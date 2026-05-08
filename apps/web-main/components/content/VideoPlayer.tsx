@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useRef, useState, useEffect, useMemo } from 'react'
 import { Download, Share2, Maximize2, Volume2, VolumeX } from 'lucide-react'
 
 interface VideoPlayerProps {
@@ -8,15 +8,41 @@ interface VideoPlayerProps {
   duration?: number
   tier: 1 | 2 | 3
   poster?: string
+  /** When set (typically Premium+), format tabs switch the `<video>` `src`. Keys must match tab labels. */
+  videoFormatUrls?: Record<string, string>
 }
 
-export function VideoPlayer({ videoUrl, duration = 60, tier, poster }: VideoPlayerProps) {
+export function VideoPlayer({ videoUrl, duration = 60, tier, poster, videoFormatUrls }: VideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const [isPlaying, setIsPlaying] = useState(false)
   const [currentTime, setCurrentTime] = useState(0)
   const [volume, setVolume] = useState(1)
   const [muted, setMuted] = useState(false)
-  const [selectedVersion, setSelectedVersion] = useState('60s')
+
+  const formatLabels = useMemo(
+    () => [
+      { label: '60s Full', desc: 'YouTube/email' },
+      { label: '30s Mobile', desc: 'Facebook/Instagram' },
+      { label: '15s Social', desc: 'TikTok/Reels' },
+      { label: '10s Preview', desc: 'Stories' },
+    ],
+    [],
+  )
+
+  const defaultFormatLabel = formatLabels[0]!.label
+  const [selectedVersion, setSelectedVersion] = useState(defaultFormatLabel)
+
+  const activeSrc =
+    tier === 3 && videoFormatUrls && videoFormatUrls[selectedVersion]
+      ? videoFormatUrls[selectedVersion]!
+      : videoUrl
+
+  useEffect(() => {
+    if (!videoRef.current) return
+    videoRef.current.load()
+    setCurrentTime(0)
+    setIsPlaying(false)
+  }, [activeSrc])
 
   const totalTime = videoRef.current?.duration || duration
 
@@ -33,7 +59,7 @@ export function VideoPlayer({ videoUrl, duration = 60, tier, poster }: VideoPlay
 
   function handleDownload() {
     const a = document.createElement('a')
-    a.href = videoUrl
+    a.href = activeSrc
     a.download = `kealee-concept-${Date.now()}.mp4`
     a.click()
   }
@@ -57,8 +83,9 @@ export function VideoPlayer({ videoUrl, duration = 60, tier, poster }: VideoPlay
       {/* Video */}
       <div className="relative aspect-video bg-black">
         <video
+          key={activeSrc}
           ref={videoRef}
-          src={videoUrl}
+          src={activeSrc}
           poster={poster}
           className="w-full h-full object-cover"
           onPlay={() => setIsPlaying(true)}
@@ -159,14 +186,10 @@ export function VideoPlayer({ videoUrl, duration = 60, tier, poster }: VideoPlay
         <div className="bg-slate-900 border-t border-slate-800 px-4 py-3">
           <p className="text-slate-400 text-xs font-semibold uppercase tracking-widest mb-2">Video Versions</p>
           <div className="flex gap-2 flex-wrap">
-            {[
-              { label: '60s Full', desc: 'YouTube/email' },
-              { label: '30s Mobile', desc: 'Facebook/Instagram' },
-              { label: '15s Social', desc: 'TikTok/Reels' },
-              { label: '10s Preview', desc: 'Stories' },
-            ].map((v) => (
+            {formatLabels.map((v) => (
               <button
                 key={v.label}
+                type="button"
                 onClick={() => setSelectedVersion(v.label)}
                 className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors ${
                   selectedVersion === v.label

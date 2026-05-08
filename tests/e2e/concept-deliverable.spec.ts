@@ -14,101 +14,21 @@
  */
 
 import { test, expect } from '@playwright/test'
-import { mockApiResponse, mockConceptOutput } from './fixtures/mock-data'
 
-// Helper: navigate to a real or mocked concept deliverable
-const DELIVERABLE_PATH = '/concept/deliverable'
+// Helper: legacy web-main path (middleware redirects to owner portal)
+const LEGACY_DELIVERABLE_PATH = '/concept/deliverable'
 
-test.describe('Concept Deliverable — /concept/deliverable', () => {
-  test.beforeEach(async ({ page }) => {
-    // Mock the concept data API so we don't need a real DB record
-    await mockApiResponse(
-      page,
-      '**/api/concept/**',
-      { conceptOutput: mockConceptOutput, status: 'concept_ready' },
+test.describe('Concept Deliverable — redirects to owner portal', () => {
+  test('GET /concept/deliverable responds with redirect to owner portal', async ({ request, baseURL }) => {
+    const intakeId = 'test-intake-uuid-001'
+    const res = await request.get(
+      `${baseURL ?? 'http://127.0.0.1:3000'}${LEGACY_DELIVERABLE_PATH}?intakeId=${encodeURIComponent(intakeId)}`,
+      { maxRedirects: 0 },
     )
-    await page.goto(`${DELIVERABLE_PATH}?intakeId=test-intake-uuid-001`)
-    await page.waitForLoadState('networkidle')
-  })
-
-  // ── Page loads ─────────────────────────────────────────────────────────────
-
-  test('concept deliverable page loads without error', async ({ page }) => {
-    // Should not show an error page
-    await expect(page.locator('h1, h2, [data-testid="concept-title"]')).toBeVisible({ timeout: 10000 })
-    const errorText = await page.locator('text=/something went wrong|500|error/i').count()
-    expect(errorText).toBe(0)
-  })
-
-  // ── Media components ───────────────────────────────────────────────────────
-
-  test('VideoPlayer renders (placeholder or real video)', async ({ page }) => {
-    // VideoPlayer shows either a real video or a placeholder card when src is empty
-    const videoEl = page.locator('video, [data-testid="video-placeholder"], [class*="VideoPlayer"]')
-    const videoVisible = await videoEl.first().isVisible({ timeout: 5000 }).catch(() => false)
-
-    // Either the video element or a placeholder card is visible
-    const placeholderEl = page.locator('text=/video coming soon|no video/i')
-    const placeholderVisible = await placeholderEl.isVisible({ timeout: 2000 }).catch(() => false)
-
-    expect(videoVisible || placeholderVisible).toBeTruthy()
-  })
-
-  test('ImageGallery shows images or empty state', async ({ page }) => {
-    // Gallery grid or empty message should be present
-    const gallery = page.locator('[class*="gallery"], [class*="Gallery"], img[class*="object-cover"]')
-    const galleryVisible = await gallery.first().isVisible({ timeout: 5000 }).catch(() => false)
-
-    const emptyGallery = page.locator('text=/no images|coming soon/i')
-    const emptyVisible = await emptyGallery.isVisible({ timeout: 2000 }).catch(() => false)
-
-    expect(galleryVisible || emptyVisible).toBeTruthy()
-  })
-
-  // ── Concept content ────────────────────────────────────────────────────────
-
-  test('estimated cost is displayed', async ({ page }) => {
-    // Should show a dollar amount
-    const costEl = page.locator('text=/\\$[0-9,]+/')
-    await expect(costEl.first()).toBeVisible({ timeout: 8000 })
-  })
-
-  test('project timeline is displayed', async ({ page }) => {
-    const timelineEl = page.locator('text=/weeks|days/i')
-    await expect(timelineEl.first()).toBeVisible({ timeout: 8000 })
-  })
-
-  test('design concept style is displayed', async ({ page }) => {
-    // mockConceptOutput has style: "Modern Contemporary"
-    const styleEl = page.locator('text=/modern|contemporary|style/i')
-    await expect(styleEl.first()).toBeVisible({ timeout: 8000 })
-  })
-
-  test('MEP system information is displayed', async ({ page }) => {
-    // Should show electrical, plumbing, or lighting info
-    const mepEl = page.locator('text=/electrical|plumbing|hvac|lighting/i')
-    await expect(mepEl.first()).toBeVisible({ timeout: 8000 })
-  })
-
-  test('bill of materials is displayed', async ({ page }) => {
-    // BOM section with item names
-    const bomEl = page.locator('text=/bill of materials|materials|bom|countertop|cabinet/i')
-    await expect(bomEl.first()).toBeVisible({ timeout: 8000 })
-  })
-
-  test('what is included section displays deliverables', async ({ page }) => {
-    // "includes" from concept output
-    const includesEl = page.locator('text=/consultation|renders|specification/i')
-    await expect(includesEl.first()).toBeVisible({ timeout: 8000 })
-  })
-
-  // ── CTAs on deliverable ────────────────────────────────────────────────────
-
-  test('intake CTA or next-step link is present', async ({ page }) => {
-    // Should have at least one link back to an intake path or permit path
-    const ctaLinks = page.locator('a[href*="/intake/"], a[href*="/marketplace"], a[href*="/gallery"]')
-    const count = await ctaLinks.count()
-    expect(count).toBeGreaterThan(0)
+    expect([301, 302, 303, 307, 308]).toContain(res.status())
+    const loc = res.headers()['location'] ?? ''
+    expect(loc).toContain('/deliverables/')
+    expect(loc).toContain(encodeURIComponent(intakeId))
   })
 })
 

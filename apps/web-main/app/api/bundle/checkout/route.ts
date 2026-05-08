@@ -14,6 +14,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
+import { guardStripeSecretForHttp } from '@/lib/stripe-vercel-guard'
 
 export async function POST(req: NextRequest) {
   try {
@@ -35,6 +36,9 @@ export async function POST(req: NextRequest) {
     if (!priceId) {
       return NextResponse.json({ error: 'Bundle price not configured (STRIPE_PRICE_BUNDLE_TEST)' }, { status: 503 })
     }
+
+    const guard = guardStripeSecretForHttp(stripeKey)
+    if (guard) return guard
 
     const stripe = new Stripe(stripeKey, { apiVersion: '2024-06-20' as any })
     const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? req.nextUrl.origin

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
+import { guardStripeSecretForHttp } from '@/lib/stripe-vercel-guard'
 
 const PATH_NAMES: Record<string, string> = {
   exterior_concept:          'Exterior Concept AI Package',
@@ -48,6 +49,9 @@ export async function POST(req: NextRequest) {
     if (!stripeKey) {
       return NextResponse.json({ error: 'Stripe not configured' }, { status: 503 })
     }
+
+    const guard = guardStripeSecretForHttp(stripeKey)
+    if (guard) return guard
 
     const stripe = new Stripe(stripeKey, { apiVersion: '2024-06-20' as any })
 

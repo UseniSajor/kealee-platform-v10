@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
+import { guardStripeSecretForHttp } from '@/lib/stripe-vercel-guard'
 
 type GCPlanSlug = 'package-a' | 'package-b' | 'package-c' | 'package-d'
 type BillingInterval = 'month' | 'year'
@@ -44,6 +45,9 @@ export async function POST(req: NextRequest) {
     if (!stripeKey) {
       return NextResponse.json({ error: 'Stripe not configured' }, { status: 500 })
     }
+
+    const guard = guardStripeSecretForHttp(stripeKey)
+    if (guard) return guard
 
     // Get price ID from env vars
     let priceId: string

@@ -82,7 +82,7 @@ describe('POST /api/test/intake-demo', () => {
     const body = await res.json()
     expect(body.intakeId).toBe(testIntakeId)
     expect(body.deliverableUrl).toContain(testIntakeId)
-    expect(body.deliverableUrl).toContain('/concept/deliverable')
+    expect(body.deliverableUrl).toContain('/deliverables/')
   })
 
   test('returns deliverableUrl even if concept generation fails', async () => {

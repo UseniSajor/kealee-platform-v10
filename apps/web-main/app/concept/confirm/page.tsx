@@ -19,18 +19,19 @@ interface DeliverableItem {
 
 const TIER_ITEMS: Record<1 | 2 | 3, DeliverableItem[]> = {
   1: [
+    { icon: Shield,        label: 'Permit scope brief + path-to-stamps roadmap (bundle)', color: 'bg-amber-100 text-amber-600' },
     { icon: Layers,        label: 'Floor Plan Overview Sketch + Layout Direction', color: 'bg-blue-100 text-blue-600' },
     { icon: ImageIcon,     label: '3–5 Concept Renderings (1920×1080)',            color: 'bg-purple-100 text-purple-600' },
-    { icon: FileText,      label: 'Permit Scope Brief + Path-to-Approval',         color: 'bg-amber-100 text-amber-600' },
     { icon: Table2,        label: 'Itemized Cost Estimate (Bill of Materials)',    color: 'bg-green-100 text-green-600' },
     { icon: FileText,      label: 'PDF Design Report',                             color: 'bg-sky-100 text-sky-600' },
+    { icon: Video,         label: 'AI transformation video — Premium or Premium+ (not in Basic)', color: 'bg-slate-100 text-slate-500' },
     { icon: Zap,           label: '1 revision included · Email support',           color: 'bg-slate-100 text-slate-500' },
   ],
   2: [
     { icon: Video,         label: '60-Second AI Transformation Video',             color: 'bg-orange-100 text-orange-600' },
     { icon: Layers,        label: '2D Architectural Floor Plan with MEP layers',   color: 'bg-blue-100 text-blue-600' },
     { icon: ImageIcon,     label: '6–8 Enhanced Renderings (2560×1440)',           color: 'bg-purple-100 text-purple-600' },
-    { icon: FileText,      label: 'Permit-Ready Documents (HOA + lender)',         color: 'bg-amber-100 text-amber-600' },
+    { icon: Shield,        label: 'Permit-ready scope pack — AHJ / HOA / lender checklist', color: 'bg-amber-100 text-amber-600' },
     { icon: Table2,        label: 'Editable Bill of Materials',                    color: 'bg-green-100 text-green-600' },
     { icon: Zap,           label: 'Everything in Basic · 3 revisions · 30-day support', color: 'bg-slate-100 text-slate-500' },
   ],
@@ -38,16 +39,16 @@ const TIER_ITEMS: Record<1 | 2 | 3, DeliverableItem[]> = {
     { icon: Video,         label: '4 Video Formats — 60s · 30s · 15s · 10s',     color: 'bg-orange-100 text-orange-600' },
     { icon: Layers,        label: '3D Floor Plan + CAD files (DWG export)',        color: 'bg-blue-100 text-blue-600' },
     { icon: ImageIcon,     label: '12–15 Renderings in 4K resolution',             color: 'bg-purple-100 text-purple-600' },
-    { icon: Lock,          label: 'Permit Package Credit — full cost credited toward plans', color: 'bg-teal-100 text-teal-600' },
+    { icon: Lock,          label: 'Permit package credit — credited toward stamped plans or filing', color: 'bg-teal-100 text-teal-600' },
     { icon: Phone,         label: '15-min expert consultation call',               color: 'bg-green-100 text-green-600' },
     { icon: Zap,           label: 'Everything in Premium · 3 revisions · 90-day support', color: 'bg-slate-100 text-slate-500' },
   ],
 }
 
 const TIER_META: Record<1 | 2 | 3, { tagline: string; accent: string; badge?: string }> = {
-  1: { tagline: 'PDF report, renders & budget comparison — perfect for planning and contractor quotes.',  accent: 'from-slate-700 to-slate-900' },
-  2: { tagline: 'Video tour + floor plan — the standard for HOA approvals and lender presentations.',    accent: 'from-[#E8724B] to-[#c75c35]', badge: 'Most Popular' },
-  3: { tagline: '4-video production, 4K renders, and CAD files — built for financing and premium builds.', accent: 'from-[#1A2B4A] to-[#0f1c30]' },
+  1: { tagline: 'Permit roadmap, renders, and estimates in Basic — upgrade to Premium for the 60s AI transformation video and deeper plan sheets.',  accent: 'from-slate-700 to-slate-900' },
+  2: { tagline: 'Includes the 60s AI transformation video plus permit-ready documentation for HOA boards and lender packages.',    accent: 'from-[#E8724B] to-[#c75c35]', badge: 'Most Popular' },
+  3: { tagline: 'Full video suite (60s–10s), 4K renders, CAD — plus permit package credit toward stamped drawings or filing.', accent: 'from-[#1A2B4A] to-[#0f1c30]' },
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

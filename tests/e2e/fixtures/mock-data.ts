@@ -97,7 +97,7 @@ export const TEST_USERS = {
 export const mockIntakeResponse = {
   intakeId: 'test-intake-uuid-001',
   status: 'paid',
-  deliverableUrl: '/concept/deliverable?intakeId=test-intake-uuid-001',
+  deliverableUrl: 'https://owner.kealee.com/deliverables/test-intake-uuid-001',
 }
 
 export const mockConceptOutput = {

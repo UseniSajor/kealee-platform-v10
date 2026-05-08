@@ -15,6 +15,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { SERVICE_DELIVERABLES } from '@/lib/service-deliverables'
+import { getOwnerPortalDeliverableUrl } from '@/lib/owner-portal-urls'
+import { isStripeWebhookSideEffectsDisabledOnThisDeployment } from '@/lib/stripe-vercel-guard'
 
 export const runtime = 'nodejs' // Required: raw body access for signature verification
 
@@ -43,6 +45,11 @@ export async function POST(req: NextRequest) {
   } catch (err: any) {
     console.error('[stripe-webhook] Signature verification failed:', err.message)
     return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })
+  }
+
+  if (isStripeWebhookSideEffectsDisabledOnThisDeployment()) {
+    console.warn('[stripe-webhook] Non-production Vercel — acknowledging without processing', event.type)
+    return NextResponse.json({ received: true, ignoredNonProduction: true })
   }
 
   // ── payment_intent.payment_failed ─────────────────────────────────────────
@@ -131,16 +138,24 @@ export async function POST(req: NextRequest) {
     ? { ...existingFormData, permitRequired: deliverable.permitRequired }
     : existingFormData
 
-  // 2. Mark intake as paid and persist permitRequired in form_data
-  const { error: updateErr } = await supabase
+  // 2. Mark intake as paid and persist permitRequired in form_data (idempotent: only rows still `new`)
+  const { data: updatedRows, error: updateErr } = await supabase
     .from('public_intake_leads')
     .update({ status: 'paid', form_data: mergedFormData })
     .eq('id', intakeId)
-    .eq('status', 'new') // Only update if still new (idempotency)
+    .eq('status', 'new')
+    .select('id')
 
   if (updateErr) {
     console.error('[stripe-webhook] Failed to update intake status:', updateErr.message)
     // Don't return error — Stripe would retry. Log and continue.
+  }
+
+  const transitionedToPaid = Boolean(updatedRows && updatedRows.length > 0)
+
+  if (!transitionedToPaid) {
+    console.log('[stripe-webhook] Intake already paid or not found; skipping generation and notification emails', intakeId)
+    return NextResponse.json({ received: true })
   }
 
   // 3. Trigger concept generation for design/development services (fire-and-forget)
@@ -219,6 +234,8 @@ export async function POST(req: NextRequest) {
           '  1. Your AI concept is generating now',
           '  2. You\'ll receive an email with Owner Portal access',
           '  3. Full package delivered in 3-5 business days',
+          '',
+          `View your deliverable (after signing in): ${getOwnerPortalDeliverableUrl(intakeId, projectPath)}`,
           '',
           'Questions? Reply to this email or contact hello@kealee.com',
           '',

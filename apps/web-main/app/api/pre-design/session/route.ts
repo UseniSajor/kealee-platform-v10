@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
+import { guardStripeSecretForHttp } from '@/lib/stripe-vercel-guard'
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: '2024-12-18.acacia' as any })
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY ?? '', { apiVersion: '2024-12-18.acacia' as any })
 
 const PRICE_MAP: Record<string, Record<string, string | undefined>> = {
   starter: {
@@ -44,6 +45,13 @@ const TIER_PRISMA_MAP: Record<string, string> = {
 
 export async function POST(req: NextRequest) {
   try {
+    const stripeKey = process.env.STRIPE_SECRET_KEY
+    if (!stripeKey) {
+      return NextResponse.json({ error: 'Stripe not configured' }, { status: 503 })
+    }
+    const guard = guardStripeSecretForHttp(stripeKey)
+    if (guard) return guard
+
     const { projectType, tier, contactName, contactEmail, propertyAddress, notes } = await req.json()
 
     if (!projectType || !tier || !contactEmail) {

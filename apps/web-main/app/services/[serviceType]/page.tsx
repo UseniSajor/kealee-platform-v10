@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { CheckCircle2, Clock, ArrowRight, Shield, Video, FileText, Image as ImageIcon, Table2, Layers, Star, LayoutTemplate, Zap, PlayCircle, Phone } from 'lucide-react'
+import { CheckCircle2, Clock, ArrowRight, Shield, Video, FileText, Image as ImageIcon, Table2, Layers, Star, LayoutTemplate, Zap, PlayCircle, Phone, Lock } from 'lucide-react'
 import { SERVICES, SERVICE_MAP } from '@/lib/services-config'
 import { SERVICE_DELIVERABLES } from '@/lib/service-deliverables'
 import {
@@ -21,17 +21,20 @@ interface DeliverableItem {
 
 const TIER_DELIVERABLES: Record<1 | 2 | 3, DeliverableItem[]> = {
   1: [
+    { icon: Shield,         label: 'Permit scope brief + path-to-stamps roadmap (bundle)', color: 'bg-amber-100 text-amber-600' },
     { icon: FileText,       label: 'PDF Design Report',                              color: 'bg-blue-100 text-blue-600' },
     { icon: ImageIcon,      label: '3–5 Concept Renderings (1920×1080)',             color: 'bg-purple-100 text-purple-600' },
     { icon: Table2,         label: 'Budget Comparison — Basic · Standard · Luxury',  color: 'bg-green-100 text-green-600' },
-    { icon: FileText,       label: 'Quick Reference Sheet (print-ready)',            color: 'bg-amber-100 text-amber-600' },
+    { icon: FileText,       label: 'Quick Reference Sheet (print-ready)',            color: 'bg-sky-100 text-sky-600' },
     { icon: LayoutTemplate, label: 'Web Portal — lifetime access & sharing',         color: 'bg-sky-100 text-sky-600' },
+    { icon: Video,          label: 'AI transformation video — Premium or Premium+ (not in Basic)', color: 'bg-slate-100 text-slate-500' },
     { icon: Zap,            label: '1 revision included · Email support',            color: 'bg-slate-100 text-slate-500' },
   ],
   2: [
     { icon: Video,          label: '60-Second AI Transformation Video',              color: 'bg-orange-100 text-orange-600' },
     { icon: Layers,         label: '2D Architectural Floor Plan with MEP',           color: 'bg-blue-100 text-blue-600' },
     { icon: ImageIcon,      label: '6–8 Enhanced Renderings (2560×1440)',            color: 'bg-purple-100 text-purple-600' },
+    { icon: Shield,         label: 'Permit-ready scope pack — AHJ / HOA / lender checklist', color: 'bg-amber-100 text-amber-600' },
     { icon: LayoutTemplate, label: 'Interactive Portal — video, floor plan, docs',   color: 'bg-sky-100 text-sky-600' },
     { icon: Table2,         label: 'Itemized Bill of Materials (editable)',          color: 'bg-green-100 text-green-600' },
     { icon: FileText,       label: 'Everything in Basic · 3 revisions · 30-day support', color: 'bg-slate-100 text-slate-500' },
@@ -40,6 +43,7 @@ const TIER_DELIVERABLES: Record<1 | 2 | 3, DeliverableItem[]> = {
     { icon: Video,          label: '4 Video Formats — 60s · 30s · 15s · 10s',       color: 'bg-orange-100 text-orange-600' },
     { icon: Layers,         label: 'Multi-Layer 3D Floor Plan + CAD files',          color: 'bg-blue-100 text-blue-600' },
     { icon: ImageIcon,      label: '12–15 Renderings in 4K resolution',              color: 'bg-purple-100 text-purple-600' },
+    { icon: Lock,           label: 'Permit package credit — credited toward stamped plans or filing', color: 'bg-teal-100 text-teal-600' },
     { icon: LayoutTemplate, label: 'Enhanced Portal — virtual walkthrough',          color: 'bg-sky-100 text-sky-600' },
     { icon: Phone,          label: '15-min expert consultation call',                color: 'bg-green-100 text-green-600' },
     { icon: FileText,       label: 'Everything in Premium · 3 revisions · 90-day support', color: 'bg-slate-100 text-slate-500' },

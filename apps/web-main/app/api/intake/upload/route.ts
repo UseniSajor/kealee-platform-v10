@@ -5,6 +5,7 @@ import { randomUUID } from 'crypto'
 const ALLOWED_TYPES = new Set([
   'image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif',
   'video/mp4', 'video/quicktime', 'video/mov',
+  'application/pdf',
 ])
 
 const MAX_FILE_SIZE = 50 * 1024 * 1024 // 50 MB

@@ -78,6 +78,9 @@ interface ConceptData {
   projectTimeline: string
   tier: number
   renderUrls: string[]
+  /** From `conceptOutput` when tier includes video (Premium+). */
+  videoUrl?: string
+  videoFormatUrls?: Record<string, string>
   designConcept: {
     style: string
     colorPalette: string[]
@@ -179,6 +182,11 @@ export default function ConceptDeliverablePage() {
         projectTimeline: (co.projectTimeline as string) ?? '4–6 weeks',
         tier,
         renderUrls,
+        videoUrl: typeof co.videoUrl === 'string' ? co.videoUrl : undefined,
+        videoFormatUrls:
+          co.videoFormatUrls && typeof co.videoFormatUrls === 'object'
+            ? (co.videoFormatUrls as Record<string, string>)
+            : undefined,
         designConcept: {
           style:        (dc.style as string) ?? 'Modern Contemporary',
           colorPalette: (dc.colorPalette as string[]) ?? [],
@@ -363,8 +371,42 @@ export default function ConceptDeliverablePage() {
           </section>
         )}
 
-        {/* ── Video Production Card (tier 2+) ─────────────────────────────── */}
-        {data.tier >= 2 && (
+        {/* ── Video (tier 2+): playable when API stored videoUrl ───────────── */}
+        {data.tier >= 2 && data.videoUrl && (
+          <section className="rounded-2xl border border-gray-200 bg-white overflow-hidden p-6"
+            style={{ boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.06)' }}>
+            <div className="flex items-center gap-2 mb-4">
+              <span className="h-2 w-2 rounded-full" style={{ backgroundColor: '#E8724B' }} />
+              <h2 className="text-base font-bold" style={{ color: '#1A2B4A' }}>
+                {data.tier >= 3 ? 'AI transformation video (master)' : 'AI transformation video'}
+              </h2>
+            </div>
+            <video
+              key={data.videoUrl}
+              src={data.videoUrl}
+              controls
+              playsInline
+              className="w-full max-h-[70vh] rounded-xl bg-black"
+            />
+            <div className="mt-4 flex flex-wrap gap-3">
+              <a
+                href={data.videoUrl}
+                download
+                className="inline-flex items-center gap-2 rounded-xl border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+              >
+                <Download className="h-4 w-4" />
+                Download MP4
+              </a>
+            </div>
+            {data.tier >= 3 && data.videoFormatUrls && (
+              <p className="text-xs text-gray-500 mt-3">
+                Premium+ 30s / 15s / 10s cuts appear here when separate files are attached to your order; until then the master cut above represents your video deliverable.
+              </p>
+            )}
+          </section>
+        )}
+
+        {data.tier >= 2 && !data.videoUrl && (
           <section>
             <div className="rounded-2xl overflow-hidden"
               style={{ background: 'linear-gradient(135deg, #E8724B 0%, #c75c35 100%)' }}>

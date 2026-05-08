@@ -12,6 +12,7 @@ export interface Concept {
   status: 'processing' | 'completed' | 'error'
   videoUrl?: string
   videoDuration?: number
+  videoFormatUrls?: Record<string, string>
   floorPlanUrl?: string
   mepSchematic?: Record<string, unknown>
   estimatedCost?: number

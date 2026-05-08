@@ -1,15 +1,15 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useParams, useSearchParams, useRouter } from 'next/navigation'
+import { useParams, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { CheckCircle2, Loader2, ArrowRight, Clock, FileText, Users } from 'lucide-react'
 import { SERVICE_DELIVERABLES, ServiceDeliverable } from '@/lib/service-deliverables'
+import { getOwnerPortalDeliverableUrl } from '@/lib/owner-portal-urls'
 
 export default function IntakeSuccessPage() {
   const params = useParams()
   const searchParams = useSearchParams()
-  const router = useRouter()
 
   const projectPath = Array.isArray(params.projectPath) ? params.projectPath[0] : params.projectPath
   const intakeId = searchParams.get('intakeId')
@@ -56,11 +56,11 @@ export default function IntakeSuccessPage() {
       }
 
       setStatus('redirecting')
-      router.push(`/concept/deliverable?intakeId=${intakeId}&projectPath=${projectPath}`)
+      window.location.assign(getOwnerPortalDeliverableUrl(intakeId, projectPath ?? undefined))
     }
 
     generate()
-  }, [deliverable, intakeId, projectPath, router])
+  }, [deliverable, intakeId, projectPath])
 
   // Permit success
   if (category === 'permit') {
@@ -93,7 +93,7 @@ export default function IntakeSuccessPage() {
           </h1>
           <p className="text-slate-600 text-lg mb-2">
             {status === 'redirecting'
-              ? 'Redirecting to your deliverable...'
+              ? 'Opening the Owner Portal…'
               : 'Claude is building your personalized concept package.'}
           </p>
           <p className="text-slate-400 text-sm">This takes about 10–15 seconds.</p>
@@ -103,7 +103,7 @@ export default function IntakeSuccessPage() {
   }
 
   // Generic fallback (no intakeId or generatesConcept=false with unknown category)
-  return <GenericSuccess deliverable={deliverable} intakeId={intakeId} />
+  return <GenericSuccess deliverable={deliverable} intakeId={intakeId} projectPath={projectPath ?? ''} />
 }
 
 function PermitSuccess({ deliverable }: { deliverable: ServiceDeliverable | null }) {
@@ -261,7 +261,15 @@ function ContractorMatchSuccess({ deliverable }: { deliverable: ServiceDeliverab
   )
 }
 
-function GenericSuccess({ deliverable, intakeId }: { deliverable: ServiceDeliverable | null; intakeId: string | null }) {
+function GenericSuccess({
+  deliverable,
+  intakeId,
+  projectPath,
+}: {
+  deliverable: ServiceDeliverable | null
+  intakeId: string | null
+  projectPath: string
+}) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-white to-green-50">
       <section className="bg-white border-b border-slate-200 px-4 py-16 text-center">
@@ -305,12 +313,14 @@ function GenericSuccess({ deliverable, intakeId }: { deliverable: ServiceDeliver
 
           {intakeId && deliverable?.generatesConcept && (
             <div className="text-center">
-              <Link href={`/concept/deliverable?intakeId=${intakeId}`}>
-                <button className="bg-orange-600 hover:bg-orange-700 text-white font-bold py-3 px-8 rounded-xl transition inline-flex items-center gap-2">
-                  View Your Concept
-                  <ArrowRight className="w-5 h-5" />
-                </button>
-              </Link>
+              <a
+                href={getOwnerPortalDeliverableUrl(intakeId, projectPath)}
+                className="inline-flex items-center gap-2 bg-orange-600 hover:bg-orange-700 text-white font-bold py-3 px-8 rounded-xl transition"
+              >
+                Open in Owner Portal
+                <ArrowRight className="w-5 h-5" />
+              </a>
+              <p className="text-xs text-slate-500 mt-3">Sign in to the portal to view downloads, video, and next steps.</p>
             </div>
           )}
         </div>

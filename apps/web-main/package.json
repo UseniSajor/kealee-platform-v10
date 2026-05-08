@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "diag:intake": "node ./scripts/smoke-intake-diagnostics.mjs"
   },
   "dependencies": {
     "@kealee/core-rules": "workspace:*",

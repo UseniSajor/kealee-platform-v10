@@ -154,7 +154,12 @@ export default function ConceptDeliverablePage() {
             <h2 className="text-2xl font-bold text-slate-900 mb-2">Your Transformation Video</h2>
             <p className="text-slate-500 mb-6">AI-generated before/after transformation</p>
             {concept.videoUrl ? (
-              <VideoPlayer videoUrl={concept.videoUrl} duration={concept.videoDuration} tier={concept.tier} />
+              <VideoPlayer
+                videoUrl={concept.videoUrl}
+                duration={concept.videoDuration}
+                tier={concept.tier}
+                videoFormatUrls={concept.videoFormatUrls}
+              />
             ) : (
               <div className="rounded-2xl bg-slate-100 border border-slate-200 p-12 text-center">
                 <Loader2 className="w-8 h-8 text-[#E8724B] animate-spin mx-auto mb-3" />

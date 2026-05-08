@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
+import { guardStripeSecretForHttp } from '@/lib/stripe-vercel-guard'
 
 // Map product slugs to Stripe price env var names
 // NOTE: Some products may not have Stripe configured yet — checkout returns 503
@@ -69,6 +70,9 @@ export async function POST(req: NextRequest) {
     if (!stripeKey) {
       return NextResponse.json({ error: 'Stripe not configured' }, { status: 503 })
     }
+
+    const guard = guardStripeSecretForHttp(stripeKey)
+    if (guard) return guard
 
     const stripe = new Stripe(stripeKey, { apiVersion: '2024-06-20' as any })
 

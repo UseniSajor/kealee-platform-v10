@@ -18,7 +18,7 @@ User → Intake Form → CTA (Stripe) → Webhook → ProjectOutput → Queue �
    - Run DesignBot → EstimateBot → PermitBot → ContractorBot
    - Save outputs to DB
    - Update ProjectOutput status='completed'
-7. **Output** — User views results at `/concept/deliverable?intakeId=...`
+7. **Output** — User views results in the **Owner Portal** at `/deliverables/{intakeId}` (see `NEXT_PUBLIC_OWNER_PORTAL_URL`).
 8. **Upsell** — nextStep CTA shown (permit filing, contractor match, etc.)
 
 ## DigitalTwin Data Flow

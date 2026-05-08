@@ -1,8 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { FileText, AlertCircle, CheckCircle } from 'lucide-react'
+import { FileText, AlertCircle, CheckCircle, ImagePlus, FileVideo, Loader2, X } from 'lucide-react'
+import { uploadIntakeFilesSequentially, type IntakeUploadedFile } from '@/lib/intake-file-upload'
 import { SERVICE_PRICING, formatPrice } from '@kealee/shared/pricing'
 import {
   getCostEstimateProjectNamePlaceholder,
@@ -24,9 +25,12 @@ export default function CostEstimateIntakePage() {
     clientName: '',
     contactEmail: '',
     contactPhone: '',
-    hasConstructionDocs: false,
     docDescription: '',
   })
+
+  const [uploadedFiles, setUploadedFiles] = useState<IntakeUploadedFile[]>([])
+  const [uploading, setUploading] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const pricing = SERVICE_PRICING.estimation.cost_estimate
   const tierCode = 'cost_estimate'
@@ -42,6 +46,33 @@ export default function CostEstimateIntakePage() {
     'Other',
   ]
 
+  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const selected = Array.from(e.target.files ?? [])
+    if (!selected.length) return
+    if (uploadedFiles.length + selected.length > 5) {
+      setError('You can upload a maximum of 5 files.')
+      return
+    }
+    setError('')
+    setUploading(true)
+    try {
+      const newFiles = await uploadIntakeFilesSequentially(selected)
+      if (newFiles.length === 0) {
+        setError('Upload failed. Use images or PDF under 50 MB each.')
+        return
+      }
+      if (newFiles.length < selected.length) {
+        setError('Some files could not be uploaded. Others were saved.')
+      }
+      setUploadedFiles(prev => [...prev, ...newFiles])
+    } catch {
+      setError('Upload failed. Please try again.')
+    } finally {
+      setUploading(false)
+      if (fileInputRef.current) fileInputRef.current.value = ''
+    }
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
@@ -52,6 +83,16 @@ export default function CostEstimateIntakePage() {
         setError('Please fill in all required fields')
         return
       }
+      if (formData.scopeDescription.trim().length < 10) {
+        setError('Please add a bit more detail in scope of work (at least 10 characters).')
+        return
+      }
+      const hasAreaPhoto = uploadedFiles.some(f => f.type === 'image')
+      const hasPdf = uploadedFiles.some(f => f.type === 'document')
+      if (!hasAreaPhoto || !hasPdf) {
+        setError('Please upload at least one photo of the project area and at least one PDF (plans, drawings, or specs).')
+        return
+      }
       setStep('review')
       return
     }
@@ -59,12 +100,20 @@ export default function CostEstimateIntakePage() {
     // Step 2: Submit intake
     setLoading(true)
     try {
+      const hasAreaPhoto = uploadedFiles.some(f => f.type === 'image')
+      const hasPdf = uploadedFiles.some(f => f.type === 'document')
+      if (!hasAreaPhoto || !hasPdf) {
+        setError('Please upload at least one area photo and one PDF before payment.')
+        setLoading(false)
+        setStep('form')
+        return
+      }
       const intakeRes = await fetch('/api/v1/estimation/intake', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           project: {
-            scopeDetail: formData.hasConstructionDocs ? 'construction_documents' : 'sketch',
+            scopeDetail: 'construction_documents',
             projectStage: 'design_development',
             projectScope: 'interior_remodel',
             estimatedBudget: undefined,
@@ -74,9 +123,10 @@ export default function CostEstimateIntakePage() {
             email: formData.contactEmail,
             phone: formData.contactPhone,
           },
-          description: formData.scopeDescription,
-          hasDesignDrawings: formData.hasConstructionDocs,
+          description: [formData.scopeDescription, formData.docDescription].filter(Boolean).join('\n\n'),
+          hasDesignDrawings: true,
           tierPreference: tierCode,
+          attachmentUrls: uploadedFiles.map(f => f.url),
         }),
       })
 
@@ -217,30 +267,77 @@ export default function CostEstimateIntakePage() {
                   />
                 </div>
 
-                <div className="flex items-center gap-3">
+                <div>
+                  <label className="block text-sm font-semibold text-slate-900 mb-2">
+                    Photos and construction PDFs <span className="text-red-600">*</span>
+                  </label>
+                  <p className="text-xs text-slate-500 mb-2">
+                    One photo of the project area (JPG, PNG, WEBP, or HEIC) and at least one PDF (plans, specs, or drawings) are required. Up to 5 files, 50 MB each.
+                  </p>
+                  {uploadedFiles.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mb-3">
+                      {uploadedFiles.map((f, i) => (
+                        <div key={i} className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs text-slate-700">
+                          {f.type === 'video' ? (
+                            <FileVideo className="h-3.5 w-3.5 text-blue-500 shrink-0" />
+                          ) : f.type === 'document' ? (
+                            <FileText className="h-3.5 w-3.5 text-amber-600 shrink-0" />
+                          ) : (
+                            <ImagePlus className="h-3.5 w-3.5 text-green-500 shrink-0" />
+                          )}
+                          <span className="max-w-[140px] truncate">{f.name}</span>
+                          <button
+                            type="button"
+                            onClick={() => setUploadedFiles(prev => prev.filter((_, j) => j !== i))}
+                            className="text-slate-400 hover:text-red-500"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                   <input
-                    type="checkbox"
-                    checked={formData.hasConstructionDocs}
-                    onChange={(e) => setFormData({ ...formData, hasConstructionDocs: e.target.checked })}
-                    className="w-4 h-4"
+                    ref={fileInputRef}
+                    type="file"
+                    multiple
+                    accept="image/jpeg,image/png,image/webp,image/heic,image/heif,video/mp4,video/quicktime,application/pdf"
+                    onChange={handleFileChange}
+                    className="sr-only"
+                    id="cost-estimate-uploads"
                   />
-                  <label className="text-sm text-slate-700">I have construction documents available</label>
+                  {uploadedFiles.length < 5 && (
+                    <label
+                      htmlFor="cost-estimate-uploads"
+                      className={`flex items-center justify-center gap-2 w-full rounded-lg border-2 border-dashed px-4 py-3 text-sm font-medium cursor-pointer ${
+                        uploading ? 'border-blue-200 bg-blue-50 text-blue-600' : 'border-slate-300 text-slate-600 hover:border-blue-400 hover:bg-slate-50'
+                      }`}
+                    >
+                      {uploading ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin" /> Uploading…
+                        </>
+                      ) : (
+                        <>
+                          <ImagePlus className="h-4 w-4" /> Add photos or PDFs
+                        </>
+                      )}
+                    </label>
+                  )}
                 </div>
 
-                {formData.hasConstructionDocs && (
-                  <div>
-                    <label className="block text-sm font-semibold text-slate-900 mb-2">
-                      Document Details
-                    </label>
-                    <textarea
-                      value={formData.docDescription}
-                      onChange={(e) => setFormData({ ...formData, docDescription: e.target.value })}
-                      className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      rows={2}
-                      placeholder="What documents do you have? (plans, drawings, specs, etc.)"
-                    />
-                  </div>
-                )}
+                <div>
+                  <label className="block text-sm font-semibold text-slate-900 mb-2">
+                    Extra notes on your documents (optional)
+                  </label>
+                  <textarea
+                    value={formData.docDescription}
+                    onChange={(e) => setFormData({ ...formData, docDescription: e.target.value })}
+                    className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    rows={2}
+                    placeholder="e.g. which sheet is existing conditions, revision date, etc."
+                  />
+                </div>
 
                 {/* Contact Information */}
                 <div className="border-t pt-6">
@@ -327,6 +424,11 @@ export default function CostEstimateIntakePage() {
                 <div className="py-4 border-b">
                   <p className="text-xs text-slate-600 mb-2">Scope of Work</p>
                   <p className="text-slate-700">{formData.scopeDescription}</p>
+                </div>
+
+                <div className="py-4 border-b">
+                  <p className="text-xs text-slate-600 mb-2">Uploaded files</p>
+                  <p className="text-slate-700">{uploadedFiles.length} file{uploadedFiles.length !== 1 ? 's' : ''}</p>
                 </div>
 
                 <div className="bg-slate-100 rounded-lg p-4">

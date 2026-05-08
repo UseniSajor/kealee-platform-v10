@@ -3,13 +3,14 @@
  * Dev/staging only — creates a paid intake record and triggers concept generation.
  *
  * Body: { projectPath: string; description?: string; address?: string }
- * Response: { intakeId: string; deliverableUrl: string }
+ * Response: { intakeId: string; deliverableUrl: string } — `deliverableUrl` points at the owner portal.
  *
  * Only enabled when NODE_ENV !== 'production' OR ALLOW_TEST_INTAKE=true.
  */
 
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
+import { getOwnerPortalDeliverableUrl } from '@/lib/owner-portal-urls'
 
 const ALLOWED =
   process.env.NODE_ENV !== 'production' || process.env.ALLOW_TEST_INTAKE === 'true'
@@ -79,7 +80,7 @@ export async function POST(req: NextRequest) {
       console.warn('[intake-demo] Concept generation failed:', genBody)
     }
 
-    const deliverableUrl = `/concept/deliverable?intakeId=${intakeId}`
+    const deliverableUrl = getOwnerPortalDeliverableUrl(intakeId, projectPath)
 
     return NextResponse.json({ intakeId, deliverableUrl })
   } catch (err: unknown) {

@@ -6,10 +6,13 @@
 import { createMiddlewareClient } from '@supabase/auth-helpers-nextjs'
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
+import { getOwnerPortalBaseUrl, getOwnerPortalDeliverableUrl } from '@/lib/owner-portal-urls'
 
 // Public routes that don't require authentication
-// NOTE: /concept/deliverable is intentionally excluded — it requires auth
+// NOTE: /concept/deliverable is not a viewer — middleware redirects to the owner portal.
+// Keep in sync with marketing + checkout funnels (anonymous users must never hit auth wall).
 const PUBLIC_ROUTES = [
+  '/login',
   '/auth/login',
   '/auth/signup',
   '/auth/callback',
@@ -23,10 +26,41 @@ const PUBLIC_ROUTES = [
   '/concept/details',
   '/concept/contact',
   '/concept/confirm',
-  '/concept',  // matches /concept exactly (service select page)
+  '/concept', // matches /concept exactly (service select page)
+  '/concept-engine',
   '/permits',
+  '/permits-only',
   '/estimation',
   '/checkout',
+  '/intake',
+  '/got-you',
+  '/pre-design',
+  '/new-construction',
+  '/bundle',
+  '/capture',
+  '/book-a-call',
+  '/about',
+  '/homeowners',
+  '/commercial',
+  '/government',
+  '/careers',
+  '/architects',
+  '/architect',
+  '/design-professionals',
+  '/design-services',
+  '/developers',
+  '/contractors',
+  '/contractor',
+  '/property-managers',
+  '/pm',
+  '/exterior',
+  '/data-deletion',
+  '/get-started',
+  '/features',
+  '/concept-package',
+  '/engineers',
+  '/engineer',
+  '/milestone-pay',
   // Catalog & service detail (public marketing — must match SiteNav / SEO)
   '/products',
   '/services',
@@ -37,21 +71,18 @@ const PUBLIC_ROUTES = [
   '/gallery',
 ]
 
-// Owner portal URL for cross-app redirects
-const OWNER_PORTAL_URL = process.env.NEXT_PUBLIC_OWNER_PORTAL_URL ?? 'https://owner.kealee.com'
-
 export async function middleware(request: NextRequest) {
   const res = NextResponse.next()
   const pathname = request.nextUrl.pathname
 
-  // /concept/deliverable requires auth — redirect to owner portal login
+  // Deliverables live in the owner portal only — never render on web-main
   if (pathname.startsWith('/concept/deliverable')) {
-    const supabase = createMiddlewareClient({ req: request, res })
-    const { data: { session } } = await supabase.auth.getSession()
-    if (!session?.user) {
-      return NextResponse.redirect(`${OWNER_PORTAL_URL}/login`)
+    const intakeId = request.nextUrl.searchParams.get('intakeId')
+    const projectPath = request.nextUrl.searchParams.get('projectPath') ?? undefined
+    if (intakeId) {
+      return NextResponse.redirect(getOwnerPortalDeliverableUrl(intakeId, projectPath))
     }
-    return res
+    return NextResponse.redirect(`${getOwnerPortalBaseUrl()}/deliverables`)
   }
 
   // Create Supabase client
@@ -63,16 +94,19 @@ export async function middleware(request: NextRequest) {
 
   // Allow public routes
   if (PUBLIC_ROUTES.some(route => pathname === route || pathname.startsWith(route + '/'))) {
-    // Redirect authenticated users away from auth pages
-    if (pathname.startsWith('/auth/') && user && !pathname.startsWith('/auth/callback')) {
-      return NextResponse.redirect(new URL('/dashboard', request.url))
+    // Redirect authenticated users away from sign-in entry (web-main has no /dashboard — use home)
+    const isAuthEntry =
+      pathname.startsWith('/login') ||
+      (pathname.startsWith('/auth/') && !pathname.startsWith('/auth/callback'))
+    if (isAuthEntry && user) {
+      return NextResponse.redirect(new URL('/', request.url))
     }
     return res
   }
 
   // Protect all other routes - require authentication
   if (!user) {
-    const loginUrl = new URL('/auth/login', request.url)
+    const loginUrl = new URL('/login', request.url)
     loginUrl.searchParams.set('redirectTo', pathname)
     return NextResponse.redirect(loginUrl)
   }
@@ -82,8 +116,9 @@ export async function middleware(request: NextRequest) {
     const emailConfirmedAt = user.email_confirmed_at
 
     if (!emailConfirmedAt) {
-      const verifyUrl = new URL('/auth/verify', request.url)
+      const verifyUrl = new URL('/login', request.url)
       verifyUrl.searchParams.set('redirectTo', pathname)
+      verifyUrl.searchParams.set('needsEmailVerification', '1')
       return NextResponse.redirect(verifyUrl)
     }
   }
@@ -94,14 +129,11 @@ export async function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     /*
-     * Match all request paths except for the ones starting with:
-     * - api (API routes)
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - sitemap.xml (sitemap)
-     * - robots.txt (robots file)
+     * Skip middleware for:
+     * - /api/* (Route Handlers)
+     * - /_next/* (includes RSC flight /_next/data — running auth here breaks navigation and can surface as 403/odd errors on Vercel)
+     * - static assets & crawlers
      */
-    '/((?!api|_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|.*\\.svg|.*\\.png|.*\\.jpg).*)'
-  ]
+    '/((?!api/|_next/|favicon.ico|sitemap.xml|robots.txt|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)',
+  ],
 }

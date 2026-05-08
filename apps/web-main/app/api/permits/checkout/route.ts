@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
+import { guardStripeSecretForHttp } from '@/lib/stripe-vercel-guard'
 
 const TIER_AMOUNTS: Record<string, { amount: number; name: string }> = {
   simple:       { amount: 29700,  name: 'Permit Research' },
@@ -21,6 +22,9 @@ export async function POST(req: NextRequest) {
     if (!stripeKey) {
       return NextResponse.json({ error: 'Stripe not configured' }, { status: 500 })
     }
+
+    const guard = guardStripeSecretForHttp(stripeKey)
+    if (guard) return guard
 
     const tierData = TIER_AMOUNTS[tier]
     if (!tierData) {

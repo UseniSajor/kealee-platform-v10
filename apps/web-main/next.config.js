@@ -5,6 +5,15 @@ const { withSentryConfig } = require('@sentry/nextjs');
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   transpilePackages: ['@kealee/ui', '@kealee/intake', '@kealee/shared'],
+  async redirects() {
+    return [
+      { source: '/auth/login', destination: '/login', permanent: false },
+      { source: '/auth/signup', destination: '/login', permanent: false },
+      { source: '/auth/verify', destination: '/login', permanent: false },
+      { source: '/auth/forgot-password', destination: '/login', permanent: false },
+      { source: '/auth/reset-password', destination: '/login', permanent: false },
+    ]
+  },
   images: {
     remotePatterns: [
       {

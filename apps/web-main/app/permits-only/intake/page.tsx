@@ -1,8 +1,10 @@
 'use client'
 
-import { useState, Suspense } from 'react'
+import { useState, useRef, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { FileText, ImagePlus, FileVideo, X } from 'lucide-react'
 import { getPermitsOnlyScopePlaceholder } from '@kealee/shared'
+import { uploadIntakeFilesSequentially, type IntakeUploadedFile } from '@/lib/intake-file-upload'
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? 'https://api.kealee.com'
 
@@ -106,20 +108,67 @@ function IntakeForm() {
     hasPlans: 'yes', tier: defaultTier,
   })
 
+  const [uploadedFiles, setUploadedFiles] = useState<IntakeUploadedFile[]>([])
+  const [uploading, setUploading] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
   function set(field: keyof FormData, value: string) {
     setForm(f => ({ ...f, [field]: value }))
   }
 
+  async function handlePermitFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const selected = Array.from(e.target.files ?? [])
+    if (!selected.length) return
+    if (uploadedFiles.length + selected.length > 5) {
+      setError('You can upload a maximum of 5 files.')
+      return
+    }
+    setError(null)
+    setUploading(true)
+    try {
+      const newFiles = await uploadIntakeFilesSequentially(selected)
+      if (newFiles.length === 0) {
+        setError('Upload failed. Use photos or PDF under 50 MB each.')
+        return
+      }
+      if (newFiles.length < selected.length) {
+        setError('Some files could not be uploaded. Others were saved.')
+      }
+      setUploadedFiles(prev => [...prev, ...newFiles])
+    } catch {
+      setError('Upload failed. Please try again.')
+    } finally {
+      setUploading(false)
+      if (fileInputRef.current) fileInputRef.current.value = ''
+    }
+  }
+
+  const hasAreaPhoto = uploadedFiles.some(f => f.type === 'image')
+  const hasConstructionPdf = uploadedFiles.some(f => f.type === 'document')
+
   const canNext: Record<number, boolean> = {
     1: !!form.firstName && !!form.lastName && !!form.email,
-    2: !!form.projectType && !!form.address && !!form.city && !!form.state && !!form.zipCode && !!form.scope,
+    2: !!form.projectType && !!form.address && !!form.city && !!form.state && !!form.zipCode && !!form.scope.trim() && hasAreaPhoto && hasConstructionPdf,
     3: !!form.tier,
   }
 
   async function handleSubmit() {
     setLoading(true)
     setError(null)
+    if (!hasAreaPhoto || !hasConstructionPdf) {
+      setError('Please upload a project-area photo and a PDF document before submitting.')
+      setLoading(false)
+      return
+    }
     try {
+      const photoUrls = uploadedFiles.filter(f => f.type === 'image').map(f => f.url)
+      const docUrls = uploadedFiles.filter(f => f.type === 'document').map(f => f.url)
+      const scopeWithUploads = [
+        form.scope.trim(),
+        photoUrls.length ? `\n\n--- Uploaded area photos ---\n${photoUrls.join('\n')}` : '',
+        docUrls.length ? `\n\n--- Uploaded documents (PDF) ---\n${docUrls.join('\n')}` : '',
+      ].join('')
+
       // Create project via API
       const projectRes = await fetch(`${API}/api/projects`, {
         method: 'POST',
@@ -132,7 +181,7 @@ function IntakeForm() {
           city: form.city,
           state: form.state,
           zipCode: form.zipCode,
-          scope: form.scope,
+          scope: scopeWithUploads,
           budgetRange: form.budgetRange,
           timeline: form.timeline,
           service: 'permits-only',
@@ -262,6 +311,49 @@ function IntakeForm() {
                 rows={4}
                 style={{ width: '100%', padding: '10px 14px', border: '1px solid #d1d5db', borderRadius: 10, fontSize: 14, resize: 'vertical', boxSizing: 'border-box' }}
               />
+            </div>
+
+            <div style={{ marginBottom: 20 }}>
+              <Label>Area photos and permit documents <span style={{ color: '#dc2626' }}>*</span></Label>
+              <p style={{ fontSize: 12, color: '#6b7280', margin: '0 0 10px' }}>
+                Upload at least one photo of the work area and at least one PDF (plans, surveys, or existing drawings). Up to 5 files, 50 MB each.
+              </p>
+              {uploadedFiles.length > 0 && (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 10 }}>
+                  {uploadedFiles.map((f, i) => (
+                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 10px', borderRadius: 8, border: '1px solid #e5e7eb', background: '#f9fafb', fontSize: 12, color: '#374151' }}>
+                      {f.type === 'video' ? <FileVideo size={14} style={{ color: '#2563eb' }} /> : f.type === 'document' ? <FileText size={14} style={{ color: '#d97706' }} /> : <ImagePlus size={14} style={{ color: '#16a34a' }} />}
+                      <span style={{ maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{f.name}</span>
+                      <button type="button" onClick={() => setUploadedFiles(prev => prev.filter((_, j) => j !== i))} style={{ border: 'none', background: 'none', cursor: 'pointer', padding: 0, color: '#9ca3af' }}>
+                        <X size={14} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              <input
+                ref={fileInputRef}
+                type="file"
+                multiple
+                accept="image/jpeg,image/png,image/webp,image/heic,image/heif,video/mp4,video/quicktime,application/pdf"
+                onChange={handlePermitFileChange}
+                style={{ display: 'none' }}
+                id="permits-only-uploads"
+              />
+              {uploadedFiles.length < 5 && (
+                <label htmlFor="permits-only-uploads" style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                  width: '100%', padding: '12px 16px', borderRadius: 10, border: '2px dashed #d1d5db',
+                  fontSize: 14, fontWeight: 600, color: uploading ? '#2563eb' : '#6b7280', cursor: uploading ? 'wait' : 'pointer', background: uploading ? '#eff6ff' : '#fff',
+                }}>
+                  {uploading ? <>… Uploading</> : <><ImagePlus size={16} /> Add photos or PDFs</>}
+                </label>
+              )}
+              {(!hasAreaPhoto || !hasConstructionPdf) && (
+                <p style={{ fontSize: 11, color: '#b45309', marginTop: 8 }}>
+                  {!hasAreaPhoto && !hasConstructionPdf ? 'Add a project-area photo and a PDF document to continue.' : !hasAreaPhoto ? 'Add at least one project-area photo.' : 'Add at least one PDF document (plans or drawings).'}
+                </p>
+              )}
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 24 }}>
               <div>

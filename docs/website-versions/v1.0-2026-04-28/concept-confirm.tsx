@@ -110,7 +110,7 @@ function ConfirmInner() {
           intakeId,
           projectPath: service?.intakePath ?? serviceSlug,
           amount: price * 100,
-          successUrl: `${window.location.origin}/concept/deliverable?intakeId=${intakeId}&session_id={CHECKOUT_SESSION_ID}`,
+          successUrl: `${window.location.origin}/concept/success?intakeId=${intakeId}&session_id={CHECKOUT_SESSION_ID}`,
           cancelUrl: `${window.location.origin}/concept/confirm?${searchParams.toString()}&canceled=true`,
         }),
       })

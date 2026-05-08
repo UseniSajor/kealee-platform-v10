@@ -14,6 +14,10 @@ import Anthropic from '@anthropic-ai/sdk'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { SERVICE_DELIVERABLES } from '@/lib/service-deliverables'
 
+/** Until a Kealee transcode pipeline writes project-specific MP4s to storage, tier 2+ packages get a playable URL (override via env). */
+const DEFAULT_CONCEPT_PLACEHOLDER_VIDEO_URL =
+  'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4'
+
 interface ConceptOutput {
   designConcept: {
     style: string
@@ -49,6 +53,11 @@ interface ConceptOutput {
   zoningNotes: string
   buildabilityFlag: 'feasible' | 'feasible-with-variance' | 'challenging'
   readinessScore: number
+  /** Present when package tier includes video (Premium / Premium+). */
+  videoUrl?: string
+  videoDuration?: number
+  /** Premium+ UI: keyed by the same labels as `VideoPlayer` format tabs. */
+  videoFormatUrls?: Record<string, string>
 }
 
 // ── Curated render stubs (Unsplash) by project type ──────────────────────────
@@ -131,6 +140,25 @@ function getRenderUrls(projectPath: string, tier: number): string[] {
   const stubs = RENDER_STUBS[projectPath] ?? RENDER_STUBS.default
   const count = tier >= 3 ? 12 : tier === 2 ? 6 : 3
   return stubs.slice(0, count)
+}
+
+function attachConceptVideoFields(conceptOutput: ConceptOutput, tier: number): void {
+  if (tier < 2) return
+  if (conceptOutput.videoUrl) return
+  const url =
+    (typeof process.env.CONCEPT_PLACEHOLDER_VIDEO_URL === 'string' &&
+      process.env.CONCEPT_PLACEHOLDER_VIDEO_URL.trim()) ||
+    DEFAULT_CONCEPT_PLACEHOLDER_VIDEO_URL
+  conceptOutput.videoUrl = url
+  conceptOutput.videoDuration = 60
+  if (tier >= 3) {
+    conceptOutput.videoFormatUrls = {
+      '60s Full': url,
+      '30s Mobile': url,
+      '15s Social': url,
+      '10s Preview': url,
+    }
+  }
 }
 
 function permitGuidance(permitRequired: 'always' | 'sometimes' | 'rarely' | undefined): string {
@@ -247,7 +275,9 @@ export async function POST(req: NextRequest) {
 
     // Return cached concept if already generated
     if (existingFormData.conceptOutput && intake.status === 'concept_ready') {
-      return NextResponse.json({ conceptOutput: existingFormData.conceptOutput, cached: true })
+      const out = { ...(existingFormData.conceptOutput as ConceptOutput) }
+      attachConceptVideoFields(out, tier)
+      return NextResponse.json({ conceptOutput: out, cached: true })
     }
 
     const apiKey = process.env.ANTHROPIC_API_KEY
@@ -339,6 +369,8 @@ export async function POST(req: NextRequest) {
         }
       }
     }
+
+    attachConceptVideoFields(conceptOutput, tier)
 
     // 3. Update intake record
     const { error: updateErr } = await supabase

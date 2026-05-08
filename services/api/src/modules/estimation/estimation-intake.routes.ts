@@ -57,6 +57,8 @@ const IntakeSchema = z.object({
   description: z.string().min(10),
   hasDesignDrawings: z.boolean().optional(),
   tierPreference: z.enum(['cost_estimate', 'certified_estimate', 'bundle']).optional(),
+  /** Public URLs from /api/intake/upload (photos + PDF plans) */
+  attachmentUrls: z.array(z.string().min(1)).optional(),
 })
 
 const CheckoutSchema = z.object({
@@ -89,6 +91,7 @@ export async function estimationIntakeRoutes(fastify: FastifyInstance) {
           description: body.description,
           hasDesignDrawings: body.hasDesignDrawings,
           tierPreference: body.tierPreference || 'cost_estimate',
+          attachmentUrls: body.attachmentUrls ?? [],
           createdAt: new Date().toISOString(),
         })
       )

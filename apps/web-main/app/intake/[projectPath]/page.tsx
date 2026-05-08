@@ -3,8 +3,9 @@
 import { useEffect, useRef, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Loader2, AlertCircle, ArrowRight, CheckCircle2, Clock, Shield, Zap, Package, ImagePlus, X, FileVideo } from 'lucide-react'
+import { Loader2, AlertCircle, ArrowRight, CheckCircle2, Clock, Shield, Zap, Package, ImagePlus, X, FileVideo, FileText } from 'lucide-react'
 import { SERVICE_DELIVERABLES } from '@/lib/service-deliverables'
+import { uploadIntakeFilesSequentially, type IntakeUploadedFile } from '@/lib/intake-file-upload'
 import { getIntakeCheckoutProjectDescriptionPlaceholder } from '@kealee/shared'
 
 const AGENT_MAP: Record<string, string> = {
@@ -53,6 +54,30 @@ interface AgentInsight {
 
 function formatPrice(cents: number) {
   return `$${(cents / 100).toFixed(2)}`
+}
+
+function deliverableForPath(projectPath: string) {
+  return projectPath in SERVICE_DELIVERABLES
+    ? SERVICE_DELIVERABLES[projectPath as keyof typeof SERVICE_DELIVERABLES]
+    : undefined
+}
+
+/** At least one still image of the project area (videos alone do not satisfy). */
+function intakeRequiresAreaPhoto(projectPath: string): boolean {
+  if (projectPath === 'certified_estimate') return true
+  const d = deliverableForPath(projectPath)
+  if (d?.generatesConcept) return true
+  if (d?.category === 'estimate' || d?.category === 'permit') return true
+  return false
+}
+
+/** PDF (or other document upload) required for estimate / permit style intakes. */
+function intakeRequiresConstructionDocuments(projectPath: string): boolean {
+  if (projectPath === 'certified_estimate' || projectPath === 'cost_estimate' || projectPath === 'permit_path_only') return true
+  if (projectPath === 'design_estimate_permit_bundle') return true
+  const d = deliverableForPath(projectPath)
+  if (d?.category === 'estimate' || d?.category === 'permit') return true
+  return false
 }
 
 // ── Step indicator ─────────────────────────────────────────────────────────────
@@ -219,9 +244,12 @@ export default function IntakePage() {
   })
 
   // File upload state
-  const [uploadedFiles, setUploadedFiles] = useState<{ name: string; url: string; type: 'image' | 'video' }[]>([])
+  const [uploadedFiles, setUploadedFiles] = useState<IntakeUploadedFile[]>([])
   const [uploading, setUploading] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const needsAreaPhoto = intakeRequiresAreaPhoto(projectPath)
+  const needsConstructionDocs = intakeRequiresConstructionDocuments(projectPath)
 
   const agentType = AGENT_MAP[projectPath] || 'design'
   const priceInfo = PRICE_MAP[projectPath] || { label: 'Project Package', amount: 39500, delivery: '3–5 days' }
@@ -275,21 +303,20 @@ export default function IntakePage() {
       setFormError('You can upload a maximum of 5 files.')
       return
     }
+    setFormError('')
     setUploading(true)
     try {
-      const body = new FormData()
-      selected.forEach(f => body.append('files', f))
-      const res = await fetch('/api/intake/upload', { method: 'POST', body })
-      if (!res.ok) return
-      const { urls } = await res.json()
-      const newFiles = selected.map((f, i) => ({
-        name: f.name,
-        url: urls[i] ?? '',
-        type: f.type.startsWith('video/') ? 'video' as const : 'image' as const,
-      })).filter(f => f.url)
+      const newFiles = await uploadIntakeFilesSequentially(selected)
+      if (newFiles.length === 0) {
+        setFormError('Upload failed. Check file type (images, video, or PDF) and size (max 50 MB each), then try again.')
+        return
+      }
+      if (newFiles.length < selected.length) {
+        setFormError('Some files could not be uploaded. Others were saved.')
+      }
       setUploadedFiles(prev => [...prev, ...newFiles])
     } catch {
-      // Upload failures are non-blocking
+      setFormError('Upload failed. Please try again.')
     } finally {
       setUploading(false)
       if (fileInputRef.current) fileInputRef.current.value = ''
@@ -312,12 +339,31 @@ export default function IntakePage() {
   }
 
   // ── Step: details ──────────────────────────────────────────────────────────
+  function validateUploadRequirements(): boolean {
+    if (needsAreaPhoto) {
+      const hasStillImage = uploadedFiles.some(f => f.type === 'image')
+      if (!hasStillImage) {
+        setFormError('Please upload at least one photo of the project area (JPG, PNG, WEBP, or HEIC).')
+        return false
+      }
+    }
+    if (needsConstructionDocs) {
+      const hasDoc = uploadedFiles.some(f => f.type === 'document')
+      if (!hasDoc) {
+        setFormError('Please upload at least one construction document as a PDF (plans, specs, or drawings).')
+        return false
+      }
+    }
+    return true
+  }
+
   function handleDetailsSubmit(e: React.FormEvent) {
     e.preventDefault()
     setFormError('')
     if (!formData.firstName.trim()) { setFormError('First name is required.'); return }
     if (!formData.email.trim()) { setFormError('Email is required.'); return }
     if (!formData.address.trim()) { setFormError('Project address is required.'); return }
+    if (!validateUploadRequirements()) return
     softCapture() // capture lead before payment step
     setStep('review')
     window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -327,6 +373,10 @@ export default function IntakePage() {
   async function handlePayment() {
     setSubmitting(true)
     setFormError('')
+    if (!validateUploadRequirements()) {
+      setSubmitting(false)
+      return
+    }
     try {
       // 1. Create intake record
       const intakeRes = await fetch('/api/intake', {
@@ -515,18 +565,28 @@ export default function IntakePage() {
                   />
                 </div>
 
-                {/* Photo / Video Upload */}
+                {/* Photo / Video / PDF Upload */}
                 <div>
                   <div className="flex items-center justify-between mb-1.5">
                     <label className="block text-sm font-semibold text-slate-800">
-                      Photos or Videos <span className="text-slate-400 font-normal">(optional)</span>
+                      {needsAreaPhoto && needsConstructionDocs ? (
+                        <>Project photos and documents <span className="text-red-500">*</span></>
+                      ) : needsAreaPhoto ? (
+                        <>Photos of project area <span className="text-red-500">*</span></>
+                      ) : (
+                        <>Photos or Videos <span className="text-slate-400 font-normal">(optional)</span></>
+                      )}
                     </label>
                     {uploadedFiles.length > 0 && (
                       <span className="text-xs text-slate-400">{uploadedFiles.length}/5 uploaded</span>
                     )}
                   </div>
                   <p className="text-xs text-slate-500 mb-3">
-                    For best output, upload a photo of your space or a reference image. Accepted: JPG, PNG, WEBP, HEIC, MP4, MOV (max 50 MB each).
+                    {needsAreaPhoto && needsConstructionDocs
+                      ? 'Upload at least one clear photo of the work area and at least one PDF (plans, existing drawings, or specs). Videos optional. Max 50 MB per file.'
+                      : needsAreaPhoto
+                        ? 'Upload at least one photo of the project area or reference images. Optional videos. Accepted: JPG, PNG, WEBP, HEIC, MP4, MOV (max 50 MB each).'
+                        : 'For best output, upload a photo of your space or a reference image. Accepted: JPG, PNG, WEBP, HEIC, MP4, MOV, PDF (max 50 MB each).'}
                   </p>
 
                   {/* Uploaded file chips */}
@@ -534,10 +594,13 @@ export default function IntakePage() {
                     <div className="flex flex-wrap gap-2 mb-3">
                       {uploadedFiles.map((f, i) => (
                         <div key={i} className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs text-slate-700">
-                          {f.type === 'video'
-                            ? <FileVideo className="h-3.5 w-3.5 text-blue-500 shrink-0" />
-                            : <ImagePlus className="h-3.5 w-3.5 text-green-500 shrink-0" />
-                          }
+                          {f.type === 'video' ? (
+                            <FileVideo className="h-3.5 w-3.5 text-blue-500 shrink-0" />
+                          ) : f.type === 'document' ? (
+                            <FileText className="h-3.5 w-3.5 text-amber-600 shrink-0" />
+                          ) : (
+                            <ImagePlus className="h-3.5 w-3.5 text-green-500 shrink-0" />
+                          )}
                           <span className="max-w-[120px] truncate">{f.name}</span>
                           <button
                             type="button"
@@ -555,7 +618,7 @@ export default function IntakePage() {
                     ref={fileInputRef}
                     type="file"
                     multiple
-                    accept="image/jpeg,image/png,image/webp,image/heic,image/heif,video/mp4,video/quicktime"
+                    accept="image/jpeg,image/png,image/webp,image/heic,image/heif,video/mp4,video/quicktime,application/pdf"
                     onChange={handleFileChange}
                     className="sr-only"
                     id="intake-file-upload"
@@ -572,7 +635,7 @@ export default function IntakePage() {
                       {uploading ? (
                         <><Loader2 className="h-4 w-4 animate-spin" /> Uploading...</>
                       ) : (
-                        <><ImagePlus className="h-4 w-4" /> Add photos or videos</>
+                        <><ImagePlus className="h-4 w-4" /> Add photos, videos, or PDFs</>
                       )}
                     </label>
                   )}
