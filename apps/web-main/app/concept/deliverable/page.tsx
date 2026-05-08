@@ -361,16 +361,16 @@ function ConceptDeliverableContent() {
       const formData = (intake.form_data as Record<string, unknown>) ?? {}
 
       if (formData.conceptOutput && intake.status === 'concept_ready') {
-        // Redirect to owner portal for authenticated access
-        const portalUrl = process.env.NEXT_PUBLIC_OWNER_PORTAL_URL ?? 'https://owner.kealee.com'
-        window.location.href = `${portalUrl}/deliverables/${id}`
+        const path = projectPathParam || (intake.project_path as string) || 'kitchen_remodel'
+        setData(conceptOutputToData(formData.conceptOutput as Record<string, unknown>, intake as Record<string, unknown>, path))
+        setLoadStatus('ready')
         return true
       }
       return false
     } catch {
       return false
     }
-  }, [])
+  }, [projectPathParam])
 
   useEffect(() => {
     if (!intakeId) {
@@ -417,9 +417,9 @@ function ConceptDeliverableContent() {
           <p className="text-slate-600">
             {loadStatus === 'polling'
               ? `Still working on it… (check ${pollCount + 1}/12)`
-              : 'Your concept is ready — redirecting to your owner portal…'}
+              : 'Preparing your concept package…'}
           </p>
-          <p className="text-slate-400 text-sm mt-2">You will be redirected automatically.</p>
+          <p className="text-slate-400 text-sm mt-2">This usually takes 15–30 seconds.</p>
         </div>
       </div>
     )
