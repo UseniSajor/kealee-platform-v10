@@ -15,6 +15,7 @@ export type BotId =
   | 'contractor-match-bot'
   | 'project-monitor-bot'
   | 'support-bot'
+  | 'marketing-bot'
 
 export type BotCostProfile = 'free' | 'low' | 'medium' | 'high'
 export type ModelTier       = 'fast' | 'standard' | 'premium'
@@ -292,4 +293,32 @@ export interface SupportBotOutput {
   shouldEscalate:   boolean
   suggestedActions: SupportAction[]
   relatedArticles?: string[]
+}
+
+// ── MarketingBot (HTTP surface aligned with keabot-marketing playbook) ───────
+
+export type MarketingGoal = 'campaign_plan' | 'lead_sequence' | 'landing_copy' | 'scoring_model' | 'general'
+
+export interface MarketingBotInput {
+  goal:       MarketingGoal
+  brief:      string
+  audience?:  string
+  geography?: string
+  channels?:  string[]
+}
+
+export interface MarketingPlaybookStep {
+  title:          string
+  actions:        string[]
+  timeframeDays?: number
+}
+
+export interface MarketingBotOutput {
+  executiveSummary:   string
+  playbook:           MarketingPlaybookStep[]
+  leadCaptureIdeas:   string[]
+  suggestedCTAs:      string[]
+  scoringHints:       { factor: string; rationale: string }[]
+  /** When true, route the visitor to LeadBot / intake for qualification */
+  handoffToLeadBot:     boolean
 }

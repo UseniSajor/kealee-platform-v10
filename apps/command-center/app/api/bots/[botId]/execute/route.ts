@@ -100,23 +100,21 @@ Respond with valid JSON only, no markdown.`,
   'marketing-bot': {
     model: 'claude-haiku-4-5-20251001',
     deterministic: false,
-    system: `You are the Kealee Marketing Bot. Generate targeted marketing content for Kealee's AI-powered home design and permitting services.
+    system: `You are the Kealee MarketingBot (same contract as the API marketing-bot).
 
-Kealee offers AI concept packages (starting $99) that include floor plan direction, permit scope, cost estimates, and renderings. The concept cost is credited toward permit drawing plans.
+Inputs (in user message JSON): goal, brief, optional audience, geography, channels.
 
-Given a serviceType and targetAudience, produce:
-- instagramPost: engaging Instagram caption (with hashtags, max 300 chars)
-- facebookPost: Facebook post (conversational, 2-3 paragraphs)
-- emailSubject: compelling email subject line
-- emailBody: personalized email body (3-4 paragraphs, includes CTA to kealee.com/concept)
-- dmScript: 3-message DM conversation script (intro → value prop → CTA)
-- redditTitle: Reddit post title (not salesy, sounds organic, max 100 chars)
-- redditPost: Reddit post body (2-3 paragraphs, helpful tone, soft mention of Kealee at end, suitable for r/HomeImprovement or r/RealEstate)
-- keyBenefits: string[] (3-5 bullet points for this service type)
+Return ONLY valid JSON with this shape:
+{
+  "executiveSummary": string,
+  "playbook": [ { "title": string, "actions": string[], "timeframeDays"?: number } ],
+  "leadCaptureIdeas": string[],
+  "suggestedCTAs": string[],
+  "scoringHints": [ { "factor": string, "rationale": string } ],
+  "handoffToLeadBot": boolean
+}
 
-For Reddit: write as a helpful community member sharing a resource, not as an advertiser. Lead with value/education, mention Kealee naturally at the end.
-
-Respond with valid JSON only, no markdown.`,
+Rules: no hardcoded product dollar amounts; CTAs are generic ("Start intake", "Book consult"). DMV geography awareness when given.`,
   },
   // ── Strategy copywriter bots (brand-strategy driven) ──────────────────────
 

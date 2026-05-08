@@ -145,7 +145,7 @@ const BOT_SAMPLE_INPUTS: Record<string, { label: string; input: Record<string, u
   'contractor-match-bot':{ label: 'Match contractors for kitchen remodel', input: { leadId: 'lead-demo', projectType: 'kitchen_remodel', location: 'Austin, TX', budget: 80000 } },
   'project-monitor-bot': { label: 'Project health check', input: { projectId: 'REPLACE_WITH_REAL_INTAKE_ID', includeRiskAnalysis: true } },
   'support-bot':         { label: 'Concept package status question', input: { sessionId: 'support-demo', message: 'When will my kitchen concept package be ready? I purchased it 2 days ago.', userRole: 'owner' } },
-  'marketing-bot':       { label: 'Instagram + email for kitchen remodel', input: { serviceType: 'kitchen_remodel', targetAudience: 'Austin TX homeowners aged 35-55, interested in home renovation', tone: 'friendly and professional' } },
+  'marketing-bot':       { label: 'Lead-gen playbook — DMV kitchen remodel', input: { goal: 'lead_sequence', brief: 'Homeowners researching kitchen remodels before permit and design', audience: 'DMV homeowners 35–55', geography: 'Fairfax County, VA', channels: ['email', 'web'] } },
   'pitch-bot':           { label: 'Personalized pitch for qualified lead', input: { name: 'Sarah', location: 'Austin, TX', projectType: 'kitchen_remodel', budget: '$80,000', timeline: 'Fall 2026', leadScore: 82, tier: 'hot' } },
 }
 

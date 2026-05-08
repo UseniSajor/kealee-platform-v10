@@ -8,8 +8,9 @@ export function generateStaticParams() {
   return getAllProductSlugs().map(slug => ({ slug }))
 }
 
-export async function generateMetadata({ params }: { params: { slug: string } }) {
-  const product = getProduct(params.slug)
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params
+  const product = getProduct(slug)
   if (!product) return { title: 'Product not found' }
   return {
     title: `${product.name} — Kealee`,
@@ -20,8 +21,9 @@ export async function generateMetadata({ params }: { params: { slug: string } })
 const AI_DESIGN_CATEGORIES = ['ai-design', 'landscape']
 const NEEDS_DISCLAIMER = ['ai-design', 'landscape', 'architectural']
 
-export default function ProductPage({ params }: { params: { slug: string } }) {
-  const product = getProduct(params.slug)
+export default async function ProductPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params
+  const product = getProduct(slug)
   if (!product) notFound()
 
   const hasCheckout = !!product.stripeEnvVar

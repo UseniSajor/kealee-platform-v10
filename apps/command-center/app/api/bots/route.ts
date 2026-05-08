@@ -59,10 +59,10 @@ const BOTS = [
   },
   {
     id:          'marketing-bot',
-    name:        'Marketing Lead Pitcher',
-    description: 'Generates personalized outreach scripts, social media posts, and email sequences for a given service type and target audience. Outputs content ready to deploy in marketing channels.',
+    name:        'MarketingBot',
+    description: 'Plans campaigns, lead capture mechanics, CTAs, and scoring hints; signals when to hand off to LeadBot for conversational qualification.',
     version:     '1.0.0',
-    costProfile: 'low',
+    costProfile: 'medium',
     requiresLLM: true,
   },
   {

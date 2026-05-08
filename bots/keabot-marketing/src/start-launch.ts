@@ -4,7 +4,19 @@
  * Entry point to start the 3-day autonomous marketing launch
  */
 
+import { resolve } from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { KeaBotMarketing } from './bot.js';
+
+function isMainModule(): boolean {
+  const entry = process.argv[1];
+  if (!entry) return false;
+  try {
+    return import.meta.url === pathToFileURL(resolve(entry)).href;
+  } catch {
+    return false;
+  }
+}
 
 async function startMarketingLaunch() {
   console.log('');
@@ -112,8 +124,7 @@ async function startMarketingLaunch() {
   }
 }
 
-// Run if this is the main module
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (isMainModule()) {
   startMarketingLaunch();
 }
 

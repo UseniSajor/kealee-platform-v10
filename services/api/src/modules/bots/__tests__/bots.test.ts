@@ -10,6 +10,7 @@
  *   - PermitBot (checklist builder, readiness score)
  *   - ContractorMatchBot (deterministic scoring logic)
  *   - SupportBot (category classification, escalation)
+ *   - MarketingBot (campaign / lead-gen playbook)
  *
  * All LLM calls are mocked — no Anthropic API key required.
  *
@@ -54,6 +55,7 @@ import { EstimateBot }           from '../bots/estimate.bot'
 import { PermitBot }             from '../bots/permit.bot'
 import { ContractorMatchBot }    from '../bots/contractor-match.bot'
 import { SupportBot }            from '../bots/support.bot'
+import { MarketingBot }          from '../bots/marketing.bot'
 import { prismaAny }             from '../../../utils/prisma-helper'
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -61,9 +63,9 @@ import { prismaAny }             from '../../../utils/prisma-helper'
 // ─────────────────────────────────────────────────────────────────────────────
 
 describe('BotRegistry', () => {
-  it('registers all 6 bots on init', () => {
+  it('registers all 7 bots on init', () => {
     const list = botRegistry.list()
-    expect(list).toHaveLength(6)
+    expect(list).toHaveLength(7)
     const ids = list.map(b => b.id)
     expect(ids).toContain('lead-bot')
     expect(ids).toContain('estimate-bot')
@@ -71,6 +73,7 @@ describe('BotRegistry', () => {
     expect(ids).toContain('contractor-match-bot')
     expect(ids).toContain('project-monitor-bot')
     expect(ids).toContain('support-bot')
+    expect(ids).toContain('marketing-bot')
   })
 
   it('returns a bot by id', () => {
@@ -475,5 +478,42 @@ describe('SupportBot', () => {
     expect(result.trace.steps.length).toBeGreaterThanOrEqual(1)
     const hasClassifyStep = result.trace.steps.some(s => s.name === 'classify_category')
     expect(hasClassifyStep).toBe(true)
+  })
+})
+
+// ─────────────────────────────────────────────────────────────────────────────
+// MarketingBot
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe('MarketingBot', () => {
+  const bot = new MarketingBot()
+
+  it('has correct metadata', () => {
+    expect(bot.id).toBe('marketing-bot')
+    expect(bot.costProfile).toBe('medium')
+  })
+
+  it('returns structured playbook and lead capture hints', async () => {
+    const result = await bot.execute(
+      {
+        data: {
+          goal: 'lead_sequence',
+          brief: 'Homeowners in Fairfax County researching kitchen remodels',
+          geography: 'Fairfax County, VA',
+          channels: ['email', 'web'],
+        },
+      },
+      { botId: 'marketing-bot', requestId: newRequestId() },
+    )
+
+    expect(result.success).toBe(true)
+    expect(result.result.executiveSummary.length).toBeGreaterThan(0)
+    expect(Array.isArray(result.result.playbook)).toBe(true)
+    expect(result.result.playbook.length).toBeGreaterThan(0)
+    expect(Array.isArray(result.result.leadCaptureIdeas)).toBe(true)
+    expect(Array.isArray(result.result.suggestedCTAs)).toBe(true)
+    expect(Array.isArray(result.result.scoringHints)).toBe(true)
+    expect(typeof result.result.handoffToLeadBot).toBe('boolean')
+    expect(result.trace.botId).toBe('marketing-bot')
   })
 })

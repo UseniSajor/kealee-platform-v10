@@ -564,6 +564,9 @@ importers:
 
   apps/web-main:
     dependencies:
+      '@kealee/core-rules':
+        specifier: workspace:*
+        version: link:../../packages/core-rules
       '@kealee/intake':
         specifier: workspace:*
         version: link:../../packages/intake

@@ -26,4 +26,6 @@ export type {
   ContractorMatchBotInput, ContractorMatchBotOutput,
   ProjectMonitorBotInput,  ProjectMonitorBotOutput,
   SupportBotInput,  SupportBotOutput,
+  MarketingBotInput, MarketingBotOutput,
+  MarketingGoal, MarketingPlaybookStep,
 } from './bots.types'

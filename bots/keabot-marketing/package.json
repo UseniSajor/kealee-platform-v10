@@ -12,7 +12,8 @@
   "scripts": {
     "build": "tsc",
     "dev": "tsx watch src/bot.ts",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "start-launch": "tsx src/start-launch.ts"
   },
   "dependencies": {
     "@kealee/core-bots": "*",

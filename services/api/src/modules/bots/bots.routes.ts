@@ -7,7 +7,7 @@
  *
  * Endpoints:
  *   GET  /bots                              — list all registered bots
- *   POST /bots/:botId/execute               — execute a bot
+ *   POST /bots/:botId/execute               — execute a bot (incl. marketing-bot)
  *   GET  /bots/executions                   — list recent traces (admin)
  *   GET  /bots/executions/:requestId        — get single trace
  */
@@ -30,6 +30,7 @@ const botIdParam = z.object({
   botId: z.enum([
     'lead-bot', 'estimate-bot', 'permit-bot',
     'contractor-match-bot', 'project-monitor-bot', 'support-bot',
+    'marketing-bot',
   ]),
 })
 
@@ -47,6 +48,7 @@ const tracesQuerySchema = z.object({
   botId: z.enum([
     'lead-bot', 'estimate-bot', 'permit-bot',
     'contractor-match-bot', 'project-monitor-bot', 'support-bot',
+    'marketing-bot',
   ]).optional(),
   limit: z.coerce.number().int().min(1).max(200).default(50),
 })

@@ -12,6 +12,7 @@ import { PermitBot }           from './bots/permit.bot'
 import { ContractorMatchBot }  from './bots/contractor-match.bot'
 import { ProjectMonitorBot }   from './bots/project-monitor.bot'
 import { SupportBot }          from './bots/support.bot'
+import { MarketingBot }        from './bots/marketing.bot'
 
 // Use any-typed IBot to allow specific input/output generics in concrete bots
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -29,6 +30,7 @@ class BotRegistry {
     this._register(new ContractorMatchBot())
     this._register(new ProjectMonitorBot())
     this._register(new SupportBot())
+    this._register(new MarketingBot())
   }
 
   private _register(bot: AnyBot): void {

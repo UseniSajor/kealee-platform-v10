@@ -26,7 +26,15 @@ const PUBLIC_ROUTES = [
   '/concept',  // matches /concept exactly (service select page)
   '/permits',
   '/estimation',
-  '/checkout'
+  '/checkout',
+  // Catalog & service detail (public marketing — must match SiteNav / SEO)
+  '/products',
+  '/services',
+  '/estimate',
+  '/marketplace',
+  '/faq',
+  '/build',
+  '/gallery',
 ]
 
 // Owner portal URL for cross-app redirects
