@@ -49,7 +49,7 @@ function GotYouInner() {
               <AlertTriangle className="w-10 h-10 text-amber-500" />
             </div>
             <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-3 leading-tight">
-              {firstName ? `${firstName}, your payment didn't go through.` : 'Your payment didn't go through.'}
+              {firstName ? `${firstName}, your payment didn't go through.` : "Your payment didn't go through."}
             </h1>
             <p className="text-slate-500 text-base leading-relaxed">
               We weren't able to process payment for your{' '}
