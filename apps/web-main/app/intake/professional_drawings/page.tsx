@@ -275,6 +275,7 @@ function ProfessionalDrawingsForm() {
         service: 'professional_drawings',
         email:   formData.email,
         name:    `${formData.firstName} ${formData.lastName}`.trim(),
+        status:  'payment_failed',
       })
       router.push(`/got-you?${params.toString()}`)
     }

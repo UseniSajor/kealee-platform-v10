@@ -206,6 +206,7 @@ export default function PermitsPage() {
         service: formData.tierCode || 'permit',
         email:   formData.contactEmail,
         name:    formData.clientName,
+        status:  'payment_failed',
       })
       router.push(`/got-you?${params.toString()}`)
     }

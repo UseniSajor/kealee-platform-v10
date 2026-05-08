@@ -32,7 +32,7 @@ export default function GlobalError({
           padding: '1rem',
         }}>
           <div style={{ textAlign: 'center' }}>
-            <h1 style={{ fontSize: '2rem', fontWeight: 'bold', marginBottom: '1rem' }}>
+            <h1 style={{ fontSize: '2rem', fontWeight: 'bold', marginBottom: '1rem', color: '#1A2B4A' }}>
               Application Error
             </h1>
             <p style={{ fontSize: '1.1rem', color: '#666', marginBottom: '2rem' }}>
@@ -47,7 +47,7 @@ export default function GlobalError({
               onClick={() => reset()}
               style={{
                 padding: '0.5rem 1.5rem',
-                backgroundColor: '#2563eb',
+                backgroundColor: '#E8724B',
                 color: 'white',
                 border: 'none',
                 borderRadius: '0.375rem',

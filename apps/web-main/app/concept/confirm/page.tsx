@@ -200,7 +200,7 @@ function ConfirmInner() {
   }
 
   // Escape hatch URL shown alongside inline errors
-  const gotYouUrl = `/got-you?${new URLSearchParams({ service: serviceSlug, email, name: `${firstName} ${lastName}`.trim(), source: 'concept-confirm' }).toString()}`
+  const gotYouUrl = `/got-you?${new URLSearchParams({ service: serviceSlug, email, name: `${firstName} ${lastName}`.trim(), source: 'concept-confirm', status: 'payment_failed' }).toString()}`
 
   if (!serviceSlug || !email) {
     return (
