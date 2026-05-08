@@ -148,15 +148,28 @@ function ConfirmInner() {
           }
           // Other redeem error → still try Stripe
         } else {
-          // Promo accepted — redirect to owner portal concept viewer
-          const ownerPortal = process.env.NEXT_PUBLIC_OWNER_PORTAL_URL ?? window.location.origin
-          window.location.href = `${ownerPortal}/concepts/${intakeId}?welcome=1`
+          // Promo accepted — redirect to success page
+          const successParams = new URLSearchParams({
+            intakeId,
+            email,
+            name:    `${firstName} ${lastName}`.trim(),
+            service: service?.label ?? serviceSlug,
+            amount:  String(price),
+            promo:   '1',
+          })
+          window.location.href = `/concept/success?${successParams.toString()}`
           return
         }
       }
 
       // ── Standard Stripe checkout path ─────────────────────────────────────
-      const ownerPortal = process.env.NEXT_PUBLIC_OWNER_PORTAL_URL ?? window.location.origin
+      const successParams = new URLSearchParams({
+        intakeId,
+        email,
+        name:    `${firstName} ${lastName}`.trim(),
+        service: service?.label ?? serviceSlug,
+        amount:  String(price),
+      })
       const checkoutRes = await fetch('/api/intake/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -164,7 +177,7 @@ function ConfirmInner() {
           intakeId,
           projectPath,
           amount: price * 100,
-          successUrl: `${ownerPortal}/concepts/${intakeId}?welcome=1&session_id={CHECKOUT_SESSION_ID}`,
+          successUrl: `${window.location.origin}/concept/success?${successParams.toString()}&session_id={CHECKOUT_SESSION_ID}`,
           cancelUrl: `${window.location.origin}/concept/confirm?${searchParams.toString()}&canceled=true`,
         }),
       })

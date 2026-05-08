@@ -191,5 +191,45 @@ export async function POST(req: NextRequest) {
     })
   }
 
+  // 4. Customer confirmation email
+  if (resendApiKey && clientEmail !== 'unknown') {
+    fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${resendApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        from: 'Kealee <hello@kealee.com>',
+        to: [clientEmail],
+        subject: `Your Kealee concept package is confirmed`,
+        text: [
+          `Hi ${clientName},`,
+          '',
+          'Your payment has been received and your concept package is being prepared now.',
+          '',
+          `  Service:  ${projectPath.replace(/_/g, ' ')}`,
+          `  Amount:   $${amountFormatted}`,
+          `  Order ID: ${intakeId}`,
+          '',
+          'Your Owner Portal login details will arrive in a separate email within the next few minutes.',
+          'Check your spam folder if you don\'t see it.',
+          '',
+          'What happens next:',
+          '  1. Your AI concept is generating now',
+          '  2. You\'ll receive an email with Owner Portal access',
+          '  3. Full package delivered in 3-5 business days',
+          '',
+          'Questions? Reply to this email or contact hello@kealee.com',
+          '',
+          'The Kealee Team',
+          'https://kealee.com',
+        ].join('\n'),
+      }),
+    }).catch((err: Error) => {
+      console.error('[stripe-webhook] Customer confirmation email failed:', err.message)
+    })
+  }
+
   return NextResponse.json({ received: true })
 }
