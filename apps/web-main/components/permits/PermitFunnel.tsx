@@ -402,7 +402,7 @@ export function PermitFunnel({ countySlug }: PermitFunnelProps) {
                     Services team produces stamped, permit-ready plans starting at $1,200.
                   </p>
                   <a
-                    href="/design-services"
+                    href="/intake/professional_drawings"
                     className="inline-flex items-center gap-2 rounded-lg px-4 py-2 text-xs font-semibold text-white transition-opacity hover:opacity-90"
                     style={{ backgroundColor: '#E8793A' }}
                   >

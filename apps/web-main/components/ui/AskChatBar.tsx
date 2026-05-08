@@ -35,12 +35,12 @@ const SUGGESTED_PROMPTS: Record<string, string[]> = {
 function detectCTA(content: string): { label: string; href: string } | null {
   const c = content.toLowerCase()
   if (/permit/i.test(c) && /have.*plan|existing plan/i.test(c)) return { label: 'Get Permit Services', href: '/permits' }
-  if (/permit/i.test(c) && /need.*plan|design service/i.test(c)) return { label: 'See Design Services', href: '/design-services' }
+  if (/permit/i.test(c) && /need.*plan|design service/i.test(c)) return { label: 'Get Permit-Ready Drawings', href: '/intake/professional_drawings' }
   if (/permit/i.test(c)) return { label: 'Get Permit Services', href: '/permits' }
   if (/concept|visualization|floor plan/i.test(c)) return { label: 'Start AI Concept', href: '/concept-engine' }
   if (/estimate|cost|budget|how much/i.test(c)) return { label: 'Get an Estimate', href: '/estimate' }
   if (/contractor|builder|hire/i.test(c)) return { label: 'Find a Contractor', href: '/marketplace' }
-  if (/design service|architect|stamped|permit.ready|drawings?/i.test(c)) return { label: 'See Design Services', href: '/design-services' }
+  if (/design service|architect|stamped|permit.ready|drawings?/i.test(c)) return { label: 'Get Permit-Ready Drawings', href: '/intake/professional_drawings' }
   if (/escrow|milestone|pay/i.test(c)) return { label: 'Learn About Milestone Pay', href: '/milestone-pay' }
   return null
 }

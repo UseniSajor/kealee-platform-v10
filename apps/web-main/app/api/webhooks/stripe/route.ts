@@ -158,12 +158,12 @@ export async function POST(req: NextRequest) {
 
   // 3. Admin purchase notification email (fire-and-forget)
   const resendApiKey = process.env.RESEND_API_KEY
-  if (resendApiKey) {
-    const amountCents = session.amount_total ?? 0
-    const amountFormatted = (amountCents / 100).toFixed(2)
-    const clientEmail = session.customer_details?.email ?? 'unknown'
-    const clientName  = session.customer_details?.name  ?? 'Unknown Client'
+  const amountCents = session.amount_total ?? 0
+  const amountFormatted = (amountCents / 100).toFixed(2)
+  const clientEmail = session.customer_details?.email ?? 'unknown'
+  const clientName  = session.customer_details?.name  ?? 'Unknown Client'
 
+  if (resendApiKey) {
     fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
