@@ -1719,7 +1719,7 @@ export const PRODUCTS: Record<string, Product> = {
     slug: 'professional-drawings',
     name: 'Professional Design Drawings',
     tagline: 'Permit-ready architectural drawings stamped by a licensed architect or PE — the step between your AI concept and permit filing.',
-    price: 'Starting at $1,499',
+    price: 'Starting at $2,499',
     priceNote: 'per project · permit-ready set',
     label: 'Architectural drawings',
     badge: 'Required for permits',
@@ -1739,7 +1739,7 @@ export const PRODUCTS: Record<string, Product> = {
     packages: [
       {
         name: 'Permit-Ready Drawings',
-        price: '$1,499',
+        price: '$2,499',
         turnaround: '7–10 business days',
         desc: 'Floor plan + elevations + site plan + PE stamp + jurisdiction cover sheet.',
         items: ['Floor plan', 'Elevations', 'Site plan', 'PE stamp', 'Jurisdiction cover sheet'],
@@ -1749,7 +1749,7 @@ export const PRODUCTS: Record<string, Product> = {
       },
       {
         name: 'Full Architectural Package',
-        price: '$2,999',
+        price: '$5,999',
         turnaround: '10–14 business days',
         rounds: '2 revision rounds',
         desc: 'Everything in Permit-Ready plus structural drawings, MEP coordination, and 2 rounds of revisions.',
