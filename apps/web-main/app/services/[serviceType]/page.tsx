@@ -15,7 +15,7 @@ interface DeliverableItem {
 
 const TIER_DELIVERABLES: Record<1 | 2 | 3, DeliverableItem[]> = {
   1: [
-    { icon: FileText,       label: 'PDF Design Report — 15–20 pages',               color: 'bg-blue-100 text-blue-600' },
+    { icon: FileText,       label: 'PDF Design Report',                              color: 'bg-blue-100 text-blue-600' },
     { icon: ImageIcon,      label: '3–5 Concept Renderings (1920×1080)',             color: 'bg-purple-100 text-purple-600' },
     { icon: Table2,         label: 'Budget Comparison — Basic · Standard · Luxury',  color: 'bg-green-100 text-green-600' },
     { icon: FileText,       label: 'Quick Reference Sheet (print-ready)',            color: 'bg-amber-100 text-amber-600' },

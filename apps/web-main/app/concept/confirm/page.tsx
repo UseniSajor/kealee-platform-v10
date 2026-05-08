@@ -23,7 +23,7 @@ const TIER_ITEMS: Record<1 | 2 | 3, DeliverableItem[]> = {
     { icon: ImageIcon,     label: '3–5 Concept Renderings (1920×1080)',            color: 'bg-purple-100 text-purple-600' },
     { icon: FileText,      label: 'Permit Scope Brief + Path-to-Approval',         color: 'bg-amber-100 text-amber-600' },
     { icon: Table2,        label: 'Itemized Cost Estimate (Bill of Materials)',    color: 'bg-green-100 text-green-600' },
-    { icon: FileText,      label: 'PDF Design Report — 15–20 pages',              color: 'bg-sky-100 text-sky-600' },
+    { icon: FileText,      label: 'PDF Design Report',                             color: 'bg-sky-100 text-sky-600' },
     { icon: Zap,           label: '1 revision included · Email support',           color: 'bg-slate-100 text-slate-500' },
   ],
   2: [
