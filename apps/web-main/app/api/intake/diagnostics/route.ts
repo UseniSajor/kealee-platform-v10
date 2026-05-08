@@ -2,11 +2,16 @@
  * GET /api/intake/diagnostics?intakeId=<uuid>
  *
  * Ops / smoke: confirm design-intake → Stripe → webhook → concept engine pipeline
- * without relying on email. Requires shared secret header.
+ * without relying on email. Auth uses **KEALEE_OPS_SECRET** if set; otherwise the
+ * same **CRON_SECRET** as `/api/cron/*` (so you do not need a new Vercel variable
+ * if cron is already configured).
  *
  * Example:
- *   curl -sS -H "x-kealee-ops: $KEALEE_OPS_SECRET" \
+ *   curl -sS -H "x-kealee-ops: $CRON_SECRET" \
  *     "https://kealee.com/api/intake/diagnostics?intakeId=<uuid>" | jq .
+ *
+ * Or Bearer (matches cron style):
+ *   curl -sS -H "Authorization: Bearer $CRON_SECRET" "https://kealee.com/api/intake/diagnostics?intakeId=<uuid>"
  *
  * Expect after successful payment + generation:
  *   - status: "paid" then webhook may still show paid; concept engine sets status "concept_ready"
@@ -18,26 +23,55 @@ import { timingSafeEqual } from 'crypto'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { SERVICE_DELIVERABLES } from '@/lib/service-deliverables'
 
-function opsAuthOk(req: NextRequest): boolean {
-  const secret = process.env.KEALEE_OPS_SECRET ?? ''
-  if (!secret) return false
-  const header = req.headers.get('x-kealee-ops') ?? ''
+function timingSafeEqualString(a: string, b: string): boolean {
   try {
-    const a = Buffer.from(header, 'utf8')
-    const b = Buffer.from(secret, 'utf8')
-    if (a.length !== b.length) return false
-    return timingSafeEqual(a, b)
+    const bufA = Buffer.from(a, 'utf8')
+    const bufB = Buffer.from(b, 'utf8')
+    if (bufA.length !== bufB.length) return false
+    return timingSafeEqual(bufA, bufB)
   } catch {
     return false
   }
 }
 
+/** Distinct non-empty secrets allowed to call diagnostics (ops-only). */
+function diagnosticsAuthSecrets(): string[] {
+  const raw = [process.env.KEALEE_OPS_SECRET, process.env.CRON_SECRET].filter(
+    (s): s is string => Boolean(s && s.trim())
+  )
+  return [...new Set(raw)]
+}
+
+function diagnosticsAuthConfigured(): boolean {
+  return diagnosticsAuthSecrets().length > 0
+}
+
+function opsAuthOk(req: NextRequest): boolean {
+  const secrets = diagnosticsAuthSecrets()
+  if (secrets.length === 0) return false
+
+  const header = req.headers.get('x-kealee-ops') ?? ''
+  if (header && secrets.some(s => timingSafeEqualString(header, s))) {
+    return true
+  }
+
+  const auth = req.headers.get('authorization') ?? ''
+  const m = /^Bearer\s+(.+)$/i.exec(auth)
+  const bearer = m?.[1]?.trim() ?? ''
+  if (bearer && secrets.some(s => timingSafeEqualString(bearer, s))) {
+    return true
+  }
+
+  return false
+}
+
 export async function GET(req: NextRequest) {
-  if (!process.env.KEALEE_OPS_SECRET) {
+  if (!diagnosticsAuthConfigured()) {
     return NextResponse.json(
       {
-        error: 'KEALEE_OPS_SECRET not set',
-        message: 'Set KEALEE_OPS_SECRET in Vercel (Production) to enable diagnostics.',
+        error: 'Diagnostics auth not configured',
+        message:
+          'Set CRON_SECRET (already used by /api/cron/*) or optionally KEALEE_OPS_SECRET in Vercel Production for web-main.',
       },
       { status: 501 }
     )

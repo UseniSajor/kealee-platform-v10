@@ -3,17 +3,18 @@
  * Call production (or any) web-main intake diagnostics after a test purchase.
  *
  * Usage:
- *   BASE_URL=https://kealee.com INTAKE_ID=<uuid> KEALEE_OPS_SECRET=<secret> node scripts/smoke-intake-diagnostics.mjs
+ *   BASE_URL=https://kealee.com INTAKE_ID=<uuid> CRON_SECRET=<same as Vercel cron> node scripts/smoke-intake-diagnostics.mjs
+ *   (or KEALEE_OPS_SECRET if you set a dedicated ops secret)
  *
  * Get INTAKE_ID from the success URL: /intake/<path>/success?...&intakeId=<uuid>
  */
 
 const base = process.env.BASE_URL ?? ''
 const intakeId = process.env.INTAKE_ID ?? ''
-const secret = process.env.KEALEE_OPS_SECRET ?? ''
+const secret = process.env.KEALEE_OPS_SECRET ?? process.env.CRON_SECRET ?? ''
 
 if (!base || !intakeId || !secret) {
-  console.error('Missing env: BASE_URL, INTAKE_ID, and KEALEE_OPS_SECRET are required.')
+  console.error('Missing env: BASE_URL, INTAKE_ID, and CRON_SECRET or KEALEE_OPS_SECRET are required.')
   process.exit(1)
 }
 
