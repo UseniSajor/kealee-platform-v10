@@ -6,6 +6,7 @@ import { SiteNav } from '@/components/nav'
 import { SiteFooter } from '@/components/footer'
 import { VideoModalProvider } from '@/context/video-modal-context'
 import { VideoModal } from '@/components/video-modal'
+import { GlobalChatBar } from '@/components/GlobalChatBar'
 
 const syne = Syne({
   subsets: ['latin'],
@@ -67,9 +68,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         )}
         <VideoModalProvider>
           <SiteNav />
-          <main>{children}</main>
+          <main className="pb-24">{children}</main>
           <SiteFooter />
           <VideoModal />
+          <GlobalChatBar />
         </VideoModalProvider>
       </body>
     </html>

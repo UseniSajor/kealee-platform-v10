@@ -50,9 +50,11 @@ interface Props {
   className?: string
   /** 'dark' for hero sections (white text, translucent bg) | 'light' for light-bg pages */
   variant?: 'dark' | 'light'
+  /** When true, suggestions popover opens upward (for fixed-bottom placement) */
+  suggestionsUp?: boolean
 }
 
-export function AskChatBar({ context = 'default', className = '', variant = 'dark' }: Props) {
+export function AskChatBar({ context = 'default', className = '', variant = 'dark', suggestionsUp = false }: Props) {
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -155,7 +157,7 @@ export function AskChatBar({ context = 'default', className = '', variant = 'dar
   const assistantTextColor = isDark ? 'text-white/90' : 'text-slate-800'
 
   return (
-    <div className={`w-full max-w-2xl mx-auto ${className}`}>
+    <div className={`w-full max-w-2xl mx-auto ${suggestionsUp ? 'relative' : ''} ${className}`}>
       {/* Conversation thread */}
       {hasMessages && (
         <div
@@ -281,7 +283,9 @@ export function AskChatBar({ context = 'default', className = '', variant = 'dar
       {/* Suggested prompts — only when input focused and no messages yet */}
       {isFocused && !hasMessages && (
         <div
-          className="mt-2 rounded-xl border p-3"
+          className={suggestionsUp
+            ? 'absolute bottom-full mb-2 left-0 right-0 rounded-xl border p-3 z-10'
+            : 'mt-2 rounded-xl border p-3'}
           style={{
             backgroundColor: suggestionBg,
             borderColor: suggestionBorder,
