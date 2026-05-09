@@ -111,3 +111,76 @@ User→Intake→CTA→Stripe→Webhook→ProjectOutput✅→Queue✅→Worker✅
 Chain: Design✅→Estimate✅→Permit✅→Contractor✅ (all bots receive DigitalTwin context)
 Agents: land✅ design✅ estimate✅ permit✅ contractor✅ (live DB + RAG fallback, projectId/address forwarded)
 DigitalTwin: created at all 4 project creation paths✅, enforced in worker✅, injected into bot chain✅
+
+## Pascal Editor Integration — 2026-05-09
+
+### Changes Applied
+
+**New Package: `packages/pascal-wrapper`**
+- `src/types.ts` — PascalSceneData, Wall, Room, Floor, FurnitureElement, all scene types
+- `src/constants.ts` — FURNITURE_CATALOG (30 items), PROJECT_TYPE_CONFIG (12 types), CONSTRUCTION_REELS, CONSULTATION_GATE rules
+- `src/SceneContext.tsx` — Zustand + Immer store, EditorProvider, useEditorStore hook
+- `src/PascalEditor.tsx` — Top-level editor component (autosave, estimate export, view modes)
+- `src/components/FloorPlanCanvas.tsx` — SVG 2D floor plan editor (wall draw, rooms, furniture, pan/zoom, snap)
+- `src/components/SceneViewer3D.tsx` — R3F 3D viewer (sketch/standard/realistic/cinematic modes)
+- `src/components/EditorToolBar.tsx` — Floating toolbar (tool modes, view modes, render modes, undo/redo)
+- `src/components/ElementLibrary.tsx` — Furniture/fixture/appliance catalog panel
+- `src/components/PropertiesPanel.tsx` — Context-sensitive selection properties + scene stats
+- `src/utils/geometry.ts` — wallLength, polygonArea, calculateSceneStats, snap, formatFeet
+- `src/utils/scene-to-estimate.ts` — PascalScene → EstimateBot quantity context (CSI codes)
+
+**Schema Additions (schema.prisma, lines 17130–17290)**
+- `PascalScene` — full scene JSON + geometry stats (denormalized)
+- `PascalSceneVersion` — autosave snapshots (max 20 per scene)
+- `PascalSceneUpload` — photo/plan/PDF uploads with AI vision results
+- `PascalRenderJob` — AI render queue (Replicate/SDXL)
+- Enums: PascalRenderMode, PascalRenderStatus, PascalUploadType, PascalProjectType
+- Schema validated ✅
+
+**New API Routes (apps/web-main/app/api/editor/)**
+- `scenes/route.ts` — GET (list) + POST (create)
+- `scenes/[id]/route.ts` — GET + PUT (autosave) + DELETE (soft)
+- `scenes/[id]/versions/route.ts` — POST (version snapshot) + GET (list, max 20)
+- `upload/route.ts` — POST multipart upload → Supabase Storage
+- `vision/route.ts` — POST photo → Claude Vision → geometry extraction
+- `renders/route.ts` — POST → Replicate SDXL render job
+- `renders/[id]/route.ts` — GET render status + poll Replicate
+- `consultation/gate/route.ts` — POST gate check (paid product or plans uploaded)
+
+**New Pages (apps/web-main/app/editor/)**
+- `/editor` — Design Studio home (project type + entry mode selection)
+- `/editor/[sceneId]` — Full Pascal Editor (lazy-loaded, SSR-safe)
+
+**New Components (apps/web-main/components/editor/)**
+- `UploadZone.tsx` — drag-drop upload + vision status + geometry results
+- `RenderPanel.tsx` — AI render panel (room type, style, quality, prompt, polling)
+- `ReelCarousel.tsx` — Construction phase video cards by project type
+- `ConsultationGate.tsx` — Consultation booking gate with upgrade prompt
+
+**Configuration Changes**
+- `apps/web-main/package.json` — Added @kealee/pascal-wrapper, @anthropic-ai/sdk, uuid
+- `apps/web-main/next.config.js` — Added @kealee/pascal-wrapper, @kealee/core-bim to transpilePackages
+
+### Pipeline Integrity
+
+SACRED PIPELINE: UNCHANGED. Pascal is additive upstream.
+```
+PascalScene (new) → geometry context
+    ↓
+Intake Form (existing) ← sqft/rooms pre-fill
+    ↓
+CTA → Stripe → Webhook → ProjectOutput → Queue → Worker (UNCHANGED)
+    ↓
+DesignBot(+geometry) → EstimateBot(+measured quantities) → PermitBot(+dims) → ContractorBot
+    ↓
+Output → Upsell (UNCHANGED)
+```
+
+### Known Next Steps (not implemented in this session)
+1. pnpm install & `npx prisma migrate dev` to create tables in DB
+2. Supabase Storage bucket `kealee-assets` must exist (or update bucket name)
+3. Add `REPLICATE_API_TOKEN`, `ANTHROPIC_API_KEY` env vars to Vercel
+4. `@kealee/pascal-wrapper` build: run `pnpm run build` in packages/pascal-wrapper
+5. Add render webhook endpoint `/api/editor/renders/webhook` for Replicate callbacks
+6. Connect `/editor?sceneId=` to intake form: pass scene geometry into intake data
+7. Navigation: add "Design Studio" to web-main nav

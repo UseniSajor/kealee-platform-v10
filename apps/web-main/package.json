@@ -19,7 +19,11 @@
   "dependencies": {
     "@kealee/core-rules": "workspace:*",
     "@kealee/intake": "workspace:*",
+    "@kealee/pascal-wrapper": "workspace:*",
     "@kealee/shared": "workspace:*",
-    "@kealee/ui": "workspace:*"
+    "@kealee/ui": "workspace:*",
+    "@anthropic-ai/sdk": "^0.30.0",
+    "replicate": "^1.4.0",
+    "uuid": "^10.0.0"
   }
 }

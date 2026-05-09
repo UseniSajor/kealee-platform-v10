@@ -17127,3 +17127,164 @@ model KeaBotEvent {
   @@index([eventType])
   @@index([status])
 }
+
+// =============================================================================
+// PASCAL EDITOR — Scene Persistence Layer
+// Added: 2026-05-09
+// Purpose: Store floor plan scenes, autosave versions, uploads, render jobs
+// Pipeline: PascalScene → EstimateBot / PermitBot / DigitalTwin
+// =============================================================================
+
+enum PascalRenderMode {
+  SKETCH
+  STANDARD
+  REALISTIC
+  CINEMATIC
+}
+
+enum PascalRenderStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+enum PascalUploadType {
+  PHOTO
+  FLOOR_PLAN
+  SKETCH
+  PDF
+  INSPIRATION
+}
+
+enum PascalProjectType {
+  ADDITION
+  KITCHEN_REMODEL
+  BATH_REMODEL
+  WHOLE_HOUSE
+  BASEMENT
+  ADU
+  GARAGE
+  DECK
+  NEW_CONSTRUCTION
+  COMMERCIAL
+  EXTERIOR
+  INTERIOR_RENO
+}
+
+/// Pascal Editor scene — stores the complete spatial model (floors, walls, rooms, furniture)
+model PascalScene {
+  id          String            @id @default(uuid())
+  userId      String?
+  projectId   String?           // Links to existing Project after intake
+  name        String
+  projectType PascalProjectType @default(ADDITION)
+
+  /// Full scene JSON: { floors, walls, rooms, furniture, camera, viewport, materials }
+  sceneData   Json
+
+  /// Calculated geometry stats (denormalized for fast querying)
+  totalSqFt         Float?
+  roomCount         Int?
+  wallLengthFt      Float?
+  floorCount        Int?
+  doorCount         Int?
+  windowCount       Int?
+  exteriorPerimFt   Float?
+
+  /// Design metadata
+  style       String?            // modern | farmhouse | contemporary | etc.
+  address     String?
+
+  /// State flags
+  isPublic    Boolean   @default(false)
+  isTemplate  Boolean   @default(false)
+  isDeleted   Boolean   @default(false)
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Relations
+  versions    PascalSceneVersion[]
+  uploads     PascalSceneUpload[]
+  renderJobs  PascalRenderJob[]
+
+  @@map("pascal_scenes")
+  @@index([userId])
+  @@index([projectId])
+  @@index([projectType])
+  @@index([createdAt])
+}
+
+/// Autosave snapshots for undo history and version browsing
+model PascalSceneVersion {
+  id        String   @id @default(uuid())
+  sceneId   String
+  label     String?  // 'Autosave', 'Before kitchen wall removal', etc.
+  sceneData Json     // full scene snapshot
+  createdAt DateTime @default(now())
+
+  scene PascalScene @relation(fields: [sceneId], references: [id], onDelete: Cascade)
+
+  @@map("pascal_scene_versions")
+  @@index([sceneId])
+  @@index([createdAt])
+}
+
+/// Uploaded photos, floor plans, PDFs connected to a scene
+model PascalSceneUpload {
+  id          String           @id @default(uuid())
+  sceneId     String
+  uploadType  PascalUploadType
+  fileName    String
+  fileUrl     String           // Supabase Storage URL
+  fileSizeMb  Float?
+  mimeType    String?
+
+  /// AI Vision analysis results (set after photo analysis)
+  visionResult    Json?         // { walls, rooms, dimensions, confidence, rawText }
+  visionStatus    String?       // 'pending' | 'processing' | 'completed' | 'failed'
+  geometryExtracted Boolean    @default(false)
+
+  createdAt   DateTime @default(now())
+
+  scene PascalScene @relation(fields: [sceneId], references: [id], onDelete: Cascade)
+
+  @@map("pascal_scene_uploads")
+  @@index([sceneId])
+}
+
+/// AI render generation jobs (image-to-image, style variants)
+model PascalRenderJob {
+  id          String              @id @default(uuid())
+  sceneId     String
+  userId      String?
+
+  renderMode  PascalRenderMode    @default(REALISTIC)
+  style       String?             // modern | farmhouse | contemporary | luxury | etc.
+  prompt      String?             // additional user prompt for AI render
+  roomType    String?             // kitchen | bathroom | living | exterior | etc.
+
+  /// Input: screenshot of the scene or uploaded photo
+  inputImageUrl  String?
+
+  /// Output: generated render URLs
+  outputUrls  String[]            @default([])
+  status      PascalRenderStatus  @default(PENDING)
+  errorMsg    String?
+
+  /// Replicate / AI provider metadata
+  externalJobId  String?          // Replicate prediction ID
+  modelVersion   String?          // Stable Diffusion / SDXL version used
+  durationMs     Int?
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  scene PascalScene @relation(fields: [sceneId], references: [id], onDelete: Cascade)
+
+  @@map("pascal_render_jobs")
+  @@index([sceneId])
+  @@index([userId])
+  @@index([status])
+}

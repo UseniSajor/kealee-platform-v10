@@ -4,7 +4,7 @@ const { withSentryConfig } = require('@sentry/nextjs');
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  transpilePackages: ['@kealee/ui', '@kealee/intake', '@kealee/shared'],
+  transpilePackages: ['@kealee/ui', '@kealee/intake', '@kealee/shared', '@kealee/pascal-wrapper', '@kealee/core-bim'],
   async redirects() {
     return [
       { source: '/auth/login', destination: '/login', permanent: false },
