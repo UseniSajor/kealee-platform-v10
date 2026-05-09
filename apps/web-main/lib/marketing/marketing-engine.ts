@@ -513,6 +513,16 @@ export const KEALEE_MARKETING_ENGINE_CONFIG = {
     monthlyRevenue: 50000,    // From campaign leads
     roi: 3.0,                 // 3:1 minimum
   },
+
+  // Lead sources
+  leadSources: {
+    web: 'kealee.com organic traffic',
+    facebook: 'Facebook Lead Ads',
+    google: 'Google Ads',
+    nextdoor: 'Nextdoor neighborhood ads',
+    referral: 'Word of mouth & partners',
+    other: 'Other sources',
+  },
 }
 
 export default KEALEE_MARKETING_ENGINE_CONFIG
