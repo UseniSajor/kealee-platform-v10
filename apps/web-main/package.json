@@ -9,7 +9,12 @@
     "lint": "next lint",
     "diag:intake": "node ./scripts/smoke-intake-diagnostics.mjs",
     "test:ghl": "node ./scripts/test-ghl-connection.mjs",
-    "test:marketing-setup": "node ./scripts/setup-marketing-phase1-check.mjs"
+    "test:marketing-setup": "node ./scripts/setup-marketing-phase1-check.mjs",
+    "deploy:marketing": "node ./scripts/deploy-marketing-automation.mjs all production",
+    "deploy:marketing:phase1": "node ./scripts/deploy-marketing-automation.mjs phase1 production",
+    "deploy:marketing:phase2": "node ./scripts/deploy-marketing-automation.mjs phase2 production",
+    "deploy:marketing:phase3": "node ./scripts/deploy-marketing-automation.mjs phase3 production",
+    "activate:phase1": "node ./scripts/activate-phase1.mjs"
   },
   "dependencies": {
     "@kealee/core-rules": "workspace:*",
