@@ -58,18 +58,20 @@ STRIPE_MODE=live
 
 ---
 
-## Section 3: GoHighLevel (GHL) Integration
+## Section 3: HubSpot (Lead Management & CRM)
 
 ```
-GHL_API_KEY=[YOUR-GHL-API-KEY]
-GHL_LOCATION_ID=[YOUR-GHL-LOCATION-ID]
-GHL_WEBHOOK_VERIFY_TOKEN=[ANY-RANDOM-STRING-YOU-CREATE]
+HUBSPOT_API_KEY=[YOUR-HUBSPOT-API-KEY]
 ```
 
-Where to get these:
-- **GHL_API_KEY**: GHL Dashboard → Settings → API Keys → Generate New Key
-- **GHL_LOCATION_ID**: GHL Dashboard → Settings → Location ID (shown at top)
-- **GHL_WEBHOOK_VERIFY_TOKEN**: Create any secure random string (used to verify webhook calls)
+Where to get this:
+- **HUBSPOT_API_KEY**: HubSpot → Settings → Integrations → Private apps → Create new private app → Copy token (starts with `pat-`)
+- See `HUBSPOT_SETUP_GUIDE.md` for complete setup instructions
+
+---
+
+~~## Section 3: GoHighLevel (GHL) Integration~~ (Replaced by HubSpot)
+~~GHL_API_KEY, GHL_LOCATION_ID, etc.~~ No longer needed!
 
 ---
 
@@ -254,9 +256,7 @@ STRIPE_SECRET_KEY=sk_live_
 STRIPE_WEBHOOK_SECRET=whsec_
 STRIPE_ENABLED=true
 STRIPE_MODE=live
-GHL_API_KEY=
-GHL_LOCATION_ID=
-GHL_WEBHOOK_VERIFY_TOKEN=
+HUBSPOT_API_KEY=pat-
 TWILIO_ACCOUNT_SID=
 TWILIO_AUTH_TOKEN=
 TWILIO_PHONE_NUMBER=

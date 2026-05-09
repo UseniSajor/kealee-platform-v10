@@ -483,7 +483,11 @@ importers:
         specifier: workspace:*
         version: link:../../packages/shared
 
-  apps/m-permits-inspections: {}
+  apps/m-permits-inspections:
+    dependencies:
+      '@kealee/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
 
   apps/m-project-owner:
     dependencies:
@@ -544,6 +548,9 @@ importers:
       '@kealee/observability':
         specifier: workspace:*
         version: link:../../packages/observability
+      '@kealee/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
       '@kealee/ui':
         specifier: workspace:*
         version: link:../../packages/ui

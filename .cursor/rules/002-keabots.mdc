@@ -1,0 +1,40 @@
+---
+description: KeaBot execution chain, model assignments, and Anthropic API caching rules. Apply when working on any bot, AI service, or Claude API call.
+alwaysApply: false
+globs:
+  - "bots/**"
+  - "packages/core-bots/**"
+  - "services/**"
+---
+
+# KeaBot Rules
+
+## Execution Chain (Immutable Order)
+DesignBot (Claude Opus 4.6) → EstimateBot (Sonnet 4.6) → PermitBot (Sonnet 4.6)
+
+Each bot gates the next. No skipping. No parallel execution.
+
+## Model Assignments
+- DesignBot: `claude-opus-4-6` ONLY — never downgrade
+- EstimateBot: `claude-sonnet-4-6`
+- PermitBot: `claude-sonnet-4-6`
+- KeaCore LLM brain: Sonnet 4.6 primary → GPT-4o fallback → Grok-2 secondary
+
+## Anthropic Caching (Required)
+Always use `ClaudeCachedClient` — never raw Anthropic SDK.
+Apply `cache_control: {"type":"ephemeral"}` to ALL 4 blocks:
+1. KeaBot MEP system prompt
+2. Prisma schema overview
+3. API request/response contract
+4. CTC metadata
+
+Each cacheable block must be under 1,024 tokens.
+
+## Cache Metrics
+Track in KeaBotRun Prisma model: `cacheCreationTokens`, `cacheReadTokens`, `cacheHit`
+Target: 60–75% cache hit rate.
+
+## PermitBot Jurisdictions
+DC DCRA | Montgomery County MD | Prince George's County MD
+Arlington County VA | Fairfax County VA | Alexandria VA | Baltimore City MD
+Always include jurisdiction slug in permit requests.

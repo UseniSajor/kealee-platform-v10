@@ -1,0 +1,35 @@
+---
+description: Portal dashboard rules for all 6 authenticated portal apps. Apply when working in any portal app.
+alwaysApply: false
+globs:
+  - "apps/portal-owner/**"
+  - "apps/portal-contractor/**"
+  - "apps/portal-developer/**"
+  - "apps/command-center/**"
+  - "apps/admin-console/**"
+---
+
+# Portal Rules
+
+## GAP-06 — All Portals Show Mock Data
+Real API wiring is the top priority. Never add new mock data.
+Throw an error if API is unreachable — do not fallback to mock.
+
+## Auth
+All 6 portals use auth. Never expose portal routes without session check.
+GAP-08: Implement optimistic auth with server-side session recovery.
+
+## Portal → Subdomain Map
+portal-owner → app.kealee.com
+portal-contractor → contractor.kealee.com
+portal-developer → developer.kealee.com
+command-center → pm.kealee.com
+admin-console → admin.kealee.com
+
+## RevenueHookModal (GAP-04)
+Built but unmounted. Wire via core-events pub/sub on post-purchase confirmation.
+Fire AFTER successful Stripe payment_intent.succeeded webhook only.
+
+## Data Fetching
+Use established Fastify service endpoints in apps/api.
+No direct Supabase calls from portal UI — always go through API layer.

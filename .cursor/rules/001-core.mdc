@@ -1,0 +1,30 @@
+---
+description: Core Kealee platform conventions, stack, and absolute rules. Always apply to every session.
+alwaysApply: true
+---
+
+# Kealee Platform v20 — Core Rules
+
+## Stack
+- Framework: Next.js (portal apps), Fastify (services/API)
+- ORM: Prisma (368 models) on Supabase (PostgreSQL + pgvector)
+- Payments: Stripe live mode (43 products)
+- Cache: Redis — NEVER silently skip (GAP-03 is critical)
+- Queue: core-events pub/sub
+- Infra: Railway (services + API) + Vercel (6 portal apps)
+- Language: TypeScript strict everywhere — no plain JS in src/
+
+## Absolute Rules (Never Violate)
+- NEVER hardcode prices — always import from `packages/core-rules/src/pricing.ts`
+- NEVER deploy without SESSION 12 smoke test
+- NEVER reference Zem Solutions anywhere in code, comments, or docs
+- NEVER run EstimateBot or PermitBot without prior bot output in chain
+- NEVER link portal subdomains from web-main CTAs
+- NEVER use raw Anthropic SDK — always use ClaudeCachedClient
+- NEVER add garden/landscape/kitchen flows that bypass AI Concept first
+- NEVER silently catch Redis errors — throw and alert
+- NEVER ship without dist/ builds across all packages/services/bots
+
+## Build Order (Strict)
+core-rules → core-events → core-bots → core-ddts → core-bim
+→ 6 services → 13 bots → API router

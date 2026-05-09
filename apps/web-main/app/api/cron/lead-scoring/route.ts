@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { calculateLeadScore, type LeadData, type RoutingTag } from '@/lib/marketing/lead-scorer'
 import { alertHotLead } from '@/lib/marketing/twilio-client'
-import { createOrUpdateContact } from '@/lib/marketing/ghl-client'
+import { createOrUpdateContact } from '@/lib/marketing/hubspot-client'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL || '',
@@ -18,7 +18,7 @@ const KEALEE_OPS_SECRET = process.env.KEALEE_OPS_SECRET
  * Runs every 5 minutes to:
  * 1. Score new leads (status = 'new')
  * 2. Send SMS alert if lead is hot
- * 3. Create GHL contact
+ * 3. Create HubSpot contact
  * 4. Update intake_leads.lead_score + routing_tag
  */
 export async function POST(req: NextRequest) {
@@ -141,51 +141,51 @@ export async function POST(req: NextRequest) {
           }
         }
 
-        // ── Create GHL contact ────────────────────────────────────────
+        // ── Create HubSpot contact ──────────────────────────────────────
         try {
           if (lead.email) {
-            const ghlContact = await createOrUpdateContact({
-              email: lead.email,
-              firstName: lead.name?.split(' ')[0],
-              lastName: lead.name?.split(' ').slice(1).join(' '),
+            const hsContact = await createOrUpdateContact(lead.email, {
+              firstname: lead.name?.split(' ')[0],
+              lastname: lead.name?.split(' ').slice(1).join(' '),
               phone: lead.phone_number,
-              source: lead.source || 'kealee-web',
-              tags: [scoreResult.tag, lead.service_type || 'unknown'].filter(Boolean),
-              customFields: [
-                { key: 'lead_score', field_value: String(scoreResult.score) },
-                { key: 'budget', field_value: leadData.budget ? `$${leadData.budget}` : 'N/A' },
-                { key: 'timeline', field_value: leadData.timeline || 'N/A' },
-                { key: 'kealee_intake_id', field_value: lead.id },
-              ],
+              lead_source: lead.source || 'kealee-web',
+              hs_lead_status: scoreResult.tag,
+              lifecyclestage: scoreResult.tag === 'hot' ? 'subscriber' : 'lead',
+              budget: leadData.budget ? `$${leadData.budget}` : 'N/A',
+              timeline: leadData.timeline || 'N/A',
+              project_type: leadData.service || 'unknown',
+              lead_score: scoreResult.score,
+              hot_lead: scoreResult.tag === 'hot',
+              kealee_intake_id: lead.id,
             })
 
-            // Update intake_leads with GHL contact ID
+            // Update intake_leads with HubSpot contact ID
             await supabase
               .from('public_intake_leads')
-              .update({ ghl_contact_id: ghlContact.id })
+              .update({ ghl_contact_id: hsContact.id })
               .eq('id', lead.id)
 
-            // Log GHL sync
+            // Log HubSpot sync
             await supabase
               .from('ghl_sync_log')
               .insert({
                 intake_id: lead.id,
-                ghl_contact_id: ghlContact.id,
+                ghl_contact_id: hsContact.id,
                 action: 'create',
-                ghl_response: ghlContact,
+                ghl_response: hsContact,
               })
-              .catch((err) => console.error('GHL sync log error:', err))
+              .catch((err) => console.error('HubSpot sync log error:', err))
           }
-        } catch (ghlErr) {
-          console.error(`GHL contact creation failed for ${lead.id}:`, ghlErr)
+        } catch (hsErr) {
+          console.error(`HubSpot contact creation failed for ${lead.id}:`, hsErr)
           await supabase
             .from('ghl_sync_log')
             .insert({
               intake_id: lead.id,
               action: 'error',
-              error_message: ghlErr instanceof Error ? ghlErr.message : String(ghlErr),
+              error_message: hsErr instanceof Error ? hsErr.message : String(hsErr),
             })
-            .catch((err) => console.error('GHL sync log error:', err))
+            .catch((err) => console.error('HubSpot sync log error:', err))
         }
 
         results.push({

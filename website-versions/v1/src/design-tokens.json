@@ -1,0 +1,107 @@
+{
+  "meta": {
+    "source": "Kealee web-main theme derived from Tailwind extensions (Figma MCP not available in this session)",
+    "version": "1.0.0"
+  },
+  "colors": [
+    {
+      "figmaVariable": "color/navy",
+      "hex": "#1A2B4A",
+      "tailwind": "navy-DEFAULT",
+      "usage": "Primary headings, hero backgrounds"
+    },
+    {
+      "figmaVariable": "color/builder-orange",
+      "hex": "#C8521A",
+      "tailwind": "builder-orange-DEFAULT",
+      "usage": "Primary CTAs, accents"
+    },
+    {
+      "figmaVariable": "color/teal",
+      "hex": "#2ABFBF",
+      "tailwind": "teal-DEFAULT",
+      "usage": "Milestone Pay emphasis, highlights"
+    },
+    {
+      "figmaVariable": "color/surface-muted",
+      "hex": "#F8FAFC",
+      "tailwind": "slate-50",
+      "usage": "Section backgrounds"
+    }
+  ],
+  "typography": [
+    {
+      "styleName": "display/hero",
+      "fontFamily": "Syne",
+      "weight": 700,
+      "sizePx": { "mobile": 40, "desktop": 72 },
+      "lineHeight": 1.05,
+      "context": "Marketing hero headline"
+    },
+    {
+      "styleName": "body/large",
+      "fontFamily": "DM Sans",
+      "weight": 400,
+      "sizePx": { "mobile": 18, "desktop": 20 },
+      "lineHeight": 1.55,
+      "context": "Hero subheads"
+    },
+    {
+      "styleName": "label/nav",
+      "fontFamily": "DM Sans",
+      "weight": 500,
+      "sizePx": { "mobile": 14, "desktop": 14 },
+      "lineHeight": 1.2,
+      "context": "Navigation labels"
+    }
+  ],
+  "spacing": {
+    "scaleRem": [0.25, 0.5, 1, 1.5, 2, 3, 4, 6, 8],
+    "notes": "Prefer Tailwind spacing scale 4-based increments"
+  },
+  "radiiPx": [8, 12, 16, 24],
+  "shadows": [
+    {
+      "name": "nav-blur",
+      "tailwind": "backdrop-blur-md shadow-sm",
+      "usage": "Sticky navigation shell"
+    },
+    {
+      "name": "card-soft",
+      "tailwind": "shadow-lg shadow-navy/10",
+      "usage": "Featured cards"
+    }
+  ],
+  "componentInventory": [
+    {
+      "componentName": "Navigation shell",
+      "frameUrl": null,
+      "complexity": "medium",
+      "targetPath": "apps/web-main/src/components/Navigation.tsx"
+    },
+    {
+      "componentName": "Hero marketing",
+      "frameUrl": null,
+      "complexity": "medium",
+      "targetPath": "apps/web-main/src/components/Hero.tsx"
+    },
+    {
+      "componentName": "AskAnythingBar",
+      "frameUrl": null,
+      "complexity": "medium",
+      "targetPath": "apps/web-main/src/components/AskAnythingBar.tsx"
+    },
+    {
+      "componentName": "Marketing product detail",
+      "frameUrl": null,
+      "complexity": "complex",
+      "targetPath": "apps/web-main/components/marketing/MarketingProductDetail.tsx"
+    },
+    {
+      "componentName": "Products catalog filter",
+      "frameUrl": null,
+      "complexity": "medium",
+      "targetPath": "apps/web-main/components/catalog/ProductsCatalogFilter.tsx"
+    }
+  ]
+}
