@@ -172,6 +172,18 @@ export default function ConceptDeliverablePage() {
         ? co.renderUrls as string[]
         : getStubRenders(projectPath, tier)
 
+      // Prefer the AI-generated video (Sora 2 / Veo 3.1 / Kling 2.5) once it
+      // has finished rendering. Falls back to the placeholder URL written by
+      // /api/concept/generate while the real video is still being produced.
+      const conceptVideo = formData.conceptVideo as
+        | { status?: string; outputUrl?: string }
+        | undefined
+      const realVideoUrl =
+        conceptVideo?.status === 'completed' && typeof conceptVideo.outputUrl === 'string'
+          ? conceptVideo.outputUrl
+          : undefined
+      const placeholderVideoUrl = typeof co.videoUrl === 'string' ? co.videoUrl : undefined
+
       setData({
         conceptId:       `concept_${intakeId.slice(0, 8)}`,
         projectType:     (intake.project_path as string)?.replace(/_/g, ' ') ?? 'Concept Package',
@@ -182,7 +194,7 @@ export default function ConceptDeliverablePage() {
         projectTimeline: (co.projectTimeline as string) ?? '4–6 weeks',
         tier,
         renderUrls,
-        videoUrl: typeof co.videoUrl === 'string' ? co.videoUrl : undefined,
+        videoUrl: realVideoUrl ?? placeholderVideoUrl,
         videoFormatUrls:
           co.videoFormatUrls && typeof co.videoFormatUrls === 'object'
             ? (co.videoFormatUrls as Record<string, string>)
@@ -228,6 +240,40 @@ export default function ConceptDeliverablePage() {
     }, 5000)
     return () => clearTimeout(timer)
   }, [loadStatus, pollCount, fetchData])
+
+  // After the concept is ready, keep refreshing for up to 5 minutes so the AI
+  // video URL (Sora / Veo / Kling) can swap in without a manual reload.
+  // Stops as soon as videoUrl no longer looks like the placeholder, or after
+  // ~5 minutes (60 polls × 5s).
+  useEffect(() => {
+    if (loadStatus !== 'ready') return
+    if (!data || data.tier < 2) return
+
+    let stopped = false
+    let pollsLeft = 60
+
+    const placeholderHosts = ['storage.googleapis.com', 'commondatastorage.googleapis.com']
+    const looksLikePlaceholder = (url?: string): boolean => {
+      if (!url) return true
+      try { return placeholderHosts.some(h => new URL(url).host.includes(h)) }
+      catch { return false }
+    }
+
+    const tick = async () => {
+      if (stopped) return
+      pollsLeft -= 1
+      const refreshed = await fetchData()
+      if (refreshed && !looksLikePlaceholder(data.videoUrl)) return
+      if (pollsLeft <= 0) return
+      window.setTimeout(tick, 5000)
+    }
+
+    if (looksLikePlaceholder(data.videoUrl)) {
+      window.setTimeout(tick, 5000)
+    }
+
+    return () => { stopped = true }
+  }, [loadStatus, data, fetchData])
 
   if (loadStatus === 'loading' || loadStatus === 'polling') {
     return <LoadingState label={loadStatus === 'polling'

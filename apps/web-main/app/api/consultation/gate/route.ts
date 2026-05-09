@@ -61,13 +61,18 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       } satisfies GateResult)
     }
 
-    // 2. Check for qualifying paid product in intake leads
+    // 2. Check for qualifying paid product in intake leads.
+    //    NOTE: `public_intake_leads.status` is the canonical column flipped
+    //    to 'paid' by the Stripe webhook (see app/api/webhooks/stripe/route.ts
+    //    and app/api/intake/redeem/route.ts). The previous version of this
+    //    file queried a non-existent `payment_status` column, which silently
+    //    rejected every paid intake user.
     if (email || userId) {
       let query = supabase
         .from('public_intake_leads')
-        .select('id, project_path, payment_status, created_at')
+        .select('id, project_path, status, created_at')
         .in('project_path', QUALIFYING_INTAKE_PATHS)
-        .eq('payment_status', 'paid')
+        .eq('status', 'paid')
         .order('created_at', { ascending: false })
         .limit(1)
 
@@ -100,15 +105,15 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       }
     }
 
-    // 4. Specific intake id with qualifying path
+    // 4. Specific intake id with qualifying path. Same column-name fix as #2.
     if (intakeId) {
       const { data: lead } = await supabase
         .from('public_intake_leads')
-        .select('project_path, payment_status')
+        .select('project_path, status')
         .eq('id', intakeId)
         .single()
 
-      if (lead && lead.payment_status === 'paid' && QUALIFYING_INTAKE_PATHS.includes(lead.project_path)) {
+      if (lead && lead.status === 'paid' && QUALIFYING_INTAKE_PATHS.includes(lead.project_path)) {
         return NextResponse.json({
           allowed: true,
           reason: 'Consultation unlocked via intake purchase',

@@ -7,6 +7,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
+import { authorizeEditorRequest, enforceOwnership } from '@/lib/editor-auth'
 import Replicate from 'replicate'
 
 export const dynamic = 'force-dynamic'
@@ -18,6 +19,9 @@ export async function GET(
   { params }: { params: { id: string } },
 ) {
   try {
+    const auth = await authorizeEditorRequest()
+    if (!auth.ok) return auth.response
+
     const supabase = getSupabaseAdmin()
     const { data: job, error } = await supabase
       .from('pascal_render_jobs')
@@ -26,6 +30,9 @@ export async function GET(
       .single()
 
     if (error || !job) return NextResponse.json({ error: 'Job not found' }, { status: 404 })
+
+    const ownershipBlock = enforceOwnership(auth, job.user_id)
+    if (ownershipBlock) return ownershipBlock
 
     // If still processing and we have a Replicate job ID, poll for updates
     if (job.status === 'PROCESSING' && job.external_job_id && process.env.REPLICATE_API_TOKEN) {

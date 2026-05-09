@@ -1,77 +1,61 @@
 /**
  * POST /api/editor/renders
  *
- * Queue an AI render generation job using Replicate (Stable Diffusion XL).
- * Replicate is already a dependency in web-main.
+ * Queue an AI render generation job.
+ *
+ * Image model is centralised in @kealee/core-rules AI_MODELS:
+ *   • Default text-to-image: Flux 1.1 Pro Ultra (Replicate)
+ *   • With input image:      Flux 1.1 Pro (better structural preservation)
+ *   • Floor plans / drawings: Recraft V3 (style: 'floor_plan')
+ *   • Legacy (back-compat):  Stable Diffusion XL
  *
  * Body:
- *   sceneId     — Pascal scene id
- *   userId      — User id (optional)
- *   renderMode  — 'realistic' | 'cinematic' | 'sketch' | 'standard'
- *   style       — 'modern' | 'farmhouse' | 'contemporary' | 'luxury' | etc.
- *   roomType    — 'kitchen' | 'bathroom' | 'living' | 'bedroom' | 'exterior'
- *   prompt      — Additional user prompt (optional)
+ *   sceneId       — Pascal scene id (required)
+ *   userId        — User id (optional, derived server-side once auth is wired)
+ *   renderMode    — 'realistic' | 'cinematic' | 'sketch' | 'standard'
+ *   style         — 'modern' | 'farmhouse' | etc.
+ *   roomType      — 'kitchen' | 'bathroom' | 'living' | etc.
+ *   prompt        — Additional user prompt (optional)
  *   inputImageUrl — Screenshot or uploaded image (optional; for img2img)
+ *   provider      — 'flux-1.1-pro-ultra' | 'flux-1.1-pro' | 'recraft-v3' | 'sdxl'
  */
 
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
-import Replicate from 'replicate'
+import { authorizeEditorRequest, enforceOwnership } from '@/lib/editor-auth'
+import {
+  generateImages,
+  buildArchitecturalPrompt,
+  defaultNegativePrompt,
+} from '@/lib/ai-image'
+import type { ImageProvider } from '@kealee/core-rules'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 120
 
-const replicate = new Replicate({ auth: process.env.REPLICATE_API_TOKEN })
-
-// Stable Diffusion XL — img2img for architectural renders
-const SDXL_VERSION = 'stability-ai/sdxl:39ed52f2319f9bfb5cc8a19eccf9d8e90261c2a7c5e31e1dab895d29fba1aa4'
-
-function buildPrompt(style: string, roomType: string, renderMode: string, extra?: string): string {
-  const styleMap: Record<string, string> = {
-    modern:       'modern minimalist, clean lines, white and gray palette, high-end materials',
-    farmhouse:    'modern farmhouse, shiplap walls, warm wood tones, cozy aesthetic',
-    contemporary: 'contemporary design, bold textures, mixed materials, sophisticated',
-    luxury:       'ultra-luxury, marble surfaces, designer fixtures, premium finishes',
-    traditional:  'traditional style, crown molding, warm wood cabinets, classic elegance',
-    industrial:   'industrial aesthetic, exposed brick, metal accents, concrete floors',
-    coastal:      'coastal style, white and blue palette, natural wood, beachy feel',
-  }
-
-  const qualityMap: Record<string, string> = {
-    sketch:    'architectural sketch, hand-drawn, clean line art',
-    standard:  'architectural visualization, professional render',
-    realistic: 'photorealistic interior design, 8K, professional photography',
-    cinematic: 'cinematic architectural photography, dramatic lighting, bokeh, magazine quality',
-  }
-
-  const styleDesc = styleMap[style] ?? 'modern design'
-  const qualityDesc = qualityMap[renderMode] ?? 'professional render'
-  const room = roomType.replace(/_/g, ' ')
-
-  return [
-    `${qualityDesc}, ${styleDesc} ${room},`,
-    'beautiful interior design, professional architectural visualization,',
-    'high quality, detailed,',
-    extra?.trim(),
-  ].filter(Boolean).join(' ')
-}
-
-function buildNegativePrompt(): string {
-  return 'ugly, blurry, low quality, distorted, unrealistic proportions, bad architecture, deformed, watermark, text, logo, oversaturated, dark, gloomy'
-}
-
 export async function POST(req: NextRequest) {
   try {
+    const auth = await authorizeEditorRequest()
+    if (!auth.ok) return auth.response
+
     const body = await req.json()
     const {
       sceneId,
-      userId,
       renderMode = 'realistic',
-      style = 'modern',
-      roomType = 'living',
-      prompt: extraPrompt,
+      style      = 'modern',
+      roomType   = 'living',
+      prompt:    extraPrompt,
       inputImageUrl,
-    } = body
+      provider,
+    } = body as {
+      sceneId: string
+      renderMode?: 'sketch' | 'standard' | 'realistic' | 'cinematic'
+      style?: string
+      roomType?: string
+      prompt?: string
+      inputImageUrl?: string
+      provider?: ImageProvider
+    }
 
     if (!sceneId) return NextResponse.json({ error: 'sceneId required' }, { status: 400 })
 
@@ -81,12 +65,27 @@ export async function POST(req: NextRequest) {
 
     const supabase = getSupabaseAdmin()
 
-    // Create render job record
+    // Verify the caller owns the scene before queuing a (paid) Replicate job
+    // against it — prevents resource-burning attacks via random scene UUIDs.
+    const { data: scene, error: sceneErr } = await supabase
+      .from('pascal_scenes')
+      .select('user_id')
+      .eq('id', sceneId)
+      .single()
+
+    if (sceneErr || !scene) {
+      return NextResponse.json({ error: 'Scene not found' }, { status: 404 })
+    }
+
+    const ownershipBlock = enforceOwnership(auth, scene.user_id)
+    if (ownershipBlock) return ownershipBlock
+
     const { data: job, error: dbError } = await supabase
       .from('pascal_render_jobs')
       .insert({
         scene_id:       sceneId,
-        user_id:        userId ?? null,
+        // user_id is server-derived. NEVER from req.body.userId.
+        user_id:        auth.userId,
         render_mode:    renderMode.toUpperCase(),
         style,
         room_type:      roomType,
@@ -99,44 +98,33 @@ export async function POST(req: NextRequest) {
 
     if (dbError) throw dbError
 
-    // Build prompt
-    const fullPrompt = buildPrompt(style, roomType, renderMode, extraPrompt)
-    const negativePrompt = buildNegativePrompt()
+    const fullPrompt = buildArchitecturalPrompt({ style, roomType, renderMode, extra: extraPrompt })
 
-    // Submit to Replicate (non-blocking — poll via /api/editor/renders/[id])
-    const replicateInput: Record<string, unknown> = {
-      prompt:          fullPrompt,
-      negative_prompt: negativePrompt,
-      num_outputs:     2,
-      guidance_scale:  7.5,
-      num_inference_steps: renderMode === 'cinematic' ? 50 : 30,
-      width:  1024,
-      height: 768,
-    }
-
-    if (inputImageUrl) {
-      replicateInput.image          = inputImageUrl
-      replicateInput.prompt_strength = 0.65  // 35% original image preservation
-    }
-
-    // Fire prediction async
-    replicate.predictions.create({
-      version: SDXL_VERSION,
-      input: replicateInput,
-      webhook: `${process.env.NEXT_PUBLIC_APP_URL}/api/editor/renders/webhook`,
-      webhook_events_filter: ['completed'],
-    }).then(prediction => {
-      supabase.from('pascal_render_jobs')
-        .update({ external_job_id: prediction.id, status: 'PROCESSING', model_version: SDXL_VERSION })
-        .eq('id', job.id)
-        .then(() => {})
-    }).catch(err => {
-      console.error('[renders] Replicate submit failed:', err)
-      supabase.from('pascal_render_jobs')
-        .update({ status: 'FAILED', error_msg: String(err) })
-        .eq('id', job.id)
-        .then(() => {})
+    // Submit to image provider — defaults to Flux 1.1 Pro Ultra (img2img → Flux Pro).
+    generateImages({
+      prompt:         fullPrompt,
+      negativePrompt: defaultNegativePrompt(),
+      inputImageUrl,
+      provider,
+      aspectRatio:    '16:9',
     })
+      .then(result => {
+        return supabase
+          .from('pascal_render_jobs')
+          .update({
+            external_job_id: result.predictionId,
+            status:          'PROCESSING',
+            model_version:   result.modelVersion,
+          })
+          .eq('id', job.id)
+      })
+      .catch(err => {
+        console.error('[renders] Image provider submit failed:', err)
+        return supabase
+          .from('pascal_render_jobs')
+          .update({ status: 'FAILED', error_msg: String(err?.message ?? err) })
+          .eq('id', job.id)
+      })
 
     return NextResponse.json({ jobId: job.id, status: 'PENDING' }, { status: 202 })
   } catch (err) {

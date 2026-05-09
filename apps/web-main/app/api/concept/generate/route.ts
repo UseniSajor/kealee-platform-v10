@@ -3,16 +3,27 @@
  * Body: { intakeId: string }
  *
  * 1. Fetch intake record from Supabase
- * 2. Load SERVICE_DELIVERABLES[projectPath] for context
- * 3. Call Claude Opus 4.6 to generate structured concept output
- * 4. UPDATE intake record with conceptOutput + status='concept_ready'
- * 5. Return concept data
+ * 2. ENFORCE that the intake is paid (status in ['paid','concept_ready'])
+ * 3. Load SERVICE_DELIVERABLES[projectPath] for context
+ * 4. Call Claude (model pinned in @kealee/core-rules AI_MODELS)
+ * 5. UPDATE intake record with conceptOutput + status='concept_ready'
+ * 6. Return concept data
+ *
+ * Auth gate added 2026-05-09 (P0-4): previously this endpoint generated
+ * concepts for any UUID, burning Anthropic credits and giving away the
+ * deliverable to anyone who could guess an intake id.
  */
 
 import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { SERVICE_DELIVERABLES } from '@/lib/service-deliverables'
+import { AI_MODELS } from '@kealee/core-rules'
+
+// Statuses that authorise a concept generation. Stripe webhook flips intake
+// to `paid`; the first successful generation flips it to `concept_ready`
+// (regenerations are allowed and return cached output).
+const PAID_INTAKE_STATUSES = new Set(['paid', 'concept_ready', 'processing'])
 
 /** Until a Kealee transcode pipeline writes project-specific MP4s to storage, tier 2+ packages get a playable URL (override via env). */
 const DEFAULT_CONCEPT_PLACEHOLDER_VIDEO_URL =
@@ -142,6 +153,14 @@ function getRenderUrls(projectPath: string, tier: number): string[] {
   return stubs.slice(0, count)
 }
 
+/**
+ * Tier 2+ deliverables include a video. The actual generation is async and
+ * runs out-of-band via /api/concept/video. This function only attaches the
+ * placeholder URL so the customer sees something while the real video renders.
+ *
+ * Once /api/concept/video reports `completed`, the customer portal swaps in
+ * `form_data.conceptVideo.outputUrl`.
+ */
 function attachConceptVideoFields(conceptOutput: ConceptOutput, tier: number): void {
   if (tier < 2) return
   if (conceptOutput.videoUrl) return
@@ -159,6 +178,69 @@ function attachConceptVideoFields(conceptOutput: ConceptOutput, tier: number): v
       '10s Preview': url,
     }
   }
+}
+
+/**
+ * Fire-and-forget call to /api/concept/video for tier 2+. Returns immediately;
+ * the customer portal polls via GET to swap in the real video when ready.
+ */
+function triggerConceptVideoGeneration(baseUrl: string, intakeId: string, tier: number): void {
+  if (tier < 2) return
+  fetch(`${baseUrl}/api/concept/video`, {
+    method:  'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body:    JSON.stringify({ intakeId }),
+  }).catch(err => {
+    console.error('[concept/generate] Video generation trigger failed:', err?.message ?? err)
+  })
+}
+
+/**
+ * Fire-and-forget call to the customer "your concept is ready" email.
+ * Skips silently when no email is on file or RESEND is unconfigured.
+ */
+function triggerConceptReadyEmail(
+  baseUrl: string,
+  args: {
+    intakeId: string
+    projectPath: string
+    intake: Record<string, unknown>
+    conceptOutput: ConceptOutput
+    tier: number
+  },
+): void {
+  const intake = args.intake
+  const formData = (intake.form_data as Record<string, unknown> | undefined) ?? {}
+  const email =
+    (intake.contact_email as string | undefined) ??
+    (intake.email as string | undefined) ??
+    (formData.email as string | undefined)
+
+  if (!email) {
+    console.warn('[concept/generate] No customer email on intake; skipping concept-ready notification', args.intakeId)
+    return
+  }
+
+  const firstName =
+    (intake.client_name as string | undefined)?.split(' ')[0] ??
+    (formData.firstName as string | undefined) ??
+    (formData.fullName as string | undefined)?.split(' ')[0]
+
+  fetch(`${baseUrl}/api/emails/concept-ready`, {
+    method:  'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body:    JSON.stringify({
+      to:             email,
+      firstName,
+      service:        args.projectPath,
+      intakeId:       args.intakeId,
+      estimatedCost:  args.conceptOutput.estimatedCost,
+      tier:           args.tier,
+      videoIncluded:  args.tier >= 2,
+    }),
+  }).catch(err => {
+    console.error('[concept/generate] concept-ready email trigger failed:', err?.message ?? err)
+  })
 }
 
 function permitGuidance(permitRequired: 'always' | 'sometimes' | 'rarely' | undefined): string {
@@ -268,6 +350,21 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Intake not found' }, { status: 404 })
     }
 
+    // ── Payment gate (P0-4) ─────────────────────────────────────────────────
+    // Block generation for unpaid intakes — never expose AI credits or the
+    // deliverable to a UUID-guesser.
+    const intakeStatus = intake.status as string | null
+    if (!intakeStatus || !PAID_INTAKE_STATUSES.has(intakeStatus)) {
+      return NextResponse.json(
+        {
+          error: 'Payment required',
+          message: 'Concept generation is only available after intake payment.',
+          status: intakeStatus ?? 'unknown',
+        },
+        { status: 402 },
+      )
+    }
+
     const projectPath = intake.project_path as string
     const existingFormData = (intake.form_data as Record<string, unknown>) ?? {}
     const tier = typeof existingFormData.tier === 'number' ? existingFormData.tier : 1
@@ -285,12 +382,22 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'ANTHROPIC_API_KEY not configured' }, { status: 503 })
     }
 
-    // 2. Call Claude Opus 4.6
+    // Pick model: Opus for high-stakes tiers (developer/commercial/multi-unit/
+    // certified estimate) where reasoning quality matters more than cost.
+    const PREMIUM_TIERS = new Set([
+      'developer_concept', 'multi_unit_residential', 'mixed_use',
+      'commercial_office', 'development_feasibility', 'townhome_subdivision',
+      'single_family_subdivision', 'certified_estimate',
+    ])
+    const model = PREMIUM_TIERS.has(projectPath)
+      ? AI_MODELS.conceptTextPremium
+      : AI_MODELS.conceptText
+
     const client = new Anthropic({ apiKey })
     const prompt = buildConceptPrompt(intake as Record<string, unknown>, projectPath)
 
     const message = await client.messages.create({
-      model: 'claude-opus-4-6',
+      model,
       max_tokens: 2000,
       messages: [{ role: 'user', content: prompt }],
     })
@@ -389,6 +496,21 @@ export async function POST(req: NextRequest) {
       console.error('[concept/generate] Failed to update intake:', updateErr.message)
       // Still return the concept data even if save failed
     }
+
+    // Tier 2+ deliverables include a video. Fire-and-forget — Stripe webhook
+    // path doesn't wait, and the customer portal polls /api/concept/video?intakeId=
+    // for the real URL when ready (Sora/Veo/Kling typically take 30–120s).
+    triggerConceptVideoGeneration(req.nextUrl.origin, intakeId, tier)
+
+    // Notify the customer that their concept is ready to view in the portal.
+    // (Fire-and-forget so a slow Resend call never delays the API response.)
+    triggerConceptReadyEmail(req.nextUrl.origin, {
+      intakeId,
+      projectPath,
+      intake: intake as Record<string, unknown>,
+      conceptOutput,
+      tier,
+    })
 
     return NextResponse.json({ conceptOutput })
   } catch (err: any) {

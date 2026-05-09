@@ -19,7 +19,9 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
+import { authorizeEditorRequest, enforceOwnership } from '@/lib/editor-auth'
 import Anthropic from '@anthropic-ai/sdk'
+import { AI_MODELS } from '@kealee/core-rules'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 60
@@ -68,6 +70,9 @@ Return ONLY valid JSON in this exact format:
 }`
 
 export async function POST(req: NextRequest) {
+  const auth = await authorizeEditorRequest()
+  if (!auth.ok) return auth.response
+
   const supabase = getSupabaseAdmin()
   let uploadId: string | undefined
 
@@ -77,6 +82,20 @@ export async function POST(req: NextRequest) {
     const { sceneId, fileUrl, imageType = 'room_photo' } = body
 
     if (!fileUrl) return NextResponse.json({ error: 'fileUrl required' }, { status: 400 })
+
+    // Enforce scene ownership before burning Anthropic vision credits.
+    if (sceneId) {
+      const { data: scene } = await supabase
+        .from('pascal_scenes')
+        .select('user_id')
+        .eq('id', sceneId)
+        .single()
+
+      if (scene) {
+        const ownershipBlock = enforceOwnership(auth, scene.user_id)
+        if (ownershipBlock) return ownershipBlock
+      }
+    }
 
     // Mark as processing
     if (uploadId) {
@@ -104,9 +123,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ result: fallback })
     }
 
-    // Call Claude Vision
+    // Call Claude Vision (model pinned in @kealee/core-rules AI_MODELS)
     const message = await anthropic.messages.create({
-      model: 'claude-opus-4-6',
+      model: AI_MODELS.vision,
       max_tokens: 2000,
       system: VISION_SYSTEM_PROMPT,
       messages: [

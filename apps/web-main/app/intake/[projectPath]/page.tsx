@@ -7,6 +7,7 @@ import { Loader2, AlertCircle, ArrowRight, CheckCircle2, Clock, Shield, Zap, Pac
 import { SERVICE_DELIVERABLES } from '@/lib/service-deliverables'
 import { uploadIntakeFilesSequentially, type IntakeUploadedFile } from '@/lib/intake-file-upload'
 import { getIntakeCheckoutProjectDescriptionPlaceholder } from '@kealee/shared'
+import { INTAKE_PRICE_CENTS } from '@kealee/core-rules'
 
 const AGENT_MAP: Record<string, string> = {
   exterior_concept: 'design', garden_concept: 'design', whole_home_concept: 'design',
@@ -19,31 +20,17 @@ const AGENT_MAP: Record<string, string> = {
   interior_renovation: 'design',
 }
 
-const PRICE_MAP: Record<string, { label: string; amount: number; delivery: string }> = {
-  exterior_concept: { label: 'Exterior Concept Package', amount: 39500, delivery: '3–5 days' },
-  garden_concept: { label: 'Garden Concept', amount: 29500, delivery: '2–4 days' },
-  whole_home_concept: { label: 'Whole Home Concept', amount: 59500, delivery: '4–6 days' },
-  interior_reno_concept: { label: 'Interior Reno Concept', amount: 34500, delivery: '3–5 days' },
-  kitchen_remodel: { label: 'Kitchen Design Package', amount: 39500, delivery: '3–5 days' },
-  bathroom_remodel: { label: 'Bathroom Design Package', amount: 29500, delivery: '2–4 days' },
-  permit_path_only: { label: 'Permit Package', amount: 49900, delivery: '3–5 days' },
-  cost_estimate: { label: 'Detailed Cost Estimate — RSMeans validated', amount: 59500, delivery: '3–5 days' },
-  certified_estimate: { label: 'Certified Estimate — Notarized for lenders', amount: 185000, delivery: '5–7 days' },
-  contractor_match: { label: 'Contractor Match', amount: 19900, delivery: '1 day' },
-  development_feasibility: { label: 'Feasibility Study', amount: 149900, delivery: '5–7 days' },
-  design_build: { label: 'Design + Build Package', amount: 79500, delivery: '5–7 days' },
-  capture_site_concept: { label: 'Site Capture + Concept', amount: 12500, delivery: '1–2 days' },
-  multi_unit_residential: { label: 'Multi-Unit Residential', amount: 99900, delivery: '5–7 days' },
-  mixed_use: { label: 'Mixed-Use Concept', amount: 129900, delivery: '6–8 days' },
-  commercial_office: { label: 'Commercial Office', amount: 119900, delivery: '5–7 days' },
-  townhome_subdivision: { label: 'Townhome Subdivision', amount: 169900, delivery: '7–10 days' },
-  single_family_subdivision: { label: 'Single-Family Subdivision', amount: 149900, delivery: '6–8 days' },
-  single_lot_development: { label: 'Single-Lot Development', amount: 89900, delivery: '4–6 days' },
-  interior_renovation: { label: 'Interior Renovation', amount: 34500, delivery: '3–5 days' },
-  whole_home_remodel: { label: 'Whole-Home Remodel', amount: 69500, delivery: '4–6 days' },
-  addition_expansion: { label: 'Addition / Expansion', amount: 49500, delivery: '3–5 days' },
-  developer_concept: { label: 'Developer Concept', amount: 79500, delivery: '5–7 days' },
-}
+// Display shape matches what the rest of this file expects. Sourced from
+// `INTAKE_PRICE_CENTS` in @kealee/core-rules — single source of truth.
+// The server (api/intake/checkout) ignores any client-supplied amount and
+// re-reads the same map, so even tampering with this object does nothing.
+const PRICE_MAP: Record<string, { label: string; amount: number; delivery: string }> =
+  Object.fromEntries(
+    Object.entries(INTAKE_PRICE_CENTS).map(([key, entry]) => [
+      key,
+      { label: entry.label, amount: entry.cents, delivery: entry.deliveryDays },
+    ]),
+  )
 
 interface AgentInsight {
   summary?: string

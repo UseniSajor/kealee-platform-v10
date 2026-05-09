@@ -107,6 +107,17 @@ describe('POST /api/concept/generate', () => {
     expect(res.status).toBe(404)
   })
 
+  test('returns 402 when intake is not paid (P0-4 gate)', async () => {
+    const unpaidRecord = { ...mockIntakeRecord, status: 'new' }
+    mockSupabaseSelect.mockResolvedValueOnce({ data: unpaidRecord, error: null })
+
+    const POST = await getHandler()
+    const res = await POST(makeRequest({ intakeId: 'test-intake-001' }))
+    expect(res.status).toBe(402)
+    const body = await res.json()
+    expect(body.error).toMatch(/Payment required/i)
+  })
+
   test('returns 503 when ANTHROPIC_API_KEY is missing', async () => {
     const originalKey = process.env.ANTHROPIC_API_KEY
     delete process.env.ANTHROPIC_API_KEY

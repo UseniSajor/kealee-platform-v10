@@ -10,6 +10,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { sendLeadToSlack } from '@/lib/marketing/slack-client'
 import { ClaudeCachedClient } from '@/lib/anthropic/claude-cached-client'
+import { AI_MODELS } from '@kealee/core-rules'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL || '',
@@ -134,7 +135,7 @@ Provide JSON response with urgency level, confidence (0-100), reasoning, and sug
 
   try {
     const response = await client.message({
-      model: 'claude-3-5-sonnet-20241022',
+      model: AI_MODELS.conceptText,
       max_tokens: 200,
       system: systemPrompt,
       messages: [

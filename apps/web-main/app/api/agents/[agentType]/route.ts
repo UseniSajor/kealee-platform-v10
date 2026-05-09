@@ -7,11 +7,13 @@
  *   POST /api/agents/permit    → /api/v1/agents/permit/execute
  *   POST /api/agents/contractor → /api/v1/agents/contractor/execute
  *
- * Falls back to direct Claude Sonnet 4.6 call when INTERNAL_API_URL is not set.
+ * Falls back to a direct Claude call (model from @kealee/core-rules AI_MODELS)
+ * when INTERNAL_API_URL is not set.
  */
 
 import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
+import { AI_MODELS } from '@kealee/core-rules'
 
 const VALID_AGENTS = new Set(['land', 'design', 'permit', 'contractor'])
 const API = process.env.INTERNAL_API_URL ?? process.env.NEXT_PUBLIC_API_URL ?? ''
@@ -107,7 +109,7 @@ async function callClaudeFallback(agentType: string, body: Record<string, unknow
   const prompt = promptFn(body)
 
   const message = await client.messages.create({
-    model: 'claude-sonnet-4-6',
+    model: AI_MODELS.conceptText,
     max_tokens: 600,
     messages: [{ role: 'user', content: prompt }],
   })

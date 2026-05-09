@@ -86,7 +86,9 @@ export const PHASE2_CONFIG = {
       nurture: 50,      // 50-74%: add to nurture sequence
       reject: 0,        // <50%: move to cold list
     },
-    model: 'claude-3-5-sonnet-20241022',
+    // Model is sourced from @kealee/core-rules AI_MODELS at call site
+    // (lib/marketing/ai-qualifier.ts). This field is informational only.
+    model: 'claude-sonnet-4-5',
     maxTokens: 300,
   },
 
@@ -338,7 +340,7 @@ export const KEALEE_MARKETING_CONFIG = {
     platform: 'Vercel (web-main)',
     database: 'Supabase PostgreSQL',
     crm: 'GoHighLevel',
-    ai: 'Claude 3.5 Sonnet',
+    ai: 'Claude Sonnet 4.5 (default) / Opus 4.1 (premium tiers)',
     sms: 'Twilio',
     scheduling: 'Calendly',
     notifications: 'Slack',

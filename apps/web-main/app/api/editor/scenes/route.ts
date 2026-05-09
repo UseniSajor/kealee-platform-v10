@@ -5,22 +5,31 @@
  * Pascal scenes are stored in the `pascal_scenes` Supabase table.
  * They persist independently of the intake pipeline and are optionally
  * linked to a Project once the user converts.
+ *
+ * SECURITY (audit 2026-05-09): `userId` is now derived server-side from the
+ * Supabase auth cookie via `authorizeEditorRequest()`. The previous version
+ * trusted a `userId` field in the request body, allowing trivial spoofing.
+ * Anonymous callers receive `userId = null` (they only see/create anonymous
+ * scenes) when `ALLOW_ANONYMOUS_EDITOR` is unset or `'true'`.
  */
 
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
+import { authorizeEditorRequest } from '@/lib/editor-auth'
 import { createDefaultScene } from '@kealee/pascal-wrapper'
 
 export const dynamic = 'force-dynamic'
 
 // ---------------------------------------------------------------------------
-// GET — list scenes
+// GET — list scenes (filtered to the caller's own scenes)
 // ---------------------------------------------------------------------------
 
 export async function GET(req: NextRequest) {
   try {
-    const supabase = getSupabaseAdmin()
-    const userId = req.nextUrl.searchParams.get('userId')
+    const auth = await authorizeEditorRequest()
+    if (!auth.ok) return auth.response
+
+    const supabase  = getSupabaseAdmin()
     const projectId = req.nextUrl.searchParams.get('projectId')
 
     let query = supabase
@@ -30,7 +39,14 @@ export async function GET(req: NextRequest) {
       .order('updated_at', { ascending: false })
       .limit(50)
 
-    if (userId)    query = query.eq('user_id', userId)
+    // Authenticated users see only their own scenes; anonymous callers see
+    // only anonymous (user_id IS NULL) scenes — prevents enumeration.
+    if (auth.userId) {
+      query = query.eq('user_id', auth.userId)
+    } else {
+      query = query.is('user_id', null)
+    }
+
     if (projectId) query = query.eq('project_id', projectId)
 
     const { data, error } = await query
@@ -49,9 +65,11 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
+    const auth = await authorizeEditorRequest()
+    if (!auth.ok) return auth.response
+
     const body = await req.json().catch(() => ({}))
     const {
-      userId,
       projectId,
       projectType = 'addition',
       name = 'New Project',
@@ -61,14 +79,13 @@ export async function POST(req: NextRequest) {
     } = body
 
     const supabase = getSupabaseAdmin()
-
-    // Use provided sceneData or generate a blank default scene
     const finalSceneData = sceneData ?? createDefaultScene(projectType, name)
 
     const { data, error } = await supabase
       .from('pascal_scenes')
       .insert({
-        user_id:      userId   ?? null,
+        // user_id is server-derived. NEVER from req.body.userId.
+        user_id:      auth.userId,
         project_id:   projectId ?? null,
         name,
         project_type: projectType.toUpperCase().replace(/-/g, '_'),

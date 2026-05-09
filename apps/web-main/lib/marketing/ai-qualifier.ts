@@ -6,6 +6,7 @@
  */
 
 import { ClaudeCachedClient } from '@/lib/anthropic/claude-cached-client'
+import { AI_MODELS } from '@kealee/core-rules'
 
 export interface AiQualificationInput {
   leadName: string
@@ -66,7 +67,7 @@ Provide JSON response with confidence (0-100), recommendation, reasoning, and su
 
   try {
     const response = await client.message({
-      model: 'claude-3-5-sonnet-20241022',
+      model: AI_MODELS.conceptText,
       max_tokens: 300,
       system: systemPrompt,
       messages: [

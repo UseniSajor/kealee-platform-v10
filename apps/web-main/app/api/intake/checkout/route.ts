@@ -1,48 +1,44 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { guardStripeSecretForHttp } from '@/lib/stripe-vercel-guard'
+import { getIntakePrice, SITE_VISIT_FEE_CENTS } from '@kealee/core-rules'
 
-const PATH_NAMES: Record<string, string> = {
-  exterior_concept:          'Exterior Concept AI Package',
-  garden_concept:            'Garden Concept AI Package',
-  whole_home_concept:        'Whole Home Concept AI Package',
-  interior_reno_concept:     'Interior Reno Concept AI Package',
-  developer_concept:         'Developer Concept AI Package',
-  interior_renovation:       'Interior Renovation AI Package',
-  kitchen_remodel:           'Kitchen Remodel AI Package',
-  bathroom_remodel:          'Bathroom Remodel AI Package',
-  whole_home_remodel:        'Whole-Home Remodel AI Package',
-  addition_expansion:        'Addition / Expansion AI Package',
-  design_build:              'Design + Build AI Package',
-  permit_path_only:          'Permit Path Intake',
-  contractor_match:          'Contractor Match Service',
-  multi_unit_residential:    'Multi-Unit Residential Concept',
-  mixed_use:                 'Mixed-Use Development Concept',
-  commercial_office:         'Commercial Office Concept',
-  development_feasibility:   'Development Feasibility Package',
-  townhome_subdivision:      'Townhome Subdivision Package',
-  single_family_subdivision: 'Single-Family Subdivision Package',
-  single_lot_development:    'Single-Lot Development Package',
-  capture_site_concept:      'Site Capture + Concept Package',
-}
-
-const SITE_VISIT_FEE = 12500 // $125
-
+/**
+ * POST /api/intake/checkout
+ *
+ * Creates a Stripe Checkout Session for an intake-driven purchase.
+ *
+ * SECURITY: The price is looked up server-side from `@kealee/core-rules`
+ * via `projectPath`. Any `amount` in the request body is IGNORED — the
+ * client cannot influence what they pay. (P0-1 fix, audit 2026-05-09.)
+ */
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json() as {
       intakeId: string
       projectPath: string
-      amount: number
       successUrl: string
       cancelUrl: string
       siteVisitRequested?: boolean
+      // Legacy `amount` field is accepted for backward compatibility
+      // but explicitly NOT used. Server price is authoritative.
+      amount?: number
     }
 
-    const { intakeId, projectPath, amount, successUrl, cancelUrl, siteVisitRequested } = body
+    const { intakeId, projectPath, successUrl, cancelUrl, siteVisitRequested } = body
 
-    if (!intakeId || !projectPath || !amount || !successUrl || !cancelUrl) {
+    if (!intakeId || !projectPath || !successUrl || !cancelUrl) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
+    }
+
+    // Server-trusted price lookup. Reject unknown SKUs outright — never let
+    // an untyped projectPath through to Stripe.
+    const priceEntry = getIntakePrice(projectPath)
+    if (!priceEntry) {
+      return NextResponse.json(
+        { error: `Unknown projectPath: ${projectPath}` },
+        { status: 400 }
+      )
     }
 
     const stripeKey = process.env.STRIPE_SECRET_KEY
@@ -55,15 +51,12 @@ export async function POST(req: NextRequest) {
 
     const stripe = new Stripe(stripeKey, { apiVersion: '2024-06-20' as any })
 
-    const productName = PATH_NAMES[projectPath] ?? 'Project Intake'
-    const baseAmount = siteVisitRequested ? amount - SITE_VISIT_FEE : amount
-
     const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = [
       {
         price_data: {
           currency: 'usd',
-          unit_amount: baseAmount,
-          product_data: { name: productName },
+          unit_amount: priceEntry.cents,
+          product_data: { name: priceEntry.label },
         },
         quantity: 1,
       },
@@ -73,7 +66,7 @@ export async function POST(req: NextRequest) {
       lineItems.push({
         price_data: {
           currency: 'usd',
-          unit_amount: SITE_VISIT_FEE,
+          unit_amount: SITE_VISIT_FEE_CENTS,
           product_data: { name: 'Kealee Site Visit Scan' },
         },
         quantity: 1,

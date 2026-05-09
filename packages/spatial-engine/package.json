@@ -1,0 +1,32 @@
+{
+  "name": "@kealee/pascal-agents",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Versioned LLM prompt library + agent orchestrator for the Pascal Editor preconstruction stack. Pairs with @kealee/pascal-wrapper.",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./prompts": {
+      "types": "./src/prompts/index.ts",
+      "default": "./src/prompts/index.ts"
+    },
+    "./agents": {
+      "types": "./src/agents.ts",
+      "default": "./src/agents.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc --noEmit",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@kealee/pascal-wrapper": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3"
+  }
+}
