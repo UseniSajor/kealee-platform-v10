@@ -29,6 +29,22 @@ CREATE TABLE IF NOT EXISTS nextdoor_performance (
   UNIQUE(neighborhood, city, state)
 );
 
+-- Reddit performance tracking
+CREATE TABLE IF NOT EXISTS reddit_performance (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  subreddit TEXT NOT NULL,
+  category TEXT,                      -- 'DIY', 'HomeImprovement', 'Construction', etc.
+  leads_count INTEGER DEFAULT 0,
+  paid_leads INTEGER DEFAULT 0,
+  revenue_generated NUMERIC,
+  cost_per_lead NUMERIC,
+  roi NUMERIC,
+  ad_campaign_id TEXT,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now(),
+  UNIQUE(subreddit, category)
+);
+
 -- Create ROI tracking table
 CREATE TABLE IF NOT EXISTS marketing_roi_metrics (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),

@@ -520,6 +520,7 @@ export const KEALEE_MARKETING_ENGINE_CONFIG = {
     facebook: 'Facebook Lead Ads',
     google: 'Google Ads',
     nextdoor: 'Nextdoor neighborhood ads',
+    reddit: 'Reddit community ads',
     referral: 'Word of mouth & partners',
     other: 'Other sources',
   },
