@@ -256,9 +256,39 @@ function permitGuidance(permitRequired: 'always' | 'sometimes' | 'rarely' | unde
   return `PERMIT RULE: Assess whether a permit is required based on the described scope and DMV jurisdiction norms.`
 }
 
-function buildConceptPrompt(intake: Record<string, unknown>, projectPath: string): string {
+interface PascalGeometry {
+  totalSqFt: number | null
+  roomCount: number | null
+  wallLengthFt: number | null
+  floorCount: number | null
+  doorCount: number | null
+  windowCount: number | null
+  exteriorPerimFt: number | null
+  style: string | null
+  projectType: string | null
+}
+
+function buildGeometrySection(geo: PascalGeometry): string {
+  const lines: string[] = ['Measured Floor Plan Data (from Pascal Design Studio):']
+  if (geo.totalSqFt)      lines.push(`- Total floor area: ${geo.totalSqFt.toFixed(0)} sq ft (use this for BOM quantities)`)
+  if (geo.roomCount)      lines.push(`- Room count: ${geo.roomCount}`)
+  if (geo.wallLengthFt)   lines.push(`- Total wall length: ${geo.wallLengthFt.toFixed(0)} linear ft`)
+  if (geo.exteriorPerimFt) lines.push(`- Exterior perimeter: ${geo.exteriorPerimFt.toFixed(0)} linear ft`)
+  if (geo.doorCount)      lines.push(`- Door openings: ${geo.doorCount}`)
+  if (geo.windowCount)    lines.push(`- Window openings: ${geo.windowCount}`)
+  if (geo.floorCount && geo.floorCount > 1) lines.push(`- Floors/levels: ${geo.floorCount}`)
+  if (geo.style)          lines.push(`- Preferred design style: ${geo.style}`)
+  lines.push('Use these measured quantities to produce accurate line-item quantities in the bill of materials.')
+  return lines.join('\n')
+}
+
+function buildConceptPrompt(intake: Record<string, unknown>, projectPath: string, geometry?: PascalGeometry): string {
   const deliverable = SERVICE_DELIVERABLES[projectPath]
   const formData = (intake.form_data as Record<string, unknown>) ?? {}
+
+  const sqFt = geometry?.totalSqFt
+    ? `${geometry.totalSqFt.toFixed(0)} sq ft (measured)`
+    : (formData.squareFootage ?? 'Not specified')
 
   return `You are a senior construction design consultant generating a detailed concept package for a client.
 
@@ -268,9 +298,10 @@ Project Details:
 - Client: ${intake.client_name ?? 'Client'}
 - Address: ${intake.project_address ?? 'Not specified'}
 - Description: ${formData.description ?? 'No description provided'}
-- Square Footage: ${formData.squareFootage ?? 'Not specified'}
+- Square Footage: ${sqFt}
 - Timeline: ${formData.timeline ?? 'Flexible'}
 - Budget Range: ${intake.budget_range ?? 'Not specified'}
+${geometry ? '\n' + buildGeometrySection(geometry) : ''}
 
 What this service includes:
 ${deliverable?.includes?.map(i => `- ${i}`).join('\n') ?? '- Concept package'}
@@ -393,8 +424,38 @@ export async function POST(req: NextRequest) {
       ? AI_MODELS.conceptTextPremium
       : AI_MODELS.conceptText
 
+    // Optionally fetch Pascal scene geometry if intake was started from Design Studio
+    let geometry: PascalGeometry | undefined
+    const linkedSceneId = existingFormData.sceneId as string | undefined
+    if (linkedSceneId) {
+      try {
+        const { data: scene } = await supabase
+          .from('pascal_scenes')
+          .select('total_sq_ft, room_count, wall_length_ft, floor_count, door_count, window_count, exterior_perim_ft, style, project_type')
+          .eq('id', linkedSceneId)
+          .eq('is_deleted', false)
+          .single()
+
+        if (scene) {
+          geometry = {
+            totalSqFt:       scene.total_sq_ft,
+            roomCount:       scene.room_count,
+            wallLengthFt:    scene.wall_length_ft,
+            floorCount:      scene.floor_count,
+            doorCount:       scene.door_count,
+            windowCount:     scene.window_count,
+            exteriorPerimFt: scene.exterior_perim_ft,
+            style:           scene.style,
+            projectType:     scene.project_type,
+          }
+        }
+      } catch (geoErr: any) {
+        // Non-fatal — proceed without geometry
+        console.warn('[concept/generate] Could not fetch Pascal scene geometry:', geoErr?.message)
+      }
+    }
     const client = new Anthropic({ apiKey })
-    const prompt = buildConceptPrompt(intake as Record<string, unknown>, projectPath)
+    const prompt = buildConceptPrompt(intake as Record<string, unknown>, projectPath, geometry)
 
     const message = await client.messages.create({
       model,

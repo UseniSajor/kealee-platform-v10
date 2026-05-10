@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { useParams, useRouter } from 'next/navigation'
+import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Loader2, AlertCircle, ArrowRight, CheckCircle2, Clock, Shield, Zap, Package, ImagePlus, X, FileVideo, FileText } from 'lucide-react'
 import { SERVICE_DELIVERABLES } from '@/lib/service-deliverables'
@@ -209,7 +209,12 @@ function OrderSummary({
 export default function IntakePage() {
   const params = useParams()
   const router = useRouter()
+  const searchParams = useSearchParams()
   const projectPath = Array.isArray(params.projectPath) ? params.projectPath[0] : params.projectPath as string
+
+  // Pascal Design Studio handoff — sceneId forwarded from /editor/[sceneId]
+  const sceneId = searchParams.get('sceneId') ?? ''
+  const sqftFromUrl = searchParams.get('sqft') ?? ''
 
   const [step, setStep] = useState<'details' | 'review'>('details')
   const [formError, setFormError] = useState('')
@@ -226,9 +231,23 @@ export default function IntakePage() {
     phone: '',
     address: '',
     description: '',
-    squareFootage: '',
+    squareFootage: sqftFromUrl,
     timeline: 'flexible',
   })
+
+  // Pre-fill squareFootage from Pascal estimate context stored in sessionStorage
+  useEffect(() => {
+    if (sqftFromUrl || !sceneId) return
+    try {
+      const ctx = sessionStorage.getItem('pascal_estimate_context')
+      if (ctx) {
+        const parsed = JSON.parse(ctx)
+        if (parsed?.totalSqFt) {
+          setFormData(prev => ({ ...prev, squareFootage: String(Math.round(parsed.totalSqFt)) }))
+        }
+      }
+    } catch { /* ignore */ }
+  }, [sceneId, sqftFromUrl])
 
   // File upload state
   const [uploadedFiles, setUploadedFiles] = useState<IntakeUploadedFile[]>([])
@@ -380,6 +399,7 @@ export default function IntakePage() {
             squareFootage: formData.squareFootage,
             timeline: formData.timeline,
             uploadedFiles: uploadedFiles.map(f => f.url),
+            ...(sceneId ? { sceneId } : {}),
           },
         }),
       })
