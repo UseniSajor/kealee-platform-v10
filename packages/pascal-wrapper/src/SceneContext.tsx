@@ -160,13 +160,16 @@ const createEditorStore = (initialScene?: PascalSceneData) => {
         set(s => {
           const floor = s.scene.floors.find(f => f.id === floorId)
           if (floor) {
+            const wallDefaults = {
+              thickness: DEFAULT_WALL_THICKNESS_FT,
+              height: DEFAULT_CEILING_HEIGHT_FT,
+              type: 'interior' as const,
+              material: 'drywall' as const,
+            }
             floor.walls.push({
               id, floorId,
               openings: [],
-              thickness: DEFAULT_WALL_THICKNESS_FT,
-              height: DEFAULT_CEILING_HEIGHT_FT,
-              type: 'interior',
-              material: 'drywall',
+              ...wallDefaults,
               ...wall,
             })
           }
