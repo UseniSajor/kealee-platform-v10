@@ -81,7 +81,6 @@ export class GLTFConverter {
     const data = new Uint8Array(ifcBuffer);
     const modelId = this.ifcApi.OpenModel(data, {
       COORDINATE_TO_ORIGIN: true,
-      USE_FAST_BOOLS: true,
     });
 
     try {
@@ -269,8 +268,10 @@ export class GLTFConverter {
       return this.buildEmptyGLB();
     }
 
-    // Collect all binary data into a single buffer
-    const bufferParts: ArrayBuffer[] = [];
+    // Collect all binary data into a single buffer.
+    // ArrayBufferLike covers both ArrayBuffer and SharedArrayBuffer because
+    // TypedArray.buffer is generic over ArrayBufferLike in TS 5.7+.
+    const bufferParts: ArrayBufferLike[] = [];
     let currentOffset = 0;
 
     const accessors: unknown[] = [];
@@ -469,7 +470,7 @@ export class GLTFConverter {
    */
   private packGLB(
     gltfJson: unknown,
-    binaryParts: ArrayBuffer[],
+    binaryParts: ArrayBufferLike[],
     totalBinaryLength: number
   ): ArrayBuffer {
     // Encode JSON to UTF-8
