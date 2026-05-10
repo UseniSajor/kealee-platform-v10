@@ -12,8 +12,9 @@
     }
   },
   "scripts": {
-    "build": "tsup src/index.ts --format cjs,esm --dts --external react --external react-dom --external three --external @react-three/fiber --external @react-three/drei",
-    "dev": "tsup src/index.ts --format cjs,esm --dts --watch --external react --external react-dom --external three --external @react-three/fiber --external @react-three/drei",
+    "build": "tsc --noEmit",
+    "typecheck": "tsc --noEmit",
+    "dev": "tsc --noEmit --watch",
     "clean": "rm -rf dist"
   },
   "dependencies": {
