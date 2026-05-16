@@ -12,11 +12,6 @@ import { createClient } from '@supabase/supabase-js'
 import { createOrUpdateContact } from '@/lib/marketing/ghl-client'
 import { calculateLeadScore } from '@/lib/marketing/lead-scorer'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-  process.env.SUPABASE_SERVICE_ROLE_KEY || ''
-)
-
 const NEXTDOOR_API_KEY = process.env.NEXTDOOR_API_KEY ?? ''
 
 export interface NextdoorLeadData {
@@ -44,6 +39,11 @@ export interface NextdoorLeadData {
  * - Track by neighborhood for ROI
  */
 export async function POST(req: NextRequest) {
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
+
   try {
     const body = (await req.json()) as NextdoorLeadData
 
