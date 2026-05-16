@@ -59,8 +59,8 @@ export async function createOrUpdateContact(
         },
         body: JSON.stringify({
           properties: {
-            email,
             ...properties,
+            email,
           },
         }),
       }
