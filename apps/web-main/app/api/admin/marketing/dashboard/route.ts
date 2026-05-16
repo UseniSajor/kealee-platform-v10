@@ -1,6 +1,6 @@
 /**
  * GET /api/admin/marketing/dashboard
- * 
+ *
  * Real-time marketing automation dashboard
  * Shows Phase 1, 2, 3 metrics and lead status
  */
@@ -48,44 +48,44 @@ export async function GET(req: NextRequest) {
     // ── Phase 1 Metrics ────────────────────────────────────────────────────
 
     // Total leads today
-    const { data: leadsToday, error: err1 } = await supabase
+    const { count: leadsTodayCount, error: err1 } = await supabase
       .from('public_intake_leads')
-      .select('id', { count: 'exact' })
+      .select('id', { count: 'exact', head: true })
       .gte('created_at', today.toISOString())
 
     // Hot leads today
-    const { data: hotToday, error: err2 } = await supabase
+    const { count: hotTodayCount, error: err2 } = await supabase
       .from('public_intake_leads')
-      .select('id', { count: 'exact' })
+      .select('id', { count: 'exact', head: true })
       .gte('created_at', today.toISOString())
       .eq('routing_tag', 'hot')
 
     // SMS alerts sent today
-    const { data: smsToday, error: err3 } = await supabase
+    const { count: smsTodayCount, error: err3 } = await supabase
       .from('sms_alert_log')
-      .select('id', { count: 'exact' })
+      .select('id', { count: 'exact', head: true })
       .gte('sent_at', today.toISOString())
 
     // GHL syncs today
-    const { data: ghlToday, error: err4 } = await supabase
+    const { count: ghlTodayCount, error: err4 } = await supabase
       .from('ghl_sync_log')
-      .select('id', { count: 'exact' })
+      .select('id', { count: 'exact', head: true })
       .gte('created_at', today.toISOString())
       .eq('action', 'create')
 
     // ── Phase 2 Metrics ────────────────────────────────────────────────────
 
     // AI qualified leads
-    const { data: aiQualified, error: err5 } = await supabase
+    const { count: aiQualifiedCount, error: err5 } = await supabase
       .from('public_intake_leads')
-      .select('id', { count: 'exact' })
+      .select('id', { count: 'exact', head: true })
       .gte('created_at', today.toISOString())
       .eq('ai_qualification_recommendation', 'qualify')
 
     // Calendly events scheduled
-    const { data: calendlyToday, error: err6 } = await supabase
+    const { count: calendlyTodayCount, error: err6 } = await supabase
       .from('calendly_events')
-      .select('id', { count: 'exact' })
+      .select('id', { count: 'exact', head: true })
       .gte('created_at', today.toISOString())
 
     // ── Phase 3 Metrics ────────────────────────────────────────────────────
@@ -104,22 +104,22 @@ export async function GET(req: NextRequest) {
 
     // ── Weekly Metrics ────────────────────────────────────────────────────
 
-    const { data: leadsWeek, error: err8 } = await supabase
+    const { count: leadsWeekCount, error: err8 } = await supabase
       .from('public_intake_leads')
-      .select('id', { count: 'exact' })
+      .select('id', { count: 'exact', head: true })
       .gte('created_at', thisWeek.toISOString())
 
-    const { data: hotWeek, error: err9 } = await supabase
+    const { count: hotWeekCount, error: err9 } = await supabase
       .from('public_intake_leads')
-      .select('id', { count: 'exact' })
+      .select('id', { count: 'exact', head: true })
       .gte('created_at', thisWeek.toISOString())
       .eq('routing_tag', 'hot')
 
     // ── Monthly Metrics ────────────────────────────────────────────────────
 
-    const { data: leadsMonth, error: err10 } = await supabase
+    const { count: leadsMonthCount, error: err10 } = await supabase
       .from('public_intake_leads')
-      .select('id', { count: 'exact' })
+      .select('id', { count: 'exact', head: true })
       .gte('created_at', thisMonth.toISOString())
       .eq('status', 'paid')
 
@@ -132,33 +132,38 @@ export async function GET(req: NextRequest) {
 
     // ── Build dashboard response ──────────────────────────────────────────
 
+    const leadsToday = leadsTodayCount ?? 0
+    const hotToday   = hotTodayCount   ?? 0
+    const leadsWeek  = leadsWeekCount  ?? 0
+    const hotWeek    = hotWeekCount    ?? 0
+
     const dashboard = {
       timestamp: new Date().toISOString(),
       phase1: {
-        leadsToday: leadsToday?.count || 0,
-        hotLeadsToday: hotToday?.count || 0,
-        hotPercentageToday: leadsToday?.count
-          ? ((hotToday?.count || 0) / leadsToday.count * 100).toFixed(1) + '%'
+        leadsToday,
+        hotLeadsToday: hotToday,
+        hotPercentageToday: leadsToday > 0
+          ? ((hotToday / leadsToday) * 100).toFixed(1) + '%'
           : '0%',
-        smsAlertsSent: smsToday?.count || 0,
-        ghlContactsCreated: ghlToday?.count || 0,
+        smsAlertsSent:       smsTodayCount     ?? 0,
+        ghlContactsCreated:  ghlTodayCount     ?? 0,
       },
       phase2: {
-        aiQualifiedToday: aiQualified?.count || 0,
-        calendlyEventsScheduled: calendlyToday?.count || 0,
+        aiQualifiedToday:          aiQualifiedCount    ?? 0,
+        calendlyEventsScheduled:   calendlyTodayCount  ?? 0,
       },
       phase3: {
         sourceBreakdown,
       },
       weekly: {
-        totalLeads: leadsWeek?.count || 0,
-        hotLeads: hotWeek?.count || 0,
-        hotPercentage: leadsWeek?.count
-          ? ((hotWeek?.count || 0) / leadsWeek.count * 100).toFixed(1) + '%'
+        totalLeads: leadsWeek,
+        hotLeads:   hotWeek,
+        hotPercentage: leadsWeek > 0
+          ? ((hotWeek / leadsWeek) * 100).toFixed(1) + '%'
           : '0%',
       },
       monthly: {
-        paidLeads: leadsMonth?.count || 0,
+        paidLeads: leadsMonthCount ?? 0,
       },
     }
 

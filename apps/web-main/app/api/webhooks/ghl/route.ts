@@ -110,7 +110,7 @@ async function handleContactUpdate(data: any) {
     const intakeId = intakes[0].id
 
     // Log sync
-    await supabase
+    const { error: syncLogErr } = await supabase
       .from('ghl_sync_log')
       .insert({
         intake_id: intakeId,
@@ -118,7 +118,7 @@ async function handleContactUpdate(data: any) {
         action: 'update',
         ghl_response: data,
       })
-      .catch((err) => console.error('GHL sync log error:', err))
+    if (syncLogErr) console.error('GHL sync log error:', syncLogErr)
 
     return NextResponse.json({
       processed: true,
@@ -173,15 +173,15 @@ async function handleOpportunityUpdate(data: any) {
     }
 
     if (newTag) {
-      await supabase
+      const { error: tagErr } = await supabase
         .from('public_intake_leads')
         .update({ routing_tag: newTag })
         .eq('id', intakeId)
-        .catch((err) => console.error('Update routing tag error:', err))
+      if (tagErr) console.error('Update routing tag error:', tagErr)
     }
 
     // Log sync
-    await supabase
+    const { error: stageLogErr } = await supabase
       .from('ghl_sync_log')
       .insert({
         intake_id: intakeId,
@@ -189,7 +189,7 @@ async function handleOpportunityUpdate(data: any) {
         action: 'stage_move',
         ghl_response: data,
       })
-      .catch((err) => console.error('GHL sync log error:', err))
+    if (stageLogErr) console.error('GHL sync log error:', stageLogErr)
 
     return NextResponse.json({
       processed: true,

@@ -68,7 +68,7 @@ export async function POST(req: NextRequest) {
     const classification = await classifySmsReply(body.message)
 
     // Store in lead_notes
-    await supabase
+    const { error: noteErr } = await supabase
       .from('lead_notes')
       .insert({
         intake_id: intake.id,
@@ -76,7 +76,7 @@ export async function POST(req: NextRequest) {
         note_type: 'sms_reply',
         ai_classified_as: classification.urgency,
       })
-      .catch((err) => console.error('Lead note insert error:', err))
+    if (noteErr) console.error('Lead note insert error:', noteErr)
 
     // Escalate urgent replies to Slack
     if (classification.urgency === 'urgent' || classification.urgency === 'escalate') {

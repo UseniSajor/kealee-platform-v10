@@ -177,7 +177,6 @@ export async function POST(req: NextRequest) {
       await supabase.from('pascal_scene_uploads')
         .update({ vision_status: 'failed' })
         .eq('id', uploadId)
-        .catch(() => {})
     }
 
     return NextResponse.json({ error: 'Vision analysis failed' }, { status: 500 })

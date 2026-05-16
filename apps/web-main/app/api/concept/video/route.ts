@@ -190,7 +190,11 @@ export async function GET(req: NextRequest) {
     // Poll provider for live status
     const live = await getVideoStatus(state.provider, state.jobId)
 
-    let next: ConceptVideoState = { ...state, status: live.status, error: live.error }
+    // Map 'queued' (VideoStatus) → 'pending' (ConceptVideoState) — the state
+    // machine uses 'pending' for not-yet-started/queued jobs.
+    const mappedStatus: ConceptVideoState['status'] =
+      live.status === 'queued' ? 'pending' : live.status
+    let next: ConceptVideoState = { ...state, status: mappedStatus, error: live.error }
 
     if (live.status === 'completed' && live.outputUrl) {
       let publicUrl = live.outputUrl

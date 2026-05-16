@@ -75,7 +75,12 @@ export async function POST(req: NextRequest) {
       if (!primaryProduct || !primaryPersona) continue
 
       // Create campaign record
-      const campaign = {
+      const campaign: {
+        id: string; week_number: number; product_id: string; secondary_product: string;
+        campaign_type: string; persona_id: string; theme: string; scheduled_day: string;
+        channels: string[]; status: string; created_at: string;
+        email_subject?: string; email_body?: string; message_template?: string;
+      } = {
         id: `${weekCampaign.primary}-w${weekNum}-${day.day.toLowerCase()}`,
         week_number: weekNum,
         product_id: weekCampaign.primary,
@@ -93,8 +98,10 @@ export async function POST(req: NextRequest) {
 
       // Get message template
       const messageTemplate = CAMPAIGN_MESSAGE_TEMPLATES[weekCampaign.primary as keyof typeof CAMPAIGN_MESSAGE_TEMPLATES]
-      if (messageTemplate && messageTemplate[day.name.toLowerCase().replace(/\s+/g, '_') as any]) {
-        const msg = messageTemplate[day.name.toLowerCase().replace(/\s+/g, '_') as any]
+      const dayKey = day.name.toLowerCase().replace(/\s+/g, '_')
+      const templateMap = messageTemplate as Record<string, { subject: string; preview: string; body: string; targetPersona: string }> | undefined
+      if (templateMap && templateMap[dayKey]) {
+        const msg = templateMap[dayKey]
         campaign.email_subject = msg.subject
         campaign.email_body = msg.body
         campaign.message_template = day.name
@@ -116,7 +123,7 @@ export async function POST(req: NextRequest) {
         )
       }
 
-      console.log(`Inserted ${inserted?.length || campaigns.length} campaigns`)
+      console.log(`Inserted ${campaigns.length} campaigns`)
     }
 
     // ── Generate follow-up automation ──────────────────────────────────────

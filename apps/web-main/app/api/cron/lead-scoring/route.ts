@@ -111,7 +111,7 @@ export async function POST(req: NextRequest) {
 
           // Log SMS result
           if (smsResult.success) {
-            await supabase
+            const { error: smsLogErr } = await supabase
               .from('sms_alert_log')
               .insert({
                 intake_id: lead.id,
@@ -119,17 +119,17 @@ export async function POST(req: NextRequest) {
                 status: 'sent',
                 twilio_message_id: smsResult.messageId,
               })
-              .catch((err) => console.error('SMS log error:', err))
+            if (smsLogErr) console.error('SMS log error:', smsLogErr)
 
             // Update sms_alert_sent_at
-            await supabase
+            const { error: smsUpdateErr } = await supabase
               .from('public_intake_leads')
               .update({ sms_alert_sent_at: new Date().toISOString() })
               .eq('id', lead.id)
-              .catch((err) => console.error('Update sms_alert_sent_at error:', err))
+            if (smsUpdateErr) console.error('Update sms_alert_sent_at error:', smsUpdateErr)
           } else {
             console.error(`SMS alert failed for ${lead.id}:`, smsResult.error)
-            await supabase
+            const { error: smsFailLogErr } = await supabase
               .from('sms_alert_log')
               .insert({
                 intake_id: lead.id,
@@ -137,7 +137,7 @@ export async function POST(req: NextRequest) {
                 status: 'failed',
                 error_message: smsResult.error,
               })
-              .catch((err) => console.error('SMS log error:', err))
+            if (smsFailLogErr) console.error('SMS log error:', smsFailLogErr)
           }
         }
 
@@ -145,6 +145,7 @@ export async function POST(req: NextRequest) {
         try {
           if (lead.email) {
             const hsContact = await createOrUpdateContact(lead.email, {
+              email: lead.email,
               firstname: lead.name?.split(' ')[0],
               lastname: lead.name?.split(' ').slice(1).join(' '),
               phone: lead.phone_number,
@@ -166,7 +167,7 @@ export async function POST(req: NextRequest) {
               .eq('id', lead.id)
 
             // Log HubSpot sync
-            await supabase
+            const { error: hsLogErr } = await supabase
               .from('ghl_sync_log')
               .insert({
                 intake_id: lead.id,
@@ -174,18 +175,18 @@ export async function POST(req: NextRequest) {
                 action: 'create',
                 ghl_response: hsContact,
               })
-              .catch((err) => console.error('HubSpot sync log error:', err))
+            if (hsLogErr) console.error('HubSpot sync log error:', hsLogErr)
           }
         } catch (hsErr) {
           console.error(`HubSpot contact creation failed for ${lead.id}:`, hsErr)
-          await supabase
+          const { error: hsErrLogErr } = await supabase
             .from('ghl_sync_log')
             .insert({
               intake_id: lead.id,
               action: 'error',
               error_message: hsErr instanceof Error ? hsErr.message : String(hsErr),
             })
-            .catch((err) => console.error('HubSpot sync log error:', err))
+          if (hsErrLogErr) console.error('HubSpot sync log error:', hsErrLogErr)
         }
 
         results.push({
