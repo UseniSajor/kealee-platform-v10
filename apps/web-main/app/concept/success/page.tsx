@@ -3,15 +3,24 @@
 import { Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { CheckCircle2, Mail, Clock, ArrowRight } from 'lucide-react'
+import { CheckCircle2, Mail, Clock, ArrowRight, ExternalLink } from 'lucide-react'
 
 function SuccessInner() {
   const searchParams = useSearchParams()
-  const email   = searchParams.get('email')   ?? ''
-  const name    = searchParams.get('name')    ?? ''
-  const service = searchParams.get('service') ?? 'Concept Package'
-  const amount  = searchParams.get('amount')  ?? ''
-  const promo   = searchParams.get('promo')   === '1'
+  const email    = searchParams.get('email')    ?? ''
+  const name     = searchParams.get('name')     ?? ''
+  const service  = searchParams.get('service')  ?? 'Concept Package'
+  const amount   = searchParams.get('amount')   ?? ''
+  const promo    = searchParams.get('promo')    === '1'
+  const intakeId = searchParams.get('intakeId') ?? ''
+
+  // Direct link to the concept access gate.
+  // The access page lets the user enter their email to receive a magic-link
+  // that establishes a session and lands them on /concept/[intakeId].
+  const conceptPath = intakeId ? `/concept/${intakeId}` : null
+  const conceptUrl  = conceptPath
+    ? `/concept/access?next=${encodeURIComponent(conceptPath)}${email ? `&email=${encodeURIComponent(email)}` : ''}`
+    : null
 
   return (
     <div className="min-h-screen bg-slate-50 flex items-center justify-center px-4 py-16">
@@ -50,14 +59,33 @@ function SuccessInner() {
             )}
           </div>
 
+          {/* Direct concept link — shown when intakeId is available */}
+          {conceptUrl && (
+            <div className="px-6 py-5 bg-[#1A2B4A] border-b border-slate-700">
+              <p className="text-xs font-bold uppercase tracking-widest text-orange-400 mb-2">Your Concept Portal</p>
+              <p className="text-sm text-slate-300 mb-4 leading-relaxed">
+                {email
+                  ? <>Enter your email (<strong className="text-white">{email}</strong>) to receive a secure access link — no password needed.</>
+                  : 'Enter your email to receive a secure access link — no password needed.'
+                }
+              </p>
+              <Link
+                href={conceptUrl}
+                className="inline-flex items-center gap-2 bg-[#E8724B] hover:bg-[#D45C33] text-white font-bold px-5 py-2.5 rounded-xl text-sm transition-all"
+              >
+                View My Concept <ExternalLink className="w-4 h-4" />
+              </Link>
+            </div>
+          )}
+
           {/* Email notice */}
           <div className="px-6 py-5 bg-blue-50 border-b border-blue-100">
             <div className="flex items-start gap-3">
               <Mail className="h-5 w-5 text-blue-500 shrink-0 mt-0.5" />
               <div>
-                <p className="text-sm font-semibold text-slate-800 mb-1">Portal login details on the way</p>
+                <p className="text-sm font-semibold text-slate-800 mb-1">Confirmation email on its way</p>
                 <p className="text-sm text-slate-600 leading-relaxed">
-                  An email with your Owner Portal login details will be sent to{' '}
+                  A confirmation with your portal link will be sent to{' '}
                   <strong>{email || 'your email address'}</strong> within a few minutes.
                 </p>
                 <p className="text-xs text-slate-400 mt-1.5">Check your spam folder if you don&apos;t see it in 5 minutes.</p>
@@ -73,8 +101,8 @@ function SuccessInner() {
                 <p className="text-sm font-semibold text-slate-800 mb-2">What happens next</p>
                 <ul className="space-y-2">
                   {[
-                    'Your AI concept is generating now',
-                    'You\'ll receive an email with Owner Portal access',
+                    'AI concept is generating now — renders appear as they complete',
+                    'Sign in with your email to access the live portal',
                     'Full package delivered in 3–5 business days',
                   ].map((step, i) => (
                     <li key={i} className="flex items-center gap-2 text-sm text-slate-600">

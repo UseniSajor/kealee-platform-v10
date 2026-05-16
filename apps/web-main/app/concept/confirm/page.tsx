@@ -78,8 +78,9 @@ function ConfirmInner() {
   const [agreed,     setAgreed]     = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [error,      setError]      = useState('')
-  const [promoCode,  setPromoCode]  = useState('')
-  const [promoApplied, setPromoApplied] = useState(false)
+  const [promoCode,       setPromoCode]       = useState('')
+  const [promoApplied,    setPromoApplied]    = useState(false)
+  const [promoError,      setPromoError]      = useState('')
 
   // Payment status banners (set from URL params)
   const [showCanceled,    setShowCanceled]    = useState(searchParams.get('canceled') === 'true')
@@ -149,16 +150,15 @@ function ConfirmInner() {
           }
           // Other redeem error → still try Stripe
         } else {
-          // Promo accepted — redirect to success page
-          const successParams = new URLSearchParams({
-            intakeId,
-            email,
-            name:    `${firstName} ${lastName}`.trim(),
-            service: service?.label ?? serviceSlug,
-            amount:  String(price),
-            promo:   '1',
+          // Promo accepted — send user to the magic-link access gate.
+          // The access page is pre-filled with their email so they just click
+          // "Send access link" to receive a one-click session link.
+          const conceptPath  = `/concept/${intakeId}`
+          const accessParams = new URLSearchParams({
+            next:  conceptPath,
+            email: email,
           })
-          window.location.href = `/concept/success?${successParams.toString()}`
+          window.location.href = `/concept/access?${accessParams.toString()}`
           return
         }
       }
@@ -433,22 +433,42 @@ function ConfirmInner() {
                 </button>
               </div>
             ) : (
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={promoCode}
-                  onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
-                  placeholder="Enter promo code"
-                  className="flex-1 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#E8724B] focus:border-transparent"
-                />
-                <button
-                  type="button"
-                  onClick={() => promoCode.trim() && setPromoApplied(true)}
-                  disabled={!promoCode.trim()}
-                  className="rounded-lg bg-slate-100 hover:bg-slate-200 disabled:opacity-40 px-4 py-2.5 text-sm font-semibold text-slate-700 transition"
-                >
-                  Apply
-                </button>
+              <div className="space-y-1.5">
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={promoCode}
+                    onChange={(e) => { setPromoCode(e.target.value.toUpperCase()); setPromoError('') }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && promoCode.trim().length >= 6) {
+                        setPromoApplied(true); setPromoError('')
+                      }
+                    }}
+                    placeholder="Enter promo code"
+                    className="flex-1 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#E8724B] focus:border-transparent font-mono uppercase tracking-widest"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (promoCode.trim().length < 6) {
+                        setPromoError('Enter a valid promo code.')
+                        return
+                      }
+                      setPromoApplied(true)
+                      setPromoError('')
+                    }}
+                    disabled={!promoCode.trim()}
+                    className="rounded-lg bg-slate-100 hover:bg-slate-200 disabled:opacity-40 px-4 py-2.5 text-sm font-semibold text-slate-700 transition"
+                  >
+                    Apply
+                  </button>
+                </div>
+                {promoError && (
+                  <p className="text-xs text-red-600 font-medium">{promoError}</p>
+                )}
+                {promoApplied && (
+                  <p className="text-xs text-slate-400">Code will be verified when you submit.</p>
+                )}
               </div>
             )}
           </div>

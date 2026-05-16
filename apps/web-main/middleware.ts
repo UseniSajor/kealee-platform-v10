@@ -26,6 +26,7 @@ const PUBLIC_ROUTES = [
   '/concept/details',
   '/concept/contact',
   '/concept/confirm',
+  '/concept/access',
   // NOTE: '/concept' (exact) is handled by special-case below to avoid the
   // startsWith('/concept/') catch-all matching paid deliverables at /concept/[uuid].
   '/concept-engine',
@@ -111,6 +112,14 @@ export async function middleware(request: NextRequest) {
 
   // Protect all other routes - require authentication
   if (!user) {
+    // Concept deliverables use the email/magic-link access gate, not the
+    // external-portal login page, so redirect there directly.
+    if (/^\/concept\/[^/]+$/.test(pathname)) {
+      const accessUrl = new URL('/concept/access', request.url)
+      accessUrl.searchParams.set('next', pathname)
+      return NextResponse.redirect(accessUrl)
+    }
+
     const loginUrl = new URL('/login', request.url)
     loginUrl.searchParams.set('redirectTo', pathname)
     return NextResponse.redirect(loginUrl)
