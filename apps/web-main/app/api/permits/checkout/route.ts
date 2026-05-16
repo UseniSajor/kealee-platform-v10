@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { guardStripeSecretForHttp } from '@/lib/stripe-vercel-guard'
 
+export const dynamic = 'force-dynamic'
+
 const TIER_AMOUNTS: Record<string, { amount: number; name: string }> = {
   simple:       { amount: 29700,  name: 'Permit Research' },
   package:      { amount: 49700,  name: 'Full Permit Package' },

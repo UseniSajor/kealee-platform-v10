@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { PROJECT_PATH_META } from '@kealee/intake'
 
+export const dynamic = 'force-dynamic'
+
 const INTERNAL_API_URL = process.env.INTERNAL_API_URL ?? process.env.NEXT_PUBLIC_API_URL
 
 export async function POST(req: NextRequest) {

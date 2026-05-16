@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
 
+export const dynamic = 'force-dynamic'
+
 // POST /api/intake/lead — collect a contractor inquiry / contact lead
 export async function POST(req: NextRequest) {
   try {

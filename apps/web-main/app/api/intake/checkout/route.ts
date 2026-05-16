@@ -3,6 +3,8 @@ import Stripe from 'stripe'
 import { guardStripeSecretForHttp } from '@/lib/stripe-vercel-guard'
 import { getIntakePrice, SITE_VISIT_FEE_CENTS } from '@kealee/core-rules'
 
+export const dynamic = 'force-dynamic'
+
 /**
  * POST /api/intake/checkout
  *

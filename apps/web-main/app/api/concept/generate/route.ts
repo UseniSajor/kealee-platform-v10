@@ -20,6 +20,8 @@ import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { SERVICE_DELIVERABLES } from '@/lib/service-deliverables'
 import { AI_MODELS } from '@kealee/core-rules'
 
+export const dynamic = 'force-dynamic'
+
 // Statuses that authorise a concept generation. Stripe webhook flips intake
 // to `paid`; the first successful generation flips it to `concept_ready`
 // (regenerations are allowed and return cached output).

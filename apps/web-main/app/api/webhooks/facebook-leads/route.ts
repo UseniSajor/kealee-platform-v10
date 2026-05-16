@@ -13,6 +13,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import crypto from 'crypto'
 import { createOrUpdateContact, triggerWorkflow } from '@/lib/marketing/ghl-client'
 
+export const dynamic = 'force-dynamic'
+
 const FACEBOOK_PAGE_ACCESS_TOKEN = process.env.FACEBOOK_PAGE_ACCESS_TOKEN ?? ''
 const META_WEBHOOK_VERIFY_TOKEN = process.env.META_WEBHOOK_VERIFY_TOKEN ?? ''
 const GHL_WORKFLOW_ID_SMS_QUAL = process.env.GHL_WORKFLOW_ID_SMS_QUAL ?? ''

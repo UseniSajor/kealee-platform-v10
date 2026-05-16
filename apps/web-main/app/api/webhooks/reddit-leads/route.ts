@@ -13,6 +13,8 @@ import { createClient } from '@supabase/supabase-js'
 import { createOrUpdateContact } from '@/lib/marketing/ghl-client'
 import { calculateLeadScore } from '@/lib/marketing/lead-scorer'
 
+export const dynamic = 'force-dynamic'
+
 const REDDIT_API_KEY = process.env.REDDIT_API_KEY ?? ''
 
 export interface RedditLeadData {

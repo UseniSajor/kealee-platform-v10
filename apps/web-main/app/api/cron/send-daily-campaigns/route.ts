@@ -16,6 +16,8 @@ import { createClient } from '@supabase/supabase-js'
 import { sendLeadToSlack } from '@/lib/marketing/slack-client'
 import { sendSMS } from '@/lib/marketing/twilio-client'
 
+export const dynamic = 'force-dynamic'
+
 export async function POST(req: NextRequest) {
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,

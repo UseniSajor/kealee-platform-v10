@@ -13,6 +13,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { SERVICE_DELIVERABLES } from '@/lib/service-deliverables'
 
+export const dynamic = 'force-dynamic'
+
 const DEFAULT_FREE_CODE = 'KEALEE-ALLIN-2026'
 
 function validCodes(): string[] {

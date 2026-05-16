@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 
+export const dynamic = 'force-dynamic'
+
 // --- System prompts ---
 
 // Legacy single-turn: must return JSON (backward compat for any callers passing stream=false)

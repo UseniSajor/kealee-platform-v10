@@ -13,6 +13,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient, SupabaseClient } from '@supabase/supabase-js'
 import crypto from 'crypto'
 
+export const dynamic = 'force-dynamic'
+
 const GHL_WEBHOOK_SECRET = process.env.GHL_WEBHOOK_SECRET || ''
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

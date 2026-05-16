@@ -15,6 +15,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { AI_MODELS } from '@kealee/core-rules'
 
+export const dynamic = 'force-dynamic'
+
 const VALID_AGENTS = new Set(['land', 'design', 'permit', 'contractor'])
 const API = process.env.INTERNAL_API_URL ?? process.env.NEXT_PUBLIC_API_URL ?? ''
 

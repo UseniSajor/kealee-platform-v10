@@ -20,6 +20,8 @@ import {
   CAMPAIGN_MESSAGE_TEMPLATES,
 } from '@/lib/marketing/marketing-engine'
 
+export const dynamic = 'force-dynamic'
+
 export async function POST(req: NextRequest) {
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,

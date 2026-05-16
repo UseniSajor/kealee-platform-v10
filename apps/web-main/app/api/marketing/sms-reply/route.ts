@@ -12,6 +12,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { tagContact, updateContactField } from '@/lib/marketing/ghl-client'
 
+export const dynamic = 'force-dynamic'
+
 interface GhlSmsPayload {
   contactId?:      string
   phone?:          string

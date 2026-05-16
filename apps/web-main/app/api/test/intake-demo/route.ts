@@ -12,6 +12,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { getOwnerPortalDeliverableUrl } from '@/lib/owner-portal-urls'
 
+export const dynamic = 'force-dynamic'
+
 const ALLOWED =
   process.env.NODE_ENV !== 'production' || process.env.ALLOW_TEST_INTAKE === 'true'
 

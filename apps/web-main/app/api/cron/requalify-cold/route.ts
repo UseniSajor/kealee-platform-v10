@@ -11,6 +11,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { calculateLeadScore, type LeadData } from '@/lib/marketing/lead-scorer'
 
+export const dynamic = 'force-dynamic'
+
 export async function POST(req: NextRequest) {
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,

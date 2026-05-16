@@ -17,6 +17,8 @@ import { createOrUpdateContact, createOpportunity } from '@/lib/marketing/ghl-cl
 import { scheduleSequence } from '@/lib/marketing/sequences'
 import { CONCEPT_KITCHEN_PRICE, CONCEPT_WHOLE_HOME_PRICE } from '@/lib/marketing/pricing'
 
+export const dynamic = 'force-dynamic'
+
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://kealee.com'
 
 // ── Validation schema ─────────────────────────────────────────────────────────

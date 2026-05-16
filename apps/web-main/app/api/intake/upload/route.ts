@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { randomUUID } from 'crypto'
 
+export const dynamic = 'force-dynamic'
+
 const ALLOWED_TYPES = new Set([
   'image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif',
   'video/mp4', 'video/quicktime', 'video/mov',

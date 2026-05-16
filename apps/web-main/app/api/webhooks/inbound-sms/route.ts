@@ -12,6 +12,8 @@ import { sendLeadToSlack } from '@/lib/marketing/slack-client'
 import { ClaudeCachedClient } from '@/lib/anthropic/claude-cached-client'
 import { AI_MODELS } from '@kealee/core-rules'
 
+export const dynamic = 'force-dynamic'
+
 
 export interface InboundSmsInput {
   ghlContactId: string

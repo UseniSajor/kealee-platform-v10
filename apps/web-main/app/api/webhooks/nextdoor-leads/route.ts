@@ -12,6 +12,8 @@ import { createClient } from '@supabase/supabase-js'
 import { createOrUpdateContact } from '@/lib/marketing/ghl-client'
 import { calculateLeadScore } from '@/lib/marketing/lead-scorer'
 
+export const dynamic = 'force-dynamic'
+
 const NEXTDOOR_API_KEY = process.env.NEXTDOOR_API_KEY ?? ''
 
 export interface NextdoorLeadData {

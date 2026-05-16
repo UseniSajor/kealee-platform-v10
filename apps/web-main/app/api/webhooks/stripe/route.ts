@@ -18,6 +18,8 @@ import { SERVICE_DELIVERABLES } from '@/lib/service-deliverables'
 import { getOwnerPortalDeliverableUrl } from '@/lib/owner-portal-urls'
 import { isStripeWebhookSideEffectsDisabledOnThisDeployment } from '@/lib/stripe-vercel-guard'
 
+export const dynamic = 'force-dynamic'
+
 export const runtime = 'nodejs' // Required: raw body access for signature verification
 
 export async function POST(req: NextRequest) {

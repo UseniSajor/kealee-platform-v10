@@ -16,6 +16,8 @@ import { getSupabaseAdmin }          from '@/lib/supabase-server'
 import { createOrUpdateContact }     from '@/lib/marketing/ghl-client'
 import { scheduleSequence }          from '@/lib/marketing/sequences'
 
+export const dynamic = 'force-dynamic'
+
 const META_WEBHOOK_SECRET = process.env.META_WEBHOOK_SECRET ?? ''
 
 // ── HMAC signature verification ───────────────────────────────────────────────

@@ -4,6 +4,8 @@ import { calculateLeadScore, type LeadData, type RoutingTag } from '@/lib/market
 import { alertHotLead } from '@/lib/marketing/twilio-client'
 import { createOrUpdateContact } from '@/lib/marketing/hubspot-client'
 
+export const dynamic = 'force-dynamic'
+
 /**
  * POST /api/cron/lead-scoring
  *

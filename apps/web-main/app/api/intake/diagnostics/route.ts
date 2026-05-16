@@ -23,6 +23,8 @@ import { timingSafeEqual } from 'crypto'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { SERVICE_DELIVERABLES } from '@/lib/service-deliverables'
 
+export const dynamic = 'force-dynamic'
+
 function timingSafeEqualString(a: string, b: string): boolean {
   try {
     const bufA = Buffer.from(a, 'utf8')

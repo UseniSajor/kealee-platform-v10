@@ -8,6 +8,8 @@ import {
   CAPTURE_EVENTS,
 } from '@kealee/intake'
 
+export const dynamic = 'force-dynamic'
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()

@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { guardStripeSecretForHttp } from '@/lib/stripe-vercel-guard'
 
+export const dynamic = 'force-dynamic'
+
 // Map product slugs to Stripe price env var names
 // NOTE: Some products may not have Stripe configured yet — checkout returns 503
 const PRICE_ENV_MAP: Record<string, string> = {

@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { guardStripeSecretForHttp } from '@/lib/stripe-vercel-guard'
 
+export const dynamic = 'force-dynamic'
+
 type GCPlanSlug = 'package-a' | 'package-b' | 'package-c' | 'package-d'
 type BillingInterval = 'month' | 'year'
 
