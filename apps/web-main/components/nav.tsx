@@ -96,12 +96,6 @@ const NAV_TABS = [
     activeColor: 'text-orange-500 border-b-2 border-orange-500',
   },
   {
-    href: '/editor',
-    label: 'Design Studio',
-    hoverColor: 'hover:text-violet-600',
-    activeColor: 'text-violet-600 border-b-2 border-violet-600',
-  },
-  {
     href: '/estimate',
     label: 'What does it Cost',
     hoverColor: 'hover:text-blue-500',
