@@ -34,13 +34,13 @@ export const PHASE1_CONFIG = {
 
   // SMS alert templates
   sms: {
-    hotLeadAlert: (name, service, budget, timeline, link) =>
+    hotLeadAlert: (name: string, service: string, budget: string, timeline: string, link: string) =>
       `🔥 Hot! ${name} | ${service} | ${budget} | ${timeline} | ${link}`,
-    
+
     qualifiedScheduling: () =>
       `Great! Pick a time: 1) Wed 2pm | 2) Thu 10am | 3) Fri 3pm?`,
-    
-    confirmationWithLink: (link) =>
+
+    confirmationWithLink: (link: string) =>
       `Perfect! Your call: ${link}`,
   },
 
