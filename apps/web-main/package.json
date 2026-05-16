@@ -23,6 +23,7 @@
     "@kealee/shared": "workspace:*",
     "@kealee/ui": "workspace:*",
     "@anthropic-ai/sdk": "^0.30.0",
+    "google-ads-api": "^23.0.0",
     "replicate": "^1.4.0",
     "uuid": "^10.0.0"
   }
