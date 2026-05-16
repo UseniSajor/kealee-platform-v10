@@ -12,12 +12,6 @@ import { sendLeadToSlack } from '@/lib/marketing/slack-client'
 import { ClaudeCachedClient } from '@/lib/anthropic/claude-cached-client'
 import { AI_MODELS } from '@kealee/core-rules'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-  process.env.SUPABASE_SERVICE_ROLE_KEY || ''
-)
-
-const client = new ClaudeCachedClient()
 
 export interface InboundSmsInput {
   ghlContactId: string
@@ -38,6 +32,12 @@ export interface SmsClassification {
  * Receives SMS replies and classifies them
  */
 export async function POST(req: NextRequest) {
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
+  const client = new ClaudeCachedClient()
+
   try {
     const body = (await req.json()) as InboundSmsInput
 
@@ -65,7 +65,7 @@ export async function POST(req: NextRequest) {
     const intake = intakes[0]
 
     // Classify SMS reply
-    const classification = await classifySmsReply(body.message)
+    const classification = await classifySmsReply(client, body.message)
 
     // Store in lead_notes
     const { error: noteErr } = await supabase
@@ -110,7 +110,7 @@ export async function POST(req: NextRequest) {
 /**
  * Classify inbound SMS using Claude
  */
-async function classifySmsReply(message: string): Promise<SmsClassification> {
+async function classifySmsReply(client: ClaudeCachedClient, message: string): Promise<SmsClassification> {
   const systemPrompt = `You are an SMS classification expert for a construction services platform.
 
 Classify user SMS replies based on urgency:

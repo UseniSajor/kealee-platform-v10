@@ -4,14 +4,6 @@ import { calculateLeadScore, type LeadData, type RoutingTag } from '@/lib/market
 import { alertHotLead } from '@/lib/marketing/twilio-client'
 import { createOrUpdateContact } from '@/lib/marketing/hubspot-client'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-  process.env.SUPABASE_SERVICE_ROLE_KEY || ''
-)
-
-const CRON_SECRET = process.env.CRON_SECRET
-const KEALEE_OPS_SECRET = process.env.KEALEE_OPS_SECRET
-
 /**
  * POST /api/cron/lead-scoring
  *
@@ -22,6 +14,13 @@ const KEALEE_OPS_SECRET = process.env.KEALEE_OPS_SECRET
  * 4. Update intake_leads.lead_score + routing_tag
  */
 export async function POST(req: NextRequest) {
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
+  const CRON_SECRET = process.env.CRON_SECRET
+  const KEALEE_OPS_SECRET = process.env.KEALEE_OPS_SECRET
+
   // ── Authenticate ─────────────────────────────────────────────────────────
   const auth = req.headers.get('Authorization')
   const xKealeeOps = req.headers.get('x-kealee-ops')

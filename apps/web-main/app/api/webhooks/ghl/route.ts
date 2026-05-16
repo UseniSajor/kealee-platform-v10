@@ -10,15 +10,20 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
+import { createClient, SupabaseClient } from '@supabase/supabase-js'
 import crypto from 'crypto'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-  process.env.SUPABASE_SERVICE_ROLE_KEY || ''
-)
-
 const GHL_WEBHOOK_SECRET = process.env.GHL_WEBHOOK_SECRET || ''
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let _supabase: SupabaseClient<any> | null = null
+const getSupabase = (): SupabaseClient<any> => {
+  if (!_supabase) _supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
+  return _supabase
+}
 
 /**
  * Verify GHL webhook signature
@@ -85,6 +90,7 @@ export async function POST(req: NextRequest) {
  * Handle contact update from GHL
  */
 async function handleContactUpdate(data: any) {
+  const supabase = getSupabase()
   try {
     const { id: ghlContactId, email } = data
 
@@ -138,6 +144,7 @@ async function handleContactUpdate(data: any) {
  * Handle opportunity update from GHL
  */
 async function handleOpportunityUpdate(data: any) {
+  const supabase = getSupabase()
   try {
     const { id: oppId, contactId, pipelineStageId, status } = data
 

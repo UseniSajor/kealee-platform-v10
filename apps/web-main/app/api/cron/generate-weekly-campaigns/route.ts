@@ -20,15 +20,14 @@ import {
   CAMPAIGN_MESSAGE_TEMPLATES,
 } from '@/lib/marketing/marketing-engine'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-  process.env.SUPABASE_SERVICE_ROLE_KEY || ''
-)
-
-const CRON_SECRET = process.env.CRON_SECRET
-const KEALEE_OPS_SECRET = process.env.KEALEE_OPS_SECRET
-
 export async function POST(req: NextRequest) {
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
+  const CRON_SECRET = process.env.CRON_SECRET
+  const KEALEE_OPS_SECRET = process.env.KEALEE_OPS_SECRET
+
   // ── Authenticate ─────────────────────────────────────────────────────────
   const auth = req.headers.get('Authorization')
   const xKealeeOps = req.headers.get('x-kealee-ops')
