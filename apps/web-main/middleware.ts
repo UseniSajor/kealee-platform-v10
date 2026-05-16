@@ -26,7 +26,8 @@ const PUBLIC_ROUTES = [
   '/concept/details',
   '/concept/contact',
   '/concept/confirm',
-  '/concept', // matches /concept exactly (service select page)
+  // NOTE: '/concept' (exact) is handled by special-case below to avoid the
+  // startsWith('/concept/') catch-all matching paid deliverables at /concept/[uuid].
   '/concept-engine',
   '/permits',
   '/permits-only',
@@ -74,6 +75,10 @@ const PUBLIC_ROUTES = [
 export async function middleware(request: NextRequest) {
   const res = NextResponse.next()
   const pathname = request.nextUrl.pathname
+
+  // /concept (exact) is the public service/package select page.
+  // /concept/[uuid] pages are paid deliverables that require auth — they do NOT appear here.
+  if (pathname === '/concept') return res
 
   // Deliverables live in the owner portal only — never render on web-main
   if (pathname.startsWith('/concept/deliverable')) {

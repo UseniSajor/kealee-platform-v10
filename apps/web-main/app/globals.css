@@ -332,6 +332,25 @@ footer { background: #1E2120; padding: 48px 40px 30px; }
   footer { padding: 36px 20px 24px; }
 }
 
+/* PRINT — concept package PDF */
+@media print {
+  /* Hide chrome, interactive widgets, upgrade banners */
+  header, nav, footer,
+  .print\:hidden { display: none !important; }
+
+  /* Ensure backgrounds render (Chrome/Edge print) */
+  * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+
+  /* Reset background colours to white for non-hero sections */
+  body { background: #fff !important; }
+
+  /* Force page breaks before major sections */
+  section { page-break-inside: avoid; }
+
+  /* Render gallery: 2 columns in print */
+  .concept-renders-grid { grid-template-columns: repeat(2, 1fr) !important; }
+}
+
 /* BACKWARD COMPAT */
 .font-display, h1, h2, h3 { font-family: var(--font-syne, 'Syne'), sans-serif; }
 .btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; border-radius: 8px; padding: 12px 24px; font-size: 14px; font-weight: 600; color: #fff; background-color: var(--o); transition: opacity .15s; }

@@ -10,6 +10,25 @@ export interface Concept {
   phone?: string
   tier: 1 | 2 | 3
   status: 'processing' | 'completed' | 'error'
+  /** AI-generated design language: style name, materials/finishes palette, key features */
+  designConcept?: {
+    style: string
+    colorPalette: string[]
+    keyFeatures: string[]
+  }
+  /** AI-generated MEP specification strings from Claude conceptOutput */
+  mepSystem?: {
+    electrical: string
+    plumbing: string
+    hvac: string
+    lighting: string
+  }
+  /** 2–3 sentence concept summary written by Claude for the client */
+  description?: string
+  /** Buildability assessment from Claude zoning/scope analysis */
+  buildabilityFlag?: 'feasible' | 'feasible-with-variance' | 'challenging'
+  /** Permit readiness score 0–100 from Claude readinessScore */
+  readinessScore?: number
   videoUrl?: string
   videoDuration?: number
   videoFormatUrls?: Record<string, string>
@@ -18,6 +37,8 @@ export interface Concept {
   estimatedCost?: number
   timeline?: string
   renderings?: string[]
+  /** Replicate prediction IDs for in-flight AI render jobs. Portal polls /api/concept/renders/[id] per entry. */
+  renderJobs?: string[]
   zoningAnalysis?: Record<string, unknown>
   permits?: PermitItem[]
   billOfMaterials?: BOMItem[]

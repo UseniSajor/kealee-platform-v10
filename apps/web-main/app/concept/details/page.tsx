@@ -116,19 +116,32 @@ function DetailsInner() {
 
   const isGarden = serviceSlug === 'garden'
 
-  const [scope, setScope] = useState('')
-  const [budget, setBudget] = useState('')
-  const [zip, setZip] = useState('')
-  const [style, setStyle] = useState('')
-  const [priority, setPriority] = useState('')
-  const [timeline, setTimeline] = useState('')
-  const [sqft, setSqft] = useState('')
+  const [scope, setScope] = useState(() => searchParams.get('scope') ?? '')
+  const [budget, setBudget] = useState(() => searchParams.get('budget') ?? '')
+  const [zip, setZip] = useState(() => searchParams.get('zip') ?? '')
+  const [style, setStyle] = useState(() => searchParams.get('style') ?? '')
+  const [priority, setPriority] = useState(() => searchParams.get('priority') ?? '')
+  const [timeline, setTimeline] = useState(() => searchParams.get('timeline') ?? '')
+  const [sqft, setSqft] = useState(() => searchParams.get('sqft') ?? '')
   // Garden-specific fields
-  const [gardenSpace, setGardenSpace] = useState('')
-  const [gardenFeatures, setGardenFeatures] = useState<string[]>([])
-  const [gardenIrrigation, setGardenIrrigation] = useState('')
-  const [gardenMaintenance, setGardenMaintenance] = useState('')
-  const [uploadedFiles, setUploadedFiles] = useState<IntakeUploadedFile[]>([])
+  const [gardenSpace, setGardenSpace] = useState(() => searchParams.get('gardenSpace') ?? '')
+  const [gardenFeatures, setGardenFeatures] = useState<string[]>(() => {
+    const raw = searchParams.get('gardenFeatures')
+    return raw ? raw.split(',').filter(Boolean) : []
+  })
+  const [gardenIrrigation, setGardenIrrigation] = useState(() => searchParams.get('gardenIrrigation') ?? '')
+  const [gardenMaintenance, setGardenMaintenance] = useState(() => searchParams.get('gardenMaintenance') ?? '')
+  const [uploadedFiles, setUploadedFiles] = useState<IntakeUploadedFile[]>(() => {
+    const raw = searchParams.get('attachments')
+    if (!raw) return []
+    return raw.split(',').filter(Boolean).map((url) => ({
+      url,
+      name: url.split('/').pop()?.split('?')[0] ?? 'file',
+      type: /\.(jpg|jpeg|png|webp|heic)/i.test(url) ? 'image'
+          : /\.(mp4|mov)/i.test(url) ? 'video'
+          : 'document',
+    } as IntakeUploadedFile))
+  })
   const [uploading, setUploading] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
 

@@ -127,15 +127,37 @@ function BudgetTab({ concept }: { concept: Concept }) {
 }
 
 function MEPTab({ concept }: { concept: Concept }) {
-  const items = [
-    { category: 'Electrical', icon: '⚡', items: ['200A service panel upgrade', 'LED recessed lighting', 'GFCI outlets at all wet locations', 'Smart switch wiring'] },
-    { category: 'Plumbing', icon: '🔧', items: ['Shut-off valves at all fixtures', 'PEX supply lines', 'PVC drain/waste/vent', 'Pressure-reducing valve'] },
-    { category: 'HVAC', icon: '❄️', items: ['Mini-split system (1.5 ton)', 'Fresh air ventilation', 'Range hood ductwork', 'Thermostat wiring'] },
-  ]
+  const mep = concept.mepSystem
 
+  if (mep) {
+    const categories = [
+      { label: 'Electrical', icon: '⚡', spec: mep.electrical },
+      { label: 'Plumbing',   icon: '🔧', spec: mep.plumbing },
+      { label: 'HVAC',       icon: '❄️', spec: mep.hvac },
+      { label: 'Lighting',   icon: '💡', spec: mep.lighting },
+    ].filter((c) => c.spec && c.spec.toLowerCase() !== 'n/a')
+
+    return (
+      <div className="grid sm:grid-cols-2 gap-4">
+        {categories.map((cat) => (
+          <div key={cat.label} className="bg-slate-50 rounded-xl p-4">
+            <p className="text-sm font-bold text-slate-900 mb-2">{cat.icon} {cat.label}</p>
+            <p className="text-sm text-slate-600 leading-relaxed">{cat.spec}</p>
+          </div>
+        ))}
+      </div>
+    )
+  }
+
+  // Fallback when mepSystem is not yet populated
+  const fallback = [
+    { category: 'Electrical', icon: '⚡', items: ['200A service panel upgrade', 'LED recessed lighting', 'GFCI outlets at all wet locations', 'Smart switch wiring'] },
+    { category: 'Plumbing',   icon: '🔧', items: ['Shut-off valves at all fixtures', 'PEX supply lines', 'PVC drain/waste/vent', 'Pressure-reducing valve'] },
+    { category: 'HVAC',       icon: '❄️', items: ['Mini-split system (1.5 ton)', 'Fresh air ventilation', 'Range hood ductwork', 'Thermostat wiring'] },
+  ]
   return (
     <div className="grid sm:grid-cols-3 gap-4">
-      {items.map((cat) => (
+      {fallback.map((cat) => (
         <div key={cat.category} className="bg-slate-50 rounded-xl p-4">
           <p className="text-base font-bold text-slate-900 mb-3">{cat.icon} {cat.category}</p>
           <ul className="space-y-1.5">

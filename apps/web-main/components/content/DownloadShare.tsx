@@ -1,13 +1,13 @@
 'use client'
 
 import { useState } from 'react'
-import { Download, Share2, Link2, CheckCircle2 } from 'lucide-react'
+import { Download, Share2, Link2, CheckCircle2, Printer } from 'lucide-react'
 
 interface Props {
   conceptId: string
 }
 
-export function DownloadShare({ conceptId }: Props) {
+export function DownloadShare({ conceptId: _ }: Props) {
   const [copied, setCopied] = useState(false)
 
   function handleCopyLink() {
@@ -29,8 +29,9 @@ export function DownloadShare({ conceptId }: Props) {
     }
   }
 
+  /** Opens the browser print dialog — user saves as PDF via the OS print driver. */
   function handleDownloadPDF() {
-    window.open(`/api/concepts/${conceptId}/download?format=pdf`, '_blank')
+    window.print()
   }
 
   return (
@@ -39,8 +40,8 @@ export function DownloadShare({ conceptId }: Props) {
         onClick={handleDownloadPDF}
         className="flex items-center gap-2 rounded-xl border-2 border-white/30 hover:border-white text-white font-semibold px-5 py-2.5 text-sm transition-all"
       >
-        <Download className="w-4 h-4" />
-        Download PDF
+        <Printer className="w-4 h-4" />
+        Save as PDF
       </button>
 
       <button

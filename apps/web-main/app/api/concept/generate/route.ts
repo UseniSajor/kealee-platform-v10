@@ -19,6 +19,7 @@ import Anthropic from '@anthropic-ai/sdk'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { SERVICE_DELIVERABLES } from '@/lib/service-deliverables'
 import { AI_MODELS } from '@kealee/core-rules'
+import { generateImages, buildArchitecturalPrompt, type GenerateImageResult } from '@/lib/ai-image'
 
 export const dynamic = 'force-dynamic'
 
@@ -73,86 +74,80 @@ interface ConceptOutput {
   videoFormatUrls?: Record<string, string>
 }
 
-// ── Curated render stubs (Unsplash) by project type ──────────────────────────
-// Each entry has 12 images; sliced to 3/6/12 based on tier.
-const RENDER_STUBS: Record<string, string[]> = {
-  kitchen_remodel: [
-    'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=1920&q=80',
-    'https://images.unsplash.com/photo-1565538810643-b5bdb714032a?w=1920&q=80',
-    'https://images.unsplash.com/photo-1600489000022-c2086d79f9d4?w=1920&q=80',
-    'https://images.unsplash.com/photo-1600566752355-35792bedcfea?w=1920&q=80',
-    'https://images.unsplash.com/photo-1556909172-54557c7e4fb7?w=1920&q=80',
-    'https://images.unsplash.com/photo-1556909114-d65f8d9e8e8a?w=1920&q=80',
-    'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=1920&q=80',
-    'https://images.unsplash.com/photo-1556909044-cbf3c24c14b4?w=1920&q=80',
-    'https://images.unsplash.com/photo-1556909212-d5b604d0c90d?w=1920&q=80',
-    'https://images.unsplash.com/photo-1556909083-b81c82c5f63f?w=1920&q=80',
-    'https://images.unsplash.com/photo-1556910103-1c02745aae4d?w=1920&q=80',
-    'https://images.unsplash.com/photo-1556910096-6f5e72db3803?w=1920&q=80',
-  ],
-  bathroom_remodel: [
-    'https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?w=1920&q=80',
-    'https://images.unsplash.com/photo-1507652313519-d4e9174996dd?w=1920&q=80',
-    'https://images.unsplash.com/photo-1600566752734-2a0cd0e0da49?w=1920&q=80',
-    'https://images.unsplash.com/photo-1584568694244-14fbdf83bd30?w=1920&q=80',
-    'https://images.unsplash.com/photo-1620626011761-996317702574?w=1920&q=80',
-    'https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?w=1920&q=80',
-    'https://images.unsplash.com/photo-1571902943202-507ec2618e8f?w=1920&q=80',
-    'https://images.unsplash.com/photo-1564540586988-aa4e53c3d799?w=1920&q=80',
-    'https://images.unsplash.com/photo-1593696954577-ab3d39317b97?w=1920&q=80',
-    'https://images.unsplash.com/photo-1603302576837-37561b2e2302?w=1920&q=80',
-    'https://images.unsplash.com/photo-1600566752447-f4d1d9dc3b76?w=1920&q=80',
-    'https://images.unsplash.com/photo-1594846887338-3f5f4e4a8b8b?w=1920&q=80',
-  ],
-  exterior_concept: [
-    'https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=1920&q=80',
-    'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1920&q=80',
-    'https://images.unsplash.com/photo-1583608205776-bfd35f0d9f83?w=1920&q=80',
-    'https://images.unsplash.com/photo-1523217582562-09d0def993a6?w=1920&q=80',
-    'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=1920&q=80',
-    'https://images.unsplash.com/photo-1628744448840-55bdb2497bd4?w=1920&q=80',
-    'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=1920&q=80',
-    'https://images.unsplash.com/photo-1598228723793-52759bba239c?w=1920&q=80',
-    'https://images.unsplash.com/photo-1600047509807-ba8f99d2cdde?w=1920&q=80',
-    'https://images.unsplash.com/photo-1600573472591-ee6b68d14c68?w=1920&q=80',
-    'https://images.unsplash.com/photo-1502005229762-cf1b2da7c5d6?w=1920&q=80',
-    'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1920&q=80',
-  ],
-  garden_concept: [
-    'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=1920&q=80',
-    'https://images.unsplash.com/photo-1558904541-efa843a96f01?w=1920&q=80',
-    'https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?w=1920&q=80',
-    'https://images.unsplash.com/photo-1558618047-f4e80c0d9e52?w=1920&q=80',
-    'https://images.unsplash.com/photo-1463554050456-f2ed7d3fec09?w=1920&q=80',
-    'https://images.unsplash.com/photo-1501004318641-b39e6451bec6?w=1920&q=80',
-    'https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=1920&q=80',
-    'https://images.unsplash.com/photo-1444858291040-58f756a3bdd6?w=1920&q=80',
-    'https://images.unsplash.com/photo-1425913397330-cf8af2ff40a1?w=1920&q=80',
-    'https://images.unsplash.com/photo-1530836369250-ef72a3f5cda8?w=1920&q=80',
-    'https://images.unsplash.com/photo-1488330890490-c291ecf62571?w=1920&q=80',
-    'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=1920&q=80',
-  ],
-  // Default fallback for any other project type
-  default: [
-    'https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1920&q=80',
-    'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=1920&q=80',
-    'https://images.unsplash.com/photo-1600210492493-0946911123ea?w=1920&q=80',
-    'https://images.unsplash.com/photo-1600607687939-ce8a6c349dc6?w=1920&q=80',
-    'https://images.unsplash.com/photo-1600573472592-401b489a3cdc?w=1920&q=80',
-    'https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?w=1920&q=80',
-    'https://images.unsplash.com/photo-1618219908412-a29a1bb7b86e?w=1920&q=80',
-    'https://images.unsplash.com/photo-1631679706909-1844bbd07221?w=1920&q=80',
-    'https://images.unsplash.com/photo-1617806118233-18e1de247200?w=1920&q=80',
-    'https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?w=1920&q=80',
-    'https://images.unsplash.com/photo-1616137466211-f939a420be84?w=1920&q=80',
-    'https://images.unsplash.com/photo-1615529328331-f8917597711f?w=1920&q=80',
-  ],
+// ── AI render helpers ─────────────────────────────────────────────────────────
+
+function projectPathToRoomType(projectPath: string): string {
+  const map: Record<string, string> = {
+    kitchen_remodel:       'kitchen',
+    bathroom_remodel:      'bathroom',
+    exterior_concept:      'exterior facade',
+    garden_concept:        'garden landscape',
+    master_suite:          'master bedroom',
+    living_room:           'living room',
+    basement_finish:       'finished basement',
+    home_addition:         'home addition',
+    full_home_renovation:  'open-concept living space',
+    commercial_office:     'modern office interior',
+    developer_concept:     'luxury residential interior',
+  }
+  return map[projectPath] ?? projectPath.replace(/_/g, ' ')
 }
 
-function getRenderUrls(projectPath: string, tier: number): string[] {
-  const stubs = RENDER_STUBS[projectPath] ?? RENDER_STUBS.default
+/**
+ * Minimal static fallbacks used when REPLICATE_API_TOKEN is not configured
+ * (local dev / CI). Keeps the portal gallery visible without burning API credits.
+ */
+const DEV_RENDER_STUBS = [
+  'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1920&q=80',
+  'https://images.unsplash.com/photo-1618219908412-a29a1bb7b86e?w=1920&q=80',
+  'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1920&q=80',
+]
+
+/**
+ * Fire AI render jobs via Flux 1.1 Pro Ultra on Replicate (non-blocking).
+ * Returns predictionIds for storage in form_data.renderJobs so the concept
+ * portal can poll /api/concept/renders/[id] for real URLs as jobs complete.
+ *
+ * Falls back to DEV_RENDER_STUBS when REPLICATE_API_TOKEN is not configured.
+ */
+async function fireConceptRenders(
+  projectPath: string,
+  tier: number,
+  style: string,
+): Promise<{ predictionIds: string[]; renderUrls: string[] }> {
   const count = tier >= 3 ? 12 : tier === 2 ? 6 : 3
-  return stubs.slice(0, count)
+
+  if (!process.env.REPLICATE_API_TOKEN) {
+    return {
+      predictionIds: [],
+      renderUrls: Array.from({ length: count }, (_, i) => DEV_RENDER_STUBS[i % DEV_RENDER_STUBS.length]),
+    }
+  }
+
+  const roomType = projectPathToRoomType(projectPath)
+  const modes    = ['realistic', 'cinematic'] as const
+
+  const settled = await Promise.allSettled(
+    Array.from({ length: count }, (_, i) =>
+      generateImages({
+        prompt:      buildArchitecturalPrompt({
+          style:      style.toLowerCase(),
+          roomType,
+          renderMode: modes[i % modes.length],
+        }),
+        aspectRatio: '16:9',
+      })
+    )
+  )
+
+  const predictionIds = settled
+    .filter((r): r is PromiseFulfilledResult<GenerateImageResult> => r.status === 'fulfilled')
+    .map(r => r.value.predictionId)
+
+  console.log(`[concept/generate] Fired ${predictionIds.length}/${count} render jobs`)
+
+  // renderUrls start empty — portal polls renderJobs predictionIds for real URLs
+  return { predictionIds, renderUrls: [] }
 }
 
 /**
@@ -492,7 +487,7 @@ export async function POST(req: NextRequest) {
         projectTimeline: '4–6 weeks',
         description: 'Your personalized concept package has been prepared based on your project details.',
         includes: SERVICE_DELIVERABLES[projectPath]?.includes ?? [],
-        renderUrls: getRenderUrls(projectPath, tier),
+        renderUrls: [],
         permitScope: {
           requiresPermit: deliverable?.permitRequired === 'always',
           permitTypes: deliverable?.permitRequired === 'always' ? ['Building Permit'] : [],
@@ -511,8 +506,7 @@ export async function POST(req: NextRequest) {
       if (!conceptOutput.includes?.length && SERVICE_DELIVERABLES[projectPath]?.includes) {
         conceptOutput.includes = SERVICE_DELIVERABLES[projectPath].includes
       }
-      // Populate render stubs (no external image API needed)
-      conceptOutput.renderUrls = getRenderUrls(projectPath, tier)
+      conceptOutput.renderUrls = []
       // Enforce catalog permit rule — override AI if it contradicts the product definition
       if (deliverable?.permitRequired === 'always' && !conceptOutput.permitScope?.requiresPermit) {
         if (!conceptOutput.permitScope) {
@@ -540,6 +534,19 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    // Fire AI render jobs (non-blocking — Replicate is async).
+    // predictionIds stored in renderJobs so the portal can poll for real URLs.
+    let renderJobs: string[] = []
+    try {
+      const renders = await fireConceptRenders(
+        projectPath, tier, conceptOutput.designConcept?.style ?? 'modern contemporary'
+      )
+      conceptOutput.renderUrls = renders.renderUrls
+      renderJobs = renders.predictionIds
+    } catch (renderErr: any) {
+      console.warn('[concept/generate] Render job submission failed:', renderErr?.message)
+    }
+
     attachConceptVideoFields(conceptOutput, tier)
 
     // 3. Update intake record
@@ -549,6 +556,7 @@ export async function POST(req: NextRequest) {
         form_data: {
           ...existingFormData,
           conceptOutput,
+          renderJobs,
           conceptGeneratedAt: new Date().toISOString(),
         },
         status: 'concept_ready',

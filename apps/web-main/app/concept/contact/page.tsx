@@ -19,11 +19,14 @@ function ContactInner() {
   const router = useRouter()
   const searchParams = useSearchParams()
 
-  const [firstName, setFirstName] = useState('')
-  const [lastName, setLastName] = useState('')
-  const [email, setEmail] = useState('')
-  const [phone, setPhone] = useState('')
-  const [address, setAddress] = useState('')
+  const [firstName, setFirstName] = useState(() => searchParams.get('firstName') ?? '')
+  const [lastName, setLastName] = useState(() => searchParams.get('lastName') ?? '')
+  const [email, setEmail] = useState(() => searchParams.get('email') ?? '')
+  const [phone, setPhone] = useState(() => {
+    const raw = searchParams.get('phone') ?? ''
+    return raw ? formatPhone(raw) : ''
+  })
+  const [address, setAddress] = useState(() => searchParams.get('address') ?? '')
   const [errors, setErrors] = useState<Record<string, string>>({})
 
   function validate() {
