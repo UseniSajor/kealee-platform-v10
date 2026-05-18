@@ -24,8 +24,11 @@ export async function middleware(request: NextRequest) {
 
   const protectedPaths = ['/projects', '/project', '/payments', '/documents', '/messages', '/twin']
   const isProtectedPath = protectedPaths.some(path => request.nextUrl.pathname.startsWith(path))
+  // Protect the deliverables LIST (exact) but NOT detail pages (/deliverables/:id) — those stay
+  // public so owners can share a concept URL directly with contractors without requiring login.
+  const isDeliverablesList = request.nextUrl.pathname === '/deliverables'
 
-  if (isProtectedPath && !session) {
+  if ((isProtectedPath || isDeliverablesList) && !session) {
     const redirectUrl = request.nextUrl.clone()
     redirectUrl.pathname = '/login'
     return NextResponse.redirect(redirectUrl)
@@ -44,5 +47,10 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/projects/:path*', '/project/:path*', '/payments/:path*', '/documents/:path*', '/messages/:path*', '/twin/:path*', '/login', '/signup'],
+  matcher: [
+    '/projects/:path*', '/project/:path*', '/payments/:path*',
+    '/documents/:path*', '/messages/:path*', '/twin/:path*',
+    '/deliverables',   // list page only — NOT /deliverables/:path*
+    '/login', '/signup',
+  ],
 }

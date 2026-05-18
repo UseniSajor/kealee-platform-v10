@@ -3,66 +3,41 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import {
-  Download, FileText, Package, Clock, CheckCircle,
-  AlertCircle, Loader2, ExternalLink, Layers, ArrowRight,
+  Download, FileText, Clock, CheckCircle,
+  AlertCircle, Loader2, Layers, ArrowRight, Package, Hourglass,
 } from 'lucide-react'
-import { supabase } from '@/lib/supabase'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
-interface ProjectOutput {
-  id: string
-  projectId: string | null
-  intakeId: string | null
-  orderId: string | null
-  type: string
-  status: 'pending' | 'generating' | 'completed' | 'failed'
-  resultJson: Record<string, unknown> | null
-  pdfUrl: string | null
-  downloadUrl: string | null
-  generatedAt: string
-  completedAt: string | null
-  metadata: Record<string, unknown> | null
+interface Deliverable {
+  id:               string
+  clientName:       string | null
+  projectPath:      string
+  projectLabel:     string
+  address:          string | null
+  budgetRange:      string | null
+  status:           string   // 'paid' | 'concept_ready' | 'failed' | ...
+  createdAt:        string
+  updatedAt:        string
+  conceptPackageId: string | null
+  pdfUrl:           string | null
+  generatedAt:      string | null
 }
 
-const CONCEPT_TYPES = new Set(['design', 'concept'])
+// ── Status helpers ─────────────────────────────────────────────────────────────
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
+type UIStatus = 'ready' | 'generating' | 'failed' | 'pending'
 
-const TYPE_CONFIG: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
-  design: {
-    label: 'Design Concept',
-    color: '#E8793A',
-    icon: <Layers className="h-5 w-5" />,
-  },
-  estimate: {
-    label: 'Cost Estimate',
-    color: '#3182CE',
-    icon: <FileText className="h-5 w-5" />,
-  },
-  permit: {
-    label: 'Permit Roadmap',
-    color: '#38A169',
-    icon: <Package className="h-5 w-5" />,
-  },
-  concept: {
-    label: 'Design Concept',
-    color: '#E8793A',
-    icon: <Layers className="h-5 w-5" />,
-  },
+function mapStatus(raw: string): UIStatus {
+  if (raw === 'concept_ready') return 'ready'
+  if (raw === 'failed')        return 'failed'
+  if (raw === 'paid')          return 'generating'  // paid but not yet generated
+  return 'pending'
 }
 
-function getTypeConfig(type: string) {
-  return TYPE_CONFIG[type.toLowerCase()] ?? {
-    label: type.charAt(0).toUpperCase() + type.slice(1),
-    color: '#6B7280',
-    icon: <FileText className="h-5 w-5" />,
-  }
-}
-
-function StatusBadge({ status }: { status: ProjectOutput['status'] }) {
+function StatusBadge({ status }: { status: UIStatus }) {
   switch (status) {
-    case 'completed':
+    case 'ready':
       return (
         <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold"
           style={{ backgroundColor: 'rgba(56,161,105,0.1)', color: '#38A169' }}>
@@ -93,95 +68,102 @@ function StatusBadge({ status }: { status: ProjectOutput['status'] }) {
   }
 }
 
-function Skeleton({ className }: { className?: string }) {
-  return <div className={`animate-pulse rounded bg-gray-200 ${className ?? ''}`} />
-}
+// ── Card ──────────────────────────────────────────────────────────────────────
 
-function DeliverableCard({ output }: { output: ProjectOutput }) {
-  const cfg = getTypeConfig(output.type)
-  const date = output.completedAt ?? output.generatedAt
+function DeliverableCard({ d }: { d: Deliverable }) {
+  const uiStatus = mapStatus(d.status)
+  const ACCENT   = '#E8793A'
+  const dateStr  = new Date(d.updatedAt).toLocaleDateString('en-US', {
+    year: 'numeric', month: 'short', day: 'numeric',
+  })
 
   return (
     <div className="overflow-hidden rounded-xl bg-white transition-shadow hover:shadow-md"
       style={{ boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.06)' }}>
-      {/* Accent bar */}
-      <div className="h-1" style={{ backgroundColor: cfg.color }} />
+      {/* Accent bar — coral for ready, teal for generating */}
+      <div className="h-1" style={{
+        backgroundColor: uiStatus === 'ready' ? ACCENT : uiStatus === 'generating' ? '#2ABFBF' : '#94A3B8',
+      }} />
 
       <div className="p-5">
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg"
-              style={{ backgroundColor: `${cfg.color}15`, color: cfg.color }}>
-              {cfg.icon}
+              style={{ backgroundColor: `${ACCENT}15`, color: ACCENT }}>
+              <Layers className="h-5 w-5" />
             </div>
             <div>
-              <h3 className="font-semibold" style={{ color: '#1A2B4A' }}>{cfg.label}</h3>
-              <p className="text-xs text-gray-400 mt-0.5">
-                {new Date(date).toLocaleDateString('en-US', {
-                  year: 'numeric', month: 'short', day: 'numeric',
-                })}
-              </p>
+              <h3 className="font-semibold" style={{ color: '#1A2B4A' }}>{d.projectLabel}</h3>
+              <p className="text-xs text-gray-400 mt-0.5">{dateStr}</p>
+              {d.address && (
+                <p className="text-xs text-gray-400 mt-0.5 truncate max-w-[180px]">{d.address}</p>
+              )}
             </div>
           </div>
-          <StatusBadge status={output.status} />
+          <StatusBadge status={uiStatus} />
         </div>
 
-        {output.status === 'completed' && (
+        {/* Actions */}
+        {uiStatus === 'ready' && (
           <div className="mt-4 flex gap-2 flex-wrap">
-            {/* Concept packages — link to full detail page */}
-            {CONCEPT_TYPES.has(output.type.toLowerCase()) && output.intakeId && (
-              <Link
-                href={`/deliverables/${output.intakeId}`}
-                className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium text-white transition-opacity hover:opacity-90"
-                style={{ backgroundColor: cfg.color }}
-              >
-                <ArrowRight className="h-3.5 w-3.5" />
-                View Package
-              </Link>
-            )}
-            {output.pdfUrl && (
-              <a
-                href={output.pdfUrl}
-                target="_blank"
-                rel="noopener noreferrer"
+            <Link href={`/deliverables/${d.id}`}
+              className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium text-white transition-opacity hover:opacity-90"
+              style={{ backgroundColor: ACCENT }}>
+              <ArrowRight className="h-3.5 w-3.5" />
+              View Package
+            </Link>
+            {d.pdfUrl ? (
+              <a href={d.pdfUrl} target="_blank" rel="noopener noreferrer"
                 className="flex items-center gap-1.5 rounded-lg border border-gray-200 px-3 py-2 text-xs font-medium transition-colors hover:bg-gray-50"
-                style={{ color: '#6B7280' }}
-              >
-                <ExternalLink className="h-3.5 w-3.5" />
-                View PDF
-              </a>
-            )}
-            {output.downloadUrl && (
-              <a
-                href={output.downloadUrl}
-                download
-                className="flex items-center gap-1.5 rounded-lg border border-gray-200 px-3 py-2 text-xs font-medium transition-colors hover:bg-gray-50"
-                style={{ color: '#6B7280' }}
-              >
+                style={{ color: '#6B7280' }}>
                 <Download className="h-3.5 w-3.5" />
-                Download
+                Download PDF
               </a>
+            ) : (
+              <span className="flex items-center gap-1.5 rounded-lg border border-gray-100 bg-gray-50 px-3 py-2 text-xs font-medium text-gray-400 cursor-not-allowed"
+                title="PDF processing">
+                <FileText className="h-3.5 w-3.5" />
+                PDF Processing
+              </span>
             )}
           </div>
         )}
 
-        {output.status === 'generating' && (
-          <p className="mt-3 text-xs text-gray-400">
-            Your deliverable is being generated. This usually completes within a few minutes.
-          </p>
+        {uiStatus === 'generating' && (
+          <div className="mt-3 flex items-center gap-2">
+            <Loader2 className="h-3.5 w-3.5 animate-spin" style={{ color: '#2ABFBF' }} />
+            <p className="text-xs text-gray-400">
+              Your concept package is being generated — usually ready within a few minutes.
+            </p>
+          </div>
         )}
 
-        {output.status === 'pending' && (
-          <p className="mt-3 text-xs text-gray-400">
-            Your order is confirmed. Generation will begin shortly.
-          </p>
+        {uiStatus === 'pending' && (
+          <div className="mt-3 flex items-center gap-2">
+            <Hourglass className="h-3.5 w-3.5 text-gray-400" />
+            <p className="text-xs text-gray-400">Order confirmed. Generation starts shortly.</p>
+          </div>
         )}
 
-        {output.status === 'failed' && (
+        {uiStatus === 'failed' && (
           <p className="mt-3 text-xs" style={{ color: '#E53E3E' }}>
-            Generation failed. Please contact support if this persists.
+            Generation failed. Contact support at hello@kealee.com if this persists.
           </p>
         )}
+      </div>
+    </div>
+  )
+}
+
+function Skeleton() {
+  return (
+    <div className="overflow-hidden rounded-xl bg-white p-5" style={{ boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.06)' }}>
+      <div className="flex items-center gap-3">
+        <div className="h-10 w-10 rounded-lg animate-pulse bg-gray-200" />
+        <div className="flex-1">
+          <div className="h-4 w-36 rounded animate-pulse bg-gray-200 mb-2" />
+          <div className="h-3 w-24 rounded animate-pulse bg-gray-100" />
+        </div>
       </div>
     </div>
   )
@@ -190,33 +172,21 @@ function DeliverableCard({ output }: { output: ProjectOutput }) {
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function DeliverablesPage() {
-  const [outputs, setOutputs] = useState<ProjectOutput[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const [deliverables, setDeliverables] = useState<Deliverable[]>([])
+  const [loading,      setLoading]      = useState(true)
+  const [error,        setError]        = useState<string | null>(null)
 
   useEffect(() => {
-    async function loadDeliverables() {
-      try {
-        const { data, error: fetchError } = await supabase
-          .from('project_outputs')
-          .select('*')
-          .order('generatedAt', { ascending: false })
-
-        if (fetchError) throw fetchError
-        setOutputs((data ?? []) as ProjectOutput[])
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load deliverables')
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    loadDeliverables()
+    fetch('/api/deliverables')
+      .then(r => r.ok ? r.json() : r.json().then(e => Promise.reject(e.error ?? 'Failed')))
+      .then(({ deliverables: list }) => setDeliverables(list ?? []))
+      .catch(err => setError(typeof err === 'string' ? err : 'Failed to load deliverables'))
+      .finally(() => setLoading(false))
   }, [])
 
-  const completed  = outputs.filter(o => o.status === 'completed')
-  const inProgress = outputs.filter(o => o.status === 'generating' || o.status === 'pending')
-  const failed     = outputs.filter(o => o.status === 'failed')
+  const ready      = deliverables.filter(d => mapStatus(d.status) === 'ready')
+  const inProgress = deliverables.filter(d => ['generating', 'pending'].includes(mapStatus(d.status)))
+  const failed     = deliverables.filter(d => mapStatus(d.status) === 'failed')
 
   return (
     <div className="mx-auto max-w-4xl">
@@ -224,37 +194,27 @@ export default function DeliverablesPage() {
       <div className="mb-6">
         <h1 className="text-2xl font-bold" style={{ color: '#1A2B4A' }}>Deliverables</h1>
         <p className="mt-1 text-sm text-gray-500">
-          All reports, estimates, and design outputs from your orders.
+          All concept packages, PDFs, and design outputs from your orders.
         </p>
       </div>
 
-      {/* Loading skeleton */}
+      {/* Loading */}
       {loading && (
         <div className="grid gap-4 sm:grid-cols-2">
-          {[1, 2, 3].map(i => (
-            <div key={i} className="overflow-hidden rounded-xl bg-white p-5"
-              style={{ boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.06)' }}>
-              <div className="flex items-center gap-3">
-                <Skeleton className="h-10 w-10 rounded-lg" />
-                <div className="flex-1">
-                  <Skeleton className="h-4 w-32 mb-2" />
-                  <Skeleton className="h-3 w-20" />
-                </div>
-              </div>
-            </div>
-          ))}
+          {[1, 2, 3].map(i => <Skeleton key={i} />)}
         </div>
       )}
 
       {/* Error */}
       {!loading && error && (
-        <div className="rounded-xl p-5 text-sm" style={{ backgroundColor: 'rgba(229,62,62,0.05)', color: '#E53E3E', border: '1px solid rgba(229,62,62,0.2)' }}>
+        <div className="rounded-xl p-5 text-sm"
+          style={{ backgroundColor: 'rgba(229,62,62,0.05)', color: '#E53E3E', border: '1px solid rgba(229,62,62,0.2)' }}>
           <AlertCircle className="mb-1 inline h-4 w-4" /> {error}
         </div>
       )}
 
       {/* Empty state */}
-      {!loading && !error && outputs.length === 0 && (
+      {!loading && !error && deliverables.length === 0 && (
         <div className="rounded-xl bg-white px-6 py-16 text-center"
           style={{ boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.06)' }}>
           <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full"
@@ -269,38 +229,30 @@ export default function DeliverablesPage() {
         </div>
       )}
 
-      {/* Deliverables grid */}
-      {!loading && !error && outputs.length > 0 && (
+      {/* Deliverable sections */}
+      {!loading && !error && deliverables.length > 0 && (
         <div className="space-y-8">
           {inProgress.length > 0 && (
             <section>
-              <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-gray-400">
-                In Progress
-              </h2>
+              <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-gray-400">In Progress</h2>
               <div className="grid gap-4 sm:grid-cols-2">
-                {inProgress.map(o => <DeliverableCard key={o.id} output={o} />)}
+                {inProgress.map(d => <DeliverableCard key={d.id} d={d} />)}
               </div>
             </section>
           )}
-
-          {completed.length > 0 && (
+          {ready.length > 0 && (
             <section>
-              <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-gray-400">
-                Ready to Download
-              </h2>
+              <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-gray-400">Ready to View</h2>
               <div className="grid gap-4 sm:grid-cols-2">
-                {completed.map(o => <DeliverableCard key={o.id} output={o} />)}
+                {ready.map(d => <DeliverableCard key={d.id} d={d} />)}
               </div>
             </section>
           )}
-
           {failed.length > 0 && (
             <section>
-              <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-gray-400">
-                Failed
-              </h2>
+              <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-gray-400">Failed</h2>
               <div className="grid gap-4 sm:grid-cols-2">
-                {failed.map(o => <DeliverableCard key={o.id} output={o} />)}
+                {failed.map(d => <DeliverableCard key={d.id} d={d} />)}
               </div>
             </section>
           )}

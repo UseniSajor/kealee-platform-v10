@@ -979,11 +979,20 @@ export default function ConceptDeliverablePage() {
               Share with Contractor
             </button>
           )}
-          <a href="https://kealee.com/marketplace"
-            className="flex items-center gap-2 rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
-            <Wrench className="h-4 w-4" />
-            Browse Contractors
-          </a>
+          {data.contractorMatchingUnlocked ? (
+            <a href="https://kealee.com/marketplace"
+              className="flex items-center gap-2 rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+              <Wrench className="h-4 w-4" />
+              Browse Contractors
+            </a>
+          ) : (
+            <button disabled
+              className="flex items-center gap-2 rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-medium text-gray-400 cursor-not-allowed"
+              title="Submit your permit to browse contractors">
+              <Lock className="h-3.5 w-3.5" />
+              Browse Contractors
+            </button>
+          )}
         </div>
 
       </div>

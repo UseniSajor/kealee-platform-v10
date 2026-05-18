@@ -127,8 +127,8 @@ async function main(): Promise<void> {
   const testTag  = `test_${Date.now()}`
 
   const INTAKE_FORM = {
-    clientName:       'Alex Johnson',
-    contactEmail:     'alex.johnson@test.kealee.com',
+    clientName:       'Tim Chamberlain',
+    contactEmail:     'tim.chamberlain24@gmail.com',
     contactPhone:     '202-555-0101',
     projectAddress:   '1234 Capitol Hill St NW, Washington DC 20024',
     projectType:      PROJECT_PATH,
