@@ -8,6 +8,10 @@ import {
   LayoutTemplate, Table2, Layers, Video, Check, Lock, Zap, X, Phone,
 } from 'lucide-react'
 import { SERVICE_MAP } from '@/lib/services-config'
+import { StripeEmbeddedCheckoutModal } from '@/components/StripeEmbeddedCheckoutModal'
+
+// True when pk is set at build time — activates embedded Stripe checkout
+const USE_EMBEDDED_CHECKOUT = Boolean(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY)
 
 // ── Condensed tier deliverables ───────────────────────────────────────────────
 
@@ -17,32 +21,128 @@ interface DeliverableItem {
   color: string   // icon circle bg
 }
 
-const TIER_ITEMS: Record<1 | 2 | 3, DeliverableItem[]> = {
-  1: [
-    { icon: Shield,        label: 'Permit scope brief + path-to-stamps roadmap (bundle)', color: 'bg-amber-100 text-amber-600' },
-    { icon: Layers,        label: 'Floor Plan Overview Sketch + Layout Direction', color: 'bg-blue-100 text-blue-600' },
-    { icon: ImageIcon,     label: '3–5 Concept Renderings (1920×1080)',            color: 'bg-purple-100 text-purple-600' },
-    { icon: Table2,        label: 'Itemized Cost Estimate (Bill of Materials)',    color: 'bg-green-100 text-green-600' },
-    { icon: FileText,      label: 'PDF Design Report',                             color: 'bg-sky-100 text-sky-600' },
-    { icon: Video,         label: 'AI transformation video — Premium or Premium+ (not in Basic)', color: 'bg-slate-100 text-slate-500' },
-    { icon: Zap,           label: '1 revision included · Email support',           color: 'bg-slate-100 text-slate-500' },
-  ],
-  2: [
-    { icon: Video,         label: '60-Second AI Transformation Video',             color: 'bg-orange-100 text-orange-600' },
-    { icon: Layers,        label: '2D Architectural Floor Plan with MEP layers',   color: 'bg-blue-100 text-blue-600' },
-    { icon: ImageIcon,     label: '6–8 Enhanced Renderings (2560×1440)',           color: 'bg-purple-100 text-purple-600' },
-    { icon: Shield,        label: 'Permit-ready scope pack — AHJ / HOA / lender checklist', color: 'bg-amber-100 text-amber-600' },
-    { icon: Table2,        label: 'Editable Bill of Materials',                    color: 'bg-green-100 text-green-600' },
-    { icon: Zap,           label: 'Everything in Basic · 3 revisions · 30-day support', color: 'bg-slate-100 text-slate-500' },
-  ],
-  3: [
-    { icon: Video,         label: '4 Video Formats — 60s · 30s · 15s · 10s',     color: 'bg-orange-100 text-orange-600' },
-    { icon: Layers,        label: '3D Floor Plan + CAD files (DWG export)',        color: 'bg-blue-100 text-blue-600' },
-    { icon: ImageIcon,     label: '12–15 Renderings in 4K resolution',             color: 'bg-purple-100 text-purple-600' },
-    { icon: Lock,          label: 'Permit package credit — credited toward stamped plans or filing', color: 'bg-teal-100 text-teal-600' },
-    { icon: Phone,         label: '15-min expert consultation call',               color: 'bg-green-100 text-green-600' },
-    { icon: Zap,           label: 'Everything in Premium · 3 revisions · 90-day support', color: 'bg-slate-100 text-slate-500' },
-  ],
+// Service-specific tier items — avoids showing building content (MEP, floor plans)
+// on landscape, exterior-only, or design-only services.
+function getServiceTierItems(serviceSlug: string): Record<1 | 2 | 3, DeliverableItem[]> {
+
+  // ── Garden / Landscape ────────────────────────────────────────────────────
+  if (serviceSlug === 'garden') {
+    return {
+      1: [
+        { icon: Layers,    label: 'Garden layout concept plan + site overview',        color: 'bg-green-100 text-green-700' },
+        { icon: Table2,    label: 'Plant species guide with seasonal selection',        color: 'bg-emerald-100 text-emerald-600' },
+        { icon: Zap,       label: 'Irrigation overview + smart controller spec',       color: 'bg-blue-100 text-blue-600' },
+        { icon: ImageIcon, label: '3–5 Garden Concept Renderings (1920×1080)',         color: 'bg-purple-100 text-purple-600' },
+        { icon: FileText,  label: 'Seasonal maintenance calendar + PDF report',        color: 'bg-sky-100 text-sky-600' },
+        { icon: Video,     label: 'AI transformation video — Premium or Premium+ only', color: 'bg-slate-100 text-slate-500' },
+        { icon: Zap,       label: '1 revision included · Email support',               color: 'bg-slate-100 text-slate-500' },
+      ],
+      2: [
+        { icon: Video,     label: '60-Second AI Garden Transformation Video',          color: 'bg-orange-100 text-orange-600' },
+        { icon: Layers,    label: 'Detailed landscape plan with zone breakdowns',      color: 'bg-green-100 text-green-700' },
+        { icon: ImageIcon, label: '6–8 Enhanced Garden Renderings (2560×1440)',        color: 'bg-purple-100 text-purple-600' },
+        { icon: Table2,    label: 'Full plant specification with quantities',          color: 'bg-emerald-100 text-emerald-600' },
+        { icon: Shield,    label: 'Hardscape material palette + cost guide',           color: 'bg-amber-100 text-amber-600' },
+        { icon: Zap,       label: 'Everything in Basic · 3 revisions · 30-day support', color: 'bg-slate-100 text-slate-500' },
+      ],
+      3: [
+        { icon: Video,     label: '4 Video Formats — 60s · 30s · 15s · 10s',          color: 'bg-orange-100 text-orange-600' },
+        { icon: Layers,    label: '3D Garden Overview + perspective views',            color: 'bg-green-100 text-green-700' },
+        { icon: ImageIcon, label: '12–15 Garden Renderings in 4K',                    color: 'bg-purple-100 text-purple-600' },
+        { icon: Table2,    label: 'Contractor-ready plant/material specification',     color: 'bg-emerald-100 text-emerald-600' },
+        { icon: Phone,     label: '15-min landscape expert consultation call',         color: 'bg-teal-100 text-teal-600' },
+        { icon: Zap,       label: 'Everything in Premium · 3 revisions · 90-day support', color: 'bg-slate-100 text-slate-500' },
+      ],
+    }
+  }
+
+  // ── Design Services only (mood board, palette — no MEP or floor plans) ────
+  if (serviceSlug === 'design-services') {
+    return {
+      1: [
+        { icon: LayoutTemplate, label: 'Mood board & design direction',                  color: 'bg-purple-100 text-purple-600' },
+        { icon: ImageIcon,      label: 'Material & finish palette with curated picks',   color: 'bg-blue-100 text-blue-600' },
+        { icon: Table2,         label: 'Furniture layout plan (to-scale)',               color: 'bg-green-100 text-green-600' },
+        { icon: Layers,         label: 'Color scheme specification (4+ colorways)',      color: 'bg-amber-100 text-amber-600' },
+        { icon: FileText,       label: 'PDF design report + shopping list with links',   color: 'bg-sky-100 text-sky-600' },
+        { icon: Zap,            label: '1 revision included · Email support',            color: 'bg-slate-100 text-slate-500' },
+      ],
+      2: [
+        { icon: Video,          label: '60-Second AI Style Transformation Video',        color: 'bg-orange-100 text-orange-600' },
+        { icon: LayoutTemplate, label: 'Enhanced design board + 3D furniture layout',   color: 'bg-purple-100 text-purple-600' },
+        { icon: ImageIcon,      label: '6–8 Enhanced Interior Renders (2560×1440)',      color: 'bg-blue-100 text-blue-600' },
+        { icon: Table2,         label: 'Editable material board with product links',     color: 'bg-green-100 text-green-600' },
+        { icon: Zap,            label: 'Everything in Basic · 3 revisions · 30-day support', color: 'bg-slate-100 text-slate-500' },
+      ],
+      3: [
+        { icon: Video,          label: '4 Video Formats — 60s · 30s · 15s · 10s',       color: 'bg-orange-100 text-orange-600' },
+        { icon: LayoutTemplate, label: '3D room walkthroughs + style direction',         color: 'bg-purple-100 text-purple-600' },
+        { icon: ImageIcon,      label: '12–15 Interior Design Renders in 4K',            color: 'bg-blue-100 text-blue-600' },
+        { icon: Phone,          label: '15-min interior design consultation call',       color: 'bg-teal-100 text-teal-600' },
+        { icon: Zap,            label: 'Everything in Premium · 3 revisions · 90-day support', color: 'bg-slate-100 text-slate-500' },
+      ],
+    }
+  }
+
+  // ── Exterior services (facade, deck/patio — no interior floor plans/MEP) ──
+  if (serviceSlug === 'facade' || serviceSlug === 'deck') {
+    return {
+      1: [
+        { icon: ImageIcon, label: '3–5 Exterior Concept Renderings (front, side, rear)', color: 'bg-purple-100 text-purple-600' },
+        { icon: Table2,    label: 'Material palette (siding, roofing, trim, windows)',   color: 'bg-amber-100 text-amber-600' },
+        { icon: Shield,    label: 'Permit scope brief + AHJ checklist',                  color: 'bg-blue-100 text-blue-600' },
+        { icon: Layers,    label: 'Elevation concept + site overview sketch',            color: 'bg-green-100 text-green-600' },
+        { icon: FileText,  label: 'Cost estimate framework + PDF report',                color: 'bg-sky-100 text-sky-600' },
+        { icon: Video,     label: 'AI transformation video — Premium or Premium+ only',  color: 'bg-slate-100 text-slate-500' },
+        { icon: Zap,       label: '1 revision included · Email support',                 color: 'bg-slate-100 text-slate-500' },
+      ],
+      2: [
+        { icon: Video,     label: '60-Second AI Exterior Transformation Video',          color: 'bg-orange-100 text-orange-600' },
+        { icon: ImageIcon, label: '6–8 Enhanced Exterior Renderings (2560×1440)',        color: 'bg-purple-100 text-purple-600' },
+        { icon: Table2,    label: 'Detailed material spec with product references',      color: 'bg-amber-100 text-amber-600' },
+        { icon: Shield,    label: 'Permit-ready exterior scope pack',                    color: 'bg-blue-100 text-blue-600' },
+        { icon: Layers,    label: 'Hardscape + softscape overview concept',              color: 'bg-green-100 text-green-600' },
+        { icon: Zap,       label: 'Everything in Basic · 3 revisions · 30-day support', color: 'bg-slate-100 text-slate-500' },
+      ],
+      3: [
+        { icon: Video,     label: '4 Video Formats — 60s · 30s · 15s · 10s',            color: 'bg-orange-100 text-orange-600' },
+        { icon: ImageIcon, label: '12–15 Exterior Renderings in 4K',                     color: 'bg-purple-100 text-purple-600' },
+        { icon: Table2,    label: 'Contractor-ready material + scope specification',     color: 'bg-amber-100 text-amber-600' },
+        { icon: Lock,      label: 'Permit package credit toward stamped drawings',       color: 'bg-teal-100 text-teal-600' },
+        { icon: Phone,     label: '15-min expert consultation call',                     color: 'bg-green-100 text-green-600' },
+        { icon: Zap,       label: 'Everything in Premium · 3 revisions · 90-day support', color: 'bg-slate-100 text-slate-500' },
+      ],
+    }
+  }
+
+  // ── Default: building services (kitchen, bathroom, interior, whole-house, addition, new-construction) ──
+  return {
+    1: [
+      { icon: Shield,    label: 'Permit scope brief + path-to-stamps roadmap',          color: 'bg-amber-100 text-amber-600' },
+      { icon: Layers,    label: 'Floor Plan Overview + Layout Direction',               color: 'bg-blue-100 text-blue-600' },
+      { icon: ImageIcon, label: '3–5 Concept Renderings (1920×1080)',                   color: 'bg-purple-100 text-purple-600' },
+      { icon: Table2,    label: 'Itemized Cost Estimate (Bill of Materials)',            color: 'bg-green-100 text-green-600' },
+      { icon: FileText,  label: 'PDF Design Report',                                    color: 'bg-sky-100 text-sky-600' },
+      { icon: Video,     label: 'AI transformation video — Premium or Premium+ only',   color: 'bg-slate-100 text-slate-500' },
+      { icon: Zap,       label: '1 revision included · Email support',                  color: 'bg-slate-100 text-slate-500' },
+    ],
+    2: [
+      { icon: Video,     label: '60-Second AI Transformation Video',                    color: 'bg-orange-100 text-orange-600' },
+      { icon: Layers,    label: '2D Architectural Floor Plan with MEP layers',          color: 'bg-blue-100 text-blue-600' },
+      { icon: ImageIcon, label: '6–8 Enhanced Renderings (2560×1440)',                  color: 'bg-purple-100 text-purple-600' },
+      { icon: Shield,    label: 'Permit-ready scope pack — AHJ / HOA / lender checklist', color: 'bg-amber-100 text-amber-600' },
+      { icon: Table2,    label: 'Editable Bill of Materials',                           color: 'bg-green-100 text-green-600' },
+      { icon: Zap,       label: 'Everything in Basic · 3 revisions · 30-day support',  color: 'bg-slate-100 text-slate-500' },
+    ],
+    3: [
+      { icon: Video,     label: '4 Video Formats — 60s · 30s · 15s · 10s',             color: 'bg-orange-100 text-orange-600' },
+      { icon: Layers,    label: '3D Floor Plan + CAD files (DWG export)',               color: 'bg-blue-100 text-blue-600' },
+      { icon: ImageIcon, label: '12–15 Renderings in 4K resolution',                   color: 'bg-purple-100 text-purple-600' },
+      { icon: Lock,      label: 'Permit package credit — credited toward stamped plans or filing', color: 'bg-teal-100 text-teal-600' },
+      { icon: Phone,     label: '15-min expert consultation call',                      color: 'bg-green-100 text-green-600' },
+      { icon: Zap,       label: 'Everything in Premium · 3 revisions · 90-day support', color: 'bg-slate-100 text-slate-500' },
+    ],
+  }
 }
 
 const TIER_META: Record<1 | 2 | 3, { tagline: string; accent: string; badge?: string }> = {
@@ -81,6 +181,8 @@ function ConfirmInner() {
   const [promoCode,       setPromoCode]       = useState('')
   const [promoApplied,    setPromoApplied]    = useState(false)
   const [promoError,      setPromoError]      = useState('')
+  // Embedded checkout state — clientSecret signals modal should open
+  const [checkoutClientSecret, setCheckoutClientSecret] = useState<string | null>(null)
 
   // Payment status banners (set from URL params)
   const [showCanceled,    setShowCanceled]    = useState(searchParams.get('canceled') === 'true')
@@ -163,7 +265,7 @@ function ConfirmInner() {
         }
       }
 
-      // ── Standard Stripe checkout path ─────────────────────────────────────
+      // ── Stripe checkout path ───────────────────────────────────────────────
       const successParams = new URLSearchParams({
         intakeId,
         email,
@@ -171,23 +273,48 @@ function ConfirmInner() {
         service: service?.label ?? serviceSlug,
         amount:  String(price),
       })
+      const successUrl = `${window.location.origin}/concept/success?${successParams.toString()}`
+      const cancelUrl  = `${window.location.origin}/concept/confirm?${searchParams.toString()}&canceled=true`
+
+      if (USE_EMBEDDED_CHECKOUT) {
+        // ── Embedded checkout — card form mounts inside the page ───────────
+        const returnUrl  = `${successUrl}&session_id={CHECKOUT_SESSION_ID}`
+        const checkoutRes = await fetch('/api/intake/checkout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ intakeId, projectPath, embedded: true, returnUrl }),
+        })
+        if (!checkoutRes.ok) {
+          const b = await checkoutRes.json().catch(() => ({}))
+          const msg = b.error ?? 'Could not create checkout.'
+          if (msg.includes('not configured') || msg.includes('Stripe')) {
+            throw new Error('Payment is not yet configured. Use promo code KEALEE-ALLIN-2026 to access for free, or contact hello@kealee.com.')
+          }
+          throw new Error(msg)
+        }
+        const { clientSecret } = await checkoutRes.json()
+        if (!clientSecret) throw new Error('No client secret returned.')
+        setCheckoutClientSecret(clientSecret)
+        setSubmitting(false)
+        return
+      }
+
+      // ── Hosted checkout (fallback) — redirect to Stripe's page ────────────
       const checkoutRes = await fetch('/api/intake/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           intakeId,
           projectPath,
-          amount: price * 100,
-          successUrl: `${window.location.origin}/concept/success?${successParams.toString()}&session_id={CHECKOUT_SESSION_ID}`,
-          cancelUrl: `${window.location.origin}/concept/confirm?${searchParams.toString()}&canceled=true`,
+          successUrl: `${successUrl}&session_id={CHECKOUT_SESSION_ID}`,
+          cancelUrl,
         }),
       })
       if (!checkoutRes.ok) {
         const b = await checkoutRes.json().catch(() => ({}))
         const msg = b.error ?? 'Could not create checkout.'
-        // Surface actionable message for missing Stripe config
         if (msg.includes('not configured') || msg.includes('Stripe')) {
-          throw new Error('Payment is not yet configured on this account. Use promo code KEALEE-ALLIN-2026 to access for free, or contact hello@kealee.com.')
+          throw new Error('Payment is not yet configured. Use promo code KEALEE-ALLIN-2026 to access for free, or contact hello@kealee.com.')
         }
         throw new Error(msg)
       }
@@ -212,7 +339,8 @@ function ConfirmInner() {
     )
   }
 
-  const tierName = availableTiers.find((t) => t.tier === tier)?.name ?? 'Basic'
+  const tierName        = availableTiers.find((t) => t.tier === tier)?.name ?? 'Basic'
+  const serviceTierItems = getServiceTierItems(serviceSlug)
 
   return (
     <div className="space-y-10">
@@ -288,7 +416,7 @@ function ConfirmInner() {
           {availableTiers.map((t) => {
             const isSelected = tier === t.tier
             const meta       = TIER_META[t.tier as 1 | 2 | 3]
-            const items      = TIER_ITEMS[t.tier as 1 | 2 | 3] ?? []
+            const items      = serviceTierItems[t.tier as 1 | 2 | 3] ?? []
 
             return (
               <button
@@ -522,10 +650,22 @@ function ConfirmInner() {
             >
               <ArrowLeft className="w-4 h-4" /> Back
             </Link>
-            <p className="text-xs text-slate-400">Redirects to Stripe — no card stored on Kealee</p>
+            <p className="text-xs text-slate-400">
+              {USE_EMBEDDED_CHECKOUT
+                ? 'Secured by Stripe — no card stored on Kealee'
+                : 'Redirects to Stripe — no card stored on Kealee'}
+            </p>
           </div>
         </div>
       </div>
+
+      {/* ── Embedded Stripe checkout modal ────────────────── */}
+      {checkoutClientSecret && (
+        <StripeEmbeddedCheckoutModal
+          clientSecret={checkoutClientSecret}
+          onClose={() => setCheckoutClientSecret(null)}
+        />
+      )}
     </div>
   )
 }

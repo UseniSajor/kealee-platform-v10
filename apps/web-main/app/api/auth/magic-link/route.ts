@@ -48,7 +48,12 @@ export async function POST(req: NextRequest) {
 
     if (error) {
       console.error('[magic-link] signInWithOtp error:', error.message)
-      return NextResponse.json({ error: error.message }, { status: 400 })
+      // Supabase rate-limits OTP emails per address — surface a friendly message
+      const isRateLimit = /rate.limit|too many/i.test(error.message)
+      const userMessage = isRateLimit
+        ? 'We already sent an access link to this email recently. Please check your inbox (and spam folder) — the link expires in 1 hour.'
+        : error.message
+      return NextResponse.json({ error: userMessage, rateLimit: isRateLimit }, { status: 400 })
     }
 
     return NextResponse.json({ ok: true })

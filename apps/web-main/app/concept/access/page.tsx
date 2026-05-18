@@ -10,10 +10,11 @@ function AccessInner() {
   const defaultEmail  = searchParams.get('email') ?? ''
   const errorParam    = searchParams.get('error') ?? ''
 
-  const [email,   setEmail]   = useState(defaultEmail)
-  const [sent,    setSent]    = useState(false)
-  const [loading, setLoading] = useState(false)
-  const [error,   setError]   = useState(
+  const [email,     setEmail]     = useState(defaultEmail)
+  const [sent,      setSent]      = useState(false)
+  const [loading,   setLoading]   = useState(false)
+  const [rateLimit, setRateLimit] = useState(false)
+  const [error,     setError]     = useState(
     errorParam === 'link-expired' ? 'Your access link has expired. Request a new one below.' : ''
   )
 
@@ -22,14 +23,16 @@ function AccessInner() {
     if (!email) return
     setLoading(true)
     setError('')
+    setRateLimit(false)
     try {
-      const res = await fetch('/api/auth/magic-link', {
+      const res  = await fetch('/api/auth/magic-link', {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
         body:    JSON.stringify({ email, next }),
       })
+      const data = await res.json().catch(() => ({}))
       if (!res.ok) {
-        const data = await res.json().catch(() => ({}))
+        if (data.rateLimit) setRateLimit(true)
         throw new Error(data.error || 'Failed to send link')
       }
       setSent(true)
@@ -86,8 +89,21 @@ function AccessInner() {
         {/* Form */}
         <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-8">
           {error && (
-            <div className="mb-4 p-3 rounded-xl bg-red-50 border border-red-100 text-sm text-red-600">
-              {error}
+            <div className={`mb-4 p-3 rounded-xl border text-sm ${
+              rateLimit
+                ? 'bg-amber-50 border-amber-100 text-amber-800'
+                : 'bg-red-50 border-red-100 text-red-600'
+            }`}>
+              <p>{error}</p>
+              {rateLimit && (
+                <p className="mt-2 text-amber-700">
+                  Can&apos;t find it?{' '}
+                  <a href="mailto:hello@kealee.com" className="font-semibold underline hover:no-underline">
+                    Contact support
+                  </a>{' '}
+                  and we&apos;ll get you in.
+                </p>
+              )}
             </div>
           )}
           <form onSubmit={handleSubmit} className="space-y-4">

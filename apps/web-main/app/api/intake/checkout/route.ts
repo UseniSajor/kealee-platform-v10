@@ -19,18 +19,26 @@ export async function POST(req: NextRequest) {
     const body = await req.json() as {
       intakeId: string
       projectPath: string
-      successUrl: string
-      cancelUrl: string
+      successUrl?: string
+      cancelUrl?: string
+      returnUrl?: string    // used for embedded mode (replaces success/cancel)
+      embedded?: boolean    // true → ui_mode:'embedded', returns clientSecret
       siteVisitRequested?: boolean
       // Legacy `amount` field is accepted for backward compatibility
       // but explicitly NOT used. Server price is authoritative.
       amount?: number
     }
 
-    const { intakeId, projectPath, successUrl, cancelUrl, siteVisitRequested } = body
+    const { intakeId, projectPath, successUrl, cancelUrl, returnUrl, embedded, siteVisitRequested } = body
 
-    if (!intakeId || !projectPath || !successUrl || !cancelUrl) {
+    if (!intakeId || !projectPath) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
+    }
+    if (embedded && !returnUrl) {
+      return NextResponse.json({ error: 'returnUrl required for embedded checkout' }, { status: 400 })
+    }
+    if (!embedded && (!successUrl || !cancelUrl)) {
+      return NextResponse.json({ error: 'successUrl and cancelUrl required for hosted checkout' }, { status: 400 })
     }
 
     // Server-trusted price lookup. Reject unknown SKUs outright — never let
@@ -75,7 +83,7 @@ export async function POST(req: NextRequest) {
       })
     }
 
-    const session = await stripe.checkout.sessions.create({
+    const commonParams: Stripe.Checkout.SessionCreateParams = {
       mode: 'payment',
       payment_method_types: ['card'],
       allow_promotion_codes: true,
@@ -93,10 +101,24 @@ export async function POST(req: NextRequest) {
           projectPath,
         },
       },
-      success_url: successUrl,
-      cancel_url: cancelUrl,
-    })
+    }
 
+    if (embedded) {
+      // Embedded checkout — Stripe renders the card form inside our page
+      const session = await stripe.checkout.sessions.create({
+        ...commonParams,
+        ui_mode: 'embedded',
+        return_url: returnUrl!,
+      })
+      return NextResponse.json({ clientSecret: session.client_secret })
+    }
+
+    // Hosted checkout — redirect to Stripe's hosted page (fallback / legacy)
+    const session = await stripe.checkout.sessions.create({
+      ...commonParams,
+      success_url: successUrl!,
+      cancel_url: cancelUrl!,
+    })
     return NextResponse.json({ url: session.url })
   } catch (err: any) {
     console.error('[intake/checkout]', err?.message)

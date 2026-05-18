@@ -608,6 +608,12 @@ importers:
       '@kealee/ui':
         specifier: workspace:*
         version: link:../../packages/ui
+      '@stripe/react-stripe-js':
+        specifier: ^6.4.0
+        version: 6.4.0(@stripe/stripe-js@9.6.0)(react-dom@18.2.0)(react@18.2.0)
+      '@stripe/stripe-js':
+        specifier: ^9.6.0
+        version: 9.6.0
       google-ads-api:
         specifier: ^23.0.0
         version: 23.0.0
@@ -11619,6 +11625,24 @@ packages:
 
   /@standard-schema/spec@1.1.0:
     resolution: {integrity: sha512-l2aFy5jALhniG5HgqrD6jXLi/rUWrKvqN/qJx6yoJsgKhblVd+iqqU4RCXavm/jPityDo5TCvKMnpjKnOriy0w==}
+    dev: false
+
+  /@stripe/react-stripe-js@6.4.0(@stripe/stripe-js@9.6.0)(react-dom@18.2.0)(react@18.2.0):
+    resolution: {integrity: sha512-5cAf7GAqf8VHPoPLVnJQ2MHtDWLdiEPs5GW/loU7iDEue3xf620v11skrk5HICUraDOhODPYpttgFC5N579NxA==}
+    peerDependencies:
+      '@stripe/stripe-js': '>=9.5.0 <10.0.0'
+      react: '>=16.8.0 <20.0.0'
+      react-dom: '>=16.8.0 <20.0.0'
+    dependencies:
+      '@stripe/stripe-js': 9.6.0
+      prop-types: 15.8.1
+      react: 18.2.0
+      react-dom: 18.2.0(react@18.2.0)
+    dev: false
+
+  /@stripe/stripe-js@9.6.0:
+    resolution: {integrity: sha512-v5MebYvJbddSRn15fknxTVwypJPzjeIXI1Q2HBxCBrQieWna8PC+RXEVUZ3F4ANAeILEj97HzFlr0r7CXvG7ZA==}
+    engines: {node: '>=12.16'}
     dev: false
 
   /@supabase/auth-helpers-nextjs@0.8.7(@supabase/supabase-js@2.104.0):
