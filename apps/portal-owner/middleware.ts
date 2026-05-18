@@ -22,7 +22,7 @@ export async function middleware(request: NextRequest) {
 
   const { data: { session } } = await supabase.auth.getSession()
 
-  const protectedPaths = ['/projects', '/project', '/payments', '/documents', '/messages', '/twin']
+  const protectedPaths = ['/projects', '/project', '/payments', '/documents', '/messages', '/twin', '/concepts']
   const isProtectedPath = protectedPaths.some(path => request.nextUrl.pathname.startsWith(path))
   // Protect the deliverables LIST (exact) but NOT detail pages (/deliverables/:id) — those stay
   // public so owners can share a concept URL directly with contractors without requiring login.
@@ -50,6 +50,7 @@ export const config = {
   matcher: [
     '/projects/:path*', '/project/:path*', '/payments/:path*',
     '/documents/:path*', '/messages/:path*', '/twin/:path*',
+    '/concepts/:path*',
     '/deliverables',   // list page only — NOT /deliverables/:path*
     '/login', '/signup',
   ],
