@@ -64,10 +64,10 @@ const PACKAGE_CONFIG: Record<string, PackageDef> = {
       'Permit roadmap (disciplines, AHJ checklist, fees)',
       'Bill of Materials with line-item costs',
       'MEP specification (electrical, plumbing, HVAC, lighting)',
-      'Detailed cost estimate',
+      'Basic cost estimate',
       'Design brief with style direction',
       'AI transformation video (Visualization & Pre-Design tiers)',
-      'Design concept fee credited toward permit-ready drawings',
+      'Concept fee credited toward design plans (permits included in design plan package)',
       'Direct support via portal ask bar',
     ],
   },
@@ -79,10 +79,10 @@ const PACKAGE_CONFIG: Record<string, PackageDef> = {
       'Permit roadmap (disciplines, AHJ checklist, fees)',
       'Bill of Materials with line-item costs',
       'MEP specification (electrical, plumbing, HVAC, lighting)',
-      'Detailed cost estimate',
+      'Basic cost estimate',
       'Design brief with style direction',
       'AI transformation video (Visualization & Pre-Design tiers)',
-      'Design concept fee credited toward permit-ready drawings',
+      'Concept fee credited toward design plans (permits included in design plan package)',
       'Direct support via portal ask bar',
     ],
   },
@@ -97,7 +97,7 @@ const PACKAGE_CONFIG: Record<string, PackageDef> = {
       'MEP specification (exterior systems)',
       'Bill of Materials',
       'AI transformation video (Visualization & Pre-Design tiers)',
-      'Design concept fee credited toward permit-ready drawings',
+      'Concept fee credited toward design plans (permits included in design plan package)',
       'Direct support via portal ask bar',
     ],
   },
@@ -121,7 +121,7 @@ const PACKAGE_CONFIG: Record<string, PackageDef> = {
       'MEP specification for all systems',
       'Bill of Materials',
       'AI transformation video (Visualization & Pre-Design tiers)',
-      'Design concept fee credited toward permit-ready drawings',
+      'Concept fee credited toward design plans (permits included in design plan package)',
       'Direct support via portal ask bar',
     ],
   },
@@ -135,7 +135,7 @@ const PACKAGE_CONFIG: Record<string, PackageDef> = {
       'Bill of Materials',
       'Remodel phase plan',
       'AI transformation video (Visualization & Pre-Design tiers)',
-      'Design concept fee credited toward permit-ready drawings',
+      'Concept fee credited toward design plans (permits included in design plan package)',
       'Direct support via portal ask bar',
     ],
   },
@@ -149,7 +149,7 @@ const PACKAGE_CONFIG: Record<string, PackageDef> = {
       'MEP specification for new addition',
       'Bill of Materials',
       'AI transformation video (Visualization & Pre-Design tiers)',
-      'Design concept fee credited toward permit-ready drawings',
+      'Concept fee credited toward design plans (permits included in design plan package)',
       'Direct support via portal ask bar',
     ],
   },
@@ -163,7 +163,7 @@ const PACKAGE_CONFIG: Record<string, PackageDef> = {
       'MEP specification (electrical, plumbing, lighting)',
       'Bill of Materials with cost breakdown',
       'AI transformation video (Visualization & Pre-Design tiers)',
-      'Design concept fee credited toward permit-ready drawings',
+      'Concept fee credited toward design plans (permits included in design plan package)',
       'Direct support via portal ask bar',
     ],
   },
@@ -177,14 +177,14 @@ const PACKAGE_CONFIG: Record<string, PackageDef> = {
       'MEP specification (electrical, plumbing, lighting)',
       'Bill of Materials with cost breakdown',
       'AI transformation video (Visualization & Pre-Design tiers)',
-      'Design concept fee credited toward permit-ready drawings',
+      'Concept fee credited toward design plans (permits included in design plan package)',
       'Direct support via portal ask bar',
     ],
   },
   design_build: {
     label: 'Design + Build Package',
     includes: [
-      'Architectural concept renders',
+      'Design concept renders',
       'Site plan overview',
       'Feasibility analysis',
       'Cost estimate',
@@ -196,7 +196,7 @@ const PACKAGE_CONFIG: Record<string, PackageDef> = {
   developer_concept: {
     label: 'Developer Concept',
     includes: [
-      'Architectural concept renders',
+      'Design concept renders',
       'Site plan overview',
       'Feasibility analysis',
       'Cost estimate',
@@ -289,6 +289,8 @@ interface ConceptData {
   buildabilityFlag: 'feasible' | 'feasible-with-variance' | 'challenging'
   readinessScore: number
   pdfUrl?: string
+  /** Inline SVG from the floor plan generator */
+  floorplanSvg?: string
   /** Human-readable package label, e.g. "Kitchen Design Package" */
   packageLabel: string
   /** What's included in this package (from the product catalog) */
@@ -326,7 +328,7 @@ const PIPELINE_STEPS = [
   { icon: Cpu,       label: 'Generating floor plan & layout',   duration: 14 },
   { icon: ImageIcon, label: 'Creating AI concept renders',      duration: 22 },
   { icon: FileText,  label: 'Building your concept package',    duration: 12 },
-  { icon: CheckCircle2, label: 'Architect quality review',     duration: 4  },
+  { icon: CheckCircle2, label: 'Design professional review',   duration: 4  },
 ]
 
 function PollingState({ pollCount }: { pollCount: number }) {
@@ -626,6 +628,9 @@ export default function ConceptDeliverablePage() {
             : []
 
       const pkgDef = getPackageDef(projectPath)
+      const floorplanSvg = typeof co.floorplanSvgInline === 'string' && co.floorplanSvgInline.trim().startsWith('<')
+        ? co.floorplanSvgInline as string
+        : undefined
 
       setData({
         conceptId:       `concept_${intakeId.slice(0, 8)}`,
@@ -633,6 +638,7 @@ export default function ConceptDeliverablePage() {
         packageLabel:    pkgDef.label,
         packageIncludes: pkgDef.includes,
         tierName:        TIER_NAMES[tier] ?? 'Starter Concept',
+        floorplanSvg,
         scope:           scopeDescription,
         budget:          typeof intake.budget_range === 'number' ? intake.budget_range : 0,
         location:        (intake.project_address as string) ?? '',
@@ -868,6 +874,26 @@ export default function ConceptDeliverablePage() {
           </div>
         </section>
 
+        {/* ── Floor Plan ───────────────────────────────────────────────────── */}
+        {data.floorplanSvg && (
+          <section className="rounded-2xl bg-white overflow-hidden"
+            style={{ boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.06)' }}>
+            <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="h-2 w-2 rounded-full" style={{ backgroundColor: '#E8793A' }} />
+                <h2 className="text-base font-bold" style={{ color: '#1A2B4A' }}>Floor Plan</h2>
+              </div>
+              <span className="text-xs text-gray-400 font-medium">AI-generated layout</span>
+            </div>
+            <div className="p-6 flex items-center justify-center bg-gray-50 rounded-b-2xl">
+              <div
+                className="w-full max-w-lg"
+                dangerouslySetInnerHTML={{ __html: data.floorplanSvg }}
+              />
+            </div>
+          </section>
+        )}
+
         {/* ── Concept Renderings ───────────────────────────────────────────── */}
         {data.renderUrls.length > 0 && (
           <section className="rounded-2xl bg-white overflow-hidden"
@@ -978,7 +1004,7 @@ export default function ConceptDeliverablePage() {
             <div className="px-6 py-4 border-b border-gray-100 flex items-center gap-2">
               <span className="h-2 w-2 rounded-full" style={{ backgroundColor: '#2ABFBF' }} />
               <h2 className="text-base font-bold" style={{ color: '#1A2B4A' }}>Design Narrative</h2>
-              <span className="ml-auto text-xs text-gray-400 font-medium">AI Architect · Claude</span>
+              <span className="ml-auto text-xs text-gray-400 font-medium">AI Design Professional · Claude</span>
             </div>
             <div className="p-6 space-y-5">
               {data.narrative.projectSummary && (
@@ -1238,7 +1264,7 @@ export default function ConceptDeliverablePage() {
                         <div className="mt-3 flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">
                           <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5 text-amber-600" />
                           <p className="text-sm text-amber-800">
-                            <span className="font-semibold">PE stamp required.</span> This project requires drawings stamped by a licensed Professional Engineer.
+                            <span className="font-semibold">PE stamp required.</span> Your design professional will coordinate licensed engineer stamping — included in your design plan package.
                           </p>
                         </div>
                       )}
@@ -1282,21 +1308,21 @@ export default function ConceptDeliverablePage() {
               </div>
               <div className="flex-1">
                 <p className="text-sm font-bold mb-0.5" style={{ color: '#44337A' }}>
-                  Required Action — Permit Before Construction
+                  Permit Required — Included in Your Design Plans
                 </p>
                 <p className="text-sm text-purple-700">
-                  This project type always requires a permit in the DMV region. You cannot begin
-                  construction without permit approval. Start your permit package now to avoid delays.
+                  This project type requires a permit. When you connect with a Kealee design professional,
+                  permit preparation and submission are included in your design plan package — no separate filing needed.
                 </p>
               </div>
               <a href={`https://kealee.com/intake/professional_drawings?conceptId=${intakeId}`}
                 className="shrink-0 rounded-xl px-5 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
                 style={{ backgroundColor: '#6B46C1' }}>
-                Get Permit-Ready Drawings →
+                Get Design Plans →
               </a>
             </div>
             <div className="px-6 pb-4 flex items-center gap-2">
-              <p className="text-xs text-purple-600 font-medium">From $1,499 · Licensed architect · PE stamp included</p>
+              <p className="text-xs text-purple-600 font-medium">From $1,499 · Licensed design professional · Permits + PE stamp included</p>
             </div>
           </section>
         )}
@@ -1304,52 +1330,44 @@ export default function ConceptDeliverablePage() {
         {/* ── Continue Your Project ────────────────────────────────────────── */}
         <section className="rounded-2xl border border-gray-200 bg-white p-6"
           style={{ boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.06)' }}>
-          <h2 className="text-base font-bold mb-4" style={{ color: '#1A2B4A' }}>Continue Your Project</h2>
-          <div className={`grid gap-3 ${requiresDrawings ? 'sm:grid-cols-2 lg:grid-cols-4' : 'sm:grid-cols-3'}`}>
-            <Link href="/projects"
-              className="flex flex-col rounded-xl p-4 text-white transition-opacity hover:opacity-90"
-              style={{ backgroundColor: '#1A2B4A' }}>
-              <span className="text-xs font-bold uppercase tracking-wider opacity-70 mb-2">Recommended</span>
-              <span className="text-sm font-semibold mb-auto">View Your Project</span>
-              <ArrowRight className="h-4 w-4 mt-3" />
-            </Link>
+          <h2 className="text-base font-bold mb-1" style={{ color: '#1A2B4A' }}>Your Next Step</h2>
+          <p className="text-xs text-gray-400 mb-4">Connect with a Kealee design professional to move from concept to construction-ready plans.</p>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
 
-            {requiresDrawings && (
-              <a href={`https://kealee.com/intake/professional_drawings?conceptId=${intakeId}`}
-                className="flex flex-col rounded-xl p-4 transition-all hover:shadow-sm"
-                style={{ background: 'linear-gradient(135deg, #6B46C120 0%, #6B46C108 100%)', border: '1px solid #6B46C130' }}>
-                <span className="text-xs font-bold uppercase tracking-wider mb-2" style={{ color: '#6B46C1' }}>
-                  {data.permitScope?.requiresPE ? 'PE Required' : 'Permit Filing'}
-                </span>
-                <span className="text-sm font-semibold text-gray-900 mb-auto">
-                  {data.permitScope?.requiresPE ? 'Get Permit-Ready Drawings' : 'File Your Permit'}
-                </span>
-                <span className="text-xs font-semibold mt-3" style={{ color: '#6B46C1' }}>From $1,499 →</span>
-              </a>
-            )}
+            {/* Primary — always shown: connect with design professional */}
+            <a href={`https://kealee.com/intake/professional_drawings?conceptId=${intakeId}`}
+              className="flex flex-col rounded-xl p-4 text-white transition-opacity hover:opacity-90 lg:col-span-1"
+              style={{ background: 'linear-gradient(135deg, #E8793A, #c75c35)' }}>
+              <span className="text-xs font-bold uppercase tracking-wider opacity-80 mb-2">Recommended · Next Step</span>
+              <span className="text-sm font-semibold mb-auto">Connect with a Design Professional</span>
+              <span className="text-xs mt-3 opacity-90">Design plans · Permits included · From $1,499 →</span>
+            </a>
 
+            {/* Cost estimate */}
             <a href="https://kealee.com/intake/cost_estimate"
               className="flex flex-col rounded-xl border border-gray-200 p-4 hover:shadow-sm transition-all">
               <span className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">Estimate</span>
-              <span className="text-sm font-semibold text-gray-900 mb-auto">Get Detailed Cost Estimate</span>
+              <span className="text-sm font-semibold text-gray-900 mb-auto">Detailed Cost Estimate</span>
               <span className="text-xs text-[#E8793A] mt-3 font-semibold">$595 →</span>
             </a>
+
+            {/* Contractor match — locked until permit submitted */}
             {data.contractorMatchingUnlocked ? (
               <a href="https://kealee.com/intake/contractor_match"
                 className="flex flex-col rounded-xl border border-gray-200 p-4 hover:shadow-sm transition-all">
                 <span className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">Find Help</span>
                 <span className="text-sm font-semibold text-gray-900 mb-auto">Match with a Contractor</span>
-                <span className="text-xs text-[#2ABFBF] mt-3 font-semibold">$199 →</span>
+                <span className="text-xs text-[#2ABFBF] mt-3 font-semibold">Free →</span>
               </a>
             ) : (
               <div className="flex flex-col rounded-xl border border-gray-200 bg-gray-50 p-4 cursor-not-allowed opacity-70"
-                title="Submit your permit package first to unlock contractor matching">
+                title="Connect with a design professional first to unlock contractor matching">
                 <div className="flex items-center gap-1.5 mb-2">
                   <Lock className="h-3 w-3 text-gray-400" />
                   <span className="text-xs font-bold uppercase tracking-wider text-gray-400">Locked</span>
                 </div>
                 <span className="text-sm font-semibold text-gray-500 mb-auto">Match with a Contractor</span>
-                <span className="text-xs text-gray-400 mt-3">Available after permit is submitted</span>
+                <span className="text-xs text-gray-400 mt-3">Available after design plans submitted</span>
               </div>
             )}
           </div>
