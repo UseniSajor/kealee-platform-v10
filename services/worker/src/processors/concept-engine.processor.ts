@@ -195,25 +195,43 @@ async function processGenerateConceptPackage(
 
   await job.updateProgress(82);
 
+  // Generate AI concept renders via Flux 1.1 Pro Ultra on Replicate
+  let renderImageUrls: string[] = [];
+  try {
+    renderImageUrls = await generateConceptRenders({
+      title:          (intake as any)?.projectTitle ?? (intake as any)?.address ?? intakeId,
+      description:    (intake as any)?.projectDescription ?? (intake as any)?.message,
+      styleDirection: (intake as any)?.stylePreference,
+      projectType:    String(projectPath ?? ''),
+    });
+    console.log(`[concept-engine] Generated ${renderImageUrls.length} concept renders for intake ${intakeId}`);
+  } catch (renderErr: any) {
+    console.warn('[concept-engine] Concept image generation failed (non-fatal):', renderErr?.message);
+  }
+
+  await job.updateProgress(88);
+
   // Persist concept package
   await prisma.$executeRaw`
     INSERT INTO concept_packages
       (id, intake_id, floorplan_id, package_json, architect_handoff_json,
-       pdf_url, status, created_at, updated_at)
+       pdf_url, render_image_urls, status, created_at, updated_at)
     VALUES
       (${result.conceptPackageId}, ${intakeId}, ${floorplanId},
        ${JSON.stringify(result.packageJson)}::jsonb,
        ${JSON.stringify(result.architectHandoffJson)}::jsonb,
        ${pdfUrl},
+       ${JSON.stringify(renderImageUrls)}::jsonb,
        'generated', now(), now())
     ON CONFLICT (id) DO UPDATE SET
       package_json           = EXCLUDED.package_json,
       architect_handoff_json = EXCLUDED.architect_handoff_json,
       pdf_url                = EXCLUDED.pdf_url,
+      render_image_urls      = EXCLUDED.render_image_urls,
       updated_at             = now()
   `;
 
-  await job.updateProgress(88);
+  await job.updateProgress(95);
 
   // Chain: enqueue architect review task
   const { conceptEngineQueue } = await import('../queues/concept-engine.queue');
@@ -335,6 +353,113 @@ async function processGenerateBuildabilitySnapshot(
 
   await job.updateProgress(100);
   console.log(`[concept-engine] Buildability snapshot generated for intake ${intakeId} (AI inferred: ${snapshot.inferredByAI})`);
+}
+
+// ── Concept Image Generation (Flux 1.1 Pro Ultra via Replicate) ─────────────
+
+interface ConceptRenderInput {
+  title: string
+  description?: string
+  styleDirection?: string
+  projectType?: string
+}
+
+async function generateConceptRenders(input: ConceptRenderInput): Promise<string[]> {
+  const token = process.env.REPLICATE_API_TOKEN;
+  if (!token) {
+    console.warn('[concept-engine] REPLICATE_API_TOKEN not set — skipping renders');
+    return [];
+  }
+
+  const exteriorTypes = ['exterior_renovation', 'adu', 'new_construction', 'addition'];
+  const renderTypes: Array<'interior' | 'exterior'> = ['interior'];
+  if (!input.projectType || exteriorTypes.includes(input.projectType)) {
+    renderTypes.push('exterior');
+  }
+
+  const imageUrls: string[] = [];
+
+  for (const type of renderTypes) {
+    const prompt = buildConceptPrompt(input, type);
+    try {
+      const submitRes = await fetch(
+        'https://api.replicate.com/v1/models/black-forest-labs/flux-1.1-pro-ultra/predictions',
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+            Prefer: 'wait=30',
+          },
+          body: JSON.stringify({
+            input: {
+              prompt,
+              aspect_ratio: '16:9',
+              output_format: 'jpg',
+              output_quality: 95,
+              safety_tolerance: 2,
+              raw: false,
+            },
+          }),
+        }
+      );
+
+      if (!submitRes.ok) {
+        console.error(`[concept-engine] Replicate submit failed (${submitRes.status}) for ${type} render`);
+        continue;
+      }
+
+      let prediction = await submitRes.json();
+
+      if (prediction.status !== 'succeeded') {
+        const deadline = Date.now() + 120_000;
+        while (Date.now() < deadline && prediction.status !== 'succeeded' && prediction.status !== 'failed' && prediction.status !== 'canceled') {
+          await new Promise((r) => setTimeout(r, 4000));
+          const pollRes = await fetch(
+            `https://api.replicate.com/v1/predictions/${prediction.id}`,
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
+          if (!pollRes.ok) break;
+          prediction = await pollRes.json();
+        }
+      }
+
+      if (prediction.status === 'succeeded' && prediction.output) {
+        const url = Array.isArray(prediction.output) ? prediction.output[0] : prediction.output;
+        imageUrls.push(url);
+        console.log(`[concept-engine] ${type} render ready: ${url}`);
+      } else {
+        console.warn(`[concept-engine] ${type} render failed:`, prediction.error);
+      }
+    } catch (err: any) {
+      console.error(`[concept-engine] ${type} render error:`, err?.message);
+    }
+  }
+
+  return imageUrls;
+}
+
+function buildConceptPrompt(input: ConceptRenderInput, type: 'interior' | 'exterior'): string {
+  const parts = [
+    `Photorealistic architectural ${type} rendering, professional photography, natural daylight, 8K resolution`,
+    `Project: "${input.title}"`,
+  ];
+  if (input.description) parts.push(input.description);
+  if (input.styleDirection) parts.push(`Style: ${input.styleDirection}`);
+
+  const projectTypeDetails: Record<string, Partial<Record<'interior' | 'exterior', string>>> = {
+    kitchen_remodel:     { interior: 'Modern kitchen, high-end appliances, granite countertops, custom cabinetry, pendant lighting' },
+    bathroom_remodel:    { interior: 'Spa bathroom, custom tile, double vanity, soaking tub, walk-in shower' },
+    exterior_renovation: { exterior: 'Updated siding, new windows, manicured landscaping, professional lighting' },
+    adu:                 { exterior: 'Accessory dwelling unit, clean lines, private entrance, complementary to main home' },
+    new_construction:    { exterior: 'New home construction, curb appeal, modern facade, professional landscaping' },
+  };
+
+  const typeDetail = projectTypeDetails[input.projectType ?? '']?.[type];
+  if (typeDetail) parts.push(typeDetail);
+
+  parts.push('No watermarks, no text overlays, no people');
+  return parts.join('. ');
 }
 
 // ── Router ───────────────────────────────────────────────────────────────────

@@ -1,10 +1,13 @@
 /**
- * Concept Image Generator Service (Enhancement 2)
- * Generates concept renderings via AI (Stable Diffusion, Midjourney, or Claude Vision)
- * Pattern: Take concept data → Generate prompt → Call AI API → Return image URLs
+ * Concept Image Generator Service
+ * Generates concept renderings via Flux 1.1 Pro Ultra on Replicate.
+ * Pattern: intake data → build prompt → Replicate prediction → poll → return image URLs
  */
 
 import { Anthropic } from '@anthropic-ai/sdk'
+
+const REPLICATE_MODEL = 'black-forest-labs/flux-1.1-pro-ultra'
+const REPLICATE_API_BASE = 'https://api.replicate.com/v1'
 
 // ============================================================================
 // Types
@@ -27,23 +30,23 @@ export interface ConceptImageOutput {
 }
 
 // ============================================================================
-// Prompt Generation (Enhancement 2A)
+// Prompt Generation
 // ============================================================================
 
 function generateImagePrompt(input: ConceptImageInput, type: 'exterior' | 'interior'): string {
-  const basePrompt = `Create a professional architectural ${type} rendering for: "${input.title}"`
-
-  const components: string[] = [basePrompt]
+  const components: string[] = [
+    `Photorealistic architectural ${type} rendering, professional photography style, high detail, natural daylight`,
+    `Project: "${input.title}"`,
+  ]
 
   if (input.description) {
-    components.push(`Description: ${input.description}`)
+    components.push(input.description)
   }
 
   if (input.styleDirection) {
     components.push(`Style: ${input.styleDirection}`)
   }
 
-  // Project-specific details
   switch (input.projectType) {
     case 'kitchen_remodel':
       if (type === 'interior') {
@@ -58,20 +61,21 @@ function generateImagePrompt(input: ConceptImageInput, type: 'exterior' | 'inter
       }
       break
     case 'exterior_renovation':
+    case 'adu':
+    case 'new_construction':
       if (type === 'exterior') {
-        components.push('Modern exterior with updated siding, new windows, landscaping, driveway')
+        components.push('Modern exterior with updated siding, new windows, manicured landscaping, professional lighting')
       }
       break
   }
 
-  // Add quality directive
-  components.push('Professional architectural photography style, photorealistic, high detail, well-lit')
+  components.push('8K resolution, architectural visualization, no watermarks, no text overlays')
 
   return components.join('. ')
 }
 
 // ============================================================================
-// Claude Vision-based Image Description (Enhancement 2B)
+// Claude Vision-based Image Description
 // ============================================================================
 
 export async function generateConceptDescriptionViaVision(
@@ -85,7 +89,6 @@ export async function generateConceptDescriptionViaVision(
       return generateImagePrompt(input, 'interior')
     }
 
-    // If we have an existing photo, analyze it and suggest modifications
     const message = await client.messages.create({
       model: 'claude-3-5-sonnet-20241022',
       max_tokens: 1024,
@@ -108,7 +111,7 @@ Title: ${input.title}
 Description: ${input.description || 'See photo'}
 Style Direction: ${input.styleDirection || 'Modern and contemporary'}
 
-Provide a detailed description of the expected result that could be used to generate a rendering.`,
+Provide a detailed description suitable for generating a photorealistic rendering. Focus on materials, finishes, lighting, and spatial characteristics.`,
             },
           ],
         },
@@ -124,97 +127,116 @@ Provide a detailed description of the expected result that could be used to gene
 }
 
 // ============================================================================
-// Image Generation via API (Enhancement 2C - Placeholder for Future Integration)
+// Replicate Polling
+// ============================================================================
+
+async function pollPrediction(token: string, predictionId: string, maxWaitMs = 120_000): Promise<any> {
+  const deadline = Date.now() + maxWaitMs
+  while (Date.now() < deadline) {
+    await new Promise((resolve) => setTimeout(resolve, 4000))
+    const res = await fetch(`${REPLICATE_API_BASE}/predictions/${predictionId}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+    if (!res.ok) break
+    const prediction = await res.json()
+    if (
+      prediction.status === 'succeeded' ||
+      prediction.status === 'failed' ||
+      prediction.status === 'canceled'
+    ) {
+      return prediction
+    }
+  }
+  return { status: 'failed', error: 'Timed out waiting for Replicate prediction' }
+}
+
+// ============================================================================
+// Image Generation via Replicate (Flux 1.1 Pro Ultra)
 // ============================================================================
 
 export async function generateConceptImages(
   input: ConceptImageInput
 ): Promise<ConceptImageOutput[]> {
-  try {
-    // NOTE: This is a placeholder for actual image generation
-    // In production, integrate with:
-    // - Stable Diffusion API (https://api.stability.ai)
-    // - Midjourney (via API if available)
-    // - DALL-E 3 (via OpenAI API)
-    // - Kealee's custom rendering service
-
-    const images: ConceptImageOutput[] = []
-
-    // Generate exterior concept
-    const exteriorPrompt = generateImagePrompt(input, 'exterior')
-    images.push({
-      url: 'https://placeholder.kealee.com/concepts/exterior.jpg', // Replace with actual image URL
-      label: 'Exterior Concept',
-      caption: 'Proposed exterior rendering',
-      prompt: exteriorPrompt,
-      format: 'jpg',
-    })
-
-    // Generate interior concept
-    const interiorPrompt = generateImagePrompt(input, 'interior')
-    images.push({
-      url: 'https://placeholder.kealee.com/concepts/interior.jpg', // Replace with actual image URL
-      label: 'Interior Concept',
-      caption: 'Proposed interior rendering',
-      prompt: interiorPrompt,
-      format: 'jpg',
-    })
-
-    // TODO: Integrate actual image generation API
-    // Example for Stable Diffusion:
-    /*
-    const stabilityResponse = await fetch('https://api.stability.ai/v2beta/stable-image/generate/core', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${process.env.STABILITY_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        prompt: exteriorPrompt,
-        aspect_ratio: '16:9',
-        output_format: 'jpeg',
-      }),
-    })
-
-    const stabilityData = await stabilityResponse.json()
-    // Process and store image...
-    */
-
-    return images
-  } catch (err: any) {
-    console.error('[Image Generation] Failed to generate concept images:', err?.message)
+  const token = process.env.REPLICATE_API_TOKEN
+  if (!token) {
+    console.warn('[Image Generation] REPLICATE_API_TOKEN not configured — skipping image generation')
     return []
   }
-}
 
-// ============================================================================
-// Mock Image Data for Testing
-// ============================================================================
+  const jobs: Array<{ prompt: string; label: string; caption: string }> = []
 
-export function getMockConceptImages(input: ConceptImageInput): ConceptImageOutput[] {
-  return [
-    {
-      url: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=800',
-      label: 'Concept 1',
-      caption: 'Modern kitchen design with open shelving',
-      prompt: generateImagePrompt(input, 'interior'),
-      format: 'jpg',
-    },
-    {
-      url: 'https://images.unsplash.com/photo-1556909294-8e5d7d42e8a3?w=800',
-      label: 'Concept 2',
-      caption: 'Alternative layout with island seating',
-      prompt: generateImagePrompt(input, 'interior'),
-      format: 'jpg',
-    },
-    {
-      url: 'https://images.unsplash.com/photo-1596178065887-8f38f6834daf?w=800',
-      label: 'Concept 3',
-      caption: 'Traditional kitchen style',
-      prompt: generateImagePrompt(input, 'interior'),
-      format: 'jpg',
-    },
-  ]
+  // Always generate an interior render
+  jobs.push({
+    prompt: generateImagePrompt(input, 'interior'),
+    label: 'Interior Concept',
+    caption: `Proposed interior rendering for ${input.title}`,
+  })
+
+  // Add exterior render for applicable project types
+  const exteriorTypes = ['exterior_renovation', 'adu', 'new_construction', 'addition']
+  if (!input.projectType || exteriorTypes.includes(input.projectType)) {
+    jobs.push({
+      prompt: generateImagePrompt(input, 'exterior'),
+      label: 'Exterior Concept',
+      caption: `Proposed exterior rendering for ${input.title}`,
+    })
+  }
+
+  const images: ConceptImageOutput[] = []
+
+  for (const job of jobs) {
+    try {
+      const submitRes = await fetch(`${REPLICATE_API_BASE}/models/${REPLICATE_MODEL}/predictions`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          // Ask Replicate to hold the connection up to 30s before falling through to polling
+          Prefer: 'wait=30',
+        },
+        body: JSON.stringify({
+          input: {
+            prompt: job.prompt,
+            aspect_ratio: '16:9',
+            output_format: 'jpg',
+            output_quality: 95,
+            safety_tolerance: 2,
+            raw: false,
+          },
+        }),
+      })
+
+      if (!submitRes.ok) {
+        const errBody = await submitRes.text().catch(() => '')
+        console.error(`[Image Generation] Submit failed (${submitRes.status}):`, errBody)
+        continue
+      }
+
+      let prediction = await submitRes.json()
+
+      if (prediction.status !== 'succeeded') {
+        prediction = await pollPrediction(token, prediction.id)
+      }
+
+      if (prediction.status === 'succeeded' && prediction.output) {
+        const url = Array.isArray(prediction.output) ? prediction.output[0] : prediction.output
+        images.push({
+          url,
+          label: job.label,
+          caption: job.caption,
+          prompt: job.prompt,
+          format: 'jpg',
+        })
+        console.log(`[Image Generation] Generated "${job.label}": ${url}`)
+      } else {
+        console.warn(`[Image Generation] Prediction failed for "${job.label}":`, prediction.error)
+      }
+    } catch (err: any) {
+      console.error(`[Image Generation] Error generating "${job.label}":`, err?.message)
+    }
+  }
+
+  return images
 }
 
 // ============================================================================
@@ -230,27 +252,30 @@ export async function storeConceptImages(
   images: ConceptImageOutput[],
   deps: { storage: any; prisma: any }
 ): Promise<StorageResult> {
-  try {
-    const imageUrls: string[] = []
-    const fileUploadIds: string[] = []
+  const imageUrls: string[] = []
+  const fileUploadIds: string[] = []
 
-    // Upload each image to Supabase Storage
-    for (const image of images) {
-      // Fetch image from URL
+  for (const image of images) {
+    try {
       const response = await fetch(image.url)
-      const buffer = await response.arrayBuffer()
-
-      // Upload to Supabase (simulated)
-      // In production: use @kealee/storage uploadFile()
+      if (!response.ok) {
+        console.warn(`[Image Storage] Failed to fetch image from Replicate: ${image.url}`)
+        continue
+      }
+      const buffer = Buffer.from(await response.arrayBuffer())
+      const uploadResult = await deps.storage.uploadFile({
+        bucket: 'designs',
+        path: `concept-renders/${Date.now()}-${image.label.toLowerCase().replace(/\s+/g, '-')}.jpg`,
+        file: buffer,
+        contentType: 'image/jpeg',
+      })
+      imageUrls.push(uploadResult.url)
+    } catch (err: any) {
+      console.error('[Image Storage] Failed to store concept image:', err?.message)
+      // Fall back to using the Replicate CDN URL directly
       imageUrls.push(image.url)
-
-      // Create FileUpload record
-      // In production: await createFileUpload({...})
     }
-
-    return { imageUrls, fileUploadIds }
-  } catch (err: any) {
-    console.error('[Image Storage] Failed to store concept images:', err?.message)
-    return { imageUrls: [], fileUploadIds: [] }
   }
+
+  return { imageUrls, fileUploadIds }
 }

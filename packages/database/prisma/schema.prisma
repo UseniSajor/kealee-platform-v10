@@ -16256,6 +16256,7 @@ model ConceptPackage {
   visualPromptsJson    Json?
   buildabilityJson     Json?
   pdfUrl               String?
+  renderImageUrls      Json?
   deliveryUrl          String?
   deliveredAt          DateTime?
   approvedAt           DateTime?
