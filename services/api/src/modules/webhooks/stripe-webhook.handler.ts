@@ -67,14 +67,18 @@ async function handleCheckoutSessionCompleted(
 
   // Update intake based on source
   if (source === 'concept') {
-    await prisma.conceptIntake.updateMany({
+    // Concept intakes are created by conceptIntakeRoutes into permitServiceLead.
+    // Try permitServiceLead first; fall back to conceptIntake for legacy records.
+    const updated = await (prisma as any).permitServiceLead?.updateMany?.({
       where: { id: intakeId },
-      data: {
-        status: 'PAID',
-        paidAt: new Date(),
-        checkoutInitiatedAt: new Date(),
-      },
-    })
+      data: { status: 'PAID', paidAt: new Date() },
+    }).catch(() => ({ count: 0 })) ?? { count: 0 }
+    if (!updated.count) {
+      await (prisma as any).conceptIntake?.updateMany?.({
+        where: { id: intakeId },
+        data: { status: 'PAID', paidAt: new Date(), checkoutInitiatedAt: new Date() },
+      }).catch(() => {})
+    }
 
     // Track conversion event
     if (funnelSessionId) {

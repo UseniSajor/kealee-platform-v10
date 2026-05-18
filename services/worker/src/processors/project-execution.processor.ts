@@ -26,13 +26,18 @@ export function createProjectExecutionWorker(): Worker<ProjectExecutionJobData> 
 
       try {
         // 1. Fetch intake or order data
+        // Try each intake model in order: concept flow writes to permitServiceLead,
+        // public intake flow writes to publicIntakeLead, conceptIntake is legacy.
         let intakeData: any = null
         let orderData: any = null
 
         if (intakeId) {
-          intakeData = await prismaAny.publicIntakeLead
-            .findUnique({ where: { id: intakeId } })
-            .catch(() => null)
+          intakeData =
+            await prismaAny.permitServiceLead?.findUnique?.({ where: { id: intakeId } }).catch(() => null) ??
+            await prismaAny.conceptIntake?.findUnique?.({ where: { id: intakeId } }).catch(() => null) ??
+            await prismaAny.publicIntakeLead?.findUnique?.({ where: { id: intakeId } }).catch(() => null) ??
+            null
+          log.info({ intakeId, found: !!intakeData }, 'intake lookup result')
         }
 
         if (orderId) {
@@ -94,16 +99,13 @@ export function createProjectExecutionWorker(): Worker<ProjectExecutionJobData> 
         // 5. Send completion notification email
         if (intakeData?.contactEmail || orderData?.customerEmail) {
           const email = intakeData?.contactEmail || orderData?.customerEmail
+          const portalUrl = process.env.OWNER_PORTAL_URL ?? 'https://owner.kealee.com'
           try {
             const emailQueue = getEmailQueue()
-            await emailQueue.add('project_output_ready', {
-              to: email,
-              subject: `Your ${type} deliverable is ready!`,
-              template: 'project_output_ready',
-              data: {
-                outputType: type,
-                outputId,
-              },
+            await emailQueue.sendTemplatedEmail(email, 'project_output_ready', {
+              customerName: intakeData?.clientName || intakeData?.name || orderData?.customerName || 'there',
+              outputType: type,
+              deliveryUrl: `${portalUrl}/orders/${outputId}`,
             })
           } catch (emailErr: any) {
             log.warn({ err: emailErr.message }, 'Failed to queue notification email')
@@ -279,9 +281,10 @@ async function executeEstimateExecution(intakeData: any, metadata: any) {
 
 async function executeConceptExecution(intakeData: any, metadata: any) {
   const { conceptEngineQueue } = await import('../queues/concept-engine.queue')
+  // intakeId falls back to metadata.intakeId if intakeData lookup failed upstream
   await conceptEngineQueue.add('generate', {
-    intakeId: intakeData?.id,
-    projectAddress: intakeData?.projectAddress,
+    intakeId: intakeData?.id ?? metadata?.intakeId,
+    projectAddress: intakeData?.projectAddress ?? intakeData?.project_address,
     metadata,
   })
   return {

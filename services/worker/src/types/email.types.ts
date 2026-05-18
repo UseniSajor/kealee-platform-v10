@@ -332,6 +332,66 @@ export const EMAIL_TEMPLATES: Record<string, EmailTemplate> = {
     `,
     text: `Set Up Your Account\n\nHi {{customerName}},\n\nYour Kealee account has been created. Set up your password to access your dashboard.\n\nCreate your password: {{setupUrl}}\n\nThis link expires in 48 hours.\n\nQuestions? Call (301) 575-8777\n`,
   },
+  // ---------------------------------------------------------------------------
+  // Payment confirmation (sent by Stripe webhook on checkout.session.completed)
+  // Fields: customerName, packageName, amount, portalUrl, loginEmail
+  // ---------------------------------------------------------------------------
+  payment_confirmation: {
+    subject: 'Payment confirmed — your {{packageName}} is being prepared',
+    html: `
+      <div style="max-width:600px;margin:0 auto;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+        <div style="background:#0F2240;padding:32px;text-align:center;border-radius:12px 12px 0 0;">
+          <h1 style="color:white;margin:0;font-size:24px;">Payment Confirmed</h1>
+        </div>
+        <div style="background:white;padding:32px;border:1px solid #e5e7eb;border-top:none;">
+          <p>Hi {{customerName}},</p>
+          <p>Thank you — your payment of <strong>${{amount}}</strong> for <strong>{{packageName}}</strong> has been received.</p>
+          <h3>What happens next?</h3>
+          <ol style="color:#374151;line-height:1.8;">
+            <li>Our AI system begins generating your deliverable (up to 24 hours)</li>
+            <li>You will receive an email when it is ready to view</li>
+            <li>Access it anytime from your owner portal</li>
+          </ol>
+          <p style="margin-top:24px;">
+            <a href="{{portalUrl}}" style="display:inline-block;background:#0284c7;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;">Go to Your Portal</a>
+          </p>
+          <p style="color:#6b7280;font-size:13px;margin-top:16px;">Portal login: {{loginEmail}}</p>
+        </div>
+        <div style="text-align:center;padding:16px;color:#9ca3af;font-size:12px;">
+          <p>Questions? Call <a href="tel:+13015758777" style="color:#0284c7;">(301) 575-8777</a> or email <a href="mailto:support@kealee.com" style="color:#0284c7;">support@kealee.com</a></p>
+        </div>
+      </div>
+    `,
+    text: `Payment Confirmed\n\nHi {{customerName}},\n\nThank you — your payment of ${{amount}} for {{packageName}} has been received.\n\nWhat happens next:\n1. Our AI system begins generating your deliverable (up to 24 hours)\n2. You will receive an email when it is ready\n3. Access it from your portal: {{portalUrl}}\n\nPortal login: {{loginEmail}}\n\nQuestions? Call (301) 575-8777\n`,
+  },
+
+  // ---------------------------------------------------------------------------
+  // Project output ready (sent by project-execution worker on completion)
+  // Fields: customerName, outputType, deliveryUrl
+  // ---------------------------------------------------------------------------
+  project_output_ready: {
+    subject: 'Your {{outputType}} deliverable is ready!',
+    html: `
+      <div style="max-width:600px;margin:0 auto;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+        <div style="background:#059669;padding:32px;text-align:center;border-radius:12px 12px 0 0;">
+          <h1 style="color:white;margin:0;font-size:24px;">Your Deliverable Is Ready</h1>
+        </div>
+        <div style="background:white;padding:32px;border:1px solid #e5e7eb;border-top:none;">
+          <p>Hi {{customerName}},</p>
+          <p>Your <strong>{{outputType}}</strong> deliverable has been generated and is ready to view.</p>
+          <p style="text-align:center;margin:32px 0;">
+            <a href="{{deliveryUrl}}" style="display:inline-block;background:#059669;color:white;padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:600;font-size:16px;">View Your Deliverable</a>
+          </p>
+          <p>You can also access it anytime from your <a href="https://owner.kealee.com" style="color:#0284c7;">owner portal</a>.</p>
+        </div>
+        <div style="text-align:center;padding:16px;color:#9ca3af;font-size:12px;">
+          <p>Questions? Call <a href="tel:+13015758777" style="color:#0284c7;">(301) 575-8777</a> or email <a href="mailto:support@kealee.com" style="color:#0284c7;">support@kealee.com</a></p>
+        </div>
+      </div>
+    `,
+    text: `Your Deliverable Is Ready!\n\nHi {{customerName}},\n\nYour {{outputType}} deliverable has been generated.\n\nView it here: {{deliveryUrl}}\n\nOr access from your portal: https://owner.kealee.com\n\nQuestions? Call (301) 575-8777\n`,
+  },
+
   order_status_update: {
     subject: 'Your {{packageName}} is ready!',
     html: `
