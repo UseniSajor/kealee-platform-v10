@@ -28,7 +28,7 @@ if (-not $env:STRIPE_WEBHOOK_SECRET) {
     Write-Host "   Set: `$env:STRIPE_WEBHOOK_SECRET='whsec_...'"
 } else {
     $timestamp = [int][DateTimeOffset]::Now.ToUnixTimeSeconds()
-    $payload = "{`"id`":`"evt_test_$timestamp`",`"type`":`"checkout.session.completed`"}"
+    $payload = "{`"id`":`"evt_test_$timestamp`",`"type`":`"checkout.session.completed`",`"data`":{`"object`":{`"id`":`"cs_test_$timestamp`",`"object`":`"checkout.session`",`"metadata`":{},`"amount_total`":0,`"customer_email`":null,`"customer_details`":null}}}"
     $signedContent = "$timestamp.$payload"
     
     # Generate HMAC-SHA256 signature

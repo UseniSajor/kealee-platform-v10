@@ -25,7 +25,7 @@ if [ -z "$STRIPE_WEBHOOK_SECRET" ]; then
   echo "   Set: export STRIPE_WEBHOOK_SECRET='whsec_...'"
 else
   TIMESTAMP=$(date +%s)
-  PAYLOAD="{\"id\":\"evt_test_${TIMESTAMP}\",\"type\":\"checkout.session.completed\"}"
+  PAYLOAD="{\"id\":\"evt_test_${TIMESTAMP}\",\"type\":\"checkout.session.completed\",\"data\":{\"object\":{\"id\":\"cs_test_${TIMESTAMP}\",\"object\":\"checkout.session\",\"metadata\":{},\"amount_total\":0,\"customer_email\":null,\"customer_details\":null}}}"
   SIGNED_CONTENT="${TIMESTAMP}.${PAYLOAD}"
 
   SIGNATURE=$(echo -n "$SIGNED_CONTENT" | openssl dgst -sha256 -hmac "$STRIPE_WEBHOOK_SECRET" | awk '{print $2}')
