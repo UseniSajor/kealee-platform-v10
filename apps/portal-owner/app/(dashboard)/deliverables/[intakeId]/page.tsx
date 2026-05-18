@@ -42,6 +42,183 @@ const RENDER_STUBS: Record<string, string[]> = {
   ],
 }
 
+// ─── Package config (mirrors web-main/lib/service-deliverables.ts) ────────────
+
+const TIER_NAMES: Record<number, string> = {
+  1: 'Starter Concept',
+  2: 'Visualization Package',
+  3: 'Pre-Design Package',
+}
+
+interface PackageDef {
+  label: string
+  includes: string[]
+}
+
+const PACKAGE_CONFIG: Record<string, PackageDef> = {
+  kitchen_remodel: {
+    label: 'Kitchen Design Package',
+    includes: [
+      'Floor plan / layout direction',
+      '3–5 concept renderings',
+      'Permit roadmap (disciplines, AHJ checklist, fees)',
+      'Bill of Materials with line-item costs',
+      'MEP specification (electrical, plumbing, HVAC, lighting)',
+      'Detailed cost estimate',
+      'Design brief with style direction',
+      'AI transformation video (Visualization & Pre-Design tiers)',
+      'Design concept fee credited toward permit-ready drawings',
+      'Direct support via portal ask bar',
+    ],
+  },
+  bathroom_remodel: {
+    label: 'Bathroom Design Package',
+    includes: [
+      'Floor plan / layout direction',
+      '3–5 concept renderings',
+      'Permit roadmap (disciplines, AHJ checklist, fees)',
+      'Bill of Materials with line-item costs',
+      'MEP specification (electrical, plumbing, HVAC, lighting)',
+      'Detailed cost estimate',
+      'Design brief with style direction',
+      'AI transformation video (Visualization & Pre-Design tiers)',
+      'Design concept fee credited toward permit-ready drawings',
+      'Direct support via portal ask bar',
+    ],
+  },
+  exterior_concept: {
+    label: 'Exterior Concept Package',
+    includes: [
+      'Floor plan / layout direction',
+      '3–5 exterior renderings (front, side, rear)',
+      'Permit roadmap (disciplines, AHJ checklist, fees)',
+      'Material palette with finish selections',
+      'Landscape overview sketch',
+      'MEP specification (exterior systems)',
+      'Bill of Materials',
+      'AI transformation video (Visualization & Pre-Design tiers)',
+      'Design concept fee credited toward permit-ready drawings',
+      'Direct support via portal ask bar',
+    ],
+  },
+  garden_concept: {
+    label: 'Garden Concept',
+    includes: [
+      'Garden layout concept rendering',
+      'Permit roadmap',
+      'Irrigation design with smart controller spec',
+      'Plant list with seasonal selection',
+      'Seasonal maintenance calendar',
+      'Direct support via portal ask bar',
+    ],
+  },
+  whole_home_concept: {
+    label: 'Whole Home Concept',
+    includes: [
+      'Floor plan / layout direction',
+      'Full-home concept renderings',
+      'Permit roadmap across all disciplines',
+      'MEP specification for all systems',
+      'Bill of Materials',
+      'AI transformation video (Visualization & Pre-Design tiers)',
+      'Design concept fee credited toward permit-ready drawings',
+      'Direct support via portal ask bar',
+    ],
+  },
+  whole_home_remodel: {
+    label: 'Whole-Home Remodel',
+    includes: [
+      'Floor plan / layout direction',
+      'Full-home concept renderings',
+      'Permit roadmap across all disciplines',
+      'MEP specification for all systems',
+      'Bill of Materials',
+      'Remodel phase plan',
+      'AI transformation video (Visualization & Pre-Design tiers)',
+      'Design concept fee credited toward permit-ready drawings',
+      'Direct support via portal ask bar',
+    ],
+  },
+  addition_expansion: {
+    label: 'Addition / Expansion',
+    includes: [
+      'Floor plan / layout direction',
+      'Addition concept renderings (interior + exterior)',
+      'Permit roadmap (always required for additions)',
+      'Structural considerations brief',
+      'MEP specification for new addition',
+      'Bill of Materials',
+      'AI transformation video (Visualization & Pre-Design tiers)',
+      'Design concept fee credited toward permit-ready drawings',
+      'Direct support via portal ask bar',
+    ],
+  },
+  interior_reno_concept: {
+    label: 'Interior Reno Concept',
+    includes: [
+      'Floor plan / layout direction',
+      'Interior concept visuals (3–5 renders)',
+      'Permit roadmap (permit required)',
+      'Layout recommendations with flow analysis',
+      'MEP specification (electrical, plumbing, lighting)',
+      'Bill of Materials with cost breakdown',
+      'AI transformation video (Visualization & Pre-Design tiers)',
+      'Design concept fee credited toward permit-ready drawings',
+      'Direct support via portal ask bar',
+    ],
+  },
+  interior_renovation: {
+    label: 'Interior Renovation',
+    includes: [
+      'Floor plan / layout direction',
+      'Interior concept visuals (3–5 renders)',
+      'Permit roadmap (permit required)',
+      'Layout recommendations with flow analysis',
+      'MEP specification (electrical, plumbing, lighting)',
+      'Bill of Materials with cost breakdown',
+      'AI transformation video (Visualization & Pre-Design tiers)',
+      'Design concept fee credited toward permit-ready drawings',
+      'Direct support via portal ask bar',
+    ],
+  },
+  design_build: {
+    label: 'Design + Build Package',
+    includes: [
+      'Architectural concept renders',
+      'Site plan overview',
+      'Feasibility analysis',
+      'Cost estimate',
+      'Permit scope brief',
+      'AI transformation video (Pre-Design tier)',
+      'Direct support via portal ask bar',
+    ],
+  },
+  developer_concept: {
+    label: 'Developer Concept',
+    includes: [
+      'Architectural concept renders',
+      'Site plan overview',
+      'Feasibility analysis',
+      'Cost estimate',
+      'Permit scope brief',
+      'AI transformation video (Pre-Design tier)',
+      'Direct support via portal ask bar',
+    ],
+  },
+}
+
+function getPackageDef(projectPath: string): PackageDef {
+  return PACKAGE_CONFIG[projectPath] ?? {
+    label: projectPath.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
+    includes: [
+      'AI concept package',
+      'Design brief with style direction',
+      'Cost estimate',
+      'Direct support via portal ask bar',
+    ],
+  }
+}
+
 function getStubRenders(projectPath: string, tier: number): string[] {
   const stubs = RENDER_STUBS[projectPath] ?? RENDER_STUBS.default
   const count = tier >= 3 ? stubs.length : tier === 2 ? Math.min(6, stubs.length) : 3
@@ -67,6 +244,11 @@ interface PermitScope {
   notes: string
 }
 
+interface NarrativeRoom {
+  name: string
+  description: string
+}
+
 interface ConceptData {
   conceptId: string
   projectType: string
@@ -85,6 +267,16 @@ interface ConceptData {
     colorPalette: string[]
     keyFeatures: string[]
   }
+  /** v2 concept engine: Claude-written architect narrative */
+  narrative: {
+    projectSummary:     string
+    designIntent:       string
+    styleNarrative:     string
+    materialDirection:  string
+    lifestyleAlignment: string
+    rooms:              NarrativeRoom[]
+    nextSteps:          string[]
+  }
   mepSystem: {
     electrical: string
     plumbing: string
@@ -97,6 +289,12 @@ interface ConceptData {
   buildabilityFlag: 'feasible' | 'feasible-with-variance' | 'challenging'
   readinessScore: number
   pdfUrl?: string
+  /** Human-readable package label, e.g. "Kitchen Design Package" */
+  packageLabel: string
+  /** What's included in this package (from the product catalog) */
+  packageIncludes: string[]
+  /** Tier name, e.g. "Starter Concept" */
+  tierName: string
   /** True once permit has been submitted or approved — unlocks contractor matching */
   contractorMatchingUnlocked: boolean
 }
@@ -300,9 +498,88 @@ export default function ConceptDeliverablePage() {
       const projectPath = (intake.project_path as string) ?? 'default'
       const tier = typeof formData.tier === 'number' ? formData.tier : 1
 
+      // ── Unpack packageJson (concept engine v2 format) with fallback to
+      //    legacy top-level fields (concept engine v1 / production format)
+      const pkg       = (co.packageJson as Record<string, unknown>) ?? {}
+      const narrative = (pkg.narrative  as Record<string, unknown>) ?? {}
+      const scope     = (pkg.scope      as Record<string, unknown>) ?? {}
+      const permit    = (pkg.permit     as Record<string, unknown>) ?? {}
+      const visuals   = (pkg.visuals    as Record<string, unknown>) ?? {}
+      const floorPlan = (pkg.floorPlan  as Record<string, unknown>) ?? {}
+      const project   = (pkg.project    as Record<string, unknown>) ?? {}
+
+      // Legacy v1 fields (may be present on older / production packages)
       const dc  = (co.designConcept as Record<string, unknown>) ?? {}
-      const mep = (co.mepSystem as Record<string, unknown>) ?? {}
+      const mep = (co.mepSystem     as Record<string, unknown>) ?? {}
       const bom = (co.billOfMaterials as BOMItem[]) ?? []
+
+      // Style — v1 has dc.style; v2 has visuals.styleKeywords
+      const styleKeywords = (visuals.styleKeywords as string[]) ?? []
+      const styleLabel =
+        (dc.style as string) ||
+        (styleKeywords.length > 0 ? styleKeywords.slice(0, 3).join(', ') : 'Modern Contemporary')
+
+      // Key features — v1 has dc.keyFeatures; v2 has scope.topRequiredTrades
+      const keyFeatures =
+        (dc.keyFeatures as string[])?.length > 0
+          ? (dc.keyFeatures as string[])
+          : (scope.topRequiredTrades as string[]) ?? []
+
+      // Color palette — v1 has dc.colorPalette; v2 has visuals.styleKeywords tail
+      const colorPalette =
+        (dc.colorPalette as string[])?.length > 0
+          ? (dc.colorPalette as string[])
+          : styleKeywords.slice(3)
+
+      // Estimated cost — v1 has co.estimatedCost; v2 has scope.totalEstimatedMax
+      const estimatedCost =
+        (co.estimatedCost as number) ||
+        (scope.totalEstimatedMax as number) ||
+        Math.round(((scope.totalEstimatedMin as number) + (scope.totalEstimatedMax as number)) / 2) ||
+        0
+
+      // Timeline — v1 has co.projectTimeline; v2 has permit.estimatedTimeline or project.timeline
+      const projectTimeline =
+        (co.projectTimeline as string) ||
+        (permit.estimatedTimeline as string) ||
+        (project.timeline as string)?.replace(/_/g, '–') ||
+        '4–6 weeks'
+
+      // Permit scope — v1 has co.permitScope; v2 maps from permit.*
+      const permitScopeRaw = co.permitScope as PermitScope | null
+      const derivedPermitScope: PermitScope | null = permitScopeRaw ?? (
+        Object.keys(permit).length > 0 ? {
+          requiresPermit: !!(permit.requiresPermit),
+          permitTypes: [
+            ...((permit.likelyPermits as string[]) ?? []),
+            ...((permit.likelyTradePermits as string[]) ?? []),
+          ],
+          estimatedPermitFee: (() => {
+            const range = permit.estimatedCostRange as [number, number] | undefined
+            return range ? Math.round((range[0] + range[1]) / 2) : 0
+          })(),
+          estimatedProcessingDays: 21, // "2-6 weeks" → mid estimate
+          requiresPE: false,
+          notes: (permit.keyConsiderations as string[] | undefined)?.join(' ') ?? '',
+        } : null
+      )
+
+      // Zoning notes — v1 has co.zoningNotes; v2 has permit.disclaimer
+      const zoningNotes =
+        (co.zoningNotes as string) ||
+        (permit.disclaimer as string) ||
+        ''
+
+      // Description / scope summary
+      const scopeDescription =
+        (co.description as string) ||
+        (narrative.projectSummary as string) ||
+        (formData.description as string) ||
+        ''
+
+      // Bill of materials — v1 has bom array; v2 doesn't have BOM, show empty
+      const billOfMaterials: BOMItem[] = bom.length > 0 ? bom : []
+
       const renderUrls = Array.isArray(co.renderUrls) && (co.renderUrls as string[]).length > 0
         ? co.renderUrls as string[]
         : getStubRenders(projectPath, tier)
@@ -326,14 +603,41 @@ export default function ConceptDeliverablePage() {
         gate?.permitApproved
       )
 
+      // Narrative rooms — concept engine produces {RoomName: description} object;
+      //   older/future shapes may be an array of {name, description}.
+      const rawRooms = narrative.rooms
+      const narrativeRooms: NarrativeRoom[] = Array.isArray(rawRooms)
+        ? (rawRooms as unknown[]).map(r => {
+            if (typeof r === 'object' && r !== null && 'name' in r) return r as NarrativeRoom
+            return { name: String(r), description: '' }
+          })
+        : typeof rawRooms === 'object' && rawRooms !== null
+          ? Object.entries(rawRooms as Record<string, string>).map(([name, description]) => ({ name, description }))
+          : []
+
+      // Next steps — narrative.nextSteps may be a string; pkg.nextSteps.actionItems is the array
+      const nextStepsData = (pkg.nextSteps as Record<string, unknown>) ?? {}
+      const narrativeNextSteps: string[] = Array.isArray(nextStepsData.actionItems)
+        ? (nextStepsData.actionItems as string[])
+        : typeof narrative.nextSteps === 'string' && (narrative.nextSteps as string).trim()
+          ? [(narrative.nextSteps as string)]
+          : Array.isArray(narrative.nextSteps)
+            ? (narrative.nextSteps as string[])
+            : []
+
+      const pkgDef = getPackageDef(projectPath)
+
       setData({
         conceptId:       `concept_${intakeId.slice(0, 8)}`,
         projectType:     (intake.project_path as string)?.replace(/_/g, ' ') ?? 'Concept Package',
-        scope:           (co.description as string) ?? (formData.description as string) ?? '',
+        packageLabel:    pkgDef.label,
+        packageIncludes: pkgDef.includes,
+        tierName:        TIER_NAMES[tier] ?? 'Starter Concept',
+        scope:           scopeDescription,
         budget:          typeof intake.budget_range === 'number' ? intake.budget_range : 0,
         location:        (intake.project_address as string) ?? '',
-        estimatedCost:   (co.estimatedCost as number) ?? 0,
-        projectTimeline: (co.projectTimeline as string) ?? '4–6 weeks',
+        estimatedCost,
+        projectTimeline,
         tier,
         renderUrls,
         pdfUrl:          typeof co.pdfUrl === 'string' ? co.pdfUrl : undefined,
@@ -344,9 +648,18 @@ export default function ConceptDeliverablePage() {
             ? (co.videoFormatUrls as Record<string, string>)
             : undefined,
         designConcept: {
-          style:        (dc.style as string) ?? 'Modern Contemporary',
-          colorPalette: (dc.colorPalette as string[]) ?? [],
-          keyFeatures:  (dc.keyFeatures as string[]) ?? [],
+          style:        styleLabel,
+          colorPalette,
+          keyFeatures,
+        },
+        narrative: {
+          projectSummary:     (narrative.projectSummary as string) ?? '',
+          designIntent:       (narrative.designIntent as string) ?? '',
+          styleNarrative:     (narrative.styleNarrative as string) ?? '',
+          materialDirection:  (narrative.materialDirection as string) ?? '',
+          lifestyleAlignment: (narrative.lifestyleAlignment as string) ?? '',
+          rooms:              narrativeRooms,
+          nextSteps:          narrativeNextSteps,
         },
         mepSystem: {
           electrical: (mep.electrical as string) ?? '',
@@ -354,11 +667,11 @@ export default function ConceptDeliverablePage() {
           hvac:       (mep.hvac as string)        ?? 'N/A',
           lighting:   (mep.lighting as string)    ?? '',
         },
-        billOfMaterials: bom,
-        permitScope: co.permitScope ? co.permitScope as PermitScope : null,
-        zoningNotes:     (co.zoningNotes as string) ?? '',
+        billOfMaterials,
+        permitScope:      derivedPermitScope,
+        zoningNotes,
         buildabilityFlag: ((co.buildabilityFlag as string) ?? 'feasible') as ConceptData['buildabilityFlag'],
-        readinessScore:  (co.readinessScore as number) ?? 70,
+        readinessScore:   (co.readinessScore as number) ?? 70,
       })
       return true
     } catch {
@@ -478,10 +791,14 @@ export default function ConceptDeliverablePage() {
                   style={{ backgroundColor: '#2ABFBF' }}>
                   Concept Ready
                 </span>
+                <span className="rounded-full px-2.5 py-0.5 text-xs font-semibold"
+                  style={{ backgroundColor: '#1A2B4A15', color: '#1A2B4A' }}>
+                  {data.tierName}
+                </span>
                 <span className="text-xs text-gray-400">{data.conceptId}</span>
               </div>
-              <h1 className="text-2xl font-bold sm:text-3xl capitalize" style={{ color: '#1A2B4A' }}>
-                {data.projectType}
+              <h1 className="text-2xl font-bold sm:text-3xl" style={{ color: '#1A2B4A' }}>
+                {data.packageLabel}
               </h1>
               {data.scope && (
                 <p className="mt-1 text-sm text-gray-500 max-w-xl">{data.scope}</p>
@@ -525,6 +842,31 @@ export default function ConceptDeliverablePage() {
       </div>
 
       <div className="space-y-6">
+
+        {/* ── What's In Your Package ───────────────────────────────────────── */}
+        <section className="rounded-2xl bg-white overflow-hidden"
+          style={{ boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.06)' }}>
+          <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full" style={{ backgroundColor: '#1A2B4A' }} />
+              <h2 className="text-base font-bold" style={{ color: '#1A2B4A' }}>{data.packageLabel}</h2>
+            </div>
+            <span className="rounded-full px-2.5 py-1 text-xs font-semibold text-white"
+              style={{ backgroundColor: '#2ABFBF' }}>
+              {data.tierName}
+            </span>
+          </div>
+          <div className="px-6 py-4">
+            <ul className="grid sm:grid-cols-2 gap-x-6 gap-y-2">
+              {data.packageIncludes.map((item, i) => (
+                <li key={i} className="flex items-start gap-2 text-sm text-gray-700">
+                  <CheckCircle className="h-4 w-4 shrink-0 mt-0.5 text-green-500" />
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </section>
 
         {/* ── Concept Renderings ───────────────────────────────────────────── */}
         {data.renderUrls.length > 0 && (
@@ -625,6 +967,76 @@ export default function ConceptDeliverablePage() {
                   Check status →
                 </a>
               </div>
+            </div>
+          </section>
+        )}
+
+        {/* ── Design Narrative (v2 concept engine) ─────────────────────────── */}
+        {(data.narrative.projectSummary || data.narrative.designIntent || data.narrative.rooms.length > 0) && (
+          <section className="rounded-2xl border border-gray-200 bg-white overflow-hidden"
+            style={{ boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.06)' }}>
+            <div className="px-6 py-4 border-b border-gray-100 flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full" style={{ backgroundColor: '#2ABFBF' }} />
+              <h2 className="text-base font-bold" style={{ color: '#1A2B4A' }}>Design Narrative</h2>
+              <span className="ml-auto text-xs text-gray-400 font-medium">AI Architect · Claude</span>
+            </div>
+            <div className="p-6 space-y-5">
+              {data.narrative.projectSummary && (
+                <p className="text-sm text-gray-700 leading-relaxed">{data.narrative.projectSummary}</p>
+              )}
+              {data.narrative.designIntent && (
+                <div>
+                  <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">Design Intent</p>
+                  <p className="text-sm text-gray-700 leading-relaxed">{data.narrative.designIntent}</p>
+                </div>
+              )}
+              {data.narrative.styleNarrative && (
+                <div>
+                  <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">Style Direction</p>
+                  <p className="text-sm text-gray-700 leading-relaxed">{data.narrative.styleNarrative}</p>
+                </div>
+              )}
+              {data.narrative.materialDirection && (
+                <div>
+                  <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">Materials &amp; Finishes</p>
+                  <p className="text-sm text-gray-700 leading-relaxed">{data.narrative.materialDirection}</p>
+                </div>
+              )}
+              {data.narrative.lifestyleAlignment && (
+                <div>
+                  <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">Lifestyle Fit</p>
+                  <p className="text-sm text-gray-700 leading-relaxed">{data.narrative.lifestyleAlignment}</p>
+                </div>
+              )}
+              {data.narrative.rooms.length > 0 && (
+                <div>
+                  <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Room-by-Room</p>
+                  <div className="space-y-2.5">
+                    {data.narrative.rooms.map((room, i) => (
+                      <div key={i} className="rounded-xl border border-gray-100 bg-gray-50 px-4 py-3">
+                        <p className="text-xs font-bold text-gray-700 mb-0.5 capitalize">{room.name}</p>
+                        {room.description && (
+                          <p className="text-sm text-gray-600 leading-relaxed">{room.description}</p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {data.narrative.nextSteps.length > 0 && (
+                <div>
+                  <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Recommended Next Steps</p>
+                  <ol className="space-y-2">
+                    {data.narrative.nextSteps.map((step, i) => (
+                      <li key={i} className="flex items-start gap-2.5 text-sm text-gray-700">
+                        <span className="shrink-0 mt-0.5 flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold text-white"
+                          style={{ backgroundColor: '#2ABFBF' }}>{i + 1}</span>
+                        {step}
+                      </li>
+                    ))}
+                  </ol>
+                </div>
+              )}
             </div>
           </section>
         )}

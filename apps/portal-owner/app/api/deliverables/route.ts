@@ -49,18 +49,49 @@ export async function GET() {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 
+    // ── Tier label map ─────────────────────────────────────────────────────────
+  const TIER_LABELS: Record<number, string> = {
+    1: 'Starter Concept',
+    2: 'Visualization Package',
+    3: 'Pre-Design Package',
+  }
+
+  // ── Package label overrides by project_path ─────────────────────────────────
+  const PACKAGE_LABELS: Record<string, string> = {
+    kitchen_remodel:    'Kitchen Design Package',
+    bathroom_remodel:   'Bathroom Design Package',
+    exterior_concept:   'Exterior Concept Package',
+    interior_reno_concept: 'Interior Reno Concept',
+    interior_renovation: 'Interior Renovation',
+    whole_home_concept: 'Whole Home Concept',
+    whole_home_remodel: 'Whole-Home Remodel',
+    addition_expansion: 'Addition / Expansion',
+    garden_concept:     'Garden Concept',
+    design_build:       'Design + Build Package',
+    developer_concept:  'Developer Concept',
+    single_lot_development: 'Single-Lot Development',
+    capture_site_concept: 'Site Capture Concept',
+    cost_estimate:      'Cost Estimate',
+    certified_estimate: 'Certified Estimate',
+    permit_path_only:   'Permit Path Assessment',
+  }
+
   // ── Shape response — extract conceptOutput summary from form_data ───────────
   const deliverables = (data ?? []).map((row: any) => {
-    const fd  = (row.form_data ?? {}) as Record<string, any>
-    const co  = (fd.conceptOutput ?? null) as Record<string, any> | null
+    const fd   = (row.form_data ?? {}) as Record<string, any>
+    const co   = (fd.conceptOutput ?? null) as Record<string, any> | null
+    const tier = typeof fd.tier === 'number' ? fd.tier : 1
+    const path = row.project_path as string
 
     return {
       id:              row.id,
       clientName:      row.client_name,
-      projectPath:     row.project_path,
-      projectLabel:    (row.project_path as string)
-                         ?.replace(/_/g, ' ')
-                         ?.replace(/\b\w/g, (c: string) => c.toUpperCase()) ?? 'Project',
+      projectPath:     path,
+      projectLabel:    PACKAGE_LABELS[path]
+                         ?? path?.replace(/_/g, ' ')?.replace(/\b\w/g, (c: string) => c.toUpperCase())
+                         ?? 'Project',
+      tier,
+      tierLabel:       TIER_LABELS[tier] ?? 'Starter Concept',
       address:         row.project_address ?? fd.projectAddress ?? null,
       budgetRange:     row.budget_range ?? fd.budgetRange ?? null,
       status:          row.status as string,

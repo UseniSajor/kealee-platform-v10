@@ -14,6 +14,8 @@ interface Deliverable {
   clientName:       string | null
   projectPath:      string
   projectLabel:     string
+  tier:             number
+  tierLabel:        string
   address:          string | null
   budgetRange:      string | null
   status:           string   // 'paid' | 'concept_ready' | 'failed' | ...
@@ -94,7 +96,7 @@ function DeliverableCard({ d }: { d: Deliverable }) {
             </div>
             <div>
               <h3 className="font-semibold" style={{ color: '#1A2B4A' }}>{d.projectLabel}</h3>
-              <p className="text-xs text-gray-400 mt-0.5">{dateStr}</p>
+              <p className="text-xs text-gray-400 mt-0.5">{d.tierLabel} · {dateStr}</p>
               {d.address && (
                 <p className="text-xs text-gray-400 mt-0.5 truncate max-w-[180px]">{d.address}</p>
               )}
