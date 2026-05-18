@@ -438,7 +438,18 @@ export async function registerStripeWebhookHandler(fastify: FastifyInstance) {
 
   const redis = await RedisClient.getInstance()
 
-  fastify.post(
+  // Scope a raw-buffer content type parser to just this plugin so it doesn't
+  // override the JSON parser for the rest of the API.
+  fastify.register(async (scope) => {
+    scope.addContentTypeParser(
+      'application/json',
+      { parseAs: 'buffer' },
+      (_req: FastifyRequest, body: Buffer, done: (err: Error | null, body?: Buffer) => void) => {
+        done(null, body)
+      }
+    )
+
+  scope.post(
     '/webhooks/stripe',
     {
       // Raw body required for Stripe signature verification
@@ -455,8 +466,8 @@ export async function registerStripeWebhookHandler(fastify: FastifyInstance) {
           })
         }
 
-        // Get raw body for verification
-        const rawBody = (request as any).rawBody || request.body
+        // request.body is a raw Buffer — required for signature verification
+        const rawBody = request.body as Buffer
 
         // Verify webhook signature
         let event: StripeWebhookEvent
@@ -509,6 +520,7 @@ export async function registerStripeWebhookHandler(fastify: FastifyInstance) {
       }
     }
   )
+  }) // end scoped raw-body plugin
 
   fastify.log.info('Stripe webhook handler registered')
 }
