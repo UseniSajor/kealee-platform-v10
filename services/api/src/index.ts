@@ -900,6 +900,11 @@ const start = async () => {
       await fastify.register(adminVerificationDocumentsRoutes, { prefix: '/admin' })
     })
 
+    await safeRegisterBlock('Admin Generate Images routes', async () => {
+      const { adminGenerateImagesRoutes } = await import('./routes/admin/generate-images')
+      await fastify.register(adminGenerateImagesRoutes, { prefix: '/admin' })
+    })
+
     await safeRegisterBlock('Phase 1 - Permit Templates, Analytics, API Integrations routes', async () => {
       const { permitTemplateRoutes } = await import('./modules/permits/permit-template.routes')
       const { permitAnalyticsRoutes } = await import('./modules/permits/permit-analytics.routes')
