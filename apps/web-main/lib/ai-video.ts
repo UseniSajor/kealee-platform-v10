@@ -71,6 +71,30 @@ export async function generateVideo(
   input: GenerateVideoInput,
 ): Promise<GenerateVideoResult> {
   const provider = input.provider ?? pickVideoProvider()
+
+  // If caller explicitly requested a provider, no fallback — fail fast.
+  if (input.provider) {
+    return dispatchVideo(provider, input)
+  }
+
+  try {
+    return await dispatchVideo(provider, input)
+  } catch (err: any) {
+    // Primary provider failed — fall back to Kling (Replicate) if available.
+    if (provider !== 'kling-2.5' && process.env.REPLICATE_API_TOKEN) {
+      console.warn(
+        `[ai-video] ${provider} failed (${err?.message ?? err}), falling back to kling-2.5`,
+      )
+      return submitKling(input)
+    }
+    throw err
+  }
+}
+
+function dispatchVideo(
+  provider: VideoProvider,
+  input: GenerateVideoInput,
+): Promise<GenerateVideoResult> {
   switch (provider) {
     case 'sora-2-pro':
     case 'sora-2':
