@@ -207,6 +207,27 @@ const PACKAGE_CONFIG: Record<string, PackageDef> = {
   },
 }
 
+// ─── Concept service price map (mirrors INTAKE_PRICE_CENTS in core-rules) ──────
+
+const CONCEPT_PRICE_DOLLARS: Record<string, number> = {
+  exterior_concept:       395,
+  garden_concept:         295,
+  whole_home_concept:     595,
+  interior_reno_concept:  345,
+  developer_concept:      795,
+  kitchen_remodel:        395,
+  bathroom_remodel:       295,
+  interior_renovation:    345,
+  whole_home_remodel:     695,
+  addition_expansion:     495,
+  permit_path_only:       499,
+  cost_estimate:          595,
+  certified_estimate:    1850,
+  design_build:           795,
+  capture_site_concept:   125,
+  single_lot_development: 899,
+}
+
 function getPackageDef(projectPath: string): PackageDef {
   return PACKAGE_CONFIG[projectPath] ?? {
     label: projectPath.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
@@ -299,6 +320,11 @@ interface ConceptData {
   tierName: string
   /** True once permit has been submitted or approved — unlocks contractor matching */
   contractorMatchingUnlocked: boolean
+  /** Price paid for the design concept service (USD) */
+  conceptServicePrice?: number
+  /** Construction cost estimate range from concept engine scope */
+  constructionCostMin?: number
+  constructionCostMax?: number
 }
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
@@ -533,11 +559,18 @@ export default function ConceptDeliverablePage() {
           ? (dc.colorPalette as string[])
           : styleKeywords.slice(3)
 
+      // Construction cost range — from v2 scope
+      const constructionCostMin = typeof scope.totalEstimatedMin === 'number' ? scope.totalEstimatedMin as number : undefined
+      const constructionCostMax = typeof scope.totalEstimatedMax === 'number' ? scope.totalEstimatedMax as number : undefined
+
+      // Concept service price paid
+      const conceptServicePrice = CONCEPT_PRICE_DOLLARS[projectPath]
+
       // Estimated cost — v1 has co.estimatedCost; v2 has scope.totalEstimatedMax
       const estimatedCost =
         (co.estimatedCost as number) ||
-        (scope.totalEstimatedMax as number) ||
-        Math.round(((scope.totalEstimatedMin as number) + (scope.totalEstimatedMax as number)) / 2) ||
+        constructionCostMax ||
+        (constructionCostMin && constructionCostMax ? Math.round((constructionCostMin + constructionCostMax) / 2) : 0) ||
         0
 
       // Timeline — v1 has co.projectTimeline; v2 has permit.estimatedTimeline or project.timeline
@@ -676,8 +709,11 @@ export default function ConceptDeliverablePage() {
         billOfMaterials,
         permitScope:      derivedPermitScope,
         zoningNotes,
-        buildabilityFlag: ((co.buildabilityFlag as string) ?? 'feasible') as ConceptData['buildabilityFlag'],
-        readinessScore:   (co.readinessScore as number) ?? 70,
+        buildabilityFlag:    ((co.buildabilityFlag as string) ?? 'feasible') as ConceptData['buildabilityFlag'],
+        readinessScore:      (co.readinessScore as number) ?? 70,
+        conceptServicePrice,
+        constructionCostMin,
+        constructionCostMax,
       })
       return true
     } catch {
@@ -770,8 +806,6 @@ export default function ConceptDeliverablePage() {
 
   const displayedBOM = showFullBOM ? data.billOfMaterials : data.billOfMaterials.slice(0, 4)
   const totalBOM     = data.billOfMaterials.reduce((s, r) => s + r.estimatedCost, 0)
-  const withinBudget = data.budget > 0 ? data.estimatedCost <= data.budget : true
-  const requiresDrawings = data.permitScope?.requiresPermit || data.permitScope?.requiresPE
 
   return (
     <div className="mx-auto max-w-4xl">
@@ -810,21 +844,28 @@ export default function ConceptDeliverablePage() {
                 <p className="mt-1 text-sm text-gray-500 max-w-xl">{data.scope}</p>
               )}
             </div>
-            {data.estimatedCost > 0 && (
-              <div className="shrink-0 text-right">
-                <p className="text-xs text-gray-400 mb-0.5">Estimated Cost</p>
-                <p className="text-3xl font-bold" style={{ color: '#1A2B4A' }}>
-                  ${data.estimatedCost.toLocaleString()}
-                </p>
-                {data.budget > 0 && (
-                  <p className="text-xs mt-0.5" style={{ color: withinBudget ? '#38A169' : '#E53E3E' }}>
-                    {withinBudget
-                      ? `$${(data.budget - data.estimatedCost).toLocaleString()} under budget`
-                      : `$${(data.estimatedCost - data.budget).toLocaleString()} over budget`}
-                  </p>
-                )}
-              </div>
-            )}
+            <div className="shrink-0 text-right space-y-2">
+              {(data.constructionCostMin || data.constructionCostMax || data.estimatedCost > 0) && (
+                <div>
+                  <p className="text-xs text-gray-400 mb-0.5">Est. Construction</p>
+                  {data.constructionCostMin && data.constructionCostMax ? (
+                    <p className="text-2xl font-bold" style={{ color: '#1A2B4A' }}>
+                      ${Math.round(data.constructionCostMin / 1000)}K–${Math.round(data.constructionCostMax / 1000)}K
+                    </p>
+                  ) : (
+                    <p className="text-2xl font-bold" style={{ color: '#1A2B4A' }}>
+                      ${data.estimatedCost.toLocaleString()}
+                    </p>
+                  )}
+                </div>
+              )}
+              {data.conceptServicePrice && (
+                <div>
+                  <p className="text-xs text-gray-400 mb-0.5">Design Concept</p>
+                  <p className="text-lg font-bold" style={{ color: '#E8793A' }}>${data.conceptServicePrice.toLocaleString()}</p>
+                </div>
+              )}
+            </div>
           </div>
           <div className="mt-4 flex flex-wrap gap-4 text-sm text-gray-500">
             <span className="flex items-center gap-1.5">
@@ -1332,6 +1373,30 @@ export default function ConceptDeliverablePage() {
           style={{ boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.06)' }}>
           <h2 className="text-base font-bold mb-1" style={{ color: '#1A2B4A' }}>Your Next Step</h2>
           <p className="text-xs text-gray-400 mb-4">Connect with a Kealee design professional to move from concept to construction-ready plans.</p>
+
+          {/* Cost summary bar */}
+          {(data.constructionCostMin || data.constructionCostMax || data.conceptServicePrice) && (
+            <div className="mb-4 flex flex-wrap items-center gap-4 rounded-xl bg-gray-50 border border-gray-200 px-4 py-3">
+              {data.constructionCostMin && data.constructionCostMax && (
+                <div>
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">Est. Construction Cost</p>
+                  <p className="text-base font-bold" style={{ color: '#1A2B4A' }}>
+                    ${Math.round(data.constructionCostMin / 1000)}K–${Math.round(data.constructionCostMax / 1000)}K
+                  </p>
+                </div>
+              )}
+              {data.conceptServicePrice && (
+                <div>
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">Design Concept</p>
+                  <p className="text-base font-bold" style={{ color: '#E8793A' }}>${data.conceptServicePrice.toLocaleString()}</p>
+                </div>
+              )}
+              <p className="ml-auto text-xs text-gray-400 max-w-[180px] text-right leading-relaxed">
+                Concept fee credited when you move to design plans.
+              </p>
+            </div>
+          )}
+
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
 
             {/* Primary — always shown: connect with design professional */}

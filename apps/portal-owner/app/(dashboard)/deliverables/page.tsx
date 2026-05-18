@@ -24,6 +24,10 @@ interface Deliverable {
   conceptPackageId: string | null
   pdfUrl:           string | null
   generatedAt:      string | null
+  // Pricing
+  conceptServicePrice: number | null
+  estimatedCostMin:    number | null
+  estimatedCostMax:    number | null
 }
 
 // ── Status helpers ─────────────────────────────────────────────────────────────
@@ -99,6 +103,26 @@ function DeliverableCard({ d }: { d: Deliverable }) {
               <p className="text-xs text-gray-400 mt-0.5">{d.tierLabel} · {dateStr}</p>
               {d.address && (
                 <p className="text-xs text-gray-400 mt-0.5 truncate max-w-[180px]">{d.address}</p>
+              )}
+              {(d.conceptServicePrice || (d.estimatedCostMin && d.estimatedCostMax)) && (
+                <div className="mt-1.5 flex flex-wrap gap-x-3 gap-y-0.5 text-xs">
+                  {d.conceptServicePrice && (
+                    <span className="text-gray-400">
+                      Concept{' '}
+                      <span className="font-semibold" style={{ color: '#E8793A' }}>
+                        ${d.conceptServicePrice.toLocaleString()}
+                      </span>
+                    </span>
+                  )}
+                  {d.estimatedCostMin && d.estimatedCostMax && (
+                    <span className="text-gray-400">
+                      Est. Build{' '}
+                      <span className="font-semibold text-gray-700">
+                        ${Math.round(d.estimatedCostMin / 1000)}K–${Math.round(d.estimatedCostMax / 1000)}K
+                      </span>
+                    </span>
+                  )}
+                </div>
               )}
             </div>
           </div>

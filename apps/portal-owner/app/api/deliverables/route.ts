@@ -76,12 +76,38 @@ export async function GET() {
     permit_path_only:   'Permit Path Assessment',
   }
 
+  // ── Concept service price map (mirrors INTAKE_PRICE_CENTS in core-rules) ────
+  const CONCEPT_PRICE_DOLLARS: Record<string, number> = {
+    exterior_concept:       395,
+    garden_concept:         295,
+    whole_home_concept:     595,
+    interior_reno_concept:  345,
+    developer_concept:      795,
+    kitchen_remodel:        395,
+    bathroom_remodel:       295,
+    interior_renovation:    345,
+    whole_home_remodel:     695,
+    addition_expansion:     495,
+    permit_path_only:       499,
+    cost_estimate:          595,
+    certified_estimate:    1850,
+    contractor_match:       199,
+    design_build:           795,
+    capture_site_concept:   125,
+    single_lot_development: 899,
+  }
+
   // ── Shape response — extract conceptOutput summary from form_data ───────────
   const deliverables = (data ?? []).map((row: any) => {
-    const fd   = (row.form_data ?? {}) as Record<string, any>
-    const co   = (fd.conceptOutput ?? null) as Record<string, any> | null
-    const tier = typeof fd.tier === 'number' ? fd.tier : 1
-    const path = row.project_path as string
+    const fd    = (row.form_data ?? {}) as Record<string, any>
+    const co    = (fd.conceptOutput ?? null) as Record<string, any> | null
+    const tier  = typeof fd.tier === 'number' ? fd.tier : 1
+    const path  = row.project_path as string
+    const pkg   = (co?.packageJson as Record<string, any>) ?? {}
+    const scope = (pkg.scope as Record<string, any>) ?? {}
+
+    const estimatedCostMin = typeof scope.totalEstimatedMin === 'number' ? scope.totalEstimatedMin : null
+    const estimatedCostMax = typeof scope.totalEstimatedMax === 'number' ? scope.totalEstimatedMax : null
 
     return {
       id:              row.id,
@@ -98,9 +124,13 @@ export async function GET() {
       createdAt:       row.created_at,
       updatedAt:       row.updated_at,
       // Concept package fields (populated after generation)
-      conceptPackageId: co?.conceptPackageId ?? null,
-      pdfUrl:           co?.pdfUrl ?? null,
-      generatedAt:      co?.generatedAt ?? null,
+      conceptPackageId:    co?.conceptPackageId ?? null,
+      pdfUrl:              co?.pdfUrl ?? null,
+      generatedAt:         co?.generatedAt ?? null,
+      // Pricing
+      conceptServicePrice: CONCEPT_PRICE_DOLLARS[path] ?? null,
+      estimatedCostMin,
+      estimatedCostMax,
     }
   })
 
