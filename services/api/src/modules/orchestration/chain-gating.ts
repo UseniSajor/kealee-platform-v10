@@ -7,6 +7,7 @@
 import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify'
 import { prisma } from '@kealee/database'
 import type { ReadinessState } from '@kealee/database'
+const prismaAny = prisma as any
 
 // ============================================================================
 // READINESS LOGIC
@@ -236,7 +237,7 @@ export async function linkConceptToZoning(
   conceptIntakeId: string,
   zoningIntakeId: string
 ): Promise<void> {
-  await prisma.zoningIntake.update({
+  await prismaAny.zoningIntake.update({
     where: { id: zoningIntakeId },
     data: { conceptIntakeId },
   })
@@ -249,7 +250,7 @@ export async function linkZoningToEstimation(
   zoningIntakeId: string,
   estimationIntakeId: string
 ): Promise<void> {
-  await prisma.estimationIntake.update({
+  await prismaAny.estimationIntake.update({
     where: { id: estimationIntakeId },
     data: {
       relatedZoningId: zoningIntakeId,
@@ -264,7 +265,7 @@ export async function linkEstimationToPermit(
   estimationIntakeId: string,
   permitIntakeId: string
 ): Promise<void> {
-  await prisma.permitIntake.update({
+  await prismaAny.permitIntake.update({
     where: { id: permitIntakeId },
     data: {
       relatedEstimateId: estimationIntakeId,

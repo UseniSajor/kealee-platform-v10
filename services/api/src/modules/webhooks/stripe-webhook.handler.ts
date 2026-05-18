@@ -58,7 +58,9 @@ async function handleCheckoutSessionCompleted(
   logger: any
 ): Promise<void> {
   const metadata = session.metadata || {}
-  const source = metadata.source // 'concept', 'zoning', 'estimation', 'permits'
+  // Normalise source: concept-intake.routes.ts sets "concept-package"; treat it as "concept"
+  const rawSource = metadata.source
+  const source = rawSource === 'concept-package' ? 'concept' : rawSource // 'concept', 'zoning', 'estimation', 'permits'
   const intakeId = metadata.intakeId
   const funnelSessionId = metadata.funnelSessionId
   const tier = metadata.packageTier

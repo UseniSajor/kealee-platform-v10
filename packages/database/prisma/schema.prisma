@@ -17288,3 +17288,106 @@ model PascalRenderJob {
   @@index([userId])
   @@index([status])
 }
+
+// ============================================================
+// MISSING INTAKE MODELS — added to fix end-to-end pipeline
+// ============================================================
+
+model ZoningIntake {
+  id               String    @id @default(uuid())
+  conceptIntakeId  String?
+  projectAddress   String?
+  projectType      String?
+  description      String?   @db.Text
+  zipCode          String?
+  status           String    @default("new")
+  paidAt           DateTime?
+  metadata         Json?
+  funnelSessionId  String?
+  source           String    @default("WEBSITE")
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@index([status])
+  @@map("zoning_intakes")
+}
+
+model EstimationIntake {
+  id               String    @id @default(uuid())
+  relatedZoningId  String?
+  projectAddress   String?
+  projectType      String?
+  description      String?   @db.Text
+  zipCode          String?
+  status           String    @default("new")
+  paidAt           DateTime?
+  metadata         Json?
+  funnelSessionId  String?
+  source           String    @default("WEBSITE")
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@index([status])
+  @@map("estimation_intakes")
+}
+
+model PermitIntake {
+  id                String    @id @default(uuid())
+  relatedEstimateId String?
+  projectAddress    String?
+  projectType       String?
+  description       String?   @db.Text
+  zipCode           String?
+  status            String    @default("new")
+  paidAt            DateTime?
+  metadata          Json?
+  funnelSessionId   String?
+  source            String    @default("WEBSITE")
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  @@index([status])
+  @@map("permit_intakes")
+}
+
+model EstimationServiceLead {
+  id                         String    @id @default(uuid())
+  // Contact
+  fullName                   String
+  email                      String
+  phone                      String?
+  company                    String?
+  // Project
+  projectScope               String?
+  projectStage               String?
+  scopeDetail                String?   @db.Text
+  location                   String?
+  zipCode                    String?
+  description                String?   @db.Text
+  estimatedBudget            Decimal?  @db.Decimal(18, 2)
+  // Docs / review flags
+  hasDesignDrawings          Boolean   @default(false)
+  designDocumentUrl          String?
+  drawingCount               Int?
+  hasContractorFeedback      Boolean   @default(false)
+  requiresArchitecturalReview Boolean  @default(false)
+  requiresEngineeringReview  Boolean   @default(false)
+  isPhased                   Boolean   @default(false)
+  // Lead scoring
+  tier                       String?
+  tierPreference             String?
+  leadScore                  Int?
+  readinessState             String?
+  // Status
+  status                     String    @default("NEW")
+  source                     String    @default("WEBSITE")
+  metadata                   Json?
+  paidAt                     DateTime?
+  createdAt                  DateTime  @default(now())
+  updatedAt                  DateTime  @updatedAt
+
+  @@index([email])
+  @@index([status])
+  @@map("estimation_service_leads")
+}
+
