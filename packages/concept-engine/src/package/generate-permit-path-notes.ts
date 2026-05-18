@@ -93,7 +93,7 @@ export function generatePermitPathNotes(input: ConceptIntakeInput): PermitPathNo
   const historicReview= detectHistoricReview(input);
 
   const keyConsiderations: string[] = [
-    `Permit applications require stamped construction drawings from a licensed architect or engineer.`,
+    `Permit applications require stamped construction drawings from a licensed design professional or engineer.`,
     `All work must comply with local building code, zoning ordinance, and energy code.`,
     `Inspections are required at rough-in and final stages for all permitted trades.`,
   ];
@@ -110,7 +110,7 @@ export function generatePermitPathNotes(input: ConceptIntakeInput): PermitPathNo
   }
   if (historicReview) {
     keyConsiderations.push(
-      `Historic review may restrict material choices and exterior changes — consult with a preservation architect.`,
+      `Historic review may restrict material choices and exterior changes — consult with a preservation design professional.`,
     );
   }
   if (input.projectPath === 'addition_expansion') {
@@ -132,6 +132,6 @@ export function generatePermitPathNotes(input: ConceptIntakeInput): PermitPathNo
     keyConsiderations,
     disclaimerNote:
       'These are preliminary permit path notes based on typical requirements for this project type. ' +
-      'Actual permit requirements vary by jurisdiction. Your architect will confirm requirements and manage submissions.',
+      'Actual permit requirements vary by jurisdiction. Your Kealee design professional will confirm requirements and manage submissions — permits are included in your design plan package.',
   };
 }

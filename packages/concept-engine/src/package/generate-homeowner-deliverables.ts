@@ -129,8 +129,8 @@ export function assembleHomeownerDeliverables(opts: {
 
   const architectUpsell =
     `To move from this concept to construction-ready drawings, a ${recommendedService} engagement ` +
-    `with a Kealee platform architect is the recommended next step. ` +
-    `This includes design refinement, structural coordination, permit drawings, and contractor procurement support.`;
+    `with a Kealee platform design professional is the recommended next step. ` +
+    `This includes design refinement, structural coordination, permit drawings (permits included), and contractor procurement support.`;
 
   return {
     version:     '1.0',
@@ -200,10 +200,10 @@ export function assembleHomeownerDeliverables(opts: {
       recommendedService,
       architectUpsell,
       actionItems: [
-        'Review your concept floor plan and confirm room list with your architect.',
+        'Review your concept floor plan and confirm room list with your design professional.',
         'Prioritize scope items based on budget and lifestyle needs.',
         'Confirm HOA and permit requirements with your local jurisdiction.',
-        'Schedule a Design Development kick-off with a Kealee platform architect.',
+        'Schedule a Design Development kick-off with a Kealee platform design professional.',
       ],
     },
   };

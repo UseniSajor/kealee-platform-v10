@@ -114,15 +114,15 @@ export function generateScopeDirection(input: ConceptIntakeInput): ScopeDirectio
     budgetFitNote =
       `The scope indicated by this project path typically runs $${(totalMin / 1000).toFixed(0)}K–$${(totalMax / 1000).toFixed(0)}K. ` +
       `Your stated budget of $${(budgetMin / 1000).toFixed(0)}K–$${(budgetMax / 1000).toFixed(0)}K may require phasing or scope reduction — ` +
-      `architect review is strongly recommended to align scope with budget before proceeding.`;
+      `design professional review is strongly recommended to align scope with budget before proceeding.`;
   } else if (totalMin <= budgetMax) {
     budgetFitNote =
       `The required scope items are likely achievable within your stated budget range. ` +
-      `Optional and recommended items can be prioritized with your architect based on value and impact.`;
+      `Optional and recommended items can be prioritized with your design professional based on value and impact.`;
   } else {
     budgetFitNote =
       `Your budget is in range for the required scope with careful contractor selection. ` +
-      `Architect-led procurement and value engineering will be important to stay on target.`;
+      `Design professional-led procurement and value engineering will be important to stay on target.`;
   }
 
   return {
@@ -132,7 +132,7 @@ export function generateScopeDirection(input: ConceptIntakeInput): ScopeDirectio
     scopeItems:        items,
     exclusions: [
       'Permit fees (jurisdiction-dependent)',
-      'Architectural and engineering fees',
+      'Design professional and engineering fees',
       'Furniture and décor',
       'Specialty equipment (home automation, AV)',
       'Unknown existing conditions (mold, asbestos, structural)',

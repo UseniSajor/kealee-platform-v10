@@ -33,7 +33,7 @@ export async function generateConceptNarrative(
   const materials = (input.desiredMaterials ?? []).join(', ') || 'curated selections';
   const path      = input.projectPath.replace(/_/g, ' ');
 
-  const prompt = `You are a licensed architect writing a concept narrative for a homeowner's review package.
+  const prompt = `You are a licensed design professional writing a concept narrative for a homeowner's review package.
 
 PROJECT DETAILS
 - Address: ${input.projectAddress}
@@ -57,13 +57,13 @@ Write a structured concept narrative as a JSON object with exactly these keys:
   "materialDirection": "2–3 sentences: material palette, finish hierarchy, and texture direction",
   "styleNarrative": "2–3 sentences: how the style preference translates to specific design decisions for this home",
   "lifestyleAlignment": "1–2 sentences: how the design supports the homeowner's stated goals and lifestyle",
-  "nextSteps": "2–3 sentences: how architect-led design development will refine this concept into construction documents"
+  "nextSteps": "2–3 sentences: how design professional-led design development will refine this concept into construction documents"
 }
 
 Rules:
 - Reference specific rooms by their exact label
 - Be specific to the style and project type — avoid generic filler
-- Keep nextSteps focused on the architect upsell path
+- Keep nextSteps focused on the design professional upsell path
 - Return ONLY the raw JSON object, no markdown fences`;
 
   try {
@@ -114,7 +114,7 @@ function buildFallbackNarrative(
       `This concept supports the homeowner's goals by optimizing flow, maximizing natural light, ` +
       `and creating spaces that work harder for daily life.`,
     nextSteps:
-      `An architect-led Design Development engagement will refine this concept into ` +
-      `construction-ready drawings, coordinate with structural and MEP engineers, and guide the permit submission process.`,
+      `A Kealee design professional will refine this concept into ` +
+      `construction-ready drawings, coordinate with structural and MEP engineers, and manage the permit submission process — permits included in your design plan package.`,
   };
 }
