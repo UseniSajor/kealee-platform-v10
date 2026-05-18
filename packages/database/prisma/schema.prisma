@@ -17392,3 +17392,93 @@ model EstimationServiceLead {
   @@map("estimation_service_leads")
 }
 
+
+// ============================================================================
+// SERVICE CHAIN GATING & ORCHESTRATION
+// ============================================================================
+
+enum ReadinessState {
+  NOT_READY
+  NEEDS_MORE_INFO
+  READY_FOR_CONCEPT
+  READY_FOR_ZONING_REVIEW
+  READY_FOR_ESTIMATE
+  READY_FOR_PERMIT_REVIEW
+  READY_FOR_CHECKOUT
+  PERMIT_SUBMITTED
+  PERMIT_APPROVED
+  REQUIRES_CONSULTATION
+  BLOCKED
+}
+
+model ServiceChainGate {
+  id                         String         @id @default(uuid())
+  projectId                  String?        @unique
+  userId                     String?
+
+  conceptCompleted           Boolean        @default(false)
+  conceptIntakeId            String?
+
+  zoningCompleted            Boolean        @default(false)
+  zoningIntakeId             String?
+
+  estimationCompleted        Boolean        @default(false)
+  estimationIntakeId         String?
+
+  permitReadyForCheckout     Boolean        @default(false)
+  permitIntakeId             String?
+  permitSubmitted            Boolean        @default(false)
+  permitApproved             Boolean        @default(false)
+  contractorMatchingUnlocked Boolean        @default(false)
+
+  currentReadinessState      ReadinessState @default(NOT_READY)
+  nextRequiredService        String?
+  blockedReason              String?
+  lastServiceCompleted       String?
+  chain                      Json?
+
+  createdAt                  DateTime       @default(now())
+  updatedAt                  DateTime       @updatedAt
+
+  @@map("service_chain_gates")
+  @@index([projectId])
+  @@index([userId])
+  @@index([currentReadinessState])
+}
+
+// ============================================================================
+// CONVERSION FUNNEL TRACKING
+// ============================================================================
+
+model ConversionFunnel {
+  id                  String    @id @default(uuid())
+  funnelSessionId     String    @unique
+  userId              String?
+  source              String?
+  campaign            String?
+  medium              String?
+
+  events              Json      @default("[]")
+  eventTimestamps     Json      @default("{}")
+
+  conceptCompleted    Boolean   @default(false)
+  zoningCompleted     Boolean   @default(false)
+  estimationCompleted Boolean   @default(false)
+  permitCompleted     Boolean   @default(false)
+  fullChainCompleted  Boolean   @default(false)
+
+  totalRevenue        Int       @default(0)
+
+  firstEventAt        DateTime?
+  lastEventAt         DateTime?
+  completionTime      Int?
+
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  @@map("conversion_funnels")
+  @@index([funnelSessionId])
+  @@index([userId])
+  @@index([source])
+  @@index([fullChainCompleted])
+}

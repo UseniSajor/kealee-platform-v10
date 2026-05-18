@@ -8,7 +8,7 @@ import {
   ArrowLeft, ArrowRight, CheckCircle, CheckCircle2, Clock, DollarSign,
   Zap, Wrench, Droplets, Wind, Lightbulb, Download, Share2,
   ChevronDown, ChevronUp, Loader2, Video, ShieldCheck,
-  AlertTriangle, MapPin, TrendingUp,
+  AlertTriangle, MapPin, TrendingUp, Lock,
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
@@ -97,6 +97,9 @@ interface ConceptData {
   zoningNotes: string
   buildabilityFlag: 'feasible' | 'feasible-with-variance' | 'challenging'
   readinessScore: number
+  pdfUrl?: string
+  /** True once permit has been submitted or approved — unlocks contractor matching */
+  contractorMatchingUnlocked: boolean
 }
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
@@ -184,6 +187,19 @@ export default function ConceptDeliverablePage() {
           : undefined
       const placeholderVideoUrl = typeof co.videoUrl === 'string' ? co.videoUrl : undefined
 
+      // Fetch service chain gate to check contractor matching unlock status
+      let contractorMatchingUnlocked = false
+      try {
+        const { data: gate } = await supabase
+          .from('service_chain_gates')
+          .select('contractorMatchingUnlocked, permitSubmitted, permitApproved')
+          .eq('conceptIntakeId', intakeId)
+          .maybeSingle()
+        if (gate) {
+          contractorMatchingUnlocked = !!(gate.contractorMatchingUnlocked || gate.permitSubmitted || gate.permitApproved)
+        }
+      } catch { /* non-fatal — default to locked */ }
+
       setData({
         conceptId:       `concept_${intakeId.slice(0, 8)}`,
         projectType:     (intake.project_path as string)?.replace(/_/g, ' ') ?? 'Concept Package',
@@ -194,6 +210,8 @@ export default function ConceptDeliverablePage() {
         projectTimeline: (co.projectTimeline as string) ?? '4–6 weeks',
         tier,
         renderUrls,
+        pdfUrl:          typeof co.pdfUrl === 'string' ? co.pdfUrl : undefined,
+        contractorMatchingUnlocked,
         videoUrl: realVideoUrl ?? placeholderVideoUrl,
         videoFormatUrls:
           co.videoFormatUrls && typeof co.videoFormatUrls === 'object'
@@ -772,25 +790,63 @@ export default function ConceptDeliverablePage() {
               <span className="text-sm font-semibold text-gray-900 mb-auto">Get Detailed Cost Estimate</span>
               <span className="text-xs text-[#E8793A] mt-3 font-semibold">$595 →</span>
             </a>
-            <a href="https://kealee.com/intake/contractor_match"
-              className="flex flex-col rounded-xl border border-gray-200 p-4 hover:shadow-sm transition-all">
-              <span className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">Find Help</span>
-              <span className="text-sm font-semibold text-gray-900 mb-auto">Match with a Contractor</span>
-              <span className="text-xs text-[#2ABFBF] mt-3 font-semibold">$199 →</span>
-            </a>
+            {data.contractorMatchingUnlocked ? (
+              <a href="https://kealee.com/intake/contractor_match"
+                className="flex flex-col rounded-xl border border-gray-200 p-4 hover:shadow-sm transition-all">
+                <span className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">Find Help</span>
+                <span className="text-sm font-semibold text-gray-900 mb-auto">Match with a Contractor</span>
+                <span className="text-xs text-[#2ABFBF] mt-3 font-semibold">$199 →</span>
+              </a>
+            ) : (
+              <div className="flex flex-col rounded-xl border border-gray-200 bg-gray-50 p-4 cursor-not-allowed opacity-70"
+                title="Submit your permit package first to unlock contractor matching">
+                <div className="flex items-center gap-1.5 mb-2">
+                  <Lock className="h-3 w-3 text-gray-400" />
+                  <span className="text-xs font-bold uppercase tracking-wider text-gray-400">Locked</span>
+                </div>
+                <span className="text-sm font-semibold text-gray-500 mb-auto">Match with a Contractor</span>
+                <span className="text-xs text-gray-400 mt-3">Available after permit is submitted</span>
+              </div>
+            )}
           </div>
         </section>
 
         {/* ── Download / Share ─────────────────────────────────────────────── */}
         <div className="flex flex-wrap gap-3 pb-8">
-          <button className="flex items-center gap-2 rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
-            <Download className="h-4 w-4" />
-            Download Concept PDF
-          </button>
-          <button className="flex items-center gap-2 rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
-            <Share2 className="h-4 w-4" />
-            Share with Contractor
-          </button>
+          {data.pdfUrl ? (
+            <a href={data.pdfUrl} target="_blank" rel="noopener noreferrer"
+              className="flex items-center gap-2 rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+              <Download className="h-4 w-4" />
+              Download Concept PDF
+            </a>
+          ) : (
+            <button disabled
+              className="flex items-center gap-2 rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-medium text-gray-400 cursor-not-allowed"
+              title="PDF not yet generated">
+              <Download className="h-4 w-4" />
+              Download Concept PDF
+            </button>
+          )}
+          {data.contractorMatchingUnlocked ? (
+            <button
+              onClick={() => {
+                const shareUrl = window.location.href
+                navigator.clipboard?.writeText(shareUrl).then(() => alert('Link copied to clipboard!')).catch(() => {
+                  window.open(`mailto:?subject=My Concept Package&body=View my concept package: ${shareUrl}`)
+                })
+              }}
+              className="flex items-center gap-2 rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+              <Share2 className="h-4 w-4" />
+              Share with Contractor
+            </button>
+          ) : (
+            <button disabled
+              className="flex items-center gap-2 rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-medium text-gray-400 cursor-not-allowed"
+              title="Submit your permit to unlock contractor sharing">
+              <Lock className="h-3.5 w-3.5" />
+              Share with Contractor
+            </button>
+          )}
           <a href="https://kealee.com/marketplace"
             className="flex items-center gap-2 rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
             <Wrench className="h-4 w-4" />

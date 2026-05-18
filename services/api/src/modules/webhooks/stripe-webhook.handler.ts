@@ -32,6 +32,7 @@ const emailQueue = {
   },
 }
 import { getProjectExecutionQueue } from '../../utils/project-execution-queue'
+import { updateReadinessState } from '../orchestration/chain-gating'
 
 // ============================================================================
 // TYPES
@@ -64,6 +65,7 @@ async function handleCheckoutSessionCompleted(
   const intakeId = metadata.intakeId
   const funnelSessionId = metadata.funnelSessionId
   const tier = metadata.packageTier
+  const projectId = metadata.projectId
 
   logger.info({ source, intakeId, sessionId: session.id }, 'Payment completed')
 
@@ -90,6 +92,13 @@ async function handleCheckoutSessionCompleted(
         tier,
       })
     }
+
+    // Advance readiness state: concept paid → ready for zoning review
+    if (projectId) {
+      await updateReadinessState(projectId, { conceptCompleted: true }).catch((e: any) =>
+        logger.warn({ err: e.message, projectId }, 'updateReadinessState failed (concept) — non-fatal')
+      )
+    }
   } else if (source === 'zoning') {
     await prisma.zoningIntake.updateMany({
       where: { id: intakeId },
@@ -106,6 +115,13 @@ async function handleCheckoutSessionCompleted(
         amount: session.amount_total,
         tier,
       })
+    }
+
+    // Advance readiness state: zoning paid → ready for estimation
+    if (projectId) {
+      await updateReadinessState(projectId, { zoningCompleted: true }).catch((e: any) =>
+        logger.warn({ err: e.message, projectId }, 'updateReadinessState failed (zoning) — non-fatal')
+      )
     }
   } else if (source === 'estimation') {
     await prisma.estimationIntake.updateMany({
@@ -124,6 +140,13 @@ async function handleCheckoutSessionCompleted(
         tier,
       })
     }
+
+    // Advance readiness state: estimation paid → ready for permit review
+    if (projectId) {
+      await updateReadinessState(projectId, { estimationCompleted: true }).catch((e: any) =>
+        logger.warn({ err: e.message, projectId }, 'updateReadinessState failed (estimation) — non-fatal')
+      )
+    }
   } else if (source === 'permits') {
     await prisma.permitIntake.updateMany({
       where: { id: intakeId },
@@ -140,6 +163,13 @@ async function handleCheckoutSessionCompleted(
         amount: session.amount_total,
         tier,
       })
+    }
+
+    // Advance readiness state: permit paid → ready for checkout
+    if (projectId) {
+      await updateReadinessState(projectId, { permitReadyForCheckout: true }).catch((e: any) =>
+        logger.warn({ err: e.message, projectId }, 'updateReadinessState failed (permits) — non-fatal')
+      )
     }
   } else if (source === 'public_intake') {
     await (prisma as any).publicIntakeLead?.updateMany?.({

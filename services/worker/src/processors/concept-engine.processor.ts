@@ -233,6 +233,32 @@ async function processGenerateConceptPackage(
 
   await job.updateProgress(95);
 
+  // Portal bridge: write concept output back to public_intake_leads.form_data
+  // The owner portal reads from public_intake_leads.form_data.conceptOutput, so we must sync.
+  try {
+    await prisma.$executeRaw`
+      UPDATE public_intake_leads
+      SET form_data = jsonb_set(
+        COALESCE(form_data, '{}'::jsonb),
+        '{conceptOutput}',
+        ${JSON.stringify({
+          conceptPackageId: result.conceptPackageId,
+          floorplanId,
+          pdfUrl,
+          renderUrls: renderImageUrls,
+          packageJson: result.packageJson,
+          generatedAt: new Date().toISOString(),
+        })}::jsonb
+      ),
+      updated_at = now()
+      WHERE id = ${intakeId}
+    `;
+    console.log(`[concept-engine] Portal bridge: wrote conceptOutput to public_intake_leads for ${intakeId}`);
+  } catch (bridgeErr) {
+    // intake may be in permitServiceLead, not publicIntakeLead — non-fatal
+    console.warn('[concept-engine] Portal bridge update failed (non-fatal):', bridgeErr);
+  }
+
   // Chain: enqueue architect review task
   const { conceptEngineQueue } = await import('../queues/concept-engine.queue');
   await conceptEngineQueue.createArchitectReviewTask({

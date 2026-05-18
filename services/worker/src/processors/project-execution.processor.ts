@@ -112,7 +112,26 @@ export function createProjectExecutionWorker(): Worker<ProjectExecutionJobData> 
           }
         }
 
-        // 6. Update DigitalTwin on completion (v20 DDTS enforcement)
+        // 6. Trigger upsell sequence (7-day post-delivery)
+        if (intakeData?.contactEmail || orderData?.customerEmail) {
+          const upsellEmail = intakeData?.contactEmail || orderData?.customerEmail
+          const upsellName  = intakeData?.clientName || intakeData?.name || orderData?.customerName || ''
+          try {
+            const { leadFollowupQueue } = await import('../queues/lead-followup.queue')
+            await leadFollowupQueue.enqueueUpsellSequence({
+              leadId:      intakeId ?? outputId,
+              email:       upsellEmail,
+              firstName:   upsellName.split(' ')[0] ?? '',
+              projectType: type,
+              stage:       'POST_PURCHASE',
+              source:      `${type}_delivery`,
+            })
+          } catch (upsellErr: any) {
+            log.warn({ err: upsellErr.message }, 'Failed to queue upsell sequence (non-fatal)')
+          }
+        }
+
+        // 7. Update DigitalTwin on completion (v20 DDTS enforcement)
         if (projectId) {
           const isDev = process.env.NODE_ENV !== 'production'
 
@@ -281,16 +300,36 @@ async function executeEstimateExecution(intakeData: any, metadata: any) {
 
 async function executeConceptExecution(intakeData: any, metadata: any) {
   const { conceptEngineQueue } = await import('../queues/concept-engine.queue')
-  // intakeId falls back to metadata.intakeId if intakeData lookup failed upstream
-  await conceptEngineQueue.add('generate', {
-    intakeId: intakeData?.id ?? metadata?.intakeId,
-    projectAddress: intakeData?.projectAddress ?? intakeData?.project_address,
-    metadata,
+  const intakeId = intakeData?.id ?? metadata?.intakeId
+  const projectPath = metadata?.projectType ?? intakeData?.projectType ?? intakeData?.project_path ?? 'kitchen_remodel'
+
+  // Use generateFloorplan() which correctly sets jobType: 'generate_floorplan'
+  // This starts the full concept engine chain: floorplan → package → architect review + renders
+  await conceptEngineQueue.generateFloorplan({
+    intakeId,
+    projectPath,
+    projectId: metadata?.projectId,
+    intake: {
+      intakeId,
+      projectPath,
+      address:        intakeData?.projectAddress ?? intakeData?.project_address,
+      budgetRange:    intakeData?.budgetRange ?? metadata?.budgetRange ?? 'under_50k',
+      stylePreference: intakeData?.stylePreference ?? metadata?.stylePreference ?? 'modern',
+      constraints:    intakeData?.constraints ?? [],
+      uploadedPhotos: intakeData?.uploadedPhotos ?? [],
+      projectTitle:   intakeData?.projectTitle ?? intakeData?.clientName,
+      projectDescription: intakeData?.message ?? intakeData?.projectScope,
+    },
+    twinId:     metadata?.twinId,
+    captureSessionId: metadata?.captureSessionId,
   })
+
   return {
     type: 'concept',
     summary: 'Concept package queued for generation',
     nextStep: 'Your concept package is being generated. You will receive an email when ready.',
+    cta: 'View Your Portal',
+    conversion_product: 'ZONING_REVIEW',
   }
 }
 

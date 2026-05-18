@@ -233,4 +233,36 @@ export async function conceptIntakeRoutes(fastify: FastifyInstance) {
       return reply.code(500).send({ error: sanitizeErrorMessage(error, "Failed to lookup order") });
     }
   });
+
+  // GET /concepts/package/:intakeId
+  // Returns the generated ConceptPackage for a given intake — used by the owner portal delivery page
+  fastify.get("/package/:intakeId", async (request, reply) => {
+    try {
+      const { intakeId } = request.params as { intakeId: string };
+
+      const pkg = await prismaAny.conceptPackage.findFirst({
+        where: { intakeId },
+        orderBy: { createdAt: "desc" },
+      });
+
+      if (!pkg) return reply.code(404).send({ error: "Concept package not found" });
+
+      return {
+        id: pkg.id,
+        intakeId: pkg.intakeId,
+        status: pkg.status,
+        projectPath: pkg.projectPath,
+        floorplanUrl: pkg.floorplanUrl,
+        pdfUrl: pkg.pdfUrl,
+        renderImageUrls: pkg.renderImageUrls ?? [],
+        packageJson: pkg.packageJson,
+        architectReviewJson: pkg.architectReviewJson,
+        createdAt: pkg.createdAt,
+        completedAt: pkg.completedAt,
+      };
+    } catch (error: any) {
+      fastify.log.error(error);
+      return reply.code(500).send({ error: sanitizeErrorMessage(error, "Failed to fetch concept package") });
+    }
+  });
 }

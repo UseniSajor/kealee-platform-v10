@@ -6,8 +6,21 @@
 
 import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify'
 import { prisma } from '@kealee/database'
-import type { ReadinessState } from '@kealee/database'
 const prismaAny = prisma as any
+
+// ReadinessState as string union (model not yet generated into Prisma client types)
+type ReadinessState =
+  | 'NOT_READY'
+  | 'NEEDS_MORE_INFO'
+  | 'READY_FOR_CONCEPT'
+  | 'READY_FOR_ZONING_REVIEW'
+  | 'READY_FOR_ESTIMATE'
+  | 'READY_FOR_PERMIT_REVIEW'
+  | 'READY_FOR_CHECKOUT'
+  | 'PERMIT_SUBMITTED'
+  | 'PERMIT_APPROVED'
+  | 'REQUIRES_CONSULTATION'
+  | 'BLOCKED'
 
 // ============================================================================
 // READINESS LOGIC
@@ -20,26 +33,27 @@ export async function getProjectReadinessState(
   projectId: string
 ): Promise<ReadinessState> {
   // Get the service chain gate for this project
-  const gate = await prisma.serviceChainGate.findFirst({
+  const gate = await prismaAny.serviceChainGate.findFirst({
     where: { projectId },
   })
 
   if (!gate) {
     // Create new gate if it doesn't exist
-    const newGate = await prisma.serviceChainGate.create({
+    const newGate = await prismaAny.serviceChainGate.create({
       data: {
         projectId,
-        currentReadinessState: 'NOT_READY' as ReadinessState,
+        currentReadinessState: 'NOT_READY',
       },
     })
-    return newGate.currentReadinessState
+    return newGate.currentReadinessState as ReadinessState
   }
 
   return gate.currentReadinessState as ReadinessState
 }
 
 /**
- * Update readiness state based on completed services
+ * Update readiness state based on completed services.
+ * Contractor matching is gated behind permit submission or approval.
  */
 export async function updateReadinessState(
   projectId: string,
@@ -48,57 +62,67 @@ export async function updateReadinessState(
     zoningCompleted?: boolean
     estimationCompleted?: boolean
     permitReadyForCheckout?: boolean
+    permitSubmitted?: boolean
+    permitApproved?: boolean
   }
 ): Promise<ReadinessState> {
-  // Determine next readiness state based on completed services
+  const {
+    conceptCompleted,
+    zoningCompleted,
+    estimationCompleted,
+    permitReadyForCheckout,
+    permitSubmitted,
+    permitApproved,
+  } = completedServices
+
+  // Contractor matching unlocks only once a permit has been submitted or approved
+  const contractorMatchingUnlocked = !!(permitSubmitted || permitApproved)
+
+  // Determine readiness state in priority order
   let nextState: ReadinessState = 'NOT_READY'
 
-  if (completedServices.conceptCompleted && !completedServices.zoningCompleted) {
-    nextState = 'READY_FOR_ZONING_REVIEW'
-  } else if (completedServices.conceptCompleted && completedServices.zoningCompleted && !completedServices.estimationCompleted) {
-    nextState = 'READY_FOR_ESTIMATE'
-  } else if (
-    completedServices.conceptCompleted &&
-    completedServices.zoningCompleted &&
-    completedServices.estimationCompleted &&
-    !completedServices.permitReadyForCheckout
-  ) {
-    nextState = 'READY_FOR_PERMIT_REVIEW'
-  } else if (
-    completedServices.conceptCompleted &&
-    completedServices.zoningCompleted &&
-    completedServices.estimationCompleted &&
-    completedServices.permitReadyForCheckout
-  ) {
+  if (permitApproved) {
+    nextState = 'PERMIT_APPROVED'
+  } else if (permitSubmitted) {
+    nextState = 'PERMIT_SUBMITTED'
+  } else if (conceptCompleted && zoningCompleted && estimationCompleted && permitReadyForCheckout) {
     nextState = 'READY_FOR_CHECKOUT'
+  } else if (conceptCompleted && zoningCompleted && estimationCompleted) {
+    nextState = 'READY_FOR_PERMIT_REVIEW'
+  } else if (conceptCompleted && zoningCompleted) {
+    nextState = 'READY_FOR_ESTIMATE'
+  } else if (conceptCompleted) {
+    nextState = 'READY_FOR_ZONING_REVIEW'
   }
 
   // Determine next required service
-  let nextRequiredService: string | undefined = undefined
-  if (!completedServices.conceptCompleted) {
+  let nextRequiredService: string | undefined
+  if (!conceptCompleted) {
     nextRequiredService = 'concept'
-  } else if (!completedServices.zoningCompleted) {
+  } else if (!zoningCompleted) {
     nextRequiredService = 'zoning'
-  } else if (!completedServices.estimationCompleted) {
+  } else if (!estimationCompleted) {
     nextRequiredService = 'estimation'
-  } else if (!completedServices.permitReadyForCheckout) {
+  } else if (!permitReadyForCheckout) {
     nextRequiredService = 'permit'
+  } else if (!permitSubmitted) {
+    nextRequiredService = 'permit_submission'
   }
 
-  // Update gate
-  const gate = await prisma.serviceChainGate.upsert({
-    where: {
-      projectId,
-    },
+  // Upsert the gate record
+  const gate = await prismaAny.serviceChainGate.upsert({
+    where: { projectId },
     create: {
       projectId,
       currentReadinessState: nextState,
       nextRequiredService,
+      contractorMatchingUnlocked,
       ...completedServices,
     },
     update: {
       currentReadinessState: nextState,
       nextRequiredService,
+      contractorMatchingUnlocked,
       ...completedServices,
     },
   })
@@ -110,7 +134,7 @@ export async function updateReadinessState(
  * Get gating requirements for a specific service
  */
 export function getGatingRequirements(
-  targetService: 'concept' | 'zoning' | 'estimation' | 'permit'
+  targetService: 'concept' | 'zoning' | 'estimation' | 'permit' | 'contractor_matching'
 ): {
   prerequisites: string[]
   description: string
@@ -125,17 +149,22 @@ export function getGatingRequirements(
     zoning: {
       prerequisites: ['concept'],
       description: 'Requires concept to be completed first',
-      skipAllowed: false, // Zoning is mandatory for most projects
+      skipAllowed: false,
     },
     estimation: {
       prerequisites: ['concept', 'zoning'],
       description: 'Requires concept and zoning to be completed',
-      skipAllowed: false, // Estimation is mandatory
+      skipAllowed: false,
     },
     permit: {
       prerequisites: ['concept', 'zoning', 'estimation'],
       description: 'Requires all prior services to be completed',
-      skipAllowed: false, // Permits require everything
+      skipAllowed: false,
+    },
+    contractor_matching: {
+      prerequisites: ['concept', 'zoning', 'estimation', 'permit_submitted'],
+      description: 'Contractor matching requires a permit to be submitted or approved first',
+      skipAllowed: false,
     },
   }
 
@@ -148,7 +177,7 @@ export function getGatingRequirements(
  */
 export async function checkServiceAccess(
   projectId: string,
-  requestedService: 'concept' | 'zoning' | 'estimation' | 'permit'
+  requestedService: 'concept' | 'zoning' | 'estimation' | 'permit' | 'contractor_matching'
 ): Promise<{
   allowed: boolean
   reason?: string
@@ -158,17 +187,20 @@ export async function checkServiceAccess(
   const currentState = await getProjectReadinessState(projectId)
   const gatingRequirements = getGatingRequirements(requestedService)
 
-  // Map readiness states to accessible services
+  // Map readiness states to accessible services.
+  // contractor_matching is ONLY accessible after a permit has been submitted or approved.
   const stateToServicesMap: Record<ReadinessState, string[]> = {
-    NOT_READY: ['concept'],
-    NEEDS_MORE_INFO: ['concept'],
-    READY_FOR_CONCEPT: ['concept'],
-    READY_FOR_ZONING_REVIEW: ['zoning'],
-    READY_FOR_ESTIMATE: ['estimation'],
-    READY_FOR_PERMIT_REVIEW: ['zoning', 'estimation', 'permit'], // Can review/revise
-    READY_FOR_CHECKOUT: ['zoning', 'estimation', 'permit', 'checkout'],
-    REQUIRES_CONSULTATION: ['concept'],
-    BLOCKED: [],
+    NOT_READY:                ['concept'],
+    NEEDS_MORE_INFO:          ['concept'],
+    READY_FOR_CONCEPT:        ['concept'],
+    READY_FOR_ZONING_REVIEW:  ['zoning'],
+    READY_FOR_ESTIMATE:       ['estimation'],
+    READY_FOR_PERMIT_REVIEW:  ['zoning', 'estimation', 'permit'],
+    READY_FOR_CHECKOUT:       ['zoning', 'estimation', 'permit', 'checkout'],
+    PERMIT_SUBMITTED:         ['zoning', 'estimation', 'permit', 'checkout', 'contractor_matching'],
+    PERMIT_APPROVED:          ['zoning', 'estimation', 'permit', 'checkout', 'contractor_matching'],
+    REQUIRES_CONSULTATION:    ['concept'],
+    BLOCKED:                  [],
   }
 
   const accessibleServices = stateToServicesMap[currentState] || []
