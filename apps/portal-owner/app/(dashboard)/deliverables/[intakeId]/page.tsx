@@ -8,9 +8,8 @@ import {
   ArrowLeft, ArrowRight, CheckCircle, CheckCircle2, Clock, DollarSign,
   Zap, Wrench, Droplets, Wind, Lightbulb, Download, Share2,
   ChevronDown, ChevronUp, Loader2, Video, ShieldCheck,
-  AlertTriangle, MapPin, TrendingUp, Lock,
+  AlertTriangle, MapPin, TrendingUp, Lock, Layers, Cpu, ImageIcon, FileText,
 } from 'lucide-react'
-import { supabase } from '@/lib/supabase'
 
 // ─── Render stubs ─────────────────────────────────────────────────────────────
 
@@ -122,15 +121,149 @@ function MEPRow({ icon: Icon, label, value, color }: {
   )
 }
 
-// ─── Loader ───────────────────────────────────────────────────────────────────
+// ─── Animated Polling State ───────────────────────────────────────────────────
 
-function LoadingState({ label }: { label: string }) {
+const PIPELINE_STEPS = [
+  { icon: Layers,    label: 'Analyzing project requirements',   duration: 8  },
+  { icon: Cpu,       label: 'Generating floor plan & layout',   duration: 14 },
+  { icon: ImageIcon, label: 'Creating AI concept renders',      duration: 22 },
+  { icon: FileText,  label: 'Building your concept package',    duration: 12 },
+  { icon: CheckCircle2, label: 'Architect quality review',     duration: 4  },
+]
+
+function PollingState({ pollCount }: { pollCount: number }) {
+  const [activeStep, setActiveStep] = useState(0)
+  const [shimmerIndex, setShimmerIndex] = useState(0)
+
+  // Cycle through pipeline steps based on poll count + time
+  useEffect(() => {
+    const stepTotal = PIPELINE_STEPS.length
+    const step = Math.min(Math.floor(pollCount * 0.6), stepTotal - 1)
+    setActiveStep(step)
+  }, [pollCount])
+
+  // Shimmer cycle for the render placeholders
+  useEffect(() => {
+    const t = setInterval(() => setShimmerIndex(i => (i + 1) % 3), 1800)
+    return () => clearInterval(t)
+  }, [])
+
+  const progressPct = Math.min(10 + pollCount * 7, 90)
+
   return (
-    <div className="min-h-[60vh] flex items-center justify-center">
-      <div className="text-center max-w-md">
-        <Loader2 className="w-12 h-12 animate-spin mx-auto mb-4" style={{ color: '#E8724B' }} />
-        <p className="text-slate-500 text-sm">{label}</p>
+    <div className="max-w-2xl mx-auto py-12 px-4">
+      {/* Header */}
+      <div className="text-center mb-10">
+        <div className="inline-flex h-16 w-16 items-center justify-center rounded-2xl mb-5"
+          style={{ background: 'linear-gradient(135deg, #E8724B18, #E8724B08)', border: '1.5px solid #E8724B30' }}>
+          <Cpu className="h-7 w-7 animate-pulse" style={{ color: '#E8724B' }} />
+        </div>
+        <h1 className="text-xl font-bold mb-2" style={{ color: '#1A2B4A' }}>Building Your Concept Package</h1>
+        <p className="text-sm text-slate-500">Our AI is crafting your personalized design. This takes a few minutes.</p>
       </div>
+
+      {/* Progress bar */}
+      <div className="mb-8">
+        <div className="flex justify-between text-xs text-slate-400 mb-2">
+          <span>Processing</span>
+          <span>{progressPct}%</span>
+        </div>
+        <div className="h-2 w-full rounded-full bg-slate-100 overflow-hidden">
+          <div
+            className="h-full rounded-full transition-all duration-1000 ease-out"
+            style={{
+              width: `${progressPct}%`,
+              background: 'linear-gradient(90deg, #E8724B, #2ABFBF)',
+            }}
+          />
+        </div>
+      </div>
+
+      {/* Pipeline steps */}
+      <div className="space-y-2 mb-10">
+        {PIPELINE_STEPS.map((step, i) => {
+          const done    = i < activeStep
+          const active  = i === activeStep
+          const pending = i > activeStep
+          return (
+            <div key={i}
+              className="flex items-center gap-3 rounded-xl px-4 py-3 transition-all duration-500"
+              style={{
+                backgroundColor: active ? '#E8724B08' : 'transparent',
+                border: active ? '1px solid #E8724B20' : '1px solid transparent',
+                opacity: pending ? 0.4 : 1,
+              }}>
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg"
+                style={{ backgroundColor: done ? '#2ABFBF15' : active ? '#E8724B15' : '#94A3B815' }}>
+                {done
+                  ? <CheckCircle2 className="h-4 w-4" style={{ color: '#2ABFBF' }} />
+                  : active
+                    ? <step.icon className="h-4 w-4 animate-pulse" style={{ color: '#E8724B' }} />
+                    : <step.icon className="h-4 w-4" style={{ color: '#94A3B8' }} />
+                }
+              </div>
+              <span className="text-sm font-medium" style={{ color: done ? '#2ABFBF' : active ? '#1A2B4A' : '#94A3B8' }}>
+                {step.label}
+              </span>
+              {active && (
+                <div className="ml-auto flex gap-1">
+                  {[0, 1, 2].map(d => (
+                    <div key={d} className="h-1.5 w-1.5 rounded-full animate-bounce"
+                      style={{ backgroundColor: '#E8724B', animationDelay: `${d * 0.15}s` }} />
+                  ))}
+                </div>
+              )}
+              {done && <CheckCircle2 className="ml-auto h-4 w-4" style={{ color: '#2ABFBF' }} />}
+            </div>
+          )
+        })}
+      </div>
+
+      {/* Shimmer render placeholders */}
+      <div className="grid grid-cols-3 gap-3 mb-8">
+        {[0, 1, 2].map(i => (
+          <div key={i} className="relative aspect-video rounded-xl overflow-hidden bg-slate-100">
+            <div
+              className="absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite]"
+              style={{
+                background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent)',
+                animationDelay: `${i * 0.4}s`,
+              }}
+            />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <ImageIcon className="h-6 w-6 text-slate-300" />
+            </div>
+            {shimmerIndex === i && (
+              <div className="absolute bottom-0 left-0 right-0 h-0.5"
+                style={{ background: 'linear-gradient(90deg, #E8724B, #2ABFBF)', animation: 'scan 1.8s ease-in-out' }} />
+            )}
+          </div>
+        ))}
+      </div>
+
+      {/* Footer hint */}
+      <div className="flex flex-col items-center gap-3 text-center">
+        <p className="text-xs text-slate-400">
+          We&apos;ll email you when your package is ready — you don&apos;t need to stay on this page.
+        </p>
+        <Link href="/deliverables"
+          className="text-xs font-medium transition-colors hover:opacity-80"
+          style={{ color: '#E8724B' }}>
+          ← Back to Deliverables
+        </Link>
+      </div>
+
+      <style>{`
+        @keyframes shimmer {
+          0%   { transform: translateX(-100%) }
+          100% { transform: translateX(300%) }
+        }
+        @keyframes scan {
+          0%   { transform: scaleX(0); transform-origin: left }
+          50%  { transform: scaleX(1); transform-origin: left }
+          100% { transform: scaleX(0); transform-origin: right }
+        }
+      `}</style>
     </div>
   )
 }
@@ -149,13 +282,12 @@ export default function ConceptDeliverablePage() {
 
   const fetchData = useCallback(async (): Promise<boolean> => {
     try {
-      const { data: intake, error } = await supabase
-        .from('public_intake_leads')
-        .select('*')
-        .eq('id', intakeId)
-        .single()
+      // Use server-side API route — bypasses Supabase RLS on public_intake_leads
+      const res = await fetch(`/api/intake/${intakeId}`)
+      if (!res.ok) return false
+      const { intake, gate } = await res.json()
 
-      if (error || !intake) return false
+      if (!intake) return false
 
       const formData = (intake.form_data as Record<string, unknown>) ?? {}
       if (!formData.conceptOutput || intake.status !== 'concept_ready') return false
@@ -187,18 +319,12 @@ export default function ConceptDeliverablePage() {
           : undefined
       const placeholderVideoUrl = typeof co.videoUrl === 'string' ? co.videoUrl : undefined
 
-      // Fetch service chain gate to check contractor matching unlock status
-      let contractorMatchingUnlocked = false
-      try {
-        const { data: gate } = await supabase
-          .from('service_chain_gates')
-          .select('contractorMatchingUnlocked, permitSubmitted, permitApproved')
-          .eq('conceptIntakeId', intakeId)
-          .maybeSingle()
-        if (gate) {
-          contractorMatchingUnlocked = !!(gate.contractorMatchingUnlocked || gate.permitSubmitted || gate.permitApproved)
-        }
-      } catch { /* non-fatal — default to locked */ }
+      // Contractor matching unlock status — from the API route (includes gate record)
+      const contractorMatchingUnlocked = !!(
+        gate?.contractorMatchingUnlocked ||
+        gate?.permitSubmitted ||
+        gate?.permitApproved
+      )
 
       setData({
         conceptId:       `concept_${intakeId.slice(0, 8)}`,
@@ -293,10 +419,16 @@ export default function ConceptDeliverablePage() {
     return () => { stopped = true }
   }, [loadStatus, data, fetchData])
 
-  if (loadStatus === 'loading' || loadStatus === 'polling') {
-    return <LoadingState label={loadStatus === 'polling'
-      ? `Generating your concept package… (check ${pollCount + 1}/12)`
-      : 'Loading your concept package…'} />
+  if (loadStatus === 'loading') {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin" style={{ color: '#E8724B' }} />
+      </div>
+    )
+  }
+
+  if (loadStatus === 'polling') {
+    return <PollingState pollCount={pollCount} />
   }
 
   if (loadStatus === 'error' || !data) {
