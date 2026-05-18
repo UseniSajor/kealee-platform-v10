@@ -293,34 +293,77 @@ async function main(): Promise<void> {
     const Replicate = (await import('replicate')).default
     const replicate = new Replicate({ auth: process.env.REPLICATE_API_TOKEN })
 
-    const prompt = [
-      `photorealistic interior design, 8K, professional photography, natural daylight,`,
-      `${style} ${roomType},`,
-      `beautiful interior design, professional architectural visualization, high quality, detailed`,
-    ].join(' ')
+    // Varied angle/composition so each render is distinct
+    const VIEW_ANGLES = [
+      'wide-angle overview shot from the entrance, full room perspective',
+      'close-up detail of countertops and cabinetry, shallow depth of field',
+      'opposite corner perspective showing windows and natural light flooding in',
+      'overhead angled view highlighting the layout and spatial flow',
+      'side elevation showing appliances and storage wall in context',
+      'hero shot centered on focal feature, warm late-afternoon lighting',
+      'hallway threshold perspective looking into the space',
+      'detail shot of materials, textures, and premium finishes',
+      'panoramic wide view capturing full width of the room',
+      'low-angle dramatic perspective emphasizing ceiling height and volume',
+      'intimate corner with ambient lighting and styled accessories',
+      'exterior-facing window view with garden or street backdrop',
+    ]
 
+    // Submit renders sequentially with a 12s gap to respect the 1-burst/min
+    // rate limit imposed when the Replicate account has < $5 credit.
     const predictionIds: string[] = []
     for (let i = 0; i < IMAGE_COUNT; i++) {
-      const pred = await replicate.predictions.create({
-        model: 'black-forest-labs/flux-1.1-pro-ultra',
-        input: {
-          prompt,
-          aspect_ratio:     '16:9',
-          output_format:    'jpg',
-          output_quality:   95,
-          safety_tolerance: 2,
-          raw:              false,
-        },
-      })
+      const angle  = VIEW_ANGLES[i % VIEW_ANGLES.length]
+      const prompt = [
+        `photorealistic interior design, 8K, professional photography, natural daylight,`,
+        `${style} ${roomType}, ${angle},`,
+        `beautiful interior design, professional architectural visualization, high quality, detailed`,
+      ].join(' ')
+
+      if (i > 0) {
+        process.stdout.write(`  Waiting 12s before next submission (rate limit)...\n`)
+        await new Promise(r => setTimeout(r, 12_000))
+      }
+      let pred: any
+      let attempts = 0
+      while (attempts < 5) {
+        try {
+          pred = await replicate.predictions.create({
+            model: 'black-forest-labs/flux-1.1-pro-ultra',
+            input: {
+              prompt,
+              aspect_ratio:     '16:9',
+              output_format:    'jpg',
+              output_quality:   95,
+              safety_tolerance: 2,
+              raw:              false,
+            },
+          })
+          break
+        } catch (err: any) {
+          if (err?.message?.includes('429') || err?.message?.includes('throttled')) {
+            const wait = 15_000 * (attempts + 1)
+            process.stdout.write(`  Rate limited — waiting ${wait / 1000}s...\n`)
+            await new Promise(r => setTimeout(r, wait))
+            attempts++
+          } else {
+            throw err
+          }
+        }
+      }
+      if (!pred) throw new Error('Failed to submit render after retries')
       predictionIds.push(pred.id)
       process.stdout.write(`  Submitted render ${i + 1}/${IMAGE_COUNT} (${pred.id})\n`)
     }
 
     console.log(`  Polling ${IMAGE_COUNT} renders to completion (up to 3 min each)...`)
     process.stdout.write('  Progress: ')
-    const results = await Promise.all(
-      predictionIds.map((id, i) => pollReplicate(id, `render-${i + 1}`))
-    )
+    // Poll sequentially to avoid hammering the API
+    const results: (string | null)[] = []
+    for (const [i, id] of predictionIds.entries()) {
+      const url = await pollReplicate(id, `render-${i + 1}`)
+      results.push(url)
+    }
     console.log()
     renderUrls = results.filter((u): u is string => typeof u === 'string')
     console.log(`[4/6] OK — ${renderUrls.length}/${IMAGE_COUNT} renders completed`)
@@ -349,7 +392,7 @@ async function main(): Promise<void> {
       const replicate = new Replicate({ auth: process.env.REPLICATE_API_TOKEN })
 
       const videoPred = await replicate.predictions.create({
-        model: 'klingai/kling-2.5-turbo-pro',
+        model: 'kwaivgi/kling-v2.5-turbo-pro',
         input: {
           prompt:            videoPrompt,
           duration:          5,
