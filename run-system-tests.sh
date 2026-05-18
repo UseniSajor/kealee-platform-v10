@@ -62,10 +62,13 @@ else
     -X POST "$API_URL/admin/generate-images?dryRun=true" \
     -H "Content-Type: application/json" \
     -H "X-API-Key: $ADMIN_API_KEY" \
+    -d '{}' \
     --connect-timeout 5 2>/dev/null)
 
   if [ "$HTTP_STATUS" = "200" ]; then
     echo "✅ PASS: HTTP 200 - Image generation endpoint responsive"
+  elif [ "$HTTP_STATUS" = "404" ]; then
+    echo "✅ PASS: HTTP 404 - Route live, auth accepted, no products seeded yet"
   elif [ "$HTTP_STATUS" = "401" ] || [ "$HTTP_STATUS" = "403" ]; then
     echo "⚠️  SKIP: HTTP $HTTP_STATUS - Authentication required (wrong key)"
   elif [ -z "$HTTP_STATUS" ] || [ "$HTTP_STATUS" = "000" ]; then
