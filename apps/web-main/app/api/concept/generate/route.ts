@@ -127,9 +127,13 @@ async function fireConceptRenders(
   const roomType = projectPathToRoomType(projectPath)
   const modes    = ['realistic', 'cinematic'] as const
 
-  const settled = await Promise.allSettled(
-    Array.from({ length: count }, (_, i) =>
-      generateImages({
+  // Submit sequentially with a short delay to avoid Replicate burst-rate limits
+  // on accounts with low credit balance (1 req/min burst cap below $5).
+  const predictionIds: string[] = []
+  for (let i = 0; i < count; i++) {
+    if (i > 0) await new Promise(r => setTimeout(r, 2000))
+    try {
+      const result = await generateImages({
         prompt:      buildArchitecturalPrompt({
           style:      style.toLowerCase(),
           roomType,
@@ -137,12 +141,11 @@ async function fireConceptRenders(
         }),
         aspectRatio: '16:9',
       })
-    )
-  )
-
-  const predictionIds = settled
-    .filter((r): r is PromiseFulfilledResult<GenerateImageResult> => r.status === 'fulfilled')
-    .map(r => r.value.predictionId)
+      predictionIds.push(result.predictionId)
+    } catch (err: any) {
+      console.warn(`[concept/generate] Render ${i + 1}/${count} failed:`, err?.message)
+    }
+  }
 
   console.log(`[concept/generate] Fired ${predictionIds.length}/${count} render jobs`)
 
