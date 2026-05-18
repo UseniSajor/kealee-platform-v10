@@ -17429,6 +17429,7 @@ model ServiceChainGate {
   permitIntakeId             String?
   permitSubmitted            Boolean        @default(false)
   permitApproved             Boolean        @default(false)
+  noPermitRequired           Boolean        @default(false)
   contractorMatchingUnlocked Boolean        @default(false)
 
   currentReadinessState      ReadinessState @default(NOT_READY)

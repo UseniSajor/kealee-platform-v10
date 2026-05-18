@@ -53,7 +53,9 @@ export async function getProjectReadinessState(
 
 /**
  * Update readiness state based on completed services.
- * Contractor matching is gated behind permit submission or approval.
+ * Contractor matching unlocks when:
+ *   - permit has been submitted or approved, OR
+ *   - no permit is required and estimation is complete
  */
 export async function updateReadinessState(
   projectId: string,
@@ -64,8 +66,13 @@ export async function updateReadinessState(
     permitReadyForCheckout?: boolean
     permitSubmitted?: boolean
     permitApproved?: boolean
+    noPermitRequired?: boolean
   }
 ): Promise<ReadinessState> {
+  // Merge with existing gate data so partial updates don't reset other flags
+  const existing = await prismaAny.serviceChainGate.findFirst({ where: { projectId } })
+  const merged = { ...(existing ?? {}), ...completedServices }
+
   const {
     conceptCompleted,
     zoningCompleted,
@@ -73,10 +80,17 @@ export async function updateReadinessState(
     permitReadyForCheckout,
     permitSubmitted,
     permitApproved,
-  } = completedServices
+    noPermitRequired,
+  } = merged
 
-  // Contractor matching unlocks only once a permit has been submitted or approved
-  const contractorMatchingUnlocked = !!(permitSubmitted || permitApproved)
+  // Contractor matching unlocks if:
+  //   1. permit submitted or approved, OR
+  //   2. project doesn't need a permit and estimation is done
+  const contractorMatchingUnlocked = !!(
+    permitSubmitted ||
+    permitApproved ||
+    (noPermitRequired && estimationCompleted)
+  )
 
   // Determine readiness state in priority order
   let nextState: ReadinessState = 'NOT_READY'
@@ -85,6 +99,9 @@ export async function updateReadinessState(
     nextState = 'PERMIT_APPROVED'
   } else if (permitSubmitted) {
     nextState = 'PERMIT_SUBMITTED'
+  } else if (noPermitRequired && conceptCompleted && zoningCompleted && estimationCompleted) {
+    // No permit needed — skip straight to checkout / contractor matching
+    nextState = 'READY_FOR_CHECKOUT'
   } else if (conceptCompleted && zoningCompleted && estimationCompleted && permitReadyForCheckout) {
     nextState = 'READY_FOR_CHECKOUT'
   } else if (conceptCompleted && zoningCompleted && estimationCompleted) {
@@ -103,28 +120,24 @@ export async function updateReadinessState(
     nextRequiredService = 'zoning'
   } else if (!estimationCompleted) {
     nextRequiredService = 'estimation'
-  } else if (!permitReadyForCheckout) {
+  } else if (!noPermitRequired && !permitReadyForCheckout) {
     nextRequiredService = 'permit'
-  } else if (!permitSubmitted) {
+  } else if (!noPermitRequired && !permitSubmitted) {
     nextRequiredService = 'permit_submission'
+  }
+
+  const writeData = {
+    currentReadinessState: nextState,
+    nextRequiredService,
+    contractorMatchingUnlocked,
+    ...completedServices,
   }
 
   // Upsert the gate record
   const gate = await prismaAny.serviceChainGate.upsert({
-    where: { projectId },
-    create: {
-      projectId,
-      currentReadinessState: nextState,
-      nextRequiredService,
-      contractorMatchingUnlocked,
-      ...completedServices,
-    },
-    update: {
-      currentReadinessState: nextState,
-      nextRequiredService,
-      contractorMatchingUnlocked,
-      ...completedServices,
-    },
+    where:  { projectId },
+    create: { projectId, ...writeData },
+    update: writeData,
   })
 
   return gate.currentReadinessState as ReadinessState
@@ -162,8 +175,8 @@ export function getGatingRequirements(
       skipAllowed: false,
     },
     contractor_matching: {
-      prerequisites: ['concept', 'zoning', 'estimation', 'permit_submitted'],
-      description: 'Contractor matching requires a permit to be submitted or approved first',
+      prerequisites: ['concept', 'zoning', 'estimation'],
+      description: 'Requires permit submission/approval, OR no permit needed with estimation complete',
       skipAllowed: false,
     },
   }
@@ -184,11 +197,25 @@ export async function checkServiceAccess(
   nextStep?: string
   blocker?: string
 }> {
+  // Contractor matching has its own unlock logic — check the gate record directly
+  // so that "no permit required" projects aren't blocked unnecessarily
+  if (requestedService === 'contractor_matching') {
+    const gate = await prismaAny.serviceChainGate.findFirst({ where: { projectId } })
+    if (gate?.contractorMatchingUnlocked) return { allowed: true }
+    return {
+      allowed: false,
+      reason: 'Contractor matching is not yet available for this project',
+      nextStep: gate?.noPermitRequired
+        ? 'Complete your cost estimation to unlock contractor matching'
+        : 'Submit your permit package to unlock contractor matching',
+      blocker: gate?.noPermitRequired ? 'estimation' : 'permit_submission',
+    }
+  }
+
   const currentState = await getProjectReadinessState(projectId)
   const gatingRequirements = getGatingRequirements(requestedService)
 
-  // Map readiness states to accessible services.
-  // contractor_matching is ONLY accessible after a permit has been submitted or approved.
+  // Map readiness states to accessible services
   const stateToServicesMap: Record<ReadinessState, string[]> = {
     NOT_READY:                ['concept'],
     NEEDS_MORE_INFO:          ['concept'],
@@ -196,7 +223,7 @@ export async function checkServiceAccess(
     READY_FOR_ZONING_REVIEW:  ['zoning'],
     READY_FOR_ESTIMATE:       ['estimation'],
     READY_FOR_PERMIT_REVIEW:  ['zoning', 'estimation', 'permit'],
-    READY_FOR_CHECKOUT:       ['zoning', 'estimation', 'permit', 'checkout'],
+    READY_FOR_CHECKOUT:       ['zoning', 'estimation', 'permit', 'checkout', 'contractor_matching'],
     PERMIT_SUBMITTED:         ['zoning', 'estimation', 'permit', 'checkout', 'contractor_matching'],
     PERMIT_APPROVED:          ['zoning', 'estimation', 'permit', 'checkout', 'contractor_matching'],
     REQUIRES_CONSULTATION:    ['concept'],

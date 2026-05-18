@@ -114,7 +114,7 @@ async function processGenerateConceptPackage(
   job: Job<ConceptEngineJobData>,
   prisma: any,
 ): Promise<void> {
-  const { intakeId, floorplanId, twinId, projectPath, intake } = job.data;
+  const { intakeId, floorplanId, twinId, projectPath, intake, projectId } = job.data;
 
   if (!floorplanId) throw new Error('floorplanId required for generate_concept_package');
 
@@ -257,6 +257,32 @@ async function processGenerateConceptPackage(
   } catch (bridgeErr) {
     // intake may be in permitServiceLead, not publicIntakeLead — non-fatal
     console.warn('[concept-engine] Portal bridge update failed (non-fatal):', bridgeErr);
+  }
+
+  // Gate update: set noPermitRequired on ServiceChainGate based on permitScope
+  // This allows contractor matching to unlock immediately when no permit is needed
+  if (projectId) {
+    try {
+      const permitScope = result.packageJson?.permitScope as { requiresPermit?: boolean } | undefined
+      const noPermitRequired = permitScope?.requiresPermit === false
+      if (noPermitRequired) {
+        await prisma.$executeRaw`
+          INSERT INTO service_chain_gates
+            (id, "projectId", "conceptIntakeId", "noPermitRequired", "conceptCompleted",
+             "currentReadinessState", "createdAt", "updatedAt")
+          VALUES
+            (gen_random_uuid()::text, ${projectId}, ${intakeId}, true, true,
+             'READY_FOR_ZONING_REVIEW', now(), now())
+          ON CONFLICT ("projectId") DO UPDATE SET
+            "noPermitRequired"    = true,
+            "conceptIntakeId"     = EXCLUDED."conceptIntakeId",
+            "updatedAt"           = now()
+        `;
+        console.log(`[concept-engine] No permit required for project ${projectId} — gate updated`);
+      }
+    } catch (gateErr) {
+      console.warn('[concept-engine] ServiceChainGate noPermitRequired update failed (non-fatal):', gateErr);
+    }
   }
 
   // Chain: enqueue architect review task
