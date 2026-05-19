@@ -3,7 +3,7 @@
  * Protects routes based on authentication status and user roles
  */
 
-import { createMiddlewareClient } from '@supabase/auth-helpers-nextjs'
+import { createServerClient } from '@supabase/ssr'
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import { getOwnerPortalBaseUrl, getOwnerPortalDeliverableUrl } from '@/lib/owner-portal-urls'
@@ -74,7 +74,6 @@ const PUBLIC_ROUTES = [
 ]
 
 export async function middleware(request: NextRequest) {
-  const res = NextResponse.next()
   const pathname = request.nextUrl.pathname
 
   // /concept (exact) is the public service/package select page.
@@ -91,8 +90,23 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(`${getOwnerPortalBaseUrl()}/deliverables`)
   }
 
-  // Create Supabase client
-  const supabase = createMiddlewareClient({ req: request, res })
+  // Create Supabase client — must use @supabase/ssr so the refreshed session
+  // cookie is written back onto the response that reaches the browser.
+  let response = NextResponse.next({ request: { headers: request.headers } })
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll: () => request.cookies.getAll(),
+        setAll: (cookiesToSet) => {
+          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
+          response = NextResponse.next({ request: { headers: request.headers } })
+          cookiesToSet.forEach(({ name, value, options }) => response.cookies.set(name, value, options as Parameters<typeof response.cookies.set>[2]))
+        },
+      },
+    }
+  )
 
   // Get session
   const { data: { session } } = await supabase.auth.getSession()
@@ -107,7 +121,7 @@ export async function middleware(request: NextRequest) {
     if (isAuthEntry && user) {
       return NextResponse.redirect(new URL('/', request.url))
     }
-    return res
+    return response
   }
 
   // Protect all other routes - require authentication
@@ -137,7 +151,7 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  return res
+  return response
 }
 
 export const config = {
