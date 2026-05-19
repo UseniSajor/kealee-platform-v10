@@ -47,10 +47,11 @@ const argv       = process.argv.slice(2)
 const get        = (flag: string, fallback: string) => {
   const i = argv.indexOf(flag); return i >= 0 ? (argv[i + 1] ?? fallback) : fallback
 }
-const BASE_URL   = get('--host', 'http://localhost:3002')
-const SERVICE    = get('--service', 'kitchen')
-const TIER       = Number(get('--tier', '2'))
-const PROMO_CODE = 'KEALEE-ALLIN-2026'
+const BASE_URL    = get('--host', 'http://localhost:3002')
+const SERVICE     = get('--service', 'kitchen')
+const TIER        = Number(get('--tier', '2'))
+const ATTACHMENTS = get('--attachments', '')   // comma-separated before-photo URLs
+const PROMO_CODE  = 'KEALEE-ALLIN-2026'
 
 // Map service slug to intakePath (mirrors services-config.ts)
 const SERVICE_PATH: Record<string, string> = {
@@ -120,6 +121,7 @@ async function main() {
   console.log(`  Tier:     ${TIER}`)
   console.log(`  User:     ${USER.firstName} ${USER.lastName} <${USER.email}>`)
   console.log(`  Promo:    ${PROMO_CODE}`)
+  if (ATTACHMENTS) console.log(`  Before:   ${ATTACHMENTS.split(',').length} photo(s) attached`)
   console.log()
 
   // ── Step 1: Soft capture (fire-and-forget lead tracking) ────────────────────
@@ -156,6 +158,7 @@ async function main() {
       priority:    USER.priority,
       timeline:    USER.timeline,
       sqft:        USER.sqft,
+      ...(ATTACHMENTS && { attachments: ATTACHMENTS }),
     },
   })
   console.log(`OK → intakeId: ${intakeId}`)
