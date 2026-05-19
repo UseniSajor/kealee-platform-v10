@@ -39,6 +39,8 @@ export interface Concept {
   renderings?: string[]
   /** Replicate prediction IDs for in-flight AI render jobs. Portal polls /api/concept/renders/[id] per entry. */
   renderJobs?: string[]
+  /** Client-uploaded "before" photos from intake. When present, renders are img2img transformations. */
+  beforeUrls?: string[]
   zoningAnalysis?: Record<string, unknown>
   permits?: PermitItem[]
   billOfMaterials?: BOMItem[]

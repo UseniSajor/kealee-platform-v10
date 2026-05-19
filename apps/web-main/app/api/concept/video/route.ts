@@ -110,9 +110,12 @@ export async function POST(req: NextRequest) {
       extra:  conceptOutput?.description as string | undefined,
     })
 
-    // Use first render image as the starting frame when available
+    // Prefer the client's uploaded "before" photo as the video start frame —
+    // this makes Kling/Sora produce a true before→after transformation.
+    // Fall back to first completed render if no before-photo is available.
+    const beforeUrls = (conceptOutput?.beforeUrls as string[] | undefined) ?? []
     const renderUrls = (conceptOutput?.renderUrls as string[] | undefined) ?? []
-    const inputImageUrl = renderUrls[0]
+    const inputImageUrl = beforeUrls[0] ?? renderUrls[0]
 
     let provider: VideoProvider
     try {
@@ -124,14 +127,32 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    const result = await generateVideo({
-      prompt,
-      inputImageUrl,
-      durationSec: provider === 'kling-2.5' ? 5 : 8,
-      size:        provider === 'sora-2-pro' ? '1920x1080' : '1280x720',
-      aspectRatio: '16:9',
-      provider,
-    })
+    // Retry up to 3 times with exponential backoff on rate-limit (429) errors
+    let result: Awaited<ReturnType<typeof generateVideo>> | undefined
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      try {
+        result = await generateVideo({
+          prompt,
+          inputImageUrl,
+          durationSec: provider === 'kling-2.5' ? 5 : 8,
+          size:        provider === 'sora-2-pro' ? '1920x1080' : '1280x720',
+          aspectRatio: '16:9',
+          provider,
+        })
+        break
+      } catch (err: any) {
+        const isRateLimit = err?.message?.includes('429') || err?.message?.includes('throttled') || err?.message?.includes('rate limit')
+        if (isRateLimit && attempt < 3) {
+          const delay = attempt * 15_000  // 15s, 30s
+          console.warn(`[concept/video POST] Rate limited (attempt ${attempt}/3), retrying in ${delay / 1000}s`)
+          await new Promise(r => setTimeout(r, delay))
+        } else {
+          throw err
+        }
+      }
+    }
+
+    if (!result) throw new Error('Video generation failed after retries')
 
     const state: ConceptVideoState = {
       status:    'processing',

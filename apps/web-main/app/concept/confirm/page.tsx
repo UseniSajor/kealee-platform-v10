@@ -169,6 +169,7 @@ function ConfirmInner() {
   const email       = searchParams.get('email') ?? ''
   const phone       = searchParams.get('phone') ?? ''
   const address     = searchParams.get('address') ?? ''
+  const attachments = searchParams.get('attachments') ?? ''
 
   const service        = SERVICE_MAP[serviceSlug]
   const availableTiers = service?.tiers.filter((t) => t.available) ?? []
@@ -208,7 +209,10 @@ function ConfirmInner() {
         contactPhone: phone || null,
         projectAddress: address || `ZIP: ${zip}`,
         budgetRange: budget || 'Not provided',
-        formData: { description: scope, budget, zip, tier, style, priority, timeline, sqft },
+        formData: {
+          description: scope, budget, zip, tier, style, priority, timeline, sqft,
+          ...(attachments && { attachments }),
+        },
       }),
     })
     if (!intakeRes.ok) {

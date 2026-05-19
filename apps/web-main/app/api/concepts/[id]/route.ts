@@ -119,6 +119,8 @@ export async function GET(
       // Renders — empty array when AI jobs are in flight; portal polls renderJobs
       renderings: (conceptOutput?.renderUrls as string[] | undefined) ?? [],
       renderJobs: (formData.renderJobs as string[] | undefined) ?? [],
+      // Before-photos uploaded by the client; used alongside "after" renders for comparison
+      beforeUrls: (conceptOutput?.beforeUrls as string[] | undefined) ?? undefined,
 
       // Video (tier 2+)
       videoUrl:        conceptOutput?.videoUrl   as string | undefined,

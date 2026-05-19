@@ -430,6 +430,39 @@ export default function ConceptDeliverablePage() {
         {/* Design Concept Hero — all tiers */}
         <DesignConceptHero concept={concept} />
 
+        {/* Before & After — shown when client uploaded photos during intake */}
+        {concept.beforeUrls && concept.beforeUrls.length > 0 && (
+          <section>
+            <h2 className="text-2xl font-bold text-slate-900 mb-2">Before &amp; After</h2>
+            <p className="text-slate-500 mb-6">
+              Your uploaded photos alongside the AI-generated design vision.
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              {concept.beforeUrls.map((beforeUrl, i) => (
+                <div key={i} className="space-y-3">
+                  <div className="relative aspect-[16/9] rounded-xl overflow-hidden bg-slate-100">
+                    <img src={beforeUrl} alt={`Before ${i + 1}`} className="w-full h-full object-cover" />
+                    <span className="absolute top-2 left-2 bg-black/60 text-white text-xs font-semibold px-2 py-1 rounded-md">Before</span>
+                  </div>
+                  <div className="relative aspect-[16/9] rounded-xl overflow-hidden bg-slate-100">
+                    {renderSlots[i] ? (
+                      <>
+                        <img src={renderSlots[i]!} alt={`After ${i + 1}`} className="w-full h-full object-cover" />
+                        <span className="absolute top-2 left-2 bg-[#E8724B]/90 text-white text-xs font-semibold px-2 py-1 rounded-md">After</span>
+                      </>
+                    ) : (
+                      <div className="w-full h-full flex flex-col items-center justify-center gap-2">
+                        <Loader2 className="w-6 h-6 text-[#E8724B] animate-spin" />
+                        <p className="text-xs text-slate-400">AI render generating…</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
         {/* AI Render Gallery — all tiers (3 / 6 / 12 based on tier) */}
         {showRenderSection && (
           <section>

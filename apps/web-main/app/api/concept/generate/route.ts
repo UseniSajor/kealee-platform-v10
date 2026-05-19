@@ -72,6 +72,8 @@ interface ConceptOutput {
   videoDuration?: number
   /** Premium+ UI: keyed by the same labels as `VideoPlayer` format tabs. */
   videoFormatUrls?: Record<string, string>
+  /** Original "before" photos uploaded by the client during intake. */
+  beforeUrls?: string[]
 }
 
 // ── AI render helpers ─────────────────────────────────────────────────────────
@@ -114,6 +116,7 @@ async function fireConceptRenders(
   projectPath: string,
   tier: number,
   style: string,
+  uploadedPhotoUrls: string[],
 ): Promise<{ predictionIds: string[]; renderUrls: string[] }> {
   const count = tier >= 3 ? 12 : tier === 2 ? 6 : 3
 
@@ -127,6 +130,11 @@ async function fireConceptRenders(
   const roomType = projectPathToRoomType(projectPath)
   const modes    = ['realistic', 'cinematic'] as const
 
+  // When the client uploaded before-photos, use the first image as a structural
+  // guide for img2img — the "after" render preserves the room geometry while
+  // applying the new design. Without a photo, fall back to pure text-to-image.
+  const inputImageUrl = uploadedPhotoUrls.length > 0 ? uploadedPhotoUrls[0] : undefined
+
   // Submit sequentially with a short delay to avoid Replicate burst-rate limits
   // on accounts with low credit balance (1 req/min burst cap below $5).
   const predictionIds: string[] = []
@@ -139,7 +147,8 @@ async function fireConceptRenders(
           roomType,
           renderMode: modes[i % modes.length],
         }),
-        aspectRatio: '16:9',
+        aspectRatio:  '16:9',
+        inputImageUrl,  // img2img when before-photo is available
       })
       predictionIds.push(result.predictionId)
     } catch (err: any) {
@@ -401,6 +410,13 @@ export async function POST(req: NextRequest) {
     const tier = typeof existingFormData.tier === 'number' ? existingFormData.tier : 1
     const deliverable = SERVICE_DELIVERABLES[projectPath]
 
+    // Parse before-photos uploaded during intake (comma-separated public URLs)
+    const attachmentsRaw = (existingFormData.attachments as string | undefined) ?? ''
+    const uploadedPhotoUrls = attachmentsRaw
+      .split(',')
+      .map((u) => u.trim())
+      .filter((u) => u.length > 0 && /\.(jpe?g|png|webp|heic)/i.test(u))
+
     // Return cached concept if already generated
     if (existingFormData.conceptOutput && intake.status === 'concept_ready') {
       const out = { ...(existingFormData.conceptOutput as ConceptOutput) }
@@ -539,15 +555,24 @@ export async function POST(req: NextRequest) {
 
     // Fire AI render jobs (non-blocking — Replicate is async).
     // predictionIds stored in renderJobs so the portal can poll for real URLs.
+    // If the client uploaded before-photos, img2img is used so renders match
+    // the actual room geometry — those source photos become the "before" set.
     let renderJobs: string[] = []
     try {
       const renders = await fireConceptRenders(
-        projectPath, tier, conceptOutput.designConcept?.style ?? 'modern contemporary'
+        projectPath, tier,
+        conceptOutput.designConcept?.style ?? 'modern contemporary',
+        uploadedPhotoUrls,
       )
       conceptOutput.renderUrls = renders.renderUrls
       renderJobs = renders.predictionIds
     } catch (renderErr: any) {
       console.warn('[concept/generate] Render job submission failed:', renderErr?.message)
+    }
+
+    // Attach before-photos so the portal can display a before/after comparison
+    if (uploadedPhotoUrls.length > 0) {
+      conceptOutput.beforeUrls = uploadedPhotoUrls
     }
 
     attachConceptVideoFields(conceptOutput, tier)
