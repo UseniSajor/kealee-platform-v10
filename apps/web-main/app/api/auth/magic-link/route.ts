@@ -44,7 +44,11 @@ export async function POST(req: NextRequest) {
 
     if (error) {
       console.error('[magic-link] generateLink error:', error.message)
-      return NextResponse.json({ error: error.message }, { status: 400 })
+      const isRateLimit = /rate.limit|too many|security purposes|after \d+ second/i.test(error.message)
+      const userMessage = isRateLimit
+        ? 'We already sent an access link to this email recently. Please check your inbox (and spam folder) — the link expires in 1 hour.'
+        : error.message
+      return NextResponse.json({ error: userMessage, rateLimit: isRateLimit }, { status: 400 })
     }
 
     const actionLink = data.properties?.action_link

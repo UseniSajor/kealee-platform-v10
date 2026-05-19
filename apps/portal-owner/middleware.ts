@@ -22,13 +22,10 @@ export async function middleware(request: NextRequest) {
 
   const { data: { session } } = await supabase.auth.getSession()
 
-  const protectedPaths = ['/projects', '/project', '/payments', '/documents', '/messages', '/twin', '/concepts']
+  const protectedPaths = ['/projects', '/project', '/payments', '/documents', '/messages', '/twin', '/concepts', '/deliverables']
   const isProtectedPath = protectedPaths.some(path => request.nextUrl.pathname.startsWith(path))
-  // Protect the deliverables LIST (exact) but NOT detail pages (/deliverables/:id) — those stay
-  // public so owners can share a concept URL directly with contractors without requiring login.
-  const isDeliverablesList = request.nextUrl.pathname === '/deliverables'
 
-  if ((isProtectedPath || isDeliverablesList) && !session) {
+  if (isProtectedPath && !session) {
     const redirectUrl = request.nextUrl.clone()
     redirectUrl.pathname = '/login'
     return NextResponse.redirect(redirectUrl)
@@ -51,7 +48,7 @@ export const config = {
     '/projects/:path*', '/project/:path*', '/payments/:path*',
     '/documents/:path*', '/messages/:path*', '/twin/:path*',
     '/concepts/:path*',
-    '/deliverables',   // list page only — NOT /deliverables/:path*
+    '/deliverables/:path*', '/deliverables',
     '/login', '/signup',
     // /auth/callback must be included so the middleware refreshes the session
     // cookie after the magic-link code exchange completes.
