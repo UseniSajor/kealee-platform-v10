@@ -53,5 +53,8 @@ export const config = {
     '/concepts/:path*',
     '/deliverables',   // list page only — NOT /deliverables/:path*
     '/login', '/signup',
+    // /auth/callback must be included so the middleware refreshes the session
+    // cookie after the magic-link code exchange completes.
+    '/auth/callback',
   ],
 }
