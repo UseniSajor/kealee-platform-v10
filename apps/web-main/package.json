@@ -27,6 +27,7 @@
     "@stripe/stripe-js": "^5.8.0",
     "google-ads-api": "^23.0.0",
     "replicate": "^1.4.0",
+    "resend": "^3.0.0",
     "uuid": "^10.0.0"
   }
 }

@@ -12,6 +12,7 @@
     "@kealee/auth": "workspace:*",
     "@kealee/core-hooks": "workspace:*",
     "@kealee/shared": "workspace:*",
-    "@kealee/ui": "workspace:*"
+    "@kealee/ui": "workspace:*",
+    "resend": "^3.0.0"
   }
 }
