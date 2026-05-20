@@ -103,7 +103,7 @@ export async function POST(req: NextRequest) {
         options: { emailRedirectTo: redirectTo, shouldCreateUser: true },
       })
       if (otpError) {
-        const isRateLimit = /rate.limit|too many/i.test(otpError.message)
+        const isRateLimit = /rate.limit|too many|security purposes|after \d+ second/i.test(otpError.message)
         const userMessage = isRateLimit
           ? 'We already sent an access link to this email recently. Please check your inbox (and spam folder) — the link expires in 1 hour.'
           : otpError.message
