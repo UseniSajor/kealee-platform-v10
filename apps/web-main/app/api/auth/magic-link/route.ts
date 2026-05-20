@@ -89,26 +89,28 @@ export async function POST(req: NextRequest) {
       })
 
       if (emailError) {
-        console.error('[magic-link] Resend send error:', emailError)
-        return NextResponse.json({ error: 'Failed to send access link email' }, { status: 500 })
+        console.error('[magic-link] Resend send error — falling back to Supabase OTP:', emailError)
+        // Fall through to Supabase OTP fallback below
+      } else {
+        return NextResponse.json({ ok: true })
       }
-    } else {
-      // ── Fallback: Supabase built-in email (limited deliverability) ──────────
-      console.warn('[magic-link] RESEND_API_KEY not set — falling back to Supabase OTP email')
-      const supabaseAnon = createClient(supabaseUrl, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, {
-        auth: { autoRefreshToken: false, persistSession: false },
-      })
-      const { error: otpError } = await supabaseAnon.auth.signInWithOtp({
-        email,
-        options: { emailRedirectTo: redirectTo, shouldCreateUser: true },
-      })
-      if (otpError) {
-        const isRateLimit = /rate.limit|too many|security purposes|after \d+ second/i.test(otpError.message)
-        const userMessage = isRateLimit
-          ? 'We already sent an access link to this email recently. Please check your inbox (and spam folder) — the link expires in 1 hour.'
-          : otpError.message
-        return NextResponse.json({ error: userMessage, rateLimit: isRateLimit }, { status: 400 })
-      }
+    }
+
+    // ── Fallback: Supabase built-in email (used when Resend is not configured or fails) ──
+    console.warn('[magic-link] Falling back to Supabase OTP email')
+    const supabaseAnon = createClient(supabaseUrl, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, {
+      auth: { autoRefreshToken: false, persistSession: false },
+    })
+    const { error: otpError } = await supabaseAnon.auth.signInWithOtp({
+      email,
+      options: { emailRedirectTo: redirectTo, shouldCreateUser: true },
+    })
+    if (otpError) {
+      const isRateLimit = /rate.limit|too many|security purposes|after \d+ second/i.test(otpError.message)
+      const userMessage = isRateLimit
+        ? 'We already sent an access link to this email recently. Please check your inbox (and spam folder) — the link expires in 1 hour.'
+        : otpError.message
+      return NextResponse.json({ error: userMessage, rateLimit: isRateLimit }, { status: 400 })
     }
 
     return NextResponse.json({ ok: true })
