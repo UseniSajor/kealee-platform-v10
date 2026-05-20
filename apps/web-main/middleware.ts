@@ -78,7 +78,7 @@ export async function middleware(request: NextRequest) {
 
   // /concept (exact) is the public service/package select page.
   // /concept/[uuid] pages are paid deliverables that require auth — they do NOT appear here.
-  if (pathname === '/concept') return res
+  if (pathname === '/concept') return NextResponse.next()
 
   // Deliverables live in the owner portal only — never render on web-main
   if (pathname.startsWith('/concept/deliverable')) {

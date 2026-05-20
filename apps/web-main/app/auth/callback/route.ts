@@ -13,7 +13,7 @@
  * Authentication → URL Configuration → Redirect URLs.
  */
 
-import { createServerClient } from '@supabase/ssr'
+import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { NextRequest, NextResponse } from 'next/server'
 
 export const dynamic = 'force-dynamic'
@@ -33,9 +33,9 @@ export async function GET(request: NextRequest) {
       {
         cookies: {
           getAll: () => request.cookies.getAll(),
-          setAll: (cookiesToSet) => {
+          setAll: (cookiesToSet: { name: string; value: string; options?: CookieOptions }[]) => {
             cookiesToSet.forEach(({ name, value, options }) =>
-              redirectResponse.cookies.set(name, value, options)
+              redirectResponse.cookies.set(name, value, options as Parameters<typeof redirectResponse.cookies.set>[2])
             )
           },
         },
