@@ -587,6 +587,9 @@ importers:
       '@kealee/ui':
         specifier: workspace:*
         version: link:../../packages/ui
+      resend:
+        specifier: ^3.0.0
+        version: 3.5.0(react-dom@18.2.0)(react@18.2.0)
 
   apps/web-main:
     dependencies:
@@ -609,17 +612,20 @@ importers:
         specifier: workspace:*
         version: link:../../packages/ui
       '@stripe/react-stripe-js':
-        specifier: ^6.4.0
-        version: 6.4.0(@stripe/stripe-js@9.6.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: ^3.7.0
+        version: 3.10.0(@stripe/stripe-js@5.10.0)(react-dom@18.2.0)(react@18.2.0)
       '@stripe/stripe-js':
-        specifier: ^9.6.0
-        version: 9.6.0
+        specifier: ^5.8.0
+        version: 5.10.0
       google-ads-api:
         specifier: ^23.0.0
         version: 23.0.0
       replicate:
         specifier: ^1.4.0
         version: 1.4.0
+      resend:
+        specifier: ^3.0.0
+        version: 3.5.0(react-dom@18.2.0)(react@18.2.0)
       uuid:
         specifier: ^10.0.0
         version: 10.0.0
@@ -11627,21 +11633,21 @@ packages:
     resolution: {integrity: sha512-l2aFy5jALhniG5HgqrD6jXLi/rUWrKvqN/qJx6yoJsgKhblVd+iqqU4RCXavm/jPityDo5TCvKMnpjKnOriy0w==}
     dev: false
 
-  /@stripe/react-stripe-js@6.4.0(@stripe/stripe-js@9.6.0)(react-dom@18.2.0)(react@18.2.0):
-    resolution: {integrity: sha512-5cAf7GAqf8VHPoPLVnJQ2MHtDWLdiEPs5GW/loU7iDEue3xf620v11skrk5HICUraDOhODPYpttgFC5N579NxA==}
+  /@stripe/react-stripe-js@3.10.0(@stripe/stripe-js@5.10.0)(react-dom@18.2.0)(react@18.2.0):
+    resolution: {integrity: sha512-UPqHZwMwDzGSax0ZI7XlxR3tZSpgIiZdk3CiwjbTK978phwR/fFXeAXQcN/h8wTAjR4ZIAzdlI9DbOqJhuJdeg==}
     peerDependencies:
-      '@stripe/stripe-js': '>=9.5.0 <10.0.0'
+      '@stripe/stripe-js': '>=1.44.1 <8.0.0'
       react: '>=16.8.0 <20.0.0'
       react-dom: '>=16.8.0 <20.0.0'
     dependencies:
-      '@stripe/stripe-js': 9.6.0
+      '@stripe/stripe-js': 5.10.0
       prop-types: 15.8.1
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
     dev: false
 
-  /@stripe/stripe-js@9.6.0:
-    resolution: {integrity: sha512-v5MebYvJbddSRn15fknxTVwypJPzjeIXI1Q2HBxCBrQieWna8PC+RXEVUZ3F4ANAeILEj97HzFlr0r7CXvG7ZA==}
+  /@stripe/stripe-js@5.10.0:
+    resolution: {integrity: sha512-PTigkxMdMUP6B5ISS7jMqJAKhgrhZwjprDqR1eATtFfh0OpKVNp110xiH+goeVdrJ29/4LeZJR4FaHHWstsu0A==}
     engines: {node: '>=12.16'}
     dev: false
 
