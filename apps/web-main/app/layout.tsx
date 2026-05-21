@@ -7,6 +7,7 @@ import { SiteFooter } from '@/components/footer'
 import { VideoModalProvider } from '@/context/video-modal-context'
 import { VideoModal } from '@/components/video-modal'
 import { GlobalChatBar } from '@/components/GlobalChatBar'
+import { AuthHashExchange } from '@/components/AuthHashExchange'
 
 const syne = Syne({
   subsets: ['latin'],
@@ -72,6 +73,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <SiteFooter />
           <VideoModal />
           <GlobalChatBar />
+          <AuthHashExchange />
         </VideoModalProvider>
       </body>
     </html>
