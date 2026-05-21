@@ -22,6 +22,7 @@ import { AI_MODELS } from '@kealee/core-rules'
 import { generateImages, buildArchitecturalPrompt, type GenerateImageResult } from '@/lib/ai-image'
 
 export const dynamic = 'force-dynamic'
+export const maxDuration = 300 // Claude + Replicate render jobs can take 60–180s
 
 // Statuses that authorise a concept generation. Stripe webhook flips intake
 // to `paid`; the first successful generation flips it to `concept_ready`

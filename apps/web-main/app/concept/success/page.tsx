@@ -1,6 +1,6 @@
 'use client'
 
-import { Suspense } from 'react'
+import { Suspense, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { CheckCircle2, Mail, Clock, ArrowRight, ExternalLink } from 'lucide-react'
@@ -13,6 +13,23 @@ function SuccessInner() {
   const amount   = searchParams.get('amount')   ?? ''
   const promo    = searchParams.get('promo')    === '1'
   const intakeId = searchParams.get('intakeId') ?? ''
+
+  // Fire concept generation from the browser after Stripe redirect.
+  // The intake is 'paid' by the time the user lands here (webhook runs first).
+  // This is the primary reliable trigger — the webhook fire-and-forget may not
+  // complete in the serverless function lifetime.
+  useEffect(() => {
+    if (!intakeId) return
+    // Small delay to give the Stripe webhook time to mark the intake paid first.
+    const t = setTimeout(() => {
+      fetch('/api/concept/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ intakeId }),
+      }).catch(() => { /* silent — webhook is secondary trigger */ })
+    }, 3000)
+    return () => clearTimeout(t)
+  }, [intakeId])
 
   // Direct link to the concept access gate.
   // The access page lets the user enter their email to receive a magic-link

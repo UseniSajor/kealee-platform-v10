@@ -3,6 +3,11 @@
   "ignoreCommand": "exit 1",
   "installCommand": "cd ../.. && NODE_ENV=development pnpm install --no-frozen-lockfile",
   "buildCommand": "cd ../.. && pnpm turbo run build --filter=web-main",
+  "functions": {
+    "app/api/concept/generate/route.ts": { "maxDuration": 300 },
+    "app/api/concept/video/route.ts":    { "maxDuration": 60 },
+    "app/api/webhooks/stripe/route.ts":  { "maxDuration": 30 }
+  },
   "crons": [
     {
       "path": "/api/cron/marketing-drip",

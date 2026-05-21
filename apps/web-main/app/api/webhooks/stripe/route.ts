@@ -19,6 +19,7 @@ import { getOwnerPortalDeliverableUrl } from '@/lib/owner-portal-urls'
 import { isStripeWebhookSideEffectsDisabledOnThisDeployment } from '@/lib/stripe-vercel-guard'
 
 export const dynamic = 'force-dynamic'
+export const maxDuration = 30
 
 export const runtime = 'nodejs' // Required: raw body access for signature verification
 
