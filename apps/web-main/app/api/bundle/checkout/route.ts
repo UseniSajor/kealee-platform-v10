@@ -13,8 +13,8 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-import Stripe from 'stripe'
 import { guardStripeSecretForHttp } from '@/lib/stripe-vercel-guard'
+import { createStripe } from '@/lib/stripe-client'
 
 export const dynamic = 'force-dynamic'
 
@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
     const guard = guardStripeSecretForHttp(stripeKey)
     if (guard) return guard
 
-    const stripe = new Stripe(stripeKey, { apiVersion: '2024-06-20' as any })
+    const stripe = createStripe(stripeKey)
     const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? req.nextUrl.origin
 
     const session = await stripe.checkout.sessions.create({

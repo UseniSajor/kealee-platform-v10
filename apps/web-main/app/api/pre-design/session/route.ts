@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { guardStripeSecretForHttp } from '@/lib/stripe-vercel-guard'
+import { createStripe } from '@/lib/stripe-client'
 
 export const dynamic = 'force-dynamic'
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY ?? '', { apiVersion: '2024-12-18.acacia' as any })
 
 const PRICE_MAP: Record<string, Record<string, string | undefined>> = {
   starter: {
@@ -53,6 +53,8 @@ export async function POST(req: NextRequest) {
     }
     const guard = guardStripeSecretForHttp(stripeKey)
     if (guard) return guard
+
+    const stripe = createStripe(stripeKey)
 
     const { projectType, tier, contactName, contactEmail, propertyAddress, notes } = await req.json()
 

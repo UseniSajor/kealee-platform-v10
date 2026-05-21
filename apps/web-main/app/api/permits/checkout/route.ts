@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import Stripe from 'stripe'
 import { guardStripeSecretForHttp } from '@/lib/stripe-vercel-guard'
+import { createStripe } from '@/lib/stripe-client'
 
 export const dynamic = 'force-dynamic'
 
@@ -58,7 +58,7 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const stripe = new Stripe(stripeKey, { apiVersion: '2024-06-20' as any })
+    const stripe = createStripe(stripeKey)
 
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',

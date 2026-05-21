@@ -13,6 +13,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
+import { createStripe } from '@/lib/stripe-client'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { SERVICE_DELIVERABLES } from '@/lib/service-deliverables'
 import { getOwnerPortalDeliverableUrl } from '@/lib/owner-portal-urls'
@@ -32,7 +33,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Webhook not configured' }, { status: 500 })
   }
 
-  const stripe = new Stripe(stripeKey, { apiVersion: '2024-06-20' as any })
+  const stripe = createStripe(stripeKey)
 
   // Read raw body for signature verification
   const rawBody = await req.text()

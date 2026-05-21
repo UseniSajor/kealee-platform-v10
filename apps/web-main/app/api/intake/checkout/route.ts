@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { guardStripeSecretForHttp } from '@/lib/stripe-vercel-guard'
+import { createStripe } from '@/lib/stripe-client'
 import { getIntakePrice, SITE_VISIT_FEE_CENTS } from '@kealee/core-rules'
 
 export const dynamic = 'force-dynamic'
@@ -59,7 +60,7 @@ export async function POST(req: NextRequest) {
     const guard = guardStripeSecretForHttp(stripeKey)
     if (guard) return guard
 
-    const stripe = new Stripe(stripeKey, { apiVersion: '2024-06-20' as any })
+    const stripe = createStripe(stripeKey)
 
     const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = [
       {
