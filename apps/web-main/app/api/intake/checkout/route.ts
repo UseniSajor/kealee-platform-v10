@@ -121,7 +121,7 @@ export async function POST(req: NextRequest) {
     })
     return NextResponse.json({ url: session.url })
   } catch (err: any) {
-    console.error('[intake/checkout]', err?.message)
-    return NextResponse.json({ error: 'Failed to create checkout session' }, { status: 500 })
+    console.error('[intake/checkout]', err?.message, err?.type, err?.code)
+    return NextResponse.json({ error: 'Failed to create checkout session', detail: err?.message, type: err?.type, code: err?.code }, { status: 500 })
   }
 }
