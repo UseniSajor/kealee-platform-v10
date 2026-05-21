@@ -179,6 +179,15 @@ function DetailsInner() {
     if (scope.trim().length < 20) e.scope = 'Please describe your project in at least 20 characters.'
     if (!budget.trim()) e.budget = 'Please enter an estimated budget.'
     if (!/^\d{5}$/.test(zip)) e.zip = 'Please enter a valid 5-digit ZIP code.'
+    if (!sqft.trim()) e.sqft = 'Please enter an approximate square footage.'
+    if (!style) e.style = 'Please select a design style.'
+    if (!priority) e.priority = 'Please select a top priority.'
+    if (!timeline) e.timeline = 'Please select a project timeline.'
+    if (isGarden) {
+      if (!gardenSpace) e.gardenSpace = 'Please select which outdoor space.'
+      if (!gardenIrrigation) e.gardenIrrigation = 'Please select an irrigation preference.'
+      if (!gardenMaintenance) e.gardenMaintenance = 'Please select a maintenance commitment.'
+    }
     setErrors(e)
     return Object.keys(e).length === 0
   }
@@ -247,7 +256,7 @@ function DetailsInner() {
         {isGarden && (
           <div>
             <label className="block text-sm font-semibold text-slate-800 mb-1.5">
-              Which outdoor space? <span className="text-slate-400 font-normal">(optional)</span>
+              Which outdoor space? <span className="text-[#E8724B]">*</span>
             </label>
             <select
               className={inputClass}
@@ -259,6 +268,7 @@ function DetailsInner() {
                 <option key={s} value={s}>{s}</option>
               ))}
             </select>
+            {errors.gardenSpace && <p className="text-xs text-red-500 mt-1">{errors.gardenSpace}</p>}
           </div>
         )}
 
@@ -304,7 +314,7 @@ function DetailsInner() {
         {isGarden && (
           <div>
             <label className="block text-sm font-semibold text-slate-800 mb-1.5">
-              Irrigation preference <span className="text-slate-400 font-normal">(optional)</span>
+              Irrigation preference <span className="text-[#E8724B]">*</span>
             </label>
             <select
               className={inputClass}
@@ -316,6 +326,7 @@ function DetailsInner() {
                 <option key={o} value={o}>{o}</option>
               ))}
             </select>
+            {errors.gardenIrrigation && <p className="text-xs text-red-500 mt-1">{errors.gardenIrrigation}</p>}
           </div>
         )}
 
@@ -323,7 +334,7 @@ function DetailsInner() {
         {isGarden && (
           <div>
             <label className="block text-sm font-semibold text-slate-800 mb-1.5">
-              Maintenance commitment <span className="text-slate-400 font-normal">(optional)</span>
+              Maintenance commitment <span className="text-[#E8724B]">*</span>
             </label>
             <select
               className={inputClass}
@@ -335,13 +346,14 @@ function DetailsInner() {
                 <option key={o} value={o}>{o}</option>
               ))}
             </select>
+            {errors.gardenMaintenance && <p className="text-xs text-red-500 mt-1">{errors.gardenMaintenance}</p>}
           </div>
         )}
 
         {/* Square Footage */}
         <div>
           <label className="block text-sm font-semibold text-slate-800 mb-1.5">
-            Approximate Square Footage <span className="text-slate-400 font-normal">(optional)</span>
+            Approximate Square Footage <span className="text-[#E8724B]">*</span>
           </label>
           <input
             type="number"
@@ -351,13 +363,14 @@ function DetailsInner() {
             value={sqft}
             onChange={(e) => setSqft(e.target.value)}
           />
+          {errors.sqft && <p className="text-xs text-red-500 mt-1">{errors.sqft}</p>}
           <p className="text-xs text-slate-400 mt-1">{getConceptSqftHint(serviceSlug)}</p>
         </div>
 
         {/* Style — garden-specific options when garden service */}
         <div>
           <label className="block text-sm font-semibold text-slate-800 mb-1.5">
-            {isGarden ? 'Garden Style' : 'Design Style'} <span className="text-slate-400 font-normal">(optional)</span>
+            {isGarden ? 'Garden Style' : 'Design Style'} <span className="text-[#E8724B]">*</span>
           </label>
           <select
             className={inputClass}
@@ -369,12 +382,13 @@ function DetailsInner() {
               <option key={s} value={s}>{s}</option>
             ))}
           </select>
+          {errors.style && <p className="text-xs text-red-500 mt-1">{errors.style}</p>}
         </div>
 
         {/* Priority — garden-specific options when garden service */}
         <div>
           <label className="block text-sm font-semibold text-slate-800 mb-1.5">
-            Top Priority <span className="text-slate-400 font-normal">(optional)</span>
+            Top Priority <span className="text-[#E8724B]">*</span>
           </label>
           <select
             className={inputClass}
@@ -386,6 +400,7 @@ function DetailsInner() {
               <option key={p} value={p}>{p}</option>
             ))}
           </select>
+          {errors.priority && <p className="text-xs text-red-500 mt-1">{errors.priority}</p>}
         </div>
 
         {/* Budget */}
@@ -411,7 +426,7 @@ function DetailsInner() {
         {/* Timeline */}
         <div>
           <label className="block text-sm font-semibold text-slate-800 mb-1.5">
-            Project Timeline <span className="text-slate-400 font-normal">(optional)</span>
+            Project Timeline <span className="text-[#E8724B]">*</span>
           </label>
           <select
             className={inputClass}
@@ -423,6 +438,7 @@ function DetailsInner() {
               <option key={t} value={t}>{t}</option>
             ))}
           </select>
+          {errors.timeline && <p className="text-xs text-red-500 mt-1">{errors.timeline}</p>}
         </div>
 
         {/* ZIP */}

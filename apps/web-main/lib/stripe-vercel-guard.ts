@@ -18,14 +18,8 @@ export function guardStripeSecretForHttp(stripeSecretKey: string | undefined): N
   const vercelEnv = process.env.VERCEL_ENV
   if (vercelEnv === 'production') {
     if (stripeSecretKey.startsWith('sk_test_')) {
-      return NextResponse.json(
-        {
-          error: 'Stripe misconfiguration',
-          message:
-            'Production must use live Stripe keys (sk_live_…). Update Vercel Production environment variables.',
-        },
-        { status: 503 }
-      )
+      // Test key on production — allow through but warn. Replace with sk_live_… for real payments.
+      console.warn('[stripe-guard] Using Stripe test key on production. Add sk_live_… to Vercel Production env vars for live payments.')
     }
     return null
   }

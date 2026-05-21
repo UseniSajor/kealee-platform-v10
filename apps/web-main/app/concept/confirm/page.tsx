@@ -182,6 +182,7 @@ function ConfirmInner() {
   const [promoCode,       setPromoCode]       = useState('')
   const [promoApplied,    setPromoApplied]    = useState(false)
   const [promoError,      setPromoError]      = useState('')
+  const [showPromo,       setShowPromo]       = useState(false)
   // Embedded checkout state — clientSecret signals modal should open
   const [checkoutClientSecret, setCheckoutClientSecret] = useState<string | null>(null)
 
@@ -223,10 +224,33 @@ function ConfirmInner() {
     return intakeId as string
   }
 
+  function handleTierPay(selectedTier: 1 | 2 | 3) {
+    setTier(selectedTier)
+    if (!agreed) {
+      setError('Please agree to the Terms of Service above before selecting a package.')
+      document.getElementById('terms-checkbox')?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      return
+    }
+    handleSubmitForTier(selectedTier)
+  }
+
   async function handleSubmit() {
     if (!agreed) { setError('Please agree to the terms to continue.'); return }
     setError('')
     setSubmitting(true)
+    await runCheckout(tier)
+    setSubmitting(false)
+  }
+
+  async function handleSubmitForTier(selectedTier: 1 | 2 | 3) {
+    setError('')
+    setSubmitting(true)
+    await runCheckout(selectedTier)
+    setSubmitting(false)
+  }
+
+  async function runCheckout(selectedTier: 1 | 2 | 3) {
+    const selectedTierPrice = service?.tiers.find((t) => t.tier === selectedTier)?.price ?? price
 
     // Fire-and-forget soft capture
     fetch('/api/intake/soft-capture', {
@@ -248,22 +272,14 @@ function ConfirmInner() {
         })
         if (!redeemRes.ok) {
           const b = await redeemRes.json().catch(() => ({}))
-          // Invalid code → fall through to Stripe below
           if (b.error === 'Invalid promo code') {
             setError('Promo code not recognised. Please check the code and try again, or proceed to payment.')
-            setSubmitting(false)
             return
           }
-          // Other redeem error → still try Stripe
+          // Other redeem error → fall through to Stripe
         } else {
-          // Promo accepted — send user to the magic-link access gate.
-          // The access page is pre-filled with their email so they just click
-          // "Send access link" to receive a one-click session link.
           const conceptPath  = `/concept/${intakeId}`
-          const accessParams = new URLSearchParams({
-            next:  conceptPath,
-            email: email,
-          })
+          const accessParams = new URLSearchParams({ next: conceptPath, email })
           window.location.href = `/concept/access?${accessParams.toString()}`
           return
         }
@@ -275,13 +291,12 @@ function ConfirmInner() {
         email,
         name:    `${firstName} ${lastName}`.trim(),
         service: service?.label ?? serviceSlug,
-        amount:  String(price),
+        amount:  String(selectedTierPrice),
       })
       const successUrl = `${window.location.origin}/concept/success?${successParams.toString()}`
       const cancelUrl  = `${window.location.origin}/concept/confirm?${searchParams.toString()}&canceled=true`
 
       if (USE_EMBEDDED_CHECKOUT) {
-        // ── Embedded checkout — card form mounts inside the page ───────────
         const returnUrl  = `${successUrl}&session_id={CHECKOUT_SESSION_ID}`
         const checkoutRes = await fetch('/api/intake/checkout', {
           method: 'POST',
@@ -290,20 +305,15 @@ function ConfirmInner() {
         })
         if (!checkoutRes.ok) {
           const b = await checkoutRes.json().catch(() => ({}))
-          const msg = b.error ?? 'Could not create checkout.'
-          if (msg.includes('not configured') || msg.includes('Stripe')) {
-            throw new Error('Payment is not yet configured. Use promo code KEALEE-ALLIN-2026 to access for free, or contact hello@kealee.com.')
-          }
-          throw new Error(msg)
+          throw new Error(b.error ?? 'Could not create checkout.')
         }
         const { clientSecret } = await checkoutRes.json()
         if (!clientSecret) throw new Error('No client secret returned.')
         setCheckoutClientSecret(clientSecret)
-        setSubmitting(false)
         return
       }
 
-      // ── Hosted checkout (fallback) — redirect to Stripe's page ────────────
+      // ── Hosted checkout — redirect to Stripe's page ────────────────────────
       const checkoutRes = await fetch('/api/intake/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -316,18 +326,13 @@ function ConfirmInner() {
       })
       if (!checkoutRes.ok) {
         const b = await checkoutRes.json().catch(() => ({}))
-        const msg = b.error ?? 'Could not create checkout.'
-        if (msg.includes('not configured') || msg.includes('Stripe')) {
-          throw new Error('Payment is not yet configured. Use promo code KEALEE-ALLIN-2026 to access for free, or contact hello@kealee.com.')
-        }
-        throw new Error(msg)
+        throw new Error(b.error ?? 'Could not create checkout.')
       }
       const { url } = await checkoutRes.json()
       if (url) window.location.href = url
       else throw new Error('No checkout URL returned.')
     } catch (err) {
       setError((err as Error).message)
-      setSubmitting(false)
     }
   }
 
@@ -413,26 +418,95 @@ function ConfirmInner() {
         </div>
       </div>
 
+      {/* ── Permit credit banner ─────────────────────────── */}
+      <div className="flex items-center gap-3 rounded-xl bg-teal-50 border border-teal-200 px-5 py-3.5">
+        <span className="text-xl">💡</span>
+        <p className="text-sm text-teal-800">
+          <span className="font-bold">Your design concept cost is credited in full toward permit drawing plans.</span>{' '}
+          When you proceed to permits, the amount you pay today is deducted from your permit package price.
+        </p>
+      </div>
+
+      {/* ── Pre-flight: terms + optional promo ───────────── */}
+      <div id="terms-checkbox" className="bg-white rounded-2xl border border-slate-200 shadow-sm px-6 py-5 space-y-3">
+        <label className="flex items-start gap-3 cursor-pointer">
+          <div
+            onClick={() => { setAgreed(!agreed); setError('') }}
+            className={`mt-0.5 w-5 h-5 rounded flex items-center justify-center shrink-0 border-2 transition-all cursor-pointer ${
+              agreed ? 'bg-[#E8724B] border-[#E8724B]' : 'border-slate-300'
+            }`}
+          >
+            {agreed && <Check className="w-3 h-3 text-white" strokeWidth={3} />}
+          </div>
+          <span className="text-sm text-slate-600 leading-relaxed">
+            I agree to Kealee's{' '}
+            <Link href="/terms" className="font-semibold text-[#E8724B] hover:underline">Terms of Service</Link>{' '}
+            and{' '}
+            <Link href="/privacy" className="font-semibold text-[#E8724B] hover:underline">Privacy Policy</Link>.
+          </span>
+        </label>
+
+        {/* Promo code — collapsible */}
+        {promoApplied ? (
+          <div className="flex items-center gap-2 rounded-lg bg-green-50 border border-green-200 px-4 py-2.5">
+            <Check className="w-4 h-4 text-green-600 shrink-0" strokeWidth={3} />
+            <span className="text-sm font-semibold text-green-700">Promo applied — payment waived</span>
+            <button type="button" onClick={() => { setPromoCode(''); setPromoApplied(false); setShowPromo(false) }}
+              className="ml-auto text-green-400 hover:text-green-700 transition">
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        ) : (
+          <div>
+            <button type="button" onClick={() => setShowPromo(!showPromo)}
+              className="text-sm text-slate-400 hover:text-[#E8724B] transition font-medium">
+              {showPromo ? '↑ Hide promo code' : '+ Have a promo code?'}
+            </button>
+            {showPromo && (
+              <div className="flex gap-2 mt-2">
+                <input
+                  type="text"
+                  value={promoCode}
+                  onChange={(e) => { setPromoCode(e.target.value.toUpperCase()); setPromoError('') }}
+                  onKeyDown={(e) => { if (e.key === 'Enter' && promoCode.trim().length >= 6) { setPromoApplied(true); setPromoError('') } }}
+                  placeholder="Enter promo code"
+                  className="flex-1 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#E8724B] focus:border-transparent font-mono uppercase tracking-widest"
+                />
+                <button type="button"
+                  onClick={() => { if (promoCode.trim().length < 6) { setPromoError('Enter a valid promo code.'); return } setPromoApplied(true); setPromoError('') }}
+                  disabled={!promoCode.trim()}
+                  className="rounded-lg bg-slate-100 hover:bg-slate-200 disabled:opacity-40 px-4 py-2.5 text-sm font-semibold text-slate-700 transition">
+                  Apply
+                </button>
+              </div>
+            )}
+            {promoError && <p className="text-xs text-red-600 font-medium mt-1">{promoError}</p>}
+          </div>
+        )}
+
+        {error && (
+          <div className="rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
+            <p>{error}</p>
+            <p className="mt-2">
+              <Link href={gotYouUrl} className="font-semibold underline hover:no-underline">
+                Let our team follow up instead →
+              </Link>
+            </p>
+          </div>
+        )}
+      </div>
+
       {/* ── Tier cards ────────────────────────────────────── */}
       <div>
-        <h2 className="text-lg font-bold text-slate-900 mb-5">Select your package</h2>
+        <h2 className="text-lg font-bold text-slate-900 mb-2">Select your package</h2>
+        <p className="text-sm text-slate-500 mb-5">Click a package below to go directly to checkout.</p>
         <div className={`grid gap-5 ${availableTiers.length === 3 ? 'lg:grid-cols-3' : availableTiers.length === 2 ? 'sm:grid-cols-2' : ''}`}>
           {availableTiers.map((t) => {
-            const isSelected = tier === t.tier
-            const meta       = TIER_META[t.tier as 1 | 2 | 3]
-            const items      = serviceTierItems[t.tier as 1 | 2 | 3] ?? []
+            const meta  = TIER_META[t.tier as 1 | 2 | 3]
+            const items = serviceTierItems[t.tier as 1 | 2 | 3] ?? []
 
             return (
-              <button
-                key={t.tier}
-                type="button"
-                onClick={() => setTier(t.tier as 1 | 2 | 3)}
-                className={`relative flex flex-col text-left rounded-2xl overflow-hidden transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#E8724B] focus:ring-offset-2 ${
-                  isSelected
-                    ? 'ring-2 ring-[#E8724B] shadow-xl shadow-orange-100/60'
-                    : 'border border-slate-200 hover:border-slate-300 hover:shadow-lg shadow-sm'
-                }`}
-              >
+              <div key={t.tier} className="relative flex flex-col rounded-2xl overflow-hidden border border-slate-200 shadow-sm hover:shadow-lg transition-all duration-200">
                 {/* Popular badge */}
                 {meta.badge && (
                   <span className="absolute top-4 right-4 rounded-full bg-[#E8724B] text-white text-[10px] font-bold px-2.5 py-0.5 z-10">
@@ -442,7 +516,6 @@ function ConfirmInner() {
 
                 {/* Gradient header */}
                 <div className={`bg-gradient-to-br ${meta.accent} px-6 pt-7 pb-6`}>
-                  {/* Round tier icon */}
                   <div className="w-12 h-12 rounded-full bg-white/15 flex items-center justify-center mb-4">
                     <span className="text-white font-black text-lg">{t.tier}</span>
                   </div>
@@ -472,195 +545,38 @@ function ConfirmInner() {
                   <span className="text-xs text-teal-700 font-medium">Cost credited toward permit drawing plans</span>
                 </div>
 
-                {/* Select indicator */}
-                <div className={`border-t px-6 py-4 flex items-center justify-between transition-colors ${
-                  isSelected ? 'bg-orange-50 border-orange-100' : 'bg-slate-50 border-slate-100'
-                }`}>
-                  <span className={`text-sm font-semibold ${isSelected ? 'text-[#E8724B]' : 'text-slate-400'}`}>
-                    {isSelected ? 'Selected' : 'Select package'}
-                  </span>
-                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
-                    isSelected ? 'border-[#E8724B] bg-[#E8724B]' : 'border-slate-300'
-                  }`}>
-                    {isSelected && <Check className="w-3 h-3 text-white" strokeWidth={3} />}
-                  </div>
+                {/* Pay CTA */}
+                <div className="bg-white border-t border-slate-100 px-6 py-4">
+                  <button
+                    type="button"
+                    disabled={submitting}
+                    onClick={() => handleTierPay(t.tier as 1 | 2 | 3)}
+                    className="w-full flex items-center justify-center gap-2 bg-[#E8724B] hover:bg-[#D45C33] active:bg-[#C04820] disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-3.5 rounded-xl text-sm transition-all duration-200 shadow-md shadow-orange-100 hover:shadow-lg"
+                  >
+                    {submitting && tier === t.tier ? (
+                      <><Loader2 className="w-4 h-4 animate-spin" /> Processing…</>
+                    ) : promoApplied ? (
+                      <><Check className="w-4 h-4" strokeWidth={3} /> Redeem Free Access</>
+                    ) : (
+                      <><Shield className="w-4 h-4" /> Pay ${t.price.toLocaleString()} — Start My Concept</>
+                    )}
+                  </button>
                 </div>
-              </button>
+              </div>
             )
           })}
         </div>
       </div>
 
-      {/* ── Permit credit banner ─────────────────────────── */}
-      <div className="flex items-center gap-3 rounded-xl bg-teal-50 border border-teal-200 px-5 py-3.5">
-        <span className="text-xl">💡</span>
-        <p className="text-sm text-teal-800">
-          <span className="font-bold">Your design concept cost is credited in full toward permit drawing plans.</span>{' '}
-          When you proceed to permits, the amount you pay today is deducted from your permit package price.
-        </p>
-      </div>
-
-      {/* ── Checkout section ──────────────────────────────── */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-
-        {/* Selected summary */}
-        <div className="flex items-center justify-between px-6 py-5 border-b border-slate-100">
-          <div className="flex items-center gap-4">
-            <div className="w-11 h-11 rounded-full bg-[#E8724B]/10 flex items-center justify-center">
-              <Check className="w-5 h-5 text-[#E8724B]" />
-            </div>
-            <div>
-              <p className="text-xs font-bold uppercase tracking-widest text-slate-400">Selected Package</p>
-              <p className="font-bold text-slate-900">{tierName} — {service?.label}</p>
-            </div>
-          </div>
-          <div className="text-right">
-            <p className="text-xs text-slate-400 uppercase tracking-widest mb-0.5">Total</p>
-            {promoApplied ? (
-              <div className="flex items-center gap-2 justify-end">
-                <p className="text-lg font-bold text-slate-400 line-through">${price.toLocaleString()}</p>
-                <p className="text-2xl font-black text-green-600">$0</p>
-              </div>
-            ) : (
-              <p className="text-2xl font-black text-slate-900">${price.toLocaleString()}</p>
-            )}
-          </div>
-        </div>
-
-        {/* Trust badges */}
-        <div className="grid grid-cols-3 divide-x divide-slate-100 border-b border-slate-100">
-          {[
-            { icon: Lock,   label: 'SSL Encrypted',    sub: '256-bit secure' },
-            { icon: Shield, label: 'Stripe Payments',  sub: 'PCI compliant' },
-            { icon: Zap,    label: 'Instant Delivery',  sub: '3–5 business days' },
-          ].map(({ icon: Icon, label, sub }) => (
-            <div key={label} className="flex items-center gap-3 px-5 py-4">
-              <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center shrink-0">
-                <Icon className="w-4 h-4 text-slate-500" />
-              </div>
-              <div>
-                <p className="text-xs font-semibold text-slate-700">{label}</p>
-                <p className="text-[11px] text-slate-400">{sub}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Terms + CTA */}
-        <div className="px-6 py-5 space-y-4">
-
-          {/* Promo code */}
-          <div>
-            <p className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-2">Promo Code</p>
-            {promoApplied ? (
-              <div className="flex items-center gap-2 rounded-lg bg-green-50 border border-green-200 px-4 py-2.5">
-                <Check className="w-4 h-4 text-green-600 shrink-0" strokeWidth={3} />
-                <span className="text-sm font-semibold text-green-700">Code applied — payment waived</span>
-                <button
-                  type="button"
-                  onClick={() => { setPromoCode(''); setPromoApplied(false) }}
-                  className="ml-auto text-green-400 hover:text-green-700 transition"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-            ) : (
-              <div className="space-y-1.5">
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={promoCode}
-                    onChange={(e) => { setPromoCode(e.target.value.toUpperCase()); setPromoError('') }}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' && promoCode.trim().length >= 6) {
-                        setPromoApplied(true); setPromoError('')
-                      }
-                    }}
-                    placeholder="Enter promo code"
-                    className="flex-1 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#E8724B] focus:border-transparent font-mono uppercase tracking-widest"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (promoCode.trim().length < 6) {
-                        setPromoError('Enter a valid promo code.')
-                        return
-                      }
-                      setPromoApplied(true)
-                      setPromoError('')
-                    }}
-                    disabled={!promoCode.trim()}
-                    className="rounded-lg bg-slate-100 hover:bg-slate-200 disabled:opacity-40 px-4 py-2.5 text-sm font-semibold text-slate-700 transition"
-                  >
-                    Apply
-                  </button>
-                </div>
-                {promoError && (
-                  <p className="text-xs text-red-600 font-medium">{promoError}</p>
-                )}
-                {promoApplied && (
-                  <p className="text-xs text-slate-400">Code will be verified when you submit.</p>
-                )}
-              </div>
-            )}
-          </div>
-
-          <label className="flex items-start gap-3 cursor-pointer">
-            <div
-              onClick={() => setAgreed(!agreed)}
-              className={`mt-0.5 w-5 h-5 rounded flex items-center justify-center shrink-0 border-2 transition-all cursor-pointer ${
-                agreed ? 'bg-[#E8724B] border-[#E8724B]' : 'border-slate-300'
-              }`}
-            >
-              {agreed && <Check className="w-3 h-3 text-white" strokeWidth={3} />}
-            </div>
-            <span className="text-sm text-slate-600 leading-relaxed">
-              I agree to Kealee's{' '}
-              <Link href="/terms" className="font-semibold text-[#E8724B] hover:underline">Terms of Service</Link>{' '}
-              and{' '}
-              <Link href="/privacy" className="font-semibold text-[#E8724B] hover:underline">Privacy Policy</Link>.
-            </span>
-          </label>
-
-          {error && (
-            <div className="rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
-              <p>{error}</p>
-              <p className="mt-2">
-                <Link href={gotYouUrl} className="font-semibold underline hover:no-underline">
-                  Let our team follow up instead →
-                </Link>
-              </p>
-            </div>
-          )}
-
-          <button
-            onClick={handleSubmit}
-            disabled={!agreed || submitting}
-            className="w-full flex items-center justify-center gap-3 bg-[#E8724B] hover:bg-[#D45C33] active:bg-[#C04820] disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold px-8 py-4 rounded-xl text-base transition-all duration-200 shadow-lg shadow-orange-200 hover:shadow-xl"
-          >
-            {submitting ? (
-              <><Loader2 className="w-5 h-5 animate-spin" /> Processing…</>
-            ) : promoApplied ? (
-              <><Check className="w-5 h-5" strokeWidth={3} /> Redeem Free Access — Start My Concept</>
-            ) : (
-              <><Shield className="w-5 h-5" /> Pay ${price.toLocaleString()} — Start My Concept</>
-            )}
-          </button>
-
-          <div className="flex items-center justify-between">
-            <Link
-              href={`/concept/contact?${contactParams}`}
-              className="flex items-center gap-1.5 text-sm text-slate-400 hover:text-slate-600 transition"
-            >
-              <ArrowLeft className="w-4 h-4" /> Back
-            </Link>
-            <p className="text-xs text-slate-400">
-              {USE_EMBEDDED_CHECKOUT
-                ? 'Secured by Stripe — no card stored on Kealee'
-                : 'Redirects to Stripe — no card stored on Kealee'}
-            </p>
-          </div>
-        </div>
+      {/* Back link */}
+      <div className="flex items-center justify-between pt-2">
+        <Link
+          href={`/concept/contact?${contactParams}`}
+          className="flex items-center gap-1.5 text-sm text-slate-400 hover:text-slate-600 transition"
+        >
+          <ArrowLeft className="w-4 h-4" /> Back
+        </Link>
+        <p className="text-xs text-slate-400">Redirects to Stripe — no card stored on Kealee</p>
       </div>
 
       {/* ── Embedded Stripe checkout modal ────────────────── */}

@@ -3,11 +3,11 @@ import { Syne, DM_Sans } from 'next/font/google'
 import Script from 'next/script'
 import './globals.css'
 import { SiteNav } from '@/components/nav'
-import { SiteFooter } from '@/components/footer'
 import { VideoModalProvider } from '@/context/video-modal-context'
 import { VideoModal } from '@/components/video-modal'
 import { GlobalChatBar } from '@/components/GlobalChatBar'
 import { AuthHashExchange } from '@/components/AuthHashExchange'
+import { ConditionalSiteFooter } from '@/components/ConditionalSiteFooter'
 
 const syne = Syne({
   subsets: ['latin'],
@@ -70,7 +70,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <VideoModalProvider>
           <SiteNav />
           <main className="pb-24">{children}</main>
-          <SiteFooter />
+          <ConditionalSiteFooter />
           <VideoModal />
           <GlobalChatBar />
           <AuthHashExchange />

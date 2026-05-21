@@ -4,8 +4,8 @@ import { usePathname } from 'next/navigation'
 import { AskChatBar } from '@/components/ui/AskChatBar'
 
 // Pages where the floating bar would compete with forms or checkout
-const EXCLUDED_PREFIXES = ['/intake/', '/pre-design/']
-const EXCLUDED_EXACT   = ['/concept/confirm', '/concept/success']
+const EXCLUDED_PREFIXES = ['/intake/', '/pre-design/', '/concept/']
+const EXCLUDED_EXACT: string[] = []
 
 export function GlobalChatBar() {
   const pathname = usePathname()
