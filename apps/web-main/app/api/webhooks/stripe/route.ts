@@ -163,7 +163,7 @@ export async function POST(req: NextRequest) {
 
   // 3. Trigger concept generation for design/development services (fire-and-forget)
   if (deliverable?.generatesConcept) {
-    const baseUrl = req.nextUrl.origin
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? req.nextUrl.origin
     // Non-blocking — Stripe gets 200 immediately
     fetch(`${baseUrl}/api/concept/generate`, {
       method: 'POST',

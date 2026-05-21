@@ -60,7 +60,7 @@ export async function POST(req: NextRequest) {
     // Trigger concept generation fire-and-forget (mirrors Stripe webhook behaviour)
     const deliverable = SERVICE_DELIVERABLES[projectPath]
     if (deliverable?.generatesConcept) {
-      const baseUrl = req.nextUrl.origin
+      const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? req.nextUrl.origin
       fetch(`${baseUrl}/api/concept/generate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

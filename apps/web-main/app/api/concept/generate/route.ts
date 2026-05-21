@@ -597,14 +597,18 @@ export async function POST(req: NextRequest) {
       // Still return the concept data even if save failed
     }
 
+    // Use canonical app URL for sub-fetches so they always hit production,
+    // not a preview URL if this route was invoked from a webhook on a non-prod origin.
+    const appBaseUrl = process.env.NEXT_PUBLIC_APP_URL ?? req.nextUrl.origin
+
     // Tier 2+ deliverables include a video. Fire-and-forget — Stripe webhook
     // path doesn't wait, and the customer portal polls /api/concept/video?intakeId=
     // for the real URL when ready (Sora/Veo/Kling typically take 30–120s).
-    triggerConceptVideoGeneration(req.nextUrl.origin, intakeId, tier)
+    triggerConceptVideoGeneration(appBaseUrl, intakeId, tier)
 
     // Notify the customer that their concept is ready to view in the portal.
     // (Fire-and-forget so a slow Resend call never delays the API response.)
-    triggerConceptReadyEmail(req.nextUrl.origin, {
+    triggerConceptReadyEmail(appBaseUrl, {
       intakeId,
       projectPath,
       intake: intake as Record<string, unknown>,
