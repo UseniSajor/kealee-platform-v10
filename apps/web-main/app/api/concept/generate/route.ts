@@ -136,11 +136,14 @@ async function fireConceptRenders(
   // applying the new design. Without a photo, fall back to pure text-to-image.
   const inputImageUrl = uploadedPhotoUrls.length > 0 ? uploadedPhotoUrls[0] : undefined
 
-  // Submit sequentially with a short delay to avoid Replicate burst-rate limits
-  // on accounts with low credit balance (1 req/min burst cap below $5).
+  // Submit sequentially with a delay to stay within Replicate burst-rate limits.
+  // Accounts below $5 credit are capped at 6 req/min (burst of 1, resets ~10s).
+  // 11s between requests keeps us safely within that window. Once the account
+  // has >$5 credit the limit rises to 600 req/min and the delay becomes moot.
+  const RENDER_SUBMIT_DELAY_MS = 11_000
   const predictionIds: string[] = []
   for (let i = 0; i < count; i++) {
-    if (i > 0) await new Promise(r => setTimeout(r, 2000))
+    if (i > 0) await new Promise(r => setTimeout(r, RENDER_SUBMIT_DELAY_MS))
     try {
       const result = await generateImages({
         prompt:      buildArchitecturalPrompt({
