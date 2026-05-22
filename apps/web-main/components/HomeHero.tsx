@@ -1,7 +1,8 @@
 'use client'
 
 import Link from 'next/link'
-import { ArrowRight, Play } from 'lucide-react'
+import { Play } from 'lucide-react'
+import { V30HeroCta } from '@/components/v30/V30HeroCta'
 import { useRef, useEffect } from 'react'
 
 export default function HomeHero() {
@@ -64,12 +65,7 @@ export default function HomeHero() {
 
         {/* CTA buttons */}
         <div className="mt-12 flex flex-col sm:flex-row gap-4 justify-center items-center">
-          <Link href="/concept">
-            <button className="group flex items-center gap-3 bg-[#E8724B] hover:bg-[#D45C33] active:bg-[#B84A28] text-white font-bold text-lg px-8 py-4 rounded-xl shadow-lg shadow-orange-500/30 hover:shadow-orange-500/50 transition-all duration-200 hover:-translate-y-0.5">
-              Build Your Project
-              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-            </button>
-          </Link>
+          <V30HeroCta />
           <a
             href="#services"
             className="flex items-center gap-2 border-2 border-white/30 hover:border-white/60 text-white font-semibold text-base px-8 py-4 rounded-xl transition-all duration-200 hover:bg-white/10"

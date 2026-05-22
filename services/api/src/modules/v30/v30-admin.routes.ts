@@ -1,14 +1,28 @@
 /**
  * v30 admin / analytics / white-label API stubs (P2)
  */
-import type { FastifyInstance } from 'fastify'
+import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
+import { z } from 'zod'
 import { prisma } from '@kealee/database'
 import {
   V30_BOT_REGISTRY,
   V30_PARALLEL_BOT_TYPES,
   DEFAULT_V30_PRICING_FORMULA,
+  V30Prompts,
   isV30Enabled,
+  type V30BotType,
 } from '@kealee/kealee-agent-stack'
+
+const botTypes = [
+  'intake', 'design', 'estimate', 'zoning', 'floorplan', 'permit', 'video', 'contractor', 'sales', 'support', 'project',
+] as const
+
+const patchBotSchema = z.object({
+  systemPrompt: z.string().min(100),
+  modelPrimary: z.string().optional(),
+  enabled: z.boolean().optional(),
+  notes: z.string().optional(),
+})
 
 export async function v30AdminRoutes(fastify: FastifyInstance) {
   fastify.get('/admin/bots', async (_request, reply) => {
@@ -22,6 +36,58 @@ export async function v30AdminRoutes(fastify: FastifyInstance) {
       dbOverride: configs.find(c => c.botType === b.type) ?? null,
     }))
     return reply.send({ bots: registry })
+  })
+
+  fastify.get('/admin/bots/:botType', async (request: FastifyRequest, reply: FastifyReply) => {
+    const botType = (request.params as { botType?: string }).botType
+    if (!botType || !botTypes.includes(botType as (typeof botTypes)[number])) {
+      return reply.code(400).send({ error: 'Invalid botType' })
+    }
+    const typed = botType as V30BotType
+    const row = await prisma.v30BotConfiguration.findUnique({ where: { botType } }).catch(() => null)
+    const def = V30_BOT_REGISTRY[typed]
+    return reply.send({
+      botType: typed,
+      displayName: def.displayName,
+      codeDefaultPrompt: V30Prompts.getV30SystemPrompt(typed),
+      dbOverride: row,
+      activePrompt: row?.enabled && row.systemPrompt ? row.systemPrompt : V30Prompts.getV30SystemPrompt(typed),
+    })
+  })
+
+  fastify.patch('/admin/bots/:botType', async (request: FastifyRequest, reply: FastifyReply) => {
+    const botType = (request.params as { botType?: string }).botType
+    if (!botType || !botTypes.includes(botType as (typeof botTypes)[number])) {
+      return reply.code(400).send({ error: 'Invalid botType' })
+    }
+    const parsed = patchBotSchema.safeParse(request.body ?? {})
+    if (!parsed.success) {
+      return reply.code(400).send({ error: 'Invalid body', issues: parsed.error.flatten() })
+    }
+    const def = V30_BOT_REGISTRY[botType as V30BotType]
+    try {
+      const updated = await prisma.v30BotConfiguration.upsert({
+        where: { botType },
+        create: {
+          botType,
+          systemPrompt: parsed.data.systemPrompt,
+          modelPrimary: parsed.data.modelPrimary ?? def.defaultModel,
+          enabled: parsed.data.enabled ?? true,
+          notes: parsed.data.notes,
+        },
+        update: {
+          systemPrompt: parsed.data.systemPrompt,
+          modelPrimary: parsed.data.modelPrimary ?? undefined,
+          enabled: parsed.data.enabled ?? true,
+          notes: parsed.data.notes,
+          version: { increment: 1 },
+        },
+      })
+      return reply.send(updated)
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Save failed'
+      return reply.code(503).send({ error: message })
+    }
   })
 
   fastify.get('/admin/pricing', async (_request, reply) => {

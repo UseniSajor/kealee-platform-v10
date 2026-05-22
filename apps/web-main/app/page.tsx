@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { ArrowRight, CheckCircle2, Star, Building2, Sparkles } from 'lucide-react'
 import HomeHero from '@/components/HomeHero'
 import { HomePricingSection } from '@/components/v30/HomePricingSection'
+import { V30HeroCta } from '@/components/v30/V30HeroCta'
 import { SERVICES } from '@/lib/services-config'
 
 const PRECON_SERVICES = SERVICES.filter((s) => s.phase === 'precon' && s.slug !== 'design-services')
@@ -413,11 +414,7 @@ function FinalCTA() {
           Get a professional AI concept with renderings, cost estimate, and permit scope — in days.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <Link href="/concept">
-            <button className="bg-white text-[#E8724B] hover:bg-orange-50 font-bold text-base px-8 py-4 rounded-xl shadow-lg transition-all duration-200 hover:-translate-y-0.5">
-              Start My Concept
-            </button>
-          </Link>
+          <V30HeroCta />
           <Link href="#services">
             <button className="border-2 border-white/50 hover:border-white text-white font-semibold text-base px-8 py-4 rounded-xl transition-all duration-200">
               Browse Project Types

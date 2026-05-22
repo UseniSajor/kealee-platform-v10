@@ -6,6 +6,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowRight, Check, Clock, PlayCircle } from 'lucide-react'
 import { getConceptServices } from '@/lib/services-config'
+import { V30ConceptRedirect } from '@/components/v30/V30TrafficGate'
 
 function ConceptStep1Inner() {
   const router = useRouter()
@@ -137,12 +138,14 @@ function ConceptStep1Inner() {
 
 export default function ConceptPage() {
   return (
-    <Suspense fallback={
-      <div className="flex justify-center py-20">
-        <div className="w-8 h-8 rounded-full border-4 border-[#E8724B] border-t-transparent animate-spin" />
-      </div>
-    }>
-      <ConceptStep1Inner />
-    </Suspense>
+    <V30ConceptRedirect>
+      <Suspense fallback={
+        <div className="flex justify-center py-20">
+          <div className="w-8 h-8 rounded-full border-4 border-[#E8724B] border-t-transparent animate-spin" />
+        </div>
+      }>
+        <ConceptStep1Inner />
+      </Suspense>
+    </V30ConceptRedirect>
   )
 }

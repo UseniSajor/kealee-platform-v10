@@ -215,4 +215,7 @@ export async function v30Routes(fastify: FastifyInstance) {
 
   const { v30AdminRoutes } = await import('./v30-admin.routes')
   await fastify.register(v30AdminRoutes)
+
+  const { v30CommandBridgeRoutes } = await import('./v30-command-bridge.routes')
+  await fastify.register(v30CommandBridgeRoutes)
 }
