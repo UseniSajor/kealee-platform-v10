@@ -3,6 +3,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowRight, CheckCircle2, Star, Building2, Sparkles } from 'lucide-react'
 import HomeHero from '@/components/HomeHero'
+import { HomePricingSection } from '@/components/v30/HomePricingSection'
 import { SERVICES } from '@/lib/services-config'
 
 const PRECON_SERVICES = SERVICES.filter((s) => s.phase === 'precon' && s.slug !== 'design-services')
@@ -442,7 +443,9 @@ export default function HomePage() {
     <div className="min-h-screen">
       <HomeHero />
       <ValueProps />
-      <ConceptTiers />
+      <HomePricingSection>
+        <ConceptTiers />
+      </HomePricingSection>
       <ServiceGallery />
       <ProcessSection />
       <FeaturedSection />

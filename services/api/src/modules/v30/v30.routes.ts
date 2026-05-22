@@ -208,7 +208,10 @@ export async function v30Routes(fastify: FastifyInstance) {
       enabled: isV30Enabled(),
       version: '3.0',
       parallelBots: 10,
-      services: ['@kealee/os-intake', '@kealee/os-ai-orch'],
+      services: ['@kealee/os-intake', '@kealee/os-ai-orch', 'services/os-intake', 'services/os-ai-orch'],
     })
   })
+
+  const { v30AdminRoutes } = await import('./v30-admin.routes')
+  await fastify.register(v30AdminRoutes)
 }

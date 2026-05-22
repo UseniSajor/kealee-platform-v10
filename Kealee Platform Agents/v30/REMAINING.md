@@ -1,62 +1,44 @@
 # Kealee v30 — remaining work
 
-**Last updated:** 2026-05-22
+**Last updated:** 2026-05-22 (P0–P4 implementation pass)
 
-## Completed (P1 core)
+## Completed
 
-| # | Task | Status |
-|---|------|--------|
-| 1 | Stripe webhook → v30 generate after `paid` | ✅ `public_intake_v30` + `triggerV30GenerationForIntake` |
-| 2 | Live all 10 bots via cached Claude + Agent prompts | ✅ `executeV30BotWithLlm` for full `V30_PARALLEL_BOT_TYPES` |
-| 3 | Customer workspace tabs | ✅ `/workspace/[intakeId]` + `GET /v30/project/:id/workspace` |
-| — | Post-pay status UI | ✅ `/concept/success` + `/api/v30/status` |
-| — | os-intake / os-ai-orch packages | ✅ |
-| — | `/get-concept` UX | ✅ |
-
-## P0 — Before production rollout
-
-- [ ] Run `cd packages/database && npx prisma migrate deploy` on Supabase
-- [ ] Env on **API**: `KEALEE_V30_ENABLED`, `KEALEE_V30_PUBLIC_USER_ID`, `ANTHROPIC_API_KEY`
-- [ ] Env on **web-main**: `NEXT_PUBLIC_KEALEE_V30_ENABLED`, `KEALEE_V30_ENABLED`, `INTERNAL_API_URL`
-- [ ] Stripe webhook URL includes `checkout.session.completed` for production
-- [ ] Smoke: `/get-concept` → pay → webhook → `/workspace/:intakeId`
-
-## P1 — Still open
-
-| Task | Notes |
+| Area | Status |
 |------|--------|
-| Wire remaining 9 bots to LLM | ✅ all 10 use `getV30SystemPrompt` + `V30ClaudeCachedClient` |
-| Map DesignBot JSON → concept portal renders | replace raw JSON in workspace |
-| Full 9-question intake UI | utilities + code considerations |
-| Homepage v30 mode | hide fixed tier cards when flag on |
+| Stripe webhook → v30 generate | ✅ |
+| 10 bots LLM + wired prompts | ✅ |
+| Customer workspace + tab renders (design/estimate/permits) | ✅ |
+| 9-question intake (utilities + code) | ✅ |
+| Homepage v30 pricing band (hides tier cards) | ✅ |
+| Intake “AI analyzing” overlay | ✅ |
+| `services/os-intake`, `services/os-ai-orch` microservices | ✅ |
+| `apps/portal-admin`, `apps/portal-projects` | ✅ |
+| API stubs: `/v30/admin/*`, `/v30/analytics/*`, `/v30/white-label/*` | ✅ |
+| B2B `/contractors/subscribe` + `/partners` | ✅ |
+| P0 runbook + `pnpm v30:smoke` + API `.env.example` | ✅ |
+| P4 gitignore (`testskeabots/`, `replicate/`) | ✅ |
 
-## P2 — Spec services / portals
+## P0 — Ops (you run in prod)
 
-- [ ] Deployable `services/os-intake`, `services/os-ai-orch`
-- [ ] `apps/portal-admin` (bot prompts, pricing formula, metrics)
-- [ ] `apps/portal-projects`, analytics, white-label
-- [ ] `os-admin`, `os-analytics`, `os-white-label` API stubs
+- [ ] `pnpm v30:migrate` on Supabase production
+- [ ] Set env on API + Vercel (see [DEPLOY-RUNBOOK.md](./DEPLOY-RUNBOOK.md))
+- [ ] Stripe production webhook → `checkout.session.completed`
+- [ ] `pnpm v30:smoke --api <api> --web <web>` after deploy
 
-## P3 — Polish & B2B
+## Optional follow-ups
 
-- [ ] Intake “AI analyzing…” animation
-- [ ] B2B contractor subscription flows
-- [ ] White-label partner portal
-
-## P4 — Repo hygiene
-
-- [ ] Optional gitignore for `*.zip` in `Kealee Platform Agents/`
-- [ ] Untracked `testskeabots/`, `replicate/`, duplicate Pascal SQL
+- [ ] Map DesignBot image prompts → Replicate/Runway generation pipeline
+- [ ] portal-admin auth + live prompt editing (DB `V30BotConfiguration`)
+- [ ] Railway services for `os-intake` :3016 and `os-ai-orch` :3017 (optional split from main API)
 
 ## Env reference
 
 ```bash
-# web-main + API
 KEALEE_V30_ENABLED=true
 NEXT_PUBLIC_KEALEE_V30_ENABLED=true
-
-# API only
 KEALEE_V30_PUBLIC_USER_ID=<User.id>
 ANTHROPIC_API_KEY=sk-...
-KEALEE_V30_LLM_ENABLED=true   # set false to force dry-run bots
+KEALEE_V30_LLM_ENABLED=true
+INTERNAL_API_URL=https://your-api.railway.app
 ```

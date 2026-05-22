@@ -76,6 +76,8 @@
     "db:rollback:prod": "cd packages/database && npm run db:rollback:prod",
     "db:create:migration": "bash scripts/db-create-migration.sh",
     "go-live-check": "tsx scripts/go-live-check.ts",
+    "v30:smoke": "node scripts/v30-smoke.mjs",
+    "v30:migrate": "cd packages/database && npx prisma migrate deploy",
     "orchestrate:launch": "node scripts/orchestrate-launch.mjs",
     "orchestrate:launch+prep": "node scripts/orchestrate-launch.mjs --with-marketing-prep",
     "test:concept": "tsx scripts/test-concept-delivery.ts",

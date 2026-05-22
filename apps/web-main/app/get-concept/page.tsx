@@ -10,6 +10,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Loader2, ArrowRight, Sparkles } from 'lucide-react'
 import { getConceptServices } from '@/lib/services-config'
+import { V30AnalyzingOverlay } from '@/components/v30/V30AnalyzingOverlay'
 import {
   isV30EnabledClient,
   V30_FEATURE_OPTIONS,
@@ -36,7 +37,7 @@ export default function GetConceptPage() {
   const [projectPath, setProjectPath] = useState('')
   const [answers, setAnswers] = useState<Partial<V30IntakeAnswers>>({
     utilities: {},
-    codeConsiderations: [],
+    codeConsiderations: ['none'],
   })
   const [features, setFeatures] = useState<string[]>([])
   const [quote, setQuote] = useState<V30QuoteResponse | null>(null)
@@ -146,6 +147,7 @@ export default function GetConceptPage() {
 
   return (
     <div className="min-h-screen bg-slate-50">
+      {loading && step === 'questions' && <V30AnalyzingOverlay />}
       <div className="bg-white border-b border-slate-200">
         <div className="mx-auto max-w-3xl px-4 py-6">
           <p className="text-xs font-bold uppercase tracking-widest text-violet-600 mb-1">Kealee v30</p>
@@ -198,7 +200,11 @@ export default function GetConceptPage() {
           const canNext =
             q.type === 'number'
               ? typeof value === 'number' && value > 0
-              : typeof value === 'string' && value.length > 0
+              : q.type === 'utilities'
+                ? true
+                : q.type === 'multiselect'
+                  ? Array.isArray(value)
+                  : typeof value === 'string' && value.length > 0
 
           return (
             <div className="space-y-4 bg-white rounded-xl border border-slate-200 p-6">
@@ -243,6 +249,54 @@ export default function GetConceptPage() {
                   value={typeof value === 'number' ? value : ''}
                   onChange={e => setAnswers(a => ({ ...a, [key]: Number(e.target.value) }))}
                 />
+              )}
+              {q.type === 'utilities' && (
+                <div className="space-y-3">
+                  {[
+                    { k: 'naturalGas' as const, label: 'Natural gas on site' },
+                    { k: 'waterSewer' as const, label: 'Municipal water & sewer' },
+                  ].map(u => (
+                    <label key={u.k} className="flex items-center gap-3 rounded-lg border border-slate-200 px-4 py-3 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={Boolean(answers.utilities?.[u.k])}
+                        onChange={e =>
+                          setAnswers(a => ({
+                            ...a,
+                            utilities: { ...a.utilities, [u.k]: e.target.checked },
+                          }))
+                        }
+                        className="h-4 w-4 rounded border-slate-300 text-violet-600"
+                      />
+                      <span className="text-sm font-medium text-slate-800">{u.label}</span>
+                    </label>
+                  ))}
+                </div>
+              )}
+              {q.type === 'multiselect' && 'options' in q && (
+                <div className="grid gap-2 sm:grid-cols-2">
+                  {q.options.map(o => {
+                    const selected = (answers.codeConsiderations ?? []).includes(o)
+                    return (
+                      <button
+                        key={o}
+                        type="button"
+                        onClick={() =>
+                          setAnswers(a => {
+                            const cur = a.codeConsiderations ?? []
+                            const next = selected ? cur.filter(x => x !== o) : [...cur, o]
+                            return { ...a, codeConsiderations: next.length ? next : ['none'] }
+                          })
+                        }
+                        className={`text-left rounded-lg border-2 px-4 py-3 text-sm transition ${
+                          selected ? 'border-violet-600 bg-violet-50' : 'border-slate-200'
+                        }`}
+                      >
+                        {o.replace(/-/g, ' ')}
+                      </button>
+                    )
+                  })}
+                </div>
               )}
               <div className="flex gap-3 pt-2">
                 {questionIndex > 0 && (

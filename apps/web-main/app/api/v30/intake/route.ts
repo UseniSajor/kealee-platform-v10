@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import {
-  analyzeV30Intake,
+  analyzeV30IntakeWithLlm,
   calculateV30PackagePrice,
   isV30Enabled,
   type V30IntakeFormAnswers,
@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Incomplete intake answers' }, { status: 400 })
     }
 
-    const analysis = analyzeV30Intake(body.answers)
+    const analysis = await analyzeV30IntakeWithLlm(body.answers)
     const features = body.selectedFeatures?.length
       ? body.selectedFeatures
       : analysis.suggestedFeatures

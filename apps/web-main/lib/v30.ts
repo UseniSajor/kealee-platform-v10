@@ -42,6 +42,16 @@ export const V30_FEATURE_OPTIONS = [
   'Support',
 ] as const
 
+export const V30_CODE_OPTIONS = [
+  'none',
+  'historic-district',
+  'HOA',
+  'ADA-compliance',
+  'flood-zone',
+  'wetlands',
+  'other',
+] as const
+
 export const V30_INTAKE_QUESTIONS = [
   { key: 'propertyType', label: 'Property type', type: 'select', options: ['single-family', 'multi-family', 'commercial', 'mixed-use'] },
   { key: 'primaryScope', label: 'Primary scope', type: 'select', options: ['kitchen_remodel', 'bath_remodel', 'addition', 'whole_house', 'HVAC', 'electrical', 'exterior', 'other'] },
@@ -50,4 +60,6 @@ export const V30_INTAKE_QUESTIONS = [
   { key: 'location', label: 'Location (DC / MD county / VA)', type: 'text' },
   { key: 'squareFeet', label: 'Square footage', type: 'number' },
   { key: 'yearBuilt', label: 'Year built', type: 'select', options: ['pre-1950', '1950-1980', '1980-2000', '2000+'] },
+  { key: 'utilities', label: 'Utilities on site', type: 'utilities' },
+  { key: 'codeConsiderations', label: 'Code & zoning considerations', type: 'multiselect', options: [...V30_CODE_OPTIONS] },
 ] as const

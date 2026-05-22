@@ -11,6 +11,7 @@ import Link from 'next/link'
 import { Loader2, LayoutGrid, Palette, Calculator, FileCheck, Layers, Video } from 'lucide-react'
 import { isV30EnabledClient } from '@/lib/v30'
 import { V30GenerationStatus } from '@/components/v30/V30GenerationStatus'
+import { V30WorkspaceTabContent } from '@/components/v30/V30WorkspacePanels'
 
 type TabId = 'overview' | 'design' | 'estimate' | 'permits' | 'floorplan' | 'video'
 
@@ -169,9 +170,7 @@ export default function V30WorkspacePage() {
         {!loading && tab !== 'overview' && (
           <div className="bg-white rounded-xl border border-slate-200 p-6">
             {tabOutput ? (
-              <pre className="text-xs text-slate-700 overflow-auto max-h-[32rem] whitespace-pre-wrap">
-                {JSON.stringify(tabOutput, null, 2)}
-              </pre>
+              <V30WorkspaceTabContent tab={tab} data={tabOutput} intakeId={intakeId} />
             ) : (
               <p className="text-slate-500 text-sm flex items-center gap-2">
                 <Loader2 className="h-4 w-4 animate-spin" />
