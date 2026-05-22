@@ -34,6 +34,18 @@ export async function ensureV30ProjectFromPublicIntake(
 
   let projectId = existing?.id
 
+  if (projectId) {
+    await prisma.project.update({
+      where: { id: projectId },
+      data: {
+        categoryMetadata: {
+          intakeLeadId: input.intakeLeadId,
+          v30: true,
+        },
+      },
+    }).catch(() => undefined)
+  }
+
   if (!projectId) {
     const project = await prisma.project.create({
       data: {
@@ -46,6 +58,10 @@ export async function ensureV30ProjectFromPublicIntake(
         packageFeatures: input.features,
         address: input.projectAddress,
         category: input.projectPath,
+        categoryMetadata: {
+          intakeLeadId: input.intakeLeadId,
+          v30: true,
+        },
       },
     })
     projectId = project.id

@@ -1,5 +1,6 @@
 import { isV30Enabled } from '@kealee/kealee-agent-stack'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
+import { syncV30ConceptToIntakeLead } from '@/lib/v30-design-sync'
 
 const API_BASE = () =>
   (process.env.INTERNAL_API_URL ?? process.env.NEXT_PUBLIC_API_URL ?? '').replace(/\/$/, '')
@@ -74,11 +75,44 @@ export async function triggerV30GenerationForIntake(
         v30PackageId: payload.packageId,
         v30GenerationStartedAt: new Date().toISOString(),
         v30GenerationSource: 'webhook',
+        v30SkipConceptGenerate: true,
       },
     })
     .eq('id', intakeId)
 
+  void pollAndSyncV30Concept(intakeId, payload.projectId)
+
   return payload
+}
+
+/** Poll API workspace until DesignBot completes, then sync concept portal (no duplicate generate). */
+async function pollAndSyncV30Concept(intakeId: string, projectId?: string): Promise<void> {
+  if (!projectId) return
+  const base = API_BASE()
+  if (!base) return
+
+  const maxAttempts = 60
+  for (let i = 0; i < maxAttempts; i++) {
+    await new Promise(r => setTimeout(r, 10_000))
+    try {
+      const res = await fetch(`${base}/v30/project/${encodeURIComponent(projectId)}/workspace`, {
+        cache: 'no-store',
+      })
+      if (!res.ok) continue
+      const ws = (await res.json()) as {
+        v30ConceptOutput?: Record<string, unknown>
+        executions?: Array<{ botType: string; status: string }>
+      }
+      const designDone = ws.executions?.some(e => e.botType === 'design' && e.status === 'COMPLETE')
+      const concept = ws.v30ConceptOutput
+      if (designDone && concept) {
+        await syncV30ConceptToIntakeLead(intakeId, concept)
+        return
+      }
+    } catch {
+      /* retry */
+    }
+  }
 }
 
 function getV30Features(formData: Record<string, unknown>): string[] {

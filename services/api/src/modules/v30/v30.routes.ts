@@ -207,7 +207,8 @@ export async function v30Routes(fastify: FastifyInstance) {
     return reply.send({
       enabled: isV30Enabled(),
       version: '3.0',
-      parallelBots: 10,
+      parallelBots: 9,
+      designBot: 'canonical:v30_design_bot_executor',
       services: ['@kealee/os-intake', '@kealee/os-ai-orch', 'services/os-intake', 'services/os-ai-orch'],
     })
   })

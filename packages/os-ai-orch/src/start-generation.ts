@@ -8,6 +8,7 @@ import {
   type V30BotExecutionResult,
 } from '@kealee/kealee-agent-stack'
 import { botTypesForPackageFeatures } from './feature-bots'
+import { syncV30DesignConceptToProject } from './sync-design-concept'
 
 export interface StartV30GenerationInput {
   projectId: string
@@ -121,6 +122,11 @@ export async function startV30Generation(
       for (const result of summary.executions) {
         const executionId = executionIds[result.botType]
         if (executionId) await persistExecutionResult(executionId, result)
+      }
+
+      const designResult = summary.executions.find(e => e.botType === 'design')
+      if (designResult) {
+        await syncV30DesignConceptToProject(input.projectId, designResult)
       }
 
       await prisma.project.update({

@@ -114,7 +114,10 @@ export const V30_BOT_REGISTRY: Record<V30BotType, V30BotDefinition> = {
   },
 }
 
-/** Bots that run in parallel after payment (excludes intake). */
+/**
+ * Post-payment parallel bots (spec: 9 + DesignBot = wired set).
+ * SupportBot is registry-only — customer Q&A is covered by ProjectBot (no duplicate run).
+ */
 export const V30_PARALLEL_BOT_TYPES: V30BotType[] = [
   'design',
   'estimate',
@@ -124,9 +127,15 @@ export const V30_PARALLEL_BOT_TYPES: V30BotType[] = [
   'video',
   'contractor',
   'sales',
-  'support',
   'project',
 ]
+
+/** Bots that must not run a second LLM alongside v30 (use v30 path only). */
+export const V30_EXTERNAL_DESIGN_BOT_PATHS = [
+  'services/api/src/modules/bots/bots.chain.ts#runDesignBot',
+  'services/api/src/services/design-bot-service.ts#runDesignBot',
+  'apps/web-main/app/api/concept/generate/route.ts',
+] as const
 
 export function getV30Bot(type: V30BotType): V30BotDefinition {
   return V30_BOT_REGISTRY[type]

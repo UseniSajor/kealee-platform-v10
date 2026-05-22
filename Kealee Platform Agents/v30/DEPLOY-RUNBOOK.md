@@ -35,10 +35,10 @@ Migration: `prisma/migrations/20260522120000_add_v30_models/`
 - Events: `checkout.session.completed` (and existing v20 events)
 - Metadata: `public_intake_v30` flow uses `triggerV30GenerationForIntake`
 
-## 4. Smoke
+## 4. Setup check + smoke
 
 ```bash
-# API + web running locally with v30 flags
+pnpm v30:setup-check
 pnpm v30:smoke
 
 # Or against staging
@@ -46,6 +46,12 @@ node scripts/v30-smoke.mjs --api https://api-staging.kealee.com --web https://ke
 ```
 
 Manual path: `/get-concept` → quote → Stripe test checkout → `/concept/success?v30=1` → `/workspace/:intakeId`
+
+## DesignBot (single path)
+
+- **v30 paid flow:** `executeV30DesignBot` in `@kealee/kealee-agent-stack` only.
+- **Blocked for v30:** `/api/concept/generate` returns cached `v30ConceptOutput` or HTTP 202 while generating.
+- **v20 flow:** unchanged — `concept/generate` for `public_intake` (non-v30).
 
 ## 5. Optional microservices (P2)
 

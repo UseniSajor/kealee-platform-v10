@@ -438,6 +438,28 @@ export async function POST(req: NextRequest) {
     const tier = typeof existingFormData.tier === 'number' ? existingFormData.tier : 1
     const deliverable = SERVICE_DELIVERABLES[projectPath]
 
+    // v30: DesignBot runs via os-ai-orch — never duplicate v20 concept/generate Claude call
+    if (existingFormData.v30 || existingFormData.v30SkipConceptGenerate) {
+      const v30Out = (existingFormData.v30ConceptOutput ?? existingFormData.conceptOutput) as
+        | ConceptOutput
+        | undefined
+      if (v30Out) {
+        return NextResponse.json({
+          conceptOutput: v30Out,
+          cached: true,
+          source: 'v30_design_bot',
+        })
+      }
+      return NextResponse.json(
+        {
+          error: 'v30 concept pending',
+          message: 'DesignBot is still generating. Open your v30 workspace or try again shortly.',
+          workspaceUrl: `/workspace/${intakeId}`,
+        },
+        { status: 202 },
+      )
+    }
+
     // Parse before-photos uploaded during intake (comma-separated public URLs)
     const attachmentsRaw = (existingFormData.attachments as string | undefined) ?? ''
     const uploadedPhotoUrls = attachmentsRaw

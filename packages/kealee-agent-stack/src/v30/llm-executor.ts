@@ -1,5 +1,6 @@
 import { getV30Bot, V30_PARALLEL_BOT_TYPES } from './bots'
 import { buildV30BotUserPrompt } from './bot-task-prompts'
+import { executeV30DesignBot } from './design-bot-executor'
 import { getV30SystemPrompt } from './prompts'
 import { v30DryRunExecution } from './orchestrator'
 import {
@@ -27,18 +28,21 @@ function isLlmBot(botType: V30BotType): boolean {
 }
 
 /**
- * Execute any of the 10 KeaBot v3.0 post-payment bots via cached Claude + Platform Agents prompts.
+ * Route v30 bot execution — DesignBot uses canonical executor only (no duplicate LLM path).
  */
 export async function executeV30BotWithLlm(
   input: V30BotExecutionInput & { systemPrompt: string },
 ): Promise<V30BotExecutionResult> {
-  const def = getV30Bot(input.botType)
-  const started = Date.now()
-
   if (!shouldUseV30Llm() || !isLlmBot(input.botType)) {
     return v30DryRunExecution(input)
   }
 
+  if (input.botType === 'design') {
+    return executeV30DesignBot(input)
+  }
+
+  const def = getV30Bot(input.botType)
+  const started = Date.now()
   const client = new V30ClaudeCachedClient()
   const system = input.systemPrompt || getV30SystemPrompt(input.botType)
   const user = buildV30BotUserPrompt(input.botType, input.inputData)
