@@ -1827,6 +1827,38 @@ importers:
         specifier: ^5.6.0
         version: 5.9.3
 
+  packages/os-ai-orch:
+    dependencies:
+      '@kealee/database':
+        specifier: workspace:*
+        version: link:../database
+      '@kealee/kealee-agent-stack':
+        specifier: workspace:*
+        version: link:../kealee-agent-stack
+    devDependencies:
+      '@types/node':
+        specifier: 20.19.39
+        version: 20.19.39
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+
+  packages/os-intake:
+    dependencies:
+      '@kealee/database':
+        specifier: workspace:*
+        version: link:../database
+      '@kealee/kealee-agent-stack':
+        specifier: workspace:*
+        version: link:../kealee-agent-stack
+    devDependencies:
+      '@types/node':
+        specifier: 20.19.39
+        version: 20.19.39
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+
   packages/page-builder:
     dependencies:
       '@kealee/ai':
@@ -2312,6 +2344,12 @@ importers:
       '@kealee/observability':
         specifier: workspace:*
         version: link:../../packages/observability
+      '@kealee/os-ai-orch':
+        specifier: workspace:*
+        version: link:../../packages/os-ai-orch
+      '@kealee/os-intake':
+        specifier: workspace:*
+        version: link:../../packages/os-intake
       '@kealee/page-builder':
         specifier: workspace:*
         version: link:../../packages/page-builder

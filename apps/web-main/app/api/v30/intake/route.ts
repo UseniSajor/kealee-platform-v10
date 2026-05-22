@@ -58,7 +58,10 @@ export async function POST(req: NextRequest) {
 
       const formData = {
         ...((existing?.form_data as Record<string, unknown>) ?? {}),
+        v30: true,
         v30Quote: quote,
+        v30Answers: body.answers,
+        v30Features: features,
         squareFootage: body.answers.squareFeet,
         description: `${body.answers.primaryScope} — ${body.answers.propertyType}`,
       }
@@ -69,6 +72,9 @@ export async function POST(req: NextRequest) {
         .eq('id', body.intakeId)
     }
 
+    const pricingBreakdown = (analysis.analysisJson as { pricingBreakdown?: Record<string, number> })
+      ?.pricingBreakdown
+
     return NextResponse.json({
       analysis: {
         scopeComplexity: analysis.scopeComplexity,
@@ -76,6 +82,7 @@ export async function POST(req: NextRequest) {
         estimatedCost: analysis.estimatedCost,
         estimatedDays: analysis.estimatedDays,
         suggestedFeatures: analysis.suggestedFeatures,
+        pricingBreakdown,
       },
       package: { features, basePrice: analysis.estimatedCost, featureAddons, totalPrice },
       quote,

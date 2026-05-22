@@ -13,6 +13,7 @@ function SuccessInner() {
   const amount   = searchParams.get('amount')   ?? ''
   const promo    = searchParams.get('promo')    === '1'
   const intakeId = searchParams.get('intakeId') ?? ''
+  const isV30      = searchParams.get('v30') === '1'
 
   // Fire concept generation from the browser after Stripe redirect.
   // The intake is 'paid' by the time the user lands here (webhook runs first).
@@ -22,14 +23,15 @@ function SuccessInner() {
     if (!intakeId) return
     // Small delay to give the Stripe webhook time to mark the intake paid first.
     const t = setTimeout(() => {
-      fetch('/api/concept/generate', {
+      const url = isV30 ? '/api/v30/generate' : '/api/concept/generate'
+      fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ intakeId }),
       }).catch(() => { /* silent — webhook is secondary trigger */ })
     }, 3000)
     return () => clearTimeout(t)
-  }, [intakeId])
+  }, [intakeId, isV30])
 
   // Direct link to the concept access gate.
   // The access page lets the user enter their email to receive a magic-link

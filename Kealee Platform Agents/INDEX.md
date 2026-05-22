@@ -17,6 +17,10 @@
 
 Extracted from `Kealee v30 files.zip` into `v30/`.
 
+**zip2 (Days 1–7 combined):** [v30/zip2/](./v30/zip2/) — from `kealeev30 2.zip`; includes os-intake / os-ai-orch build prompts.
+
+**UI/UX impact:** [v30/uiux/](./v30/uiux/) — from `UI UX v30.zip`; see [VERIFICATION.md](./v30/uiux/VERIFICATION.md) for web-main checklist.
+
 ---
 
 ## Legacy agent / ops docs
@@ -36,11 +40,15 @@ Extracted from `Kealee v30 files.zip` into `v30/`.
 | Spec area | Monorepo location |
 |-----------|-------------------|
 | 10 bots + IntakeBot | `packages/kealee-agent-stack/src/v30/` |
+| os-intake (zip2) | `packages/os-intake` |
+| os-ai-orch (zip2) | `packages/os-ai-orch` |
 | Dynamic pricing formula | `packages/kealee-agent-stack/src/v30/pricing.ts` (uses `@kealee/core-rules`) |
 | Parallel orchestration | `packages/kealee-agent-stack/src/v30/orchestrator.ts` |
-| Intake API | `services/api/src/modules/v30/v30.routes.ts` |
+| Intake + generate API | `services/api/src/modules/v30/v30.routes.ts` |
+| Public intake → generate | `apps/web-main/app/api/v30/generate/route.ts` |
 | 12 Prisma models | `packages/database/prisma/schema.prisma` + migration `20260522_add_v30_models` |
-| Feature flag | `KEALEE_V30_ENABLED` env + `isV30Enabled()` |
+| Feature flag | `KEALEE_V30_ENABLED` / `NEXT_PUBLIC_KEALEE_V30_ENABLED` |
+| Public project owner | `KEALEE_V30_PUBLIC_USER_ID` on API (User.id for `/get-concept`) |
 
 ---
 

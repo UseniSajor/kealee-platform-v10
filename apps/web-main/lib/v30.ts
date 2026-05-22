@@ -23,6 +23,7 @@ export interface V30QuoteResponse {
     estimatedCost: number
     estimatedDays: number
     suggestedFeatures: string[]
+    pricingBreakdown?: Record<string, number>
   }
   package: {
     features: string[]

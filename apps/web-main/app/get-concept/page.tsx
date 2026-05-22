@@ -13,9 +13,18 @@ import { getConceptServices } from '@/lib/services-config'
 import {
   isV30EnabledClient,
   V30_FEATURE_OPTIONS,
+  V30_INTAKE_QUESTIONS,
   type V30IntakeAnswers,
   type V30QuoteResponse,
 } from '@/lib/v30'
+
+const PRICING_LABELS: Record<string, string> = {
+  baseAmount: 'Base package',
+  sqftComponent: 'Size (sq ft)',
+  complexityFee: 'Complexity',
+  urgencyMultiplier: 'Timeline multiplier',
+  locationMultiplier: 'Location multiplier',
+}
 
 export default function GetConceptPage() {
   const router = useRouter()
@@ -23,6 +32,7 @@ export default function GetConceptPage() {
   const services = getConceptServices()
 
   const [step, setStep] = useState<'service' | 'questions' | 'quote' | 'contact'>('service')
+  const [questionIndex, setQuestionIndex] = useState(0)
   const [projectPath, setProjectPath] = useState('')
   const [answers, setAnswers] = useState<Partial<V30IntakeAnswers>>({
     utilities: {},
@@ -93,6 +103,8 @@ export default function GetConceptPage() {
           formData: {
             ...answers,
             v30: true,
+            v30Answers: answers,
+            v30Features: features,
             squareFootage: answers.squareFeet,
           },
         }),
@@ -118,7 +130,7 @@ export default function GetConceptPage() {
           intakeId,
           projectPath,
           useV30Pricing: true,
-          successUrl: `${window.location.origin}/concept/confirm?intakeId=${intakeId}`,
+          successUrl: `${window.location.origin}/concept/success?intakeId=${intakeId}&v30=1`,
           cancelUrl: `${window.location.origin}/get-concept`,
         }),
       })
@@ -167,7 +179,10 @@ export default function GetConceptPage() {
             <button
               type="button"
               disabled={!projectPath}
-              onClick={() => setStep('questions')}
+              onClick={() => {
+                setQuestionIndex(0)
+                setStep('questions')
+              }}
               className="inline-flex items-center gap-2 rounded-lg bg-violet-600 px-5 py-2.5 text-white font-semibold disabled:opacity-50"
             >
               Continue <ArrowRight className="h-4 w-4" />
@@ -175,71 +190,94 @@ export default function GetConceptPage() {
           </div>
         )}
 
-        {step === 'questions' && (
-          <div className="space-y-4 bg-white rounded-xl border border-slate-200 p-6">
-            <h2 className="font-semibold text-lg">Project details</h2>
-            {[
-              { key: 'propertyType', label: 'Property type', options: ['single-family', 'multi-family', 'commercial'] },
-              { key: 'primaryScope', label: 'Primary scope', options: ['kitchen_remodel', 'bath_remodel', 'addition', 'whole_house'] },
-              { key: 'budgetRange', label: 'Budget', options: ['$25K-$50K', '$50K-$100K', '$100K-$250K', '$250K+'] },
-              { key: 'timeline', label: 'Timeline', options: ['ASAP', '6-8 weeks', 'flexible'] },
-            ].map(f => (
-              <label key={f.key} className="block">
-                <span className="text-sm font-medium text-slate-700">{f.label}</span>
-                <select
-                  className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2"
-                  value={(answers as Record<string, string>)[f.key] ?? ''}
-                  onChange={e => setAnswers(a => ({ ...a, [f.key]: e.target.value }))}
-                >
-                  <option value="">Select…</option>
-                  {f.options.map(o => (
-                    <option key={o} value={o}>{o}</option>
+        {step === 'questions' && (() => {
+          const q = V30_INTAKE_QUESTIONS[questionIndex]
+          const total = V30_INTAKE_QUESTIONS.length
+          const key = q.key as keyof V30IntakeAnswers
+          const value = answers[key]
+          const canNext =
+            q.type === 'number'
+              ? typeof value === 'number' && value > 0
+              : typeof value === 'string' && value.length > 0
+
+          return (
+            <div className="space-y-4 bg-white rounded-xl border border-slate-200 p-6">
+              <div className="flex items-center justify-between text-sm text-slate-500">
+                <span>Question {questionIndex + 1} of {total}</span>
+                <div className="h-1.5 w-32 rounded-full bg-slate-100 overflow-hidden">
+                  <div
+                    className="h-full bg-violet-600 transition-all"
+                    style={{ width: `${((questionIndex + 1) / total) * 100}%` }}
+                  />
+                </div>
+              </div>
+              <h2 className="font-semibold text-lg text-slate-900">{q.label}</h2>
+              {q.type === 'select' && 'options' in q && (
+                <div className="grid gap-2">
+                  {q.options.map(o => (
+                    <button
+                      key={o}
+                      type="button"
+                      onClick={() => setAnswers(a => ({ ...a, [key]: o }))}
+                      className={`text-left rounded-lg border-2 px-4 py-3 transition ${
+                        value === o ? 'border-violet-600 bg-violet-50' : 'border-slate-200'
+                      }`}
+                    >
+                      {o.replace(/_/g, ' ')}
+                    </button>
                   ))}
-                </select>
-              </label>
-            ))}
-            <label className="block">
-              <span className="text-sm font-medium text-slate-700">Location</span>
-              <input
-                className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2"
-                placeholder="e.g. Washington DC or Montgomery County MD"
-                value={answers.location ?? ''}
-                onChange={e => setAnswers(a => ({ ...a, location: e.target.value }))}
-              />
-            </label>
-            <label className="block">
-              <span className="text-sm font-medium text-slate-700">Square footage</span>
-              <input
-                type="number"
-                className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2"
-                value={answers.squareFeet ?? ''}
-                onChange={e => setAnswers(a => ({ ...a, squareFeet: Number(e.target.value) }))}
-              />
-            </label>
-            <label className="block">
-              <span className="text-sm font-medium text-slate-700">Year built</span>
-              <select
-                className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2"
-                value={answers.yearBuilt ?? ''}
-                onChange={e => setAnswers(a => ({ ...a, yearBuilt: e.target.value }))}
-              >
-                <option value="">Select…</option>
-                {['pre-1950', '1950-1980', '1980-2000', '2000+'].map(o => (
-                  <option key={o} value={o}>{o}</option>
-                ))}
-              </select>
-            </label>
-            <button
-              type="button"
-              disabled={loading}
-              onClick={() => runQuote()}
-              className="inline-flex items-center gap-2 rounded-lg bg-violet-600 px-5 py-2.5 text-white font-semibold"
-            >
-              {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
-              Get my estimate
-            </button>
-          </div>
-        )}
+                </div>
+              )}
+              {q.type === 'text' && (
+                <input
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2"
+                  placeholder="e.g. Washington DC or Montgomery County MD"
+                  value={(value as string) ?? ''}
+                  onChange={e => setAnswers(a => ({ ...a, [key]: e.target.value }))}
+                />
+              )}
+              {q.type === 'number' && (
+                <input
+                  type="number"
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2"
+                  value={typeof value === 'number' ? value : ''}
+                  onChange={e => setAnswers(a => ({ ...a, [key]: Number(e.target.value) }))}
+                />
+              )}
+              <div className="flex gap-3 pt-2">
+                {questionIndex > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setQuestionIndex(i => i - 1)}
+                    className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700"
+                  >
+                    Back
+                  </button>
+                )}
+                {questionIndex < total - 1 ? (
+                  <button
+                    type="button"
+                    disabled={!canNext}
+                    onClick={() => setQuestionIndex(i => i + 1)}
+                    className="inline-flex items-center gap-2 rounded-lg bg-violet-600 px-5 py-2.5 text-white font-semibold disabled:opacity-50"
+                  >
+                    Next <ArrowRight className="h-4 w-4" />
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    disabled={loading || !canNext}
+                    onClick={() => runQuote()}
+                    className="inline-flex items-center gap-2 rounded-lg bg-violet-600 px-5 py-2.5 text-white font-semibold disabled:opacity-50"
+                  >
+                    {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+                    {loading ? 'Analyzing…' : 'Get my estimate'}
+                  </button>
+                )}
+              </div>
+            </div>
+          )
+        })()}
 
         {step === 'quote' && quote && (
           <div className="space-y-4">
@@ -251,6 +289,24 @@ export default function GetConceptPage() {
               <p className="text-sm text-slate-600 mt-2">
                 {quote.analysis.estimatedDays} day delivery · {quote.analysis.scopeComplexity} scope · {quote.analysis.riskLevel} risk
               </p>
+              {quote.analysis.pricingBreakdown && (
+                <ul className="mt-4 space-y-1 text-sm text-slate-600 border-t border-slate-100 pt-4">
+                  {Object.entries(quote.analysis.pricingBreakdown).map(([k, v]) => (
+                    <li key={k} className="flex justify-between gap-4">
+                      <span>{PRICING_LABELS[k] ?? k}</span>
+                      <span className="font-medium text-slate-800">
+                        {k.includes('Multiplier') ? `×${v}` : `$${Math.round(v).toLocaleString()}`}
+                      </span>
+                    </li>
+                  ))}
+                  {quote.package.featureAddons > 0 && (
+                    <li className="flex justify-between gap-4">
+                      <span>Feature add-ons</span>
+                      <span className="font-medium">${quote.package.featureAddons.toLocaleString()}</span>
+                    </li>
+                  )}
+                </ul>
+              )}
               <div className="mt-4 flex flex-wrap gap-2">
                 {V30_FEATURE_OPTIONS.map(f => (
                   <button
