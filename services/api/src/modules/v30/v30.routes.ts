@@ -12,6 +12,7 @@ import {
 } from '@kealee/os-intake'
 import {
   getV30ProjectGenerationStatus,
+  getV30ProjectWorkspace,
   startV30Generation,
 } from '@kealee/os-ai-orch'
 import { isV30Enabled, type V30IntakeFormAnswers } from '@kealee/kealee-agent-stack'
@@ -184,6 +185,20 @@ export async function v30Routes(fastify: FastifyInstance) {
       return reply.send(status)
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Status unavailable'
+      return reply.code(503).send({ error: message })
+    }
+  })
+
+  fastify.get('/project/:projectId/workspace', async (request: FastifyRequest, reply: FastifyReply) => {
+    const projectId = (request.params as { projectId?: string }).projectId
+    if (!projectId) return reply.code(400).send({ error: 'projectId required' })
+
+    try {
+      const workspace = await getV30ProjectWorkspace(projectId)
+      const status = await getV30ProjectGenerationStatus(projectId)
+      return reply.send({ ...workspace, generation: status })
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Workspace unavailable'
       return reply.code(503).send({ error: message })
     }
   })

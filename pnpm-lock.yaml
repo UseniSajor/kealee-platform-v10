@@ -1779,6 +1779,10 @@ importers:
         version: 5.9.3
 
   packages/kealee-agent-stack:
+    dependencies:
+      '@kealee/core-bots':
+        specifier: workspace:*
+        version: link:../core-bots
     devDependencies:
       '@types/node':
         specifier: 20.19.39

@@ -4,6 +4,7 @@ import { Suspense, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { CheckCircle2, Mail, Clock, ArrowRight, ExternalLink } from 'lucide-react'
+import { V30GenerationStatus } from '@/components/v30/V30GenerationStatus'
 
 function SuccessInner() {
   const searchParams = useSearchParams()
@@ -111,6 +112,18 @@ function SuccessInner() {
               </div>
             </div>
           </div>
+
+          {isV30 && intakeId && (
+            <div className="px-6 py-5 border-b border-slate-100 space-y-4">
+              <V30GenerationStatus intakeId={intakeId} />
+              <Link
+                href={`/workspace/${intakeId}`}
+                className="inline-flex items-center gap-2 text-sm font-bold text-violet-700 hover:underline"
+              >
+                Open v30 workspace <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
+          )}
 
           {/* What happens next */}
           <div className="px-6 py-5">

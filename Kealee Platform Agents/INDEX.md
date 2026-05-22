@@ -68,6 +68,12 @@ Extracted from `Kealee v30 files.zip` into `v30/`.
 
 ---
 
+## Remaining work
+
+See [v30/REMAINING.md](./v30/REMAINING.md) for full checklist (P0–P4).
+
+---
+
 ## Quick commands
 
 ```bash

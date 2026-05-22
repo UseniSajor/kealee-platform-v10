@@ -128,9 +128,10 @@ export async function POST(req: NextRequest) {
       },
       payment_intent_data: {
         metadata: {
-          source: 'public_intake',
+          source: useV30Pricing ? 'public_intake_v30' : 'public_intake',
           intakeId,
           projectPath,
+          pricingModel: useV30Pricing ? 'v30_dynamic' : 'tier_fixed',
         },
       },
     }

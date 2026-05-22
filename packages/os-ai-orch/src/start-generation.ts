@@ -1,8 +1,10 @@
 import { Prisma } from '@prisma/client'
 import { prisma } from '@kealee/database'
 import {
+  executeV30BotWithLlm,
   getV30Bot,
   runV30ParallelGeneration,
+  shouldUseV30Llm,
   type V30BotExecutionResult,
 } from '@kealee/kealee-agent-stack'
 import { botTypesForPackageFeatures } from './feature-bots'
@@ -110,7 +112,11 @@ export async function startV30Generation(
     ...(input.sharedInput ?? {}),
   }
 
-  void runV30ParallelGeneration(input.projectId, input.packageId, sharedInput, { botTypes })
+  const orchOptions = shouldUseV30Llm()
+    ? { botTypes, executeBot: executeV30BotWithLlm }
+    : { botTypes }
+
+  void runV30ParallelGeneration(input.projectId, input.packageId, sharedInput, orchOptions)
     .then(async summary => {
       for (const result of summary.executions) {
         const executionId = executionIds[result.botType]

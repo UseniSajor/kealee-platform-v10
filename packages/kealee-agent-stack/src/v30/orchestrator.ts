@@ -14,7 +14,7 @@ export interface V30OrchestratorOptions {
   botTypes?: V30BotType[]
 }
 
-function dryRunExecution(input: V30BotExecutionInput): V30BotExecutionResult {
+export function v30DryRunExecution(input: V30BotExecutionInput): V30BotExecutionResult {
   const def = getV30Bot(input.botType)
   const started = Date.now()
   return {
@@ -57,7 +57,7 @@ export async function runV30ParallelGeneration(
     if (options.executeBot) {
       return options.executeBot({ ...input, systemPrompt })
     }
-    return dryRunExecution(input)
+    return v30DryRunExecution(input)
   })
 
   const executions = await Promise.all(tasks)
