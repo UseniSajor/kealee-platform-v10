@@ -1072,6 +1072,16 @@ const start = async () => {
       await fastify.register(botsChainRoutes, { prefix: '/bots' })
     })
 
+    await safeRegisterBlock('Agent Ops cockpit routes', async () => {
+      const { agentOpsRoutes } = await import('./modules/agent-ops/agent-ops.routes')
+      await fastify.register(agentOpsRoutes, { prefix: '/agent-ops' })
+    })
+
+    await safeRegisterBlock('Kealee v30 routes', async () => {
+      const { v30Routes } = await import('./modules/v30/v30.routes')
+      await fastify.register(v30Routes, { prefix: '/v30' })
+    })
+
     // ══════════════════════════════════════════════════════════════
     // Opportunities Phase 06 — Interest list, contracts, apprenticeships
     // ══════════════════════════════════════════════════════════════

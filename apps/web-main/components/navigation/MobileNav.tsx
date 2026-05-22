@@ -3,7 +3,8 @@
 import Link from 'next/link'
 import { X, ChevronDown, ArrowRight } from 'lucide-react'
 import { useState } from 'react'
-import { PRIMARY_NAV, NAV_CTA_PRIMARY, NAV_LOGIN_OPTIONS } from '@/config/navigation'
+import { PRIMARY_NAV, NAV_CTA_PRIMARY, NAV_CTA_V30, NAV_LOGIN_OPTIONS } from '@/config/navigation'
+import { isV30EnabledClient } from '@/lib/v30'
 
 interface Props {
   isOpen:  boolean
@@ -11,6 +12,7 @@ interface Props {
 }
 
 export function MobileNav({ isOpen, onClose }: Props) {
+  const navCta = isV30EnabledClient() ? NAV_CTA_V30 : NAV_CTA_PRIMARY
   const [openItems,   setOpenItems]   = useState<Record<string, boolean>>({})
   const [loginExpand, setLoginExpand] = useState(false)
 
@@ -120,12 +122,12 @@ export function MobileNav({ isOpen, onClose }: Props) {
         {/* Bottom CTAs */}
         <div className="border-t border-gray-100 px-5 py-4 space-y-2">
           <Link
-            href={NAV_CTA_PRIMARY.href}
+            href={navCta.href}
             onClick={onClose}
             className="flex w-full items-center justify-center gap-2 rounded-xl py-3 text-sm font-semibold text-white transition-all hover:opacity-90"
             style={{ backgroundColor: '#C8521A' }}
           >
-            {NAV_CTA_PRIMARY.label}
+            {navCta.label}
             <ArrowRight className="h-4 w-4" />
           </Link>
 

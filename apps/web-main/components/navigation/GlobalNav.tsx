@@ -14,9 +14,11 @@ import Link from 'next/link'
 import { Menu, ArrowRight, ChevronDown } from 'lucide-react'
 import { NavItem } from './NavItem'
 import { MobileNav } from './MobileNav'
-import { PRIMARY_NAV, NAV_CTA_PRIMARY, NAV_LOGIN_OPTIONS } from '@/config/navigation'
+import { PRIMARY_NAV, NAV_CTA_PRIMARY, NAV_CTA_V30, NAV_LOGIN_OPTIONS } from '@/config/navigation'
+import { isV30EnabledClient } from '@/lib/v30'
 
 export function GlobalNav() {
+  const navCta = isV30EnabledClient() ? NAV_CTA_V30 : NAV_CTA_PRIMARY
   const [mobileOpen,    setMobileOpen]    = useState(false)
   const [openDropdown,  setOpenDropdown]  = useState<string | null>(null)
   const [loginOpen,     setLoginOpen]     = useState(false)
@@ -141,11 +143,11 @@ export function GlobalNav() {
 
             {/* Primary CTA */}
             <Link
-              href={NAV_CTA_PRIMARY.href}
+              href={navCta.href}
               className="inline-flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-semibold text-white transition-all hover:opacity-90"
               style={{ backgroundColor: '#C8521A' }}
             >
-              {NAV_CTA_PRIMARY.label}
+              {navCta.label}
               <ArrowRight className="h-3.5 w-3.5" />
             </Link>
           </div>

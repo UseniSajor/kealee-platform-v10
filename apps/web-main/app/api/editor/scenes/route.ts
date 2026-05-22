@@ -34,7 +34,7 @@ export async function GET(req: NextRequest) {
 
     let query = supabase
       .from('pascal_scenes')
-      .select('id, name, project_type, total_sq_ft, room_count, style, address, created_at, updated_at')
+      .select('id, name, project_type, total_sq_ft, room_count, style, address, cover_image_url, selected_render_url, created_at, updated_at')
       .eq('is_deleted', false)
       .order('updated_at', { ascending: false })
       .limit(50)
@@ -95,6 +95,8 @@ export async function POST(req: NextRequest) {
         floor_count:  finalSceneData.stats?.floorCount ?? 1,
         style:        style ?? null,
         address:      address ?? null,
+        cover_image_url: null,
+        selected_render_url: null,
       })
       .select()
       .single()

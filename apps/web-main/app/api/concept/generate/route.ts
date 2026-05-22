@@ -180,6 +180,14 @@ async function fireConceptRenders(
   return { predictionIds, renderUrls: [] }
 }
 
+function preferSelectedRender(renderUrls: string[], selectedRenderUrl?: string | null): string[] {
+  if (!selectedRenderUrl) return renderUrls
+  return [
+    selectedRenderUrl,
+    ...renderUrls.filter(url => url !== selectedRenderUrl),
+  ]
+}
+
 /**
  * Tier 2+ deliverables include a video. The actual generation is async and
  * runs out-of-band via /api/concept/video. This function only attaches the
@@ -293,6 +301,8 @@ interface PascalGeometry {
   exteriorPerimFt: number | null
   style: string | null
   projectType: string | null
+  selectedRenderUrl: string | null
+  coverImageUrl: string | null
 }
 
 function buildGeometrySection(geo: PascalGeometry): string {
@@ -428,6 +438,28 @@ export async function POST(req: NextRequest) {
     const tier = typeof existingFormData.tier === 'number' ? existingFormData.tier : 1
     const deliverable = SERVICE_DELIVERABLES[projectPath]
 
+    // v30: DesignBot runs via os-ai-orch — never duplicate v20 concept/generate Claude call
+    if (existingFormData.v30 || existingFormData.v30SkipConceptGenerate) {
+      const v30Out = (existingFormData.v30ConceptOutput ?? existingFormData.conceptOutput) as
+        | ConceptOutput
+        | undefined
+      if (v30Out) {
+        return NextResponse.json({
+          conceptOutput: v30Out,
+          cached: true,
+          source: 'v30_design_bot',
+        })
+      }
+      return NextResponse.json(
+        {
+          error: 'v30 concept pending',
+          message: 'DesignBot is still generating. Open your v30 workspace or try again shortly.',
+          workspaceUrl: `/workspace/${intakeId}`,
+        },
+        { status: 202 },
+      )
+    }
+
     // Parse before-photos uploaded during intake (comma-separated public URLs)
     const attachmentsRaw = (existingFormData.attachments as string | undefined) ?? ''
     const uploadedPhotoUrls = attachmentsRaw
@@ -438,6 +470,7 @@ export async function POST(req: NextRequest) {
     // Return cached concept if already generated
     if (existingFormData.conceptOutput && intake.status === 'concept_ready') {
       const out = { ...(existingFormData.conceptOutput as ConceptOutput) }
+      out.renderUrls = preferSelectedRender(out.renderUrls ?? [], existingFormData.selectedRenderUrl as string | undefined)
       attachConceptVideoFields(out, tier)
       return NextResponse.json({ conceptOutput: out, cached: true })
     }
@@ -465,7 +498,7 @@ export async function POST(req: NextRequest) {
       try {
         const { data: scene } = await supabase
           .from('pascal_scenes')
-          .select('total_sq_ft, room_count, wall_length_ft, floor_count, door_count, window_count, exterior_perim_ft, style, project_type')
+          .select('total_sq_ft, room_count, wall_length_ft, floor_count, door_count, window_count, exterior_perim_ft, style, project_type, selected_render_url, cover_image_url')
           .eq('id', linkedSceneId)
           .eq('is_deleted', false)
           .single()
@@ -481,6 +514,8 @@ export async function POST(req: NextRequest) {
             exteriorPerimFt: scene.exterior_perim_ft,
             style:           scene.style,
             projectType:     scene.project_type,
+            selectedRenderUrl: scene.selected_render_url,
+            coverImageUrl:     scene.cover_image_url,
           }
         }
       } catch (geoErr: any) {
@@ -524,7 +559,10 @@ export async function POST(req: NextRequest) {
         projectTimeline: '4–6 weeks',
         description: 'Your personalized concept package has been prepared based on your project details.',
         includes: SERVICE_DELIVERABLES[projectPath]?.includes ?? [],
-        renderUrls: [],
+        renderUrls: preferSelectedRender(
+          getRenderUrls(projectPath, tier),
+          geometry?.selectedRenderUrl ?? (existingFormData.selectedRenderUrl as string | undefined),
+        ),
         permitScope: {
           requiresPermit: deliverable?.permitRequired === 'always',
           permitTypes: deliverable?.permitRequired === 'always' ? ['Building Permit'] : [],
@@ -543,7 +581,10 @@ export async function POST(req: NextRequest) {
       if (!conceptOutput.includes?.length && SERVICE_DELIVERABLES[projectPath]?.includes) {
         conceptOutput.includes = SERVICE_DELIVERABLES[projectPath].includes
       }
-      conceptOutput.renderUrls = []
+      conceptOutput.renderUrls = preferSelectedRender(
+        getRenderUrls(projectPath, tier),
+        geometry?.selectedRenderUrl ?? (existingFormData.selectedRenderUrl as string | undefined),
+      )
       // Enforce catalog permit rule — override AI if it contradicts the product definition
       if (deliverable?.permitRequired === 'always' && !conceptOutput.permitScope?.requiresPermit) {
         if (!conceptOutput.permitScope) {
@@ -602,6 +643,8 @@ export async function POST(req: NextRequest) {
       .update({
         form_data: {
           ...existingFormData,
+          selectedRenderUrl: geometry?.selectedRenderUrl ?? existingFormData.selectedRenderUrl,
+          coverImageUrl: geometry?.coverImageUrl ?? existingFormData.coverImageUrl,
           conceptOutput,
           renderJobs,
           conceptGeneratedAt: new Date().toISOString(),

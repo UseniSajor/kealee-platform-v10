@@ -18,6 +18,7 @@
   },
   "dependencies": {
     "@kealee/core-rules": "workspace:*",
+    "@kealee/kealee-agent-stack": "workspace:*",
     "stripe": "^14.25.0",
     "@kealee/intake": "workspace:*",
     "@kealee/pascal-wrapper": "workspace:*",

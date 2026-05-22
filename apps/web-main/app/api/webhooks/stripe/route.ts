@@ -18,6 +18,7 @@ import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { SERVICE_DELIVERABLES } from '@/lib/service-deliverables'
 import { getOwnerPortalDeliverableUrl } from '@/lib/owner-portal-urls'
 import { isStripeWebhookSideEffectsDisabledOnThisDeployment } from '@/lib/stripe-vercel-guard'
+import { isV30IntakeMetadata, triggerV30GenerationForIntake } from '@/lib/v30-trigger'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 30
@@ -112,10 +113,12 @@ export async function POST(req: NextRequest) {
   const session = event.data.object as Stripe.Checkout.Session
   const meta = session.metadata ?? {}
 
-  // Only handle public_intake source
-  if (meta.source !== 'public_intake') {
+  // public_intake (v20 tiers) and public_intake_v30 (dynamic quote)
+  if (meta.source !== 'public_intake' && meta.source !== 'public_intake_v30') {
     return NextResponse.json({ received: true })
   }
+
+  const isV30 = isV30IntakeMetadata(meta)
 
   const intakeId = meta.intakeId
   const projectPath = meta.projectPath
@@ -171,10 +174,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ received: true })
   }
 
-  // 3. Trigger concept generation for design/development services (fire-and-forget)
-  if (deliverable?.generatesConcept) {
+  // 3. Trigger generation (fire-and-forget)
+  if (isV30) {
+    triggerV30GenerationForIntake(intakeId).catch((err: Error) => {
+      console.error('[stripe-webhook] v30 generation trigger failed:', err.message)
+    })
+  } else if (deliverable?.generatesConcept) {
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? req.nextUrl.origin
-    // Non-blocking — Stripe gets 200 immediately
     fetch(`${baseUrl}/api/concept/generate`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
