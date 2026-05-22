@@ -1,8 +1,9 @@
 import { Prisma } from '@prisma/client'
 import { prisma } from '@kealee/database'
 import {
-  analyzeV30Intake,
+  analyzeV30IntakeWithLlm,
   calculateV30PackagePrice,
+  type V30IntakeAnalysis,
   type V30IntakeFormAnswers,
 } from '@kealee/kealee-agent-stack'
 
@@ -16,7 +17,7 @@ export interface ProcessV30ProjectIntakeInput {
 export interface ProcessV30ProjectIntakeResult {
   projectId: string
   packageId: string
-  analysis: ReturnType<typeof analyzeV30Intake>
+  analysis: V30IntakeAnalysis
   package: {
     features: string[]
     basePrice: number
@@ -32,7 +33,7 @@ export async function processV30ProjectIntake(
   input: ProcessV30ProjectIntakeInput,
 ): Promise<ProcessV30ProjectIntakeResult> {
   const { projectId, userId, answers } = input
-  const analysis = analyzeV30Intake(answers)
+  const analysis = await analyzeV30IntakeWithLlm(answers)
   const features = input.selectedFeatures?.length
     ? input.selectedFeatures
     : analysis.suggestedFeatures

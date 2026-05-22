@@ -1,22 +1,9 @@
-import type { V30BotType } from '@kealee/kealee-agent-stack'
+import { V30_PARALLEL_BOT_TYPES, type V30BotType } from '@kealee/kealee-agent-stack'
 
-/** Map v30 package feature labels → bot types (zip2 os-ai-orch). */
-export function botTypesForPackageFeatures(features: string[]): V30BotType[] {
-  const normalized = features.map(f => f.toLowerCase())
-  const types = new Set<V30BotType>()
-
-  if (normalized.some(f => f.includes('design'))) types.add('design')
-  if (normalized.some(f => f.includes('floorplan'))) types.add('floorplan')
-  if (normalized.some(f => f.includes('estimate'))) types.add('estimate')
-  if (normalized.some(f => f.includes('permit'))) {
-    types.add('zoning')
-    types.add('permit')
-  }
-  if (normalized.some(f => f.includes('video'))) types.add('video')
-  if (normalized.some(f => f.includes('support'))) types.add('support')
-
-  types.add('contractor')
-  types.add('project')
-
-  return [...types]
+/**
+ * KeaBot v3.0 — run all 10 post-payment bots in parallel (Kealee Platform Agents spec).
+ * Package features still control billing; generation runs the full bot suite.
+ */
+export function botTypesForPackageFeatures(_features: string[]): V30BotType[] {
+  return [...V30_PARALLEL_BOT_TYPES]
 }

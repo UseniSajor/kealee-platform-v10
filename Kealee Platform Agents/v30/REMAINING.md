@@ -7,7 +7,7 @@
 | # | Task | Status |
 |---|------|--------|
 | 1 | Stripe webhook → v30 generate after `paid` | ✅ `public_intake_v30` + `triggerV30GenerationForIntake` |
-| 2 | Live DesignBot via `ClaudeCachedClient` | ✅ `executeV30BotWithLlm` (other bots stub until wired) |
+| 2 | Live all 10 bots via cached Claude + Agent prompts | ✅ `executeV30BotWithLlm` for full `V30_PARALLEL_BOT_TYPES` |
 | 3 | Customer workspace tabs | ✅ `/workspace/[intakeId]` + `GET /v30/project/:id/workspace` |
 | — | Post-pay status UI | ✅ `/concept/success` + `/api/v30/status` |
 | — | os-intake / os-ai-orch packages | ✅ |
@@ -25,7 +25,7 @@
 
 | Task | Notes |
 |------|--------|
-| Wire remaining 9 bots to LLM | estimate, zoning, permit, floorplan, video, … |
+| Wire remaining 9 bots to LLM | ✅ all 10 use `getV30SystemPrompt` + `V30ClaudeCachedClient` |
 | Map DesignBot JSON → concept portal renders | replace raw JSON in workspace |
 | Full 9-question intake UI | utilities + code considerations |
 | Homepage v30 mode | hide fixed tier cards when flag on |

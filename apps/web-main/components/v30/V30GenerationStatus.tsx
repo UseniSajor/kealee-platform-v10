@@ -25,9 +25,9 @@ const BOT_LABELS: Record<string, string> = {
   permit: 'Permits',
   video: 'Video',
   contractor: 'Contractors',
-  sales: 'Sales',
-  support: 'Support',
-  project: 'Project workflow',
+  sales: 'SalesBot',
+  support: 'SupportBot',
+  project: 'ProjectBot',
 }
 
 export function V30GenerationStatus({ intakeId }: { intakeId: string }) {

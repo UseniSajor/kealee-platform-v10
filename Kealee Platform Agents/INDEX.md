@@ -14,6 +14,7 @@
 | [v30/KEALEE-v30-IMPLEMENTATION-GUIDE.md](./v30/KEALEE-v30-IMPLEMENTATION-GUIDE.md) | Quick start, critical changes, checklist |
 | [v30/KEALEE-v30-COMPLETE-MASTER-SPEC.md](./v30/KEALEE-v30-COMPLETE-MASTER-SPEC.md) | Full architecture, Prisma, APIs, Cursor prompts |
 | [v30/KEALEE-v30-INTEGRATION-STRATEGY.md](./v30/KEALEE-v30-INTEGRATION-STRATEGY.md) | v20 → v30 rollout and feature flag |
+| [KEALEE-v30-ALL-10-BOTS-COMPLETE-WIRED.md](./KEALEE-v30-ALL-10-BOTS-COMPLETE-WIRED.md) | **All 10 bot prompts (wired)** → `packages/kealee-agent-stack/src/v30/prompts/` |
 
 Extracted from `Kealee v30 files.zip` into `v30/`.
 
