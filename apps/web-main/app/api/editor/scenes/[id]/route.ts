@@ -79,11 +79,13 @@ export async function PUT(
     if (ownershipBlock) return ownershipBlock
 
     const body = await req.json()
-    const { sceneData, name, style, address } = body as {
+    const { sceneData, name, style, address, selectedRenderUrl, coverImageUrl } = body as {
       sceneData?: PascalSceneData
       name?: string
       style?: string
       address?: string
+      selectedRenderUrl?: string
+      coverImageUrl?: string
     }
 
     const updates: Record<string, unknown> = { updated_at: new Date().toISOString() }
@@ -91,6 +93,12 @@ export async function PUT(
     if (name)    updates.name    = name
     if (style)   updates.style   = style
     if (address) updates.address = address
+    if (selectedRenderUrl) {
+      updates.selected_render_url = selectedRenderUrl
+      updates.cover_image_url = coverImageUrl ?? selectedRenderUrl
+    } else if (coverImageUrl) {
+      updates.cover_image_url = coverImageUrl
+    }
 
     if (sceneData) {
       const stats = calculateSceneStats(sceneData)
@@ -119,11 +127,75 @@ export async function PUT(
 
     if (error) throw error
 
+    if (selectedRenderUrl) {
+      await syncLinkedConceptRender(supabase, params.id, selectedRenderUrl)
+    }
+
     return NextResponse.json({ scene: data })
   } catch (err) {
     console.error('[editor/scenes/[id] PUT]', err)
     return NextResponse.json({ error: 'Failed to update scene' }, { status: 500 })
   }
+}
+
+async function syncLinkedConceptRender(
+  supabase: ReturnType<typeof getSupabaseAdmin>,
+  sceneId: string,
+  selectedRenderUrl: string,
+) {
+  const { data: intakes, error } = await supabase
+    .from('public_intake_leads')
+    .select('id, form_data')
+    .filter('form_data->>sceneId', 'eq', sceneId)
+
+  if (error) {
+    console.warn('[editor/scenes/[id] PUT] Could not fetch linked intakes:', error.message)
+    return
+  }
+
+  await Promise.all((intakes ?? []).map(async (intake: any) => {
+    const formData = ((intake.form_data ?? {}) as Record<string, unknown>)
+    const conceptOutput = formData.conceptOutput as Record<string, unknown> | undefined
+    const existingRenderUrls = Array.isArray(conceptOutput?.renderUrls)
+      ? (conceptOutput.renderUrls as unknown[]).filter((url): url is string => typeof url === 'string')
+      : []
+    const renderUrls = moveUrlToFront(existingRenderUrls, selectedRenderUrl)
+    const nextConceptOutput = conceptOutput
+      ? { ...conceptOutput, renderUrls }
+      : undefined
+
+    const nextFormData: Record<string, unknown> = {
+      ...formData,
+      selectedRenderUrl,
+      coverImageUrl: selectedRenderUrl,
+    }
+
+    if (nextConceptOutput) nextFormData.conceptOutput = nextConceptOutput
+
+    const conceptVideo = formData.conceptVideo as Record<string, unknown> | undefined
+    if (conceptVideo && conceptVideo.inputImageUrl !== selectedRenderUrl) {
+      nextFormData.conceptVideo = {
+        ...conceptVideo,
+        supersededByRenderUrl: selectedRenderUrl,
+      }
+    }
+
+    const { error: updateErr } = await supabase
+      .from('public_intake_leads')
+      .update({ form_data: nextFormData })
+      .eq('id', intake.id)
+
+    if (updateErr) {
+      console.warn('[editor/scenes/[id] PUT] Could not update linked intake:', updateErr.message)
+    }
+  }))
+}
+
+function moveUrlToFront(urls: string[], selectedRenderUrl: string): string[] {
+  return [
+    selectedRenderUrl,
+    ...urls.filter(url => url !== selectedRenderUrl),
+  ]
 }
 
 // ---------------------------------------------------------------------------

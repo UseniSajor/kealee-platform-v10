@@ -33,6 +33,52 @@ import type { ImageProvider } from '@kealee/core-rules'
 export const dynamic = 'force-dynamic'
 export const maxDuration = 120
 
+export async function GET(req: NextRequest) {
+  try {
+    const auth = await authorizeEditorRequest()
+    if (!auth.ok) return auth.response
+
+    const sceneId = req.nextUrl.searchParams.get('sceneId')
+    if (!sceneId) return NextResponse.json({ error: 'sceneId required' }, { status: 400 })
+
+    const supabase = getSupabaseAdmin()
+    const { data: scene, error: sceneErr } = await supabase
+      .from('pascal_scenes')
+      .select('user_id')
+      .eq('id', sceneId)
+      .single()
+
+    if (sceneErr || !scene) return NextResponse.json({ error: 'Scene not found' }, { status: 404 })
+
+    const ownershipBlock = enforceOwnership(auth, scene.user_id)
+    if (ownershipBlock) return ownershipBlock
+
+    const { data: jobs, error } = await supabase
+      .from('pascal_render_jobs')
+      .select('id, status, output_urls, style, room_type, render_mode, created_at')
+      .eq('scene_id', sceneId)
+      .order('created_at', { ascending: false })
+      .limit(25)
+
+    if (error) throw error
+
+    return NextResponse.json({
+      jobs: (jobs ?? []).map((job: any) => ({
+        jobId:      job.id,
+        status:     job.status,
+        outputUrls: job.output_urls ?? [],
+        style:      job.style ?? 'render',
+        roomType:   job.room_type ?? 'space',
+        renderMode: job.render_mode,
+        createdAt:  job.created_at,
+      })),
+    })
+  } catch (err) {
+    console.error('[editor/renders GET]', err)
+    return NextResponse.json({ error: 'Failed to list renders' }, { status: 500 })
+  }
+}
+
 export async function POST(req: NextRequest) {
   try {
     const auth = await authorizeEditorRequest()

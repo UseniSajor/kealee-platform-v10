@@ -43,6 +43,7 @@ interface ConceptVideoState {
   provider:     VideoProvider
   jobId:        string
   outputUrl?:   string
+  inputImageUrl?: string
   model?:       string
   startedAt:    string
   completedAt?: string
@@ -95,11 +96,6 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    const existing = formData.conceptVideo as ConceptVideoState | undefined
-    if (existing && existing.status === 'completed' && !regenerate) {
-      return NextResponse.json({ ...existing, cached: true })
-    }
-
     const conceptOutput = formData.conceptOutput as Record<string, any> | undefined
     const style    = (conceptOutput?.designConcept?.style as string) ?? 'modern'
     const roomType = inferRoomType(intake.project_path as string)
@@ -110,12 +106,19 @@ export async function POST(req: NextRequest) {
       extra:  conceptOutput?.description as string | undefined,
     })
 
-    // Prefer the client's uploaded "before" photo as the video start frame —
-    // this makes Kling/Sora produce a true before→after transformation.
-    // Fall back to first completed render if no before-photo is available.
+    // Before photo → editor-selected render → first concept render
     const beforeUrls = (conceptOutput?.beforeUrls as string[] | undefined) ?? []
     const renderUrls = (conceptOutput?.renderUrls as string[] | undefined) ?? []
-    const inputImageUrl = beforeUrls[0] ?? renderUrls[0]
+    const inputImageUrl =
+      beforeUrls[0] ??
+      (formData.selectedRenderUrl as string | undefined) ??
+      (formData.coverImageUrl as string | undefined) ??
+      renderUrls[0]
+
+    const existing = formData.conceptVideo as ConceptVideoState | undefined
+    if (existing && existing.status === 'completed' && existing.inputImageUrl === inputImageUrl && !regenerate) {
+      return NextResponse.json({ ...existing, cached: true })
+    }
 
     let provider: VideoProvider
     try {
@@ -158,6 +161,7 @@ export async function POST(req: NextRequest) {
       status:    'processing',
       provider:  result.provider,
       jobId:     result.jobId,
+      inputImageUrl,
       model:     result.modelVersion,
       startedAt: new Date().toISOString(),
     }

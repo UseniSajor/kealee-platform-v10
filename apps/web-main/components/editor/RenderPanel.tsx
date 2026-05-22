@@ -15,7 +15,7 @@
  */
 
 import { useState, useCallback, useEffect } from 'react'
-import { Sparkles, Loader2, AlertCircle, Download, RefreshCw } from 'lucide-react'
+import { Sparkles, Loader2, AlertCircle, Download, Image, CheckCircle2 } from 'lucide-react'
 import type { ProjectType } from '@kealee/pascal-wrapper'
 
 const ROOM_TYPES = [
@@ -53,9 +53,10 @@ interface RenderJob {
 interface Props {
   sceneId: string
   projectType: ProjectType
+  initialSelectedRenderUrl?: string | null
 }
 
-export default function RenderPanel({ sceneId, projectType }: Props) {
+export default function RenderPanel({ sceneId, projectType, initialSelectedRenderUrl }: Props) {
   const defaultRoom = projectType === 'kitchen_remodel' ? 'kitchen' :
                       projectType === 'bath_remodel'    ? 'bathroom' : 'living'
 
@@ -66,6 +67,29 @@ export default function RenderPanel({ sceneId, projectType }: Props) {
   const [isGenerating, setIsGenerating] = useState(false)
   const [jobs,        setJobs]        = useState<RenderJob[]>([])
   const [error,       setError]       = useState<string | null>(null)
+  const [selectedRenderUrl, setSelectedRenderUrl] = useState(initialSelectedRenderUrl ?? null)
+  const [selectingUrl, setSelectingUrl] = useState<string | null>(null)
+
+  useEffect(() => {
+    let cancelled = false
+
+    fetch(`/api/editor/renders?sceneId=${encodeURIComponent(sceneId)}`)
+      .then(async res => {
+        const data = await res.json()
+        if (!res.ok) throw new Error(data.error ?? 'Failed to load renders')
+        return data.jobs as RenderJob[]
+      })
+      .then(loadedJobs => {
+        if (!cancelled) setJobs(loadedJobs)
+      })
+      .catch(() => {
+        if (!cancelled) setJobs([])
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [sceneId])
 
   const handleGenerate = useCallback(async () => {
     setIsGenerating(true)
@@ -93,6 +117,25 @@ export default function RenderPanel({ sceneId, projectType }: Props) {
       setIsGenerating(false)
     }
   }, [sceneId, roomType, style, renderMode, extraPrompt])
+
+  const handleSelectRender = useCallback(async (url: string) => {
+    setSelectingUrl(url)
+    setError(null)
+    try {
+      const res = await fetch(`/api/editor/scenes/${sceneId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ selectedRenderUrl: url, coverImageUrl: url }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error ?? 'Failed to select render')
+      setSelectedRenderUrl(url)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to select render')
+    } finally {
+      setSelectingUrl(null)
+    }
+  }, [sceneId])
 
   // Poll pending/processing jobs
   useEffect(() => {
@@ -237,15 +280,25 @@ export default function RenderPanel({ sceneId, projectType }: Props) {
                 {job.outputUrls.map((url, i) => (
                   <div key={i} className="relative group rounded-lg overflow-hidden aspect-video bg-slate-200">
                     <img src={url} alt={`Render ${i + 1}`} className="w-full h-full object-cover" />
+                    {selectedRenderUrl === url && (
+                      <div className="absolute left-2 top-2 flex items-center gap-1 rounded-full bg-[#1A2B4A] px-2 py-1 text-[10px] font-bold uppercase text-white shadow">
+                        <CheckCircle2 className="h-3 w-3" />
+                        Cover
+                      </div>
+                    )}
                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center gap-2">
                       <a href={url} download target="_blank" rel="noopener noreferrer"
                         className="bg-white/90 rounded-full p-1.5" onClick={e => e.stopPropagation()}>
                         <Download className="w-3.5 h-3.5 text-slate-700" />
                       </a>
                       <button
-                        onClick={() => {/* TODO: set as header image */}}
-                        className="bg-[#E8724B]/90 rounded-full p-1.5">
-                        <RefreshCw className="w-3.5 h-3.5 text-white" />
+                        onClick={() => handleSelectRender(url)}
+                        disabled={selectingUrl === url}
+                        title="Set as cover and video start frame"
+                        className="bg-[#E8724B]/90 rounded-full p-1.5 disabled:opacity-70">
+                        {selectingUrl === url
+                          ? <Loader2 className="w-3.5 h-3.5 animate-spin text-white" />
+                          : <Image className="w-3.5 h-3.5 text-white" />}
                       </button>
                     </div>
                   </div>

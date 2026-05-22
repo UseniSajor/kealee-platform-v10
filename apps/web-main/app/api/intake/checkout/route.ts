@@ -3,6 +3,8 @@ import Stripe from 'stripe'
 import { guardStripeSecretForHttp } from '@/lib/stripe-vercel-guard'
 import { createStripe } from '@/lib/stripe-client'
 import { getIntakePrice, SITE_VISIT_FEE_CENTS } from '@kealee/core-rules'
+import { isV30Enabled } from '@kealee/kealee-agent-stack'
+import { getSupabaseAdmin } from '@/lib/supabase-server'
 
 export const dynamic = 'force-dynamic'
 
@@ -25,12 +27,14 @@ export async function POST(req: NextRequest) {
       returnUrl?: string    // used for embedded mode (replaces success/cancel)
       embedded?: boolean    // true → ui_mode:'embedded', returns clientSecret
       siteVisitRequested?: boolean
+      /** v30: use AI-quoted price stored on intake form_data.v30Quote */
+      useV30Pricing?: boolean
       // Legacy `amount` field is accepted for backward compatibility
       // but explicitly NOT used. Server price is authoritative.
       amount?: number
     }
 
-    const { intakeId, projectPath, successUrl, cancelUrl, returnUrl, embedded, siteVisitRequested } = body
+    const { intakeId, projectPath, successUrl, cancelUrl, returnUrl, embedded, siteVisitRequested, useV30Pricing } = body
 
     if (!intakeId || !projectPath) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
@@ -42,14 +46,40 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'successUrl and cancelUrl required for hosted checkout' }, { status: 400 })
     }
 
-    // Server-trusted price lookup. Reject unknown SKUs outright — never let
-    // an untyped projectPath through to Stripe.
-    const priceEntry = getIntakePrice(projectPath)
-    if (!priceEntry) {
-      return NextResponse.json(
-        { error: `Unknown projectPath: ${projectPath}` },
-        { status: 400 }
-      )
+    let unitAmountCents: number
+    let productName: string
+
+    if (useV30Pricing && isV30Enabled()) {
+      const supabase = getSupabaseAdmin()
+      const { data: intakeRow } = await supabase
+        .from('public_intake_leads')
+        .select('form_data')
+        .eq('id', intakeId)
+        .single()
+
+      const formData = (intakeRow?.form_data as Record<string, unknown>) ?? {}
+      const v30Quote = formData.v30Quote as { totalPriceCents?: number; features?: string[] } | undefined
+      const quoted = v30Quote?.totalPriceCents
+
+      if (!quoted || quoted < 9900 || quoted > 999_900) {
+        return NextResponse.json(
+          { error: 'Invalid or missing v30 quote — complete /get-concept intake first' },
+          { status: 400 },
+        )
+      }
+      unitAmountCents = Math.round(quoted)
+      productName = `Kealee Custom Package (${(v30Quote?.features ?? []).join(', ') || 'v30'})`
+    } else {
+      // Server-trusted tier price (v20)
+      const priceEntry = getIntakePrice(projectPath)
+      if (!priceEntry) {
+        return NextResponse.json(
+          { error: `Unknown projectPath: ${projectPath}` },
+          { status: 400 },
+        )
+      }
+      unitAmountCents = priceEntry.cents
+      productName = priceEntry.label
     }
 
     const stripeKey = process.env.STRIPE_SECRET_KEY
@@ -66,8 +96,8 @@ export async function POST(req: NextRequest) {
       {
         price_data: {
           currency: 'usd',
-          unit_amount: priceEntry.cents,
-          product_data: { name: priceEntry.label },
+          unit_amount: unitAmountCents,
+          product_data: { name: productName },
         },
         quantity: 1,
       },
@@ -90,10 +120,11 @@ export async function POST(req: NextRequest) {
       allow_promotion_codes: true,
       line_items: lineItems,
       metadata: {
-        source: 'public_intake',
+        source: useV30Pricing ? 'public_intake_v30' : 'public_intake',
         intakeId,
         projectPath,
         siteVisitRequested: siteVisitRequested ? 'true' : 'false',
+        pricingModel: useV30Pricing ? 'v30_dynamic' : 'tier_fixed',
       },
       payment_intent_data: {
         metadata: {
