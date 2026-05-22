@@ -137,10 +137,19 @@ export async function POST(req: NextRequest) {
     .single()
   const existingFormData = (currentIntake?.form_data as Record<string, unknown>) ?? {}
 
-  // Merge catalog permit requirement so concept generator + portal can read it
-  const mergedFormData = deliverable?.permitRequired != null
-    ? { ...existingFormData, permitRequired: deliverable.permitRequired }
-    : existingFormData
+  // Merge catalog metadata so the portal always knows what was purchased.
+  // serviceLabel / serviceIncludes / serviceDeliveryDays are set here for intakes
+  // created before the intake-creation enrichment was added, and to ensure the
+  // snapshot is always locked to the version at payment time.
+  const mergedFormData: Record<string, unknown> = { ...existingFormData }
+  if (deliverable) {
+    mergedFormData.serviceLabel        = deliverable.label
+    mergedFormData.serviceCategory     = deliverable.category
+    mergedFormData.serviceIncludes     = deliverable.includes
+    mergedFormData.serviceDeliveryDays = deliverable.deliveryDays
+    if (deliverable.renderCount != null) mergedFormData.renderCount = deliverable.renderCount
+    if (deliverable.permitRequired != null) mergedFormData.permitRequired = deliverable.permitRequired
+  }
 
   // 2. Mark intake as paid and persist permitRequired in form_data (idempotent: only rows still `new`)
   const { data: updatedRows, error: updateErr } = await supabase

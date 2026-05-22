@@ -81,17 +81,31 @@ interface ConceptOutput {
 
 function projectPathToRoomType(projectPath: string): string {
   const map: Record<string, string> = {
-    kitchen_remodel:       'kitchen',
-    bathroom_remodel:      'bathroom',
-    exterior_concept:      'exterior facade',
-    garden_concept:        'garden landscape',
-    master_suite:          'master bedroom',
-    living_room:           'living room',
-    basement_finish:       'finished basement',
-    home_addition:         'home addition',
-    full_home_renovation:  'open-concept living space',
-    commercial_office:     'modern office interior',
-    developer_concept:     'luxury residential interior',
+    kitchen_remodel:          'kitchen',
+    bathroom_remodel:         'bathroom',
+    exterior_concept:         'exterior facade',
+    garden_concept:           'garden landscape',
+    master_suite:             'master bedroom',
+    living_room:              'living room',
+    basement_finish:          'finished basement',
+    home_addition:            'home addition',
+    full_home_renovation:     'open-concept living space',
+    commercial_office:        'modern office interior',
+    developer_concept:        'luxury residential interior',
+    // Whole-home packages — render a multi-room living/dining/kitchen open plan
+    whole_home_concept:       'open-concept whole home interior with living room, dining room, and kitchen',
+    whole_home_remodel:       'open-concept whole home interior with living room, dining room, and kitchen',
+    interior_reno_concept:    'interior living space renovation',
+    interior_renovation:      'interior living space renovation',
+    addition_expansion:       'modern home addition with open-plan interior',
+    capture_site_concept:     'exterior facade and site',
+    // Commercial / mixed-use
+    multi_unit_residential:   'modern multi-unit residential interior',
+    mixed_use:                'modern mixed-use lobby and commercial interior',
+    development_feasibility:  'luxury residential development interior',
+    townhome_subdivision:     'modern townhome interior',
+    single_family_subdivision:'luxury single-family home interior',
+    single_lot_development:   'luxury custom home interior',
   }
   return map[projectPath] ?? projectPath.replace(/_/g, ' ')
 }
@@ -115,11 +129,11 @@ const DEV_RENDER_STUBS = [
  */
 async function fireConceptRenders(
   projectPath: string,
-  tier: number,
+  renderCount: number,
   style: string,
   uploadedPhotoUrls: string[],
 ): Promise<{ predictionIds: string[]; renderUrls: string[] }> {
-  const count = tier >= 3 ? 12 : tier === 2 ? 6 : 3
+  const count = renderCount
 
   if (!process.env.REPLICATE_API_TOKEN) {
     return {
@@ -564,7 +578,8 @@ export async function POST(req: NextRequest) {
     let renderJobs: string[] = []
     try {
       const renders = await fireConceptRenders(
-        projectPath, tier,
+        projectPath,
+        deliverable?.renderCount ?? 3,
         conceptOutput.designConcept?.style ?? 'modern contemporary',
         uploadedPhotoUrls,
       )

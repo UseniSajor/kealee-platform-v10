@@ -17,6 +17,11 @@ export interface ServiceDeliverable {
   generatesConcept: boolean
   /** Mirrors products.ts permitRequired. Used by concept generator + webhook. */
   permitRequired?: 'always' | 'sometimes' | 'rarely'
+  /**
+   * Number of AI renders to generate for this service.
+   * Defaults to 3 if not set. Used by /api/concept/generate.
+   */
+  renderCount?: number
   includes: string[]
   deliveryDays: string
   nextStep: { label: string; href: string }
@@ -29,9 +34,10 @@ export const SERVICE_DELIVERABLES: Record<string, ServiceDeliverable> = {
     agentType: 'design',
     generatesConcept: true,
     permitRequired: 'sometimes',
+    renderCount: 5,
     includes: [
       'Floor plan / layout direction',
-      '3–5 concept renderings (before/after views)',
+      '5 photorealistic AI renderings (multiple angles and lighting)',
       PERMIT_ROADMAP_IN_DESIGN_BUNDLE,
       'Bill of Materials (BOM) with line-item costs',
       'MEP specification (electrical, plumbing, HVAC, lighting)',
@@ -50,9 +56,10 @@ export const SERVICE_DELIVERABLES: Record<string, ServiceDeliverable> = {
     agentType: 'design',
     generatesConcept: true,
     permitRequired: 'sometimes',
+    renderCount: 5,
     includes: [
       'Floor plan / layout direction',
-      '3–5 concept renderings (before/after views)',
+      '5 photorealistic AI renderings (multiple angles and lighting)',
       PERMIT_ROADMAP_IN_DESIGN_BUNDLE,
       'Bill of Materials (BOM) with line-item costs',
       'MEP specification (electrical, plumbing, HVAC, lighting)',
@@ -71,9 +78,10 @@ export const SERVICE_DELIVERABLES: Record<string, ServiceDeliverable> = {
     agentType: 'design',
     generatesConcept: true,
     permitRequired: 'sometimes',
+    renderCount: 5,
     includes: [
       'Floor plan / layout direction',
-      '3–5 exterior renderings (front, side, rear views)',
+      '5 exterior renderings (front, side, rear, and detail views)',
       PERMIT_ROADMAP_IN_DESIGN_BUNDLE,
       'Material palette with finish selections',
       'Landscape overview sketch',
@@ -92,9 +100,10 @@ export const SERVICE_DELIVERABLES: Record<string, ServiceDeliverable> = {
     agentType: 'design',
     generatesConcept: true,
     permitRequired: 'always',
+    renderCount: 5,
     includes: [
       'Floor plan / layout direction',
-      'Interior concept visuals (3–5 renders)',
+      '5 photorealistic AI renderings',
       PERMIT_ROADMAP_IN_DESIGN_BUNDLE,
       'Layout recommendations with flow analysis',
       'MEP specification (electrical, plumbing, lighting)',
@@ -112,9 +121,10 @@ export const SERVICE_DELIVERABLES: Record<string, ServiceDeliverable> = {
     agentType: 'design',
     generatesConcept: true,
     permitRequired: 'always',
+    renderCount: 5,
     includes: [
       'Floor plan / layout direction',
-      'Interior concept visuals (3–5 renders)',
+      '5 photorealistic AI renderings',
       PERMIT_ROADMAP_IN_DESIGN_BUNDLE,
       'Layout recommendations with flow analysis',
       'MEP specification (electrical, plumbing, lighting)',
@@ -132,9 +142,10 @@ export const SERVICE_DELIVERABLES: Record<string, ServiceDeliverable> = {
     agentType: 'design',
     generatesConcept: true,
     permitRequired: 'always',
+    renderCount: 7,
     includes: [
       'Floor plan / layout direction',
-      'Full-home concept renderings',
+      '7 photorealistic AI renderings across living, dining, kitchen, and primary spaces',
       PERMIT_ROADMAP_IN_DESIGN_BUNDLE,
       'MEP specification for all systems',
       'Bill of Materials (BOM)',
@@ -151,9 +162,10 @@ export const SERVICE_DELIVERABLES: Record<string, ServiceDeliverable> = {
     agentType: 'design',
     generatesConcept: true,
     permitRequired: 'always',
+    renderCount: 7,
     includes: [
       'Floor plan / layout direction',
-      'Full-home concept renderings',
+      '7 photorealistic AI renderings across living, dining, kitchen, and primary spaces',
       PERMIT_ROADMAP_IN_DESIGN_BUNDLE,
       'MEP specification for all systems',
       'Bill of Materials (BOM)',
@@ -171,9 +183,10 @@ export const SERVICE_DELIVERABLES: Record<string, ServiceDeliverable> = {
     agentType: 'design',
     generatesConcept: true,
     permitRequired: 'always',
+    renderCount: 5,
     includes: [
       'Floor plan / layout direction',
-      'Addition concept renderings (interior + exterior)',
+      '5 AI renderings (interior and exterior views of the addition)',
       PERMIT_ROADMAP_IN_DESIGN_BUNDLE,
       'Structural considerations brief',
       'MEP specification for new addition',

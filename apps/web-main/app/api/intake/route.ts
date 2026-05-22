@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
+import { SERVICE_DELIVERABLES } from '@/lib/service-deliverables'
 import { randomUUID } from 'crypto'
 
 export const dynamic = 'force-dynamic'
@@ -27,7 +28,16 @@ export async function POST(req: NextRequest) {
 
     // form_data is used by concept/generate — must contain the original form fields
     // so description, budget, zip etc. are available to the Claude prompt.
-    const resolvedFormData = formData ? { ...formData } : null
+    // Enrich with catalog metadata so the portal (and any downstream consumer)
+    // always knows what was purchased without a SERVICE_DELIVERABLES lookup.
+    const deliverable = SERVICE_DELIVERABLES[projectPath]
+    const resolvedFormData: Record<string, unknown> = formData ? { ...formData } : {}
+    if (deliverable) {
+      resolvedFormData.serviceLabel      = deliverable.label
+      resolvedFormData.serviceCategory   = deliverable.category
+      resolvedFormData.serviceIncludes   = deliverable.includes
+      resolvedFormData.serviceDeliveryDays = deliverable.deliveryDays
+    }
 
     const { data: intake, error: intakeErr } = await supabase
       .from('public_intake_leads')
@@ -42,8 +52,8 @@ export async function POST(req: NextRequest) {
         status: 'new',
         requires_payment: true,
         payment_amount: 0,
-        metadata: resolvedFormData,
-        form_data: resolvedFormData,   // concept/generate reads from form_data
+        metadata: Object.keys(resolvedFormData).length ? resolvedFormData : null,
+        form_data: Object.keys(resolvedFormData).length ? resolvedFormData : null,   // concept/generate reads from form_data
       })
       .select('id')
       .single()
