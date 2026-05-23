@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { Loader2, Handshake } from 'lucide-react'
+import { Loader2, Users } from 'lucide-react'
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? ''
 
@@ -38,7 +38,7 @@ export default function PartnersPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 text-white py-20 px-4">
       <div className="max-w-xl mx-auto">
-        <Handshake className="h-10 w-10 text-violet-400 mb-4" />
+        <Users className="h-10 w-10 text-violet-400 mb-4" />
         <p className="text-xs font-bold uppercase tracking-widest text-violet-300">White-label · Partners</p>
         <h1 className="text-3xl font-bold mt-2">Kealee partner portal</h1>
         <p className="text-slate-300 mt-3 text-sm leading-relaxed">

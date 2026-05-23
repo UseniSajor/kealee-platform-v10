@@ -188,6 +188,13 @@ function preferSelectedRender(renderUrls: string[], selectedRenderUrl?: string |
   ]
 }
 
+/** Initial renderUrls on concept JSON; async jobs replace via fireConceptRenders. */
+function getRenderUrls(projectPath: string, _tier: number): string[] {
+  const count = SERVICE_DELIVERABLES[projectPath]?.renderCount ?? 3
+  if (process.env.REPLICATE_API_TOKEN) return []
+  return Array.from({ length: count }, (_, i) => DEV_RENDER_STUBS[i % DEV_RENDER_STUBS.length])
+}
+
 /**
  * Tier 2+ deliverables include a video. The actual generation is async and
  * runs out-of-band via /api/concept/video. This function only attaches the
