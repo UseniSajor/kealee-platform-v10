@@ -256,7 +256,7 @@ function DetailsInner() {
     if (!validate()) return
     const params = new URLSearchParams({
       service: serviceSlug,
-      scope,
+      scope: composedScope(),
       budget,
       zip,
       style,
