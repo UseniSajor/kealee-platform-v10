@@ -29,7 +29,9 @@ export async function middleware(request: NextRequest) {
 
   if (isProtectedPath && !session) {
     const redirectUrl = request.nextUrl.clone()
+    const next = request.nextUrl.pathname + request.nextUrl.search
     redirectUrl.pathname = '/login'
+    redirectUrl.search = `?next=${encodeURIComponent(next)}`
     return NextResponse.redirect(redirectUrl)
   }
 
@@ -37,8 +39,10 @@ export async function middleware(request: NextRequest) {
   const isAuthPath = authPaths.some(path => request.nextUrl.pathname.startsWith(path))
 
   if (isAuthPath && session) {
+    const next = request.nextUrl.searchParams.get('next')
     const redirectUrl = request.nextUrl.clone()
-    redirectUrl.pathname = '/projects'
+    redirectUrl.pathname = next && next.startsWith('/') ? next : '/deliverables'
+    redirectUrl.search = ''
     return NextResponse.redirect(redirectUrl)
   }
 

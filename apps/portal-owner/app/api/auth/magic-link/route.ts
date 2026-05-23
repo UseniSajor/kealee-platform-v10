@@ -17,7 +17,7 @@ export const dynamic = 'force-dynamic'
 
 export async function POST(req: NextRequest) {
   try {
-    const { email } = await req.json() as { email?: string }
+    const { email, next } = await req.json() as { email?: string; next?: string }
 
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return NextResponse.json({ error: 'Valid email required' }, { status: 400 })
@@ -26,7 +26,9 @@ export async function POST(req: NextRequest) {
     const supabaseUrl    = process.env.NEXT_PUBLIC_SUPABASE_URL!
     const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
     const resendApiKey   = process.env.RESEND_API_KEY
-    const redirectTo     = `${req.nextUrl.origin}/auth/callback?next=/deliverables`
+    const portalBase     = (process.env.NEXT_PUBLIC_OWNER_PORTAL_URL ?? 'https://owner.kealee.com').replace(/\/$/, '')
+    const safeNext       = next && next.startsWith('/') ? next : '/deliverables'
+    const redirectTo     = `${portalBase}/auth/callback?next=${encodeURIComponent(safeNext)}`
 
     // ── Generate the magic link via admin API (no Supabase email sent) ──────
     const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey, {

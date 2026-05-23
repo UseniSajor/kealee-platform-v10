@@ -1,11 +1,16 @@
 'use client'
 
 import { useState } from 'react'
+import { useSearchParams } from 'next/navigation'
+import { Suspense } from 'react'
 import Link from 'next/link'
 import { Home, Mail, Lock, Eye, EyeOff, CheckCircle2, Loader2 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
-export default function LoginPage() {
+function LoginForm() {
+  const searchParams = useSearchParams()
+  const next = searchParams.get('next') ?? '/deliverables'
+
   // mode: 'magic' = send magic link (default for concept clients), 'password' = classic login
   const [mode, setMode]               = useState<'magic' | 'password'>('magic')
   const [email, setEmail]             = useState('')
@@ -25,7 +30,7 @@ export default function LoginPage() {
       const res = await fetch('/api/auth/magic-link', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email, next }),
       })
       const data = await res.json()
       if (!res.ok) {
@@ -47,7 +52,7 @@ export default function LoginPage() {
     try {
       const { error: authError } = await supabase.auth.signInWithPassword({ email, password })
       if (authError) throw authError
-      window.location.href = '/deliverables'
+      window.location.href = next
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Failed to sign in')
     } finally {
@@ -230,5 +235,17 @@ export default function LoginPage() {
         </Link>
       </p>
     </div>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="rounded-2xl border p-8 shadow-2xl flex items-center justify-center" style={{ borderColor: '#2A3D5F', backgroundColor: '#1A2B4A', minHeight: 300 }}>
+        <Loader2 className="h-8 w-8 animate-spin" style={{ color: '#2ABFBF' }} />
+      </div>
+    }>
+      <LoginForm />
+    </Suspense>
   )
 }
