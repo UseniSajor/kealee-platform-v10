@@ -77,6 +77,7 @@
     "db:create:migration": "bash scripts/db-create-migration.sh",
     "go-live-check": "tsx scripts/go-live-check.ts",
     "v30:smoke": "node scripts/v30-smoke.mjs",
+    "v30:test-concepts": "node scripts/v30-concept-scope-test.mjs",
     "v30:migrate": "cd packages/database && npx prisma migrate deploy",
     "v30:setup-check": "node scripts/v30-setup-check.mjs",
     "v30:prod-rollout": "node scripts/v30-prod-rollout.mjs",

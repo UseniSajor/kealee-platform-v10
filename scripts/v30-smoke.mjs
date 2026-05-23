@@ -12,8 +12,10 @@ const WEB = process.argv.includes('--web')
 
 const checks = []
 
+const HTTP_TIMEOUT_MS = 120_000
+
 async function get(url) {
-  const res = await fetch(url, { signal: AbortSignal.timeout(15_000) })
+  const res = await fetch(url, { signal: AbortSignal.timeout(HTTP_TIMEOUT_MS) })
   const text = await res.text()
   let json = null
   try {
@@ -58,7 +60,7 @@ async function main() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ projectPath, answers, selectedFeatures }),
-      signal: AbortSignal.timeout(60_000),
+      signal: AbortSignal.timeout(HTTP_TIMEOUT_MS),
     })
     const json = await res.json().catch(() => ({}))
     return { ok: res.ok, status: res.status, json }

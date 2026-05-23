@@ -20,8 +20,7 @@ export function landscapeHasIrrigation(
   const codes = (answers.codeConsiderations ?? []).map(c => c.toLowerCase())
   const utils = answers.utilities ?? {}
   if (scope.includes('irrigation')) return true
-  if (codes.some(c => c.includes('irrigation') || c.includes('water'))) return true
-  if (utils.waterSewer && scope.includes('landscape')) return true
+  if (codes.some(c => c.includes('irrigation'))) return true
   return false
 }
 
