@@ -108,7 +108,7 @@ const conceptCampaign: MetaCampaign = {
     { key: 'project_type', label: 'Project Type',    type: 'CUSTOM',      required: true },
     { key: 'zip_code',     label: 'ZIP Code',        type: 'CUSTOM',      required: false },
   ],
-  webhookUrl:  'https://api.kealee.com/marketing/meta-lead',
+  webhookUrl:  'https://kealee.com/api/marketing/meta-lead',
   pixelEvents: ['Lead', 'ViewContent', 'InitiateCheckout', 'Purchase'],
 }
 
@@ -143,7 +143,7 @@ const permitCampaign: MetaCampaign = {
       imageSpec:   { ratio: '4:5', minWidth: 864, minHeight: 1080 },
     },
   ],
-  webhookUrl:  'https://api.kealee.com/marketing/meta-lead',
+  webhookUrl:  'https://kealee.com/api/marketing/meta-lead',
   pixelEvents: ['Lead', 'ViewContent'],
 }
 
