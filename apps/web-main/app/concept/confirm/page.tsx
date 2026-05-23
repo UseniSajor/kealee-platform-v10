@@ -9,6 +9,8 @@ import {
 } from 'lucide-react'
 import { SERVICE_MAP } from '@/lib/services-config'
 import { StripeEmbeddedCheckoutModal } from '@/components/StripeEmbeddedCheckoutModal'
+import { isV30EnabledClient } from '@/lib/v30'
+import { buildV30AnswersFromConceptConfirm } from '@/lib/v30-concept-confirm'
 
 // True when pk is set at build time — activates embedded Stripe checkout
 const USE_EMBEDDED_CHECKOUT = Boolean(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY)
@@ -306,8 +308,9 @@ function ConfirmInner() {
   const contactParams = new URLSearchParams({ service: serviceSlug, scope, budget, zip, style, priority, timeline, sqft, firstName, lastName, email, phone, address })
 
   const projectPath = service?.intakePath ?? serviceSlug
+  const v30Enabled = isV30EnabledClient()
 
-  async function createIntakeRecord(): Promise<string> {
+  async function createIntakeRecord(checkoutTier: 1 | 2 | 3): Promise<string> {
     const intakeRes = await fetch('/api/intake', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -319,7 +322,8 @@ function ConfirmInner() {
         projectAddress: address || `ZIP: ${zip}`,
         budgetRange: budget || 'Not provided',
         formData: {
-          description: scope, budget, zip, tier, style, priority, timeline, sqft,
+          description: scope, budget, zip, tier: checkoutTier, style, priority, timeline, sqft,
+          ...(v30Enabled && { v30: true }),
           ...(attachments && { attachments }),
         },
       }),
@@ -368,7 +372,33 @@ function ConfirmInner() {
     }).catch(() => {})
 
     try {
-      const intakeId = await createIntakeRecord()
+      const intakeId = await createIntakeRecord(selectedTier)
+
+      if (v30Enabled) {
+        const v30Answers = buildV30AnswersFromConceptConfirm({
+          projectPath,
+          scope,
+          budget,
+          zip,
+          timeline,
+          sqft,
+          address: address || undefined,
+        })
+        const v30Res = await fetch('/api/v30/intake', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            intakeId,
+            projectPath,
+            tier: selectedTier,
+            answers: v30Answers,
+          }),
+        })
+        if (!v30Res.ok) {
+          const b = await v30Res.json().catch(() => ({}))
+          throw new Error((b as { error?: string }).error ?? 'Could not build v30 package quote.')
+        }
+      }
 
       // ── Free promo code path — bypass Stripe entirely ──────────────────────
       const code = promoCode.trim()
@@ -400,6 +430,7 @@ function ConfirmInner() {
         name:    `${firstName} ${lastName}`.trim(),
         service: service?.label ?? serviceSlug,
         amount:  String(selectedTierPrice),
+        ...(v30Enabled && { v30: '1' }),
       })
       const successUrl = `${window.location.origin}/concept/success?${successParams.toString()}`
       const cancelUrl  = `${window.location.origin}/concept/confirm?${searchParams.toString()}&canceled=true`
@@ -409,7 +440,13 @@ function ConfirmInner() {
         const checkoutRes = await fetch('/api/intake/checkout', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ intakeId, projectPath, embedded: true, returnUrl }),
+          body: JSON.stringify({
+            intakeId,
+            projectPath,
+            embedded: true,
+            returnUrl,
+            ...(v30Enabled && { useV30Pricing: true }),
+          }),
         })
         if (!checkoutRes.ok) {
           const b = await checkoutRes.json().catch(() => ({}))
@@ -430,6 +467,7 @@ function ConfirmInner() {
           projectPath,
           successUrl: `${successUrl}&session_id={CHECKOUT_SESSION_ID}`,
           cancelUrl,
+          ...(v30Enabled && { useV30Pricing: true }),
         }),
       })
       if (!checkoutRes.ok) {
