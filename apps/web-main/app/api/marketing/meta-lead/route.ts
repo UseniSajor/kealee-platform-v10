@@ -18,7 +18,7 @@ import { scheduleSequence }          from '@/lib/marketing/sequences'
 
 export const dynamic = 'force-dynamic'
 
-const META_WEBHOOK_SECRET = process.env.META_WEBHOOK_SECRET ?? ''
+const META_WEBHOOK_SECRET = process.env.META_WEBHOOK_SECRET ?? process.env.FACEBOOK_WEBHOOK_SECRET ?? ''
 
 // ── HMAC signature verification ───────────────────────────────────────────────
 
