@@ -22,8 +22,10 @@ export async function middleware(request: NextRequest) {
 
   const { data: { session } } = await supabase.auth.getSession()
 
-  const protectedPaths = ['/projects', '/project', '/payments', '/documents', '/messages', '/twin', '/concepts', '/deliverables']
-  const isProtectedPath = protectedPaths.some(path => request.nextUrl.pathname.startsWith(path))
+  const protectedPaths = ['/', '/projects', '/project', '/payments', '/documents', '/messages', '/twin', '/concepts', '/deliverables']
+  const isProtectedPath = protectedPaths.some(path =>
+    path === '/' ? request.nextUrl.pathname === '/' : request.nextUrl.pathname.startsWith(path)
+  )
 
   if (isProtectedPath && !session) {
     const redirectUrl = request.nextUrl.clone()
@@ -45,13 +47,12 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
+    '/',
     '/projects/:path*', '/project/:path*', '/payments/:path*',
     '/documents/:path*', '/messages/:path*', '/twin/:path*',
     '/concepts/:path*',
     '/deliverables/:path*', '/deliverables',
     '/login', '/signup',
-    // /auth/callback must be included so the middleware refreshes the session
-    // cookie after the magic-link code exchange completes.
     '/auth/callback',
   ],
 }

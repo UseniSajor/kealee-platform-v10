@@ -3,8 +3,8 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import {
-  FolderKanban, ArrowRight, Activity, AlertTriangle, CheckCircle,
-  Calendar, DollarSign, Clock,
+  FolderKanban, ArrowRight, Activity, AlertTriangle,
+  Clock, FileText, ChevronRight,
 } from 'lucide-react'
 import { listProjects, getProjectReadiness } from '@/lib/api/owner'
 import type { Project, ReadinessStatus } from '@/lib/api/owner'
@@ -138,7 +138,7 @@ export default function OwnerDashboard() {
   const [readinessMap, setReadinessMap] = useState<Record<string, ReadinessStatus>>({})
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [showDesignHook, setShowDesignHook] = useState(false)
+  const [showDesignModal, setShowDesignModal] = useState(false)
   const [showPermitHook, setShowPermitHook] = useState(false)
 
   useEffect(() => {
@@ -172,17 +172,7 @@ export default function OwnerDashboard() {
     return () => { mounted = false }
   }, [])
 
-  // Auto-show design hook once per session when user has active projects
-  useEffect(() => {
-    const hasActive = projects.some(p => p.status !== 'ARCHIVED')
-    if (!loading && hasActive) {
-      const key = 'kea_design_hook_shown'
-      if (!sessionStorage.getItem(key)) {
-        sessionStorage.setItem(key, '1')
-        setShowDesignHook(true)
-      }
-    }
-  }, [loading, projects])
+  // No auto-show for design modal — user opens it via the card CTA
 
   // Auto-show permit hook once per session when a project is in PERMITS phase
   useEffect(() => {
@@ -252,42 +242,42 @@ export default function OwnerDashboard() {
         </div>
       </div>
 
-      {/* Revenue Hook: design_complete — shown when user has active projects */}
-      {!loading && activeProjects.length > 0 && showDesignHook && (
-        <div className="mb-6 flex items-center justify-between gap-4 rounded-xl border border-blue-200 bg-blue-50 px-5 py-4">
-          <div className="flex items-center gap-3 min-w-0">
-            <div
-              className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg"
-              style={{ backgroundColor: 'rgba(49,130,206,0.15)' }}
-            >
-              <Activity className="h-5 w-5" style={{ color: '#3182CE' }} />
+      {/* Full Design Package card — always visible */}
+      <div
+        className="mb-6 rounded-2xl overflow-hidden"
+        style={{ background: 'linear-gradient(135deg, #0F1F38 0%, #1a3560 100%)', border: '1px solid rgba(42,191,191,0.25)' }}
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center gap-4 px-6 py-5">
+          <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl" style={{ backgroundColor: 'rgba(42,191,191,0.15)' }}>
+            <FileText className="h-5 w-5" style={{ color: '#2ABFBF' }} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <p className="text-base font-bold text-white">Full Design Package</p>
+              <span className="rounded-full px-2.5 py-0.5 text-xs font-semibold" style={{ backgroundColor: 'rgba(232,121,58,0.2)', color: '#E8793A' }}>
+                Starting at $4,499
+              </span>
             </div>
-            <div className="min-w-0">
-              <p className="text-sm font-semibold" style={{ color: '#1A2B4A' }}>
-                Ready for design?
-              </p>
-              <p className="text-xs text-gray-500">
-                Turn your concept into permitted construction drawings with AI-assisted design.
-              </p>
+            <p className="mt-1 text-sm" style={{ color: 'rgba(255,255,255,0.55)' }}>
+              Complete design documents — schematic through permit-ready drawing set.
+            </p>
+            <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1">
+              {['Schematic design', 'Design development', 'Permit-ready drawings', 'Structural details'].map(f => (
+                <span key={f} className="flex items-center gap-1 text-xs" style={{ color: 'rgba(255,255,255,0.45)' }}>
+                  <span style={{ color: '#2ABFBF' }}>✓</span> {f}
+                </span>
+              ))}
             </div>
           </div>
-          <div className="flex flex-shrink-0 items-center gap-2">
-            <button
-              onClick={() => setShowDesignHook(false)}
-              className="rounded-lg px-3 py-1.5 text-xs font-medium text-gray-400 hover:text-gray-600"
-            >
-              Dismiss
-            </button>
-            <button
-              onClick={() => setShowDesignHook(true)}
-              className="rounded-lg px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90"
-              style={{ backgroundColor: '#3182CE' }}
-            >
-              Explore design
-            </button>
-          </div>
+          <button
+            onClick={() => setShowDesignModal(true)}
+            className="flex shrink-0 items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold text-white transition-opacity hover:opacity-90"
+            style={{ backgroundColor: '#E8793A' }}
+          >
+            Get full design <ChevronRight className="h-4 w-4" />
+          </button>
         </div>
-      )}
+      </div>
 
       {/* Revenue Hook: permit_detected — shown when a project is in PERMITS phase */}
       {!loading && projects.some(p => (p.lifecyclePhase ?? '').toUpperCase() === 'PERMITS') && showPermitHook && (
@@ -402,17 +392,25 @@ export default function OwnerDashboard() {
         </div>
       </div>
 
-      {/* Revenue Hook Modals */}
-      <RevenueHookModal
-        stage="design_complete"
-        onSelect={() => setShowDesignHook(false)}
-        onDismiss={() => setShowDesignHook(false)}
-      />
-      <RevenueHookModal
-        stage="permit_detected"
-        onSelect={() => setShowPermitHook(false)}
-        onDismiss={() => setShowPermitHook(false)}
-      />
+      {/* Design modal — opened by Full Design Package card CTA */}
+      {showDesignModal && (
+        <RevenueHookModal
+          stage="design_complete"
+          autoOpen
+          onSelect={() => setShowDesignModal(false)}
+          onDismiss={() => setShowDesignModal(false)}
+        />
+      )}
+
+      {/* Permit modal — only shown when a project is in PERMITS phase */}
+      {showPermitHook && (
+        <RevenueHookModal
+          stage="permit_detected"
+          autoOpen
+          onSelect={() => setShowPermitHook(false)}
+          onDismiss={() => setShowPermitHook(false)}
+        />
+      )}
     </div>
   )
 }
