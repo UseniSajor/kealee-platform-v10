@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
     const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
     const resendApiKey   = process.env.RESEND_API_KEY
 
-    const appUrl     = process.env.NEXT_PUBLIC_APP_URL ?? req.nextUrl.origin
+    const appUrl     = process.env.NEXT_PUBLIC_WEB_MAIN_URL ?? process.env.NEXT_PUBLIC_APP_URL ?? 'https://kealee.com'
     const safeNext   = next && next.startsWith('/') ? next : '/'
     const redirectTo = `${appUrl}/auth/callback?next=${encodeURIComponent(safeNext)}`
 
