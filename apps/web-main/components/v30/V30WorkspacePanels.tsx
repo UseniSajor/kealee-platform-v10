@@ -45,9 +45,9 @@ export function V30DesignPanel({ data }: { data: Record<string, unknown> }) {
           ) : null}
         </article>
       ))}
-      {data.summary && typeof data.summary === 'string' && (
+      {typeof data.summary === 'string' ? (
         <p className="md:col-span-3 text-sm text-slate-600 border-t border-slate-100 pt-4">{data.summary}</p>
-      )}
+      ) : null}
     </div>
   )
 }
@@ -169,6 +169,7 @@ export function V30WorkspaceTabContent({
           : [])
       const floorplanScope = data.floorplanScope as string | undefined
       const landscape = data.landscapePackage as {
+        sitePlanImageUrl?: string
         plants?: Array<{ species: string; quantity: number; unit: string; lineTotal?: number }>
         trees?: Array<{ species: string; quantity: number; lineTotal?: number }>
         materials?: Array<{ material: string; quantity: number; unit: string; lineTotal?: number }>
