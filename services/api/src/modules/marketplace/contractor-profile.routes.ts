@@ -172,7 +172,7 @@ export async function contractorProfileRoutes(fastify: FastifyInstance) {
           select: {
             id:                    true,
             slug:                  true,
-            companyName:           true,
+            businessName:          true,
             tradeSpecialties:      true,
             serviceAreas:          true,
             isVerified:            true,
