@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { ArrowRight, Sparkles } from 'lucide-react'
 import { isV30EnabledClient } from '@/lib/v30'
 
-/** P1 — hide fixed tier cards when v30 dynamic pricing is on. */
+/** P1 — hide fixed tier cards when v30 dynamic pricing is on (formula from v30_pricing_formulas, editable in portal-admin). */
 export function HomePricingSection({ children }: { children: React.ReactNode }) {
   if (!isV30EnabledClient()) return <>{children}</>
 

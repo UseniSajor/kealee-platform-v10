@@ -80,6 +80,8 @@
     "v30:migrate": "cd packages/database && npx prisma migrate deploy",
     "v30:setup-check": "node scripts/v30-setup-check.mjs",
     "v30:prod-rollout": "node scripts/v30-prod-rollout.mjs",
+    "v30:apply-env": "node scripts/apply-v30-env.mjs --resolve-user-id",
+    "portal-admin:dev": "pnpm --filter portal-admin dev",
     "orchestrate:launch": "node scripts/orchestrate-launch.mjs",
     "orchestrate:launch+prep": "node scripts/orchestrate-launch.mjs --with-marketing-prep",
     "test:concept": "tsx scripts/test-concept-delivery.ts",

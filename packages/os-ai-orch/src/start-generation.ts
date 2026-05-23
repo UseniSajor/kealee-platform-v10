@@ -105,11 +105,19 @@ export async function startV30Generation(
     data: { v30Status: 'GENERATING' },
   })
 
+  const project = await prisma.project.findUnique({
+    where: { id: input.projectId },
+    select: { categoryMetadata: true },
+  })
+  const meta = (project?.categoryMetadata as Record<string, unknown> | null) ?? {}
+
   const sharedInput = {
     projectId: input.projectId,
     packageId: input.packageId,
     intake: pkg.intakeResponse,
     features: pkg.features,
+    lotContext: meta.v30LotContext ?? input.sharedInput?.lotContext,
+    projectPath: (input.sharedInput?.projectPath as string) ?? undefined,
     ...(input.sharedInput ?? {}),
   }
 

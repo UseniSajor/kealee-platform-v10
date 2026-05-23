@@ -1,6 +1,9 @@
 import { isV30Enabled } from '@kealee/kealee-agent-stack'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { syncV30ConceptToIntakeLead } from '@/lib/v30-design-sync'
+import { finalizeV30FloorplanDeliverables } from '@/lib/v30-floorplan-deliverables'
+import { syncLandscapePremiumPlusPackage } from '@/lib/v30-landscape-package'
+import { isGardenLandscapeScope } from '@kealee/kealee-agent-stack'
 
 const API_BASE = () =>
   (process.env.INTERNAL_API_URL ?? process.env.NEXT_PUBLIC_API_URL ?? '').replace(/\/$/, '')
@@ -101,14 +104,60 @@ async function pollAndSyncV30Concept(intakeId: string, projectId?: string): Prom
       if (!res.ok) continue
       const ws = (await res.json()) as {
         v30ConceptOutput?: Record<string, unknown>
-        executions?: Array<{ botType: string; status: string }>
+        executions?: Array<{
+          botType: string
+          status: string
+          outputData?: Record<string, unknown>
+        }>
+        package?: { features?: string[] }
       }
       const designDone = ws.executions?.some(e => e.botType === 'design' && e.status === 'COMPLETE')
+      const floorplanExec = ws.executions?.find(e => e.botType === 'floorplan')
       const concept = ws.v30ConceptOutput
+
       if (designDone && concept) {
         await syncV30ConceptToIntakeLead(intakeId, concept)
-        return
       }
+
+      const allComplete =
+        ws.executions?.length &&
+        ws.executions.every(e => e.status === 'COMPLETE' || e.status === 'FAILED')
+
+      if (floorplanExec?.status === 'COMPLETE' && floorplanExec.outputData) {
+        const supabase = getSupabaseAdmin()
+        const { data: intake } = await supabase
+          .from('public_intake_leads')
+          .select('project_path, project_address, form_data')
+          .eq('id', intakeId)
+          .single()
+        const fd = (intake?.form_data as Record<string, unknown>) ?? {}
+        const tier = typeof fd.tier === 'number' ? (fd.tier as 1 | 2 | 3) : undefined
+        const deliverables = await finalizeV30FloorplanDeliverables({
+          intakeId,
+          projectPath: intake?.project_path ?? 'kitchen_remodel',
+          floorplanOutput: floorplanExec.outputData,
+          tier,
+          features: ws.package?.features ?? getV30Features(fd),
+          address: intake?.project_address,
+        })
+        if (
+          tier === 3 &&
+          intake?.project_path &&
+          isGardenLandscapeScope(intake.project_path) &&
+          ws.executions
+        ) {
+          await syncLandscapePremiumPlusPackage({
+            intakeId,
+            projectPath: intake.project_path,
+            tier: 3,
+            executions: ws.executions,
+            sitePlanImageUrl: deliverables.sitePlanImageUrl as string | undefined,
+          })
+        }
+        if (designDone && concept && allComplete) return
+      }
+
+      if (designDone && concept && allComplete) return
     } catch {
       /* retry */
     }

@@ -1,10 +1,9 @@
 import Link from 'next/link'
 
-const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001'
-
 async function fetchJson(path: string) {
+  const base = process.env.INTERNAL_API_URL || 'http://127.0.0.1:3001'
   try {
-    const res = await fetch(`${API}${path}`, { cache: 'no-store' })
+    const res = await fetch(`${base}${path}`, { cache: 'no-store' })
     if (!res.ok) return null
     return res.json()
   } catch {
@@ -13,6 +12,7 @@ async function fetchJson(path: string) {
 }
 
 export default async function PortalAdminPage() {
+  const apiBase = process.env.INTERNAL_API_URL || 'http://127.0.0.1:3001'
   const [bots, metrics] = await Promise.all([
     fetchJson('/v30/admin/bots'),
     fetchJson('/v30/admin/metrics'),
@@ -23,7 +23,7 @@ export default async function PortalAdminPage() {
       <p style={{ fontSize: 12, fontWeight: 700, color: '#7c3aed', letterSpacing: '0.1em' }}>PORTAL ADMIN · V30</p>
       <h1 style={{ fontSize: 28, marginBottom: 8 }}>Kealee v30 dashboard</h1>
       <p style={{ color: '#64748b', marginBottom: 24 }}>
-        Bot registry, pricing formula, and execution metrics. API: <code>{API}/v30/admin/*</code>
+        Bot registry, pricing formula, and execution metrics. API: <code>{apiBase}/v30/admin/*</code>
       </p>
 
       <section style={{ background: '#fff', borderRadius: 12, padding: 20, marginBottom: 16, border: '1px solid #e2e8f0' }}>

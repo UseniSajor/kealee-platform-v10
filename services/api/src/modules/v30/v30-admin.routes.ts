@@ -7,11 +7,11 @@ import { prisma } from '@kealee/database'
 import {
   V30_BOT_REGISTRY,
   V30_PARALLEL_BOT_TYPES,
-  DEFAULT_V30_PRICING_FORMULA,
   V30Prompts,
   isV30Enabled,
   type V30BotType,
 } from '@kealee/kealee-agent-stack'
+import { getActiveV30PricingFormula, upsertActiveV30PricingFormula } from './v30-pricing.service'
 
 const botTypes = [
   'intake', 'design', 'estimate', 'zoning', 'floorplan', 'permit', 'video', 'contractor', 'sales', 'support', 'project',
@@ -91,10 +91,39 @@ export async function v30AdminRoutes(fastify: FastifyInstance) {
   })
 
   fastify.get('/admin/pricing', async (_request, reply) => {
-    const row = await prisma.v30PricingFormula.findFirst({ orderBy: { updatedAt: 'desc' } }).catch(() => null)
+    const active = await getActiveV30PricingFormula()
     return reply.send({
-      active: row ?? { formula: DEFAULT_V30_PRICING_FORMULA, source: 'kealee-agent-stack/pricing.ts' },
+      formula: active.config,
+      source: active.source,
+      version: active.version,
+      updatedAt: active.updatedAt,
+      note: 'PATCH /v30/admin/pricing applies in real time to new quotes (no redeploy).',
     })
+  })
+
+  fastify.patch('/admin/pricing', async (request, reply) => {
+    const body = (request.body ?? {}) as Record<string, unknown>
+    try {
+      const result = await upsertActiveV30PricingFormula({
+        baseAmount: body.baseAmount as number | undefined,
+        sqftMultiplier: body.sqftMultiplier as number | undefined,
+        complexityFees: body.complexityFees as Record<string, number> | undefined,
+        featureCosts: body.featureCosts as Record<string, number> | undefined,
+        floorplanScopeCosts: body.floorplanScopeCosts as Record<string, number> | undefined,
+        urgencyMultiplier: body.urgencyMultiplier as number | undefined,
+        locationMultiplier: body.locationMultiplier as number | undefined,
+        minPrice: body.minPrice as number | undefined,
+        maxPrice: body.maxPrice as number | undefined,
+      })
+      return reply.send({
+        ok: true,
+        version: result.version,
+        formula: result.config,
+      })
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Pricing update failed'
+      return reply.code(503).send({ error: message })
+    }
   })
 
   fastify.get('/admin/metrics', async (_request, reply) => {

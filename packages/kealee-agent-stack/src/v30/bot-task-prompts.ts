@@ -10,7 +10,7 @@ export function buildV30BotUserPrompt(botType: V30BotType, inputData: Record<str
     design: `Produce DesignBot output: exactly 3 concepts (BUDGET, BALANCED, PREMIUM) with narratives, costs, imagePrompts. ${jsonOnly}\n\n${ctx}`,
     estimate: `Produce EstimateBot output for this project (PRELIMINARY or DETAILED per scope). Include byTrade, costLow, costHigh. ${jsonOnly}\n\n${ctx}`,
     zoning: `Produce ZoningBot output: jurisdiction, requiredPermits, documentsChecklist, fees, timelines for DMV location. ${jsonOnly}\n\n${ctx}`,
-    floorplan: `Produce FloorplanBot output: rooms[], walls[], dimensions, coordinate data for 2D layout. ${jsonOnly}\n\n${ctx}`,
+    floorplan: `Produce FloorplanBot output: rooms[], walls[], dimensions, coordinate data for 2D layout. For garden/landscape Premium+ also include plantSchedule[], treeSchedule[], materialTakeoff[] with quantities and costs. For additions use lotContext for footprint on lot. ${jsonOnly}\n\n${ctx}`,
     permit: `Produce PermitBot output: permit-ready spec sections, submission checklist, PE requirements. ${jsonOnly}\n\n${ctx}`,
     video: `Produce VideoBot output: prompts for architectural walkthrough video (Sora/Veo/Kling), shot list, durations. ${jsonOnly}\n\n${ctx}`,
     contractor: `Produce ContractorBot output: ranked contractor recommendations with match scores and rationale. ${jsonOnly}\n\n${ctx}`,

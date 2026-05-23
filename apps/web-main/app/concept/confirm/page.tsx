@@ -5,7 +5,7 @@ import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import {
   ArrowLeft, Shield, Loader2, FileText, Image as ImageIcon,
-  LayoutTemplate, Table2, Layers, Video, Check, Lock, Zap, X, Phone,
+  LayoutTemplate, Table2, Layers, Video, Check, Lock, Zap, X, Phone, Calculator,
 } from 'lucide-react'
 import { SERVICE_MAP } from '@/lib/services-config'
 import { StripeEmbeddedCheckoutModal } from '@/components/StripeEmbeddedCheckoutModal'
@@ -39,6 +39,7 @@ function getServiceTierItems(serviceSlug: string): Record<1 | 2 | 3, Deliverable
       ],
       2: [
         { icon: Video,     label: '60-Second AI Garden Transformation Video',          color: 'bg-orange-100 text-orange-600' },
+        { icon: Layers,    label: '2D site layout + planting zones (Premium floorplan)', color: 'bg-green-100 text-green-700' },
         { icon: Layers,    label: 'Detailed landscape plan with zone breakdowns',      color: 'bg-green-100 text-green-700' },
         { icon: ImageIcon, label: '6–8 Enhanced Garden Renderings (2560×1440)',        color: 'bg-purple-100 text-purple-600' },
         { icon: Table2,    label: 'Full plant specification with quantities',          color: 'bg-emerald-100 text-emerald-600' },
@@ -47,9 +48,13 @@ function getServiceTierItems(serviceSlug: string): Record<1 | 2 | 3, Deliverable
       ],
       3: [
         { icon: Video,     label: '4 Video Formats — 60s · 30s · 15s · 10s',          color: 'bg-orange-100 text-orange-600' },
-        { icon: Layers,    label: '3D Garden Overview + perspective views',            color: 'bg-green-100 text-green-700' },
+        { icon: Layers,    label: 'Full package: site plan + GIS/satellite lot context', color: 'bg-green-100 text-green-700' },
+        { icon: Table2,    label: 'Plant species schedule with quantities + unit costs', color: 'bg-emerald-100 text-emerald-600' },
+        { icon: Table2,    label: 'Tree species schedule (caliper/size) + quantities', color: 'bg-emerald-100 text-emerald-600' },
+        { icon: Shield,    label: 'Hardscape & material takeoff with estimated install cost', color: 'bg-amber-100 text-amber-600' },
+        { icon: Calculator, label: 'Line-item landscape cost estimate (low / mid / high)', color: 'bg-blue-100 text-blue-600' },
+        { icon: Layers,    label: 'CAD export (DXF) + Google Earth–ready coordinates', color: 'bg-violet-100 text-violet-600' },
         { icon: ImageIcon, label: '12–15 Garden Renderings in 4K',                    color: 'bg-purple-100 text-purple-600' },
-        { icon: Table2,    label: 'Contractor-ready plant/material specification',     color: 'bg-emerald-100 text-emerald-600' },
         { icon: Phone,     label: '15-min landscape expert consultation call',         color: 'bg-teal-100 text-teal-600' },
         { icon: Zap,       label: 'Everything in Premium · 3 revisions · 90-day support', color: 'bg-slate-100 text-slate-500' },
       ],

@@ -1,8 +1,11 @@
 import { Prisma } from '@prisma/client'
 import { prisma } from '@kealee/database'
+import { getActiveV30PricingFormula } from '@kealee/database'
 import {
+  adjustPackageFeaturesForScope,
   analyzeV30IntakeWithLlm,
   calculateV30PackagePrice,
+  mergeV30PackageFeatures,
   type V30IntakeAnalysis,
   type V30IntakeFormAnswers,
 } from '@kealee/kealee-agent-stack'
@@ -33,11 +36,26 @@ export async function processV30ProjectIntake(
   input: ProcessV30ProjectIntakeInput,
 ): Promise<ProcessV30ProjectIntakeResult> {
   const { projectId, userId, answers } = input
-  const analysis = await analyzeV30IntakeWithLlm(answers)
-  const features = input.selectedFeatures?.length
-    ? input.selectedFeatures
-    : analysis.suggestedFeatures
-  const { featureAddons, totalPrice } = calculateV30PackagePrice(analysis.estimatedCost, features)
+  const { config: formula } = await getActiveV30PricingFormula()
+  const project = await prisma.project.findUnique({
+    where: { id: projectId },
+    select: { category: true },
+  })
+  const analysis = await analyzeV30IntakeWithLlm(answers, formula, project?.category ?? undefined)
+  const features = adjustPackageFeaturesForScope(
+    mergeV30PackageFeatures(
+      input.selectedFeatures?.length ? input.selectedFeatures : analysis.suggestedFeatures,
+      { answers },
+    ),
+    answers,
+    project?.category ?? undefined,
+  )
+  const { featureAddons, totalPrice } = calculateV30PackagePrice(
+    analysis.estimatedCost,
+    features,
+    formula,
+    { answers },
+  )
 
   const intake = await prisma.v30IntakeResponse.upsert({
     where: { projectId },

@@ -3,7 +3,8 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 
-const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001'
+/** Same-origin proxy — avoids CORS and fixes localhost:3020 → API */
+const apiPath = (p: string) => `/api/v30/${p}`
 
 export function BotPromptEditor({ botType }: { botType: string }) {
   const [prompt, setPrompt] = useState('')
@@ -13,7 +14,7 @@ export function BotPromptEditor({ botType }: { botType: string }) {
   const [message, setMessage] = useState<string | null>(null)
 
   useEffect(() => {
-    fetch(`${API}/v30/admin/bots/${botType}`, { cache: 'no-store' })
+    fetch(apiPath(`admin/bots/${botType}`), { cache: 'no-store' })
       .then(r => r.json())
       .then(data => {
         setPrompt(data.activePrompt ?? data.codeDefaultPrompt ?? '')
@@ -26,7 +27,7 @@ export function BotPromptEditor({ botType }: { botType: string }) {
     setSaving(true)
     setMessage(null)
     try {
-      const res = await fetch(`${API}/v30/admin/bots/${botType}`, {
+      const res = await fetch(apiPath(`admin/bots/${botType}`), {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ systemPrompt: prompt, enabled: true }),

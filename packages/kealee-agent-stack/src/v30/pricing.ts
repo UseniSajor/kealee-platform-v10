@@ -1,8 +1,11 @@
 /**
- * v30 dynamic pricing — formula from KEALEE-v30-COMPLETE-MASTER-SPEC.md
- * Dollar amounts are computed; tier display prices still come from @kealee/core-rules at checkout.
+ * v30 dynamic pricing — live formula in `v30_pricing_formulas` (portal-admin PATCH).
+ * Quotes read the active row at request time; no redeploy required to change AI package prices.
+ * Tier card prices on /concept/confirm may still use @kealee/core-rules until fully on v30 checkout.
  */
 
+import { calculateFloorplanAddon } from './floorplan-pricing'
+import type { V30FloorplanScope } from './floorplan-pricing'
 import type { V30Complexity, V30IntakeFormAnswers } from './types'
 
 export interface V30PricingFormulaConfig {
@@ -10,6 +13,8 @@ export interface V30PricingFormulaConfig {
   sqftMultiplier: number
   complexityFees: Record<V30Complexity, number>
   featureCosts: Record<string, number>
+  /** Per-scope floorplan add-ons (whole house scales with sqft in calculateFloorplanAddon). */
+  floorplanScopeCosts?: Partial<Record<V30FloorplanScope, number>>
   urgencyMultiplier: number
   locationMultiplier: number
   minPrice: number
@@ -27,6 +32,16 @@ export const DEFAULT_V30_PRICING_FORMULA: V30PricingFormulaConfig = {
     Permits: 250,
     Videos: 400,
     Support: 50,
+    CADExport: 149,
+  },
+  floorplanScopeCosts: {
+    room: 80,
+    kitchen: 140,
+    bath: 100,
+    addition: 220,
+    whole_house: 280,
+    garden_landscape: 175,
+    exterior: 130,
   },
   urgencyMultiplier: 1,
   locationMultiplier: 1,
@@ -75,18 +90,41 @@ export function calculateV30BasePrice(
   }
 }
 
+export interface V30PackagePriceOptions {
+  answers?: V30IntakeFormAnswers
+  projectPath?: string
+}
+
+export function resolveFeatureAddon(
+  feature: string,
+  formula: V30PricingFormulaConfig,
+  options?: V30PackagePriceOptions,
+): number {
+  if (feature === 'Floorplan' && options?.answers) {
+    return calculateFloorplanAddon(options.answers, formula, options.projectPath).amount
+  }
+  return formula.featureCosts[feature] ?? 0
+}
+
 export function calculateV30PackagePrice(
   basePrice: number,
   features: string[],
   formula: V30PricingFormulaConfig = DEFAULT_V30_PRICING_FORMULA,
-): { featureAddons: number; totalPrice: number } {
-  const featureAddons = features.reduce(
-    (sum, f) => sum + (formula.featureCosts[f] ?? 0),
-    0,
-  )
+  options?: V30PackagePriceOptions,
+): {
+  featureAddons: number
+  totalPrice: number
+  featureBreakdown: Record<string, number>
+} {
+  const featureBreakdown: Record<string, number> = {}
+  const featureAddons = features.reduce((sum, f) => {
+    const addon = resolveFeatureAddon(f, formula, options)
+    featureBreakdown[f] = addon
+    return sum + addon
+  }, 0)
   const totalPrice = Math.min(
     formula.maxPrice,
     Math.max(formula.minPrice, Math.round(basePrice + featureAddons)),
   )
-  return { featureAddons, totalPrice }
+  return { featureAddons, totalPrice, featureBreakdown }
 }

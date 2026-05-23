@@ -57,12 +57,37 @@ export async function GET(req: NextRequest) {
     )
   }
 
+  const ws = workspace as {
+    executions?: Array<{
+      botType: string
+      outputData?: Record<string, unknown>
+      result?: { contentJson?: Record<string, unknown> }
+    }>
+  }
+  const deliverables = formData.v30FloorplanDeliverables as Record<string, unknown> | undefined
+  const landscapePkg = formData.v30LandscapePremiumPlus as Record<string, unknown> | undefined
+  if (deliverables && ws.executions) {
+    const fp = ws.executions.find(e => e.botType === 'floorplan')
+    if (fp) {
+      const merged = {
+        ...(fp.outputData ?? fp.result?.contentJson ?? {}),
+        ...deliverables,
+        landscapePackage: landscapePkg,
+      }
+      fp.outputData = merged
+      if (fp.result) fp.result.contentJson = merged
+    }
+  }
+
   return NextResponse.json({
     intakeId,
     projectPath: intake.project_path,
     clientName: intake.client_name,
     status: intake.status,
     quote: v30Quote,
-    ...(workspace as object),
+    v30LotContext: formData.v30LotContext,
+    v30FloorplanDeliverables: deliverables,
+    v30LandscapePremiumPlus: landscapePkg,
+    ...ws,
   })
 }

@@ -6,6 +6,14 @@ Generate SVG coordinate data for a 2D floorplan based on the design concept.
 Output is NOT a permit-ready engineering drawing - it's a CONCEPT VISUALIZATION.
 Used for customer to visualize layout, not for construction or permitting.
 
+SCOPE TYPES:
+- Interior (kitchen, bath, room): walls, appliances, dimensions
+- Whole house: all levels/rooms proportional to sqft
+- Garden / landscape: lot layout aligned to geocoded lat/lng and optional satellite backdrop; beds, hardscape, paths; irrigation zones only when irrigation is in scope
+- Garden Premium+: REQUIRED plantSchedule[], treeSchedule[], materialTakeoff[] with species, quantities, units, unitCost, lineTotal; tie to EstimateBot totals
+- Additions: use lotContext lat/lng + satellite for footprint on lot; show proposed addition outline relative to existing structure
+- Premium tier: include optional MEP overlay hints (electrical/plumbing/HVAC zones) when interior scope
+
 INPUT:
 {
   "conceptName": "Balanced Kitchen",
@@ -278,6 +286,14 @@ OUTPUT FORMAT (JSON with SVG coordinates):
     ]
   }
 }
+
+LANDSCAPE / GARDEN PREMIUM+ (when projectPath or scope is garden/landscape) — include in floorplan JSON root:
+"plantSchedule": [{ "species": "Botanical name", "commonName": "...", "quantity": 12, "unit": "each", "zone": "Perennial bed A", "unitCost": 45, "lineTotal": 540 }],
+"treeSchedule": [{ "species": "Acer rubrum", "caliperOrSize": "2\\" caliper", "quantity": 2, "unitCost": 450, "lineTotal": 900 }],
+"materialTakeoff": [{ "material": "Pennsylvania bluestone pavers", "quantity": 180, "unit": "sqft", "unitCost": 18, "lineTotal": 3240 }],
+"seasonalCalendar": ["Spring: mulch + pre-emergent", "Fall: aeration"],
+"maintenanceNotes": ["..."],
+"use lotContext.satelliteImageUrl when provided for bed alignment"
 
 FLOORPLAN RULES:
 1. Generate SVG-compatible coordinates (not actual SVG code)

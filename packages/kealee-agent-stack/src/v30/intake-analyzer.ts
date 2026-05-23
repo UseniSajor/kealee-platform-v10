@@ -1,6 +1,9 @@
 import { calculateV30BasePrice, DEFAULT_V30_PRICING_FORMULA } from './pricing'
+import type { V30PricingFormulaConfig } from './pricing'
 import { executeV30BotWithLlm, shouldUseV30Llm } from './llm-executor'
 import { getV30SystemPrompt } from './prompts'
+import { suggestFloorplanFeature } from './package-features'
+import { adjustPackageFeaturesForScope, requiresPermitsForScope } from './scope-rules'
 import type { V30Complexity, V30IntakeAnalysis, V30IntakeFormAnswers, V30RiskLevel } from './types'
 
 const DEFAULT_FEATURES = ['Design', 'Estimate', 'Zoning']
@@ -9,8 +12,12 @@ const DEFAULT_FEATURES = ['Design', 'Estimate', 'Zoning']
  * Heuristic IntakeBot — deterministic analysis before LLM enrichment.
  * API layer can call Claude with INTAKE_BOT_PROMPT for full analysisJson.
  */
-export function analyzeV30Intake(answers: V30IntakeFormAnswers): V30IntakeAnalysis {
-  const { total, complexity, breakdown } = calculateV30BasePrice(answers)
+export function analyzeV30Intake(
+  answers: V30IntakeFormAnswers,
+  formula: V30PricingFormulaConfig = DEFAULT_V30_PRICING_FORMULA,
+  projectPath?: string,
+): V30IntakeAnalysis {
+  const { total, complexity, breakdown } = calculateV30BasePrice(answers, formula)
 
   let riskLevel: V30IntakeAnalysis['riskLevel'] = 'low'
   if (answers.yearBuilt.includes('pre-1950') || answers.codeConsiderations.length > 2) {
@@ -23,19 +30,24 @@ export function analyzeV30Intake(answers: V30IntakeFormAnswers): V30IntakeAnalys
     complexity === 'complex' ? 45 : complexity === 'moderate' ? 28 : 14
 
   const suggestedFeatures = [...DEFAULT_FEATURES]
-  if (answers.primaryScope.toLowerCase().includes('kitchen')) {
+  if (suggestFloorplanFeature(answers)) {
     suggestedFeatures.push('Floorplan')
+  }
+  if (requiresPermitsForScope(answers, projectPath)) {
+    suggestedFeatures.push('Permits')
   }
   if (answers.timeline.toLowerCase().includes('asap')) {
     suggestedFeatures.push('Support')
   }
+
+  const scopedFeatures = adjustPackageFeaturesForScope(suggestedFeatures, answers)
 
   return {
     scopeComplexity: complexity,
     riskLevel,
     estimatedCost: total,
     estimatedDays,
-    suggestedFeatures,
+    suggestedFeatures: scopedFeatures,
     analysisJson: {
       summary: `${complexity} ${answers.primaryScope} project in ${answers.location}`,
       factors: [
@@ -64,8 +76,10 @@ function asRisk(v: unknown, fallback: V30RiskLevel): V30RiskLevel {
  */
 export async function analyzeV30IntakeWithLlm(
   answers: V30IntakeFormAnswers,
+  formula: V30PricingFormulaConfig = DEFAULT_V30_PRICING_FORMULA,
+  projectPath?: string,
 ): Promise<V30IntakeAnalysis> {
-  const base = analyzeV30Intake(answers)
+  const base = analyzeV30Intake(answers, formula, projectPath)
   if (!shouldUseV30Llm()) return base
 
   const llm = await executeV30BotWithLlm({

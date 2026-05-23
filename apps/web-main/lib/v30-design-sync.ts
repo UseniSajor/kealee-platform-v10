@@ -1,5 +1,6 @@
 import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { queueV30DesignRenders } from '@/lib/v30-replicate-renders'
+import { pollV30RendersUntilDone } from '@/lib/v30-replicate-poll'
 
 /**
  * Copy v30 DesignBot conceptOutput onto public_intake_leads for /concept/[id] portal.
@@ -36,6 +37,9 @@ export async function syncV30ConceptToIntakeLead(
     .eq('id', intakeId)
 
   if (imagePrompts.length > 0) {
-    void queueV30DesignRenders(intakeId, imagePrompts, roomType.split(' ')[0] ?? 'kitchen')
+    void (async () => {
+      await queueV30DesignRenders(intakeId, imagePrompts, roomType.split(' ')[0] ?? 'kitchen')
+      await pollV30RendersUntilDone(intakeId, { maxAttempts: 40, intervalMs: 15_000 })
+    })()
   }
 }

@@ -2,9 +2,13 @@ import { NextRequest, NextResponse } from 'next/server'
 import {
   analyzeV30IntakeWithLlm,
   calculateV30PackagePrice,
+  mergeV30PackageFeatures,
   isV30Enabled,
+  shouldResolveLotGis,
   type V30IntakeFormAnswers,
 } from '@kealee/kealee-agent-stack'
+import { fetchActiveV30PricingFormula } from '@/lib/v30-pricing-formula'
+import { resolveLotContext } from '@/lib/v30-lot-gis'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
 
 export const dynamic = 'force-dynamic'
@@ -30,11 +34,21 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Incomplete intake answers' }, { status: 400 })
     }
 
-    const analysis = await analyzeV30IntakeWithLlm(body.answers)
-    const features = body.selectedFeatures?.length
-      ? body.selectedFeatures
-      : analysis.suggestedFeatures
-    const { featureAddons, totalPrice } = calculateV30PackagePrice(analysis.estimatedCost, features)
+    const formula = await fetchActiveV30PricingFormula()
+    const lotContext = shouldResolveLotGis(body.projectPath ?? undefined, body.answers.primaryScope)
+      ? await resolveLotContext(body.answers.location)
+      : null
+    const analysis = await analyzeV30IntakeWithLlm(body.answers, formula, body.projectPath ?? undefined)
+    const features = mergeV30PackageFeatures(
+      body.selectedFeatures?.length ? body.selectedFeatures : analysis.suggestedFeatures,
+      { projectPath: body.projectPath ?? undefined, answers: body.answers },
+    )
+    const { featureAddons, totalPrice, featureBreakdown } = calculateV30PackagePrice(
+      analysis.estimatedCost,
+      features,
+      formula,
+      { answers: body.answers, projectPath: body.projectPath },
+    )
 
     const quote = {
       version: '3.0',
@@ -43,6 +57,12 @@ export async function POST(req: NextRequest) {
       features,
       basePrice: analysis.estimatedCost,
       featureAddons,
+      featureBreakdown,
+      pricingSource: 'v30_pricing_formulas',
+      lotContext,
+      permitNote: features.includes('Permits')
+        ? 'Permit scope included for this project type.'
+        : 'No permit package — typical for landscape without irrigation.',
       totalPriceCents: Math.round(totalPrice * 100),
       totalPrice,
       quotedAt: new Date().toISOString(),
@@ -62,6 +82,7 @@ export async function POST(req: NextRequest) {
         v30Quote: quote,
         v30Answers: body.answers,
         v30Features: features,
+        v30LotContext: lotContext,
         squareFootage: body.answers.squareFeet,
         description: `${body.answers.primaryScope} — ${body.answers.propertyType}`,
       }

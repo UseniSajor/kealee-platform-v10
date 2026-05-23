@@ -40,6 +40,7 @@ export const V30_FEATURE_OPTIONS = [
   'Permits',
   'Videos',
   'Support',
+  'CADExport',
 ] as const
 
 export const V30_CODE_OPTIONS = [

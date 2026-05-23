@@ -157,7 +157,93 @@ export function V30WorkspaceTabContent({
       return <V30EstimatePanel data={data} />
     case 'permits':
       return <V30PermitsPanel data={data} />
-    case 'floorplan':
+    case 'floorplan': {
+      const landscape = data.landscapePackage as {
+        plants?: Array<{ species: string; quantity: number; unit: string; lineTotal?: number }>
+        trees?: Array<{ species: string; quantity: number; lineTotal?: number }>
+        materials?: Array<{ material: string; quantity: number; unit: string; lineTotal?: number }>
+        estimatedCost?: { low: number; high: number; mid: number }
+      } | undefined
+      const siteUrl = (data.sitePlanImageUrl ?? landscape?.sitePlanImageUrl) as string | undefined
+      const lot = data.lotContext as { satelliteImageUrl?: string; googleEarthHint?: string } | undefined
+      const cad = data.cadExport as { dxfFilename?: string } | undefined
+      return (
+        <div className="space-y-4">
+          {lot?.satelliteImageUrl && (
+            <div>
+              <p className="text-xs font-bold text-slate-500 uppercase">Lot context (satellite)</p>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={lot.satelliteImageUrl} alt="Satellite lot" className="mt-2 rounded-lg border max-h-64 w-full object-cover" />
+              <p className="text-xs text-slate-500 mt-1">{lot.googleEarthHint}</p>
+            </div>
+          )}
+          {siteUrl && (
+            <div>
+              <p className="text-xs font-bold text-slate-500 uppercase">Site / floor plan sheet (Recraft)</p>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={siteUrl} alt="Site plan" className="mt-2 rounded-lg border max-h-96 w-full object-contain bg-white" />
+            </div>
+          )}
+          {landscape && (
+            <div className="space-y-3 rounded-xl border border-emerald-200 bg-emerald-50/50 p-4">
+              <p className="text-sm font-bold text-emerald-900">Premium+ landscape package</p>
+              {landscape.estimatedCost && (
+                <p className="text-lg font-bold text-slate-900">
+                  ${landscape.estimatedCost.low.toLocaleString()} – ${landscape.estimatedCost.high.toLocaleString()}
+                  <span className="text-sm font-normal text-slate-600"> (mid ${landscape.estimatedCost.mid.toLocaleString()})</span>
+                </p>
+              )}
+              {landscape.plants && landscape.plants.length > 0 && (
+                <div>
+                  <p className="text-xs font-bold text-slate-600 uppercase mb-1">Plants</p>
+                  <ul className="text-xs space-y-1">
+                    {landscape.plants.slice(0, 12).map((p, i) => (
+                      <li key={i}>{p.species} × {p.quantity} {p.unit}{p.lineTotal ? ` — $${p.lineTotal}` : ''}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {landscape.trees && landscape.trees.length > 0 && (
+                <div>
+                  <p className="text-xs font-bold text-slate-600 uppercase mb-1">Trees</p>
+                  <ul className="text-xs space-y-1">
+                    {landscape.trees.map((t, i) => (
+                      <li key={i}>{t.species} × {t.quantity}{t.lineTotal ? ` — $${t.lineTotal}` : ''}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {landscape.materials && landscape.materials.length > 0 && (
+                <div>
+                  <p className="text-xs font-bold text-slate-600 uppercase mb-1">Materials</p>
+                  <ul className="text-xs space-y-1">
+                    {landscape.materials.slice(0, 10).map((m, i) => (
+                      <li key={i}>{m.material} — {m.quantity} {m.unit}{m.lineTotal ? ` — $${m.lineTotal}` : ''}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          )}
+          {cad && (
+            <p className="text-sm">
+              <a
+                href={`/api/v30/cad/${intakeId}`}
+                className="text-violet-600 font-semibold underline"
+              >
+                Download DXF for AutoCAD / SketchUp →
+              </a>
+            </p>
+          )}
+          <details className="text-sm">
+            <summary className="cursor-pointer font-semibold text-slate-700">Layout JSON</summary>
+            <pre className="mt-2 text-xs overflow-auto max-h-96 whitespace-pre-wrap text-slate-600">
+              {JSON.stringify(data, null, 2)}
+            </pre>
+          </details>
+        </div>
+      )
+    }
     case 'video':
       return (
         <details className="text-sm">

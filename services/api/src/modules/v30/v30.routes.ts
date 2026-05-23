@@ -5,6 +5,7 @@
 
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import { z } from 'zod'
+import { prisma } from '@kealee/database'
 import {
   ensureV30ProjectFromPublicIntake,
   processV30ProjectIntake,
@@ -15,7 +16,13 @@ import {
   getV30ProjectWorkspace,
   startV30Generation,
 } from '@kealee/os-ai-orch'
-import { isV30Enabled, type V30IntakeFormAnswers } from '@kealee/kealee-agent-stack'
+import {
+  isV30Enabled,
+  resolveLotContext,
+  shouldResolveLotGis,
+  type V30IntakeFormAnswers,
+} from '@kealee/kealee-agent-stack'
+import { getActiveV30PricingFormula } from '@kealee/database'
 
 const intakeBodySchema = z.object({
   projectId: z.string().min(1),
@@ -69,6 +76,17 @@ function v30Disabled(reply: FastifyReply) {
 export async function v30Routes(fastify: FastifyInstance) {
   fastify.addHook('preHandler', async (_request, reply) => {
     if (!isV30Enabled()) return v30Disabled(reply)
+  })
+
+  /** Active pricing formula — quotes call this (or DB via getActiveV30PricingFormula) for real-time AI package pricing. */
+  fastify.get('/pricing/active', async (_request, reply: FastifyReply) => {
+    const active = await getActiveV30PricingFormula()
+    return reply.send({
+      formula: active.config,
+      source: active.source,
+      version: active.version,
+      updatedAt: active.updatedAt,
+    })
   })
 
   fastify.post('/intake', async (request: FastifyRequest, reply: FastifyReply) => {
@@ -135,12 +153,31 @@ export async function v30Routes(fastify: FastifyInstance) {
         userId,
       })
 
+      const lotContext = shouldResolveLotGis(parsed.data.projectPath, parsed.data.answers.primaryScope)
+        ? (await resolveLotContext(parsed.data.projectAddress || parsed.data.answers.location)) ?? undefined
+        : undefined
+
+      if (lotContext) {
+        const existing = await prisma.project.findUnique({
+          where: { id: bridge.projectId },
+          select: { categoryMetadata: true },
+        })
+        const meta = (existing?.categoryMetadata as Record<string, unknown> | null) ?? {}
+        await prisma.project.update({
+          where: { id: bridge.projectId },
+          data: {
+            categoryMetadata: { ...meta, intakeLeadId: parsed.data.intakeLeadId, v30: true, v30LotContext: lotContext },
+          },
+        })
+      }
+
       const generation = await startV30Generation({
         projectId: bridge.projectId,
         packageId: bridge.packageId,
         sharedInput: {
           intakeLeadId: parsed.data.intakeLeadId,
           projectPath: parsed.data.projectPath,
+          lotContext,
         },
       })
 

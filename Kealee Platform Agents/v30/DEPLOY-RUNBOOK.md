@@ -12,6 +12,24 @@ Migration: `prisma/migrations/20260522120000_add_v30_models/`
 
 ## 2. Environment
 
+### Local (all three apps)
+
+```bash
+# 1. Copy keys (gitignored) — ANTHROPIC + REPLICATE required for LLM/renders
+cp .env.v30.keys.example .env.v30.keys
+# edit .env.v30.keys
+
+# 2. Merge into web-main, API, portal-admin .env.local
+pnpm v30:apply-env
+
+# 3. Terminals
+pnpm --filter @kealee/api dev          # :3001
+pnpm --filter web-main dev             # :3000
+pnpm portal-admin:dev                  # :3020 — login: PORTAL_ADMIN_PASSWORD (default kealee-admin-dev)
+```
+
+`portal-admin` uses same-origin `/api/v30/*` proxy → `INTERNAL_API_URL` (no browser CORS). Replicate polls: `POST /api/v30/renders/poll` on web-main after design sync queues predictions.
+
 ### API (`services/api` / Railway)
 
 | Variable | Required | Notes |
