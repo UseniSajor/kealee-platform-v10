@@ -14,7 +14,7 @@ import {
 import { getActiveV30PricingFormula, upsertActiveV30PricingFormula } from './v30-pricing.service'
 
 const botTypes = [
-  'intake', 'design', 'estimate', 'zoning', 'floorplan', 'permit', 'video', 'contractor', 'sales', 'support', 'project',
+  'intake', 'design', 'estimate', 'zoning', 'floorplan', 'permit', 'video', 'contractor', 'sales', 'marketing', 'support', 'project',
 ] as const
 
 const patchBotSchema = z.object({

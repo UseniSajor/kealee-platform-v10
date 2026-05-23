@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { Megaphone } from 'lucide-react'
 
 interface DesignConcept {
   id?: string
@@ -85,6 +86,77 @@ export function V30EstimatePanel({ data }: { data: Record<string, unknown> }) {
         </table>
       ) : (
         <p className="text-sm text-slate-500">Estimate breakdown will appear when EstimateBot completes.</p>
+      )}
+    </div>
+  )
+}
+
+export function V30MarketingPanel({ data }: { data: Record<string, unknown> }) {
+  const headline = data.headline as string | undefined
+  const pitch = data.elevatorPitch as string | undefined
+  const social = (data.socialPosts as Array<Record<string, unknown>> | undefined) ?? []
+  const emails = (data.emailSequence as Array<Record<string, unknown>> | undefined) ?? []
+  const listing = data.listingCopy as Record<string, unknown> | undefined
+  const outreach = data.contractorOutreach as Record<string, unknown> | undefined
+
+  if (!headline && !social.length && !emails.length) {
+    return <p className="text-sm text-slate-500">Marketing kit will appear when MarketingBot completes.</p>
+  }
+
+  return (
+    <div className="space-y-5">
+      <div className="flex items-center gap-2 text-violet-800">
+        <Megaphone className="h-5 w-5" />
+        <p className="text-sm font-bold">Share your project</p>
+      </div>
+      {headline && <p className="text-lg font-bold text-slate-900">{headline}</p>}
+      {pitch && <p className="text-sm text-slate-600 leading-relaxed">{pitch}</p>}
+      {social.length > 0 && (
+        <div className="space-y-3">
+          <p className="text-xs font-bold uppercase text-slate-500">Social posts</p>
+          {social.map((post, i) => (
+            <div key={i} className="rounded-xl border border-slate-200 bg-white p-4 text-sm">
+              <p className="text-xs font-semibold text-violet-600 mb-1">
+                {(post.platform as string) ?? 'Social'}
+              </p>
+              <p className="text-slate-700 whitespace-pre-wrap">{String(post.caption ?? '')}</p>
+              {Array.isArray(post.hashtags) && (
+                <p className="text-xs text-slate-400 mt-2">{(post.hashtags as string[]).join(' ')}</p>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+      {emails.length > 0 && (
+        <div className="space-y-3">
+          <p className="text-xs font-bold uppercase text-slate-500">Email copy</p>
+          {emails.map((em, i) => (
+            <div key={i} className="rounded-xl border border-slate-200 bg-slate-50/80 p-4 text-sm">
+              <p className="font-semibold text-slate-900">{String(em.subject ?? `Email ${i + 1}`)}</p>
+              <p className="text-xs text-slate-500 mt-0.5">Day {String(em.dayOffset ?? 0)} · {String(em.audience ?? 'general')}</p>
+              <p className="text-slate-600 mt-2 whitespace-pre-wrap">{String(em.body ?? '')}</p>
+            </div>
+          ))}
+        </div>
+      )}
+      {listing && (
+        <div className="rounded-xl border border-emerald-200 bg-emerald-50/50 p-4 text-sm">
+          <p className="text-xs font-bold uppercase text-emerald-800 mb-2">Listing copy</p>
+          <p className="text-slate-700">{String(listing.shortDescription ?? '')}</p>
+          {Array.isArray(listing.bullets) && (
+            <ul className="mt-2 list-disc pl-5 text-slate-600">
+              {(listing.bullets as string[]).map((b, i) => (
+                <li key={i}>{b}</li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
+      {outreach?.introParagraph && (
+        <div className="rounded-xl border border-slate-200 p-4 text-sm">
+          <p className="text-xs font-bold uppercase text-slate-500 mb-2">Contractor outreach</p>
+          <p className="text-slate-700 whitespace-pre-wrap">{String(outreach.introParagraph)}</p>
+        </div>
       )}
     </div>
   )
@@ -283,6 +355,8 @@ export function V30WorkspaceTabContent({
           </pre>
         </details>
       )
+    case 'marketing':
+      return <V30MarketingPanel data={data} />
     default:
       return null
   }

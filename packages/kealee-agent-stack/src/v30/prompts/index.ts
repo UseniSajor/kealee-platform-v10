@@ -7,6 +7,7 @@ export { PERMIT_BOT_PROMPT } from './permit-bot'
 export { VIDEO_BOT_PROMPT } from './video-bot'
 export { CONTRACTOR_BOT_PROMPT } from './contractor-bot'
 export { SALES_BOT_PROMPT } from './sales-bot'
+export { MARKETING_BOT_PROMPT } from './marketing-bot'
 export { SUPPORT_BOT_PROMPT } from './support-bot'
 export { PROJECT_BOT_PROMPT } from './project-bot'
 
@@ -20,6 +21,7 @@ import { PERMIT_BOT_PROMPT } from './permit-bot'
 import { VIDEO_BOT_PROMPT } from './video-bot'
 import { CONTRACTOR_BOT_PROMPT } from './contractor-bot'
 import { SALES_BOT_PROMPT } from './sales-bot'
+import { MARKETING_BOT_PROMPT } from './marketing-bot'
 import { SUPPORT_BOT_PROMPT } from './support-bot'
 import { PROJECT_BOT_PROMPT } from './project-bot'
 
@@ -33,6 +35,7 @@ const PROMPTS: Record<V30BotType, string> = {
   video: VIDEO_BOT_PROMPT,
   contractor: CONTRACTOR_BOT_PROMPT,
   sales: SALES_BOT_PROMPT,
+  marketing: MARKETING_BOT_PROMPT,
   support: SUPPORT_BOT_PROMPT,
   project: PROJECT_BOT_PROMPT,
 }

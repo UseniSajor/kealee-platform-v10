@@ -96,5 +96,5 @@ export function shouldUseV30Llm(): boolean {
   return Boolean(process.env.ANTHROPIC_API_KEY && process.env.KEALEE_V30_LLM_ENABLED !== 'false')
 }
 
-/** All 10 parallel post-payment bots (Kealee Platform Agents KeaBot v3.0). */
+/** All parallel post-payment bots (Kealee Platform Agents KeaBot v3.0). */
 export { V30_PARALLEL_BOT_TYPES }

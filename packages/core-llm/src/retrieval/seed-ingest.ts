@@ -16,15 +16,33 @@ import { createId } from "../utils/ids";
 import fs from 'fs';
 import path from 'path';
 import { parse } from 'csv-parse/sync';
-import {
-  intentSeeds,
-  workflowTemplateSeeds,
-  jurisdictionSeeds,
-  serviceOfferingSeeds,
-  toolRegistrySeeds,
-  ruleSeeds,
-  promptPolicySeeds
-} from '@kealee/seeds';
+
+const SEEDS_BUILD_HINT = 'pnpm --filter @kealee/seeds build';
+
+type SeedsModule = typeof import('@kealee/seeds');
+
+let seedsModule: SeedsModule | null | undefined;
+let seedsLoadHintLogged = false;
+
+function loadSeedsModule(): SeedsModule | null {
+  if (seedsModule !== undefined) return seedsModule;
+  try {
+    // Dynamic require so zoning CSV ingest still works when dist/ is missing.
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    seedsModule = require('@kealee/seeds') as SeedsModule;
+    return seedsModule;
+  } catch (err) {
+    seedsModule = null;
+    const message = (err as NodeJS.ErrnoException)?.message ?? String(err);
+    if (!seedsLoadHintLogged) {
+      seedsLoadHintLogged = true;
+      console.warn(
+        `[SeedIngest] @kealee/seeds not available (${message}). Run: ${SEEDS_BUILD_HINT}`,
+      );
+    }
+    return null;
+  }
+}
 // ─── Seed chunk store ─────────────────────────────────────────────────────────
 function loadZoningCSV() {
   // Try multiple candidate paths so the module works whether cwd is the monorepo
@@ -112,8 +130,13 @@ function addChunk(partial: Omit<SeedChunk, "id" | "keywords"> & { text: string }
 // ─── Seed importers ───────────────────────────────────────────────────────────
 
 function ingestIntents(): void {
+  const seeds = loadSeedsModule();
+  if (!seeds?.intentSeeds?.length) {
+    console.warn('[SeedIngest] Could not load intent seeds');
+    return;
+  }
   try {
-    for (const intent of intentSeeds) {
+    for (const intent of seeds.intentSeeds) {
       addChunk({
         sourceType: "intent",
         seedPack: "intents",
@@ -122,15 +145,20 @@ function ingestIntents(): void {
         workflowCode: intent.defaultWorkflowTemplate,
       });
     }
-    console.log(`[SeedIngest] Loaded ${intentSeeds.length} intent seeds`);
+    console.log(`[SeedIngest] Loaded ${seeds.intentSeeds.length} intent seeds`);
   } catch (err) {
-    console.warn("[SeedIngest] Could not load intent seeds:", (err as any)?.message);
+    console.warn('[SeedIngest] Could not load intent seeds:', (err as Error)?.message);
   }
 }
 
 function ingestWorkflows(): void {
+  const seeds = loadSeedsModule();
+  if (!seeds?.workflowTemplateSeeds?.length) {
+    console.warn('[SeedIngest] Could not load workflow seeds');
+    return;
+  }
   try {
-    for (const wf of workflowTemplateSeeds) {
+    for (const wf of seeds.workflowTemplateSeeds) {
       addChunk({
         sourceType: "workflow",
         seedPack: "workflows",
@@ -139,15 +167,20 @@ function ingestWorkflows(): void {
         workflowCode: wf.code,
       });
     }
-    console.log(`[SeedIngest] Loaded ${workflowTemplateSeeds.length} workflow seeds`);
+    console.log(`[SeedIngest] Loaded ${seeds.workflowTemplateSeeds.length} workflow seeds`);
   } catch (err) {
-    console.warn("[SeedIngest] Could not load workflow seeds:", (err as any)?.message);
+    console.warn('[SeedIngest] Could not load workflow seeds:', (err as Error)?.message);
   }
 }
 
 function ingestJurisdictions(): void {
+  const seeds = loadSeedsModule();
+  if (!seeds?.jurisdictionSeeds?.length) {
+    console.warn('[SeedIngest] Could not load jurisdiction seeds');
+    return;
+  }
   try {
-    for (const j of jurisdictionSeeds) {
+    for (const j of seeds.jurisdictionSeeds) {
       addChunk({
         sourceType: "jurisdiction",
         seedPack: "jurisdictions",
@@ -156,15 +189,20 @@ function ingestJurisdictions(): void {
         jurisdictionCode: j.code,
       });
     }
-    console.log(`[SeedIngest] Loaded ${jurisdictionSeeds.length} jurisdiction seeds`);
+    console.log(`[SeedIngest] Loaded ${seeds.jurisdictionSeeds.length} jurisdiction seeds`);
   } catch (err) {
-    console.warn("[SeedIngest] Could not load jurisdiction seeds:", (err as any)?.message);
+    console.warn('[SeedIngest] Could not load jurisdiction seeds:', (err as Error)?.message);
   }
 }
 
 function ingestServices(): void {
+  const seeds = loadSeedsModule();
+  if (!seeds?.serviceOfferingSeeds?.length) {
+    console.warn('[SeedIngest] Could not load service seeds');
+    return;
+  }
   try {
-    for (const svc of serviceOfferingSeeds) {
+    for (const svc of seeds.serviceOfferingSeeds) {
       addChunk({
         sourceType: "service",
         seedPack: "services",
@@ -173,15 +211,20 @@ function ingestServices(): void {
         serviceCode: svc.code,
       });
     }
-    console.log(`[SeedIngest] Loaded ${serviceOfferingSeeds.length} service seeds`);
+    console.log(`[SeedIngest] Loaded ${seeds.serviceOfferingSeeds.length} service seeds`);
   } catch (err) {
-    console.warn("[SeedIngest] Could not load service seeds:", (err as any)?.message);
+    console.warn('[SeedIngest] Could not load service seeds:', (err as Error)?.message);
   }
 }
 
 function ingestTools(): void {
+  const seeds = loadSeedsModule();
+  if (!seeds?.toolRegistrySeeds?.length) {
+    console.warn('[SeedIngest] Could not load tool seeds');
+    return;
+  }
   try {
-    for (const tool of toolRegistrySeeds) {
+    for (const tool of seeds.toolRegistrySeeds) {
       addChunk({
         sourceType: "tool",
         seedPack: "tools",
@@ -189,15 +232,20 @@ function ingestTools(): void {
         metadata: { toolCode: tool.code, requiresApproval: tool.requiresApproval },
       });
     }
-    console.log(`[SeedIngest] Loaded ${toolRegistrySeeds.length} tool seeds`);
+    console.log(`[SeedIngest] Loaded ${seeds.toolRegistrySeeds.length} tool seeds`);
   } catch (err) {
-    console.warn("[SeedIngest] Could not load tool seeds:", (err as any)?.message);
+    console.warn('[SeedIngest] Could not load tool seeds:', (err as Error)?.message);
   }
 }
 
 function ingestRules(): void {
+  const seeds = loadSeedsModule();
+  if (!seeds?.ruleSeeds?.length) {
+    console.warn('[SeedIngest] Could not load rule seeds');
+    return;
+  }
   try {
-    for (const rule of ruleSeeds) {
+    for (const rule of seeds.ruleSeeds) {
       addChunk({
         sourceType: "rule",
         seedPack: "rules",
@@ -205,15 +253,20 @@ function ingestRules(): void {
         metadata: { ruleCode: rule.code, ruleType: rule.type, riskLevel: rule.severity },
       });
     }
-    console.log(`[SeedIngest] Loaded ${ruleSeeds.length} rule seeds`);
+    console.log(`[SeedIngest] Loaded ${seeds.ruleSeeds.length} rule seeds`);
   } catch (err) {
-    console.warn("[SeedIngest] Could not load rule seeds:", (err as any)?.message);
+    console.warn('[SeedIngest] Could not load rule seeds:', (err as Error)?.message);
   }
 }
 
 function ingestPrompts(): void {
+  const seeds = loadSeedsModule();
+  if (!seeds?.promptPolicySeeds?.length) {
+    console.warn('[SeedIngest] Could not load prompt seeds');
+    return;
+  }
   try {
-    for (const prompt of promptPolicySeeds) {
+    for (const prompt of seeds.promptPolicySeeds) {
       addChunk({
         sourceType: "prompt",
         seedPack: "prompts",
@@ -221,9 +274,9 @@ function ingestPrompts(): void {
         metadata: { promptCode: prompt.code, category: prompt.type },
       });
     }
-    console.log(`[SeedIngest] Loaded ${promptPolicySeeds.length} prompt seeds`);
+    console.log(`[SeedIngest] Loaded ${seeds.promptPolicySeeds.length} prompt seeds`);
   } catch (err) {
-    console.warn("[SeedIngest] Could not load prompt seeds:", (err as any)?.message);
+    console.warn('[SeedIngest] Could not load prompt seeds:', (err as Error)?.message);
   }
 }
 

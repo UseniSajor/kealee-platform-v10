@@ -39,6 +39,7 @@ export const V30_FEATURE_OPTIONS = [
   'Estimate',
   'Permits',
   'Videos',
+  'Marketing',
   'Support',
   'CADExport',
 ] as const

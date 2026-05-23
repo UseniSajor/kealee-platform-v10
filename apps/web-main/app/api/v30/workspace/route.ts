@@ -90,6 +90,7 @@ export async function GET(req: NextRequest) {
     v30LotContext: formData.v30LotContext,
     v30FloorplanDeliverables: deliverables,
     v30LandscapePremiumPlus: landscapePkg,
+    v30MarketingKit: formData.v30MarketingKit,
     ...ws,
   })
 }

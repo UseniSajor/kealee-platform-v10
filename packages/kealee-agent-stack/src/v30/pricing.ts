@@ -33,6 +33,7 @@ export const DEFAULT_V30_PRICING_FORMULA: V30PricingFormulaConfig = {
     Videos: 400,
     Support: 50,
     CADExport: 149,
+    Marketing: 85,
   },
   floorplanScopeCosts: {
     room: 80,

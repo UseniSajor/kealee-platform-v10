@@ -18,6 +18,7 @@ export const V30_WIRED_BOT_CONFIG: Record<
   video: { timeoutSeconds: 15, cacheEphemeral: false, maxTokens: 2048 },
   contractor: { timeoutSeconds: 20, cacheEphemeral: true, maxTokens: 2048 },
   sales: { timeoutSeconds: 10, cacheEphemeral: false, maxTokens: 2048 },
+  marketing: { timeoutSeconds: 25, cacheEphemeral: true, maxTokens: 4096 },
   support: { timeoutSeconds: 15, cacheEphemeral: false, maxTokens: 2048 },
   project: { timeoutSeconds: 5, cacheEphemeral: false, maxTokens: 2048 },
 }

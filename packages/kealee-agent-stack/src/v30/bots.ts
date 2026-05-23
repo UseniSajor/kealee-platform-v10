@@ -11,7 +11,7 @@ export interface V30BotDefinition {
   estimatedCostUsd: number
 }
 
-/** KeaBot v3.0 registry — 10 post-payment bots + IntakeBot. */
+/** KeaBot v3.0 registry — 11 post-payment parallel bots + IntakeBot. */
 export const V30_BOT_REGISTRY: Record<V30BotType, V30BotDefinition> = {
   intake: {
     type: 'intake',
@@ -94,6 +94,15 @@ export const V30_BOT_REGISTRY: Record<V30BotType, V30BotDefinition> = {
     parallelGroup: 'post-payment-aux',
     estimatedCostUsd: 0.01,
   },
+  marketing: {
+    type: 'marketing',
+    displayName: 'MarketingBot',
+    description: 'Social posts, email copy, and share kit for the customer project',
+    defaultModel: 'claude-sonnet-4-6',
+    timeoutSeconds: V30_WIRED_BOT_CONFIG.marketing.timeoutSeconds,
+    parallelGroup: 'post-payment-aux',
+    estimatedCostUsd: 0.03,
+  },
   support: {
     type: 'support',
     displayName: 'SupportBot',
@@ -127,6 +136,7 @@ export const V30_PARALLEL_BOT_TYPES: V30BotType[] = [
   'video',
   'contractor',
   'sales',
+  'marketing',
   'project',
 ]
 

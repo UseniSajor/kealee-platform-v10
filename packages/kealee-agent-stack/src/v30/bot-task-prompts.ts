@@ -15,6 +15,7 @@ export function buildV30BotUserPrompt(botType: V30BotType, inputData: Record<str
     video: `Produce VideoBot output: prompts for architectural walkthrough video (Sora/Veo/Kling), shot list, durations. ${jsonOnly}\n\n${ctx}`,
     contractor: `Produce ContractorBot output: ranked contractor recommendations with match scores and rationale. ${jsonOnly}\n\n${ctx}`,
     sales: `Produce SalesBot output: common objections[], responses[], upsell opportunities[] for this customer profile. ${jsonOnly}\n\n${ctx}`,
+    marketing: `Produce MarketingBot output: headline, elevatorPitch, socialPosts[], emailSequence[], listingCopy, contractorOutreach, compliance, opsHandoff for sharing this project's design package. ${jsonOnly}\n\n${ctx}`,
     support: `Produce SupportBot output: faq[], nextSteps[], escalationTriggers[] for this customer. ${jsonOnly}\n\n${ctx}`,
     project: `Produce ProjectBot output: currentStageRecommendation, nextActions[], blockers[], workspace stage updates. ${jsonOnly}\n\n${ctx}`,
   }

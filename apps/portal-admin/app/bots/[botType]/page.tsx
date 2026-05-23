@@ -1,7 +1,7 @@
 import { BotPromptEditor } from './BotPromptEditor'
 
 const TYPES = new Set([
-  'intake', 'design', 'estimate', 'zoning', 'floorplan', 'permit', 'video', 'contractor', 'sales', 'support', 'project',
+  'intake', 'design', 'estimate', 'zoning', 'floorplan', 'permit', 'video', 'contractor', 'sales', 'marketing', 'support', 'project',
 ])
 
 export default async function BotPromptPage({ params }: { params: Promise<{ botType: string }> }) {

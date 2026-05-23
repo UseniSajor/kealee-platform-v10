@@ -3,6 +3,7 @@
 /**
  * Concept intake queue loader — queries Supabase public_intake_leads directly.
  * Maps the real schema to the shape expected by IntakeQueue / IntakeDetail.
+ * Supports v20 conceptOutput and v30 v30ConceptOutput / v30 sync.
  */
 
 import { createClient } from '@supabase/supabase-js'
@@ -25,11 +26,27 @@ export interface ConceptQueueResult {
   total: number
 }
 
+function getConceptOutput(fd: Record<string, unknown>): Record<string, unknown> | null {
+  const raw = fd.conceptOutput ?? fd.v30ConceptOutput
+  if (raw && typeof raw === 'object' && !Array.isArray(raw)) {
+    return raw as Record<string, unknown>
+  }
+  return null
+}
+
+function isV30Intake(fd: Record<string, unknown>): boolean {
+  return Boolean(fd.v30 || fd.v30Quote || fd.v30ProjectId)
+}
+
 // ── Status mapping ────────────────────────────────────────────────────────────
 
-function deliveryStatus(status: string): string {
-  if (status === 'concept_ready' || status === 'paid') return 'ready'
-  if (status === 'processing')                          return 'generating'
+function deliveryStatus(status: string, fd: Record<string, unknown>): string {
+  const co = getConceptOutput(fd)
+  if (status === 'concept_ready' && co) return 'ready'
+  if (status === 'paid' && co) return 'ready'
+  if (status === 'processing') return 'generating'
+  if (status === 'paid' && !co) return 'generating'
+  if (status === 'failed') return 'failed'
   return 'pending'
 }
 
@@ -54,26 +71,27 @@ export async function loadConceptQueue(params?: {
       .order('created_at', { ascending: false })
       .limit(params?.limit ?? 50)
 
-    // Filter by mapped status if requested
-    if (params?.deliveryStatus === 'ready') {
-      query = query.in('status', ['concept_ready', 'paid'])
-    } else if (params?.deliveryStatus === 'generating') {
-      query = query.eq('status', 'processing')
+    if (params?.deliveryStatus === 'generating') {
+      query = query.in('status', ['processing', 'paid'])
     } else if (params?.deliveryStatus === 'pending') {
       query = query.eq('status', 'new')
+    } else if (params?.deliveryStatus === 'ready') {
+      query = query.in('status', ['concept_ready', 'paid'])
     }
 
     const { data, error } = await query
     if (error || !data) return { orders: [], total: 0 }
 
-    const orders: ConceptQueueItem[] = data.map(row => {
+    let orders: ConceptQueueItem[] = data.map(row => {
       const fd  = (row.form_data as Record<string, unknown> | null) ?? {}
+      const co  = getConceptOutput(fd)
       const tier = typeof fd.tier === 'number' ? fd.tier : 1
+      const mapped = deliveryStatus(row.status, fd)
       return {
         id:            row.id,
         packageName:   (row.project_path ?? 'unknown').replace(/_/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase()),
         packageTier:   row.project_path ?? 'unknown',
-        deliveryStatus: deliveryStatus(row.status),
+        deliveryStatus: mapped,
         status:        row.status,
         createdAt:     row.created_at,
         user: {
@@ -85,17 +103,24 @@ export async function loadConceptQueue(params?: {
             projectAddress: (row as { project_address?: string }).project_address ?? '',
             budgetRange:    (row as { budget_range?: string }).budget_range ?? '',
             tier,
+            isV30: isV30Intake(fd),
           },
           leadScore: {
             tier: tier >= 3 ? 'hot' : tier >= 2 ? 'warm' : 'cold',
           },
           outputs: {
-            designBrief:        (fd.conceptOutput as Record<string, unknown>)?.designBrief ?? null,
-            permitPathSummary:  (fd.conceptOutput as Record<string, unknown>)?.permitPathSummary ?? null,
+            designBrief:        co?.designBrief ?? null,
+            permitPathSummary:  co?.permitPathSummary ?? null,
           },
         },
       }
     })
+
+    if (params?.deliveryStatus === 'ready') {
+      orders = orders.filter(o => o.deliveryStatus === 'ready')
+    } else if (params?.deliveryStatus === 'generating') {
+      orders = orders.filter(o => o.deliveryStatus === 'generating')
+    }
 
     return { orders, total: orders.length }
   } catch {
@@ -117,14 +142,14 @@ export async function loadConceptOrderDetail(id: string): Promise<ConceptQueueIt
     if (error || !data) return null
 
     const fd  = (data.form_data as Record<string, unknown> | null) ?? {}
-    const co  = (fd.conceptOutput as Record<string, unknown> | null) ?? {}
+    const co  = getConceptOutput(fd) ?? {}
     const tier = typeof fd.tier === 'number' ? fd.tier : 1
 
     return {
       id:            data.id,
       packageName:   (data.project_path ?? 'unknown').replace(/_/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase()),
       packageTier:   data.project_path ?? 'unknown',
-      deliveryStatus: deliveryStatus(data.status),
+      deliveryStatus: deliveryStatus(data.status, fd),
       status:        data.status,
       createdAt:     data.created_at,
       user: {
@@ -138,6 +163,10 @@ export async function loadConceptOrderDetail(id: string): Promise<ConceptQueueIt
           jurisdiction:   (fd.jurisdiction as string) ?? '',
           photos:         Array.isArray(co.renderUrls) ? co.renderUrls : [],
           tier,
+          isV30: isV30Intake(fd),
+          v30WorkspaceUrl: isV30Intake(fd)
+            ? `${(process.env.NEXT_PUBLIC_WEB_MAIN_URL ?? 'https://kealee.com').replace(/\/$/, '')}/workspace/${data.id}`
+            : undefined,
         },
         leadScore: {
           tier: tier >= 3 ? 'hot' : tier >= 2 ? 'warm' : 'cold',
@@ -147,13 +176,15 @@ export async function loadConceptOrderDetail(id: string): Promise<ConceptQueueIt
             ? { summary: typeof co.designBrief === 'string' ? co.designBrief : JSON.stringify(co.designBrief) }
             : null,
           permitPathSummary: co.permitPathSummary
-            ? { notes: Array.isArray((co.permitPathSummary as any).keyRequirements)
-                ? (co.permitPathSummary as any).keyRequirements
+            ? { notes: Array.isArray((co.permitPathSummary as { keyRequirements?: string[] }).keyRequirements)
+                ? (co.permitPathSummary as { keyRequirements: string[] }).keyRequirements
                 : [typeof co.permitPathSummary === 'string' ? co.permitPathSummary : JSON.stringify(co.permitPathSummary)]
               }
             : null,
           exteriorConceptImages:  Array.isArray(co.renderUrls) ? (co.renderUrls as string[]).slice(0, 3) : [],
           landscapeConceptImages: Array.isArray(co.renderUrls) ? (co.renderUrls as string[]).slice(3, 6) : [],
+          v30Landscape: fd.v30LandscapePremiumPlus ?? null,
+          v30Floorplan: fd.v30FloorplanDeliverables ?? null,
         },
       },
     }

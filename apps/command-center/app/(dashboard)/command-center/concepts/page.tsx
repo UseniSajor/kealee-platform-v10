@@ -9,6 +9,7 @@ const STATUS_LABEL: Record<string, string> = {
   generating: "GENERATING_VISUALS",
   ready:      "READY_FOR_PM_REVIEW",
   delivered:  "DELIVERED",
+  failed:     "FAILED",
   new:        "COLLECTING_INFO",
   processing: "GENERATING_VISUALS",
   concept_ready: "READY_FOR_PM_REVIEW",
@@ -25,7 +26,12 @@ export default async function ConceptsPage() {
         address:
           (o.metadata as any)?.intakeData?.projectAddress ?? "Address not provided",
         projectType: o.packageTier,
-        status: STATUS_LABEL[o.deliveryStatus] ?? o.deliveryStatus.toUpperCase(),
+        status: (() => {
+          const base = STATUS_LABEL[o.deliveryStatus] ?? o.deliveryStatus.toUpperCase();
+          const isV30 = (o.metadata as { intakeData?: { isV30?: boolean } })?.intakeData?.isV30;
+          if (o.deliveryStatus === "generating" && isV30) return "GENERATING_V30";
+          return base;
+        })(),
         complexity:
           (o.metadata as any)?.leadScore?.tier === "hot"
             ? "high"

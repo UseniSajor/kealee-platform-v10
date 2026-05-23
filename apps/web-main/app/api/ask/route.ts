@@ -58,6 +58,8 @@ Key distinctions:
 - Permit-ready plans require a licensed architect (Design Services)
 - Permit filing requires existing plans
 - Structural work, additions, and electrical/mechanical changes almost always need a permit
+- On the concept intake form: renderings are illustrative; before/after comparisons need photos of existing conditions; without photos, concepts are forward-looking only
+- Concept packages include AI renders, cost band, and scope brief — not stamped construction drawings
 
 Respond conversationally in plain text. No JSON, no markdown headers or bullets. Keep answers concise (2–4 sentences). Always end with a clear next step or a helpful follow-up question.`
 

@@ -12,6 +12,7 @@ export type V30BotType =
   | 'video'
   | 'contractor'
   | 'sales'
+  | 'marketing'
   | 'support'
   | 'project'
 

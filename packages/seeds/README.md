@@ -18,6 +18,11 @@ KeaCore seed blueprint — the single source of truth for all platform configura
 ## Commands
 
 ```bash
+# Compile dist/ (required before API boot / SeedIngest)
+pnpm --filter @kealee/seeds build
+# or from repo root:
+pnpm seeds:build
+
 # Validate all seed packs with Zod (throws on error)
 pnpm --filter @kealee/seeds validate
 
