@@ -9,6 +9,8 @@ import {
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
+type UIStatus = 'ready' | 'generating' | 'failed' | 'pending'
+
 interface Deliverable {
   id:               string
   clientName:       string | null
@@ -19,6 +21,9 @@ interface Deliverable {
   address:          string | null
   budgetRange:      string | null
   status:           string   // 'paid' | 'concept_ready' | 'failed' | ...
+  uiStatus?:        UIStatus
+  isV30?:           boolean
+  v30WorkspaceUrl?: string | null
   createdAt:        string
   updatedAt:        string
   conceptPackageId: string | null
@@ -32,16 +37,11 @@ interface Deliverable {
 
 // ── Status helpers ─────────────────────────────────────────────────────────────
 
-type UIStatus = 'ready' | 'generating' | 'failed' | 'pending'
-
-function mapStatus(raw: string): UIStatus {
-  if (raw === 'concept_ready') return 'ready'
-  if (raw === 'failed')        return 'failed'
-  if (raw === 'paid')          return 'generating'  // paid but not yet generated
-  return 'pending'
+function resolveUiStatus(d: Deliverable): UIStatus {
+  return d.uiStatus ?? (d.status === 'concept_ready' ? 'ready' : d.status === 'paid' ? 'generating' : d.status === 'failed' ? 'failed' : 'pending')
 }
 
-function StatusBadge({ status }: { status: UIStatus }) {
+function StatusBadge({ status, isV30 }: { status: UIStatus; isV30?: boolean }) {
   switch (status) {
     case 'ready':
       return (
@@ -54,7 +54,7 @@ function StatusBadge({ status }: { status: UIStatus }) {
       return (
         <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold"
           style={{ backgroundColor: 'rgba(42,191,191,0.1)', color: '#2ABFBF' }}>
-          <Loader2 className="h-3 w-3 animate-spin" /> Generating
+          <Loader2 className="h-3 w-3 animate-spin" /> {isV30 ? 'Generating (v30)' : 'Generating'}
         </span>
       )
     case 'failed':
@@ -77,7 +77,7 @@ function StatusBadge({ status }: { status: UIStatus }) {
 // ── Card ──────────────────────────────────────────────────────────────────────
 
 function DeliverableCard({ d }: { d: Deliverable }) {
-  const uiStatus = mapStatus(d.status)
+  const uiStatus = resolveUiStatus(d)
   const ACCENT   = '#E8793A'
   const dateStr  = new Date(d.updatedAt).toLocaleDateString('en-US', {
     year: 'numeric', month: 'short', day: 'numeric',
@@ -126,7 +126,7 @@ function DeliverableCard({ d }: { d: Deliverable }) {
               )}
             </div>
           </div>
-          <StatusBadge status={uiStatus} />
+          <StatusBadge status={uiStatus} isV30={d.isV30} />
         </div>
 
         {/* Actions */}
@@ -156,11 +156,25 @@ function DeliverableCard({ d }: { d: Deliverable }) {
         )}
 
         {uiStatus === 'generating' && (
-          <div className="mt-3 flex items-center gap-2">
-            <Loader2 className="h-3.5 w-3.5 animate-spin" style={{ color: '#2ABFBF' }} />
-            <p className="text-xs text-gray-400">
-              Your concept package is being generated — usually ready within a few minutes.
-            </p>
+          <div className="mt-3 space-y-2">
+            <div className="flex items-center gap-2">
+              <Loader2 className="h-3.5 w-3.5 animate-spin" style={{ color: '#2ABFBF' }} />
+              <p className="text-xs text-gray-400">
+                {d.isV30
+                  ? 'Kealee v30 bots are running (design, estimate, permits, floorplan).'
+                  : 'Your concept package is being generated — usually ready within a few minutes.'}
+              </p>
+            </div>
+            {d.isV30 && d.v30WorkspaceUrl && (
+              <a
+                href={d.v30WorkspaceUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs font-semibold text-violet-600 hover:underline"
+              >
+                Track progress in v30 workspace →
+              </a>
+            )}
           </div>
         )}
 
@@ -210,15 +224,15 @@ export default function DeliverablesPage() {
       .finally(() => setLoading(false))
   }, [])
 
-  const ready      = deliverables.filter(d => mapStatus(d.status) === 'ready')
-  const inProgress = deliverables.filter(d => ['generating', 'pending'].includes(mapStatus(d.status)))
-  const failed     = deliverables.filter(d => mapStatus(d.status) === 'failed')
+  const ready      = deliverables.filter(d => resolveUiStatus(d) === 'ready')
+  const inProgress = deliverables.filter(d => ['generating', 'pending'].includes(resolveUiStatus(d)))
+  const failed     = deliverables.filter(d => resolveUiStatus(d) === 'failed')
 
   return (
     <div className="mx-auto max-w-4xl">
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-2xl font-bold" style={{ color: '#1A2B4A' }}>Deliverables</h1>
+        <h1 className="text-2xl font-bold" style={{ color: '#1A2B4A' }}>Concept Packages</h1>
         <p className="mt-1 text-sm text-gray-500">
           All concept packages, PDFs, and design outputs from your orders.
         </p>

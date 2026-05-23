@@ -5,6 +5,7 @@
  */
 
 import { Anthropic } from '@anthropic-ai/sdk'
+import { archiveReplicateOutputsFireAndForget } from '@kealee/storage'
 
 const REPLICATE_MODEL = 'black-forest-labs/flux-1.1-pro-ultra'
 const REPLICATE_API_BASE = 'https://api.replicate.com/v1'
@@ -219,7 +220,16 @@ export async function generateConceptImages(
       }
 
       if (prediction.status === 'succeeded' && prediction.output) {
-        const url = Array.isArray(prediction.output) ? prediction.output[0] : prediction.output
+        const outputs = Array.isArray(prediction.output) ? prediction.output : [prediction.output]
+        const url = outputs[0]
+        archiveReplicateOutputsFireAndForget({
+          predictionId: prediction.id,
+          source: 'api-concept-image-generator',
+          mediaKind: 'image',
+          outputUrls: outputs,
+          model: REPLICATE_MODEL,
+          prompt: job.prompt,
+        })
         images.push({
           url,
           label: job.label,

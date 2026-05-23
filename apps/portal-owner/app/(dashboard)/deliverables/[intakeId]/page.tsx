@@ -10,6 +10,17 @@ import {
   ChevronDown, ChevronUp, Loader2, Video, ShieldCheck,
   AlertTriangle, MapPin, TrendingUp, Lock, Layers, Cpu, ImageIcon, FileText,
 } from 'lucide-react'
+import {
+  isV30IntakeFormData,
+  parseV30FloorplanDeliverables,
+  parseV30LandscapePackage,
+  parseV30MarketingKit,
+  v30WorkspaceUrl,
+} from '@/lib/concept-output'
+import { V30LandscapeCadPanel } from '@/components/v30/V30LandscapeCadPanel'
+import { V30MarketingKitPanel } from '@/components/v30/V30MarketingKitPanel'
+import { V30WorkspaceEmbed } from '@/components/v30/V30WorkspaceEmbed'
+import { ConceptPackageNav } from '@/components/concept/ConceptPackageNav'
 
 // ─── Render stubs ─────────────────────────────────────────────────────────────
 
@@ -325,6 +336,13 @@ interface ConceptData {
   /** Construction cost estimate range from concept engine scope */
   constructionCostMin?: number
   constructionCostMax?: number
+  isV30?: boolean
+  v30WorkspaceUrl?: string
+  projectPath?: string
+  v30Landscape?: ReturnType<typeof parseV30LandscapePackage>
+  v30Floorplan?: ReturnType<typeof parseV30FloorplanDeliverables>
+  v30LotContext?: { satelliteImageUrl?: string; googleEarthHint?: string } | null
+  v30MarketingKit?: Record<string, unknown> | null
 }
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
@@ -516,13 +534,18 @@ export default function ConceptDeliverablePage() {
       if (!intake) return false
 
       const formData = (intake.form_data as Record<string, unknown>) ?? {}
-      if (!formData.conceptOutput || intake.status !== 'concept_ready') return false
+      const conceptRaw = formData.conceptOutput ?? formData.v30ConceptOutput
+      const ready =
+        conceptRaw &&
+        (intake.status === 'concept_ready' ||
+          (formData.v30 && intake.status === 'processing'))
+      if (!ready) return false
 
       // Persist catalog-level permit requirement (set at Stripe purchase time)
       const pr = formData.permitRequired as 'always' | 'sometimes' | 'rarely' | undefined
       setCatalogPermitRequired(pr ?? null)
 
-      const co = formData.conceptOutput as Record<string, unknown>
+      const co = conceptRaw as Record<string, unknown>
       const projectPath = (intake.project_path as string) ?? 'default'
       const tier = typeof formData.tier === 'number' ? formData.tier : 1
 
@@ -670,7 +693,16 @@ export default function ConceptDeliverablePage() {
         projectType:     (intake.project_path as string)?.replace(/_/g, ' ') ?? 'Concept Package',
         packageLabel:    pkgDef.label,
         packageIncludes: pkgDef.includes,
-        tierName:        TIER_NAMES[tier] ?? 'Starter Concept',
+        tierName:        isV30IntakeFormData(formData)
+          ? tier === 3 ? 'Premium+' : tier === 2 ? 'Premium' : 'Basic'
+          : TIER_NAMES[tier] ?? 'Starter Concept',
+        isV30:           isV30IntakeFormData(formData),
+        v30WorkspaceUrl: isV30IntakeFormData(formData) ? v30WorkspaceUrl(intakeId) : undefined,
+        projectPath,
+        v30Landscape:    parseV30LandscapePackage(formData),
+        v30Floorplan:    parseV30FloorplanDeliverables(formData),
+        v30LotContext:   (formData.v30LotContext as ConceptData['v30LotContext']) ?? null,
+        v30MarketingKit: parseV30MarketingKit(formData),
         floorplanSvg,
         scope:           scopeDescription,
         budget:          typeof intake.budget_range === 'number' ? intake.budget_range : 0,
@@ -807,17 +839,41 @@ export default function ConceptDeliverablePage() {
   const displayedBOM = showFullBOM ? data.billOfMaterials : data.billOfMaterials.slice(0, 4)
   const totalBOM     = data.billOfMaterials.reduce((s, r) => s + r.estimatedCost, 0)
 
+  const hasNarrative =
+    Boolean(data.narrative?.projectSummary) ||
+    (data.narrative?.rooms?.length ?? 0) > 0
+  const visibleSectionIds = [
+    'package-overview',
+    ...(data.floorplanSvg ? ['floor-plan'] : []),
+    ...(hasNarrative ? ['narrative'] : []),
+    ...(data.billOfMaterials.length > 0 ? ['scope-bom'] : []),
+    ...(data.permitScope || data.zoningNotes ? ['permit'] : []),
+    ...(data.renderUrls.length > 0 || data.videoUrl ? ['visuals'] : []),
+    ...(data.designConcept?.style || (data.designConcept?.keyFeatures?.length ?? 0) > 0
+      ? ['design-concept']
+      : []),
+    ...(data.mepSystem?.electrical || data.mepSystem?.plumbing ? ['mep'] : []),
+    ...(data.isV30 && data.v30Floorplan ? ['v30-landscape'] : []),
+    ...(data.v30MarketingKit ? ['v30-marketing'] : []),
+    'next-steps',
+  ]
+
   return (
-    <div className="mx-auto max-w-4xl">
+    <div className="mx-auto max-w-6xl">
+
+      {data.isV30 && <V30WorkspaceEmbed intakeId={intakeId} />}
 
       {/* ── Breadcrumb ──────────────────────────────────────────────────── */}
       <div className="mb-5 flex items-center gap-2 text-sm text-gray-400">
         <Link href="/deliverables" className="hover:text-gray-600 transition-colors flex items-center gap-1">
-          <ArrowLeft className="h-3.5 w-3.5" /> Deliverables
+          <ArrowLeft className="h-3.5 w-3.5" /> Concept Packages
         </Link>
         <span>/</span>
         <span className="text-gray-700 font-medium truncate">{data.projectType}</span>
       </div>
+
+      <div className="xl:grid xl:grid-cols-[minmax(0,1fr)_15rem] xl:gap-8 xl:items-start">
+        <div className="min-w-0">
 
       {/* ── Header ──────────────────────────────────────────────────────── */}
       <div className="rounded-2xl bg-white overflow-hidden mb-6"
@@ -915,6 +971,24 @@ export default function ConceptDeliverablePage() {
           </div>
         </section>
 
+        {data.v30MarketingKit && (
+          <div id="v30-marketing" className="scroll-mt-24">
+            <V30MarketingKitPanel kit={data.v30MarketingKit} />
+          </div>
+        )}
+
+        {data.isV30 && (
+          <div id="v30-landscape" className="scroll-mt-24">
+          <V30LandscapeCadPanel
+            intakeId={intakeId}
+            projectPath={data.projectPath ?? 'kitchen_remodel'}
+            tier={data.tier}
+            landscape={data.v30Landscape ?? null}
+            floorplan={data.v30Floorplan ?? null}
+            lotContext={data.v30LotContext}
+          />
+        )}
+
         {/* ── Floor Plan ───────────────────────────────────────────────────── */}
         {data.floorplanSvg && (
           <section className="rounded-2xl bg-white overflow-hidden"
@@ -937,7 +1011,7 @@ export default function ConceptDeliverablePage() {
 
         {/* ── Concept Renderings ───────────────────────────────────────────── */}
         {data.renderUrls.length > 0 && (
-          <section className="rounded-2xl bg-white overflow-hidden"
+          <section id="visuals" className="scroll-mt-24 rounded-2xl bg-white overflow-hidden"
             style={{ boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.06)' }}>
             <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -978,7 +1052,9 @@ export default function ConceptDeliverablePage() {
 
         {/* ── Video (tier 2+): playable when API stored videoUrl ───────────── */}
         {data.tier >= 2 && data.videoUrl && (
-          <section className="rounded-2xl border border-gray-200 bg-white overflow-hidden p-6"
+          <section
+            id={data.renderUrls.length === 0 ? 'visuals' : undefined}
+            className={`rounded-2xl border border-gray-200 bg-white overflow-hidden p-6 ${data.renderUrls.length === 0 ? 'scroll-mt-24' : ''}`}
             style={{ boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.06)' }}>
             <div className="flex items-center gap-2 mb-4">
               <span className="h-2 w-2 rounded-full" style={{ backgroundColor: '#E8724B' }} />
@@ -1040,7 +1116,7 @@ export default function ConceptDeliverablePage() {
 
         {/* ── Design Narrative (v2 concept engine) ─────────────────────────── */}
         {(data.narrative.projectSummary || data.narrative.designIntent || data.narrative.rooms.length > 0) && (
-          <section className="rounded-2xl border border-gray-200 bg-white overflow-hidden"
+          <section id="narrative" className="scroll-mt-24 rounded-2xl border border-gray-200 bg-white overflow-hidden"
             style={{ boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.06)' }}>
             <div className="px-6 py-4 border-b border-gray-100 flex items-center gap-2">
               <span className="h-2 w-2 rounded-full" style={{ backgroundColor: '#2ABFBF' }} />
@@ -1110,7 +1186,7 @@ export default function ConceptDeliverablePage() {
 
         {/* ── Design Concept ───────────────────────────────────────────────── */}
         {data.designConcept.keyFeatures.length > 0 && (
-          <section className="rounded-2xl border border-gray-200 bg-white overflow-hidden"
+          <section id="design-concept" className="scroll-mt-24 rounded-2xl border border-gray-200 bg-white overflow-hidden"
             style={{ boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.06)' }}>
             <div className="px-6 py-4 border-b border-gray-100 flex items-center gap-2">
               <span className="h-2 w-2 rounded-full" style={{ backgroundColor: '#E8793A' }} />
@@ -1154,7 +1230,7 @@ export default function ConceptDeliverablePage() {
 
         {/* ── MEP Systems ─────────────────────────────────────────────────── */}
         {(data.mepSystem.electrical || data.mepSystem.plumbing || data.mepSystem.lighting) && (
-          <section className="rounded-2xl border border-gray-200 bg-white overflow-hidden"
+          <section id="mep" className="scroll-mt-24 rounded-2xl border border-gray-200 bg-white overflow-hidden"
             style={{ boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.06)' }}>
             <div className="px-6 py-4 border-b border-gray-100 flex items-center gap-2">
               <span className="h-2 w-2 rounded-full" style={{ backgroundColor: '#7C3AED' }} />
@@ -1171,11 +1247,11 @@ export default function ConceptDeliverablePage() {
 
         {/* ── Bill of Materials ────────────────────────────────────────────── */}
         {data.billOfMaterials.length > 0 && (
-          <section className="rounded-2xl border border-gray-200 bg-white overflow-hidden"
+          <section id="scope-bom" className="scroll-mt-24 rounded-2xl border border-gray-200 bg-white overflow-hidden"
             style={{ boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.06)' }}>
             <div className="px-6 py-4 border-b border-gray-100 flex items-center gap-2">
               <span className="h-2 w-2 rounded-full" style={{ backgroundColor: '#38A169' }} />
-              <h2 className="text-base font-bold" style={{ color: '#1A2B4A' }}>Bill of Materials</h2>
+              <h2 className="text-base font-bold" style={{ color: '#1A2B4A' }}>Scope &amp; Bill of Materials</h2>
               <span className="ml-auto text-xs text-gray-400">{data.billOfMaterials.length} line items</span>
             </div>
             <div className="overflow-x-auto">
@@ -1227,7 +1303,7 @@ export default function ConceptDeliverablePage() {
 
         {/* ── Permit & Zoning ─────────────────────────────────────────────── */}
         {(data.permitScope || data.zoningNotes) && (
-          <section className="rounded-2xl border border-gray-200 bg-white overflow-hidden"
+          <section id="permit" className="scroll-mt-24 rounded-2xl border border-gray-200 bg-white overflow-hidden"
             style={{ boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.06)' }}>
             <div className="px-6 py-4 border-b border-gray-100 flex items-center gap-2">
               <span className="h-2 w-2 rounded-full" style={{ backgroundColor: '#6B46C1' }} />
@@ -1369,7 +1445,7 @@ export default function ConceptDeliverablePage() {
         )}
 
         {/* ── Continue Your Project ────────────────────────────────────────── */}
-        <section className="rounded-2xl border border-gray-200 bg-white p-6"
+        <section id="next-steps" className="scroll-mt-24 rounded-2xl border border-gray-200 bg-white p-6"
           style={{ boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.06)' }}>
           <h2 className="text-base font-bold mb-1" style={{ color: '#1A2B4A' }}>Your Next Step</h2>
           <p className="text-xs text-gray-400 mb-4">Connect with a Kealee design professional to move from concept to construction-ready plans.</p>
@@ -1490,6 +1566,16 @@ export default function ConceptDeliverablePage() {
           )}
         </div>
 
+      </div>
+
+        <aside className="hidden xl:block">
+          <ConceptPackageNav
+            visibleSectionIds={visibleSectionIds}
+            intakeId={intakeId}
+            pdfUrl={data.pdfUrl}
+            packageLabel={data.packageLabel}
+          />
+        </aside>
       </div>
     </div>
   )

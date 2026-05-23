@@ -10,8 +10,10 @@
   },
   "dependencies": {
     "@kealee/auth": "workspace:*",
+    "@kealee/concept-engine": "workspace:*",
     "@kealee/core-hooks": "workspace:*",
     "@kealee/shared": "workspace:*",
+    "@kealee/storage": "workspace:*",
     "@kealee/ui": "workspace:*",
     "resend": "^3.0.0"
   }

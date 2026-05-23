@@ -31,6 +31,7 @@ import {
   pickVideoProvider,
   downloadSoraVideo,
 } from '@/lib/ai-video'
+import { archiveReplicateOutputsFireAndForget } from '@/lib/replicate-archive'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -238,6 +239,17 @@ export async function GET(req: NextRequest) {
 
       if (next.status === 'completed') {
         next = { ...next, outputUrl: publicUrl, completedAt: new Date().toISOString() }
+
+        if (state.provider === 'kling-2.5' && live.outputUrl) {
+          archiveReplicateOutputsFireAndForget({
+            predictionId: state.jobId,
+            source: 'concept-video-kling',
+            mediaKind: 'video',
+            outputUrls: [live.outputUrl],
+            model: state.model,
+            context: { intakeId },
+          })
+        }
       }
     }
 

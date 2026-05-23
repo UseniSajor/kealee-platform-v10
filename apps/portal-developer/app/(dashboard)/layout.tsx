@@ -6,9 +6,10 @@ import { useState } from 'react'
 import {
   Map, FlaskConical, Landmark, LayoutGrid,
   FileBarChart, LogOut, Building, Briefcase,
-  Bot, Bell, Menu, X, ChevronRight,
+  Bell, Menu, ChevronRight,
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
+import { PortalPageWithAskRail } from '@kealee/ui'
 
 const NAV_ITEMS = [
   { href: '/pipeline',    label: 'Land Pipeline',  icon: Map,          group: 'Acquisitions' },
@@ -16,7 +17,7 @@ const NAV_ITEMS = [
   { href: '/capital',     label: 'Capital Stack',  icon: Landmark,     group: 'Finance' },
   { href: '/portfolio',   label: 'Portfolio',      icon: LayoutGrid,   group: 'Finance' },
   { href: '/reports',     label: 'Reports',        icon: FileBarChart, group: 'Finance' },
-  { href: '/services',    label: 'Services',       icon: Briefcase,    group: 'Tools' },
+  { href: '/services',    label: 'Estimate & Permits', icon: Briefcase, group: 'Tools' },
 ]
 
 // Developer accent: indigo/violet
@@ -25,7 +26,6 @@ const SIDEBAR = '#1E1B4B'   // indigo-950
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
-  const [showBot, setShowBot]       = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
 
   const handleSignOut = async () => {
@@ -86,17 +86,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </div>
           </div>
         ))}
-      </div>
-
-      {/* KeaBot */}
-      <div className="px-3 pb-3">
-        <button onClick={() => { setShowBot(!showBot); setMobileOpen(false) }}
-          className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all"
-          style={{ backgroundColor: showBot ? `${ACCENT}22` : `${ACCENT}10`, color: ACCENT }}>
-          <Bot className="h-4 w-4" />
-          <span className="flex-1 text-left">KeaBot Dev</span>
-          <span className="h-2 w-2 rounded-full" style={{ backgroundColor: '#34D399' }} />
-        </button>
       </div>
 
       {/* Sign out */}
@@ -172,45 +161,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </div>
         </div>
 
-        <main className="flex-1 overflow-auto p-4 sm:p-6 lg:p-8">{children}</main>
+        <main className="flex-1 overflow-auto p-4 sm:p-6 lg:p-8">
+          <PortalPageWithAskRail portal="developer">{children}</PortalPageWithAskRail>
+        </main>
       </div>
-
-      {/* KeaBot Chat Widget */}
-      {showBot && (
-        <div className="fixed bottom-5 right-5 z-50 w-80 overflow-hidden rounded-2xl bg-white sm:w-96"
-          style={{ boxShadow: '0 20px 60px rgba(30,27,75,0.2)', border: '1px solid rgba(0,0,0,0.08)' }}>
-          <div className="flex items-center justify-between px-4 py-3"
-            style={{ background: `linear-gradient(135deg, ${SIDEBAR}, #312E81)` }}>
-            <div className="flex items-center gap-2">
-              <Bot className="h-4 w-4" style={{ color: ACCENT }} />
-              <span className="text-sm font-semibold text-white">KeaBot Dev</span>
-              <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: '#34D399' }} />
-            </div>
-            <button onClick={() => setShowBot(false)} className="text-white/50 hover:text-white">
-              <X className="h-4 w-4" />
-            </button>
-          </div>
-          <div className="h-64 overflow-y-auto p-4">
-            <div className="mb-3 max-w-[85%] rounded-2xl rounded-tl-sm p-3 text-sm leading-relaxed"
-              style={{ backgroundColor: '#F0F0FF', color: SIDEBAR, border: `1px solid ${ACCENT}22` }}>
-              Hi! I&apos;m KeaBot Dev. I can assist with pipeline analysis, feasibility studies, capital structuring, and portfolio reporting. What do you need?
-            </div>
-          </div>
-          <div className="border-t border-slate-100 p-3">
-            <div className="flex gap-2">
-              <input type="text" placeholder="Ask about your pipeline or deals…"
-                className="flex-1 rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none"
-                onFocus={e => (e.target.style.borderColor = ACCENT)}
-                onBlur={e => (e.target.style.borderColor = '#E2E8F0')}
-              />
-              <button className="rounded-xl p-2 text-white"
-                style={{ background: 'linear-gradient(135deg, #6366F1, #4338CA)' }}>
-                <ChevronRight className="h-4 w-4" />
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   )
 }

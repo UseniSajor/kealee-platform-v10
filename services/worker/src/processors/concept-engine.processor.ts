@@ -477,7 +477,17 @@ async function generateConceptRenders(input: ConceptRenderInput): Promise<string
       }
 
       if (prediction.status === 'succeeded' && prediction.output) {
-        const url = Array.isArray(prediction.output) ? prediction.output[0] : prediction.output;
+        const outputs = Array.isArray(prediction.output) ? prediction.output : [prediction.output];
+        const url = outputs[0];
+        const { archiveReplicateOutputsFireAndForget } = await import('@kealee/storage');
+        archiveReplicateOutputsFireAndForget({
+          predictionId: prediction.id,
+          source: 'worker-concept-engine',
+          mediaKind: 'image',
+          outputUrls: outputs,
+          model: 'black-forest-labs/flux-1.1-pro-ultra',
+          context: { renderType: type, projectType: input.projectType },
+        });
         imageUrls.push(url);
         console.log(`[concept-engine] ${type} render ready: ${url}`);
       } else {

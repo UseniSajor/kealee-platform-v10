@@ -23,6 +23,12 @@ const SUGGESTED_PROMPTS: Record<string, string[]> = {
     'What is included in the permit package?',
     'Can I expedite my permit application?',
   ],
+  'concept-intake': [
+    'What photos should I upload?',
+    'Is an AI concept permit-ready?',
+    'What’s included in my concept package?',
+    'How accurate are the renderings?',
+  ],
   default: [
     'What services does Kealee offer?',
     'How does the AI concept work?',
@@ -52,9 +58,20 @@ interface Props {
   variant?: 'dark' | 'light'
   /** When true, suggestions popover opens upward (for fixed-bottom placement) */
   suggestionsUp?: boolean
+  /** Sidebar: thread + input fill parent height (concept intake right rail) */
+  layout?: 'inline' | 'sidebar'
+  /** Passed to /api/ask for intake-specific answers */
+  serviceSlug?: string
 }
 
-export function AskChatBar({ context = 'default', className = '', variant = 'dark', suggestionsUp = false }: Props) {
+export function AskChatBar({
+  context = 'default',
+  className = '',
+  variant = 'dark',
+  suggestionsUp = false,
+  layout = 'inline',
+  serviceSlug,
+}: Props) {
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -66,8 +83,10 @@ export function AskChatBar({ context = 'default', className = '', variant = 'dar
   const abortRef = useRef<AbortController | null>(null)
 
   const isDark = variant === 'dark'
+  const isSidebar = layout === 'sidebar'
   const suggestions = SUGGESTED_PROMPTS[context] ?? SUGGESTED_PROMPTS['default']
   const hasMessages = messages.length > 0
+  const askContext = serviceSlug ? `${context}:${serviceSlug}` : context
 
   // Auto-scroll thread to bottom
   useEffect(() => {
@@ -100,7 +119,7 @@ export function AskChatBar({ context = 'default', className = '', variant = 'dar
       const res = await fetch('/api/ask', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query: trimmed, context, messages: history, stream: true }),
+        body: JSON.stringify({ query: trimmed, context: askContext, messages: history, stream: true }),
         signal: abortRef.current.signal,
       })
 
@@ -133,7 +152,7 @@ export function AskChatBar({ context = 'default', className = '', variant = 'dar
       setIsLoading(false)
       setStreamingId(null)
     }
-  }, [messages, context, isLoading])
+  }, [messages, askContext, isLoading])
 
   // --- Styles depending on variant ---
   const threadBg = isDark
@@ -157,12 +176,20 @@ export function AskChatBar({ context = 'default', className = '', variant = 'dar
   const assistantTextColor = isDark ? 'text-white/90' : 'text-slate-800'
 
   return (
-    <div className={`w-full max-w-2xl mx-auto ${suggestionsUp ? 'relative' : ''} ${className}`}>
+    <div
+      className={`w-full max-w-2xl mx-auto ${
+        isSidebar ? 'flex flex-col h-full min-h-0' : suggestionsUp ? 'relative' : ''
+      } ${className}`}
+    >
       {/* Conversation thread */}
       {hasMessages && (
         <div
           ref={threadRef}
-          className="mb-3 max-h-[400px] overflow-y-auto rounded-2xl border p-4 space-y-4 scroll-smooth"
+          className={`rounded-2xl border p-4 space-y-4 scroll-smooth ${
+            isSidebar
+              ? 'flex-1 min-h-0 overflow-y-auto mb-2'
+              : 'mb-3 max-h-[400px] overflow-y-auto'
+          }`}
           style={{ backgroundColor: threadBg, borderColor: threadBorder, backdropFilter: 'blur(12px)' }}
         >
           {messages.map(msg => {
@@ -240,7 +267,7 @@ export function AskChatBar({ context = 'default', className = '', variant = 'dar
 
       {/* Input row */}
       <div
-        className="relative flex items-center rounded-2xl border-2 transition-all"
+        className={`relative flex items-center rounded-2xl border-2 transition-all ${isSidebar ? 'shrink-0' : ''}`}
         style={{
           backgroundColor: inputBg,
           borderColor: isFocused ? inputBorderFocused : inputBorderDefault,
@@ -259,7 +286,9 @@ export function AskChatBar({ context = 'default', className = '', variant = 'dar
           placeholder={
             hasMessages
               ? 'Ask a follow-up…'
-              : 'Ask anything — permits, costs, design, contractors…'
+              : context === 'concept-intake'
+                ? 'Ask about photos, deliverables, timelines…'
+                : 'Ask anything — permits, costs, design, contractors…'
           }
           className={`flex-1 bg-transparent px-5 py-3.5 text-sm outline-none ${inputTextColor} ${inputPlaceholderColor}`}
           disabled={isLoading}
@@ -283,9 +312,13 @@ export function AskChatBar({ context = 'default', className = '', variant = 'dar
       {/* Suggested prompts — only when input focused and no messages yet */}
       {isFocused && !hasMessages && (
         <div
-          className={suggestionsUp
-            ? 'absolute bottom-full mb-2 left-0 right-0 rounded-xl border p-3 z-10'
-            : 'mt-2 rounded-xl border p-3'}
+          className={
+            suggestionsUp && !isSidebar
+              ? 'absolute bottom-full mb-2 left-0 right-0 rounded-xl border p-3 z-10'
+              : isSidebar
+                ? 'mt-2 rounded-xl border p-3 shrink-0 max-h-40 overflow-y-auto'
+                : 'mt-2 rounded-xl border p-3'
+          }
           style={{
             backgroundColor: suggestionBg,
             borderColor: suggestionBorder,

@@ -16,6 +16,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
+import { archiveReplicateOutputsFireAndForget } from '@/lib/replicate-archive'
 
 export const dynamic = 'force-dynamic'
 
@@ -48,6 +49,13 @@ export async function POST(req: NextRequest) {
 
     if (renderStatus === 'COMPLETED' && Array.isArray(output)) {
       updatePayload.output_urls = output
+      archiveReplicateOutputsFireAndForget({
+        predictionId: externalJobId,
+        source: 'editor-render-webhook',
+        mediaKind: 'image',
+        outputUrls: output.filter((u: unknown) => typeof u === 'string'),
+        context: { route: '/api/editor/renders/webhook' },
+      })
     }
 
     if (renderStatus === 'FAILED' && replicateError) {

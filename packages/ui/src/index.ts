@@ -76,6 +76,17 @@ export type {
 } from './components/layout';
 
 // ========================================
+// Portal — locked ask rail (owner / contractor / developer)
+// ========================================
+export {
+  PortalAskChatBar,
+  PortalPageWithAskRail,
+  PortalServicesHub,
+  PORTAL_ASK_CONFIG,
+} from './components/portal';
+export type { PortalAskKind, PortalAskConfig, PortalServiceLink } from './components/portal';
+
+// ========================================
 // Card Components (Domain-Specific)
 // ========================================
 export {

@@ -1,11 +1,19 @@
 'use client'
 
-import { useState, Suspense } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowRight, ArrowLeft, Paperclip, X, ImageIcon, FileText, Video } from 'lucide-react'
+import { ArrowRight, ArrowLeft, Paperclip, X, ImageIcon, FileText, Video, Info } from 'lucide-react'
 import { SERVICE_MAP } from '@/lib/services-config'
-import { getConceptScopePlaceholder, getConceptSqftHint } from '@/lib/concept-scope-placeholders'
+import { getConceptSqftHint, CONCEPT_PHOTO_RENDERING_DISCLAIMER } from '@/lib/concept-scope-placeholders'
+import {
+  buildConceptScope,
+  getConceptConditionOptions,
+  getConceptGoalOptions,
+  isConceptScopeComplete,
+} from '@/lib/concept-scope-builder'
+import { ConceptIntakeShell } from '@/components/concept/ConceptIntakeShell'
+import { ScopeChipGrid } from '@/components/concept/ScopeChipGrid'
 import {
   uploadIntakeFilesSequentially,
   type IntakeUploadedFile,
@@ -116,7 +124,15 @@ function DetailsInner() {
 
   const isGarden = serviceSlug === 'garden'
 
-  const [scope, setScope] = useState(() => searchParams.get('scope') ?? '')
+  const [scopeGoals, setScopeGoals] = useState<string[]>(() => {
+    const raw = searchParams.get('scopeGoals')
+    return raw ? raw.split('||').filter(Boolean) : []
+  })
+  const [scopeConditions, setScopeConditions] = useState<string[]>(() => {
+    const raw = searchParams.get('scopeConditions')
+    return raw ? raw.split('||').filter(Boolean) : []
+  })
+  const [extraNote, setExtraNote] = useState(() => searchParams.get('extraNote') ?? '')
   const [budget, setBudget] = useState(() => searchParams.get('budget') ?? '')
   const [zip, setZip] = useState(() => searchParams.get('zip') ?? '')
   const [style, setStyle] = useState(() => searchParams.get('style') ?? '')
@@ -143,7 +159,42 @@ function DetailsInner() {
     } as IntakeUploadedFile))
   })
   const [uploading, setUploading] = useState(false)
+  const [photoAckNoUpload, setPhotoAckNoUpload] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
+
+  function toggleScopeGoal(goal: string) {
+    setScopeGoals((prev) => (prev.includes(goal) ? prev.filter((g) => g !== goal) : [...prev, goal]))
+  }
+
+  function toggleScopeCondition(condition: string) {
+    setScopeConditions((prev) =>
+      prev.includes(condition) ? prev.filter((c) => c !== condition) : [...prev, condition]
+    )
+  }
+
+  function composedScope(): string {
+    return buildConceptScope({
+      serviceSlug,
+      serviceLabel: service?.label,
+      goals: scopeGoals,
+      conditions: scopeConditions,
+      extraNote,
+      style,
+      priority,
+      timeline,
+      sqft,
+      gardenSpace: isGarden ? gardenSpace : undefined,
+      gardenFeatures: isGarden ? gardenFeatures : undefined,
+      gardenIrrigation: isGarden ? gardenIrrigation : undefined,
+      gardenMaintenance: isGarden ? gardenMaintenance : undefined,
+    })
+  }
+
+  useEffect(() => {
+    if (uploadedFiles.some((f) => f.type === 'image')) {
+      setPhotoAckNoUpload(false)
+    }
+  }, [uploadedFiles])
 
   async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const selected = Array.from(e.target.files ?? [])
@@ -176,7 +227,11 @@ function DetailsInner() {
 
   function validate() {
     const e: Record<string, string> = {}
-    if (scope.trim().length < 20) e.scope = 'Please describe your project in at least 20 characters.'
+    if (!isConceptScopeComplete(scopeGoals, extraNote, isGarden, gardenFeatures)) {
+      e.scope = isGarden
+        ? 'Select at least one garden feature, or add a short note below.'
+        : 'Tap at least one update you want, or add a short note below.'
+    }
     if (!budget.trim()) e.budget = 'Please enter an estimated budget.'
     if (!/^\d{5}$/.test(zip)) e.zip = 'Please enter a valid 5-digit ZIP code.'
     if (!sqft.trim()) e.sqft = 'Please enter an approximate square footage.'
@@ -187,6 +242,11 @@ function DetailsInner() {
       if (!gardenSpace) e.gardenSpace = 'Please select which outdoor space.'
       if (!gardenIrrigation) e.gardenIrrigation = 'Please select an irrigation preference.'
       if (!gardenMaintenance) e.gardenMaintenance = 'Please select a maintenance commitment.'
+    }
+    const hasPhoto = uploadedFiles.some((f) => f.type === 'image')
+    if (!hasPhoto && !photoAckNoUpload) {
+      e.photos =
+        'Upload at least one photo of existing conditions, or check the acknowledgment below to continue without photos.'
     }
     setErrors(e)
     return Object.keys(e).length === 0
@@ -225,32 +285,42 @@ function DetailsInner() {
     )
   }
 
+  const goalOptions = getConceptGoalOptions(serviceSlug)
+  const conditionOptions = getConceptConditionOptions(serviceSlug)
+  const scopePreview = composedScope()
+
   return (
-    <div>
+    <ConceptIntakeShell serviceSlug={serviceSlug}>
       <div className="mb-8">
         <p className="text-xs font-bold uppercase tracking-widest text-[#E8724B] mb-2">Step 2 of 4</p>
         <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-2">Tell Us About Your Project</h1>
         <p className="text-slate-500">
           Selected: <span className="font-semibold text-slate-700">{service?.label ?? serviceSlug}</span>
+          {' · '}
+          <span className="text-slate-400">Tap options below — no long essay required</span>
         </p>
       </div>
 
-      <div className="space-y-6 max-w-xl">
+      <div className="space-y-6 max-w-xl lg:max-w-none">
 
-        {/* Project Description */}
-        <div>
-          <label className="block text-sm font-semibold text-slate-800 mb-1.5">
-            Project Description <span className="text-[#E8724B]">*</span>
-          </label>
-          <textarea
-            className={`${inputClass} h-32 resize-none`}
-            placeholder={getConceptScopePlaceholder(serviceSlug)}
-            value={scope}
-            onChange={(e) => setScope(e.target.value)}
+        <ScopeChipGrid
+          label={isGarden ? "What's the yard like today? (optional)" : "What's it like today? (optional)"}
+          hint="Helps us ground the concept in your existing space."
+          options={conditionOptions}
+          selected={scopeConditions}
+          onToggle={toggleScopeCondition}
+        />
+
+        {!isGarden && (
+          <ScopeChipGrid
+            label="What updates do you want? *"
+            hint="Select all that apply."
+            options={goalOptions}
+            selected={scopeGoals}
+            onToggle={toggleScopeGoal}
+            error={errors.scope}
           />
-          {errors.scope && <p className="text-xs text-red-500 mt-1">{errors.scope}</p>}
-          <p className="text-xs text-slate-400 mt-1">{scope.length} characters — the more detail, the more accurate your concept</p>
-        </div>
+        )}
 
         {/* Garden: Outdoor Space Type */}
         {isGarden && (
@@ -276,7 +346,8 @@ function DetailsInner() {
         {isGarden && (
           <div>
             <label className="block text-sm font-semibold text-slate-800 mb-2">
-              What do you want to include? <span className="text-slate-400 font-normal">(select all that apply)</span>
+              What do you want to include? <span className="text-[#E8724B]">*</span>
+              <span className="text-slate-400 font-normal"> (select all that apply)</span>
             </label>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {GARDEN_FEATURES.map((feat) => (
@@ -307,6 +378,7 @@ function DetailsInner() {
                 </label>
               ))}
             </div>
+            {errors.scope && <p className="text-xs text-red-500 mt-2">{errors.scope}</p>}
           </div>
         )}
 
@@ -460,13 +532,38 @@ function DetailsInner() {
           )}
         </div>
 
+        <div>
+          <label className="block text-sm font-semibold text-slate-800 mb-1.5">
+            Anything else? <span className="text-slate-400 font-normal">(optional one line)</span>
+          </label>
+          <input
+            type="text"
+            className={inputClass}
+            placeholder="e.g. Keep the brick chimney visible, prefer warm wood tones"
+            value={extraNote}
+            onChange={(e) => setExtraNote(e.target.value)}
+            maxLength={200}
+          />
+        </div>
+
+        {scopePreview.length > 20 && (
+          <div className="rounded-xl border border-slate-200 bg-slate-50/80 px-4 py-3">
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-1">Your project summary</p>
+            <p className="text-sm text-slate-700 whitespace-pre-line leading-relaxed">{scopePreview}</p>
+          </div>
+        )}
+
         {/* File / Photo Upload */}
         <div>
           <label className="block text-sm font-semibold text-slate-800 mb-1.5">
-            Photos or Documents <span className="text-slate-400 font-normal">(optional)</span>
+            Photos of existing conditions <span className="text-[#E8724B]">*</span>
           </label>
-          <p className="text-xs text-slate-400 mb-2">
-            Attach existing plans, inspiration photos, or videos — up to 5 files, 50 MB each. Accepted: JPG, PNG, WEBP, MP4, PDF.
+          <div className="flex gap-2 rounded-xl border border-amber-200 bg-amber-50/80 px-3 py-2.5 mb-3 text-xs text-amber-950 leading-relaxed">
+            <Info className="w-4 h-4 shrink-0 text-amber-700 mt-0.5" aria-hidden />
+            <p>{CONCEPT_PHOTO_RENDERING_DISCLAIMER}</p>
+          </div>
+          <p className="text-xs text-slate-500 mb-2">
+            Upload current-space photos (required for before/after-style concepts). Plans and inspiration welcome — up to 5 files, 50 MB each. JPG, PNG, WEBP, MP4, PDF.
           </p>
 
           {/* Uploaded file chips */}
@@ -514,6 +611,21 @@ function DetailsInner() {
           {uploadedFiles.length >= 5 && (
             <p className="text-xs text-slate-400 mt-1">Maximum 5 files attached.</p>
           )}
+
+          {!uploadedFiles.some((f) => f.type === 'image') && (
+            <label className="mt-4 flex items-start gap-2.5 cursor-pointer text-sm text-slate-700">
+              <input
+                type="checkbox"
+                className="mt-1 rounded border-slate-300 text-[#E8724B] focus:ring-[#E8724B]/30"
+                checked={photoAckNoUpload}
+                onChange={(e) => setPhotoAckNoUpload(e.target.checked)}
+              />
+              <span>
+                I don&apos;t have photos yet — I understand renderings will be forward-looking concepts only (no before/after without existing-condition photos).
+              </span>
+            </label>
+          )}
+          {errors.photos && <p className="text-xs text-red-500 mt-2">{errors.photos}</p>}
         </div>
       </div>
 
@@ -532,7 +644,7 @@ function DetailsInner() {
           {uploading ? 'Uploading files…' : 'Continue to Contact'} <ArrowRight className="w-4 h-4" />
         </button>
       </div>
-    </div>
+    </ConceptIntakeShell>
   )
 }
 

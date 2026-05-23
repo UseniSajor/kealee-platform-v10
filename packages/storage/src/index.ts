@@ -59,3 +59,18 @@ export type {
   PermitOcrResult,
   AnalyzeImageFn,
 } from './ocr'
+
+// Replicate output archive (training / reuse)
+export {
+  archiveReplicateOutputs,
+  archiveReplicateOutputsFireAndForget,
+  archiveReplicateUrlsFireAndForget,
+  REPLICATE_ARCHIVE_BUCKET,
+} from './replicate-archive'
+
+export type {
+  ArchiveReplicateOutputOptions,
+  ArchiveReplicateOutputResult,
+  ArchivedAsset,
+  ReplicateArchiveMediaKind,
+} from './replicate-archive'

@@ -10,6 +10,7 @@
  *   4. 'profiles'     — user avatars, company logos, portfolio images (public)
  *   5. 'permits'      — permit applications and supporting docs (private)
  *   6. 'designs'      — architectural designs and drawings (private)
+ *   7. 'replicate-archive' — Replicate image/video outputs + manifests (private)
  */
 
 import { createClient, SupabaseClient } from '@supabase/supabase-js'

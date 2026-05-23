@@ -9,6 +9,12 @@ import { NextResponse } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 import { createClient } from '@supabase/supabase-js'
 import { cookies } from 'next/headers'
+import {
+  isV30IntakeFormData,
+  mapDeliverableUiStatus,
+  v30TierLabel,
+  v30WorkspaceUrl,
+} from '@/lib/concept-output'
 
 export async function GET() {
   const supabaseAdmin = createClient(
@@ -99,7 +105,7 @@ export async function GET() {
   // ── Shape response — extract conceptOutput summary from form_data ───────────
   const deliverables = (data ?? []).map((row: any) => {
     const fd    = (row.form_data ?? {}) as Record<string, any>
-    const co    = (fd.conceptOutput ?? null) as Record<string, any> | null
+    const co    = (fd.conceptOutput ?? fd.v30ConceptOutput ?? null) as Record<string, any> | null
     const tier  = typeof fd.tier === 'number' ? fd.tier : 1
     const path  = row.project_path as string
     const pkg   = (co?.packageJson as Record<string, any>) ?? {}
@@ -107,6 +113,9 @@ export async function GET() {
 
     const estimatedCostMin = typeof scope.totalEstimatedMin === 'number' ? scope.totalEstimatedMin : null
     const estimatedCostMax = typeof scope.totalEstimatedMax === 'number' ? scope.totalEstimatedMax : null
+
+    const isV30 = isV30IntakeFormData(fd)
+    const uiStatus = mapDeliverableUiStatus(row.status as string, fd)
 
     return {
       id:              row.id,
@@ -116,10 +125,13 @@ export async function GET() {
                          ?? path?.replace(/_/g, ' ')?.replace(/\b\w/g, (c: string) => c.toUpperCase())
                          ?? 'Project',
       tier,
-      tierLabel:       TIER_LABELS[tier] ?? 'Starter Concept',
+      tierLabel:       isV30 ? v30TierLabel(tier) : (TIER_LABELS[tier] ?? 'Starter Concept'),
       address:         row.project_address ?? fd.projectAddress ?? null,
       budgetRange:     row.budget_range ?? fd.budgetRange ?? null,
       status:          row.status as string,
+      uiStatus,
+      isV30,
+      v30WorkspaceUrl: isV30 ? v30WorkspaceUrl(row.id) : null,
       createdAt:       row.created_at,
       updatedAt:       row.updated_at,
       // Concept package fields (populated after generation)

@@ -52,6 +52,10 @@ export * from './ai-concept';
 // PDF renderer
 export { renderConceptPdf } from './pdf/render-concept-pdf';
 export type { ConceptPdfInput, ConceptPdfResult } from './pdf/render-concept-pdf';
+export { resolveHomeownerDeliverablesForPdf, getConceptOutputRecord } from './pdf/build-from-intake';
+export type { IntakePdfSource } from './pdf/build-from-intake';
+export { serveConceptPackagePdf } from './pdf/serve-concept-pdf';
+export type { ServeConceptPdfResult } from './pdf/serve-concept-pdf';
 
 // Commercial concept engine (developer / investor)
 export * from './commercial';

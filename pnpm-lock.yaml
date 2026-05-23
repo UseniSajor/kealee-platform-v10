@@ -618,12 +618,18 @@ importers:
       '@kealee/auth':
         specifier: workspace:*
         version: link:../../packages/auth
+      '@kealee/concept-engine':
+        specifier: workspace:*
+        version: link:../../packages/concept-engine
       '@kealee/core-hooks':
         specifier: workspace:*
         version: link:../../packages/core-hooks
       '@kealee/shared':
         specifier: workspace:*
         version: link:../../packages/shared
+      '@kealee/storage':
+        specifier: workspace:*
+        version: link:../../packages/storage
       '@kealee/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -680,6 +686,9 @@ importers:
       '@anthropic-ai/sdk':
         specifier: ^0.30.0
         version: 0.30.1
+      '@kealee/concept-engine':
+        specifier: workspace:*
+        version: link:../../packages/concept-engine
       '@kealee/core-rules':
         specifier: workspace:*
         version: link:../../packages/core-rules
@@ -695,6 +704,9 @@ importers:
       '@kealee/shared':
         specifier: workspace:*
         version: link:../../packages/shared
+      '@kealee/storage':
+        specifier: workspace:*
+        version: link:../../packages/storage
       '@kealee/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -1421,6 +1433,9 @@ importers:
       '@anthropic-ai/sdk':
         specifier: ^0.27.0
         version: 0.27.3
+      pdfkit:
+        specifier: ^0.14.0
+        version: 0.14.0
       zod:
         specifier: ^3.22.4
         version: 3.25.76
@@ -2438,6 +2453,9 @@ importers:
       '@kealee/scoring':
         specifier: workspace:*
         version: link:../../packages/scoring
+      '@kealee/seeds':
+        specifier: workspace:*
+        version: link:../../packages/seeds
       '@kealee/shared':
         specifier: workspace:*
         version: link:../../packages/shared

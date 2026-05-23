@@ -17,7 +17,9 @@
     "activate:phase1": "node ./scripts/activate-phase1.mjs"
   },
   "dependencies": {
+    "@kealee/concept-engine": "workspace:*",
     "@kealee/core-rules": "workspace:*",
+    "@kealee/storage": "workspace:*",
     "@kealee/kealee-agent-stack": "workspace:*",
     "stripe": "^14.25.0",
     "@kealee/intake": "workspace:*",

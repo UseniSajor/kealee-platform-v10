@@ -10,6 +10,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import Replicate from 'replicate'
+import { archiveReplicateOutputsFireAndForget } from '@/lib/replicate-archive'
 
 export const dynamic = 'force-dynamic'
 
@@ -27,9 +28,22 @@ export async function GET(
     const prediction = await replicate.predictions.get(params.id)
 
     if (prediction.status === 'succeeded') {
-      const outputUrl = Array.isArray(prediction.output)
-        ? (prediction.output[0] as string)
-        : (prediction.output as string)
+      const outputs = Array.isArray(prediction.output)
+        ? (prediction.output as string[])
+        : prediction.output
+          ? [prediction.output as string]
+          : []
+      const outputUrl = outputs[0]
+      if (outputs.length > 0) {
+        archiveReplicateOutputsFireAndForget({
+          predictionId: params.id,
+          source: 'concept-render-poll',
+          mediaKind: 'image',
+          outputUrls: outputs,
+          model: typeof prediction.model === 'string' ? prediction.model : undefined,
+          context: { route: '/api/concept/renders/[id]' },
+        })
+      }
       return NextResponse.json({ status: 'completed', outputUrl })
     }
 

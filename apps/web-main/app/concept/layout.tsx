@@ -67,10 +67,15 @@ function LayoutInner({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const isConfirm = pathname === '/concept/confirm'
   const isStep1 = pathname === '/concept'
+  const isDetails = pathname === '/concept/details'
   return (
     <div className="min-h-screen bg-slate-50">
       <ConceptProgressBar />
-      <div className={`mx-auto px-4 py-10 lg:py-14 ${isConfirm ? 'max-w-6xl' : isStep1 ? 'max-w-5xl' : 'max-w-3xl'}`}>
+      <div
+        className={`mx-auto px-4 py-10 lg:py-14 ${
+          isConfirm || isDetails ? 'max-w-6xl' : isStep1 ? 'max-w-5xl' : 'max-w-3xl'
+        }`}
+      >
         {children}
       </div>
     </div>

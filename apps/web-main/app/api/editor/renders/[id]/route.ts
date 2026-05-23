@@ -8,6 +8,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { authorizeEditorRequest, enforceOwnership } from '@/lib/editor-auth'
+import { archiveReplicateOutputsFireAndForget } from '@/lib/replicate-archive'
 import Replicate from 'replicate'
 
 export const dynamic = 'force-dynamic'
@@ -40,18 +41,28 @@ export async function GET(
         const prediction = await replicate.predictions.get(job.external_job_id)
 
         if (prediction.status === 'succeeded' && Array.isArray(prediction.output)) {
+          const outputUrls = prediction.output as string[]
           await supabase.from('pascal_render_jobs')
             .update({
               status:      'COMPLETED',
-              output_urls: prediction.output as string[],
+              output_urls: outputUrls,
               duration_ms: prediction.metrics?.predict_time ? Math.round(prediction.metrics.predict_time * 1000) : null,
             })
             .eq('id', params.id)
 
+          archiveReplicateOutputsFireAndForget({
+            predictionId: job.external_job_id,
+            source: 'editor-render-poll',
+            mediaKind: 'image',
+            outputUrls,
+            model: typeof prediction.model === 'string' ? prediction.model : undefined,
+            context: { pascalRenderJobId: params.id, sceneId: job.scene_id as string | undefined },
+          })
+
           return NextResponse.json({
             jobId:     params.id,
             status:    'COMPLETED',
-            outputUrls: prediction.output,
+            outputUrls,
           })
         }
 

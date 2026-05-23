@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { BarChart3, TrendingUp, Layers, Building2, ArrowRight, X, CheckCircle } from 'lucide-react'
 import { PORTAL_DEVELOPER_SERVICE_DESCRIPTION_PLACEHOLDER } from '@kealee/shared'
+import { PortalServicesHub } from '@kealee/ui'
 
 const SERVICES = [
   {
@@ -91,7 +92,9 @@ export default function DeveloperServicesPage() {
   }
 
   return (
-    <div className="p-6">
+    <div className="p-6 space-y-10">
+      <PortalServicesHub portal="developer" />
+      <div className="border-t border-slate-200 pt-8">
       <div className="mb-8">
         <h1 className="text-2xl font-bold" style={{ color: '#1A2B4A' }}>Developer Services</h1>
         <p className="mt-1 text-sm text-gray-500">
@@ -219,6 +222,7 @@ export default function DeveloperServicesPage() {
           </div>
         </div>
       )}
+      </div>
     </div>
   )
 }
