@@ -287,6 +287,20 @@ OUTPUT FORMAT (JSON with SVG coordinates):
   }
 }
 
+BATHROOM (scope bath / bathroom_remodel) — include wet zone, fixture clearances, door swing:
+"rooms": [{ "name": "Primary Bath", "width": 10, "length": 12, "fixtures": ["tub", "vanity", "toilet"] }],
+"clearances": [{ "area": "Toilet side", "width": 15, "note": "Minimum 15 in side clearance" }]
+
+ADDITION / ADU (scope addition / addition_expansion) — site + proposed massing on lotContext:
+"existingFootprint": { "width": 40, "length": 28 },
+"proposedAddition": { "width": 16, "length": 20, "attachSide": "rear" },
+"setbackNotes": ["..."],
+"use lotContext for satellite alignment"
+
+WHOLE HOME (scope whole_home / whole_home_concept) — multiple rooms, stairs, overall dimensions:
+"rooms": [{ "name": "Kitchen", ... }, { "name": "Living", ... }],
+"overallDimensions": { "width": 52, "length": 34 }
+
 LANDSCAPE / GARDEN PREMIUM+ (when projectPath or scope is garden/landscape) — include in floorplan JSON root:
 "plantSchedule": [{ "species": "Botanical name", "commonName": "...", "quantity": 12, "unit": "each", "zone": "Perennial bed A", "unitCost": 45, "lineTotal": 540 }],
 "treeSchedule": [{ "species": "Acer rubrum", "caliperOrSize": "2\\" caliper", "quantity": 2, "unitCost": 450, "lineTotal": 900 }],

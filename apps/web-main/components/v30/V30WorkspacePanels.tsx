@@ -158,6 +158,16 @@ export function V30WorkspaceTabContent({
     case 'permits':
       return <V30PermitsPanel data={data} />
     case 'floorplan': {
+      const rooms = (data.rooms as Array<{ name: string; widthFt?: number; lengthFt?: number; areaSqft?: number }> | undefined) ??
+        (Array.isArray((data.floorplan as Record<string, unknown>)?.rooms)
+          ? ((data.floorplan as Record<string, unknown>).rooms as Array<Record<string, unknown>>).map(r => ({
+              name: String(r.name ?? r.label ?? 'Room'),
+              widthFt: Number(r.width ?? r.widthFt) || undefined,
+              lengthFt: Number(r.length ?? r.lengthFt) || undefined,
+              areaSqft: Number(r.area ?? r.areaSqft) || undefined,
+            }))
+          : [])
+      const floorplanScope = data.floorplanScope as string | undefined
       const landscape = data.landscapePackage as {
         plants?: Array<{ species: string; quantity: number; unit: string; lineTotal?: number }>
         trees?: Array<{ species: string; quantity: number; lineTotal?: number }>
@@ -169,6 +179,25 @@ export function V30WorkspaceTabContent({
       const cad = data.cadExport as { dxfFilename?: string } | undefined
       return (
         <div className="space-y-4">
+          {floorplanScope && (
+            <p className="text-xs font-bold text-violet-700 uppercase tracking-wide">
+              Scope: {String(floorplanScope).replace(/_/g, ' ')}
+            </p>
+          )}
+          {rooms.length > 0 && (
+            <div className="rounded-xl border border-slate-200 bg-slate-50/80 p-4">
+              <p className="text-sm font-bold text-slate-900 mb-2">Room layout</p>
+              <ul className="text-xs space-y-1 text-slate-700">
+                {rooms.slice(0, 14).map((r, i) => (
+                  <li key={i}>
+                    {r.name}
+                    {r.widthFt && r.lengthFt ? ` — ${r.widthFt}′ × ${r.lengthFt}′` : ''}
+                    {r.areaSqft ? ` (${r.areaSqft} sq ft)` : ''}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
           {lot?.satelliteImageUrl && (
             <div>
               <p className="text-xs font-bold text-slate-500 uppercase">Lot context (satellite)</p>

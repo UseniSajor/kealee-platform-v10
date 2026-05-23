@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import {
   analyzeV30IntakeWithLlm,
+  calculateFloorplanAddon,
   calculateV30PackagePrice,
   mergeV30PackageFeatures,
   isV30Enabled,
@@ -26,6 +27,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json() as {
       intakeId?: string
       projectPath?: string
+      tier?: 1 | 2 | 3
       answers: V30IntakeFormAnswers
       selectedFeatures?: string[]
     }
@@ -39,10 +41,14 @@ export async function POST(req: NextRequest) {
       ? await resolveLotContext(body.answers.location)
       : null
     const analysis = await analyzeV30IntakeWithLlm(body.answers, formula, body.projectPath ?? undefined)
+    const tier = body.tier && body.tier >= 1 && body.tier <= 3 ? body.tier : undefined
     const features = mergeV30PackageFeatures(
       body.selectedFeatures?.length ? body.selectedFeatures : analysis.suggestedFeatures,
-      { projectPath: body.projectPath ?? undefined, answers: body.answers },
+      { tier, projectPath: body.projectPath ?? undefined, answers: body.answers },
     )
+    const floorplanAddon = features.some(f => /^floorplan$/i.test(f))
+      ? calculateFloorplanAddon(body.answers, formula, body.projectPath ?? undefined)
+      : null
     const { featureAddons, totalPrice, featureBreakdown } = calculateV30PackagePrice(
       analysis.estimatedCost,
       features,
@@ -60,6 +66,9 @@ export async function POST(req: NextRequest) {
       featureBreakdown,
       pricingSource: 'v30_pricing_formulas',
       lotContext,
+      floorplanScope: floorplanAddon?.scope ?? null,
+      floorplanAddonUsd: floorplanAddon?.amount ?? null,
+      tier: tier ?? null,
       permitNote: features.includes('Permits')
         ? 'Permit scope included for this project type.'
         : 'No permit package — typical for landscape without irrigation.',

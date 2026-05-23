@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { isV30Enabled } from '@kealee/kealee-agent-stack'
+import { extractFloorplanRoomSummary, isV30Enabled } from '@kealee/kealee-agent-stack'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
 
 export const dynamic = 'force-dynamic'
@@ -69,10 +69,12 @@ export async function GET(req: NextRequest) {
   if (deliverables && ws.executions) {
     const fp = ws.executions.find(e => e.botType === 'floorplan')
     if (fp) {
+      const fpJson = (fp.outputData ?? fp.result?.contentJson ?? {}) as Record<string, unknown>
       const merged = {
-        ...(fp.outputData ?? fp.result?.contentJson ?? {}),
+        ...fpJson,
         ...deliverables,
         landscapePackage: landscapePkg,
+        rooms: extractFloorplanRoomSummary(fpJson),
       }
       fp.outputData = merged
       if (fp.result) fp.result.contentJson = merged

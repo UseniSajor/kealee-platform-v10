@@ -27,6 +27,11 @@ Portal-admin: `/pricing` → proxy `PATCH /api/v30/admin/pricing` with JSON body
 | `addition` | Addition / ADU | $220 |
 | `whole_house` | Whole home (+ $0.08/sqft) | $280 + sqft |
 | `garden_landscape` | Garden, deck, landscape layout | $175 |
+| `kitchen` | Kitchen remodel layout | $140 |
+| `bath` | Bathroom remodel layout | $100 |
+| `addition` | Addition / ADU site plan on lot | $220 |
+
+Premium / Premium+ tiers include **FloorplanBot** for kitchen, bath, addition, whole-home, garden, interior, and exterior scopes. Lot GIS (geocode + satellite when `GOOGLE_MAPS_API_KEY` is set) runs for all layout-heavy paths, not only garden/additions.
 | `exterior` | Facade / exterior | $130 |
 
 Store overrides in `featureCosts.floorplanScopeCosts` on the active formula row, or PATCH `floorplanScopeCosts` in admin API.

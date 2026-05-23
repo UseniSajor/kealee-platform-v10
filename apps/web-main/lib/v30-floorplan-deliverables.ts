@@ -1,9 +1,12 @@
 import Replicate from 'replicate'
 import {
+  buildFloorplanSheetPrompt,
   floorplanToCadBundle,
   includesCadExport,
+  inferFloorplanScope,
   isGardenLandscapeScope,
   type V30CadExportInput,
+  type V30IntakeFormAnswers,
 } from '@kealee/kealee-agent-stack'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { generateImages } from '@/lib/ai-image'
@@ -14,18 +17,14 @@ function buildSitePlanPrompt(
   floorplan: Record<string, unknown>,
   projectPath: string,
   lot?: V30LotContext | null,
+  answers?: V30IntakeFormAnswers,
 ): string {
-  const garden = isGardenLandscapeScope(projectPath)
-  const base = garden
-    ? 'Professional landscape site plan, top-down orthographic, labeled planting zones, hardscape paths, lot boundaries, clean vector style, white background, landscape architecture sheet'
-    : 'Professional architectural floor plan, top-down, labeled rooms and dimensions, clean black lines on white, concept sheet not construction stamped'
-  const name = String(floorplan.name ?? 'Concept layout')
   const lotNote = lot?.satelliteImageUrl
     ? ' Align layout to satellite lot context.'
     : lot
       ? ` Lot coordinates ${lot.lat}, ${lot.lng}.`
       : ''
-  return `${base}. Title: ${name}.${lotNote}`
+  return buildFloorplanSheetPrompt(floorplan, projectPath, lotNote, answers)
 }
 
 async function pollRecraftPrediction(predictionId: string, maxMs = 120_000): Promise<string | null> {
@@ -73,10 +72,18 @@ export async function finalizeV30FloorplanDeliverables(input: {
         )
       : null
 
+  const answers = (formData.v30Answers ?? {}) as V30IntakeFormAnswers
   const fpRoot = (input.floorplanOutput?.floorplan ?? input.floorplanOutput) as Record<string, unknown>
+  const floorplanScope = inferFloorplanScope(
+    answers.primaryScope
+      ? answers
+      : { ...answers, primaryScope: input.projectPath, squareFeet: Number(formData.squareFootage ?? 0) || 1200 },
+    input.projectPath,
+  )
   const deliverables: Record<string, unknown> = {
     completedAt: new Date().toISOString(),
     lotContext: lot,
+    floorplanScope,
     permitNote: isGardenLandscapeScope(input.projectPath)
       ? 'Landscape permit not required unless irrigation or permanent plumbing is in scope.'
       : undefined,
@@ -84,7 +91,7 @@ export async function finalizeV30FloorplanDeliverables(input: {
 
   if (process.env.REPLICATE_API_TOKEN && fpRoot && Object.keys(fpRoot).length > 0) {
     try {
-      const prompt = buildSitePlanPrompt(fpRoot, input.projectPath, lot)
+      const prompt = buildSitePlanPrompt(fpRoot, input.projectPath, lot, answers.primaryScope ? answers : undefined)
       const job = await generateImages({
         prompt,
         provider: 'recraft-v3',

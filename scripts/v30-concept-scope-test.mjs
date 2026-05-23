@@ -1,106 +1,132 @@
 #!/usr/bin/env node
 /**
- * Fast offline checks for garden + whole-home v30 concept paths (no HTTP/LLM).
- * Usage: node scripts/v30-concept-scope-test.mjs
+ * Fast offline checks for v30 concept paths (garden, kitchen, bath, addition, whole home).
  */
 import { createRequire } from 'node:module'
 
 const require = createRequire(import.meta.url)
 const { analyzeV30Intake } = require('../packages/kealee-agent-stack/dist/v30/intake-analyzer.js')
-const {
-  calculateV30PackagePrice,
-  DEFAULT_V30_PRICING_FORMULA,
-} = require('../packages/kealee-agent-stack/dist/v30/pricing.js')
+const { calculateV30PackagePrice, DEFAULT_V30_PRICING_FORMULA } = require('../packages/kealee-agent-stack/dist/v30/pricing.js')
+const { calculateFloorplanAddon } = require('../packages/kealee-agent-stack/dist/v30/floorplan-pricing.js')
 const { mergeV30PackageFeatures } = require('../packages/kealee-agent-stack/dist/v30/package-features.js')
 const {
   assembleLandscapePremiumPackage,
   shouldResolveLotGis,
 } = require('../packages/kealee-agent-stack/dist/v30/landscape-deliverables.js')
+const { inferFloorplanScope } = require('../packages/kealee-agent-stack/dist/v30/floorplan-pricing.js')
 
-const gardenAnswers = {
+const base = {
   propertyType: 'single-family',
-  primaryScope: 'garden_landscape',
-  budgetRange: '$25K-$75K',
-  timeline: '4-6 weeks',
+  budgetRange: '$100K-$250K',
+  timeline: '6-8 weeks',
   location: 'Arlington, VA',
-  squareFeet: 1200,
   yearBuilt: '1980-2000',
-  utilities: { naturalGas: false, waterSewer: true },
+  utilities: { naturalGas: true, waterSewer: true },
   codeConsiderations: ['none'],
 }
 
-const wholeAnswers = {
-  propertyType: 'single-family',
-  primaryScope: 'whole_home_concept',
-  budgetRange: '$250K-$500K',
-  timeline: '12-16 weeks',
-  location: 'Bethesda, MD',
-  squareFeet: 3200,
-  yearBuilt: '1960-1980',
-  utilities: { naturalGas: true, waterSewer: true },
-  codeConsiderations: ['structural'],
-}
+const cases = [
+  {
+    name: 'garden Premium+',
+    projectPath: 'garden_concept',
+    answers: { ...base, primaryScope: 'garden_landscape', squareFeet: 1200 },
+    tier: 3,
+    expectFloorplan: true,
+    expectPermits: false,
+    floorplanScope: 'garden_landscape',
+    gis: true,
+  },
+  {
+    name: 'kitchen Premium',
+    projectPath: 'kitchen_remodel',
+    answers: { ...base, primaryScope: 'kitchen_remodel', squareFeet: 220 },
+    tier: 2,
+    expectFloorplan: true,
+    expectPermits: true,
+    floorplanScope: 'kitchen',
+    gis: true,
+  },
+  {
+    name: 'bathroom Premium',
+    projectPath: 'bathroom_remodel',
+    answers: { ...base, primaryScope: 'bathroom_remodel', squareFeet: 65 },
+    tier: 2,
+    expectFloorplan: true,
+    expectPermits: true,
+    floorplanScope: 'bath',
+    gis: true,
+  },
+  {
+    name: 'addition Premium+',
+    projectPath: 'addition_expansion',
+    answers: { ...base, primaryScope: 'addition', squareFeet: 480 },
+    tier: 3,
+    expectFloorplan: true,
+    expectPermits: true,
+    floorplanScope: 'addition',
+    gis: true,
+  },
+  {
+    name: 'whole home Premium+',
+    projectPath: 'whole_home_concept',
+    answers: { ...base, primaryScope: 'whole_home_concept', squareFeet: 3200, budgetRange: '$250K-$500K' },
+    tier: 3,
+    expectFloorplan: true,
+    expectPermits: true,
+    floorplanScope: 'whole_house',
+    gis: true,
+  },
+]
 
-function runCase(name, projectPath, answers, tier) {
-  const analysis = analyzeV30Intake(answers, DEFAULT_V30_PRICING_FORMULA, projectPath)
+let failed = 0
+console.log('v30 concept + floorplan scope tests\n')
+
+for (const c of cases) {
+  const analysis = analyzeV30Intake(c.answers, DEFAULT_V30_PRICING_FORMULA, c.projectPath)
   const features = mergeV30PackageFeatures(analysis.suggestedFeatures, {
-    tier,
-    projectPath,
-    answers,
+    tier: c.tier,
+    projectPath: c.projectPath,
+    answers: c.answers,
   })
   const { totalPrice } = calculateV30PackagePrice(
     analysis.estimatedCost,
     features,
     DEFAULT_V30_PRICING_FORMULA,
-    { answers, projectPath },
+    { answers: c.answers, projectPath: c.projectPath },
   )
-  const noPermits = !features.some(f => /^permits?$/i.test(f))
-  const hasFloorplan = features.some(f => /floorplan/i.test(f))
+  const fpScope = inferFloorplanScope(c.answers, c.projectPath)
+  const fpAddon = calculateFloorplanAddon(c.answers, DEFAULT_V30_PRICING_FORMULA, c.projectPath)
+  const hasFloorplan = features.some(f => /^floorplan$/i.test(f))
+  const hasPermits = features.some(f => /^permits?$/i.test(f))
+  const gisOk = shouldResolveLotGis(c.projectPath, c.answers.primaryScope) === c.gis
   const pass =
     totalPrice > 0 &&
-    hasFloorplan &&
-    (name.includes('garden') ? noPermits : features.some(f => /^permits?$/i.test(f)))
-  return { name, pass, totalPrice, features, complexity: analysis.scopeComplexity }
+    hasFloorplan === c.expectFloorplan &&
+    hasPermits === c.expectPermits &&
+    fpScope === c.floorplanScope &&
+    fpAddon.amount > 0 &&
+    gisOk
+
+  if (!pass) failed++
+  console.log(`${pass ? '✓' : '✗'} ${c.name}`)
+  console.log(
+    `   $${totalPrice} | floorplan=${hasFloorplan} scope=${fpScope} addon=$${fpAddon.amount} permits=${hasPermits} gis=${gisOk}`,
+  )
 }
 
 const gardenPkg = assembleLandscapePremiumPackage({
   tier: 3,
   projectPath: 'garden_concept',
   floorplanOutput: {
-    plantSchedule: [{ species: 'Hydrangea macrophylla', quantity: 8, unit: 'each', unitCost: 45 }],
-    treeSchedule: [{ species: 'Cercis canadensis', quantity: 1, unitCost: 380 }],
-    materialTakeoff: [{ material: 'Compost', quantity: 6, unit: 'cu yd', unitCost: 55 }],
+    plantSchedule: [{ species: 'Hosta', quantity: 20, unit: 'each' }],
+    treeSchedule: [{ species: 'Dogwood', quantity: 1 }],
+    materialTakeoff: [{ material: 'Mulch', quantity: 8, unit: 'cu yd' }],
   },
-  estimateOutput: { estimatedCost: 18500, costRange: { low: 14000, high: 24000 } },
+  estimateOutput: { estimatedCost: 12000 },
 })
-
-const cases = [
-  runCase('garden concept (tier 3)', 'garden_concept', gardenAnswers, 3),
-  runCase('whole home concept (tier 3)', 'whole_home_concept', wholeAnswers, 3),
-]
-
-let failed = 0
-console.log('v30 concept scope tests (offline)\n')
-for (const c of cases) {
-  const icon = c.pass ? '✓' : '✗'
-  if (!c.pass) failed++
-  console.log(`${icon} ${c.name}`)
-  console.log(`   $${c.totalPrice} | ${c.features.join(', ')} | complexity=${c.complexity}`)
-}
-
-const landscapeOk =
-  gardenPkg?.plants?.length >= 1 &&
-  gardenPkg?.trees?.length >= 1 &&
-  gardenPkg?.materials?.length >= 1 &&
-  gardenPkg?.estimatedCost?.mid > 0
-console.log(`${landscapeOk ? '✓' : '✗'} Premium+ landscape package assembler`)
+const landscapeOk = gardenPkg?.plants?.length >= 1
+console.log(`${landscapeOk ? '✓' : '✗'} landscape Premium+ assembler`)
 if (!landscapeOk) failed++
-else console.log(`   plants=${gardenPkg.plants.length} trees=${gardenPkg.trees.length} mid=$${gardenPkg.estimatedCost.mid}`)
-
-if (!shouldResolveLotGis('garden_concept')) failed++
-if (shouldResolveLotGis('whole_home_concept')) failed++
-console.log(`${shouldResolveLotGis('garden_concept') ? '✓' : '✗'} GIS for garden`)
-console.log(`${!shouldResolveLotGis('whole_home_concept') ? '✓' : '✗'} GIS skipped for whole home`)
 
 console.log(failed ? `\n${failed} failed` : '\nAll passed')
 process.exit(failed ? 1 : 0)

@@ -120,7 +120,110 @@ function getServiceTierItems(serviceSlug: string): Record<1 | 2 | 3, Deliverable
     }
   }
 
-  // ── Default: building services (kitchen, bathroom, interior, whole-house, addition, new-construction) ──
+  // ── Kitchen ───────────────────────────────────────────────────────────────
+  if (serviceSlug === 'kitchen') {
+    return {
+      1: [
+        { icon: Layers,    label: 'Kitchen layout direction + key dimensions',          color: 'bg-blue-100 text-blue-600' },
+        { icon: ImageIcon, label: '3–5 Kitchen Concept Renderings (1920×1080)',         color: 'bg-purple-100 text-purple-600' },
+        { icon: Table2,    label: 'Cabinet & appliance BOM with line-item costs',     color: 'bg-green-100 text-green-600' },
+        { icon: Shield,    label: 'MEP scope brief (electrical / plumbing zones)',    color: 'bg-amber-100 text-amber-600' },
+        { icon: FileText,  label: 'PDF design report',                                color: 'bg-sky-100 text-sky-600' },
+        { icon: Zap,       label: '1 revision · Email support',                       color: 'bg-slate-100 text-slate-500' },
+      ],
+      2: [
+        { icon: Video,     label: '60-Second AI Kitchen Transformation Video',        color: 'bg-orange-100 text-orange-600' },
+        { icon: Layers,    label: '2D kitchen floor plan (work triangle, clearances)', color: 'bg-blue-100 text-blue-600' },
+        { icon: ImageIcon, label: '6–8 Enhanced Kitchen Renderings (2560×1440)',      color: 'bg-purple-100 text-purple-600' },
+        { icon: Table2,    label: 'Editable BOM + trade cost estimate',               color: 'bg-green-100 text-green-600' },
+        { icon: Zap,       label: 'Everything in Basic · 3 revisions · 30-day support', color: 'bg-slate-100 text-slate-500' },
+      ],
+      3: [
+        { icon: Video,     label: '4 Video Formats — 60s · 30s · 15s · 10s',           color: 'bg-orange-100 text-orange-600' },
+        { icon: Layers,    label: 'Kitchen plan sheet + CAD export (DXF)',            color: 'bg-blue-100 text-blue-600' },
+        { icon: ImageIcon, label: '12–15 Kitchen Renderings in 4K',                   color: 'bg-purple-100 text-purple-600' },
+        { icon: Phone,     label: '15-min kitchen design consultation',               color: 'bg-teal-100 text-teal-600' },
+        { icon: Zap,       label: 'Everything in Premium · 90-day support',           color: 'bg-slate-100 text-slate-500' },
+      ],
+    }
+  }
+
+  // ── Bathroom ──────────────────────────────────────────────────────────────
+  if (serviceSlug === 'bathroom') {
+    return {
+      1: [
+        { icon: Layers,    label: 'Bath layout concept + fixture zones',              color: 'bg-blue-100 text-blue-600' },
+        { icon: ImageIcon, label: '3–5 Bathroom Concept Renderings',                  color: 'bg-purple-100 text-purple-600' },
+        { icon: Table2,    label: 'Fixture & tile BOM with costs',                    color: 'bg-green-100 text-green-600' },
+        { icon: FileText,  label: 'PDF design report',                                color: 'bg-sky-100 text-sky-600' },
+        { icon: Zap,       label: '1 revision · Email support',                       color: 'bg-slate-100 text-slate-500' },
+      ],
+      2: [
+        { icon: Video,     label: '60-Second AI Bath Transformation Video',         color: 'bg-orange-100 text-orange-600' },
+        { icon: Layers,    label: '2D bath floor plan (fixtures, wet zone, clearances)', color: 'bg-blue-100 text-blue-600' },
+        { icon: ImageIcon, label: '6–8 Enhanced Bath Renderings',                     color: 'bg-purple-100 text-purple-600' },
+        { icon: Zap,       label: 'Everything in Basic · 3 revisions · 30-day support', color: 'bg-slate-100 text-slate-500' },
+      ],
+      3: [
+        { icon: Video,     label: '4 Video Formats',                                  color: 'bg-orange-100 text-orange-600' },
+        { icon: Layers,    label: 'Bath plan sheet + CAD export (DXF)',               color: 'bg-blue-100 text-blue-600' },
+        { icon: ImageIcon, label: '12–15 Bath Renderings in 4K',                      color: 'bg-purple-100 text-purple-600' },
+        { icon: Zap,       label: 'Everything in Premium · 90-day support',           color: 'bg-slate-100 text-slate-500' },
+      ],
+    }
+  }
+
+  // ── Addition ──────────────────────────────────────────────────────────────
+  if (serviceSlug === 'addition') {
+    return {
+      1: [
+        { icon: Layers,    label: 'Site overview + addition massing concept',         color: 'bg-blue-100 text-blue-600' },
+        { icon: ImageIcon, label: '3–5 Addition Concept Renderings',                  color: 'bg-purple-100 text-purple-600' },
+        { icon: Shield,    label: 'Zoning & feasibility brief',                       color: 'bg-amber-100 text-amber-600' },
+        { icon: Table2,    label: 'Preliminary cost estimate',                        color: 'bg-green-100 text-green-600' },
+        { icon: Zap,       label: '1 revision · Email support',                       color: 'bg-slate-100 text-slate-500' },
+      ],
+      2: [
+        { icon: Video,     label: '60-Second AI Addition Transformation Video',       color: 'bg-orange-100 text-orange-600' },
+        { icon: Layers,    label: 'Site plan: existing home + proposed addition (GIS lot)', color: 'bg-blue-100 text-blue-600' },
+        { icon: Shield,    label: 'Permit-ready scope pack',                          color: 'bg-amber-100 text-amber-600' },
+        { icon: Zap,       label: 'Everything in Basic · 3 revisions · 30-day support', color: 'bg-slate-100 text-slate-500' },
+      ],
+      3: [
+        { icon: Video,     label: '4 Video Formats',                                  color: 'bg-orange-100 text-orange-600' },
+        { icon: Layers,    label: 'Addition site plan + CAD (DXF) + satellite context', color: 'bg-blue-100 text-blue-600' },
+        { icon: Phone,     label: '15-min feasibility consultation',                  color: 'bg-teal-100 text-teal-600' },
+        { icon: Zap,       label: 'Everything in Premium · 90-day support',           color: 'bg-slate-100 text-slate-500' },
+      ],
+    }
+  }
+
+  // ── Whole house ───────────────────────────────────────────────────────────
+  if (serviceSlug === 'whole-house') {
+    return {
+      1: [
+        { icon: Layers,    label: 'Whole-home layout direction (key rooms)',          color: 'bg-blue-100 text-blue-600' },
+        { icon: ImageIcon, label: '3–5 Whole-Home Concept Renderings',                color: 'bg-purple-100 text-purple-600' },
+        { icon: Table2,    label: 'Master cost estimate by trade',                    color: 'bg-green-100 text-green-600' },
+        { icon: Shield,    label: 'Permit scope roadmap',                             color: 'bg-amber-100 text-amber-600' },
+        { icon: Zap,       label: '1 revision · Email support',                       color: 'bg-slate-100 text-slate-500' },
+      ],
+      2: [
+        { icon: Video,     label: '60-Second AI Whole-Home Transformation Video',     color: 'bg-orange-100 text-orange-600' },
+        { icon: Layers,    label: 'Multi-room 2D floor plan (scales with sq ft)',     color: 'bg-blue-100 text-blue-600' },
+        { icon: Shield,    label: 'Permit-ready coordinated scope',                   color: 'bg-amber-100 text-amber-600' },
+        { icon: Zap,       label: 'Everything in Basic · 3 revisions · 30-day support', color: 'bg-slate-100 text-slate-500' },
+      ],
+      3: [
+        { icon: Video,     label: '4 Video Formats',                                  color: 'bg-orange-100 text-orange-600' },
+        { icon: Layers,    label: 'Whole-home plan sheet + CAD export + lot GIS',     color: 'bg-blue-100 text-blue-600' },
+        { icon: ImageIcon, label: '12–15 Renderings in 4K',                           color: 'bg-purple-100 text-purple-600' },
+        { icon: Zap,       label: 'Everything in Premium · 90-day support',           color: 'bg-slate-100 text-slate-500' },
+      ],
+    }
+  }
+
+  // ── Default: building services (interior, new-construction, etc.) ──
   return {
     1: [
       { icon: Shield,    label: 'Permit scope brief + path-to-stamps roadmap',          color: 'bg-amber-100 text-amber-600' },

@@ -25,12 +25,24 @@ export function featuresForConceptTier(
   }
 
   const path = (projectPath ?? '').toLowerCase()
-  if (path.includes('garden') || path.includes('landscape')) {
+  const layoutHeavy =
+    path.includes('garden') ||
+    path.includes('landscape') ||
+    path.includes('kitchen') ||
+    path.includes('bath') ||
+    path.includes('addition') ||
+    path.includes('whole') ||
+    path.includes('interior') ||
+    path.includes('basement') ||
+    path.includes('facade') ||
+    path.includes('deck')
+
+  if (layoutHeavy && tier >= 2) {
     if (!base.includes('Floorplan')) base.push('Floorplan')
+  }
+  if (path.includes('garden') || path.includes('landscape')) {
     if (!base.includes('Estimate')) base.push('Estimate')
-    if (tier >= 3) {
-      if (!base.includes('Design')) base.push('Design')
-    }
+    if (tier >= 3 && !base.includes('Design')) base.push('Design')
   }
 
   return [...new Set(base)]
@@ -65,6 +77,12 @@ export function suggestFloorplanFeature(
     scope.includes('whole') ||
     scope.includes('addition') ||
     scope.includes('bath') ||
+    scope.includes('bathroom') ||
+    scope.includes('interior') ||
+    scope.includes('basement') ||
+    scope.includes('facade') ||
+    scope.includes('deck') ||
+    scope.includes('remodel') ||
     answers.squareFeet >= 400
   )
 }

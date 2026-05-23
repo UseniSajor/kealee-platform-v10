@@ -40,7 +40,10 @@ export function inferFloorplanScope(
   }
   if (scope.includes('addition') || scope.includes('adu')) return 'addition'
   if (scope.includes('kitchen')) return 'kitchen'
-  if (scope.includes('bath')) return 'bath'
+  if (scope.includes('bath') || scope.includes('bathroom') || scope.includes('powder')) return 'bath'
+  if (scope.includes('basement')) return 'room'
+  if (scope.includes('interior') && !scope.includes('kitchen') && !scope.includes('bath')) return 'room'
+  if (scope.includes('new_construction') || scope.includes('new-construction')) return 'whole_house'
   if (answers.squareFeet > 2800) return 'whole_house'
   if (answers.squareFeet > 1200) return 'addition'
   return 'room'

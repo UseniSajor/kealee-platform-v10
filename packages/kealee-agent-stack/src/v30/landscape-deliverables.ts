@@ -153,13 +153,4 @@ export function assembleLandscapePremiumPackage(input: {
   }
 }
 
-/** Premium+ and additions benefit from lot/satellite GIS. */
-export function shouldResolveLotGis(projectPath?: string, primaryScope?: string): boolean {
-  const scope = `${projectPath ?? ''} ${primaryScope ?? ''}`.toLowerCase()
-  return (
-    isGardenLandscapeScope(projectPath, primaryScope ? { primaryScope } : undefined) ||
-    scope.includes('addition') ||
-    scope.includes('adu') ||
-    scope.includes('expansion')
-  )
-}
+export { shouldResolveLotGis } from './floorplan-scope'

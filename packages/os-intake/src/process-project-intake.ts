@@ -41,20 +41,21 @@ export async function processV30ProjectIntake(
     where: { id: projectId },
     select: { category: true },
   })
-  const analysis = await analyzeV30IntakeWithLlm(answers, formula, project?.category ?? undefined)
+  const projectPath = project?.category ?? undefined
+  const analysis = await analyzeV30IntakeWithLlm(answers, formula, projectPath)
   const features = adjustPackageFeaturesForScope(
     mergeV30PackageFeatures(
       input.selectedFeatures?.length ? input.selectedFeatures : analysis.suggestedFeatures,
-      { answers },
+      { answers, projectPath },
     ),
     answers,
-    project?.category ?? undefined,
+    projectPath,
   )
   const { featureAddons, totalPrice } = calculateV30PackagePrice(
     analysis.estimatedCost,
     features,
     formula,
-    { answers },
+    { answers, projectPath },
   )
 
   const intake = await prisma.v30IntakeResponse.upsert({

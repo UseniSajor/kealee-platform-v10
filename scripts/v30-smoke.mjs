@@ -163,8 +163,15 @@ async function main() {
       detail: 'garden_concept',
     })
     checks.push({
-      name: 'GIS — whole home does not require lot GIS',
-      pass: !shouldResolveLotGis('whole_home_concept', 'whole_home_concept'),
+      name: 'GIS — kitchen + addition resolve lot',
+      pass:
+        shouldResolveLotGis('kitchen_remodel', 'kitchen_remodel') &&
+        shouldResolveLotGis('addition_expansion', 'addition'),
+      detail: 'kitchen, addition',
+    })
+    checks.push({
+      name: 'GIS — whole home resolves lot for floorplan',
+      pass: shouldResolveLotGis('whole_home_concept', 'whole_home_concept'),
       detail: 'whole_home_concept',
     })
   } catch (err) {
