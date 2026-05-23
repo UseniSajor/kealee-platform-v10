@@ -16,6 +16,8 @@ import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { createOrUpdateContact, createOpportunity } from '@/lib/marketing/ghl-client'
 import { scheduleSequence } from '@/lib/marketing/sequences'
 import { CONCEPT_KITCHEN_PRICE, CONCEPT_WHOLE_HOME_PRICE } from '@/lib/marketing/pricing'
+import { mergeAttributionMetadata } from '@/lib/marketing/utm-metadata'
+import { trackLeadSubmitted } from '@/lib/marketing/ga4-server'
 
 export const dynamic = 'force-dynamic'
 
@@ -146,10 +148,15 @@ export async function POST(req: NextRequest) {
           utmCampaign: body.utmCampaign ?? null,
           message:     body.message ?? null,
         },
-        metadata: {
+        metadata: mergeAttributionMetadata(null, {
+          source: body.utmSource,
+          medium: body.utmMedium,
+          campaign: body.utmCampaign,
+        }, {
+          funnelStage: 'lead',
           marketingSource: body.source,
-          capturedAt:      new Date().toISOString(),
-        },
+          capturedAt: new Date().toISOString(),
+        }),
       })
       .select('id')
       .single()
@@ -157,6 +164,16 @@ export async function POST(req: NextRequest) {
     if (!error && data) {
       conceptId = data.id
       savedToDb = true
+      void trackLeadSubmitted({
+        intakeId: data.id,
+        projectPath: body.projectType ?? 'kitchen_remodel',
+        source: body.source ?? 'kealee-web',
+        utm: {
+          source: body.utmSource,
+          medium: body.utmMedium,
+          campaign: body.utmCampaign,
+        },
+      })
     } else {
       console.error('[concept-lead] Supabase insert error:', error?.message)
     }
@@ -171,8 +188,6 @@ export async function POST(req: NextRequest) {
   // ── 2. GHL contact + opportunity + sequence (fire-and-forget) ─────────────
   void (async () => {
     try {
-      if (!process.env.GHL_API_KEY) return
-
       const contact = await createOrUpdateContact({
         email:     body.email,
         firstName: body.firstName,
@@ -181,6 +196,8 @@ export async function POST(req: NextRequest) {
         source:    body.source,
         tags:      ['concept-inquiry', body.source ?? 'web'],
       })
+      if (!contact) return
+
       ghlContactId = contact.id
 
       if (GHL_PIPELINE_ID && GHL_STAGE_NEW_INQUIRY) {

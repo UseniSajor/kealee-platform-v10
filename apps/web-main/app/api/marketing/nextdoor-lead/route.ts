@@ -8,8 +8,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z }                         from 'zod'
 import { getSupabaseAdmin }          from '@/lib/supabase-server'
-import { createOrUpdateContact }     from '@/lib/marketing/ghl-client'
-import { scheduleSequence }          from '@/lib/marketing/sequences'
+import { isGhlEnabled } from '@/lib/marketing/ghl-enabled'
+import { createOrUpdateContact } from '@/lib/marketing/ghl-client'
+import { scheduleSequence } from '@/lib/marketing/sequences'
+import { schedulePrePaymentDrip } from '@/lib/marketing/drip-schedule'
+import { buildConceptFunnelUrl, sendWelcomeLeadEmail } from '@/lib/marketing/lifecycle'
+import { mergeMarketingMetadata } from '@/lib/marketing/types'
 
 export const dynamic = 'force-dynamic'
 
@@ -63,10 +67,12 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
           message:      body.message ?? null,
           source:       'nextdoor',
         },
-        metadata: {
-          source:     'nextdoor',
+        metadata: mergeMarketingMetadata(null, {
+          funnelStage: 'lead',
+          marketingSource: 'nextdoor',
+          tags: ['nextdoor-lead', 'concept-inquiry'],
           capturedAt: new Date().toISOString(),
-        },
+        }),
       })
       .select('id')
       .single()
@@ -85,37 +91,52 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     leadId = `nd_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
   }
 
-  // GHL + sequence (fire-and-forget)
-  void (async () => {
-    try {
-      if (!process.env.GHL_API_KEY) return
+  const serviceLabel = (body.projectType ?? 'home project').replace(/_/g, ' ')
+  const funnelUrl = buildConceptFunnelUrl(body.projectType, leadId)
 
-      const contact = await createOrUpdateContact({
-        email:     body.email,
-        firstName: body.firstName,
-        lastName:  body.lastName,
-        phone:     body.phone,
-        source:    'nextdoor',
-        tags:      ['nextdoor-lead', 'concept-inquiry'],
-      })
+  void sendWelcomeLeadEmail({
+    email: body.email,
+    name: body.firstName ?? '',
+    funnelUrl,
+    serviceLabel,
+  })
 
-      await scheduleSequence(
-        leadId!,
-        contact.id,
-        'CONCEPT_SEQUENCE',
-        {
-          firstName:        body.firstName ?? 'there',
-          projectType:      (body.projectType ?? 'home project').replace(/_/g, ' '),
-          projectSlug:      body.projectType ?? '',
-          location:         body.location ?? body.neighborhood ?? 'your area',
-          conceptPrice:     '395',
-          conceptPriceHigh: '585',
-        },
-      )
-    } catch (e: any) {
-      console.error('[nextdoor-lead] GHL error:', e?.message)
-    }
-  })()
+  if (savedToDb) {
+    void schedulePrePaymentDrip({
+      leadId: leadId!,
+      email: body.email,
+      name: [body.firstName, body.lastName].filter(Boolean).join(' ') || null,
+      serviceLabel,
+      funnelUrl,
+    }).catch(e => console.error('[nextdoor-lead] drip error:', e))
+  }
+
+  if (isGhlEnabled()) {
+    void (async () => {
+      try {
+        const contact = await createOrUpdateContact({
+          email: body.email,
+          firstName: body.firstName,
+          lastName: body.lastName,
+          phone: body.phone,
+          source: 'nextdoor',
+          tags: ['nextdoor-lead', 'concept-inquiry'],
+        })
+        if (contact) {
+          await scheduleSequence(leadId!, contact.id, 'CONCEPT_SEQUENCE', {
+            firstName: body.firstName ?? 'there',
+            projectType: serviceLabel,
+            projectSlug: body.projectType ?? '',
+            location: body.location ?? body.neighborhood ?? 'your area',
+            conceptPrice: '395',
+            conceptPriceHigh: '585',
+          })
+        }
+      } catch (e: unknown) {
+        console.error('[nextdoor-lead] GHL error:', e instanceof Error ? e.message : e)
+      }
+    })()
+  }
 
   return NextResponse.json({ success: true, leadId, saved: savedToDb })
 }

@@ -1,11 +1,10 @@
 /**
- * GoHighLevel (GHL) API Client
- *
- * All functions are typed, throw on HTTP errors, and return typed responses.
- * Use GHL_LOCATION_ID and GHL_API_KEY from environment variables.
+ * GoHighLevel (GHL) API Client — legacy. Disabled when GHL_ENABLED=false (default).
  *
  * Base URL: https://services.leadconnectorhq.com
  */
+
+import { isGhlEnabled } from '@/lib/marketing/ghl-enabled'
 
 const GHL_BASE        = 'https://services.leadconnectorhq.com'
 const GHL_LOCATION_ID = process.env.GHL_LOCATION_ID ?? ''
@@ -77,7 +76,9 @@ export interface CreateContactInput {
  */
 export async function createOrUpdateContact(
   input: CreateContactInput,
-): Promise<GhlContact> {
+): Promise<GhlContact | null> {
+  if (!isGhlEnabled()) return null
+
   // Search first
   const searchRes = await ghlFetch<{ contacts: GhlContact[] }>(
     'GET',

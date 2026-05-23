@@ -113,8 +113,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
             }
 
             // GHL contact + sequence
-            if (process.env.GHL_API_KEY) {
-              try {
+            try {
                 const contact = await createOrUpdateContact({
                   email,
                   firstName,
@@ -123,6 +122,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
                   source: 'meta_lead_ad',
                   tags: ['meta-lead-ad', 'concept-inquiry'],
                 })
+                if (!contact) return
 
                 await scheduleSequence(
                   lead.leadgen_id,
@@ -140,7 +140,6 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
               } catch (e: any) {
                 console.error('[meta-lead] GHL error:', e?.message)
               }
-            }
           }
         }
       }

@@ -3,6 +3,7 @@ import { createClient } from '@supabase/supabase-js'
 import { calculateLeadScore, type LeadData, type RoutingTag } from '@/lib/marketing/lead-scorer'
 import { alertHotLead } from '@/lib/marketing/twilio-client'
 import { createOrUpdateContact } from '@/lib/marketing/hubspot-client'
+import { sendLeadToSlack } from '@/lib/marketing/slack-client'
 
 export const dynamic = 'force-dynamic'
 
@@ -94,6 +95,7 @@ export async function POST(req: NextRequest) {
           .update({
             lead_score: scoreResult.score,
             routing_tag: scoreResult.tag,
+            lead_tier: scoreResult.tag,
           })
           .eq('id', lead.id)
 
@@ -101,13 +103,22 @@ export async function POST(req: NextRequest) {
 
         // ── If hot: send SMS alert ────────────────────────────────────
         if (isHot) {
+          void sendLeadToSlack({
+            leadId: lead.id,
+            leadName: lead.client_name || lead.name || 'Unknown',
+            leadService: leadData.service || lead.project_path || 'Unknown',
+            leadBudget: lead.budget_range || (leadData.budget ? `$${leadData.budget}` : 'N/A'),
+            leadScore: scoreResult.score,
+            routingTag: scoreResult.tag,
+          })
+
           const smsResult = await alertHotLead({
-            name: lead.name || 'Unknown',
+            name: lead.client_name || lead.name || 'Unknown',
             service: leadData.service || 'Unknown',
             budget: leadData.budget ? `$${leadData.budget}` : 'N/A',
             timeline: leadData.timeline || 'N/A',
             intakePath: `/intake/${lead.id}`,
-            email: lead.email,
+            email: lead.contact_email || lead.email,
           })
 
           // Log SMS result
@@ -142,11 +153,12 @@ export async function POST(req: NextRequest) {
           }
         }
 
-        // ── Create HubSpot contact ──────────────────────────────────────
+        // ── HubSpot (optional — only when HUBSPOT_ACCESS_TOKEN is set) ─────
         try {
-          if (lead.email) {
-            const hsContact = await createOrUpdateContact(lead.email, {
-              email: lead.email,
+          if (process.env.HUBSPOT_ACCESS_TOKEN && (lead.contact_email || lead.email)) {
+            const leadEmail = lead.contact_email || lead.email
+            const hsContact = await createOrUpdateContact(leadEmail, {
+              email: leadEmail,
               firstname: lead.name?.split(' ')[0],
               lastname: lead.name?.split(' ').slice(1).join(' '),
               phone: lead.phone_number,
