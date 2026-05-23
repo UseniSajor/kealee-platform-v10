@@ -1,49 +1,66 @@
 /**
  * Redis Configuration
- * Centralized Redis configuration for rate limiting and caching
+ * Centralized Redis configuration for rate limiting and caching.
+ * Prefers REDIS_URL (Railway/Upstash/Heroku style) over individual REDIS_HOST vars.
  */
 
 import Redis from 'ioredis';
 
 export interface RedisConfig {
-  host: string;
-  port: number;
+  host?: string;
+  port?: number;
   password?: string;
   db?: number;
-  retryStrategy?: (times: number) => number;
-  maxRetriesPerRequest?: number;
 }
 
 export function createRedisClient(config?: Partial<RedisConfig>): Redis | null {
-  const redisConfig: RedisConfig = {
-    host: config?.host || process.env.REDIS_HOST || 'localhost',
-    port: config?.port || parseInt(process.env.REDIS_PORT || '6379'),
-    password: config?.password || process.env.REDIS_PASSWORD,
-    db: config?.db || parseInt(process.env.REDIS_DB || '0'),
-    retryStrategy: (times) => Math.min(times * 50, 2000),
-    maxRetriesPerRequest: 3,
-    ...config,
-  };
+  const redisUrl = process.env.REDIS_URL;
+  const redisHost = config?.host || process.env.REDIS_HOST;
 
-  // If no Redis host configured, return null (use in-memory fallback)
-  if (!redisConfig.host || redisConfig.host === 'localhost' && !process.env.REDIS_HOST) {
+  // No Redis configured — cache and rate-limit state will use in-memory fallback
+  if (!redisUrl && !redisHost) {
+    console.log('[Redis] No REDIS_URL or REDIS_HOST set — using in-memory fallback');
     return null;
   }
 
   try {
-    const client = new Redis(redisConfig);
+    let client: Redis;
+
+    if (redisUrl) {
+      // REDIS_URL preferred: works with Railway, Upstash, Heroku, etc.
+      client = new Redis(redisUrl, {
+        maxRetriesPerRequest: 3,
+        retryStrategy: (times) => Math.min(times * 100, 3000),
+        enableReadyCheck: false,
+        // TLS is inferred from rediss:// scheme automatically by ioredis
+      });
+    } else {
+      client = new Redis({
+        host: redisHost!,
+        port: config?.port ?? parseInt(process.env.REDIS_PORT ?? '6379', 10),
+        password: config?.password ?? process.env.REDIS_PASSWORD,
+        db: config?.db ?? parseInt(process.env.REDIS_DB ?? '0', 10),
+        maxRetriesPerRequest: 3,
+        retryStrategy: (times) => Math.min(times * 100, 3000),
+        enableReadyCheck: false,
+      });
+    }
 
     client.on('error', (err) => {
-      console.error('Redis error:', err);
+      console.error('[Redis] Connection error:', err.message);
     });
 
     client.on('connect', () => {
-      console.log('Redis connected');
+      console.log('[Redis] Connected');
+    });
+
+    client.on('ready', () => {
+      console.log('[Redis] Ready');
     });
 
     return client;
   } catch (error) {
-    console.error('Failed to create Redis client:', error);
+    console.error('[Redis] Failed to create client:', error);
     return null;
   }
 }

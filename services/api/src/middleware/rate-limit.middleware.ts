@@ -1,5 +1,6 @@
 import { FastifyRequest, FastifyReply } from 'fastify'
 import rateLimit from '@fastify/rate-limit'
+import { redisClient } from '../config/redis.config'
 
 /**
  * Rate limit configuration
@@ -21,9 +22,19 @@ export const RATE_LIMIT_CONFIG = {
  * Unified rate limiter
  * Authenticated users get 100 req/min keyed by userId.
  * Unauthenticated traffic gets 50 req/min keyed by IP.
+ * When REDIS_URL is set, state is persisted in Redis (shared across restarts/instances).
+ * Falls back to in-memory when Redis is unavailable.
  */
 export async function registerRateLimits(fastify: any) {
+  if (redisClient) {
+    console.log('[RateLimit] Using Redis store for rate limiting')
+  } else {
+    console.log('[RateLimit] Redis unavailable — using in-memory rate limiting')
+  }
+
   await fastify.register(rateLimit, {
+    // Pass ioredis client when available; @fastify/rate-limit accepts ioredis instances
+    redis: redisClient ?? undefined,
     max: (request: FastifyRequest, key: string) => {
       if (key.startsWith('user:')) return RATE_LIMIT_CONFIG.perUser.max
       return RATE_LIMIT_CONFIG.global.max
