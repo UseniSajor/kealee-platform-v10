@@ -24,7 +24,9 @@ export async function GET(
   if (!row) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
   const formData = (row.form_data as Record<string, unknown>) ?? {}
-  const deliverables = formData.v30FloorplanDeliverables as { cadExport?: { dxf?: string; dxfFilename?: string } } } | undefined
+  const deliverables = formData.v30FloorplanDeliverables as
+    | { cadExport?: { dxf?: string; dxfFilename?: string } }
+    | undefined
   const cad = deliverables?.cadExport
   const dxf = cad?.dxf
   if (!dxf) {
