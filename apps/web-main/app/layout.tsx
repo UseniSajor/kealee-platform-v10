@@ -24,8 +24,9 @@ const dmSans = DM_Sans({
   display: 'swap',
 })
 
-const GA_ID    = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID
-const PIXEL_ID = process.env.NEXT_PUBLIC_META_PIXEL_ID
+const GA_ID      = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID
+const PIXEL_ID   = process.env.NEXT_PUBLIC_META_PIXEL_ID
+const GADS_ID    = process.env.NEXT_PUBLIC_GOOGLE_ADS_ID   // format: AW-XXXXXXXXXX
 
 export const metadata: Metadata = {
   title: {
@@ -65,6 +66,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 function gtag(){dataLayer.push(arguments);}
                 gtag('js', new Date());
                 gtag('config', '${GA_ID}', { page_path: window.location.pathname });
+                ${GADS_ID ? `gtag('config', '${GADS_ID}');` : ''}
               `}
             </Script>
           </>

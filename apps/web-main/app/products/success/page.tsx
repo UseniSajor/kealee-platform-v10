@@ -1,11 +1,14 @@
+'use client'
 import Link from 'next/link'
+import Script from 'next/script'
+import { useSearchParams } from 'next/navigation'
 
-export default function ProductSuccessPage({
-  searchParams,
-}: {
-  searchParams: { session_id?: string; product?: string }
-}) {
-  const product = searchParams.product ?? ''
+const GADS_ID        = process.env.NEXT_PUBLIC_GOOGLE_ADS_ID
+const GADS_CONV_LABEL = process.env.NEXT_PUBLIC_GOOGLE_ADS_CONV_LABEL  // e.g. 'abcXYZ123'
+
+export default function ProductSuccessPage() {
+  const searchParams = useSearchParams()
+  const product = searchParams.get('product') ?? ''
 
   const PRODUCT_MESSAGES: Record<string, { title: string; next: string; timeline: string }> = {
     'ai-design':           { title: 'AI Design Report ordered', next: 'Upload your project photos in your dashboard to start generation.', timeline: 'Delivered within 24 hours' },
@@ -27,6 +30,11 @@ export default function ProductSuccessPage({
 
   return (
     <main style={{ fontFamily: 'var(--font-dm, DM Sans, sans-serif)', color: 'var(--ink)', minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      {GADS_ID && GADS_CONV_LABEL && (
+        <Script id="gads-conversion" strategy="afterInteractive">
+          {`gtag('event', 'conversion', { 'send_to': '${GADS_ID}/${GADS_CONV_LABEL}' });`}
+        </Script>
+      )}
       <div style={{ maxWidth: 560, margin: '0 auto', padding: '80px 32px', textAlign: 'center' }}>
         {/* Check icon */}
         <div style={{ width: 72, height: 72, borderRadius: '50%', background: '#F0FFF4', border: '2px solid #3A7D52', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 28px' }}>
