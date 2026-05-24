@@ -123,10 +123,11 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
                   tags: ['meta-lead-ad', 'concept-inquiry'],
                 })
                 if (!contact || !contact.id) return
+                const resolvedContact = contact
 
                 await scheduleSequence(
                   lead.leadgen_id,
-                  contact.id,
+                  resolvedContact.id,
                   'CONCEPT_SEQUENCE',
                   {
                     firstName:       firstName || 'there',

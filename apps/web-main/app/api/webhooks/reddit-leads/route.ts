@@ -133,14 +133,15 @@ export async function POST(req: NextRequest) {
           { key: 'kealee_intake_id', field_value: leadId },
         ],
       })
+      if (!ghlContact) return NextResponse.json({ success: true, leadId })
+      const resolvedGhlContact = ghlContact
 
-      // Update lead with GHL contact ID
       await supabase
         .from('public_intake_leads')
-        .update({ ghl_contact_id: ghlContact.id })
+        .update({ ghl_contact_id: resolvedGhlContact.id })
         .eq('id', leadId)
 
-      console.log(`GHL contact created: ${ghlContact.id}`)
+      console.log(`GHL contact created: ${resolvedGhlContact.id}`)
     } catch (ghlErr) {
       console.error('GHL contact creation failed:', ghlErr)
     }
