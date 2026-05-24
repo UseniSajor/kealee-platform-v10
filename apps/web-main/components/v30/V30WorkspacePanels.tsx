@@ -152,10 +152,10 @@ export function V30MarketingPanel({ data }: { data: Record<string, unknown> }) {
           )}
         </div>
       )}
-      {outreach?.introParagraph && (
+      {Boolean(outreach?.introParagraph) && (
         <div className="rounded-xl border border-slate-200 p-4 text-sm">
           <p className="text-xs font-bold uppercase text-slate-500 mb-2">Contractor outreach</p>
-          <p className="text-slate-700 whitespace-pre-wrap">{String(outreach.introParagraph)}</p>
+          <p className="text-slate-700 whitespace-pre-wrap">{String(outreach!.introParagraph)}</p>
         </div>
       )}
     </div>
