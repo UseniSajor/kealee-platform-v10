@@ -180,11 +180,13 @@ async function syncToGhl(leadData: FacebookLeadData): Promise<boolean> {
         { key: 'form_id', field_value: leadData.form_name || '' },
       ],
     })
+    if (!contact) return false
+    const resolvedContact = contact
 
     // Trigger SMS qualification workflow if configured
     if (GHL_WORKFLOW_ID_SMS_QUAL) {
       await triggerWorkflow({
-        contactId: contact.id,
+        contactId: resolvedContact.id,
         workflowId: GHL_WORKFLOW_ID_SMS_QUAL,
         eventData: {
           service: leadData.service_type || 'unknown',
@@ -193,7 +195,7 @@ async function syncToGhl(leadData: FacebookLeadData): Promise<boolean> {
       })
     }
 
-    console.log(`Facebook lead synced to GHL: ${contact.id}`)
+    console.log(`Facebook lead synced to GHL: ${resolvedContact.id}`)
     return true
   } catch (err) {
     console.error('GHL sync failed:', err)

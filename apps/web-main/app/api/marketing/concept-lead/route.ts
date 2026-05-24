@@ -197,12 +197,13 @@ export async function POST(req: NextRequest) {
         tags:      ['concept-inquiry', body.source ?? 'web'],
       })
       if (!contact) return
+      const resolvedContact = contact
 
-      ghlContactId = contact.id
+      ghlContactId = resolvedContact.id
 
       if (GHL_PIPELINE_ID && GHL_STAGE_NEW_INQUIRY) {
         await createOpportunity({
-          contactId:       contact.id,
+          contactId:       resolvedContact.id,
           name:            `${body.firstName ?? body.email} — ${(body.projectType ?? 'Concept').replace(/_/g, ' ')}`,
           pipelineId:      GHL_PIPELINE_ID,
           pipelineStageId: GHL_STAGE_NEW_INQUIRY,
@@ -212,7 +213,7 @@ export async function POST(req: NextRequest) {
 
       await scheduleSequence(
         conceptId ?? body.email,
-        contact.id,
+        resolvedContact.id,
         'CONCEPT_SEQUENCE',
         {
           firstName:       body.firstName ?? 'there',
