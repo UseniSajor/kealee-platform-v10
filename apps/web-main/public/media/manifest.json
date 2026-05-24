@@ -1,0 +1,97 @@
+{
+  "version": 1,
+  "updatedAt": "2026-05-24T01:37:21.526Z",
+  "cards": {
+    "home:design": {
+      "photoUrl": "/media/service-photos/home-design.jpg",
+      "photoAlt": "AI-generated kitchen design concepts",
+      "mediaType": "video",
+      "source": "fallback",
+      "generatedAt": "2026-05-24T01:37:20.812Z"
+    },
+    "home:permits": {
+      "photoUrl": "/media/service-photos/home-permits.jpg",
+      "photoAlt": "Building permits and compliance documentation",
+      "mediaType": "photo",
+      "source": "fallback",
+      "generatedAt": "2026-05-24T01:37:20.880Z"
+    },
+    "home:estimate": {
+      "photoUrl": "/media/service-photos/home-estimate.jpg",
+      "photoAlt": "Construction cost estimation breakdown",
+      "mediaType": "video",
+      "source": "fallback",
+      "generatedAt": "2026-05-24T01:37:21.034Z"
+    },
+    "home:build": {
+      "photoUrl": "/media/service-photos/home-build.jpg",
+      "photoAlt": "Construction team managing a renovation project",
+      "mediaType": "video",
+      "source": "fallback",
+      "generatedAt": "2026-05-24T01:37:21.114Z"
+    },
+    "product:kitchen": {
+      "photoUrl": "/media/service-photos/product-kitchen.jpg",
+      "photoAlt": "Kitchen Remodel — Kealee AI concept",
+      "mediaType": "video",
+      "source": "fallback",
+      "generatedAt": "2026-05-24T01:37:21.143Z"
+    },
+    "product:bathroom": {
+      "photoUrl": "/media/service-photos/product-bathroom.jpg",
+      "photoAlt": "Bathroom Remodel — Kealee AI concept",
+      "mediaType": "video",
+      "source": "fallback",
+      "generatedAt": "2026-05-24T01:37:21.178Z"
+    },
+    "product:garden": {
+      "photoUrl": "/media/service-photos/product-garden.jpg",
+      "photoAlt": "Garden & Landscape — Kealee AI concept",
+      "mediaType": "video",
+      "source": "fallback",
+      "generatedAt": "2026-05-24T01:37:21.223Z"
+    },
+    "product:addition": {
+      "photoUrl": "/media/service-photos/product-addition.jpg",
+      "photoAlt": "Home Addition — Kealee AI concept",
+      "mediaType": "video",
+      "source": "fallback",
+      "generatedAt": "2026-05-24T01:37:21.262Z"
+    },
+    "product:whole-house": {
+      "photoUrl": "/media/service-photos/product-whole-house.jpg",
+      "photoAlt": "Whole House Renovation — Kealee AI concept",
+      "mediaType": "video",
+      "source": "fallback",
+      "generatedAt": "2026-05-24T01:37:21.304Z"
+    },
+    "product:interior": {
+      "photoUrl": "/media/service-photos/product-interior.jpg",
+      "photoAlt": "Interior Renovation — Kealee AI concept",
+      "mediaType": "video",
+      "source": "fallback",
+      "generatedAt": "2026-05-24T01:37:21.351Z"
+    },
+    "product:facade": {
+      "photoUrl": "/media/service-photos/product-facade.jpg",
+      "photoAlt": "Exterior Facade — Kealee AI concept",
+      "mediaType": "video",
+      "source": "fallback",
+      "generatedAt": "2026-05-24T01:37:21.428Z"
+    },
+    "product:deck": {
+      "photoUrl": "/media/service-photos/product-deck.jpg",
+      "photoAlt": "Deck & Patio — Kealee AI concept",
+      "mediaType": "video",
+      "source": "fallback",
+      "generatedAt": "2026-05-24T01:37:21.495Z"
+    },
+    "product:design-services": {
+      "photoUrl": "/media/service-photos/product-design-services.jpg",
+      "photoAlt": "Design Services — Kealee AI concept",
+      "mediaType": "video",
+      "source": "fallback",
+      "generatedAt": "2026-05-24T01:37:21.526Z"
+    }
+  }
+}
