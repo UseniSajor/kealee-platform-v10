@@ -17,6 +17,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { getOwnerPortalDeliverableUrl } from '@/lib/owner-portal-urls'
+import { onConceptReadyLifecycle } from '@/lib/marketing/lifecycle'
 
 export const dynamic = 'force-dynamic'
 
@@ -129,6 +130,16 @@ export async function POST(req: NextRequest) {
       }),
     }).catch(err => {
       console.error('[concept-ready email] internal notification failed:', err?.message ?? err)
+    })
+
+    onConceptReadyLifecycle({
+      intakeId,
+      email: to,
+      clientName: greeting !== 'there' ? greeting : undefined,
+      projectPath: service,
+      serviceLabel: serviceName,
+    }).catch(err => {
+      console.error('[concept-ready email] lifecycle hook failed:', err?.message ?? err)
     })
 
     return NextResponse.json({ sent: customerRes.ok })

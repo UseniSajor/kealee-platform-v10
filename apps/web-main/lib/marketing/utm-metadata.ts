@@ -1,5 +1,6 @@
 import type { NextRequest } from 'next/server'
 import { parseUTM, type UTMParams } from '@/lib/marketing/utm'
+import { marketingChannelFromUtm } from '@/lib/marketing/channel-attribution'
 import { mergeMarketingMetadata, type MarketingLeadMetadata } from '@/lib/marketing/types'
 
 export const UTM_SESSION_KEY = 'kealee_utm_v1'
@@ -56,9 +57,14 @@ export function mergeAttributionMetadata(
 ): MarketingLeadMetadata {
   const utmFields = utmToMetadataFields(utm)
   const hasUtm = Boolean(utm.source || utm.medium || utm.campaign)
+  const marketingChannel = marketingChannelFromUtm(
+    utm,
+    (extra?.marketingSource as string) ?? undefined,
+  )
   return mergeMarketingMetadata(existing, {
     ...extra,
+    marketingChannel,
     ...(hasUtm ? utmFields : {}),
-    ...(utm.source ? { tags: [`utm-${utm.source}`] } : {}),
+    ...(utm.source ? { tags: [`utm-${utm.source}`, `channel-${marketingChannel}`] } : { tags: [`channel-${marketingChannel}`] }),
   })
 }

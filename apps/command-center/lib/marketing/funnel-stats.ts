@@ -1,3 +1,11 @@
+import {
+  computeChannelComparison,
+  type ChannelComparisonOptions,
+  type ChannelComparisonReport,
+} from '@/lib/marketing/channel-attribution'
+
+export type { ChannelComparisonReport }
+
 export const CONVERTED_STATUSES = ['paid', 'concept_ready', 'processing'] as const
 
 export interface IntakeLeadRow {
@@ -13,6 +21,7 @@ export interface IntakeLeadRow {
   budget_range?: string | null
   project_address?: string | null
   paid_at?: string | null
+  payment_amount?: number | null
 }
 
 export interface FunnelStats {
@@ -28,6 +37,7 @@ export interface FunnelStats {
   sequencesPending: number
   last7DaysLeads: number
   last7DaysPaid: number
+  channelComparison: ChannelComparisonReport
 }
 
 function pct(n: number, d: number): string {
@@ -39,10 +49,19 @@ function bump(map: Record<string, number>, key: string): void {
   map[key] = (map[key] ?? 0) + 1
 }
 
+export interface ComputeFunnelStatsOptions {
+  sequencesPending?: number
+  channelComparison?: ChannelComparisonOptions
+}
+
 export function computeFunnelStats(
   leads: IntakeLeadRow[],
-  sequencesPending = 0,
+  options: ComputeFunnelStatsOptions | number = {},
 ): FunnelStats {
+  const opts: ComputeFunnelStatsOptions =
+    typeof options === 'number' ? { sequencesPending: options } : options
+  const sequencesPending = opts.sequencesPending ?? 0
+
   const bySource: Record<string, number> = {}
   const byProjectPath: Record<string, number> = {}
   const byUtmSource: Record<string, number> = {}
@@ -81,6 +100,8 @@ export function computeFunnelStats(
   const paidCount = leads.filter(l => l.status === 'paid').length
   const conceptReadyCount = leads.filter(l => l.status === 'concept_ready').length
 
+  const channelComparison = computeChannelComparison(leads, opts.channelComparison ?? {})
+
   return {
     totalLeads: leads.length,
     converted,
@@ -94,5 +115,6 @@ export function computeFunnelStats(
     sequencesPending,
     last7DaysLeads,
     last7DaysPaid,
+    channelComparison,
   }
 }

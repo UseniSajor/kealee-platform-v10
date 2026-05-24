@@ -8,12 +8,12 @@
 import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
-import { Loader2, LayoutGrid, Palette, Calculator, FileCheck, Layers, Video, Megaphone } from 'lucide-react'
+import { Loader2, LayoutGrid, Palette, Calculator, FileCheck, Layers, Video } from 'lucide-react'
 import { isV30EnabledClient } from '@/lib/v30'
 import { V30GenerationStatus } from '@/components/v30/V30GenerationStatus'
 import { V30WorkspaceTabContent } from '@/components/v30/V30WorkspacePanels'
 
-type TabId = 'overview' | 'design' | 'estimate' | 'permits' | 'floorplan' | 'video' | 'marketing'
+type TabId = 'overview' | 'design' | 'estimate' | 'permits' | 'floorplan' | 'video'
 
 interface BotExecution {
   botType: string
@@ -41,7 +41,6 @@ const TABS: { id: TabId; label: string; icon: React.ElementType; bots: string[] 
   { id: 'permits', label: 'Permits', icon: FileCheck, bots: ['zoning', 'permit'] },
   { id: 'floorplan', label: 'Floorplan', icon: Layers, bots: ['floorplan'] },
   { id: 'video', label: 'Video', icon: Video, bots: ['video'] },
-  { id: 'marketing', label: 'Marketing', icon: Megaphone, bots: ['marketing'] },
 ]
 
 function outputForTab(executions: BotExecution[], bots: string[]): Record<string, unknown> | null {

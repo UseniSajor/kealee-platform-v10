@@ -7,8 +7,12 @@ export type FunnelStage =
   | 'estimate_interest'
   | 'permit_interest'
 
+/** organic | paid_ads | marketing_saas — set at capture from UTM/source */
+export type MarketingChannelBucket = 'organic' | 'paid_ads' | 'marketing_saas' | 'unknown'
+
 export interface MarketingLeadMetadata {
   funnelStage?: FunnelStage
+  marketingChannel?: MarketingChannelBucket
   tags?: string[]
   marketingSource?: string
   utm_source?: string

@@ -10,6 +10,21 @@
  */
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// CANONICAL UPSELL (post-concept)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/** After concept / concept_ready: always permit → professional drawings. */
+export const CANONICAL_UPSELL_PATH = {
+  summary: 'concept → permit → drawings',
+  paths: {
+    concept: '/intake/concept',
+    permit: '/intake/permit_path_only',
+    drawings: '/intake/professional_drawings',
+  },
+  productKeys: ['conceptEngine', 'permitsService', 'drawings'] as const,
+} as const
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // KEALEE PRODUCTS
 // ═══════════════════════════════════════════════════════════════════════════════
 
@@ -23,7 +38,7 @@ export const KEALEE_PRODUCTS = {
     targetPersonas: ['homeowners', 'designers', 'contractors'],
     pricingRange: '$99–$499',
     timeToValue: '2–4 hours',
-    conversionPath: 'concept → estimate → permits → build',
+    conversionPath: 'concept → permit → drawings → build',
   },
 
   // Estimation
@@ -35,7 +50,7 @@ export const KEALEE_PRODUCTS = {
     targetPersonas: ['homeowners', 'contractors', 'property-managers'],
     pricingRange: '$199–$799',
     timeToValue: '1–2 days',
-    conversionPath: 'estimate → concept → permits → build',
+    conversionPath: 'concept → permit → drawings (estimate optional in concept package)',
   },
 
   // Permits
@@ -47,7 +62,7 @@ export const KEALEE_PRODUCTS = {
     targetPersonas: ['contractors', 'architects', 'property-managers'],
     pricingRange: '$399–$1,999',
     timeToValue: '5–10 business days',
-    conversionPath: 'permits → concept → estimate → build',
+    conversionPath: 'concept → permit → drawings → build',
   },
 
   // Pre-Design
@@ -268,63 +283,57 @@ export const CAMPAIGN_TYPES = {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 export const WEEKLY_CAMPAIGN_ROTATION = {
-  // Week 1: Concept Engine
+  // Upsell spine (weeks 1–3): concept → permit → drawings
   week1: {
     primary: 'conceptEngine',
-    secondary: 'marketplace',
+    secondary: 'permitsService',
     persona: 'homeowners',
-    theme: 'Get design ideas in minutes',
+    theme: 'Start with AI concept — then permit-ready path',
   },
 
-  // Week 2: Estimation Tool
   week2: {
-    primary: 'estimationTool',
+    primary: 'permitsService',
+    secondary: 'drawings',
+    persona: 'homeowners',
+    theme: 'Permit path for your jurisdiction',
+  },
+
+  week3: {
+    primary: 'drawings',
+    secondary: 'permitsService',
+    persona: 'homeowners',
+    theme: 'Permit-ready professional drawings',
+  },
+
+  // Repeat upsell spine + awareness (weeks 4–8)
+  week4: {
+    primary: 'conceptEngine',
+    secondary: 'permitsService',
+    persona: 'homeowners',
+    theme: 'From concept to permit in one platform',
+  },
+
+  week5: {
+    primary: 'permitsService',
+    secondary: 'drawings',
+    persona: 'homeowners',
+    theme: 'File permits with confidence',
+  },
+
+  week6: {
+    primary: 'drawings',
     secondary: 'conceptEngine',
     persona: 'homeowners',
-    theme: 'Know your project costs upfront',
+    theme: 'Stamped drawings when your jurisdiction requires them',
   },
 
-  // Week 3: Permits & Inspections
-  week3: {
-    primary: 'permitsService',
-    secondary: 'estimationTool',
-    persona: 'contractors',
-    theme: 'Navigate permits like a pro',
-  },
-
-  // Week 4: Pre-Design Sessions
-  week4: {
-    primary: 'preDesign',
-    secondary: 'conceptEngine',
-    persona: 'architects',
-    theme: 'Professional consultation, AI-powered',
-  },
-
-  // Week 5: Professional Drawings
-  week5: {
-    primary: 'drawings',
-    secondary: 'preDesign',
-    persona: 'architects',
-    theme: 'CAD, renderings, 3D visualization',
-  },
-
-  // Week 6: Digital Development Twin
-  week6: {
-    primary: 'ddts',
-    secondary: 'commandCenter',
-    persona: 'propertyManagers',
-    theme: 'Manage everything in one place',
-  },
-
-  // Week 7: Marketplace
   week7: {
     primary: 'marketplace',
     secondary: 'conceptEngine',
     persona: 'homeowners',
-    theme: 'Find & hire verified professionals',
+    theme: 'Find contractors after concept + permit scope',
   },
 
-  // Week 8: Command Center
   week8: {
     primary: 'commandCenter',
     secondary: 'ddts',
@@ -365,12 +374,61 @@ Sarah wanted to redesign her kitchen but didn't know where to start.
 Using Kealee's Concept Engine:
 → Got 5 design options in 2 hours
 → Picked her favorite design
-→ Moved straight to contractor bids
+→ Ordered permit planning, then permit-ready drawings
 
 Her kitchen now looks exactly how she imagined.
 
 Ready to design yours?
 https://kealee.com/intake/concept
+      `,
+      targetPersona: 'homeowners',
+    },
+  },
+
+  permitsService: {
+    featureSpotlight: {
+      subject: '📋 Your concept is ready — plan your permit path',
+      preview: 'DMV permit scope from your AI concept',
+      body: `
+Your design concept is the first step. Next: permit planning for your jurisdiction.
+
+✓ Scope aligned to your concept
+✓ Jurisdiction checklist
+✓ Credit concept fee toward drawings
+
+Continue to permit planning:
+https://kealee.com/intake/permit_path_only
+      `,
+      targetPersona: 'homeowners',
+    },
+    educational: {
+      subject: 'Permit rejections are almost always incomplete drawings',
+      preview: 'Complete submittal the first time',
+      body: `
+Most DMV permit delays come from incomplete submittals — not slow reviewers.
+
+Kealee maps your concept to permit requirements, then delivers permit-ready drawings when needed.
+
+Start permit path:
+https://kealee.com/intake/permit_path_only
+      `,
+      targetPersona: 'homeowners',
+    },
+  },
+
+  drawings: {
+    featureSpotlight: {
+      subject: '📐 Permit-ready drawings from your concept',
+      preview: 'Professional drawings in 7–14 business days',
+      body: `
+When your jurisdiction requires stamped drawings, Kealee delivers them from your AI concept.
+
+✓ Architect-ready package
+✓ Aligned to permit scope
+✓ File yourself or with Kealee permit service
+
+Get permit-ready drawings:
+https://kealee.com/intake/professional_drawings
       `,
       targetPersona: 'homeowners',
     },

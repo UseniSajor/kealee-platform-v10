@@ -1,5 +1,6 @@
 import Replicate from 'replicate'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
+import { onConceptReadyLifecycle } from '@/lib/marketing/lifecycle'
 
 const replicate = () =>
   process.env.REPLICATE_API_TOKEN ? new Replicate({ auth: process.env.REPLICATE_API_TOKEN }) : null
@@ -14,7 +15,7 @@ export async function pollV30RenderPredictions(intakeId: string): Promise<string
   const supabase = getSupabaseAdmin()
   const { data: row } = await supabase
     .from('public_intake_leads')
-    .select('form_data, status')
+    .select('form_data, status, contact_email, client_name, project_path')
     .eq('id', intakeId)
     .single()
 
@@ -47,6 +48,9 @@ export async function pollV30RenderPredictions(intakeId: string): Promise<string
     v30RenderUrls: urls,
   }
 
+  const becomingReady = row.status === 'paid'
+  const nextStatus = becomingReady ? 'concept_ready' : row.status
+
   await supabase
     .from('public_intake_leads')
     .update({
@@ -55,10 +59,20 @@ export async function pollV30RenderPredictions(intakeId: string): Promise<string
         conceptOutput,
         v30ConceptOutput: conceptOutput,
         v30RendersCompletedAt: new Date().toISOString(),
+        funnelStage: becomingReady ? 'concept_ready' : formData.funnelStage,
       },
-      status: row.status === 'paid' ? 'concept_ready' : row.status,
+      status: nextStatus,
     })
     .eq('id', intakeId)
+
+  if (becomingReady && row.contact_email) {
+    void onConceptReadyLifecycle({
+      intakeId,
+      email: row.contact_email as string,
+      clientName: (row.client_name as string) ?? undefined,
+      projectPath: (row.project_path as string) ?? 'exterior_concept',
+    })
+  }
 
   return urls
 }

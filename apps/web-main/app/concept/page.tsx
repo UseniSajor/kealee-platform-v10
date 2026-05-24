@@ -7,12 +7,14 @@ import Link from 'next/link'
 import { ArrowRight, Check, Clock, PlayCircle } from 'lucide-react'
 import { getConceptServices } from '@/lib/services-config'
 import { V30ConceptRedirect } from '@/components/v30/V30TrafficGate'
+import { useCardMediaManifest, productHeroFromManifest } from '@/hooks/useCardMediaManifest'
 
 function ConceptStep1Inner() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [selected, setSelected] = useState(searchParams.get('service') ?? '')
   const services = getConceptServices()
+  const manifest = useCardMediaManifest()
 
   function handleNext() {
     if (!selected) return
@@ -50,7 +52,7 @@ function ConceptStep1Inner() {
               {/* Image / Video zone */}
               <div className="relative h-48 shrink-0 overflow-hidden bg-slate-100">
                 <Image
-                  src={svc.heroImage}
+                  src={productHeroFromManifest(manifest, svc.slug, svc.heroImage)}
                   alt={svc.label}
                   fill
                   className="object-cover group-hover:scale-105 transition-transform duration-500"

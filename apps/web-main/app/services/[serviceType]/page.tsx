@@ -11,6 +11,7 @@ import {
   getServiceProcessSteps,
   getServiceVideoFallbackCopy,
 } from '@/lib/service-page-copy'
+import { getServiceMedia } from '@/lib/marketing/service-media'
 
 // ── Tier deliverables (mirrors confirm/page.tsx TIER_ITEMS) ──────────────────
 interface DeliverableItem {
@@ -62,13 +63,15 @@ export async function generateMetadata({
   const { serviceType } = await params
   const svc = SERVICE_MAP[serviceType]
   if (!svc) return { title: 'Service Not Found' }
+  const media = await getServiceMedia(serviceType)
+  const heroImage = media?.heroImage ?? svc.heroImage
   return {
     title: `${svc.label} — Kealee`,
     description: svc.description,
     openGraph: {
       title: `${svc.label} — Kealee`,
       description: svc.description,
-      images: [{ url: svc.heroImage }],
+      images: [{ url: heroImage }],
     },
   }
 }
@@ -159,6 +162,10 @@ export default async function ServicePage({
   const svc = SERVICE_MAP[serviceType]
   if (!svc) notFound()
 
+  const media = await getServiceMedia(serviceType)
+  const heroImage = media?.heroImage ?? svc.heroImage
+  const heroVideo = media?.heroVideo
+
   const deliverable = SERVICE_DELIVERABLES[svc.intakePath]
   const includes = deliverable?.includes ?? svc.features
   const availableTiers = svc.tiers.filter((t) => t.available)
@@ -174,7 +181,7 @@ export default async function ServicePage({
         {/* Hero for New Construction */}
         <section className="relative bg-[#1A2B4A] py-24 px-4 overflow-hidden">
           <div className="absolute inset-0">
-            <Image src={svc.heroImage} alt={svc.label} fill className="object-cover opacity-20" />
+            <Image src={heroImage} alt={svc.label} fill className="object-cover opacity-20" />
           </div>
           <div className="relative mx-auto max-w-3xl text-center">
             <p className="text-xs font-bold uppercase tracking-widest text-orange-400 mb-4">{svc.category}</p>
@@ -212,13 +219,26 @@ export default async function ServicePage({
       {/* ── 1. Hero ────────────────────────────────────────────────────────── */}
       <section className="relative bg-[#1A2B4A] py-24 px-4 overflow-hidden">
         <div className="absolute inset-0">
-          <Image
-            src={svc.heroImage}
-            alt={svc.label}
-            fill
-            className="object-cover opacity-25"
-            priority
-          />
+          {heroVideo ? (
+            <video
+              autoPlay
+              muted
+              loop
+              playsInline
+              className="h-full w-full object-cover opacity-30"
+              poster={heroImage}
+            >
+              <source src={heroVideo} type="video/mp4" />
+            </video>
+          ) : (
+            <Image
+              src={heroImage}
+              alt={svc.label}
+              fill
+              className="object-cover opacity-25"
+              priority
+            />
+          )}
           <div className="absolute inset-0 bg-gradient-to-br from-[#1A2B4A]/90 via-[#1A2B4A]/80 to-[#E8724B]/30" />
         </div>
         <div className="relative mx-auto max-w-4xl text-center">

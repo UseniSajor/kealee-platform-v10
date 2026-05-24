@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { PROJECT_PATH_META } from '@kealee/intake'
+import { mergeAttributionMetadata, parseUtmFromRequest } from '@/lib/marketing/utm-metadata'
+import { trackLeadSubmitted } from '@/lib/marketing/ga4-server'
 
 export const dynamic = 'force-dynamic'
 
@@ -54,6 +56,20 @@ export async function POST(req: NextRequest) {
     const meta = PROJECT_PATH_META[projectPath as keyof typeof PROJECT_PATH_META]
     const baseAmount = meta?.paymentAmount ?? 58500
     const totalAmount = overrideAmount ?? baseAmount
+    const utm = parseUtmFromRequest(req, intake as Record<string, unknown>)
+    const formPayload = {
+      ...(intake as Record<string, unknown>),
+      captureSessionId: captureSessionId ?? null,
+      captureMode: captureMode ?? null,
+      siteVisitRequested: siteVisitRequested ?? false,
+      preferredVisitWindow: preferredVisitWindow ?? null,
+      funnelStage: 'lead',
+    }
+    const metadata = mergeAttributionMetadata(null, utm, {
+      funnelStage: 'lead',
+      marketingSource: 'web-main',
+      capturedAt: new Date().toISOString(),
+    })
 
     try {
       const supabase = getSupabaseAdmin()
@@ -66,13 +82,8 @@ export async function POST(req: NextRequest) {
           contact_phone: intake.contactPhone ?? null,
           project_address: intake.projectAddress,
           budget_range: intake.budgetRange ?? null,
-          form_data: {
-            ...intake,
-            captureSessionId: captureSessionId ?? null,
-            captureMode: captureMode ?? null,
-            siteVisitRequested: siteVisitRequested ?? false,
-            preferredVisitWindow: preferredVisitWindow ?? null,
-          },
+          form_data: formPayload,
+          metadata,
           source: 'web-main',
           status: 'new',
           requires_payment: meta?.requiresPayment ?? true,
@@ -83,6 +94,12 @@ export async function POST(req: NextRequest) {
         .single()
 
       if (!error && data) {
+        void trackLeadSubmitted({
+          intakeId: data.id,
+          projectPath,
+          source: 'web-main',
+          utm,
+        })
         return NextResponse.json({
           ok: true,
           intakeId: data.id,

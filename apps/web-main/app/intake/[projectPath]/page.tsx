@@ -8,6 +8,8 @@ import { SERVICE_DELIVERABLES } from '@/lib/service-deliverables'
 import { uploadIntakeFilesSequentially, type IntakeUploadedFile } from '@/lib/intake-file-upload'
 import { getIntakeCheckoutProjectDescriptionPlaceholder } from '@kealee/shared'
 import { INTAKE_PRICE_CENTS } from '@kealee/core-rules'
+import { trackEvent } from '@/lib/analytics'
+import { utmForApiBody } from '@/lib/marketing/client-utm'
 
 const AGENT_MAP: Record<string, string> = {
   exterior_concept: 'design', garden_concept: 'design', whole_home_concept: 'design',
@@ -385,6 +387,7 @@ export default function IntakePage() {
     }
     try {
       // 1. Create intake record
+      const attribution = utmForApiBody()
       const intakeRes = await fetch('/api/intake', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -394,11 +397,13 @@ export default function IntakePage() {
           contactEmail: formData.email,
           contactPhone: formData.phone || null,
           projectAddress: formData.address,
+          attribution,
           formData: {
             description: formData.description,
             squareFootage: formData.squareFootage,
             timeline: formData.timeline,
             uploadedFiles: uploadedFiles.map(f => f.url),
+            ...attribution,
             ...(sceneId ? { sceneId } : {}),
           },
         }),
@@ -409,6 +414,12 @@ export default function IntakePage() {
         throw new Error(body.error || 'Failed to save your intake. Please try again.')
       }
       const { intakeId } = await intakeRes.json()
+
+      trackEvent('lead_submitted', {
+        project_path: projectPath,
+        intake_id: intakeId,
+        ...attribution,
+      })
 
       // 2. Create Stripe checkout session
       const appUrl = typeof window !== 'undefined' ? window.location.origin : ''
@@ -429,6 +440,13 @@ export default function IntakePage() {
         throw new Error(body.error || 'Could not create checkout session. Please try again.')
       }
       const { url } = await checkoutRes.json()
+
+      trackEvent('checkout_started', {
+        project_path: projectPath,
+        intake_id: intakeId,
+        value: priceInfo.amount / 100,
+      })
+
       if (url) {
         window.location.href = url
       } else {

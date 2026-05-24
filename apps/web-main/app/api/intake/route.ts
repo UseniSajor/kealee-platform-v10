@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { SERVICE_DELIVERABLES } from '@/lib/service-deliverables'
 import { randomUUID } from 'crypto'
+import { mergeAttributionMetadata, parseUtmFromRequest } from '@/lib/marketing/utm-metadata'
+import { trackLeadSubmitted } from '@/lib/marketing/ga4-server'
 
 export const dynamic = 'force-dynamic'
 
@@ -18,42 +20,59 @@ export async function POST(req: NextRequest) {
       projectAddress,
       budgetRange,
       formData,
-    } = body
+      attribution,
+    } = body as Record<string, unknown>
+
+    const utm = parseUtmFromRequest(req, {
+      ...(typeof attribution === 'object' && attribution ? (attribution as Record<string, unknown>) : {}),
+      ...(formData && typeof formData === 'object' ? (formData as Record<string, unknown>) : {}),
+    })
 
     if (!projectPath || !clientName || !contactEmail || !projectAddress) {
       return NextResponse.json({ error: 'Missing required intake fields' }, { status: 400 })
     }
 
+    const path = String(projectPath)
     const supabase = getSupabaseAdmin()
+    const fd = formData && typeof formData === 'object' ? (formData as Record<string, unknown>) : {}
 
-    // form_data is used by concept/generate — must contain the original form fields
-    // so description, budget, zip etc. are available to the Claude prompt.
-    // Enrich with catalog metadata so the portal (and any downstream consumer)
-    // always knows what was purchased without a SERVICE_DELIVERABLES lookup.
-    const deliverable = SERVICE_DELIVERABLES[projectPath]
-    const resolvedFormData: Record<string, unknown> = formData ? { ...formData } : {}
+    const deliverable = SERVICE_DELIVERABLES[path]
+    const resolvedFormData: Record<string, unknown> = { ...fd, funnelStage: 'lead' }
+    if (utm.source) resolvedFormData.utm_source = utm.source
+    if (utm.medium) resolvedFormData.utm_medium = utm.medium
+    if (utm.campaign) resolvedFormData.utm_campaign = utm.campaign
     if (deliverable) {
-      resolvedFormData.serviceLabel      = deliverable.label
-      resolvedFormData.serviceCategory   = deliverable.category
-      resolvedFormData.serviceIncludes   = deliverable.includes
+      resolvedFormData.serviceLabel = deliverable.label
+      resolvedFormData.serviceCategory = deliverable.category
+      resolvedFormData.serviceIncludes = deliverable.includes
       resolvedFormData.serviceDeliveryDays = deliverable.deliveryDays
     }
+
+    const metadata = mergeAttributionMetadata(null, utm, {
+      funnelStage: 'lead',
+      marketingSource: 'web-main',
+      capturedAt: new Date().toISOString(),
+    })
 
     const { data: intake, error: intakeErr } = await supabase
       .from('public_intake_leads')
       .insert({
-        project_path: projectPath,
-        client_name: clientName,
-        contact_email: contactEmail,
-        contact_phone: contactPhone ?? null,
-        project_address: projectAddress,
-        budget_range: budgetRange ?? (formData?.budget ? String(formData.budget) : 'Not provided'),
+        project_path: path,
+        client_name: String(clientName),
+        contact_email: String(contactEmail),
+        contact_phone: contactPhone ? String(contactPhone) : null,
+        project_address: String(projectAddress),
+        budget_range: budgetRange
+          ? String(budgetRange)
+          : fd.budget
+            ? String(fd.budget)
+            : 'Not provided',
         source: 'web-main',
         status: 'new',
         requires_payment: true,
         payment_amount: 0,
-        metadata: Object.keys(resolvedFormData).length ? resolvedFormData : null,
-        form_data: Object.keys(resolvedFormData).length ? resolvedFormData : null,   // concept/generate reads from form_data
+        metadata,
+        form_data: resolvedFormData,
       })
       .select('id')
       .single()
@@ -66,6 +85,13 @@ export async function POST(req: NextRequest) {
       const fallbackId = randomUUID()
       return NextResponse.json({ intakeId: fallbackId, fallback: true })
     }
+
+    void trackLeadSubmitted({
+      intakeId: intake.id,
+      projectPath: path,
+      source: 'web-main',
+      utm,
+    })
 
     return NextResponse.json({ intakeId: intake.id })
   } catch (err: unknown) {

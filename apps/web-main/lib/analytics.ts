@@ -7,6 +7,9 @@ type EventName =
   | 'service_page_view'
   | 'cta_click'
   | 'intake_start'
+  | 'lead_submitted'
+  | 'checkout_started'
+  | 'purchase'
 
 declare global {
   interface Window {

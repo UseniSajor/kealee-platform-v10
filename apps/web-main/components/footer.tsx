@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { SERVICES } from '@/lib/services-config'
+import { SiteBottomBar } from '@/components/footer/SiteBottomBar'
 
 const COMPANY_LINKS = [
   { href: '/about', label: 'About Kealee' },
@@ -128,13 +129,7 @@ export function SiteFooter() {
         </div>
       </div>
 
-      {/* Bottom bar */}
-      <div className="border-t border-white/10">
-        <div className="mx-auto max-w-7xl px-4 py-5 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <p className="text-xs text-slate-500">© 2026 Kealee Platform LLC · Washington DC Metro Area</p>
-          <p className="text-xs text-slate-500">Kealee Construction LLC est. 2002 · DC · MD · VA</p>
-        </div>
-      </div>
+      <SiteBottomBar variant="dark" />
     </footer>
   )
 }

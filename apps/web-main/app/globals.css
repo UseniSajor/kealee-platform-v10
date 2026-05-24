@@ -3,6 +3,8 @@
 @tailwind utilities;
 
 :root {
+  --site-nav-h: 4rem;
+  --home-chat-reserve: 7.5rem;
   --o: #C8521A;
   --o2: #E8733D;
   --olt: #FDF0E8;
@@ -349,6 +351,14 @@ footer { background: #1E2120; padding: 48px 40px 30px; }
 
   /* Render gallery: 2 columns in print */
   .concept-renders-grid { grid-template-columns: repeat(2, 1fr) !important; }
+}
+
+/* Homepage service cards — fill viewport between nav and fixed AskChatBar */
+.home-cards-shell {
+  min-height: calc(100dvh - var(--site-nav-h) - var(--home-chat-reserve));
+}
+main:has(.home-cards-shell) {
+  padding-bottom: 0;
 }
 
 /* BACKWARD COMPAT */

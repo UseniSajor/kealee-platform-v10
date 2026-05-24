@@ -3,7 +3,6 @@ import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { syncV30ConceptToIntakeLead } from '@/lib/v30-design-sync'
 import { finalizeV30FloorplanDeliverables } from '@/lib/v30-floorplan-deliverables'
 import { syncLandscapePremiumPlusPackage } from '@/lib/v30-landscape-package'
-import { syncV30MarketingKit } from '@/lib/v30-marketing-sync'
 import { isGardenLandscapeScope } from '@kealee/kealee-agent-stack'
 
 const API_BASE = () =>
@@ -114,15 +113,10 @@ async function pollAndSyncV30Concept(intakeId: string, projectId?: string): Prom
       }
       const designDone = ws.executions?.some(e => e.botType === 'design' && e.status === 'COMPLETE')
       const floorplanExec = ws.executions?.find(e => e.botType === 'floorplan')
-      const marketingExec = ws.executions?.find(e => e.botType === 'marketing')
       const concept = ws.v30ConceptOutput
 
       if (designDone && concept) {
         await syncV30ConceptToIntakeLead(intakeId, concept)
-      }
-
-      if (marketingExec?.status === 'COMPLETE' && marketingExec.outputData) {
-        await syncV30MarketingKit(intakeId, marketingExec.outputData as Record<string, unknown>)
       }
 
       const allComplete =

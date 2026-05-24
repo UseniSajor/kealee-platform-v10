@@ -5,6 +5,8 @@ import { createStripe } from '@/lib/stripe-client'
 import { getIntakePrice, SITE_VISIT_FEE_CENTS } from '@kealee/core-rules'
 import { isV30Enabled } from '@kealee/kealee-agent-stack'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
+import { trackCheckoutStarted } from '@/lib/marketing/ga4-server'
+import { parseUtmFromBody } from '@/lib/marketing/utm-metadata'
 
 export const dynamic = 'force-dynamic'
 
@@ -135,6 +137,33 @@ export async function POST(req: NextRequest) {
         },
       },
     }
+
+    const totalCents =
+      unitAmountCents + (siteVisitRequested ? SITE_VISIT_FEE_CENTS : 0)
+
+    let checkoutUtm = parseUtmFromBody(body as Record<string, unknown>)
+    try {
+      const supabase = getSupabaseAdmin()
+      const { data: intakeRow } = await supabase
+        .from('public_intake_leads')
+        .select('metadata, form_data')
+        .eq('id', intakeId)
+        .single()
+      const bag = {
+        ...((intakeRow?.metadata as Record<string, unknown>) ?? {}),
+        ...((intakeRow?.form_data as Record<string, unknown>) ?? {}),
+      }
+      checkoutUtm = parseUtmFromBody(bag)
+    } catch {
+      // non-fatal
+    }
+
+    void trackCheckoutStarted({
+      intakeId,
+      projectPath,
+      valueCents: totalCents,
+      utm: checkoutUtm,
+    })
 
     if (embedded) {
       // Embedded checkout — Stripe renders the card form inside our page

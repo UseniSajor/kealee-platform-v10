@@ -8,6 +8,7 @@ import { ArrowRight, Search, X, Building2 } from 'lucide-react'
 import { SERVICES } from '@/lib/services-config'
 import type { Service } from '@/lib/services-config'
 import { GALLERY_SEARCH_PLACEHOLDER } from '@kealee/shared'
+import { useCardMediaManifest, productHeroFromManifest } from '@/hooks/useCardMediaManifest'
 
 // Precon = AI concepts, estimates, permits (digital deliverables)
 // Build = construction execution (separate flow)
@@ -22,7 +23,7 @@ const CATEGORIES = [
   { key: 'design', label: 'Design' },
 ]
 
-function ServiceCard({ svc }: { svc: Service }) {
+function ServiceCard({ svc, heroImage }: { svc: Service; heroImage: string }) {
   const hasVideo = svc.tiers.some((t) => t.video)
 
   return (
@@ -31,7 +32,7 @@ function ServiceCard({ svc }: { svc: Service }) {
         {/* Image */}
         <div className="relative h-44 overflow-hidden bg-slate-100 flex-shrink-0">
           <Image
-            src={svc.heroImage}
+            src={heroImage}
             alt={svc.label}
             fill
             className="object-cover group-hover:scale-105 transition-transform duration-500"
@@ -73,6 +74,7 @@ function ServiceCard({ svc }: { svc: Service }) {
 export default function GalleryPage() {
   const [activeCategory, setActiveCategory] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
+  const manifest = useCardMediaManifest()
 
   const filtered = useMemo(() => {
     // Filter within precon services only (build has its own section)
@@ -177,7 +179,10 @@ export default function GalleryPage() {
                   exit={{ opacity: 0, y: -10 }}
                   transition={{ duration: 0.2 }}
                 >
-                  <ServiceCard svc={svc} />
+                  <ServiceCard
+                    svc={svc}
+                    heroImage={productHeroFromManifest(manifest, svc.slug, svc.heroImage)}
+                  />
                 </motion.div>
               ))}
             </AnimatePresence>

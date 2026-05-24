@@ -19,6 +19,12 @@ import { SERVICE_DELIVERABLES } from '@/lib/service-deliverables'
 import { getOwnerPortalDeliverableUrl } from '@/lib/owner-portal-urls'
 import { isStripeWebhookSideEffectsDisabledOnThisDeployment } from '@/lib/stripe-vercel-guard'
 import { isV30IntakeMetadata, triggerV30GenerationForIntake } from '@/lib/v30-trigger'
+import {
+  patchIntakeFunnelStage,
+  sendPostPaymentCustomerEmail,
+} from '@/lib/marketing/lifecycle'
+import { trackPurchase } from '@/lib/marketing/ga4-server'
+import { parseUtmFromBody } from '@/lib/marketing/utm-metadata'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 30
@@ -135,10 +141,14 @@ export async function POST(req: NextRequest) {
 
   const { data: currentIntake } = await supabase
     .from('public_intake_leads')
-    .select('form_data')
+    .select('form_data, metadata')
     .eq('id', intakeId)
     .single()
   const existingFormData = (currentIntake?.form_data as Record<string, unknown>) ?? {}
+  const purchaseUtm = parseUtmFromBody({
+    ...((currentIntake?.metadata as Record<string, unknown>) ?? {}),
+    ...existingFormData,
+  })
 
   // Merge catalog metadata so the portal always knows what was purchased.
   // serviceLabel / serviceIncludes / serviceDeliveryDays are set here for intakes
@@ -155,9 +165,16 @@ export async function POST(req: NextRequest) {
   }
 
   // 2. Mark intake as paid and persist permitRequired in form_data (idempotent: only rows still `new`)
+  mergedFormData.funnelStage = 'paid_concept'
+
   const { data: updatedRows, error: updateErr } = await supabase
     .from('public_intake_leads')
-    .update({ status: 'paid', form_data: mergedFormData })
+    .update({
+      status: 'paid',
+      form_data: mergedFormData,
+      paid_at: new Date().toISOString(),
+      stripe_session_id: session.id,
+    })
     .eq('id', intakeId)
     .eq('status', 'new')
     .select('id')
@@ -225,43 +242,23 @@ export async function POST(req: NextRequest) {
     })
   }
 
-  // 4. Customer confirmation email
-  if (resendApiKey && clientEmail !== 'unknown') {
-    fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${resendApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        from: 'Kealee <hello@kealee.com>',
-        to: [clientEmail],
-        subject: `Your Kealee concept package is confirmed`,
-        text: [
-          `Hi ${clientName},`,
-          '',
-          'Your payment has been received and your concept package is being prepared now.',
-          '',
-          `  Service:  ${projectPath.replace(/_/g, ' ')}`,
-          `  Amount:   $${amountFormatted}`,
-          `  Order ID: ${intakeId}`,
-          '',
-          'Your Owner Portal login details will arrive in a separate email within the next few minutes.',
-          'Check your spam folder if you don\'t see it.',
-          '',
-          'What happens next:',
-          '  1. Your AI concept is generating now',
-          '  2. You\'ll receive an email with Owner Portal access',
-          '  3. Full package delivered in 3-5 business days',
-          '',
-          `View your deliverable (after signing in): ${getOwnerPortalDeliverableUrl(intakeId, projectPath)}`,
-          '',
-          'Questions? Reply to this email or contact hello@kealee.com',
-          '',
-          'The Kealee Team',
-          'https://kealee.com',
-        ].join('\n'),
-      }),
+  patchIntakeFunnelStage(intakeId, 'paid_concept', ['stripe-paid']).catch(err => {
+    console.error('[stripe-webhook] funnel stage patch failed:', err.message)
+  })
+
+  void trackPurchase({
+    intakeId,
+    projectPath,
+    valueCents: amountCents,
+    utm: purchaseUtm,
+  })
+
+  if (clientEmail !== 'unknown') {
+    sendPostPaymentCustomerEmail({
+      intakeId,
+      email: clientEmail,
+      clientName,
+      projectPath,
     }).catch((err: Error) => {
       console.error('[stripe-webhook] Customer confirmation email failed:', err.message)
     })

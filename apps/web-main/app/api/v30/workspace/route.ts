@@ -23,7 +23,7 @@ export async function GET(req: NextRequest) {
   const supabase = getSupabaseAdmin()
   const { data: intake, error } = await supabase
     .from('public_intake_leads')
-    .select('id, project_path, client_name, form_data, status')
+    .select('id, project_path, client_name, contact_email, form_data, status')
     .eq('id', intakeId)
     .single()
 
@@ -90,7 +90,6 @@ export async function GET(req: NextRequest) {
     v30LotContext: formData.v30LotContext,
     v30FloorplanDeliverables: deliverables,
     v30LandscapePremiumPlus: landscapePkg,
-    v30MarketingKit: formData.v30MarketingKit,
     ...ws,
   })
 }
