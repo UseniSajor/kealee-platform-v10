@@ -6,12 +6,25 @@
   "functions": {
     "app/api/concept/generate/route.ts": { "maxDuration": 300 },
     "app/api/concept/video/route.ts":    { "maxDuration": 60 },
+    "app/api/marketing/card-media/generate/route.ts": { "maxDuration": 300 },
     "app/api/webhooks/stripe/route.ts":  { "maxDuration": 30 }
   },
   "crons": [
     {
       "path": "/api/cron/marketing-drip",
       "schedule": "0 14 * * *"
+    },
+    {
+      "path": "/api/cron/generate-weekly-campaigns",
+      "schedule": "0 13 * * 1"
+    },
+    {
+      "path": "/api/cron/send-daily-campaigns",
+      "schedule": "0 14 * * *"
+    },
+    {
+      "path": "/api/cron/linkedin",
+      "schedule": "0 14 * * 1"
     }
   ]
 }
