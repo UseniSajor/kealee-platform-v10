@@ -4,8 +4,23 @@ const { withSentryConfig } = require('@sentry/nextjs');
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  serverExternalPackages: ['stripe', 'sharp'],
+  serverExternalPackages: ['stripe', 'sharp', '@img/sharp-libvips-dev', '@img/sharp-wasm32', '@img/sharp-libvips-linux-x64', '@img/sharp-libvips-linux-arm64'],
   transpilePackages: ['@kealee/ui', '@kealee/intake', '@kealee/shared', '@kealee/pascal-wrapper', '@kealee/core-bim', '@kealee/kealee-agent-stack', '@kealee/storage', '@kealee/concept-engine'],
+  webpack(config, { isServer }) {
+    if (isServer) {
+      const prev = Array.isArray(config.externals) ? config.externals : [config.externals].filter(Boolean)
+      config.externals = [
+        ...prev,
+        ({ request }, callback) => {
+          if (request && (request.startsWith('@img/') || request === 'sharp')) {
+            return callback(null, 'commonjs ' + request)
+          }
+          callback()
+        },
+      ]
+    }
+    return config
+  },
   async redirects() {
     return [
       { source: '/auth/login', destination: '/login', permanent: false },
