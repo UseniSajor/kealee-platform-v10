@@ -122,7 +122,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
                   source: 'meta_lead_ad',
                   tags: ['meta-lead-ad', 'concept-inquiry'],
                 })
-                if (!contact?.id) return
+                if (!contact || !contact.id) return
 
                 await scheduleSequence(
                   lead.leadgen_id,
