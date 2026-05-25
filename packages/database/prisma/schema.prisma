@@ -16230,6 +16230,7 @@ model PublicIntakeLead {
 
   // Extra fields (flexible)
   metadata Json?
+  formData Json? @map("form_data")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -16239,6 +16240,8 @@ model PublicIntakeLead {
   @@index([status])
   @@index([createdAt])
   @@index([stripeSessionId])
+  @@index([source])
+  @@index([leadTier])
 }
 
 // ─── AI Concept Engine ────────────────────────────────────────────────────────

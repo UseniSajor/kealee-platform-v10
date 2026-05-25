@@ -14,11 +14,9 @@ import {
   isV30IntakeFormData,
   parseV30FloorplanDeliverables,
   parseV30LandscapePackage,
-  parseV30MarketingKit,
   v30WorkspaceUrl,
 } from '@/lib/concept-output'
 import { V30LandscapeCadPanel } from '@/components/v30/V30LandscapeCadPanel'
-import { V30MarketingKitPanel } from '@/components/v30/V30MarketingKitPanel'
 import { V30WorkspaceEmbed } from '@/components/v30/V30WorkspaceEmbed'
 import { ConceptPackageNav } from '@/components/concept/ConceptPackageNav'
 
@@ -342,7 +340,6 @@ interface ConceptData {
   v30Landscape?: ReturnType<typeof parseV30LandscapePackage>
   v30Floorplan?: ReturnType<typeof parseV30FloorplanDeliverables>
   v30LotContext?: { satelliteImageUrl?: string; googleEarthHint?: string } | null
-  v30MarketingKit?: Record<string, unknown> | null
 }
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
@@ -702,7 +699,6 @@ export default function ConceptDeliverablePage() {
         v30Landscape:    parseV30LandscapePackage(formData),
         v30Floorplan:    parseV30FloorplanDeliverables(formData),
         v30LotContext:   (formData.v30LotContext as ConceptData['v30LotContext']) ?? null,
-        v30MarketingKit: parseV30MarketingKit(formData),
         floorplanSvg,
         scope:           scopeDescription,
         budget:          typeof intake.budget_range === 'number' ? intake.budget_range : 0,
@@ -854,7 +850,6 @@ export default function ConceptDeliverablePage() {
       : []),
     ...(data.mepSystem?.electrical || data.mepSystem?.plumbing ? ['mep'] : []),
     ...(data.isV30 && data.v30Floorplan ? ['v30-landscape'] : []),
-    ...(data.v30MarketingKit ? ['v30-marketing'] : []),
     'next-steps',
   ]
 
@@ -970,12 +965,6 @@ export default function ConceptDeliverablePage() {
             </ul>
           </div>
         </section>
-
-        {data.v30MarketingKit && (
-          <div id="v30-marketing" className="scroll-mt-24">
-            <V30MarketingKitPanel kit={data.v30MarketingKit} />
-          </div>
-        )}
 
         {data.isV30 && (
           <div id="v30-landscape" className="scroll-mt-24">

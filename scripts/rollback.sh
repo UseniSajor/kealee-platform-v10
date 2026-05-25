@@ -18,7 +18,7 @@ available_services=(
   "portal-contractor"
   "portal-developer"
   "command-center"
-  "admin-console"
+  "os-admin"
 )
 
 # Check if service is valid

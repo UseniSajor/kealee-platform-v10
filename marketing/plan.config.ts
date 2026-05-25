@@ -1,15 +1,22 @@
 /**
  * Machine-readable marketing plan — aligned with STACK-RECOMMENDATION.md
  * No GHL. Prices always from @kealee/core-rules at runtime.
+ *
+ * Canonical upsell after concept: permit → professional drawings (see upsell-path.json).
  */
+
+/** Post-concept upsell order — always permit, then drawings. */
+export const CANONICAL_UPSELL_PATH = [
+  { stage: 'permit', goal: 'Permit path & filing', path: '/intake/permit_path_only' },
+  { stage: 'drawings', goal: 'Permit-ready professional drawings', path: '/intake/professional_drawings' },
+] as const
 
 export const MARKETING_FUNNEL = [
   { stage: 'traffic', goal: 'DMV-targeted visits to web-main' },
   { stage: 'lead', goal: 'Capture email + project_path', api: 'POST /api/leads/marketing' },
   { stage: 'paid_concept', goal: 'Stripe checkout → v30 parallel bots', status: 'paid' },
   { stage: 'concept_ready', goal: 'Deliverables in owner portal', status: 'concept_ready' },
-  { stage: 'estimate', goal: 'Upsell cost estimate', path: '/estimate/intake' },
-  { stage: 'permit', goal: 'Upsell permit path / drawings', path: '/permits' },
+  ...CANONICAL_UPSELL_PATH,
   { stage: 'build', goal: 'Contractor match, PM, milestones on platform' },
 ] as const
 
@@ -36,12 +43,13 @@ export const DRIP_SEQUENCE = [
   { step: 1, delayDays: 1, channel: 'resend', template: 'package_included' },
   { step: 2, delayDays: 3, channel: 'resend', template: 'social_proof' },
   { step: 3, delayDays: 7, channel: 'resend', template: 'final_cta' },
-  { step: 4, delayDays: 14, channel: 'resend', template: 'estimate_upsell', when: 'concept_ready' },
+  { step: 4, delayDays: 14, channel: 'resend', template: 'permit_upsell', when: 'concept_ready' },
+  { step: 5, delayDays: 21, channel: 'resend', template: 'drawings_upsell', when: 'concept_ready' },
 ] as const
 
 export const CONVERSION_CTAS = [
   'Start your AI concept',
-  'Get a cost estimate',
-  'Check your permit path',
+  'Continue to permit planning',
+  'Get permit-ready drawings',
   'Find a contractor on Kealee',
 ] as const

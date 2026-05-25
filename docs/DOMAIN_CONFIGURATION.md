@@ -4,7 +4,7 @@
 
 ### For Each App:
 
-1. **os-admin** → `admin.kealee.com`
+1. **os-admin** → `admin.kealee.com` (canonical admin UI; replaces deprecated `admin-console`)
 2. **os-pm** → `pm.kealee.com`
 3. **m-ops-services** → `ops.kealee.com` (or `kealee.com` for main site)
 4. **m-project-owner** → `owner.kealee.com`

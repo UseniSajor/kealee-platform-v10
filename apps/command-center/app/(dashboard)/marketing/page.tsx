@@ -4,20 +4,28 @@
  * /marketing — Kealee Marketing Command Center
  *
  * Tabs:
- *  1. Content Generator — run marketing-bot / pitch-bot, copy generated content
- *  2. Lead Pipeline     — all marketing-sourced leads with source + conversion status
- *  3. Sequences         — drip email queue status per lead
- *  4. Commands          — schema-defined automation commands (single + pipelines)
+ *  0. Ops Overview      — funnel stats, drip health, quick links
+ *  1. Card Media        — homepage/service heroes (MarketingBot + generate)
+ *  2. Automation        — Vercel cron manual triggers
+ *  3. Content Generator — run marketing-bot / pitch-bot, copy generated content
+ *  4. Lead Pipeline     — all marketing-sourced leads with source + conversion status
+ *  5. Sequences         — drip email queue status per lead
+ *  6. Commands          — schema-defined automation commands (single + pipelines)
  */
 
 import { useState, useEffect, useCallback } from 'react'
+import Link from 'next/link'
 import {
   Megaphone, Sparkles, Users, Mail, Copy, Check, RefreshCw,
   Loader2, ChevronDown, ExternalLink, Send, Instagram, Facebook,
   MessageSquare, AtSign, Terminal, Play, ChevronRight,
-  Zap, BarChart2, Layers,
+  Zap, BarChart2, Layers, Rocket, LayoutDashboard, ImageIcon, Clock, BookOpen,
 } from 'lucide-react'
 import type { CommandSchema, CommandResult, FieldSchema } from '../../../lib/marketing-commands'
+import { OpsOverview } from '@/components/marketing/OpsOverview'
+import { CardMediaOps } from '@/components/marketing/CardMediaOps'
+import { AutomationCrons } from '@/components/marketing/AutomationCrons'
+import { PlansLibrary } from '@/components/marketing/PlansLibrary'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -33,14 +41,16 @@ interface MarketingContent {
 }
 
 interface Lead {
-  id:              string
-  contact_email:   string
-  client_name:     string
-  project_path:    string
-  status:          string
-  created_at:      string
-  form_data:       { source?: string; tier?: number; message?: string } | null
-  budget_range:    string | null
+  id: string
+  contact_email: string
+  client_name: string
+  project_path: string
+  status: string
+  source?: string
+  created_at: string
+  form_data: { source?: string; tier?: number; message?: string; utm_source?: string } | null
+  metadata?: Record<string, unknown> | null
+  budget_range: string | null
   project_address: string | null
 }
 
@@ -54,12 +64,47 @@ interface SequenceEntry {
 }
 
 interface MarketingStats {
-  totalLeads:      number
-  bySource:        Record<string, number>
-  byService:       Record<string, number>
-  converted:       number
-  conversionRate:  string
+  totalLeads: number
+  bySource: Record<string, number>
+  byService?: Record<string, number>
+  byProjectPath?: Record<string, number>
+  byUtmSource?: Record<string, number>
+  byStatus?: Record<string, number>
+  converted: number
+  conversionRate: string
+  paidCount?: number
+  conceptReadyCount?: number
   sequencesPending: number
+  last7DaysLeads?: number
+  last7DaysPaid?: number
+}
+
+function BreakdownTable({
+  title,
+  data,
+}: {
+  title: string
+  data: Record<string, number>
+}) {
+  const entries = Object.entries(data).sort((a, b) => b[1] - a[1]).slice(0, 8)
+  if (entries.length === 0) return null
+  return (
+    <div className="rounded-xl border p-4" style={{ borderColor: '#2A3D5F', backgroundColor: '#1A2B4A' }}>
+      <p className="mb-3 text-xs font-semibold uppercase tracking-widest" style={{ color: 'rgba(255,255,255,0.4)' }}>
+        {title}
+      </p>
+      <ul className="space-y-1.5">
+        {entries.map(([key, count]) => (
+          <li key={key} className="flex justify-between text-sm">
+            <span className="truncate pr-2" style={{ color: 'rgba(255,255,255,0.7)' }}>
+              {key.replace(/_/g, ' ')}
+            </span>
+            <span className="font-medium text-white">{count}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  )
 }
 
 // ── Constants ─────────────────────────────────────────────────────────────────
@@ -344,19 +389,33 @@ function LeadPipeline({ stats }: { stats: MarketingStats | null }) {
     <div className="space-y-4">
       {/* Stats bar */}
       {stats && (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          {[
-            { label: 'Marketing Leads', value: stats.totalLeads },
-            { label: 'Converted',       value: stats.converted },
-            { label: 'Conversion Rate', value: stats.conversionRate },
-            { label: 'Drip Pending',    value: stats.sequencesPending },
-          ].map(s => (
-            <div key={s.label} className="rounded-xl border p-4" style={{ borderColor: '#2A3D5F', backgroundColor: '#1A2B4A' }}>
-              <p className="text-2xl font-bold text-white">{s.value}</p>
-              <p className="mt-0.5 text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>{s.label}</p>
-            </div>
-          ))}
-        </div>
+        <>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+            {[
+              { label: 'All intakes', value: stats.totalLeads },
+              { label: 'Paid', value: stats.paidCount ?? '—' },
+              { label: 'Concept ready', value: stats.conceptReadyCount ?? '—' },
+              { label: 'Converted', value: stats.converted },
+              { label: 'Conversion', value: stats.conversionRate },
+              { label: 'Drip pending', value: stats.sequencesPending },
+            ].map(s => (
+              <div key={s.label} className="rounded-xl border p-4" style={{ borderColor: '#2A3D5F', backgroundColor: '#1A2B4A' }}>
+                <p className="text-2xl font-bold text-white">{s.value}</p>
+                <p className="mt-0.5 text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>{s.label}</p>
+              </div>
+            ))}
+          </div>
+          {(stats.last7DaysLeads != null || stats.byUtmSource) && (
+            <p className="text-xs" style={{ color: 'rgba(255,255,255,0.45)' }}>
+              Last 7 days: {stats.last7DaysLeads ?? 0} leads · {stats.last7DaysPaid ?? 0} converted
+            </p>
+          )}
+          <div className="grid gap-3 md:grid-cols-3">
+            <BreakdownTable title="By source" data={stats.bySource} />
+            <BreakdownTable title="By project path" data={stats.byProjectPath ?? stats.byService ?? {}} />
+            <BreakdownTable title="By UTM source" data={stats.byUtmSource ?? {}} />
+          </div>
+        </>
       )}
 
       {/* Leads table */}
@@ -364,7 +423,7 @@ function LeadPipeline({ stats }: { stats: MarketingStats | null }) {
         <table className="w-full text-sm">
           <thead style={{ backgroundColor: '#1A2B4A' }}>
             <tr>
-              {['Name / Email', 'Service', 'Source', 'Budget', 'Status', 'Date'].map(h => (
+              {['Name / Email', 'Service', 'Channel', 'UTM', 'Budget', 'Status', 'Date'].map(h => (
                 <th key={h} className="px-4 py-3 text-left text-xs font-medium" style={{ color: 'rgba(255,255,255,0.4)' }}>{h}</th>
               ))}
             </tr>
@@ -372,11 +431,18 @@ function LeadPipeline({ stats }: { stats: MarketingStats | null }) {
           <tbody>
             {leads.length === 0 ? (
               <tr>
-                <td colSpan={6} className="px-4 py-12 text-center text-sm" style={{ color: 'rgba(255,255,255,0.3)' }}>
-                  No marketing leads yet. Generate content and capture leads via the bot channels.
+                <td colSpan={7} className="px-4 py-12 text-center text-sm" style={{ color: 'rgba(255,255,255,0.3)' }}>
+                  No intakes yet.
                 </td>
               </tr>
-            ) : leads.map(lead => (
+            ) : leads.map(lead => {
+              const meta = (lead as Lead & { metadata?: Record<string, unknown> }).metadata
+              const utm =
+                (meta?.utm_source as string) ??
+                (lead.form_data?.source as string) ??
+                '—'
+              const channel = (lead as Lead & { source?: string }).source ?? lead.form_data?.source ?? 'unknown'
+              return (
               <tr key={lead.id} className="border-t hover:bg-white/5 transition-colors" style={{ borderColor: '#2A3D5F' }}>
                 <td className="px-4 py-3">
                   <p className="font-medium text-white">{lead.client_name}</p>
@@ -386,9 +452,12 @@ function LeadPipeline({ stats }: { stats: MarketingStats | null }) {
                   {lead.project_path.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}
                 </td>
                 <td className="px-4 py-3">
-                  <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${SOURCE_COLORS[lead.form_data?.source ?? ''] ?? 'bg-gray-700 text-gray-300'}`}>
-                    {lead.form_data?.source ?? 'unknown'}
+                  <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${SOURCE_COLORS[channel] ?? 'bg-gray-700 text-gray-300'}`}>
+                    {channel}
                   </span>
+                </td>
+                <td className="px-4 py-3 text-xs" style={{ color: 'rgba(255,255,255,0.5)' }}>
+                  {utm}
                 </td>
                 <td className="px-4 py-3 text-xs" style={{ color: 'rgba(255,255,255,0.5)' }}>
                   {lead.budget_range ?? '—'}
@@ -408,7 +477,8 @@ function LeadPipeline({ stats }: { stats: MarketingStats | null }) {
                   {new Date(lead.created_at).toLocaleDateString()}
                 </td>
               </tr>
-            ))}
+              )
+            })}
           </tbody>
         </table>
       </div>
@@ -470,7 +540,7 @@ function DripSequences() {
                 <td className="px-4 py-3 text-xs" style={{ color: 'rgba(255,255,255,0.6)' }}>{s.service_label}</td>
                 <td className="px-4 py-3">
                   <span className="rounded-full px-2 py-0.5 text-xs" style={{ backgroundColor: 'rgba(42,191,191,0.15)', color: '#2ABFBF' }}>
-                    Step {s.sequence_step}/3
+                    Step {s.sequence_step}/4
                   </span>
                 </td>
                 <td className="px-4 py-3 text-xs" style={{ color: 'rgba(255,255,255,0.5)' }}>
@@ -850,26 +920,121 @@ function CommandRunner() {
   )
 }
 
-// ── Page ──────────────────────────────────────────────────────────────────────
+// ── Campaign launcher ───────────────────────────────────────────────────────────
 
-type Tab = 'content' | 'leads' | 'sequences' | 'commands'
-
-export default function MarketingPage() {
-  const [tab,   setTab]   = useState<Tab>('content')
-  const [stats, setStats] = useState<MarketingStats | null>(null)
+function CampaignLauncher({ onComplete }: { onComplete: () => void }) {
+  const [loading, setLoading] = useState(false)
+  const [dryRun, setDryRun] = useState(false)
+  const [force, setForce] = useState(false)
+  const [preview, setPreview] = useState<{ weekKey?: string; theme?: string; today?: string } | null>(null)
+  const [result, setResult] = useState<Record<string, unknown> | null>(null)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
+    fetch('/api/marketing/campaign/start')
+      .then(r => r.json())
+      .then(j => setPreview(j))
+      .catch(() => null)
+  }, [])
+
+  async function startCampaign() {
+    setLoading(true)
+    setError(null)
+    setResult(null)
+    try {
+      const res = await fetch('/api/marketing/campaign/start', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ generate: true, send: true, dryRun, forceGenerate: force }),
+      })
+      const json = await res.json()
+      if (!res.ok) throw new Error(json.error ?? `HTTP ${res.status}`)
+      setResult(json)
+      onComplete()
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : String(e))
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div
+      className="rounded-xl border p-4 flex flex-col gap-4 md:flex-row md:items-center md:justify-between"
+      style={{ borderColor: '#2A3D5F', backgroundColor: 'rgba(232,121,58,0.08)' }}
+    >
+      <div>
+        <p className="flex items-center gap-2 text-sm font-semibold text-white">
+          <Rocket className="h-4 w-4" style={{ color: '#E8793A' }} />
+          Weekly product campaign
+        </p>
+        <p className="mt-1 text-xs" style={{ color: 'rgba(255,255,255,0.5)' }}>
+          {preview?.theme ?? 'Generate 7 days · send today’s email via Resend'}
+          {preview?.today ? ` · Today: ${preview.today}` : ''}
+        </p>
+        <label className="mt-2 flex items-center gap-4 text-xs" style={{ color: 'rgba(255,255,255,0.55)' }}>
+          <span className="flex items-center gap-1.5">
+            <input type="checkbox" checked={dryRun} onChange={e => setDryRun(e.target.checked)} />
+            Dry run (no emails)
+          </span>
+          <span className="flex items-center gap-1.5">
+            <input type="checkbox" checked={force} onChange={e => setForce(e.target.checked)} />
+            Regenerate week
+          </span>
+        </label>
+      </div>
+      <button
+        type="button"
+        onClick={startCampaign}
+        disabled={loading}
+        className="flex shrink-0 items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold disabled:opacity-50"
+        style={{ backgroundColor: '#E8793A', color: '#0f1c30' }}
+      >
+        {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Zap className="h-4 w-4" />}
+        {loading ? 'Starting…' : 'Start campaign'}
+      </button>
+      {(error || result) && (
+        <div className="md:basis-full md:order-last w-full">
+          {error && <p className="text-sm text-rose-400">{error}</p>}
+          {result && (
+            <pre className="mt-2 max-h-32 overflow-auto rounded-lg border p-2 text-xs" style={{ borderColor: '#2A3D5F', color: 'rgba(255,255,255,0.7)' }}>
+              {JSON.stringify(result, null, 2)}
+            </pre>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ── Page ──────────────────────────────────────────────────────────────────────
+
+type Tab = 'overview' | 'library' | 'media' | 'automation' | 'content' | 'leads' | 'sequences' | 'commands'
+
+export default function MarketingPage() {
+  const [tab,   setTab]   = useState<Tab>('overview')
+  const [stats, setStats] = useState<MarketingStats | null>(null)
+
+  const refreshStats = useCallback(() => {
     fetch('/api/command-center/marketing')
       .then(r => r.json())
       .then(j => setStats(j.stats ?? null))
       .catch(() => null)
   }, [])
 
+  useEffect(() => {
+    refreshStats()
+  }, [refreshStats])
+
   const tabs: { id: Tab; label: string; icon: React.ElementType }[] = [
-    { id: 'content',   label: 'Content Generator', icon: Sparkles },
-    { id: 'leads',     label: 'Lead Pipeline',      icon: Users },
-    { id: 'sequences', label: 'Drip Sequences',     icon: Send },
-    { id: 'commands',  label: 'Commands',            icon: Terminal },
+    { id: 'overview',   label: 'Ops',              icon: LayoutDashboard },
+    { id: 'library',    label: 'Plans & library',  icon: BookOpen },
+    { id: 'media',      label: 'Card Media',       icon: ImageIcon },
+    { id: 'automation', label: 'Automation',       icon: Clock },
+    { id: 'content',    label: 'Content',          icon: Sparkles },
+    { id: 'leads',      label: 'Leads',            icon: Users },
+    { id: 'sequences',  label: 'Sequences',        icon: Send },
+    { id: 'commands',   label: 'Commands',         icon: Terminal },
   ]
 
   return (
@@ -882,16 +1047,27 @@ export default function MarketingPage() {
             Marketing
           </h1>
           <p className="mt-1 text-sm" style={{ color: 'rgba(255,255,255,0.4)' }}>
-            AI-generated content · Lead capture · Drip automation · Schema commands
+            v30 marketing ops · Card media · Crons · Leads · Drip · MarketingBot commands
           </p>
         </div>
-        {stats && (
-          <div className="flex items-center gap-2 text-sm" style={{ color: 'rgba(255,255,255,0.5)' }}>
-            <span className="font-semibold text-white">{stats.totalLeads}</span> marketing leads ·
-            <span className="font-semibold" style={{ color: '#2ABFBF' }}>{stats.conversionRate}</span> conversion
-          </div>
-        )}
+        <div className="flex items-center gap-3">
+          <Link
+            href="/marketing/strategy"
+            className="rounded-lg border px-3 py-1.5 text-xs font-medium text-white/60 hover:text-white"
+            style={{ borderColor: '#2A3D5F' }}
+          >
+            Brand strategy
+          </Link>
+          {stats && (
+            <div className="flex items-center gap-2 text-sm" style={{ color: 'rgba(255,255,255,0.5)' }}>
+              <span className="font-semibold text-white">{stats.totalLeads}</span> marketing leads ·
+              <span className="font-semibold" style={{ color: '#2ABFBF' }}>{stats.conversionRate}</span> conversion
+            </div>
+          )}
+        </div>
       </div>
+
+      <CampaignLauncher onComplete={refreshStats} />
 
       {/* Tabs */}
       <div className="flex gap-1 border-b" style={{ borderColor: '#2A3D5F' }}>
@@ -911,10 +1087,14 @@ export default function MarketingPage() {
       </div>
 
       {/* Tab content */}
-      {tab === 'content'   && <ContentGenerator />}
-      {tab === 'leads'     && <LeadPipeline stats={stats} />}
-      {tab === 'sequences' && <DripSequences />}
-      {tab === 'commands'  && <CommandRunner />}
+      {tab === 'overview'   && <OpsOverview />}
+      {tab === 'library'    && <PlansLibrary />}
+      {tab === 'media'      && <CardMediaOps />}
+      {tab === 'automation' && <AutomationCrons />}
+      {tab === 'content'    && <ContentGenerator />}
+      {tab === 'leads'      && <LeadPipeline stats={stats} />}
+      {tab === 'sequences'  && <DripSequences />}
+      {tab === 'commands'   && <CommandRunner />}
     </div>
   )
 }

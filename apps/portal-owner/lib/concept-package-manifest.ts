@@ -22,7 +22,6 @@ export const CONCEPT_PACKAGE_SECTIONS: ConceptPackageSection[] = [
   { id: 'design-concept', label: 'Style direction', pdfPage: null },
   { id: 'mep', label: 'MEP systems', pdfPage: null },
   { id: 'v30-landscape', label: 'Site & landscape', pdfPage: null },
-  { id: 'v30-marketing', label: 'Marketing kit', pdfPage: null },
   { id: 'next-steps', label: 'Next steps', pdfPage: 7 },
 ]
 

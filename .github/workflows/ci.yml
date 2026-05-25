@@ -53,7 +53,7 @@ jobs:
           pnpm --filter portal-contractor run build
           pnpm --filter portal-developer run build
           pnpm --filter command-center run build
-          pnpm --filter admin-console run build
+          pnpm --filter os-admin run build
 
       - name: Type check API
         run: pnpm --filter @kealee/api run build:ts

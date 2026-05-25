@@ -1,7 +1,15 @@
 {
+  "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "nextjs",
   "ignoreCommand": "exit 1",
   "installCommand": "cd ../.. && NODE_ENV=development pnpm install --no-frozen-lockfile",
   "buildCommand": "cd ../.. && pnpm turbo run build --filter=os-admin",
-  "outputDirectory": ".next"
+  "outputDirectory": ".next",
+  "redirects": [
+    {
+      "source": "/admin-console/:path*",
+      "destination": "/:path*",
+      "permanent": true
+    }
+  ]
 }

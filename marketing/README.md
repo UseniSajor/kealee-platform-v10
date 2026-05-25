@@ -1,14 +1,29 @@
 # Kealee marketing (repo)
 
-Platform growth for **traffic → leads → paid concept / estimate / permit → build** — not a customer-facing product.
+Platform growth for **traffic → leads → paid concept → permit → drawings → build** — not a customer-facing product.
 
 | Doc | Purpose |
 |-----|---------|
-| [STACK-RECOMMENDATION.md](./STACK-RECOMMENDATION.md) | **Start here** — tools & stack vs current repo, schema, v30 |
+| [ORGANIC-AUTOMATION-PLAN.md](./ORGANIC-AUTOMATION-PLAN.md) | **Organic plan** — no paid ads, no marketing SaaS |
+| [upsell-path.json](./upsell-path.json) | Canonical post-concept upsell (permit → drawings) |
+| [index.json](./index.json) | Catalog of saved plans, stacks, campaigns |
+| [STACK-RECOMMENDATION.md](./STACK-RECOMMENDATION.md) | Tools & stack vs current repo, schema, v30 |
 | [KEALEE-v30-MARKETING-PLAN-WITHOUT-GHL.md](./KEALEE-v30-MARKETING-PLAN-WITHOUT-GHL.md) | Long-form alternative architecture (Zoho/Klaviyo/Segment) — reference only |
 | [email-templates/welcome.html](./email-templates/welcome.html) | HTML reference for Resend |
 
 Implementation code lives in `apps/web-main/lib/marketing/`, `apps/command-center/`, and `packages/kealee-agent-stack/src/v30/`.
+
+## Saved library
+
+| Folder | Contents |
+|--------|----------|
+| `plans/` | Quarterly / organic plans (JSON) |
+| `stacks/` | Tool + channel stacks (JSON) |
+| `campaigns/` | Drip + 8-week rotation manifest (JSON) |
+
+Regenerate rotation from engine: `pnpm run generate:marketing-library`
+
+Command Center: **Marketing → Plans & library** tab loads `GET /api/marketing/library`.
 
 ## Start a campaign
 
@@ -28,7 +43,7 @@ node scripts/start-marketing-campaign.mjs
 node scripts/start-marketing-campaign.mjs --dry-run
 ```
 
-Generates 7 daily campaigns for the current week (concept → estimate → permit funnel) and sends **today’s** email to `public_intake_leads` with `status=new` via Resend.
+Generates 7 daily campaigns for the current week (concept → permit → drawings upsell spine) and sends **today’s** email to `public_intake_leads` with `status=new` via Resend.
 
 ## Phase 3 (implemented)
 
@@ -40,4 +55,4 @@ Generates 7 daily campaigns for the current week (concept → estimate → permi
 
 - SQL: `packages/database/migrations/20260522_marketing_drip_queue.sql`
 - `GHL_ENABLED=false` by default — see `apps/web-main/.env.example`
-- Resend lifecycle: welcome, post-payment, drip 1–4, concept-ready → estimate upsell queue
+- Resend lifecycle: welcome, post-payment, drip 1–3, concept-ready → permit (day 14) → drawings (day 21)

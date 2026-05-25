@@ -20,9 +20,9 @@ export const PORTAL_ASK_CONFIG: Record<PortalAskKind, PortalAskConfig> = {
     inputPlaceholder: 'E.g., When is my concept PDF ready, or what is my permit path?',
     suggestions: [
       'What is included in my concept package?',
-      'How do I download my PDF?',
+      'How do I get a cost estimate for my project?',
+      'What is my permit path?',
       'What are my next steps after concept?',
-      'When is my milestone payment due?',
     ],
   },
   contractor: {

@@ -10,7 +10,7 @@ export function botTypesForPackageFeatures(features: string[]): V30BotType[] {
     features.map(f => f.toLowerCase().replace(/\s+/g, '')),
   )
   const core: V30BotType[] = ['design', 'estimate', 'zoning', 'contractor', 'sales', 'project']
-  const optional: V30BotType[] = ['floorplan', 'permit', 'video', 'marketing']
+  const optional: V30BotType[] = ['floorplan', 'permit', 'video']
   const out = new Set<V30BotType>(core)
   for (const bot of optional) {
     const key =
@@ -20,10 +20,6 @@ export function botTypesForPackageFeatures(features: string[]): V30BotType[] {
           ? 'videos'
           : bot
     if (normalized.has(key) || normalized.has(bot)) out.add(bot)
-  }
-  // Premium+ and explicit Marketing feature activate MarketingBot
-  if (normalized.has('marketing') || normalized.has('cadexport')) {
-    out.add('marketing')
   }
   return V30_PARALLEL_BOT_TYPES.filter(t => out.has(t))
 }

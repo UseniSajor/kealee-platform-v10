@@ -27,7 +27,7 @@ case "$SERVICE" in
   "command-center")
     URL="https://command.kealee.com/"
     ;;
-  "admin-console")
+  "os-admin")
     URL="https://admin.kealee.com/"
     ;;
   "worker")

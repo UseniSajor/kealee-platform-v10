@@ -120,7 +120,7 @@ Ops handoff should reference **in-repo systems**:
     "v30Generate": "POST /v30/public-intake/generate after paid",
     "portalUpsell": "/services (estimate, permits)",
     "tags": ["funnel-concept", "dmv-homeowner"],
-    "recommendedAutomations": ["welcome_drip", "post_paid_v30", "estimate_upsell_7d"],
+    "recommendedAutomations": ["welcome_drip", "post_paid_v30", "permit_upsell_14d", "drawings_upsell_21d"],
     "handoffToLeadBot": true
   }
 }
@@ -147,8 +147,8 @@ No `ghlTags` / `ghl_drip` in new plans.
 
 ### Week 3 — Upsell funnel
 
-- [ ] Portal `/services` + email CTAs → estimate + permit paths (done in UI; align copy)  
-- [x] Drip step 4 (Day 14): estimate upsell for `concept_ready` intakes  
+- [ ] Portal `/services` + email CTAs → permit + drawings paths (done in UI; align copy)  
+- [x] Drip step 4–5 (Day 14 / 21): permit → drawings upsell for `concept_ready` intakes  
 - [ ] SalesBot + MarketingBot command `full-funnel` for ops campaigns  
 
 ### Week 4 — Paid traffic

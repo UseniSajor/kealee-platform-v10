@@ -86,9 +86,14 @@ NODE_ENV=production
 - [ ] `DATABASE_URL` - (if reads data)
 
 ### **4. command-center (Next.js Mini-App)**
-- [ ] `NEXT_PUBLIC_API_URL` - API endpoint
-- [ ] `ADMIN_API_KEY` - Access admin endpoints
-- [ ] `JWT_SECRET` - Auth
+- [ ] `NODE_ENV` - `production`
+- [ ] `NEXT_PUBLIC_API_URL` - API endpoint (`https://api.kealee.com`)
+- [ ] `NEXT_PUBLIC_SITE_URL` - Public site for marketing proxies (`https://kealee.com`)
+- [ ] `NEXT_PUBLIC_SUPABASE_URL` - Auth (public)
+- [ ] `NEXT_PUBLIC_SUPABASE_ANON_KEY` - Auth (public)
+- [ ] `SUPABASE_SERVICE_ROLE_KEY` - Marketing ops, leads, sequences (server-only)
+- [ ] `CRON_SECRET` - Must match web-main — card media generate + cron triggers
+- [ ] `KEALEE_OPS_SECRET` - Optional (same as CRON_SECRET)
 
 ### **5. portal-owner (Next.js Portal)**
 - [ ] `NEXT_PUBLIC_API_URL` - API endpoint

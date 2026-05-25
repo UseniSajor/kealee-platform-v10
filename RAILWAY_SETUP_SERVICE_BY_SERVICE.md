@@ -112,16 +112,26 @@ NODE_ENV=production
 
 **Go to:** Railway > kealee-platform-v10 > **command-center** > Variables
 
-**Paste these variables:**
+**Paste these variables** (see also `apps/command-center/railway.env.example`):
 
 ```
-NEXT_PUBLIC_API_URL=https://arstic-kindness.up.railway.app
-ADMIN_API_KEY=2963f446c99b44278525daff14bc7bac
-JWT_SECRET=[EXISTING_SECRET]
 NODE_ENV=production
+NEXT_PUBLIC_API_URL=https://api.kealee.com
+NEXT_PUBLIC_SITE_URL=https://kealee.com
+NEXT_PUBLIC_SUPABASE_URL=[same as web-main / portals]
+NEXT_PUBLIC_SUPABASE_ANON_KEY=[same as web-main]
+SUPABASE_SERVICE_ROLE_KEY=[Supabase service role — marketing ops / leads API]
+CRON_SECRET=[same as web-main Vercel — card media + cron triggers]
+KEALEE_OPS_SECRET=[optional — same as CRON_SECRET]
 ```
 
-**⚡ Action:** Copy above, paste into Railway, click **Save**
+**CLI sync** (after `railway login`):
+
+```powershell
+.\scripts\railway-sync-command-center-env.ps1
+```
+
+**⚡ Action:** Paste in Railway Variables → **Save** → redeploy **command-center**
 
 ---
 

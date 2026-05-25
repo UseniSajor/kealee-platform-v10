@@ -97,7 +97,8 @@ export const V30_BOT_REGISTRY: Record<V30BotType, V30BotDefinition> = {
   marketing: {
     type: 'marketing',
     displayName: 'MarketingBot',
-    description: 'Social posts, email copy, and share kit for the customer project',
+    description:
+      'Platform growth: traffic, lead capture, and conversion paths for concept → estimate → permit → build (ops/Command Center — not a customer deliverable)',
     defaultModel: 'claude-sonnet-4-6',
     timeoutSeconds: V30_WIRED_BOT_CONFIG.marketing.timeoutSeconds,
     parallelGroup: 'post-payment-aux',
@@ -136,9 +137,11 @@ export const V30_PARALLEL_BOT_TYPES: V30BotType[] = [
   'video',
   'contractor',
   'sales',
-  'marketing',
   'project',
 ]
+
+/** Ops-only bots — not run on paid customer intakes (use Command Center / API / crons). */
+export const V30_OPS_BOT_TYPES: V30BotType[] = ['marketing', 'support']
 
 /** Bots that must not run a second LLM alongside v30 (use v30 path only). */
 export const V30_EXTERNAL_DESIGN_BOT_PATHS = [

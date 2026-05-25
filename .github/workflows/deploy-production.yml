@@ -46,7 +46,7 @@ jobs:
           - service: portal-developer
           - service: command-center
           - service: web-main
-          - service: admin-console
+          # admin-console merged into os-admin (Vercel: admin.kealee.com)
     steps:
       - name: Checkout code
         uses: actions/checkout@v4

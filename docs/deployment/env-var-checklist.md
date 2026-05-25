@@ -3,7 +3,7 @@
 > Last updated: 2026-03-15
 > Platform: Railway (ALL services — no Vercel)
 > Services: api, worker, ai-learning, command-center, os-land, os-feas, os-dev, os-pm, os-pay, os-ops, marketplace
-> Apps: portal-owner, portal-contractor, portal-developer, command-center, web-main, admin-console
+> Apps: portal-owner, portal-contractor, portal-developer, command-center, web-main, os-admin (admin.kealee.com)
 
 ---
 

@@ -39,6 +39,8 @@ export interface CommandSchema {
   inputs:      Record<string, FieldSchema>
   steps:       string[]
   chain?:      string[]   // ordered sub-command IDs when this is a pipeline
+  /** True when `chain` has steps (pipeline command). */
+  isPipeline?: boolean
 }
 
 // ── Result types ──────────────────────────────────────────────────────────────

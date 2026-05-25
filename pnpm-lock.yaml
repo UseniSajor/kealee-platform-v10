@@ -686,6 +686,9 @@ importers:
       '@anthropic-ai/sdk':
         specifier: ^0.30.0
         version: 0.30.1
+      '@kealee/ai':
+        specifier: workspace:*
+        version: link:../../packages/ai
       '@kealee/concept-engine':
         specifier: workspace:*
         version: link:../../packages/concept-engine
@@ -716,9 +719,15 @@ importers:
       '@stripe/stripe-js':
         specifier: ^5.8.0
         version: 5.10.0
+      framer-motion:
+        specifier: ^11.15.0
+        version: 11.18.2(react-dom@18.2.0)(react@18.2.0)
       google-ads-api:
         specifier: ^23.0.0
         version: 23.0.0
+      lucide-react:
+        specifier: ^0.469.0
+        version: 0.469.0(react@18.2.0)
       replicate:
         specifier: ^1.4.0
         version: 1.4.0
@@ -18942,6 +18951,14 @@ packages:
     resolution: {integrity: sha512-V7o0/VECSGbLHn3/1O67FUgBwWB+hmzshrgDVRJQhMh8uj5D3HBuIvhuAmQTtlupILSplwIZg5FTc4tTKMA2SA==}
     peerDependencies:
       react: ^16.5.1 || ^17.0.0 || ^18.0.0
+    dependencies:
+      react: 18.2.0
+    dev: false
+
+  /lucide-react@0.469.0(react@18.2.0):
+    resolution: {integrity: sha512-28vvUnnKQ/dBwiCQtwJw7QauYnE7yd2Cyp4tTTJpvglX4EMpbflcdBgrgToX2j71B3YvugK/NH3BGUk+E/p/Fw==}
+    peerDependencies:
+      react: ^16.5.1 || ^17.0.0 || ^18.0.0 || ^19.0.0
     dependencies:
       react: 18.2.0
     dev: false

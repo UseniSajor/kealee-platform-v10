@@ -6,7 +6,7 @@ globs:
   - "apps/portal-contractor/**"
   - "apps/portal-developer/**"
   - "apps/command-center/**"
-  - "apps/admin-console/**"
+  - "apps/os-admin/**"
 ---
 
 # Portal Rules
@@ -24,7 +24,7 @@ portal-owner → app.kealee.com
 portal-contractor → contractor.kealee.com
 portal-developer → developer.kealee.com
 command-center → pm.kealee.com
-admin-console → admin.kealee.com
+os-admin → admin.kealee.com
 
 ## RevenueHookModal (GAP-04)
 Built but unmounted. Wire via core-events pub/sub on post-purchase confirmation.

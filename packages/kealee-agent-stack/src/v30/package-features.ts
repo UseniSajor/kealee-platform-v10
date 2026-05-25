@@ -21,10 +21,7 @@ export function featuresForConceptTier(
   }
 
   if (tier >= 3) {
-    base.push('Videos', 'CADExport', 'Marketing')
-  }
-  if (tier >= 2) {
-    base.push('Marketing')
+    base.push('Videos', 'CADExport')
   }
 
   const path = (projectPath ?? '').toLowerCase()

@@ -1,0 +1,32 @@
+{
+  "id": "in-repo-no-subscriptions",
+  "version": "1.0.0",
+  "title": "Kealee in-repo stack (no GHL / no marketing SaaS)",
+  "updatedAt": "2026-05-24",
+  "crm": { "system": "supabase", "table": "public_intake_leads", "tagsField": "metadata.tags" },
+  "email": { "system": "resend", "queue": "marketing_drip_queue", "templatesDir": "apps/web-main/lib/marketing" },
+  "payments": { "system": "stripe", "pricingSource": "packages/core-rules/src/pricing.ts" },
+  "automation": {
+    "cronsHost": "vercel-web-main",
+    "jobs": [
+      "marketing-drip",
+      "lead-scoring",
+      "generate-weekly-campaigns",
+      "send-daily-campaigns",
+      "sequences"
+    ]
+  },
+  "opsUi": { "app": "command-center", "path": "/marketing" },
+  "bots": {
+    "planning": "services/api marketing.bot.ts",
+    "opsPrompt": "packages/kealee-agent-stack/src/v30/prompts/marketing-bot.ts",
+    "qualification": "lead_bot",
+    "postPaymentUpsell": "sales_bot"
+  },
+  "canonicalUpsellPath": {
+    "ref": "../upsell-path.json",
+    "summary": "concept → permit → drawings"
+  },
+  "disabledByDefault": ["ghl", "klaviyo", "segment", "zapier", "zoho_full_crm"],
+  "paidAds": { "enabled": false, "note": "Meta/Google lead webhooks optional; no ad spend required" }
+}

@@ -20,8 +20,10 @@ const GHL_API_KEY = process.env.GHL_API_KEY || '';
 const GHL_LOCATION_ID = process.env.GHL_LOCATION_ID || '';
 const GHL_API_VERSION = '2021-07-28';
 
-/** Verify that GHL env vars are configured. */
+/** Verify that GHL env vars are configured and not explicitly disabled. */
 export function isGhlConfigured(): boolean {
+  const flag = process.env.GHL_ENABLED;
+  if (flag === 'false' || flag === '0') return false;
   return !!(GHL_API_KEY && GHL_LOCATION_ID);
 }
 

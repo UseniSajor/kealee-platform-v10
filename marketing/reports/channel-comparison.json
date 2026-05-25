@@ -1,0 +1,49 @@
+{
+  "id": "channel-comparison-v1",
+  "version": "1.0.0",
+  "title": "Projects, sales, revenue by marketing channel",
+  "updatedAt": "2026-05-24",
+  "buckets": [
+    {
+      "id": "organic",
+      "label": "Organic (in-repo)",
+      "includes": ["SEO", "Resend drip", "organic social", "referral", "utm_medium=organic|email"],
+      "defaultCostPerSaleUsd": 0
+    },
+    {
+      "id": "paid_ads",
+      "label": "Paid ads",
+      "includes": ["utm_medium=cpc|paid_social|display", "meta/google paid lead sources"],
+      "defaultCostPerSaleUsd": 120
+    },
+    {
+      "id": "marketing_saas",
+      "label": "Marketing SaaS",
+      "includes": ["GHL", "Klaviyo", "HubSpot when used as CRM"],
+      "defaultCostPerSaleUsd": 35
+    }
+  ],
+  "metrics": {
+    "projects": "Distinct project_path per bucket (intake types)",
+    "leads": "All public_intake_leads rows in sample",
+    "sales": "status=paid",
+    "revenue": "Sum payment_amount (cents) for paid | concept_ready | processing"
+  },
+  "implementation": {
+    "classify": "apps/web-main/lib/marketing/channel-attribution.ts",
+    "capture": "apps/web-main/lib/marketing/utm-metadata.ts → metadata.marketingChannel",
+    "adSpend": "apps/web-main/lib/marketing/ad-spend.ts",
+    "spendTable": "marketing_channel_spend",
+    "opsApi": "GET /api/marketing/ops?from=&to= (Command Center)",
+    "reportApi": "GET /api/marketing/channel-comparison",
+    "syncCron": "POST /api/cron/marketing-ad-spend-sync",
+    "backfill": "pnpm run backfill:marketing-channel"
+  },
+  "env": {
+    "MARKETING_SPEND_GOOGLE_CENTS_MONTH": "optional monthly Google spend override",
+    "MARKETING_SPEND_META_CENTS_MONTH": "optional monthly Meta spend override",
+    "MARKETING_SPEND_SAAS_CENTS_MONTH": "optional GHL/Klaviyo monthly override",
+    "META_AD_ACCOUNT_ID": "Meta insights API",
+    "META_ACCESS_TOKEN": "Meta insights API"
+  }
+}

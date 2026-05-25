@@ -21,6 +21,9 @@ import {
   CreditCard,
   ShoppingCart,
   ShoppingBag,
+  ClipboardCheck,
+  Database,
+  FlaskConical,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -41,6 +44,9 @@ const navigation = [
   { name: 'Analytics', href: '/analytics', icon: BarChart3 },
   { name: 'Webhooks', href: '/webhooks', icon: Webhook },
   { name: 'Subscriptions', href: '/subscriptions', icon: CreditCard },
+  { name: 'Concept QA', href: '/validation', icon: ClipboardCheck },
+  { name: 'Schema Map', href: '/schema', icon: Database },
+  { name: 'Test Panel', href: '/test-panel', icon: FlaskConical },
   { name: 'Settings', href: '/settings', icon: SettingsIcon },
 ]
 

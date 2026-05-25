@@ -1,0 +1,60 @@
+{
+  "version": "1.0.0",
+  "updatedAt": "2026-05-24",
+  "description": "Canonical marketing plans, stacks, and campaign library (no paid ads / no marketing SaaS)",
+  "canonicalUpsellPath": "concept → permit → drawings",
+  "upsellPath": {
+    "id": "concept-permit-drawings",
+    "path": "upsell-path.json",
+    "title": "Post-concept upsell (permit then drawings)"
+  },
+  "docs": [
+    { "path": "upsell-path.json", "title": "Canonical upsell path" },
+    { "path": "ORGANIC-AUTOMATION-PLAN.md", "title": "Organic automation plan (human-readable)" },
+    { "path": "STACK-RECOMMENDATION.md", "title": "Stack vs repo tools" },
+    { "path": "README.md", "title": "Marketing folder index" }
+  ],
+  "plans": [
+    {
+      "id": "organic-2026-q2",
+      "path": "plans/organic-2026-q2.json",
+      "title": "Organic automation Q2 2026"
+    }
+  ],
+  "stacks": [
+    {
+      "id": "in-repo-no-subscriptions",
+      "path": "stacks/in-repo-no-subscriptions.json",
+      "title": "In-repo stack (no GHL)"
+    },
+    {
+      "id": "organic-channels",
+      "path": "stacks/organic-channels.json",
+      "title": "Organic channel map"
+    }
+  ],
+  "reports": [
+    {
+      "id": "channel-comparison-v1",
+      "path": "reports/channel-comparison.json",
+      "title": "Organic vs paid ads vs marketing SaaS metrics"
+    }
+  ],
+  "campaigns": [
+    {
+      "id": "drip-sequence-v1",
+      "path": "campaigns/drip-sequence.json",
+      "title": "Resend drip sequence"
+    },
+    {
+      "id": "rotation-8week",
+      "path": "campaigns/rotation-8week.json",
+      "title": "8-week product email rotation",
+      "regenerate": "pnpm run generate:marketing-library"
+    }
+  ],
+  "config": {
+    "machineReadable": "plan.config.ts",
+    "engine": "apps/web-main/lib/marketing/marketing-engine.ts"
+  }
+}

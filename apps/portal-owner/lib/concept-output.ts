@@ -98,15 +98,6 @@ export function parseV30FloorplanDeliverables(
   return raw as V30FloorplanDeliverables
 }
 
-export function parseV30MarketingKit(
-  formData: Record<string, unknown> | null | undefined,
-): Record<string, unknown> | null {
-  if (!formData) return null
-  const raw = formData.v30MarketingKit
-  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null
-  return raw as Record<string, unknown>
-}
-
 export function isGardenLandscapePath(projectPath: string): boolean {
   const p = projectPath.toLowerCase()
   return p.includes('garden') || p.includes('landscape')

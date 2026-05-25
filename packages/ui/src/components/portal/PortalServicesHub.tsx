@@ -25,8 +25,8 @@ const PORTAL_COPY: Record<
   { headline: string; sub: string; services: PortalServiceLink[] }
 > = {
   owner: {
-    headline: 'Estimation & permits',
-    sub: 'Order standalone services or continue from your concept package.',
+    headline: 'Estimate, permits & next steps',
+    sub: 'After your concept package, order estimation and permit services — then build on Kealee.',
     services: [
       {
         id: 'estimate',
