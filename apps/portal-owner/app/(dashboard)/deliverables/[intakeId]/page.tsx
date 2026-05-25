@@ -1090,14 +1090,15 @@ export default function ConceptDeliverablePage() {
 
         {data.isV30 && (
           <div id="v30-landscape" className="scroll-mt-24">
-          <V30LandscapeCadPanel
-            intakeId={intakeId}
-            projectPath={data.projectPath ?? 'kitchen_remodel'}
-            tier={data.tier}
-            landscape={data.v30Landscape ?? null}
-            floorplan={data.v30Floorplan ?? null}
-            lotContext={data.v30LotContext}
-          />
+            <V30LandscapeCadPanel
+              intakeId={intakeId}
+              projectPath={data.projectPath ?? 'kitchen_remodel'}
+              tier={data.tier}
+              landscape={data.v30Landscape ?? null}
+              floorplan={data.v30Floorplan ?? null}
+              lotContext={data.v30LotContext}
+            />
+          </div>
         )}
 
         {/* ── Floor Plan ───────────────────────────────────────────────────── */}
@@ -1693,6 +1694,7 @@ export default function ConceptDeliverablePage() {
           )}
         </div>
 
+      </div>
       </div>
 
         <aside className="hidden xl:block">
