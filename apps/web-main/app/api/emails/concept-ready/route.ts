@@ -100,7 +100,7 @@ export async function POST(req: NextRequest) {
               </h1>
               <p style="margin:0 0 24px;font-size:15px;color:#555;line-height:1.7">
                 Your AI concept package is complete and waiting in your Owner Portal.
-                One click below takes you straight to your results — no sign-in screens, no extra steps.
+                Click below to sign in and access your results.
               </p>
             </div>
 
@@ -160,7 +160,7 @@ export async function POST(req: NextRequest) {
           '',
           `Your ${serviceName} AI concept package is ready in your Owner Portal.`,
           '',
-          'Open your concept (one click — no login screen):',
+          'Sign in to access your concept:',
           signInUrl,
           '',
           'Inside your package:',
