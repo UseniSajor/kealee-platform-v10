@@ -1,34 +1,40 @@
 {
   "version": 1,
-  "updatedAt": "2026-05-24T01:37:21.526Z",
+  "updatedAt": "2026-05-25T15:06:17.325Z",
   "cards": {
     "home:design": {
       "photoUrl": "/media/service-photos/home-design.jpg",
       "photoAlt": "AI-generated kitchen design concepts",
       "mediaType": "video",
+      "videoUrl": "/media/service-videos/home-design-video.mp4",
+      "videoWebM": "/media/service-videos/home-design-video.mp4",
       "source": "fallback",
-      "generatedAt": "2026-05-24T01:37:20.812Z"
+      "generatedAt": "2026-05-25T15:06:16.416Z"
     },
     "home:permits": {
       "photoUrl": "/media/service-photos/home-permits.jpg",
       "photoAlt": "Building permits and compliance documentation",
       "mediaType": "photo",
       "source": "fallback",
-      "generatedAt": "2026-05-24T01:37:20.880Z"
+      "generatedAt": "2026-05-25T15:06:16.457Z"
     },
     "home:estimate": {
       "photoUrl": "/media/service-photos/home-estimate.jpg",
       "photoAlt": "Construction cost estimation breakdown",
       "mediaType": "video",
+      "videoUrl": "/media/service-videos/home-estimate-video.mp4",
+      "videoWebM": "/media/service-videos/home-estimate-video.mp4",
       "source": "fallback",
-      "generatedAt": "2026-05-24T01:37:21.034Z"
+      "generatedAt": "2026-05-25T15:06:16.699Z"
     },
     "home:build": {
       "photoUrl": "/media/service-photos/home-build.jpg",
       "photoAlt": "Construction team managing a renovation project",
       "mediaType": "video",
+      "videoUrl": "/media/service-videos/home-build-video.mp4",
+      "videoWebM": "/media/service-videos/home-build-video.mp4",
       "source": "fallback",
-      "generatedAt": "2026-05-24T01:37:21.114Z"
+      "generatedAt": "2026-05-25T15:06:17.304Z"
     },
     "product:kitchen": {
       "photoUrl": "/media/service-photos/product-kitchen.jpg",

@@ -62,8 +62,8 @@ export const HOME_JOURNEY_SERVICES: HomeJourneyService[] = [
     mediaType: 'video',
     photoSrc: PHOTOS.design,
     photoAlt: 'Modern kitchen AI design concepts',
-    videoSrc: '/media/service-videos/design-concepts.mp4',
-    videoWebM: '/media/service-videos/design-concepts.webm',
+    videoSrc: '/media/service-videos/home-design-video.mp4',
+    videoWebM: '/media/service-videos/home-design-video.mp4',
   },
   {
     id: 'permits',
@@ -96,8 +96,8 @@ export const HOME_JOURNEY_SERVICES: HomeJourneyService[] = [
     mediaType: 'video',
     photoSrc: PHOTOS.estimate,
     photoAlt: 'Detailed construction cost estimation',
-    videoSrc: '/media/service-videos/cost-estimation.mp4',
-    videoWebM: '/media/service-videos/cost-estimation.webm',
+    videoSrc: '/media/service-videos/home-estimate-video.mp4',
+    videoWebM: '/media/service-videos/home-estimate-video.mp4',
   },
   {
     id: 'build',
@@ -114,7 +114,7 @@ export const HOME_JOURNEY_SERVICES: HomeJourneyService[] = [
     mediaType: 'video',
     photoSrc: PHOTOS.build,
     photoAlt: 'Construction team managing a renovation project',
-    videoSrc: '/media/service-videos/build-manage.mp4',
-    videoWebM: '/media/service-videos/build-manage.webm',
+    videoSrc: '/media/service-videos/home-build-video.mp4',
+    videoWebM: '/media/service-videos/home-build-video.mp4',
   },
 ]

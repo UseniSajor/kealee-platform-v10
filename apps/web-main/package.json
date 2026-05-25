@@ -18,7 +18,8 @@
     "generate:card-media": "node ./scripts/setup-and-run-card-media.mjs",
     "generate:card-media:api": "node ./scripts/generate-card-media.mjs",
     "generate:card-media:fallback": "node ./scripts/setup-and-run-card-media.mjs --fallback-only",
-    "setup:card-media": "node ./scripts/setup-and-run-card-media.mjs --scope=all --skip-video"
+    "setup:card-media": "node ./scripts/setup-and-run-card-media.mjs --scope=all --skip-video",
+    "sync:card-media:home": "node ./scripts/setup-and-run-card-media.mjs --scope=home --fallback-only --with-videos"
   },
   "dependencies": {
     "@kealee/concept-engine": "workspace:*",

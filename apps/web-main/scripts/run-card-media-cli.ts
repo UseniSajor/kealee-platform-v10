@@ -26,21 +26,34 @@ const scope = (args.find((a) => a.startsWith('--scope='))?.split('=')[1] ??
 const dryRun = args.includes('--dry-run')
 const skipVideo = args.includes('--skip-video')
 const fallbackOnly = args.includes('--fallback-only')
+const withVideos = args.includes('--with-videos') || (!skipVideo && fallbackOnly)
 
 async function main() {
   const { syncFallbackCardMedia } = await import('../lib/marketing/card-media-sync-fallbacks')
 
   if (fallbackOnly) {
-    const { manifest, count } = await syncFallbackCardMedia({ scope })
-    console.log(JSON.stringify({ mode: 'fallback-sync', count, updatedAt: manifest.updatedAt }, null, 2))
+    const { manifest, count } = await syncFallbackCardMedia({ scope, withVideos })
+    console.log(
+      JSON.stringify(
+        { mode: 'fallback-sync', withVideos, count, cards: manifest.cards, updatedAt: manifest.updatedAt },
+        null,
+        2,
+      ),
+    )
     return
   }
 
   const hasImageProvider = Boolean(process.env.OPENAI_API_KEY || process.env.REPLICATE_API_TOKEN)
   if (!hasImageProvider && !dryRun) {
     console.warn('[card-media] No OPENAI_API_KEY or REPLICATE_API_TOKEN — syncing Unsplash fallbacks to public/media/')
-    const { manifest, count } = await syncFallbackCardMedia({ scope })
-    console.log(JSON.stringify({ mode: 'fallback-sync', count, updatedAt: manifest.updatedAt }, null, 2))
+    const { manifest, count } = await syncFallbackCardMedia({ scope, withVideos: !skipVideo })
+    console.log(
+      JSON.stringify(
+        { mode: 'fallback-sync', withVideos: !skipVideo, count, cards: manifest.cards, updatedAt: manifest.updatedAt },
+        null,
+        2,
+      ),
+    )
     return
   }
 

@@ -1,44 +1,70 @@
 /**
- * GET /auth/callback
- *
- * Exchanges the Supabase PKCE code for a session after magic link click.
- * Cookies MUST be set on the redirect response itself — setting them on
- * cookieStore then returning a new NextResponse.redirect() silently drops
- * them, leaving the browser with no session cookie.
+ * GET /auth/callback — server exchange for PKCE ?code= and ?token_hash= magic links.
+ * Session cookies must be set on the redirect response (see web-main auth/callback).
+ * Hash-only tokens (#access_token=) are handled by page.tsx in the same segment.
  */
+
+import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerClient } from '@supabase/ssr'
+
+export const dynamic = 'force-dynamic'
+
+function safeNextPath(raw: string | null): string {
+  const next = raw ?? '/deliverables'
+  return next.startsWith('/') ? next : '/deliverables'
+}
+
+function loginRedirect(origin: string, next: string, detail?: string | null) {
+  const url = new URL('/login', origin)
+  url.searchParams.set('error', 'auth_callback_failed')
+  url.searchParams.set('next', next)
+  if (detail) url.searchParams.set('detail', detail.slice(0, 120))
+  return NextResponse.redirect(url)
+}
 
 export async function GET(request: NextRequest) {
-  const { searchParams, origin } = new URL(request.url)
+  const { searchParams, origin } = request.nextUrl
+  const next = safeNextPath(searchParams.get('next'))
   const code = searchParams.get('code')
-  const next = searchParams.get('next') ?? '/deliverables'
+  const tokenHash = searchParams.get('token_hash')
+  const type = searchParams.get('type')
 
-  if (code) {
-    // Build the redirect response first so we can attach cookies to it.
-    const redirectResponse = NextResponse.redirect(`${origin}${next}`)
-
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          getAll: () => request.cookies.getAll(),
-          setAll: (cookiesToSet) => {
-            cookiesToSet.forEach(({ name, value, options }) =>
-              redirectResponse.cookies.set(name, value, options)
-            )
-          },
-        },
-      }
-    )
-
-    const { error } = await supabase.auth.exchangeCodeForSession(code)
-    if (!error) {
-      return redirectResponse
-    }
-    console.error('[auth/callback] exchangeCodeForSession error:', error.message)
+  if (!code && !(tokenHash && type)) {
+    return NextResponse.next()
   }
 
-  return NextResponse.redirect(`${origin}/login?error=auth_callback_failed`)
+  const redirectResponse = NextResponse.redirect(`${origin}${next}`)
+
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll: () => request.cookies.getAll(),
+        setAll: (cookiesToSet: { name: string; value: string; options?: CookieOptions }[]) => {
+          cookiesToSet.forEach(({ name, value, options }) =>
+            redirectResponse.cookies.set(
+              name,
+              value,
+              options as Parameters<typeof redirectResponse.cookies.set>[2],
+            ),
+          )
+        },
+      },
+    },
+  )
+
+  if (code) {
+    const { error } = await supabase.auth.exchangeCodeForSession(code)
+    if (!error) return redirectResponse
+    console.error('[portal-owner/auth/callback] exchangeCodeForSession:', error.message)
+    return loginRedirect(origin, next, error.message)
+  }
+
+  const otpType = type as 'magiclink' | 'email' | 'signup' | 'recovery' | 'invite'
+  const { error } = await supabase.auth.verifyOtp({ token_hash: tokenHash!, type: otpType })
+  if (!error) return redirectResponse
+
+  console.error('[portal-owner/auth/callback] verifyOtp:', error.message)
+  return loginRedirect(origin, next, error.message)
 }

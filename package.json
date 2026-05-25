@@ -63,6 +63,7 @@
     "verify:vercel-supabase": "node scripts/verify-vercel-supabase-service-role.mjs",
     "smoke:premium-visuals": "node scripts/smoke-premium-addition-wholehome.mjs",
     "show:premium-deliverable": "node scripts/show-premium-deliverable.mjs",
+    "sync:card-media:home": "pnpm --filter web-main run sync:card-media:home",
     "setup:seo": "bash scripts/seo-optimization.sh",
     "setup:content": "bash scripts/content-deployment.sh",
     "setup:golive": "bash scripts/go-live.sh",

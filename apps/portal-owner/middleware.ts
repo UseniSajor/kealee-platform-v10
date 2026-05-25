@@ -59,5 +59,6 @@ export const config = {
     '/services/:path*', '/services',
     '/login', '/signup',
     '/auth/callback',
+    '/auth/callback/:path*',
   ],
 }

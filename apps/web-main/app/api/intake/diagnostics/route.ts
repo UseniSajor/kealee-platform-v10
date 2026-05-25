@@ -22,6 +22,11 @@ import { NextRequest, NextResponse } from 'next/server'
 import { timingSafeEqual } from 'crypto'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { SERVICE_DELIVERABLES } from '@/lib/service-deliverables'
+import {
+  buildOwnerPortalAuthCallbackUrl,
+  createOwnerPortalMagicLink,
+} from '@/lib/owner-portal-magic-link'
+import { getOwnerPortalBaseUrl, getOwnerPortalDeliverableUrl } from '@/lib/owner-portal-urls'
 
 export const dynamic = 'force-dynamic'
 
@@ -92,7 +97,7 @@ export async function GET(req: NextRequest) {
 
   const { data: row, error } = await supabase
     .from('public_intake_leads')
-    .select('id, status, project_path, form_data, updated_at, created_at')
+    .select('id, status, project_path, form_data, updated_at, created_at, contact_email')
     .eq('id', intakeId)
     .maybeSingle()
 
@@ -111,24 +116,46 @@ export async function GET(req: NextRequest) {
   const projectPath = row.project_path as string
   const deliverable = projectPath ? SERVICE_DELIVERABLES[projectPath as keyof typeof SERVICE_DELIVERABLES] : undefined
 
+  const contactEmail = (row as { contact_email?: string }).contact_email ?? ''
+  const deliverablePath = `/deliverables/${encodeURIComponent(intakeId)}?projectPath=${encodeURIComponent(projectPath)}`
+  const magic =
+    contactEmail && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contactEmail)
+      ? await createOwnerPortalMagicLink({ email: contactEmail, nextPath: deliverablePath })
+      : { actionLink: null, redirectTo: buildOwnerPortalAuthCallbackUrl(deliverablePath), error: 'no email' }
+
   return NextResponse.json({
     intakeId: row.id,
     status: row.status,
     projectPath: row.project_path,
+    contactEmail: contactEmail || null,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
     hasConceptOutput: Boolean(conceptOutput),
     conceptGeneratedAt: typeof formData.conceptGeneratedAt === 'string' ? formData.conceptGeneratedAt : null,
     deliverableGeneratesConcept: Boolean(deliverable?.generatesConcept),
+    ownerPortal: {
+      baseUrl: getOwnerPortalBaseUrl(),
+      deliverableUrl: getOwnerPortalDeliverableUrl(intakeId, projectPath),
+      authCallbackTemplate: buildOwnerPortalAuthCallbackUrl(deliverablePath),
+      magicLinkGenerated: Boolean(magic.actionLink),
+      magicLinkError: magic.error ?? null,
+      supabaseRedirectUrlsRequired: [
+        'https://owner.kealee.com/**',
+        'https://owner.kealee.com/auth/callback',
+      ],
+    },
     checks: {
       anthropicApiKeyConfigured: Boolean(process.env.ANTHROPIC_API_KEY),
       supabaseConfigured: Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY && process.env.NEXT_PUBLIC_SUPABASE_URL),
+      resendConfigured: Boolean(process.env.RESEND_API_KEY),
       stripeWebhookPath: '/api/webhooks/stripe',
     },
     pipelineNotes: [
       'After Stripe Checkout, Stripe sends checkout.session.completed to /api/webhooks/stripe (production URL only).',
       'The success page also POSTs /api/concept/generate for packages with generatesConcept (redundant with webhook trigger).',
       'status "concept_ready" and hasConceptOutput true mean the concept engine wrote output to form_data.',
+      'Concept-ready email must use magic link (action_link), not bare /deliverables URL.',
+      'Supabase Auth → Redirect URLs must include owner.kealee.com or magic links land on kealee.com login.',
     ],
   })
 }

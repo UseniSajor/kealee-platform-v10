@@ -14,7 +14,7 @@ export async function downloadUrlToBuffer(url: string): Promise<Buffer> {
   return Buffer.from(await res.arrayBuffer())
 }
 
-function localMediaPath(scope: CardMediaScope, id: string, ext: string): string {
+export function localMediaPath(scope: CardMediaScope, id: string, ext: string): string {
   const folder = ext === 'mp4' || ext === 'webm' ? 'service-videos' : 'service-photos'
   return path.join(PUBLIC_MEDIA_ROOT, folder, `${scope}-${id}.${ext}`)
 }

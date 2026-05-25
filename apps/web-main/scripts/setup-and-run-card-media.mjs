@@ -46,7 +46,10 @@ if (hasSupabase) {
 
 const cliArgs = ['exec', 'tsx', 'scripts/run-card-media-cli.ts', `--scope=${scope}`]
 if (skipVideo) cliArgs.push('--skip-video')
-if (!hasImage && !forceAi) cliArgs.push('--fallback-only')
+if (!hasImage && !forceAi) {
+  cliArgs.push('--fallback-only')
+  if (!skipVideo) cliArgs.push('--with-videos')
+}
 
 const run = spawnSync('pnpm', cliArgs, {
   cwd: root,

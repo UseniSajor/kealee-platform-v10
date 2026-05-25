@@ -44,6 +44,43 @@ const RENDER_STUBS: Record<string, string[]> = {
     'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1920&q=80',
     'https://images.unsplash.com/photo-1583608205776-bfd35f0d9f83?w=1920&q=80',
   ],
+  addition_expansion: {
+    interior: [
+      'https://images.unsplash.com/photo-1600210492493-0946911123ea?w=1920&q=80',
+      'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=1920&q=80',
+      'https://images.unsplash.com/photo-1618219908412-a29a1bb7b86e?w=1920&q=80',
+    ],
+    exterior: [
+      'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1920&q=80',
+      'https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=1920&q=80',
+    ],
+  },
+  whole_home_remodel: {
+    interior: [
+      'https://images.unsplash.com/photo-1600210492493-0946911123ea?w=1920&q=80',
+      'https://images.unsplash.com/photo-1600566752734-2a0cd0e0da49?w=1920&q=80',
+      'https://images.unsplash.com/photo-1618219908412-a29a1bb7b86e?w=1920&q=80',
+      'https://images.unsplash.com/photo-1600489000022-c2086d79f9d4?w=1920&q=80',
+    ],
+    exterior: [
+      'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1920&q=80',
+      'https://images.unsplash.com/photo-1583608205776-bfd35f0d9f83?w=1920&q=80',
+      'https://images.unsplash.com/photo-1565182999561-18d7dc61c393?w=1920&q=80',
+    ],
+  },
+  whole_home_concept: {
+    interior: [
+      'https://images.unsplash.com/photo-1600210492493-0946911123ea?w=1920&q=80',
+      'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=1920&q=80',
+      'https://images.unsplash.com/photo-1618219908412-a29a1bb7b86e?w=1920&q=80',
+      'https://images.unsplash.com/photo-1600489000022-c2086d79f9d4?w=1920&q=80',
+    ],
+    exterior: [
+      'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1920&q=80',
+      'https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=1920&q=80',
+      'https://images.unsplash.com/photo-1583608205776-bfd35f0d9f83?w=1920&q=80',
+    ],
+  },
   default: [
     'https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1920&q=80',
     'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=1920&q=80',
@@ -249,10 +286,35 @@ function getPackageDef(projectPath: string): PackageDef {
   }
 }
 
+const DUAL_SCOPE_PATHS = new Set(['addition_expansion', 'whole_home_remodel', 'whole_home_concept'])
+
+function getDualStubRenders(projectPath: string, tier: number): {
+  interiorRenderUrls: string[]
+  exteriorRenderUrls: string[]
+  renderUrls: string[]
+} {
+  const pack = RENDER_STUBS[projectPath] as { interior: string[]; exterior: string[] } | undefined
+  const interiorSrc = pack?.interior ?? (RENDER_STUBS.addition_expansion as { interior: string[] }).interior
+  const exteriorSrc = pack?.exterior ?? (RENDER_STUBS.addition_expansion as { exterior: string[] }).exterior
+  const interiorCount = tier >= 3 ? interiorSrc.length : tier >= 2 ? Math.min(3, interiorSrc.length) : 2
+  const exteriorCount = tier >= 3 ? exteriorSrc.length : tier >= 2 ? Math.min(2, exteriorSrc.length) : 2
+  const interiorRenderUrls = interiorSrc.slice(0, interiorCount)
+  const exteriorRenderUrls = exteriorSrc.slice(0, exteriorCount)
+  return {
+    interiorRenderUrls,
+    exteriorRenderUrls,
+    renderUrls: [...interiorRenderUrls, ...exteriorRenderUrls],
+  }
+}
+
 function getStubRenders(projectPath: string, tier: number): string[] {
-  const stubs = RENDER_STUBS[projectPath] ?? RENDER_STUBS.default
-  const count = tier >= 3 ? stubs.length : tier === 2 ? Math.min(6, stubs.length) : 3
-  return stubs.slice(0, count)
+  if (DUAL_SCOPE_PATHS.has(projectPath)) {
+    return getDualStubRenders(projectPath, tier).renderUrls
+  }
+  const stubs = RENDER_STUBS[projectPath] as string[] | undefined
+  const list = Array.isArray(stubs) ? stubs : RENDER_STUBS.default
+  const count = tier >= 3 ? list.length : tier === 2 ? Math.min(6, list.length) : 3
+  return list.slice(0, count)
 }
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -289,6 +351,8 @@ interface ConceptData {
   projectTimeline: string
   tier: number
   renderUrls: string[]
+  interiorRenderUrls?: string[]
+  exteriorRenderUrls?: string[]
   /** From `conceptOutput` when tier includes video (Premium+). */
   videoUrl?: string
   videoFormatUrls?: Record<string, string>
@@ -358,6 +422,42 @@ function MEPRow({ icon: Icon, label, value, color }: {
         <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-0.5">{label}</p>
         <p className="text-sm text-gray-700 leading-relaxed">{value}</p>
       </div>
+    </div>
+  )
+}
+
+function ConceptRenderGrid({
+  urls,
+  projectType,
+  labelPrefix,
+}: {
+  urls: string[]
+  projectType: string
+  labelPrefix: string
+}) {
+  if (urls.length === 0) return null
+  return (
+    <div className={`grid gap-3 ${urls.length === 1 ? 'grid-cols-1' : urls.length <= 3 ? 'grid-cols-1 sm:grid-cols-3' : 'grid-cols-2 sm:grid-cols-3'}`}>
+      {urls.map((url, i) => (
+        <div
+          key={`${labelPrefix}-${i}`}
+          className={`relative overflow-hidden rounded-xl bg-gray-100 ${i === 0 && urls.length > 3 ? 'col-span-2 row-span-2' : ''}`}
+          style={{ aspectRatio: '16/9' }}
+        >
+          <Image
+            src={url}
+            alt={`${projectType} ${labelPrefix} ${i + 1}`}
+            fill
+            className="object-cover"
+            sizes="(max-width: 768px) 100vw, 50vw"
+            unoptimized
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+          <span className="absolute bottom-2 left-3 text-white text-[10px] font-bold uppercase tracking-widest opacity-70">
+            {labelPrefix} {i + 1}
+          </span>
+        </div>
+      ))}
     </div>
   )
 }
@@ -635,9 +735,24 @@ export default function ConceptDeliverablePage() {
       // Bill of materials — v1 has bom array; v2 doesn't have BOM, show empty
       const billOfMaterials: BOMItem[] = bom.length > 0 ? bom : []
 
+      const dualStubs = DUAL_SCOPE_PATHS.has(projectPath) ? getDualStubRenders(projectPath, tier) : null
+      const interiorFromOutput = Array.isArray(co.interiorRenderUrls)
+        ? (co.interiorRenderUrls as string[]).filter(Boolean)
+        : []
+      const exteriorFromOutput = Array.isArray(co.exteriorRenderUrls)
+        ? (co.exteriorRenderUrls as string[]).filter(Boolean)
+        : []
+      const interiorRenderUrls =
+        interiorFromOutput.length > 0
+          ? interiorFromOutput
+          : dualStubs?.interiorRenderUrls ?? []
+      const exteriorRenderUrls =
+        exteriorFromOutput.length > 0
+          ? exteriorFromOutput
+          : dualStubs?.exteriorRenderUrls ?? []
       const renderUrls = Array.isArray(co.renderUrls) && (co.renderUrls as string[]).length > 0
         ? co.renderUrls as string[]
-        : getStubRenders(projectPath, tier)
+        : dualStubs?.renderUrls ?? getStubRenders(projectPath, tier)
 
       // Prefer the AI-generated video (Sora 2 / Veo 3.1 / Kling 2.5) once it
       // has finished rendering. Falls back to the placeholder URL written by
@@ -707,6 +822,8 @@ export default function ConceptDeliverablePage() {
         projectTimeline,
         tier,
         renderUrls,
+        interiorRenderUrls: interiorRenderUrls.length > 0 ? interiorRenderUrls : undefined,
+        exteriorRenderUrls: exteriorRenderUrls.length > 0 ? exteriorRenderUrls : undefined,
         pdfUrl:          typeof co.pdfUrl === 'string' ? co.pdfUrl : undefined,
         contractorMatchingUnlocked,
         videoUrl: realVideoUrl ?? placeholderVideoUrl,
@@ -844,7 +961,12 @@ export default function ConceptDeliverablePage() {
     ...(hasNarrative ? ['narrative'] : []),
     ...(data.billOfMaterials.length > 0 ? ['scope-bom'] : []),
     ...(data.permitScope || data.zoningNotes ? ['permit'] : []),
-    ...(data.renderUrls.length > 0 || data.videoUrl ? ['visuals'] : []),
+    ...(data.renderUrls.length > 0 ||
+      (data.interiorRenderUrls?.length ?? 0) > 0 ||
+      (data.exteriorRenderUrls?.length ?? 0) > 0 ||
+      data.videoUrl
+      ? ['visuals']
+      : []),
     ...(data.designConcept?.style || (data.designConcept?.keyFeatures?.length ?? 0) > 0
       ? ['design-concept']
       : []),
@@ -998,8 +1120,10 @@ export default function ConceptDeliverablePage() {
           </section>
         )}
 
-        {/* ── Concept Renderings ───────────────────────────────────────────── */}
-        {data.renderUrls.length > 0 && (
+        {/* ── Concept Renderings (interior + exterior for addition / whole-home) ─ */}
+        {(data.renderUrls.length > 0 ||
+          (data.interiorRenderUrls?.length ?? 0) > 0 ||
+          (data.exteriorRenderUrls?.length ?? 0) > 0) && (
           <section id="visuals" className="scroll-mt-24 rounded-2xl bg-white overflow-hidden"
             style={{ boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.06)' }}>
             <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
@@ -1008,32 +1132,46 @@ export default function ConceptDeliverablePage() {
                 <h2 className="text-base font-bold" style={{ color: '#1A2B4A' }}>Concept Renderings</h2>
               </div>
               <span className="text-xs text-gray-400 font-medium">
-                {data.renderUrls.length} render{data.renderUrls.length !== 1 ? 's' : ''}
+                {(data.interiorRenderUrls?.length ?? 0) + (data.exteriorRenderUrls?.length ?? 0) || data.renderUrls.length} render
+                {((data.interiorRenderUrls?.length ?? 0) + (data.exteriorRenderUrls?.length ?? 0) || data.renderUrls.length) !== 1 ? 's' : ''}
               </span>
             </div>
-            <div className="p-4">
-              <div className={`grid gap-3 ${data.renderUrls.length === 1 ? 'grid-cols-1' : data.renderUrls.length <= 3 ? 'grid-cols-1 sm:grid-cols-3' : 'grid-cols-2 sm:grid-cols-3'}`}>
-                {data.renderUrls.map((url, i) => (
-                  <div key={i}
-                    className={`relative overflow-hidden rounded-xl bg-gray-100 ${i === 0 && data.renderUrls.length > 3 ? 'col-span-2 row-span-2' : ''}`}
-                    style={{ aspectRatio: '16/9' }}>
-                    <Image
-                      src={url}
-                      alt={`${data.projectType} concept render ${i + 1}`}
-                      fill
-                      className="object-cover"
-                      sizes="(max-width: 768px) 100vw, 50vw"
-                      unoptimized
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
-                    <span className="absolute bottom-2 left-3 text-white text-[10px] font-bold uppercase tracking-widest opacity-70">
-                      Render {i + 1}
-                    </span>
-                  </div>
-                ))}
-              </div>
-              <p className="mt-3 text-xs text-gray-400 text-center">
-                AI-curated concept images — final renders delivered in your package within 3–5 business days
+            <div className="p-4 space-y-8">
+              {(data.interiorRenderUrls?.length ?? 0) > 0 && (
+                <div>
+                  <h3 className="text-sm font-bold mb-3 flex items-center gap-2" style={{ color: '#1A2B4A' }}>
+                    <ImageIcon className="h-4 w-4" style={{ color: '#2ABFBF' }} />
+                    Interior views
+                  </h3>
+                  <ConceptRenderGrid
+                    urls={data.interiorRenderUrls!}
+                    projectType={data.projectType}
+                    labelPrefix="Interior"
+                  />
+                </div>
+              )}
+              {(data.exteriorRenderUrls?.length ?? 0) > 0 && (
+                <div>
+                  <h3 className="text-sm font-bold mb-3 flex items-center gap-2" style={{ color: '#1A2B4A' }}>
+                    <ImageIcon className="h-4 w-4" style={{ color: '#E8793A' }} />
+                    Exterior views
+                  </h3>
+                  <ConceptRenderGrid
+                    urls={data.exteriorRenderUrls!}
+                    projectType={data.projectType}
+                    labelPrefix="Exterior"
+                  />
+                </div>
+              )}
+              {!data.interiorRenderUrls?.length && !data.exteriorRenderUrls?.length && (
+                <ConceptRenderGrid
+                  urls={data.renderUrls}
+                  projectType={data.projectType}
+                  labelPrefix="Render"
+                />
+              )}
+              <p className="text-xs text-gray-400 text-center">
+                AI-curated concept images — Premium includes interior and exterior sets plus transformation video
               </p>
             </div>
           </section>

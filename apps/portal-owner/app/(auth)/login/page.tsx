@@ -10,6 +10,8 @@ import { supabase } from '@/lib/supabase'
 function LoginForm() {
   const searchParams = useSearchParams()
   const next = searchParams.get('next') ?? '/deliverables'
+  const authError = searchParams.get('error')
+  const authDetail = searchParams.get('detail')
 
   // mode: 'magic' = send magic link (default for concept clients), 'password' = classic login
   const [mode, setMode]               = useState<'magic' | 'password'>('magic')
@@ -71,6 +73,19 @@ function LoginForm() {
           {mode === 'magic' ? 'Enter your email to access your concept package' : 'Sign in with your password'}
         </p>
       </div>
+
+      {authError === 'auth_callback_failed' && (
+        <div
+          className="mb-4 rounded-lg p-3 text-sm"
+          style={{ backgroundColor: 'rgba(220,38,38,0.2)', color: '#FCA5A5', border: '1px solid rgba(220,38,38,0.3)' }}
+        >
+          <p className="font-medium">Sign-in link expired or invalid</p>
+          <p className="mt-1 text-xs opacity-90">
+            {authDetail ??
+              'Request a new magic link below using the same email you used at checkout.'}
+          </p>
+        </div>
+      )}
 
       {/* Mode tabs */}
       <div className="flex rounded-lg overflow-hidden mb-6 border" style={{ borderColor: '#2A3D5F' }}>

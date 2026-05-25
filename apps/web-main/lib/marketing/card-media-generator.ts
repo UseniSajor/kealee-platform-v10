@@ -69,6 +69,7 @@ export async function generateCardMedia(
   const photoUrl = await uploadMarketingAsset(spec.scope, spec.id, imageBytes, 'jpg')
 
   let videoUrl: string | undefined
+  let videoWebM: string | undefined
   if (spec.mediaType === 'video' && !opts.skipVideo) {
     try {
       const prompt = buildArchitecturalVideoPrompt({
@@ -87,6 +88,7 @@ export async function generateCardMedia(
       const outputUrl = await pollVideoJob(job.provider, job.jobId)
       const videoBytes = await downloadUrlToBuffer(outputUrl)
       videoUrl = await uploadMarketingAsset(spec.scope, `${spec.id}-video`, videoBytes, 'mp4')
+      videoWebM = videoUrl
     } catch (err) {
       console.warn(`[card-media] Video skipped for ${spec.key}:`, err)
     }
@@ -96,6 +98,7 @@ export async function generateCardMedia(
     photoUrl,
     photoAlt: spec.photoAlt,
     videoUrl,
+    videoWebM,
     mediaType: spec.mediaType,
     generatedAt: new Date().toISOString(),
     promptUsed: description,
