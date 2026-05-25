@@ -61,7 +61,15 @@ export async function GET(request: NextRequest) {
 
   const expiresAt = meta.portalTokenExpiresAt as string | undefined
   if (expiresAt && new Date(expiresAt) < new Date()) {
-    return errorRedirect(origin, 'token_expired', `/deliverables/${intakeId}`)
+    // Token expired — redirect to login with email pre-filled so user can send a new magic link
+    const expiredEmail = ((meta.portalEmail as string | undefined) ?? intake.contact_email ?? '').trim().toLowerCase()
+    const expiredPath = (meta.portalNextPath as string | undefined) ?? `/deliverables/${intakeId}`
+    const loginUrl = new URL('/login', origin)
+    if (expiredEmail) loginUrl.searchParams.set('email', expiredEmail)
+    loginUrl.searchParams.set('next', expiredPath.startsWith('/') ? expiredPath : `/deliverables/${intakeId}`)
+    loginUrl.searchParams.set('info', 'link_expired')
+    console.log('[auth/claim] token expired for intake:', intakeId, '— redirecting to login with email pre-filled')
+    return NextResponse.redirect(loginUrl)
   }
 
   const email = ((meta.portalEmail as string | undefined) ?? intake.contact_email ?? '')
@@ -108,7 +116,7 @@ export async function GET(request: NextRequest) {
 
   const { error: verifyError } = await supabase.auth.verifyOtp({
     token_hash: tokenHash,
-    type: 'email',
+    type: 'magiclink',
   })
 
   if (verifyError) {

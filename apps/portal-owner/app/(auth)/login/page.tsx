@@ -17,6 +17,8 @@ function LoginForm() {
   const emailParam   = searchParams.get('email') ?? ''
   const welcomeMode  = searchParams.get('welcome') === '1'
 
+  const authInfo     = searchParams.get('info')
+
   const [mode, setMode]                   = useState<Mode>(welcomeMode ? 'create' : 'magic')
   const [email, setEmail]                 = useState(emailParam)
   const [password, setPassword]           = useState('')
@@ -142,6 +144,21 @@ function LoginForm() {
             : 'Enter your email to access your concept package'}
         </p>
       </div>
+
+      {/* Expired link info banner (amber) */}
+      {authInfo === 'link_expired' && (
+        <div
+          className="mb-4 rounded-lg p-3 text-sm"
+          style={{ backgroundColor: 'rgba(234,179,8,0.15)', color: '#FDE68A', border: '1px solid rgba(234,179,8,0.3)' }}
+        >
+          <p className="font-medium">Your access link has expired</p>
+          <p className="mt-1 text-xs opacity-90">
+            {emailParam
+              ? 'Your email is filled in below — click "Send Access Link" to get a new one instantly.'
+              : 'Enter your email below to receive a fresh access link.'}
+          </p>
+        </div>
+      )}
 
       {/* Auth callback error banner */}
       {authError && authError !== 'auth_callback_failed' && (

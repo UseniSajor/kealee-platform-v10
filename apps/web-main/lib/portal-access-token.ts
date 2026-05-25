@@ -45,7 +45,7 @@ export async function generatePortalAccessToken(opts: {
   }
 
   const token = crypto.randomUUID()
-  const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+  const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
 
   // Merge token into existing metadata (preserve other fields)
   const { data: row } = await admin
