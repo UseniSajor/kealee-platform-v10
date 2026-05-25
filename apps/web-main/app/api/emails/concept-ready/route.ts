@@ -7,7 +7,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { getOwnerPortalDeliverableUrl } from '@/lib/owner-portal-urls'
-import { createOwnerPortalMagicLink } from '@/lib/owner-portal-magic-link'
+import { generatePortalAccessToken } from '@/lib/portal-access-token'
 import { onConceptReadyLifecycle } from '@/lib/marketing/lifecycle'
 
 export const dynamic = 'force-dynamic'
@@ -45,25 +45,25 @@ export async function POST(req: NextRequest) {
     const deliverablePath = `/deliverables/${encodeURIComponent(intakeId)}?projectPath=${encodeURIComponent(service)}`
     const deliverableUrl = getOwnerPortalDeliverableUrl(intakeId, service)
 
-    const magic = await createOwnerPortalMagicLink({
+    const portalAccess = await generatePortalAccessToken({
+      intakeId,
       email: to,
       nextPath: deliverablePath,
     })
 
-    if (!magic.actionLink) {
-      console.error('[concept-ready email] magic link failed:', magic.error)
+    if (!portalAccess.claimUrl) {
+      console.error('[concept-ready email] portal access token failed:', portalAccess.error)
       return NextResponse.json(
         {
           sent: false,
-          error: 'Owner portal sign-in link could not be generated',
-          detail: magic.error,
-          redirectTo: magic.redirectTo,
+          error: 'Owner portal access link could not be generated',
+          detail: portalAccess.error,
         },
         { status: 503 },
       )
     }
 
-    const signInUrl = magic.actionLink
+    const signInUrl = portalAccess.claimUrl
 
     const costLine =
       typeof estimatedCost === 'number' && estimatedCost > 0
@@ -83,50 +83,97 @@ export async function POST(req: NextRequest) {
       body: JSON.stringify({
         from: 'Kealee <hello@kealee.com>',
         to: [to],
-        subject: `Your Kealee ${serviceName} concept is ready to view`,
+        subject: `Your ${serviceName} concept is ready — open it now`,
         html: `
-          <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:32px 24px;background:#fff">
-            <div style="margin-bottom:24px">
-              <span style="font-size:22px;font-weight:700;color:#0F1A2E">Kealee</span>
+          <div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:0;background:#fff">
+
+            <!-- Header bar -->
+            <div style="background:#0F1A2E;padding:20px 32px">
+              <span style="font-size:20px;font-weight:800;color:#fff;letter-spacing:-0.5px">Kealee</span>
             </div>
-            <h2 style="margin:0 0 12px;font-size:20px;color:#0F1A2E">Your concept is ready</h2>
-            <p style="color:#555;line-height:1.6;margin:0 0 16px;font-size:15px">
-              Hi ${greeting}, your AI concept package for <strong>${serviceName}</strong> is ready in your Owner Portal.
-            </p>
-            <ul style="color:#555;line-height:1.6;font-size:14px;padding-left:20px">
-              <li>Design concept summary, palette, and key features</li>
-              <li>Bill of materials with DMV-market costs</li>
-              <li>Permit scope and zoning guidance</li>
-              <li>Project renders</li>
-              ${videoLine ? `<li>${videoLine}</li>` : ''}
-            </ul>
-            ${costLine ? `<p style="color:#555;font-size:14px">${costLine}</p>` : ''}
-            <p style="color:#555;line-height:1.6;margin:24px 0;font-size:14px">
-              Click below to sign in with <strong>${to}</strong> (one click — link expires in 1 hour).
-            </p>
-            <a href="${signInUrl}"
-               style="display:inline-block;background:#E8793A;color:#fff;text-decoration:none;
-                      padding:14px 32px;border-radius:8px;font-weight:700;font-size:15px">
-              Open My Owner Portal →
-            </a>
-            <p style="color:#aaa;font-size:12px;margin-top:36px;line-height:1.5">
-              If the button does not work, copy this link into your browser:<br/>
-              <a href="${signInUrl}" style="color:#2ABFBF;word-break:break-all">${signInUrl}</a>
-            </p>
+
+            <!-- Hero -->
+            <div style="padding:40px 32px 0">
+              <p style="margin:0 0 6px;font-size:13px;font-weight:600;color:#E8793A;text-transform:uppercase;letter-spacing:0.08em">Your concept is ready</p>
+              <h1 style="margin:0 0 16px;font-size:26px;font-weight:800;color:#0F1A2E;line-height:1.2">
+                Hi ${greeting} — your ${serviceName} package just landed.
+              </h1>
+              <p style="margin:0 0 24px;font-size:15px;color:#555;line-height:1.7">
+                Your AI concept package is complete and waiting in your Owner Portal.
+                One click below takes you straight to your results — no sign-in screens, no extra steps.
+              </p>
+            </div>
+
+            <!-- What's inside card -->
+            <div style="margin:0 32px;background:#F8F9F9;border:1px solid #E8E6DF;border-radius:12px;padding:24px">
+              <p style="margin:0 0 12px;font-size:13px;font-weight:700;color:#0F1A2E;text-transform:uppercase;letter-spacing:0.06em">Inside your package</p>
+              <table style="border-collapse:collapse;width:100%">
+                <tr>
+                  <td style="padding:5px 0;font-size:14px;color:#444;line-height:1.5">&#10003;&nbsp; Design concept summary, palette &amp; key features</td>
+                </tr>
+                <tr>
+                  <td style="padding:5px 0;font-size:14px;color:#444;line-height:1.5">&#10003;&nbsp; Bill of materials with DMV-market cost ranges</td>
+                </tr>
+                <tr>
+                  <td style="padding:5px 0;font-size:14px;color:#444;line-height:1.5">&#10003;&nbsp; Permit scope &amp; zoning guidance</td>
+                </tr>
+                <tr>
+                  <td style="padding:5px 0;font-size:14px;color:#444;line-height:1.5">&#10003;&nbsp; Rendered project visuals</td>
+                </tr>
+                ${videoLine ? `<tr><td style="padding:5px 0;font-size:14px;color:#444;line-height:1.5">&#10003;&nbsp; ${videoLine}</td></tr>` : ''}
+              </table>
+              ${costLine ? `<p style="margin:16px 0 0;font-size:14px;color:#0F1A2E;font-weight:600">${costLine}</p>` : ''}
+            </div>
+
+            <!-- CTA -->
+            <div style="padding:32px 32px 0;text-align:center">
+              <a href="${signInUrl}"
+                 style="display:inline-block;background:#E8793A;color:#fff;text-decoration:none;
+                        padding:16px 40px;border-radius:10px;font-weight:800;font-size:16px;
+                        letter-spacing:-0.2px">
+                View My Concept &rarr;
+              </a>
+              <p style="margin:14px 0 0;font-size:12px;color:#999">
+                This link is personal to you and valid for 7 days.
+              </p>
+            </div>
+
+            <!-- Divider -->
+            <div style="margin:36px 32px 0;border-top:1px solid #E8E6DF"></div>
+
+            <!-- Footer -->
+            <div style="padding:24px 32px 32px">
+              <p style="margin:0 0 8px;font-size:13px;color:#888;line-height:1.6">
+                Questions? Reply to this email or reach us at
+                <a href="mailto:support@kealee.com" style="color:#E8793A;text-decoration:none">support@kealee.com</a>.
+              </p>
+              <p style="margin:0;font-size:12px;color:#bbb;line-height:1.5">
+                If the button does not work, copy this URL into your browser:<br/>
+                <a href="${signInUrl}" style="color:#2ABFBF;word-break:break-all">${signInUrl}</a>
+              </p>
+            </div>
+
           </div>
         `,
         text: [
           `Hi ${greeting},`,
           '',
-          `Your AI concept package for "${serviceName}" is ready.`,
+          `Your ${serviceName} AI concept package is ready in your Owner Portal.`,
           '',
-          'Open your Owner Portal (sign in with this email address):',
+          'Open your concept (one click — no login screen):',
           signInUrl,
           '',
-          ...(videoLine ? [videoLine, ''] : []),
-          ...(costLine ? [costLine, ''] : []),
+          'Inside your package:',
+          '- Design concept summary, palette & key features',
+          '- Bill of materials with DMV-market cost ranges',
+          '- Permit scope & zoning guidance',
+          '- Rendered project visuals',
+          ...(videoLine ? [`- ${videoLine}`] : []),
+          ...(costLine ? ['', costLine] : []),
           '',
-          'Questions? Reply to this email.',
+          'This link is personal to you and valid for 7 days.',
+          '',
+          'Questions? Reply to this email or write to support@kealee.com.',
           '',
           'The Kealee Team',
         ].join('\n'),
@@ -151,10 +198,10 @@ export async function POST(req: NextRequest) {
         text: [
           'A new AI concept was delivered to a customer.',
           '',
-          `  Intake ID: ${intakeId}`,
-          `  Service:   ${serviceName}`,
-          `  Customer:  ${to}`,
-          `  Magic link: ${magic.actionLink ? 'yes' : `no (${magic.error})`}`,
+          `  Intake ID:   ${intakeId}`,
+          `  Service:     ${serviceName}`,
+          `  Customer:    ${to}`,
+          `  Claim URL:   ${portalAccess.claimUrl ? 'generated' : `failed (${portalAccess.error})`}`,
           `  Deliverable: ${deliverableUrl}`,
         ].join('\n'),
       }),
@@ -174,8 +221,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       sent: customerRes.ok,
-      magicLink: Boolean(magic.actionLink),
-      redirectTo: magic.redirectTo,
+      claimToken: Boolean(portalAccess.claimUrl),
     })
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err)
