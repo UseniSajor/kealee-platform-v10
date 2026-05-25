@@ -12,6 +12,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { Resend } from 'resend'
+import { buildOwnerPortalAuthCallbackUrl } from '@/lib/owner-portal-magic-link'
+import { mapNextPathToOwnerPortal } from '@/lib/owner-portal-next-path'
 
 export const dynamic = 'force-dynamic'
 
@@ -27,9 +29,8 @@ export async function POST(req: NextRequest) {
     const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
     const resendApiKey   = process.env.RESEND_API_KEY
 
-    const appUrl     = process.env.NEXT_PUBLIC_WEB_MAIN_URL ?? process.env.NEXT_PUBLIC_APP_URL ?? 'https://kealee.com'
-    const safeNext   = next && next.startsWith('/') ? next : '/'
-    const redirectTo = `${appUrl}/auth/callback?next=${encodeURIComponent(safeNext)}`
+    const safeNext   = mapNextPathToOwnerPortal(next && next.startsWith('/') ? next : '/deliverables')
+    const redirectTo = buildOwnerPortalAuthCallbackUrl(safeNext)
 
     // ── Generate the magic link via admin API (no Supabase email sent) ──────
     const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey, {

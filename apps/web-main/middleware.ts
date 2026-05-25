@@ -129,9 +129,11 @@ export async function middleware(request: NextRequest) {
     // Concept deliverables use the email/magic-link access gate, not the
     // external-portal login page, so redirect there directly.
     if (/^\/concept\/[^/]+$/.test(pathname)) {
-      const accessUrl = new URL('/concept/access', request.url)
-      accessUrl.searchParams.set('next', pathname)
-      return NextResponse.redirect(accessUrl)
+      const intakeId = pathname.split('/')[2]
+      if (intakeId) {
+        return NextResponse.redirect(getOwnerPortalDeliverableUrl(intakeId))
+      }
+      return NextResponse.redirect(`${getOwnerPortalBaseUrl()}/login`)
     }
 
     const loginUrl = new URL('/login', request.url)

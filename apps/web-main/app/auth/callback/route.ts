@@ -15,6 +15,8 @@
 
 import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { NextRequest, NextResponse } from 'next/server'
+import { getOwnerPortalBaseUrl } from '@/lib/owner-portal-urls'
+import { mapNextPathToOwnerPortal } from '@/lib/owner-portal-next-path'
 
 export const dynamic = 'force-dynamic'
 
@@ -49,9 +51,9 @@ export async function GET(request: NextRequest) {
     console.error('[auth/callback] exchangeCodeForSession error:', error.message)
   }
 
-  // Exchange failed (expired or missing code) — back to access gate with an error flag
-  const accessUrl = new URL('/concept/access', origin)
-  if (next !== '/') accessUrl.searchParams.set('next', next)
-  accessUrl.searchParams.set('error', 'link-expired')
-  return NextResponse.redirect(accessUrl.toString())
+  // Legacy magic links may still hit web-main — send users to owner portal login
+  const ownerLogin = new URL('/login', getOwnerPortalBaseUrl())
+  ownerLogin.searchParams.set('next', mapNextPathToOwnerPortal(next))
+  ownerLogin.searchParams.set('error', 'auth_callback_failed')
+  return NextResponse.redirect(ownerLogin.toString())
 }

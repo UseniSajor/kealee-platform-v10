@@ -56,15 +56,19 @@ export async function generatePortalAccessToken(opts: {
 
   const existingMeta = (row?.metadata as Record<string, unknown>) ?? {}
 
+  const normalizedEmail = opts.email.trim().toLowerCase()
+
   const { error: updateError } = await admin
     .from('public_intake_leads')
     .update({
+      contact_email: normalizedEmail,
       metadata: {
         ...existingMeta,
         portalToken: token,
         portalTokenExpiresAt: expiresAt,
         portalNextPath: opts.nextPath,
-        portalEmail: opts.email.trim().toLowerCase(),
+        portalEmail: normalizedEmail,
+        portalTokenIssuedAt: new Date().toISOString(),
       },
     })
     .eq('id', opts.intakeId)

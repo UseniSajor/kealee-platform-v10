@@ -79,9 +79,19 @@ Or send a magic link from `https://owner.kealee.com/login` and confirm the link 
 
 ## Code paths (reference)
 
-- Magic link: `apps/portal-owner/app/api/auth/magic-link/route.ts` → `redirectTo = ${portalBase}/auth/callback?next=...`
+- **Concept-ready email CTA**: `GET https://owner.kealee.com/auth/claim?t=…&i=…` → server session → `/deliverables/[intakeId]` (`apps/portal-owner/app/auth/claim/route.ts`)
+- Magic link (login form): `apps/portal-owner/app/api/auth/magic-link/route.ts` → `redirectTo = ${portalBase}/auth/callback?next=...`
+- web-main `/concept/access` redirects to owner portal login (legacy links)
 - Deliverable URL: `apps/web-main/lib/owner-portal-urls.ts` → `getOwnerPortalDeliverableUrl()`
-- Auth callback: `apps/portal-owner/app/auth/callback/route.ts` (PKCE `code` / `token_hash`) + `page.tsx` (hash tokens)
+- Auth callback: `apps/portal-owner/app/auth/callback/route.ts` (PKCE `code` / `token_hash`)
+
+### Resend access email (expired link)
+
+```bash
+curl -X POST https://kealee.com/api/emails/resend-portal-access \
+  -H "Content-Type: application/json" \
+  -d '{"intakeId":"<uuid>","email":"customer@example.com"}'
+```
 
 ## v30 intake (not this fix)
 
