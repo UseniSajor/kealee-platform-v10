@@ -16,10 +16,12 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
+import Replicate from 'replicate'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { SERVICE_DELIVERABLES } from '@/lib/service-deliverables'
 import { AI_MODELS } from '@kealee/core-rules'
 import { generateImages, buildArchitecturalPrompt, type GenerateImageResult } from '@/lib/ai-image'
+import { archiveReplicateOutputsFireAndForget } from '@/lib/replicate-archive'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 300 // Claude + Replicate render jobs can take 60–180s
@@ -73,9 +75,20 @@ interface ConceptOutput {
   videoDuration?: number
   /** Premium+ UI: keyed by the same labels as `VideoPlayer` format tabs. */
   videoFormatUrls?: Record<string, string>
+  /** Addition / whole-home: interior-only gallery URLs. */
+  interiorRenderUrls?: string[]
+  /** Addition / whole-home: exterior-only gallery URLs. */
+  exteriorRenderUrls?: string[]
   /** Original "before" photos uploaded by the client during intake. */
   beforeUrls?: string[]
 }
+
+/** Paths that ship both interior and exterior concept renders. */
+const DUAL_SCOPE_PROJECT_PATHS = new Set([
+  'addition_expansion',
+  'whole_home_remodel',
+  'whole_home_concept',
+])
 
 // ── AI render helpers ─────────────────────────────────────────────────────────
 
@@ -110,6 +123,77 @@ function projectPathToRoomType(projectPath: string): string {
   return map[projectPath] ?? projectPath.replace(/_/g, ' ')
 }
 
+function projectPathToExteriorRoomType(projectPath: string): string {
+  const map: Record<string, string> = {
+    addition_expansion: 'home addition exterior facade with new wing tied to existing house',
+    whole_home_remodel: 'whole house exterior renovation with updated facade and landscaping',
+    whole_home_concept: 'whole house exterior curb appeal and architectural modernization',
+  }
+  return map[projectPath] ?? 'single-family home exterior facade'
+}
+
+function splitDualRenderCounts(total: number): { interior: number; exterior: number } {
+  const exterior = Math.max(2, Math.ceil(total * 0.4))
+  const interior = Math.max(2, total - exterior)
+  return { interior, exterior }
+}
+
+const DUAL_SCOPE_DEV_STUBS: Record<string, { interior: string[]; exterior: string[] }> = {
+  addition_expansion: {
+    interior: [
+      'https://images.unsplash.com/photo-1600210492493-0946911123ea?w=1920&q=80',
+      'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=1920&q=80',
+      'https://images.unsplash.com/photo-1618219908412-a29a1bb7b86e?w=1920&q=80',
+    ],
+    exterior: [
+      'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1920&q=80',
+      'https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=1920&q=80',
+    ],
+  },
+  whole_home_remodel: {
+    interior: [
+      'https://images.unsplash.com/photo-1600210492493-0946911123ea?w=1920&q=80',
+      'https://images.unsplash.com/photo-1600566752734-2a0cd0e0da49?w=1920&q=80',
+      'https://images.unsplash.com/photo-1618219908412-a29a1bb7b86e?w=1920&q=80',
+      'https://images.unsplash.com/photo-1600489000022-c2086d79f9d4?w=1920&q=80',
+    ],
+    exterior: [
+      'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1920&q=80',
+      'https://images.unsplash.com/photo-1583608205776-bfd35f0d9f83?w=1920&q=80',
+      'https://images.unsplash.com/photo-1565182999561-18d7dc61c393?w=1920&q=80',
+    ],
+  },
+  whole_home_concept: {
+    interior: [
+      'https://images.unsplash.com/photo-1600210492493-0946911123ea?w=1920&q=80',
+      'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=1920&q=80',
+      'https://images.unsplash.com/photo-1618219908412-a29a1bb7b86e?w=1920&q=80',
+      'https://images.unsplash.com/photo-1600489000022-c2086d79f9d4?w=1920&q=80',
+    ],
+    exterior: [
+      'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1920&q=80',
+      'https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=1920&q=80',
+      'https://images.unsplash.com/photo-1583608205776-bfd35f0d9f83?w=1920&q=80',
+    ],
+  },
+}
+
+function getDualScopeDevStubs(projectPath: string, renderCount: number): {
+  interiorRenderUrls: string[]
+  exteriorRenderUrls: string[]
+  renderUrls: string[]
+} {
+  const pack = DUAL_SCOPE_DEV_STUBS[projectPath] ?? DUAL_SCOPE_DEV_STUBS.addition_expansion
+  const { interior, exterior } = splitDualRenderCounts(renderCount)
+  const interiorRenderUrls = pack.interior.slice(0, interior)
+  const exteriorRenderUrls = pack.exterior.slice(0, exterior)
+  return {
+    interiorRenderUrls,
+    exteriorRenderUrls,
+    renderUrls: [...interiorRenderUrls, ...exteriorRenderUrls],
+  }
+}
+
 /**
  * Minimal static fallbacks used when REPLICATE_API_TOKEN is not configured
  * (local dev / CI). Keeps the portal gallery visible without burning API credits.
@@ -127,57 +211,199 @@ const DEV_RENDER_STUBS = [
  *
  * Falls back to DEV_RENDER_STUBS when REPLICATE_API_TOKEN is not configured.
  */
+interface ConceptRenderBundle {
+  predictionIds: string[]
+  renderJobScopes: Array<'interior' | 'exterior'>
+  renderUrls: string[]
+  interiorRenderUrls: string[]
+  exteriorRenderUrls: string[]
+}
+
+async function submitOneRenderJob(opts: {
+  style: string
+  roomType: string
+  scope: 'interior' | 'exterior'
+  renderMode: 'realistic' | 'cinematic'
+  inputImageUrl?: string
+}): Promise<string | null> {
+  const extra =
+    opts.scope === 'exterior'
+      ? 'exterior architectural photography, front elevation, curb appeal, residential street context, no interior view'
+      : undefined
+  const result = await generateImages({
+    prompt: buildArchitecturalPrompt({
+      style: opts.style.toLowerCase(),
+      roomType: opts.roomType,
+      renderMode: opts.renderMode,
+      extra,
+    }),
+    aspectRatio: '16:9',
+    inputImageUrl: opts.scope === 'interior' ? opts.inputImageUrl : undefined,
+  })
+  return result.predictionId
+}
+
 async function fireConceptRenders(
   projectPath: string,
   renderCount: number,
   style: string,
   uploadedPhotoUrls: string[],
-): Promise<{ predictionIds: string[]; renderUrls: string[] }> {
+): Promise<ConceptRenderBundle> {
   const count = renderCount
+  const dualScope = DUAL_SCOPE_PROJECT_PATHS.has(projectPath)
 
   if (!process.env.REPLICATE_API_TOKEN) {
+    if (dualScope) {
+      const stubs = getDualScopeDevStubs(projectPath, count)
+      return {
+        predictionIds: [],
+        renderJobScopes: [],
+        ...stubs,
+      }
+    }
+    const renderUrls = Array.from(
+      { length: count },
+      (_, i) => DEV_RENDER_STUBS[i % DEV_RENDER_STUBS.length],
+    )
     return {
       predictionIds: [],
-      renderUrls: Array.from({ length: count }, (_, i) => DEV_RENDER_STUBS[i % DEV_RENDER_STUBS.length]),
+      renderJobScopes: [],
+      renderUrls,
+      interiorRenderUrls: [],
+      exteriorRenderUrls: [],
     }
   }
 
-  const roomType = projectPathToRoomType(projectPath)
-  const modes    = ['realistic', 'cinematic'] as const
-
-  // When the client uploaded before-photos, use the first image as a structural
-  // guide for img2img — the "after" render preserves the room geometry while
-  // applying the new design. Without a photo, fall back to pure text-to-image.
+  const modes = ['realistic', 'cinematic'] as const
   const inputImageUrl = uploadedPhotoUrls.length > 0 ? uploadedPhotoUrls[0] : undefined
-
-  // Submit sequentially with a delay to stay within Replicate burst-rate limits.
-  // Accounts below $5 credit are capped at 6 req/min (burst of 1, resets ~10s).
-  // 11s between requests keeps us safely within that window. Once the account
-  // has >$5 credit the limit rises to 600 req/min and the delay becomes moot.
   const RENDER_SUBMIT_DELAY_MS = 11_000
   const predictionIds: string[] = []
-  for (let i = 0; i < count; i++) {
+  const renderJobScopes: Array<'interior' | 'exterior'> = []
+
+  const jobs: Array<{ scope: 'interior' | 'exterior'; roomType: string }> = []
+  if (dualScope) {
+    const { interior, exterior } = splitDualRenderCounts(count)
+    const interiorRoom = projectPathToRoomType(projectPath)
+    const exteriorRoom = projectPathToExteriorRoomType(projectPath)
+    for (let i = 0; i < interior; i++) jobs.push({ scope: 'interior', roomType: interiorRoom })
+    for (let i = 0; i < exterior; i++) jobs.push({ scope: 'exterior', roomType: exteriorRoom })
+  } else {
+    const roomType = projectPathToRoomType(projectPath)
+    for (let i = 0; i < count; i++) jobs.push({ scope: 'interior', roomType })
+  }
+
+  for (let i = 0; i < jobs.length; i++) {
     if (i > 0) await new Promise(r => setTimeout(r, RENDER_SUBMIT_DELAY_MS))
     try {
-      const result = await generateImages({
-        prompt:      buildArchitecturalPrompt({
-          style:      style.toLowerCase(),
-          roomType,
-          renderMode: modes[i % modes.length],
-        }),
-        aspectRatio:  '16:9',
-        inputImageUrl,  // img2img when before-photo is available
+      const id = await submitOneRenderJob({
+        style,
+        roomType: jobs[i].roomType,
+        scope: jobs[i].scope,
+        renderMode: modes[i % modes.length],
+        inputImageUrl,
       })
-      predictionIds.push(result.predictionId)
-    } catch (err: any) {
-      console.warn(`[concept/generate] Render ${i + 1}/${count} failed:`, err?.message)
+      if (id) {
+        predictionIds.push(id)
+        renderJobScopes.push(jobs[i].scope)
+      }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err)
+      console.warn(`[concept/generate] Render ${i + 1}/${jobs.length} (${jobs[i].scope}) failed:`, msg)
     }
   }
 
-  console.log(`[concept/generate] Fired ${predictionIds.length}/${count} render jobs`)
+  console.log(
+    `[concept/generate] Fired ${predictionIds.length}/${jobs.length} render jobs` +
+      (dualScope ? ' (interior + exterior)' : ''),
+  )
 
-  // renderUrls start empty — portal polls renderJobs predictionIds for real URLs
-  return { predictionIds, renderUrls: [] }
+  return {
+    predictionIds,
+    renderJobScopes,
+    renderUrls: [],
+    interiorRenderUrls: [],
+    exteriorRenderUrls: [],
+  }
+}
+
+/**
+ * Poll Replicate predictions to completion and return real render URLs.
+ * Called immediately after fireConceptRenders so URLs are written to the DB
+ * before the response is returned. Predictions expire ~1h after completion,
+ * so this must run within the same serverless invocation.
+ *
+ * maxWaitMs budget: 300s route limit − ~30s Claude − ~55s submit = ~215s headroom.
+ * We use 150s so there's margin for Supabase write + email trigger.
+ */
+async function resolveConceptRenders(
+  predictionIds: string[],
+  renderJobScopes: Array<'interior' | 'exterior'>,
+  maxWaitMs = 150_000,
+): Promise<ConceptRenderBundle> {
+  if (!process.env.REPLICATE_API_TOKEN || predictionIds.length === 0) {
+    return { predictionIds, renderJobScopes, renderUrls: [], interiorRenderUrls: [], exteriorRenderUrls: [] }
+  }
+
+  const repl = new Replicate({ auth: process.env.REPLICATE_API_TOKEN })
+  // null = not yet resolved, string = resolved URL (or sentinel '__failed__')
+  const resolvedUrls: (string | null)[] = new Array(predictionIds.length).fill(null)
+  const deadline = Date.now() + maxWaitMs
+  let unresolved = predictionIds.length
+
+  while (unresolved > 0 && Date.now() < deadline) {
+    for (let i = 0; i < predictionIds.length; i++) {
+      if (resolvedUrls[i] !== null) continue
+      try {
+        const pred = await repl.predictions.get(predictionIds[i])
+        if (pred.status === 'succeeded') {
+          const outputs = Array.isArray(pred.output)
+            ? (pred.output as string[])
+            : pred.output ? [pred.output as string] : []
+          const url = outputs[0] ?? null
+          resolvedUrls[i] = url ?? '__failed__'
+          unresolved--
+          if (url && outputs.length > 0) {
+            archiveReplicateOutputsFireAndForget({
+              predictionId: predictionIds[i],
+              source: 'concept-generate-resolve',
+              mediaKind: 'image',
+              outputUrls: outputs,
+              model: typeof pred.model === 'string' ? pred.model : undefined,
+              context: { route: '/api/concept/generate' },
+            })
+          }
+        } else if (pred.status === 'failed' || pred.status === 'canceled') {
+          console.warn(`[concept/generate] Render ${predictionIds[i]} ${pred.status}`)
+          resolvedUrls[i] = '__failed__'
+          unresolved--
+        }
+      } catch (err: unknown) {
+        console.warn('[concept/generate] resolve poll error:', predictionIds[i], (err as Error)?.message)
+      }
+    }
+    if (unresolved > 0) await new Promise(r => setTimeout(r, 5_000))
+  }
+
+  if (unresolved > 0) {
+    console.warn(`[concept/generate] resolveConceptRenders timed out with ${unresolved} unresolved predictions`)
+  }
+
+  const interiorRenderUrls: string[] = []
+  const exteriorRenderUrls: string[] = []
+  for (let i = 0; i < predictionIds.length; i++) {
+    const url = resolvedUrls[i]
+    if (!url || url === '__failed__') continue
+    if ((renderJobScopes[i] ?? 'interior') === 'exterior') exteriorRenderUrls.push(url)
+    else interiorRenderUrls.push(url)
+  }
+
+  return {
+    predictionIds,
+    renderJobScopes,
+    renderUrls: [...interiorRenderUrls, ...exteriorRenderUrls],
+    interiorRenderUrls,
+    exteriorRenderUrls,
+  }
 }
 
 function preferSelectedRender(renderUrls: string[], selectedRenderUrl?: string | null): string[] {
@@ -192,7 +418,20 @@ function preferSelectedRender(renderUrls: string[], selectedRenderUrl?: string |
 function getRenderUrls(projectPath: string, _tier: number): string[] {
   const count = SERVICE_DELIVERABLES[projectPath]?.renderCount ?? 3
   if (process.env.REPLICATE_API_TOKEN) return []
+  if (DUAL_SCOPE_PROJECT_PATHS.has(projectPath)) {
+    return getDualScopeDevStubs(projectPath, count).renderUrls
+  }
   return Array.from({ length: count }, (_, i) => DEV_RENDER_STUBS[i % DEV_RENDER_STUBS.length])
+}
+
+function applyRenderBundle(conceptOutput: ConceptOutput, bundle: ConceptRenderBundle): void {
+  conceptOutput.renderUrls = bundle.renderUrls
+  if (bundle.interiorRenderUrls.length > 0) {
+    conceptOutput.interiorRenderUrls = bundle.interiorRenderUrls
+  }
+  if (bundle.exteriorRenderUrls.length > 0) {
+    conceptOutput.exteriorRenderUrls = bundle.exteriorRenderUrls
+  }
 }
 
 /**
@@ -624,6 +863,7 @@ export async function POST(req: NextRequest) {
     // If the client uploaded before-photos, img2img is used so renders match
     // the actual room geometry — those source photos become the "before" set.
     let renderJobs: string[] = []
+    let renderJobScopes: Array<'interior' | 'exterior'> = []
     try {
       const renders = await fireConceptRenders(
         projectPath,
@@ -631,10 +871,21 @@ export async function POST(req: NextRequest) {
         conceptOutput.designConcept?.style ?? 'modern contemporary',
         uploadedPhotoUrls,
       )
-      conceptOutput.renderUrls = renders.renderUrls
+      // Resolve Replicate predictions to real URLs before writing to DB.
+      // Predictions expire ~1h after completion, so this must happen in the
+      // same serverless invocation. Budget: 150s within the 300s maxDuration.
+      const resolved = await resolveConceptRenders(
+        renders.predictionIds,
+        renders.renderJobScopes,
+        150_000,
+      )
+      const bundle = resolved.renderUrls.length > 0 ? resolved : renders
+      applyRenderBundle(conceptOutput, bundle)
       renderJobs = renders.predictionIds
-    } catch (renderErr: any) {
-      console.warn('[concept/generate] Render job submission failed:', renderErr?.message)
+      renderJobScopes = renders.renderJobScopes
+    } catch (renderErr: unknown) {
+      const msg = renderErr instanceof Error ? renderErr.message : String(renderErr)
+      console.warn('[concept/generate] Render job submission/resolve failed:', msg)
     }
 
     // Attach before-photos so the portal can display a before/after comparison
@@ -654,6 +905,7 @@ export async function POST(req: NextRequest) {
           coverImageUrl: geometry?.coverImageUrl ?? existingFormData.coverImageUrl,
           conceptOutput,
           renderJobs,
+          renderJobScopes,
           conceptGeneratedAt: new Date().toISOString(),
         },
         status: 'concept_ready',
@@ -661,8 +913,21 @@ export async function POST(req: NextRequest) {
       .eq('id', intakeId)
 
     if (updateErr) {
-      console.error('[concept/generate] Failed to update intake:', updateErr.message)
-      // Still return the concept data even if save failed
+      console.error('[concept/generate] Failed to update intake:', updateErr.message, {
+        intakeId,
+        projectPath,
+        code: (updateErr as { code?: string }).code,
+      })
+      return NextResponse.json(
+        {
+          error: 'Concept generated but failed to save to database',
+          detail: updateErr.message,
+          intakeId,
+          partial: true,
+          conceptOutput,
+        },
+        { status: 500 },
+      )
     }
 
     // Use canonical app URL for sub-fetches so they always hit production,
