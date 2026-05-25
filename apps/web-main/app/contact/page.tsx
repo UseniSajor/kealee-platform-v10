@@ -4,6 +4,13 @@ import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { Mail, Phone, MapPin, Send, MessageSquare, ArrowRight, Clock } from 'lucide-react'
 import { CONTACT_PAGE_MESSAGE_PLACEHOLDER } from '@kealee/shared'
+import {
+  KEALEE_EMAIL,
+  KEALEE_PHONE_DISPLAY,
+  KEALEE_PHONE_E164,
+  KEALEE_HQ_DISPLAY,
+  KEALEE_SERVICE_AREAS,
+} from '@/lib/site/contact'
 
 const fadeInUp = {
   initial: { opacity: 0, y: 20 },
@@ -90,10 +97,21 @@ export default function ContactPage() {
               <h2 className="text-lg font-bold font-display" style={{ color: '#1A2B4A' }}>Contact Information</h2>
               <div className="mt-6 space-y-6">
                 {[
-                  { icon: Mail, label: 'Email', value: 'hello@kealee.com', href: 'mailto:hello@kealee.com' },
-                  { icon: Phone, label: 'Phone', value: '(240) 555-0100', href: 'tel:+12405550100' },
-                  { icon: MapPin, label: 'Office', value: 'Austin, TX (Serving Nationwide)', href: undefined },
-                  { icon: Clock, label: 'Hours', value: 'Mon-Fri 9am-6pm ET', href: undefined },
+                  { icon: Mail, label: 'Email', value: KEALEE_EMAIL, href: `mailto:${KEALEE_EMAIL}` },
+                  { icon: Phone, label: 'Phone', value: KEALEE_PHONE_DISPLAY, href: `tel:${KEALEE_PHONE_E164}` },
+                  {
+                    icon: MapPin,
+                    label: 'Headquarters',
+                    value: KEALEE_HQ_DISPLAY,
+                    href: '/service-areas/oxon-hill-md',
+                  },
+                  {
+                    icon: MapPin,
+                    label: 'Service area',
+                    value: `${KEALEE_SERVICE_AREAS.slice(1, 4).join(' · ')} & more`,
+                    href: '/service-areas',
+                  },
+                  { icon: Clock, label: 'Hours', value: 'Mon–Fri 9am–6pm ET', href: undefined },
                 ].map((item) => (
                   <div key={item.label} className="flex items-start gap-4">
                     <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg" style={{ backgroundColor: 'rgba(42,191,191,0.1)' }}>

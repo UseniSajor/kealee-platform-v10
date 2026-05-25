@@ -10,7 +10,9 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Your Project Journey: Design → Permits → Estimate → Build',
     description: 'Four connected services from concept to completion on Kealee.',
+    url: 'https://kealee.com',
   },
+  alternates: { canonical: '/' },
 }
 
 export default async function HomePage() {

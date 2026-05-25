@@ -9,6 +9,10 @@ import { GlobalChatBar } from '@/components/GlobalChatBar'
 import { AuthHashExchange } from '@/components/AuthHashExchange'
 import { ConditionalSiteFooter } from '@/components/ConditionalSiteFooter'
 import { UtmCaptureRoot } from '@/components/marketing/UtmCaptureRoot'
+import { JsonLd } from '@/components/seo/JsonLd'
+import { buildGlobalJsonLdGraph } from '@/lib/seo/site-json-ld'
+import { MobileConversionRail } from '@/components/marketing/MobileConversionRail'
+import { ConversionPathTracker } from '@/components/marketing/ConversionPathTracker'
 
 const syne = Syne({
   subsets: ['latin'],
@@ -48,12 +52,21 @@ export const metadata: Metadata = {
     description: 'AI-powered permits, design, and construction management for homeowners, contractors, and developers in Washington DC, Maryland, and Virginia.',
   },
   metadataBase: new URL('https://kealee.com'),
+  keywords: [
+    'AI kitchen design DC',
+    'DC building permits',
+    'home renovation estimate DMV',
+    'construction cost estimator',
+    'contractor marketplace DC',
+  ],
+  robots: { index: true, follow: true },
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${syne.variable} ${dmSans.variable}`}>
       <body className="bg-warm-50">
+        <JsonLd data={buildGlobalJsonLdGraph()} />
         {GA_ID && (
           <>
             <Script
@@ -99,10 +112,12 @@ fbq('track', 'PageView');`}
         )}
         <VideoModalProvider>
           <UtmCaptureRoot />
+          <ConversionPathTracker />
           <SiteNav />
-          <main className="pb-24">{children}</main>
+          <main className="pb-28 md:pb-24">{children}</main>
           <ConditionalSiteFooter />
           <VideoModal />
+          <MobileConversionRail />
           <GlobalChatBar />
           <AuthHashExchange />
         </VideoModalProvider>

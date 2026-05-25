@@ -15,6 +15,7 @@ export function GlobalChatBar() {
 
   return (
     <div
+      id="kealee-global-chat"
       className="fixed bottom-0 left-0 right-0 z-40 px-4 pb-4 pt-3"
       style={{
         background: 'linear-gradient(to top, rgba(248,246,242,0.98) 70%, transparent)',

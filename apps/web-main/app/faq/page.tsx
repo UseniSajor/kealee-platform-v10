@@ -2,10 +2,14 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
 import { AskChatBar } from '@/components/ui/AskChatBar'
+import { JsonLd } from '@/components/seo/JsonLd'
+import { buildFaqPageJsonLd } from '@/lib/seo/site-json-ld'
 
 export const metadata: Metadata = {
-  title: 'FAQ — Kealee',
-  description: 'Frequently asked questions about the Kealee platform — AI concept design, contractor marketplace, escrow payments, and more.',
+  title: 'FAQ — Permits, AI Concepts, Estimates & Contractors',
+  description:
+    'Answers about Kealee AI design concepts, DC/MD/VA permits, cost estimates, contractor marketplace, and milestone payments.',
+  alternates: { canonical: '/faq' },
 }
 
 const SECTIONS = [
@@ -156,6 +160,7 @@ const SECTIONS = [
 export default function FAQPage() {
   return (
     <div className="min-h-screen bg-white">
+      <JsonLd data={buildFaqPageJsonLd(SECTIONS)} />
       {/* Hero */}
       <section className="border-b border-gray-100 py-16" style={{ backgroundColor: '#F7FAFC' }}>
         <div className="mx-auto max-w-3xl px-4 text-center sm:px-6">

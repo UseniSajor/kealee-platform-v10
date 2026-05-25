@@ -698,7 +698,7 @@ export default function PermitsPage() {
                 </div>
                 <div>
                   <FieldLabel>Project Address *</FieldLabel>
-                  <Input required placeholder="123 Main St, Austin, TX" value={formData.projectAddress} onChange={e => setFormData(f => ({ ...f, projectAddress: e.target.value }))} />
+                  <Input required placeholder="123 Main St, Oxon Hill, MD 20745" value={formData.projectAddress} onChange={e => setFormData(f => ({ ...f, projectAddress: e.target.value }))} />
                 </div>
               </div>
             </div>
