@@ -25,12 +25,15 @@ import {
   getConceptPackageDeliverableLabelsForIntake,
   getPermitZoningLabels,
   intakePathToFamily,
+  resolveConceptTier,
+  conceptTierIncludesVideo,
   type ConceptTier,
 } from '@kealee/core-rules'
 
 // ─── Render stubs ─────────────────────────────────────────────────────────────
 
-const RENDER_STUBS: Record<string, string[]> = {
+type RenderStubValue = string[] | { interior: string[]; exterior: string[] }
+const RENDER_STUBS: Record<string, RenderStubValue> = {
   kitchen_remodel: [
     'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=1920&q=80',
     'https://images.unsplash.com/photo-1565538810643-b5bdb714032a?w=1920&q=80',
@@ -319,8 +322,8 @@ function getStubRenders(projectPath: string, tier: number): string[] {
   if (DUAL_SCOPE_PATHS.has(projectPath)) {
     return getDualStubRenders(projectPath, tier).renderUrls
   }
-  const stubs = RENDER_STUBS[projectPath] as string[] | undefined
-  const list = Array.isArray(stubs) ? stubs : RENDER_STUBS.default
+  const stubs = RENDER_STUBS[projectPath]
+  const list: string[] = Array.isArray(stubs) ? stubs : (RENDER_STUBS.default as string[])
   const count = tier >= 3 ? list.length : tier === 2 ? Math.min(6, list.length) : 3
   return list.slice(0, count)
 }
@@ -645,6 +648,7 @@ export default function ConceptDeliverablePage() {
       const ready =
         conceptRaw &&
         (intake.status === 'concept_ready' ||
+          (intake.status === 'paid' && Boolean(conceptRaw)) ||
           (formData.v30 && intake.status === 'processing'))
       if (!ready) return false
 
@@ -655,7 +659,7 @@ export default function ConceptDeliverablePage() {
 
       const co = conceptRaw as Record<string, unknown>
       const projectPath = (intake.project_path as string) ?? 'default'
-      const tier = typeof formData.tier === 'number' ? formData.tier : 1
+      const tier = resolveConceptTier(formData, { projectPath })
 
       // ── Unpack packageJson (concept engine v2 format) with fallback to
       //    legacy top-level fields (concept engine v1 / production format)
@@ -842,7 +846,7 @@ export default function ConceptDeliverablePage() {
             : []
 
       const coIncludes = Array.isArray(co.includes) ? (co.includes as string[]) : []
-      const pkgDef = getPackageDef(projectPath, tier)
+      const pkgDef = getPackageDef(projectPath)
       const packageIncludes =
         coIncludes.length > 0 ? coIncludes : pkgDef.includes
       const floorplanSvg = typeof co.floorplanSvgInline === 'string' && co.floorplanSvgInline.trim().startsWith('<')
@@ -937,17 +941,15 @@ export default function ConceptDeliverablePage() {
     return () => clearTimeout(timer)
   }, [loadStatus, pollCount, fetchData])
 
-  // After the concept is ready, keep refreshing for up to 5 minutes so the AI
-  // video URL (Sora / Veo / Kling) can swap in without a manual reload.
-  // Stops as soon as videoUrl no longer looks like the placeholder, or after
-  // ~5 minutes (60 polls × 5s).
+  // After the concept is ready, poll web-main video pipeline (POST start + GET advance segments).
   useEffect(() => {
     if (loadStatus !== 'ready') return
-    if (!data || data.tier < 2) return
+    if (!data || !conceptTierIncludesVideo(data.tier as ConceptTier)) return
 
+    const webMain = (process.env.NEXT_PUBLIC_WEB_MAIN_URL ?? 'https://kealee.com').replace(/\/$/, '')
     let stopped = false
-    let pollsLeft = 60
-    let videoKickoffDone = false
+    let pollsLeft = 120
+    let kickoffAttempts = 0
 
     const placeholderHosts = ['storage.googleapis.com', 'commondatastorage.googleapis.com']
     const looksLikePlaceholder = (url?: string): boolean => {
@@ -956,12 +958,10 @@ export default function ConceptDeliverablePage() {
       catch { return false }
     }
 
-    const kickoffVideoGeneration = () => {
-      if (videoKickoffDone) return
-      videoKickoffDone = true
-      const webMain = process.env.NEXT_PUBLIC_WEB_MAIN_URL?.replace(/\/$/, '')
-      if (!webMain) return
-      fetch(`${webMain}/api/concept/video`, {
+    const ensureVideoStarted = async () => {
+      if (kickoffAttempts >= 3) return
+      kickoffAttempts += 1
+      await fetch(`${webMain}/api/concept/video`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ intakeId }),
@@ -971,20 +971,38 @@ export default function ConceptDeliverablePage() {
     const tick = async () => {
       if (stopped) return
       pollsLeft -= 1
-      if (looksLikePlaceholder(data.videoUrl)) kickoffVideoGeneration()
-      const refreshed = await fetchData()
-      if (refreshed && !looksLikePlaceholder(data.videoUrl)) return
+
+      // GET advances multi-segment Sora/Kling jobs and mirrors finished MP4 to storage.
+      const pollRes = await fetch(
+        `${webMain}/api/concept/video?intakeId=${encodeURIComponent(intakeId)}`,
+      ).catch(() => null)
+
+      if (pollRes?.ok) {
+        const videoState = (await pollRes.json().catch(() => null)) as
+          | { status?: string; outputUrl?: string }
+          | null
+        if (videoState?.status === 'completed' && videoState.outputUrl) {
+          await fetchData()
+          return
+        }
+        if (videoState?.status === 'failed' && kickoffAttempts < 3) {
+          await ensureVideoStarted()
+        }
+      }
+
+      await fetchData()
+
       if (pollsLeft <= 0) return
       window.setTimeout(tick, 5000)
     }
 
     if (looksLikePlaceholder(data.videoUrl)) {
-      kickoffVideoGeneration()
+      void ensureVideoStarted()
       window.setTimeout(tick, 5000)
     }
 
     return () => { stopped = true }
-  }, [loadStatus, data, fetchData])
+  }, [loadStatus, data?.tier, data?.videoUrl, intakeId, fetchData])
 
   if (loadStatus === 'loading') {
     return (
