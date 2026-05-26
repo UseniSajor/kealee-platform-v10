@@ -1,4 +1,11 @@
 import { SERVICES, type Service } from '@/lib/services-config'
+import {
+  defaultBeforeAfterDescriptions,
+  getCardProcessPrompt,
+  narrativeForHomeId,
+  narrativeForServiceSlug,
+  type VideoNarrativeId,
+} from './installation-video-scripts'
 
 export type HomeServiceId = 'design' | 'permits' | 'estimate' | 'build'
 export type CardMediaScope = 'home' | 'product'
@@ -8,20 +15,24 @@ export interface CardMediaSpec {
   scope: CardMediaScope
   id: string
   title: string
-  imageType: 'hero' | 'after' | 'trend' | 'detail'
+  imageType: 'hero' | 'after' | 'before' | 'trend' | 'detail'
   style: 'modern' | 'contemporary' | 'traditional' | 'transitional' | 'luxury'
   roomType?: string
-  /** Passed to DesignBot / generate_product_image */
+  narrativeId: VideoNarrativeId
+  /** Generate before still (kitchen / bath / garden). */
+  generatesBefore?: boolean
+  beforeImageDescription?: string
+  /** Passed to DesignBot / generate_product_image — typically the "after" hero */
   imageDescription: string
-  /** Concept-engine video (img2video) */
+  /** Condensed installation timelapse for card video (Kling). */
+  cardProcessPrompt: string
   videoMotion?: 'reveal' | 'slow_pan' | 'walkthrough'
-  videoExtra?: string
   mediaType: 'video' | 'photo'
   fallbackPhoto: string
   photoAlt: string
 }
 
-const HOME_SPECS: Record<HomeServiceId, Omit<CardMediaSpec, 'key' | 'scope' | 'id'>> = {
+const HOME_SPECS: Record<HomeServiceId, Omit<CardMediaSpec, 'key' | 'scope' | 'id' | 'narrativeId' | 'cardProcessPrompt'>> = {
   design: {
     title: 'AI Design Concepts',
     imageType: 'hero',
@@ -30,7 +41,6 @@ const HOME_SPECS: Record<HomeServiceId, Omit<CardMediaSpec, 'key' | 'scope' | 'i
     imageDescription:
       'Stunning modern kitchen with quartz waterfall island, three AI concept style boards visible on a tablet, photorealistic renovation showcase',
     videoMotion: 'reveal',
-    videoExtra: 'AI design concepts morphing between modern, traditional, and contemporary palettes',
     mediaType: 'video',
     fallbackPhoto:
       'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=900&q=80&auto=format&fit=crop',
@@ -56,7 +66,6 @@ const HOME_SPECS: Record<HomeServiceId, Omit<CardMediaSpec, 'key' | 'scope' | 'i
     imageDescription:
       'Construction cost spreadsheet on laptop with line-item materials and labor totals, calculator, professional estimating workspace',
     videoMotion: 'slow_pan',
-    videoExtra: 'cost line items populating with checkmarks and running total',
     mediaType: 'video',
     fallbackPhoto:
       'https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=900&q=80&auto=format&fit=crop',
@@ -68,9 +77,8 @@ const HOME_SPECS: Record<HomeServiceId, Omit<CardMediaSpec, 'key' | 'scope' | 'i
     style: 'transitional',
     roomType: 'kitchen',
     imageDescription:
-      'Professional construction crew collaborating on active kitchen renovation, timeline board, vetted contractor teamwork',
+      'Completed modern kitchen renovation, magazine-quality finishes, same angle as active construction reference',
     videoMotion: 'walkthrough',
-    videoExtra: 'construction timelapse from demo to finished kitchen',
     mediaType: 'video',
     fallbackPhoto:
       'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=900&q=80&auto=format&fit=crop',
@@ -90,18 +98,27 @@ function productSpecFromService(s: Service): CardMediaSpec {
             ? 'living'
             : 'interior'
 
+  const narrativeId = narrativeForServiceSlug(s.slug, s.category)
+  const { before, after } = defaultBeforeAfterDescriptions(narrativeId, s.label, 'modern')
+  const generatesBefore =
+    narrativeId === 'kitchen-install' ||
+    narrativeId === 'bath-install' ||
+    narrativeId === 'landscape-install'
+
   return {
     key: cardKey('product', s.slug),
     scope: 'product',
     id: s.slug,
     title: s.label,
-    imageType: 'hero',
+    imageType: 'after',
     style: 'modern',
     roomType: room,
-    imageDescription: `${s.description.slice(0, 200)}. Magazine-quality ${room} renovation hero, Kealee AI concept aesthetic`,
-    videoMotion: 'reveal',
-    videoExtra: s.shortLabel,
-    mediaType: 'video',
+    narrativeId,
+    generatesBefore,
+    beforeImageDescription: generatesBefore ? before : undefined,
+    imageDescription: `${after}. Magazine-quality ${room} renovation hero, Kealee AI concept aesthetic`,
+    cardProcessPrompt: getCardProcessPrompt(narrativeId),
+    mediaType: narrativeId === 'permits-static' ? 'photo' : 'video',
     fallbackPhoto: s.heroImage,
     photoAlt: `${s.label} — Kealee AI concept`,
   }
@@ -112,12 +129,17 @@ export function cardKey(scope: CardMediaScope, id: string): string {
 }
 
 export function getAllCardMediaSpecs(): CardMediaSpec[] {
-  const home: CardMediaSpec[] = (Object.keys(HOME_SPECS) as HomeServiceId[]).map((id) => ({
-    ...HOME_SPECS[id],
-    key: cardKey('home', id),
-    scope: 'home' as const,
-    id,
-  }))
+  const home: CardMediaSpec[] = (Object.keys(HOME_SPECS) as HomeServiceId[]).map((id) => {
+    const narrativeId = narrativeForHomeId(id)
+    return {
+      ...HOME_SPECS[id],
+      key: cardKey('home', id),
+      scope: 'home' as const,
+      id,
+      narrativeId,
+      cardProcessPrompt: getCardProcessPrompt(narrativeId),
+    }
+  })
   const products = SERVICES.filter((s) => s.phase === 'precon').map(productSpecFromService)
   return [...home, ...products]
 }

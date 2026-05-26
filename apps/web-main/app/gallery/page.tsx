@@ -8,7 +8,13 @@ import { ArrowRight, Search, X, Building2 } from 'lucide-react'
 import { SERVICES } from '@/lib/services-config'
 import type { Service } from '@/lib/services-config'
 import { GALLERY_SEARCH_PLACEHOLDER } from '@kealee/shared'
-import { useCardMediaManifest, productHeroFromManifest } from '@/hooks/useCardMediaManifest'
+import {
+  useCardMediaManifest,
+  productHeroFromManifest,
+  productMediaFromManifest,
+} from '@/hooks/useCardMediaManifest'
+import { BeforeAfterMedia } from '@/components/marketing/BeforeAfterMedia'
+import { ProcessVideoLoop } from '@/components/marketing/ProcessVideoLoop'
 
 // Precon = AI concepts, estimates, permits (digital deliverables)
 // Build = construction execution (separate flow)
@@ -23,21 +29,46 @@ const CATEGORIES = [
   { key: 'design', label: 'Design' },
 ]
 
-function ServiceCard({ svc, heroImage }: { svc: Service; heroImage: string }) {
+function ServiceCard({
+  svc,
+  heroImage,
+  beforeImage,
+  videoUrl,
+}: {
+  svc: Service
+  heroImage: string
+  beforeImage?: string
+  videoUrl?: string
+}) {
   const hasVideo = svc.tiers.some((t) => t.video)
 
   return (
     <Link href={`/services/${svc.slug}`}>
       <div className="group rounded-xl overflow-hidden border border-slate-200 bg-white shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-200 cursor-pointer h-full flex flex-col">
-        {/* Image */}
+        {/* Image / process video */}
         <div className="relative h-44 overflow-hidden bg-slate-100 flex-shrink-0">
-          <Image
-            src={heroImage}
-            alt={svc.label}
-            fill
-            className="object-cover group-hover:scale-105 transition-transform duration-500"
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-          />
+          {videoUrl ? (
+            <ProcessVideoLoop
+              src={videoUrl}
+              poster={heroImage}
+              className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
+            />
+          ) : beforeImage ? (
+            <BeforeAfterMedia
+              beforeUrl={beforeImage}
+              afterUrl={heroImage}
+              alt={svc.label}
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            />
+          ) : (
+            <Image
+              src={heroImage}
+              alt={svc.label}
+              fill
+              className="object-cover group-hover:scale-105 transition-transform duration-500"
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            />
+          )}
           {/* Badges */}
           <div className="absolute top-3 left-3 flex gap-1.5">
             <span className="rounded-full bg-black/50 backdrop-blur-sm px-2.5 py-0.5 text-[11px] font-semibold text-white capitalize">
@@ -181,7 +212,14 @@ export default function GalleryPage() {
                 >
                   <ServiceCard
                     svc={svc}
-                    heroImage={productHeroFromManifest(manifest, svc.slug, svc.heroImage)}
+                    {...(() => {
+                      const m = productMediaFromManifest(manifest, svc.slug, svc.heroImage)
+                      return {
+                        heroImage: m.photoUrl,
+                        beforeImage: m.beforePhotoUrl,
+                        videoUrl: m.videoUrl,
+                      }
+                    })()}
                   />
                 </motion.div>
               ))}

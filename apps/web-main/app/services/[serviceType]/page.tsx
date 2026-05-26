@@ -12,6 +12,7 @@ import {
   getServiceVideoFallbackCopy,
 } from '@/lib/service-page-copy'
 import { getServiceMedia } from '@/lib/marketing/service-media'
+import { ServiceHeroMedia } from '@/components/marketing/ServiceHeroMedia'
 
 // ── Tier deliverables (mirrors confirm/page.tsx TIER_ITEMS) ──────────────────
 interface DeliverableItem {
@@ -165,6 +166,8 @@ export default async function ServicePage({
   const media = await getServiceMedia(serviceType)
   const heroImage = media?.heroImage ?? svc.heroImage
   const heroVideo = media?.heroVideo
+  const heroVideoWebM = media?.heroVideoWebM
+  const beforeImage = media?.beforeImage
 
   const deliverable = SERVICE_DELIVERABLES[svc.intakePath]
   const includes = deliverable?.includes ?? svc.features
@@ -219,26 +222,13 @@ export default async function ServicePage({
       {/* ── 1. Hero ────────────────────────────────────────────────────────── */}
       <section className="relative bg-[#1A2B4A] py-24 px-4 overflow-hidden">
         <div className="absolute inset-0">
-          {heroVideo ? (
-            <video
-              autoPlay
-              muted
-              loop
-              playsInline
-              className="h-full w-full object-cover opacity-30"
-              poster={heroImage}
-            >
-              <source src={heroVideo} type="video/mp4" />
-            </video>
-          ) : (
-            <Image
-              src={heroImage}
-              alt={svc.label}
-              fill
-              className="object-cover opacity-25"
-              priority
-            />
-          )}
+          <ServiceHeroMedia
+            heroImage={heroImage}
+            beforeImage={beforeImage}
+            heroVideo={heroVideo}
+            heroVideoWebM={heroVideoWebM}
+            alt={svc.label}
+          />
           <div className="absolute inset-0 bg-gradient-to-br from-[#1A2B4A]/90 via-[#1A2B4A]/80 to-[#E8724B]/30" />
         </div>
         <div className="relative mx-auto max-w-4xl text-center">

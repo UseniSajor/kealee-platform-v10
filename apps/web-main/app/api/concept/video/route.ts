@@ -1,37 +1,23 @@
 /**
- * POST /api/concept/video      — Submit a video-generation job for an intake.
- * GET  /api/concept/video?intakeId=… — Poll status / fetch URL when ready.
+ * POST /api/concept/video      — Submit process video generation for an intake.
+ * GET  /api/concept/video?intakeId=… — Poll status / chain segments / fetch URL.
  *
- * Provider auto-pick (lib/ai-video.ts): Sora 2 Pro → Veo 3.1 → Kling 2.5,
- * based on which API key is configured. Force a provider with the
- * `VIDEO_PROVIDER` env var or the `provider` request body field.
- *
- * State is stored on `public_intake_leads.form_data.conceptVideo`:
- *   {
- *     status:       'pending' | 'processing' | 'completed' | 'failed',
- *     provider:     VideoProvider,
- *     jobId:        string,
- *     outputUrl?:   string,
- *     model?:       string,
- *     startedAt:    ISO string,
- *     completedAt?: ISO string,
- *     error?:       string,
- *   }
- *
- * The intake `status` itself stays `'concept_ready'` — video is supplemental.
+ * Premium (tier 2): Kling — up to 3 process segments.
+ * Premium+ (tier 3): Sora 2 Pro — up to 6 segments, stitched when ffmpeg is available.
  */
 
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { TIER_VIDEO_DEFAULTS, type VideoProvider } from '@kealee/core-rules'
-import {
-  generateVideo,
-  getVideoStatus,
-  buildArchitecturalVideoPrompt,
-  pickVideoProvider,
-  downloadSoraVideo,
-} from '@/lib/ai-video'
+import { getVideoStatus, pickVideoProvider, downloadSoraVideo } from '@/lib/ai-video'
 import { archiveReplicateOutputsFireAndForget } from '@/lib/replicate-archive'
+import {
+  buildDeliverableProcessPlan,
+  startNextDeliverableSegment,
+  pollCurrentDeliverableSegment,
+  finalizeDeliverableStitch,
+  type DeliverableProcessVideoState,
+} from '@/lib/marketing/process-video-generator'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -39,23 +25,28 @@ export const maxDuration = 60
 
 const PAID_INTAKE_STATUSES = new Set(['paid', 'concept_ready', 'processing'])
 
-interface ConceptVideoState {
-  status:       'pending' | 'processing' | 'completed' | 'failed'
-  provider:     VideoProvider
-  jobId:        string
-  outputUrl?:   string
+type LegacyConceptVideoState = {
+  videoKind?: undefined
+  status: 'pending' | 'processing' | 'completed' | 'failed'
+  provider: VideoProvider
+  jobId: string
+  outputUrl?: string
   inputImageUrl?: string
-  model?:       string
-  startedAt:    string
+  model?: string
+  startedAt: string
   completedAt?: string
-  error?:       string
+  error?: string
 }
 
-// ── POST — start a video generation job ─────────────────────────────────────
+type ConceptVideoState = LegacyConceptVideoState | DeliverableProcessVideoState
+
+function isProcessState(state: ConceptVideoState): state is DeliverableProcessVideoState {
+  return state.videoKind === 'process'
+}
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json().catch(() => ({})) as {
+    const body = (await req.json().catch(() => ({}))) as {
       intakeId?: string
       provider?: VideoProvider
       regenerate?: boolean
@@ -85,9 +76,9 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    const formData    = (intake.form_data ?? {}) as Record<string, unknown>
-    const tier        = typeof formData.tier === 'number' ? formData.tier : 1
-    const tierKey     = (tier === 3 ? 3 : tier === 2 ? 2 : 1) as 1 | 2 | 3
+    const formData = (intake.form_data ?? {}) as Record<string, unknown>
+    const tier = typeof formData.tier === 'number' ? formData.tier : 1
+    const tierKey = (tier === 3 ? 3 : tier === 2 ? 2 : 1) as 1 | 2 | 3
     const tierDefault = TIER_VIDEO_DEFAULTS[tierKey]
 
     if (!tierDefault) {
@@ -97,17 +88,10 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    const conceptOutput = formData.conceptOutput as Record<string, any> | undefined
-    const style    = (conceptOutput?.designConcept?.style as string) ?? 'modern'
+    const conceptOutput = formData.conceptOutput as Record<string, unknown> | undefined
+    const style = (conceptOutput?.designConcept as { style?: string } | undefined)?.style ?? 'modern'
     const roomType = inferRoomType(intake.project_path as string)
-    const prompt   = buildArchitecturalVideoPrompt({
-      style,
-      roomType,
-      motion: 'reveal',
-      extra:  conceptOutput?.description as string | undefined,
-    })
 
-    // Before photo → editor-selected render → first concept render
     const beforeUrls = (conceptOutput?.beforeUrls as string[] | undefined) ?? []
     const renderUrls = (conceptOutput?.renderUrls as string[] | undefined) ?? []
     const inputImageUrl =
@@ -117,7 +101,12 @@ export async function POST(req: NextRequest) {
       renderUrls[0]
 
     const existing = formData.conceptVideo as ConceptVideoState | undefined
-    if (existing && existing.status === 'completed' && existing.inputImageUrl === inputImageUrl && !regenerate) {
+    if (
+      existing &&
+      existing.status === 'completed' &&
+      existing.inputImageUrl === inputImageUrl &&
+      !regenerate
+    ) {
       return NextResponse.json({ ...existing, cached: true })
     }
 
@@ -131,58 +120,45 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // Retry up to 3 times with exponential backoff on rate-limit (429) errors
-    let result: Awaited<ReturnType<typeof generateVideo>> | undefined
-    for (let attempt = 1; attempt <= 3; attempt++) {
-      try {
-        result = await generateVideo({
-          prompt,
-          inputImageUrl,
-          durationSec: provider === 'kling-2.5' ? 5 : 8,
-          size:        provider === 'sora-2-pro' ? '1920x1080' : '1280x720',
-          aspectRatio: '16:9',
-          provider,
-        })
-        break
-      } catch (err: any) {
-        const isRateLimit = err?.message?.includes('429') || err?.message?.includes('throttled') || err?.message?.includes('rate limit')
-        if (isRateLimit && attempt < 3) {
-          const delay = attempt * 15_000  // 15s, 30s
-          console.warn(`[concept/video POST] Rate limited (attempt ${attempt}/3), retrying in ${delay / 1000}s`)
-          await new Promise(r => setTimeout(r, delay))
-        } else {
-          throw err
-        }
-      }
+    const plan = buildDeliverableProcessPlan({
+      tier: tierKey,
+      projectPath: intake.project_path as string,
+      provider,
+      inputImageUrl,
+    })
+
+    if (!plan) {
+      return NextResponse.json({ error: 'No process video plan for tier' }, { status: 400 })
     }
 
-    if (!result) throw new Error('Video generation failed after retries')
-
-    const state: ConceptVideoState = {
-      status:    'processing',
-      provider:  result.provider,
-      jobId:     result.jobId,
+    const { state: started, job } = await startNextDeliverableSegment(plan, {
+      style,
+      roomType,
       inputImageUrl,
-      model:     result.modelVersion,
-      startedAt: new Date().toISOString(),
+    })
+
+    if (!job) {
+      return NextResponse.json(
+        { error: 'Failed to start process video', state: started },
+        { status: 500 },
+      )
     }
 
     await supabase
       .from('public_intake_leads')
-      .update({ form_data: { ...formData, conceptVideo: state } })
+      .update({ form_data: { ...formData, conceptVideo: started } })
       .eq('id', intakeId)
 
-    return NextResponse.json(state, { status: 202 })
-  } catch (err: any) {
-    console.error('[concept/video POST]', err?.message ?? err)
+    return NextResponse.json(started, { status: 202 })
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err)
+    console.error('[concept/video POST]', message)
     return NextResponse.json(
-      { error: 'Failed to start video generation', message: err?.message },
+      { error: 'Failed to start video generation', message },
       { status: 500 },
     )
   }
 }
-
-// ── GET — poll status and lazily mirror completed Sora bytes to storage ────
 
 export async function GET(req: NextRequest) {
   try {
@@ -195,7 +171,7 @@ export async function GET(req: NextRequest) {
 
     const { data: intake, error: fetchErr } = await supabase
       .from('public_intake_leads')
-      .select('form_data')
+      .select('id, project_path, form_data')
       .eq('id', intakeId)
       .single()
 
@@ -204,56 +180,92 @@ export async function GET(req: NextRequest) {
     }
 
     const formData = (intake.form_data ?? {}) as Record<string, unknown>
-    const state    = formData.conceptVideo as ConceptVideoState | undefined
+    let state = formData.conceptVideo as ConceptVideoState | undefined
 
     if (!state) {
       return NextResponse.json({ status: 'not_started' })
     }
+
     if (state.status === 'completed' || state.status === 'failed') {
       return NextResponse.json(state)
     }
 
-    // Poll provider for live status
-    const live = await getVideoStatus(state.provider, state.jobId)
+    if (isProcessState(state)) {
+      const conceptOutput = formData.conceptOutput as Record<string, unknown> | undefined
+      const style = (conceptOutput?.designConcept as { style?: string } | undefined)?.style ?? 'modern'
+      const roomType = inferRoomType(intake.project_path as string)
 
-    // Map 'queued' (VideoStatus) → 'pending' (ConceptVideoState) — the state
-    // machine uses 'pending' for not-yet-started/queued jobs.
-    const mappedStatus: ConceptVideoState['status'] =
+      const mirror = async (remoteUrl: string) =>
+        mirrorVideoUrl(supabase, intakeId, state!.provider, remoteUrl, state as DeliverableProcessVideoState)
+
+      state = await pollCurrentDeliverableSegment(state, mirror)
+
+      const allDone = state.segments.every((s) => s.status === 'completed')
+      const needsNext =
+        state.currentIndex < state.segments.length &&
+        state.segments[state.currentIndex]?.status === 'pending'
+
+      if (needsNext) {
+        const { state: nextStarted } = await startNextDeliverableSegment(state, {
+          style,
+          roomType,
+          inputImageUrl: state.inputImageUrl,
+        })
+        state = nextStarted
+      } else if (allDone && !state.outputUrl) {
+        state = await finalizeDeliverableStitch(state, (bytes) =>
+          uploadVideoToStorage(supabase, intakeId, bytes),
+        )
+      }
+
+      if (state !== formData.conceptVideo) {
+        await supabase
+          .from('public_intake_leads')
+          .update({ form_data: { ...formData, conceptVideo: state } })
+          .eq('id', intakeId)
+      }
+
+      return NextResponse.json(state)
+    }
+
+    const legacy = state as LegacyConceptVideoState
+    const live = await getVideoStatus(legacy.provider, legacy.jobId)
+
+    const mappedStatus: LegacyConceptVideoState['status'] =
       live.status === 'queued' ? 'pending' : live.status
-    let next: ConceptVideoState = { ...state, status: mappedStatus, error: live.error }
+    let next: LegacyConceptVideoState = { ...legacy, status: mappedStatus, error: live.error }
 
     if (live.status === 'completed' && live.outputUrl) {
       let publicUrl = live.outputUrl
 
-      // Sora returns binary content — mirror to Supabase Storage so the
-      // browser can render it directly.
       if (publicUrl.startsWith('openai://')) {
         const sceneId = publicUrl.replace('openai://', '')
         try {
           const bytes = await downloadSoraVideo(sceneId)
-          publicUrl   = await uploadVideoToStorage(supabase, intakeId, bytes)
-        } catch (mirrorErr: any) {
-          next = { ...next, status: 'failed', error: `Mirror failed: ${mirrorErr?.message}` }
+          publicUrl = await uploadVideoToStorage(supabase, intakeId, bytes)
+        } catch (mirrorErr: unknown) {
+          const msg = mirrorErr instanceof Error ? mirrorErr.message : String(mirrorErr)
+          next = { ...next, status: 'failed', error: `Mirror failed: ${msg}` }
         }
       }
 
       if (next.status === 'completed') {
         next = { ...next, outputUrl: publicUrl, completedAt: new Date().toISOString() }
 
-        if (state.provider === 'kling-2.5' && live.outputUrl) {
+        if (legacy.provider === 'kling-2.5' && live.outputUrl) {
           archiveReplicateOutputsFireAndForget({
-            predictionId: state.jobId,
+            predictionId: legacy.jobId,
             source: 'concept-video-kling',
             mediaKind: 'video',
             outputUrls: [live.outputUrl],
-            model: state.model,
+            model: legacy.model,
             context: { intakeId },
           })
         }
       }
     }
 
-    if (next.status !== state.status || next.outputUrl !== state.outputUrl) {
+    if (next.status !== legacy.status || next.outputUrl !== legacy.outputUrl) {
       await supabase
         .from('public_intake_leads')
         .update({ form_data: { ...formData, conceptVideo: next } })
@@ -261,17 +273,43 @@ export async function GET(req: NextRequest) {
     }
 
     return NextResponse.json(next)
-  } catch (err: any) {
-    console.error('[concept/video GET]', err?.message ?? err)
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err)
+    console.error('[concept/video GET]', message)
     return NextResponse.json({ error: 'Failed to poll video status' }, { status: 500 })
   }
 }
 
-// ── Helpers ────────────────────────────────────────────────────────────────
+async function mirrorVideoUrl(
+  supabase: ReturnType<typeof getSupabaseAdmin>,
+  intakeId: string,
+  provider: VideoProvider,
+  remoteUrl: string,
+  state: DeliverableProcessVideoState,
+): Promise<string> {
+  if (remoteUrl.startsWith('openai://')) {
+    const sceneId = remoteUrl.replace('openai://', '')
+    const bytes = await downloadSoraVideo(sceneId)
+    return uploadVideoToStorage(supabase, intakeId, bytes)
+  }
+
+  if (provider === 'kling-2.5') {
+    archiveReplicateOutputsFireAndForget({
+      predictionId: state.segments[state.currentIndex]?.jobId ?? '',
+      source: 'concept-video-kling',
+      mediaKind: 'video',
+      outputUrls: [remoteUrl],
+      model: state.model,
+      context: { intakeId },
+    })
+  }
+
+  return remoteUrl
+}
 
 function inferRoomType(projectPath: string): string {
-  if (projectPath.includes('kitchen'))  return 'kitchen'
-  if (projectPath.includes('bath'))     return 'bathroom'
+  if (projectPath.includes('kitchen')) return 'kitchen'
+  if (projectPath.includes('bath')) return 'bathroom'
   if (projectPath.includes('garden') || projectPath.includes('landscape')) return 'garden'
   if (projectPath.includes('exterior')) return 'exterior'
   if (projectPath.includes('whole_home') || projectPath.includes('addition')) return 'living'

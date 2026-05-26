@@ -92,6 +92,8 @@ async function syncOneFallback(
     photoUrl,
     photoAlt: spec.photoAlt,
     mediaType: spec.mediaType,
+    narrativeId: spec.narrativeId,
+    videoNarrative: spec.cardProcessPrompt,
     videoUrl,
     videoWebM,
     source: 'fallback',

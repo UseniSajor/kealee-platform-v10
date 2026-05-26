@@ -38,3 +38,26 @@ export function productVideoFromManifest(
 ): string | undefined {
   return manifest?.cards[`product:${slug}`]?.videoUrl
 }
+
+export function productBeforeFromManifest(
+  manifest: CardMediaManifest | null,
+  slug: string,
+): string | undefined {
+  return manifest?.cards[`product:${slug}`]?.beforePhotoUrl
+}
+
+export function productMediaFromManifest(
+  manifest: CardMediaManifest | null,
+  slug: string,
+  fallback: string,
+) {
+  const entry = manifest?.cards[`product:${slug}`]
+  return {
+    photoUrl: entry?.photoUrl ?? fallback,
+    beforePhotoUrl: entry?.beforePhotoUrl,
+    videoUrl: entry?.videoUrl,
+    videoWebM: entry?.videoWebM,
+    photoAlt: entry?.photoAlt,
+    source: entry?.source,
+  }
+}

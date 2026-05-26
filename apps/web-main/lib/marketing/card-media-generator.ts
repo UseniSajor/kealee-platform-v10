@@ -1,13 +1,13 @@
 import { writeFile, mkdir } from 'fs/promises'
 import path from 'path'
-import { generateVideo, getVideoStatus, buildArchitecturalVideoPrompt } from '@/lib/ai-video'
-import { generateCardImageUrl } from './card-media-image'
 import type { CardMediaSpec } from './card-media-spec'
 import { getAllCardMediaSpecs } from './card-media-spec'
 import type { CardMediaEntry, CardMediaManifest } from './card-media-manifest'
 import { loadCardMediaManifest } from './card-media-manifest'
 import { refineImagePromptWithMarketingBot } from './card-media-prompts'
 import { downloadUrlToBuffer, uploadMarketingAsset } from './card-media-storage'
+import { generateCardImageUrl } from './card-media-image'
+import { generateCardProcessVideo } from './process-video-generator'
 
 const MANIFEST_PATH = path.join(process.cwd(), 'public', 'media', 'manifest.json')
 
@@ -26,21 +26,6 @@ export interface GenerateCardMediaResult {
   error?: string
 }
 
-async function pollVideoJob(
-  provider: Awaited<ReturnType<typeof generateVideo>>['provider'],
-  jobId: string,
-  maxMs = 180_000,
-): Promise<string> {
-  const started = Date.now()
-  while (Date.now() - started < maxMs) {
-    const status = await getVideoStatus(provider, jobId)
-    if (status.status === 'completed' && status.outputUrl) return status.outputUrl
-    if (status.status === 'failed') throw new Error(status.error ?? 'Video generation failed')
-    await new Promise((r) => setTimeout(r, 4000))
-  }
-  throw new Error('Video generation timed out')
-}
-
 async function persistManifest(manifest: CardMediaManifest): Promise<void> {
   await mkdir(path.dirname(MANIFEST_PATH), { recursive: true })
   await writeFile(MANIFEST_PATH, JSON.stringify(manifest, null, 2), 'utf8')
@@ -50,7 +35,7 @@ export async function generateCardMedia(
   spec: CardMediaSpec,
   opts: GenerateCardMediaOptions = {},
 ): Promise<CardMediaEntry> {
-  const description = opts.useMarketingBot !== false
+  const afterDescription = opts.useMarketingBot !== false
     ? await refineImagePromptWithMarketingBot(spec)
     : spec.imageDescription
 
@@ -59,12 +44,24 @@ export async function generateCardMedia(
       photoUrl: spec.fallbackPhoto,
       photoAlt: spec.photoAlt,
       mediaType: spec.mediaType,
-      promptUsed: description,
+      narrativeId: spec.narrativeId,
+      videoNarrative: spec.cardProcessPrompt,
+      promptUsed: afterDescription,
       source: 'fallback',
     }
   }
 
-  const remoteImageUrl = await generateCardImageUrl(spec, description)
+  let beforePhotoUrl: string | undefined
+  if (spec.generatesBefore && spec.beforeImageDescription) {
+    const beforeRemote = await generateCardImageUrl(
+      { ...spec, imageDescription: spec.beforeImageDescription, imageType: 'before' },
+      spec.beforeImageDescription,
+    )
+    const beforeBytes = await downloadUrlToBuffer(beforeRemote)
+    beforePhotoUrl = await uploadMarketingAsset(spec.scope, `${spec.id}-before`, beforeBytes, 'jpg')
+  }
+
+  const remoteImageUrl = await generateCardImageUrl(spec, afterDescription)
   const imageBytes = await downloadUrlToBuffer(remoteImageUrl)
   const photoUrl = await uploadMarketingAsset(spec.scope, spec.id, imageBytes, 'jpg')
 
@@ -72,23 +69,23 @@ export async function generateCardMedia(
   let videoWebM: string | undefined
   if (spec.mediaType === 'video' && !opts.skipVideo) {
     try {
-      const prompt = buildArchitecturalVideoPrompt({
-        style: spec.style,
-        roomType: spec.roomType ?? 'interior',
-        motion: spec.videoMotion ?? 'reveal',
-        extra: spec.videoExtra,
-      })
-      const job = await generateVideo({
-        prompt,
-        inputImageUrl: photoUrl,
-        durationSec: 8,
-        aspectRatio: '1:1',
-        size: '1080x1920',
-      })
-      const outputUrl = await pollVideoJob(job.provider, job.jobId)
-      const videoBytes = await downloadUrlToBuffer(outputUrl)
+      const { videoUrl: remoteVideo, prompt } = await generateCardProcessVideo(spec, photoUrl)
+      const videoBytes = await downloadUrlToBuffer(remoteVideo)
       videoUrl = await uploadMarketingAsset(spec.scope, `${spec.id}-video`, videoBytes, 'mp4')
       videoWebM = videoUrl
+      return {
+        photoUrl,
+        beforePhotoUrl,
+        photoAlt: spec.photoAlt,
+        videoUrl,
+        videoWebM,
+        mediaType: spec.mediaType,
+        narrativeId: spec.narrativeId,
+        videoNarrative: prompt,
+        generatedAt: new Date().toISOString(),
+        promptUsed: afterDescription,
+        source: 'generated',
+      }
     } catch (err) {
       console.warn(`[card-media] Video skipped for ${spec.key}:`, err)
     }
@@ -96,12 +93,15 @@ export async function generateCardMedia(
 
   return {
     photoUrl,
+    beforePhotoUrl,
     photoAlt: spec.photoAlt,
     videoUrl,
     videoWebM,
     mediaType: spec.mediaType,
+    narrativeId: spec.narrativeId,
+    videoNarrative: spec.cardProcessPrompt,
     generatedAt: new Date().toISOString(),
-    promptUsed: description,
+    promptUsed: afterDescription,
     source: 'generated',
   }
 }

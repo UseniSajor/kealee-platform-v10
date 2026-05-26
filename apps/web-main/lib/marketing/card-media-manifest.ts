@@ -6,9 +6,12 @@ import { cardKey, getAllCardMediaSpecs, type CardMediaScope, type HomeServiceId 
 export interface CardMediaEntry {
   photoUrl: string
   photoAlt: string
+  beforePhotoUrl?: string
   videoUrl?: string
   videoWebM?: string
   mediaType: 'video' | 'photo'
+  narrativeId?: string
+  videoNarrative?: string
   generatedAt?: string
   promptUsed?: string
   source?: 'generated' | 'fallback'
@@ -32,7 +35,7 @@ function defaultManifest(): CardMediaManifest {
       source: 'fallback',
     }
   }
-  return { version: 1, updatedAt: null, cards }
+  return { version: 2, updatedAt: null, cards }
 }
 
 export async function loadCardMediaManifest(): Promise<CardMediaManifest> {
@@ -63,9 +66,12 @@ export function resolveCardMedia(
     return {
       photoUrl: entry.photoUrl,
       photoAlt: entry.photoAlt ?? fallback?.photoAlt ?? id,
+      beforePhotoUrl: entry.beforePhotoUrl ?? fallback?.beforePhotoUrl,
       videoUrl: entry.videoUrl ?? fallback?.videoUrl,
       videoWebM: entry.videoWebM ?? fallback?.videoWebM,
       mediaType: entry.mediaType ?? fallback?.mediaType ?? 'photo',
+      narrativeId: entry.narrativeId ?? fallback?.narrativeId,
+      videoNarrative: entry.videoNarrative ?? fallback?.videoNarrative,
       generatedAt: entry.generatedAt,
       promptUsed: entry.promptUsed,
       source: entry.source ?? 'fallback',

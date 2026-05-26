@@ -7,6 +7,9 @@ const QUALITY_SUFFIX =
 
 function buildDallePrompt(spec: CardMediaSpec, description: string): string {
   const room = spec.roomType ?? 'space'
+  if (spec.imageType === 'before') {
+    return `Before renovation: ${description}. Dated worn ${room}, needs remodel, same camera angle as after shot. ${QUALITY_SUFFIX}`
+  }
   if (spec.imageType === 'hero' || spec.imageType === 'after') {
     return `Hero showcase: ${description}. Beautiful renovated ${room} with ${spec.style} design. ${QUALITY_SUFFIX}`
   }

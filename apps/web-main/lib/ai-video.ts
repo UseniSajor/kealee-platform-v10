@@ -383,6 +383,24 @@ async function pollKling(predictionId: string): Promise<VideoStatusResult> {
 
 // ── Helper: build a high-quality architectural video prompt ────────────────
 
+/** Process / installation timelapse (card loops + deliverable segments). */
+export function buildInstallationProcessPrompt(opts: {
+  segmentPrompt: string
+  style?: string
+  roomType?: string
+}): string {
+  const room = opts.roomType?.replace(/_/g, ' ') ?? 'residential project'
+  const style = opts.style ?? 'modern'
+  return [
+    opts.segmentPrompt,
+    `${style} ${room}.`,
+    'Smooth timelapse motion, steady camera or slow dolly, photorealistic construction documentary,',
+    'no text overlays, no watermarks, believable jobsite activity.',
+  ]
+    .filter(Boolean)
+    .join(' ')
+}
+
 export function buildArchitecturalVideoPrompt(opts: {
   style: string
   roomType: string
