@@ -5,7 +5,7 @@
  * Regenerates the 7-day claim link and resends concept-ready email (internal/cron).
  */
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@kealee/database'
+import { createClient } from '@supabase/supabase-js'
 
 export const dynamic = 'force-dynamic'
 
@@ -17,21 +17,23 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'intakeId required' }, { status: 400 })
     }
 
-    const intake = await prisma.publicIntakeLead.findUnique({
-      where: { id: intakeId },
-      select: {
-        id: true,
-        contactEmail: true,
-        projectPath: true,
-        clientName: true,
-      },
-    })
+    const supabaseAdmin = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+      { auth: { persistSession: false } },
+    )
 
-    if (!intake) {
+    const { data: intake, error: dbErr } = await supabaseAdmin
+      .from('public_intake_leads')
+      .select('id, contact_email, project_path, client_name')
+      .eq('id', intakeId)
+      .single()
+
+    if (dbErr || !intake) {
       return NextResponse.json({ error: 'Intake not found' }, { status: 404 })
     }
 
-    const to = (body.email?.trim() || intake.contactEmail || '').toLowerCase()
+    const to = (body.email?.trim() || intake.contact_email || '').toLowerCase()
     if (!to) {
       return NextResponse.json({ error: 'No email on intake' }, { status: 400 })
     }
@@ -47,8 +49,8 @@ export async function POST(req: NextRequest) {
       body: JSON.stringify({
         to,
         intakeId,
-        service: intake.projectPath ?? 'concept',
-        firstName: intake.clientName?.split(' ')[0],
+        service: intake.project_path ?? 'concept',
+        firstName: intake.client_name?.split(' ')[0],
       }),
     })
 
