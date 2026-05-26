@@ -1192,6 +1192,31 @@ export default function ConceptDeliverablePage() {
           </section>
         )}
 
+        {/* ── Before / After comparison (when intake photos were uploaded) ─── */}
+        {(data.beforeUrls?.length ?? 0) > 0 && (data.renderUrls.length > 0 || (data.interiorRenderUrls?.length ?? 0) > 0) && (
+          <section
+            id="before-after"
+            className="scroll-mt-24 rounded-2xl bg-white overflow-hidden p-6"
+            style={{ boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.06)' }}
+          >
+            <div className="flex items-center gap-2 mb-5">
+              <span className="h-2 w-2 rounded-full" style={{ backgroundColor: '#2ABFBF' }} />
+              <h2 className="text-base font-bold" style={{ color: '#1A2B4A' }}>Before &amp; After</h2>
+            </div>
+            <BeforeAfterMedia
+              beforeUrls={data.beforeUrls!}
+              afterUrls={
+                (data.exteriorRenderUrls?.length ?? 0) > 0
+                  ? data.exteriorRenderUrls!
+                  : (data.interiorRenderUrls?.length ?? 0) > 0
+                  ? data.interiorRenderUrls!
+                  : data.renderUrls
+              }
+              projectType={data.projectType}
+            />
+          </section>
+        )}
+
         {/* ── Video (tier 2+): playable when API stored videoUrl ───────────── */}
         {data.tier >= 2 && data.videoUrl && (
           <section
@@ -1226,11 +1251,24 @@ export default function ConceptDeliverablePage() {
                 Premium+ 30s / 15s / 10s cuts appear here when separate files are attached to your order; until then the master cut above represents your video deliverable.
               </p>
             )}
+            {/* Compact muted loop — good for sharing or screencapture */}
+            <details className="mt-4">
+              <summary className="text-xs text-gray-400 cursor-pointer select-none hover:text-gray-600 w-fit">
+                Show loop preview (muted, shareable)
+              </summary>
+              <div className="mt-3">
+                <ProcessVideoLoop
+                  src={data.videoUrl!}
+                  label="Loop Preview"
+                  maxHeightPx={200}
+                />
+              </div>
+            </details>
           </section>
         )}
 
         {data.tier >= 2 && !data.videoUrl && (
-          <section>
+          <section className="space-y-4">
             <div className="rounded-2xl overflow-hidden"
               style={{ background: 'linear-gradient(135deg, #E8724B 0%, #c75c35 100%)' }}>
               <div className="px-6 py-6 sm:px-8 sm:py-7 flex flex-col sm:flex-row sm:items-center gap-4">
@@ -1253,6 +1291,24 @@ export default function ConceptDeliverablePage() {
                 </a>
               </div>
             </div>
+            {/* Process preview loop — shown while the full video is rendering */}
+            {data.renderUrls[0] && (
+              <div className="rounded-2xl bg-white overflow-hidden p-5" style={{ boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.06)' }}>
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">
+                  Concept Preview
+                </p>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={data.renderUrls[0]}
+                  alt={`${data.projectType} concept preview`}
+                  className="w-full rounded-xl object-cover"
+                  style={{ maxHeight: '280px' }}
+                />
+                <p className="text-xs text-gray-400 mt-2 text-center">
+                  Full transformation video renders in the background — this page refreshes automatically.
+                </p>
+              </div>
+            )}
           </section>
         )}
 
