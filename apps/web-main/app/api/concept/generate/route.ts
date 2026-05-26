@@ -22,12 +22,17 @@ import { SERVICE_DELIVERABLES } from '@/lib/service-deliverables'
 import {
   AI_MODELS,
   getConceptPackageDeliverableLabelsForIntake,
+  resolveConceptTier,
+  renderCountForTier,
+  shouldTriggerConceptVideo,
+  conceptTierIncludesVideo,
   type ConceptTier,
 } from '@kealee/core-rules'
 import { generateImages, buildArchitecturalPrompt, type GenerateImageResult } from '@/lib/ai-image'
 import { archiveReplicateOutputsFireAndForget } from '@/lib/replicate-archive'
 import {
   ensureConceptPermitZoningFields,
+  generateAndAttachConceptFloorplan,
   generateAndAttachConceptPdf,
 } from '@/lib/concept-output-enrichment'
 
@@ -97,6 +102,8 @@ interface ConceptOutput {
   exteriorRenderUrls?: string[]
   /** Original "before" photos uploaded by the client during intake. */
   beforeUrls?: string[]
+  /** Storage URL for the generated concept package PDF (set after PDF generation). */
+  pdfUrl?: string
 }
 
 /** Paths that ship both interior and exterior concept renders. */
@@ -482,7 +489,7 @@ function attachConceptVideoFields(conceptOutput: ConceptOutput, tier: number): v
  * the customer portal polls via GET to swap in the real video when ready.
  */
 function triggerConceptVideoGeneration(baseUrl: string, intakeId: string, tier: number): void {
-  if (tier < 2) return
+  if (!conceptTierIncludesVideo(tier as ConceptTier)) return
   fetch(`${baseUrl}/api/concept/video`, {
     method:  'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -490,6 +497,12 @@ function triggerConceptVideoGeneration(baseUrl: string, intakeId: string, tier: 
   }).catch(err => {
     console.error('[concept/generate] Video generation trigger failed:', err?.message ?? err)
   })
+}
+
+/** Kick GET poll once so segment chaining starts even without a browser on web-main. */
+function kickConceptVideoPoll(baseUrl: string, intakeId: string, tier: number): void {
+  if (!conceptTierIncludesVideo(tier as ConceptTier)) return
+  fetch(`${baseUrl}/api/concept/video?intakeId=${encodeURIComponent(intakeId)}`).catch(() => {})
 }
 
 /**
@@ -540,7 +553,18 @@ function triggerConceptReadyEmail(
   })
 }
 
-function permitGuidance(permitRequired: 'always' | 'sometimes' | 'rarely' | undefined): string {
+function intakeFloorplanInput(intake: Record<string, unknown>, intakeId: string) {
+  return {
+    id: intakeId,
+    project_path: intake.project_path as string,
+    client_name: intake.client_name as string | null,
+    contact_email: intake.contact_email as string | null,
+    contact_phone: intake.contact_phone as string | null,
+    project_address: intake.project_address as string | null,
+    budget_range: intake.budget_range as string | null,
+    form_data: (intake.form_data as Record<string, unknown> | null) ?? null,
+  }
+}
   if (permitRequired === 'always') {
     return `PERMIT RULE (from Kealee product catalog): This project type ALWAYS requires a permit in the DMV region. You MUST set "requiresPermit": true in permitScope regardless of scope details. Identify the specific permit types, realistic fees, and processing days for the jurisdiction.`
   }
@@ -703,7 +727,7 @@ export async function POST(req: NextRequest) {
 
     const projectPath = intake.project_path as string
     const existingFormData = (intake.form_data as Record<string, unknown>) ?? {}
-    const tier = typeof existingFormData.tier === 'number' ? existingFormData.tier : 1
+    const tier = resolveConceptTier(existingFormData, { projectPath })
     const deliverable = SERVICE_DELIVERABLES[projectPath]
 
     // v30: DesignBot runs via os-ai-orch — never duplicate v20 concept/generate Claude call
@@ -737,18 +761,51 @@ export async function POST(req: NextRequest) {
 
     // Return cached concept if already generated
     if (existingFormData.conceptOutput && intake.status === 'concept_ready') {
-      const out = { ...(existingFormData.conceptOutput as ConceptOutput) }
+      const cachedRaw = existingFormData.conceptOutput as ConceptOutput & Record<string, unknown>
+      const out = { ...cachedRaw }
       out.renderUrls = preferSelectedRender(out.renderUrls ?? [], existingFormData.selectedRenderUrl as string | undefined)
       ensureConceptPermitZoningFields(out, projectPath, tier, {
         projectAddress: intake.project_address as string | undefined,
         permitRequired: deliverable?.permitRequired,
       })
       attachConceptVideoFields(out, tier)
-      const appBaseUrl = process.env.NEXT_PUBLIC_APP_URL ?? req.nextUrl.origin
-      if (tier >= 2 && !existingFormData.conceptVideo) {
-        triggerConceptVideoGeneration(appBaseUrl, intakeId, tier)
+
+      const hadFloorplan =
+        typeof cachedRaw.floorplanSvgInline === 'string' &&
+        cachedRaw.floorplanSvgInline.trim().startsWith('<')
+      await generateAndAttachConceptFloorplan(
+        intakeFloorplanInput(intake as Record<string, unknown>, intakeId),
+        out,
+        tier,
+      )
+      const floorplanBackfilled =
+        !hadFloorplan &&
+        typeof out.floorplanSvgInline === 'string' &&
+        out.floorplanSvgInline.trim().startsWith('<')
+
+      if (floorplanBackfilled) {
+        const pdfUrl = await generateAndAttachConceptPdf({
+          ...intakeFloorplanInput(intake as Record<string, unknown>, intakeId),
+          form_data: { ...existingFormData, conceptOutput: out },
+        })
+        if (pdfUrl) out.pdfUrl = pdfUrl
+        await supabase
+          .from('public_intake_leads')
+          .update({
+            form_data: {
+              ...existingFormData,
+              conceptOutput: out,
+            },
+          })
+          .eq('id', intakeId)
       }
-      return NextResponse.json({ conceptOutput: out, cached: true })
+
+      const appBaseUrl = process.env.NEXT_PUBLIC_APP_URL ?? req.nextUrl.origin
+      if (shouldTriggerConceptVideo(tier, existingFormData.conceptVideo)) {
+        triggerConceptVideoGeneration(appBaseUrl, intakeId, tier)
+        kickConceptVideoPoll(appBaseUrl, intakeId, tier)
+      }
+      return NextResponse.json({ conceptOutput: out, cached: true, floorplanBackfilled })
     }
 
     const apiKey = process.env.ANTHROPIC_API_KEY
@@ -895,7 +952,7 @@ export async function POST(req: NextRequest) {
     try {
       const renders = await fireConceptRenders(
         projectPath,
-        deliverable?.renderCount ?? 3,
+        renderCountForTier(tier, deliverable?.renderCount ?? 3),
         conceptOutput.designConcept?.style ?? 'modern contemporary',
         uploadedPhotoUrls,
       )
@@ -928,6 +985,12 @@ export async function POST(req: NextRequest) {
 
     attachConceptVideoFields(conceptOutput, tier)
 
+    await generateAndAttachConceptFloorplan(
+      intakeFloorplanInput(intake as Record<string, unknown>, intakeId),
+      conceptOutput as ConceptOutput & Record<string, unknown>,
+      tier,
+    )
+
     const pdfUrl = await generateAndAttachConceptPdf({
       id: intakeId,
       project_path: projectPath,
@@ -946,6 +1009,7 @@ export async function POST(req: NextRequest) {
       .update({
         form_data: {
           ...existingFormData,
+          tier,
           selectedRenderUrl: geometry?.selectedRenderUrl ?? existingFormData.selectedRenderUrl,
           coverImageUrl: geometry?.coverImageUrl ?? existingFormData.coverImageUrl,
           conceptOutput,
@@ -979,10 +1043,11 @@ export async function POST(req: NextRequest) {
     // not a preview URL if this route was invoked from a webhook on a non-prod origin.
     const appBaseUrl = process.env.NEXT_PUBLIC_APP_URL ?? req.nextUrl.origin
 
-    // Tier 2+ deliverables include a video. Fire-and-forget — Stripe webhook
-    // path doesn't wait, and the customer portal polls /api/concept/video?intakeId=
-    // for the real URL when ready (Sora/Veo/Kling typically take 30–120s).
-    triggerConceptVideoGeneration(appBaseUrl, intakeId, tier)
+    // Tier 2+ deliverables include a video. Fire-and-forget — portal polls GET to advance segments.
+    if (shouldTriggerConceptVideo(tier, existingFormData.conceptVideo)) {
+      triggerConceptVideoGeneration(appBaseUrl, intakeId, tier)
+      kickConceptVideoPoll(appBaseUrl, intakeId, tier)
+    }
 
     // Notify the customer that their concept is ready to view in the portal.
     // (Fire-and-forget so a slow Resend call never delays the API response.)
