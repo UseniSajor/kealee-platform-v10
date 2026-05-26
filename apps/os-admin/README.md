@@ -39,4 +39,12 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 
 Required env (production + preview): `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `NEXT_PUBLIC_API_URL`.
 
+Local setup:
+
+```bash
+cd apps/os-admin
+pnpm run env:pull   # downloads .env.local from Vercel (kealee/kealee-os-admin)
+pnpm run build
+```
+
 Migrated from deprecated `admin-console`: `/validation`, `/schema`, `/test-panel`. Do not deploy a separate Vercel project for `admin-console`.

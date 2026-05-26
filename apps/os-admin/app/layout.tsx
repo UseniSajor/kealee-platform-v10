@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { ErrorBoundary } from "../components/ErrorBoundary";
-import { Toaster } from "sonner";
+import { ClientToaster } from "../components/client-toaster";
 import "./globals.css";
+
+export const dynamic = "force-dynamic";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -28,7 +30,7 @@ export default function RootLayout({
       <body className={inter.className}>
         <ErrorBoundary>
           {children}
-          <Toaster position="top-right" />
+          <ClientToaster />
         </ErrorBoundary>
       </body>
     </html>
