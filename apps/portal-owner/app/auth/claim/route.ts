@@ -9,6 +9,7 @@
 import { createClient } from '@supabase/supabase-js'
 import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { NextRequest, NextResponse } from 'next/server'
+import { mergePortalAccessMeta, readPortalAccessMeta } from '@/lib/portal-access-meta'
 
 export const dynamic = 'force-dynamic'
 
@@ -43,7 +44,7 @@ export async function GET(request: NextRequest) {
 
   const { data: intake, error: intakeError } = await admin
     .from('public_intake_leads')
-    .select('id, contact_email, metadata')
+    .select('id, contact_email, metadata, form_data')
     .eq('id', intakeId)
     .single()
 
@@ -52,18 +53,17 @@ export async function GET(request: NextRequest) {
     return errorRedirect(origin, 'intake_not_found')
   }
 
-  const meta = (intake.metadata as Record<string, unknown>) ?? {}
+  const meta = readPortalAccessMeta(intake)
 
   if (!meta.portalToken || meta.portalToken !== token) {
     console.error('[auth/claim] token mismatch for intake:', intakeId)
     return errorRedirect(origin, 'invalid_token', `/deliverables/${intakeId}`)
   }
 
-  const expiresAt = meta.portalTokenExpiresAt as string | undefined
+  const expiresAt = meta.portalTokenExpiresAt
   if (expiresAt && new Date(expiresAt) < new Date()) {
-    // Token expired — redirect to login with email pre-filled so user can send a new magic link
-    const expiredEmail = ((meta.portalEmail as string | undefined) ?? intake.contact_email ?? '').trim().toLowerCase()
-    const expiredPath = (meta.portalNextPath as string | undefined) ?? `/deliverables/${intakeId}`
+    const expiredEmail = (meta.portalEmail ?? intake.contact_email ?? '').trim().toLowerCase()
+    const expiredPath = meta.portalNextPath ?? `/deliverables/${intakeId}`
     const loginUrl = new URL('/login', origin)
     if (expiredEmail) loginUrl.searchParams.set('email', expiredEmail)
     loginUrl.searchParams.set('next', expiredPath.startsWith('/') ? expiredPath : `/deliverables/${intakeId}`)
@@ -72,15 +72,13 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(loginUrl)
   }
 
-  const email = ((meta.portalEmail as string | undefined) ?? intake.contact_email ?? '')
-    .trim()
-    .toLowerCase()
+  const email = (meta.portalEmail ?? intake.contact_email ?? '').trim().toLowerCase()
   if (!email) {
     console.error('[auth/claim] no email for intake:', intakeId)
     return errorRedirect(origin, 'no_email')
   }
 
-  const nextPath = (meta.portalNextPath as string | undefined) ?? `/deliverables/${intakeId}`
+  const nextPath = meta.portalNextPath ?? `/deliverables/${intakeId}`
   const safePath = nextPath.startsWith('/') ? nextPath : `/deliverables/${intakeId}`
 
   const redirectTo = `${origin}/auth/callback?next=${encodeURIComponent(safePath)}`
@@ -124,21 +122,22 @@ export async function GET(request: NextRequest) {
     return errorRedirect(origin, 'session_failed', safePath)
   }
 
-  const { data: { session } } = await supabase.auth.getSession()
-  if (!session) {
-    console.error('[auth/claim] verifyOtp succeeded but no session cookie was set')
-    return errorRedirect(origin, 'session_failed', safePath)
-  }
+  // verifyOtp success = session cookies are set on redirectResponse.
+  // (getSession() reads from REQUEST cookies and returns null here — don't check it.)
 
   // Invalidate claim token after successful sign-in (fresh token on resend email)
+  const existingMetadata = (intake.metadata as Record<string, unknown> | null) ?? {}
+  const existingFormData = (intake.form_data as Record<string, unknown> | null) ?? {}
+  const merged = mergePortalAccessMeta(existingMetadata, existingFormData, {
+    portalToken: null,
+    portalTokenClaimedAt: new Date().toISOString(),
+  })
+
   await admin
     .from('public_intake_leads')
     .update({
-      metadata: {
-        ...meta,
-        portalToken: null,
-        portalTokenClaimedAt: new Date().toISOString(),
-      },
+      metadata: merged.metadata,
+      form_data: merged.form_data,
     })
     .eq('id', intakeId)
     .then(({ error }) => {

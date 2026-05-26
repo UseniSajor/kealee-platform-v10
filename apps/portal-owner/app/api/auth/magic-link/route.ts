@@ -12,7 +12,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { Resend } from 'resend'
-import { buildOwnerPortalAuthCallbackUrl } from '@/lib/owner-portal-auth'
+import { getOwnerPortalBaseUrl } from '@/lib/owner-portal-auth'
 
 export const dynamic = 'force-dynamic'
 
@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
     const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
     const resendApiKey   = process.env.RESEND_API_KEY
     const safeNext   = next && next.startsWith('/') ? next : '/deliverables'
-    const redirectTo = buildOwnerPortalAuthCallbackUrl(safeNext)
+    const portalBase = getOwnerPortalBaseUrl()
 
     // ── Generate the magic link via admin API (no Supabase email sent) ──────
     const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey, {
@@ -38,7 +38,8 @@ export async function POST(req: NextRequest) {
     const { data, error } = await supabaseAdmin.auth.admin.generateLink({
       type: 'magiclink',
       email,
-      options: { redirectTo },
+      // redirectTo kept for Supabase config compatibility; we use hashed_token directly below
+      options: { redirectTo: `${portalBase}/auth/callback` },
     })
 
     if (error) {
@@ -50,11 +51,20 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: userMessage, rateLimit: isRateLimit }, { status: 400 })
     }
 
-    const actionLink = data.properties?.action_link
-    if (!actionLink) {
-      console.error('[portal-owner/magic-link] No action_link in generateLink response')
+    // Use hashed_token directly in our callback URL — this bypasses Supabase's intermediate
+    // redirect entirely and avoids PKCE/implicit-flow ambiguity.
+    // The callback route calls verifyOtp server-side and sets session cookies before redirecting.
+    const hashedToken = data.properties?.hashed_token
+    if (!hashedToken) {
+      console.error('[portal-owner/magic-link] No hashed_token in generateLink response')
       return NextResponse.json({ error: 'Failed to generate access link' }, { status: 500 })
     }
+
+    const callbackUrl = new URL('/auth/callback', portalBase)
+    callbackUrl.searchParams.set('token_hash', hashedToken)
+    callbackUrl.searchParams.set('type', 'magiclink')
+    callbackUrl.searchParams.set('next', safeNext)
+    const magicLinkUrl = callbackUrl.toString()
 
     // ── Send via Resend ──────────────────────────────────────────────────────
     if (resendApiKey) {
@@ -73,7 +83,7 @@ export async function POST(req: NextRequest) {
               Click the button below to access your deliverables, concept packages,
               and all project documents. This link expires in <strong>1 hour</strong>.
             </p>
-            <a href="${actionLink}"
+            <a href="${magicLinkUrl}"
                style="display:inline-block;background:#E8793A;color:#fff;text-decoration:none;
                       padding:14px 32px;border-radius:8px;font-weight:700;font-size:15px;
                       letter-spacing:0.01em">
