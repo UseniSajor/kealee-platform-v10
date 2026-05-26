@@ -20,7 +20,14 @@ export async function middleware(request: NextRequest) {
     }
   )
 
-  const { data: { session } } = await supabase.auth.getSession()
+  // Refresh session — getSession() alone can return stale/null cookies on edge.
+  const { data: { user } } = await supabase.auth.getUser()
+  const session = user ? { user } : null
+
+  const publicPaths = ['/auth/claim', '/auth/callback']
+  if (publicPaths.some((p) => request.nextUrl.pathname.startsWith(p))) {
+    return response
+  }
 
   const protectedPaths = ['/', '/projects', '/project', '/payments', '/documents', '/messages', '/twin', '/concepts', '/deliverables', '/services']
   const isProtectedPath = protectedPaths.some(path =>
@@ -58,6 +65,7 @@ export const config = {
     '/deliverables/:path*', '/deliverables',
     '/services/:path*', '/services',
     '/login', '/signup',
+    '/auth/claim',
     '/auth/callback',
     '/auth/callback/:path*',
   ],

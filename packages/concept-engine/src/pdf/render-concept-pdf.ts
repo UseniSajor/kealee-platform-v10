@@ -238,10 +238,29 @@ function drawScopePage(doc: any, data: HomeownerDeliverables): void {
 
 // ── Page 5: Permit Path ───────────────────────────────────────────────────────
 
-function drawPermitPage(doc: any, data: HomeownerDeliverables): void {
-  sectionHeader(doc, 'Permit Path')
+function resolvePermitPathForPdf(data: HomeownerDeliverables): HomeownerDeliverables['permitPath'] {
+  if (data.permitPath) return data.permitPath
+  const p = data.permit
+  if (!p) return undefined
+  const [low, high] = p.estimatedCostRange ?? [500, 3500]
+  return {
+    requiresPermit: p.requiresPermit,
+    likelyPermits: p.likelyPermits,
+    estimatedTimeline: p.estimatedTimeline,
+    estimatedCost: `$${low.toLocaleString()}–$${high.toLocaleString()}`,
+    permits: p.likelyPermits,
+    tradeLicenses: p.likelyTradePermits,
+    structuralReviewRequired: p.keyConsiderations.some((c) => /structural|PE|engineer/i.test(c)),
+    designReviewRequired: false,
+    notes: [...p.keyConsiderations, p.disclaimer].filter(Boolean),
+    disclaimer: p.disclaimer,
+  }
+}
 
-  const permit = data.permitPath
+function drawPermitPage(doc: any, data: HomeownerDeliverables): void {
+  sectionHeader(doc, 'Permit Path & Zoning')
+
+  const permit = resolvePermitPathForPdf(data)
   if (!permit) { doc.text('Permit information not yet generated.'); return }
 
   twoCol(doc, 'Estimated cost:', permit.estimatedCost ?? '—')

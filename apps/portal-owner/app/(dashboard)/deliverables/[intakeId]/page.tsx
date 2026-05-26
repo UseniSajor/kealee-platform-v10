@@ -23,6 +23,8 @@ import { BeforeAfterMedia } from '@/components/concept/BeforeAfterMedia'
 import { ProcessVideoLoop } from '@/components/concept/ProcessVideoLoop'
 import {
   getConceptPackageDeliverableLabelsForIntake,
+  getPermitZoningLabels,
+  intakePathToFamily,
   type ConceptTier,
 } from '@kealee/core-rules'
 
@@ -648,6 +650,7 @@ export default function ConceptDeliverablePage() {
 
       // Persist catalog-level permit requirement (set at Stripe purchase time)
       const pr = formData.permitRequired as 'always' | 'sometimes' | 'rarely' | undefined
+      const catalogPermitReq = pr ?? 'sometimes'
       setCatalogPermitRequired(pr ?? null)
 
       const co = conceptRaw as Record<string, unknown>
@@ -728,10 +731,45 @@ export default function ConceptDeliverablePage() {
       )
 
       // Zoning notes — v1 has co.zoningNotes; v2 has permit.disclaimer
-      const zoningNotes =
+      let zoningNotes =
         (co.zoningNotes as string) ||
         (permit.disclaimer as string) ||
         ''
+
+      const tierNorm = (tier === 3 ? 3 : tier === 2 ? 2 : 1) as ConceptTier
+      const permitZoningCatalog = getPermitZoningLabels(intakePathToFamily(projectPath), tierNorm)
+
+      let finalPermitScope = derivedPermitScope
+      if (!finalPermitScope?.permitTypes?.length) {
+        finalPermitScope = {
+          requiresPermit: catalogPermitReq !== 'rarely',
+          permitTypes: permitZoningCatalog
+            .filter((l) => /permit|AHJ|trade/i.test(l))
+            .slice(0, 5)
+            .map((l) => l.split('—')[0]?.trim() || l)
+            .filter(Boolean),
+          estimatedPermitFee: 0,
+          estimatedProcessingDays: 21,
+          requiresPE: ['addition_expansion', 'whole_home_remodel', 'whole_home_concept'].includes(projectPath),
+          notes:
+            'Permit scope brief is included in your design concept package. Agency filing and stamped drawings are available when you continue with Kealee.',
+        }
+        if (finalPermitScope.permitTypes.length === 0) {
+          finalPermitScope.permitTypes = ['Building / alteration permit (scope-dependent)']
+        }
+      }
+
+      if (!zoningNotes.trim() || /pending|confirm with local/i.test(zoningNotes)) {
+        zoningNotes = [
+          permitZoningCatalog.filter((l) => /zoning|buildability|variance|HOA|overlay|setback/i.test(l)).join('. '),
+          (intake.project_address as string)
+            ? `Property: ${intake.project_address as string}.`
+            : '',
+          'Confirm zoning district rules with your local planning department before construction.',
+        ]
+          .filter(Boolean)
+          .join(' ')
+      }
 
       // Description / scope summary
       const scopeDescription =
@@ -866,7 +904,7 @@ export default function ConceptDeliverablePage() {
           lighting:   (mep.lighting as string)    ?? '',
         },
         billOfMaterials,
-        permitScope:      derivedPermitScope,
+        permitScope:      finalPermitScope,
         zoningNotes,
         buildabilityFlag:    ((co.buildabilityFlag as string) ?? 'feasible') as ConceptData['buildabilityFlag'],
         readinessScore:      (co.readinessScore as number) ?? 70,
@@ -909,6 +947,7 @@ export default function ConceptDeliverablePage() {
 
     let stopped = false
     let pollsLeft = 60
+    let videoKickoffDone = false
 
     const placeholderHosts = ['storage.googleapis.com', 'commondatastorage.googleapis.com']
     const looksLikePlaceholder = (url?: string): boolean => {
@@ -917,9 +956,22 @@ export default function ConceptDeliverablePage() {
       catch { return false }
     }
 
+    const kickoffVideoGeneration = () => {
+      if (videoKickoffDone) return
+      videoKickoffDone = true
+      const webMain = process.env.NEXT_PUBLIC_WEB_MAIN_URL?.replace(/\/$/, '')
+      if (!webMain) return
+      fetch(`${webMain}/api/concept/video`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ intakeId }),
+      }).catch(() => {})
+    }
+
     const tick = async () => {
       if (stopped) return
       pollsLeft -= 1
+      if (looksLikePlaceholder(data.videoUrl)) kickoffVideoGeneration()
       const refreshed = await fetchData()
       if (refreshed && !looksLikePlaceholder(data.videoUrl)) return
       if (pollsLeft <= 0) return
@@ -927,6 +979,7 @@ export default function ConceptDeliverablePage() {
     }
 
     if (looksLikePlaceholder(data.videoUrl)) {
+      kickoffVideoGeneration()
       window.setTimeout(tick, 5000)
     }
 
@@ -974,7 +1027,11 @@ export default function ConceptDeliverablePage() {
     ...(data.floorplanSvg ? ['floor-plan'] : []),
     ...(hasNarrative ? ['narrative'] : []),
     ...(data.billOfMaterials.length > 0 ? ['scope-bom'] : []),
-    ...(data.permitScope || data.zoningNotes ? ['permit'] : []),
+    ...(data.packageIncludes.some((i) => /permit|zoning/i.test(i)) ||
+      data.permitScope ||
+      data.zoningNotes
+      ? ['permit']
+      : []),
     ...(data.renderUrls.length > 0 ||
       (data.interiorRenderUrls?.length ?? 0) > 0 ||
       (data.exteriorRenderUrls?.length ?? 0) > 0 ||
@@ -1714,20 +1771,15 @@ export default function ConceptDeliverablePage() {
 
         {/* ── Download / Share ─────────────────────────────────────────────── */}
         <div className="flex flex-wrap gap-3 pb-8">
-          {data.pdfUrl ? (
-            <a href={data.pdfUrl} target="_blank" rel="noopener noreferrer"
-              className="flex items-center gap-2 rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
-              <Download className="h-4 w-4" />
-              Download Concept PDF
-            </a>
-          ) : (
-            <button disabled
-              className="flex items-center gap-2 rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-medium text-gray-400 cursor-not-allowed"
-              title="PDF not yet generated">
-              <Download className="h-4 w-4" />
-              Download Concept PDF
-            </button>
-          )}
+          <a
+            href={data.pdfUrl ?? `/api/concept/${intakeId}/pdf`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+          >
+            <Download className="h-4 w-4" />
+            Download Concept PDF
+          </a>
           {data.contractorMatchingUnlocked ? (
             <button
               onClick={() => {

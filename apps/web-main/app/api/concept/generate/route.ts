@@ -26,6 +26,10 @@ import {
 } from '@kealee/core-rules'
 import { generateImages, buildArchitecturalPrompt, type GenerateImageResult } from '@/lib/ai-image'
 import { archiveReplicateOutputsFireAndForget } from '@/lib/replicate-archive'
+import {
+  ensureConceptPermitZoningFields,
+  generateAndAttachConceptPdf,
+} from '@/lib/concept-output-enrichment'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 300 // Claude + Replicate render jobs can take 60–180s
@@ -735,7 +739,15 @@ export async function POST(req: NextRequest) {
     if (existingFormData.conceptOutput && intake.status === 'concept_ready') {
       const out = { ...(existingFormData.conceptOutput as ConceptOutput) }
       out.renderUrls = preferSelectedRender(out.renderUrls ?? [], existingFormData.selectedRenderUrl as string | undefined)
+      ensureConceptPermitZoningFields(out, projectPath, tier, {
+        projectAddress: intake.project_address as string | undefined,
+        permitRequired: deliverable?.permitRequired,
+      })
       attachConceptVideoFields(out, tier)
+      const appBaseUrl = process.env.NEXT_PUBLIC_APP_URL ?? req.nextUrl.origin
+      if (tier >= 2 && !existingFormData.conceptVideo) {
+        triggerConceptVideoGeneration(appBaseUrl, intakeId, tier)
+      }
       return NextResponse.json({ conceptOutput: out, cached: true })
     }
 
@@ -909,7 +921,24 @@ export async function POST(req: NextRequest) {
       conceptOutput.beforeUrls = uploadedPhotoUrls
     }
 
+    ensureConceptPermitZoningFields(conceptOutput, projectPath, tier, {
+      projectAddress: intake.project_address as string | undefined,
+      permitRequired: deliverable?.permitRequired,
+    })
+
     attachConceptVideoFields(conceptOutput, tier)
+
+    const pdfUrl = await generateAndAttachConceptPdf({
+      id: intakeId,
+      project_path: projectPath,
+      client_name: intake.client_name as string | null,
+      contact_email: intake.contact_email as string | null,
+      contact_phone: intake.contact_phone as string | null,
+      project_address: intake.project_address as string | null,
+      budget_range: intake.budget_range as string | null,
+      form_data: { ...existingFormData, conceptOutput },
+    })
+    if (pdfUrl) conceptOutput.pdfUrl = pdfUrl
 
     // 3. Update intake record
     const { error: updateErr } = await supabase

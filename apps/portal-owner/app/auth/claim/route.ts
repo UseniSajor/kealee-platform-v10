@@ -124,6 +124,12 @@ export async function GET(request: NextRequest) {
     return errorRedirect(origin, 'session_failed', safePath)
   }
 
+  const { data: { session } } = await supabase.auth.getSession()
+  if (!session) {
+    console.error('[auth/claim] verifyOtp succeeded but no session cookie was set')
+    return errorRedirect(origin, 'session_failed', safePath)
+  }
+
   // Invalidate claim token after successful sign-in (fresh token on resend email)
   await admin
     .from('public_intake_leads')

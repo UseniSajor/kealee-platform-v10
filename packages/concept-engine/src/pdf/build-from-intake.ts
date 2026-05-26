@@ -64,11 +64,19 @@ export function resolveHomeownerDeliverablesForPdf(
   const style = String(design?.style ?? 'Contemporary')
   const description = String(co.description ?? '')
 
-  const likelyPermits = Array.isArray(permitScope?.permitsRequired)
-    ? (permitScope!.permitsRequired as string[])
-    : Array.isArray(permitScope?.likelyPermits)
-      ? (permitScope!.likelyPermits as string[])
-      : ['Building permit']
+  const likelyPermits = Array.isArray(permitScope?.permitTypes)
+    ? (permitScope!.permitTypes as string[])
+    : Array.isArray(permitScope?.permitsRequired)
+      ? (permitScope!.permitsRequired as string[])
+      : Array.isArray(permitScope?.likelyPermits)
+        ? (permitScope!.likelyPermits as string[])
+        : ['Building permit']
+
+  const estimatedPermitFee = Number(permitScope?.estimatedPermitFee ?? 0)
+  const estimatedProcessingDays = Number(permitScope?.estimatedProcessingDays ?? 0)
+  const permitNotes = String(permitScope?.notes ?? '').trim()
+  const zoningNotes = String(co.zoningNotes ?? '').trim()
+  const requiresPE = Boolean(permitScope?.requiresPE ?? false)
 
   const now = new Date().toISOString()
 
@@ -118,14 +126,46 @@ export function resolveHomeownerDeliverablesForPdf(
     permit: {
       requiresPermit: Boolean(permitScope?.requiresPermit ?? true),
       likelyPermits,
-      likelyTradePermits: [],
+      likelyTradePermits: Array.isArray(permitScope?.likelyTradePermits)
+        ? (permitScope!.likelyTradePermits as string[])
+        : [],
       hoaReviewRequired: Boolean(permitScope?.hoaReviewRequired ?? false),
       estimatedTimeline: String(co.projectTimeline ?? permitScope?.timeline ?? '4–8 weeks'),
-      estimatedCostRange: [500, 3500] as [number, number],
-      keyConsiderations: Array.isArray(permitScope?.considerations)
-        ? (permitScope!.considerations as string[])
-        : ['Verify with local AHJ before submission'],
-      disclaimer: 'Permit requirements vary by jurisdiction. This is not legal advice.',
+      estimatedCostRange: estimatedPermitFee > 0
+        ? ([Math.round(estimatedPermitFee * 0.85), Math.round(estimatedPermitFee * 1.15)] as [number, number])
+        : ([500, 3500] as [number, number]),
+      keyConsiderations: [
+        ...(Array.isArray(permitScope?.considerations)
+          ? (permitScope!.considerations as string[])
+          : []),
+        ...(permitNotes ? [permitNotes] : []),
+        ...(zoningNotes ? [zoningNotes] : []),
+        'Verify with local AHJ before submission',
+      ].filter((v, i, a) => a.indexOf(v) === i),
+      disclaimer: zoningNotes
+        ? `${zoningNotes} Permit requirements vary by jurisdiction. This is not legal advice.`
+        : 'Permit requirements vary by jurisdiction. This is not legal advice.',
+    },
+    permitPath: {
+      requiresPermit: Boolean(permitScope?.requiresPermit ?? true),
+      likelyPermits,
+      estimatedTimeline: String(co.projectTimeline ?? '4–8 weeks'),
+      estimatedCost:
+        estimatedPermitFee > 0
+          ? `$${estimatedPermitFee.toLocaleString()}`
+          : '$500–$3,500 (estimated range)',
+      permits: likelyPermits,
+      tradeLicenses: Array.isArray(permitScope?.likelyTradePermits)
+        ? (permitScope!.likelyTradePermits as string[])
+        : [],
+      structuralReviewRequired: requiresPE,
+      designReviewRequired: requiresPE,
+      notes: [
+        ...(permitNotes ? [permitNotes] : []),
+        ...(zoningNotes ? [`Zoning: ${zoningNotes}`] : []),
+      ],
+      disclaimer:
+        'Permit and zoning guidance are informational — not agency filing or stamped drawings.',
     },
     visuals: {
       midjourneyPrompts: renderUrls.slice(0, 3),
