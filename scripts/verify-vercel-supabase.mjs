@@ -31,6 +31,8 @@ const PROJECTS = [
       { key: 'NEXT_PUBLIC_OWNER_PORTAL_URL', targets: ['production'],            secret: false, mustEqual: 'https://owner.kealee.com' },
       { key: 'NEXT_PUBLIC_APP_URL',          targets: ['production'],            secret: false, mustEqual: 'https://kealee.com' },
       { key: 'RESEND_API_KEY',               targets: ['production'],            secret: true },
+      { key: 'STRIPE_SECRET_KEY',            targets: ['production'],            secret: true },
+      { key: 'STRIPE_WEBHOOK_SECRET',        targets: ['production'],            secret: true },
       { key: 'ANTHROPIC_API_KEY',            targets: ['production'],            secret: true },
       { key: 'REPLICATE_API_TOKEN',          targets: ['production'],            secret: true },
     ],

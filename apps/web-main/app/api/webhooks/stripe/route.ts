@@ -1,48 +1,59 @@
 /**
  * POST /api/webhooks/stripe
  *
- * Handles Stripe checkout.session.completed for source='public_intake'.
- * 1. Verifies Stripe webhook signature
- * 2. Updates public_intake_leads status to 'paid'
- * 3. Triggers concept generation for design/development services
+ * Stripe live endpoint: https://kealee.com/api/webhooks/stripe
  *
- * Required env vars:
- *   STRIPE_SECRET_KEY
- *   STRIPE_WEBHOOK_SECRET  (from Stripe Dashboard → Webhooks)
+ * Required on Vercel (kealee-web-main Production):
+ *   STRIPE_SECRET_KEY=sk_live_…
+ *   STRIPE_WEBHOOK_SECRET=whsec_…  (Signing secret from this exact Dashboard endpoint)
+ *   SUPABASE_SERVICE_ROLE_KEY=…
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-import Stripe from 'stripe'
 import { createStripe } from '@/lib/stripe-client'
-import { getSupabaseAdmin } from '@/lib/supabase-server'
-import { SERVICE_DELIVERABLES } from '@/lib/service-deliverables'
-import { getOwnerPortalDeliverableUrl } from '@/lib/owner-portal-urls'
 import { isStripeWebhookSideEffectsDisabledOnThisDeployment } from '@/lib/stripe-vercel-guard'
-import { isV30IntakeMetadata, triggerV30GenerationForIntake } from '@/lib/v30-trigger'
-import {
-  patchIntakeFunnelStage,
-  sendPostPaymentCustomerEmail,
-} from '@/lib/marketing/lifecycle'
-import { trackPurchase } from '@/lib/marketing/ga4-server'
-import { parseUtmFromBody } from '@/lib/marketing/utm-metadata'
+import { getStripeWebhookSecrets, verifyStripeWebhookEvent } from '@/lib/stripe-webhook-verify'
+import { processStripeWebhookEvent } from '@/lib/stripe-webhook-handler'
 
 export const dynamic = 'force-dynamic'
-export const maxDuration = 30
+export const maxDuration = 60
+export const runtime = 'nodejs'
 
-export const runtime = 'nodejs' // Required: raw body access for signature verification
+export async function GET() {
+  const secrets = getStripeWebhookSecrets()
+  const hasStripeKey = Boolean(process.env.STRIPE_SECRET_KEY?.startsWith('sk_'))
+  const hasSupabase = Boolean(
+    process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY,
+  )
+  return NextResponse.json({
+    ok: secrets.length > 0 && hasStripeKey && hasSupabase,
+    endpoint: '/api/webhooks/stripe',
+    webhookSecretsConfigured: secrets.length,
+    supabaseConfigured: hasSupabase,
+    vercelEnv: process.env.VERCEL_ENV ?? 'local',
+  })
+}
 
 export async function POST(req: NextRequest) {
   const stripeKey = process.env.STRIPE_SECRET_KEY
-  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET
+  const webhookSecrets = getStripeWebhookSecrets()
 
-  if (!stripeKey || !webhookSecret) {
-    console.error('[stripe-webhook] Missing STRIPE_SECRET_KEY or STRIPE_WEBHOOK_SECRET')
-    return NextResponse.json({ error: 'Webhook not configured' }, { status: 500 })
+  if (!stripeKey) {
+    console.error('[stripe-webhook] Missing STRIPE_SECRET_KEY')
+    return NextResponse.json({ error: 'STRIPE_SECRET_KEY not configured' }, { status: 503 })
   }
 
-  const stripe = createStripe(stripeKey)
+  if (webhookSecrets.length === 0) {
+    console.error('[stripe-webhook] Missing STRIPE_WEBHOOK_SECRET (whsec_…) on this deployment')
+    return NextResponse.json(
+      {
+        error: 'STRIPE_WEBHOOK_SECRET not configured',
+        hint: 'Stripe Dashboard → Webhooks → kealee.com endpoint → Signing secret → Vercel env',
+      },
+      { status: 503 },
+    )
+  }
 
-  // Read raw body for signature verification
   const rawBody = await req.text()
   const sig = req.headers.get('stripe-signature')
 
@@ -50,219 +61,31 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Missing stripe-signature header' }, { status: 400 })
   }
 
-  let event: Stripe.Event
+  const stripe = createStripe(stripeKey)
+
+  let event
   try {
-    event = stripe.webhooks.constructEvent(rawBody, sig, webhookSecret)
-  } catch (err: any) {
-    console.error('[stripe-webhook] Signature verification failed:', err.message)
+    event = verifyStripeWebhookEvent(stripe, rawBody, sig)
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err)
+    console.error('[stripe-webhook] Signature verification failed:', message)
     return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })
   }
 
   if (isStripeWebhookSideEffectsDisabledOnThisDeployment()) {
-    console.warn('[stripe-webhook] Non-production Vercel — acknowledging without processing', event.type)
+    console.warn('[stripe-webhook] Non-production Vercel — ack only', event.type, event.id)
     return NextResponse.json({ received: true, ignoredNonProduction: true })
   }
 
-  // ── payment_intent.payment_failed ─────────────────────────────────────────
-  if (event.type === 'payment_intent.payment_failed') {
-    const pi = event.data.object as Stripe.PaymentIntent
-    const meta = pi.metadata ?? {}
-    const intakeId = meta.intakeId
-    const projectPath = meta.projectPath
-    const source = meta.source
-
-    const failureMessage =
-      pi.last_payment_error?.message ?? 'Unknown error'
-
-    console.log(`[stripe-webhook] payment_intent.payment_failed intakeId=${intakeId} reason="${failureMessage}"`)
-
-    // Fire-and-forget email notification
-    if (intakeId && source) {
-      const baseUrl = req.nextUrl.origin
-      fetch(`${baseUrl}/api/emails/payment-failed`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          to: pi.receipt_email ?? '',
-          firstName: '',
-          service: projectPath ?? source,
-          amount: pi.amount,
-          intakeId,
-          failureMessage,
-          source,
-        }),
-      }).catch((err: Error) => {
-        console.error('[stripe-webhook] payment-failed email trigger failed:', err.message)
-      })
-    }
-
-    return NextResponse.json({ received: true })
+  try {
+    await processStripeWebhookEvent(event, req)
+    return NextResponse.json({ received: true, id: event.id, type: event.type })
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err)
+    console.error('[stripe-webhook] processing failed:', event.type, event.id, message)
+    return NextResponse.json(
+      { error: 'Webhook processing failed', eventId: event.id, message },
+      { status: 500 },
+    )
   }
-
-  // ── checkout.session.expired ───────────────────────────────────────────────
-  if (event.type === 'checkout.session.expired') {
-    const session = event.data.object as Stripe.Checkout.Session
-    const meta = session.metadata ?? {}
-    const intakeId = meta.intakeId
-
-    console.log(`[stripe-webhook] checkout.session.expired intakeId=${intakeId}`)
-
-    return NextResponse.json({ received: true })
-  }
-
-  // ── checkout.session.completed ─────────────────────────────────────────────
-  if (event.type !== 'checkout.session.completed') {
-    // Acknowledge other events without processing
-    return NextResponse.json({ received: true })
-  }
-
-  const session = event.data.object as Stripe.Checkout.Session
-  const meta = session.metadata ?? {}
-
-  // public_intake (v20 tiers) and public_intake_v30 (dynamic quote)
-  if (meta.source !== 'public_intake' && meta.source !== 'public_intake_v30') {
-    return NextResponse.json({ received: true })
-  }
-
-  const isV30 = isV30IntakeMetadata(meta)
-
-  const intakeId = meta.intakeId
-  const projectPath = meta.projectPath
-
-  if (!intakeId || !projectPath) {
-    console.error('[stripe-webhook] Missing intakeId or projectPath in metadata', meta)
-    return NextResponse.json({ received: true })
-  }
-
-  const supabase = getSupabaseAdmin()
-
-  // 1. Resolve deliverable + fetch existing form_data (needed to merge permitRequired)
-  const deliverable = SERVICE_DELIVERABLES[projectPath]
-
-  const { data: currentIntake } = await supabase
-    .from('public_intake_leads')
-    .select('form_data, metadata')
-    .eq('id', intakeId)
-    .single()
-  const existingFormData = (currentIntake?.form_data as Record<string, unknown>) ?? {}
-  const purchaseUtm = parseUtmFromBody({
-    ...((currentIntake?.metadata as Record<string, unknown>) ?? {}),
-    ...existingFormData,
-  })
-
-  // Merge catalog metadata so the portal always knows what was purchased.
-  // serviceLabel / serviceIncludes / serviceDeliveryDays are set here for intakes
-  // created before the intake-creation enrichment was added, and to ensure the
-  // snapshot is always locked to the version at payment time.
-  const mergedFormData: Record<string, unknown> = { ...existingFormData }
-  if (deliverable) {
-    mergedFormData.serviceLabel        = deliverable.label
-    mergedFormData.serviceCategory     = deliverable.category
-    mergedFormData.serviceIncludes     = deliverable.includes
-    mergedFormData.serviceDeliveryDays = deliverable.deliveryDays
-    if (deliverable.renderCount != null) mergedFormData.renderCount = deliverable.renderCount
-    if (deliverable.permitRequired != null) mergedFormData.permitRequired = deliverable.permitRequired
-  }
-
-  // 2. Mark intake as paid and persist permitRequired in form_data (idempotent: only rows still `new`)
-  mergedFormData.funnelStage = 'paid_concept'
-
-  const { data: updatedRows, error: updateErr } = await supabase
-    .from('public_intake_leads')
-    .update({
-      status: 'paid',
-      form_data: mergedFormData,
-      paid_at: new Date().toISOString(),
-      stripe_session_id: session.id,
-    })
-    .eq('id', intakeId)
-    .eq('status', 'new')
-    .select('id')
-
-  if (updateErr) {
-    console.error('[stripe-webhook] Failed to update intake status:', updateErr.message)
-    // Don't return error — Stripe would retry. Log and continue.
-  }
-
-  const transitionedToPaid = Boolean(updatedRows && updatedRows.length > 0)
-
-  if (!transitionedToPaid) {
-    console.log('[stripe-webhook] Intake already paid or not found; skipping generation and notification emails', intakeId)
-    return NextResponse.json({ received: true })
-  }
-
-  // 3. Trigger generation (fire-and-forget)
-  if (isV30) {
-    triggerV30GenerationForIntake(intakeId).catch((err: Error) => {
-      console.error('[stripe-webhook] v30 generation trigger failed:', err.message)
-    })
-  } else if (deliverable?.generatesConcept) {
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? req.nextUrl.origin
-    fetch(`${baseUrl}/api/concept/generate`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ intakeId }),
-    }).catch((err: Error) => {
-      console.error('[stripe-webhook] Concept generation trigger failed:', err.message)
-    })
-  }
-
-  // 3. Admin purchase notification email (fire-and-forget)
-  const resendApiKey = process.env.RESEND_API_KEY
-  const amountCents = session.amount_total ?? 0
-  const amountFormatted = (amountCents / 100).toFixed(2)
-  const clientEmail = session.customer_details?.email ?? 'unknown'
-  const clientName  = session.customer_details?.name  ?? 'Unknown Client'
-
-  if (resendApiKey) {
-    fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${resendApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        from: 'Kealee Notifications <notifications@kealee.com>',
-        to: ['hello@kealee.com'],
-        subject: `New purchase — ${projectPath.replace(/_/g, ' ')} $${amountFormatted}`,
-        text: [
-          'A new purchase has been completed.',
-          '',
-          `  Intake ID:   ${intakeId}`,
-          `  Service:     ${projectPath.replace(/_/g, ' ')}`,
-          `  Client:      ${clientName} <${clientEmail}>`,
-          `  Amount:      $${amountFormatted}`,
-          `  Time:        ${new Date().toISOString()}`,
-          '',
-          'Review in Command Center: https://cc.kealee.com/events',
-        ].join('\n'),
-      }),
-    }).catch((err: Error) => {
-      console.error('[stripe-webhook] Purchase notification email failed:', err.message)
-    })
-  }
-
-  patchIntakeFunnelStage(intakeId, 'paid_concept', ['stripe-paid']).catch(err => {
-    console.error('[stripe-webhook] funnel stage patch failed:', err.message)
-  })
-
-  void trackPurchase({
-    intakeId,
-    projectPath,
-    valueCents: amountCents,
-    utm: purchaseUtm,
-  })
-
-  if (clientEmail !== 'unknown') {
-    sendPostPaymentCustomerEmail({
-      intakeId,
-      email: clientEmail,
-      clientName,
-      projectPath,
-    }).catch((err: Error) => {
-      console.error('[stripe-webhook] Customer confirmation email failed:', err.message)
-    })
-  }
-
-  return NextResponse.json({ received: true })
 }
