@@ -19,6 +19,12 @@ import {
 import { V30LandscapeCadPanel } from '@/components/v30/V30LandscapeCadPanel'
 import { V30WorkspaceEmbed } from '@/components/v30/V30WorkspaceEmbed'
 import { ConceptPackageNav } from '@/components/concept/ConceptPackageNav'
+import { BeforeAfterMedia } from '@/components/concept/BeforeAfterMedia'
+import { ProcessVideoLoop } from '@/components/concept/ProcessVideoLoop'
+import {
+  getConceptPackageDeliverableLabelsForIntake,
+  type ConceptTier,
+} from '@kealee/core-rules'
 
 // ─── Render stubs ─────────────────────────────────────────────────────────────
 
@@ -353,6 +359,8 @@ interface ConceptData {
   renderUrls: string[]
   interiorRenderUrls?: string[]
   exteriorRenderUrls?: string[]
+  /** Photos uploaded by the user at intake — shown in before/after comparison. */
+  beforeUrls?: string[]
   /** From `conceptOutput` when tier includes video (Premium+). */
   videoUrl?: string
   videoFormatUrls?: Record<string, string>
@@ -795,7 +803,10 @@ export default function ConceptDeliverablePage() {
             ? (narrative.nextSteps as string[])
             : []
 
-      const pkgDef = getPackageDef(projectPath)
+      const coIncludes = Array.isArray(co.includes) ? (co.includes as string[]) : []
+      const pkgDef = getPackageDef(projectPath, tier)
+      const packageIncludes =
+        coIncludes.length > 0 ? coIncludes : pkgDef.includes
       const floorplanSvg = typeof co.floorplanSvgInline === 'string' && co.floorplanSvgInline.trim().startsWith('<')
         ? co.floorplanSvgInline as string
         : undefined
@@ -804,7 +815,7 @@ export default function ConceptDeliverablePage() {
         conceptId:       `concept_${intakeId.slice(0, 8)}`,
         projectType:     (intake.project_path as string)?.replace(/_/g, ' ') ?? 'Concept Package',
         packageLabel:    pkgDef.label,
-        packageIncludes: pkgDef.includes,
+        packageIncludes,
         tierName:        isV30IntakeFormData(formData)
           ? tier === 3 ? 'Premium+' : tier === 2 ? 'Premium' : 'Basic'
           : TIER_NAMES[tier] ?? 'Starter Concept',
@@ -824,6 +835,9 @@ export default function ConceptDeliverablePage() {
         renderUrls,
         interiorRenderUrls: interiorRenderUrls.length > 0 ? interiorRenderUrls : undefined,
         exteriorRenderUrls: exteriorRenderUrls.length > 0 ? exteriorRenderUrls : undefined,
+        beforeUrls: Array.isArray(co.beforeUrls) && (co.beforeUrls as string[]).length > 0
+          ? (co.beforeUrls as string[]).filter(Boolean)
+          : undefined,
         pdfUrl:          typeof co.pdfUrl === 'string' ? co.pdfUrl : undefined,
         contractorMatchingUnlocked,
         videoUrl: realVideoUrl ?? placeholderVideoUrl,

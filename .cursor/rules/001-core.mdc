@@ -16,6 +16,7 @@ alwaysApply: true
 
 ## Absolute Rules (Never Violate)
 - NEVER hardcode prices — always import from `packages/core-rules/src/pricing.ts`
+- NEVER omit permit or zoning from concept packages — use `packages/core-rules/src/concept-package-deliverables.ts` and `docs/system/concept-package-deliverables.md` (included in Basic, Premium, Premium+)
 - NEVER deploy without SESSION 12 smoke test
 - NEVER reference Zem Solutions anywhere in code, comments, or docs
 - NEVER run EstimateBot or PermitBot without prior bot output in chain

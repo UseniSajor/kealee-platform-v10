@@ -8,6 +8,9 @@ export type { ZoningRequest, ZoningResponse } from './zoning-bot';
 // Pricing constants
 export * from './pricing';
 
+// Concept package deliverables (permit + zoning in all tiers)
+export * from './concept-package-deliverables';
+
 // GHL marketing client
 export * from './marketing/ghl-client';
 export type {

@@ -19,7 +19,11 @@ import Anthropic from '@anthropic-ai/sdk'
 import Replicate from 'replicate'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { SERVICE_DELIVERABLES } from '@/lib/service-deliverables'
-import { AI_MODELS } from '@kealee/core-rules'
+import {
+  AI_MODELS,
+  getConceptPackageDeliverableLabelsForIntake,
+  type ConceptTier,
+} from '@kealee/core-rules'
 import { generateImages, buildArchitecturalPrompt, type GenerateImageResult } from '@/lib/ai-image'
 import { archiveReplicateOutputsFireAndForget } from '@/lib/replicate-archive'
 
@@ -30,6 +34,14 @@ export const maxDuration = 300 // Claude + Replicate render jobs can take 60–1
 // to `paid`; the first successful generation flips it to `concept_ready`
 // (regenerations are allowed and return cached output).
 const PAID_INTAKE_STATUSES = new Set(['paid', 'concept_ready', 'processing'])
+
+function normalizeConceptTier(tier: number): ConceptTier {
+  return (tier === 3 ? 3 : tier === 2 ? 2 : 1) as ConceptTier
+}
+
+function tierDeliverableIncludes(projectPath: string, tier: number): string[] {
+  return getConceptPackageDeliverableLabelsForIntake(projectPath, normalizeConceptTier(tier))
+}
 
 /** Until a Kealee transcode pipeline writes project-specific MP4s to storage, tier 2+ packages get a playable URL (override via env). */
 const DEFAULT_CONCEPT_PLACEHOLDER_VIDEO_URL =
@@ -565,9 +577,15 @@ function buildGeometrySection(geo: PascalGeometry): string {
   return lines.join('\n')
 }
 
-function buildConceptPrompt(intake: Record<string, unknown>, projectPath: string, geometry?: PascalGeometry): string {
+function buildConceptPrompt(
+  intake: Record<string, unknown>,
+  projectPath: string,
+  tier: number,
+  geometry?: PascalGeometry,
+): string {
   const deliverable = SERVICE_DELIVERABLES[projectPath]
   const formData = (intake.form_data as Record<string, unknown>) ?? {}
+  const tierIncludes = tierDeliverableIncludes(projectPath, tier)
 
   const sqFt = geometry?.totalSqFt
     ? `${geometry.totalSqFt.toFixed(0)} sq ft (measured)`
@@ -586,8 +604,8 @@ Project Details:
 - Budget Range: ${intake.budget_range ?? 'Not specified'}
 ${geometry ? '\n' + buildGeometrySection(geometry) : ''}
 
-What this service includes:
-${deliverable?.includes?.map(i => `- ${i}`).join('\n') ?? '- Concept package'}
+What this service includes (tier ${normalizeConceptTier(tier)} — permit and zoning included):
+${tierIncludes.map((i) => `- ${i}`).join('\n')}
 
 ${permitGuidance(deliverable?.permitRequired)}
 
@@ -770,7 +788,7 @@ export async function POST(req: NextRequest) {
       }
     }
     const client = new Anthropic({ apiKey })
-    const prompt = buildConceptPrompt(intake as Record<string, unknown>, projectPath, geometry)
+    const prompt = buildConceptPrompt(intake as Record<string, unknown>, projectPath, tier, geometry)
 
     const message = await client.messages.create({
       model,
@@ -804,7 +822,7 @@ export async function POST(req: NextRequest) {
         estimatedCost: 23000,
         projectTimeline: '4–6 weeks',
         description: 'Your personalized concept package has been prepared based on your project details.',
-        includes: SERVICE_DELIVERABLES[projectPath]?.includes ?? [],
+        includes: tierDeliverableIncludes(projectPath, tier),
         renderUrls: preferSelectedRender(
           getRenderUrls(projectPath, tier),
           geometry?.selectedRenderUrl ?? (existingFormData.selectedRenderUrl as string | undefined),
@@ -823,10 +841,8 @@ export async function POST(req: NextRequest) {
       }
     } else {
       conceptOutput = JSON.parse(jsonMatch[0]) as ConceptOutput
-      // Ensure includes matches the service deliverable
-      if (!conceptOutput.includes?.length && SERVICE_DELIVERABLES[projectPath]?.includes) {
-        conceptOutput.includes = SERVICE_DELIVERABLES[projectPath].includes
-      }
+      // Ensure includes matches canonical tier package (permit + zoning in all tiers)
+      conceptOutput.includes = tierDeliverableIncludes(projectPath, tier)
       conceptOutput.renderUrls = preferSelectedRender(
         getRenderUrls(projectPath, tier),
         geometry?.selectedRenderUrl ?? (existingFormData.selectedRenderUrl as string | undefined),

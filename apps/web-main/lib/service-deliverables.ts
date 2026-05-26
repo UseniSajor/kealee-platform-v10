@@ -1,14 +1,18 @@
+import { CONCEPT_PACKAGE_RULES } from '@kealee/core-rules'
+
 export type ServiceCategory = 'design' | 'development' | 'permit' | 'estimate' | 'match'
 export type AgentType = 'design' | 'land' | 'permit' | 'contractor'
 
 /** Tier 2+; Basic is renders + PDF only. */
 const VIDEO_PREMIUM_TIERS =
   'AI transformation video (Premium or Premium+): 60s narrated flythrough synced to your renders — Premium+ adds 30s, 15s, and 10s cuts for HOA, lenders, and social.'
-/** Scope inside design concept; not agency filing. */
+/**
+ * Included in every concept tier — full lists: @kealee/core-rules concept-package-deliverables.
+ * @see docs/system/concept-package-deliverables.md
+ */
 const PERMIT_ROADMAP_IN_DESIGN_BUNDLE =
-  'Permit roadmap in your design bundle — disciplines flagged, AHJ checklist, submittal order, typical fees and review windows (pairs with permit-ready drawings or filing add-ons).'
-const CREDIT_TOWARD_PERMIT_DRAWINGS =
-  'Design concept fee credited toward permit-ready drawings when you continue with Kealee filing or architect handoff.'
+  'Permit + zoning in every package: scope brief, buildability snapshot, AHJ checklist, and fee/timeline ranges (depth increases by tier; not agency filing).'
+const CREDIT_TOWARD_PERMIT_DRAWINGS = CONCEPT_PACKAGE_RULES.creditTowardDrawings
 
 export interface ServiceDeliverable {
   label: string

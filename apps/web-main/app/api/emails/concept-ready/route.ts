@@ -9,6 +9,11 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getOwnerPortalDeliverableUrl } from '@/lib/owner-portal-urls'
 import { generatePortalAccessToken } from '@/lib/portal-access-token'
 import { onConceptReadyLifecycle } from '@/lib/marketing/lifecycle'
+import {
+  getPermitZoningLabels,
+  intakePathToFamily,
+  type ConceptTier,
+} from '@kealee/core-rules'
 
 export const dynamic = 'force-dynamic'
 
@@ -74,6 +79,9 @@ export async function POST(req: NextRequest) {
         ? 'A short cinematic walkthrough video (rendering now — typically arrives within a few minutes of this email)'
         : null
 
+    const tierKey = ((tier ?? 1) === 3 ? 3 : (tier ?? 1) === 2 ? 2 : 1) as ConceptTier
+    const permitZoningBullets = getPermitZoningLabels(intakePathToFamily(service), tierKey)
+
     const customerRes = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
@@ -114,9 +122,12 @@ export async function POST(req: NextRequest) {
                 <tr>
                   <td style="padding:5px 0;font-size:14px;color:#444;line-height:1.5">&#10003;&nbsp; Bill of materials with DMV-market cost ranges</td>
                 </tr>
-                <tr>
-                  <td style="padding:5px 0;font-size:14px;color:#444;line-height:1.5">&#10003;&nbsp; Permit scope &amp; zoning guidance</td>
-                </tr>
+                ${permitZoningBullets
+                  .map(
+                    (line) =>
+                      `<tr><td style="padding:5px 0;font-size:14px;color:#444;line-height:1.5">&#10003;&nbsp; ${line}</td></tr>`,
+                  )
+                  .join('')}
                 <tr>
                   <td style="padding:5px 0;font-size:14px;color:#444;line-height:1.5">&#10003;&nbsp; Rendered project visuals</td>
                 </tr>
@@ -166,7 +177,7 @@ export async function POST(req: NextRequest) {
           'Inside your package:',
           '- Design concept summary, palette & key features',
           '- Bill of materials with DMV-market cost ranges',
-          '- Permit scope & zoning guidance',
+          ...permitZoningBullets.map((line) => `- ${line}`),
           '- Rendered project visuals',
           ...(videoLine ? [`- ${videoLine}`] : []),
           ...(costLine ? ['', costLine] : []),

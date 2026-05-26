@@ -104,7 +104,7 @@ All system knowledge is stored in the docs/ directory.
 Primary folders:
 - docs/audits/
 - docs/decisions/
-- docs/system/
+- docs/system/ (includes `concept-package-deliverables.md` — canonical tier deliverables; permit+zoning in all tiers)
 - docs/prompts/
 - docs/runbooks/
 
