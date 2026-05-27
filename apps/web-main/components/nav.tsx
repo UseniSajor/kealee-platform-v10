@@ -209,7 +209,7 @@ export function SiteNav() {
             <div className="hidden lg:block w-px h-6 bg-gray-300" />
 
             <Link
-              href="https://owner.kealee.com"
+              href="https://owner.kealee.com/login"
               className="hidden lg:block text-sm font-medium text-teal-600 hover:text-teal-700 transition whitespace-nowrap"
             >
               My Portal
@@ -268,7 +268,7 @@ export function SiteNav() {
             {/* Account */}
             <div className="border-t border-slate-200 mt-3 pt-3 space-y-2">
               <Link
-                href="https://owner.kealee.com"
+                href="https://owner.kealee.com/login"
                 onClick={() => setMobileMenuOpen(false)}
                 className="block rounded-lg px-3 py-2.5 text-sm font-medium text-teal-600 hover:bg-teal-50 transition"
               >

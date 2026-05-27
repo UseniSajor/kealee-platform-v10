@@ -8,13 +8,13 @@ const COMPANY_LINKS = [
   { href: '/marketplace', label: 'Contractor Marketplace' },
   { href: '/faq', label: 'FAQ' },
   { href: '/contact', label: 'Contact' },
-  { href: 'https://owner.kealee.com', label: 'Owner Portal' },
+  { href: 'https://owner.kealee.com/login', label: 'Owner Portal' },
 ]
 
 const LEGAL_LINKS = [
   { href: '/terms', label: 'Terms of Service' },
   { href: '/privacy', label: 'Privacy Policy' },
-  { href: 'https://owner.kealee.com', label: 'Owner Portal' },
+  { href: 'https://owner.kealee.com/login', label: 'Owner Portal' },
 ]
 
 const SOCIAL = [
