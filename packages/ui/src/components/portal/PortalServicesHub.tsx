@@ -39,9 +39,9 @@ const PORTAL_COPY: Record<
       },
       {
         id: 'permits',
-        title: 'Permit path & submissions',
-        description: 'AHJ checklist, discipline map, and permit-ready drawing packages.',
-        href: '/permits',
+        title: 'File permit application',
+        description: 'DC / MD / VA permit filing — AHJ checklist, application prep, agency submission, and comment response.',
+        href: '/intake/permit_path_only',
         external: true,
         priceHint: 'From $499',
         icon: 'permits',
