@@ -6,6 +6,46 @@ This file preserves key context for Claude Code sessions working on this project
 
 Kealee Platform v20 is a full-lifecycle construction development platform with 18 apps, 11 services, 34 packages, and 13 AI bots, built as a monorepo using pnpm workspaces. Evolved from v10 with formal service layers, Digital Development Twin System (DDTS), and KeaBot automation agents.
 
+## AI Automation Layer (MANDATORY READING — prevents agent confusion)
+
+**v20 and v30 are the same platform. v30 is NOT a separate system.**
+
+v30 = v20 + parallel AI automation bots (DesignBot, EstimateBot, PermitBot, FloorplanBot) running via `os-ai-orch`. Same database, same pipeline, same data model. An "AI-automated order" is one where `formData.v30 === true`.
+
+### What the `v30` prefix means in code
+
+The `v30` prefix on JSONB keys and legacy function names is a **frozen historical label**, not a platform version indicator. Do not treat it as a separate system.
+
+| Legacy identifier | What it actually means |
+|---|---|
+| `formData.v30 === true` | This order uses parallel AI bots |
+| `formData.v30ConceptOutput` | Concept output written by DesignBot |
+| `formData.v30FloorplanDeliverables` | Floorplan/CAD output from FloorplanBot |
+| `formData.v30LandscapePremiumPlus` | Landscape package from LandscapeBot |
+| `isV30IntakeFormData()` | `isAIAutomatedOrder()` — use the alias |
+| `v30WorkspaceUrl()` | `getAutomatedWorkspaceUrl()` — use the alias |
+| `v30TierLabel()` | `getAutomatedTierLabel()` — use the alias |
+
+### Frozen rules — never change these
+
+- **DB JSONB keys are frozen**: `v30ConceptOutput`, `v30FloorplanDeliverables`, `v30`, `v30Quote`, `v30ProjectId` are written by `os-ai-orch`. Do not rename them. Do not add DB migrations for these keys.
+- **The v30 guard in `concept/generate` is sacred**: The check `if (formData.v30 || formData.v30SkipConceptGenerate)` prevents double-generating AI-automated orders. Never remove or weaken it.
+- **`os-ai-orch` is the write authority**: All `v30*` fields in `form_data` are written by the orchestration service. Application code only reads them.
+
+### For new code — use the aliases in `apps/portal-owner/lib/concept-output.ts`
+
+```ts
+// Prefer these in new code:
+isAIAutomatedOrder(formData)       // was: isV30IntakeFormData
+getAutomatedWorkspaceUrl(intakeId) // was: v30WorkspaceUrl
+getAutomatedTierLabel(tier)        // was: v30TierLabel
+getAutomatedConceptOutput(formData) // was: getConceptOutputFromFormData (v30 branch)
+getAutomatedFloorplan(formData)    // was: parseV30FloorplanDeliverables
+getAutomatedLandscape(formData)    // was: parseV30LandscapePackage
+```
+
+Existing code using the `v30`-prefixed function names is valid and does not need to be updated. Use aliases only in new code going forward.
+
 ## Repository Structure
 
 ```

@@ -102,3 +102,32 @@ export function isGardenLandscapePath(projectPath: string): boolean {
   const p = projectPath.toLowerCase()
   return p.includes('garden') || p.includes('landscape')
 }
+
+// ── AI Automation Layer aliases ────────────────────────────────────────────────
+//
+// v20 and v30 are the same platform. v30 adds parallel AI bots (DesignBot,
+// EstimateBot, PermitBot, FloorplanBot) via os-ai-orch. The `v30` prefix on
+// the functions below is a frozen historical label tied to DB JSONB keys that
+// os-ai-orch writes. Use these aliases in new code instead of the v30-prefixed
+// originals so agents and developers don't mistake this for a separate system.
+//
+// DB keys (v30ConceptOutput, v30FloorplanDeliverables, etc.) are FROZEN —
+// do not rename them or add migrations.
+
+/** Whether this order was processed by the parallel AI automation bots. */
+export const isAIAutomatedOrder = isV30IntakeFormData
+
+/** Workspace URL for AI-automated orders (full design/estimate/permit workspace). */
+export const getAutomatedWorkspaceUrl = v30WorkspaceUrl
+
+/** CAD file download URL for AI-automated orders. */
+export const getAutomatedCadDownloadUrl = v30CadDownloadUrl
+
+/** Tier label for AI-automated orders: 'Basic' | 'Premium' | 'Premium+' */
+export const getAutomatedTierLabel = v30TierLabel
+
+/** Floorplan and CAD deliverables written by FloorplanBot. */
+export const getAutomatedFloorplan = parseV30FloorplanDeliverables
+
+/** Landscape package written by LandscapeBot (garden/exterior paths). */
+export const getAutomatedLandscape = parseV30LandscapePackage
