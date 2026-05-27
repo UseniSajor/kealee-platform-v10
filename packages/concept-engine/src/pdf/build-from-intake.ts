@@ -72,6 +72,40 @@ export function resolveHomeownerDeliverablesForPdf(
         ? (permitScope!.likelyPermits as string[])
         : ['Building permit']
 
+  const pkgPartial = asRecord(co.packageJson)
+  const fpFromPkg = asRecord(pkgPartial?.floorPlan)
+  const floorPlanBlock = fpFromPkg && Number(fpFromPkg.roomCount ?? 0) > 0
+    ? {
+        floorplanId: String(fpFromPkg.floorplanId ?? `intake-${intake.id}`),
+        totalAreaFt2: Number(fpFromPkg.totalAreaFt2 ?? 0),
+        roomCount: Number(fpFromPkg.roomCount ?? 0),
+        totalWidthFt: fpFromPkg.totalWidthFt != null ? Number(fpFromPkg.totalWidthFt) : undefined,
+        totalDepthFt: fpFromPkg.totalDepthFt != null ? Number(fpFromPkg.totalDepthFt) : undefined,
+        rooms: Array.isArray(fpFromPkg.rooms)
+          ? (fpFromPkg.rooms as Array<Record<string, unknown>>).map((r) => ({
+              label: String(r.label ?? ''),
+              widthFt: Number(r.widthFt ?? 0),
+              depthFt: Number(r.depthFt ?? 0),
+              areaFt2: Number(r.areaFt2 ?? 0),
+              type: r.type != null ? String(r.type) : undefined,
+            }))
+          : [],
+        layoutNotes: Array.isArray(fpFromPkg.layoutNotes)
+          ? (fpFromPkg.layoutNotes as string[])
+          : [],
+        layoutIssues: Array.isArray(fpFromPkg.layoutIssues)
+          ? (fpFromPkg.layoutIssues as string[])
+          : undefined,
+        svgUrl: typeof fpFromPkg.svgUrl === 'string' ? fpFromPkg.svgUrl : undefined,
+      }
+    : {
+        floorplanId: `intake-${intake.id}`,
+        totalAreaFt2: 0,
+        roomCount: 0,
+        rooms: [],
+        layoutNotes: ['See concept renderings and scope sections for spatial direction.'],
+      }
+
   const estimatedPermitFee = Number(permitScope?.estimatedPermitFee ?? 0)
   const estimatedProcessingDays = Number(permitScope?.estimatedProcessingDays ?? 0)
   const permitNotes = String(permitScope?.notes ?? '').trim()
@@ -98,13 +132,7 @@ export function resolveHomeownerDeliverablesForPdf(
       knownConstraints: [],
       address: intake.project_address ?? undefined,
     },
-    floorPlan: {
-      floorplanId: `intake-${intake.id}`,
-      totalAreaFt2: 0,
-      roomCount: 0,
-      rooms: [],
-      layoutNotes: ['See concept renderings and scope sections for spatial direction.'],
-    },
+    floorPlan: floorPlanBlock,
     narrative: {
       projectSummary: description || `Concept package for ${intake.project_path.replace(/_/g, ' ')}`,
       designIntent: description,

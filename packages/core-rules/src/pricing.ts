@@ -95,6 +95,18 @@ export const INTAKE_PRICE_CENTS: Record<string, IntakePriceEntry> = {
   permit_path_only:          { label: 'Permit Package',                           cents: 49_900,  deliveryDays: '3–5 days'  },
   cost_estimate:             { label: 'Detailed Cost Estimate — RSMeans validated', cents: 59_500, deliveryDays: '3–5 days'  },
   certified_estimate:        { label: 'Certified Estimate — Notarized for lenders', cents: 185_000, deliveryDays: '5–7 days' },
+  professional_drawings:     { label: 'Permit-Ready Design Plans',                cents: 149_900, deliveryDays: '7–14 days' },
+  design_estimate_permit_bundle: {
+    label: 'Design + Estimate + Permit Bundle',
+    cents: 249_900,
+    deliveryDays: '7–14 days',
+  },
+  /** Estimate + permit only (no stamped plans) — upsell bundle for interior/kitchen paths. */
+  estimate_permit_bundle: {
+    label: 'Estimate + Permit Package',
+    cents: 99_900,
+    deliveryDays: '5–8 days',
+  },
 
   // ── Bundles + matchmaking ───────────────────────────────────────────────
   contractor_match:          { label: 'Contractor Match',                         cents: 19_900,  deliveryDays: '1 day'     },

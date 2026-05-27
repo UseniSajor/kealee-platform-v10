@@ -96,6 +96,7 @@
     "orchestrate:launch": "node scripts/orchestrate-launch.mjs",
     "orchestrate:launch+prep": "node scripts/orchestrate-launch.mjs --with-marketing-prep",
     "test:concept": "tsx scripts/test-concept-delivery.ts",
+    "test:whole-home-premium-plus": "tsx scripts/test-whole-home-premium-plus.ts --engine-only",
     "platform-ai-test": "tsx scripts/platform-ai-test.ts",
     "automation-validation": "tsx scripts/automation-validation.ts",
     "production-deployment-check": "tsx scripts/production-deployment-check.ts"

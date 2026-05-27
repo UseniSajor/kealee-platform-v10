@@ -24,7 +24,7 @@ export async function middleware(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser()
   const session = user ? { user } : null
 
-  const publicPaths = ['/auth/claim', '/auth/callback']
+  const publicPaths = ['/auth/claim', '/auth/callback', '/account/complete']
   if (publicPaths.some((p) => request.nextUrl.pathname.startsWith(p))) {
     return response
   }
@@ -51,6 +51,17 @@ export async function middleware(request: NextRequest) {
     redirectUrl.pathname = next && next.startsWith('/') ? next : '/deliverables'
     redirectUrl.search = ''
     return NextResponse.redirect(redirectUrl)
+  }
+
+  // Phase 5: optional redirect local /login to universal auth hub
+  const authHub = process.env.NEXT_PUBLIC_AUTH_HUB_URL?.trim()
+  if (authHub && isAuthPath && !session) {
+    const hubLogin = new URL(`${authHub.replace(/\/$/, '')}/login`)
+    const returnTo = request.nextUrl.origin + (request.nextUrl.searchParams.get('next') ?? '/deliverables')
+    hubLogin.searchParams.set('next', returnTo)
+    const email = request.nextUrl.searchParams.get('email')
+    if (email) hubLogin.searchParams.set('email', email)
+    return NextResponse.redirect(hubLogin.toString())
   }
 
   return response

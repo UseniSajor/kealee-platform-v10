@@ -4,11 +4,12 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import {
   FolderKanban, ArrowRight, Activity, AlertTriangle,
-  Clock, FileText, ChevronRight,
+  Clock, FileText, ChevronRight, Package,
 } from 'lucide-react'
 import { listProjects, getProjectReadiness } from '@/lib/api/owner'
 import type { Project, ReadinessStatus } from '@/lib/api/owner'
 import { RevenueHookModal } from '@kealee/core-hooks'
+import { BuildPathUpsell, type OwnedUpsellProduct } from '@/components/BuildPathUpsell'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -131,6 +132,65 @@ function ProjectRow({
   )
 }
 
+// ── Concept next-steps upsell panel ───────────────────────────────────────────
+
+interface ReadyConceptDeliverable {
+  id: string
+  projectPath: string
+  projectLabel: string
+  uiStatus?: string
+  conceptServicePrice?: number | null
+  estimatedCostMin?: number | null
+  estimatedCostMax?: number | null
+  upsellSummary?: { label: string; priceLabel: string; savingsLabel: string | null } | null
+}
+
+function ConceptNextStepsPanel({
+  deliverables,
+  ownedProducts,
+}: {
+  deliverables: ReadyConceptDeliverable[]
+  ownedProducts: OwnedUpsellProduct[]
+}) {
+  const ready = deliverables.filter((d) => d.uiStatus === 'ready' && d.upsellSummary)
+  if (ready.length === 0) return null
+
+  const featured = ready[0]
+
+  return (
+    <section className="mb-6 rounded-2xl border border-orange-200 bg-white overflow-hidden shadow-sm">
+      <div className="flex items-center justify-between border-b border-orange-100 bg-orange-50/60 px-5 py-3">
+        <div className="flex items-center gap-2">
+          <Package className="h-4 w-4" style={{ color: '#E8793A' }} />
+          <span className="text-sm font-semibold" style={{ color: '#1A2B4A' }}>
+            Next steps — concept to build
+          </span>
+        </div>
+        <Link href="/deliverables" className="text-xs font-medium" style={{ color: '#2ABFBF' }}>
+          All packages →
+        </Link>
+      </div>
+      <div className="p-5">
+        {ready.length > 1 && (
+          <p className="text-xs text-gray-500 mb-4">
+            {ready.length} concept packages ready — pricing below is for{' '}
+            <span className="font-semibold text-gray-700">{featured.projectLabel}</span>.
+          </p>
+        )}
+        <BuildPathUpsell
+          variant="full"
+          sourceProjectPath={featured.projectPath}
+          fromIntakeId={featured.id}
+          ownedProducts={ownedProducts}
+          conceptServicePrice={featured.conceptServicePrice ?? undefined}
+          constructionCostMin={featured.estimatedCostMin ?? undefined}
+          constructionCostMax={featured.estimatedCostMax ?? undefined}
+        />
+      </div>
+    </section>
+  )
+}
+
 // ── Page ───────────────────────────────────────────────────────────────────────
 
 export default function OwnerDashboard() {
@@ -140,6 +200,19 @@ export default function OwnerDashboard() {
   const [error, setError] = useState<string | null>(null)
   const [showDesignModal, setShowDesignModal] = useState(false)
   const [showPermitHook, setShowPermitHook] = useState(false)
+  const [conceptDeliverables, setConceptDeliverables] = useState<ReadyConceptDeliverable[]>([])
+  const [ownedProducts, setOwnedProducts] = useState<OwnedUpsellProduct[]>([])
+
+  useEffect(() => {
+    fetch('/api/deliverables')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (!data) return
+        setConceptDeliverables(data.deliverables ?? [])
+        setOwnedProducts(data.ownedProducts ?? [])
+      })
+      .catch(() => {})
+  }, [])
 
   useEffect(() => {
     let mounted = true
@@ -241,6 +314,8 @@ export default function OwnerDashboard() {
           )}
         </div>
       </div>
+
+      <ConceptNextStepsPanel deliverables={conceptDeliverables} ownedProducts={ownedProducts} />
 
       {/* Full Design Package card — always visible */}
       <div

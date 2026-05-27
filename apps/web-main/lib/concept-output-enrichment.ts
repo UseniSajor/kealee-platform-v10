@@ -24,6 +24,9 @@ export interface EnrichableConceptOutput {
   readinessScore?: number
   pdfUrl?: string
   includes?: string[]
+  floorplanSvgInline?: string
+  floorPlanUrl?: string
+  packageJson?: Record<string, unknown>
 }
 
 const STRUCTURAL_PATHS = new Set([
@@ -102,6 +105,137 @@ export function ensureConceptPermitZoningFields(
   if (!output.buildabilityFlag) {
     output.buildabilityFlag = defaultRequiresPermit ? 'feasible-with-variance' : 'feasible'
   }
+}
+
+const NO_FLOORPLAN_PATHS = new Set([
+  'cost_estimate',
+  'certified_estimate',
+  'contractor_match',
+  'permit_path_only',
+  'professional_drawings',
+  'developer_concept',
+  'development_feasibility',
+  'multi_unit_residential',
+  'mixed_use',
+  'commercial_office',
+  'townhome_subdivision',
+  'single_family_subdivision',
+  'single_lot_development',
+])
+
+export interface FloorplanEnrichmentInput {
+  id: string
+  project_path: string
+  client_name?: string | null
+  contact_email?: string | null
+  contact_phone?: string | null
+  project_address?: string | null
+  budget_range?: string | null
+  form_data?: Record<string, unknown> | null
+}
+
+/** Run concept-engine floorplan optimizer and attach SVG + packageJson.floorPlan (Premium+ tiers). */
+export async function generateAndAttachConceptFloorplan(
+  intake: FloorplanEnrichmentInput,
+  output: EnrichableConceptOutput & Record<string, unknown>,
+  tier: number,
+): Promise<void> {
+  if (normalizeTier(tier) < 2) return
+  if (NO_FLOORPLAN_PATHS.has(intake.project_path)) return
+  if (typeof output.floorplanSvgInline === 'string' && output.floorplanSvgInline.trim().startsWith('<')) {
+    return
+  }
+
+  try {
+    const { generateFloorplan } = await import('@kealee/concept-engine')
+    const formData = (intake.form_data ?? {}) as Record<string, unknown>
+    const design = (output.designConcept as { style?: string } | undefined) ?? {}
+    const attachmentsRaw = (formData.attachments as string | undefined) ?? ''
+    const uploadedPhotos = attachmentsRaw
+      .split(',')
+      .map((u) => u.trim())
+      .filter(Boolean)
+
+    const styleFromForm = typeof formData.style === 'string' ? formData.style : null
+    const stylePreferences = styleFromForm
+      ? [styleFromForm]
+      : design.style
+        ? [design.style]
+        : ['Contemporary']
+
+    const description = typeof formData.description === 'string' ? formData.description : ''
+    const goals = description ? [description] : []
+
+    const result = generateFloorplan({
+      intakeId: intake.id,
+      projectPath: intake.project_path,
+      clientName: intake.client_name ?? 'Homeowner',
+      contactEmail: intake.contact_email ?? '',
+      contactPhone: intake.contact_phone ?? undefined,
+      projectAddress: intake.project_address ?? '',
+      budgetRange: intake.budget_range ?? '—',
+      stylePreferences,
+      goals,
+      knownConstraints: [],
+      uploadedPhotos,
+      captureZones: Array.isArray(formData.captureZones)
+        ? (formData.captureZones as string[])
+        : undefined,
+    })
+
+    if (!result.roomCount || !result.svgString?.trim()) {
+      console.warn('[concept-floorplan] empty layout for', intake.project_path)
+      return
+    }
+
+    let floorPlanUrl: string | undefined
+    try {
+      const { uploadFile } = await import('@kealee/storage')
+      const upload = await uploadFile({
+        bucket: 'designs',
+        path: `concept-packages/${intake.id}/floorplan.svg`,
+        file: Buffer.from(result.svgString, 'utf-8'),
+        contentType: 'image/svg+xml',
+      })
+      floorPlanUrl = upload.url
+    } catch (uploadErr: unknown) {
+      console.warn('[concept-floorplan] SVG upload failed (inline SVG still attached):',
+        uploadErr instanceof Error ? uploadErr.message : uploadErr)
+    }
+
+    output.floorplanSvgInline = result.svgString
+    if (floorPlanUrl) output.floorPlanUrl = floorPlanUrl
+
+    const existingPkg = (output.packageJson as Record<string, unknown> | undefined) ?? {}
+    output.packageJson = {
+      ...existingPkg,
+      floorPlan: {
+        floorplanId: result.floorplanId,
+        totalAreaFt2: result.totalAreaFt2,
+        roomCount: result.roomCount,
+        totalWidthFt: result.floorplanJson.totalWidthFt,
+        totalDepthFt: result.floorplanJson.totalDepthFt,
+        rooms: result.floorplanJson.rooms.map((r) => ({
+          label: r.label,
+          widthFt: r.widthFt,
+          depthFt: r.depthFt,
+          areaFt2: r.areaFt2,
+          type: r.type,
+        })),
+        layoutNotes: generateAdjacencyNotes(result.floorplanJson),
+        layoutIssues: result.layoutIssues,
+        svgUrl: floorPlanUrl,
+      },
+    }
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err)
+    console.warn('[concept-floorplan] generation failed (non-fatal):', message)
+  }
+}
+
+function generateAdjacencyNotes(json: { rooms: Array<{ label: string; areaFt2: number }> }): string[] {
+  const notes = [`${json.rooms.length} rooms · ${Math.round(json.rooms.reduce((s, r) => s + r.areaFt2, 0))} sq ft total`]
+  return notes
 }
 
 export interface IntakePdfRow {

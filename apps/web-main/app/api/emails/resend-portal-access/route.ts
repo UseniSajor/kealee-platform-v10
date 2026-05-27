@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
       process.env.NEXT_PUBLIC_APP_URL ??
       (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000')
 
-    const res = await fetch(`${baseUrl}/api/emails/concept-ready`, {
+    const res = await fetch(`${baseUrl}/api/emails/deliverable-ready`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

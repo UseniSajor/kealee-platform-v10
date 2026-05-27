@@ -40,12 +40,13 @@ export async function middleware(request: NextRequest) {
     request.nextUrl.pathname.startsWith(path)
   );
 
-  // Redirect to login if accessing protected route without session
+  // Redirect to universal auth hub if accessing protected route without session
   if (isProtectedPath && !session) {
-    const redirectUrl = request.nextUrl.clone();
-    redirectUrl.pathname = '/login';
-    redirectUrl.searchParams.set('redirect', request.nextUrl.pathname);
-    return NextResponse.redirect(redirectUrl);
+    const authHub = (process.env.NEXT_PUBLIC_AUTH_HUB_URL ?? 'https://kealee.com/auth').replace(/\/$/, '')
+    const returnTo = request.nextUrl.origin + request.nextUrl.pathname + request.nextUrl.search
+    const loginUrl = new URL(`${authHub}/login`)
+    loginUrl.searchParams.set('next', returnTo)
+    return NextResponse.redirect(loginUrl.toString())
   }
 
   // Redirect to dashboard if accessing auth pages with active session

@@ -11,6 +11,12 @@ export * from './pricing';
 // Concept package deliverables (permit + zoning in all tiers)
 export * from './concept-package-deliverables';
 
+// Concept tier resolution (checkout → generate → video)
+export * from './concept-tier';
+
+// Concept → build lifecycle upsells (estimate + permit + design plans)
+export * from './build-lifecycle-upsell';
+
 // GHL marketing client
 export * from './marketing/ghl-client';
 export type {

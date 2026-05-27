@@ -10,6 +10,16 @@ import { buildLayoutVariants }    from '../floorplan/build-layout-json';
 import { renderSvgFloorplan }     from '../floorplan/render-svg-floorplan';
 
 // All valid project paths (residential + commercial)
+const PATH_ALIASES: Record<string, ProjectPath> = {
+  whole_home_concept: 'whole_home_remodel',
+  interior_reno_concept: 'interior_renovation',
+  interior_renovation: 'interior_renovation',
+  garden_concept: 'exterior_concept',
+  design_build: 'whole_home_remodel',
+  design_estimate_permit_bundle: 'interior_renovation',
+  home_addition: 'addition_expansion',
+};
+
 const VALID_PATHS: ProjectPath[] = [
   'kitchen_remodel', 'bathroom_remodel', 'interior_renovation',
   'whole_home_remodel', 'addition_expansion', 'exterior_concept',
@@ -18,6 +28,12 @@ const VALID_PATHS: ProjectPath[] = [
   'development_feasibility',
   'townhome_subdivision', 'single_family_subdivision', 'single_lot_development',
 ];
+
+function resolveProjectPath(raw: string): ProjectPath {
+  if (VALID_PATHS.includes(raw as ProjectPath)) return raw as ProjectPath;
+  if (PATH_ALIASES[raw]) return PATH_ALIASES[raw];
+  return 'interior_renovation';
+}
 
 export interface GenerateFloorplanInput {
   intakeId:          string;
@@ -84,9 +100,7 @@ export interface GenerateFloorplanResult {
 }
 
 export function generateFloorplan(input: GenerateFloorplanInput): GenerateFloorplanResult {
-  const projectPath: ProjectPath = VALID_PATHS.includes(input.projectPath as ProjectPath)
-    ? (input.projectPath as ProjectPath)
-    : 'interior_renovation';
+  const projectPath: ProjectPath = resolveProjectPath(input.projectPath);
 
   const conceptInput: ConceptIntakeInput = {
     intakeId:        input.intakeId,

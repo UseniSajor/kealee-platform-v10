@@ -6,6 +6,9 @@ export type FunnelStage =
   | 'concept_ready'
   | 'estimate_interest'
   | 'permit_interest'
+  | 'portal_user'
+  | 'bundle_interest'
+  | 'bundle_purchased'
 
 /** organic | paid_ads | marketing_saas — set at capture from UTM/source */
 export type MarketingChannelBucket = 'organic' | 'paid_ads' | 'marketing_saas' | 'unknown'

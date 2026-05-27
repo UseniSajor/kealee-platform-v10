@@ -9,6 +9,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { TIER_VIDEO_DEFAULTS, type VideoProvider } from '@kealee/core-rules'
+import { resolveConceptTier } from '@kealee/core-rules'
 import { getVideoStatus, pickVideoProvider, downloadSoraVideo } from '@/lib/ai-video'
 import { archiveReplicateOutputsFireAndForget } from '@/lib/replicate-archive'
 import {
@@ -77,8 +78,8 @@ export async function POST(req: NextRequest) {
     }
 
     const formData = (intake.form_data ?? {}) as Record<string, unknown>
-    const tier = typeof formData.tier === 'number' ? formData.tier : 1
-    const tierKey = (tier === 3 ? 3 : tier === 2 ? 2 : 1) as 1 | 2 | 3
+    const tier = resolveConceptTier(formData, { projectPath: intake.project_path as string })
+    const tierKey = tier
     const tierDefault = TIER_VIDEO_DEFAULTS[tierKey]
 
     if (!tierDefault) {
@@ -93,14 +94,21 @@ export async function POST(req: NextRequest) {
     const roomType = inferRoomType(intake.project_path as string)
 
     const beforeUrls = (conceptOutput?.beforeUrls as string[] | undefined) ?? []
+    const interiorRenderUrls = (conceptOutput?.interiorRenderUrls as string[] | undefined) ?? []
+    const exteriorRenderUrls = (conceptOutput?.exteriorRenderUrls as string[] | undefined) ?? []
     const renderUrls = (conceptOutput?.renderUrls as string[] | undefined) ?? []
     const inputImageUrl =
       beforeUrls[0] ??
+      interiorRenderUrls[0] ??
+      exteriorRenderUrls[0] ??
       (formData.selectedRenderUrl as string | undefined) ??
       (formData.coverImageUrl as string | undefined) ??
       renderUrls[0]
 
     const existing = formData.conceptVideo as ConceptVideoState | undefined
+    if (existing?.status === 'processing' && !regenerate) {
+      return NextResponse.json(existing, { status: 202 })
+    }
     if (
       existing &&
       existing.status === 'completed' &&

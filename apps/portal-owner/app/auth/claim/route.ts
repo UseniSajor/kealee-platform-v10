@@ -122,6 +122,14 @@ export async function GET(request: NextRequest) {
     return errorRedirect(origin, 'session_failed', safePath)
   }
 
+  const { data: { user: sessionUser } } = await supabase.auth.getUser()
+  if (sessionUser?.id && sessionUser.email) {
+    const { linkIntakeToUser } = await import('@kealee/auth')
+    await linkIntakeToUser(admin, intakeId, sessionUser.id, sessionUser.email).catch((err: unknown) => {
+      console.warn('[auth/claim] link intake:', err instanceof Error ? err.message : err)
+    })
+  }
+
   // verifyOtp success = session cookies are set on redirectResponse.
   // (getSession() reads from REQUEST cookies and returns null here — don't check it.)
 

@@ -6,6 +6,7 @@ import type Stripe from 'stripe'
 import type { NextRequest } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { SERVICE_DELIVERABLES } from '@/lib/service-deliverables'
+import { resolveConceptTier, isBundleProductKey } from '@kealee/core-rules'
 import { isV30IntakeMetadata, triggerV30GenerationForIntake } from '@/lib/v30-trigger'
 import {
   patchIntakeFunnelStage,
@@ -13,6 +14,7 @@ import {
 } from '@/lib/marketing/lifecycle'
 import { trackPurchase } from '@/lib/marketing/ga4-server'
 import { parseUtmFromBody } from '@/lib/marketing/utm-metadata'
+import { mergeMarketingMetadata } from '@/lib/marketing/types'
 
 export async function processStripeWebhookEvent(
   event: Stripe.Event,
@@ -83,6 +85,9 @@ async function handleCheckoutCompleted(
   const isV30 = isV30IntakeMetadata(meta)
   const intakeId = meta.intakeId
   const projectPath = meta.projectPath
+  const upsellSourceIntakeId = meta.upsellSourceIntakeId
+  const sourcePath = meta.sourcePath
+  const isBundlePurchase = isBundleProductKey(projectPath)
 
   if (!intakeId || !projectPath) {
     console.error('[stripe-webhook] Missing intakeId or projectPath in metadata', meta)
@@ -118,7 +123,14 @@ async function handleCheckoutCompleted(
     if (deliverable.renderCount != null) mergedFormData.renderCount = deliverable.renderCount
     if (deliverable.permitRequired != null) mergedFormData.permitRequired = deliverable.permitRequired
   }
-  mergedFormData.funnelStage = 'paid_concept'
+  if (typeof mergedFormData.tier !== 'number' && deliverable?.generatesConcept && !isBundlePurchase) {
+    mergedFormData.tier = resolveConceptTier(mergedFormData, { projectPath })
+  }
+  if (upsellSourceIntakeId) {
+    mergedFormData.upsellSourceIntakeId = upsellSourceIntakeId
+    if (sourcePath) mergedFormData.upsellSourcePath = sourcePath
+  }
+  mergedFormData.funnelStage = isBundlePurchase ? 'bundle_purchased' : 'paid_concept'
 
   const { data: updatedRows, error: updateErr } = await supabase
     .from('public_intake_leads')
@@ -147,7 +159,7 @@ async function handleCheckoutCompleted(
     triggerV30GenerationForIntake(intakeId).catch((err: Error) => {
       console.error('[stripe-webhook] v30 generation trigger failed:', err.message)
     })
-  } else if (deliverable?.generatesConcept) {
+  } else if (deliverable?.generatesConcept && !upsellSourceIntakeId && !isBundlePurchase) {
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? req.nextUrl.origin
     fetch(`${baseUrl}/api/concept/generate`, {
       method: 'POST',
@@ -192,9 +204,22 @@ async function handleCheckoutCompleted(
     })
   }
 
-  patchIntakeFunnelStage(intakeId, 'paid_concept', ['stripe-paid']).catch((err: Error) => {
+  patchIntakeFunnelStage(intakeId, isBundlePurchase ? 'bundle_purchased' : 'paid_concept', [
+    isBundlePurchase ? 'bundle-checkout' : 'stripe-paid',
+  ]).catch((err: Error) => {
     console.error('[stripe-webhook] funnel stage patch failed:', err.message)
   })
+
+  if (upsellSourceIntakeId && isBundlePurchase) {
+    linkBundlePurchaseToSourceIntake(supabase, upsellSourceIntakeId, {
+      bundleIntakeId: intakeId,
+      bundleProjectPath: projectPath,
+      sourcePath: sourcePath ?? undefined,
+      amountCents: session.amount_total ?? 0,
+    }).catch((err: Error) => {
+      console.error('[stripe-webhook] bundle source link failed:', err.message)
+    })
+  }
 
   await trackPurchase({
     intakeId,
@@ -212,5 +237,75 @@ async function handleCheckoutCompleted(
     }).catch((err: Error) => {
       console.error('[stripe-webhook] Customer confirmation email failed:', err.message)
     })
+
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? req.nextUrl.origin
+    const headline = deliverable?.generatesConcept
+      ? undefined
+      : `Payment confirmed — your ${projectPath.replace(/_/g, ' ')} is in progress`
+
+    fetch(`${baseUrl}/api/emails/deliverable-ready`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        to: clientEmail,
+        firstName: clientName.split(' ')[0],
+        service: projectPath,
+        intakeId,
+        headline,
+        upsellSourceIntakeId: upsellSourceIntakeId ?? undefined,
+      }),
+    }).catch((err: Error) => {
+      console.error('[stripe-webhook] deliverable-ready email failed:', err.message)
+    })
   }
+}
+
+async function linkBundlePurchaseToSourceIntake(
+  supabase: ReturnType<typeof getSupabaseAdmin>,
+  sourceIntakeId: string,
+  bundle: {
+    bundleIntakeId: string
+    bundleProjectPath: string
+    sourcePath?: string
+    amountCents: number
+  },
+): Promise<void> {
+  const { data: sourceRow } = await supabase
+    .from('public_intake_leads')
+    .select('metadata, form_data')
+    .eq('id', sourceIntakeId)
+    .single()
+
+  if (!sourceRow) return
+
+  const existingForm = (sourceRow.form_data as Record<string, unknown>) ?? {}
+  const purchases = Array.isArray(existingForm.bundlePurchases)
+    ? (existingForm.bundlePurchases as Record<string, unknown>[])
+    : []
+
+  purchases.push({
+    intakeId: bundle.bundleIntakeId,
+    projectPath: bundle.bundleProjectPath,
+    purchasedAt: new Date().toISOString(),
+    amountCents: bundle.amountCents,
+  })
+
+  const metadata = mergeMarketingMetadata(sourceRow.metadata as Record<string, unknown>, {
+    funnelStage: 'bundle_purchased',
+    tags: ['bundle-upsell-converted'],
+    lastBundleIntakeId: bundle.bundleIntakeId,
+    lastBundleProjectPath: bundle.bundleProjectPath,
+  })
+
+  await supabase
+    .from('public_intake_leads')
+    .update({
+      metadata,
+      form_data: {
+        ...existingForm,
+        bundlePurchases: purchases,
+        lastBundleIntakeId: bundle.bundleIntakeId,
+      },
+    })
+    .eq('id', sourceIntakeId)
 }

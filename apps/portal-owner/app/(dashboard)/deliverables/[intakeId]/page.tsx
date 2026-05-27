@@ -21,6 +21,8 @@ import { V30WorkspaceEmbed } from '@/components/v30/V30WorkspaceEmbed'
 import { ConceptPackageNav } from '@/components/concept/ConceptPackageNav'
 import { BeforeAfterMedia } from '@/components/concept/BeforeAfterMedia'
 import { ProcessVideoLoop } from '@/components/concept/ProcessVideoLoop'
+import { BuildPathUpsell, type OwnedUpsellProduct } from '@/components/BuildPathUpsell'
+import { AccountCompleteBanner } from '@/components/AccountCompleteBanner'
 import {
   getConceptPackageDeliverableLabelsForIntake,
   getPermitZoningLabels,
@@ -633,6 +635,16 @@ export default function ConceptDeliverablePage() {
   const [pollCount,  setPollCount]  = useState(0)
   const [showFullBOM, setShowFullBOM] = useState(false)
   const [catalogPermitRequired, setCatalogPermitRequired] = useState<'always' | 'sometimes' | 'rarely' | null>(null)
+  const [ownedProducts, setOwnedProducts] = useState<OwnedUpsellProduct[]>([])
+
+  useEffect(() => {
+    fetch('/api/deliverables')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((payload) => {
+        if (payload?.ownedProducts) setOwnedProducts(payload.ownedProducts)
+      })
+      .catch(() => {})
+  }, [])
 
   const fetchData = useCallback(async (): Promise<boolean> => {
     try {
@@ -1066,6 +1078,8 @@ export default function ConceptDeliverablePage() {
 
   return (
     <div className="mx-auto max-w-6xl">
+
+      <AccountCompleteBanner />
 
       {data.isV30 && <V30WorkspaceEmbed intakeId={intakeId} />}
 
@@ -1717,75 +1731,15 @@ export default function ConceptDeliverablePage() {
           </section>
         )}
 
-        {/* ── Continue Your Project ────────────────────────────────────────── */}
-        <section id="next-steps" className="scroll-mt-24 rounded-2xl border border-gray-200 bg-white p-6"
-          style={{ boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.06)' }}>
-          <h2 className="text-base font-bold mb-1" style={{ color: '#1A2B4A' }}>Your Next Step</h2>
-          <p className="text-xs text-gray-400 mb-4">Connect with a Kealee design professional to move from concept to construction-ready plans.</p>
-
-          {/* Cost summary bar */}
-          {(data.constructionCostMin || data.constructionCostMax || data.conceptServicePrice) && (
-            <div className="mb-4 flex flex-wrap items-center gap-4 rounded-xl bg-gray-50 border border-gray-200 px-4 py-3">
-              {data.constructionCostMin && data.constructionCostMax && (
-                <div>
-                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">Est. Construction Cost</p>
-                  <p className="text-base font-bold" style={{ color: '#1A2B4A' }}>
-                    ${Math.round(data.constructionCostMin / 1000)}K–${Math.round(data.constructionCostMax / 1000)}K
-                  </p>
-                </div>
-              )}
-              {data.conceptServicePrice && (
-                <div>
-                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">Design Concept</p>
-                  <p className="text-base font-bold" style={{ color: '#E8793A' }}>${data.conceptServicePrice.toLocaleString()}</p>
-                </div>
-              )}
-              <p className="ml-auto text-xs text-gray-400 max-w-[180px] text-right leading-relaxed">
-                Concept fee credited when you move to design plans.
-              </p>
-            </div>
-          )}
-
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-
-            {/* Primary — always shown: connect with design professional */}
-            <a href={`https://kealee.com/intake/professional_drawings?conceptId=${intakeId}`}
-              className="flex flex-col rounded-xl p-4 text-white transition-opacity hover:opacity-90 lg:col-span-1"
-              style={{ background: 'linear-gradient(135deg, #E8793A, #c75c35)' }}>
-              <span className="text-xs font-bold uppercase tracking-wider opacity-80 mb-2">Recommended · Next Step</span>
-              <span className="text-sm font-semibold mb-auto">Connect with a Design Professional</span>
-              <span className="text-xs mt-3 opacity-90">Design plans · Permits included · From $1,499 →</span>
-            </a>
-
-            {/* Cost estimate */}
-            <a href="https://kealee.com/intake/cost_estimate"
-              className="flex flex-col rounded-xl border border-gray-200 p-4 hover:shadow-sm transition-all">
-              <span className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">Estimate</span>
-              <span className="text-sm font-semibold text-gray-900 mb-auto">Detailed Cost Estimate</span>
-              <span className="text-xs text-[#E8793A] mt-3 font-semibold">$595 →</span>
-            </a>
-
-            {/* Contractor match — locked until permit submitted */}
-            {data.contractorMatchingUnlocked ? (
-              <a href="https://kealee.com/intake/contractor_match"
-                className="flex flex-col rounded-xl border border-gray-200 p-4 hover:shadow-sm transition-all">
-                <span className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">Find Help</span>
-                <span className="text-sm font-semibold text-gray-900 mb-auto">Match with a Contractor</span>
-                <span className="text-xs text-[#2ABFBF] mt-3 font-semibold">Free →</span>
-              </a>
-            ) : (
-              <div className="flex flex-col rounded-xl border border-gray-200 bg-gray-50 p-4 cursor-not-allowed opacity-70"
-                title="Connect with a design professional first to unlock contractor matching">
-                <div className="flex items-center gap-1.5 mb-2">
-                  <Lock className="h-3 w-3 text-gray-400" />
-                  <span className="text-xs font-bold uppercase tracking-wider text-gray-400">Locked</span>
-                </div>
-                <span className="text-sm font-semibold text-gray-500 mb-auto">Match with a Contractor</span>
-                <span className="text-xs text-gray-400 mt-3">Available after design plans submitted</span>
-              </div>
-            )}
-          </div>
-        </section>
+        <BuildPathUpsell
+          sourceProjectPath={projectPath}
+          fromIntakeId={intakeId}
+          ownedProducts={ownedProducts}
+          contractorMatchingUnlocked={data.contractorMatchingUnlocked}
+          constructionCostMin={data.constructionCostMin}
+          constructionCostMax={data.constructionCostMax}
+          conceptServicePrice={data.conceptServicePrice}
+        />
 
         {/* ── Download / Share ─────────────────────────────────────────────── */}
         <div className="flex flex-wrap gap-3 pb-8">

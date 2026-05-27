@@ -22,8 +22,11 @@
     "sync:card-media:home": "node ./scripts/setup-and-run-card-media.mjs --scope=home --fallback-only --with-videos"
   },
   "dependencies": {
+    "@kealee/auth": "workspace:*",
     "@kealee/concept-engine": "workspace:*",
     "@kealee/core-rules": "workspace:*",
+    "@supabase/ssr": "^0.5.2",
+    "@supabase/supabase-js": "^2.39.0",
     "@kealee/storage": "workspace:*",
     "@kealee/kealee-agent-stack": "workspace:*",
     "stripe": "^14.25.0",

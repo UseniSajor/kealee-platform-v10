@@ -624,6 +624,9 @@ importers:
       '@kealee/core-hooks':
         specifier: workspace:*
         version: link:../../packages/core-hooks
+      '@kealee/core-rules':
+        specifier: workspace:*
+        version: link:../../packages/core-rules
       '@kealee/shared':
         specifier: workspace:*
         version: link:../../packages/shared
@@ -686,9 +689,6 @@ importers:
       '@anthropic-ai/sdk':
         specifier: ^0.30.0
         version: 0.30.1
-      '@kealee/ai':
-        specifier: workspace:*
-        version: link:../../packages/ai
       '@kealee/concept-engine':
         specifier: workspace:*
         version: link:../../packages/concept-engine
@@ -728,6 +728,9 @@ importers:
       lucide-react:
         specifier: ^0.469.0
         version: 0.469.0(react@18.2.0)
+      openai:
+        specifier: ^4.77.0
+        version: 4.104.0(zod@4.3.6)
       replicate:
         specifier: ^1.4.0
         version: 1.4.0

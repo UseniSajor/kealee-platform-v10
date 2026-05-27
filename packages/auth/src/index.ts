@@ -94,3 +94,20 @@ export {
   ROLE_APP_REDIRECT,
 } from './supabase-auth';
 export type { AuthUser, CookieStore } from './supabase-auth';
+
+export {
+  getAuthHubBaseUrl,
+  buildAuthHubUrl,
+  getKealeeCookieDomain,
+  defaultHomeownerPortalNext,
+} from './auth-hub';
+export type { AuthHubIntent, AuthHubUrlOptions } from './auth-hub';
+
+export { linkIntakesToUser, linkIntakeToUser } from './link-intakes';
+export type { LinkIntakeResult } from './link-intakes';
+
+export {
+  entitlementsFromIntakePaths,
+  canAccessApp,
+} from './entitlements';
+export type { KealeeAppId, EntitlementProduct, UserEntitlements } from './entitlements';

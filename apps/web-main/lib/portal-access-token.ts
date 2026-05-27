@@ -50,26 +50,29 @@ export async function generatePortalAccessToken(opts: {
   // Merge token into existing metadata (preserve other fields)
   const { data: row } = await admin
     .from('public_intake_leads')
-    .select('metadata')
+    .select('metadata, form_data')
     .eq('id', opts.intakeId)
     .single()
 
   const existingMeta = (row?.metadata as Record<string, unknown>) ?? {}
+  const existingForm = (row?.form_data as Record<string, unknown>) ?? {}
 
   const normalizedEmail = opts.email.trim().toLowerCase()
+
+  const portalFields = {
+    portalToken: token,
+    portalTokenExpiresAt: expiresAt,
+    portalNextPath: opts.nextPath,
+    portalEmail: normalizedEmail,
+    portalTokenIssuedAt: new Date().toISOString(),
+  }
 
   const { error: updateError } = await admin
     .from('public_intake_leads')
     .update({
       contact_email: normalizedEmail,
-      metadata: {
-        ...existingMeta,
-        portalToken: token,
-        portalTokenExpiresAt: expiresAt,
-        portalNextPath: opts.nextPath,
-        portalEmail: normalizedEmail,
-        portalTokenIssuedAt: new Date().toISOString(),
-      },
+      metadata: { ...existingMeta, ...portalFields },
+      form_data: { ...existingForm, ...portalFields },
     })
     .eq('id', opts.intakeId)
 

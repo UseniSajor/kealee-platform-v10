@@ -3,9 +3,10 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import {
-  Download, FileText, Clock, CheckCircle,
-  AlertCircle, Loader2, Layers, ArrowRight, Package, Hourglass,
+  AlertCircle, ArrowRight, CheckCircle, Clock, Download, FileText,
+  Hourglass, Layers, Loader2, Package,
 } from 'lucide-react'
+import { BuildPathUpsell, type OwnedUpsellProduct } from '@/components/BuildPathUpsell'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -33,6 +34,13 @@ interface Deliverable {
   conceptServicePrice: number | null
   estimatedCostMin:    number | null
   estimatedCostMax:    number | null
+  upsellSummary?: {
+    label: string
+    priceLabel: string
+    savingsLabel: string | null
+    href: string
+    includes: string[]
+  } | null
 }
 
 // ── Status helpers ─────────────────────────────────────────────────────────────
@@ -76,7 +84,7 @@ function StatusBadge({ status, isV30 }: { status: UIStatus; isV30?: boolean }) {
 
 // ── Card ──────────────────────────────────────────────────────────────────────
 
-function DeliverableCard({ d }: { d: Deliverable }) {
+function DeliverableCard({ d, ownedProducts }: { d: Deliverable; ownedProducts?: OwnedUpsellProduct[] }) {
   const uiStatus = resolveUiStatus(d)
   const ACCENT   = '#E8793A'
   const dateStr  = new Date(d.updatedAt).toLocaleDateString('en-US', {
@@ -155,6 +163,16 @@ function DeliverableCard({ d }: { d: Deliverable }) {
           </div>
         )}
 
+        {uiStatus === 'ready' && d.projectPath && (
+          <BuildPathUpsell
+            variant="compact"
+            sourceProjectPath={d.projectPath}
+            fromIntakeId={d.id}
+            ownedProducts={ownedProducts}
+            conceptServicePrice={d.conceptServicePrice ?? undefined}
+          />
+        )}
+
         {uiStatus === 'generating' && (
           <div className="mt-3 space-y-2">
             <div className="flex items-center gap-2">
@@ -213,13 +231,17 @@ function Skeleton() {
 
 export default function DeliverablesPage() {
   const [deliverables, setDeliverables] = useState<Deliverable[]>([])
+  const [ownedProducts, setOwnedProducts] = useState<OwnedUpsellProduct[]>([])
   const [loading,      setLoading]      = useState(true)
   const [error,        setError]        = useState<string | null>(null)
 
   useEffect(() => {
     fetch('/api/deliverables')
       .then(r => r.ok ? r.json() : r.json().then(e => Promise.reject(e.error ?? 'Failed')))
-      .then(({ deliverables: list }) => setDeliverables(list ?? []))
+      .then(({ deliverables: list, ownedProducts: owned }) => {
+        setDeliverables(list ?? [])
+        setOwnedProducts(owned ?? [])
+      })
       .catch(err => setError(typeof err === 'string' ? err : 'Failed to load deliverables'))
       .finally(() => setLoading(false))
   }, [])
@@ -276,7 +298,7 @@ export default function DeliverablesPage() {
             <section>
               <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-gray-400">In Progress</h2>
               <div className="grid gap-4 sm:grid-cols-2">
-                {inProgress.map(d => <DeliverableCard key={d.id} d={d} />)}
+                {inProgress.map(d => <DeliverableCard key={d.id} d={d} ownedProducts={ownedProducts} />)}
               </div>
             </section>
           )}
@@ -284,7 +306,7 @@ export default function DeliverablesPage() {
             <section>
               <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-gray-400">Ready to View</h2>
               <div className="grid gap-4 sm:grid-cols-2">
-                {ready.map(d => <DeliverableCard key={d.id} d={d} />)}
+                {ready.map(d => <DeliverableCard key={d.id} d={d} ownedProducts={ownedProducts} />)}
               </div>
             </section>
           )}
@@ -292,7 +314,7 @@ export default function DeliverablesPage() {
             <section>
               <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-gray-400">Failed</h2>
               <div className="grid gap-4 sm:grid-cols-2">
-                {failed.map(d => <DeliverableCard key={d.id} d={d} />)}
+                {failed.map(d => <DeliverableCard key={d.id} d={d} ownedProducts={ownedProducts} />)}
               </div>
             </section>
           )}

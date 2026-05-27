@@ -536,7 +536,7 @@ function triggerConceptReadyEmail(
     (formData.firstName as string | undefined) ??
     (formData.fullName as string | undefined)?.split(' ')[0]
 
-  fetch(`${baseUrl}/api/emails/concept-ready`, {
+  fetch(`${baseUrl}/api/emails/deliverable-ready`, {
     method:  'POST',
     headers: { 'Content-Type': 'application/json' },
     body:    JSON.stringify({
@@ -549,7 +549,7 @@ function triggerConceptReadyEmail(
       videoIncluded:  args.tier >= 2,
     }),
   }).catch(err => {
-    console.error('[concept/generate] concept-ready email trigger failed:', err?.message ?? err)
+    console.error('[concept/generate] deliverable-ready email trigger failed:', err?.message ?? err)
   })
 }
 

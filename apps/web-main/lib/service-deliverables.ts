@@ -478,4 +478,19 @@ export const SERVICE_DELIVERABLES: Record<string, ServiceDeliverable> = {
     deliveryDays: '3–5 days',
     nextStep: { label: 'Match with a Contractor', href: '/intake/contractor_match' },
   },
+  estimate_permit_bundle: {
+    label: 'Estimate + Permit Package',
+    category: 'estimate',
+    agentType: 'design',
+    generatesConcept: false,
+    permitRequired: 'always',
+    includes: [
+      'RSMeans-validated cost estimate aligned to your concept',
+      'Permit package — application prep and agency filing',
+      'Jurisdiction checklist for DC / MD / VA',
+      'Single checkout — one project team',
+    ],
+    deliveryDays: '5–10 days',
+    nextStep: { label: 'Match with a Contractor', href: '/intake/contractor_match' },
+  },
 }

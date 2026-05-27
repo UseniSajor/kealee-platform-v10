@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { guardStripeSecretForHttp } from '@/lib/stripe-vercel-guard'
 import { createStripe } from '@/lib/stripe-client'
-import { getIntakePrice, SITE_VISIT_FEE_CENTS } from '@kealee/core-rules'
+import { getIntakePrice, SITE_VISIT_FEE_CENTS, getBundleCheckoutCents, isBundleProductKey } from '@kealee/core-rules'
 import { isV30Enabled } from '@kealee/kealee-agent-stack'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { trackCheckoutStarted } from '@/lib/marketing/ga4-server'
@@ -29,14 +29,15 @@ export async function POST(req: NextRequest) {
       returnUrl?: string    // used for embedded mode (replaces success/cancel)
       embedded?: boolean    // true → ui_mode:'embedded', returns clientSecret
       siteVisitRequested?: boolean
-      /** v30: use AI-quoted price stored on intake form_data.v30Quote */
-      useV30Pricing?: boolean
+      /** Source concept intake — used for project-type bundle pricing */
+      sourcePath?: string
+      upsellSourceIntakeId?: string
       // Legacy `amount` field is accepted for backward compatibility
       // but explicitly NOT used. Server price is authoritative.
       amount?: number
     }
 
-    const { intakeId, projectPath, successUrl, cancelUrl, returnUrl, embedded, siteVisitRequested, useV30Pricing } = body
+    const { intakeId, projectPath, successUrl, cancelUrl, returnUrl, embedded, siteVisitRequested, useV30Pricing, sourcePath, upsellSourceIntakeId } = body
 
     if (!intakeId || !projectPath) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
@@ -71,6 +72,16 @@ export async function POST(req: NextRequest) {
       }
       unitAmountCents = Math.round(quoted)
       productName = `Kealee Custom Package (${(v30Quote?.features ?? []).join(', ') || 'v30'})`
+    } else if (isBundleProductKey(projectPath) && sourcePath) {
+      const bundle = getBundleCheckoutCents(
+        projectPath as 'design_estimate_permit_bundle' | 'estimate_permit_bundle',
+        sourcePath,
+      )
+      if (!bundle.cents) {
+        return NextResponse.json({ error: 'Invalid bundle pricing' }, { status: 400 })
+      }
+      unitAmountCents = bundle.cents
+      productName = bundle.label
     } else {
       // Server-trusted tier price (v20)
       const priceEntry = getIntakePrice(projectPath)
@@ -127,6 +138,9 @@ export async function POST(req: NextRequest) {
         projectPath,
         siteVisitRequested: siteVisitRequested ? 'true' : 'false',
         pricingModel: useV30Pricing ? 'v30_dynamic' : 'tier_fixed',
+        ...(sourcePath ? { sourcePath } : {}),
+        ...(upsellSourceIntakeId ? { upsellSourceIntakeId } : {}),
+        ...(isBundleProductKey(projectPath) ? { bundlePurchase: 'true' } : {}),
       },
       payment_intent_data: {
         metadata: {
@@ -134,6 +148,9 @@ export async function POST(req: NextRequest) {
           intakeId,
           projectPath,
           pricingModel: useV30Pricing ? 'v30_dynamic' : 'tier_fixed',
+          ...(sourcePath ? { sourcePath } : {}),
+          ...(upsellSourceIntakeId ? { upsellSourceIntakeId } : {}),
+          ...(isBundleProductKey(projectPath) ? { bundlePurchase: 'true' } : {}),
         },
       },
     }

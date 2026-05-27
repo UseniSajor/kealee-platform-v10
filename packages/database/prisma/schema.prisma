@@ -16228,6 +16228,9 @@ model PublicIntakeLead {
   source         String  @default("public_intake")
   funnelSessionId String?
 
+  // Universal auth — links intake purchases to Supabase auth user
+  userId String? @map("user_id")
+
   // Extra fields (flexible)
   metadata Json?
   formData Json? @map("form_data")
@@ -16237,6 +16240,7 @@ model PublicIntakeLead {
 
   @@map("public_intake_leads")
   @@index([contactEmail])
+  @@index([userId])
   @@index([status])
   @@index([createdAt])
   @@index([stripeSessionId])

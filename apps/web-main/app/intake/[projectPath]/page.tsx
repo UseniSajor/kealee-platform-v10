@@ -7,7 +7,7 @@ import { Loader2, AlertCircle, ArrowRight, CheckCircle2, Clock, Shield, Zap, Pac
 import { SERVICE_DELIVERABLES } from '@/lib/service-deliverables'
 import { uploadIntakeFilesSequentially, type IntakeUploadedFile } from '@/lib/intake-file-upload'
 import { getIntakeCheckoutProjectDescriptionPlaceholder } from '@kealee/shared'
-import { INTAKE_PRICE_CENTS } from '@kealee/core-rules'
+import { INTAKE_PRICE_CENTS, getBuildPathBundle } from '@kealee/core-rules'
 import { trackEvent } from '@/lib/analytics'
 import { utmForApiBody } from '@/lib/marketing/client-utm'
 
@@ -16,6 +16,7 @@ const AGENT_MAP: Record<string, string> = {
   interior_reno_concept: 'design', developer_concept: 'land', kitchen_remodel: 'design',
   bathroom_remodel: 'design', whole_home_remodel: 'design', addition_expansion: 'design',
   permit_path_only: 'permit', cost_estimate: 'design', certified_estimate: 'design', contractor_match: 'contractor',
+  design_estimate_permit_bundle: 'design', estimate_permit_bundle: 'design', professional_drawings: 'permit',
   multi_unit_residential: 'land', mixed_use: 'land', commercial_office: 'land',
   development_feasibility: 'land', design_build: 'design', capture_site_concept: 'design',
   townhome_subdivision: 'land', single_family_subdivision: 'land', single_lot_development: 'land',
@@ -43,6 +44,47 @@ interface AgentInsight {
 
 function formatPrice(cents: number) {
   return `$${(cents / 100).toFixed(2)}`
+}
+
+function BundleUpsellBanner({
+  bundle,
+  sourcePath,
+}: {
+  bundle: NonNullable<ReturnType<typeof getBuildPathBundle>>
+  sourcePath: string
+}) {
+  const sourceLabel = sourcePath.replace(/_/g, ' ')
+  return (
+    <div className="rounded-xl border border-orange-200 bg-gradient-to-br from-orange-50 via-amber-50 to-white p-5 mb-5">
+      <div className="flex items-start gap-3">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-orange-100">
+          <Package className="h-5 w-5 text-orange-600" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-xs font-bold uppercase tracking-wider text-orange-700 mb-1">
+            Package deal from your {sourceLabel}
+          </p>
+          <h2 className="text-lg font-bold text-slate-900 mb-1">{bundle.label}</h2>
+          <p className="text-sm text-slate-600 leading-relaxed mb-3">{bundle.description}</p>
+          <ul className="space-y-1 mb-3">
+            {bundle.includes.map((item) => (
+              <li key={item} className="flex items-start gap-2 text-xs text-slate-600">
+                <CheckCircle2 className="h-3.5 w-3.5 shrink-0 mt-0.5 text-green-600" />
+                {item}
+              </li>
+            ))}
+          </ul>
+          <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+            <span className="text-2xl font-black text-orange-700">{bundle.priceLabel}</span>
+            <span className="text-sm text-slate-400 line-through">
+              {formatPrice(bundle.retailCents)}
+            </span>
+            <span className="text-xs font-semibold text-green-700">{bundle.savingsLabel}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
 }
 
 function deliverableForPath(projectPath: string) {
@@ -217,6 +259,8 @@ export default function IntakePage() {
   // Pascal Design Studio handoff — sceneId forwarded from /editor/[sceneId]
   const sceneId = searchParams.get('sceneId') ?? ''
   const sqftFromUrl = searchParams.get('sqft') ?? ''
+  const upsellFromIntake = searchParams.get('fromIntake') ?? ''
+  const upsellSourcePath = searchParams.get('sourcePath') ?? ''
 
   const [step, setStep] = useState<'details' | 'review'>('details')
   const [formError, setFormError] = useState('')
@@ -260,9 +304,28 @@ export default function IntakePage() {
   const needsConstructionDocs = intakeRequiresConstructionDocuments(projectPath)
 
   const agentType = AGENT_MAP[projectPath] || 'design'
-  const priceInfo = PRICE_MAP[projectPath] || { label: 'Project Package', amount: 39500, delivery: '3–5 days' }
+  const bundlePreview = upsellSourcePath
+    ? getBuildPathBundle({ sourceProjectPath: upsellSourcePath, fromIntakeId: upsellFromIntake || undefined })
+    : null
+  const priceInfo = bundlePreview && (projectPath === bundlePreview.productKey)
+    ? { label: bundlePreview.label, amount: bundlePreview.bundleCents, delivery: bundlePreview.deliveryDays }
+    : (PRICE_MAP[projectPath] || { label: 'Project Package', amount: 39500, delivery: '3–5 days' })
   const deliverable = SERVICE_DELIVERABLES[projectPath]
   const includes = deliverable?.includes ?? []
+
+  useEffect(() => {
+    if (!upsellFromIntake || !upsellSourcePath || !bundlePreview) return
+    if (projectPath !== bundlePreview.productKey) return
+    fetch('/api/marketing/bundle-interest', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        intakeId: upsellFromIntake,
+        bundleProjectPath: projectPath,
+        sourcePath: upsellSourcePath,
+      }),
+    }).catch(() => {})
+  }, [upsellFromIntake, upsellSourcePath, projectPath, bundlePreview])
 
   // Fetch AI insight in background — form is already visible
   useEffect(() => {
@@ -405,6 +468,7 @@ export default function IntakePage() {
             uploadedFiles: uploadedFiles.map(f => f.url),
             ...attribution,
             ...(sceneId ? { sceneId } : {}),
+            ...(upsellFromIntake ? { upsellSourceIntakeId: upsellFromIntake, upsellSourcePath: upsellSourcePath } : {}),
           },
         }),
       })
@@ -430,6 +494,8 @@ export default function IntakePage() {
           intakeId,
           projectPath,
           amount: priceInfo.amount,
+          sourcePath: upsellSourcePath || undefined,
+          upsellSourceIntakeId: upsellFromIntake || undefined,
           successUrl: `${appUrl}/intake/${projectPath}/success?session_id={CHECKOUT_SESSION_ID}&intakeId=${intakeId}`,
           cancelUrl: `${appUrl}/intake/${projectPath}?canceled=true`,
         }),
@@ -478,6 +544,9 @@ export default function IntakePage() {
             {/* ── DETAILS FORM ─────────────────────────────────────────────── */}
             {step === 'details' && (
               <form onSubmit={handleDetailsSubmit} className="space-y-5" noValidate>
+                {bundlePreview && projectPath === bundlePreview.productKey && (
+                  <BundleUpsellBanner bundle={bundlePreview} sourcePath={upsellSourcePath} />
+                )}
                 {/* Package context — visible on mobile (sidebar is hidden) */}
                 <div className="lg:hidden rounded-xl bg-orange-50 border border-orange-200 p-4 flex items-center justify-between">
                   <div>
@@ -710,6 +779,9 @@ export default function IntakePage() {
             {/* ── REVIEW STEP ──────────────────────────────────────────────── */}
             {step === 'review' && (
               <div className="space-y-6">
+                {bundlePreview && projectPath === bundlePreview.productKey && (
+                  <BundleUpsellBanner bundle={bundlePreview} sourcePath={upsellSourcePath} />
+                )}
                 <div>
                   <h1 className="text-2xl font-extrabold text-slate-900">Review your order</h1>
                   <p className="text-slate-500 mt-1 text-sm">Confirm your details, then proceed to secure payment.</p>
@@ -745,6 +817,9 @@ export default function IntakePage() {
                     <span className="text-sm font-semibold text-slate-700">{priceInfo.label}</span>
                     <span className="text-sm font-bold text-slate-900">{formatPrice(priceInfo.amount)}</span>
                   </div>
+                  {bundlePreview && projectPath === bundlePreview.productKey && (
+                    <p className="text-xs text-green-700 font-medium mb-2">{bundlePreview.savingsLabel}</p>
+                  )}
                   <div className="flex items-center justify-between text-xs text-slate-500">
                     <span>Delivered in {priceInfo.delivery}</span>
                     <span>One-time payment</span>

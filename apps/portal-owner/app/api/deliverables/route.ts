@@ -15,6 +15,8 @@ import {
   v30TierLabel,
   v30WorkspaceUrl,
 } from '@/lib/concept-output'
+import { getBuildPathUpsells } from '@kealee/core-rules'
+import { isConceptSourcePath, ownedProductsFromRows } from '@/lib/build-path-owned'
 
 export async function GET() {
   const supabaseAdmin = createClient(
@@ -53,6 +55,8 @@ export async function GET() {
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
+
+  const ownedProducts = ownedProductsFromRows(data ?? [])
 
     // ── Tier label map ─────────────────────────────────────────────────────────
   const TIER_LABELS: Record<number, string> = {
@@ -117,6 +121,15 @@ export async function GET() {
     const isV30 = isV30IntakeFormData(fd)
     const uiStatus = mapDeliverableUiStatus(row.status as string, fd)
 
+    const upsell =
+      uiStatus === 'ready' && isConceptSourcePath(path)
+        ? getBuildPathUpsells({
+            sourceProjectPath: path,
+            fromIntakeId: row.id as string,
+            ownedProducts,
+          })
+        : null
+
     return {
       id:              row.id,
       clientName:      row.client_name,
@@ -142,8 +155,25 @@ export async function GET() {
       conceptServicePrice: CONCEPT_PRICE_DOLLARS[path] ?? null,
       estimatedCostMin,
       estimatedCostMax,
+      upsellSummary: upsell?.bundle
+        ? {
+            label: upsell.bundle.label,
+            priceLabel: upsell.bundle.priceLabel,
+            savingsLabel: upsell.bundle.savingsLabel,
+            href: upsell.bundle.href,
+            includes: upsell.bundle.includes,
+          }
+        : upsell && upsell.offers.length > 0
+          ? {
+              label: upsell.offers[0]?.label ?? 'Next steps',
+              priceLabel: upsell.offers[0]?.priceLabel ?? '',
+              savingsLabel: null,
+              href: upsell.offers[0]?.href ?? '',
+              includes: upsell.nextSteps.slice(0, 3),
+            }
+          : null,
     }
   })
 
-  return NextResponse.json({ deliverables })
+  return NextResponse.json({ deliverables, ownedProducts })
 }

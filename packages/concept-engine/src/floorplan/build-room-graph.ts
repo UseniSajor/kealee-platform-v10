@@ -108,7 +108,8 @@ function captureZoneToRoomType(zone: string): RoomType | null {
 }
 
 export function buildRoomGraph(input: ConceptIntakeInput): RoomGraph {
-  const defaultTypes = PROJECT_PATH_ROOMS[input.projectPath];
+  const defaultTypes =
+    PROJECT_PATH_ROOMS[input.projectPath] ?? PROJECT_PATH_ROOMS.interior_renovation;
   const roomTypeSet = new Set<RoomType>(defaultTypes);
 
   // Augment from completed capture zones
