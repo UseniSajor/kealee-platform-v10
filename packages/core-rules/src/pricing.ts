@@ -131,6 +131,67 @@ export function getIntakePrice(projectPath: string): IntakePriceEntry | null {
   return INTAKE_PRICE_CENTS[projectPath] ?? null
 }
 
+// ── Tier-specific prices ───────────────────────────────────────────────────────
+//
+// These prices match the `tiers` array in apps/web-main/lib/services-config.ts.
+// Used when `form_data.tier` (1 | 2 | 3) is present on the intake record so
+// the checkout route charges the correct tier price instead of the flat fallback.
+//
+// Mapping: projectPath → tier number → IntakePriceEntry (cents = price * 100)
+
+export const INTAKE_TIER_PRICE_CENTS: Record<string, Partial<Record<1 | 2 | 3, IntakePriceEntry>>> = {
+  kitchen_remodel: {
+    1: { label: 'Kitchen Design Package — Basic',    cents: 14_900,  deliveryDays: '3–5 days' },
+    2: { label: 'Kitchen Design Package — Premium',  cents: 69_900,  deliveryDays: '3–5 days' },
+    3: { label: 'Kitchen Design Package — Premium+', cents: 129_900, deliveryDays: '3–5 days' },
+  },
+  bathroom_remodel: {
+    1: { label: 'Bathroom Design Package — Basic',    cents: 12_900, deliveryDays: '2–4 days' },
+    2: { label: 'Bathroom Design Package — Premium',  cents: 54_900, deliveryDays: '2–4 days' },
+    3: { label: 'Bathroom Design Package — Premium+', cents: 99_900, deliveryDays: '2–4 days' },
+  },
+  garden_concept: {
+    1: { label: 'Garden Concept — Basic',    cents: 9_900,  deliveryDays: '2–4 days' },
+    2: { label: 'Garden Concept — Premium',  cents: 39_900, deliveryDays: '2–4 days' },
+    3: { label: 'Garden Concept — Premium+', cents: 79_900, deliveryDays: '2–4 days' },
+  },
+  addition_expansion: {
+    1: { label: 'Home Addition — Basic',    cents: 19_900,  deliveryDays: '3–5 days' },
+    2: { label: 'Home Addition — Premium',  cents: 79_900,  deliveryDays: '3–5 days' },
+    3: { label: 'Home Addition — Premium+', cents: 149_900, deliveryDays: '3–5 days' },
+  },
+  whole_home_concept: {
+    1: { label: 'Whole Home Concept — Basic',    cents: 24_900,  deliveryDays: '4–6 days' },
+    2: { label: 'Whole Home Concept — Premium',  cents: 89_900,  deliveryDays: '4–6 days' },
+    3: { label: 'Whole Home Concept — Premium+', cents: 169_900, deliveryDays: '4–6 days' },
+  },
+  interior_renovation: {
+    1: { label: 'Interior Renovation — Basic',    cents: 14_900,  deliveryDays: '3–5 days' },
+    2: { label: 'Interior Renovation — Premium',  cents: 64_900,  deliveryDays: '3–5 days' },
+    3: { label: 'Interior Renovation — Premium+', cents: 119_900, deliveryDays: '3–5 days' },
+  },
+  exterior_concept: {
+    1: { label: 'Exterior Concept — Basic',    cents: 13_900,  deliveryDays: '3–5 days' },
+    2: { label: 'Exterior Concept — Premium',  cents: 59_900,  deliveryDays: '3–5 days' },
+    3: { label: 'Exterior Concept — Premium+', cents: 109_900, deliveryDays: '3–5 days' },
+  },
+  interior_reno_concept: {
+    1: { label: 'Design Services', cents: 7_900, deliveryDays: '2–3 days' },
+  },
+}
+
+/**
+ * Tier-aware price lookup. Uses tier-specific price from INTAKE_TIER_PRICE_CENTS
+ * when available; falls back to getIntakePrice (flat price) for unknown combos.
+ */
+export function getIntakePriceByTier(projectPath: string, tier: number): IntakePriceEntry | null {
+  if (tier === 1 || tier === 2 || tier === 3) {
+    const entry = INTAKE_TIER_PRICE_CENTS[projectPath]?.[tier]
+    if (entry) return entry
+  }
+  return getIntakePrice(projectPath)
+}
+
 // ── AI model registry — single source of truth for model strings ─────────────
 //
 // Pin model identifiers in ONE place. Audited 2026-05-09 against:

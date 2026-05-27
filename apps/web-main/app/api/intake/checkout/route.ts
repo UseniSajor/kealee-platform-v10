@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { guardStripeSecretForHttp } from '@/lib/stripe-vercel-guard'
 import { createStripe } from '@/lib/stripe-client'
-import { getIntakePrice, SITE_VISIT_FEE_CENTS, getBundleCheckoutCents, isBundleProductKey } from '@kealee/core-rules'
+import { getIntakePrice, getIntakePriceByTier, SITE_VISIT_FEE_CENTS, getBundleCheckoutCents, isBundleProductKey } from '@kealee/core-rules'
 import { isV30Enabled } from '@kealee/kealee-agent-stack'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { trackCheckoutStarted } from '@/lib/marketing/ga4-server'
@@ -85,8 +85,21 @@ export async function POST(req: NextRequest) {
       unitAmountCents = bundle.cents
       productName = bundle.label
     } else {
-      // Server-trusted tier price (v20)
-      const priceEntry = getIntakePrice(projectPath)
+      // Server-trusted tier price (v20) — read tier from intake form_data
+      let selectedTier: number | undefined
+      try {
+        const supabase = getSupabaseAdmin()
+        const { data: tierRow } = await supabase
+          .from('public_intake_leads')
+          .select('form_data')
+          .eq('id', intakeId)
+          .single()
+        selectedTier = ((tierRow?.form_data as Record<string, unknown>) ?? {}).tier as number | undefined
+      } catch { /* non-fatal — falls back to flat price */ }
+
+      const priceEntry = selectedTier
+        ? getIntakePriceByTier(projectPath, selectedTier)
+        : getIntakePrice(projectPath)
       if (!priceEntry) {
         return NextResponse.json(
           { error: `Unknown projectPath: ${projectPath}` },
