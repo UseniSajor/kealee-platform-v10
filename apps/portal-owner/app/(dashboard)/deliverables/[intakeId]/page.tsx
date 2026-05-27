@@ -1336,9 +1336,35 @@ export default function ConceptDeliverablePage() {
               </a>
             </div>
             {data.tier >= 3 && data.videoFormatUrls && (
-              <p className="text-xs text-gray-500 mt-3">
-                Premium+ 30s / 15s / 10s cuts appear here when separate files are attached to your order; until then the master cut above represents your video deliverable.
-              </p>
+              data.videoFormatUrls['30s Mobile'] &&
+              data.videoFormatUrls['30s Mobile'] !== (data.videoFormatUrls['60s Full'] ?? data.videoUrl)
+                ? (
+                  <div className="mt-4 border-t border-gray-100 pt-4">
+                    <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">
+                      Short-format downloads
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {(['30s Mobile', '15s Social', '10s Preview'] as const)
+                        .filter(label => Boolean(data.videoFormatUrls![label]))
+                        .map(label => (
+                          <a
+                            key={label}
+                            href={data.videoFormatUrls![label]}
+                            download
+                            className="inline-flex items-center gap-2 rounded-xl border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50"
+                          >
+                            <Download className="h-3.5 w-3.5" />
+                            {label}
+                          </a>
+                        ))}
+                    </div>
+                  </div>
+                )
+                : (
+                  <p className="text-xs text-gray-500 mt-3">
+                    Premium+ short-format cuts (30s / 15s / 10s) are being prepared and will appear here once trimming completes — typically within a few minutes of your master video delivering.
+                  </p>
+                )
             )}
             {/* Compact muted loop — good for sharing or screencapture */}
             <details className="mt-4">

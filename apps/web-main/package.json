@@ -22,27 +22,28 @@
     "sync:card-media:home": "node ./scripts/setup-and-run-card-media.mjs --scope=home --fallback-only --with-videos"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.30.0",
     "@kealee/auth": "workspace:*",
     "@kealee/concept-engine": "workspace:*",
     "@kealee/core-rules": "workspace:*",
-    "@supabase/ssr": "^0.5.2",
-    "@supabase/supabase-js": "^2.39.0",
-    "@kealee/storage": "workspace:*",
-    "@kealee/kealee-agent-stack": "workspace:*",
-    "stripe": "^14.25.0",
     "@kealee/intake": "workspace:*",
+    "@kealee/kealee-agent-stack": "workspace:*",
     "@kealee/pascal-wrapper": "workspace:*",
     "@kealee/shared": "workspace:*",
+    "@kealee/storage": "workspace:*",
     "@kealee/ui": "workspace:*",
-    "@anthropic-ai/sdk": "^0.30.0",
-    "openai": "^4.77.0",
     "@stripe/react-stripe-js": "^3.7.0",
     "@stripe/stripe-js": "^5.8.0",
+    "@supabase/ssr": "^0.5.2",
+    "@supabase/supabase-js": "^2.39.0",
+    "ffmpeg-static": "^5.3.0",
+    "framer-motion": "^11.15.0",
     "google-ads-api": "^23.0.0",
+    "lucide-react": "^0.469.0",
+    "openai": "^4.77.0",
     "replicate": "^1.4.0",
     "resend": "^3.0.0",
-    "uuid": "^10.0.0",
-    "framer-motion": "^11.15.0",
-    "lucide-react": "^0.469.0"
+    "stripe": "^14.25.0",
+    "uuid": "^10.0.0"
   }
 }

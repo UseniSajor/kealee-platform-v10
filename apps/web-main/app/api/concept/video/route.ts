@@ -213,6 +213,7 @@ export async function GET(req: NextRequest) {
         state.currentIndex < state.segments.length &&
         state.segments[state.currentIndex]?.status === 'pending'
 
+      let justFinished = false
       if (needsNext) {
         const { state: nextStarted } = await startNextDeliverableSegment(state, {
           style,
@@ -224,6 +225,7 @@ export async function GET(req: NextRequest) {
         state = await finalizeDeliverableStitch(state, (bytes) =>
           uploadVideoToStorage(supabase, intakeId, bytes),
         )
+        justFinished = state.status === 'completed' && Boolean(state.outputUrl)
       }
 
       if (state !== formData.conceptVideo) {
@@ -231,6 +233,22 @@ export async function GET(req: NextRequest) {
           .from('public_intake_leads')
           .update({ form_data: { ...formData, conceptVideo: state } })
           .eq('id', intakeId)
+      }
+
+      // Kick Tier 3 format trimming (30s / 15s / 10s) once master is ready.
+      // Fire-and-forget so the GET response is not delayed.
+      if (justFinished) {
+        const tier = resolveConceptTier(formData, { projectPath: intake.project_path as string })
+        if (tier >= 3) {
+          const appBaseUrl = process.env.NEXT_PUBLIC_APP_URL ?? req.nextUrl.origin
+          fetch(`${appBaseUrl}/api/concept/video/formats`, {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body:    JSON.stringify({ intakeId }),
+          }).catch((err: unknown) => {
+            console.warn('[concept/video] Tier 3 format kick failed:', (err as Error)?.message ?? err)
+          })
+        }
       }
 
       return NextResponse.json(state)
