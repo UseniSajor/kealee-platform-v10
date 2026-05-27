@@ -565,6 +565,8 @@ function intakeFloorplanInput(intake: Record<string, unknown>, intakeId: string)
     form_data: (intake.form_data as Record<string, unknown> | null) ?? null,
   }
 }
+
+function permitGuidance(permitRequired: string | undefined): string {
   if (permitRequired === 'always') {
     return `PERMIT RULE (from Kealee product catalog): This project type ALWAYS requires a permit in the DMV region. You MUST set "requiresPermit": true in permitScope regardless of scope details. Identify the specific permit types, realistic fees, and processing days for the jurisdiction.`
   }
