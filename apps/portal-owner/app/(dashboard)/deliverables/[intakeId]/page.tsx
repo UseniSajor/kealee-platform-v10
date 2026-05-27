@@ -636,6 +636,8 @@ export default function ConceptDeliverablePage() {
   const [showFullBOM, setShowFullBOM] = useState(false)
   const [catalogPermitRequired, setCatalogPermitRequired] = useState<'always' | 'sometimes' | 'rarely' | null>(null)
   const [ownedProducts, setOwnedProducts] = useState<OwnedUpsellProduct[]>([])
+  /** True while Replicate renders are still being produced (renderJobs present but renderUrls empty). */
+  const [rendersGenerating, setRendersGenerating] = useState(false)
 
   useEffect(() => {
     fetch('/api/deliverables')
@@ -865,6 +867,11 @@ export default function ConceptDeliverablePage() {
         ? co.floorplanSvgInline as string
         : undefined
 
+      // Detect pending Replicate renders: prediction IDs stored but no resolved URLs yet.
+      const renderJobsPending = Array.isArray(formData.renderJobs) && (formData.renderJobs as string[]).length > 0
+      const hasRealRenders = Array.isArray(co.renderUrls) && (co.renderUrls as string[]).length > 0
+      setRendersGenerating(renderJobsPending && !hasRealRenders)
+
       setData({
         conceptId:       `concept_${intakeId.slice(0, 8)}`,
         projectType:     (intake.project_path as string)?.replace(/_/g, ' ') ?? 'Concept Package',
@@ -1015,6 +1022,19 @@ export default function ConceptDeliverablePage() {
 
     return () => { stopped = true }
   }, [loadStatus, data?.tier, data?.videoUrl, intakeId, fetchData])
+
+  // Poll for Replicate render completion — re-fetches form_data every 15s until
+  // conceptOutput.renderUrls is populated, then setRendersGenerating(false).
+  useEffect(() => {
+    if (!rendersGenerating || loadStatus !== 'ready') return
+    let pollsLeft = 20 // up to 5 min (20 × 15s)
+    const id = setInterval(async () => {
+      pollsLeft -= 1
+      if (pollsLeft <= 0) { clearInterval(id); setRendersGenerating(false); return }
+      await fetchData()
+    }, 15_000)
+    return () => clearInterval(id)
+  }, [rendersGenerating, loadStatus, fetchData])
 
   if (loadStatus === 'loading') {
     return (
@@ -1234,6 +1254,13 @@ export default function ConceptDeliverablePage() {
               <div className="flex items-center gap-2">
                 <span className="h-2 w-2 rounded-full" style={{ backgroundColor: '#E8724B' }} />
                 <h2 className="text-base font-bold" style={{ color: '#1A2B4A' }}>Concept Renderings</h2>
+                {rendersGenerating && (
+                  <span className="flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full"
+                    style={{ backgroundColor: '#FFF7ED', color: '#C2410C' }}>
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                    Rendering…
+                  </span>
+                )}
               </div>
               <span className="text-xs text-gray-400 font-medium">
                 {(data.interiorRenderUrls?.length ?? 0) + (data.exteriorRenderUrls?.length ?? 0) || data.renderUrls.length} render

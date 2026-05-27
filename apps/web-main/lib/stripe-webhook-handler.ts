@@ -239,24 +239,26 @@ async function handleCheckoutCompleted(
     })
 
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? req.nextUrl.origin
-    const headline = deliverable?.generatesConcept
-      ? undefined
-      : `Payment confirmed — your ${projectPath.replace(/_/g, ' ')} is in progress`
-
-    fetch(`${baseUrl}/api/emails/deliverable-ready`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        to: clientEmail,
-        firstName: clientName.split(' ')[0],
-        service: projectPath,
-        intakeId,
-        headline,
-        upsellSourceIntakeId: upsellSourceIntakeId ?? undefined,
-      }),
-    }).catch((err: Error) => {
-      console.error('[stripe-webhook] deliverable-ready email failed:', err.message)
-    })
+    // For concept services, the concept/generate route fires the deliverable-ready
+    // email after generation completes (with the real claim URL + renders ready).
+    // Firing it here would be premature — the concept isn't ready yet.
+    if (!deliverable?.generatesConcept) {
+      const headline = `Payment confirmed — your ${projectPath.replace(/_/g, ' ')} is in progress`
+      fetch(`${baseUrl}/api/emails/deliverable-ready`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          to: clientEmail,
+          firstName: clientName.split(' ')[0],
+          service: projectPath,
+          intakeId,
+          headline,
+          upsellSourceIntakeId: upsellSourceIntakeId ?? undefined,
+        }),
+      }).catch((err: Error) => {
+        console.error('[stripe-webhook] deliverable-ready email failed:', err.message)
+      })
+    }
   }
 }
 

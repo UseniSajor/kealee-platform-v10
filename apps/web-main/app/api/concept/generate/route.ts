@@ -1051,6 +1051,18 @@ export async function POST(req: NextRequest) {
       kickConceptVideoPoll(appBaseUrl, intakeId, tier)
     }
 
+    // If inline render resolution timed out, kick the external resolve route so
+    // renders eventually write back to conceptOutput.renderUrls in DB.
+    if (renderJobs.length > 0 && !(conceptOutput.renderUrls as string[] | undefined)?.length) {
+      fetch(`${appBaseUrl}/api/concept/renders/resolve`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ intakeId }),
+      }).catch((err: unknown) => {
+        console.warn('[concept/generate] Render resolve kick failed:', (err as Error)?.message ?? err)
+      })
+    }
+
     // Notify the customer that their concept is ready to view in the portal.
     // (Fire-and-forget so a slow Resend call never delays the API response.)
     triggerConceptReadyEmail(appBaseUrl, {
