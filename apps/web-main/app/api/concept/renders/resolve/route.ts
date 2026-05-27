@@ -19,6 +19,7 @@ import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { generateImages, buildArchitecturalPrompt } from '@/lib/ai-image'
 import { archiveReplicateOutputsFireAndForget } from '@/lib/replicate-archive'
 import { SERVICE_DELIVERABLES } from '@/lib/service-deliverables'
+import { TIER_IMAGE_COUNT, resolveConceptTier } from '@kealee/core-rules'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 300
@@ -131,7 +132,9 @@ async function resubmitRenders(
   renderCount: number,
   style: string,
 ): Promise<ResolvedBundle> {
-  const DELAY_MS = 11_000
+  // 2.5s delay matches generate/route.ts — keeps Replicate rate limits safe
+  // without causing timeouts for tier 3 (12 renders).
+  const DELAY_MS = 2_500
   const dualScope = DUAL_SCOPE_PATHS.has(projectPath)
   const modes = ['realistic', 'cinematic'] as const
 
@@ -215,7 +218,9 @@ export async function POST(req: NextRequest) {
   const projectPath = intake.project_path as string
   const style = (conceptOutput.designConcept as Record<string, unknown>)?.style as string ?? 'modern contemporary'
   const deliverable = SERVICE_DELIVERABLES[projectPath]
-  const renderCount = deliverable?.renderCount ?? 3
+  // Use tier-aware render count — tier 3 gets 12 renders, tier 2 gets 6, tier 1 gets 3.
+  const tier = resolveConceptTier(formData, { projectPath })
+  const renderCount = TIER_IMAGE_COUNT[tier] ?? deliverable?.renderCount ?? 3
 
   const repl = new Replicate({ auth: process.env.REPLICATE_API_TOKEN })
 

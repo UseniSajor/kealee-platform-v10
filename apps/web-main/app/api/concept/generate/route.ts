@@ -299,7 +299,9 @@ async function fireConceptRenders(
 
   const modes = ['realistic', 'cinematic'] as const
   const inputImageUrl = uploadedPhotoUrls.length > 0 ? uploadedPhotoUrls[0] : undefined
-  const RENDER_SUBMIT_DELAY_MS = 11_000
+  // 2.5s between submissions: 12 renders × 2.5s = 30s, well within 300s maxDuration.
+  // (Was 11s, which caused tier 3 to exceed the route timeout before resolution could start.)
+  const RENDER_SUBMIT_DELAY_MS = 2_500
   const predictionIds: string[] = []
   const renderJobScopes: Array<'interior' | 'exterior'> = []
 

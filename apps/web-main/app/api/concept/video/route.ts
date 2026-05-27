@@ -26,6 +26,19 @@ export const maxDuration = 60
 
 const PAID_INTAKE_STATUSES = new Set(['paid', 'concept_ready', 'processing'])
 
+/** Returns true if the required API key for the given video provider is configured. */
+function isVideoProviderAvailable(provider: VideoProvider): boolean {
+  switch (provider) {
+    case 'sora-2-pro':
+    case 'sora-2':
+      return Boolean(process.env.OPENAI_API_KEY)
+    case 'veo-3.1':
+      return Boolean(process.env.GEMINI_API_KEY)
+    case 'kling-2.5':
+      return Boolean(process.env.REPLICATE_API_TOKEN)
+  }
+}
+
 type LegacyConceptVideoState = {
   videoKind?: undefined
   status: 'pending' | 'processing' | 'completed' | 'failed'
@@ -120,7 +133,12 @@ export async function POST(req: NextRequest) {
 
     let provider: VideoProvider
     try {
-      provider = providerOverride ?? tierDefault ?? pickVideoProvider()
+      // Prefer: explicit override → tier default (if its API key is available) → best available key.
+      // This prevents tier 3 (sora-2-pro) from hard-failing when OPENAI_API_KEY isn't set —
+      // it falls back to kling-2.5 (REPLICATE_API_TOKEN) or veo-3.1 (GEMINI_API_KEY).
+      const preferred = providerOverride ?? tierDefault
+      const preferredAvailable = preferred && isVideoProviderAvailable(preferred)
+      provider = preferredAvailable ? preferred : pickVideoProvider()
     } catch (err) {
       return NextResponse.json(
         { error: 'No video provider configured', message: String((err as Error).message) },
