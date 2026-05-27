@@ -32,6 +32,8 @@ export async function POST(req: NextRequest) {
       /** Source concept intake — used for project-type bundle pricing */
       sourcePath?: string
       upsellSourceIntakeId?: string
+      /** Whether to price this checkout from a v30 dynamic quote in form_data. */
+      useV30Pricing?: boolean
       // Legacy `amount` field is accepted for backward compatibility
       // but explicitly NOT used. Server price is authoritative.
       amount?: number
