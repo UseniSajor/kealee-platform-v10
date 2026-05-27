@@ -275,7 +275,7 @@ export default function OwnerDashboard() {
         <div className="relative">
           <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: '#2ABFBF' }}>Owner Portal</p>
           <h1 className="font-display text-2xl font-bold text-white mt-1">Owner Dashboard</h1>
-          <p className="mt-1 text-sm" style={{ color: 'rgba(255,255,255,0.6)' }}>Your construction portfolio at a glance</p>
+          <p className="mt-1 text-sm" style={{ color: 'rgba(255,255,255,0.6)' }}>Your personal design-build workspace</p>
         </div>
       </div>
 

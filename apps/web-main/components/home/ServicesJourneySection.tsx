@@ -35,13 +35,13 @@ export function ServicesJourneySection({ services }: { services: HomeJourneyServ
       {/* Sub-header */}
       <header className="shrink-0 border-b border-charcoal/8 bg-white/80 px-4 py-3 text-center backdrop-blur-sm sm:py-4">
         <p className="font-home-sans text-[10px] font-semibold uppercase tracking-[0.22em] text-copper sm:text-xs">
-          Your project journey
+          End-to-end design-build platform · DC, MD &amp; VA
         </p>
         <h1 className="font-home-serif mt-1 text-2xl font-bold leading-tight text-charcoal sm:text-3xl lg:text-4xl">
-          Design Your Perfect Project
+          From First Concept to Final Build
         </h1>
         <p className="font-home-sans mx-auto mt-1 max-w-xl text-xs text-charcoal/65 sm:text-sm">
-          AI design · permits · estimates · build — start anywhere
+          Design concepts · cost estimates · permit filing · project workspace — everything your project needs, in one place
         </p>
       </header>
 

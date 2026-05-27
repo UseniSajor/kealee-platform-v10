@@ -8,12 +8,13 @@ const COMPANY_LINKS = [
   { href: '/marketplace', label: 'Contractor Marketplace' },
   { href: '/faq', label: 'FAQ' },
   { href: '/contact', label: 'Contact' },
+  { href: 'https://owner.kealee.com', label: 'Owner Portal' },
 ]
 
 const LEGAL_LINKS = [
   { href: '/terms', label: 'Terms of Service' },
   { href: '/privacy', label: 'Privacy Policy' },
-  { href: '/auth/sign-in', label: 'Client Login' },
+  { href: 'https://owner.kealee.com', label: 'Owner Portal' },
 ]
 
 const SOCIAL = [
@@ -52,7 +53,7 @@ export function SiteFooter() {
               <span className="font-bold text-xl text-white">Kealee</span>
             </div>
             <p className="text-slate-400 text-sm leading-relaxed mb-6">
-              AI-powered home design concepts with professional videos, cost estimates, and permit roadmaps — delivered in days.
+              End-to-end design-build platform for homeowners — AI design concepts, RSMeans cost estimates, permit filing, and a personal project workspace from first idea to final build.
             </p>
             <div className="flex items-center gap-3">
               {SOCIAL.map((s) => (

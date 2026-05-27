@@ -117,7 +117,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <button onClick={() => setMobileOpen(true)} className="rounded-lg p-1.5 text-slate-500 hover:bg-slate-100">
             <Menu className="h-5 w-5" />
           </button>
-          <span className="font-bold font-display text-sm" style={{ color: '#0F1F38' }}>Owner Portal</span>
+          <span className="font-bold font-display text-sm" style={{ color: '#0F1F38' }}>Project Workspace</span>
           <div className="ml-auto flex items-center gap-2">
             <button className="relative rounded-lg p-1.5 text-slate-400 hover:bg-slate-100">
               <Bell className="h-4 w-4" />

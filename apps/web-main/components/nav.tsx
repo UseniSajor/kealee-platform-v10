@@ -209,6 +209,13 @@ export function SiteNav() {
             <div className="hidden lg:block w-px h-6 bg-gray-300" />
 
             <Link
+              href="https://owner.kealee.com"
+              className="hidden lg:block text-sm font-medium text-teal-600 hover:text-teal-700 transition whitespace-nowrap"
+            >
+              My Portal
+            </Link>
+
+            <Link
               href="/auth/sign-in"
               className="hidden sm:block text-sm text-slate-600 hover:text-slate-900 font-medium transition whitespace-nowrap"
             >
@@ -219,7 +226,7 @@ export function SiteNav() {
               href="/concept"
               className="hidden sm:flex items-center px-5 py-2 bg-[#E8724B] hover:bg-[#D45C33] active:bg-[#C04820] text-white font-semibold rounded-lg text-sm transition-all shadow-sm hover:shadow-md whitespace-nowrap"
             >
-              Get Started
+              Start Your Project
             </Link>
 
             {/* Mobile hamburger */}
@@ -261,6 +268,13 @@ export function SiteNav() {
             {/* Account */}
             <div className="border-t border-slate-200 mt-3 pt-3 space-y-2">
               <Link
+                href="https://owner.kealee.com"
+                onClick={() => setMobileMenuOpen(false)}
+                className="block rounded-lg px-3 py-2.5 text-sm font-medium text-teal-600 hover:bg-teal-50 transition"
+              >
+                My Portal
+              </Link>
+              <Link
                 href="/auth/sign-in"
                 onClick={() => setMobileMenuOpen(false)}
                 className="block rounded-lg px-3 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50 transition"
@@ -274,7 +288,7 @@ export function SiteNav() {
               </Link>
               <Link href="/concept" onClick={() => setMobileMenuOpen(false)}>
                 <button className="w-full bg-[#E8724B] hover:bg-[#D45C33] text-white font-bold py-3.5 rounded-xl text-base transition">
-                  Get Started — Design Your Concept
+                  Start Your Project
                 </button>
               </Link>
             </div>

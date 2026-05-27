@@ -4,12 +4,13 @@ import { loadCardMediaManifest } from '@/lib/marketing/card-media-manifest'
 import { mergeHomeServicesWithManifest } from '@/lib/marketing/merge-home-services'
 
 export const metadata: Metadata = {
-  title: 'Kealee — AI Design, Permits, Estimates & Build in DC, MD, VA',
+  title: 'Kealee — Design-Build Platform | DC, MD & VA',
   description:
-    'AI design concepts, permit analysis, cost estimation, and contractor matching for home projects in Washington DC, Maryland, and Virginia.',
+    'Kealee is the end-to-end design-build platform for homeowners. AI design concepts, RSMeans cost estimates, permit filing, and a personal project workspace — from first idea to final build. Serving DC, MD & VA.',
   openGraph: {
-    title: 'Your Project Journey: Design → Permits → Estimate → Build',
-    description: 'Four connected services from concept to completion on Kealee.',
+    title: 'Kealee — Plan, Design, Permit & Build in One Platform',
+    description:
+      'AI design concepts, validated cost estimates, permit filing, and a project workspace for every homeowner. Starting at $295.',
     url: 'https://kealee.com',
   },
   alternates: { canonical: '/' },

@@ -34,22 +34,22 @@ const GADS_ID    = process.env.NEXT_PUBLIC_GOOGLE_ADS_ID   // format: AW-XXXXXXX
 
 export const metadata: Metadata = {
   title: {
-    default: 'Kealee — Build Your Project in DC, MD, VA',
+    default: 'Kealee — Design-Build Platform | DC, MD, VA',
     template: '%s — Kealee',
   },
-  description: 'AI-powered permits, design, and construction management for homeowners, contractors, and developers in Washington DC, Maryland, and Virginia.',
+  description: 'Kealee is the end-to-end design-build platform for homeowners — AI design concepts, RSMeans cost estimates, permit filing, and a personal project workspace from first idea to final build. Serving DC, MD & VA.',
   openGraph: {
     type: 'website',
     siteName: 'Kealee',
-    title: 'Kealee — Build Your Project in DC, MD, VA',
-    description: 'AI-powered permits, design, and construction management for homeowners, contractors, and developers in Washington DC, Maryland, and Virginia.',
+    title: 'Kealee — Design-Build Platform | DC, MD, VA',
+    description: 'Kealee is the end-to-end design-build platform for homeowners — AI design concepts, RSMeans cost estimates, permit filing, and a personal project workspace from first idea to final build. Serving DC, MD & VA.',
     url: 'https://kealee.com',
   },
   twitter: {
     card: 'summary_large_image',
     site: '@kealee',
-    title: 'Kealee — Build Your Project in DC, MD, VA',
-    description: 'AI-powered permits, design, and construction management for homeowners, contractors, and developers in Washington DC, Maryland, and Virginia.',
+    title: 'Kealee — Design-Build Platform | DC, MD, VA',
+    description: 'Kealee is the end-to-end design-build platform for homeowners — AI design concepts, RSMeans cost estimates, permit filing, and a personal project workspace from first idea to final build. Serving DC, MD & VA.',
   },
   metadataBase: new URL('https://kealee.com'),
   keywords: [
@@ -58,6 +58,11 @@ export const metadata: Metadata = {
     'home renovation estimate DMV',
     'construction cost estimator',
     'contractor marketplace DC',
+    'design build platform',
+    'design build DC',
+    'home renovation platform',
+    'construction project management',
+    'project workspace homeowner',
   ],
   robots: { index: true, follow: true },
 }
