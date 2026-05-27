@@ -106,7 +106,7 @@ export async function POST(req: NextRequest) {
       const supabase = createClient(supabaseUrl, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
       const { error: otpError } = await supabase.auth.signInWithOtp({
         email,
-        options: { emailRedirectTo: redirectTo, shouldCreateUser: true },
+        options: { emailRedirectTo: `${portalBase}/auth/callback?next=${encodeURIComponent(safeNext)}`, shouldCreateUser: true },
       })
       if (otpError) {
         const isRateLimit = /rate.limit|too many/i.test(otpError.message)

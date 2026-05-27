@@ -1785,7 +1785,7 @@ export default function ConceptDeliverablePage() {
         )}
 
         <BuildPathUpsell
-          sourceProjectPath={projectPath}
+          sourceProjectPath={data.projectPath ?? ''}
           fromIntakeId={intakeId}
           ownedProducts={ownedProducts}
           contractorMatchingUnlocked={data.contractorMatchingUnlocked}
