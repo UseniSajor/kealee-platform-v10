@@ -35,6 +35,7 @@ import {
   generateAndAttachConceptFloorplan,
   generateAndAttachConceptPdf,
 } from '@/lib/concept-output-enrichment'
+import { runZoningBot } from '@kealee/core-rules'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 300 // Claude + Replicate render jobs can take 60–180s
@@ -568,6 +569,61 @@ function intakeFloorplanInput(intake: Record<string, unknown>, intakeId: string)
   }
 }
 
+/** Map a projectPath to the ZoningBot projectType enum */
+function projectPathToZoningType(projectPath: string): 'garden' | 'kitchen' | 'landscape' | 'renovation' {
+  if (projectPath.includes('kitchen')) return 'kitchen'
+  if (projectPath.includes('garden')) return 'garden'
+  if (projectPath.includes('landscape')) return 'landscape'
+  return 'renovation'
+}
+
+/**
+ * Run the zoning bot for tier 2+ when an address is provided.
+ * Merges real jurisdiction/setback/FAR/permit data into the concept output.
+ * Non-fatal — failures are logged but don't block generation.
+ */
+async function enrichWithZoningData(
+  conceptOutput: ConceptOutput,
+  projectPath: string,
+  projectAddress: string | null | undefined,
+  squareFootage: unknown,
+  email: string | null | undefined,
+): Promise<void> {
+  if (!projectAddress?.trim()) return
+  try {
+    const sqFt = typeof squareFootage === 'number'
+      ? squareFootage
+      : typeof squareFootage === 'string'
+      ? parseInt(squareFootage, 10) || 1500
+      : 1500
+
+    const zoning = await runZoningBot({
+      location: projectAddress.trim(),
+      propertySize: sqFt,
+      projectType: projectPathToZoningType(projectPath),
+      email: email?.trim() || 'unknown@kealee.com',
+    })
+
+    // Merge zoning data into the concept output
+    const setbackDesc = `Front: ${zoning.setbacks.front}ft, Side: ${zoning.setbacks.side}ft, Rear: ${zoning.setbacks.rear}ft`
+    const farDesc = zoning.far ? ` FAR: ${zoning.far}.` : ''
+    conceptOutput.zoningNotes =
+      `${zoning.jurisdiction} — Zone: ${zoning.zoning}. Setbacks: ${setbackDesc}.${farDesc}` +
+      (zoning.requirements.length > 0 ? ` Requirements: ${zoning.requirements.join('; ')}.` : '')
+
+    // Merge permit types from zoning bot if it found them
+    if (zoning.permitType.length > 0 && conceptOutput.permitScope) {
+      const existing = conceptOutput.permitScope.permitTypes ?? []
+      const merged = Array.from(new Set([...existing, ...zoning.permitType]))
+      conceptOutput.permitScope.permitTypes = merged
+      if (merged.length > 0) conceptOutput.permitScope.requiresPermit = true
+    }
+  } catch (zoningErr: unknown) {
+    const msg = zoningErr instanceof Error ? zoningErr.message : String(zoningErr)
+    console.warn('[concept/generate] runZoningBot failed (non-fatal):', msg)
+  }
+}
+
 function permitGuidance(permitRequired: string | undefined): string {
   if (permitRequired === 'always') {
     return `PERMIT RULE (from Kealee product catalog): This project type ALWAYS requires a permit in the DMV region. You MUST set "requiresPermit": true in permitScope regardless of scope details. Identify the specific permit types, realistic fees, and processing days for the jurisdiction.`
@@ -945,6 +1001,18 @@ export async function POST(req: NextRequest) {
           notes: 'Permit rarely required for this project type.',
         }
       }
+    }
+
+    // Tier 2+: enrich zoning/permit data from real address via ZoningBot (Claude).
+    // Non-fatal — generation continues even if zoning lookup fails.
+    if (tier >= 2) {
+      await enrichWithZoningData(
+        conceptOutput,
+        projectPath,
+        intake.project_address as string | null | undefined,
+        (existingFormData.squareFootage as unknown) ?? (existingFormData.totalSqFt as unknown),
+        (intake.contact_email as string | null | undefined) ?? (existingFormData.email as string | null | undefined),
+      )
     }
 
     // Fire AI render jobs (non-blocking — Replicate is async).

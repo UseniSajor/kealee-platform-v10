@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect, useCallback } from 'react'
-import { ArrowUp, Loader2 } from 'lucide-react'
+import { ArrowUp, Loader2, Lock } from 'lucide-react'
 import { cn } from '../../lib/utils'
 import type { PortalAskConfig } from './portal-ask-config'
 
@@ -18,6 +18,8 @@ interface Props {
   /** Appended to context for page-aware answers */
   pagePath?: string
   className?: string
+  /** When true, hides the input and shows a "complete your order" message */
+  locked?: boolean
 }
 
 export function PortalAskChatBar({
@@ -25,6 +27,7 @@ export function PortalAskChatBar({
   askEndpoint = '/api/ask',
   pagePath,
   className = '',
+  locked = false,
 }: Props) {
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
@@ -108,6 +111,23 @@ export function PortalAskChatBar({
     },
     [messages, askContext, askEndpoint, isLoading],
   )
+
+  if (locked) {
+    return (
+      <div className={cn('flex flex-col h-full min-h-0 items-center justify-center text-center gap-3 px-4', className)}>
+        <div
+          className="flex h-10 w-10 items-center justify-center rounded-full"
+          style={{ backgroundColor: `${config.accentColor}22` }}
+        >
+          <Lock className="h-5 w-5" style={{ color: config.accentColor }} />
+        </div>
+        <p className="text-sm font-semibold text-slate-700">Ask Kea is included</p>
+        <p className="text-xs text-slate-500 leading-relaxed">
+          Complete your project order to unlock your personal AI assistant and ask anything about your design, permits, or build.
+        </p>
+      </div>
+    )
+  }
 
   return (
     <div className={cn('flex flex-col h-full min-h-0', className)}>

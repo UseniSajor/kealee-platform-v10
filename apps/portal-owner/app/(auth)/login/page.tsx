@@ -7,7 +7,7 @@ import Link from 'next/link'
 import { Home, Mail, Lock, Eye, EyeOff, CheckCircle2, Loader2 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
-type Mode = 'magic' | 'password' | 'create'
+type Mode = 'magic' | 'password' | 'create' | 'forgot'
 
 function LoginForm() {
   const searchParams = useSearchParams()
@@ -114,6 +114,25 @@ function LoginForm() {
     }
   }
 
+  // ── Forgot password ──────────────────────────────────────────────────────────
+  async function handleForgotPassword(e: React.FormEvent) {
+    e.preventDefault()
+    setLoading(true)
+    setError('')
+    try {
+      const portalBase = typeof window !== 'undefined' ? window.location.origin : 'https://owner.kealee.com'
+      const { error: resetErr } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${portalBase}/auth/callback?next=${encodeURIComponent('/reset-password/update')}`,
+      })
+      if (resetErr) throw resetErr
+      setSent(true)
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to send reset email')
+    } finally {
+      setLoading(false)
+    }
+  }
+
   // ── Helpers ─────────────────────────────────────────────────────────────────
   function switchMode(m: Mode) {
     setMode(m)
@@ -134,11 +153,13 @@ function LoginForm() {
           <Home className="h-7 w-7 text-white" />
         </div>
         <h1 className="font-display text-2xl font-bold text-white">
-          {mode === 'create' ? 'Create your account' : 'Owner Portal'}
+          {mode === 'create' ? 'Create your account' : mode === 'forgot' ? 'Reset password' : 'Owner Portal'}
         </h1>
         <p className="mt-1 text-sm" style={{ color: 'rgba(255,255,255,0.5)' }}>
           {mode === 'create'
             ? 'Set a password to access your concept package'
+            : mode === 'forgot'
+            ? 'Enter your email to receive a reset link'
             : mode === 'password'
             ? 'Sign in with your password'
             : 'Enter your email to access your concept package'}
@@ -466,7 +487,69 @@ function LoginForm() {
                 {loading && <Loader2 className="h-4 w-4 animate-spin" />}
                 {loading ? 'Signing in…' : 'Sign In'}
               </button>
+              <p className="mt-3 text-center text-xs">
+                <button type="button" onClick={() => switchMode('forgot')} className="hover:underline" style={{ color: '#2ABFBF' }}>
+                  Forgot password?
+                </button>
+              </p>
             </form>
+          )}
+
+          {/* Forgot password form */}
+          {!sent && mode === 'forgot' && (
+            <form onSubmit={handleForgotPassword} className="space-y-4">
+              {error && (
+                <div className="rounded-lg p-3 text-sm" style={{ backgroundColor: 'rgba(220,38,38,0.2)', color: '#FCA5A5' }}>
+                  {error}
+                </div>
+              )}
+              <div>
+                <label htmlFor="reset-email" className="mb-1 block text-sm font-medium" style={{ color: 'rgba(255,255,255,0.7)' }}>
+                  Email address
+                </label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2" style={{ color: 'rgba(255,255,255,0.3)' }} />
+                  <input
+                    id="reset-email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="w-full rounded-lg border py-2.5 pl-10 pr-4 text-sm text-white placeholder-white/30 focus:outline-none focus:ring-1"
+                    style={{ borderColor: '#2A3D5F', backgroundColor: '#0F1A2E', '--tw-ring-color': '#2ABFBF' } as React.CSSProperties}
+                    placeholder="your@email.com"
+                    required
+                  />
+                </div>
+              </div>
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full rounded-lg py-2.5 text-sm font-semibold text-white disabled:opacity-50 transition-opacity hover:opacity-90 flex items-center justify-center gap-2"
+                style={{ backgroundColor: '#E8793A' }}
+              >
+                {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+                {loading ? 'Sending…' : 'Send Reset Link'}
+              </button>
+              <p className="text-center text-xs">
+                <button type="button" onClick={() => switchMode('password')} className="hover:underline" style={{ color: '#2ABFBF' }}>
+                  Back to sign in
+                </button>
+              </p>
+            </form>
+          )}
+
+          {/* Forgot password sent */}
+          {sent && mode === 'forgot' && (
+            <div className="text-center py-4">
+              <CheckCircle2 className="mx-auto mb-3 h-10 w-10" style={{ color: '#2ABFBF' }} />
+              <p className="font-semibold text-white text-sm">Reset link sent</p>
+              <p className="mt-1 text-xs" style={{ color: 'rgba(255,255,255,0.5)' }}>
+                Check your inbox for <strong className="text-white">{email}</strong> and click the link to set a new password.
+              </p>
+              <button onClick={() => switchMode('password')} className="mt-4 text-xs underline hover:no-underline" style={{ color: '#2ABFBF' }}>
+                Back to sign in
+              </button>
+            </div>
           )}
 
           <p className="mt-6 text-center text-sm" style={{ color: 'rgba(255,255,255,0.5)' }}>

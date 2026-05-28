@@ -47,8 +47,11 @@ export async function sendDeliverableReadyEmail(
   }
 
   const signInUrl = portalAccess.claimUrl
-  const authHubBase = (process.env.NEXT_PUBLIC_AUTH_HUB_URL ?? 'https://kealee.com/auth').replace(/\/$/, '')
-  const accountUrl = `${authHubBase}/complete?welcome=1&email=${encodeURIComponent(to)}&next=${encodeURIComponent(getOwnerPortalDeliverableUrl(intakeId, service))}`
+  // "Create a password" link uses the portal's login page in create-account mode.
+  // Previously pointed to kealee.com/auth/complete which requires an active session
+  // the user doesn't have when arriving from email — causing a 404/auth error.
+  const portalBase = (process.env.NEXT_PUBLIC_PORTAL_URL ?? 'https://owner.kealee.com').replace(/\/$/, '')
+  const accountUrl = `${portalBase}/login?welcome=1&email=${encodeURIComponent(to)}&next=${encodeURIComponent(getOwnerPortalDeliverableUrl(intakeId, service))}`
 
   const upsells = getBuildPathUpsells({
     sourceProjectPath: service,

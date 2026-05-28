@@ -9,12 +9,14 @@ interface Props {
   portal: PortalAskKind
   children: React.ReactNode
   askEndpoint?: string
+  /** Lock the ask bar (no active order) */
+  locked?: boolean
 }
 
 /**
  * Locks Kea ask UI to the right on lg+ so chat never covers portal forms/tables.
  */
-export function PortalPageWithAskRail({ portal, children, askEndpoint }: Props) {
+export function PortalPageWithAskRail({ portal, children, askEndpoint, locked }: Props) {
   const pathname = usePathname()
   const config = PORTAL_ASK_CONFIG[portal]
   const pagePath = pathname.replace(/^\//, '') || 'home'
@@ -48,6 +50,7 @@ export function PortalPageWithAskRail({ portal, children, askEndpoint }: Props) 
               askEndpoint={askEndpoint}
               pagePath={pagePath}
               className="h-full"
+              locked={locked}
             />
           </div>
         </div>
@@ -58,7 +61,7 @@ export function PortalPageWithAskRail({ portal, children, askEndpoint }: Props) 
           <MessageCircle className="w-5 h-5" style={{ color: config.accentColor }} />
           <h2 className="text-sm font-semibold text-slate-900">{config.title}</h2>
         </div>
-        <PortalAskChatBar config={config} askEndpoint={askEndpoint} pagePath={pagePath} />
+        <PortalAskChatBar config={config} askEndpoint={askEndpoint} pagePath={pagePath} locked={locked} />
       </div>
     </div>
   )

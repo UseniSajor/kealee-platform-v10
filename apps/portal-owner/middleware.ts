@@ -24,7 +24,7 @@ export async function middleware(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser()
   const session = user ? { user } : null
 
-  const publicPaths = ['/auth/claim', '/auth/callback', '/account/complete']
+  const publicPaths = ['/auth/claim', '/auth/callback', '/account/complete', '/reset-password']
   if (publicPaths.some((p) => request.nextUrl.pathname.startsWith(p))) {
     return response
   }
@@ -68,5 +68,6 @@ export const config = {
     '/auth/claim',
     '/auth/callback',
     '/auth/callback/:path*',
+    '/reset-password/:path*',
   ],
 }
