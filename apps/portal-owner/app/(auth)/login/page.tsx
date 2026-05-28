@@ -105,8 +105,22 @@ function LoginForm() {
         return
       }
 
-      // Email confirmation is on — tell the user to check inbox
-      setSent(true)
+      // Email confirmation is on — Supabase requires a confirmation email.
+      // Instead of leaving the user stranded, send a magic link so they can
+      // access their concept immediately without waiting for (or missing) a
+      // separate confirmation email from Supabase.
+      const magicRes = await fetch('/api/auth/magic-link', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, next }),
+      })
+      if (magicRes.ok) {
+        setMode('magic')
+        setSent(true)
+      } else {
+        // Fall back to generic "check inbox" if magic link also fails
+        setSent(true)
+      }
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Failed to create account')
     } finally {
@@ -220,8 +234,8 @@ function LoginForm() {
               <CheckCircle2 className="h-6 w-6 mx-auto" style={{ color: '#2ABFBF' }} />
               <p className="font-semibold text-white">Check your inbox</p>
               <p style={{ color: 'rgba(255,255,255,0.6)' }}>
-                We sent a confirmation link to <strong className="text-white">{email}</strong>.
-                Click it to activate your account and view your concept.
+                We sent a one-click sign-in link to <strong className="text-white">{email}</strong>.
+                Click it to access your concept — you can set a password from your account settings once you're in.
               </p>
             </div>
           ) : (
