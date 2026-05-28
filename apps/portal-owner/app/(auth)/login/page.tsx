@@ -288,7 +288,7 @@ function LoginForm() {
                     onChange={(e) => setPassword(e.target.value)}
                     className="w-full rounded-lg border py-2.5 pl-10 pr-10 text-sm text-white placeholder-white/30 focus:outline-none focus:ring-1"
                     style={{ borderColor: '#2A3D5F', backgroundColor: '#0F1A2E', '--tw-ring-color': '#2ABFBF' } as React.CSSProperties}
-                    placeholder="At least 8 characters"
+                    placeholder="Min 8 chars — upper, lower, number, symbol"
                     required
                     minLength={8}
                   />
