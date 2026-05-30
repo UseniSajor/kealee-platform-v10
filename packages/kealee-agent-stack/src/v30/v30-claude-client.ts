@@ -40,13 +40,13 @@ export class V30ClaudeCachedClient {
         ]
       : [{ type: 'text' as const, text: params.system }]
 
-    const response = await this.anthropic.beta.messages.create({
+    const response = await this.anthropic.messages.create({
       model: params.model,
       max_tokens: params.maxTokens,
       system: systemBlocks,
       messages: [{ role: 'user', content: params.user }],
-      betas: ['prompt-caching-2024-07-31'],
-    })
+      ...(cache ? { betas: ['prompt-caching-2024-07-31'] } : {}),
+    } as Parameters<typeof this.anthropic.messages.create>[0])
 
     const block = response.content[0]
     const text = block?.type === 'text' ? block.text : ''
