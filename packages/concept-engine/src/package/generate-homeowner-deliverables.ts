@@ -153,6 +153,8 @@ export function assembleHomeownerDeliverables(opts: {
     floorPlan: {
       floorplanId:  floorplan.id,
       totalAreaFt2: floorplan.totalAreaFt2,
+      totalWidthFt: floorplan.totalWidthFt,
+      totalDepthFt: floorplan.totalDepthFt,
       roomCount:    floorplan.rooms.length,
       rooms:        floorplan.rooms.map(r => ({
         label:   r.label,
@@ -171,6 +173,7 @@ export function assembleHomeownerDeliverables(opts: {
       lifestyleAlignment:narrative.lifestyleAlignment,
       nextSteps:         narrative.nextSteps,
       rooms:             narrative.spaceBySpace,
+      spaceBySpace:      narrative.spaceBySpace,
     },
     scope: {
       totalEstimatedMin: scope.totalEstimatedMin,
@@ -178,6 +181,13 @@ export function assembleHomeownerDeliverables(opts: {
       budgetFitNote:     scope.budgetFitNote,
       topRequiredTrades: topRequired,
       exclusions:        scope.exclusions,
+      lineItems:         scope.scopeItems.map(i => ({
+        trade:         i.trade,
+        description:   i.description,
+        estimatedLow:  `$${i.estimatedCostRange[0].toLocaleString()}`,
+        estimatedHigh: `$${i.estimatedCostRange[1].toLocaleString()}`,
+      })),
+      estimatedTotal: `$${scope.totalEstimatedMin.toLocaleString()} – $${scope.totalEstimatedMax.toLocaleString()}`,
     },
     permit: {
       requiresPermit:     permit.requiresPermit,
@@ -189,12 +199,29 @@ export function assembleHomeownerDeliverables(opts: {
       keyConsiderations:  permit.keyConsiderations,
       disclaimer:         permit.disclaimerNote,
     },
+    permitPath: {
+      requiresPermit:          permit.requiresPermit,
+      likelyPermits:           permit.likelyPermits,
+      estimatedTimeline:       permit.estimatedPermitTimeline,
+      estimatedCost:           `$${permit.estimatedPermitCostRange[0].toLocaleString()} – $${permit.estimatedPermitCostRange[1].toLocaleString()}`,
+      permits:                 permit.likelyPermits,
+      tradeLicenses:           permit.likelyTradePermits,
+      structuralReviewRequired:input.projectPath === 'addition_expansion' || input.projectPath === 'whole_home_remodel',
+      designReviewRequired:    permit.designReviewRequired,
+      notes:                   permit.keyConsiderations,
+      disclaimer:              permit.disclaimerNote,
+    },
     visuals: {
       midjourneyPrompts:      visuals.midjourneyPrompts,
       stableDiffusionPrompts: visuals.stableDiffusionPrompts,
       descriptions:           visuals.descriptions,
       roomFocus:              visuals.roomFocus,
       styleKeywords:          visuals.styleKeywords,
+      materialKeywords:       visuals.materialKeywords,
+      paletteSuggestion:      visuals.paletteSuggestion,
+      lightingDirection:      visuals.lightingDirection,
+      cameraGuidance:         visuals.cameraGuidance,
+      consistencyNotes:       visuals.consistencyNotes,
     },
     nextSteps: {
       recommendedService,
