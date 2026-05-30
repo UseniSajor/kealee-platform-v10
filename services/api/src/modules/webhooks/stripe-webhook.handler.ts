@@ -84,6 +84,32 @@ async function handleCheckoutSessionCompleted(
       }).catch(() => {})
     }
 
+    // Create ConceptPackageOrder so the owner portal success page can poll delivery status.
+    // Use upsert (idempotent) — Stripe may retry the webhook on timeout.
+    const userId = metadata.userId
+    if (userId) {
+      await (prisma as any).conceptPackageOrder.upsert({
+        where: { stripeSessionId: session.id },
+        create: {
+          userId,
+          stripeSessionId:       session.id,
+          stripePaymentIntentId: session.payment_intent as string | undefined,
+          packageTier:           tier ?? 'professional',
+          packageName:           metadata.packageName ?? getPackageName('concept', tier),
+          amount:                session.amount_total ?? 0,
+          currency:              session.currency ?? 'usd',
+          deliveryStatus:        'generating',
+          funnelSessionId:       funnelSessionId ?? null,
+          metadata:              { intakeId, source: 'concept', sessionId: session.id },
+        },
+        update: {
+          // If already exists (duplicate webhook), keep existing delivery status
+        },
+      }).catch((e: any) => {
+        logger.warn({ err: e.message, sessionId: session.id }, 'Failed to upsert ConceptPackageOrder — non-fatal')
+      })
+    }
+
     // Track conversion event
     if (funnelSessionId) {
       await trackConversionEvent(redis, funnelSessionId, 'CONCEPT_PAID', {
