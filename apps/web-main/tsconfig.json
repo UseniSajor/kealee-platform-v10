@@ -15,7 +15,13 @@
     "incremental": true,
     "types": ["node", "react", "react-dom", "jest"],
     "plugins": [{ "name": "next" }],
-    "paths": { "@/*": ["./*"] }
+    "paths": {
+      "@/*": ["./*"],
+      "@kealee/core-rules": ["../../packages/core-rules/src/index.ts"],
+      "@kealee/concept-engine": ["../../packages/concept-engine/src/index.ts"],
+      "@kealee/storage": ["../../packages/storage/src/index.ts"],
+      "@kealee/kealee-agent-stack": ["../../packages/kealee-agent-stack/src/index.ts"]
+    }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
   "exclude": ["node_modules"]

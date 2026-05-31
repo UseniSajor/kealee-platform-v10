@@ -54,7 +54,7 @@ export async function GET(
 
     const { buffer, generated, cachedUrl } = await serveConceptPackagePdf(intake, {
       existingPdfUrl,
-      upload: async (pdfBuffer, id) => {
+      upload: async (pdfBuffer: Buffer, id: string) => {
         const result = await uploadFile({
           bucket: 'designs',
           path: `concept-packages/${id}/concept-package.pdf`,

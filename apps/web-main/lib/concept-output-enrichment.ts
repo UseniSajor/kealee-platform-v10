@@ -215,7 +215,7 @@ export async function generateAndAttachConceptFloorplan(
         roomCount: result.roomCount,
         totalWidthFt: result.floorplanJson.totalWidthFt,
         totalDepthFt: result.floorplanJson.totalDepthFt,
-        rooms: result.floorplanJson.rooms.map((r) => ({
+        rooms: result.floorplanJson.rooms.map((r: { label: string; widthFt: number; depthFt: number; areaFt2: number; type: string }) => ({
           label: r.label,
           widthFt: r.widthFt,
           depthFt: r.depthFt,
@@ -256,7 +256,7 @@ export async function generateAndAttachConceptPdf(intake: IntakePdfRow): Promise
     const { uploadFile } = await import('@kealee/storage')
 
     const { cachedUrl } = await serveConceptPackagePdf(intake, {
-      upload: async (pdfBuffer, intakeId) => {
+      upload: async (pdfBuffer: Buffer, intakeId: string) => {
         const result = await uploadFile({
           bucket: 'designs',
           path: `concept-packages/${intakeId}/concept-package.pdf`,
