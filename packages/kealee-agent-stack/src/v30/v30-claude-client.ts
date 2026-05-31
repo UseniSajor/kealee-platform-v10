@@ -40,13 +40,16 @@ export class V30ClaudeCachedClient {
         ]
       : [{ type: 'text' as const, text: params.system }]
 
-    const response = await this.anthropic.messages.create({
+    // Cast through `any` so TypeScript doesn't widen to Stream|Message union.
+    // The prompt-caching beta requires system to be a ContentBlock array, which
+    // the SDK non-beta types don't accept — the runtime API handles both forms.
+    const response = (await (this.anthropic.messages as any).create({
       model: params.model,
       max_tokens: params.maxTokens,
       system: systemBlocks,
       messages: [{ role: 'user', content: params.user }],
       ...(cache ? { betas: ['prompt-caching-2024-07-31'] } : {}),
-    } as Parameters<typeof this.anthropic.messages.create>[0])
+    })) as Anthropic.Message
 
     const block = response.content[0]
     const text = block?.type === 'text' ? block.text : ''
