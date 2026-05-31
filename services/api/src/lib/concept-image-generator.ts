@@ -4,7 +4,7 @@
  * Pattern: intake data → build prompt → Replicate prediction → poll → return image URLs
  */
 
-import { Anthropic } from '@anthropic-ai/sdk'
+import Anthropic from '@anthropic-ai/sdk'
 import { archiveReplicateOutputsFireAndForget } from '@kealee/storage'
 
 const REPLICATE_MODEL = 'black-forest-labs/flux-1.1-pro-ultra'

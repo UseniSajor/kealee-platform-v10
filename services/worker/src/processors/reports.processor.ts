@@ -243,8 +243,15 @@ async function addCustomContent(
 }
 
 /**
- * // --- HTML GENERATION (FIXED) ---
-const html = `<!DOCTYPE html>
+ * Generate HTML report
+ */
+async function generateHTMLReport(job: Job<ReportJobData>): Promise<ReportResult> {
+  const { type, title, data } = job.data
+  const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
+  const filename = `${type}-${timestamp}.html`
+  const filePath = join(REPORTS_DIR, filename)
+
+  const html = `<!DOCTYPE html>
 <html>
 <head>
   <meta charset="utf-8">
@@ -252,52 +259,81 @@ const html = `<!DOCTYPE html>
 </head>
 <body>
   <h1>${title}</h1>
+  <pre>${JSON.stringify(data, null, 2)}</pre>
 </body>
-</html>`;
-// --- CSV HELPERS (FIXED) ---
-function escapeCsv(s: any) {
-  if (s === null || s === undefined) return '';
-  s = String(s);
+</html>`
 
-  if (s.includes(",") || s.includes('"') || s.includes("\n")) {
-    return '"' + s.replace(/"/g, '""') + '"';
+  const fsP = await import('fs/promises')
+  await fsP.writeFile(filePath, html, 'utf8')
+  const stats = await fsP.stat(filePath)
+
+  return {
+    success: true,
+    filePath,
+    fileUrl: `${REPORTS_URL_PREFIX}/${filename}`,
+    fileSize: stats.size,
+    format: 'html',
+    pages: 1,
+    generatedAt: new Date(),
   }
-
-  return s;
-}
-// --- CSV GENERATION (FIXED) ---
-let csvContent = "";
-
-// headers
-csvContent += headers.map(escapeCsv).join(",") + "\n";
-
-// rows
-for (const row of rows) {
-  csvContent += headers.map(h => escapeCsv(row[h])).join(",") + "\n";
 }
 
-// key/value section
-csvContent += "Key,Value\n";
+/**
+ * Generate CSV report
+ */
+async function generateCSVReport(job: Job<ReportJobData>): Promise<ReportResult> {
+  const { type, data } = job.data
+  const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
+  const filename = `${type}-${timestamp}.csv`
+  const filePath = join(REPORTS_DIR, filename)
 
-for (const [key, value] of Object.entries(summary || {})) {
-  if (typeof value === "object" && value !== null) {
-    for (const [k, v] of Object.entries(value)) {
-      csvContent += escapeCsv(key + "." + k) + "," + escapeCsv(v) + "\n";
+  function escapeCsv(s: any): string {
+    if (s === null || s === undefined) return ''
+    s = String(s)
+    if (s.includes(',') || s.includes('"') || s.includes('\n')) {
+      return '"' + s.replace(/"/g, '""') + '"'
     }
-  } else {
-    csvContent += escapeCsv(key) + "," + escapeCsv(value) + "\n";
+    return s
   }
-}
 
-  const fsP=await import("fs/promises")
-  await fsP.writeFile(filePath,csvContent,"utf8")
-  const stats=await fsP.stat(filePath)
+  const summary = data as Record<string, any>
+  const rows: Array<Record<string, any>> = Array.isArray(data.rows) ? data.rows : []
+  const headers: string[] = rows.length > 0 ? Object.keys(rows[0]) : []
 
-  return{
-    success:true,filePath,
-    fileUrl:REPORTS_URL_PREFIX+"/"+filename,
-    fileSize:stats.size,format:"csv",pages:1,
-    generatedAt:new Date(),
+  let csvContent = ''
+
+  if (headers.length > 0) {
+    csvContent += headers.map(escapeCsv).join(',') + '\n'
+    for (const row of rows) {
+      csvContent += headers.map((h) => escapeCsv(row[h])).join(',') + '\n'
+    }
+    csvContent += '\n'
+  }
+
+  csvContent += 'Key,Value\n'
+  for (const [key, value] of Object.entries(summary)) {
+    if (key === 'rows') continue
+    if (typeof value === 'object' && value !== null) {
+      for (const [k, v] of Object.entries(value)) {
+        csvContent += escapeCsv(key + '.' + k) + ',' + escapeCsv(v) + '\n'
+      }
+    } else {
+      csvContent += escapeCsv(key) + ',' + escapeCsv(value) + '\n'
+    }
+  }
+
+  const fsP = await import('fs/promises')
+  await fsP.writeFile(filePath, csvContent, 'utf8')
+  const stats = await fsP.stat(filePath)
+
+  return {
+    success: true,
+    filePath,
+    fileUrl: `${REPORTS_URL_PREFIX}/${filename}`,
+    fileSize: stats.size,
+    format: 'csv',
+    pages: 1,
+    generatedAt: new Date(),
   }
 }
 

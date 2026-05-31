@@ -28,7 +28,7 @@ if (SENDGRID_API_KEY) {
     sendGridClient = sgMail
     logger.info('SendGrid initialized for email delivery')
   } catch (err) {
-    logger.warn('SendGrid not available, falling back to console:', err)
+    logger.warn({ err }, 'SendGrid not available, falling back to console')
   }
 }
 
@@ -145,7 +145,7 @@ ${message.html}
       return { success: true, messageId: 'console-logged' }
     }
   } catch (error) {
-    logger.error(`Failed to send email to ${emailData.to}:`, error)
+    logger.error({ err: error }, `Failed to send email to ${emailData.to}`)
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error'
@@ -174,7 +174,7 @@ export async function setupEmailProcessor(redis: Redis) {
           throw new Error(result.error || 'Email send failed')
         }
       } catch (error) {
-        logger.error(`Email job failed: ${job.id}`, error)
+        logger.error({ err: error }, `Email job failed: ${job.id}`)
 
         // Retry logic
         const attempt = (job.attemptsMade ?? 0) + 1
@@ -190,12 +190,6 @@ export async function setupEmailProcessor(redis: Redis) {
     {
       connection: redis,
       concurrency: 5,
-      defaultJobOptions: {
-        attempts: 3,
-        backoff: { type: 'exponential', delay: 2000 },
-        removeOnComplete: true,
-        removeOnFail: false,
-      }
     }
   )
 
@@ -205,11 +199,11 @@ export async function setupEmailProcessor(redis: Redis) {
   })
 
   worker.on('failed', (job, error) => {
-    logger.error(`Email job failed: ${job?.id}`, error)
+    logger.error({ err: error }, `Email job failed: ${job?.id}`)
   })
 
   worker.on('error', (error) => {
-    logger.error('Email worker error:', error)
+    logger.error({ err: error }, 'Email worker error')
   })
 
   logger.info('Email processor initialized and listening')

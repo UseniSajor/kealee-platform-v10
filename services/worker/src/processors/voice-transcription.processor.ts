@@ -107,7 +107,7 @@ async function transcribeVoiceNote(job: Job<CaptureAnalysisJobData>): Promise<vo
 
       const urlPath = new URL(storageUrl).pathname
       const ext = urlPath.split('.').pop() || 'webm'
-      const file = new File([audioBuffer], `voice_note_${voiceNoteId}.${ext}`, { type: `audio/${ext}` })
+      const file = new File([audioBuffer as unknown as BlobPart], `voice_note_${voiceNoteId}.${ext}`, { type: `audio/${ext}` })
 
       const transcription = await client.audio.transcriptions.create({
         model: 'whisper-1',

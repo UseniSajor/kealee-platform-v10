@@ -1,4 +1,4 @@
-import { Anthropic } from "@anthropic-ai/sdk";
+import Anthropic from "@anthropic-ai/sdk";
 import { prisma } from "@kealee/core-ddts";
 import { zoningService } from "../modules/zoning/zoning.service";
 

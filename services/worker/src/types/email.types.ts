@@ -281,7 +281,7 @@ export const EMAIL_TEMPLATES: Record<string, EmailTemplate> = {
           <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:16px;margin:24px 0;">
             <p style="margin:0 0 8px;font-weight:600;">Order Summary</p>
             <p style="margin:0;color:#6b7280;">Package: {{packageName}} ({{packageTier}})</p>
-            <p style="margin:0;color:#6b7280;">Amount: ${{amount}}</p>
+            <p style="margin:0;color:#6b7280;">Amount: \${{amount}}</p>
           </div>
           <h3>What happens next?</h3>
           <ol style="color:#374151;line-height:1.8;">
@@ -299,7 +299,7 @@ export const EMAIL_TEMPLATES: Record<string, EmailTemplate> = {
         </div>
       </div>
     `,
-    text: `Order Confirmed\n\nHi {{customerName}},\n\nYour {{packageName}} ({{packageTier}}) has been confirmed.\nAmount: ${{amount}}\n\nWhat happens next:\n1. Our AI system generates your concept package (up to 24 hours)\n2. You'll receive an email when your concept is ready\n3. View and download from your dashboard\n\nDashboard: https://kealee.com/dashboard\nQuestions? Call (301) 575-8777\n`,
+    text: `Order Confirmed\n\nHi {{customerName}},\n\nYour {{packageName}} ({{packageTier}}) has been confirmed.\nAmount: \${{amount}}\n\nWhat happens next:\n1. Our AI system generates your concept package (up to 24 hours)\n2. You'll receive an email when your concept is ready\n3. View and download from your dashboard\n\nDashboard: https://kealee.com/dashboard\nQuestions? Call (301) 575-8777\n`,
   },
   account_setup: {
     subject: 'Set up your Kealee dashboard account',
@@ -345,7 +345,7 @@ export const EMAIL_TEMPLATES: Record<string, EmailTemplate> = {
         </div>
         <div style="background:white;padding:32px;border:1px solid #e5e7eb;border-top:none;">
           <p>Hi {{customerName}},</p>
-          <p>Thank you — your payment of <strong>${{amount}}</strong> for <strong>{{packageName}}</strong> has been received.</p>
+          <p>Thank you — your payment of <strong>\${{amount}}</strong> for <strong>{{packageName}}</strong> has been received.</p>
           <h3>What happens next?</h3>
           <ol style="color:#374151;line-height:1.8;">
             <li>Our AI system begins generating your deliverable (up to 24 hours)</li>
@@ -362,7 +362,7 @@ export const EMAIL_TEMPLATES: Record<string, EmailTemplate> = {
         </div>
       </div>
     `,
-    text: `Payment Confirmed\n\nHi {{customerName}},\n\nThank you — your payment of ${{amount}} for {{packageName}} has been received.\n\nWhat happens next:\n1. Our AI system begins generating your deliverable (up to 24 hours)\n2. You will receive an email when it is ready\n3. Access it from your portal: {{portalUrl}}\n\nPortal login: {{loginEmail}}\n\nQuestions? Call (301) 575-8777\n`,
+    text: `Payment Confirmed\n\nHi {{customerName}},\n\nThank you — your payment of \${{amount}} for {{packageName}} has been received.\n\nWhat happens next:\n1. Our AI system begins generating your deliverable (up to 24 hours)\n2. You will receive an email when it is ready\n3. Access it from your portal: {{portalUrl}}\n\nPortal login: {{loginEmail}}\n\nQuestions? Call (301) 575-8777\n`,
   },
 
   // ---------------------------------------------------------------------------
