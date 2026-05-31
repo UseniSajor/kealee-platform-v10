@@ -4,7 +4,6 @@
     "module": "commonjs",
     "lib": ["ES2020"],
     "outDir": "./dist",
-    "rootDir": "./src",
     "strict": false,
     "esModuleInterop": true,
     "skipLibCheck": true,
@@ -13,9 +12,12 @@
     "moduleResolution": "node",
     "baseUrl": ".",
     "paths": {
-      "@kealee/ai": ["../../packages/ai/dist"],
-      "@kealee/page-builder": ["../../packages/page-builder/dist"],
-      "@kealee/realtime": ["../../packages/realtime/dist"]
+      "@kealee/ai": ["../../packages/ai/src/index.ts"],
+      "@kealee/page-builder": ["../../packages/page-builder/src/index.ts"],
+      "@kealee/realtime": ["../../packages/realtime/src/index.ts"],
+      "@kealee/concept-engine": ["../../packages/concept-engine/src/index.ts"],
+      "@kealee/storage": ["../../packages/storage/src/index.ts"],
+      "@kealee/core": ["../../packages/core/src/index.ts"]
     }
   },
   "include": ["src/**/*"],
