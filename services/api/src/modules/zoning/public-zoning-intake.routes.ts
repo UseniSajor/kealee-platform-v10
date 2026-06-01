@@ -57,6 +57,7 @@ function scoreZoningLead(data: ZoningIntake): {
 } {
   let score = 0
   let complexityDeduction = 0
+  let buildType: string | undefined
   const flags: Record<string, boolean | string> = {
     jurisdictionSimplified: false,
     structuralRequired: false,
@@ -114,15 +115,16 @@ function scoreZoningLead(data: ZoningIntake): {
 
   // Project type (0-20 points)
   if (data.desiredBuild) {
-    const buildType = data.desiredBuild.toLowerCase()
-    if (buildType.includes('adu')) {
+    buildType = data.desiredBuild.toLowerCase()
+    const bt: string = buildType!
+    if (bt.includes('adu')) {
       score += 12
       complexityDeduction += 3 // ADU has specific requirements
-    } else if (buildType.includes('addition')) {
+    } else if (bt.includes('addition')) {
       score += 10
-    } else if (buildType.includes('renovation')) {
+    } else if (bt.includes('renovation')) {
       score += 8
-    } else if (buildType.includes('new')) {
+    } else if (bt.includes('new')) {
       score += 18
       complexityDeduction += 8
     }
@@ -193,7 +195,7 @@ function scoreZoningLead(data: ZoningIntake): {
 
 export async function registerPublicZoningRoutes(fastify: FastifyInstance) {
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-    apiVersion: '2024-04-10',
+    apiVersion: '2024-04-10' as any,
   })
 
   const redis = await RedisClient.getInstance()
@@ -213,7 +215,7 @@ export async function registerPublicZoningRoutes(fastify: FastifyInstance) {
 
       // Generate unique IDs
       const intakeId = `zoning_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
-      const funnelSessionId = (request.cookies as any)?.funnelSessionId || `fs_${Date.now()}`
+      const funnelSessionId = (request as any).cookies?.funnelSessionId || `fs_${Date.now()}`
 
       // Store intake in Redis with 7-day TTL
       await redis.setex(
@@ -419,8 +421,8 @@ export async function registerPublicZoningRoutes(fastify: FastifyInstance) {
     '/zoning/:intakeId/schedule-consultation',
     async (request, reply) => {
       try {
-        const { intakeId } = request.params
-        const { preferredDate, notes } = request.body
+        const { intakeId } = request.params as { intakeId: string }
+        const { preferredDate, notes } = request.body as any
 
         const intakeData = await redis.get(`zoning_intake:${intakeId}`)
         if (!intakeData) {

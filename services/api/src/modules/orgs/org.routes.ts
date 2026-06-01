@@ -11,10 +11,10 @@ import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 export async function orgRoutes(fastify: FastifyInstance) {
   // Register per-org rate limiting for org routes
-  await fastify.register(rateLimit, {
+  await (fastify as any).register(rateLimit, {
     max: RATE_LIMIT_CONFIG.perUser.max,
     timeWindow: RATE_LIMIT_CONFIG.perUser.timeWindow,
-    keyGenerator: (request) => {
+    keyGenerator: (request: any) => {
       const orgId =
         (request.params as any)?.id ||
         (request.query as any)?.orgId ||
@@ -77,7 +77,7 @@ export async function orgRoutes(fastify: FastifyInstance) {
         return reply.code(201).send({ org })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(400).send({
+        return (reply as any).code(400).send({
           error: sanitizeErrorMessage(error, 'Failed to create organization'),
         })
       }

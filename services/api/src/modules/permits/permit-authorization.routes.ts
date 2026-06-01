@@ -64,7 +64,7 @@ export async function registerPermitAuthorizationRoutes(fastify: FastifyInstance
         const validatedData = PermitAuthorizationRequestSchema.parse(request.body)
 
         // Create authorization record
-        const authorization = await prisma.permitAuthorization.create({
+        const authorization = await (prisma as any).permitAuthorization.create({
           data: {
             projectId: validatedData.projectId,
             permitId: validatedData.permitId,
@@ -141,7 +141,7 @@ export async function registerPermitAuthorizationRoutes(fastify: FastifyInstance
         const validatedData = PermitAuthorizationSignatureSchema.parse(request.body)
 
         // Get authorization record
-        const authorization = await prisma.permitAuthorization.findUniqueOrThrow({
+        const authorization = await (prisma as any).permitAuthorization.findUniqueOrThrow({
           where: { id: authorizationId },
         })
 
@@ -152,7 +152,7 @@ export async function registerPermitAuthorizationRoutes(fastify: FastifyInstance
           !authorization.contractorSignedAt
 
         // Update authorization with signatures
-        const updated = await prisma.permitAuthorization.update({
+        const updated = await (prisma as any).permitAuthorization.update({
           where: { id: authorizationId },
           data: {
             ...(isOwnerSigning && {
@@ -174,7 +174,7 @@ export async function registerPermitAuthorizationRoutes(fastify: FastifyInstance
 
         // Mark as complete if all signatures obtained
         if (allSignaturesComplete) {
-          await prisma.permitAuthorization.update({
+          await (prisma as any).permitAuthorization.update({
             where: { id: authorizationId },
             data: {
               consentGiven: true,
@@ -238,7 +238,7 @@ export async function registerPermitAuthorizationRoutes(fastify: FastifyInstance
       try {
         const { authorizationId } = request.params
 
-        const authorization = await prisma.permitAuthorization.findUniqueOrThrow({
+        const authorization = await (prisma as any).permitAuthorization.findUniqueOrThrow({
           where: { id: authorizationId },
         })
 
@@ -287,7 +287,7 @@ export async function registerPermitAuthorizationRoutes(fastify: FastifyInstance
         const { authorizationId } = request.params as { authorizationId: string }
         const { reason } = request.body
 
-        await prisma.permitAuthorization.update({
+        await (prisma as any).permitAuthorization.update({
           where: { id: authorizationId },
           data: {
             revokedAt: new Date(),
@@ -327,7 +327,7 @@ export async function registerPermitAuthorizationRoutes(fastify: FastifyInstance
       try {
         const { permitId } = request.params
 
-        const authorization = await prisma.permitAuthorization.findFirst({
+        const authorization = await (prisma as any).permitAuthorization.findFirst({
           where: { permitId },
         })
 

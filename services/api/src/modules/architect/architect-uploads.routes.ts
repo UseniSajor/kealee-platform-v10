@@ -54,7 +54,7 @@ const architectUploadsRoutes: FastifyPluginAsync = async (fastify) => {
 
       const category = categoryMap[fileType] || ('DESIGN_FILE' as FileCategory)
 
-      const parts = request.parts()
+      const parts = (request as any).parts()
       const uploads: any[] = []
 
       for await (const part of parts) {
@@ -145,7 +145,7 @@ const architectUploadsRoutes: FastifyPluginAsync = async (fastify) => {
       }
 
       const userRole: UploadedByRole = 'ARCHITECT'
-      const parts = request.parts()
+      const parts = (request as any).parts()
       const uploads: any[] = []
 
       for await (const part of parts) {
@@ -227,7 +227,7 @@ const architectUploadsRoutes: FastifyPluginAsync = async (fastify) => {
       }
 
       const userRole: UploadedByRole = 'ARCHITECT'
-      const parts = request.parts()
+      const parts = (request as any).parts()
       const uploads: any[] = []
 
       for await (const part of parts) {
@@ -286,7 +286,7 @@ const architectUploadsRoutes: FastifyPluginAsync = async (fastify) => {
       }
 
       const userRole: UploadedByRole = 'ARCHITECT'
-      const parts = request.parts()
+      const parts = (request as any).parts()
       const uploads: any[] = []
 
       for await (const part of parts) {
@@ -349,7 +349,7 @@ const architectUploadsRoutes: FastifyPluginAsync = async (fastify) => {
       }
 
       const userRole: UploadedByRole = 'ARCHITECT'
-      const parts = request.parts()
+      const parts = (request as any).parts()
       const uploads: any[] = []
 
       for await (const part of parts) {
@@ -538,7 +538,7 @@ const architectUploadsRoutes: FastifyPluginAsync = async (fastify) => {
       }
 
       const userRole: UploadedByRole = 'ARCHITECT'
-      const parts = request.parts()
+      const parts = (request as any).parts()
       const uploads: any[] = []
 
       for await (const part of parts) {
@@ -625,7 +625,7 @@ const architectUploadsRoutes: FastifyPluginAsync = async (fastify) => {
       }
 
       const userRole: UploadedByRole = 'ARCHITECT'
-      const parts = request.parts()
+      const parts = (request as any).parts()
       const uploads: any[] = []
 
       for await (const part of parts) {

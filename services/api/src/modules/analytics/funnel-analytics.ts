@@ -7,7 +7,8 @@
 import type { FastifyInstance, FastifyRequest } from 'fastify'
 import { prisma } from '@kealee/database'
 import { RedisClient } from '@kealee/redis'
-import type { ConversionEvent } from '@kealee/database'
+// ConversionEvent is a string event name (e.g. 'concept.started')
+type ConversionEvent = string
 
 // ============================================================================
 // EVENT TYPES
@@ -334,7 +335,7 @@ export async function registerAnalyticsRoutes(fastify: FastifyInstance) {
     '/analytics/stats',
     { preHandler: [async (request, reply) => {
       // Add authorization check here if needed
-      if (!process.env.ANALYTICS_SECRET_KEY || request.query.apiKey !== process.env.ANALYTICS_SECRET_KEY) {
+      if (!process.env.ANALYTICS_SECRET_KEY || (request.query as any).apiKey !== process.env.ANALYTICS_SECRET_KEY) {
         return reply.status(403).send({ error: 'UNAUTHORIZED' })
       }
     }] },

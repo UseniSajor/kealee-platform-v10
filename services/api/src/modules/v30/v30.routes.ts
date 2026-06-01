@@ -166,7 +166,7 @@ export async function v30Routes(fastify: FastifyInstance) {
         await prisma.project.update({
           where: { id: bridge.projectId },
           data: {
-            categoryMetadata: { ...meta, intakeLeadId: parsed.data.intakeLeadId, v30: true, v30LotContext: lotContext },
+            categoryMetadata: { ...meta, intakeLeadId: parsed.data.intakeLeadId, v30: true, v30LotContext: lotContext } as any,
           },
         })
       }

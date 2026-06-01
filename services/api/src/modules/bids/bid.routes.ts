@@ -213,7 +213,7 @@ export async function bidRoutes(fastify: FastifyInstance) {
     let type = 'OTHER'
     let notes = ''
 
-    const parts = request.parts()
+    const parts = (request as any).parts()
     for await (const part of parts) {
       if (part.type === 'file') {
         fileBuffer = await part.toBuffer()

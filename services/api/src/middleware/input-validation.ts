@@ -304,7 +304,7 @@ export const FILE_VALIDATION_PRESETS = {
  */
 export function validateFile(config: FileValidationConfig) {
   return async (request: FastifyRequest, reply: FastifyReply) => {
-    const data = await request.file();
+    const data = await (request as any).file();
 
     if (!data) {
       return reply.status(400).send({

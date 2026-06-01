@@ -12,10 +12,10 @@ import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 export async function userRoutes(fastify: FastifyInstance) {
   // Register per-user rate limiting for user routes
-  await fastify.register(rateLimit, {
+  await (fastify as any).register(rateLimit, {
     max: RATE_LIMIT_CONFIG.perUser.max,
     timeWindow: RATE_LIMIT_CONFIG.perUser.timeWindow,
-    keyGenerator: (request) => {
+    keyGenerator: (request: any) => {
       const user = (request as any).user
       return user?.id ? `user:${user.id}` : request.ip || 'unknown'
     },
@@ -94,7 +94,7 @@ export async function userRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         const statusCode = (error instanceof Error && error.message === 'User not found') ? 404 : 500
-        return reply.code(statusCode).send({
+        return (reply as any).code(statusCode).send({
           error: sanitizeErrorMessage(error, 'Failed to get user'),
         })
       }

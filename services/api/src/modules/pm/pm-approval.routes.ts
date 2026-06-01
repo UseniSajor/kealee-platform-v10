@@ -100,7 +100,7 @@ export async function pmApprovalRoutes(fastify: FastifyInstance) {
 
         // Check if multipart/form-data (has files)
         if (contentType.includes('multipart/form-data')) {
-          const data = await request.file()
+          const data = await (request as any).file()
 
           if (!data) {
             return reply.code(400).send({ error: 'No data provided' })
@@ -136,7 +136,7 @@ export async function pmApprovalRoutes(fastify: FastifyInstance) {
           }
 
           // Handle multiple files if provided
-          const files = await request.saveRequestFiles()
+          const files = await (request as any).saveRequestFiles()
           for (const file of files) {
             if ((file as any).filename !== data.filename) {
               const buffer = await file.toBuffer()
@@ -501,7 +501,7 @@ export async function pmApprovalRoutes(fastify: FastifyInstance) {
       try {
         const user = (request as any).user
         const { id } = request.params as { id: string }
-        const data = await request.file()
+        const data = await (request as any).file()
 
         if (!data) {
           return reply.code(400).send({ error: 'No file provided' })

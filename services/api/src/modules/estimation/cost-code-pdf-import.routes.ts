@@ -40,7 +40,7 @@ export async function costCodePdfImportRoutes(fastify: FastifyInstance) {
 
   fastify.post('/pdf/upload', async (request, reply) => {
     try {
-      const data = await request.file()
+      const data = await (request as any).file()
       if (!data) {
         return reply.code(400).send({ error: 'No file uploaded' })
       }
@@ -180,7 +180,7 @@ export async function costCodePdfImportRoutes(fastify: FastifyInstance) {
 
   fastify.post('/pdf/upload-ctc', async (request, reply) => {
     try {
-      const data = await request.file()
+      const data = await (request as any).file()
       if (!data) {
         return reply.code(400).send({ error: 'No file uploaded' })
       }

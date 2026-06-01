@@ -62,7 +62,7 @@ export abstract class BaseOrgBot {
           throw new Error("No text content in model response");
         }
 
-        const raw = this.extractJSON(content.text);
+        const raw = this.extractJSON(content.text ?? '');
         const decision = validateDecision(raw);
 
         console.info(

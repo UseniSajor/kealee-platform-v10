@@ -31,7 +31,7 @@ async function verifyViaVaDporApi(licenseNum: string): Promise<{
     )
     if (!response.ok) return { found: false }
 
-    const data = await response.json()
+    const data = await response.json() as any
     return {
       found: true,
       status: data.LicenseStatus ?? data.status,

@@ -101,7 +101,7 @@ export class AccelaPermitAdapter implements PermitAdapter {
         }
       }
 
-      const record = await resp.json()
+      const record = await resp.json() as any
 
       return {
         permitNumber,
@@ -178,7 +178,7 @@ export class AccelaPermitAdapter implements PermitAdapter {
         }
       }
 
-      const record = await resp.json()
+      const record = await resp.json() as any
       return {
         permitNumber: record.id,
         success: true,
@@ -229,7 +229,7 @@ export class AccelaPermitAdapter implements PermitAdapter {
           })
 
           if (resp.ok) {
-            const result = await resp.json()
+            const result = await resp.json() as any
             return { filename: doc.filename, success: true, remoteId: result.id }
           } else {
             return { filename: doc.filename, success: false, error: resp.statusText }

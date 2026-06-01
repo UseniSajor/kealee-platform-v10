@@ -60,7 +60,7 @@ export async function checkoutPricingRoutes(fastify: FastifyInstance) {
         const input = CalculatePricingSchema.parse(request.body)
 
         // Calculate pricing
-        const pricing = pricingEngine.calculateFinalPrice(input)
+        const pricing = pricingEngine.calculateFinalPrice(input as any)
 
         // Log pricing calculation
         console.log(`✅ Pricing calculated: ${input.serviceType} - ${input.tier} = $${pricing.finalPrice}`)

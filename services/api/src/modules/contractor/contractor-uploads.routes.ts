@@ -49,7 +49,7 @@ const contractorUploadsRoutes: FastifyPluginAsync = async (fastify) => {
       }
       const userRole: UploadedByRole = 'CONTRACTOR'
 
-      const parts = request.parts()
+      const parts = (request as any).parts()
       const uploads: any[] = []
 
       for await (const part of parts) {
@@ -109,7 +109,7 @@ const contractorUploadsRoutes: FastifyPluginAsync = async (fastify) => {
       }
 
       const userRole: UploadedByRole = 'CONTRACTOR'
-      const parts = request.parts()
+      const parts = (request as any).parts()
       const receipts: any[] = []
 
       for await (const part of parts) {
@@ -363,7 +363,7 @@ const contractorUploadsRoutes: FastifyPluginAsync = async (fastify) => {
       }
 
       const userRole: UploadedByRole = 'CONTRACTOR'
-      const parts = request.parts()
+      const parts = (request as any).parts()
       const uploads: any[] = []
 
       for await (const part of parts) {
@@ -422,7 +422,7 @@ const contractorUploadsRoutes: FastifyPluginAsync = async (fastify) => {
       }
 
       const userRole: UploadedByRole = 'CONTRACTOR'
-      const parts = request.parts()
+      const parts = (request as any).parts()
       const uploads: any[] = []
 
       for await (const part of parts) {

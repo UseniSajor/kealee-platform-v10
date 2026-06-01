@@ -71,7 +71,7 @@ export async function registerAdminRoutes(fastify: FastifyInstance) {
   createBullBoard({ queues, serverAdapter })
 
   // Register Bull Board at /admin/queues
-  await fastify.register(serverAdapter.registerPlugin(), {
+  await (fastify as any).register(serverAdapter.registerPlugin(), {
     prefix: '/admin/queues',
     basePath: '/admin/queues',
   })
@@ -86,7 +86,7 @@ export async function registerAdminRoutes(fastify: FastifyInstance) {
       for (const name of QUEUE_NAMES) {
         try {
           const queue = new Queue(name, { connection: redis })
-          const counts = await queue.getCountsPerState('wait', 'active', 'completed', 'failed')
+          const counts = await queue.getJobCounts('wait', 'active', 'completed', 'failed')
           queueStats[name] = { waiting: counts.wait || 0, active: counts.active || 0, completed: counts.completed || 0, failed: counts.failed || 0 }
           await queue.close()
         } catch {

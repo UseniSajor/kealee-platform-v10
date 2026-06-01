@@ -181,7 +181,7 @@ export async function costImportRoutes(fastify: FastifyInstance) {
 
   fastify.post('/import/csv', async (request, reply) => {
     try {
-      const data = await request.file()
+      const data = await (request as any).file()
       if (!data) {
         return reply.code(400).send({ error: 'No file uploaded' })
       }

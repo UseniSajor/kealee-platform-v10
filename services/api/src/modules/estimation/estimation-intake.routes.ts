@@ -15,7 +15,7 @@ import { z } from 'zod'
 import { RedisClient } from '@kealee/redis'
 import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY ?? '', { apiVersion: '2024-04-10' })
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY ?? '', { apiVersion: '2024-04-10' as any })
 
 // ── Estimation tiers ──────────────────────────────────────────────────────────────
 const ESTIMATION_TIERS = {
@@ -77,7 +77,7 @@ export async function estimationIntakeRoutes(fastify: FastifyInstance) {
 
       // Generate unique intakeId
       const intakeId = `est_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
-      const funnelSessionId = (request.cookies as any)?.funnelSessionId || `fs_${Date.now()}`
+      const funnelSessionId = (request as any).cookies?.funnelSessionId || `fs_${Date.now()}`
 
       // Store intake in Redis with 7-day TTL
       await redis.setex(

@@ -62,7 +62,7 @@ export async function chunkedUploadRoutes(fastify: FastifyInstance) {
     '/chunk',
     async (request: FastifyRequest, reply: FastifyReply) => {
       try {
-        const parts = request.parts();
+        const parts = (request as any).parts();
         let uploadId = '';
         let index = -1;
         let totalChunks = -1;

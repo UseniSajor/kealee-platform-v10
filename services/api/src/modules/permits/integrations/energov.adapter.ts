@@ -71,7 +71,7 @@ export class EnerGovPermitAdapter implements PermitAdapter {
         }
       }
 
-      const permit = await resp.json()
+      const permit = await resp.json() as any
 
       return {
         permitNumber,
@@ -141,7 +141,7 @@ export class EnerGovPermitAdapter implements PermitAdapter {
         }
       }
 
-      const result = await resp.json()
+      const result = await resp.json() as any
       return {
         permitNumber: result.permitNumber,
         success: true,
@@ -187,7 +187,7 @@ export class EnerGovPermitAdapter implements PermitAdapter {
           })
 
           if (resp.ok) {
-            const result = await resp.json()
+            const result = await resp.json() as any
             return { filename: doc.filename, success: true, remoteId: result.documentId }
           } else {
             return { filename: doc.filename, success: false, error: resp.statusText }

@@ -273,7 +273,7 @@ export async function getContractorLandingPageData(profileId: string): Promise<{
     const res = await fetch(`${API_BASE}/marketplace/contractors/${profileId}/public`, {
       headers: { 'x-internal-key': process.env.INTERNAL_API_KEY ?? '' },
     });
-    if (res.ok) profile = await res.json();
+    if (res.ok) profile = await res.json() as Record<string, unknown>;
   } catch (err) {
     logger.warn({ err, profileId }, 'Failed to fetch contractor profile for landing page');
   }

@@ -12,10 +12,10 @@ import { getSupabaseClient } from '../../utils/supabase-client'
 
 export async function authRoutes(fastify: FastifyInstance) {
   // Register stricter rate limiting for auth routes (prevent brute force)
-  await fastify.register(rateLimit, {
+  await (fastify as any).register(rateLimit, {
     max: 10, // Lower limit for auth endpoints
     timeWindow: '1 minute',
-    keyGenerator: (request) => {
+    keyGenerator: (request: any) => {
       // Rate limit by IP for auth endpoints
       return request.ip || 'unknown'
     },
@@ -236,6 +236,12 @@ export async function authRoutes(fastify: FastifyInstance) {
             type: 'object',
             properties: {
               error: { type: 'object' },
+            },
+          },
+          404: {
+            type: 'object',
+            properties: {
+              error: { type: 'string' },
             },
           },
         },

@@ -61,10 +61,10 @@ type ContractorRegistrationBody = z.infer<typeof contractorRegistrationSchema>
 export async function contractorRegistrationRoutes(fastify: FastifyInstance) {
   // Rate limit: 5 registrations per hour per IP (skipped in test environment)
   if (process.env.NODE_ENV !== 'test') {
-    await fastify.register(rateLimit, {
+    await (fastify as any).register(rateLimit, {
       max: 5,
       timeWindow: '1 hour',
-      keyGenerator: (request) => request.ip || 'unknown',
+      keyGenerator: (request: any) => request.ip || 'unknown',
     })
   }
 

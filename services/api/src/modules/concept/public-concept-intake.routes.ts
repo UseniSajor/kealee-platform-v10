@@ -161,7 +161,7 @@ function scoreConceptLead(data: ConceptIntake): {
 
 export async function registerPublicConceptRoutes(fastify: FastifyInstance) {
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-    apiVersion: '2024-04-10',
+    apiVersion: '2024-04-10' as any,
   })
 
   const redis = await RedisClient.getInstance()
@@ -181,7 +181,7 @@ export async function registerPublicConceptRoutes(fastify: FastifyInstance) {
 
       // Generate unique IDs
       let intakeId: string
-      const funnelSessionId = (request.cookies as any)?.funnelSessionId || `fs_${Date.now()}`
+      const funnelSessionId = (request as any).cookies?.funnelSessionId || `fs_${Date.now()}`
 
       // Create DB record first (use UUID as intakeId for better referential integrity)
       try {
@@ -489,7 +489,7 @@ export async function registerPublicConceptRoutes(fastify: FastifyInstance) {
     { schema: { consumes: ['multipart/form-data'] } },
     async (request, reply) => {
       try {
-        const data = await request.file()
+        const data = await (request as any).file()
         if (!data) {
           return reply.status(400).send({ error: 'No file provided' })
         }

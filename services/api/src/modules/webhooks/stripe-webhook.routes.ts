@@ -56,7 +56,7 @@ export async function registerStripeWebhookRoutes(fastify: FastifyInstance) {
 
     fastify.log.info('✅ Stripe webhook routes registered')
   } catch (error) {
-    fastify.log.error('❌ Failed to register Stripe webhook routes:', error)
+    fastify.log.error({ err: error }, '❌ Failed to register Stripe webhook routes')
     throw error
   }
 }

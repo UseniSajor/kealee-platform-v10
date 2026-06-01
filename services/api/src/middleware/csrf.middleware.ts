@@ -19,7 +19,7 @@ declare module 'fastify' {
  */
 export async function registerCSRFProtection(fastify: FastifyInstance) {
   // Register CSRF protection plugin
-  await fastify.register(csrf, {
+  await (fastify as any).register(csrf, {
     // Cookie options
     cookieOpts: {
       signed: true,

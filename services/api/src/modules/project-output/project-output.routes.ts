@@ -5,7 +5,7 @@ export async function projectOutputRoutes(fastify: FastifyInstance) {
   // GET /api/project-output/:id — fetch ProjectOutput status + result
   fastify.get<{ Params: { id: string } }>('/project-output/:id', async (request: FastifyRequest, reply: FastifyReply) => {
     try {
-      const { id } = request.params
+      const { id } = request.params as { id: string }
 
       // Query with indexed fields for performance
       const output = await prisma.projectOutput.findUnique({

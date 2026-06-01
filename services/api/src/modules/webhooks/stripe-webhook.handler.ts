@@ -132,7 +132,7 @@ async function handleCheckoutSessionCompleted(
         status: 'PAID',
         paidAt: new Date(),
         checkoutInitiatedAt: new Date(),
-      },
+      } as any,
     })
 
     if (funnelSessionId) {
@@ -156,7 +156,7 @@ async function handleCheckoutSessionCompleted(
         status: 'PAID',
         paidAt: new Date(),
         checkoutInitiatedAt: new Date(),
-      },
+      } as any,
     })
 
     if (funnelSessionId) {
@@ -180,7 +180,7 @@ async function handleCheckoutSessionCompleted(
         status: 'PAID',
         paidAt: new Date(),
         checkoutInitiatedAt: new Date(),
-      },
+      } as any,
     })
 
     if (funnelSessionId) {
@@ -495,7 +495,7 @@ function getPackageName(source: string | undefined, tier: string | undefined): s
  */
 export async function registerStripeWebhookHandler(fastify: FastifyInstance) {
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-    apiVersion: '2024-04-10',
+    apiVersion: '2024-04-10' as any,
   })
 
   const redis = await RedisClient.getInstance()

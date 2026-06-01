@@ -41,7 +41,7 @@ export async function milestoneUploadRoutes(fastify: FastifyInstance) {
         return reply.code(403).send({ error: 'Only the contractor can upload evidence' })
       }
 
-      const data = await request.file()
+      const data = await (request as any).file()
       if (!data) {
         return reply.code(400).send({ error: 'No file uploaded' })
       }
@@ -95,7 +95,7 @@ export async function milestoneUploadRoutes(fastify: FastifyInstance) {
       preHandler: [authenticateUser],
     },
     async (request, reply) => {
-      const data = await request.file()
+      const data = await (request as any).file()
       if (!data) {
         return reply.code(400).send({ error: 'No file uploaded' })
       }

@@ -14,7 +14,7 @@ import { z } from 'zod'
 import { prismaAny } from '../../utils/prisma-helper'
 import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 import { LeadIntelligenceService } from '../../services/lead-intelligence.service.js'
-import { evaluateAvailability } from '../../services/availability.service.js'
+import { evaluateAvailability, persistAvailabilitySnapshot } from '../../services/availability.service.js'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY ?? '', { apiVersion: '2023-10-16' })
 
@@ -117,7 +117,7 @@ export async function permitIntakeRoutes(fastify: FastifyInstance) {
 
       // Evaluate service availability and BLOCK if unavailable
       const serviceKey = body.hasPlans === 'yes' ? 'permit-package' : 'permit-simple'
-      const availability = await evaluateAvailability({
+      const availability: any = await evaluateAvailability({
         serviceType: serviceKey,
         projectAddress: body.address,
         hasPlans: body.hasPlans === 'yes',
@@ -144,20 +144,12 @@ export async function permitIntakeRoutes(fastify: FastifyInstance) {
       // Persist availability snapshot for audit trail
       if (availability && lead.id) {
         try {
-          await persistAvailabilitySnapshot({
-            serviceRequestId: lead.id,
-            decision: availability.decision,
-            confidenceScore: availability.confidenceScore,
-            promisedStartAt: availability.promisedStartAt,
-            promisedCompleteAt: availability.promisedCompleteAt,
-            sameDayEligible: availability.sameDayEligible,
-            missingRequirements: JSON.stringify(availability.missingRequirements || []),
-          }).catch((err) => {
-            fastify.log.warn('Failed to persist availability snapshot:', err)
+          await persistAvailabilitySnapshot(lead.id, availability).catch((err) => {
+            fastify.log.warn({ err }, 'Failed to persist availability snapshot')
           })
         } catch (err) {
           // Fail-open: don't block intake if persistence fails
-          fastify.log.warn('Availability persistence error (non-blocking):', err)
+          fastify.log.warn({ err }, 'Availability persistence error (non-blocking)')
         }
       }
 

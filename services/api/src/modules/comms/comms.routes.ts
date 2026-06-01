@@ -83,7 +83,7 @@ export async function commsRoutes(fastify: FastifyInstance) {
     return reply.send({ preferences: prefs })
   })
 
-  fastify.setErrorHandler((error, _request, reply) => {
+  fastify.setErrorHandler((error: any, _request, reply) => {
     const statusCode = (error as any).statusCode ?? 500
     fastify.log.error(error)
     return reply.status(statusCode).send({ error: error.message, statusCode })

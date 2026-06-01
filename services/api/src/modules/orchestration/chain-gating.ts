@@ -262,7 +262,7 @@ export function createGatingMiddleware(
     }
 
     const userId = (request.user as any).id
-    const projectId = request.body?.projectId || request.query?.projectId || (request.params as any)?.projectId
+    const projectId = (request.body as any)?.projectId || (request.query as any)?.projectId || (request.params as any)?.projectId
 
     if (!projectId) {
       // Can't enforce gating without project ID
@@ -472,6 +472,8 @@ export async function registerOrchestrationRoutes(fastify: FastifyInstance) {
           READY_FOR_CHECKOUT: 'Ready for payment and order creation',
           REQUIRES_CONSULTATION: 'Schedule consultation with specialist',
           BLOCKED: 'Service temporarily unavailable',
+          PERMIT_SUBMITTED: 'Permit application submitted',
+          PERMIT_APPROVED: 'Permit approved',
         }
 
         return reply.send({

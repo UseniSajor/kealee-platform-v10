@@ -145,7 +145,7 @@ function scorePermitLead(data: PermitIntake): {
  */
 export async function registerPublicPermitRoutes(fastify: FastifyInstance) {
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-    apiVersion: '2024-04-10',
+    apiVersion: '2024-04-10' as any,
   })
 
   const redis = await RedisClient.getInstance()
@@ -165,7 +165,7 @@ export async function registerPublicPermitRoutes(fastify: FastifyInstance) {
 
       // Generate unique IDs
       const intakeId = `perm_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
-      const funnelSessionId = (request.cookies as any)?.funnelSessionId || `fs_${Date.now()}`
+      const funnelSessionId = (request as any).cookies?.funnelSessionId || `fs_${Date.now()}`
 
       // Store intake in Redis with 7-day TTL
       await redis.setex(

@@ -117,7 +117,7 @@ function scoreEstimationLead(data: EstimationIntake): {
  */
 export async function registerPublicEstimationRoutes(fastify: FastifyInstance) {
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-    apiVersion: '2024-04-10',
+    apiVersion: '2024-04-10' as any,
   })
 
   const redis = await RedisClient.getInstance()
@@ -137,7 +137,7 @@ export async function registerPublicEstimationRoutes(fastify: FastifyInstance) {
 
       // Create DB record first (use UUID as intakeId)
       let intakeId: string
-      const funnelSessionId = (request.cookies as any)?.funnelSessionId || `fs_${Date.now()}`
+      const funnelSessionId = (request as any).cookies?.funnelSessionId || `fs_${Date.now()}`
 
       try {
         const dbRecord = await prismaAny.estimationServiceLead.create({
@@ -365,7 +365,7 @@ export async function registerPublicEstimationRoutes(fastify: FastifyInstance) {
     { schema: { consumes: ['multipart/form-data'] } },
     async (request, reply) => {
       try {
-        const data = await request.file()
+        const data = await (request as any).file()
         if (!data) {
           return reply.status(400).send({ error: 'No file provided' })
         }

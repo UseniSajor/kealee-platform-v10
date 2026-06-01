@@ -113,7 +113,7 @@ export async function ownerRoutes(fastify: FastifyInstance) {
   })
 
   // ─── Error handler ───────────────────────────────────────────────────────────
-  fastify.setErrorHandler((error, _request, reply) => {
+  fastify.setErrorHandler((error: any, _request, reply) => {
     const statusCode = (error as any).statusCode ?? 500
     fastify.log.error(error)
     return reply.status(statusCode).send({

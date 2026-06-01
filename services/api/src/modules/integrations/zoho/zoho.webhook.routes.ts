@@ -113,7 +113,7 @@ export async function zohoWebhookRoutes(fastify: FastifyInstance): Promise<void>
   fastify.post(
     '/webhook',
     {
-      config: { rawBody: true },
+      config: { rawBody: true } as any,
     },
     async (request: FastifyRequest, reply: FastifyReply) => {
       // Verify token

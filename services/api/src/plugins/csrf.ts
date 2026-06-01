@@ -8,7 +8,7 @@ import { FastifyInstance } from 'fastify';
 
 export async function registerCSRFProtection(server: FastifyInstance) {
   // Register CSRF protection
-  await server.register(csrfProtection, {
+  await (server as any).register(csrfProtection, {
     // Cookie options
     cookieOpts: {
       signed: true,

@@ -107,7 +107,7 @@ export async function fileRoutes(fastify: FastifyInstance) {
     async (request, reply) => {
       try {
         const user = (request as any).user
-        const data = await request.file()
+        const data = await (request as any).file()
 
         if (!data) {
           return reply.code(400).send({ error: 'No file provided' })

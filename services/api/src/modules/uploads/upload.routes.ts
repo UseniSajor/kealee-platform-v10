@@ -82,7 +82,7 @@ export async function uploadRoutes(fastify: FastifyInstance) {
     { preHandler: [authenticateUser] },
     async (request: FastifyRequest, reply: FastifyReply) => {
       const user = (request as any).user
-      const data = await request.file()
+      const data = await (request as any).file()
 
       if (!data) {
         return reply.code(400).send({ error: 'No file provided' })
@@ -136,7 +136,7 @@ export async function uploadRoutes(fastify: FastifyInstance) {
     { preHandler: [authenticateUser] },
     async (request: FastifyRequest, reply: FastifyReply) => {
       const user = (request as any).user
-      const data = await request.file()
+      const data = await (request as any).file()
 
       if (!data) {
         return reply.code(400).send({ error: 'No file provided' })
@@ -186,7 +186,7 @@ export async function uploadRoutes(fastify: FastifyInstance) {
     { preHandler: [authenticateUser] },
     async (request: FastifyRequest, reply: FastifyReply) => {
       const user = (request as any).user
-      const data = await request.file()
+      const data = await (request as any).file()
 
       if (!data) {
         return reply.code(400).send({ error: 'No file provided' })
@@ -239,7 +239,7 @@ export async function uploadRoutes(fastify: FastifyInstance) {
     { preHandler: [authenticateUser] },
     async (request: FastifyRequest, reply: FastifyReply) => {
       const user = (request as any).user
-      const parts = request.files()
+      const parts = (request as any).files()
 
       const uploaded: Array<{ url: string; thumbnailUrl: string; documentId: string }> = []
       const failed: Array<{ filename: string; error: string }> = []

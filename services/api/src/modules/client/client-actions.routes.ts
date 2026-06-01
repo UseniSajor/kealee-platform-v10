@@ -113,7 +113,7 @@ const clientActionsRoutes: FastifyPluginAsync = async (fastify) => {
       }
 
       const userRole: UploadedByRole = 'HOMEOWNER'
-      const parts = request.parts()
+      const parts = (request as any).parts()
       const uploads: any[] = []
 
       for await (const part of parts) {
