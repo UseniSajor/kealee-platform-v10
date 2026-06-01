@@ -862,7 +862,7 @@ export default function ConceptDeliverablePage() {
       const coIncludes = Array.isArray(co.includes) ? (co.includes as string[]) : []
       const pkgDef = getPackageDef(projectPath)
       const packageIncludes =
-        coIncludes.length > 0 ? coIncludes : pkgDef.includes
+        coIncludes.length > 0 ? coIncludes : getConceptPackageDeliverableLabelsForIntake(projectPath, tierNorm)
       const floorplanSvg = typeof co.floorplanSvgInline === 'string' && co.floorplanSvgInline.trim().startsWith('<')
         ? co.floorplanSvgInline as string
         : undefined

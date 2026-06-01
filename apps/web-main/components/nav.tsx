@@ -90,6 +90,12 @@ function ServicesDropdown() {
 // Color config per nav tab
 const NAV_TABS = [
   {
+    href: '/ai-construction-platform',
+    label: 'AI Platform',
+    hoverColor: 'hover:text-blue-500',
+    activeColor: 'text-blue-500 border-b-2 border-blue-500',
+  },
+  {
     href: '/concept',
     label: 'Design Concept',
     hoverColor: 'hover:text-orange-500',

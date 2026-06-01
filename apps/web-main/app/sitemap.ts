@@ -7,6 +7,7 @@ const BASE_URL = 'https://kealee.com'
 const HIGH_PRIORITY_ROUTES: MetadataRoute.Sitemap = [
   { url: BASE_URL, changeFrequency: 'weekly', priority: 1.0 },
   { url: `${BASE_URL}/concept`, changeFrequency: 'weekly', priority: 0.95 },
+  { url: `${BASE_URL}/ai-construction-platform`, changeFrequency: 'weekly', priority: 0.95 },
   { url: `${BASE_URL}/concept-engine`, changeFrequency: 'weekly', priority: 0.9 },
   { url: `${BASE_URL}/permits`, changeFrequency: 'weekly', priority: 0.95 },
   { url: `${BASE_URL}/estimate`, changeFrequency: 'weekly', priority: 0.9 },

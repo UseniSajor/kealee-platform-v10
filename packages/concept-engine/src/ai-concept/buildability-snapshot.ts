@@ -217,7 +217,8 @@ Respond ONLY with valid JSON matching this structure:
       messages: [{ role: 'user', content: prompt }],
     })
 
-    const text = message.content[0].type === 'text' ? message.content[0].text : ''
+    const block = message.content[0]
+    const text = block?.type === 'text' ? (block.text ?? '') : ''
     const jsonMatch = text.match(/\{[\s\S]+\}/)
     if (jsonMatch) {
       return JSON.parse(jsonMatch[0])

@@ -21,4 +21,7 @@ export { generate_product_image, GENERATE_PRODUCT_IMAGE_TOOL_DEF, generate_produ
 
 // Design Engine (Replicate SDXL)
 export { runDesignEngine, buildPrompts, buildFloorPlanPrompt, generateImages } from './design-engine';
+
+// Exterior Concept Workflow
+export { executeExteriorConceptWorkflow } from './exterior-concept/service';
 export type { DesignEngineInput, DesignEngineOutput } from './design-engine';

@@ -36,7 +36,7 @@ export function resolveHomeownerDeliverablesForPdf(
   const co = getConceptOutputRecord(formData)
   if (!co) return null
 
-  const pkg = asRecord(co.packageJson) as HomeownerDeliverables | null
+  const pkg = asRecord(co.packageJson) as unknown as HomeownerDeliverables | null
   if (pkg?.version && pkg.project) return pkg
 
   const design = asRecord(co.designConcept)

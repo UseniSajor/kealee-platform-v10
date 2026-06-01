@@ -203,7 +203,7 @@ async function processConceptDeliveryJob(job: Job<ConceptDeliveryJobData>) {
     try {
       const { broadcastToUser } = await import('@kealee/realtime')
       await broadcastToUser(userId, {
-        type: 'order.completed',
+        event: 'order.completed',
         payload: {
           orderId,
           deliveryStatus: 'ready',

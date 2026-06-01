@@ -73,7 +73,8 @@ Rules:
       messages:   [{ role: 'user', content: prompt }],
     });
 
-    const text    = res.content[0]?.type === 'text' ? res.content[0].text : '';
+    const block   = res.content[0]
+    const text    = block?.type === 'text' ? (block.text ?? '') : '';
     const cleaned = text.replace(/```json\n?|```\n?/g, '').trim();
     return JSON.parse(cleaned) as ConceptNarrative;
   } catch (err) {

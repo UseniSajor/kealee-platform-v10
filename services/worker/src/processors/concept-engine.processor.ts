@@ -263,7 +263,7 @@ async function processGenerateConceptPackage(
   // This allows contractor matching to unlock immediately when no permit is needed
   if (projectId) {
     try {
-      const permitScope = result.packageJson?.permitScope as { requiresPermit?: boolean } | undefined
+      const permitScope = (result.packageJson?.permit ?? result.packageJson?.permitPath) as { requiresPermit?: boolean } | undefined
       const noPermitRequired = permitScope?.requiresPermit === false
       if (noPermitRequired) {
         await prisma.$executeRaw`

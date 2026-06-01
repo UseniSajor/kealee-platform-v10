@@ -62,7 +62,8 @@ export class ClaudeProvider implements LlmProvider {
       messages: [{ role: "user", content: args.prompt }],
     });
 
-    const text = response.content[0].type === "text" ? response.content[0].text : "";
+    const block = response.content[0]
+    const text = block?.type === "text" ? (block.text ?? "") : "";
     const latencyMs = Date.now() - start;
 
     return {
