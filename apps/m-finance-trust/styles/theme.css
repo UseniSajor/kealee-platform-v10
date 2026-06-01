@@ -1,0 +1,78 @@
+/* Theme for Finance & Trust */
+/* Module: m-finance-trust */
+/* Generated - DO NOT EDIT MANUALLY */
+
+:root[data-module="m-finance-trust"] {
+  /* Primary Color */
+  --theme-primary: #2563eb;
+  --theme-primary-light: #3f7dff;
+  --theme-primary-dark: #0c4ad2;
+
+  /* Accent Color */
+  --theme-accent: #2563eb;
+  --theme-accent-light: #3f7dff;
+  --theme-accent-dark: #0c4ad2;
+
+  /* Derived Colors */
+  --theme-text-primary: var(--color-neutral-900);
+  --theme-text-secondary: var(--color-neutral-600);
+  --theme-background: var(--color-neutral-50);
+  --theme-border: var(--color-neutral-200);
+}
+
+/* Button styles for this theme */
+.btn-primary {
+  background-color: var(--theme-primary);
+  color: white;
+}
+
+.btn-primary:hover {
+  background-color: var(--theme-primary-dark);
+}
+
+/* Accent button styles */
+.btn-accent {
+  background-color: var(--theme-accent);
+  color: white;
+}
+
+.btn-accent:hover {
+  background-color: var(--theme-accent-dark);
+}
+
+/* Card styles */
+.card {
+  border-color: var(--theme-border);
+  color: var(--theme-text-primary);
+}
+
+/* Navigation styles */
+.nav-primary {
+  background-color: var(--theme-primary);
+  color: white;
+}
+
+.nav-accent {
+  background-color: var(--theme-accent);
+  color: white;
+}
+
+/* Link styles */
+a {
+  color: var(--theme-primary);
+}
+
+a:hover {
+  color: var(--theme-primary-dark);
+}
+
+/* Badge styles */
+.badge-primary {
+  background-color: var(--theme-primary);
+  color: white;
+}
+
+.badge-accent {
+  background-color: var(--theme-accent);
+  color: white;
+}
