@@ -116,7 +116,7 @@ export async function autocompleteAddresses(
       throw new Error(`Google Places API error: ${response.statusText}`);
     }
 
-    const data = await response.json();
+    const data = await response.json() as any;
 
     if (data.status !== 'OK' && data.status !== 'ZERO_RESULTS') {
       throw new Error(`Google Places API error: ${data.status} - ${data.error_message || ''}`);
@@ -173,7 +173,7 @@ export async function getPlaceDetails(
       throw new Error(`Google Places API error: ${response.statusText}`);
     }
 
-    const data = await response.json();
+    const data = await response.json() as any;
 
     if (data.status !== 'OK') {
       throw new Error(`Google Places API error: ${data.status} - ${data.error_message || ''}`);
@@ -235,7 +235,7 @@ export async function geocodeAddress(address: string): Promise<GeocodeResult> {
       throw new Error(`Google Geocoding API error: ${response.statusText}`);
     }
 
-    const data = await response.json();
+    const data = await response.json() as any;
 
     if (data.status !== 'OK') {
       throw new Error(`Google Geocoding API error: ${data.status} - ${data.error_message || ''}`);
@@ -343,7 +343,7 @@ export async function reverseGeocode(lat: number, lng: number): Promise<GeocodeR
       throw new Error(`Google Geocoding API error: ${response.statusText}`);
     }
 
-    const data = await response.json();
+    const data = await response.json() as any;
 
     if (data.status !== 'OK') {
       throw new Error(`Google Geocoding API error: ${data.status} - ${data.error_message || ''}`);

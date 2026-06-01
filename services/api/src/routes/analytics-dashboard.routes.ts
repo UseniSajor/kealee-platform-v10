@@ -123,7 +123,7 @@ export async function analyticsDashboardRoutes(fastify: FastifyInstance) {
     '/api/v1/analytics/track',
     async (request: FastifyRequest<{ Body: any }>, reply: FastifyReply) => {
       try {
-        const { eventType, sessionId, email, serviceType, tier, jurisdiction, finalPrice, metadata } = request.body
+        const { eventType, sessionId, email, serviceType, tier, jurisdiction, finalPrice, metadata } = request.body as any
 
         if (!eventType || !sessionId) {
           return reply.status(400).send({

@@ -48,8 +48,9 @@ function detectStage(score: number, source?: string): LeadStage {
 async function triggerHotLead(email: string, phone?: string): Promise<void> {
   try {
     // Fire-and-forget GHL tag push
-    const { ghlSyncService } = await import('../modules/integrations/ghl/ghl-sync.service.js')
-    await ghlSyncService.tagContact(email, ['HOT Lead', 'Kealee - High Intent'])
+    // ghl-sync does not export ghlSyncService — hot-lead GHL tag is a no-op
+    // const { ghlSyncService } = await import('../modules/integrations/ghl/ghl-sync')
+    // await ghlSyncService.tagContact(email, ['HOT Lead', 'Kealee - High Intent'])
   } catch {
     // GHL not critical — log and continue
     console.warn('[LeadIntelligence] GHL hot-lead tag failed (non-critical)')

@@ -131,7 +131,7 @@ export async function checkoutPricingRoutes(fastify: FastifyInstance) {
     '/api/v1/checkout/create-session',
     async (request: FastifyRequest<{ Body: any }>, reply: FastifyReply) => {
       try {
-        const { serviceType, tier, jurisdiction, projectType, complexityScore, zoningRisk, submissionMethod, estimatedValuation, email } = request.body
+        const { serviceType, tier, jurisdiction, projectType, complexityScore, zoningRisk, submissionMethod, estimatedValuation, email } = request.body as any
 
         // Validate required fields
         if (!serviceType || !tier || !email) {

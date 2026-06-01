@@ -82,7 +82,7 @@ export async function googlePlacesRoutes(fastify: FastifyInstance) {
         return { predictions };
       } catch (error: any) {
         fastify.log.error(error);
-        return reply.code(500).send({
+        return (reply as any).status(500).send({
           error: sanitizeErrorMessage(error, 'Failed to autocomplete addresses'),
         });
       }

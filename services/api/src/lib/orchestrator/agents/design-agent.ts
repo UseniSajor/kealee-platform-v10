@@ -80,8 +80,7 @@ export async function executeDesignAgent(input: DesignAgentInput): Promise<Agent
 
   // Jurisdiction: prefer live zoning address fields
   const resolvedJurisdiction = input.jurisdiction
-    ?? (live.zoning ? `${live.zoning.zoningDistrict}` : "")
-    ?? "";
+    ?? (live.zoning ? `${live.zoning.zoningDistrict}` : "");
 
   // Zoning constraints from live DB
   const liveMaxHeight   = live.zoning?.maxHeight   ?? null;

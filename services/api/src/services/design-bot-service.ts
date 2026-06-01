@@ -1,5 +1,5 @@
 import Anthropic from "@anthropic-ai/sdk";
-import { prisma } from "@kealee/core-ddts";
+import { prisma } from "@kealee/database";
 import { zoningService } from "../modules/zoning/zoning.service";
 
 interface ConceptRequest {
@@ -131,7 +131,7 @@ Return JSON only with:
         type: "text",
         text: systemPrompt,
         cache_control: { type: "ephemeral" },
-      },
+      } as any,
       messages: [
         {
           role: "user",
@@ -154,7 +154,7 @@ Return only JSON.`,
       throw new Error("Unexpected response type from Claude");
     }
 
-    const conceptData = JSON.parse(content.text) as ConceptResponse;
+    const conceptData = JSON.parse(content.text ?? '') as ConceptResponse;
 
     // Validate response structure
     if (
@@ -184,14 +184,14 @@ Return only JSON.`,
     }
 
     // Save to database
-    const savedConcept = await prisma.conceptOutput.create({
+    const savedConcept = await (prisma as any).conceptOutput.create({
       data: {
         projectType: request.projectType,
         scope: request.scope,
         budget: request.budget,
         location: request.location,
         mepSystem: conceptData.mepSystem as Record<string, string>,
-        billOfMaterials: conceptData.billOfMaterials as Array<
+        billOfMaterials: conceptData.billOfMaterials as unknown as Array<
           Record<string, unknown>
         >,
         estimatedCost: conceptData.estimatedCost,

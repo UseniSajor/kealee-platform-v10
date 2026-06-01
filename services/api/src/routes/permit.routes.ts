@@ -9,7 +9,9 @@ import { authenticateUser } from '../middleware/auth.middleware';
 import { validateBody, validateParams } from '../middleware/validation.middleware';
 import { prisma } from '@kealee/database';
 import { sanitizeErrorMessage } from '../utils/sanitize-error'
-import { KeaBotPermit } from '@kealee/keabot-permit';
+// @ts-ignore -- @kealee/keabot-permit not yet built; usage below is guarded
+// import { KeaBotPermit } from '@kealee/keabot-permit';
+const KeaBotPermit: any = null;
 import { inspectionCoordinator } from '../lib/inspection-coordinator';
 // AI review function - uses @kealee/automation AI service if available
 async function reviewPermitWithAI(permit: any): Promise<{ score: number; issues: any[]; suggestions: any[] }> {

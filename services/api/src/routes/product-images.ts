@@ -68,7 +68,7 @@ async function productImagesRoutes(fastify: FastifyInstance) {
    * GET /product-images/:id
    * Fetch a single image by ID
    */
-  fastify.get<{ Params: { id: string } }>('/:id', async (request: FastifyRequest, reply: FastifyReply) => {
+  fastify.get<{ Params: { id: string } }>('/:id', async (request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) => {
     try {
       const { id } = request.params;
 

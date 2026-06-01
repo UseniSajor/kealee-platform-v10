@@ -11,7 +11,7 @@
  */
 
 import Anthropic from '@anthropic-ai/sdk'
-import type { MessageParam, TextBlock } from '@anthropic-ai/sdk/resources/messages'
+import type { Message as AnthropicMessage, MessageParam, TextBlock } from '@anthropic-ai/sdk/resources/messages/messages'
 import type { ModelTier, ConvMessage } from './bots.types'
 
 // ── Constants ─────────────────────────────────────────────────────────────────
@@ -90,7 +90,7 @@ export async function callModel(params: ModelCallParams): Promise<ModelCallResul
     throw new Error(`LLM call timed out after ${BOT_LLM_TIMEOUT_MS}ms — model: ${model}`)
   }, BOT_LLM_TIMEOUT_MS)
 
-  let response: Anthropic.Message
+  let response: AnthropicMessage
   try {
     response = await getClient().messages.create({
       model,

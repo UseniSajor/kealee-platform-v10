@@ -10,6 +10,14 @@ import { archiveReplicateOutputsFireAndForget } from '@kealee/storage'
 const REPLICATE_MODEL = 'black-forest-labs/flux-1.1-pro-ultra'
 const REPLICATE_API_BASE = 'https://api.replicate.com/v1'
 
+interface ReplicatePrediction {
+  id: string
+  status: string
+  output?: string | string[]
+  error?: string
+  urls?: { get: string }
+}
+
 // ============================================================================
 // Types
 // ============================================================================
@@ -120,7 +128,7 @@ Provide a detailed description suitable for generating a photorealistic renderin
     })
 
     const textContent = message.content.find((block) => block.type === 'text')
-    return textContent && 'text' in textContent ? textContent.text : generateImagePrompt(input, 'interior')
+    return textContent && 'text' in textContent ? (textContent.text ?? '') : generateImagePrompt(input, 'interior')
   } catch (err) {
     console.error('[Image Generation] Vision analysis failed:', err)
     return generateImagePrompt(input, 'interior')
@@ -131,7 +139,7 @@ Provide a detailed description suitable for generating a photorealistic renderin
 // Replicate Polling
 // ============================================================================
 
-async function pollPrediction(token: string, predictionId: string, maxWaitMs = 120_000): Promise<any> {
+async function pollPrediction(token: string, predictionId: string, maxWaitMs = 120_000): Promise<ReplicatePrediction> {
   const deadline = Date.now() + maxWaitMs
   while (Date.now() < deadline) {
     await new Promise((resolve) => setTimeout(resolve, 4000))
@@ -139,7 +147,7 @@ async function pollPrediction(token: string, predictionId: string, maxWaitMs = 1
       headers: { Authorization: `Bearer ${token}` },
     })
     if (!res.ok) break
-    const prediction = await res.json()
+    const prediction = await res.json() as ReplicatePrediction
     if (
       prediction.status === 'succeeded' ||
       prediction.status === 'failed' ||
@@ -148,7 +156,7 @@ async function pollPrediction(token: string, predictionId: string, maxWaitMs = 1
       return prediction
     }
   }
-  return { status: 'failed', error: 'Timed out waiting for Replicate prediction' }
+  return { id: predictionId, status: 'failed', error: 'Timed out waiting for Replicate prediction' }
 }
 
 // ============================================================================
@@ -213,7 +221,7 @@ export async function generateConceptImages(
         continue
       }
 
-      let prediction = await submitRes.json()
+      let prediction = await submitRes.json() as ReplicatePrediction
 
       if (prediction.status !== 'succeeded') {
         prediction = await pollPrediction(token, prediction.id)

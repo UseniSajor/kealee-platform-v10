@@ -3,6 +3,7 @@
  * Uses per-bot system prompts from Kealee Platform Agents specs.
  */
 import Anthropic from '@anthropic-ai/sdk'
+import type { Message as AnthropicMessage } from '@anthropic-ai/sdk/resources/messages/messages'
 import { maxTokensForWiredBot, useEphemeralCacheForBot } from './wired-bot-config'
 import type { V30BotType } from './types'
 
@@ -49,7 +50,7 @@ export class V30ClaudeCachedClient {
       system: systemBlocks,
       messages: [{ role: 'user', content: params.user }],
       ...(cache ? { betas: ['prompt-caching-2024-07-31'] } : {}),
-    })) as Anthropic.Message
+    })) as AnthropicMessage
 
     const block = response.content[0]
     const text = block?.type === 'text' ? block.text : ''

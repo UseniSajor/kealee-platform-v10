@@ -508,7 +508,7 @@ export async function stripeConnectRoutes(fastify: FastifyInstance) {
    * POST /api/connect/webhooks/stripe-connect
    * Handle Stripe Connect webhooks
    */
-  fastify.post('/webhooks/stripe-connect', {
+  ;(fastify as any).post('/webhooks/stripe-connect', {
     config: {
       rawBody: true, // Required for signature verification
     },
