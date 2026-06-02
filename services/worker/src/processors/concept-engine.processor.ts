@@ -285,6 +285,56 @@ async function processGenerateConceptPackage(
     }
   }
 
+  // Trigger video generation for tier 2+ orders (fire-and-forget).
+  // The video route reads tier from form_data and manages Sora/Kling dispatch.
+  // We only kick it off when conceptVideo is absent so re-runs don't re-trigger.
+  try {
+    const intakeRows = await prisma.$queryRaw`
+      SELECT
+        (form_data->>'tier')::int       AS tier,
+        form_data->'conceptVideo'       AS concept_video
+      FROM public_intake_leads
+      WHERE id = ${intakeId}
+      LIMIT 1
+    ` as Array<{ tier: number | null; concept_video: unknown }>;
+
+    if (intakeRows.length > 0) {
+      const intakeTier  = intakeRows[0].tier ?? 1;
+      const conceptVideo = intakeRows[0].concept_video;
+      const videoAbsent =
+        !conceptVideo ||
+        (typeof conceptVideo === 'object' &&
+          conceptVideo !== null &&
+          Object.keys(conceptVideo as object).length === 0);
+
+      if (intakeTier >= 2 && videoAbsent) {
+        const webMain = (
+          process.env.NEXT_PUBLIC_WEB_MAIN_URL ??
+          process.env.WEB_MAIN_URL ??
+          'https://kealee.com'
+        ).replace(/\/$/, '');
+
+        void fetch(`${webMain}/api/concept/video`, {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body:    JSON.stringify({ intakeId }),
+        })
+          .then((r) => {
+            if (!r.ok) {
+              console.warn(`[concept-engine] Video trigger HTTP ${r.status} for intake ${intakeId}`);
+            } else {
+              console.log(`[concept-engine] Video generation triggered for intake ${intakeId} (tier ${intakeTier})`);
+            }
+          })
+          .catch((err: unknown) => {
+            console.warn('[concept-engine] Video trigger failed (non-fatal):', (err as Error)?.message);
+          });
+      }
+    }
+  } catch (videoErr: unknown) {
+    console.warn('[concept-engine] Video trigger check failed (non-fatal):', (videoErr as Error)?.message);
+  }
+
   // Chain: enqueue architect review task
   const { conceptEngineQueue } = await import('../queues/concept-engine.queue');
   await conceptEngineQueue.createArchitectReviewTask({
