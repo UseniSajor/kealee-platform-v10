@@ -102,6 +102,20 @@ function intakeRequiresAreaPhoto(projectPath: string): boolean {
   return false
 }
 
+/**
+ * Paths where a rough floor plan sketch meaningfully improves concept output.
+ * Not required — but Q9 copy is upgraded to strongly prompt for it.
+ */
+function intakeBenefitsFromFloorplanSketch(projectPath: string): boolean {
+  return [
+    'whole_home_remodel',
+    'whole_home_concept',
+    'addition_expansion',
+    'interior_renovation',
+    'interior_reno_concept',
+  ].includes(projectPath)
+}
+
 /** PDF (or other document upload) required for estimate / permit style intakes. */
 function intakeRequiresConstructionDocuments(projectPath: string): boolean {
   if (projectPath === 'certified_estimate' || projectPath === 'cost_estimate' || projectPath === 'permit_path_only') return true
@@ -307,6 +321,7 @@ export default function IntakePage() {
 
   const needsAreaPhoto = intakeRequiresAreaPhoto(projectPath)
   const needsConstructionDocs = intakeRequiresConstructionDocuments(projectPath)
+  const benefitsFromFloorplan = intakeBenefitsFromFloorplanSketch(projectPath)
 
   const agentType = AGENT_MAP[projectPath] || 'design'
   const bundlePreview = upsellSourcePath
@@ -772,14 +787,19 @@ export default function IntakePage() {
                   )}
                 </div>
 
-                {/* Q9 — Construction Documents */}
+                {/* Q9 — Floor plan sketch / construction documents (path-aware) */}
                 <div>
                   <div className="flex items-center justify-between mb-1.5">
                     <label className="block text-sm font-semibold text-slate-800">
                       {needsConstructionDocs ? (
                         <>Construction documents <span className="text-red-500">*</span></>
+                      ) : benefitsFromFloorplan ? (
+                        <>
+                          Floor plan sketch or existing drawings{' '}
+                          <span className="text-amber-600 font-normal">(recommended)</span>
+                        </>
                       ) : (
-                        <>Construction documents <span className="text-slate-400 font-normal">(optional)</span></>
+                        <>Documents <span className="text-slate-400 font-normal">(optional)</span></>
                       )}
                     </label>
                     {uploadedDocs.length > 0 && (
@@ -789,7 +809,9 @@ export default function IntakePage() {
                   <p className="text-xs text-slate-500 mb-3">
                     {needsConstructionDocs
                       ? 'Upload at least one construction document — existing plans, specs, or drawings. Accepted: PDF, DWG, DOCX (max 25 MB each, up to 5 files).'
-                      : 'Optionally upload existing plans, specs, or drawings. Accepted: PDF, DWG, DOCX (max 25 MB each, up to 5 files).'}
+                      : benefitsFromFloorplan
+                        ? 'A rough hand-drawn sketch or photo of your existing floor plan helps us match your actual room dimensions and layout — especially useful for multi-room and addition projects. Accepted: PDF, DWG, DOCX (max 25 MB each, up to 5 files).'
+                        : 'Optionally upload existing plans, specs, or reference drawings. Accepted: PDF, DWG, DOCX (max 25 MB each, up to 5 files).'}
                   </p>
 
                   {uploadedDocs.length > 0 && (
@@ -830,6 +852,8 @@ export default function IntakePage() {
                     >
                       {uploadingDocs ? (
                         <><Loader2 className="h-4 w-4 animate-spin" /> Uploading document...</>
+                      ) : benefitsFromFloorplan ? (
+                        <><FileText className="h-4 w-4" /> Add floor plan sketch or drawings (PDF / DWG / DOCX)</>
                       ) : (
                         <><FileText className="h-4 w-4" /> Add plans, specs, or drawings (PDF / DWG / DOCX)</>
                       )}
