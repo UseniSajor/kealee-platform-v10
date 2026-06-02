@@ -143,7 +143,8 @@ async function submitSora(
   // Docs: https://developers.openai.com/api/docs/guides/video-generation
   // JSON requests accept input_reference as { file_id } | { image_url }.
   // Size must match the reference image resolution when img-guided.
-  const seconds = String(input.durationSec ?? 8)
+  // Sora 2 / 2-Pro minimum supported duration is 10s (API rejects 8s).
+  const seconds = String(input.durationSec ?? 10)
   const size    = input.size ?? (variant === 'sora-2-pro' ? '1920x1080' : '1280x720')
   const model   = variant === 'sora-2-pro' ? AI_MODELS.videoSora2Pro : AI_MODELS.videoSora2
 

@@ -139,7 +139,8 @@ export async function startNextDeliverableSegment(
     roomType: opts.roomType,
   })
 
-  const durationSec = state.provider === 'kling-2.5' ? 5 : 8
+  // Sora 2/2-Pro minimum supported duration is 10s; Veo supports 8s+; Kling uses 5s.
+  const durationSec = state.provider === 'kling-2.5' ? 5 : state.provider.startsWith('sora') ? 10 : 8
   const job = await generateVideo({
     prompt,
     inputImageUrl: opts.inputImageUrl ?? state.inputImageUrl,
