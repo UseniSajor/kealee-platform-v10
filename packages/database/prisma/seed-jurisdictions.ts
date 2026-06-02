@@ -4,7 +4,10 @@
  * DMV jurisdictions include real fee schedules derived from municipal fee tables.
  */
 
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, ZoningDistrictType } from '@prisma/client';
+import { createHash } from 'crypto';
+import { readFileSync } from 'fs';
+import { resolve } from 'path';
 
 const prisma = new PrismaClient();
 
@@ -460,6 +463,75 @@ const dmvJurisdictions = [
     formTemplates: { templates: ['FFX_BUILD_PERMIT_v3'] },
   },
   {
+    name: "Prince George's County Department of Permitting, Inspections and Enforcement",
+    code: 'PGC-DPIE',
+    state: 'MD',
+    city: 'Upper Marlboro',
+    county: "Prince George's",
+    website: 'https://www.princegeorgescountymd.gov/Government/AgencyIndex/DPIE',
+    phone: '(301) 636-2050',
+    email: 'dpie@co.pg.md.us',
+    portalUrl: 'https://permits.princegeorgescountymd.gov',
+    avgReviewDays: 20,
+    firstTimeApprovalRate: 0.68,
+    integrationType: 'MANUAL_ENTRY',
+    requiredDocuments: { types: ['building_permit_app', 'construction_docs', 'site_plan'] },
+    feeSchedule: {
+      kitchen_remodel:     590,
+      bathroom_remodel:    380,
+      interior_renovation: 700,
+      whole_home_remodel:  3000,
+      addition_expansion:  5000,
+    },
+    formTemplates: { templates: ['PGC_BUILD_PERMIT_v1'] },
+  },
+  {
+    name: 'Baltimore City Department of Housing and Community Development',
+    code: 'BALT-DHCD',
+    state: 'MD',
+    city: 'Baltimore',
+    county: 'Baltimore City',
+    website: 'https://dhcd.baltimorecity.gov',
+    phone: '(410) 396-3009',
+    email: 'dhcd@baltimorecity.gov',
+    portalUrl: 'https://permits.baltimorecity.gov',
+    avgReviewDays: 25,
+    firstTimeApprovalRate: 0.64,
+    integrationType: 'MANUAL_ENTRY',
+    requiredDocuments: { types: ['building_permit_app', 'construction_docs', 'site_plan', 'contractor_license'] },
+    feeSchedule: {
+      kitchen_remodel:     560,
+      bathroom_remodel:    360,
+      interior_renovation: 650,
+      whole_home_remodel:  2800,
+      addition_expansion:  4600,
+    },
+    formTemplates: { templates: ['BALT_BUILD_PERMIT_v2'] },
+  },
+  {
+    name: 'Baltimore County Office of Permits, Approvals and Inspections',
+    code: 'BALTCO-PAI',
+    state: 'MD',
+    city: 'Towson',
+    county: 'Baltimore County',
+    website: 'https://www.baltimorecountymd.gov/departments/permits',
+    phone: '(410) 887-3637',
+    email: 'permits@baltimorecountymd.gov',
+    portalUrl: 'https://permitsportal.baltimorecountymd.gov',
+    avgReviewDays: 22,
+    firstTimeApprovalRate: 0.69,
+    integrationType: 'MANUAL_ENTRY',
+    requiredDocuments: { types: ['building_permit_app', 'construction_docs', 'site_plan'] },
+    feeSchedule: {
+      kitchen_remodel:     540,
+      bathroom_remodel:    340,
+      interior_renovation: 620,
+      whole_home_remodel:  2600,
+      addition_expansion:  4200,
+    },
+    formTemplates: { templates: ['BALTCO_BUILD_PERMIT_v1'] },
+  },
+  {
     name: 'City of Alexandria Department of Planning and Zoning',
     code: 'ALX-DPZ',
     state: 'VA',
@@ -483,6 +555,168 @@ const dmvJurisdictions = [
     formTemplates: { templates: ['ALX_BUILD_PERMIT_v1'] },
   },
 ];
+
+// ── DMV ZoningProfile seed helpers ───────────────────────────────────────────
+
+/** Generate a stable UUID v4 from a string seed so upserts are idempotent. */
+function deterministicId(seed: string): string {
+  const h = createHash('sha256').update(`zoning-profile:${seed}`).digest('hex');
+  return [
+    h.slice(0, 8),
+    h.slice(8, 12),
+    `4${h.slice(13, 16)}`,
+    `${((parseInt(h.slice(16, 18), 16) & 0x3f) | 0x80).toString(16)}${h.slice(18, 20)}`,
+    h.slice(20, 32),
+  ].join('-');
+}
+
+/** Parse city from an address like "1234 Main St Falls Church VA 22042". */
+function parseCityStateZip(address: string): { city: string; state: string; zipCode: string } {
+  const parts = address.trim().split(/\s+/);
+  const zipCode = parts.pop() ?? '';
+  const state   = parts.pop() ?? '';
+  // Walk backwards collecting city words until we hit a known street terminator.
+  const streetTerminators = new Set([
+    'Ave', 'St', 'Blvd', 'Rd', 'Dr', 'Pkwy', 'Pike', 'Ln', 'Ct', 'Way', 'Pl',
+    'NE', 'NW', 'SE', 'SW', 'N', 'S', 'E', 'W', 'Mill', 'Hill',
+  ]);
+  const cityParts: string[] = [];
+  while (parts.length > 0) {
+    const last = parts[parts.length - 1];
+    if (streetTerminators.has(last)) break;
+    cityParts.unshift(parts.pop()!);
+  }
+  return { city: cityParts.join(' ') || state, state, zipCode };
+}
+
+/** Parse a dimension string like "20 ft" or "20ft" → 20. */
+function parseFt(val: string): number | null {
+  const m = val.trim().match(/^([\d.]+)/);
+  return m ? parseFloat(m[1]) : null;
+}
+
+/** Parse a percentage string like "60%" → 0.60. */
+function parsePct(val: string): number | null {
+  const m = val.trim().match(/^([\d.]+)/);
+  return m ? parseFloat(m[1]) / 100 : null;
+}
+
+/** Map a zoning code string to the nearest ZoningDistrictType enum value. */
+function mapZoningDistrict(code: string): ZoningDistrictType {
+  const c = code.toUpperCase();
+  if (/^(R-1|R-S|R-R|RE-|R-60|R-90|R-10)/.test(c)) return ZoningDistrictType.R1_SINGLE_FAMILY;
+  if (/^R-[56]$/.test(c))                              return ZoningDistrictType.R1_SINGLE_FAMILY; // Arlington SF
+  if (/^R-2/.test(c))                                  return ZoningDistrictType.R2_TWO_FAMILY;
+  if (/^(R-3|RF-|R-T|TLD|RL)/.test(c))                return ZoningDistrictType.R3_MULTI_FAMILY;
+  if (/^(R-4|RA6|R-M|CBD)/.test(c))                   return ZoningDistrictType.R4_HIGH_DENSITY;
+  if (/^(C-|MX-)/.test(c) || c === 'C-O-2.5')         return ZoningDistrictType.MX_MIXED_USE;
+  if (/^M-X-T/.test(c))                               return ZoningDistrictType.TO_TRANSIT_ORIENTED;
+  if (/^PDH/.test(c))                                  return ZoningDistrictType.PD_PLANNED_DEVELOPMENT;
+  return ZoningDistrictType.UNKNOWN;
+}
+
+/** Map CSV Jurisdiction column to the jurisdiction code seeded above. */
+const CSV_JURISDICTION_MAP: Record<string, string> = {
+  'Washington DC':            'DC-DOB',
+  'Arlington County VA':      'ARL-DCP',
+  'Fairfax County VA':        'FFX-LDS',
+  'Montgomery County MD':     'MONT-DPS',
+  'Prince Georges County MD': 'PGC-DPIE',
+  'Baltimore City MD':        'BALT-DHCD',
+  'Baltimore County MD':      'BALTCO-PAI',
+};
+
+/**
+ * Reads data/zoning/dmv_zoning_seed.csv and upserts each row as a ZoningProfile
+ * linked to the matching DMV Jurisdiction. Safe to run multiple times.
+ */
+async function seedDmvZoningProfiles() {
+  console.log('\n🗺️  Seeding DMV ZoningProfiles from CSV...\n');
+
+  const csvPath = resolve(__dirname, '../../../data/zoning/dmv_zoning_seed.csv');
+  const lines = readFileSync(csvPath, 'utf-8').trim().split('\n');
+  // Skip header row
+  const dataLines = lines.slice(1);
+
+  // Pre-fetch jurisdiction IDs keyed by code
+  const jurisdictions = await prisma.jurisdiction.findMany({
+    where: { code: { in: Object.values(CSV_JURISDICTION_MAP) } },
+    select: { id: true, code: true },
+  });
+  const jurisdictionIdByCode = Object.fromEntries(
+    jurisdictions.map((j) => [j.code, j.id]),
+  );
+
+  let seeded = 0;
+  let skipped = 0;
+
+  for (const line of dataLines) {
+    if (!line.trim()) continue;
+
+    // Simple CSV split — Notes field uses semicolons, not commas, so this is safe.
+    const cols = line.split(',');
+    if (cols.length < 10) { skipped++; continue; }
+
+    const [
+      address,
+      jurisdiction,
+      zoningCode,
+      frontSetbackRaw,
+      sideSetbackRaw,
+      rearSetbackRaw,
+      heightLimitRaw,
+      lotCoverageRaw,
+      permitAuthorityUrl,
+      typicalDaysRaw,
+      ...notesParts
+    ] = cols;
+
+    const jurisdictionCode = CSV_JURISDICTION_MAP[jurisdiction?.trim()];
+    if (!jurisdictionCode) {
+      console.warn(`  ⚠  Unknown jurisdiction "${jurisdiction?.trim()}" — skipping`);
+      skipped++;
+      continue;
+    }
+
+    const jurisdictionId = jurisdictionIdByCode[jurisdictionCode];
+    if (!jurisdictionId) {
+      console.warn(`  ⚠  Jurisdiction code "${jurisdictionCode}" not found in DB — skipping`);
+      skipped++;
+      continue;
+    }
+
+    const { city, state, zipCode } = parseCityStateZip(address.trim());
+    const id = deterministicId(`${address.trim()}::${jurisdictionCode}`);
+
+    const data = {
+      jurisdictionId,
+      address:         address.trim(),
+      city,
+      state,
+      zipCode,
+      zoningCode:      zoningCode.trim(),
+      zoningDistrict:  mapZoningDistrict(zoningCode.trim()),
+      frontSetback:    parseFt(frontSetbackRaw),
+      sideSetback:     parseFt(sideSetbackRaw),
+      rearSetback:     parseFt(rearSetbackRaw),
+      maxHeight:       parseFt(heightLimitRaw),
+      maxLotCoverage:  parsePct(lotCoverageRaw),
+      sourceDocumentUrls: [permitAuthorityUrl.trim()].filter(Boolean),
+      aiRawResponse:   { notes: notesParts.join(',').trim() },
+    };
+
+    await prisma.zoningProfile.upsert({
+      where: { id },
+      update: data,
+      create: { id, ...data },
+    });
+
+    console.log(`  ✅ ${address.trim()} [${zoningCode.trim()}]`);
+    seeded++;
+  }
+
+  console.log(`\n✅ ZoningProfile seed complete — ${seeded} upserted, ${skipped} skipped`);
+}
 
 async function main() {
   console.log('🏛️  Seeding 25 U.S. jurisdictions + 5 core DMV jurisdictions...\n');
@@ -510,15 +744,17 @@ async function main() {
     console.log(`✅ ${jurisdiction.name} (${jurisdiction.code})`);
   }
 
-  const total = jurisdictions.length + dmvJurisdictions.length;
-  console.log(`\n✅ Successfully seeded ${total} jurisdictions`);
+  const totalJurisdictions = jurisdictions.length + dmvJurisdictions.length;
+  console.log(`\n✅ Successfully seeded ${totalJurisdictions} jurisdictions`);
   console.log('\nCoverage:');
   console.log('  • California: 7 jurisdictions');
   console.log('  • Texas: 5 jurisdictions');
   console.log('  • Florida: 3 jurisdictions');
   console.log('  • Other major metros: 10 jurisdictions');
-  console.log('  • DMV (DC/MD/VA): 5 jurisdictions with real fee schedules');
+  console.log('  • DMV + Baltimore (DC/MD/VA): 8 jurisdictions with real fee schedules');
   console.log('\n📊 Estimated coverage: 65-70% of U.S. permit volume');
+
+  await seedDmvZoningProfiles();
 }
 
 main()
