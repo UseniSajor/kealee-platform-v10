@@ -438,6 +438,25 @@ export default function PermitsPage() {
               </div>
             </div>
 
+            {/* Professional design prompt — shown above the tier cards */}
+            <div className="mb-8 rounded-xl border border-blue-200 bg-blue-50 px-5 py-4 flex flex-col sm:flex-row sm:items-center gap-4">
+              <div className="flex-1">
+                <p className="text-xs font-bold uppercase tracking-widest text-blue-700 mb-1">Need Permit-Ready Design Plans?</p>
+                <p className="text-sm text-blue-800 leading-relaxed">
+                  Most structural and addition projects require stamped architectural drawings before the permit office will accept your application.
+                  Kealee&apos;s{' '}
+                  <strong>Professional Design</strong> service delivers a licensed, PE-stamped plan set — ready to file — from{' '}
+                  <strong>$4,995</strong>.
+                </p>
+              </div>
+              <a
+                href="/intake/professional_drawings"
+                className="shrink-0 inline-flex items-center gap-2 rounded-xl bg-[#1A2B4A] hover:bg-[#243d68] text-white text-sm font-bold px-5 py-2.5 transition whitespace-nowrap"
+              >
+                Get Design Plans <ArrowRight className="w-4 h-4" />
+              </a>
+            </div>
+
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
               {tiers.map((tier) => {
                 const isRecommended = formData.projectType !== '' && PERMIT_RECOMMENDATION[formData.projectType] === tier.code

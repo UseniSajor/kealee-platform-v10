@@ -295,10 +295,15 @@ export default function IntakePage() {
     } catch { /* ignore */ }
   }, [sceneId, sqftFromUrl])
 
-  // File upload state
+  // File upload state — Q8: project photos / videos
   const [uploadedFiles, setUploadedFiles] = useState<IntakeUploadedFile[]>([])
   const [uploading, setUploading] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  // Q9: construction documents (PDF / DWG / DOCX)
+  const [uploadedDocs, setUploadedDocs] = useState<IntakeUploadedFile[]>([])
+  const [uploadingDocs, setUploadingDocs] = useState(false)
+  const docInputRef = useRef<HTMLInputElement>(null)
 
   const needsAreaPhoto = intakeRequiresAreaPhoto(projectPath)
   const needsConstructionDocs = intakeRequiresConstructionDocuments(projectPath)
@@ -366,12 +371,18 @@ export default function IntakePage() {
     )
   }
 
-  // ── File upload handler ────────────────────────────────────────────────────
+  // ── Q8: Photo / video upload handler ──────────────────────────────────────
   async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const selected = Array.from(e.target.files ?? [])
     if (!selected.length) return
-    if (uploadedFiles.length + selected.length > 5) {
-      setFormError('You can upload a maximum of 5 files.')
+    if (uploadedFiles.length + selected.length > 10) {
+      setFormError('You can upload a maximum of 10 photos / videos.')
+      return
+    }
+    // 10 MB per image limit
+    const oversized = selected.filter(f => f.size > 10 * 1024 * 1024)
+    if (oversized.length > 0) {
+      setFormError(`File too large: "${oversized[0].name}". Photos must be under 10 MB each.`)
       return
     }
     setFormError('')
@@ -379,7 +390,7 @@ export default function IntakePage() {
     try {
       const newFiles = await uploadIntakeFilesSequentially(selected)
       if (newFiles.length === 0) {
-        setFormError('Upload failed. Check file type (images, video, or PDF) and size (max 50 MB each), then try again.')
+        setFormError('Upload failed. Check file type (JPG or PNG) and size (max 10 MB each), then try again.')
         return
       }
       if (newFiles.length < selected.length) {
@@ -391,6 +402,40 @@ export default function IntakePage() {
     } finally {
       setUploading(false)
       if (fileInputRef.current) fileInputRef.current.value = ''
+    }
+  }
+
+  // ── Q9: Construction document upload handler ───────────────────────────────
+  async function handleDocChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const selected = Array.from(e.target.files ?? [])
+    if (!selected.length) return
+    if (uploadedDocs.length + selected.length > 5) {
+      setFormError('You can upload a maximum of 5 construction documents.')
+      return
+    }
+    // 25 MB per document limit
+    const oversized = selected.filter(f => f.size > 25 * 1024 * 1024)
+    if (oversized.length > 0) {
+      setFormError(`File too large: "${oversized[0].name}". Documents must be under 25 MB each.`)
+      return
+    }
+    setFormError('')
+    setUploadingDocs(true)
+    try {
+      const newFiles = await uploadIntakeFilesSequentially(selected)
+      if (newFiles.length === 0) {
+        setFormError('Upload failed. Check file type (PDF, DWG, or DOCX) and size (max 25 MB each), then try again.')
+        return
+      }
+      if (newFiles.length < selected.length) {
+        setFormError('Some documents could not be uploaded. Others were saved.')
+      }
+      setUploadedDocs(prev => [...prev, ...newFiles])
+    } catch {
+      setFormError('Document upload failed. Please try again.')
+    } finally {
+      setUploadingDocs(false)
+      if (docInputRef.current) docInputRef.current.value = ''
     }
   }
 
@@ -414,14 +459,17 @@ export default function IntakePage() {
     if (needsAreaPhoto) {
       const hasStillImage = uploadedFiles.some(f => f.type === 'image')
       if (!hasStillImage) {
-        setFormError('Please upload at least one photo of the project area (JPG, PNG, WEBP, or HEIC).')
+        setFormError('Please upload at least one photo of the project area (JPG or PNG).')
         return false
       }
     }
     if (needsConstructionDocs) {
-      const hasDoc = uploadedFiles.some(f => f.type === 'document')
+      // Check Q9 doc section first; fall back to checking Q8 for backwards compat
+      const hasDoc =
+        uploadedDocs.some(f => f.type === 'document') ||
+        uploadedFiles.some(f => f.type === 'document')
       if (!hasDoc) {
-        setFormError('Please upload at least one construction document as a PDF (plans, specs, or drawings).')
+        setFormError('Please upload at least one construction document (PDF, DWG, or DOCX) in the Documents section.')
         return false
       }
     }
@@ -465,7 +513,7 @@ export default function IntakePage() {
             description: formData.description,
             squareFootage: formData.squareFootage,
             timeline: formData.timeline,
-            uploadedFiles: uploadedFiles.map(f => f.url),
+            uploadedFiles: [...uploadedFiles, ...uploadedDocs].map(f => f.url),
             ...attribution,
             ...(sceneId ? { sceneId } : {}),
             ...(upsellFromIntake ? { upsellSourceIntakeId: upsellFromIntake, upsellSourcePath: upsellSourcePath } : {}),
@@ -659,42 +707,31 @@ export default function IntakePage() {
                   />
                 </div>
 
-                {/* Photo / Video / PDF Upload */}
+                {/* Q8 — Project Photos */}
                 <div>
                   <div className="flex items-center justify-between mb-1.5">
                     <label className="block text-sm font-semibold text-slate-800">
-                      {needsAreaPhoto && needsConstructionDocs ? (
-                        <>Project photos and documents <span className="text-red-500">*</span></>
-                      ) : needsAreaPhoto ? (
-                        <>Photos of project area <span className="text-red-500">*</span></>
+                      {needsAreaPhoto ? (
+                        <>Project photos <span className="text-red-500">*</span></>
                       ) : (
-                        <>Photos or Videos <span className="text-slate-400 font-normal">(optional)</span></>
+                        <>Project photos <span className="text-slate-400 font-normal">(optional)</span></>
                       )}
                     </label>
                     {uploadedFiles.length > 0 && (
-                      <span className="text-xs text-slate-400">{uploadedFiles.length}/5 uploaded</span>
+                      <span className="text-xs text-slate-400">{uploadedFiles.length}/10 uploaded</span>
                     )}
                   </div>
                   <p className="text-xs text-slate-500 mb-3">
-                    {needsAreaPhoto && needsConstructionDocs
-                      ? 'Upload at least one clear photo of the work area and at least one PDF (plans, existing drawings, or specs). Videos optional. Max 50 MB per file.'
-                      : needsAreaPhoto
-                        ? 'Upload at least one photo of the project area or reference images. Optional videos. Accepted: JPG, PNG, WEBP, HEIC, MP4, MOV (max 50 MB each).'
-                        : 'For best output, upload a photo of your space or a reference image. Accepted: JPG, PNG, WEBP, HEIC, MP4, MOV, PDF (max 50 MB each).'}
+                    {needsAreaPhoto
+                      ? 'Upload at least one clear photo of the project area. Accepted: JPG, PNG (max 10 MB each, up to 10 photos).'
+                      : 'For best output, upload a photo of your space or reference images. Accepted: JPG, PNG (max 10 MB each, up to 10 photos).'}
                   </p>
 
-                  {/* Uploaded file chips */}
                   {uploadedFiles.length > 0 && (
                     <div className="flex flex-wrap gap-2 mb-3">
                       {uploadedFiles.map((f, i) => (
                         <div key={i} className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs text-slate-700">
-                          {f.type === 'video' ? (
-                            <FileVideo className="h-3.5 w-3.5 text-blue-500 shrink-0" />
-                          ) : f.type === 'document' ? (
-                            <FileText className="h-3.5 w-3.5 text-amber-600 shrink-0" />
-                          ) : (
-                            <ImagePlus className="h-3.5 w-3.5 text-green-500 shrink-0" />
-                          )}
+                          <ImagePlus className="h-3.5 w-3.5 text-green-500 shrink-0" />
                           <span className="max-w-[120px] truncate">{f.name}</span>
                           <button
                             type="button"
@@ -712,12 +749,12 @@ export default function IntakePage() {
                     ref={fileInputRef}
                     type="file"
                     multiple
-                    accept="image/jpeg,image/png,image/webp,image/heic,image/heif,video/mp4,video/quicktime,application/pdf"
+                    accept="image/jpeg,image/png"
                     onChange={handleFileChange}
                     className="sr-only"
                     id="intake-file-upload"
                   />
-                  {uploadedFiles.length < 5 && (
+                  {uploadedFiles.length < 10 && (
                     <label
                       htmlFor="intake-file-upload"
                       className={`flex items-center justify-center gap-2 w-full rounded-lg border-2 border-dashed px-4 py-4 text-sm font-medium transition cursor-pointer ${
@@ -729,7 +766,72 @@ export default function IntakePage() {
                       {uploading ? (
                         <><Loader2 className="h-4 w-4 animate-spin" /> Uploading...</>
                       ) : (
-                        <><ImagePlus className="h-4 w-4" /> Add photos, videos, or PDFs</>
+                        <><ImagePlus className="h-4 w-4" /> Add project photos (JPG / PNG)</>
+                      )}
+                    </label>
+                  )}
+                </div>
+
+                {/* Q9 — Construction Documents */}
+                <div>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="block text-sm font-semibold text-slate-800">
+                      {needsConstructionDocs ? (
+                        <>Construction documents <span className="text-red-500">*</span></>
+                      ) : (
+                        <>Construction documents <span className="text-slate-400 font-normal">(optional)</span></>
+                      )}
+                    </label>
+                    {uploadedDocs.length > 0 && (
+                      <span className="text-xs text-slate-400">{uploadedDocs.length}/5 uploaded</span>
+                    )}
+                  </div>
+                  <p className="text-xs text-slate-500 mb-3">
+                    {needsConstructionDocs
+                      ? 'Upload at least one construction document — existing plans, specs, or drawings. Accepted: PDF, DWG, DOCX (max 25 MB each, up to 5 files).'
+                      : 'Optionally upload existing plans, specs, or drawings. Accepted: PDF, DWG, DOCX (max 25 MB each, up to 5 files).'}
+                  </p>
+
+                  {uploadedDocs.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mb-3">
+                      {uploadedDocs.map((f, i) => (
+                        <div key={i} className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs text-slate-700">
+                          <FileText className="h-3.5 w-3.5 text-amber-600 shrink-0" />
+                          <span className="max-w-[120px] truncate">{f.name}</span>
+                          <button
+                            type="button"
+                            onClick={() => setUploadedDocs(prev => prev.filter((_, j) => j !== i))}
+                            className="ml-0.5 text-slate-400 hover:text-red-500 transition"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  <input
+                    ref={docInputRef}
+                    type="file"
+                    multiple
+                    accept="application/pdf,.dwg,.docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                    onChange={handleDocChange}
+                    className="sr-only"
+                    id="intake-doc-upload"
+                  />
+                  {uploadedDocs.length < 5 && (
+                    <label
+                      htmlFor="intake-doc-upload"
+                      className={`flex items-center justify-center gap-2 w-full rounded-lg border-2 border-dashed px-4 py-4 text-sm font-medium transition cursor-pointer ${
+                        uploadingDocs
+                          ? 'border-amber-300 bg-amber-50 text-amber-600'
+                          : 'border-slate-300 bg-white text-slate-500 hover:border-amber-400 hover:bg-amber-50 hover:text-amber-700'
+                      }`}
+                    >
+                      {uploadingDocs ? (
+                        <><Loader2 className="h-4 w-4 animate-spin" /> Uploading document...</>
+                      ) : (
+                        <><FileText className="h-4 w-4" /> Add plans, specs, or drawings (PDF / DWG / DOCX)</>
                       )}
                     </label>
                   )}
@@ -802,7 +904,7 @@ export default function IntakePage() {
                     { label: 'Address', value: formData.address },
                     formData.phone ? { label: 'Phone', value: formData.phone } : null,
                     formData.description ? { label: 'Project description', value: formData.description } : null,
-                    uploadedFiles.length > 0 ? { label: 'Files', value: `${uploadedFiles.length} file${uploadedFiles.length > 1 ? 's' : ''} uploaded` } : null,
+                    (uploadedFiles.length > 0 || uploadedDocs.length > 0) ? { label: 'Files', value: [uploadedFiles.length > 0 ? `${uploadedFiles.length} photo${uploadedFiles.length > 1 ? 's' : ''}` : null, uploadedDocs.length > 0 ? `${uploadedDocs.length} document${uploadedDocs.length > 1 ? 's' : ''}` : null].filter(Boolean).join(', ') + ' uploaded' } : null,
                   ].filter(Boolean).map(row => (
                     <div key={row!.label} className="flex items-start gap-4 px-5 py-3">
                       <span className="text-xs font-semibold text-slate-400 w-28 shrink-0 pt-0.5">{row!.label}</span>

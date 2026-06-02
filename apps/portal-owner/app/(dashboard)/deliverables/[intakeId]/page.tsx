@@ -1922,6 +1922,55 @@ export default function ConceptDeliverablePage() {
           )
         })()}
 
+        {/* ── Professional Design featured card ────────────────────────────── */}
+        {!ownedProducts.includes('professional_drawings') && (
+          <section className="rounded-2xl overflow-hidden border border-[#1A2B4A]/20"
+            style={{ background: 'linear-gradient(135deg, #1A2B4A 0%, #243d68 60%, #2d4a7a 100%)' }}>
+            <div className="px-6 py-5 flex flex-col sm:flex-row sm:items-start gap-5">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-white/10">
+                <FileText className="h-6 w-6 text-white" />
+              </div>
+              <div className="flex-1">
+                <span className="inline-flex items-center rounded-full bg-[#E8724B]/20 border border-[#E8724B]/30 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-widest text-[#FFB899] mb-2">
+                  Next Step — Professional Design
+                </span>
+                <h3 className="text-base font-bold text-white mb-1">
+                  Ready to Build? Get Permit-Ready Plans
+                </h3>
+                <p className="text-sm text-white/80 leading-relaxed mb-3">
+                  Your concept is the vision. A <strong className="text-white">Professional Design</strong> package converts it into
+                  a licensed, PE-stamped plan set — ready for permit filing and contractor bidding.
+                  Your concept fee is credited toward the package.
+                </p>
+                <ul className="space-y-1 mb-4">
+                  {['Stamped architectural + structural drawings', 'Permit-ready plan set (agency-formatted)', 'MEP coordination sheets', 'Permits included — Kealee files on your behalf'].map(item => (
+                    <li key={item} className="flex items-center gap-2 text-xs text-white/85">
+                      <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-[#E8724B]" />
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div className="shrink-0 flex flex-col items-end gap-2 min-w-[160px]">
+                <p className="text-2xl font-black text-white">From $4,995</p>
+                <p className="text-xs text-white/60">7–14 day delivery</p>
+                <a
+                  href={`https://kealee.com/intake/professional_drawings?conceptId=${intakeId}&from=concept`}
+                  className="mt-2 inline-flex items-center gap-2 rounded-xl bg-[#E8724B] hover:opacity-90 transition-opacity px-5 py-2.5 text-sm font-bold text-white whitespace-nowrap"
+                >
+                  Get Design Plans <ArrowRight className="h-4 w-4" />
+                </a>
+                <a
+                  href="https://kealee.com/services/professional_drawings"
+                  className="text-xs text-white/50 hover:text-white/80 transition-colors"
+                >
+                  What&apos;s included →
+                </a>
+              </div>
+            </div>
+          </section>
+        )}
+
         <BuildPathUpsell
           sourceProjectPath={data.projectPath ?? ''}
           fromIntakeId={intakeId}

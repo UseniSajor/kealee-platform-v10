@@ -4,7 +4,7 @@ import { useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
-import { ArrowRight, Check, Clock, PlayCircle } from 'lucide-react'
+import { ArrowRight, Check, Clock, PlayCircle, FileCheck } from 'lucide-react'
 import { getConceptServices } from '@/lib/services-config'
 import { V30ConceptRedirect } from '@/components/v30/V30TrafficGate'
 import { useCardMediaManifest, productHeroFromManifest } from '@/hooks/useCardMediaManifest'
@@ -119,6 +119,25 @@ function ConceptStep1Inner() {
             </div>
           )
         })}
+      </div>
+
+      {/* Professional design note — shown below the service grid */}
+      <div className="mb-8 rounded-xl bg-slate-50 border border-slate-200 px-5 py-4 flex items-start gap-4">
+        <div className="w-10 h-10 rounded-lg bg-[#1A2B4A] flex items-center justify-center shrink-0 mt-0.5">
+          <FileCheck className="w-5 h-5 text-white" />
+        </div>
+        <div>
+          <p className="text-xs font-bold uppercase tracking-widest text-[#1A2B4A] mb-1">Need Permit-Ready Plans?</p>
+          <p className="text-sm text-slate-600 leading-relaxed">
+            Start with a Concept Package — then upgrade to{' '}
+            <strong className="text-slate-800">Professional Design</strong> (stamped drawings, engineer certification, permit-ready plan set) from{' '}
+            <strong className="text-slate-800">$4,995</strong>.
+            Your concept fee is credited toward the design package.
+          </p>
+          <Link href="/intake/professional_drawings" className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-[#E8724B] hover:text-[#D45C33] transition-colors">
+            Learn about Professional Design <ArrowRight className="w-3.5 h-3.5" />
+          </Link>
+        </div>
       </div>
 
       {/* CTA */}

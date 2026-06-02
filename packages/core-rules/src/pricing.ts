@@ -36,6 +36,18 @@ export const CONCEPT_TIER_PRICES: Record<1 | 2 | 3, number> = {
   3: CONCEPT_DEVELOPER_PRICE,     // high-tier concept
 }
 
+// ── AI Concept tier marketing display prices ──────────────────────────────────
+//
+// Used on marketing surfaces (concept page tier blurbs, ads, banners).
+// Checkout amounts are determined by INTAKE_TIER_PRICE_CENTS (per project path).
+//
+export const AI_CONCEPT_BASIC        = 599   // Basic tier  — 3 AI renders + cost summary
+export const AI_CONCEPT_PREMIUM      = 999   // Premium tier — 6 renders + video + BOM
+export const AI_CONCEPT_PREMIUM_PLUS = 1499  // Premium+ tier — 12 renders + 4K video + floorplan
+
+/** Starting price for Professional Design services (permit-ready stamped plan set). */
+export const PROFESSIONAL_DESIGN_BASE = 4995
+
 // ── Permit Prices ─────────────────────────────────────────────────────────────
 
 export const PERMIT_BASIC_PRICE    = 299   // permit path assessment
