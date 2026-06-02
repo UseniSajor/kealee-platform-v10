@@ -721,9 +721,17 @@ async function seedDmvZoningProfiles() {
 async function main() {
   console.log('🏛️  Seeding 25 U.S. jurisdictions + 5 core DMV jurisdictions...\n');
 
+  // Strip fields not in the Jurisdiction schema (website, phone, email are
+  // stored in our seed objects for reference but not in the Prisma model).
+  function toJurisdictionRecord(obj: Record<string, unknown>) {
+    const { website: _w, phone: _p, email: _e, ...rest } = obj;
+    return rest;
+  }
+
   // Seed base 25 jurisdictions with default meta
   for (const jurisdiction of jurisdictions) {
-    const data = { ...DEFAULT_JURISDICTION_META, ...jurisdiction };
+    const raw = { ...DEFAULT_JURISDICTION_META, ...jurisdiction };
+    const data = toJurisdictionRecord(raw as Record<string, unknown>);
     await prisma.jurisdiction.upsert({
       where: { code: jurisdiction.code },
       update: data as any,
@@ -736,10 +744,11 @@ async function main() {
 
   // Seed DMV jurisdictions
   for (const jurisdiction of dmvJurisdictions) {
+    const data = toJurisdictionRecord(jurisdiction as unknown as Record<string, unknown>);
     await prisma.jurisdiction.upsert({
       where: { code: jurisdiction.code },
-      update: jurisdiction as any,
-      create: jurisdiction as any,
+      update: data as any,
+      create: data as any,
     });
     console.log(`✅ ${jurisdiction.name} (${jurisdiction.code})`);
   }
