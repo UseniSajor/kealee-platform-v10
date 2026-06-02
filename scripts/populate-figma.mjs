@@ -12,7 +12,7 @@ import { fileURLToPath } from 'url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const projectRoot = path.join(__dirname, '..');
 
-const FIGMA_TOKEN = 'FIGMA_TOKEN_REDACTED_REVOKED';
+const FIGMA_TOKEN = process.env.FIGMA_TOKEN ?? '';
 const FILE_ID = 'mhmydzsUHbQzGanUIdHHoQ';
 
 console.log('\n🎨 POPULATING FIGMA FILE\n');
