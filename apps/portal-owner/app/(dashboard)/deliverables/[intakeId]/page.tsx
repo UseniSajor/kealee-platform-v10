@@ -23,6 +23,7 @@ import { BeforeAfterMedia } from '@/components/concept/BeforeAfterMedia'
 import { ProcessVideoLoop } from '@/components/concept/ProcessVideoLoop'
 import { BuildPathUpsell, type OwnedUpsellProduct } from '@/components/BuildPathUpsell'
 import { AccountCompleteBanner } from '@/components/AccountCompleteBanner'
+import { BuildJourneyProgress } from '@/components/BuildJourneyProgress'
 import {
   getConceptPackageDeliverableLabelsForIntake,
   getIntakePriceByTier,
@@ -372,6 +373,8 @@ interface ConceptData {
   /** From `conceptOutput` when tier includes video (Premium+). */
   videoUrl?: string
   videoFormatUrls?: Record<string, string>
+  /** Raw status from form_data.conceptVideo.status — 'pending' | 'processing' | 'completed' | 'failed' */
+  conceptVideoStatus?: string
   designConcept: {
     style: string
     colorPalette: string[]
@@ -875,7 +878,7 @@ export default function ConceptDeliverablePage() {
       setRendersGenerating(renderJobsPending && !hasRealRenders)
 
       setData({
-        conceptId:       `concept_${intakeId.slice(0, 8)}`,
+        conceptId:       typeof co.packageId === 'string' ? co.packageId.slice(0, 13) : `concept_${intakeId.slice(0, 8)}`,
         projectType:     (intake.project_path as string)?.replace(/_/g, ' ') ?? 'Concept Package',
         packageLabel:    pkgDef.label,
         packageIncludes,
@@ -906,6 +909,7 @@ export default function ConceptDeliverablePage() {
         // Never surface the ForBiggerBlazes.mp4 placeholder — customers see
         // the "In Production" banner instead until the real video is ready.
         videoUrl: realVideoUrl,
+        conceptVideoStatus: conceptVideo?.status,
         videoFormatUrls:
           co.videoFormatUrls && typeof co.videoFormatUrls === 'object'
             ? (co.videoFormatUrls as Record<string, string>)
@@ -1027,18 +1031,37 @@ export default function ConceptDeliverablePage() {
     return () => { stopped = true }
   }, [loadStatus, data?.tier, data?.videoUrl, intakeId, fetchData])
 
-  // Poll for Replicate render completion — re-fetches form_data every 15s until
-  // conceptOutput.renderUrls is populated, then setRendersGenerating(false).
+  // When renders are pending: fire the resolve endpoint once on mount (fire-and-forget),
+  // then poll form_data every 15s until renderUrls is populated.
   useEffect(() => {
     if (!rendersGenerating || loadStatus !== 'ready') return
+    const webMain = (process.env.NEXT_PUBLIC_WEB_MAIN_URL ?? 'https://kealee.com').replace(/\/$/, '')
+    // Fire resolve endpoint — it polls Replicate and writes URLs back to Supabase.
+    // Fire-and-forget with a 200s timeout; the polling below will pick up the result.
+    const controller = new AbortController()
+    const resolveTimeout = setTimeout(() => controller.abort(), 200_000)
+    fetch(`${webMain}/api/concept/renders/resolve`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ intakeId }),
+      signal: controller.signal,
+    })
+      .then(() => fetchData())
+      .catch(() => {})
+      .finally(() => clearTimeout(resolveTimeout))
+
     let pollsLeft = 20 // up to 5 min (20 × 15s)
     const id = setInterval(async () => {
       pollsLeft -= 1
       if (pollsLeft <= 0) { clearInterval(id); setRendersGenerating(false); return }
       await fetchData()
     }, 15_000)
-    return () => clearInterval(id)
-  }, [rendersGenerating, loadStatus, fetchData])
+    return () => {
+      controller.abort()
+      clearTimeout(resolveTimeout)
+      clearInterval(id)
+    }
+  }, [rendersGenerating, loadStatus, fetchData, intakeId])
 
   if (loadStatus === 'loading') {
     return (
@@ -1115,6 +1138,9 @@ export default function ConceptDeliverablePage() {
         <span>/</span>
         <span className="text-gray-700 font-medium truncate">{data.projectType}</span>
       </div>
+
+      {/* ── Build Journey Progress ───────────────────────────────────────── */}
+      <BuildJourneyProgress currentStage={0} className="mb-6" />
 
       <div className="xl:grid xl:grid-cols-[minmax(0,1fr)_15rem] xl:gap-8 xl:items-start">
         <div className="min-w-0">
@@ -1415,29 +1441,90 @@ export default function ConceptDeliverablePage() {
 
         {data.tier >= 2 && !data.videoUrl && (
           <section className="space-y-4">
-            <div className="rounded-2xl overflow-hidden"
-              style={{ background: 'linear-gradient(135deg, #E8724B 0%, #c75c35 100%)' }}>
-              <div className="px-6 py-6 sm:px-8 sm:py-7 flex flex-col sm:flex-row sm:items-center gap-4">
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-white/20">
-                  <Video className="h-6 w-6 text-white" />
+            {data.conceptVideoStatus === 'failed' ? (
+              /* Video failed — offer retry */
+              <div className="rounded-2xl overflow-hidden border border-red-200 bg-red-50">
+                <div className="px-6 py-5 sm:px-8 flex flex-col sm:flex-row sm:items-center gap-4">
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-red-100">
+                    <Video className="h-5 w-5 text-red-600" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-bold text-red-900 mb-0.5">Video generation failed</p>
+                    <p className="text-sm text-red-700">The AI video job encountered an error. Retry to regenerate.</p>
+                  </div>
+                  <button
+                    onClick={() => {
+                      const webMain = (process.env.NEXT_PUBLIC_WEB_MAIN_URL ?? 'https://kealee.com').replace(/\/$/, '')
+                      fetch(`${webMain}/api/concept/video`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ intakeId }),
+                      }).then(() => fetchData()).catch(() => {})
+                    }}
+                    className="shrink-0 rounded-xl bg-red-600 hover:bg-red-700 transition-colors px-4 py-2.5 text-sm font-semibold text-white">
+                    Retry Video →
+                  </button>
                 </div>
-                <div className="flex-1">
-                  <h3 className="font-bold text-white text-base mb-1">
-                    {data.tier >= 3 ? '4 Video Formats — In Production' : 'AI Transformation Video — In Production'}
-                  </h3>
-                  <p className="text-white/80 text-sm leading-relaxed">
-                    {data.tier >= 3
-                      ? 'Your 60s, 30s, 15s, and 10s AI transformation videos are being produced and will be delivered within your package window.'
-                      : 'Your 60-second AI transformation video is being produced — estimated delivery within your package window.'}
-                  </p>
-                </div>
-                <a href="mailto:hello@kealee.com?subject=Video%20Status%20Inquiry"
-                  className="shrink-0 rounded-xl bg-white/15 hover:bg-white/25 transition-colors px-4 py-2.5 text-sm font-semibold text-white border border-white/20">
-                  Check status →
-                </a>
               </div>
-            </div>
-            {/* Process preview loop — shown while the full video is rendering */}
+            ) : !data.conceptVideoStatus ? (
+              /* No conceptVideo field — older order or not yet triggered */
+              <div className="rounded-2xl overflow-hidden border border-gray-200 bg-white">
+                <div className="px-6 py-5 sm:px-8 flex flex-col sm:flex-row sm:items-center gap-4">
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gray-100">
+                    <Video className="h-5 w-5 text-gray-500" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-bold text-gray-900 mb-0.5">
+                      {data.tier >= 3 ? '4-Format AI Video' : 'AI Transformation Video'}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      {data.tier >= 3
+                        ? 'Your package includes 60s, 30s, 15s, and 10s cinematic AI videos. Click to start generation.'
+                        : 'Your package includes a 60-second AI transformation video. Click to start generation.'}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => {
+                      const webMain = (process.env.NEXT_PUBLIC_WEB_MAIN_URL ?? 'https://kealee.com').replace(/\/$/, '')
+                      fetch(`${webMain}/api/concept/video`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ intakeId }),
+                      }).then(() => fetchData()).catch(() => {})
+                    }}
+                    className="shrink-0 rounded-xl px-4 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+                    style={{ backgroundColor: '#E8724B' }}>
+                    Generate Video →
+                  </button>
+                </div>
+              </div>
+            ) : (
+              /* Processing/pending — show animated "In Production" banner */
+              <div className="rounded-2xl overflow-hidden"
+                style={{ background: 'linear-gradient(135deg, #E8724B 0%, #c75c35 100%)' }}>
+                <div className="px-6 py-6 sm:px-8 sm:py-7 flex flex-col sm:flex-row sm:items-center gap-4">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-white/20">
+                    <Loader2 className="h-6 w-6 text-white animate-spin" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-bold text-white text-base mb-1">
+                      {data.tier >= 3 ? '4 Video Formats — Generating' : 'AI Transformation Video — Generating'}
+                    </h3>
+                    <p className="text-white/80 text-sm leading-relaxed">
+                      {data.tier >= 3
+                        ? 'Your 60s, 30s, 15s, and 10s AI transformation videos are being rendered. This page updates automatically when complete.'
+                        : 'Your 60-second AI transformation video is rendering. This page refreshes automatically — no action needed.'}
+                    </p>
+                  </div>
+                  <div className="shrink-0 flex items-center gap-2">
+                    <div className="h-2 w-2 rounded-full bg-white/60 animate-bounce" style={{ animationDelay: '0ms' }} />
+                    <div className="h-2 w-2 rounded-full bg-white/60 animate-bounce" style={{ animationDelay: '150ms' }} />
+                    <div className="h-2 w-2 rounded-full bg-white/60 animate-bounce" style={{ animationDelay: '300ms' }} />
+                  </div>
+                </div>
+              </div>
+            )}
+            {/* Concept preview image — shown while video is rendering */}
             {data.renderUrls[0] && (
               <div className="rounded-2xl bg-white overflow-hidden p-5" style={{ boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.06)' }}>
                 <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">
@@ -1451,7 +1538,9 @@ export default function ConceptDeliverablePage() {
                   style={{ maxHeight: '280px' }}
                 />
                 <p className="text-xs text-gray-400 mt-2 text-center">
-                  Full transformation video renders in the background — this page refreshes automatically.
+                  {data.conceptVideoStatus === 'processing' || data.conceptVideoStatus === 'pending'
+                    ? 'Full transformation video renders in the background — this page refreshes automatically.'
+                    : 'Your concept renders are ready. Generate your AI transformation video above.'}
                 </p>
               </div>
             )}
@@ -1787,6 +1876,51 @@ export default function ConceptDeliverablePage() {
             </div>
           </section>
         )}
+
+        {/* ── Next Steps CTA (intelligent — branches on permit requirement) ─── */}
+        {(() => {
+          const requiresPermit = data.permitScope?.requiresPermit ?? (catalogPermitRequired === 'always')
+          const processingDays = data.permitScope?.estimatedProcessingDays
+          const primaryHref = requiresPermit
+            ? `https://kealee.com/intake/permit_path_only?projectId=${intakeId}&from=concept`
+            : `https://kealee.com/intake/contractor_match?projectId=${intakeId}&from=concept`
+          const primaryLabel = requiresPermit
+            ? 'Get Permit-Ready Design'
+            : 'Match with Contractors + Get Firm Pricing'
+          const secondaryHref = requiresPermit ? '#permit' : `https://kealee.com/intake/certified_estimate?projectId=${intakeId}`
+          const secondaryLabel = requiresPermit ? 'Review Permit Requirements' : 'Get Full Cost Estimate'
+          return (
+            <section className="rounded-2xl overflow-hidden"
+              style={{ border: '1.5px solid #E8724B30', background: 'linear-gradient(135deg, #FFF7F3 0%, #FFF 100%)' }}>
+              <div className="px-6 py-5">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-3">Your Next Step</p>
+                <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                  <div className="flex-1">
+                    <h3 className="text-base font-bold mb-1" style={{ color: '#1A2B4A' }}>
+                      {requiresPermit ? 'Permit Required — Start Your Design Plans' : 'Ready to Build — Match with Contractors'}
+                    </h3>
+                    <p className="text-sm text-gray-600 leading-relaxed">
+                      {requiresPermit
+                        ? `Your project requires a permit${processingDays ? ` (estimated ${processingDays} days processing)` : ''}. A permit-ready design includes stamped drawings and agency filing — your concept fee is credited toward this package.`
+                        : 'No permit needed. Match with licensed contractors directly using your concept brief and get firm pricing before you commit.'}
+                    </p>
+                  </div>
+                  <div className="flex flex-col gap-2 shrink-0 min-w-[180px]">
+                    <a href={primaryHref}
+                      className="inline-flex items-center justify-center rounded-xl px-5 py-2.5 text-sm font-bold text-white text-center transition-opacity hover:opacity-90"
+                      style={{ backgroundColor: '#E8724B' }}>
+                      {primaryLabel} <ArrowRight className="ml-1.5 h-4 w-4 shrink-0" />
+                    </a>
+                    <a href={secondaryHref}
+                      className="inline-flex items-center justify-center rounded-xl border border-gray-200 px-5 py-2 text-xs font-semibold text-gray-700 text-center hover:bg-gray-50 transition-colors">
+                      {secondaryLabel}
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </section>
+          )
+        })()}
 
         <BuildPathUpsell
           sourceProjectPath={data.projectPath ?? ''}

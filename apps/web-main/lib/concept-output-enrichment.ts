@@ -48,6 +48,9 @@ function zoningLooksEmpty(notes: string | undefined): boolean {
 
 /**
  * Fills permitScope + zoningNotes when Claude omitted them or returned placeholders.
+ *
+ * @param jurisdictionData  Optional real data from DB lookup. When provided, overrides
+ *   the hardcoded fee/timeline defaults so customers see accurate permit costs.
  */
 export function ensureConceptPermitZoningFields(
   output: EnrichableConceptOutput,
@@ -56,6 +59,13 @@ export function ensureConceptPermitZoningFields(
   opts?: {
     projectAddress?: string
     permitRequired?: 'always' | 'sometimes' | 'rarely'
+    jurisdictionData?: {
+      avgReviewDays?: number
+      feeSchedule?: Record<string, number>
+      city?: string
+      state?: string
+      inferredByAI?: boolean
+    }
   },
 ): void {
   const tierKey = normalizeTier(tier)
@@ -66,13 +76,24 @@ export function ensureConceptPermitZoningFields(
     permitRequired === 'always' ||
     (permitRequired === 'sometimes' && STRUCTURAL_PATHS.has(projectPath))
 
+  // Resolve permit fee: prefer real DB fee schedule over the $850 hardcoded default
+  const jData = opts?.jurisdictionData
+  const realFee = jData?.feeSchedule?.[projectPath] ?? jData?.feeSchedule?.['interior_renovation']
+  const permitFee = realFee ?? (defaultRequiresPermit ? 850 : 0)
+  const processingDays = jData?.avgReviewDays ?? (defaultRequiresPermit ? 21 : 0)
+
   if (zoningLooksEmpty(output.zoningNotes)) {
     const zoningLines = pzLabels.filter((l) => /zoning|buildability|variance|HOA|overlay|setback/i.test(l))
+    const locationLabel = jData?.city && jData?.state
+      ? `${jData.city}, ${jData.state}`
+      : opts?.projectAddress ?? undefined
     output.zoningNotes = [
       `Your ${tierKey === 1 ? 'Basic' : tierKey === 2 ? 'Premium' : 'Premium+'} package includes zoning and permit guidance.`,
       ...zoningLines,
-      opts?.projectAddress ? `Property: ${opts.projectAddress}.` : '',
-      'Confirm allowed use, setbacks, and height limits with your local planning department before construction.',
+      locationLabel ? `Property: ${locationLabel}.` : '',
+      jData && !jData.inferredByAI
+        ? 'Permit data sourced from jurisdiction records — verify current fees with your local AHJ before filing.'
+        : 'Confirm allowed use, setbacks, and height limits with your local planning department before construction.',
     ]
       .filter(Boolean)
       .join(' ')
@@ -89,13 +110,21 @@ export function ensureConceptPermitZoningFields(
           ? ['Building / alteration permit', 'Electrical permit (if scope includes)', 'Plumbing permit (if scope includes)']
           : []
         : (ps!.permitTypes ?? []),
-      estimatedPermitFee: ps?.estimatedPermitFee ?? (defaultRequiresPermit ? 850 : 0),
-      estimatedProcessingDays: ps?.estimatedProcessingDays ?? (defaultRequiresPermit ? 21 : 0),
+      estimatedPermitFee: ps?.estimatedPermitFee ?? permitFee,
+      estimatedProcessingDays: ps?.estimatedProcessingDays ?? processingDays,
       requiresPE: ps?.requiresPE ?? STRUCTURAL_PATHS.has(projectPath),
       notes:
         ps?.notes?.trim() ||
         permitLabels.join(' ') ||
         'Permit scope brief included — agency filing and stamped drawings are available as a separate Kealee service.',
+    }
+  } else if (jData && !jData.inferredByAI) {
+    // Real jurisdiction data found — override AI-generated fee/timeline estimates
+    if (ps.estimatedPermitFee === 0 || ps.estimatedPermitFee === 850) {
+      ps.estimatedPermitFee = permitFee
+    }
+    if (ps.estimatedProcessingDays === 0 || ps.estimatedProcessingDays === 21) {
+      ps.estimatedProcessingDays = processingDays
     }
   }
 

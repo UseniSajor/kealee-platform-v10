@@ -599,10 +599,95 @@ function projectPathToZoningType(projectPath: string): 'garden' | 'kitchen' | 'l
   return 'renovation'
 }
 
+// ── DMV jurisdiction lookup (local, no DB query required) ────────────────────
+// Maps zip codes and city names to real fee schedules from the seeded Jurisdiction table.
+// Covers the core DMV market; callers fall back to runZoningBot for other locations.
+
+interface JurisdictionRecord {
+  name: string
+  city: string
+  state: string
+  avgReviewDays: number
+  feeSchedule: Record<string, number>
+  inferredByAI: false
+}
+
+const DMV_JURISDICTION_BY_ZIP: Record<string, JurisdictionRecord> = {
+  // DC zip codes
+  '20001': { name: 'DC Department of Buildings (DCRA)', city: 'Washington', state: 'DC', avgReviewDays: 21, feeSchedule: { kitchen_remodel: 850, bathroom_remodel: 550, interior_renovation: 950, whole_home_remodel: 4000, addition_expansion: 6500 }, inferredByAI: false },
+  '20002': { name: 'DC Department of Buildings (DCRA)', city: 'Washington', state: 'DC', avgReviewDays: 21, feeSchedule: { kitchen_remodel: 850, bathroom_remodel: 550, interior_renovation: 950, whole_home_remodel: 4000, addition_expansion: 6500 }, inferredByAI: false },
+  '20003': { name: 'DC Department of Buildings (DCRA)', city: 'Washington', state: 'DC', avgReviewDays: 21, feeSchedule: { kitchen_remodel: 850, bathroom_remodel: 550, interior_renovation: 950, whole_home_remodel: 4000, addition_expansion: 6500 }, inferredByAI: false },
+  '20010': { name: 'DC Department of Buildings (DCRA)', city: 'Washington', state: 'DC', avgReviewDays: 21, feeSchedule: { kitchen_remodel: 850, bathroom_remodel: 550, interior_renovation: 950, whole_home_remodel: 4000, addition_expansion: 6500 }, inferredByAI: false },
+  '20024': { name: 'DC Department of Buildings (DCRA)', city: 'Washington', state: 'DC', avgReviewDays: 21, feeSchedule: { kitchen_remodel: 850, bathroom_remodel: 550, interior_renovation: 950, whole_home_remodel: 4000, addition_expansion: 6500 }, inferredByAI: false },
+  // Arlington VA
+  '22201': { name: 'Arlington County DCP', city: 'Arlington', state: 'VA', avgReviewDays: 14, feeSchedule: { kitchen_remodel: 700, bathroom_remodel: 450, interior_renovation: 800, whole_home_remodel: 3500, addition_expansion: 5500 }, inferredByAI: false },
+  '22202': { name: 'Arlington County DCP', city: 'Arlington', state: 'VA', avgReviewDays: 14, feeSchedule: { kitchen_remodel: 700, bathroom_remodel: 450, interior_renovation: 800, whole_home_remodel: 3500, addition_expansion: 5500 }, inferredByAI: false },
+  '22203': { name: 'Arlington County DCP', city: 'Arlington', state: 'VA', avgReviewDays: 14, feeSchedule: { kitchen_remodel: 700, bathroom_remodel: 450, interior_renovation: 800, whole_home_remodel: 3500, addition_expansion: 5500 }, inferredByAI: false },
+  '22204': { name: 'Arlington County DCP', city: 'Arlington', state: 'VA', avgReviewDays: 14, feeSchedule: { kitchen_remodel: 700, bathroom_remodel: 450, interior_renovation: 800, whole_home_remodel: 3500, addition_expansion: 5500 }, inferredByAI: false },
+  '22205': { name: 'Arlington County DCP', city: 'Arlington', state: 'VA', avgReviewDays: 14, feeSchedule: { kitchen_remodel: 700, bathroom_remodel: 450, interior_renovation: 800, whole_home_remodel: 3500, addition_expansion: 5500 }, inferredByAI: false },
+  '22206': { name: 'Arlington County DCP', city: 'Arlington', state: 'VA', avgReviewDays: 14, feeSchedule: { kitchen_remodel: 700, bathroom_remodel: 450, interior_renovation: 800, whole_home_remodel: 3500, addition_expansion: 5500 }, inferredByAI: false },
+  '22207': { name: 'Arlington County DCP', city: 'Arlington', state: 'VA', avgReviewDays: 14, feeSchedule: { kitchen_remodel: 700, bathroom_remodel: 450, interior_renovation: 800, whole_home_remodel: 3500, addition_expansion: 5500 }, inferredByAI: false },
+  '22209': { name: 'Arlington County DCP', city: 'Arlington', state: 'VA', avgReviewDays: 14, feeSchedule: { kitchen_remodel: 700, bathroom_remodel: 450, interior_renovation: 800, whole_home_remodel: 3500, addition_expansion: 5500 }, inferredByAI: false },
+  // Montgomery County MD
+  '20814': { name: 'Montgomery County DPS', city: 'Bethesda', state: 'MD', avgReviewDays: 18, feeSchedule: { kitchen_remodel: 620, bathroom_remodel: 400, interior_renovation: 750, whole_home_remodel: 3200, addition_expansion: 5000 }, inferredByAI: false },
+  '20815': { name: 'Montgomery County DPS', city: 'Chevy Chase', state: 'MD', avgReviewDays: 18, feeSchedule: { kitchen_remodel: 620, bathroom_remodel: 400, interior_renovation: 750, whole_home_remodel: 3200, addition_expansion: 5000 }, inferredByAI: false },
+  '20816': { name: 'Montgomery County DPS', city: 'Cabin John', state: 'MD', avgReviewDays: 18, feeSchedule: { kitchen_remodel: 620, bathroom_remodel: 400, interior_renovation: 750, whole_home_remodel: 3200, addition_expansion: 5000 }, inferredByAI: false },
+  '20817': { name: 'Montgomery County DPS', city: 'Bethesda', state: 'MD', avgReviewDays: 18, feeSchedule: { kitchen_remodel: 620, bathroom_remodel: 400, interior_renovation: 750, whole_home_remodel: 3200, addition_expansion: 5000 }, inferredByAI: false },
+  '20854': { name: 'Montgomery County DPS', city: 'Potomac', state: 'MD', avgReviewDays: 18, feeSchedule: { kitchen_remodel: 620, bathroom_remodel: 400, interior_renovation: 750, whole_home_remodel: 3200, addition_expansion: 5000 }, inferredByAI: false },
+  '20895': { name: 'Montgomery County DPS', city: 'Kensington', state: 'MD', avgReviewDays: 18, feeSchedule: { kitchen_remodel: 620, bathroom_remodel: 400, interior_renovation: 750, whole_home_remodel: 3200, addition_expansion: 5000 }, inferredByAI: false },
+  // Fairfax County VA
+  '22153': { name: 'Fairfax County LDS', city: 'Springfield', state: 'VA', avgReviewDays: 16, feeSchedule: { kitchen_remodel: 580, bathroom_remodel: 380, interior_renovation: 700, whole_home_remodel: 3000, addition_expansion: 4800 }, inferredByAI: false },
+  '22180': { name: 'Fairfax County LDS', city: 'Vienna', state: 'VA', avgReviewDays: 16, feeSchedule: { kitchen_remodel: 580, bathroom_remodel: 380, interior_renovation: 700, whole_home_remodel: 3000, addition_expansion: 4800 }, inferredByAI: false },
+  '22182': { name: 'Fairfax County LDS', city: 'Vienna', state: 'VA', avgReviewDays: 16, feeSchedule: { kitchen_remodel: 580, bathroom_remodel: 380, interior_renovation: 700, whole_home_remodel: 3000, addition_expansion: 4800 }, inferredByAI: false },
+  '22101': { name: 'Fairfax County LDS', city: 'McLean', state: 'VA', avgReviewDays: 16, feeSchedule: { kitchen_remodel: 580, bathroom_remodel: 380, interior_renovation: 700, whole_home_remodel: 3000, addition_expansion: 4800 }, inferredByAI: false },
+  '22102': { name: 'Fairfax County LDS', city: 'McLean', state: 'VA', avgReviewDays: 16, feeSchedule: { kitchen_remodel: 580, bathroom_remodel: 380, interior_renovation: 700, whole_home_remodel: 3000, addition_expansion: 4800 }, inferredByAI: false },
+  // Alexandria VA
+  '22301': { name: 'Alexandria DPZ', city: 'Alexandria', state: 'VA', avgReviewDays: 15, feeSchedule: { kitchen_remodel: 680, bathroom_remodel: 430, interior_renovation: 780, whole_home_remodel: 3400, addition_expansion: 5200 }, inferredByAI: false },
+  '22302': { name: 'Alexandria DPZ', city: 'Alexandria', state: 'VA', avgReviewDays: 15, feeSchedule: { kitchen_remodel: 680, bathroom_remodel: 430, interior_renovation: 780, whole_home_remodel: 3400, addition_expansion: 5200 }, inferredByAI: false },
+  '22304': { name: 'Alexandria DPZ', city: 'Alexandria', state: 'VA', avgReviewDays: 15, feeSchedule: { kitchen_remodel: 680, bathroom_remodel: 430, interior_renovation: 780, whole_home_remodel: 3400, addition_expansion: 5200 }, inferredByAI: false },
+  '22314': { name: 'Alexandria DPZ', city: 'Alexandria', state: 'VA', avgReviewDays: 15, feeSchedule: { kitchen_remodel: 680, bathroom_remodel: 430, interior_renovation: 780, whole_home_remodel: 3400, addition_expansion: 5200 }, inferredByAI: false },
+  // Prince George's County MD
+  '20745': { name: "Prince George's County DPIE", city: 'Oxon Hill', state: 'MD', avgReviewDays: 20, feeSchedule: { kitchen_remodel: 600, bathroom_remodel: 390, interior_renovation: 720, whole_home_remodel: 3100, addition_expansion: 4900 }, inferredByAI: false },
+  '20746': { name: "Prince George's County DPIE", city: 'Camp Springs', state: 'MD', avgReviewDays: 20, feeSchedule: { kitchen_remodel: 600, bathroom_remodel: 390, interior_renovation: 720, whole_home_remodel: 3100, addition_expansion: 4900 }, inferredByAI: false },
+  '20747': { name: "Prince George's County DPIE", city: 'District Heights', state: 'MD', avgReviewDays: 20, feeSchedule: { kitchen_remodel: 600, bathroom_remodel: 390, interior_renovation: 720, whole_home_remodel: 3100, addition_expansion: 4900 }, inferredByAI: false },
+}
+
+/** Lookup jurisdiction data from address string without a DB query. */
+function lookupDmvJurisdiction(address: string): JurisdictionRecord | null {
+  if (!address?.trim()) return null
+  // Try zip code match first (most reliable)
+  const zipMatch = address.match(/\b(\d{5})\b/)
+  if (zipMatch) {
+    const rec = DMV_JURISDICTION_BY_ZIP[zipMatch[1]]
+    if (rec) return rec
+  }
+  // Try city name match
+  const lower = address.toLowerCase()
+  if (lower.includes('washington') || lower.includes(', dc')) {
+    return DMV_JURISDICTION_BY_ZIP['20001']
+  }
+  if (lower.includes('arlington') && (lower.includes(', va') || lower.includes('virginia'))) {
+    return DMV_JURISDICTION_BY_ZIP['22201']
+  }
+  if (lower.includes('alexandria') && (lower.includes(', va') || lower.includes('virginia'))) {
+    return DMV_JURISDICTION_BY_ZIP['22301']
+  }
+  if (lower.includes('mclean') || lower.includes('vienna') || lower.includes('fairfax')) {
+    return DMV_JURISDICTION_BY_ZIP['22180']
+  }
+  if (lower.includes('bethesda') || lower.includes('rockville') || lower.includes('silver spring') || lower.includes('chevy chase')) {
+    return DMV_JURISDICTION_BY_ZIP['20814']
+  }
+  return null
+}
+
 /**
  * Run the zoning bot for tier 2+ when an address is provided.
  * Merges real jurisdiction/setback/FAR/permit data into the concept output.
  * Non-fatal — failures are logged but don't block generation.
+ *
+ * Returns jurisdiction data when a real DB/lookup record was found so the caller
+ * can pass it to ensureConceptPermitZoningFields() to override AI-default fees.
  */
 async function enrichWithZoningData(
   conceptOutput: ConceptOutput,
@@ -610,8 +695,12 @@ async function enrichWithZoningData(
   projectAddress: string | null | undefined,
   squareFootage: unknown,
   email: string | null | undefined,
-): Promise<void> {
-  if (!projectAddress?.trim()) return
+): Promise<JurisdictionRecord | null> {
+  if (!projectAddress?.trim()) return null
+
+  // Step 1: Try fast local DMV lookup (no DB or AI call needed)
+  const dmvRecord = lookupDmvJurisdiction(projectAddress)
+
   try {
     const sqFt = typeof squareFootage === 'number'
       ? squareFootage
@@ -640,10 +729,23 @@ async function enrichWithZoningData(
       conceptOutput.permitScope.permitTypes = merged
       if (merged.length > 0) conceptOutput.permitScope.requiresPermit = true
     }
+
+    // If we found a real DMV record, override AI-estimated fee/timeline with real values
+    if (dmvRecord && conceptOutput.permitScope) {
+      const realFee = dmvRecord.feeSchedule[projectPath] ?? dmvRecord.feeSchedule['interior_renovation']
+      if (realFee && (conceptOutput.permitScope.estimatedPermitFee === 0 || conceptOutput.permitScope.estimatedPermitFee === 850)) {
+        conceptOutput.permitScope.estimatedPermitFee = realFee
+      }
+      if (conceptOutput.permitScope.estimatedProcessingDays === 0 || conceptOutput.permitScope.estimatedProcessingDays === 30) {
+        conceptOutput.permitScope.estimatedProcessingDays = dmvRecord.avgReviewDays
+      }
+    }
   } catch (zoningErr: unknown) {
     const msg = zoningErr instanceof Error ? zoningErr.message : String(zoningErr)
     console.warn('[concept/generate] runZoningBot failed (non-fatal):', msg)
   }
+
+  return dmvRecord
 }
 
 function permitGuidance(permitRequired: string | undefined): string {
@@ -1026,9 +1128,11 @@ export async function POST(req: NextRequest) {
     }
 
     // Tier 2+: enrich zoning/permit data from real address via ZoningBot (Claude).
+    // Returns real jurisdiction data when a DMV address is recognized.
     // Non-fatal — generation continues even if zoning lookup fails.
+    let jurisdictionData: JurisdictionRecord | null = null
     if (tier >= 2) {
-      await enrichWithZoningData(
+      jurisdictionData = await enrichWithZoningData(
         conceptOutput,
         projectPath,
         intake.project_address as string | null | undefined,
@@ -1075,9 +1179,59 @@ export async function POST(req: NextRequest) {
     ensureConceptPermitZoningFields(conceptOutput, projectPath, tier, {
       projectAddress: intake.project_address as string | undefined,
       permitRequired: deliverable?.permitRequired,
+      jurisdictionData: jurisdictionData ?? undefined,
     })
 
+    // Synthesize dynamic next steps based on permit requirement and jurisdiction data.
+    // Written to packageJson.nextSteps.actionItems so the portal renders them.
+    {
+      const requiresPermit = conceptOutput.permitScope?.requiresPermit ?? false
+      const permitTypes = conceptOutput.permitScope?.permitTypes ?? []
+      const processingDays = conceptOutput.permitScope?.estimatedProcessingDays ?? 21
+      const jCity = jurisdictionData?.city ?? ''
+      const nextStepItems: string[] = []
+
+      if (requiresPermit && permitTypes.length > 0) {
+        const permitList = permitTypes.slice(0, 2).join(' + ')
+        nextStepItems.push(
+          `Obtain ${permitList} — estimated ${processingDays} business days processing${jCity ? ` in ${jCity}` : ''}. Filing details included in your permit scope brief.`,
+        )
+      } else if (!requiresPermit) {
+        nextStepItems.push(
+          'Match with licensed contractors using your concept brief — no permit delay needed before construction can begin.',
+        )
+      }
+
+      nextStepItems.push('Review your zoning compliance summary and confirm setback/height limits with your local planning department.')
+      nextStepItems.push('Schedule a professional site assessment to verify existing conditions before construction documents are produced.')
+
+      if (tier >= 2) {
+        nextStepItems.push('Share your concept package with your design professional to advance to permit-ready construction drawings.')
+      }
+
+      // Attach to packageJson.nextSteps (read by portal deliverables page)
+      const co = conceptOutput as ConceptOutput & Record<string, unknown>
+      const existingPkg = (co.packageJson as Record<string, unknown> | undefined) ?? {}
+      co.packageJson = {
+        ...existingPkg,
+        nextSteps: { actionItems: nextStepItems },
+      }
+    }
+
     attachConceptVideoFields(conceptOutput, tier)
+
+    // Stamp a stable package ID and provenance metadata so agents and humans
+    // can retrieve, audit, and track each delivered package by a durable key.
+    // Written once at generation time; regenerations preserve the existing ID.
+    {
+      const co = conceptOutput as ConceptOutput & Record<string, unknown>
+      if (!co.packageId) co.packageId = crypto.randomUUID()
+      co.packageGeneratedAt = new Date().toISOString()
+      co.packageTier        = tier
+      co.packageProjectPath = projectPath
+      co.packageIntakeId    = intakeId
+      co.packageVersion     = '1'
+    }
 
     await generateAndAttachConceptFloorplan(
       intakeFloorplanInput(intake as Record<string, unknown>, intakeId),
