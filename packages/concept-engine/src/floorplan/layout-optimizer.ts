@@ -26,8 +26,8 @@ import { checkCodeCompliance } from './layout-constraints';
 import type { RoomType } from './types';
 
 const GRID_PAD  = 4;   // outer padding in feet
-const ROOM_GAP  = 3;   // gap between rooms in feet
-const GRID_STEP = 2;   // annealing grid step size in feet
+const ROOM_GAP  = 0;   // gap between rooms in feet (0 = rooms touch, matching architectural convention)
+const GRID_STEP = 1;   // annealing grid step size in feet (1ft granularity for tight packing)
 
 // Simulated annealing parameters
 const SA_INITIAL_TEMP  = 100;

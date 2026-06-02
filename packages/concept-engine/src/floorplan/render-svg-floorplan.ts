@@ -205,7 +205,7 @@ const OUTDOOR_TYPES = new Set<string>([
 function computeSharedEdges(rooms: RoomNode[]): SharedEdge[] {
   const placed = rooms.filter(r => r.placed && r.x !== undefined && r.y !== undefined);
   const edges: SharedEdge[] = [];
-  const SNAP = 0.6; // ft tolerance
+  const SNAP = 1.2; // ft tolerance (catches 1ft annealing residuals when ROOM_GAP=0)
 
   for (let i = 0; i < placed.length; i++) {
     for (let j = i + 1; j < placed.length; j++) {
