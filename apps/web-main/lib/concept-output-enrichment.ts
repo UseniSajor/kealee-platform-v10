@@ -134,6 +134,111 @@ export interface FloorplanEnrichmentInput {
   form_data?: Record<string, unknown> | null
 }
 
+// ── Description / photo analysis helpers ─────────────────────────────────────
+
+/**
+ * Extract room-size hints from description text and goals.
+ * Returns a map of RoomType string → scale multiplier (0.82–1.5).
+ */
+function parseDescriptionForRoomHints(
+  description: string,
+  goals: string[],
+): { roomSizeHints: Record<string, number>; extraCaptureZones: string[] } {
+  const text = [description, ...goals].join(' ').toLowerCase()
+  const hints: Record<string, number> = {}
+  const extra: string[] = []
+
+  // Kitchen size
+  if (/large kitchen|chef.?s kitchen|open kitchen|gourmet kitchen/.test(text))  hints['kitchen'] = 1.28
+  else if (/small kitchen|compact kitchen|galley kitchen/.test(text))            hints['kitchen'] = 0.82
+
+  // Living area
+  if (/great room|large living|open\s+(plan|concept|layout)|vaulted ceiling/.test(text)) hints['living'] = 1.28
+
+  // Primary bedroom
+  if (/large (master|primary) bed|owner.?s suite|master suite/.test(text)) hints['primary_bedroom'] = 1.28
+
+  // Detect extra room types not in default set
+  if (/home office|study room/.test(text))           extra.push('office')
+  if (/mudroom|boot room/.test(text))                extra.push('mudroom')
+  if (/laundry room/.test(text))                     extra.push('laundry')
+  if (/flex room|bonus room|media room|game room|playroom/.test(text)) extra.push('flex_room')
+
+  return { roomSizeHints: hints, extraCaptureZones: extra }
+}
+
+/**
+ * Call Claude vision (haiku) on uploaded photos to detect room types and sizes.
+ * Non-fatal — returns empty results on any error.
+ * Analyzes up to 3 HTTP(S) photo URLs to control cost and latency.
+ */
+async function analyzePhotosForFloorplan(photoUrls: string[]): Promise<{
+  captureZones: string[]
+  roomSizeHints: Record<string, number>
+}> {
+  const urls = photoUrls.filter((u) => /^https?:\/\//.test(u)).slice(0, 3)
+  if (urls.length === 0) return { captureZones: [], roomSizeHints: {} }
+
+  try {
+    const { default: Anthropic } = await import('@anthropic-ai/sdk')
+    const client = new Anthropic()
+
+    // Build a content array with image blocks (URL source) + prompt text.
+    // Cast to unknown[] to work around SDK union narrowing on ImageBlockParam.source.
+    const content: unknown[] = [
+      ...urls.map((url) => ({
+        type: 'image',
+        source: { type: 'url', url },
+      })),
+      {
+        type: 'text',
+        text:
+          'Identify the rooms shown in these photos. For each, estimate if the room is ' +
+          'small, medium, or large. Reply ONLY with JSON, no prose: ' +
+          '{"rooms":[{"type":"kitchen","size":"large"}]}. ' +
+          'Valid types: kitchen, dining, living, primary_bedroom, secondary_bedroom, ' +
+          'primary_bathroom, secondary_bathroom, hallway, garage, office, laundry, mudroom, flex_room. ' +
+          'Valid sizes: small, medium, large.',
+      },
+    ]
+
+    const response = await client.messages.create({
+      model: 'claude-haiku-4-5',
+      max_tokens: 256,
+      messages: [
+        {
+          role: 'user' as const,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          content: content as any,
+        },
+      ],
+    })
+
+    const raw = response.content[0].type === 'text' ? response.content[0].text.trim() : ''
+    const match = raw.match(/\{[\s\S]*\}/)
+    if (!match) return { captureZones: [], roomSizeHints: {} }
+
+    const data = JSON.parse(match[0]) as { rooms?: Array<{ type?: string; size?: string }> }
+    const captureZones: string[] = []
+    const roomSizeHints: Record<string, number> = {}
+
+    for (const r of data.rooms ?? []) {
+      if (!r.type) continue
+      captureZones.push(r.type)
+      if (r.size === 'large')  roomSizeHints[r.type] = 1.25
+      else if (r.size === 'small') roomSizeHints[r.type] = 0.82
+    }
+
+    return { captureZones, roomSizeHints }
+  } catch (err) {
+    console.warn(
+      '[concept-floorplan] photo analysis skipped:',
+      err instanceof Error ? err.message : err,
+    )
+    return { captureZones: [], roomSizeHints: {} }
+  }
+}
+
 /** Run concept-engine floorplan optimizer and attach SVG + packageJson.floorPlan (Premium+ tiers). */
 export async function generateAndAttachConceptFloorplan(
   intake: FloorplanEnrichmentInput,
@@ -166,6 +271,28 @@ export async function generateAndAttachConceptFloorplan(
     const description = typeof formData.description === 'string' ? formData.description : ''
     const goals = description ? [description] : []
 
+    // Parse description + goals for room size hints and extra zone hints
+    const { roomSizeHints: descHints, extraCaptureZones } =
+      parseDescriptionForRoomHints(description, goals)
+
+    // Analyze uploaded photos via Claude vision (non-fatal, no-op if no valid URLs)
+    const photoAnalysis = uploadedPhotos.length
+      ? await analyzePhotosForFloorplan(uploadedPhotos)
+      : { captureZones: [] as string[], roomSizeHints: {} as Record<string, number> }
+
+    // Merge size hints (photo analysis wins on conflict)
+    const roomSizeHints: Record<string, number> = { ...descHints, ...photoAnalysis.roomSizeHints }
+
+    // Merge capture zones from form, description parsing, and photo analysis
+    const baseCaptureZones: string[] = Array.isArray(formData.captureZones)
+      ? (formData.captureZones as string[])
+      : []
+    const mergedCaptureZones = [
+      ...baseCaptureZones,
+      ...extraCaptureZones,
+      ...photoAnalysis.captureZones,
+    ]
+
     const result = generateFloorplan({
       intakeId: intake.id,
       projectPath: intake.project_path,
@@ -179,9 +306,8 @@ export async function generateAndAttachConceptFloorplan(
       goals,
       knownConstraints: [],
       uploadedPhotos,
-      captureZones: Array.isArray(formData.captureZones)
-        ? (formData.captureZones as string[])
-        : undefined,
+      captureZones: mergedCaptureZones.length ? mergedCaptureZones : undefined,
+      roomSizeHints: Object.keys(roomSizeHints).length ? roomSizeHints : undefined,
     })
 
     if (!result.roomCount || !result.svgString?.trim()) {

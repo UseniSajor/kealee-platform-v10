@@ -187,4 +187,9 @@ export interface ConceptIntakeInput {
   voiceNoteTranscriptions?: string[];
   // From property twin spatial nodes (optional)
   spatialNodes?: SpatialNodeSummary[];
+  /**
+   * Per-room size multipliers derived from photo/description analysis.
+   * 1.0 = default, 1.25 = large, 0.82 = small. Keyed by RoomType string.
+   */
+  roomSizeHints?: Record<string, number>;
 }

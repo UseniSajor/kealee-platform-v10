@@ -77,6 +77,11 @@ export interface GenerateFloorplanInput {
     label:       string;
     properties?: Record<string, unknown>;
   }>;
+  /**
+   * Per-room size multipliers derived from photo/description analysis.
+   * Keys are RoomType strings; values are scale factors (0.82 = small, 1.25 = large).
+   */
+  roomSizeHints?: Record<string, number>;
 }
 
 export interface GenerateFloorplanResult {
@@ -134,6 +139,7 @@ export function generateFloorplan(input: GenerateFloorplanInput): GenerateFloorp
     captureAssets:   input.captureAssets,
     voiceNoteTranscriptions: input.voiceNoteTranscriptions,
     spatialNodes:    input.spatialNodes,
+    roomSizeHints:   input.roomSizeHints,
   };
 
   const graph = buildRoomGraph(conceptInput);

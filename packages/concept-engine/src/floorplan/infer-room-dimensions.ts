@@ -53,8 +53,10 @@ export function inferRoomDimensions(
   input: ConceptIntakeInput,
 ): RoomDimensions {
   const [w, d] = DEFAULT_DIMENSIONS[type] ?? [12, 12];
-  const scale = EXTERIOR_TYPES.has(type) ? 1.0 : (BUDGET_SCALE[input.budgetRange] ?? 1.0);
-  const widthFt = Math.round(w * scale);
-  const depthFt = Math.round(d * scale);
+  const budgetScale = EXTERIOR_TYPES.has(type) ? 1.0 : (BUDGET_SCALE[input.budgetRange] ?? 1.0);
+  const sizeHint   = input.roomSizeHints?.[type] ?? 1.0;
+  const scale      = budgetScale * sizeHint;
+  const widthFt    = Math.round(w * scale);
+  const depthFt    = Math.round(d * scale);
   return { widthFt, depthFt, areaFt2: widthFt * depthFt };
 }

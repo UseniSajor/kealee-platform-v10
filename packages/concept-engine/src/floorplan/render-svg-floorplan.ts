@@ -265,6 +265,9 @@ function renderPermit(layout: FloorPlanLayout, level: DetailLevel): string {
     return `<rect x="${rx}" y="${ry}" width="${rw}" height="${rh}" fill="${fill}"/>`;
   }).join('\n    ');
 
+  // Outer building boundary (perimeter polygon over connected room rows)
+  const outerBoundary = buildOuterBoundaryPolygon(placed, s, MX, MY);
+
   // Room wall outlines
   const walls = placed.map(r => {
     const rx = fmt(MX + r.x! * s), ry = fmt(MY + r.y! * s);
@@ -331,6 +334,11 @@ function renderPermit(layout: FloorPlanLayout, level: DetailLevel): string {
   <!-- Room fills -->
   <g id="fills">
     ${fills}
+  </g>
+
+  <!-- Outer building boundary -->
+  <g id="boundary">
+    ${outerBoundary}
   </g>
 
   <!-- Door symbols -->
@@ -788,6 +796,79 @@ function buildScheduleRows(
     <text x="${fmt(x + 3)}" y="${fmt(totalRowY + ROW_H - 3)}" font-size="7" font-weight="700" fill="${TEXT_COL}">TOTAL</text>
     <text x="${fmt(divX + 33)}" y="${fmt(totalRowY + ROW_H - 3)}" text-anchor="end" font-size="7" font-weight="700" fill="${TEXT_COL}">${Math.round(total)}</text>
   </g>`;
+}
+
+// ── Outer building boundary polygon ───────────────────────────────────────────
+//
+// After compactifyLayout, rooms are packed into zone rows with no gaps.
+// We group rooms by their y-start to find row extents, then trace a staircase
+// polygon around the full building footprint.
+
+interface RowSpan {
+  y: number;   // row top (ft)
+  x1: number;  // row left edge (ft)
+  x2: number;  // row right edge (ft)
+  y2: number;  // row bottom (ft)
+}
+
+function computeRowSpans(rooms: RoomNode[]): RowSpan[] {
+  const rowMap = new Map<number, RoomNode[]>();
+  for (const r of rooms) {
+    // Round to nearest foot to bucket rooms into rows despite floating-point drift
+    const rowY = Math.round(r.y! * 2) / 2;
+    if (!rowMap.has(rowY)) rowMap.set(rowY, []);
+    rowMap.get(rowY)!.push(r);
+  }
+  return [...rowMap.entries()]
+    .sort((a, b) => a[0] - b[0])
+    .map(([rowY, rms]) => ({
+      y:  rowY,
+      x1: Math.min(...rms.map(r => r.x!)),
+      x2: Math.max(...rms.map(r => r.x! + r.dimensions.widthFt)),
+      y2: rowY + Math.max(...rms.map(r => r.dimensions.depthFt)),
+    }));
+}
+
+function buildOuterBoundaryPolygon(
+  rooms: RoomNode[], s: number, MX: number, MY: number,
+): string {
+  const rows = computeRowSpans(rooms);
+  if (rows.length === 0) return '';
+
+  // Trace polygon clockwise:
+  //  top-left → top-right → descend right (with steps) → bottom-left → ascend left (with steps)
+  const pts: [number, number][] = [];
+
+  pts.push([rows[0].x1, rows[0].y]);       // top-left
+  pts.push([rows[0].x2, rows[0].y]);       // top-right
+
+  // Right side descending
+  for (let i = 0; i < rows.length; i++) {
+    pts.push([rows[i].x2, rows[i].y2]);    // bottom-right of row i
+    if (i + 1 < rows.length && rows[i + 1].x2 !== rows[i].x2) {
+      pts.push([rows[i + 1].x2, rows[i].y2]); // horizontal step to next row's right edge
+    }
+  }
+
+  // Bottom edge of last row (already at y2 of last row)
+  pts.push([rows[rows.length - 1].x1, rows[rows.length - 1].y2]);
+
+  // Left side ascending
+  for (let i = rows.length - 1; i >= 0; i--) {
+    pts.push([rows[i].x1, rows[i].y]);    // top-left of row i
+    if (i - 1 >= 0 && rows[i - 1].x1 !== rows[i].x1) {
+      pts.push([rows[i - 1].x1, rows[i].y]); // horizontal step to prev row's left edge
+    }
+  }
+
+  // Convert feet → SVG px and build polygon attribute
+  const svgPts = pts
+    .map(([x, y]) => `${fmt(MX + x * s)},${fmt(MY + y * s)}`)
+    .join(' ');
+
+  return `<polygon points="${svgPts}"
+      fill="none" stroke="${WALL_COL}" stroke-width="4" stroke-linejoin="miter"
+      stroke-linecap="square"/>`;
 }
 
 // ── Utility ───────────────────────────────────────────────────────────────────

@@ -29,6 +29,23 @@ const GRID_PAD  = 4;   // outer padding in feet
 const ROOM_GAP  = 0;   // gap between rooms in feet (0 = rooms touch, matching architectural convention)
 const GRID_STEP = 1;   // annealing grid step size in feet (1ft granularity for tight packing)
 
+// ── Zone classification for seed placement ───────────────────────────────────
+// Rooms are grouped into zone rows to produce a connected building footprint.
+
+const ZONE_OUTDOOR = new Set<string>(['front_yard', 'rear_yard', 'side_yard', 'driveway']);
+const ZONE_SERVICE = new Set<string>(['garage', 'mudroom', 'laundry', 'utility']);
+const ZONE_PUBLIC  = new Set<string>(['living', 'dining', 'kitchen', 'pantry', 'porch', 'deck', 'covered_patio']);
+const ZONE_HALL    = new Set<string>(['hallway', 'connecting_hall']);
+// Everything else falls into ZONE_PRIVATE (bedrooms, bathrooms, office, flex, etc.)
+
+function roomZoneOrder(type: string): number {
+  if (ZONE_OUTDOOR.has(type)) return 0;
+  if (ZONE_SERVICE.has(type)) return 1;
+  if (ZONE_PUBLIC.has(type))  return 2;
+  if (ZONE_HALL.has(type))    return 3;
+  return 4; // PRIVATE: bedrooms, bathrooms, office, flex_room, addition_room
+}
+
 // Simulated annealing parameters
 const SA_INITIAL_TEMP  = 100;
 const SA_COOLING_RATE  = 0.97;
@@ -64,8 +81,8 @@ export function optimizeLayout(
   const weights = VARIANT_WEIGHTS[variantId];
   const meta    = VARIANT_META[variantId];
 
-  // Step 1: Initial placement (row-packing to seed the optimizer)
-  const seeded = seedPlacement([...rooms.map(r => ({ ...r }))]);
+  // Step 1: Initial placement (zone-aware row-packing to seed the optimizer)
+  const seeded = zoneAwareSeed([...rooms.map(r => ({ ...r }))]);
 
   // Step 2: Simulated annealing
   const optimized = anneal(seeded, edges, weights);
@@ -148,40 +165,86 @@ function anneal(rooms: RoomNode[], edges: RoomEdge[], weights: EnergyWeights): R
     temp *= SA_COOLING_RATE;
   }
 
-  // Normalize: shift all rooms so min x/y = GRID_PAD
-  return normalize(best);
+  // Normalize then compactify: eliminate sub-foot gaps and produce connected rows
+  return compactifyLayout(normalize(best));
 }
 
-// ── Seed placement (row-packing to start annealing from a reasonable state) ──
+// ── Zone-aware seed (groups rooms by functional zone for connected footprint) ─
 
-function seedPlacement(rooms: RoomNode[]): RoomNode[] {
+function zoneAwareSeed(rooms: RoomNode[]): RoomNode[] {
   if (rooms.length === 0) return rooms;
 
-  const sorted = [...rooms].sort((a, b) => b.dimensions.areaFt2 - a.dimensions.areaFt2);
-  const totalWidth = estimateRowWidth(sorted);
-  let curX = GRID_PAD;
-  let curY = GRID_PAD;
-  let rowH = 0;
-
-  for (const room of sorted) {
-    if (curX + room.dimensions.widthFt > totalWidth + GRID_PAD && curX > GRID_PAD) {
-      curX  = GRID_PAD;
-      curY += rowH + ROOM_GAP;
-      rowH  = 0;
-    }
-    room.x      = curX;
-    room.y      = curY;
-    room.placed = true;
-    curX       += room.dimensions.widthFt + ROOM_GAP;
-    rowH        = Math.max(rowH, room.dimensions.depthFt);
+  // Group by zone order
+  const zoneGroups = new Map<number, RoomNode[]>();
+  for (const room of rooms) {
+    const z = roomZoneOrder(room.type);
+    if (!zoneGroups.has(z)) zoneGroups.set(z, []);
+    zoneGroups.get(z)!.push(room);
   }
 
-  return sorted;
+  // Sort each zone group by area (largest first) to fill rows left-to-right
+  for (const group of zoneGroups.values()) {
+    group.sort((a, b) => b.dimensions.areaFt2 - a.dimensions.areaFt2);
+  }
+
+  // Place zones in row order (outdoor→service→public→hall→private)
+  const sortedZones = [...zoneGroups.entries()].sort((a, b) => a[0] - b[0]);
+  let curY = GRID_PAD;
+  for (const [, group] of sortedZones) {
+    const rowDepth = Math.max(...group.map(r => r.dimensions.depthFt));
+    let curX = GRID_PAD;
+    for (const room of group) {
+      room.x      = curX;
+      room.y      = curY;
+      room.placed = true;
+      curX += room.dimensions.widthFt;
+    }
+    curY += rowDepth;
+  }
+
+  return rooms;
 }
 
-function estimateRowWidth(rooms: RoomNode[]): number {
-  const total = rooms.reduce((s, r) => s + r.dimensions.widthFt + ROOM_GAP, 0);
-  return Math.max(40, Math.ceil(Math.sqrt(total * 1.5) * 2));
+// ── compactifyLayout (post-SA): re-pack rooms into connected zone rows ────────
+//
+// After SA, rooms may drift to sub-optimal positions with tiny gaps.
+// compactify groups rooms back into their functional zone rows,
+// preserving the SA's horizontal ordering within each zone,
+// and packs them with no gaps — producing a connected building footprint.
+
+function compactifyLayout(rooms: RoomNode[]): RoomNode[] {
+  const placed = rooms.filter(r => r.placed && r.x !== undefined);
+  if (placed.length === 0) return rooms;
+
+  // Group by zone order (same zones used in seed)
+  const zoneGroups = new Map<number, RoomNode[]>();
+  for (const r of placed) {
+    const z = roomZoneOrder(r.type);
+    if (!zoneGroups.has(z)) zoneGroups.set(z, []);
+    zoneGroups.get(z)!.push(r);
+  }
+
+  // Within each zone, sort by SA x-position (preserves adjacency-driven ordering)
+  for (const group of zoneGroups.values()) {
+    group.sort((a, b) => (a.x ?? 0) - (b.x ?? 0));
+  }
+
+  // Re-pack each zone row with zero gaps starting at GRID_PAD
+  const sortedZones = [...zoneGroups.entries()].sort((a, b) => a[0] - b[0]);
+  let curY = GRID_PAD;
+  for (const [, group] of sortedZones) {
+    // Row height = deepest room in zone (all rooms start at same y)
+    const rowDepth = Math.max(...group.map(r => r.dimensions.depthFt));
+    let curX = GRID_PAD;
+    for (const room of group) {
+      room.x = curX;
+      room.y = curY;
+      curX += room.dimensions.widthFt; // no gap
+    }
+    curY += rowDepth; // no gap between rows
+  }
+
+  return rooms;
 }
 
 // ── Scoring ───────────────────────────────────────────────────────────────────
