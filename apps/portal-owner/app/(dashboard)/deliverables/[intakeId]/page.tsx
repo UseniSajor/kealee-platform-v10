@@ -25,6 +25,7 @@ import { BuildPathUpsell, type OwnedUpsellProduct } from '@/components/BuildPath
 import { AccountCompleteBanner } from '@/components/AccountCompleteBanner'
 import {
   getConceptPackageDeliverableLabelsForIntake,
+  getIntakePriceByTier,
   getPermitZoningLabels,
   intakePathToFamily,
   resolveConceptTier,
@@ -712,8 +713,10 @@ export default function ConceptDeliverablePage() {
       const constructionCostMin = typeof scope.totalEstimatedMin === 'number' ? scope.totalEstimatedMin as number : undefined
       const constructionCostMax = typeof scope.totalEstimatedMax === 'number' ? scope.totalEstimatedMax as number : undefined
 
-      // Concept service price paid
-      const conceptServicePrice = CONCEPT_PRICE_DOLLARS[projectPath]
+      // Concept service price paid — tier-aware from core-rules; falls back to flat map
+      const conceptServicePrice =
+        (getIntakePriceByTier(projectPath, tier)?.cents ?? 0) / 100 ||
+        (CONCEPT_PRICE_DOLLARS[projectPath] ?? 0)
 
       // Estimated cost — v1 has co.estimatedCost; v2 has scope.totalEstimatedMax
       const estimatedCost =
@@ -818,9 +821,9 @@ export default function ConceptDeliverablePage() {
         ? co.renderUrls as string[]
         : dualStubs?.renderUrls ?? getStubRenders(projectPath, tier)
 
-      // Prefer the AI-generated video (Sora 2 / Veo 3.1 / Kling 2.5) once it
-      // has finished rendering. Falls back to the placeholder URL written by
-      // /api/concept/generate while the real video is still being produced.
+      // Use AI-generated video (Sora 2 / Veo 3.1 / Kling 2.5) once completed.
+      // While the video is being produced, videoUrl is undefined and the portal
+      // shows the "In Production" banner — never the placeholder URL.
       const conceptVideo = formData.conceptVideo as
         | { status?: string; outputUrl?: string }
         | undefined
@@ -828,7 +831,6 @@ export default function ConceptDeliverablePage() {
         conceptVideo?.status === 'completed' && typeof conceptVideo.outputUrl === 'string'
           ? conceptVideo.outputUrl
           : undefined
-      const placeholderVideoUrl = typeof co.videoUrl === 'string' ? co.videoUrl : undefined
 
       // Contractor matching unlock status — from the API route (includes gate record)
       const contractorMatchingUnlocked = !!(
@@ -901,7 +903,9 @@ export default function ConceptDeliverablePage() {
           : undefined,
         pdfUrl:          typeof co.pdfUrl === 'string' ? co.pdfUrl : undefined,
         contractorMatchingUnlocked,
-        videoUrl: realVideoUrl ?? placeholderVideoUrl,
+        // Never surface the ForBiggerBlazes.mp4 placeholder — customers see
+        // the "In Production" banner instead until the real video is ready.
+        videoUrl: realVideoUrl,
         videoFormatUrls:
           co.videoFormatUrls && typeof co.videoFormatUrls === 'object'
             ? (co.videoFormatUrls as Record<string, string>)

@@ -17,7 +17,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import Replicate from 'replicate'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { generateImages, buildArchitecturalPrompt } from '@/lib/ai-image'
-import { archiveReplicateOutputsFireAndForget } from '@/lib/replicate-archive'
+import { archiveReplicateOutputs } from '@/lib/replicate-archive'
 import { SERVICE_DELIVERABLES } from '@/lib/service-deliverables'
 import { TIER_IMAGE_COUNT, resolveConceptTier } from '@kealee/core-rules'
 
@@ -73,6 +73,9 @@ async function pollPredictions(
   maxWaitMs: number,
 ): Promise<ResolvedBundle> {
   const resolvedUrls: (string | null)[] = new Array(predictionIds.length).fill(null)
+  // Archive promises fired in parallel as renders resolve; awaited to swap
+  // Replicate delivery URLs (expire ~1h) for permanent Supabase storage URLs.
+  const archivePromises: Array<{ index: number; promise: Promise<string | null> }> = []
   const deadline = Date.now() + maxWaitMs
   let unresolved = predictionIds.length
 
@@ -89,13 +92,16 @@ async function pollPredictions(
           resolvedUrls[i] = url ?? '__failed__'
           unresolved--
           if (url && outputs.length > 0) {
-            archiveReplicateOutputsFireAndForget({
-              predictionId: predictionIds[i],
-              source: 'concept-renders-resolve',
-              mediaKind: 'image',
-              outputUrls: outputs,
-              model: typeof pred.model === 'string' ? pred.model : undefined,
-              context: { route: '/api/concept/renders/resolve' },
+            archivePromises.push({
+              index: i,
+              promise: archiveReplicateOutputs({
+                predictionId: predictionIds[i],
+                source: 'concept-renders-resolve',
+                mediaKind: 'image',
+                outputUrls: outputs,
+                model: typeof pred.model === 'string' ? pred.model : undefined,
+                context: { route: '/api/concept/renders/resolve' },
+              }).then(result => result?.assets[0]?.publicUrl ?? null).catch(() => null),
             })
           }
         } else if (pred.status === 'failed' || pred.status === 'canceled') {
@@ -110,6 +116,20 @@ async function pollPredictions(
       }
     }
     if (unresolved > 0) await new Promise(r => setTimeout(r, 5_000))
+  }
+
+  // Swap Replicate delivery URLs for permanent Supabase storage URLs.
+  if (archivePromises.length > 0) {
+    const settled = await Promise.all(
+      archivePromises.map(({ index, promise }) =>
+        promise.then(permanentUrl => ({ index, permanentUrl })),
+      ),
+    )
+    for (const { index, permanentUrl } of settled) {
+      if (permanentUrl && resolvedUrls[index] && resolvedUrls[index] !== '__failed__') {
+        resolvedUrls[index] = permanentUrl
+      }
+    }
   }
 
   const interiorRenderUrls: string[] = []

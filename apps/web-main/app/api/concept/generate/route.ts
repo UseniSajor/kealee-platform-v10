@@ -29,7 +29,7 @@ import {
   type ConceptTier,
 } from '@kealee/core-rules'
 import { generateImages, buildArchitecturalPrompt, type GenerateImageResult } from '@/lib/ai-image'
-import { archiveReplicateOutputsFireAndForget } from '@/lib/replicate-archive'
+import { archiveReplicateOutputs } from '@/lib/replicate-archive'
 import {
   ensureConceptPermitZoningFields,
   generateAndAttachConceptFloorplan,
@@ -373,6 +373,9 @@ async function resolveConceptRenders(
   const repl = new Replicate({ auth: process.env.REPLICATE_API_TOKEN })
   // null = not yet resolved, string = resolved URL (or sentinel '__failed__')
   const resolvedUrls: (string | null)[] = new Array(predictionIds.length).fill(null)
+  // Archive promises fired in parallel as each render resolves; awaited after polling
+  // so we can swap Replicate delivery URLs (expire ~1h) for permanent Supabase URLs.
+  const archivePromises: Array<{ index: number; promise: Promise<string | null> }> = []
   const deadline = Date.now() + maxWaitMs
   let unresolved = predictionIds.length
 
@@ -389,13 +392,17 @@ async function resolveConceptRenders(
           resolvedUrls[i] = url ?? '__failed__'
           unresolved--
           if (url && outputs.length > 0) {
-            archiveReplicateOutputsFireAndForget({
-              predictionId: predictionIds[i],
-              source: 'concept-generate-resolve',
-              mediaKind: 'image',
-              outputUrls: outputs,
-              model: typeof pred.model === 'string' ? pred.model : undefined,
-              context: { route: '/api/concept/generate' },
+            // Fire archive in parallel; promise collected below to swap temp→permanent URL.
+            archivePromises.push({
+              index: i,
+              promise: archiveReplicateOutputs({
+                predictionId: predictionIds[i],
+                source: 'concept-generate-resolve',
+                mediaKind: 'image',
+                outputUrls: outputs,
+                model: typeof pred.model === 'string' ? pred.model : undefined,
+                context: { route: '/api/concept/generate' },
+              }).then(result => result?.assets[0]?.publicUrl ?? null).catch(() => null),
             })
           }
         } else if (pred.status === 'failed' || pred.status === 'canceled') {
@@ -412,6 +419,21 @@ async function resolveConceptRenders(
 
   if (unresolved > 0) {
     console.warn(`[concept/generate] resolveConceptRenders timed out with ${unresolved} unresolved predictions`)
+  }
+
+  // Swap Replicate delivery URLs (expire ~1h) for permanent Supabase storage URLs.
+  // Archives run in parallel so total overhead is ~5–10s regardless of render count.
+  if (archivePromises.length > 0) {
+    const settled = await Promise.all(
+      archivePromises.map(({ index, promise }) =>
+        promise.then(permanentUrl => ({ index, permanentUrl })),
+      ),
+    )
+    for (const { index, permanentUrl } of settled) {
+      if (permanentUrl && resolvedUrls[index] && resolvedUrls[index] !== '__failed__') {
+        resolvedUrls[index] = permanentUrl
+      }
+    }
   }
 
   const interiorRenderUrls: string[] = []
