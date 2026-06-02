@@ -14,9 +14,17 @@ export const themes = {
 } as const;
 
 export type ThemeKey = keyof typeof themes;
+export type ModuleTheme = { primary: string; accent: string; name: string };
 
-export function getThemeByModule(moduleKey: string) {
+export function getThemeByModule(moduleKey: string): ModuleTheme {
   return themes[moduleKey as ThemeKey] || themes['os-admin'];
+}
+
+export function getThemeCSSVariables(theme: ModuleTheme): Record<string, string> {
+  return {
+    '--color-primary': theme.primary,
+    '--color-accent': theme.accent,
+  };
 }
 
 export function applyTheme(moduleKey: string) {
