@@ -7,7 +7,7 @@
 import type { ConceptIntakeInput, FloorPlanJson, FloorPlanVariant, ProjectPath } from '../floorplan/types';
 import { buildRoomGraph }         from '../floorplan/build-room-graph';
 import { buildLayoutVariants }    from '../floorplan/build-layout-json';
-import { renderSvgFloorplan }     from '../floorplan/render-svg-floorplan';
+import { type DetailLevel }       from '../floorplan/render-svg-floorplan';
 
 // All valid project paths (residential + commercial)
 const PATH_ALIASES: Record<string, ProjectPath> = {
@@ -38,6 +38,8 @@ function resolveProjectPath(raw: string): ProjectPath {
 export interface GenerateFloorplanInput {
   intakeId:          string;
   projectPath:       string;
+  /** 1 = schematic, 2 = permit, 3 = permit-full. Defaults to 1. */
+  tier?:             number;
   projectId?:        string;
   twinId?:           string;
   captureSessionId?: string;
@@ -99,8 +101,15 @@ export interface GenerateFloorplanResult {
   recommended: 'A' | 'B' | 'C';
 }
 
+function tierToDetailLevel(tier?: number): DetailLevel {
+  if (tier === 3) return 'permit-full';
+  if (tier === 2) return 'permit';
+  return 'schematic';
+}
+
 export function generateFloorplan(input: GenerateFloorplanInput): GenerateFloorplanResult {
   const projectPath: ProjectPath = resolveProjectPath(input.projectPath);
+  const detailLevel: DetailLevel = tierToDetailLevel(input.tier);
 
   const conceptInput: ConceptIntakeInput = {
     intakeId:        input.intakeId,
@@ -128,7 +137,7 @@ export function generateFloorplan(input: GenerateFloorplanInput): GenerateFloorp
   };
 
   const graph = buildRoomGraph(conceptInput);
-  const { variants, recommended } = buildLayoutVariants(graph, conceptInput);
+  const { variants, recommended } = buildLayoutVariants(graph, conceptInput, detailLevel);
 
   const rec = recommended;
 

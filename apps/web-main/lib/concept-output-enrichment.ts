@@ -169,6 +169,7 @@ export async function generateAndAttachConceptFloorplan(
     const result = generateFloorplan({
       intakeId: intake.id,
       projectPath: intake.project_path,
+      tier,
       clientName: intake.client_name ?? 'Homeowner',
       contactEmail: intake.contact_email ?? '',
       contactPhone: intake.contact_phone ?? undefined,

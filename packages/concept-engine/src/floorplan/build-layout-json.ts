@@ -13,7 +13,7 @@ import type {
   ConceptIntakeInput,
 } from './types';
 import { optimizeLayout } from './layout-optimizer';
-import { renderSvgFloorplan } from './render-svg-floorplan';
+import { renderSvgFloorplan, type DetailLevel } from './render-svg-floorplan';
 import { scoreAdjacency, generateAdjacencyNotes } from './build-adjacency';
 
 const VARIANTS = ['A', 'B', 'C'] as const;
@@ -22,6 +22,7 @@ const VARIANTS = ['A', 'B', 'C'] as const;
 export function buildLayoutVariants(
   graph: RoomGraph,
   input: ConceptIntakeInput,
+  detailLevel: DetailLevel = 'schematic',
 ): { variants: FloorPlanVariant[]; recommended: FloorPlanVariant } {
   const variants: FloorPlanVariant[] = VARIANTS.map(variantId => {
     const optimized = optimizeLayout(graph.rooms, graph.edges, variantId);
@@ -34,7 +35,7 @@ export function buildLayoutVariants(
       layoutIssues: optimized.layoutIssues,
     };
 
-    const svgString = renderSvgFloorplan(layout);
+    const svgString = renderSvgFloorplan(layout, detailLevel);
 
     const json: FloorPlanJson = {
       id: `fp_${variantId}_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
