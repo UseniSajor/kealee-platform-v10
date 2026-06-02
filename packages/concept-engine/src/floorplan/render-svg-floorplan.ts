@@ -411,15 +411,18 @@ function buildInteriorSideMap(rooms: RoomNode[], edges: SharedEdge[]): Map<strin
 
 function renderDoorSymbols(edges: SharedEdge[], s: number, MX: number, MY: number): string {
   const parts: string[] = [];
-  const doorPx = DOOR_FT * s;
 
   for (const edge of edges) {
     if (edge.length < DOOR_FT + 0.5) continue;
     if (OUTDOOR_TYPES.has(edge.roomA.type) || OUTDOOR_TYPES.has(edge.roomB.type)) continue;
 
+    // Cap door width so it never overflows a narrow corridor or short shared edge
+    const doorFt = Math.min(DOOR_FT, edge.length - 0.25);
+    const doorPx = doorFt * s;
+
     // Centre the door in the overlap
     const mid  = edge.start + edge.length / 2;
-    const dStart = Math.max(edge.start + 0.3, mid - DOOR_FT / 2);
+    const dStart = Math.max(edge.start + 0.3, mid - doorFt / 2);
 
     if (edge.edgeType === 'vertical') {
       const wx = MX + edge.wallPos * s;
@@ -601,7 +604,8 @@ function renderInteriorDimensions(rooms: RoomNode[], s: number, MX: number, MY: 
     const rx = MX + r.x! * s, ry = MY + r.y! * s;
     const rw = r.dimensions.widthFt * s, rh = r.dimensions.depthFt * s;
 
-    if (rw < 54 || rh < 40) return '';
+    // Only draw interior dims for rooms ≥ 13ft wide and 12ft deep — avoids crowding in small rooms
+    if (rw < 78 || rh < 72) return '';
 
     const wText = feetInches(r.dimensions.widthFt);
     const hText = feetInches(r.dimensions.depthFt);
@@ -628,6 +632,9 @@ function renderPlumbingSymbols(rooms: RoomNode[], s: number, MX: number, MY: num
     const ry = MY + room.y! * s;
     const rw = room.dimensions.widthFt * s;
     const rh = room.dimensions.depthFt * s;
+
+    // Skip rooms too small to draw symbols without overflowing walls
+    if (rw < 42 || rh < 42) continue;
 
     if (room.type === 'primary_bathroom' || room.type === 'secondary_bathroom') {
       // Toilet: tank rect + bowl ellipse
