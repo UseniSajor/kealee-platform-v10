@@ -390,8 +390,11 @@ export default function PreDesignResultsPage() {
   const systems = session.systemsImpact
   const estimate = session.estimateFramework
 
-  // Use persisted deliverables from ProjectOutput, fall back to session data
+  // Use persisted deliverables from ProjectOutput, fall back to session data.
+  // resultJson.conceptImageUrls and resultJson.images are populated by
+  // /api/project-output/[id] which maps form_data.conceptOutput.renderUrls.
   const persistedConceptImages = projectOutput?.resultJson?.conceptImageUrls || projectOutput?.resultJson?.images || []
+  const requiresPermit: boolean | undefined = projectOutput?.resultJson?.requiresPermit
   const persistedPdfUrl = projectOutput?.pdfUrl || session.outputPdfUrl
   const persistedDownloadUrl = projectOutput?.downloadUrl || persistedPdfUrl
   const images = (persistedConceptImages && persistedConceptImages.length > 0)
@@ -456,6 +459,7 @@ export default function PreDesignResultsPage() {
           status={projectOutput?.status ?? 'completed'}
           deliverables={deliverablesStatus}
           confidence={session.confidenceScore}
+          requiresPermit={requiresPermit}
         />
         {/* Concept images */}
         {images.length > 0 && (
