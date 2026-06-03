@@ -13,7 +13,8 @@
  */
 
 import Anthropic from '@anthropic-ai/sdk';
-import { RateLimiter } from 'bottleneck';
+import Bottleneck from 'bottleneck';
+type RateLimiter = Bottleneck;
 
 export interface BotConfig {
   name: string;
@@ -56,7 +57,7 @@ export abstract class EnterpriseBot {
     });
 
     // Rate limiter: 10 requests per second max
-    this.rateLimiter = new RateLimiter({
+    this.rateLimiter = new Bottleneck({
       maxConcurrent: 5,
       minTime: 100, // 100ms between requests
     });
@@ -82,7 +83,7 @@ export abstract class EnterpriseBot {
   ): Promise<{ content: string; tokensUsed: number; cached: boolean }> {
     // Check cache first
     if (cacheKey && this.cache.has(cacheKey)) {
-      const cached = this.cache.get(cacheKey);
+      const cached = this.cache.get(cacheKey)!;
       if (Date.now() - cached.timestamp < this.config.cacheTTL * 1000) {
         this.metrics.cacheHits++;
         return { content: cached.data, tokensUsed: 0, cached: true };

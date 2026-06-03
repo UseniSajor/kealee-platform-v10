@@ -258,7 +258,7 @@ export class GrowthTracker {
         where: {
           cohortDate_channel: {
             cohortDate: dateOnly,
-            channel: null,
+            channel: null as unknown as string,
           },
         },
         create: {

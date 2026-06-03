@@ -228,7 +228,7 @@ Always respond with valid JSON for easy parsing.`;
 
   private async storeResult(projectId: string, result: DesignOutput): Promise<void> {
     try {
-      await prisma.v30ConceptDeliverable.upsert({
+      await (prisma as any).v30ConceptDeliverable?.upsert({
         where: { projectId },
         create: {
           projectId,

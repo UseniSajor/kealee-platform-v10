@@ -65,7 +65,7 @@ export { default as DesignBotEnterprise } from "./bots/design-bot-enterprise";
 export { default as EstimateBotEnterprise } from "./bots/estimate-bot-enterprise";
 export { default as PermitBotEnterprise } from "./bots/permit-bot-enterprise";
 export { default as FloorplanBotEnterprise } from "./bots/floorplan-bot-enterprise";
-export { EnterpriseBotBase } from "./bots/enterprise-bot-base";
+export { EnterpriseBot as EnterpriseBotBase } from "./bots/enterprise-bot-base";
 
 // ─── Startup helper ───────────────────────────────────────────────────────────
 // Call this at KeaCore boot to register all providers and warm the retrieval layer.

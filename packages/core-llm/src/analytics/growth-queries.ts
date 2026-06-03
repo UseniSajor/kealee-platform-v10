@@ -185,7 +185,7 @@ export class GrowthAnalytics {
         where: {
           cohortDate_channel: {
             cohortDate: dateOnly,
-            channel: null,
+            channel: null as unknown as string,
           },
         },
       });
