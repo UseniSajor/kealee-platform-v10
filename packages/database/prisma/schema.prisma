@@ -17809,3 +17809,175 @@ model V30ConversionFunnel {
 
   @@map("v30_conversion_funnels")
 }
+
+// ============================================================================
+// GROWTH METRICS & ANALYTICS (Enterprise Growth Tracking)
+// ============================================================================
+
+enum AcquisitionSource {
+  GOOGLE_ADS
+  META_ADS
+  TIKTOK
+  ORGANIC
+  PARTNERSHIP
+  REFERRAL
+  DIRECT
+  OTHER
+}
+
+enum ConversionEventType {
+  SIGNUP
+  FIRST_PROJECT
+  PAYMENT
+  CONTRACTOR_HIRED
+  CONCEPT_GENERATED
+  ESTIMATE_COMPLETED
+  PERMIT_SUBMITTED
+}
+
+model UserAcquisition {
+  id          String             @id @default(uuid())
+  userId      String
+  source      AcquisitionSource
+  medium      String? // e.g., "google_cpc", "facebook_feed", "tiktok_organic"
+  campaign    String? // e.g., "design_concept_q2", "black_friday"
+  gclid       String? // Google Click ID
+  fbclid      String? // Facebook Click ID
+  utmSource   String?
+  utmMedium   String?
+  utmCampaign String?
+  utmContent  String?
+  metadata    Json? // Additional tracking data
+  timestamp   DateTime @default(now())
+  user        User     @relation("UserAcquisition", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([source])
+  @@index([timestamp])
+  @@index([campaign])
+  @@map("growth_user_acquisitions")
+}
+
+model ConversionEvent {
+  id          String               @id @default(uuid())
+  userId      String
+  eventType   ConversionEventType
+  projectId   String?
+  projectValue Decimal?            @db.Decimal(12, 2)
+  metadata    Json? // Additional event data
+  timestamp   DateTime @default(now())
+  user        User     @relation("ConversionEvent", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([eventType])
+  @@index([timestamp])
+  @@map("growth_conversion_events")
+}
+
+model FunnelMetrics {
+  id                 String   @id @default(uuid())
+  date               DateTime @db.Date
+  channel            String // e.g., "google_ads", "meta", "organic"
+  newSignups         Int      @default(0)
+  intakeStarted      Int      @default(0)
+  intakeCompleted    Int      @default(0)
+  paymentsProcessed  Int      @default(0)
+  projectsCreated    Int      @default(0)
+  firstConversion    Int      @default(0)
+  conversionRate     Float    @default(0) // intakeCompleted / newSignups
+  totalSpend         Decimal  @db.Decimal(12, 2) @default(0)
+  costPerAcquisition Decimal  @db.Decimal(10, 4) @default(0)
+  costPerConversion  Decimal  @db.Decimal(10, 4) @default(0)
+  createdAt          DateTime @default(now())
+
+  @@unique([date, channel])
+  @@index([date])
+  @@index([channel])
+  @@map("growth_funnel_metrics")
+}
+
+model ChannelMetrics {
+  id                    String   @id @default(uuid())
+  channel               String @unique // e.g., "google_ads", "meta", "tiktok", "partnerships"
+  totalUsers            Int      @default(0)
+  totalSpend            Decimal  @db.Decimal(12, 2) @default(0)
+  totalRevenue          Decimal  @db.Decimal(12, 2) @default(0)
+  cac                   Decimal  @db.Decimal(10, 4) @default(0) // Cost per acquisition
+  ltv                   Decimal  @db.Decimal(10, 4) @default(0) // Lifetime value
+  roi                   Float    @default(0) // (revenue - spend) / spend
+  conversionRate        Float    @default(0)
+  retentionRate         Float    @default(0)
+  averageOrderValue     Decimal  @db.Decimal(12, 2) @default(0)
+  repeatPurchaseRate    Float    @default(0)
+  attributionValue      Decimal  @db.Decimal(12, 2) @default(0)
+  lastUpdated           DateTime @default(now()) @updatedAt
+  createdAt             DateTime @default(now())
+
+  @@map("growth_channel_metrics")
+}
+
+model CohortAnalysis {
+  id           String   @id @default(uuid())
+  cohortDate   DateTime @db.Date // First signup date of cohort
+  cohortSize   Int      @default(0) // Total users in cohort
+  channel      String? // Original acquisition channel
+  day0Retained Int      @default(0)
+  day1Retained Int      @default(0)
+  day7Retained Int      @default(0)
+  day30Retained Int      @default(0)
+  day60Retained Int      @default(0)
+  day90Retained Int      @default(0)
+  d0Rate       Float    @default(0)
+  d1Rate       Float    @default(0)
+  d7Rate       Float    @default(0)
+  d30Rate      Float    @default(0)
+  d60Rate      Float    @default(0)
+  d90Rate      Float    @default(0)
+  lastCalculatedAt DateTime @default(now())
+
+  @@unique([cohortDate, channel])
+  @@index([cohortDate])
+  @@index([channel])
+  @@map("growth_cohort_analysis")
+}
+
+model GrowthMetric {
+  id              String   @id @default(uuid())
+  date            DateTime @unique @db.Date
+  totalOwners     Int      @default(0)
+  totalContractors Int      @default(0)
+  newOwners       Int      @default(0)
+  newContractors  Int      @default(0)
+  activeOwners    Int      @default(0)
+  activeContractors Int      @default(0)
+  churnOwners     Int      @default(0)
+  churnContractors Int      @default(0)
+  churnRate       Float    @default(0)
+  averageCAC      Decimal  @db.Decimal(10, 4) @default(0)
+  estimatedARR    Decimal  @db.Decimal(12, 2) @default(0)
+  totalProjects   Int      @default(0)
+  totalRevenue    Decimal  @db.Decimal(12, 2) @default(0)
+  insights        Json? // KPI insights and alerts
+  createdAt       DateTime @default(now())
+
+  @@index([date])
+  @@map("growth_daily_metrics")
+}
+
+model PartnershipMetric {
+  id                  String   @id @default(uuid())
+  partnerName         String // e.g., "Home Depot", "Lowe's"
+  startDate           DateTime
+  usersFromPartner    Int      @default(0)
+  revenueFromPartner  Decimal  @db.Decimal(12, 2) @default(0)
+  costToPartner       Decimal  @db.Decimal(12, 2) @default(0)
+  roi                 Float    @default(0) // (revenue - cost) / cost
+  status              String   @default("ACTIVE") // ACTIVE, PAUSED, ENDED
+  integrationPoints   String[] // e.g., ["email", "homepage", "instore"]
+  lastUpdated         DateTime @default(now()) @updatedAt
+  createdAt           DateTime @default(now())
+
+  @@index([partnerName])
+  @@index([status])
+  @@map("growth_partnership_metrics")
+}
