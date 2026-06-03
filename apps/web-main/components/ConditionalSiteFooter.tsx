@@ -6,7 +6,7 @@ import { SiteFooter } from '@/components/footer'
 // Hide the full site footer inside the intake / concept funnel and on
 // checkout pages so it doesn't distract from the form/payment flow.
 const HIDDEN_PREFIXES = ['/concept/', '/intake/', '/pre-design/']
-const HIDDEN_EXACT    = ['/concept', '/']
+const HIDDEN_EXACT    = ['/concept']
 
 export function ConditionalSiteFooter() {
   const pathname = usePathname()

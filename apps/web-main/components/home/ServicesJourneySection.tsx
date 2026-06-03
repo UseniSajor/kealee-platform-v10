@@ -4,7 +4,6 @@ import { motion } from 'framer-motion'
 import { Cormorant_Garamond, Barlow } from 'next/font/google'
 import { CircularServiceCard } from './CircularServiceCard'
 import type { HomeJourneyService } from './home-services-data'
-import { SiteBottomBar } from '@/components/footer/SiteBottomBar'
 
 const cormorant = Cormorant_Garamond({
   subsets: ['latin'],
@@ -63,7 +62,6 @@ export function ServicesJourneySection({ services }: { services: HomeJourneyServ
         </motion.div>
       </div>
 
-      <SiteBottomBar className="shrink-0" />
     </section>
   )
 }
