@@ -366,7 +366,7 @@ export class PitneybowesProvider {
       zoning: f.properties?.ZONING_CODE,
       zoningDescription: f.properties?.ZONING_DESCRIPTION,
       coordinates: f.geometry?.centroid,
-      assessed Value: f.properties?.ASSESSED_VALUE,
+      assessedValue: f.properties?.ASSESSED_VALUE,
       taxAmount: f.properties?.TAX_AMOUNT,
     }));
   }

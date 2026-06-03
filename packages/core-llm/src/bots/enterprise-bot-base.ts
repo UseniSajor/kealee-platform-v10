@@ -100,7 +100,6 @@ export abstract class EnterpriseBot {
           return await this.client.messages.create({
             model: this.config.model,
             max_tokens: this.config.maxTokens,
-            temperature: this.config.temperature,
             system: systemPrompt,
             messages: [
               {
