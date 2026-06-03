@@ -57,30 +57,45 @@ npm run seed:gis -- --state CA --county "San Francisco"
 ## 🚀 IMPLEMENTATION PHASES
 
 ### **PHASE 1: FREE SOURCES ONLY** (Week 1-2)
-**Goal:** Get data in database using free sources
+**Goal:** Get data in database using free sources - INCLUDES ALL DMV + BALTIMORE
 
 **Steps:**
 1. Set up free API integrations (no credentials needed)
-2. Run seed script for CA, NY, TX, VA, MD
+2. Run seed script for DMV (DC, MD, VA) + Baltimore + CA, NY, TX
 3. Test PermitBot + Parcel Viewer with real data
 4. Validate data quality
 
 **Time:** 2 days  
 **Cost:** $0  
-**Expected Data:** ~100K+ parcels, 200+ jurisdictions
+**Expected Data:** ~500K+ parcels, 400+ jurisdictions
+
+⭐ **DMV & BALTIMORE BONUS:** All counties have FREE public GIS data!
+```
+DC:                   1 jurisdiction
+Maryland (11 counties): Montgomery, Prince George's, Baltimore City, Baltimore, Anne Arundel,
+                        Howard, Carroll, Harford, Frederick, Washington, Allegany, Wicomico,
+                        Somerset, Dorchester, Talbot
+Virginia (13 counties): Fairfax, Arlington, Alexandria, Loudoun, Prince William, Stafford,
+                        Fauquier, Clarke, Frederick, Shenandoah, Warren, Page, Rappahannock
+```
 
 **Commands:**
 ```bash
 # Install dependencies
 npm install
 
-# Seed free data
+# Seed FREE DMV data (15+ jurisdictions, 0 cost!)
+npm run seed:gis -- --state DC
+npm run seed:gis -- --state MD
+npm run seed:gis -- --state VA
+
+# Optionally seed other states
 npm run seed:gis -- --state CA
-npm run seed:gis -- --state NY
+npm run seed:gis -- --state TX
 
 # Verify data
 psql -c "SELECT COUNT(*) FROM \"Parcel\";"
-# Expected: ~50K-100K records per state
+# Expected: ~300K+ records from DMV alone, 500K+ total
 ```
 
 ### **PHASE 2: PAID PROVIDER INTEGRATION** (Week 3)

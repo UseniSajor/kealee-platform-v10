@@ -24,15 +24,45 @@ const stateArg = args.includes('--state') ? args[args.indexOf('--state') + 1] : 
 const countyArg = args.includes('--county') ? args[args.indexOf('--county') + 1] : null;
 
 const STATES = stateArg ? [stateArg] : [
-  'CA', 'NY', 'TX', 'VA', 'MD', 'FL', 'PA', 'IL', 'OH', 'NC',
+  'DC', 'MD', 'VA', 'CA', 'TX', 'NY', 'FL', 'PA', 'IL', 'OH',
 ];
 
 const COUNTIES_BY_STATE: Record<string, string[]> = {
-  CA: ['San Francisco', 'Los Angeles', 'San Diego', 'Alameda', 'Santa Clara', 'Marin'],
-  NY: ['New York', 'Kings', 'Queens', 'Bronx', 'Richmond'],
-  TX: ['Travis', 'Dallas', 'Harris', 'Bexar', 'Tarrant'],
-  VA: ['Fairfax', 'Arlington', 'Alexandria', 'Loudoun'],
-  MD: ['Baltimore', 'Montgomery', 'Prince George\'s', 'Anne Arundel'],
+  // DMV TIER - ALL FREE (Priority 1)
+  DC: ['District of Columbia'],
+
+  MD: [
+    // Baltimore & DMV Core
+    'Baltimore City', 'Baltimore', 'Montgomery', 'Prince George\'s', 'Anne Arundel',
+    // DC Suburbs
+    'Howard', 'Carroll', 'Harford',
+    // Rest of Maryland (ALL have free data)
+    'Frederick', 'Washington', 'Allegany', 'Wicomico', 'Somerset', 'Dorchester', 'Talbot',
+  ],
+
+  VA: [
+    // Northern Virginia/DMV Core
+    'Fairfax', 'Arlington', 'Alexandria', 'Loudoun', 'Prince William', 'Stafford',
+    // Piedmont/Shenandoah Valley (ALL have free data)
+    'Fauquier', 'Clarke', 'Frederick', 'Shenandoah', 'Warren', 'Page', 'Rappahannock',
+  ],
+
+  // CALIFORNIA
+  CA: [
+    'San Francisco', 'Los Angeles', 'San Diego', 'Alameda', 'Santa Clara', 'Marin',
+    'Sacramento', 'Sonoma', 'Contra Costa', 'Kern', 'Fresno', 'San Bernardino',
+  ],
+
+  // TEXAS
+  TX: [
+    'Travis', 'Dallas', 'Harris', 'Bexar', 'Tarrant', 'Williamson', 'Denton',
+    'Jefferson', 'Nueces', 'Collin', 'Galveston', 'Montgomery',
+  ],
+
+  // NEW YORK
+  NY: [
+    'New York', 'Kings', 'Queens', 'Bronx', 'Richmond', 'Westchester', 'Nassau',
+  ],
 };
 
 interface SeedingStats {

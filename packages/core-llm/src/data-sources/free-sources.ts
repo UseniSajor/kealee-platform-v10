@@ -158,6 +158,190 @@ export class CountyAssessorSource {
       return { jurisdictions: [], parcels: [] };
     }
   }
+
+  /**
+   * Fetch Maryland County Assessor Data (DMV + Baltimore)
+   * Maryland has excellent free public GIS data
+   */
+  static async fetchMDCountyData(county: string): Promise<{
+    jurisdictions: JurisdictionData[];
+    parcels: ParcelData[];
+  }> {
+    console.log(`Fetching MD County Assessor data for ${county}`);
+
+    // Maryland counties expose free GIS data via:
+    // msa.maryland.gov (Maryland State Archives)
+    // Individual county assessor portals
+
+    const mdSources: Record<string, string> = {
+      'Montgomery': 'https://gis.montgomerycountymd.gov/arcgis/rest/services/AssessmentParcel',
+      'Prince George\'s': 'https://gis.pgcmd.org/arcgis/rest/services/AssessmentParcel',
+      'Baltimore': 'https://gis.baltimorecountymd.gov/arcgis/rest/services/AssessmentParcel',
+      'Baltimore City': 'https://gis.baltimorecity.gov/arcgis/rest/services/AssessmentParcel',
+      'Anne Arundel': 'https://gis.aacounty.org/arcgis/rest/services/AssessmentParcel',
+      'Harford': 'https://gis.harfordcountymd.gov/arcgis/rest/services/AssessmentParcel',
+      'Carroll': 'https://gis.carrollcountymd.gov/arcgis/rest/services/AssessmentParcel',
+      'Howard': 'https://gis.howardcountymd.gov/arcgis/rest/services/AssessmentParcel',
+      'Frederick': 'https://gis.frederickcountymd.gov/arcgis/rest/services/AssessmentParcel',
+      'Washington': 'https://gis.washingtonco-md.gov/arcgis/rest/services/AssessmentParcel',
+      'Allegany': 'https://gis.alleganycounty.gov/arcgis/rest/services/AssessmentParcel',
+      'Wicomico': 'https://gis.wicomicocounty.org/arcgis/rest/services/AssessmentParcel',
+      'Somerset': 'https://gis.somersetcountymd.gov/arcgis/rest/services/AssessmentParcel',
+      'Dorchester': 'https://gis.dorchestercountymd.gov/arcgis/rest/services/AssessmentParcel',
+      'Talbot': 'https://gis.talbotcountymd.gov/arcgis/rest/services/AssessmentParcel',
+    };
+
+    const endpoint = mdSources[county];
+    if (!endpoint) {
+      console.warn(`No public GIS endpoint found for ${county}, MD`);
+      return { jurisdictions: [], parcels: [] };
+    }
+
+    try {
+      const response = await fetch(
+        `${endpoint}/MapServer/0/query?where=1%3D1&outFields=*&returnGeometry=true&f=json`
+      );
+      const data = (await response.json()) as any;
+
+      const parcels = (data.features || []).map((feature: any) => ({
+        address: feature.attributes?.SITUS_ADDRESS || '',
+        county,
+        state: 'MD',
+        coordinates: feature.geometry?.centroid || null,
+        boundaries: feature.geometry,
+        sqft: feature.attributes?.SHAPE_AREA || 0,
+      }));
+
+      return {
+        jurisdictions: [{
+          name: county,
+          code: `MD_${county.replace(/\s/g, '_')}`,
+          state: 'MD',
+          county,
+          type: 'COUNTY',
+        }],
+        parcels,
+      };
+    } catch (error) {
+      console.error(`Failed to fetch MD County data for ${county}:`, error);
+      return { jurisdictions: [], parcels: [] };
+    }
+  }
+
+  /**
+   * Fetch Virginia County Assessor Data (DMV + Northern Virginia)
+   * Virginia has excellent free public parcel data
+   */
+  static async fetchVACountyData(county: string): Promise<{
+    jurisdictions: JurisdictionData[];
+    parcels: ParcelData[];
+  }> {
+    console.log(`Fetching VA County Assessor data for ${county}`);
+
+    // Virginia counties expose free GIS data via:
+    // vgis.lis.virginia.gov
+    // Individual county GIS portals
+
+    const vaSources: Record<string, string> = {
+      'Fairfax': 'https://gis.fairfaxcounty.gov/arcgis/rest/services/ParcelInfo',
+      'Arlington': 'https://gis.arlingtonva.us/arcgis/rest/services/ParcelData',
+      'Alexandria': 'https://gis.alexandriava.gov/arcgis/rest/services/AssessmentParcel',
+      'Loudoun': 'https://gis.loudoun.gov/arcgis/rest/services/ParcelData',
+      'Prince William': 'https://mapping.pwcgov.org/arcgis/rest/services/ParcelInfo',
+      'Stafford': 'https://gis.staffordcountyva.gov/arcgis/rest/services/ParcelData',
+      'Fauquier': 'https://gis.fauquiercounty.gov/arcgis/rest/services/ParcelData',
+      'Clarke': 'https://gis.clarkecountyva.gov/arcgis/rest/services/ParcelData',
+      'Frederick': 'https://gis.co.frederick.va.us/arcgis/rest/services/ParcelData',
+      'Shenandoah': 'https://gis.shenandoahco.gov/arcgis/rest/services/ParcelData',
+      'Warren': 'https://gis.warrencountyva.gov/arcgis/rest/services/ParcelData',
+      'Page': 'https://gis.pagecountyva.gov/arcgis/rest/services/ParcelData',
+      'Rappahannock': 'https://gis.rappahannockcountyva.gov/arcgis/rest/services/ParcelData',
+    };
+
+    const endpoint = vaSources[county];
+    if (!endpoint) {
+      console.warn(`No public GIS endpoint found for ${county}, VA`);
+      return { jurisdictions: [], parcels: [] };
+    }
+
+    try {
+      const response = await fetch(
+        `${endpoint}/MapServer/0/query?where=1%3D1&outFields=*&returnGeometry=true&f=json`
+      );
+      const data = (await response.json()) as any;
+
+      const parcels = (data.features || []).map((feature: any) => ({
+        address: feature.attributes?.ADDRESS || feature.attributes?.SITUS_ADDRESS || '',
+        county,
+        state: 'VA',
+        coordinates: feature.geometry?.centroid || null,
+        boundaries: feature.geometry,
+        sqft: feature.attributes?.ACRES ? feature.attributes.ACRES * 43560 : 0,
+      }));
+
+      return {
+        jurisdictions: [{
+          name: county,
+          code: `VA_${county.replace(/\s/g, '_')}`,
+          state: 'VA',
+          county,
+          type: 'COUNTY',
+        }],
+        parcels,
+      };
+    } catch (error) {
+      console.error(`Failed to fetch VA County data for ${county}:`, error);
+      return { jurisdictions: [], parcels: [] };
+    }
+  }
+
+  /**
+   * Fetch DC (District of Columbia) Assessor Data
+   * DC has excellent free public parcel data
+   */
+  static async fetchDCData(): Promise<{
+    jurisdictions: JurisdictionData[];
+    parcels: ParcelData[];
+  }> {
+    console.log('Fetching DC Assessor data');
+
+    try {
+      // DC Open GIS data
+      const response = await fetch(
+        'https://opendata.dc.gov/api/3/action/package_search?q=parcel'
+      );
+      const data = (await response.json()) as any;
+
+      // Alternatively: https://gis.dc.gov/arcgis/rest/services/AssessmentParcel
+      const alt_response = await fetch(
+        'https://gis.dc.gov/arcgis/rest/services/AssessmentParcel/MapServer/0/query?' +
+        'where=1%3D1&outFields=*&returnGeometry=true&f=json'
+      );
+      const altData = (await alt_response.json()) as any;
+
+      const parcels = (altData.features || []).map((feature: any) => ({
+        address: feature.attributes?.ADDRESS || '',
+        county: 'District of Columbia',
+        state: 'DC',
+        coordinates: feature.geometry?.centroid || null,
+        boundaries: feature.geometry,
+        sqft: feature.attributes?.SHAPE_AREA || 0,
+      }));
+
+      return {
+        jurisdictions: [{
+          name: 'District of Columbia',
+          code: 'DC',
+          state: 'DC',
+          type: 'DISTRICT',
+        }],
+        parcels,
+      };
+    } catch (error) {
+      console.error('Failed to fetch DC Assessor data:', error);
+      return { jurisdictions: [], parcels: [] };
+    }
+  }
 }
 
 // ============================================================================
@@ -407,6 +591,7 @@ export class USGSSource {
 export class FreeDataSourceAggregator {
   /**
    * Fetch jurisdiction data from all free sources
+   * Includes special handling for DMV and Baltimore (ALL counties have free data)
    */
   static async fetchJurisdictions(state: string): Promise<JurisdictionData[]> {
     const sources = await Promise.all([
@@ -429,13 +614,15 @@ export class FreeDataSourceAggregator {
 
   /**
    * Fetch parcel data from free sources
+   * Priority: County Assessor > OpenGov > OpenStreetMap fallback
+   * DMV (DC, MD, VA) and Baltimore have EXCELLENT free tier coverage
    */
   static async fetchParcels(
     state: string,
     county?: string,
     options?: { limit?: number; bbox?: any }
   ): Promise<ParcelData[]> {
-    // Try county assessor first (if CA or TX)
+    // Try county assessor first (CA, TX, MD, VA have county-level APIs)
     if (state === 'CA' && county) {
       const caData = await CountyAssessorSource.fetchCACountyData(county);
       if (caData.parcels.length > 0) {
@@ -450,7 +637,29 @@ export class FreeDataSourceAggregator {
       }
     }
 
-    // Fall back to OpenStreetMap
+    // DMV & BALTIMORE: ALL counties have free public GIS data!
+    if (state === 'MD' && county) {
+      const mdData = await CountyAssessorSource.fetchMDCountyData(county);
+      if (mdData.parcels.length > 0) {
+        return mdData.parcels.slice(0, options?.limit || 10000);
+      }
+    }
+
+    if (state === 'VA' && county) {
+      const vaData = await CountyAssessorSource.fetchVACountyData(county);
+      if (vaData.parcels.length > 0) {
+        return vaData.parcels.slice(0, options?.limit || 10000);
+      }
+    }
+
+    if (state === 'DC') {
+      const dcData = await CountyAssessorSource.fetchDCData();
+      if (dcData.parcels.length > 0) {
+        return dcData.parcels.slice(0, options?.limit || 10000);
+      }
+    }
+
+    // Fall back to OpenStreetMap for other states/counties
     const osmParcels = await OpenStreetMapSource.fetchBuildingFootprints(
       state,
       county,
