@@ -34,16 +34,25 @@ function usdRange(min: number, max: number): string {
   return `${fmt(min)} – ${fmt(max)}`
 }
 
-/** Square photos — swap for /public/media/service-photos/* when assets are uploaded */
+/**
+ * Square photos for the four home journey circle cards.
+ * Rules: must show live residential/commercial construction content.
+ * No tax forms, no spreadsheets, no financial paperwork.
+ * Swap for /public/media/service-photos/* when AI-generated assets are uploaded.
+ */
 const PHOTOS = {
+  // AI Design Concepts — stunning interior/exterior design render
   design:
-    'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=900&q=80&auto=format&fit=crop',
+    'https://images.unsplash.com/photo-1618219908412-a29a1bb7b86e?w=900&q=80&auto=format&fit=crop',
+  // Permit Analysis — architect reviewing blueprints at construction site
   permits:
-    'https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=900&q=80&auto=format&fit=crop',
+    'https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=900&q=80&auto=format&fit=crop',
+  // Cost Estimation — construction materials and lumber at active job site
   estimate:
-    'https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=900&q=80&auto=format&fit=crop',
+    'https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?w=900&q=80&auto=format&fit=crop',
+  // Build & Manage — construction crew framing a residential home
   build:
-    'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=900&q=80&auto=format&fit=crop',
+    'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=900&q=80&auto=format&fit=crop',
 } as const
 
 export const HOME_JOURNEY_SERVICES: HomeJourneyService[] = [
@@ -61,7 +70,7 @@ export const HOME_JOURNEY_SERVICES: HomeJourneyService[] = [
     progress: 25,
     mediaType: 'video',
     photoSrc: PHOTOS.design,
-    photoAlt: 'Modern kitchen AI design concepts',
+    photoAlt: 'Modern home interior AI design concept render',
     videoSrc: '/media/service-videos/home-design-video.mp4',
     videoWebM: '/media/service-videos/home-design-video.mp4',
   },
@@ -79,7 +88,7 @@ export const HOME_JOURNEY_SERVICES: HomeJourneyService[] = [
     progress: 50,
     mediaType: 'photo',
     photoSrc: PHOTOS.permits,
-    photoAlt: 'Building permits and compliance checklist',
+    photoAlt: 'Architect reviewing blueprints at residential construction site',
   },
   {
     id: 'estimate',
@@ -95,7 +104,7 @@ export const HOME_JOURNEY_SERVICES: HomeJourneyService[] = [
     progress: 75,
     mediaType: 'video',
     photoSrc: PHOTOS.estimate,
-    photoAlt: 'Detailed construction cost estimation',
+    photoAlt: 'Construction materials and lumber at active residential job site',
     videoSrc: '/media/service-videos/home-estimate-video.mp4',
     videoWebM: '/media/service-videos/home-estimate-video.mp4',
   },
@@ -113,7 +122,7 @@ export const HOME_JOURNEY_SERVICES: HomeJourneyService[] = [
     progress: 100,
     mediaType: 'video',
     photoSrc: PHOTOS.build,
-    photoAlt: 'Construction team managing a renovation project',
+    photoAlt: 'Construction crew building a residential home addition',
     videoSrc: '/media/service-videos/home-build-video.mp4',
     videoWebM: '/media/service-videos/home-build-video.mp4',
   },

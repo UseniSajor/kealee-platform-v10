@@ -171,3 +171,41 @@ Rules:
 
 Execution pipeline is sacred:
 User → Agent → CTA → Stripe → Webhook → ProjectOutput → Queue → Worker → Output → Upsell
+
+## AI CONTENT GENERATION — MANDATORY PROMPT RULES
+
+All AI generation prompts (Replicate, Kling, Sora, Claude Vision, any model) that produce
+platform content MUST be grounded in platform data. Generic prompts are forbidden.
+
+### Every prompt MUST include context from at least one of:
+
+1. **Schema / service type** — derive from `services-config.ts`, `INTAKE_PRICE_CENTS`, or
+   the project's `projectPath` / `service_type` field (e.g. `kitchen_remodel`, `addition_expansion`)
+2. **Platform rules / deliverables** — reference `docs/system/concept-package-deliverables.md`
+   and `@kealee/core-rules` for tier, delivery days, and what is included
+3. **Seed / jurisdiction data** — reference `ZoningProfile`, `Jurisdiction`, or `ParcelData`
+   when relevant to the project location (DC · MD · VA)
+4. **Form data / project context** — use `sqft`, `room_count`, `property_type`, `address`,
+   `style_preference` from the intake `form_data` JSONB when available
+
+### Forbidden in prompts:
+- Generic "beautiful room" prompts with no service context
+- Tax forms, spreadsheets, financial paperwork as imagery
+- Non-construction stock content (business meetings, generic offices)
+- Any image/video that does not show live residential or commercial construction content
+
+### Platform AI providers (priority order):
+1. `VIDEO_PROVIDER` env override → `sora-2-pro | sora-2 | veo-3.1 | kling-2.5`
+2. `REPLICATE_API_TOKEN` → Kling 2.5 via Replicate (default production)
+3. FLUX 1.1 Pro via Replicate for static renders
+
+### v30 = AI live platform
+v30 orders are fully AI-automated. DesignBot, EstimateBot, PermitBot, and FloorplanBot
+run in parallel and write outputs to `form_data` JSONB. Every v30 concept delivery includes
+AI-generated renders and (for Tier 2+) AI video. The platform is live and production-ready.
+
+### Content categories required on all platform pages:
+- Residential construction (kitchen, bathroom, addition, whole-home, deck, garden)
+- Commercial construction (mixed-use, multi-unit, office, retail fit-out)
+- Permit and inspection imagery (blueprints at job site, inspection signage, plan review)
+- Active build sites (framing, MEP rough-in, finish work, exterior)
