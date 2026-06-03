@@ -18,7 +18,7 @@ const STEPS = [
   {
     icon:  FileText,
     title: 'Receive Your Package',
-    desc:  'Within 48 hours: exterior concept renderings, permit path analysis, design direction brief, and a fixed-price quote to move forward.',
+    desc:  'Within 2–5 business days: AI concept renderings, permit path analysis, design direction brief, and cost band estimate. This is your planning package — construction starts after permitting.',
     color: '#805AD5',
   },
   {
@@ -47,7 +47,7 @@ export function ConceptPackageSection() {
 
             <h2 className="text-3xl font-bold text-white font-display sm:text-4xl lg:text-[40px] leading-tight">
               From photos to permit-ready concept —{' '}
-              <span style={{ color: '#E8793A' }}>in 48 hours</span>
+              <span style={{ color: '#E8793A' }}>in 2–5 business days</span>
             </h2>
 
             <p className="mt-5 text-lg text-gray-300 leading-relaxed">
@@ -82,7 +82,7 @@ export function ConceptPackageSection() {
               <div className="text-sm" style={{ color: 'rgba(255,255,255,0.6)' }}>
                 Starting at{' '}
                 <span className="font-bold text-white">$585</span>
-                {' '}· 48-hr delivery
+                {' '}· 2–5 day concept delivery
               </div>
             </div>
 

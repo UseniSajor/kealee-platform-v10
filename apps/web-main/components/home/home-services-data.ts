@@ -58,10 +58,11 @@ const PHOTOS = {
 export const HOME_JOURNEY_SERVICES: HomeJourneyService[] = [
   {
     id: 'design',
+    // Concept package delivery — 2–5 business days. NOT construction.
     title: 'AI Design Concepts',
-    subtitle: 'Planning workspace included',
+    subtitle: 'Concept package · 2–5 day delivery',
     description:
-      'AI renders, floor plan, permit scope, and cost band. Your concept order opens your project workspace.',
+      'AI renders, floor plan, permit scope outline, and cost band. This is your planning package — not construction. Order opens your project workspace.',
     priceHint: usdRange(CONCEPT_START_PRICE, CONCEPT_DEVELOPER_PRICE),
     ctaText: 'Start Design Concept',
     ctaLink: '/concept',
@@ -75,10 +76,11 @@ export const HOME_JOURNEY_SERVICES: HomeJourneyService[] = [
   },
   {
     id: 'permits',
-    title: 'Permit Analysis',
-    subtitle: 'DC · MD · VA filing',
+    // Kealee files the permit; jurisdiction determines approval timing (4–12 weeks).
+    title: 'Permit Filing',
+    subtitle: 'Kealee files · jurisdiction approves',
     description:
-      'Licensed specialists handle every form, agency submission, and comment cycle from your concept scope.',
+      'Licensed specialists prepare and submit every form to DC, MD, or VA agencies. Kealee manages all comment cycles. Permit approval is set by the jurisdiction — typically 4–12 weeks after submission.',
     priceHint: usdRange(PERMIT_BASIC_PRICE, PERMIT_PREMIUM_PRICE),
     ctaText: 'File Permits',
     ctaLink: '/permits',
@@ -92,10 +94,11 @@ export const HOME_JOURNEY_SERVICES: HomeJourneyService[] = [
   },
   {
     id: 'estimate',
+    // Cost estimate document — delivered with the concept package, not a construction milestone.
     title: 'Cost Estimation',
-    subtitle: 'RSMeans-validated',
+    subtitle: 'RSMeans-validated · lender-ready PDF',
     description:
-      'Trade-by-trade cost breakdown validated against RSMeans regional data. Lender-ready PDF.',
+      'Line-item material and labor breakdown validated against RSMeans DMV regional data. Not a ballpark — a certified cost plan your lender will accept.',
     priceHint: usdRange(ESTIMATION_PRICE, ESTIMATION_CERTIFIED_PRICE),
     ctaText: 'Get Cost Estimate',
     ctaLink: '/estimate',
@@ -109,10 +112,11 @@ export const HOME_JOURNEY_SERVICES: HomeJourneyService[] = [
   },
   {
     id: 'build',
+    // Construction execution phase — weeks to months of active build work, not package delivery.
     title: 'Build & Manage',
-    subtitle: 'Workspace + contractors',
+    subtitle: 'Active construction · contractor-matched',
     description:
-      'Matched bids from vetted DMV contractors, milestone escrow, and your owner workspace tracking every phase.',
+      'Vetted DMV contractor bids, milestone-based escrow, and a live owner dashboard. This is the construction phase — scope and schedule set by your permit-approved plans.',
     priceHint: `From $${PM_ADVISORY_PRICE}/mo advisory`,
     ctaText: 'View Build Services',
     ctaLink: '/contractors',
@@ -121,7 +125,7 @@ export const HOME_JOURNEY_SERVICES: HomeJourneyService[] = [
     progress: 100,
     mediaType: 'video',
     photoSrc: PHOTOS.build,
-    photoAlt: 'Construction crew building a residential home addition',
+    photoAlt: 'Construction crew framing a residential home addition on an active job site',
     videoSrc: '/media/service-videos/home-build-video.mp4',
   },
 ]
