@@ -72,7 +72,6 @@ export const HOME_JOURNEY_SERVICES: HomeJourneyService[] = [
     photoSrc: PHOTOS.design,
     photoAlt: 'Modern home interior AI design concept render',
     videoSrc: '/media/service-videos/home-design-video.mp4',
-    videoWebM: '/media/service-videos/home-design-video.mp4',
   },
   {
     id: 'permits',
@@ -106,7 +105,6 @@ export const HOME_JOURNEY_SERVICES: HomeJourneyService[] = [
     photoSrc: PHOTOS.estimate,
     photoAlt: 'Construction materials and lumber at active residential job site',
     videoSrc: '/media/service-videos/home-estimate-video.mp4',
-    videoWebM: '/media/service-videos/home-estimate-video.mp4',
   },
   {
     id: 'build',
@@ -124,6 +122,5 @@ export const HOME_JOURNEY_SERVICES: HomeJourneyService[] = [
     photoSrc: PHOTOS.build,
     photoAlt: 'Construction crew building a residential home addition',
     videoSrc: '/media/service-videos/home-build-video.mp4',
-    videoWebM: '/media/service-videos/home-build-video.mp4',
   },
 ]
