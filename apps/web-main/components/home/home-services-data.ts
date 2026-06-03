@@ -85,9 +85,10 @@ export const HOME_JOURNEY_SERVICES: HomeJourneyService[] = [
     gradientFrom: '#2E5090',
     gradientTo: '#C38B5F',
     progress: 50,
-    mediaType: 'photo',
+    mediaType: 'video',
     photoSrc: PHOTOS.permits,
     photoAlt: 'Architect reviewing blueprints at residential construction site',
+    videoSrc: '/media/service-videos/home-permits-video.mp4',
   },
   {
     id: 'estimate',
