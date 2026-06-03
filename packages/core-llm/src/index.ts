@@ -67,6 +67,10 @@ export { default as PermitBotEnterprise } from "./bots/permit-bot-enterprise";
 export { default as FloorplanBotEnterprise } from "./bots/floorplan-bot-enterprise";
 export { EnterpriseBot as EnterpriseBotBase } from "./bots/enterprise-bot-base";
 
+// Output mappers
+export { mapDesignOutputToConceptOutput } from "./bots/design-output-to-concept";
+export type { MappedConceptOutput } from "./bots/design-output-to-concept";
+
 // ─── Startup helper ───────────────────────────────────────────────────────────
 // Call this at KeaCore boot to register all providers and warm the retrieval layer.
 

@@ -15,8 +15,8 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-import Anthropic from '@anthropic-ai/sdk'
 import Replicate from 'replicate'
+import { DesignBotEnterprise, mapDesignOutputToConceptOutput } from '@kealee/core-llm'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { SERVICE_DELIVERABLES } from '@/lib/service-deliverables'
 import {
@@ -997,17 +997,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'ANTHROPIC_API_KEY not configured' }, { status: 503 })
     }
 
-    // Pick model: Opus for high-stakes tiers (developer/commercial/multi-unit/
-    // certified estimate) where reasoning quality matters more than cost.
-    const PREMIUM_TIERS = new Set([
-      'developer_concept', 'multi_unit_residential', 'mixed_use',
-      'commercial_office', 'development_feasibility', 'townhome_subdivision',
-      'single_family_subdivision', 'certified_estimate',
-    ])
-    const model = PREMIUM_TIERS.has(projectPath)
-      ? AI_MODELS.conceptTextPremium
-      : AI_MODELS.conceptText
-
     // Optionally fetch Pascal scene geometry if intake was started from Design Studio
     let geometry: PascalGeometry | undefined
     const linkedSceneId = existingFormData.sceneId as string | undefined
@@ -1040,92 +1029,27 @@ export async function POST(req: NextRequest) {
         console.warn('[concept/generate] Could not fetch Pascal scene geometry:', geoErr?.message)
       }
     }
-    const client = new Anthropic({ apiKey })
-    const prompt = buildConceptPrompt(intake as Record<string, unknown>, projectPath, tier, geometry)
-
-    const message = await client.messages.create({
-      model,
-      max_tokens: 2000,
-      messages: [{ role: 'user', content: prompt }],
+    const designBot = new DesignBotEnterprise()
+    const botResult = await designBot.execute({
+      projectId: intakeId,
+      projectType: projectPath,
+      squareFeet: Math.max(1, Number(existingFormData.sqft ?? existingFormData.squareFootage ?? 1000)),
+      budget: Math.max(1, Number(existingFormData.budget ?? 50000)),
+      stylePreferences: existingFormData.style ? [existingFormData.style as string] : [],
+      accessibility: Boolean(existingFormData.accessibility),
+      timeline: Number(existingFormData.timeline ?? 30),
+      formData: { ...existingFormData, geometry },
     })
 
-    const raw = message.content[0].type === 'text' ? message.content[0].text : ''
-    const jsonMatch = raw.match(/\{[\s\S]*\}/)
-
-    let conceptOutput: ConceptOutput
-    if (!jsonMatch) {
-      console.error('[concept/generate] No JSON in Claude response, using partial data')
-      // Return partial concept rather than failing
-      conceptOutput = {
-        designConcept: {
-          style: 'Modern Contemporary',
-          colorPalette: ['Neutral tones', 'Natural materials', 'Accent finishes'],
-          keyFeatures: ['Custom design tailored to your project', 'Professional-grade materials', 'Energy efficient systems'],
-        },
-        mepSystem: {
-          electrical: 'Updated electrical systems per code requirements',
-          plumbing: 'N/A',
-          hvac: 'N/A',
-          lighting: 'LED lighting throughout',
-        },
-        billOfMaterials: [
-          { item: 'Materials Package', quantity: 1, unit: 'set', estimatedCost: 15000, description: 'All required materials for project scope' },
-          { item: 'Labor - Installation', quantity: 100, unit: 'hours', estimatedCost: 8000, description: 'Professional installation labor' },
-        ],
-        estimatedCost: 23000,
-        projectTimeline: '4–6 weeks',
-        description: 'Your personalized concept package has been prepared based on your project details.',
-        includes: tierDeliverableIncludes(projectPath, tier),
-        renderUrls: preferSelectedRender(
-          getRenderUrls(projectPath, tier),
-          geometry?.selectedRenderUrl ?? (existingFormData.selectedRenderUrl as string | undefined),
-        ),
-        permitScope: {
-          requiresPermit: deliverable?.permitRequired === 'always',
-          permitTypes: deliverable?.permitRequired === 'always' ? ['Building Permit'] : [],
-          estimatedPermitFee: 0,
-          estimatedProcessingDays: 0,
-          requiresPE: false,
-          notes: 'Permit requirements to be confirmed with your local jurisdiction.',
-        },
-        zoningNotes: 'Zoning analysis pending — confirm with local planning department.',
-        buildabilityFlag: 'feasible' as const,
-        readinessScore: deliverable?.permitRequired === 'always' ? 55 : 70,
-      }
-    } else {
-      conceptOutput = JSON.parse(jsonMatch[0]) as ConceptOutput
-      // Ensure includes matches canonical tier package (permit + zoning in all tiers)
-      conceptOutput.includes = tierDeliverableIncludes(projectPath, tier)
-      conceptOutput.renderUrls = preferSelectedRender(
-        getRenderUrls(projectPath, tier),
-        geometry?.selectedRenderUrl ?? (existingFormData.selectedRenderUrl as string | undefined),
-      )
-      // Enforce catalog permit rule — override AI if it contradicts the product definition
-      if (deliverable?.permitRequired === 'always' && !conceptOutput.permitScope?.requiresPermit) {
-        if (!conceptOutput.permitScope) {
-          conceptOutput.permitScope = {
-            requiresPermit: true,
-            permitTypes: ['Building Permit'],
-            estimatedPermitFee: 0,
-            estimatedProcessingDays: 0,
-            requiresPE: false,
-            notes: 'A permit is required for this project type in the DMV region.',
-          }
-        } else {
-          conceptOutput.permitScope.requiresPermit = true
-        }
-      }
-      if (deliverable?.permitRequired === 'rarely' && conceptOutput.permitScope?.requiresPermit === undefined) {
-        conceptOutput.permitScope = conceptOutput.permitScope ?? {
-          requiresPermit: false,
-          permitTypes: [],
-          estimatedPermitFee: 0,
-          estimatedProcessingDays: 0,
-          requiresPE: false,
-          notes: 'Permit rarely required for this project type.',
-        }
-      }
+    if (!botResult.success || !botResult.data) {
+      throw new Error(botResult.error ?? 'DesignBot failed')
     }
+
+    const conceptOutput: ConceptOutput = mapDesignOutputToConceptOutput(botResult.data, {
+      tier,
+      projectPath,
+      includes: tierDeliverableIncludes(projectPath, tier),
+    }) as ConceptOutput
 
     // Tier 2+: enrich zoning/permit data from real address via ZoningBot (Claude).
     // Returns real jurisdiction data when a DMV address is recognized.

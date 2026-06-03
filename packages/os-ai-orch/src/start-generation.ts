@@ -4,8 +4,10 @@ import {
   getV30Bot,
   runV30ParallelGeneration,
   shouldUseV30Llm,
+  type V30BotExecutionInput,
   type V30BotExecutionResult,
 } from '@kealee/kealee-agent-stack'
+import { DesignBotEnterprise, mapDesignOutputToConceptOutput } from '@kealee/core-llm'
 import { botTypesForPackageFeatures } from './feature-bots'
 import { executeV30BotForOrch } from './execute-v30-bot'
 import { syncV30DesignConceptToProject } from './sync-design-concept'
@@ -60,6 +62,68 @@ async function persistExecutionResult(
         deliveredAt: new Date(),
       },
     })
+  }
+}
+
+/**
+ * Execute bot for the orchestration layer — uses DesignBotEnterprise for the
+ * 'design' botType, falls back to executeV30BotForOrch for all others.
+ */
+async function executeDesignBotOrOrch(
+  input: V30BotExecutionInput,
+): Promise<V30BotExecutionResult> {
+  if (input.botType !== 'design') {
+    return executeV30BotForOrch(input)
+  }
+
+  const startTime = Date.now()
+  const inputData = input.inputData
+  const intakeFormData =
+    ((inputData.intake as Record<string, unknown> | null | undefined)
+      ?.form_data as Record<string, unknown> | undefined) ?? {}
+
+  const designBot = new DesignBotEnterprise()
+  const botResult = await designBot.execute({
+    projectId: input.projectId,
+    projectType: (inputData.projectPath as string) ?? '',
+    squareFeet: Math.max(
+      1,
+      Number(intakeFormData.sqft ?? intakeFormData.squareFootage ?? 1000),
+    ),
+    budget: Math.max(1, Number(intakeFormData.budget ?? 50000)),
+    stylePreferences: intakeFormData.style ? [intakeFormData.style as string] : [],
+    accessibility: Boolean(intakeFormData.accessibility),
+    timeline: Number(intakeFormData.timeline ?? 30),
+    formData: intakeFormData,
+  })
+
+  if (botResult.success && botResult.data) {
+    const conceptOutput = mapDesignOutputToConceptOutput(botResult.data, {
+      tier: 1,
+      projectPath: (inputData.projectPath as string) ?? '',
+      includes: [],
+    })
+    return {
+      botType: 'design',
+      status: 'COMPLETE',
+      progress: 100,
+      outputData: { conceptOutput, ...botResult.data } as Record<string, unknown>,
+      modelUsed: 'DesignBotEnterprise',
+      tokensUsed: botResult.metrics.tokensUsed,
+      costUSD: botResult.metrics.costUSD,
+      durationMs: Date.now() - startTime,
+    }
+  }
+
+  return {
+    botType: 'design',
+    status: 'FAILED',
+    progress: 0,
+    modelUsed: 'DesignBotEnterprise',
+    tokensUsed: botResult.metrics.tokensUsed,
+    costUSD: botResult.metrics.costUSD,
+    durationMs: Date.now() - startTime,
+    errorMessage: botResult.error ?? 'DesignBot failed',
   }
 }
 
@@ -122,7 +186,7 @@ export async function startV30Generation(
   }
 
   const orchOptions = shouldUseV30Llm()
-    ? { botTypes, executeBot: executeV30BotForOrch }
+    ? { botTypes, executeBot: executeDesignBotOrOrch }
     : { botTypes }
 
   void runV30ParallelGeneration(input.projectId, input.packageId, sharedInput, orchOptions)
