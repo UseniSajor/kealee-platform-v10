@@ -31,7 +31,8 @@
     "db:seed": "tsx prisma/seed.ts",
     "db:reset": "prisma migrate reset",
     "db:deploy:production": "bash deploy-production.sh",
-    "db:deploy:production:win": "deploy-production.bat"
+    "db:deploy:production:win": "deploy-production.bat",
+    "seed:gis": "tsx scripts/seed-gis-data.ts"
   },
   "dependencies": {
     "@kealee/kealee-agent-stack": "workspace:*",
