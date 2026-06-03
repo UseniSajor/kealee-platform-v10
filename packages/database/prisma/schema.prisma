@@ -2048,6 +2048,10 @@ model User {
   v30IntakeResponses    V30IntakeResponse[]
   v30CustomPackages     V30CustomPackage[]
   v30AdminAuditLogs     V30AdminAuditLog[]
+
+  // Growth Metrics relations
+  acquisitions     UserAcquisition[]  @relation("UserAcquisition")
+  conversionEvents ConversionEvent[]  @relation("ConversionEvent")
 }
 
 // ============================================================================

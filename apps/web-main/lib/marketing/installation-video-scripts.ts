@@ -12,6 +12,7 @@ export type VideoNarrativeId =
   | 'exterior-install'
   | 'design-reveal'
   | 'permits-static'
+  | 'permits-active'
   | 'estimate-motion'
 
 export type ProcessSegment = {
@@ -81,6 +82,7 @@ export const PROCESS_SCRIPTS: Record<VideoNarrativeId, ProcessSegment[]> = {
     { id: 'reveal', label: 'Concept reveal', prompt: `${BASE_REALISM}, slow cinematic reveal of renovated interior, design boards on tablet, photoreal staging` },
   ],
   'permits-static': [],
+  'permits-active': [],
   'estimate-motion': [
     { id: 'desk', label: 'Estimating', prompt: `${BASE_REALISM}, estimator reviewing plans on laptop, cost spreadsheet, measuring tools on desk` },
   ],
@@ -112,7 +114,7 @@ export function narrativeForHomeId(id: string): VideoNarrativeId {
   if (id === 'design') return 'design-reveal'
   if (id === 'build') return 'full-build'
   if (id === 'estimate') return 'estimate-motion'
-  if (id === 'permits') return 'permits-static'
+  if (id === 'permits') return 'permits-active'
   return 'design-reveal'
 }
 

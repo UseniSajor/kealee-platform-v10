@@ -47,16 +47,17 @@ const HOME_SPECS: Record<HomeServiceId, Omit<CardMediaSpec, 'key' | 'scope' | 'i
     photoAlt: 'AI-generated kitchen design concepts',
   },
   permits: {
-    title: 'Permit Analysis',
+    title: 'Permit Filing',
     imageType: 'detail',
     style: 'contemporary',
-    roomType: 'office',
+    roomType: 'site',
     imageDescription:
-      'Official building permit application with approved stamps, DC zoning checklist, blueprint roll, professional compliance desk flat lay',
-    mediaType: 'photo',
+      'Architect reviewing blueprints at active residential job site, permit documents in hand, construction crew in background',
+    videoMotion: 'slow_pan',
+    mediaType: 'video',
     fallbackPhoto:
-      'https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=900&q=80&auto=format&fit=crop',
-    photoAlt: 'Building permits and compliance documentation',
+      '/media/service-photos/home-permits.jpg',
+    photoAlt: 'Architect reviewing blueprints at active job site',
   },
   estimate: {
     title: 'Cost Estimation',
@@ -118,7 +119,7 @@ function productSpecFromService(s: Service): CardMediaSpec {
     beforeImageDescription: generatesBefore ? before : undefined,
     imageDescription: `${after}. Magazine-quality ${room} renovation hero, Kealee AI concept aesthetic`,
     cardProcessPrompt: getCardProcessPrompt(narrativeId),
-    mediaType: narrativeId === 'permits-static' ? 'photo' : 'video',
+    mediaType: 'video',
     fallbackPhoto: s.heroImage,
     photoAlt: `${s.label} — Kealee AI concept`,
   }

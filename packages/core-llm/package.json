@@ -10,6 +10,36 @@
       "require": "./dist/index.js",
       "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
+    },
+    "./analytics/growth-queries": {
+      "require": "./dist/analytics/growth-queries.js",
+      "import": "./dist/analytics/growth-queries.js",
+      "types": "./dist/analytics/growth-queries.d.ts"
+    },
+    "./analytics/growth-tracker": {
+      "require": "./dist/analytics/growth-tracker.js",
+      "import": "./dist/analytics/growth-tracker.js",
+      "types": "./dist/analytics/growth-tracker.d.ts"
+    },
+    "./bots/design-bot-enterprise": {
+      "require": "./dist/bots/design-bot-enterprise.js",
+      "import": "./dist/bots/design-bot-enterprise.js",
+      "types": "./dist/bots/design-bot-enterprise.d.ts"
+    },
+    "./bots/estimate-bot-enterprise": {
+      "require": "./dist/bots/estimate-bot-enterprise.js",
+      "import": "./dist/bots/estimate-bot-enterprise.js",
+      "types": "./dist/bots/estimate-bot-enterprise.d.ts"
+    },
+    "./bots/permit-bot-enterprise": {
+      "require": "./dist/bots/permit-bot-enterprise.js",
+      "import": "./dist/bots/permit-bot-enterprise.js",
+      "types": "./dist/bots/permit-bot-enterprise.d.ts"
+    },
+    "./bots/floorplan-bot-enterprise": {
+      "require": "./dist/bots/floorplan-bot-enterprise.js",
+      "import": "./dist/bots/floorplan-bot-enterprise.js",
+      "types": "./dist/bots/floorplan-bot-enterprise.d.ts"
     }
   },
   "scripts": {
