@@ -1,3 +1,5 @@
+import Link from 'next/link'
+
 export function SiteBottomBar({
   className = '',
   variant = 'light',
@@ -17,9 +19,14 @@ export function SiteBottomBar({
         <p className={`text-[11px] sm:text-xs ${text} text-center sm:text-left`}>
           © 2026 Kealee Platform LLC · Washington DC Metro Area
         </p>
-        <p className={`text-[11px] sm:text-xs ${text} text-center sm:text-right`}>
-          Kealee Construction LLC est. 2002 · DC · MD · VA
-        </p>
+        <nav
+          className={`flex flex-wrap items-center justify-center sm:justify-end gap-x-4 gap-y-1 text-[11px] sm:text-xs ${text}`}
+          aria-label="Legal"
+        >
+          <Link href="/privacy" className="hover:underline underline-offset-2">Privacy Policy</Link>
+          <Link href="/terms" className="hover:underline underline-offset-2">Terms of Service</Link>
+          <span>Kealee Construction LLC est. 2002 · DC · MD · VA</span>
+        </nav>
       </div>
     </div>
   )
