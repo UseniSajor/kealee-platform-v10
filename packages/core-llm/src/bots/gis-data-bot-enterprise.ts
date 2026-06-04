@@ -538,12 +538,13 @@ export class GISDataBotEnterprise extends EnterpriseBot {
             code: j.code,
             state: j.state,
             county: j.county,
-            type: j.type,
-            isActive: j.isActive || true,
+            integrationType: 'MANUAL_ENTRY',
+            requiredDocuments: [],
+            feeSchedule: {},
+            formTemplates: {},
           },
           update: {
             name: j.name,
-            isActive: j.isActive || true,
           },
         });
 
@@ -574,18 +575,18 @@ export class GISDataBotEnterprise extends EnterpriseBot {
         if (!existing) {
           await prisma.parcel.create({
             data: {
+              orgId: 'gis-import',
+              label: p.address ?? 'Unknown Parcel',
               address: p.address,
               county: region.county || region.state,
               state: region.state,
-              jurisdictionId: '...', // Link to jurisdiction
-              metadata: p,
             },
           });
           created++;
         } else {
           await prisma.parcel.update({
             where: { id: existing.id },
-            data: { metadata: p },
+            data: { county: region.county || region.state },
           });
           updated++;
         }

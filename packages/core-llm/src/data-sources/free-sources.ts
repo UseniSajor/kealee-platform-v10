@@ -333,7 +333,7 @@ export class CountyAssessorSource {
           name: 'District of Columbia',
           code: 'DC',
           state: 'DC',
-          type: 'DISTRICT',
+          type: 'CITY',
         }],
         parcels,
       };
