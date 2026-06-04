@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "NODE_OPTIONS=--max-old-space-size=4096 next build",
     "start": "next start",
     "lint": "next lint",
     "diag:intake": "node ./scripts/smoke-intake-diagnostics.mjs",
@@ -24,6 +24,7 @@
   "dependencies": {
     "@anthropic-ai/sdk": "^0.30.0",
     "@kealee/auth": "workspace:*",
+    "@kealee/core-llm": "workspace:*",
     "@kealee/concept-engine": "workspace:*",
     "@kealee/core-rules": "workspace:*",
     "@kealee/intake": "workspace:*",

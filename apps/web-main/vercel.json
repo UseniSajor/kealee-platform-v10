@@ -2,7 +2,7 @@
   "framework": "nextjs",
   "ignoreCommand": "exit 1",
   "installCommand": "cd ../.. && NODE_ENV=development pnpm install --no-frozen-lockfile",
-  "buildCommand": "cd ../.. && pnpm turbo run build --filter=web-main",
+  "buildCommand": "cd ../.. && NODE_OPTIONS=--max-old-space-size=4096 pnpm turbo run build --filter=web-main",
   "functions": {
     "app/api/concept/generate/route.ts": { "maxDuration": 300 },
     "app/api/concept/video/route.ts":    { "maxDuration": 60 },
