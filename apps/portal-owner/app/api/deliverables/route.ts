@@ -58,6 +58,22 @@ export async function GET() {
 
   const ownedProducts = ownedProductsFromRows(data ?? [])
 
+  // ── Batch-fetch service_chain_gates for lifecycle stage ─────────────────────
+  const intakeIds = (data ?? []).map((r: any) => r.id as string)
+  const { data: gates } = intakeIds.length > 0
+    ? await supabaseAdmin
+        .from('service_chain_gates')
+        .select('conceptIntakeId, permitSubmitted, permitApproved, contractorMatchingUnlocked')
+        .in('conceptIntakeId', intakeIds)
+    : { data: [] }
+  const gateMap = new Map<string, { permitSubmitted: boolean; contractorMatchingUnlocked: boolean }>()
+  ;(gates ?? []).forEach((g: any) => {
+    gateMap.set(g.conceptIntakeId as string, {
+      permitSubmitted:            !!(g.permitSubmitted || g.permitApproved),
+      contractorMatchingUnlocked: !!(g.contractorMatchingUnlocked || g.permitSubmitted || g.permitApproved),
+    })
+  })
+
     // ── Tier label map ─────────────────────────────────────────────────────────
   const TIER_LABELS: Record<number, string> = {
     1: 'Starter Concept',
@@ -121,6 +137,17 @@ export async function GET() {
     const isV30 = isV30IntakeFormData(fd)
     const uiStatus = mapDeliverableUiStatus(row.status as string, fd)
 
+    // ── Lifecycle stage for Build Journey indicator ────────────────────────
+    const gate = gateMap.get(row.id as string)
+    const hasContractorMatch = typeof fd.contractorMatchResult === 'object' && fd.contractorMatchResult !== null
+    const contractorMatchingUnlocked = !!(gate?.contractorMatchingUnlocked || hasContractorMatch)
+    const permitSubmitted = gate?.permitSubmitted ?? false
+    // -1 = not yet started, 0 = concept ready, 1 = permit/pricing done, 2 = contractor matched
+    const lifecycleStage = uiStatus !== 'ready' ? -1
+      : contractorMatchingUnlocked ? 2
+      : permitSubmitted ? 1
+      : 0
+
     const upsell =
       uiStatus === 'ready' && isConceptSourcePath(path)
         ? getBuildPathUpsells({
@@ -155,6 +182,7 @@ export async function GET() {
       conceptServicePrice: CONCEPT_PRICE_DOLLARS[path] ?? null,
       estimatedCostMin,
       estimatedCostMax,
+      lifecycleStage,
       upsellSummary: upsell?.bundle
         ? {
             label: upsell.bundle.label,

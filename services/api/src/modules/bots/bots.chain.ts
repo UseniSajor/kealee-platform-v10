@@ -1210,6 +1210,65 @@ Provide contractor matching criteria and actionable recommendations.`
 
     console.log(`[Chain:ContractorBot] run=${runId} readiness=${permitResult.readinessScore} cache_hit=${llmResult.cacheHit} cost=$${llmResult.estimatedCostUsd.toFixed(4)}`)
 
+    // ── Non-fatal: create marketplace lead after contractor analysis ───────
+    // Uses fire-and-forget so chain result is never blocked by lead creation.
+    void (async () => {
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
+        const { leadsService } = require('../marketplace/leads.service') as
+          typeof import('../marketplace/leads.service')
+        await leadsService.createLead({
+          category:    input.projectType,
+          description: summary,
+          location:    input.location ?? jurisdiction,
+          projectId:   input.projectId || undefined,
+          userId:      input.userId   || undefined,
+        })
+        console.log(`[Chain:ContractorBot] marketplace lead created project=${input.projectId}`)
+      } catch (leadErr: unknown) {
+        console.warn(`[Chain:ContractorBot] lead creation skipped (non-fatal): ${(leadErr as Error).message}`)
+      }
+    })()
+
+    // ── Non-fatal: write contractor match output to Supabase form_data ────
+    // Enables portal-owner deliverables page to display the match profile
+    // without an additional API call. Fire-and-forget — never blocks return.
+    void (async () => {
+      if (!input.projectId) return
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
+        const { getSupabaseClientSafe } = require('../../utils/supabase-client') as
+          typeof import('../../utils/supabase-client')
+        const sb = getSupabaseClientSafe()
+        if (!sb) return
+        const { data: row } = await sb
+          .from('public_intake_leads')
+          .select('form_data')
+          .eq('id', input.projectId)
+          .maybeSingle()
+        if (!row) return
+        const existing = (row.form_data as Record<string, unknown>) ?? {}
+        await sb
+          .from('public_intake_leads')
+          .update({
+            form_data: {
+              ...existing,
+              contractorMatchResult: {
+                matchCriteria,
+                recommendations,
+                nextStep,
+                confidence,
+                readinessScore: permitResult.readinessScore,
+              },
+            },
+          })
+          .eq('id', input.projectId)
+        console.log(`[Chain:ContractorBot] match result written to Supabase project=${input.projectId}`)
+      } catch (sbErr: unknown) {
+        console.warn(`[Chain:ContractorBot] Supabase write skipped (non-fatal): ${(sbErr as Error).message}`)
+      }
+    })()
+
     return {
       botRunId:           runId,
       parentRunId:        permitResult.botRunId,

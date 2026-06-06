@@ -412,6 +412,16 @@ interface ConceptData {
   tierName: string
   /** True once permit has been submitted or approved — unlocks contractor matching */
   contractorMatchingUnlocked: boolean
+  /** True when the permit step is done (submitted or approved) but before contractor is matched */
+  permitSubmitted: boolean
+  /** ContractorBot match profile — present once the AI chain has run and written back to Supabase */
+  contractorMatchResult?: {
+    matchCriteria: Record<string, unknown>
+    recommendations: string[]
+    nextStep: string
+    confidence: string
+    readinessScore: number
+  }
   /** Price paid for the design concept service (USD) */
   conceptServicePrice?: number
   /** Construction cost estimate range from concept engine scope */
@@ -841,6 +851,8 @@ export default function ConceptDeliverablePage() {
         gate?.permitSubmitted ||
         gate?.permitApproved
       )
+      // Permit submitted (stage 1) — true when permit step is done regardless of contractor match
+      const permitSubmitted = !!(gate?.permitSubmitted || gate?.permitApproved)
 
       // Narrative rooms — concept engine produces {RoomName: description} object;
       //   older/future shapes may be an array of {name, description}.
@@ -906,6 +918,7 @@ export default function ConceptDeliverablePage() {
           : undefined,
         pdfUrl:          typeof co.pdfUrl === 'string' ? co.pdfUrl : undefined,
         contractorMatchingUnlocked,
+        permitSubmitted,
         // Never surface the ForBiggerBlazes.mp4 placeholder — customers see
         // the "In Production" banner instead until the real video is ready.
         videoUrl: realVideoUrl,
@@ -942,6 +955,7 @@ export default function ConceptDeliverablePage() {
         conceptServicePrice,
         constructionCostMin,
         constructionCostMax,
+        contractorMatchResult: (formData.contractorMatchResult as ConceptData['contractorMatchResult']) ?? undefined,
       })
       return true
     } catch {
@@ -1140,7 +1154,14 @@ export default function ConceptDeliverablePage() {
       </div>
 
       {/* ── Build Journey Progress ───────────────────────────────────────── */}
-      <BuildJourneyProgress currentStage={0} className="mb-6" />
+      <BuildJourneyProgress
+        currentStage={
+          data.contractorMatchingUnlocked ? 2
+          : data.permitSubmitted ? 1
+          : 0
+        }
+        className="mb-6"
+      />
 
       <div className="xl:grid xl:grid-cols-[minmax(0,1fr)_15rem] xl:gap-8 xl:items-start">
         <div className="min-w-0">
@@ -1921,6 +1942,51 @@ export default function ConceptDeliverablePage() {
             </section>
           )
         })()}
+
+        {/* ── Contractor Match Profile (ContractorBot output) ──────────────── */}
+        {(data.contractorMatchResult?.recommendations?.length ?? 0) > 0 && (
+          <section className="rounded-2xl bg-white overflow-hidden"
+            style={{ boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.06)', border: '1px solid #E8724B20' }}>
+            <div className="px-6 py-4 border-b border-gray-100 flex items-center gap-2">
+              <Wrench className="h-4 w-4" style={{ color: '#E8724B' }} />
+              <h2 className="text-base font-bold" style={{ color: '#1A2B4A' }}>Contractor Match Profile</h2>
+              {data.contractorMatchResult!.confidence && (
+                <span className="ml-auto rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider"
+                  style={{
+                    backgroundColor: data.contractorMatchResult!.confidence === 'high' ? '#ECFDF5' : data.contractorMatchResult!.confidence === 'medium' ? '#FFF7ED' : '#FEF2F2',
+                    color:           data.contractorMatchResult!.confidence === 'high' ? '#065F46' : data.contractorMatchResult!.confidence === 'medium' ? '#92400E' : '#991B1B',
+                  }}>
+                  {data.contractorMatchResult!.confidence} readiness
+                </span>
+              )}
+            </div>
+            <div className="p-6 space-y-4">
+              <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">
+                AI-generated requirements for your project type in {data.location || 'your jurisdiction'}
+              </p>
+              <ul className="space-y-2">
+                {data.contractorMatchResult!.recommendations.map((rec, i) => (
+                  <li key={i} className="flex items-start gap-2.5">
+                    <CheckCircle className="h-4 w-4 shrink-0 mt-0.5" style={{ color: '#2ABFBF' }} />
+                    <span className="text-sm text-gray-700 leading-relaxed">{rec}</span>
+                  </li>
+                ))}
+              </ul>
+              {data.contractorMatchResult!.nextStep && (
+                <p className="text-sm text-gray-600 leading-relaxed border-t border-gray-100 pt-4">
+                  <strong className="text-gray-800">Next step:</strong> {data.contractorMatchResult!.nextStep}
+                </p>
+              )}
+              <a
+                href={`https://kealee.com/marketplace?from=concept&intakeId=${intakeId}`}
+                className="inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold text-white transition-opacity hover:opacity-90"
+                style={{ backgroundColor: '#E8724B' }}
+              >
+                Browse Verified Contractors <ArrowRight className="h-4 w-4" />
+              </a>
+            </div>
+          </section>
+        )}
 
         {/* ── Professional Design featured card ────────────────────────────── */}
         {!ownedProducts.includes('professional_drawings') && (

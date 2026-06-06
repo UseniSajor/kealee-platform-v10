@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import {
-  AlertCircle, ArrowRight, CheckCircle, Clock, Download, FileText,
+  AlertCircle, ArrowRight, CheckCircle, CheckCircle2, Clock, Download, FileText,
   Hourglass, Layers, Loader2, Package,
 } from 'lucide-react'
 import { BuildPathUpsell, type OwnedUpsellProduct } from '@/components/BuildPathUpsell'
@@ -34,6 +34,8 @@ interface Deliverable {
   conceptServicePrice: number | null
   estimatedCostMin:    number | null
   estimatedCostMax:    number | null
+  /** -1 = not started, 0 = concept ready, 1 = permit done, 2 = contractor matched */
+  lifecycleStage?: number
   upsellSummary?: {
     label: string
     priceLabel: string
@@ -80,6 +82,59 @@ function StatusBadge({ status, isV30 }: { status: UIStatus; isV30?: boolean }) {
         </span>
       )
   }
+}
+
+// ── Compact lifecycle stage indicator ─────────────────────────────────────────
+
+const JOURNEY_STAGES = ['Concept Ready', 'Permit / Pricing', 'Contractor Match', 'Break Ground']
+
+const JOURNEY_NEXT_STEPS: Record<number, { label: string; href: (id: string) => string }> = {
+  0: { label: 'Start permit process →', href: id => `https://kealee.com/intake/permit_path_only?projectId=${id}&from=concept` },
+  1: { label: 'Match with contractors →', href: id => `https://kealee.com/intake/contractor_match?projectId=${id}&from=concept` },
+  2: { label: 'Browse marketplace →', href: () => 'https://kealee.com/marketplace' },
+}
+
+function JourneyStageIndicator({ stage, intakeId }: { stage: number; intakeId: string }) {
+  if (stage < 0) return null
+  const nextStep = JOURNEY_NEXT_STEPS[stage]
+  return (
+    <div className="mt-3 pt-3 border-t border-gray-100">
+      <div className="flex items-center justify-between gap-2 mb-1.5">
+        <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Build Journey</p>
+        {nextStep && (
+          <a href={nextStep.href(intakeId)}
+            className="text-[10px] font-semibold transition-colors hover:opacity-80"
+            style={{ color: '#E8724B' }}>
+            {nextStep.label}
+          </a>
+        )}
+      </div>
+      <div className="flex items-center gap-1">
+        {JOURNEY_STAGES.map((label, i) => {
+          const done   = i < stage
+          const active = i === stage
+          return (
+            <div key={i} className="flex items-center gap-1 min-w-0">
+              <div className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full ${
+                done ? 'bg-green-500' : active ? 'bg-[#E8724B]' : 'bg-gray-100 border border-gray-200'
+              }`}>
+                {done
+                  ? <CheckCircle2 className="h-2.5 w-2.5 text-white" />
+                  : <span className={`text-[7px] font-bold leading-none ${active ? 'text-white' : 'text-gray-300'}`}>{i + 1}</span>
+                }
+              </div>
+              {i < JOURNEY_STAGES.length - 1 && (
+                <div className={`h-px w-2 sm:w-3 shrink-0 ${done ? 'bg-green-400' : 'bg-gray-100'}`} />
+              )}
+            </div>
+          )
+        })}
+        <span className="ml-1.5 text-[10px] font-semibold text-gray-600 truncate">
+          {JOURNEY_STAGES[stage]}
+        </span>
+      </div>
+    </div>
+  )
 }
 
 // ── Card ──────────────────────────────────────────────────────────────────────
@@ -136,6 +191,11 @@ function DeliverableCard({ d, ownedProducts }: { d: Deliverable; ownedProducts?:
           </div>
           <StatusBadge status={uiStatus} isV30={d.isV30} />
         </div>
+
+        {/* Build journey stage indicator */}
+        {typeof d.lifecycleStage === 'number' && d.lifecycleStage >= 0 && (
+          <JourneyStageIndicator stage={d.lifecycleStage} intakeId={d.id} />
+        )}
 
         {/* Actions */}
         {uiStatus === 'ready' && (
