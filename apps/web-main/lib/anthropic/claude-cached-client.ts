@@ -16,12 +16,15 @@
 
 import Anthropic from '@anthropic-ai/sdk'
 
-type MessageParams = {
+export type MessageParams = {
   model: string
   max_tokens: number
   system?: string
   messages: Array<{ role: 'user' | 'assistant'; content: string }>
 }
+
+// Named alias for backwards compat with imports expecting ClaudeMessageParams
+export type ClaudeMessageParams = MessageParams
 
 export class ClaudeCachedClient {
   private anthropic: Anthropic
