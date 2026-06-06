@@ -243,7 +243,12 @@ export async function botsChainRoutes(fastify: FastifyInstance) {
         return reply.code(200).send({ success: true, result })
       } catch (err: any) {
         if (err instanceof ChainGateError) {
+          fastify.log.warn(
+            { code: err.code, stage: err.stage, parentRunId: err.parentRunId, parentStatus: err.parentStatus, projectId: body.projectId },
+            '[CHAIN_GATE] Bot blocked — parent run not COMPLETED',
+          )
           return reply.code(422).send({
+            code:         err.code,
             error:        err.message,
             stage:        err.stage,
             parentRunId:  err.parentRunId,
@@ -319,7 +324,12 @@ export async function botsChainRoutes(fastify: FastifyInstance) {
         return reply.code(200).send({ success: true, result: normalizeEstimate(estimateResult) })
       } catch (err: any) {
         if (err instanceof ChainGateError) {
+          fastify.log.warn(
+            { code: err.code, stage: err.stage, parentRunId: err.parentRunId, parentStatus: err.parentStatus },
+            '[CHAIN_GATE] EstimateBot blocked — parent run not COMPLETED',
+          )
           return reply.code(422).send({
+            code:         err.code,
             error:        err.message,
             stage:        err.stage,
             parentRunId:  err.parentRunId,
@@ -362,7 +372,12 @@ export async function botsChainRoutes(fastify: FastifyInstance) {
         return reply.code(200).send({ success: true, result: normalizePermit(permitResult) })
       } catch (err: any) {
         if (err instanceof ChainGateError) {
+          fastify.log.warn(
+            { code: err.code, stage: err.stage, parentRunId: err.parentRunId, parentStatus: err.parentStatus },
+            '[CHAIN_GATE] PermitBot blocked — parent run not COMPLETED',
+          )
           return reply.code(422).send({
+            code:         err.code,
             error:        err.message,
             stage:        err.stage,
             parentRunId:  err.parentRunId,
@@ -427,7 +442,12 @@ export async function botsChainRoutes(fastify: FastifyInstance) {
         return reply.code(200).send({ success: true, result: normalizeContractor(contractorResult) })
       } catch (err: any) {
         if (err instanceof ChainGateError) {
+          fastify.log.warn(
+            { code: err.code, stage: err.stage, parentRunId: err.parentRunId, parentStatus: err.parentStatus },
+            '[CHAIN_GATE] ContractorBot blocked — parent run not COMPLETED',
+          )
           return reply.code(422).send({
+            code:         err.code,
             error:        err.message,
             stage:        err.stage,
             parentRunId:  err.parentRunId,
