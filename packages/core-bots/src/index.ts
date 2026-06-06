@@ -2,9 +2,13 @@ export { KeaBot } from './keabot-base';
 export { BotRegistry } from './bot-registry';
 export { callLLMWithFallback, getLLMConfig } from './llm-fallback';
 export { getLLMStatus, isLLMHealthy, getRecommendedProvider } from './llm-config';
+export { createRagTool } from './rag-tool';
+export { AgenticBot } from './agentic-bot-base';
 export type { BotTool, BotConfig, BotMessage, HandoffRequest } from './keabot-base';
 export type { LLMResponse, LLMSource } from './llm-fallback';
 export type { LLMStatusReport } from './llm-config';
+export type { RagToolInput, RagToolOutput } from './rag-tool';
+export type { AgenticBotConfig } from './agentic-bot-base';
 
 // Orgo: Organizational Structure Layer
 export {

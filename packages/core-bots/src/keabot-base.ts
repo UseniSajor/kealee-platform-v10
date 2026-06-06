@@ -3,6 +3,7 @@
  */
 import Anthropic from '@anthropic-ai/sdk';
 import { callLLMWithFallback, type LLMSource } from './llm-fallback';
+import { createRagTool } from './rag-tool';
 
 export interface BotTool {
   name: string;
@@ -19,6 +20,7 @@ export interface BotConfig {
   model?: string;
   maxTokens?: number;
   temperature?: number;
+  enableRagTool?: boolean; // default: true
 }
 
 export interface BotMessage {
@@ -45,7 +47,13 @@ export abstract class KeaBot {
       model: config.model ?? 'claude-sonnet-4-20250514',
       maxTokens: config.maxTokens ?? 4096,
       temperature: config.temperature ?? 0.3,
+      enableRagTool: config.enableRagTool ?? true,
     };
+
+    // Register RAG tool by default
+    if (this.config.enableRagTool) {
+      this.registerTool(createRagTool());
+    }
   }
 
   get name(): string { return this.config.name; }
