@@ -42,6 +42,11 @@ vi.mock('../../../utils/prisma-helper', () => ({
     project: {
       findUnique: vi.fn().mockResolvedValue(null),
     },
+    jobQueue: {
+      upsert: vi.fn().mockResolvedValue({}),
+      findMany: vi.fn().mockResolvedValue([]),
+      findUnique: vi.fn().mockResolvedValue(null),
+    },
   },
 }))
 
@@ -63,9 +68,9 @@ import { prismaAny }             from '../../../utils/prisma-helper'
 // ─────────────────────────────────────────────────────────────────────────────
 
 describe('BotRegistry', () => {
-  it('registers all 7 bots on init', () => {
+  it('registers the complete System C catalog on init', () => {
     const list = botRegistry.list()
-    expect(list).toHaveLength(7)
+    expect(list).toHaveLength(24)
     const ids = list.map(b => b.id)
     expect(ids).toContain('lead-bot')
     expect(ids).toContain('estimate-bot')
@@ -74,6 +79,9 @@ describe('BotRegistry', () => {
     expect(ids).toContain('project-monitor-bot')
     expect(ids).toContain('support-bot')
     expect(ids).toContain('marketing-bot')
+    expect(ids).toContain('owner-bot')
+    expect(ids).toContain('operations-bot')
+    expect(ids).toContain('day8-email-bot')
   })
 
   it('returns a bot by id', () => {
@@ -153,7 +161,7 @@ describe('bots.logger', () => {
     expect(step.error).toBeUndefined()
   })
 
-  it('recordTrace + getTrace roundtrip', () => {
+  it('recordTrace persists to JobQueue', async () => {
     const requestId = newRequestId()
     const trace = {
       requestId,
@@ -165,17 +173,17 @@ describe('bots.logger', () => {
       steps:        [],
     }
     recordTrace(trace)
-    const found = getTrace(requestId)
-    expect(found).toBeDefined()
-    expect(found?.requestId).toBe(requestId)
+    expect(prismaAny.jobQueue.upsert).toHaveBeenCalled()
   })
 
-  it('getRecentTraces returns traces in LIFO order', () => {
+  it('getRecentTraces reads DB-backed history', async () => {
     const id1 = newRequestId()
     const id2 = newRequestId()
-    recordTrace({ requestId: id1, botId: 'support-bot', startedAt: new Date(), completedAt: new Date(), durationMs: 1, deterministic: true, steps: [] })
-    recordTrace({ requestId: id2, botId: 'support-bot', startedAt: new Date(), completedAt: new Date(), durationMs: 1, deterministic: true, steps: [] })
-    const traces = getRecentTraces(2, 'support-bot')
+    ;(prismaAny.jobQueue.findMany as any).mockResolvedValueOnce([
+      { result: { requestId: id2, botId: 'support-bot', startedAt: new Date().toISOString(), completedAt: new Date().toISOString(), durationMs: 1, deterministic: true, steps: [] } },
+      { result: { requestId: id1, botId: 'support-bot', startedAt: new Date().toISOString(), completedAt: new Date().toISOString(), durationMs: 1, deterministic: true, steps: [] } },
+    ])
+    const traces = await getRecentTraces(2, 'support-bot')
     expect(traces[0].requestId).toBe(id2) // most recent first
   })
 })

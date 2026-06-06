@@ -10,15 +10,33 @@
 
 export type BotId =
   | 'lead-bot'
+  | 'owner-bot'
+  | 'gc-bot'
+  | 'feasibility-bot'
+  | 'command-bot'
+  | 'design-bot'
   | 'estimate-bot'
   | 'permit-bot'
   | 'contractor-match-bot'
   | 'project-monitor-bot'
   | 'support-bot'
   | 'marketing-bot'
+  | 'finance-bot'
+  | 'developer-bot'
+  | 'construction-bot'
+  | 'land-bot'
+  | 'payments-bot'
+  | 'operations-bot'
+  | 'pitch-bot'
+  | 'email-subject-bot'
+  | 'google-ad-bot'
+  | 'meta-ad-bot'
+  | 'day1-email-bot'
+  | 'day8-email-bot'
 
 export type BotCostProfile = 'free' | 'low' | 'medium' | 'high'
 export type ModelTier       = 'fast' | 'standard' | 'premium'
+export type BotMigrationStatus = 'READY' | 'PARTIAL' | 'TEMPORARY'
 
 export interface BotContext {
   botId:      BotId
@@ -81,6 +99,7 @@ export interface IBot<
   readonly version:       string
   readonly costProfile:   BotCostProfile
   readonly requiresLLM:   boolean
+  readonly migrationStatus?: BotMigrationStatus
 
   execute(input: BotInput<TInput>, ctx: BotContext): Promise<BotOutput<TOutput>>
 }

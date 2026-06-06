@@ -32,6 +32,7 @@ import { createLeadFollowupWorker } from './processors/lead-followup.processor'
 import { cronManager } from './cron/cron.manager'
 import cron from 'node-cron'
 import type { Worker } from 'bullmq'
+import { createBotJobsWorker, createChainJobsWorker } from './processors/bot-jobs.processor'
 
 logger.info('Starting Kealee Platform Worker Service')
 
@@ -53,6 +54,8 @@ let captureVisionWorker: Worker | null = null
 let voiceTranscriptionWorker: Worker | null = null
 let projectExecutionWorker: Worker | null = null
 let leadFollowupWorker: Worker | null = null
+let botJobsWorker: Worker | null = null
+let chainJobsWorker: Worker | null = null
 
 // Validate required environment variables at startup (fail fast, not at first query)
 function validateRequiredEnv() {
@@ -342,6 +345,13 @@ async function initializeLeadFollowupQueue() {
   }
 }
 
+async function initializeSystemCBotWorkers() {
+  console.log('Initializing System C bot workers...')
+  botJobsWorker = createBotJobsWorker()
+  chainJobsWorker = createChainJobsWorker()
+  console.log('System C bot-jobs and chain-jobs workers started')
+}
+
 // Graceful shutdown
 async function shutdown() {
   console.log('\n⚠️ Shutting down worker service...')
@@ -420,6 +430,16 @@ async function shutdown() {
     if (leadFollowupWorker) {
       await leadFollowupWorker.close()
       console.log('✅ Lead followup worker closed')
+    }
+
+    if (botJobsWorker) {
+      await botJobsWorker.close()
+      console.log('System C bot jobs worker closed')
+    }
+
+    if (chainJobsWorker) {
+      await chainJobsWorker.close()
+      console.log('System C chain jobs worker closed')
     }
 
     // Close queues
@@ -515,6 +535,7 @@ async function start() {
   await initializeCaptureAnalysisWorkers()
   await initializeProjectExecutionQueue()
   await initializeLeadFollowupQueue()
+  await initializeSystemCBotWorkers()
   await initializeCronJobs()
 
   console.log('✅ Worker service ready')
@@ -572,6 +593,8 @@ start()
           voiceTranscription: !!voiceTranscriptionWorker,
           projectExecution: !!projectExecutionWorker,
           leadFollowup: !!leadFollowupWorker,
+          botJobs: !!botJobsWorker,
+          chainJobs: !!chainJobsWorker,
         },
         timestamp: new Date().toISOString(),
       }))

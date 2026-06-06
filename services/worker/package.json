@@ -12,11 +12,13 @@
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
+    "@kealee/api": "workspace:*",
     "@anthropic-ai/sdk": "^0.74.0",
     "@kealee/concept-engine": "workspace:*",
     "@kealee/core": "workspace:*",
     "@kealee/database": "workspace:*",
     "@kealee/observability": "workspace:^",
+    "@kealee/queue": "workspace:*",
     "@kealee/storage": "workspace:*",
     "@sentry/node": "^10.38.0",
     "bullmq": "^5.0.0",

@@ -1,39 +1,20 @@
-/**
- * bots.logger.ts
- *
- * Execution trace store and structured logging for KeaBots.
- * - Keeps recent traces in memory (configurable ring buffer, 500 entries)
- * - Emits structured JSON to stdout so Railway log drains pick it up
- * - Exports helpers to build BotStep and BotExecutionTrace objects
- */
-
 import { randomUUID } from 'crypto'
-import type { BotExecutionTrace, BotStep, BotId } from './bots.types'
+import { prismaAny } from '../../utils/prisma-helper'
+import type { BotContext, BotExecutionTrace, BotId, BotStep } from './bots.types'
 
-// ── In-memory ring buffer ─────────────────────────────────────────────────────
-
-const MAX_TRACES = 500
-const _traces: BotExecutionTrace[] = []
-
-function store(trace: BotExecutionTrace): void {
-  _traces.unshift(trace)
-  if (_traces.length > MAX_TRACES) _traces.length = MAX_TRACES
-}
-
-// ── Public API ────────────────────────────────────────────────────────────────
+export const BOT_TRACE_QUEUE = 'bot-execution-traces'
 
 export function newRequestId(): string {
   return randomUUID()
 }
 
-/** Create a pending step timer — call finish() to close it */
 export function startStep(
   type: BotStep['type'],
   name: string,
   inputSummary?: string,
 ): { finish(outputSummary?: string, error?: string): BotStep } {
   const stepId = randomUUID()
-  const start  = Date.now()
+  const start = Date.now()
 
   return {
     finish(outputSummary?: string, error?: string): BotStep {
@@ -50,35 +31,113 @@ export function startStep(
   }
 }
 
-/** Finalise and store a trace. Also emits structured log. */
-export function recordTrace(trace: BotExecutionTrace): void {
-  store(trace)
-  // Structured log — Railway / DataDog friendly
+function serializeTrace(trace: BotExecutionTrace): Record<string, unknown> {
+  return {
+    ...trace,
+    startedAt: trace.startedAt.toISOString(),
+    completedAt: trace.completedAt.toISOString(),
+  }
+}
+
+function deserializeTrace(value: any): BotExecutionTrace {
+  return {
+    ...value,
+    startedAt: new Date(value.startedAt),
+    completedAt: new Date(value.completedAt),
+  }
+}
+
+export function recordTrace(trace: BotExecutionTrace, ctx?: Partial<BotContext>): void {
+  const failedStep = trace.steps.find(step => step.error)
+
+  try {
+    const write = prismaAny.jobQueue.upsert({
+      where: {
+        queueName_jobId: {
+          queueName: BOT_TRACE_QUEUE,
+          jobId: trace.requestId,
+        },
+      },
+      create: {
+        queueName: BOT_TRACE_QUEUE,
+        jobId: trace.requestId,
+        jobName: trace.botId,
+        status: failedStep ? 'FAILED' : 'COMPLETED',
+        data: {
+          botId: trace.botId,
+          userId: ctx?.userId,
+          orgId: ctx?.orgId,
+          sessionId: ctx?.sessionId,
+        },
+        result: serializeTrace(trace),
+        error: failedStep?.error,
+        attempts: 1,
+        maxAttempts: 1,
+        progress: 100,
+        processedAt: trace.startedAt,
+        completedAt: trace.completedAt,
+        failedAt: failedStep ? trace.completedAt : undefined,
+      },
+      update: {
+        status: failedStep ? 'FAILED' : 'COMPLETED',
+        result: serializeTrace(trace),
+        error: failedStep?.error,
+        progress: 100,
+        completedAt: trace.completedAt,
+        failedAt: failedStep ? trace.completedAt : null,
+      },
+    })
+    void write.catch((error: unknown) => {
+      console.error('[bots.logger] Failed to persist trace:', error)
+    })
+  } catch (error) {
+    console.error('[bots.logger] Failed to persist trace:', error)
+  }
+
   console.log(JSON.stringify({
-    level:       'info',
-    event:       'bot.execution',
-    botId:       trace.botId,
-    requestId:   trace.requestId,
-    durationMs:  trace.durationMs,
-    success:     !trace.steps.some(s => s.error),
-    modelUsed:   trace.modelUsed,
+    level: 'info',
+    event: 'bot.execution',
+    botId: trace.botId,
+    requestId: trace.requestId,
+    durationMs: trace.durationMs,
+    success: !failedStep,
+    modelUsed: trace.modelUsed,
     inputTokens: trace.inputTokens,
     outputTokens: trace.outputTokens,
-    costUSD:     trace.cost?.estimatedUSD,
+    costUSD: trace.cost?.estimatedUSD,
     deterministic: trace.deterministic,
   }))
 }
 
-/** Get N most recent traces, optionally filtered by botId */
-export function getRecentTraces(
+export async function getRecentTraces(
   limit = 50,
   botId?: BotId,
-): BotExecutionTrace[] {
-  const filtered = botId ? _traces.filter(t => t.botId === botId) : _traces
-  return filtered.slice(0, limit)
+): Promise<BotExecutionTrace[]> {
+  const rows = await prismaAny.jobQueue.findMany({
+    where: {
+      queueName: BOT_TRACE_QUEUE,
+      ...(botId ? { jobName: botId } : {}),
+    },
+    orderBy: { createdAt: 'desc' },
+    take: limit,
+    select: { result: true },
+  })
+
+  return rows
+    .filter((row: { result: unknown }) => row.result)
+    .map((row: { result: unknown }) => deserializeTrace(row.result))
 }
 
-/** Get a single trace by requestId */
-export function getTrace(requestId: string): BotExecutionTrace | undefined {
-  return _traces.find(t => t.requestId === requestId)
+export async function getTrace(requestId: string): Promise<BotExecutionTrace | undefined> {
+  const row = await prismaAny.jobQueue.findUnique({
+    where: {
+      queueName_jobId: {
+        queueName: BOT_TRACE_QUEUE,
+        jobId: requestId,
+      },
+    },
+    select: { result: true },
+  })
+
+  return row?.result ? deserializeTrace(row.result) : undefined
 }

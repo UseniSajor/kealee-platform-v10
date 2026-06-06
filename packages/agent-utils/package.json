@@ -1,0 +1,42 @@
+{
+  "name": "@kealee/agent-utils",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Pure utility functions for Kealee agents — zero side effects, no I/O, no LLM calls",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "require": "./dist/index.js",
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./scoring": {
+      "require": "./dist/scoring/index.js",
+      "import": "./dist/scoring/index.js",
+      "types": "./dist/scoring/index.d.ts"
+    },
+    "./monitoring": {
+      "require": "./dist/monitoring/index.js",
+      "import": "./dist/monitoring/index.js",
+      "types": "./dist/monitoring/index.d.ts"
+    },
+    "./support": {
+      "require": "./dist/support/index.js",
+      "import": "./dist/support/index.js",
+      "types": "./dist/support/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "clean": "rm -rf dist",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.6.0",
+    "vitest": "^1.0.0"
+  }
+}

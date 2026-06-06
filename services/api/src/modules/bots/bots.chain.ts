@@ -228,6 +228,9 @@ export interface ChainRunResult {
 // ── Chain error (gating) ──────────────────────────────────────────────────────
 
 export class ChainGateError extends Error {
+  /** Machine-readable error code — stable across deployments */
+  public readonly code = 'CHAIN_GATE_BLOCKED' as const
+
   constructor(
     message: string,
     public readonly stage: string,
@@ -238,6 +241,19 @@ export class ChainGateError extends Error {
     this.name = 'ChainGateError'
   }
 }
+
+/**
+ * Test-only status override map.
+ *
+ * In production this map is always empty (no-op).
+ * In unit tests, populate before calling a gated bot function to inject a
+ * specific parent status without needing a live database connection:
+ *
+ *   import { _gateStatusOverride } from './bots.chain'
+ *   _gateStatusOverride.set(parentRunId, 'FAILED')
+ *   await expect(runEstimateBot(...)).rejects.toThrow(ChainGateError)
+ */
+export const _gateStatusOverride = new Map<string, string>()
 
 // ── Environment flag ──────────────────────────────────────────────────────────
 const IS_PROD = process.env.NODE_ENV === 'production'
@@ -450,6 +466,9 @@ async function dbFailRun(id: string, errorMessage: string): Promise<void> {
 }
 
 async function dbGetRunStatus(id: string): Promise<string | null> {
+  // Test-only override — always empty in production
+  if (_gateStatusOverride.has(id)) return _gateStatusOverride.get(id)!
+
   const prisma = getPrisma()
   if (!prisma) return null
   try {

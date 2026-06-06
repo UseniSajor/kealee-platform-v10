@@ -15,7 +15,7 @@
 import { FastifyInstance } from 'fastify'
 import { z } from 'zod'
 import { authenticateUser } from '../auth/auth.middleware'
-import { validateBody, validateParams } from '../../middleware/validation.middleware'
+import { validateBody, validateParams, validateQuery } from '../../middleware/validation.middleware'
 import { checkCostGuard } from './bots.router'
 import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 import { prismaAny as prisma } from '../../utils/prisma-helper'
@@ -35,6 +35,7 @@ import {
   type EstimateBotResult,
   type PermitBotResult,
 } from './bots.chain'
+import { enqueueChainJob } from './bots.queue'
 
 // ── Schemas ───────────────────────────────────────────────────────────────────
 
@@ -100,6 +101,12 @@ const permitRunSchema = chainInputSchema.extend({
 
 const projectIdParam = z.object({
   projectId: z.string().min(1),
+})
+const executionModeSchema = z.object({
+  sync: z.preprocess(
+    value => value === true || value === 'true',
+    z.boolean(),
+  ).default(false),
 })
 
 // ── Helper: extract user guard key ───────────────────────────────────────────
@@ -180,11 +187,13 @@ export async function botsChainRoutes(fastify: FastifyInstance) {
       preHandler: [
         authenticateUser,
         validateBody(chainInputSchema),
+        validateQuery(executionModeSchema),
       ],
     },
     async (request, reply) => {
       const body = request.body as z.infer<typeof chainInputSchema>
       const user = (request as any).user as { id: string; orgId?: string }
+      const { sync } = request.query as z.infer<typeof executionModeSchema>
 
       const guard = checkCostGuard({ key: guardKey({ user }), maxPerHour: 10, maxPerDay: 50 })
       if (!guard.allowed) {
@@ -213,6 +222,15 @@ export async function botsChainRoutes(fastify: FastifyInstance) {
 
       const input: ChainInput = { ...body, userId: user.id, orgId: user.orgId }
 
+      if (!sync) {
+        const queued = await enqueueChainJob(body, { userId: user.id, orgId: user.orgId })
+        return reply.code(202).send({
+          accepted: true,
+          status: 'WAITING',
+          ...queued,
+        })
+      }
+
       try {
         const raw = await runChain(input)
         const result = {
@@ -225,7 +243,12 @@ export async function botsChainRoutes(fastify: FastifyInstance) {
         return reply.code(200).send({ success: true, result })
       } catch (err: any) {
         if (err instanceof ChainGateError) {
+          fastify.log.warn(
+            { code: err.code, stage: err.stage, parentRunId: err.parentRunId, parentStatus: err.parentStatus, projectId: body.projectId },
+            '[CHAIN_GATE] Bot blocked — parent run not COMPLETED',
+          )
           return reply.code(422).send({
+            code:         err.code,
             error:        err.message,
             stage:        err.stage,
             parentRunId:  err.parentRunId,
@@ -301,7 +324,12 @@ export async function botsChainRoutes(fastify: FastifyInstance) {
         return reply.code(200).send({ success: true, result: normalizeEstimate(estimateResult) })
       } catch (err: any) {
         if (err instanceof ChainGateError) {
+          fastify.log.warn(
+            { code: err.code, stage: err.stage, parentRunId: err.parentRunId, parentStatus: err.parentStatus },
+            '[CHAIN_GATE] EstimateBot blocked — parent run not COMPLETED',
+          )
           return reply.code(422).send({
+            code:         err.code,
             error:        err.message,
             stage:        err.stage,
             parentRunId:  err.parentRunId,
@@ -344,7 +372,12 @@ export async function botsChainRoutes(fastify: FastifyInstance) {
         return reply.code(200).send({ success: true, result: normalizePermit(permitResult) })
       } catch (err: any) {
         if (err instanceof ChainGateError) {
+          fastify.log.warn(
+            { code: err.code, stage: err.stage, parentRunId: err.parentRunId, parentStatus: err.parentStatus },
+            '[CHAIN_GATE] PermitBot blocked — parent run not COMPLETED',
+          )
           return reply.code(422).send({
+            code:         err.code,
             error:        err.message,
             stage:        err.stage,
             parentRunId:  err.parentRunId,
@@ -409,7 +442,12 @@ export async function botsChainRoutes(fastify: FastifyInstance) {
         return reply.code(200).send({ success: true, result: normalizeContractor(contractorResult) })
       } catch (err: any) {
         if (err instanceof ChainGateError) {
+          fastify.log.warn(
+            { code: err.code, stage: err.stage, parentRunId: err.parentRunId, parentStatus: err.parentStatus },
+            '[CHAIN_GATE] ContractorBot blocked — parent run not COMPLETED',
+          )
           return reply.code(422).send({
+            code:         err.code,
             error:        err.message,
             stage:        err.stage,
             parentRunId:  err.parentRunId,

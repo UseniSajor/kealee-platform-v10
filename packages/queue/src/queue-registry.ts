@@ -3,6 +3,10 @@
  * See: _docs/kealee-architecture.md §5.2
  */
 export const KEALEE_QUEUES = {
+  BOT_JOBS: 'bot-jobs',
+  CHAIN_JOBS: 'chain-jobs',
+  RAG_INGEST: 'rag-ingest',
+
   // Claw A: Acquisition & PreCon
   BID_ENGINE: 'bid-engine',
   ESTIMATION_TOOL: 'estimation-tool',

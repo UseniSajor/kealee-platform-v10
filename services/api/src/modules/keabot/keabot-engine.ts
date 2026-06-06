@@ -10,6 +10,7 @@
 
 import Anthropic from '@anthropic-ai/sdk';
 import { prisma } from '@kealee/database';
+import Redis from 'ioredis';
 
 const p = prisma as any;
 
@@ -52,23 +53,41 @@ interface ConversationContext {
   leadData: Record<string, string>;
   score: number;
   handedOff: boolean;
+  userId?: string;
 }
 
 // ---------------------------------------------------------------------------
-// In-memory session store (production would use Redis)
+// Redis session store
 // ---------------------------------------------------------------------------
 
-const sessions = new Map<string, ConversationContext>();
-const SESSION_TTL_MS = 30 * 60 * 1000; // 30 min
+const SESSION_TTL_SECONDS = 30 * 60;
+const SESSION_KEY_PREFIX = 'keabot:website-session:';
+let redis: Redis | null = null;
 
-function cleanupSessions() {
-  // Simple cleanup — in production use Redis with TTL
-  if (sessions.size > 1000) {
-    const entries = [...sessions.entries()];
-    entries.slice(0, 500).forEach(([k]) => sessions.delete(k));
+function getRedis(): Redis {
+  if (!redis) {
+    redis = new Redis(process.env.REDIS_URL ?? 'redis://localhost:6379', {
+      lazyConnect: true,
+      maxRetriesPerRequest: 1,
+      enableOfflineQueue: false,
+    });
   }
+  return redis;
 }
-setInterval(cleanupSessions, 10 * 60 * 1000).unref();
+
+async function loadSession(sessionId: string): Promise<ConversationContext | null> {
+  const raw = await getRedis().get(`${SESSION_KEY_PREFIX}${sessionId}`);
+  return raw ? JSON.parse(raw) as ConversationContext : null;
+}
+
+async function saveSession(sessionId: string, ctx: ConversationContext): Promise<void> {
+  await getRedis().set(
+    `${SESSION_KEY_PREFIX}${sessionId}`,
+    JSON.stringify(ctx),
+    'EX',
+    SESSION_TTL_SECONDS,
+  );
+}
 
 // ---------------------------------------------------------------------------
 // System prompt
@@ -118,11 +137,12 @@ Never make up pricing not listed above. Say "I can connect you with our team for
 // Engine
 // ---------------------------------------------------------------------------
 
-function getOrCreateSession(sessionId: string): ConversationContext {
-  let ctx = sessions.get(sessionId);
+async function getOrCreateSession(sessionId: string, userId?: string): Promise<ConversationContext> {
+  let ctx = await loadSession(sessionId);
   if (!ctx) {
-    ctx = { messages: [], leadData: {}, score: 0, handedOff: false };
-    sessions.set(sessionId, ctx);
+    ctx = { messages: [], leadData: {}, score: 0, handedOff: false, userId };
+  } else if (userId && !ctx.userId) {
+    ctx.userId = userId;
   }
   return ctx;
 }
@@ -199,7 +219,11 @@ function calculateLeadScore(ctx: ConversationContext): LeadScore {
 /**
  * Process a chat message and return KeaBot's response.
  */
-export async function chat(sessionId: string, userMessage: string): Promise<KeaBotResponse> {
+export async function chat(
+  sessionId: string,
+  userMessage: string,
+  options: { userId?: string } = {},
+): Promise<KeaBotResponse> {
   if (!ANTHROPIC_API_KEY) {
     return {
       message: "I'm currently unavailable. Please contact us at info@kealee.com or call (202) 555-KEALEE.",
@@ -208,7 +232,7 @@ export async function chat(sessionId: string, userMessage: string): Promise<KeaB
     };
   }
 
-  const ctx = getOrCreateSession(sessionId);
+  const ctx = await getOrCreateSession(sessionId, options.userId);
   ctx.messages.push({ role: 'user', content: userMessage });
 
   // Load FAQ knowledge for context
@@ -250,6 +274,7 @@ export async function chat(sessionId: string, userMessage: string): Promise<KeaB
     suggestedActions.push('connect_specialist');
     ctx.handedOff = true;
   }
+  await saveSession(sessionId, ctx);
 
   return {
     message: assistantMessage ?? '',
@@ -262,17 +287,39 @@ export async function chat(sessionId: string, userMessage: string): Promise<KeaB
 /**
  * Get conversation history for a session.
  */
-export function getConversation(sessionId: string): ChatMessage[] {
-  return sessions.get(sessionId)?.messages ?? [];
+export async function getConversation(sessionId: string): Promise<ChatMessage[]> {
+  return (await loadSession(sessionId))?.messages ?? [];
 }
 
 /**
  * End a session and return final lead score.
  */
-export function endSession(sessionId: string): LeadScore | null {
-  const ctx = sessions.get(sessionId);
+export async function endSession(
+  sessionId: string,
+  options: { userId?: string } = {},
+): Promise<LeadScore | null> {
+  const ctx = await loadSession(sessionId);
   if (!ctx) return null;
   const score = calculateLeadScore(ctx);
-  sessions.delete(sessionId);
+  const userId = options.userId ?? ctx.userId;
+
+  if (userId) {
+    await p.aIConversation.create({
+      data: {
+        userId,
+        title: `KeaBot website chat ${sessionId.slice(0, 8)}`,
+        messages: ctx.messages,
+        context: { source: 'website-chat', sessionId, leadScore: score },
+        summary: `Website chat ended with lead score ${score.score}.`,
+        lastMessageAt: new Date(),
+      },
+    });
+  } else {
+    // TEMPORARY: AIConversation requires userId. Add an anonymous visitor
+    // identity table/API or make AIConversation.userId nullable.
+    console.warn(`[KeaBot] Session ${sessionId} not persisted: no canonical user identity`);
+  }
+
+  await getRedis().del(`${SESSION_KEY_PREFIX}${sessionId}`);
   return score;
 }

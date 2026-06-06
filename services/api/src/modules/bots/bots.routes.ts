@@ -23,15 +23,14 @@ import { getRecentTraces, getTrace } from './bots.logger'
 import { checkCostGuard } from './bots.router'
 import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 import type { BotId } from './bots.types'
+import { BOT_IDS } from './bots.ids'
+import { enqueueBotJob, getBotJob } from './bots.queue'
+import { persistBotConversation } from './bots.conversations'
 
 // ── Schemas ───────────────────────────────────────────────────────────────────
 
 const botIdParam = z.object({
-  botId: z.enum([
-    'lead-bot', 'estimate-bot', 'permit-bot',
-    'contractor-match-bot', 'project-monitor-bot', 'support-bot',
-    'marketing-bot',
-  ]),
+  botId: z.enum(BOT_IDS),
 })
 
 const executeBodySchema = z.object({
@@ -45,16 +44,21 @@ const executeBodySchema = z.object({
 })
 
 const tracesQuerySchema = z.object({
-  botId: z.enum([
-    'lead-bot', 'estimate-bot', 'permit-bot',
-    'contractor-match-bot', 'project-monitor-bot', 'support-bot',
-    'marketing-bot',
-  ]).optional(),
+  botId: z.enum(BOT_IDS).optional(),
   limit: z.coerce.number().int().min(1).max(200).default(50),
 })
 
 const traceIdParam = z.object({
   requestId: z.string().uuid(),
+})
+const executeQuerySchema = z.object({
+  sync: z.preprocess(
+    value => value === true || value === 'true',
+    z.boolean(),
+  ).default(false),
+})
+const jobIdParam = z.object({
+  jobId: z.string().min(1),
 })
 
 // ── Routes ────────────────────────────────────────────────────────────────────
@@ -85,12 +89,14 @@ export async function botsRoutes(fastify: FastifyInstance) {
         authenticateUser,
         validateParams(botIdParam),
         validateBody(executeBodySchema),
+        validateQuery(executeQuerySchema),
       ],
     },
     async (request, reply) => {
       const { botId }  = request.params as { botId: BotId }
       const body       = request.body   as z.infer<typeof executeBodySchema>
       const user       = (request as any).user as { id: string; orgId?: string }
+      const { sync } = request.query as z.infer<typeof executeQuerySchema>
 
       // Cost guard
       const guardKey = user.orgId ?? user.id
@@ -107,11 +113,36 @@ export async function botsRoutes(fastify: FastifyInstance) {
 
       const requestId = randomUUID()
 
+      if (!sync) {
+        const queued = await enqueueBotJob(
+          botId,
+          { data: body.data as Record<string, unknown>, options: body.options },
+          {
+            userId: user.id,
+            orgId: user.orgId,
+            sessionId: typeof body.data.sessionId === 'string' ? body.data.sessionId : undefined,
+          },
+        )
+        return reply.code(202).send({
+          accepted: true,
+          status: 'WAITING',
+          ...queued,
+        })
+      }
+
       try {
+        const context = {
+          botId,
+          requestId,
+          userId: user.id,
+          orgId: user.orgId,
+          sessionId: typeof body.data.sessionId === 'string' ? body.data.sessionId : undefined,
+        }
         const result = await bot.execute(
           { data: body.data as any, options: body.options },
-          { botId, requestId, userId: user.id, orgId: user.orgId },
+          context,
         )
+        await persistBotConversation(body.data, result, context)
         return reply.code(result.success ? 200 : 422).send(result)
       } catch (error: any) {
         fastify.log.error({ error, botId, requestId }, 'Bot execution failed')
@@ -120,6 +151,22 @@ export async function botsRoutes(fastify: FastifyInstance) {
         })
       }
     }
+  )
+
+  fastify.get(
+    '/jobs/:jobId',
+    {
+      preHandler: [
+        authenticateUser,
+        validateParams(jobIdParam),
+      ],
+    },
+    async (request, reply) => {
+      const { jobId } = request.params as { jobId: string }
+      const job = await getBotJob(jobId)
+      if (!job) return reply.code(404).send({ error: 'Job not found' })
+      return reply.send(job)
+    },
   )
 
   /**
@@ -138,7 +185,7 @@ export async function botsRoutes(fastify: FastifyInstance) {
     },
     async (request, reply) => {
       const { botId, limit } = request.query as z.infer<typeof tracesQuerySchema>
-      const traces = getRecentTraces(limit, botId as BotId | undefined)
+      const traces = await getRecentTraces(limit, botId as BotId | undefined)
       return reply.send({ traces, count: traces.length })
     }
   )
@@ -158,7 +205,7 @@ export async function botsRoutes(fastify: FastifyInstance) {
     },
     async (request, reply) => {
       const { requestId } = request.params as { requestId: string }
-      const trace = getTrace(requestId)
+      const trace = await getTrace(requestId)
       if (!trace) {
         return reply.code(404).send({ error: 'Trace not found' })
       }

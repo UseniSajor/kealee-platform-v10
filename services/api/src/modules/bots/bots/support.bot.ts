@@ -32,7 +32,7 @@ const CATEGORY_PATTERNS: Array<{ category: SupportCategory; patterns: RegExp[] }
   },
   {
     category: 'navigation',
-    patterns: [/where is|how do I find|navigate|dashboard|page|menu|section/i],
+    patterns: [/where (?:is|do)|how do I find|navigate|dashboard|page|menu|section/i],
   },
   {
     category: 'escalation',
