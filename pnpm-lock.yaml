@@ -732,6 +732,9 @@ importers:
       '@kealee/concept-engine':
         specifier: workspace:*
         version: link:../../packages/concept-engine
+      '@kealee/core-llm':
+        specifier: workspace:*
+        version: link:../../packages/core-llm
       '@kealee/core-rules':
         specifier: workspace:*
         version: link:../../packages/core-rules
@@ -1284,6 +1287,43 @@ importers:
       typescript:
         specifier: ^5.6.0
         version: 5.9.3
+
+  packages/agent-harness:
+    dependencies:
+      '@kealee/agent-prompts':
+        specifier: workspace:*
+        version: link:../agent-prompts
+      '@kealee/agent-utils':
+        specifier: workspace:*
+        version: link:../agent-utils
+    devDependencies:
+      vitest:
+        specifier: ^1.6.1
+        version: 1.6.1(@types/node@20.19.39)
+
+  packages/agent-prompts:
+    devDependencies:
+      '@types/node':
+        specifier: ^20.0.0
+        version: 20.19.39
+      typescript:
+        specifier: ^5.6.0
+        version: 5.9.3
+      vitest:
+        specifier: ^1.0.0
+        version: 1.6.1(@types/node@20.19.39)
+
+  packages/agent-utils:
+    devDependencies:
+      '@types/node':
+        specifier: ^20.0.0
+        version: 20.19.39
+      typescript:
+        specifier: ^5.6.0
+        version: 5.9.3
+      vitest:
+        specifier: ^1.0.0
+        version: 1.6.1(@types/node@20.19.39)
 
   packages/ai:
     dependencies:
@@ -2457,6 +2497,12 @@ importers:
       '@fastify/swagger-ui':
         specifier: ^5.2.6
         version: 5.2.6
+      '@kealee/agent-prompts':
+        specifier: workspace:*
+        version: link:../../packages/agent-prompts
+      '@kealee/agent-utils':
+        specifier: workspace:*
+        version: link:../../packages/agent-utils
       '@kealee/ai':
         specifier: workspace:*
         version: link:../../packages/ai
@@ -2508,6 +2554,9 @@ importers:
       '@kealee/page-builder':
         specifier: workspace:*
         version: link:../../packages/page-builder
+      '@kealee/queue':
+        specifier: workspace:*
+        version: link:../../packages/queue
       '@kealee/realtime':
         specifier: workspace:*
         version: link:../../packages/realtime
@@ -3221,6 +3270,9 @@ importers:
       '@anthropic-ai/sdk':
         specifier: ^0.74.0
         version: 0.74.0(zod@4.3.6)
+      '@kealee/api':
+        specifier: workspace:*
+        version: link:../api
       '@kealee/concept-engine':
         specifier: workspace:*
         version: link:../../packages/concept-engine
@@ -3233,6 +3285,9 @@ importers:
       '@kealee/observability':
         specifier: workspace:^
         version: link:../../packages/observability
+      '@kealee/queue':
+        specifier: workspace:*
+        version: link:../../packages/queue
       '@kealee/storage':
         specifier: workspace:*
         version: link:../../packages/storage

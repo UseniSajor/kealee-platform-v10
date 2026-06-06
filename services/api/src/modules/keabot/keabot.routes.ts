@@ -12,6 +12,7 @@ import { chat, getConversation, endSession } from './keabot-engine';
 import { isGhlConfigured } from '../integrations/ghl/ghl-client';
 import { syncNewUser } from '../integrations/ghl/ghl-sync';
 import { randomUUID } from 'crypto';
+import { prismaAny } from '../../utils/prisma-helper';
 
 // ---------------------------------------------------------------------------
 // Validation
@@ -40,8 +41,14 @@ export async function keabotRoutes(fastify: FastifyInstance) {
     try {
       const input = chatSchema.parse(request.body);
       const sessionId = input.sessionId || randomUUID();
+      const user = input.visitorEmail
+        ? await prismaAny.user.findUnique({
+            where: { email: input.visitorEmail },
+            select: { id: true },
+          }).catch(() => null)
+        : null;
 
-      const response = await chat(sessionId, input.message);
+      const response = await chat(sessionId, input.message, { userId: user?.id });
 
       // If lead is qualified and we have email, sync to GHL
       if (
@@ -84,7 +91,7 @@ export async function keabotRoutes(fastify: FastifyInstance) {
   /** GET /history/:sessionId - Get conversation history */
   fastify.get('/history/:sessionId', async (request, reply) => {
     const { sessionId } = request.params as { sessionId: string };
-    const messages = getConversation(sessionId);
+    const messages = await getConversation(sessionId);
     return reply.send({ success: true, data: messages });
   });
 
@@ -92,7 +99,13 @@ export async function keabotRoutes(fastify: FastifyInstance) {
   fastify.post('/end', async (request, reply) => {
     try {
       const input = endSessionSchema.parse(request.body);
-      const score = endSession(input.sessionId);
+      const user = input.visitorEmail
+        ? await prismaAny.user.findUnique({
+            where: { email: input.visitorEmail },
+            select: { id: true },
+          }).catch(() => null)
+        : null;
+      const score = await endSession(input.sessionId, { userId: user?.id });
       return reply.send({ success: true, data: { score } });
     } catch (error: any) {
       if (error instanceof z.ZodError) {
