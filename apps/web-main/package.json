@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "NODE_OPTIONS=--max-old-space-size=4096 next build",
+    "build": "cross-env NODE_OPTIONS=--max-old-space-size=4096 next build",
     "start": "next start",
     "lint": "next lint",
     "diag:intake": "node ./scripts/smoke-intake-diagnostics.mjs",
@@ -24,8 +24,8 @@
   "dependencies": {
     "@anthropic-ai/sdk": "^0.30.0",
     "@kealee/auth": "workspace:*",
-    "@kealee/core-llm": "workspace:*",
     "@kealee/concept-engine": "workspace:*",
+    "@kealee/core-llm": "workspace:*",
     "@kealee/core-rules": "workspace:*",
     "@kealee/intake": "workspace:*",
     "@kealee/kealee-agent-stack": "workspace:*",
@@ -46,5 +46,8 @@
     "resend": "^3.0.0",
     "stripe": "^14.25.0",
     "uuid": "^10.0.0"
+  },
+  "devDependencies": {
+    "cross-env": "^10.1.0"
   }
 }

@@ -23,21 +23,27 @@ const OS_MODULES = [
   { key: 'marketplace', name: 'Marketplace' },
 ]
 
+function normalizePhase(phase: string | null | undefined): string {
+  const p = (phase ?? 'IDEA').toUpperCase().trim();
+  if (p === 'FEASIBILITY' || p === 'CONCEPT' || p === 'LAND' || p === 'FEASIBILITY STUDY') return 'IDEA';
+  if (p === 'PRECONSTRUCTION' || p === 'COSTING') return 'ESTIMATE';
+  if (p === 'PERMITS') return 'PERMIT';
+  if (p === 'CONTRACTOR_MATCH') return 'CONTRACTOR';
+  if (p === 'CONSTRUCTION' || p === 'INSPECTIONS') return 'EXECUTION';
+  if (p === 'CLOSEOUT' || p === 'COMPLETED' || p === 'OPERATIONS' || p === 'ARCHIVE' || p === 'PAYMENTS') return 'COMPLETION';
+  return p;
+}
+
 // ── v20 Seed: Lifecycle Phases ─────────────────────────────
 const LIFECYCLE_PHASES = [
   { key: 'IDEA', name: 'Idea', order: 1 },
-  { key: 'LAND', name: 'Land', order: 2 },
-  { key: 'FEASIBILITY', name: 'Feasibility', order: 3 },
-  { key: 'DESIGN', name: 'Design', order: 4 },
-  { key: 'PERMITS', name: 'Permits', order: 5 },
-  { key: 'PRECONSTRUCTION', name: 'Pre-Con', order: 6 },
-  { key: 'CONSTRUCTION', name: 'Construction', order: 7 },
-  { key: 'INSPECTIONS', name: 'Inspections', order: 8 },
-  { key: 'PAYMENTS', name: 'Payments', order: 9 },
-  { key: 'CLOSEOUT', name: 'Closeout', order: 10 },
-  { key: 'OPERATIONS', name: 'Operations', order: 11 },
-  { key: 'ARCHIVE', name: 'Archive', order: 12 },
-]
+  { key: 'DESIGN', name: 'Design', order: 2 },
+  { key: 'ESTIMATE', name: 'Estimate', order: 3 },
+  { key: 'PERMIT', name: 'Permit', order: 4 },
+  { key: 'CONTRACTOR', name: 'Contractor Match', order: 5 },
+  { key: 'EXECUTION', name: 'Project Execution', order: 6 },
+  { key: 'COMPLETION', name: 'Completion', order: 7 },
+] as const
 
 // ── Portfolio projects covering all 6 types ────────────────
 const PROJECTS = [
@@ -53,18 +59,13 @@ const PROJECTS = [
 ]
 
 const phaseColors: Record<string, string> = {
-  IDEA: 'bg-gray-100 text-gray-700',
-  LAND: 'bg-purple-100 text-purple-700',
-  FEASIBILITY: 'bg-indigo-100 text-indigo-700',
-  DESIGN: 'bg-blue-100 text-blue-700',
-  PERMITS: 'bg-amber-100 text-amber-700',
-  PRECONSTRUCTION: 'bg-orange-100 text-orange-700',
-  CONSTRUCTION: 'bg-teal-100 text-teal-700',
-  INSPECTIONS: 'bg-cyan-100 text-cyan-700',
-  PAYMENTS: 'bg-green-100 text-green-700',
-  CLOSEOUT: 'bg-emerald-100 text-emerald-700',
-  OPERATIONS: 'bg-lime-100 text-lime-700',
-  ARCHIVE: 'bg-stone-100 text-stone-700',
+  IDEA:        'bg-slate-100 text-slate-700',
+  DESIGN:      'bg-blue-100 text-blue-700',
+  ESTIMATE:    'bg-amber-100 text-amber-700 border border-amber-200/50',
+  PERMIT:      'bg-orange-100 text-orange-700',
+  CONTRACTOR:  'bg-violet-100 text-violet-700',
+  EXECUTION:   'bg-teal-100 text-teal-700',
+  COMPLETION:  'bg-green-100 text-green-700',
 }
 
 const tierColors: Record<string, string> = {
@@ -74,14 +75,15 @@ const tierColors: Record<string, string> = {
 }
 
 export default function PortfolioPage() {
-  const totalInvestment = PROJECTS.reduce((s, p) => s + p.totalCost, 0)
-  const totalValue = PROJECTS.reduce((s, p) => s + p.currentValue, 0)
-  const totalUnits = PROJECTS.reduce((s, p) => s + p.units, 0)
-  const avgHealth = Math.round(PROJECTS.reduce((s, p) => s + p.twinHealth, 0) / PROJECTS.length)
+  const projects = PROJECTS.map(p => ({ ...p, phase: normalizePhase(p.phase) }))
+  const totalInvestment = projects.reduce((s, p) => s + p.totalCost, 0)
+  const totalValue = projects.reduce((s, p) => s + p.currentValue, 0)
+  const totalUnits = projects.reduce((s, p) => s + p.units, 0)
+  const avgHealth = Math.round(projects.reduce((s, p) => s + p.twinHealth, 0) / projects.length)
 
   // Twin tier distribution
   const tierCounts = { L1: 0, L2: 0, L3: 0 }
-  PROJECTS.forEach(p => {
+  projects.forEach(p => {
     const tier = PROJECT_TYPE_MAP[p.projectType]?.tier as 'L1' | 'L2' | 'L3'
     if (tier) tierCounts[tier]++
   })
@@ -89,13 +91,13 @@ export default function PortfolioPage() {
   // Phase distribution
   const phaseCounts = LIFECYCLE_PHASES.map(lp => ({
     ...lp,
-    count: PROJECTS.filter(p => p.phase === lp.key).length,
+    count: projects.filter(p => p.phase === lp.key).length,
   })).filter(p => p.count > 0)
 
   // Module utilization
   const moduleUtilization = OS_MODULES.map(mod => {
-    const activeCount = PROJECTS.filter(p => PROJECT_TYPE_MAP[p.projectType]?.modules.includes(mod.key)).length
-    return { ...mod, activeCount, pct: Math.round((activeCount / PROJECTS.length) * 100) }
+    const activeCount = projects.filter(p => PROJECT_TYPE_MAP[p.projectType]?.modules.includes(mod.key)).length
+    return { ...mod, activeCount, pct: Math.round((activeCount / projects.length) * 100) }
   })
 
   return (
@@ -109,7 +111,7 @@ export default function PortfolioPage() {
       <div className="mb-8 grid grid-cols-2 gap-4 sm:grid-cols-5">
         <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
           <LayoutGrid className="h-5 w-5" style={{ color: '#1A2B4A' }} />
-          <p className="mt-2 text-2xl font-bold" style={{ color: '#1A2B4A' }}>{PROJECTS.length}</p>
+          <p className="mt-2 text-2xl font-bold" style={{ color: '#1A2B4A' }}>{projects.length}</p>
           <p className="text-xs text-gray-500">Total Projects</p>
         </div>
         <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
@@ -164,7 +166,7 @@ export default function PortfolioPage() {
           <div className="flex h-8 w-full overflow-hidden rounded-lg">
             {phaseCounts.map((phase, i) => {
               const colors = ['#6366F1', '#3B82F6', '#06B6D4', '#F59E0B', '#2ABFBF', '#38A169', '#84CC16', '#D69E2E', '#E8793A']
-              const width = (phase.count / PROJECTS.length) * 100
+              const width = (phase.count / projects.length) * 100
               return (
                 <div key={phase.key} className="flex items-center justify-center text-xs font-bold text-white" style={{ width: `${width}%`, backgroundColor: colors[i % colors.length], minWidth: '28px' }} title={`${phase.name}: ${phase.count}`}>
                   {phase.count}
@@ -193,7 +195,7 @@ export default function PortfolioPage() {
           {moduleUtilization.map((mod) => (
             <div key={mod.key} className="rounded-lg border border-gray-200 p-3 text-center">
               <Box className="mx-auto h-5 w-5" style={{ color: mod.pct >= 80 ? '#38A169' : mod.pct >= 50 ? '#2ABFBF' : '#94A3B8' }} />
-              <p className="mt-1.5 text-sm font-bold" style={{ color: '#1A2B4A' }}>{mod.activeCount}/{PROJECTS.length}</p>
+              <p className="mt-1.5 text-sm font-bold" style={{ color: '#1A2B4A' }}>{mod.activeCount}/{projects.length}</p>
               <p className="text-xs text-gray-500">{mod.name}</p>
               <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-gray-100">
                 <div className="h-full rounded-full" style={{ width: `${mod.pct}%`, backgroundColor: mod.pct >= 80 ? '#38A169' : mod.pct >= 50 ? '#2ABFBF' : '#94A3B8' }} />
@@ -206,7 +208,7 @@ export default function PortfolioPage() {
 
       {/* Project Cards */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {PROJECTS.map((project) => {
+        {projects.map((project) => {
           const pt = PROJECT_TYPE_MAP[project.projectType]
           const phaseName = LIFECYCLE_PHASES.find(lp => lp.key === project.phase)?.name ?? project.phase
           return (

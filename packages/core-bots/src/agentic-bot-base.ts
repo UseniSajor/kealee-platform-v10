@@ -5,7 +5,7 @@
  * Replaces the simple chat() pattern with callModelAgentic()
  */
 
-import { KeaBot, type BotConfig, type BotTool } from './keabot-base';
+import { KeaBot, type BotConfig, type BotTool, type HandoffRequest } from './keabot-base';
 import { callModelAgentic, type AgenticTool, type AgenticExecutionContext } from '@kealee/core-agents';
 import { createRagTool } from './rag-tool';
 import { createBrowserTool, getGlobalBrowserAgent } from '@kealee/core-agents';
@@ -31,7 +31,13 @@ export abstract class AgenticBot extends KeaBot {
     // Optionally add browser tool
     if (config.enableBrowserTool) {
       const browserTool = createBrowserTool(getGlobalBrowserAgent());
-      this.registerTool(browserTool);
+      const botTool: BotTool = {
+        name: browserTool.name,
+        description: browserTool.description,
+        parameters: browserTool.inputSchema as BotTool['parameters'],
+        handler: async (params: Record<string, unknown>) => browserTool.execute(params),
+      };
+      this.registerTool(botTool);
     }
   }
 
@@ -53,7 +59,7 @@ export abstract class AgenticBot extends KeaBot {
           { type: val.type, description: val.description, required: val.required },
         ])
       ),
-      execute: tool.handler,
+      execute: (input: unknown) => tool.handler(input as Record<string, unknown>),
     }));
 
     const result = await callModelAgentic({
@@ -90,5 +96,5 @@ export abstract class AgenticBot extends KeaBot {
   /**
    * Implement this for bot handoff logic
    */
-  abstract shouldHandoff(message: string): Record<string, unknown> | null;
+  abstract shouldHandoff(message: string): HandoffRequest | null;
 }

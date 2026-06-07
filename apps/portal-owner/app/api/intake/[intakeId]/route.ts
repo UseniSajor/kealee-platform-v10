@@ -7,11 +7,13 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  { auth: { persistSession: false } }
-)
+export const dynamic = 'force-dynamic'
+
+function getSupabaseAdmin() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co'
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY || 'placeholder-key'
+  return createClient(url, key, { auth: { persistSession: false } })
+}
 
 export async function GET(
   _req: Request,
@@ -23,6 +25,7 @@ export async function GET(
     return NextResponse.json({ error: 'Missing intakeId' }, { status: 400 })
   }
 
+  const supabaseAdmin = getSupabaseAdmin()
   const { data, error } = await supabaseAdmin
     .from('public_intake_leads')
     .select('*')

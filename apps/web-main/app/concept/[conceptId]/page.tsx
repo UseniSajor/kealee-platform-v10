@@ -32,7 +32,36 @@ const SAMPLE_BOM = [
 
 function DesignConceptHero({ concept }: { concept: Concept }) {
   const dc = concept.designConcept
-  if (!dc) return null
+  
+  if (!dc || concept.status === 'processing') {
+    return (
+      <section className="bg-gradient-to-br from-slate-900 to-[#1A2B4A] rounded-2xl p-8 text-white animate-pulse">
+        <div className="flex flex-wrap items-center gap-3 mb-5">
+          <div className="h-6 w-28 bg-white/10 rounded-full" />
+          <div className="h-6 w-36 bg-white/10 rounded-full" />
+        </div>
+        <div className="h-4 bg-white/10 rounded w-3/4 mb-3" />
+        <div className="h-4 bg-white/10 rounded w-1/2 mb-6" />
+        <div className="grid sm:grid-cols-2 gap-6 pt-4 border-t border-white/10">
+          <div>
+            <div className="h-3 bg-white/10 rounded w-24 mb-3" />
+            <div className="flex flex-wrap gap-2">
+              <div className="h-6 w-20 bg-white/10 rounded-lg" />
+              <div className="h-6 w-24 bg-white/10 rounded-lg" />
+              <div className="h-6 w-16 bg-white/10 rounded-lg" />
+            </div>
+          </div>
+          <div>
+            <div className="h-3 bg-white/10 rounded w-24 mb-3" />
+            <div className="space-y-2">
+              <div className="h-4 bg-white/10 rounded w-5/6" />
+              <div className="h-4 bg-white/10 rounded w-4/5" />
+            </div>
+          </div>
+        </div>
+      </section>
+    )
+  }
 
   const buildabilityMeta: Record<string, { label: string; cls: string }> = {
     'feasible':               { label: '✓ Feasible',        cls: 'bg-green-100 text-green-800 border-green-200' },
@@ -42,7 +71,7 @@ function DesignConceptHero({ concept }: { concept: Concept }) {
   const bm = buildabilityMeta[concept.buildabilityFlag ?? 'feasible'] ?? buildabilityMeta['feasible']
 
   return (
-    <section className="bg-gradient-to-br from-slate-900 to-[#1A2B4A] rounded-2xl p-8 text-white">
+    <section className="bg-gradient-to-br from-slate-900 to-[#1A2B4A] rounded-2xl p-8 text-white shadow-xl">
       {/* Badges row */}
       <div className="flex flex-wrap items-center gap-3 mb-5">
         <span className="inline-flex items-center gap-1.5 bg-[#E8724B]/20 border border-[#E8724B]/40 text-[#E8724B] text-sm font-bold px-3 py-1.5 rounded-full">
@@ -137,7 +166,7 @@ function LockedFeatureCard({ icon, title, description }: {
 
 function Tier3ConsultationCTA() {
   return (
-    <div className="rounded-2xl bg-gradient-to-r from-[#1A2B4A] to-[#243B63] p-6">
+    <div className="rounded-2xl bg-gradient-to-r from-[#1A2B4A] to-[#243B63] p-6 shadow-md">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <p className="text-xs font-bold uppercase tracking-widest text-orange-400 mb-1">Premium+ Exclusive</p>
@@ -160,7 +189,7 @@ function Tier3ConsultationCTA() {
 function UpgradeBanner({ currentTier }: { currentTier: 1 | 2 | 3 }) {
   if (currentTier === 3) return null
   return (
-    <div className="rounded-2xl border border-orange-200 bg-orange-50 p-6">
+    <div className="rounded-2xl border border-orange-200 bg-orange-50/50 p-6">
       <div className="flex items-start gap-4">
         <div className="w-10 h-10 rounded-full bg-[#E8724B] flex items-center justify-center shrink-0">
           <Video className="w-5 h-5 text-white" />
@@ -191,7 +220,7 @@ function UpgradeBanner({ currentTier }: { currentTier: 1 | 2 | 3 }) {
 function RenderSlot({ url, index }: { url: string | null; index: number }) {
   if (url) {
     return (
-      <div className="group relative aspect-[16/9] rounded-xl overflow-hidden bg-slate-100">
+      <div className="group relative aspect-[16/9] rounded-xl overflow-hidden bg-slate-100 border border-slate-200 shadow-sm">
         <img src={url} alt={`Rendering ${index + 1}`} className="w-full h-full object-cover" />
         {/* Download button — visible on hover */}
         <a
@@ -209,9 +238,85 @@ function RenderSlot({ url, index }: { url: string | null; index: number }) {
     )
   }
   return (
-    <div className="relative aspect-[16/9] rounded-xl overflow-hidden bg-slate-100 flex flex-col items-center justify-center gap-2">
+    <div className="relative aspect-[16/9] rounded-xl overflow-hidden bg-slate-50 border border-slate-200/60 flex flex-col items-center justify-center gap-2 shadow-inner">
       <Loader2 className="w-6 h-6 text-[#E8724B] animate-spin" />
       <p className="text-xs text-slate-400">Rendering {index + 1} generating…</p>
+    </div>
+  )
+}
+
+// ── Status Timeline Indicator ───────────────────────────────────────────────
+
+function StatusTimeline({ status }: { status: 'processing' | 'completed' | 'error' }) {
+  const steps = [
+    { label: 'Draft', done: true },
+    { label: 'Submitted', done: true },
+    { label: 'Paid', done: true },
+    { 
+      label: status === 'error' ? 'Analysis Failed' : 'Generating', 
+      done: status === 'completed', 
+      active: status === 'processing',
+      failed: status === 'error'
+    },
+    { 
+      label: status === 'error' ? 'Failed' : 'Ready', 
+      done: status === 'completed',
+      active: status === 'completed',
+      failed: status === 'error'
+    }
+  ]
+
+  return (
+    <div className="bg-slate-950/40 backdrop-blur-md border border-white/10 rounded-2xl p-5 mt-4">
+      <div className="flex items-center justify-between">
+        {steps.map((s, i) => {
+          const isDone = s.done
+          const isActive = s.active
+          const isFailed = s.failed
+
+          return (
+            <div key={i} className="flex items-center flex-1 last:flex-none">
+              <div className="flex flex-col items-center relative">
+                <div
+                  className={`w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-extrabold transition-all duration-300 ${
+                    isFailed
+                      ? 'bg-red-500 text-white shadow-md shadow-red-950/20'
+                      : isDone
+                      ? 'bg-green-500 text-white shadow-md shadow-green-950/20'
+                      : isActive
+                      ? 'bg-[#E8724B] text-white ring-4 ring-[#E8724B]/30 animate-pulse shadow-md shadow-orange-950/20'
+                      : 'bg-white/10 text-slate-400 border border-white/10'
+                  }`}
+                >
+                  {isFailed ? (
+                    '✕'
+                  ) : isDone ? (
+                    <CheckCircle2 className="w-4.5 h-4.5" strokeWidth={3} />
+                  ) : (
+                    i + 1
+                  )}
+                </div>
+                <span
+                  className={`text-[9px] font-bold mt-2 tracking-wide uppercase transition-colors duration-300 ${
+                    isActive ? 'text-[#E8724B]' : isFailed ? 'text-red-400' : isDone ? 'text-green-400' : 'text-slate-400'
+                  }`}
+                >
+                  {s.label}
+                </span>
+              </div>
+              {i < steps.length - 1 && (
+                <div className="flex-1 mx-3 -mt-6">
+                  <div
+                    className={`h-0.5 rounded-full transition-all duration-500 ${
+                      isFailed ? 'bg-red-500' : isDone ? 'bg-green-500' : isActive ? 'bg-slate-700' : 'bg-white/10'
+                    }`}
+                  />
+                </div>
+              )}
+            </div>
+          )
+        })}
+      </div>
     </div>
   )
 }
@@ -257,8 +362,7 @@ export default function ConceptDeliverablePage() {
         setRenderSlots((prev) => {
           const existing  = data.renderings ?? []
           const jobCount  = data.renderJobs?.length ?? 0
-          const slotCount = Math.max(existing.length, jobCount)
-          if (slotCount === 0) return prev
+          const slotCount = Math.max(existing.length, jobCount, data.tier === 3 ? 12 : data.tier === 2 ? 6 : 3)
           return Array.from({ length: slotCount }, (_, i) => existing[i] || null)
         })
 
@@ -382,29 +486,7 @@ export default function ConceptDeliverablePage() {
     )
   }
 
-  if (concept.status === 'processing') {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center gap-6 bg-slate-50 px-4">
-        <div className="w-16 h-16 rounded-full bg-orange-100 flex items-center justify-center">
-          <Loader2 className="w-8 h-8 text-[#E8724B] animate-spin" />
-        </div>
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-slate-900 mb-2">Creating Your Concept</h2>
-          <p className="text-slate-500 max-w-sm">Our AI is generating your renders, cost estimate, and permit analysis. This takes 2–5 minutes.</p>
-        </div>
-        <div className="bg-white rounded-2xl border border-slate-200 p-5 max-w-sm w-full">
-          {['AI rendering generation', 'Cost estimation analysis', 'Zoning & permit research', 'MEP specification'].map((step, i) => (
-            <div key={step} className="flex items-center gap-3 py-2 border-b border-slate-100 last:border-0">
-              <div className="w-5 h-5 rounded-full border-2 border-[#E8724B] border-t-transparent animate-spin shrink-0" style={{ animationDelay: `${i * 0.2}s` }} />
-              <span className="text-sm text-slate-600">{step}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-    )
-  }
-
-  // ── Concept ready — render the deliverable ────────────────────────────────────
+  // ── Concept ready or processing — render the deliverable ────────────────────────────────────
 
   const displayVideoUrl = liveVideoUrl ?? concept.videoUrl
   const hasRenderJobs   = (concept.renderJobs?.length ?? 0) > 0
@@ -412,27 +494,60 @@ export default function ConceptDeliverablePage() {
   const showRenderSection = renderSlots.length > 0 || hasRenderJobs
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-slate-50/30">
       {/* Header */}
-      <div className="bg-gradient-to-r from-[#1A2B4A] to-[#1A2B4A]/90 py-16 px-4">
-        <div className="mx-auto max-w-5xl">
-          <p className="text-xs font-bold uppercase tracking-widest text-orange-400 mb-3">
-            {concept.tier === 3 ? 'Premium+ Concept Package' : concept.tier === 2 ? 'Premium Concept Package' : 'Concept Package'}
-          </p>
-          <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2">{concept.service} Concept</h1>
-          <p className="text-slate-400 mb-8">Generated {new Date(concept.createdAt).toLocaleDateString()}</p>
-          <DownloadShare conceptId={conceptId} />
+      <div className="bg-gradient-to-br from-slate-900 via-[#1A2B4A] to-slate-900 py-12 px-4 border-b border-white/5 shadow-lg">
+        <div className="mx-auto max-w-5xl space-y-6">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+            <div>
+              <p className="text-xs font-extrabold uppercase tracking-widest text-[#E8724B] mb-2">
+                {concept.tier === 3 ? 'Premium+ Concept Package' : concept.tier === 2 ? 'Premium Concept Package' : 'Concept Package'}
+              </p>
+              <h1 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight leading-tight">
+                {concept.service} Concept
+              </h1>
+              <p className="text-slate-400 text-sm mt-1.5">
+                Created on {new Date(concept.createdAt).toLocaleDateString()}
+              </p>
+            </div>
+            
+            {concept.status === 'completed' && (
+              <div className="flex flex-wrap items-center gap-3">
+                <DownloadShare conceptId={conceptId} />
+                <button
+                  onClick={() => window.print()}
+                  className="flex items-center gap-2 rounded-xl bg-[#E8724B] hover:bg-[#D45C33] text-white font-bold px-6 py-3 text-sm transition-all shadow-md shadow-orange-950/20"
+                >
+                  <Download className="w-4 h-4" /> Download PDF
+                </button>
+              </div>
+            )}
+          </div>
+          
+          {/* Status Timeline */}
+          <StatusTimeline status={concept.status} />
         </div>
       </div>
 
       <div className="mx-auto max-w-5xl px-4 py-12 space-y-16">
+        {concept.status === 'processing' && (
+          <div className="bg-orange-50 border border-orange-200 rounded-2xl p-5 flex items-start gap-4 shadow-sm animate-pulse">
+            <Loader2 className="w-5 h-5 text-[#E8724B] animate-spin shrink-0 mt-0.5" />
+            <div>
+              <h3 className="font-bold text-slate-800 text-sm">Advisory Concept Generating</h3>
+              <p className="text-xs text-slate-600 mt-0.5">
+                Our AI model engines are drafting your 3D transformation renders, interactive floorplans, bill of materials, and video animations. This dashboard will update live in 1–3 minutes.
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* Design Concept Hero — all tiers */}
         <DesignConceptHero concept={concept} />
 
         {/* Before & After — shown when client uploaded photos during intake */}
         {concept.beforeUrls && concept.beforeUrls.length > 0 && (
-          <section>
+          <section className="bg-white rounded-2xl border border-slate-200/60 p-6 md:p-8 shadow-sm">
             <h2 className="text-2xl font-bold text-slate-900 mb-2">Before &amp; After</h2>
             <p className="text-slate-500 mb-6">
               Your uploaded photos alongside the AI-generated design vision.
@@ -440,18 +555,18 @@ export default function ConceptDeliverablePage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               {concept.beforeUrls.map((beforeUrl, i) => (
                 <div key={i} className="space-y-3">
-                  <div className="relative aspect-[16/9] rounded-xl overflow-hidden bg-slate-100">
+                  <div className="relative aspect-[16/9] rounded-xl overflow-hidden bg-slate-100 border border-slate-200/60 shadow-sm">
                     <img src={beforeUrl} alt={`Before ${i + 1}`} className="w-full h-full object-cover" />
                     <span className="absolute top-2 left-2 bg-black/60 text-white text-xs font-semibold px-2 py-1 rounded-md">Before</span>
                   </div>
-                  <div className="relative aspect-[16/9] rounded-xl overflow-hidden bg-slate-100">
+                  <div className="relative aspect-[16/9] rounded-xl overflow-hidden bg-slate-100 border border-slate-200/60 shadow-sm">
                     {renderSlots[i] ? (
                       <>
                         <img src={renderSlots[i]!} alt={`After ${i + 1}`} className="w-full h-full object-cover" />
                         <span className="absolute top-2 left-2 bg-[#E8724B]/90 text-white text-xs font-semibold px-2 py-1 rounded-md">After</span>
                       </>
                     ) : (
-                      <div className="w-full h-full flex flex-col items-center justify-center gap-2">
+                      <div className="w-full h-full flex flex-col items-center justify-center gap-2 bg-slate-50 shadow-inner">
                         <Loader2 className="w-6 h-6 text-[#E8724B] animate-spin" />
                         <p className="text-xs text-slate-400">AI render generating…</p>
                       </div>
@@ -465,7 +580,7 @@ export default function ConceptDeliverablePage() {
 
         {/* AI Render Gallery — all tiers (3 / 6 / 12 based on tier) */}
         {showRenderSection && (
-          <section>
+          <section className="bg-white rounded-2xl border border-slate-200/60 p-6 md:p-8 shadow-sm">
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h2 className="text-2xl font-bold text-slate-900">
@@ -481,7 +596,7 @@ export default function ConceptDeliverablePage() {
                   </p>
                 )}
               </div>
-              {rendersComplete && (
+              {rendersComplete && concept.status === 'completed' && (
                 <span className="flex items-center gap-1.5 text-xs font-semibold text-green-600">
                   <CheckCircle2 className="w-4 h-4" /> All renders complete
                 </span>
@@ -497,7 +612,7 @@ export default function ConceptDeliverablePage() {
 
         {/* Video — tier 2+ active, tier 1 locked */}
         {concept.tier >= 2 ? (
-          <section>
+          <section className="bg-white rounded-2xl border border-slate-200/60 p-6 md:p-8 shadow-sm">
             <h2 className="text-2xl font-bold text-slate-900 mb-2">Your Transformation Video</h2>
             <p className="text-slate-500 mb-6">
               {concept.tier === 3
@@ -512,7 +627,7 @@ export default function ConceptDeliverablePage() {
                 videoFormatUrls={liveVideoUrl ? undefined : concept.videoFormatUrls}
               />
             ) : (
-              <div className="rounded-2xl bg-slate-100 border border-slate-200 p-12 text-center">
+              <div className="rounded-2xl bg-slate-50 border border-slate-200/60 p-12 text-center shadow-inner">
                 <Loader2 className="w-8 h-8 text-[#E8724B] animate-spin mx-auto mb-3" />
                 <p className="text-slate-600 font-medium text-sm mb-1">Video generating</p>
                 <p className="text-slate-400 text-xs">AI video generation typically takes 1–3 minutes. This page updates automatically.</p>
@@ -520,7 +635,7 @@ export default function ConceptDeliverablePage() {
             )}
           </section>
         ) : (
-          <section>
+          <section className="bg-white rounded-2xl border border-slate-200/60 p-6 md:p-8 shadow-sm">
             <h2 className="text-2xl font-bold text-slate-900 mb-6">Transformation Video</h2>
             <LockedFeatureCard
               icon={<Video className="w-6 h-6 text-slate-400" />}
@@ -532,7 +647,7 @@ export default function ConceptDeliverablePage() {
 
         {/* Floor Plan — tier 2+ active, tier 1 locked */}
         {concept.tier >= 2 ? (
-          <section>
+          <section className="bg-white rounded-2xl border border-slate-200/60 p-6 md:p-8 shadow-sm">
             <h2 className="text-2xl font-bold text-slate-900 mb-2">
               {concept.tier === 3 ? 'Interactive Multi-Layer Floor Plan' : '2D Architectural Floor Plan'}
             </h2>
@@ -544,7 +659,7 @@ export default function ConceptDeliverablePage() {
             <FloorPlan tier={concept.tier} floorPlanUrl={concept.floorPlanUrl} mepSchematic={concept.mepSchematic} conceptId={conceptId} />
           </section>
         ) : (
-          <section>
+          <section className="bg-white rounded-2xl border border-slate-200/60 p-6 md:p-8 shadow-sm">
             <h2 className="text-2xl font-bold text-slate-900 mb-6">Architectural Floor Plan</h2>
             <LockedFeatureCard
               icon={<Lock className="w-6 h-6 text-slate-400" />}
@@ -555,19 +670,19 @@ export default function ConceptDeliverablePage() {
         )}
 
         {/* Specification Tabs — all tiers */}
-        <section>
+        <section className="bg-white rounded-2xl border border-slate-200/60 p-6 md:p-8 shadow-sm">
           <SpecificationTabs concept={concept} tier={concept.tier} />
         </section>
 
         {/* Bill of Materials — tier 2+ full, tier 1 locked */}
         {concept.tier >= 2 ? (
-          <section>
+          <section className="bg-white rounded-2xl border border-slate-200/60 p-6 md:p-8 shadow-sm">
             <h2 className="text-2xl font-bold text-slate-900 mb-2">Detailed Cost Breakdown</h2>
             <p className="text-slate-500 mb-6">Line-item materials and estimated costs</p>
             <BillOfMaterials items={concept.billOfMaterials?.length ? concept.billOfMaterials : SAMPLE_BOM} />
           </section>
         ) : (
-          <section>
+          <section className="bg-white rounded-2xl border border-slate-200/60 p-6 md:p-8 shadow-sm">
             <h2 className="text-2xl font-bold text-slate-900 mb-6">Detailed Bill of Materials</h2>
             <LockedFeatureCard
               icon={<Lock className="w-6 h-6 text-slate-400" />}
@@ -586,12 +701,12 @@ export default function ConceptDeliverablePage() {
         <div className="print:hidden"><UpgradeBanner currentTier={concept.tier} /></div>
 
         {/* Final CTA */}
-        <section className="print:hidden bg-gradient-to-r from-[#E8724B] to-[#D45C33] rounded-2xl p-8 text-center">
+        <section className="print:hidden bg-gradient-to-r from-[#E8724B] to-[#D45C33] rounded-2xl p-8 text-center shadow-lg">
           <h2 className="text-2xl font-bold text-white mb-3">Ready to Build?</h2>
           <p className="text-orange-100 mb-6">Connect with a Kealee-vetted contractor in your area.</p>
           <Link
             href="/marketplace"
-            className="inline-flex items-center gap-2 bg-white text-[#E8724B] hover:bg-orange-50 font-bold px-7 py-3 rounded-xl transition-all"
+            className="inline-flex items-center gap-2 bg-white text-[#E8724B] hover:bg-orange-50 font-bold px-7 py-3 rounded-xl transition-all shadow"
           >
             Find a Contractor <ArrowRight className="w-4 h-4" />
           </Link>

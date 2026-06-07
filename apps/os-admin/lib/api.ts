@@ -212,4 +212,25 @@ export const api = {
     if (params?.endDate) query.append('endDate', params.endDate)
     return apiRequest<{ report: any }>(`/billing/reports/revenue?${query.toString()}`)
   },
+
+  // v30 AI & Pricing Admin (Consolidated)
+  getV30Bots: () => apiRequest<{ bots: any[] }>('/v30/admin/bots'),
+  getV30Bot: (botType: string) => apiRequest<{
+    botType: string
+    displayName: string
+    codeDefaultPrompt: string
+    dbOverride: any
+    activePrompt: string
+  }>(`/v30/admin/bots/${botType}`),
+  updateV30Bot: (botType: string, data: { systemPrompt: string; modelPrimary?: string; enabled?: boolean; notes?: string }) =>
+    apiRequest<any>(`/v30/admin/bots/${botType}`, { method: 'PATCH', body: data }),
+  getV30Pricing: () => apiRequest<{
+    formula: any
+    source: string
+    version: number
+    updatedAt: string
+  }>('/v30/admin/pricing'),
+  updateV30Pricing: (formula: any) =>
+    apiRequest<any>('/v30/admin/pricing', { method: 'PATCH', body: formula }),
+  getV30Analytics: () => apiRequest<any>('/v30/analytics/summary'),
 }

@@ -3,7 +3,7 @@
 import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowRight, ArrowLeft, Paperclip, X, ImageIcon, FileText, Video, Info } from 'lucide-react'
+import { ArrowRight, ArrowLeft, Paperclip, X, ImageIcon, FileText, Video, Info, Loader2 } from 'lucide-react'
 import { SERVICE_MAP } from '@/lib/services-config'
 import { getConceptSqftHint, CONCEPT_PHOTO_RENDERING_DISCLAIMER } from '@/lib/concept-scope-placeholders'
 import {
@@ -159,35 +159,33 @@ function DetailsInner() {
     } as IntakeUploadedFile))
   })
   const [uploading, setUploading] = useState(false)
+  const [dragActive, setDragActive] = useState(false)
   const [photoAckNoUpload, setPhotoAckNoUpload] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
 
-  function toggleScopeGoal(goal: string) {
-    setScopeGoals((prev) => (prev.includes(goal) ? prev.filter((g) => g !== goal) : [...prev, goal]))
+  function handleDrag(e: React.DragEvent) {
+    e.preventDefault()
+    e.stopPropagation()
+    if (e.type === "dragenter" || e.type === "dragover") {
+      setDragActive(true)
+    } else if (e.type === "dragleave") {
+      setDragActive(false)
+    }
   }
 
-  function toggleScopeCondition(condition: string) {
-    setScopeConditions((prev) =>
-      prev.includes(condition) ? prev.filter((c) => c !== condition) : [...prev, condition]
-    )
-  }
-
-  function composedScope(): string {
-    return buildConceptScope({
-      serviceSlug,
-      serviceLabel: service?.label,
-      goals: scopeGoals,
-      conditions: scopeConditions,
-      extraNote,
-      style,
-      priority,
-      timeline,
-      sqft,
-      gardenSpace: isGarden ? gardenSpace : undefined,
-      gardenFeatures: isGarden ? gardenFeatures : undefined,
-      gardenIrrigation: isGarden ? gardenIrrigation : undefined,
-      gardenMaintenance: isGarden ? gardenMaintenance : undefined,
-    })
+  async function handleDrop(e: React.DragEvent) {
+    e.preventDefault()
+    e.stopPropagation()
+    setDragActive(false)
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      const selected = Array.from(e.dataTransfer.files)
+      const remaining = 5 - uploadedFiles.length
+      const toUpload = selected.slice(0, remaining)
+      setUploading(true)
+      const newFiles = await uploadIntakeFilesSequentially(toUpload)
+      setUploadedFiles((prev) => [...prev, ...newFiles])
+      setUploading(false)
+    }
   }
 
   useEffect(() => {
@@ -195,6 +193,8 @@ function DetailsInner() {
       setPhotoAckNoUpload(false)
     }
   }, [uploadedFiles])
+
+
 
   async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const selected = Array.from(e.target.files ?? [])
@@ -214,15 +214,45 @@ function DetailsInner() {
   }
 
   function fileIcon(kind: IntakeUploadedFile['type']) {
-    if (kind === 'image') return <ImageIcon className="w-4 h-4 shrink-0" />
-    if (kind === 'video') return <Video className="w-4 h-4 shrink-0" />
-    return <FileText className="w-4 h-4 shrink-0" />
+    if (kind === 'image') return <ImageIcon className="w-5 h-5 text-slate-400" />
+    if (kind === 'video') return <Video className="w-5 h-5 text-slate-400" />
+    return <FileText className="w-5 h-5 text-slate-400" />
+  }
+
+  function toggleScopeCondition(item: string) {
+    setScopeConditions((prev) =>
+      prev.includes(item) ? prev.filter((x) => x !== item) : [...prev, item]
+    )
+  }
+
+  function toggleScopeGoal(item: string) {
+    setScopeGoals((prev) =>
+      prev.includes(item) ? prev.filter((x) => x !== item) : [...prev, item]
+    )
   }
 
   function toggleGardenFeature(feature: string) {
     setGardenFeatures((prev) =>
       prev.includes(feature) ? prev.filter((f) => f !== feature) : [...prev, feature]
     )
+  }
+
+  function composedScope() {
+    return buildConceptScope({
+      serviceSlug,
+      serviceLabel: service?.label,
+      goals: scopeGoals,
+      conditions: scopeConditions,
+      extraNote,
+      style,
+      priority,
+      timeline,
+      sqft,
+      gardenSpace,
+      gardenFeatures,
+      gardenIrrigation,
+      gardenMaintenance,
+    })
   }
 
   function validate() {
@@ -464,8 +494,8 @@ function DetailsInner() {
           </label>
           <select
             className={inputClass}
-            value={priority}
-            onChange={(e) => setPriority(e.target.value)}
+            value={style}
+            onChange={(e) => setStyle(e.target.value)}
           >
             <option value="">What matters most to you?</option>
             {(isGarden ? GARDEN_PRIORITY_OPTIONS : PRIORITY_OPTIONS).map((p) => (
@@ -558,58 +588,86 @@ function DetailsInner() {
           <label className="block text-sm font-semibold text-slate-800 mb-1.5">
             Photos of existing conditions <span className="text-[#E8724B]">*</span>
           </label>
-          <div className="flex gap-2 rounded-xl border border-amber-200 bg-amber-50/80 px-3 py-2.5 mb-3 text-xs text-amber-950 leading-relaxed">
+          <div className="flex gap-2 rounded-xl border border-amber-200 bg-amber-50/80 px-3 py-2.5 mb-4 text-xs text-amber-950 leading-relaxed">
             <Info className="w-4 h-4 shrink-0 text-amber-700 mt-0.5" aria-hidden />
             <p>{CONCEPT_PHOTO_RENDERING_DISCLAIMER}</p>
           </div>
-          <p className="text-xs text-slate-500 mb-2">
-            Upload current-space photos (required for before/after-style concepts). Plans and inspiration welcome — up to 5 files, 50 MB each. JPG, PNG, WEBP, MP4, PDF.
-          </p>
 
-          {/* Uploaded file chips */}
-          {uploadedFiles.length > 0 && (
-            <div className="flex flex-wrap gap-2 mb-3">
-              {uploadedFiles.map((f) => (
-                <div
-                  key={f.url}
-                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-100 border border-slate-200 text-xs text-slate-700 max-w-[200px]"
-                >
-                  {fileIcon(f.type)}
-                  <span className="truncate flex-1">{f.name}</span>
-                  <button
-                    type="button"
-                    onClick={() => removeFile(f.url)}
-                    className="text-slate-400 hover:text-red-500 transition ml-1 shrink-0"
-                    aria-label="Remove file"
-                  >
-                    <X className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              ))}
+          {/* Drag & Drop zone */}
+          <div
+            onDragEnter={handleDrag}
+            onDragOver={handleDrag}
+            onDragLeave={handleDrag}
+            onDrop={handleDrop}
+            className={`relative rounded-2xl border-2 border-dashed p-6 transition-all flex flex-col items-center justify-center text-center cursor-pointer ${
+              dragActive
+                ? 'border-[#E8724B] bg-orange-50/30'
+                : 'border-slate-300 bg-slate-50 hover:border-[#E8724B] hover:bg-orange-50/10'
+            }`}
+          >
+            <input
+              type="file"
+              accept="image/jpeg,image/png,image/webp,image/heic,video/mp4,video/quicktime,application/pdf"
+              multiple
+              disabled={uploading}
+              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+              onChange={handleFileChange}
+            />
+            <div className="w-12 h-12 rounded-full bg-slate-200/60 flex items-center justify-center mb-3 text-slate-500 group-hover:text-[#E8724B] transition-colors">
+              <Paperclip className="w-5 h-5" />
             </div>
-          )}
+            <p className="text-sm font-semibold text-slate-800 mb-1">
+              Drag &amp; drop photos here, or <span className="text-[#E8724B] hover:underline">browse files</span>
+            </p>
+            <p className="text-xs text-slate-400">
+              Up to 5 files, 50 MB each (JPG, PNG, WEBP, MP4, PDF)
+            </p>
+            {uploading && (
+              <div className="absolute inset-0 bg-white/95 rounded-2xl flex flex-col items-center justify-center gap-2">
+                <Loader2 className="w-6 h-6 text-[#E8724B] animate-spin" />
+                <span className="text-xs font-semibold text-slate-700">Uploading files, please wait...</span>
+              </div>
+            )}
+          </div>
 
-          {/* Upload trigger */}
-          {uploadedFiles.length < 5 && (
-            <label className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 border-dashed cursor-pointer text-sm font-medium transition ${
-              uploading
-                ? 'border-slate-200 text-slate-400 cursor-not-allowed'
-                : 'border-slate-300 text-slate-600 hover:border-[#E8724B] hover:text-[#E8724B]'
-            }`}>
-              <Paperclip className="w-4 h-4 shrink-0" />
-              {uploading ? 'Uploading…' : `Attach files${uploadedFiles.length > 0 ? ` (${uploadedFiles.length}/5)` : ''}`}
-              <input
-                type="file"
-                accept="image/jpeg,image/png,image/webp,image/heic,video/mp4,video/quicktime,application/pdf"
-                multiple
-                disabled={uploading}
-                className="sr-only"
-                onChange={handleFileChange}
-              />
-            </label>
-          )}
-          {uploadedFiles.length >= 5 && (
-            <p className="text-xs text-slate-400 mt-1">Maximum 5 files attached.</p>
+          {/* Uploaded file previews grid */}
+          {uploadedFiles.length > 0 && (
+            <div className="mt-4">
+              <p className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2.5">
+                Attached Files ({uploadedFiles.length}/5)
+              </p>
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-3.5">
+                {uploadedFiles.map((f) => (
+                  <div
+                    key={f.url}
+                    className="relative aspect-square rounded-xl border border-slate-200 bg-slate-100 overflow-hidden group shadow-sm"
+                  >
+                    {f.type === 'image' ? (
+                      <img src={f.url} alt={f.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex flex-col items-center justify-center gap-1.5 p-2 text-center bg-slate-50">
+                        {fileIcon(f.type)}
+                        <span className="text-[10px] text-slate-500 truncate w-full">{f.name}</span>
+                      </div>
+                    )}
+                    {/* Delete hover overlay */}
+                    <div className="absolute inset-0 bg-slate-950/45 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center z-10">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          removeFile(f.url)
+                        }}
+                        className="p-1.5 rounded-full bg-red-600 hover:bg-red-700 text-white shadow transition-transform hover:scale-105"
+                        aria-label="Delete file"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           )}
 
           {!uploadedFiles.some((f) => f.type === 'image') && (
