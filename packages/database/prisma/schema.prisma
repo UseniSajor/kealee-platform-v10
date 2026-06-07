@@ -17985,3 +17985,131 @@ model PartnershipMetric {
   @@index([status])
   @@map("growth_partnership_metrics")
 }
+
+// ============================================================================
+// AGENTIC BOT EXECUTION HISTORY & AUDIT (June 2026)
+// ============================================================================
+
+model AgenticJobExecution {
+  id                    String   @id @default(cuid())
+  requestId             String   @unique
+  botId                 String
+  sessionId             String
+  userId                String?
+  orgId                 String?
+  projectId             String?
+
+  // Execution metadata
+  systemPrompt          String   @db.Text
+  userMessage           String   @db.Text
+  finalOutput           String   @db.Text
+
+  // Status & metrics
+  status                String   // 'completed' | 'failed' | 'max_iterations_reached'
+  success               Boolean
+  totalIterations       Int
+  durationMs            Int
+  error                 String?
+
+  // Tool execution history (JSON array of ToolExecutionRecord)
+  toolHistory           Json     @default("[]")
+  toolMetrics           Json     // { successful, failed, byName: {} }
+
+  // Audit & security
+  warnings              String[] @default([])
+  browserAuditLog       Json?    // Browser security audit log
+  llmSource             String?  // 'claude' | 'internal' | 'gpt'
+
+  // Timestamps
+  createdAt             DateTime @default(now())
+  completedAt           DateTime?
+
+  // Relationships
+  org                   Org?     @relation(fields: [orgId], references: [id], onDelete: SetNull)
+  user                  User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  toolLogs              ToolExecutionLog[]
+  browserEvents         BrowserAuditEvent[]
+
+  @@index([requestId])
+  @@index([sessionId])
+  @@index([userId])
+  @@index([orgId])
+  @@index([createdAt])
+  @@index([status])
+  @@map("agentic_job_execution")
+}
+
+model ToolExecutionLog {
+  id                    String   @id @default(cuid())
+  agenticJobId          String
+  toolName              String
+  input                 Json
+  output                Json?
+  success               Boolean
+  error                 String?
+
+  startedAt             DateTime
+  completedAt           DateTime?
+  durationMs            Int?
+
+  agenticJob            AgenticJobExecution @relation(fields: [agenticJobId], references: [id], onDelete: Cascade)
+
+  @@index([agenticJobId])
+  @@index([toolName])
+  @@index([success])
+  @@map("tool_execution_log")
+}
+
+model BrowserAuditEvent {
+  id                    String   @id @default(cuid())
+  agenticJobId          String?
+  sessionId             String
+
+  action                String   // 'navigate' | 'click' | 'input' | 'extract' | 'screenshot'
+  url                   String?
+  selector              String?
+  success               Boolean
+  risk                  String?  // 'safe' | 'warning' | 'blocked'
+
+  timestamp             DateTime @default(now())
+
+  agenticJob            AgenticJobExecution? @relation(fields: [agenticJobId], references: [id], onDelete: SetNull)
+
+  @@index([sessionId])
+  @@index([agenticJobId])
+  @@index([risk])
+  @@index([timestamp])
+  @@map("browser_audit_event")
+}
+
+model AgenticSessionMemory {
+  id                    String   @id @default(cuid())
+  sessionId             String   @unique
+  userId                String?
+  orgId                 String?
+
+  // Memory layers
+  userIntent            String?
+  normalizedIntent      String?
+  facts                 Json     @default("{}")
+  constraints           Json     @default("{}")
+  riskFlags             String[] @default([])
+  agentNotes            String[] @default([])
+
+  // Outputs & decisions
+  outputs               Json     @default("{}")
+  decisions             Json     @default("[]") // DecisionRecord[]
+
+  // Metadata
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  lastAccessedAt        DateTime @updatedAt
+
+  user                  User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  org                   Org?     @relation(fields: [orgId], references: [id], onDelete: SetNull)
+
+  @@index([sessionId])
+  @@index([userId])
+  @@index([orgId])
+  @@map("agentic_session_memory")
+}

@@ -33,3 +33,5 @@ export {
   defaultObservability,
 } from './observability';
 export type { ObservabilityProvider, ObservabilityEvent, MetricsEvent, AgenticMetrics, AlertThresholds } from './observability';
+
+export { initializeObservability, getObservability, getAnomalyDetector } from './observability-setup';

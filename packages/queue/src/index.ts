@@ -9,3 +9,6 @@ export {
   executeAgenticBotJob,
 } from './agentic-bot-job';
 export type { AgenticBotJobData, AgenticJobResult, AgenticJobMetrics } from './agentic-bot-job';
+
+export { AgenticBotWorker, createAgenticBotHandler } from './agentic-bot-worker';
+export type { AgenticBotWorkerConfig } from './agentic-bot-worker';

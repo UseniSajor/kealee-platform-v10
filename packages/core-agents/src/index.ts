@@ -29,3 +29,5 @@ export {
   defaultObservability,
 } from "./runtime/observability";
 export type { ObservabilityProvider, ObservabilityEvent, MetricsEvent, AgenticMetrics, AlertThresholds } from "./runtime/observability";
+
+export { initializeObservability, getObservability, getAnomalyDetector } from "./runtime/observability-setup";
