@@ -15,7 +15,7 @@
  * Feature flag: AGENTIC_DESIGN_BOT=true
  */
 
-import { AgenticBot, type AgenticBotConfig } from '@kealee/core-bots';
+import { AgenticBot, type AgenticBotConfig } from './agentic-bot-base';
 import type { SessionMemory } from '@kealee/core-agents';
 
 const DESIGN_BOT_SYSTEM_PROMPT = `
@@ -180,37 +180,3 @@ to ground your designs in local building codes and standards for ${input.locatio
 `;
   }
 }
-
-/**
- * Migration Example: Using DesignBotAgentic
- *
- * Before (EnterpriseBot):
- * ```typescript
- * const bot = new DesignBotEnterprise();
- * const result = await bot.execute({
- *   projectId: 'proj_123',
- *   projectType: 'kitchen',
- *   squareFeet: 250,
- *   budget: 75000,
- *   stylePreferences: ['modern'],
- *   formData: {...}
- * });
- * ```
- *
- * After (AgenticBot):
- * ```typescript
- * const bot = new DesignBotAgentic();
- * const message = bot.buildDesignRequest({
- *   projectType: 'kitchen',
- *   location: 'Washington, DC',
- *   squareFeet: 250,
- *   budget: 75000,
- *   stylePreferences: ['modern'],
- * });
- * const result = await bot.handleMessage(message, {
- *   sessionId: 'session_123',
- *   projectId: 'proj_123',
- * });
- * const output = JSON.parse(result);
- * ```
- */

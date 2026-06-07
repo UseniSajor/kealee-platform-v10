@@ -9,6 +9,8 @@ export type { LLMResponse, LLMSource } from './llm-fallback';
 export type { LLMStatusReport } from './llm-config';
 export type { RagToolInput, RagToolOutput } from './rag-tool';
 export type { AgenticBotConfig } from './agentic-bot-base';
+export { DesignBotAgentic } from './design-bot-agentic';
+export type { DesignBotInput, DesignBotOutput, DesignConcept } from './design-bot-agentic';
 
 // Orgo: Organizational Structure Layer
 export {
