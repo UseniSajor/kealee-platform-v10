@@ -4,19 +4,25 @@ import { useState, useEffect } from 'react'
 import { Map, MapPin, DollarSign, Ruler, ChevronRight, Plus, Filter, Layers, Cpu, Box, AlertCircle } from 'lucide-react'
 
 // ── v20 Seed: Lifecycle Phases ──────────────────────────────
+function normalizePhase(phase: string | null | undefined): string {
+  const p = (phase ?? 'IDEA').toUpperCase().trim();
+  if (p === 'FEASIBILITY' || p === 'CONCEPT' || p === 'LAND' || p === 'FEASIBILITY STUDY') return 'IDEA';
+  if (p === 'PRECONSTRUCTION' || p === 'COSTING') return 'ESTIMATE';
+  if (p === 'PERMITS') return 'PERMIT';
+  if (p === 'CONTRACTOR_MATCH') return 'CONTRACTOR';
+  if (p === 'CONSTRUCTION' || p === 'INSPECTIONS') return 'EXECUTION';
+  if (p === 'CLOSEOUT' || p === 'COMPLETED' || p === 'OPERATIONS' || p === 'ARCHIVE' || p === 'PAYMENTS') return 'COMPLETION';
+  return p;
+}
+
 const LIFECYCLE_PHASES = [
   { key: 'IDEA', name: 'Idea', order: 1 },
-  { key: 'LAND', name: 'Land Acquisition & Analysis', order: 2 },
-  { key: 'FEASIBILITY', name: 'Feasibility Study', order: 3 },
-  { key: 'DESIGN', name: 'Design & Architecture', order: 4 },
-  { key: 'PERMITS', name: 'Permitting & Entitlements', order: 5 },
-  { key: 'PRECONSTRUCTION', name: 'Pre-Construction', order: 6 },
-  { key: 'CONSTRUCTION', name: 'Construction', order: 7 },
-  { key: 'INSPECTIONS', name: 'Inspections & QA', order: 8 },
-  { key: 'PAYMENTS', name: 'Payments & Finance', order: 9 },
-  { key: 'CLOSEOUT', name: 'Closeout', order: 10 },
-  { key: 'OPERATIONS', name: 'Operations & Maintenance', order: 11 },
-  { key: 'ARCHIVE', name: 'Archive', order: 12 },
+  { key: 'DESIGN', name: 'Design', order: 2 },
+  { key: 'ESTIMATE', name: 'Estimate', order: 3 },
+  { key: 'PERMIT', name: 'Permit', order: 4 },
+  { key: 'CONTRACTOR', name: 'Contractor Match', order: 5 },
+  { key: 'EXECUTION', name: 'Project Execution', order: 6 },
+  { key: 'COMPLETION', name: 'Completion', order: 7 },
 ] as const
 
 // ── v20 Seed: Project Types ────────────────────────────────
@@ -117,21 +123,16 @@ const PROJECTS = [
   },
 ]
 
-const PHASE_FILTERS = ['All', 'LAND', 'FEASIBILITY', 'DESIGN', 'PERMITS', 'CONSTRUCTION', 'OPERATIONS'] as const
+const PHASE_FILTERS = ['All', 'IDEA', 'DESIGN', 'ESTIMATE', 'PERMIT', 'CONTRACTOR', 'EXECUTION', 'COMPLETION'] as const
 
 const phaseColors: Record<string, string> = {
-  IDEA: 'bg-gray-100 text-gray-700',
-  LAND: 'bg-purple-100 text-purple-700',
-  FEASIBILITY: 'bg-indigo-100 text-indigo-700',
-  DESIGN: 'bg-blue-100 text-blue-700',
-  PERMITS: 'bg-amber-100 text-amber-700',
-  PRECONSTRUCTION: 'bg-orange-100 text-orange-700',
-  CONSTRUCTION: 'bg-teal-100 text-teal-700',
-  INSPECTIONS: 'bg-cyan-100 text-cyan-700',
-  PAYMENTS: 'bg-green-100 text-green-700',
-  CLOSEOUT: 'bg-emerald-100 text-emerald-700',
-  OPERATIONS: 'bg-lime-100 text-lime-700',
-  ARCHIVE: 'bg-stone-100 text-stone-700',
+  IDEA:        'bg-slate-100 text-slate-700',
+  DESIGN:      'bg-blue-100 text-blue-700',
+  ESTIMATE:    'bg-amber-100 text-amber-700 border border-amber-200/50',
+  PERMIT:      'bg-orange-100 text-orange-700',
+  CONTRACTOR:  'bg-violet-100 text-violet-700',
+  EXECUTION:   'bg-teal-100 text-teal-700',
+  COMPLETION:  'bg-green-100 text-green-700',
 }
 
 const tierColors: Record<string, string> = {
@@ -142,7 +143,7 @@ const tierColors: Record<string, string> = {
 
 export default function PipelinePage() {
   const [phaseFilter, setPhaseFilter] = useState<string>('All')
-  const [projects, setProjects] = useState(PROJECTS)
+  const [projects, setProjects] = useState(() => PROJECTS.map(p => ({ ...p, phase: normalizePhase(p.phase) })))
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [isLive, setIsLive] = useState(false)
@@ -166,7 +167,10 @@ export default function PipelinePage() {
           const data = await response.json()
           const apiProjects = Array.isArray(data) ? data : data.projects || []
           if (apiProjects.length > 0) {
-            setProjects(apiProjects)
+            setProjects(apiProjects.map((p: any) => ({
+              ...p,
+              phase: normalizePhase(p.lifecyclePhase || p.phase),
+            })))
             setIsLive(true)
           }
         }

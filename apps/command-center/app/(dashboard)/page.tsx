@@ -159,36 +159,47 @@ export default function CommandCenterOverview() {
   const displayEvents = data?.recentEvents ?? []
 
   return (
-    <div>
+    <div className="space-y-6">
       {/* Header */}
-      <div className="mb-6 flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-800 pb-5">
         <div>
-          <h1 className="font-display text-2xl font-bold text-white">Command Center</h1>
-          <p className="mt-1 text-sm" style={{ color: 'rgba(255,255,255,0.5)' }}>
-            {loading
-              ? '○ Connecting to Supabase…'
-              : isLive
-                ? `● Live · ${pathDist.length} service types · updated ${data ? timeAgo(data.generatedAt) : '—'}`
-                : `○ Error: ${error}`}
-          </p>
+          <h1 className="font-sans text-3xl font-extrabold text-white tracking-tight leading-tight">Command Center</h1>
+          <div className="mt-2 flex items-center gap-2">
+            {!loading && isLive ? (
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-green-500/10 text-green-400 px-2.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wide border border-green-500/20">
+                <span className="h-1.5 w-1.5 rounded-full bg-green-400 animate-ping" />
+                Live Sync
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-500/10 text-slate-400 px-2.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wide border border-slate-500/20">
+                Offline
+              </span>
+            )}
+            <p className="text-xs text-slate-400 font-semibold uppercase">
+              {loading
+                ? 'Connecting to platform databases…'
+                : isLive
+                ? `${pathDist.length} service types · updated ${data ? timeAgo(data.generatedAt) : '—'}`
+                : `Error: ${error}`}
+            </p>
+          </div>
         </div>
         <button
           onClick={() => load(true)}
           disabled={refreshing}
-          className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors"
-          style={{ color: isLive ? '#38A169' : 'rgba(255,255,255,0.3)', backgroundColor: 'rgba(255,255,255,0.05)' }}
+          className="flex items-center gap-2 rounded-xl px-5 py-2.5 text-xs font-bold transition-all shadow hover:scale-[1.02] border border-slate-700 bg-slate-800 text-slate-300 disabled:opacity-50"
         >
           <RefreshCw className={`h-3.5 w-3.5 ${(loading || refreshing) ? 'animate-spin' : ''}`} />
-          {refreshing ? 'Refreshing…' : isLive ? 'Live' : 'Retry'}
+          {refreshing ? 'Refreshing…' : 'Refresh Telemetry'}
         </button>
       </div>
 
       {/* Loading state */}
       {loading && (
-        <div className="flex items-center justify-center py-20">
-          <div className="text-center">
-            <Loader2 className="h-10 w-10 animate-spin mx-auto mb-4" style={{ color: '#2ABFBF' }} />
-            <p className="text-sm" style={{ color: 'rgba(255,255,255,0.4)' }}>Loading live data from Supabase…</p>
+        <div className="flex items-center justify-center py-24">
+          <div className="text-center space-y-3">
+            <Loader2 className="h-10 w-10 animate-spin mx-auto text-[#2ABFBF]" />
+            <p className="text-sm font-semibold text-slate-400 tracking-wide">Loading command data streams…</p>
           </div>
         </div>
       )}
@@ -196,18 +207,18 @@ export default function CommandCenterOverview() {
       {!loading && (
         <>
           {/* Top Stats */}
-          <div className="mb-8 grid grid-cols-2 gap-4 lg:grid-cols-4">
+          <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
             {displayStats.map((stat) => (
-              <div key={stat.label} className="rounded-xl border p-5"
-                style={{ borderColor: '#2A3D5F', backgroundColor: '#1A2B4A' }}>
+              <div key={stat.label} className="rounded-2xl border border-slate-800 bg-[#111C30] p-5 shadow-lg relative overflow-hidden group">
+                <div className="absolute top-0 left-0 w-full h-1" style={{ backgroundColor: stat.color }} />
                 <div className="flex items-center gap-3">
-                  <div className="rounded-lg p-2.5" style={{ backgroundColor: stat.bg }}>
+                  <div className="rounded-xl p-2.5 shrink-0" style={{ backgroundColor: stat.bg }}>
                     <stat.icon className="h-5 w-5" style={{ color: stat.color }} />
                   </div>
-                  <div>
-                    <p className="text-xs" style={{ color: 'rgba(255,255,255,0.5)' }}>{stat.label}</p>
-                    <p className="text-xl font-bold text-white">{stat.value}</p>
-                    <p className="text-xs" style={{ color: 'rgba(255,255,255,0.3)' }}>{stat.change}</p>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400">{stat.label}</p>
+                    <p className="text-xl font-black font-sans tracking-tight text-white mt-0.5">{stat.value}</p>
+                    <p className="text-[9px] font-bold text-slate-500 mt-0.5 uppercase tracking-wide leading-tight">{stat.change}</p>
                   </div>
                 </div>
               </div>
@@ -215,62 +226,58 @@ export default function CommandCenterOverview() {
           </div>
 
           {/* Service Type Distribution */}
-          <div className="mb-6 rounded-xl border p-5"
-            style={{ borderColor: '#2A3D5F', backgroundColor: '#1A2B4A' }}>
-            <h2 className="font-display mb-3 text-sm font-semibold text-white">
-              Intake Distribution by Service Type ({pathDist.length} types · {totalCount} total)
+          <div className="rounded-3xl border border-slate-800 bg-[#111C30] p-6 shadow-lg">
+            <h2 className="font-sans mb-4 text-xs font-extrabold text-slate-400 uppercase tracking-widest">
+              Intake Distribution by Service ({pathDist.length} types · {totalCount} total)
             </h2>
             {pathDist.length === 0 ? (
-              <p className="text-xs py-4 text-center" style={{ color: 'rgba(255,255,255,0.3)' }}>
-                No intake data yet.
+              <p className="text-xs py-4 text-center text-slate-500 font-semibold">
+                No intake records logged.
               </p>
             ) : (
-              <>
-                <div className="flex h-8 w-full overflow-hidden rounded-lg">
+              <div className="space-y-4">
+                <div className="flex h-5 w-full overflow-hidden rounded-full bg-slate-900 border border-slate-800">
                   {pathDist.map((p, i) => {
                     const width = (p.count / totalCount) * 100
                     return (
                       <div
                         key={p.key}
-                        className="flex items-center justify-center text-xs font-bold text-white"
-                        style={{ width: `${width}%`, backgroundColor: PHASE_COLORS[i % PHASE_COLORS.length], minWidth: '20px' }}
+                        className="flex items-center justify-center text-[9px] font-extrabold text-white shrink-0 border-r border-slate-950/20 last:border-0"
+                        style={{ width: `${width}%`, backgroundColor: PHASE_COLORS[i % PHASE_COLORS.length], minWidth: '15px' }}
                         title={`${LIFECYCLE_PHASE_LABELS[p.key] ?? p.name}: ${p.count}`}
                       >
-                        {p.count}
+                        {p.count > 0 && p.count}
                       </div>
                     )
                   })}
                 </div>
-                <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1">
+                <div className="flex flex-wrap gap-x-4 gap-y-2 pt-2 border-t border-slate-800/40">
                   {pathDist.map((p, i) => (
-                    <span key={p.key} className="flex items-center gap-1 text-xs"
-                      style={{ color: 'rgba(255,255,255,0.4)' }}>
-                      <span className="inline-block h-2 w-2 rounded-full"
+                    <span key={p.key} className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-400">
+                      <span className="inline-block h-2 w-2 rounded-full shrink-0"
                         style={{ backgroundColor: PHASE_COLORS[i % PHASE_COLORS.length] }} />
-                      {LIFECYCLE_PHASE_LABELS[p.key] ?? p.name} ({p.count})
+                      {LIFECYCLE_PHASE_LABELS[p.key] ?? p.name} <span className="text-slate-500 font-bold ml-0.5">({p.count})</span>
                     </span>
                   ))}
                 </div>
-              </>
+              </div>
             )}
           </div>
 
           {/* Status Breakdown */}
           {stats && (
-            <div className="mb-6 rounded-xl border p-5"
-              style={{ borderColor: '#2A3D5F', backgroundColor: '#1A2B4A' }}>
-              <h2 className="font-display mb-3 text-sm font-semibold text-white">Intake Status Breakdown</h2>
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <div className="rounded-3xl border border-slate-800 bg-[#111C30] p-6 shadow-lg">
+              <h2 className="font-sans mb-4 text-xs font-extrabold text-slate-400 uppercase tracking-widest">Intake Status Matrix</h2>
+              <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
                 {[
-                  { label: 'Total', value: stats.totalIntakes, color: '#2ABFBF' },
+                  { label: 'Total Logs', value: stats.totalIntakes, color: '#2ABFBF' },
                   { label: 'Paid / Ready', value: stats.paidIntakes, color: '#38A169' },
-                  { label: 'Active (new)', value: stats.activeIntakes, color: '#F59E0B' },
+                  { label: 'Active Drafts', value: stats.activeIntakes, color: '#F59E0B' },
                   { label: 'Last 30 Days', value: stats.recentIntakes30d, color: '#A78BFA' },
                 ].map((item) => (
-                  <div key={item.label} className="rounded-lg p-3 text-center"
-                    style={{ backgroundColor: 'rgba(15, 26, 46, 0.5)' }}>
-                    <p className="text-2xl font-bold" style={{ color: item.color }}>{item.value}</p>
-                    <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.4)' }}>{item.label}</p>
+                  <div key={item.label} className="rounded-2xl p-4 text-center bg-slate-950/40 border border-slate-800/60 shadow-inner">
+                    <p className="text-3xl font-black font-sans tracking-tight" style={{ color: item.color }}>{item.value}</p>
+                    <p className="text-[10px] font-bold mt-1.5 uppercase tracking-wider text-slate-400">{item.label}</p>
                   </div>
                 ))}
               </div>
@@ -280,27 +287,30 @@ export default function CommandCenterOverview() {
           {/* Event Feed + Integrations */}
           <div className="grid gap-6 lg:grid-cols-2">
             {/* Live Event Feed */}
-            <div className="rounded-xl border p-6"
-              style={{ borderColor: '#2A3D5F', backgroundColor: '#1A2B4A' }}>
-              <h2 className="font-display mb-4 text-lg font-semibold text-white">
-                Live Intake Feed
-                {isLive && <span className="ml-2 text-xs font-normal" style={{ color: '#38A169' }}>● live</span>}
+            <div className="rounded-3xl border border-slate-800 bg-[#111C30] p-6 shadow-lg">
+              <h2 className="font-sans mb-4 text-sm font-bold text-white flex items-center justify-between">
+                <span>Live Intake Log Feed</span>
+                {isLive && (
+                  <span className="inline-flex items-center gap-1 text-[10px] font-extrabold uppercase text-green-400 tracking-wider">
+                    <span className="h-1.5 w-1.5 rounded-full bg-green-400 animate-pulse" />
+                    live stream
+                  </span>
+                )}
               </h2>
               {displayEvents.length === 0 ? (
-                <p className="text-xs py-8 text-center" style={{ color: 'rgba(255,255,255,0.3)' }}>
-                  No intake events yet.
+                <p className="text-xs py-12 text-center text-slate-500 font-semibold">
+                  No log entries recorded.
                 </p>
               ) : (
                 <div className="space-y-3">
                   {displayEvents.map((event, i) => (
-                    <div key={event.id ?? i} className="flex items-start gap-3 rounded-lg p-3"
-                      style={{ backgroundColor: 'rgba(15, 26, 46, 0.5)' }}>
-                      <div className="mt-0.5 h-2 w-2 flex-shrink-0 rounded-full" style={{
-                        backgroundColor: event.type === 'success' ? '#38A169' : event.type === 'error' ? '#E53E3E' : '#2ABFBF'
+                    <div key={event.id ?? i} className="flex items-start gap-3 rounded-xl p-4 bg-slate-950/40 border border-slate-800/60 shadow-inner">
+                      <div className="mt-1.5 h-2 w-2 flex-shrink-0 rounded-full shrink-0" style={{
+                        backgroundColor: event.type === 'success' ? '#38A169' : event.type === 'error' ? '#EF4444' : '#2ABFBF'
                       }} />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm truncate" style={{ color: 'rgba(255,255,255,0.8)' }}>{event.message}</p>
-                        <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.3)' }}>
+                      <div className="flex-1 min-w-0 pr-2">
+                        <p className="text-xs font-semibold text-slate-300 leading-relaxed break-words">{event.message}</p>
+                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wide mt-1">
                           {timeAgo(event.timestamp)}
                         </p>
                       </div>
@@ -311,32 +321,31 @@ export default function CommandCenterOverview() {
             </div>
 
             {/* Integration Health */}
-            <div className="rounded-xl border p-6"
-              style={{ borderColor: '#2A3D5F', backgroundColor: '#1A2B4A' }}>
-              <h2 className="font-display mb-4 text-lg font-semibold text-white">Integration Health</h2>
+            <div className="rounded-3xl border border-slate-800 bg-[#111C30] p-6 shadow-lg">
+              <h2 className="font-sans mb-4 text-sm font-bold text-white">Integration Cluster Health</h2>
               {displayIntegrations.length === 0 ? (
-                <p className="text-xs py-8 text-center" style={{ color: 'rgba(255,255,255,0.3)' }}>
-                  No integration data.
+                <p className="text-xs py-12 text-center text-slate-500 font-semibold">
+                  No registered cluster systems.
                 </p>
               ) : (
                 <div className="space-y-3">
                   {displayIntegrations.map((int) => {
                     const isOk      = int.status === 'operational'
                     const isUnknown = int.status === 'unknown'
-                    const color = isOk ? '#38A169' : isUnknown ? '#94A3B8' : '#E8793A'
-                    const bg    = isOk ? 'rgba(56,161,105,0.15)' : isUnknown ? 'rgba(148,163,184,0.15)' : 'rgba(232,121,58,0.15)'
+                    const color = isOk ? '#38A169' : isUnknown ? '#94A3B8' : '#EF4444'
+                    const bg    = isOk ? 'rgba(56,161,105,0.1)' : isUnknown ? 'rgba(148,163,184,0.1)' : 'rgba(239,68,68,0.1)'
+                    const border = isOk ? 'rgba(56,161,105,0.2)' : isUnknown ? 'rgba(148,163,184,0.2)' : 'rgba(239,68,68,0.2)'
                     return (
-                      <div key={int.name} className="flex items-center justify-between rounded-lg p-3"
-                        style={{ backgroundColor: 'rgba(15, 26, 46, 0.5)' }}>
+                      <div key={int.name} className="flex items-center justify-between rounded-xl p-4 bg-slate-950/40 border border-slate-800/60 shadow-inner">
                         <div className="flex items-center gap-3">
-                          <Plug className="h-4 w-4" style={{ color: 'rgba(255,255,255,0.4)' }} />
-                          <span className="text-sm font-medium" style={{ color: 'rgba(255,255,255,0.8)' }}>{int.name}</span>
+                          <Plug className="h-4.5 w-4.5 text-slate-500" />
+                          <span className="text-xs font-bold text-slate-200">{int.name}</span>
                         </div>
                         <div className="flex items-center gap-3">
-                          <span className="text-xs" style={{ color: 'rgba(255,255,255,0.3)' }}>{int.latency}</span>
-                          <span className="flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium"
-                            style={{ backgroundColor: bg, color }}>
-                            <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: color }} />
+                          <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">{int.latency}</span>
+                          <span className="flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[9px] font-extrabold uppercase tracking-wide border shadow"
+                            style={{ backgroundColor: bg, color, borderColor: border }}>
+                            <span className="h-1 w-1 rounded-full" style={{ backgroundColor: color }} />
                             {int.status}
                           </span>
                         </div>

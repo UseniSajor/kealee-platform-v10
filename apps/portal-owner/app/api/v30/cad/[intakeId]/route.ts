@@ -3,11 +3,11 @@ import { createClient } from '@supabase/supabase-js'
 
 export const dynamic = 'force-dynamic'
 
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  { auth: { persistSession: false } },
-)
+function getSupabaseAdmin() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co'
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY || 'placeholder-key'
+  return createClient(url, key, { auth: { persistSession: false } })
+}
 
 /** GET /api/v30/cad/:intakeId — DXF from form_data.v30FloorplanDeliverables (owner portal). */
 export async function GET(
@@ -19,6 +19,7 @@ export async function GET(
     return NextResponse.json({ error: 'Missing intakeId' }, { status: 400 })
   }
 
+  const supabaseAdmin = getSupabaseAdmin()
   const { data: row, error } = await supabaseAdmin
     .from('public_intake_leads')
     .select('form_data')

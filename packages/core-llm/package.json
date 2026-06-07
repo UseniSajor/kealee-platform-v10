@@ -53,6 +53,7 @@
     "@kealee/database": "workspace:*",
     "@kealee/core-agents": "workspace:*",
     "@kealee/seeds": "workspace:*",
+    "@kealee/database": "workspace:*",
     "bottleneck": "^2.19.5",
     "openai": "^4.77.0",
     "zod": "^3.22.0",

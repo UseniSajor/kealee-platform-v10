@@ -15,8 +15,7 @@
     "dev": "tsc --watch"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.74.0",
-    "@kealee/core-bots": "workspace:*"
+    "@anthropic-ai/sdk": "^0.74.0"
   },
   "devDependencies": {
     "@types/node": "20.19.39",

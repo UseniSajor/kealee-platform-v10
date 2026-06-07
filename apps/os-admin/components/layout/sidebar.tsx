@@ -24,6 +24,8 @@ import {
   ClipboardCheck,
   Database,
   FlaskConical,
+  Sparkles,
+  Calculator,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -37,6 +39,8 @@ const navigation = [
   { name: 'Orders', href: '/orders', icon: ShoppingCart },
   { name: 'Disputes', href: '/disputes', icon: Gavel },
   { name: 'Automation', href: '/automation', icon: Bot },
+  { name: 'AI Bot Prompts', href: '/automation/bots', icon: Sparkles },
+  { name: 'Pricing Formulas', href: '/automation/pricing', icon: Calculator },
   { name: 'Command Center', href: '/command-center', icon: Radar },
   { name: 'Monitoring', href: '/monitoring', icon: Activity },
   { name: 'Jurisdictions', href: '/jurisdictions', icon: MapPinned },

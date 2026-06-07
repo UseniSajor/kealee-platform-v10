@@ -9,6 +9,8 @@ import { cookies } from 'next/headers'
 import { getBuildPathUpsells } from '@kealee/core-rules'
 import { ownedProductsFromRows } from '@/lib/build-path-owned'
 
+export const dynamic = 'force-dynamic'
+
 export async function GET(req: NextRequest) {
   const intakeId = req.nextUrl.searchParams.get('intakeId')
   const projectPath = req.nextUrl.searchParams.get('projectPath')

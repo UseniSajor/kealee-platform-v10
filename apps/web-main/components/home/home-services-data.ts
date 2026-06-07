@@ -75,24 +75,6 @@ export const HOME_JOURNEY_SERVICES: HomeJourneyService[] = [
     videoSrc: '/media/service-videos/home-design-video.mp4',
   },
   {
-    id: 'permits',
-    // Kealee files the permit; jurisdiction determines approval timing (4–12 weeks).
-    title: 'Permit Filing',
-    subtitle: 'Kealee files · jurisdiction approves',
-    description:
-      'Licensed specialists prepare and submit every form to DC, MD, or VA agencies. Kealee manages all comment cycles. Permit approval is set by the jurisdiction — typically 4–12 weeks after submission.',
-    priceHint: usdRange(PERMIT_BASIC_PRICE, PERMIT_PREMIUM_PRICE),
-    ctaText: 'File Permits',
-    ctaLink: '/permits',
-    gradientFrom: '#2E5090',
-    gradientTo: '#C38B5F',
-    progress: 50,
-    mediaType: 'video',
-    photoSrc: PHOTOS.permits,
-    photoAlt: 'Architect reviewing blueprints at residential construction site',
-    videoSrc: '/media/service-videos/home-permits-video.mp4',
-  },
-  {
     id: 'estimate',
     // Cost estimate document — delivered with the concept package, not a construction milestone.
     title: 'Cost Estimation',
@@ -104,11 +86,29 @@ export const HOME_JOURNEY_SERVICES: HomeJourneyService[] = [
     ctaLink: '/estimate',
     gradientFrom: '#C38B5F',
     gradientTo: '#1F252A',
-    progress: 75,
+    progress: 50,
     mediaType: 'video',
     photoSrc: PHOTOS.estimate,
     photoAlt: 'Construction materials and lumber at active residential job site',
     videoSrc: '/media/service-videos/home-estimate-video.mp4',
+  },
+  {
+    id: 'permits',
+    // Kealee files the permit; jurisdiction determines approval timing (4–12 weeks).
+    title: 'Permit Filing',
+    subtitle: 'Kealee files · jurisdiction approves',
+    description:
+      'Licensed specialists prepare and submit every form to DC, MD, or VA agencies. Kealee manages all comment cycles. Permit approval is set by the jurisdiction — typically 4–12 weeks after submission.',
+    priceHint: usdRange(PERMIT_BASIC_PRICE, PERMIT_PREMIUM_PRICE),
+    ctaText: 'File Permits',
+    ctaLink: '/permits',
+    gradientFrom: '#2E5090',
+    gradientTo: '#C38B5F',
+    progress: 75,
+    mediaType: 'video',
+    photoSrc: PHOTOS.permits,
+    photoAlt: 'Architect reviewing blueprints at residential construction site',
+    videoSrc: '/media/service-videos/home-permits-video.mp4',
   },
   {
     id: 'build',

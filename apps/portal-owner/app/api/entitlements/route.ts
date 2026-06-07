@@ -7,6 +7,8 @@ import { createClient } from '@supabase/supabase-js'
 import { cookies } from 'next/headers'
 import { entitlementsFromIntakePaths } from '@kealee/auth'
 
+export const dynamic = 'force-dynamic'
+
 export async function GET() {
   const cookieStore = cookies()
   const supabaseSession = createServerClient(

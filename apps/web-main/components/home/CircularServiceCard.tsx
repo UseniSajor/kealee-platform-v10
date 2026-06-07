@@ -4,17 +4,17 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { useEffect, useRef, useState } from 'react'
-import { Calculator, FileCheck, Hammer, Palette, Play } from 'lucide-react'
+import { Calculator, FileCheck, Hammer, Palette, Play, ArrowRight } from 'lucide-react'
 import type { HomeJourneyService, HomeServiceId } from './home-services-data'
 import { trackEvent } from '@/lib/analytics'
 
-const RING_RADIUS = 45
+const RING_RADIUS = 35
 const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS
 
 const ICONS: Record<HomeServiceId, typeof Palette> = {
   design: Palette,
-  permits: FileCheck,
   estimate: Calculator,
+  permits: FileCheck,
   build: Hammer,
 }
 
@@ -57,23 +57,23 @@ export function CircularServiceCard({ service, index }: CircularServiceCardProps
     <motion.article
       ref={rootRef}
       variants={{
-        hidden: { opacity: 0, scale: 0.92 },
+        hidden: { opacity: 0, y: 15 },
         visible: {
           opacity: 1,
-          scale: 1,
+          y: 0,
           transition: { duration: 0.5, delay: index * 0.1, ease: 'easeOut' },
         },
       }}
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true, amount: 0.2 }}
-      className="relative w-full h-full min-h-0 min-w-0 flex items-center justify-center"
+      className="relative w-full h-full min-h-[260px] flex items-center justify-center"
       aria-labelledby={`service-${service.id}-title`}
     >
       <motion.div
-        className="relative aspect-square w-full h-full max-w-full max-h-full rounded-full cursor-pointer group overflow-hidden shadow-xl ring-1 ring-black/10"
-        whileHover={{ scale: 1.02 }}
-        transition={{ type: 'spring', stiffness: 300, damping: 24 }}
+        className="relative w-full h-full rounded-2xl cursor-pointer group overflow-hidden shadow-lg border border-slate-200 bg-white"
+        whileHover={{ y: -4, shadow: '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)' }}
+        transition={{ type: 'spring', stiffness: 350, damping: 26 }}
         onMouseEnter={() => {
           setHovered(true)
           trackEvent('cta_click', {
@@ -120,108 +120,103 @@ export function CircularServiceCard({ service, index }: CircularServiceCardProps
             src={service.photoSrc}
             alt={service.photoAlt}
             fill
-            className={`object-cover ${service.id === 'permits' && hovered ? 'scale-105' : ''} transition-transform duration-700`}
-            sizes="(max-width: 640px) 45vw, (max-width: 1024px) 40vw, 360px"
+            className={`object-cover group-hover:scale-[1.03] transition-transform duration-700`}
+            sizes="(max-width: 640px) 90vw, (max-width: 1024px) 45vw, 550px"
             priority={index < 2}
           />
-          {service.id === 'permits' && hovered && (
-            <div
-              className="absolute inset-0 bg-gradient-to-b from-transparent via-white/10 to-transparent animate-pulse pointer-events-none"
-              aria-hidden
-            />
-          )}
         </div>
 
         {/* Readability overlays */}
-        <div className="absolute inset-0 z-[2] bg-gradient-to-t from-black/85 via-black/45 to-black/20" />
+        <div className="absolute inset-0 z-[2] bg-gradient-to-t from-slate-950 via-slate-900/60 to-black/35" />
         <div
-          className={`absolute inset-0 z-[2] opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none`}
+          className={`absolute inset-0 z-[2] opacity-0 group-hover:opacity-20 transition-opacity duration-300 pointer-events-none`}
           style={{
-            background: `linear-gradient(135deg, ${service.gradientFrom}99 0%, ${service.gradientTo}66 100%)`,
+            background: `linear-gradient(135deg, ${service.gradientFrom} 0%, ${service.gradientTo} 100%)`,
           }}
         />
 
-        {/* Progress ring */}
-        <svg className="absolute inset-0 z-[3] h-full w-full -rotate-90" viewBox="0 0 100 100" aria-hidden>
-          <circle cx="50" cy="50" r={RING_RADIUS} fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="2" />
-          <circle
-            cx="50"
-            cy="50"
-            r={RING_RADIUS}
-            fill="none"
-            stroke="rgba(255,255,255,0.9)"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-            strokeDasharray={RING_CIRCUMFERENCE}
-            strokeDashoffset={ringOffset}
-            className="transition-all duration-500"
-          />
-        </svg>
+        {/* Step Badge */}
+        <span className="absolute top-4 left-4 z-10 rounded-lg bg-white/10 backdrop-blur-md border border-white/20 px-2.5 py-1 text-[9px] font-bold uppercase tracking-widest text-[#E8724B] shadow-sm">
+          Step 0{index + 1}
+        </span>
+
+        {/* Progress Ring Corner Badge */}
+        <div className="absolute top-4 right-4 z-10 flex items-center justify-center bg-slate-950/65 backdrop-blur-md rounded-full p-1.5 border border-white/15 h-10 w-10 shadow-md">
+          <svg className="absolute h-8.5 w-8.5 -rotate-90" viewBox="0 0 100 100" aria-hidden>
+            <circle cx="50" cy="50" r={RING_RADIUS} fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="6" />
+            <circle
+              cx="50"
+              cy="50"
+              r={RING_RADIUS}
+              fill="none"
+              stroke="#E8724B"
+              strokeWidth="9"
+              strokeLinecap="round"
+              strokeDasharray={RING_CIRCUMFERENCE}
+              strokeDashoffset={ringOffset}
+              className="transition-all duration-500"
+            />
+          </svg>
+          <span className="text-[9px] font-bold text-white tracking-tighter">{service.progress}%</span>
+        </div>
 
         {useVideo && videoReady && (
           <div
-            className="absolute top-3 right-3 z-[5] rounded-full bg-white/20 p-1.5 backdrop-blur-sm"
+            className="absolute bottom-4 right-4 z-[5] rounded-full bg-slate-900/50 p-1.5 backdrop-blur-sm border border-white/10"
             aria-label="Video preview playing"
           >
-            <Play className="h-3.5 w-3.5 fill-white text-white" aria-hidden />
+            <Play className="h-3 w-3 fill-white text-white" aria-hidden />
           </div>
         )}
 
-        {/* Content */}
-        <div className="absolute inset-0 z-[4] flex flex-col items-center justify-end text-center text-white px-4 pb-5 sm:px-6 sm:pb-7 lg:px-8 lg:pb-9">
-          <motion.div
-            animate={hovered ? { y: -4, scale: 1.05 } : { y: 0, scale: 1 }}
-            transition={{ duration: 0.25 }}
-            className="mb-2 sm:mb-3 drop-shadow-lg"
-          >
-            <Icon className="h-8 w-8 sm:h-10 sm:w-10 lg:h-11 lg:w-11" strokeWidth={1.5} aria-hidden />
-          </motion.div>
+        {/* Content Container */}
+        <div className="absolute inset-0 z-[4] flex flex-col justify-end text-left px-5 pb-5 sm:px-6 sm:pb-6 lg:px-8 lg:pb-7">
+          <div className="flex items-center gap-2.5 mb-2">
+            <div className="p-2 bg-[#E8724B] rounded-lg text-white shadow-md">
+              <Icon className="h-4.5 w-4.5 lg:h-5 lg:w-5" strokeWidth={2} aria-hidden />
+            </div>
+            <div>
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-300">
+                {service.subtitle}
+              </span>
+            </div>
+          </div>
 
           <h3
             id={`service-${service.id}-title`}
-            className="font-home-serif text-lg sm:text-xl md:text-2xl lg:text-[1.65rem] font-bold leading-tight drop-shadow-md"
+            className="font-home-serif text-xl sm:text-2xl font-bold leading-tight text-white drop-shadow-md"
           >
             {service.title}
           </h3>
-          <p className="font-home-sans mt-0.5 text-xs sm:text-sm lg:text-base text-white/85 drop-shadow-md">
-            {service.subtitle}
+
+          <p className="font-home-sans mt-2 text-xs lg:text-sm text-slate-200 line-clamp-2 max-w-[90%] leading-relaxed">
+            {service.description}
           </p>
 
-          <motion.p
-            initial={false}
-            animate={{
-              opacity: hovered ? 1 : 0,
-              maxHeight: hovered ? 96 : 0,
-              marginTop: hovered ? 8 : 0,
-            }}
-            transition={{ duration: 0.25 }}
-            className="font-home-sans max-w-[85%] overflow-hidden text-[11px] leading-snug text-white/95 sm:text-xs lg:text-sm"
-          >
-            {service.description}
-          </motion.p>
-
-          <p className="font-home-sans mt-2 text-[10px] text-white/75 sm:text-xs lg:text-sm">{service.priceHint}</p>
-
-          <Link
-            href={service.ctaLink}
-            className="mt-3 sm:mt-4"
-            aria-label={`${service.ctaText} — ${service.title}`}
-            onClick={() =>
-              trackEvent('cta_click', {
-                context: 'home_journey',
-                label: service.id,
-                href: service.ctaLink,
-              })
-            }
-          >
-            <motion.span
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.96 }}
-              className="inline-block rounded-full bg-white px-5 py-2 font-home-sans text-xs font-semibold text-charcoal shadow-lg hover:bg-gray-100 sm:px-6 sm:py-2.5 sm:text-sm lg:text-base"
+          <div className="mt-4 flex items-center justify-between border-t border-white/10 pt-3.5">
+            <span className="font-home-sans text-[11px] lg:text-xs font-semibold text-[#E8724B] tracking-wide">
+              {service.priceHint}
+            </span>
+            <Link
+              href={service.ctaLink}
+              aria-label={`${service.ctaText} — ${service.title}`}
+              onClick={() =>
+                trackEvent('cta_click', {
+                  context: 'home_journey',
+                  label: service.id,
+                  href: service.ctaLink,
+                })
+              }
             >
-              {service.ctaText}
-            </motion.span>
-          </Link>
+              <motion.span
+                whileHover={{ x: 3 }}
+                whileTap={{ scale: 0.97 }}
+                className="inline-flex items-center gap-1 text-[11px] lg:text-xs font-bold text-white hover:text-[#E8724B] transition-colors"
+              >
+                {service.ctaText} <ArrowRight className="w-3.5 h-3.5" />
+              </motion.span>
+            </Link>
+          </div>
         </div>
       </motion.div>
     </motion.article>

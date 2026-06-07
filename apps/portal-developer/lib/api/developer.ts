@@ -29,6 +29,17 @@ export interface DevStats {
   portfolioHealth: number
 }
 
+function normalizePhase(phase: string | null | undefined): string {
+  const p = (phase ?? 'IDEA').toUpperCase().trim();
+  if (p === 'FEASIBILITY' || p === 'CONCEPT' || p === 'LAND' || p === 'FEASIBILITY STUDY') return 'IDEA';
+  if (p === 'PRECONSTRUCTION' || p === 'COSTING') return 'ESTIMATE';
+  if (p === 'PERMITS') return 'PERMIT';
+  if (p === 'CONTRACTOR_MATCH') return 'CONTRACTOR';
+  if (p === 'CONSTRUCTION' || p === 'INSPECTIONS') return 'EXECUTION';
+  if (p === 'CLOSEOUT' || p === 'COMPLETED' || p === 'OPERATIONS' || p === 'ARCHIVE' || p === 'PAYMENTS') return 'COMPLETION';
+  return p;
+}
+
 export async function listDevProjects(): Promise<{ projects: DevProject[]; total: number }> {
   return apiFetch('/projects?limit=50')
 }
@@ -36,7 +47,7 @@ export async function listDevProjects(): Promise<{ projects: DevProject[]; total
 export async function getDevStats(): Promise<DevStats> {
   const data = await apiFetch<{ projects: DevProject[]; total: number }>('/projects?limit=100')
   const projects = data.projects ?? []
-  const active   = projects.filter(p => !['ARCHIVE', 'CLOSEOUT'].includes(p.lifecyclePhase ?? ''))
+  const active   = projects.filter(p => normalizePhase(p.lifecyclePhase) !== 'COMPLETION')
   const totalBudget = projects.reduce((s, p) => s + (p.totalBudget ?? 0), 0)
   const healthScores = projects.filter(p => p.twinHealthScore).map(p => p.twinHealthScore!)
   const avgHealth = healthScores.length ? Math.round(healthScores.reduce((a, b) => a + b) / healthScores.length) : 0

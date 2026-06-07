@@ -31,13 +31,25 @@ const readinessStatusConfig: Record<ReadinessStatus, { label: string; bg: string
   OVERRIDDEN:   { label: 'Overridden',   bg: 'rgba(128,90,213,0.1)', text: '#805AD5', icon: CheckCircle },
 }
 
+function normalizePhase(phase: string | null | undefined): string {
+  const p = (phase ?? 'IDEA').toUpperCase().trim();
+  if (p === 'FEASIBILITY' || p === 'CONCEPT') return 'IDEA';
+  if (p === 'PRECONSTRUCTION' || p === 'COSTING') return 'ESTIMATE';
+  if (p === 'PERMITS') return 'PERMIT';
+  if (p === 'CONTRACTOR_MATCH') return 'CONTRACTOR';
+  if (p === 'CONSTRUCTION') return 'EXECUTION';
+  if (p === 'CLOSEOUT' || p === 'COMPLETED') return 'COMPLETION';
+  return p;
+}
+
 const phaseStyles: Record<string, { bg: string; text: string }> = {
-  CONSTRUCTION:    { bg: 'rgba(42,191,191,0.1)', text: '#2ABFBF' },
-  CLOSEOUT:        { bg: 'rgba(56,161,105,0.1)', text: '#38A169' },
-  PERMITS:         { bg: 'rgba(232,121,58,0.1)', text: '#E8793A' },
-  PRECONSTRUCTION: { bg: 'rgba(26,43,74,0.1)',  text: '#1A2B4A' },
-  FEASIBILITY:     { bg: 'rgba(128,90,213,0.1)', text: '#805AD5' },
-  DESIGN:          { bg: 'rgba(49,130,206,0.1)', text: '#3182CE' },
+  IDEA:        { bg: 'rgba(148,163,184,0.1)', text: '#64748B' }, // Slate
+  DESIGN:      { bg: 'rgba(49,130,206,0.1)',  text: '#3182CE' }, // Blue
+  ESTIMATE:    { bg: 'rgba(234,179,8,0.12)',  text: '#D97706' }, // Amber
+  PERMIT:      { bg: 'rgba(232,121,58,0.1)',  text: '#E8793A' }, // Kealee Orange
+  CONTRACTOR:  { bg: 'rgba(167,139,250,0.1)', text: '#8B5CF6' }, // Purple
+  EXECUTION:   { bg: 'rgba(42,191,191,0.1)',  text: '#2ABFBF' }, // Teal
+  COMPLETION:  { bg: 'rgba(56,161,105,0.1)',  text: '#38A169' }, // Green
 }
 
 const tierColor: Record<string, string> = {
@@ -204,20 +216,20 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
   // Trigger phase-based revenue hooks once project loads
   useEffect(() => {
     if (!project || loading) return
-    const phase = (project.lifecyclePhase ?? '').toUpperCase()
+    const phase = normalizePhase(project.lifecyclePhase)
     const phaseHookMap: Record<string, HookStage> = {
       DESIGN:          'design_complete',
-      PRECONSTRUCTION: 'estimate_complete',
-      PERMITS:         'permit_detected',
+      ESTIMATE:        'estimate_complete',
+      PERMIT:          'permit_detected',
     }
     const hook = phaseHookMap[phase]
     if (hook && !hookDismissed.has(hook)) {
       setActiveHook(hook)
     }
-  }, [project, loading])
+  }, [project, loading, hookDismissed])
 
-  const phaseKey = (project?.lifecyclePhase ?? 'IDEA').toUpperCase().replace(/\s+/g, '_')
-  const phase = phaseStyles[phaseKey] ?? phaseStyles['PRECONSTRUCTION'] ?? { bg: 'rgba(160,174,192,0.1)', text: '#A0AEC0' }
+  const phaseKey = normalizePhase(project?.lifecyclePhase)
+  const phase = phaseStyles[phaseKey] ?? { bg: 'rgba(160,174,192,0.1)', text: '#A0AEC0' }
   const progress = project?.progressPct ?? 0
   const health = project?.twinHealthScore ?? null
 
@@ -284,6 +296,70 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
           <Boxes className="h-4 w-4" />Digital Twin
         </Link>
       </div>
+
+      {/* Project Lifecycle Timeline */}
+      {!loading && project && (
+        <div className="mb-6 rounded-2xl border border-slate-100 bg-white p-6 shadow-sm">
+          <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">Project Lifecycle Progress</p>
+          <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-4">
+            {/* Background line */}
+            <div className="absolute top-4 left-6 right-6 hidden h-0.5 bg-slate-100 md:block" />
+            
+            {(() => {
+              const currentNorm = normalizePhase(project.lifecyclePhase);
+              const stages = [
+                { key: 'IDEA', label: 'Idea' },
+                { key: 'DESIGN', label: 'Design' },
+                { key: 'ESTIMATE', label: 'Estimate' },
+                { key: 'PERMIT', label: 'Permit' },
+                { key: 'CONTRACTOR', label: 'Contractor' },
+                { key: 'EXECUTION', label: 'Execution' },
+                { key: 'COMPLETION', label: 'Completion' },
+              ];
+              const currentIndex = stages.findIndex(s => s.key === currentNorm);
+              
+              return stages.map((stage, idx) => {
+                const isCompleted = idx < currentIndex;
+                const isActive = idx === currentIndex;
+                
+                let ringColor = 'border-slate-200 bg-white text-slate-400';
+                let textColor = 'text-slate-500 font-medium';
+                
+                if (isActive) {
+                  ringColor = `border-[3px] bg-white text-slate-900`;
+                  textColor = 'text-slate-900 font-bold';
+                } else if (isCompleted) {
+                  ringColor = 'border-teal-500 bg-teal-50 text-teal-600';
+                  textColor = 'text-slate-700 font-semibold';
+                }
+                
+                return (
+                  <div key={stage.key} className="relative z-10 flex flex-1 items-center gap-3 md:flex-col md:text-center">
+                    {/* Ring/Node */}
+                    <div 
+                      className={`flex h-8 w-8 items-center justify-center rounded-full border-2 text-xs font-bold transition-all ${ringColor}`}
+                      style={isActive ? { borderColor: phaseStyles[stage.key]?.text || '#E8793A' } : {}}
+                    >
+                      {isCompleted ? '✓' : idx + 1}
+                    </div>
+                    {/* Label */}
+                    <div className="md:mt-2">
+                      <p className={`text-xs ${textColor}`}>{stage.label}</p>
+                      {isActive && (
+                        <span className="inline-block rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider mt-0.5 animate-pulse"
+                          style={{ backgroundColor: phaseStyles[stage.key]?.bg || 'rgba(232,121,58,0.1)', color: phaseStyles[stage.key]?.text || '#E8793A' }}
+                        >
+                          Active
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                );
+              });
+            })()}
+          </div>
+        </div>
+      )}
 
       {/* Summary cards */}
       <div className="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-4">

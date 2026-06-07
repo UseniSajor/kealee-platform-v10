@@ -5,19 +5,25 @@ import { MapPin, Calendar, DollarSign, Users, Cpu, CheckCircle, Clock, Layers, W
 import { getContractorProjects, type ContractorProject } from '@/lib/api/contractor'
 
 // ── v20 Seed: Lifecycle Phases ─────────────────────────────────────
+function normalizePhase(phase: string | null | undefined): string {
+  const p = (phase ?? 'IDEA').toUpperCase().trim();
+  if (p === 'FEASIBILITY' || p === 'CONCEPT' || p === 'LAND' || p === 'FEASIBILITY STUDY') return 'IDEA';
+  if (p === 'PRECONSTRUCTION' || p === 'COSTING') return 'ESTIMATE';
+  if (p === 'PERMITS') return 'PERMIT';
+  if (p === 'CONTRACTOR_MATCH') return 'CONTRACTOR';
+  if (p === 'CONSTRUCTION' || p === 'INSPECTIONS') return 'EXECUTION';
+  if (p === 'CLOSEOUT' || p === 'COMPLETED' || p === 'OPERATIONS' || p === 'ARCHIVE' || p === 'PAYMENTS') return 'COMPLETION';
+  return p;
+}
+
 const LIFECYCLE_PHASES = [
   { key: 'IDEA', name: 'Idea', order: 1 },
-  { key: 'LAND', name: 'Land Acquisition & Analysis', order: 2 },
-  { key: 'FEASIBILITY', name: 'Feasibility Study', order: 3 },
-  { key: 'DESIGN', name: 'Design & Architecture', order: 4 },
-  { key: 'PERMITS', name: 'Permitting & Entitlements', order: 5 },
-  { key: 'PRECONSTRUCTION', name: 'Pre-Construction', order: 6 },
-  { key: 'CONSTRUCTION', name: 'Construction', order: 7 },
-  { key: 'INSPECTIONS', name: 'Inspections & QA', order: 8 },
-  { key: 'PAYMENTS', name: 'Payments & Finance', order: 9 },
-  { key: 'CLOSEOUT', name: 'Closeout', order: 10 },
-  { key: 'OPERATIONS', name: 'Operations & Maintenance', order: 11 },
-  { key: 'ARCHIVE', name: 'Archive', order: 12 },
+  { key: 'DESIGN', name: 'Design', order: 2 },
+  { key: 'ESTIMATE', name: 'Estimate', order: 3 },
+  { key: 'PERMIT', name: 'Permit', order: 4 },
+  { key: 'CONTRACTOR', name: 'Contractor Match', order: 5 },
+  { key: 'EXECUTION', name: 'Project Execution', order: 6 },
+  { key: 'COMPLETION', name: 'Completion', order: 7 },
 ] as const
 
 // ── v20 Seed: Payment Milestones ───────────────────────────────────
@@ -197,10 +203,13 @@ const ACTIVE_PROJECTS: ActiveProject[] = [
 ]
 
 const statusStyles: Record<string, { color: string; bgColor: string }> = {
-  PRECONSTRUCTION: { color: '#2ABFBF', bgColor: 'rgba(42,191,191,0.1)' },
-  CONSTRUCTION: { color: '#E8793A', bgColor: 'rgba(232,121,58,0.1)' },
-  INSPECTIONS: { color: '#7C3AED', bgColor: 'rgba(124,58,237,0.1)' },
-  CLOSEOUT: { color: '#38A169', bgColor: 'rgba(56,161,105,0.1)' },
+  IDEA:        { color: '#64748B', bgColor: 'rgba(148,163,184,0.1)' },
+  DESIGN:      { color: '#3182CE', bgColor: 'rgba(49,130,206,0.1)' },
+  ESTIMATE:    { color: '#D97706', bgColor: 'rgba(234,179,8,0.12)' },
+  PERMIT:      { color: '#E8793A', bgColor: 'rgba(232,121,58,0.1)' },
+  CONTRACTOR:  { color: '#8B5CF6', bgColor: 'rgba(167,139,250,0.1)' },
+  EXECUTION:   { color: '#2ABFBF', bgColor: 'rgba(42,191,191,0.1)' },
+  COMPLETION:  { color: '#38A169', bgColor: 'rgba(56,161,105,0.1)' },
 }
 
 function HealthBadge({ label, value, unit, warningThreshold, criticalThreshold, invertWarning = false }: {
@@ -234,7 +243,7 @@ function apiToActiveProject(p: ContractorProject): ActiveProject {
     clientRole:  'Owner',
     address:     [p.address, p.city, p.state].filter(Boolean).join(', ') || 'Location TBD',
     twinTier:    'L1',
-    lifecyclePhase: p.lifecyclePhase ?? 'CONSTRUCTION',
+    lifecyclePhase: normalizePhase(p.lifecyclePhase),
     progress:    p.contractStatus === 'ACTIVE' ? 30 : 5,
     contractAmount: p.contractAmount ?? 0,
     startDate:   p.startDate ? p.startDate.split('T')[0] : p.assignedAt.split('T')[0],

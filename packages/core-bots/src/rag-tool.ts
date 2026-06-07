@@ -63,7 +63,7 @@ export function createRagTool(): BotTool {
           blocks,
           summary: `Found ${blocks.length} jurisdiction rules for ${input.jurisdictionCode}`,
           hitCount: blocks.length,
-          avgScore: blocks.length > 0 ? blocks.reduce((sum, b) => sum + b.score, 0) / blocks.length : 0,
+          avgScore: blocks.length > 0 ? blocks.reduce((sum: number, b: RetrievedContextBlock) => sum + b.score, 0) / blocks.length : 0,
         };
       }
 
@@ -74,7 +74,7 @@ export function createRagTool(): BotTool {
           blocks,
           summary: `Found ${blocks.length} resources for ${input.serviceCategory} service`,
           hitCount: blocks.length,
-          avgScore: blocks.length > 0 ? blocks.reduce((sum, b) => sum + b.score, 0) / blocks.length : 0,
+          avgScore: blocks.length > 0 ? blocks.reduce((sum: number, b: RetrievedContextBlock) => sum + b.score, 0) / blocks.length : 0,
         };
       }
 
@@ -89,7 +89,7 @@ export function createRagTool(): BotTool {
         blocks,
         summary: `Retrieved ${blocks.length} relevant knowledge blocks for: "${input.query}"`,
         hitCount: blocks.length,
-        avgScore: blocks.length > 0 ? blocks.reduce((sum, b) => sum + b.score, 0) / blocks.length : 0,
+        avgScore: blocks.length > 0 ? blocks.reduce((sum: number, b: RetrievedContextBlock) => sum + b.score, 0) / blocks.length : 0,
       };
     },
   };

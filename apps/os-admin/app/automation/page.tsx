@@ -67,6 +67,34 @@ export default function AutomationDashboardPage() {
               </CardContent>
             </Card>
 
+            <Card>
+              <CardHeader>
+                <CardTitle>AI Bot Prompts</CardTitle>
+                <CardDescription>Manage and override system prompts for 10+ AI-assisted KeaBots</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Link href="/automation/bots">
+                  <Button variant="outline" className="w-full justify-between">
+                    Configure Prompts <ArrowRight className="h-4 w-4" />
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Pricing Formulas</CardTitle>
+                <CardDescription>Live dynamic pricing overrides for Design Concept and floorplan scopes</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Link href="/automation/pricing">
+                  <Button variant="outline" className="w-full justify-between">
+                    Edit Formula <ArrowRight className="h-4 w-4" />
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+
             <Card className="lg:col-span-2 border-orange-200">
               <CardHeader>
                 <div className="flex items-center gap-3">

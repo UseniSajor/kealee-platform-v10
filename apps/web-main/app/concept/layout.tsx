@@ -19,28 +19,28 @@ function ConceptProgressBar() {
   if (currentStep === 0) return null
 
   return (
-    <div className="sticky top-16 z-40 bg-white border-b border-slate-200 shadow-sm">
-      <div className="mx-auto max-w-3xl px-4 py-4">
-        <div className="flex items-center">
+    <div className="sticky top-16 z-40 bg-white/85 backdrop-blur-md border-b border-slate-200/80 shadow-sm">
+      <div className="mx-auto max-w-3xl px-4 py-4.5">
+        <div className="flex items-center justify-between">
           {STEPS.map((step, i) => {
             const done = currentStep > step.n
             const active = currentStep === step.n
             return (
-              <div key={step.n} className="flex items-center flex-1">
-                <div className="flex flex-col items-center">
+              <div key={step.n} className="flex items-center flex-1 last:flex-none">
+                <div className="flex flex-col items-center relative">
                   <div
-                    className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold transition-all ${
+                    className={`w-9.5 h-9.5 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-300 ${
                       done
-                        ? 'bg-[#E8724B] text-white'
+                        ? 'bg-[#E8724B] text-white shadow-md shadow-orange-100'
                         : active
-                        ? 'bg-[#E8724B] text-white ring-4 ring-orange-100'
-                        : 'bg-slate-100 text-slate-400'
+                        ? 'bg-[#E8724B] text-white ring-4 ring-orange-100 shadow-md shadow-orange-100'
+                        : 'bg-slate-100 text-slate-400 border border-slate-200'
                     }`}
                   >
-                    {done ? <CheckCircle2 className="w-4 h-4" /> : step.n}
+                    {done ? <CheckCircle2 className="w-4.5 h-4.5" strokeWidth={2.5} /> : step.n}
                   </div>
                   <span
-                    className={`text-[10px] font-semibold mt-1 hidden sm:block ${
+                    className={`text-[10px] font-bold mt-1.5 hidden sm:block tracking-wide uppercase transition-colors duration-300 ${
                       active ? 'text-[#E8724B]' : done ? 'text-[#E8724B]' : 'text-slate-400'
                     }`}
                   >
@@ -48,11 +48,13 @@ function ConceptProgressBar() {
                   </span>
                 </div>
                 {i < STEPS.length - 1 && (
-                  <div
-                    className={`h-0.5 flex-1 mx-3 mb-4 rounded-full transition-all ${
-                      done ? 'bg-[#E8724B]' : 'bg-slate-200'
-                    }`}
-                  />
+                  <div className="flex-1 mx-3 -mt-4.5">
+                    <div
+                      className={`h-0.5 rounded-full transition-all duration-500 ${
+                        done ? 'bg-[#E8724B]' : 'bg-slate-200'
+                      }`}
+                    />
+                  </div>
                 )}
               </div>
             )

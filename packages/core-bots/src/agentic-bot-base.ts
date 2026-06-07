@@ -31,7 +31,13 @@ export abstract class AgenticBot extends KeaBot {
     // Optionally add browser tool
     if (config.enableBrowserTool) {
       const browserTool = createBrowserTool(getGlobalBrowserAgent());
-      this.registerTool(browserTool as unknown as BotTool);
+      const botTool: BotTool = {
+        name: browserTool.name,
+        description: browserTool.description,
+        parameters: browserTool.inputSchema as BotTool['parameters'],
+        handler: async (params: Record<string, unknown>) => browserTool.execute(params),
+      };
+      this.registerTool(botTool);
     }
   }
 
