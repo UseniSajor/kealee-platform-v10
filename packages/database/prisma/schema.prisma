@@ -2052,6 +2052,10 @@ model User {
   // Growth Metrics relations
   acquisitions     UserAcquisition[]  @relation("UserAcquisition")
   conversionEvents ConversionEvent[]  @relation("ConversionEvent")
+
+  // Agentic framework relations
+  agenticJobExecutions   AgenticJobExecution[]
+  agenticSessionMemories AgenticSessionMemory[]
 }
 
 // ============================================================================
@@ -2127,6 +2131,10 @@ model Org {
 
   // Stripe service subscriptions
   serviceSubscriptions ServiceSubscription[] @relation("OrgServiceSubscriptions")
+
+  // Agentic framework relations
+  agenticJobExecutions   AgenticJobExecution[]
+  agenticSessionMemories AgenticSessionMemory[]
 
   @@index([slug])
   @@index([status])
