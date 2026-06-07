@@ -5,6 +5,8 @@ settings:
   excludeLinksFromLockfile: false
 
 neverBuiltDependencies:
+  - '@sentry/cli'
+  - canvas
   - msgpackr-extract
   - unrs-resolver
 
@@ -11080,7 +11082,6 @@ packages:
     resolution: {integrity: sha512-c3eDqcDRmy4TFz2bFU5Y6QatlpoBPPa8cxBooaS4aMQpnIdLYPF1xhyyiW0LQlDUNc3rRjNF7oN5qKoaRoMTQQ==}
     engines: {node: '>= 8'}
     hasBin: true
-    requiresBuild: true
     dependencies:
       https-proxy-agent: 5.0.1
       mkdirp: 0.5.6
@@ -11097,7 +11098,6 @@ packages:
     resolution: {integrity: sha512-tavJ7yGUZV+z3Ct2/ZB6mg339i08sAk6HDkgqmSRuQEu2iLS5sl9HIvuXfM6xjv8fwlgFOSy++WNABNAcGHUbg==}
     engines: {node: '>= 10'}
     hasBin: true
-    requiresBuild: true
     dependencies:
       https-proxy-agent: 5.0.1
       node-fetch: 2.7.0
@@ -14188,7 +14188,6 @@ packages:
   /canvas@3.2.3:
     resolution: {integrity: sha512-PzE5nJZPz72YUAfo8oTp0u3fqqY7IzlTubneAihqDYAUcBk7ryeCmBbdJBEdaH0bptSOe2VT2Zwcb3UaFyaSWw==}
     engines: {node: ^18.12.0 || >= 20.9.0}
-    requiresBuild: true
     dependencies:
       node-addon-api: 7.1.1
       prebuild-install: 7.1.3

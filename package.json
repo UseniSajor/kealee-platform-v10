@@ -169,6 +169,8 @@
   },
   "pnpm": {
     "neverBuiltDependencies": [
+      "@sentry/cli",
+      "canvas",
       "msgpackr-extract",
       "unrs-resolver"
     ]
