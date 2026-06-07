@@ -18,3 +18,14 @@ export type { AgenticTool, AgenticExecutionContext, AgenticExecutionResult } fro
 export { BrowserAgent, BrowserSessionManager, BrowserSecurity } from "./runtime";
 export { createBrowserTool, getGlobalBrowserAgent, shutdownGlobalBrowserAgent } from "./runtime/browser-tool";
 export type { BrowserOpResult, BrowserToolInput } from "./runtime";
+
+// Observability & monitoring (new)
+export {
+  AgenticObservability,
+  NoOpObservabilityProvider,
+  SentryObservabilityProvider,
+  ConsoleObservabilityProvider,
+  AnomalyDetector,
+  defaultObservability,
+} from "./runtime/observability";
+export type { ObservabilityProvider, ObservabilityEvent, MetricsEvent, AgenticMetrics, AlertThresholds } from "./runtime/observability";

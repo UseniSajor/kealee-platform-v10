@@ -22,3 +22,14 @@ export type { BrowserSecurityAuditLog } from './browser-security';
 
 export { createBrowserTool, getGlobalBrowserAgent, shutdownGlobalBrowserAgent } from './browser-tool';
 export type { BrowserToolInput } from './browser-tool';
+
+// Observability & monitoring
+export {
+  AgenticObservability,
+  NoOpObservabilityProvider,
+  SentryObservabilityProvider,
+  ConsoleObservabilityProvider,
+  AnomalyDetector,
+  defaultObservability,
+} from './observability';
+export type { ObservabilityProvider, ObservabilityEvent, MetricsEvent, AgenticMetrics, AlertThresholds } from './observability';
