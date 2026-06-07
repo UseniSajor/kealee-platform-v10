@@ -2,6 +2,7 @@ import { createServer } from 'http'
 import { logger } from './lib/logger'
 import { initWorkerSentry, captureWorkerError } from './lib/sentry'
 import { redis } from './config/redis.config'
+import { getWorkerHealth, setHealthStartTime, setRedisHealth, setDatabaseHealth, isWorkerReadyForProduction, getWorkerAlerts } from './lib/worker-health'
 import { emailQueue } from './queues/email.queue'
 import { webhookQueue } from './queues/webhook.queue'
 import { mlQueue } from './queues/ml.queue'
@@ -57,6 +58,10 @@ let leadFollowupWorker: Worker | null = null
 let botJobsWorker: Worker | null = null
 let chainJobsWorker: Worker | null = null
 
+// Track queues and workers for health monitoring
+const allQueues = new Map<string, typeof emailQueue>()
+const allWorkers = new Map<string, Worker | null>()
+
 // Validate required environment variables at startup (fail fast, not at first query)
 function validateRequiredEnv() {
   const required = ['DATABASE_URL', 'REDIS_URL'] as const
@@ -74,10 +79,30 @@ async function testRedisConnection() {
   try {
     await redis.ping()
     console.log('✅ Redis connection successful')
+    setRedisHealth(true)
   } catch (error) {
     console.error('❌ Redis connection failed:', error)
+    setRedisHealth(false)
     process.exit(1)
   }
+}
+
+// Monitor Redis connection
+function monitorRedisConnection() {
+  redis.on('connect', () => {
+    logger.info('Redis connection established')
+    setRedisHealth(true)
+  })
+
+  redis.on('error', (error) => {
+    logger.error({ error }, 'Redis connection error')
+    setRedisHealth(false)
+  })
+
+  redis.on('close', () => {
+    logger.warn('Redis connection closed')
+    setRedisHealth(false)
+  })
 }
 
 // Initialize email queue and worker
@@ -520,8 +545,23 @@ async function initializeCronJobs() {
 
 // Initialize
 async function start() {
+  setHealthStartTime()
   validateRequiredEnv()
   await testRedisConnection()
+  monitorRedisConnection()
+
+  // Test database connection
+  try {
+    // Import Prisma to test database
+    const { prisma } = await import('./lib/prisma')
+    await prisma.$queryRaw`SELECT 1`
+    setDatabaseHealth(true)
+    console.log('✅ Database connection successful')
+  } catch (error) {
+    logger.error({ error }, 'Database connection failed')
+    setDatabaseHealth(false)
+  }
+
   await initializeEmailQueue()
   await initializeWebhookQueue()
   await initializeMLQueue()
@@ -537,6 +577,38 @@ async function start() {
   await initializeLeadFollowupQueue()
   await initializeSystemCBotWorkers()
   await initializeCronJobs()
+
+  // Populate health tracking maps
+  allQueues.set('email', emailQueue)
+  allQueues.set('webhook', webhookQueue)
+  allQueues.set('ml', mlQueue)
+  allQueues.set('reports', reportsQueue)
+  allQueues.set('sales', salesQueue)
+  allQueues.set('mlPrediction', mlPredictionQueue)
+  allQueues.set('spatialVerification', spatialVerificationQueue)
+  allQueues.set('conceptDelivery', conceptDeliveryQueue)
+  allQueues.set('intakeProcessing', intakeProcessingQueue)
+  allQueues.set('conceptEngine', conceptEngineQueue)
+  allQueues.set('captureAnalysis', captureAnalysisQueue)
+  allQueues.set('projectExecution', projectExecutionQueue)
+  allQueues.set('leadFollowup', leadFollowupQueue)
+
+  allWorkers.set('email', emailWorker)
+  allWorkers.set('webhook', webhookWorker)
+  allWorkers.set('ml', mlWorker)
+  allWorkers.set('reports', reportsWorker)
+  allWorkers.set('sales', salesWorker)
+  allWorkers.set('mlPrediction', mlPredictionWorker)
+  allWorkers.set('spatialVerification', spatialVerificationWorker)
+  allWorkers.set('conceptDelivery', conceptDeliveryWorker)
+  allWorkers.set('intakeProcessing', intakeProcessingWorker)
+  allWorkers.set('conceptEngine', conceptEngineWorker)
+  allWorkers.set('captureVision', captureVisionWorker)
+  allWorkers.set('voiceTranscription', voiceTranscriptionWorker)
+  allWorkers.set('projectExecution', projectExecutionWorker)
+  allWorkers.set('leadFollowup', leadFollowupWorker)
+  allWorkers.set('botJobs', botJobsWorker)
+  allWorkers.set('chainJobs', chainJobsWorker)
 
   console.log('✅ Worker service ready')
   console.log('📧 Email queue operational')
@@ -573,31 +645,37 @@ start()
   .then(() => {
     // Health check HTTP server — required for Railway healthcheck probes
     const HEALTH_PORT = Number(process.env.HEALTH_PORT) || 3099
-    const healthServer = createServer((_req, res) => {
-      res.writeHead(200, { 'Content-Type': 'application/json' })
-      res.end(JSON.stringify({
-        status: 'ok',
-        service: 'worker',
-        queues: {
-          email: !!emailWorker,
-          webhook: !!webhookWorker,
-          ml: !!mlWorker,
-          reports: !!reportsWorker,
-          sales: !!salesWorker,
-          mlPrediction: !!mlPredictionWorker,
-          spatialVerification: !!spatialVerificationWorker,
-          conceptDelivery: !!conceptDeliveryWorker,
-          intakeProcessing: !!intakeProcessingWorker,
-          conceptEngine: !!conceptEngineWorker,
-          captureVision: !!captureVisionWorker,
-          voiceTranscription: !!voiceTranscriptionWorker,
-          projectExecution: !!projectExecutionWorker,
-          leadFollowup: !!leadFollowupWorker,
-          botJobs: !!botJobsWorker,
-          chainJobs: !!chainJobsWorker,
-        },
-        timestamp: new Date().toISOString(),
-      }))
+    const healthServer = createServer(async (req, res) => {
+      try {
+        // Get comprehensive health status
+        const health = await getWorkerHealth(allQueues, allWorkers)
+        const ready = isWorkerReadyForProduction(health)
+        const alerts = getWorkerAlerts(health)
+
+        // Set HTTP status code based on health
+        const statusCode = health.status === 'healthy' ? 200 : health.status === 'degraded' ? 202 : 503
+
+        res.writeHead(statusCode, { 'Content-Type': 'application/json' })
+        res.end(JSON.stringify({
+          status: health.status,
+          ready,
+          service: 'worker',
+          timestamp: health.timestamp,
+          uptime: health.uptime,
+          checks: health.checks,
+          queues: health.queues,
+          metrics: health.metrics,
+          alerts: alerts.length > 0 ? alerts : undefined,
+        }, null, 2))
+      } catch (error) {
+        logger.error({ error }, 'Health check failed')
+        res.writeHead(503, { 'Content-Type': 'application/json' })
+        res.end(JSON.stringify({
+          status: 'unhealthy',
+          error: error instanceof Error ? error.message : 'Unknown error',
+          timestamp: new Date().toISOString(),
+        }))
+      }
     })
     healthServer.listen(HEALTH_PORT, '0.0.0.0', () => {
       logger.info({ port: HEALTH_PORT }, 'Worker health endpoint listening')

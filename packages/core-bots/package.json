@@ -19,7 +19,9 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.74.0",
+    "@kealee/core-agents": "workspace:*",
     "@kealee/core-events": "workspace:*",
+    "@kealee/core-llm": "workspace:*",
     "@kealee/shared": "workspace:*",
     "zod": "^3.22.4"
   },

@@ -50,6 +50,8 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.74.0",
+    "@kealee/database": "workspace:*",
+    "@kealee/core-agents": "workspace:*",
     "@kealee/seeds": "workspace:*",
     "bottleneck": "^2.19.5",
     "openai": "^4.77.0",

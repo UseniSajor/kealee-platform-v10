@@ -67,10 +67,6 @@ export { default as PermitBotEnterprise } from "./bots/permit-bot-enterprise";
 export { default as FloorplanBotEnterprise } from "./bots/floorplan-bot-enterprise";
 export { EnterpriseBot as EnterpriseBotBase } from "./bots/enterprise-bot-base";
 
-// Agentic Bots (new multi-step framework)
-export { DesignBotAgentic } from "./bots/design-bot-agentic";
-export type { DesignBotInput, DesignBotOutput, DesignConcept } from "./bots/design-bot-agentic";
-
 // Output mappers
 export { mapDesignOutputToConceptOutput } from "./bots/design-output-to-concept";
 export type { MappedConceptOutput } from "./bots/design-output-to-concept";

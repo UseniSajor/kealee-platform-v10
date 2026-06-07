@@ -1651,9 +1651,15 @@ importers:
       '@anthropic-ai/sdk':
         specifier: ^0.74.0
         version: 0.74.0(zod@3.25.76)
+      '@kealee/core-agents':
+        specifier: workspace:*
+        version: link:../core-agents
       '@kealee/core-events':
         specifier: workspace:*
         version: link:../core-events
+      '@kealee/core-llm':
+        specifier: workspace:*
+        version: link:../core-llm
       '@kealee/shared':
         specifier: workspace:*
         version: link:../shared
@@ -1784,6 +1790,12 @@ importers:
       '@anthropic-ai/sdk':
         specifier: ^0.74.0
         version: 0.74.0(zod@3.25.76)
+      '@kealee/core-agents':
+        specifier: workspace:*
+        version: link:../core-agents
+      '@kealee/database':
+        specifier: workspace:*
+        version: link:../database
       '@kealee/seeds':
         specifier: workspace:*
         version: link:../seeds
