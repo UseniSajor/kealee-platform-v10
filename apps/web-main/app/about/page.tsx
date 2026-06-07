@@ -144,7 +144,7 @@ export default function AboutPage() {
                     { value: '364+', label: 'Data Models' },
                     { value: '7', label: 'User Roles' },
                     { value: '6', label: 'Project Types' },
-                    { value: '12', label: 'Lifecycle Phases' },
+                    { value: '7', label: 'Lifecycle Phases' },
                   ].map((stat) => (
                     <div key={stat.label}>
                       <div className="text-2xl font-bold font-display" style={{ color: '#E8793A' }}>{stat.value}</div>

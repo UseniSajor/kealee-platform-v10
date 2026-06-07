@@ -189,7 +189,7 @@ export default function FeaturesPage() {
             transition={{ duration: 0.5, delay: 0.2 }}
             className="mx-auto mt-6 max-w-2xl text-lg text-gray-600"
           >
-            7 operating systems, 13 AI assistants, 12 lifecycle phases, and 4 role-based portals —
+            7 operating systems, 13 AI assistants, a 7-phase unified lifecycle, and 4 role-based portals —
             designed for homeowners, contractors, developers, and construction professionals.
           </motion.p>
         </div>
@@ -270,7 +270,7 @@ export default function FeaturesPage() {
               { icon: Brain, title: 'Event Intelligence', desc: 'Every OS action emits TwinEvents. 27 integration hooks track project, permit, estimation, payment, schedule, and marketplace events.' },
               { icon: Eye, title: 'State Snapshots', desc: 'Point-in-time captures for investor reports, audits, and trend analysis. Compare any two snapshots to see what changed.' },
               { icon: Gauge, title: 'KPI Thresholds', desc: '19 pre-configured KPI defaults across 3 tiers. Custom warning (±10%) and critical (±20%) thresholds for each metric.' },
-              { icon: Layers, title: '12-Phase Lifecycle', desc: 'Tracks projects through all 12 phases: Idea → Land → Feasibility → Design → Permits → Pre-Con → Construction → Inspections → Payments → Closeout → Ops → Archive.' },
+              { icon: Layers, title: '7-Phase Unified Lifecycle', desc: 'Tracks projects through the unified sequence: Idea → Design → Estimate → Permit → Contractor → Execution → Completion.' },
             ].map((item, i) => (
               <motion.div
                 key={item.title}
@@ -400,7 +400,7 @@ export default function FeaturesPage() {
             Ready to Transform Your Projects?
           </h2>
           <p className="mt-4 text-lg text-gray-600">
-            See how Kealee's 7 operating systems, 13 AI assistants, and 12 lifecycle phases can streamline your next development project.
+            See how Kealee's 7 operating systems, 13 AI assistants, and 7-phase unified lifecycle can streamline your next development project.
           </p>
           <div className="mt-8 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
             <Link href="/contact" className="btn-primary">

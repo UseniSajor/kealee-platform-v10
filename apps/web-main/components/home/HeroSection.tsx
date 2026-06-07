@@ -37,14 +37,14 @@ export function HeroSection() {
 
             {/* Headline */}
             <h1 className="text-4xl font-bold leading-tight text-white sm:text-5xl lg:text-[58px] font-display">
-              From Land to Closeout —{' '}
+              From Idea to Completion —{' '}
               <span style={{ color: '#E8793A' }}>One Intelligent Platform</span>
             </h1>
 
             {/* Sub-headline */}
             <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-gray-300 lg:text-xl">
-              7 operating systems. 13 AI assistants. Escrow-protected payments.
-              Project dashboards for every project — from kitchen remodels to multifamily developments.
+              7 operating systems, 13 AI assistants, and a single unified project lifecycle from first idea to final build.
+              Escrow-protected payments and dashboards for every project.
             </p>
 
             {/* AskAnythingBar */}

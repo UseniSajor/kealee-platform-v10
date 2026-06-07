@@ -37,7 +37,7 @@ export default async function HomePage() {
       {/* Who Kealee is built for */}
       <RoleCards />
 
-      {/* 12-phase lifecycle overview */}
+      {/* 7-phase unified lifecycle overview */}
       <PipelineSection />
 
       {/* Contractor marketplace */}
