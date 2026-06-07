@@ -1933,6 +1933,9 @@ importers:
 
   packages/os-ai-orch:
     dependencies:
+      '@kealee/core-llm':
+        specifier: workspace:*
+        version: link:../core-llm
       '@kealee/database':
         specifier: workspace:*
         version: link:../database
