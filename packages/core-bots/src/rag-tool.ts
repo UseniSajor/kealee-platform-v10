@@ -54,7 +54,7 @@ export function createRagTool(): BotTool {
       },
     },
     handler: async (params: Record<string, unknown>): Promise<RagToolOutput> => {
-      const input = params as RagToolInput;
+      const input = params as unknown as RagToolInput;
 
       // Jurisdiction-specific retrieval
       if (input.jurisdictionCode && !input.serviceCategory) {
