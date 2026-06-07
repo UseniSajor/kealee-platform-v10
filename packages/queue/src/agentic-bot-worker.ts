@@ -20,9 +20,16 @@ import {
   type AgenticBotJobData,
   type AgenticJobResult,
 } from './agentic-bot-job';
-import type { BotRegistry } from '@kealee/core-bots';
-import type { AgenticObservability } from '@kealee/core-agents';
-import type { PrismaClient } from '@kealee/database';
+// Inline minimal interfaces to avoid workspace coupling
+interface BotRegistry {
+  get(botId: string): { handleMessage: (msg: string, ctx: Record<string, unknown>) => Promise<unknown>; name: string } | undefined;
+}
+interface AgenticObservability {
+  recordExecution(botName: string, metrics: { success: boolean; durationMs: number; iterations: number; toolCalls: number; outputLength: number }): Promise<void>;
+  recordError(error: Error, ctx: { requestId: string; botId: string }): Promise<void>;
+}
+// Use any for PrismaClient to avoid deep import chain
+type PrismaClient = any;
 
 export interface AgenticBotWorkerConfig {
   botRegistry: BotRegistry;
@@ -74,8 +81,8 @@ export class AgenticBotWorker {
 
       // Execute bot with agentic framework
       const result = await bot.handleMessage(
-        jobData.input.data.message || JSON.stringify(jobData.input.data),
-        { ...context, projectId: jobData.input.data.projectId }
+        (jobData.input.data.message as string | undefined) || JSON.stringify(jobData.input.data),
+        { ...context, projectId: jobData.input.data.projectId as string | undefined }
       );
 
       // Parse result if JSON
@@ -100,6 +107,7 @@ export class AgenticBotWorker {
       // Persist to database if available
       if (this.db) {
         await this.persistExecution(jobData, {
+          requestId: jobData.requestId,
           success: true,
           durationMs: Date.now() - startTime,
           finalText: JSON.stringify(parsedResult),
@@ -107,6 +115,7 @@ export class AgenticBotWorker {
           totalIterations: (parsedResult as any)?.totalIterations || 1,
           status: 'completed',
           error: undefined,
+          timestamp: new Date().toISOString(),
         });
       }
 
@@ -115,7 +124,7 @@ export class AgenticBotWorker {
       );
 
       // Update job progress
-      await job.progress(100);
+      await job.updateProgress(100);
     } catch (err) {
       const error = err instanceof Error ? err : new Error(String(err));
       this.logger.error(`[AgenticBotWorker] ❌ Job ${jobData.requestId} failed:`, error.message);
@@ -129,6 +138,7 @@ export class AgenticBotWorker {
       // Persist failure to database if available
       if (this.db) {
         await this.persistExecution(jobData, {
+          requestId: jobData.requestId,
           success: false,
           durationMs: Date.now() - startTime,
           finalText: '',
@@ -136,6 +146,7 @@ export class AgenticBotWorker {
           totalIterations: 0,
           status: 'failed',
           error: error.message,
+          timestamp: new Date().toISOString(),
         });
       }
 
@@ -166,15 +177,15 @@ export class AgenticBotWorker {
           orgId: jobData.context.orgId,
           projectId: jobData.input.data.projectId as string | undefined,
           systemPrompt: jobData.systemPrompt,
-          userMessage: jobData.input.data.message || JSON.stringify(jobData.input.data),
+          userMessage: (jobData.input.data.message as string | undefined) || JSON.stringify(jobData.input.data),
           finalOutput: result.finalText,
           status: result.status,
           success: result.success,
           totalIterations: result.totalIterations,
           durationMs: result.durationMs,
           error: result.error,
-          toolHistory: result.toolHistory,
-          toolMetrics: metrics,
+          toolHistory: result.toolHistory as any,
+          toolMetrics: metrics as any,
           warnings,
           completedAt: new Date(),
         },

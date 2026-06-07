@@ -2152,6 +2152,15 @@ importers:
 
   packages/queue:
     dependencies:
+      '@kealee/core-agents':
+        specifier: workspace:*
+        version: link:../core-agents
+      '@kealee/core-bots':
+        specifier: workspace:*
+        version: link:../core-bots
+      '@kealee/database':
+        specifier: workspace:*
+        version: link:../database
       bullmq:
         specifier: ^5.1.0
         version: 5.75.2
@@ -2159,6 +2168,9 @@ importers:
         specifier: ^5.3.2
         version: 5.10.1
     devDependencies:
+      '@types/node':
+        specifier: ^20.0.0
+        version: 20.19.39
       typescript:
         specifier: ^5.6.0
         version: 5.9.3

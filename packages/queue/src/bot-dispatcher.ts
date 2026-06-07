@@ -54,7 +54,7 @@ export class MemoryFeatureFlagProvider implements FeatureFlagProvider {
 
     // Simple hash-based routing
     const hash = userId
-      ? parseInt(userId.split('').reduce((a, b) => String((a + b.charCodeAt(0)) % 256), '0'))
+      ? parseInt(userId.split('').reduce((a, b) => String((parseInt(a, 10) + b.charCodeAt(0)) % 256), '0'), 10)
       : Math.random() * 100;
 
     return (hash % 100) < percentage;

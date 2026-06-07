@@ -6,7 +6,18 @@
  */
 
 import type { BotJobData } from './bot-jobs';
-import type { SessionMemory, ToolExecutionRecord } from '@kealee/core-agents';
+
+// Inline minimal types to avoid workspace coupling
+export interface ToolExecutionRecord {
+  id: string;
+  toolName: string;
+  input: Record<string, unknown>;
+  output?: Record<string, unknown>;
+  success: boolean;
+  startedAt: string;
+  completedAt?: string;
+  error?: string;
+}
 
 export interface AgenticBotJobData extends BotJobData {
   agentic: true;

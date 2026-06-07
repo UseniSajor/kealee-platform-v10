@@ -11,7 +11,7 @@ export interface AgenticBotHealth {
   timestamp: string;
   checks: {
     queueConnection: { status: string; message?: string };
-    worker: { status: string; processing?: number; paused?: boolean };
+    worker: { status: string; processing?: number; paused?: boolean; message?: string };
     database: { status: string; message?: string };
     redis: { status: string; message?: string };
   };

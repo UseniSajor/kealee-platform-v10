@@ -7,10 +7,16 @@
 
 import type { Worker, Queue } from 'bullmq';
 import { createAgenticBotHandler, type AgenticBotWorkerConfig } from './agentic-bot-worker';
-import type { Logger } from 'winston';
+
+export interface MinimalLogger {
+  info(msg: string, meta?: Record<string, unknown>): void;
+  warn(msg: string, meta?: Record<string, unknown>): void;
+  error(msg: string, meta?: Record<string, unknown>): void;
+  debug(msg: string, meta?: Record<string, unknown>): void;
+}
 
 export interface AgenticBotWorkerSetupConfig extends AgenticBotWorkerConfig {
-  logger: Logger;
+  logger: MinimalLogger;
   queueName?: string;
   concurrency?: number;
   stalledInterval?: number;
@@ -40,12 +46,7 @@ export function setupAgenticBotWorker(
   const worker = new Worker(queueName, handler, {
     connection: (queue as any).client.options, // Use same Redis connection
     concurrency,
-    settings: {
-      maxStalledCount,
-      stalledInterval,
-      retryProcessDelay: retryDelay,
-      lockRenewTime: 10000,
-    },
+    stalledInterval,
   }) as unknown as Worker;
 
   // Event handlers
@@ -53,7 +54,7 @@ export function setupAgenticBotWorker(
     logger.info('[AgenticBotWorker] Job completed', {
       jobId: job?.id,
       jobName: job?.name,
-      progress: job?.progress(),
+      progress: job?.progress,
     });
   });
 
@@ -142,7 +143,7 @@ export async function getAgenticBotWorkerHealth(worker: Worker): Promise<{
  */
 export async function shutdownAgenticBotWorker(
   worker: Worker,
-  logger: Logger,
+  logger: MinimalLogger,
   timeoutMs: number = 30000
 ): Promise<void> {
   logger.info('[AgenticBotWorker] Shutting down gracefully', { timeoutMs });
