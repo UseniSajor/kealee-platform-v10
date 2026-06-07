@@ -2,6 +2,24 @@
 
 This file preserves key context for Claude Code sessions working on this project.
 
+## MULTI-AGENT SYNC — MANDATORY (do this before and after every session)
+
+Multiple agents work on this repo simultaneously from different platforms (Claude Code, Antigravity, etc.). To stay in sync:
+
+```bash
+# START OF EVERY SESSION — pull before touching anything
+git fetch origin && git pull origin main
+
+# END OF EVERY SESSION — push after every commit
+git push origin main
+```
+
+**Rules:**
+- ALWAYS pull from `origin/main` before starting any work
+- ALWAYS push to `origin/main` immediately after committing
+- NEVER leave commits local-only — they block other agents
+- If a merge conflict occurs, resolve it before pushing
+
 ## Project Overview
 
 Kealee Platform v20 is a full-lifecycle construction development platform with 18 apps, 11 services, 34 packages, and 13 AI bots, built as a monorepo using pnpm workspaces. Evolved from v10 with formal service layers, Digital Development Twin System (DDTS), and KeaBot automation agents.
