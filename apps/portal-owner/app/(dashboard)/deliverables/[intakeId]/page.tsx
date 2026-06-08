@@ -849,7 +849,8 @@ export default function ConceptDeliverablePage() {
       const contractorMatchingUnlocked = !!(
         gate?.contractorMatchingUnlocked ||
         gate?.permitSubmitted ||
-        gate?.permitApproved
+        gate?.permitApproved ||
+        gate?.noPermitRequired
       )
       // Permit submitted (stage 1) — true when permit step is done regardless of contractor match
       const permitSubmitted = !!(gate?.permitSubmitted || gate?.permitApproved)

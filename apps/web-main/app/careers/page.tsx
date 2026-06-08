@@ -5,7 +5,7 @@ import { ArrowRight, MapPin, Clock, Briefcase, Zap, Shield, Globe, Users, Trendi
 export const metadata: Metadata = {
   title: 'Careers at Kealee — Build the Future of Construction',
   description:
-    'Join the team building the full-lifecycle construction platform. Open roles across engineering, AI, operations, permit services, design, and business development.',
+    'Join the team building the full-lifecycle construction platform. Open roles across engineering, AI, operations, permit services, design, and estimation.',
 }
 
 // ── Open roles ────────────────────────────────────────────────────────────────
@@ -94,13 +94,6 @@ const OPEN_ROLES = [
     type: 'Contract / Part-time',
     badge: null,
   },
-  {
-    title: 'Feasibility Analyst',
-    team: 'Developer Services',
-    location: 'Remote (US)',
-    type: 'Full-time',
-    badge: null,
-  },
 ]
 
 // ── Benefits ──────────────────────────────────────────────────────────────────
@@ -173,7 +166,7 @@ const TEAMS = [
   },
   {
     name: 'AI Platform',
-    description: 'KeaBots, specialized AI integration, and the Digital Project Twin. We\'re building AI that understands the construction lifecycle, not just text.',
+    description: 'Specialized AI integration and the Digital Project Twin. We\'re building AI that understands the construction lifecycle, not just text.',
   },
   {
     name: 'Operations & Field',
@@ -181,11 +174,11 @@ const TEAMS = [
   },
   {
     name: 'Design & Product',
-    description: 'UX, service design, visual design, and product strategy across 18 apps and 13 AI bots. Complex surfaces, high-stakes decisions, real users.',
+    description: 'UX, service design, visual design, and product strategy across dedicated homeowner and builder portals. Complex surfaces, high-stakes decisions, real users.',
   },
   {
     name: 'Growth & BD',
-    description: 'Partnerships, enterprise sales, marketplace expansion, and developer/contractor acquisition across the DC-Baltimore corridor and beyond.',
+    description: 'Partnerships, enterprise sales, marketplace expansion, and contractor acquisition across the DC-Baltimore corridor and beyond.',
   },
 ]
 
@@ -193,34 +186,29 @@ export default function CareersPage() {
   return (
     <div className="bg-white">
       {/* ── Hero ──────────────────────────────────────────────────────────── */}
-      <section className="border-b border-gray-100 bg-gradient-to-b from-[#F7FAFC] to-white py-24">
+      <section className="border-b border-slate-200 bg-gradient-to-br from-slate-50 via-slate-100 to-slate-200 py-24">
         <div className="mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
           <span
-            className="inline-block rounded-full px-3 py-1 text-xs font-bold uppercase tracking-widest"
-            style={{ backgroundColor: '#FFF3EC', color: '#E8793A' }}
+            className="inline-block rounded-full px-3 py-1 text-xs font-bold uppercase tracking-widest bg-orange-600/10 text-orange-600"
           >
             We&apos;re Hiring
           </span>
-          <h1 className="mt-4 text-4xl font-bold leading-tight sm:text-5xl" style={{ color: '#1A2B4A' }}>
+          <h1 className="mt-4 text-4xl font-black leading-tight sm:text-5xl text-slate-900 tracking-tight">
             Build the future of<br />construction with us
           </h1>
-          <p className="mt-5 text-lg text-gray-500 max-w-2xl mx-auto leading-relaxed">
-            Kealee is the full-lifecycle construction platform — land acquisition to project
-            closeout. Fourteen operating systems, thirteen AI assistants, and digital twins for
-            every project. We&apos;re hiring builders, engineers, architects, and operators who
-            want to reshape how the built environment works.
+          <p className="mt-5 text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed">
+            Kealee is the full-lifecycle construction coordination platform for homeowners — guiding them through design, cost estimating, permit filing, and active build execution. We&apos;re hiring developers, builders, designers, and operators who want to reshape how the built environment works.
           </p>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
             <a
               href="#open-roles"
-              className="inline-flex items-center gap-2 rounded-xl px-6 py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90"
-              style={{ backgroundColor: '#E8793A' }}
+              className="inline-flex items-center gap-2 rounded-xl px-6 py-3.5 text-sm font-bold text-white transition-opacity hover:opacity-90 bg-orange-600"
             >
               View Open Roles <ArrowRight className="h-4 w-4" />
             </a>
             <a
               href="mailto:careers@kealee.com"
-              className="inline-flex items-center gap-2 rounded-xl border border-gray-200 px-6 py-3 text-sm font-semibold text-gray-700 transition-colors hover:border-gray-300"
+              className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-6 py-3.5 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50"
             >
               Send a general application
             </a>
@@ -228,14 +216,14 @@ export default function CareersPage() {
           {/* Quick stats */}
           <div className="mt-12 flex flex-wrap justify-center gap-10 text-center">
             {[
-              { value: '18', label: 'Products' },
-              { value: '13', label: 'AI Assistants' },
+              { value: '4', label: 'Lifecycle Phases' },
+              { value: '4', label: 'Core Services' },
+              { value: '2', label: 'User Portals' },
               { value: 'DC · MD · VA', label: 'Primary Market' },
-              { value: 'Series A', label: 'Stage' },
             ].map((s) => (
               <div key={s.label}>
-                <p className="text-2xl font-bold" style={{ color: '#1A2B4A' }}>{s.value}</p>
-                <p className="mt-0.5 text-xs text-gray-400 uppercase tracking-widest">{s.label}</p>
+                <p className="text-2xl font-black text-slate-900">{s.value}</p>
+                <p className="mt-0.5 text-xs text-slate-400 uppercase tracking-widest font-semibold">{s.label}</p>
               </div>
             ))}
           </div>
@@ -243,20 +231,20 @@ export default function CareersPage() {
       </section>
 
       {/* ── Teams ─────────────────────────────────────────────────────────── */}
-      <section className="border-b border-gray-100 py-16">
+      <section className="border-b border-slate-100 py-16 bg-white">
         <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
-          <h2 className="mb-3 text-2xl font-bold" style={{ color: '#1A2B4A' }}>Our teams</h2>
-          <p className="mb-8 text-sm text-gray-500 max-w-xl">
+          <h2 className="mb-3 text-2xl font-bold text-slate-900">Our teams</h2>
+          <p className="mb-8 text-sm text-slate-500 max-w-xl">
             We&apos;re organized around the disciplines that make Kealee work — technical, operational, and commercial.
           </p>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {TEAMS.map((t) => (
               <div
                 key={t.name}
-                className="rounded-2xl border border-gray-100 bg-gray-50 p-5"
+                className="rounded-2xl border border-slate-200 bg-slate-50/50 p-5"
               >
-                <p className="font-semibold" style={{ color: '#1A2B4A' }}>{t.name}</p>
-                <p className="mt-2 text-xs text-gray-500 leading-relaxed">{t.description}</p>
+                <p className="font-bold text-slate-900 text-sm">{t.name}</p>
+                <p className="mt-2 text-xs text-slate-500 leading-relaxed">{t.description}</p>
               </div>
             ))}
           </div>
@@ -264,14 +252,14 @@ export default function CareersPage() {
       </section>
 
       {/* ── Values ────────────────────────────────────────────────────────── */}
-      <section className="border-b border-gray-100 py-16">
+      <section className="border-b border-slate-100 py-16 bg-white">
         <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
-          <h2 className="mb-8 text-2xl font-bold" style={{ color: '#1A2B4A' }}>How we work</h2>
+          <h2 className="mb-8 text-2xl font-bold text-slate-900">How we work</h2>
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {VALUES.map((v) => (
-              <div key={v.title} className="rounded-2xl border border-gray-100 p-5">
-                <h3 className="font-semibold" style={{ color: '#1A2B4A' }}>{v.title}</h3>
-                <p className="mt-2 text-sm text-gray-500 leading-relaxed">{v.body}</p>
+              <div key={v.title} className="rounded-2xl border border-slate-200 p-5 shadow-sm">
+                <h3 className="font-bold text-slate-900 text-sm">{v.title}</h3>
+                <p className="mt-2 text-xs text-slate-500 leading-relaxed">{v.body}</p>
               </div>
             ))}
           </div>
@@ -279,13 +267,13 @@ export default function CareersPage() {
       </section>
 
       {/* ── Benefits ──────────────────────────────────────────────────────── */}
-      <section className="border-b border-gray-100 py-16" style={{ backgroundColor: '#F7FAFC' }}>
+      <section className="border-b border-slate-200 py-16" style={{ backgroundColor: '#F8FAFC' }}>
         <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
-          <h2 className="mb-2 text-2xl font-bold" style={{ color: '#1A2B4A' }}>Benefits & perks</h2>
-          <p className="mb-8 text-sm text-gray-500">We take care of the team that builds this platform.</p>
+          <h2 className="mb-2 text-2xl font-bold text-slate-900">Benefits & perks</h2>
+          <p className="mb-8 text-sm text-slate-500">We take care of the team that builds this platform.</p>
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {BENEFITS.map((b) => (
-              <div key={b.title} className="flex gap-4 rounded-2xl bg-white border border-gray-100 p-5">
+              <div key={b.title} className="flex gap-4 rounded-2xl bg-white border border-slate-200 p-5 shadow-sm">
                 <div
                   className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
                   style={{ backgroundColor: '#FFF3EC' }}
@@ -293,8 +281,8 @@ export default function CareersPage() {
                   <b.icon className="h-4 w-4" style={{ color: '#E8793A' }} />
                 </div>
                 <div>
-                  <p className="font-semibold text-sm" style={{ color: '#1A2B4A' }}>{b.title}</p>
-                  <p className="mt-1 text-xs text-gray-500 leading-relaxed">{b.body}</p>
+                  <p className="font-bold text-sm text-slate-900">{b.title}</p>
+                  <p className="mt-1 text-xs text-slate-500 leading-relaxed">{b.body}</p>
                 </div>
               </div>
             ))}
@@ -303,25 +291,24 @@ export default function CareersPage() {
       </section>
 
       {/* ── Open roles ────────────────────────────────────────────────────── */}
-      <section id="open-roles" className="py-16">
+      <section id="open-roles" className="py-16 bg-white">
         <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
-          <h2 className="mb-2 text-2xl font-bold" style={{ color: '#1A2B4A' }}>Open roles</h2>
-          <p className="mb-8 text-sm text-gray-500">
+          <h2 className="mb-2 text-2xl font-bold text-slate-900">Open roles</h2>
+          <p className="mb-8 text-sm text-slate-500">
             {OPEN_ROLES.length} positions currently open. Most roles are remote-friendly.
           </p>
 
-          <div className="divide-y divide-gray-100 overflow-hidden rounded-2xl border border-gray-200 bg-white">
+          <div className="divide-y divide-slate-100 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
             {OPEN_ROLES.map((role) => (
               <a
                 key={role.title}
                 href={`mailto:careers@kealee.com?subject=Application: ${encodeURIComponent(role.title)}`}
-                className="group flex flex-col gap-2 px-6 py-5 transition-colors hover:bg-gray-50 sm:flex-row sm:items-center sm:justify-between"
+                className="group flex flex-col gap-2 px-6 py-5 transition-colors hover:bg-slate-50 sm:flex-row sm:items-center sm:justify-between"
               >
                 <div>
                   <div className="flex flex-wrap items-center gap-2">
                     <p
-                      className="font-semibold transition-colors group-hover:text-[#E8793A]"
-                      style={{ color: '#1A2B4A' }}
+                      className="font-bold text-slate-900 transition-colors group-hover:text-[#E8793A]"
                     >
                       {role.title}
                     </p>
@@ -334,7 +321,7 @@ export default function CareersPage() {
                       </span>
                     )}
                   </div>
-                  <div className="mt-1 flex flex-wrap items-center gap-3 text-xs text-gray-400">
+                  <div className="mt-1 flex flex-wrap items-center gap-3 text-xs text-slate-400">
                     <span className="flex items-center gap-1">
                       <Briefcase className="h-3 w-3" /> {role.team}
                     </span>
@@ -346,22 +333,21 @@ export default function CareersPage() {
                     </span>
                   </div>
                 </div>
-                <div className="flex shrink-0 items-center gap-1.5 text-xs font-medium text-gray-400 group-hover:text-[#E8793A] transition-colors">
+                <div className="flex shrink-0 items-center gap-1.5 text-xs font-medium text-slate-400 group-hover:text-[#E8793A] transition-colors">
                   Apply <ArrowRight className="h-3.5 w-3.5" />
                 </div>
               </a>
             ))}
           </div>
 
-          <div className="mt-10 rounded-2xl border border-gray-200 bg-gray-50 p-8 text-center">
-            <p className="font-semibold" style={{ color: '#1A2B4A' }}>Don&apos;t see your role?</p>
-            <p className="mt-1 text-sm text-gray-500">
+          <div className="mt-10 rounded-2xl border border-slate-200 bg-slate-50 p-8 text-center">
+            <p className="font-bold text-slate-900">Don&apos;t see your role?</p>
+            <p className="mt-1 text-sm text-slate-500">
               We&apos;re always looking for exceptional people. Send us your resume and tell us how you&apos;d contribute.
             </p>
             <a
               href="mailto:careers@kealee.com"
-              className="mt-4 inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
-              style={{ backgroundColor: '#1A2B4A' }}
+              className="mt-4 inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold text-white transition-opacity hover:opacity-90 bg-slate-900"
             >
               careers@kealee.com <ArrowRight className="h-4 w-4" />
             </a>

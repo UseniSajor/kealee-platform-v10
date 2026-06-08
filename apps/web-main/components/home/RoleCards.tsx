@@ -8,37 +8,19 @@ const ROLES = [
     emoji:       '🏠',
     title:       'Homeowners',
     tagline:     'Build with confidence',
-    description: 'Track your renovation or new build. Escrow-protected payments, AI progress tracking, and a vetted contractor network.',
+    description: 'Track your renovation or new build. Escrow-protected payments, AI progress tracking, and vetted contractor matching strictly after your permit is filed or verified as not required.',
     href:        '/homeowners',
     cta:         'Start a Project',
     accent:      '#2ABFBF',
   },
   {
-    emoji:       '🏢',
-    title:       'Developers',
-    tagline:     'From land to exit',
-    description: 'Land intelligence, feasibility pro formas, capital stack management, and full development lifecycle tracking.',
-    href:        '/developers',
-    cta:         'Explore Developer Tools',
-    accent:      '#1A2B4A',
-  },
-  {
     emoji:       '🔨',
     title:       'Contractors',
     tagline:     'Win more. Build better.',
-    description: 'Join the vetted marketplace, manage bids, track field operations, and grow your reputation through verified work.',
+    description: 'Join the vetted marketplace, receive matched project bids after permits are filed/approved, track field operations, and grow your reputation through verified work.',
     href:        '/contractors',
     cta:         'Join as GC / Contractor',
     accent:      '#E8793A',
-  },
-  {
-    emoji:       '🏛️',
-    title:       'Government',
-    tagline:     'Strengthen housing supply',
-    description: 'Municipal dashboards, permit coordination, and tools aligned with housing finance programs to accelerate development.',
-    href:        '/government',
-    cta:         'Municipal Overview',
-    accent:      '#38A169',
   },
 ]
 
@@ -49,11 +31,11 @@ export function RoleCards() {
         <div className="mx-auto max-w-2xl text-center">
           <Heading>Who Kealee Is Built For</Heading>
           <p className="mt-4 text-lg text-gray-600">
-            One platform — purpose-built tools for every role in construction.
+            One platform — purpose-built tools for home project owners and construction GCs.
           </p>
         </div>
 
-        <div className="mt-16 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-16 max-w-4xl mx-auto grid gap-6 sm:grid-cols-2">
           {ROLES.map(role => (
             <Link
               key={role.title}
@@ -75,7 +57,7 @@ export function RoleCards() {
                 <p className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: role.accent }}>
                   {role.tagline}
                 </p>
-                <h3 className="text-lg font-bold font-display mb-2" style={{ color: '#1A2B4A' }}>
+                <h3 className="text-lg font-bold font-display mb-2" style={{ color: '#1E293B' }}>
                   {role.title}
                 </h3>
                 <p className="text-sm leading-relaxed text-gray-500">{role.description}</p>

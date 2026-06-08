@@ -284,6 +284,58 @@ export default function IntakePage() {
   const [agentInsight, setAgentInsight] = useState<AgentInsight | null>(null)
   const [insightLoading, setInsightLoading] = useState(true)
 
+  // Blocker checks for contractor matching
+  const projectId = searchParams.get('projectId') ?? ''
+  const [showBlocker, setShowBlocker] = useState(false)
+  const [checkingProject, setCheckingProject] = useState(true)
+  const [projectData, setProjectData] = useState<any>(null)
+
+  useEffect(() => {
+    if (projectPath !== 'contractor_match') {
+      setCheckingProject(false)
+      return
+    }
+
+    if (!projectId) {
+      setShowBlocker(true)
+      setCheckingProject(false)
+      return
+    }
+
+    let active = true
+    setCheckingProject(true)
+
+    fetch(`/api/intake?intakeId=${projectId}`)
+      .then(r => {
+        if (!r.ok) throw new Error('Not found')
+        return r.json()
+      })
+      .then(data => {
+        if (active) {
+          setProjectData(data)
+          if (!data.contractorMatchingUnlocked) {
+            setShowBlocker(true)
+          } else {
+            setShowBlocker(false)
+          }
+        }
+      })
+      .catch(() => {
+        if (active) {
+          setShowBlocker(true)
+        }
+      })
+      .finally(() => {
+        if (active) {
+          setCheckingProject(false)
+        }
+      })
+
+    return () => {
+      active = false
+    }
+  }, [projectPath, projectId])
+
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -369,6 +421,122 @@ export default function IntakePage() {
 
     return () => { cancelled = true; controller.abort() }
   }, [agentType, projectPath])
+
+  // ── Contractor Match Blocker Guard ─────────────────────────────────────────
+  if (projectPath === 'contractor_match' && checkingProject) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4">
+        <Loader2 className="w-10 h-10 animate-spin text-orange-600 mb-4" />
+        <p className="text-sm text-slate-500 font-semibold">Verifying design and permit status...</p>
+      </div>
+    )
+  }
+
+  if (projectPath === 'contractor_match' && showBlocker) {
+    const hasDesign = projectData?.hasDesign ?? false
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-slate-100 to-slate-200 flex items-center justify-center px-4 py-12">
+        <div className="max-w-2xl w-full bg-white/80 backdrop-blur-md border border-slate-200 rounded-3xl p-8 md:p-10 shadow-xl relative overflow-hidden">
+          {/* Subtle background glow */}
+          <div className="absolute -top-20 -right-20 w-60 h-60 bg-orange-200/40 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute -bottom-20 -left-20 w-60 h-60 bg-teal-200/30 rounded-full blur-3xl pointer-events-none" />
+          
+          <div className="relative z-10 flex flex-col items-center text-center">
+            {/* Lock/Workflow Icon */}
+            <div className="h-16 w-16 bg-orange-100 rounded-2xl flex items-center justify-center mb-6 shadow-sm border border-orange-200">
+              <Shield className="h-8 w-8 text-orange-600" />
+            </div>
+            
+            <span className="text-[10px] font-extrabold uppercase tracking-widest text-orange-600 bg-orange-50 border border-orange-200/50 px-3 py-1 rounded-full mb-3">
+              Lifecycle Coordination Gate
+            </span>
+            
+            <h1 className="text-3xl font-black text-slate-900 tracking-tight mb-4 animate-fade-in">
+              Bidding Requires Plans & Permits
+            </h1>
+            
+            <p className="text-sm text-slate-600 leading-relaxed mb-8 max-w-lg text-slate-600">
+              To guarantee construction quality and eliminate cost uncertainty, Kealee operates as a unified workflow that coordinates design, estimating, permit filing, and build execution. 
+              Licensed contractors cannot submit accurate, binding bids without completed architectural drawings and municipal permit filings. By coordinating these phases in order, we protect your project from zoning violations and expensive change orders.
+            </p>
+            
+            {/* Next Steps cards */}
+            <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-4 mb-8 text-left">
+              <div className={`p-5 rounded-2xl border transition-all duration-300 ${!hasDesign ? 'border-orange-500 bg-orange-50/50 ring-2 ring-orange-500/20' : 'border-slate-200 bg-white'}`}>
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Phase 1: Design & Estimate</span>
+                <h3 className="font-bold text-slate-900 mt-1">Design Concepts</h3>
+                <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+                  Visualize your layout, capture site dimensions, and get a trade-by-trade cost estimate.
+                </p>
+                {!hasDesign && (
+                  <Link 
+                    href="/intake/whole_home_concept" 
+                    className="inline-flex items-center gap-1.5 text-xs font-bold text-orange-600 hover:text-orange-700 mt-4"
+                  >
+                    Start Design Concept <ArrowRight className="w-3.5 h-3.5" />
+                  </Link>
+                )}
+                {hasDesign && (
+                  <span className="inline-flex items-center gap-1 text-xs font-bold text-green-600 mt-4">
+                    ✓ Completed
+                  </span>
+                )}
+              </div>
+              
+              <div className={`p-5 rounded-2xl border transition-all duration-300 ${hasDesign ? 'border-orange-500 bg-orange-50/50 ring-2 ring-orange-500/20' : 'border-slate-200 bg-white'}`}>
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Phase 2: Permitting</span>
+                <h3 className="font-bold text-slate-900 mt-1">Permit Preparation</h3>
+                <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+                  Convert drawings to permit plans and file with local building agencies before bidding.
+                </p>
+                {hasDesign ? (
+                  <Link 
+                    href={`/intake/permit_path_only?projectId=${projectId}`} 
+                    className="inline-flex items-center gap-1.5 text-xs font-bold text-orange-600 hover:text-orange-700 mt-4"
+                  >
+                    File Permit Package <ArrowRight className="w-3.5 h-3.5" />
+                  </Link>
+                ) : (
+                  <span className="inline-flex items-center gap-1 text-xs font-bold text-slate-400 mt-4">
+                    Requires Design
+                  </span>
+                )}
+              </div>
+            </div>
+            
+            {/* Primary Action Button */}
+            <div className="flex flex-col sm:flex-row gap-3 w-full justify-center">
+              {!hasDesign ? (
+                <Link
+                  href="/intake/whole_home_concept"
+                  className="rounded-xl bg-orange-600 hover:bg-orange-700 text-white font-bold py-3.5 px-8 text-sm transition-all hover:shadow-md text-center"
+                >
+                  Start Your Design Concept
+                </Link>
+              ) : (
+                <Link
+                  href={`/intake/permit_path_only?projectId=${projectId}`}
+                  className="rounded-xl bg-orange-600 hover:bg-orange-700 text-white font-bold py-3.5 px-8 text-sm transition-all hover:shadow-md text-center"
+                >
+                  File Your Permit Package
+                </Link>
+              )}
+              <Link
+                href="/gallery"
+                className="rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-semibold py-3.5 px-8 text-sm transition-all text-center"
+              >
+                Browse All Services
+              </Link>
+            </div>
+            
+            <p className="text-xs text-slate-400 mt-6">
+              Already have stamped drawings and approved permits? Contact us at <a href="mailto:hello@kealee.com" className="text-orange-600 hover:underline font-semibold">hello@kealee.com</a> to verify and unlock matching.
+            </p>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   // ── Unknown project path guard ─────────────────────────────────────────────
   if (!projectPath || !AGENT_MAP[projectPath]) {

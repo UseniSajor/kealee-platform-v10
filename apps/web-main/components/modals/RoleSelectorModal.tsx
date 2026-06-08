@@ -19,25 +19,11 @@ const ROLES = [
     accent:      '#2ABFBF',
   },
   {
-    icon:        '🏢',
-    label:       'Developer',
-    description: 'Multifamily, commercial, mixed-use, or land development projects',
-    href:        '/developers',
-    accent:      '#1A2B4A',
-  },
-  {
     icon:        '🔨',
     label:       'Contractor',
     description: 'General contractors, specialty trades, and construction professionals',
     href:        '/contractors',
     accent:      '#E8793A',
-  },
-  {
-    icon:        '🏛️',
-    label:       'Government / Municipal',
-    description: 'Permit authorities, housing agencies, and municipal planners',
-    href:        '/government',
-    accent:      '#38A169',
   },
 ]
 

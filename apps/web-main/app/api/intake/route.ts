@@ -120,5 +120,26 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 })
   }
 
-  return NextResponse.json(data)
+  // Also query service_chain_gates for checking permit status and matching unlock status
+  const { data: gate } = await supabase
+    .from('service_chain_gates')
+    .select('permitSubmitted, permitApproved, contractorMatchingUnlocked, noPermitRequired')
+    .eq('conceptIntakeId', intakeId)
+    .maybeSingle()
+
+  const hasDesign = data.status === 'concept_ready' || !!(data.form_data?.conceptOutput || data.form_data?.v30ConceptOutput)
+  const hasPermit = !!(gate?.permitSubmitted || gate?.permitApproved)
+  const contractorMatchingUnlocked = !!(
+    gate?.contractorMatchingUnlocked ||
+    hasPermit ||
+    gate?.noPermitRequired ||
+    data.form_data?.contractorMatchResult
+  )
+
+  return NextResponse.json({
+    ...data,
+    hasDesign,
+    hasPermit,
+    contractorMatchingUnlocked
+  })
 }

@@ -1,11 +1,7 @@
 import type { Metadata } from 'next'
 import { ServicesJourneySection } from '@/components/home/ServicesJourneySection'
 import { ConceptPackageSection } from '@/components/home/ConceptPackageSection'
-import { RoleCards } from '@/components/home/RoleCards'
 import { PipelineSection } from '@/components/home/PipelineSection'
-import { MarketplaceSection } from '@/components/home/MarketplaceSection'
-import { ContractorSection } from '@/components/home/ContractorSection'
-import { AiSection } from '@/components/home/AiSection'
 import { PortalAccessSection } from '@/components/home/PortalAccessSection'
 import { loadCardMediaManifest } from '@/lib/marketing/card-media-manifest'
 import { mergeHomeServicesWithManifest } from '@/lib/marketing/merge-home-services'
@@ -34,20 +30,8 @@ export default async function HomePage() {
       {/* AI Concept Design — 4-step workflow */}
       <ConceptPackageSection />
 
-      {/* Who Kealee is built for */}
-      <RoleCards />
-
-      {/* 7-phase unified lifecycle overview */}
+      {/* 4-phase unified lifecycle overview */}
       <PipelineSection />
-
-      {/* Contractor marketplace */}
-      <MarketplaceSection />
-
-      {/* Contractor value prop */}
-      <ContractorSection />
-
-      {/* 13 KeaBot AI assistants */}
-      <AiSection />
 
       {/* Portal dashboard access */}
       <PortalAccessSection />

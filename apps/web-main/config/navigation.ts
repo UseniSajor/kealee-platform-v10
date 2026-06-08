@@ -71,11 +71,6 @@ export const PRIMARY_NAV: NavItem[] = [
             href:        '/concept-engine/interior-reno',
             description: 'Room additions, layout changes, ADUs, and interior redesign',
           },
-          {
-            label:       'Developer Concept',
-            href:        '/intake/developer_concept',
-            description: 'Multifamily, mixed-use, and new development project concepts',
-          },
         ],
       },
     ],
@@ -142,9 +137,6 @@ export const PRIMARY_NAV: NavItem[] = [
 
   // 5 — For Contractors (direct link to landing page)
   { label: 'For Contractors', href: '/contractors' },
-
-  // 6 — For Developers (direct link to landing page)
-  { label: 'For Developers', href: '/developers' },
 ]
 
 // ── CTA buttons ───────────────────────────────────────────────────────────────
@@ -171,15 +163,11 @@ export const FOOTER_NAV = {
     { label: 'Contractor Marketplace',     href: '/marketplace' },
     { label: 'Design Services',            href: '/design-services' },
     { label: 'Payments & Escrow',          href: '/milestone-pay' },
-    { label: 'AI KeaBots',                 href: '/#keabots' },
   ],
   solutions: [
     { label: 'For Homeowners',             href: '/homeowners' },
     { label: 'Garden & Farming',           href: '/homeowners/garden-farming' },
-    { label: 'For Developers',             href: '/developers' },
     { label: 'For Contractors',            href: '/contractors' },
-    { label: 'Commercial Projects',        href: '/commercial' },
-    { label: 'Government',                 href: '/government' },
     { label: 'Get Estimate',               href: '/estimate' },
     { label: 'Design Services',            href: '/design-services' },
     { label: 'Milestone Pay',              href: '/milestone-pay' },
@@ -188,7 +176,6 @@ export const FOOTER_NAV = {
     { label: 'Client Login',               href: '/auth/sign-in' },
     { label: 'Owner Portal',               href: process.env.NEXT_PUBLIC_OWNER_PORTAL_URL ?? '/auth/sign-in' },
     { label: 'Contractor Portal',          href: process.env.NEXT_PUBLIC_CONTRACTOR_PORTAL_URL ?? '/auth/sign-in' },
-    { label: 'Developer Portal',           href: process.env.NEXT_PUBLIC_DEVELOPER_PORTAL_URL ?? '/auth/sign-in' },
   ],
   company: [
     { label: 'About Us',                   href: '/about' },

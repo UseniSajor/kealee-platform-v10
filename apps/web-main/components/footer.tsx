@@ -40,7 +40,7 @@ const SOCIAL = [
 
 export function SiteFooter() {
   return (
-    <footer className="bg-[#1A2B4A] text-white">
+    <footer className="bg-slate-50 border-t border-slate-200 text-slate-800">
       <div className="mx-auto max-w-7xl px-4 py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
 
@@ -50,9 +50,9 @@ export function SiteFooter() {
               <div className="w-8 h-8 bg-[#E8724B] rounded-lg flex items-center justify-center text-white font-bold">
                 K
               </div>
-              <span className="font-bold text-xl text-white">Kealee</span>
+              <span className="font-bold text-xl text-slate-900">Kealee</span>
             </div>
-            <p className="text-slate-400 text-sm leading-relaxed mb-6">
+            <p className="text-slate-500 text-sm leading-relaxed mb-6">
               End-to-end design-build platform for homeowners — AI design concepts, RSMeans cost estimates, permit filing, and a personal project workspace from first idea to final build.
             </p>
             <div className="flex items-center gap-3">
@@ -63,7 +63,7 @@ export function SiteFooter() {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={s.label}
-                  className="text-slate-400 hover:text-white transition-colors"
+                  className="text-slate-400 hover:text-slate-600 transition-colors"
                 >
                   {s.icon}
                 </a>
@@ -79,7 +79,7 @@ export function SiteFooter() {
                 <li key={svc.slug}>
                   <Link
                     href={`/services/${svc.slug}`}
-                    className="text-sm text-slate-300 hover:text-white transition-colors"
+                    className="text-sm text-slate-600 hover:text-slate-900 transition-colors"
                   >
                     {svc.label}
                   </Link>
@@ -96,7 +96,7 @@ export function SiteFooter() {
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-sm text-slate-300 hover:text-white transition-colors"
+                    className="text-sm text-slate-600 hover:text-slate-900 transition-colors"
                   >
                     {link.label}
                   </Link>
@@ -113,7 +113,7 @@ export function SiteFooter() {
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-sm text-slate-300 hover:text-white transition-colors"
+                    className="text-sm text-slate-600 hover:text-slate-900 transition-colors"
                   >
                     {link.label}
                   </Link>
@@ -130,7 +130,7 @@ export function SiteFooter() {
         </div>
       </div>
 
-      <SiteBottomBar variant="dark" />
+      <SiteBottomBar variant="light" />
     </footer>
   )
 }

@@ -73,7 +73,7 @@ const SECTIONS = [
     questions: [
       {
         q: 'How does the contractor marketplace work?',
-        a: 'Kealee matches homeowners and developers with verified, background-checked contractors in their area. You describe your project, we surface matched contractors, and you review profiles and request bids — all within the platform.',
+        a: 'Kealee matches homeowners and project owners with verified, background-checked contractors in their area. You describe your project, we surface matched contractors, and you review profiles and request bids — all within the platform.',
       },
       {
         q: 'How are contractors verified?',
@@ -116,16 +116,12 @@ const SECTIONS = [
     ],
   },
   {
-    title: 'Owner & Developer Portals',
-    color: '#1A2B4A',
+    title: 'Owner & Contractor Portals',
+    color: '#1E293B',
     questions: [
       {
         q: 'What is the Owner Portal?',
         a: 'The Owner Portal gives homeowners a dashboard to track their project progress, approve payments at each milestone, message their contractor and team, and review project documents — all in one place.',
-      },
-      {
-        q: 'What is the Developer Portal?',
-        a: 'The Developer Portal is a full project and portfolio management platform for developers. It includes land intelligence, feasibility pro formas, capital stack tracking, draw management, Digital Development Twin System (DDTS) access, and multi-project reporting.',
       },
       {
         q: 'What is the Contractor Portal?',
@@ -133,7 +129,7 @@ const SECTIONS = [
       },
       {
         q: 'How do I access my portal?',
-        a: 'Log in at /login. If you don\'t yet have an account, you can register as a homeowner through the intake process, as a contractor at /contractor/register, or contact us to set up a developer account.',
+        a: 'Log in at /login. If you don\'t yet have an account, you can register as a homeowner through the intake process or as a contractor at /contractor/register.',
       },
     ],
   },
@@ -162,26 +158,25 @@ export default function FAQPage() {
     <div className="min-h-screen bg-white">
       <JsonLd data={buildFaqPageJsonLd(SECTIONS)} />
       {/* Hero */}
-      <section className="border-b border-gray-100 py-16" style={{ backgroundColor: '#F7FAFC' }}>
+      <section className="border-b border-slate-200 py-16 bg-gradient-to-br from-slate-50 via-slate-100 to-slate-200">
         <div className="mx-auto max-w-3xl px-4 text-center sm:px-6">
           <span
-            className="inline-block rounded-full px-3 py-1 text-xs font-bold uppercase tracking-widest"
-            style={{ backgroundColor: 'rgba(232,121,58,0.1)', color: '#E8793A' }}
+            className="inline-block rounded-full px-3 py-1 text-xs font-bold uppercase tracking-widest bg-orange-600/10 text-orange-600"
           >
             FAQ
           </span>
-          <h1 className="mt-4 text-4xl font-bold font-display" style={{ color: '#1A2B4A' }}>
+          <h1 className="mt-4 text-4xl font-black font-display text-slate-900 tracking-tight">
             Frequently Asked Questions
           </h1>
-          <p className="mt-4 text-lg text-gray-600">
+          <p className="mt-4 text-lg text-slate-600">
             Everything you need to know about the Kealee platform.
           </p>
-          <div className="mt-6 flex flex-wrap items-center justify-center gap-3 text-sm">
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-3 text-xs">
             {SECTIONS.map(s => (
               <a
                 key={s.title}
                 href={`#${s.title.toLowerCase().replace(/[^a-z]+/g, '-')}`}
-                className="rounded-full border border-gray-200 bg-white px-4 py-1.5 font-medium text-gray-600 transition-colors hover:border-gray-300 hover:text-gray-900"
+                className="rounded-xl border border-slate-200 bg-white px-4 py-2 font-semibold text-slate-600 transition-colors hover:border-slate-350 hover:text-slate-900"
               >
                 {s.title}
               </a>
@@ -190,8 +185,8 @@ export default function FAQPage() {
 
           {/* Ask bar */}
           <div className="mt-8 mx-auto max-w-xl">
-            <div className="rounded-2xl p-4" style={{ backgroundColor: '#1A2B4A' }}>
-              <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-white/50 text-center">
+            <div className="rounded-2xl p-6 bg-slate-900 shadow-md">
+              <p className="mb-3 text-xs font-bold uppercase tracking-widest text-slate-400 text-center">
                 Can&apos;t find your answer? Ask anything
               </p>
               <AskChatBar context="default" variant="light" />
@@ -206,18 +201,18 @@ export default function FAQPage() {
           <div key={section.title} id={section.title.toLowerCase().replace(/[^a-z]+/g, '-')}>
             <div className="mb-6 flex items-center gap-3">
               <div className="h-1 w-8 rounded-full" style={{ backgroundColor: section.color }} />
-              <h2 className="text-xl font-bold font-display" style={{ color: '#1A2B4A' }}>{section.title}</h2>
+              <h2 className="text-xl font-bold font-display text-slate-900">{section.title}</h2>
             </div>
             <div className="space-y-4">
               {section.questions.map(qa => (
                 <details
                   key={qa.q}
-                  className="group rounded-xl border border-gray-200 bg-white"
+                  className="group rounded-xl border border-slate-200 bg-white shadow-sm"
                 >
-                  <summary className="flex cursor-pointer items-center justify-between gap-4 px-6 py-4 text-sm font-semibold select-none" style={{ color: '#1A2B4A' }}>
+                  <summary className="flex cursor-pointer items-center justify-between gap-4 px-6 py-4 text-sm font-semibold select-none text-slate-900">
                     {qa.q}
                     <span
-                      className="shrink-0 rounded-full p-1 text-gray-400 transition-colors group-open:rotate-45"
+                      className="shrink-0 rounded-full p-1 text-slate-400 transition-colors group-open:rotate-45"
                       style={{ transition: 'transform 200ms' }}
                     >
                       <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
@@ -225,8 +220,8 @@ export default function FAQPage() {
                       </svg>
                     </span>
                   </summary>
-                  <div className="border-t border-gray-100 px-6 py-4">
-                    <p className="text-sm text-gray-600 leading-relaxed">{qa.a}</p>
+                  <div className="border-t border-slate-100 px-6 py-4">
+                    <p className="text-sm text-slate-600 leading-relaxed">{qa.a}</p>
                   </div>
                 </details>
               ))}
@@ -236,21 +231,20 @@ export default function FAQPage() {
       </div>
 
       {/* CTA */}
-      <section className="border-t border-gray-100 py-16" style={{ backgroundColor: '#F7FAFC' }}>
+      <section className="border-t border-slate-200 py-16 bg-slate-50">
         <div className="mx-auto max-w-2xl px-4 text-center sm:px-6">
-          <h2 className="text-2xl font-bold font-display" style={{ color: '#1A2B4A' }}>Still have questions?</h2>
-          <p className="mt-3 text-gray-600">Our team responds to all inquiries within 1 business day.</p>
+          <h2 className="text-2xl font-bold font-display text-slate-900">Still have questions?</h2>
+          <p className="mt-3 text-slate-600 text-sm">Our team responds to all inquiries within 1 business day.</p>
           <div className="mt-6 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
             <Link
               href="/contact"
-              className="inline-flex items-center gap-2 rounded-xl px-6 py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90"
-              style={{ backgroundColor: '#E8793A' }}
+              className="inline-flex items-center gap-2 rounded-xl px-6 py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90 bg-orange-600 hover:bg-orange-700"
             >
               Contact Us <ArrowRight className="h-4 w-4" />
             </Link>
             <Link
-              href="/get-started"
-              className="inline-flex items-center gap-2 rounded-xl border border-gray-300 px-6 py-3 text-sm font-semibold text-gray-700 transition-colors hover:border-gray-400 hover:text-gray-900"
+              href="/concept"
+              className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-6 py-3 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50"
             >
               Get Started
             </Link>

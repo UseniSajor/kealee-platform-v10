@@ -4,12 +4,10 @@ import { Container } from '@/components/ui/Container'
 import { Heading } from '@/components/ui/Heading'
 
 const CATEGORIES = [
-  { emoji: '🏠', title: 'Residential',      desc: 'New homes, additions & ADUs' },
-  { emoji: '🔧', title: 'Renovations',       desc: 'Kitchen, bath & whole-home' },
-  { emoji: '🏢', title: 'Multifamily',       desc: 'Duplexes to apartments' },
-  { emoji: '🏪', title: 'Commercial',        desc: 'Office, retail & restaurants' },
-  { emoji: '🏛️', title: 'Government',        desc: 'Public & institutional' },
-  { emoji: '🛣️', title: 'Infrastructure',    desc: 'Site work & utilities' },
+  { emoji: '🏠', title: 'New Builds',        desc: 'Custom homes, additions & ADUs' },
+  { emoji: '🔧', title: 'Renovations',       desc: 'Kitchens, bathrooms & basements' },
+  { emoji: '📐', title: 'Design Concepts',   desc: 'Layouts, 3D renders & floor plans' },
+  { emoji: '📋', title: 'Permitting',        desc: 'Jurisdiction filings & approvals' },
 ]
 
 const TRUST = ['Licensed & Insured Verified', 'Background Checked', 'Reference Verified', 'Reputation Scored']
@@ -45,7 +43,7 @@ export function MarketplaceSection() {
             >
               <Sparkles className="mt-0.5 h-5 w-5 shrink-0" style={{ color: '#E8793A' }} />
               <div>
-                <p className="text-sm font-semibold" style={{ color: '#1A2B4A' }}>Start with an AI Concept Design</p>
+                <p className="text-sm font-semibold" style={{ color: '#1E293B' }}>Start with an AI Concept Design</p>
                 <p className="mt-0.5 text-xs text-gray-500">Get a property-specific design concept, then match to a vetted contractor — all in one platform.</p>
                 <Link
                   href="/concept-engine"
@@ -68,7 +66,7 @@ export function MarketplaceSection() {
           </div>
 
           {/* Right: categories grid */}
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+          <div className="grid grid-cols-2 gap-3">
             {CATEGORIES.map(cat => (
               <Link
                 key={cat.title}
@@ -76,7 +74,7 @@ export function MarketplaceSection() {
                 className="group flex flex-col items-center rounded-xl border border-gray-200 p-5 text-center transition-all hover:border-teal hover:shadow-sm hover:-translate-y-0.5"
               >
                 <span className="mb-3 text-2xl">{cat.emoji}</span>
-                <p className="text-sm font-semibold group-hover:text-teal-700" style={{ color: '#1A2B4A' }}>{cat.title}</p>
+                <p className="text-sm font-semibold group-hover:text-teal-700" style={{ color: '#1E293B' }}>{cat.title}</p>
                 <p className="mt-0.5 text-xs text-gray-400">{cat.desc}</p>
               </Link>
             ))}

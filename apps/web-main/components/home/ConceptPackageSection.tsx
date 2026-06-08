@@ -31,7 +31,7 @@ const STEPS = [
 
 export function ConceptPackageSection() {
   return (
-    <section className="py-20" style={{ background: 'linear-gradient(135deg, #1A2B4A 0%, #0F1D34 60%, #1A3B3B 100%)' }}>
+    <section className="py-20" style={{ background: 'linear-gradient(135deg, #F8FAFC 0%, #F1F5F9 60%, #E2E8F0 100%)' }}>
       <Container>
         <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
 
@@ -45,12 +45,12 @@ export function ConceptPackageSection() {
               AI Concept Design
             </div>
 
-            <h2 className="text-3xl font-bold text-white font-display sm:text-4xl lg:text-[40px] leading-tight">
+            <h2 className="text-3xl font-bold text-slate-900 font-display sm:text-4xl lg:text-[40px] leading-tight">
               From photos to permit-ready concept —{' '}
               <span style={{ color: '#E8793A' }}>in 2–5 business days</span>
             </h2>
 
-            <p className="mt-5 text-lg text-gray-300 leading-relaxed">
+            <p className="mt-5 text-lg text-slate-600 leading-relaxed">
               The Kealee AI Concept Package turns your property
               photos and project goals into a full design brief, exterior renderings, zoning analysis,
               and permit path strategy.
@@ -64,7 +64,7 @@ export function ConceptPackageSection() {
                 'Design direction brief',
                 'Live consultation with a project coordinator',
               ].map((item) => (
-                <li key={item} className="flex items-start gap-3 text-sm text-gray-200">
+                <li key={item} className="flex items-start gap-3 text-sm text-slate-700">
                   <span className="mt-0.5 flex-shrink-0 text-base" style={{ color: '#2ABFBF' }}>✓</span>
                   {item}
                 </li>
@@ -79,9 +79,9 @@ export function ConceptPackageSection() {
               >
                 Start Your Project <ArrowRight className="h-4 w-4" />
               </Link>
-              <div className="text-sm" style={{ color: 'rgba(255,255,255,0.6)' }}>
+              <div className="text-sm" style={{ color: '#64748B' }}>
                 Starting at{' '}
-                <span className="font-bold text-white">$585</span>
+                <span className="font-bold text-slate-900">$585</span>
                 {' '}· 2–5 day concept delivery
               </div>
             </div>
@@ -103,8 +103,7 @@ export function ConceptPackageSection() {
               return (
                 <div
                   key={step.title}
-                  className="flex gap-4 rounded-xl p-5 border"
-                  style={{ backgroundColor: 'rgba(255,255,255,0.05)', borderColor: 'rgba(255,255,255,0.08)' }}
+                  className="flex gap-4 rounded-xl p-5 border bg-white border-slate-200 shadow-sm"
                 >
                   <div
                     className="flex-shrink-0 flex h-10 w-10 items-center justify-center rounded-xl"
@@ -118,8 +117,8 @@ export function ConceptPackageSection() {
                         Step {i + 1}
                       </span>
                     </div>
-                    <p className="text-sm font-semibold text-white mb-1">{step.title}</p>
-                    <p className="text-xs text-gray-400 leading-relaxed">{step.desc}</p>
+                    <p className="text-sm font-semibold text-slate-900 mb-1">{step.title}</p>
+                    <p className="text-xs text-slate-600 leading-relaxed">{step.desc}</p>
                   </div>
                 </div>
               )

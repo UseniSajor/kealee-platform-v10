@@ -228,6 +228,7 @@ function DeliverableCard({ d, ownedProducts }: { d: Deliverable; ownedProducts?:
             variant="compact"
             sourceProjectPath={d.projectPath}
             fromIntakeId={d.id}
+            contractorMatchingUnlocked={d.lifecycleStage === 1 || d.lifecycleStage === 2}
             ownedProducts={ownedProducts}
             conceptServicePrice={d.conceptServicePrice ?? undefined}
           />
