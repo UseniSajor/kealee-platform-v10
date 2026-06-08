@@ -1,12 +1,9 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
 import { ErrorBoundary } from "../components/ErrorBoundary";
 import { ClientToaster } from "../components/client-toaster";
 import "./globals.css";
 
 export const dynamic = "force-dynamic";
-
-const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "Kealee - Admin Console",
@@ -27,7 +24,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={inter.className}>
+      <body className="font-sans antialiased">
         <ErrorBoundary>
           {children}
           <ClientToaster />
