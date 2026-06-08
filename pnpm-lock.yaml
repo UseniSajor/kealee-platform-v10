@@ -8,6 +8,7 @@ neverBuiltDependencies:
   - '@sentry/cli'
   - canvas
   - msgpackr-extract
+  - onnxruntime-node
   - unrs-resolver
 
 importers:
@@ -20054,7 +20055,6 @@ packages:
   /onnxruntime-node@1.21.0:
     resolution: {integrity: sha512-NeaCX6WW2L8cRCSqy3bInlo5ojjQqu2fD3D+9W5qb5irwxhEyWKXeH2vZ8W9r6VxaMPUan+4/7NDwZMtouZxEw==}
     os: [win32, darwin, linux]
-    requiresBuild: true
     dependencies:
       global-agent: 3.0.0
       onnxruntime-common: 1.21.0
