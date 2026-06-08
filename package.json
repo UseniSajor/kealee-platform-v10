@@ -172,6 +172,7 @@
       "@sentry/cli",
       "canvas",
       "msgpackr-extract",
+      "onnxruntime-node",
       "unrs-resolver"
     ]
   }
