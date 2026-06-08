@@ -12,7 +12,7 @@ const STEPS = [
   {
     icon:  Brain,
     title: 'AI Analyzes & Designs',
-    desc:  'Our 15-node AI workflow — powered by Claude — analyzes your property, zoning, and project goals to generate a design brief and concept visuals.',
+    desc:  'Our specialized AI design engine analyzes your property, zoning, and project goals to generate a design brief and concept visuals.',
     color: '#E8793A',
   },
   {
@@ -51,7 +51,7 @@ export function ConceptPackageSection() {
             </h2>
 
             <p className="mt-5 text-lg text-gray-300 leading-relaxed">
-              The Kealee AI Concept Package uses a 15-node Claude AI workflow to turn your property
+              The Kealee AI Concept Package turns your property
               photos and project goals into a full design brief, exterior renderings, zoning analysis,
               and permit path strategy.
             </p>

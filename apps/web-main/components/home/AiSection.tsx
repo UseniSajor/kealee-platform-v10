@@ -27,8 +27,8 @@ export function AiSection() {
           </span>
           <Heading className="mt-3">13 KeaBot AI Assistants</Heading>
           <p className="mt-4 text-lg text-gray-600">
-            Every domain has a dedicated AI assistant powered by Claude. KeaBots orchestrate tasks,
-            answer questions, and automate workflows — so your team can focus on building.
+            Every project has access to specialized AI assistants that analyze plans, track progress,
+            answer questions, and automate paperwork — so you can focus on building.
           </p>
         </div>
 

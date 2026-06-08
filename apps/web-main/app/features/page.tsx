@@ -256,21 +256,21 @@ export default function FeaturesPage() {
               Core Infrastructure
             </span>
             <h2 className="mt-3 text-3xl font-bold text-white font-display sm:text-4xl">
-              Digital Development Twin System (DDTS)
+              Digital Project Twin
             </h2>
             <p className="mt-4 text-lg text-gray-300">
-              Every project gets a living digital twin from day one. The DDTS is the nervous system that connects all operating systems and provides real-time project intelligence.
+              Every project gets a living digital record from day one. The twin tracks all updates, files, and progress to keep your project on schedule and on budget.
             </p>
           </div>
 
           <div className="mt-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {[
-              { icon: Boxes, title: 'L1/L2/L3 Tiers', desc: 'L1: 3 KPIs for renovations. L2: 6 KPIs + health scoring for new builds. L3: 10 KPIs + predictive analytics for complex developments.' },
-              { icon: Activity, title: 'Health Scoring', desc: 'Aggregate score across schedule, budget, quality, and risk. L2+ twins compute real-time health with configurable warning/critical thresholds.' },
-              { icon: Brain, title: 'Event Intelligence', desc: 'Every OS action emits TwinEvents. 27 integration hooks track project, permit, estimation, payment, schedule, and marketplace events.' },
-              { icon: Eye, title: 'State Snapshots', desc: 'Point-in-time captures for investor reports, audits, and trend analysis. Compare any two snapshots to see what changed.' },
-              { icon: Gauge, title: 'KPI Thresholds', desc: '19 pre-configured KPI defaults across 3 tiers. Custom warning (±10%) and critical (±20%) thresholds for each metric.' },
-              { icon: Layers, title: '7-Phase Unified Lifecycle', desc: 'Tracks projects through the unified sequence: Idea → Design → Estimate → Permit → Contractor → Execution → Completion.' },
+              { icon: Boxes, title: 'Flexible Tracking', desc: 'Standard tracking for home renovations, and advanced analytics for larger construction projects.' },
+              { icon: Activity, title: 'Project Health Monitoring', desc: 'Real-time scoring across schedule, budget, and quality to identify issues before they delay construction.' },
+              { icon: Brain, title: 'Smart Activity Log', desc: 'Automated updates for every project milestone, permit submission, and payment event.' },
+              { icon: Eye, title: 'Progress Snapshots', desc: 'Saved history logs for review, insurance, and reporting. Easily compare snapshots to see what changed.' },
+              { icon: Gauge, title: 'Budget & Schedule Alerts', desc: 'Automatic notifications if your project budget or timeline deviates from the original plan.' },
+              { icon: Layers, title: '7-Phase Project Journey', desc: 'Seamlessly guides your project from first idea, design, cost planning, permits, contractor matching, and active build, through completion.' },
             ].map((item, i) => (
               <motion.div
                 key={item.title}
@@ -301,7 +301,7 @@ export default function FeaturesPage() {
               13 Specialized AI Assistants
             </h2>
             <p className="mt-4 text-lg text-gray-600">
-              KeaBots are thin orchestrators that call OS service APIs — they assist and automate but never replace the system of record. Powered by Claude AI.
+              KeaBots assist and automate your project workflow, helping you manage documents, track details, and get quick answers without replacing human expertise.
             </p>
           </div>
 

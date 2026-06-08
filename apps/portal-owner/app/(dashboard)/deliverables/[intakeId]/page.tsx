@@ -1575,7 +1575,7 @@ export default function ConceptDeliverablePage() {
             <div className="px-6 py-4 border-b border-gray-100 flex items-center gap-2">
               <span className="h-2 w-2 rounded-full" style={{ backgroundColor: '#2ABFBF' }} />
               <h2 className="text-base font-bold" style={{ color: '#1A2B4A' }}>Design Narrative</h2>
-              <span className="ml-auto text-xs text-gray-400 font-medium">AI Design Professional · Claude</span>
+              <span className="ml-auto text-xs text-gray-400 font-medium">AI Design Professional</span>
             </div>
             <div className="p-6 space-y-5">
               {data.narrative.projectSummary && (

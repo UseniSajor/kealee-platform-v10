@@ -94,7 +94,7 @@ export default function IntakeSuccessPage() {
           <p className="text-slate-600 text-lg mb-2">
             {status === 'redirecting'
               ? 'Opening the Owner Portal…'
-              : 'Claude is building your personalized concept package.'}
+              : 'Our design engine is building your personalized concept package.'}
           </p>
           <p className="text-slate-400 text-sm">This takes about 10–15 seconds.</p>
         </div>

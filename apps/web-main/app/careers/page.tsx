@@ -173,7 +173,7 @@ const TEAMS = [
   },
   {
     name: 'AI Platform',
-    description: 'KeaBots, Claude API, multi-turn tool-use agents, Digital Development Twin System (DDTS). We\'re building AI that understands the construction lifecycle, not just text.',
+    description: 'KeaBots, specialized AI integration, and the Digital Project Twin. We\'re building AI that understands the construction lifecycle, not just text.',
   },
   {
     name: 'Operations & Field',
