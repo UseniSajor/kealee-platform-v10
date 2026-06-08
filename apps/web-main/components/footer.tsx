@@ -14,7 +14,6 @@ const COMPANY_LINKS = [
 const LEGAL_LINKS = [
   { href: '/terms', label: 'Terms of Service' },
   { href: '/privacy', label: 'Privacy Policy' },
-  { href: 'https://owner.kealee.com/login', label: 'Owner Portal' },
 ]
 
 const SOCIAL = [

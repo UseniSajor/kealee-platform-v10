@@ -494,8 +494,8 @@ function DetailsInner() {
           </label>
           <select
             className={inputClass}
-            value={style}
-            onChange={(e) => setStyle(e.target.value)}
+            value={priority}
+            onChange={(e) => setPriority(e.target.value)}
           >
             <option value="">What matters most to you?</option>
             {(isGarden ? GARDEN_PRIORITY_OPTIONS : PRIORITY_OPTIONS).map((p) => (

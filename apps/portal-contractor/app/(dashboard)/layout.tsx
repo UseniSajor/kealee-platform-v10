@@ -165,8 +165,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </div>
         </div>
 
-        <main className="flex-1 overflow-auto p-4 sm:p-6 lg:p-8">
-          <PortalPageWithAskRail portal="contractor">{children}</PortalPageWithAskRail>
+        <main className="flex-1 overflow-auto p-4 sm:p-6 lg:p-8 flex flex-col justify-between">
+          <div className="flex-grow">
+            <PortalPageWithAskRail portal="contractor">{children}</PortalPageWithAskRail>
+          </div>
+          <footer className="mt-8 pt-4 border-t border-slate-200/50 text-center text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+            © 2026 Kealee Platform LLC · DC, MD & VA
+          </footer>
         </main>
       </div>
     </div>
