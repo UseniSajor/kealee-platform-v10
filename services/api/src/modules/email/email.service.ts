@@ -1,19 +1,20 @@
-import { Resend } from 'resend'
+import sgMail from '@sendgrid/mail'
 
-// Lazy-initialize Resend client to avoid crash if API key missing
-let resend: Resend | null = null;
+// Lazy-initialize SendGrid client
+let sendgridInitialized = false;
 
-function getResendClient(): Resend | null {
-  if (!process.env.RESEND_API_KEY) {
-    console.warn('⚠️  RESEND_API_KEY not set - email service disabled');
-    return null;
+function initializeSendGrid(): boolean {
+  if (!process.env.SENDGRID_API_KEY) {
+    console.warn('⚠️  SENDGRID_API_KEY not set - email service disabled');
+    return false;
   }
-  
-  if (!resend) {
-    resend = new Resend(process.env.RESEND_API_KEY);
+
+  if (!sendgridInitialized) {
+    sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+    sendgridInitialized = true;
   }
-  
-  return resend;
+
+  return true;
 }
 
 export interface EmailOptions {
@@ -27,12 +28,10 @@ export interface EmailOptions {
 
 export class EmailService {
   /**
-   * Send email using Resend
+   * Send email using SendGrid
    */
   async sendEmail(options: EmailOptions) {
-    const resendClient = getResendClient();
-    
-    if (!resendClient) {
+    if (!initializeSendGrid()) {
       console.warn('⚠️  Email service not configured, email not sent:', options.subject)
       return { success: false, error: 'Email provider not configured' }
     }
@@ -43,20 +42,23 @@ export class EmailService {
         ? await this.getTemplate(options.template, options.data || {})
         : { html: options.html, text: options.text }
 
-      const result = await resendClient.emails.send({
-        from: process.env.RESEND_FROM_EMAIL || 'Kealee Platform <noreply@kealee.com>',
+      const msg = {
         to: Array.isArray(options.to) ? options.to : [options.to],
+        from: process.env.SENDGRID_FROM_EMAIL || 'Kealee Platform <noreply@kealee.com>',
         subject: options.subject,
         html: html || undefined,
         text: text || (html ? html.replace(/<[^>]*>/g, '') : undefined),
-      } as any)
+      } as any
 
-      // Handle different response structures from Resend API
-      const emailId = result.data?.id || (result as any).id || 'unknown'
+      const result = await sgMail.send(msg)
+
+      // SendGrid returns array with response object
+      const emailId = (result as any)?.[0]?.headers?.['x-message-id'] || 'sent'
+      console.log(`✅ Email sent to ${Array.isArray(options.to) ? options.to.join(', ') : options.to}`)
       return { success: true, id: emailId }
     } catch (error: any) {
-      console.error('❌ Email send failed:', error)
-      return { success: false, error: error.message }
+      console.error('❌ Email send failed:', error?.message || error)
+      return { success: false, error: error?.message || String(error) }
     }
   }
 
