@@ -311,7 +311,7 @@ export default function BuildPageClient() {
             Your project gets built here.
           </h1>
           <p className="text-slate-300 text-lg max-w-2xl mx-auto mb-3 leading-relaxed">
-            Kealee is not a contractor. We are the platform that coordinates every licensed professional — architect, engineer, GC, and specialty trade — from your first design concept through your final inspection.
+            Kealee is the platform that coordinates every licensed professional — architect, engineer, GC, and specialty trade — from your first design concept through your final inspection.
           </p>
           <p className="text-slate-400 text-sm max-w-xl mx-auto mb-10">
             Every professional on your project is vetted, licensed, insured, and onboarded to the Kealee platform. You never source or negotiate with professionals independently.
