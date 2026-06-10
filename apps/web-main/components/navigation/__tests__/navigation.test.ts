@@ -58,20 +58,19 @@ describe('PRIMARY_NAV', () => {
     })
   })
 
-  it('includes a Pricing nav item', () => {
-    const pricing = PRIMARY_NAV.find(i => i.label === 'Pricing')
-    expect(pricing).toBeDefined()
+  it('includes a Products nav item', () => {
+    const products = PRIMARY_NAV.find(i => i.label === 'Products')
+    expect(products).toBeDefined()
   })
 
-  it('includes role nav items for Contractors and Developers', () => {
+  it('includes a For Contractors role nav item', () => {
     const labels = PRIMARY_NAV.map(i => i.label)
     expect(labels).toContain('For Contractors')
-    expect(labels).toContain('For Developers')
   })
 
-  it('AI Concept Engine item points to /concept', () => {
-    const conceptItem = PRIMARY_NAV.find(i => i.label === 'AI Concept Engine')
-    expect(conceptItem?.href).toBe('/concept')
+  it('Start your design item points to /concept-engine', () => {
+    const conceptItem = PRIMARY_NAV.find(i => i.label === 'Start your design')
+    expect(conceptItem?.href).toBe('/concept-engine')
   })
 })
 

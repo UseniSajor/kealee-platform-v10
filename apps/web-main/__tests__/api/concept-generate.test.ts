@@ -6,8 +6,9 @@
  *  - Missing intakeId → 400
  *  - Non-existent intakeId → 404
  *  - Missing ANTHROPIC_API_KEY → 503
- *  - Claude response parsing
+ *  - DesignBot success → 200 with conceptOutput
  *  - Cached concept returned if already generated
+ *  - DesignBot failure → 500 with partial: true
  */
 
 import { NextRequest } from 'next/server'
@@ -39,11 +40,40 @@ const mockConceptOutput = {
   projectTimeline: '10–14 weeks',
   description: 'Modern chef kitchen concept.',
   includes: ['3 renders', 'BOM', 'MEP spec'],
+  renderUrls: [],
+  permitScope: {
+    requiresPermit: true,
+    permitTypes: ['Building Permit'],
+    estimatedPermitFee: 850,
+    estimatedProcessingDays: 21,
+    requiresPE: false,
+    notes: 'Permit required.',
+  },
+  zoningNotes: 'R-4 zone.',
+  buildabilityFlag: 'feasible' as const,
+  readinessScore: 80,
+}
+
+const mockDesignOutput = {
+  projectId: 'test-intake-001',
+  conceptCount: 1,
+  concepts: [{
+    id: 'c1',
+    name: 'Modern Kitchen',
+    description: 'Island kitchen',
+    styleMatch: 85,
+    estimatedCost: 46500,
+    materials: ['Quartz'],
+    accessibility: [],
+    renderingHints: 'Clean lines',
+    uniqueFeatures: ['Island'],
+  }],
+  recommendations: ['Add island seating'],
+  estimatedTimeline: 90,
 }
 
 let mockSupabaseSelect: jest.Mock
-let mockSupabaseUpdate: jest.Mock
-let mockAnthropicCreate: jest.Mock
+let mockBotExecute: jest.Mock
 
 jest.mock('@/lib/supabase-server', () => ({
   getSupabaseAdmin: jest.fn(() => ({
@@ -60,12 +90,13 @@ jest.mock('@/lib/supabase-server', () => ({
   })),
 }))
 
-jest.mock('@anthropic-ai/sdk', () => ({
-  default: jest.fn().mockImplementation(() => ({
-    messages: {
-      create: jest.fn(() => mockAnthropicCreate()),
-    },
+// Mock DesignBotEnterprise and mapDesignOutputToConceptOutput so tests never
+// hit the real Anthropic API.
+jest.mock('@kealee/core-llm', () => ({
+  DesignBotEnterprise: jest.fn().mockImplementation(() => ({
+    execute: jest.fn((..._args: unknown[]) => mockBotExecute()),
   })),
+  mapDesignOutputToConceptOutput: jest.fn((_data: unknown, _opts: unknown) => mockConceptOutput),
 }))
 
 async function getHandler() {
@@ -87,8 +118,14 @@ describe('POST /api/concept/generate', () => {
   beforeEach(() => {
     jest.clearAllMocks()
     mockSupabaseSelect = jest.fn()
-    mockSupabaseUpdate = jest.fn()
-    mockAnthropicCreate = jest.fn()
+    mockBotExecute = jest.fn()
+    // Re-wire the DesignBotEnterprise mock's execute to use the per-test mockBotExecute
+    const { DesignBotEnterprise } = require('@kealee/core-llm') as {
+      DesignBotEnterprise: jest.Mock
+    }
+    DesignBotEnterprise.mockImplementation(() => ({
+      execute: jest.fn((..._args: unknown[]) => mockBotExecute()),
+    }))
   })
 
   test('returns 400 when intakeId is missing', async () => {
@@ -147,12 +184,10 @@ describe('POST /api/concept/generate', () => {
     expect(body.conceptOutput).toBeDefined()
   })
 
-  test('calls Claude and returns conceptOutput on success', async () => {
+  test('calls DesignBot and returns conceptOutput on success', async () => {
     process.env.ANTHROPIC_API_KEY = 'test-key-for-unit-tests'
     mockSupabaseSelect.mockResolvedValueOnce({ data: mockIntakeRecord, error: null })
-    mockAnthropicCreate.mockResolvedValueOnce({
-      content: [{ type: 'text', text: JSON.stringify(mockConceptOutput) }],
-    })
+    mockBotExecute.mockResolvedValueOnce({ success: true, data: mockDesignOutput })
 
     const POST = await getHandler()
     const res = await POST(makeRequest({ intakeId: 'test-intake-001' }))
@@ -162,19 +197,15 @@ describe('POST /api/concept/generate', () => {
     expect(body.conceptOutput.designConcept.style).toBe('Modern')
   })
 
-  test('falls back to partial concept when Claude returns no JSON', async () => {
+  test('returns 500 with partial:true when DesignBot fails', async () => {
     process.env.ANTHROPIC_API_KEY = 'test-key-for-unit-tests'
     mockSupabaseSelect.mockResolvedValueOnce({ data: mockIntakeRecord, error: null })
-    mockAnthropicCreate.mockResolvedValueOnce({
-      content: [{ type: 'text', text: 'Sorry, I cannot help with that.' }],
-    })
+    mockBotExecute.mockResolvedValueOnce({ success: false, error: 'DesignBot error: service unavailable' })
 
     const POST = await getHandler()
     const res = await POST(makeRequest({ intakeId: 'test-intake-001' }))
-    expect(res.status).toBe(200)
+    expect(res.status).toBe(500)
     const body = await res.json()
-    // Partial fallback should still return a concept
-    expect(body.conceptOutput).toBeDefined()
-    expect(body.conceptOutput.estimatedCost).toBeGreaterThan(0)
+    expect(body.partial).toBe(true)
   })
 })

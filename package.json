@@ -40,7 +40,7 @@
     "ssl:test": "bash scripts/ssl-test-subdomains.sh",
     "ssl:setup-renewal": "bash scripts/ssl-setup-auto-renewal.sh",
     "ssl:fix-all": "bash scripts/ssl-complete-fix.sh",
-    "test:unit": "echo 'Run unit tests in individual apps'",
+    "test:unit": "jest --no-coverage",
     "test:integration": "bash scripts/test-integrations.sh",
     "test:api": "bash scripts/test-integrations.sh",
     "test:payment": "cd apps/m-ops-services && npm run test:payment || echo 'Payment tests not configured'",
@@ -127,6 +127,9 @@
     "jsonwebtoken": "^9.0.3",
     "postcss": "^8.5.6",
     "tailwindcss": "^3.4.0",
+    "@types/jest": "^29.5.0",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.3.0",
     "tsx": "^4.21.0",
     "turbo": "^2.7.6",
     "typescript": "^5.9.3"

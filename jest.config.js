@@ -1,7 +1,18 @@
 // jest.config.js
 // Jest configuration for the monorepo
 
+/** Directories that contain duplicate package.json names — exclude from Haste map */
+const IGNORE_PATHS = [
+  '/\\.next/',
+  '/website-versions/',
+  '/services/command-center/local/',
+  '/node_modules/',
+];
+
 module.exports = {
+  // Prevent Haste module map collisions from .next builds, local copies, and old versions
+  modulePathIgnorePatterns: IGNORE_PATHS,
+  testPathIgnorePatterns: IGNORE_PATHS,
   projects: [
     {
       displayName: 'm-permits-inspections',
@@ -11,12 +22,14 @@ module.exports = {
       moduleNameMapper: {
         '^@/(.*)$': '<rootDir>/apps/m-permits-inspections/$1',
       },
+      modulePathIgnorePatterns: IGNORE_PATHS,
     },
     {
       displayName: 'm-ops-services',
       testMatch: ['<rootDir>/apps/m-ops-services/**/__tests__/**/*.test.{ts,tsx}'],
       testEnvironment: 'jsdom',
       setupFilesAfterEnv: ['<rootDir>/apps/m-ops-services/__tests__/setup.ts'],
+      modulePathIgnorePatterns: IGNORE_PATHS,
     },
     {
       displayName: 'web-main',
@@ -27,6 +40,7 @@ module.exports = {
         '^@/(.*)$': '<rootDir>/apps/web-main/$1',
       },
       setupFilesAfterEnv: ['<rootDir>/apps/web-main/__tests__/setup.ts'],
+      modulePathIgnorePatterns: IGNORE_PATHS,
     },
   ],
   collectCoverageFrom: [
