@@ -4,8 +4,6 @@
  * Tests UI elements, pricing accuracy, and user flows
  */
 
-import { describe, it, expect } from 'vitest';
-
 // Pricing data that must match what's displayed on the pages
 const EXPECTED_PRICING = {
   gcPackages: {

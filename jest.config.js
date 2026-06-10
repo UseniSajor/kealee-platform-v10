@@ -17,7 +17,9 @@ module.exports = {
     {
       displayName: 'm-permits-inspections',
       testMatch: ['<rootDir>/apps/m-permits-inspections/**/__tests__/**/*.test.{ts,tsx}'],
-      testEnvironment: 'jsdom',
+      testEnvironment: '<rootDir>/jest-environments/jsdom-canvas-mock.js',
+      // Override jsx: preserve → react so ts-jest emits valid JS (preserve is for Next.js/SWC, not Jest)
+      transform: { '^.+\\.tsx?$': ['ts-jest', { tsconfig: { jsx: 'react' } }] },
       setupFilesAfterEnv: ['<rootDir>/apps/m-permits-inspections/__tests__/setup.ts'],
       moduleNameMapper: {
         '^@/(.*)$': '<rootDir>/apps/m-permits-inspections/$1',
@@ -27,7 +29,9 @@ module.exports = {
     {
       displayName: 'm-ops-services',
       testMatch: ['<rootDir>/apps/m-ops-services/**/__tests__/**/*.test.{ts,tsx}'],
-      testEnvironment: 'jsdom',
+      testEnvironment: '<rootDir>/jest-environments/jsdom-canvas-mock.js',
+      // Override jsx: preserve → react so ts-jest emits valid JS (preserve is for Next.js/SWC, not Jest)
+      transform: { '^.+\\.tsx?$': ['ts-jest', { tsconfig: { jsx: 'react' } }] },
       setupFilesAfterEnv: ['<rootDir>/apps/m-ops-services/__tests__/setup.ts'],
       modulePathIgnorePatterns: IGNORE_PATHS,
     },

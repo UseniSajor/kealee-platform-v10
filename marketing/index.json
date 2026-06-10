@@ -1,7 +1,7 @@
 {
   "version": "1.0.0",
-  "updatedAt": "2026-05-24",
-  "description": "Canonical marketing plans, stacks, and campaign library (no paid ads / no marketing SaaS)",
+  "updatedAt": "2026-06-08",
+  "description": "Canonical platform marketing plans, stacks, and campaign library for preconstruction services",
   "canonicalUpsellPath": "concept → permit → drawings",
   "upsellPath": {
     "id": "concept-permit-drawings",
@@ -9,12 +9,18 @@
     "title": "Post-concept upsell (permit then drawings)"
   },
   "docs": [
+    { "path": "PRECONSTRUCTION-MARKETING-PLAN.md", "title": "Preconstruction services marketing plan" },
     { "path": "upsell-path.json", "title": "Canonical upsell path" },
     { "path": "ORGANIC-AUTOMATION-PLAN.md", "title": "Organic automation plan (human-readable)" },
     { "path": "STACK-RECOMMENDATION.md", "title": "Stack vs repo tools" },
     { "path": "README.md", "title": "Marketing folder index" }
   ],
   "plans": [
+    {
+      "id": "preconstruction-services-2026",
+      "path": "plans/preconstruction-services-2026.json",
+      "title": "Preconstruction services launch plan"
+    },
     {
       "id": "organic-2026-q2",
       "path": "plans/organic-2026-q2.json",
@@ -41,6 +47,16 @@
     }
   ],
   "campaigns": [
+    {
+      "id": "preconstruction-launch-12-week",
+      "path": "campaigns/preconstruction-launch.json",
+      "title": "Preconstruction 12-week launch"
+    },
+    {
+      "id": "preconstruction-qualification-drip",
+      "path": "campaigns/preconstruction-drip.json",
+      "title": "Preconstruction lead qualification drip"
+    },
     {
       "id": "drip-sequence-v1",
       "path": "campaigns/drip-sequence.json",

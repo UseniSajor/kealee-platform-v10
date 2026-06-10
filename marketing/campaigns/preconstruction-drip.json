@@ -1,0 +1,52 @@
+{
+  "id": "preconstruction-qualification-drip",
+  "version": "1.0.0",
+  "updatedAt": "2026-06-08",
+  "channel": "resend",
+  "audience": "unpaid qualified preconstruction leads",
+  "exitConditions": ["paid_service", "unsubscribed", "human_sales_sequence"],
+  "messages": [
+    {
+      "step": 1,
+      "delay": "immediate",
+      "subject": "We received your preconstruction request",
+      "purpose": "Confirm receipt and explain the scope-review process.",
+      "cta": "Add project details"
+    },
+    {
+      "step": 2,
+      "delayDays": 1,
+      "subject": "The inputs that make a project estimate useful",
+      "purpose": "Request plans, dimensions, unit count, specifications, and known site constraints.",
+      "cta": "Complete your project inputs"
+    },
+    {
+      "step": 3,
+      "delayDays": 3,
+      "subject": "Concept, estimate, or permit path: where should you start?",
+      "purpose": "Route the lead based on the unresolved project decision.",
+      "cta": "Choose your starting point"
+    },
+    {
+      "step": 4,
+      "delayDays": 6,
+      "subject": "Why Kealee documents every estimating assumption",
+      "purpose": "Explain catalogue references, quantities, labor, materials, equipment, and exclusions.",
+      "cta": "Review the estimating approach"
+    },
+    {
+      "step": 5,
+      "delayDays": 10,
+      "subject": "Prepare the project before the permit submission",
+      "purpose": "Explain jurisdiction research, dependencies, and submission-readiness outputs.",
+      "cta": "Review permit planning"
+    },
+    {
+      "step": 6,
+      "delayDays": 14,
+      "subject": "Ready to organize the next project decision?",
+      "purpose": "Invite the lead to begin the recommended paid preconstruction workflow.",
+      "cta": "Start your preconstruction plan"
+    }
+  ]
+}

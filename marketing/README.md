@@ -4,6 +4,7 @@ Platform growth for **traffic → leads → paid concept → permit → drawings
 
 | Doc | Purpose |
 |-----|---------|
+| [PRECONSTRUCTION-MARKETING-PLAN.md](./PRECONSTRUCTION-MARKETING-PLAN.md) | **Current campaign** — design concepts, catalogue-based estimating, and permit planning |
 | [ORGANIC-AUTOMATION-PLAN.md](./ORGANIC-AUTOMATION-PLAN.md) | **Organic plan** — no paid ads, no marketing SaaS |
 | [upsell-path.json](./upsell-path.json) | Canonical post-concept upsell (permit → drawings) |
 | [index.json](./index.json) | Catalog of saved plans, stacks, campaigns |

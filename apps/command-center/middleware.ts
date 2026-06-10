@@ -22,7 +22,7 @@ export async function middleware(request: NextRequest) {
 
   const { data: { session } } = await supabase.auth.getSession()
 
-  const protectedPaths = ['/twins', '/events', '/bots', '/integrations', '/analytics']
+  const protectedPaths = ['/twins', '/events', '/bots', '/marketing', '/renderings', '/integrations', '/analytics']
   const isProtectedPath = request.nextUrl.pathname === '/' || protectedPaths.some(path => request.nextUrl.pathname.startsWith(path))
 
   if (isProtectedPath && !session) {
@@ -44,5 +44,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/', '/twins/:path*', '/events/:path*', '/bots/:path*', '/integrations/:path*', '/analytics/:path*', '/login', '/signup', '/auth/callback'],
+  matcher: ['/', '/twins/:path*', '/events/:path*', '/bots/:path*', '/marketing/:path*', '/renderings/:path*', '/integrations/:path*', '/analytics/:path*', '/login', '/signup', '/auth/callback'],
 }

@@ -12,8 +12,12 @@ import {
   LogOut,
   Radar,
   Megaphone,
+  ImageIcon,
+  Orbit,
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
+
+const MARKETING_OS_URL = process.env.NEXT_PUBLIC_MARKETING_OS_URL ?? 'http://localhost:3032'
 
 const NAV_ITEMS = [
   { href: '/', label: 'Overview', icon: LayoutDashboard, exact: true },
@@ -21,6 +25,8 @@ const NAV_ITEMS = [
   { href: '/events', label: 'Events', icon: Radio },
   { href: '/bots', label: 'Bots', icon: Bot },
   { href: '/marketing', label: 'Marketing', icon: Megaphone },
+  { href: MARKETING_OS_URL, label: 'Marketing OS', icon: Orbit, external: true },
+  { href: '/renderings', label: 'Renderings', icon: ImageIcon },
   { href: '/integrations', label: 'Integrations', icon: Plug },
   { href: '/analytics', label: 'Analytics', icon: BarChart3 },
 ]
@@ -46,9 +52,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </div>
         <nav className="space-y-1 p-4">
           {NAV_ITEMS.map((item) => {
-            const active = item.exact ? pathname === item.href : pathname.startsWith(item.href)
+            const active = item.external ? false : item.exact ? pathname === item.href : pathname.startsWith(item.href)
             return (
               <Link key={item.href} href={item.href}
+                target={item.external ? '_blank' : undefined}
+                rel={item.external ? 'noreferrer' : undefined}
                 className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
                   active ? 'text-white' : 'text-white/50 hover:bg-white/5 hover:text-white/80'
                 }`}
@@ -81,9 +89,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </header>
         <nav className="flex gap-1 overflow-x-auto border-b px-4 py-2 lg:hidden" style={{ borderColor: '#2A3D5F', backgroundColor: '#1A2B4A' }}>
           {NAV_ITEMS.map((item) => {
-            const active = item.exact ? pathname === item.href : pathname.startsWith(item.href)
+            const active = item.external ? false : item.exact ? pathname === item.href : pathname.startsWith(item.href)
             return (
               <Link key={item.href} href={item.href}
+                target={item.external ? '_blank' : undefined}
+                rel={item.external ? 'noreferrer' : undefined}
                 className={`flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium ${
                   active ? '' : 'text-white/50 hover:bg-white/5'
                 }`}
