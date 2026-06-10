@@ -24,6 +24,17 @@ const healthColor = (score: number | null) => {
   return '#E53E3E'
 }
 
+function normalizePhase(phase: string | null): string {
+  if (!phase) return 'IDEA'
+  const upper = phase.toUpperCase()
+  const aliases: Record<string, string> = {
+    PERMITS:      'PERMIT',
+    CONSTRUCTION: 'EXECUTION',
+    CLOSEOUT:     'COMPLETION',
+  }
+  return aliases[upper] ?? upper
+}
+
 const phaseStyles: Record<string, string> = {
   CONSTRUCTION:    '#2ABFBF',
   CLOSEOUT:        '#38A169',
