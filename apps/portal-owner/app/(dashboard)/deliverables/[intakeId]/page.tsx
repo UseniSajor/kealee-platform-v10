@@ -266,6 +266,46 @@ const PACKAGE_CONFIG: Record<string, PackageDef> = {
       'Direct support via portal ask bar',
     ],
   },
+  design_estimate_permit_bundle: {
+    label: 'Design + Estimate + Permit Bundle',
+    includes: [
+      'Floor plan / layout direction',
+      'AI concept renderings (3–5 views)',
+      'Permit roadmap (disciplines, AHJ checklist, fees)',
+      'Zoning and setback analysis tied to your concept massing',
+      'Bill of Materials with line-item costs',
+      'MEP specification (electrical, plumbing, HVAC, lighting)',
+      'RSMeans-validated cost estimate (trade-by-trade)',
+      'AI transformation video (Visualization & Pre-Design tiers)',
+      'Concept fee credited toward permit drawings',
+      '15-min expert consultation call (booked after delivery)',
+      'Direct support via portal ask bar',
+    ],
+  },
+  cost_estimate: {
+    label: 'Catalogue-Based Construction Estimate',
+    includes: [
+      'Line-item cost breakdown by trade (labour, material, equipment)',
+      'Documented quantity takeoff from your scope',
+      'RSMeans market data for DMV region',
+      'Assumptions and risk register',
+      'Sources and uses schedule',
+      'Lender-grade hard cost model',
+      'Direct support via portal ask bar',
+    ],
+  },
+  permit_path_only: {
+    label: 'Permit Path Planning',
+    includes: [
+      'Jurisdiction-specific permit type identification',
+      'AHJ submission checklist',
+      'Estimated permit fees and processing timeline',
+      'Required inspection sequence',
+      'PE/architect sign-off requirements',
+      'Zoning compliance summary',
+      'Direct support via portal ask bar',
+    ],
+  },
 }
 
 // ─── Concept service price map (mirrors INTAKE_PRICE_CENTS in core-rules) ──────
@@ -281,8 +321,9 @@ const CONCEPT_PRICE_DOLLARS: Record<string, number> = {
   interior_renovation:    345,
   whole_home_remodel:     695,
   addition_expansion:     495,
-  permit_path_only:       499,
-  cost_estimate:          595,
+  permit_path_only:               499,
+  cost_estimate:                  595,
+  design_estimate_permit_bundle: 2499,
   certified_estimate:    1850,
   design_build:           795,
   capture_site_concept:   125,

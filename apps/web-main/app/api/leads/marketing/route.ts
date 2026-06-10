@@ -26,7 +26,7 @@ const SERVICE_LABELS: Record<string, string> = {
   garden_concept: 'Garden Concept',
   capture_site_concept: 'Site Capture + Concept',
   design_build: 'Design + Build',
-  design_estimate_permit_bundle: 'Full Bundle',
+  design_estimate_permit_bundle: 'Design + Estimate + Permit Bundle',
   developer_concept: 'Developer Concept',
   single_lot_development: 'Single Lot Development',
   single_family_subdivision: 'SF Subdivision',
@@ -146,6 +146,7 @@ export async function POST(req: NextRequest) {
     name: name ?? '',
     funnelUrl,
     serviceLabel,
+    serviceKey: projectInterest,
   })
 
   if (savedToDb) {

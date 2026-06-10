@@ -18,6 +18,48 @@ export interface DripEmailContext {
   email?: string
 }
 
+const PRECONSTRUCTION_COPY: Record<string, { label: string; body: string }> = {
+  design_estimate_permit_bundle: {
+    label: 'Design + Estimate + Permit Bundle',
+    body: 'Connect concept direction, catalogue-based estimating, and permit planning in one connected workflow before construction begins.',
+  },
+  cost_estimate: {
+    label: 'Catalogue-Based Construction Estimate',
+    body: 'Build a transparent estimate from defined quantities, labor, materials, equipment, and documented assumptions — no generic cost-per-square-foot pricing.',
+  },
+  permit_path_only: {
+    label: 'Permit Planning',
+    body: 'Identify jurisdiction requirements, submission needs, dependencies, and the next documents your project needs before filing.',
+  },
+}
+
+export function buildPreconstructionWelcomeEmail(
+  ctx: DripEmailContext & { serviceKey: string },
+): { subject: string; html: string } {
+  const greeting = ctx.name ? `Hi ${ctx.name}` : 'Hi there'
+  const copy = PRECONSTRUCTION_COPY[ctx.serviceKey] ?? {
+    label: ctx.serviceLabel,
+    body: 'Kealee provides project-specific preconstruction services built around your scope, not a generic estimate.',
+  }
+  return {
+    subject: `Your ${copy.label} request is confirmed — Kealee`,
+    html: wrap(`
+  <h2 style="color:#1A2B4A;margin-bottom:8px">${greeting},</h2>
+  <p style="color:#4A5568;line-height:1.6">
+    We received your preconstruction project details. ${copy.body}
+  </p>
+  <p style="color:#4A5568;line-height:1.6">
+    We will review your scope and follow up with a recommended service path and next action.
+  </p>
+  <div style="margin:32px 0;text-align:center">
+    <a href="${ctx.funnelUrl}" style="display:inline-block;background:#2ABFBF;color:#fff;text-decoration:none;font-weight:700;font-size:16px;padding:14px 32px;border-radius:12px">
+      Start Your Preconstruction Package →
+    </a>
+  </div>
+  <p style="color:#718096;font-size:13px">All estimates are based on your project scope and documented assumptions — not square-foot averages.</p>`),
+  }
+}
+
 export function buildWelcomeEmail(ctx: DripEmailContext): { subject: string; html: string } {
   const greeting = ctx.name ? `Hi ${ctx.name}` : 'Hi there'
   return {

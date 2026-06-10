@@ -1,6 +1,10 @@
 import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { getOwnerPortalDeliverableUrl } from '@/lib/owner-portal-urls'
-import { buildPostPaymentEmail, buildWelcomeEmail } from '@/lib/marketing/email-templates'
+import {
+  buildPostPaymentEmail,
+  buildPreconstructionWelcomeEmail,
+  buildWelcomeEmail,
+} from '@/lib/marketing/email-templates'
 import { sendMarketingEmail } from '@/lib/marketing/resend'
 import {
   buildConceptFunnelUrl,
@@ -29,18 +33,29 @@ export async function patchIntakeFunnelStage(
   await supabase.from('public_intake_leads').update({ metadata }).eq('id', intakeId)
 }
 
+const PRECONSTRUCTION_SERVICE_KEYS = new Set([
+  'design_estimate_permit_bundle',
+  'cost_estimate',
+  'permit_path_only',
+])
+
 export async function sendWelcomeLeadEmail(opts: {
   email: string
   name: string
   funnelUrl: string
   serviceLabel: string
+  serviceKey?: string
 }): Promise<boolean> {
-  const { subject, html } = buildWelcomeEmail({
+  const ctx = {
     name: opts.name,
     serviceLabel: opts.serviceLabel,
     funnelUrl: opts.funnelUrl,
     email: opts.email,
-  })
+  }
+  const { subject, html } =
+    opts.serviceKey && PRECONSTRUCTION_SERVICE_KEYS.has(opts.serviceKey)
+      ? buildPreconstructionWelcomeEmail({ ...ctx, serviceKey: opts.serviceKey })
+      : buildWelcomeEmail(ctx)
   return sendMarketingEmail({ to: opts.email, subject, html })
 }
 
