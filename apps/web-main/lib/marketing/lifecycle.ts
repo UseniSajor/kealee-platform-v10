@@ -46,16 +46,32 @@ export async function sendWelcomeLeadEmail(opts: {
   serviceLabel: string
   serviceKey?: string
 }): Promise<boolean> {
-  const ctx = {
-    name: opts.name,
-    serviceLabel: opts.serviceLabel,
-    funnelUrl: opts.funnelUrl,
-    email: opts.email,
+  const isPreconstruction = opts.serviceKey && PRECONSTRUCTION_SERVICE_KEYS.has(opts.serviceKey)
+
+  let subject: string
+  let html: string
+
+  if (isPreconstruction) {
+    const result = buildPreconstructionWelcomeEmail({
+      name: opts.name,
+      serviceLabel: opts.serviceLabel,
+      funnelUrl: opts.funnelUrl,
+      email: opts.email,
+      serviceKey: opts.serviceKey as string,
+    })
+    subject = result.subject
+    html = result.html
+  } else {
+    const result = buildWelcomeEmail({
+      name: opts.name,
+      serviceLabel: opts.serviceLabel,
+      funnelUrl: opts.funnelUrl,
+      email: opts.email,
+    })
+    subject = result.subject
+    html = result.html
   }
-  const { subject, html } =
-    opts.serviceKey && PRECONSTRUCTION_SERVICE_KEYS.has(opts.serviceKey)
-      ? buildPreconstructionWelcomeEmail({ ...ctx, serviceKey: opts.serviceKey })
-      : buildWelcomeEmail(ctx)
+
   return sendMarketingEmail({ to: opts.email, subject, html })
 }
 
