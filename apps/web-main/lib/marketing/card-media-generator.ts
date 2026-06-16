@@ -11,6 +11,8 @@ import { generateCardProcessVideo } from './process-video-generator'
 
 const MANIFEST_PATH = path.join(process.cwd(), 'public', 'media', 'manifest.json')
 
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
+
 export interface GenerateCardMediaOptions {
   keys?: string[]
   scope?: 'home' | 'product' | 'all'
@@ -34,6 +36,7 @@ async function persistManifest(manifest: CardMediaManifest): Promise<void> {
 export async function generateCardMedia(
   spec: CardMediaSpec,
   opts: GenerateCardMediaOptions = {},
+  existingEntry?: CardMediaEntry,
 ): Promise<CardMediaEntry> {
   const afterDescription = opts.useMarketingBot !== false
     ? await refineImagePromptWithMarketingBot(spec)
@@ -41,18 +44,18 @@ export async function generateCardMedia(
 
   if (opts.dryRun) {
     return {
-      photoUrl: spec.fallbackPhoto,
+      photoUrl: existingEntry?.photoUrl ?? spec.fallbackPhoto,
       photoAlt: spec.photoAlt,
       mediaType: spec.mediaType,
       narrativeId: spec.narrativeId,
       videoNarrative: spec.cardProcessPrompt,
       promptUsed: afterDescription,
-      source: 'fallback',
+      source: existingEntry?.source ?? 'fallback',
     }
   }
 
-  let beforePhotoUrl: string | undefined
-  if (spec.generatesBefore && spec.beforeImageDescription) {
+  let beforePhotoUrl = existingEntry?.beforePhotoUrl
+  if (!beforePhotoUrl && spec.generatesBefore && spec.beforeImageDescription) {
     const beforeRemote = await generateCardImageUrl(
       { ...spec, imageDescription: spec.beforeImageDescription, imageType: 'before' },
       spec.beforeImageDescription,
@@ -61,31 +64,28 @@ export async function generateCardMedia(
     beforePhotoUrl = await uploadMarketingAsset(spec.scope, `${spec.id}-before`, beforeBytes, 'jpg')
   }
 
-  const remoteImageUrl = await generateCardImageUrl(spec, afterDescription)
-  const imageBytes = await downloadUrlToBuffer(remoteImageUrl)
-  const photoUrl = await uploadMarketingAsset(spec.scope, spec.id, imageBytes, 'jpg')
+  let photoUrl = existingEntry?.photoUrl
+  if (!photoUrl || photoUrl.startsWith('/media/service-photos/home-')) {
+    const remoteImageUrl = await generateCardImageUrl(spec, afterDescription)
+    const imageBytes = await downloadUrlToBuffer(remoteImageUrl)
+    photoUrl = await uploadMarketingAsset(spec.scope, spec.id, imageBytes, 'jpg')
+  }
 
-  let videoUrl: string | undefined
-  let videoWebM: string | undefined
-  if (spec.mediaType === 'video' && !opts.skipVideo) {
+  let videoUrl = existingEntry?.videoUrl
+  let videoWebM = existingEntry?.videoWebM
+  let videoNarrative = existingEntry?.videoNarrative ?? spec.cardProcessPrompt
+
+  if (spec.mediaType === 'video' && !opts.skipVideo && (!videoUrl || videoUrl.startsWith('/media/service-videos/home-'))) {
     try {
+      if (!opts.dryRun) {
+        console.log('[card-media] Sleeping 12s before generating video…')
+        await sleep(12000)
+      }
       const { videoUrl: remoteVideo, prompt } = await generateCardProcessVideo(spec, photoUrl)
       const videoBytes = await downloadUrlToBuffer(remoteVideo)
       videoUrl = await uploadMarketingAsset(spec.scope, `${spec.id}-video`, videoBytes, 'mp4')
       videoWebM = videoUrl
-      return {
-        photoUrl,
-        beforePhotoUrl,
-        photoAlt: spec.photoAlt,
-        videoUrl,
-        videoWebM,
-        mediaType: spec.mediaType,
-        narrativeId: spec.narrativeId,
-        videoNarrative: prompt,
-        generatedAt: new Date().toISOString(),
-        promptUsed: afterDescription,
-        source: 'generated',
-      }
+      videoNarrative = prompt
     } catch (err) {
       console.warn(`[card-media] Video skipped for ${spec.key}:`, err)
     }
@@ -99,8 +99,8 @@ export async function generateCardMedia(
     videoWebM,
     mediaType: spec.mediaType,
     narrativeId: spec.narrativeId,
-    videoNarrative: spec.cardProcessPrompt,
-    generatedAt: new Date().toISOString(),
+    videoNarrative,
+    generatedAt: existingEntry?.generatedAt ?? new Date().toISOString(),
     promptUsed: afterDescription,
     source: 'generated',
   }
@@ -121,11 +121,17 @@ export async function runCardMediaBatch(
   }
 
   const results: GenerateCardMediaResult[] = []
+  let isFirst = true
 
   for (const spec of specs) {
     try {
+      if (!isFirst && !opts.dryRun) {
+        console.log('[card-media] Sleeping 12s between cards…')
+        await sleep(12000)
+      }
+      isFirst = false
       console.log(`[card-media] Generating ${spec.key}…`)
-      const entry = await generateCardMedia(spec, opts)
+      const entry = await generateCardMedia(spec, opts, manifest.cards[spec.key])
       manifest.cards[spec.key] = entry
       results.push({ key: spec.key, ok: true, entry })
     } catch (err) {

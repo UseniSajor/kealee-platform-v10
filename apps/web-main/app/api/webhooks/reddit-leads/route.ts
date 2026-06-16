@@ -10,8 +10,8 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import { createOrUpdateContact } from '@/lib/marketing/ghl-client'
 import { calculateLeadScore } from '@/lib/marketing/lead-scorer'
+import { parseBudgetRange, syncLeadToCrms } from '@/lib/marketing/crm-dispatcher'
 
 export const dynamic = 'force-dynamic'
 
@@ -93,9 +93,10 @@ export async function POST(req: NextRequest) {
 
     // ── Score lead immediately ─────────────────────────────────────────
 
+    const cleanBudget = parseBudgetRange(body.budget)
     const scoreResult = calculateLeadScore({
       source: 'reddit',
-      budget: body.budget ? parseInt(body.budget.replace(/\D/g, '')) : undefined,
+      budget: cleanBudget,
       timeline: 'unknown',
       service: body.service_interest || 'unknown',
     })
@@ -110,40 +111,39 @@ export async function POST(req: NextRequest) {
       })
       .eq('id', leadId)
 
-    // ── Create GHL contact ────────────────────────────────────────────
+    // ── Sync to CRMs dynamically ─────────────────────────────────────
 
     try {
-      const ghlContact = await createOrUpdateContact({
+      const syncResult = await syncLeadToCrms({
+        leadId,
         email: body.email,
-        firstName: body.name.split(' ')[0],
-        lastName: body.name.split(' ').slice(1).join(' '),
-        phone: body.phone,
+        name: body.name,
+        phone: body.phone || undefined,
         source: 'reddit',
-        tags: [
-          'reddit',
-          scoreResult.tag,
-          body.subreddit || 'unknown-subreddit',
-          body.subreddit_category || 'unknown-category',
-        ],
-        customFields: [
-          { key: 'subreddit', field_value: body.subreddit },
-          { key: 'subreddit_category', field_value: body.subreddit_category || 'N/A' },
-          { key: 'engagement_level', field_value: body.engagement_level || 'medium' },
-          { key: 'lead_source', field_value: 'reddit' },
-          { key: 'kealee_intake_id', field_value: leadId },
-        ],
+        serviceType: body.service_interest || undefined,
+        budget: body.budget || undefined,
+        timeline: 'unknown',
+        score: scoreResult.score,
+        tag: scoreResult.tag,
+        customFields: {
+          subreddit: body.subreddit || '',
+          subreddit_category: body.subreddit_category || 'N/A',
+          engagement_level: body.engagement_level || 'medium',
+        }
       })
-      if (!ghlContact) return NextResponse.json({ success: true, leadId })
-      const resolvedGhlContact = ghlContact
 
-      await supabase
-        .from('public_intake_leads')
-        .update({ ghl_contact_id: resolvedGhlContact.id })
-        .eq('id', leadId)
+      const primaryContactId = syncResult.ghl?.id || syncResult.hubspot?.id
 
-      console.log(`GHL contact created: ${resolvedGhlContact.id}`)
-    } catch (ghlErr) {
-      console.error('GHL contact creation failed:', ghlErr)
+      if (primaryContactId) {
+        await supabase
+          .from('public_intake_leads')
+          .update({ ghl_contact_id: primaryContactId })
+          .eq('id', leadId)
+      }
+
+      console.log(`Reddit lead synced. Primary ID: ${primaryContactId}`)
+    } catch (crmErr) {
+      console.error('CRM sync failed for Reddit lead:', crmErr)
     }
 
     // ── Track Reddit performance ───────────────────────────────────────

@@ -9,8 +9,8 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import { createOrUpdateContact } from '@/lib/marketing/ghl-client'
 import { calculateLeadScore } from '@/lib/marketing/lead-scorer'
+import { parseBudgetRange, syncLeadToCrms } from '@/lib/marketing/crm-dispatcher'
 
 export const dynamic = 'force-dynamic'
 
@@ -94,9 +94,10 @@ export async function POST(req: NextRequest) {
 
     // ── Score lead immediately ─────────────────────────────────────────
 
+    const cleanBudget = parseBudgetRange(body.budget)
     const scoreResult = calculateLeadScore({
       source: 'nextdoor',
-      budget: body.budget ? parseInt(body.budget.replace(/\D/g, '')) : undefined,
+      budget: cleanBudget,
       timeline: 'unknown',  // Nextdoor doesn't always have this
       service: body.service_interest || 'unknown',
     })
@@ -111,39 +112,40 @@ export async function POST(req: NextRequest) {
       })
       .eq('id', leadId)
 
-    // ── Create GHL contact ────────────────────────────────────────────
+    // ── Sync to CRMs dynamically ─────────────────────────────────────
 
     try {
-      const ghlContact = await createOrUpdateContact({
+      const syncResult = await syncLeadToCrms({
+        leadId,
         email: body.email,
-        firstName: body.name.split(' ')[0],
-        lastName: body.name.split(' ').slice(1).join(' '),
-        phone: body.phone,
+        name: body.name,
+        phone: body.phone || undefined,
         source: 'nextdoor',
-        tags: [
-          'nextdoor',
-          scoreResult.tag,
-          body.neighborhood || 'unknown-neighborhood',
-        ],
-        customFields: [
-          { key: 'neighborhood', field_value: body.neighborhood },
-          { key: 'city', field_value: body.city },
-          { key: 'lead_source', field_value: 'nextdoor' },
-          { key: 'kealee_intake_id', field_value: leadId },
-        ],
+        serviceType: body.service_interest || undefined,
+        budget: body.budget || undefined,
+        timeline: 'unknown',
+        score: scoreResult.score,
+        tag: scoreResult.tag,
+        customFields: {
+          neighborhood: body.neighborhood || '',
+          city: body.city || '',
+          state: body.state || '',
+          zip_code: body.zip_code || '',
+        }
       })
-      if (!ghlContact) return NextResponse.json({ success: true, leadId })
-      const resolvedGhlContact = ghlContact
 
-      // Update lead with GHL contact ID
-      await supabase
-        .from('public_intake_leads')
-        .update({ ghl_contact_id: resolvedGhlContact.id })
-        .eq('id', leadId)
+      const primaryContactId = syncResult.ghl?.id || syncResult.hubspot?.id
 
-      console.log(`GHL contact created: ${resolvedGhlContact.id}`)
-    } catch (ghlErr) {
-      console.error('GHL contact creation failed:', ghlErr)
+      if (primaryContactId) {
+        await supabase
+          .from('public_intake_leads')
+          .update({ ghl_contact_id: primaryContactId })
+          .eq('id', leadId)
+      }
+
+      console.log(`Nextdoor lead synced. Primary ID: ${primaryContactId}`)
+    } catch (crmErr) {
+      console.error('CRM sync failed for Nextdoor lead:', crmErr)
     }
 
     // ── Track Nextdoor performance ────────────────────────────────────

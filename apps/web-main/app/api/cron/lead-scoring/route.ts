@@ -2,8 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { calculateLeadScore, type LeadData, type RoutingTag } from '@/lib/marketing/lead-scorer'
 import { alertHotLead } from '@/lib/marketing/twilio-client'
-import { createOrUpdateContact } from '@/lib/marketing/hubspot-client'
 import { sendLeadToSlack } from '@/lib/marketing/slack-client'
+import { parseBudgetRange, syncLeadToCrms } from '@/lib/marketing/crm-dispatcher'
+import { isGhlEnabled } from '@/lib/marketing/ghl-enabled'
 
 export const dynamic = 'force-dynamic'
 
@@ -75,7 +76,7 @@ export async function POST(req: NextRequest) {
         const formData = lead.form_data || {}
         const leadData: LeadData = {
           source: lead.source || formData.source,
-          budget: formData.budget ? parseInt(formData.budget) : undefined,
+          budget: formData.budget ? parseBudgetRange(formData.budget) : undefined,
           timeline: formData.timeline,
           service: lead.service_type || formData.serviceType,
           hasPhoto: lead.area_photo_url ? true : false,
@@ -153,53 +154,72 @@ export async function POST(req: NextRequest) {
           }
         }
 
-        // ── HubSpot (optional — only when HUBSPOT_ACCESS_TOKEN is set) ─────
+        // ── CRM Sync (HubSpot and/or GoHighLevel dynamically) ──────────────
         try {
-          if (process.env.HUBSPOT_ACCESS_TOKEN && (lead.contact_email || lead.email)) {
+          const hasHubspot = Boolean(process.env.HUBSPOT_API_KEY || process.env.HUBSPOT_ACCESS_TOKEN)
+          const hasGhl = isGhlEnabled()
+          
+          if ((hasHubspot || hasGhl) && (lead.contact_email || lead.email)) {
             const leadEmail = lead.contact_email || lead.email
-            const hsContact = await createOrUpdateContact(leadEmail, {
+            const syncResult = await syncLeadToCrms({
+              leadId: lead.id,
               email: leadEmail,
-              firstname: lead.name?.split(' ')[0],
-              lastname: lead.name?.split(' ').slice(1).join(' '),
-              phone: lead.phone_number,
-              lead_source: lead.source || 'kealee-web',
-              hs_lead_status: scoreResult.tag,
-              lifecyclestage: scoreResult.tag === 'hot' ? 'subscriber' : 'lead',
-              budget: leadData.budget ? `$${leadData.budget}` : 'N/A',
-              timeline: leadData.timeline || 'N/A',
-              project_type: leadData.service || 'unknown',
-              lead_score: scoreResult.score,
-              hot_lead: scoreResult.tag === 'hot',
-              kealee_intake_id: lead.id,
+              name: lead.client_name || lead.name || 'Unknown',
+              phone: lead.phone_number || undefined,
+              source: lead.source || formData.source || 'kealee-web',
+              serviceType: lead.service_type || formData.serviceType || undefined,
+              budget: formData.budget || undefined,
+              timeline: leadData.timeline || undefined,
+              score: scoreResult.score,
+              tag: scoreResult.tag,
             })
 
-            // Update intake_leads with HubSpot contact ID
-            await supabase
-              .from('public_intake_leads')
-              .update({ ghl_contact_id: hsContact.id })
-              .eq('id', lead.id)
+            const primaryContactId = syncResult.ghl?.id || syncResult.hubspot?.id
 
-            // Log HubSpot sync
-            const { error: hsLogErr } = await supabase
-              .from('ghl_sync_log')
-              .insert({
-                intake_id: lead.id,
-                ghl_contact_id: hsContact.id,
-                action: 'create',
-                ghl_response: hsContact,
-              })
-            if (hsLogErr) console.error('HubSpot sync log error:', hsLogErr)
+            if (primaryContactId) {
+              await supabase
+                .from('public_intake_leads')
+                .update({ ghl_contact_id: primaryContactId })
+                .eq('id', lead.id)
+            }
+
+            // Log CRM Sync results
+            if (syncResult.ghl) {
+              const { error: ghlLogErr } = await supabase
+                .from('ghl_sync_log')
+                .insert({
+                  intake_id: lead.id,
+                  ghl_contact_id: syncResult.ghl.id || null,
+                  action: syncResult.ghl.success ? 'create' : 'error',
+                  ghl_response: syncResult.ghl,
+                  error_message: syncResult.ghl.error || null,
+                })
+              if (ghlLogErr) console.error('GHL sync log error:', ghlLogErr)
+            }
+
+            if (syncResult.hubspot) {
+              const { error: hsLogErr } = await supabase
+                .from('ghl_sync_log')
+                .insert({
+                  intake_id: lead.id,
+                  ghl_contact_id: syncResult.hubspot.id || null,
+                  action: syncResult.hubspot.success ? 'create' : 'error',
+                  ghl_response: syncResult.hubspot,
+                  error_message: syncResult.hubspot.error || null,
+                })
+              if (hsLogErr) console.error('HubSpot sync log error:', hsLogErr)
+            }
           }
-        } catch (hsErr) {
-          console.error(`HubSpot contact creation failed for ${lead.id}:`, hsErr)
+        } catch (crmErr) {
+          console.error(`CRM sync failed for ${lead.id}:`, crmErr)
           const { error: hsErrLogErr } = await supabase
             .from('ghl_sync_log')
             .insert({
               intake_id: lead.id,
               action: 'error',
-              error_message: hsErr instanceof Error ? hsErr.message : String(hsErr),
+              error_message: crmErr instanceof Error ? crmErr.message : String(crmErr),
             })
-          if (hsErrLogErr) console.error('HubSpot sync log error:', hsErrLogErr)
+          if (hsErrLogErr) console.error('CRM sync error log failed:', hsErrLogErr)
         }
 
         results.push({

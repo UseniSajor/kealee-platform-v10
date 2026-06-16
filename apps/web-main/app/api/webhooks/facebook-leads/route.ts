@@ -11,7 +11,11 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import crypto from 'crypto'
-import { createOrUpdateContact, triggerWorkflow } from '@/lib/marketing/ghl-client'
+import { createClient } from '@supabase/supabase-js'
+import { triggerWorkflow } from '@/lib/marketing/ghl-client'
+import { isGhlEnabled } from '@/lib/marketing/ghl-enabled'
+import { calculateLeadScore } from '@/lib/marketing/lead-scorer'
+import { parseBudgetRange, syncLeadToCrms } from '@/lib/marketing/crm-dispatcher'
 
 export const dynamic = 'force-dynamic'
 
@@ -62,12 +66,17 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ received: false }, { status: 400 })
     }
 
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    )
+
     let processed = 0
     for (const e of entry) {
       for (const messaging of e.messaging || []) {
         const leadData = extractLeadData(messaging)
         if (leadData) {
-          const result = await syncToGhl(leadData)
+          const result = await processFacebookLead(supabase, leadData)
           if (result) processed++
         }
       }
@@ -154,51 +163,114 @@ function extractLeadData(messaging: any): FacebookLeadData | null {
 }
 
 /**
- * Sync Facebook lead directly to GHL
+ * Process Facebook Lead: Save to DB, score, and sync to CRM
  */
-async function syncToGhl(leadData: FacebookLeadData): Promise<boolean> {
+async function processFacebookLead(supabase: any, leadData: FacebookLeadData): Promise<boolean> {
   try {
     if (!leadData.email) {
-      console.warn('Facebook lead missing email, skipping GHL sync')
+      console.warn('Facebook lead missing email, skipping')
       return false
     }
 
-    // Create or update GHL contact
-    const contact = await createOrUpdateContact({
-      email: leadData.email,
-      firstName: leadData.first_name,
-      lastName: leadData.last_name,
-      phone: leadData.phone_number,
-      source: 'facebook-lead-ads',
-      tags: [
-        leadData.service_type || 'unknown',
-        'facebook',
-      ],
-      customFields: [
-        { key: 'budget', field_value: leadData.budget || 'N/A' },
-        { key: 'timeline', field_value: leadData.timeline || 'N/A' },
-        { key: 'form_id', field_value: leadData.form_name || '' },
-      ],
-    })
-    if (!contact) return false
-    const resolvedContact = contact
+    const name = `${leadData.first_name || ''} ${leadData.last_name || ''}`.trim() || 'Unknown'
+    const cleanBudget = parseBudgetRange(leadData.budget)
 
-    // Trigger SMS qualification workflow if configured
-    if (GHL_WORKFLOW_ID_SMS_QUAL) {
-      await triggerWorkflow({
-        contactId: resolvedContact.id,
-        workflowId: GHL_WORKFLOW_ID_SMS_QUAL,
-        eventData: {
-          service: leadData.service_type || 'unknown',
-          budget: leadData.budget || 'N/A',
+    // ── 1. Save to Supabase public_intake_leads first ──────────────────
+    const { data: inserted, error: insertErr } = await supabase
+      .from('public_intake_leads')
+      .insert({
+        project_path: leadData.service_type || 'kitchen_remodel',
+        client_name: name,
+        contact_email: leadData.email,
+        contact_phone: leadData.phone_number || null,
+        source: 'facebook',
+        source_channel: 'facebook',
+        status: 'new',
+        requires_payment: true,
+        payment_amount: 0,
+        facebook_lead_id: leadData.form_name || null,
+        form_data: {
+          budget: leadData.budget || null,
+          timeline: leadData.timeline || null,
+          serviceType: leadData.service_type || null,
+          facebookFormId: leadData.form_name || null,
         },
       })
+      .select('id')
+      .single()
+
+    if (insertErr || !inserted) {
+      console.error('Facebook lead insert to Supabase failed:', insertErr)
     }
 
-    console.log(`Facebook lead synced to GHL: ${resolvedContact.id}`)
+    const leadId = inserted?.id || `fb_${Date.now()}`
+
+    // ── 2. Calculate score (Phase 1) ─────────────────────────────────
+    const scoreResult = calculateLeadScore({
+      source: 'facebook',
+      budget: cleanBudget,
+      timeline: leadData.timeline || 'unknown',
+      service: leadData.service_type || 'unknown',
+      phone: leadData.phone_number || undefined,
+    })
+
+    // Update lead with score
+    if (inserted?.id) {
+      await supabase
+        .from('public_intake_leads')
+        .update({
+          lead_score: scoreResult.score,
+          routing_tag: scoreResult.tag,
+          lead_tier: scoreResult.tag,
+        })
+        .eq('id', leadId)
+    }
+
+    // ── 3. Call CRM Dispatcher (HubSpot + GHL) ────────────────────────
+    const syncResult = await syncLeadToCrms({
+      leadId,
+      email: leadData.email,
+      name,
+      phone: leadData.phone_number || undefined,
+      source: 'facebook-lead-ads',
+      serviceType: leadData.service_type || undefined,
+      budget: leadData.budget || undefined,
+      timeline: leadData.timeline || undefined,
+      score: scoreResult.score,
+      tag: scoreResult.tag,
+      customFields: {
+        facebook_form_id: leadData.form_name || '',
+      }
+    })
+
+    const primaryContactId = syncResult.ghl?.id || syncResult.hubspot?.id
+
+    if (primaryContactId && inserted?.id) {
+      await supabase
+        .from('public_intake_leads')
+        .update({ ghl_contact_id: primaryContactId })
+        .eq('id', leadId)
+    }
+
+    // If GHL is enabled, trigger SMS qualification workflow
+    if (isGhlEnabled() && syncResult.ghl?.id && GHL_WORKFLOW_ID_SMS_QUAL) {
+      try {
+        await triggerWorkflow({
+          contactId: syncResult.ghl.id,
+          workflowId: GHL_WORKFLOW_ID_SMS_QUAL,
+          eventData: {
+            service: leadData.service_type || 'unknown',
+            budget: leadData.budget || 'N/A',
+          },
+        })
+      } catch (workflowErr) {
+        console.error('GHL workflow trigger failed:', workflowErr)
+      }
+    }
+
     return true
   } catch (err) {
-    console.error('GHL sync failed:', err)
+    console.error('processFacebookLead error:', err)
     return false
   }
 }

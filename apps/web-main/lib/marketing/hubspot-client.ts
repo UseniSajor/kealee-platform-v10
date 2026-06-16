@@ -3,7 +3,7 @@
  * Replaces GoHighLevel integration
  */
 
-interface HubSpotContact {
+export interface HubSpotContact {
   email: string;
   firstname?: string;
   lastname?: string;
@@ -31,10 +31,10 @@ interface HubSpotDeal {
 }
 
 const HUBSPOT_API_BASE = "https://api.hubapi.com";
-const HUBSPOT_API_KEY = process.env.HUBSPOT_API_KEY;
+const HUBSPOT_API_KEY = process.env.HUBSPOT_API_KEY || process.env.HUBSPOT_ACCESS_TOKEN;
 
 if (!HUBSPOT_API_KEY) {
-  console.warn("⚠️  HUBSPOT_API_KEY not set. HubSpot integration disabled.");
+  console.warn("⚠️  HUBSPOT_API_KEY or HUBSPOT_ACCESS_TOKEN not set. HubSpot integration disabled.");
 }
 
 /**

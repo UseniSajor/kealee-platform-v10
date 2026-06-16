@@ -52,12 +52,33 @@ async function generateWithReplicate(spec: CardMediaSpec, description: string): 
     QUALITY_SUFFIX,
   ].join(', ')
 
-  const output = (await replicate.run('stability-ai/sdxl:latest', {
-    input: { prompt, width: 1024, height: 1024, num_outputs: 1 },
-  })) as string[]
+  let prediction = await replicate.predictions.create({
+    model: 'black-forest-labs/flux-1.1-pro-ultra',
+    input: {
+      prompt,
+      aspect_ratio: '1:1',
+      raw: false,
+      safety_tolerance: 2,
+    },
+  })
 
-  if (!output?.[0]) throw new Error('Replicate SDXL returned no image')
-  return output[0]
+  while (
+    prediction.status !== 'succeeded' &&
+    prediction.status !== 'failed' &&
+    prediction.status !== 'canceled'
+  ) {
+    await new Promise((resolve) => setTimeout(resolve, 2000))
+    prediction = await replicate.predictions.get(prediction.id)
+  }
+
+  if (prediction.status !== 'succeeded') {
+    throw new Error(`Replicate Flux 1.1 Pro Ultra failed: ${prediction.error || 'unknown error'}`)
+  }
+
+  const out = prediction.output
+  const url = Array.isArray(out) ? out[0] : (out as string)
+  if (!url) throw new Error('Replicate Flux 1.1 Pro Ultra returned no image URL')
+  return url
 }
 
 /** DesignBot / concept-engine image path (DALL-E primary, Replicate SDXL fallback). */

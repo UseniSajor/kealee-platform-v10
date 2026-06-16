@@ -4,6 +4,8 @@ const { withSentryConfig } = require('@sentry/nextjs');
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  output: 'standalone',
+  optimizeFonts: false,
   experimental: {
     serverComponentsExternalPackages: ['stripe', 'sharp', '@img/sharp-libvips-dev', '@img/sharp-wasm32', '@img/sharp-libvips-linux-x64', '@img/sharp-libvips-linux-arm64'],
   },

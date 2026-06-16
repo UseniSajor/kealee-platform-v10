@@ -336,7 +336,6 @@ async function submitKling(input: GenerateVideoInput): Promise<GenerateVideoResu
     prompt:        input.prompt,
     duration:      input.durationSec ?? 5,
     aspect_ratio:  input.aspectRatio ?? '16:9',
-    cfg_scale:     0.5,
   }
   if (input.inputImageUrl) klingInput.start_image = input.inputImageUrl
 

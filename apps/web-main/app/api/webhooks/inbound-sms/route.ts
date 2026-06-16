@@ -41,40 +41,83 @@ export async function POST(req: NextRequest) {
   const client = new ClaudeCachedClient()
 
   try {
-    const body = (await req.json()) as InboundSmsInput
+    let ghlContactId: string | undefined
+    let message: string | undefined
+    let fromPhone: string | undefined
 
-    if (!body.ghlContactId || !body.message) {
+    const contentType = req.headers.get('content-type') || ''
+    if (contentType.includes('application/x-www-form-urlencoded')) {
+      const formData = await req.formData()
+      message = (formData.get('Body') as string) || undefined
+      fromPhone = (formData.get('From') as string) || undefined
+    } else {
+      try {
+        const body = await req.json()
+        ghlContactId = body.ghlContactId
+        message = body.message
+        if (!message && body.Body) message = body.Body
+        if (!fromPhone && body.From) fromPhone = body.From
+      } catch {
+        return NextResponse.json({ error: 'Invalid JSON payload' }, { status: 400 })
+      }
+    }
+
+    if (!message) {
       return NextResponse.json(
-        { error: 'Missing ghlContactId or message' },
+        { error: 'Missing message body' },
         { status: 400 }
       )
     }
 
-    // Find intake by GHL contact ID
-    const { data: intakes, error: findErr } = await supabase
-      .from('public_intake_leads')
-      .select('id, name, service_type')
-      .eq('ghl_contact_id', body.ghlContactId)
-      .limit(1)
+    let intake: { id: string; name: string; service_type: string } | null = null
 
-    if (findErr) throw new Error(`Find intake: ${findErr.message}`)
+    // ── Look up lead by GHL Contact ID ──────────────────────────────────
+    if (ghlContactId) {
+      const { data: intakes, error: findErr } = await supabase
+        .from('public_intake_leads')
+        .select('id, name, service_type')
+        .eq('ghl_contact_id', ghlContactId)
+        .limit(1)
 
-    if (!intakes || intakes.length === 0) {
-      console.log(`SMS received for unknown GHL contact: ${body.ghlContactId}`)
+      if (findErr) throw new Error(`Find intake by GHL: ${findErr.message}`)
+      if (intakes && intakes.length > 0) {
+        intake = intakes[0]
+      }
+    }
+
+    // ── Fallback: Look up lead by sender phone number ──────────────────
+    if (!intake && fromPhone) {
+      const cleanPhone = fromPhone.replace(/\D/g, '')
+      const orQuery = `contact_phone.eq.${fromPhone},phone_number.eq.${fromPhone}` + 
+                      (cleanPhone ? `,contact_phone.ilike.%${cleanPhone}%,phone_number.ilike.%${cleanPhone}%` : '')
+
+      const { data: intakes, error: findErr } = await supabase
+        .from('public_intake_leads')
+        .select('id, name, service_type')
+        .or(orQuery)
+        .order('created_at', { ascending: false })
+        .limit(1)
+
+      if (findErr) throw new Error(`Find intake by Phone: ${findErr.message}`)
+      if (intakes && intakes.length > 0) {
+        intake = intakes[0]
+      }
+    }
+
+    if (!intake) {
+      console.log(`SMS received from unattributed sender. Phone: ${fromPhone}, GHL Contact: ${ghlContactId}`)
       return NextResponse.json({ linked: false })
     }
 
-    const intake = intakes[0]
-
     // Classify SMS reply
-    const classification = await classifySmsReply(client, body.message)
+    const classification = await classifySmsReply(client, message)
 
     // Store in lead_notes
     const { error: noteErr } = await supabase
       .from('lead_notes')
       .insert({
         intake_id: intake.id,
-        note: body.message,
+        note: message,
         note_type: 'sms_reply',
         ai_classified_as: classification.urgency,
       })
@@ -89,7 +132,7 @@ export async function POST(req: NextRequest) {
         leadBudget: 'N/A',
         leadScore: 90,
         routingTag: 'urgent-reply',
-        ghlLink: `https://app.leadconnectorhq.com/contacts/${body.ghlContactId}`,
+        ghlLink: ghlContactId ? `https://app.leadconnectorhq.com/contacts/${ghlContactId}` : undefined,
       })
     }
 

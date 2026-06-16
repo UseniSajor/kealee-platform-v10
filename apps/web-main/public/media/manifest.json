@@ -1,42 +1,50 @@
 {
   "version": 2,
-  "updatedAt": "2026-06-03T00:00:00.000Z",
+  "updatedAt": "2026-06-09T19:44:41.835Z",
   "cards": {
     "home:design": {
-      "photoUrl": "/media/service-photos/home-design.jpg",
+      "photoUrl": "https://rkreqfpkxavqpsqexbfs.supabase.co/storage/v1/object/public/marketing-media/home/design.jpg",
       "photoAlt": "AI-generated kitchen design concepts",
+      "videoUrl": "https://rkreqfpkxavqpsqexbfs.supabase.co/storage/v1/object/public/marketing-media/home/design-video.mp4",
+      "videoWebM": "https://rkreqfpkxavqpsqexbfs.supabase.co/storage/v1/object/public/marketing-media/home/design-video.mp4",
       "mediaType": "video",
       "narrativeId": "design-reveal",
-      "videoUrl": "/media/service-videos/home-design-video.mp4",
-      "source": "generated",
-      "generatedAt": "2026-06-03T00:00:00.000Z"
+      "videoNarrative": "Photorealistic construction documentary, DMV suburban home, natural daylight, no on-screen text, no logos, workers in PPE with faces away from camera, believable tools and materials, 24fps cinematic timelapse feel, seamless timelapse showing full project process: Concept reveal. DMV suburban home, natural daylight, no on-screen text, no logos, workers in PPE with faces away from camera, believable tools and materials, 24fps cinematic timelapse feel, slow cinematic reveal of renovated interior, design boards on tablet, photoreal staging. Smooth transitions, no text overlays. modern kitchen. Smooth timelapse motion, steady camera or slow dolly, photorealistic construction documentary, no text overlays, no watermarks, believable jobsite activity.",
+      "generatedAt": "2026-06-09T16:55:28.983Z",
+      "promptUsed": "Modern kitchen with white quartz waterfall island, stainless steel appliances, and sleek cabinetry. A tablet displaying three distinct design concept boards sits on the counter, showcasing different color palettes and material options for kitchen renovations in photorealistic detail.",
+      "source": "generated"
     },
     "home:permits": {
-      "photoUrl": "/media/service-photos/home-permits.jpg",
+      "photoUrl": "https://rkreqfpkxavqpsqexbfs.supabase.co/storage/v1/object/public/marketing-media/home/permits.jpg",
       "photoAlt": "Architect reviewing blueprints at active job site",
+      "videoUrl": "https://rkreqfpkxavqpsqexbfs.supabase.co/storage/v1/object/public/marketing-media/home/permits-video.mp4",
+      "videoWebM": "https://rkreqfpkxavqpsqexbfs.supabase.co/storage/v1/object/public/marketing-media/home/permits-video.mp4",
       "mediaType": "video",
       "narrativeId": "permits-active",
-      "videoUrl": "/media/service-videos/home-permits-video.mp4",
-      "source": "generated",
-      "generatedAt": "2026-06-03T00:00:00.000Z"
+      "videoNarrative": "Photorealistic construction documentary, DMV suburban home, natural daylight, no on-screen text, no logos, workers in PPE with faces away from camera, believable tools and materials, 24fps cinematic timelapse feel, professional construction services b-roll, smooth camera motion contemporary site. Smooth timelapse motion, steady camera or slow dolly, photorealistic construction documentary, no text overlays, no watermarks, believable jobsite activity.",
+      "generatedAt": "2026-06-09T16:56:09.869Z",
+      "promptUsed": "Modern residential construction site with architectural blueprints spread on temporary table, official permit documents with stamps and seals, hard hats and safety equipment nearby, partially framed house structure in background, natural daylight, professional construction photography style",
+      "source": "generated"
     },
     "home:estimate": {
-      "photoUrl": "/media/service-photos/home-estimate.jpg",
-      "photoAlt": "Construction materials and lumber at active residential job site",
+      "photoUrl": "https://rkreqfpkxavqpsqexbfs.supabase.co/storage/v1/object/public/marketing-media/home/estimate.jpg",
+      "photoAlt": "Construction cost estimation breakdown",
       "mediaType": "video",
       "narrativeId": "estimate-motion",
-      "videoUrl": "/media/service-videos/home-estimate-video.mp4",
-      "source": "generated",
-      "generatedAt": "2026-06-03T00:00:00.000Z"
+      "videoNarrative": "Photorealistic construction documentary, DMV suburban home, natural daylight, no on-screen text, no logos, workers in PPE with faces away from camera, believable tools and materials, 24fps cinematic timelapse feel, seamless timelapse showing full project process: Estimating. DMV suburban home, natural daylight, no on-screen text, no logos, workers in PPE with faces away from camera, believable tools and materials, 24fps cinematic timelapse feel, estimator reviewing plans on laptop, cost spreadsheet, measuring tools on desk. Smooth transitions, no text overlays.",
+      "generatedAt": "2026-06-09T16:56:45.087Z",
+      "promptUsed": "Modern office desk with open laptop displaying detailed construction cost spreadsheet with line-item materials and labor columns, professional calculator beside keyboard, architectural plans partially visible, clean workspace with natural lighting, photorealistic business environment",
+      "source": "generated"
     },
     "home:build": {
-      "photoUrl": "/media/service-photos/home-build.jpg",
-      "photoAlt": "Construction crew framing a residential home on an active job site",
+      "photoUrl": "https://rkreqfpkxavqpsqexbfs.supabase.co/storage/v1/object/public/marketing-media/home/build.jpg",
+      "photoAlt": "Construction team managing a renovation project",
       "mediaType": "video",
       "narrativeId": "full-build",
-      "videoUrl": "/media/service-videos/home-build-video.mp4",
-      "source": "generated",
-      "generatedAt": "2026-06-03T00:00:00.000Z"
+      "videoNarrative": "Photorealistic construction documentary, DMV suburban home, natural daylight, no on-screen text, no logos, workers in PPE with faces away from camera, believable tools and materials, 24fps cinematic timelapse feel, seamless timelapse showing full project process: Site work → Framing → Envelope → Rough-in → Drywall → Completion. DMV suburban home, natural daylight, no on-screen text, no logos, workers in PPE with faces away from camera, believable tools and materials, 24fps cinematic timelapse feel, residential lot excavation and foundation forms, concrete pour, suburban Maryland context; DMV suburban home, natural daylight, no on-screen text, no logos, workers in PPE with faces away from camera, believable tools and materials, 24fps cinematic timelapse feel, wood frame erection, roof trusses, house skeleton on suburban street; DMV suburban home, natural daylight, no on-screen text, no logos, workers in PPE with faces away from camera, believable tools and materials, 24fps cinematic timelapse feel, house wrap, window install, siding and roof shingles going on; DMV suburban home, natural daylight, no on-screen text, no logos, workers in PPE with faces away from camera, believable tools and materials, 24fps cinematic timelapse feel, interior MEP rough-in visible through windows, ladders and scaffolding; DMV suburban home, natural daylight, no on-screen text, no logos, workers in PPE with faces away from camera, believable tools and materials, 24fps cinematic timelapse feel, drywall hang and mud, interior taking shape; DMV suburban home, natural daylight, no on-screen text, no logos, workers in PPE with faces away from camera, believable tools and materials, 24fps cinematic timelapse feel, finished new home exterior golden hour, landscaping started, move-in ready. Smooth transitions, no text overlays.",
+      "generatedAt": "2026-06-09T16:57:22.936Z",
+      "promptUsed": "Modern transitional kitchen with white shaker cabinets, quartz countertops, subway tile backsplash, stainless steel appliances, hardwood floors, pendant lighting over island, natural light from windows, magazine-quality finishes, professional real estate photography",
+      "source": "generated"
     },
     "product:kitchen": {
       "photoUrl": "/media/service-photos/product-kitchen.jpg",

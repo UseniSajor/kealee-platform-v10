@@ -1,4 +1,4 @@
-import { mkdir, writeFile } from 'fs/promises'
+import { mkdir, writeFile, readFile } from 'fs/promises'
 import path from 'path'
 import { getSupabaseAdmin, buildStorageUrl } from '@/lib/supabase-server'
 import type { CardMediaScope } from './card-media-spec'
@@ -9,6 +9,10 @@ export const MARKETING_MEDIA_BUCKET =
 const PUBLIC_MEDIA_ROOT = path.join(process.cwd(), 'public', 'media')
 
 export async function downloadUrlToBuffer(url: string): Promise<Buffer> {
+  if (url.startsWith('/')) {
+    const localPath = path.join(process.cwd(), 'public', url)
+    return await readFile(localPath)
+  }
   const res = await fetch(url, { signal: AbortSignal.timeout(120_000) })
   if (!res.ok) throw new Error(`Download failed ${res.status}: ${url.slice(0, 80)}`)
   return Buffer.from(await res.arrayBuffer())

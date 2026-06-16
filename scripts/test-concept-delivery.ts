@@ -26,6 +26,8 @@
 
 import * as fs   from 'node:fs'
 import * as path from 'node:path'
+import { generateFloorplan } from '../packages/concept-engine/src/api/generate-floorplan'
+import { generateConceptPackage } from '../packages/concept-engine/src/api/generate-concept-package'
 
 // ── Env loading ────────────────────────────────────────────────────────────────
 
@@ -48,15 +50,20 @@ function loadEnvFile(filePath: string): void {
 }
 
 const ROOT = process.cwd()
+loadEnvFile(path.join(ROOT, 'apps', 'web-main', '.env.local'))
 loadEnvFile(path.join(ROOT, 'services', 'api', '.env'))
 loadEnvFile(path.join(ROOT, 'services', 'api', '.env.local'))
 loadEnvFile(path.join(ROOT, 'apps', 'portal-owner', '.env.local'))
 
 // ── Config ─────────────────────────────────────────────────────────────────────
 
-const SUPABASE_URL      = (process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL ?? '').replace(/\/$/, '')
+let SUPABASE_URL      = (process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL ?? '').replace(/\/$/, '')
 const SERVICE_ROLE_KEY  = process.env.SUPABASE_SERVICE_ROLE_KEY ?? ''
 const PORTAL_URL        = (process.env.OWNER_PORTAL_URL ?? 'http://localhost:3000').replace(/\/$/, '')
+
+if (SUPABASE_URL.includes('placeholder') && process.env.NEXT_PUBLIC_SUPABASE_URL && !process.env.NEXT_PUBLIC_SUPABASE_URL.includes('placeholder')) {
+  SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL.replace(/\/$/, '')
+}
 
 if (!SUPABASE_URL || !SERVICE_ROLE_KEY) {
   console.error('[test-concept] Missing Supabase credentials. Check services/api/.env.local')
@@ -169,9 +176,7 @@ async function main(): Promise<void> {
 
   process.stdout.write('[2/4] Generating floor plan... ')
 
-  const { generateFloorplan } = await import(
-    path.join(ROOT, 'packages/concept-engine/src/api/generate-floorplan.ts')
-  ) as typeof import('../packages/concept-engine/src/api/generate-floorplan')
+
 
   const fp = generateFloorplan({
     intakeId,
@@ -196,9 +201,7 @@ async function main(): Promise<void> {
   console.log('[3/4] Generating concept package (Claude AI narrative)...')
   console.log('      Estimated: 30–90 seconds')
 
-  const { generateConceptPackage } = await import(
-    path.join(ROOT, 'packages/concept-engine/src/api/generate-concept-package.ts')
-  ) as typeof import('../packages/concept-engine/src/api/generate-concept-package')
+
 
   const pkg = await generateConceptPackage({
     intakeId,
