@@ -26,6 +26,8 @@ import {
   type PromptTemplate,
 } from './prompts';
 
+import { getJurisdictionGisData } from './gis-client';
+
 // ── Public types ────────────────────────────────────────────────────────────
 
 export interface LLMClient {
@@ -200,6 +202,7 @@ export async function permitAgent(
   input: AgentInput<{ address?: string; scope?: string }>,
 ): Promise<AgentOutput<PermitAgentResult>> {
   const triggers: string[] = [];
+  const notesPrefix: string[] = [];
   const m = calculateSceneStats(input.scene);
 
   if (m.exteriorPerimeterFt > 0) triggers.push('Exterior wall work — building permit typically required.');
@@ -207,16 +210,49 @@ export async function permitAgent(
   if (input.scene.projectType === 'adu') triggers.push('ADU permitting subject to local ordinance — typically required.');
   if (input.scene.projectType === 'kitchen_remodel') triggers.push('Plumbing + electrical relocations usually require permits.');
 
+  // Live GIS lookup if address is available
+  const address = input.payload?.address;
+  let gisZoning = '';
+  let gisAuthority = '';
+  if (address && address !== 'unknown') {
+    try {
+      const gisData = await getJurisdictionGisData(address);
+      if (gisData) {
+        gisZoning = gisData.zoningClass;
+        gisAuthority = gisData.zoningAuthority;
+        triggers.push(`Zoning resolved via County GIS: ${gisData.zoningClass} (${gisData.zoningAuthority})`);
+        notesPrefix.push(
+          `Zoning Code: ${gisData.zoningClass}`,
+          `Parcel Identifier: ${gisData.parcelId ?? 'N/A'}`,
+          `Official Zoning Map: ${gisData.zoningMapUrl}`,
+          `Zoning Authority: ${gisData.zoningAuthority}`
+        );
+      }
+    } catch (err) {
+      console.error('[GIS] Failed to fetch live GIS data:', err);
+    }
+  }
+
   const { result: llm, promptRef } = await runPromptJson<PermitAgentResult>(
     AGENT_PROMPTS.permit,
     {
       sceneJson: JSON.stringify(input.scene),
-      address: input.payload?.address ?? 'unknown',
+      address: address ?? 'unknown',
       projectType: input.scene.projectType,
       scope: input.payload?.scope ?? '',
+      zoningClass: gisZoning || 'Undetermined',
+      zoningAuthority: gisAuthority || 'Undetermined',
     },
     input.llm,
   );
+
+  const finalNotes = [
+    ...notesPrefix,
+    ...(llm?.jurisdictionNotes ?? [
+      'Confirm setbacks, FAR, and lot coverage with local AHJ.',
+      'Schedule pre-application meeting if scope > $50k.',
+    ]),
+  ];
 
   return {
     agent: 'permit',
@@ -226,10 +262,7 @@ export async function permitAgent(
     result: {
       permitLikely: llm?.permitLikely ?? triggers.length > 0,
       triggers: dedupe([...(triggers ?? []), ...(llm?.triggers ?? [])]),
-      jurisdictionNotes: llm?.jurisdictionNotes ?? [
-        'Confirm setbacks, FAR, and lot coverage with local AHJ.',
-        'Schedule pre-application meeting if scope > $50k.',
-      ],
+      jurisdictionNotes: dedupe(finalNotes),
       requiredDrawings: llm?.requiredDrawings,
       estimatedReviewDays: llm?.estimatedReviewDays,
       reviewFeeRangeCents: llm?.reviewFeeRangeCents,
@@ -467,7 +500,7 @@ export async function orchestrate(
   scene: PascalSceneData,
   opts: OrchestrateOptions = {},
 ): Promise<OrchestrationResult> {
-  const base: AgentInput = { scene, llm: opts.llm };
+  const base = { scene, llm: opts.llm };
 
   const [layout, estimating, permit, designStyle, material, sequencing, budget] = await Promise.all([
     layoutAgent({ ...base }),

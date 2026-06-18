@@ -10,3 +10,4 @@
 
 export * from './agents';
 export * as Prompts from './prompts';
+export * from './gis-client';

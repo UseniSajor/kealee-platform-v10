@@ -8,8 +8,17 @@ COPY . .
 
 RUN pnpm install --no-frozen-lockfile
 
-# ✅ build only API + its dependencies
-RUN pnpm --filter @kealee/api... build
+# ✅ build dynamically based on service name
+ARG RAILWAY_SERVICE_NAME
+RUN if [ "$RAILWAY_SERVICE_NAME" = "web-main" ]; then \
+      pnpm turbo run build --filter=web-main && \
+      mkdir -p apps/web-main/.next/standalone/apps/web-main/public && \
+      cp -r apps/web-main/public/. apps/web-main/.next/standalone/apps/web-main/public/ || true && \
+      mkdir -p apps/web-main/.next/standalone/apps/web-main/.next/static && \
+      cp -r apps/web-main/.next/static/. apps/web-main/.next/standalone/apps/web-main/.next/static/ || true; \
+    else \
+      pnpm --filter @kealee/api... build; \
+    fi
 
 EXPOSE 3000
 

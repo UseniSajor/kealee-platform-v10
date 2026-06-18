@@ -140,6 +140,8 @@ Output JSON shape:
 Address: {{address}}
 Project type: {{projectType}}
 Scope summary: {{scope}}
+Resolved Zoning Class from County GIS: {{zoningClass}}
+Zoning Authority: {{zoningAuthority}}
 
 Return JSON.`,
   responseJsonSchema: `{
