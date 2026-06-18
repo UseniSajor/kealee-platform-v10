@@ -148,7 +148,7 @@ async function generateVideo(startImageUrl: string) {
   if (!remoteUrl.startsWith('http')) throw new Error('Kling returned no usable video URL')
   const filename = 'preconstruction-hero.mp4'
   await writeFile(path.join(outputRoot, filename), await download(remoteUrl))
-  return { filename, model: videoModel, prompt: current.input?.prompt, remoteUrl }
+  return { filename, model: videoModel, prompt: (current as any).input?.prompt, remoteUrl }
 }
 
 async function main() {
