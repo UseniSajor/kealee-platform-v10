@@ -10,6 +10,8 @@ RUN pnpm install --no-frozen-lockfile
 
 # ✅ build dynamically based on service name
 ARG RAILWAY_SERVICE_NAME
+ENV RAILWAY_SERVICE_NAME=$RAILWAY_SERVICE_NAME
+
 RUN if [ "$RAILWAY_SERVICE_NAME" = "web-main" ]; then \
       pnpm turbo run build --filter=web-main && \
       mkdir -p apps/web-main/.next/standalone/apps/web-main/public && \
@@ -22,9 +24,11 @@ RUN if [ "$RAILWAY_SERVICE_NAME" = "web-main" ]; then \
 
 EXPOSE 3000
 
-# Set WORKDIR to the api package so that Railway's start command override
-# ("node dist/index.js") resolves to /app/services/api/dist/index.js
-# regardless of whether it comes from CMD, railway.toml, or the Railway UI.
+# Set WORKDIR to the api package as default
 WORKDIR /app/services/api
 
-CMD ["node", "dist/index.js"]
+CMD if [ "$RAILWAY_SERVICE_NAME" = "web-main" ]; then \
+      cd /app && node apps/web-main/.next/standalone/apps/web-main/server.js; \
+    else \
+      node dist/index.js; \
+    fi
