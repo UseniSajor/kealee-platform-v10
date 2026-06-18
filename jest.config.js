@@ -46,6 +46,13 @@ module.exports = {
       setupFilesAfterEnv: ['<rootDir>/apps/web-main/__tests__/setup.ts'],
       modulePathIgnorePatterns: IGNORE_PATHS,
     },
+    {
+      displayName: 'spatial-engine',
+      testMatch: ['<rootDir>/packages/spatial-engine/**/__tests__/**/*.test.{ts,tsx}'],
+      testEnvironment: 'node',
+      transform: { '^.+\\.tsx?$': ['ts-jest', { tsconfig: '<rootDir>/packages/spatial-engine/tsconfig.json' }] },
+      modulePathIgnorePatterns: IGNORE_PATHS,
+    },
   ],
   collectCoverageFrom: [
     'apps/**/*.{ts,tsx}',
