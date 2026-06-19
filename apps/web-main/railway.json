@@ -5,7 +5,7 @@
     "buildCommand": "pnpm turbo run build --filter=web-main && mkdir -p apps/web-main/.next/standalone/apps/web-main/public && cp -r apps/web-main/public/. apps/web-main/.next/standalone/apps/web-main/public/ || true && mkdir -p apps/web-main/.next/standalone/apps/web-main/.next/static && cp -r apps/web-main/.next/static/. apps/web-main/.next/standalone/apps/web-main/.next/static/ || true"
   },
   "deploy": {
-    "startCommand": "cd /app && node apps/web-main/.next/standalone/apps/web-main/server.js",
+    "startCommand": "sh -c \"cd /app && node apps/web-main/.next/standalone/apps/web-main/server.js\"",
     "healthcheckPath": "/",
     "healthcheckTimeout": 120,
     "restartPolicyType": "ON_FAILURE",
