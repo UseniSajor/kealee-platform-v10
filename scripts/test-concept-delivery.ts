@@ -69,6 +69,18 @@ if (!SUPABASE_URL || !SERVICE_ROLE_KEY) {
   console.error('[test-concept] Missing Supabase credentials. Check services/api/.env.local')
   process.exit(1)
 }
+console.log(`[test-concept] Supabase URL: ${SUPABASE_URL}`)
+try {
+  const parts = SERVICE_ROLE_KEY.split('.');
+  if (parts.length === 3) {
+    const payload = JSON.parse(Buffer.from(parts[1], 'base64').toString('utf8'));
+    console.log(`[test-concept] Service Role Key Payload:`, payload);
+  } else {
+    console.log(`[test-concept] Service Role Key format is not JWT: ${SERVICE_ROLE_KEY}`);
+  }
+} catch (e) {
+  console.log(`[test-concept] Failed to decode key:`, e.message);
+}
 if (!process.env.ANTHROPIC_API_KEY) {
   console.error('[test-concept] Missing ANTHROPIC_API_KEY. Check services/api/.env')
   process.exit(1)
@@ -152,23 +164,23 @@ async function main(): Promise<void> {
 
   process.stdout.write('[1/4] Seeding Supabase public_intake_leads... ')
   await sbInsert('public_intake_leads', {
-    id:              intakeId,
-    project_path:    PROJECT_PATH,
-    client_name:     INTAKE_FORM.clientName,
-    contact_email:   INTAKE_FORM.contactEmail,
-    contact_phone:   INTAKE_FORM.contactPhone,
-    project_address: INTAKE_FORM.projectAddress,
-    budget_range:    INTAKE_FORM.budgetRange,
-    source:          'test',
-    status:          'paid',
-    requires_payment: false,
+    id:             intakeId,
+    projectPath:    PROJECT_PATH,
+    clientName:     INTAKE_FORM.clientName,
+    contactEmail:   INTAKE_FORM.contactEmail,
+    contactPhone:   INTAKE_FORM.contactPhone,
+    projectAddress: INTAKE_FORM.projectAddress,
+    budgetRange:    INTAKE_FORM.budgetRange,
+    source:         'test',
+    status:         'paid',
+    requiresPayment: false,
     form_data: {
       ...INTAKE_FORM,
       _test:    true,
       _testTag: testTag,
     },
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
   })
   console.log(`OK (${intakeId})`)
 
@@ -242,14 +254,14 @@ async function main(): Promise<void> {
   }
 
   await sbPatch('public_intake_leads', intakeId, {
-    status:     'concept_ready',
+    status:     'delivered',
     form_data: {
       ...INTAKE_FORM,
       _test:        true,
       _testTag:     testTag,
       conceptOutput,
     },
-    updated_at: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
   })
 
   console.log('OK')
