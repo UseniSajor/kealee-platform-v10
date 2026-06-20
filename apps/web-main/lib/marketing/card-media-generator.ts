@@ -5,7 +5,7 @@ import { getAllCardMediaSpecs } from './card-media-spec'
 import type { CardMediaEntry, CardMediaManifest } from './card-media-manifest'
 import { loadCardMediaManifest } from './card-media-manifest'
 import { refineImagePromptWithMarketingBot } from './card-media-prompts'
-import { downloadUrlToBuffer, uploadMarketingAsset } from './card-media-storage'
+import { downloadUrlToBuffer, uploadMarketingAsset, getPublicUrlForLocalFile } from './card-media-storage'
 import { generateCardImageUrl } from './card-media-image'
 import { generateCardProcessVideo } from './process-video-generator'
 
@@ -19,6 +19,7 @@ export interface GenerateCardMediaOptions {
   skipVideo?: boolean
   dryRun?: boolean
   useMarketingBot?: boolean
+  force?: boolean
 }
 
 export interface GenerateCardMediaResult {
@@ -54,7 +55,11 @@ export async function generateCardMedia(
     }
   }
 
-  let beforePhotoUrl = existingEntry?.beforePhotoUrl
+  const isFallback = existingEntry?.source === 'fallback'
+  const shouldRegeneratePhoto = opts.force || isFallback || !existingEntry?.photoUrl || existingEntry.photoUrl.startsWith('/media/service-photos/home-')
+  const shouldRegenerateVideo = opts.force || isFallback || !existingEntry?.videoUrl || existingEntry.videoUrl.startsWith('/media/service-videos/home-')
+
+  let beforePhotoUrl = (opts.force || isFallback) ? undefined : existingEntry?.beforePhotoUrl
   if (!beforePhotoUrl && spec.generatesBefore && spec.beforeImageDescription) {
     const beforeRemote = await generateCardImageUrl(
       { ...spec, imageDescription: spec.beforeImageDescription, imageType: 'before' },
@@ -64,24 +69,28 @@ export async function generateCardMedia(
     beforePhotoUrl = await uploadMarketingAsset(spec.scope, `${spec.id}-before`, beforeBytes, 'jpg')
   }
 
-  let photoUrl = existingEntry?.photoUrl
-  if (!photoUrl || photoUrl.startsWith('/media/service-photos/home-')) {
+  let photoUrl = shouldRegeneratePhoto ? undefined : existingEntry?.photoUrl
+  if (!photoUrl) {
     const remoteImageUrl = await generateCardImageUrl(spec, afterDescription)
     const imageBytes = await downloadUrlToBuffer(remoteImageUrl)
     photoUrl = await uploadMarketingAsset(spec.scope, spec.id, imageBytes, 'jpg')
   }
 
-  let videoUrl = existingEntry?.videoUrl
-  let videoWebM = existingEntry?.videoWebM
-  let videoNarrative = existingEntry?.videoNarrative ?? spec.cardProcessPrompt
+  let videoUrl = shouldRegenerateVideo ? undefined : existingEntry?.videoUrl
+  let videoWebM = shouldRegenerateVideo ? undefined : existingEntry?.videoWebM
+  let videoNarrative = shouldRegenerateVideo ? spec.cardProcessPrompt : (existingEntry?.videoNarrative ?? spec.cardProcessPrompt)
 
-  if (spec.mediaType === 'video' && !opts.skipVideo && (!videoUrl || videoUrl.startsWith('/media/service-videos/home-'))) {
+  if (spec.mediaType === 'video' && !opts.skipVideo && !videoUrl) {
     try {
       if (!opts.dryRun) {
         console.log('[card-media] Sleeping 12s before generating video…')
         await sleep(12000)
       }
-      const { videoUrl: remoteVideo, prompt } = await generateCardProcessVideo(spec, photoUrl)
+      let inputImageUrl = photoUrl
+      if (photoUrl && photoUrl.startsWith('/')) {
+        inputImageUrl = await getPublicUrlForLocalFile(photoUrl)
+      }
+      const { videoUrl: remoteVideo, prompt } = await generateCardProcessVideo(spec, inputImageUrl)
       const videoBytes = await downloadUrlToBuffer(remoteVideo)
       videoUrl = await uploadMarketingAsset(spec.scope, `${spec.id}-video`, videoBytes, 'mp4')
       videoWebM = videoUrl

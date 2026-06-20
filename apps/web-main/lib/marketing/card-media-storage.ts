@@ -81,3 +81,16 @@ export async function uploadMarketingAsset(
     return saveLocalMarketingAsset(scope, id, bytes, ext)
   }
 }
+
+export async function getPublicUrlForLocalFile(localRelativePath: string): Promise<string> {
+  if (localRelativePath.startsWith('http://') || localRelativePath.startsWith('https://')) {
+    return localRelativePath
+  }
+  if (process.env.PUBLIC_TUNNEL_URL) {
+    return `${process.env.PUBLIC_TUNNEL_URL.replace(/\/$/, '')}${localRelativePath}`
+  }
+
+  const cleanPath = localRelativePath.replace(/^\//, '')
+  return `https://raw.githubusercontent.com/UseniSajor/kealee-platform-v10/main/apps/web-main/public/${cleanPath}`
+}
+

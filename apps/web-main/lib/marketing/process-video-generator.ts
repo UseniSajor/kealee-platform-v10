@@ -44,7 +44,7 @@ export type DeliverableProcessVideoState = {
 async function pollVideoJob(
   provider: VideoProvider,
   jobId: string,
-  maxMs = 180_000,
+  maxMs = 600_000,
 ): Promise<string> {
   const started = Date.now()
   while (Date.now() - started < maxMs) {
@@ -139,8 +139,8 @@ export async function startNextDeliverableSegment(
     roomType: opts.roomType,
   })
 
-  // Sora 2/2-Pro minimum supported duration is 10s; Veo supports 8s+; Kling uses 5s.
-  const durationSec = state.provider === 'kling-2.5' ? 5 : state.provider.startsWith('sora') ? 10 : 8
+  // Sora 2/2-Pro minimum supported duration is 10s; Veo supports 8s+; Kling uses 10s.
+  const durationSec = state.provider === 'kling-2.5' ? 10 : state.provider.startsWith('sora') ? 10 : 8
   const job = await generateVideo({
     prompt,
     inputImageUrl: opts.inputImageUrl ?? state.inputImageUrl,
