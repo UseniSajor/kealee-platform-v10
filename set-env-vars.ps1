@@ -6,7 +6,7 @@ $envVars = @{
     "SUPABASE_URL" = "https://rkreqfpkxavqpsqexbfs.supabase.co"
     "NEXT_PUBLIC_SUPABASE_ANON_KEY" = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJrcmVxZnBreGF2cXBzcWV4YmZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg0MDc3NzAsImV4cCI6MjA4Mzk4Mzc3MH0.Zszenm7LrN7eRKi3-htbsQX8h4ulNvdCT_F1s-v0YJk"
     "NEXT_PUBLIC_SUPABASE_URL" = "https://rkreqfpkxavqpsqexbfs.supabase.co"
-    "DATABASE_URL" = "postgresql://postgres:nBSLJLNmWGhvnChFBVedulYdZGKWFyjj@postgres.railway.internal:5432/railway"
+    "DATABASE_URL" = "postgresql://postgres.rkreqfpkxavqpsqexbfs:mFGurIiScT9AlMw8@aws-1-us-east-2.pooler.supabase.com:6543/postgres?pgbouncer=true&connection_limit=1"
 }
 
 $apps = @(
