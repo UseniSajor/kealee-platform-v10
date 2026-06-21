@@ -4,7 +4,7 @@ const { withSentryConfig } = require('@sentry/nextjs');
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'standalone',
+  output: process.platform === 'win32' && !process.env.FORCE_STANDALONE ? undefined : 'standalone',
   optimizeFonts: false,
   experimental: {
     serverComponentsExternalPackages: ['stripe', 'sharp', '@img/sharp-libvips-dev', '@img/sharp-wasm32', '@img/sharp-libvips-linux-x64', '@img/sharp-libvips-linux-arm64'],

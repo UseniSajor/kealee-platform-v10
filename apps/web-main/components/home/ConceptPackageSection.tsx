@@ -58,6 +58,7 @@ export function ConceptPackageSection() {
             <ul className="mt-6 space-y-2.5">
               {[
                 'Exterior concept renderings (AI-generated)',
+                'Basic floor plans',
                 'Zoning & FAR analysis for your parcel',
                 'Permit path + timeline estimate',
                 'Design direction brief',

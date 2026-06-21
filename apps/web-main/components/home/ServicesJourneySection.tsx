@@ -175,18 +175,18 @@ export function ServicesJourneySection({ services }: { services: HomeJourneyServ
         </div>
       </header>
 
-      {/* Cards fill remaining viewport */}
-      <div className="flex min-h-0 flex-1 flex-col px-2 py-2 sm:px-4 sm:py-3 lg:px-6 lg:py-4">
+      {/* Cards listed in single column */}
+      <div className="flex flex-col px-4 py-8 sm:px-6 sm:py-10 lg:px-8 lg:py-12 bg-[#F5F5F5]">
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.4 }}
-          className="mx-auto grid h-full min-h-0 w-full max-w-none px-4 lg:px-8 flex-1 grid-cols-1 grid-rows-4 gap-2 sm:grid-cols-2 sm:grid-rows-2 sm:gap-3 lg:gap-5"
+          className="mx-auto flex flex-col w-full max-w-[1160px] gap-6 sm:gap-8 lg:gap-10"
           role="list"
           aria-label="Service offerings"
         >
           {services.map((service, index) => (
-            <div key={service.id} role="listitem" className="min-h-0 min-w-0">
+            <div key={service.id} role="listitem" className="w-full">
               <CircularServiceCard service={service} index={index} />
             </div>
           ))}

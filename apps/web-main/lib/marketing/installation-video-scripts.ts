@@ -35,7 +35,7 @@ export type CardNarrativeConfig = {
 }
 
 const BASE_REALISM =
-  'Photorealistic construction documentary, DMV suburban home, natural daylight, no on-screen text, no logos, workers in PPE with faces away from camera, believable tools and materials, 24fps cinematic slow-motion feel, slow-paced motion'
+  'Photorealistic construction documentary, DMV suburban home, natural daylight, no on-screen text, no logos, diverse crew of professional construction workers including black, white, and Hispanic men and women, wearing standard safety vests, hard hats, work shirts and jeans, no hazmat suits, believable tools and materials, 24fps cinematic slow-motion feel, slow-paced motion'
 
 export const PROCESS_SCRIPTS: Record<VideoNarrativeId, ProcessSegment[]> = {
   'kitchen-install': [
