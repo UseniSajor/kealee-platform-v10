@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Cormorant_Garamond, Barlow } from 'next/font/google'
 import { Play, Image as ImageIcon, Video } from 'lucide-react'
@@ -30,6 +30,16 @@ export function ServicesJourneySection({ services }: { services: HomeJourneyServ
   const [sliderPosition, setSliderPosition] = useState(50)
   const [isSliding, setIsSliding] = useState(false)
   const sliderRef = useRef<HTMLDivElement>(null)
+  const videoRef = useRef<HTMLVideoElement>(null)
+
+  useEffect(() => {
+    const video = videoRef.current
+    if (!video || activeTab !== 'video') return
+    video.muted = true
+    video.play().catch((err) => {
+      console.warn('AI reveal video autoplay blocked:', err)
+    })
+  }, [activeTab])
 
   const handleMouseMove = (e: React.MouseEvent) => {
     if (!sliderRef.current || (!isSliding && e.buttons !== 1)) return
@@ -101,6 +111,7 @@ export function ServicesJourneySection({ services }: { services: HomeJourneyServ
               {activeTab === 'video' ? (
                 <div className="relative w-full h-full">
                   <video
+                    ref={videoRef}
                     autoPlay
                     muted
                     loop
@@ -170,7 +181,7 @@ export function ServicesJourneySection({ services }: { services: HomeJourneyServ
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.4 }}
-          className="mx-auto grid h-full min-h-0 w-full max-w-[1200px] flex-1 grid-cols-1 grid-rows-4 gap-2 sm:grid-cols-2 sm:grid-rows-2 sm:gap-3 lg:gap-5"
+          className="mx-auto grid h-full min-h-0 w-full max-w-none px-4 lg:px-8 flex-1 grid-cols-1 grid-rows-4 gap-2 sm:grid-cols-2 sm:grid-rows-2 sm:gap-3 lg:gap-5"
           role="list"
           aria-label="Service offerings"
         >

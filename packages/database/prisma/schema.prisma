@@ -16212,33 +16212,33 @@ model PublicIntakeLead {
   id String @id @default(uuid())
 
   // Contact
-  clientName    String
-  contactEmail  String
-  contactPhone  String?
+  clientName    String @map("client_name")
+  contactEmail  String @map("contact_email")
+  contactPhone  String? @map("contact_phone")
 
   // Project
-  projectAddress String
-  projectPath    String  // exterior_concept | interior_renovation | etc.
-  budgetRange    String
-  timelineGoal   String?
-  uploadedPhotos String[]
+  projectAddress String @map("project_address")
+  projectPath    String @map("project_path") // exterior_concept | interior_renovation | etc.
+  budgetRange    String @map("budget_range")
+  timelineGoal   String? @map("timeline_goal")
+  uploadedPhotos String[] @map("uploaded_photos")
 
   // Lead Scoring
-  leadScore Int    @default(0)
-  leadTier  String @default("cold")  // hot | warm | cold
-  leadRoute String @default("standard") // fast_track | standard | nurture
+  leadScore Int    @default(0) @map("lead_score")
+  leadTier  String @default("cold") @map("lead_tier") // hot | warm | cold
+  leadRoute String @default("standard") @map("lead_route") // fast_track | standard | nurture
 
   // Payment
   status                  PublicIntakeStatus @default(new)
-  requiresPayment         Boolean @default(true)
-  paymentAmount           Int     @default(0)  // cents
-  stripeSessionId         String?
-  stripePaymentIntentId   String?
-  paidAt                  DateTime?
+  requiresPayment         Boolean @default(true) @map("requires_payment")
+  paymentAmount           Int     @default(0) @map("payment_amount") // cents
+  stripeSessionId         String? @map("stripe_session_id")
+  stripePaymentIntentId   String? @map("stripe_payment_intent_id")
+  paidAt                  DateTime? @map("paid_at")
 
   // Routing
   source         String  @default("public_intake")
-  funnelSessionId String?
+  funnelSessionId String? @map("funnel_session_id")
 
   // Universal auth — links intake purchases to Supabase auth user
   userId String? @map("user_id")
@@ -16247,8 +16247,8 @@ model PublicIntakeLead {
   metadata Json?
   formData Json? @map("form_data")
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("public_intake_leads")
   @@index([contactEmail])
@@ -16274,17 +16274,17 @@ enum ArchitectReviewStatus {
 
 model ConceptFloorplan {
   id            String   @id @default(cuid())
-  intakeId      String   @unique
-  projectPath   String
-  roomCount     Int
-  totalSqFt     Float?
-  svgData       String   @db.Text
-  svgUrl        String?
-  layoutJson    Json
-  adjacencyJson Json?
-  issueCount    Int      @default(0)
-  generatedAt   DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  intakeId      String   @unique @map("intake_id")
+  projectPath   String @map("project_path")
+  roomCount     Int @map("room_count")
+  totalSqFt     Float? @map("total_sq_ft")
+  svgData       String   @db.Text @map("svg_data")
+  svgUrl        String? @map("svg_url")
+  layoutJson    Json @map("layout_json")
+  adjacencyJson Json? @map("adjacency_json")
+  issueCount    Int      @default(0) @map("issue_count")
+  generatedAt   DateTime @default(now()) @map("generated_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
 
   @@map("concept_floorplans")
   @@index([intakeId])
@@ -16293,21 +16293,21 @@ model ConceptFloorplan {
 
 model ConceptPackage {
   id                   String   @id @default(cuid())
-  intakeId             String   @unique
-  floorplanId          String?
-  homeownerJson        Json
-  architectHandoffJson Json
-  visualPromptsJson    Json?
-  buildabilityJson     Json?
-  pdfUrl               String?
-  renderImageUrls      Json?
-  deliveryUrl          String?
-  deliveredAt          DateTime?
-  approvedAt           DateTime?
-  approvedBy           String?
+  intakeId             String   @unique @map("intake_id")
+  floorplanId          String? @map("floorplan_id")
+  homeownerJson        Json @map("homeowner_json")
+  architectHandoffJson Json @map("architect_handoff_json")
+  visualPromptsJson    Json? @map("visual_prompts_json")
+  buildabilityJson     Json? @map("buildability_json")
+  pdfUrl               String? @map("pdf_url")
+  renderImageUrls      Json? @map("render_image_urls")
+  deliveryUrl          String? @map("delivery_url")
+  deliveredAt          DateTime? @map("delivered_at")
+  approvedAt           DateTime? @map("approved_at")
+  approvedBy           String? @map("approved_by")
   status               String   @default("pending")
-  generatedAt          DateTime @default(now())
-  updatedAt            DateTime @updatedAt
+  generatedAt          DateTime @default(now()) @map("generated_at")
+  updatedAt            DateTime @updatedAt @map("updated_at")
 
   @@map("concept_packages")
   @@index([intakeId])
@@ -16319,16 +16319,16 @@ model ConceptPackage {
 
 model ProjectOutput {
   id          String   @id @default(cuid())
-  projectId   String?
-  intakeId    String?
-  orderId     String?
+  projectId   String? @map("project_id")
+  intakeId    String? @map("intake_id")
+  orderId     String? @map("order_id")
   type        String   // design | permit | estimate | concept
   status      String   @default("pending") // pending | generating | completed | failed
-  resultJson  Json?
-  pdfUrl      String?
-  downloadUrl String?
-  generatedAt DateTime @default(now())
-  completedAt DateTime?
+  resultJson  Json? @map("result_json")
+  pdfUrl      String? @map("pdf_url")
+  downloadUrl String? @map("download_url")
+  generatedAt DateTime @default(now()) @map("generated_at")
+  completedAt DateTime? @map("completed_at")
   metadata    Json?
 
   @@map("project_outputs")
@@ -16341,19 +16341,19 @@ model ProjectOutput {
 
 model ArchitectReviewTask {
   id                  BigInt                @id @default(autoincrement())
-  intakeId            String
-  conceptPackageId    String?
+  intakeId            String @map("intake_id")
+  conceptPackageId    String? @map("concept_package_id")
   status              ArchitectReviewStatus @default(pending)
   priority            String                @default("normal")
-  recommendedService  String?
-  upsellNotes         String?               @db.Text
-  flaggedUncertainties Json?
-  assignedArchitectId String?
-  architectNotes      String?               @db.Text
-  reviewStartedAt     DateTime?
-  reviewCompletedAt   DateTime?
-  createdAt           DateTime              @default(now())
-  updatedAt           DateTime              @updatedAt
+  recommendedService  String? @map("recommended_service")
+  upsellNotes         String?               @db.Text @map("upsell_notes")
+  flaggedUncertainties Json? @map("flagged_uncertainties")
+  assignedArchitectId String? @map("assigned_architect_id")
+  architectNotes      String?               @db.Text @map("architect_notes")
+  reviewStartedAt     DateTime? @map("review_started_at")
+  reviewCompletedAt   DateTime? @map("review_completed_at")
+  createdAt           DateTime              @default(now()) @map("created_at")
+  updatedAt           DateTime              @updatedAt @map("updated_at")
 
   @@map("architect_review_tasks")
   @@index([intakeId])

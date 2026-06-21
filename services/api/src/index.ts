@@ -1,20 +1,5 @@
-import { config } from 'dotenv'
-import { resolve } from 'path'
+import './load-env'
 
-// Load .env.local file ONLY in development (for local development)
-// In production (Railway/Vercel), environment variables are set via platform dashboards
-// and available in process.env - no .env.local file needed or used
-if (process.env.NODE_ENV !== 'production') {
-  // Load .env.local file (for API service) - only exists locally, gitignored
-  config({ path: resolve(process.cwd(), '.env.local') })
-  // Ensure local dev picks up the database package's connection string.
-  // We intentionally override here because `.env.local` often contains app secrets,
-  // while the canonical DB credentials live in `packages/database/.env`.
-  // When running from services/api, the workspace package lives at ../../packages/database
-  config({ path: resolve(process.cwd(), '../../packages/database/.env'), override: true })
-}
-// In production, deployment platforms (Railway/Vercel) set environment variables via their dashboards
-// No .env.local file is needed or used in production
 
 // ============================================================================
 // STARTUP GUARDS - Critical Security Checks

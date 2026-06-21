@@ -18,13 +18,13 @@ const STEPS = [
   {
     icon:  FileText,
     title: 'Receive Your Package',
-    desc:  'Within 2–5 business days: AI concept renderings, permit path analysis, design direction brief, and cost band estimate. This is your planning package — construction starts after permitting.',
+    desc:  'Within 2–5 business days: AI concept renderings, permit path analysis, design direction brief, and cost band estimate. This is your planning package — construction starts after permitting (if required).',
     color: '#805AD5',
   },
   {
     icon:  MessageSquare,
     title: 'Consult with an Expert',
-    desc:  'A Kealee project coordinator reviews your package with you and outlines the path to permit approval and construction start.',
+    desc:  'A Kealee project coordinator reviews your package with you to guide your next steps: transitioning to permit-ready plans and matching with a vetted contractor.',
     color: '#38A169',
   },
 ]
@@ -42,18 +42,17 @@ export function ConceptPackageSection() {
               style={{ backgroundColor: 'rgba(42,191,191,0.15)', color: '#2ABFBF' }}
             >
               <Zap className="h-3.5 w-3.5" />
-              AI Concept Design
+              Design & Permitting
             </div>
 
             <h2 className="text-3xl font-bold text-slate-900 font-display sm:text-4xl lg:text-[40px] leading-tight">
-              From photos to permit-ready concept —{' '}
-              <span style={{ color: '#E8793A' }}>in 2–5 business days</span>
+              From Design Concept to permit ready Plans
             </h2>
 
             <p className="mt-5 text-lg text-slate-600 leading-relaxed">
-              The Kealee AI Concept Package turns your property
-              photos and project goals into a full design brief, exterior renderings, zoning analysis,
-              and permit path strategy.
+              The Kealee AI Concept Package turns your property photos and project goals into a complete 
+              design brief, exterior renderings, zoning check, and permit roadmap—helping you identify 
+              if a permit is even required (such as for simple replace-in-kind kitchen or bath remodels).
             </p>
 
             <ul className="mt-6 space-y-2.5">

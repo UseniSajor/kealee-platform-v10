@@ -44,6 +44,7 @@ export function mapDeliverableUiStatus(
   const hasConcept = Boolean(getConceptOutputFromFormData(formData))
   if (status === 'concept_ready' && hasConcept) return 'ready'
   if (status === 'paid' && hasConcept) return 'ready'
+  if (status === 'delivered' && hasConcept) return 'ready'
   if (status === 'processing') return 'generating'
   if (status === 'paid') {
     return isV30IntakeFormData(formData) || !hasConcept ? 'generating' : 'ready'

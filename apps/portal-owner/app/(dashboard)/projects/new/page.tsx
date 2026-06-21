@@ -1,19 +1,20 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
 import {
   ArrowLeft, ArrowRight, Check, MapPin, Boxes,
   Home, Building2, Warehouse, Building, Landmark, Layers,
-  ChevronRight, AlertCircle, Camera, Video, Upload, X,
+  ChevronRight, AlertCircle, Camera, Video, Upload, X, Sparkles, FolderLock, Loader2
 } from 'lucide-react'
 import { RevenueHookModal } from '@kealee/core-hooks'
 import {
   PORTAL_OWNER_NEW_PROJECT_NAME_PLACEHOLDER,
   PORTAL_OWNER_NEW_PROJECT_SCOPE_PLACEHOLDER,
 } from '@kealee/shared'
+import { apiFetch } from '@/lib/api/client'
 
-type Step = 'type' | 'details' | 'location' | 'twin' | 'info' | 'media' | 'review'
+type Step = 'concept' | 'type' | 'details' | 'location' | 'twin' | 'info' | 'media' | 'review'
 
 const PROJECT_TYPES = [
   { id: 'ADDITION', label: 'Addition', desc: 'Expand your existing home', icon: Home, twinTier: 'L1' },
@@ -187,6 +188,7 @@ const INFO_FIELDS_BY_TYPE: Record<string, { title: string; fields: InfoField[] }
 }
 
 const STEPS: { id: Step; label: string }[] = [
+  { id: 'concept', label: 'Concept' },
   { id: 'type', label: 'Type' },
   { id: 'details', label: 'Details' },
   { id: 'location', label: 'Location' },
@@ -215,7 +217,91 @@ export default function NewProjectPage() {
   const [createdProjectId, setCreatedProjectId] = useState<string | null>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
 
-  const currentStepIndex = STEPS.findIndex(s => s.id === step)
+  // Concept integration
+  const [concepts, setConcepts] = useState<any[]>([])
+  const [selectedConcept, setSelectedConcept] = useState<any | null>(null)
+  const [loadingConcepts, setLoadingConcepts] = useState(true)
+
+  useEffect(() => {
+    fetch('/api/deliverables')
+      .then(res => res.ok ? res.json() : Promise.reject())
+      .then(data => {
+        const valid = (data.deliverables ?? []).filter((d: any) => d.status === 'concept_ready' || d.status === 'paid' || d.status === 'completed' || d.status === 'delivered')
+        setConcepts(valid)
+        if (valid.length > 0) {
+          setStep('concept')
+        }
+        setLoadingConcepts(false)
+      })
+      .catch(() => {
+        setLoadingConcepts(false)
+      })
+  }, [])
+
+  function mapPathToProjectType(path: string): string {
+    const p = path.toLowerCase()
+    if (p.includes('addition')) return 'ADDITION'
+    if (p.includes('reno') || p.includes('remodel') || p.includes('kitchen') || p.includes('bathroom') || p.includes('exterior') || p.includes('garden')) return 'RENOVATION'
+    if (p.includes('mixed')) return 'MIXED_USE'
+    if (p.includes('commercial')) return 'COMMERCIAL'
+    if (p.includes('multi')) return 'MULTIFAMILY'
+    return 'NEW_HOME'
+  }
+
+  const handleSelectConcept = (concept: any) => {
+    setSelectedConcept(concept)
+    const type = mapPathToProjectType(concept.projectPath)
+    setProjectType(type)
+
+    let budgetStr = ''
+    if (concept.budgetRange) {
+      const match = concept.budgetRange.match(/\d+/g)
+      if (match) {
+        const val = match[1] ? parseInt(match[1]) * 1000 : parseInt(match[0]) * 1000
+        budgetStr = val.toLocaleString()
+      }
+    }
+
+    setDetails({
+      name: `${concept.clientName ? concept.clientName + "'s " : ''}${concept.projectLabel}`,
+      description: `Created from design concept: ${concept.projectLabel}`,
+      budget: budgetStr,
+      sqft: '',
+    })
+
+    let street = ''
+    let city = ''
+    let state = ''
+    let zip = ''
+    if (concept.address) {
+      const parts = concept.address.split(',')
+      street = parts[0]?.trim() ?? ''
+      city = parts[1]?.trim() ?? ''
+      const stateZip = parts[2]?.trim() ?? ''
+      if (stateZip) {
+        const sz = stateZip.trim().split(/\s+/)
+        state = sz[0]?.trim() ?? ''
+        zip = sz[1]?.trim() ?? ''
+      }
+    }
+
+    setLocation({
+      address: street,
+      city,
+      state,
+      zip,
+    })
+
+    let tier = 'L1'
+    if (concept.tier === 2) tier = 'L2'
+    if (concept.tier === 3) tier = 'L3'
+    setTwinTier(tier)
+
+    setStep('type')
+  }
+
+  const visibleSteps = concepts.length > 0 ? STEPS : STEPS.filter(s => s.id !== 'concept')
+  const currentStepIndex = visibleSteps.findIndex(s => s.id === step)
   const selectedType = PROJECT_TYPES.find(t => t.id === projectType)
   const zones = projectType ? (PHOTO_ZONES_BY_TYPE[projectType] ?? []) : []
   const requiresVideo = projectType ? REQUIRES_VIDEO.has(projectType) : false
@@ -224,12 +310,14 @@ export default function NewProjectPage() {
   const requiredZonesCaptured = requiredZones.filter(z => capturedZoneIds.has(z.id)).length
 
   const canAdvance = () => {
+    if (step === 'concept') return true
     if (step === 'type') return !!projectType
     if (step === 'details') return !!details.name && !!details.budget
     if (step === 'location') return !!location.address && !!location.city && !!location.state
     if (step === 'twin') return true
     if (step === 'info') return true
     if (step === 'media') {
+      if (selectedConcept) return true
       const requiredMet = requiredZones.every(z => capturedZoneIds.has(z.id))
       if (!requiredMet) return false
       if (requiresVideo && !videoFile) return false
@@ -239,13 +327,13 @@ export default function NewProjectPage() {
   }
 
   const nextStep = () => {
-    const idx = STEPS.findIndex(s => s.id === step)
-    if (idx < STEPS.length - 1) setStep(STEPS[idx + 1].id)
+    const idx = visibleSteps.findIndex(s => s.id === step)
+    if (idx < visibleSteps.length - 1) setStep(visibleSteps[idx + 1].id)
   }
 
   const prevStep = () => {
-    const idx = STEPS.findIndex(s => s.id === step)
-    if (idx > 0) setStep(STEPS[idx - 1].id)
+    const idx = visibleSteps.findIndex(s => s.id === step)
+    if (idx > 0) setStep(visibleSteps[idx - 1].id)
   }
 
   const handleTypeSelect = (typeId: string) => {
@@ -288,45 +376,64 @@ export default function NewProjectPage() {
     }
   }
 
+  function mapTypeToCategory(type: string, path?: string): string {
+    if (path === 'kitchen_remodel') return 'KITCHEN'
+    if (path === 'bathroom_remodel') return 'BATHROOM'
+    switch (type) {
+      case 'ADDITION': return 'ADDITION'
+      case 'RENOVATION': return 'RENOVATION'
+      case 'NEW_HOME': return 'NEW_CONSTRUCTION'
+      case 'MULTIFAMILY': return 'NEW_CONSTRUCTION'
+      case 'MIXED_USE': return 'NEW_CONSTRUCTION'
+      case 'COMMERCIAL': return 'RENOVATION'
+      default: return 'OTHER'
+    }
+  }
+
   const handleSubmit = async () => {
     setSubmitting(true)
     try {
-      const res = await fetch('/api/v1/projects', {
+      const data = await apiFetch<{ project: any }>('/projects', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          type: projectType,
+          category: mapTypeToCategory(projectType || 'RENOVATION', selectedConcept?.projectPath),
           name: details.name,
           description: details.description,
-          budget: parseFloat(details.budget.replace(/,/g, '')) || 0,
-          sqft: parseInt(details.sqft.replace(/,/g, '')) || undefined,
+          budgetTotal: parseFloat(details.budget.replace(/,/g, '')) || 0,
           address: location.address,
           city: location.city,
           state: location.state,
-          zip: location.zip,
+          zipCode: location.zip,
           twinTier,
-          projectInfo,
-          mediaZones: zonePhotos.map(p => ({ zoneId: p.zoneId, filename: p.file.name })),
-          hasVideoWalkthrough: !!videoFile,
+          categoryMetadata: {
+            projectInfo,
+            sqft: parseInt(details.sqft.replace(/,/g, '')) || undefined,
+            intakeId: selectedConcept?.id,
+          },
+          adminOverride: true,
+          adminReason: selectedConcept 
+            ? `Created directly from Design Concept intake lead ${selectedConcept.id}` 
+            : 'Created directly from Owner Portal wizard',
         }),
       })
-      if (res.ok) {
-        const data = await res.json()
-        setCreatedProjectId(data.project?.id ?? null)
-        const pid = data.project?.id
+
+      const pid = data.project?.id
+      if (pid) {
+        setCreatedProjectId(pid)
 
         // Upload zone photos
-        if (pid && zonePhotos.length > 0) {
+        if (zonePhotos.length > 0) {
           for (const photo of zonePhotos) {
             try {
-              const urlRes = await fetch(`/api/v1/projects/${pid}/photos/presign`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ filename: photo.file.name, contentType: photo.file.type, zoneId: photo.zoneId }),
-              })
-              const { uploadUrl, photoId } = await urlRes.json()
+              const { uploadUrl, photoId } = await apiFetch<{ uploadUrl: string; photoId: string }>(
+                `/api/v1/projects/${pid}/photos/presign`,
+                {
+                  method: 'POST',
+                  body: JSON.stringify({ filename: photo.file.name, contentType: photo.file.type }),
+                }
+              )
               await fetch(uploadUrl, { method: 'PUT', body: photo.file, headers: { 'Content-Type': photo.file.type } })
-              await fetch(`/api/v1/projects/${pid}/photos/${photoId}/confirm`, { method: 'POST' })
+              await apiFetch(`/api/v1/projects/${pid}/photos/${photoId}/confirm`, { method: 'POST' })
             } catch (err) {
               console.warn('Zone photo upload failed', photo.zoneId, err)
             }
@@ -334,16 +441,17 @@ export default function NewProjectPage() {
         }
 
         // Upload video
-        if (pid && videoFile) {
+        if (videoFile) {
           try {
-            const urlRes = await fetch(`/api/v1/projects/${pid}/videos/presign`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ filename: videoFile.name, contentType: videoFile.type }),
-            })
-            const { uploadUrl, videoId } = await urlRes.json()
+            const { uploadUrl, videoId } = await apiFetch<{ uploadUrl: string; videoId: string }>(
+              `/api/v1/projects/${pid}/videos/presign`,
+              {
+                method: 'POST',
+                body: JSON.stringify({ filename: videoFile.name, contentType: videoFile.type }),
+              }
+            )
             await fetch(uploadUrl, { method: 'PUT', body: videoFile, headers: { 'Content-Type': videoFile.type } })
-            await fetch(`/api/v1/projects/${pid}/videos/${videoId}/confirm`, { method: 'POST' })
+            await apiFetch(`/api/v1/projects/${pid}/videos/${videoId}/confirm`, { method: 'POST' })
           } catch (err) {
             console.warn('Video upload failed', err)
           }
@@ -353,7 +461,8 @@ export default function NewProjectPage() {
       } else {
         window.location.href = '/projects'
       }
-    } catch {
+    } catch (err) {
+      console.error('Project creation failed:', err)
       window.location.href = '/projects'
     } finally {
       setSubmitting(false)
@@ -434,7 +543,7 @@ export default function NewProjectPage() {
       {/* Step Progress */}
       <div className="mb-8 overflow-x-auto">
         <div className="flex min-w-max items-center justify-between">
-          {STEPS.map((s, i) => (
+          {visibleSteps.map((s, i) => (
             <div key={s.id} className="flex items-center">
               <div className="flex flex-col items-center">
                 <div
@@ -452,7 +561,7 @@ export default function NewProjectPage() {
                   {s.label}
                 </span>
               </div>
-              {i < STEPS.length - 1 && (
+              {i < visibleSteps.length - 1 && (
                 <div className="mx-2 mt-[-18px] h-0.5 w-8 sm:w-14" style={{
                   backgroundColor: i < currentStepIndex ? '#38A169' : '#E5E7EB',
                 }} />
@@ -465,11 +574,81 @@ export default function NewProjectPage() {
       {/* Step Content */}
       <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
 
+        {/* ── Step 0: Concept Selection ────────────────────────────────────────── */}
+        {step === 'concept' && (
+          <div>
+            <h2 className="font-display mb-1 text-lg font-semibold" style={{ color: '#1A2B4A' }}>Start from a Design Concept?</h2>
+            <p className="mb-6 text-sm text-slate-500">We found existing AI design concept packages in your account. You can link one to instantly set up your project and digital twin.</p>
+            
+            {loadingConcepts ? (
+              <div className="flex justify-center py-8">
+                <Loader2 className="h-8 w-8 animate-spin text-teal-500" />
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {concepts.map((concept) => (
+                  <div
+                    key={concept.id}
+                    className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-xl border-2 hover:bg-slate-50 transition-all cursor-pointer"
+                    style={{
+                      borderColor: selectedConcept?.id === concept.id ? '#2ABFBF' : '#E5E7EB',
+                      backgroundColor: selectedConcept?.id === concept.id ? 'rgba(42,191,191,0.02)' : 'white',
+                    }}
+                    onClick={() => handleSelectConcept(concept)}
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg mt-0.5"
+                        style={{ backgroundColor: 'rgba(42,191,191,0.1)', color: '#2ABFBF' }}>
+                        <Sparkles className="h-5 w-5" />
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-sm" style={{ color: '#1A2B4A' }}>{concept.projectLabel}</h4>
+                        <p className="text-xs text-gray-500 mt-0.5">{concept.tierLabel} · Ready</p>
+                        {concept.address && (
+                          <p className="text-xs text-gray-400 mt-0.5 truncate max-w-[280px]">{concept.address}</p>
+                        )}
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      className="shrink-0 rounded-lg px-4 py-2 text-xs font-semibold text-white transition-opacity hover:opacity-90 flex items-center gap-1.5 self-end sm:self-auto"
+                      style={{ backgroundColor: '#2ABFBF' }}
+                    >
+                      <ArrowRight className="h-3.5 w-3.5" />
+                      Link Concept
+                    </button>
+                  </div>
+                ))}
+                
+                <div className="border-t border-slate-100 my-6 pt-6 flex justify-between items-center font-display">
+                  <span className="text-xs text-slate-400">Or start fresh without a design concept</span>
+                  <button
+                    onClick={() => {
+                      setSelectedConcept(null)
+                      setStep('type')
+                    }}
+                    className="text-sm font-semibold hover:underline"
+                    style={{ color: '#2ABFBF' }}
+                  >
+                    Start from scratch →
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* ── Step 1: Type ─────────────────────────────────────────────────── */}
         {step === 'type' && (
           <div>
             <h2 className="font-display mb-1 text-lg font-semibold" style={{ color: '#1A2B4A' }}>What type of project?</h2>
             <p className="mb-6 text-sm text-gray-500">This determines your default Digital Twin tier and enabled modules</p>
+            {selectedConcept && (
+              <div className="mb-6 rounded-lg p-3.5 text-xs flex items-center gap-2 border" style={{ backgroundColor: 'rgba(42,191,191,0.06)', borderColor: '#2ABFBF', color: '#1A2B4A' }}>
+                <Sparkles className="h-4 w-4 flex-shrink-0" style={{ color: '#2ABFBF' }} />
+                <span>Concept Linked: Prefilled type for <strong>{selectedConcept.projectLabel}</strong>. Feel free to adjust if needed.</span>
+              </div>
+            )}
             <div className="grid gap-3 sm:grid-cols-2">
               {PROJECT_TYPES.map((type) => (
                 <button
@@ -509,6 +688,12 @@ export default function NewProjectPage() {
           <div>
             <h2 className="font-display mb-1 text-lg font-semibold" style={{ color: '#1A2B4A' }}>Project Details</h2>
             <p className="mb-6 text-sm text-gray-500">Basic information about your project</p>
+            {selectedConcept && (
+              <div className="mb-6 rounded-lg p-3.5 text-xs flex items-center gap-2 border" style={{ backgroundColor: 'rgba(42,191,191,0.06)', borderColor: '#2ABFBF', color: '#1A2B4A' }}>
+                <Sparkles className="h-4 w-4 flex-shrink-0" style={{ color: '#2ABFBF' }} />
+                <span>Concept Linked: Prefilled name and budget from <strong>{selectedConcept.projectLabel}</strong>. Feel free to edit.</span>
+              </div>
+            )}
             <div className="space-y-4">
               <div>
                 <label className="mb-1 block text-sm font-medium text-gray-700">Project Name *</label>
@@ -568,6 +753,12 @@ export default function NewProjectPage() {
           <div>
             <h2 className="font-display mb-1 text-lg font-semibold" style={{ color: '#1A2B4A' }}>Project Location</h2>
             <p className="mb-6 text-sm text-gray-500">Where is the project located?</p>
+            {selectedConcept && (
+              <div className="mb-6 rounded-lg p-3.5 text-xs flex items-center gap-2 border" style={{ backgroundColor: 'rgba(42,191,191,0.06)', borderColor: '#2ABFBF', color: '#1A2B4A' }}>
+                <Sparkles className="h-4 w-4 flex-shrink-0" style={{ color: '#2ABFBF' }} />
+                <span>Concept Linked: Prefilled address from your design concept. Feel free to edit.</span>
+              </div>
+            )}
             <div className="space-y-4">
               <div>
                 <label className="mb-1 block text-sm font-medium text-gray-700">Street Address *</label>
@@ -696,6 +887,15 @@ export default function NewProjectPage() {
         {step === 'media' && (
           <div>
             <h2 className="font-display mb-1 text-lg font-semibold" style={{ color: '#1A2B4A' }}>Photos & Video</h2>
+            {selectedConcept && (
+              <div className="mb-6 rounded-lg p-3.5 text-xs flex items-start gap-2 border" style={{ backgroundColor: 'rgba(42,191,191,0.06)', borderColor: '#2ABFBF', color: '#1A2B4A' }}>
+                <Sparkles className="h-4 w-4 mt-0.5 flex-shrink-0" style={{ color: '#2ABFBF' }} />
+                <div>
+                  <p className="font-semibold">Concept Photos Linked</p>
+                  <p className="mt-0.5 text-slate-600">We will use the photos you uploaded during your design concept intake. You can proceed directly or optionally upload additional media below.</p>
+                </div>
+              </div>
+            )}
             <div className="mb-4 flex items-center justify-between">
               <p className="text-sm text-gray-500">Capture each zone for the best AI results</p>
               {zones.length > 0 && (

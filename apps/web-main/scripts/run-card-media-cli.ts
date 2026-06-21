@@ -25,7 +25,9 @@ const scope = (args.find((a) => a.startsWith('--scope='))?.split('=')[1] ??
   'all') as 'home' | 'product' | 'all'
 const dryRun = args.includes('--dry-run')
 const skipVideo = args.includes('--skip-video')
+const skipImage = args.includes('--skip-image')
 const fallbackOnly = args.includes('--fallback-only')
+const force = args.includes('--force')
 const withVideos = args.includes('--with-videos') || (!skipVideo && fallbackOnly)
 
 async function main() {
@@ -62,6 +64,8 @@ async function main() {
     scope,
     dryRun,
     skipVideo,
+    skipImage,
+    force,
     useMarketingBot: Boolean(process.env.ANTHROPIC_API_KEY),
   })
 

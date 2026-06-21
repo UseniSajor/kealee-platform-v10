@@ -17,6 +17,12 @@ export const createProjectSchema = z.object({
   categoryMetadata: z.unknown().optional(),
   adminOverride: z.boolean().optional(),
   adminReason: z.string().optional(),
+  budgetTotal: z.number().nonnegative().optional(),
+  address: z.string().optional(),
+  city: z.string().optional(),
+  state: z.string().optional(),
+  zipCode: z.string().optional(),
+  twinTier: z.string().optional(),
 })
 
 export const updateProjectSchema = z.object({

@@ -6,25 +6,7 @@ import { Menu, X, ChevronDown } from 'lucide-react'
 import { useState, useRef, useEffect } from 'react'
 import { SERVICES } from '@/lib/services-config'
 
-// Services dropdown shows precon (design/planning) services only
-// Build services live under the Build button → /build
-const PRECON_SERVICES = SERVICES.filter((s) => s.phase === 'precon')
-
-const SERVICE_GROUPS = [
-  {
-    label: 'Remodels',
-    services: PRECON_SERVICES.filter((s) => s.category === 'remodel'),
-  },
-  {
-    label: 'Additions & Outdoor',
-    services: PRECON_SERVICES.filter((s) => s.category === 'addition' || s.category === 'landscape'),
-  },
-  {
-    label: 'Design',
-    services: PRECON_SERVICES.filter((s) => s.category === 'design'),
-  },
-]
-
+// Services dropdown shows design and construction side-by-side
 function ServicesDropdown() {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
@@ -49,36 +31,74 @@ function ServicesDropdown() {
       </button>
 
       {open && (
-        <div className="absolute left-0 top-full mt-1 w-[600px] bg-white rounded-2xl shadow-xl border border-slate-200 p-5 z-50">
-          <div className="grid grid-cols-3 gap-5">
-            {SERVICE_GROUPS.map((group) => (
-              <div key={group.label}>
-                <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-3">{group.label}</p>
-                <ul className="space-y-1">
-                  {group.services.map((svc) => (
-                    <li key={svc.slug}>
-                      <Link
-                        href={`/services/${svc.slug}`}
-                        onClick={() => setOpen(false)}
-                        className="block rounded-lg px-2 py-1.5 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-700 transition"
-                      >
-                        {svc.label}
-                        <span className="block text-[11px] text-slate-400">{svc.deliverableLabel} · {svc.deliveryDays}</span>
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
+        <div className="absolute left-0 top-full mt-1 w-[640px] bg-white rounded-2xl shadow-xl border border-slate-200 p-5 z-50">
+          <div className="grid grid-cols-2 gap-8 divide-x divide-slate-100">
+            {/* COLUMN 1: DESIGN & PLANNING */}
+            <div>
+              <p className="text-[11px] font-bold uppercase tracking-widest text-[#E8724B] mb-4 flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#E8724B]"></span>
+                Design & Planning
+              </p>
+              <ul className="space-y-1">
+                {SERVICES.map((svc) => (
+                  <li key={`design-${svc.slug}`}>
+                    <Link
+                      href={`/services/${svc.slug}`}
+                      onClick={() => setOpen(false)}
+                      className="block rounded-lg px-2.5 py-2 text-sm text-slate-700 hover:bg-orange-50 hover:text-[#E8724B] transition"
+                    >
+                      <span className="font-semibold block">{svc.label}</span>
+                      <span className="block text-[11px] text-slate-400 mt-0.5">{svc.deliverableLabel} · {svc.deliveryDays}</span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* COLUMN 2: CONSTRUCTION & BUILD */}
+            <div className="pl-8">
+              <p className="text-[11px] font-bold uppercase tracking-widest text-blue-600 mb-4 flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+                Construction & Build
+              </p>
+              <ul className="space-y-1">
+                {SERVICES.filter(s => s.slug !== 'design-services').map((svc) => (
+                  <li key={`build-${svc.slug}`}>
+                    <Link
+                      href={svc.slug === 'new-construction' ? `/services/${svc.slug}` : `/services/${svc.slug}#build`}
+                      onClick={() => setOpen(false)}
+                      className="block rounded-lg px-2.5 py-2 text-sm text-slate-700 hover:bg-blue-50 hover:text-blue-700 transition"
+                    >
+                      <span className="font-semibold block">{svc.label} Build</span>
+                      <span className="block text-[11px] text-slate-400 mt-0.5">Vetted GCs · {svc.timeline}</span>
+                    </Link>
+                  </li>
+                ))}
+                {/* Special design-services note/cta in construction column */}
+                <li className="pt-2">
+                  <div className="rounded-xl bg-slate-50 border border-slate-100 p-3">
+                    <p className="text-xs font-semibold text-slate-700">Need contractor matching?</p>
+                    <p className="text-[11px] text-slate-400 mt-0.5 mb-2">We match permit-ready plans to vetted local contractors.</p>
+                    <Link
+                      href="/build"
+                      onClick={() => setOpen(false)}
+                      className="inline-flex items-center gap-1 text-xs font-bold text-[#E8724B] hover:text-[#D45C33]"
+                    >
+                      Explore Build Platform →
+                    </Link>
+                  </div>
+                </li>
+              </ul>
+            </div>
           </div>
           <div className="mt-4 pt-4 border-t border-slate-100 flex items-center justify-between">
-            <p className="text-xs text-slate-500">Delivered in 2–6 days</p>
+            <p className="text-xs text-slate-500">Design concepts in 2–6 days · Bids in 24–48 hours</p>
             <Link
               href="/gallery"
               onClick={() => setOpen(false)}
               className="text-xs font-semibold text-orange-600 hover:text-orange-700"
             >
-              Browse all →
+              Browse Project Gallery →
             </Link>
           </div>
         </div>
@@ -89,12 +109,6 @@ function ServicesDropdown() {
 
 // Color config per nav tab
 const NAV_TABS = [
-  {
-    href: '/ai-construction-platform',
-    label: 'AI Platform',
-    hoverColor: 'hover:text-blue-500',
-    activeColor: 'text-blue-500 border-b-2 border-blue-500',
-  },
   {
     href: '/concept',
     label: 'Design Concept',
@@ -139,17 +153,38 @@ function MobileServicesAccordion({ onClose }: { onClose: () => void }) {
         <ChevronDown className={`w-4 h-4 transition-transform ${open ? 'rotate-180' : ''}`} />
       </button>
       {open && (
-        <div className="ml-4 mt-1 space-y-0.5">
-          {PRECON_SERVICES.map((svc) => (
-            <Link
-              key={svc.slug}
-              href={`/services/${svc.slug}`}
-              onClick={onClose}
-              className="block rounded-lg px-3 py-2 text-sm text-slate-500 hover:bg-slate-50 hover:text-slate-800 transition"
-            >
-              {svc.label}
-            </Link>
-          ))}
+        <div className="ml-4 mt-2 space-y-4 pl-2 border-l border-slate-100">
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-widest text-[#E8724B] mb-1">Design & Planning</p>
+            <div className="space-y-0.5">
+              {SERVICES.map((svc) => (
+                <Link
+                  key={`mobile-design-${svc.slug}`}
+                  href={`/services/${svc.slug}`}
+                  onClick={onClose}
+                  className="block rounded-lg px-3 py-1.5 text-sm text-slate-500 hover:bg-slate-50 hover:text-slate-800 transition"
+                >
+                  {svc.label}
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-widest text-blue-600 mb-1">Construction & Build</p>
+            <div className="space-y-0.5">
+              {SERVICES.filter(s => s.slug !== 'design-services').map((svc) => (
+                <Link
+                  key={`mobile-build-${svc.slug}`}
+                  href={svc.slug === 'new-construction' ? `/services/${svc.slug}` : `/services/${svc.slug}#build`}
+                  onClick={onClose}
+                  className="block rounded-lg px-3 py-1.5 text-sm text-slate-500 hover:bg-slate-50 hover:text-slate-800 transition"
+                >
+                  {svc.label} Build
+                </Link>
+              ))}
+            </div>
+          </div>
         </div>
       )}
     </div>

@@ -164,23 +164,23 @@ async function main(): Promise<void> {
 
   process.stdout.write('[1/4] Seeding Supabase public_intake_leads... ')
   await sbInsert('public_intake_leads', {
-    id:             intakeId,
-    projectPath:    PROJECT_PATH,
-    clientName:     INTAKE_FORM.clientName,
-    contactEmail:   INTAKE_FORM.contactEmail,
-    contactPhone:   INTAKE_FORM.contactPhone,
-    projectAddress: INTAKE_FORM.projectAddress,
-    budgetRange:    INTAKE_FORM.budgetRange,
-    source:         'test',
-    status:         'paid',
-    requiresPayment: false,
+    id:               intakeId,
+    project_path:     PROJECT_PATH,
+    client_name:      INTAKE_FORM.clientName,
+    contact_email:    INTAKE_FORM.contactEmail,
+    contact_phone:    INTAKE_FORM.contactPhone,
+    project_address:  INTAKE_FORM.projectAddress,
+    budget_range:     INTAKE_FORM.budgetRange,
+    source:           'test',
+    status:           'paid',
+    requires_payment: false,
     form_data: {
       ...INTAKE_FORM,
       _test:    true,
       _testTag: testTag,
     },
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
   })
   console.log(`OK (${intakeId})`)
 
@@ -261,7 +261,7 @@ async function main(): Promise<void> {
       _testTag:     testTag,
       conceptOutput,
     },
-    updatedAt: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
   })
 
   console.log('OK')

@@ -319,7 +319,7 @@ export default async function ServicePage({
       </section>
 
       {/* ── 4. Cost & Timeline ─────────────────────────────────────────────── */}
-      <section className="py-16 px-4 bg-slate-50">
+      <section id="build" className="py-16 px-4 bg-slate-50">
         <div className="mx-auto max-w-3xl">
           <h2 className="text-2xl font-bold text-slate-900 mb-6">Project Cost &amp; Timeline</h2>
           <div className="rounded-2xl bg-white border border-slate-200 p-6 shadow-sm">

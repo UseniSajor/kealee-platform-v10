@@ -17,6 +17,7 @@ export interface GenerateCardMediaOptions {
   keys?: string[]
   scope?: 'home' | 'product' | 'all'
   skipVideo?: boolean
+  skipImage?: boolean
   dryRun?: boolean
   useMarketingBot?: boolean
   force?: boolean
@@ -56,7 +57,7 @@ export async function generateCardMedia(
   }
 
   const isFallback = existingEntry?.source === 'fallback'
-  const shouldRegeneratePhoto = opts.force || isFallback || !existingEntry?.photoUrl || existingEntry.photoUrl.startsWith('/media/service-photos/home-')
+  const shouldRegeneratePhoto = (opts.force && !opts.skipImage) || isFallback || !existingEntry?.photoUrl || existingEntry.photoUrl.startsWith('/media/service-photos/home-')
   const shouldRegenerateVideo = opts.force || isFallback || !existingEntry?.videoUrl || existingEntry.videoUrl.startsWith('/media/service-videos/home-')
 
   let beforePhotoUrl = (opts.force || isFallback) ? undefined : existingEntry?.beforePhotoUrl

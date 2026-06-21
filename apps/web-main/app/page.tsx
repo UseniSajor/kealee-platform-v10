@@ -6,6 +6,8 @@ import { PortalAccessSection } from '@/components/home/PortalAccessSection'
 import { loadCardMediaManifest } from '@/lib/marketing/card-media-manifest'
 import { mergeHomeServicesWithManifest } from '@/lib/marketing/merge-home-services'
 
+export const dynamic = 'force-dynamic'
+
 export const metadata: Metadata = {
   title: 'Kealee — Design-Build Platform | DC, MD & VA',
   description:

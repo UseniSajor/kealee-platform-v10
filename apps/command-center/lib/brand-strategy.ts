@@ -113,7 +113,7 @@ export const JURISDICTIONS = [
 export const PRICE_ANCHORS = {
   concept:              'from $599',
   permitResearch:       '$495',
-  professionalDrawings: 'from $1,499',
+  professionalDrawings: 'from $4,999',
   fullArchPackage:      '$2,999',
   costEstimate:         '$595',
   contractorMatch:      '$199',

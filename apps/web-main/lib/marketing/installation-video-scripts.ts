@@ -35,7 +35,7 @@ export type CardNarrativeConfig = {
 }
 
 const BASE_REALISM =
-  'Photorealistic construction documentary, DMV suburban home, natural daylight, no on-screen text, no logos, workers in PPE with faces away from camera, believable tools and materials, 24fps cinematic timelapse feel'
+  'Photorealistic construction documentary, DMV suburban home, natural daylight, no on-screen text, no logos, workers in PPE with faces away from camera, believable tools and materials, 24fps cinematic slow-motion feel, slow-paced motion'
 
 export const PROCESS_SCRIPTS: Record<VideoNarrativeId, ProcessSegment[]> = {
   'kitchen-install': [
@@ -95,7 +95,7 @@ function condensedCardPrompt(narrativeId: VideoNarrativeId): string {
   }
   const phases = segments.map((s) => s.label).join(' → ')
   const detail = segments.map((s) => s.prompt.split(',').slice(1).join(',').trim()).join('; ')
-  return `${BASE_REALISM}, seamless timelapse showing full project process: ${phases}. ${detail}. Smooth transitions, no text overlays.`
+  return `${BASE_REALISM}, seamless slow-motion process showing project flow: ${phases}. ${detail}. Slow steady pacing, regular speed movement of workers, smooth transitions, no text overlays.`
 }
 
 export function narrativeForServiceSlug(slug: string, category: string): VideoNarrativeId {

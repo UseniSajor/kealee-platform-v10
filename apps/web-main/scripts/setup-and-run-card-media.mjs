@@ -20,6 +20,7 @@ const args = process.argv.slice(2)
 const scope = args.find((a) => a.startsWith('--scope='))?.split('=')[1] ?? 'all'
 const skipVideo = args.includes('--skip-video')
 const forceAi = args.includes('--force-ai')
+const force = args.includes('--force')
 
 console.log('\n── Card media setup ──\n')
 
@@ -46,6 +47,7 @@ if (hasSupabase) {
 
 const cliArgs = ['exec', 'tsx', 'scripts/run-card-media-cli.ts', `--scope=${scope}`]
 if (skipVideo) cliArgs.push('--skip-video')
+if (force) cliArgs.push('--force')
 if (!hasImage && !forceAi) {
   cliArgs.push('--fallback-only')
   if (!skipVideo) cliArgs.push('--with-videos')

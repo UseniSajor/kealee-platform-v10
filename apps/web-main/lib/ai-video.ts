@@ -394,7 +394,7 @@ export function buildInstallationProcessPrompt(opts: {
   return [
     opts.segmentPrompt,
     `${style} ${room}.`,
-    'Smooth timelapse motion, steady camera or slow dolly, photorealistic construction documentary,',
+    'Smooth slow-motion video, regular speed movement of workers, steady camera or slow dolly, photorealistic construction documentary,',
     'no text overlays, no watermarks, believable jobsite activity.',
   ]
     .filter(Boolean)

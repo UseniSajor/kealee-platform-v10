@@ -29,6 +29,12 @@ export async function projectRoutes(fastify: FastifyInstance) {
           categoryMetadata: body.categoryMetadata,
           adminOverride: body.adminOverride,
           adminReason: body.adminReason,
+          budgetTotal: body.budgetTotal,
+          address: body.address,
+          city: body.city,
+          state: body.state,
+          zipCode: body.zipCode,
+          twinTier: body.twinTier,
         },
         user.id
       )

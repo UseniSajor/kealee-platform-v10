@@ -21,6 +21,12 @@ export type CreateProjectInput = {
   categoryMetadata?: unknown
   adminOverride?: boolean // Allow direct creation for OS-PM flow (requires audit reason)
   adminReason?: string // Required if adminOverride is true
+  budgetTotal?: number
+  address?: string
+  city?: string
+  state?: string
+  zipCode?: string
+  twinTier?: string
 }
 
 export type UpdateProjectInput = {
@@ -92,6 +98,11 @@ export const projectService = {
         category: input.category,
         categoryMetadata: (input.categoryMetadata as any) ?? null,
         status: 'DRAFT',
+        budgetTotal: input.budgetTotal ?? null,
+        address: input.address ?? null,
+        city: input.city ?? null,
+        state: input.state ?? null,
+        zipCode: input.zipCode ?? null,
         memberships: {
           create: [
             {
@@ -104,7 +115,49 @@ export const projectService = {
     })
 
     // Ensure DigitalTwin exists for the new project (DDTS enforcement)
-    await ensureDigitalTwin(project.id, input.orgId ?? undefined)
+    const twin = await ensureDigitalTwin(project.id, input.orgId ?? undefined)
+    if (twin && input.twinTier) {
+      let modules: string[] = ['os-pm', 'os-pay']
+      if (input.twinTier === 'L2') modules = ['os-pm', 'os-pay', 'os-feas']
+      if (input.twinTier === 'L3') modules = ['os-pm', 'os-pay', 'os-feas', 'os-dev', 'os-ops']
+
+      await prismaAny.digitalTwin.update({
+        where: { id: twin.id },
+        data: {
+          tier: input.twinTier as any,
+          enabledModules: modules,
+        },
+      })
+    }
+
+    // Clone photos from public_intake_leads if intakeId is present in categoryMetadata
+    if (input.categoryMetadata && typeof input.categoryMetadata === 'object') {
+      const meta = input.categoryMetadata as Record<string, any>
+      if (meta.intakeId) {
+        try {
+          const intake = await prismaAny.publicIntakeLead.findUnique({
+            where: { id: meta.intakeId },
+          })
+          if (intake && intake.uploadedPhotos && Array.isArray(intake.uploadedPhotos)) {
+            for (const photoUrl of intake.uploadedPhotos) {
+              if (typeof photoUrl === 'string') {
+                const filename = photoUrl.split('/').pop() || 'photo.jpg'
+                await prismaAny.projectPhoto.create({
+                  data: {
+                    projectId: project.id,
+                    url: photoUrl,
+                    filename,
+                    s3Key: photoUrl,
+                  },
+                })
+              }
+            }
+          }
+        } catch (err: any) {
+          console.warn('[ProjectService] Failed to clone intake photos:', err.message)
+        }
+      }
+    }
 
     // Log admin override in audit (only after successful creation)
     if (input.adminOverride && userId) {

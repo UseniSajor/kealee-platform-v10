@@ -144,10 +144,10 @@ const SERVICE_CATEGORIES: ServiceCategory[] = [
     color: '#6B46C1',
     bgLight: '#FAF5FF',
     Icon: PenTool,
-    fromPrice: 'From $1,499',
+    fromPrice: 'From $4,999',
     trades: ['Architect', 'Licensed Designer', 'PE Engineer'],
     services: [
-      { slug: 'professional-drawings', label: 'Permit-Ready Drawings',           priceRange: '$1,499–$2,999', typical: '7–14 days',  popular: true, href: '/intake/professional_drawings' },
+      { slug: 'professional-drawings', label: 'Permit-Ready Drawings',           priceRange: 'From $4,999',  typical: '7–14 days',  popular: true, href: '/intake/professional_drawings' },
       { slug: 'pe-stamp',              label: 'Structural / PE Stamp',           priceRange: '$799–$1,499',   typical: '5–10 days',                 href: '/intake/professional_drawings' },
       { slug: 'interior-design',       label: 'Interior Design Consultation',    priceRange: '$395–$695',     typical: '48–72 hrs',                 href: '/intake/kitchen_remodel' },
     ],
