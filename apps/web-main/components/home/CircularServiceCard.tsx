@@ -67,7 +67,7 @@ export function CircularServiceCard({ service, index }: CircularServiceCardProps
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true, amount: 0.2 }}
-      className="relative w-full h-[200px] sm:h-[240px] lg:h-[260px] flex items-center justify-center"
+      className="relative w-full h-[300px] sm:h-[360px] lg:h-[400px] flex items-center justify-center"
       aria-labelledby={`service-${service.id}-title`}
     >
       <motion.div
@@ -136,12 +136,12 @@ export function CircularServiceCard({ service, index }: CircularServiceCardProps
         />
 
         {/* Step Badge */}
-        <span className="absolute top-4 left-6 sm:left-8 lg:left-14 z-10 rounded-lg bg-white/10 backdrop-blur-md border border-white/20 px-2.5 py-1 text-[9px] font-bold uppercase tracking-widest text-[#E8724B] shadow-sm">
+        <span className="absolute top-8 left-8 sm:top-10 sm:left-16 lg:top-12 lg:left-24 z-10 rounded-lg bg-white/10 backdrop-blur-md border border-white/20 px-2.5 py-1 text-[9px] font-bold uppercase tracking-widest text-[#E8724B] shadow-sm">
           Step 0{index + 1}
         </span>
 
         {/* Progress Ring Corner Badge */}
-        <div className="absolute top-4 right-6 sm:right-8 lg:right-14 z-10 flex items-center justify-center bg-slate-950/65 backdrop-blur-md rounded-full p-1.5 border border-white/15 h-10 w-10 shadow-md">
+        <div className="absolute top-8 right-8 sm:top-10 sm:right-16 lg:top-12 lg:right-24 z-10 flex items-center justify-center bg-slate-950/65 backdrop-blur-md rounded-full p-1.5 border border-white/15 h-10 w-10 shadow-md">
           <svg className="absolute h-8.5 w-8.5 -rotate-90" viewBox="0 0 100 100" aria-hidden>
             <circle cx="50" cy="50" r={RING_RADIUS} fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="6" />
             <circle
@@ -162,7 +162,7 @@ export function CircularServiceCard({ service, index }: CircularServiceCardProps
 
         {useVideo && videoReady && (
           <div
-            className="absolute bottom-4 right-6 sm:right-8 lg:right-14 z-[5] rounded-full bg-slate-900/50 p-1.5 backdrop-blur-sm border border-white/10"
+            className="absolute bottom-8 right-8 sm:bottom-10 sm:right-16 lg:bottom-12 lg:right-24 z-[5] rounded-full bg-slate-900/50 p-1.5 backdrop-blur-sm border border-white/10"
             aria-label="Video preview playing"
           >
             <Play className="h-3 w-3 fill-white text-white" aria-hidden />
@@ -170,7 +170,7 @@ export function CircularServiceCard({ service, index }: CircularServiceCardProps
         )}
 
         {/* Content Container */}
-        <div className="absolute inset-0 z-[4] flex flex-col justify-end text-left px-6 pb-5 sm:px-10 sm:pb-6 lg:px-16 lg:pb-8">
+        <div className="absolute inset-0 z-[4] flex flex-col justify-end text-left px-8 pb-8 sm:px-16 sm:pb-12 lg:px-24 lg:pb-16">
           <div className="flex items-center gap-2.5 mb-2">
             <div className="p-2 bg-[#E8724B] rounded-lg text-white shadow-md">
               <Icon className="h-4.5 w-4.5 lg:h-5 lg:w-5" strokeWidth={2} aria-hidden />
@@ -189,11 +189,11 @@ export function CircularServiceCard({ service, index }: CircularServiceCardProps
             {service.title}
           </h3>
 
-          <p className="font-home-sans mt-2 text-xs lg:text-sm text-slate-200 line-clamp-2 max-w-[90%] sm:max-w-[75%] lg:max-w-[60%] leading-relaxed">
+          <p className="font-home-sans mt-3 text-xs lg:text-sm text-slate-200 line-clamp-3 max-w-[90%] sm:max-w-[75%] lg:max-w-[60%] leading-relaxed">
             {service.description}
           </p>
 
-          <div className="mt-3.5 flex items-center justify-between border-t border-white/10 pt-3 sm:max-w-[75%] lg:max-w-[60%]">
+          <div className="mt-4 flex items-center justify-between border-t border-white/10 pt-3 sm:max-w-[75%] lg:max-w-[60%]">
             <span className="font-home-sans text-[11px] lg:text-xs font-semibold text-[#E8724B] tracking-wide">
               {service.priceHint}
             </span>

@@ -37,14 +37,14 @@ const HOME_SPECS: Record<HomeServiceId, Omit<CardMediaSpec, 'key' | 'scope' | 'i
     title: 'AI Design Concepts',
     imageType: 'hero',
     style: 'modern',
-    roomType: 'kitchen',
+    roomType: 'design examples',
     imageDescription:
-      'Stunning modern kitchen with quartz waterfall island, three AI concept style boards visible on a tablet, photorealistic renovation showcase',
+      'A collection of modern design concept boards showcasing custom kitchen layouts, spa-like bathrooms, home additions, and landscaping plans',
     videoMotion: 'reveal',
     mediaType: 'video',
     fallbackPhoto:
       'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=900&q=80&auto=format&fit=crop',
-    photoAlt: 'AI-generated kitchen design concepts',
+    photoAlt: 'Diverse AI-generated design concepts including kitchen, bath, addition, and garden',
   },
   permits: {
     title: 'Permit Filing',
@@ -76,14 +76,14 @@ const HOME_SPECS: Record<HomeServiceId, Omit<CardMediaSpec, 'key' | 'scope' | 'i
     title: 'Build & Manage',
     imageType: 'after',
     style: 'transitional',
-    roomType: 'kitchen',
+    roomType: 'new construction home',
     imageDescription:
-      'Completed modern kitchen renovation, magazine-quality finishes, same angle as active construction reference',
+      'Completed modern house exterior after new construction, lush landscaping, golden hour sunset',
     videoMotion: 'walkthrough',
     mediaType: 'video',
     fallbackPhoto:
       'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=900&q=80&auto=format&fit=crop',
-    photoAlt: 'Construction team managing a renovation project',
+    photoAlt: 'Completed modern new construction home exterior',
   },
 }
 
