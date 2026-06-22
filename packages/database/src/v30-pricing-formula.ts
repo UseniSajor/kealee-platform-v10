@@ -72,6 +72,13 @@ export async function upsertActiveV30PricingFormula(
     floorplanScopeCosts: payload.floorplanScopeCosts,
   }
 
+  const baseAmount = Number(payload.baseAmount ?? 99)
+  const sqftMultiplier = Number(payload.sqftMultiplier ?? 0.05)
+  const urgencyMultiplier = Number(payload.urgencyMultiplier ?? 1)
+  const locationMultiplier = Number(payload.locationMultiplier ?? 1)
+  const minPrice = Number(payload.minPrice ?? 99)
+  const maxPrice = Number(payload.maxPrice ?? 9999)
+
   const existing = await prisma.v30PricingFormula.findFirst({
     where: { active: true },
     orderBy: { updatedAt: 'desc' },
@@ -81,14 +88,14 @@ export async function upsertActiveV30PricingFormula(
     const updated = await prisma.v30PricingFormula.update({
       where: { id: existing.id },
       data: {
-        baseAmount: payload.baseAmount,
-        sqftMultiplier: payload.sqftMultiplier,
+        baseAmount,
+        sqftMultiplier,
         complexityFees: payload.complexityFees ?? {},
         featureCosts,
-        urgencyMultiplier: payload.urgencyMultiplier,
-        locationMultiplier: payload.locationMultiplier,
-        minPrice: payload.minPrice,
-        maxPrice: payload.maxPrice,
+        urgencyMultiplier,
+        locationMultiplier,
+        minPrice,
+        maxPrice,
         version: { increment: 1 },
       },
     })
@@ -97,14 +104,14 @@ export async function upsertActiveV30PricingFormula(
 
   const created = await prisma.v30PricingFormula.create({
     data: {
-      baseAmount: payload.baseAmount ?? 99,
-      sqftMultiplier: payload.sqftMultiplier ?? 0.05,
+      baseAmount,
+      sqftMultiplier,
       complexityFees: payload.complexityFees ?? {},
       featureCosts,
-      urgencyMultiplier: payload.urgencyMultiplier ?? 1,
-      locationMultiplier: payload.locationMultiplier ?? 1,
-      minPrice: payload.minPrice ?? 99,
-      maxPrice: payload.maxPrice ?? 9999,
+      urgencyMultiplier,
+      locationMultiplier,
+      minPrice,
+      maxPrice,
       active: true,
     },
   })

@@ -622,13 +622,15 @@ model DecisionLog {
 
 // APP-15: Automation Event Bus
 model AutomationEvent {
-  id          String   @id @default(uuid())
+  id          String    @id @default(uuid())
   eventType   String
-  sourceApp   String // "APP-01" through "APP-15"
+  sourceApp   String    // "APP-01" through "APP-15"
   projectId   String?
   payload     Json
   processedBy String[]
-  createdAt   DateTime @default(now())
+  processed   Boolean   @default(false)
+  processedAt DateTime?
+  createdAt   DateTime  @default(now())
 
   @@index([eventType])
   @@index([sourceApp])

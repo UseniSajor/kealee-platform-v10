@@ -12,6 +12,7 @@ import { Loader2, LayoutGrid, Palette, Calculator, FileCheck, Layers, Video } fr
 import { isV30EnabledClient } from '@/lib/v30'
 import { V30GenerationStatus } from '@/components/v30/V30GenerationStatus'
 import { V30WorkspaceTabContent } from '@/components/v30/V30WorkspacePanels'
+import { DecisionPanel } from '@/components/loops/DecisionPanel'
 
 type TabId = 'overview' | 'design' | 'estimate' | 'permits' | 'floorplan' | 'video'
 
@@ -149,6 +150,7 @@ export default function V30WorkspacePage() {
         {!loading && tab === 'overview' && (
           <div className="space-y-6">
             <V30GenerationStatus intakeId={intakeId} />
+            <DecisionPanel projectId={intakeId} />
             <div className="bg-white rounded-xl border border-slate-200 p-6">
               <h2 className="font-semibold text-slate-900 mb-3">Package features</h2>
               <div className="flex flex-wrap gap-2">

@@ -14,6 +14,17 @@ export default function IntakeSuccessPage() {
   const projectPath = Array.isArray(params.projectPath) ? params.projectPath[0] : params.projectPath
   const intakeId = searchParams.get('intakeId')
 
+  // Clear persisted form data on success
+  useEffect(() => {
+    if (typeof window !== 'undefined' && projectPath) {
+      try {
+        sessionStorage.removeItem(`intake_form_${projectPath}`)
+      } catch (e) {
+        console.error('Failed to clear persisted intake form:', e)
+      }
+    }
+  }, [projectPath])
+
   const deliverable = SERVICE_DELIVERABLES[projectPath] ?? null
   const category = deliverable?.category ?? 'design'
 

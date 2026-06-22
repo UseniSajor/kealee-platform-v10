@@ -1,0 +1,104 @@
+// WORKFLOW — Loops Orchestration Models
+// Kealee Platform v30 Loop Orchestration System
+
+model LoopRun {
+  id              String     @id @default(cuid())
+  projectId       String
+  loopType        String     // intake_refinement, estimate_revision, permit_correction, contractor_bid, etc.
+  status          String     // PENDING, RUNNING, COMPLETED, FAILED, AWAITING_REVIEW
+  currentStep     String?
+  confidenceScore Float?
+  requiresReview  Boolean    @default(false)
+  triggerEvent    String     // PROJECT_CREATED, INTAKE_UPDATED, etc.
+  inputSnapshot   Json?      // Input payload
+  outputSnapshot  Json?      // Structured output response
+  nextAction      Json?      // Planned next steps
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  // Relations
+  steps           LoopStep[]
+  project         Project    @relation("ProjectLoopRuns", fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@index([loopType])
+  @@index([status])
+  @@index([createdAt])
+  @@map("loop_runs")
+}
+
+model LoopStep {
+  id              String   @id @default(cuid())
+  loopRunId       String
+  agentName       String   // OwnerAgent, IntakeAgent, etc.
+  stepType        String   // evaluation, revision, check, etc.
+  input           Json?
+  output          Json?
+  confidenceScore Float?
+  error           String?  @db.Text
+  createdAt       DateTime @default(now())
+
+  // Relations
+  loopRun         LoopRun  @relation(fields: [loopRunId], references: [id], onDelete: Cascade)
+
+  @@index([loopRunId])
+  @@index([createdAt])
+  @@map("loop_steps")
+}
+
+model ProjectDecision {
+  id              String   @id @default(cuid())
+  projectId       String
+  loopRunId       String?
+  decisionType    String   // select_concept, value_engineer, authorize_filing, etc.
+  selectedOption  String
+  reason          String?  @db.Text
+  budgetImpact    Float?
+  scheduleImpact  String?
+  createdBy       String?  // user ID
+  createdAt       DateTime @default(now())
+
+  // Relations
+  project         Project  @relation("ProjectDecisions", fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@index([loopRunId])
+  @@index([createdAt])
+  @@map("project_decisions")
+}
+
+model AgentMemory {
+  id          String   @id @default(cuid())
+  projectId   String
+  agentName   String   // IntakeAgent, EstimateAgent, etc.
+  memoryType  String   // project_context, user_preferences, historical_choices, etc.
+  content     Json
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  project         Project  @relation("ProjectAgentMemory", fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@index([agentName])
+  @@index([updatedAt])
+  @@map("agent_memories")
+}
+
+model V30PricingFormula {
+  id                 String   @id @default(uuid())
+  baseAmount         Float
+  sqftMultiplier     Float
+  complexityFees     Json     // Record<string, number>
+  featureCosts       Json     // Record<string, number>
+  urgencyMultiplier  Float
+  locationMultiplier Float
+  minPrice           Float
+  maxPrice           Float
+  active             Boolean  @default(true)
+  version            Int      @default(1)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@map("v30_pricing_formulas")
+}

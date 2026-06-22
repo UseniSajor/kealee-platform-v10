@@ -57,7 +57,7 @@ model ConceptServiceLead {
   paidAt          DateTime?
 
   // Related Entities
-  projectConceptPreDesignId String? // Links to generated project
+  projectConceptPreDesignId String? @unique // Links to generated project
   projectId                 String? // If converted to full project
 
   // Metadata & Notes

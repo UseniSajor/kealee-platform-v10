@@ -376,7 +376,7 @@ class AlertServiceImpl {
 
     // 5. Check circuit breaker states
     try {
-      const { getAllCircuitStatuses } = await import('./circuit-breaker');
+      const { getAllCircuitStatuses } = await import('./circuit-breaker.js');
       const statuses = getAllCircuitStatuses();
 
       for (const status of statuses) {

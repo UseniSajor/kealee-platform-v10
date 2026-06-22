@@ -17,6 +17,11 @@ interface OrderStatus {
 }
 
 export default function PermitsSuccessClient() {
+  useEffect(() => {
+    try {
+      sessionStorage.removeItem('intake_form_permits')
+    } catch {}
+  }, [])
   const params = useSearchParams()
   const [order, setOrder] = useState<OrderStatus | null>(null)
   const [loading, setLoading] = useState(true)

@@ -1427,6 +1427,9 @@ importers:
       '@anthropic-ai/sdk':
         specifier: ^0.30.0
         version: 0.30.1
+      '@kealee/communications':
+        specifier: workspace:*
+        version: link:../communications
       '@kealee/database':
         specifier: workspace:*
         version: link:../database

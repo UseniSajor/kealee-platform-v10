@@ -186,25 +186,25 @@ function defaultOnStateChange(name: string, from: CircuitState, to: CircuitState
   if (to === CircuitState.OPEN) {
     console.error(`[CircuitBreaker] ${name}: ${from} → ${to} — Service degraded, fast-failing requests`);
     // Alert is triggered asynchronously (fire-and-forget)
-    import('./alerting').then(({ alertService, AlertLevel }) => {
+    import('./alerting.js').then(({ alertService, AlertLevel }) => {
       alertService.createAlert({
         level: AlertLevel.ERROR,
         source: 'system',
         title: `Circuit Breaker OPEN: ${name}`,
         message: `The ${name} service circuit breaker has opened. Requests are being fast-failed to prevent cascading failures. The circuit will attempt recovery in the configured timeout.`,
         data: { service: name, from, to },
-      }).catch((err) => console.error('[CircuitBreaker] Failed to create alert:', err));
+      }).catch((err: any) => console.error('[CircuitBreaker] Failed to create alert:', err));
     }).catch(() => {});
   } else if (to === CircuitState.CLOSED && from === CircuitState.HALF_OPEN) {
     console.log(`[CircuitBreaker] ${name}: ${from} → ${to} — Service recovered`);
-    import('./alerting').then(({ alertService, AlertLevel }) => {
+    import('./alerting.js').then(({ alertService, AlertLevel }) => {
       alertService.createAlert({
         level: AlertLevel.INFO,
         source: 'system',
         title: `Circuit Breaker Recovered: ${name}`,
         message: `The ${name} service circuit breaker has closed. Service is operating normally.`,
         data: { service: name, from, to },
-      }).catch((err) => console.error('[CircuitBreaker] Failed to create alert:', err));
+      }).catch((err: any) => console.error('[CircuitBreaker] Failed to create alert:', err));
     }).catch(() => {});
   }
 }

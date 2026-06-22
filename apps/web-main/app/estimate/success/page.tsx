@@ -1,12 +1,16 @@
+'use client'
+
+import { useEffect } from 'react'
 import { CheckCircle, Clock, FileText, Home } from 'lucide-react'
 import Link from 'next/link'
 
-export const metadata = {
-  title: 'Estimate Order Confirmed — Kealee',
-  description: 'Your cost estimation order has been received. Our team will prepare your trade-by-trade breakdown.',
-}
-
 export default function EstimateSuccessPage() {
+  useEffect(() => {
+    document.title = 'Estimate Order Confirmed — Kealee'
+    try {
+      sessionStorage.removeItem('intake_form_cost_estimate')
+    } catch {}
+  }, [])
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-slate-100 py-12 px-4">
       <div className="max-w-2xl mx-auto">

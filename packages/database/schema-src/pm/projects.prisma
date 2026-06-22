@@ -152,6 +152,11 @@ model Project {
   escrowReconciliations EscrowReconciliation[]
   feasibilityStudies    FeasibilityStudy[]
 
+  // V30 — Loop Orchestration relations
+  loopRuns         LoopRun[]          @relation("ProjectLoopRuns")
+  decisions        ProjectDecision[]  @relation("ProjectDecisions")
+  agentMemories    AgentMemory[]      @relation("ProjectAgentMemory")
+
   @@index([clientId])
   @@index([orgId])
   @@index([propertyId])

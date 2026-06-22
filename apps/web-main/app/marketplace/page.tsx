@@ -22,6 +22,8 @@ type ServiceItem = {
   typical: string
   popular?: boolean
   href: string
+  photoUrl?: string
+  videoUrl?: string
 }
 
 type ServiceCategory = {
@@ -46,11 +48,11 @@ const SERVICE_CATEGORIES: ServiceCategory[] = [
     Icon: Home,
     fromPrice: '$10K',
     services: [
-      { slug: 'kitchen_remodel',      label: 'Kitchen Remodel',        priceRange: '$25K–$80K',   typical: '8–16 weeks',  popular: true, href: '/concept?service=kitchen' },
-      { slug: 'bathroom_remodel',     label: 'Bathroom Remodel',       priceRange: '$10K–$40K',   typical: '4–8 weeks',                 href: '/concept?service=bathroom' },
-      { slug: 'whole_home_reno',      label: 'Whole-Home Renovation',  priceRange: '$75K–$250K',  typical: '16–36 weeks',               href: '/concept?service=whole-house' },
-      { slug: 'interior_painting',    label: 'Interior Painting',      priceRange: '$3K–$15K',    typical: '1–2 weeks',                 href: '/concept' },
-      { slug: 'flooring',             label: 'Flooring',               priceRange: '$8K–$30K',    typical: '1–3 weeks',                 href: '/concept' },
+      { slug: 'kitchen_remodel',      label: 'Kitchen Remodel',        priceRange: '$25K–$80K',   typical: '8–16 weeks',  popular: true, href: '/concept?service=kitchen', photoUrl: '/media/service-photos/product-kitchen.jpg', videoUrl: '/media/service-videos/home-design-video.mp4' },
+      { slug: 'bathroom_remodel',     label: 'Bathroom Remodel',       priceRange: '$10K–$40K',   typical: '4–8 weeks',                 href: '/concept?service=bathroom', photoUrl: '/media/service-photos/product-bathroom.jpg', videoUrl: '/media/service-videos/home-design-video.mp4' },
+      { slug: 'whole_home_reno',      label: 'Whole-Home Renovation',  priceRange: '$75K–$250K',  typical: '16–36 weeks',               href: '/concept?service=whole-house', photoUrl: '/media/service-photos/product-whole-house.jpg', videoUrl: '/media/service-videos/home-design-video.mp4' },
+      { slug: 'interior_painting',    label: 'Interior Painting',      priceRange: '$3K–$15K',    typical: '1–2 weeks',                 href: '/concept', photoUrl: '/media/service-photos/product-interior.jpg', videoUrl: '/media/service-videos/home-design-video.mp4' },
+      { slug: 'flooring',             label: 'Flooring',               priceRange: '$8K–$30K',    typical: '1–3 weeks',                 href: '/concept', photoUrl: '/media/service-photos/product-interior.jpg', videoUrl: '/media/service-videos/home-design-video.mp4' },
     ],
     trades: ['General Contractor', 'Flooring', 'Painting', 'Drywall', 'Electrician'],
   },
@@ -62,10 +64,10 @@ const SERVICE_CATEGORIES: ServiceCategory[] = [
     Icon: Wrench,
     fromPrice: '$8K',
     services: [
-      { slug: 'roofing',              label: 'Roofing Replacement',    priceRange: '$8K–$30K',    typical: '1–2 weeks',   popular: true, href: '/concept' },
-      { slug: 'siding',               label: 'Siding & Cladding',      priceRange: '$10K–$35K',   typical: '2–4 weeks',                 href: '/concept?service=facade' },
-      { slug: 'windows_doors',        label: 'Windows & Doors',        priceRange: '$8K–$25K',    typical: '1–2 weeks',                 href: '/concept' },
-      { slug: 'deck_patio',           label: 'Deck & Patio',           priceRange: '$15K–$50K',   typical: '4–8 weeks',                 href: '/concept?service=deck' },
+      { slug: 'roofing',              label: 'Roofing Replacement',    priceRange: '$8K–$30K',    typical: '1–2 weeks',   popular: true, href: '/concept', photoUrl: '/media/service-photos/product-facade.jpg', videoUrl: '/media/service-videos/home-permits-video.mp4' },
+      { slug: 'siding',               label: 'Siding & Cladding',      priceRange: '$10K–$35K',   typical: '2–4 weeks',                 href: '/concept?service=facade', photoUrl: '/media/service-photos/product-facade.jpg', videoUrl: '/media/service-videos/home-permits-video.mp4' },
+      { slug: 'windows_doors',        label: 'Windows & Doors',        priceRange: '$8K–$25K',    typical: '1–2 weeks',                 href: '/concept', photoUrl: '/media/service-photos/product-facade.jpg', videoUrl: '/media/service-videos/home-permits-video.mp4' },
+      { slug: 'deck_patio',           label: 'Deck & Patio',           priceRange: '$15K–$50K',   typical: '4–8 weeks',                 href: '/concept?service=deck', photoUrl: '/media/service-photos/product-deck.jpg', videoUrl: '/media/service-videos/home-permits-video.mp4' },
     ],
     trades: ['General Contractor', 'Roofing', 'Painting', 'Masonry', 'Landscaping'],
   },
@@ -77,9 +79,9 @@ const SERVICE_CATEGORIES: ServiceCategory[] = [
     Icon: Plus,
     fromPrice: '$30K',
     services: [
-      { slug: 'room_addition',        label: 'Room Addition',          priceRange: '$50K–$200K',  typical: '12–20 weeks', popular: true, href: '/concept?service=addition' },
-      { slug: 'adu_inlaw',            label: 'ADU / In-law Suite',     priceRange: '$80K–$250K',  typical: '16–28 weeks',               href: '/concept?service=addition' },
-      { slug: 'garage_addition',      label: 'Garage Addition',        priceRange: '$30K–$80K',   typical: '8–12 weeks',                href: '/concept?service=addition' },
+      { slug: 'room_addition',        label: 'Room Addition',          priceRange: '$50K–$200K',  typical: '12–20 weeks', popular: true, href: '/concept?service=addition', photoUrl: '/media/service-photos/product-addition.jpg', videoUrl: '/media/service-videos/home-build-video.mp4' },
+      { slug: 'adu_inlaw',            label: 'ADU / In-law Suite',     priceRange: '$80K–$250K',  typical: '16–28 weeks',               href: '/concept?service=addition', photoUrl: '/media/service-photos/product-addition.jpg', videoUrl: '/media/service-videos/home-build-video.mp4' },
+      { slug: 'garage_addition',      label: 'Garage Addition',        priceRange: '$30K–$80K',   typical: '8–12 weeks',                href: '/concept?service=addition', photoUrl: '/media/service-photos/product-addition.jpg', videoUrl: '/media/service-videos/home-build-video.mp4' },
     ],
     trades: ['General Contractor'],
   },
@@ -91,8 +93,8 @@ const SERVICE_CATEGORIES: ServiceCategory[] = [
     Icon: LayoutGrid,
     fromPrice: '$40K',
     services: [
-      { slug: 'full_gut_rehab',       label: 'Full Gut Rehab',         priceRange: '$120K–$400K', typical: '20–40 weeks', popular: true, href: '/concept?service=whole-house' },
-      { slug: 'cosmetic_reno',        label: 'Cosmetic Renovation',    priceRange: '$40K–$120K',  typical: '8–16 weeks',                href: '/concept?service=interior' },
+      { slug: 'full_gut_rehab',       label: 'Full Gut Rehab',         priceRange: '$120K–$400K', typical: '20–40 weeks', popular: true, href: '/concept?service=whole-house', photoUrl: '/media/service-photos/product-whole-house.jpg', videoUrl: '/media/service-videos/home-design-video.mp4' },
+      { slug: 'cosmetic_reno',        label: 'Cosmetic Renovation',    priceRange: '$40K–$120K',  typical: '8–16 weeks',                href: '/concept?service=interior', photoUrl: '/media/service-photos/product-interior.jpg', videoUrl: '/media/service-videos/home-design-video.mp4' },
     ],
     trades: ['General Contractor'],
   },
@@ -104,9 +106,9 @@ const SERVICE_CATEGORIES: ServiceCategory[] = [
     Icon: Building2,
     fromPrice: '$120K',
     services: [
-      { slug: 'single_family',        label: 'Single-Family Home',     priceRange: '$300K–$800K', typical: '10–18 months', popular: true, href: '/new-construction/intake' },
-      { slug: 'adu_cottage',          label: 'ADU / Cottage',          priceRange: '$120K–$350K', typical: '6–12 months',                href: '/new-construction/intake' },
-      { slug: 'townhome_build',       label: 'Townhome Build',         priceRange: '$250K–$600K', typical: '12–20 months',               href: '/new-construction/intake' },
+      { slug: 'single_family',        label: 'Single-Family Home',     priceRange: '$300K–$800K', typical: '10–18 months', popular: true, href: '/new-construction/intake', photoUrl: '/media/service-photos/home-build.jpg', videoUrl: '/media/service-videos/home-build-video.mp4' },
+      { slug: 'adu_cottage',          label: 'ADU / Cottage',          priceRange: '$120K–$350K', typical: '6–12 months',                href: '/new-construction/intake', photoUrl: '/media/service-photos/home-build.jpg', videoUrl: '/media/service-videos/home-build-video.mp4' },
+      { slug: 'townhome_build',       label: 'Townhome Build',         priceRange: '$250K–$600K', typical: '12–20 months',               href: '/new-construction/intake', photoUrl: '/media/service-photos/home-build.jpg', videoUrl: '/media/service-videos/home-build-video.mp4' },
     ],
     trades: ['General Contractor', 'Excavation', 'Steel / Structural'],
   },
@@ -118,9 +120,9 @@ const SERVICE_CATEGORIES: ServiceCategory[] = [
     Icon: Store,
     fromPrice: '$50K',
     services: [
-      { slug: 'office_fitout',        label: 'Office Fit-Out',         priceRange: '$50K–$300K',  typical: '8–16 weeks',  popular: true, href: '/contact' },
-      { slug: 'retail_buildout',      label: 'Retail Build-Out',       priceRange: '$60K–$250K',  typical: '8–14 weeks',                href: '/contact' },
-      { slug: 'mixed_use',            label: 'Mixed-Use Development',  priceRange: '$1M–$5M+',    typical: '12–24 months',               href: '/contact' },
+      { slug: 'office_fitout',        label: 'Office Fit-Out',         priceRange: '$50K–$300K',  typical: '8–16 weeks',  popular: true, href: '/contact', photoUrl: '/media/service-photos/product-interior.jpg', videoUrl: '/media/service-videos/home-build-video.mp4' },
+      { slug: 'retail_buildout',      label: 'Retail Build-Out',       priceRange: '$60K–$250K',  typical: '8–14 weeks',                href: '/contact', photoUrl: '/media/service-photos/product-interior.jpg', videoUrl: '/media/service-videos/home-build-video.mp4' },
+      { slug: 'mixed_use',            label: 'Mixed-Use Development',  priceRange: '$1M–$5M+',    typical: '12–24 months',               href: '/contact', photoUrl: '/media/service-photos/home-build.jpg', videoUrl: '/media/service-videos/home-build-video.mp4' },
     ],
     trades: ['General Contractor', 'HVAC', 'Roofing', 'Electrician', 'Plumber'],
   },
@@ -132,9 +134,9 @@ const SERVICE_CATEGORIES: ServiceCategory[] = [
     Icon: Flower2,
     fromPrice: '$5K',
     services: [
-      { slug: 'hardscape_patio',      label: 'Hardscape & Patio',      priceRange: '$15K–$60K',   typical: '2–4 weeks',   popular: true, href: '/concept?service=garden' },
-      { slug: 'full_landscape',       label: 'Full Landscape Design',  priceRange: '$20K–$80K',   typical: '4–8 weeks',                 href: '/concept?service=garden' },
-      { slug: 'irrigation',           label: 'Irrigation System',      priceRange: '$5K–$20K',    typical: '1–2 weeks',                 href: '/concept?service=garden' },
+      { slug: 'hardscape_patio',      label: 'Hardscape & Patio',      priceRange: '$15K–$60K',   typical: '2–4 weeks',   popular: true, href: '/concept?service=garden', photoUrl: '/media/service-photos/product-garden.jpg', videoUrl: '/media/service-videos/home-design-video.mp4' },
+      { slug: 'full_landscape',       label: 'Full Landscape Design',  priceRange: '$20K–$80K',   typical: '4–8 weeks',                 href: '/concept?service=garden', photoUrl: '/media/service-photos/product-garden.jpg', videoUrl: '/media/service-videos/home-design-video.mp4' },
+      { slug: 'irrigation',           label: 'Irrigation System',      priceRange: '$5K–$20K',    typical: '1–2 weeks',                 href: '/concept?service=garden', photoUrl: '/media/service-photos/product-garden.jpg', videoUrl: '/media/service-videos/home-design-video.mp4' },
     ],
     trades: ['Landscaping', 'Masonry', 'Irrigation'],
   },
@@ -147,9 +149,9 @@ const SERVICE_CATEGORIES: ServiceCategory[] = [
     fromPrice: 'From $4,999',
     trades: ['Architect', 'Licensed Designer', 'PE Engineer'],
     services: [
-      { slug: 'professional-drawings', label: 'Permit-Ready Drawings',           priceRange: 'From $4,999',  typical: '7–14 days',  popular: true, href: '/intake/professional_drawings' },
-      { slug: 'pe-stamp',              label: 'Structural / PE Stamp',           priceRange: '$799–$1,499',   typical: '5–10 days',                 href: '/intake/professional_drawings' },
-      { slug: 'interior-design',       label: 'Interior Design Consultation',    priceRange: '$395–$695',     typical: '48–72 hrs',                 href: '/intake/kitchen_remodel' },
+      { slug: 'professional-drawings', label: 'Permit-Ready Drawings',           priceRange: 'From $4,999',  typical: '7–14 days',  popular: true, href: '/intake/professional_drawings', photoUrl: '/media/service-photos/product-design-services.jpg', videoUrl: '/media/service-videos/home-design-video.mp4' },
+      { slug: 'pe-stamp',              label: 'Structural / PE Stamp',           priceRange: '$799–$1,499',   typical: '5–10 days',                 href: '/intake/professional_drawings', photoUrl: '/media/service-photos/home-design.jpg', videoUrl: '/media/service-videos/home-design-video.mp4' },
+      { slug: 'interior-design',       label: 'Interior Design Consultation',    priceRange: '$395–$695',     typical: '48–72 hrs',                 href: '/intake/kitchen_remodel', photoUrl: '/media/service-photos/product-design-services.jpg', videoUrl: '/media/service-videos/home-design-video.mp4' },
     ],
   },
 ]
@@ -378,32 +380,84 @@ const DEFAULT_FILTERS: Filters = {
 // ─── Service Card ──────────────────────────────────────────────────────────────
 
 function ServiceCard({ service, color }: { service: ServiceItem; color: string }) {
+  const videoRef = useRef<HTMLVideoElement>(null)
+
+  const handleMouseEnter = () => {
+    if (videoRef.current) {
+      videoRef.current.play().catch((err) => console.log('Video play interrupted:', err))
+    }
+  }
+
+  const handleMouseLeave = () => {
+    if (videoRef.current) {
+      videoRef.current.pause()
+    }
+  }
+
   return (
     <Link
       href={service.href}
-      className="group relative flex flex-col rounded-xl bg-white p-4 transition-all hover:shadow-md hover:-translate-y-0.5"
-      style={{ border: `1px solid ${color}25`, borderLeft: `3px solid ${color}` }}
+      className="group relative flex flex-col rounded-xl bg-white transition-all hover:shadow-md hover:-translate-y-0.5 overflow-hidden border border-gray-200"
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
     >
-      {service.popular && (
-        <span
-          className="absolute -top-2 right-3 rounded-full px-2 py-0.5 text-xs font-bold text-white"
-          style={{ backgroundColor: color }}
-        >
-          Popular
-        </span>
-      )}
-      <p className="text-sm font-semibold text-gray-900 mb-1">{service.label}</p>
-      <p className="text-xs text-gray-400 mb-4">Typical: {service.typical}</p>
-      <div className="mt-auto flex items-center justify-between">
-        <span className="text-lg font-bold" style={{ color: '#1A2B4A' }}>
-          {service.priceRange}
-        </span>
-        <span
-          className="flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-semibold text-white transition-opacity group-hover:opacity-90"
-          style={{ backgroundColor: color }}
-        >
-          Get Started <ArrowRight className="h-3 w-3" />
-        </span>
+      {/* Media Header */}
+      <div className="relative aspect-video w-full overflow-hidden bg-gray-100 border-b border-gray-100">
+        {service.photoUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={service.photoUrl}
+            alt={service.label}
+            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+          />
+        ) : (
+          <div className="w-full h-full bg-gray-50 flex items-center justify-center text-gray-300 text-2xl font-bold">
+            Kealee
+          </div>
+        )}
+        
+        {service.videoUrl && (
+          <video
+            ref={videoRef}
+            src={service.videoUrl}
+            muted
+            loop
+            playsInline
+            preload="none"
+            className="absolute inset-0 w-full h-full object-cover opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+          />
+        )}
+        
+        {service.popular && (
+          <span
+            className="absolute top-2 right-2 rounded-full px-2 py-0.5 text-[10px] font-bold text-white shadow-sm"
+            style={{ backgroundColor: color }}
+          >
+            Popular
+          </span>
+        )}
+      </div>
+
+      {/* Content Section */}
+      <div className="p-4 flex-1 flex flex-col justify-between">
+        <div>
+          <p className="text-sm font-semibold text-gray-900 mb-1 group-hover:text-blue-600 transition-colors">
+            {service.label}
+          </p>
+          <p className="text-[11px] text-gray-500">Typical: {service.typical}</p>
+        </div>
+        
+        <div className="mt-4 flex items-center justify-between">
+          <span className="text-sm font-bold text-gray-900">
+            {service.priceRange}
+          </span>
+          <span
+            className="flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-white transition-all transform group-hover:scale-[1.03]"
+            style={{ backgroundColor: color }}
+          >
+            Get Started <ArrowRight className="h-3 w-3" />
+          </span>
+        </div>
       </div>
     </Link>
   )

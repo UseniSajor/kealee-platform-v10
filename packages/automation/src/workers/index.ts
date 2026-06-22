@@ -35,6 +35,14 @@ import { smartSchedulerWorker, smartSchedulerQueue, smartSchedulerService } from
 import { qaInspectorWorker, qaInspectorQueue, qaInspectorService } from '../apps/qa-inspector/index.js';
 import { decisionSupportWorker, decisionSupportQueue, decisionSupportService } from '../apps/decision-support/index.js';
 import { dashboardWorker, dashboardQueue, dashboardService } from '../apps/dashboard/index.js';
+import {
+  processAutomationEventWorker,
+  runLoopWorker,
+  updateDigitalTwinWorker,
+  generateDeliverableWorker,
+  sendNotificationWorker,
+  adminReviewWorker,
+} from '../infrastructure/loop-queues.js';
 
 // ── All workers array (for lifecycle management) ───────────────────────────
 
@@ -54,6 +62,12 @@ const ALL_WORKERS = [
   { name: 'APP-13 QA Inspector', worker: qaInspectorWorker },
   { name: 'APP-14 Decision Support', worker: decisionSupportWorker },
   { name: 'APP-15 Dashboard Monitor', worker: dashboardWorker },
+  { name: 'Loop processAutomationEvent', worker: processAutomationEventWorker },
+  { name: 'Loop runLoop', worker: runLoopWorker },
+  { name: 'Loop updateDigitalTwin', worker: updateDigitalTwinWorker },
+  { name: 'Loop generateDeliverable', worker: generateDeliverableWorker },
+  { name: 'Loop sendNotification', worker: sendNotificationWorker },
+  { name: 'Loop adminReview', worker: adminReviewWorker },
 ];
 
 // ── Prisma client ──────────────────────────────────────────────────────────

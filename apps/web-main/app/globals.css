@@ -3,32 +3,38 @@
 @tailwind utilities;
 
 :root {
+  /* Layout Dimensions */
   --site-nav-h: 4rem;
   --home-chat-reserve: 7.5rem;
-  --o: #C8521A;
-  --o2: #E8733D;
-  --olt: #FDF0E8;
-  --blue: #4A8FA8;
-  --green: #3A7D52;
-  --smoke: #F0F1F2;
-  --smoke2: #E6E8EA;
-  --smokedk: #8C9198;
-  --ink: #1A1C1B;
-  --ink2: #3D4040;
-  --ink3: #6B7070;
+
+  /* Figma Design Tokens - Color Palette Alignment */
+  --o: #F97316;       /* Secondary Accent Orange (secondary-500) */
+  --o2: #EA580C;      /* Hover Accent Orange (secondary-600) */
+  --olt: #FFF7ED;     /* Subtle Orange Accent Bg (secondary-50) */
+  --blue: #2563EB;    /* Primary Brand Blue (primary-600) */
+  --green: #10B981;   /* Success Green (semantic success) */
+  --smoke: #F9FAFB;   /* Default Page Background (neutral-50) */
+  --smoke2: #F3F4F6;  /* Card Panels / Background (neutral-100) */
+  --smokedk: #6B7280; /* Secondary Helper Text (neutral-500) */
+  --ink: #111827;     /* Maximum Contrast Text (neutral-900) */
+  --ink2: #374151;    /* Default Heading Color (neutral-700) */
+  --ink3: #4B5563;    /* Body text color (neutral-600) */
   --w: #FFFFFF;
-  --b: rgba(26,28,27,.1);
-  --b2: rgba(26,28,27,.16);
-  --r: 4px;
-  --rl: 12px;
-  --rxl: 18px;
-  /* backward compat */
-  --navy: #1A2B4A;
-  --navy-light: #2A3D5F;
-  --navy-dark: #0F1A2E;
-  --orange: #E8793A;
+  --b: rgba(17, 24, 37, 0.08); /* Border (neutral-200 equivalent opacity) */
+  --b2: rgba(17, 24, 37, 0.15); /* Border hover */
+  
+  /* Border Radius Specs */
+  --r: 6px;           /* BorderRadius Base - Default Cards/Components */
+  --rl: 12px;         /* BorderRadius LG - Modals, Large Cards */
+  --rxl: 16px;        /* BorderRadius XL - Containers */
+
+  /* Backward compatibility fallbacks */
+  --navy: #1E3A8A;     /* Primary Darkest (primary-900) */
+  --navy-light: #3B82F6; /* Primary Light (primary-500) */
+  --navy-dark: #1E3A8A;
+  --orange: #F97316;
   --teal: #2ABFBF;
-  --hero-bg: #0F1110;
+  --hero-bg: #111827;  /* Neutral 900 */
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }

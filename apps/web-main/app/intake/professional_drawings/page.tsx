@@ -143,6 +143,43 @@ function ProfessionalDrawingsForm() {
   const [uploading, setUploading] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
+  // Session storage persistence
+  const [isPersistedDataLoaded, setIsPersistedDataLoaded] = useState(false)
+
+  useEffect(() => {
+    try {
+      const saved = sessionStorage.getItem('intake_form_professional_drawings')
+      if (saved) {
+        const parsed = JSON.parse(saved)
+        if (parsed.formData) {
+          setFormData(prev => ({ ...prev, ...parsed.formData }))
+        }
+        if (parsed.uploadedFiles) {
+          setUploadedFiles(parsed.uploadedFiles)
+        }
+        if (parsed.step) {
+          setStep(parsed.step)
+        }
+      }
+    } catch (e) {
+      console.error('Failed to load persisted drawings intake form:', e)
+    } finally {
+      setIsPersistedDataLoaded(true)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!isPersistedDataLoaded) return
+    try {
+      sessionStorage.setItem(
+        'intake_form_professional_drawings',
+        JSON.stringify({ formData, uploadedFiles, step })
+      )
+    } catch (e) {
+      console.error('Failed to persist drawings intake form:', e)
+    }
+  }, [formData, uploadedFiles, step, isPersistedDataLoaded])
+
   // Pre-populate from concept if conceptId is provided
   useEffect(() => {
     if (!conceptId) return

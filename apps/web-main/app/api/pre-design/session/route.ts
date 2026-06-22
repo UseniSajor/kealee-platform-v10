@@ -83,6 +83,7 @@ export async function POST(req: NextRequest) {
     if (priceId) {
       session = await stripe.checkout.sessions.create({
         mode: 'payment',
+        allow_promotion_codes: true,
         customer_email: contactEmail,
         line_items: [{ price: priceId, quantity: 1 }],
         metadata,
@@ -100,6 +101,7 @@ export async function POST(req: NextRequest) {
       }
       session = await stripe.checkout.sessions.create({
         mode: 'payment',
+        allow_promotion_codes: true,
         customer_email: contactEmail,
         line_items: [
           {

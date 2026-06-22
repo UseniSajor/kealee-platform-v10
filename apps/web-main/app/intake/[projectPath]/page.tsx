@@ -371,6 +371,46 @@ export default function IntakePage() {
   const [uploadingDocs, setUploadingDocs] = useState(false)
   const docInputRef = useRef<HTMLInputElement>(null)
 
+  // Session storage persistence
+  const [isPersistedDataLoaded, setIsPersistedDataLoaded] = useState(false)
+
+  useEffect(() => {
+    try {
+      const saved = sessionStorage.getItem(`intake_form_${projectPath}`)
+      if (saved) {
+        const parsed = JSON.parse(saved)
+        if (parsed.formData) {
+          setFormData(prev => ({ ...prev, ...parsed.formData }))
+        }
+        if (parsed.uploadedFiles) {
+          setUploadedFiles(parsed.uploadedFiles)
+        }
+        if (parsed.uploadedDocs) {
+          setUploadedDocs(parsed.uploadedDocs)
+        }
+        if (parsed.step) {
+          setStep(parsed.step)
+        }
+      }
+    } catch (e) {
+      console.error('Failed to load persisted intake form:', e)
+    } finally {
+      setIsPersistedDataLoaded(true)
+    }
+  }, [projectPath])
+
+  useEffect(() => {
+    if (!isPersistedDataLoaded) return
+    try {
+      sessionStorage.setItem(
+        `intake_form_${projectPath}`,
+        JSON.stringify({ formData, uploadedFiles, uploadedDocs, step })
+      )
+    } catch (e) {
+      console.error('Failed to persist intake form:', e)
+    }
+  }, [formData, uploadedFiles, uploadedDocs, step, projectPath, isPersistedDataLoaded])
+
   const needsAreaPhoto = intakeRequiresAreaPhoto(projectPath)
   const needsConstructionDocs = intakeRequiresConstructionDocuments(projectPath)
   const benefitsFromFloorplan = intakeBenefitsFromFloorplanSketch(projectPath)

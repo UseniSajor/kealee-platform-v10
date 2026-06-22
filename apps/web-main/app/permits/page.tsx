@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import {
@@ -337,6 +337,40 @@ export default function PermitsPage() {
   })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+
+  // Session storage persistence
+  const [isPersistedDataLoaded, setIsPersistedDataLoaded] = useState(false)
+
+  useEffect(() => {
+    try {
+      const saved = sessionStorage.getItem('intake_form_permits')
+      if (saved) {
+        const parsed = JSON.parse(saved)
+        if (parsed.formData) {
+          setFormData(prev => ({ ...prev, ...parsed.formData }))
+        }
+        if (parsed.step) {
+          setStep(parsed.step)
+        }
+      }
+    } catch (e) {
+      console.error('Failed to load persisted permits form:', e)
+    } finally {
+      setIsPersistedDataLoaded(true)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!isPersistedDataLoaded) return
+    try {
+      sessionStorage.setItem(
+        'intake_form_permits',
+        JSON.stringify({ formData, step })
+      )
+    } catch (e) {
+      console.error('Failed to persist permits form:', e)
+    }
+  }, [formData, step, isPersistedDataLoaded])
 
   const tiers = buildTiers()
   const selectedTier = tiers.find(t => t.code === formData.tierCode)

@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { FileText, AlertCircle, CheckCircle, ImagePlus, FileVideo, Loader2, X } from 'lucide-react'
 import { uploadIntakeFilesSequentially, type IntakeUploadedFile } from '@/lib/intake-file-upload'
@@ -31,6 +31,43 @@ export default function CostEstimateIntakePage() {
   const [uploadedFiles, setUploadedFiles] = useState<IntakeUploadedFile[]>([])
   const [uploading, setUploading] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  // Session storage persistence
+  const [isPersistedDataLoaded, setIsPersistedDataLoaded] = useState(false)
+
+  useEffect(() => {
+    try {
+      const saved = sessionStorage.getItem('intake_form_cost_estimate')
+      if (saved) {
+        const parsed = JSON.parse(saved)
+        if (parsed.formData) {
+          setFormData(prev => ({ ...prev, ...parsed.formData }))
+        }
+        if (parsed.uploadedFiles) {
+          setUploadedFiles(parsed.uploadedFiles)
+        }
+        if (parsed.step) {
+          setStep(parsed.step)
+        }
+      }
+    } catch (e) {
+      console.error('Failed to load persisted cost estimate form:', e)
+    } finally {
+      setIsPersistedDataLoaded(true)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!isPersistedDataLoaded) return
+    try {
+      sessionStorage.setItem(
+        'intake_form_cost_estimate',
+        JSON.stringify({ formData, uploadedFiles, step })
+      )
+    } catch (e) {
+      console.error('Failed to persist cost estimate form:', e)
+    }
+  }, [formData, uploadedFiles, step, isPersistedDataLoaded])
 
   const pricing = SERVICE_PRICING.estimation.cost_estimate
   const tierCode = 'cost_estimate'

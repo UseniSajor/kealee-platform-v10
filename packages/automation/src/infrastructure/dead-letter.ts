@@ -116,7 +116,7 @@ async function detectErrorPattern(
 
     if (patternCount >= 3) {
       // Import alertService lazily to avoid circular deps
-      const { alertService, AlertLevel } = await import('./alerting');
+      const { alertService, AlertLevel } = await import('./alerting.js');
 
       await alertService.createAlert({
         level: AlertLevel.CRITICAL,

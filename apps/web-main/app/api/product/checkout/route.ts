@@ -85,6 +85,7 @@ export async function POST(req: NextRequest) {
       payment_method_types: ['card'],
       customer_email: customerEmail,
       line_items: [{ price: priceId, quantity: 1 }],
+      allow_promotion_codes: true,
       success_url: `${appUrl}/products/success?session_id={CHECKOUT_SESSION_ID}&product=${encodeURIComponent(slug)}`,
       cancel_url: `${appUrl}/products/${encodeURIComponent(slug)}?cancelled=1`,
       metadata: {
