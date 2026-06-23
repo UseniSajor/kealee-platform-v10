@@ -24,7 +24,7 @@ const STEPS = [
   {
     icon:  MessageSquare,
     title: 'Consult with an Expert',
-    desc:  'A Kealee project coordinator reviews your package with you to guide your next steps: transitioning to permit-ready plans and matching with a vetted contractor.',
+    desc:  'Premium+ includes a live 15-minute call with a Kealee consultant. All tiers get email support within 1 business day.',
     color: '#38A169',
   },
 ]
@@ -57,12 +57,12 @@ export function ConceptPackageSection() {
 
             <ul className="mt-6 space-y-2.5">
               {[
-                'Exterior concept renderings (AI-generated)',
-                'Basic floor plans',
-                'Zoning & FAR analysis for your parcel',
-                'Permit path + timeline estimate',
-                'Design direction brief',
-                'Live consultation with a project coordinator',
+                'AI concept renderings (3–12 based on package tier)',
+                'Layout direction brief (Essential); scaled floor plans (Premium & Premium+)',
+                'Zoning & permit path analysis for your parcel',
+                'Bill of materials with line-item cost estimates',
+                'Design direction brief with materials & finishes',
+                'Email support on all tiers; live consultation on Premium+',
               ].map((item) => (
                 <li key={item} className="flex items-start gap-3 text-sm text-slate-700">
                   <span className="mt-0.5 flex-shrink-0 text-base" style={{ color: '#2ABFBF' }}>✓</span>

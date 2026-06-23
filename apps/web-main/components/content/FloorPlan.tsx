@@ -7,6 +7,7 @@ import { Download } from 'lucide-react'
 interface FloorPlanProps {
   tier: 1 | 2 | 3
   floorPlanUrl?: string
+  floorplanSvgInline?: string
   mepSchematic?: Record<string, unknown>
   conceptId: string
 }
@@ -124,7 +125,7 @@ function InteractiveSVG({ visible }: { visible: Set<string> }) {
   )
 }
 
-export function FloorPlan({ tier, floorPlanUrl, mepSchematic, conceptId }: FloorPlanProps) {
+export function FloorPlan({ tier, floorPlanUrl, floorplanSvgInline, mepSchematic, conceptId }: FloorPlanProps) {
   const [visibleLayers, setVisibleLayers] = useState<Set<string>>(new Set(['base']))
 
   function toggleLayer(id: string) {
@@ -175,8 +176,13 @@ export function FloorPlan({ tier, floorPlanUrl, mepSchematic, conceptId }: Floor
       <div className="bg-slate-50 rounded-xl border border-slate-200 p-6 flex items-center justify-center min-h-80">
         {floorPlanUrl ? (
           <div className="relative w-full max-w-2xl aspect-[16/10]">
-            <Image src={floorPlanUrl} alt="Floor plan" fill className="object-contain" />
+            <Image src={floorPlanUrl} alt="Floor plan" fill className="object-contain" unoptimized={floorPlanUrl.endsWith('.svg')} />
           </div>
+        ) : floorplanSvgInline?.trim().startsWith('<') ? (
+          <div
+            className="w-full max-w-2xl [&_svg]:w-full [&_svg]:h-auto"
+            dangerouslySetInnerHTML={{ __html: floorplanSvgInline }}
+          />
         ) : (
           <InteractiveSVG visible={visibleLayers} />
         )}

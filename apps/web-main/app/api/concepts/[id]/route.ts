@@ -61,19 +61,36 @@ export async function GET(
     // Map intake status → portal status
     const intakeStatus = intake.status as string | null
     let status: Concept['status'] = 'processing'
-    if (intakeStatus && COMPLETED_STATUSES.has(intakeStatus)) status = 'completed'
-    else if (intakeStatus === 'error') status = 'error'
+    if (intakeStatus && COMPLETED_STATUSES.has(intakeStatus)) {
+      status = 'completed'
+    } else if (intakeStatus === 'error') {
+      status = 'error'
+    } else if (conceptOutput?.designConcept && intakeStatus !== 'error') {
+      // Generation finished but status may still be `paid` if a prior DB write lagged
+      status = 'completed'
+    }
+
+    const interiorRenderUrls = (conceptOutput?.interiorRenderUrls as string[] | undefined) ?? []
+    const exteriorRenderUrls = (conceptOutput?.exteriorRenderUrls as string[] | undefined) ?? []
+    const storedRenderUrls = conceptOutput?.renderUrls as string[] | undefined
+    const renderings =
+      storedRenderUrls && storedRenderUrls.length > 0
+        ? storedRenderUrls
+        : [...interiorRenderUrls, ...exteriorRenderUrls]
+
+    const packageJson = conceptOutput?.packageJson as Record<string, unknown> | undefined
+    const floorPlanPkg = packageJson?.floorPlan as Record<string, unknown> | undefined
 
     // Map bill of materials: ConceptOutput uses { item, quantity, unit, estimatedCost, description }
     // Concept type uses { category, item, quantity, unit, unitCost, total }
     const rawBom = conceptOutput?.billOfMaterials as Array<Record<string, unknown>> | undefined
     const billOfMaterials: BOMItem[] | undefined = rawBom?.map((row) => ({
-      category:  'Materials',
+      category:  String(row.category ?? 'Materials'),
       item:      String(row.item ?? ''),
       quantity:  Number(row.quantity ?? 0),
       unit:      String(row.unit ?? ''),
-      unitCost:  Number(row.estimatedCost ?? 0) / Math.max(Number(row.quantity ?? 1), 1),
-      total:     Number(row.estimatedCost ?? 0),
+      unitCost:  Number(row.unitCost ?? row.estimatedCost ?? 0) / Math.max(Number(row.quantity ?? 1), 1),
+      total:     Number(row.total ?? row.estimatedCost ?? 0),
     }))
 
     // Map permit scope → PermitItem array
@@ -117,7 +134,7 @@ export async function GET(
         : undefined,
 
       // Renders — empty array when AI jobs are in flight; portal polls renderJobs
-      renderings: (conceptOutput?.renderUrls as string[] | undefined) ?? [],
+      renderings,
       renderJobs: (formData.renderJobs as string[] | undefined) ?? [],
       // Before-photos uploaded by the client; used alongside "after" renders for comparison
       beforeUrls: (conceptOutput?.beforeUrls as string[] | undefined) ?? undefined,
@@ -126,6 +143,38 @@ export async function GET(
       videoUrl:        conceptOutput?.videoUrl   as string | undefined,
       videoDuration:   conceptOutput?.videoDuration as number | undefined,
       videoFormatUrls: conceptOutput?.videoFormatUrls as Record<string, string> | undefined,
+
+      // Floor plan + PDF deliverables
+      floorPlanUrl:
+        (conceptOutput?.floorPlanUrl as string | undefined) ??
+        (typeof floorPlanPkg?.svgUrl === 'string' ? floorPlanPkg.svgUrl : undefined),
+      floorplanSvgInline:
+        typeof conceptOutput?.floorplanSvgInline === 'string'
+          ? conceptOutput.floorplanSvgInline
+          : undefined,
+      layoutPlan: floorPlanPkg
+        ? {
+            totalAreaFt2: typeof floorPlanPkg.totalAreaFt2 === 'number' ? floorPlanPkg.totalAreaFt2 : undefined,
+            roomCount: typeof floorPlanPkg.roomCount === 'number' ? floorPlanPkg.roomCount : undefined,
+            rooms: Array.isArray(floorPlanPkg.rooms)
+              ? (floorPlanPkg.rooms as Array<{
+                  label: string
+                  widthFt: number
+                  depthFt: number
+                  areaFt2: number
+                  type: string
+                }>)
+              : undefined,
+            layoutNotes: Array.isArray(floorPlanPkg.layoutNotes)
+              ? (floorPlanPkg.layoutNotes as string[])
+              : undefined,
+            layoutIssues: Array.isArray(floorPlanPkg.layoutIssues)
+              ? (floorPlanPkg.layoutIssues as string[])
+              : undefined,
+          }
+        : undefined,
+      pdfUrl: typeof conceptOutput?.pdfUrl === 'string' ? conceptOutput.pdfUrl : undefined,
+      mepSchematic: conceptOutput?.mepSchematic as Concept['mepSchematic'],
 
       // Financials
       estimatedCost: conceptOutput?.estimatedCost as number | undefined,
