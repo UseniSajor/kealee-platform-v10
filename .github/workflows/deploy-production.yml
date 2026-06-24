@@ -46,6 +46,9 @@ jobs:
           - service: portal-developer
           - service: command-center
           - service: web-main
+          - service: marketing-cron-lead-scoring
+          - service: marketing-cron-sequences
+          - service: marketing-cron-requalify-cold
           # admin-console merged into os-admin (Vercel: admin.kealee.com)
     steps:
       - name: Checkout code

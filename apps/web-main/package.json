@@ -10,6 +10,7 @@
     "diag:intake": "node ./scripts/smoke-intake-diagnostics.mjs",
     "test:ghl": "node ./scripts/test-ghl-connection.mjs",
     "test:marketing-setup": "node ./scripts/setup-marketing-phase1-check.mjs",
+    "test:marketing-e2e": "node ./scripts/marketing-e2e-smoke.mjs",
     "deploy:marketing": "node ./scripts/deploy-marketing-automation.mjs all production",
     "deploy:marketing:phase1": "node ./scripts/deploy-marketing-automation.mjs phase1 production",
     "deploy:marketing:phase2": "node ./scripts/deploy-marketing-automation.mjs phase2 production",
