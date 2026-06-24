@@ -1,22 +1,20 @@
-# 🚀 Kealee Marketing Automation: Ready to Deploy
+# Kealee Marketing Automation: Deployment Guide
 
-**Date:** May 8, 2026  
-**Status:** ✅ PRODUCTION READY  
-**Commits:** 5 (19 new files, 3,500+ lines of code)
+**Date:** June 2026  
+**Status:** Code complete — **requires production env + cron verification before paid ads**
 
 ---
 
 ## Executive Summary
 
-**All 3 phases of marketing automation are fully implemented, tested, and ready to deploy.** This package includes:
+Phases 1–3 are implemented in code. **Do not run paid campaigns until the P0 checklist below is verified in production** (Stripe live, Resend, analytics pixels, `CRON_SECRET`, end-to-end purchase test).
 
-✅ **Phase 1:** Lead scoring (0–100) + SMS alerts (< 2 min) + GHL sync (100%)  
-✅ **Phase 2:** AI qualification (Claude) + Calendly auto-scheduling + Slack feed  
-✅ **Phase 3:** Facebook Lead Ads + Google Ads ROI tracking + inbound SMS escalation  
+✅ **Phase 1:** Lead scoring + SMS alerts + optional GHL sync  
+✅ **Phase 2:** AI qualification + Calendly + Slack feed  
+✅ **Phase 3:** Facebook Lead Ads + Google Ads ROI tracking  
 
-**Deployment time:** 30 minutes to Phase 1 live  
-**Expected results:** 5–10 hot leads/day by end of Week 1, 100+ leads/week by Week 6  
-**ROI target:** 2:1+ (every $1 spent → $2+ revenue)
+**Pre-launch verification:** ~2–4 hours (env vars, webhook test, funnel walkthrough)  
+**Feature flags:** Auto-enable in `kealee-config.ts` when matching env vars are set
 
 ---
 

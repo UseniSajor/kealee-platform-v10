@@ -18,6 +18,8 @@ import {
   type V30IntakeAnswers,
   type V30QuoteResponse,
 } from '@/lib/v30'
+import { utmForApiBody } from '@/lib/marketing/client-utm'
+import { trackEvent } from '@/lib/analytics'
 
 const PRICING_LABELS: Record<string, string> = {
   baseAmount: 'Base package price',
@@ -94,6 +96,23 @@ export default function GetConceptPage() {
     setLoading(true)
     setError(null)
     try {
+      const attribution = utmForApiBody()
+
+      // Soft capture before payment — fire-and-forget
+      if (contactEmail) {
+        fetch('/api/intake/soft-capture', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: contactEmail,
+            name: clientName,
+            service: projectPath,
+            source: 'get-concept',
+            ...attribution,
+          }),
+        }).catch(() => {})
+      }
+
       const intakeRes = await fetch('/api/intake', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -104,17 +123,26 @@ export default function GetConceptPage() {
           contactPhone,
           projectAddress: projectAddress || answers.location,
           budgetRange: answers.budgetRange,
+          attribution,
           formData: {
             ...answers,
             v30: true,
             v30Answers: answers,
             v30Features: features,
             squareFootage: answers.squareFeet,
+            ...attribution,
           },
         }),
       })
       const intakeData = await intakeRes.json()
       const intakeId = intakeData.intakeId as string
+
+      trackEvent('lead_submitted', {
+        project_path: projectPath,
+        intake_id: intakeId,
+        funnel: 'get-concept',
+        ...attribution,
+      })
 
       await fetch('/api/v30/intake', {
         method: 'POST',
@@ -134,12 +162,22 @@ export default function GetConceptPage() {
           intakeId,
           projectPath,
           useV30Pricing: true,
+          attribution,
           successUrl: `${window.location.origin}/concept/success?intakeId=${intakeId}&v30=1`,
           cancelUrl: `${window.location.origin}/get-concept`,
         }),
       })
       const checkout = await checkoutRes.json()
       if (!checkoutRes.ok) throw new Error(checkout.error ?? 'Checkout failed')
+
+      trackEvent('checkout_started', {
+        project_path: projectPath,
+        intake_id: intakeId,
+        funnel: 'get-concept',
+        value: quote.package.totalPrice,
+        ...attribution,
+      })
+
       if (checkout.url) window.location.href = checkout.url as string
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Checkout failed')
@@ -636,7 +674,27 @@ export default function GetConceptPage() {
               </div>
               <div>
                 <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">Email Address *</label>
-                <input className={inputClass} placeholder="Email" type="email" value={contactEmail} onChange={e => setContactEmail(e.target.value)} />
+                <input
+                  className={inputClass}
+                  placeholder="Email"
+                  type="email"
+                  value={contactEmail}
+                  onChange={e => setContactEmail(e.target.value)}
+                  onBlur={() => {
+                    if (!contactEmail.trim()) return
+                    fetch('/api/intake/soft-capture', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({
+                        email: contactEmail,
+                        name: clientName,
+                        service: projectPath,
+                        source: 'get-concept',
+                        ...utmForApiBody(),
+                      }),
+                    }).catch(() => {})
+                  }}
+                />
               </div>
               <div>
                 <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">Phone Number (optional)</label>

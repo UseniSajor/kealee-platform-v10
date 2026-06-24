@@ -15,6 +15,18 @@
       "schedule": "0 14 * * *"
     },
     {
+      "path": "/api/cron/lead-scoring",
+      "schedule": "*/5 * * * *"
+    },
+    {
+      "path": "/api/cron/sequences",
+      "schedule": "*/5 * * * *"
+    },
+    {
+      "path": "/api/cron/requalify-cold",
+      "schedule": "0 */12 * * *"
+    },
+    {
       "path": "/api/cron/generate-weekly-campaigns",
       "schedule": "0 13 * * 1"
     },

@@ -11,6 +11,7 @@
 
 import { useEffect } from 'react'
 import { Mail, Phone } from 'lucide-react'
+import { KEALEE_PHONE_DISPLAY, KEALEE_PHONE_E164 } from '@/lib/site/contact'
 
 const CALENDLY_URL = process.env.NEXT_PUBLIC_CALENDLY_URL
 
@@ -55,10 +56,10 @@ export default function CalendarEmbed() {
           <Mail className="w-4 h-4" /> Email Us to Schedule
         </a>
         <a
-          href="tel:+12025550100"
+          href={`tel:${KEALEE_PHONE_E164}`}
           className="inline-flex items-center justify-center gap-2 border border-slate-200 hover:border-slate-300 text-slate-700 font-semibold px-6 py-3 rounded-xl transition-all text-sm bg-white"
         >
-          <Phone className="w-4 h-4" /> Call Us Directly
+          <Phone className="w-4 h-4" /> Call {KEALEE_PHONE_DISPLAY}
         </a>
       </div>
       <p className="mt-5 text-xs text-slate-400">

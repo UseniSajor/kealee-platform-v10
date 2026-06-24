@@ -252,3 +252,8 @@ export async function POST(req: NextRequest) {
     )
   }
 }
+
+/** Vercel Cron invokes GET — delegate to POST handler. */
+export async function GET(req: NextRequest) {
+  return POST(req)
+}

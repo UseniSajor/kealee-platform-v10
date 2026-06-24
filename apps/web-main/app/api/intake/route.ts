@@ -4,6 +4,10 @@ import { SERVICE_DELIVERABLES } from '@/lib/service-deliverables'
 import { randomUUID } from 'crypto'
 import { mergeAttributionMetadata, parseUtmFromRequest } from '@/lib/marketing/utm-metadata'
 import { trackLeadSubmitted } from '@/lib/marketing/ga4-server'
+import {
+  buildConceptFunnelUrl,
+  schedulePrePaymentDrip,
+} from '@/lib/marketing/drip-schedule'
 
 export const dynamic = 'force-dynamic'
 
@@ -92,6 +96,23 @@ export async function POST(req: NextRequest) {
       source: 'web-main',
       utm,
     })
+
+    void (async () => {
+      try {
+        await schedulePrePaymentDrip({
+          leadId: intake.id,
+          email: String(contactEmail),
+          name: String(clientName),
+          serviceLabel: deliverable?.label ?? path,
+          funnelUrl: buildConceptFunnelUrl(path, intake.id),
+        })
+      } catch (dripErr: unknown) {
+        console.warn(
+          '[intake] pre-payment drip skipped:',
+          dripErr instanceof Error ? dripErr.message : dripErr,
+        )
+      }
+    })()
 
     return NextResponse.json({ intakeId: intake.id })
   } catch (err: unknown) {

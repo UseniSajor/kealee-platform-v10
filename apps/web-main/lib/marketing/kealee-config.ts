@@ -9,6 +9,8 @@
  * - ROI targets
  */
 
+import { isGhlEnabled } from './ghl-enabled'
+
 // ══════════════════════════════════════════════════════════════════════════════
 // PHASE 1: LEAD SCORING CONFIGURATION
 // ══════════════════════════════════════════════════════════════════════════════
@@ -353,17 +355,25 @@ export const KEALEE_MARKETING_CONFIG = {
     oncall: process.env.ONCALL_NUMBER,
   },
 
-  // Feature flags
+  // Feature flags — auto-enable when required env vars are present
   features: {
     leadScoring: true,
-    smsAlerts: true,
-    ghlSync: true,
-    aiQualification: false,  // Enable after Phase 1 stable
-    calendlyScheduling: false,
-    slackNotifications: false,
-    facebookLeadAds: false,
-    googleAds: false,
-    roiTracking: false,
+    smsAlerts: Boolean(process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN),
+    ghlSync: isGhlEnabled(),
+    aiQualification: Boolean(process.env.ANTHROPIC_API_KEY),
+    calendlyScheduling: Boolean(
+      process.env.CALENDLY_API_TOKEN ||
+        process.env.CALENDLY_CALENDAR_UUID ||
+        process.env.NEXT_PUBLIC_CALENDLY_URL,
+    ),
+    slackNotifications: Boolean(process.env.SLACK_WEBHOOK_URL),
+    facebookLeadAds: Boolean(
+      process.env.META_APP_ID && process.env.FACEBOOK_PAGE_ACCESS_TOKEN,
+    ),
+    googleAds: Boolean(process.env.NEXT_PUBLIC_GOOGLE_ADS_ID),
+    roiTracking: Boolean(
+      process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID && process.env.GA4_API_SECRET,
+    ),
   },
 
   // Rollback procedures

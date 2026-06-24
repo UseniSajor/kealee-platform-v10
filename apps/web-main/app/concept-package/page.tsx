@@ -149,14 +149,14 @@ export default function ConceptPackagePage() {
 
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
             <Link
-              href="/intake/exterior_concept"
+              href="/get-concept"
               className="inline-flex items-center gap-2 rounded-xl px-7 py-3.5 text-base font-semibold text-white transition-opacity hover:opacity-90"
               style={{ backgroundColor: '#E8793A' }}
             >
               Get My Concept Package <ArrowRight className="h-5 w-5" />
             </Link>
             <Link
-              href="/intake"
+              href="/get-concept"
               className="inline-flex items-center gap-2 rounded-xl border border-gray-200 px-7 py-3.5 text-base font-semibold text-gray-700 transition-colors hover:border-gray-300"
             >
               See All Project Types
@@ -320,7 +320,7 @@ export default function ConceptPackagePage() {
           </p>
           <div className="mt-8 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
             <Link
-              href="/intake"
+              href="/get-concept"
               className="inline-flex items-center gap-2 rounded-xl px-7 py-3.5 text-base font-semibold text-white transition-opacity hover:opacity-90"
               style={{ backgroundColor: '#E8793A' }}
             >

@@ -1,10 +1,11 @@
 'use client'
 
-import { Suspense, useEffect } from 'react'
+import { Suspense, useEffect, useRef } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { CheckCircle2, Mail, Clock, ArrowRight, ExternalLink } from 'lucide-react'
 import { V30GenerationStatus } from '@/components/v30/V30GenerationStatus'
+import { trackEvent } from '@/lib/analytics'
 
 function SuccessInner() {
   const searchParams = useSearchParams()
@@ -15,6 +16,20 @@ function SuccessInner() {
   const promo    = searchParams.get('promo')    === '1'
   const intakeId = searchParams.get('intakeId') ?? ''
   const isV30      = searchParams.get('v30') === '1'
+  const purchaseTracked = useRef(false)
+
+  useEffect(() => {
+    if (!intakeId || purchaseTracked.current) return
+    purchaseTracked.current = true
+    const value = amount ? Number.parseFloat(amount.replace(/[^0-9.]/g, '')) : undefined
+    trackEvent('purchase', {
+      intake_id: intakeId,
+      service,
+      value,
+      currency: 'USD',
+      funnel: isV30 ? 'get-concept' : 'concept',
+    })
+  }, [intakeId, amount, service, isV30])
 
   // Fire concept generation from the browser after Stripe redirect.
   // The intake is 'paid' by the time the user lands here (webhook runs first).
