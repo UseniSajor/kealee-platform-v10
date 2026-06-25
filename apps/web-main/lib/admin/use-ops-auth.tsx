@@ -24,7 +24,7 @@ export function OpsAuthProvider({ children }: { children: ReactNode }) {
     setSecretState(s)
   }
 
-  const headers = () => (secret ? { 'x-kealee-ops': secret } : {})
+  const headers = (): Record<string, string> => (secret ? { 'x-kealee-ops': secret } : {})
 
   return (
     <OpsAuthContext.Provider value={{ secret, setSecret, headers }}>

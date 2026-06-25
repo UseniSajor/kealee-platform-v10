@@ -149,7 +149,7 @@ export async function processOutreachQueue(limit = 30): Promise<{
         directMail++
       } else if (row.channel === 'sms' && target.owner_phone) {
         const { sendSMS } = await import('@/lib/marketing/twilio-client')
-        await sendSMS({ to: target.owner_phone, body: payload.message ?? '' })
+        await sendSMS({ to: target.owner_phone, message: payload.message ?? '' })
       }
 
       await supabase
