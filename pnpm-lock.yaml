@@ -696,6 +696,9 @@ importers:
       '@kealee/core-rules':
         specifier: workspace:*
         version: link:../../packages/core-rules
+      '@kealee/database':
+        specifier: workspace:*
+        version: link:../../packages/database
       '@kealee/intake':
         specifier: workspace:*
         version: link:../../packages/intake

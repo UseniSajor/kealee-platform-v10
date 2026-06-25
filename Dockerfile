@@ -12,19 +12,21 @@ RUN pnpm install --no-frozen-lockfile
 ARG RAILWAY_SERVICE_NAME
 ENV RAILWAY_SERVICE_NAME=$RAILWAY_SERVICE_NAME
 
-RUN if [ "$RAILWAY_SERVICE_NAME" = "web-main" ]; then \
-      rm -rf apps/web-main/.next && \
-      pnpm turbo run build --filter=web-main --force && \
-      SRV=$(find apps/web-main/.next/standalone -name server.js -print -quit) && \
-      echo "server.js: $SRV" && \
-      if [ -z "$SRV" ]; then echo 'ERROR: standalone server.js not produced'; exit 1; fi && \
-      SDIR=$(dirname "$SRV") && \
-      mkdir -p "$SDIR/public" "$SDIR/.next/static" && \
-      cp -r apps/web-main/public/. "$SDIR/public/" 2>/dev/null || true && \
-      cp -r apps/web-main/.next/static/. "$SDIR/.next/static/" 2>/dev/null || true; \
-    else \
-      pnpm --filter @kealee/api... build; \
-    fi
+RUN set -eux; \
+  if [ "$RAILWAY_SERVICE_NAME" = "web-main" ]; then \
+    rm -rf apps/web-main/.next; \
+    pnpm turbo run build --filter=web-main --force; \
+    SRV=$(find apps/web-main/.next/standalone -name server.js -print -quit); \
+    echo "server.js: $SRV"; \
+    test -n "$SRV"; \
+    test -f "$SRV"; \
+    SDIR=$(dirname "$SRV"); \
+    mkdir -p "$SDIR/public" "$SDIR/.next/static"; \
+    cp -r apps/web-main/public/. "$SDIR/public/"; \
+    cp -r apps/web-main/.next/static/. "$SDIR/.next/static/"; \
+  else \
+    pnpm --filter @kealee/api... build; \
+  fi
 
 EXPOSE 3000
 
