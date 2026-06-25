@@ -31,7 +31,10 @@ CMD if [ "$RAILWAY_SERVICE_NAME" = "web-main" ]; then \
       export NEXT_PUBLIC_SUPABASE_URL=$SUPABASE_URL && \
       export NEXT_PUBLIC_SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY && \
       export HOSTNAME=0.0.0.0 && \
-      exec node /app/apps/web-main/.next/standalone/server.js; \
+      SERVER=$(find /app -path '*/.next/standalone*server.js' -print -quit) && \
+      echo "Starting $SERVER" && \
+      cd $(dirname $SERVER) && \
+      exec node $SERVER; \
     else \
       exec node dist/index.js; \
     fi
