@@ -6,8 +6,8 @@
   },
   "deploy": {
     "startCommand": "sh -c \"export NEXT_PUBLIC_SUPABASE_URL=$SUPABASE_URL NEXT_PUBLIC_SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY HOSTNAME=0.0.0.0; SERVER=$(find /app -path '*/.next/standalone*server.js' -print -quit); if [ -z \\\"$SERVER\\\" ]; then echo 'standalone server.js not found'; find /app -maxdepth 5 -type d -name standalone -print; exit 1; fi; echo Starting $SERVER; cd $(dirname $SERVER); exec node $SERVER\"",
-    "healthcheckPath": "/",
-    "healthcheckTimeout": 120,
+    "healthcheckPath": "/api/health",
+    "healthcheckTimeout": 300,
     "restartPolicyType": "ON_FAILURE",
     "restartPolicyMaxRetries": 10
   }
