@@ -28,7 +28,10 @@ EXPOSE 3000
 WORKDIR /app/services/api
 
 CMD if [ "$RAILWAY_SERVICE_NAME" = "web-main" ]; then \
-      sh /app/apps/web-main/scripts/start-standalone.sh; \
+      export NEXT_PUBLIC_SUPABASE_URL=$SUPABASE_URL && \
+      export NEXT_PUBLIC_SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY && \
+      export HOSTNAME=0.0.0.0 && \
+      exec node /app/apps/web-main/.next/standalone/server.js; \
     else \
-      node dist/index.js; \
+      exec node dist/index.js; \
     fi

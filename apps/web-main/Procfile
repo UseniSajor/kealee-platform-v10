@@ -1,1 +1,1 @@
-web: sh scripts/start-standalone.sh
+web: node .next/standalone/server.js
