@@ -1,1 +1,1 @@
-web: cd apps/web-main && node .next/standalone/server.js
+web: sh scripts/start-standalone.sh

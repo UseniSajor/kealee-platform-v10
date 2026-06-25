@@ -28,7 +28,7 @@ EXPOSE 3000
 WORKDIR /app/services/api
 
 CMD if [ "$RAILWAY_SERVICE_NAME" = "web-main" ]; then \
-      cd /app/apps/web-main && node .next/standalone/server.js; \
+      sh /app/apps/web-main/scripts/start-standalone.sh; \
     else \
       node dist/index.js; \
     fi
