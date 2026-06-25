@@ -35,10 +35,13 @@ CMD if [ "$RAILWAY_SERVICE_NAME" = "web-main" ]; then \
       export NEXT_PUBLIC_SUPABASE_URL=$SUPABASE_URL && \
       export NEXT_PUBLIC_SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY && \
       export HOSTNAME=0.0.0.0 && \
-      SERVER=$(find /app -path '*/.next/standalone*server.js' -print -quit) && \
+      export PORT=${PORT:-3000} && \
+      SERVER=/app/apps/web-main/.next/standalone/apps/web-main/server.js && \
+      if [ ! -f "$SERVER" ]; then SERVER=$(find /app/apps/web-main/.next/standalone -name server.js -print -quit); fi && \
+      if [ -z "$SERVER" ] || [ ! -f "$SERVER" ]; then echo 'standalone server.js not found' && exit 1; fi && \
       echo "Starting $SERVER" && \
-      cd $(dirname $SERVER) && \
-      exec node $SERVER; \
+      cd $(dirname "$SERVER") && \
+      exec node "$SERVER"; \
     else \
       exec node dist/index.js; \
     fi
