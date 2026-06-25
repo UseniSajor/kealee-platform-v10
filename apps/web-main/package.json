@@ -29,6 +29,7 @@
     "@kealee/concept-engine": "workspace:*",
     "@kealee/core-llm": "workspace:*",
     "@kealee/core-rules": "workspace:*",
+    "@kealee/intelligence": "workspace:*",
     "@kealee/intake": "workspace:*",
     "@kealee/kealee-agent-stack": "workspace:*",
     "@kealee/pascal-wrapper": "workspace:*",

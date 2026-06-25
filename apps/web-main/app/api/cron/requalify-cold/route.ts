@@ -9,7 +9,12 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import { calculateLeadScore, type LeadData } from '@/lib/marketing/lead-scorer'
+import { type LeadData } from '@/lib/marketing/lead-scorer'
+import {
+  scoreLeadWithIntelligence,
+  mapIntakeRowToLeadInput,
+  intelligenceMetadataUpdate,
+} from '@/lib/marketing/intelligence-scorer'
 
 export const dynamic = 'force-dynamic'
 
@@ -74,27 +79,30 @@ export async function POST(req: NextRequest) {
       try {
         // Check for activity: last_viewed_at, email_clicked_at, etc.
         // This is simplified; add your own activity tracking logic
+        const formData = lead.form_data || {}
         const leadData: LeadData = {
           source: lead.source,
-          budget: lead.form_data?.budget ? parseInt(lead.form_data.budget) : undefined,
-          timeline: lead.form_data?.timeline,
+          budget: formData.budget ? parseInt(String(formData.budget)) : undefined,
+          timeline: formData.timeline,
           service: lead.service_type,
           hasPhoto: !!lead.area_photo_url,
-          hasDocuments: lead.form_data?.attachment_urls?.length > 0,
+          hasDocuments: formData.attachment_urls?.length > 0,
           phone: lead.phone_number,
-          previousInteraction: true,  // They've seen it before
+          previousInteraction: true,
         }
 
-        const newScore = calculateLeadScore(leadData)
+        const intakeInput = mapIntakeRowToLeadInput(lead, formData)
+        const newScore = await scoreLeadWithIntelligence(leadData, intakeInput)
+        const intelMeta = intelligenceMetadataUpdate(newScore)
 
         // If score improved by 15+ points, it's a re-engagement signal
         if (newScore.score > (lead.lead_score || 0) + 15) {
-          // Update scoring
           const { error: updateErr } = await supabase
             .from('public_intake_leads')
             .update({
               lead_score: newScore.score,
               routing_tag: newScore.tag,
+              ...(intelMeta ?? {}),
             })
             .eq('id', lead.id)
 

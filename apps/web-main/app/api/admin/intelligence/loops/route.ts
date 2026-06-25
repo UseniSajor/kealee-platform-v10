@@ -1,0 +1,20 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { authorizeOps, unauthorized } from '@/lib/admin/intelligence-auth'
+import { intelligenceAdminService, isIntelligencePersistenceAvailable } from '@kealee/intelligence'
+
+export const dynamic = 'force-dynamic'
+
+export async function GET(req: NextRequest) {
+  if (!authorizeOps(req)) return unauthorized()
+  if (!isIntelligencePersistenceAvailable()) {
+    return NextResponse.json({ error: 'DATABASE_URL not configured' }, { status: 503 })
+  }
+  try {
+    const propertyTwinId = req.nextUrl.searchParams.get('propertyTwinId') ?? undefined
+    const limit = Number(req.nextUrl.searchParams.get('limit') ?? 30)
+    const items = await intelligenceAdminService.listLoopHistory(propertyTwinId, limit)
+    return NextResponse.json({ items, count: items.length })
+  } catch (err) {
+    return NextResponse.json({ error: err instanceof Error ? err.message : String(err) }, { status: 500 })
+  }
+}

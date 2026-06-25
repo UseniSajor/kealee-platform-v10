@@ -1,0 +1,255 @@
+// Intelligence layer — PropertyTwin, LoopRun, scoring, and campaign models
+
+model PropertyTwin {
+  id        String  @id @default(uuid())
+  orgId     String?
+  parcelId  String?
+
+  address         String
+  jurisdiction    String?
+  zoning          Json?
+  lotSize         Float?
+  buildingSize    Float?
+  yearBuilt       Int?
+  propertyType    String?
+  ownershipType   String?
+  assessedValue   Decimal?  @db.Decimal(14, 2)
+  lastSaleDate    DateTime?
+  permitHistory   Json?
+  riskFlags       String[]  @default([])
+  opportunityFlags String[] @default([])
+  recommendedProducts String[] @default([])
+  latestScores    Json?
+  dataSources     String[]  @default([])
+  dataQualityScore Float    @default(0)
+  propertySummary String?   @db.Text
+  metadata        Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  leadTwins               LeadTwin[]
+  opportunityScores       OpportunityScore[]
+  propertyIntelligenceRuns PropertyIntelligenceRun[]
+  campaignRecommendations CampaignRecommendation[]
+  loopRuns                LoopRun[]
+  capitalTwins            CapitalTwin[]
+  projectTwins            ProjectTwin[]
+  platformIntelligenceRuns IntelligenceRun[]
+
+  @@index([orgId])
+  @@index([parcelId])
+  @@index([jurisdiction])
+  @@index([dataQualityScore])
+  @@map("property_twins")
+}
+
+model LeadTwin {
+  id             String  @id @default(uuid())
+  orgId          String?
+  propertyTwinId String?
+  crmContactId   String?
+  email          String?
+  phone          String?
+  name           String?
+  leadType       String?
+  segment        String?
+  crmStatus      String?
+  sourceChannel  String?
+  interactionHistory Json?
+  complianceFlags String[] @default([])
+  metadata       Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  propertyTwin     PropertyTwin?      @relation(fields: [propertyTwinId], references: [id], onDelete: SetNull)
+  marketingSegments MarketingSegment[]
+  loopRuns          LoopRun[]
+  capitalTwins      CapitalTwin[]
+  projectTwins      ProjectTwin[]
+  intelligenceRuns  IntelligenceRun[]
+
+  @@index([orgId])
+  @@index([propertyTwinId])
+  @@index([crmContactId])
+  @@map("lead_twins")
+}
+
+model OpportunityScore {
+  id                    String   @id @default(uuid())
+  propertyTwinId        String
+  loopRunId             String?
+  totalOpportunityScore Float
+  productScores         Json
+  urgencyScore          Float
+  revenuePotential      Decimal? @db.Decimal(14, 2)
+  conversionLikelihood  Float?
+  estimatedProjectValue Decimal? @db.Decimal(14, 2)
+  recommendedPriority   String
+  recommendedNextAction String?
+  dataQualityScore      Float
+  scoreExplanation      String   @db.Text
+  confidenceScore       Float
+  requiresHumanReview   Boolean  @default(false)
+  reviewReasons         String[] @default([])
+  crmUpdates            Json?
+  digitalTwinUpdates    Json?
+
+  createdAt DateTime @default(now())
+
+  propertyTwin PropertyTwin @relation(fields: [propertyTwinId], references: [id], onDelete: Cascade)
+  loopRun      LoopRun?     @relation(fields: [loopRunId], references: [id], onDelete: SetNull)
+
+  @@index([propertyTwinId])
+  @@index([totalOpportunityScore])
+  @@index([recommendedPriority])
+  @@map("opportunity_scores")
+}
+
+model MarketingSegment {
+  id             String  @id @default(uuid())
+  leadTwinId     String?
+  propertyTwinId String?
+  segmentKey     String
+  audienceSegment String
+  confidenceScore Float?
+  metadata       Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  leadTwin LeadTwin? @relation(fields: [leadTwinId], references: [id], onDelete: Cascade)
+
+  @@index([segmentKey])
+  @@index([leadTwinId])
+  @@index([propertyTwinId])
+  @@map("marketing_segments")
+}
+
+model CampaignRecommendation {
+  id                      String   @id @default(uuid())
+  propertyTwinId          String
+  loopRunId               String?
+  recommendedCampaign     String
+  recommendedChannel      String
+  recommendedOffer        String?
+  recommendedMessageAngle String?
+  salesPriority           String?
+  nurtureSequence         String?
+  suppressionFlags        String[] @default([])
+  complianceFlags         String[] @default([])
+  confidenceScore         Float
+  requiresHumanReview       Boolean  @default(false)
+  metadata                Json?
+
+  createdAt DateTime @default(now())
+
+  propertyTwin PropertyTwin @relation(fields: [propertyTwinId], references: [id], onDelete: Cascade)
+  loopRun      LoopRun?     @relation(fields: [loopRunId], references: [id], onDelete: SetNull)
+
+  @@index([propertyTwinId])
+  @@map("campaign_recommendations")
+}
+
+model PropertyIntelligenceRun {
+  id               String  @id @default(uuid())
+  propertyTwinId   String
+  loopRunId        String?
+  inputContext     Json
+  output           Json
+  propertySummary  String? @db.Text
+  propertyType     String?
+  ownershipType    String?
+  confidenceScore  Float
+  requiresHumanReview Boolean @default(false)
+  dataQualityScore Float?
+
+  createdAt DateTime @default(now())
+
+  propertyTwin PropertyTwin @relation(fields: [propertyTwinId], references: [id], onDelete: Cascade)
+  loopRun      LoopRun?     @relation(fields: [loopRunId], references: [id], onDelete: SetNull)
+
+  @@index([propertyTwinId])
+  @@map("property_intelligence_runs")
+}
+
+model AgentMemory {
+  id         String  @id @default(uuid())
+  agentId    String
+  entityType String
+  entityId   String
+  loopRunId  String?
+  memoryKey  String
+  content    Json
+  confidence Float?
+  expiresAt  DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  loopRun LoopRun? @relation(fields: [loopRunId], references: [id], onDelete: SetNull)
+
+  @@unique([agentId, entityType, entityId, memoryKey])
+  @@index([entityType, entityId])
+  @@map("agent_memory")
+}
+
+model LoopRun {
+  id               String                 @id @default(uuid())
+  loopType         IntelligenceLoopType
+  status           IntelligenceLoopStatus @default(pending)
+  triggerEventType String?
+  triggerEventId   String?
+  propertyTwinId   String?
+  leadTwinId       String?
+  projectTwinId    String?
+  capitalTwinId    String?
+  orgId            String?
+  context          Json?
+  result           Json?
+  errorMessage     String?                @db.Text
+  startedAt        DateTime?
+  completedAt      DateTime?
+  createdAt        DateTime               @default(now())
+  updatedAt        DateTime               @updatedAt
+
+  propertyTwin            PropertyTwin?             @relation(fields: [propertyTwinId], references: [id], onDelete: SetNull)
+  leadTwin                LeadTwin?                 @relation(fields: [leadTwinId], references: [id], onDelete: SetNull)
+  projectTwin             ProjectTwin?              @relation(fields: [projectTwinId], references: [id], onDelete: SetNull)
+  capitalTwin             CapitalTwin?              @relation(fields: [capitalTwinId], references: [id], onDelete: SetNull)
+  steps                   LoopStep[]
+  agentMemories           AgentMemory[]
+  opportunityScores       OpportunityScore[]
+  campaignRecommendations CampaignRecommendation[]
+  intelligenceRuns        PropertyIntelligenceRun[]
+  platformRuns            IntelligenceRun[]
+
+  @@index([loopType])
+  @@index([status])
+  @@index([propertyTwinId])
+  @@index([leadTwinId])
+  @@index([projectTwinId])
+  @@index([capitalTwinId])
+  @@map("loop_runs")
+}
+
+model LoopStep {
+  id           String                 @id @default(uuid())
+  loopRunId    String
+  stepOrder    Int
+  stepName     String
+  agentId      String?
+  status       IntelligenceStepStatus @default(pending)
+  input        Json?
+  output       Json?
+  errorMessage String?                @db.Text
+  startedAt    DateTime?
+  completedAt  DateTime?
+  createdAt    DateTime               @default(now())
+
+  loopRun LoopRun @relation(fields: [loopRunId], references: [id], onDelete: Cascade)
+
+  @@index([loopRunId])
+  @@map("loop_steps")
+}

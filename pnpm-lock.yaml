@@ -699,6 +699,9 @@ importers:
       '@kealee/intake':
         specifier: workspace:*
         version: link:../../packages/intake
+      '@kealee/intelligence':
+        specifier: workspace:*
+        version: link:../../packages/intelligence
       '@kealee/kealee-agent-stack':
         specifier: workspace:*
         version: link:../../packages/kealee-agent-stack
@@ -1945,6 +1948,25 @@ importers:
       typescript:
         specifier: ^5.3.3
         version: 5.9.3
+
+  packages/intelligence:
+    dependencies:
+      '@kealee/database':
+        specifier: workspace:*
+        version: link:../database
+      zod:
+        specifier: ^3.22.4
+        version: 3.25.76
+    devDependencies:
+      '@types/node':
+        specifier: ^20.19.0
+        version: 20.19.39
+      typescript:
+        specifier: ^5.9.0
+        version: 5.9.3
+      vitest:
+        specifier: ^1.6.1
+        version: 1.6.1(@types/node@20.19.39)
 
   packages/kealee-agent-stack:
     dependencies:

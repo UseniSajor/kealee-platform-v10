@@ -8,7 +8,7 @@
 
 param(
   [string]$WebMainService = "web-main",
-  [string]$ApiService = "api",
+  [string]$ApiService = "kealee-platform-v10",
   [string[]]$CronServices = @(
     "marketing-cron-lead-scoring",
     "marketing-cron-sequences",
@@ -50,29 +50,19 @@ function Get-RailwayTokenCandidatesFromRepo {
   return $candidates | Select-Object -Unique
 }
 
-function Resolve-RailwayToken {
-  $configPath = Join-Path $env:USERPROFILE ".railway\config.json"
-  if (Test-Path $configPath) {
-    try {
-      $cfg = Get-Content $configPath -Raw | ConvertFrom-Json
-      if ($cfg.user.token) {
-        $env:RAILWAY_TOKEN = $null
-        $null = railway whoami 2>&1
-        if ($LASTEXITCODE -eq 0) { return "session" }
-      }
-    } catch {
-      # ignore
-    }
+function Test-RailwayCliAuth {
+  try {
+    $null = railway status 2>&1
+    return $LASTEXITCODE -eq 0
+  } catch {
+    return $false
   }
+}
 
+function Resolve-RailwayToken {
   foreach ($t in (Get-RailwayTokenCandidatesFromRepo)) {
     $env:RAILWAY_TOKEN = $t
-    try {
-      $null = railway whoami 2>&1
-      if ($LASTEXITCODE -eq 0) { return $t }
-    } catch {
-      # invalid token
-    }
+    if (Test-RailwayCliAuth) { return $t }
   }
   $env:RAILWAY_TOKEN = $null
   return $null
@@ -129,6 +119,7 @@ $sources = @(
   (Join-Path $repoRoot "apps\web-main\.env.verify")
   (Join-Path $repoRoot "services\api\.env")
   (Join-Path $repoRoot "services\api\.env.local")
+  (Join-Path $repoRoot "railway-env-paste-web-main.txt")
 )
 
 foreach ($src in $sources) {
@@ -179,27 +170,14 @@ Write-Host "Railway authenticated. Syncing $($vars.Count) variables..." -Foregro
 function Ensure-RailwayLink {
   $status = railway status 2>&1
   if ($LASTEXITCODE -eq 0) { return }
-  $configPath = Join-Path $env:USERPROFILE ".railway\config.json"
-  if (-not (Test-Path $configPath)) { return }
-  try {
-    $cfg = Get-Content $configPath -Raw | ConvertFrom-Json
-    $proj = $null
-    foreach ($p in $cfg.projects.PSObject.Properties) {
-      if ($p.Value.project) { $proj = $p.Value; break }
-    }
-    if ($proj) {
-      railway link --project $proj.project --environment $proj.environment 2>&1 | Out-Null
-    }
-  } catch {
-    # ignore
-  }
+  railway link --project 8187fcf6-9916-49aa-bc75-77407f83d319 --environment ff19d499-942b-4668-9a26-a21ecb20e349 2>&1 | Out-Null
 }
 
 Ensure-RailwayLink
 
 function Get-RailwayVarMap([string]$service) {
   $map = @{}
-  $raw = railway variables --service $service --environment $Environment 2>&1
+  $raw = railway variable list --service $service --environment $Environment --kv 2>&1
   if ($LASTEXITCODE -ne 0) { return $map }
   foreach ($line in ($raw -split "`n")) {
     if ($line -match '^\s*([A-Z0-9_]+)\s*=\s*(.*)$') {
@@ -221,7 +199,7 @@ function Set-RailwayVars([string]$service, [hashtable]$toSet) {
       Write-Host "    [dry-run] $($kv.Key)=$display"
       continue
     }
-    railway variables set "$($kv.Key)=$($kv.Value)" --service $service --environment $Environment 2>&1 | Out-Null
+    railway variable set "$($kv.Key)=$($kv.Value)" --service $service --environment $Environment --skip-deploys 2>&1 | Out-Null
     if ($LASTEXITCODE -ne 0) {
       Write-Host "    failed: $($kv.Key)" -ForegroundColor Red
     }
@@ -229,6 +207,11 @@ function Set-RailwayVars([string]$service, [hashtable]$toSet) {
 }
 
 function Sync-Service([string]$service, [string[]]$onlyKeys) {
+  $check = railway service status --service $service --environment $Environment 2>&1
+  if ($LASTEXITCODE -ne 0) {
+    Write-Host "  $service - service not found (create in Railway dashboard)" -ForegroundColor Yellow
+    return
+  }
   $existing = Get-RailwayVarMap $service
   $toSet = @{}
   foreach ($kv in $vars.GetEnumerator()) {
