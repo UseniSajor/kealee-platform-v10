@@ -9,7 +9,7 @@ const PRE_PAYMENT_DRIP = [
   { step: 3, delayDays: 7 },
 ] as const
 
-const ESTIMATE_UPSELL_DELAY_DAYS = 14
+const PERMIT_DRAWINGS_UPSELL_DELAY_DAYS = 14
 
 export function buildConceptFunnelUrl(projectInterest?: string, leadId?: string): string {
   const params = new URLSearchParams()
@@ -18,8 +18,15 @@ export function buildConceptFunnelUrl(projectInterest?: string, leadId?: string)
   return `${SITE_URL}/concept?${params}`
 }
 
+export function buildPermitDrawingsFunnelUrl(leadId: string, projectPath?: string): string {
+  const params = new URLSearchParams({ lead: leadId })
+  if (projectPath) params.set('service', projectPath)
+  return `${SITE_URL}/intake/professional_drawings?${params}`
+}
+
+/** @deprecated Standalone estimate upsell removed — estimate bundled with design/permit packages */
 export function buildEstimateFunnelUrl(leadId: string): string {
-  return `${SITE_URL}/estimate/intake?lead=${encodeURIComponent(leadId)}`
+  return buildPermitDrawingsFunnelUrl(leadId)
 }
 
 export async function schedulePrePaymentDrip(opts: {
@@ -47,11 +54,13 @@ export async function schedulePrePaymentDrip(opts: {
   if (error) throw new Error(error.message)
 }
 
-export async function scheduleEstimateUpsellDrip(opts: {
+/** After concept_ready: permit-ready professional drawings upsell (estimate already included). */
+export async function schedulePermitDrawingsUpsellDrip(opts: {
   leadId: string
   email: string
   name?: string | null
   serviceLabel: string
+  projectPath?: string
 }): Promise<boolean> {
   const supabase = getSupabaseAdmin()
 
@@ -65,7 +74,7 @@ export async function scheduleEstimateUpsellDrip(opts: {
   if (existing && existing.length > 0) return false
 
   const sendAt = new Date(
-    Date.now() + ESTIMATE_UPSELL_DELAY_DAYS * 24 * 60 * 60 * 1000,
+    Date.now() + PERMIT_DRAWINGS_UPSELL_DELAY_DAYS * 24 * 60 * 60 * 1000,
   ).toISOString()
 
   const { error } = await supabase.from('marketing_drip_queue').insert({
@@ -73,15 +82,18 @@ export async function scheduleEstimateUpsellDrip(opts: {
     email: opts.email,
     name: opts.name ?? null,
     service_label: opts.serviceLabel,
-    funnel_url: buildEstimateFunnelUrl(opts.leadId),
+    funnel_url: buildPermitDrawingsFunnelUrl(opts.leadId, opts.projectPath),
     sequence_step: 4,
     send_at: sendAt,
     status: 'pending',
   })
 
   if (error) {
-    console.warn('[drip-schedule] estimate upsell insert failed:', error.message)
+    console.warn('[drip-schedule] permit drawings upsell insert failed:', error.message)
     return false
   }
   return true
 }
+
+/** @deprecated Use schedulePermitDrawingsUpsellDrip */
+export const scheduleEstimateUpsellDrip = schedulePermitDrawingsUpsellDrip

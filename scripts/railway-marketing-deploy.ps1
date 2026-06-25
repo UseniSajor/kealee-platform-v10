@@ -19,7 +19,10 @@ $EnvironmentId = "ff19d499-942b-4668-9a26-a21ecb20e349"
 $CronServices = @(
   "marketing-cron-lead-scoring",
   "marketing-cron-sequences",
-  "marketing-cron-requalify-cold"
+  "marketing-cron-requalify-cold",
+  "marketing-cron-parcel-enrichment",
+  "marketing-cron-parcel-outreach",
+  "marketing-cron-marketing-drip"
 )
 
 function Test-RailwayAuth {
@@ -69,6 +72,15 @@ if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
 Write-Host "`n=== Services in production ===" -ForegroundColor Yellow
 railway service status --all --environment production 2>&1
+
+Write-Host "`n=== Setup cron services (root dirs + deploy) ===" -ForegroundColor Yellow
+$setupArgs = @("scripts\railway-setup-marketing-crons.mjs")
+if ($DryRun) { $setupArgs += "--dry-run" }
+if ($SkipRedeploy) { $setupArgs += "--skip-deploy" }
+node @setupArgs
+if ($LASTEXITCODE -ne 0) {
+  Write-Host "railway-setup-marketing-crons.mjs failed (auth or API error)" -ForegroundColor Yellow
+}
 
 Write-Host "`n=== Cron services check ===" -ForegroundColor Yellow
 $statusJson = railway service status --all --environment production --json 2>&1

@@ -243,7 +243,7 @@ Full story →`,
 Can you build a backyard cottage in Northern Virginia?
 
 It depends on 4 things:
-1️⃣ Your zoning district (R-1 through R-4 have different rules)
+1️⃣ Your zoning district (Fairfax: R-1–R-20; Arlington: R-5/R-6/R-10; codes vary by jurisdiction)
 2️⃣ Lot size (most jurisdictions need 6,000–8,000 sq ft min)
 3️⃣ Setbacks (typically 5 ft sides, 25 ft rear from a street)
 4️⃣ Lot coverage (impervious surface limits, usually 25–35%)

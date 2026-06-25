@@ -194,6 +194,25 @@ export async function POST(req: NextRequest) {
                 .from('public_intake_leads')
                 .update({ ghl_contact_id: primaryContactId })
                 .eq('id', lead.id)
+
+              if (scoreResult.intelligence && syncResult.ghl?.id) {
+                try {
+                  const { scheduleIntelligenceNurtureIfEligible } = await import(
+                    '@/lib/marketing/intelligence-nurture'
+                  )
+                  await scheduleIntelligenceNurtureIfEligible({
+                    leadId: lead.id,
+                    ghlContactId: syncResult.ghl.id,
+                    intelligence: scoreResult.intelligence,
+                    email: leadEmail,
+                    name: lead.client_name || lead.name,
+                    address: lead.project_address,
+                    projectPath: lead.project_path,
+                  })
+                } catch (nurtureErr) {
+                  console.warn(`[lead-scoring] intelligence nurture skipped for ${lead.id}:`, nurtureErr)
+                }
+              }
             }
 
             // Log CRM Sync results

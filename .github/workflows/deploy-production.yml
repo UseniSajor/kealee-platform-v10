@@ -49,6 +49,9 @@ jobs:
           - service: marketing-cron-lead-scoring
           - service: marketing-cron-sequences
           - service: marketing-cron-requalify-cold
+          - service: marketing-cron-parcel-enrichment
+          - service: marketing-cron-parcel-outreach
+          - service: marketing-cron-marketing-drip
           # admin-console merged into os-admin (Vercel: admin.kealee.com)
     steps:
       - name: Checkout code

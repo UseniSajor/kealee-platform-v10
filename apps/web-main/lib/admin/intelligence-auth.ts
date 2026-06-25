@@ -1,14 +1,44 @@
 import { NextRequest, NextResponse } from 'next/server'
+import {
+  resolveRoleFromApiKey,
+  roleHasScope,
+  type ApiScope,
+  type KealeeAccessRole,
+} from '@/lib/admin/access-roles'
 
-export function authorizeOps(req: NextRequest): boolean {
-  const secret = process.env.KEALEE_OPS_SECRET || process.env.CRON_SECRET
-  if (!secret) return false
+export interface OpsAuthResult {
+  authorized: boolean
+  role: KealeeAccessRole | null
+}
+
+function extractSecret(req: NextRequest): string | null {
   const auth = req.headers.get('Authorization')
   const xKealeeOps = req.headers.get('x-kealee-ops')
-  return (
-    (auth != null && auth === `Bearer ${secret}`) ||
-    (xKealeeOps != null && xKealeeOps === secret)
-  )
+  const xApiKey = req.headers.get('x-kealee-api-key')
+  if (auth?.startsWith('Bearer ')) return auth.slice(7)
+  if (xKealeeOps) return xKealeeOps
+  if (xApiKey) return xApiKey
+  return null
+}
+
+export function authorizeOps(req: NextRequest, requiredScope?: ApiScope): OpsAuthResult {
+  const provided = extractSecret(req)
+  if (!provided) return { authorized: false, role: null }
+
+  const opsSecret = process.env.KEALEE_OPS_SECRET || process.env.CRON_SECRET
+  if (opsSecret && provided === opsSecret) {
+    return { authorized: true, role: 'ops' }
+  }
+
+  const partnerRole = resolveRoleFromApiKey(provided)
+  if (partnerRole) {
+    if (!requiredScope || roleHasScope(partnerRole, requiredScope)) {
+      return { authorized: true, role: partnerRole }
+    }
+    return { authorized: false, role: partnerRole }
+  }
+
+  return { authorized: false, role: null }
 }
 
 export function unauthorized() {

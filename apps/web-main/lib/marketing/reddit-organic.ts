@@ -195,7 +195,7 @@ Not every lot in Northern Virginia allows an ADU. The key variables:
 
 **Arlington specifically:** Arlington County has one of the more permissive ADU ordinances in Virginia. They allow attached and detached ADUs and have a defined approval process. Worth reading their site if you're in Arlington.
 
-**Fairfax County:** More restrictive zoning. Check your specific zoning district — R-1 through R-4 have different rules.
+**Fairfax County:** More restrictive zoning. Check your specific district at gis.fairfaxcounty.gov — R-1, R-2, R-3, and R-20 each have different lot minimums and setback rules (not the same as Arlington's R-5/R-6 codes).
 
 **The cost math:**
 

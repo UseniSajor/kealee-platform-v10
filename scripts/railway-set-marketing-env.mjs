@@ -17,16 +17,19 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const repoRoot = path.resolve(__dirname, '..')
 const dryRun = process.argv.includes('--dry-run')
 
-const PROJECT_ID = '6e9af929-5e5c-43c0-9f33-2a005f11034d'
-const ENV_ID = 'ef50ea57-e9e7-4e25-bc01-af5349b85119'
+const PROJECT_ID = '8187fcf6-9916-49aa-bc75-77407f83d319'
+const ENV_ID = 'ff19d499-942b-4668-9a26-a21ecb20e349'
 
 const SERVICE_NAMES = {
   webMain: 'web-main',
-  api: 'api',
+  api: 'kealee-platform-v10',
   crons: [
     'marketing-cron-lead-scoring',
     'marketing-cron-sequences',
     'marketing-cron-requalify-cold',
+    'marketing-cron-parcel-enrichment',
+    'marketing-cron-parcel-outreach',
+    'marketing-cron-marketing-drip',
   ],
 }
 

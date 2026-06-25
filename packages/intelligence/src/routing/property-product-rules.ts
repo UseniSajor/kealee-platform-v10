@@ -94,8 +94,8 @@ export const PROPERTY_PRODUCT_RULES: PropertyProductRule[] = [
   {
     id: 'plans_uploaded',
     characteristic: 'Existing plans uploaded',
-    recommendedProduct: 'estimate_detailed',
-    bot: 'EstimateBot',
+    recommendedProduct: 'permit_package',
+    bot: 'PermitBot',
     priority: 80,
     match: (ctx) => Boolean(ctx.hasDocuments || ctx.hasPlans),
   },
@@ -133,8 +133,8 @@ export const PROPERTY_PRODUCT_RULES: PropertyProductRule[] = [
   {
     id: 'service_estimate',
     characteristic: 'Estimate requested',
-    recommendedProduct: 'estimate_detailed',
-    bot: 'EstimateBot',
+    recommendedProduct: 'design_concept_validation',
+    bot: 'DesignBot',
     priority: 82,
     match: (ctx) => ctx.serviceIntent?.toLowerCase().includes('estimate') === true,
   },

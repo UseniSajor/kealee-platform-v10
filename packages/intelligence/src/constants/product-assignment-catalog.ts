@@ -37,7 +37,7 @@ export const PRODUCT_ASSIGNMENT_CATALOG: Record<KealeeProduct, ProductAssignment
     offerPriceUsd: 299,
     bot: 'DesignBot',
     nurtureSequence: 'kitchen_remodel_14d',
-    nextServiceInJourney: 'estimate_detailed',
+    nextServiceInJourney: 'permit_package',
     crmPipelineStage: 'design_concept',
   },
   design_concept_validation: {
@@ -46,11 +46,11 @@ export const PRODUCT_ASSIGNMENT_CATALOG: Record<KealeeProduct, ProductAssignment
     campaign: 'Design Concept',
     landingPage: '/concept-package',
     landingPageLabel: 'Design Concept Validation',
-    offer: '$299 Design Concept',
+    offer: '$299 Design Concept (estimate included)',
     offerPriceUsd: 299,
     bot: 'DesignBot',
     nurtureSequence: 'design_concept_14d',
-    nextServiceInJourney: 'estimate_detailed',
+    nextServiceInJourney: 'permit_package',
     crmPipelineStage: 'design_concept',
   },
   adu_feasibility: {
@@ -76,7 +76,7 @@ export const PRODUCT_ASSIGNMENT_CATALOG: Record<KealeeProduct, ProductAssignment
     offerPriceUsd: 299,
     bot: 'DesignLandBot',
     nurtureSequence: 'addition_14d',
-    nextServiceInJourney: 'estimate_detailed',
+    nextServiceInJourney: 'permit_package',
     crmPipelineStage: 'addition_feasibility',
   },
   basement_finish: {
@@ -85,25 +85,25 @@ export const PRODUCT_ASSIGNMENT_CATALOG: Record<KealeeProduct, ProductAssignment
     campaign: 'Basement Finish',
     landingPage: '/intake/basement_finish',
     landingPageLabel: 'Basement Design Concept',
-    offer: '$299 Design Concept',
+    offer: '$299 Design Concept (estimate included)',
     offerPriceUsd: 299,
     bot: 'DesignBot',
     nurtureSequence: 'basement_14d',
-    nextServiceInJourney: 'estimate_detailed',
+    nextServiceInJourney: 'permit_package',
     crmPipelineStage: 'design_concept',
   },
   estimate_detailed: {
     product: 'estimate_detailed',
     displayName: 'Detailed Estimate',
-    campaign: 'Detailed Estimate',
-    landingPage: '/intake/estimate',
-    landingPageLabel: 'Detailed Estimate',
-    offer: '$495 RSMeans Estimate',
-    offerPriceUsd: 495,
+    campaign: 'Included with Design',
+    landingPage: '/concept-package',
+    landingPageLabel: 'Estimate Included with Design Concept',
+    offer: 'Included with design concept, professional drawings, or permit package',
+    offerPriceUsd: 0,
     bot: 'EstimateBot',
-    nurtureSequence: 'estimate_followup_7d',
+    nurtureSequence: 'permit_status_7d',
     nextServiceInJourney: 'permit_package',
-    crmPipelineStage: 'estimate',
+    crmPipelineStage: 'design_concept',
   },
   permit_package: {
     product: 'permit_package',
@@ -178,7 +178,7 @@ export const PRODUCT_ASSIGNMENT_CATALOG: Record<KealeeProduct, ProductAssignment
     offerPriceUsd: 995,
     bot: 'DeveloperBot',
     nurtureSequence: 'developer_outreach_10d',
-    nextServiceInJourney: 'estimate_detailed',
+    nextServiceInJourney: 'permit_package',
     crmPipelineStage: 'developer',
   },
   investor_renovation_package: {
@@ -209,10 +209,9 @@ export const PRODUCT_ASSIGNMENT_CATALOG: Record<KealeeProduct, ProductAssignment
   },
 }
 
-/** Customer journey: each completed product naturally leads to the next */
+/** Customer journey: concept (estimate included) → permit → contractor → PM */
 export const POST_PURCHASE_JOURNEY: KealeeProduct[] = [
   'design_concept_validation',
-  'estimate_detailed',
   'permit_package',
   'contractor_match',
   'pm_advisory',

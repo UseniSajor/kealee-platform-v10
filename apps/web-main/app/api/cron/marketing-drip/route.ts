@@ -2,7 +2,7 @@
  * GET /api/cron/marketing-drip
  *
  * Sends pending drip emails via Resend (steps 1–4).
- * Step 4 = estimate upsell for concept_ready cohort (scheduled on concept delivery).
+ * Sends pending drip emails via Resend (steps 1–3 pre-payment; step 4 permit drawings upsell).
  */
 
 import { NextRequest, NextResponse } from 'next/server'

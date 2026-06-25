@@ -12,7 +12,10 @@ param(
   [string[]]$CronServices = @(
     "marketing-cron-lead-scoring",
     "marketing-cron-sequences",
-    "marketing-cron-requalify-cold"
+    "marketing-cron-requalify-cold",
+    "marketing-cron-parcel-enrichment",
+    "marketing-cron-parcel-outreach",
+    "marketing-cron-marketing-drip"
   ),
   [string]$Environment = "production",
   [switch]$DryRun
@@ -110,6 +113,7 @@ $vars = [ordered]@{
   NEXT_PUBLIC_KEALEE_PHONE_E164 = "+13015758777"
   SUPABASE_AUTH_REDIRECT_URL = "https://kealee.com/auth/callback"
   ALLOW_ANONYMOUS_EDITOR = "true"
+  PARCEL_USE_LOCAL_ASSESSOR = "true"
 }
 
 $sources = @(

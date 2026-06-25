@@ -46,9 +46,9 @@ describe('Property → Product routing rules', () => {
     expect(result.primaryProduct).toBe('kitchen_bath_remodel')
   })
 
-  it('routes plans uploaded to detailed estimate', () => {
+  it('routes plans uploaded to permit package', () => {
     const result = routePropertyToProducts({ hasPlans: true })
-    expect(result.primaryProduct).toBe('estimate_detailed')
+    expect(result.primaryProduct).toBe('permit_package')
   })
 })
 

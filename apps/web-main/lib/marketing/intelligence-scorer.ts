@@ -124,6 +124,7 @@ export async function scoreLeadWithIntelligence(
 export function intelligenceMetadataUpdate(result: BlendedLeadScore): Record<string, unknown> | null {
   if (!result.intelligence) return null
   const i = result.intelligence
+  const pa = i.productAssignment
   return {
     property_twin_id: i.propertyTwinId,
     lead_twin_id: i.leadTwinId,
@@ -136,8 +137,21 @@ export function intelligenceMetadataUpdate(result: BlendedLeadScore): Record<str
       humanReviewRequired: i.humanReviewRequired,
       reviewReasons: i.reviewReasons,
       routed: i.routed,
+      autoAssigned: pa?.autoAssigned ?? false,
       mode: result.mode,
       crmTags: prismaCampaignRoutingService.buildCrmTags(i.marketing),
+      productAssignment: pa
+        ? {
+            assignedProduct: pa.assignedProduct,
+            campaign: pa.campaign,
+            landingPage: pa.landingPage,
+            offer: pa.offer,
+            bot: pa.bot,
+            nurtureSequence: pa.nurtureSequence,
+            autoAssigned: pa.autoAssigned,
+            requiresHumanReview: pa.requiresHumanReview,
+          }
+        : undefined,
     },
   }
 }

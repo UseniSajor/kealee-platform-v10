@@ -6,7 +6,7 @@ import { isIntelligencePersistenceAvailable } from '@kealee/intelligence'
 export const dynamic = 'force-dynamic'
 
 export async function GET(req: NextRequest) {
-  if (!authorizeOps(req)) return unauthorized()
+  if (!authorizeOps(req, 'read:intelligence').authorized) return unauthorized()
   if (!isIntelligencePersistenceAvailable()) {
     return NextResponse.json({ error: 'DATABASE_URL not configured' }, { status: 503 })
   }

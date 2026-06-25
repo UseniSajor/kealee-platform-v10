@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { Menu, X, ChevronDown } from 'lucide-react'
 import { useState, useRef, useEffect } from 'react'
@@ -206,11 +207,15 @@ export function SiteNav() {
 
           {/* LEFT: Logo + Desktop Nav */}
           <div className="flex items-center gap-6">
-            <Link href="/" className="flex items-center gap-2 shrink-0">
-              <div className="w-8 h-8 bg-[#E8724B] rounded-lg flex items-center justify-center text-white font-bold text-sm">
-                K
-              </div>
-              <span className="hidden sm:inline font-bold text-xl text-slate-900">Kealee</span>
+            <Link href="/" className="flex shrink-0 items-center">
+              <Image
+                src="/media/kealee-logo.svg"
+                alt="kealee"
+                width={150}
+                height={44}
+                priority
+                className="h-10 w-auto"
+              />
             </Link>
 
             {/* Build button — desktop left section */}

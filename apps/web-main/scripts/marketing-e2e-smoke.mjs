@@ -74,6 +74,8 @@ async function main() {
     { path: '/api/cron/sequences', method: 'GET' },
     { path: '/api/cron/requalify-cold', method: 'GET' },
     { path: '/api/cron/marketing-drip', method: 'GET' },
+    { path: '/api/cron/parcel-enrichment', method: 'POST' },
+    { path: '/api/cron/parcel-outreach', method: 'POST' },
   ]
 
   for (const { path, method } of crons) {

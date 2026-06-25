@@ -4,6 +4,8 @@ import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { Loader2, RefreshCw, Filter, ChevronRight, Camera, Clock, CheckCircle2, AlertCircle, MapPin, Scan } from 'lucide-react'
 
+import { CommandCenterIntelligencePanel } from '@/components/command-center/IntelligencePanel'
+
 interface IntakeRow {
   id: string
   project_path: string
@@ -25,6 +27,10 @@ interface IntakeRow {
     preferredWindow: string | null
     fee: number
   } | null
+  intelligence_priority?: string | null
+  intelligence_segment?: string | null
+  lead_score?: number | null
+  intelligence_metadata?: Record<string, unknown> | null
 }
 
 const STATUS_META: Record<string, { label: string; bg: string; text: string; icon: React.ReactNode }> = {
@@ -93,6 +99,8 @@ export default function CommandCenterIntakesPage() {
         </button>
       </div>
 
+      <CommandCenterIntelligencePanel />
+
       {/* Filters */}
       <div className="mb-5 flex flex-wrap gap-3">
         <div className="flex items-center gap-2">
@@ -138,6 +146,7 @@ export default function CommandCenterIntakesPage() {
                 <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-400">Path</th>
                 <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-400 hidden sm:table-cell">Address</th>
                 <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-400">Status</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-400 hidden md:table-cell">Intel</th>
                 <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-400 hidden md:table-cell">Captures</th>
                 <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-400 hidden lg:table-cell">Date</th>
                 <th className="w-8" />
@@ -177,6 +186,20 @@ export default function CommandCenterIntakesPage() {
                         {statusMeta.icon}
                         {statusMeta.label}
                       </span>
+                    </td>
+                    <td className="hidden px-4 py-3 md:table-cell">
+                      {intake.intelligence_priority ? (
+                        <div className="flex flex-col gap-0.5">
+                          <span className="text-xs font-medium capitalize text-indigo-700">
+                            {intake.intelligence_priority}
+                          </span>
+                          {intake.lead_score != null && (
+                            <span className="text-xs text-gray-400">Score {intake.lead_score}</span>
+                          )}
+                        </div>
+                      ) : (
+                        <span className="text-xs text-gray-300">—</span>
+                      )}
                     </td>
                     <td className="hidden px-4 py-3 md:table-cell">
                       <div className="flex flex-col gap-1">
