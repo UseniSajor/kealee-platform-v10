@@ -1,1 +1,1 @@
-web: node /app/apps/web-main/node_modules/.next/standalone/server.js
+web: cd apps/web-main && node .next/standalone/server.js

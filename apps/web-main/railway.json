@@ -2,10 +2,10 @@
   "$schema": "https://railway.app/railway.schema.json",
   "build": {
     "builder": "NIXPACKS",
-    "buildCommand": "pnpm turbo run build --filter=web-main && mkdir -p apps/web-main/.next/standalone/apps/web-main/public && cp -r apps/web-main/public/. apps/web-main/.next/standalone/apps/web-main/public/ || true && mkdir -p apps/web-main/.next/standalone/apps/web-main/.next/static && cp -r apps/web-main/.next/static/. apps/web-main/.next/standalone/apps/web-main/.next/static/ || true"
+    "buildCommand": "pnpm turbo run build --filter=web-main && mkdir -p apps/web-main/.next/standalone/public && cp -r apps/web-main/public/. apps/web-main/.next/standalone/public/ || true && mkdir -p apps/web-main/.next/standalone/.next/static && cp -r apps/web-main/.next/static/. apps/web-main/.next/standalone/.next/static/ || true"
   },
   "deploy": {
-    "startCommand": "sh -c \"export NEXT_PUBLIC_SUPABASE_URL=$SUPABASE_URL && export NEXT_PUBLIC_SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY && export HOSTNAME=0.0.0.0 && cd /app && node apps/web-main/.next/standalone/apps/web-main/server.js\"",
+    "startCommand": "sh -c \"export NEXT_PUBLIC_SUPABASE_URL=$SUPABASE_URL && export NEXT_PUBLIC_SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY && export HOSTNAME=0.0.0.0 && cd apps/web-main && node .next/standalone/server.js\"",
     "healthcheckPath": "/",
     "healthcheckTimeout": 120,
     "restartPolicyType": "ON_FAILURE",

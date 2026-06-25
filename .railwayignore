@@ -39,6 +39,11 @@ tmp/
 temp/
 *.tmp
 
-
-
-
+# Large local data packs (not needed for web-main build)
+kealee_dmv_rag_seed_pack/
+kealee_dmv_rag_seed_pack.zip
+data/
+website-versions/
+Kealee Platform Agents/
+apps/marketing/
+apps/os-admin/

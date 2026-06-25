@@ -14,10 +14,10 @@ ENV RAILWAY_SERVICE_NAME=$RAILWAY_SERVICE_NAME
 
 RUN if [ "$RAILWAY_SERVICE_NAME" = "web-main" ]; then \
       pnpm turbo run build --filter=web-main && \
-      mkdir -p apps/web-main/.next/standalone/apps/web-main/public && \
-      cp -r apps/web-main/public/. apps/web-main/.next/standalone/apps/web-main/public/ || true && \
-      mkdir -p apps/web-main/.next/standalone/apps/web-main/.next/static && \
-      cp -r apps/web-main/.next/static/. apps/web-main/.next/standalone/apps/web-main/.next/static/ || true; \
+      mkdir -p apps/web-main/.next/standalone/public && \
+      cp -r apps/web-main/public/. apps/web-main/.next/standalone/public/ || true && \
+      mkdir -p apps/web-main/.next/standalone/.next/static && \
+      cp -r apps/web-main/.next/static/. apps/web-main/.next/standalone/.next/static/ || true; \
     else \
       pnpm --filter @kealee/api... build; \
     fi
@@ -28,7 +28,7 @@ EXPOSE 3000
 WORKDIR /app/services/api
 
 CMD if [ "$RAILWAY_SERVICE_NAME" = "web-main" ]; then \
-      cd /app && node apps/web-main/.next/standalone/apps/web-main/server.js; \
+      cd /app/apps/web-main && node .next/standalone/server.js; \
     else \
       node dist/index.js; \
     fi
