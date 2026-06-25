@@ -41,8 +41,10 @@ CMD if [ "$RAILWAY_SERVICE_NAME" = "web-main" ]; then \
       SERVER=/app/apps/web-main/.next/standalone/apps/web-main/server.js && \
       if [ ! -f "$SERVER" ]; then SERVER=$(find /app/apps/web-main/.next/standalone -name server.js -print -quit); fi && \
       if [ -z "$SERVER" ] || [ ! -f "$SERVER" ]; then echo 'standalone server.js not found' && exit 1; fi && \
+      SDIR=$(dirname "$SERVER") && \
+      if [ ! -d "$SDIR/.next/static/chunks" ]; then echo 'Healing static assets' && mkdir -p "$SDIR/.next/static" "$SDIR/public" && cp -r /app/apps/web-main/.next/static/. "$SDIR/.next/static/" 2>/dev/null || true && cp -r /app/apps/web-main/public/. "$SDIR/public/" 2>/dev/null || true; fi && \
       echo "Starting $SERVER" && \
-      cd $(dirname "$SERVER") && \
+      cd "$SDIR" && \
       exec node "$SERVER"; \
     else \
       exec node dist/index.js; \
