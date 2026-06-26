@@ -42,8 +42,8 @@ WORKDIR /app/services/api
 # apps/*/.next/standalone; everything else runs the API entrypoint.
 CMD SERVER=$(find /app/apps -path '*/.next/standalone/apps/*/server.js' -print -quit 2>/dev/null); \
     if [ -n "$SERVER" ] && [ -f "$SERVER" ]; then \
-      export NEXT_PUBLIC_SUPABASE_URL=$SUPABASE_URL && \
-      export NEXT_PUBLIC_SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY && \
+      export NEXT_PUBLIC_SUPABASE_URL=${SUPABASE_URL:-$NEXT_PUBLIC_SUPABASE_URL} && \
+      export NEXT_PUBLIC_SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY:-$NEXT_PUBLIC_SUPABASE_ANON_KEY} && \
       export HOSTNAME=0.0.0.0 && \
       export PORT=${PORT:-3000} && \
       SDIR=$(dirname "$SERVER") && \
