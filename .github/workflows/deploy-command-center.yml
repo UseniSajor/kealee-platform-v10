@@ -104,4 +104,4 @@ jobs:
       - name: Deploy to Railway
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-        run: railway up --service command-center-workers --environment production --detach
+        run: railway redeploy --service command-center-workers --yes

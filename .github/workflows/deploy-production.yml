@@ -35,7 +35,7 @@ jobs:
         run: npm install -g @railway/cli@4.40.0
 
       - name: Deploy API to Railway
-        run: railway up --service api --environment production --detach
+        run: railway redeploy --service api --yes
 
   deploy-services:
     name: Deploy ${{ matrix.service }} to Railway
@@ -64,4 +64,4 @@ jobs:
         run: npm install -g @railway/cli@4.40.0
 
       - name: Deploy ${{ matrix.service }} to Railway
-        run: railway up --service "${{ matrix.service }}" --environment production --detach
+        run: railway redeploy --service "${{ matrix.service }}" --yes
