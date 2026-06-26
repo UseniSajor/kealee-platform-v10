@@ -255,7 +255,7 @@ export function SiteNav() {
             <div className="hidden lg:block w-px h-6 bg-gray-300" />
 
             <Link
-              href="/login"
+              href="/auth/login"
               className="hidden sm:block text-sm text-slate-600 hover:text-slate-900 font-medium transition whitespace-nowrap"
             >
               Sign in
@@ -307,7 +307,7 @@ export function SiteNav() {
             {/* Account */}
             <div className="border-t border-slate-200 mt-3 pt-3 space-y-2">
               <Link
-                href="/login"
+                href="/auth/login"
                 onClick={() => setMobileMenuOpen(false)}
                 className="block rounded-lg px-3 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50 transition"
               >

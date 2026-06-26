@@ -148,8 +148,8 @@ export const NAV_CTA_SECONDARY = { label: 'Join as Contractor',   href: '/contra
 
 /** Login dropdown entries — shown in nav, never internal routes */
 export const NAV_LOGIN_OPTIONS = [
-  { label: 'Client / Contractor Login', href: '/auth/sign-in',   description: 'Owner, contractor, and developer accounts' },
-  { label: 'Internal Login',            href: '/auth/internal',  description: 'Kealee team access only' },
+  { label: 'Client / Contractor Login', href: '/auth/login',  description: 'Owner, contractor, and developer accounts' },
+  { label: 'Choose your portal',        href: '/login',       description: 'Pick Homeowner, Contractor, Developer, or staff' },
 ]
 
 // ── Footer links ──────────────────────────────────────────────────────────────
@@ -173,9 +173,9 @@ export const FOOTER_NAV = {
     { label: 'Milestone Pay',              href: '/milestone-pay' },
   ],
   portals: [
-    { label: 'Client Login',               href: '/auth/sign-in' },
-    { label: 'Owner Portal',               href: process.env.NEXT_PUBLIC_OWNER_PORTAL_URL ?? '/auth/sign-in' },
-    { label: 'Contractor Portal',          href: process.env.NEXT_PUBLIC_CONTRACTOR_PORTAL_URL ?? '/auth/sign-in' },
+    { label: 'Client Login',               href: '/auth/login' },
+    { label: 'Owner Portal',               href: process.env.NEXT_PUBLIC_OWNER_PORTAL_URL ?? '/login' },
+    { label: 'Contractor Portal',          href: process.env.NEXT_PUBLIC_CONTRACTOR_PORTAL_URL ?? '/login' },
   ],
   company: [
     { label: 'About Us',                   href: '/about' },

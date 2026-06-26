@@ -16,9 +16,10 @@ function ConceptStep1Inner() {
   const services = getConceptServices()
   const manifest = useCardMediaManifest()
 
-  function handleNext() {
-    if (!selected) return
-    router.push(`/concept/details?service=${selected}`)
+  function goToService(slug: string) {
+    if (!slug) return
+    setSelected(slug)
+    router.push(`/concept/details?service=${slug}`)
   }
 
   return (
@@ -42,8 +43,8 @@ function ConceptStep1Inner() {
               key={svc.slug}
               role="button"
               tabIndex={0}
-              onClick={() => setSelected(svc.slug)}
-              onKeyDown={(e) => e.key === 'Enter' && setSelected(svc.slug)}
+              onClick={() => goToService(svc.slug)}
+              onKeyDown={(e) => e.key === 'Enter' && goToService(svc.slug)}
               className={`group flex flex-col rounded-2xl border-2 overflow-hidden cursor-pointer transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#E8724B] focus:ring-offset-2 ${
                 isSelected
                   ? 'border-[#E8724B] shadow-xl shadow-orange-100/60'
@@ -105,17 +106,11 @@ function ConceptStep1Inner() {
               </div>
 
               {/* Select footer */}
-              <div className={`px-4 py-3 border-t flex items-center justify-between ${
-                isSelected ? 'bg-[#E8724B]/5 border-[#E8724B]/20' : 'bg-slate-50 border-slate-100'
-              }`}>
-                <span className={`text-xs font-bold ${isSelected ? 'text-[#E8724B]' : 'text-slate-400'}`}>
-                  {isSelected ? 'Selected' : 'Select this project'}
+              <div className="px-4 py-3 border-t flex items-center justify-between bg-slate-50 border-slate-100 group-hover:bg-[#E8724B]/5 group-hover:border-[#E8724B]/20 transition-colors">
+                <span className="text-xs font-bold text-slate-400 group-hover:text-[#E8724B] transition-colors">
+                  Start this project
                 </span>
-                <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
-                  isSelected ? 'border-[#E8724B] bg-[#E8724B]' : 'border-slate-300 group-hover:border-slate-400'
-                }`}>
-                  {isSelected && <Check className="w-3 h-3 text-white" strokeWidth={3} />}
-                </div>
+                <ArrowRight className="w-4 h-4 text-slate-300 group-hover:text-[#E8724B] group-hover:translate-x-0.5 transition-all" />
               </div>
             </div>
           )
@@ -141,19 +136,8 @@ function ConceptStep1Inner() {
         </div>
       </div>
 
-      {/* CTA */}
-      <div className="flex items-center gap-4">
-        <button
-          onClick={handleNext}
-          disabled={!selected}
-          className="flex items-center gap-2 bg-[#E8724B] hover:bg-[#D45C33] active:bg-[#C04820] disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed text-white font-bold px-8 py-4 rounded-xl transition-all duration-200 shadow-md hover:shadow-lg shadow-orange-200 disabled:shadow-none"
-        >
-          Continue to Details <ArrowRight className="w-4 h-4" />
-        </button>
-        {!selected && (
-          <p className="text-sm text-slate-400">Select a project type to continue</p>
-        )}
-      </div>
+      {/* CTA — selecting a project card takes you straight to the next step */}
+      <p className="text-sm text-slate-400">Select a project above to continue to details.</p>
     </div>
   )
 }
