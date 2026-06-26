@@ -18,7 +18,7 @@ RUN set -eux; \
       APP_DIR="apps/$RAILWAY_SERVICE_NAME"; \
       rm -rf "$APP_DIR/.next"; \
       pnpm turbo run build --filter="$RAILWAY_SERVICE_NAME" --force; \
-      SRV=$(find "$APP_DIR/.next/standalone" -name server.js -print -quit); \
+      SRV=$(find "$APP_DIR/.next/standalone/apps" -name server.js -print -quit); \
       echo "server.js: $SRV"; \
       test -n "$SRV"; \
       test -f "$SRV"; \
@@ -41,7 +41,7 @@ WORKDIR /app/services/api
 # $RAILWAY_SERVICE_NAME at runtime (not always present for Dockerfile deploys).
 # A Next standalone build (web-main / portal-owner) produces a server.js under
 # apps/*/.next/standalone; everything else runs the API entrypoint.
-CMD SERVER=$(find /app/apps -path '*/.next/standalone/*' -name server.js -print -quit 2>/dev/null); \
+CMD SERVER=$(find /app/apps -path '*/.next/standalone/apps/*/server.js' -print -quit 2>/dev/null); \
     if [ -n "$SERVER" ] && [ -f "$SERVER" ]; then \
       export NEXT_PUBLIC_SUPABASE_URL=$SUPABASE_URL && \
       export NEXT_PUBLIC_SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY && \
