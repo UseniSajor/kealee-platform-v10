@@ -4,10 +4,10 @@
     "builder": "NIXPACKS"
   },
   "deploy": {
-    "startCommand": "sh /app/scripts/railway-next-start.sh portal-owner",
+    "startCommand": "sh -c \"export NEXT_PUBLIC_SUPABASE_URL=$SUPABASE_URL NEXT_PUBLIC_SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY HOSTNAME=0.0.0.0; echo Railway PORT=$PORT; SERVER=/app/apps/portal-owner/.next/standalone/apps/portal-owner/server.js; if [ ! -f $SERVER ]; then SERVER=$(find /app/apps/portal-owner/.next/standalone -name server.js -print -quit); fi; if [ -z $SERVER ] || [ ! -f $SERVER ]; then echo 'standalone server.js not found'; find /app -maxdepth 6 -name server.js 2>/dev/null; exit 1; fi; SDIR=$(dirname $SERVER); if [ ! -d $SDIR/.next/static/chunks ]; then echo 'Healing static assets'; mkdir -p $SDIR/.next/static $SDIR/public; cp -r /app/apps/portal-owner/.next/static/. $SDIR/.next/static/ 2>/dev/null || true; cp -r /app/apps/portal-owner/public/. $SDIR/public/ 2>/dev/null || true; fi; echo Starting $SERVER on port $PORT; cd $SDIR; exec node $SERVER\"",
     "healthcheckPath": "/api/health",
     "healthcheckTimeout": 300,
     "restartPolicyType": "ON_FAILURE",
-    "restartPolicyMaxRetries": 5
+    "restartPolicyMaxRetries": 10
   }
 }
