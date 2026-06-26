@@ -2,13 +2,13 @@ import type { HomeServiceId } from './card-media-spec'
 
 /**
  * Short, loop-friendly stock MP4s for homepage service cards when AI video gen is skipped.
- * Google sample bucket — stable URLs, muted-friendly, <3MB each.
+ * Curated public MP4s keep cards relevant when Replicate video generation is unavailable.
  */
 export const HOME_CARD_STOCK_VIDEOS: Partial<
   Record<HomeServiceId, { mp4: string; webm?: string }>
 > = {
   design: {
-    mp4: 'https://download.samplelib.com/mp4/sample-5s.mp4',
+    mp4: 'https://videos.pexels.com/video-files/6474143/6474143-hd_1280_720_25fps.mp4',
   },
   estimate: {
     mp4: 'https://www.w3schools.com/html/mov_bbb.mp4',

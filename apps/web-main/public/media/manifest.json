@@ -5,13 +5,13 @@
     "home:design": {
       "photoUrl": "https://rkreqfpkxavqpsqexbfs.supabase.co/storage/v1/object/public/marketing-media/home/design.jpg",
       "photoAlt": "Diverse AI-generated design concepts including kitchen, bath, addition, and garden",
-      "videoUrl": "/media/service-videos/home-design-video.mp4",
-      "videoWebM": "/media/service-videos/home-design-video.mp4",
+      "videoUrl": "/media/service-videos/home-design-concept-video.mp4",
+      "videoWebM": "/media/service-videos/home-design-concept-video.mp4",
       "mediaType": "video",
       "narrativeId": "design-reveal",
-      "videoNarrative": "Photorealistic construction documentary, DMV suburban home, natural daylight, no on-screen text, no logos, diverse crew of professional construction workers including black, white, and Hispanic men and women, wearing standard safety vests, hard hats, work shirts and jeans, no hazmat suits, believable tools and materials, 24fps cinematic slow-motion feel, slow-paced motion, seamless slow-motion process showing project flow: Garden & Landscape → Home Addition → Bath Design → Kitchen Concept. slow pan across a beautifully designed modern backyard garden and landscape, stone paver patio, lush plants; slow tilt showing a newly framed modern home addition exterior integrating with the original house; slow dolly through a luxury spa-like bathroom, marble tiling, floating double vanity, warm accent lighting; slow cinematic reveal of a renovated modern kitchen interior with design concept boards visible on a tablet. Slow steady pacing, regular speed movement of workers, smooth transitions, no text overlays. modern design examples. Smooth slow-motion video, regular speed movement of workers, steady camera or slow dolly, photorealistic construction documentary, no text overlays, no watermarks, believable jobsite activity.",
-      "generatedAt": "2026-06-09T16:55:28.983Z",
-      "promptUsed": "A collection of modern design concept boards showcasing custom kitchen layouts, spa-like bathrooms, home additions, and landscaping plans",
+      "videoNarrative": "Photorealistic Kealee AI concept package review for a DMV residential renovation, one designer reviewing property photos, floor plan sketches, zoning notes, and material samples on a table with a tablet showing concept boards, calm slow camera pan, design planning not construction labor, no logos, no on-screen text, natural daylight, professional architectural workspace, 1:1.",
+      "generatedAt": "2026-06-26T14:37:00.000Z",
+      "promptUsed": "Kealee AI concept package review with property photos, floor plan sketches, zoning notes, material samples, and tablet concept boards",
       "source": "generated"
     },
     "home:permits": {

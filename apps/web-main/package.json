@@ -17,6 +17,7 @@
     "deploy:marketing:phase3": "node ./scripts/deploy-marketing-automation.mjs phase3 production",
     "activate:phase1": "node ./scripts/activate-phase1.mjs",
     "generate:card-media": "node ./scripts/setup-and-run-card-media.mjs",
+    "generate:home-videos": "tsx ./scripts/generate-homepage-feature-videos.ts",
     "generate:preconstruction-media": "tsx ./scripts/generate-preconstruction-campaign-media.ts",
     "generate:card-media:api": "node ./scripts/generate-card-media.mjs",
     "generate:card-media:fallback": "node ./scripts/setup-and-run-card-media.mjs --fallback-only",

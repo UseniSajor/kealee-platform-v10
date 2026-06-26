@@ -10,6 +10,7 @@ import {
 } from './card-media-storage'
 import { HOME_CARD_STOCK_VIDEOS, LEGACY_SERVICE_VIDEO_ALIASES } from './card-media-video-fallbacks'
 import type { HomeServiceId } from './card-media-spec'
+import { homeServiceVideoAssetId } from './homepage-feature-videos'
 
 const MANIFEST_PATH = path.join(process.cwd(), 'public', 'media', 'manifest.json')
 
@@ -60,9 +61,10 @@ async function syncOneFallback(
     if (stock?.mp4) {
       try {
         const videoBytes = await downloadUrlToBuffer(stock.mp4)
+        const videoAssetId = homeServiceVideoAssetId(spec.id)
         videoUrl = await saveLocalMarketingAsset(
           spec.scope,
-          `${spec.id}-video`,
+          videoAssetId,
           videoBytes,
           'mp4',
         )
@@ -70,7 +72,7 @@ async function syncOneFallback(
           const webmBytes = await downloadUrlToBuffer(stock.webm)
           videoWebM = await saveLocalMarketingAsset(
             spec.scope,
-            `${spec.id}-video`,
+            videoAssetId,
             webmBytes,
             'webm',
           )
@@ -101,10 +103,10 @@ async function syncOneFallback(
   }
 }
 
-/** Copy home-*-video.mp4 to legacy names (design-concepts.mp4, etc.). */
+/** Copy generated home videos to legacy names (design-concepts.mp4, etc.). */
 async function writeLegacyVideoAliases(): Promise<void> {
   for (const [legacyName, homeId] of Object.entries(LEGACY_SERVICE_VIDEO_ALIASES)) {
-    const src = localMediaPath('home', `${homeId}-video`, 'mp4')
+    const src = localMediaPath('home', homeServiceVideoAssetId(homeId), 'mp4')
     const dest = path.join(
       process.cwd(),
       'public',

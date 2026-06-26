@@ -7,6 +7,7 @@ import {
   ESTIMATION_CERTIFIED_PRICE,
   PM_ADVISORY_PRICE,
 } from '@kealee/core-rules'
+import { HOME_DESIGN_CARD_VIDEO } from '@/lib/marketing/homepage-feature-videos'
 
 export type HomeServiceId = 'design' | 'permits' | 'estimate' | 'build'
 export type HomeServiceMediaType = 'video' | 'photo'
@@ -72,7 +73,7 @@ export const HOME_JOURNEY_SERVICES: HomeJourneyService[] = [
     mediaType: 'video',
     photoSrc: PHOTOS.design,
     photoAlt: 'Modern home interior AI design concept render',
-    videoSrc: '/media/service-videos/home-design-video.mp4',
+    videoSrc: HOME_DESIGN_CARD_VIDEO.src,
   },
   {
     id: 'estimate',

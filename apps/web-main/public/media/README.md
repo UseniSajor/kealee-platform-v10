@@ -13,6 +13,8 @@ Writes:
 
 - `service-photos/home-{design|permits|estimate|build}.jpg`
 - `service-videos/home-{design|estimate|build}-video.mp4`
+- `service-videos/home-hero-one-person-working.mp4`
+- `service-videos/home-design-concept-video.mp4`
 - Legacy aliases: `design-concepts.mp4`, `cost-estimation.mp4`, `build-manage.mp4`
 - `manifest.json` with `videoUrl` / `videoWebM` for video cards
 
@@ -22,6 +24,7 @@ Writes:
 pnpm run generate:card-media -- --scope=home
 pnpm run generate:card-media -- --scope=product
 pnpm run generate:card-media -- --scope=all --skip-video   # images only (faster)
+pnpm run generate:home-videos                              # Replicate/Kling homepage hero + design card
 ```
 
 Requires:
@@ -45,6 +48,8 @@ Pipeline:
 |------|-----|
 | `service-photos/home-design.jpg` | AI Design card photo |
 | `service-videos/home-design-video.mp4` | AI Design card video |
+| `service-videos/home-design-concept-video.mp4` | AI Design card Replicate/Kling replacement |
+| `service-videos/home-hero-one-person-working.mp4` | Homepage hero Replicate/Kling one-worker clip |
 | `service-videos/design-concepts.mp4` | Legacy alias (optional) |
 
 Homepage merges manifest in `app/page.tsx` via `mergeHomeServicesWithManifest()`.

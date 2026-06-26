@@ -6,6 +6,7 @@ import { Cormorant_Garamond, Barlow } from 'next/font/google'
 import { Play, Image as ImageIcon, Video } from 'lucide-react'
 import { CircularServiceCard } from './CircularServiceCard'
 import type { HomeJourneyService } from './home-services-data'
+import { HOME_HERO_VIDEO } from '@/lib/marketing/homepage-feature-videos'
 
 const cormorant = Cormorant_Garamond({
   subsets: ['latin'],
@@ -116,9 +117,10 @@ export function ServicesJourneySection({ services }: { services: HomeJourneyServ
                     muted
                     loop
                     playsInline
+                    poster={HOME_HERO_VIDEO.poster}
                     className="w-full h-full object-cover"
                   >
-                    <source src="/media/service-videos/design-concepts.mp4" type="video/mp4" />
+                    <source src={HOME_HERO_VIDEO.src} type="video/mp4" />
                   </video>
                   {/* Subtle pulsing AI overlay */}
                   <div className="absolute top-3 left-3 bg-black/60 backdrop-blur-md rounded-lg px-2.5 py-1 flex items-center gap-1.5 border border-white/10">
