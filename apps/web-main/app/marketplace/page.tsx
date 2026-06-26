@@ -3,15 +3,35 @@
 import { useState, useMemo, useRef, useEffect } from 'react'
 import {
   Search, X, ArrowRight, Home, Wrench, Plus, LayoutGrid,
-  Building2, Store, Flower2, Shield, Calculator, Users, Zap, PenTool,
+  Building2, Store, Flower2, Shield, Calculator, Users, Zap, PenTool, PlayCircle, CheckCircle2,
 } from 'lucide-react'
 import Link from 'next/link'
+import Image from 'next/image'
+import { useVideoModal } from '@/context/video-modal-context'
 import { MarketplaceTopbar } from '@/components/marketplace/MarketplaceTopbar'
 import { MarketplaceNav } from '@/components/marketplace/MarketplaceNav'
 import { MarketplaceFilterBar, type Filters } from '@/components/marketplace/MarketplaceFilterBar'
 import { MarketplaceCard, type ContractorCardData } from '@/components/marketplace/MarketplaceCard'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { MARKETPLACE_DIRECTORY_SEARCH_PLACEHOLDER } from '@kealee/shared'
+
+// ─── Media library ──────────────────────────────────────────────────────────────
+// Verified local Kealee AI-render photos (git-tracked under public/media/service-photos).
+const PHOTO = {
+  kitchen:   '/media/service-photos/product-kitchen.jpg',
+  bathroom:  '/media/service-photos/product-bathroom.jpg',
+  wholeHouse:'/media/service-photos/product-whole-house.jpg',
+  interior:  '/media/service-photos/product-interior.jpg',
+  addition:  '/media/service-photos/product-addition.jpg',
+  facade:    '/media/service-photos/product-facade.jpg',
+  deck:      '/media/service-photos/product-deck.jpg',
+  garden:    '/media/service-photos/product-garden.jpg',
+  design:    '/media/service-photos/product-design-services.jpg',
+  homeBuild: '/media/service-photos/home-build.jpg',
+  homeDesign:'/media/service-photos/home-design.jpg',
+  homeEstimate:'/media/service-photos/home-estimate.jpg',
+  homePermits:'/media/service-photos/home-permits.jpg',
+} as const
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -22,6 +42,8 @@ type ServiceItem = {
   typical: string
   popular?: boolean
   href: string
+  image: string
+  scope: string
 }
 
 type ServiceCategory = {
@@ -33,6 +55,8 @@ type ServiceCategory = {
   services: ServiceItem[]
   trades: string[]
   fromPrice: string
+  bannerImage: string
+  blurb: string
 }
 
 // ─── Service Category Data ─────────────────────────────────────────────────────
@@ -45,12 +69,14 @@ const SERVICE_CATEGORIES: ServiceCategory[] = [
     bgLight: '#F5F3FF',
     Icon: Home,
     fromPrice: '$10K',
+    bannerImage: PHOTO.homeDesign,
+    blurb: 'Gut to finish — cabinetry, tile, MEP rough-in, and finishes by licensed crews.',
     services: [
-      { slug: 'kitchen_remodel',      label: 'Kitchen Remodel',        priceRange: '$25K–$80K',   typical: '8–16 weeks',  popular: true, href: '/concept?service=kitchen' },
-      { slug: 'bathroom_remodel',     label: 'Bathroom Remodel',       priceRange: '$10K–$40K',   typical: '4–8 weeks',                 href: '/concept?service=bathroom' },
-      { slug: 'whole_home_reno',      label: 'Whole-Home Renovation',  priceRange: '$75K–$250K',  typical: '16–36 weeks',               href: '/concept?service=whole-house' },
-      { slug: 'interior_painting',    label: 'Interior Painting',      priceRange: '$3K–$15K',    typical: '1–2 weeks',                 href: '/concept' },
-      { slug: 'flooring',             label: 'Flooring',               priceRange: '$8K–$30K',    typical: '1–3 weeks',                 href: '/concept' },
+      { slug: 'kitchen_remodel',   label: 'Kitchen Remodel',       priceRange: '$25K–$80K',  typical: '8–16 weeks',  popular: true, href: '/concept?service=kitchen',      image: PHOTO.kitchen,    scope: 'Demo, custom cabinetry, quartz/stone counters, backsplash tile, plumbing & electrical rough-in, lighting, appliances.' },
+      { slug: 'bathroom_remodel',  label: 'Bathroom Remodel',      priceRange: '$10K–$40K',  typical: '4–8 weeks',                  href: '/concept?service=bathroom',     image: PHOTO.bathroom,   scope: 'Demo, waterproofing, shower pan & glass, large-format tile, vanity set, fixtures, ventilation & lighting.' },
+      { slug: 'whole_home_reno',   label: 'Whole-Home Renovation', priceRange: '$75K–$250K', typical: '16–36 weeks',               href: '/concept?service=whole-house',  image: PHOTO.wholeHouse, scope: 'Full interior re-framing, MEP replacement, insulation, drywall, flooring, kitchen & baths, paint, trim.' },
+      { slug: 'interior_painting', label: 'Interior Painting',     priceRange: '$3K–$15K',   typical: '1–2 weeks',                  href: '/concept',                      image: PHOTO.interior,   scope: 'Surface prep, patching, priming, two-coat finish on walls/ceilings/trim, color consultation.' },
+      { slug: 'flooring',          label: 'Flooring',              priceRange: '$8K–$30K',   typical: '1–3 weeks',                  href: '/concept',                      image: PHOTO.interior,   scope: 'Tear-out, subfloor leveling, hardwood/LVP/tile install, transitions, baseboard & quarter-round.' },
     ],
     trades: ['General Contractor', 'Flooring', 'Painting', 'Drywall', 'Electrician'],
   },
@@ -61,11 +87,13 @@ const SERVICE_CATEGORIES: ServiceCategory[] = [
     bgLight: '#FFF7ED',
     Icon: Wrench,
     fromPrice: '$8K',
+    bannerImage: PHOTO.facade,
+    blurb: 'Weather-tight envelope work — roofing, siding, openings, and outdoor living.',
     services: [
-      { slug: 'roofing',              label: 'Roofing Replacement',    priceRange: '$8K–$30K',    typical: '1–2 weeks',   popular: true, href: '/concept' },
-      { slug: 'siding',               label: 'Siding & Cladding',      priceRange: '$10K–$35K',   typical: '2–4 weeks',                 href: '/concept?service=facade' },
-      { slug: 'windows_doors',        label: 'Windows & Doors',        priceRange: '$8K–$25K',    typical: '1–2 weeks',                 href: '/concept' },
-      { slug: 'deck_patio',           label: 'Deck & Patio',           priceRange: '$15K–$50K',   typical: '4–8 weeks',                 href: '/concept?service=deck' },
+      { slug: 'roofing',       label: 'Roofing Replacement', priceRange: '$8K–$30K',  typical: '1–2 weeks',   popular: true, href: '/concept',                 image: PHOTO.facade, scope: 'Tear-off, deck inspection, ice & water shield, underlayment, architectural shingles, flashing, ridge vent.' },
+      { slug: 'siding',        label: 'Siding & Cladding',   priceRange: '$10K–$35K', typical: '2–4 weeks',                  href: '/concept?service=facade',  image: PHOTO.facade, scope: 'Old siding removal, house wrap, fiber-cement or vinyl install, trim, caulk & paint, gutter coordination.' },
+      { slug: 'windows_doors', label: 'Windows & Doors',     priceRange: '$8K–$25K',  typical: '1–2 weeks',                  href: '/concept',                 image: PHOTO.facade, scope: 'Tear-out, flashing & sealing, energy-rated window/door units, interior/exterior trim, weatherproofing.' },
+      { slug: 'deck_patio',    label: 'Deck & Patio',        priceRange: '$15K–$50K', typical: '4–8 weeks',                  href: '/concept?service=deck',    image: PHOTO.deck,   scope: 'Footings & framing, composite/wood decking, railings, stairs, paver or stamped-concrete patio, lighting.' },
     ],
     trades: ['General Contractor', 'Roofing', 'Painting', 'Masonry', 'Landscaping'],
   },
@@ -76,10 +104,12 @@ const SERVICE_CATEGORIES: ServiceCategory[] = [
     bgLight: '#F0FDFD',
     Icon: Plus,
     fromPrice: '$30K',
+    bannerImage: PHOTO.addition,
+    blurb: 'New square footage — foundation, framing, envelope, and full interior build-out.',
     services: [
-      { slug: 'room_addition',        label: 'Room Addition',          priceRange: '$50K–$200K',  typical: '12–20 weeks', popular: true, href: '/concept?service=addition' },
-      { slug: 'adu_inlaw',            label: 'ADU / In-law Suite',     priceRange: '$80K–$250K',  typical: '16–28 weeks',               href: '/concept?service=addition' },
-      { slug: 'garage_addition',      label: 'Garage Addition',        priceRange: '$30K–$80K',   typical: '8–12 weeks',                href: '/concept?service=addition' },
+      { slug: 'room_addition',   label: 'Room Addition',      priceRange: '$50K–$200K', typical: '12–20 weeks', popular: true, href: '/concept?service=addition', image: PHOTO.addition, scope: 'Foundation/footings, framing tie-in, roof integration, MEP extension, insulation, drywall, finishes.' },
+      { slug: 'adu_inlaw',       label: 'ADU / In-law Suite', priceRange: '$80K–$250K', typical: '16–28 weeks',               href: '/concept?service=addition', image: PHOTO.addition, scope: 'Zoning/setback review, foundation, full framing, kitchen & bath, separate utilities, egress, finishes.' },
+      { slug: 'garage_addition', label: 'Garage Addition',    priceRange: '$30K–$80K',  typical: '8–12 weeks',                href: '/concept?service=addition', image: PHOTO.addition, scope: 'Slab, framing, roof, garage door, electrical, optional heating/loft, exterior match to home.' },
     ],
     trades: ['General Contractor'],
   },
@@ -90,9 +120,11 @@ const SERVICE_CATEGORIES: ServiceCategory[] = [
     bgLight: '#EFF6FF',
     Icon: LayoutGrid,
     fromPrice: '$40K',
+    bannerImage: PHOTO.wholeHouse,
+    blurb: 'Down-to-the-studs transformation managed milestone-by-milestone.',
     services: [
-      { slug: 'full_gut_rehab',       label: 'Full Gut Rehab',         priceRange: '$120K–$400K', typical: '20–40 weeks', popular: true, href: '/concept?service=whole-house' },
-      { slug: 'cosmetic_reno',        label: 'Cosmetic Renovation',    priceRange: '$40K–$120K',  typical: '8–16 weeks',                href: '/concept?service=interior' },
+      { slug: 'full_gut_rehab', label: 'Full Gut Rehab',      priceRange: '$120K–$400K', typical: '20–40 weeks', popular: true, href: '/concept?service=whole-house', image: PHOTO.wholeHouse, scope: 'Strip to studs, structural repairs, all-new MEP, insulation, drywall, kitchen/baths, flooring, paint.' },
+      { slug: 'cosmetic_reno',  label: 'Cosmetic Renovation', priceRange: '$40K–$120K',  typical: '8–16 weeks',                href: '/concept?service=interior',    image: PHOTO.interior,   scope: 'Surface refresh — paint, flooring, fixtures, cabinet fronts, lighting, hardware, minor layout tweaks.' },
     ],
     trades: ['General Contractor'],
   },
@@ -103,10 +135,12 @@ const SERVICE_CATEGORIES: ServiceCategory[] = [
     bgLight: '#F0F4FF',
     Icon: Building2,
     fromPrice: '$120K',
+    bannerImage: PHOTO.homeBuild,
+    blurb: 'Ground-up builds — site work and foundation through certificate of occupancy.',
     services: [
-      { slug: 'single_family',        label: 'Single-Family Home',     priceRange: '$300K–$800K', typical: '10–18 months', popular: true, href: '/new-construction/intake' },
-      { slug: 'adu_cottage',          label: 'ADU / Cottage',          priceRange: '$120K–$350K', typical: '6–12 months',                href: '/new-construction/intake' },
-      { slug: 'townhome_build',       label: 'Townhome Build',         priceRange: '$250K–$600K', typical: '12–20 months',               href: '/new-construction/intake' },
+      { slug: 'single_family', label: 'Single-Family Home', priceRange: '$300K–$800K', typical: '10–18 months', popular: true, href: '/new-construction/intake', image: PHOTO.homeBuild, scope: 'Site work, foundation, framing, full envelope, MEP, insulation, drywall, finishes, landscaping.' },
+      { slug: 'adu_cottage',   label: 'ADU / Cottage',      priceRange: '$120K–$350K', typical: '6–12 months',                href: '/new-construction/intake', image: PHOTO.addition,  scope: 'Permitting, slab/foundation, framing, compact kitchen & bath, utilities, finishes, exterior.' },
+      { slug: 'townhome_build', label: 'Townhome Build',    priceRange: '$250K–$600K', typical: '12–20 months',               href: '/new-construction/intake', image: PHOTO.homeBuild, scope: 'Party-wall framing, fire separation, multi-unit MEP, stairs, full interior finishes per unit.' },
     ],
     trades: ['General Contractor', 'Excavation', 'Steel / Structural'],
   },
@@ -117,10 +151,12 @@ const SERVICE_CATEGORIES: ServiceCategory[] = [
     bgLight: '#F8FAFC',
     Icon: Store,
     fromPrice: '$50K',
+    bannerImage: PHOTO.homeBuild,
+    blurb: 'Tenant fit-outs and build-outs to code, on schedule, minimal downtime.',
     services: [
-      { slug: 'office_fitout',        label: 'Office Fit-Out',         priceRange: '$50K–$300K',  typical: '8–16 weeks',  popular: true, href: '/contact' },
-      { slug: 'retail_buildout',      label: 'Retail Build-Out',       priceRange: '$60K–$250K',  typical: '8–14 weeks',                href: '/contact' },
-      { slug: 'mixed_use',            label: 'Mixed-Use Development',  priceRange: '$1M–$5M+',    typical: '12–24 months',               href: '/contact' },
+      { slug: 'office_fitout',   label: 'Office Fit-Out',        priceRange: '$50K–$300K', typical: '8–16 weeks',  popular: true, href: '/contact', image: PHOTO.interior,  scope: 'Demising walls, ceilings, HVAC zoning, electrical & data, glass fronts, flooring, ADA compliance.' },
+      { slug: 'retail_buildout', label: 'Retail Build-Out',      priceRange: '$60K–$250K', typical: '8–14 weeks',                href: '/contact', image: PHOTO.interior,  scope: 'Storefront, finishes, lighting design, POS/data, restrooms, signage, code & accessibility.' },
+      { slug: 'mixed_use',       label: 'Mixed-Use Development',  priceRange: '$1M–$5M+',  typical: '12–24 months',               href: '/contact', image: PHOTO.homeBuild, scope: 'Structural shell, multi-tenant MEP, parking, residential + retail finishes, life-safety systems.' },
     ],
     trades: ['General Contractor', 'HVAC', 'Roofing', 'Electrician', 'Plumber'],
   },
@@ -131,10 +167,12 @@ const SERVICE_CATEGORIES: ServiceCategory[] = [
     bgLight: '#F0FFF4',
     Icon: Flower2,
     fromPrice: '$5K',
+    bannerImage: PHOTO.garden,
+    blurb: 'Outdoor living — grading, hardscape, planting, and irrigation.',
     services: [
-      { slug: 'hardscape_patio',      label: 'Hardscape & Patio',      priceRange: '$15K–$60K',   typical: '2–4 weeks',   popular: true, href: '/concept?service=garden' },
-      { slug: 'full_landscape',       label: 'Full Landscape Design',  priceRange: '$20K–$80K',   typical: '4–8 weeks',                 href: '/concept?service=garden' },
-      { slug: 'irrigation',           label: 'Irrigation System',      priceRange: '$5K–$20K',    typical: '1–2 weeks',                 href: '/concept?service=garden' },
+      { slug: 'hardscape_patio', label: 'Hardscape & Patio',     priceRange: '$15K–$60K', typical: '2–4 weeks',  popular: true, href: '/concept?service=garden', image: PHOTO.garden, scope: 'Excavation & base prep, paver/stone patio, retaining walls, steps, edging, drainage, lighting.' },
+      { slug: 'full_landscape',  label: 'Full Landscape Design', priceRange: '$20K–$80K', typical: '4–8 weeks',                 href: '/concept?service=garden', image: PHOTO.garden, scope: 'Grading, planting beds, trees & shrubs, sod/lawn, hardscape integration, lighting, irrigation.' },
+      { slug: 'irrigation',      label: 'Irrigation System',     priceRange: '$5K–$20K',  typical: '1–2 weeks',                 href: '/concept?service=garden', image: PHOTO.garden, scope: 'Zone design, trenching, sprinkler/drip lines, smart controller, backflow, seasonal programming.' },
     ],
     trades: ['Landscaping', 'Masonry', 'Irrigation'],
   },
@@ -145,14 +183,64 @@ const SERVICE_CATEGORIES: ServiceCategory[] = [
     bgLight: '#FAF5FF',
     Icon: PenTool,
     fromPrice: 'From $4,999',
+    bannerImage: PHOTO.homePermits,
+    blurb: 'Stamped, permit-ready documentation from licensed professionals.',
     trades: ['Architect', 'Licensed Designer', 'PE Engineer'],
     services: [
-      { slug: 'professional-drawings', label: 'Permit-Ready Drawings',           priceRange: 'From $4,999',  typical: '7–14 days',  popular: true, href: '/intake/professional_drawings' },
-      { slug: 'pe-stamp',              label: 'Structural / PE Stamp',           priceRange: '$799–$1,499',   typical: '5–10 days',                 href: '/intake/professional_drawings' },
-      { slug: 'interior-design',       label: 'Interior Design Consultation',    priceRange: '$395–$695',     typical: '48–72 hrs',                 href: '/intake/kitchen_remodel' },
+      { slug: 'professional-drawings', label: 'Permit-Ready Drawings',        priceRange: 'From $4,999', typical: '7–14 days', popular: true, href: '/intake/professional_drawings', image: PHOTO.design, scope: 'Full construction document set — floor plans, elevations, sections, schedules, code notes for permit.' },
+      { slug: 'pe-stamp',              label: 'Structural / PE Stamp',        priceRange: '$799–$1,499', typical: '5–10 days',               href: '/intake/professional_drawings', image: PHOTO.design, scope: 'Structural calcs, framing/beam sizing, foundation review, licensed PE stamp for jurisdiction.' },
+      { slug: 'interior-design',       label: 'Interior Design Consultation', priceRange: '$395–$695',   typical: '48–72 hrs',               href: '/intake/kitchen_remodel',       image: PHOTO.design, scope: 'Space planning, finish & material palette, fixture/furniture selections, mood boards, layout options.' },
     ],
   },
 ]
+
+// ─── "See it built" video band ─────────────────────────────────────────────────
+const BUILD_VIDEOS = [
+  { tag: 'Design',   title: 'AI Design + Validation',  description: 'See how upload-to-concept works: AI generates layouts, then staff validate zoning, structure, and cost band.', thumb: 'https://rkreqfpkxavqpsqexbfs.supabase.co/storage/v1/object/public/marketing-media/home/design.jpg',   video: '/media/service-videos/home-design-video.mp4' },
+  { tag: 'Permits',  title: 'Permits We File & Track', description: 'We prepare the drawing package, submit to the agency, and respond to reviewer comments for you.',         thumb: 'https://rkreqfpkxavqpsqexbfs.supabase.co/storage/v1/object/public/marketing-media/home/permits.jpg', video: '/media/service-videos/home-permits-video.mp4' },
+  { tag: 'Estimate', title: 'Real Construction Costs', description: 'RSMeans-validated, line-item estimates your contractors can bid against with confidence.',                thumb: 'https://rkreqfpkxavqpsqexbfs.supabase.co/storage/v1/object/public/marketing-media/home/estimate.jpg', video: '/media/service-videos/home-estimate-video.mp4' },
+  { tag: 'Build',    title: 'From Foundation to Final', description: 'Every milestone, payment, document, and site photo tracked end-to-end in your project workspace.',       thumb: 'https://rkreqfpkxavqpsqexbfs.supabase.co/storage/v1/object/public/marketing-media/home/build.jpg',    video: '/media/service-videos/home-build-video.mp4' },
+]
+
+function SeeItBuiltBand() {
+  const { openModal } = useVideoModal()
+  return (
+    <div className="bg-[#0f1c30]">
+      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+        <div className="text-center mb-8">
+          <p className="text-xs font-bold uppercase tracking-widest text-orange-400 mb-2">Watch the process</p>
+          <h2 className="text-2xl sm:text-3xl font-bold text-white">See it built — design to done</h2>
+          <p className="mt-2 text-sm text-slate-400 max-w-xl mx-auto">Real construction footage of how a Kealee project moves from concept through permits, estimate, and final build.</p>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {BUILD_VIDEOS.map((v) => (
+            <button
+              key={v.tag}
+              onClick={() => openModal({ tag: v.tag, title: v.title, description: v.description, thumbUrl: v.thumb, videoUrl: v.video })}
+              className="group relative flex flex-col overflow-hidden rounded-2xl text-left ring-1 ring-white/10 transition-all hover:ring-white/30 hover:-translate-y-0.5"
+            >
+              <div className="relative h-40 overflow-hidden">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={v.thumb} alt={v.title} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/20 backdrop-blur-sm ring-1 ring-white/40 transition-transform group-hover:scale-110">
+                    <PlayCircle className="h-6 w-6 text-white" />
+                  </div>
+                </div>
+                <span className="absolute top-3 left-3 rounded-full bg-[#E8724B] px-2.5 py-0.5 text-[11px] font-bold text-white">{v.tag}</span>
+              </div>
+              <div className="bg-[#152540] p-4 flex-1">
+                <h3 className="text-sm font-bold text-white leading-snug mb-1">{v.title}</h3>
+                <p className="text-xs text-slate-400 leading-relaxed">{v.description}</p>
+              </div>
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
 
 // ─── Cross-Category Services ───────────────────────────────────────────────────
 
@@ -171,6 +259,8 @@ const COMBO_PACKAGES = [
     price: 'Custom Quote',
     href: '/new-construction',
     color: '#1A2B4A',
+    image: PHOTO.homeDesign,
+    scope: ['AI concept + stamped drawings', 'Permitting & agency coordination', 'Vetted GC + milestone management'],
   },
   {
     name: 'Kitchen + Bath Bundle',
@@ -178,6 +268,8 @@ const COMBO_PACKAGES = [
     price: 'From $45K',
     href: '/concept',
     color: '#7C3AED',
+    image: PHOTO.kitchen,
+    scope: ['Two-room concept & material palette', 'Coordinated plumbing/electrical', 'Single crew, shared timeline'],
   },
   {
     name: 'Full Gut Rehab',
@@ -185,6 +277,8 @@ const COMBO_PACKAGES = [
     price: 'From $85K',
     href: '/contact',
     color: '#3B82F6',
+    image: PHOTO.wholeHouse,
+    scope: ['Strip-to-studs + structural repair', 'All-new MEP & insulation', 'Full finishes top to bottom'],
   },
   {
     name: 'ADU Complete',
@@ -192,6 +286,8 @@ const COMBO_PACKAGES = [
     price: 'From $120K',
     href: '/contact',
     color: '#2ABFBF',
+    image: PHOTO.addition,
+    scope: ['Zoning & setback feasibility', 'Foundation-to-finish build', 'Separate utilities & egress'],
   },
   {
     name: 'Exterior Refresh',
@@ -199,6 +295,8 @@ const COMBO_PACKAGES = [
     price: 'From $35K',
     href: '/concept',
     color: '#E8793A',
+    image: PHOTO.facade,
+    scope: ['Roof + siding replacement', 'Energy-rated windows & doors', 'Deck or patio add-on'],
   },
 ]
 
@@ -381,29 +479,53 @@ function ServiceCard({ service, color }: { service: ServiceItem; color: string }
   return (
     <Link
       href={service.href}
-      className="group relative flex flex-col rounded-xl bg-white p-4 transition-all hover:shadow-md hover:-translate-y-0.5"
-      style={{ border: `1px solid ${color}25`, borderLeft: `3px solid ${color}` }}
+      className="group relative flex flex-col overflow-hidden rounded-2xl bg-white transition-all hover:shadow-lg hover:-translate-y-0.5"
+      style={{ border: `1px solid ${color}25` }}
     >
-      {service.popular && (
-        <span
-          className="absolute -top-2 right-3 rounded-full px-2 py-0.5 text-xs font-bold text-white"
-          style={{ backgroundColor: color }}
-        >
-          Popular
-        </span>
-      )}
-      <p className="text-sm font-semibold text-gray-900 mb-1">{service.label}</p>
-      <p className="text-xs text-gray-400 mb-4">Typical: {service.typical}</p>
-      <div className="mt-auto flex items-center justify-between">
-        <span className="text-lg font-bold" style={{ color: '#1A2B4A' }}>
-          {service.priceRange}
-        </span>
-        <span
-          className="flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-semibold text-white transition-opacity group-hover:opacity-90"
-          style={{ backgroundColor: color }}
-        >
-          Get Started <ArrowRight className="h-3 w-3" />
-        </span>
+      {/* Image header */}
+      <div className="relative h-40 overflow-hidden bg-slate-100">
+        <Image
+          src={service.image}
+          alt={service.label}
+          fill
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+          className="object-cover transition-transform duration-500 group-hover:scale-105"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/15 to-transparent" />
+        {service.popular && (
+          <span
+            className="absolute top-3 left-3 rounded-full px-2.5 py-0.5 text-[11px] font-bold text-white shadow-sm"
+            style={{ backgroundColor: color }}
+          >
+            Popular
+          </span>
+        )}
+        <h3 className="absolute bottom-3 left-3 right-3 text-base font-bold text-white leading-tight drop-shadow">
+          {service.label}
+        </h3>
+      </div>
+
+      {/* Body */}
+      <div className="flex flex-1 flex-col p-4">
+        <p className="mb-1 text-[11px] font-bold uppercase tracking-wider" style={{ color }}>
+          What&apos;s involved
+        </p>
+        <p className="mb-4 text-xs leading-relaxed text-gray-500">{service.scope}</p>
+
+        <div className="mt-auto flex items-center justify-between border-t border-gray-100 pt-3">
+          <div>
+            <span className="text-lg font-bold" style={{ color: '#1A2B4A' }}>
+              {service.priceRange}
+            </span>
+            <p className="text-[11px] text-gray-400">Typical build: {service.typical}</p>
+          </div>
+          <span
+            className="flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-semibold text-white transition-opacity group-hover:opacity-90"
+            style={{ backgroundColor: color }}
+          >
+            Get Started <ArrowRight className="h-3 w-3" />
+          </span>
+        </div>
       </div>
     </Link>
   )
@@ -422,28 +544,32 @@ function CategorySection({
 }) {
   return (
     <section id={cat.id} className="scroll-mt-16 rounded-2xl bg-white border border-gray-200 overflow-hidden shadow-sm">
-      {/* ── Category Header ─────────────────────────────────────────────── */}
-      <div
-        className="flex items-center gap-4 px-6 py-5 border-b border-gray-100"
-        style={{ backgroundColor: cat.bgLight }}
-      >
+      {/* ── Cinematic Category Header ───────────────────────────────────── */}
+      <div className="relative h-36 sm:h-40 overflow-hidden">
+        <Image
+          src={cat.bannerImage}
+          alt={cat.label}
+          fill
+          sizes="(max-width: 1280px) 100vw, 1200px"
+          className="object-cover"
+        />
         <div
-          className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl shadow-sm"
-          style={{ backgroundColor: cat.color }}
-        >
-          <cat.Icon className="h-6 w-6 text-white" />
-        </div>
-        <div className="flex-1 min-w-0">
-          <h2 className="text-xl font-extrabold text-gray-900 leading-tight">{cat.label}</h2>
-          <p className="text-sm text-gray-500 mt-0.5">
-            {cat.services.length} project type{cat.services.length > 1 ? 's' : ''} · from {cat.fromPrice}
-          </p>
-        </div>
-        <div
-          className="hidden sm:flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold text-white shrink-0"
-          style={{ backgroundColor: cat.color }}
-        >
-          {cat.services.length} {cat.services.length === 1 ? 'Type' : 'Types'}
+          className="absolute inset-0"
+          style={{ background: `linear-gradient(90deg, ${cat.color}E6 0%, ${cat.color}99 45%, ${cat.color}33 100%)` }}
+        />
+        <div className="absolute inset-0 flex items-center gap-4 px-6">
+          <div
+            className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-white/15 backdrop-blur-sm ring-1 ring-white/30"
+          >
+            <cat.Icon className="h-7 w-7 text-white" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <h2 className="text-2xl font-extrabold text-white leading-tight drop-shadow">{cat.label}</h2>
+            <p className="text-sm text-white/85 mt-0.5 max-w-xl drop-shadow-sm">{cat.blurb}</p>
+            <p className="text-xs font-semibold text-white/75 mt-1">
+              {cat.services.length} project type{cat.services.length > 1 ? 's' : ''} · from {cat.fromPrice}
+            </p>
+          </div>
         </div>
       </div>
 
@@ -646,6 +772,9 @@ export default function MarketplacePage() {
         ))}
       </div>
 
+      {/* ── SEE IT BUILT — VIDEO MARKETING BAND ──────────────────────────── */}
+      <SeeItBuiltBand />
+
       {/* ── CROSS-CATEGORY STRIP ──────────────────────────────────────────── */}
       <div className="bg-white border-y border-gray-200">
         <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
@@ -674,20 +803,33 @@ export default function MarketplacePage() {
       {/* ── COMBO PACKAGES ────────────────────────────────────────────────── */}
       <div className="mx-auto max-w-7xl px-4 pt-8 pb-2 sm:px-6 lg:px-8">
         <h2 className="text-sm font-bold uppercase tracking-widest text-gray-400 mb-4">Featured Packages</h2>
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
           {COMBO_PACKAGES.map(pkg => (
             <Link
               key={pkg.name}
               href={pkg.href}
-              className="group flex flex-col rounded-xl bg-white p-4 transition-all hover:shadow-md hover:-translate-y-0.5"
+              className="group flex flex-col overflow-hidden rounded-2xl bg-white transition-all hover:shadow-lg hover:-translate-y-0.5"
               style={{ border: `1px solid ${pkg.color}30` }}
             >
-              <div className="h-0.5 w-8 rounded-full mb-3" style={{ backgroundColor: pkg.color }} />
-              <p className="text-xs font-bold mb-1" style={{ color: pkg.color }}>{pkg.name}</p>
-              <p className="flex-1 text-xs text-gray-500 leading-relaxed mb-2">{pkg.desc}</p>
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold" style={{ color: '#1A2B4A' }}>{pkg.price}</span>
-                <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" style={{ color: pkg.color }} />
+              <div className="relative h-28 overflow-hidden">
+                <Image src={pkg.image} alt={pkg.name} fill sizes="(max-width: 1024px) 50vw, 20vw" className="object-cover transition-transform duration-500 group-hover:scale-105" />
+                <div className="absolute inset-0" style={{ background: `linear-gradient(180deg, transparent 30%, ${pkg.color}E6 100%)` }} />
+                <p className="absolute bottom-2 left-3 right-3 text-sm font-bold text-white leading-tight drop-shadow">{pkg.name}</p>
+              </div>
+              <div className="flex flex-1 flex-col p-4">
+                <p className="text-xs text-gray-500 leading-relaxed mb-3">{pkg.desc}</p>
+                <ul className="space-y-1.5 mb-4">
+                  {pkg.scope.map(s => (
+                    <li key={s} className="flex items-start gap-1.5 text-[11px] text-gray-600">
+                      <CheckCircle2 className="h-3.5 w-3.5 shrink-0 mt-px" style={{ color: pkg.color }} />
+                      <span className="leading-snug">{s}</span>
+                    </li>
+                  ))}
+                </ul>
+                <div className="mt-auto flex items-center justify-between border-t border-gray-100 pt-3">
+                  <span className="text-sm font-bold" style={{ color: '#1A2B4A' }}>{pkg.price}</span>
+                  <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" style={{ color: pkg.color }} />
+                </div>
               </div>
             </Link>
           ))}
