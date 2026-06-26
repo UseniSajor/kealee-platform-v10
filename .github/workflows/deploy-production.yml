@@ -6,7 +6,6 @@ on:
   workflow_dispatch:
 
 env:
-  RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
   RAILWAY_PROJECT_ID: 8187fcf6-9916-49aa-bc75-77407f83d319
   RAILWAY_ENVIRONMENT: production
 
@@ -14,6 +13,8 @@ jobs:
   deploy-api:
     name: Deploy API to Railway
     runs-on: ubuntu-latest
+    env:
+      RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -45,6 +46,8 @@ jobs:
   deploy-services:
     name: Deploy ${{ matrix.service }} to Railway
     runs-on: ubuntu-latest
+    env:
+      RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
     strategy:
       fail-fast: false
       matrix:
