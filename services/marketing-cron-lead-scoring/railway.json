@@ -2,7 +2,7 @@
   "$schema": "https://railway.app/railway.schema.json",
   "build": {
     "builder": "DOCKERFILE",
-    "dockerfilePath": "Dockerfile"
+    "dockerfilePath": "services/marketing-cron-lead-scoring/Dockerfile"
   },
   "deploy": {
     "startCommand": "/bin/sh /app/run.sh",

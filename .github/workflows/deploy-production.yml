@@ -5,6 +5,9 @@ on:
     branches: [main]
   workflow_dispatch:
 
+env:
+  RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+
 jobs:
   deploy-api:
     name: Deploy API to Railway
@@ -28,37 +31,37 @@ jobs:
       - name: Build API
         run: pnpm build --filter=@kealee/api
 
-      - name: Deploy to Railway
-        uses: bervProject/railway-deploy@main
-        with:
-          railway_token: ${{ secrets.RAILWAY_TOKEN }}
-          service: api
+      - name: Install Railway CLI
+        run: npm install -g @railway/cli@4.40.0
 
-  deploy-portals:
+      - name: Deploy API to Railway
+        run: railway up --service api --environment production --detach
+
+  deploy-services:
     name: Deploy ${{ matrix.service }} to Railway
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - service: portal-owner
-          - service: portal-contractor
-          - service: portal-developer
-          - service: command-center
-          - service: web-main
-          - service: marketing-cron-lead-scoring
-          - service: marketing-cron-sequences
-          - service: marketing-cron-requalify-cold
-          - service: marketing-cron-parcel-enrichment
-          - service: marketing-cron-parcel-outreach
-          - service: marketing-cron-marketing-drip
-          # admin-console merged into os-admin (Vercel: admin.kealee.com)
+        service:
+          - portal-owner
+          - portal-contractor
+          - portal-developer
+          - command-center
+          - web-main
+          - marketing-cron-lead-scoring
+          - marketing-cron-sequences
+          - marketing-cron-requalify-cold
+          - marketing-cron-parcel-enrichment
+          - marketing-cron-parcel-outreach
+          - marketing-cron-marketing-drip
+          # admin-console: orphaned on Railway (merged into os-admin on Vercel) — disable in dashboard
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Install Railway CLI
+        run: npm install -g @railway/cli@4.40.0
+
       - name: Deploy ${{ matrix.service }} to Railway
-        uses: bervProject/railway-deploy@main
-        with:
-          railway_token: ${{ secrets.RAILWAY_TOKEN }}
-          service: ${{ matrix.service }}
+        run: railway up --service "${{ matrix.service }}" --environment production --detach
