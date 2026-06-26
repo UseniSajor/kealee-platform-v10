@@ -81,18 +81,16 @@ export function mapEventToLoopType(event: string): LoopType | null {
   }
 }
 
-export interface AgentOutput {
-  agentName: string;
-  loopType: string;
-  summary: string;
-  digitalTwinUpdates: Record<string, any>;
-  deliverableUpdates: Record<string, any>;
-  nextActions: Array<any>;
-  questionsForUser: Array<any>;
-  adminFlags: Array<any>;
-  confidenceScore: number;
-  requiresHumanReview: boolean;
-}
+import { AgentOutput } from './agents/types.js';
+import { IntakeAgent } from './agents/intake-agent.js';
+import { EstimateAgent } from './agents/estimate-agent.js';
+import { PermitAgent } from './agents/permit-agent.js';
+import { ContractorAgent } from './agents/contractor-agent.js';
+import { ProjectAgent } from './agents/project-agent.js';
+import { FeasibilityAgent } from './agents/feasibility-agent.js';
+import { FinanceAgent } from './agents/finance-agent.js';
+import { AdminAgent } from './agents/admin-agent.js';
+import { contextBuilder } from './context/context-builder.js';
 
 export class LoopRouter {
   private runLoopQueue?: Queue;
@@ -235,8 +233,49 @@ export class LoopRouter {
     });
 
     try {
-      // Stub AI logic for testing/simulation (in production this calls Anthropic Claude cached client)
-      const agentOutput = await simulateAgentLLM(agentName, loopType, projectId, digitalTwinConfig);
+      // Fetch supplemental context and history
+      const { optionalKnowledgeContext, priorLoopHistory } = await contextBuilder.buildContext(projectId, 'EVALUATE');
+
+      let agent: any;
+      
+      // Route to correct agent
+      switch (loopType) {
+        case LOOP_TYPES.INTAKE_REFINEMENT:
+          agent = new IntakeAgent();
+          break;
+        case LOOP_TYPES.ESTIMATE_REVISION:
+          agent = new EstimateAgent();
+          break;
+        case LOOP_TYPES.PERMIT_CORRECTION:
+          agent = new PermitAgent();
+          break;
+        case LOOP_TYPES.CONTRACTOR_BID:
+          agent = new ContractorAgent();
+          break;
+        case LOOP_TYPES.PROJECT_MANAGEMENT:
+          agent = new ProjectAgent();
+          break;
+        case LOOP_TYPES.DEVELOPER_FEASIBILITY:
+          agent = new FeasibilityAgent();
+          break;
+        case LOOP_TYPES.FINANCE_REVIEW:
+          agent = new FinanceAgent();
+          break;
+        case LOOP_TYPES.ADMIN_REVIEW:
+          agent = new AdminAgent();
+          break;
+        default:
+          throw new Error(`Unsupported loop type: ${loopType}`);
+      }
+
+      const agentOutput = await agent.evaluate({
+        projectId,
+        triggerEvent: 'EVALUATE', // Abstracted trigger event for the evaluation run
+        digitalTwinState: digitalTwinConfig,
+        eventPayload: {}, // Full event payload would be retrieved from LoopRun
+        optionalKnowledgeContext,
+        priorLoopHistory
+      });
 
       // Perform human review rule checks
       const reviewRequired = checkHumanReviewRequired(agentOutput, digitalTwinConfig);
@@ -373,45 +412,6 @@ function checkHumanReviewRequired(output: AgentOutput, digitalTwinConfig: any): 
   }
 
   return false;
-}
-
-// Simulate LLM Agent
-async function simulateAgentLLM(
-  agentName: string,
-  loopType: LoopType,
-  projectId: string,
-  digitalTwinConfig: any
-): Promise<AgentOutput> {
-  const isIntake = loopType === LOOP_TYPES.INTAKE_REFINEMENT;
-  
-  return {
-    agentName,
-    loopType,
-    summary: `${agentName} evaluated the project conditions successfully.`,
-    digitalTwinUpdates: {
-      status: isIntake ? 'CONCEPT_SELECTION' : 'IN_PROGRESS',
-      projectProfile: {
-        lastUpdateType: loopType,
-        updatedAt: new Date().toISOString(),
-      },
-      budget: {
-        total: isIntake ? 125000 : (digitalTwinConfig.budget?.total || 100000),
-      },
-    },
-    deliverableUpdates: {
-      summaryUrl: `/deliverables/${projectId}/summary.pdf`,
-    },
-    nextActions: [
-      {
-        actionType: 'notify_user',
-        description: 'Notify customer of project updates and recommendations',
-      },
-    ],
-    questionsForUser: [],
-    adminFlags: [],
-    confidenceScore: 0.85,
-    requiresHumanReview: false,
-  };
 }
 
 export const loopRouter = new LoopRouter();

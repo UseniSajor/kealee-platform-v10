@@ -102,3 +102,134 @@ model V30PricingFormula {
 
   @@map("v30_pricing_formulas")
 }
+
+model AutomationEvent {
+  id            String   @id @default(cuid())
+  projectId     String
+  eventName     String   // PROJECT_CREATED, INTAKE_UPDATED, etc.
+  payload       Json
+  processed     Boolean  @default(false)
+  error         String?  @db.Text
+  createdAt     DateTime @default(now())
+
+  // Relations
+  project       Project  @relation("ProjectAutomationEvents", fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@index([eventName])
+  @@index([createdAt])
+  @@map("automation_events")
+}
+
+model V30WhiteLabelConfig {
+  id                  String   @id @default(cuid())
+  partnerId           String   @unique
+  companyName         String
+  companyEmail        String
+  logoUrl             String?
+  primaryColor        String   @default("#0064C8")
+  secondaryColor      String   @default("#666666")
+  accentColor         String   @default("#00B050")
+  customDomain        String?
+  enabledFeatures     String[] @default(["design", "estimate"])
+  monthlyProjectLimit Int?
+  teamSizeLimit       Int?
+  markup              Float    @default(1)
+  customPricing       Json?
+  webhookUrl          String?
+  webhookSecret       String?
+  supportEmail        String?
+  supportPhone        String?
+  status              String   @default("ACTIVE")
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@map("v30_white_label_configs")
+}
+
+model V30IntakeResponse {
+  id                 String             @id @default(cuid())
+  projectId          String             @unique
+  userId             String
+  propertyType       String
+  primaryScope       String
+  budgetRange        String
+  timeline           String
+  location           String
+  squareFeet         Int
+  yearBuilt          String
+  utilities          Json               @default("{}")
+  codeConsiderations String[]           @default([])
+  scopeComplexity    String
+  riskLevel          String
+  estimatedCost      Decimal            @db.Decimal(12, 2)
+  estimatedDays      Int
+  analysisJson       Json               @default("{}")
+  status             String             @default("SUBMITTED")
+  analyzedAt         DateTime?
+  expiresAt          DateTime?
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+  customPackage      V30CustomPackage?
+
+  @@map("v30_intake_responses")
+}
+
+model V30CustomPackage {
+  id               String            @id @default(cuid())
+  intakeResponseId String            @unique
+  projectId        String            @unique
+  userId           String
+  features         String[]          @default([])
+  basePrice        Decimal           @db.Decimal(12, 2)
+  featureAddons    Decimal           @default(0) @db.Decimal(12, 2)
+  totalPrice       Decimal           @db.Decimal(12, 2)
+  stripeProductId  String?
+  stripePriceId    String?
+  stripeSessionId  String?
+  status           String            @default("DRAFT")
+  acceptedAt       DateTime?
+  paidAt           DateTime?
+  completedAt      DateTime?
+  expiresAt        DateTime?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  intakeResponse   V30IntakeResponse @relation(fields: [intakeResponseId], references: [id], onDelete: Cascade)
+
+  @@map("v30_custom_packages")
+}
+
+model V30BotExecution {
+  id           String    @id @default(cuid())
+  projectId    String
+  packageId    String
+  botType      String
+  status       String    @default("PENDING")
+  progress     Int       @default(0)
+  inputData    Json?
+  outputData   Json?
+  modelUsed    String?
+  tokensUsed   Int?
+  costUSD      Float?
+  durationMs   Int?
+  errorMessage String?   @db.Text
+  completedAt  DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@map("v30_bot_executions")
+}
+
+model V30BotResult {
+  id             String   @id @default(cuid())
+  executionId    String   @unique
+  resultType     String   @default("json")
+  contentJson    Json
+  deliveredAt    DateTime @default(now())
+  deliveryMethod String   @default("api")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@map("v30_bot_results")
+}
+

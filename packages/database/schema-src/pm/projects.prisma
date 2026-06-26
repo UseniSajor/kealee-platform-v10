@@ -152,10 +152,15 @@ model Project {
   escrowReconciliations EscrowReconciliation[]
   feasibilityStudies    FeasibilityStudy[]
 
+  // V30 — Hybrid Digital Twin State
+  digitalTwinState  Json?
+  riskSnapshot      Json?
+
   // V30 — Loop Orchestration relations
   loopRuns         LoopRun[]          @relation("ProjectLoopRuns")
   decisions        ProjectDecision[]  @relation("ProjectDecisions")
   agentMemories    AgentMemory[]      @relation("ProjectAgentMemory")
+  automationEvents AutomationEvent[]  @relation("ProjectAutomationEvents")
 
   @@index([clientId])
   @@index([orgId])

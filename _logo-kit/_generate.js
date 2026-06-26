@@ -2,35 +2,136 @@ const sharp = require('sharp');
 const fs = require('fs');
 const path = require('path');
 
-const OUT = 'C:/Kealee-Platform v10/_logo-kit';
-const LOGO_SRC = 'C:/Kealee-Platform v10/apps/m-marketplace/public/kealee-logo-transparent.png';
+const WORKSPACE_ROOT = path.resolve(__dirname, '..');
+const OUT_DIR = path.resolve(WORKSPACE_ROOT, '_logo-kit');
 
-async function main() {
-  // ─── Step 1: Auto-crop logo to content (remove transparent padding) ───
-  const trimmed = await sharp(LOGO_SRC)
+// SVG Concepts (Concept 1: The Lifecycle Ribbon)
+const SVG_FULL_COLORED = `
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 80">
+  <defs>
+    <linearGradient id="concept1-blue" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1E40AF" />
+      <stop offset="100%" stop-color="#3B82F6" />
+    </linearGradient>
+    <linearGradient id="concept1-orange" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#EA580C" />
+      <stop offset="100%" stop-color="#F97316" />
+    </linearGradient>
+    <linearGradient id="concept1-violet" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F97316" />
+      <stop offset="100%" stop-color="#8B5CF6" />
+    </linearGradient>
+  </defs>
+  <g transform="translate(12, 10)">
+    <rect x="15" y="5" width="14" height="50" rx="7" fill="url(#concept1-blue)" />
+    <path d="M 22 28 C 36 28, 42 5, 54 5" fill="none" stroke="url(#concept1-orange)" stroke-width="12" stroke-linecap="round" />
+    <path d="M 22 32 C 36 32, 42 55, 54 55" fill="none" stroke="url(#concept1-violet)" stroke-width="12" stroke-linecap="round" />
+  </g>
+  <text x="88" y="52" font-family="'Plus Jakarta Sans', 'Outfit', sans-serif" font-weight="700" font-size="38" fill="#0F172A" letter-spacing="-0.03em">kealee</text>
+</svg>
+`;
+
+const SVG_FULL_SOLID_DARK = `
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 80">
+  <g transform="translate(12, 10)">
+    <rect x="15" y="5" width="14" height="50" rx="7" fill="#0F172A" />
+    <path d="M 22 28 C 36 28, 42 5, 54 5" fill="none" stroke="#0F172A" stroke-width="12" stroke-linecap="round" />
+    <path d="M 22 32 C 36 32, 42 55, 54 55" fill="none" stroke="#0F172A" stroke-width="12" stroke-linecap="round" />
+  </g>
+  <text x="88" y="52" font-family="'Plus Jakarta Sans', 'Outfit', sans-serif" font-weight="700" font-size="38" fill="#0F172A" letter-spacing="-0.03em">kealee</text>
+</svg>
+`;
+
+const SVG_FULL_SOLID_LIGHT = `
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 80">
+  <g transform="translate(12, 10)">
+    <rect x="15" y="5" width="14" height="50" rx="7" fill="#FFFFFF" />
+    <path d="M 22 28 C 36 28, 42 5, 54 5" fill="none" stroke="#FFFFFF" stroke-width="12" stroke-linecap="round" />
+    <path d="M 22 32 C 36 32, 42 55, 54 55" fill="none" stroke="#FFFFFF" stroke-width="12" stroke-linecap="round" />
+  </g>
+  <text x="88" y="52" font-family="'Plus Jakarta Sans', 'Outfit', sans-serif" font-weight="700" font-size="38" fill="#FFFFFF" letter-spacing="-0.03em">kealee</text>
+</svg>
+`;
+
+const SVG_ICON_COLORED = `
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80">
+  <defs>
+    <linearGradient id="concept1-blue" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1E40AF" />
+      <stop offset="100%" stop-color="#3B82F6" />
+    </linearGradient>
+    <linearGradient id="concept1-orange" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#EA580C" />
+      <stop offset="100%" stop-color="#F97316" />
+    </linearGradient>
+    <linearGradient id="concept1-violet" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F97316" />
+      <stop offset="100%" stop-color="#8B5CF6" />
+    </linearGradient>
+  </defs>
+  <g transform="translate(2.5, 10)">
+    <rect x="15" y="5" width="14" height="50" rx="7" fill="url(#concept1-blue)" />
+    <path d="M 22 28 C 36 28, 42 5, 54 5" fill="none" stroke="url(#concept1-orange)" stroke-width="12" stroke-linecap="round" />
+    <path d="M 22 32 C 36 32, 42 55, 54 55" fill="none" stroke="url(#concept1-violet)" stroke-width="12" stroke-linecap="round" />
+  </g>
+</svg>
+`;
+
+const SVG_ICON_SOLID_DARK = `
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80">
+  <g transform="translate(2.5, 10)">
+    <rect x="15" y="5" width="14" height="50" rx="7" fill="#0F172A" />
+    <path d="M 22 28 C 36 28, 42 5, 54 5" fill="none" stroke="#0F172A" stroke-width="12" stroke-linecap="round" />
+    <path d="M 22 32 C 36 32, 42 55, 54 55" fill="none" stroke="#0F172A" stroke-width="12" stroke-linecap="round" />
+  </g>
+</svg>
+`;
+
+const SVG_ICON_SOLID_LIGHT = `
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80">
+  <g transform="translate(2.5, 10)">
+    <rect x="15" y="5" width="14" height="50" rx="7" fill="#FFFFFF" />
+    <path d="M 22 28 C 36 28, 42 5, 54 5" fill="none" stroke="#FFFFFF" stroke-width="12" stroke-linecap="round" />
+    <path d="M 22 32 C 36 32, 42 55, 54 55" fill="none" stroke="#FFFFFF" stroke-width="12" stroke-linecap="round" />
+  </g>
+</svg>
+`;
+
+async function generateSet(dir, svgFull, svgIcon, isWhiteText = false) {
+  fs.mkdirSync(dir, { recursive: true });
+
+  // Save the master SVG files
+  fs.writeFileSync(path.join(dir, 'kealee-logo.svg'), svgFull.trim());
+  fs.writeFileSync(path.join(dir, 'kealee-icon.svg'), svgIcon.trim());
+
+  // 1. Render and Trim the Full Logo PNG
+  const fullPngBuffer = await sharp(Buffer.from(svgFull))
+    .png()
+    .toBuffer();
+
+  const trimmed = await sharp(fullPngBuffer)
     .trim()
     .toBuffer({ resolveWithObject: true });
 
   const { width: trimW, height: trimH } = trimmed.info;
-  console.log(`Trimmed source logo: ${trimW}x${trimH} (aspect ratio ${(trimW / trimH).toFixed(2)})`);
+  console.log(`[Trimmed] W: ${trimW}, H: ${trimH} (aspect ratio ${(trimW / trimH).toFixed(2)})`);
 
-  // Save the master (full resolution, content-cropped)
-  fs.writeFileSync(path.join(OUT, 'kealee-logo-full.png'), trimmed.data);
-  console.log(`Created kealee-logo-full.png (${trimW}x${trimH})`);
+  // Save full cropped master
+  fs.writeFileSync(path.join(dir, 'kealee-logo-full.png'), trimmed.data);
+  fs.writeFileSync(path.join(dir, 'kealee-logo.png'), trimmed.data);
+  fs.writeFileSync(path.join(dir, 'kealee-logo-transparent.png'), trimmed.data);
 
-  // ─── Step 2: Generate width-based logo sizes (preserving natural aspect ratio) ───
-  const logoWidths = [800, 600, 400, 300, 200];
-  for (const w of logoWidths) {
+  // Width-based resized versions
+  const widths = [800, 600, 400, 300, 200];
+  for (const w of widths) {
     const h = Math.round(w * (trimH / trimW));
     await sharp(trimmed.data)
       .resize(w, h, { fit: 'fill' })
       .png()
-      .toFile(path.join(OUT, `kealee-logo-${w}w.png`));
-    console.log(`Created kealee-logo-${w}w.png (${w}x${h})`);
+      .toFile(path.join(dir, `kealee-logo-${w}w.png`));
   }
 
-  // ─── Step 3: App Icons — ALL TRANSPARENT, no white box ───
-  // Use the trimmed logo content, fit into a square with padding, transparent bg
+  // 2. Render App Icons (from the square SVG icon)
   const iconSizes = [
     { size: 16, name: 'kealee-icon-16x16.png' },
     { size: 32, name: 'kealee-icon-32x32.png' },
@@ -40,28 +141,27 @@ async function main() {
   ];
 
   for (const { size, name } of iconSizes) {
-    // Transparent background — logo centered, occupying ~80% of the square
-    const logoSize = Math.round(size * 0.80);
-    await sharp(trimmed.data)
-      .resize(logoSize, logoSize, { fit: 'contain', background: { r: 0, g: 0, b: 0, alpha: 0 } })
-      .extend({
-        top: Math.round((size - logoSize) / 2),
-        bottom: size - logoSize - Math.round((size - logoSize) / 2),
-        left: Math.round((size - logoSize) / 2),
-        right: size - logoSize - Math.round((size - logoSize) / 2),
-        background: { r: 0, g: 0, b: 0, alpha: 0 }
-      })
+    await sharp(Buffer.from(svgIcon))
+      .resize(size, size)
       .png()
-      .toFile(path.join(OUT, name));
-    console.log(`Created ${name} (${size}x${size}, transparent)`);
+      .toFile(path.join(dir, name));
   }
 
-  // ─── Step 4: favicon.ico (multi-size, transparent) ───
+  // Generate transparent variant filenames for compatibility
+  for (const { size, name } of iconSizes) {
+    const transparentName = name.replace('.png', '-transparent.png');
+    await sharp(Buffer.from(svgIcon))
+      .resize(size, size)
+      .png()
+      .toFile(path.join(dir, transparentName));
+  }
+
+  // 3. Multi-size favicon.ico
   const icoSizes = [16, 32, 48];
   const pngBuffers = [];
   for (const size of icoSizes) {
-    const buf = await sharp(trimmed.data)
-      .resize(size, size, { fit: 'contain', background: { r: 0, g: 0, b: 0, alpha: 0 } })
+    const buf = await sharp(Buffer.from(svgIcon))
+      .resize(size, size)
       .png()
       .toBuffer();
     pngBuffers.push({ size, buf });
@@ -97,36 +197,98 @@ async function main() {
   }
 
   const ico = Buffer.concat([header, dirEntries, ...dataChunks]);
-  fs.writeFileSync(path.join(OUT, 'favicon.ico'), ico);
-  console.log(`Created favicon.ico (multi-size: ${icoSizes.join(', ')}px, transparent)`);
+  fs.writeFileSync(path.join(dir, 'favicon.ico'), ico);
 
-  // ─── Step 5: OG Image (1200x630, white background, logo centered) ───
-  // OG images NEED a solid background (social cards render on white)
-  const ogLogoHeight = Math.round(630 * 0.55);
-  const ogLogoWidth = Math.round(ogLogoHeight * (trimW / trimH));
+  // 4. OG Image (1200x630)
+  const ogBgColor = isWhiteText ? { r: 15, g: 23, b: 42 } : { r: 255, g: 255, b: 255 }; // slate-900 or white
+  const ogLogoH = Math.round(630 * 0.4);
+  const ogLogoW = Math.round(ogLogoH * (trimW / trimH));
 
   const resizedLogo = await sharp(trimmed.data)
-    .resize(ogLogoWidth, ogLogoHeight, { fit: 'contain', background: { r: 0, g: 0, b: 0, alpha: 0 } })
+    .resize(ogLogoW, ogLogoH, { fit: 'contain' })
     .png()
     .toBuffer();
-
-  const left = Math.round((1200 - ogLogoWidth) / 2);
-  const top = Math.round((630 - ogLogoHeight) / 2);
 
   await sharp({
     create: {
       width: 1200,
       height: 630,
       channels: 3,
-      background: { r: 255, g: 255, b: 255 }
+      background: ogBgColor
     }
   })
-    .composite([{ input: resizedLogo, left, top }])
+    .composite([{ input: resizedLogo, left: Math.round((1200 - ogLogoW) / 2), top: Math.round((630 - ogLogoH) / 2) }])
     .jpeg({ quality: 90 })
-    .toFile(path.join(OUT, 'kealee-og-image.jpg'));
-  console.log('Created kealee-og-image.jpg (1200x630, white bg, centered logo)');
-
-  console.log('\n✅ All files generated in:', OUT);
+    .toFile(path.join(dir, 'kealee-og-image.jpg'));
 }
 
-main().catch(err => { console.error(err); process.exit(1); });
+async function main() {
+  console.log('Starting logo generator in:', OUT_DIR);
+
+  // Generate Colored (Default) Version
+  console.log('Generating Colored Logo kit...');
+  await generateSet(OUT_DIR, SVG_FULL_COLORED, SVG_ICON_COLORED, false);
+
+  // Generate Solid Dark Version
+  console.log('Generating Solid Dark Logo kit...');
+  await generateSet(path.join(OUT_DIR, 'solid-dark'), SVG_FULL_SOLID_DARK, SVG_ICON_SOLID_DARK, false);
+
+  // Generate Solid Light Version
+  console.log('Generating Solid Light Logo kit...');
+  await generateSet(path.join(OUT_DIR, 'solid-light'), SVG_FULL_SOLID_LIGHT, SVG_ICON_SOLID_LIGHT, true);
+
+  console.log('\nCopying generated main files to apps...');
+  
+  // Find all public/ directories inside apps/
+  const appsDir = path.resolve(WORKSPACE_ROOT, 'apps');
+  const items = fs.readdirSync(appsDir);
+  
+  const filesToCopy = [
+    'kealee-logo-full.png',
+    'kealee-logo.png',
+    'kealee-logo-transparent.png',
+    'kealee-logo-800w.png',
+    'kealee-logo-600w.png',
+    'kealee-logo-400w.png',
+    'kealee-logo-300w.png',
+    'kealee-logo-200w.png',
+    'kealee-icon-16x16.png',
+    'kealee-icon-32x32.png',
+    'kealee-icon-192x192.png',
+    'kealee-icon-512x512.png',
+    'apple-touch-icon.png',
+    'favicon.ico',
+    'kealee-og-image.jpg',
+    'kealee-logo.svg',
+    'kealee-icon.svg',
+    'kealee-icon-16x16-transparent.png',
+    'kealee-icon-32x32-transparent.png',
+    'kealee-icon-192x192-transparent.png',
+    'kealee-icon-512x512-transparent.png',
+    'apple-touch-icon-transparent.png'
+  ];
+
+  for (const item of items) {
+    const itemPath = path.join(appsDir, item);
+    if (fs.statSync(itemPath).isDirectory()) {
+      const publicPath = path.join(itemPath, 'public');
+      if (fs.existsSync(publicPath)) {
+        console.log(`Copying logo assets to: ${publicPath}`);
+        for (const file of filesToCopy) {
+          const srcFile = path.join(OUT_DIR, file);
+          const destFile = path.join(publicPath, file);
+          if (fs.existsSync(srcFile)) {
+            fs.copyFileSync(srcFile, destFile);
+          }
+        }
+      }
+    }
+  }
+
+  console.log('\n✅ Logo generation and distribution completed successfully!');
+}
+
+main().catch(err => {
+  console.error('Fatal error generating logos:', err);
+  process.exit(1);
+});

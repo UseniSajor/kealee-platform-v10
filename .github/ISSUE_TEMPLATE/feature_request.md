@@ -1,32 +1,16 @@
 ---
 name: Feature Request
-about: Suggest a new feature or enhancement for the Kealee Platform.
+about: Suggest an idea for this project
 title: 'feat: '
-labels: ['agent-task', 'needs-review']
+labels: enhancement
 assignees: ''
 ---
 
 ## Goal
-<!-- Provide a clear, concise description of the goal of this feature request. What problem are we solving? -->
+Describe the feature or enhancement you're requesting. What problem does it solve?
 
 ## Context
-<!-- Provide any background context, requirements, user stories, or reference links here. -->
+Provide background context or user stories here.
 
-## Files likely affected
-<!-- List directories or specific files that are expected to be changed or added. -->
-- 
-
-## Acceptance criteria
-<!-- What are the exact requirements that must be satisfied for this feature to be considered done? -->
-- [ ] 
-
-## Testing requirements
-<!-- Detail how the implementation should be verified. Mention unit tests, manual checks, or integration tests. -->
-- 
-
-## Risks
-<!-- Identify potential side effects, performance hits, breaking changes, or integration risks. -->
-
-## Do-not-touch areas
-<!-- List any specific files, paths, databases, or third-party integrations that should NOT be modified or impacted. -->
-- 
+## Files
+List the files or components likely to be affected by this change.

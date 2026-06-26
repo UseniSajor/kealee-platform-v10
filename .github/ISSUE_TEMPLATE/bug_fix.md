@@ -1,33 +1,16 @@
 ---
 name: Bug Fix
-about: Report a bug or unexpected behavior in the Kealee Platform.
+about: Create a report to help us improve
 title: 'fix: '
-labels: ['bug', 'needs-review']
+labels: bug
 assignees: ''
 ---
 
 ## Goal
-<!-- Describe the bug and what the correct behavior should be. -->
+Describe the bug and the expected behavior.
 
 ## Context
-<!-- Provide logs, stack traces, steps to reproduce, or browser screenshots here. -->
+Provide steps to reproduce the bug and any relevant logs or context.
 
-## Files likely affected
-<!-- List directories or specific files that are expected to be changed to fix this bug. -->
-- 
-
-## Acceptance criteria
-<!-- Define the criteria for the bug to be considered resolved. -->
-- [ ] Bug is no longer reproducible.
-- [ ] Existing behavior is preserved and regression tests are added.
-
-## Testing requirements
-<!-- Detail how the bug fix should be verified (e.g. reproducing steps, automated test suite). -->
-- 
-
-## Risks
-<!-- Identify potential side effects of the fix (e.g., breaking other flows, performance impact). -->
-
-## Do-not-touch areas
-<!-- List any specific files, paths, databases, or third-party integrations that should NOT be modified or impacted. -->
-- 
+## Files
+List the files or components likely to be affected by this fix.

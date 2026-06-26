@@ -3,7 +3,7 @@ const axios = require('axios');
 const fs = require('fs');
 
 const FIGMA_API_BASE = 'https://api.figma.com/v1';
-const FIGMA_TOKEN = 'FIGMA_TOKEN_REDACTED';
+const FIGMA_TOKEN = process.argv[2] || process.env.FIGMA_TOKEN || 'FIGMA_TOKEN_REDACTED';
 
 const client = axios.create({
   baseURL: FIGMA_API_BASE,
@@ -30,13 +30,15 @@ async function createFigmaFile() {
     // Most Figma accounts have at least one team
     console.log('📁 Creating design file...');
     
+    const teamId = process.argv[3] || '';
     const fileRes = await client.post('/files', {
       name: 'Kealee Platform Design System v2026',
-      team_id: '', // Figma will use the user's default team
+      team_id: teamId,
     }).catch(async (err) => {
       // If that fails, try alternative endpoint
       console.log('Trying alternative API endpoint...');
-      return client.post('/teams/0/files', {
+      const fallbackTeamId = teamId || '0';
+      return client.post(`/teams/${fallbackTeamId}/files`, {
         name: 'Kealee Platform Design System v2026',
       });
     });
