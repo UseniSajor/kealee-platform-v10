@@ -4,8 +4,9 @@
     "builder": "NIXPACKS"
   },
   "deploy": {
-    "healthcheckPath": "/",
-    "healthcheckTimeout": 120,
+    "startCommand": "sh /app/scripts/railway-next-start.sh portal-developer",
+    "healthcheckPath": "/api/health",
+    "healthcheckTimeout": 300,
     "restartPolicyType": "ON_FAILURE",
     "restartPolicyMaxRetries": 5
   }

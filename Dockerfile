@@ -12,10 +12,11 @@ RUN pnpm install --no-frozen-lockfile
 ARG RAILWAY_SERVICE_NAME
 ENV RAILWAY_SERVICE_NAME=$RAILWAY_SERVICE_NAME
 
+# Build the right thing for the service. Any Next.js app (apps/<name>/next.config.js)
+# is built as a standalone server; everything else builds the API entrypoint.
 RUN set -eux; \
-  case "$RAILWAY_SERVICE_NAME" in \
-    web-main|portal-owner) \
-      APP_DIR="apps/$RAILWAY_SERVICE_NAME"; \
+  APP_DIR="apps/$RAILWAY_SERVICE_NAME"; \
+  if [ -n "$RAILWAY_SERVICE_NAME" ] && [ -f "$APP_DIR/next.config.js" ]; then \
       rm -rf "$APP_DIR/.next"; \
       pnpm turbo run build --filter="$RAILWAY_SERVICE_NAME" --force; \
       SRV=$(find "$APP_DIR/.next/standalone/apps" -name server.js -print -quit); \
@@ -26,11 +27,9 @@ RUN set -eux; \
       mkdir -p "$SDIR/public" "$SDIR/.next/static"; \
       cp -r "$APP_DIR/public/." "$SDIR/public/" 2>/dev/null || true; \
       cp -r "$APP_DIR/.next/static/." "$SDIR/.next/static/"; \
-      ;; \
-    *) \
+  else \
       pnpm --filter @kealee/api... build; \
-      ;; \
-  esac
+  fi
 
 EXPOSE 3000
 
