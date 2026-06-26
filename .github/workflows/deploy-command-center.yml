@@ -15,6 +15,8 @@ on:
 env:
   NODE_VERSION: '20'
   PNPM_VERSION: '8.15.9'
+  RAILWAY_PROJECT_ID: 8187fcf6-9916-49aa-bc75-77407f83d319
+  RAILWAY_ENVIRONMENT: production
 
 jobs:
   # ────────────────────────────────────────────────────────────
@@ -100,6 +102,11 @@ jobs:
 
       - name: Install Railway CLI
         run: npm install -g @railway/cli@4.40.0
+
+      - name: Link Railway project
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        run: railway link --project "$RAILWAY_PROJECT_ID" --environment "$RAILWAY_ENVIRONMENT"
 
       - name: Deploy to Railway
         env:
