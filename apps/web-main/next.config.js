@@ -15,7 +15,7 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
-  transpilePackages: ['@kealee/ui', '@kealee/intake', '@kealee/shared', '@kealee/pascal-wrapper', '@kealee/core-bim', '@kealee/kealee-agent-stack', '@kealee/storage', '@kealee/concept-engine', '@kealee/database'],
+  transpilePackages: ['@kealee/ui', '@kealee/intake', '@kealee/shared', '@kealee/pascal-wrapper', '@kealee/core-bim', '@kealee/kealee-agent-stack', '@kealee/storage', '@kealee/concept-engine', '@kealee/database', '@kealee/automation'],
   webpack(config, { isServer }) {
     if (isServer) {
       const prev = Array.isArray(config.externals) ? config.externals : [config.externals].filter(Boolean)

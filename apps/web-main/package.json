@@ -26,6 +26,7 @@
   "dependencies": {
     "@anthropic-ai/sdk": "^0.30.0",
     "@kealee/auth": "workspace:*",
+    "@kealee/automation": "workspace:*",
     "@kealee/communications": "workspace:*",
     "@kealee/concept-engine": "workspace:*",
     "@kealee/core-llm": "workspace:*",
