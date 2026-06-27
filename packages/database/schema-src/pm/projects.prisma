@@ -157,10 +157,10 @@ model Project {
   riskSnapshot      Json?
 
   // V30 — Loop Orchestration relations
-  loopRuns         LoopRun[]          @relation("ProjectLoopRuns")
-  decisions        ProjectDecision[]  @relation("ProjectDecisions")
-  agentMemories    AgentMemory[]      @relation("ProjectAgentMemory")
-  automationEvents AutomationEvent[]  @relation("ProjectAutomationEvents")
+  v30LoopRuns         V30LoopRun[]          @relation("ProjectLoopRuns")
+  v30Decisions        V30ProjectDecision[]  @relation("ProjectDecisions")
+  v30AgentMemories    V30AgentMemory[]      @relation("ProjectAgentMemory")
+  v30AutomationEvents V30AutomationEvent[]  @relation("ProjectAutomationEvents")
 
   @@index([clientId])
   @@index([orgId])

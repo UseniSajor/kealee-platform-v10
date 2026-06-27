@@ -1,7 +1,7 @@
 // WORKFLOW — Loops Orchestration Models
 // Kealee Platform v30 Loop Orchestration System
 
-model LoopRun {
+model V30LoopRun {
   id              String     @id @default(cuid())
   projectId       String
   loopType        String     // intake_refinement, estimate_revision, permit_correction, contractor_bid, etc.
@@ -17,17 +17,17 @@ model LoopRun {
   updatedAt       DateTime   @updatedAt
 
   // Relations
-  steps           LoopStep[]
+  steps           V30LoopStep[]
   project         Project    @relation("ProjectLoopRuns", fields: [projectId], references: [id], onDelete: Cascade)
 
   @@index([projectId])
   @@index([loopType])
   @@index([status])
   @@index([createdAt])
-  @@map("loop_runs")
+  @@map("v30_loop_runs")
 }
 
-model LoopStep {
+model V30LoopStep {
   id              String   @id @default(cuid())
   loopRunId       String
   agentName       String   // OwnerAgent, IntakeAgent, etc.
@@ -39,14 +39,14 @@ model LoopStep {
   createdAt       DateTime @default(now())
 
   // Relations
-  loopRun         LoopRun  @relation(fields: [loopRunId], references: [id], onDelete: Cascade)
+  loopRun         V30LoopRun  @relation(fields: [loopRunId], references: [id], onDelete: Cascade)
 
   @@index([loopRunId])
   @@index([createdAt])
-  @@map("loop_steps")
+  @@map("v30_loop_steps")
 }
 
-model ProjectDecision {
+model V30ProjectDecision {
   id              String   @id @default(cuid())
   projectId       String
   loopRunId       String?
@@ -64,10 +64,10 @@ model ProjectDecision {
   @@index([projectId])
   @@index([loopRunId])
   @@index([createdAt])
-  @@map("project_decisions")
+  @@map("v30_project_decisions")
 }
 
-model AgentMemory {
+model V30AgentMemory {
   id          String   @id @default(cuid())
   projectId   String
   agentName   String   // IntakeAgent, EstimateAgent, etc.
@@ -82,7 +82,7 @@ model AgentMemory {
   @@index([projectId])
   @@index([agentName])
   @@index([updatedAt])
-  @@map("agent_memories")
+  @@map("v30_agent_memories")
 }
 
 model V30PricingFormula {
@@ -103,7 +103,7 @@ model V30PricingFormula {
   @@map("v30_pricing_formulas")
 }
 
-model AutomationEvent {
+model V30AutomationEvent {
   id            String   @id @default(cuid())
   projectId     String
   eventName     String   // PROJECT_CREATED, INTAKE_UPDATED, etc.
@@ -118,7 +118,7 @@ model AutomationEvent {
   @@index([projectId])
   @@index([eventName])
   @@index([createdAt])
-  @@map("automation_events")
+  @@map("v30_automation_events")
 }
 
 model V30WhiteLabelConfig {
