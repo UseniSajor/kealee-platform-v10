@@ -1,0 +1,56 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { authorizeOps, unauthorized } from '@/lib/admin/intelligence-auth'
+import { ingestParcelTargets, type ParcelIngestInput } from '@/lib/marketing/parcel-outreach/ingest'
+import { queueOutreachForTarget } from '@/lib/marketing/parcel-outreach/queue'
+import { getSupabaseAdmin } from '@/lib/supabase-server'
+
+export const dynamic = 'force-dynamic'
+
+/** POST /api/admin/parcel-outreach/ingest — ingest GIS/assessor parcel list */
+export async function POST(req: NextRequest) {
+  if (!authorizeOps(req, 'write:intelligence').authorized) return unauthorized()
+
+  try {
+    const body = await req.json()
+    const rows = (body.parcels ?? body.rows ?? []) as ParcelIngestInput[]
+    const autoQueue = body.autoQueue === true
+
+    if (!Array.isArray(rows) || rows.length === 0) {
+      return NextResponse.json({ error: 'parcels array required' }, { status: 400 })
+    }
+
+    const result = await ingestParcelTargets(rows)
+
+    let queued = 0
+    if (autoQueue) {
+      const supabase = getSupabaseAdmin()
+      const { data: targets } = await supabase
+        .from('parcel_outreach_targets')
+        .select('id')
+        .is('converted_intake_id', null)
+        .order('created_at', { ascending: false })
+        .limit(result.inserted)
+
+      for (const t of targets ?? []) {
+        const q = await queueOutreachForTarget(t.id)
+        queued += q.queued
+      }
+    }
+
+    return NextResponse.json({ ...result, queued })
+  } catch (err) {
+    return NextResponse.json(
+      { error: err instanceof Error ? err.message : String(err) },
+      { status: 500 },
+    )
+  }
+}
+
+/** GET — export direct-mail queue for print vendor */
+export async function GET(req: NextRequest) {
+  if (!authorizeOps(req, 'read:intelligence').authorized) return unauthorized()
+
+  const { exportDirectMailPending } = await import('@/lib/marketing/parcel-outreach/queue')
+  const items = await exportDirectMailPending()
+  return NextResponse.json({ count: items.length, items })
+}

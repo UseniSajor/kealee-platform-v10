@@ -71,6 +71,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={`${syne.variable} ${dmSans.variable}`}>
       <body className="bg-warm-50">
+        {process.env.NEXT_PUBLIC_FIGMA_CAPTURE === 'true' && (
+          <Script
+            src="https://mcp.figma.com/mcp/html-to-design/capture.js"
+            strategy="beforeInteractive"
+          />
+        )}
         <JsonLd data={buildGlobalJsonLdGraph()} />
         {GA_ID && (
           <>

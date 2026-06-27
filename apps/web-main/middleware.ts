@@ -164,6 +164,6 @@ export const config = {
      * - /_next/* (includes RSC flight /_next/data — running auth here breaks navigation and can surface as 403/odd errors on Vercel)
      * - static assets & crawlers
      */
-    '/((?!api/|_next/|favicon.ico|sitemap.xml|robots.txt|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)',
+    '/((?!api/|_next/|favicon.ico|sitemap.xml|robots.txt|.*\\.(?:svg|png|jpg|jpeg|gif|webp|avif|ico|mp4|webm|mov|m4v|ogg|ogv|mp3|wav|woff|woff2|ttf|otf|eot|pdf|txt|xml|json)$).*)',
   ],
 }

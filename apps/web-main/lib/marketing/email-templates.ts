@@ -155,28 +155,28 @@ export function buildDripEmail(
     }
   }
 
-  // Step 4 — estimate upsell (concept_ready cohort); funnelUrl should be /estimate/intake?lead=
-  const estimateLink = ctx.funnelUrl.startsWith('http')
+  // Step 4 — permit-ready professional drawings upsell (concept_ready); estimate already included
+  const permitDrawingsLink = ctx.funnelUrl.startsWith('http')
     ? ctx.funnelUrl
-    : `${SITE_URL}/estimate/intake`
+    : `${SITE_URL}/intake/professional_drawings`
 
   return {
-    subject: `Ready for a certified cost estimate for your ${ctx.serviceLabel}?`,
+    subject: `Ready for permit-ready drawings for your ${ctx.serviceLabel}?`,
     html: wrap(`
   <h2 style="color:#1A2B4A">${greeting},</h2>
   <p style="color:#4A5568;line-height:1.6">
-    Your concept package is in your Owner Portal. The natural next step is a
-    <strong>RSMeans-validated cost estimate</strong> so you can compare contractor bids with confidence.
+    Your concept package is in your Owner Portal — including the <strong>RSMeans cost estimate</strong> (no separate purchase needed).
+    The next step is <strong>permit-ready professional drawings</strong> so you can file with your jurisdiction.
   </p>
   <ul style="color:#4A5568;line-height:1.8;padding-left:20px">
-    <li>Line-item scope aligned to your concept</li>
-    <li>DMV market cost ranges</li>
-    <li>Credit toward permit drawings when you move forward</li>
+    <li>Licensed architect / PE drawing set</li>
+    <li>Floor plans, elevations, site plan</li>
+    <li>PE stamp where required · permit filing coordination</li>
   </ul>
   <div style="margin:32px 0;text-align:center">
-    <a href="${estimateLink}" style="display:inline-block;background:#2ABFBF;color:#fff;text-decoration:none;font-weight:700;font-size:16px;padding:14px 32px;border-radius:12px">Get a Cost Estimate →</a>
+    <a href="${permitDrawingsLink}" style="display:inline-block;background:#2ABFBF;color:#fff;text-decoration:none;font-weight:700;font-size:16px;padding:14px 32px;border-radius:12px">Get Permit-Ready Drawings →</a>
   </div>
-  <p style="color:#718096;font-size:13px">Or <a href="${SITE_URL}/permits" style="color:#2ABFBF">check your permit path</a> if you are ready to pull drawings.</p>`),
+  <p style="color:#718096;font-size:13px">Or <a href="${SITE_URL}/permits" style="color:#2ABFBF">add full permit filing</a> when you are ready to submit.</p>`),
   }
 }
 
@@ -200,7 +200,7 @@ export function buildPostPaymentEmail(opts: {
     'What happens next:',
     '1. Your concept generates now (v30 parallel deliverables)',
     '2. You will receive an email when your package is ready in the Owner Portal',
-    '3. From there you can add a cost estimate or permit path on Kealee',
+    '3. From there you can order permit-ready drawings or full permit filing on Kealee',
     '',
     `Portal: ${opts.deliverableUrl}`,
     '',
@@ -211,9 +211,9 @@ export function buildPostPaymentEmail(opts: {
   <h2 style="color:#1A2B4A">Hi ${firstName},</h2>
   <p style="color:#4A5568;line-height:1.6">Your payment is confirmed. We are generating your <strong>${serviceName}</strong> concept package now.</p>
   <ol style="color:#4A5568;line-height:1.8">
-    <li>AI design, estimate preview, and permit guidance (per your tier)</li>
+    <li>AI design, RSMeans estimate (included), and permit guidance (per your tier)</li>
     <li>Email when your Owner Portal deliverable is ready</li>
-    <li>Optional next steps: certified estimate or permit drawings on Kealee</li>
+    <li>Next step: permit-ready professional drawings — estimate already included</li>
   </ol>
   <div style="margin:32px 0;text-align:center">
     <a href="${opts.deliverableUrl}" style="display:inline-block;background:#2ABFBF;color:#fff;text-decoration:none;font-weight:700;font-size:16px;padding:14px 32px;border-radius:12px">Open Owner Portal →</a>

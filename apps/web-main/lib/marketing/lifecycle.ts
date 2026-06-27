@@ -8,8 +8,8 @@ import {
 import { sendMarketingEmail } from '@/lib/marketing/resend'
 import {
   buildConceptFunnelUrl,
-  buildEstimateFunnelUrl,
-  scheduleEstimateUpsellDrip,
+  buildPermitDrawingsFunnelUrl,
+  schedulePermitDrawingsUpsellDrip,
 } from '@/lib/marketing/drip-schedule'
 import { mergeMarketingMetadata, type FunnelStage } from '@/lib/marketing/types'
 
@@ -35,7 +35,7 @@ export async function patchIntakeFunnelStage(
 
 const PRECONSTRUCTION_SERVICE_KEYS = new Set([
   'design_estimate_permit_bundle',
-  'cost_estimate',
+  'professional_drawings',
   'permit_path_only',
 ])
 
@@ -76,7 +76,7 @@ export async function sendPostPaymentCustomerEmail(opts: {
 }
 
 /**
- * After concept_ready: schedule day-14 estimate upsell drip (idempotent).
+ * After concept_ready: schedule permit-ready drawings upsell (estimate is already included).
  */
 export async function onConceptReadyLifecycle(opts: {
   intakeId: string
@@ -90,11 +90,12 @@ export async function onConceptReadyLifecycle(opts: {
   const serviceLabel =
     opts.serviceLabel ?? opts.projectPath.replace(/_/g, ' ')
 
-  const scheduled = await scheduleEstimateUpsellDrip({
+  const scheduled = await schedulePermitDrawingsUpsellDrip({
     leadId: opts.intakeId,
     email: opts.email,
     name: opts.clientName,
     serviceLabel,
+    projectPath: opts.projectPath,
   })
 
   if (scheduled) {
@@ -106,10 +107,10 @@ export async function onConceptReadyLifecycle(opts: {
       .single()
 
     const metadata = mergeMarketingMetadata(row?.metadata as Record<string, unknown>, {
-      estimateUpsellDripScheduledAt: new Date().toISOString(),
+      permitDrawingsUpsellScheduledAt: new Date().toISOString(),
     })
     await supabase.from('public_intake_leads').update({ metadata }).eq('id', opts.intakeId)
   }
 }
 
-export { buildConceptFunnelUrl, buildEstimateFunnelUrl }
+export { buildConceptFunnelUrl, buildPermitDrawingsFunnelUrl }

@@ -103,15 +103,15 @@ const DELIVERABLES = [
   {
     icon: Video,
     number: '08',
-    title: 'Included Design Consultation',
-    subtitle: 'Scheduled after delivery — video call to review your concept',
+    title: 'Design Consultation (Premium+)',
+    subtitle: '15-minute video call — included with Premium+; email support on all tiers',
     items: [
       'Walk through your concept together (Zoom, Google Meet, or Zoho)',
       'Review every design decision in context',
       'Refine direction based on your feedback',
       'Map out clear next steps specific to your project',
     ],
-    callout: 'Included as part of your package — not sold separately.',
+    callout: 'Premium+ includes a live consultation; Essential and Premium get email support within 1 business day.',
     isBonus: true,
   },
 ]
@@ -120,7 +120,7 @@ const NEXT_STEPS = [
   { step: '1', label: 'Submit your project details', desc: 'Complete the quick intake form with photos and your project goals.' },
   { step: '2', label: 'We generate your concept package', desc: 'Our AI analyzes your property, style preferences, and project type.' },
   { step: '3', label: 'You receive your full design concept', desc: 'Delivered to your inbox and accessible in your Kealee portal.' },
-  { step: '4', label: 'We schedule your included consultation', desc: 'A Kealee design consultant reviews the package with you on video.' },
+  { step: '4', label: 'Get support on your package', desc: 'Premium+ includes a live consultation; all tiers get email support within 1 business day.' },
   { step: '5', label: 'Move into design, permits, or build', desc: 'Your concept becomes the foundation for every next step.' },
 ]
 
@@ -149,14 +149,14 @@ export default function ConceptPackagePage() {
 
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
             <Link
-              href="/intake/exterior_concept"
+              href="/get-concept"
               className="inline-flex items-center gap-2 rounded-xl px-7 py-3.5 text-base font-semibold text-white transition-opacity hover:opacity-90"
               style={{ backgroundColor: '#E8793A' }}
             >
               Get My Concept Package <ArrowRight className="h-5 w-5" />
             </Link>
             <Link
-              href="/intake"
+              href="/get-concept"
               className="inline-flex items-center gap-2 rounded-xl border border-gray-200 px-7 py-3.5 text-base font-semibold text-gray-700 transition-colors hover:border-gray-300"
             >
               See All Project Types
@@ -320,7 +320,7 @@ export default function ConceptPackagePage() {
           </p>
           <div className="mt-8 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
             <Link
-              href="/intake"
+              href="/get-concept"
               className="inline-flex items-center gap-2 rounded-xl px-7 py-3.5 text-base font-semibold text-white transition-opacity hover:opacity-90"
               style={{ backgroundColor: '#E8793A' }}
             >

@@ -420,6 +420,17 @@ const MODEL_DOMAIN: Record<string, string> = {
   FunnelSession: 'analytics',
   ActivityLog: 'analytics',
   Client: 'analytics',
+
+  // === INTELLIGENCE ===
+  PropertyTwin: 'intelligence',
+  LeadTwin: 'intelligence',
+  OpportunityScore: 'intelligence',
+  MarketingSegment: 'intelligence',
+  CampaignRecommendation: 'intelligence',
+  PropertyIntelligenceRun: 'intelligence',
+  AgentMemory: 'intelligence',
+  LoopRun: 'intelligence',
+  LoopStep: 'intelligence',
 }
 
 // Enum classification — map each enum to its domain
@@ -664,6 +675,11 @@ const ENUM_DOMAIN: Record<string, string> = {
   SoftwareSubscriptionStatus: 'analytics',
   ComparisonType: 'analytics',
   BudgetCategory: 'analytics',
+
+  // intelligence
+  IntelligenceLoopType: 'intelligence',
+  IntelligenceLoopStatus: 'intelligence',
+  IntelligenceStepStatus: 'intelligence',
 }
 
 interface Block {

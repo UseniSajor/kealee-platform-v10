@@ -13,6 +13,7 @@ export interface CrmSyncInput {
   timeline?: string
   score?: number
   tag?: string
+  tags?: string[]
   customFields?: Record<string, string>
 }
 
@@ -84,6 +85,7 @@ export async function syncLeadToCrms(input: CrmSyncInput): Promise<CrmSyncResult
           input.source || 'kealee-web',
           input.tag || 'pending',
           input.serviceType || 'unknown',
+          ...(input.tags ?? []),
         ],
         customFields: ghlCustomFields,
       })

@@ -1,0 +1,30 @@
+// Intelligence layer — v30 loop orchestration enums
+
+enum IntelligenceLoopType {
+  property_intelligence
+  marketing_intelligence
+  opportunity_scoring
+  campaign_routing
+  lead_nurture
+  lead_intelligence
+  capital_intelligence
+  project_intelligence
+  finance_review
+}
+
+enum IntelligenceLoopStatus {
+  pending
+  running
+  completed
+  failed
+  awaiting_review
+  cancelled
+}
+
+enum IntelligenceStepStatus {
+  pending
+  running
+  completed
+  failed
+  skipped
+}

@@ -2,12 +2,12 @@
   "$schema": "https://railway.app/railway.schema.json",
   "build": {
     "builder": "NIXPACKS",
-    "buildCommand": "pnpm turbo run build --filter=web-main && mkdir -p apps/web-main/.next/standalone/apps/web-main/public && cp -r apps/web-main/public/. apps/web-main/.next/standalone/apps/web-main/public/ || true && mkdir -p apps/web-main/.next/standalone/apps/web-main/.next/static && cp -r apps/web-main/.next/static/. apps/web-main/.next/standalone/apps/web-main/.next/static/ || true"
+    "buildCommand": "set -e; corepack enable 2>/dev/null || true; corepack prepare pnpm@8.15.9 --activate 2>/dev/null || true; if [ -f pnpm-workspace.yaml ]; then :; elif [ -f ../../pnpm-workspace.yaml ]; then cd ../..; fi; echo \"Building from $(pwd)\"; pnpm install --no-frozen-lockfile; rm -rf apps/web-main/.next; pnpm turbo run build --filter=web-main --force; SA=$(find . -type d -path '*/.next/standalone' -print -quit); echo \"standalone dir: $SA\"; ls -la \"$SA\" || true; SRV=$(find \"$SA\" -name server.js -print -quit); echo \"server.js: $SRV\"; if [ -z \"$SRV\" ]; then echo 'ERROR: standalone server.js not produced by build'; find apps/web-main/.next -maxdepth 3 -type d 2>/dev/null | head -50; exit 1; fi; SDIR=$(dirname \"$SRV\"); mkdir -p \"$SDIR/public\" \"$SDIR/.next/static\"; cp -r apps/web-main/public/. \"$SDIR/public/\" 2>/dev/null || true; cp -r apps/web-main/.next/static/. \"$SDIR/.next/static/\" 2>/dev/null || true; test -f \"$SRV\""
   },
   "deploy": {
-    "startCommand": "sh -c \"export NEXT_PUBLIC_SUPABASE_URL=$SUPABASE_URL && export NEXT_PUBLIC_SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY && export HOSTNAME=0.0.0.0 && cd /app && node apps/web-main/.next/standalone/apps/web-main/server.js\"",
-    "healthcheckPath": "/",
-    "healthcheckTimeout": 120,
+    "startCommand": "sh -c \"export NEXT_PUBLIC_SUPABASE_URL=${SUPABASE_URL:-$NEXT_PUBLIC_SUPABASE_URL} NEXT_PUBLIC_SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY:-$NEXT_PUBLIC_SUPABASE_ANON_KEY} HOSTNAME=0.0.0.0; echo Railway PORT=$PORT; SERVER=/app/apps/web-main/.next/standalone/apps/web-main/server.js; if [ ! -f $SERVER ]; then SERVER=$(find /app/apps/web-main/.next/standalone -name server.js -print -quit); fi; if [ -z $SERVER ] || [ ! -f $SERVER ]; then echo 'standalone server.js not found'; find /app -maxdepth 6 -name server.js 2>/dev/null; exit 1; fi; SDIR=$(dirname $SERVER); if [ ! -d $SDIR/.next/static/chunks ]; then echo 'Healing static assets'; mkdir -p $SDIR/.next/static $SDIR/public; cp -r /app/apps/web-main/.next/static/. $SDIR/.next/static/ 2>/dev/null || true; cp -r /app/apps/web-main/public/. $SDIR/public/ 2>/dev/null || true; fi; echo Starting $SERVER on port $PORT; cd $SDIR; exec node $SERVER\"",
+    "healthcheckPath": "/api/health",
+    "healthcheckTimeout": 300,
     "restartPolicyType": "ON_FAILURE",
     "restartPolicyMaxRetries": 10
   }

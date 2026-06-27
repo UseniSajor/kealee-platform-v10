@@ -1,0 +1,18 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { authorizeOps, unauthorized } from '@/lib/admin/intelligence-auth'
+import { intelligenceAdminService, isIntelligencePersistenceAvailable } from '@kealee/intelligence'
+
+export const dynamic = 'force-dynamic'
+
+export async function GET(req: NextRequest) {
+  if (!authorizeOps(req, 'read:intelligence').authorized) return unauthorized()
+  if (!isIntelligencePersistenceAvailable()) {
+    return NextResponse.json({ error: 'DATABASE_URL not configured' }, { status: 503 })
+  }
+  try {
+    const dashboard = await intelligenceAdminService.getDashboard()
+    return NextResponse.json(dashboard)
+  } catch (err) {
+    return NextResponse.json({ error: err instanceof Error ? err.message : String(err) }, { status: 500 })
+  }
+}

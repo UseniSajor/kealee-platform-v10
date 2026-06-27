@@ -92,7 +92,7 @@ describe('NAV CTAs', () => {
   })
 
   it('NAV_LOGIN_OPTIONS includes a client/contractor login option', () => {
-    const client = NAV_LOGIN_OPTIONS.find(o => o.href === '/auth/sign-in')
+    const client = NAV_LOGIN_OPTIONS.find(o => o.href === '/auth/login')
     expect(client).toBeDefined()
   })
 })

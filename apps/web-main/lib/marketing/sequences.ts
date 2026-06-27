@@ -235,8 +235,8 @@ export const SEQUENCES: Record<SequenceId, SequenceStep[]> = {
     {
       type:         'email',
       delaySeconds: 3 * DAY,
-      subject:      'Your concept is ready — and here\'s your next step',
-      html:         `<p>Hi {firstName},</p><p>Your concept package should have arrived by now. Your next step depends on what you decide:</p><ul><li><strong>Permits needed?</strong> We can file your permit application — <a href="https://kealee.com/permits">permit packages start at $${PERMIT_BASIC_PRICE}</a></li><li><strong>Ready to hire?</strong> We'll match you with 2–3 verified contractors — <a href="https://kealee.com/contractors">start contractor match</a></li><li><strong>Want more design detail?</strong> Upgrade to an Advanced Design package — <a href="https://kealee.com/concept">see options</a></li></ul>`,
+      subject:      'Your concept is ready — permit-ready drawings are your next step',
+      html:         `<p>Hi {firstName},</p><p>Your concept package should have arrived by now — <strong>including your RSMeans cost estimate</strong> (no separate purchase).</p><p>Your next step:</p><ul><li><strong>Permit-ready drawings?</strong> Licensed architect/PE drawing set — <a href="https://kealee.com/intake/professional_drawings">professional drawings</a></li><li><strong>Ready to file?</strong> Full permit package — <a href="https://kealee.com/permits">permit filing from $${PERMIT_BASIC_PRICE}</a></li><li><strong>Ready to hire?</strong> Vetted contractor bids — <a href="https://kealee.com/contractors">contractor match</a></li></ul>`,
     },
   ],
 }

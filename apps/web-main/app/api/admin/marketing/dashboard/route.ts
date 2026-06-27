@@ -7,33 +7,17 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { authorizeOps, unauthorized } from '@/lib/admin/intelligence-auth'
 
 export const dynamic = 'force-dynamic'
 
 export async function GET(req: NextRequest) {
+  if (!authorizeOps(req, 'read:marketing').authorized) return unauthorized()
+
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   )
-
-  const CRON_SECRET = process.env.CRON_SECRET
-  const KEALEE_OPS_SECRET = process.env.KEALEE_OPS_SECRET
-  // Authenticate
-  const auth = req.headers.get('Authorization')
-  const xKealeeOps = req.headers.get('x-kealee-ops')
-
-  const secret = KEALEE_OPS_SECRET || CRON_SECRET
-  if (!secret) {
-    return NextResponse.json({ error: 'Not configured' }, { status: 500 })
-  }
-
-  const isValid =
-    (auth && auth === `Bearer ${secret}`) ||
-    (xKealeeOps && xKealeeOps === secret)
-
-  if (!isValid) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
 
   try {
     // Get time ranges

@@ -147,6 +147,17 @@ export default async function ServicePage({
   const pricingBlurb = getServicePricingBlurb(svc.slug)
   const includedBlurb = getIncludedSectionBlurb(svc.slug)
 
+  // Real construction footage fallback by category — ensures every service page
+  // has playing video marketing even without a per-service promo clip.
+  const CATEGORY_VIDEO: Record<string, string> = {
+    design:       '/media/service-videos/home-design-video.mp4',
+    remodel:      '/media/service-videos/home-design-video.mp4',
+    addition:     '/media/service-videos/home-build-video.mp4',
+    construction: '/media/service-videos/home-build-video.mp4',
+    landscape:    '/media/service-videos/home-build-video.mp4',
+  }
+  const showcaseVideo = heroVideo ?? CATEGORY_VIDEO[svc.category]
+
   // If New Construction, redirect to its custom flow
   if (!svc.usesConceptIntake) {
     return (
@@ -290,6 +301,38 @@ export default async function ServicePage({
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen
               />
+            </div>
+          ) : showcaseVideo ? (
+            <div>
+              <div className="text-center mb-6">
+                <p className="text-xs font-bold uppercase tracking-widest text-orange-400 mb-2">Video Overview</p>
+                <h2 className="text-2xl font-bold text-white">{videoFallback.headline}</h2>
+                <p className="text-slate-400 max-w-lg mx-auto text-sm mt-2 leading-relaxed">{videoFallback.body}</p>
+              </div>
+              <div className="aspect-video rounded-2xl overflow-hidden shadow-2xl ring-1 ring-white/10 bg-black">
+                <video
+                  src={showcaseVideo}
+                  poster={heroImage}
+                  controls
+                  playsInline
+                  preload="metadata"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-6">
+                <Link
+                  href={`/concept?service=${svc.slug}`}
+                  className="inline-flex items-center gap-2 bg-[#E8724B] hover:bg-[#D45C33] text-white font-bold px-6 py-3 rounded-xl transition text-sm"
+                >
+                  Start Your Design <ArrowRight className="w-4 h-4" />
+                </Link>
+                <Link
+                  href="/gallery"
+                  className="inline-flex items-center gap-2 border border-white/20 hover:border-white/40 text-white/70 hover:text-white font-semibold px-6 py-3 rounded-xl transition text-sm"
+                >
+                  Browse Project Gallery
+                </Link>
+              </div>
             </div>
           ) : (
             <div className="text-center py-6">

@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { X, ChevronDown, ArrowRight } from 'lucide-react'
 import { useState } from 'react'
 import { PRIMARY_NAV, NAV_CTA_PRIMARY, NAV_CTA_V30, NAV_LOGIN_OPTIONS } from '@/config/navigation'
@@ -35,12 +36,16 @@ export function MobileNav({ isOpen, onClose }: Props) {
       <div className="fixed inset-y-0 right-0 z-50 flex w-full max-w-xs flex-col bg-white shadow-2xl">
         {/* Header */}
         <div className="flex h-16 items-center justify-between border-b border-gray-100 px-5">
-          <div className="flex items-center gap-2">
-            <div className="flex h-7 w-7 items-center justify-center rounded-lg" style={{ backgroundColor: '#C8521A' }}>
-              <span className="text-xs font-bold text-white font-display">K</span>
-            </div>
-            <span className="text-lg font-bold font-display" style={{ color: '#1A2B4A' }}>Kealee</span>
-          </div>
+          <Link href="/" onClick={onClose} className="flex items-center">
+            <Image
+              src="/media/kealee-logo.svg"
+              alt="kealee"
+              width={130}
+              height={38}
+              priority
+              className="h-9 w-auto"
+            />
+          </Link>
           <button
             onClick={onClose}
             className="rounded-lg p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-900"

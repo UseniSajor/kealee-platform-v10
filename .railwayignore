@@ -19,10 +19,15 @@ _docs/
 **/*.spec.ts
 coverage/
 
-# Build artifacts (will be rebuilt)
+# Build artifacts (will be rebuilt) — recursive across the monorepo
 dist/
+**/dist/
 .next/
+**/.next/
 node_modules/
+**/node_modules/
+.turbo/
+**/.turbo/
 
 # Git
 .git/
@@ -39,6 +44,11 @@ tmp/
 temp/
 *.tmp
 
-
-
-
+# Large local data packs (not needed for web-main build)
+kealee_dmv_rag_seed_pack/
+kealee_dmv_rag_seed_pack.zip
+data/
+website-versions/
+Kealee Platform Agents/
+apps/marketing/
+apps/os-admin/

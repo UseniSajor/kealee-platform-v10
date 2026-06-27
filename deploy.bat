@@ -4,6 +4,11 @@ if exist env-templates\railway-cli.env (
     if /i "%%a"=="RAILWAY_TOKEN" set RAILWAY_TOKEN=%%b
   )
 )
-if not defined RAILWAY_TOKEN set RAILWAY_TOKEN=cd78d6fe-082e-4968-8058-d1cb7a5bca58
+if not defined RAILWAY_TOKEN (
+  echo RAILWAY_TOKEN not set. Run: railway login
+  echo Or save token to env-templates\railway-cli.env
+  exit /b 1
+)
 railway whoami
-echo EXIT_CODE=%ERRORLEVEL%
+if errorlevel 1 exit /b 1
+powershell -ExecutionPolicy Bypass -File scripts\railway-marketing-deploy.ps1

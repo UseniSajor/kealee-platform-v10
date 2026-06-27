@@ -17,6 +17,24 @@ type EventName =
 declare global {
   interface Window {
     gtag?: (...args: unknown[]) => void
+    fbq?: (...args: unknown[]) => void
+  }
+}
+
+const META_EVENT_MAP: Partial<Record<EventName, string>> = {
+  intake_start: 'Lead',
+  lead_submitted: 'Lead',
+  checkout_started: 'InitiateCheckout',
+  purchase: 'Purchase',
+}
+
+function trackMetaEvent(name: string, props?: Record<string, unknown>): void {
+  try {
+    if (typeof window !== 'undefined' && typeof window.fbq === 'function') {
+      window.fbq('track', name, props)
+    }
+  } catch {
+    // never throw
   }
 }
 
@@ -26,6 +44,11 @@ export function trackEvent(name: EventName, props?: Record<string, unknown>): vo
       window.gtag('event', name, props)
     } else {
       console.log('[analytics]', name, props)
+    }
+
+    const metaEvent = META_EVENT_MAP[name]
+    if (metaEvent) {
+      trackMetaEvent(metaEvent, props)
     }
   } catch {
     // never throw

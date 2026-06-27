@@ -18,7 +18,7 @@ export default function CoreServicesSection() {
             <div className="scimg">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="https://images.unsplash.com/photo-1584622781564-1d987f7333c1?w=700&q=60&auto=format&fit=crop" alt="AI Concept" />
-              <button className="scvp" onClick={() => openModal({ tag: 'AI design engine', title: 'AI Design + Validation — how it works', description: 'You upload photos of your space or lot. Our AI generates a concept floor plan, a design brief, and a room-by-room scope. A staff member checks zoning, structural risk, permit complexity, and cost band. The full report lands in your inbox within 24 hours.', thumbUrl: 'https://images.unsplash.com/photo-1584622781564-1d987f7333c1?w=900&q=60&auto=format&fit=crop' })}>
+              <button className="scvp" onClick={() => openModal({ tag: 'AI design engine', title: 'AI Design + Validation — how it works', description: 'You upload photos of your space or lot. Our AI generates a concept floor plan, a design brief, and a room-by-room scope. A staff member checks zoning, structural risk, permit complexity, and cost band. The full report lands in your inbox within 24 hours.', thumbUrl: 'https://images.unsplash.com/photo-1584622781564-1d987f7333c1?w=900&q=60&auto=format&fit=crop', videoUrl: '/media/service-videos/home-design-video.mp4' })}>
                 <svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21" fill="white" /></svg>
               </button>
             </div>
@@ -41,7 +41,7 @@ export default function CoreServicesSection() {
             <div className="scimg">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=700&q=60&auto=format&fit=crop" alt="Permits" />
-              <button className="scvp" onClick={() => openModal({ tag: 'Permit services', title: 'Permits — what we file and track', description: 'We fill out your application, prepare your drawings package, and submit to the right agency. If the reviewer sends comments, we respond. You get a tracking link and a notification when it is approved. You do not call the permit office.', thumbUrl: 'https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=900&q=60&auto=format&fit=crop' })}>
+              <button className="scvp" onClick={() => openModal({ tag: 'Permit services', title: 'Permits — what we file and track', description: 'We fill out your application, prepare your drawings package, and submit to the right agency. If the reviewer sends comments, we respond. You get a tracking link and a notification when it is approved. You do not call the permit office.', thumbUrl: 'https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=900&q=60&auto=format&fit=crop', videoUrl: '/media/service-videos/home-permits-video.mp4' })}>
                 <svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21" fill="white" /></svg>
               </button>
             </div>
@@ -66,7 +66,7 @@ export default function CoreServicesSection() {
             <div className="scimg">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=700&q=60&auto=format&fit=crop" alt="Build" />
-              <button className="scvp" onClick={() => openModal({ tag: 'Build your project', title: 'Build your project — what the platform tracks', description: 'Every milestone, document, pay application, and site photo lives in your project dashboard. You approve each milestone before any payment releases. Your contractor cannot receive funds without your sign-off.', thumbUrl: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=900&q=60&auto=format&fit=crop' })}>
+              <button className="scvp" onClick={() => openModal({ tag: 'Build your project', title: 'Build your project — what the platform tracks', description: 'Every milestone, document, pay application, and site photo lives in your project dashboard. You approve each milestone before any payment releases. Your contractor cannot receive funds without your sign-off.', thumbUrl: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=900&q=60&auto=format&fit=crop', videoUrl: '/media/service-videos/home-build-video.mp4' })}>
                 <svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21" fill="white" /></svg>
               </button>
             </div>

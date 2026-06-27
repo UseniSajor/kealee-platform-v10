@@ -5,10 +5,16 @@ on:
     branches: [main]
   workflow_dispatch:
 
+env:
+  RAILWAY_PROJECT_ID: 8187fcf6-9916-49aa-bc75-77407f83d319
+  RAILWAY_ENVIRONMENT: production
+
 jobs:
   deploy-api:
     name: Deploy API to Railway
     runs-on: ubuntu-latest
+    env:
+      RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -28,31 +34,45 @@ jobs:
       - name: Build API
         run: pnpm build --filter=@kealee/api
 
-      - name: Deploy to Railway
-        uses: bervProject/railway-deploy@main
-        with:
-          railway_token: ${{ secrets.RAILWAY_TOKEN }}
-          service: api
+      - name: Install Railway CLI
+        run: npm install -g @railway/cli@4.40.0
 
-  deploy-portals:
+      - name: Link Railway project
+        run: railway link --project "$RAILWAY_PROJECT_ID" --environment "$RAILWAY_ENVIRONMENT"
+
+      - name: Deploy API to Railway
+        run: railway redeploy --service api --yes
+
+  deploy-services:
     name: Deploy ${{ matrix.service }} to Railway
     runs-on: ubuntu-latest
+    env:
+      RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - service: portal-owner
-          - service: portal-contractor
-          - service: portal-developer
-          - service: command-center
-          - service: web-main
-          # admin-console merged into os-admin (Vercel: admin.kealee.com)
+        service:
+          - portal-owner
+          - portal-contractor
+          - portal-developer
+          - command-center
+          - web-main
+          - marketing-cron-lead-scoring
+          - marketing-cron-sequences
+          - marketing-cron-requalify-cold
+          - marketing-cron-parcel-enrichment
+          - marketing-cron-parcel-outreach
+          - marketing-cron-marketing-drip
+          # admin-console: orphaned on Railway (merged into os-admin on Vercel) — disable in dashboard
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Install Railway CLI
+        run: npm install -g @railway/cli@4.40.0
+
+      - name: Link Railway project
+        run: railway link --project "$RAILWAY_PROJECT_ID" --environment "$RAILWAY_ENVIRONMENT"
+
       - name: Deploy ${{ matrix.service }} to Railway
-        uses: bervProject/railway-deploy@main
-        with:
-          railway_token: ${{ secrets.RAILWAY_TOKEN }}
-          service: ${{ matrix.service }}
+        run: railway redeploy --service "${{ matrix.service }}" --yes

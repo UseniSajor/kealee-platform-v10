@@ -11,6 +11,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { Menu, ArrowRight, ChevronDown } from 'lucide-react'
 import { NavItem } from './NavItem'
 import { MobileNav } from './MobileNav'
@@ -85,16 +86,17 @@ export function GlobalNav() {
           {/* Logo */}
           <Link
             href="/"
-            className="flex flex-shrink-0 items-center gap-2.5"
+            className="flex flex-shrink-0 items-center"
             onClick={() => { setOpenDropdown(null); setLoginOpen(false) }}
           >
-            <div
-              className="flex h-8 w-8 items-center justify-center rounded-lg"
-              style={{ backgroundColor: '#C8521A' }}
-            >
-              <span className="text-sm font-bold text-white font-display">K</span>
-            </div>
-            <span className="text-xl font-bold font-display" style={{ color: '#1A2B4A' }}>Kealee</span>
+            <Image
+              src="/media/kealee-logo.svg"
+              alt="kealee"
+              width={150}
+              height={44}
+              priority
+              className="h-10 w-auto"
+            />
           </Link>
 
           {/* Desktop nav items — center */}

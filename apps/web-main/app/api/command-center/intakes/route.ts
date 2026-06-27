@@ -27,7 +27,13 @@ export async function GET(req: NextRequest) {
       requires_payment,
       payment_amount,
       created_at,
-      form_data
+      form_data,
+      lead_score,
+      intelligence_priority,
+      intelligence_segment,
+      intelligence_metadata,
+      property_twin_id,
+      lead_twin_id
     `)
     .order('created_at', { ascending: false })
     .limit(limit)

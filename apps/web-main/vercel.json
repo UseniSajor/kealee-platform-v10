@@ -11,8 +11,28 @@
   },
   "crons": [
     {
+      "path": "/api/cron/parcel-enrichment",
+      "schedule": "0 12 * * *"
+    },
+    {
+      "path": "/api/cron/parcel-outreach",
+      "schedule": "0 13 * * *"
+    },
+    {
       "path": "/api/cron/marketing-drip",
       "schedule": "0 14 * * *"
+    },
+    {
+      "path": "/api/cron/lead-scoring",
+      "schedule": "*/5 * * * *"
+    },
+    {
+      "path": "/api/cron/sequences",
+      "schedule": "*/5 * * * *"
+    },
+    {
+      "path": "/api/cron/requalify-cold",
+      "schedule": "0 */12 * * *"
     },
     {
       "path": "/api/cron/generate-weekly-campaigns",

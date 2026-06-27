@@ -39,6 +39,7 @@ const DOMAIN_ORDER = [
   'workflow',
   'integrations',
   'analytics',
+  'intelligence',
   'pre-design',
 ]
 

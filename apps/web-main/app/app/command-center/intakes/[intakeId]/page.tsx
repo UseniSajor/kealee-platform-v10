@@ -2,7 +2,7 @@
 
 import { useParams, useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
-import { ArrowLeft, Camera, Building2, CheckCircle2, Clock, Loader2, AlertTriangle, ExternalLink, MapPin, Scan, Calendar } from 'lucide-react'
+import { ArrowLeft, Camera, Building2, CheckCircle2, Clock, Loader2, AlertTriangle, ExternalLink, MapPin, Scan, Calendar, Brain } from 'lucide-react'
 
 interface IntakeDetail {
   id: string
@@ -19,6 +19,12 @@ interface IntakeDetail {
   form_data: Record<string, unknown>
   assigned_to?: string | null
   notes?: string | null
+  lead_score?: number | null
+  intelligence_priority?: string | null
+  intelligence_segment?: string | null
+  intelligence_metadata?: Record<string, unknown> | null
+  property_twin_id?: string | null
+  lead_twin_id?: string | null
 }
 
 interface CaptureSession {
@@ -188,6 +194,43 @@ export default function IntakeDetailPage() {
           </select>
         </div>
       </div>
+
+      {(intake.intelligence_priority || intake.lead_score != null) && (
+        <div className="mb-6 rounded-2xl border border-indigo-100 bg-gradient-to-br from-indigo-50/60 to-white p-5">
+          <div className="mb-4 flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <Brain className="h-5 w-5 text-indigo-600" />
+              <h3 className="font-semibold" style={{ color: '#1A2B4A' }}>Intelligence</h3>
+            </div>
+            <a
+              href="/admin/intelligence/dashboard"
+              className="flex items-center gap-1 text-xs text-indigo-600 hover:underline"
+            >
+              Full dashboard <ExternalLink className="h-3.5 w-3.5" />
+            </a>
+          </div>
+          <dl className="grid gap-3 text-sm sm:grid-cols-2">
+            <Row label="Lead score" value={intake.lead_score != null ? String(intake.lead_score) : '—'} />
+            <Row label="Priority" value={intake.intelligence_priority ?? '—'} />
+            <Row label="Segment" value={intake.intelligence_segment ?? '—'} />
+            {intake.property_twin_id && (
+              <Row label="Property twin" value={intake.property_twin_id.slice(0, 8) + '…'} />
+            )}
+            {(() => {
+              const pa = intake.intelligence_metadata?.productAssignment as Record<string, unknown> | undefined
+              if (!pa) return null
+              return (
+                <>
+                  <Row label="Assigned product" value={String(pa.assignedProduct ?? '—').replace(/_/g, ' ')} />
+                  <Row label="Campaign" value={String(pa.campaign ?? '—')} />
+                  <Row label="Landing page" value={String(pa.landingPage ?? '—')} />
+                  <Row label="Offer" value={String(pa.offer ?? '—')} />
+                </>
+              )
+            })()}
+          </dl>
+        </div>
+      )}
 
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Client info */}

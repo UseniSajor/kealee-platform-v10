@@ -131,7 +131,7 @@ ADUs (Accessory Dwelling Units) — backyard cottages, garage apartments, baseme
 
 NOT every lot qualifies. The key variables:
 
-1. Zoning district: Your lot's zoning (R-1 through R-4 and others) determines whether an ADU is allowed by-right. Not all zones allow it.
+1. Zoning district: Codes vary by jurisdiction — Fairfax uses R-1/R-2/R-3, Arlington uses R-5/R-6/R-10, DC uses R-2/R-3/RF-1, Montgomery uses R-60/R-90. Look up your specific district; not all zones allow ADUs by-right.
 
 2. Lot size: Most jurisdictions require a minimum lot size — usually 6,000–8,000+ square feet — for a detached ADU.
 

@@ -33,6 +33,18 @@ export interface Concept {
   videoDuration?: number
   videoFormatUrls?: Record<string, string>
   floorPlanUrl?: string
+  /** Inline SVG when storage upload failed but layout was generated */
+  floorplanSvgInline?: string
+  /** Room layout summary from concept-engine (tier 2+ floor plan package) */
+  layoutPlan?: {
+    totalAreaFt2?: number
+    roomCount?: number
+    rooms?: Array<{ label: string; widthFt: number; depthFt: number; areaFt2: number; type: string }>
+    layoutNotes?: string[]
+    layoutIssues?: string[]
+  }
+  /** Server-generated concept package PDF */
+  pdfUrl?: string
   mepSchematic?: Record<string, unknown>
   estimatedCost?: number
   timeline?: string

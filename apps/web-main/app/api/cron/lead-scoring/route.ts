@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import { calculateLeadScore, type LeadData, type RoutingTag } from '@/lib/marketing/lead-scorer'
+import { type LeadData } from '@/lib/marketing/lead-scorer'
+import {
+  scoreLeadWithIntelligence,
+  mapIntakeRowToLeadInput,
+  intelligenceMetadataUpdate,
+  intelligenceCrmExtras,
+} from '@/lib/marketing/intelligence-scorer'
 import { alertHotLead } from '@/lib/marketing/twilio-client'
 import { sendLeadToSlack } from '@/lib/marketing/slack-client'
 import { parseBudgetRange, syncLeadToCrms } from '@/lib/marketing/crm-dispatcher'
@@ -16,6 +22,7 @@ export const dynamic = 'force-dynamic'
  * 2. Send SMS alert if lead is hot
  * 3. Create HubSpot contact
  * 4. Update intake_leads.lead_score + routing_tag
+ * 5. When enabled: run v30 intelligence agents + PropertyTwin/LeadTwin persistence
  */
 export async function POST(req: NextRequest) {
   const supabase = createClient(
@@ -84,9 +91,12 @@ export async function POST(req: NextRequest) {
           phone: lead.phone_number,
         }
 
-        // ── Calculate score ────────────────────────────────────────────
-        const scoreResult = calculateLeadScore(leadData)
+        // ── Calculate score (legacy + intelligence blend) ───────────────
+        const intakeInput = mapIntakeRowToLeadInput(lead, formData)
+        const scoreResult = await scoreLeadWithIntelligence(leadData, intakeInput)
         const isHot = scoreResult.tag === 'hot'
+        const intelMeta = intelligenceMetadataUpdate(scoreResult)
+        const crmExtras = intelligenceCrmExtras(scoreResult)
 
         if (isHot) hotCount++
 
@@ -97,6 +107,7 @@ export async function POST(req: NextRequest) {
             lead_score: scoreResult.score,
             routing_tag: scoreResult.tag,
             lead_tier: scoreResult.tag,
+            ...(intelMeta ?? {}),
           })
           .eq('id', lead.id)
 
@@ -172,6 +183,8 @@ export async function POST(req: NextRequest) {
               timeline: leadData.timeline || undefined,
               score: scoreResult.score,
               tag: scoreResult.tag,
+              customFields: crmExtras.customFields,
+              tags: crmExtras.tags,
             })
 
             const primaryContactId = syncResult.ghl?.id || syncResult.hubspot?.id
@@ -181,6 +194,25 @@ export async function POST(req: NextRequest) {
                 .from('public_intake_leads')
                 .update({ ghl_contact_id: primaryContactId })
                 .eq('id', lead.id)
+
+              if (scoreResult.intelligence && syncResult.ghl?.id) {
+                try {
+                  const { scheduleIntelligenceNurtureIfEligible } = await import(
+                    '@/lib/marketing/intelligence-nurture'
+                  )
+                  await scheduleIntelligenceNurtureIfEligible({
+                    leadId: lead.id,
+                    ghlContactId: syncResult.ghl.id,
+                    intelligence: scoreResult.intelligence,
+                    email: leadEmail,
+                    name: lead.client_name || lead.name,
+                    address: lead.project_address,
+                    projectPath: lead.project_path,
+                  })
+                } catch (nurtureErr) {
+                  console.warn(`[lead-scoring] intelligence nurture skipped for ${lead.id}:`, nurtureErr)
+                }
+              }
             }
 
             // Log CRM Sync results
@@ -227,6 +259,8 @@ export async function POST(req: NextRequest) {
           score: scoreResult.score,
           tag: scoreResult.tag,
           isHot,
+          mode: scoreResult.mode,
+          intelligenceSegment: scoreResult.intelligence?.audienceSegment,
         })
       } catch (err) {
         console.error(`Lead scoring error for ${lead.id}:`, err)
@@ -251,4 +285,9 @@ export async function POST(req: NextRequest) {
       { status: 500 }
     )
   }
+}
+
+/** Vercel Cron invokes GET — delegate to POST handler. */
+export async function GET(req: NextRequest) {
+  return POST(req)
 }
