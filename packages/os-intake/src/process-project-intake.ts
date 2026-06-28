@@ -124,9 +124,7 @@ export async function processV30ProjectIntake(
   await prisma.project.update({
     where: { id: projectId },
     data: {
-      v30Status: 'INTAKE',
-      packageFeatures: features,
-      packageType: 'custom',
+      status: 'INTAKE',
       name: `${answers.propertyType} ${answers.primaryScope}`,
       address: answers.location,
     },

@@ -52,10 +52,7 @@ export async function ensureV30ProjectFromPublicIntake(
         name: `${input.clientName} — ${input.projectPath}`,
         description: `v30 public intake ${input.intakeLeadId}`,
         ownerId: input.userId,
-        status: 'ACTIVE',
-        v30Status: 'INTAKE',
-        packageType: 'custom',
-        packageFeatures: input.features,
+        status: 'INTAKE',
         address: input.projectAddress,
         category: input.projectPath,
         categoryMetadata: {
@@ -81,7 +78,7 @@ export async function ensureV30ProjectFromPublicIntake(
 
   await prisma.project.update({
     where: { id: projectId },
-    data: { v30Status: 'GENERATING' },
+    data: { status: 'GENERATING' },
   })
 
   return { projectId, packageId: result.packageId }
