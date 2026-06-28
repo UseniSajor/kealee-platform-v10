@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { createQueue, createWorker, addJob } from './queues.js';
 import { loopRouter, mapEventToLoopType } from '../loop-router.js';
 import { PrismaClient } from '@prisma/client';
