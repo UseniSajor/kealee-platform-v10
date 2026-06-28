@@ -166,7 +166,7 @@ export async function startV30Generation(
 
   await prisma.project.update({
     where: { id: input.projectId },
-    data: { v30Status: 'GENERATING' },
+    data: { status: 'GENERATING' },
   })
 
   const project = await prisma.project.findUnique({
@@ -203,7 +203,7 @@ export async function startV30Generation(
 
       await prisma.project.update({
         where: { id: input.projectId },
-        data: { v30Status: summary.failedCount === 0 ? 'DELIVERED' : 'GENERATING' },
+        data: { status: summary.failedCount === 0 ? 'DELIVERED' : 'GENERATING' },
       })
 
       if (summary.failedCount === 0) {
@@ -217,7 +217,7 @@ export async function startV30Generation(
       const message = err instanceof Error ? err.message : 'Generation failed'
       await prisma.project.update({
         where: { id: input.projectId },
-        data: { v30Status: 'FAILED' },
+        data: { status: 'FAILED' },
       })
       for (const id of Object.values(executionIds)) {
         await prisma.v30BotExecution.update({

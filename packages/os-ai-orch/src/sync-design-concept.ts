@@ -30,7 +30,7 @@ export async function syncV30DesignConceptToProject(
   await prisma.project.update({
     where: { id: projectId },
     data: {
-      v30Status: 'DESIGN',
+      status: 'DESIGN',
       categoryMetadata: {
         ...meta,
         v30DesignBot: designResult.outputData,

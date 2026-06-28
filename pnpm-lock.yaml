@@ -687,6 +687,9 @@ importers:
       '@kealee/auth':
         specifier: workspace:*
         version: link:../../packages/auth
+      '@kealee/automation':
+        specifier: workspace:*
+        version: link:../../packages/automation
       '@kealee/communications':
         specifier: workspace:*
         version: link:../../packages/communications
