@@ -2,22 +2,14 @@ import { NextRequest, NextResponse } from 'next/server'
 import { enrichParcelTarget, applyEnrichment } from '@/lib/marketing/parcel-outreach/enrichment'
 import { queueOutreachForTarget } from '@/lib/marketing/parcel-outreach/queue'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
+import { verifyCronRequest } from '@/lib/cron-auth'
 
 export const dynamic = 'force-dynamic'
 
-function authorize(req: NextRequest): boolean {
-  const secret = process.env.KEALEE_OPS_SECRET || process.env.CRON_SECRET
-  if (!secret) return false
-  const auth = req.headers.get('Authorization')
-  const ops = req.headers.get('x-kealee-ops')
-  return auth === `Bearer ${secret}` || ops === secret
-}
-
 /** POST /api/cron/parcel-enrichment — enrich pending parcel targets */
 export async function POST(req: NextRequest) {
-  if (!authorize(req)) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  const cronDenied = verifyCronRequest(req)
+  if (cronDenied) return cronDenied
 
   const supabase = getSupabaseAdmin()
   const { data: targets } = await supabase

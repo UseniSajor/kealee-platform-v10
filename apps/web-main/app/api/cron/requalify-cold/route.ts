@@ -16,38 +16,18 @@ import {
   intelligenceMetadataUpdate,
 } from '@/lib/marketing/intelligence-scorer'
 
+import { verifyCronRequest } from '@/lib/cron-auth'
+
 export const dynamic = 'force-dynamic'
 
 export async function POST(req: NextRequest) {
+  const cronDenied = verifyCronRequest(req)
+  if (cronDenied) return cronDenied
+
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   )
-  const CRON_SECRET = process.env.CRON_SECRET
-  const KEALEE_OPS_SECRET = process.env.KEALEE_OPS_SECRET
-
-  // Authenticate
-  const auth = req.headers.get('Authorization')
-  const xKealeeOps = req.headers.get('x-kealee-ops')
-
-  const secret = KEALEE_OPS_SECRET || CRON_SECRET
-  if (!secret) {
-    return NextResponse.json(
-      { error: 'CRON_SECRET or KEALEE_OPS_SECRET not set' },
-      { status: 500 }
-    )
-  }
-
-  const isValid =
-    (auth && auth === `Bearer ${secret}`) ||
-    (xKealeeOps && xKealeeOps === secret)
-
-  if (!isValid) {
-    return NextResponse.json(
-      { error: 'Unauthorized' },
-      { status: 401 }
-    )
-  }
 
   try {
     // Fetch cold leads created < 7 days ago

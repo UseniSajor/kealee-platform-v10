@@ -1,11 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
+import { requireCommandCenterApi } from '@/lib/command-center-api-auth'
 
 export const dynamic = 'force-dynamic'
 
 
 // GET /api/command-center/intakes/[intakeId]
 export async function GET(req: NextRequest, { params }: { params: { intakeId: string } }) {
+  const denied = await requireCommandCenterApi(req)
+  if (denied) return denied
+
   const { intakeId } = params
   const supabase = getSupabaseAdmin()
 

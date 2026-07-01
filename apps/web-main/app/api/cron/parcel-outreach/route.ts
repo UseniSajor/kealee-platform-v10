@@ -1,21 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { processOutreachQueue } from '@/lib/marketing/parcel-outreach/queue'
+import { verifyCronRequest } from '@/lib/cron-auth'
 
 export const dynamic = 'force-dynamic'
 
-function authorize(req: NextRequest): boolean {
-  const secret = process.env.KEALEE_OPS_SECRET || process.env.CRON_SECRET
-  if (!secret) return false
-  const auth = req.headers.get('Authorization')
-  const ops = req.headers.get('x-kealee-ops')
-  return auth === `Bearer ${secret}` || ops === secret
-}
-
 /** POST /api/cron/parcel-outreach — send queued parcel owner outreach */
 export async function POST(req: NextRequest) {
-  if (!authorize(req)) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  const cronDenied = verifyCronRequest(req)
+  if (cronDenied) return cronDenied
 
   try {
     const result = await processOutreachQueue()

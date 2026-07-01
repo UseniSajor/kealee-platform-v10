@@ -1,10 +1,16 @@
 /**
- * Wire intelligence product assignment → GHL nurture sequences.
- * Called from lead-scoring cron after CRM contact is created.
+ * Wire intelligence product assignment → nurture sequences.
+ * Enterprise CRM: GHL sequences. Default: Kealee native drip (Resend).
  */
 
 import type { IntelligenceLeadResult } from '@kealee/intelligence'
 import { scheduleSequence, type SequenceId } from '@/lib/marketing/sequences'
+import { isEnterpriseCrmEnabled } from '@/lib/marketing/crm-enterprise'
+import { isGhlEnabled } from '@/lib/marketing/ghl-enabled'
+import {
+  schedulePrePaymentDrip,
+  buildConceptFunnelUrl,
+} from '@/lib/marketing/drip-schedule'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
 
 const NURTURE_TO_SEQUENCE: Record<string, SequenceId> = {
@@ -34,15 +40,82 @@ export function resolveSequenceForIntelligence(intelligence: IntelligenceLeadRes
   return 'CONCEPT_SEQUENCE'
 }
 
+async function scheduleNativeIntelligenceDrip(opts: {
+  leadId: string
+  email: string
+  name?: string
+  projectPath?: string
+  intelligence: IntelligenceLeadResult
+}): Promise<{ scheduled: boolean; mode: 'native_drip' }> {
+  const supabase = getSupabaseAdmin()
+
+  const { data: existing } = await supabase
+    .from('marketing_drip_queue')
+    .select('id')
+    .eq('lead_id', opts.leadId)
+    .limit(1)
+
+  if (existing?.length) {
+    return { scheduled: false, mode: 'native_drip' }
+  }
+
+  const projectType = (opts.projectPath ?? opts.intelligence.topProduct ?? 'renovation').replace(
+    /_/g,
+    ' ',
+  )
+
+  await schedulePrePaymentDrip({
+    leadId: opts.leadId,
+    email: opts.email,
+    name: opts.name,
+    serviceLabel: projectType,
+    funnelUrl: buildConceptFunnelUrl(opts.projectPath, opts.leadId),
+  })
+
+  const { data: row } = await supabase
+    .from('public_intake_leads')
+    .select('metadata')
+    .eq('id', opts.leadId)
+    .single()
+
+  const prior = (row?.metadata as Record<string, unknown>) ?? {}
+  await supabase
+    .from('public_intake_leads')
+    .update({
+      metadata: {
+        ...prior,
+        intelligenceNurtureScheduled: 'NATIVE_DRIP',
+        intelligenceNurtureAt: new Date().toISOString(),
+        nurtureMode: 'kealee_native',
+      },
+    })
+    .eq('id', opts.leadId)
+
+  return { scheduled: true, mode: 'native_drip' }
+}
+
 export async function scheduleIntelligenceNurtureIfEligible(opts: {
   leadId: string
-  ghlContactId: string
+  ghlContactId?: string
   intelligence: IntelligenceLeadResult
   email: string
   name?: string
   address?: string
   projectPath?: string
-}): Promise<{ scheduled: boolean; sequenceId?: SequenceId }> {
+}): Promise<{ scheduled: boolean; sequenceId?: SequenceId | 'NATIVE_DRIP'; mode?: string }> {
+  if (!opts.intelligence.productAssignment?.autoAssigned && opts.intelligence.humanReviewRequired) {
+    return { scheduled: false }
+  }
+
+  if (!isEnterpriseCrmEnabled() || !isGhlEnabled()) {
+    const native = await scheduleNativeIntelligenceDrip(opts)
+    return { scheduled: native.scheduled, sequenceId: 'NATIVE_DRIP', mode: 'kealee_native' }
+  }
+
+  if (!opts.ghlContactId) {
+    return { scheduled: false }
+  }
+
   const supabase = getSupabaseAdmin()
 
   const { data: existing } = await supabase
@@ -53,10 +126,6 @@ export async function scheduleIntelligenceNurtureIfEligible(opts: {
     .limit(1)
 
   if (existing?.length) {
-    return { scheduled: false }
-  }
-
-  if (!opts.intelligence.productAssignment?.autoAssigned && opts.intelligence.humanReviewRequired) {
     return { scheduled: false }
   }
 
@@ -90,9 +159,10 @@ export async function scheduleIntelligenceNurtureIfEligible(opts: {
         ...prior,
         intelligenceNurtureScheduled: sequenceId,
         intelligenceNurtureAt: new Date().toISOString(),
+        nurtureMode: 'ghl_sequence',
       },
     })
     .eq('id', opts.leadId)
 
-  return { scheduled: true, sequenceId }
+  return { scheduled: true, sequenceId, mode: 'ghl_sequence' }
 }

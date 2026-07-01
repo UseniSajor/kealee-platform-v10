@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation'
 import { Menu, X, ChevronDown } from 'lucide-react'
 import { useState, useRef, useEffect } from 'react'
 import { SERVICES } from '@/lib/services-config'
+import { isAgencyPartnerShellPath } from '@/lib/agency-partner-shell'
 
 // Services dropdown shows design and construction side-by-side
 function ServicesDropdown() {
@@ -195,6 +196,8 @@ function MobileServicesAccordion({ onClose }: { onClose: () => void }) {
 export function SiteNav() {
   const pathname = usePathname()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+
+  if (isAgencyPartnerShellPath(pathname)) return null
 
   function isActive(href: string) {
     return pathname === href || (href !== '/' && pathname?.startsWith(href + '/'))

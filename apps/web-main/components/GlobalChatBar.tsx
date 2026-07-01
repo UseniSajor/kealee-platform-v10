@@ -2,6 +2,7 @@
 
 import { usePathname } from 'next/navigation'
 import { AskChatBar } from '@/components/ui/AskChatBar'
+import { isAgencyPartnerShellPath } from '@/lib/agency-partner-shell'
 
 // Pages where the floating bar would compete with forms or checkout
 const EXCLUDED_PREFIXES = ['/intake/', '/pre-design/', '/concept/']
@@ -9,6 +10,8 @@ const EXCLUDED_EXACT: string[] = []
 
 export function GlobalChatBar() {
   const pathname = usePathname()
+
+  if (isAgencyPartnerShellPath(pathname)) return null
 
   if (EXCLUDED_PREFIXES.some(p => pathname.startsWith(p))) return null
   if (EXCLUDED_EXACT.includes(pathname)) return null

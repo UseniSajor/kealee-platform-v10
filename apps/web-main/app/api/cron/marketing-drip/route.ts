@@ -7,6 +7,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
+import { verifyCronRequest } from '@/lib/cron-auth'
 import { buildDripEmail } from '@/lib/marketing/email-templates'
 import { sendMarketingEmail } from '@/lib/marketing/resend'
 
@@ -14,13 +15,8 @@ export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 
 export async function GET(req: NextRequest) {
-  const cronSecret = process.env.CRON_SECRET
-  if (cronSecret) {
-    const auth = req.headers.get('authorization')
-    if (auth !== `Bearer ${cronSecret}`) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-  }
+  const cronDenied = verifyCronRequest(req)
+  if (cronDenied) return cronDenied
 
   const supabase = getSupabaseAdmin()
   const now = new Date().toISOString()

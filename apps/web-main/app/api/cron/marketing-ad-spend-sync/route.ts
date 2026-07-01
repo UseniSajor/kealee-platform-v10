@@ -6,21 +6,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { parseDateRange, syncAdSpendToDatabase, toDateOnly } from '@/lib/marketing/ad-spend'
+import { verifyCronRequest } from '@/lib/cron-auth'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 
-function authorize(req: NextRequest): boolean {
-  const secret = process.env.CRON_SECRET ?? process.env.KEALEE_OPS_SECRET
-  if (!secret) return false
-  const auth = req.headers.get('authorization')
-  return auth === `Bearer ${secret}`
-}
-
 export async function POST(req: NextRequest) {
-  if (!authorize(req)) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  const cronDenied = verifyCronRequest(req)
+  if (cronDenied) return cronDenied
 
   try {
     const { searchParams } = new URL(req.url)

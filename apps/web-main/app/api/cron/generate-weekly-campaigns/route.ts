@@ -5,21 +5,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { generateWeeklyCampaigns } from '@/lib/marketing/campaign-runner'
+import { verifyCronRequest } from '@/lib/cron-auth'
 
 export const dynamic = 'force-dynamic'
 
-function authorize(req: NextRequest): boolean {
-  const secret = process.env.KEALEE_OPS_SECRET || process.env.CRON_SECRET
-  if (!secret) return false
-  const auth = req.headers.get('Authorization')
-  const ops = req.headers.get('x-kealee-ops')
-  return auth === `Bearer ${secret}` || ops === secret
-}
-
 export async function POST(req: NextRequest) {
-  if (!authorize(req)) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  const cronDenied = verifyCronRequest(req)
+  if (cronDenied) return cronDenied
 
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,

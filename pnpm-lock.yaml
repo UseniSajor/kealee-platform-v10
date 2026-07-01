@@ -708,12 +708,15 @@ importers:
       '@kealee/intake':
         specifier: workspace:*
         version: link:../../packages/intake
-      '@kealee/intelligence':
-        specifier: workspace:*
-        version: link:../../packages/intelligence
       '@kealee/kealee-agent-stack':
         specifier: workspace:*
         version: link:../../packages/kealee-agent-stack
+      '@kealee/marketing-agency':
+        specifier: workspace:*
+        version: link:../../packages/marketing-agency
+      '@kealee/marketing-privacy':
+        specifier: workspace:*
+        version: link:../../packages/marketing-privacy
       '@kealee/pascal-wrapper':
         specifier: workspace:*
         version: link:../../packages/pascal-wrapper
@@ -1992,6 +1995,37 @@ importers:
       typescript:
         specifier: ^5.9.3
         version: 5.9.3
+
+  packages/marketing-agency:
+    dependencies:
+      '@supabase/supabase-js':
+        specifier: ^2.39.0
+        version: 2.104.0
+      zod:
+        specifier: ^3.22.4
+        version: 3.25.76
+    devDependencies:
+      '@types/node':
+        specifier: ^20.19.0
+        version: 20.19.39
+      typescript:
+        specifier: ^5.9.0
+        version: 5.9.3
+      vitest:
+        specifier: ^1.6.1
+        version: 1.6.1(@types/node@20.19.39)
+
+  packages/marketing-privacy:
+    devDependencies:
+      '@types/node':
+        specifier: ^20.19.0
+        version: 20.19.39
+      typescript:
+        specifier: ^5.9.0
+        version: 5.9.3
+      vitest:
+        specifier: ^1.6.1
+        version: 1.6.1(@types/node@20.19.39)
 
   packages/observability:
     dependencies:

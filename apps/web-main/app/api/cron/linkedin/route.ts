@@ -26,6 +26,7 @@
 
 import { NextRequest, NextResponse }   from 'next/server'
 import { LINKEDIN_POSTS, LinkedInPost } from '@/lib/marketing/linkedin-posts'
+import { verifyCronRequest } from '@/lib/cron-auth'
 
 export const dynamic = 'force-dynamic'
 
@@ -139,13 +140,8 @@ async function publishLinkedInPost(post: LinkedInPost): Promise<{ id: string }> 
 // ── Handler ───────────────────────────────────────────────────────────────────
 
 export async function GET(req: NextRequest): Promise<NextResponse> {
-  // Auth
-  if (CRON_SECRET) {
-    const auth = req.headers.get('authorization') ?? ''
-    if (auth !== `Bearer ${CRON_SECRET}`) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-  }
+  const cronDenied = verifyCronRequest(req)
+  if (cronDenied) return cronDenied
 
   const post = getTodaysPost()
 

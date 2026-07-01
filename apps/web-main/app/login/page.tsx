@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { redirect } from 'next/navigation'
 import { ArrowRight, ExternalLink } from 'lucide-react'
 
 export const metadata: Metadata = {
@@ -62,7 +63,25 @@ const STAFF_PORTALS = [
   },
 ]
 
-export default function LoginPage() {
+export default function LoginPage({
+  searchParams,
+}: {
+  searchParams?: { redirectTo?: string; next?: string }
+}) {
+  const target = searchParams?.redirectTo ?? searchParams?.next
+  if (
+    target?.startsWith('/') &&
+    target.startsWith('/marketing/workspace')
+  ) {
+    redirect('/marketing/login')
+  }
+  if (
+    target?.startsWith('/') &&
+    target.startsWith('/admin/marketing')
+  ) {
+    redirect(`/auth/login?next=${encodeURIComponent(target)}`)
+  }
+
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#F8FAFC' }}>
       {/* Header */}

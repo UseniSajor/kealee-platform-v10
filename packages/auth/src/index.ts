@@ -111,3 +111,15 @@ export {
   canAccessApp,
 } from './entitlements';
 export type { KealeeAppId, EntitlementProduct, UserEntitlements } from './entitlements';
+
+export {
+  verifyCronRequest,
+  verifyOpsBearer,
+  getOpsSecret,
+  isProductionEnv,
+  hasCommandCenterApiRole,
+  hasIntelligenceUiRole,
+  hasOsAdminRole,
+  COMMAND_CENTER_API_ROLES,
+  INTELLIGENCE_UI_ROLES,
+} from './ops-api-auth';

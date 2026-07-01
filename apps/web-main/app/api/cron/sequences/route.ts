@@ -11,6 +11,8 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseAdmin }          from '@/lib/supabase-server'
+import { isGhlEnabled } from '@/lib/marketing/ghl-enabled'
+import { verifyCronRequest } from '@/lib/cron-auth'
 import {
 
   sendSMS,
@@ -39,12 +41,15 @@ interface QueueRow {
 }
 
 export async function GET(req: NextRequest): Promise<NextResponse> {
-  // Auth — Vercel sends Authorization: Bearer <CRON_SECRET>
-  if (CRON_SECRET) {
-    const auth = req.headers.get('authorization') ?? ''
-    if (auth !== `Bearer ${CRON_SECRET}`) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+  const cronDenied = verifyCronRequest(req)
+  if (cronDenied) return cronDenied
+
+  if (!isGhlEnabled()) {
+    return NextResponse.json({
+      skipped: true,
+      reason: 'GHL disabled — using Kealee native drip (marketing_drip_queue)',
+      processed: 0,
+    })
   }
 
   const supabase = getSupabaseAdmin()

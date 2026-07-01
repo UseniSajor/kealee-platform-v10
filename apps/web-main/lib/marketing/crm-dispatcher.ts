@@ -1,5 +1,6 @@
 import { createOrUpdateContact as createOrUpdateGhlContact } from './ghl-client'
 import { isGhlEnabled } from './ghl-enabled'
+import { isEnterpriseCrmEnabled } from './crm-enterprise'
 import { createOrUpdateContact as createOrUpdateHubspotContact, HubSpotContact } from './hubspot-client'
 
 export interface CrmSyncInput {
@@ -53,6 +54,10 @@ export function parseBudgetRange(budgetString: string | number | undefined | nul
  * depending on what API credentials are configured in the environment.
  */
 export async function syncLeadToCrms(input: CrmSyncInput): Promise<CrmSyncResult> {
+  if (!isEnterpriseCrmEnabled()) {
+    return {}
+  }
+
   const result: CrmSyncResult = {}
   const firstName = input.name ? input.name.split(' ')[0] : undefined
   const lastName = input.name ? input.name.split(' ').slice(1).join(' ') : undefined
@@ -101,9 +106,9 @@ export async function syncLeadToCrms(input: CrmSyncInput): Promise<CrmSyncResult
     }
   }
 
-  // ── 2. Sync to HubSpot if configured ────────────────────────────────────
+  // ── 2. Sync to HubSpot if enterprise CRM + configured ───────────────────
   const hubspotKey = process.env.HUBSPOT_API_KEY || process.env.HUBSPOT_ACCESS_TOKEN
-  if (hubspotKey?.trim()) {
+  if (isEnterpriseCrmEnabled() && hubspotKey?.trim()) {
     try {
       const hsProperties: HubSpotContact = {
         email: input.email,
