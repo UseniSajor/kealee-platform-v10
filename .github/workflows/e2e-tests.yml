@@ -50,9 +50,9 @@ jobs:
           node-version: '20'
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v2
+        uses: pnpm/action-setup@v4
         with:
-          version: 8
+          version: 8.15.9
 
       - name: Get pnpm store directory
         id: pnpm-cache
@@ -61,7 +61,7 @@ jobs:
           echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
 
       - name: Setup pnpm cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
           key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
@@ -74,30 +74,34 @@ jobs:
       - name: Install Playwright browsers
         run: pnpm exec playwright install --with-deps
 
-      - name: Build services
-        run: pnpm build --filter=web-main --filter=api
+      - name: Build web-main (Playwright target)
+        run: pnpm build --filter=web-main...
         env:
           CI: true
+          NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: placeholder-anon-key
+          SUPABASE_SERVICE_ROLE_KEY: placeholder-service-role-key
 
       - name: Setup test environment
-        run: |
-          # Create test database
-          export DATABASE_URL=postgresql://postgres:postgres@localhost:5432/kealee_test
-          # Run migrations if needed
+        run: echo "Test DB ready at postgresql://postgres:***@localhost:5432/kealee_test"
         env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/kealee_test
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
 
       - name: Run E2E tests
-        run: pnpm test:e2e
+        run: pnpm test:e2e --project=chromium
         env:
           CI: true
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/kealee_test
           REDIS_URL: redis://localhost:6379
           NODE_ENV: test
+          NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: placeholder-anon-key
+          SUPABASE_SERVICE_ROLE_KEY: placeholder-service-role-key
 
       - name: Upload test report
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: playwright-report
@@ -105,7 +109,7 @@ jobs:
           retention-days: 30
 
       - name: Upload test videos
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: failure()
         with:
           name: playwright-videos

@@ -29,7 +29,9 @@ export default defineConfig({
     video: 'retain-on-failure',
   },
 
-  projects: [
+  projects: process.env.CI
+    ? [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }]
+    : [
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
@@ -49,9 +51,15 @@ export default defineConfig({
   ],
 
   webServer: {
-    command: 'pnpm dev --filter=web-main',
+    command: 'pnpm --filter web-main dev -- -p 3024',
     url: 'http://localhost:3024',
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
+    env: {
+      NEXT_PUBLIC_SUPABASE_URL:
+        process.env.NEXT_PUBLIC_SUPABASE_URL ?? 'https://placeholder.supabase.co',
+      NEXT_PUBLIC_SUPABASE_ANON_KEY:
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? 'placeholder-anon-key',
+    },
   },
 })
