@@ -37,9 +37,9 @@ const HOME_SPECS: Record<HomeServiceId, Omit<CardMediaSpec, 'key' | 'scope' | 'i
     title: 'AI Design Concepts',
     imageType: 'hero',
     style: 'modern',
-    roomType: 'design examples',
+    roomType: 'concept package review',
     imageDescription:
-      'A collection of modern design concept boards showcasing custom kitchen layouts, spa-like bathrooms, home additions, and landscaping plans',
+      'Kealee AI concept package workspace for a residential renovation, property photos, floor plan sketches, zoning notes, material samples, and tablet concept boards',
     videoMotion: 'reveal',
     mediaType: 'video',
     fallbackPhoto:

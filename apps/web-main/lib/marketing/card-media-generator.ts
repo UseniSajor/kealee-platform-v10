@@ -8,6 +8,7 @@ import { refineImagePromptWithMarketingBot } from './card-media-prompts'
 import { downloadUrlToBuffer, uploadMarketingAsset, getPublicUrlForLocalFile } from './card-media-storage'
 import { generateCardImageUrl } from './card-media-image'
 import { generateCardProcessVideo } from './process-video-generator'
+import { homeServiceVideoAssetId } from './homepage-feature-videos'
 
 const MANIFEST_PATH = path.join(process.cwd(), 'public', 'media', 'manifest.json')
 
@@ -93,7 +94,8 @@ export async function generateCardMedia(
       }
       const { videoUrl: remoteVideo, prompt } = await generateCardProcessVideo(spec, inputImageUrl)
       const videoBytes = await downloadUrlToBuffer(remoteVideo)
-      videoUrl = await uploadMarketingAsset(spec.scope, `${spec.id}-video`, videoBytes, 'mp4')
+      const videoAssetId = spec.scope === 'home' ? homeServiceVideoAssetId(spec.id) : `${spec.id}-video`
+      videoUrl = await uploadMarketingAsset(spec.scope, videoAssetId, videoBytes, 'mp4')
       videoWebM = videoUrl
       videoNarrative = prompt
     } catch (err) {
