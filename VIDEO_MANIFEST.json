@@ -1,0 +1,161 @@
+{
+  "videos": {
+    "hero_carousel": {
+      "description": "8-second hero showcase videos (web-main home page)",
+      "model": "Seedance 2.0",
+      "duration": 8,
+      "resolution": "720p",
+      "videos": {
+        "kitchen": {
+          "title": "Kitchen Transformation",
+          "url": "https://replicate.delivery/xezq/nPPaGJpAIIqfXqD1BROVRK8zC24yGnitwjM9h3I2e8XAoeqtA/tmp918wegji.mp4",
+          "duration": 8,
+          "generation_time": "185 seconds",
+          "created": "2026-07-03T18:30:00Z",
+          "content": "Modern kitchen transformation with marble island and LED lighting"
+        },
+        "addition": {
+          "title": "Home Addition",
+          "url": "https://replicate.delivery/xezq/nzDLyAy4dDYTKBMbzXES4ufa4pjsVRSfp4c088JhPupppeqtA/tmpxd4angyk.mp4",
+          "duration": 8,
+          "generation_time": "95 seconds",
+          "created": "2026-07-03T18:30:00Z",
+          "content": "Home construction progress from framing to completion"
+        },
+        "garden": {
+          "title": "Garden Landscape",
+          "url": "https://replicate.delivery/xezq/nWHCayy5BzLVLBSXzxYHlX3T9xBBcPdOw8ahoBnt1FveVvaLA/tmp8af2hnud.mp4",
+          "duration": 8,
+          "generation_time": "135 seconds",
+          "created": "2026-07-03T18:30:00Z",
+          "content": "Garden landscape transformation with plants and patio"
+        }
+      }
+    },
+    "construction_sequences": {
+      "description": "15-second construction progress videos (Grok Imagine Video model)",
+      "model": "xai/grok-imagine-video",
+      "duration": 15,
+      "resolution": "1080p",
+      "generation_model": "Grok Imagine Video (xai)",
+      "videos": {
+        "kitchen_remodel": {
+          "title": "Kitchen Remodel - Construction Order",
+          "url": "https://replicate.delivery/xezq/jhHpAZi5iY59KZ43Ve97mcE2laoZfeSRIf94K2yw6bCMS9VbB/tmpdcant39j.mp4",
+          "duration": 15,
+          "generation_time": "230 seconds (3m 50s)",
+          "created": "2026-07-03T19:45:00Z",
+          "prediction_id": "58c97an6xdrmr0cz5919bfws20",
+          "content": "Professional kitchen renovation time-lapse: demolition → framing → installation → finishing → completion. No duplicate frames.",
+          "phases": [
+            "Demolition (0-3s): Old cabinets and appliances removed",
+            "Framing & Utilities (3-6s): Electrical and plumbing rough-in",
+            "Cabinet Installation (6-10s): White shaker cabinets and stainless appliances",
+            "Countertop & Backsplash (10-13s): Marble island and glass tile",
+            "Final Finishes (13-15s): Lighting, hardware, and completion"
+          ]
+        },
+        "home_addition": {
+          "title": "Home Addition - Construction Sequence",
+          "url": "https://replicate.delivery/xezq/QfzXmwSpzU2IKifjG6I0JvCQYpiVpZ3zg4YpNZ8GQkufweVbB/tmpzxtam51k.mp4",
+          "duration": 15,
+          "generation_time": "240 seconds (4m 0s)",
+          "created": "2026-07-03T19:50:00Z",
+          "prediction_id": "r3xcg5tjcdrmy0cz593ag2367c",
+          "content": "Professional 2-story home addition: site prep → foundation → framing → roof → MEP systems → finishing. Every frame unique.",
+          "phases": [
+            "Site Prep (0-3s): Lot preparation and equipment delivery",
+            "Foundation & Framing (3-6s): Concrete foundation and wood frame",
+            "Roof & Enclosure (6-9s): Roof and windows installation",
+            "MEP Systems (9-12s): Electrical, HVAC, and plumbing rough-in",
+            "Finish Work (12-15s): Drywall, paint, flooring, trim, final walkthrough"
+          ]
+        },
+        "garden_landscaping": {
+          "title": "Garden Landscaping - Pending",
+          "url": null,
+          "duration": 15,
+          "status": "failed",
+          "error": "Insufficient credits on Replicate account",
+          "created": "2026-07-03T19:55:00Z",
+          "prediction_id": null,
+          "content": "Garden transformation from bare yard to finished landscape with plants, patio, and lighting. Requires account credit.",
+          "retry": "Set REPLICATE_API_TOKEN and re-run: node generate-grok-videos.js"
+        }
+      }
+    }
+  },
+  "storage_locations": {
+    "replicate_cdn": {
+      "description": "Videos hosted on Replicate's CDN (replicate.delivery)",
+      "pros": [
+        "Free CDN delivery",
+        "Immediate playback",
+        "High availability",
+        "Professional streaming infrastructure"
+      ],
+      "cons": [
+        "External dependency",
+        "URLs may expire after period of time",
+        "Not version-controlled"
+      ],
+      "recommendation": "Use for production delivery to users"
+    },
+    "aws_s3": {
+      "description": "Mirror videos to AWS S3 for long-term storage",
+      "bucket": "kealee-hero-videos",
+      "region": "us-east-1",
+      "cloudfront": "d123456.cloudfront.net",
+      "pros": [
+        "Version-controlled storage",
+        "Long-term archival",
+        "Backup capability",
+        "S3 + CloudFront integration"
+      ],
+      "recommendation": "Use for backup and production failover"
+    },
+    "git_lfs": {
+      "description": "Git Large File Storage (if tracking in repo)",
+      "location": "assets/videos/",
+      "pros": [
+        "Version control with binary support",
+        "Git history preserved"
+      ],
+      "cons": [
+        "LFS server costs",
+        "Repo size increases",
+        "Additional setup required"
+      ],
+      "recommendation": "Not recommended for video storage"
+    }
+  },
+  "deployment_status": {
+    "hero_carousel_8sec": {
+      "status": "DEPLOYED",
+      "environment_variables": [
+        "NEXT_PUBLIC_HERO_VIDEO_KITCHEN",
+        "NEXT_PUBLIC_HERO_VIDEO_ADDITION",
+        "NEXT_PUBLIC_HERO_VIDEO_GARDEN"
+      ],
+      "component": "apps/web-main/components/HomeHero.tsx",
+      "live_url": "https://web-main.kealee.com"
+    },
+    "construction_sequences_15sec": {
+      "status": "GENERATED - READY TO DEPLOY",
+      "environment_variables": [
+        "NEXT_PUBLIC_GROK_VIDEO_KITCHEN",
+        "NEXT_PUBLIC_GROK_VIDEO_ADDITION",
+        "NEXT_PUBLIC_GROK_VIDEO_GARDEN"
+      ],
+      "next_step": "Add environment variables to Railway dashboard and update component to display Grok videos"
+    }
+  },
+  "metadata": {
+    "generated": "2026-07-03",
+    "generator": "Claude Haiku 4.5 with Replicate API",
+    "total_seedance_videos": 3,
+    "total_grok_videos": 2,
+    "total_generation_time": "~17 minutes",
+    "total_video_duration": "56 seconds"
+  }
+}
