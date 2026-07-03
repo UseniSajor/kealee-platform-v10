@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { KEALEE_PHONE_DISPLAY } from '@/lib/site/contact'
+import { checkRateLimit, sendEmailWithTemplate, sendInternalSystemEmail } from '@kealee/communications'
 
 export const dynamic = 'force-dynamic'
 
 export async function POST(req: NextRequest) {
   try {
-    const { name, email, phone, subject, message } = await req.json()
+    const { name, email, phone, subject, message, 'cf-turnstile-response': turnstileResponse } = await req.json()
 
     if (!name || !email || !subject || !message) {
       return NextResponse.json({ error: 'Name, email, subject, and message are required.' }, { status: 400 })
@@ -15,72 +15,56 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid email address.' }, { status: 400 })
     }
 
-    const resendApiKey = process.env.RESEND_API_KEY
+    // Turnstile Validation
+    if (process.env.TURNSTILE_SECRET_KEY && turnstileResponse) {
+      const tsRes = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: `secret=${process.env.TURNSTILE_SECRET_KEY}&response=${turnstileResponse}`,
+      })
+      const tsData = await tsRes.json()
+      if (!tsData.success) {
+        return NextResponse.json({ error: 'Failed security verification. Please try again.' }, { status: 403 })
+      }
+    }
 
-    if (!resendApiKey) {
-      console.error('[contact] RESEND_API_KEY not configured')
+    // Rate Limiting: 3 requests per IP per hour
+    const ip = req.headers.get('x-forwarded-for') || req.ip || 'unknown'
+    const ipLimit = await checkRateLimit(`rl_contact_ip_${ip}`, 3, 3600)
+
+    if (!ipLimit.success) {
       return NextResponse.json(
-        {
-          error:
-            'Email delivery is temporarily unavailable. Please email hello@kealee.com directly.',
-        },
-        { status: 503 },
+        { error: 'Too many requests. Please try again later.' },
+        { status: 429 }
       )
     }
 
-    await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${resendApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        from: 'Kealee Contact Form <notifications@kealee.com>',
-        to: ['hello@kealee.com'],
-        reply_to: email,
-        subject: `[Contact] ${subject} — ${name}`,
-        text: [
-          `Name: ${name}`,
-          `Email: ${email}`,
-          `Phone: ${phone || 'Not provided'}`,
-          `Subject: ${subject}`,
-          '',
-          'Message:',
-          message,
-          '',
-          `Submitted: ${new Date().toISOString()}`,
-        ].join('\n'),
-      }),
-    })
+    // 1. Send Internal Notification
+    // Safe because the "to" address is hardcoded to our internal team.
+    const internalHtml = `
+      <h3>New Contact Submission</h3>
+      <p><strong>Name:</strong> ${name}</p>
+      <p><strong>Email:</strong> ${email}</p>
+      <p><strong>Phone:</strong> ${phone || 'Not provided'}</p>
+      <p><strong>Subject:</strong> ${subject}</p>
+      <hr />
+      <p>${message.replace(/\n/g, '<br/>')}</p>
+    `
+    await sendInternalSystemEmail({
+      to: 'hello@kealee.com',
+      subject: `[Contact] ${subject} — ${name}`,
+      html: internalHtml,
+      route: '/api/contact'
+    }, true)
 
-    await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${resendApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        from: 'Kealee <hello@kealee.com>',
-        to: [email],
-        subject: 'We received your message — Kealee',
-        text: [
-          `Hi ${name},`,
-          '',
-          "Thanks for reaching out to Kealee! We've received your message and our team will get back to you within 24 hours.",
-          '',
-          "Here's a copy of what you sent:",
-          `Subject: ${subject}`,
-          `Message: ${message}`,
-          '',
-          'In the meantime, explore our services:',
-          '• AI Concept Design: https://kealee.com/get-concept',
-          '• Building Permits: https://kealee.com/permits',
-          '• Pricing: https://kealee.com/pricing',
-          '',
-          '— The Kealee Team',
-          `hello@kealee.com | ${KEALEE_PHONE_DISPLAY}`,
-        ].join('\n'),
-      }),
+    // 2. Send Auto-Responder to User
+    // Uses predefined template so attacker cannot control the email body sent to external addresses.
+    await sendEmailWithTemplate({
+      to: email,
+      templateName: 'CONTACT_FORM_AUTO_REPLY',
+      variables: { name, subject, message },
+      ipAddress: ip,
+      route: '/api/contact'
     })
 
     return NextResponse.json({ success: true })

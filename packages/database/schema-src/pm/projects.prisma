@@ -157,10 +157,7 @@ model Project {
   riskSnapshot      Json?
 
   // V30 — Loop Orchestration relations
-  loopRuns         LoopRun[]          @relation("ProjectLoopRuns")
-  decisions        ProjectDecision[]  @relation("ProjectDecisions")
-  agentMemories    AgentMemory[]      @relation("ProjectAgentMemory")
-  automationEvents AutomationEvent[]  @relation("ProjectAutomationEvents")
+  // Removed duplicate loop relations to fix schema build
 
   @@index([clientId])
   @@index([orgId])

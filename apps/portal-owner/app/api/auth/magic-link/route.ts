@@ -11,7 +11,7 @@
  */
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import { Resend } from 'resend'
+import { sendInternalSystemEmail, checkRateLimit } from '@kealee/communications'
 import { getOwnerPortalBaseUrl } from '@/lib/owner-portal-auth'
 
 export const dynamic = 'force-dynamic'
@@ -22,6 +22,18 @@ export async function POST(req: NextRequest) {
 
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return NextResponse.json({ error: 'Valid email required' }, { status: 400 })
+    }
+
+    // Rate Limiting: 3 requests per IP per hour, and 3 per email per hour
+    const ip = req.headers.get('x-forwarded-for') || req.ip || 'unknown'
+    const ipLimit = await checkRateLimit(`rl_magiclink_ip_${ip}`, 3, 3600)
+    const emailLimit = await checkRateLimit(`rl_magiclink_email_${email}`, 3, 3600)
+
+    if (!ipLimit.success || !emailLimit.success) {
+      return NextResponse.json(
+        { error: 'Rate limit exceeded. Please try again later.', rateLimit: true },
+        { status: 429 }
+      )
     }
 
     const supabaseUrl    = process.env.NEXT_PUBLIC_SUPABASE_URL!
@@ -68,35 +80,36 @@ export async function POST(req: NextRequest) {
 
     // ── Send via Resend ──────────────────────────────────────────────────────
     if (resendApiKey) {
-      const resend = new Resend(resendApiKey)
-      const { error: emailError } = await resend.emails.send({
-        from: 'Kealee <noreply@kealee.com>',
-        to:   email,
-        subject: 'Sign in to your Kealee Owner Portal',
-        html: `
-          <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:32px 24px;background:#fff">
-            <div style="margin-bottom:24px">
-              <span style="font-size:22px;font-weight:700;color:#0F1A2E">Kealee</span>
-            </div>
-            <h2 style="margin:0 0 12px;font-size:20px;color:#0F1A2E">Access your Owner Portal</h2>
-            <p style="color:#555;line-height:1.6;margin:0 0 28px;font-size:15px">
-              Click the button below to access your deliverables, concept packages,
-              and all project documents. This link expires in <strong>1 hour</strong>.
-            </p>
-            <a href="${magicLinkUrl}"
-               style="display:inline-block;background:#E8793A;color:#fff;text-decoration:none;
-                      padding:14px 32px;border-radius:8px;font-weight:700;font-size:15px;
-                      letter-spacing:0.01em">
-              Open My Owner Portal →
-            </a>
-            <p style="color:#aaa;font-size:12px;margin-top:36px;line-height:1.5">
-              If you didn't request this link, you can safely ignore this email.
-            </p>
+      const htmlBody = `
+        <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:32px 24px;background:#fff">
+          <div style="margin-bottom:24px">
+            <span style="font-size:22px;font-weight:700;color:#0F1A2E">Kealee</span>
           </div>
-        `,
-      })
-
-      if (emailError) {
+          <h2 style="margin:0 0 12px;font-size:20px;color:#0F1A2E">Access your Owner Portal</h2>
+          <p style="color:#555;line-height:1.6;margin:0 0 28px;font-size:15px">
+            Click the button below to access your deliverables, concept packages,
+            and all project documents. This link expires in <strong>1 hour</strong>.
+          </p>
+          <a href="${magicLinkUrl}"
+             style="display:inline-block;background:#E8793A;color:#fff;text-decoration:none;
+                    padding:14px 32px;border-radius:8px;font-weight:700;font-size:15px;
+                    letter-spacing:0.01em">
+            Open My Owner Portal →
+          </a>
+          <p style="color:#aaa;font-size:12px;margin-top:36px;line-height:1.5">
+            If you didn't request this link, you can safely ignore this email.
+          </p>
+        </div>
+      `
+      
+      try {
+        await sendInternalSystemEmail({
+          to: email,
+          subject: 'Sign in to your Kealee Owner Portal',
+          html: htmlBody,
+          route: '/api/auth/magic-link'
+        }, true)
+      } catch (emailError) {
         console.error('[portal-owner/magic-link] Resend send error:', emailError)
         return NextResponse.json({ error: 'Failed to send access link email' }, { status: 500 })
       }
