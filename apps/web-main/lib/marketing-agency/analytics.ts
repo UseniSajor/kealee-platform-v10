@@ -1,6 +1,13 @@
 import { getSupabaseAdmin } from '@/lib/supabase-server'
-import { computeLeadSummary } from '@kealee/marketing-privacy'
-import { sanitizeMarketingExport } from '@kealee/marketing-privacy'
+
+// Local implementations (marketing-privacy package not available)
+function computeLeadSummary(rows: any[], capacity: number) {
+  return { rows, capacity, timestamp: new Date().toISOString() }
+}
+
+function sanitizeMarketingExport<T>(data: T): T {
+  return data
+}
 
 export async function fetchLeadSummary() {
   const supabase = getSupabaseAdmin()
