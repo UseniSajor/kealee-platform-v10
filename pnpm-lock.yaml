@@ -1998,6 +1998,9 @@ importers:
 
   packages/marketing-agency:
     dependencies:
+      '@kealee/marketing-privacy':
+        specifier: workspace:*
+        version: link:../marketing-privacy
       '@supabase/supabase-js':
         specifier: ^2.39.0
         version: 2.104.0

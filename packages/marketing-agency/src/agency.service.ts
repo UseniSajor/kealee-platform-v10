@@ -1,5 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
-import { sanitizeMarketingExport } from '../../marketing-privacy/dist/index.js'
+import { sanitizeMarketingExport } from '@kealee/marketing-privacy'
 import type { MarketingAgencyAsset, MarketingApprovalStatus } from './types'
 import { ProposeAssetInputSchema } from './types'
 import { z } from 'zod'

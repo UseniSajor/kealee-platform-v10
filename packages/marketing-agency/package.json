@@ -18,6 +18,7 @@
     "test:watch": "vitest"
   },
   "dependencies": {
+    "@kealee/marketing-privacy": "workspace:*",
     "@supabase/supabase-js": "^2.39.0",
     "zod": "^3.22.4"
   },
