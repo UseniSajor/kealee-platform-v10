@@ -32,7 +32,6 @@
     "@kealee/core-llm": "workspace:*",
     "@kealee/core-rules": "workspace:*",
     "@kealee/database": "workspace:*",
-    "@kealee/intelligence": "workspace:*",
     "@kealee/marketing-agency": "workspace:*",
     "@kealee/marketing-privacy": "workspace:*",
     "@kealee/intake": "workspace:*",
