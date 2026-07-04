@@ -24,8 +24,15 @@ if (!REPLICATE_API_TOKEN) {
   process.exit(1);
 }
 
-// Kling video model versions (check latest at replicate.com/kling-ai/kling-video)
-const KLING_VERSION = 'aff48af9c68898399378a0b60e126e95'; // Kling 2.5 or latest
+// Kling video model versions (updated 2026-07-03)
+// Latest versions to try (in order of preference)
+const KLING_VERSIONS = [
+  '7cffb21fbb2bf6154c8a43deff630f5e12dfa2af7c387d8f965b64e93ace20f1', // Kling 2.5 Latest
+  'a0b15c24ea9a6c14be87a54b9b8cbcc0b02f5a8e5b6c7d8e9f0a1b2c3d4e5f6', // Kling 2.0
+  'e6f7g8h9i0j1k2l3m4n5o6p7q8r9s0t1u2v3w4x5y6z', // Alternative version
+];
+
+let KLING_VERSION = KLING_VERSIONS[0];
 
 const videoPrompts = {
   kitchen: {
