@@ -8,26 +8,26 @@
       "videos": {
         "kitchen": {
           "title": "Kitchen Transformation",
-          "url": "https://replicate.delivery/xezq/nPPaGJpAIIqfXqD1BROVRK8zC24yGnitwjM9h3I2e8XAoeqtA/tmp918wegji.mp4",
+          "url": "https://replicate.delivery/xezq/ViAoWS3GPGoiEJOZpfMX5VSyJIgplFE66FZReGwQe4ZObCrtA/tmpgjvxumny.mp4",
           "duration": 8,
-          "generation_time": "185 seconds",
-          "created": "2026-07-03T18:30:00Z",
+          "generation_time": "145 seconds",
+          "created": "2026-07-03T21:00:00Z",
           "content": "Modern kitchen transformation with marble island and LED lighting"
         },
         "addition": {
           "title": "Home Addition",
-          "url": "https://replicate.delivery/xezq/nzDLyAy4dDYTKBMbzXES4ufa4pjsVRSfp4c088JhPupppeqtA/tmpxd4angyk.mp4",
+          "url": "https://replicate.delivery/xezq/WK3vf0fEoQms4UCf6YthBePfemi8cjG3sYGHUkesb3S09nwaLA/tmpmiobyq3m.mp4",
           "duration": 8,
-          "generation_time": "95 seconds",
-          "created": "2026-07-03T18:30:00Z",
+          "generation_time": "135 seconds",
+          "created": "2026-07-03T21:00:00Z",
           "content": "Home construction progress from framing to completion"
         },
         "garden": {
           "title": "Garden Landscape",
-          "url": "https://replicate.delivery/xezq/nWHCayy5BzLVLBSXzxYHlX3T9xBBcPdOw8ahoBnt1FveVvaLA/tmp8af2hnud.mp4",
+          "url": "https://replicate.delivery/xezq/qQnfhgqraKTfsE5tGpH0oU2UdjgJJCRaEGvrN5qcF2PaTh1WA/tmpniiena3x.mp4",
           "duration": 8,
-          "generation_time": "135 seconds",
-          "created": "2026-07-03T18:30:00Z",
+          "generation_time": "215 seconds",
+          "created": "2026-07-03T21:00:00Z",
           "content": "Garden landscape transformation with plants and patio"
         }
       }
