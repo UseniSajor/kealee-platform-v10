@@ -1,21 +1,7 @@
-/**
- * Marketing Cron Service
- * 
- * Standalone Node.js service for scheduled marketing tasks.
- * Runs independently from web-main to avoid build-time dependency issues.
- * 
- * Scheduled tasks:
- * - Facebook posts: Mon/Wed/Fri 10am ET
- * - Twitter posts: Daily 9am ET
- * - LinkedIn posts: Tue/Thu 11am ET
- * - YouTube posts: Sun 8am ET
- * - Email sequences: Daily 6am ET
- * - Lead scoring: Daily 2am ET
- * - Campaign generation: Weekly Mon 3am ET
- */
-
 import cron from 'node-cron'
 import { prisma } from '@kealee/database'
+import { recordTaskExecution, getHealthStatus } from './monitoring'
+import { initializeJobQueues, addJobToQueue } from './job-queue'
 import { facebookHandler } from './handlers/facebook'
 import { twitterHandler } from './handlers/twitter'
 import { linkedinHandler } from './handlers/linkedin'
@@ -42,72 +28,72 @@ interface CronJob {
 const CRON_JOBS: CronJob[] = [
   {
     name: 'Facebook Posts',
-    schedule: '0 10 * * 1,3,5', // Mon/Wed/Fri 10am ET (15:00 UTC)
+    schedule: '0 10 * * 1,3,5',
     handler: facebookHandler,
   },
   {
     name: 'Twitter Posts',
-    schedule: '0 9 * * *', // Daily 9am ET (14:00 UTC)
+    schedule: '0 9 * * *',
     handler: twitterHandler,
   },
   {
     name: 'LinkedIn Posts',
-    schedule: '0 11 * * 2,4', // Tue/Thu 11am ET (16:00 UTC)
+    schedule: '0 11 * * 2,4',
     handler: linkedinHandler,
   },
   {
     name: 'YouTube Posts',
-    schedule: '0 8 * * 0', // Sun 8am ET (13:00 UTC)
+    schedule: '0 8 * * 0',
     handler: youtubeHandler,
   },
   {
     name: 'Send Daily Campaigns',
-    schedule: '0 6 * * *', // Daily 6am ET (11:00 UTC)
+    schedule: '0 6 * * *',
     handler: sendDailyCampaignsHandler,
   },
   {
     name: 'Generate Weekly Campaigns',
-    schedule: '0 3 * * 1', // Mon 3am ET (08:00 UTC)
+    schedule: '0 3 * * 1',
     handler: generateWeeklyCampaignsHandler,
   },
   {
     name: 'Email Sequences',
-    schedule: '0 7 * * *', // Daily 7am ET (12:00 UTC)
+    schedule: '0 7 * * *',
     handler: sequencesHandler,
   },
   {
     name: 'Marketing Drip',
-    schedule: '0 5 * * *', // Daily 5am ET (10:00 UTC)
+    schedule: '0 5 * * *',
     handler: marketingDripHandler,
   },
   {
     name: 'Lead Scoring',
-    schedule: '0 2 * * *', // Daily 2am ET (07:00 UTC)
+    schedule: '0 2 * * *',
     handler: leadScoringHandler,
   },
   {
     name: 'Parcel Outreach',
-    schedule: '0 4 * * *', // Daily 4am ET (09:00 UTC)
+    schedule: '0 4 * * *',
     handler: parcelOutreachHandler,
   },
   {
     name: 'Parcel Enrichment',
-    schedule: '0 1 * * *', // Daily 1am ET (06:00 UTC)
+    schedule: '0 1 * * *',
     handler: parcelEnrichmentHandler,
   },
   {
     name: 'Marketing Ad Spend Sync',
-    schedule: '0 12 * * *', // Daily 12pm ET (17:00 UTC)
+    schedule: '0 12 * * *',
     handler: marketingAdSpendSyncHandler,
   },
   {
     name: 'Instagram Posts',
-    schedule: '0 10 * * 2,5', // Tue/Fri 10am ET (15:00 UTC)
+    schedule: '0 10 * * 2,5',
     handler: instagramHandler,
   },
   {
     name: 'Requalify Cold',
-    schedule: '0 3 * * 0', // Sun 3am ET (08:00 UTC)
+    schedule: '0 3 * * 0',
     handler: requalifyColdHandler,
   },
 ]
@@ -115,8 +101,11 @@ const CRON_JOBS: CronJob[] = [
 async function initializeCronJobs() {
   console.log(`\n${LOG_PREFIX} Starting marketing cron service...\n`)
 
+  // Initialize job queues (optional BullMQ for persistence)
+  const taskNames = CRON_JOBS.map(j => j.name)
+  await initializeJobQueues(taskNames)
+
   for (const job of CRON_JOBS) {
-    // Validate cron expression (basic check)
     try {
       cron.validate(job.schedule)
     } catch (e) {
@@ -124,17 +113,32 @@ async function initializeCronJobs() {
       process.exit(1)
     }
 
-    // Schedule the job
     cron.schedule(job.schedule, async () => {
       const startTime = Date.now()
       console.log(`${LOG_PREFIX} ▶️  Running: ${job.name}`)
 
       try {
+        // Queue job for persistence (if Redis available)
+        await addJobToQueue(job.name, {
+          taskName: job.name,
+          schedule: job.schedule,
+          handlerName: job.handler.name,
+        })
+
+        // Execute handler
         await job.handler()
+
         const duration = Date.now() - startTime
+
+        // Record success
+        recordTaskExecution(job.name, job.schedule, 'success', duration)
         console.log(`${LOG_PREFIX} ✅ Completed: ${job.name} (${duration}ms)`)
       } catch (error) {
+        const duration = Date.now() - startTime
         const msg = error instanceof Error ? error.message : String(error)
+
+        // Record failure
+        recordTaskExecution(job.name, job.schedule, 'failed', duration, msg)
         console.error(`${LOG_PREFIX} ❌ Failed: ${job.name} — ${msg}`)
       }
     })
@@ -143,6 +147,15 @@ async function initializeCronJobs() {
   }
 
   console.log(`\n${LOG_PREFIX} All ${CRON_JOBS.length} cron jobs initialized\n`)
+
+  // Log health status every hour
+  setInterval(() => {
+    const health = getHealthStatus()
+    const rate = health.successRate.toFixed(1)
+    console.log(
+      `${LOG_PREFIX} Health: ${health.status} | Tasks: ${health.activeTasks} | Success rate: ${rate}%`
+    )
+  }, 60 * 60 * 1000)
 }
 
 async function main() {
@@ -155,9 +168,10 @@ async function main() {
   }
 }
 
-// Handle graceful shutdown
 process.on('SIGINT', async () => {
   console.log(`\n${LOG_PREFIX} Shutting down gracefully...`)
+  const health = getHealthStatus()
+  console.log(`${LOG_PREFIX} Final stats: ${health.activeTasks} tasks, ${health.successRate.toFixed(1)}% success rate`)
   await prisma.$disconnect()
   process.exit(0)
 })
@@ -172,3 +186,5 @@ main().catch((error) => {
   console.error(`${LOG_PREFIX} Initialization error:`, error)
   process.exit(1)
 })
+
+export { getHealthStatus }
