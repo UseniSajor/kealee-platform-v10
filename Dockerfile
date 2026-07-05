@@ -27,7 +27,8 @@ RUN set -eux; \
   APP_DIR="apps/$RAILWAY_SERVICE_NAME"; \
   if [ -n "$RAILWAY_SERVICE_NAME" ] && [ -f "$APP_DIR/next.config.js" ]; then \
       rm -rf "$APP_DIR/.next"; \
-      pnpm turbo run build --filter="$RAILWAY_SERVICE_NAME"; \
+      echo "Building $RAILWAY_SERVICE_NAME and dependencies..."; \
+      pnpm turbo run build --filter="$RAILWAY_SERVICE_NAME..."; \
       SRV=$(find "$APP_DIR/.next/standalone/apps" -name server.js -print -quit); \
       echo "server.js: $SRV"; \
       test -n "$SRV"; \
