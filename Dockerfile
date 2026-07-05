@@ -16,7 +16,7 @@ RUN pnpm install --frozen-lockfile
 COPY . .
 
 # Layer 4: Generate Prisma client (required before build)
-RUN pnpm --filter @kealee/database exec prisma generate
+RUN cd /app/packages/database && npx prisma generate
 
 # Layer 5: Build only web-main and its direct dependencies
 # Remove --force to enable turbo cache
