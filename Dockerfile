@@ -1,28 +1,44 @@
-FROM node:20-bullseye AS builder
+FROM node:20-bullseye AS deps
 
 RUN corepack enable && corepack prepare pnpm@8.15.9 --activate
 
 WORKDIR /app
 
-# Layer 1: Copy only package.json files for dependency caching
-COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
-COPY packages/*/package.json ./packages/
-COPY apps/web-main/package.json ./apps/web-main/
+# Populate the pnpm store from the lockfile alone (pnpm fetch needs no
+# workspace manifests), so this layer stays cached until dependencies change.
+# Copying per-package package.json files with a glob does NOT work here:
+# `COPY packages/*/package.json ./packages/` flattens every file into one,
+# which breaks `pnpm install --frozen-lockfile` (workspace/lockfile mismatch).
+COPY pnpm-lock.yaml pnpm-workspace.yaml package.json .npmrc ./
+RUN pnpm fetch
 
-# Layer 2: Install dependencies (cached unless lock file changes)
-RUN pnpm install --frozen-lockfile
-
-# Layer 3: Copy source code
+# Copy sources and link dependencies from the already-populated store.
+# Postinstall hooks (e.g. @kealee/database `prisma generate`) run here with
+# full sources present, so no separate prisma step is needed before build.
 COPY . .
+RUN pnpm install --frozen-lockfile --prefer-offline
 
-# Layer 4: Generate Prisma client (required before build)
-RUN pnpm --filter @kealee/database prisma generate
+FROM deps AS builder
 
-# Layer 5: Build only web-main and its direct dependencies
-# Remove --force to enable turbo cache
+# Railway injects the service name as a build arg for Dockerfile deploys.
 ARG RAILWAY_SERVICE_NAME
 ENV RAILWAY_SERVICE_NAME=$RAILWAY_SERVICE_NAME
 
+# NEXT_PUBLIC_* values are inlined into the client bundle at build time, so
+# they must be present here (Railway passes service variables as build args
+# for any ARG declared in the Dockerfile). The build still succeeds without
+# them; server-side code falls back to runtime env from the start command.
+ARG NEXT_PUBLIC_SUPABASE_URL
+ARG NEXT_PUBLIC_SUPABASE_ANON_KEY
+ARG NEXT_PUBLIC_APP_URL
+ENV NEXT_PUBLIC_SUPABASE_URL=$NEXT_PUBLIC_SUPABASE_URL \
+    NEXT_PUBLIC_SUPABASE_ANON_KEY=$NEXT_PUBLIC_SUPABASE_ANON_KEY \
+    NEXT_PUBLIC_APP_URL=$NEXT_PUBLIC_APP_URL
+
+# Build the right thing for the service. Any Next.js app (apps/<name>/next.config.js)
+# is built as a standalone server; everything else builds the API entrypoint.
+# --filter="<name>..." builds the app plus its workspace dependencies; turbo
+# cache stays enabled (no --force).
 RUN set -eux; \
   APP_DIR="apps/$RAILWAY_SERVICE_NAME"; \
   if [ -n "$RAILWAY_SERVICE_NAME" ] && [ -f "$APP_DIR/next.config.js" ]; then \
@@ -44,10 +60,11 @@ RUN corepack enable && corepack prepare pnpm@8.15.9 --activate
 
 WORKDIR /app
 
-# Copy built app from builder
 COPY --from=builder /app/apps ./apps
 COPY --from=builder /app/packages/database/node_modules ./packages/database/node_modules
 COPY --from=builder /app/node_modules ./node_modules
+# Needed by railway.toml's startCommand (scripts/railway-next-start.sh).
+COPY --from=builder /app/scripts ./scripts
 
 EXPOSE 3000
 
