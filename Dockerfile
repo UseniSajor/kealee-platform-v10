@@ -15,7 +15,10 @@ RUN pnpm install --frozen-lockfile
 # Layer 3: Copy source code
 COPY . .
 
-# Layer 4: Build only web-main and its direct dependencies
+# Layer 4: Generate Prisma client (required before build)
+RUN pnpm --filter @kealee/database exec prisma generate
+
+# Layer 5: Build only web-main and its direct dependencies
 # Remove --force to enable turbo cache
 ARG RAILWAY_SERVICE_NAME
 ENV RAILWAY_SERVICE_NAME=$RAILWAY_SERVICE_NAME
