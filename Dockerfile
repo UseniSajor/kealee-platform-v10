@@ -66,7 +66,10 @@ WORKDIR /app
 COPY --from=builder /app/apps ./apps
 # Non-Next services (API fallback branch) run from services/api/dist.
 COPY --from=builder /app/services ./services
-COPY --from=builder /app/packages/database/node_modules ./packages/database/node_modules
+# Workspace packages must ship too: /app/node_modules/@kealee/* are symlinks
+# into /app/packages/*, so omitting packages/ leaves dangling links and the
+# API crashes with e.g. "Cannot find module '@kealee/observability'".
+COPY --from=builder /app/packages ./packages
 COPY --from=builder /app/node_modules ./node_modules
 # Needed by railway.toml's startCommand (scripts/railway-next-start.sh).
 COPY --from=builder /app/scripts ./scripts
