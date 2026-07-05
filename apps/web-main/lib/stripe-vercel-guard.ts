@@ -1,35 +1,70 @@
 import { NextResponse } from 'next/server'
 
 /**
- * Stripe + Vercel deployment policy (web-main production = live keys only).
+ * Stripe deployment policy (enforce live keys on production, test keys on preview/staging).
  *
- * - On Vercel **production** (`VERCEL_ENV=production`): reject **test** secret keys so
- *   prod never silently runs in test mode.
- * - On Vercel **preview** / **development**: reject **live** secret keys so preview URLs
- *   cannot charge real cards if env vars are copied from Production by mistake.
+ * Supports both Vercel and Railway:
+ * - Vercel: checks VERCEL_ENV (production/preview/development)
+ * - Railway: checks RAILWAY_ENVIRONMENT_NAME (production/staging) or NODE_ENV
+ * - Local: VERCEL and RAILWAY_ENVIRONMENT_NAME both unset — no-op
  *
- * Local `next dev` (`VERCEL` unset): no-op — use Stripe CLI / test keys as you choose.
+ * Rules:
+ * - Production: require live keys (sk_live_*), warn if test keys detected
+ * - Non-production (staging/preview): block live keys to prevent accidental charges
+ * - Local development: no restrictions
  */
+
+function isProduction(): boolean {
+  // Vercel production
+  if (process.env.VERCEL === '1' && process.env.VERCEL_ENV === 'production') {
+    return true
+  }
+
+  // Railway production
+  if (process.env.RAILWAY_ENVIRONMENT_NAME === 'production') {
+    return true
+  }
+
+  // Fallback: NODE_ENV=production in deployed context
+  if (
+    process.env.NODE_ENV === 'production' &&
+    (process.env.VERCEL === '1' || process.env.RAILWAY_ENVIRONMENT_NAME)
+  ) {
+    return true
+  }
+
+  return false
+}
+
+function isDeployedEnvironment(): boolean {
+  // Either Vercel or Railway
+  return process.env.VERCEL === '1' || !!process.env.RAILWAY_ENVIRONMENT_NAME
+}
+
 export function guardStripeSecretForHttp(stripeSecretKey: string | undefined): NextResponse | null {
   if (!stripeSecretKey) return null
 
-  if (process.env.VERCEL !== '1') return null
+  // Local development: no restrictions
+  if (!isDeployedEnvironment()) return null
 
-  const vercelEnv = process.env.VERCEL_ENV
-  if (vercelEnv === 'production') {
+  const isProd = isProduction()
+
+  if (isProd) {
     if (stripeSecretKey.startsWith('sk_test_')) {
-      // Test key on production — allow through but warn. Replace with sk_live_… for real payments.
-      console.warn('[stripe-guard] Using Stripe test key on production. Add sk_live_… to Vercel Production env vars for live payments.')
+      // Test key on production — allow through but warn
+      console.warn(
+        '[stripe-guard] Using Stripe test key on production. Add sk_live_… to your production env vars for live payments.'
+      )
     }
     return null
   }
 
+  // Non-production: reject live keys
   if (stripeSecretKey.startsWith('sk_live_')) {
     return NextResponse.json(
       {
         error: 'Live Stripe blocked on this deployment',
-        message:
-          'Use test keys (sk_test_…) on Preview, or test checkout on the production domain. Live Stripe cannot be used from non-production Vercel deployments.',
+        message: 'Use test keys (sk_test_…) on preview/staging, or verify you are on the production domain.',
       },
       { status: 403 }
     )
@@ -38,7 +73,7 @@ export function guardStripeSecretForHttp(stripeSecretKey: string | undefined): N
   return null
 }
 
-/** Webhook: never apply side effects from a non-production Vercel deployment (mis-pointed URL). */
+/** Webhook: never apply side effects from a non-production deployment (mis-pointed URL). */
 export function isStripeWebhookSideEffectsDisabledOnThisDeployment(): boolean {
-  return process.env.VERCEL === '1' && process.env.VERCEL_ENV !== 'production'
+  return isDeployedEnvironment() && !isProduction()
 }
