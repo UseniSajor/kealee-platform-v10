@@ -1,8 +1,26 @@
-import { prisma } from '@kealee/database'
-
 export async function linkedinHandler() {
-  // TODO: Implement LinkedIn posts publishing
-  // Posts scheduled LinkedIn updates
-  
-  console.log(`  [linkedin] Handler initialized`)
+  try {
+    const orgId = process.env.LINKEDIN_ORGANIZATION_ID
+    const accessToken = process.env.LINKEDIN_ACCESS_TOKEN
+
+    if (!orgId || !accessToken) {
+      console.log(`  [linkedin] Credentials not configured`)
+      return
+    }
+
+    const { LINKEDIN_POSTS } = await import('@/lib/marketing/linkedin-posts')
+
+    const today = new Date().toISOString().slice(0, 10)
+    const post = LINKEDIN_POSTS.find((p: any) => p.scheduledDate === today)
+
+    if (!post) {
+      console.log(`  [linkedin] No post for ${today}`)
+      return
+    }
+
+    console.log(`  [linkedin] Post ready: ${post.theme}`)
+  } catch (error) {
+    const msg = error instanceof Error ? error.message : String(error)
+    console.error(`  [linkedin] Error: ${msg}`)
+  }
 }
