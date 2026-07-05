@@ -40,17 +40,20 @@ ENV NEXT_PUBLIC_SUPABASE_URL=$NEXT_PUBLIC_SUPABASE_URL \
 # --filter="<name>..." builds the app plus its workspace dependencies; turbo
 # cache stays enabled (no --force).
 RUN set -eux; \
+  echo "RAILWAY_SERVICE_NAME='$RAILWAY_SERVICE_NAME'"; \
   APP_DIR="apps/$RAILWAY_SERVICE_NAME"; \
   if [ -n "$RAILWAY_SERVICE_NAME" ] && [ -f "$APP_DIR/next.config.js" ]; then \
       rm -rf "$APP_DIR/.next"; \
-      echo "Building $RAILWAY_SERVICE_NAME and dependencies..."; \
+      echo "Building Next app $RAILWAY_SERVICE_NAME and dependencies..."; \
       pnpm turbo run build --filter="$RAILWAY_SERVICE_NAME..."; \
       SRV=$(find "$APP_DIR/.next/standalone/apps" -name server.js -print -quit); \
       echo "server.js: $SRV"; \
       test -n "$SRV"; \
       test -f "$SRV"; \
   else \
+      echo "No Next app for '$RAILWAY_SERVICE_NAME' — building @kealee/api"; \
       pnpm --filter @kealee/api... build; \
+      test -f services/api/dist/index.js; \
   fi
 
 # Production stage: copy only what we need
@@ -61,6 +64,8 @@ RUN corepack enable && corepack prepare pnpm@8.15.9 --activate
 WORKDIR /app
 
 COPY --from=builder /app/apps ./apps
+# Non-Next services (API fallback branch) run from services/api/dist.
+COPY --from=builder /app/services ./services
 COPY --from=builder /app/packages/database/node_modules ./packages/database/node_modules
 COPY --from=builder /app/node_modules ./node_modules
 # Needed by railway.toml's startCommand (scripts/railway-next-start.sh).
@@ -81,5 +86,7 @@ CMD SERVER=$(find /app/apps -path '*/.next/standalone/apps/*/server.js' -print -
       cd "$SDIR" && \
       exec node "$SERVER"; \
     else \
+      echo 'No Next standalone server.js found; starting API from services/api' && \
+      cd /app/services/api && \
       exec node dist/index.js; \
     fi
