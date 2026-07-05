@@ -15,6 +15,9 @@ importers:
 
   .:
     dependencies:
+      '@anthropic-ai/sdk':
+        specifier: ^0.74.0
+        version: 0.74.0(zod@4.3.6)
       '@apollo/server':
         specifier: ^4.11.0
         version: 4.13.0(graphql@16.13.2)
@@ -682,8 +685,8 @@ importers:
   apps/web-main:
     dependencies:
       '@anthropic-ai/sdk':
-        specifier: ^0.30.0
-        version: 0.30.1
+        specifier: ^0.74.0
+        version: 0.74.0(zod@4.3.6)
       '@kealee/auth':
         specifier: workspace:*
         version: link:../../packages/auth
