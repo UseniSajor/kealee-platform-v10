@@ -8,8 +8,8 @@
   --home-chat-reserve: 7.5rem;
 
   /* Figma Design Tokens - Color Palette Alignment */
-  --o: #FF8C22;       /* Secondary Accent Orange (secondary-500) */
-  --o2: #E07B1E;      /* Hover Accent Orange (secondary-600) */
+  --o: #FFB366;       /* Primary Accent Orange (secondary-500) */
+  --o2: #FF8C22;      /* Hover Accent Orange (secondary-600) */
   --olt: #FFF7ED;     /* Subtle Orange Accent Bg (secondary-50) */
   --blue: #2563EB;    /* Primary Brand Blue (primary-600) */
   --green: #10B981;   /* Success Green (semantic success) */

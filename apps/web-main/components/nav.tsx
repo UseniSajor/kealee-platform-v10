@@ -3,8 +3,9 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
-import { Menu, X, ChevronDown } from 'lucide-react'
+import { X, ChevronDown } from 'lucide-react'
 import { useState, useRef, useEffect } from 'react'
+import { KealeeNavIcon } from '@/components/brand/KealeeNavIcon'
 import { SERVICES } from '@/lib/services-config'
 import { isAgencyPartnerShellPath } from '@/lib/agency-partner-shell'
 
@@ -212,8 +213,8 @@ export function SiteNav() {
           <div className="flex items-center gap-6">
             <Link href="/" className="flex shrink-0 items-center">
               <Image
-                src="/media/kealee-logo.png"
-                alt="kealee"
+                src="/brand/kealee-horizontal-logo.svg"
+                alt="Kealee Construction"
                 width={150}
                 height={44}
                 priority
@@ -277,7 +278,7 @@ export function SiteNav() {
               className="lg:hidden p-2 text-slate-600 hover:text-slate-900 transition"
               aria-label="Toggle menu"
             >
-              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              {mobileMenuOpen ? <X className="w-6 h-6" /> : <KealeeNavIcon className="w-6 h-6 text-slate-600 hover:text-slate-900" />}
             </button>
           </div>
         </div>

@@ -8,9 +8,12 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        'kealee-orange': { DEFAULT: '#FF8C22', light: '#FFB366', dark: '#E07B1E' },
-        'kealee-black': '#1A1A1A',
-        'kealee-gray': { DEFAULT: '#6B6B6B', light: '#D9D9D9' },
+        'kealee-primary': '#FFB366',
+        'kealee-primary-hover': '#FF8C22',
+        'kealee-brown': '#B69574',
+        'kealee-tan': '#E9D7C1',
+        'kealee-gray': '#666666',
+        'kealee-sky': '#7EC6F4',
         'kealee-light-gray': '#F5F5F5',
         charcoal: '#1F252A',
         copper: '#C38B5F',
