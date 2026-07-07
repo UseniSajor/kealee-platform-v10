@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation'
 import { Menu, X, ChevronDown } from 'lucide-react'
 import { useState, useRef, useEffect } from 'react'
 import { SERVICES } from '@/lib/services-config'
+import { isAgencyPartnerShellPath } from '@/lib/agency-partner-shell'
 
 // Services dropdown shows design and construction side-by-side
 function ServicesDropdown() {
@@ -196,6 +197,8 @@ export function SiteNav() {
   const pathname = usePathname()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
+  if (isAgencyPartnerShellPath(pathname)) return null
+
   function isActive(href: string) {
     return pathname === href || (href !== '/' && pathname?.startsWith(href + '/'))
   }
@@ -209,7 +212,7 @@ export function SiteNav() {
           <div className="flex items-center gap-6">
             <Link href="/" className="flex shrink-0 items-center">
               <Image
-                src="/media/kealee-logo.svg"
+                src="/media/kealee-logo.png"
                 alt="kealee"
                 width={150}
                 height={44}

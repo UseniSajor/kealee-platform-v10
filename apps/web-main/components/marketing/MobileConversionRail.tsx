@@ -1,10 +1,15 @@
 'use client'
 
+import { usePathname } from 'next/navigation'
 import { Phone, MessageCircle } from 'lucide-react'
 import { KEALEE_PHONE_DISPLAY, KEALEE_PHONE_E164 } from '@/lib/site/contact'
+import { isAgencyPartnerShellPath } from '@/lib/agency-partner-shell'
 
 /** Mobile-only: click-to-call + jump to Kealee Ask chat (above GlobalChatBar). */
 export function MobileConversionRail() {
+  const pathname = usePathname()
+  if (isAgencyPartnerShellPath(pathname)) return null
+
   function scrollToChat() {
     const el = document.getElementById('kealee-global-chat')
     if (el) {

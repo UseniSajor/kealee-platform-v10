@@ -21,13 +21,19 @@ function safeNext(raw: string | null): string {
   return `/${n}`
 }
 
+function isMarketingPath(path: string): boolean {
+  return path.startsWith('/marketing') || path.startsWith('/admin/marketing')
+}
+
 function AuthHubLoginForm() {
   const searchParams = useSearchParams()
-  const next = safeNext(searchParams.get('next'))
+  const next = safeNext(searchParams.get('next') ?? searchParams.get('redirectTo'))
   const emailParam = searchParams.get('email') ?? ''
   const welcomeMode = searchParams.get('welcome') === '1'
+  const authError = searchParams.get('error')
+  const marketingLogin = isMarketingPath(next)
 
-  const [mode, setMode] = useState<Mode>(welcomeMode ? 'create' : 'magic')
+  const [mode, setMode] = useState<Mode>(welcomeMode ? 'create' : 'password')
   const [email, setEmail] = useState(emailParam)
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -111,12 +117,24 @@ function AuthHubLoginForm() {
           <Home className="h-7 w-7 text-white" />
         </div>
         <h1 className="text-2xl font-bold text-white">
-          {mode === 'create' ? 'Create your Kealee account' : 'Sign in to Kealee'}
+          {mode === 'create'
+            ? 'Create your Kealee account'
+            : marketingLogin
+              ? 'Sign in to Marketing Workspace'
+              : 'Sign in to Kealee'}
         </h1>
         <p className="mt-1 text-sm text-white/50">
-          One account for concepts, estimates, permits, and your project portal.
+          {marketingLogin
+            ? 'Use the email and password provided by Kealee. You will land in the marketing workspace after sign-in.'
+            : 'One account for concepts, estimates, permits, and your project portal.'}
         </p>
       </div>
+
+      {authError === 'unauthorized' && (
+        <div className="mb-4 rounded-lg border border-amber-500/40 bg-amber-500/10 p-3 text-sm text-amber-100">
+          Your account does not have access to this area. Contact Kealee if you need marketing workspace access.
+        </div>
+      )}
 
       {sent && (
         <div className="rounded-lg border border-[#2ABFBF]/30 bg-[#2ABFBF]/10 p-4 text-center text-sm text-white">
@@ -127,6 +145,7 @@ function AuthHubLoginForm() {
 
       {!sent && (
         <>
+          {!marketingLogin && (
           <div className="mb-4 flex rounded-lg overflow-hidden border border-slate-600">
             {(['magic', 'password', ...(welcomeMode ? ['create'] as const : [])] as Mode[]).map((m) => (
               <button
@@ -143,6 +162,7 @@ function AuthHubLoginForm() {
               </button>
             ))}
           </div>
+          )}
 
           {error && (
             <div className="mb-4 rounded-lg bg-red-500/20 p-3 text-sm text-red-200">{error}</div>

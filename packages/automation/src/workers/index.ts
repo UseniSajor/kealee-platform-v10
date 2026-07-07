@@ -35,14 +35,18 @@ import { smartSchedulerWorker, smartSchedulerQueue, smartSchedulerService } from
 import { qaInspectorWorker, qaInspectorQueue, qaInspectorService } from '../apps/qa-inspector/index.js';
 import { decisionSupportWorker, decisionSupportQueue, decisionSupportService } from '../apps/decision-support/index.js';
 import { dashboardWorker, dashboardQueue, dashboardService } from '../apps/dashboard/index.js';
-import {
+import { startLoopWorkers } from '../infrastructure/loop-queues.js';
+
+// Loop workers start polling as soon as they're created, so they're only
+// instantiated here in the worker entrypoint — never via import side effects.
+const {
   processAutomationEventWorker,
   runLoopWorker,
   updateDigitalTwinWorker,
   generateDeliverableWorker,
   sendNotificationWorker,
   adminReviewWorker,
-} from '../infrastructure/loop-queues.js';
+} = startLoopWorkers();
 
 // ── All workers array (for lifecycle management) ───────────────────────────
 

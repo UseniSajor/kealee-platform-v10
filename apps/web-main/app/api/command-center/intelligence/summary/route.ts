@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
+import { requireCommandCenterApi } from '@/lib/command-center-api-auth'
 
 export const dynamic = 'force-dynamic'
 
@@ -39,7 +40,10 @@ function metaField(
 }
 
 /** GET /api/command-center/intelligence/summary — intake intelligence rollup for Command Center */
-export async function GET(_req: NextRequest) {
+export async function GET(req: NextRequest) {
+  const denied = await requireCommandCenterApi(req)
+  if (denied) return denied
+
   const supabase = getSupabaseAdmin()
   const limit = 50
 

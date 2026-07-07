@@ -21,15 +21,19 @@
  *   CREATE INDEX IF NOT EXISTS idx_mdrip_status_send ON marketing_drip_queue(status, send_at);
  */
 
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
+import { requireCommandCenterApi } from '@/lib/command-center-api-auth'
 
 export const dynamic = 'force-dynamic'
 
 
 export const runtime = 'nodejs'
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const denied = await requireCommandCenterApi(req)
+  if (denied) return denied
+
   try {
     const supabase = getSupabaseAdmin()
 

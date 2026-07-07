@@ -16,6 +16,12 @@
       "import": "./dist/client.js",
       "require": "./dist/client.js",
       "default": "./dist/client.js"
+    },
+    "./ops-api-auth": {
+      "types": "./dist/ops-api-auth.d.ts",
+      "import": "./dist/ops-api-auth.js",
+      "require": "./dist/ops-api-auth.js",
+      "default": "./dist/ops-api-auth.js"
     }
   },
   "scripts": {

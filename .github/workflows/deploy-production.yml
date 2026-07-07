@@ -10,6 +10,36 @@ env:
   RAILWAY_ENVIRONMENT: production
 
 jobs:
+  migrate-marketing-agency:
+    name: Apply marketing agency Supabase migrations
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v3
+        with:
+          version: 8.15.9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: pnpm
+
+      - name: Install dependencies
+        run: PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true pnpm install --no-frozen-lockfile
+
+      - name: Apply Supabase migrations
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          if [ -z "$SUPABASE_DB_URL" ]; then
+            echo "::warning::SUPABASE_DB_URL secret not set — run: pnpm run deploy:marketing-agency"
+            exit 0
+          fi
+          pnpm run migrate:marketing-agency
+          pnpm run migrate:intelligence-rls
+
   deploy-api:
     name: Deploy API to Railway
     runs-on: ubuntu-latest
@@ -45,6 +75,7 @@ jobs:
 
   deploy-services:
     name: Deploy ${{ matrix.service }} to Railway
+    needs: migrate-marketing-agency
     runs-on: ubuntu-latest
     env:
       RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}

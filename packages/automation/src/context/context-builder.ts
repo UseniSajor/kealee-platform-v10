@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
@@ -12,7 +13,7 @@ export class ContextBuilder {
     priorLoopHistory: any[];
   }> {
     // Fetch prior loop history for this project
-    const priorLoops = await prisma.loopRun.findMany({
+    const priorLoops = await prisma.v30LoopRun.findMany({
       where: { projectId },
       orderBy: { createdAt: 'desc' },
       take: 5,

@@ -6,6 +6,7 @@
  */
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { getWebMainUrl } from '@/lib/get-app-url'
 
 export const dynamic = 'force-dynamic'
 
@@ -38,10 +39,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'No email on intake' }, { status: 400 })
     }
 
-    const baseUrl =
-      process.env.NEXT_PUBLIC_WEB_MAIN_URL ??
-      process.env.NEXT_PUBLIC_APP_URL ??
-      (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000')
+    const baseUrl = getWebMainUrl()
 
     const res = await fetch(`${baseUrl}/api/emails/deliverable-ready`, {
       method: 'POST',

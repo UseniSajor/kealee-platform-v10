@@ -6,6 +6,7 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
+import { hasIntelligenceUiRole } from '@kealee/auth/ops-api-auth'
 import { getOwnerPortalBaseUrl, getOwnerPortalDeliverableUrl } from '@/lib/owner-portal-urls'
 
 // Public routes that don't require authentication
@@ -13,6 +14,7 @@ import { getOwnerPortalBaseUrl, getOwnerPortalDeliverableUrl } from '@/lib/owner
 // Keep in sync with marketing + checkout funnels (anonymous users must never hit auth wall).
 const PUBLIC_ROUTES = [
   '/login',
+  '/marketing/login',
   '/auth/login',
   '/auth/signup',
   '/auth/callback',
@@ -73,6 +75,23 @@ const PUBLIC_ROUTES = [
   '/gallery',
 ]
 
+function authLoginUrl(request: NextRequest, nextPath: string, extra?: Record<string, string>) {
+  const isAgencyLogin =
+    nextPath === '/marketing/login' || nextPath.startsWith('/marketing/login/')
+  const isAgencyWorkspace =
+    nextPath === '/marketing/workspace' || nextPath.startsWith('/marketing/workspace/')
+  const loginPath =
+    isAgencyLogin || isAgencyWorkspace ? '/marketing/login' : '/auth/login'
+  const url = new URL(loginPath, request.url)
+  if (!isAgencyLogin && !isAgencyWorkspace) {
+    url.searchParams.set('next', nextPath)
+  }
+  if (extra) {
+    for (const [k, v] of Object.entries(extra)) url.searchParams.set(k, v)
+  }
+  return url
+}
+
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname
 
@@ -116,9 +135,19 @@ export async function middleware(request: NextRequest) {
   if (PUBLIC_ROUTES.some(route => pathname === route || pathname.startsWith(route + '/'))) {
     // Redirect authenticated users away from sign-in entry (web-main has no /dashboard — use home)
     const isAuthEntry =
-      pathname.startsWith('/login') ||
+      pathname === '/login' ||
+      pathname === '/marketing/login' ||
       (pathname.startsWith('/auth/') && !pathname.startsWith('/auth/callback'))
     if (isAuthEntry && user) {
+      const next =
+        request.nextUrl.searchParams.get('next') ??
+        request.nextUrl.searchParams.get('redirectTo')
+      if (next?.startsWith('/')) {
+        return NextResponse.redirect(new URL(next, request.url))
+      }
+      if (pathname === '/marketing/login') {
+        return NextResponse.redirect(new URL('/marketing/workspace', request.url))
+      }
       return NextResponse.redirect(new URL('/', request.url))
     }
     return response
@@ -136,9 +165,7 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(`${getOwnerPortalBaseUrl()}/login`)
     }
 
-    const loginUrl = new URL('/login', request.url)
-    loginUrl.searchParams.set('redirectTo', pathname)
-    return NextResponse.redirect(loginUrl)
+    return NextResponse.redirect(authLoginUrl(request, pathname))
   }
 
   // Check email verification for sensitive routes
@@ -146,10 +173,29 @@ export async function middleware(request: NextRequest) {
     const emailConfirmedAt = user.email_confirmed_at
 
     if (!emailConfirmedAt) {
-      const verifyUrl = new URL('/login', request.url)
-      verifyUrl.searchParams.set('redirectTo', pathname)
-      verifyUrl.searchParams.set('needsEmailVerification', '1')
-      return NextResponse.redirect(verifyUrl)
+      return NextResponse.redirect(
+        authLoginUrl(request, pathname, { needsEmailVerification: '1' })
+      )
+    }
+  }
+
+  // Intelligence admin — ops/admin roles only (data still requires ops secret on APIs)
+  if (pathname.startsWith('/admin/intelligence')) {
+    const appRole = (user.app_metadata?.role as string | undefined)?.toLowerCase()
+    if (!hasIntelligenceUiRole(appRole)) {
+      return NextResponse.redirect(authLoginUrl(request, pathname, { error: 'unauthorized' }))
+    }
+  }
+
+  // Marketing workspace / admin approvals — role-gated
+  if (pathname.startsWith('/marketing/workspace') || pathname.startsWith('/admin/marketing')) {
+    const appRole = (user.app_metadata?.role as string | undefined)?.toLowerCase()
+    const isWorkspace = pathname.startsWith('/marketing/workspace')
+    const workspaceRoles = new Set(['marketing_agency', 'zem_marketing', 'admin', 'super_admin', 'marketing_admin'])
+    const adminRoles = new Set(['admin', 'super_admin', 'marketing_admin', 'owner'])
+    const allowed = isWorkspace ? workspaceRoles.has(appRole ?? '') : adminRoles.has(appRole ?? '')
+    if (!allowed) {
+      return NextResponse.redirect(authLoginUrl(request, pathname, { error: 'unauthorized' }))
     }
   }
 

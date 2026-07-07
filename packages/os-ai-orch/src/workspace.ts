@@ -6,14 +6,13 @@ export async function getV30ProjectWorkspace(projectId: string) {
     prisma.v30CustomPackage.findUnique({ where: { projectId } }),
     prisma.v30BotExecution.findMany({
       where: { projectId },
-      include: { result: true },
       orderBy: { createdAt: 'asc' },
     }),
   ])
 
   const project = await prisma.project.findUnique({
     where: { id: projectId },
-    select: { categoryMetadata: true, v30Status: true },
+    select: { categoryMetadata: true, status: true },
   })
   const meta = (project?.categoryMetadata as Record<string, unknown> | null) ?? {}
 
@@ -31,7 +30,6 @@ export async function getV30ProjectWorkspace(projectId: string) {
       outputData: e.outputData,
       modelUsed: e.modelUsed,
       completedAt: e.completedAt,
-      result: e.result,
     })),
   }
 }

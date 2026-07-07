@@ -1,22 +1,75 @@
 'use client'
 
 import Link from 'next/link'
-import { Play } from 'lucide-react'
+import { Play, ChevronLeft, ChevronRight } from 'lucide-react'
 import { V30HeroCta } from '@/components/v30/V30HeroCta'
-import { useRef, useEffect } from 'react'
+import { useRef, useEffect, useState } from 'react'
+
+interface HeroVideo {
+  src: string
+  poster: string
+  label: string
+  description: string
+}
 
 export default function HomeHero() {
   const videoRef = useRef<HTMLVideoElement>(null)
+  const [currentVideoIndex, setCurrentVideoIndex] = useState(0)
+  const [autoRotate, setAutoRotate] = useState(true)
+
+  const heroVideos: HeroVideo[] = [
+    {
+      src: process.env.NEXT_PUBLIC_HERO_VIDEO_KITCHEN || '',
+      poster: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=1400&q=60&auto=format&fit=crop',
+      label: 'Kitchen Remodel',
+      description: 'AI-designed kitchen concepts with professional renderings',
+    },
+    {
+      src: process.env.NEXT_PUBLIC_HERO_VIDEO_ADDITION || '',
+      poster: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1400&q=60&auto=format&fit=crop',
+      label: 'Home Addition',
+      description: 'New construction & expansion designs with cost estimates',
+    },
+    {
+      src: process.env.NEXT_PUBLIC_HERO_VIDEO_GARDEN || '',
+      poster: 'https://images.unsplash.com/photo-1576486213369-148396e848e6?w=1400&q=60&auto=format&fit=crop',
+      label: 'Garden & Landscaping',
+      description: 'Outdoor living spaces transformed with AI visualization',
+    },
+  ]
+
+  const currentVideo = heroVideos[currentVideoIndex]
 
   useEffect(() => {
     if (videoRef.current) {
       videoRef.current.play().catch(() => {/* autoplay blocked — poster shows */})
     }
-  }, [])
+  }, [currentVideoIndex])
+
+  // Auto-rotate videos every 8 seconds
+  useEffect(() => {
+    if (!autoRotate) return
+    const interval = setInterval(() => {
+      setCurrentVideoIndex(prev => (prev + 1) % heroVideos.length)
+    }, 8000)
+    return () => clearInterval(interval)
+  }, [autoRotate, heroVideos.length])
+
+  const handlePrevVideo = () => {
+    setAutoRotate(false)
+    setCurrentVideoIndex(prev => (prev - 1 + heroVideos.length) % heroVideos.length)
+    setTimeout(() => setAutoRotate(true), 10000)
+  }
+
+  const handleNextVideo = () => {
+    setAutoRotate(false)
+    setCurrentVideoIndex(prev => (prev + 1) % heroVideos.length)
+    setTimeout(() => setAutoRotate(true), 10000)
+  }
 
   return (
     <section className="relative min-h-screen flex items-center overflow-hidden bg-[#1A2B4A]">
-      {/* Video background */}
+      {/* Video background with carousel */}
       <video
         ref={videoRef}
         className="absolute inset-0 w-full h-full object-cover opacity-30"
@@ -24,8 +77,9 @@ export default function HomeHero() {
         muted
         loop
         playsInline
-        poster="https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?w=1400&q=60&auto=format&fit=crop"
-        src=""
+        poster={currentVideo.poster}
+        src={currentVideo.src}
+        key={currentVideoIndex}
         aria-hidden="true"
       />
 
@@ -40,13 +94,13 @@ export default function HomeHero() {
         </p>
 
         <h1 className="text-4xl sm:text-5xl lg:text-7xl font-bold text-white leading-[1.08] tracking-tight">
-          Transform Your Home.
+          {currentVideo.label}.
           <br className="hidden sm:block" />
-          <span className="text-[#E8724B]"> Visualize</span> Your Build.
+          <span className="text-[#E8724B]"> Visualized</span> with AI.
         </h1>
 
         <p className="mt-6 text-lg sm:text-xl lg:text-2xl text-slate-300 max-w-2xl mx-auto leading-relaxed">
-          Get AI-designed concepts with professional videos, cost estimates, and permit roadmaps — in days, not months.
+          {currentVideo.description}
         </p>
 
         {/* Stats row */}
@@ -79,6 +133,43 @@ export default function HomeHero() {
           No commitment · Delivered in days · Includes permits + cost estimate
         </p>
       </div>
+
+      {/* Video carousel controls */}
+      <div className="absolute bottom-20 inset-x-0 flex justify-center gap-3 z-20">
+        {heroVideos.map((_, index) => (
+          <button
+            key={index}
+            onClick={() => {
+              setAutoRotate(false)
+              setCurrentVideoIndex(index)
+              setTimeout(() => setAutoRotate(true), 10000)
+            }}
+            className={`w-2 h-2 rounded-full transition-all ${
+              index === currentVideoIndex
+                ? 'bg-white w-8'
+                : 'bg-white/40 hover:bg-white/60'
+            }`}
+            aria-label={`View ${heroVideos[index].label}`}
+          />
+        ))}
+      </div>
+
+      {/* Carousel navigation */}
+      <button
+        onClick={handlePrevVideo}
+        className="absolute left-4 sm:left-8 top-1/2 -translate-y-1/2 z-20 flex h-10 w-10 items-center justify-center rounded-full bg-white/20 backdrop-blur-sm text-white hover:bg-white/40 transition"
+        aria-label="Previous project"
+      >
+        <ChevronLeft className="w-5 h-5" />
+      </button>
+
+      <button
+        onClick={handleNextVideo}
+        className="absolute right-4 sm:right-8 top-1/2 -translate-y-1/2 z-20 flex h-10 w-10 items-center justify-center rounded-full bg-white/20 backdrop-blur-sm text-white hover:bg-white/40 transition"
+        aria-label="Next project"
+      >
+        <ChevronRight className="w-5 h-5" />
+      </button>
 
       {/* Scroll indicator */}
       <div className="absolute bottom-10 inset-x-0 flex justify-center">

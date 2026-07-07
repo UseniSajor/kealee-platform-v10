@@ -1,0 +1,21 @@
+{
+  "name": "marketing-cron",
+  "description": "Standalone Node.js service for scheduled marketing automation tasks",
+  "primaryServiceName": "marketing-cron",
+  "services": {
+    "marketing-cron": {
+      "dockerfile": "packages/automation/apps/marketing-cron/Dockerfile",
+      "port": null,
+      "startCommand": "node packages/automation/apps/marketing-cron/dist/index.js",
+      "private": true
+    }
+  },
+  "environments": {
+    "production": {
+      "replicas": 1,
+      "cpuCores": 0.5,
+      "memory": 512,
+      "restartPolicy": "always"
+    }
+  }
+}

@@ -1,7 +1,91 @@
 // WORKFLOW ΓÇö Loops Orchestration Models
 // Kealee Platform v30 Loop Orchestration System
 
-// Removed duplicate loop models (LoopRun, LoopStep, ProjectDecision, AgentMemory)
+
+model V30LoopRun {
+  id              String     @id @default(cuid())
+  projectId       String
+  loopType        String     // intake_refinement, estimate_revision, permit_correction, contractor_bid, etc.
+  status          String     // PENDING, RUNNING, COMPLETED, FAILED, AWAITING_REVIEW
+  currentStep     String?
+  confidenceScore Float?
+  requiresReview  Boolean    @default(false)
+  triggerEvent    String     // PROJECT_CREATED, INTAKE_UPDATED, etc.
+  inputSnapshot   Json?      // Input payload
+  outputSnapshot  Json?      // Structured output response
+  nextAction      Json?      // Planned next steps
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  // Relations
+  steps           V30LoopStep[]
+  project         Project    @relation("ProjectLoopRuns", fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@index([loopType])
+  @@index([status])
+  @@index([createdAt])
+  @@map("v30_loop_runs")
+}
+
+model V30LoopStep {
+  id              String   @id @default(cuid())
+  loopRunId       String
+  agentName       String   // OwnerAgent, IntakeAgent, etc.
+  stepType        String   // evaluation, revision, check, etc.
+  input           Json?
+  output          Json?
+  confidenceScore Float?
+  error           String?  @db.Text
+  createdAt       DateTime @default(now())
+
+  // Relations
+  loopRun         V30LoopRun  @relation(fields: [loopRunId], references: [id], onDelete: Cascade)
+
+  @@index([loopRunId])
+  @@index([createdAt])
+  @@map("v30_loop_steps")
+}
+
+model V30ProjectDecision {
+  id              String   @id @default(cuid())
+  projectId       String
+  loopRunId       String?
+  decisionType    String   // select_concept, value_engineer, authorize_filing, etc.
+  selectedOption  String
+  reason          String?  @db.Text
+  budgetImpact    Float?
+  scheduleImpact  String?
+  createdBy       String?  // user ID
+  createdAt       DateTime @default(now())
+
+  // Relations
+  project         Project  @relation("ProjectDecisions", fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@index([loopRunId])
+  @@index([createdAt])
+  @@map("v30_project_decisions")
+}
+
+model V30AgentMemory {
+  id          String   @id @default(cuid())
+  projectId   String
+  agentName   String   // IntakeAgent, EstimateAgent, etc.
+  memoryType  String   // project_context, user_preferences, historical_choices, etc.
+  content     Json
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  project         Project  @relation("ProjectAgentMemory", fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@index([agentName])
+  @@index([updatedAt])
+  @@map("v30_agent_memories")
+}
+
 
 model V30PricingFormula {
   id                 String   @id @default(uuid())
@@ -21,7 +105,25 @@ model V30PricingFormula {
   @@map("v30_pricing_formulas")
 }
 
-// Removed duplicate AutomationEvent
+
+model V30AutomationEvent {
+  id            String   @id @default(cuid())
+  projectId     String
+  eventName     String   // PROJECT_CREATED, INTAKE_UPDATED, etc.
+  payload       Json
+  processed     Boolean  @default(false)
+  error         String?  @db.Text
+  createdAt     DateTime @default(now())
+
+  // Relations
+  project       Project  @relation("ProjectAutomationEvents", fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@index([eventName])
+  @@index([createdAt])
+  @@map("v30_automation_events")
+}
+
 
 model V30WhiteLabelConfig {
   id                  String   @id @default(cuid())

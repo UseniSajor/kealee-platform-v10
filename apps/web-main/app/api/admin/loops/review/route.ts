@@ -5,7 +5,7 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
   try {
-    const loops = await prisma.loopRun.findMany({
+    const loops = await prisma.v30LoopRun.findMany({
       where: {
         OR: [
           { status: 'AWAITING_REVIEW' },

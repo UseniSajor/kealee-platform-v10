@@ -90,7 +90,7 @@ export function GlobalNav() {
             onClick={() => { setOpenDropdown(null); setLoginOpen(false) }}
           >
             <Image
-              src="/media/kealee-logo.svg"
+              src="/media/kealee-logo.png"
               alt="kealee"
               width={150}
               height={44}

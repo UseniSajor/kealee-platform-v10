@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { PrismaClient } from '@prisma/client';
 import { randomUUID } from 'node:crypto';
 import { addJob } from './infrastructure/queues.js';

@@ -13,6 +13,7 @@ import { JsonLd } from '@/components/seo/JsonLd'
 import { buildGlobalJsonLdGraph } from '@/lib/seo/site-json-ld'
 import { MobileConversionRail } from '@/components/marketing/MobileConversionRail'
 import { ConversionPathTracker } from '@/components/marketing/ConversionPathTracker'
+import { ConditionalMain } from '@/components/ConditionalMain'
 
 const syne = Syne({
   subsets: ['latin'],
@@ -125,7 +126,7 @@ fbq('track', 'PageView');`}
           <UtmCaptureRoot />
           <ConversionPathTracker />
           <SiteNav />
-          <main className="pb-28 md:pb-24">{children}</main>
+          <ConditionalMain>{children}</ConditionalMain>
           <ConditionalSiteFooter />
           <VideoModal />
           <MobileConversionRail />

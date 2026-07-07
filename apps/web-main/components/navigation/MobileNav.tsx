@@ -38,7 +38,7 @@ export function MobileNav({ isOpen, onClose }: Props) {
         <div className="flex h-16 items-center justify-between border-b border-gray-100 px-5">
           <Link href="/" onClick={onClose} className="flex items-center">
             <Image
-              src="/media/kealee-logo.svg"
+              src="/media/kealee-logo.png"
               alt="kealee"
               width={130}
               height={38}

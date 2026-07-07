@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import {
   resolveRoleFromApiKey,
   roleHasScope,
+  isExternalMarketingRole,
   type ApiScope,
   type KealeeAccessRole,
 } from '@/lib/admin/access-roles'
@@ -32,6 +33,9 @@ export function authorizeOps(req: NextRequest, requiredScope?: ApiScope): OpsAut
 
   const partnerRole = resolveRoleFromApiKey(provided)
   if (partnerRole) {
+    if (isExternalMarketingRole(partnerRole)) {
+      return { authorized: false, role: partnerRole }
+    }
     if (!requiredScope || roleHasScope(partnerRole, requiredScope)) {
       return { authorized: true, role: partnerRole }
     }

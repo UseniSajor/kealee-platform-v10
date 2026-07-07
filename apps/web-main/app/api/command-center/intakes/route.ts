@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
+import { requireCommandCenterApi } from '@/lib/command-center-api-auth'
 
 export const dynamic = 'force-dynamic'
 
@@ -7,6 +8,9 @@ export const dynamic = 'force-dynamic'
 // GET /api/command-center/intakes
 // Returns intake queue with optional filters
 export async function GET(req: NextRequest) {
+  const denied = await requireCommandCenterApi(req)
+  if (denied) return denied
+
   const status = req.nextUrl.searchParams.get('status')
   const projectPath = req.nextUrl.searchParams.get('projectPath')
   const limit = parseInt(req.nextUrl.searchParams.get('limit') ?? '50', 10)

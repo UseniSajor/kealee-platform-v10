@@ -30,7 +30,7 @@ export async function GET() {
     endpoint: '/api/webhooks/stripe',
     webhookSecretsConfigured: secrets.length,
     supabaseConfigured: hasSupabase,
-    vercelEnv: process.env.VERCEL_ENV ?? 'local',
+    environment: process.env.RAILWAY_ENVIRONMENT_NAME ?? process.env.VERCEL_ENV ?? 'local',
   })
 }
 

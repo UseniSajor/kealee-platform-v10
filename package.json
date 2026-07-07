@@ -65,6 +65,11 @@
     "seed:parcel-outreach": "node scripts/seed-parcel-outreach.mjs",
     "export:direct-mail": "node scripts/export-direct-mail-queue.mjs",
     "migrate:parcel-outreach": "node scripts/apply-supabase-sql.mjs packages/database/supabase/migrations/20260625_parcel_outreach.sql",
+    "migrate:marketing-agency": "node scripts/apply-supabase-sql.mjs packages/database/supabase/migrations/20260701_marketing_agency_layer.sql",
+    "migrate:intelligence-rls": "node scripts/apply-supabase-sql.mjs packages/database/supabase/migrations/20260702_intelligence_rls.sql",
+    "provision:marketing-agency-users": "node scripts/provision-marketing-agency-users.mjs",
+    "deploy:marketing-agency": "node scripts/deploy-marketing-agency.mjs",
+    "deploy:marketing-agency:full": "node scripts/deploy-marketing-agency.mjs --provision-users",
     "generate:marketing-library": "tsx scripts/generate-marketing-library.ts",
     "backfill:marketing-channel": "node scripts/backfill-marketing-channel.mjs",
     "verify:owner-portal": "node scripts/verify-owner-portal-config.mjs",
@@ -139,6 +144,7 @@
     "typescript": "^5.9.3"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.74.0",
     "@apollo/server": "^4.11.0",
     "@as-integrations/fastify": "^1.3.0",
     "@aws-sdk/client-s3": "^3.972.0",

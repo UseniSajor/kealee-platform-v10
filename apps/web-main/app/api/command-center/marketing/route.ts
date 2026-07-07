@@ -2,9 +2,10 @@
  * GET /api/command-center/marketing — funnel stats for Command Center (all sources).
  */
 
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { computeFunnelStats, type IntakeLeadRow } from '@/lib/marketing/funnel-stats'
+import { requireCommandCenterApi } from '@/lib/command-center-api-auth'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -12,7 +13,10 @@ export const runtime = 'nodejs'
 const LEAD_SELECT =
   'id, contact_email, client_name, project_path, status, source, created_at, form_data, metadata, budget_range, project_address, paid_at, payment_amount'
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const denied = await requireCommandCenterApi(req)
+  if (denied) return denied
+
   try {
     const supabase = getSupabaseAdmin()
 

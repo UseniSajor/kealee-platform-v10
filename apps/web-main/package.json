@@ -24,14 +24,16 @@
     "sync:card-media:home": "node ./scripts/setup-and-run-card-media.mjs --scope=home --fallback-only --with-videos"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.30.0",
+    "@anthropic-ai/sdk": "^0.74.0",
     "@kealee/auth": "workspace:*",
+    "@kealee/automation": "workspace:*",
     "@kealee/communications": "workspace:*",
     "@kealee/concept-engine": "workspace:*",
     "@kealee/core-llm": "workspace:*",
     "@kealee/core-rules": "workspace:*",
     "@kealee/database": "workspace:*",
-    "@kealee/intelligence": "workspace:*",
+    "@kealee/marketing-agency": "workspace:*",
+    "@kealee/marketing-privacy": "workspace:*",
     "@kealee/intake": "workspace:*",
     "@kealee/kealee-agent-stack": "workspace:*",
     "@kealee/pascal-wrapper": "workspace:*",

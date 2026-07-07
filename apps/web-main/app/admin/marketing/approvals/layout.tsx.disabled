@@ -1,0 +1,23 @@
+import { redirect } from 'next/navigation'
+import { cookies } from 'next/headers'
+import { createSupabaseServerClient } from '@kealee/auth'
+import { canApproveMarketingContent } from '@/lib/admin/access-roles'
+
+export default async function MarketingApprovalsLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  const cookieStore = await cookies()
+  const supabase = createSupabaseServerClient(cookieStore)
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) redirect('/auth/login?next=/admin/marketing/approvals')
+
+  const appRole = (user.app_metadata?.role as string | undefined)?.toLowerCase()
+  if (!canApproveMarketingContent(appRole)) {
+    redirect('/marketing/workspace')
+  }
+
+  return <>{children}</>
+}
