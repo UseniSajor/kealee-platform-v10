@@ -93,3 +93,4 @@ CMD SERVER=$(find /app/apps -path '*/.next/standalone/apps/*/server.js' -print -
       cd /app/services/api && \
       exec node dist/index.js; \
     fi
+/* Force rebuild */
