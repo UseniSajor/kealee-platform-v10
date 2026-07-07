@@ -276,9 +276,8 @@ export function SiteNav() {
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="lg:hidden p-2 text-slate-600 hover:text-slate-900 transition"
-              aria-label="Toggle menu"
             >
-              {mobileMenuOpen ? <X className="w-6 h-6" /> : <KealeeNavIcon className="w-6 h-6 text-slate-600 hover:text-slate-900" />}
+              {mobileMenuOpen ? <X className="w-6 h-6" /> : <KealeeNavIcon className="w-6 h-6" />}
             </button>
           </div>
         </div>

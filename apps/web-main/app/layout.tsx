@@ -20,6 +20,7 @@ const nunitoDisplay = Nunito({
   weight: ['400', '600', '700', '800', '900'],
   variable: '--font-nunito-display',
   display: 'swap',
+  adjustFontFallback: false,
 })
 
 const nunitoBody = Nunito_Sans({
@@ -27,6 +28,7 @@ const nunitoBody = Nunito_Sans({
   weight: ['300', '400', '600', '700', '800'],
   variable: '--font-nunito-body',
   display: 'swap',
+  adjustFontFallback: false,
 })
 
 const GA_ID      = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID
@@ -40,9 +42,14 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   title: {
     default: 'Kealee Construction',
-    template: '%s — Kealee Construction',
+    template: '%s - Kealee Construction',
   },
   description: 'Design. Build. Deliver.',
+  manifest: '/site.webmanifest',
+  icons: {
+    icon: '/favicon.svg',
+    apple: '/apple-touch-icon.svg',
+  },
   openGraph: {
     type: 'website',
     siteName: 'Kealee Construction',

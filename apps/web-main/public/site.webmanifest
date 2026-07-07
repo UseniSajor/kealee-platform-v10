@@ -4,12 +4,12 @@
   "icons": [
     {
       "src": "/favicon.svg",
-      "sizes": "any",
+      "sizes": "192x192 512x512",
       "type": "image/svg+xml"
     },
     {
       "src": "/apple-touch-icon.svg",
-      "sizes": "180x180",
+      "sizes": "512x512",
       "type": "image/svg+xml"
     }
   ],
