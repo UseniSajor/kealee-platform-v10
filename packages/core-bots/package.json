@@ -23,8 +23,6 @@
     "@kealee/core-events": "workspace:*",
     "@kealee/core-llm": "workspace:*",
     "@kealee/shared": "workspace:*",
-    "@kealee/core-agents": "workspace:*",
-    "@kealee/core-llm": "workspace:*",
     "zod": "^3.22.4"
   },
   "devDependencies": {
