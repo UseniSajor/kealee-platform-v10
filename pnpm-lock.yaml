@@ -660,6 +660,9 @@ importers:
       '@kealee/auth':
         specifier: workspace:*
         version: link:../../packages/auth
+      '@kealee/communications':
+        specifier: workspace:*
+        version: link:../../packages/communications
       '@kealee/concept-engine':
         specifier: workspace:*
         version: link:../../packages/concept-engine
