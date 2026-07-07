@@ -167,7 +167,6 @@ export async function sendEmailWithTemplate(
       sentAt: new Date(),
       metadata: {
         messageId: data?.id,
-        templateName: opts.templateName,
         templateName: template.name,
         emailEventId: emailEvent.id
       },
