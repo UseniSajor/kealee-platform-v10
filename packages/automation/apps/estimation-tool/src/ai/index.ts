@@ -1,6 +1,6 @@
 /**
  * AI Module
- * AI-powered estimation features
+ * powered by AI tools estimation features
  */
 
 export * from './scope-analyzer.js';

@@ -3,7 +3,7 @@ import './globals.css'
 
 export const metadata: Metadata = {
   title: 'Kealee - Owner Portal',
-  description: 'Track your construction project with AI-powered digital twins, escrow payments, and real-time monitoring.',
+  description: 'Track your construction project with powered by AI tools digital twins, escrow payments, and real-time monitoring.',
   icons: { icon: '/favicon.ico' },
 }
 

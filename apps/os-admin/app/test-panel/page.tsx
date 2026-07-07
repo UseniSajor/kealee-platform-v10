@@ -213,11 +213,11 @@ export default function TestPanelPage() {
         <ResultPanel result={results.seed ?? null} />
       </div>
 
-      {/* Part 3A: AI Concept Purchases */}
+      {/* Part 3A: design concept Purchases */}
       <div className="rounded-2xl border border-gray-200 bg-white p-6">
         <div className="mb-4 flex items-center gap-2">
           <Zap className="h-5 w-5" style={{ color: '#E8793A' }} />
-          <h2 className="text-base font-bold font-display" style={{ color: '#1A2B4A' }}>AI Concept Purchases</h2>
+          <h2 className="text-base font-bold font-display" style={{ color: '#1A2B4A' }}>design concept Purchases</h2>
           <span className="text-xs text-gray-400">→ Stripe checkout → webhook → ConceptPackageOrder</span>
         </div>
         <div className="flex flex-wrap gap-3 mb-2">

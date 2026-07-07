@@ -147,7 +147,7 @@ const ownerCards = [
   },
   {
     icon: '\ud83e\udd16',
-    title: 'AI-Powered Pre-Review',
+    title: 'powered by AI tools Pre-Review',
     desc: 'Our AI catches common rejection reasons before you submit. Fewer revisions, faster approvals, less wasted time.',
   },
   {
@@ -193,7 +193,7 @@ export default function PermitsClient() {
       <section className="pm-hero">
         <div className="pm-hero-badge">
           <span className="pm-badge-dot" />
-          AI-POWERED &middot; 12 JURISDICTIONS SUPPORTED
+          powered by AI tools &middot; 12 JURISDICTIONS SUPPORTED
         </div>
         <div className="pm-hero-layout">
           <div>
@@ -202,7 +202,7 @@ export default function PermitsClient() {
               <em>Simple</em>
             </h1>
             <p className="pm-hero-sub">
-              Stop chasing permit statuses. AI-powered document review catches errors before you
+              Stop chasing permit statuses. powered by AI tools document review catches errors before you
               submit, and our permit specialists handle the entire process &mdash; from application
               to approval.
             </p>
@@ -482,7 +482,7 @@ export default function PermitsClient() {
             </Link>
           </div>
           <p style={{ marginTop: 24, fontSize: 13, color: 'rgba(255,255,255,0.45)' }}>
-            AI-powered document review + dedicated permit specialist on every application.
+            powered by AI tools document review + dedicated permit specialist on every application.
           </p>
         </div>
       </section>

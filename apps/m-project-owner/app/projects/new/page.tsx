@@ -454,7 +454,7 @@ function StepScope({
           />
           <div>
             <p className="font-semibold text-amber-900">
-              Include AI-powered CTC estimate
+              Include powered by AI tools CTC estimate
             </p>
             <p className="text-sm text-amber-700 mt-0.5">
               Automatically generate a cost estimate using the Construction Task
@@ -784,7 +784,7 @@ function StepReview({
           <div>
             <p className="font-semibold text-amber-900">CTC Estimate Included</p>
             <p className="text-sm text-amber-700">
-              An AI-powered cost estimate will be generated from the Construction Task Catalog
+              An powered by AI tools cost estimate will be generated from the Construction Task Catalog
             </p>
           </div>
         </div>

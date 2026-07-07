@@ -81,7 +81,7 @@ const AI_TOOLS: ToolConfig[] = [
     id: 'cost-prediction',
     title: 'Cost Prediction',
     description:
-      'Get an AI-powered cost prediction based on project type, size, location, and specifications.',
+      'Get an powered by AI tools cost prediction based on project type, size, location, and specifications.',
     icon: TrendingUp,
     color: 'text-green-600',
     bgColor: 'bg-green-100',
@@ -815,7 +815,7 @@ export default function AIToolsPage() {
         <div>
           <h1 className="text-3xl font-bold">AI Tools</h1>
           <p className="text-muted-foreground">
-            AI-powered estimation analysis and optimization tools
+            powered by AI tools estimation analysis and optimization tools
           </p>
         </div>
       </div>

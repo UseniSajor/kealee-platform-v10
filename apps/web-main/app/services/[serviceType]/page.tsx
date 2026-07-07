@@ -420,7 +420,7 @@ export default async function ServicePage({
         <p className="text-orange-100 text-lg mb-8 max-w-xl mx-auto">
           Your {svc.deliverableLabel.toLowerCase()}
           {' — '}
-          AI-assisted with renders
+          assisted by AI tools with renders
           {svc.permits > 0 ? ', cost estimate, and permit scope' : ' and documented design direction'}
           {' — '}
           delivered in {svc.deliveryDays}.

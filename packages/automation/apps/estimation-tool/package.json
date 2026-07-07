@@ -1,7 +1,7 @@
 {
   "name": "@kealee/estimation-tool",
   "version": "1.0.0",
-  "description": "Kealee Platform Estimation Tool - Construction cost estimation with AI-powered analysis",
+  "description": "Kealee Platform Estimation Tool - Construction cost estimation with powered by AI tools analysis",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",

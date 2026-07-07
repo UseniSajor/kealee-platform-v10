@@ -34,7 +34,7 @@ import {
 
 export const metadata: Metadata = {
   title: 'PM Software | Construction Project Management — Kealee',
-  description: 'Full-featured construction project management software. Scheduling, budgets, RFIs, submittals, daily logs, punch lists, change orders, and AI-powered command center. Free to start.',
+  description: 'Full-featured construction project management software. Scheduling, budgets, RFIs, submittals, daily logs, punch lists, change orders, and powered by AI tools command center. Free to start.',
   keywords: 'construction project management, PM software, scheduling, budgets, RFIs, submittals, daily logs, punch lists, change orders, construction software',
   openGraph: {
     title: 'Kealee PM Software — Construction Project Management',
@@ -484,7 +484,7 @@ export default function PMSoftwareLandingPage() {
                 'Budget tracking with real-time cost data',
                 'Subcontractor coordination & payments',
                 'Daily logs, photos & safety management',
-                'AI-generated reports for owners & banks',
+                'generated using AI tools reports for owners & banks',
               ]}
             />
             <AudienceCard

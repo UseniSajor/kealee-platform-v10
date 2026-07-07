@@ -15,8 +15,8 @@ const fadeInUp = {
 // ── Homeowner project services (one-time per project) ─────────────────────────
 
 const PLAN_ITEMS = [
-  { name: 'AI Concept Design Package', price: '$585', note: 'Property-specific visuals, design direction, zoning brief, path-to-approval plan + consultation included.', highlight: true },
-  { name: 'Advanced AI Concept', price: '$899', note: '3 floor plan options, 3D views, material suggestions' },
+  { name: 'Concept Design Package', price: '$585', note: 'Property-specific visuals, design direction, zoning brief, path-to-approval plan + consultation included.', highlight: true },
+  { name: 'Advanced Concept', price: '$899', note: '3 floor plan options, 3D views, material suggestions' },
   { name: 'Full Design Package', price: '$4,499', note: 'Permit-ready drawing set with licensed architect' },
 ]
 
@@ -99,7 +99,7 @@ const CONTRACTOR_LISTING = [
 
 const FAQ_ITEMS = [
   {
-    question: 'What does the $585 AI Concept Design Package include?',
+    question: 'What does the $585 Concept Design Package include?',
     answer: 'You get 8 structured deliverables: property-specific concept visuals (2–4 options), a design direction summary, layout and flow recommendations, a property-based zoning analysis, a path-to-approval plan, rough scope direction, a downloadable digital concept package, and an included design consultation call. Everything is built around your specific property — not generic AI outputs.',
   },
   {

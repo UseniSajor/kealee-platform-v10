@@ -3,8 +3,8 @@ import { redirect } from 'next/navigation'
 import { Container } from '@/components/ui/Container'
 
 export const metadata: Metadata = {
-  title: 'AI Design Intake — Kealee',
-  description: 'Tell us about your project and get an AI-generated concept package.',
+  title: 'design Intake — Kealee',
+  description: 'Tell us about your project and get an generated using AI tools concept package.',
 }
 
 interface Props {

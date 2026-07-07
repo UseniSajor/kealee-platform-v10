@@ -1,6 +1,6 @@
 /**
  * Plan Analyzer
- * AI-powered construction plan analysis
+ * powered by AI tools construction plan analysis
  *
  * Note: Analysis results are stored in-memory and can be exported to/imported from
  * Estimate.metadata for persistence.

@@ -68,7 +68,7 @@ export function buildWelcomeEmail(ctx: DripEmailContext): { subject: string; htm
   <h2 style="color:#1A2B4A;margin-bottom:8px">${greeting}!</h2>
   <p style="color:#4A5568;line-height:1.6">
     Thanks for your interest in a <strong>${ctx.serviceLabel}</strong> concept from Kealee.
-    Our AI-powered design engine delivers floor plan direction, permit scope, cost estimates,
+    Our powered by AI tools design engine delivers floor plan direction, permit scope, cost estimates,
     and concept renderings in one package.
   </p>
   <p style="color:#4A5568;line-height:1.6">
@@ -100,7 +100,7 @@ export function buildDripEmail(
   </p>
   <table style="width:100%;border-collapse:collapse;margin:20px 0">
     ${[
-      ['AI Concept Renderings', 'Photorealistic images of your finished space'],
+      ['design concept Renderings', 'Photorealistic images of your finished space'],
       ['Floor Plan Direction', 'Layout sketch and flow recommendations'],
       ['Permit Scope Brief', 'Path-to-approval checklist for DMV'],
       ['Cost Estimate', 'Itemized ranges for budgeting'],
@@ -192,7 +192,7 @@ export function buildPostPaymentEmail(opts: {
   const text = [
     `Hi ${firstName},`,
     '',
-    'Your payment has been received. Your AI concept is generating now.',
+    'Your payment has been received. Your design concept is generating now.',
     '',
     `Service: ${serviceName}`,
     `Order ID: ${opts.intakeId}`,
@@ -211,7 +211,7 @@ export function buildPostPaymentEmail(opts: {
   <h2 style="color:#1A2B4A">Hi ${firstName},</h2>
   <p style="color:#4A5568;line-height:1.6">Your payment is confirmed. We are generating your <strong>${serviceName}</strong> concept package now.</p>
   <ol style="color:#4A5568;line-height:1.8">
-    <li>AI design, RSMeans estimate (included), and permit guidance (per your tier)</li>
+    <li>design, RSMeans estimate (included), and permit guidance (per your tier)</li>
     <li>Email when your Owner Portal deliverable is ready</li>
     <li>Next step: permit-ready professional drawings — estimate already included</li>
   </ol>

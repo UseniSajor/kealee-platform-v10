@@ -89,7 +89,7 @@ export function ConceptPackages({ data }: { data: ConceptPackagesData }) {
                     : 'bg-neutral-900 text-white hover:bg-neutral-800'
                 }`}
               >
-                Get {pkg.name.replace('AI Concept', '').trim() || 'Started'}
+                Get {pkg.name.replace('design concept', '').trim() || 'Started'}
               </a>
             </div>
           )

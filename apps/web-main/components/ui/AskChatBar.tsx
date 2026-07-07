@@ -14,7 +14,7 @@ const SUGGESTED_PROMPTS: Record<string, string[]> = {
   homepage: [
     'How much does a kitchen remodel cost?',
     'Do I need a permit for my addition?',
-    'What is an AI concept package?',
+    'What is an Concept Package?',
     'How do I find a contractor?',
   ],
   permit: [
@@ -25,13 +25,13 @@ const SUGGESTED_PROMPTS: Record<string, string[]> = {
   ],
   'concept-intake': [
     'What photos should I upload?',
-    'Is an AI concept permit-ready?',
+    'Is an design concept permit-ready?',
     'What’s included in my concept package?',
     'How accurate are the renderings?',
   ],
   default: [
     'What services does Kealee offer?',
-    'How does the AI concept work?',
+    'How does the design concept work?',
     'How are contractors vetted?',
     'Where do I start my project?',
   ],
@@ -43,7 +43,7 @@ function detectCTA(content: string): { label: string; href: string } | null {
   if (/permit/i.test(c) && /have.*plan|existing plan/i.test(c)) return { label: 'Get Permit Services', href: '/permits' }
   if (/permit/i.test(c) && /need.*plan|design service/i.test(c)) return { label: 'Get Permit-Ready Drawings', href: '/intake/professional_drawings' }
   if (/permit/i.test(c)) return { label: 'Get Permit Services', href: '/permits' }
-  if (/concept|visualization|floor plan/i.test(c)) return { label: 'Start AI Concept', href: '/concept-engine' }
+  if (/concept|visualization|floor plan/i.test(c)) return { label: 'Start design concept', href: '/concept-engine' }
   if (/estimate|cost|budget|how much/i.test(c)) return { label: 'Get an Estimate', href: '/estimate' }
   if (/contractor|builder|hire/i.test(c)) return { label: 'Find a Contractor', href: '/marketplace' }
   if (/design service|architect|stamped|permit.ready|drawings?/i.test(c)) return { label: 'Get Permit-Ready Drawings', href: '/intake/professional_drawings' }

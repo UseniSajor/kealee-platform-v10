@@ -65,7 +65,7 @@ Both will follow the same high-quality pattern as Kealee Development but tailore
 
 ### Core Services
 1. **Permit Application Assistance** - We prep and submit
-2. **AI-Powered Compliance Review** - Catch issues before rejection
+2. **powered by AI tools Compliance Review** - Catch issues before rejection
 3. **Inspection Scheduling & Tracking** - Never miss an inspection
 4. **Resubmittal Management** - Handle corrections quickly
 5. **Multi-Jurisdiction Support** - Work across cities/counties

@@ -10,7 +10,7 @@ import { RoleFAQ } from '@/components/roles/RoleFAQ'
 export const metadata: Metadata = {
   title: 'For Contractors — Kealee',
   description:
-    'Win more projects, manage your pipeline, and get paid faster. Join the Kealee contractor network with AI-powered lead matching.',
+    'Win more projects, manage your pipeline, and get paid faster. Join the Kealee contractor network with powered by AI tools lead matching.',
 }
 
 const BENEFITS = [
@@ -64,7 +64,7 @@ const WORKFLOW = [
   },
   {
     number: 4,
-    title: 'Submit AI-Assisted Bids',
+    title: 'Submit assisted by AI tools Bids',
     desc: 'KeaBot GC helps you analyze scope, pull line-item costs, and prepare competitive proposals — fast.',
   },
   {
@@ -341,7 +341,7 @@ export default function ContractorsPage() {
 
       <RoleCTA
         headline="Ready to Grow Your Business?"
-        subhead="Join hundreds of licensed contractors winning more projects with Kealee's AI-powered platform."
+        subhead="Join hundreds of licensed contractors winning more projects with Kealee's powered by AI tools platform."
         cta={{ label: 'Join as Contractor', href: '/contractor/register' }}
         secondaryCta={{ label: 'Learn More', href: '/contact' }}
       />

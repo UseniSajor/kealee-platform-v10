@@ -1,5 +1,5 @@
 // ============================================================
-// REVIEW INTERFACE - AI-Assisted Review with PDF Markup
+// REVIEW INTERFACE - assisted by AI tools Review with PDF Markup
 // ============================================================
 
 'use client';

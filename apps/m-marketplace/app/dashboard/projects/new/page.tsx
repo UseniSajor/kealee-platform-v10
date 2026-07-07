@@ -153,7 +153,7 @@ export default function NewProjectPage() {
       <div>
         <h1 className="text-2xl font-black text-gray-900">Start a New Project</h1>
         <p className="mt-1 text-sm text-gray-500">
-          Tell us about your construction project. We&apos;ll generate AI design concepts and connect you with verified contractors.
+          Tell us about your construction project. We&apos;ll generate design concepts and connect you with verified contractors.
         </p>
       </div>
 
@@ -296,7 +296,7 @@ export default function NewProjectPage() {
         <div className="bg-white rounded-2xl border border-gray-200 p-6 space-y-5">
           <h2 className="text-lg font-bold text-gray-900">Design Package</h2>
           <p className="text-sm text-gray-500 -mt-3">
-            Choose the level of design detail for your AI-generated concepts.
+            Choose the level of design detail for your generated using AI tools concepts.
           </p>
 
           <div className="space-y-3">

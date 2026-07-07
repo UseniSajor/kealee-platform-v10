@@ -352,7 +352,7 @@ export const FEATURE_FLAGS: Record<string, FeatureFlag> = {
   // Estimation Features
   'estimation.ai-analysis': {
     id: 'estimation.ai-analysis',
-    name: 'AI-Powered Estimation',
+    name: 'powered by AI tools Estimation',
     description: 'Use AI for cost estimation analysis',
     module: 'estimation-engine',
     status: 'enabled',

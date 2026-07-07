@@ -4,7 +4,7 @@
  * and permit blueprints. Acts as the source of truth for agent decision-making.
  *
  * Features:
- * - Concept store (AI Concept outputs + design history)
+ * - Concept store (design concept outputs + design history)
  * - Pricing rules (imported from packages/core-rules/src/pricing.ts)
  * - Approval workflows (gates between chain stages)
  * - Permit blueprints (DC DCRA + Maryland county templates)
@@ -149,7 +149,7 @@ export class ObsidianKnowledgeBase {
   // ========================================================================
 
   /**
-   * Store AI Concept output (from DesignBot)
+   * Store design concept output (from DesignBot)
    */
   async storeConceptRecord(
     projectId: string,

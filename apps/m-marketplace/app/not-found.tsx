@@ -1,7 +1,7 @@
 import Link from 'next/link'
 
 const quickLinks = [
-  { label: 'Design Concepts', href: '/services/design', desc: 'AI-powered design from $199' },
+  { label: 'Design Concepts', href: '/services/design', desc: 'powered by AI tools design from $199' },
   { label: 'Cost Estimation', href: '/services/estimation', desc: 'Know your costs before you build' },
   { label: 'Permits', href: '/services/permits', desc: 'Automated permit tracking' },
   { label: 'All Services', href: '/services', desc: 'Browse all Kealee services' },

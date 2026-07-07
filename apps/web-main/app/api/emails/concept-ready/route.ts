@@ -1,7 +1,7 @@
 /**
  * POST /api/emails/concept-ready
  *
- * Notifies the customer that their AI concept package has finished generating.
+ * Notifies the customer that their Concept Package has finished generating.
  * Uses a Supabase magic link (not a bare deliverable URL) so one click signs them in.
  */
 
@@ -107,7 +107,7 @@ export async function POST(req: NextRequest) {
                 Hi ${greeting} — your ${serviceName} package just landed.
               </h1>
               <p style="margin:0 0 24px;font-size:15px;color:#555;line-height:1.7">
-                Your AI concept package is complete and waiting in your Owner Portal.
+                Your Concept Package is complete and waiting in your Owner Portal.
                 Click below to sign in and access your results.
               </p>
             </div>
@@ -169,7 +169,7 @@ export async function POST(req: NextRequest) {
         text: [
           `Hi ${greeting},`,
           '',
-          `Your ${serviceName} AI concept package is ready in your Owner Portal.`,
+          `Your ${serviceName} Concept Package is ready in your Owner Portal.`,
           '',
           'Sign in to access your concept:',
           signInUrl,
@@ -207,7 +207,7 @@ export async function POST(req: NextRequest) {
         to: ['hello@kealee.com'],
         subject: `Concept delivered — ${serviceName} #${intakeId}`,
         text: [
-          'A new AI concept was delivered to a customer.',
+          'A new design concept was delivered to a customer.',
           '',
           `  Intake ID:   ${intakeId}`,
           `  Service:     ${serviceName}`,

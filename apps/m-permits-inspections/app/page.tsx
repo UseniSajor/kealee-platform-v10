@@ -257,7 +257,7 @@ export default function PermitsLanding() {
           <div className="text-center max-w-4xl mx-auto">
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-500/20 text-emerald-300 rounded-full text-sm font-semibold mb-6 backdrop-blur-sm border border-emerald-400/30">
               <Zap className="h-4 w-4" />
-              AI-Powered — Get Approved 40% Faster
+              powered by AI tools — Get Approved 40% Faster
             </div>
             <h1 className="text-5xl md:text-6xl font-black tracking-tight text-white">
               Permits, Inspections &
@@ -512,7 +512,7 @@ export default function PermitsLanding() {
                 title: 'AI Compliance Pre-Review',
                 price: '$350',
                 unit: 'per review',
-                description: 'AI-powered compliance check against local, state, and federal building codes before submission.',
+                description: 'powered by AI tools compliance check against local, state, and federal building codes before submission.',
               },
               {
                 icon: Clock,

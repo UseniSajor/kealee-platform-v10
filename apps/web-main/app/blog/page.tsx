@@ -91,7 +91,7 @@ const BLOG_POSTS = [
   },
   {
     slug: 'os-land-parcel-analysis',
-    title: 'AI-Powered Land Intelligence: How OS-Land Transforms Parcel Analysis',
+    title: 'powered by AI tools Land Intelligence: How OS-Land Transforms Parcel Analysis',
     excerpt: 'From zoning analysis to development readiness scoring, discover how AI is changing the way developers evaluate and acquire land.',
     author: 'Tim Chamberlain',
     date: '2026-02-15',
@@ -101,7 +101,7 @@ const BLOG_POSTS = [
   },
   {
     slug: 'ai-cost-estimation',
-    title: 'AI-Powered Cost Estimation: Accuracy Meets Speed',
+    title: 'powered by AI tools Cost Estimation: Accuracy Meets Speed',
     excerpt: 'Modern AI can analyze architectural plans and generate detailed cost estimates in minutes instead of days. Here is how it works and why it matters.',
     author: 'Tim Chamberlain',
     date: '2026-02-10',

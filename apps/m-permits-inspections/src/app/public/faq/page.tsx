@@ -78,7 +78,7 @@ export default function FAQPage() {
         },
         {
           question: 'What fees are included in Kealee\'s service?',
-          answer: 'Kealee\'s service fees cover: AI-powered document review, application preparation, submission to the jurisdiction, status tracking, and communication support. Government filing fees are separate and passed through at cost with no markup.',
+          answer: 'Kealee\'s service fees cover: powered by AI tools document review, application preparation, submission to the jurisdiction, status tracking, and communication support. Government filing fees are separate and passed through at cost with no markup.',
         },
         {
           question: 'Are permit fees refundable?',

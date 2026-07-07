@@ -42,9 +42,9 @@ Do not loop blindly.`
     status: "active",
     type: "policy",
     appliesTo: ["design"],
-    body: `AI concept generation is for early-stage concepting and qualification.
+    body: `design concept generation is for early-stage concepting and qualification.
 Escalate to architect handoff when the project is mixed-use, multifamily, structural-heavy, occupancy-changing, or otherwise too complex for concept-only delivery.
-Never present AI concept output as final permit-ready construction documents.`
+Never present design concept output as final permit-ready construction documents.`
   },
   {
     code: "policy_permit_agent_v1",

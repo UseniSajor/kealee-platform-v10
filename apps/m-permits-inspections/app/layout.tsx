@@ -6,8 +6,8 @@ import './globals.css';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'Kealee Permits - AI-Powered Permit Applications',
-  description: 'Get your permits approved 40% faster with AI-powered review. Professional permit services, inspection coordination, and zoning verification.',
+  title: 'Kealee Permits - powered by AI tools Permit Applications',
+  description: 'Get your permits approved 40% faster with powered by AI tools review. Professional permit services, inspection coordination, and zoning verification.',
   icons: {
     icon: '/favicon.ico',
     apple: '/apple-touch-icon.png',

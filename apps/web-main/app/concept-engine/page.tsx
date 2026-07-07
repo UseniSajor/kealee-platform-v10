@@ -3,8 +3,8 @@ import Link from 'next/link'
 import { ArrowRight, Home, Leaf, Layers, PaintBucket, Building2 } from 'lucide-react'
 
 export const metadata: Metadata = {
-  title: 'AI Concept Engine — Kealee',
-  description: 'Choose your design path. Exterior, Garden, Whole Home, Interior Reno, or Developer concept packages — AI-powered and property-specific.',
+  title: 'design concept Engine — Kealee',
+  description: 'Choose your design path. Exterior, Garden, Whole Home, Interior Reno, or Developer concept packages — powered by AI tools and property-specific.',
 }
 
 const PATHS = [
@@ -60,13 +60,13 @@ export default function ConceptEnginePage() {
             className="inline-block rounded-full px-3 py-1 text-xs font-bold uppercase tracking-widest"
             style={{ backgroundColor: 'rgba(232,121,58,0.1)', color: '#E8793A' }}
           >
-            AI Concept Engine
+            design concept Engine
           </span>
           <h1 className="mt-4 text-4xl font-bold font-display" style={{ color: '#1A2B4A' }}>
             Choose your design path
           </h1>
           <p className="mt-4 text-lg text-gray-600">
-            Every path delivers AI-powered, property-specific concept designs — tailored to your project type.
+            Every path delivers powered by AI tools, property-specific concept designs — tailored to your project type.
           </p>
         </div>
 
@@ -125,7 +125,7 @@ export default function ConceptEnginePage() {
           style={{ backgroundColor: 'rgba(232,121,58,0.05)' }}
         >
           <span className="font-semibold" style={{ color: '#E8793A' }}>Note:</span>
-          <span className="ml-1 text-gray-600">AI concept packages are pre-design visualization services — not permit-ready plans. Need permit-ready architectural drawings?</span>{' '}
+          <span className="ml-1 text-gray-600">Concept Packages are pre-design visualization services — not permit-ready plans. Need permit-ready architectural drawings?</span>{' '}
           <Link href="/design-services" className="font-semibold hover:underline" style={{ color: '#E8793A' }}>
             See Design Services →
           </Link>

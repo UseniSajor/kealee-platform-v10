@@ -16,7 +16,7 @@ const SUGGESTED_PROMPTS: Record<string, string[]> = {
   homepage: [
     'How much does a kitchen remodel cost?',
     'Do I need a permit for my addition?',
-    'What is an AI concept package?',
+    'What is an Concept Package?',
     'How do I find a contractor?',
     'How does milestone pay work?',
   ],
@@ -29,7 +29,7 @@ const SUGGESTED_PROMPTS: Record<string, string[]> = {
   ],
   default: [
     'What services does Kealee offer?',
-    'How does the AI concept work?',
+    'How does the design concept work?',
     'How are contractors vetted?',
     'How does escrow protect me?',
     'Where do I start my project?',

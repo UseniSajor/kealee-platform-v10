@@ -99,7 +99,7 @@ export default function ConceptPage() {
           </h1>
           <p className="mb-2 text-3xl font-bold" style={{ color: '#E8793A' }}>$395</p>
           <p className="mb-6 text-gray-500">
-            AI-generated concept + zoning check + structural risk + cost band + permit risk — all delivered in 24 hours.
+            generated using AI tools concept + zoning check + structural risk + cost band + permit risk — all delivered in 24 hours.
           </p>
           <div className="mb-8 grid gap-3 sm:grid-cols-2">
             {[
@@ -166,7 +166,7 @@ export default function ConceptPage() {
               <p className="mt-2 text-xs text-gray-500">
                 DCS Score: <strong>{record.dcsScore}</strong>
                 {' · '}
-                Route: <strong>{record.designRoute === 'AI_ONLY' ? 'AI Design' : 'Architect Required'}</strong>
+                Route: <strong>{record.designRoute === 'AI_ONLY' ? 'design' : 'Architect Required'}</strong>
               </p>
             )}
           </div>
@@ -199,7 +199,7 @@ export default function ConceptPage() {
               color:            isAiOnly ? '#2ABFBF' : '#E8793A',
             }}>
             <CheckCircle className="h-3.5 w-3.5" />
-            {isAiOnly ? 'AI Design Qualifies' : 'Architect Required'}
+            {isAiOnly ? 'design Qualifies' : 'Architect Required'}
           </div>
         </div>
 
@@ -230,7 +230,7 @@ export default function ConceptPage() {
             <p className="text-xs text-gray-400">DCS Score</p>
             <p className="mt-1 text-2xl font-bold" style={{ color: '#1A2B4A' }}>{record.dcsScore ?? '—'}</p>
             <p className="text-xs text-gray-500">
-              {isAiOnly ? 'AI design qualifies' : 'Architect required'}
+              {isAiOnly ? 'design qualifies' : 'Architect required'}
             </p>
           </div>
           {record.costBandLow != null && (

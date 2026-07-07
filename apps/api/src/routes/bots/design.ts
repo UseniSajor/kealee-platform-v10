@@ -1,6 +1,6 @@
 /**
  * DESIGN BOT ENDPOINT
- * Generates AI-powered design concepts for construction projects
+ * Generates powered by AI tools design concepts for construction projects
  */
 
 import { Router, Request, Response } from 'express';

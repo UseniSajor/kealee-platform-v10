@@ -8,7 +8,7 @@ import { RoleFAQ } from '@/components/roles/RoleFAQ'
 export const metadata: Metadata = {
   title: 'For Property Managers — Kealee',
   description:
-    'Manage capital improvement projects, maintenance upgrades, and tenant improvement work across your portfolio. AI-powered oversight, contractor matching, and escrow payments.',
+    'Manage capital improvement projects, maintenance upgrades, and tenant improvement work across your portfolio. powered by AI tools oversight, contractor matching, and escrow payments.',
 }
 
 const BENEFITS = [
@@ -78,7 +78,7 @@ const WORKFLOW = [
 ]
 
 const SERVICES = [
-  { name: 'Capital Improvement Planning',         note: 'AI-assisted 5-year CIP modeling and prioritization' },
+  { name: 'Capital Improvement Planning',         note: 'assisted by AI tools 5-year CIP modeling and prioritization' },
   { name: 'Unit Renovation Coordination',          note: 'Turnover, TI, and full gut renovation management' },
   { name: 'HVAC / Mechanical Upgrades',           note: 'Scope, match, permit, and oversee system replacements' },
   { name: 'Exterior & Envelope Improvements',     note: 'Roof, siding, windows, parking, and common area upgrades' },

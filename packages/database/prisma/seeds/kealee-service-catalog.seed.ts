@@ -142,7 +142,7 @@ async function seed() {
   console.log('\n=== Seeding Kealee Service Catalog (2026 CTC Pricing) ===\n')
 
   // ─────────────────────────────────────────────────────────────────────────
-  // AI DESIGN CATEGORY
+  // design CATEGORY
   // ─────────────────────────────────────────────────────────────────────────
 
   const aiDesignServices = [
@@ -158,7 +158,7 @@ async function seed() {
     { slug: 'historic-renovation', name: 'Historic Renovation',  ctcKey: 'historic-renovation', stripeEnvVar: 'STRIPE_PRICE_CONCEPT_VALIDATION' },
     { slug: 'garden',           name: 'Garden & Farming Design', ctcKey: 'garden',           stripeEnvVar: 'STRIPE_PRICE_CONCEPT_VALIDATION' },
     { slug: 'landscape',        name: 'Landscape Design & Install', ctcKey: 'landscape',     stripeEnvVar: 'STRIPE_PRICE_CONCEPT_VALIDATION' },
-    { slug: 'ai-design',        name: 'AI Design (General)',     ctcKey: 'kitchen-remodel',  stripeEnvVar: 'STRIPE_PRICE_CONCEPT_VALIDATION' },
+    { slug: 'ai-design',        name: 'design (General)',     ctcKey: 'kitchen-remodel',  stripeEnvVar: 'STRIPE_PRICE_CONCEPT_VALIDATION' },
   ]
 
   for (const svc of aiDesignServices) {
@@ -179,7 +179,7 @@ async function seed() {
       create: {
         slug:                 svc.slug,
         name:                 svc.name,
-        tagline:              `AI concept design for ${svc.name.toLowerCase()} projects — delivered in 24–72 hours.`,
+        tagline:              `design concept design for ${svc.name.toLowerCase()} projects — delivered in 24–72 hours.`,
         category:             'AI_DESIGN',
         deliveryMode:         'STAFF_REVIEW',
         pricingBasis:         'FLAT_FEE',
@@ -209,7 +209,7 @@ async function seed() {
       update: { updatedAt: new Date() },
     })
 
-    // Tier 1 — AI Concept (Starter)
+    // Tier 1 — design concept (Starter)
     await prisma.kealeeServiceTier.upsert({
       where: { id: `${service.id}-starter` },
       create: {
@@ -217,7 +217,7 @@ async function seed() {
         serviceId:      service.id,
         tierType:       'STARTER',
         name:           `AI ${svc.name} Concept`,
-        description:    'AI-generated concept options with staff review, permit scope, and cost band.',
+        description:    'generated using AI tools concept options with staff review, permit scope, and cost band.',
         priceCents:     effectiveBase,
         cogsLaborHours: d_concept.hoursMax,
         cogsLaborRateUsd: d_concept.rateUsd,
@@ -267,7 +267,7 @@ async function seed() {
         stripeEnvVar:     `${svc.stripeEnvVar}_ADVANCED`,
         ctaLabel:         `Start Advanced Design`,
         intakeHref:       `/intake/${svc.slug.replace('-', '_')}`,
-        includes:         ['Everything in AI Concept', '3D views', 'Detailed floor plans', 'Full material direction', '60-min consultation'],
+        includes:         ['Everything in design concept', '3D views', 'Detailed floor plans', 'Full material direction', '60-min consultation'],
         sortOrder:        1,
       },
       update: {},
@@ -336,7 +336,7 @@ async function seed() {
       update: {},
     })
 
-    console.log(`  ✓ ${svc.name}: AI Concept $${(effectiveBase/100).toLocaleString()} | Advanced $${(advPrice/100).toLocaleString()} | CTC $${Math.round(ctc.totalCTC/1000)}k`)
+    console.log(`  ✓ ${svc.name}: design concept $${(effectiveBase/100).toLocaleString()} | Advanced $${(advPrice/100).toLocaleString()} | CTC $${Math.round(ctc.totalCTC/1000)}k`)
   }
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -602,7 +602,7 @@ async function seed() {
       name: 'ADU Concept + Permit Bundle',
       priceCents: 152000,  // $1,520 (was $1,345, × 1.13)
       ctcKey: 'adu',
-      description: 'AI Design + Full Permit Package bundled for ADU projects.',
+      description: 'design + Full Permit Package bundled for ADU projects.',
       tiers: [
         { type: 'STANDARD' as const, name: 'ADU Bundle', priceCents: 152000, stripe: 'STRIPE_PRICE_ADU_BUNDLE', popular: true },
       ],

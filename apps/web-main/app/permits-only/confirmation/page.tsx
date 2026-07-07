@@ -40,7 +40,7 @@ function ConfirmationContent() {
         Application Submitted
       </h1>
       <p style={{ fontSize: 16, color: '#4b5563', margin: '0 0 40px', lineHeight: 1.6 }}>
-        Your AI-generated permit roadmap is being created now and will be reviewed by a permit specialist before any filing takes place.
+        Your generated using AI tools permit roadmap is being created now and will be reviewed by a permit specialist before any filing takes place.
       </p>
 
       {/* Tier card */}

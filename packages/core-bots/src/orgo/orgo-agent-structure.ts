@@ -148,9 +148,9 @@ export class Gateway {
     // Determine which stages are needed
     const stages: ChainStage[] = [];
 
-    // AI Concept always starts with design
+    // design concept always starts with design
     if (
-      intents.includes("ai concept") ||
+      intents.includes("design concept") ||
       intents.includes("design") ||
       intents.includes("scope")
     ) {

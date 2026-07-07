@@ -53,7 +53,7 @@ export function Hero() {
                 <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0">
                   <CheckCircle className="text-white" size={16} />
                 </div>
-                <span className="text-gray-700 font-medium">AI-powered permit review in 5 minutes</span>
+                <span className="text-gray-700 font-medium">powered by AI tools permit review in 5 minutes</span>
               </div>
               <div className="flex items-center gap-3">
                 <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0">

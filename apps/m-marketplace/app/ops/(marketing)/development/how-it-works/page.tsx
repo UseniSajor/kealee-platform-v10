@@ -77,7 +77,7 @@ export default function HowItWorksPage() {
                       </li>
                       <li className="flex items-start space-x-2">
                         <CheckCircle2 className="h-5 w-5 text-orange-600 mt-0.5 shrink-0" />
-                        <span>AI-powered analysis identifies gaps, risks, and immediate action items</span>
+                        <span>powered by AI tools analysis identifies gaps, risks, and immediate action items</span>
                       </li>
                       <li className="flex items-start space-x-2">
                         <CheckCircle2 className="h-5 w-5 text-orange-600 mt-0.5 shrink-0" />
@@ -131,7 +131,7 @@ export default function HowItWorksPage() {
                       </li>
                       <li className="flex items-start space-x-2">
                         <CheckCircle2 className="h-5 w-5 text-orange-600 mt-0.5 shrink-0" />
-                        <span>AI-powered risk alerts escalate issues before they become problems</span>
+                        <span>powered by AI tools risk alerts escalate issues before they become problems</span>
                       </li>
                     </ul>
                     <div className="mt-4 p-4 bg-gray-50 rounded-lg">
@@ -516,7 +516,7 @@ export default function HowItWorksPage() {
                   </li>
                   <li className="flex items-start space-x-2">
                     <CheckCircle2 className="h-4 w-4 text-orange-600 mt-0.5 shrink-0" />
-                    <span>Emerging issue alerts (AI-powered)</span>
+                    <span>Emerging issue alerts (powered by AI tools)</span>
                   </li>
                   <li className="flex items-start space-x-2">
                     <CheckCircle2 className="h-4 w-4 text-orange-600 mt-0.5 shrink-0" />

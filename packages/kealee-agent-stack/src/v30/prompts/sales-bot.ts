@@ -133,18 +133,18 @@ OUTPUT FORMAT (JSON):
     {
       "objectType": "Contractor Relationship",
       "commonObjections": [
-        "Won't getting AI designs make contractors feel threatened?",
-        "What if my contractor doesn't like using AI designs?",
+        "Won't getting designs make contractors feel threatened?",
+        "What if my contractor doesn't like using designs?",
         "Should I hire a contractor first or get designs first?"
       ],
       "response": {
         "empathy": "Great thinking - you want a good contractor relationship.",
-        "reality": "Professional contractors LOVE AI designs. Here's why: they get a detailed roadmap instead of vague homeowner ideas. Reduces miscommunication.",
-        "data": "Contractors using AI designs finish projects 20% faster (fewer 'wait, I didn't want it that way' changes mid-project). They prefer it.",
-        "flow": "Best workflow: 1) Get AI design, 2) Show to contractors (proves you're serious), 3) Contractors bid based on detailed spec (better bids), 4) You hire best bidder.",
-        "alternative": "You can also: hire contractor first, then use AI design to refine their ideas, then get estimates.",
+        "reality": "Professional contractors LOVE designs. Here's why: they get a detailed roadmap instead of vague homeowner ideas. Reduces miscommunication.",
+        "data": "Contractors using designs finish projects 20% faster (fewer 'wait, I didn't want it that way' changes mid-project). They prefer it.",
+        "flow": "Best workflow: 1) Get design, 2) Show to contractors (proves you're serious), 3) Contractors bid based on detailed spec (better bids), 4) You hire best bidder.",
+        "alternative": "You can also: hire contractor first, then use design to refine their ideas, then get estimates.",
         "both": "Either way works. Contractors are fine with it. Most appreciate the clarity.",
-        "positioning": "Frame it as: 'I got a professional AI design to clarify my vision. Now I want your expert input on execution.'",
+        "positioning": "Frame it as: 'I got a professional design to clarify my vision. Now I want your expert input on execution.'",
         "cta": "Grab the design. Your contractor will appreciate the clarity."
       }
     },

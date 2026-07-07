@@ -28,7 +28,7 @@ export function buildOrganizationJsonLd(): JsonLd {
       'https://www.facebook.com/kealee',
     ],
     description:
-      'AI-powered design concepts, permit analysis, cost estimation, and contractor matching for construction projects in DC, Maryland, and Virginia.',
+      'powered by AI tools design concepts, permit analysis, cost estimation, and contractor matching for construction projects in DC, Maryland, and Virginia.',
     areaServed: KEALEE_SERVICE_AREAS.map((name) => ({
       '@type': 'AdministrativeArea',
       name,
@@ -104,7 +104,7 @@ export function buildServiceJsonLd(): JsonLd {
           '@type': 'Offer',
           itemOffered: {
             '@type': 'Service',
-            name: 'AI Design Concepts',
+            name: 'design concepts',
             url: `${KEALEE_SITE_URL}/concept`,
           },
         },

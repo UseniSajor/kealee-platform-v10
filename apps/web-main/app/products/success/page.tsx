@@ -8,7 +8,7 @@ const GADS_ID        = process.env.NEXT_PUBLIC_GOOGLE_ADS_ID
 const GADS_CONV_LABEL = process.env.NEXT_PUBLIC_GOOGLE_ADS_CONV_LABEL  // e.g. 'abcXYZ123'
 
 const PRODUCT_MESSAGES: Record<string, { title: string; next: string; timeline: string }> = {
-  'ai-design':           { title: 'AI Design Report ordered', next: 'Upload your project photos in your dashboard to start generation.', timeline: 'Delivered within 24 hours' },
+  'ai-design':           { title: 'design Report ordered', next: 'Upload your project photos in your dashboard to start generation.', timeline: 'Delivered within 24 hours' },
   'permit-package':      { title: 'Permit Package ordered', next: 'A permit specialist will contact you within 1 business day to gather your documents.', timeline: 'Filing within 3–5 business days' },
   'cost-estimate':       { title: 'Cost Estimate ordered', next: 'Submit your project scope and any existing drawings in your dashboard.', timeline: 'Delivered within 3–5 business days' },
   'adu-bundle':          { title: 'ADU Bundle ordered', next: 'We\'ll start your lot eligibility check immediately. Expect a concept floor plan within 48 hours.', timeline: 'Concept in 48 hrs · Permit filing within 5 days' },

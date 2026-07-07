@@ -38,7 +38,7 @@ const USER_ROUTES = [
     hoverColor: 'hover:bg-blue-700',
     lightColor: 'bg-blue-50',
     textColor: 'text-blue-600',
-    features: ['AI Design Concepts', 'Find Contractors', 'Escrow Protection', 'Project Dashboard'],
+    features: ['design concepts', 'Find Contractors', 'Escrow Protection', 'Project Dashboard'],
   },
   {
     id: 'contractor',
@@ -62,7 +62,7 @@ const USER_ROUTES = [
     hoverColor: 'hover:bg-indigo-700',
     lightColor: 'bg-indigo-50',
     textColor: 'text-indigo-600',
-    features: ['Licensed Architects', 'AI-Assisted Design', 'Permit-Ready Docs', 'Code Compliance'],
+    features: ['Licensed Architects', 'assisted by AI tools Design', 'Permit-Ready Docs', 'Code Compliance'],
   },
   {
     id: 'permits',

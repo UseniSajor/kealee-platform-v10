@@ -8,7 +8,7 @@ interface Stage {
 }
 
 const STAGES: Stage[] = [
-  { label: 'Concept Package', sublabel: 'AI-powered design' },
+  { label: 'Concept Package', sublabel: 'powered by AI tools design' },
   { label: 'Permit / Pricing',  sublabel: 'Permit-ready or firm estimate' },
   { label: 'Contractor Match',  sublabel: 'Licensed professionals' },
   { label: 'Break Ground',      sublabel: 'Build it' },

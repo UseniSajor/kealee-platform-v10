@@ -243,7 +243,7 @@ export default function AnalyzePage() {
         {step === 'feasibility' && (
           <div>
             <h2 className="font-display mb-1 text-lg font-semibold" style={{ color: '#1A2B4A' }}>Feasibility Scenarios</h2>
-            <p className="mb-6 text-sm text-gray-500">AI-generated development scenarios ranked by ROI</p>
+            <p className="mb-6 text-sm text-gray-500">generated using AI tools development scenarios ranked by ROI</p>
 
             <div className="space-y-4">
               {FEASIBILITY.scenarios.map((scenario, i) => (

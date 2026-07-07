@@ -424,7 +424,7 @@ export function WeeklyReportViewer({
               <div className="rounded-2xl border border-black/10 bg-white p-4">
                 <div className="flex items-start justify-between gap-3">
                   <div className="text-sm font-black text-zinc-950">
-                    AI-generated insights (Claude)
+                    generated using AI tools insights (Claude)
                   </div>
                   <Pill>Draft</Pill>
                 </div>

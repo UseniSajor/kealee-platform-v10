@@ -56,7 +56,7 @@ export function AccountSetupEmail({
         <Text style={{ ...paragraph, paddingLeft: '16px' }}>
           {'\u2705'} Track your concept package delivery<br />
           {'\u2705'} Start new construction projects<br />
-          {'\u2705'} Get AI-generated design concepts<br />
+          {'\u2705'} Get generated using AI tools design concepts<br />
           {'\u2705'} Connect with verified contractors
         </Text>
 

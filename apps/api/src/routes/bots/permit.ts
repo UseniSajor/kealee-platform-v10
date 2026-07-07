@@ -1,6 +1,6 @@
 /**
  * PERMIT BOT ENDPOINT
- * Generates AI-powered permit roadmaps and compliance checklists
+ * Generates powered by AI tools permit roadmaps and compliance checklists
  */
 
 import { Router, Request, Response } from 'express';

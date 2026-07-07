@@ -23,7 +23,7 @@ export function DownloadShare({ conceptId, pdfUrl }: Props) {
     if (navigator.share) {
       navigator.share({
         title: 'My Kealee Concept',
-        text: 'Check out my AI-designed home concept from Kealee!',
+        text: 'Check out my designed using AI tools home concept from Kealee!',
         url: window.location.href,
       })
     } else {

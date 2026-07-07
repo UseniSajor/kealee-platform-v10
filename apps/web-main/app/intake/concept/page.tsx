@@ -6,7 +6,7 @@ import { ArrowRight, CheckCircle2, Clock, Play } from 'lucide-react'
 export const metadata: Metadata = {
   title: 'Get a Concept — Kealee',
   description:
-    'Choose your concept type: exterior improvements, interior renovation, garden design, whole home, or new construction. AI-generated concepts delivered in days.',
+    'Choose your concept type: exterior improvements, interior renovation, garden design, whole home, or new construction. generated using AI tools concepts delivered in days.',
 }
 
 // ── Category definitions ───────────────────────────────────────────────────────
@@ -17,7 +17,7 @@ const CATEGORIES = [
     label: 'Exterior Improvements',
     tagline: 'Transform your home from the outside in',
     description:
-      'Refresh your facade, expand your footprint, or document your property for planning. Get AI-generated exterior concepts, material palettes, and landscape overviews.',
+      'Refresh your facade, expand your footprint, or document your property for planning. Get generated using AI tools exterior concepts, material palettes, and landscape overviews.',
     accentColor: 'orange' as const,
     heroImage: {
       src: 'https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=900&q=80&auto=format&fit=crop',
@@ -40,7 +40,7 @@ const CATEGORIES = [
     label: 'Interior Renovation',
     tagline: 'Reimagine every space inside your home',
     description:
-      'From kitchen and bath upgrades to full interior overhauls — get detailed AI-generated concepts with line-item cost estimates, MEP specifications, and permit scope briefs.',
+      'From kitchen and bath upgrades to full interior overhauls — get detailed generated using AI tools concepts with line-item cost estimates, MEP specifications, and permit scope briefs.',
     accentColor: 'teal' as const,
     heroImage: {
       src: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=900&q=80&auto=format&fit=crop',
@@ -65,7 +65,7 @@ const CATEGORIES = [
     label: 'Garden & Landscape',
     tagline: 'Design your outdoor living space',
     description:
-      'Create a landscape plan, garden layout, and outdoor living design with AI-generated concepts tailored to your property, soil type, and climate zone.',
+      'Create a landscape plan, garden layout, and outdoor living design with generated using AI tools concepts tailored to your property, soil type, and climate zone.',
     accentColor: 'green' as const,
     heroImage: {
       src: 'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=900&q=80&auto=format&fit=crop',
@@ -107,7 +107,7 @@ const CATEGORIES = [
     label: 'New Construction',
     tagline: 'Build something new — built right',
     description:
-      'From single-lot custom homes to multi-unit developments — AI-generated architectural concepts, site plans, feasibility analysis, and build-ready direction.',
+      'From single-lot custom homes to multi-unit developments — generated using AI tools architectural concepts, site plans, feasibility analysis, and build-ready direction.',
     accentColor: 'navy' as const,
     heroImage: {
       src: 'https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=900&q=80&auto=format&fit=crop',
@@ -329,12 +329,12 @@ export default function ConceptLandingPage() {
       {/* Hero */}
       <section className="bg-gradient-to-br from-slate-900 to-[#1A2B4A] px-4 py-20 text-center">
         <div className="mx-auto max-w-3xl">
-          <p className="text-xs font-bold uppercase tracking-widest text-orange-400 mb-4">AI-Powered Design Concepts</p>
+          <p className="text-xs font-bold uppercase tracking-widest text-orange-400 mb-4">powered by AI tools Design Concepts</p>
           <h1 className="text-4xl sm:text-5xl font-extrabold text-white leading-tight">
             What kind of concept<br className="hidden sm:block" /> do you need?
           </h1>
           <p className="mt-5 text-lg text-slate-300 leading-relaxed max-w-xl mx-auto">
-            Choose a category below. Each package delivers AI-generated renders, cost estimates, and MEP specs — in days, not months.
+            Choose a category below. Each package delivers generated using AI tools renders, cost estimates, and MEP specs — in days, not months.
           </p>
           <div className="mt-8 flex flex-wrap gap-3 justify-center">
             {CATEGORIES.map((cat) => (

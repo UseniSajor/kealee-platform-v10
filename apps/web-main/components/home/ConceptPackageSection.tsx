@@ -12,13 +12,13 @@ const STEPS = [
   {
     icon:  Brain,
     title: 'AI Analyzes & Designs',
-    desc:  'Our specialized AI design engine analyzes your property, zoning, and project goals to generate a design brief and concept visuals.',
+    desc:  'Our specialized Design Engine analyzes your property, zoning, and project goals to generate a design brief and concept visuals.',
     color: '#E8793A',
   },
   {
     icon:  FileText,
     title: 'Receive Your Package',
-    desc:  'Within 2–5 business days: AI concept renderings, permit path analysis, design direction brief, and cost band estimate. This is your planning package — construction starts after permitting (if required).',
+    desc:  'Within 2–5 business days: design concept renderings, permit path analysis, design direction brief, and cost band estimate. This is your planning package — construction starts after permitting (if required).',
     color: '#805AD5',
   },
   {
@@ -50,14 +50,14 @@ export function ConceptPackageSection() {
             </h2>
 
             <p className="mt-5 text-lg text-slate-600 leading-relaxed">
-              The Kealee AI Concept Package turns your property photos and project goals into a complete 
+              The Kealee Concept Package turns your property photos and project goals into a complete 
               design brief, exterior renderings, zoning check, and permit roadmap—helping you identify 
               if a permit is even required (such as for simple replace-in-kind kitchen or bath remodels).
             </p>
 
             <ul className="mt-6 space-y-2.5">
               {[
-                'AI concept renderings (3–12 based on package tier)',
+                'design concept renderings (3–12 based on package tier)',
                 'Layout direction brief (Essential); scaled floor plans (Premium & Premium+)',
                 'Zoning & permit path analysis for your parcel',
                 'Bill of materials with line-item cost estimates',

@@ -472,7 +472,7 @@ export default function EstimateDetailPage() {
           <div className="rounded-2xl border border-black/10 bg-white p-5 shadow-sm">
             <h3 className="text-lg font-black tracking-tight">AI analysis</h3>
             <p className="mt-1 text-sm text-zinc-700">
-              Run AI-powered analysis on this estimate.
+              Run powered by AI tools analysis on this estimate.
             </p>
             <div className="mt-4 grid gap-2">
               <button

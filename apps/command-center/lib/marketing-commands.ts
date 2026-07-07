@@ -387,7 +387,7 @@ export const COMMAND_REGISTRY: CommandSchema[] = [
   {
     id:          'meta-ad-copy',
     name:        'Meta Ad Copy (Facebook / Instagram)',
-    description: 'Write 3 Facebook/Instagram ad body copy variations (60–90 words each). Leads with a specific problem, introduces AI Concept as the low-risk first step. No rhetorical questions.',
+    description: 'Write 3 Facebook/Instagram ad body copy variations (60–90 words each). Leads with a specific problem, introduces design concept as the low-risk first step. No rhetorical questions.',
     category:    'content',
     tags:        ['facebook', 'instagram', 'meta', 'ads', 'social', 'strategy'],
     inputs: {

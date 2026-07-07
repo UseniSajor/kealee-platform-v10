@@ -461,7 +461,7 @@ export default function PricingPage() {
               {[
                 ['Platform Access', true, true],
                 ['Mobile Field Access', true, true],
-                ['AI-Powered Tools', 'S3+', 'B+'],
+                ['powered by AI tools Tools', 'S3+', 'B+'],
                 ['API Access', 'S4 only', 'D only'],
                 ['Dedicated PM', false, true],
                 ['Consulting Services', false, true],

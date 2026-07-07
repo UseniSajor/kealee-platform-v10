@@ -148,7 +148,7 @@ function SuccessInner() {
                 <p className="text-sm font-semibold text-slate-800 mb-2">What happens next</p>
                 <ul className="space-y-2">
                   {[
-                    'AI concept is generating now — renders appear as they complete',
+                    'design concept is generating now — renders appear as they complete',
                     'Sign in with your email to access the live portal',
                     'Full package delivered in 3–5 business days',
                   ].map((step, i) => (

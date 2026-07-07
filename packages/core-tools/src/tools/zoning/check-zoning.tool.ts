@@ -181,7 +181,7 @@ Respond ONLY with valid JSON, no other text.`;
           zoningMapUrl: jurisdiction.zoningMapUrl,
           source: "ai",
           confidence: (parsed.confidence as "high" | "medium" | "low") ?? "medium",
-          note: `AI-generated analysis for ${jurisdiction.name}. Verify at ${jurisdiction.zoningMapUrl}`,
+          note: `generated using AI tools analysis for ${jurisdiction.name}. Verify at ${jurisdiction.zoningMapUrl}`,
         };
 
         // Bubble risk flags into session memory

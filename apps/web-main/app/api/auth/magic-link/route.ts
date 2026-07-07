@@ -72,7 +72,7 @@ export async function POST(req: NextRequest) {
             </div>
             <h2 style="margin:0 0 12px;font-size:20px;color:#0F1A2E">Your concept package is ready</h2>
             <p style="color:#555;line-height:1.6;margin:0 0 28px;font-size:15px">
-              Click the button below to access your AI design renders, cost estimate,
+              Click the button below to access your design renders, cost estimate,
               permit timeline, and all deliverables. This link expires in <strong>1 hour</strong>.
             </p>
             <a href="${actionLink}"

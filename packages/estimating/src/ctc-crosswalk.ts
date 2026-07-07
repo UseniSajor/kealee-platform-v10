@@ -95,7 +95,7 @@ export function getCrosswalkByConfidence(
 }
 
 /**
- * AI-assisted crosswalk lookup.
+ * assisted by AI tools crosswalk lookup.
  * For CTC tasks not in the static map, queries the database for the
  * closest marketplace assembly by CSI code + description similarity.
  */
@@ -176,7 +176,7 @@ export async function findClosestMarketplaceAssembly(
 
 /**
  * Build a full crosswalk for all CTC tasks in the database.
- * Combines static mappings with AI-assisted matching for unmapped tasks.
+ * Combines static mappings with assisted by AI tools matching for unmapped tasks.
  */
 export async function buildFullCrosswalk(
   prisma: any,

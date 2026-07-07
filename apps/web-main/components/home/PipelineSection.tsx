@@ -2,7 +2,7 @@ import { Container } from '@/components/ui/Container'
 import { Heading } from '@/components/ui/Heading'
 
 const PHASES = [
-  { n: 1, title: 'AI Design Concepts', emoji: '📐', group: 'design',   desc: 'AI renders, floor plan options, and zoning/permit path reports in 2–5 days.' },
+  { n: 1, title: 'design concepts', emoji: '📐', group: 'design',   desc: 'AI renders, floor plan options, and zoning/permit path reports in 2–5 days.' },
   { n: 2, title: 'Cost Estimating',   emoji: '📊', group: 'estimate', desc: 'Line-item material and labor estimates validated against RSMeans regional data.' },
   { n: 3, title: 'Permit Filing',      emoji: '📋', group: 'permit',   desc: 'Preparation and submission of full permit packets to county/city agencies.' },
   { n: 4, title: 'Build & Manage',     emoji: '🏗️', group: 'build',    desc: 'Match with vetted local builders, secure funds in escrow, and track construction progress.' },

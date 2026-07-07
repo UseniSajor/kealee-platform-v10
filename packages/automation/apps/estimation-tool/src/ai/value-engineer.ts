@@ -1,6 +1,6 @@
 /**
  * Value Engineer
- * AI-powered value engineering analysis
+ * powered by AI tools value engineering analysis
  */
 
 import { PrismaClient } from '@prisma/client';

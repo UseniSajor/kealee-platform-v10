@@ -282,7 +282,7 @@ export default function DashboardPage() {
                 <Target className="h-6 w-6 text-violet-700" />
               </div>
             </div>
-            <p className="text-sm text-muted-foreground mt-3">AI-powered precision</p>
+            <p className="text-sm text-muted-foreground mt-3">powered by AI tools precision</p>
           </CardContent>
         </Card>
       </div>

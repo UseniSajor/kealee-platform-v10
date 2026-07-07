@@ -14,7 +14,7 @@ export default function FeaturedProductsSection() {
             <span className="fbg bgo">Start here</span>
           </div>
           <div className="fcb">
-            <div className="fclbl">AI design engine</div>
+            <div className="fclbl">Design Engine</div>
             <h4>Concept + Validation Report</h4>
             <p>Floor plan, zoning check, cost band, and permit risk. Staff reviewed. Delivered in 24 hours.</p>
             <div className="fcp">Starting at $395 <small>one-time</small></div>

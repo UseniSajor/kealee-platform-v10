@@ -68,7 +68,7 @@ export default function ServicesPage() {
                     {[
                       "Zoning and entitlement path analysis",
                       "Constructability review and scope validation",
-                      "Budget and schedule validation with AI-powered stress testing",
+                      "Budget and schedule validation with powered by AI tools stress testing",
                       "Risk identification and mitigation planning",
                       "Opportunity identification: value engineering, alternate designs",
                       "Go/no-go recommendation with written feasibility report",

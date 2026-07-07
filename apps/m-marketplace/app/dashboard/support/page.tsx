@@ -22,7 +22,7 @@ const faqs = [
   },
   {
     q: 'What\'s included in a concept package?',
-    a: 'Each package includes AI-generated design concepts, cost estimates, material selections, and a project timeline tailored to your specifications.',
+    a: 'Each package includes generated using AI tools design concepts, cost estimates, material selections, and a project timeline tailored to your specifications.',
   },
   {
     q: 'How do I get a refund?',

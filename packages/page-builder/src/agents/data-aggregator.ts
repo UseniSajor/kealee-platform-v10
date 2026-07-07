@@ -6,7 +6,7 @@ const prisma = new PrismaClient()
 
 const CONCEPT_FEATURES: Record<string, string[]> = {
   basic: [
-    'AI-generated floor plan',
+    'generated using AI tools floor plan',
     '3D concept visualization',
     'Budget estimate report',
     '48-hour delivery',
@@ -40,18 +40,18 @@ export async function aggregateConceptPackages(): Promise<ConceptPackagesData> {
   if (packages.length === 0) {
     // Fallback concept packages if none in DB
     return {
-      title: 'Choose Your AI Concept Package',
+      title: 'Choose Your Concept Package',
       subtitle: 'See your project in 3D before committing to major costs',
       packages: [
-        { id: 'concept-basic', name: 'Basic AI Concept', description: 'AI floor plan + 3D visualization + budget estimate', price: 9900, tierLevel: 'basic', features: CONCEPT_FEATURES.basic },
-        { id: 'concept-enhanced', name: 'Enhanced AI Concept', description: '3 design options + materials + detailed costs', price: 49900, tierLevel: 'enhanced', features: CONCEPT_FEATURES.enhanced },
-        { id: 'concept-premium', name: 'Premium AI Concept', description: 'Photo renders + virtual tour + ROI analysis', price: 89900, tierLevel: 'premium', features: CONCEPT_FEATURES.premium },
+        { id: 'concept-basic', name: 'Basic design concept', description: 'AI floor plan + 3D visualization + budget estimate', price: 9900, tierLevel: 'basic', features: CONCEPT_FEATURES.basic },
+        { id: 'concept-enhanced', name: 'Enhanced design concept', description: '3 design options + materials + detailed costs', price: 49900, tierLevel: 'enhanced', features: CONCEPT_FEATURES.enhanced },
+        { id: 'concept-premium', name: 'Premium design concept', description: 'Photo renders + virtual tour + ROI analysis', price: 89900, tierLevel: 'premium', features: CONCEPT_FEATURES.premium },
       ],
     }
   }
 
   return {
-    title: 'Choose Your AI Concept Package',
+    title: 'Choose Your Concept Package',
     subtitle: 'See your project in 3D before committing to major costs',
     packages: packages.map((p) => ({
       id: p.id,

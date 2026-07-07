@@ -578,7 +578,7 @@ export default function NewProjectPage() {
         {step === 'concept' && (
           <div>
             <h2 className="font-display mb-1 text-lg font-semibold" style={{ color: '#1A2B4A' }}>Start from a Design Concept?</h2>
-            <p className="mb-6 text-sm text-slate-500">We found existing AI design concept packages in your account. You can link one to instantly set up your project and digital twin.</p>
+            <p className="mb-6 text-sm text-slate-500">We found existing design concept packages in your account. You can link one to instantly set up your project and digital twin.</p>
             
             {loadingConcepts ? (
               <div className="flex justify-center py-8">

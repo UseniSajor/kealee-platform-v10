@@ -153,7 +153,7 @@ export default function GCServicesHomePage() {
               },
               {
                 problem: "Permit delays killing margins?",
-                solution: "AI-powered tracking + automated follow-ups reduce schedule slip and the expensive domino effect it creates across trades. Get alerts before delays impact your schedule.",
+                solution: "powered by AI tools tracking + automated follow-ups reduce schedule slip and the expensive domino effect it creates across trades. Get alerts before delays impact your schedule.",
               },
               {
                 problem: "Sub/vendor coordination eating your evenings?",
@@ -161,7 +161,7 @@ export default function GCServicesHomePage() {
               },
               {
                 problem: "Weekly reporting always behind?",
-                solution: "AI-assisted reporting generates consistent, client-ready weekly updates with action items—so you look sharp and stay ahead of surprises. Automated data collection saves hours.",
+                solution: "assisted by AI tools reporting generates consistent, client-ready weekly updates with action items—so you look sharp and stay ahead of surprises. Automated data collection saves hours.",
               },
             ].map((item, idx) => (
               <Card key={idx} className="bg-gray-50 border-gray-200">

@@ -63,7 +63,7 @@ export default function InteriorRenoConceptEnginePage() {
 
       {/* Pre-design disclaimer banner */}
       <div className="bg-purple-50 border-b border-purple-100 py-2.5 px-4 text-center text-sm text-purple-800">
-        AI concept is a pre-design service — not a permit-ready plan.{' '}
+        design concept is a pre-design service — not a permit-ready plan.{' '}
         <Link href="/design-services" className="font-semibold underline hover:text-purple-900">
           Need permit-ready plans? See Design Services →
         </Link>
@@ -84,7 +84,7 @@ export default function InteriorRenoConceptEnginePage() {
                 Reimagine your interior before swinging a hammer.
               </h1>
               <p className="mt-5 text-lg text-white/80">
-                Kitchen, bath, room additions, ADUs, and full interior redesign — all in one concept package. Property-specific AI concepts with 3 options and consultation included.
+                Kitchen, bath, room additions, ADUs, and full interior redesign — all in one concept package. Property-specific design concepts with 3 options and consultation included.
               </p>
               <div className="mt-8 flex flex-wrap gap-4">
                 <Link
@@ -102,7 +102,7 @@ export default function InteriorRenoConceptEnginePage() {
                 </Link>
               </div>
               <p className="mt-4 text-xs text-white/50">
-                All onsite installation and build work is performed by your contractor of record. Kealee provides AI design, final design packages, permit filing, advisory, and contractor matching services only.
+                All onsite installation and build work is performed by your contractor of record. Kealee provides design, final design packages, permit filing, advisory, and contractor matching services only.
               </p>
             </div>
             <div className="lg:w-72 shrink-0">
@@ -155,7 +155,7 @@ export default function InteriorRenoConceptEnginePage() {
                 rounds: 'Up to 3 feedback rounds',
                 turnaround: '10–14 business days',
                 desc: 'Detailed floor plans, 3D views, material boards, and contractor-ready scope.',
-                items: ['Everything in AI Concept', 'Detailed floor plans', '3D interior views', 'Material + finish boards', '60-min consultation'],
+                items: ['Everything in design concept', 'Detailed floor plans', '3D interior views', 'Material + finish boards', '60-min consultation'],
                 cta: 'Start Advanced Design',
                 href: '/intake/interior_reno_concept',
                 popular: true,

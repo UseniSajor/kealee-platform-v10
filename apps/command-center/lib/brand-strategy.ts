@@ -2,7 +2,7 @@
  * Kealee Brand Strategy — Source of Truth
  *
  * These constants are injected into marketing bot system prompts so every
- * AI-generated output stays on-brand. Do not modify without a strategy review.
+ * generated using AI tools output stays on-brand. Do not modify without a strategy review.
  */
 
 // ── Core brand identity ───────────────────────────────────────────────────────
@@ -34,7 +34,7 @@ export const AUDIENCE_SEGMENTS = {
   homeowners: {
     label: 'DC/MD/VA Homeowners',
     demographics: 'HHI $120K+, ages 34–58, own primary home 3+ years, researching online before hiring anyone.',
-    primaryPath: 'AI Concept + Architect — $599 → $4,400+',
+    primaryPath: 'design concept + Architect — $599 → $4,400+',
     painPoints: [
       "Don't know what's actually possible on their lot",
       'Fear cost overruns',
@@ -81,7 +81,7 @@ export const AUDIENCE_SEGMENTS = {
 // ── Copy pillars ──────────────────────────────────────────────────────────────
 
 export const COPY_PILLARS = {
-  speed: 'AI Concept in 24–72 hrs. Permit-ready drawings in 1–2 weeks. Always include the number — vague speed claims don\'t convert.',
+  speed: 'design concept in 24–72 hrs. Permit-ready drawings in 1–2 weeks. Always include the number — vague speed claims don\'t convert.',
   jurisdiction: 'Name the jurisdiction in copy whenever possible. "We know Montgomery County\'s process" is more persuasive than "we handle all permits."',
   pricing: 'Lead with price ranges in ads and emails. "$495 permit research" converts better than "affordable permitting solutions."',
   portal: 'Mention secure portal delivery as a feature, not a footnote. Clients who\'ve been burned by email file chaos will notice this immediately.',
@@ -90,7 +90,7 @@ export const COPY_PILLARS = {
 // ── Pricing decisions ─────────────────────────────────────────────────────────
 
 export const PRICING_STRATEGY = {
-  entryPoint: 'AI Concept — position as the low-risk starting point for all segments. $599 converts cold traffic and naturally upsells.',
+  entryPoint: 'design concept — position as the low-risk starting point for all segments. $599 converts cold traffic and naturally upsells.',
   anchor: 'Anchor on timeline, not price. "Permit-ready drawings in 1–2 weeks" differentiates more than competing on price.',
   segmentation: 'Segment email lists by jurisdiction. Montgomery County leads get MC-specific copy. Arlington leads get Arlington-specific.',
   creative: 'Test investor vs. homeowner creative separately. Investor copy leads with ROI/timeline. Homeowner copy leads with vision/possibility.',
@@ -138,7 +138,7 @@ Copy pillars:
 - Pricing: ${COPY_PILLARS.pricing}
 - Portal: ${COPY_PILLARS.portal}
 
-Primary entry product: AI Concept Package — ${PRICE_ANCHORS.concept}
+Primary entry product: Concept Package — ${PRICE_ANCHORS.concept}
 Permit-ready drawings: ${PRICE_ANCHORS.professionalDrawings}
 Cost estimate: ${PRICE_ANCHORS.costEstimate}
 

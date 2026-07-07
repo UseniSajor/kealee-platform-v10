@@ -38,10 +38,10 @@ export default function MoreProductsSection() {
             <div className="fci">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="https://images.unsplash.com/photo-1493809842364-78817add7ffb?w=700&q=60&auto=format&fit=crop" alt="Basement" />
-              <span className="fbg bgo">AI design ready</span>
+              <span className="fbg bgo">design ready</span>
             </div>
             <div className="fcb">
-              <div className="fclbl">AI design engine</div>
+              <div className="fclbl">Design Engine</div>
               <h4>Basement finish concept</h4>
               <p>Floor plan options, egress check, structural flag, and permit scope. Staff reviewed in 24 hours.</p>
               <div className="fcp">Starting at $395 <small>one-time</small></div>

@@ -25,7 +25,7 @@ export function Benefits() {
     {
       icon: Shield,
       title: 'Reduce Risk by 60%',
-      description: 'AI-powered review catches issues before they become expensive problems',
+      description: 'powered by AI tools review catches issues before they become expensive problems',
       stat: '85% first-try pass rate',
     },
     {

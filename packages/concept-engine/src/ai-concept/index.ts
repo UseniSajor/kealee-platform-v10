@@ -1,4 +1,4 @@
-// AI Concept module — central orchestration, journey config, intake resolution, upsell routing
+// design concept module — central orchestration, journey config, intake resolution, upsell routing
 
 export * from './journey-config'
 export * from './buildability-snapshot'

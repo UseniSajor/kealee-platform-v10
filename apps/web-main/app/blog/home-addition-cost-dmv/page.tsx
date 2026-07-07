@@ -4,7 +4,7 @@ import { CONCEPT_WHOLE_HOME_PRICE, PERMIT_STANDARD_PRICE } from '@/lib/marketing
 
 export const metadata: Metadata = {
   title: 'Home Addition Cost in the DMV — 2026 Guide | Kealee',
-  description: `What does a home addition cost in DC, Maryland, and Virginia? Complete 2026 cost breakdown by addition type, jurisdiction, and quality tier. AI concept packages from $${CONCEPT_WHOLE_HOME_PRICE}.`,
+  description: `What does a home addition cost in DC, Maryland, and Virginia? Complete 2026 cost breakdown by addition type, jurisdiction, and quality tier. Concept Packages from $${CONCEPT_WHOLE_HOME_PRICE}.`,
   keywords: ['home addition cost DMV', 'house addition cost Maryland', 'home addition cost DC', 'home addition cost Virginia', 'room addition cost 2026'],
   openGraph: {
     title: 'Home Addition Cost in the DMV — 2026 Guide',
@@ -190,7 +190,7 @@ export default function HomeAdditionCostDMVPage() {
 
         <H2>How Kealee Helps With Home Additions</H2>
         <p>
-          Kealee&apos;s AI concept packages give you a project-specific cost band before you hire a contractor or pay for architect drawings. Starting at <strong>${CONCEPT_WHOLE_HOME_PRICE}</strong>, your concept package includes:
+          Kealee&apos;s Concept Packages give you a project-specific cost band before you hire a contractor or pay for architect drawings. Starting at <strong>${CONCEPT_WHOLE_HOME_PRICE}</strong>, your concept package includes:
         </p>
         <ul style={{ paddingLeft: 24 }}>
           <li>Addition scope summary and floor plan direction</li>
@@ -208,7 +208,7 @@ export default function HomeAdditionCostDMVPage() {
             Get a project-specific home addition cost estimate
           </h3>
           <p style={{ color: '#4A5568', margin: '0 0 20px' }}>
-            AI concept with floor plan direction, permit scope, and cost band — delivered in 24–48 hours.
+            design concept with floor plan direction, permit scope, and cost band — delivered in 24–48 hours.
           </p>
           <Link
             href="/intake/interior-reno"

@@ -34,7 +34,7 @@ export interface CardMediaSpec {
 
 const HOME_SPECS: Record<HomeServiceId, Omit<CardMediaSpec, 'key' | 'scope' | 'id' | 'narrativeId' | 'cardProcessPrompt'>> = {
   design: {
-    title: 'AI Design Concepts',
+    title: 'design concepts',
     imageType: 'hero',
     style: 'modern',
     roomType: 'design examples',
@@ -44,7 +44,7 @@ const HOME_SPECS: Record<HomeServiceId, Omit<CardMediaSpec, 'key' | 'scope' | 'i
     mediaType: 'video',
     fallbackPhoto:
       'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=900&q=80&auto=format&fit=crop',
-    photoAlt: 'Diverse AI-generated design concepts including kitchen, bath, addition, and garden',
+    photoAlt: 'Diverse generated using AI tools design concepts including kitchen, bath, addition, and garden',
   },
   permits: {
     title: 'Permit Filing',
@@ -117,11 +117,11 @@ function productSpecFromService(s: Service): CardMediaSpec {
     narrativeId,
     generatesBefore,
     beforeImageDescription: generatesBefore ? before : undefined,
-    imageDescription: `${after}. Magazine-quality ${room} renovation hero, Kealee AI concept aesthetic`,
+    imageDescription: `${after}. Magazine-quality ${room} renovation hero, Kealee design concept aesthetic`,
     cardProcessPrompt: getCardProcessPrompt(narrativeId),
     mediaType: 'video',
     fallbackPhoto: s.heroImage,
-    photoAlt: `${s.label} — Kealee AI concept`,
+    photoAlt: `${s.label} — Kealee design concept`,
   }
 }
 

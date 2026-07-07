@@ -108,7 +108,7 @@ export default function MarketingLayout({
                 Kealee <span className="text-blue-500">Estimation</span>
               </div>
               <p className="text-sm text-gray-400">
-                Professional cost estimation with AI-powered analysis, automated takeoff, and industry-standard cost databases.
+                Professional cost estimation with powered by AI tools analysis, automated takeoff, and industry-standard cost databases.
               </p>
             </div>
 

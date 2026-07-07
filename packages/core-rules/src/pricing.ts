@@ -36,7 +36,7 @@ export const CONCEPT_TIER_PRICES: Record<1 | 2 | 3, number> = {
   3: CONCEPT_DEVELOPER_PRICE,     // high-tier concept
 }
 
-// ── AI Concept tier marketing display prices ──────────────────────────────────
+// ── design concept tier marketing display prices ──────────────────────────────────
 //
 // Used on marketing surfaces (concept page tier blurbs, ads, banners).
 // Checkout amounts are determined by INTAKE_TIER_PRICE_CENTS (per project path).

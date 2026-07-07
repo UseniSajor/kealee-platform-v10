@@ -7,6 +7,7 @@
 
 import React, { useEffect, useRef } from 'react';
 import { useLoader, useThree } from '@react-three/fiber';
+// @ts-expect-error Types for three loaders are often incomplete
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import * as THREE from 'three';
 
@@ -38,7 +39,7 @@ export const ModelLoader: React.FC<ModelLoaderProps> = ({
 
   try {
     gltf = useLoader(GLTFLoader, url, (loader) => {
-      loader.manager.onProgress = (_url, loaded, total) => {
+      loader.manager.onProgress = (_url: string, loaded: number, total: number) => {
         if (total > 0) {
           onProgress?.(loaded / total);
         }

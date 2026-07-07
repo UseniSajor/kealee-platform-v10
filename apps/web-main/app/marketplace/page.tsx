@@ -198,7 +198,7 @@ const SERVICE_CATEGORIES: ServiceCategory[] = [
 
 // ─── "See it built" video band ─────────────────────────────────────────────────
 const BUILD_VIDEOS = [
-  { tag: 'Design',   title: 'AI Design + Validation',  description: 'See how upload-to-concept works: AI generates layouts, then staff validate zoning, structure, and cost band.', thumb: 'https://rkreqfpkxavqpsqexbfs.supabase.co/storage/v1/object/public/marketing-media/home/design.jpg',   video: '/media/service-videos/home-design-video.mp4' },
+  { tag: 'Design',   title: 'design + Validation',  description: 'See how upload-to-concept works: AI generates layouts, then staff validate zoning, structure, and cost band.', thumb: 'https://rkreqfpkxavqpsqexbfs.supabase.co/storage/v1/object/public/marketing-media/home/design.jpg',   video: '/media/service-videos/home-design-video.mp4' },
   { tag: 'Permits',  title: 'Permits We File & Track', description: 'We prepare the drawing package, submit to the agency, and respond to reviewer comments for you.',         thumb: 'https://rkreqfpkxavqpsqexbfs.supabase.co/storage/v1/object/public/marketing-media/home/permits.jpg', video: '/media/service-videos/home-permits-video.mp4' },
   { tag: 'Estimate', title: 'Real Construction Costs', description: 'RSMeans-validated, line-item estimates your contractors can bid against with confidence.',                thumb: 'https://rkreqfpkxavqpsqexbfs.supabase.co/storage/v1/object/public/marketing-media/home/estimate.jpg', video: '/media/service-videos/home-estimate-video.mp4' },
   { tag: 'Build',    title: 'From Foundation to Final', description: 'Every milestone, payment, document, and site photo tracked end-to-end in your project workspace.',       thumb: 'https://rkreqfpkxavqpsqexbfs.supabase.co/storage/v1/object/public/marketing-media/home/build.jpg',    video: '/media/service-videos/home-build-video.mp4' },
@@ -262,7 +262,7 @@ const COMBO_PACKAGES = [
     href: '/new-construction',
     color: '#1A2B4A',
     image: PHOTO.homeDesign,
-    scope: ['AI concept + stamped drawings', 'Permitting & agency coordination', 'Vetted GC + milestone management'],
+    scope: ['design concept + stamped drawings', 'Permitting & agency coordination', 'Vetted GC + milestone management'],
   },
   {
     name: 'Kitchen + Bath Bundle',
@@ -761,7 +761,7 @@ export default function MarketplacePage() {
             </span>
             <span className="flex items-center gap-1.5">
               <Zap className="h-3.5 w-3.5 text-orange-500" />
-              AI-powered
+              powered by AI tools
             </span>
           </div>
         </div>

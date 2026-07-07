@@ -241,7 +241,7 @@ export default function NEPACheckerPage() {
             </div>
 
             <div className="mt-6 pt-4 border-t border-gray-200/50 text-xs text-gray-500">
-              This assessment is AI-generated and for informational purposes only. Consult with your environmental compliance officer or HUD representative for official determinations.
+              This assessment is generated using AI tools and for informational purposes only. Consult with your environmental compliance officer or HUD representative for official determinations.
             </div>
           </div>
         )}

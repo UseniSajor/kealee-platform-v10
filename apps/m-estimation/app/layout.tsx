@@ -7,7 +7,7 @@ const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
   title: 'Kealee Estimation - Cost Estimation Platform',
-  description: 'Professional cost estimation and takeoff management with AI-powered insights',
+  description: 'Professional cost estimation and takeoff management with powered by AI tools insights',
   icons: {
     icon: '/favicon.ico',
     apple: '/apple-touch-icon.png',

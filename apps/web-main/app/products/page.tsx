@@ -5,20 +5,20 @@ import { getProductsByCategory, type Product } from '@/lib/products'
 
 export const metadata: Metadata = {
   title: 'All Products & Services — Kealee',
-  description: 'Every Kealee service in one place. AI design, permits, cost estimation, construction management, and landscape — all starting with AI concept.',
+  description: 'Every Kealee service in one place. design, permits, cost estimation, construction management, and landscape — all starting with design concept.',
 }
 
 const CATEGORIES = [
   {
     id: 'ai-design' as const,
-    label: 'AI Design Engine',
+    label: 'Design Engine',
     description: 'Start here. See your project before anything is built.',
     accent: '#E8793A',
   },
   {
     id: 'landscape' as const,
     label: 'Garden & Landscape',
-    description: 'AI concept, then permits if needed, then contractor match.',
+    description: 'design concept, then permits if needed, then contractor match.',
     accent: '#38A169',
   },
   {
@@ -107,7 +107,7 @@ export default function ProductsPage() {
             Every Kealee service.<br />One place.
           </h1>
           <p className="mt-5 text-lg text-white/70 max-w-2xl mx-auto leading-relaxed">
-            Start with an AI concept. Add permits if required. Match with a verified contractor when you're ready.
+            Start with an design concept. Add permits if required. Match with a verified contractor when you're ready.
             Each service is separate — stop at any step.
           </p>
           <div className="mt-8 flex flex-wrap gap-3 justify-center text-sm text-white/60">
@@ -126,13 +126,13 @@ export default function ProductsPage() {
         <div className="mx-auto max-w-3xl px-4 sm:px-6 text-center">
           <p className="text-sm font-medium text-gray-700">
             <strong style={{ color: '#E8793A' }}>How it works:</strong>{' '}
-            AI Concept Package
+            Concept Package
             <span className="mx-2 text-gray-400">→</span>
             Permits (if required)
             <span className="mx-2 text-gray-400">→</span>
             Contractor Match (if elected)
           </p>
-          <p className="text-xs text-gray-500 mt-1.5">Garden, landscape, kitchen, bath, exterior, basement, ADU — all start with AI concept.</p>
+          <p className="text-xs text-gray-500 mt-1.5">Garden, landscape, kitchen, bath, exterior, basement, ADU — all start with design concept.</p>
         </div>
       </section>
 
@@ -168,14 +168,14 @@ export default function ProductsPage() {
       <section className="py-16 border-t border-gray-100 bg-gray-50">
         <div className="mx-auto max-w-2xl px-4 text-center sm:px-6">
           <h2 className="text-2xl font-bold font-display" style={{ color: '#1A2B4A' }}>Not sure where to start?</h2>
-          <p className="mt-3 text-gray-500">Most projects start with an AI concept package. If you're not sure which one fits, tell us about your project.</p>
+          <p className="mt-3 text-gray-500">Most projects start with an Concept Package. If you're not sure which one fits, tell us about your project.</p>
           <div className="mt-6 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
             <Link
               href="/concept-engine"
               className="inline-flex items-center gap-2 rounded-xl px-7 py-3.5 text-base font-semibold text-white transition-opacity hover:opacity-90"
               style={{ backgroundColor: '#E8793A' }}
             >
-              Browse AI Design Paths <ArrowRight className="h-5 w-5" />
+              Browse design Paths <ArrowRight className="h-5 w-5" />
             </Link>
             <Link
               href="/contact"

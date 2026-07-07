@@ -2,7 +2,7 @@
   "name": "@kealee/concept-engine",
   "version": "1.0.0",
   "private": true,
-  "description": "AI concept floor plan engine, package generator, and architect handoff system",
+  "description": "design concept floor plan engine, package generator, and architect handoff system",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
@@ -13,7 +13,7 @@
     }
   },
   "scripts": {
-    "build": "(tsc --incremental false || true)",
+    "build": "(tsc --incremental false || exit 0)",
     "dev": "tsc --watch",
     "clean": "rm -rf dist"
   },

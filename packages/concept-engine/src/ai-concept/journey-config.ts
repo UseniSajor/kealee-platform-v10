@@ -1,5 +1,5 @@
 /**
- * AI Concept Journey Configuration
+ * design concept Journey Configuration
  * Defines the full user journey from homepage → intake → capture → payment → generation → delivery → upsell
  */
 
@@ -432,7 +432,7 @@ export const COMMERCIAL_PROJECT_PATH_CONFIGS: Record<
     architectReviewDefault: true,
     permitPathIncluded: true,
     deliverables: [
-      'AI-generated site plan with lot layout and street network',
+      'generated using AI tools site plan with lot layout and street network',
       'Phase plan (3 phases with revenue and cost per phase)',
       'Unit mix and lot configuration (22–26ft wide attached townhomes)',
       'Infrastructure cost estimate (streets, utilities, grading)',
@@ -456,7 +456,7 @@ export const COMMERCIAL_PROJECT_PATH_CONFIGS: Record<
     architectReviewDefault: true,
     permitPathIncluded: true,
     deliverables: [
-      'AI-generated subdivision site plan with lot numbering',
+      'generated using AI tools subdivision site plan with lot numbering',
       'Lot layout optimized for yield and setback compliance',
       'Street network design (ROW, paved width, connectivity)',
       'Phase plan with infrastructure and per-phase cash flow',

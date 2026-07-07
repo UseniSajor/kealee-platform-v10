@@ -39,7 +39,7 @@ export function AIPermitFeatures() {
       <div className="text-center mb-12">
         <div className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-100 text-emerald-700 rounded-full text-sm font-medium mb-4">
           <Brain className="h-4 w-4" />
-          <span>AI-Powered Permit Intelligence</span>
+          <span>powered by AI tools Permit Intelligence</span>
         </div>
         <h2 className="text-3xl font-bold text-gray-900 mb-4">
           Why Our AI Catches What Others Miss

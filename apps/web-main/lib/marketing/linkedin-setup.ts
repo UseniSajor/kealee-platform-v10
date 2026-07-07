@@ -18,7 +18,7 @@
  * 6. Company type: Privately Held
  * 7. Upload logo (400x400px minimum, square crop)
  * 8. Write company description (see COMPANY_DESCRIPTION below)
- * 9. Add tagline: "AI-powered design, permits, and construction planning for the DMV"
+ * 9. Add tagline: "powered by AI tools design, permits, and construction planning for the DMV"
  *
  * ─── STEP 2: Get the Organization ID ────────────────────────────────────────
  *
@@ -92,16 +92,16 @@
 
 export const COMPANY_DESCRIPTION = `Kealee is a construction planning platform for homeowners, contractors, and developers in Washington DC, Maryland, and Virginia.
 
-We help you plan your renovation or development project before you hire a contractor — AI-generated design concepts, permit filing, cost estimation, and contractor-ready scope documents.
+We help you plan your renovation or development project before you hire a contractor — generated using AI tools design concepts, permit filing, cost estimation, and contractor-ready scope documents.
 
-Our pipeline: AI concept → permit path → scope brief → vetted contractor bids.
+Our pipeline: design concept → permit path → scope brief → vetted contractor bids.
 
 The concept cost is credited toward permit drawings. Concept packages from $395.`
 
-export const PROFILE_TAGLINE = 'AI-powered design, permits, and construction planning for the DMV'
+export const PROFILE_TAGLINE = 'powered by AI tools design, permits, and construction planning for the DMV'
 
 export const FEATURED_CONTENT_LINKS = [
-  { title: 'AI Design Concepts', url: 'https://kealee.com/products/ai-design' },
+  { title: 'design concepts', url: 'https://kealee.com/products/ai-design' },
   { title: 'Permit Packages',    url: 'https://kealee.com/products/permit-package' },
   { title: 'ADU Bundle',         url: 'https://kealee.com/products/adu-bundle' },
   { title: 'Cost Estimates',     url: 'https://kealee.com/products/cost-estimate' },

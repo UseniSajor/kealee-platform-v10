@@ -164,7 +164,7 @@ export function PortalsClient() {
             <PortalPreview
               portalName="Permits Portal"
               portalUrl="kealee.com/permits"
-              description="AI-powered permit review, auto form-filling, and real-time status tracking across 3,000+ jurisdictions."
+              description="powered by AI tools permit review, auto form-filling, and real-time status tracking across 3,000+ jurisdictions."
               heroImage={portalImages.permits.src}
               heroImageAlt={portalImages.permits.alt}
               accentColor="green"
@@ -327,7 +327,7 @@ export function PortalsClient() {
               Housing Act Tools
             </h2>
             <p className="text-lg max-w-2xl mx-auto" style={{ color: brand.gray[600] }}>
-              AI-powered tools for affordable housing development, grant eligibility, and zoning analysis.
+              powered by AI tools tools for affordable housing development, grant eligibility, and zoning analysis.
             </p>
           </div>
 
@@ -360,7 +360,7 @@ export function PortalsClient() {
             <PortalPreview
               portalName="Dev Package Generator"
               portalUrl="kealee.com/development-package"
-              description="AI-powered feasibility analysis for any address — zoning, costs, pro forma, and grant eligibility in minutes."
+              description="powered by AI tools feasibility analysis for any address — zoning, costs, pro forma, and grant eligibility in minutes."
               heroImage={portalImages.devPackage.src}
               heroImageAlt={portalImages.devPackage.alt}
               accentColor="teal"
@@ -427,7 +427,7 @@ export function PortalsClient() {
                 >
                   Zoning Accelerator
                 </h3>
-                <p className="text-sm text-gray-600">AI-powered zoning compliance, density analysis, and setback calculations for any address.</p>
+                <p className="text-sm text-gray-600">powered by AI tools zoning compliance, density analysis, and setback calculations for any address.</p>
               </div>
             </a>
             <a

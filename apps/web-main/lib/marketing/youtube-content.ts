@@ -46,7 +46,7 @@ We cover:
 → Renovation cost breakdowns for the DMV market
 → How to evaluate contractor quotes
 → ADU feasibility and design
-→ AI-powered design concepts
+→ powered by AI tools design concepts
 
 Videos every Wednesday. Shorts every Friday.
 
@@ -376,7 +376,7 @@ TIMESTAMPS:
 8:30 — What you can DIY to reduce cost
 10:00 — Permit costs and timeline
 
-KITCHEN CONCEPT PACKAGE — 3 AI concepts + cost estimate + permit scope: $${CONCEPT_KITCHEN_PRICE}
+KITCHEN CONCEPT PACKAGE — 3 design concepts + cost estimate + permit scope: $${CONCEPT_KITCHEN_PRICE}
 https://kealee.com
 
 #kitchenremodel #kitchenrenovation #homeimprovement #DMV #renovation`,
@@ -409,7 +409,7 @@ https://kealee.com
       {
         section:   'Permits + CTA',
         timestamp: '10:00',
-        script:    `On permits: if your kitchen remodel involves moving plumbing or adding electrical circuits, you need a permit. In the DMV that's 5 to 12 weeks depending on jurisdiction. Budget $800 to $2,500 for the permit itself. Make sure your contractor's quote includes the permit cost — not all of them do. If you want an AI-generated concept for your specific kitchen with an itemized cost estimate and permit scope for your jurisdiction, that's what we do at Kealee. Kitchen concepts are $${CONCEPT_KITCHEN_PRICE} and we deliver in 48 hours. Link in the description.`,
+        script:    `On permits: if your kitchen remodel involves moving plumbing or adding electrical circuits, you need a permit. In the DMV that's 5 to 12 weeks depending on jurisdiction. Budget $800 to $2,500 for the permit itself. Make sure your contractor's quote includes the permit cost — not all of them do. If you want an generated using AI tools concept for your specific kitchen with an itemized cost estimate and permit scope for your jurisdiction, that's what we do at Kealee. Kitchen concepts are $${CONCEPT_KITCHEN_PRICE} and we deliver in 48 hours. Link in the description.`,
       },
     ],
   },
@@ -583,11 +583,11 @@ export function buildDescription(video: YouTubeVideo): string {
 ─────────────────────────────
 KEALEE — Construction planning for DC, Maryland, and Virginia homeowners.
 
-AI design concepts, permit filing, cost estimates, and contractor-ready scope documents.
+design concepts, permit filing, cost estimates, and contractor-ready scope documents.
 → https://kealee.com
 
 Products:
-→ AI Design Concept (48-hour turnaround): https://kealee.com/products/ai-design
+→ design concept (48-hour turnaround): https://kealee.com/products/ai-design
 → Permit Package: https://kealee.com/products/permit-package
 → ADU Bundle: https://kealee.com/products/adu-bundle
 → Cost Estimate: https://kealee.com/products/cost-estimate

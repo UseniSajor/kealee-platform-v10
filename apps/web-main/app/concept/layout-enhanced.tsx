@@ -7,13 +7,13 @@ import React from 'react'
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'AI-Powered Concept Design for Home Renovations | Kealee',
+  title: 'powered by AI tools Concept Design for Home Renovations | Kealee',
   description:
     'Get professional architectural concepts for your home renovation in minutes. Zoning-aware feasibility insights + detailed scope + MEP systems. Starting at $333.',
   keywords:
     'home renovation concept, kitchen renovation, bathroom remodel, design concept, zoning analysis, architectural design',
   openGraph: {
-    title: 'AI Concept Design for Home Renovations',
+    title: 'design concept Design for Home Renovations',
     description: 'Get professional concepts with zoning intelligence in minutes',
     type: 'website',
     url: 'https://kealee.com/concept',
@@ -27,7 +27,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'AI Concept Design for Home Renovations',
+    title: 'design concept Design for Home Renovations',
     description: 'Professional concepts with zoning intelligence',
   },
 }
@@ -40,7 +40,7 @@ export default function ConceptLayout({ children }: { children: React.ReactNode 
         <div className='hero-content'>
           <h1>Professional Home Renovation Concepts in Minutes</h1>
           <p className='hero-subtitle'>
-            Get AI-powered architectural concepts with zoning-aware feasibility insights. Includes MEP systems,
+            Get powered by AI tools architectural concepts with zoning-aware feasibility insights. Includes MEP systems,
             materials list, and project scope analysis.
           </p>
           <div className='hero-ctas'>
@@ -112,7 +112,7 @@ export default function ConceptLayout({ children }: { children: React.ReactNode 
             recommended={false}
           />
           <TierCard
-            name='Advanced AI Concept'
+            name='Advanced Concept'
             price='Starting at $786'
             features={[
               'Full zoning analysis',

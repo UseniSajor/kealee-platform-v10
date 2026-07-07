@@ -35,13 +35,13 @@ import {
 export const metadata: Metadata = {
   title: 'Permits & Inspections Management Platform | Kealee',
   description:
-    'Streamline permit applications, plan reviews, inspections, zoning changes, historic district permits, and code compliance. AI-powered workflows for building departments, contractors, and property owners.',
+    'Streamline permit applications, plan reviews, inspections, zoning changes, historic district permits, and code compliance. powered by AI tools workflows for building departments, contractors, and property owners.',
   keywords:
     'permit management, building permits, inspection scheduling, plan review, building department software, permit tracking, zoning changes, historic district permits, code compliance',
   openGraph: {
     title: 'Kealee Permits & Inspections - Modern Permit Management Platform',
     description:
-      'Digital permit processing, AI-powered compliance checks, zoning research, historic district permits, and inspection management.',
+      'Digital permit processing, powered by AI tools compliance checks, zoning research, historic district permits, and inspection management.',
     type: 'website',
   },
 };
@@ -281,7 +281,7 @@ export default async function HomePage() {
           <div className="text-center max-w-4xl mx-auto">
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-100 text-emerald-700 rounded-full text-sm font-semibold mb-6">
               <Zap className="h-4 w-4" />
-              AI-Powered — Get Approved 40% Faster
+              powered by AI tools — Get Approved 40% Faster
             </div>
             <h1 className="text-5xl md:text-6xl font-black tracking-tight text-gray-900">
               Permits, Inspections &
@@ -526,7 +526,7 @@ export default async function HomePage() {
                 title: 'AI Compliance Pre-Review',
                 price: '$350',
                 unit: 'per review',
-                description: 'AI-powered compliance check against local, state, and federal building codes before submission.',
+                description: 'powered by AI tools compliance check against local, state, and federal building codes before submission.',
               },
               {
                 icon: Clock,

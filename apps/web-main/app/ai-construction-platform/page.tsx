@@ -21,7 +21,7 @@ export const metadata: Metadata = {
   alternates: { canonical: '/ai-construction-platform' },
   keywords: [
     'AI construction platform',
-    'AI design build platform',
+    'design build platform',
     'construction project planning software',
     'DC permit and estimate platform',
     'Maryland renovation estimate',

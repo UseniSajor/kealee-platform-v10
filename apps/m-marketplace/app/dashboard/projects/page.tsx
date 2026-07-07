@@ -159,7 +159,7 @@ export default function ProjectsPage() {
             {filter === 'all' ? 'No projects yet' : `No ${filter} projects`}
           </h3>
           <p className="text-sm text-gray-500 mb-6 max-w-sm mx-auto">
-            Start a new project to get AI-generated design concepts, contractor bids, and project management.
+            Start a new project to get generated using AI tools design concepts, contractor bids, and project management.
           </p>
           <Link
             href="/dashboard/projects/new"

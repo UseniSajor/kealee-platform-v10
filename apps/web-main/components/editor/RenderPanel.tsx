@@ -164,7 +164,7 @@ export default function RenderPanel({ sceneId, projectType, initialSelectedRende
   return (
     <div className="p-4 flex flex-col h-full" style={{ fontFamily: 'system-ui, sans-serif' }}>
       <div className="mb-4">
-        <p className="font-bold text-slate-900 text-sm mb-1">AI Design Renders</p>
+        <p className="font-bold text-slate-900 text-sm mb-1">design Renders</p>
         <p className="text-xs text-slate-500">Generate photorealistic renders of your space in any style.</p>
       </div>
 

@@ -58,7 +58,7 @@ export default function PermitReviewQueuePage() {
             <div>
               <h1 className="text-2xl font-bold text-gray-900">Permit Review Queue</h1>
               <p className="text-sm text-gray-500 mt-1">
-                AI-generated roadmaps awaiting specialist approval before submission
+                generated using AI tools roadmaps awaiting specialist approval before submission
               </p>
             </div>
             <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-orange-100 text-orange-800">
@@ -89,7 +89,7 @@ export default function PermitReviewQueuePage() {
           {!loading && filtered.length === 0 && (
             <div className="text-center py-16 text-gray-400">
               <p className="text-lg font-medium">No permits awaiting review</p>
-              <p className="text-sm mt-1">New AI-generated roadmaps will appear here.</p>
+              <p className="text-sm mt-1">New generated using AI tools roadmaps will appear here.</p>
             </div>
           )}
 

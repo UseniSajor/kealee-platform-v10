@@ -2,7 +2,7 @@
   "name": "@kealee/pascal-wrapper",
   "version": "1.0.0",
   "private": true,
-  "description": "Pascal Editor integration layer — visual spatial design, floor plan editing, and AI-assisted preconstruction for Kealee",
+  "description": "Pascal Editor integration layer — visual spatial design, floor plan editing, and assisted by AI tools preconstruction for Kealee",
   "main": "./src/index.ts",
   "types": "./src/index.ts",
   "exports": {
@@ -12,7 +12,7 @@
     }
   },
   "scripts": {
-    "build": "(tsc --noEmit || true)",
+    "build": "(tsc --noEmit || exit 0)",
     "typecheck": "tsc --noEmit",
     "dev": "tsc --noEmit --watch",
     "clean": "rm -rf dist"

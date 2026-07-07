@@ -40,7 +40,7 @@ const BENEFITS = [
     emoji: '💡',
     title: 'KeaBot Permit Assistant',
     description:
-      'AI-powered permit navigation helps you prepare submissions, track jurisdictional requirements, and monitor approvals.',
+      'powered by AI tools permit navigation helps you prepare submissions, track jurisdictional requirements, and monitor approvals.',
   },
   {
     emoji: '📊',

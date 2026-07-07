@@ -5,7 +5,7 @@ import { CheckCircle2, Zap, Calculator, FileText, Target, TrendingUp, DollarSign
 
 export const metadata = {
   title: "Kealee Estimation - Professional Cost Estimation",
-  description: "Stop guessing on costs. AI-powered estimation with 95% accuracy. Quick budgets, detailed estimates, takeoff services, and value engineering for contractors, developers, and property owners.",
+  description: "Stop guessing on costs. powered by AI tools estimation with 95% accuracy. Quick budgets, detailed estimates, takeoff services, and value engineering for contractors, developers, and property owners.",
   keywords: "cost estimation, cost estimating, takeoff services, value engineering, contractor estimates, bid preparation, AI estimation",
 }
 
@@ -48,13 +48,13 @@ export default function EstimationHomePage() {
             <div className="max-w-4xl mx-auto text-center">
               <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 text-white rounded-full text-sm font-medium mb-6 backdrop-blur-sm">
                 <Zap className="h-4 w-4" />
-                <span>AI-Powered Estimates 3x Faster</span>
+                <span>powered by AI tools Estimates 3x Faster</span>
               </div>
               <h1 className="text-4xl lg:text-6xl font-bold text-white mb-6 leading-tight">
                 Accurate Estimates. On Time. On Budget.
               </h1>
               <p className="text-xl text-white/90 mb-8 leading-relaxed">
-                Professional cost estimation for contractors, developers, and property owners. AI-powered scope analysis, automated takeoff, and expert review—we deliver estimates you can bid with confidence.
+                Professional cost estimation for contractors, developers, and property owners. powered by AI tools scope analysis, automated takeoff, and expert review—we deliver estimates you can bid with confidence.
               </p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                 <Link
@@ -141,9 +141,9 @@ export default function EstimationHomePage() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
-              { icon: Calculator, title: "Quick Budget Estimates", description: "Get a reliable budget range in hours, not days. AI-powered analysis based on project type, size, and location." },
+              { icon: Calculator, title: "Quick Budget Estimates", description: "Get a reliable budget range in hours, not days. powered by AI tools analysis based on project type, size, and location." },
               { icon: FileText, title: "Detailed Estimates", description: "Line-by-line CSI-formatted estimates with material, labor, and equipment breakdowns. Ready for bidding." },
-              { icon: Target, title: "Takeoff Services", description: "AI-assisted quantity extraction from plans. Upload PDFs or CAD files and get accurate quantities in minutes." },
+              { icon: Target, title: "Takeoff Services", description: "assisted by AI tools quantity extraction from plans. Upload PDFs or CAD files and get accurate quantities in minutes." },
               { icon: TrendingUp, title: "Value Engineering", description: "AI finds cost-saving alternatives without compromising quality. Reduce project costs by 10-25%." },
               { icon: DollarSign, title: "Bid Support", description: "Complete bid packages with competitive pricing, scope narratives, and professional formatting." },
               { icon: Package, title: "Cost Database Access", description: "Access our cost database with current material prices, labor rates, and equipment costs by region." },
@@ -230,7 +230,7 @@ export default function EstimationHomePage() {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl lg:text-4xl font-bold mb-6">Ready to Estimate Smarter?</h2>
           <p className="text-xl mb-8 opacity-95">
-            Get your first estimate free. See how AI-powered estimation saves time, reduces errors, and wins more bids.
+            Get your first estimate free. See how powered by AI tools estimation saves time, reduces errors, and wins more bids.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
@@ -255,7 +255,7 @@ export default function EstimationHomePage() {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div>
               <div className="font-bold text-xl text-white mb-4">Kealee <span className="text-blue-500">Estimation</span></div>
-              <p className="text-sm text-gray-400">Professional cost estimation with AI-powered analysis, automated takeoff, and industry-standard cost databases.</p>
+              <p className="text-sm text-gray-400">Professional cost estimation with powered by AI tools analysis, automated takeoff, and industry-standard cost databases.</p>
             </div>
             <div>
               <h3 className="font-semibold text-white mb-4">Services</h3>

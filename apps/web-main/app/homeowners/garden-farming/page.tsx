@@ -12,7 +12,7 @@ const SERVICES = [
     icon:    Leaf,
     color:   '#38A169',
     title:   'Garden Design',
-    desc:    'AI-powered garden layouts tailored to your space, sun exposure, and goals. From decorative to productive gardens.',
+    desc:    'powered by AI tools garden layouts tailored to your space, sun exposure, and goals. From decorative to productive gardens.',
     items: [
       { name: 'AI Garden Concept Package',  price: '$395',        note: '3 layout options · consultation included' },
       { name: 'Advanced Garden Design',     price: '$695',        note: 'Detailed plant lists + irrigation specs + 3D views' },
@@ -55,7 +55,7 @@ const SERVICES = [
 ]
 
 const BENEFITS = [
-  { title: 'AI-Designed for Your Property',   desc: 'Every concept is built around your specific yard, sun exposure, and soil conditions — not a generic template.' },
+  { title: 'designed using AI tools for Your Property',   desc: 'Every concept is built around your specific yard, sun exposure, and soil conditions — not a generic template.' },
   { title: 'Vetted Garden Contractors',        desc: 'All installation and build work is performed by licensed, background-checked contractors in our network.' },
   { title: 'Seasonal Planning Built In',       desc: 'Your concept includes a seasonal planting calendar tailored to your climate zone and goals.' },
   { title: 'Water Efficiency First',           desc: 'Drip irrigation and water management built into every design to reduce waste and maximize yield.' },
@@ -65,7 +65,7 @@ const BENEFITS = [
 
 const WORKFLOW = [
   { step: '01', title: 'Submit Your Goals',          desc: 'Share your address, photos, and what you want to grow or create. Takes about 10 minutes.' },
-  { step: '02', title: 'AI Concept Delivered',       desc: 'Receive 3 property-specific garden concepts in 5–7 business days, with a consultation call.' },
+  { step: '02', title: 'design concept Delivered',       desc: 'Receive 3 property-specific garden concepts in 5–7 business days, with a consultation call.' },
   { step: '03', title: 'Contractor Match',            desc: 'Review your concept and get matched to vetted garden contractors in your area for build estimates.' },
   { step: '04', title: 'Build + Install',             desc: 'Your contractor handles all onsite work — beds, irrigation, structures, plantings, and more.' },
   { step: '05', title: 'Harvest + Maintain',          desc: 'Your seasonal calendar and maintenance guides keep your garden productive year-round.' },
@@ -78,7 +78,7 @@ const FAQS = [
   },
   {
     q: 'Does Kealee do the planting and installation onsite?',
-    a: 'No. All onsite installation and build work is performed by your contractor of record. Kealee provides AI design, final design packages, permit filing, advisory, and contractor matching services only.',
+    a: 'No. All onsite installation and build work is performed by your contractor of record. Kealee provides design, final design packages, permit filing, advisory, and contractor matching services only.',
   },
   {
     q: 'What kinds of contractors do you match for garden projects?',
@@ -115,7 +115,7 @@ export default function GardenFarmingPage() {
               Grow Something Real.
             </h1>
             <p className="mt-5 text-lg text-gray-300 leading-relaxed">
-              AI-powered garden design, raised beds, backyard farming, drip irrigation, and greenhouse build — all from one platform. Property-specific concepts starting at $395.
+              powered by AI tools garden design, raised beds, backyard farming, drip irrigation, and greenhouse build — all from one platform. Property-specific concepts starting at $395.
             </p>
             <div className="mt-8 flex flex-wrap gap-4">
               <Link
@@ -204,7 +204,7 @@ export default function GardenFarmingPage() {
             ))}
           </div>
           <p className="mt-6 text-center text-xs text-gray-400">
-            All onsite installation and build work is performed by your contractor of record. Kealee provides AI design, final design packages, permit filing, advisory, and contractor matching services only.
+            All onsite installation and build work is performed by your contractor of record. Kealee provides design, final design packages, permit filing, advisory, and contractor matching services only.
           </p>
         </div>
       </section>

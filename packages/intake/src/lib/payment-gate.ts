@@ -48,8 +48,8 @@ export function evaluatePaymentGate(
 }
 
 const PAYMENT_REASONS: Record<ProjectPath, string> = {
-  exterior_concept:          "Exterior concept package includes AI-generated design direction, site analysis, and visual concepts.",
-  garden_concept:            "Garden concept package includes AI-generated planting plan, layout, and irrigation direction.",
+  exterior_concept:          "Exterior concept package includes generated using AI tools design direction, site analysis, and visual concepts.",
+  garden_concept:            "Garden concept package includes generated using AI tools planting plan, layout, and irrigation direction.",
   whole_home_concept:        "Whole home concept package includes interior + exterior design direction and transformation scope.",
   interior_reno_concept:     "Interior reno concept covers room-by-room layout, kitchen/bath renderings, and finish direction.",
   developer_concept:         "Developer concept covers feasibility context, pro forma framing, and development path.",

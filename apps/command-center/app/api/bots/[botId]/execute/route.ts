@@ -179,7 +179,7 @@ Given a target audience and jurisdictions, write 3 ad body copy variations.
 Each variation:
 - 60–90 words
 - Leads with a specific problem (not knowing what's possible, fear of cost overruns, permit confusion)
-- Introduces the AI Concept service as the low-risk first step
+- Introduces the design concept service as the low-risk first step
 - Ends with CTA: "Get your concept" linking to the intake form
 - Conversational, not salesy
 - No rhetorical questions
@@ -227,7 +227,7 @@ ${BRAND_CONTEXT}
 
 Write a Day 8 nurture email for Kealee leads who haven't booked a call yet.
 Address these 3 objections in order:
-1. "I don't know if I'm ready to spend yet" — point to the AI Concept ($599) as the low-risk starting point
+1. "I don't know if I'm ready to spend yet" — point to the design concept ($599) as the low-risk starting point
 2. "I've had bad experiences with contractors/architects" — address with Kealee's process transparency and permit progress updates
 3. "I'm not sure my jurisdiction allows what I want" — address with Kealee's DC/MD/VA expertise and jurisdiction-native knowledge
 

@@ -65,7 +65,7 @@ const OS_MODULES: Record<string, string> = {
 const twinTierLabels: Record<string, { label: string; color: string; bgColor: string; description: string }> = {
   L1: { label: 'L1 Light', color: '#2ABFBF', bgColor: 'rgba(42,191,191,0.1)', description: 'Basic tracking with budget, schedule, and completion metrics' },
   L2: { label: 'L2 Standard', color: '#E8793A', bgColor: 'rgba(232,121,58,0.1)', description: 'Full scheduling, cost tracking, document management, and risk monitoring' },
-  L3: { label: 'L3 Premium', color: '#7C3AED', bgColor: 'rgba(124,58,237,0.1)', description: 'AI-powered predictions, real-time IoT, advanced analytics' },
+  L3: { label: 'L3 Premium', color: '#7C3AED', bgColor: 'rgba(124,58,237,0.1)', description: 'powered by AI tools predictions, real-time IoT, advanced analytics' },
 }
 
 interface ScheduleItem {

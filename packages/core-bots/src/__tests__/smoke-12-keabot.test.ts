@@ -97,7 +97,7 @@ function makeContext(overrides: Partial<ExecutionContext> = {}): ExecutionContex
   return {
     projectId: 'proj-smoke-001',
     userId: 'user-test',
-    intents: ['ai concept'],
+    intents: ['design concept'],
     metadata: {
       intakeAnswers: {
         property_type: 'Single-family home',

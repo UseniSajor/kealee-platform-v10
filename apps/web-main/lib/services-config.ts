@@ -21,7 +21,7 @@ export interface Service {
   description: string
   priceDisplay: string     // Display range for homepage cards
   heroImage: string        // Unsplash URL
-  /** 'precon' = design/planning services (AI concepts, estimates, permits) · 'build' = construction execution */
+  /** 'precon' = design/planning services (design concepts, estimates, permits) · 'build' = construction execution */
   phase: 'precon' | 'build'
   category: 'remodel' | 'addition' | 'landscape' | 'design' | 'construction'
   /** What Kealee actually delivers — e.g. "Design Package", "Concept Package", "Custom Quote" */
@@ -85,7 +85,7 @@ export const SERVICES: Service[] = [
     intakePath: 'kitchen_remodel',
     label: 'Kitchen Remodel',
     shortLabel: 'Kitchen',
-    description: 'Transform your kitchen with AI-generated concepts, detailed cost estimates, and permit-ready plans. From updated cabinets to full gut-renovations with custom islands.',
+    description: 'Transform your kitchen with generated using AI tools concepts, detailed cost estimates, and permit-ready plans. From updated cabinets to full gut-renovations with custom islands.',
     priceDisplay: 'From $149',
     heroImage: '/images/services/kitchen-concept.jpg',
     phase: 'precon',
@@ -104,7 +104,7 @@ export const SERVICES: Service[] = [
     intakePath: 'bathroom_remodel',
     label: 'Bathroom Remodel',
     shortLabel: 'Bathroom',
-    description: 'Create your dream bathroom — from spa-level primary suites to efficient powder room refreshes. Full AI concepts with plumbing, electrical, and tile specifications.',
+    description: 'Create your dream bathroom — from spa-level primary suites to efficient powder room refreshes. Full design concepts with plumbing, electrical, and tile specifications.',
     priceDisplay: 'From $129',
     heroImage: '/images/services/bathroom-concept.jpg',
     phase: 'precon',
@@ -123,7 +123,7 @@ export const SERVICES: Service[] = [
     intakePath: 'garden_concept',
     label: 'Garden & Landscape',
     shortLabel: 'Garden',
-    description: 'Design your outdoor living space with AI-generated landscape concepts, plant selection guides, irrigation overviews, and hardscape design — tailored to your climate zone.',
+    description: 'Design your outdoor living space with generated using AI tools landscape concepts, plant selection guides, irrigation overviews, and hardscape design — tailored to your climate zone.',
     priceDisplay: 'From $99',
     heroImage: 'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=900&q=80&auto=format&fit=crop',
     phase: 'precon',
@@ -199,7 +199,7 @@ export const SERVICES: Service[] = [
     intakePath: 'exterior_concept',
     label: 'Exterior Facade',
     shortLabel: 'Exterior',
-    description: 'Dramatically improve your home\'s curb appeal — new siding, windows, roofline, entry, and landscaping — with AI-generated concepts and a full material specification.',
+    description: 'Dramatically improve your home\'s curb appeal — new siding, windows, roofline, entry, and landscaping — with generated using AI tools concepts and a full material specification.',
     priceDisplay: 'From $139',
     heroImage: 'https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=900&q=80&auto=format&fit=crop',
     phase: 'precon',

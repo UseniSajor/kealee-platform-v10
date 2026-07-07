@@ -5,7 +5,7 @@ import { Providers } from './providers';
 
 export const metadata: Metadata = {
   title: 'Kealee Estimation - Cost Estimation Platform',
-  description: 'Professional cost estimation and takeoff management with AI-powered insights',
+  description: 'Professional cost estimation and takeoff management with powered by AI tools insights',
 };
 
 export default function EstimationLayout({

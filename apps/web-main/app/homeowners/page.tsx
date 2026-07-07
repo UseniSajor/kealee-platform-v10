@@ -48,7 +48,7 @@ const WORKFLOW = [
   {
     number: 1,
     title: 'Get Your Concept + Validation',
-    desc: 'For $585, get a structured, property-specific AI Concept Design Package — 3 concept options, 1 round of feedback, design direction, zoning brief, path-to-approval plan, and an included design consultation. Additional revision rounds available as a paid add-on (Unlimited Package includes unlimited rounds).',
+    desc: 'For $585, get a structured, property-specific Concept Design Package — 3 concept options, 1 round of feedback, design direction, zoning brief, path-to-approval plan, and an included design consultation. Additional revision rounds available as a paid add-on (Unlimited Package includes unlimited rounds).',
   },
   {
     number: 2,
@@ -87,8 +87,8 @@ const PRICING = [
   {
     section: 'Plan Your Project',
     items: [
-      { name: 'AI Concept Design Package', price: '$585', note: '3 concept options, 1 round of feedback. Design direction, zoning brief, path-to-approval + consultation included.', highlight: true },
-      { name: 'Advanced AI Concept', price: '$899', note: '3 floor plan options, 3D views, material suggestions — up to 3 revision rounds' },
+      { name: 'Concept Design Package', price: '$585', note: '3 concept options, 1 round of feedback. Design direction, zoning brief, path-to-approval + consultation included.', highlight: true },
+      { name: 'Advanced Concept', price: '$899', note: '3 floor plan options, 3D views, material suggestions — up to 3 revision rounds' },
       { name: 'Full Design Package', price: '$4,499', note: 'Permit-ready drawing set — up to 5 revision rounds' },
     ],
     note: 'Projects over $65,000 or with structural complexity are connected with a licensed architect.',
@@ -130,7 +130,7 @@ export default function HomeownersPage() {
         headline="Build with Confidence"
         highlight="Confidence"
         subhead="Plan, price, permit, and control your project. Transparent pricing at every step — pay only for what your project needs."
-        cta={{ label: 'Start with $585 AI Concept Package', href: '/homeowners/start' }}
+        cta={{ label: 'Start with $585 Concept Package', href: '/homeowners/start' }}
         secondaryCta={{ label: 'Browse Contractors', href: '/marketplace' }}
         trustItems={['No surprise invoices', 'Escrow-protected payments', 'Licensed & insured contractors', 'AI advisor included']}
         dark
@@ -278,12 +278,12 @@ export default function HomeownersPage() {
       <RoleFAQ
         items={[
           {
-            question: 'What is included in the $585 AI Concept Design Package?',
+            question: 'What is included in the $585 Concept Design Package?',
             answer: '3 property-specific concept visuals, design direction summary, layout and flow recommendations, property analysis, path-to-approval plan, rough scope direction, a downloadable digital package, and an included design consultation call. 1 round of feedback is included.',
           },
           {
             question: 'Can I request more design revisions?',
-            answer: 'The Starter package ($585) includes 1 round of feedback. Additional revision rounds are available as a paid add-on. Upgrading to Advanced AI Concept ($899) includes up to 3 rounds. The Full Design Package ($4,499) includes up to 5 rounds.',
+            answer: 'The Starter package ($585) includes 1 round of feedback. Additional revision rounds are available as a paid add-on. Upgrading to Advanced Concept ($899) includes up to 3 rounds. The Full Design Package ($4,499) includes up to 5 rounds.',
           },
           {
             question: 'Does Kealee provide onsite services?',
@@ -305,7 +305,7 @@ export default function HomeownersPage() {
       />
       <RoleCTA
         headline="Ready to Start Your Project?"
-        subhead="Join thousands of homeowners who have built smarter with Kealee's AI-powered platform."
+        subhead="Join thousands of homeowners who have built smarter with Kealee's powered by AI tools platform."
         cta={{ label: 'Get My $585 Concept Package', href: '/homeowners/start' }}
         secondaryCta={{ label: 'Browse Contractors', href: '/marketplace' }}
       />

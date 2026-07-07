@@ -36,8 +36,8 @@ const CATEGORIES = [
 ]
 
 const PACKAGES = [
-  { tier: 'STARTER' as const, name: 'Starter', price: 199, desc: 'AI concepts + 5 revisions' },
-  { tier: 'STANDARD' as const, name: 'Standard', price: 499, desc: 'AI concepts + 5 revisions + 3D renders', popular: true },
+  { tier: 'STARTER' as const, name: 'Starter', price: 199, desc: 'design concepts + 5 revisions' },
+  { tier: 'STANDARD' as const, name: 'Standard', price: 499, desc: 'design concepts + 5 revisions + 3D renders', popular: true },
   { tier: 'PREMIUM' as const, name: 'Premium', price: 999, desc: 'Full AI package + permit-ready docs', },
 ]
 

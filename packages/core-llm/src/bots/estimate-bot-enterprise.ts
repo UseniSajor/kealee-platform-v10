@@ -1,6 +1,6 @@
 /**
  * ESTIMATE BOT - ENTERPRISE EDITION
- * AI-powered construction cost estimation with real-time pricing
+ * powered by AI tools construction cost estimation with real-time pricing
  *
  * Improvements:
  * - Real-time RSMeans database integration

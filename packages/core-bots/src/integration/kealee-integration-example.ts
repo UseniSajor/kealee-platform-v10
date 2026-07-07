@@ -56,7 +56,7 @@ export class KealeeAgentSystem {
   }
 
   /**
-   * Execute full AI Concept workflow
+   * Execute full design concept workflow
    * Input: 9-question intake
    * Output: 3 design concepts with 6 images each
    */
@@ -66,13 +66,13 @@ export class KealeeAgentSystem {
     intakeAnswers: Record<string, string>
   ): Promise<any> {
     console.log(`\n${"=".repeat(60)}`);
-    console.log(`[Kealee] Starting AI Concept for project ${projectId}`);
+    console.log(`[Kealee] Starting design concept for project ${projectId}`);
     console.log(`${"=".repeat(60)}\n`);
 
     const context: ExecutionContext = {
       projectId,
       userId,
-      intents: ["ai concept"],
+      intents: ["design concept"],
       metadata: {
         intakeAnswers,
       },
@@ -106,7 +106,7 @@ export class KealeeAgentSystem {
 
       return result;
     } catch (error) {
-      console.error(`[Kealee] AI Concept failed:`, error);
+      console.error(`[Kealee] design concept failed:`, error);
       this.eventEmitter.emit(KheaEvent.ERROR, projectId, {
         stage: "DESIGN",
         error: String(error),
@@ -314,8 +314,8 @@ export class KealeeAgentSystem {
 async function main() {
   const system = new KealeeAgentSystem();
 
-  // Example 1: AI Concept only
-  console.log("\n>>> EXAMPLE 1: AI Concept (DesignBot only)\n");
+  // Example 1: design concept only
+  console.log("\n>>> EXAMPLE 1: design concept (DesignBot only)\n");
 
   const conceptResult = await system.executeAIConcept(
     "proj-001",

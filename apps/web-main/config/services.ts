@@ -27,9 +27,9 @@ export const SERVICES: ServiceConfig[] = [
     key: 'kitchen_remodel',
     slug: 'kitchen-remodel',
     label: 'Kitchen Design Package',
-    tagline: 'Transform your kitchen with an AI-powered concept package.',
+    tagline: 'Transform your kitchen with an powered by AI tools concept package.',
     description:
-      'Get 3 concept visuals, a detailed bill of materials, full MEP specification, and a cost estimate—all in 3–5 days. Our AI design engine combined with staff review ensures every deliverable is project-ready.',
+      'Get 3 concept visuals, a detailed bill of materials, full MEP specification, and a cost estimate—all in 3–5 days. Our Design Engine combined with staff review ensures every deliverable is project-ready.',
     category: 'design',
     priceDisplay: '$395',
     priceRange: [39500, 39500],

@@ -94,7 +94,7 @@ export const SEQUENCES: Record<SequenceId, SequenceStep[]> = {
     {
       type:         'sms',
       delaySeconds: 0,
-      message:      'Hi {firstName}! Thanks for your interest in a {projectType} concept from Kealee. Your AI design package starts at ${conceptPrice}. Ready to get started? → https://kealee.com/concept',
+      message:      'Hi {firstName}! Thanks for your interest in a {projectType} concept from Kealee. Your design package starts at ${conceptPrice}. Ready to get started? → https://kealee.com/concept',
     },
     {
       type:         'tag',
@@ -105,7 +105,7 @@ export const SEQUENCES: Record<SequenceId, SequenceStep[]> = {
       type:         'email',
       delaySeconds: 2 * HR,
       subject:      'Your {projectType} concept is waiting — here\'s what\'s included',
-      html:         '<p>Hi {firstName},</p><p>Your AI concept package for a <strong>{projectType}</strong> project includes floor plan direction, permit scope, cost estimate, and material palette — all delivered digitally.</p><p><a href="https://kealee.com/concept?service={projectSlug}">Start my concept →</a></p>',
+      html:         '<p>Hi {firstName},</p><p>Your Concept Package for a <strong>{projectType}</strong> project includes floor plan direction, permit scope, cost estimate, and material palette — all delivered digitally.</p><p><a href="https://kealee.com/concept?service={projectSlug}">Start my concept →</a></p>',
     },
     {
       type:         'sms',
@@ -199,13 +199,13 @@ export const SEQUENCES: Record<SequenceId, SequenceStep[]> = {
       type:         'email',
       delaySeconds: 14 * DAY,
       subject:      '{projectType} cost guide for {location} — 2026',
-      html:         `<p>Hi {firstName},</p><p>Here's what {projectType} projects typically cost in {location} in 2026:</p><ul><li>Entry-level: $15,000–$35,000</li><li>Mid-range: $40,000–$85,000</li><li>Premium: $90,000+</li></ul><p>Your actual cost depends on scope, materials, and site conditions. An AI concept from Kealee gives you a project-specific cost band in 24–48 hours.</p><p><a href="https://kealee.com/concept">Get your cost estimate →</a></p>`,
+      html:         `<p>Hi {firstName},</p><p>Here's what {projectType} projects typically cost in {location} in 2026:</p><ul><li>Entry-level: $15,000–$35,000</li><li>Mid-range: $40,000–$85,000</li><li>Premium: $90,000+</li></ul><p>Your actual cost depends on scope, materials, and site conditions. An design concept from Kealee gives you a project-specific cost band in 24–48 hours.</p><p><a href="https://kealee.com/concept">Get your cost estimate →</a></p>`,
     },
     {
       type:         'email',
       delaySeconds: 30 * DAY,
       subject:      'Still thinking about your {projectType} project?',
-      html:         '<p>Hi {firstName},</p><p>We know home projects take time to plan. When you\'re ready, Kealee makes it easy to get started — AI concept, permits, and contractor matching all in one place.</p><p><a href="https://kealee.com/concept">Pick up where you left off →</a></p>',
+      html:         '<p>Hi {firstName},</p><p>We know home projects take time to plan. When you\'re ready, Kealee makes it easy to get started — design concept, permits, and contractor matching all in one place.</p><p><a href="https://kealee.com/concept">Pick up where you left off →</a></p>',
     },
   ],
 
@@ -225,7 +225,7 @@ export const SEQUENCES: Record<SequenceId, SequenceStep[]> = {
       type:         'email',
       delaySeconds: HR,
       subject:      'Your {projectType} concept package is confirmed — here\'s what happens next',
-      html:         '<p>Hi {firstName},</p><p>Thank you for your purchase! Here\'s the timeline for your <strong>{projectType}</strong> concept package:</p><ol><li><strong>Now:</strong> Our AI design engine processes your photos and project details</li><li><strong>24–48 hours:</strong> Staff review and quality check</li><li><strong>Delivery:</strong> You\'ll receive an email with your full digital package</li></ol><p>Have photos or additional details to share? Reply to this email or upload them at <a href="https://kealee.com/upload">kealee.com/upload</a>.</p>',
+      html:         '<p>Hi {firstName},</p><p>Thank you for your purchase! Here\'s the timeline for your <strong>{projectType}</strong> concept package:</p><ol><li><strong>Now:</strong> Our Design Engine processes your photos and project details</li><li><strong>24–48 hours:</strong> Staff review and quality check</li><li><strong>Delivery:</strong> You\'ll receive an email with your full digital package</li></ol><p>Have photos or additional details to share? Reply to this email or upload them at <a href="https://kealee.com/upload">kealee.com/upload</a>.</p>',
     },
     {
       type:         'sms',

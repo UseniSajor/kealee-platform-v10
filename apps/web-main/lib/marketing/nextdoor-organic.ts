@@ -85,7 +85,7 @@ export const NEXTDOOR_POSTS: NextdoorPost[] = [
 
 What we do:
 
-→ AI-generated design concepts for kitchen, bath, addition, and ADU projects
+→ generated using AI tools design concepts for kitchen, bath, addition, and ADU projects
 → Permit research and filing (DC DLCP, Montgomery County, Fairfax, Arlington)
 → Cost estimates before you hire anyone
 → Scope of work preparation so contractor quotes are actually comparable
@@ -241,7 +241,7 @@ We include a contractor-ready scope brief with every Kealee concept package — 
     body: `For Nextdoor neighbors in the DC/MD/VA area: use code NEIGHBOR50 at checkout for $50 off any Kealee concept or permit package.
 
 What's included in a concept package:
-→ 3 AI-generated layout concepts for your space (kitchen, bath, addition, ADU, basement, or deck)
+→ 3 generated using AI tools layout concepts for your space (kitchen, bath, addition, ADU, basement, or deck)
 → Itemized cost estimate by trade (demo, framing, electrical, plumbing, finishes)
 → Permit scope assessment for your jurisdiction
 → Contractor-ready scope brief for getting comparable bids
@@ -330,7 +330,7 @@ export const SETUP_CHECKLIST = [
   'Business name: Kealee',
   'Category: Home Services > Contractor (General)',
   'Service area: Set to DC/MD/VA metro (can set radius in miles from zip)',
-  'Description: 150-char max — "AI-powered design concepts, permit filing, and construction planning for DC, Maryland, and Virginia homeowners."',
+  'Description: 150-char max — "powered by AI tools design concepts, permit filing, and construction planning for DC, Maryland, and Virginia homeowners."',
   'Website: kealee.com',
   'Phone: Add business phone',
   'Upload logo (square, min 256x256px)',

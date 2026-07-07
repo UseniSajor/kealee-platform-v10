@@ -3,7 +3,7 @@
 /**
  * KeaBot Chat Widget
  *
- * Floating chat bubble that opens an AI-powered assistant panel.
+ * Floating chat bubble that opens an powered by AI tools assistant panel.
  * Communicates with the KeaBot API via Next.js proxy route.
  */
 

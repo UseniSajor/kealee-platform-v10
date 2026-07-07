@@ -12,11 +12,11 @@ export const dynamic = 'force-dynamic'
 export const metadata: Metadata = {
   title: 'Kealee — Design-Build Platform | DC, MD & VA',
   description:
-    'Kealee is the end-to-end design-build platform for homeowners. AI design concepts, RSMeans cost estimates, permit filing, and a personal project workspace — from first idea to final build. Serving DC, MD & VA.',
+    'Kealee is the end-to-end design-build platform for homeowners. design concepts, RSMeans cost estimates, permit filing, and a personal project workspace — from first idea to final build. Serving DC, MD & VA.',
   openGraph: {
     title: 'Kealee — Plan, Design, Permit & Build in One Platform',
     description:
-      'AI design concepts, validated cost estimates, permit filing, and a project workspace for every homeowner. Starting at $295.',
+      'design concepts, validated cost estimates, permit filing, and a project workspace for every homeowner. Starting at $295.',
     url: 'https://kealee.com',
   },
   alternates: { canonical: '/' },
@@ -33,7 +33,7 @@ export default async function HomePage() {
       {/* Services: circular service cards */}
       <ServicesJourneySection services={services} />
 
-      {/* AI Concept Design — 4-step workflow */}
+      {/* design concept Design — 4-step workflow */}
       <ConceptPackageSection />
 
       {/* 4-phase unified lifecycle overview */}

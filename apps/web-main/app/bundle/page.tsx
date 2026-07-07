@@ -7,7 +7,7 @@ const DELIVERABLES = [
   {
     icon: '🎨',
     title: 'Design Concept',
-    desc: 'AI-generated renders, concept PDF, and 3–5 high-res visualisations — delivered within 24 hours.',
+    desc: 'generated using AI tools renders, concept PDF, and 3–5 high-res visualisations — delivered within 24 hours.',
     color: 'border-orange-200 bg-orange-50',
     badge: 'bg-orange-100 text-orange-700',
     label: 'Design',
@@ -73,7 +73,7 @@ export default function BundlePage() {
             Everything you need to start your project
           </h1>
           <p className="text-lg text-gray-500 max-w-2xl mx-auto mb-6">
-            Design concept, cost estimate, and permit roadmap — three AI-powered deliverables in one package.
+            Design concept, cost estimate, and permit roadmap — three powered by AI tools deliverables in one package.
           </p>
           <div className="inline-flex items-baseline gap-2">
             <span className="text-5xl font-bold text-gray-900">$10</span>

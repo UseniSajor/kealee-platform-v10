@@ -280,7 +280,7 @@ pnpm lint
 - ✅ Real-time cost calculations (client-side)
 
 ### Planned
-- ⏳ AI-powered scope analysis
+- ⏳ powered by AI tools scope analysis
 - ⏳ Pre-built assembly library (50+ templates)
 - ⏳ Cost database management
 - ⏳ PDF plan viewer with takeoff tools

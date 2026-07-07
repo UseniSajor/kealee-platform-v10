@@ -1313,7 +1313,7 @@ export default function NewProjectPage() {
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-gray-900">Smart Estimate</h1>
           <p className="text-sm text-gray-500 mt-1">
-            Describe your project and get an AI-powered cost estimate instantly
+            Describe your project and get an powered by AI tools cost estimate instantly
           </p>
         </div>
 

@@ -2,7 +2,7 @@
  * @kealee/ai-chat — Conversational AI Chat Engine
  *
  * Provides the PlatformChatEngine class and all supporting types
- * for building AI-powered chat interfaces on the Kealee Platform.
+ * for building powered by AI tools chat interfaces on the Kealee Platform.
  */
 
 // Core engine

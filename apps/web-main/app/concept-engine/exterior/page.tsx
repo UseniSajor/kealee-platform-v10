@@ -13,7 +13,7 @@ const TIERS = [
     price: '$595',
     rounds: '1 feedback round',
     turnaround: '5–7 business days',
-    desc: 'AI-generated exterior concept with 3 renderings, material palette, and landscape layout.',
+    desc: 'generated using AI tools exterior concept with 3 renderings, material palette, and landscape layout.',
     items: ['3 exterior concept renderings', 'Material + color palette', 'Landscape overview', '30-min consultation'],
     cta: 'Start My Exterior Concept',
   },
@@ -24,7 +24,7 @@ const TIERS = [
     turnaround: '10–14 business days',
     desc: 'Full exterior design with detailed landscape plan, hardscape specifications, and lighting layout.',
     items: [
-      'Everything in AI Concept',
+      'Everything in design concept',
       'Detailed hardscape plan',
       'Lighting layout + fixture specs',
       'Plant species + sizing list',
@@ -87,11 +87,11 @@ const INCLUDED = [
 const FAQ = [
   {
     q: 'What is the AI Exterior Concept Package?',
-    a: "It's a $595 AI-generated concept design package for your home's exterior. You submit your property details and goals; we deliver 3 rendered concepts, a material palette, a landscape overview, and a consultation call — all within 5–7 business days.",
+    a: "It's a $595 generated using AI tools concept design package for your home's exterior. You submit your property details and goals; we deliver 3 rendered concepts, a material palette, a landscape overview, and a consultation call — all within 5–7 business days.",
   },
   {
     q: 'Does this include contractor services?',
-    a: 'No. The concept package is a design and planning service only. All onsite installation and build work is performed by your contractor of record. Kealee provides AI design, final design packages, permit filing, advisory, and contractor matching services only.',
+    a: 'No. The concept package is a design and planning service only. All onsite installation and build work is performed by your contractor of record. Kealee provides design, final design packages, permit filing, advisory, and contractor matching services only.',
   },
   {
     q: 'What kinds of contractors do you match with?',
@@ -130,7 +130,7 @@ export default function ExteriorConceptPage() {
 
       {/* Pre-design disclaimer banner */}
       <div className="bg-orange-50 border-b border-orange-100 py-2.5 px-4 text-center text-sm text-orange-800">
-        AI concept is a pre-design service — not a permit-ready plan.{' '}
+        design concept is a pre-design service — not a permit-ready plan.{' '}
         <Link href="/design-services" className="font-semibold underline hover:text-orange-900">
           Need permit-ready plans? See Design Services →
         </Link>
@@ -155,7 +155,7 @@ export default function ExteriorConceptPage() {
                 See your exterior before the first brushstroke
               </h1>
               <p className="mt-6 text-lg text-gray-300">
-                AI-generated exterior concepts covering facade redesign, landscaping, hardscaping, driveways, and outdoor
+                generated using AI tools exterior concepts covering facade redesign, landscaping, hardscaping, driveways, and outdoor
                 living — delivered as a contractor-ready package in 5–7 business days.
               </p>
               <div className="mt-8 flex flex-col gap-4 sm:flex-row">
@@ -387,7 +387,7 @@ export default function ExteriorConceptPage() {
             </Link>
           </div>
           <p className="mt-6 text-xs text-gray-500">
-            All onsite installation and build work is performed by your contractor of record. Kealee provides AI design,
+            All onsite installation and build work is performed by your contractor of record. Kealee provides design,
             final design packages, permit filing, advisory, and contractor matching services only.
           </p>
         </div>

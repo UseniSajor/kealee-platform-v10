@@ -22,7 +22,7 @@ const BENEFITS = [
     emoji: '📋',
     title: 'Permit Automation',
     description:
-      'AI-assisted permit intake, plan review routing, and status tracking reduces review times and improves applicant experience.',
+      'assisted by AI tools permit intake, plan review routing, and status tracking reduces review times and improves applicant experience.',
   },
   {
     emoji: '🏠',

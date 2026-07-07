@@ -22,7 +22,7 @@ export interface LinkedInPost {
 export const LINKEDIN_POSTS: LinkedInPost[] = [
   {
     week:          1,
-    theme:         'Platform intro — AI design + permits + contractors',
+    theme:         'Platform intro — design + permits + contractors',
     scheduledDate: '2026-05-12',
     body: `We built Kealee because construction projects fail in the planning phase.
 
@@ -34,7 +34,7 @@ The result? Cost overruns, delays, and disputes that everyone involved wants to 
 
 Kealee fixes the planning phase:
 
-→ AI concept design — 3 layout options with permit scope and cost estimate delivered in 24–48 hours
+→ design concept design — 3 layout options with permit scope and cost estimate delivered in 24–48 hours
 → Permit filing — we prepare and submit the application, handle reviewer comments, and track approval
 → Contractor matching — vetted contractors bid on a clear scope that actually matches the permit
 
@@ -80,7 +80,7 @@ What they had:
 → No drawings, no permit, no clear scope
 
 What we did:
-→ AI concept with 3 layout options (48 hours)
+→ design concept with 3 layout options (48 hours)
 → Permit scope assessment — kitchen remodel required electrical and plumbing permits
 → Cost band: $48,000–$65,000 based on scope and material tier
 → Permit application prep and filing with Montgomery County
@@ -116,7 +116,7 @@ How to get the good contractors to respond:
 3. Have a clear scope document — not "renovate the kitchen," but "demo existing cabinets, relocate island 2 feet, add circuit for dishwasher, countertops to quartz"
 4. Be clear about your timeline and decision timeline
 
-The AI concept + permit path is step 1 of this. A contractor-ready scope brief is included in every Kealee concept package.`,
+The design concept + permit path is step 1 of this. A contractor-ready scope brief is included in every Kealee concept package.`,
     hashtags: ['construction', 'contractors', 'homeimprovement', 'scopeofwork', 'DMV', 'renovation'],
   },
 
@@ -229,7 +229,7 @@ Over the past year, Kealee has processed hundreds of concept packages across the
 
 The solution is simple: do the planning work before the construction work.
 
-AI concept → permit path → contractor scope → vetted contractor bids
+design concept → permit path → contractor scope → vetted contractor bids
 
 That's the Kealee pipeline. It's not magic — it's just applying process discipline to a phase that's historically been chaotic.
 
@@ -258,7 +258,7 @@ Kealee fixes this on the front end.
 When a homeowner comes through the Kealee pipeline, contractors receive:
 
 → A scope brief with explicit demo, MEP, structural, and finish specifications
-→ An AI-generated cost estimate they can compare their own pricing against
+→ An generated using AI tools cost estimate they can compare their own pricing against
 → A permit status (applied, in process, or in hand) so no one is bidding blind on permit costs
 → Clear selection allowances or specified materials
 
@@ -368,7 +368,7 @@ Full finish with kitchen/ADU conversion: $90,000–$160,000
 
 The ADU conversion is the highest-ROI option if your jurisdiction allows it and the unit has an exterior entrance. Current basement apartment rental rates in DC: $1,600–$2,200/month.
 
-We do basement concept packages — AI-generated layout options, cost estimate, and permit path for your specific jurisdiction. Starting at $${CONCEPT_KITCHEN_PRICE} at kealee.com.`,
+We do basement concept packages — generated using AI tools layout options, cost estimate, and permit path for your specific jurisdiction. Starting at $${CONCEPT_KITCHEN_PRICE} at kealee.com.`,
     hashtags: ['basement', 'homeimprovement', 'ADU', 'renovation', 'DMV', 'construction', 'realestate'],
   },
 

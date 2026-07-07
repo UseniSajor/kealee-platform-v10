@@ -407,7 +407,7 @@ export default function MarketplaceDashboard() {
               <ServiceCard
                 icon={FileText}
                 title="I Need Permits"
-                description="AI-powered permit review and submission services"
+                description="powered by AI tools permit review and submission services"
                 href="/permits"
                 color="orange"
                 stats="95% approval rate"

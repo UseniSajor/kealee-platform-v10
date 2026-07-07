@@ -1,5 +1,5 @@
 /**
- * AI Concept Orchestrator
+ * design concept Orchestrator
  * Central coordinator for the full concept engine pipeline.
  * Used by both API routes (sync fast path) and worker jobs (async full pipeline).
  */

@@ -4,7 +4,7 @@
   "cards": {
     "home:design": {
       "photoUrl": "https://rkreqfpkxavqpsqexbfs.supabase.co/storage/v1/object/public/marketing-media/home/design.jpg",
-      "photoAlt": "Diverse AI-generated design concepts including kitchen, bath, addition, and garden",
+      "photoAlt": "Diverse generated using AI tools design concepts including kitchen, bath, addition, and garden",
       "videoUrl": "/media/service-videos/home-design-video.mp4",
       "videoWebM": "/media/service-videos/home-design-video.mp4",
       "mediaType": "video",
@@ -53,94 +53,94 @@
     "product:kitchen": {
       "photoUrl": "/media/service-photos/product-kitchen.jpg",
       "beforePhotoUrl": "/media/service-photos/product-kitchen-before.jpg",
-      "photoAlt": "Kitchen Remodel — Kealee AI concept",
+      "photoAlt": "Kitchen Remodel — Kealee design concept",
       "mediaType": "video",
       "narrativeId": "kitchen-install",
       "videoNarrative": "Photorealistic construction documentary, DMV suburban home, natural daylight, no on-screen text, no logos, workers in PPE with faces away from camera, believable tools and materials, 24fps cinematic timelapse feel, seamless timelapse showing full project process: Demo → Rough-in → Cabinet set → Counters & tile → Finished kitchen. DMV suburban home, natural daylight, no on-screen text, no logos, workers in PPE with faces away from camera, believable tools and materials, 24fps cinematic timelapse feel, kitchen demolition, removing old cabinets and countertops, dust protection, debris in bins; DMV suburban home, natural daylight, no on-screen text, no logos, workers in PPE with faces away from camera, believable tools and materials, 24fps cinematic timelapse feel, plumber and electrician rough-in under kitchen sink, new conduit and supply lines; DMV suburban home, natural daylight, no on-screen text, no logos, workers in PPE with faces away from camera, believable tools and materials, 24fps cinematic timelapse feel, installers leveling and fastening new shaker kitchen cabinets, laser level visible; DMV suburban home, natural daylight, no on-screen text, no logos, workers in PPE with faces away from camera, believable tools and materials, 24fps cinematic timelapse feel, quartz countertop installation, backsplash tile setting, thin-set and spacers; DMV suburban home, natural daylight, no on-screen text, no logos, workers in PPE with faces away from camera, believable tools and materials, 24fps cinematic timelapse feel, completed modern kitchen, under-cabinet lighting on, appliances installed, spotless finishes. Smooth transitions, no text overlays.",
       "generatedAt": "2026-05-26T02:56:28.713Z",
-      "promptUsed": "Renovated modern kitchen with new cabinets, quartz counters, backsplash, under-cabinet lighting, identical camera angle. Magazine-quality kitchen renovation hero, Kealee AI concept aesthetic",
+      "promptUsed": "Renovated modern kitchen with new cabinets, quartz counters, backsplash, under-cabinet lighting, identical camera angle. Magazine-quality kitchen renovation hero, Kealee design concept aesthetic",
       "source": "generated"
     },
     "product:bathroom": {
       "photoUrl": "/media/service-photos/product-bathroom.jpg",
       "beforePhotoUrl": "/media/service-photos/product-bathroom-before.jpg",
-      "photoAlt": "Bathroom Remodel — Kealee AI concept",
+      "photoAlt": "Bathroom Remodel — Kealee design concept",
       "mediaType": "video",
       "narrativeId": "bath-install",
       "videoNarrative": "Photorealistic construction documentary, DMV suburban home, natural daylight, no on-screen text, no logos, workers in PPE with faces away from camera, believable tools and materials, 24fps cinematic timelapse feel, seamless timelapse showing full project process: Demo → Rough-in → Tile & vanity → Fixtures → Finished bath. DMV suburban home, natural daylight, no on-screen text, no logos, workers in PPE with faces away from camera, believable tools and materials, 24fps cinematic timelapse feel, bathroom demo, removing vanity toilet and tub surround, floor protection; DMV suburban home, natural daylight, no on-screen text, no logos, workers in PPE with faces away from camera, believable tools and materials, 24fps cinematic timelapse feel, bathroom plumbing rough-in, new drain lines, waterproof board on walls; DMV suburban home, natural daylight, no on-screen text, no logos, workers in PPE with faces away from camera, believable tools and materials, 24fps cinematic timelapse feel, large format wall tile installation, floating vanity set, grout work; DMV suburban home, natural daylight, no on-screen text, no logos, workers in PPE with faces away from camera, believable tools and materials, 24fps cinematic timelapse feel, installing glass shower, chrome fixtures, mirror and lighting; DMV suburban home, natural daylight, no on-screen text, no logos, workers in PPE with faces away from camera, believable tools and materials, 24fps cinematic timelapse feel, spa-like finished bathroom, walk-in shower, bright and clean. Smooth transitions, no text overlays.",
       "generatedAt": "2026-05-26T02:56:28.791Z",
-      "promptUsed": "Renovated modern spa bathroom, walk-in shower, floating vanity, same angle. Magazine-quality bathroom renovation hero, Kealee AI concept aesthetic",
+      "promptUsed": "Renovated modern spa bathroom, walk-in shower, floating vanity, same angle. Magazine-quality bathroom renovation hero, Kealee design concept aesthetic",
       "source": "generated"
     },
     "product:garden": {
       "photoUrl": "/media/service-photos/product-garden.jpg",
       "beforePhotoUrl": "/media/service-photos/product-garden-before.jpg",
-      "photoAlt": "Garden & Landscape — Kealee AI concept",
+      "photoAlt": "Garden & Landscape — Kealee design concept",
       "mediaType": "video",
       "narrativeId": "landscape-install",
       "videoNarrative": "Photorealistic construction documentary, DMV suburban home, natural daylight, no on-screen text, no logos, workers in PPE with faces away from camera, believable tools and materials, 24fps cinematic timelapse feel, seamless timelapse showing full project process: Grading → Hardscape → Planting → Finished garden. DMV suburban home, natural daylight, no on-screen text, no logos, workers in PPE with faces away from camera, believable tools and materials, 24fps cinematic timelapse feel, yard grading with mini excavator, soil delivery, level lawn preparation; DMV suburban home, natural daylight, no on-screen text, no logos, workers in PPE with faces away from camera, believable tools and materials, 24fps cinematic timelapse feel, paver patio installation, edging, compacted base layers; DMV suburban home, natural daylight, no on-screen text, no logos, workers in PPE with faces away from camera, believable tools and materials, 24fps cinematic timelapse feel, planting shrubs and perennials, mulch spreading, irrigation trenches; DMV suburban home, natural daylight, no on-screen text, no logos, workers in PPE with faces away from camera, believable tools and materials, 24fps cinematic timelapse feel, completed backyard landscape, stone path, lighting at dusk. Smooth transitions, no text overlays.",
       "generatedAt": "2026-05-26T02:56:28.840Z",
-      "promptUsed": "Designed modern garden with patio, planting beds, path, same viewpoint. Magazine-quality garden renovation hero, Kealee AI concept aesthetic",
+      "promptUsed": "Designed modern garden with patio, planting beds, path, same viewpoint. Magazine-quality garden renovation hero, Kealee design concept aesthetic",
       "source": "generated"
     },
     "product:addition": {
       "photoUrl": "/media/service-photos/product-addition.jpg",
-      "photoAlt": "Home Addition — Kealee AI concept",
+      "photoAlt": "Home Addition — Kealee design concept",
       "mediaType": "video",
       "narrativeId": "full-build",
       "videoNarrative": "Photorealistic construction documentary, DMV suburban home, natural daylight, no on-screen text, no logos, workers in PPE with faces away from camera, believable tools and materials, 24fps cinematic timelapse feel, seamless timelapse showing full project process: Site work → Framing → Envelope → Rough-in → Drywall → Completion. DMV suburban home, natural daylight, no on-screen text, no logos, workers in PPE with faces away from camera, believable tools and materials, 24fps cinematic timelapse feel, residential lot excavation and foundation forms, concrete pour, suburban Maryland context; DMV suburban home, natural daylight, no on-screen text, no logos, workers in PPE with faces away from camera, believable tools and materials, 24fps cinematic timelapse feel, wood frame erection, roof trusses, house skeleton on suburban street; DMV suburban home, natural daylight, no on-screen text, no logos, workers in PPE with faces away from camera, believable tools and materials, 24fps cinematic timelapse feel, house wrap, window install, siding and roof shingles going on; DMV suburban home, natural daylight, no on-screen text, no logos, workers in PPE with faces away from camera, believable tools and materials, 24fps cinematic timelapse feel, interior MEP rough-in visible through windows, ladders and scaffolding; DMV suburban home, natural daylight, no on-screen text, no logos, workers in PPE with faces away from camera, believable tools and materials, 24fps cinematic timelapse feel, drywall hang and mud, interior taking shape; DMV suburban home, natural daylight, no on-screen text, no logos, workers in PPE with faces away from camera, believable tools and materials, 24fps cinematic timelapse feel, finished new home exterior golden hour, landscaping started, move-in ready. Smooth transitions, no text overlays.",
       "generatedAt": "2026-05-26T02:56:28.896Z",
-      "promptUsed": "Completed modern Home Addition after professional renovation, magazine quality, same camera angle. Magazine-quality living renovation hero, Kealee AI concept aesthetic",
+      "promptUsed": "Completed modern Home Addition after professional renovation, magazine quality, same camera angle. Magazine-quality living renovation hero, Kealee design concept aesthetic",
       "source": "generated"
     },
     "product:whole-house": {
       "photoUrl": "/media/service-photos/product-whole-house.jpg",
-      "photoAlt": "Whole House Renovation — Kealee AI concept",
+      "photoAlt": "Whole House Renovation — Kealee design concept",
       "mediaType": "video",
       "narrativeId": "remodel-install",
       "videoNarrative": "Photorealistic construction documentary, DMV suburban home, natural daylight, no on-screen text, no logos, workers in PPE with faces away from camera, believable tools and materials, 24fps cinematic timelapse feel, seamless timelapse showing full project process: Prep → Framing → MEP → Finishes → Reveal. DMV suburban home, natural daylight, no on-screen text, no logos, workers in PPE with faces away from camera, believable tools and materials, 24fps cinematic timelapse feel, interior renovation prep, floor protection, temporary dust walls; DMV suburban home, natural daylight, no on-screen text, no logos, workers in PPE with faces away from camera, believable tools and materials, 24fps cinematic timelapse feel, framing new interior walls, lumber delivery, nail gun work; DMV suburban home, natural daylight, no on-screen text, no logos, workers in PPE with faces away from camera, believable tools and materials, 24fps cinematic timelapse feel, electrical and HVAC rough-in in renovated rooms, inspectors clipboards in background; DMV suburban home, natural daylight, no on-screen text, no logos, workers in PPE with faces away from camera, believable tools and materials, 24fps cinematic timelapse feel, installing flooring, trim, paint touch-ups, staging furniture; DMV suburban home, natural daylight, no on-screen text, no logos, workers in PPE with faces away from camera, believable tools and materials, 24fps cinematic timelapse feel, slow dolly through completed renovated living spaces, warm light. Smooth transitions, no text overlays.",
       "generatedAt": "2026-05-26T02:56:28.928Z",
-      "promptUsed": "Completed modern Whole House Renovation after professional renovation, magazine quality, same camera angle. Magazine-quality interior renovation hero, Kealee AI concept aesthetic",
+      "promptUsed": "Completed modern Whole House Renovation after professional renovation, magazine quality, same camera angle. Magazine-quality interior renovation hero, Kealee design concept aesthetic",
       "source": "generated"
     },
     "product:interior": {
       "photoUrl": "/media/service-photos/product-interior.jpg",
-      "photoAlt": "Interior Renovation — Kealee AI concept",
+      "photoAlt": "Interior Renovation — Kealee design concept",
       "mediaType": "video",
       "narrativeId": "remodel-install",
       "videoNarrative": "Photorealistic construction documentary, DMV suburban home, natural daylight, no on-screen text, no logos, workers in PPE with faces away from camera, believable tools and materials, 24fps cinematic timelapse feel, seamless timelapse showing full project process: Prep → Framing → MEP → Finishes → Reveal. DMV suburban home, natural daylight, no on-screen text, no logos, workers in PPE with faces away from camera, believable tools and materials, 24fps cinematic timelapse feel, interior renovation prep, floor protection, temporary dust walls; DMV suburban home, natural daylight, no on-screen text, no logos, workers in PPE with faces away from camera, believable tools and materials, 24fps cinematic timelapse feel, framing new interior walls, lumber delivery, nail gun work; DMV suburban home, natural daylight, no on-screen text, no logos, workers in PPE with faces away from camera, believable tools and materials, 24fps cinematic timelapse feel, electrical and HVAC rough-in in renovated rooms, inspectors clipboards in background; DMV suburban home, natural daylight, no on-screen text, no logos, workers in PPE with faces away from camera, believable tools and materials, 24fps cinematic timelapse feel, installing flooring, trim, paint touch-ups, staging furniture; DMV suburban home, natural daylight, no on-screen text, no logos, workers in PPE with faces away from camera, believable tools and materials, 24fps cinematic timelapse feel, slow dolly through completed renovated living spaces, warm light. Smooth transitions, no text overlays.",
       "generatedAt": "2026-05-26T02:56:28.962Z",
-      "promptUsed": "Completed modern Interior Renovation after professional renovation, magazine quality, same camera angle. Magazine-quality interior renovation hero, Kealee AI concept aesthetic",
+      "promptUsed": "Completed modern Interior Renovation after professional renovation, magazine quality, same camera angle. Magazine-quality interior renovation hero, Kealee design concept aesthetic",
       "source": "generated"
     },
     "product:facade": {
       "photoUrl": "/media/service-photos/product-facade.jpg",
-      "photoAlt": "Exterior Facade — Kealee AI concept",
+      "photoAlt": "Exterior Facade — Kealee design concept",
       "mediaType": "video",
       "narrativeId": "exterior-install",
       "videoNarrative": "Photorealistic construction documentary, DMV suburban home, natural daylight, no on-screen text, no logos, workers in PPE with faces away from camera, believable tools and materials, 24fps cinematic timelapse feel, seamless timelapse showing full project process: Prep → Install → Curb appeal. DMV suburban home, natural daylight, no on-screen text, no logos, workers in PPE with faces away from camera, believable tools and materials, 24fps cinematic timelapse feel, exterior scaffold, siding removal, window protection; DMV suburban home, natural daylight, no on-screen text, no logos, workers in PPE with faces away from camera, believable tools and materials, 24fps cinematic timelapse feel, new fiber cement siding and trim install, coordinated crew; DMV suburban home, natural daylight, no on-screen text, no logos, workers in PPE with faces away from camera, believable tools and materials, 24fps cinematic timelapse feel, completed facade refresh, clean landscaping, inviting front entry. Smooth transitions, no text overlays.",
       "generatedAt": "2026-05-26T02:56:28.993Z",
-      "promptUsed": "Completed modern Exterior Facade after professional renovation, magazine quality, same camera angle. Magazine-quality interior renovation hero, Kealee AI concept aesthetic",
+      "promptUsed": "Completed modern Exterior Facade after professional renovation, magazine quality, same camera angle. Magazine-quality interior renovation hero, Kealee design concept aesthetic",
       "source": "generated"
     },
     "product:deck": {
       "photoUrl": "/media/service-photos/product-deck.jpg",
-      "photoAlt": "Deck & Patio — Kealee AI concept",
+      "photoAlt": "Deck & Patio — Kealee design concept",
       "mediaType": "video",
       "narrativeId": "full-build",
       "videoNarrative": "Photorealistic construction documentary, DMV suburban home, natural daylight, no on-screen text, no logos, workers in PPE with faces away from camera, believable tools and materials, 24fps cinematic timelapse feel, seamless timelapse showing full project process: Site work → Framing → Envelope → Rough-in → Drywall → Completion. DMV suburban home, natural daylight, no on-screen text, no logos, workers in PPE with faces away from camera, believable tools and materials, 24fps cinematic timelapse feel, residential lot excavation and foundation forms, concrete pour, suburban Maryland context; DMV suburban home, natural daylight, no on-screen text, no logos, workers in PPE with faces away from camera, believable tools and materials, 24fps cinematic timelapse feel, wood frame erection, roof trusses, house skeleton on suburban street; DMV suburban home, natural daylight, no on-screen text, no logos, workers in PPE with faces away from camera, believable tools and materials, 24fps cinematic timelapse feel, house wrap, window install, siding and roof shingles going on; DMV suburban home, natural daylight, no on-screen text, no logos, workers in PPE with faces away from camera, believable tools and materials, 24fps cinematic timelapse feel, interior MEP rough-in visible through windows, ladders and scaffolding; DMV suburban home, natural daylight, no on-screen text, no logos, workers in PPE with faces away from camera, believable tools and materials, 24fps cinematic timelapse feel, drywall hang and mud, interior taking shape; DMV suburban home, natural daylight, no on-screen text, no logos, workers in PPE with faces away from camera, believable tools and materials, 24fps cinematic timelapse feel, finished new home exterior golden hour, landscaping started, move-in ready. Smooth transitions, no text overlays.",
       "generatedAt": "2026-05-26T02:56:29.025Z",
-      "promptUsed": "Completed modern Deck & Patio after professional renovation, magazine quality, same camera angle. Magazine-quality living renovation hero, Kealee AI concept aesthetic",
+      "promptUsed": "Completed modern Deck & Patio after professional renovation, magazine quality, same camera angle. Magazine-quality living renovation hero, Kealee design concept aesthetic",
       "source": "generated"
     },
     "product:design-services": {
       "photoUrl": "/media/service-photos/product-design-services.jpg",
-      "photoAlt": "Design Services — Kealee AI concept",
+      "photoAlt": "Design Services — Kealee design concept",
       "mediaType": "video",
       "narrativeId": "design-reveal",
       "videoNarrative": "Photorealistic construction documentary, DMV suburban home, natural daylight, no on-screen text, no logos, workers in PPE with faces away from camera, believable tools and materials, 24fps cinematic timelapse feel, seamless timelapse showing full project process: Concept reveal. DMV suburban home, natural daylight, no on-screen text, no logos, workers in PPE with faces away from camera, believable tools and materials, 24fps cinematic timelapse feel, slow cinematic reveal of renovated interior, design boards on tablet, photoreal staging. Smooth transitions, no text overlays.",
       "generatedAt": "2026-05-26T02:56:29.060Z",
-      "promptUsed": "Completed modern Design Services after professional renovation, magazine quality, same camera angle. Magazine-quality interior renovation hero, Kealee AI concept aesthetic",
+      "promptUsed": "Completed modern Design Services after professional renovation, magazine quality, same camera angle. Magazine-quality interior renovation hero, Kealee design concept aesthetic",
       "source": "generated"
     }
   }

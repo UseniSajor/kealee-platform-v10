@@ -383,7 +383,7 @@ function IntakeForm() {
           <Card>
             <h2 style={{ fontSize: 20, fontWeight: 700, margin: '0 0 8px', color: '#111' }}>Choose Your Service</h2>
             <p style={{ fontSize: 13, color: '#6b7280', margin: '0 0 24px' }}>
-              All tiers include AI-generated permit roadmap with human specialist review.
+              All tiers include generated using AI tools permit roadmap with human specialist review.
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 24 }}>
               {TIERS.map(t => (

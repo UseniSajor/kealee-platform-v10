@@ -358,7 +358,7 @@ export default function OrderDetailPage() {
               </div>
               <h3 className="text-sm font-bold text-gray-900 mb-1">Get a Cost Estimate</h3>
               <p className="text-xs text-gray-500 leading-relaxed">
-                AI-powered cost breakdown with labor, materials, and timeline. From $299.
+                powered by AI tools cost breakdown with labor, materials, and timeline. From $299.
               </p>
               <span className="inline-flex items-center gap-1 text-xs font-semibold text-amber-600 mt-3">
                 Learn more <ArrowRight size={12} />
@@ -373,7 +373,7 @@ export default function OrderDetailPage() {
               </div>
               <h3 className="text-sm font-bold text-gray-900 mb-1">Start Your Permit</h3>
               <p className="text-xs text-gray-500 leading-relaxed">
-                AI-powered document review and full-service permit filing. From $325/permit.
+                powered by AI tools document review and full-service permit filing. From $325/permit.
               </p>
               <span className="inline-flex items-center gap-1 text-xs font-semibold text-green-600 mt-3">
                 Learn more <ArrowRight size={12} />

@@ -39,7 +39,7 @@ export default function DevelopmentHomePage() {
               Owner's Representation & Development Advisory for Real Estate Projects That Can't Afford Mistakes
             </h1>
             <p className="text-xl text-white/80 mb-8 leading-relaxed">
-              Kealee Development protects owner capital by managing entitlement, design, and project risk—acting as your senior development partner from feasibility through Certificate of Occupancy. Backed by AI-powered project analytics and automated risk monitoring.
+              Kealee Development protects owner capital by managing entitlement, design, and project risk—acting as your senior development partner from feasibility through Certificate of Occupancy. Backed by powered by AI tools project analytics and automated risk monitoring.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Button
@@ -94,7 +94,7 @@ export default function DevelopmentHomePage() {
               Real estate development fails most often due to poor coordination, misaligned incentives, and unmanaged risk. Kealee Development acts as the owner's representative, ensuring your project is designed, approved, built, and delivered in alignment with your budget, schedule, and exit strategy.
             </p>
             <p className="text-lg text-gray-600 leading-relaxed">
-              We operate nationwide, coordinating your project team while providing senior-level oversight without the cost of full-time staff. Our AI-powered monitoring systems track project health in real-time, while automated reporting keeps you informed every step of the way.
+              We operate nationwide, coordinating your project team while providing senior-level oversight without the cost of full-time staff. Our powered by AI tools monitoring systems track project health in real-time, while automated reporting keeps you informed every step of the way.
             </p>
           </div>
 

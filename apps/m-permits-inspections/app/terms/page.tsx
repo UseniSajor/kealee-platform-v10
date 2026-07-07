@@ -118,7 +118,7 @@ export default function TermsPage() {
               <p>
                 <strong>2.1 Platform Overview.</strong> The Kealee Permits &amp; Inspections platform provides
                 permit management and inspection coordination services, including but not limited
-                to: permit application preparation, AI-powered document review, permit submission to
+                to: permit application preparation, powered by AI tools document review, permit submission to
                 governmental jurisdictions, permit status tracking, inspection scheduling and coordination,
                 and compliance verification tools.
               </p>

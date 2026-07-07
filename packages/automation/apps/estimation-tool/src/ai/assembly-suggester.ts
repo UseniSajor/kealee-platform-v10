@@ -1,6 +1,6 @@
 /**
  * Assembly Suggester
- * AI-powered assembly recommendations
+ * powered by AI tools assembly recommendations
  */
 
 import { PrismaClient } from '@prisma/client';

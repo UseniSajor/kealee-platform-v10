@@ -192,7 +192,7 @@ export default function BasementFinishNorthernVirginiaPage() {
           How Kealee Can Help With Your Basement Project
         </h2>
         <p>
-          Kealee&apos;s AI concept packages are a fast, low-cost way to nail down your basement scope, cost band, and permit requirements before hiring a contractor. Starting at <strong>${CONCEPT_KITCHEN_PRICE}</strong>, your concept package includes:
+          Kealee&apos;s Concept Packages are a fast, low-cost way to nail down your basement scope, cost band, and permit requirements before hiring a contractor. Starting at <strong>${CONCEPT_KITCHEN_PRICE}</strong>, your concept package includes:
         </p>
         <ul style={{ paddingLeft: 24 }}>
           <li>Basement layout options with room configuration direction</li>

@@ -9,7 +9,7 @@ import {
 
 /**
  * AI Review Service
- * Provides AI-powered permit review and analysis
+ * Provides powered by AI tools permit review and analysis
  */
 export class AIReviewService {
   private openai: OpenAI | null = null;

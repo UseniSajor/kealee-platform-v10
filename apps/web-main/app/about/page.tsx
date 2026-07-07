@@ -18,7 +18,7 @@ const fadeInUp = {
 const VALUES = [
   { icon: Target, title: 'Transparency', description: 'Every dollar tracked, every milestone visible. Project owners deserve full visibility into their investment.', color: '#2ABFBF' },
   { icon: Heart, title: 'Trust', description: 'Escrow-protected payments, verified contractors, and honest communication. Trust is the foundation of great construction.', color: '#E8793A' },
-  { icon: Zap, title: 'Innovation', description: 'AI-powered tools, digital twins, and smart automation. We bring technology to an industry that needs it most.', color: '#38A169' },
+  { icon: Zap, title: 'Innovation', description: 'powered by AI tools tools, digital twins, and smart automation. We bring technology to an industry that needs it most.', color: '#38A169' },
   { icon: Building2, title: 'Quality', description: 'From vetted contractors to inspection management, we never compromise on the quality of what gets built.', color: '#1E293B' },
 ]
 

@@ -40,7 +40,7 @@ const BENEFITS = [
     emoji: '💡',
     title: 'KeaBot Permit Navigation',
     description:
-      'AI-assisted permit preparation for your jurisdiction. KeaBot tracks requirements, review status, and resubmittal windows.',
+      'assisted by AI tools permit preparation for your jurisdiction. KeaBot tracks requirements, review status, and resubmittal windows.',
   },
   {
     emoji: '💰',

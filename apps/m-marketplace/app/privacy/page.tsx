@@ -84,7 +84,7 @@ export default function PrivacyPage() {
               <li><strong>Supabase</strong> — Authentication and user account management</li>
               <li><strong>Stripe</strong> — Payment processing and billing</li>
               <li><strong>Meta (Facebook) Platform</strong> — Advertising, analytics, and social login integration</li>
-              <li><strong>Anthropic (Claude AI)</strong> — AI-powered features including estimation, document analysis, and chat assistance</li>
+              <li><strong>Anthropic (Claude AI)</strong> — powered by AI tools features including estimation, document analysis, and chat assistance</li>
               <li><strong>Resend</strong> — Transactional and marketing email delivery</li>
               <li><strong>Twilio</strong> — SMS notifications</li>
               <li><strong>Vercel</strong> — Website hosting and performance analytics</li>

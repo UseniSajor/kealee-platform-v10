@@ -4,13 +4,13 @@ import { ArrowRight } from 'lucide-react'
 
 export const metadata: Metadata = {
   title: 'All Services — Kealee Platform',
-  description: 'AI design concepts, permit filing, design services, cost estimates, contractor matching, and project management — all in one platform.',
+  description: 'design concepts, permit filing, design services, cost estimates, contractor matching, and project management — all in one platform.',
 }
 
 const SERVICES = [
   {
-    tag: 'AI Design Engine',
-    title: 'AI Concept & Design',
+    tag: 'Design Engine',
+    title: 'Concept & Design',
     description: 'Upload photos of your space. Get a concept floor plan, design brief, cost band, and permit scope in 24 hours. Staff-reviewed before delivery.',
     price: 'From $395',
     note: 'Pre-design concept only — not a permit-ready plan.',
@@ -20,7 +20,7 @@ const SERVICES = [
     imgUrl: 'https://images.unsplash.com/photo-1584622781564-1d987f7333c1?w=700&q=60&auto=format&fit=crop',
     tiers: [
       { name: 'Design + Validation', price: '$395', pop: true },
-      { name: 'Advanced AI Concept — 3 options', price: '$695' },
+      { name: 'Advanced Concept — 3 options', price: '$695' },
       { name: 'Full Design Package', price: 'from $4,499' },
     ],
   },
@@ -44,7 +44,7 @@ const SERVICES = [
   {
     tag: 'Design Services',
     title: 'Architect-Stamped Plans',
-    description: 'Licensed architects provide permit-ready construction drawings. Ideal after an AI concept, or if you need plans before permit filing.',
+    description: 'Licensed architects provide permit-ready construction drawings. Ideal after an design concept, or if you need plans before permit filing.',
     price: 'From $895',
     note: 'Required before permit filing for most projects.',
     href: '/design-services',
@@ -60,7 +60,7 @@ const SERVICES = [
   {
     tag: 'Cost Estimation',
     title: 'Project Cost Estimates',
-    description: 'AI-powered cost ranges based on real DMV project data. Certified estimates from licensed estimators for financing and bid review.',
+    description: 'powered by AI tools cost ranges based on real DMV project data. Certified estimates from licensed estimators for financing and bid review.',
     price: 'From $95',
     note: 'AI estimates are ranges — certified estimates are for financing.',
     href: '/estimate',
@@ -68,7 +68,7 @@ const SERVICES = [
     accent: '#38A169',
     imgUrl: 'https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=700&q=60&auto=format&fit=crop',
     tiers: [
-      { name: 'AI Design + Cost Estimate', price: '$395' },
+      { name: 'Design + Cost Estimate', price: '$395' },
       { name: 'Standalone Cost Estimate', price: '$95', pop: true },
       { name: 'Certified Estimate', price: '$595' },
     ],
@@ -85,7 +85,7 @@ const SERVICES = [
     imgUrl: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=700&q=60&auto=format&fit=crop',
     tiers: [
       { name: 'Browse + Get Matched', price: 'Free' },
-      { name: 'AI Concept + Contractor Match', price: '$395', pop: true },
+      { name: 'Concept + Contractor Match', price: '$395', pop: true },
       { name: 'Managed Bid Process', price: 'Included with PM' },
     ],
   },
@@ -124,8 +124,8 @@ const SERVICES = [
 ]
 
 const BUNDLES = [
-  { name: 'Design + Permit Starter', desc: 'AI concept + simple permit filing', price: '$495', href: '/products/design-permit-starter' },
-  { name: 'Concept + Estimate', desc: 'AI design + cost estimate in one package', price: '$449', href: '/products/concept-estimate' },
+  { name: 'Design + Permit Starter', desc: 'design concept + simple permit filing', price: '$495', href: '/products/design-permit-starter' },
+  { name: 'Concept + Estimate', desc: 'Design + Cost Estimate in one package', price: '$449', href: '/products/concept-estimate' },
   { name: 'Permit + PM Advisory', desc: 'Permit filing + milestone payment oversight', price: '$1,799', href: '/products/permit-pm-advisory' },
   { name: 'Full Owner Package', desc: 'Concept, permit, PM, and contractor match', price: 'From $1,995', href: '/get-started' },
 ]
@@ -143,7 +143,7 @@ export default function ServicesPage() {
             Everything your project needs.<br />One platform.
           </h1>
           <p style={{ fontSize: 18, color: '#9CA3AF', maxWidth: 560, margin: '0 auto 32px' }}>
-            AI design concepts, permit filing, cost estimates, vetted contractors, and milestone payment protection — from first idea to final inspection.
+            design concepts, permit filing, cost estimates, vetted contractors, and milestone payment protection — from first idea to final inspection.
           </p>
           <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
             <Link href="/get-started" style={{ background: '#E8793A', color: '#fff', padding: '12px 28px', borderRadius: 8, fontWeight: 700, fontSize: 15, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 8 }}>

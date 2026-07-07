@@ -139,7 +139,7 @@ export const SERVICE_PRICING = {
       name: 'Concept Package — Starter',
       amount: 29500, // cents
       amountUsd: 295,
-      description: 'AI-generated concept design with basic visualization',
+      description: 'generated using AI tools concept design with basic visualization',
     },
     visualization: {
       name: 'Concept Package — Visualization',

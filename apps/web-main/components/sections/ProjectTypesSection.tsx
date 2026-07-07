@@ -39,7 +39,7 @@ export default function ProjectTypesSection() {
           </div>
           <div className="pto" />
           <span className="ptpr">from $395</span>
-          <div className="ptb"><div className="ptpre">AI design ready</div><h3>Tiny home</h3><p>Concept · Zoning · Permits</p></div>
+          <div className="ptb"><div className="ptpre">design ready</div><h3>Tiny home</h3><p>Concept · Zoning · Permits</p></div>
         </Link>
         {/* Whole home */}
         <Link href="/products/whole-home" className="ptc">

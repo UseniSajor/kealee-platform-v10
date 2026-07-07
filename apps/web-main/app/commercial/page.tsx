@@ -8,7 +8,7 @@ import { RoleFAQ } from '@/components/roles/RoleFAQ'
 export const metadata: Metadata = {
   title: 'Commercial Projects — Kealee',
   description:
-    'Commercial construction, tenant improvements, mixed-use development, and capital projects. AI-powered scoping, feasibility, permitting, contractor matching, and project oversight.',
+    'Commercial construction, tenant improvements, mixed-use development, and capital projects. powered by AI tools scoping, feasibility, permitting, contractor matching, and project oversight.',
 }
 
 const COMMERCIAL_PROJECT_TYPES = [
@@ -23,8 +23,8 @@ const COMMERCIAL_PROJECT_TYPES = [
 const BENEFITS = [
   {
     icon: '📐',
-    title: 'AI Concept + Feasibility',
-    desc: 'AI-generated commercial concept packages with pro forma modeling, IRR analysis, and go/no-go recommendations — delivered in days.',
+    title: 'design concept + Feasibility',
+    desc: 'generated using AI tools commercial concept packages with pro forma modeling, IRR analysis, and go/no-go recommendations — delivered in days.',
   },
   {
     icon: '📋',
@@ -61,7 +61,7 @@ const WORKFLOW = [
   },
   {
     number: 2,
-    title: 'AI Concept + Feasibility Package',
+    title: 'design concept + Feasibility Package',
     desc: 'Receive a commercial concept package with design direction, space planning options, zoning brief, and a preliminary pro forma.',
   },
   {
@@ -93,7 +93,7 @@ export default function CommercialPage() {
         badge="Commercial Projects"
         headline="Commercial Construction, Simplified"
         highlight="Simplified"
-        subhead="Office, retail, industrial, mixed-use, multifamily, and IT infrastructure — AI-powered scoping, permitting, contractor matching, and full lifecycle management. Built for developers, investors, and property managers."
+        subhead="Office, retail, industrial, mixed-use, multifamily, and IT infrastructure — powered by AI tools scoping, permitting, contractor matching, and full lifecycle management. Built for developers, investors, and property managers."
         cta={{ label: 'Start a Commercial Project', href: '/intake' }}
         secondaryCta={{ label: 'Schedule a Consultation', href: '/contact' }}
         trustItems={['AI feasibility + pro forma', 'Commercial GC matching', 'Permit coordination', 'Lender draw management']}
@@ -192,7 +192,7 @@ export default function CommercialPage() {
 
       <RoleCTA
         headline="Start Your Commercial Project Today"
-        subhead="AI-powered scoping, permitting, contractor matching, and lifecycle management — all in one platform."
+        subhead="powered by AI tools scoping, permitting, contractor matching, and lifecycle management — all in one platform."
         cta={{ label: 'Start a Commercial Project', href: '/intake' }}
         secondaryCta={{ label: 'Schedule a Consultation', href: '/contact' }}
       />

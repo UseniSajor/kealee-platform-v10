@@ -105,7 +105,7 @@ export default function ContractorsLayout({
                 Kealee <span className="text-emerald-600">Permits</span>
               </div>
               <p className="text-sm text-gray-400">
-                Professional permit and inspection services for contractors, developers, and property owners. AI-powered compliance and automated tracking.
+                Professional permit and inspection services for contractors, developers, and property owners. powered by AI tools compliance and automated tracking.
               </p>
             </div>
 

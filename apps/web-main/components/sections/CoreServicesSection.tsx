@@ -13,22 +13,22 @@ export default function CoreServicesSection() {
         <p className="sub">Free tools are always available. Paid services add professional review and execution. You choose what you need.</p>
         <div className="tg">
 
-          {/* AI CONCEPT */}
+          {/* design concept */}
           <div className="sc">
             <div className="scimg">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="https://images.unsplash.com/photo-1584622781564-1d987f7333c1?w=700&q=60&auto=format&fit=crop" alt="AI Concept" />
-              <button className="scvp" onClick={() => openModal({ tag: 'AI design engine', title: 'AI Design + Validation — how it works', description: 'You upload photos of your space or lot. Our AI generates a concept floor plan, a design brief, and a room-by-room scope. A staff member checks zoning, structural risk, permit complexity, and cost band. The full report lands in your inbox within 24 hours.', thumbUrl: 'https://images.unsplash.com/photo-1584622781564-1d987f7333c1?w=900&q=60&auto=format&fit=crop', videoUrl: '/media/service-videos/home-design-video.mp4' })}>
+              <img src="https://images.unsplash.com/photo-1584622781564-1d987f7333c1?w=700&q=60&auto=format&fit=crop" alt="design concept" />
+              <button className="scvp" onClick={() => openModal({ tag: 'Design Engine', title: 'design + Validation — how it works', description: 'You upload photos of your space or lot. Our AI generates a concept floor plan, a design brief, and a room-by-room scope. A staff member checks zoning, structural risk, permit complexity, and cost band. The full report lands in your inbox within 24 hours.', thumbUrl: 'https://images.unsplash.com/photo-1584622781564-1d987f7333c1?w=900&q=60&auto=format&fit=crop', videoUrl: '/media/service-videos/home-design-video.mp4' })}>
                 <svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21" fill="white" /></svg>
               </button>
             </div>
             <div className="scb">
-              <div className="sctag">AI design engine</div>
+              <div className="sctag">Design Engine</div>
               <h3>Upload photos.<br />Get a floor plan in 24 hours.</h3>
               <div className="exec">You send photos. We send back a concept layout, zoning check, structural risk flag, cost band, and permit scope. Staff-reviewed before delivery.</div>
               <div className="tl">
                 <div className="tr pop"><span className="trn b">Design + Validation <span className="pp">Start here</span></span><span className="trp">$395</span></div>
-                <div className="tr"><span className="trn">Advanced AI Concept — 3 options</span><span className="trp">$495</span></div>
+                <div className="tr"><span className="trn">Advanced Concept — 3 options</span><span className="trp">$495</span></div>
                 <div className="tr"><span className="trn">Full Design Package</span><span className="trp">starting at $4,499</span></div>
               </div>
               <p style={{ fontSize: 12, color: '#9CA3AF', marginTop: 8 }}>Pre-design concept only — not a permit-ready plan. <Link href="/intake/professional_drawings" style={{ color: 'var(--o)' }}>Need permit-ready plans?</Link></p>

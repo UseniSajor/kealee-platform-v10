@@ -36,21 +36,21 @@ export function MarketplaceSection() {
               ))}
             </ul>
 
-            {/* AI Concept Engine callout */}
+            {/* design concept Engine callout */}
             <div
               className="mt-8 flex items-start gap-3 rounded-xl p-4"
               style={{ backgroundColor: 'rgba(232,121,58,0.06)', border: '1px solid rgba(232,121,58,0.2)' }}
             >
               <Sparkles className="mt-0.5 h-5 w-5 shrink-0" style={{ color: '#E8793A' }} />
               <div>
-                <p className="text-sm font-semibold" style={{ color: '#1E293B' }}>Start with an AI Concept Design</p>
+                <p className="text-sm font-semibold" style={{ color: '#1E293B' }}>Start with an design concept Design</p>
                 <p className="mt-0.5 text-xs text-gray-500">Get a property-specific design concept, then match to a vetted contractor — all in one platform.</p>
                 <Link
                   href="/concept-engine"
                   className="mt-2 inline-flex items-center gap-1 text-xs font-semibold hover:underline"
                   style={{ color: '#E8793A' }}
                 >
-                  Start AI Concept — From $395 <ArrowRight className="h-3 w-3" />
+                  Start design concept — From $395 <ArrowRight className="h-3 w-3" />
                 </Link>
               </div>
             </div>

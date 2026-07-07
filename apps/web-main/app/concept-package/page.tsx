@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { ArrowRight, CheckCircle, Clock, FileText, Eye, MapPin, Layers, Route, Ruler, Package, Video } from 'lucide-react'
 
 export const metadata: Metadata = {
-  title: 'AI Concept Design Package — $585 | Kealee',
+  title: 'Concept Design Package — $585 | Kealee',
   description:
     'A structured, property-specific design concept that gives you clear visual direction, layout thinking, and a defined path toward permitting and construction. Delivered by Kealee.',
 }
@@ -15,7 +15,7 @@ const DELIVERABLES = [
     title: 'Exterior + Interior Concept Visuals',
     subtitle: '3 concept options, 1 round of feedback included',
     items: [
-      'AI-generated concepts based on your specific property',
+      'generated using AI tools concepts based on your specific property',
       'Style-driven variations — modern, transitional, luxury, farmhouse, and more',
       'Facade, materials, and architectural form exploration',
       'Optional landscape concepts where applicable',
@@ -137,7 +137,7 @@ export default function ConceptPackagePage() {
             Design + Build Readiness
           </span>
           <h1 className="mt-4 text-4xl font-bold leading-tight sm:text-5xl" style={{ color: '#1A2B4A' }}>
-            AI Concept Design Package
+            Concept Design Package
           </h1>
           <p className="mt-5 text-xl font-semibold" style={{ color: '#E8793A' }}>
             $585

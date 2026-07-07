@@ -49,7 +49,7 @@ describe('scoreDCS — routing thresholds', () => {
     expect(result.skipAiConcept).toBe(false);
   });
 
-  it('routes ARCHITECT_REQUIRED and skips AI concept for DCS >= 71', () => {
+  it('routes ARCHITECT_REQUIRED and skips design concept for DCS >= 71', () => {
     const result = scoreDCS({
       structuralChanges: 'span_or_roof',   // 25
       sqft: 3000,                          // 20

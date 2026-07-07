@@ -38,10 +38,10 @@ function usdRange(min: number, max: number): string {
  * Square photos for the four home journey circle cards.
  * Rules: must show live residential/commercial construction content.
  * No tax forms, no spreadsheets, no financial paperwork.
- * Swap for /public/media/service-photos/* when AI-generated assets are uploaded.
+ * Swap for /public/media/service-photos/* when generated using AI tools assets are uploaded.
  */
 const PHOTOS = {
-  // AI Design Concepts — stunning interior/exterior design render
+  // design concepts — stunning interior/exterior design render
   design:
     'https://images.unsplash.com/photo-1618219908412-a29a1bb7b86e?w=900&q=80&auto=format&fit=crop',
   // Permit Analysis — architect reviewing blueprints at construction site
@@ -59,7 +59,7 @@ export const HOME_JOURNEY_SERVICES: HomeJourneyService[] = [
   {
     id: 'design',
     // Concept package delivery — 2–5 business days. NOT construction.
-    title: 'AI Design Concepts',
+    title: 'design concepts',
     subtitle: 'Concept package · 2–5 day delivery',
     description:
       'AI renders, floor plan, permit scope outline, and cost band. This is your planning package — not construction. Order opens your project workspace.',
@@ -71,7 +71,7 @@ export const HOME_JOURNEY_SERVICES: HomeJourneyService[] = [
     progress: 25,
     mediaType: 'video',
     photoSrc: PHOTOS.design,
-    photoAlt: 'Modern home interior AI design concept render',
+    photoAlt: 'Modern home interior design concept render',
     videoSrc: '/media/service-videos/home-design-video.mp4',
   },
   {

@@ -32,7 +32,7 @@ export const KEALEE_PRODUCTS = {
   // Design & Concepts
   conceptEngine: {
     id: 'concept-engine',
-    name: 'AI Concept Engine',
+    name: 'design concept Engine',
     description: 'Design concepts powered by AI',
     variants: ['exterior', 'interior', 'garden', 'whole-home'],
     targetPersonas: ['homeowners', 'designers', 'contractors'],
@@ -188,7 +188,7 @@ export const MARKETING_PERSONAS = {
     bottomOfFunnel: ['Command Center', 'Marketplace'],
     bestChannels: ['Email', 'Slack', 'LinkedIn'],
     messaging: {
-      hook: 'AI-powered design tools + lead generation',
+      hook: 'powered by AI tools design tools + lead generation',
       value: 'Deliver 10x more projects with automation',
       cta: 'Start free trial',
     },
@@ -288,7 +288,7 @@ export const WEEKLY_CAMPAIGN_ROTATION = {
     primary: 'conceptEngine',
     secondary: 'permitsService',
     persona: 'homeowners',
-    theme: 'Start with AI concept — then permit-ready path',
+    theme: 'Start with design concept — then permit-ready path',
   },
 
   week2: {
@@ -388,7 +388,7 @@ https://kealee.com/intake/concept
   permitsService: {
     featureSpotlight: {
       subject: '📋 Your concept is ready — plan your permit path',
-      preview: 'DMV permit scope from your AI concept',
+      preview: 'DMV permit scope from your design concept',
       body: `
 Your design concept is the first step. Next: permit planning for your jurisdiction.
 
@@ -421,7 +421,7 @@ https://kealee.com/intake/permit_path_only
       subject: '📐 Permit-ready drawings from your concept',
       preview: 'Professional drawings in 7–14 business days',
       body: `
-When your jurisdiction requires stamped drawings, Kealee delivers them from your AI concept.
+When your jurisdiction requires stamped drawings, Kealee delivers them from your design concept.
 
 ✓ Architect-ready package
 ✓ Aligned to permit scope

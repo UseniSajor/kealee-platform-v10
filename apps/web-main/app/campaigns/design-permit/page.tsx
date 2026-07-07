@@ -123,7 +123,7 @@ export default function DesignPermitCampaignPage() {
               </h1>
               
               <p className="text-slate-300 text-lg sm:text-xl max-w-xl leading-relaxed">
-                Kealee gives DMV homeowners AI design concepts, real cost direction, and permit filing support before construction starts.
+                Kealee gives DMV homeowners design concepts, real cost direction, and permit filing support before construction starts.
               </p>
 
               <div className="flex flex-wrap items-center gap-3 pt-2">
@@ -199,12 +199,12 @@ export default function DesignPermitCampaignPage() {
 
           <div className="grid md:grid-cols-2 gap-8 lg:gap-12">
             
-            {/* Card 1: AI Design Concept */}
+            {/* Card 1: design concept */}
             <div className="flex flex-col bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-md hover:shadow-xl transition duration-300">
               <div className="relative h-64">
                 <img
                   src="/media/campaigns/design-permit/images/design.jpg"
-                  alt="AI Design Concept Workspace"
+                  alt="design concept Workspace"
                   className="w-full h-full object-cover"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent" />
@@ -215,7 +215,7 @@ export default function DesignPermitCampaignPage() {
               
               <div className="p-8 flex-1 flex flex-col text-left space-y-6">
                 <div>
-                  <h3 className="font-display font-extrabold text-2xl text-slate-900 mb-2">AI Design Concept</h3>
+                  <h3 className="font-display font-extrabold text-2xl text-slate-900 mb-2">design concept</h3>
                   <p className="text-sm text-slate-500 leading-relaxed">
                     Translate your goals into visual, contractor-ready options in days. Avoid expensive redesign fees.
                   </p>

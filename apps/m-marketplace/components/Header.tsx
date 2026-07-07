@@ -39,7 +39,7 @@ const solutions = [
     items: [
       { name: 'PM Software', description: 'Project management tools', href: '/pm', icon: LayoutDashboard },
       { name: 'Ops Services', description: 'Outsourced operations team', href: '/ops', icon: Wrench },
-      { name: 'Estimation', description: 'AI-powered cost estimation', href: '/estimation', icon: Calculator },
+      { name: 'Estimation', description: 'powered by AI tools cost estimation', href: '/estimation', icon: Calculator },
     ],
   },
   {

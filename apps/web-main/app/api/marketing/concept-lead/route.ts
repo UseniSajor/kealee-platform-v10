@@ -73,7 +73,7 @@ async function sendWelcomeEmail(body: ConceptLeadBody): Promise<boolean> {
   <h2 style="color:#1A2B4A">Hi ${name}!</h2>
   <p style="color:#4A5568;line-height:1.6">
     Thanks for your interest in a <strong>${projectLabel}</strong> concept from Kealee.
-    Our AI-powered design engine generates floor plan direction, permit scope, cost estimates,
+    Our powered by AI tools design engine generates floor plan direction, permit scope, cost estimates,
     and material palette — all in one digital package.
   </p>
   <p style="color:#4A5568;line-height:1.6">

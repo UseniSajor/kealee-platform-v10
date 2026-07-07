@@ -59,7 +59,7 @@
 ✅ Coordinates design and legal professionals when required
 ✅ Senior-level oversight
 ✅ Licensed GC with 350+ projects
-✅ AI-powered monitoring and automation
+✅ powered by AI tools monitoring and automation
 
 ---
 

@@ -270,7 +270,7 @@ const PACKAGE_CONFIG: Record<string, PackageDef> = {
     label: 'Design + Estimate + Permit Bundle',
     includes: [
       'Floor plan / layout direction',
-      'AI concept renderings (3–5 views)',
+      'design concept renderings (3–5 views)',
       'Permit roadmap (disciplines, AHJ checklist, fees)',
       'Zoning and setback analysis tied to your concept massing',
       'Bill of Materials with line-item costs',
@@ -334,7 +334,7 @@ function getPackageDef(projectPath: string): PackageDef {
   return PACKAGE_CONFIG[projectPath] ?? {
     label: projectPath.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
     includes: [
-      'AI concept package',
+      'Concept Package',
       'Design brief with style direction',
       'Cost estimate',
       'Direct support via portal ask bar',
@@ -537,7 +537,7 @@ function ConceptRenderGrid({
 const PIPELINE_STEPS = [
   { icon: Layers,    label: 'Analyzing project requirements',   duration: 8  },
   { icon: Cpu,       label: 'Generating floor plan & layout',   duration: 14 },
-  { icon: ImageIcon, label: 'Creating AI concept renders',      duration: 22 },
+  { icon: ImageIcon, label: 'Creating design concept renders',      duration: 22 },
   { icon: FileText,  label: 'Building your concept package',    duration: 12 },
   { icon: CheckCircle2, label: 'Design professional review',   duration: 4  },
 ]
@@ -875,7 +875,7 @@ export default function ConceptDeliverablePage() {
         ? co.renderUrls as string[]
         : dualStubs?.renderUrls ?? getStubRenders(projectPath, tier)
 
-      // Use AI-generated video (Sora 2 / Veo 3.1 / Kling 2.5) once completed.
+      // Use generated using AI tools video (Sora 2 / Veo 3.1 / Kling 2.5) once completed.
       // While the video is being produced, videoUrl is undefined and the portal
       // shows the "In Production" banner — never the placeholder URL.
       const conceptVideo = formData.conceptVideo as
@@ -1326,7 +1326,7 @@ export default function ConceptDeliverablePage() {
                 <span className="h-2 w-2 rounded-full" style={{ backgroundColor: '#E8793A' }} />
                 <h2 className="text-base font-bold" style={{ color: '#1A2B4A' }}>Floor Plan</h2>
               </div>
-              <span className="text-xs text-gray-400 font-medium">AI-generated layout</span>
+              <span className="text-xs text-gray-400 font-medium">generated using AI tools layout</span>
             </div>
             <div className="p-6 flex items-center justify-center bg-gray-50 rounded-b-2xl">
               <div
@@ -1617,7 +1617,7 @@ export default function ConceptDeliverablePage() {
             <div className="px-6 py-4 border-b border-gray-100 flex items-center gap-2">
               <span className="h-2 w-2 rounded-full" style={{ backgroundColor: '#2ABFBF' }} />
               <h2 className="text-base font-bold" style={{ color: '#1A2B4A' }}>Design Narrative</h2>
-              <span className="ml-auto text-xs text-gray-400 font-medium">AI Design Professional</span>
+              <span className="ml-auto text-xs text-gray-400 font-medium">design Professional</span>
             </div>
             <div className="p-6 space-y-5">
               {data.narrative.projectSummary && (
@@ -2004,7 +2004,7 @@ export default function ConceptDeliverablePage() {
             </div>
             <div className="p-6 space-y-4">
               <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">
-                AI-generated requirements for your project type in {data.location || 'your jurisdiction'}
+                generated using AI tools requirements for your project type in {data.location || 'your jurisdiction'}
               </p>
               <ul className="space-y-2">
                 {data.contractorMatchResult!.recommendations.map((rec, i) => (

@@ -163,7 +163,7 @@ export default function BrandStrategyPage() {
         <div className="space-y-3">
           {[
             { step: '1', label: 'Awareness', channel: 'Meta / Google Search', detail: 'Target by DMV zip codes + intent keywords. Budget: $20–40/day per segment.', tag: 'Top of funnel' },
-            { step: '2', label: 'Lead Capture', channel: 'GHL landing page + form', detail: 'Offer: "Free 5-min scope call" or "See your AI concept example." Collect: sqft, type, location, timeline.', tag: 'Mid funnel' },
+            { step: '2', label: 'Lead Capture', channel: 'GHL landing page + form', detail: 'Offer: "Free 5-min scope call" or "See your design concept example." Collect: sqft, type, location, timeline.', tag: 'Mid funnel' },
             { step: '3', label: 'Nurture', channel: 'Email sequence (GHL)', detail: '5-email sequence over 12 days. Day 1: welcome. Day 3: case study. Day 5: pricing. Day 8: objections. Day 12: call CTA.', tag: 'Nurture' },
             { step: '4', label: 'Close', channel: 'Intake form + payment', detail: 'After call, send intake via GHL automation. Portal access email triggers post-payment.', tag: 'Conversion' },
           ].map(({ step, label, channel, detail, tag }) => (

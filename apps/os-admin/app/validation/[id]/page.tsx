@@ -79,7 +79,7 @@ export default function ValidationDetailPage() {
       .then(r => r.json())
       .then(data => {
         setRecord(data)
-        // Pre-fill form with AI-generated values if present
+        // Pre-fill form with generated using AI tools values if present
         setForm(prev => ({
           ...prev,
           structuralRisk:       data.structuralRisk ?? 'LOW',

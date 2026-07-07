@@ -16,7 +16,7 @@ export function AIFeaturesShowcase() {
     {
       icon: TrendingUp,
       title: "Intelligent Reporting",
-      description: "AI-assisted report generation pulls data from multiple sources and formats it into professional client updates automatically.",
+      description: "assisted by AI tools report generation pulls data from multiple sources and formats it into professional client updates automatically.",
     },
     {
       icon: AlertCircle,
@@ -43,7 +43,7 @@ export function AIFeaturesShowcase() {
           <span>Powered by AI & Machine Learning</span>
         </div>
         <h2 className="text-3xl font-bold text-gray-900 mb-4">
-          AI-Powered Operations Intelligence
+          powered by AI tools Operations Intelligence
         </h2>
         <p className="text-lg text-gray-600 max-w-3xl mx-auto">
           Our AI doesn't just track—it predicts, alerts, and recommends. Catch problems before they cost you money.

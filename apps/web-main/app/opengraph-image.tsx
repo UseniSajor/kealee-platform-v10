@@ -47,12 +47,12 @@ export default function Image() {
           color: '#94A3B8', fontSize: '26px', marginTop: '24px',
           maxWidth: '800px', lineHeight: '1.5',
         }}>
-          AI-powered permits, design, and construction management
+          powered by AI tools permits, design, and construction management
         </div>
 
         {/* Pills */}
         <div style={{ display: 'flex', gap: '12px', marginTop: '48px' }}>
-          {['AI Design', 'Permits', 'Construction'].map((label) => (
+          {['design', 'Permits', 'Construction'].map((label) => (
             <div key={label} style={{
               background: 'rgba(42,191,191,0.15)', border: '1px solid rgba(42,191,191,0.4)',
               borderRadius: '100px', padding: '10px 24px',

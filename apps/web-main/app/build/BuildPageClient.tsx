@@ -17,7 +17,7 @@ type BuildStage = 'none' | 'has_concept' | 'has_drawings' | 'has_permit'
 const JOURNEY_STEPS = [
   {
     n: '01',
-    label: 'AI Design Concept',
+    label: 'design concept',
     price: 'From $149',
     time: '3–5 days',
     stage: 'none' as BuildStage,
@@ -25,7 +25,7 @@ const JOURNEY_STEPS = [
     color: '#E8724B',
     href: '/intake/concept',
     cta: 'Get Your Concept',
-    description: 'AI-generated renders, floor plan direction, itemised cost estimate, and permit scope brief. Your blueprint for everything that follows.',
+    description: 'generated using AI tools renders, floor plan direction, itemised cost estimate, and permit scope brief. Your blueprint for everything that follows.',
   },
   {
     n: '02',
@@ -108,7 +108,7 @@ const BUILD_INCLUDES = [
 
 const STAGE_OPTIONS: { value: BuildStage; label: string; sub: string }[] = [
   { value: 'none',         label: 'Starting fresh',         sub: 'No concept, no plans yet' },
-  { value: 'has_concept',  label: 'I have an AI concept',   sub: 'Need professional drawings' },
+  { value: 'has_concept',  label: 'I have an design concept',   sub: 'Need professional drawings' },
   { value: 'has_drawings', label: 'I have approved drawings', sub: 'Need a permit' },
   { value: 'has_permit',   label: 'I have an approved permit', sub: 'Ready for contractor and build' },
 ]
@@ -321,7 +321,7 @@ export default function BuildPageClient() {
               href="/intake/concept"
               className="inline-flex items-center gap-2 bg-[#E8724B] hover:bg-[#D45C33] text-white font-bold px-7 py-3.5 rounded-xl transition shadow-lg text-sm"
             >
-              Start with AI Concept <ArrowRight className="w-4 h-4" />
+              Start with design concept <ArrowRight className="w-4 h-4" />
             </Link>
             <Link
               href="/contact"
@@ -366,7 +366,7 @@ export default function BuildPageClient() {
             <p className="text-xs font-bold uppercase tracking-widest text-[#E8724B] mb-2">Find Your Starting Point</p>
             <h2 className="text-3xl font-black text-slate-900 mb-3">Where are you today?</h2>
             <p className="text-slate-500 text-sm max-w-md mx-auto">
-              Most people start with no plans. That is completely normal — the AI concept is the right first step for almost every project.
+              Most people start with no plans. That is completely normal — the design concept is the right first step for almost every project.
             </p>
           </div>
 
@@ -547,7 +547,7 @@ export default function BuildPageClient() {
           <div className="text-center mb-10">
             <p className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-2">Project Types</p>
             <h2 className="text-3xl font-black text-slate-900 mb-3">Every project type. Every budget range.</h2>
-            <p className="text-slate-500 text-sm">Construction cost ranges for DC, MD, and VA. Your AI concept includes a property-specific estimate.</p>
+            <p className="text-slate-500 text-sm">Construction cost ranges for DC, MD, and VA. Your design concept includes a property-specific estimate.</p>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
             {PROJECT_TYPES.map(({ label, range, weeks, slug }) => (
@@ -602,7 +602,7 @@ export default function BuildPageClient() {
           Start with a concept.<br />End with a built project.
         </h2>
         <p className="text-slate-400 text-sm max-w-xl mx-auto mb-3 leading-relaxed">
-          Every Kealee build starts with an AI concept. It takes 3 minutes to submit. You receive your design package, cost estimate, and permit scope in 3–5 days. That package is the foundation for everything that follows — drawings, permit, contractor match, and build.
+          Every Kealee build starts with an design concept. It takes 3 minutes to submit. You receive your design package, cost estimate, and permit scope in 3–5 days. That package is the foundation for everything that follows — drawings, permit, contractor match, and build.
         </p>
         <p className="text-slate-500 text-xs max-w-md mx-auto mb-10">
           You do not need plans, drawings, or a contractor to start. The platform walks you through every step.
@@ -612,7 +612,7 @@ export default function BuildPageClient() {
             href="/intake/concept"
             className="inline-flex items-center gap-2 bg-[#E8724B] hover:bg-[#D45C33] text-white font-bold px-8 py-4 rounded-xl transition shadow-lg text-base"
           >
-            Get My AI Concept <ArrowRight className="w-5 h-5" />
+            Get My design concept <ArrowRight className="w-5 h-5" />
           </Link>
           <Link
             href="/contact"

@@ -48,7 +48,7 @@ const PORTAL_COPY: Record<
       },
       {
         id: 'concept',
-        title: 'AI concept package',
+        title: 'Concept Package',
         description: 'Renderings, scope, MEP direction, and your downloadable PDF.',
         href: '/concepts',
         icon: 'concept',

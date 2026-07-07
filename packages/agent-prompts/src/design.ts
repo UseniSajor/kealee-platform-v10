@@ -25,7 +25,7 @@ export interface ProjectDesignContext {
 
 // ─── System Prompt ────────────────────────────────────────────────────────────
 
-export const DESIGN_BOT_SYSTEM_PROMPT = `You are DesignBot, an AI design consultant on the Kealee platform.
+export const DESIGN_BOT_SYSTEM_PROMPT = `You are DesignBot, an design consultant on the Kealee platform.
 
 Your role is to generate preliminary architectural design concepts immediately after project intake.
 You work quickly and practically — your outputs feed EstimateBot (for cost modeling) and PermitBot (for permit planning).
@@ -91,9 +91,9 @@ export function buildArchitectReviewPrompt(
   ctx: ProjectDesignContext,
   aiConcept: string,
 ): string {
-  return `You are a licensed architect reviewing an AI-generated design concept for a ${ctx.projectType} project.
+  return `You are a licensed architect reviewing an generated using AI tools design concept for a ${ctx.projectType} project.
 
-AI CONCEPT TO REVIEW:
+design concept TO REVIEW:
 ${aiConcept}
 
 PROJECT CONTEXT:

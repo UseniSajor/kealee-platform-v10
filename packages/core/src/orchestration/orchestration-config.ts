@@ -39,7 +39,7 @@ export const CONFIDENCE_THRESHOLDS = {
   intent_classification: 0.75,
   /** Did we find enough context for a grounded answer? */
   retrieval_sufficiency: 0.60,
-  /** Is the AI-generated summary coherent? */
+  /** Is the generated using AI tools summary coherent? */
   internal_summary: 0.70,
   /** Service/workflow recommendation quality */
   recommendation: 0.65,

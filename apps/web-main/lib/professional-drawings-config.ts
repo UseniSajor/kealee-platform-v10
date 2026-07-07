@@ -4,7 +4,7 @@
  * Prices are all-in: architect fee + permit filing fee bundled.
  * Professionals earn industry-standard margins; the discount vs. a
  * standalone architect engagement reflects the pre-design work already
- * completed by the Kealee AI concept package.
+ * completed by the Kealee Concept Package.
  *
  * amount = 0 means "contact us" (custom-scope project).
  */

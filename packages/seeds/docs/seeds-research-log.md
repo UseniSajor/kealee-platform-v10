@@ -101,8 +101,8 @@
 
 | Tool Name | File | Status | Notes |
 |-----------|------|--------|-------|
-| check_zoning | tools/zoning/check-zoning.tool.ts | ✅ v2.0.0 | AI-powered (claude-sonnet-4-6) + stub fallback; 7 DMV jurisdictions detected |
-| run_feasibility | tools/feasibility/run-feasibility.tool.ts | ✅ v2.0.0 | AI-powered (claude-sonnet-4-6) + stub; reads prior zoning from session memory |
+| check_zoning | tools/zoning/check-zoning.tool.ts | ✅ v2.0.0 | powered by AI tools (claude-sonnet-4-6) + stub fallback; 7 DMV jurisdictions detected |
+| run_feasibility | tools/feasibility/run-feasibility.tool.ts | ✅ v2.0.0 | powered by AI tools (claude-sonnet-4-6) + stub; reads prior zoning from session memory |
 | create_checkout | tools/payments/create-checkout.tool.ts | ✅ v1.0.0 | Maps 12 product keys → Stripe price env vars; requiresApproval |
 | generate_concept_brief | tools/design/generate-concept-brief.tool.ts | ✅ v1.0.0 | 6 types: exterior, garden, interior, whole_home, developer, adu |
 | create_estimate | tools/estimate/create-estimate.tool.ts | ✅ v1.0.0 | $/sqft lookup by type; ADU $250-450/sf, reno $80-200/sf |
@@ -214,7 +214,7 @@ All prompt/policy seeds in `prompts-policies.seed.ts` are purpose-built for KeaC
 | `stripeProductKey` in service-catalog.seed.ts | High | ✅ Resolved | All `stripePriceKey` fields use actual STRIPE_PRICE_* env vars. Prices corrected to match live pages. |
 | Missing service seeds for known Stripe products | High | ✅ Resolved | 26 new seeds added 2026-03-24: design advanced/full, garden/interior/whole-home all tiers, estimate certified, permit expediting, PM advisory/oversight, listing premium, growth starter/pro/enterprise, ops A/B/C/D, dev proforma/capital/entitlements. |
 | Price corrections | High | ✅ Resolved | ai_concept_basic $149→$585, estimate_package $249→$595, permit_path_review $325→$149 (simple filing), permit_prep $500→$950, full_permit_coordination $1000→$2750. All aligned to live customer-facing pages. |
-| `get_permit_status` tool implementation | Medium | ✅ Resolved | Built at `packages/core-tools/src/tools/permits/get-permit-status.tool.ts`. Follows ToolDefinition pattern, uses jurisdiction portal lookup table, AI-powered with stub fallback, bubbles riskFlags into session memory. Registered in index.ts. |
+| `get_permit_status` tool implementation | Medium | ✅ Resolved | Built at `packages/core-tools/src/tools/permits/get-permit-status.tool.ts`. Follows ToolDefinition pattern, uses jurisdiction portal lookup table, powered by AI tools with stub fallback, bubbles riskFlags into session memory. Registered in index.ts. |
 | `assign_contractor` / `create_milestone_schedule` / `send_email` / `send_sms` tool file paths | Medium | 🔶 Open | Seeded as active — implementations not yet confirmed in core-tools. Build next. |
 | Supabase JWT role claim key format | Medium | ✅ Resolved | **No JWT role claims used.** Auth middleware calls `supabase.auth.getUser(token)` for user ID only, then fetches role from DB via `OrgMember.roleKey`. Role values: `admin`, `super_admin`, `pm`, `user`. No Supabase custom claims needed for role resolution. |
 | Role seed vs DB enum alignment | Medium | 🔶 Open | Business-domain seeds (role_homeowner etc.) are KeaCore orchestration-layer concepts. DB uses ParticipantRole/StaffRole/ApproverType enums for data modeling. API auth uses OrgMember.roleKey strings. These are separate layers — document cross-reference. |

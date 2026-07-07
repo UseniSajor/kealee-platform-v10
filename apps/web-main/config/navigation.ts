@@ -31,7 +31,7 @@ export type NavItem = NavLink | (NavDropdown & { type: 'dropdown' })
 // ── Primary navigation items ──────────────────────────────────────────────────
 
 export const PRIMARY_NAV: NavItem[] = [
-  // 1 — Start your design (AI Concept Engine)
+  // 1 — Start your design (design concept Engine)
   {
     label: 'Start your design',
     type:  'dropdown',
@@ -54,7 +54,7 @@ export const PRIMARY_NAV: NavItem[] = [
           {
             label:       'Kitchen Remodel',
             href:        '/products/kitchen-remodel',
-            description: 'AI concept, permit scope, layout options — in 24 hours',
+            description: 'design concept, permit scope, layout options — in 24 hours',
           },
           {
             label:       'Bathroom Remodel',
@@ -75,9 +75,9 @@ export const PRIMARY_NAV: NavItem[] = [
       },
     ],
     featured: {
-      label:       'AI Concept Engine — From $395',
+      label:       'design concept Engine — From $395',
       href:        '/concept-engine',
-      description: 'AI-generated design + contractor-ready PDF · 5–7 business day delivery',
+      description: 'generated using AI tools design + contractor-ready PDF · 5–7 business day delivery',
     },
   },
 
@@ -88,7 +88,7 @@ export const PRIMARY_NAV: NavItem[] = [
     href:  '/products',
     groups: [
       {
-        title: 'AI Design',
+        title: 'design',
         links: [
           { label: 'Whole Home Renovation',    href: '/products/whole-home',      description: 'Full concept, permits, contractor — From $585' },
           { label: 'Kitchen Remodel',          href: '/products/kitchen-remodel', description: 'Layouts, permit scope, cost band — From $395' },
@@ -101,7 +101,7 @@ export const PRIMARY_NAV: NavItem[] = [
       {
         title: 'Garden & Landscape',
         links: [
-          { label: 'Garden & Farming Design',  href: '/products/garden',          description: 'Raised beds, irrigation, AI concept — From $395' },
+          { label: 'Garden & Farming Design',  href: '/products/garden',          description: 'Raised beds, irrigation, design concept — From $395' },
           { label: 'Landscape Design & Install', href: '/products/landscape',     description: 'Beds, hardscape, drainage — From $395' },
         ],
       },

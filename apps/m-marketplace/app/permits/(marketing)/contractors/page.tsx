@@ -5,7 +5,7 @@ import { CheckCircle2, Zap, Shield, Clock, FileCheck, AlertCircle } from "lucide
 
 export const metadata = {
   title: "Kealee Permits - Professional Permit Services for Everyone",
-  description: "Stop chasing permits. We handle applications, inspections, and resubmittals for contractors, developers, and property owners. AI-powered compliance, 40% faster approvals.",
+  description: "Stop chasing permits. We handle applications, inspections, and resubmittals for contractors, developers, and property owners. powered by AI tools compliance, 40% faster approvals.",
   keywords: "permit services, building permits, inspection coordination, permit expediting, contractor permits, developer permits, property owner permits",
 }
 
@@ -33,7 +33,7 @@ export default function ContractorsHomePage() {
               Stop Chasing Permits. Start Building.
             </h1>
             <p className="text-xl text-white/90 mb-8 leading-relaxed">
-              Professional permit and inspection services for contractors, developers, and property owners. AI-powered compliance review, automated tracking, and expert coordination—we handle the paperwork so you can focus on your project.
+              Professional permit and inspection services for contractors, developers, and property owners. powered by AI tools compliance review, automated tracking, and expert coordination—we handle the paperwork so you can focus on your project.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link
@@ -126,7 +126,7 @@ export default function ContractorsHomePage() {
               {
                 icon: FileCheck,
                 title: "Permit Applications",
-                description: "We prep, review, and submit your permits with AI-powered compliance checking.",
+                description: "We prep, review, and submit your permits with powered by AI tools compliance checking.",
               },
               {
                 icon: Clock,

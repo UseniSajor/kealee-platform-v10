@@ -34,7 +34,7 @@ const SERVICES = [
     imageAlt: 'Beautiful room renovation with modern finishes and open concept design',
     items: [
       { name: 'Room-by-Room Design', price: '$1,200', desc: 'Detailed design for up to 5 rooms: kitchen, bathrooms, bedrooms, living spaces — with finish and fixture selections.' },
-      { name: 'Open Concept Conversion', price: '$850', desc: 'AI design for removing walls, expanding spaces, and creating open-plan living areas. Includes structural overview.' },
+      { name: 'Open Concept Conversion', price: '$850', desc: 'design for removing walls, expanding spaces, and creating open-plan living areas. Includes structural overview.' },
       { name: 'Full Interior Finish Package', price: '$2,200', desc: 'Complete interior finish selection: flooring, paint, cabinetry, countertops, lighting, hardware for every room.' },
     ],
   },
@@ -66,7 +66,7 @@ const FAQ = [
   },
   {
     q: 'Does this include construction or contractor services?',
-    a: 'No. All onsite construction is performed by your contractor of record. Kealee provides AI design, final design packages, permit filing, advisory, and contractor matching services only.',
+    a: 'No. All onsite construction is performed by your contractor of record. Kealee provides design, final design packages, permit filing, advisory, and contractor matching services only.',
   },
   {
     q: 'Can I renovate in phases?',
@@ -78,7 +78,7 @@ const FAQ = [
   },
   {
     q: 'How is this different from hiring an architect directly?',
-    a: 'Our AI concept packages help you clarify your vision and get realistic contractor bids before committing to full architectural fees. Many clients use a Kealee concept to decide whether and how to engage a licensed architect.',
+    a: 'Our Concept Packages help you clarify your vision and get realistic contractor bids before committing to full architectural fees. Many clients use a Kealee concept to decide whether and how to engage a licensed architect.',
   },
 ]
 
@@ -109,7 +109,7 @@ export default function WholeHomePage() {
                 Your entire home, completely transformed
               </h1>
               <p className="mt-6 text-lg text-gray-300">
-                Floor plan redesigns, structural changes, systems upgrades, and room-by-room renovations — AI concept
+                Floor plan redesigns, structural changes, systems upgrades, and room-by-room renovations — design concept
                 design that covers every inch of your home, start to finish.
               </p>
               <div className="mt-8 flex flex-col gap-4 sm:flex-row">
@@ -154,7 +154,7 @@ export default function WholeHomePage() {
       <div className="bg-white py-4">
         <div className="mx-auto max-w-4xl px-4 text-center">
           <p className="text-sm text-gray-500">
-            All onsite construction is performed by your contractor of record. Kealee provides AI design, advisory, and
+            All onsite construction is performed by your contractor of record. Kealee provides design, advisory, and
             contractor matching services only.
           </p>
         </div>

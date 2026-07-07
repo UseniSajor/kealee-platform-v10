@@ -89,7 +89,7 @@ export default function ConsultationGate({ email, userId, intakeId, hasPlans, ch
         <Lock className="w-4 h-4 text-slate-400 shrink-0" />
         <div className="flex-1 min-w-0">
           <p className="text-xs font-semibold text-slate-700">Consultation locked</p>
-          <p className="text-xs text-slate-500">Requires AI Concept package or approved plans</p>
+          <p className="text-xs text-slate-500">Requires Concept Package or approved plans</p>
         </div>
         <Link
           href={result?.upgradeUrl ?? '/intake/concept'}
@@ -115,7 +115,7 @@ export default function ConsultationGate({ email, userId, intakeId, hasPlans, ch
 
       <ul className="space-y-2.5 mb-6">
         {[
-          'AI Concept package purchased ($149)',
+          'Concept Package purchased ($149)',
           'Professional Drawings package purchased',
           'Permit Package purchased',
           'Approved architect drawings uploaded',
@@ -136,7 +136,7 @@ export default function ConsultationGate({ email, userId, intakeId, hasPlans, ch
           href={result?.upgradeUrl ?? '/intake/concept'}
           className="flex-1 flex items-center justify-center gap-2 bg-[#E8724B] hover:bg-[#D45C33] text-white font-bold px-5 py-3 rounded-xl text-sm transition"
         >
-          Start with AI Concept — {result?.upgradePrice ?? '$149'} <ArrowRight className="w-4 h-4" />
+          Start with design concept — {result?.upgradePrice ?? '$149'} <ArrowRight className="w-4 h-4" />
         </Link>
         <Link
           href="/contact"

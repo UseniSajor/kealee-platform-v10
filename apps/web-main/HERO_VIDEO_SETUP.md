@@ -15,7 +15,7 @@ The web-main homepage hero section now features a **dynamic video carousel** sho
 Add these to your `.env.local`:
 
 ```bash
-# Hero video URLs (AI-generated showcases)
+# Hero video URLs (generated using AI tools showcases)
 # Generated via Replicate Kling 2.5 API
 NEXT_PUBLIC_HERO_VIDEO_KITCHEN=https://...cdn-url.../kitchen-hero.mp4
 NEXT_PUBLIC_HERO_VIDEO_ADDITION=https://...cdn-url.../addition-hero.mp4

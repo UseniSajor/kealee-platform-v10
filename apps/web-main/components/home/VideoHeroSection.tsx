@@ -77,7 +77,7 @@ export function VideoHeroSection() {
       <div className="relative z-10 w-full max-w-7xl mx-auto px-6 lg:px-8 flex flex-col items-start justify-center h-full pt-20">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white text-sm font-medium mb-6">
           <span className="flex h-2 w-2 rounded-full bg-green-500 animate-pulse" />
-          Powered by Kealee AI Concept Engine
+          Powered by Kealee design concept Engine
         </div>
 
         <div className="min-h-[140px] md:min-h-[160px] flex flex-col justify-end">

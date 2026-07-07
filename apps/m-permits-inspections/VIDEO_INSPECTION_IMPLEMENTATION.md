@@ -2,7 +2,7 @@
 
 ## Overview
 
-A comprehensive remote video inspection system with WebRTC-based video conferencing, AI-powered video analysis, guided inspection workflows, and automated report generation.
+A comprehensive remote video inspection system with WebRTC-based video conferencing, powered by AI tools video analysis, guided inspection workflows, and automated report generation.
 
 ## ✅ Completed Features
 
@@ -26,7 +26,7 @@ A comprehensive remote video inspection system with WebRTC-based video conferenc
 - ✅ **Automatic frame capture** - Screenshots at key moments with timestamps
 
 ### 4. Post-Inspection Processing
-- ✅ **AI-generated inspection report** - Automated report generation from video analysis
+- ✅ **generated using AI tools inspection report** - Automated report generation from video analysis
 - ✅ **Timestamped video evidence** - Evidence catalog with video references
 - ✅ **Deficiency catalog** - Organized deficiency list with severity and video timestamps
 - ✅ **Quality assurance review interface** - Review and approval workflow
@@ -199,7 +199,7 @@ All types defined in `src/types/video-inspection.ts`:
    - Report generated automatically
 
 5. **Post-Inspection**
-   - Review AI-generated report
+   - Review generated using AI tools report
    - Confirm or edit deficiencies
    - Approve or request revisions
    - Export report and video evidence

@@ -71,10 +71,10 @@ export default function GCServicesPage() {
     },
     {
       icon: AlertCircle,
-      title: "AI-Powered Risk Monitoring",
+      title: "powered by AI tools Risk Monitoring",
       description: "Machine learning algorithms analyze your project data to catch schedule risks, permit delays, and delivery issues before they become expensive problems.",
       details: [
-        "AI-powered schedule delay prediction",
+        "powered by AI tools schedule delay prediction",
         "Automated permit expiration warnings",
         "Smart delivery tracking with anomaly detection",
         "Inspection failure pattern analysis",

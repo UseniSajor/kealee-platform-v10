@@ -1,6 +1,6 @@
 /**
  * Cost Predictor
- * AI-powered cost prediction and forecasting
+ * powered by AI tools cost prediction and forecasting
  */
 
 import { PrismaClient } from '@prisma/client';

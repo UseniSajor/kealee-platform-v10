@@ -137,7 +137,7 @@ The changes are now live on your dev server:
 2. **Nationwide Coverage** - Coordinate teams across all locations
 3. **Comprehensive Services** - Advisory + licensed professional coordination
 4. **Independent Advocacy** - Conflict-free owner representation
-5. **Technology-Enabled** - AI-powered risk monitoring and automation
+5. **Technology-Enabled** - powered by AI tools risk monitoring and automation
 
 ---
 

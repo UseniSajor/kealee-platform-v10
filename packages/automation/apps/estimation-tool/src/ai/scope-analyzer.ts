@@ -1,6 +1,6 @@
 /**
  * Scope Analyzer
- * AI-powered scope analysis and validation
+ * powered by AI tools scope analysis and validation
  */
 
 import { PrismaClient } from '@prisma/client';

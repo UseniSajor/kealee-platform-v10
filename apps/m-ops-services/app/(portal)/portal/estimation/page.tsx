@@ -102,7 +102,7 @@ export default function EstimationListPage() {
         <div>
           <h1 className="text-2xl font-black tracking-tight">Estimation</h1>
           <p className="mt-2 text-sm text-zinc-700">
-            Create and manage cost estimates with AI-powered tools.
+            Create and manage cost estimates with powered by AI tools tools.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">

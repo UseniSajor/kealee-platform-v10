@@ -4,7 +4,7 @@ import { ArrowRight, Home, Leaf, Layers, PaintBucket, Building2, Users, CheckCir
 
 export const metadata: Metadata = {
   title: 'Get Started — Kealee',
-  description: 'Start your AI concept design or join as a contractor. Choose your path and get started in minutes.',
+  description: 'Start your design concept design or join as a contractor. Choose your path and get started in minutes.',
 }
 
 const CONCEPT_PATHS = [
@@ -92,11 +92,11 @@ export default function GetStartedPage() {
           </p>
         </div>
 
-        {/* Section 1: AI Concept Packages */}
+        {/* Section 1: Concept Packages */}
         <div className="mb-14">
           <div className="mb-6 flex items-center gap-3">
             <div className="h-px flex-1 bg-gray-200" />
-            <span className="text-sm font-bold uppercase tracking-widest text-gray-400">AI Concept Design</span>
+            <span className="text-sm font-bold uppercase tracking-widest text-gray-400">design concept Design</span>
             <div className="h-px flex-1 bg-gray-200" />
           </div>
 

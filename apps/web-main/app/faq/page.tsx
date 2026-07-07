@@ -6,32 +6,32 @@ import { JsonLd } from '@/components/seo/JsonLd'
 import { buildFaqPageJsonLd } from '@/lib/seo/site-json-ld'
 
 export const metadata: Metadata = {
-  title: 'FAQ — Permits, AI Concepts, Estimates & Contractors',
+  title: 'FAQ — Permits, design concepts, Estimates & Contractors',
   description:
-    'Answers about Kealee AI design concepts, DC/MD/VA permits, cost estimates, contractor marketplace, and milestone payments.',
+    'Answers about Kealee design concepts, DC/MD/VA permits, cost estimates, contractor marketplace, and milestone payments.',
   alternates: { canonical: '/faq' },
 }
 
 const SECTIONS = [
   {
-    title: 'AI Concept Engine',
+    title: 'design concept Engine',
     color: '#E8793A',
     questions: [
       {
-        q: 'What is the AI Concept Engine?',
-        a: 'The Kealee AI Concept Engine delivers property-specific design concepts for your renovation, addition, garden, or development project. Submit your address and goals — we analyze your specific property and deliver 3 design concept options in 5–7 business days, along with a 30-minute consultation call.',
+        q: 'What is the design concept Engine?',
+        a: 'The Kealee design concept Engine delivers property-specific design concepts for your renovation, addition, garden, or development project. Submit your address and goals — we analyze your specific property and deliver 3 design concept options in 5–7 business days, along with a 30-minute consultation call.',
       },
       {
-        q: 'What is the difference between an AI concept and architectural services?',
-        a: 'An AI concept is a pre-design visualization service. It shows you what your project could look like — renderings, layout direction, material palettes, and a rough cost range — before you commit to anything. Architectural services produce permit-ready, stamped drawings that contractors can legally build from. The AI concept is a planning and visualization tool; architectural drawings are required to pull a permit and begin construction.',
+        q: 'What is the difference between an design concept and architectural services?',
+        a: 'An design concept is a pre-design visualization service. It shows you what your project could look like — renderings, layout direction, material palettes, and a rough cost range — before you commit to anything. Architectural services produce permit-ready, stamped drawings that contractors can legally build from. The design concept is a planning and visualization tool; architectural drawings are required to pull a permit and begin construction.',
       },
       {
-        q: 'Can an AI concept package get me a permit?',
-        a: 'No. AI concept packages are pre-design services only. They are not permit-ready plans. Most jurisdictions require architect-stamped or engineer-stamped drawings to obtain a building permit. If you need permit-ready plans, see our Design Services page.',
+        q: 'Can an Concept Package get me a permit?',
+        a: 'No. Concept Packages are pre-design services only. They are not permit-ready plans. Most jurisdictions require architect-stamped or engineer-stamped drawings to obtain a building permit. If you need permit-ready plans, see our Design Services page.',
       },
       {
         q: 'When do I need permit-ready plans?',
-        a: 'You need permit-ready plans whenever you plan to pull a building permit — which is required for structural changes, additions, ADUs, new construction, and most work that affects the building envelope or mechanical systems. AI concepts help you decide what you want before investing in full architectural drawings.',
+        a: 'You need permit-ready plans whenever you plan to pull a building permit — which is required for structural changes, additions, ADUs, new construction, and most work that affects the building envelope or mechanical systems. design concepts help you decide what you want before investing in full architectural drawings.',
       },
       {
         q: 'Can I use existing plans for permit services?',
@@ -39,14 +39,14 @@ const SECTIONS = [
       },
       {
         q: 'What if I don\'t have plans yet?',
-        a: 'Start with an AI concept package to clarify your vision, then move to our Design Services for permit-ready architectural drawings. Our team can coordinate the full sequence — concept → design → permit — so nothing falls through the cracks.',
+        a: 'Start with an Concept Package to clarify your vision, then move to our Design Services for permit-ready architectural drawings. Our team can coordinate the full sequence — concept → design → permit — so nothing falls through the cracks.',
       },
       {
-        q: 'What happens after the AI concept?',
+        q: 'What happens after the design concept?',
         a: 'After receiving your concept package, you have several options: (1) use it to get contractor bids for non-permit work; (2) move to Design Services for permit-ready plans; (3) use it to match with a contractor through our Marketplace. Your consultation call covers next steps for your specific project.',
       },
       {
-        q: 'How much does an AI concept package cost?',
+        q: 'How much does an Concept Package cost?',
         a: 'Exterior, garden, and interior reno concept packages start at $395. Whole home and developer concept packages start at $585. Advanced tiers with more revision rounds and detailed drawings are also available.',
       },
       {
@@ -59,11 +59,11 @@ const SECTIONS = [
       },
       {
         q: 'How many revision rounds are included?',
-        a: 'The base AI Concept Package includes 1 feedback round with 3 concept options. Advanced packages include up to 3 rounds, and full design packages include up to 5 rounds.',
+        a: 'The base Concept Package includes 1 feedback round with 3 concept options. Advanced packages include up to 3 rounds, and full design packages include up to 5 rounds.',
       },
       {
         q: 'Is the concept package done by AI or a human designer?',
-        a: 'Concepts are generated using our AI design system trained on thousands of residential and commercial projects, then reviewed by our design team before delivery. You work with a real person on consultation and feedback rounds.',
+        a: 'Concepts are generated using our design system trained on thousands of residential and commercial projects, then reviewed by our design team before delivery. You work with a real person on consultation and feedback rounds.',
       },
     ],
   },
@@ -139,11 +139,11 @@ const SECTIONS = [
     questions: [
       {
         q: 'Is Kealee available nationwide?',
-        a: 'AI Concept Engine services are available nationwide. The contractor marketplace is currently focused on the DC–Baltimore Corridor and expanding to additional markets. Contact us to check availability in your area.',
+        a: 'design concept Engine services are available nationwide. The contractor marketplace is currently focused on the DC–Baltimore Corridor and expanding to additional markets. Contact us to check availability in your area.',
       },
       {
         q: 'Where can I see full pricing?',
-        a: 'Visit /pricing for a full breakdown of AI concept packages, marketplace fees, and portal subscription tiers.',
+        a: 'Visit /pricing for a full breakdown of Concept Packages, marketplace fees, and portal subscription tiers.',
       },
       {
         q: 'How do I contact Kealee support?',

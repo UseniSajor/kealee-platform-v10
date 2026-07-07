@@ -61,7 +61,7 @@ export function Services() {
     {
       icon: <FileCheck size={40} />,
       title: 'Permits & Inspections',
-      description: 'AI-powered permit review and fast-track approval',
+      description: 'powered by AI tools permit review and fast-track approval',
       pricing: 'From $50/permit',
       features: [
         'AI review in 5 minutes',

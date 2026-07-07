@@ -67,7 +67,7 @@ const conceptCampaign: GoogleAdsCampaign = {
         'Kealee Design Engine',
       ],
       descriptions: [
-        `AI-powered kitchen concept with floor plans, permit scope, and cost estimate. From $${CONCEPT_KITCHEN_PRICE}.`,
+        `powered by AI tools kitchen concept with floor plans, permit scope, and cost estimate. From $${CONCEPT_KITCHEN_PRICE}.`,
         `Get 3+ kitchen layout options, permit scope, and a cost band — delivered digitally in 24–48 hours. No subscription.`,
       ],
       finalUrl:    'https://kealee.com/marketplace/kitchen-remodel',
@@ -87,13 +87,13 @@ const conceptCampaign: GoogleAdsCampaign = {
       headlines: [
         'Home Addition Concept Design',
         `Starting at $${CONCEPT_WHOLE_HOME_PRICE}`,
-        'AI Design + Permit Scope',
+        'design + Permit Scope',
         'DMV Design Experts',
         'Kealee Concept Packages',
       ],
       descriptions: [
         `Get your home addition or whole-home renovation concept in days. AI floor plans, permit scope, cost estimate. From $${CONCEPT_WHOLE_HOME_PRICE}.`,
-        'Kealee generates AI concept designs with permit scope and cost band — before you hire a contractor. Serving DC, MD, VA.',
+        'Kealee generates design concept designs with permit scope and cost band — before you hire a contractor. Serving DC, MD, VA.',
       ],
       finalUrl:    'https://kealee.com/marketplace/whole-home',
       cpcBidCents: 400,
@@ -168,13 +168,13 @@ const brandCampaign: GoogleAdsCampaign = {
       keywords:  ['kealee', 'kealee design', 'kealee permits', 'kealee.com', 'kealee construction'],
       negatives: [],
       headlines: [
-        'Kealee — AI Design Platform',
+        'Kealee — design Platform',
         'Concept · Permits · Contractors',
         'Start Your Project Today',
       ],
       descriptions: [
-        'AI concept designs, permit filing, and contractor matching — all in one platform. Serving DC, MD, VA.',
-        'Get your construction project started with AI-powered design concepts. Permit scope and cost estimate included.',
+        'design concept designs, permit filing, and contractor matching — all in one platform. Serving DC, MD, VA.',
+        'Get your construction project started with powered by AI tools design concepts. Permit scope and cost estimate included.',
       ],
       finalUrl:    'https://kealee.com',
       cpcBidCents: 150,

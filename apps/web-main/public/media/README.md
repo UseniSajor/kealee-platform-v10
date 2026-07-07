@@ -43,8 +43,8 @@ Pipeline:
 
 | Path | Use |
 |------|-----|
-| `service-photos/home-design.jpg` | AI Design card photo |
-| `service-videos/home-design-video.mp4` | AI Design card video |
+| `service-photos/home-design.jpg` | design card photo |
+| `service-videos/home-design-video.mp4` | design card video |
 | `service-videos/design-concepts.mp4` | Legacy alias (optional) |
 
 Homepage merges manifest in `app/page.tsx` via `mergeHomeServicesWithManifest()`.

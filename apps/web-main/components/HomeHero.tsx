@@ -22,7 +22,7 @@ export default function HomeHero() {
       src: process.env.NEXT_PUBLIC_HERO_VIDEO_KITCHEN || '',
       poster: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=1400&q=60&auto=format&fit=crop',
       label: 'Kitchen Remodel',
-      description: 'AI-designed kitchen concepts with professional renderings',
+      description: 'designed using AI tools kitchen concepts with professional renderings',
     },
     {
       src: process.env.NEXT_PUBLIC_HERO_VIDEO_ADDITION || '',
@@ -90,7 +90,7 @@ export default function HomeHero() {
       {/* Content */}
       <div className="relative z-10 mx-auto max-w-5xl px-4 sm:px-8 py-32 text-center">
         <p className="text-xs sm:text-sm font-bold uppercase tracking-[0.2em] text-orange-400 mb-6">
-          AI-Powered Construction Design
+          powered by AI tools Construction Design
         </p>
 
         <h1 className="text-4xl sm:text-5xl lg:text-7xl font-bold text-white leading-[1.08] tracking-tight">
@@ -108,7 +108,7 @@ export default function HomeHero() {
           {[
             { value: '3–5 days', label: 'Concept delivery' },
             { value: '$99+', label: 'Starting price' },
-            { value: 'AI-Powered', label: 'Design Engine' },
+            { value: 'powered by AI tools', label: 'Design Engine' },
           ].map(stat => (
             <div key={stat.label} className="text-center">
               <p className="text-2xl font-extrabold text-white">{stat.value}</p>

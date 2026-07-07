@@ -62,7 +62,7 @@ export default function GardenConceptEnginePage() {
 
       {/* Pre-design disclaimer banner */}
       <div className="bg-green-50 border-b border-green-100 py-2.5 px-4 text-center text-sm text-green-800">
-        AI concept is a pre-design service — not a permit-ready plan.{' '}
+        design concept is a pre-design service — not a permit-ready plan.{' '}
         <Link href="/design-services" className="font-semibold underline hover:text-green-900">
           Need permit-ready plans? See Design Services →
         </Link>
@@ -101,7 +101,7 @@ export default function GardenConceptEnginePage() {
                 </Link>
               </div>
               <p className="mt-4 text-xs text-gray-400">
-                All onsite installation and build work is performed by your contractor of record. Kealee provides AI design, final design packages, permit filing, advisory, and contractor matching services only.
+                All onsite installation and build work is performed by your contractor of record. Kealee provides design, final design packages, permit filing, advisory, and contractor matching services only.
               </p>
             </div>
             <div className="lg:w-72 shrink-0">
@@ -154,7 +154,7 @@ export default function GardenConceptEnginePage() {
                 rounds: 'Up to 3 feedback rounds',
                 turnaround: '10–14 business days',
                 desc: 'Detailed garden design with plant lists, irrigation specs, and 3D garden views.',
-                items: ['Everything in AI Concept', 'Detailed plant + variety list', 'Drip irrigation specs', '3D garden views', '60-min consultation'],
+                items: ['Everything in design concept', 'Detailed plant + variety list', 'Drip irrigation specs', '3D garden views', '60-min consultation'],
                 cta: 'Start Advanced Design',
                 href: '/intake/garden_concept',
                 popular: true,

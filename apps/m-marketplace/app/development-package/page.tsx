@@ -125,7 +125,7 @@ export default function DevelopmentPackageLandingPage() {
           <div className="max-w-4xl mx-auto">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold mb-6 bg-white/10 text-white/90">
               <Zap className="w-4 h-4" />
-              AI-Powered &middot; 8 Analyses in One Click
+              powered by AI tools &middot; 8 Analyses in One Click
             </div>
 
             <h1

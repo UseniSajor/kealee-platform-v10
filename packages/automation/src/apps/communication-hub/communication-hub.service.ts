@@ -1,6 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import {
-  sendEmail,
+  sendInternalSystemEmail,
   sendSMS,
   sendWhatsApp,
   createInAppNotification,
@@ -104,15 +104,12 @@ export class CommunicationHubService {
         switch (channel) {
           case 'email': {
             if (!user.email) break;
-            const emailResult = await sendEmail({
+            const emailResult = await sendInternalSystemEmail({
               to: user.email,
               subject: opts.title,
               html: opts.htmlBody || wrapInEmailLayout(opts.body),
-              tags: [
-                { name: 'type', value: opts.type },
-                ...(opts.projectId ? [{ name: 'projectId', value: opts.projectId }] : []),
-              ],
-            });
+              route: opts.type,
+            }, true);
             // Also create Message record for unified tracking
             const emailMsg = await prisma.message.create({
               data: {

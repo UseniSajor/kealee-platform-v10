@@ -1,6 +1,6 @@
 /**
  * Comparison Analyzer
- * AI-powered estimate comparison and benchmarking
+ * powered by AI tools estimate comparison and benchmarking
  */
 
 import { PrismaClient } from '@prisma/client';

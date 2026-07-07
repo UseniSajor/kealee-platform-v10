@@ -155,7 +155,7 @@ export default function NewEstimatePage() {
             </li>
             <li className="flex gap-2">
               <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--primary)]" />
-              Upload plans for AI-powered takeoff
+              Upload plans for powered by AI tools takeoff
             </li>
           </ul>
         </div>

@@ -1,6 +1,6 @@
 # @kealee/shared-ai
 
-Shared AI services for the Kealee Platform, providing AI-powered permit review, document analysis, and code compliance checking.
+Shared AI services for the Kealee Platform, providing powered by AI tools permit review, document analysis, and code compliance checking.
 
 ## Features
 

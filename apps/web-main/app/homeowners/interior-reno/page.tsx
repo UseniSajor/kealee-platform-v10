@@ -43,7 +43,7 @@ const SERVICES = [
     image: 'https://images.unsplash.com/photo-1631679706909-1972befa7633?w=600&q=80&auto=format&fit=crop',
     imageAlt: 'Complete interior renovation with open concept design and modern finishes throughout',
     items: [
-      { name: 'Multi-Room Interior Concept', price: '$1,100', desc: 'AI concept for up to 4 rooms: flooring, paint, trim, lighting, and finish coordination across the full interior.' },
+      { name: 'Multi-Room Interior Concept', price: '$1,100', desc: 'design concept for up to 4 rooms: flooring, paint, trim, lighting, and finish coordination across the full interior.' },
       { name: 'Full Interior Design Package', price: '$2,800', desc: 'Comprehensive interior design with specification sheets, contractor bid package, and procurement coordination.' },
       { name: 'Full Interior Renovation Build', price: 'From $40,000', desc: 'Complete interior renovation coordination: flooring, paint, trim, lighting, cabinetry, and finish installation.' },
     ],
@@ -51,7 +51,7 @@ const SERVICES = [
 ]
 
 const BENEFITS = [
-  { icon: Layers, title: 'Room-by-Room AI Design', desc: 'Every space designed cohesively — finishes, fixtures, and layouts that work together across the whole interior.' },
+  { icon: Layers, title: 'Room-by-Room design', desc: 'Every space designed cohesively — finishes, fixtures, and layouts that work together across the whole interior.' },
   { icon: Zap, title: 'Fast Concept Turnaround', desc: 'Kitchen and bathroom concepts delivered in 5–7 business days with revision rounds included in every package.' },
   { icon: Shield, title: 'Permit-Ready Drawings', desc: 'Addition and ADU packages include permit-ready drawings and structural coordination for faster permitting.' },
   { icon: CheckCircle, title: 'Finish Specification Packages', desc: 'Every concept includes a finish selection guide with countertop, tile, flooring, fixture, and cabinetry options.' },
@@ -66,7 +66,7 @@ const FAQ = [
   },
   {
     q: 'Does this include construction or installation?',
-    a: 'No. All onsite construction is performed by your contractor of record. Kealee provides AI design, final design packages, permit filing, advisory, and contractor matching services only.',
+    a: 'No. All onsite construction is performed by your contractor of record. Kealee provides design, final design packages, permit filing, advisory, and contractor matching services only.',
   },
   {
     q: 'Can you design a home addition or ADU?',
@@ -158,7 +158,7 @@ export default function InteriorRenoPage() {
       <div className="bg-white py-4">
         <div className="mx-auto max-w-4xl px-4 text-center">
           <p className="text-sm text-gray-500">
-            All onsite construction is performed by your contractor of record. Kealee provides AI design, advisory, and
+            All onsite construction is performed by your contractor of record. Kealee provides design, advisory, and
             contractor matching services only.
           </p>
         </div>

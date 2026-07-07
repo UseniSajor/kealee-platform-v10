@@ -20,7 +20,7 @@ export const SERVICE_AREAS: ServiceArea[] = [
     region: 'Prince George\'s County, MD',
     headline: 'Construction & Permits in Oxon Hill, MD — Kealee HQ',
     description:
-      'Kealee is headquartered in Oxon Hill. AI design concepts, permit filing, estimates, and contractor matching for PG County homeowners — minutes from National Harbor and the Beltway.',
+      'Kealee is headquartered in Oxon Hill. design concepts, permit filing, estimates, and contractor matching for PG County homeowners — minutes from National Harbor and the Beltway.',
     keywords: ['Oxon Hill contractor', 'construction Oxon Hill MD', 'Prince George\'s County permit', 'home renovation Oxon Hill'],
     highlights: [
       'Local HQ — same-day consults for PG County projects',
@@ -29,7 +29,7 @@ export const SERVICE_AREAS: ServiceArea[] = [
     ],
     permitAgency: 'Prince George\'s County DPS',
     typicalTimeline: '4–10 weeks plan review',
-    primaryCta: { label: 'Start AI concept', href: '/concept' },
+    primaryCta: { label: 'Start design concept', href: '/concept' },
   },
   {
     slug: 'silver-spring-md',
@@ -37,7 +37,7 @@ export const SERVICE_AREAS: ServiceArea[] = [
     region: 'Montgomery County, MD',
     headline: 'Home Renovation & Permits in Silver Spring, MD',
     description:
-      'Montgomery County permit prep, AI concepts, and vetted contractors for Silver Spring renovations, additions, and interior remodels.',
+      'Montgomery County permit prep, design concepts, and vetted contractors for Silver Spring renovations, additions, and interior remodels.',
     keywords: ['Silver Spring contractor', 'Montgomery County permit', 'kitchen remodel Silver Spring'],
     highlights: ['Montgomery DPS ePlans workflow', 'HOA coordination experience', 'Whole-home and addition concepts'],
     permitAgency: 'Montgomery County DPS',
@@ -48,9 +48,9 @@ export const SERVICE_AREAS: ServiceArea[] = [
     slug: 'washington-dc',
     name: 'Washington DC',
     region: 'District of Columbia',
-    headline: 'DC Building Permits & AI Design — Washington DC',
+    headline: 'DC Building Permits & design — Washington DC',
     description:
-      'DLCP permit filing, historic district awareness, and AI concept packages for DC row homes, condos, and additions.',
+      'DLCP permit filing, historic district awareness, and Concept Packages for DC row homes, condos, and additions.',
     keywords: ['DC building permit', 'contractor Washington DC', 'kitchen remodel DC', 'DLCP permit'],
     highlights: ['DLCP / permits.dc.gov submissions', 'Row home and condo expertise', 'HPRB coordination when required'],
     permitAgency: 'DC DLCP (Dept. of Licensing and Consumer Protection)',
@@ -89,7 +89,7 @@ export const SERVICE_AREAS: ServiceArea[] = [
     region: 'Virginia',
     headline: 'Alexandria VA Construction & Permit Filing',
     description:
-      'Old Town and suburban Alexandria renovations — permit prep, AI concepts, and milestone-based payments.',
+      'Old Town and suburban Alexandria renovations — permit prep, design concepts, and milestone-based payments.',
     keywords: ['Alexandria VA permit', 'contractor Alexandria', 'home renovation Alexandria'],
     highlights: ['City of Alexandria P&Z', 'Row house and townhouse scope', 'Waterfront district constraints'],
     permitAgency: 'City of Alexandria Planning & Zoning',
@@ -102,7 +102,7 @@ export const SERVICE_AREAS: ServiceArea[] = [
     region: 'Montgomery County, MD',
     headline: 'Bethesda MD Home Projects — Design, Permits, Build',
     description:
-      'High-end renovation and addition support in Bethesda — AI concepts, Montgomery permits, and escrow milestone pay.',
+      'High-end renovation and addition support in Bethesda — design concepts, Montgomery permits, and escrow milestone pay.',
     keywords: ['Bethesda contractor', 'Montgomery County renovation', 'kitchen remodel Bethesda'],
     highlights: ['Montgomery County DPS', 'Addition and whole-home concepts', 'Contractor vetting'],
     permitAgency: 'Montgomery County DPS',

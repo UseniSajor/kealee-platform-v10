@@ -12,11 +12,11 @@
 
 ## 🎯 EXECUTIVE SUMMARY
 
-The m-estimation app is a **professional construction cost estimation platform** that transforms the backend estimation tool into a fully-featured, user-friendly interface for creating accurate, AI-powered estimates in minutes instead of hours.
+The m-estimation app is a **professional construction cost estimation platform** that transforms the backend estimation tool into a fully-featured, user-friendly interface for creating accurate, powered by AI tools estimates in minutes instead of hours.
 
 ### Key Value Propositions
 1. **15-20 hour time savings** per estimate (vs. manual Excel)
-2. **AI-powered** scope analysis and cost prediction
+2. **powered by AI tools** scope analysis and cost prediction
 3. **Pre-built assemblies** for common construction elements
 4. **Seamless integration** with bid requests and project budgets
 5. **Professional output** (PDF proposals, Excel breakdowns)

@@ -258,7 +258,7 @@ Return JSON with primaryRecommendation (serviceCode, name, rationale, price), se
   return {
     primaryRecommendation: obj.primaryRecommendation ?? {
       serviceCode: analysisResult.primaryService ?? "ai_concept_basic",
-      name: "AI Concept Package",
+      name: "Concept Package",
       rationale: "Based on your project description",
       price: "$585",
     },

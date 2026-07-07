@@ -753,7 +753,7 @@ export default function ConceptDeliverablePage() {
           <section className="bg-white rounded-2xl border border-slate-200/60 p-6 md:p-8 shadow-sm">
             <h2 className="text-2xl font-bold text-slate-900 mb-2">Before &amp; After</h2>
             <p className="text-slate-500 mb-6">
-              Your uploaded photos alongside the AI-generated design vision.
+              Your uploaded photos alongside the generated using AI tools design vision.
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               {concept.beforeUrls.map((beforeUrl, i) => (
@@ -820,7 +820,7 @@ export default function ConceptDeliverablePage() {
             <p className="text-slate-500 mb-6">
               {concept.tier === 3
                 ? 'Four format cuts: full reveal, 30s mobile, 15s social, 10s preview'
-                : 'AI-generated 60-second before/after transformation'}
+                : 'generated using AI tools 60-second before/after transformation'}
             </p>
             {displayVideoUrl && !displayVideoUrl.includes('ForBiggerBlazes') ? (
               <VideoPlayer

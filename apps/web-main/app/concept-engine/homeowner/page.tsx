@@ -75,7 +75,7 @@ export default function HomeownerConceptEnginePage() {
                 See your project as a real concept — before you spend a dollar on design.
               </h1>
               <p className="mt-5 text-lg text-gray-300">
-                Property-specific. AI-powered. 3 concept options with 1 round of feedback included. Delivered in 2–5 business days.
+                Property-specific. powered by AI tools. 3 concept options with 1 round of feedback included. Delivered in 2–5 business days.
               </p>
               <div className="mt-8 flex flex-wrap gap-4">
                 <Link
@@ -171,8 +171,8 @@ export default function HomeownerConceptEnginePage() {
           <h2 className="mb-6 text-xl font-bold text-center" style={{ color: '#1A2B4A' }}>Revision rounds by package tier</h2>
           <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
             {[
-              { tier: 'AI Concept Package', price: '$585', revisions: '1 round (3 options)', note: 'Additional rounds available as add-on' },
-              { tier: 'Advanced AI Concept', price: '$899', revisions: 'Up to 3 rounds', note: '3 floor plan options + 3D views + material suggestions', highlight: true },
+              { tier: 'Concept Package', price: '$585', revisions: '1 round (3 options)', note: 'Additional rounds available as add-on' },
+              { tier: 'Advanced Concept', price: '$899', revisions: 'Up to 3 rounds', note: '3 floor plan options + 3D views + material suggestions', highlight: true },
               { tier: 'Full Design Package', price: '$4,499', revisions: 'Up to 5 rounds', note: 'Permit-ready drawing set. Premium credit applies at this tier.' },
             ].map((row, i) => (
               <div

@@ -17,7 +17,7 @@ import { KealeeAgentSystem } from "./kealee-integration-example";
 // ============================================================================
 
 /**
- * When customer purchases "AI Concept" ($599) via Stripe,
+ * When customer purchases "design concept" ($599) via Stripe,
  * trigger DesignBot execution immediately.
  *
  * Webhook flow:
@@ -38,7 +38,7 @@ export async function handleStripeChargeSucceeded(
   const productId = charge.metadata?.product_id;
   if (!productId) return; // Not a KeaBot product
 
-  // Check if this is an "AI Concept" product
+  // Check if this is an "design concept" product
   const isAIConcept = productId === process.env.AI_CONCEPT_PRODUCT_ID;
   if (!isAIConcept) return;
 

@@ -1,7 +1,7 @@
 import { ImageResponse } from 'next/og'
 
 export const runtime = 'edge'
-export const alt = 'AI Design Concepts in Days — Kealee'
+export const alt = 'design concepts in Days — Kealee'
 export const size = { width: 1200, height: 630 }
 export const contentType = 'image/png'
 
@@ -27,7 +27,7 @@ export default function Image() {
           borderRadius: '100px', padding: '8px 20px',
           color: '#E8793A', fontSize: '18px', fontWeight: '600', marginBottom: '28px',
         }}>
-          AI Concept Engine
+          design concept Engine
         </div>
 
         {/* Headline */}

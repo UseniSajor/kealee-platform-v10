@@ -26,7 +26,7 @@ export default function PermitServicesPage() {
     },
     {
       icon: Zap,
-      title: "AI-Powered Compliance Pre-Review",
+      title: "powered by AI tools Compliance Pre-Review",
       description: "Advanced machine learning trained on thousands of permits analyzes your application to catch common issues and code violations before submission—reducing rejections by 60%.",
       details: [
         "AI code compliance checking (trained on 50,000+ permits)",

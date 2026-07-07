@@ -22,7 +22,7 @@ export default function PreDesignEntryPage() {
             What are you designing?
           </h1>
           <p className="mt-4 text-lg text-gray-500 max-w-xl mx-auto">
-            Property-specific AI concept packages. Delivered in 2–5 business days.
+            Property-specific Concept Packages. Delivered in 2–5 business days.
           </p>
         </div>
 
@@ -31,7 +31,7 @@ export default function PreDesignEntryPage() {
 
         {/* Trust bar */}
         <div className="mt-12 flex flex-wrap justify-center gap-6 text-sm text-gray-400">
-          <span>AI-powered analysis</span>
+          <span>powered by AI tools analysis</span>
           <span>·</span>
           <span>Property-specific outputs</span>
           <span>·</span>

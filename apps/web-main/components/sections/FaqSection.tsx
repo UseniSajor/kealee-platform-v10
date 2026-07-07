@@ -17,19 +17,19 @@ const FAQS = [
   },
   {
     q: 'What if my project needs an architect?',
-    a: 'We score every project with a Design Complexity Score (DCS). Projects at DCS 41 or above, or with a budget of $65,000 or more, are routed to a licensed architect. Your $395 report still includes a reference sketch, cost band, and zoning notes. AI design alone cannot produce permit-ready drawings for complex projects — we are direct about this.',
+    a: 'We score every project with a Design Complexity Score (DCS). Projects at DCS 41 or above, or with a budget of $65,000 or more, are routed to a licensed architect. Your $395 report still includes a reference sketch, cost band, and zoning notes. design alone cannot produce permit-ready drawings for complex projects — we are direct about this.',
   },
   {
     q: 'What is free? What costs money?',
     a: 'The $395 concept report is where most projects start. Every other service — cost estimate, permit filing, PM advisory — is per-service and optional. Your homeowner dashboard, permit checklist, and standard contractor assignment are included with your project.',
   },
   {
-    q: 'What is the difference between AI concept and architectural services?',
-    a: 'AI concept is a pre-design service: you get a floor plan sketch, cost band, zoning check, and permit scope to help you plan and budget. It is not permit-ready. Architectural services produce licensed, stamped drawings required to pull a permit for complex projects. If your project scores above DCS 41 or exceeds $65,000, we route you to a licensed architect.',
+    q: 'What is the difference between design concept and architectural services?',
+    a: 'design concept is a pre-design service: you get a floor plan sketch, cost band, zoning check, and permit scope to help you plan and budget. It is not permit-ready. Architectural services produce licensed, stamped drawings required to pull a permit for complex projects. If your project scores above DCS 41 or exceeds $65,000, we route you to a licensed architect.',
   },
   {
-    q: 'Can I use my AI concept to get a permit?',
-    a: 'No. AI concept is a pre-design planning tool only. Permit submissions require architect-stamped, jurisdiction-specific construction documents. See our Design Services page for permit-ready plan packages.',
+    q: 'Can I use my design concept to get a permit?',
+    a: 'No. design concept is a pre-design planning tool only. Permit submissions require architect-stamped, jurisdiction-specific construction documents. See our Design Services page for permit-ready plan packages.',
   },
   {
     q: 'When do I need permit-ready plans?',
@@ -41,10 +41,10 @@ const FAQS = [
   },
   {
     q: 'What if I don\'t have plans yet?',
-    a: 'Start with AI concept to plan and budget, then move to Design Services for permit-ready drawings. We offer a Design Starter package from $1,200 that produces stamped drawings for straightforward residential projects.',
+    a: 'Start with design concept to plan and budget, then move to Design Services for permit-ready drawings. We offer a Design Starter package from $1,200 that produces stamped drawings for straightforward residential projects.',
   },
   {
-    q: 'What happens after my AI concept is delivered?',
+    q: 'What happens after my design concept is delivered?',
     a: 'You can move to Design Services for permit-ready plans, start the permit intake directly if you already have plans, request a detailed cost estimate, or browse the contractor marketplace. Your concept report includes a recommended next step.',
   },
   {

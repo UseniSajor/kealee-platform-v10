@@ -77,25 +77,25 @@ const STATIC_FAQS: Faq[] = [
   // ── Concept Design ─────────────────────────────────────
   {
     id: 'cd-1', number: 6,
-    question: 'How does the AI concept design work?',
+    question: 'How does the design concept design work?',
     answer: 'When you start a project, you describe your vision — project type, preferred style, rooms, budget range, and any special requirements. Our AI engine generates floor plans, 3D renderings, material suggestions, and cost estimates based on your input. You can revise and iterate up to 5 times, then choose from 3 final concept options. A designer reviews your selected concept in a one-on-one meeting before handoff to architecture.',
     section: 'Concept Design', sectionSlug: 'concept-design', featured: true,
   },
   {
     id: 'cd-2', number: 7,
     question: 'What is included in each concept package?',
-    answer: 'Starter ($199): 2 AI-generated floor plan options, basic room layout and dimensions, rough cost estimate, up to 5 design revisions, 3 final concepts, and a designer review meeting.\n\nStandard ($499): 3 AI-generated design concepts, detailed floor plans with 3D renderings, material and finish suggestions, detailed cost breakdown, up to 5 design revisions, 3 final concepts, designer review meeting, and site layout with elevation views.\n\nPremium ($999): 5 AI-generated design concepts, full floor plans with 3D renders and elevations, material specifications and cost analysis, energy efficiency and sustainability scoring, up to 5 design revisions, 3 final concepts, designer review meeting, and permit-readiness pre-check.',
+    answer: 'Starter ($199): 2 generated using AI tools floor plan options, basic room layout and dimensions, rough cost estimate, up to 5 design revisions, 3 final concepts, and a designer review meeting.\n\nStandard ($499): 3 generated using AI tools design concepts, detailed floor plans with 3D renderings, material and finish suggestions, detailed cost breakdown, up to 5 design revisions, 3 final concepts, designer review meeting, and site layout with elevation views.\n\nPremium ($999): 5 generated using AI tools design concepts, full floor plans with 3D renders and elevations, material specifications and cost analysis, energy efficiency and sustainability scoring, up to 5 design revisions, 3 final concepts, designer review meeting, and permit-readiness pre-check.',
     section: 'Concept Design', sectionSlug: 'concept-design', featured: false,
   },
   {
     id: 'cd-3', number: 8,
     question: 'How long does concept generation take?',
-    answer: 'AI concept generation typically takes just a few minutes per iteration. The entire concept phase — from your initial input through revisions to your final selection and designer meeting — usually takes 1 to 2 weeks depending on how quickly you provide feedback on each round.',
+    answer: 'design concept generation typically takes just a few minutes per iteration. The entire concept phase — from your initial input through revisions to your final selection and designer meeting — usually takes 1 to 2 weeks depending on how quickly you provide feedback on each round.',
     section: 'Concept Design', sectionSlug: 'concept-design', featured: false,
   },
   {
     id: 'cd-4', number: 9,
-    question: 'Can I make changes to the AI-generated concepts?',
+    question: 'Can I make changes to the generated using AI tools concepts?',
     answer: 'Yes. Every concept package includes up to 5 rounds of AI revisions. You can ask for changes to room sizes, layouts, style, materials, or any other aspect. After revisions, you choose from 3 final concepts. Your designer meeting also provides an opportunity for minor adjustments before handing off to the architecture phase.',
     section: 'Concept Design', sectionSlug: 'concept-design', featured: false,
   },
@@ -110,7 +110,7 @@ const STATIC_FAQS: Faq[] = [
   {
     id: 'ar-1', number: 11,
     question: 'How does the architecture phase work?',
-    answer: 'After your concept is approved, a licensed architect is assigned to your project within 48 hours. They take your approved AI concept and develop it into professional construction documents through Schematic Design (SD), Design Development (DD), and Construction Documents (CD). The result is a complete, permit-ready drawing set including structural, MEP (mechanical, electrical, plumbing), and code compliance.',
+    answer: 'After your concept is approved, a licensed architect is assigned to your project within 48 hours. They take your approved design concept and develop it into professional construction documents through Schematic Design (SD), Design Development (DD), and Construction Documents (CD). The result is a complete, permit-ready drawing set including structural, MEP (mechanical, electrical, plumbing), and code compliance.',
     section: 'Architecture', sectionSlug: 'architecture', featured: false,
   },
   {
@@ -174,7 +174,7 @@ const STATIC_FAQS: Faq[] = [
   {
     id: 'pm-1', number: 21,
     question: 'Does Kealee handle building permits?',
-    answer: 'Yes. We offer full permit management services from application preparation through inspection and certificate of occupancy. Our system includes AI-powered compliance pre-checks that catch common issues before submission, jurisdiction-specific checklists, plan review correction responses, and inspection scheduling coordination. You can purchase permit services as part of our full flow or standalone if you already have plans.',
+    answer: 'Yes. We offer full permit management services from application preparation through inspection and certificate of occupancy. Our system includes powered by AI tools compliance pre-checks that catch common issues before submission, jurisdiction-specific checklists, plan review correction responses, and inspection scheduling coordination. You can purchase permit services as part of our full flow or standalone if you already have plans.',
     section: 'Permits', sectionSlug: 'permits', featured: false,
   },
   {
@@ -226,7 +226,7 @@ const STATIC_FAQS: Faq[] = [
   {
     id: 'pt-1', number: 29,
     question: 'What technology powers Kealee?',
-    answer: 'Kealee is built on a modern technology stack including AI-powered design generation (using Claude by Anthropic), real-time project dashboards, automated permit compliance checking, milestone-based escrow payment processing, in-app messaging, scheduling and timeline management, daily photo-verified progress reports, and zoning analysis tools. Everything is accessible through your web browser — no software to install.',
+    answer: 'Kealee is built on a modern technology stack including powered by AI tools design generation (using Claude by Anthropic), real-time project dashboards, automated permit compliance checking, milestone-based escrow payment processing, in-app messaging, scheduling and timeline management, daily photo-verified progress reports, and zoning analysis tools. Everything is accessible through your web browser — no software to install.',
     section: 'Platform & Tech', sectionSlug: 'platform', featured: false,
   },
   {
@@ -276,7 +276,7 @@ const STATIC_FAQS: Faq[] = [
   {
     id: 'ts-5', number: 37,
     question: 'Where is Kealee available?',
-    answer: 'Kealee is available nationwide across the United States. Our AI concept design, architecture coordination, and project management tools work for any location. Permit services cover all U.S. jurisdictions — our system automatically identifies your local jurisdiction requirements. Our contractor marketplace is growing and currently has the strongest coverage in major metro areas, with expansion to smaller markets ongoing.',
+    answer: 'Kealee is available nationwide across the United States. Our design concept design, architecture coordination, and project management tools work for any location. Permit services cover all U.S. jurisdictions — our system automatically identifies your local jurisdiction requirements. Our contractor marketplace is growing and currently has the strongest coverage in major metro areas, with expansion to smaller markets ongoing.',
     section: 'Trust & Safety', sectionSlug: 'trust', featured: false,
   },
 ];
@@ -418,7 +418,7 @@ export default function FAQPage() {
               Frequently Asked Questions
             </h1>
             <p className="text-lg text-white/70 max-w-2xl mx-auto">
-              Everything you need to know about Kealee &mdash; from AI concept design and
+              Everything you need to know about Kealee &mdash; from design concept design and
               architecture to permits, contractors, and escrow payments.
             </p>
           </div>

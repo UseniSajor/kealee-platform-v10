@@ -1,5 +1,5 @@
 /**
- * AI-Powered Scope Analyzer
+ * powered by AI tools Scope Analyzer
  *
  * Converts natural-language project descriptions into detailed, assembly-level
  * cost estimates by combining Claude's reasoning with the platform's assembly

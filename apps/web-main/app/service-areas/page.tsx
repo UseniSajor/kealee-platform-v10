@@ -7,7 +7,7 @@ import { KEALEE_HQ_DISPLAY } from '@/lib/site/contact'
 export const metadata: Metadata = {
   title: 'Service Areas — DC, Maryland & Virginia | Kealee',
   description:
-    'Kealee serves the DC metro from headquarters in Oxon Hill, MD — permits, AI design, estimates, and contractors across PG County, Montgomery, DC, and Northern Virginia.',
+    'Kealee serves the DC metro from headquarters in Oxon Hill, MD — permits, design, estimates, and contractors across PG County, Montgomery, DC, and Northern Virginia.',
   alternates: { canonical: 'https://kealee.com/service-areas' },
 }
 

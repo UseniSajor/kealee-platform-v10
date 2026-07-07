@@ -19,7 +19,7 @@ function VideoPlaceholder({ label, type }: { label: string; type: 'before' | 'af
       <div className="text-5xl mb-3">{type === 'before' ? '📷' : '✨'}</div>
       <p className="text-sm font-semibold text-gray-600">{label}</p>
       <p className="text-xs text-gray-400 mt-1">
-        {type === 'before' ? 'Current space' : 'AI concept render'}
+        {type === 'before' ? 'Current space' : 'design concept render'}
       </p>
     </div>
   )
@@ -147,7 +147,7 @@ export function VideoComparison({
         {/* After side (full-width base) */}
         <div className="absolute inset-0 bg-gray-800">
           {afterError ? (
-            <VideoPlaceholder label="AI Concept Render" type="after" />
+            <VideoPlaceholder label="design concept Render" type="after" />
           ) : (
             <video
               ref={afterVideoRef}

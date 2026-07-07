@@ -382,7 +382,7 @@ export default function CostBookImportPage() {
           }`}
         >
           <Sparkles className="h-4 w-4" />
-          PDF (AI-Powered)
+          PDF (powered by AI tools)
         </button>
         <button
           onClick={() => setFileMode('csv')}
@@ -418,7 +418,7 @@ export default function CostBookImportPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Sparkles className="h-5 w-5 text-amber-600" />
-                AI-Powered PDF Import
+                powered by AI tools PDF Import
               </CardTitle>
               <CardDescription>
                 Upload any cost code book PDF — our AI will extract materials, labor rates, equipment costs, and assemblies automatically.

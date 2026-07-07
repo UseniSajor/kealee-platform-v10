@@ -239,7 +239,7 @@ export const OS_FEATURE_DEFINITIONS = [
   {
     slug:        'predictive-cost',
     name:        'Predictive Cost Analytics',
-    description: 'AI-powered cost-at-completion forecasting using earned value + historical project data.',
+    description: 'powered by AI tools cost-at-completion forecasting using earned value + historical project data.',
     phase:       3,
     tier:        'ENTERPRISE' as const,
     isEnabled:   false,   // requires AI training data volume

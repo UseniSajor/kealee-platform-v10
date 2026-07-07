@@ -1,6 +1,6 @@
 /**
  * @kealee/concept-engine
- * AI concept floor plan engine, package generator, and architect handoff system.
+ * design concept floor plan engine, package generator, and architect handoff system.
  */
 
 // Floor plan
@@ -46,7 +46,7 @@ export type { GenerateFloorplanInput, GenerateFloorplanResult } from './api/gene
 export type { GenerateConceptPackageInput, GenerateConceptPackageResult } from './api/generate-concept-package';
 export type { CreateArchitectReviewInput, CreateArchitectReviewResult } from './api/create-architect-review-task';
 
-// AI Concept — orchestration, journey config, intake resolution, upsell routing, buildability
+// design concept — orchestration, journey config, intake resolution, upsell routing, buildability
 export * from './ai-concept';
 
 // PDF renderer

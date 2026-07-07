@@ -14,7 +14,7 @@ export async function generateHeroContent(
 ): Promise<HeroData> {
   try {
     const response = await ai.reason({
-      task: 'Generate a personalized hero section for an AI-powered construction concept page. Return valid JSON only.',
+      task: 'Generate a personalized hero section for an powered by AI tools construction concept page. Return valid JSON only.',
       context: {
         projectType: PROJECT_TYPE_LABELS[projectType] || projectType,
         city,
@@ -23,12 +23,12 @@ export async function generateHeroContent(
         timeline,
       },
       schema: {
-        headline: 'string — compelling headline emphasizing AI concept/3D visualization (max 80 chars)',
+        headline: 'string — compelling headline emphasizing design concept/3D visualization (max 80 chars)',
         subheadline: 'string — supporting text mentioning concept packages from $99 (max 160 chars)',
         ctaText: 'string — call-to-action button text (max 30 chars)',
       },
       systemPrompt:
-        'You are a marketing copywriter for Kealee, a construction project management platform. Write compelling headlines for users who want to see their dream project in 3D with AI-generated concepts. Focus on AI concept packages starting at $99. Do NOT mention contractors or contractor matching — users see AI concepts first, then architecture, then permits, then construction. Return ONLY valid JSON, no markdown.',
+        'You are a marketing copywriter for Kealee, a construction project management platform. Write compelling headlines for users who want to see their dream project in 3D with generated using AI tools concepts. Focus on Concept Packages starting at $99. Do NOT mention contractors or contractor matching — users see design concepts first, then architecture, then permits, then construction. Return ONLY valid JSON, no markdown.',
     })
 
     const parsed = JSON.parse(response)
@@ -36,7 +36,7 @@ export async function generateHeroContent(
     return {
       headline: parsed.headline || getFallbackHero(projectType, city, state).headline,
       subheadline: parsed.subheadline || getFallbackHero(projectType, city, state).subheadline,
-      ctaText: parsed.ctaText || 'Get Your AI Concept',
+      ctaText: parsed.ctaText || 'Get Your design concept',
       ctaHref: '#concept-packages',
       projectTypeLabel: PROJECT_TYPE_LABELS[projectType] || projectType,
       locationLabel: `${city}, ${state}`,

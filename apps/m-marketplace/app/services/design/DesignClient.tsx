@@ -33,7 +33,7 @@ const workflowSteps = [
   {
     num: 2,
     circle: 'ai',
-    tag: 'AI Concept Engine',
+    tag: 'design concept Engine',
     tagClass: 'tag-ai',
     title: 'AI Generates Your Concept Drawings',
     desc: 'Our AI — trained on 500,000+ construction drawings and local jurisdiction requirements — generates floor plan concepts, spatial layouts, and multiple variations within 48 hours.',
@@ -45,7 +45,7 @@ const workflowSteps = [
     tag: 'Architect Review',
     tagClass: 'tag-arch',
     title: 'A Licensed Architect Reviews Every Drawing',
-    desc: 'Every AI-generated concept is reviewed, refined, and approved by a licensed architect before you receive it. No exceptions, no shortcuts.',
+    desc: 'Every generated using AI tools concept is reviewed, refined, and approved by a licensed architect before you receive it. No exceptions, no shortcuts.',
     chips: ['Code Compliance Check', 'Design Refinements', 'Quality Assurance', 'Architect Approval'],
   },
   {
@@ -234,7 +234,7 @@ const ownerCards = [
   },
   {
     icon: '\ud83e\udd16',
-    title: 'AI-Powered Speed',
+    title: 'powered by AI tools Speed',
     desc: '48-hour concept delivery. Full architecture 30% faster than traditional firms.',
   },
   {
@@ -250,7 +250,7 @@ const ownerCards = [
   {
     icon: '\ud83d\udcb0',
     title: 'Money-Back Guarantee',
-    desc: 'Not satisfied with your AI concept? Full refund, no questions asked.',
+    desc: 'Not satisfied with your design concept? Full refund, no questions asked.',
   },
 ]
 
@@ -277,7 +277,7 @@ export default function DesignClient() {
       <section className="design-hero">
         <div className="hero-badge">
           <span className="hero-badge-dot" />
-          AI-POWERED &middot; LICENSED ARCHITECT REVIEW
+          powered by AI tools &middot; LICENSED ARCHITECT REVIEW
         </div>
         <div className="hero-layout">
           <div>
@@ -292,7 +292,7 @@ export default function DesignClient() {
             </p>
             <div className="hero-actions">
               <Link href="/get-started" className="btn-gold">
-                Start with AI Concept &mdash; $99
+                Start with design concept &mdash; $99
               </Link>
               <button
                 className="btn-outline-white"
@@ -390,7 +390,7 @@ export default function DesignClient() {
         <div className="section-label">Pricing</div>
         <h2 className="section-title">Choose Your Design Path</h2>
         <p className="section-sub">
-          Start with an AI concept to validate your vision, then upgrade to full architectural
+          Start with an design concept to validate your vision, then upgrade to full architectural
           services when you&apos;re ready to build.
         </p>
 
@@ -399,7 +399,7 @@ export default function DesignClient() {
             className={`pkg-tab ${activePkgTab === 'ai' ? 'active' : ''}`}
             onClick={() => setActivePkgTab('ai')}
           >
-            AI Concept Generation
+            design concept Generation
           </button>
           <button
             className={`pkg-tab ${activePkgTab === 'arch' ? 'active' : ''}`}
@@ -409,7 +409,7 @@ export default function DesignClient() {
           </button>
         </div>
 
-        {/* AI Concept Packages */}
+        {/* Concept Packages */}
         {activePkgTab === 'ai' && (
           <div className="pkg-grid">
             {aiPackages.map((pkg) => (
@@ -576,11 +576,11 @@ export default function DesignClient() {
             </span>
           </h2>
           <p style={{ fontSize: 17, color: 'rgba(255,255,255,0.7)', marginBottom: 36, fontWeight: 300 }}>
-            Start with a $99 AI concept. 48-hour delivery. Money-back if you&apos;re not satisfied.
+            Start with a $99 design concept. 48-hour delivery. Money-back if you&apos;re not satisfied.
           </p>
           <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
             <Link href="/get-started" className="btn-gold">
-              Get My AI Concept &mdash; From $99
+              Get My design concept &mdash; From $99
             </Link>
             <Link href="/contact" className="btn-outline-white">
               Talk to an Architect

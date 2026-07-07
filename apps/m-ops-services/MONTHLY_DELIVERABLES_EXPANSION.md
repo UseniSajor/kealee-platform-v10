@@ -77,7 +77,7 @@ Significantly expanded the "What Clients Receive Monthly" section on the How It 
 **8. Risk & Issue Management** 🆕
 - Active risk register with probability/impact ratings
 - Mitigation action plans and status
-- Emerging issue alerts (AI-powered)
+- Emerging issue alerts (powered by AI tools)
 - Lessons learned and improvements
 
 **9. Stakeholder Reporting** 🆕
@@ -173,7 +173,7 @@ Significantly expanded the "What Clients Receive Monthly" section on the How It 
 ### Value Indicators:
 - "15–25 page report"
 - "Line-item budget tracking"
-- "AI-powered emerging issue alerts"
+- "powered by AI tools emerging issue alerts"
 - "Lender-ready formats"
 - "Board-ready presentations"
 

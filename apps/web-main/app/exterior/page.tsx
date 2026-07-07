@@ -13,7 +13,7 @@ const SERVICES = [
     image: 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=600&q=80&auto=format&fit=crop',
     imageAlt: 'Beautiful home exterior with professional curb appeal and landscaping',
     items: [
-      { name: 'AI Exterior Concept Package', price: '$595', desc: 'AI-generated exterior concept with 3 renderings, material palette, and landscape overview. 1 feedback round. 5–7 business days.' },
+      { name: 'AI Exterior Concept Package', price: '$595', desc: 'generated using AI tools exterior concept with 3 renderings, material palette, and landscape overview. 1 feedback round. 5–7 business days.' },
       { name: 'Advanced Exterior Design', price: '$1,200', desc: 'Full exterior design with detailed landscape plan, hardscape specs, and lighting layout. Up to 3 feedback rounds.' },
       { name: 'Full Landscape Design', price: 'From $3,500', desc: 'Permit-ready landscape + exterior design with contractor bid documents, irrigation plan, and grading overview.' },
     ],
@@ -33,7 +33,7 @@ const SERVICES = [
     image: 'https://images.unsplash.com/photo-1480074568708-e7b720bb3f09?w=600&q=80&auto=format&fit=crop',
     imageAlt: 'Beautiful stone driveway and hardscape pathway leading to home entrance',
     items: [
-      { name: 'Hardscape Design', price: '$450', desc: 'AI-designed patio, walkway, driveway, and retaining wall layouts with material selection guide.' },
+      { name: 'Hardscape Design', price: '$450', desc: 'designed using AI tools patio, walkway, driveway, and retaining wall layouts with material selection guide.' },
       { name: 'Patio & Walkway Build', price: '$3,000–$15,000', desc: 'Concrete, pavers, natural stone, or brick installation by vetted hardscape contractors.' },
       { name: 'Driveway Replacement', price: '$4,000–$20,000', desc: 'Driveway design, permits, demolition, and new installation in concrete, asphalt, or pavers.' },
     ],
@@ -43,7 +43,7 @@ const SERVICES = [
     image: 'https://images.unsplash.com/photo-1591825729269-caeb344f6df2?w=600&q=80&auto=format&fit=crop',
     imageAlt: 'Beautiful outdoor living area with patio furniture, pergola, and outdoor kitchen',
     items: [
-      { name: 'Outdoor Living Design', price: '$550', desc: 'AI-designed outdoor living concept: pergola, deck, outdoor kitchen, fire pit, and seating areas.' },
+      { name: 'Outdoor Living Design', price: '$550', desc: 'designed using AI tools outdoor living concept: pergola, deck, outdoor kitchen, fire pit, and seating areas.' },
       { name: 'Deck or Patio Build', price: '$8,000–$35,000', desc: 'Composite or wood deck, patio, or covered pergola construction by vetted contractors. Permit coordination included.' },
       { name: 'Outdoor Kitchen & Fire Pit', price: '$5,000–$25,000', desc: 'Full outdoor kitchen design and build with gas, appliances, countertops, and fire feature installation.' },
     ],
@@ -66,7 +66,7 @@ const FAQ = [
   },
   {
     q: 'Does this include installation?',
-    a: 'No. All onsite installation and build work is performed by your contractor of record. Kealee provides AI design, final design packages, permit filing, advisory, and contractor matching services only.',
+    a: 'No. All onsite installation and build work is performed by your contractor of record. Kealee provides design, final design packages, permit filing, advisory, and contractor matching services only.',
   },
   {
     q: 'Can I get just a landscape design without the exterior concept?',
@@ -109,7 +109,7 @@ export default function ExteriorPage() {
                 Make a statement before the front door
               </h1>
               <p className="mt-6 text-lg text-gray-300">
-                AI-powered exterior design concepts covering facade updates, landscaping, hardscaping, driveways, and
+                powered by AI tools exterior design concepts covering facade updates, landscaping, hardscaping, driveways, and
                 outdoor living — from concept to contractor in one platform.
               </p>
               <div className="mt-8 flex flex-col gap-4 sm:flex-row">
@@ -154,7 +154,7 @@ export default function ExteriorPage() {
       <div className="bg-white py-4">
         <div className="mx-auto max-w-4xl px-4 text-center">
           <p className="text-sm text-gray-500">
-            All onsite installation and build work is performed by your contractor of record. Kealee provides AI design,
+            All onsite installation and build work is performed by your contractor of record. Kealee provides design,
             final design packages, permit filing, advisory, and contractor matching services only.
           </p>
         </div>

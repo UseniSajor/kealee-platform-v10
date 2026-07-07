@@ -87,7 +87,7 @@ export default async function ServiceAreaPage({ params }: Props) {
 
           <div className="mt-12 flex flex-wrap gap-3">
             <Link href="/concept" className="text-sm font-medium text-[#2ABFBF] hover:underline">
-              AI concepts
+              design concepts
             </Link>
             <Link href="/permits" className="text-sm font-medium text-[#2ABFBF] hover:underline">
               Permits

@@ -128,7 +128,7 @@ export default function PrivacyPage() {
               <ul className="list-disc pl-6 space-y-2">
                 <li><strong>Process permit applications:</strong> Prepare, review, and submit permit applications to the appropriate local, county, or state jurisdictions on your behalf</li>
                 <li><strong>Coordinate inspections:</strong> Schedule, track, and manage inspections with local building departments and third-party inspection services</li>
-                <li><strong>Perform AI-powered document review:</strong> Analyze uploaded plans and documents to identify potential compliance issues before submission</li>
+                <li><strong>Perform powered by AI tools document review:</strong> Analyze uploaded plans and documents to identify potential compliance issues before submission</li>
                 <li><strong>Facilitate government data submission:</strong> Transmit required information to governmental agencies in the format and manner they require for permit processing</li>
                 <li><strong>Provide status updates:</strong> Notify you of changes to your permit application status, upcoming inspections, required corrections, and approval decisions</li>
                 <li><strong>Process payments:</strong> Charge service fees and pass through applicable government filing fees</li>
@@ -247,7 +247,7 @@ export default function PrivacyPage() {
                 <li><strong>Cloud hosting and storage:</strong> Our Platform and your data are hosted on secure, SOC 2-compliant cloud infrastructure within the United States.</li>
                 <li><strong>Government permitting portals:</strong> We interact with various local, county, and state government permitting systems to submit applications and retrieve status updates on your behalf. These portals are governed by their respective government privacy policies.</li>
                 <li><strong>Email and communication services:</strong> We use third-party providers to deliver transactional emails (permit status updates, inspection reminders) and support communications.</li>
-                <li><strong>Document processing:</strong> We may use AI-powered tools to review project documents for compliance. Document data processed by these tools is not retained beyond the review session.</li>
+                <li><strong>Document processing:</strong> We may use powered by AI tools tools to review project documents for compliance. Document data processed by these tools is not retained beyond the review session.</li>
               </ul>
               <p className="mt-4">
                 We carefully vet all third-party service providers and require them to maintain appropriate

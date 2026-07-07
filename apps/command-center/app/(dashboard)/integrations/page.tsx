@@ -21,7 +21,7 @@ const OS_MODULE_INTEGRATIONS = [
   {
     id: 'mod-3', name: 'OS Development', key: 'os-dev',
     category: 'Internal Module',
-    description: 'Design and development module. Architect coordination, drawing management, AI concept generation, and permit document preparation.',
+    description: 'Design and development module. Architect coordination, drawing management, design concept generation, and permit document preparation.',
     defaultPhases: ['DESIGN', 'PERMITS'],
   },
   {

@@ -335,7 +335,7 @@ Implemented comprehensive quality control system with quality control checklist 
 - **Automated Sampling**: Automated random sampling based on risk factors
 - **Quality Reports**: Comprehensive quality reports generation
 - **Benchmarking**: Compare metrics across projects
-- **AI-Powered Error Detection**: ML-based error pattern detection
+- **powered by AI tools Error Detection**: ML-based error pattern detection
 - **Integration with CAD**: Direct integration with CAD software for automated checking
 
 ---

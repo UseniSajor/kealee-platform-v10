@@ -4,7 +4,7 @@
  * BeforeAfterMedia
  *
  * Toggle between the user's original photos (intake uploads stored in
- * conceptOutput.beforeUrls) and the AI concept renders, with an index strip
+ * conceptOutput.beforeUrls) and the design concept renders, with an index strip
  * when multiple images exist.
  */
 

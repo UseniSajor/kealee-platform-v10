@@ -100,7 +100,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       if (orders && orders.length > 0) {
         return NextResponse.json({
           allowed: true,
-          reason: 'Consultation unlocked — AI Concept package purchased',
+          reason: 'Consultation unlocked — Concept Package purchased',
         } satisfies GateResult)
       }
     }
@@ -121,10 +121,10 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       }
     }
 
-    // 5. Not allowed — push to AI Concept (cheapest entry point)
+    // 5. Not allowed — push to design concept (cheapest entry point)
     return NextResponse.json({
       allowed: false,
-      reason: 'Consultation requires an AI Concept package or approved plans',
+      reason: 'Consultation requires an Concept Package or approved plans',
       upgradeProduct: 'concept',
       upgradeUrl:     '/intake/concept',
       upgradePrice:   '$149',

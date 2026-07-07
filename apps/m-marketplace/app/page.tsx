@@ -292,7 +292,7 @@ const jsonLd = {
   featureList: [
     'Architectural Design Services',
     'Structural, MEP, Civil & Geotechnical Engineering',
-    'AI-Powered Cost Estimation',
+    'powered by AI tools Cost Estimation',
     'Permit Application & Tracking',
     'Inspection Scheduling',
     'Project Management Software',

@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   description: 'Get accurate construction cost estimates powered by AI and certified estimators. From $299. 96% accuracy with real-time market data. Residential and commercial.',
   openGraph: {
     title: 'AI Cost Estimation | Kealee',
-    description: 'AI-powered construction estimates with 96% accuracy. Certified estimators, real-time market data, transparent line-item pricing.',
+    description: 'powered by AI tools construction estimates with 96% accuracy. Certified estimators, real-time market data, transparent line-item pricing.',
     url: 'https://kealee.com/services/estimation',
     siteName: 'Kealee Marketplace',
     type: 'website',

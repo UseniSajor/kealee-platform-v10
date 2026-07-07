@@ -99,7 +99,7 @@ export const portalImages = {
   /** Pattern Book - pre-approved housing designs */
   patternBook: unsplash('photo-1600596542815-ffad4c1539a9', 800, 450, 'Pre-approved housing designs from the 21st Century Housing Act'),
   /** Dev Package Generator - AI feasibility analysis */
-  devPackage: unsplash('photo-1551836022-4c4c79ecde51', 800, 450, 'AI-powered development feasibility analysis'),
+  devPackage: unsplash('photo-1551836022-4c4c79ecde51', 800, 450, 'powered by AI tools development feasibility analysis'),
   /** Workforce Housing - federal grants and financing */
   workforceHousing: unsplash('photo-1560518883-ce09059eeffa', 800, 450, 'Workforce housing and federal grant programs'),
 };

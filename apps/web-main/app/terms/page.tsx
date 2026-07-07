@@ -30,7 +30,7 @@ export default function TermsPage() {
           <h2 className="text-lg font-semibold mb-2">2. Description of Services</h2>
           <p>Kealee provides:</p>
           <ul className="list-disc pl-5 space-y-1 mt-2">
-            <li><strong>AI Concept Packages</strong> — AI-generated design concepts, floor plan options, scope summaries, and cost estimates for home improvement projects</li>
+            <li><strong>Concept Packages</strong> — generated using AI tools design concepts, floor plan options, scope summaries, and cost estimates for home improvement projects</li>
             <li><strong>Permit Services</strong> — preparation and filing assistance for building permits in DC, Maryland, and Virginia</li>
             <li><strong>Contractor Marketplace</strong> — a platform to connect homeowners with vetted contractors and design professionals</li>
             <li><strong>Owner Portal</strong> — a dashboard to view and manage your project deliverables</li>
@@ -53,7 +53,7 @@ export default function TermsPage() {
             All purchases are processed through Stripe. Prices are displayed in US dollars. By completing a
             purchase, you authorize Kealee to charge your payment method for the stated amount.
           </p>
-          <p className="mt-2"><strong>Concept Packages:</strong> Due to the AI-generated and customized nature of concept
+          <p className="mt-2"><strong>Concept Packages:</strong> Due to the generated using AI tools and customized nature of concept
           packages, all sales are final once generation has begun. If you experience a technical failure that
           prevents delivery, contact us within 7 days for a resolution.</p>
           <p className="mt-2"><strong>Permit Services:</strong> Refunds for permit services are available before filing
@@ -64,7 +64,7 @@ export default function TermsPage() {
         </div>
 
         <div>
-          <h2 className="text-lg font-semibold mb-2">5. AI-Generated Content</h2>
+          <h2 className="text-lg font-semibold mb-2">5. generated using AI tools Content</h2>
           <p>
             Kealee&apos;s concept packages are created using AI technology and are intended as
             <strong> preliminary design concepts and planning tools only</strong>. They are not:
@@ -75,7 +75,7 @@ export default function TermsPage() {
             <li>A substitute for consultation with a licensed architect, engineer, or contractor</li>
           </ul>
           <p className="mt-2">
-            AI-generated cost estimates are approximations based on market data and may vary significantly from
+            generated using AI tools cost estimates are approximations based on market data and may vary significantly from
             actual contractor bids. Kealee makes no warranty as to the accuracy of estimates.
           </p>
         </div>
@@ -129,7 +129,7 @@ export default function TermsPage() {
             All Platform content, software, AI models, branding, and design elements are owned by or licensed
             to Kealee. Concept packages and deliverables generated for you are licensed to you for personal
             use on the specific project for which they were created. You may not resell or publicly distribute
-            AI-generated deliverables without our written consent.
+            generated using AI tools deliverables without our written consent.
           </p>
         </div>
 
@@ -139,7 +139,7 @@ export default function TermsPage() {
             THE PLATFORM IS PROVIDED &ldquo;AS IS&rdquo; WITHOUT WARRANTIES OF ANY KIND, EXPRESS OR IMPLIED,
             INCLUDING BUT NOT LIMITED TO WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND
             NON-INFRINGEMENT. WE DO NOT WARRANT THAT THE PLATFORM WILL BE UNINTERRUPTED, ERROR-FREE, OR
-            THAT AI-GENERATED CONTENT WILL MEET YOUR SPECIFIC REQUIREMENTS.
+            THAT generated using AI tools CONTENT WILL MEET YOUR SPECIFIC REQUIREMENTS.
           </p>
         </div>
 

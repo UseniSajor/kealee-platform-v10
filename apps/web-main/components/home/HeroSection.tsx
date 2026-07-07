@@ -71,7 +71,7 @@ export function HeroSection() {
 
             {/* Trust strip */}
             <div className="mt-10 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-gray-400">
-              {['Licensed & Insured', 'Escrow Protected', 'AI-Powered', 'DC-Baltimore Corridor'].map(item => (
+              {['Licensed & Insured', 'Escrow Protected', 'powered by AI tools', 'DC-Baltimore Corridor'].map(item => (
                 <span key={item} className="flex items-center gap-1.5">
                   <Shield className="h-4 w-4" style={{ color: '#2ABFBF' }} />
                   {item}

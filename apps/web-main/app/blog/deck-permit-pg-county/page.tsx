@@ -190,7 +190,7 @@ export default function DeckPermitPGCountyPage() {
           <li>Inspection coordination and scheduling</li>
         </ul>
         <p>
-          Permit packages start at <strong>${PERMIT_STANDARD_PRICE}</strong>. If you don&apos;t yet have a deck design, our AI concept packages start at <strong>${CONCEPT_KITCHEN_PRICE}</strong> and include permit scope identification — so you know exactly what you&apos;ll need before you hire a contractor.
+          Permit packages start at <strong>${PERMIT_STANDARD_PRICE}</strong>. If you don&apos;t yet have a deck design, our Concept Packages start at <strong>${CONCEPT_KITCHEN_PRICE}</strong> and include permit scope identification — so you know exactly what you&apos;ll need before you hire a contractor.
         </p>
 
         {/* CTA */}

@@ -2,7 +2,7 @@ export const phase4Hero = {
   eyebrow: 'AI construction platform for DC, Maryland, and Virginia',
   title: 'Plan, price, permit, and build construction projects from one guided workspace.',
   summary:
-    'Kealee combines AI concept planning, RSMeans-informed estimates, permit guidance, contractor matching, and project workspaces so homeowners and construction teams can move from idea to approved scope with less friction.',
+    'Kealee combines design concept planning, RSMeans-informed estimates, permit guidance, contractor matching, and project workspaces so homeowners and construction teams can move from idea to approved scope with less friction.',
   directAnswer:
     'Kealee is an AI construction platform for the DC metro that helps homeowners, contractors, and project teams turn a renovation or construction idea into a scoped project with concept visuals, cost estimates, permit support, marketplace matching, and a managed project workspace.',
 }
@@ -36,7 +36,7 @@ export const serviceArchitecture = [
     name: 'Concept planning',
     description: 'AI-supported visual direction, scope framing, zoning context, and path-to-approval planning.',
     href: '/concept',
-    schemaName: 'AI Design Concepts',
+    schemaName: 'design concepts',
   },
   {
     name: 'Cost estimates',
@@ -119,7 +119,7 @@ export const purchasePaths = [
 export const aiSearchFaqs = [
   {
     q: 'What is Kealee?',
-    a: 'Kealee is an AI-assisted construction and design-build platform serving DC, Maryland, and Virginia. It helps users move from project idea to concept planning, estimate, permit support, contractor matching, and project workspace coordination.',
+    a: 'Kealee is an assisted by AI tools construction and design-build platform serving DC, Maryland, and Virginia. It helps users move from project idea to concept planning, estimate, permit support, contractor matching, and project workspace coordination.',
   },
   {
     q: 'Can Kealee help before I hire a contractor?',

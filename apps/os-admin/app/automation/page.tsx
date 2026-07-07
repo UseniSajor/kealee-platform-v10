@@ -70,7 +70,7 @@ export default function AutomationDashboardPage() {
             <Card>
               <CardHeader>
                 <CardTitle>AI Bot Prompts</CardTitle>
-                <CardDescription>Manage and override system prompts for 10+ AI-assisted KeaBots</CardDescription>
+                <CardDescription>Manage and override system prompts for 10+ assisted by AI tools KeaBots</CardDescription>
               </CardHeader>
               <CardContent>
                 <Link href="/automation/bots">

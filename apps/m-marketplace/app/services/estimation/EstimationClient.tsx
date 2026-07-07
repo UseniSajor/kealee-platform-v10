@@ -53,7 +53,7 @@ const workflowSteps = [
     tag: 'Expert Review',
     tagClass: 'est-tag-review',
     title: 'A Certified Estimator Validates Every Number',
-    desc: 'Every AI-generated estimate is reviewed and validated by a certified professional estimator before delivery. They check quantities, verify rates, and add risk contingencies. No shortcuts.',
+    desc: 'Every generated using AI tools estimate is reviewed and validated by a certified professional estimator before delivery. They check quantities, verify rates, and add risk contingencies. No shortcuts.',
     chips: ['Quantity Verification', 'Rate Validation', 'Risk Analysis', 'Estimator Approval'],
   },
   {
@@ -196,7 +196,7 @@ export default function EstimationClient() {
       <section className="est-hero">
         <div className="est-hero-badge">
           <span className="est-badge-dot" />
-          AI-POWERED &middot; EXPERT-VALIDATED ESTIMATES
+          powered by AI tools &middot; EXPERT-VALIDATED ESTIMATES
         </div>
         <div className="est-hero-layout">
           <div>
@@ -205,7 +205,7 @@ export default function EstimationClient() {
               Before You <em>Build</em>
             </h1>
             <p className="est-hero-sub">
-              AI-powered cost estimation backed by real market data and validated by certified
+              powered by AI tools cost estimation backed by real market data and validated by certified
               estimators. Labor, materials, timeline, and profit analysis &mdash; delivered in as
               little as 24 hours.
             </p>

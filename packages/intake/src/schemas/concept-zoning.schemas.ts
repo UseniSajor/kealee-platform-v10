@@ -1,6 +1,6 @@
 /**
  * Concept & Zoning Intake Schemas
- * Zod validation schemas for AI concept intake and zoning analysis
+ * Zod validation schemas for design concept intake and zoning analysis
  */
 
 import { z } from 'zod'

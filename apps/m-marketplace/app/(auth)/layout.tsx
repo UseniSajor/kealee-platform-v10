@@ -46,7 +46,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
             Build faster.
           </h2>
           <p className="text-blue-200 text-sm leading-relaxed max-w-[360px]">
-            AI-powered design, estimation, permits, and construction management — all in one
+            powered by AI tools design, estimation, permits, and construction management — all in one
             platform.
           </p>
 

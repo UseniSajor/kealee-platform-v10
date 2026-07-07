@@ -212,7 +212,7 @@ Important notes for ${portal.name}:
           riskFlags: parsed.riskFlags ?? [],
           source: "ai",
           confidence: (parsed.confidence as "high" | "medium" | "low") ?? "low",
-          note: `AI-generated analysis for ${portal.name}. Verify at: ${portal.permitStatusUrl}`,
+          note: `generated using AI tools analysis for ${portal.name}. Verify at: ${portal.permitStatusUrl}`,
         };
       } catch (err) {
         console.warn("[get_permit_status] AI call failed, using stub:", err);

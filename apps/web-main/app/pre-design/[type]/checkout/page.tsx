@@ -33,8 +33,8 @@ const TIER_PRICES: Record<string, number> = {
 }
 
 const TIER_INCLUDES: Record<string, string[]> = {
-  starter: ['3 AI concept images', 'Style + materials brief', 'PDF package'],
-  visualization: ['3 AI concept images', 'Zoning + buildability', 'Feasibility brief', 'Consultation call', 'PDF package'],
+  starter: ['3 design concept images', 'Style + materials brief', 'PDF package'],
+  visualization: ['3 design concept images', 'Zoning + buildability', 'Feasibility brief', 'Consultation call', 'PDF package'],
   'pre-design': ['Everything in Visualization', 'Detailed scope of work', 'Systems impact analysis', 'Architect-ready export', 'Architect handoff'],
 }
 

@@ -1,6 +1,6 @@
 /**
  * AI Takeoff Service
- * AI-powered quantity extraction from construction plans and site photos
+ * powered by AI tools quantity extraction from construction plans and site photos
  *
  * Supports:
  * - PDF plan analysis (architectural, structural, MEP)

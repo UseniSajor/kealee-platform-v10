@@ -60,7 +60,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
       {showDisclaimer && (
         <div className="border-b border-amber-200 bg-amber-50 py-2.5 px-4 text-center">
           <p className="text-xs text-amber-800">
-            <strong>Pre-design service only</strong> — AI concept packages are not permit-ready plans.
+            <strong>Pre-design service only</strong> — Concept Packages are not permit-ready plans.
             Need permit-ready drawings?{' '}
             <Link href="/design-services" className="underline font-medium">See Design Services →</Link>
           </p>
@@ -103,7 +103,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
               </div>
               {isAiProduct && (
                 <p className="mt-4 text-xs text-white/50">
-                  All onsite installation and build work is performed by your contractor of record. Kealee provides AI design, final design packages, permit filing, advisory, and contractor matching services only.
+                  All onsite installation and build work is performed by your contractor of record. Kealee provides design, final design packages, permit filing, advisory, and contractor matching services only.
                 </p>
               )}
             </div>
@@ -139,7 +139,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
               {/* Step 1 */}
               <div className="flex flex-col items-center text-center px-6 py-4 rounded-xl bg-white border-2 border-gray-200 flex-1 max-w-xs" style={{ borderColor: accentColor }}>
                 <div className="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold mb-3" style={{ backgroundColor: accentColor }}>1</div>
-                <h3 className="font-bold text-sm" style={{ color: '#1A2B4A' }}>AI Concept Package</h3>
+                <h3 className="font-bold text-sm" style={{ color: '#1A2B4A' }}>Concept Package</h3>
                 <p className="text-xs text-gray-500 mt-1">Start here. See your project before anything is built.</p>
                 <span className="mt-2 text-xs font-semibold" style={{ color: accentColor }}>{product.price}</span>
               </div>
@@ -213,7 +213,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
               <h2 className="mt-3 text-2xl font-bold font-display sm:text-3xl" style={{ color: '#1A2B4A' }}>
                 Choose your package
               </h2>
-              <p className="mt-3 text-gray-500">All packages start with AI concept. Upgrade or add services at any step.</p>
+              <p className="mt-3 text-gray-500">All packages start with design concept. Upgrade or add services at any step.</p>
             </div>
             <div className="grid gap-6 lg:grid-cols-3">
               {product.packages.map(tier => (

@@ -23,7 +23,7 @@ export function AiSection() {
       <Container>
         <div className="mx-auto max-w-2xl text-center">
           <span className="text-xs font-bold uppercase tracking-widest" style={{ color: '#2ABFBF' }}>
-            AI-Powered Automation
+            powered by AI tools Automation
           </span>
           <Heading className="mt-3">13 KeaBot AI Assistants</Heading>
           <p className="mt-4 text-lg text-gray-600">

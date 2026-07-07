@@ -233,7 +233,7 @@ export default function PreConListPage() {
             <div className="flex-1">
               <h4 className="font-semibold text-indigo-900">3-Phase Project Workflow</h4>
               <p className="text-sm text-indigo-700 mt-1">
-                <strong>Pre-Con</strong> (AI concepts + designer meeting) → <strong>Architecture</strong> (full professional plans, concept fee credited) → <strong>Permits</strong> (submission + inspections) → <strong>Build</strong> (contractor bids via Fair Bid Rotation).
+                <strong>Pre-Con</strong> (design concepts + designer meeting) → <strong>Architecture</strong> (full professional plans, concept fee credited) → <strong>Permits</strong> (submission + inspections) → <strong>Build</strong> (contractor bids via Fair Bid Rotation).
               </p>
             </div>
             <div className="text-xs text-green-700 bg-white px-3 py-1 rounded-full border border-green-200 whitespace-nowrap">
@@ -350,7 +350,7 @@ export default function PreConListPage() {
                   <div className="text-2xl mb-1 mt-2">🧠</div>
                   <h5 className="font-medium text-gray-900">2. AI Generates Concepts</h5>
                   <p className="text-sm text-gray-500 mt-1">
-                    Get AI-powered design concepts with up to 5 revision rounds, then pick from 3 finalists.
+                    Get powered by AI tools design concepts with up to 5 revision rounds, then pick from 3 finalists.
                   </p>
                 </div>
                 <div className="bg-indigo-50 rounded-lg p-4 border border-indigo-100">
@@ -414,7 +414,7 @@ export default function PreConListPage() {
                       )}
                       <h5 className="font-semibold text-gray-900 mt-1">{tier.replace('_', ' ')}</h5>
                       <p className="text-2xl font-bold text-gray-900 mt-2">{formatCurrency(price)}</p>
-                      <p className="text-xs text-gray-500 mt-1">AI concepts · 5 revisions · 3 finals · designer meeting</p>
+                      <p className="text-xs text-gray-500 mt-1">design concepts · 5 revisions · 3 finals · designer meeting</p>
                     </div>
                   ))}
                 </div>

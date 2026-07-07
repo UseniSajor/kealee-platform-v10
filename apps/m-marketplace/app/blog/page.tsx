@@ -62,7 +62,7 @@ export default function BlogPage() {
     {
       slug: 'building-tech-trends-2025',
       title: 'Building Tech Trends to Watch in 2025',
-      excerpt: 'From AI-powered project management to drone inspections, here are the technology trends reshaping the building industry this year.',
+      excerpt: 'From powered by AI tools project management to drone inspections, here are the technology trends reshaping the building industry this year.',
       author: 'Tim Chamberlain',
       date: 'January 5, 2025',
       readTime: '10 min read',

@@ -16,7 +16,7 @@ import { PROFESSIONAL_DRAWINGS_SCOPE_PLACEHOLDER } from '@kealee/shared'
 
 const INCLUDES = [
   'Licensed architect / PE assigned to your project',
-  'AI concept review and integration',
+  'design concept review and integration',
   'Permit-ready drawing set (floor plan, elevations, site plan)',
   'PE stamp where required by jurisdiction',
   'Jurisdiction cover sheet and code compliance notes',
@@ -109,7 +109,7 @@ function OrderSummary({ priceInfo }: { priceInfo: DrawingsServiceConfig }) {
         </div>
         <p className="text-sm text-purple-200 leading-relaxed">
           Most DC, MD, and VA jurisdictions reject permit applications that lack stamped architectural drawings.
-          Your AI concept identified this requirement — this service delivers the drawings you need to proceed.
+          Your design concept identified this requirement — this service delivers the drawings you need to proceed.
         </p>
       </div>
     </div>

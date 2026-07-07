@@ -11,7 +11,7 @@
 ### **Core Functionality:**
 - ✅ Permit application workflow (all permit types)
 - ✅ Jurisdiction database (3,000+ jurisdictions)
-- ✅ AI-powered document review
+- ✅ powered by AI tools document review
 - ✅ Real-time status tracking
 - ✅ Inspection scheduling
 - ✅ Payment integration (Stripe)
@@ -281,7 +281,7 @@ ANTHROPIC_API_KEY=xxx (for AI features)
 
 ### **Already Built:**
 - Complete application (40+ pages)
-- AI-powered review engine
+- powered by AI tools review engine
 - 3,000+ jurisdiction database
 - Payment processing
 - Status tracking

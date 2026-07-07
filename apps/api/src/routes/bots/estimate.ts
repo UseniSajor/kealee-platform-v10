@@ -1,6 +1,6 @@
 /**
  * ESTIMATE BOT ENDPOINT
- * Generates AI-powered construction cost estimates
+ * Generates powered by AI tools construction cost estimates
  */
 
 import { Router, Request, Response } from 'express';

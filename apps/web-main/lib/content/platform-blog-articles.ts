@@ -31,7 +31,7 @@ export const PLATFORM_BLOG_ARTICLES: PlatformBlogArticle[] = [
       {
         heading: 'What is a construction digital twin?',
         paragraphs: [
-          'A digital twin is a continuously updated model of your project — not just a 3D rendering, but schedule status, payment milestones, permit checkpoints, and AI-generated risk flags tied to real data.',
+          'A digital twin is a continuously updated model of your project — not just a 3D rendering, but schedule status, payment milestones, permit checkpoints, and generated using AI tools risk flags tied to real data.',
           'For residential and light commercial work in the DMV, twins help owners answer: Are we on budget? Is the permit still active? Did the last inspection pass?',
         ],
       },
@@ -57,7 +57,7 @@ export const PLATFORM_BLOG_ARTICLES: PlatformBlogArticle[] = [
     datePublished: '2026-03-01',
     readTime: '8 min',
     keywords: ['AI construction assistant', 'KeaBots', 'construction automation'],
-    cta: { label: 'Start AI concept', href: '/concept' },
+    cta: { label: 'Start design concept', href: '/concept' },
     sections: [
       {
         heading: 'Agents, not autopilot',
@@ -68,7 +68,7 @@ export const PLATFORM_BLOG_ARTICLES: PlatformBlogArticle[] = [
       {
         heading: 'Typical homeowner path',
         paragraphs: [
-          'Most owners begin with an AI concept package, then route to permit-ready drawings or permit filing depending on scope. KeaBots keep context across those steps so you do not re-enter the same data three times.',
+          'Most owners begin with an Concept Package, then route to permit-ready drawings or permit filing depending on scope. KeaBots keep context across those steps so you do not re-enter the same data three times.',
         ],
         bullets: [
           'ConceptBot — design directions and renderings',
@@ -110,7 +110,7 @@ export const PLATFORM_BLOG_ARTICLES: PlatformBlogArticle[] = [
   },
   {
     slug: 'os-land-parcel-analysis',
-    title: 'AI-Powered Land Intelligence: Parcel Analysis for Developers',
+    title: 'powered by AI tools Land Intelligence: Parcel Analysis for Developers',
     description:
       'Zoning, setbacks, and development readiness scoring for DMV parcels — how OS-Land supports feasibility before you option land.',
     category: 'Land',
@@ -135,7 +135,7 @@ export const PLATFORM_BLOG_ARTICLES: PlatformBlogArticle[] = [
   },
   {
     slug: 'ai-cost-estimation',
-    title: 'AI-Powered Cost Estimation: Accuracy Meets Speed',
+    title: 'powered by AI tools Cost Estimation: Accuracy Meets Speed',
     description:
       'How AI reads scope and plans to produce construction cost direction for renovations, additions, and light commercial work in DC, MD, and VA.',
     category: 'AI',
@@ -212,7 +212,7 @@ export const PLATFORM_BLOG_ARTICLES: PlatformBlogArticle[] = [
     slug: 'feasibility-studies',
     title: 'The Developer\'s Guide to Feasibility Studies with AI',
     description:
-      'Multi-scenario pro formas and sensitivity analysis for small-scale development in the DC metro — faster iteration with AI-assisted inputs.',
+      'Multi-scenario pro formas and sensitivity analysis for small-scale development in the DC metro — faster iteration with assisted by AI tools inputs.',
     category: 'Finance',
     datePublished: '2026-01-20',
     readTime: '7 min',
@@ -247,7 +247,7 @@ export const PLATFORM_BLOG_ARTICLES: PlatformBlogArticle[] = [
       {
         heading: 'AI moves upstream',
         paragraphs: [
-          'Owners expect fast concept visualization before committing to architectural fees. Platforms that combine AI concepts with a clear path to permit-ready drawings win on trust.',
+          'Owners expect fast concept visualization before committing to architectural fees. Platforms that combine design concepts with a clear path to permit-ready drawings win on trust.',
         ],
       },
       {

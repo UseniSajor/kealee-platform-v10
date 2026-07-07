@@ -35,8 +35,8 @@ export function getFallbackHero(
   const label = PROJECT_TYPE_LABELS[projectType] || 'Home Project'
   return {
     headline: `See Your Dream ${label} in 3D — From $99`,
-    subheadline: `Get an AI-powered concept for your ${label.toLowerCase()} in ${city}, ${state}. Choose from 3 packages and see your vision come to life before committing to major costs.`,
-    ctaText: 'Get Your AI Concept',
+    subheadline: `Get an powered by AI tools concept for your ${label.toLowerCase()} in ${city}, ${state}. Choose from 3 packages and see your vision come to life before committing to major costs.`,
+    ctaText: 'Get Your design concept',
     ctaHref: '#concept-packages',
     projectTypeLabel: label,
     locationLabel: `${city}, ${state}`,
@@ -68,7 +68,7 @@ export function getFallbackBudgetBreakdown(
 
 export function getFallbackTimeline(projectType: FunnelProjectType): TimelineData {
   const phases: TimelinePhase[] = [
-    { name: 'AI Concept & Design', durationWeeks: 1, description: 'AI generates your concept, you review and approve', order: 1 },
+    { name: 'Concept & Design', durationWeeks: 1, description: 'AI generates your concept, you review and approve', order: 1 },
     { name: 'Architecture Phase', durationWeeks: 4, description: 'Full architectural plans based on approved concept', order: 2 },
     { name: 'Permits (Kealee Handles)', durationWeeks: 4, description: 'Permit applications and approvals — we manage it all', order: 3 },
     { name: 'Construction Phase', durationWeeks: 8, description: 'Build phase with real-time tracking on Kealee platform', order: 4 },
@@ -85,13 +85,13 @@ export function getFallbackTimeline(projectType: FunnelProjectType): TimelineDat
 
 export function getFallbackPricing(budget: BudgetRange): PricingGridData {
   return {
-    title: 'AI Concept Packages',
+    title: 'Concept Packages',
     tiers: [
       {
         label: 'Basic',
         price: 9900,
         description: 'Perfect for exploring your vision',
-        features: ['AI-generated floor plan', '3D concept visualization', 'Budget estimate report', '48-hour delivery'],
+        features: ['generated using AI tools floor plan', '3D concept visualization', 'Budget estimate report', '48-hour delivery'],
       },
       {
         label: 'Enhanced',

@@ -522,7 +522,7 @@ function DetailsInner() {
             />
           </div>
           {errors.budget && <p className="text-xs text-red-500 mt-1">{errors.budget}</p>}
-          <p className="text-xs text-slate-400 mt-1">Your total budget for construction — not the AI concept fee</p>
+          <p className="text-xs text-slate-400 mt-1">Your total budget for construction — not the design concept fee</p>
         </div>
 
         {/* Timeline */}

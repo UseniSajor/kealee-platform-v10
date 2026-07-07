@@ -445,7 +445,7 @@ export const SERVICE_DELIVERABLES: Record<string, ServiceDeliverable> = {
     permitRequired: 'always',
     includes: [
       'Licensed architect / PE assigned to your project',
-      'AI concept review and integration into drawing set',
+      'design concept review and integration into drawing set',
       'Permit-ready drawing set (floor plan, elevations, site plan)',
       'PE stamp where required by jurisdiction',
       'Jurisdiction cover sheet and code compliance notes',
@@ -465,7 +465,7 @@ export const SERVICE_DELIVERABLES: Record<string, ServiceDeliverable> = {
     permitRequired: 'always',
     includes: [
       'Floor plan / layout direction',
-      'AI concept renderings (3–5 views)',
+      'design concept renderings (3–5 views)',
       PERMIT_ROADMAP_IN_DESIGN_BUNDLE,
       'Zoning and setback analysis tied to your concept massing',
       'Bill of Materials with line-item costs',

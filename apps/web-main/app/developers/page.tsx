@@ -10,7 +10,7 @@ import { RoleFAQ } from '@/components/roles/RoleFAQ'
 export const metadata: Metadata = {
   title: 'For Real Estate Developers — Kealee',
   description:
-    'Full-lifecycle development platform with feasibility modeling, capital stack management, investor reporting, and AI-powered portfolio analytics.',
+    'Full-lifecycle development platform with feasibility modeling, capital stack management, investor reporting, and powered by AI tools portfolio analytics.',
 }
 
 const BENEFITS = [

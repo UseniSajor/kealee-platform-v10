@@ -683,7 +683,7 @@ export const TWIN_KPI_DEFAULTS = {
   L3: {
     tier: "L3",
     description:
-      "Premium twin -- AI-powered predictions, real-time IoT, advanced analytics, and proactive alerting.",
+      "Premium twin -- powered by AI tools predictions, real-time IoT, advanced analytics, and proactive alerting.",
     kpis: [
       {
         key: "budget_variance",
@@ -801,7 +801,7 @@ export const OS_MODULES = [
     key: "os-dev",
     name: "OS Development",
     description:
-      "Design and development module. Architect coordination, drawing management, AI concept generation, and permit document preparation.",
+      "Design and development module. Architect coordination, drawing management, design concept generation, and permit document preparation.",
     defaultPhases: ["DESIGN", "PERMITS"],
   },
   {

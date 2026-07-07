@@ -203,7 +203,7 @@ export default function AiToolsPage() {
         <div>
           <h1 className="text-2xl font-black tracking-tight">AI Tools</h1>
           <p className="mt-2 text-sm text-zinc-700">
-            AI-powered analysis tools for cost estimation.
+            powered by AI tools analysis tools for cost estimation.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">

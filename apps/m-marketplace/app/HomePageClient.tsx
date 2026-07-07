@@ -373,8 +373,8 @@ export function HomePageClient({
             <ModuleShowcaseCard
               icon={FileCheck}
               title="Permits & Inspections"
-              subtitle="AI-Powered Review"
-              description="AI-powered permit review and submission for faster approvals."
+              subtitle="powered by AI tools Review"
+              description="powered by AI tools permit review and submission for faster approvals."
               features={[
                 'AI Compliance Review',
                 'Auto Form Filling',
@@ -487,12 +487,12 @@ export function HomePageClient({
                 { icon: Zap, title: 'MEP Engineering', desc: 'Mechanical, electrical, and plumbing system design' },
                 { icon: FileCheck, title: 'Permit Applications', desc: 'Full permit prep, submission, and approval tracking' },
                 { icon: CalendarCheck, title: 'Inspection Coordination', desc: 'Schedule, attend, and manage all building inspections' },
-                { icon: MapPin, title: 'Zoning Analysis', desc: 'AI-powered zoning compliance and density analysis' },
+                { icon: MapPin, title: 'Zoning Analysis', desc: 'powered by AI tools zoning compliance and density analysis' },
                 { icon: Calculator, title: 'Cost Estimating', desc: 'Assembly-based estimating with RSMeans cost data' },
                 { icon: Gavel, title: 'Bid Management', desc: 'Fair bid rotation, contractor vetting, and bid comparison' },
                 { icon: LayoutDashboard, title: 'Project Management', desc: 'Full PM with scheduling, budgeting, RFIs, and daily logs' },
                 { icon: ClipboardList, title: 'Construction Admin', desc: 'Submittals, RFIs, change orders, and field management' },
-                { icon: FileSearch, title: 'Document Intelligence', desc: 'AI-powered plan review, compliance checking, and analysis' },
+                { icon: FileSearch, title: 'Document Intelligence', desc: 'powered by AI tools plan review, compliance checking, and analysis' },
                 { icon: CheckCircle, title: 'Closeout & Warranty', desc: 'Punch lists, O&M manuals, warranty tracking, and final docs' },
               ].map((item) => {
                 const Icon = item.icon;
@@ -568,7 +568,7 @@ export function HomePageClient({
             <ModuleShowcaseCard
               icon={Calculator}
               title="Estimation"
-              subtitle="AI-Powered Takeoff"
+              subtitle="powered by AI tools Takeoff"
               description="Assembly-based cost estimating with AI takeoff and cost databases."
               features={[
                 'AI Takeoff',
@@ -720,7 +720,7 @@ export function HomePageClient({
             <PortalPreview
               portalName="Permits Portal"
               portalUrl="kealee.com/permits"
-              description="AI-powered permit review, auto form-filling, and real-time status tracking across 3,000+ jurisdictions."
+              description="powered by AI tools permit review, auto form-filling, and real-time status tracking across 3,000+ jurisdictions."
               heroImage={portalImages.permits.src}
               heroImageAlt={portalImages.permits.alt}
               accentColor="green"
@@ -895,7 +895,7 @@ export function HomePageClient({
             <PortalPreview
               portalName="Dev Package Generator"
               portalUrl="kealee.com/development-package"
-              description="AI-powered feasibility analysis for any address — zoning, costs, pro forma, and grant eligibility in minutes."
+              description="powered by AI tools feasibility analysis for any address — zoning, costs, pro forma, and grant eligibility in minutes."
               heroImage={portalImages.devPackage.src}
               heroImageAlt={portalImages.devPackage.alt}
               accentColor="teal"
@@ -959,7 +959,7 @@ export function HomePageClient({
               <em className="italic">Built Into the Platform</em>
             </h2>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Leverage the 21st Century Housing Act with AI-powered tools for zoning analysis, pre-approved designs, feasibility studies, and federal grant eligibility.
+              Leverage the 21st Century Housing Act with powered by AI tools tools for zoning analysis, pre-approved designs, feasibility studies, and federal grant eligibility.
             </p>
           </div>
 
@@ -968,7 +968,7 @@ export function HomePageClient({
               {
                 icon: MapPin,
                 title: 'Zoning Accelerator',
-                description: 'AI-powered zoning compliance, density analysis, and setback calculations for any address.',
+                description: 'powered by AI tools zoning compliance, density analysis, and setback calculations for any address.',
                 href: '/zoning/analyze',
                 color: brand.teal,
               },

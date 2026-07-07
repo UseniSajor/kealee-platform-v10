@@ -124,7 +124,7 @@ export default function PermitsOnlyPage() {
       <section style={{ padding: '72px 24px', background: '#fff' }}>
         <div style={{ maxWidth: 960, margin: '0 auto' }}>
           <h2 style={{ fontSize: 32, fontWeight: 800, textAlign: 'center', margin: '0 0 12px', color: '#111' }}>Choose Your Service</h2>
-          <p style={{ textAlign: 'center', color: '#6b7280', marginBottom: 48, fontSize: 15 }}>All tiers include AI-powered roadmap generation with human specialist review before submission.</p>
+          <p style={{ textAlign: 'center', color: '#6b7280', marginBottom: 48, fontSize: 15 }}>All tiers include powered by AI tools roadmap generation with human specialist review before submission.</p>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 24 }}>
             {TIERS.map(t => (
               <div

@@ -12,7 +12,7 @@ export default function CtaSection() {
           <Link href="/products" className="cc">
             <div>
               <h4>Browse all services</h4>
-              <p>AI design, permits, estimation, PM — every service in one place</p>
+              <p>design, permits, estimation, PM — every service in one place</p>
             </div>
             <span className="ccarr">→</span>
           </Link>

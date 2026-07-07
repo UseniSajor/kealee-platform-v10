@@ -72,7 +72,7 @@ const features = [
   {
     icon: Zap,
     title: 'Instant Results',
-    description: 'AI-powered analysis returns results in seconds, not days. Review zoning data for any parcel nationwide.',
+    description: 'powered by AI tools analysis returns results in seconds, not days. Review zoning data for any parcel nationwide.',
     color: brand.navy,
   },
 ];
@@ -136,7 +136,7 @@ export default function ZoningLandingPage() {
           </h1>
 
           <p className="text-lg lg:text-xl text-gray-600 max-w-2xl mx-auto mb-10" style={{ fontFamily: '"Plus Jakarta Sans", sans-serif' }}>
-            AI-powered zoning analysis, compliance checking, and permit checklists for any address in the US.
+            powered by AI tools zoning analysis, compliance checking, and permit checklists for any address in the US.
             Stop guessing — start building with confidence.
           </p>
 
@@ -303,7 +303,7 @@ export default function ZoningLandingPage() {
             Ready to Analyze Your Site?
           </h2>
           <p className="text-lg text-white/70 mb-8 max-w-xl mx-auto">
-            Get AI-powered zoning analysis, compliance reports, and permit checklists in minutes — not weeks.
+            Get powered by AI tools zoning analysis, compliance reports, and permit checklists in minutes — not weeks.
           </p>
           <div className="flex gap-4 justify-center flex-wrap">
             <Link

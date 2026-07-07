@@ -57,7 +57,7 @@ export type ZoningIntake = z.infer<typeof ZoningIntakeSchema>;
 
 /**
  * Concept Response Schema
- * Validates AI-generated concept response
+ * Validates generated using AI tools concept response
  */
 export const ConceptResponseSchema = z.object({
   mepSystem: z.object({
@@ -83,7 +83,7 @@ export type ConceptResponse = z.infer<typeof ConceptResponseSchema>;
 
 /**
  * Zoning Response Schema
- * Validates AI-generated zoning response
+ * Validates generated using AI tools zoning response
  */
 export const ZoningResponseSchema = z.object({
   jurisdiction: z.string(),

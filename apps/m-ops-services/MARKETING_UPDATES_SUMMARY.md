@@ -22,9 +22,9 @@ The marketing website has been updated to emphasize **delivered services** over 
 ### 2. **Added AI & Automation References (Subtle)**
 
 Strategic mentions throughout the site:
-- "Backed by AI-powered project analytics and automated risk monitoring"
-- "AI-powered analysis identifies gaps, risks, and immediate action items"
-- "AI-powered risk alerts escalate issues before they become problems"
+- "Backed by powered by AI tools project analytics and automated risk monitoring"
+- "powered by AI tools analysis identifies gaps, risks, and immediate action items"
+- "powered by AI tools risk alerts escalate issues before they become problems"
 - "Automated tracking of action items, decisions, and deliverables"
 - "Automated data collection ensures accuracy"
 - "Real-time alerts on budget concerns"
@@ -79,7 +79,7 @@ Integrated your provided copy throughout:
 
 ### How It Works Page (`/development/how-it-works`)
 - Updated process steps with automation references
-- Added AI-powered analysis mentions
+- Added powered by AI tools analysis mentions
 - Enhanced reporting descriptions
 - Emphasized delivered services vs platform
 
@@ -104,7 +104,7 @@ Integrated your provided copy throughout:
    - Independent, conflict-free advocacy
 
 2. **Technology as Enabler**
-   - AI-powered risk monitoring
+   - powered by AI tools risk monitoring
    - Automated reporting and tracking
    - Intelligent workflow automation
 
@@ -160,7 +160,7 @@ Integrated your provided copy throughout:
 - Never overshadows professional judgment
 
 **Examples of Good Balance:**
-- ✅ "AI-powered project analytics and automated risk monitoring"
+- ✅ "powered by AI tools project analytics and automated risk monitoring"
 - ✅ "Automated tracking supports our team coordination"
 - ✅ "Real-time alerts help us catch issues early"
 
@@ -249,7 +249,7 @@ Both use the same underlying platform but with different access and perspectives
    - Senior oversight without full-time cost
 
 4. **Technology**
-   - AI-powered risk monitoring
+   - powered by AI tools risk monitoring
    - Automated reporting systems
    - Real-time project analytics
 

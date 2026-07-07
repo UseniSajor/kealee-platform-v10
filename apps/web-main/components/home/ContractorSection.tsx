@@ -4,7 +4,7 @@ import { Container } from '@/components/ui/Container'
 
 const BENEFITS = [
   'Get matched to projects that fit your license and capacity',
-  'AI-powered bid assistant reduces quote time by 60%',
+  'powered by AI tools bid assistant reduces quote time by 60%',
   'Construction OS: schedule, daily logs, RFIs, punch list',
   'Escrow-protected payment — get paid on milestone completion',
   'Build your reputation score with every verified project',

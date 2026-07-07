@@ -59,7 +59,7 @@ const steps = [
 ]
 
 const timelines = [
-  { service: "Quick Budget", time: "4-8 hours", description: "AI-powered budget range based on project description" },
+  { service: "Quick Budget", time: "4-8 hours", description: "powered by AI tools budget range based on project description" },
   { service: "Conceptual Estimate", time: "1-2 days", description: "Preliminary estimate from basic drawings" },
   { service: "Detailed Estimate", time: "3-5 days", description: "Full line-item estimate from complete drawings" },
   { service: "Takeoff Services", time: "1-3 days", description: "Quantity extraction from project plans" },

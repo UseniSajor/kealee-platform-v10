@@ -169,7 +169,7 @@ export default function CheckoutSuccessPage() {
                     <Sparkles className="h-6 w-6 text-green-600" />
                   </div>
                   <h3 className="font-bold text-gray-900 mb-2">Concept Delivery</h3>
-                  <p className="text-sm text-gray-600">Your AI-generated concept package will be delivered within 24 hours.</p>
+                  <p className="text-sm text-gray-600">Your generated using AI tools concept package will be delivered within 24 hours.</p>
                 </div>
                 <div className="bg-white rounded-2xl border border-gray-200 p-6 text-left">
                   <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mb-4">

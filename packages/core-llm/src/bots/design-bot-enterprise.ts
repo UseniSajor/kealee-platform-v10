@@ -1,6 +1,6 @@
 /**
  * DESIGN BOT - ENTERPRISE EDITION
- * AI-powered home design concept generation
+ * powered by AI tools home design concept generation
  *
  * Improvements over v30:
  * - Multi-concept generation with variants

@@ -7,8 +7,8 @@
  * Score range: 0–100
  * Routing rules:
  *   DCS 0–40 AND budget < $65,000    → AI_ONLY
- *   DCS 41–70 OR budget >= $65,000   → HYBRID (AI concept as reference)
- *   DCS 71+                           → ARCHITECT_REQUIRED (skip AI concept)
+ *   DCS 41–70 OR budget >= $65,000   → HYBRID (design concept as reference)
+ *   DCS 71+                           → ARCHITECT_REQUIRED (skip design concept)
  *
  * Source: extracted from bots/keabot-design/src/scoring.ts
  * Pure function — no I/O, no LLM, no database.
@@ -77,7 +77,7 @@ export function scoreDCS(input: DCSInput): DCSResult {
   if (total >= 71) {
     route = 'ARCHITECT_REQUIRED';
     skipAiConcept = true;
-    routingReason = `DCS ${total} >= 71 — high complexity project requires architect (AI concept skipped)`;
+    routingReason = `DCS ${total} >= 71 — high complexity project requires architect (design concept skipped)`;
   } else if (total >= 41 || budget >= 65000) {
     route = 'HYBRID';
     routingReason = total >= 41
@@ -85,7 +85,7 @@ export function scoreDCS(input: DCSInput): DCSResult {
       : `Budget $${(budget / 1000).toLocaleString()}K >= $65K — hybrid AI + architect review required`;
   } else {
     route = 'AI_ONLY';
-    routingReason = `DCS ${total} <= 40 and budget < $65,000 — project qualifies for AI-assisted design`;
+    routingReason = `DCS ${total} <= 40 and budget < $65,000 — project qualifies for assisted by AI tools design`;
   }
 
   return {

@@ -151,7 +151,7 @@ export default function DashboardPage() {
             </div>
             <h3 className="font-bold text-gray-900 mb-2">No orders yet</h3>
             <p className="text-sm text-gray-500 mb-6 max-w-sm mx-auto">
-              Browse our concept packages to get an AI-generated design concept for your project.
+              Browse our concept packages to get an generated using AI tools design concept for your project.
             </p>
             <Link
               href="/pricing"
@@ -212,7 +212,7 @@ export default function DashboardPage() {
             <h3 className="font-bold text-gray-900">Start a Project</h3>
           </div>
           <p className="text-sm text-gray-500 mb-4">
-            Get AI-generated design concepts, contractor bids, and full project management.
+            Get generated using AI tools design concepts, contractor bids, and full project management.
           </p>
           <Link
             href="/dashboard/projects/new"

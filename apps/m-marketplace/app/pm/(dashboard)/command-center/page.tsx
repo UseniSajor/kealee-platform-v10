@@ -90,7 +90,7 @@ const APP_CONFIG: Record<string, {
   "APP-08": { icon: MessageSquare, description: "Centralized messaging, RFIs, and notifications", category: "operations", pmRoute: "/pm/communication" },
   "APP-09": { icon: ListChecks, description: "Manage and prioritize task workflows", category: "workflows", pmRoute: "/pm/tasks" },
   "APP-10": { icon: FileOutput, description: "Generate contracts, submittals, and forms", category: "workflows", pmRoute: "/pm/documents" },
-  "APP-11": { icon: BrainCircuit, description: "AI-powered project risk and cost predictions", category: "ai" },
+  "APP-11": { icon: BrainCircuit, description: "powered by AI tools project risk and cost predictions", category: "ai" },
   "APP-12": { icon: CalendarClock, description: "AI-optimized scheduling and resource allocation", category: "ai", pmRoute: "/pm/schedule" },
   "APP-13": { icon: ScanSearch, description: "Automated quality inspection analysis", category: "ai", pmRoute: "/pm/punch-list" },
   "APP-14": { icon: Scale, description: "Data-driven decision support for PMs", category: "ai" },

@@ -1,6 +1,6 @@
 /**
  * FLOORPLAN BOT ENDPOINT
- * Generates AI-powered floorplans and material takeoffs
+ * Generates powered by AI tools floorplans and material takeoffs
  */
 
 import { Router, Request, Response } from 'express';

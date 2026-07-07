@@ -159,7 +159,7 @@ export async function quickStartProject(data: {
 }
 
 /**
- * Trigger Auto Design — kicks off AI concept generation.
+ * Trigger Auto Design — kicks off design concept generation.
  * Activates: Claw A (scope → concepts), Claw F (notifications), Claw H (tracking)
  */
 export async function triggerAutoDesign(preconId: string, params?: {
@@ -288,7 +288,7 @@ export async function getRiskAssessment(projectId: string): Promise<{ risks: any
   return clawFetch(`/api/claws/risk/${projectId}`)
 }
 
-/** Get AI-generated decision recommendations */
+/** Get generated using AI tools decision recommendations */
 export async function getDecisions(projectId: string): Promise<{ decisions: any[] }> {
   return clawFetch(`/api/claws/risk/${projectId}/decisions`)
 }

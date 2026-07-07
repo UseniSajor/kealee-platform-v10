@@ -395,12 +395,12 @@ const estimationServices: ProductDefinition[] = [
   {
     key: 'estimation-basic',
     name: 'Basic Estimate',
-    description: 'AI-powered preliminary cost estimate',
+    description: 'powered by AI tools preliminary cost estimate',
     category: 'estimation',
     prices: [
       { nickname: 'Basic Estimate', unitAmount: 9900, currency: 'usd', interval: 'one_time' },
     ],
-    features: ['AI-generated estimate', 'CSI division breakdown', 'Regional cost factors', 'PDF report'],
+    features: ['generated using AI tools estimate', 'CSI division breakdown', 'Regional cost factors', 'PDF report'],
     metadata: { app: 'estimation-tool', tier: 'basic' },
   },
   {
@@ -429,7 +429,7 @@ const estimationServices: ProductDefinition[] = [
   {
     key: 'estimation-value-engineering',
     name: 'Value Engineering Report',
-    description: 'AI-powered cost optimization analysis',
+    description: 'powered by AI tools cost optimization analysis',
     category: 'estimation',
     prices: [
       { nickname: 'Value Engineering Report', unitAmount: 49900, currency: 'usd', interval: 'one_time' },

@@ -57,7 +57,7 @@ function drawCoverPage(doc: any, data: HomeownerDeliverables): void {
   doc.fontSize(28).fillColor('#0f172a').font('Helvetica-Bold')
      .text('Kealee', 50, 80)
   doc.fontSize(11).fillColor('#64748b').font('Helvetica')
-     .text('AI Concept Package', 50, 116)
+     .text('Concept Package', 50, 116)
 
   doc.moveDown(3)
 
@@ -78,7 +78,7 @@ function drawCoverPage(doc: any, data: HomeownerDeliverables): void {
 
   doc.moveDown(1)
   doc.fontSize(9).fillColor('#94a3b8')
-     .text('This AI-generated concept package is for planning and discussion purposes only. It is not a substitute for licensed architectural drawings, engineering plans, or permit-ready documents. Always verify zoning, code compliance, and project scope with licensed professionals before construction.', {
+     .text('This generated using AI tools concept package is for planning and discussion purposes only. It is not a substitute for licensed architectural drawings, engineering plans, or permit-ready documents. Always verify zoning, code compliance, and project scope with licensed professionals before construction.', {
        align: 'left',
        width: 495,
      })
@@ -386,9 +386,9 @@ export async function renderConceptPdf(input: ConceptPdfInput): Promise<ConceptP
       margin: 50,
       size: 'LETTER',
       info: {
-        Title: 'Kealee AI Concept Package',
+        Title: 'Kealee Concept Package',
         Author: 'Kealee Inc.',
-        Subject: 'AI-generated concept design package',
+        Subject: 'generated using AI tools concept design package',
       },
     })
 

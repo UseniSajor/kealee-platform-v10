@@ -31,7 +31,7 @@ const TWIN_KPI_TIERS = {
   L3: {
     tier: 'L3',
     label: 'Premium Twin',
-    description: 'AI-powered predictions, real-time IoT, advanced analytics, and proactive alerting.',
+    description: 'powered by AI tools predictions, real-time IoT, advanced analytics, and proactive alerting.',
     kpis: [
       { key: 'budget_variance', name: 'Budget Variance', unit: 'percent', thresholdWarning: 5, thresholdCritical: 10 },
       { key: 'schedule_spi', name: 'Schedule Performance Index (SPI)', unit: 'ratio', thresholdWarning: 0.9, thresholdCritical: 0.8 },

@@ -3,7 +3,7 @@ import Link from 'next/link';
 
 export const metadata: Metadata = {
   title: 'Permits & Inspections | Kealee',
-  description: 'Automated permit tracking, inspection scheduling, and AI-powered document review for compliance.',
+  description: 'Automated permit tracking, inspection scheduling, and powered by AI tools document review for compliance.',
 };
 
 export default function PermitsPage() {
@@ -21,7 +21,7 @@ export default function PermitsPage() {
     {
       icon: '🤖',
       title: 'AI Document Review',
-      description: 'AI-powered review catches common errors before submission to reduce rejections.',
+      description: 'powered by AI tools review catches common errors before submission to reduce rejections.',
     },
     {
       icon: '🔔',
@@ -101,7 +101,7 @@ export default function PermitsPage() {
           Permits & Inspections
         </h1>
         <p className="mt-4 text-xl text-zinc-600 max-w-3xl mx-auto">
-          Stop chasing permit statuses. Automated tracking, AI-powered reviews,
+          Stop chasing permit statuses. Automated tracking, powered by AI tools reviews,
           and seamless inspection scheduling for compliance.
         </p>
         <div className="mt-8 flex flex-wrap justify-center gap-4">

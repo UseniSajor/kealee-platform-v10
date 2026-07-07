@@ -1,6 +1,6 @@
 /**
  * FLOORPLAN BOT - ENTERPRISE EDITION
- * AI-powered floorplan generation and CAD output
+ * powered by AI tools floorplan generation and CAD output
  *
  * Improvements:
  * - Dimension-accurate floorplan generation

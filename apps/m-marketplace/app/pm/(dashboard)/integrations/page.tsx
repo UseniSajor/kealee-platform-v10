@@ -54,7 +54,7 @@ const INTEGRATIONS: IntegrationItem[] = [
   {
     id: "estimation-engine",
     name: "Estimation Engine",
-    description: "Construction cost estimation with AI-powered takeoff",
+    description: "Construction cost estimation with powered by AI tools takeoff",
     status: "connected",
     category: "Core Tools",
     details: "Create, edit, list estimates with status mapping (draft/review/sent/final). AI takeoff and cost databases.",

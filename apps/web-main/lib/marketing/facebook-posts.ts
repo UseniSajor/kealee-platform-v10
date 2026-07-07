@@ -170,7 +170,7 @@ The $79,000 quote included a full custom cabinet package they hadn't asked for �
 The $61,000 quote was the most complete, but included demo they could do themselves to bring costs down.
 
 What Kealee did:
-1. AI concept with 3 layout options — they chose the island configuration
+1. design concept with 3 layout options — they chose the island configuration
 2. Permit scope assessment — kitchen renovation required electrical and plumbing permits in Montgomery County
 3. Itemized cost estimate: $48,000–$58,000 for the scope they actually wanted
 4. Scope brief sent to all 3 contractors for re-bid
@@ -554,7 +554,7 @@ CONCEPT PACKAGES (48-hour turnaround):
 • Landscape/deck concept: $${CONCEPT_LANDSCAPE_PRICE}
 
 WHAT'S INCLUDED:
-→ 3 AI-generated layout options for your space
+→ 3 generated using AI tools layout options for your space
 → Itemized cost estimate by trade (demo, framing, MEP, finishes)
 → Permit scope assessment for your jurisdiction (DC, MD, or VA)
 → Contractor-ready scope brief for comparable bids

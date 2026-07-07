@@ -4,7 +4,7 @@ import { ArrowRight, CheckCircle, Pencil, FileText, Layers, Info } from 'lucide-
 
 export const metadata: Metadata = {
   title: 'Design Services — Permit-Ready Plans from Licensed Designers | Kealee',
-  description: 'Licensed architects and designers create permit-ready plans for your renovation, addition, or new build. From AI concept to stamped drawings — one continuous path.',
+  description: 'Licensed architects and designers create permit-ready plans for your renovation, addition, or new build. From design concept to stamped drawings — one continuous path.',
 }
 
 const COMPARISON = [
@@ -15,7 +15,7 @@ const COMPARISON = [
   },
   {
     feature: 'Can I pull a permit?',
-    concept: 'No — AI concepts are not permit-ready documents',
+    concept: 'No — design concepts are not permit-ready documents',
     design: 'Yes — stamped drawings are accepted by all DC-MD-VA jurisdictions',
   },
   {
@@ -110,7 +110,7 @@ export default function DesignServicesPage() {
           <p className="mt-5 text-lg text-gray-300 max-w-2xl mx-auto leading-relaxed">
             When you&apos;re ready to build, you need more than concept renderings — you need
             architect-stamped, permit-ready drawings. Our licensed design team takes you from
-            AI concept to construction documents.
+            design concept to construction documents.
           </p>
           <div className="mt-8 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
             <Link
@@ -124,25 +124,25 @@ export default function DesignServicesPage() {
               href="/concept-engine"
               className="inline-flex items-center gap-2 rounded-xl border border-white/30 px-6 py-3.5 text-sm font-semibold text-white/80 hover:text-white hover:border-white/50 transition-all"
             >
-              Start with AI Concept First
+              Start with design concept First
             </Link>
           </div>
         </div>
       </section>
 
-      {/* AI Concept vs Design Services explainer */}
+      {/* design concept vs Design Services explainer */}
       <section className="py-16 border-b border-gray-100">
         <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-3 mb-8">
             <Info className="h-5 w-5 text-blue-500 flex-shrink-0" />
             <h2 className="text-xl font-bold font-display" style={{ color: '#1A2B4A' }}>
-              AI Concept vs. Design Services — what&apos;s the difference?
+              design concept vs. Design Services — what&apos;s the difference?
             </h2>
           </div>
           <div className="overflow-hidden rounded-2xl border border-gray-200">
             <div className="grid grid-cols-3 bg-gray-50 px-5 py-3 text-xs font-bold uppercase tracking-widest text-gray-400">
               <span />
-              <span style={{ color: '#E8793A' }}>AI Concept</span>
+              <span style={{ color: '#E8793A' }}>design concept</span>
               <span style={{ color: '#2ABFBF' }}>Design Services</span>
             </div>
             {COMPARISON.map((row, i) => (
@@ -158,7 +158,7 @@ export default function DesignServicesPage() {
             ))}
           </div>
           <p className="mt-4 text-xs text-center text-gray-400">
-            Most homeowners start with an AI concept, then move to Design Services once they&apos;re ready to permit and build.
+            Most homeowners start with an design concept, then move to Design Services once they&apos;re ready to permit and build.
           </p>
         </div>
       </section>
@@ -244,7 +244,7 @@ export default function DesignServicesPage() {
         </div>
       </section>
 
-      {/* How it connects to AI concept */}
+      {/* How it connects to design concept */}
       <section className="py-16">
         <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
           <h2 className="text-2xl font-bold font-display text-center mb-10" style={{ color: '#1A2B4A' }}>
@@ -252,7 +252,7 @@ export default function DesignServicesPage() {
           </h2>
           <div className="flex flex-col sm:flex-row items-center gap-4">
             {[
-              { step: '1', label: 'AI Concept', sub: 'From $395', color: '#E8793A', href: '/concept-engine' },
+              { step: '1', label: 'design concept', sub: 'From $395', color: '#E8793A', href: '/concept-engine' },
               { step: '2', label: 'Design Services', sub: 'From $1,200', color: '#2ABFBF', href: '/pre-design' },
               { step: '3', label: 'Permit Submission', sub: 'From $595', color: '#38A169', href: '/permits' },
               { step: '4', label: 'Contractor Match', sub: 'Free matching', color: '#7C3AED', href: '/marketplace' },
@@ -277,7 +277,7 @@ export default function DesignServicesPage() {
             ))}
           </div>
           <p className="mt-8 text-center text-sm text-gray-400">
-            Already have an AI concept? Bring it to our design team and we&apos;ll take it from visualization to permit-ready documents.
+            Already have an design concept? Bring it to our design team and we&apos;ll take it from visualization to permit-ready documents.
           </p>
         </div>
       </section>

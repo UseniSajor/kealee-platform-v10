@@ -16,7 +16,7 @@ import {
 import { BeforeAfterMedia } from '@/components/marketing/BeforeAfterMedia'
 import { ProcessVideoLoop } from '@/components/marketing/ProcessVideoLoop'
 
-// Precon = AI concepts, estimates, permits (digital deliverables)
+// Precon = design concepts, estimates, permits (digital deliverables)
 // Build = construction execution (separate flow)
 const PRECON_SERVICES = SERVICES.filter((s) => s.phase === 'precon')
 const BUILD_SERVICES = SERVICES.filter((s) => s.phase === 'build')
@@ -273,7 +273,7 @@ export default function GalleryPage() {
       {/* CTA strip */}
       <div className="bg-[#1A2B4A] py-12 px-4 text-center">
         <h2 className="text-2xl font-bold text-white mb-3">Not sure where to start?</h2>
-        <p className="text-slate-400 mb-6">Get an AI-designed concept first — then move to permits or build management when you're ready.</p>
+        <p className="text-slate-400 mb-6">Get an designed using AI tools concept first — then move to permits or build management when you're ready.</p>
         <Link
           href="/concept"
           className="inline-flex items-center gap-2 bg-[#E8724B] hover:bg-[#D45C33] text-white font-bold px-7 py-3.5 rounded-xl transition-all duration-200"

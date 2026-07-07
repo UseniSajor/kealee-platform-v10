@@ -85,9 +85,9 @@ const preConPackages = [
     price: '$199',
     priceNote: 'one-time',
     popular: false,
-    description: 'Get started with AI-generated concepts to see what is possible on your lot and budget.',
+    description: 'Get started with generated using AI tools concepts to see what is possible on your lot and budget.',
     includes: [
-      '2 AI-generated floor plan options',
+      '2 generated using AI tools floor plan options',
       'Basic room layout & dimensions',
       'Rough cost estimate',
       'Up to 5 design revisions with AI',
@@ -101,9 +101,9 @@ const preConPackages = [
     price: '$499',
     priceNote: 'one-time',
     popular: true,
-    description: 'Our most popular option — detailed AI concepts with 3D renderings and material suggestions.',
+    description: 'Our most popular option — detailed design concepts with 3D renderings and material suggestions.',
     includes: [
-      '3 AI-generated design concepts',
+      '3 generated using AI tools design concepts',
       'Detailed floor plans with 3D renderings',
       'Material & finish suggestions',
       'Detailed cost breakdown',
@@ -121,7 +121,7 @@ const preConPackages = [
     popular: false,
     description: 'Full concept package with 5 options, sustainability scoring, and permit-readiness assessment.',
     includes: [
-      '5 AI-generated design concepts',
+      '5 generated using AI tools design concepts',
       'Full floor plans, 3D renders & elevations',
       'Material specifications & cost analysis',
       'Energy efficiency & sustainability scoring',
@@ -254,7 +254,7 @@ const howItWorksSteps = [
   },
   {
     number: 2,
-    title: 'AI Designs Your Concepts',
+    title: 'designs Your Concepts',
     description: 'Our AI generates floor plans, 3D renders, and cost estimates. You get 5 rounds of revisions, then pick from 3 final options.',
     icon: Brain,
     phase: 'Pre-Con',
@@ -409,7 +409,7 @@ export function ProjectOwnerLandingClient() {
         eyebrow="For Homeowners & Project Owners"
         eyebrowColor="navy"
         headline="From Concept to Keys &mdash; We Handle Every Step"
-        subheadline="Kealee guides you from AI-powered design concepts through professional architecture, permitting, and build. Start with a concept &mdash; your fee is credited when you move to the next phase."
+        subheadline="Kealee guides you from powered by AI tools design concepts through professional architecture, permitting, and build. Start with a concept &mdash; your fee is credited when you move to the next phase."
         ctas={[
           { label: 'Start Your Project', href: '/owner/precon/new', variant: 'primary' },
           { label: 'See How It Works', href: '#how-it-works', variant: 'outline' },
@@ -447,8 +447,8 @@ export function ProjectOwnerLandingClient() {
             {[
               {
                 icon: Brain,
-                title: 'AI Concept Design',
-                desc: 'Get AI-generated floor plans, 3D renderings, and cost estimates in minutes. Explore multiple layouts before committing to an architect.',
+                title: 'design concept Design',
+                desc: 'Get generated using AI tools floor plans, 3D renderings, and cost estimates in minutes. Explore multiple layouts before committing to an architect.',
                 color: brand.navy,
               },
               {
@@ -537,7 +537,7 @@ export function ProjectOwnerLandingClient() {
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {[
-              { icon: Brain, title: 'AI Design Engine', desc: 'Generate floor plans and 3D concepts from a text description of your project' },
+              { icon: Brain, title: 'Design Engine', desc: 'Generate floor plans and 3D concepts from a text description of your project' },
               { icon: DollarSign, title: 'Instant Cost Estimates', desc: 'Assembly-level cost breakdowns with regional pricing before you hire anyone' },
               { icon: MapPin, title: 'Zoning Checker', desc: 'Verify what you can build on your lot — setbacks, height, density, and variances' },
               { icon: FileCheck, title: 'Permit Tracker', desc: 'Track every permit from application through inspection to certificate of occupancy' },
