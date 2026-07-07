@@ -47,7 +47,7 @@ importers:
         version: 3.8.1
       '@kealee/observability':
         specifier: workspace:^
-        version: file:packages/observability
+        version: link:packages/observability
       '@sentry/nextjs':
         specifier: ^10.38.0
         version: 10.49.0(@opentelemetry/core@2.7.0)(@opentelemetry/sdk-trace-base@2.7.0)(next@14.2.35)(react@18.2.0)(webpack@5.106.2)
@@ -147,7 +147,7 @@ importers:
         version: 5.10.1
       isomorphic-dompurify:
         specifier: ^2.35.0
-        version: 2.36.0
+        version: 2.36.0(canvas@3.2.3)
       jest:
         specifier: ^29.7.0
         version: 29.7.0(@types/node@20.19.39)
@@ -172,9 +172,6 @@ importers:
       typescript:
         specifier: ^5.9.3
         version: 5.9.3
-    dependenciesMeta:
-      '@kealee/observability':
-        injected: true
 
   apps/api:
     dependencies:
@@ -692,49 +689,49 @@ importers:
         version: 0.74.0(zod@4.3.6)
       '@kealee/auth':
         specifier: workspace:*
-        version: file:packages/auth(next@14.2.35)(react@18.2.0)(zod@4.3.6)
+        version: link:../../packages/auth
       '@kealee/automation':
         specifier: workspace:*
-        version: file:packages/automation(react-dom@18.2.0)(zod@4.3.6)
+        version: link:../../packages/automation
       '@kealee/communications':
         specifier: workspace:*
-        version: file:packages/communications(react-dom@18.2.0)(zod@4.3.6)
+        version: link:../../packages/communications
       '@kealee/concept-engine':
         specifier: workspace:*
-        version: file:packages/concept-engine
+        version: link:../../packages/concept-engine
       '@kealee/core-llm':
         specifier: workspace:*
-        version: file:packages/core-llm
+        version: link:../../packages/core-llm
       '@kealee/core-rules':
         specifier: workspace:*
-        version: file:packages/core-rules
+        version: link:../../packages/core-rules
       '@kealee/database':
         specifier: workspace:*
-        version: file:packages/database(zod@4.3.6)
+        version: link:../../packages/database
       '@kealee/intake':
         specifier: workspace:*
-        version: file:packages/intake
+        version: link:../../packages/intake
       '@kealee/kealee-agent-stack':
         specifier: workspace:*
-        version: file:packages/kealee-agent-stack(zod@4.3.6)
+        version: link:../../packages/kealee-agent-stack
       '@kealee/marketing-agency':
         specifier: workspace:*
-        version: file:packages/marketing-agency
+        version: link:../../packages/marketing-agency
       '@kealee/marketing-privacy':
         specifier: workspace:*
-        version: file:packages/marketing-privacy
+        version: link:../../packages/marketing-privacy
       '@kealee/pascal-wrapper':
         specifier: workspace:*
-        version: file:packages/pascal-wrapper(@types/react@18.3.28)(@types/three@0.170.0)(react-dom@18.2.0)(react@18.2.0)
+        version: link:../../packages/pascal-wrapper
       '@kealee/shared':
         specifier: workspace:*
-        version: file:packages/shared
+        version: link:../../packages/shared
       '@kealee/storage':
         specifier: workspace:*
-        version: file:packages/storage
+        version: link:../../packages/storage
       '@kealee/ui':
         specifier: workspace:*
-        version: file:packages/ui(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@opentelemetry/sdk-trace-base@2.7.0)(@playwright/test@1.59.1)(@types/react-dom@18.3.7)(@types/react@18.3.28)(openai@4.104.0)(react-dom@18.2.0)(react@18.2.0)(webpack@5.106.2)
+        version: link:../../packages/ui
       '@stripe/react-stripe-js':
         specifier: ^3.7.0
         version: 3.10.0(@stripe/stripe-js@5.10.0)(react-dom@18.2.0)(react@18.2.0)
@@ -778,37 +775,6 @@ importers:
       cross-env:
         specifier: ^10.1.0
         version: 10.1.0
-    dependenciesMeta:
-      '@kealee/auth':
-        injected: true
-      '@kealee/automation':
-        injected: true
-      '@kealee/communications':
-        injected: true
-      '@kealee/concept-engine':
-        injected: true
-      '@kealee/core-llm':
-        injected: true
-      '@kealee/core-rules':
-        injected: true
-      '@kealee/database':
-        injected: true
-      '@kealee/intake':
-        injected: true
-      '@kealee/kealee-agent-stack':
-        injected: true
-      '@kealee/marketing-agency':
-        injected: true
-      '@kealee/marketing-privacy':
-        injected: true
-      '@kealee/pascal-wrapper':
-        injected: true
-      '@kealee/shared':
-        injected: true
-      '@kealee/storage':
-        injected: true
-      '@kealee/ui':
-        injected: true
 
   bots/keabot-command:
     dependencies:
@@ -1510,6 +1476,9 @@ importers:
       '@react-email/components':
         specifier: ^0.0.25
         version: 0.0.25(react-dom@18.2.0)(react@18.2.0)
+      ioredis:
+        specifier: ^5.3.2
+        version: 5.10.1
       react:
         specifier: ^18.2.0
         version: 18.2.0
@@ -4435,7 +4404,7 @@ packages:
       '@babel/types': 7.29.0
       '@jridgewell/remapping': 2.3.5
       convert-source-map: 2.0.0
-      debug: 4.4.3
+      debug: 4.4.3(supports-color@5.5.0)
       gensync: 1.0.0-beta.2
       json5: 2.2.3
       semver: 6.3.1
@@ -5783,7 +5752,7 @@ packages:
       '@babel/parser': 7.29.2
       '@babel/template': 7.28.6
       '@babel/types': 7.29.0
-      debug: 4.4.3
+      debug: 4.4.3(supports-color@5.5.0)
     transitivePeerDependencies:
       - supports-color
 
@@ -7637,7 +7606,7 @@ packages:
       mustache: 4.2.0
       p-queue: 6.6.2
       uuid: 11.1.0
-      zod: 4.3.6
+      zod: 3.25.76
     transitivePeerDependencies:
       - '@opentelemetry/api'
       - '@opentelemetry/exporter-trace-otlp-proto'
@@ -7675,7 +7644,7 @@ packages:
     peerDependencies:
       '@langchain/core': ^1.0.1
     dependencies:
-      '@langchain/core': 1.1.40(@opentelemetry/api@1.9.1)(@opentelemetry/sdk-trace-base@2.7.0)(openai@4.104.0)
+      '@langchain/core': 1.1.40(@opentelemetry/api@1.9.1)(@opentelemetry/sdk-trace-base@2.7.0)(openai@6.34.0)
       uuid: 10.0.0
     dev: false
 
@@ -7699,7 +7668,7 @@ packages:
       vue:
         optional: true
     dependencies:
-      '@langchain/core': 1.1.40(@opentelemetry/api@1.9.1)(@opentelemetry/sdk-trace-base@2.7.0)(openai@4.104.0)
+      '@langchain/core': 1.1.40(@opentelemetry/api@1.9.1)(@opentelemetry/sdk-trace-base@2.7.0)(openai@6.34.0)
       '@types/json-schema': 7.0.15
       p-queue: 9.1.2
       p-retry: 7.1.1
@@ -7719,7 +7688,7 @@ packages:
       zod-to-json-schema:
         optional: true
     dependencies:
-      '@langchain/core': 1.1.40(@opentelemetry/api@1.9.1)(@opentelemetry/sdk-trace-base@2.7.0)(openai@4.104.0)
+      '@langchain/core': 1.1.40(@opentelemetry/api@1.9.1)(@opentelemetry/sdk-trace-base@2.7.0)(openai@6.34.0)
       '@langchain/langgraph-checkpoint': 1.0.1(@langchain/core@1.1.40)
       '@langchain/langgraph-sdk': 1.8.9(@langchain/core@1.1.40)(react-dom@18.2.0)(react@18.2.0)
       '@standard-schema/spec': 1.1.0
@@ -7738,7 +7707,7 @@ packages:
     peerDependencies:
       '@langchain/core': ^1.1.39
     dependencies:
-      '@langchain/core': 1.1.40(@opentelemetry/api@1.9.1)(@opentelemetry/sdk-trace-base@2.7.0)(openai@4.104.0)
+      '@langchain/core': 1.1.40(@opentelemetry/api@1.9.1)(@opentelemetry/sdk-trace-base@2.7.0)(openai@6.34.0)
       js-tiktoken: 1.0.21
       openai: 6.34.0(zod@4.3.6)
       zod: 4.3.6
@@ -13460,7 +13429,7 @@ packages:
     resolution: {integrity: sha512-RZNwNclF7+MS/8bDg70amg32dyeZGZxiDuQmZxKLAlQjr3jGyLx+4Kkk58UO7D2QdgFIQCovuSuZESne6RG6XQ==}
     engines: {node: '>= 6.0.0'}
     dependencies:
-      debug: 4.4.3
+      debug: 4.4.3(supports-color@5.5.0)
     transitivePeerDependencies:
       - supports-color
 
@@ -14097,7 +14066,6 @@ packages:
 
   /base64-js@1.5.1:
     resolution: {integrity: sha512-AKpaYlHn8t4SVbOHCy+b5+KKgvR4vrsD8vbvrbiQJps7fKDTkjkDry6ji0rUJjC0kzbNePLwzxq8iypo41qeWA==}
-    dev: false
 
   /base64url@3.0.1:
     resolution: {integrity: sha512-ir1UPr3dkwexU7FdV8qBBbNDRUhMmIekYMFZfi+C/sLNnRESKPl23nB9b2pltqfOQNnGzsDdId90AEtG5tCx4A==}
@@ -14143,7 +14111,6 @@ packages:
       buffer: 5.7.1
       inherits: 2.0.4
       readable-stream: 3.6.2
-    dev: false
 
   /bmp-js@0.1.0:
     resolution: {integrity: sha512-vHdS19CnY3hwiNdkaqk93DvjVLfbEcI8mys4UjuWrlX1haDmroo8o4xCzh4wD6DGV6HxRCyauwhHRqMTfERtjw==}
@@ -14276,7 +14243,6 @@ packages:
     dependencies:
       base64-js: 1.5.1
       ieee754: 1.2.1
-    dev: false
 
   /buffer@6.0.3:
     resolution: {integrity: sha512-FTiCpNxtwiZZHEZbcbTIcZjERVICn9yq/pDFkTl95/AxzD1naBctN7YO68riM/gLSDY7sdrMby8hofADYuuqOA==}
@@ -14399,7 +14365,6 @@ packages:
     dependencies:
       node-addon-api: 7.1.1
       prebuild-install: 7.1.3
-    dev: false
 
   /canvaskit-wasm@0.39.1:
     resolution: {integrity: sha512-Gy3lCmhUdKq+8bvDrs9t8+qf7RvcjuQn+we7vTVVyqgOVO1UVfHpsnBxkTZw+R4ApEJ3D5fKySl9TU11hmjl/A==}
@@ -14543,7 +14508,6 @@ packages:
 
   /chownr@1.1.4:
     resolution: {integrity: sha512-jJ0bqzaylmJtVnNgzTeSOs8DPavpbYgEr/b0YL8/2GO3xJEhInFmhKMUnEJQjZumK7KXGFhUy89PrsJWlakBVg==}
-    dev: false
 
   /chownr@3.0.0:
     resolution: {integrity: sha512-+IxzY9BZOQd/XuYPRmrvEVjF/nqj5kgT4kEq7VofrDoM1MxoRjEWkrCC3EtLi59TVawxTAn+orJwFQcrqEN1+g==}
@@ -15211,17 +15175,6 @@ packages:
       ms: 2.1.2
     dev: false
 
-  /debug@4.4.3:
-    resolution: {integrity: sha512-RGwwWnwQvkVfavKVt22FGLw+xYSdzARwm0ru6DhTVA3umU5hZc28V3kO4stgYryrTlLpuvgI9GiijltAjNbcqA==}
-    engines: {node: '>=6.0'}
-    peerDependencies:
-      supports-color: '*'
-    peerDependenciesMeta:
-      supports-color:
-        optional: true
-    dependencies:
-      ms: 2.1.3
-
   /debug@4.4.3(supports-color@5.5.0):
     resolution: {integrity: sha512-RGwwWnwQvkVfavKVt22FGLw+xYSdzARwm0ru6DhTVA3umU5hZc28V3kO4stgYryrTlLpuvgI9GiijltAjNbcqA==}
     engines: {node: '>=6.0'}
@@ -15252,7 +15205,6 @@ packages:
     engines: {node: '>=10'}
     dependencies:
       mimic-response: 3.1.0
-    dev: false
 
   /dedent@1.7.2:
     resolution: {integrity: sha512-WzMx3mW98SN+zn3hgemf4OzdmyNhhhKz5Ay0pUfQiMQ3e1g+xmTJWp/pKdwKVXhdSkAEGIIzqeuWrL3mV/AXbA==}
@@ -15301,7 +15253,6 @@ packages:
   /deep-extend@0.6.0:
     resolution: {integrity: sha512-LOHxIOaPYdHlJRtCQfDIVZtfw/ufM8+rVj649RIHzcm/vGwQRXFt6OPqIFWsm2XEMrNIEtWR64sY1LEKD2vAOA==}
     engines: {node: '>=4.0.0'}
-    dev: false
 
   /deep-is@0.1.4:
     resolution: {integrity: sha512-oIPzksmTg4/MriiaYGO+okXDT7ztn/w3Eptv/+gSIdMdKsJo0u4CfYNFJPy+4SKMuCqGw2wxnA+URMg3t8a/bQ==}
@@ -15391,7 +15342,6 @@ packages:
   /detect-libc@2.1.2:
     resolution: {integrity: sha512-Btj2BOOO83o3WyH59e8MgXsxEQVcarkUOpEYrubB0urwnN10yQ364rsiByU11nZlqWYZm05i/of7io4mzihBtQ==}
     engines: {node: '>=8'}
-    dev: false
 
   /detect-newline@3.1.0:
     resolution: {integrity: sha512-TLz+x/vEXm/Y7P7wn1EJFNLxYpUD4TgMosxY6fAVJUnJMbupHBOncxyWUG9OpTaH9EBD7uFI5LfEgmMOc54DsA==}
@@ -15638,7 +15588,6 @@ packages:
     resolution: {integrity: sha512-ooEGc6HP26xXq/N+GCGOT0JKCLDGrq2bQUZrQ7gyrJiZANJ/8YDTxTpQBXGMn+WbIQXNVpyWymm7KYVICQnyOg==}
     dependencies:
       once: 1.4.0
-    dev: false
 
   /enhanced-resolve@5.20.1:
     resolution: {integrity: sha512-Qohcme7V1inbAfvjItgw0EaxVX5q2rdVEZHRBrEQdRZTssLDGsL8Lwrznl8oQ/6kuTJONLaDcGjkNP247XEhcA==}
@@ -16251,7 +16200,6 @@ packages:
   /expand-template@2.0.3:
     resolution: {integrity: sha512-XYfuKMvj4O35f/pOXLObndIRvyQ+/+6AhODh+OKWj9S9498pHHn/IMszH+gt0fBCRWMNfk1ZSp5x3AifmnI2vg==}
     engines: {node: '>=6'}
-    dev: false
 
   /expect-type@1.3.0:
     resolution: {integrity: sha512-knvyeauYhqjOYvQ66MznSMs83wmHrCycNEN6Ao+2AeYEfxUIkuiVxdEa1qlGEPK+We3n0THiDciYSsCcgW/DoA==}
@@ -16844,7 +16792,6 @@ packages:
 
   /fs-constants@1.0.0:
     resolution: {integrity: sha512-y6OAwoSIf7FyjMIv94u+b5rdheZEjzR63GTyZJm5qh4Bi+2YgwLCcI/fPFZkL5PSixOt6ZNKm+w+Hfp/Bciwow==}
-    dev: false
 
   /fs-extra@8.1.0:
     resolution: {integrity: sha512-yhlQgA6mnOJUKOsRUFsgJdQCvkKhcz8tlZG5HBQfReYZy46OwLcY+Zia0mtdHsOo9y/hP+CxMN0TU9QxoOtG4g==}
@@ -17050,7 +16997,6 @@ packages:
 
   /github-from-package@0.0.0:
     resolution: {integrity: sha512-SyHy3T1v2NUXn29OsWdxmK6RwHD+vkj3v8en8AOBZ1wBQ/hCAQ5bAQTD02kW4W9tUp/3Qh6J8r9EvntiyCmOOw==}
-    dev: false
 
   /glob-parent@5.1.2:
     resolution: {integrity: sha512-AOIgSQCepiJYwP3ARnGx+5VnTu2HBYdzbGP45eLw1vr3zB3vZLeyed1sC9hnbcOc9/SrMyM5RPQrkGz4aS9Zow==}
@@ -17550,7 +17496,7 @@ packages:
     engines: {node: '>= 14'}
     dependencies:
       agent-base: 7.1.4
-      debug: 4.4.3
+      debug: 4.4.3(supports-color@5.5.0)
     transitivePeerDependencies:
       - supports-color
 
@@ -17565,7 +17511,7 @@ packages:
     engines: {node: '>= 6'}
     dependencies:
       agent-base: 6.0.2
-      debug: 4.4.3
+      debug: 4.4.3(supports-color@5.5.0)
     transitivePeerDependencies:
       - supports-color
 
@@ -17574,7 +17520,7 @@ packages:
     engines: {node: '>= 14'}
     dependencies:
       agent-base: 7.1.4
-      debug: 4.4.3
+      debug: 4.4.3(supports-color@5.5.0)
     transitivePeerDependencies:
       - supports-color
 
@@ -17624,7 +17570,6 @@ packages:
 
   /ieee754@1.2.1:
     resolution: {integrity: sha512-dcyqhDvX1C46lXZcVqCpK+FtMRQVdIMN6/Df5js2zouUsqG7I6sFxitIC+7KYK29KdXOLHdu9zL4sFnoVQnqaA==}
-    dev: false
 
   /ignore-by-default@1.0.1:
     resolution: {integrity: sha512-Ius2VYcGNk7T90CppJqcIkS5ooHUZyIQK+ClZfMfMNFEF9VSE73Fq+906u/CWu92x4gzZMWOwfFYckPObzdEbA==}
@@ -17722,7 +17667,6 @@ packages:
 
   /ini@1.3.8:
     resolution: {integrity: sha512-JV/yugV2uzW5iMRSiZAyDtQd+nxtUnjeLt0acNdw98kKLrvuRVyB80tsREOE7yvGVgalhZ6RNXCmEHkUKBKxew==}
-    dev: false
 
   /internal-slot@1.1.0:
     resolution: {integrity: sha512-4gd7VpWNQNB4UKKCFFVcp1AVv+FMOgs9NKzjHKusc8jTMhd5eL1NqQqOpE0KzMds804/yHlglp3uxgluOqAPLw==}
@@ -17747,7 +17691,7 @@ packages:
     dependencies:
       '@ioredis/commands': 1.5.1
       cluster-key-slot: 1.1.2
-      debug: 4.4.3
+      debug: 4.4.3(supports-color@5.5.0)
       denque: 2.1.0
       lodash.defaults: 4.2.0
       lodash.isarguments: 3.1.0
@@ -18078,18 +18022,6 @@ packages:
     resolution: {integrity: sha512-WhB9zCku7EGTj/HQQRz5aUQEUeoQZH2bWcltRErOpymJ4boYE6wL9Tbr23krRPSZ+C5zqNSrSw+Cc7sZZ4b7vg==}
     engines: {node: '>=0.10.0'}
 
-  /isomorphic-dompurify@2.36.0:
-    resolution: {integrity: sha512-E8YkGyPY3a/U5s0WOoc8Ok+3SWL/33yn2IHCoxCFLBUUPVy9WGa++akJZFxQCcJIhI+UvYhbrbnTIFQkHKZbgA==}
-    engines: {node: '>=20.19.5'}
-    dependencies:
-      dompurify: 3.4.1
-      jsdom: 28.1.0
-    transitivePeerDependencies:
-      - '@noble/hashes'
-      - canvas
-      - supports-color
-    dev: true
-
   /isomorphic-dompurify@2.36.0(canvas@3.2.3):
     resolution: {integrity: sha512-E8YkGyPY3a/U5s0WOoc8Ok+3SWL/33yn2IHCoxCFLBUUPVy9WGa++akJZFxQCcJIhI+UvYhbrbnTIFQkHKZbgA==}
     engines: {node: '>=20.19.5'}
@@ -18100,7 +18032,6 @@ packages:
       - '@noble/hashes'
       - canvas
       - supports-color
-    dev: false
 
   /istanbul-lib-coverage@3.2.2:
     resolution: {integrity: sha512-O8dpsF+r0WV/8MNRKfnmrtCWhuKjxrq2w+jpzBL5UZKTi2LeVWnWOmWRxFlesJONmc+wLAGvKQZEOanko0LFTg==}
@@ -18146,7 +18077,7 @@ packages:
     resolution: {integrity: sha512-n3s8EwkdFIJCG3BPKBYvskgXGoy88ARzvegkitk60NxRdwltLOTaH7CUiMRXvwYorl0Q712iEjcWB+fK/MrWVw==}
     engines: {node: '>=10'}
     dependencies:
-      debug: 4.4.3
+      debug: 4.4.3(supports-color@5.5.0)
       istanbul-lib-coverage: 3.2.2
       source-map: 0.6.1
     transitivePeerDependencies:
@@ -18786,41 +18717,6 @@ packages:
       - utf-8-validate
     dev: true
 
-  /jsdom@28.1.0:
-    resolution: {integrity: sha512-0+MoQNYyr2rBHqO1xilltfDjV9G7ymYGlAUazgcDLQaUf8JDHbuGwsxN6U9qWaElZ4w1B2r7yEGIL3GdeW3Rug==}
-    engines: {node: ^20.19.0 || ^22.12.0 || >=24.0.0}
-    peerDependencies:
-      canvas: ^3.0.0
-    peerDependenciesMeta:
-      canvas:
-        optional: true
-    dependencies:
-      '@acemir/cssom': 0.9.31
-      '@asamuzakjp/dom-selector': 6.8.1
-      '@bramus/specificity': 2.4.2
-      '@exodus/bytes': 1.15.0
-      cssstyle: 6.2.0
-      data-urls: 7.0.0
-      decimal.js: 10.6.0
-      html-encoding-sniffer: 6.0.0
-      http-proxy-agent: 7.0.2
-      https-proxy-agent: 7.0.6
-      is-potential-custom-element-name: 1.0.1
-      parse5: 8.0.1
-      saxes: 6.0.0
-      symbol-tree: 3.2.4
-      tough-cookie: 6.0.1
-      undici: 7.25.0
-      w3c-xmlserializer: 5.0.0
-      webidl-conversions: 8.0.1
-      whatwg-mimetype: 5.0.0
-      whatwg-url: 16.0.1
-      xml-name-validator: 5.0.0
-    transitivePeerDependencies:
-      - '@noble/hashes'
-      - supports-color
-    dev: true
-
   /jsdom@28.1.0(canvas@3.2.3):
     resolution: {integrity: sha512-0+MoQNYyr2rBHqO1xilltfDjV9G7ymYGlAUazgcDLQaUf8JDHbuGwsxN6U9qWaElZ4w1B2r7yEGIL3GdeW3Rug==}
     engines: {node: ^20.19.0 || ^22.12.0 || >=24.0.0}
@@ -18855,7 +18751,6 @@ packages:
     transitivePeerDependencies:
       - '@noble/hashes'
       - supports-color
-    dev: false
 
   /jsesc@3.1.0:
     resolution: {integrity: sha512-/sM3dO2FOzXjKQhJuo0Q173wf2KOo8t4I8vHy6lF9poUp7bKT0/NHE8fPX23PwfhnykfqnC2xRxOnVw5XuGIaA==}
@@ -18897,7 +18792,7 @@ packages:
     resolution: {integrity: sha512-pJ4XLQP4Q9HTxl6RVDLJ8Cyh1uitSs0CzDBAz1uoJ4sRD/Bk7cFSXL1FUXDW3zJ7YnfliJx6eu8Jn283bpZ4Yg==}
     engines: {node: '>=10'}
     dependencies:
-      debug: 4.4.3
+      debug: 4.4.3(supports-color@5.5.0)
       rfdc: 1.4.1
       uri-js: 4.4.1
     transitivePeerDependencies:
@@ -19768,7 +19663,6 @@ packages:
   /mimic-response@3.1.0:
     resolution: {integrity: sha512-z0yWI+4FDrrweS8Zmt4Ej5HdJmky15+L2e6Wgn3+iK5fWzb6T3fhNFq2+MeTRb064c6Wr4N/wv0DzQTjNzHNGQ==}
     engines: {node: '>=10'}
-    dev: false
 
   /min-indent@1.0.1:
     resolution: {integrity: sha512-I9jwMn07Sy/IwOj3zVkVik2JTvgpaykDZEigL6Rx6N9LbMywwUSMtxET+7lVoDLLd3O3IXwJwvuuns8UB/HeAg==}
@@ -19852,7 +19746,6 @@ packages:
 
   /mkdirp-classic@0.5.3:
     resolution: {integrity: sha512-gKLcREMhtuZRwRAfqP3RFW+TK4JqApVBtOIftVgjuABpAtpxhPGaDcfvbhNvD0B8iD1oUr/txX35NjcaY6Ns/A==}
-    dev: false
 
   /mkdirp@0.5.6:
     resolution: {integrity: sha512-FP+p8RB8OWpF3YZBCrP5gtADmtXApB5AMLn+vdyA+PyxCjrCs00mjyUozssO33cwDeT3wNGdLxJ5M//YqtHAJw==}
@@ -19969,7 +19862,6 @@ packages:
 
   /napi-build-utils@2.0.0:
     resolution: {integrity: sha512-GEbrYkbfF7MoNaoh2iGG84Mnf/WZfB0GdGEsM8wz7Expx/LlWf5U8t9nvJKXSp3qr5IsEbK04cBGhol/KwOsWA==}
-    dev: false
 
   /natural-compare-lite@1.4.0:
     resolution: {integrity: sha512-Tj+HTDSJJKaZnfiuw+iaF9skdPpTo2GtEly5JHnWV/hfv2Qj/9RKsGISQtLh2ox3l5EAGw487hnBee0sIJ6v2g==}
@@ -20050,14 +19942,12 @@ packages:
     engines: {node: '>=10'}
     dependencies:
       semver: 7.7.4
-    dev: false
 
   /node-abort-controller@3.1.1:
     resolution: {integrity: sha512-AGK2yQKIjRuqnc6VkX2Xj5d+QW8xZ87pa1UK6yA6ouUyuxfHuMP6umE5QK7UmTeOAymo+Zx1Fxiuw9rVx8taHQ==}
 
   /node-addon-api@7.1.1:
     resolution: {integrity: sha512-5m3bsyrjFWE1xf7nz7YXdN4udnVtXK6/Yfgn5qnahL6bCkf2yKt4k3nuTKAtT4r3IG8JNR2ncsIMdZuAzJjHQQ==}
-    dev: false
 
   /node-cron@3.0.3:
     resolution: {integrity: sha512-dOal67//nohNgYWb+nWmg5dkFdIwDm8EpeGYMekPMrngV3637lqnX0lbUcCtgibHTz6SEz7DAIjKvKDFYCnO1A==}
@@ -21134,7 +21024,6 @@ packages:
       simple-get: 4.0.1
       tar-fs: 2.1.4
       tunnel-agent: 0.6.0
-    dev: false
 
   /prelude-ls@1.2.1:
     resolution: {integrity: sha512-vkcDPrRZo1QZLbn5RLGPpg/WmIQ65qoWWhcGKf/b5eplkkarX0m9z8ppCat4mlOqUsWpyNuYgO3VRyrYHSzX5g==}
@@ -21349,7 +21238,6 @@ packages:
     dependencies:
       end-of-stream: 1.4.5
       once: 1.4.0
-    dev: false
 
   /punycode@2.3.1:
     resolution: {integrity: sha512-vYt7UD1U9Wg6138shLtLOvdAu+8DsC/ilFtEVHcH+wydcSpNE20AfSOduf6MkRFahL5FY7X1oU7nKVZFtfq8Fg==}
@@ -21538,7 +21426,6 @@ packages:
       ini: 1.3.8
       minimist: 1.2.8
       strip-json-comments: 2.0.1
-    dev: false
 
   /react-composer@5.0.3(react@18.2.0):
     resolution: {integrity: sha512-1uWd07EME6XZvMfapwZmc7NgCZqDemcvicRi3wMJzXsQLvZ3L7fTHVyPy1bZdnWXM4iPjYuNE+uJ41MLKeTtnA==}
@@ -22091,7 +21978,6 @@ packages:
       inherits: 2.0.4
       string_decoder: 1.3.0
       util-deprecate: 1.0.2
-    dev: false
 
   /readable-stream@4.7.0:
     resolution: {integrity: sha512-oIGGmcpTLwPga8Bn6/Z75SVaH1z5dUut2ibSyAMVhmUggWpmDn2dapB0n7f8nwaSiRtepAsfJyfXIO5DCVAODg==}
@@ -22246,7 +22132,7 @@ packages:
     resolution: {integrity: sha512-gAZ+kLqBdHarXB64XpAe2VCjB7rIRv+mU8tfRWziHRJ5umKsIHN2tLLv6EtMw7WCdP19S0ERVMldNvxYCHnhSQ==}
     engines: {node: '>=8.6.0'}
     dependencies:
-      debug: 4.4.3
+      debug: 4.4.3(supports-color@5.5.0)
       module-details-from-path: 1.0.4
       resolve: 1.22.12
     transitivePeerDependencies:
@@ -22257,7 +22143,7 @@ packages:
     resolution: {integrity: sha512-QT7FVMXfWOYFbeRBF6nu+I6tr2Tf3u0q8RIEjNob/heKY/nh7drD/k7eeMFmSQgnTtCzLDcCu/XEnpW2wk4xCQ==}
     engines: {node: '>=9.3.0 || >=8.10.0 <9.0.0'}
     dependencies:
-      debug: 4.4.3
+      debug: 4.4.3(supports-color@5.5.0)
       module-details-from-path: 1.0.4
     transitivePeerDependencies:
       - supports-color
@@ -22870,7 +22756,6 @@ packages:
 
   /simple-concat@1.0.1:
     resolution: {integrity: sha512-cSFtAPtRhljv69IK0hTVZQ+OfE9nePi/rtJmw5UjHeVyVroEqJXP1sFztKUy1qU+xvz3u/sfYJLa947b7nAN2Q==}
-    dev: false
 
   /simple-get@4.0.1:
     resolution: {integrity: sha512-brv7p5WgH0jmQJr1ZDDfKDOSeWWg+OVypG99A/5vYGPqJ6pxiaHLy8nxtFjBA7oMa01ebA9gfh1uMCFqOuXxvA==}
@@ -22878,7 +22763,6 @@ packages:
       decompress-response: 6.0.0
       once: 1.4.0
       simple-concat: 1.0.1
-    dev: false
 
   /simple-plist@1.3.1:
     resolution: {integrity: sha512-iMSw5i0XseMnrhtIzRb7XpQEXepa9xhWxGUojHBL43SIpQuDQkh3Wpy67ZbDzZVr6EKxvwVChnVpdl8hEVLDiw==}
@@ -23234,7 +23118,6 @@ packages:
     resolution: {integrity: sha512-hkRX8U1WjJFd8LsDJ2yQ/wWWxaopEsABU1XfkM8A+j0+85JAGppt16cr1Whg6KIbb4okU6Mql6BOj+uup/wKeA==}
     dependencies:
       safe-buffer: 5.2.1
-    dev: false
 
   /strip-ansi@5.2.0:
     resolution: {integrity: sha512-DuRs1gKbBqsMKIZlrffwlug8MHkcnpjs5VPmL1PAh+mA30U0DTotfDZ0d2UUsXpPmPmMMJ6W773MaA3J+lbiWA==}
@@ -23451,7 +23334,6 @@ packages:
       mkdirp-classic: 0.5.3
       pump: 3.0.4
       tar-stream: 2.2.0
-    dev: false
 
   /tar-fs@3.0.4:
     resolution: {integrity: sha512-5AFQU8b9qLfZCX9zp2duONhPmZv0hGYiBPJsyUdqMjzq/mqVpy/rEUSeHk1+YitmxugaptgBh5oDGU3VsAJq4w==}
@@ -23488,7 +23370,6 @@ packages:
       fs-constants: 1.0.0
       inherits: 2.0.4
       readable-stream: 3.6.2
-    dev: false
 
   /tar-stream@3.1.8:
     resolution: {integrity: sha512-U6QpVRyCGHva435KoNWy9PRoi2IFYCgtEhq9nmrPPpbRacPs9IH4aJ3gbrFC8dPcXvdSZ4XXfXT5Fshbp2MtlQ==}
@@ -24058,7 +23939,6 @@ packages:
     resolution: {integrity: sha512-McnNiV1l8RYeY8tBgEpuodCC1mLUdbSN+CYBL7kJsJNInOP8UjDDEwdk6Mw60vdLLrr5NHKZhMAOSrR2NZuQ+w==}
     dependencies:
       safe-buffer: 5.2.1
-    dev: false
 
   /tunnel-rat@0.1.2(@types/react@18.3.28)(immer@10.2.0)(react@18.2.0):
     resolution: {integrity: sha512-lR5VHmkPhzdhrM092lI2nACsLO4QubF0/yoOhzX7c+wIpbN1GjHNzCc91QlpxBi+cnx8vVJ+Ur6vL5cEoQPFpQ==}
@@ -25338,333 +25218,4 @@ packages:
       '@types/react': 18.3.28
       immer: 10.2.0
       react: 18.2.0
-    dev: false
-
-  file:packages/auth(next@14.2.35)(react@18.2.0)(zod@4.3.6):
-    resolution: {directory: packages/auth, type: directory}
-    id: file:packages/auth
-    name: '@kealee/auth'
-    peerDependencies:
-      next: '>=14.0.0'
-      react: '>=18.2.0'
-    dependencies:
-      '@kealee/database': file:packages/database(zod@4.3.6)
-      '@supabase/auth-helpers-nextjs': 0.8.7(@supabase/supabase-js@2.104.0)
-      '@supabase/ssr': 0.5.2(@supabase/supabase-js@2.104.0)
-      '@supabase/supabase-js': 2.104.0
-      next: 14.2.35(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(react-dom@18.2.0)(react@18.2.0)
-      react: 18.2.0
-    transitivePeerDependencies:
-      - bufferutil
-      - utf-8-validate
-      - zod
-    dev: false
-
-  file:packages/automation(react-dom@18.2.0)(zod@4.3.6):
-    resolution: {directory: packages/automation, type: directory}
-    id: file:packages/automation
-    name: '@kealee/automation'
-    dependencies:
-      '@anthropic-ai/sdk': 0.30.1
-      '@kealee/communications': file:packages/communications(react-dom@18.2.0)(zod@4.3.6)
-      '@kealee/database': file:packages/database(zod@4.3.6)
-      bullmq: 5.75.2
-      ioredis: 5.10.1
-    transitivePeerDependencies:
-      - debug
-      - encoding
-      - react-dom
-      - supports-color
-      - zod
-    dev: false
-
-  file:packages/communications(react-dom@18.2.0)(zod@4.3.6):
-    resolution: {directory: packages/communications, type: directory}
-    id: file:packages/communications
-    name: '@kealee/communications'
-    dependencies:
-      '@kealee/database': file:packages/database(zod@4.3.6)
-      '@react-email/components': 0.0.25(react-dom@18.2.0)(react@18.2.0)
-      ioredis: 5.10.1
-      react: 18.2.0
-      resend: 3.5.0(react-dom@18.2.0)(react@18.2.0)
-      twilio: 5.13.1
-    transitivePeerDependencies:
-      - debug
-      - react-dom
-      - supports-color
-      - zod
-    dev: false
-
-  file:packages/concept-engine:
-    resolution: {directory: packages/concept-engine, type: directory}
-    name: '@kealee/concept-engine'
-    dependencies:
-      '@anthropic-ai/sdk': 0.27.3
-      pdfkit: 0.14.0
-      zod: 3.25.76
-    transitivePeerDependencies:
-      - encoding
-    dev: false
-
-  file:packages/core-agents:
-    resolution: {directory: packages/core-agents, type: directory}
-    name: '@kealee/core-agents'
-    dependencies:
-      '@anthropic-ai/sdk': 0.24.3
-      '@kealee/database': file:packages/database(zod@3.25.76)
-      '@kealee/seeds': file:packages/seeds
-      nanoid: 3.3.11
-      zod: 3.25.76
-    transitivePeerDependencies:
-      - encoding
-    dev: false
-
-  file:packages/core-bim(@types/react@18.3.28)(@types/three@0.170.0)(immer@10.2.0)(react-dom@18.2.0)(react@18.2.0):
-    resolution: {directory: packages/core-bim, type: directory}
-    id: file:packages/core-bim
-    name: '@kealee/core-bim'
-    peerDependencies:
-      react: ^18.0.0
-      react-dom: ^18.0.0
-    dependencies:
-      '@react-three/drei': 9.122.0(@react-three/fiber@8.18.0)(@types/react@18.3.28)(@types/three@0.170.0)(immer@10.2.0)(react-dom@18.2.0)(react@18.2.0)(three@0.170.0)
-      '@react-three/fiber': 8.18.0(@types/react@18.3.28)(react-dom@18.2.0)(react@18.2.0)(three@0.170.0)
-      react: 18.2.0
-      react-dom: 18.2.0(react@18.2.0)
-      three: 0.170.0
-      web-ifc: 0.0.57
-      zod: 3.25.76
-    transitivePeerDependencies:
-      - '@types/react'
-      - '@types/three'
-      - expo
-      - expo-asset
-      - expo-file-system
-      - expo-gl
-      - immer
-      - react-native
-      - use-sync-external-store
-    dev: false
-
-  file:packages/core-llm:
-    resolution: {directory: packages/core-llm, type: directory}
-    name: '@kealee/core-llm'
-    dependencies:
-      '@anthropic-ai/sdk': 0.74.0(zod@3.25.76)
-      '@kealee/core-agents': file:packages/core-agents
-      '@kealee/database': file:packages/database(zod@3.25.76)
-      '@kealee/seeds': file:packages/seeds
-      bottleneck: 2.19.5
-      csv-parse: 5.6.0
-      nanoid: 3.3.11
-      openai: 4.104.0(zod@3.25.76)
-      zod: 3.25.76
-    transitivePeerDependencies:
-      - encoding
-      - ws
-    dev: false
-
-  file:packages/core-rules:
-    resolution: {directory: packages/core-rules, type: directory}
-    name: '@kealee/core-rules'
-    dependencies:
-      '@kealee/database': file:packages/database(zod@3.25.76)
-      zod: 3.25.76
-    dev: false
-
-  file:packages/database(zod@3.25.76):
-    resolution: {directory: packages/database, type: directory}
-    id: file:packages/database
-    name: '@kealee/database'
-    requiresBuild: true
-    dependencies:
-      '@kealee/kealee-agent-stack': file:packages/kealee-agent-stack(zod@3.25.76)
-      '@prisma/client': 5.22.0(prisma@5.22.0)
-      prisma: 5.22.0
-    transitivePeerDependencies:
-      - zod
-    dev: false
-
-  file:packages/database(zod@4.3.6):
-    resolution: {directory: packages/database, type: directory}
-    id: file:packages/database
-    name: '@kealee/database'
-    requiresBuild: true
-    dependencies:
-      '@kealee/kealee-agent-stack': file:packages/kealee-agent-stack(zod@4.3.6)
-      '@prisma/client': 5.22.0(prisma@5.22.0)
-      prisma: 5.22.0
-    transitivePeerDependencies:
-      - zod
-    dev: false
-
-  file:packages/intake:
-    resolution: {directory: packages/intake, type: directory}
-    name: '@kealee/intake'
-    dependencies:
-      zod: 3.25.76
-    dev: false
-
-  file:packages/kealee-agent-stack(zod@3.25.76):
-    resolution: {directory: packages/kealee-agent-stack, type: directory}
-    id: file:packages/kealee-agent-stack
-    name: '@kealee/kealee-agent-stack'
-    dependencies:
-      '@anthropic-ai/sdk': 0.74.0(zod@3.25.76)
-    transitivePeerDependencies:
-      - zod
-    dev: false
-
-  file:packages/kealee-agent-stack(zod@4.3.6):
-    resolution: {directory: packages/kealee-agent-stack, type: directory}
-    id: file:packages/kealee-agent-stack
-    name: '@kealee/kealee-agent-stack'
-    dependencies:
-      '@anthropic-ai/sdk': 0.74.0(zod@4.3.6)
-    transitivePeerDependencies:
-      - zod
-    dev: false
-
-  file:packages/marketing-agency:
-    resolution: {directory: packages/marketing-agency, type: directory}
-    name: '@kealee/marketing-agency'
-    dependencies:
-      '@kealee/marketing-privacy': file:packages/marketing-privacy
-      '@supabase/supabase-js': 2.104.0
-      zod: 3.25.76
-    transitivePeerDependencies:
-      - bufferutil
-      - utf-8-validate
-    dev: false
-
-  file:packages/marketing-privacy:
-    resolution: {directory: packages/marketing-privacy, type: directory}
-    name: '@kealee/marketing-privacy'
-    dev: false
-
-  file:packages/observability:
-    resolution: {directory: packages/observability, type: directory}
-    name: '@kealee/observability'
-    dependencies:
-      '@opentelemetry/api': 1.9.1
-      '@opentelemetry/exporter-trace-otlp-http': 0.52.1(@opentelemetry/api@1.9.1)
-      '@opentelemetry/instrumentation-fastify': 0.38.0(@opentelemetry/api@1.9.1)
-      '@opentelemetry/instrumentation-http': 0.52.1(@opentelemetry/api@1.9.1)
-      '@opentelemetry/instrumentation-ioredis': 0.42.0(@opentelemetry/api@1.9.1)
-      '@opentelemetry/resources': 1.30.1(@opentelemetry/api@1.9.1)
-      '@opentelemetry/sdk-node': 0.52.1(@opentelemetry/api@1.9.1)
-      '@opentelemetry/semantic-conventions': 1.40.0
-      pino: 9.14.0
-      pino-pretty: 11.3.0
-    transitivePeerDependencies:
-      - supports-color
-    dev: false
-
-  file:packages/pascal-wrapper(@types/react@18.3.28)(@types/three@0.170.0)(react-dom@18.2.0)(react@18.2.0):
-    resolution: {directory: packages/pascal-wrapper, type: directory}
-    id: file:packages/pascal-wrapper
-    name: '@kealee/pascal-wrapper'
-    peerDependencies:
-      react: ^18.0.0
-      react-dom: ^18.0.0
-    dependencies:
-      '@kealee/core-bim': file:packages/core-bim(@types/react@18.3.28)(@types/three@0.170.0)(immer@10.2.0)(react-dom@18.2.0)(react@18.2.0)
-      '@react-three/drei': 9.122.0(@react-three/fiber@8.18.0)(@types/react@18.3.28)(@types/three@0.170.0)(immer@10.2.0)(react-dom@18.2.0)(react@18.2.0)(three@0.170.0)
-      '@react-three/fiber': 8.18.0(@types/react@18.3.28)(react-dom@18.2.0)(react@18.2.0)(three@0.170.0)
-      '@react-three/postprocessing': 2.19.1(@react-three/fiber@8.18.0)(@types/three@0.170.0)(react@18.2.0)(three@0.170.0)
-      immer: 10.2.0
-      postprocessing: 6.39.1(three@0.170.0)
-      react: 18.2.0
-      react-dom: 18.2.0(react@18.2.0)
-      three: 0.170.0
-      uuid: 10.0.0
-      zod: 3.25.76
-      zustand: 4.5.7(@types/react@18.3.28)(immer@10.2.0)(react@18.2.0)
-    transitivePeerDependencies:
-      - '@types/react'
-      - '@types/three'
-      - expo
-      - expo-asset
-      - expo-file-system
-      - expo-gl
-      - react-native
-      - use-sync-external-store
-    dev: false
-
-  file:packages/seeds:
-    resolution: {directory: packages/seeds, type: directory}
-    name: '@kealee/seeds'
-    dependencies:
-      zod: 3.25.76
-    dev: false
-
-  file:packages/shared:
-    resolution: {directory: packages/shared, type: directory}
-    name: '@kealee/shared'
-    dependencies:
-      zod: 3.25.76
-    dev: false
-
-  file:packages/storage:
-    resolution: {directory: packages/storage, type: directory}
-    name: '@kealee/storage'
-    dependencies:
-      '@supabase/supabase-js': 2.104.0
-      sharp: 0.33.5
-    transitivePeerDependencies:
-      - bufferutil
-      - utf-8-validate
-    dev: false
-
-  file:packages/ui(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@opentelemetry/sdk-trace-base@2.7.0)(@playwright/test@1.59.1)(@types/react-dom@18.3.7)(@types/react@18.3.28)(openai@4.104.0)(react-dom@18.2.0)(react@18.2.0)(webpack@5.106.2):
-    resolution: {directory: packages/ui, type: directory}
-    id: file:packages/ui
-    name: '@kealee/ui'
-    peerDependencies:
-      react: ^18.2.0
-      react-dom: ^18.2.0
-    dependencies:
-      '@ai-sdk/react': 3.0.170(react@18.2.0)(zod@4.3.6)
-      '@kealee/intake': file:packages/intake
-      '@langchain/core': 1.1.40(@opentelemetry/api@1.9.1)(@opentelemetry/sdk-trace-base@2.7.0)(openai@4.104.0)
-      '@langchain/langgraph': 1.2.9(@langchain/core@1.1.40)(react-dom@18.2.0)(react@18.2.0)(zod@4.3.6)
-      '@langchain/openai': 1.4.4(@langchain/core@1.1.40)
-      '@radix-ui/react-accordion': 1.2.12(@types/react-dom@18.3.7)(@types/react@18.3.28)(react-dom@18.2.0)(react@18.2.0)
-      '@radix-ui/react-slot': 1.2.4(@types/react@18.3.28)(react@18.2.0)
-      '@sentry/nextjs': 7.120.4(next@14.2.35)(react@18.2.0)(webpack@5.106.2)
-      '@sentry/replay': 7.120.4
-      '@sentry/tracing': 7.120.4
-      ai: 6.0.168(zod@4.3.6)
-      class-variance-authority: 0.7.1
-      clsx: 2.1.1
-      framer-motion: 11.18.2(react-dom@18.2.0)(react@18.2.0)
-      lucide-react: 0.562.0(react@18.2.0)
-      mixpanel-browser: 2.78.0
-      next: 14.2.35(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(react-dom@18.2.0)(react@18.2.0)
-      posthog-js: 1.369.5
-      react: 18.2.0
-      react-dom: 18.2.0(react@18.2.0)
-      tailwind-merge: 2.6.1
-      web-vitals: 4.2.4
-      zod: 4.3.6
-    transitivePeerDependencies:
-      - '@babel/core'
-      - '@emotion/is-prop-valid'
-      - '@opentelemetry/api'
-      - '@opentelemetry/exporter-trace-otlp-proto'
-      - '@opentelemetry/sdk-trace-base'
-      - '@playwright/test'
-      - '@types/react'
-      - '@types/react-dom'
-      - babel-plugin-macros
-      - encoding
-      - openai
-      - sass
-      - supports-color
-      - svelte
-      - vue
-      - webpack
-      - ws
-      - zod-to-json-schema
     dev: false
