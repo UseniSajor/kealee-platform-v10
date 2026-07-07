@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@kealee/database';
-import { processAutomationEventQueue } from '@kealee/automation/dist/infrastructure/loop-queues.js';
+import { getProcessAutomationEventQueue } from '@kealee/automation/dist/infrastructure/loop-queues.js';
 import { addJob } from '@kealee/automation/dist/infrastructure/queues.js';
 
 export const dynamic = 'force-dynamic';
@@ -64,7 +64,7 @@ export async function POST(
       },
     });
 
-    await addJob(processAutomationEventQueue, 'processEvent', {
+    await addJob(getProcessAutomationEventQueue(), 'processEvent', {
       eventId: nextEvent.id,
       eventType: 'USER_DECISION_SUBMITTED',
       sourceApp: 'USER-INTERFACE',

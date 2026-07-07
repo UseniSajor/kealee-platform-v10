@@ -1,5 +1,5 @@
-import type { Metadata } from 'next'
-import { Syne, DM_Sans } from 'next/font/google'
+import type { Metadata, Viewport } from 'next'
+import { Nunito, Nunito_Sans } from 'next/font/google'
 import Script from 'next/script'
 import './globals.css'
 import { SiteNav } from '@/components/nav'
@@ -15,42 +15,53 @@ import { MobileConversionRail } from '@/components/marketing/MobileConversionRai
 import { ConversionPathTracker } from '@/components/marketing/ConversionPathTracker'
 import { ConditionalMain } from '@/components/ConditionalMain'
 
-const syne = Syne({
+const nunitoDisplay = Nunito({
   subsets: ['latin'],
-  weight: ['400', '700', '800'],
-  variable: '--font-syne',
+  weight: ['400', '600', '700', '800', '900'],
+  variable: '--font-nunito-display',
   display: 'swap',
+  adjustFontFallback: false,
 })
 
-const dmSans = DM_Sans({
+const nunitoBody = Nunito_Sans({
   subsets: ['latin'],
-  weight: ['300', '400', '500'],
-  variable: '--font-dm',
+  weight: ['300', '400', '600', '700', '800'],
+  variable: '--font-nunito-body',
   display: 'swap',
+  adjustFontFallback: false,
 })
 
 const GA_ID      = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID
 const PIXEL_ID   = process.env.NEXT_PUBLIC_META_PIXEL_ID
 const GADS_ID    = process.env.NEXT_PUBLIC_GOOGLE_ADS_ID   // format: AW-XXXXXXXXXX
 
+export const viewport: Viewport = {
+  themeColor: '#FFB366',
+}
+
 export const metadata: Metadata = {
   title: {
-    default: 'Kealee — Design-Build Platform | DC, MD, VA',
-    template: '%s — Kealee',
+    default: 'Kealee Construction',
+    template: '%s - Kealee Construction',
   },
-  description: 'Kealee is the end-to-end design-build platform for homeowners — AI design concepts, RSMeans cost estimates, permit filing, and a personal project workspace from first idea to final build. Serving DC, MD & VA.',
+  description: 'Design. Build. Deliver.',
+  manifest: '/site.webmanifest',
+  icons: {
+    icon: '/favicon.svg',
+    apple: '/apple-touch-icon.svg',
+  },
   openGraph: {
     type: 'website',
-    siteName: 'Kealee',
-    title: 'Kealee — Design-Build Platform | DC, MD, VA',
-    description: 'Kealee is the end-to-end design-build platform for homeowners — AI design concepts, RSMeans cost estimates, permit filing, and a personal project workspace from first idea to final build. Serving DC, MD & VA.',
+    siteName: 'Kealee Construction',
+    title: 'Kealee Construction',
+    description: 'Design. Build. Deliver.',
     url: 'https://kealee.com',
   },
   twitter: {
     card: 'summary_large_image',
     site: '@kealee',
-    title: 'Kealee — Design-Build Platform | DC, MD, VA',
-    description: 'Kealee is the end-to-end design-build platform for homeowners — AI design concepts, RSMeans cost estimates, permit filing, and a personal project workspace from first idea to final build. Serving DC, MD & VA.',
+    title: 'Kealee Construction',
+    description: 'Design. Build. Deliver.',
   },
   metadataBase: new URL('https://kealee.com'),
   keywords: [
@@ -70,7 +81,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${syne.variable} ${dmSans.variable}`}>
+    <html lang="en" className={`${nunitoDisplay.variable} ${nunitoBody.variable}`}>
       <body className="bg-warm-50">
         {process.env.NEXT_PUBLIC_FIGMA_CAPTURE === 'true' && (
           <Script

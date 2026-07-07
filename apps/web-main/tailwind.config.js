@@ -8,6 +8,13 @@ module.exports = {
   theme: {
     extend: {
       colors: {
+        'kealee-primary': '#FFB366',
+        'kealee-primary-hover': '#FF8C22',
+        'kealee-brown': '#B69574',
+        'kealee-tan': '#E9D7C1',
+        'kealee-gray': '#666666',
+        'kealee-sky': '#7EC6F4',
+        'kealee-light-gray': '#F5F5F5',
         charcoal: '#1F252A',
         copper: '#C38B5F',
         'deep-blue': '#2E5090',
@@ -21,8 +28,8 @@ module.exports = {
         },
       },
       fontFamily: {
-        display: ['Syne', '"Clash Display"', 'sans-serif'],
-        body:    ['"DM Sans"', '"Plus Jakarta Sans"', 'sans-serif'],
+        display: ['var(--font-nunito-display)', 'sans-serif'],
+        body:    ['var(--font-nunito-body)', 'sans-serif'],
         mono:    ['"JetBrains Mono"', 'monospace'],
         'home-serif': ['var(--font-home-serif)', 'Cormorant Garamond', 'Georgia', 'serif'],
         'home-sans': ['var(--font-home-sans)', 'Barlow', 'system-ui', 'sans-serif'],

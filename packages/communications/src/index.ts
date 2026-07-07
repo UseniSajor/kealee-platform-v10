@@ -1,15 +1,11 @@
 // Email (Resend)
 export {
-  sendEmail,
-  sendBatchEmails,
+  sendInternalSystemEmail,
   sendEmailWithTemplate,
   wrapInEmailLayout,
 } from './email';
 export type {
-  SendEmailOptions,
   SendEmailResult,
-  BatchEmailMessage,
-  BatchEmailResult,
   SendTemplateEmailOptions,
 } from './email';
 

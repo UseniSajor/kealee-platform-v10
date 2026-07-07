@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { VideoHeroSection } from '@/components/home/VideoHeroSection'
 import { ServicesJourneySection } from '@/components/home/ServicesJourneySection'
 import { ConceptPackageSection } from '@/components/home/ConceptPackageSection'
 import { PipelineSection } from '@/components/home/PipelineSection'
@@ -26,7 +27,10 @@ export default async function HomePage() {
   const services = mergeHomeServicesWithManifest(manifest)
   return (
     <>
-      {/* Hero: circular service cards */}
+      {/* Video Hero: Gilbane-style full screen looping videos */}
+      <VideoHeroSection />
+
+      {/* Services: circular service cards */}
       <ServicesJourneySection services={services} />
 
       {/* AI Concept Design — 4-step workflow */}

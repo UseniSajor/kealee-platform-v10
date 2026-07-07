@@ -1,0 +1,19 @@
+{
+  "name": "Kealee Construction",
+  "short_name": "Kealee",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "/apple-touch-icon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml"
+    }
+  ],
+  "theme_color": "#FFB366",
+  "background_color": "#ffffff",
+  "display": "standalone"
+}

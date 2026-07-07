@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@kealee/database';
-import { runLoopQueue } from '@kealee/automation/dist/infrastructure/loop-queues.js';
+import { getRunLoopQueue } from '@kealee/automation/dist/infrastructure/loop-queues.js';
 import { addJob } from '@kealee/automation/dist/infrastructure/queues.js';
 
 export const dynamic = 'force-dynamic';
@@ -34,7 +34,7 @@ export async function POST(
     });
 
     // Queue for execution
-    await addJob(runLoopQueue, 'runLoop', {
+    await addJob(getRunLoopQueue(), 'runLoop', {
       loopRunId,
       projectId: run.projectId,
       loopType: run.loopType,

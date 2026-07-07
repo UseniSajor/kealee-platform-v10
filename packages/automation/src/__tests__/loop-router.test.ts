@@ -1,7 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { loopRouter, LOOP_EVENTS, LOOP_TYPES } from '../loop-router.js';
 import { digitalTwinService } from '../digital-twin-service.js';
-import { runAgentQueue } from '../infrastructure/loop-queues.js';
 
 // Mock dependencies
 vi.mock('@prisma/client', () => ({

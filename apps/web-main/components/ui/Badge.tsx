@@ -5,7 +5,7 @@ interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
 }
 
 const variants: Record<Variant, { bg: string; style: React.CSSProperties }> = {
-  navy:   { bg: 'bg-navy/10',   style: { color: '#1A2B4A' } },
+  navy:   { bg: 'bg-kealee-black/10',   style: { color: '#1A2B4A' } },
   teal:   { bg: '',              style: { backgroundColor: 'rgba(42,191,191,0.12)', color: '#1A8F8F' } },
   orange: { bg: '',              style: { backgroundColor: 'rgba(232,121,58,0.12)', color: '#C65A20' } },
   green:  { bg: 'bg-green-100', style: { color: '#276749' } },

@@ -1,54 +1,40 @@
-# Files to ignore during Railway deployment
-# Reduces build context size and speeds up deployment
-
-# Documentation
-_docs/
-*.md
-!README.md
-!DEPLOYMENT.md
-
-# Development files
-.env.local
-.env.example
-*.log
-.DS_Store
-
-# Test files
-**/__tests__/
-**/*.test.ts
-**/*.spec.ts
-coverage/
-
-# Build artifacts (will be rebuilt) — recursive across the monorepo
-dist/
-**/dist/
-.next/
-**/.next/
-node_modules/
-**/node_modules/
-.turbo/
-**/.turbo/
-
-# Git
 .git/
-.gitignore
-
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# Temporary files
-tmp/
-temp/
-*.tmp
-
-# Large local data packs (not needed for web-main build)
-kealee_dmv_rag_seed_pack/
-kealee_dmv_rag_seed_pack.zip
-data/
-website-versions/
+.gemini/
+node_modules/
+dist/
+build/
+.next/
+.turbo/
+*.log
+.venv*/
+_docs/
+services/
+bots/
+testskeabots/
+replicate/
 Kealee Platform Agents/
+data/replicate-archive/media/
+_archived-apps/
+
+apps/web-main/.next/
+apps/web-main/node_modules/
+apps/web-main/.turbo/
+
+apps/api/
+apps/api-service/
+apps/command-center/
+apps/m-architect/
+apps/m-engineer/
+apps/m-estimation/
+apps/m-finance-trust/
+apps/m-inspector/
+apps/m-marketplace/
+apps/m-ops-services/
+apps/m-permits-inspections/
+apps/m-project-owner/
 apps/marketing/
+apps/marketing-os/
 apps/os-admin/
+apps/portal-contractor/
+apps/portal-developer/
+apps/portal-owner/

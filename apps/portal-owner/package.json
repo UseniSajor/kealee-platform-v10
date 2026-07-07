@@ -16,6 +16,7 @@
     "@kealee/shared": "workspace:*",
     "@kealee/storage": "workspace:*",
     "@kealee/ui": "workspace:*",
+    "@kealee/communications": "workspace:*",
     "resend": "^3.0.0"
   }
 }

@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@kealee/database';
-import { updateDigitalTwinQueue, generateDeliverableQueue, sendNotificationQueue } from '@kealee/automation/dist/infrastructure/loop-queues.js';
+import {
+  getUpdateDigitalTwinQueue,
+  getGenerateDeliverableQueue,
+  getSendNotificationQueue,
+  getProcessAutomationEventQueue,
+} from '@kealee/automation/dist/infrastructure/loop-queues.js';
 import { addJob } from '@kealee/automation/dist/infrastructure/queues.js';
-import { processAutomationEventQueue } from '@kealee/automation/dist/infrastructure/loop-queues.js';
 
 export const dynamic = 'force-dynamic';
 
@@ -30,7 +34,7 @@ export async function POST(
     const outputSnapshot = (run.outputSnapshot as any) || {};
 
     // 1. Queue Digital Twin updates (auto-updates relational tables)
-    await addJob(updateDigitalTwinQueue, 'updateDigitalTwin', {
+    await addJob(getUpdateDigitalTwinQueue(), 'updateDigitalTwin', {
       loopRunId,
       projectId: run.projectId,
       updates: outputSnapshot.digitalTwinUpdates,
@@ -38,7 +42,7 @@ export async function POST(
 
     // 2. Queue Deliverables if present
     if (outputSnapshot.deliverableUpdates && Object.keys(outputSnapshot.deliverableUpdates).length > 0) {
-      await addJob(generateDeliverableQueue, 'generateDeliverable', {
+      await addJob(getGenerateDeliverableQueue(), 'generateDeliverable', {
         loopRunId,
         projectId: run.projectId,
         deliverables: outputSnapshot.deliverableUpdates,
@@ -69,7 +73,7 @@ export async function POST(
       },
     });
 
-    await addJob(processAutomationEventQueue, 'processEvent', {
+    await addJob(getProcessAutomationEventQueue(), 'processEvent', {
       eventId: nextEvent.id,
       eventType: 'ADMIN_OVERRIDE_SUBMITTED',
       sourceApp: 'ADMIN-PORTAL',
@@ -78,7 +82,7 @@ export async function POST(
     });
 
     // Send customer notification
-    await addJob(sendNotificationQueue, 'sendNotification', {
+    await addJob(getSendNotificationQueue(), 'sendNotification', {
       projectId: run.projectId,
       type: 'loop_completed',
       title: 'Project Update Recommendations Approved',

@@ -1,5 +1,6 @@
-// WORKFLOW — Loops Orchestration Models
+// WORKFLOW ΓÇö Loops Orchestration Models
 // Kealee Platform v30 Loop Orchestration System
+
 
 model V30LoopRun {
   id              String     @id @default(cuid())
@@ -85,6 +86,7 @@ model V30AgentMemory {
   @@map("v30_agent_memories")
 }
 
+
 model V30PricingFormula {
   id                 String   @id @default(uuid())
   baseAmount         Float
@@ -103,6 +105,7 @@ model V30PricingFormula {
   @@map("v30_pricing_formulas")
 }
 
+
 model V30AutomationEvent {
   id            String   @id @default(cuid())
   projectId     String
@@ -120,6 +123,7 @@ model V30AutomationEvent {
   @@index([createdAt])
   @@map("v30_automation_events")
 }
+
 
 model V30WhiteLabelConfig {
   id                  String   @id @default(cuid())

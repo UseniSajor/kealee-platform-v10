@@ -1,15 +1,30 @@
 import { createClient } from '@supabase/supabase-js';
-import type { User, Session } from '@supabase/supabase-js';
+import type { SupabaseClient, User, Session } from '@supabase/supabase-js';
 
-// Supabase client configuration
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+// Create the client lazily so importing this module never throws. A module-load
+// throw breaks `next build` ("Failed to collect page data") in environments
+// without Supabase env vars, e.g. Docker image builds.
+let browserClient: SupabaseClient | null = null;
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Missing Supabase environment variables: NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY are required');
+function getSupabaseClient(): SupabaseClient {
+  if (!browserClient) {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    if (!supabaseUrl || !supabaseAnonKey) {
+      throw new Error('Missing Supabase environment variables: NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY are required');
+    }
+    browserClient = createClient(supabaseUrl, supabaseAnonKey);
+  }
+  return browserClient;
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+export const supabase: SupabaseClient = new Proxy({} as SupabaseClient, {
+  get(_target, prop, receiver) {
+    const client = getSupabaseClient();
+    const value = Reflect.get(client, prop, client);
+    return typeof value === 'function' ? value.bind(client) : value;
+  },
+});
 
 // Auth functions
 export async function signUp(email: string, password: string, metadata?: Record<string, any>) {
