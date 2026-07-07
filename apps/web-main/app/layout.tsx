@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { Cinzel, Montserrat } from 'next/font/google'
+import { Nunito } from 'next/font/google'
 import Script from 'next/script'
 import './globals.css'
 import { SiteNav } from '@/components/nav'
@@ -15,17 +15,17 @@ import { MobileConversionRail } from '@/components/marketing/MobileConversionRai
 import { ConversionPathTracker } from '@/components/marketing/ConversionPathTracker'
 import { ConditionalMain } from '@/components/ConditionalMain'
 
-const cinzel = Cinzel({
+const nunitoDisplay = Nunito({
   subsets: ['latin'],
-  weight: ['400', '700', '800'],
-  variable: '--font-cinzel',
+  weight: ['400', '600', '700', '800'],
+  variable: '--font-nunito-display',
   display: 'swap',
 })
 
-const montserrat = Montserrat({
+const nunitoBody = Nunito({
   subsets: ['latin'],
   weight: ['300', '400', '500', '600', '700'],
-  variable: '--font-montserrat',
+  variable: '--font-nunito-body',
   display: 'swap',
 })
 
@@ -70,7 +70,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${cinzel.variable} ${montserrat.variable}`}>
+    <html lang="en" className={`${nunitoDisplay.variable} ${nunitoBody.variable}`}>
       <body className="bg-warm-50">
         {process.env.NEXT_PUBLIC_FIGMA_CAPTURE === 'true' && (
           <Script

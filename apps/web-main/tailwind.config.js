@@ -8,10 +8,10 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        'kealee-orange': { DEFAULT: '#F26A21', light: '#F97316', dark: '#D15A1A' },
+        'kealee-orange': { DEFAULT: '#FF8C22', light: '#FFB366', dark: '#E07B1E' },
         'kealee-black': '#1A1A1A',
-        'kealee-gray': '#555555',
-        'kealee-light-gray': '#E6E6E6',
+        'kealee-gray': { DEFAULT: '#6B6B6B', light: '#D9D9D9' },
+        'kealee-light-gray': '#F5F5F5',
         charcoal: '#1F252A',
         copper: '#C38B5F',
         'deep-blue': '#2E5090',
@@ -25,8 +25,8 @@ module.exports = {
         },
       },
       fontFamily: {
-        display: ['var(--font-cinzel)', 'serif'],
-        body:    ['var(--font-montserrat)', 'sans-serif'],
+        display: ['var(--font-nunito-display)', 'sans-serif'],
+        body:    ['var(--font-nunito-body)', 'sans-serif'],
         mono:    ['"JetBrains Mono"', 'monospace'],
         'home-serif': ['var(--font-home-serif)', 'Cormorant Garamond', 'Georgia', 'serif'],
         'home-sans': ['var(--font-home-sans)', 'Barlow', 'system-ui', 'sans-serif'],
