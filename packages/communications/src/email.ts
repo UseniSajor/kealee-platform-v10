@@ -50,6 +50,15 @@ export interface SendEmailResult {
   status: 'sent' | 'failed' | 'rate_limited'
 }
 
+export interface SendEmailOptions {
+  to: string
+  subject: string
+  html: string
+  from?: string
+  replyTo?: string
+  tags?: Array<{ name: string; value: string }>
+}
+
 /**
  * Check rate limits using Redis.
  * Falls back to allowing the request if Redis is unavailable.
@@ -172,6 +181,35 @@ export async function sendEmailWithTemplate(
       },
     },
   })
+
+  return {
+    messageId: data?.id || '',
+    status: 'sent',
+  }
+}
+
+/**
+ * Send a raw email directly without template. Used for internal system emails.
+ * Should only be called from internal automation services, not public endpoints.
+ */
+export async function sendEmail(
+  opts: SendEmailOptions
+): Promise<SendEmailResult> {
+  const resend = getResend()
+
+  const { data, error } = await resend.emails.send({
+    from: opts.from || DEFAULT_FROM,
+    to: [opts.to],
+    subject: opts.subject,
+    html: opts.html,
+    reply_to: opts.replyTo || DEFAULT_REPLY_TO,
+    tags: opts.tags || [],
+  })
+
+  if (error) {
+    console.error('[EmailService] Failed to send raw email:', error)
+    return { messageId: '', status: 'failed' }
+  }
 
   return {
     messageId: data?.id || '',
