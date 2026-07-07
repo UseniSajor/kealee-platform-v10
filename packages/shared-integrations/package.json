@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "@kealee/database": "workspace:*",
-    "@prisma/client": "^5.20.0",
+    "@prisma/client": "^5.22.0",
     "axios": "^1.6.0",
     "cheerio": "^1.0.0-rc.12",
     "form-data": "^4.0.0",

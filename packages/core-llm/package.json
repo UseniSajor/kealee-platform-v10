@@ -55,7 +55,7 @@
     "@kealee/seeds": "workspace:*",
     "bottleneck": "^2.19.5",
     "openai": "^4.77.0",
-    "zod": "^3.22.0",
+    "zod": "^3.22.4",
     "nanoid": "^3.3.7",
     "csv-parse": "^5.5.0"
   },
