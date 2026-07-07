@@ -10,8 +10,8 @@ export function SiteBottomBar({
   const shell =
     variant === 'dark'
       ? 'border-t border-white/10 bg-[#1A2B4A]'
-      : 'border-t border-charcoal/10 bg-white/90 backdrop-blur-sm'
-  const text = variant === 'dark' ? 'text-slate-500' : 'text-charcoal/55'
+      : 'border-t border-kealee-black/10 bg-white/90 backdrop-blur-sm'
+  const text = variant === 'dark' ? 'text-slate-500' : 'text-kealee-black/55'
 
   return (
     <div className={`${shell} ${className}`}>

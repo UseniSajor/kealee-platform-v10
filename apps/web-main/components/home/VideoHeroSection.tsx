@@ -51,7 +51,7 @@ export function VideoHeroSection() {
   }
 
   return (
-    <section className="relative w-full h-[90vh] min-h-[600px] flex items-center justify-center overflow-hidden bg-black">
+    <section className="relative w-[100vw] left-[50%] right-[50%] -ml-[50vw] -mr-[50vw] h-[90vh] min-h-[600px] flex items-center justify-center overflow-hidden bg-black">
       {/* Video Backgrounds */}
       {HERO_SLIDES.map((slide, index) => (
         <video
@@ -103,7 +103,7 @@ export function VideoHeroSection() {
         <div className="mt-10 flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
           <Link
             href="/get-started"
-            className="inline-flex items-center justify-center gap-2 px-8 py-4 text-base font-semibold text-black bg-white rounded-lg hover:bg-gray-100 transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5"
+            className="inline-flex items-center justify-center gap-2 px-8 py-4 text-base font-semibold text-white bg-kealee-orange rounded-lg hover:bg-kealee-orange-dark transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5"
           >
             Start Your Project
             <ArrowRight className="w-5 h-5" />

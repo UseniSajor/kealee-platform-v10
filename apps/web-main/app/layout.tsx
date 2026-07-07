@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { Syne, DM_Sans } from 'next/font/google'
+import { Cinzel, Montserrat } from 'next/font/google'
 import Script from 'next/script'
 import './globals.css'
 import { SiteNav } from '@/components/nav'
@@ -15,17 +15,17 @@ import { MobileConversionRail } from '@/components/marketing/MobileConversionRai
 import { ConversionPathTracker } from '@/components/marketing/ConversionPathTracker'
 import { ConditionalMain } from '@/components/ConditionalMain'
 
-const syne = Syne({
+const cinzel = Cinzel({
   subsets: ['latin'],
   weight: ['400', '700', '800'],
-  variable: '--font-syne',
+  variable: '--font-cinzel',
   display: 'swap',
 })
 
-const dmSans = DM_Sans({
+const montserrat = Montserrat({
   subsets: ['latin'],
-  weight: ['300', '400', '500'],
-  variable: '--font-dm',
+  weight: ['300', '400', '500', '600', '700'],
+  variable: '--font-montserrat',
   display: 'swap',
 })
 
@@ -70,7 +70,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${syne.variable} ${dmSans.variable}`}>
+    <html lang="en" className={`${cinzel.variable} ${montserrat.variable}`}>
       <body className="bg-warm-50">
         {process.env.NEXT_PUBLIC_FIGMA_CAPTURE === 'true' && (
           <Script

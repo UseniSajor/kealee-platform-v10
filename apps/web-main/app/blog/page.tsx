@@ -34,7 +34,7 @@ const BLOG_POSTS = [
     readTime: '9 min',
     category: 'Cost Guides',
     jurisdiction: 'DMV',
-    gradient: 'from-builder-orange to-builder-orange-dark',
+    gradient: 'from-kealee-orange to-kealee-orange-dark',
   },
   {
     slug: 'dc-dcra-permit-guide',
@@ -77,7 +77,7 @@ const BLOG_POSTS = [
     date: '2026-03-01',
     readTime: '8 min',
     category: 'AI',
-    gradient: 'from-builder-orange to-builder-orange-dark',
+    gradient: 'from-kealee-orange to-kealee-orange-dark',
   },
   {
     slug: 'escrow-payments-guide',
@@ -107,7 +107,7 @@ const BLOG_POSTS = [
     date: '2026-02-10',
     readTime: '5 min',
     category: 'AI',
-    gradient: 'from-builder-orange to-builder-orange-dark',
+    gradient: 'from-kealee-orange to-kealee-orange-dark',
   },
   {
     slug: 'housing-act-technology',
@@ -147,7 +147,7 @@ const BLOG_POSTS = [
     date: '2026-01-02',
     readTime: '6 min',
     category: 'Industry',
-    gradient: 'from-builder-orange to-builder-orange-dark',
+    gradient: 'from-kealee-orange to-kealee-orange-dark',
   },
 ]
 

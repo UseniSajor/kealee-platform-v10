@@ -59,7 +59,7 @@ export function ServicesJourneySection({ services }: { services: HomeJourneyServ
       {/* Full Screen Hero Header */}
       <header className="relative w-full h-[100svh] min-h-[600px] flex items-center justify-center overflow-hidden">
         {/* Background Video */}
-        <div className="absolute inset-0 z-0 bg-charcoal">
+        <div className="absolute inset-0 z-0 bg-kealee-black">
           <video
             ref={videoRef}
             muted
@@ -73,7 +73,7 @@ export function ServicesJourneySection({ services }: { services: HomeJourneyServ
         </div>
 
         {/* Overlay gradient for readability */}
-        <div className="absolute inset-0 z-0 bg-gradient-to-t from-charcoal/80 via-transparent to-charcoal/40" />
+        <div className="absolute inset-0 z-0 bg-gradient-to-t from-kealee-black/80 via-transparent to-kealee-black/40" />
 
         <div className="relative z-10 mx-auto max-w-[1200px] px-4 sm:px-6 lg:px-8 text-center w-full flex flex-col items-center gap-6">
           <motion.div 
@@ -126,7 +126,7 @@ export function ServicesJourneySection({ services }: { services: HomeJourneyServ
       {/* Cards listed in single column */}
       <div className="flex flex-col px-4 py-16 sm:px-6 sm:py-20 lg:px-8 lg:py-24 bg-[#F5F5F5] relative z-20">
         <div className="text-center mb-12 sm:mb-16">
-          <h2 className="font-home-serif text-3xl sm:text-4xl font-bold text-charcoal">
+          <h2 className="font-home-serif text-3xl sm:text-4xl font-bold text-kealee-black">
             Explore Our Services
           </h2>
           <div className="w-16 h-1 bg-[#E8724B] mx-auto mt-6 rounded-full" />
