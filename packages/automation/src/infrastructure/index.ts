@@ -63,3 +63,11 @@ export {
   createManagedQueue,
   type ManagedWorkerOptions,
 } from './queue-factory';
+
+// ── Response Cache ───────────────────────────────────────────
+export {
+  getResponseCache,
+  withCache,
+  type CacheMetrics,
+  type BotType,
+} from './response-cache';

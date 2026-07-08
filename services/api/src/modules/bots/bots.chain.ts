@@ -14,7 +14,10 @@
  */
 
 import Anthropic from '@anthropic-ai/sdk'
-import { randomUUID } from 'crypto'
+import { randomUUID, createHash } from 'crypto'
+
+// ── Response cache for bot outputs ─────────────────────────────────────────────
+import { getResponseCache } from '@kealee/automation'
 
 // ── Orchestrator imports (consolidated in lib/orchestrator/) ──────────────────
 import {
@@ -304,6 +307,7 @@ function estimateCost(
 
 /**
  * Call Claude with `cache_control: {type: "ephemeral"}` on the system prompt.
+ * Also checks Redis response cache before calling API to avoid duplicate LLM calls.
  * Returns standard result plus cache creation / read token counts.
  */
 async function callModelCached(params: {
@@ -312,9 +316,28 @@ async function callModelCached(params: {
   model:        string
   maxTokens?:   number
   temperature?: number
+  cacheKey?:    string
 }): Promise<CachedCallResult> {
   const client    = getAnthropic()
   const maxTokens = params.maxTokens ?? 4096
+  const cache     = getResponseCache()
+
+  // Check response cache if cacheKey provided
+  if (params.cacheKey) {
+    try {
+      const redisKey = `llm-response:${params.cacheKey}`
+      const cached = await (cache as any).redis?.get(redisKey)
+      if (cached) {
+        const result = JSON.parse(cached) as CachedCallResult
+        result.cacheHit = true
+        console.log(`[ResponseCache:HIT] key=${params.cacheKey}`)
+        return result
+      }
+    } catch (err) {
+      console.warn(`[ResponseCache:MISS] Failed to check cache:`, err)
+      // Continue with API call on cache miss or error
+    }
+  }
 
   // cache_control is not in the SDK's default typings yet — cast through unknown
   const createParams = {
@@ -356,7 +379,7 @@ async function callModelCached(params: {
     params.model, inputTokens, outputTokens, cacheCreationTokens, cacheReadTokens,
   )
 
-  return {
+  const result: CachedCallResult = {
     content,
     model:  params.model,
     inputTokens,
@@ -367,6 +390,21 @@ async function callModelCached(params: {
     cacheHit,
     savedTokens,
   }
+
+  // Store in response cache for future calls
+  if (params.cacheKey) {
+    try {
+      const redisKey = `llm-response:${params.cacheKey}`
+      const ttl = 24 * 60 * 60 // 24h default
+      await (cache as any).redis?.setex(redisKey, ttl, JSON.stringify(result))
+      console.log(`[ResponseCache:STORE] key=${params.cacheKey} ttl=${ttl}s`)
+    } catch (err) {
+      console.warn(`[ResponseCache:STORE_FAIL] Failed to store response in cache:`, err)
+      // Non-fatal: continue even if cache write fails
+    }
+  }
+
+  return result
 }
 
 // ── JSON extractor ────────────────────────────────────────────────────────────
@@ -487,6 +525,74 @@ function ensureRAG(): void {
   }
 }
 
+// ── Cache input helpers ──────────────────────────────────────────────────────
+
+/**
+ * Generate cache key from input data
+ * Hash prevents key length issues with large inputs
+ */
+function generateCacheKey(botType: string, inputData: Record<string, any>): string {
+  const hash = createHash('sha256')
+    .update(JSON.stringify(inputData))
+    .digest('hex')
+    .slice(0, 12)
+  return `${botType}:${hash}`
+}
+
+/**
+ * Extract cache-relevant fields from ChainInput
+ * Used to compute cache key for bot responses
+ */
+function getCacheInputForDesignBot(input: ChainInput): Record<string, any> {
+  return {
+    projectType: input.projectType,
+    location: input.location,
+    scope: input.scope,
+    sqft: input.sqft,
+    budgetUsd: input.budgetUsd,
+    jurisdiction: input.jurisdiction,
+    zipCode: input.zipCode,
+    structuralChanges: input.structuralChanges,
+    electricalChanges: input.electricalChanges,
+    plumbingChanges: input.plumbingChanges,
+    hvacChanges: input.hvacChanges,
+  }
+}
+
+function getCacheInputForEstimateBot(input: ChainInput): Record<string, any> {
+  return {
+    projectType: input.projectType,
+    location: input.location,
+    scope: input.scope,
+    sqft: input.sqft,
+    budgetUsd: input.budgetUsd,
+    jurisdiction: input.jurisdiction,
+  }
+}
+
+function getCacheInputForPermitBot(input: ChainInput): Record<string, any> {
+  return {
+    projectType: input.projectType,
+    location: input.location,
+    scope: input.scope,
+    jurisdiction: input.jurisdiction ?? input.location,
+    zipCode: input.zipCode,
+    structuralChanges: input.structuralChanges,
+    electricalChanges: input.electricalChanges,
+    plumbingChanges: input.plumbingChanges,
+    hvacChanges: input.hvacChanges,
+  }
+}
+
+function getCacheInputForContractorBot(input: ChainInput): Record<string, any> {
+  return {
+    projectType: input.projectType,
+    location: input.location,
+    jurisdiction: input.jurisdiction ?? input.location,
+    sqft: input.sqft,
+  }
+}
+
 // ── Stage 1: DesignBot ────────────────────────────────────────────────────────
 
 const DESIGN_BOT_SYSTEM = `You are Kealee's DesignBot — an expert construction systems designer for the DC, Maryland, and Virginia (DMV) region.
@@ -579,12 +685,14 @@ CTC 2026 DMV Estimate:
 ${buildTwinSection(input)}
 Generate the MEP system design and full BOM for this project.`
 
+    const designCacheKey = generateCacheKey('design', getCacheInputForDesignBot(input))
     const llmResult = await callModelCached({
       systemPrompt: DESIGN_BOT_SYSTEM,
       userPrompt,
       model:        'claude-opus-4-6',
       maxTokens:    4096,
       temperature:  0.3,
+      cacheKey:     designCacheKey,
     })
 
     const parsed = parseJSON<{
@@ -784,12 +892,14 @@ CTC Budget: $${designResult.ctcTotal.toLocaleString()} (range $${designResult.ct
 ${buildTwinSection(input)}
 Generate the full 2026 CTC line-item estimate.`
 
+    const estimateCacheKey = generateCacheKey('estimate', getCacheInputForEstimateBot(input))
     const llmResult = await callModelCached({
       systemPrompt,
       userPrompt,
       model:       'claude-sonnet-4-6',
       maxTokens:   8192, // 4096 truncates mid-JSON when BOM context is included
       temperature: 0.15,
+      cacheKey:    estimateCacheKey,
     })
 
     const parsed = parseJSON<{
@@ -991,12 +1101,14 @@ Estimated Construction Cost: $${estimateResult.totalLow.toLocaleString()}–$${e
 ${buildTwinSection(input)}
 Identify all required permits, issues, and provide a permitting action plan.`
 
+    const permitCacheKey = generateCacheKey('permit', getCacheInputForPermitBot(input))
     const llmResult = await callModelCached({
       systemPrompt,
       userPrompt,
       model:       'claude-sonnet-4-6',
       maxTokens:   4096,
       temperature: 0.15,
+      cacheKey:    permitCacheKey,
     })
 
     const parsed = parseJSON<{
@@ -1162,12 +1274,14 @@ Warnings: ${permitResult.issues.filter(i => i.severity === 'warning').length}\
 ${buildTwinSection(input)}
 Provide contractor matching criteria and actionable recommendations.`
 
+    const contractorCacheKey = generateCacheKey('contractor', getCacheInputForContractorBot(input))
     const llmResult = await callModelCached({
       systemPrompt: CONTRACTOR_BOT_SYSTEM,
       userPrompt,
       model:        'claude-sonnet-4-6',
       maxTokens:    2048,
       temperature:  0.15,
+      cacheKey:     contractorCacheKey,
     })
 
     const parsed = parseJSON<{
