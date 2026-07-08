@@ -17,7 +17,7 @@ import Anthropic from '@anthropic-ai/sdk'
 import { randomUUID, createHash } from 'crypto'
 
 // ── Response cache for bot outputs ─────────────────────────────────────────────
-import { getResponseCache } from '@kealee/automation'
+import { getResponseCache, getCostTracker } from '@kealee/automation'
 
 // ── Orchestrator imports (consolidated in lib/orchestrator/) ──────────────────
 import {
@@ -718,6 +718,27 @@ Generate the MEP system design and full BOM for this project.`
 
     const durationMs = Date.now() - startedAt
 
+    // ── Track cost for monitoring ────────────────────────────────────────────
+    try {
+      const costTracker = getCostTracker()
+      costTracker.recordBotExecution({
+        botType: 'design',
+        model: llmResult.model,
+        inputTokens: llmResult.inputTokens,
+        outputTokens: llmResult.outputTokens,
+        cacheCreationTokens: llmResult.cacheCreationTokens,
+        cacheReadTokens: llmResult.cacheReadTokens,
+        cacheHit: llmResult.cacheHit,
+        savedTokens: llmResult.savedTokens,
+        estimatedCostUsd: llmResult.estimatedCostUsd,
+        timestamp: new Date(),
+        projectId: input.projectId,
+        durationMs,
+      })
+    } catch (trackErr) {
+      console.warn('[CostTracker] Failed to record design bot execution:', trackErr)
+    }
+
     // ── Persist DesignConcept ────────────────────────────────────────────────
     const prisma = getPrisma()
     if (prisma) {
@@ -924,6 +945,27 @@ Generate the full 2026 CTC line-item estimate.`
     }
 
     const durationMs = Date.now() - startedAt
+
+    // ── Track cost for monitoring ────────────────────────────────────────────
+    try {
+      const costTracker = getCostTracker()
+      costTracker.recordBotExecution({
+        botType: 'estimate',
+        model: llmResult.model,
+        inputTokens: llmResult.inputTokens,
+        outputTokens: llmResult.outputTokens,
+        cacheCreationTokens: llmResult.cacheCreationTokens,
+        cacheReadTokens: llmResult.cacheReadTokens,
+        cacheHit: llmResult.cacheHit,
+        savedTokens: llmResult.savedTokens,
+        estimatedCostUsd: llmResult.estimatedCostUsd,
+        timestamp: new Date(),
+        projectId: input.projectId,
+        durationMs,
+      })
+    } catch (trackErr) {
+      console.warn('[CostTracker] Failed to record estimate bot execution:', trackErr)
+    }
 
     // ── Persist EstimateLineItems ────────────────────────────────────────────
     const prisma = getPrisma()
@@ -1138,6 +1180,27 @@ Identify all required permits, issues, and provide a permitting action plan.`
 
     const durationMs = Date.now() - startedAt
 
+    // ── Track cost for monitoring ────────────────────────────────────────────
+    try {
+      const costTracker = getCostTracker()
+      costTracker.recordBotExecution({
+        botType: 'permit',
+        model: llmResult.model,
+        inputTokens: llmResult.inputTokens,
+        outputTokens: llmResult.outputTokens,
+        cacheCreationTokens: llmResult.cacheCreationTokens,
+        cacheReadTokens: llmResult.cacheReadTokens,
+        cacheHit: llmResult.cacheHit,
+        savedTokens: llmResult.savedTokens,
+        estimatedCostUsd: llmResult.estimatedCostUsd,
+        timestamp: new Date(),
+        projectId: input.projectId,
+        durationMs,
+      })
+    } catch (trackErr) {
+      console.warn('[CostTracker] Failed to record permit bot execution:', trackErr)
+    }
+
     // ── Persist PermitCase ───────────────────────────────────────────────────
     const prisma = getPrisma()
     if (prisma) {
@@ -1310,6 +1373,27 @@ Provide contractor matching criteria and actionable recommendations.`
     }
 
     const durationMs = Date.now() - startedAt
+
+    // ── Track cost for monitoring ────────────────────────────────────────────
+    try {
+      const costTracker = getCostTracker()
+      costTracker.recordBotExecution({
+        botType: 'contractor',
+        model: llmResult.model,
+        inputTokens: llmResult.inputTokens,
+        outputTokens: llmResult.outputTokens,
+        cacheCreationTokens: llmResult.cacheCreationTokens,
+        cacheReadTokens: llmResult.cacheReadTokens,
+        cacheHit: llmResult.cacheHit,
+        savedTokens: llmResult.savedTokens,
+        estimatedCostUsd: llmResult.estimatedCostUsd,
+        timestamp: new Date(),
+        projectId: input.projectId,
+        durationMs,
+      })
+    } catch (trackErr) {
+      console.warn('[CostTracker] Failed to record contractor bot execution:', trackErr)
+    }
 
     await dbCompleteRun({
       id:               runId,

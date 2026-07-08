@@ -71,3 +71,18 @@ export {
   type CacheMetrics,
   type BotType,
 } from './response-cache';
+
+// ── Cost Tracking ────────────────────────────────────────────
+export {
+  getCostTracker,
+  type BotExecutionRecord,
+  type CostStats,
+} from './cost-tracker';
+
+// ── Load Testing ─────────────────────────────────────────────
+export {
+  runLoadTest,
+  SCENARIOS,
+  type LoadTestMetrics,
+  type LoadTestConfig,
+} from './load-test';
