@@ -86,3 +86,10 @@ export {
   type LoadTestMetrics,
   type LoadTestConfig,
 } from './load-test';
+
+// ── Tier Integration Testing ─────────────────────────────────
+export {
+  runTierTest,
+  TEST_CASES,
+  type TestResult,
+} from './tier-integration-test';
