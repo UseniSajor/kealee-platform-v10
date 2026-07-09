@@ -18,6 +18,7 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
+    "@kealee/ai-infrastructure": "workspace:*",
     "@kealee/core-llm": "workspace:*",
     "zod": "^3.22.4"
   },

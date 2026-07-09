@@ -21,6 +21,7 @@
     "zod": "^3.22.4",
     "nanoid": "^3.3.7",
     "@anthropic-ai/sdk": "^0.74.0",
+    "@kealee/ai-infrastructure": "workspace:*",
     "@kealee/seeds": "workspace:*",
     "@kealee/database": "workspace:*"
   },
