@@ -1037,7 +1037,9 @@ export async function POST(req: NextRequest) {
       budget: Math.max(1, Number(existingFormData.budget ?? 50000)),
       stylePreferences: existingFormData.style ? [existingFormData.style as string] : [],
       accessibility: Boolean(existingFormData.accessibility),
-      timeline: Number(existingFormData.timeline ?? 30),
+      // Intake stores timeline as a label ('Flexible', 'ASAP (1-2 weeks)') — Number() of
+      // those is NaN and surfaces as 'NaN days' in the deliverable. Default to 30 days.
+      timeline: Number.isFinite(Number(existingFormData.timeline)) ? Number(existingFormData.timeline) : 30,
       formData: { ...existingFormData, geometry },
     })
 
