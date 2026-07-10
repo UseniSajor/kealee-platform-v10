@@ -79,7 +79,7 @@ export async function GET() {
   const { data: intakes, error } = await supabase
     .from('public_intake_leads')
     .select('id, project_path, status, contact_email, client_name, created_at, form_data, project_address')
-    .in('status', ['concept_ready', 'processing', 'new'])
+    .in('status', ['delivered', 'processing', 'new'])
     .order('created_at', { ascending: false })
     .limit(60)
 
@@ -107,20 +107,20 @@ export async function GET() {
       .toUpperCase()
 
     const l1Kpis = {
-      budget_variance: intake.status === 'concept_ready' ? 0 : 5,
-      schedule_spi:    intake.status === 'concept_ready' ? 1.0 : 0.88,
-      completion_pct:  intake.status === 'concept_ready' ? 100 : 25,
+      budget_variance: (intake.status === 'concept_ready' || intake.status === 'delivered') ? 0 : 5,
+      schedule_spi:    (intake.status === 'concept_ready' || intake.status === 'delivered') ? 1.0 : 0.88,
+      completion_pct:  (intake.status === 'concept_ready' || intake.status === 'delivered') ? 100 : 25,
     }
 
     const l2Kpis = tier >= 2 ? {
-      risk_score:    intake.status === 'concept_ready' ? 12 : 48,
+      risk_score:    (intake.status === 'concept_ready' || intake.status === 'delivered') ? 12 : 48,
       quality_score: health,
       open_issues:   intake.status === 'processing' ? 1 : 0,
     } : {}
 
     const l3Kpis = tier >= 3 ? {
       safety_score:          100,
-      cost_performance_index: intake.status === 'concept_ready' ? 1.0 : 0.92,
+      cost_performance_index: (intake.status === 'concept_ready' || intake.status === 'delivered') ? 1.0 : 0.92,
       rfi_response_time:     0,
       change_order_rate:     0,
     } : {}

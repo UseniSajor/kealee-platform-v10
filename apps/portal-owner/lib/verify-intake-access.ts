@@ -2,7 +2,7 @@ import { createServerClient } from '@supabase/ssr'
 import { createClient } from '@supabase/supabase-js'
 import { cookies } from 'next/headers'
 
-const PAID_STATUSES = new Set(['paid', 'concept_ready', 'processing'])
+const PAID_STATUSES = new Set(['paid', 'concept_ready', 'processing', 'delivered'])
 
 export async function verifyIntakeAccessForSession(intakeId: string): Promise<
   | { ok: true; email: string }

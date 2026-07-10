@@ -68,7 +68,7 @@ export async function GET() {
 
   const totalIntakes  = intakes.length
   const todayIntakes  = intakes.filter(i => i.created_at >= todayStart.toISOString()).length
-  const paidIntakes   = intakes.filter(i => i.status === 'paid' || i.status === 'concept_ready').length
+  const paidIntakes   = intakes.filter(i => i.status === 'paid' || (i.status === 'concept_ready' || i.status === 'delivered')).length
 
   // ── External service pings ──────────────────────────────────────────────────
 

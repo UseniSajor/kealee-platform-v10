@@ -717,6 +717,7 @@ export default function ConceptDeliverablePage() {
       const ready =
         conceptRaw &&
         (intake.status === 'concept_ready' ||
+          intake.status === 'delivered' ||
           (intake.status === 'paid' && Boolean(conceptRaw)) ||
           (formData.v30 && intake.status === 'processing'))
       if (!ready) return false

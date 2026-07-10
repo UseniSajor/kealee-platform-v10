@@ -43,7 +43,7 @@ export const maxDuration = 300 // Claude + Replicate render jobs can take 60–1
 // Statuses that authorise a concept generation. Stripe webhook flips intake
 // to `paid`; the first successful generation flips it to `concept_ready`
 // (regenerations are allowed and return cached output).
-const PAID_INTAKE_STATUSES = new Set(['paid', 'concept_ready', 'processing'])
+const PAID_INTAKE_STATUSES = new Set(['paid', 'concept_ready', 'processing', 'delivered'])
 
 function normalizeConceptTier(tier: number): ConceptTier {
   return (tier === 3 ? 3 : tier === 2 ? 2 : 1) as ConceptTier
@@ -944,7 +944,7 @@ export async function POST(req: NextRequest) {
       .filter((u) => u.length > 0 && /\.(jpe?g|png|webp|heic)/i.test(u))
 
     // Return cached concept if already generated
-    if (existingFormData.conceptOutput && intake.status === 'concept_ready') {
+    if (existingFormData.conceptOutput && (intake.status === 'concept_ready' || intake.status === 'delivered')) {
       const cachedRaw = existingFormData.conceptOutput as ConceptOutput & Record<string, unknown>
       const out = { ...cachedRaw }
       out.renderUrls = preferSelectedRender(out.renderUrls ?? [], existingFormData.selectedRenderUrl as string | undefined)
@@ -1189,7 +1189,8 @@ export async function POST(req: NextRequest) {
           renderJobScopes,
           conceptGeneratedAt: new Date().toISOString(),
         },
-        status: 'concept_ready',
+        // DB enum lacks 'concept_ready'; 'delivered' = generated-and-delivered
+        status: 'delivered',
       })
       .eq('id', intakeId)
 
