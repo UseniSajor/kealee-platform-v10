@@ -1,11 +1,11 @@
 'use client'
 
 import Link from 'next/link'
-import Image from 'next/image'
 import { X, ChevronDown, ArrowRight } from 'lucide-react'
 import { useState } from 'react'
 import { PRIMARY_NAV, NAV_CTA_PRIMARY, NAV_CTA_V30, NAV_LOGIN_OPTIONS } from '@/config/navigation'
 import { isV30EnabledClient } from '@/lib/v30'
+import { KealeeLogo } from '@/components/KealeeLogo'
 
 interface Props {
   isOpen:  boolean
@@ -37,14 +37,8 @@ export function MobileNav({ isOpen, onClose }: Props) {
         {/* Header */}
         <div className="flex h-16 items-center justify-between border-b border-gray-100 px-5">
           <Link href="/" onClick={onClose} className="flex items-center">
-            <Image
-              src="/media/kealee-logo.png"
-              alt="kealee"
-              width={130}
-              height={38}
-              priority
-              className="h-9 w-auto"
-            />
+            <KealeeLogo compact />
+            <span className="sr-only">Kealee — home</span>
           </Link>
           <button
             onClick={onClose}
