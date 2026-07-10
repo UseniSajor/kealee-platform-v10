@@ -98,7 +98,7 @@ export async function processBidDocument(bidId: string, docId: string): Promise<
     if (!fileResponse.ok) throw new Error(`Failed to download file: ${fileResponse.statusText}`)
 
     const isImage = (doc.mimeType || '').startsWith('image/')
-    const model = config.anthropicModel || 'claude-sonnet-4-20250514'
+    const model = config.anthropicModel || 'claude-sonnet-4-6'
 
     let extractedText = ''
     let metadata: DocumentMetadata

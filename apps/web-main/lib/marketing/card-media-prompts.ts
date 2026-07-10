@@ -15,7 +15,7 @@ export async function refineImagePromptWithMarketingBot(spec: CardMediaSpec): Pr
   try {
     const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
     const res = await client.messages.create({
-      model: process.env.ANTHROPIC_MARKETING_MODEL ?? 'claude-3-5-sonnet-latest',
+      model: process.env.ANTHROPIC_MARKETING_MODEL ?? 'claude-sonnet-4-6',
       max_tokens: 200,
       temperature: 0.4,
       system: MARKETING_MEDIA_SYSTEM,

@@ -209,7 +209,7 @@ export async function scopeAnalysisRoutes(fastify: FastifyInstance) {
             regionMultiplier: 1.0,
           },
           confidence: assumptions?.confidence ?? 50,
-          aiModelUsed: 'claude-sonnet-4-20250514',
+          aiModelUsed: 'claude-sonnet-4-6',
         }
 
         // Run refinement with user answers

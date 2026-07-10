@@ -130,7 +130,7 @@ export const analyzeUploadedPhotos = tool(
       }));
 
       const response = await client.messages.create({
-        model: "claude-sonnet-4-20250514",
+        model: "claude-sonnet-4-6",
         max_tokens: 800,
         messages: [
           {
@@ -253,7 +253,7 @@ Return a JSON object with exactly these fields:
 Return only valid JSON, no markdown.`;
 
       const response = await client.messages.create({
-        model: "claude-sonnet-4-20250514",
+        model: "claude-sonnet-4-6",
         max_tokens: 600,
         messages: [{ role: "user", content: prompt }],
       });
@@ -425,7 +425,7 @@ Return a JSON object with exactly these fields:
 Return only valid JSON, no markdown. This is a preliminary estimate only.`;
 
       const response = await client.messages.create({
-        model: "claude-sonnet-4-20250514",
+        model: "claude-sonnet-4-6",
         max_tokens: 400,
         messages: [{ role: "user", content: prompt }],
       });

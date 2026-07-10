@@ -384,7 +384,7 @@ export function registerHealthChecks(fastify: FastifyInstance) {
       services: externalServices,
       ai: {
         configured: !!process.env.ANTHROPIC_API_KEY,
-        model: process.env.ANTHROPIC_API_KEY ? 'claude-sonnet-4-20250514' : undefined,
+        model: process.env.ANTHROPIC_API_KEY ? 'claude-sonnet-4-6' : undefined,
       },
     }
   })

@@ -40,7 +40,7 @@ export const config = {
 
   // AI
   anthropicApiKey: process.env.ANTHROPIC_API_KEY || '',
-  anthropicModel: process.env.ANTHROPIC_MODEL || 'claude-sonnet-4-20250514',
+  anthropicModel: process.env.ANTHROPIC_MODEL || 'claude-sonnet-4-6',
 
   // Email (Resend)
   resendApiKey: process.env.RESEND_API_KEY || '',
