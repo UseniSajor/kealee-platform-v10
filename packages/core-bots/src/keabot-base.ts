@@ -44,7 +44,7 @@ export abstract class KeaBot {
   constructor(config: BotConfig) {
     this.config = {
       ...config,
-      model: config.model ?? 'claude-sonnet-4-20250514',
+      model: config.model ?? 'claude-sonnet-4-6',
       maxTokens: config.maxTokens ?? 4096,
       temperature: config.temperature ?? 0.3,
       enableRagTool: config.enableRagTool ?? true,

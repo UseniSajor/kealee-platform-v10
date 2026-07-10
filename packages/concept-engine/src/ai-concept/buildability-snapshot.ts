@@ -212,7 +212,7 @@ Respond ONLY with valid JSON matching this structure:
 
   try {
     const message = await client.messages.create({
-      model: process.env.ANTHROPIC_MODEL || 'claude-3-5-sonnet-20241022',
+      model: process.env.ANTHROPIC_MODEL || 'claude-sonnet-4-6',
       max_tokens: 512,
       messages: [{ role: 'user', content: prompt }],
     })

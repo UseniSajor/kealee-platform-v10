@@ -320,21 +320,31 @@ async function fireConceptRenders(
 
   for (let i = 0; i < jobs.length; i++) {
     if (i > 0) await new Promise(r => setTimeout(r, RENDER_SUBMIT_DELAY_MS))
-    try {
-      const id = await submitOneRenderJob({
-        style,
-        roomType: jobs[i].roomType,
-        scope: jobs[i].scope,
-        renderMode: modes[i % modes.length],
-        inputImageUrl,
-      })
-      if (id) {
-        predictionIds.push(id)
-        renderJobScopes.push(jobs[i].scope)
+    // Replicate throttles prediction creation hard when account credit is low
+    // (burst of 1/min). Retry 429s with a wait so bursts still complete.
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      try {
+        const id = await submitOneRenderJob({
+          style,
+          roomType: jobs[i].roomType,
+          scope: jobs[i].scope,
+          renderMode: modes[i % modes.length],
+          inputImageUrl,
+        })
+        if (id) {
+          predictionIds.push(id)
+          renderJobScopes.push(jobs[i].scope)
+        }
+        break
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : String(err)
+        if (msg.includes('429') && attempt < 3) {
+          await new Promise(r => setTimeout(r, 12_000))
+          continue
+        }
+        console.warn(`[concept/generate] Render ${i + 1}/${jobs.length} (${jobs[i].scope}) failed:`, msg)
+        break
       }
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : String(err)
-      console.warn(`[concept/generate] Render ${i + 1}/${jobs.length} (${jobs[i].scope}) failed:`, msg)
     }
   }
 

@@ -285,7 +285,7 @@ ${jurisdictionBlock}
 Return ONLY the JSON object matching the required schema.`;
 
     const response = await this.anthropic.messages.create({
-      model: 'claude-sonnet-4-20250514',
+      model: 'claude-sonnet-4-6',
       max_tokens: 2048,
       system: [
         {
