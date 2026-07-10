@@ -43,9 +43,9 @@ export async function fetchAnalyticsSummary() {
   }
 
   const { count: campaignsActive } = await supabase
-    .from('marketing_campaigns')
+    .from('marketing_email_campaigns')
     .select('id', { count: 'exact', head: true })
-    .eq('status', 'active')
+    .eq('status', 'scheduled')
 
   const leadSummary = await fetchLeadSummary()
 
@@ -60,7 +60,7 @@ export async function fetchAnalyticsSummary() {
 export async function fetchCampaignsList() {
   const supabase = getSupabaseAdmin()
   const { data, error } = await supabase
-    .from('marketing_campaigns')
+    .from('marketing_email_campaigns')
     .select('id, week_number, product_id, persona_id, campaign_type, channels, status, leads_generated')
     .order('week_number', { ascending: false })
     .limit(20)

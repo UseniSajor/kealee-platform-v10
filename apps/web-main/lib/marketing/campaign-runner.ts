@@ -94,7 +94,7 @@ export async function generateWeeklyCampaigns(
 
   if (!options?.force) {
     const { count } = await supabase
-      .from('marketing_campaigns')
+      .from('marketing_email_campaigns')
       .select('id', { count: 'exact', head: true })
       .eq('week_number', weekNum)
     if ((count ?? 0) > 0) {
@@ -137,7 +137,7 @@ export async function generateWeeklyCampaigns(
     return { created: 0, skipped: false, weekNumber: weekNum, product: weekCampaign.primary }
   }
 
-  const { error } = await supabase.from('marketing_campaigns').upsert(campaigns, { onConflict: 'id' })
+  const { error } = await supabase.from('marketing_email_campaigns').upsert(campaigns, { onConflict: 'id' })
   if (error) throw new Error(error.message)
 
   return {
@@ -165,7 +165,7 @@ export async function sendTodaysCampaigns(
   let errors = 0
 
   const { data: campaigns, error: fetchErr } = await supabase
-    .from('marketing_campaigns')
+    .from('marketing_email_campaigns')
     .select('*')
     .eq('scheduled_day', dayName)
     .eq('status', 'scheduled')
@@ -222,7 +222,7 @@ export async function sendTodaysCampaigns(
 
     if (!options?.dryRun && sent > 0) {
       await supabase
-        .from('marketing_campaigns')
+        .from('marketing_email_campaigns')
         .update({
           status: 'sent',
           sent_at: new Date().toISOString(),
