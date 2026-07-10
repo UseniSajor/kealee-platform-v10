@@ -78,7 +78,7 @@ export interface CostStats {
 class CostTracker {
   private redis: Redis
   private buffer: BotExecutionRecord[] = []
-  private bufferFlushInterval: NodeJS.Timer | null = null
+  private bufferFlushInterval: NodeJS.Timeout | null = null
 
   constructor() {
     this.redis = getQueueConnection()

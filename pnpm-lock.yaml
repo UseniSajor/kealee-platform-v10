@@ -1592,9 +1592,6 @@ importers:
       '@anthropic-ai/sdk':
         specifier: ^0.74.0
         version: 0.74.0(zod@3.25.76)
-      '@kealee/ai-infrastructure':
-        specifier: workspace:*
-        version: link:../ai-infrastructure
       '@kealee/database':
         specifier: workspace:*
         version: link:../database
@@ -1617,9 +1614,6 @@ importers:
 
   packages/core-ai-gateway:
     dependencies:
-      '@kealee/ai-infrastructure':
-        specifier: workspace:*
-        version: link:../ai-infrastructure
       '@kealee/core-llm':
         specifier: workspace:*
         version: link:../core-llm
@@ -1809,9 +1803,6 @@ importers:
       '@anthropic-ai/sdk':
         specifier: ^0.74.0
         version: 0.74.0(zod@3.25.76)
-      '@kealee/ai-infrastructure':
-        specifier: workspace:*
-        version: link:../ai-infrastructure
       '@kealee/core-agents':
         specifier: workspace:*
         version: link:../core-agents
@@ -1900,9 +1891,6 @@ importers:
       '@anthropic-ai/sdk':
         specifier: ^0.74.0
         version: 0.74.0(zod@3.25.76)
-      '@kealee/ai-infrastructure':
-        specifier: workspace:*
-        version: link:../ai-infrastructure
       '@kealee/core-agents':
         specifier: workspace:*
         version: link:../core-agents

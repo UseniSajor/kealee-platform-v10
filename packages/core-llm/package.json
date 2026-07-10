@@ -50,7 +50,6 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.74.0",
-    "@kealee/ai-infrastructure": "workspace:*",
     "@kealee/database": "workspace:*",
     "@kealee/core-agents": "workspace:*",
     "@kealee/seeds": "workspace:*",

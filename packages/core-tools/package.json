@@ -18,7 +18,6 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@kealee/ai-infrastructure": "workspace:*",
     "@kealee/core-agents": "workspace:*",
     "@kealee/database": "workspace:*",
     "@anthropic-ai/sdk": "^0.74.0",
