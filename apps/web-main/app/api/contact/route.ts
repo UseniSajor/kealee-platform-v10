@@ -59,13 +59,19 @@ export async function POST(req: NextRequest) {
 
     // 2. Send Auto-Responder to User
     // Uses predefined template so attacker cannot control the email body sent to external addresses.
-    await sendEmailWithTemplate({
-      to: email,
-      templateName: 'CONTACT_FORM_AUTO_REPLY',
-      variables: { name, subject, message },
-      ipAddress: ip,
-      route: '/api/contact'
-    })
+    // Non-fatal: the internal notification above is the part that matters (the lead is captured
+    // either way) — a missing/misconfigured auto-reply template must not fail the visitor's submission.
+    try {
+      await sendEmailWithTemplate({
+        to: email,
+        templateName: 'CONTACT_FORM_AUTO_REPLY',
+        variables: { name, subject, message },
+        ipAddress: ip,
+        route: '/api/contact'
+      })
+    } catch (autoReplyErr) {
+      console.error('[contact] Auto-reply failed (non-fatal):', autoReplyErr)
+    }
 
     return NextResponse.json({ success: true })
   } catch (err) {
