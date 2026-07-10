@@ -17,7 +17,7 @@ export function SiteBottomBar({
     <div className={`${shell} ${className}`}>
       <div className="mx-auto max-w-7xl px-4 py-3 sm:py-4 flex flex-col sm:flex-row items-center justify-between gap-2">
         <p className={`text-[11px] sm:text-xs ${text} text-center sm:text-left`}>
-          © 2026 Kealee Platform LLC · Washington DC Metro Area
+          © {new Date().getFullYear()} Kealee Services LLC. All rights reserved.
         </p>
         <nav
           className={`flex flex-wrap items-center justify-center sm:justify-end gap-x-4 gap-y-1 text-[11px] sm:text-xs ${text}`}
@@ -25,7 +25,7 @@ export function SiteBottomBar({
         >
           <Link href="/privacy" className="hover:underline underline-offset-2">Privacy Policy</Link>
           <Link href="/terms" className="hover:underline underline-offset-2">Terms of Service</Link>
-          <span>Kealee Construction LLC est. 2002 · DC · MD · VA</span>
+          <span>Serving the Washington DC Metro Area · DC · MD · VA</span>
         </nav>
       </div>
     </div>

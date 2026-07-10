@@ -128,7 +128,7 @@ export default function MarketingLayout({ children }: { children: React.ReactNod
           </div>
 
           <div className="border-t border-zinc-800 pt-8 flex flex-col md:flex-row justify-between items-center text-sm text-zinc-400">
-            <p>&copy; {new Date().getFullYear()} Kealee Platform. All rights reserved.</p>
+            <p>&copy; {new Date().getFullYear()} Kealee Services LLC. All rights reserved.</p>
             <div className="flex gap-6 mt-4 md:mt-0">
               <Link href="/legal/terms" className="hover:text-white transition">Terms of Service</Link>
               <Link href="/legal/privacy" className="hover:text-white transition">Privacy Policy</Link>
