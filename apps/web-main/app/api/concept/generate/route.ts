@@ -513,6 +513,18 @@ function attachConceptVideoFields(conceptOutput: ConceptOutput, tier: number): v
  * Fire-and-forget call to /api/concept/video for tier 2+. Returns immediately;
  * the customer portal polls via GET to swap in the real video when ready.
  */
+/**
+ * Base URL for fire-and-forget self-calls (video trigger/poll, render resolve,
+ * deliverable-ready email). On Railway, fetching our own public domain from
+ * inside the container fails ('fetch failed') — call the local server directly.
+ */
+function internalApiBaseUrl(req: NextRequest): string {
+  if (process.env.RAILWAY_ENVIRONMENT_NAME && process.env.PORT) {
+    return `http://127.0.0.1:${process.env.PORT}`
+  }
+  return process.env.NEXT_PUBLIC_APP_URL ?? req.nextUrl.origin
+}
+
 function triggerConceptVideoGeneration(baseUrl: string, intakeId: string, tier: number): void {
   if (!conceptTierIncludesVideo(tier as ConceptTier)) return
   fetch(`${baseUrl}/api/concept/video`, {
@@ -984,7 +996,7 @@ export async function POST(req: NextRequest) {
           .eq('id', intakeId)
       }
 
-      const appBaseUrl = process.env.NEXT_PUBLIC_APP_URL ?? req.nextUrl.origin
+      const appBaseUrl = internalApiBaseUrl(req)
       if (shouldTriggerConceptVideo(tier, existingFormData.conceptVideo)) {
         triggerConceptVideoGeneration(appBaseUrl, intakeId, tier)
         kickConceptVideoPoll(appBaseUrl, intakeId, tier)
@@ -1216,7 +1228,7 @@ export async function POST(req: NextRequest) {
 
     // Use canonical app URL for sub-fetches so they always hit production,
     // not a preview URL if this route was invoked from a webhook on a non-prod origin.
-    const appBaseUrl = process.env.NEXT_PUBLIC_APP_URL ?? req.nextUrl.origin
+    const appBaseUrl = internalApiBaseUrl(req)
 
     // Tier 2+ deliverables include a video. Fire-and-forget — portal polls GET to advance segments.
     if (shouldTriggerConceptVideo(tier, existingFormData.conceptVideo)) {
