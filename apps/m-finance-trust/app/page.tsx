@@ -1111,7 +1111,7 @@ export default function FinanceTrustLandingPage() {
           {/* Footer Bottom */}
           <div className="text-center">
             <p className="text-sm">
-              © 2026 Kealee Platform. All rights reserved.
+              © {new Date().getFullYear()} Kealee Services LLC. All rights reserved.
             </p>
           </div>
         </div>

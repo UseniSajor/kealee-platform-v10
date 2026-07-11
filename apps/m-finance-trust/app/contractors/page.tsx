@@ -540,7 +540,7 @@ export default function ContractorsPage() {
             <Link href="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link>
             <Link href="/terms" className="hover:text-white transition-colors">Terms of Service</Link>
           </div>
-          <p className="text-sm">&copy; 2026 Kealee Platform. All rights reserved.</p>
+          <p className="text-sm">&copy; {new Date().getFullYear()} Kealee Services LLC. All rights reserved.</p>
         </div>
       </footer>
     </div>

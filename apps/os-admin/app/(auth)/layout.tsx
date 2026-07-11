@@ -36,7 +36,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           </div>
         </div>
         <div className="relative z-10 text-slate-500 text-sm">
-          &copy; {new Date().getFullYear()} Kealee. All rights reserved.
+          &copy; {new Date().getFullYear()} Kealee Services LLC. All rights reserved.
         </div>
       </div>
 

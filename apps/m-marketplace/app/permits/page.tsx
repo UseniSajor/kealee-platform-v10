@@ -1064,7 +1064,7 @@ export default function PermitsLanding() {
           </div>
 
           <div className="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center text-sm text-gray-400">
-            <p>&copy; {new Date().getFullYear()} Kealee Platform. All rights reserved.</p>
+            <p>&copy; {new Date().getFullYear()} Kealee Services LLC. All rights reserved.</p>
             <div className="flex gap-6 mt-4 md:mt-0">
               <Link href="/permits/legal/terms" className="hover:text-white transition">
                 Terms of Service
