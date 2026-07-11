@@ -1,8 +1,16 @@
 // Build: 2026-05-04-tw3
+import path from "path";
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   output: 'standalone',
+  // Pin the file-tracing root to the monorepo root so the standalone output
+  // nests as .next/standalone/apps/os-admin/server.js — matching every other
+  // app and the path the Railway Dockerfile looks for. build.mjs runs
+  // `next build` with cwd = this app dir, so ../.. is the repo root.
+  experimental: {
+    outputFileTracingRoot: path.join(process.cwd(), '..', '..'),
+  },
   reactStrictMode: true,
   transpilePackages: ['@kealee/ui', '@kealee/auth'],
   typescript: {
