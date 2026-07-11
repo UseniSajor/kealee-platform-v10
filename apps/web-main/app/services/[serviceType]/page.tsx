@@ -147,6 +147,21 @@ export default async function ServicePage({
   const pricingBlurb = getServicePricingBlurb(svc.slug)
   const includedBlurb = getIncludedSectionBlurb(svc.slug)
 
+  // Per-service AI-generated showcase video (grounded in each service type via
+  // the Kealee platform pipeline). Keyed by slug so every service page has its
+  // own clip; falls back to category footage if a per-service file is absent.
+  // Only slugs with a rendered file are listed; the rest fall back to category
+  // footage. deck / design-services / new-construction are pending a Replicate
+  // credit top-up and will be added here once generated.
+  const SERVICE_VIDEO: Record<string, string> = {
+    kitchen:       '/media/service-videos/kitchen.mp4',
+    bathroom:      '/media/service-videos/bathroom.mp4',
+    garden:        '/media/service-videos/garden.mp4',
+    addition:      '/media/service-videos/addition.mp4',
+    'whole-house': '/media/service-videos/whole-house.mp4',
+    interior:      '/media/service-videos/interior.mp4',
+    facade:        '/media/service-videos/facade.mp4',
+  }
   // Real construction footage fallback by category — ensures every service page
   // has playing video marketing even without a per-service promo clip.
   const CATEGORY_VIDEO: Record<string, string> = {
@@ -156,7 +171,7 @@ export default async function ServicePage({
     construction: '/media/service-videos/home-build-video.mp4',
     landscape:    '/media/service-videos/home-build-video.mp4',
   }
-  const showcaseVideo = heroVideo ?? CATEGORY_VIDEO[svc.category]
+  const showcaseVideo = heroVideo ?? SERVICE_VIDEO[svc.slug] ?? CATEGORY_VIDEO[svc.category]
 
   // If New Construction, redirect to its custom flow
   if (!svc.usesConceptIntake) {

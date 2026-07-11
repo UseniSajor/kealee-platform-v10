@@ -23,6 +23,7 @@ const barlow = Barlow({
 
 const HERO_VIDEOS = [
   '/media/hero-videos/hero-new-construction.mp4',
+  '/media/hero-videos/hero-facade-transformation.mp4',
   '/media/hero-videos/hero-interior-renovation.mp4',
   '/media/hero-videos/hero-living-remodel.mp4',
   '/media/hero-videos/hero-landscaping.mp4',
