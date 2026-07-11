@@ -25,6 +25,7 @@ const HERO_VIDEOS = [
   '/media/hero-videos/hero-new-construction.mp4',
   '/media/hero-videos/hero-interior-renovation.mp4',
   '/media/hero-videos/hero-living-remodel.mp4',
+  '/media/hero-videos/hero-landscaping.mp4',
   '/media/hero-videos/hero-kitchen.mp4',
 ]
 
