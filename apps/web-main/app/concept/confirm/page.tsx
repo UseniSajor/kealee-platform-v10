@@ -416,18 +416,37 @@ function ConfirmInner() {
           {availableTiers.map((t) => {
             const meta  = TIER_META[t.tier as 1 | 2 | 3]
             const items = serviceTierItems[t.tier as 1 | 2 | 3] ?? []
+            // Only the selected card lights up — clicking any card selects just that one.
+            const isSelected = tier === t.tier
 
             return (
-              <div key={t.tier} className="relative flex flex-col rounded-2xl overflow-hidden border border-slate-200 shadow-sm hover:shadow-lg transition-all duration-200">
-                {/* Popular badge */}
+              <div
+                key={t.tier}
+                role="button"
+                tabIndex={0}
+                aria-pressed={isSelected}
+                onClick={() => setTier(t.tier as 1 | 2 | 3)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault()
+                    setTier(t.tier as 1 | 2 | 3)
+                  }
+                }}
+                className={`relative flex flex-col rounded-2xl overflow-hidden border cursor-pointer transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#E8724B] focus:ring-offset-2 ${
+                  isSelected
+                    ? 'border-[#E8724B] ring-2 ring-[#E8724B] shadow-lg -translate-y-0.5'
+                    : 'border-slate-200 shadow-sm hover:shadow-md hover:border-slate-300'
+                }`}
+              >
+                {/* Popular badge — muted unless this card is the selected one */}
                 {meta.badge && (
-                  <span className="absolute top-4 right-4 rounded-full bg-[#E8724B] text-white text-[10px] font-bold px-2.5 py-0.5 z-10">
+                  <span className={`absolute top-4 right-4 rounded-full text-white text-[10px] font-bold px-2.5 py-0.5 z-10 transition-colors duration-200 ${isSelected ? 'bg-[#E8724B]' : 'bg-slate-400'}`}>
                     {meta.badge}
                   </span>
                 )}
 
-                {/* Gradient header */}
-                <div className={`bg-gradient-to-br ${meta.accent} px-6 pt-7 pb-6`}>
+                {/* Gradient header — tier accent shows only when selected, so exactly one card is lit */}
+                <div className={`bg-gradient-to-br ${isSelected ? meta.accent : 'from-slate-500 to-slate-700'} px-6 pt-7 pb-6 transition-colors duration-200`}>
                   <div className="w-12 h-12 rounded-full bg-white/15 flex items-center justify-center mb-4">
                     <span className="text-white font-black text-lg">{t.tier}</span>
                   </div>
@@ -462,7 +481,7 @@ function ConfirmInner() {
                   <button
                     type="button"
                     disabled={submitting}
-                    onClick={() => handleTierPay(t.tier as 1 | 2 | 3)}
+                    onClick={(e) => { e.stopPropagation(); handleTierPay(t.tier as 1 | 2 | 3) }}
                     className="w-full flex items-center justify-center gap-2 bg-[#E8724B] hover:bg-[#D45C33] active:bg-[#C04820] disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-3.5 rounded-xl text-sm transition-all duration-200 shadow-md shadow-orange-100 hover:shadow-lg"
                   >
                     {submitting && tier === t.tier ? (
