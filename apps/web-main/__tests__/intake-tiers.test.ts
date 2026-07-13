@@ -14,8 +14,32 @@
  * - Home Addition: $199 / $799 / $1499
  */
 
-import { INTAKE_TIER_PRICE_CENTS, INTAKE_PRICE_CENTS } from '@kealee/core-rules'
+import {
+  INTAKE_TIER_PRICE_CENTS,
+  INTAKE_PRICE_CENTS,
+  CONCEPT_PREMIUM_PLUS_PROMO_PATH,
+  CONCEPT_PREMIUM_PLUS_PROMO_CENTS,
+  resolveConceptTier,
+} from '@kealee/core-rules'
 import { expect, describe, it, test } from '@jest/globals'
+
+describe('$5 Concept Premium+ promo', () => {
+  test('promo path is priced at exactly $5 (500 cents) in the server price book', () => {
+    const entry = INTAKE_PRICE_CENTS[CONCEPT_PREMIUM_PLUS_PROMO_PATH]
+    expect(entry).toBeDefined()
+    expect(entry?.cents).toBe(500)
+    expect(entry?.cents).toBe(CONCEPT_PREMIUM_PLUS_PROMO_CENTS)
+    expect(entry?.label).toMatch(/Premium\+/)
+  })
+
+  test('promo resolves to full Premium+ (tier 3) deliverables', () => {
+    expect(resolveConceptTier({}, { projectPath: CONCEPT_PREMIUM_PLUS_PROMO_PATH })).toBe(3)
+  })
+
+  test('promo does not leak into the tier price book (keeps tier ratio invariants intact)', () => {
+    expect(INTAKE_TIER_PRICE_CENTS[CONCEPT_PREMIUM_PLUS_PROMO_PATH]).toBeUndefined()
+  })
+})
 
 describe('Intake Tier Configuration', () => {
   describe('Tier-specific pricing (INTAKE_TIER_PRICE_CENTS)', () => {

@@ -89,6 +89,11 @@ export interface IntakePriceEntry {
 }
 
 export const INTAKE_PRICE_CENTS: Record<string, IntakePriceEntry> = {
+  // ── Promo ───────────────────────────────────────────────────────────────
+  // $5 Premium+ promo (key = CONCEPT_PREMIUM_PLUS_PROMO_PATH, cents =
+  // CONCEPT_PREMIUM_PLUS_PROMO_CENTS). Delivers full tier-3 Premium+ package.
+  concept_premium_plus_promo: { label: 'Concept Premium+ — $5 Promo',          cents: 500,     deliveryDays: '3–5 days'  },
+
   // ── Concept packages ────────────────────────────────────────────────────
   exterior_concept:          { label: 'Exterior Concept Package',                 cents: 39_500,  deliveryDays: '3–5 days'  },
   garden_concept:            { label: 'Garden Concept',                           cents: 29_500,  deliveryDays: '2–4 days'  },
@@ -134,6 +139,16 @@ export const INTAKE_PRICE_CENTS: Record<string, IntakePriceEntry> = {
   single_family_subdivision: { label: 'Single-Family Subdivision',                cents: 149_900, deliveryDays: '6–8 days'  },
   single_lot_development:    { label: 'Single-Lot Development',                   cents: 89_900,  deliveryDays: '4–6 days'  },
 }
+
+// ── Promotional SKUs ─────────────────────────────────────────────────────────
+//
+// Low-priced, server-trusted promo used to validate the live Stripe pipeline
+// end-to-end (checkout → webhook → concept engine) with a real charge, and for
+// time-boxed marketing offers. Delivers the full Premium+ (tier 3) concept
+// package — see resolveConceptTier() in concept-tier.ts, which maps this path to
+// tier 3 so buyers receive 12 renders, 4K video, and CAD floorplan.
+export const CONCEPT_PREMIUM_PLUS_PROMO_PATH = 'concept_premium_plus_promo'
+export const CONCEPT_PREMIUM_PLUS_PROMO_CENTS = 500 // $5.00
 
 /** Site-visit add-on (additive line item on Stripe checkout). */
 export const SITE_VISIT_FEE_CENTS = 12_500

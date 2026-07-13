@@ -21,6 +21,7 @@ const AGENT_MAP: Record<string, string> = {
   development_feasibility: 'land', design_build: 'design', capture_site_concept: 'design',
   townhome_subdivision: 'land', single_family_subdivision: 'land', single_lot_development: 'land',
   interior_renovation: 'design',
+  concept_premium_plus_promo: 'design',
 }
 
 // Display shape matches what the rest of this file expects. Sourced from

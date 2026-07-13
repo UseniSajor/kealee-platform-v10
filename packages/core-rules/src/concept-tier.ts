@@ -1,7 +1,7 @@
 /**
  * Resolve purchased concept tier for deliverables (renders, video, PDF depth).
  */
-import { INTAKE_PRICE_CENTS, TIER_IMAGE_COUNT } from './pricing'
+import { INTAKE_PRICE_CENTS, TIER_IMAGE_COUNT, CONCEPT_PREMIUM_PLUS_PROMO_PATH } from './pricing'
 import type { ConceptTier } from './concept-package-deliverables'
 
 export function resolveConceptTier(
@@ -11,6 +11,11 @@ export function resolveConceptTier(
   const raw = formData.tier
   if (typeof raw === 'number' && raw >= 1 && raw <= 3) {
     return (raw === 3 ? 3 : raw === 2 ? 2 : 1) as ConceptTier
+  }
+
+  // $5 Premium+ promo is a single SKU that delivers the full tier-3 package.
+  if (opts?.projectPath === CONCEPT_PREMIUM_PLUS_PROMO_PATH) {
+    return 3
   }
 
   // Legacy /intake/[projectPath] checkout — single SKU includes Premium deliverables (video).

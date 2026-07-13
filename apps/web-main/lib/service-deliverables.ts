@@ -32,6 +32,32 @@ export interface ServiceDeliverable {
 }
 
 export const SERVICE_DELIVERABLES: Record<string, ServiceDeliverable> = {
+  // $5 Premium+ promo — full tier-3 concept package at a promotional price.
+  // Used to validate the live Stripe → webhook → concept-engine pipeline and for
+  // time-boxed offers. Priced in @kealee/core-rules (concept_premium_plus_promo).
+  concept_premium_plus_promo: {
+    label: 'Concept Premium+ — $5 Promo',
+    category: 'design',
+    agentType: 'design',
+    generatesConcept: true,
+    permitRequired: 'sometimes',
+    renderCount: 12,
+    includes: [
+      'Floor plan / layout direction',
+      '12 photorealistic AI renderings (4K, multiple angles and lighting)',
+      PERMIT_ROADMAP_IN_DESIGN_BUNDLE,
+      'Multi-layer 3D floor plan + CAD (DWG/DXF) where applicable',
+      'Bill of Materials (BOM) with line-item costs',
+      'MEP specification (electrical, plumbing, HVAC, lighting)',
+      'Detailed cost estimate',
+      VIDEO_PREMIUM_TIERS,
+      '4 video formats (60s · 30s · 15s · 10s) + HD/4K download',
+      CREDIT_TOWARD_PERMIT_DRAWINGS,
+      'Direct support via portal ask bar',
+    ],
+    deliveryDays: '3-5 days',
+    nextStep: { label: 'Continue to Permit Planning', href: '/intake/permit_path_only' },
+  },
   kitchen_remodel: {
     label: 'Kitchen Design Package',
     category: 'design',
