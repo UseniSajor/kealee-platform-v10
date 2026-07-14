@@ -88,7 +88,7 @@ const html = `<!doctype html><html><head><meta charset="utf-8"><title>Estimate �
 
 <h1>Construction Estimate — Breakdown</h1>
 <div class="sub"><b>5213 Call Place SE, Washington DC 20019</b> · New-construction detached group home / residential care (R-2), Type IIIB · Cellar + 3 stories · ${o.gsf.toLocaleString()} GSF · ${o.bedrooms} BR / ${o.beds} beds / ${o.bathrooms} baths / 1 commercial kitchen / 1 elevator</div>
-<div class="sub">Priced through the Kealee catalogue (packages/estimating, DC factor 1.15) · Markups OH 12% / Profit 15% / Contingency 7% · Generated ${new Date(J.meta.generated).toISOString().slice(0, 10)}</div>
+<div class="sub">Priced through the Kealee catalogue (packages/estimating, DC factor 1.15) · Markups OH 12% / Profit 15% / Contingency 7%${J.meta.basis && J.meta.basis.scheduleMonths ? ` · <b>${J.meta.basis.scheduleMonths}-month construction schedule</b>` : ''} · Generated ${new Date(J.meta.generated).toISOString().slice(0, 10)}</div>
 
 <div class="warn"><b>Basis of estimate — measured from the permit set (28 sheets).</b> ${J.meta.methodMix ? `<b>${J.meta.methodMix.dimensionedPct}% of direct cost is dimensioned</b> (measured off schedules/plans or calculated from drawing dimensions); every line below lists its dimensional basis and sheet. The remaining ${(100 - J.meta.methodMix.dimensionedPct).toFixed(0)}% is scope that cannot be measured from this set: Division 01 general conditions (time/effort-based), utility service laterals (no civil sheet), and security (not designed).` : ''} Drawings stamped NOT FOR PERMITTING — estimation only. Persisted to Postgres (quick_estimates + estimate_line_items).</div>
 

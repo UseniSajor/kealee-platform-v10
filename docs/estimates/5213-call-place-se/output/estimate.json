@@ -2,7 +2,7 @@
   "meta": {
     "project": "5213 Call Place SE, Washington DC 20019",
     "type": "New construction detached group home / residential care (R-2), Type IIIB",
-    "generated": "2026-07-14T04:35:18.037Z",
+    "generated": "2026-07-14T04:39:28.780Z",
     "engine": "Kealee packages/estimating (EstimatingService markup structure)",
     "catalogue": "MARKETPLACE_ASSEMBLIES (DC-Baltimore 2024-25) — mid tier, DC factor 1.15",
     "takeoff": "MEASURED from permit set (28 sheets) — see drawings/MEASURED-TAKEOFF.md",
@@ -31,18 +31,19 @@
       "bedrooms": 8,
       "baths": 7,
       "height": "35'-4\"",
-      "structure": "TJI 360×14 + W12×26 steel + HSS columns"
+      "structure": "TJI 360×14 + W12×26 steel + HSS columns",
+      "scheduleMonths": 6
     },
     "methodMix": {
       "measured": 733411,
-      "calcFromDims": 787697,
-      "notDimensioned": 263200,
-      "dimensionedPct": 85.2
+      "calcFromDims": 760186,
+      "notDimensioned": 201100,
+      "dimensionedPct": 88.1
     },
     "notDimensionedItems": [
       {
-        "item": "Site superintendent (12 mo)",
-        "extended": 114000
+        "item": "Site superintendent (6 mo)",
+        "extended": 57000
       },
       {
         "item": "Mobilization / demobilization",
@@ -50,7 +51,7 @@
       },
       {
         "item": "Temporary water / heat / enclosure",
-        "extended": 10200
+        "extended": 5100
       },
       {
         "item": "Safety / OSHA / PPE program",
@@ -86,7 +87,7 @@
       }
     ],
     "caveats": [
-      "85% of direct cost is dimensioned (measured or calc-from-drawing-dims); remainder is scope not shown on the drawings.",
+      "88% of direct cost is dimensioned (measured or calc-from-drawing-dims); remainder is scope not shown on the drawings.",
       "Every line carries its dimensional basis (dim field) and sheet reference.",
       "Drawings stamped NOT FOR PERMITTING — used for estimation only.",
       "Elevator + commercial-kitchen equipment excluded (confirmed present on A001/E101)."
@@ -108,7 +109,7 @@
               "code": "GEN-PM-WEEKLY",
               "name": "Project Management – Weekly",
               "unit": "each",
-              "qty": 52,
+              "qty": 26,
               "matUnit": 0,
               "labUnit": 805,
               "equipUnit": 0,
@@ -116,7 +117,7 @@
               "lhrsUnit": 8,
               "allowance": false,
               "waste": 0.05,
-              "basis": "12-mo schedule",
+              "basis": "6-mo schedule = 26 wk",
               "dim": "",
               "sheet": "",
               "method": "CALC",
@@ -124,20 +125,20 @@
               "note": "Project management, weekly",
               "ext": {
                 "mat": 0,
-                "lab": 41860,
+                "lab": 20930,
                 "equip": 0,
                 "sub": 0,
-                "total": 41860,
-                "lhrs": 416,
+                "total": 20930,
+                "lhrs": 208,
                 "rate": null
               },
               "laborRate": null
             },
             {
               "code": "ALLOWANCE",
-              "name": "Site superintendent (12 mo)",
+              "name": "Site superintendent (6 mo)",
               "unit": "mo",
-              "qty": 12,
+              "qty": 6,
               "matUnit": 0,
               "labUnit": 9500,
               "equipUnit": 0,
@@ -145,7 +146,7 @@
               "lhrsUnit": 126.6667,
               "allowance": true,
               "waste": 0,
-              "basis": "12-mo build",
+              "basis": "6-mo build",
               "dim": "",
               "sheet": "",
               "method": "ASSUMED",
@@ -154,11 +155,11 @@
               "aUnit": 9500,
               "ext": {
                 "mat": 0,
-                "lab": 114000,
+                "lab": 57000,
                 "equip": 0,
                 "sub": 0,
-                "total": 114000,
-                "lhrs": 1520.0004000000001,
+                "total": 57000,
+                "lhrs": 760.0002000000001,
                 "rate": null
               },
               "laborRate": null
@@ -197,7 +198,7 @@
               "code": "GEN-TEMP-POWER",
               "name": "Temporary Power",
               "unit": "each",
-              "qty": 12,
+              "qty": 6,
               "matUnit": 483,
               "labUnit": 402.5,
               "equipUnit": 0,
@@ -205,19 +206,19 @@
               "lhrsUnit": 4,
               "allowance": false,
               "waste": 0.05,
-              "basis": "monthly",
+              "basis": "6 months",
               "dim": "",
               "sheet": "",
               "method": "CALC",
               "conf": "MED",
               "note": "",
               "ext": {
-                "mat": 5796,
-                "lab": 4830,
+                "mat": 2898,
+                "lab": 2415,
                 "equip": 0,
                 "sub": 0,
-                "total": 10626,
-                "lhrs": 48,
+                "total": 5313,
+                "lhrs": 24,
                 "rate": null
               },
               "laborRate": null
@@ -226,7 +227,7 @@
               "code": "ALLOWANCE",
               "name": "Temporary water / heat / enclosure",
               "unit": "mo",
-              "qty": 12,
+              "qty": 6,
               "matUnit": 0,
               "labUnit": 0,
               "equipUnit": 0,
@@ -245,8 +246,8 @@
                 "mat": 0,
                 "lab": 0,
                 "equip": 0,
-                "sub": 10200,
-                "total": 10200,
+                "sub": 5100,
+                "total": 5100,
                 "lhrs": 0,
                 "rate": null
               },
@@ -256,7 +257,7 @@
               "code": "GEN-PORT-TOILET",
               "name": "Portable Toilet – Monthly",
               "unit": "each",
-              "qty": 12,
+              "qty": 6,
               "matUnit": 211.31,
               "labUnit": 0,
               "equipUnit": 0,
@@ -264,18 +265,18 @@
               "lhrsUnit": 0,
               "allowance": false,
               "waste": 0.05,
-              "basis": "",
+              "basis": "6 months",
               "dim": "",
               "sheet": "",
               "method": "CALC",
               "conf": "MED",
               "note": "",
               "ext": {
-                "mat": 2535.7200000000003,
+                "mat": 1267.8600000000001,
                 "lab": 0,
                 "equip": 0,
                 "sub": 0,
-                "total": 2535.7200000000003,
+                "total": 1267.8600000000001,
                 "lhrs": 0,
                 "rate": null
               },
@@ -488,12 +489,12 @@
               "laborRate": null
             }
           ],
-          "mat": 19526.22,
-          "lab": 163768.4,
+          "mat": 15360.36,
+          "lab": 83423.4,
           "equip": 0,
-          "sub": 69200,
-          "hrs": 2043.2004000000002,
-          "total": 252494.62
+          "sub": 64100,
+          "hrs": 1051.2002,
+          "total": 162883.76
         },
         {
           "num": "02",
@@ -3559,19 +3560,19 @@
           "total": 62000
         }
       ],
-      "material": 466907.7379999999,
-      "labor": 706073.51,
+      "material": 462741.8779999999,
+      "labor": 625728.51,
       "equipment": 32721.2,
-      "subcontractor": 578606,
-      "laborHours": 8545.2264,
-      "direct": 1784308.4479999999,
-      "overhead": 214117.01375999997,
-      "profit": 267646.26719999994,
-      "contingency": 124901.59136,
-      "bondsIns": 33991.075934399996,
+      "subcontractor": 573506,
+      "laborHours": 7553.2262,
+      "direct": 1694697.5879999998,
+      "overhead": 203363.71055999998,
+      "profit": 254204.63819999996,
+      "contingency": 118628.83115999999,
+      "bondsIns": 32283.9890514,
       "permit": 22000,
-      "total": 2446964.3962544,
-      "psf": 413.33858044837837
+      "total": 2325178.7569714,
+      "psf": 392.76668192084463
     },
     "B": {
       "scen": "B",
@@ -3584,7 +3585,7 @@
               "code": "GEN-PM-WEEKLY",
               "name": "Project Management – Weekly",
               "unit": "each",
-              "qty": 52,
+              "qty": 26,
               "matUnit": 0,
               "labUnit": 805,
               "equipUnit": 0,
@@ -3592,7 +3593,7 @@
               "lhrsUnit": 8,
               "allowance": false,
               "waste": 0.05,
-              "basis": "12-mo schedule",
+              "basis": "6-mo schedule = 26 wk",
               "dim": "",
               "sheet": "",
               "method": "CALC",
@@ -3600,20 +3601,20 @@
               "note": "Project management, weekly",
               "ext": {
                 "mat": 0,
-                "lab": 36836.8,
+                "lab": 18418.4,
                 "equip": 0,
                 "sub": 0,
-                "total": 36836.8,
-                "lhrs": 366.08,
+                "total": 18418.4,
+                "lhrs": 183.04,
                 "rate": null
               },
               "laborRate": null
             },
             {
               "code": "ALLOWANCE",
-              "name": "Site superintendent (12 mo)",
+              "name": "Site superintendent (6 mo)",
               "unit": "mo",
-              "qty": 12,
+              "qty": 6,
               "matUnit": 0,
               "labUnit": 9500,
               "equipUnit": 0,
@@ -3621,7 +3622,7 @@
               "lhrsUnit": 126.6667,
               "allowance": true,
               "waste": 0,
-              "basis": "12-mo build",
+              "basis": "6-mo build",
               "dim": "",
               "sheet": "",
               "method": "ASSUMED",
@@ -3630,11 +3631,11 @@
               "aUnit": 9500,
               "ext": {
                 "mat": 0,
-                "lab": 100320,
+                "lab": 50160,
                 "equip": 0,
                 "sub": 0,
-                "total": 100320,
-                "lhrs": 1337.6003520000002,
+                "total": 50160,
+                "lhrs": 668.8001760000001,
                 "rate": null
               },
               "laborRate": null
@@ -3673,7 +3674,7 @@
               "code": "GEN-TEMP-POWER",
               "name": "Temporary Power",
               "unit": "each",
-              "qty": 12,
+              "qty": 6,
               "matUnit": 483,
               "labUnit": 402.5,
               "equipUnit": 0,
@@ -3681,19 +3682,19 @@
               "lhrsUnit": 4,
               "allowance": false,
               "waste": 0.05,
-              "basis": "monthly",
+              "basis": "6 months",
               "dim": "",
               "sheet": "",
               "method": "CALC",
               "conf": "MED",
               "note": "",
               "ext": {
-                "mat": 5100.4800000000005,
-                "lab": 4250.4,
+                "mat": 2550.2400000000002,
+                "lab": 2125.2,
                 "equip": 0,
                 "sub": 0,
-                "total": 9350.880000000001,
-                "lhrs": 42.24,
+                "total": 4675.4400000000005,
+                "lhrs": 21.12,
                 "rate": null
               },
               "laborRate": null
@@ -3702,7 +3703,7 @@
               "code": "ALLOWANCE",
               "name": "Temporary water / heat / enclosure",
               "unit": "mo",
-              "qty": 12,
+              "qty": 6,
               "matUnit": 0,
               "labUnit": 0,
               "equipUnit": 0,
@@ -3721,8 +3722,8 @@
                 "mat": 0,
                 "lab": 0,
                 "equip": 0,
-                "sub": 8976,
-                "total": 8976,
+                "sub": 4488,
+                "total": 4488,
                 "lhrs": 0,
                 "rate": null
               },
@@ -3732,7 +3733,7 @@
               "code": "GEN-PORT-TOILET",
               "name": "Portable Toilet – Monthly",
               "unit": "each",
-              "qty": 12,
+              "qty": 6,
               "matUnit": 211.31,
               "labUnit": 0,
               "equipUnit": 0,
@@ -3740,18 +3741,18 @@
               "lhrsUnit": 0,
               "allowance": false,
               "waste": 0.05,
-              "basis": "",
+              "basis": "6 months",
               "dim": "",
               "sheet": "",
               "method": "CALC",
               "conf": "MED",
               "note": "",
               "ext": {
-                "mat": 2231.4336000000003,
+                "mat": 1115.7168000000001,
                 "lab": 0,
                 "equip": 0,
                 "sub": 0,
-                "total": 2231.4336000000003,
+                "total": 1115.7168000000001,
                 "lhrs": 0,
                 "rate": null
               },
@@ -3964,12 +3965,12 @@
               "laborRate": null
             }
           ],
-          "mat": 17183.073600000003,
-          "lab": 144116.19199999998,
+          "mat": 13517.1168,
+          "lab": 73412.59199999999,
           "equip": 0,
-          "sub": 60896,
-          "hrs": 1798.016352,
-          "total": 222195.26559999998
+          "sub": 56408,
+          "hrs": 925.056176,
+          "total": 143337.7088
         },
         {
           "num": "02",
@@ -7035,19 +7036,19 @@
           "total": 54560
         }
       ],
-      "material": 410878.80944000004,
-      "labor": 621344.6888000001,
+      "material": 407212.85264,
+      "labor": 550641.0888,
       "equipment": 28794.656000000003,
-      "subcontractor": 509173.27999999997,
-      "laborHours": 7519.799232000001,
-      "direct": 1570191.43424,
-      "overhead": 188422.9721088,
-      "profit": 235528.715136,
-      "contingency": 78509.571712,
-      "bondsIns": 29912.146822272,
+      "subcontractor": 504685.27999999997,
+      "laborHours": 6646.839056000001,
+      "direct": 1491333.87744,
+      "overhead": 178960.0652928,
+      "profit": 223700.08161599998,
+      "contingency": 74566.693872,
+      "bondsIns": 28409.910365232,
       "permit": 22000,
-      "total": 2124564.840019072,
-      "psf": 358.8791959491676
+      "total": 2018970.6285860322,
+      "psf": 341.0423359098027
     },
     "C": {
       "scen": "C",
@@ -7060,7 +7061,7 @@
               "code": "GEN-PM-WEEKLY",
               "name": "Project Management – Weekly",
               "unit": "each",
-              "qty": 52,
+              "qty": 26,
               "matUnit": 0,
               "labUnit": 805,
               "equipUnit": 0,
@@ -7068,7 +7069,7 @@
               "lhrsUnit": 8,
               "allowance": false,
               "waste": 0.05,
-              "basis": "12-mo schedule",
+              "basis": "6-mo schedule = 26 wk",
               "dim": "",
               "sheet": "",
               "method": "CALC",
@@ -7076,20 +7077,20 @@
               "note": "Project management, weekly",
               "ext": {
                 "mat": 0,
-                "lab": 31813.600000000002,
+                "lab": 15906.800000000001,
                 "equip": 0,
                 "sub": 0,
-                "total": 31813.600000000002,
-                "lhrs": 316.16,
+                "total": 15906.800000000001,
+                "lhrs": 158.08,
                 "rate": null
               },
               "laborRate": null
             },
             {
               "code": "ALLOWANCE",
-              "name": "Site superintendent (12 mo)",
+              "name": "Site superintendent (6 mo)",
               "unit": "mo",
-              "qty": 12,
+              "qty": 6,
               "matUnit": 0,
               "labUnit": 9500,
               "equipUnit": 0,
@@ -7097,7 +7098,7 @@
               "lhrsUnit": 126.6667,
               "allowance": true,
               "waste": 0,
-              "basis": "12-mo build",
+              "basis": "6-mo build",
               "dim": "",
               "sheet": "",
               "method": "ASSUMED",
@@ -7106,11 +7107,11 @@
               "aUnit": 9500,
               "ext": {
                 "mat": 0,
-                "lab": 86640,
+                "lab": 43320,
                 "equip": 0,
                 "sub": 0,
-                "total": 86640,
-                "lhrs": 1155.2003040000002,
+                "total": 43320,
+                "lhrs": 577.6001520000001,
                 "rate": null
               },
               "laborRate": null
@@ -7149,7 +7150,7 @@
               "code": "GEN-TEMP-POWER",
               "name": "Temporary Power",
               "unit": "each",
-              "qty": 12,
+              "qty": 6,
               "matUnit": 483,
               "labUnit": 402.5,
               "equipUnit": 0,
@@ -7157,19 +7158,19 @@
               "lhrsUnit": 4,
               "allowance": false,
               "waste": 0.05,
-              "basis": "monthly",
+              "basis": "6 months",
               "dim": "",
               "sheet": "",
               "method": "CALC",
               "conf": "MED",
               "note": "",
               "ext": {
-                "mat": 4404.96,
-                "lab": 3670.8,
+                "mat": 2202.48,
+                "lab": 1835.4,
                 "equip": 0,
                 "sub": 0,
-                "total": 8075.76,
-                "lhrs": 36.480000000000004,
+                "total": 4037.88,
+                "lhrs": 18.240000000000002,
                 "rate": null
               },
               "laborRate": null
@@ -7178,7 +7179,7 @@
               "code": "ALLOWANCE",
               "name": "Temporary water / heat / enclosure",
               "unit": "mo",
-              "qty": 12,
+              "qty": 6,
               "matUnit": 0,
               "labUnit": 0,
               "equipUnit": 0,
@@ -7197,8 +7198,8 @@
                 "mat": 0,
                 "lab": 0,
                 "equip": 0,
-                "sub": 7752,
-                "total": 7752,
+                "sub": 3876,
+                "total": 3876,
                 "lhrs": 0,
                 "rate": null
               },
@@ -7208,7 +7209,7 @@
               "code": "GEN-PORT-TOILET",
               "name": "Portable Toilet – Monthly",
               "unit": "each",
-              "qty": 12,
+              "qty": 6,
               "matUnit": 211.31,
               "labUnit": 0,
               "equipUnit": 0,
@@ -7216,18 +7217,18 @@
               "lhrsUnit": 0,
               "allowance": false,
               "waste": 0.05,
-              "basis": "",
+              "basis": "6 months",
               "dim": "",
               "sheet": "",
               "method": "CALC",
               "conf": "MED",
               "note": "",
               "ext": {
-                "mat": 1927.1472,
+                "mat": 963.5736,
                 "lab": 0,
                 "equip": 0,
                 "sub": 0,
-                "total": 1927.1472,
+                "total": 963.5736,
                 "lhrs": 0,
                 "rate": null
               },
@@ -7440,12 +7441,12 @@
               "laborRate": null
             }
           ],
-          "mat": 14839.9272,
-          "lab": 124463.98400000001,
+          "mat": 11673.8736,
+          "lab": 63401.78400000001,
           "equip": 0,
-          "sub": 52592,
-          "hrs": 1552.8323040000002,
-          "total": 191895.9112
+          "sub": 48716,
+          "hrs": 798.9121520000001,
+          "total": 123791.6576
         },
         {
           "num": "02",
@@ -10511,19 +10512,19 @@
           "total": 47120
         }
       ],
-      "material": 354849.88088,
-      "labor": 536615.8676,
+      "material": 351683.8272799999,
+      "labor": 475553.66760000004,
       "equipment": 24868.112,
-      "subcontractor": 439740.56,
-      "laborHours": 6494.372064,
-      "direct": 1356074.42048,
-      "overhead": 162728.9304576,
-      "profit": 203411.163072,
-      "contingency": 67803.72102400001,
-      "bondsIns": 25833.217710144,
+      "subcontractor": 435864.56,
+      "laborHours": 5740.4519119999995,
+      "direct": 1287970.16688,
+      "overhead": 154556.42002559997,
+      "profit": 193195.52503199998,
+      "contingency": 64398.508344,
+      "bondsIns": 24535.831679063995,
       "permit": 14000,
-      "total": 1829851.452743744,
-      "psf": 309.0965291796865
+      "total": 1738656.4519606638,
+      "psf": 293.6919682365986
     }
   },
   "exclusions": {
@@ -10597,24 +10598,24 @@
     "beds": 14,
     "bedrooms": 8,
     "bathrooms": 7,
-    "recommendedBaseBuilding": 2446964,
-    "costPerGSF": 413.34,
-    "costPerBed": 174783,
-    "costPerBedroom": 305871,
-    "costPerBathroom": 349566,
-    "costExclElevatorAndKitchen": 2446964,
+    "recommendedBaseBuilding": 2325179,
+    "costPerGSF": 392.77,
+    "costPerBed": 166084,
+    "costPerBedroom": 290647,
+    "costPerBathroom": 332168,
+    "costExclElevatorAndKitchen": 2325179,
     "elevatorAllowanceSeparate": 142000,
     "kitchenEquipmentAllowanceSeparate": 120500,
-    "allInWithExcludedAllowances": 2709464
+    "allInWithExcludedAllowances": 2587679
   },
   "topDrivers": [
     {
-      "k": "Div 01 General Conditions",
-      "v": 252494.62
-    },
-    {
       "k": "Div 09 Finishes",
       "v": 246523.928
+    },
+    {
+      "k": "Div 01 General Conditions",
+      "v": 162883.76
     },
     {
       "k": "Div 26 Electrical",

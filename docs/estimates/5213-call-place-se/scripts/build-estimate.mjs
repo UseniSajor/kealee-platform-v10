@@ -25,6 +25,9 @@ const SEED = path.join(REPO, 'packages/estimating/src/seed-assemblies.ts');
 // ── Project constants (MEASURED from drawings) ──────────────────────────────
 const GSF = 5920, FOOTPRINT = 1480, BEDS = 14, BEDROOMS = 8, BATHS = 7;
 const TARGET_PSF = 170, TARGET_TOTAL = 1006400;
+// Construction schedule — scales time-based general conditions (Div 01).
+const SCHEDULE_MONTHS = 6;
+const SCHEDULE_WEEKS = Math.round(SCHEDULE_MONTHS * 4.333); // 26
 const DC = 1.15;
 const OH = 0.12, PROFIT = 0.15, CONTINGENCY = 0.07, BONDS_INS = 0.015;
 // ── Labor wage schedule (owner-directed) ────────────────────────────────────
@@ -107,12 +110,12 @@ const DFLT_FB = 0.88, DFLT_FC = 0.76;
 // ── LINE ITEMS BY CSI DIVISION (measured) ───────────────────────────────────
 const divisions = [
   ['01', 'General Conditions', [
-    cat('GEN-PM-WEEKLY', 52, { method: 'CALC', basis: '12-mo schedule', note: 'Project management, weekly' }),
-    allow('Site superintendent (12 mo)', 'mo', 12, 9500, { split: { lab: 1 }, basis: '12-mo build' }),
+    cat('GEN-PM-WEEKLY', SCHEDULE_WEEKS, { method: 'CALC', basis: `${SCHEDULE_MONTHS}-mo schedule = ${SCHEDULE_WEEKS} wk`, note: 'Project management, weekly' }),
+    allow(`Site superintendent (${SCHEDULE_MONTHS} mo)`, 'mo', SCHEDULE_MONTHS, 9500, { split: { lab: 1 }, basis: `${SCHEDULE_MONTHS}-mo build` }),
     allow('Mobilization / demobilization', 'ls', 1, 18000, {}),
-    cat('GEN-TEMP-POWER', 12, { basis: 'monthly' }),
-    allow('Temporary water / heat / enclosure', 'mo', 12, 850, {}),
-    cat('GEN-PORT-TOILET', 12, {}),
+    cat('GEN-TEMP-POWER', SCHEDULE_MONTHS, { basis: `${SCHEDULE_MONTHS} months` }),
+    allow('Temporary water / heat / enclosure', 'mo', SCHEDULE_MONTHS, 850, {}),
+    cat('GEN-PORT-TOILET', SCHEDULE_MONTHS, { basis: `${SCHEDULE_MONTHS} months` }),
     allow('Safety / OSHA / PPE program', 'ls', 1, 14000, {}),
     cat('GEN-DUMP-30', 10, {}),
     cat('GEN-CLEANUP-FINAL', GSF, { method: 'MEASURED', sheet: 'A001-A002', basis: 'GSF 5,920' }),
@@ -324,7 +327,7 @@ const money = (n) => '$' + Math.round(n).toLocaleString();
 const psf = (n) => '$' + n.toFixed(0) + '/SF';
 console.log('='.repeat(78));
 console.log('5213 CALL PLACE SE — MEASURED ESTIMATE (from 28-sheet permit set)');
-console.log(`GSF ${GSF.toLocaleString()} | ${BEDROOMS} BR | ${BEDS} beds | ${BATHS} baths | footprint 24'×64' | DC ${DC}`);
+console.log(`GSF ${GSF.toLocaleString()} | ${BEDROOMS} BR | ${BEDS} beds | ${BATHS} baths | footprint 24'×64' | ${SCHEDULE_MONTHS}-month schedule | DC ${DC}`);
 console.log('='.repeat(78));
 for (const S of [A, B, C]) {
   const label = { A: 'A · Catalogue Market', B: 'B · Value-Engineered', C: 'C · Minimum Viable' }[S.scen];
@@ -364,7 +367,7 @@ const jsonExport = {
     takeoff: 'MEASURED from permit set (28 sheets) — see drawings/MEASURED-TAKEOFF.md',
     markups: { overheadPct: 12, profitPct: 15, contingencyPct_A: 7, contingencyPct_BC: 5, bondsInsPct: 1.5 },
     laborWage: { apprentice: APPRENTICE, journeyman: JOURNEYMAN, master: MASTER, generalTradesRate: GENERAL_RATE, licensedTradesRate: LICENSED_RATE, generalCrew: '60% journeyman + 40% apprentice', licensedCrew: 'master flat (Div 21/22/23/26/27-28)', note: 'Labor = labor-hours × crew rate. Div 01 GC supervision salaried; subcontractor lump sums keep quoted value.' },
-    basis: { gsf: GSF, footprint: "24'×64'", stories: 'cellar + 3', beds: BEDS, bedrooms: BEDROOMS, baths: BATHS, height: "35'-4\"", structure: 'TJI 360×14 + W12×26 steel + HSS columns' },
+    basis: { gsf: GSF, footprint: "24'×64'", stories: 'cellar + 3', beds: BEDS, bedrooms: BEDROOMS, baths: BATHS, height: "35'-4\"", structure: 'TJI 360×14 + W12×26 steel + HSS columns', scheduleMonths: SCHEDULE_MONTHS },
     methodMix: { measured: Math.round(methodMix.MEASURED), calcFromDims: Math.round(methodMix.CALC), notDimensioned: Math.round(methodMix.ASSUMED), dimensionedPct: +dimensionedPct.toFixed(1) },
     notDimensionedItems: undimLines.map((l) => ({ item: l.name, extended: Math.round(l.ext.total) })),
     caveats: [
