@@ -1361,6 +1361,43 @@ importers:
         specifier: ^5.6.0
         version: 5.9.3
 
+  packages/ai-infrastructure:
+    dependencies:
+      '@anthropic-ai/sdk':
+        specifier: ^0.74.0
+        version: 0.74.0(zod@3.25.76)
+      '@kealee/database':
+        specifier: workspace:*
+        version: link:../database
+      '@kealee/seeds':
+        specifier: workspace:*
+        version: link:../seeds
+      bottleneck:
+        specifier: ^2.19.5
+        version: 2.19.5
+      csv-parse:
+        specifier: ^5.5.0
+        version: 5.6.0
+      nanoid:
+        specifier: ^3.3.7
+        version: 3.3.11
+      openai:
+        specifier: ^4.77.0
+        version: 4.104.0(zod@3.25.76)
+      replicate:
+        specifier: ^1.4.0
+        version: 1.4.0
+      zod:
+        specifier: ^3.22.4
+        version: 3.25.76
+    devDependencies:
+      '@types/node':
+        specifier: ^20.19.30
+        version: 20.19.39
+      typescript:
+        specifier: ^5.3.3
+        version: 5.9.3
+
   packages/analytics:
     dependencies:
       '@kealee/database':
@@ -1451,6 +1488,9 @@ importers:
       '@kealee/communications':
         specifier: workspace:*
         version: link:../communications
+      '@kealee/core-rules':
+        specifier: workspace:*
+        version: link:../core-rules
       '@kealee/database':
         specifier: workspace:*
         version: link:../database
@@ -7536,7 +7576,7 @@ packages:
       mustache: 4.2.0
       p-queue: 6.6.2
       uuid: 11.1.0
-      zod: 4.3.6
+      zod: 3.25.76
     transitivePeerDependencies:
       - '@opentelemetry/api'
       - '@opentelemetry/exporter-trace-otlp-proto'
@@ -21048,6 +21088,7 @@ packages:
   /process@0.11.10:
     resolution: {integrity: sha512-cdGef/drWFoydD1JsMzuFf8100nZl+GT+yacc2bEced5f9Rjk4z+WtFUTBu9PhOi9j/jfmBPu0mMEY4wIdAF8A==}
     engines: {node: '>= 0.6.0'}
+    requiresBuild: true
     dev: false
 
   /progress@2.0.3:

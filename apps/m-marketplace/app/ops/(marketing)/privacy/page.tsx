@@ -213,7 +213,7 @@ export default function PrivacyPage() {
 
       {/* Footer */}
       <div className="mt-8 text-center text-sm text-zinc-500">
-        © 2026 Kealee. All rights reserved.
+        © {new Date().getFullYear()} Kealee Services LLC. All rights reserved.
       </div>
     </main>
   );

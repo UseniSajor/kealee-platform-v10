@@ -161,7 +161,7 @@ export default function BotPromptEditorPage() {
                         id="model"
                         value={model}
                         onChange={(e) => setModel(e.target.value)}
-                        placeholder="e.g. claude-3-5-sonnet-20241022"
+                        placeholder="e.g. claude-sonnet-4-6"
                         className="font-mono text-xs"
                       />
                       <p className="text-[10px] text-gray-400">Leave blank to use code registry default.</p>

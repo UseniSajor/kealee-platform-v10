@@ -277,7 +277,7 @@ export function computeChannelComparison(
     projectPathsByBucket.get(bucket)!.add(pathKey)
 
     if (lead.status === 'paid') row.sales++
-    if (lead.status === 'concept_ready') row.conceptReady++
+    if (lead.status === 'concept_ready' || lead.status === 'delivered') row.conceptReady++
 
     if (CONVERTED_FOR_REVENUE.has(lead.status)) {
       row.revenueCents += lead.payment_amount ?? 0

@@ -464,7 +464,7 @@ function LeadPipeline({ stats }: { stats: MarketingStats | null }) {
                 </td>
                 <td className="px-4 py-3">
                   <span className={`rounded-full px-2 py-0.5 text-xs ${
-                    lead.status === 'paid' || lead.status === 'concept_ready'
+                    lead.status === 'paid' || (lead.status === 'concept_ready' || lead.status === 'delivered')
                       ? 'bg-emerald-900/40 text-emerald-400'
                       : lead.status === 'processing'
                         ? 'bg-blue-900/40 text-blue-300'

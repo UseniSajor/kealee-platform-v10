@@ -151,7 +151,7 @@ export default function ContractorsLayout({
               <a href="/permits/legal/privacy" className="hover:text-white transition-colors">Privacy Policy</a>
               <a href="/permits/legal/acceptable-use" className="hover:text-white transition-colors">Acceptable Use</a>
             </div>
-            <p>© {new Date().getFullYear()} Kealee Platform. All rights reserved.</p>
+            <p>© {new Date().getFullYear()} Kealee Services LLC. All rights reserved.</p>
           </div>
         </div>
       </footer>

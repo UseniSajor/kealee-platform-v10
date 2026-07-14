@@ -76,7 +76,7 @@ export async function loadConceptQueue(params?: {
     } else if (params?.deliveryStatus === 'pending') {
       query = query.eq('status', 'new')
     } else if (params?.deliveryStatus === 'ready') {
-      query = query.in('status', ['concept_ready', 'paid'])
+      query = query.in('status', ['delivered', 'paid'])
     }
 
     const { data, error } = await query

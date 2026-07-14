@@ -98,7 +98,7 @@ export function Footer() {
         <Separator className="my-8 bg-gray-800" />
 
         <div className="flex flex-col md:flex-row justify-between items-center text-sm text-gray-400">
-          <p>© {currentYear} Kealee Platform. All rights reserved.</p>
+          <p>© {currentYear} Kealee Services LLC. All rights reserved.</p>
           <div className="flex space-x-6 mt-4 md:mt-0">
             <Link href="/ops/legal/terms" className="hover:text-orange-600 transition-colors">
               Terms of Service

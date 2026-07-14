@@ -35,7 +35,7 @@ if (!process.env.REPLICATE_API_TOKEN) {
 
 const replicate = new Replicate({ auth: process.env.REPLICATE_API_TOKEN })
 const imageModel = 'black-forest-labs/flux-1.1-pro-ultra'
-const videoModel = 'kwaivgi/kling-v2.5-turbo-pro'
+const videoModel = 'bytedance/seedance-1-pro'
 
 const specs = [
   {
@@ -103,12 +103,13 @@ async function generateImage(spec: typeof specs[0]) {
 }
 
 async function generateVideo(spec: typeof specs[0], startImageUrl: string) {
-  console.log(`[hero-media] Generating video ${spec.id} with Kling 2.5`)
+  console.log(`[hero-media] Generating video ${spec.id} with Seedance 1 Pro`)
 
   const input = {
-    start_image: startImageUrl,
+    image: startImageUrl,
     prompt: spec.promptVideo,
     duration: 5,
+    resolution: '1080p',
     aspect_ratio: '16:9',
   }
   let prediction
@@ -123,22 +124,22 @@ async function generateVideo(spec: typeof specs[0], startImageUrl: string) {
       await new Promise((resolve) => setTimeout(resolve, (retryAfter + 1) * 1000))
     }
   }
-  if (!prediction) throw new Error('Kling prediction could not be created')
+  if (!prediction) throw new Error('Seedance prediction could not be created')
 
   let current = prediction
   const startedAt = Date.now()
   while (!['succeeded', 'failed', 'canceled'].includes(current.status)) {
-    if (Date.now() - startedAt > 10 * 60_000) throw new Error('Kling generation timed out')
+    if (Date.now() - startedAt > 10 * 60_000) throw new Error('Seedance generation timed out')
     await new Promise((resolve) => setTimeout(resolve, 5000))
     current = await replicate.predictions.get(prediction.id)
   }
 
   if (current.status !== 'succeeded') {
-    throw new Error(`Kling generation ${current.status}: ${String(current.error ?? '')}`)
+    throw new Error(`Seedance generation ${current.status}: ${String(current.error ?? '')}`)
   }
 
   const remoteUrl = outputUrl(current.output)
-  if (!remoteUrl.startsWith('http')) throw new Error('Kling returned no usable video URL')
+  if (!remoteUrl.startsWith('http')) throw new Error('Seedance returned no usable video URL')
   await writeFile(path.join(outputRoot, spec.videoFile), await download(remoteUrl))
   console.log(`[hero-media] Saved video ${spec.videoFile}`)
 }

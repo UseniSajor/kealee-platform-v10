@@ -98,7 +98,7 @@ export function computeFunnelStats(
     CONVERTED_STATUSES.includes(l.status as (typeof CONVERTED_STATUSES)[number]),
   ).length
   const paidCount = leads.filter(l => l.status === 'paid').length
-  const conceptReadyCount = leads.filter(l => l.status === 'concept_ready').length
+  const conceptReadyCount = leads.filter(l => (l.status === 'concept_ready' || l.status === 'delivered')).length
 
   const channelComparison = computeChannelComparison(leads, opts.channelComparison ?? {})
 

@@ -43,7 +43,7 @@ export const maxDuration = 300 // Claude + Replicate render jobs can take 60–1
 // Statuses that authorise a concept generation. Stripe webhook flips intake
 // to `paid`; the first successful generation flips it to `concept_ready`
 // (regenerations are allowed and return cached output).
-const PAID_INTAKE_STATUSES = new Set(['paid', 'concept_ready', 'processing'])
+const PAID_INTAKE_STATUSES = new Set(['paid', 'concept_ready', 'processing', 'delivered'])
 
 function normalizeConceptTier(tier: number): ConceptTier {
   return (tier === 3 ? 3 : tier === 2 ? 2 : 1) as ConceptTier
@@ -320,21 +320,31 @@ async function fireConceptRenders(
 
   for (let i = 0; i < jobs.length; i++) {
     if (i > 0) await new Promise(r => setTimeout(r, RENDER_SUBMIT_DELAY_MS))
-    try {
-      const id = await submitOneRenderJob({
-        style,
-        roomType: jobs[i].roomType,
-        scope: jobs[i].scope,
-        renderMode: modes[i % modes.length],
-        inputImageUrl,
-      })
-      if (id) {
-        predictionIds.push(id)
-        renderJobScopes.push(jobs[i].scope)
+    // Replicate throttles prediction creation hard when account credit is low
+    // (burst of 1/min). Retry 429s with a wait so bursts still complete.
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      try {
+        const id = await submitOneRenderJob({
+          style,
+          roomType: jobs[i].roomType,
+          scope: jobs[i].scope,
+          renderMode: modes[i % modes.length],
+          inputImageUrl,
+        })
+        if (id) {
+          predictionIds.push(id)
+          renderJobScopes.push(jobs[i].scope)
+        }
+        break
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : String(err)
+        if (msg.includes('429') && attempt < 3) {
+          await new Promise(r => setTimeout(r, 12_000))
+          continue
+        }
+        console.warn(`[concept/generate] Render ${i + 1}/${jobs.length} (${jobs[i].scope}) failed:`, msg)
+        break
       }
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : String(err)
-      console.warn(`[concept/generate] Render ${i + 1}/${jobs.length} (${jobs[i].scope}) failed:`, msg)
     }
   }
 
@@ -513,6 +523,18 @@ function attachConceptVideoFields(conceptOutput: ConceptOutput, tier: number): v
  * Fire-and-forget call to /api/concept/video for tier 2+. Returns immediately;
  * the customer portal polls via GET to swap in the real video when ready.
  */
+/**
+ * Base URL for fire-and-forget self-calls (video trigger/poll, render resolve,
+ * deliverable-ready email). On Railway, fetching our own public domain from
+ * inside the container fails ('fetch failed') — call the local server directly.
+ */
+function internalApiBaseUrl(req: NextRequest): string {
+  if (process.env.RAILWAY_ENVIRONMENT_NAME && process.env.PORT) {
+    return `http://127.0.0.1:${process.env.PORT}`
+  }
+  return process.env.NEXT_PUBLIC_APP_URL ?? req.nextUrl.origin
+}
+
 function triggerConceptVideoGeneration(baseUrl: string, intakeId: string, tier: number): void {
   if (!conceptTierIncludesVideo(tier as ConceptTier)) return
   fetch(`${baseUrl}/api/concept/video`, {
@@ -944,7 +966,7 @@ export async function POST(req: NextRequest) {
       .filter((u) => u.length > 0 && /\.(jpe?g|png|webp|heic)/i.test(u))
 
     // Return cached concept if already generated
-    if (existingFormData.conceptOutput && intake.status === 'concept_ready') {
+    if (existingFormData.conceptOutput && (intake.status === 'concept_ready' || intake.status === 'delivered')) {
       const cachedRaw = existingFormData.conceptOutput as ConceptOutput & Record<string, unknown>
       const out = { ...cachedRaw }
       out.renderUrls = preferSelectedRender(out.renderUrls ?? [], existingFormData.selectedRenderUrl as string | undefined)
@@ -984,7 +1006,7 @@ export async function POST(req: NextRequest) {
           .eq('id', intakeId)
       }
 
-      const appBaseUrl = process.env.NEXT_PUBLIC_APP_URL ?? req.nextUrl.origin
+      const appBaseUrl = internalApiBaseUrl(req)
       if (shouldTriggerConceptVideo(tier, existingFormData.conceptVideo)) {
         triggerConceptVideoGeneration(appBaseUrl, intakeId, tier)
         kickConceptVideoPoll(appBaseUrl, intakeId, tier)
@@ -1037,7 +1059,9 @@ export async function POST(req: NextRequest) {
       budget: Math.max(1, Number(existingFormData.budget ?? 50000)),
       stylePreferences: existingFormData.style ? [existingFormData.style as string] : [],
       accessibility: Boolean(existingFormData.accessibility),
-      timeline: Number(existingFormData.timeline ?? 30),
+      // Intake stores timeline as a label ('Flexible', 'ASAP (1-2 weeks)') — Number() of
+      // those is NaN and surfaces as 'NaN days' in the deliverable. Default to 30 days.
+      timeline: Number.isFinite(Number(existingFormData.timeline)) ? Number(existingFormData.timeline) : 30,
       formData: { ...existingFormData, geometry },
     })
 
@@ -1189,7 +1213,8 @@ export async function POST(req: NextRequest) {
           renderJobScopes,
           conceptGeneratedAt: new Date().toISOString(),
         },
-        status: 'concept_ready',
+        // DB enum lacks 'concept_ready'; 'delivered' = generated-and-delivered
+        status: 'delivered',
       })
       .eq('id', intakeId)
 
@@ -1213,7 +1238,7 @@ export async function POST(req: NextRequest) {
 
     // Use canonical app URL for sub-fetches so they always hit production,
     // not a preview URL if this route was invoked from a webhook on a non-prod origin.
-    const appBaseUrl = process.env.NEXT_PUBLIC_APP_URL ?? req.nextUrl.origin
+    const appBaseUrl = internalApiBaseUrl(req)
 
     // Tier 2+ deliverables include a video. Fire-and-forget — portal polls GET to advance segments.
     if (shouldTriggerConceptVideo(tier, existingFormData.conceptVideo)) {

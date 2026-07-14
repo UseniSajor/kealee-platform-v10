@@ -57,7 +57,7 @@ export class ClaudeCachedClient {
   async callClaudeWithCache(
     contextId: string,
     userPrompt: string,
-    model: string = "claude-sonnet-4-20250514",
+    model: string = "claude-sonnet-4-6",
     metadata?: Record<string, any>
   ): Promise<ClaudeCallResult> {
     console.log(

@@ -197,7 +197,7 @@ export function Footer() {
         {/* Bottom Bar */}
         <div className="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center text-sm">
           <p className="text-gray-400">
-            © {new Date().getFullYear()} Kealee Platform. All rights
+            © {new Date().getFullYear()} Kealee Services LLC. All rights
             reserved.
           </p>
           <div className="flex gap-6 mt-4 md:mt-0">

@@ -555,7 +555,7 @@ export async function permitRoutes(fastify: FastifyInstance) {
             codeViolations: [],
             missingDocuments: [],
             suggestedFixes: [{ roadmap }],
-            modelVersion: 'claude-sonnet-4-20250514:keabot-permit',
+            modelVersion: 'claude-sonnet-4-6:keabot-permit',
             processingTimeMs: 0,
             confidenceScores: { overall: roadmap.confidenceScore },
           },

@@ -29,9 +29,11 @@ const PUBLIC_ROUTES = [
   '/concept/contact',
   '/concept/confirm',
   '/concept/access',
+  '/concept/success',
   // NOTE: '/concept' (exact) is handled by special-case below to avoid the
   // startsWith('/concept/') catch-all matching paid deliverables at /concept/[uuid].
   '/concept-engine',
+  '/get-concept',
   '/permits',
   '/permits-only',
   '/estimation',

@@ -42,7 +42,7 @@ ENV NEXT_PUBLIC_SUPABASE_URL=$NEXT_PUBLIC_SUPABASE_URL \
 RUN set -eux; \
   echo "RAILWAY_SERVICE_NAME='$RAILWAY_SERVICE_NAME'"; \
   APP_DIR="apps/$RAILWAY_SERVICE_NAME"; \
-  if [ -n "$RAILWAY_SERVICE_NAME" ] && [ -f "$APP_DIR/next.config.js" ]; then \
+  if [ -n "$RAILWAY_SERVICE_NAME" ] && { [ -f "$APP_DIR/next.config.js" ] || [ -f "$APP_DIR/next.config.ts" ] || [ -f "$APP_DIR/next.config.mjs" ]; }; then \
       rm -rf "$APP_DIR/.next"; \
       echo "Building Next app $RAILWAY_SERVICE_NAME and dependencies..."; \
       pnpm turbo run build --filter="$RAILWAY_SERVICE_NAME..."; \

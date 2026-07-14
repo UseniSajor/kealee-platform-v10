@@ -72,7 +72,7 @@ export async function analyzeBid(bidId: string): Promise<{ bid: any; analysis: B
 
   try {
     const prompt = buildAnalysisPrompt(bid, scores)
-    const model = config.anthropicModel || 'claude-sonnet-4-20250514'
+    const model = config.anthropicModel || 'claude-sonnet-4-6'
 
     const message = await anthropic.messages.create({
       model,
@@ -131,7 +131,7 @@ export async function generateBidStrategy(bidId: string): Promise<{ bid: any; st
 
   try {
     const prompt = buildStrategyPrompt(bid)
-    const model = config.anthropicModel || 'claude-sonnet-4-20250514'
+    const model = config.anthropicModel || 'claude-sonnet-4-6'
 
     const message = await anthropic.messages.create({
       model,

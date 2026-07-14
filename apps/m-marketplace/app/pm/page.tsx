@@ -794,7 +794,7 @@ export default function PMSoftwareLandingPage() {
 
           <div className="border-t border-gray-800 pt-8 text-center">
             <p className="text-sm">
-              © {new Date().getFullYear()} Kealee Platform. All rights reserved.
+              © {new Date().getFullYear()} Kealee Services LLC. All rights reserved.
             </p>
           </div>
         </div>

@@ -327,7 +327,7 @@ export default function ZoningLandingPage() {
       {/* Footer */}
       <footer className="py-8 px-4 sm:px-6 lg:px-8 border-t border-gray-200">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-gray-500">
-          <p>&copy; {new Date().getFullYear()} Kealee. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} Kealee Services LLC. All rights reserved.</p>
           <div className="flex gap-6">
             <Link href="/permits" className="hover:text-gray-900">Permits</Link>
             <Link href="/privacy" className="hover:text-gray-900">Privacy</Link>

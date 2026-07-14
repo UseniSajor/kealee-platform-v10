@@ -23,7 +23,6 @@ const VALUES = [
 ]
 
 const TEAM = [
-  { name: 'Tim Chamberlain', role: 'Founder & CEO', bio: 'Construction industry veteran with 15+ years in project management, real estate development, and technology. Built Kealee to solve the problems he experienced firsthand.', initials: 'TC' },
   { name: 'Engineering', role: 'Product & Engineering', bio: 'Full-stack team building the platform that construction deserves — from design studio integrations to real-time monitoring and escrow payments.', initials: 'ENG' },
   { name: 'Operations', role: 'Client Success', bio: 'Dedicated project managers and client advisors with deep construction experience, ensuring every project succeeds on the platform.', initials: 'OPS' },
 ]
@@ -54,7 +53,7 @@ export default function AboutPage() {
             className="mx-auto mt-6 max-w-2xl text-lg text-slate-600 leading-relaxed"
           >
             Kealee was founded on a simple idea: construction project coordination should be transparent,
-            efficient, and accessible to homeowners — from design concept to final build.
+            efficient, and accessible to every project owner — from design concept to final build.
           </motion.p>
         </div>
       </section>
@@ -66,7 +65,7 @@ export default function AboutPage() {
             <motion.div {...fadeInUp}>
               <span className="text-xs font-bold uppercase tracking-[0.15em] text-[#2ABFBF]">Our Story</span>
               <h2 className="mt-3 text-3xl font-bold font-display text-slate-900">
-                Built by Builders, for Homeowners
+                Built by Builders, for Project Owners
               </h2>
               <div className="mt-6 space-y-4 text-slate-600 leading-relaxed text-sm">
                 <p>
@@ -75,14 +74,17 @@ export default function AboutPage() {
                   manage bids on legacy spreadsheets, and budgets often run out of control.
                 </p>
                 <p>
-                  After 15 years in construction management and real estate development, Tim Chamberlain
-                  experienced these problems firsthand. Kealee was born from the conviction that interactive
-                  design tools, validated cost estimates, permit filing, and real-time project workspaces could transform construction
-                  for homeowners.
+                  With 25 years of combined experience in construction management and real estate development,
+                  our founding team experienced these problems firsthand. Kealee was born from the conviction
+                  that interactive design tools, validated cost estimates, permit filing, and real-time project
+                  workspaces could transform construction for project owners — homeowners, developers, and
+                  commercial owners alike.
                 </p>
                 <p>
-                  Today, Kealee guides homeowners through their build projects with 4 integrated lifecycle stages
-                  and 2 dedicated portals. We coordinate design concepts, RSMeans cost planning, and permit filing before contractor bidding, eliminating surprises and ensuring projects break ground with certainty.
+                  Today, Kealee guides project owners through their build projects with 4 integrated lifecycle
+                  stages and 2 dedicated portals. We coordinate design concepts, RSMeans cost planning, and permit
+                  filing before contractor bidding, eliminating surprises and ensuring projects break ground with
+                  certainty.
                 </p>
               </div>
             </motion.div>
@@ -97,7 +99,7 @@ export default function AboutPage() {
                     { value: '4', label: 'Core Services' },
                     { value: '2', label: 'Dedicated Portals' },
                     { value: '100%', label: ' DMV Coverage' },
-                    { value: '15+', label: 'Years Experience' },
+                    { value: '25+', label: 'Years Experience' },
                     { value: '0', label: 'Opaque Fees' },
                   ].map((stat) => (
                     <div key={stat.label}>
@@ -156,7 +158,7 @@ export default function AboutPage() {
             </h2>
           </div>
 
-          <div className="mt-16 max-w-5xl mx-auto grid gap-8 sm:grid-cols-3">
+          <div className="mt-16 max-w-3xl mx-auto grid gap-8 sm:grid-cols-2">
             {TEAM.map((t, i) => (
               <motion.div
                 key={t.name}

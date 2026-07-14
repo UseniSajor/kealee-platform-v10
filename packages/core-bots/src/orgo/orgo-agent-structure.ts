@@ -288,7 +288,7 @@ export class KeaBotExecutor {
     const estimateResult = await this.claudeClient.callClaudeWithCache(
       context.projectId,
       estimatePrompt,
-      "claude-sonnet-4-20250514",
+      "claude-sonnet-4-6",
       { role: AgentRole.ESTIMATE }
     );
 
@@ -339,7 +339,7 @@ export class KeaBotExecutor {
     const permitResult = await this.claudeClient.callClaudeWithCache(
       context.projectId,
       permitPrompt,
-      "claude-sonnet-4-20250514",
+      "claude-sonnet-4-6",
       { role: AgentRole.PERMIT }
     );
 

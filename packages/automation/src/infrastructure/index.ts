@@ -63,3 +63,33 @@ export {
   createManagedQueue,
   type ManagedWorkerOptions,
 } from './queue-factory';
+
+// ── Response Cache ───────────────────────────────────────────
+export {
+  getResponseCache,
+  withCache,
+  type CacheMetrics,
+  type BotType,
+} from './response-cache';
+
+// ── Cost Tracking ────────────────────────────────────────────
+export {
+  getCostTracker,
+  type BotExecutionRecord,
+  type CostStats,
+} from './cost-tracker';
+
+// ── Load Testing ─────────────────────────────────────────────
+export {
+  runLoadTest,
+  SCENARIOS,
+  type LoadTestMetrics,
+  type LoadTestConfig,
+} from './load-test';
+
+// ── Tier Integration Testing ─────────────────────────────────
+export {
+  runTierTest,
+  TEST_CASES,
+  type TestResult,
+} from './tier-integration-test';

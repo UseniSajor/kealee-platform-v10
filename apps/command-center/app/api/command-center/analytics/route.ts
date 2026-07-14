@@ -72,7 +72,7 @@ export async function GET() {
   const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
   const sixtyDaysAgo  = new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString()
 
-  const paidIntakes   = intakes.filter(i => i.status === 'paid' || i.status === 'concept_ready')
+  const paidIntakes   = intakes.filter(i => i.status === 'paid' || (i.status === 'concept_ready' || i.status === 'delivered'))
   const recentIntakes = intakes.filter(i => i.created_at >= thirtyDaysAgo)
   const prevIntakes   = intakes.filter(i => i.created_at >= sixtyDaysAgo && i.created_at < thirtyDaysAgo)
 
@@ -95,14 +95,14 @@ export async function GET() {
   }
 
   for (const intake of recentIntakes) {
-    if (intake.status !== 'paid' && intake.status !== 'concept_ready') continue
+    if (intake.status !== 'paid' && (intake.status !== 'concept_ready' && intake.status !== 'delivered')) continue
     const fd   = (intake.form_data as Record<string, unknown> | null) ?? {}
     const tier = typeof fd.tier === 'number' ? fd.tier : 1
     recentRevenue += getPrice(intake.project_path ?? '', tier)
   }
 
   for (const intake of prevIntakes) {
-    if (intake.status !== 'paid' && intake.status !== 'concept_ready') continue
+    if (intake.status !== 'paid' && (intake.status !== 'concept_ready' && intake.status !== 'delivered')) continue
     const fd   = (intake.form_data as Record<string, unknown> | null) ?? {}
     const tier = typeof fd.tier === 'number' ? fd.tier : 1
     prevRevenue += getPrice(intake.project_path ?? '', tier)
@@ -169,8 +169,8 @@ export async function GET() {
     ? Math.round(((recentRevenue - prevRevenue) / prevRevenue) * 100)
     : recentRevenue > 0 ? 100 : 0
 
-  const recentPaidCount = recentIntakes.filter(i => i.status === 'paid' || i.status === 'concept_ready').length
-  const prevPaidCount   = prevIntakes.filter(i => i.status === 'paid' || i.status === 'concept_ready').length
+  const recentPaidCount = recentIntakes.filter(i => i.status === 'paid' || (i.status === 'concept_ready' || i.status === 'delivered')).length
+  const prevPaidCount   = prevIntakes.filter(i => i.status === 'paid' || (i.status === 'concept_ready' || i.status === 'delivered')).length
   const paidChangePct   = prevPaidCount > 0
     ? Math.round(((recentPaidCount - prevPaidCount) / prevPaidCount) * 100)
     : recentPaidCount > 0 ? 100 : 0

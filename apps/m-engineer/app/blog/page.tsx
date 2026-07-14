@@ -252,7 +252,7 @@ export default function BlogPage() {
             </div>
           </div>
           <div className="border-t border-zinc-800 pt-8 text-center text-sm text-zinc-500">
-            &copy; 2026 Kealee. All rights reserved.
+            &copy; {new Date().getFullYear()} Kealee Services LLC. All rights reserved.
           </div>
         </div>
       </footer>

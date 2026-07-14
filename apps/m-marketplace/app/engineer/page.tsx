@@ -405,7 +405,7 @@ export default function EngineerHomePage() {
             </div>
           </div>
           <div className="border-t border-zinc-800 pt-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4 text-sm text-zinc-500">
-            <p>© {new Date().getFullYear()} Kealee Platform. All rights reserved.</p>
+            <p>© {new Date().getFullYear()} Kealee Services LLC. All rights reserved.</p>
             <div className="flex gap-6 justify-center md:justify-end">
               <Link href="/engineer/legal/terms" className="hover:text-white">Terms of Service</Link>
               <Link href="/engineer/legal/privacy" className="hover:text-white">Privacy Policy</Link>

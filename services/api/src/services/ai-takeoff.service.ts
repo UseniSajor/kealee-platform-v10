@@ -98,7 +98,7 @@ async function analyzePlans(text: string): Promise<{
   const textToAnalyze = text.length > maxChars ? text.substring(0, maxChars) : text
 
   const response = await anthropic.messages.create({
-    model: 'claude-sonnet-4-20250514',
+    model: 'claude-sonnet-4-6',
     max_tokens: 8192,
     system: PLAN_ANALYSIS_PROMPT,
     messages: [

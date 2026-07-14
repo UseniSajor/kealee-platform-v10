@@ -347,7 +347,7 @@ export default function TermsOfServicePage() {
             <Link href="/help" className="hover:text-white transition-colors">Help</Link>
             <Link href="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link>
           </div>
-          <p className="text-sm">&copy; 2026 Kealee Platform. All rights reserved.</p>
+          <p className="text-sm">&copy; {new Date().getFullYear()} Kealee Services LLC. All rights reserved.</p>
         </div>
       </footer>
     </div>

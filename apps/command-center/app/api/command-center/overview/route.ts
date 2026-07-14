@@ -74,7 +74,7 @@ export async function GET() {
 
   const totalIntakes   = intakes.length
   const uniqueEmails   = new Set(intakes.map((i: { contact_email: string }) => i.contact_email)).size
-  const paidIntakes    = intakes.filter((i: { status: string }) => i.status === 'paid' || i.status === 'concept_ready').length
+  const paidIntakes    = intakes.filter((i: { status: string }) => i.status === 'paid' || (i.status === 'concept_ready' || i.status === 'delivered')).length
   const activeIntakes  = intakes.filter((i: { status: string }) => i.status === 'new' || i.status === 'processing').length
 
   // Distribution by project_path (for phase chart)
@@ -102,7 +102,7 @@ export async function GET() {
   }) => {
     const label = (intake.project_path ?? '').replace(/_/g, ' ')
     const name  = intake.client_name ?? intake.contact_email ?? 'Unknown'
-    const isPaid = intake.status === 'paid' || intake.status === 'concept_ready'
+    const isPaid = intake.status === 'paid' || (intake.status === 'concept_ready' || intake.status === 'delivered')
     return {
       id: intake.id,
       timestamp: intake.created_at,

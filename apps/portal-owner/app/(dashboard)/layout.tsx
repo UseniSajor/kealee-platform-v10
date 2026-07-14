@@ -154,7 +154,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <PortalPageWithAskRail portal="owner">{children}</PortalPageWithAskRail>
           </div>
           <footer className="mt-8 pt-4 border-t border-slate-200/50 text-center text-[10px] font-semibold uppercase tracking-wider text-slate-400">
-            © 2026 Kealee Platform LLC · DC, MD & VA
+            © {new Date().getFullYear()} Kealee Services LLC. All rights reserved. · DC · MD · VA
           </footer>
         </main>
       </div>

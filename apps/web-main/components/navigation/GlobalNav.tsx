@@ -11,10 +11,10 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
 import { Menu, ArrowRight, ChevronDown } from 'lucide-react'
 import { NavItem } from './NavItem'
 import { MobileNav } from './MobileNav'
+import { KealeeLogo } from '@/components/KealeeLogo'
 import { PRIMARY_NAV, NAV_CTA_PRIMARY, NAV_CTA_V30, NAV_LOGIN_OPTIONS } from '@/config/navigation'
 import { isV30EnabledClient } from '@/lib/v30'
 
@@ -89,14 +89,8 @@ export function GlobalNav() {
             className="flex flex-shrink-0 items-center"
             onClick={() => { setOpenDropdown(null); setLoginOpen(false) }}
           >
-            <Image
-              src="/media/kealee-logo.png"
-              alt="kealee"
-              width={150}
-              height={44}
-              priority
-              className="h-10 w-auto"
-            />
+            <KealeeLogo />
+            <span className="sr-only">Kealee — home</span>
           </Link>
 
           {/* Desktop nav items — center */}

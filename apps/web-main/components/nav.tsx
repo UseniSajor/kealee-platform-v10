@@ -1,11 +1,11 @@
 'use client'
 
 import Link from 'next/link'
-import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { X, ChevronDown } from 'lucide-react'
 import { useState, useRef, useEffect } from 'react'
 import { KealeeNavIcon } from '@/components/brand/KealeeNavIcon'
+import { KealeeLogo } from '@/components/KealeeLogo'
 import { SERVICES } from '@/lib/services-config'
 import { isAgencyPartnerShellPath } from '@/lib/agency-partner-shell'
 
@@ -212,14 +212,8 @@ export function SiteNav() {
           {/* LEFT: Logo + Desktop Nav */}
           <div className="flex items-center gap-6">
             <Link href="/" className="flex shrink-0 items-center">
-              <Image
-                src="/brand/kealee-horizontal-logo.svg"
-                alt="Kealee Construction"
-                width={150}
-                height={44}
-                priority
-                className="h-10 w-auto"
-              />
+              <KealeeLogo />
+              <span className="sr-only">Kealee Construction — home</span>
             </Link>
 
             {/* Build button — desktop left section */}

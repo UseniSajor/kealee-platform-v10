@@ -69,8 +69,8 @@ Return your response as JSON with this structure:
 
     // Use latest Claude Sonnet 4.5 for best performance
     // Fallback to Sonnet 4 if 4.5 not available
-    // Note: claude-3-5-sonnet-20241022 is deprecated (retired Oct 2025)
-    const model = config.anthropicModel || 'claude-sonnet-4-20250514';
+    // Note: claude-sonnet-4-6 is deprecated (retired Oct 2025)
+    const model = config.anthropicModel || 'claude-sonnet-4-6';
     
     const message = await anthropic.messages.create({
       model,
@@ -178,7 +178,7 @@ Write a 2-3 paragraph executive summary highlighting:
 Make it professional, concise, and suitable for executive review.`;
 
     // Use latest Claude Sonnet 4.5 for best performance
-    const model = config.anthropicModel || 'claude-sonnet-4-20250514';
+    const model = config.anthropicModel || 'claude-sonnet-4-6';
     
     const message = await anthropic.messages.create({
       model,

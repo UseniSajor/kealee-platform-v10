@@ -2,11 +2,13 @@
 export {
   sendInternalSystemEmail,
   sendEmailWithTemplate,
+  sendEmail,
   wrapInEmailLayout,
 } from './email';
 export type {
   SendEmailResult,
   SendTemplateEmailOptions,
+  SendEmailOptions,
 } from './email';
 
 // SMS & WhatsApp (Twilio)
