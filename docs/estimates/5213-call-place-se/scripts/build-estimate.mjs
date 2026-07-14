@@ -27,6 +27,19 @@ const GSF = 5920, FOOTPRINT = 1480, BEDS = 14, BEDROOMS = 8, BATHS = 7;
 const TARGET_PSF = 170, TARGET_TOTAL = 1006400;
 const DC = 1.15;
 const OH = 0.12, PROFIT = 0.15, CONTINGENCY = 0.07, BONDS_INS = 0.015;
+// ── Labor wage schedule (owner-directed) ────────────────────────────────────
+// Apprentice $55/hr · Journeyman $85/hr · Master $124/hr. Labor = hours × crew rate.
+// Crew blends (documented, adjustable):
+//   General trades   = 60% journeyman + 40% apprentice           => $73.00/hr
+//   Licensed MEP/fire = 25% master + 50% journeyman + 25% apprentice => $87.25/hr
+// Applied to self-performed construction labor (Div 02-33). Div 01 general
+// conditions are salaried/effort (not repriced); pure subcontractor lump sums
+// keep their quoted value (subs set their own wages).
+const APPRENTICE = 55, JOURNEYMAN = 85, MASTER = 124, EMBEDDED = 75;
+const GENERAL_RATE = +(0.6 * JOURNEYMAN + 0.4 * APPRENTICE).toFixed(2);          // 73.00
+const LICENSED_RATE = +(0.25 * MASTER + 0.5 * JOURNEYMAN + 0.25 * APPRENTICE).toFixed(2); // 87.25
+const MASTER_LED = new Set(['21', '22', '23', '26', '27/28']); // licensed MEP + fire trades
+const crewRate = (div) => MASTER_LED.has(div) ? LICENSED_RATE : GENERAL_RATE;
 // ── Measured geometry — dimensions scaled off the drawings ──────────────────
 const W = 24, L = 64;                 // footprint 24'×64' (A000/A001/S100)
 const P = 2 * (W + L);                // 176 LF perimeter
@@ -80,10 +93,13 @@ function cat(code, qty, o = {}) {
 }
 function allow(name, unit, qty, aUnit, o = {}) {
   const s = o.split ?? { sub: 1 };
+  const labUnit = +(aUnit * (s.lab ?? 0)).toFixed(2);
+  // derive labor-hours from the self-perform labor portion at the catalogue's base rate
+  const lhrsUnit = o.lhrsUnit ?? +(labUnit / EMBEDDED).toFixed(4);
   return { code: o.code ?? 'ALLOWANCE', name, unit, qty,
-    matUnit: +(aUnit * (s.mat ?? 0)).toFixed(2), labUnit: +(aUnit * (s.lab ?? 0)).toFixed(2),
+    matUnit: +(aUnit * (s.mat ?? 0)).toFixed(2), labUnit,
     equipUnit: +(aUnit * (s.equip ?? 0)).toFixed(2), subUnit: +(aUnit * (s.sub ?? 0)).toFixed(2),
-    lhrsUnit: o.lhrsUnit ?? 0, allowance: true, waste: 0,
+    lhrsUnit, allowance: true, waste: 0,
     basis: o.basis || '', dim: o.dim || '', sheet: o.sheet || '', method: o.method || 'ASSUMED', conf: o.conf ?? 'LOW', note: o.note ?? '', aUnit };
 }
 const DFLT_FB = 0.88, DFLT_FC = 0.76;
@@ -262,17 +278,22 @@ const exclusions = {
 };
 
 // ── COMPUTE ─────────────────────────────────────────────────────────────────
-function extend(line, scen) {
+function extend(line, scen, div) {
   const f = scen === 'A' ? 1 : scen === 'B' ? (line.fB ?? DFLT_FB) : (line.fC ?? DFLT_FC);
-  const mat = line.matUnit * line.qty * f, lab = line.labUnit * line.qty * f;
+  const mat = line.matUnit * line.qty * f;
   const equip = line.equipUnit * line.qty * f, sub = line.subUnit * line.qty * f;
-  return { mat, lab, equip, sub, total: mat + lab + equip + sub, lhrs: (line.lhrsUnit || 0) * line.qty };
+  const lhrs = (line.lhrsUnit || 0) * line.qty * f;
+  // Labor = hours × wage. Div 01 (GC supervision/mgmt) stays salaried/effort.
+  let lab, rate;
+  if (div === '01') { lab = line.labUnit * line.qty * f; rate = null; }
+  else { rate = crewRate(div); lab = lhrs * rate; }
+  return { mat, lab, equip, sub, total: mat + lab + equip + sub, lhrs, rate };
 }
 function computeScenario(scen) {
   const divs = []; let dMat = 0, dLab = 0, dEquip = 0, dSub = 0, dHrs = 0;
   for (const [num, name, lines] of divisions) {
     let m = 0, l = 0, e = 0, s = 0, h = 0;
-    const litems = lines.map((ln) => { const x = extend(ln, scen); m += x.mat; l += x.lab; e += x.equip; s += x.sub; h += x.lhrs; return { ...ln, ext: x }; });
+    const litems = lines.map((ln) => { const x = extend(ln, scen, num); m += x.mat; l += x.lab; e += x.equip; s += x.sub; h += x.lhrs; return { ...ln, ext: x, laborRate: x.rate }; });
     divs.push({ num, name, lines: litems, mat: m, lab: l, equip: e, sub: s, hrs: h, total: m + l + e + s });
     dMat += m; dLab += l; dEquip += e; dSub += s; dHrs += h;
   }
@@ -313,6 +334,9 @@ for (const S of [A, B, C]) {
 }
 console.log(`\nTARGET ${money(TARGET_TOTAL)} @ ${psf(TARGET_PSF)} — Scenario A variance ${money(A.total - TARGET_TOTAL)} (${((A.psf / TARGET_PSF - 1) * 100).toFixed(0)}% over)`);
 console.log(`Excluded: elevator ${money(elevatorAllow)} | kitchen equip ${money(kitchenAllow)}`);
+console.log(`\nLABOR WAGE: apprentice $${APPRENTICE} · journeyman $${JOURNEYMAN} · master $${MASTER}/hr`);
+console.log(`  General-trades crew $${GENERAL_RATE}/hr (60% jrny + 40% appr) | Licensed MEP/fire crew $${LICENSED_RATE}/hr (25% master + 50% jrny + 25% appr)`);
+console.log(`  ${Math.round(A.laborHours).toLocaleString()} total labor-hours | labor $${Math.round(A.labor).toLocaleString()}`);
 console.log(`\nTakeoff basis (Scenario A direct): MEASURED ${money(methodMix.MEASURED)} (${(methodMix.MEASURED / A.direct * 100).toFixed(0)}%) | CALC-from-dims ${money(methodMix.CALC)} (${(methodMix.CALC / A.direct * 100).toFixed(0)}%) | not-dimensioned ${money(methodMix.ASSUMED)} (${(methodMix.ASSUMED / A.direct * 100).toFixed(0)}%)`);
 console.log(`==> DIMENSIONED (measured + calc-from-dims): ${dimensionedPct.toFixed(1)}% of direct cost`);
 if (undimLines.length) { console.log(`Remaining not-dimensioned (not shown on drawings):`); for (const l of undimLines) console.log(`   - ${l.name} (${money(l.ext.total)})`); }
@@ -339,6 +363,7 @@ const jsonExport = {
     catalogue: 'MARKETPLACE_ASSEMBLIES (DC-Baltimore 2024-25) — mid tier, DC factor 1.15',
     takeoff: 'MEASURED from permit set (28 sheets) — see drawings/MEASURED-TAKEOFF.md',
     markups: { overheadPct: 12, profitPct: 15, contingencyPct_A: 7, contingencyPct_BC: 5, bondsInsPct: 1.5 },
+    laborWage: { apprentice: APPRENTICE, journeyman: JOURNEYMAN, master: MASTER, generalTradesRate: GENERAL_RATE, licensedTradesRate: LICENSED_RATE, generalCrew: '60% journeyman + 40% apprentice', licensedCrew: '25% master + 50% journeyman + 25% apprentice (Div 21/22/23/26/27-28)', note: 'Labor = labor-hours × crew rate. Div 01 GC supervision salaried; subcontractor lump sums keep quoted value.' },
     basis: { gsf: GSF, footprint: "24'×64'", stories: 'cellar + 3', beds: BEDS, bedrooms: BEDROOMS, baths: BATHS, height: "35'-4\"", structure: 'TJI 360×14 + W12×26 steel + HSS columns' },
     methodMix: { measured: Math.round(methodMix.MEASURED), calcFromDims: Math.round(methodMix.CALC), notDimensioned: Math.round(methodMix.ASSUMED), dimensionedPct: +dimensionedPct.toFixed(1) },
     notDimensionedItems: undimLines.map((l) => ({ item: l.name, extended: Math.round(l.ext.total) })),
@@ -356,8 +381,8 @@ const jsonExport = {
 };
 fs.writeFileSync(path.join(OUT, 'estimate.json'), JSON.stringify(jsonExport, null, 2));
 
-const csvRows = [['Division', 'Item', 'CatalogueCode', 'Allowance', 'Unit', 'Qty', 'Method', 'DimensionBasis', 'Sheet', 'Confidence', 'MatUnit', 'LabUnit', 'EquipUnit', 'SubUnit', 'LaborHrs', 'Extended', 'Note']];
-for (const d of A.divs) for (const ln of d.lines) csvRows.push([d.num, ln.name, ln.code, ln.allowance ? 'YES' : 'no', ln.unit, ln.qty, ln.method, (ln.dim || ln.basis || '').replace(/,/g, ';'), ln.sheet, ln.conf, ln.matUnit, ln.labUnit, ln.equipUnit, ln.subUnit, Math.round(ln.ext.lhrs), Math.round(ln.ext.total), (ln.note || '').replace(/,/g, ';')]);
+const csvRows = [['Division', 'Item', 'CatalogueCode', 'Allowance', 'Unit', 'Qty', 'Method', 'DimensionBasis', 'Sheet', 'Confidence', 'MatUnit', 'LaborHrs', 'LaborRate', 'LaborCost', 'EquipUnit', 'SubUnit', 'Extended', 'Note']];
+for (const d of A.divs) for (const ln of d.lines) csvRows.push([d.num, ln.name, ln.code, ln.allowance ? 'YES' : 'no', ln.unit, ln.qty, ln.method, (ln.dim || ln.basis || '').replace(/,/g, ';'), ln.sheet, ln.conf, ln.matUnit, Math.round(ln.ext.lhrs), ln.ext.rate ? '$' + ln.ext.rate + '/hr' : 'salaried', Math.round(ln.ext.lab), Math.round(ln.ext.equip), Math.round(ln.ext.sub), Math.round(ln.ext.total), (ln.note || '').replace(/,/g, ';')]);
 fs.writeFileSync(path.join(OUT, 'estimate-lineitems-scenarioA.csv'), csvRows.map((r) => r.map((c) => `"${c}"`).join(',')).join('\n'));
 
 const divCsv = [['Division', 'Name', 'ScenA_Total', 'ScenB_Total', 'ScenC_Total', 'ScenA_Mat', 'ScenA_Lab', 'ScenA_Sub', 'ScenA_LaborHrs']];

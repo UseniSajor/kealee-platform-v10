@@ -68,10 +68,11 @@ CREATE TABLE IF NOT EXISTS estimate_line_items (
   sheet         text,
   confidence    text,
   "matUnit"     numeric(14,2),
-  "labUnit"     numeric(14,2),
-  "equipUnit"   numeric(14,2),
-  "subUnit"     numeric(14,2),
   "laborHours"  numeric(12,2),
+  "laborRate"   text,
+  "laborCost"   numeric(14,2),
+  "equipCost"   numeric(14,2),
+  "subCost"     numeric(14,2),
   extended      numeric(14,2),
   note          text
 );
@@ -106,9 +107,9 @@ for (const scen of ['A', 'B', 'C']) {
 
 // line items for the recommended Scenario A
 for (const d of J.scenarios.A.divs) for (const ln of d.lines) {
-  sql += `INSERT INTO estimate_line_items ("estimateId",division,item,"catalogueCode","isAllowance",unit,qty,method,"dimensionBasis",sheet,confidence,"matUnit","labUnit","equipUnit","subUnit","laborHours",extended,note) VALUES (
+  sql += `INSERT INTO estimate_line_items ("estimateId",division,item,"catalogueCode","isAllowance",unit,qty,method,"dimensionBasis",sheet,confidence,"matUnit","laborHours","laborRate","laborCost","equipCost","subCost",extended,note) VALUES (
   '${IDS.A}', '${d.num}', ${sqlStr(ln.name)}, ${sqlStr(ln.code)}, ${ln.allowance}, ${sqlStr(ln.unit)}, ${ln.qty}, ${sqlStr(ln.method)}, ${sqlStr(ln.dim || ln.basis || '')}, ${sqlStr(ln.sheet)}, ${sqlStr(ln.conf)},
-  ${num(ln.matUnit)}, ${num(ln.labUnit)}, ${num(ln.equipUnit)}, ${num(ln.subUnit)}, ${num(ln.ext.lhrs)}, ${num(ln.ext.total)}, ${sqlStr(ln.note)});
+  ${num(ln.matUnit)}, ${num(ln.ext.lhrs)}, ${sqlStr(ln.ext.rate ? '$' + ln.ext.rate + '/hr' : 'salaried')}, ${num(ln.ext.lab)}, ${num(ln.ext.equip)}, ${num(ln.ext.sub)}, ${num(ln.ext.total)}, ${sqlStr(ln.note)});
 `;
 }
 

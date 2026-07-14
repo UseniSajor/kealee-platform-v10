@@ -35,13 +35,15 @@ const lineTables = A.divs.map((d) => {
     <td class="dimc">${esc(ln.dim || ln.basis || '')}${ln.sheet ? ` <span class="sh">[${esc(ln.sheet)}]</span>` : ''}</td>
     <td class="r">${ln.qty.toLocaleString()}</td>
     <td class="c">${esc(ln.unit)}</td>
-    <td class="r">${m2(ln.matUnit)}</td>
-    <td class="r">${m2(ln.labUnit)}</td>
-    <td class="r">${ln.subUnit ? m2(ln.subUnit) : ln.equipUnit ? m2(ln.equipUnit) : '—'}</td>
+    <td class="r">${m0(ln.ext.mat)}</td>
+    <td class="r">${Math.round(ln.ext.lhrs).toLocaleString()}</td>
+    <td class="c" style="font-size:8px">${ln.ext.rate ? '$' + ln.ext.rate : 'sal.'}</td>
+    <td class="r">${m0(ln.ext.lab)}</td>
+    <td class="r">${(ln.ext.sub + ln.ext.equip) ? m0(ln.ext.sub + ln.ext.equip) : '—'}</td>
     <td class="r b">${m0(ln.ext.total)}</td></tr>`).join('');
   return `<table class="lines"><thead>
-    <tr><th colspan="10" class="divhead">DIVISION ${d.num} — ${esc(d.name)} &nbsp;·&nbsp; ${m0(d.total)}</th></tr>
-    <tr><th>Item</th><th>Code</th><th>Method</th><th>Dimension basis [sheet]</th><th class="r">Qty</th><th>Unit</th><th class="r">Mat/u</th><th class="r">Lab/u</th><th class="r">Sub·Eq/u</th><th class="r">Extended</th></tr>
+    <tr><th colspan="11" class="divhead">DIVISION ${d.num} — ${esc(d.name)} &nbsp;·&nbsp; ${m0(d.total)}</th></tr>
+    <tr><th>Item</th><th>Code</th><th>Method</th><th>Dimension basis [sheet]</th><th class="r">Qty</th><th>Unit</th><th class="r">Mat $</th><th class="r">Lab-hrs</th><th>Rate</th><th class="r">Labor $</th><th class="r">Sub·Eq $</th><th class="r">Total</th></tr>
     </thead><tbody>${rows}</tbody></table>`;
 }).join('');
 
@@ -104,6 +106,7 @@ const html = `<!doctype html><html><head><meta charset="utf-8"><title>Estimate �
 </tbody></table>
 <div class="note"><b>CTC cross-check:</b> the same takeoff priced against the Construction Task Catalog (data/ctc) totals <b>${m0(CTCJ.totals.total)} (${psf(CTCJ.totals.psf)})</b> — within <b>${((CTCJ.totals.total / A.total - 1) * 100).toFixed(1)}%</b> of Scenario A. Only <b>${CTCJ.totals.coveragePct}%</b> of direct cost maps to a real CTC task (41-task sample); the rest is allowance.</div>
 
+${J.meta.laborWage ? `<div class="note"><b>Labor wage schedule:</b> apprentice $${J.meta.laborWage.apprentice} · journeyman $${J.meta.laborWage.journeyman} · master $${J.meta.laborWage.master}/hr. Labor = labor-hours × crew rate — general trades <b>$${J.meta.laborWage.generalTradesRate}/hr</b> (${J.meta.laborWage.generalCrew}); licensed MEP/fire <b>$${J.meta.laborWage.licensedTradesRate}/hr</b> (${J.meta.laborWage.licensedCrew}). Div 01 general conditions salaried; subcontractor lump sums keep quoted value.</div>` : ''}
 <h2>Scenario A — cost build-up</h2>
 <div class="kpi">
   <div><div class="l">Direct construction</div><div class="n">${m0(A.direct)}</div></div>

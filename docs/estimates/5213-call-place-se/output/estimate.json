@@ -2,7 +2,7 @@
   "meta": {
     "project": "5213 Call Place SE, Washington DC 20019",
     "type": "New construction detached group home / residential care (R-2), Type IIIB",
-    "generated": "2026-07-14T04:22:26.355Z",
+    "generated": "2026-07-14T04:31:10.114Z",
     "engine": "Kealee packages/estimating (EstimatingService markup structure)",
     "catalogue": "MARKETPLACE_ASSEMBLIES (DC-Baltimore 2024-25) — mid tier, DC factor 1.15",
     "takeoff": "MEASURED from permit set (28 sheets) — see drawings/MEASURED-TAKEOFF.md",
@@ -12,6 +12,16 @@
       "contingencyPct_A": 7,
       "contingencyPct_BC": 5,
       "bondsInsPct": 1.5
+    },
+    "laborWage": {
+      "apprentice": 55,
+      "journeyman": 85,
+      "master": 124,
+      "generalTradesRate": 73,
+      "licensedTradesRate": 87.25,
+      "generalCrew": "60% journeyman + 40% apprentice",
+      "licensedCrew": "25% master + 50% journeyman + 25% apprentice (Div 21/22/23/26/27-28)",
+      "note": "Labor = labor-hours × crew rate. Div 01 GC supervision salaried; subcontractor lump sums keep quoted value."
     },
     "basis": {
       "gsf": 5920,
@@ -24,10 +34,10 @@
       "structure": "TJI 360×14 + W12×26 steel + HSS columns"
     },
     "methodMix": {
-      "measured": 721144,
-      "calcFromDims": 729648,
+      "measured": 710416,
+      "calcFromDims": 761940,
       "notDimensioned": 263200,
-      "dimensionedPct": 84.6
+      "dimensionedPct": 84.8
     },
     "notDimensionedItems": [
       {
@@ -118,8 +128,10 @@
                 "equip": 0,
                 "sub": 0,
                 "total": 41860,
-                "lhrs": 416
-              }
+                "lhrs": 416,
+                "rate": null
+              },
+              "laborRate": null
             },
             {
               "code": "ALLOWANCE",
@@ -130,7 +142,7 @@
               "labUnit": 9500,
               "equipUnit": 0,
               "subUnit": 0,
-              "lhrsUnit": 0,
+              "lhrsUnit": 126.6667,
               "allowance": true,
               "waste": 0,
               "basis": "12-mo build",
@@ -146,8 +158,10 @@
                 "equip": 0,
                 "sub": 0,
                 "total": 114000,
-                "lhrs": 0
-              }
+                "lhrs": 1520.0004000000001,
+                "rate": null
+              },
+              "laborRate": null
             },
             {
               "code": "ALLOWANCE",
@@ -174,8 +188,10 @@
                 "equip": 0,
                 "sub": 18000,
                 "total": 18000,
-                "lhrs": 0
-              }
+                "lhrs": 0,
+                "rate": null
+              },
+              "laborRate": null
             },
             {
               "code": "GEN-TEMP-POWER",
@@ -201,8 +217,10 @@
                 "equip": 0,
                 "sub": 0,
                 "total": 10626,
-                "lhrs": 48
-              }
+                "lhrs": 48,
+                "rate": null
+              },
+              "laborRate": null
             },
             {
               "code": "ALLOWANCE",
@@ -229,8 +247,10 @@
                 "equip": 0,
                 "sub": 10200,
                 "total": 10200,
-                "lhrs": 0
-              }
+                "lhrs": 0,
+                "rate": null
+              },
+              "laborRate": null
             },
             {
               "code": "GEN-PORT-TOILET",
@@ -256,8 +276,10 @@
                 "equip": 0,
                 "sub": 0,
                 "total": 2535.7200000000003,
-                "lhrs": 0
-              }
+                "lhrs": 0,
+                "rate": null
+              },
+              "laborRate": null
             },
             {
               "code": "ALLOWANCE",
@@ -284,8 +306,10 @@
                 "equip": 0,
                 "sub": 14000,
                 "total": 14000,
-                "lhrs": 0
-              }
+                "lhrs": 0,
+                "rate": null
+              },
+              "laborRate": null
             },
             {
               "code": "GEN-DUMP-30",
@@ -311,8 +335,10 @@
                 "equip": 0,
                 "sub": 0,
                 "total": 7245,
-                "lhrs": 0
-              }
+                "lhrs": 0,
+                "rate": null
+              },
+              "laborRate": null
             },
             {
               "code": "GEN-CLEANUP-FINAL",
@@ -338,8 +364,10 @@
                 "equip": 0,
                 "sub": 0,
                 "total": 4854.4,
-                "lhrs": 59.2
-              }
+                "lhrs": 59.2,
+                "rate": null
+              },
+              "laborRate": null
             },
             {
               "code": "ALLOWANCE",
@@ -366,8 +394,10 @@
                 "equip": 0,
                 "sub": 18000,
                 "total": 18000,
-                "lhrs": 0
-              }
+                "lhrs": 0,
+                "rate": null
+              },
+              "laborRate": null
             },
             {
               "code": "GEN-SURVEY",
@@ -393,8 +423,10 @@
                 "equip": 0,
                 "sub": 0,
                 "total": 724.5,
-                "lhrs": 0
-              }
+                "lhrs": 0,
+                "rate": null
+              },
+              "laborRate": null
             },
             {
               "code": "GEN-ENGINEER",
@@ -420,8 +452,10 @@
                 "equip": 0,
                 "sub": 0,
                 "total": 1449,
-                "lhrs": 0
-              }
+                "lhrs": 0,
+                "rate": null
+              },
+              "laborRate": null
             },
             {
               "code": "ALLOWANCE",
@@ -448,15 +482,17 @@
                 "equip": 0,
                 "sub": 9000,
                 "total": 9000,
-                "lhrs": 0
-              }
+                "lhrs": 0,
+                "rate": null
+              },
+              "laborRate": null
             }
           ],
           "mat": 19526.22,
           "lab": 163768.4,
           "equip": 0,
           "sub": 69200,
-          "hrs": 523.2,
+          "hrs": 2043.2004000000002,
           "total": 252494.62
         },
         {
@@ -472,7 +508,7 @@
               "labUnit": 0.6,
               "equipUnit": 1.2,
               "subUnit": 1.2,
-              "lhrsUnit": 0,
+              "lhrsUnit": 0.008,
               "allowance": true,
               "waste": 0,
               "basis": "",
@@ -484,12 +520,14 @@
               "aUnit": 3,
               "ext": {
                 "mat": 0,
-                "lab": 2400,
+                "lab": 2336,
                 "equip": 4800,
                 "sub": 4800,
-                "total": 12000,
-                "lhrs": 0
-              }
+                "total": 11936,
+                "lhrs": 32,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ALLOWANCE",
@@ -500,7 +538,7 @@
               "labUnit": 6.4,
               "equipUnit": 0,
               "subUnit": 16,
-              "lhrsUnit": 0,
+              "lhrsUnit": 0.0853,
               "allowance": true,
               "waste": 0,
               "basis": "",
@@ -512,12 +550,14 @@
               "aUnit": 32,
               "ext": {
                 "mat": 2688,
-                "lab": 1792,
+                "lab": 1743.532,
                 "equip": 0,
                 "sub": 4480,
-                "total": 8960,
-                "lhrs": 0
-              }
+                "total": 8911.532,
+                "lhrs": 23.884,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ALLOWANCE",
@@ -544,16 +584,18 @@
                 "equip": 0,
                 "sub": 12000,
                 "total": 12000,
-                "lhrs": 0
-              }
+                "lhrs": 0,
+                "rate": 73
+              },
+              "laborRate": 73
             }
           ],
           "mat": 2688,
-          "lab": 4192,
+          "lab": 4079.532,
           "equip": 4800,
           "sub": 21280,
-          "hrs": 0,
-          "total": 32960
+          "hrs": 55.884,
+          "total": 32847.532
         },
         {
           "num": "03",
@@ -584,8 +626,10 @@
                 "equip": 3300,
                 "sub": 9075,
                 "total": 16500,
-                "lhrs": 0
-              }
+                "lhrs": 0,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ALLOWANCE",
@@ -596,7 +640,7 @@
               "labUnit": 6.8,
               "equipUnit": 0,
               "subUnit": 18.7,
-              "lhrsUnit": 0,
+              "lhrsUnit": 0.0907,
               "allowance": true,
               "waste": 0,
               "basis": "",
@@ -608,12 +652,14 @@
               "aUnit": 34,
               "ext": {
                 "mat": 13464,
-                "lab": 10771.199999999999,
+                "lab": 10487.822400000001,
                 "equip": 0,
                 "sub": 29620.8,
-                "total": 53856,
-                "lhrs": 0
-              }
+                "total": 53572.6224,
+                "lhrs": 143.6688,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "CONC-POUR-4",
@@ -635,12 +681,14 @@
               "note": "Slab on grade on 6-mil VB + 4\" gravel (S100)",
               "ext": {
                 "mat": 8036.4,
-                "lab": 6807.999999999999,
+                "lab": 4321.6,
                 "equip": 0,
                 "sub": 0,
-                "total": 14844.399999999998,
-                "lhrs": 59.2
-              }
+                "total": 12358,
+                "lhrs": 59.2,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "CONC-MESH",
@@ -662,12 +710,14 @@
               "note": "Welded wire fabric (not rebar) per S100",
               "ext": {
                 "mat": 888,
-                "lab": 769.6,
+                "lab": 1080.4,
                 "equip": 0,
                 "sub": 0,
-                "total": 1657.6,
-                "lhrs": 14.8
-              }
+                "total": 1968.4,
+                "lhrs": 14.8,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ALLOWANCE",
@@ -694,8 +744,10 @@
                 "equip": 0,
                 "sub": 9500,
                 "total": 9500,
-                "lhrs": 0
-              }
+                "lhrs": 0,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ALLOWANCE",
@@ -706,7 +758,7 @@
               "labUnit": 3.6,
               "equipUnit": 0,
               "subUnit": 14.4,
-              "lhrsUnit": 0,
+              "lhrsUnit": 0.048,
               "allowance": true,
               "waste": 0,
               "basis": "",
@@ -718,12 +770,14 @@
               "aUnit": 24,
               "ext": {
                 "mat": 2400,
-                "lab": 1440,
+                "lab": 1401.6,
                 "equip": 0,
                 "sub": 5760,
-                "total": 9600,
-                "lhrs": 0
-              }
+                "total": 9561.6,
+                "lhrs": 19.2,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "FOUND-WP-EXT",
@@ -745,20 +799,22 @@
               "note": "",
               "ext": {
                 "mat": 21252,
-                "lab": 26312,
+                "lab": 19272,
                 "equip": 0,
                 "sub": 0,
-                "total": 47564,
-                "lhrs": 264
-              }
+                "total": 40524,
+                "lhrs": 264,
+                "rate": 73
+              },
+              "laborRate": 73
             }
           ],
           "mat": 50165.4,
-          "lab": 46100.799999999996,
+          "lab": 36563.422399999996,
           "equip": 3300,
           "sub": 53955.8,
-          "hrs": 338,
-          "total": 153522
+          "hrs": 500.8688,
+          "total": 143984.6224
         },
         {
           "num": "04",
@@ -784,12 +840,14 @@
               "note": "",
               "ext": {
                 "mat": 8694,
-                "lab": 9660,
+                "lab": 10950,
                 "equip": 0,
                 "sub": 0,
-                "total": 18354,
-                "lhrs": 150
-              }
+                "total": 19644,
+                "lhrs": 150,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ALLOWANCE",
@@ -816,16 +874,18 @@
                 "equip": 0,
                 "sub": 5500,
                 "total": 5500,
-                "lhrs": 0
-              }
+                "lhrs": 0,
+                "rate": 73
+              },
+              "laborRate": 73
             }
           ],
           "mat": 8694,
-          "lab": 9660,
+          "lab": 10950,
           "equip": 0,
           "sub": 5500,
           "hrs": 150,
-          "total": 23854
+          "total": 25144
         },
         {
           "num": "05",
@@ -851,12 +911,14 @@
               "note": "W12×26",
               "ext": {
                 "mat": 12677.699999999999,
-                "lab": 13282.5,
+                "lab": 11497.5,
                 "equip": 0,
                 "sub": 0,
-                "total": 25960.199999999997,
-                "lhrs": 157.5
-              }
+                "total": 24175.199999999997,
+                "lhrs": 157.5,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ALLOWANCE",
@@ -867,7 +929,7 @@
               "labUnit": 9.3,
               "equipUnit": 0,
               "subUnit": 31,
-              "lhrsUnit": 0,
+              "lhrsUnit": 0.124,
               "allowance": true,
               "waste": 0,
               "basis": "",
@@ -879,12 +941,14 @@
               "aUnit": 62,
               "ext": {
                 "mat": 6076,
-                "lab": 2604,
+                "lab": 2534.56,
                 "equip": 0,
                 "sub": 8680,
-                "total": 17360,
-                "lhrs": 0
-              }
+                "total": 17290.559999999998,
+                "lhrs": 34.72,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ALLOWANCE",
@@ -911,16 +975,18 @@
                 "equip": 0,
                 "sub": 14000,
                 "total": 14000,
-                "lhrs": 0
-              }
+                "lhrs": 0,
+                "rate": 73
+              },
+              "laborRate": 73
             }
           ],
           "mat": 18753.699999999997,
-          "lab": 15886.5,
+          "lab": 14032.06,
           "equip": 0,
           "sub": 22680,
-          "hrs": 157.5,
-          "total": 57320.2
+          "hrs": 192.22,
+          "total": 55465.759999999995
         },
         {
           "num": "06",
@@ -946,12 +1012,14 @@
               "note": "TJI 360×14 engineered-wood I-joist @16\" O.C.",
               "ext": {
                 "mat": 33699.6,
-                "lab": 22954.8,
+                "lab": 19447.199999999997,
                 "equip": 0,
                 "sub": 0,
-                "total": 56654.399999999994,
-                "lhrs": 266.4
-              }
+                "total": 53146.799999999996,
+                "lhrs": 266.4,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "FRAME-SHEATH-SUB",
@@ -973,12 +1041,14 @@
               "note": "",
               "ext": {
                 "mat": 12654,
-                "lab": 10212,
+                "lab": 9723.599999999999,
                 "equip": 0,
                 "sub": 0,
-                "total": 22866,
-                "lhrs": 133.2
-              }
+                "total": 22377.6,
+                "lhrs": 133.2,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "FRAME-WALL-2X6",
@@ -1000,12 +1070,14 @@
               "note": "",
               "ext": {
                 "mat": 6008.64,
-                "lab": 7893.599999999999,
+                "lab": 6937.919999999999,
                 "equip": 0,
                 "sub": 0,
-                "total": 13902.24,
-                "lhrs": 95.03999999999999
-              }
+                "total": 12946.56,
+                "lhrs": 95.03999999999999,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "FRAME-WALL-2X4",
@@ -1027,12 +1099,14 @@
               "note": "",
               "ext": {
                 "mat": 5313,
-                "lab": 8050,
+                "lab": 7665,
                 "equip": 0,
                 "sub": 0,
-                "total": 13363,
-                "lhrs": 105
-              }
+                "total": 12978,
+                "lhrs": 105,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "FRAME-SHEATH-WALL",
@@ -1054,12 +1128,14 @@
               "note": "",
               "ext": {
                 "mat": 10032,
-                "lab": 10612.8,
+                "lab": 7708.8,
                 "equip": 0,
                 "sub": 0,
-                "total": 20644.8,
-                "lhrs": 105.60000000000001
-              }
+                "total": 17740.8,
+                "lhrs": 105.60000000000001,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ALLOWANCE",
@@ -1070,7 +1146,7 @@
               "labUnit": 3.75,
               "equipUnit": 0,
               "subUnit": 0,
-              "lhrsUnit": 0,
+              "lhrsUnit": 0.05,
               "allowance": true,
               "waste": 0,
               "basis": "",
@@ -1082,12 +1158,14 @@
               "aUnit": 7.5,
               "ext": {
                 "mat": 5550,
-                "lab": 5550,
+                "lab": 5402,
                 "equip": 0,
                 "sub": 0,
-                "total": 11100,
-                "lhrs": 0
-              }
+                "total": 10952,
+                "lhrs": 74,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "FRAME-SHEATH-ROOF",
@@ -1109,12 +1187,14 @@
               "note": "",
               "ext": {
                 "mat": 2989.6,
-                "lab": 3403.9999999999995,
+                "lab": 3241.2,
                 "equip": 0,
                 "sub": 0,
-                "total": 6393.599999999999,
-                "lhrs": 44.4
-              }
+                "total": 6230.799999999999,
+                "lhrs": 44.4,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "FRAME-STAIR",
@@ -1136,12 +1216,14 @@
               "note": "",
               "ext": {
                 "mat": 724.52,
-                "lab": 1610,
+                "lab": 1168,
                 "equip": 0,
                 "sub": 0,
-                "total": 2334.52,
-                "lhrs": 16
-              }
+                "total": 1892.52,
+                "lhrs": 16,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ALLOWANCE",
@@ -1168,8 +1250,10 @@
                 "equip": 0,
                 "sub": 14000,
                 "total": 14000,
-                "lhrs": 0
-              }
+                "lhrs": 0,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ALLOWANCE",
@@ -1180,7 +1264,7 @@
               "labUnit": 0.63,
               "equipUnit": 0,
               "subUnit": 0,
-              "lhrsUnit": 0,
+              "lhrsUnit": 0.0084,
               "allowance": true,
               "waste": 0,
               "basis": "",
@@ -1192,20 +1276,22 @@
               "aUnit": 1.25,
               "ext": {
                 "mat": 3729.6,
-                "lab": 3729.6,
+                "lab": 3630.144,
                 "equip": 0,
                 "sub": 0,
-                "total": 7459.2,
-                "lhrs": 0
-              }
+                "total": 7359.744,
+                "lhrs": 49.727999999999994,
+                "rate": 73
+              },
+              "laborRate": 73
             }
           ],
           "mat": 80700.96,
-          "lab": 74016.8,
+          "lab": 64923.863999999994,
           "equip": 0,
           "sub": 14000,
-          "hrs": 765.64,
-          "total": 168717.76
+          "hrs": 889.3679999999999,
+          "total": 159624.824
         },
         {
           "num": "07",
@@ -1231,12 +1317,14 @@
               "note": "",
               "ext": {
                 "mat": 5121.599999999999,
-                "lab": 5174.4,
+                "lab": 3854.4,
                 "equip": 0,
                 "sub": 0,
-                "total": 10296,
-                "lhrs": 52.800000000000004
-              }
+                "total": 8976,
+                "lhrs": 52.800000000000004,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "SID-FC-LAP",
@@ -1258,12 +1346,14 @@
               "note": "Fiber-cement lap — rear + sides",
               "ext": {
                 "mat": 33864,
-                "lab": 35190,
+                "lab": 29784,
                 "equip": 0,
                 "sub": 0,
-                "total": 69054,
-                "lhrs": 408
-              }
+                "total": 63648,
+                "lhrs": 408,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ALLOWANCE",
@@ -1274,7 +1364,7 @@
               "labUnit": 1.13,
               "equipUnit": 0,
               "subUnit": 1.8,
-              "lhrsUnit": 0,
+              "lhrsUnit": 0.0151,
               "allowance": true,
               "waste": 0,
               "basis": "",
@@ -1286,12 +1376,14 @@
               "aUnit": 4.5,
               "ext": {
                 "mat": 2323.6,
-                "lab": 1672.3999999999999,
+                "lab": 1631.4040000000002,
                 "equip": 0,
                 "sub": 2664,
-                "total": 6660,
-                "lhrs": 0
-              }
+                "total": 6619.004,
+                "lhrs": 22.348000000000003,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ALLOWANCE",
@@ -1302,7 +1394,7 @@
               "labUnit": 0.68,
               "equipUnit": 0,
               "subUnit": 0,
-              "lhrsUnit": 0,
+              "lhrsUnit": 0.0091,
               "allowance": true,
               "waste": 0,
               "basis": "",
@@ -1314,12 +1406,14 @@
               "aUnit": 1.35,
               "ext": {
                 "mat": 3590.4,
-                "lab": 3590.4,
+                "lab": 3507.504,
                 "equip": 0,
                 "sub": 0,
-                "total": 7180.8,
-                "lhrs": 0
-              }
+                "total": 7097.904,
+                "lhrs": 48.048,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ROOF-FLAT-TPO",
@@ -1341,12 +1435,14 @@
               "note": "",
               "ext": {
                 "mat": 4914.488,
-                "lab": 4084.8,
+                "lab": 2701,
                 "equip": 0,
                 "sub": 0,
-                "total": 8999.288,
-                "lhrs": 37
-              }
+                "total": 7615.488,
+                "lhrs": 37,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ALLOWANCE",
@@ -1373,8 +1469,10 @@
                 "equip": 0,
                 "sub": 8500,
                 "total": 8500,
-                "lhrs": 0
-              }
+                "lhrs": 0,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ALLOWANCE",
@@ -1385,7 +1483,7 @@
               "labUnit": 0.22,
               "equipUnit": 0,
               "subUnit": 0.66,
-              "lhrsUnit": 0,
+              "lhrsUnit": 0.0029,
               "allowance": true,
               "waste": 0,
               "basis": "",
@@ -1397,12 +1495,14 @@
               "aUnit": 1.1,
               "ext": {
                 "mat": 1302.4,
-                "lab": 1302.4,
+                "lab": 1253.264,
                 "equip": 0,
                 "sub": 3907.2000000000003,
-                "total": 6512,
-                "lhrs": 0
-              }
+                "total": 6462.864,
+                "lhrs": 17.168,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ALLOWANCE",
@@ -1429,16 +1529,18 @@
                 "equip": 0,
                 "sub": 4500,
                 "total": 4500,
-                "lhrs": 0
-              }
+                "lhrs": 0,
+                "rate": 73
+              },
+              "laborRate": 73
             }
           ],
           "mat": 51116.488,
-          "lab": 51014.40000000001,
+          "lab": 42731.57200000001,
           "equip": 0,
           "sub": 19571.2,
-          "hrs": 497.8,
-          "total": 121702.088
+          "hrs": 585.364,
+          "total": 113419.26
         },
         {
           "num": "08",
@@ -1464,12 +1566,14 @@
               "note": "",
               "ext": {
                 "mat": 14490,
-                "lab": 9200,
+                "lab": 7300,
                 "equip": 0,
                 "sub": 0,
-                "total": 23690,
-                "lhrs": 100
-              }
+                "total": 21790,
+                "lhrs": 100,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "DOOR-EXT-STEEL",
@@ -1491,12 +1595,14 @@
               "note": "",
               "ext": {
                 "mat": 2898,
-                "lab": 1610,
+                "lab": 1168,
                 "equip": 0,
                 "sub": 0,
-                "total": 4508,
-                "lhrs": 16
-              }
+                "total": 4066,
+                "lhrs": 16,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "WIN-VIN-DH",
@@ -1518,12 +1624,14 @@
               "note": "",
               "ext": {
                 "mat": 15848.35,
-                "lab": 10062.5,
+                "lab": 6387.5,
                 "equip": 0,
                 "sub": 0,
-                "total": 25910.85,
-                "lhrs": 87.5
-              }
+                "total": 22235.85,
+                "lhrs": 87.5,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ALLOWANCE",
@@ -1550,8 +1658,10 @@
                 "equip": 0,
                 "sub": 9500,
                 "total": 9500,
-                "lhrs": 0
-              }
+                "lhrs": 0,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ALLOWANCE",
@@ -1562,7 +1672,7 @@
               "labUnit": 43.5,
               "equipUnit": 0,
               "subUnit": 0,
-              "lhrsUnit": 0,
+              "lhrsUnit": 0.58,
               "allowance": true,
               "waste": 0,
               "basis": "",
@@ -1574,20 +1684,22 @@
               "aUnit": 145,
               "ext": {
                 "mat": 4466,
-                "lab": 1914,
+                "lab": 1862.96,
                 "equip": 0,
                 "sub": 0,
-                "total": 6380,
-                "lhrs": 0
-              }
+                "total": 6328.96,
+                "lhrs": 25.52,
+                "rate": 73
+              },
+              "laborRate": 73
             }
           ],
           "mat": 37702.35,
-          "lab": 22786.5,
+          "lab": 16718.46,
           "equip": 0,
           "sub": 9500,
-          "hrs": 203.5,
-          "total": 69988.85
+          "hrs": 229.02,
+          "total": 63920.81
         },
         {
           "num": "09",
@@ -1613,12 +1725,14 @@
               "note": "",
               "ext": {
                 "mat": 18258.8,
-                "lab": 29996.6,
+                "lab": 38082.64000000001,
                 "equip": 0,
                 "sub": 0,
-                "total": 48255.399999999994,
-                "lhrs": 521.6800000000001
-              }
+                "total": 56341.44,
+                "lhrs": 521.6800000000001,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "DRY-TAPE-L4",
@@ -1640,12 +1754,14 @@
               "note": "",
               "ext": {
                 "mat": 7825.2,
-                "lab": 32865.840000000004,
+                "lab": 38082.64000000001,
                 "equip": 0,
                 "sub": 0,
-                "total": 40691.04,
-                "lhrs": 521.6800000000001
-              }
+                "total": 45907.840000000004,
+                "lhrs": 521.6800000000001,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ALLOWANCE",
@@ -1656,7 +1772,7 @@
               "labUnit": 0.66,
               "equipUnit": 0,
               "subUnit": 0,
-              "lhrsUnit": 0,
+              "lhrsUnit": 0.0088,
               "allowance": true,
               "waste": 0,
               "basis": "",
@@ -1668,12 +1784,14 @@
               "aUnit": 1.1,
               "ext": {
                 "mat": 1540,
-                "lab": 2310,
+                "lab": 2248.4,
                 "equip": 0,
                 "sub": 0,
-                "total": 3850,
-                "lhrs": 0
-              }
+                "total": 3788.4,
+                "lhrs": 30.8,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ALLOWANCE",
@@ -1684,7 +1802,7 @@
               "labUnit": 1.44,
               "equipUnit": 0,
               "subUnit": 3.6,
-              "lhrsUnit": 0,
+              "lhrsUnit": 0.0192,
               "allowance": true,
               "waste": 0,
               "basis": "",
@@ -1696,12 +1814,14 @@
               "aUnit": 7.2,
               "ext": {
                 "mat": 3456,
-                "lab": 2304,
+                "lab": 2242.56,
                 "equip": 0,
                 "sub": 5760,
-                "total": 11520,
-                "lhrs": 0
-              }
+                "total": 11458.56,
+                "lhrs": 30.72,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "FLR-TILE-PORC",
@@ -1723,12 +1843,14 @@
               "note": "",
               "ext": {
                 "mat": 8694,
-                "lab": 10350,
+                "lab": 13140,
                 "equip": 0,
                 "sub": 0,
-                "total": 19044,
-                "lhrs": 180
-              }
+                "total": 21834,
+                "lhrs": 180,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "FLR-LVP",
@@ -1750,12 +1872,14 @@
               "note": "",
               "ext": {
                 "mat": 21735,
-                "lab": 16830,
+                "lab": 19710,
                 "equip": 0,
                 "sub": 0,
-                "total": 38565,
-                "lhrs": 270
-              }
+                "total": 41445,
+                "lhrs": 270,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "PAINT-INT-WALL",
@@ -1777,12 +1901,14 @@
               "note": "",
               "ext": {
                 "mat": 12520.32,
-                "lab": 40430.200000000004,
+                "lab": 38082.64000000001,
                 "equip": 0,
                 "sub": 0,
-                "total": 52950.520000000004,
-                "lhrs": 521.6800000000001
-              }
+                "total": 50602.96000000001,
+                "lhrs": 521.6800000000001,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ALLOWANCE",
@@ -1793,7 +1919,7 @@
               "labUnit": 1.56,
               "equipUnit": 0,
               "subUnit": 0,
-              "lhrsUnit": 0,
+              "lhrsUnit": 0.0208,
               "allowance": true,
               "waste": 0,
               "basis": "",
@@ -1805,20 +1931,22 @@
               "aUnit": 2.6,
               "ext": {
                 "mat": 6156.8,
-                "lab": 9235.2,
+                "lab": 8988.928,
                 "equip": 0,
                 "sub": 0,
-                "total": 15392,
-                "lhrs": 0
-              }
+                "total": 15145.728,
+                "lhrs": 123.136,
+                "rate": 73
+              },
+              "laborRate": 73
             }
           ],
           "mat": 80186.12000000001,
-          "lab": 144321.84000000003,
+          "lab": 160577.80800000002,
           "equip": 0,
           "sub": 5760,
-          "hrs": 2015.0400000000002,
-          "total": 230267.96000000002
+          "hrs": 2199.6960000000004,
+          "total": 246523.928
         },
         {
           "num": "10",
@@ -1844,12 +1972,14 @@
               "note": "",
               "ext": {
                 "mat": 1521.45,
-                "lab": 2052.75,
+                "lab": 1533,
                 "equip": 0,
                 "sub": 0,
-                "total": 3574.2,
-                "lhrs": 21
-              }
+                "total": 3054.45,
+                "lhrs": 21,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ALLOWANCE",
@@ -1860,7 +1990,7 @@
               "labUnit": 66,
               "equipUnit": 0,
               "subUnit": 0,
-              "lhrsUnit": 0,
+              "lhrsUnit": 0.88,
               "allowance": true,
               "waste": 0,
               "basis": "",
@@ -1872,12 +2002,14 @@
               "aUnit": 220,
               "ext": {
                 "mat": 1078,
-                "lab": 462,
+                "lab": 449.68,
                 "equip": 0,
                 "sub": 0,
-                "total": 1540,
-                "lhrs": 0
-              }
+                "total": 1527.68,
+                "lhrs": 6.16,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ALLOWANCE",
@@ -1888,7 +2020,7 @@
               "labUnit": 42,
               "equipUnit": 0,
               "subUnit": 0,
-              "lhrsUnit": 0,
+              "lhrsUnit": 0.56,
               "allowance": true,
               "waste": 0,
               "basis": "",
@@ -1900,12 +2032,14 @@
               "aUnit": 140,
               "ext": {
                 "mat": 2940,
-                "lab": 1260,
+                "lab": 1226.4,
                 "equip": 0,
                 "sub": 0,
-                "total": 4200,
-                "lhrs": 0
-              }
+                "total": 4166.4,
+                "lhrs": 16.8,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ALLOWANCE",
@@ -1916,7 +2050,7 @@
               "labUnit": 33,
               "equipUnit": 0,
               "subUnit": 0,
-              "lhrsUnit": 0,
+              "lhrsUnit": 0.44,
               "allowance": true,
               "waste": 0,
               "basis": "",
@@ -1928,12 +2062,14 @@
               "aUnit": 165,
               "ext": {
                 "mat": 1056,
-                "lab": 264,
+                "lab": 256.96,
                 "equip": 0,
                 "sub": 0,
-                "total": 1320,
-                "lhrs": 0
-              }
+                "total": 1312.96,
+                "lhrs": 3.52,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ALLOWANCE",
@@ -1960,16 +2096,18 @@
                 "equip": 0,
                 "sub": 3500,
                 "total": 3500,
-                "lhrs": 0
-              }
+                "lhrs": 0,
+                "rate": 73
+              },
+              "laborRate": 73
             }
           ],
           "mat": 6595.45,
-          "lab": 4038.75,
+          "lab": 3466.04,
           "equip": 0,
           "sub": 3500,
-          "hrs": 21,
-          "total": 14134.2
+          "hrs": 47.480000000000004,
+          "total": 13561.49
         },
         {
           "num": "12",
@@ -1995,12 +2133,14 @@
               "note": "",
               "ext": {
                 "mat": 4226.25,
-                "lab": 2012.5,
+                "lab": 1533,
                 "equip": 0,
                 "sub": 0,
-                "total": 6238.75,
-                "lhrs": 21
-              }
+                "total": 5759.25,
+                "lhrs": 21,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ALLOWANCE",
@@ -2011,7 +2151,7 @@
               "labUnit": 36,
               "equipUnit": 0,
               "subUnit": 120,
-              "lhrsUnit": 0,
+              "lhrsUnit": 0.48,
               "allowance": true,
               "waste": 0,
               "basis": "",
@@ -2023,12 +2163,14 @@
               "aUnit": 240,
               "ext": {
                 "mat": 3360,
-                "lab": 1440,
+                "lab": 1401.6,
                 "equip": 0,
                 "sub": 4800,
-                "total": 9600,
-                "lhrs": 0
-              }
+                "total": 9561.6,
+                "lhrs": 19.2,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ALLOWANCE",
@@ -2039,7 +2181,7 @@
               "labUnit": 812.5,
               "equipUnit": 0,
               "subUnit": 0,
-              "lhrsUnit": 0,
+              "lhrsUnit": 10.8333,
               "allowance": true,
               "waste": 0,
               "basis": "",
@@ -2051,20 +2193,22 @@
               "aUnit": 1625,
               "ext": {
                 "mat": 3250,
-                "lab": 3250,
+                "lab": 3163.3235999999997,
                 "equip": 0,
                 "sub": 0,
-                "total": 6500,
-                "lhrs": 0
-              }
+                "total": 6413.3236,
+                "lhrs": 43.3332,
+                "rate": 73
+              },
+              "laborRate": 73
             }
           ],
           "mat": 10836.25,
-          "lab": 6702.5,
+          "lab": 6097.9236,
           "equip": 0,
           "sub": 4800,
-          "hrs": 21,
-          "total": 22338.75
+          "hrs": 83.5332,
+          "total": 21734.173600000002
         },
         {
           "num": "21",
@@ -2095,8 +2239,10 @@
                 "equip": 0,
                 "sub": 38480,
                 "total": 38480,
-                "lhrs": 0
-              }
+                "lhrs": 0,
+                "rate": 87.25
+              },
+              "laborRate": 87.25
             },
             {
               "code": "ALLOWANCE",
@@ -2123,8 +2269,10 @@
                 "equip": 0,
                 "sub": 12000,
                 "total": 12000,
-                "lhrs": 0
-              }
+                "lhrs": 0,
+                "rate": 87.25
+              },
+              "laborRate": 87.25
             },
             {
               "code": "ALLOWANCE",
@@ -2151,8 +2299,10 @@
                 "equip": 0,
                 "sub": 3500,
                 "total": 3500,
-                "lhrs": 0
-              }
+                "lhrs": 0,
+                "rate": 87.25
+              },
+              "laborRate": 87.25
             }
           ],
           "mat": 0,
@@ -2186,12 +2336,14 @@
               "note": "",
               "ext": {
                 "mat": 2324.42,
-                "lab": 1610,
+                "lab": 1221.5,
                 "equip": 0,
                 "sub": 0,
-                "total": 3934.42,
-                "lhrs": 14
-              }
+                "total": 3545.92,
+                "lhrs": 14,
+                "rate": 87.25
+              },
+              "laborRate": 87.25
             },
             {
               "code": "ALLOWANCE",
@@ -2214,12 +2366,14 @@
               "aUnit": 620,
               "ext": {
                 "mat": 2232,
-                "lab": 1116,
+                "lab": 4188,
                 "equip": 0,
                 "sub": 4092,
-                "total": 7440,
-                "lhrs": 48
-              }
+                "total": 10512,
+                "lhrs": 48,
+                "rate": 87.25
+              },
+              "laborRate": 87.25
             },
             {
               "code": "BATH-TUB-STD",
@@ -2241,12 +2395,14 @@
               "note": "",
               "ext": {
                 "mat": 3381,
-                "lab": 4025,
+                "lab": 3053.75,
                 "equip": 0,
                 "sub": 0,
-                "total": 7406,
-                "lhrs": 35
-              }
+                "total": 6434.75,
+                "lhrs": 35,
+                "rate": 87.25
+              },
+              "laborRate": 87.25
             },
             {
               "code": "ALLOWANCE",
@@ -2269,12 +2425,14 @@
               "aUnit": 950,
               "ext": {
                 "mat": 6840,
-                "lab": 10260,
+                "lab": 18846,
                 "equip": 0,
                 "sub": 17100,
-                "total": 34200,
-                "lhrs": 216
-              }
+                "total": 42786,
+                "lhrs": 216,
+                "rate": 87.25
+              },
+              "laborRate": 87.25
             },
             {
               "code": "PLUMB-GAS-LINE",
@@ -2296,12 +2454,14 @@
               "note": "",
               "ext": {
                 "mat": 2608.2,
-                "lab": 4140,
+                "lab": 3926.25,
                 "equip": 0,
                 "sub": 0,
-                "total": 6748.2,
-                "lhrs": 45
-              }
+                "total": 6534.45,
+                "lhrs": 45,
+                "rate": 87.25
+              },
+              "laborRate": 87.25
             },
             {
               "code": "ALLOWANCE",
@@ -2324,12 +2484,14 @@
               "aUnit": 4200,
               "ext": {
                 "mat": 3360,
-                "lab": 840,
+                "lab": 1396,
                 "equip": 0,
                 "sub": 4200,
-                "total": 8400,
-                "lhrs": 16
-              }
+                "total": 8956,
+                "lhrs": 16,
+                "rate": 87.25
+              },
+              "laborRate": 87.25
             },
             {
               "code": "ALLOWANCE",
@@ -2340,7 +2502,7 @@
               "labUnit": 800,
               "equipUnit": 0,
               "subUnit": 1920,
-              "lhrsUnit": 0,
+              "lhrsUnit": 10.6667,
               "allowance": true,
               "waste": 0,
               "basis": "",
@@ -2352,12 +2514,14 @@
               "aUnit": 3200,
               "ext": {
                 "mat": 480,
-                "lab": 800,
+                "lab": 930.669575,
                 "equip": 0,
                 "sub": 1920,
-                "total": 3200,
-                "lhrs": 0
-              }
+                "total": 3330.669575,
+                "lhrs": 10.6667,
+                "rate": 87.25
+              },
+              "laborRate": 87.25
             },
             {
               "code": "ALLOWANCE",
@@ -2384,16 +2548,18 @@
                 "equip": 0,
                 "sub": 22000,
                 "total": 22000,
-                "lhrs": 0
-              }
+                "lhrs": 0,
+                "rate": 87.25
+              },
+              "laborRate": 87.25
             }
           ],
           "mat": 21225.62,
-          "lab": 22791,
+          "lab": 33562.169575,
           "equip": 0,
           "sub": 49312,
-          "hrs": 374,
-          "total": 93328.62
+          "hrs": 384.6667,
+          "total": 104099.789575
         },
         {
           "num": "23",
@@ -2420,12 +2586,14 @@
               "aUnit": 9800,
               "ext": {
                 "mat": 15680,
-                "lab": 3920,
+                "lab": 5584,
                 "equip": 0,
                 "sub": 19600,
-                "total": 39200,
-                "lhrs": 64
-              }
+                "total": 40864,
+                "lhrs": 64,
+                "rate": 87.25
+              },
+              "laborRate": 87.25
             },
             {
               "code": "ALLOWANCE",
@@ -2448,12 +2616,14 @@
               "aUnit": 22,
               "ext": {
                 "mat": 5940,
-                "lab": 3960.0000000000005,
+                "lab": 23557.5,
                 "equip": 0,
                 "sub": 9900,
-                "total": 19800,
-                "lhrs": 270
-              }
+                "total": 39397.5,
+                "lhrs": 270,
+                "rate": 87.25
+              },
+              "laborRate": 87.25
             },
             {
               "code": "ALLOWANCE",
@@ -2480,8 +2650,10 @@
                 "equip": 0,
                 "sub": 7500,
                 "total": 7500,
-                "lhrs": 0
-              }
+                "lhrs": 0,
+                "rate": 87.25
+              },
+              "laborRate": 87.25
             },
             {
               "code": "BATH-VENT-STD",
@@ -2503,12 +2675,14 @@
               "note": "",
               "ext": {
                 "mat": 760.69,
-                "lab": 1610,
+                "lab": 1526.875,
                 "equip": 0,
                 "sub": 0,
-                "total": 2370.69,
-                "lhrs": 17.5
-              }
+                "total": 2287.565,
+                "lhrs": 17.5,
+                "rate": 87.25
+              },
+              "laborRate": 87.25
             },
             {
               "code": "ALLOWANCE",
@@ -2535,8 +2709,10 @@
                 "equip": 0,
                 "sub": 26000,
                 "total": 26000,
-                "lhrs": 0
-              }
+                "lhrs": 0,
+                "rate": 87.25
+              },
+              "laborRate": 87.25
             },
             {
               "code": "ALLOWANCE",
@@ -2563,16 +2739,18 @@
                 "equip": 0,
                 "sub": 6500,
                 "total": 6500,
-                "lhrs": 0
-              }
+                "lhrs": 0,
+                "rate": 87.25
+              },
+              "laborRate": 87.25
             }
           ],
           "mat": 22380.69,
-          "lab": 9490,
+          "lab": 30668.375,
           "equip": 0,
           "sub": 69500,
           "hrs": 351.5,
-          "total": 101370.69
+          "total": 122549.065
         },
         {
           "num": "26",
@@ -2598,12 +2776,14 @@
               "note": "",
               "ext": {
                 "mat": 4226.25,
-                "lab": 4600,
+                "lab": 2094,
                 "equip": 0,
                 "sub": 0,
-                "total": 8826.25,
-                "lhrs": 24
-              }
+                "total": 6320.25,
+                "lhrs": 24,
+                "rate": 87.25
+              },
+              "laborRate": 87.25
             },
             {
               "code": "ELEC-PNL-200",
@@ -2625,12 +2805,14 @@
               "note": "",
               "ext": {
                 "mat": 3381,
-                "lab": 4600,
+                "lab": 2443,
                 "equip": 0,
                 "sub": 0,
-                "total": 7981,
-                "lhrs": 28
-              }
+                "total": 5824,
+                "lhrs": 28,
+                "rate": 87.25
+              },
+              "laborRate": 87.25
             },
             {
               "code": "ALLOWANCE",
@@ -2653,12 +2835,14 @@
               "aUnit": 9.5,
               "ext": {
                 "mat": 19654.399999999998,
-                "lab": 14089.599999999999,
+                "lab": 25826,
                 "equip": 0,
                 "sub": 22496,
-                "total": 56240,
-                "lhrs": 296
-              }
+                "total": 67976.4,
+                "lhrs": 296,
+                "rate": 87.25
+              },
+              "laborRate": 87.25
             },
             {
               "code": "ALLOWANCE",
@@ -2669,7 +2853,7 @@
               "labUnit": 52,
               "equipUnit": 0,
               "subUnit": 91,
-              "lhrsUnit": 0,
+              "lhrsUnit": 0.6933,
               "allowance": true,
               "waste": 0,
               "basis": "",
@@ -2681,12 +2865,14 @@
               "aUnit": 260,
               "ext": {
                 "mat": 7605,
-                "lab": 3380,
+                "lab": 3931.877625,
                 "equip": 0,
                 "sub": 5915,
-                "total": 16900,
-                "lhrs": 0
-              }
+                "total": 17451.877625,
+                "lhrs": 45.0645,
+                "rate": 87.25
+              },
+              "laborRate": 87.25
             },
             {
               "code": "ALLOWANCE",
@@ -2697,7 +2883,7 @@
               "labUnit": 25.2,
               "equipUnit": 0,
               "subUnit": 0,
-              "lhrsUnit": 0,
+              "lhrsUnit": 0.336,
               "allowance": true,
               "waste": 0,
               "basis": "",
@@ -2709,12 +2895,14 @@
               "aUnit": 42,
               "ext": {
                 "mat": 3696,
-                "lab": 5544,
+                "lab": 6449.52,
                 "equip": 0,
                 "sub": 0,
-                "total": 9240,
-                "lhrs": 0
-              }
+                "total": 10145.52,
+                "lhrs": 73.92,
+                "rate": 87.25
+              },
+              "laborRate": 87.25
             },
             {
               "code": "ALLOWANCE",
@@ -2725,7 +2913,7 @@
               "labUnit": 390,
               "equipUnit": 0,
               "subUnit": 0,
-              "lhrsUnit": 0,
+              "lhrsUnit": 5.2,
               "allowance": true,
               "waste": 0,
               "basis": "",
@@ -2737,12 +2925,14 @@
               "aUnit": 650,
               "ext": {
                 "mat": 2600,
-                "lab": 3900,
+                "lab": 4537,
                 "equip": 0,
                 "sub": 0,
-                "total": 6500,
-                "lhrs": 0
-              }
+                "total": 7137,
+                "lhrs": 52,
+                "rate": 87.25
+              },
+              "laborRate": 87.25
             },
             {
               "code": "ALLOWANCE",
@@ -2769,8 +2959,10 @@
                 "equip": 0,
                 "sub": 11000,
                 "total": 11000,
-                "lhrs": 0
-              }
+                "lhrs": 0,
+                "rate": 87.25
+              },
+              "laborRate": 87.25
             },
             {
               "code": "ALLOWANCE",
@@ -2797,8 +2989,10 @@
                 "equip": 0,
                 "sub": 5200,
                 "total": 5200,
-                "lhrs": 0
-              }
+                "lhrs": 0,
+                "rate": 87.25
+              },
+              "laborRate": 87.25
             },
             {
               "code": "ALLOWANCE",
@@ -2809,7 +3003,7 @@
               "labUnit": 128,
               "equipUnit": 0,
               "subUnit": 0,
-              "lhrsUnit": 0,
+              "lhrsUnit": 1.7067,
               "allowance": true,
               "waste": 0,
               "basis": "",
@@ -2821,12 +3015,14 @@
               "aUnit": 320,
               "ext": {
                 "mat": 4608,
-                "lab": 3072,
+                "lab": 3573.8298000000004,
                 "equip": 0,
                 "sub": 0,
-                "total": 7680,
-                "lhrs": 0
-              }
+                "total": 8181.8298,
+                "lhrs": 40.960800000000006,
+                "rate": 87.25
+              },
+              "laborRate": 87.25
             },
             {
               "code": "ELEC-SMOKE",
@@ -2848,20 +3044,22 @@
               "note": "",
               "ext": {
                 "mat": 591.64,
-                "lab": 1368.5,
+                "lab": 916.125,
                 "equip": 0,
                 "sub": 0,
-                "total": 1960.1399999999999,
-                "lhrs": 10.5
-              }
+                "total": 1507.7649999999999,
+                "lhrs": 10.5,
+                "rate": 87.25
+              },
+              "laborRate": 87.25
             }
           ],
           "mat": 46362.28999999999,
-          "lab": 40554.1,
+          "lab": 49771.352425,
           "equip": 0,
           "sub": 44611,
-          "hrs": 358.5,
-          "total": 131527.38999999998
+          "hrs": 570.4453000000001,
+          "total": 140744.642425
         },
         {
           "num": "27/28",
@@ -2892,8 +3090,10 @@
                 "equip": 0,
                 "sub": 15392,
                 "total": 15392,
-                "lhrs": 0
-              }
+                "lhrs": 0,
+                "rate": 87.25
+              },
+              "laborRate": 87.25
             },
             {
               "code": "ELEC-CAT6",
@@ -2915,12 +3115,14 @@
               "note": "",
               "ext": {
                 "mat": 724.5999999999999,
-                "lab": 2300,
+                "lab": 1745,
                 "equip": 0,
                 "sub": 0,
-                "total": 3024.6,
-                "lhrs": 20
-              }
+                "total": 2469.6,
+                "lhrs": 20,
+                "rate": 87.25
+              },
+              "laborRate": 87.25
             },
             {
               "code": "ALLOWANCE",
@@ -2947,16 +3149,18 @@
                 "equip": 0,
                 "sub": 18000,
                 "total": 18000,
-                "lhrs": 0
-              }
+                "lhrs": 0,
+                "rate": 87.25
+              },
+              "laborRate": 87.25
             }
           ],
           "mat": 724.5999999999999,
-          "lab": 2300,
+          "lab": 1745,
           "equip": 0,
           "sub": 33392,
           "hrs": 20,
-          "total": 36416.6
+          "total": 35861.6
         },
         {
           "num": "31",
@@ -2971,7 +3175,7 @@
               "labUnit": 8.4,
               "equipUnit": 21,
               "subUnit": 12.6,
-              "lhrsUnit": 0,
+              "lhrsUnit": 0.112,
               "allowance": true,
               "waste": 0,
               "basis": "",
@@ -2983,12 +3187,14 @@
               "aUnit": 42,
               "ext": {
                 "mat": 0,
-                "lab": 4620,
+                "lab": 4496.8,
                 "equip": 11550,
                 "sub": 6930,
-                "total": 23100,
-                "lhrs": 0
-              }
+                "total": 22976.8,
+                "lhrs": 61.6,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ALLOWANCE",
@@ -2999,7 +3205,7 @@
               "labUnit": 7.6,
               "equipUnit": 15.2,
               "subUnit": 15.2,
-              "lhrsUnit": 0,
+              "lhrsUnit": 0.1013,
               "allowance": true,
               "waste": 0,
               "basis": "",
@@ -3011,12 +3217,14 @@
               "aUnit": 38,
               "ext": {
                 "mat": 0,
-                "lab": 3040,
+                "lab": 2957.96,
                 "equip": 6080,
                 "sub": 6080,
-                "total": 15200,
-                "lhrs": 0
-              }
+                "total": 15117.96,
+                "lhrs": 40.52,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ALLOWANCE",
@@ -3027,7 +3235,7 @@
               "labUnit": 10.2,
               "equipUnit": 17,
               "subUnit": 6.8,
-              "lhrsUnit": 0,
+              "lhrsUnit": 0.136,
               "allowance": true,
               "waste": 0,
               "basis": "",
@@ -3039,12 +3247,14 @@
               "aUnit": 34,
               "ext": {
                 "mat": 0,
-                "lab": 1835.9999999999998,
+                "lab": 1787.04,
                 "equip": 3060,
                 "sub": 1224,
-                "total": 6120,
-                "lhrs": 0
-              }
+                "total": 6071.04,
+                "lhrs": 24.48,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ALLOWANCE",
@@ -3055,7 +3265,7 @@
               "labUnit": 1.28,
               "equipUnit": 0,
               "subUnit": 0,
-              "lhrsUnit": 0,
+              "lhrsUnit": 0.0171,
               "allowance": true,
               "waste": 0,
               "basis": "",
@@ -3067,12 +3277,14 @@
               "aUnit": 3.2,
               "ext": {
                 "mat": 2841.6,
-                "lab": 1894.4,
+                "lab": 1847.484,
                 "equip": 0,
                 "sub": 0,
-                "total": 4736,
-                "lhrs": 0
-              }
+                "total": 4689.084,
+                "lhrs": 25.308,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ALLOWANCE",
@@ -3083,7 +3295,7 @@
               "labUnit": 1.04,
               "equipUnit": 1.56,
               "subUnit": 0,
-              "lhrsUnit": 0,
+              "lhrsUnit": 0.0139,
               "allowance": true,
               "waste": 0,
               "basis": "",
@@ -3095,20 +3307,22 @@
               "aUnit": 2.6,
               "ext": {
                 "mat": 0,
-                "lab": 2620.8,
+                "lab": 2557.044,
                 "equip": 3931.2000000000003,
                 "sub": 0,
-                "total": 6552,
-                "lhrs": 0
-              }
+                "total": 6488.244000000001,
+                "lhrs": 35.028,
+                "rate": 73
+              },
+              "laborRate": 73
             }
           ],
           "mat": 2841.6,
-          "lab": 14011.2,
+          "lab": 13646.328,
           "equip": 24621.2,
           "sub": 14234,
-          "hrs": 0,
-          "total": 55708
+          "hrs": 186.936,
+          "total": 55343.128
         },
         {
           "num": "32",
@@ -3123,7 +3337,7 @@
               "labUnit": 2.7,
               "equipUnit": 0,
               "subUnit": 10.8,
-              "lhrsUnit": 0,
+              "lhrsUnit": 0.036,
               "allowance": true,
               "waste": 0,
               "basis": "",
@@ -3135,12 +3349,14 @@
               "aUnit": 18,
               "ext": {
                 "mat": 2250,
-                "lab": 1350,
+                "lab": 1314,
                 "equip": 0,
                 "sub": 5400,
-                "total": 9000,
-                "lhrs": 0
-              }
+                "total": 8964,
+                "lhrs": 18,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ALLOWANCE",
@@ -3167,8 +3383,10 @@
                 "equip": 0,
                 "sub": 9500,
                 "total": 9500,
-                "lhrs": 0
-              }
+                "lhrs": 0,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ALLOWANCE",
@@ -3179,7 +3397,7 @@
               "labUnit": 1.1,
               "equipUnit": 0,
               "subUnit": 2.75,
-              "lhrsUnit": 0,
+              "lhrsUnit": 0.0147,
               "allowance": true,
               "waste": 0,
               "basis": "",
@@ -3191,20 +3409,22 @@
               "aUnit": 5.5,
               "ext": {
                 "mat": 4158,
-                "lab": 2772,
+                "lab": 2704.212,
                 "equip": 0,
                 "sub": 6930,
-                "total": 13860,
-                "lhrs": 0
-              }
+                "total": 13792.212,
+                "lhrs": 37.044,
+                "rate": 73
+              },
+              "laborRate": 73
             }
           ],
           "mat": 6408,
-          "lab": 4122,
+          "lab": 4018.212,
           "equip": 0,
           "sub": 21830,
-          "hrs": 0,
-          "total": 32360
+          "hrs": 55.044,
+          "total": 32256.212
         },
         {
           "num": "33",
@@ -3235,8 +3455,10 @@
                 "equip": 0,
                 "sub": 18000,
                 "total": 18000,
-                "lhrs": 0
-              }
+                "lhrs": 0,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ALLOWANCE",
@@ -3263,8 +3485,10 @@
                 "equip": 0,
                 "sub": 20000,
                 "total": 20000,
-                "lhrs": 0
-              }
+                "lhrs": 0,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ALLOWANCE",
@@ -3291,8 +3515,10 @@
                 "equip": 0,
                 "sub": 9000,
                 "total": 9000,
-                "lhrs": 0
-              }
+                "lhrs": 0,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ALLOWANCE",
@@ -3319,8 +3545,10 @@
                 "equip": 0,
                 "sub": 15000,
                 "total": 15000,
-                "lhrs": 0
-              }
+                "lhrs": 0,
+                "rate": 73
+              },
+              "laborRate": 73
             }
           ],
           "mat": 0,
@@ -3332,18 +3560,18 @@
         }
       ],
       "material": 466907.7379999999,
-      "labor": 635756.7899999999,
+      "labor": 657320.5190000001,
       "equipment": 32721.2,
       "subcontractor": 578606,
-      "laborHours": 5796.68,
-      "direct": 1713991.728,
-      "overhead": 205679.00736,
-      "profit": 257098.75919999997,
-      "contingency": 119979.42096,
-      "bondsIns": 32651.542418399993,
+      "laborHours": 8545.2264,
+      "direct": 1735555.457,
+      "overhead": 208266.65483999997,
+      "profit": 260333.31854999997,
+      "contingency": 121488.88199000001,
+      "bondsIns": 33062.33145585,
       "permit": 22000,
-      "total": 2351400.457938399,
-      "psf": 397.1960233004053
+      "total": 2380706.64383585,
+      "psf": 402.14639253983955
     },
     "B": {
       "scen": "B",
@@ -3376,8 +3604,10 @@
                 "equip": 0,
                 "sub": 0,
                 "total": 36836.8,
-                "lhrs": 416
-              }
+                "lhrs": 366.08,
+                "rate": null
+              },
+              "laborRate": null
             },
             {
               "code": "ALLOWANCE",
@@ -3388,7 +3618,7 @@
               "labUnit": 9500,
               "equipUnit": 0,
               "subUnit": 0,
-              "lhrsUnit": 0,
+              "lhrsUnit": 126.6667,
               "allowance": true,
               "waste": 0,
               "basis": "12-mo build",
@@ -3404,8 +3634,10 @@
                 "equip": 0,
                 "sub": 0,
                 "total": 100320,
-                "lhrs": 0
-              }
+                "lhrs": 1337.6003520000002,
+                "rate": null
+              },
+              "laborRate": null
             },
             {
               "code": "ALLOWANCE",
@@ -3432,8 +3664,10 @@
                 "equip": 0,
                 "sub": 15840,
                 "total": 15840,
-                "lhrs": 0
-              }
+                "lhrs": 0,
+                "rate": null
+              },
+              "laborRate": null
             },
             {
               "code": "GEN-TEMP-POWER",
@@ -3459,8 +3693,10 @@
                 "equip": 0,
                 "sub": 0,
                 "total": 9350.880000000001,
-                "lhrs": 48
-              }
+                "lhrs": 42.24,
+                "rate": null
+              },
+              "laborRate": null
             },
             {
               "code": "ALLOWANCE",
@@ -3487,8 +3723,10 @@
                 "equip": 0,
                 "sub": 8976,
                 "total": 8976,
-                "lhrs": 0
-              }
+                "lhrs": 0,
+                "rate": null
+              },
+              "laborRate": null
             },
             {
               "code": "GEN-PORT-TOILET",
@@ -3514,8 +3752,10 @@
                 "equip": 0,
                 "sub": 0,
                 "total": 2231.4336000000003,
-                "lhrs": 0
-              }
+                "lhrs": 0,
+                "rate": null
+              },
+              "laborRate": null
             },
             {
               "code": "ALLOWANCE",
@@ -3542,8 +3782,10 @@
                 "equip": 0,
                 "sub": 12320,
                 "total": 12320,
-                "lhrs": 0
-              }
+                "lhrs": 0,
+                "rate": null
+              },
+              "laborRate": null
             },
             {
               "code": "GEN-DUMP-30",
@@ -3569,8 +3811,10 @@
                 "equip": 0,
                 "sub": 0,
                 "total": 6375.6,
-                "lhrs": 0
-              }
+                "lhrs": 0,
+                "rate": null
+              },
+              "laborRate": null
             },
             {
               "code": "GEN-CLEANUP-FINAL",
@@ -3596,8 +3840,10 @@
                 "equip": 0,
                 "sub": 0,
                 "total": 4271.872,
-                "lhrs": 59.2
-              }
+                "lhrs": 52.096000000000004,
+                "rate": null
+              },
+              "laborRate": null
             },
             {
               "code": "ALLOWANCE",
@@ -3624,8 +3870,10 @@
                 "equip": 0,
                 "sub": 15840,
                 "total": 15840,
-                "lhrs": 0
-              }
+                "lhrs": 0,
+                "rate": null
+              },
+              "laborRate": null
             },
             {
               "code": "GEN-SURVEY",
@@ -3651,8 +3899,10 @@
                 "equip": 0,
                 "sub": 0,
                 "total": 637.5600000000001,
-                "lhrs": 0
-              }
+                "lhrs": 0,
+                "rate": null
+              },
+              "laborRate": null
             },
             {
               "code": "GEN-ENGINEER",
@@ -3678,8 +3928,10 @@
                 "equip": 0,
                 "sub": 0,
                 "total": 1275.1200000000001,
-                "lhrs": 0
-              }
+                "lhrs": 0,
+                "rate": null
+              },
+              "laborRate": null
             },
             {
               "code": "ALLOWANCE",
@@ -3706,15 +3958,17 @@
                 "equip": 0,
                 "sub": 7920,
                 "total": 7920,
-                "lhrs": 0
-              }
+                "lhrs": 0,
+                "rate": null
+              },
+              "laborRate": null
             }
           ],
           "mat": 17183.073600000003,
           "lab": 144116.19199999998,
           "equip": 0,
           "sub": 60896,
-          "hrs": 523.2,
+          "hrs": 1798.016352,
           "total": 222195.26559999998
         },
         {
@@ -3730,7 +3984,7 @@
               "labUnit": 0.6,
               "equipUnit": 1.2,
               "subUnit": 1.2,
-              "lhrsUnit": 0,
+              "lhrsUnit": 0.008,
               "allowance": true,
               "waste": 0,
               "basis": "",
@@ -3742,12 +3996,14 @@
               "aUnit": 3,
               "ext": {
                 "mat": 0,
-                "lab": 2112,
+                "lab": 2055.68,
                 "equip": 4224,
                 "sub": 4224,
-                "total": 10560,
-                "lhrs": 0
-              }
+                "total": 10503.68,
+                "lhrs": 28.16,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ALLOWANCE",
@@ -3758,7 +4014,7 @@
               "labUnit": 6.4,
               "equipUnit": 0,
               "subUnit": 16,
-              "lhrsUnit": 0,
+              "lhrsUnit": 0.0853,
               "allowance": true,
               "waste": 0,
               "basis": "",
@@ -3770,12 +4026,14 @@
               "aUnit": 32,
               "ext": {
                 "mat": 2365.44,
-                "lab": 1576.96,
+                "lab": 1534.30816,
                 "equip": 0,
                 "sub": 3942.4,
-                "total": 7884.8,
-                "lhrs": 0
-              }
+                "total": 7842.148160000001,
+                "lhrs": 21.01792,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ALLOWANCE",
@@ -3802,16 +4060,18 @@
                 "equip": 0,
                 "sub": 10560,
                 "total": 10560,
-                "lhrs": 0
-              }
+                "lhrs": 0,
+                "rate": 73
+              },
+              "laborRate": 73
             }
           ],
           "mat": 2365.44,
-          "lab": 3688.96,
+          "lab": 3589.98816,
           "equip": 4224,
           "sub": 18726.4,
-          "hrs": 0,
-          "total": 29004.800000000003
+          "hrs": 49.17792,
+          "total": 28905.82816
         },
         {
           "num": "03",
@@ -3842,8 +4102,10 @@
                 "equip": 2904,
                 "sub": 7986,
                 "total": 14520,
-                "lhrs": 0
-              }
+                "lhrs": 0,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ALLOWANCE",
@@ -3854,7 +4116,7 @@
               "labUnit": 6.8,
               "equipUnit": 0,
               "subUnit": 18.7,
-              "lhrsUnit": 0,
+              "lhrsUnit": 0.0907,
               "allowance": true,
               "waste": 0,
               "basis": "",
@@ -3866,12 +4128,14 @@
               "aUnit": 34,
               "ext": {
                 "mat": 11848.32,
-                "lab": 9478.655999999999,
+                "lab": 9229.283712,
                 "equip": 0,
                 "sub": 26066.304,
-                "total": 47393.28,
-                "lhrs": 0
-              }
+                "total": 47143.907712,
+                "lhrs": 126.428544,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "CONC-POUR-4",
@@ -3893,12 +4157,14 @@
               "note": "Slab on grade on 6-mil VB + 4\" gravel (S100)",
               "ext": {
                 "mat": 7072.032,
-                "lab": 5991.039999999999,
+                "lab": 3803.0080000000003,
                 "equip": 0,
                 "sub": 0,
-                "total": 13063.072,
-                "lhrs": 59.2
-              }
+                "total": 10875.04,
+                "lhrs": 52.096000000000004,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "CONC-MESH",
@@ -3920,12 +4186,14 @@
               "note": "Welded wire fabric (not rebar) per S100",
               "ext": {
                 "mat": 781.44,
-                "lab": 677.248,
+                "lab": 950.7520000000001,
                 "equip": 0,
                 "sub": 0,
-                "total": 1458.688,
-                "lhrs": 14.8
-              }
+                "total": 1732.192,
+                "lhrs": 13.024000000000001,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ALLOWANCE",
@@ -3952,8 +4220,10 @@
                 "equip": 0,
                 "sub": 8360,
                 "total": 8360,
-                "lhrs": 0
-              }
+                "lhrs": 0,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ALLOWANCE",
@@ -3964,7 +4234,7 @@
               "labUnit": 3.6,
               "equipUnit": 0,
               "subUnit": 14.4,
-              "lhrsUnit": 0,
+              "lhrsUnit": 0.048,
               "allowance": true,
               "waste": 0,
               "basis": "",
@@ -3976,12 +4246,14 @@
               "aUnit": 24,
               "ext": {
                 "mat": 2112,
-                "lab": 1267.2,
+                "lab": 1233.4080000000001,
                 "equip": 0,
                 "sub": 5068.8,
-                "total": 8448,
-                "lhrs": 0
-              }
+                "total": 8414.208,
+                "lhrs": 16.896,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "FOUND-WP-EXT",
@@ -4003,20 +4275,22 @@
               "note": "",
               "ext": {
                 "mat": 18701.76,
-                "lab": 23154.56,
+                "lab": 16959.36,
                 "equip": 0,
                 "sub": 0,
-                "total": 41856.32,
-                "lhrs": 264
-              }
+                "total": 35661.119999999995,
+                "lhrs": 232.32,
+                "rate": 73
+              },
+              "laborRate": 73
             }
           ],
           "mat": 44145.551999999996,
-          "lab": 40568.704,
+          "lab": 32175.811712000002,
           "equip": 2904,
           "sub": 47481.10400000001,
-          "hrs": 338,
-          "total": 135099.36
+          "hrs": 440.764544,
+          "total": 126706.467712
         },
         {
           "num": "04",
@@ -4042,12 +4316,14 @@
               "note": "",
               "ext": {
                 "mat": 7650.72,
-                "lab": 8500.8,
+                "lab": 9636,
                 "equip": 0,
                 "sub": 0,
-                "total": 16151.52,
-                "lhrs": 150
-              }
+                "total": 17286.72,
+                "lhrs": 132,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ALLOWANCE",
@@ -4074,16 +4350,18 @@
                 "equip": 0,
                 "sub": 4840,
                 "total": 4840,
-                "lhrs": 0
-              }
+                "lhrs": 0,
+                "rate": 73
+              },
+              "laborRate": 73
             }
           ],
           "mat": 7650.72,
-          "lab": 8500.8,
+          "lab": 9636,
           "equip": 0,
           "sub": 4840,
-          "hrs": 150,
-          "total": 20991.52
+          "hrs": 132,
+          "total": 22126.72
         },
         {
           "num": "05",
@@ -4109,12 +4387,14 @@
               "note": "W12×26",
               "ext": {
                 "mat": 11156.375999999998,
-                "lab": 11688.6,
+                "lab": 10117.8,
                 "equip": 0,
                 "sub": 0,
-                "total": 22844.976,
-                "lhrs": 157.5
-              }
+                "total": 21274.176,
+                "lhrs": 138.6,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ALLOWANCE",
@@ -4125,7 +4405,7 @@
               "labUnit": 9.3,
               "equipUnit": 0,
               "subUnit": 31,
-              "lhrsUnit": 0,
+              "lhrsUnit": 0.124,
               "allowance": true,
               "waste": 0,
               "basis": "",
@@ -4137,12 +4417,14 @@
               "aUnit": 62,
               "ext": {
                 "mat": 5346.88,
-                "lab": 2291.52,
+                "lab": 2230.4128,
                 "equip": 0,
                 "sub": 7638.4,
-                "total": 15276.8,
-                "lhrs": 0
-              }
+                "total": 15215.6928,
+                "lhrs": 30.5536,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ALLOWANCE",
@@ -4169,16 +4451,18 @@
                 "equip": 0,
                 "sub": 12320,
                 "total": 12320,
-                "lhrs": 0
-              }
+                "lhrs": 0,
+                "rate": 73
+              },
+              "laborRate": 73
             }
           ],
           "mat": 16503.255999999998,
-          "lab": 13980.12,
+          "lab": 12348.2128,
           "equip": 0,
           "sub": 19958.4,
-          "hrs": 157.5,
-          "total": 50441.776
+          "hrs": 169.15359999999998,
+          "total": 48809.8688
         },
         {
           "num": "06",
@@ -4204,12 +4488,14 @@
               "note": "TJI 360×14 engineered-wood I-joist @16\" O.C.",
               "ext": {
                 "mat": 29655.647999999997,
-                "lab": 20200.224,
+                "lab": 17113.536,
                 "equip": 0,
                 "sub": 0,
-                "total": 49855.871999999996,
-                "lhrs": 266.4
-              }
+                "total": 46769.183999999994,
+                "lhrs": 234.432,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "FRAME-SHEATH-SUB",
@@ -4231,12 +4517,14 @@
               "note": "",
               "ext": {
                 "mat": 11135.52,
-                "lab": 8986.56,
+                "lab": 8556.768,
                 "equip": 0,
                 "sub": 0,
-                "total": 20122.08,
-                "lhrs": 133.2
-              }
+                "total": 19692.288,
+                "lhrs": 117.216,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "FRAME-WALL-2X6",
@@ -4258,12 +4546,14 @@
               "note": "",
               "ext": {
                 "mat": 5287.6032000000005,
-                "lab": 6946.3679999999995,
+                "lab": 6105.3696,
                 "equip": 0,
                 "sub": 0,
-                "total": 12233.9712,
-                "lhrs": 95.03999999999999
-              }
+                "total": 11392.9728,
+                "lhrs": 83.6352,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "FRAME-WALL-2X4",
@@ -4285,12 +4575,14 @@
               "note": "",
               "ext": {
                 "mat": 4675.44,
-                "lab": 7084,
+                "lab": 6745.200000000001,
                 "equip": 0,
                 "sub": 0,
-                "total": 11759.439999999999,
-                "lhrs": 105
-              }
+                "total": 11420.64,
+                "lhrs": 92.4,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "FRAME-SHEATH-WALL",
@@ -4312,12 +4604,14 @@
               "note": "",
               "ext": {
                 "mat": 8828.16,
-                "lab": 9339.264,
+                "lab": 6783.744000000001,
                 "equip": 0,
                 "sub": 0,
-                "total": 18167.424,
-                "lhrs": 105.60000000000001
-              }
+                "total": 15611.904,
+                "lhrs": 92.92800000000001,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ALLOWANCE",
@@ -4328,7 +4622,7 @@
               "labUnit": 3.75,
               "equipUnit": 0,
               "subUnit": 0,
-              "lhrsUnit": 0,
+              "lhrsUnit": 0.05,
               "allowance": true,
               "waste": 0,
               "basis": "",
@@ -4340,12 +4634,14 @@
               "aUnit": 7.5,
               "ext": {
                 "mat": 4884,
-                "lab": 4884,
+                "lab": 4753.76,
                 "equip": 0,
                 "sub": 0,
-                "total": 9768,
-                "lhrs": 0
-              }
+                "total": 9637.76,
+                "lhrs": 65.12,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "FRAME-SHEATH-ROOF",
@@ -4367,12 +4663,14 @@
               "note": "",
               "ext": {
                 "mat": 2630.848,
-                "lab": 2995.5199999999995,
+                "lab": 2852.256,
                 "equip": 0,
                 "sub": 0,
-                "total": 5626.3679999999995,
-                "lhrs": 44.4
-              }
+                "total": 5483.103999999999,
+                "lhrs": 39.071999999999996,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "FRAME-STAIR",
@@ -4394,12 +4692,14 @@
               "note": "",
               "ext": {
                 "mat": 637.5776,
-                "lab": 1416.8,
+                "lab": 1027.84,
                 "equip": 0,
                 "sub": 0,
-                "total": 2054.3776,
-                "lhrs": 16
-              }
+                "total": 1665.4175999999998,
+                "lhrs": 14.08,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ALLOWANCE",
@@ -4426,8 +4726,10 @@
                 "equip": 0,
                 "sub": 12320,
                 "total": 12320,
-                "lhrs": 0
-              }
+                "lhrs": 0,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ALLOWANCE",
@@ -4438,7 +4740,7 @@
               "labUnit": 0.63,
               "equipUnit": 0,
               "subUnit": 0,
-              "lhrsUnit": 0,
+              "lhrsUnit": 0.0084,
               "allowance": true,
               "waste": 0,
               "basis": "",
@@ -4450,20 +4752,22 @@
               "aUnit": 1.25,
               "ext": {
                 "mat": 3282.048,
-                "lab": 3282.048,
+                "lab": 3194.52672,
                 "equip": 0,
                 "sub": 0,
-                "total": 6564.096,
-                "lhrs": 0
-              }
+                "total": 6476.57472,
+                "lhrs": 43.760639999999995,
+                "rate": 73
+              },
+              "laborRate": 73
             }
           ],
           "mat": 71016.84479999999,
-          "lab": 65134.784,
+          "lab": 57133.00032000001,
           "equip": 0,
           "sub": 12320,
-          "hrs": 765.64,
-          "total": 148471.6288
+          "hrs": 782.64384,
+          "total": 140469.84512
         },
         {
           "num": "07",
@@ -4489,12 +4793,14 @@
               "note": "",
               "ext": {
                 "mat": 4507.008,
-                "lab": 4553.472,
+                "lab": 3391.8720000000003,
                 "equip": 0,
                 "sub": 0,
-                "total": 9060.48,
-                "lhrs": 52.800000000000004
-              }
+                "total": 7898.88,
+                "lhrs": 46.464000000000006,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "SID-FC-LAP",
@@ -4516,12 +4822,14 @@
               "note": "Fiber-cement lap — rear + sides",
               "ext": {
                 "mat": 29800.32,
-                "lab": 30967.2,
+                "lab": 26209.920000000002,
                 "equip": 0,
                 "sub": 0,
-                "total": 60767.520000000004,
-                "lhrs": 408
-              }
+                "total": 56010.240000000005,
+                "lhrs": 359.04,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ALLOWANCE",
@@ -4532,7 +4840,7 @@
               "labUnit": 1.13,
               "equipUnit": 0,
               "subUnit": 1.8,
-              "lhrsUnit": 0,
+              "lhrsUnit": 0.0151,
               "allowance": true,
               "waste": 0,
               "basis": "",
@@ -4544,12 +4852,14 @@
               "aUnit": 4.5,
               "ext": {
                 "mat": 2044.768,
-                "lab": 1471.712,
+                "lab": 1435.63552,
                 "equip": 0,
                 "sub": 2344.32,
-                "total": 5860.8,
-                "lhrs": 0
-              }
+                "total": 5824.72352,
+                "lhrs": 19.666240000000002,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ALLOWANCE",
@@ -4560,7 +4870,7 @@
               "labUnit": 0.68,
               "equipUnit": 0,
               "subUnit": 0,
-              "lhrsUnit": 0,
+              "lhrsUnit": 0.0091,
               "allowance": true,
               "waste": 0,
               "basis": "",
@@ -4572,12 +4882,14 @@
               "aUnit": 1.35,
               "ext": {
                 "mat": 3159.552,
-                "lab": 3159.552,
+                "lab": 3086.60352,
                 "equip": 0,
                 "sub": 0,
-                "total": 6319.104,
-                "lhrs": 0
-              }
+                "total": 6246.15552,
+                "lhrs": 42.28224,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ROOF-FLAT-TPO",
@@ -4599,12 +4911,14 @@
               "note": "",
               "ext": {
                 "mat": 4324.7494400000005,
-                "lab": 3594.6240000000003,
+                "lab": 2376.88,
                 "equip": 0,
                 "sub": 0,
-                "total": 7919.373440000001,
-                "lhrs": 37
-              }
+                "total": 6701.629440000001,
+                "lhrs": 32.56,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ALLOWANCE",
@@ -4631,8 +4945,10 @@
                 "equip": 0,
                 "sub": 7480,
                 "total": 7480,
-                "lhrs": 0
-              }
+                "lhrs": 0,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ALLOWANCE",
@@ -4643,7 +4959,7 @@
               "labUnit": 0.22,
               "equipUnit": 0,
               "subUnit": 0.66,
-              "lhrsUnit": 0,
+              "lhrsUnit": 0.0029,
               "allowance": true,
               "waste": 0,
               "basis": "",
@@ -4655,12 +4971,14 @@
               "aUnit": 1.1,
               "ext": {
                 "mat": 1146.112,
-                "lab": 1146.112,
+                "lab": 1102.87232,
                 "equip": 0,
                 "sub": 3438.3360000000002,
-                "total": 5730.56,
-                "lhrs": 0
-              }
+                "total": 5687.320320000001,
+                "lhrs": 15.10784,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ALLOWANCE",
@@ -4687,16 +5005,18 @@
                 "equip": 0,
                 "sub": 3960,
                 "total": 3960,
-                "lhrs": 0
-              }
+                "lhrs": 0,
+                "rate": 73
+              },
+              "laborRate": 73
             }
           ],
           "mat": 44982.50944000001,
-          "lab": 44892.672000000006,
+          "lab": 37603.78336,
           "equip": 0,
           "sub": 17222.656,
-          "hrs": 497.8,
-          "total": 107097.83744000002
+          "hrs": 515.12032,
+          "total": 99808.94880000001
         },
         {
           "num": "08",
@@ -4722,12 +5042,14 @@
               "note": "",
               "ext": {
                 "mat": 12751.2,
-                "lab": 8096,
+                "lab": 6424,
                 "equip": 0,
                 "sub": 0,
-                "total": 20847.2,
-                "lhrs": 100
-              }
+                "total": 19175.2,
+                "lhrs": 88,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "DOOR-EXT-STEEL",
@@ -4749,12 +5071,14 @@
               "note": "",
               "ext": {
                 "mat": 2550.2400000000002,
-                "lab": 1416.8,
+                "lab": 1027.84,
                 "equip": 0,
                 "sub": 0,
-                "total": 3967.04,
-                "lhrs": 16
-              }
+                "total": 3578.08,
+                "lhrs": 14.08,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "WIN-VIN-DH",
@@ -4776,12 +5100,14 @@
               "note": "",
               "ext": {
                 "mat": 13946.548,
-                "lab": 8855,
+                "lab": 5621,
                 "equip": 0,
                 "sub": 0,
-                "total": 22801.548000000003,
-                "lhrs": 87.5
-              }
+                "total": 19567.548000000003,
+                "lhrs": 77,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ALLOWANCE",
@@ -4808,8 +5134,10 @@
                 "equip": 0,
                 "sub": 8360,
                 "total": 8360,
-                "lhrs": 0
-              }
+                "lhrs": 0,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ALLOWANCE",
@@ -4820,7 +5148,7 @@
               "labUnit": 43.5,
               "equipUnit": 0,
               "subUnit": 0,
-              "lhrsUnit": 0,
+              "lhrsUnit": 0.58,
               "allowance": true,
               "waste": 0,
               "basis": "",
@@ -4832,20 +5160,22 @@
               "aUnit": 145,
               "ext": {
                 "mat": 3930.08,
-                "lab": 1684.32,
+                "lab": 1639.4048,
                 "equip": 0,
                 "sub": 0,
-                "total": 5614.4,
-                "lhrs": 0
-              }
+                "total": 5569.4848,
+                "lhrs": 22.4576,
+                "rate": 73
+              },
+              "laborRate": 73
             }
           ],
           "mat": 33178.068,
-          "lab": 20052.12,
+          "lab": 14712.2448,
           "equip": 0,
           "sub": 8360,
-          "hrs": 203.5,
-          "total": 61590.187999999995
+          "hrs": 201.5376,
+          "total": 56250.3128
         },
         {
           "num": "09",
@@ -4871,12 +5201,14 @@
               "note": "",
               "ext": {
                 "mat": 16067.743999999999,
-                "lab": 26397.007999999998,
+                "lab": 33512.7232,
                 "equip": 0,
                 "sub": 0,
-                "total": 42464.75199999999,
-                "lhrs": 521.6800000000001
-              }
+                "total": 49580.4672,
+                "lhrs": 459.07840000000004,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "DRY-TAPE-L4",
@@ -4898,12 +5230,14 @@
               "note": "",
               "ext": {
                 "mat": 6886.1759999999995,
-                "lab": 28921.939200000004,
+                "lab": 33512.7232,
                 "equip": 0,
                 "sub": 0,
-                "total": 35808.1152,
-                "lhrs": 521.6800000000001
-              }
+                "total": 40398.8992,
+                "lhrs": 459.07840000000004,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ALLOWANCE",
@@ -4914,7 +5248,7 @@
               "labUnit": 0.66,
               "equipUnit": 0,
               "subUnit": 0,
-              "lhrsUnit": 0,
+              "lhrsUnit": 0.0088,
               "allowance": true,
               "waste": 0,
               "basis": "",
@@ -4926,12 +5260,14 @@
               "aUnit": 1.1,
               "ext": {
                 "mat": 1355.2,
-                "lab": 2032.8,
+                "lab": 1978.5919999999999,
                 "equip": 0,
                 "sub": 0,
-                "total": 3388,
-                "lhrs": 0
-              }
+                "total": 3333.792,
+                "lhrs": 27.104,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ALLOWANCE",
@@ -4942,7 +5278,7 @@
               "labUnit": 1.44,
               "equipUnit": 0,
               "subUnit": 3.6,
-              "lhrsUnit": 0,
+              "lhrsUnit": 0.0192,
               "allowance": true,
               "waste": 0,
               "basis": "",
@@ -4954,12 +5290,14 @@
               "aUnit": 7.2,
               "ext": {
                 "mat": 3041.28,
-                "lab": 2027.52,
+                "lab": 1973.4528,
                 "equip": 0,
                 "sub": 5068.8,
-                "total": 10137.6,
-                "lhrs": 0
-              }
+                "total": 10083.5328,
+                "lhrs": 27.0336,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "FLR-TILE-PORC",
@@ -4981,12 +5319,14 @@
               "note": "",
               "ext": {
                 "mat": 7650.72,
-                "lab": 9108,
+                "lab": 11563.2,
                 "equip": 0,
                 "sub": 0,
-                "total": 16758.72,
-                "lhrs": 180
-              }
+                "total": 19213.920000000002,
+                "lhrs": 158.4,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "FLR-LVP",
@@ -5008,12 +5348,14 @@
               "note": "",
               "ext": {
                 "mat": 19126.8,
-                "lab": 14810.4,
+                "lab": 17344.8,
                 "equip": 0,
                 "sub": 0,
-                "total": 33937.2,
-                "lhrs": 270
-              }
+                "total": 36471.6,
+                "lhrs": 237.6,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "PAINT-INT-WALL",
@@ -5035,12 +5377,14 @@
               "note": "",
               "ext": {
                 "mat": 11017.8816,
-                "lab": 35578.576,
+                "lab": 33512.7232,
                 "equip": 0,
                 "sub": 0,
-                "total": 46596.4576,
-                "lhrs": 521.6800000000001
-              }
+                "total": 44530.6048,
+                "lhrs": 459.07840000000004,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ALLOWANCE",
@@ -5051,7 +5395,7 @@
               "labUnit": 1.56,
               "equipUnit": 0,
               "subUnit": 0,
-              "lhrsUnit": 0,
+              "lhrsUnit": 0.0208,
               "allowance": true,
               "waste": 0,
               "basis": "",
@@ -5063,20 +5407,22 @@
               "aUnit": 2.6,
               "ext": {
                 "mat": 5417.984,
-                "lab": 8126.976000000001,
+                "lab": 7910.25664,
                 "equip": 0,
                 "sub": 0,
-                "total": 13544.960000000001,
-                "lhrs": 0
-              }
+                "total": 13328.24064,
+                "lhrs": 108.35968,
+                "rate": 73
+              },
+              "laborRate": 73
             }
           ],
           "mat": 70563.7856,
-          "lab": 127003.21919999999,
+          "lab": 141308.47104,
           "equip": 0,
           "sub": 5068.8,
-          "hrs": 2015.0400000000002,
-          "total": 202635.80479999998
+          "hrs": 1935.7324800000001,
+          "total": 216941.05664
         },
         {
           "num": "10",
@@ -5102,12 +5448,14 @@
               "note": "",
               "ext": {
                 "mat": 1338.876,
-                "lab": 1806.42,
+                "lab": 1349.04,
                 "equip": 0,
                 "sub": 0,
-                "total": 3145.2960000000003,
-                "lhrs": 21
-              }
+                "total": 2687.916,
+                "lhrs": 18.48,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ALLOWANCE",
@@ -5118,7 +5466,7 @@
               "labUnit": 66,
               "equipUnit": 0,
               "subUnit": 0,
-              "lhrsUnit": 0,
+              "lhrsUnit": 0.88,
               "allowance": true,
               "waste": 0,
               "basis": "",
@@ -5130,12 +5478,14 @@
               "aUnit": 220,
               "ext": {
                 "mat": 948.64,
-                "lab": 406.56,
+                "lab": 395.7184,
                 "equip": 0,
                 "sub": 0,
-                "total": 1355.2,
-                "lhrs": 0
-              }
+                "total": 1344.3584,
+                "lhrs": 5.4208,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ALLOWANCE",
@@ -5146,7 +5496,7 @@
               "labUnit": 42,
               "equipUnit": 0,
               "subUnit": 0,
-              "lhrsUnit": 0,
+              "lhrsUnit": 0.56,
               "allowance": true,
               "waste": 0,
               "basis": "",
@@ -5158,12 +5508,14 @@
               "aUnit": 140,
               "ext": {
                 "mat": 2587.2,
-                "lab": 1108.8,
+                "lab": 1079.232,
                 "equip": 0,
                 "sub": 0,
-                "total": 3696,
-                "lhrs": 0
-              }
+                "total": 3666.432,
+                "lhrs": 14.784,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ALLOWANCE",
@@ -5174,7 +5526,7 @@
               "labUnit": 33,
               "equipUnit": 0,
               "subUnit": 0,
-              "lhrsUnit": 0,
+              "lhrsUnit": 0.44,
               "allowance": true,
               "waste": 0,
               "basis": "",
@@ -5186,12 +5538,14 @@
               "aUnit": 165,
               "ext": {
                 "mat": 929.28,
-                "lab": 232.32,
+                "lab": 226.1248,
                 "equip": 0,
                 "sub": 0,
-                "total": 1161.6,
-                "lhrs": 0
-              }
+                "total": 1155.4048,
+                "lhrs": 3.0976,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ALLOWANCE",
@@ -5218,16 +5572,18 @@
                 "equip": 0,
                 "sub": 3080,
                 "total": 3080,
-                "lhrs": 0
-              }
+                "lhrs": 0,
+                "rate": 73
+              },
+              "laborRate": 73
             }
           ],
           "mat": 5803.996,
-          "lab": 3554.1,
+          "lab": 3050.1151999999997,
           "equip": 0,
           "sub": 3080,
-          "hrs": 21,
-          "total": 12438.096
+          "hrs": 41.7824,
+          "total": 11934.1112
         },
         {
           "num": "12",
@@ -5253,12 +5609,14 @@
               "note": "",
               "ext": {
                 "mat": 3719.1,
-                "lab": 1771,
+                "lab": 1349.04,
                 "equip": 0,
                 "sub": 0,
-                "total": 5490.1,
-                "lhrs": 21
-              }
+                "total": 5068.139999999999,
+                "lhrs": 18.48,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ALLOWANCE",
@@ -5269,7 +5627,7 @@
               "labUnit": 36,
               "equipUnit": 0,
               "subUnit": 120,
-              "lhrsUnit": 0,
+              "lhrsUnit": 0.48,
               "allowance": true,
               "waste": 0,
               "basis": "",
@@ -5281,12 +5639,14 @@
               "aUnit": 240,
               "ext": {
                 "mat": 2956.8,
-                "lab": 1267.2,
+                "lab": 1233.4080000000001,
                 "equip": 0,
                 "sub": 4224,
-                "total": 8448,
-                "lhrs": 0
-              }
+                "total": 8414.208,
+                "lhrs": 16.896,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ALLOWANCE",
@@ -5297,7 +5657,7 @@
               "labUnit": 812.5,
               "equipUnit": 0,
               "subUnit": 0,
-              "lhrsUnit": 0,
+              "lhrsUnit": 10.8333,
               "allowance": true,
               "waste": 0,
               "basis": "",
@@ -5309,20 +5669,22 @@
               "aUnit": 1625,
               "ext": {
                 "mat": 2860,
-                "lab": 2860,
+                "lab": 2783.7247679999996,
                 "equip": 0,
                 "sub": 0,
-                "total": 5720,
-                "lhrs": 0
-              }
+                "total": 5643.724768,
+                "lhrs": 38.133216,
+                "rate": 73
+              },
+              "laborRate": 73
             }
           ],
           "mat": 9535.9,
-          "lab": 5898.2,
+          "lab": 5366.172768,
           "equip": 0,
           "sub": 4224,
-          "hrs": 21,
-          "total": 19658.1
+          "hrs": 73.50921600000001,
+          "total": 19126.072767999998
         },
         {
           "num": "21",
@@ -5353,8 +5715,10 @@
                 "equip": 0,
                 "sub": 33862.4,
                 "total": 33862.4,
-                "lhrs": 0
-              }
+                "lhrs": 0,
+                "rate": 87.25
+              },
+              "laborRate": 87.25
             },
             {
               "code": "ALLOWANCE",
@@ -5381,8 +5745,10 @@
                 "equip": 0,
                 "sub": 10560,
                 "total": 10560,
-                "lhrs": 0
-              }
+                "lhrs": 0,
+                "rate": 87.25
+              },
+              "laborRate": 87.25
             },
             {
               "code": "ALLOWANCE",
@@ -5409,8 +5775,10 @@
                 "equip": 0,
                 "sub": 3080,
                 "total": 3080,
-                "lhrs": 0
-              }
+                "lhrs": 0,
+                "rate": 87.25
+              },
+              "laborRate": 87.25
             }
           ],
           "mat": 0,
@@ -5444,12 +5812,14 @@
               "note": "",
               "ext": {
                 "mat": 2045.4896,
-                "lab": 1416.8,
+                "lab": 1074.92,
                 "equip": 0,
                 "sub": 0,
-                "total": 3462.2896,
-                "lhrs": 14
-              }
+                "total": 3120.4096,
+                "lhrs": 12.32,
+                "rate": 87.25
+              },
+              "laborRate": 87.25
             },
             {
               "code": "ALLOWANCE",
@@ -5472,12 +5842,14 @@
               "aUnit": 620,
               "ext": {
                 "mat": 1964.16,
-                "lab": 982.08,
+                "lab": 3685.44,
                 "equip": 0,
                 "sub": 3600.96,
-                "total": 6547.200000000001,
-                "lhrs": 48
-              }
+                "total": 9250.560000000001,
+                "lhrs": 42.24,
+                "rate": 87.25
+              },
+              "laborRate": 87.25
             },
             {
               "code": "BATH-TUB-STD",
@@ -5499,12 +5871,14 @@
               "note": "",
               "ext": {
                 "mat": 2975.28,
-                "lab": 3542,
+                "lab": 2687.3,
                 "equip": 0,
                 "sub": 0,
-                "total": 6517.280000000001,
-                "lhrs": 35
-              }
+                "total": 5662.58,
+                "lhrs": 30.8,
+                "rate": 87.25
+              },
+              "laborRate": 87.25
             },
             {
               "code": "ALLOWANCE",
@@ -5527,12 +5901,14 @@
               "aUnit": 950,
               "ext": {
                 "mat": 6019.2,
-                "lab": 9028.8,
+                "lab": 16584.48,
                 "equip": 0,
                 "sub": 15048,
-                "total": 30096,
-                "lhrs": 216
-              }
+                "total": 37651.68,
+                "lhrs": 190.08,
+                "rate": 87.25
+              },
+              "laborRate": 87.25
             },
             {
               "code": "PLUMB-GAS-LINE",
@@ -5554,12 +5930,14 @@
               "note": "",
               "ext": {
                 "mat": 2295.216,
-                "lab": 3643.2,
+                "lab": 3455.1,
                 "equip": 0,
                 "sub": 0,
-                "total": 5938.415999999999,
-                "lhrs": 45
-              }
+                "total": 5750.316,
+                "lhrs": 39.6,
+                "rate": 87.25
+              },
+              "laborRate": 87.25
             },
             {
               "code": "ALLOWANCE",
@@ -5582,12 +5960,14 @@
               "aUnit": 4200,
               "ext": {
                 "mat": 2956.8,
-                "lab": 739.2,
+                "lab": 1228.48,
                 "equip": 0,
                 "sub": 3696,
-                "total": 7392,
-                "lhrs": 16
-              }
+                "total": 7881.280000000001,
+                "lhrs": 14.08,
+                "rate": 87.25
+              },
+              "laborRate": 87.25
             },
             {
               "code": "ALLOWANCE",
@@ -5598,7 +5978,7 @@
               "labUnit": 800,
               "equipUnit": 0,
               "subUnit": 1920,
-              "lhrsUnit": 0,
+              "lhrsUnit": 10.6667,
               "allowance": true,
               "waste": 0,
               "basis": "",
@@ -5610,12 +5990,14 @@
               "aUnit": 3200,
               "ext": {
                 "mat": 422.4,
-                "lab": 704,
+                "lab": 818.989226,
                 "equip": 0,
                 "sub": 1689.6,
-                "total": 2816,
-                "lhrs": 0
-              }
+                "total": 2930.9892259999997,
+                "lhrs": 9.386696,
+                "rate": 87.25
+              },
+              "laborRate": 87.25
             },
             {
               "code": "ALLOWANCE",
@@ -5642,16 +6024,18 @@
                 "equip": 0,
                 "sub": 19360,
                 "total": 19360,
-                "lhrs": 0
-              }
+                "lhrs": 0,
+                "rate": 87.25
+              },
+              "laborRate": 87.25
             }
           ],
           "mat": 18678.5456,
-          "lab": 20056.08,
+          "lab": 29534.709226,
           "equip": 0,
           "sub": 43394.56,
-          "hrs": 374,
-          "total": 82129.1856
+          "hrs": 338.50669600000003,
+          "total": 91607.814826
         },
         {
           "num": "23",
@@ -5678,12 +6062,14 @@
               "aUnit": 9800,
               "ext": {
                 "mat": 13798.4,
-                "lab": 3449.6,
+                "lab": 4913.92,
                 "equip": 0,
                 "sub": 17248,
-                "total": 34496,
-                "lhrs": 64
-              }
+                "total": 35960.32,
+                "lhrs": 56.32,
+                "rate": 87.25
+              },
+              "laborRate": 87.25
             },
             {
               "code": "ALLOWANCE",
@@ -5706,12 +6092,14 @@
               "aUnit": 22,
               "ext": {
                 "mat": 5227.2,
-                "lab": 3484.8000000000006,
+                "lab": 20730.6,
                 "equip": 0,
                 "sub": 8712,
-                "total": 17424,
-                "lhrs": 270
-              }
+                "total": 34669.8,
+                "lhrs": 237.6,
+                "rate": 87.25
+              },
+              "laborRate": 87.25
             },
             {
               "code": "ALLOWANCE",
@@ -5738,8 +6126,10 @@
                 "equip": 0,
                 "sub": 6600,
                 "total": 6600,
-                "lhrs": 0
-              }
+                "lhrs": 0,
+                "rate": 87.25
+              },
+              "laborRate": 87.25
             },
             {
               "code": "BATH-VENT-STD",
@@ -5761,12 +6151,14 @@
               "note": "",
               "ext": {
                 "mat": 669.4072000000001,
-                "lab": 1416.8,
+                "lab": 1343.65,
                 "equip": 0,
                 "sub": 0,
-                "total": 2086.2072,
-                "lhrs": 17.5
-              }
+                "total": 2013.0572000000002,
+                "lhrs": 15.4,
+                "rate": 87.25
+              },
+              "laborRate": 87.25
             },
             {
               "code": "ALLOWANCE",
@@ -5793,8 +6185,10 @@
                 "equip": 0,
                 "sub": 22880,
                 "total": 22880,
-                "lhrs": 0
-              }
+                "lhrs": 0,
+                "rate": 87.25
+              },
+              "laborRate": 87.25
             },
             {
               "code": "ALLOWANCE",
@@ -5821,16 +6215,18 @@
                 "equip": 0,
                 "sub": 5720,
                 "total": 5720,
-                "lhrs": 0
-              }
+                "lhrs": 0,
+                "rate": 87.25
+              },
+              "laborRate": 87.25
             }
           ],
           "mat": 19695.0072,
-          "lab": 8351.2,
+          "lab": 26988.17,
           "equip": 0,
           "sub": 61160,
-          "hrs": 351.5,
-          "total": 89206.2072
+          "hrs": 309.32,
+          "total": 107843.1772
         },
         {
           "num": "26",
@@ -5856,12 +6252,14 @@
               "note": "",
               "ext": {
                 "mat": 3719.1,
-                "lab": 4048,
+                "lab": 1842.72,
                 "equip": 0,
                 "sub": 0,
-                "total": 7767.1,
-                "lhrs": 24
-              }
+                "total": 5561.82,
+                "lhrs": 21.12,
+                "rate": 87.25
+              },
+              "laborRate": 87.25
             },
             {
               "code": "ELEC-PNL-200",
@@ -5883,12 +6281,14 @@
               "note": "",
               "ext": {
                 "mat": 2975.28,
-                "lab": 4048,
+                "lab": 2149.84,
                 "equip": 0,
                 "sub": 0,
-                "total": 7023.280000000001,
-                "lhrs": 28
-              }
+                "total": 5125.120000000001,
+                "lhrs": 24.64,
+                "rate": 87.25
+              },
+              "laborRate": 87.25
             },
             {
               "code": "ALLOWANCE",
@@ -5911,12 +6311,14 @@
               "aUnit": 9.5,
               "ext": {
                 "mat": 17295.872,
-                "lab": 12398.847999999998,
+                "lab": 22726.88,
                 "equip": 0,
                 "sub": 19796.48,
-                "total": 49491.2,
-                "lhrs": 296
-              }
+                "total": 59819.232,
+                "lhrs": 260.48,
+                "rate": 87.25
+              },
+              "laborRate": 87.25
             },
             {
               "code": "ALLOWANCE",
@@ -5927,7 +6329,7 @@
               "labUnit": 52,
               "equipUnit": 0,
               "subUnit": 91,
-              "lhrsUnit": 0,
+              "lhrsUnit": 0.6933,
               "allowance": true,
               "waste": 0,
               "basis": "",
@@ -5939,12 +6341,14 @@
               "aUnit": 260,
               "ext": {
                 "mat": 6692.4,
-                "lab": 2974.4,
+                "lab": 3460.0523100000005,
                 "equip": 0,
                 "sub": 5205.2,
-                "total": 14872,
-                "lhrs": 0
-              }
+                "total": 15357.652310000001,
+                "lhrs": 39.656760000000006,
+                "rate": 87.25
+              },
+              "laborRate": 87.25
             },
             {
               "code": "ALLOWANCE",
@@ -5955,7 +6359,7 @@
               "labUnit": 25.2,
               "equipUnit": 0,
               "subUnit": 0,
-              "lhrsUnit": 0,
+              "lhrsUnit": 0.336,
               "allowance": true,
               "waste": 0,
               "basis": "",
@@ -5967,12 +6371,14 @@
               "aUnit": 42,
               "ext": {
                 "mat": 3252.48,
-                "lab": 4878.72,
+                "lab": 5675.5776,
                 "equip": 0,
                 "sub": 0,
-                "total": 8131.200000000001,
-                "lhrs": 0
-              }
+                "total": 8928.0576,
+                "lhrs": 65.0496,
+                "rate": 87.25
+              },
+              "laborRate": 87.25
             },
             {
               "code": "ALLOWANCE",
@@ -5983,7 +6389,7 @@
               "labUnit": 390,
               "equipUnit": 0,
               "subUnit": 0,
-              "lhrsUnit": 0,
+              "lhrsUnit": 5.2,
               "allowance": true,
               "waste": 0,
               "basis": "",
@@ -5995,12 +6401,14 @@
               "aUnit": 650,
               "ext": {
                 "mat": 2288,
-                "lab": 3432,
+                "lab": 3992.56,
                 "equip": 0,
                 "sub": 0,
-                "total": 5720,
-                "lhrs": 0
-              }
+                "total": 6280.5599999999995,
+                "lhrs": 45.76,
+                "rate": 87.25
+              },
+              "laborRate": 87.25
             },
             {
               "code": "ALLOWANCE",
@@ -6027,8 +6435,10 @@
                 "equip": 0,
                 "sub": 9680,
                 "total": 9680,
-                "lhrs": 0
-              }
+                "lhrs": 0,
+                "rate": 87.25
+              },
+              "laborRate": 87.25
             },
             {
               "code": "ALLOWANCE",
@@ -6055,8 +6465,10 @@
                 "equip": 0,
                 "sub": 4576,
                 "total": 4576,
-                "lhrs": 0
-              }
+                "lhrs": 0,
+                "rate": 87.25
+              },
+              "laborRate": 87.25
             },
             {
               "code": "ALLOWANCE",
@@ -6067,7 +6479,7 @@
               "labUnit": 128,
               "equipUnit": 0,
               "subUnit": 0,
-              "lhrsUnit": 0,
+              "lhrsUnit": 1.7067,
               "allowance": true,
               "waste": 0,
               "basis": "",
@@ -6079,12 +6491,14 @@
               "aUnit": 320,
               "ext": {
                 "mat": 4055.04,
-                "lab": 2703.36,
+                "lab": 3144.9702240000006,
                 "equip": 0,
                 "sub": 0,
-                "total": 6758.4,
-                "lhrs": 0
-              }
+                "total": 7200.010224000001,
+                "lhrs": 36.04550400000001,
+                "rate": 87.25
+              },
+              "laborRate": 87.25
             },
             {
               "code": "ELEC-SMOKE",
@@ -6106,20 +6520,22 @@
               "note": "",
               "ext": {
                 "mat": 520.6432,
-                "lab": 1204.28,
+                "lab": 806.19,
                 "equip": 0,
                 "sub": 0,
-                "total": 1724.9232,
-                "lhrs": 10.5
-              }
+                "total": 1326.8332,
+                "lhrs": 9.24,
+                "rate": 87.25
+              },
+              "laborRate": 87.25
             }
           ],
           "mat": 40798.815200000005,
-          "lab": 35687.608,
+          "lab": 43798.790133999995,
           "equip": 0,
           "sub": 39257.68,
-          "hrs": 358.5,
-          "total": 115744.10320000001
+          "hrs": 501.991864,
+          "total": 123855.28533399999
         },
         {
           "num": "27/28",
@@ -6150,8 +6566,10 @@
                 "equip": 0,
                 "sub": 13544.960000000001,
                 "total": 13544.960000000001,
-                "lhrs": 0
-              }
+                "lhrs": 0,
+                "rate": 87.25
+              },
+              "laborRate": 87.25
             },
             {
               "code": "ELEC-CAT6",
@@ -6173,12 +6591,14 @@
               "note": "",
               "ext": {
                 "mat": 637.6479999999999,
-                "lab": 2024,
+                "lab": 1535.6000000000001,
                 "equip": 0,
                 "sub": 0,
-                "total": 2661.648,
-                "lhrs": 20
-              }
+                "total": 2173.248,
+                "lhrs": 17.6,
+                "rate": 87.25
+              },
+              "laborRate": 87.25
             },
             {
               "code": "ALLOWANCE",
@@ -6205,16 +6625,18 @@
                 "equip": 0,
                 "sub": 15840,
                 "total": 15840,
-                "lhrs": 0
-              }
+                "lhrs": 0,
+                "rate": 87.25
+              },
+              "laborRate": 87.25
             }
           ],
           "mat": 637.6479999999999,
-          "lab": 2024,
+          "lab": 1535.6000000000001,
           "equip": 0,
           "sub": 29384.96,
-          "hrs": 20,
-          "total": 32046.608
+          "hrs": 17.6,
+          "total": 31558.208
         },
         {
           "num": "31",
@@ -6229,7 +6651,7 @@
               "labUnit": 8.4,
               "equipUnit": 21,
               "subUnit": 12.6,
-              "lhrsUnit": 0,
+              "lhrsUnit": 0.112,
               "allowance": true,
               "waste": 0,
               "basis": "",
@@ -6241,12 +6663,14 @@
               "aUnit": 42,
               "ext": {
                 "mat": 0,
-                "lab": 4065.6,
+                "lab": 3957.1839999999997,
                 "equip": 10164,
                 "sub": 6098.4,
-                "total": 20328,
-                "lhrs": 0
-              }
+                "total": 20219.584,
+                "lhrs": 54.208,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ALLOWANCE",
@@ -6257,7 +6681,7 @@
               "labUnit": 7.6,
               "equipUnit": 15.2,
               "subUnit": 15.2,
-              "lhrsUnit": 0,
+              "lhrsUnit": 0.1013,
               "allowance": true,
               "waste": 0,
               "basis": "",
@@ -6269,12 +6693,14 @@
               "aUnit": 38,
               "ext": {
                 "mat": 0,
-                "lab": 2675.2,
+                "lab": 2603.0048,
                 "equip": 5350.4,
                 "sub": 5350.4,
-                "total": 13376,
-                "lhrs": 0
-              }
+                "total": 13303.8048,
+                "lhrs": 35.6576,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ALLOWANCE",
@@ -6285,7 +6711,7 @@
               "labUnit": 10.2,
               "equipUnit": 17,
               "subUnit": 6.8,
-              "lhrsUnit": 0,
+              "lhrsUnit": 0.136,
               "allowance": true,
               "waste": 0,
               "basis": "",
@@ -6297,12 +6723,14 @@
               "aUnit": 34,
               "ext": {
                 "mat": 0,
-                "lab": 1615.6799999999998,
+                "lab": 1572.5952,
                 "equip": 2692.8,
                 "sub": 1077.1200000000001,
-                "total": 5385.599999999999,
-                "lhrs": 0
-              }
+                "total": 5342.5152,
+                "lhrs": 21.5424,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ALLOWANCE",
@@ -6313,7 +6741,7 @@
               "labUnit": 1.28,
               "equipUnit": 0,
               "subUnit": 0,
-              "lhrsUnit": 0,
+              "lhrsUnit": 0.0171,
               "allowance": true,
               "waste": 0,
               "basis": "",
@@ -6325,12 +6753,14 @@
               "aUnit": 3.2,
               "ext": {
                 "mat": 2500.6079999999997,
-                "lab": 1667.0720000000001,
+                "lab": 1625.78592,
                 "equip": 0,
                 "sub": 0,
-                "total": 4167.68,
-                "lhrs": 0
-              }
+                "total": 4126.3939199999995,
+                "lhrs": 22.27104,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ALLOWANCE",
@@ -6341,7 +6771,7 @@
               "labUnit": 1.04,
               "equipUnit": 1.56,
               "subUnit": 0,
-              "lhrsUnit": 0,
+              "lhrsUnit": 0.0139,
               "allowance": true,
               "waste": 0,
               "basis": "",
@@ -6353,20 +6783,22 @@
               "aUnit": 2.6,
               "ext": {
                 "mat": 0,
-                "lab": 2306.304,
+                "lab": 2250.19872,
                 "equip": 3459.456,
                 "sub": 0,
-                "total": 5765.76,
-                "lhrs": 0
-              }
+                "total": 5709.65472,
+                "lhrs": 30.82464,
+                "rate": 73
+              },
+              "laborRate": 73
             }
           ],
           "mat": 2500.6079999999997,
-          "lab": 12329.856,
+          "lab": 12008.76864,
           "equip": 21666.656000000003,
           "sub": 12525.92,
-          "hrs": 0,
-          "total": 49023.04
+          "hrs": 164.50367999999997,
+          "total": 48701.95264
         },
         {
           "num": "32",
@@ -6381,7 +6813,7 @@
               "labUnit": 2.7,
               "equipUnit": 0,
               "subUnit": 10.8,
-              "lhrsUnit": 0,
+              "lhrsUnit": 0.036,
               "allowance": true,
               "waste": 0,
               "basis": "",
@@ -6393,12 +6825,14 @@
               "aUnit": 18,
               "ext": {
                 "mat": 1980,
-                "lab": 1188,
+                "lab": 1156.32,
                 "equip": 0,
                 "sub": 4752,
-                "total": 7920,
-                "lhrs": 0
-              }
+                "total": 7888.32,
+                "lhrs": 15.84,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ALLOWANCE",
@@ -6425,8 +6859,10 @@
                 "equip": 0,
                 "sub": 8360,
                 "total": 8360,
-                "lhrs": 0
-              }
+                "lhrs": 0,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ALLOWANCE",
@@ -6437,7 +6873,7 @@
               "labUnit": 1.1,
               "equipUnit": 0,
               "subUnit": 2.75,
-              "lhrsUnit": 0,
+              "lhrsUnit": 0.0147,
               "allowance": true,
               "waste": 0,
               "basis": "",
@@ -6449,20 +6885,22 @@
               "aUnit": 5.5,
               "ext": {
                 "mat": 3659.04,
-                "lab": 2439.36,
+                "lab": 2379.70656,
                 "equip": 0,
                 "sub": 6098.4,
-                "total": 12196.8,
-                "lhrs": 0
-              }
+                "total": 12137.14656,
+                "lhrs": 32.59872,
+                "rate": 73
+              },
+              "laborRate": 73
             }
           ],
           "mat": 5639.04,
-          "lab": 3627.36,
+          "lab": 3536.0265600000002,
           "equip": 0,
           "sub": 19210.4,
-          "hrs": 0,
-          "total": 28476.800000000003
+          "hrs": 48.43872,
+          "total": 28385.46656
         },
         {
           "num": "33",
@@ -6493,8 +6931,10 @@
                 "equip": 0,
                 "sub": 15840,
                 "total": 15840,
-                "lhrs": 0
-              }
+                "lhrs": 0,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ALLOWANCE",
@@ -6521,8 +6961,10 @@
                 "equip": 0,
                 "sub": 17600,
                 "total": 17600,
-                "lhrs": 0
-              }
+                "lhrs": 0,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ALLOWANCE",
@@ -6549,8 +6991,10 @@
                 "equip": 0,
                 "sub": 7920,
                 "total": 7920,
-                "lhrs": 0
-              }
+                "lhrs": 0,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ALLOWANCE",
@@ -6577,8 +7021,10 @@
                 "equip": 0,
                 "sub": 13200,
                 "total": 13200,
-                "lhrs": 0
-              }
+                "lhrs": 0,
+                "rate": 73
+              },
+              "laborRate": 73
             }
           ],
           "mat": 0,
@@ -6590,18 +7036,18 @@
         }
       ],
       "material": 410878.80944000004,
-      "labor": 559465.9752,
+      "labor": 578442.05672,
       "equipment": 28794.656000000003,
       "subcontractor": 509173.27999999997,
-      "laborHours": 5796.68,
-      "direct": 1508312.72064,
-      "overhead": 180997.52647679998,
-      "profit": 226246.908096,
-      "contingency": 75415.636032,
-      "bondsIns": 28733.357328192,
+      "laborHours": 7519.799232000001,
+      "direct": 1527288.80216,
+      "overhead": 183274.65625919998,
+      "profit": 229093.320324,
+      "contingency": 76364.440108,
+      "bondsIns": 29094.851681148,
       "permit": 22000,
-      "total": 2041706.148572992,
-      "psf": 344.8827953670595
+      "total": 2067116.070532348,
+      "psf": 349.175011914248
     },
     "C": {
       "scen": "C",
@@ -6634,8 +7080,10 @@
                 "equip": 0,
                 "sub": 0,
                 "total": 31813.600000000002,
-                "lhrs": 416
-              }
+                "lhrs": 316.16,
+                "rate": null
+              },
+              "laborRate": null
             },
             {
               "code": "ALLOWANCE",
@@ -6646,7 +7094,7 @@
               "labUnit": 9500,
               "equipUnit": 0,
               "subUnit": 0,
-              "lhrsUnit": 0,
+              "lhrsUnit": 126.6667,
               "allowance": true,
               "waste": 0,
               "basis": "12-mo build",
@@ -6662,8 +7110,10 @@
                 "equip": 0,
                 "sub": 0,
                 "total": 86640,
-                "lhrs": 0
-              }
+                "lhrs": 1155.2003040000002,
+                "rate": null
+              },
+              "laborRate": null
             },
             {
               "code": "ALLOWANCE",
@@ -6690,8 +7140,10 @@
                 "equip": 0,
                 "sub": 13680,
                 "total": 13680,
-                "lhrs": 0
-              }
+                "lhrs": 0,
+                "rate": null
+              },
+              "laborRate": null
             },
             {
               "code": "GEN-TEMP-POWER",
@@ -6717,8 +7169,10 @@
                 "equip": 0,
                 "sub": 0,
                 "total": 8075.76,
-                "lhrs": 48
-              }
+                "lhrs": 36.480000000000004,
+                "rate": null
+              },
+              "laborRate": null
             },
             {
               "code": "ALLOWANCE",
@@ -6745,8 +7199,10 @@
                 "equip": 0,
                 "sub": 7752,
                 "total": 7752,
-                "lhrs": 0
-              }
+                "lhrs": 0,
+                "rate": null
+              },
+              "laborRate": null
             },
             {
               "code": "GEN-PORT-TOILET",
@@ -6772,8 +7228,10 @@
                 "equip": 0,
                 "sub": 0,
                 "total": 1927.1472,
-                "lhrs": 0
-              }
+                "lhrs": 0,
+                "rate": null
+              },
+              "laborRate": null
             },
             {
               "code": "ALLOWANCE",
@@ -6800,8 +7258,10 @@
                 "equip": 0,
                 "sub": 10640,
                 "total": 10640,
-                "lhrs": 0
-              }
+                "lhrs": 0,
+                "rate": null
+              },
+              "laborRate": null
             },
             {
               "code": "GEN-DUMP-30",
@@ -6827,8 +7287,10 @@
                 "equip": 0,
                 "sub": 0,
                 "total": 5506.2,
-                "lhrs": 0
-              }
+                "lhrs": 0,
+                "rate": null
+              },
+              "laborRate": null
             },
             {
               "code": "GEN-CLEANUP-FINAL",
@@ -6854,8 +7316,10 @@
                 "equip": 0,
                 "sub": 0,
                 "total": 3689.344,
-                "lhrs": 59.2
-              }
+                "lhrs": 44.992000000000004,
+                "rate": null
+              },
+              "laborRate": null
             },
             {
               "code": "ALLOWANCE",
@@ -6882,8 +7346,10 @@
                 "equip": 0,
                 "sub": 13680,
                 "total": 13680,
-                "lhrs": 0
-              }
+                "lhrs": 0,
+                "rate": null
+              },
+              "laborRate": null
             },
             {
               "code": "GEN-SURVEY",
@@ -6909,8 +7375,10 @@
                 "equip": 0,
                 "sub": 0,
                 "total": 550.62,
-                "lhrs": 0
-              }
+                "lhrs": 0,
+                "rate": null
+              },
+              "laborRate": null
             },
             {
               "code": "GEN-ENGINEER",
@@ -6936,8 +7404,10 @@
                 "equip": 0,
                 "sub": 0,
                 "total": 1101.24,
-                "lhrs": 0
-              }
+                "lhrs": 0,
+                "rate": null
+              },
+              "laborRate": null
             },
             {
               "code": "ALLOWANCE",
@@ -6964,15 +7434,17 @@
                 "equip": 0,
                 "sub": 6840,
                 "total": 6840,
-                "lhrs": 0
-              }
+                "lhrs": 0,
+                "rate": null
+              },
+              "laborRate": null
             }
           ],
           "mat": 14839.9272,
           "lab": 124463.98400000001,
           "equip": 0,
           "sub": 52592,
-          "hrs": 523.2,
+          "hrs": 1552.8323040000002,
           "total": 191895.9112
         },
         {
@@ -6988,7 +7460,7 @@
               "labUnit": 0.6,
               "equipUnit": 1.2,
               "subUnit": 1.2,
-              "lhrsUnit": 0,
+              "lhrsUnit": 0.008,
               "allowance": true,
               "waste": 0,
               "basis": "",
@@ -7000,12 +7472,14 @@
               "aUnit": 3,
               "ext": {
                 "mat": 0,
-                "lab": 1824,
+                "lab": 1775.3600000000001,
                 "equip": 3648,
                 "sub": 3648,
-                "total": 9120,
-                "lhrs": 0
-              }
+                "total": 9071.36,
+                "lhrs": 24.32,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ALLOWANCE",
@@ -7016,7 +7490,7 @@
               "labUnit": 6.4,
               "equipUnit": 0,
               "subUnit": 16,
-              "lhrsUnit": 0,
+              "lhrsUnit": 0.0853,
               "allowance": true,
               "waste": 0,
               "basis": "",
@@ -7028,12 +7502,14 @@
               "aUnit": 32,
               "ext": {
                 "mat": 2042.88,
-                "lab": 1361.92,
+                "lab": 1325.08432,
                 "equip": 0,
                 "sub": 3404.8,
-                "total": 6809.6,
-                "lhrs": 0
-              }
+                "total": 6772.76432,
+                "lhrs": 18.15184,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ALLOWANCE",
@@ -7060,16 +7536,18 @@
                 "equip": 0,
                 "sub": 9120,
                 "total": 9120,
-                "lhrs": 0
-              }
+                "lhrs": 0,
+                "rate": 73
+              },
+              "laborRate": 73
             }
           ],
           "mat": 2042.88,
-          "lab": 3185.92,
+          "lab": 3100.44432,
           "equip": 3648,
           "sub": 16172.8,
-          "hrs": 0,
-          "total": 25049.6
+          "hrs": 42.47184,
+          "total": 24964.12432
         },
         {
           "num": "03",
@@ -7100,8 +7578,10 @@
                 "equip": 2508,
                 "sub": 6897,
                 "total": 12540,
-                "lhrs": 0
-              }
+                "lhrs": 0,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ALLOWANCE",
@@ -7112,7 +7592,7 @@
               "labUnit": 6.8,
               "equipUnit": 0,
               "subUnit": 18.7,
-              "lhrsUnit": 0,
+              "lhrsUnit": 0.0907,
               "allowance": true,
               "waste": 0,
               "basis": "",
@@ -7124,12 +7604,14 @@
               "aUnit": 34,
               "ext": {
                 "mat": 10232.64,
-                "lab": 8186.111999999999,
+                "lab": 7970.745024,
                 "equip": 0,
                 "sub": 22511.808,
-                "total": 40930.56,
-                "lhrs": 0
-              }
+                "total": 40715.193024,
+                "lhrs": 109.188288,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "CONC-POUR-4",
@@ -7151,12 +7633,14 @@
               "note": "Slab on grade on 6-mil VB + 4\" gravel (S100)",
               "ext": {
                 "mat": 6107.664,
-                "lab": 5174.079999999999,
+                "lab": 3284.416,
                 "equip": 0,
                 "sub": 0,
-                "total": 11281.743999999999,
-                "lhrs": 59.2
-              }
+                "total": 9392.08,
+                "lhrs": 44.992000000000004,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "CONC-MESH",
@@ -7178,12 +7662,14 @@
               "note": "Welded wire fabric (not rebar) per S100",
               "ext": {
                 "mat": 674.88,
-                "lab": 584.8960000000001,
+                "lab": 821.104,
                 "equip": 0,
                 "sub": 0,
-                "total": 1259.776,
-                "lhrs": 14.8
-              }
+                "total": 1495.984,
+                "lhrs": 11.248000000000001,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ALLOWANCE",
@@ -7210,8 +7696,10 @@
                 "equip": 0,
                 "sub": 7220,
                 "total": 7220,
-                "lhrs": 0
-              }
+                "lhrs": 0,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ALLOWANCE",
@@ -7222,7 +7710,7 @@
               "labUnit": 3.6,
               "equipUnit": 0,
               "subUnit": 14.4,
-              "lhrsUnit": 0,
+              "lhrsUnit": 0.048,
               "allowance": true,
               "waste": 0,
               "basis": "",
@@ -7234,12 +7722,14 @@
               "aUnit": 24,
               "ext": {
                 "mat": 1824,
-                "lab": 1094.4,
+                "lab": 1065.216,
                 "equip": 0,
                 "sub": 4377.6,
-                "total": 7296,
-                "lhrs": 0
-              }
+                "total": 7266.816000000001,
+                "lhrs": 14.591999999999999,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "FOUND-WP-EXT",
@@ -7261,20 +7751,22 @@
               "note": "",
               "ext": {
                 "mat": 16151.52,
-                "lab": 19997.12,
+                "lab": 14646.720000000001,
                 "equip": 0,
                 "sub": 0,
-                "total": 36148.64,
-                "lhrs": 264
-              }
+                "total": 30798.24,
+                "lhrs": 200.64000000000001,
+                "rate": 73
+              },
+              "laborRate": 73
             }
           ],
           "mat": 38125.704,
-          "lab": 35036.608,
+          "lab": 27788.201024,
           "equip": 2508,
           "sub": 41006.408,
-          "hrs": 338,
-          "total": 116676.72
+          "hrs": 380.66028800000004,
+          "total": 109428.313024
         },
         {
           "num": "04",
@@ -7300,12 +7792,14 @@
               "note": "",
               "ext": {
                 "mat": 6607.4400000000005,
-                "lab": 7341.6,
+                "lab": 8322,
                 "equip": 0,
                 "sub": 0,
-                "total": 13949.04,
-                "lhrs": 150
-              }
+                "total": 14929.44,
+                "lhrs": 114,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ALLOWANCE",
@@ -7332,16 +7826,18 @@
                 "equip": 0,
                 "sub": 4180,
                 "total": 4180,
-                "lhrs": 0
-              }
+                "lhrs": 0,
+                "rate": 73
+              },
+              "laborRate": 73
             }
           ],
           "mat": 6607.4400000000005,
-          "lab": 7341.6,
+          "lab": 8322,
           "equip": 0,
           "sub": 4180,
-          "hrs": 150,
-          "total": 18129.04
+          "hrs": 114,
+          "total": 19109.440000000002
         },
         {
           "num": "05",
@@ -7367,12 +7863,14 @@
               "note": "W12×26",
               "ext": {
                 "mat": 9635.052,
-                "lab": 10094.7,
+                "lab": 8738.1,
                 "equip": 0,
                 "sub": 0,
-                "total": 19729.752,
-                "lhrs": 157.5
-              }
+                "total": 18373.152000000002,
+                "lhrs": 119.7,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ALLOWANCE",
@@ -7383,7 +7881,7 @@
               "labUnit": 9.3,
               "equipUnit": 0,
               "subUnit": 31,
-              "lhrsUnit": 0,
+              "lhrsUnit": 0.124,
               "allowance": true,
               "waste": 0,
               "basis": "",
@@ -7395,12 +7893,14 @@
               "aUnit": 62,
               "ext": {
                 "mat": 4617.76,
-                "lab": 1979.04,
+                "lab": 1926.2656,
                 "equip": 0,
                 "sub": 6596.8,
-                "total": 13193.6,
-                "lhrs": 0
-              }
+                "total": 13140.8256,
+                "lhrs": 26.3872,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ALLOWANCE",
@@ -7427,16 +7927,18 @@
                 "equip": 0,
                 "sub": 10640,
                 "total": 10640,
-                "lhrs": 0
-              }
+                "lhrs": 0,
+                "rate": 73
+              },
+              "laborRate": 73
             }
           ],
           "mat": 14252.812,
-          "lab": 12073.740000000002,
+          "lab": 10664.365600000001,
           "equip": 0,
           "sub": 17236.8,
-          "hrs": 157.5,
-          "total": 43563.352
+          "hrs": 146.0872,
+          "total": 42153.9776
         },
         {
           "num": "06",
@@ -7462,12 +7964,14 @@
               "note": "TJI 360×14 engineered-wood I-joist @16\" O.C.",
               "ext": {
                 "mat": 25611.696,
-                "lab": 17445.648,
+                "lab": 14779.872,
                 "equip": 0,
                 "sub": 0,
-                "total": 43057.344,
-                "lhrs": 266.4
-              }
+                "total": 40391.568,
+                "lhrs": 202.464,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "FRAME-SHEATH-SUB",
@@ -7489,12 +7993,14 @@
               "note": "",
               "ext": {
                 "mat": 9617.04,
-                "lab": 7761.12,
+                "lab": 7389.936,
                 "equip": 0,
                 "sub": 0,
-                "total": 17378.16,
-                "lhrs": 133.2
-              }
+                "total": 17006.976000000002,
+                "lhrs": 101.232,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "FRAME-WALL-2X6",
@@ -7516,12 +8022,14 @@
               "note": "",
               "ext": {
                 "mat": 4566.566400000001,
-                "lab": 5999.1359999999995,
+                "lab": 5272.819199999999,
                 "equip": 0,
                 "sub": 0,
-                "total": 10565.7024,
-                "lhrs": 95.03999999999999
-              }
+                "total": 9839.3856,
+                "lhrs": 72.23039999999999,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "FRAME-WALL-2X4",
@@ -7543,12 +8051,14 @@
               "note": "",
               "ext": {
                 "mat": 4037.88,
-                "lab": 6118,
+                "lab": 5825.4,
                 "equip": 0,
                 "sub": 0,
-                "total": 10155.880000000001,
-                "lhrs": 105
-              }
+                "total": 9863.279999999999,
+                "lhrs": 79.8,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "FRAME-SHEATH-WALL",
@@ -7570,12 +8080,14 @@
               "note": "",
               "ext": {
                 "mat": 7624.32,
-                "lab": 8065.727999999999,
+                "lab": 5858.688000000001,
                 "equip": 0,
                 "sub": 0,
-                "total": 15690.047999999999,
-                "lhrs": 105.60000000000001
-              }
+                "total": 13483.008000000002,
+                "lhrs": 80.25600000000001,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ALLOWANCE",
@@ -7586,7 +8098,7 @@
               "labUnit": 3.75,
               "equipUnit": 0,
               "subUnit": 0,
-              "lhrsUnit": 0,
+              "lhrsUnit": 0.05,
               "allowance": true,
               "waste": 0,
               "basis": "",
@@ -7598,12 +8110,14 @@
               "aUnit": 7.5,
               "ext": {
                 "mat": 4218,
-                "lab": 4218,
+                "lab": 4105.52,
                 "equip": 0,
                 "sub": 0,
-                "total": 8436,
-                "lhrs": 0
-              }
+                "total": 8323.52,
+                "lhrs": 56.24,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "FRAME-SHEATH-ROOF",
@@ -7625,12 +8139,14 @@
               "note": "",
               "ext": {
                 "mat": 2272.096,
-                "lab": 2587.0399999999995,
+                "lab": 2463.312,
                 "equip": 0,
                 "sub": 0,
-                "total": 4859.1359999999995,
-                "lhrs": 44.4
-              }
+                "total": 4735.407999999999,
+                "lhrs": 33.744,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "FRAME-STAIR",
@@ -7652,12 +8168,14 @@
               "note": "",
               "ext": {
                 "mat": 550.6351999999999,
-                "lab": 1223.6,
+                "lab": 887.6800000000001,
                 "equip": 0,
                 "sub": 0,
-                "total": 1774.2351999999998,
-                "lhrs": 16
-              }
+                "total": 1438.3152,
+                "lhrs": 12.16,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ALLOWANCE",
@@ -7684,8 +8202,10 @@
                 "equip": 0,
                 "sub": 10640,
                 "total": 10640,
-                "lhrs": 0
-              }
+                "lhrs": 0,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ALLOWANCE",
@@ -7696,7 +8216,7 @@
               "labUnit": 0.63,
               "equipUnit": 0,
               "subUnit": 0,
-              "lhrsUnit": 0,
+              "lhrsUnit": 0.0084,
               "allowance": true,
               "waste": 0,
               "basis": "",
@@ -7708,20 +8228,22 @@
               "aUnit": 1.25,
               "ext": {
                 "mat": 2834.496,
-                "lab": 2834.496,
+                "lab": 2758.90944,
                 "equip": 0,
                 "sub": 0,
-                "total": 5668.992,
-                "lhrs": 0
-              }
+                "total": 5593.40544,
+                "lhrs": 37.793279999999996,
+                "rate": 73
+              },
+              "laborRate": 73
             }
           ],
           "mat": 61332.7296,
-          "lab": 56252.768,
+          "lab": 49342.13664,
           "equip": 0,
           "sub": 10640,
-          "hrs": 765.64,
-          "total": 128225.4976
+          "hrs": 675.91968,
+          "total": 121314.86624
         },
         {
           "num": "07",
@@ -7747,12 +8269,14 @@
               "note": "",
               "ext": {
                 "mat": 3892.4159999999997,
-                "lab": 3932.544,
+                "lab": 2929.3440000000005,
                 "equip": 0,
                 "sub": 0,
-                "total": 7824.959999999999,
-                "lhrs": 52.800000000000004
-              }
+                "total": 6821.76,
+                "lhrs": 40.12800000000001,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "SID-FC-LAP",
@@ -7774,12 +8298,14 @@
               "note": "Fiber-cement lap — rear + sides",
               "ext": {
                 "mat": 25736.64,
-                "lab": 26744.4,
+                "lab": 22635.84,
                 "equip": 0,
                 "sub": 0,
-                "total": 52481.04,
-                "lhrs": 408
-              }
+                "total": 48372.479999999996,
+                "lhrs": 310.08,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ALLOWANCE",
@@ -7790,7 +8316,7 @@
               "labUnit": 1.13,
               "equipUnit": 0,
               "subUnit": 1.8,
-              "lhrsUnit": 0,
+              "lhrsUnit": 0.0151,
               "allowance": true,
               "waste": 0,
               "basis": "",
@@ -7802,12 +8328,14 @@
               "aUnit": 4.5,
               "ext": {
                 "mat": 1765.936,
-                "lab": 1271.024,
+                "lab": 1239.86704,
                 "equip": 0,
                 "sub": 2024.64,
-                "total": 5061.6,
-                "lhrs": 0
-              }
+                "total": 5030.44304,
+                "lhrs": 16.98448,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ALLOWANCE",
@@ -7818,7 +8346,7 @@
               "labUnit": 0.68,
               "equipUnit": 0,
               "subUnit": 0,
-              "lhrsUnit": 0,
+              "lhrsUnit": 0.0091,
               "allowance": true,
               "waste": 0,
               "basis": "",
@@ -7830,12 +8358,14 @@
               "aUnit": 1.35,
               "ext": {
                 "mat": 2728.704,
-                "lab": 2728.704,
+                "lab": 2665.7030400000003,
                 "equip": 0,
                 "sub": 0,
-                "total": 5457.408,
-                "lhrs": 0
-              }
+                "total": 5394.40704,
+                "lhrs": 36.51648,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ROOF-FLAT-TPO",
@@ -7857,12 +8387,14 @@
               "note": "",
               "ext": {
                 "mat": 3735.0108800000003,
-                "lab": 3104.4480000000003,
+                "lab": 2052.76,
                 "equip": 0,
                 "sub": 0,
-                "total": 6839.45888,
-                "lhrs": 37
-              }
+                "total": 5787.77088,
+                "lhrs": 28.12,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ALLOWANCE",
@@ -7889,8 +8421,10 @@
                 "equip": 0,
                 "sub": 6460,
                 "total": 6460,
-                "lhrs": 0
-              }
+                "lhrs": 0,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ALLOWANCE",
@@ -7901,7 +8435,7 @@
               "labUnit": 0.22,
               "equipUnit": 0,
               "subUnit": 0.66,
-              "lhrsUnit": 0,
+              "lhrsUnit": 0.0029,
               "allowance": true,
               "waste": 0,
               "basis": "",
@@ -7913,12 +8447,14 @@
               "aUnit": 1.1,
               "ext": {
                 "mat": 989.8240000000001,
-                "lab": 989.8240000000001,
+                "lab": 952.48064,
                 "equip": 0,
                 "sub": 2969.472,
-                "total": 4949.120000000001,
-                "lhrs": 0
-              }
+                "total": 4911.77664,
+                "lhrs": 13.04768,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ALLOWANCE",
@@ -7945,16 +8481,18 @@
                 "equip": 0,
                 "sub": 3420,
                 "total": 3420,
-                "lhrs": 0
-              }
+                "lhrs": 0,
+                "rate": 73
+              },
+              "laborRate": 73
             }
           ],
           "mat": 38848.530880000006,
-          "lab": 38770.94400000001,
+          "lab": 32475.994720000002,
           "equip": 0,
           "sub": 14874.112,
-          "hrs": 497.8,
-          "total": 92493.58688000002
+          "hrs": 444.87664,
+          "total": 86198.6376
         },
         {
           "num": "08",
@@ -7980,12 +8518,14 @@
               "note": "",
               "ext": {
                 "mat": 11012.4,
-                "lab": 6992,
+                "lab": 5548,
                 "equip": 0,
                 "sub": 0,
-                "total": 18004.4,
-                "lhrs": 100
-              }
+                "total": 16560.4,
+                "lhrs": 76,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "DOOR-EXT-STEEL",
@@ -8007,12 +8547,14 @@
               "note": "",
               "ext": {
                 "mat": 2202.48,
-                "lab": 1223.6,
+                "lab": 887.6800000000001,
                 "equip": 0,
                 "sub": 0,
-                "total": 3426.08,
-                "lhrs": 16
-              }
+                "total": 3090.16,
+                "lhrs": 12.16,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "WIN-VIN-DH",
@@ -8034,12 +8576,14 @@
               "note": "",
               "ext": {
                 "mat": 12044.746000000001,
-                "lab": 7647.5,
+                "lab": 4854.5,
                 "equip": 0,
                 "sub": 0,
-                "total": 19692.246,
-                "lhrs": 87.5
-              }
+                "total": 16899.246,
+                "lhrs": 66.5,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ALLOWANCE",
@@ -8066,8 +8610,10 @@
                 "equip": 0,
                 "sub": 7220,
                 "total": 7220,
-                "lhrs": 0
-              }
+                "lhrs": 0,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ALLOWANCE",
@@ -8078,7 +8624,7 @@
               "labUnit": 43.5,
               "equipUnit": 0,
               "subUnit": 0,
-              "lhrsUnit": 0,
+              "lhrsUnit": 0.58,
               "allowance": true,
               "waste": 0,
               "basis": "",
@@ -8090,20 +8636,22 @@
               "aUnit": 145,
               "ext": {
                 "mat": 3394.16,
-                "lab": 1454.64,
+                "lab": 1415.8496,
                 "equip": 0,
                 "sub": 0,
-                "total": 4848.8,
-                "lhrs": 0
-              }
+                "total": 4810.009599999999,
+                "lhrs": 19.3952,
+                "rate": 73
+              },
+              "laborRate": 73
             }
           ],
           "mat": 28653.786,
-          "lab": 17317.74,
+          "lab": 12706.0296,
           "equip": 0,
           "sub": 7220,
-          "hrs": 203.5,
-          "total": 53191.526
+          "hrs": 174.05519999999999,
+          "total": 48579.8156
         },
         {
           "num": "09",
@@ -8129,12 +8677,14 @@
               "note": "",
               "ext": {
                 "mat": 13876.688,
-                "lab": 22797.415999999997,
+                "lab": 28942.8064,
                 "equip": 0,
                 "sub": 0,
-                "total": 36674.104,
-                "lhrs": 521.6800000000001
-              }
+                "total": 42819.4944,
+                "lhrs": 396.4768,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "DRY-TAPE-L4",
@@ -8156,12 +8706,14 @@
               "note": "",
               "ext": {
                 "mat": 5947.152,
-                "lab": 24978.038400000005,
+                "lab": 28942.8064,
                 "equip": 0,
                 "sub": 0,
-                "total": 30925.190400000007,
-                "lhrs": 521.6800000000001
-              }
+                "total": 34889.9584,
+                "lhrs": 396.4768,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ALLOWANCE",
@@ -8172,7 +8724,7 @@
               "labUnit": 0.66,
               "equipUnit": 0,
               "subUnit": 0,
-              "lhrsUnit": 0,
+              "lhrsUnit": 0.0088,
               "allowance": true,
               "waste": 0,
               "basis": "",
@@ -8184,12 +8736,14 @@
               "aUnit": 1.1,
               "ext": {
                 "mat": 1170.4,
-                "lab": 1755.6,
+                "lab": 1708.784,
                 "equip": 0,
                 "sub": 0,
-                "total": 2926,
-                "lhrs": 0
-              }
+                "total": 2879.184,
+                "lhrs": 23.408,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ALLOWANCE",
@@ -8200,7 +8754,7 @@
               "labUnit": 1.44,
               "equipUnit": 0,
               "subUnit": 3.6,
-              "lhrsUnit": 0,
+              "lhrsUnit": 0.0192,
               "allowance": true,
               "waste": 0,
               "basis": "",
@@ -8212,12 +8766,14 @@
               "aUnit": 7.2,
               "ext": {
                 "mat": 2626.56,
-                "lab": 1751.04,
+                "lab": 1704.3456,
                 "equip": 0,
                 "sub": 4377.6,
-                "total": 8755.2,
-                "lhrs": 0
-              }
+                "total": 8708.5056,
+                "lhrs": 23.3472,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "FLR-TILE-PORC",
@@ -8239,12 +8795,14 @@
               "note": "",
               "ext": {
                 "mat": 6607.4400000000005,
-                "lab": 7866,
+                "lab": 9986.400000000001,
                 "equip": 0,
                 "sub": 0,
-                "total": 14473.44,
-                "lhrs": 180
-              }
+                "total": 16593.840000000004,
+                "lhrs": 136.8,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "FLR-LVP",
@@ -8266,12 +8824,14 @@
               "note": "",
               "ext": {
                 "mat": 16518.6,
-                "lab": 12790.8,
+                "lab": 14979.599999999999,
                 "equip": 0,
                 "sub": 0,
-                "total": 29309.399999999998,
-                "lhrs": 270
-              }
+                "total": 31498.199999999997,
+                "lhrs": 205.2,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "PAINT-INT-WALL",
@@ -8293,12 +8853,14 @@
               "note": "",
               "ext": {
                 "mat": 9515.4432,
-                "lab": 30726.952000000005,
+                "lab": 28942.8064,
                 "equip": 0,
                 "sub": 0,
-                "total": 40242.395200000006,
-                "lhrs": 521.6800000000001
-              }
+                "total": 38458.2496,
+                "lhrs": 396.4768,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ALLOWANCE",
@@ -8309,7 +8871,7 @@
               "labUnit": 1.56,
               "equipUnit": 0,
               "subUnit": 0,
-              "lhrsUnit": 0,
+              "lhrsUnit": 0.0208,
               "allowance": true,
               "waste": 0,
               "basis": "",
@@ -8321,20 +8883,22 @@
               "aUnit": 2.6,
               "ext": {
                 "mat": 4679.168000000001,
-                "lab": 7018.752,
+                "lab": 6831.58528,
                 "equip": 0,
                 "sub": 0,
-                "total": 11697.920000000002,
-                "lhrs": 0
-              }
+                "total": 11510.75328,
+                "lhrs": 93.58336,
+                "rate": 73
+              },
+              "laborRate": 73
             }
           ],
           "mat": 60941.4512,
-          "lab": 109684.59840000002,
+          "lab": 122039.13408000002,
           "equip": 0,
           "sub": 4377.6,
-          "hrs": 2015.0400000000002,
-          "total": 175003.64960000003
+          "hrs": 1671.7689600000003,
+          "total": 187358.18528000003
         },
         {
           "num": "10",
@@ -8360,12 +8924,14 @@
               "note": "",
               "ext": {
                 "mat": 1156.3020000000001,
-                "lab": 1560.09,
+                "lab": 1165.0800000000002,
                 "equip": 0,
                 "sub": 0,
-                "total": 2716.392,
-                "lhrs": 21
-              }
+                "total": 2321.3820000000005,
+                "lhrs": 15.96,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ALLOWANCE",
@@ -8376,7 +8942,7 @@
               "labUnit": 66,
               "equipUnit": 0,
               "subUnit": 0,
-              "lhrsUnit": 0,
+              "lhrsUnit": 0.88,
               "allowance": true,
               "waste": 0,
               "basis": "",
@@ -8388,12 +8954,14 @@
               "aUnit": 220,
               "ext": {
                 "mat": 819.28,
-                "lab": 351.12,
+                "lab": 341.75680000000006,
                 "equip": 0,
                 "sub": 0,
-                "total": 1170.4,
-                "lhrs": 0
-              }
+                "total": 1161.0368,
+                "lhrs": 4.6816,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ALLOWANCE",
@@ -8404,7 +8972,7 @@
               "labUnit": 42,
               "equipUnit": 0,
               "subUnit": 0,
-              "lhrsUnit": 0,
+              "lhrsUnit": 0.56,
               "allowance": true,
               "waste": 0,
               "basis": "",
@@ -8416,12 +8984,14 @@
               "aUnit": 140,
               "ext": {
                 "mat": 2234.4,
-                "lab": 957.6,
+                "lab": 932.0640000000001,
                 "equip": 0,
                 "sub": 0,
-                "total": 3192,
-                "lhrs": 0
-              }
+                "total": 3166.464,
+                "lhrs": 12.768,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ALLOWANCE",
@@ -8432,7 +9002,7 @@
               "labUnit": 33,
               "equipUnit": 0,
               "subUnit": 0,
-              "lhrsUnit": 0,
+              "lhrsUnit": 0.44,
               "allowance": true,
               "waste": 0,
               "basis": "",
@@ -8444,12 +9014,14 @@
               "aUnit": 165,
               "ext": {
                 "mat": 802.5600000000001,
-                "lab": 200.64000000000001,
+                "lab": 195.2896,
                 "equip": 0,
                 "sub": 0,
-                "total": 1003.2,
-                "lhrs": 0
-              }
+                "total": 997.8496,
+                "lhrs": 2.6752000000000002,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ALLOWANCE",
@@ -8476,16 +9048,18 @@
                 "equip": 0,
                 "sub": 2660,
                 "total": 2660,
-                "lhrs": 0
-              }
+                "lhrs": 0,
+                "rate": 73
+              },
+              "laborRate": 73
             }
           ],
           "mat": 5012.542,
-          "lab": 3069.45,
+          "lab": 2634.1904000000004,
           "equip": 0,
           "sub": 2660,
-          "hrs": 21,
-          "total": 10741.992
+          "hrs": 36.0848,
+          "total": 10306.7324
         },
         {
           "num": "12",
@@ -8511,12 +9085,14 @@
               "note": "",
               "ext": {
                 "mat": 3211.95,
-                "lab": 1529.5,
+                "lab": 1165.0800000000002,
                 "equip": 0,
                 "sub": 0,
-                "total": 4741.45,
-                "lhrs": 21
-              }
+                "total": 4377.03,
+                "lhrs": 15.96,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ALLOWANCE",
@@ -8527,7 +9103,7 @@
               "labUnit": 36,
               "equipUnit": 0,
               "subUnit": 120,
-              "lhrsUnit": 0,
+              "lhrsUnit": 0.48,
               "allowance": true,
               "waste": 0,
               "basis": "",
@@ -8539,12 +9115,14 @@
               "aUnit": 240,
               "ext": {
                 "mat": 2553.6,
-                "lab": 1094.4,
+                "lab": 1065.216,
                 "equip": 0,
                 "sub": 3648,
-                "total": 7296,
-                "lhrs": 0
-              }
+                "total": 7266.816,
+                "lhrs": 14.591999999999999,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ALLOWANCE",
@@ -8555,7 +9133,7 @@
               "labUnit": 812.5,
               "equipUnit": 0,
               "subUnit": 0,
-              "lhrsUnit": 0,
+              "lhrsUnit": 10.8333,
               "allowance": true,
               "waste": 0,
               "basis": "",
@@ -8567,20 +9145,22 @@
               "aUnit": 1625,
               "ext": {
                 "mat": 2470,
-                "lab": 2470,
+                "lab": 2404.125936,
                 "equip": 0,
                 "sub": 0,
-                "total": 4940,
-                "lhrs": 0
-              }
+                "total": 4874.125936,
+                "lhrs": 32.933232,
+                "rate": 73
+              },
+              "laborRate": 73
             }
           ],
           "mat": 8235.55,
-          "lab": 5093.9,
+          "lab": 4634.421936000001,
           "equip": 0,
           "sub": 3648,
-          "hrs": 21,
-          "total": 16977.449999999997
+          "hrs": 63.485231999999996,
+          "total": 16517.971936
         },
         {
           "num": "21",
@@ -8611,8 +9191,10 @@
                 "equip": 0,
                 "sub": 29244.8,
                 "total": 29244.8,
-                "lhrs": 0
-              }
+                "lhrs": 0,
+                "rate": 87.25
+              },
+              "laborRate": 87.25
             },
             {
               "code": "ALLOWANCE",
@@ -8639,8 +9221,10 @@
                 "equip": 0,
                 "sub": 9120,
                 "total": 9120,
-                "lhrs": 0
-              }
+                "lhrs": 0,
+                "rate": 87.25
+              },
+              "laborRate": 87.25
             },
             {
               "code": "ALLOWANCE",
@@ -8667,8 +9251,10 @@
                 "equip": 0,
                 "sub": 2660,
                 "total": 2660,
-                "lhrs": 0
-              }
+                "lhrs": 0,
+                "rate": 87.25
+              },
+              "laborRate": 87.25
             }
           ],
           "mat": 0,
@@ -8702,12 +9288,14 @@
               "note": "",
               "ext": {
                 "mat": 1766.5592000000001,
-                "lab": 1223.6,
+                "lab": 928.34,
                 "equip": 0,
                 "sub": 0,
-                "total": 2990.1592,
-                "lhrs": 14
-              }
+                "total": 2694.8992000000003,
+                "lhrs": 10.64,
+                "rate": 87.25
+              },
+              "laborRate": 87.25
             },
             {
               "code": "ALLOWANCE",
@@ -8730,12 +9318,14 @@
               "aUnit": 620,
               "ext": {
                 "mat": 1696.32,
-                "lab": 848.16,
+                "lab": 3182.8800000000006,
                 "equip": 0,
                 "sub": 3109.92,
-                "total": 5654.4,
-                "lhrs": 48
-              }
+                "total": 7989.120000000001,
+                "lhrs": 36.480000000000004,
+                "rate": 87.25
+              },
+              "laborRate": 87.25
             },
             {
               "code": "BATH-TUB-STD",
@@ -8757,12 +9347,14 @@
               "note": "",
               "ext": {
                 "mat": 2569.56,
-                "lab": 3059,
+                "lab": 2320.85,
                 "equip": 0,
                 "sub": 0,
-                "total": 5628.5599999999995,
-                "lhrs": 35
-              }
+                "total": 4890.41,
+                "lhrs": 26.6,
+                "rate": 87.25
+              },
+              "laborRate": 87.25
             },
             {
               "code": "ALLOWANCE",
@@ -8785,12 +9377,14 @@
               "aUnit": 950,
               "ext": {
                 "mat": 5198.4,
-                "lab": 7797.6,
+                "lab": 14322.96,
                 "equip": 0,
                 "sub": 12996,
-                "total": 25992,
-                "lhrs": 216
-              }
+                "total": 32517.36,
+                "lhrs": 164.16,
+                "rate": 87.25
+              },
+              "laborRate": 87.25
             },
             {
               "code": "PLUMB-GAS-LINE",
@@ -8812,12 +9406,14 @@
               "note": "",
               "ext": {
                 "mat": 1982.232,
-                "lab": 3146.4,
+                "lab": 2983.9500000000003,
                 "equip": 0,
                 "sub": 0,
-                "total": 5128.632,
-                "lhrs": 45
-              }
+                "total": 4966.182000000001,
+                "lhrs": 34.2,
+                "rate": 87.25
+              },
+              "laborRate": 87.25
             },
             {
               "code": "ALLOWANCE",
@@ -8840,12 +9436,14 @@
               "aUnit": 4200,
               "ext": {
                 "mat": 2553.6,
-                "lab": 638.4,
+                "lab": 1060.96,
                 "equip": 0,
                 "sub": 3192,
-                "total": 6384,
-                "lhrs": 16
-              }
+                "total": 6806.5599999999995,
+                "lhrs": 12.16,
+                "rate": 87.25
+              },
+              "laborRate": 87.25
             },
             {
               "code": "ALLOWANCE",
@@ -8856,7 +9454,7 @@
               "labUnit": 800,
               "equipUnit": 0,
               "subUnit": 1920,
-              "lhrsUnit": 0,
+              "lhrsUnit": 10.6667,
               "allowance": true,
               "waste": 0,
               "basis": "",
@@ -8868,12 +9466,14 @@
               "aUnit": 3200,
               "ext": {
                 "mat": 364.8,
-                "lab": 608,
+                "lab": 707.308877,
                 "equip": 0,
                 "sub": 1459.2,
-                "total": 2432,
-                "lhrs": 0
-              }
+                "total": 2531.3088770000004,
+                "lhrs": 8.106692,
+                "rate": 87.25
+              },
+              "laborRate": 87.25
             },
             {
               "code": "ALLOWANCE",
@@ -8900,16 +9500,18 @@
                 "equip": 0,
                 "sub": 16720,
                 "total": 16720,
-                "lhrs": 0
-              }
+                "lhrs": 0,
+                "rate": 87.25
+              },
+              "laborRate": 87.25
             }
           ],
           "mat": 16131.4712,
-          "lab": 17321.16,
+          "lab": 25507.248876999998,
           "equip": 0,
           "sub": 37477.119999999995,
-          "hrs": 374,
-          "total": 70929.7512
+          "hrs": 292.346692,
+          "total": 79115.840077
         },
         {
           "num": "23",
@@ -8936,12 +9538,14 @@
               "aUnit": 9800,
               "ext": {
                 "mat": 11916.8,
-                "lab": 2979.2,
+                "lab": 4243.84,
                 "equip": 0,
                 "sub": 14896,
-                "total": 29792,
-                "lhrs": 64
-              }
+                "total": 31056.64,
+                "lhrs": 48.64,
+                "rate": 87.25
+              },
+              "laborRate": 87.25
             },
             {
               "code": "ALLOWANCE",
@@ -8964,12 +9568,14 @@
               "aUnit": 22,
               "ext": {
                 "mat": 4514.4,
-                "lab": 3009.6000000000004,
+                "lab": 17903.7,
                 "equip": 0,
                 "sub": 7524,
-                "total": 15048,
-                "lhrs": 270
-              }
+                "total": 29942.1,
+                "lhrs": 205.2,
+                "rate": 87.25
+              },
+              "laborRate": 87.25
             },
             {
               "code": "ALLOWANCE",
@@ -8996,8 +9602,10 @@
                 "equip": 0,
                 "sub": 5700,
                 "total": 5700,
-                "lhrs": 0
-              }
+                "lhrs": 0,
+                "rate": 87.25
+              },
+              "laborRate": 87.25
             },
             {
               "code": "BATH-VENT-STD",
@@ -9019,12 +9627,14 @@
               "note": "",
               "ext": {
                 "mat": 578.1244,
-                "lab": 1223.6,
+                "lab": 1160.425,
                 "equip": 0,
                 "sub": 0,
-                "total": 1801.7244,
-                "lhrs": 17.5
-              }
+                "total": 1738.5493999999999,
+                "lhrs": 13.3,
+                "rate": 87.25
+              },
+              "laborRate": 87.25
             },
             {
               "code": "ALLOWANCE",
@@ -9051,8 +9661,10 @@
                 "equip": 0,
                 "sub": 19760,
                 "total": 19760,
-                "lhrs": 0
-              }
+                "lhrs": 0,
+                "rate": 87.25
+              },
+              "laborRate": 87.25
             },
             {
               "code": "ALLOWANCE",
@@ -9079,16 +9691,18 @@
                 "equip": 0,
                 "sub": 4940,
                 "total": 4940,
-                "lhrs": 0
-              }
+                "lhrs": 0,
+                "rate": 87.25
+              },
+              "laborRate": 87.25
             }
           ],
           "mat": 17009.324399999998,
-          "lab": 7212.4,
+          "lab": 23307.965,
           "equip": 0,
           "sub": 52820,
-          "hrs": 351.5,
-          "total": 77041.7244
+          "hrs": 267.14,
+          "total": 93137.2894
         },
         {
           "num": "26",
@@ -9114,12 +9728,14 @@
               "note": "",
               "ext": {
                 "mat": 3211.95,
-                "lab": 3496,
+                "lab": 1591.4400000000003,
                 "equip": 0,
                 "sub": 0,
-                "total": 6707.95,
-                "lhrs": 24
-              }
+                "total": 4803.39,
+                "lhrs": 18.240000000000002,
+                "rate": 87.25
+              },
+              "laborRate": 87.25
             },
             {
               "code": "ELEC-PNL-200",
@@ -9141,12 +9757,14 @@
               "note": "",
               "ext": {
                 "mat": 2569.56,
-                "lab": 3496,
+                "lab": 1856.68,
                 "equip": 0,
                 "sub": 0,
-                "total": 6065.5599999999995,
-                "lhrs": 28
-              }
+                "total": 4426.24,
+                "lhrs": 21.28,
+                "rate": 87.25
+              },
+              "laborRate": 87.25
             },
             {
               "code": "ALLOWANCE",
@@ -9169,12 +9787,14 @@
               "aUnit": 9.5,
               "ext": {
                 "mat": 14937.344,
-                "lab": 10708.096,
+                "lab": 19627.760000000002,
                 "equip": 0,
                 "sub": 17096.96,
-                "total": 42742.399999999994,
-                "lhrs": 296
-              }
+                "total": 51662.064,
+                "lhrs": 224.96,
+                "rate": 87.25
+              },
+              "laborRate": 87.25
             },
             {
               "code": "ALLOWANCE",
@@ -9185,7 +9805,7 @@
               "labUnit": 52,
               "equipUnit": 0,
               "subUnit": 91,
-              "lhrsUnit": 0,
+              "lhrsUnit": 0.6933,
               "allowance": true,
               "waste": 0,
               "basis": "",
@@ -9197,12 +9817,14 @@
               "aUnit": 260,
               "ext": {
                 "mat": 5779.8,
-                "lab": 2568.8,
+                "lab": 2988.226995,
                 "equip": 0,
                 "sub": 4495.4,
-                "total": 12844,
-                "lhrs": 0
-              }
+                "total": 13263.426995,
+                "lhrs": 34.24902,
+                "rate": 87.25
+              },
+              "laborRate": 87.25
             },
             {
               "code": "ALLOWANCE",
@@ -9213,7 +9835,7 @@
               "labUnit": 25.2,
               "equipUnit": 0,
               "subUnit": 0,
-              "lhrsUnit": 0,
+              "lhrsUnit": 0.336,
               "allowance": true,
               "waste": 0,
               "basis": "",
@@ -9225,12 +9847,14 @@
               "aUnit": 42,
               "ext": {
                 "mat": 2808.96,
-                "lab": 4213.44,
+                "lab": 4901.6352,
                 "equip": 0,
                 "sub": 0,
-                "total": 7022.4,
-                "lhrs": 0
-              }
+                "total": 7710.5952,
+                "lhrs": 56.1792,
+                "rate": 87.25
+              },
+              "laborRate": 87.25
             },
             {
               "code": "ALLOWANCE",
@@ -9241,7 +9865,7 @@
               "labUnit": 390,
               "equipUnit": 0,
               "subUnit": 0,
-              "lhrsUnit": 0,
+              "lhrsUnit": 5.2,
               "allowance": true,
               "waste": 0,
               "basis": "",
@@ -9253,12 +9877,14 @@
               "aUnit": 650,
               "ext": {
                 "mat": 1976,
-                "lab": 2964,
+                "lab": 3448.1200000000003,
                 "equip": 0,
                 "sub": 0,
-                "total": 4940,
-                "lhrs": 0
-              }
+                "total": 5424.120000000001,
+                "lhrs": 39.52,
+                "rate": 87.25
+              },
+              "laborRate": 87.25
             },
             {
               "code": "ALLOWANCE",
@@ -9285,8 +9911,10 @@
                 "equip": 0,
                 "sub": 8360,
                 "total": 8360,
-                "lhrs": 0
-              }
+                "lhrs": 0,
+                "rate": 87.25
+              },
+              "laborRate": 87.25
             },
             {
               "code": "ALLOWANCE",
@@ -9313,8 +9941,10 @@
                 "equip": 0,
                 "sub": 3952,
                 "total": 3952,
-                "lhrs": 0
-              }
+                "lhrs": 0,
+                "rate": 87.25
+              },
+              "laborRate": 87.25
             },
             {
               "code": "ALLOWANCE",
@@ -9325,7 +9955,7 @@
               "labUnit": 128,
               "equipUnit": 0,
               "subUnit": 0,
-              "lhrsUnit": 0,
+              "lhrsUnit": 1.7067,
               "allowance": true,
               "waste": 0,
               "basis": "",
@@ -9337,12 +9967,14 @@
               "aUnit": 320,
               "ext": {
                 "mat": 3502.08,
-                "lab": 2334.7200000000003,
+                "lab": 2716.1106480000008,
                 "equip": 0,
                 "sub": 0,
-                "total": 5836.8,
-                "lhrs": 0
-              }
+                "total": 6218.190648000001,
+                "lhrs": 31.130208000000007,
+                "rate": 87.25
+              },
+              "laborRate": 87.25
             },
             {
               "code": "ELEC-SMOKE",
@@ -9364,20 +9996,22 @@
               "note": "",
               "ext": {
                 "mat": 449.64639999999997,
-                "lab": 1040.06,
+                "lab": 696.255,
                 "equip": 0,
                 "sub": 0,
-                "total": 1489.7064,
-                "lhrs": 10.5
-              }
+                "total": 1145.9014,
+                "lhrs": 7.98,
+                "rate": 87.25
+              },
+              "laborRate": 87.25
             }
           ],
           "mat": 35235.340399999994,
-          "lab": 30821.115999999998,
+          "lab": 37826.227843,
           "equip": 0,
           "sub": 33904.36,
-          "hrs": 358.5,
-          "total": 99960.8164
+          "hrs": 433.53842799999995,
+          "total": 106965.92824299999
         },
         {
           "num": "27/28",
@@ -9408,8 +10042,10 @@
                 "equip": 0,
                 "sub": 11697.92,
                 "total": 11697.92,
-                "lhrs": 0
-              }
+                "lhrs": 0,
+                "rate": 87.25
+              },
+              "laborRate": 87.25
             },
             {
               "code": "ELEC-CAT6",
@@ -9431,12 +10067,14 @@
               "note": "",
               "ext": {
                 "mat": 550.6959999999999,
-                "lab": 1748,
+                "lab": 1326.2,
                 "equip": 0,
                 "sub": 0,
-                "total": 2298.696,
-                "lhrs": 20
-              }
+                "total": 1876.896,
+                "lhrs": 15.2,
+                "rate": 87.25
+              },
+              "laborRate": 87.25
             },
             {
               "code": "ALLOWANCE",
@@ -9463,16 +10101,18 @@
                 "equip": 0,
                 "sub": 13680,
                 "total": 13680,
-                "lhrs": 0
-              }
+                "lhrs": 0,
+                "rate": 87.25
+              },
+              "laborRate": 87.25
             }
           ],
           "mat": 550.6959999999999,
-          "lab": 1748,
+          "lab": 1326.2,
           "equip": 0,
           "sub": 25377.92,
-          "hrs": 20,
-          "total": 27676.615999999998
+          "hrs": 15.2,
+          "total": 27254.816
         },
         {
           "num": "31",
@@ -9487,7 +10127,7 @@
               "labUnit": 8.4,
               "equipUnit": 21,
               "subUnit": 12.6,
-              "lhrsUnit": 0,
+              "lhrsUnit": 0.112,
               "allowance": true,
               "waste": 0,
               "basis": "",
@@ -9499,12 +10139,14 @@
               "aUnit": 42,
               "ext": {
                 "mat": 0,
-                "lab": 3511.2,
+                "lab": 3417.568,
                 "equip": 8778,
                 "sub": 5266.8,
-                "total": 17556,
-                "lhrs": 0
-              }
+                "total": 17462.368,
+                "lhrs": 46.816,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ALLOWANCE",
@@ -9515,7 +10157,7 @@
               "labUnit": 7.6,
               "equipUnit": 15.2,
               "subUnit": 15.2,
-              "lhrsUnit": 0,
+              "lhrsUnit": 0.1013,
               "allowance": true,
               "waste": 0,
               "basis": "",
@@ -9527,12 +10169,14 @@
               "aUnit": 38,
               "ext": {
                 "mat": 0,
-                "lab": 2310.4,
+                "lab": 2248.0496000000003,
                 "equip": 4620.8,
                 "sub": 4620.8,
-                "total": 11552,
-                "lhrs": 0
-              }
+                "total": 11489.6496,
+                "lhrs": 30.7952,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ALLOWANCE",
@@ -9543,7 +10187,7 @@
               "labUnit": 10.2,
               "equipUnit": 17,
               "subUnit": 6.8,
-              "lhrsUnit": 0,
+              "lhrsUnit": 0.136,
               "allowance": true,
               "waste": 0,
               "basis": "",
@@ -9555,12 +10199,14 @@
               "aUnit": 34,
               "ext": {
                 "mat": 0,
-                "lab": 1395.36,
+                "lab": 1358.1504,
                 "equip": 2325.6,
                 "sub": 930.24,
-                "total": 4651.2,
-                "lhrs": 0
-              }
+                "total": 4613.9904,
+                "lhrs": 18.6048,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ALLOWANCE",
@@ -9571,7 +10217,7 @@
               "labUnit": 1.28,
               "equipUnit": 0,
               "subUnit": 0,
-              "lhrsUnit": 0,
+              "lhrsUnit": 0.0171,
               "allowance": true,
               "waste": 0,
               "basis": "",
@@ -9583,12 +10229,14 @@
               "aUnit": 3.2,
               "ext": {
                 "mat": 2159.616,
-                "lab": 1439.7440000000001,
+                "lab": 1404.08784,
                 "equip": 0,
                 "sub": 0,
-                "total": 3599.36,
-                "lhrs": 0
-              }
+                "total": 3563.70384,
+                "lhrs": 19.23408,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ALLOWANCE",
@@ -9599,7 +10247,7 @@
               "labUnit": 1.04,
               "equipUnit": 1.56,
               "subUnit": 0,
-              "lhrsUnit": 0,
+              "lhrsUnit": 0.0139,
               "allowance": true,
               "waste": 0,
               "basis": "",
@@ -9611,20 +10259,22 @@
               "aUnit": 2.6,
               "ext": {
                 "mat": 0,
-                "lab": 1991.8080000000002,
+                "lab": 1943.3534399999999,
                 "equip": 2987.7120000000004,
                 "sub": 0,
-                "total": 4979.52,
-                "lhrs": 0
-              }
+                "total": 4931.06544,
+                "lhrs": 26.62128,
+                "rate": 73
+              },
+              "laborRate": 73
             }
           ],
           "mat": 2159.616,
-          "lab": 10648.512,
+          "lab": 10371.20928,
           "equip": 18712.112,
           "sub": 10817.84,
-          "hrs": 0,
-          "total": 42338.08
+          "hrs": 142.07135999999997,
+          "total": 42060.777279999995
         },
         {
           "num": "32",
@@ -9639,7 +10289,7 @@
               "labUnit": 2.7,
               "equipUnit": 0,
               "subUnit": 10.8,
-              "lhrsUnit": 0,
+              "lhrsUnit": 0.036,
               "allowance": true,
               "waste": 0,
               "basis": "",
@@ -9651,12 +10301,14 @@
               "aUnit": 18,
               "ext": {
                 "mat": 1710,
-                "lab": 1026,
+                "lab": 998.64,
                 "equip": 0,
                 "sub": 4104,
-                "total": 6840,
-                "lhrs": 0
-              }
+                "total": 6812.639999999999,
+                "lhrs": 13.68,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ALLOWANCE",
@@ -9683,8 +10335,10 @@
                 "equip": 0,
                 "sub": 7220,
                 "total": 7220,
-                "lhrs": 0
-              }
+                "lhrs": 0,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ALLOWANCE",
@@ -9695,7 +10349,7 @@
               "labUnit": 1.1,
               "equipUnit": 0,
               "subUnit": 2.75,
-              "lhrsUnit": 0,
+              "lhrsUnit": 0.0147,
               "allowance": true,
               "waste": 0,
               "basis": "",
@@ -9707,20 +10361,22 @@
               "aUnit": 5.5,
               "ext": {
                 "mat": 3160.08,
-                "lab": 2106.72,
+                "lab": 2055.2011199999997,
                 "equip": 0,
                 "sub": 5266.8,
-                "total": 10533.599999999999,
-                "lhrs": 0
-              }
+                "total": 10482.081119999999,
+                "lhrs": 28.153439999999996,
+                "rate": 73
+              },
+              "laborRate": 73
             }
           ],
           "mat": 4870.08,
-          "lab": 3132.72,
+          "lab": 3053.8411199999996,
           "equip": 0,
           "sub": 16590.8,
-          "hrs": 0,
-          "total": 24593.6
+          "hrs": 41.833439999999996,
+          "total": 24514.72112
         },
         {
           "num": "33",
@@ -9751,8 +10407,10 @@
                 "equip": 0,
                 "sub": 13680,
                 "total": 13680,
-                "lhrs": 0
-              }
+                "lhrs": 0,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ALLOWANCE",
@@ -9779,8 +10437,10 @@
                 "equip": 0,
                 "sub": 15200,
                 "total": 15200,
-                "lhrs": 0
-              }
+                "lhrs": 0,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ALLOWANCE",
@@ -9807,8 +10467,10 @@
                 "equip": 0,
                 "sub": 6840,
                 "total": 6840,
-                "lhrs": 0
-              }
+                "lhrs": 0,
+                "rate": 73
+              },
+              "laborRate": 73
             },
             {
               "code": "ALLOWANCE",
@@ -9835,8 +10497,10 @@
                 "equip": 0,
                 "sub": 11400,
                 "total": 11400,
-                "lhrs": 0
-              }
+                "lhrs": 0,
+                "rate": 73
+              },
+              "laborRate": 73
             }
           ],
           "mat": 0,
@@ -9848,18 +10512,18 @@
         }
       ],
       "material": 354849.88088,
-      "labor": 483175.1604,
+      "labor": 499563.59444000013,
       "equipment": 24868.112,
       "subcontractor": 439740.56,
-      "laborHours": 5796.68,
-      "direct": 1302633.71328,
-      "overhead": 156316.0455936,
-      "profit": 195395.056992,
-      "contingency": 65131.685664000004,
-      "bondsIns": 24815.172237984,
+      "laborHours": 6494.372064,
+      "direct": 1319022.1473200002,
+      "overhead": 158282.65767840002,
+      "profit": 197853.32209800003,
+      "contingency": 65951.10736600001,
+      "bondsIns": 25127.371906446002,
       "permit": 14000,
-      "total": 1758291.673767584,
-      "psf": 297.00872867695676
+      "total": 1780236.6063688463,
+      "psf": 300.7156429677105
     }
   },
   "exclusions": {
@@ -9933,15 +10597,15 @@
     "beds": 14,
     "bedrooms": 8,
     "bathrooms": 7,
-    "recommendedBaseBuilding": 2351400,
-    "costPerGSF": 397.2,
-    "costPerBed": 167957,
-    "costPerBedroom": 293925,
-    "costPerBathroom": 335914,
-    "costExclElevatorAndKitchen": 2351400,
+    "recommendedBaseBuilding": 2380707,
+    "costPerGSF": 402.15,
+    "costPerBed": 170050,
+    "costPerBedroom": 297588,
+    "costPerBathroom": 340101,
+    "costExclElevatorAndKitchen": 2380707,
     "elevatorAllowanceSeparate": 142000,
     "kitchenEquipmentAllowanceSeparate": 120500,
-    "allInWithExcludedAllowances": 2613900
+    "allInWithExcludedAllowances": 2643207
   },
   "topDrivers": [
     {
@@ -9950,35 +10614,35 @@
     },
     {
       "k": "Div 09 Finishes",
-      "v": 230267.96000000002
+      "v": 246523.928
     },
     {
       "k": "Div 06 Wood, Plastics & Rough Carpentry",
-      "v": 168717.76
+      "v": 159624.824
     },
     {
       "k": "Div 03 Concrete",
-      "v": 153522
+      "v": 143984.6224
     },
     {
       "k": "Div 26 Electrical",
-      "v": 131527.38999999998
-    },
-    {
-      "k": "Div 07 Thermal, Moisture & Exterior",
-      "v": 121702.088
+      "v": 140744.642425
     },
     {
       "k": "Div 23 HVAC",
-      "v": 101370.69
+      "v": 122549.065
+    },
+    {
+      "k": "Div 07 Thermal, Moisture & Exterior",
+      "v": 113419.26
     },
     {
       "k": "Div 22 Plumbing",
-      "v": 93328.62
+      "v": 104099.789575
     },
     {
       "k": "Div 08 Openings",
-      "v": 69988.85
+      "v": 63920.81
     },
     {
       "k": "Div 33 Utilities",
@@ -9986,11 +10650,11 @@
     },
     {
       "k": "Div 05 Metals (structural steel)",
-      "v": 57320.2
+      "v": 55465.759999999995
     },
     {
       "k": "Div 31 Earthwork",
-      "v": 55708
+      "v": 55343.128
     },
     {
       "k": "Div 21 Fire Suppression",
@@ -9998,11 +10662,11 @@
     },
     {
       "k": "Div 27/28 Communications & Electronic Safety",
-      "v": 36416.6
+      "v": 35861.6
     },
     {
       "k": "Div 02 Existing Conditions",
-      "v": 32960
+      "v": 32847.532
     }
   ]
 }
