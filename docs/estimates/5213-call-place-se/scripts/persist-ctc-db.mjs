@@ -35,12 +35,12 @@ DELETE FROM quick_estimates WHERE id='${ID}';
 INSERT INTO quick_estimates (id,"projectType",sqft,location,"qualityTier",description,
   "materialTotal","laborTotal",subtotal,overhead,profit,contingency,"grandTotal",
   "priceLow","priceMid","priceHigh",breakdown,assumptions,status)
-VALUES ('${ID}','group_home_new', ${J.meta.scheduleMonths ? 5920 : 5920}, 'DC', 'ctc',
-  ${S('5213 Call Place SE — CTC-priced (measured takeoff, owner wages, 6-mo, +accel)')},
+VALUES ('${ID}','group_home_new', 5920, 'DC', 'ctc',
+  ${S(`5213 Call Place SE — CTC-priced (STRICT, no placeholders). ${J.meta.matchedLines}/${J.meta.totalLines} lines from CTC tasks, ${J.meta.totalLines - J.meta.matchedLines} PENDING-CTC. ${J.meta.ctcCoveragePct}% coverage — INCOMPLETE until full catalog loaded.`)},
   ${N(J.divisions.reduce((a, d) => a + d.mat, 0))}, ${N(J.divisions.reduce((a, d) => a + d.lab, 0))},
   ${N(J.totals.direct)}, ${N(J.totals.overhead)}, ${N(J.totals.profit)}, ${N(J.totals.contingency)}, ${N(J.totals.total)},
   ${N(J.totals.total * 0.9)}, ${N(J.totals.total)}, ${N(J.totals.total * 1.1)},
-  $j$${JSON.stringify(breakdown)}$j$::jsonb, $j$${JSON.stringify(J.meta)}$j$::jsonb, 'draft');
+  $j$${JSON.stringify(breakdown)}$j$::jsonb, $j$${JSON.stringify(J.meta)}$j$::jsonb, ${J.meta.matchedLines === J.meta.totalLines ? "'complete'" : "'ctc-incomplete'"});
 `;
 for (const d of J.divisions) for (const ln of d.lines) {
   sql += `INSERT INTO ctc_estimate_line_items ("estimateId",division,item,unit,qty,priced_by,ctc_task,ctc_desc,mat,labor_hours,labor_rate,labor,equip,sub,extended) VALUES (

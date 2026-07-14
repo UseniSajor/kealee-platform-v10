@@ -87,6 +87,15 @@ Do this:
    commit, and push to PR #27. (Optional: a CTC PDF — gen-pdf.mjs targets the A/B/C
    estimate.json shape; adapt it or reuse the marketplace PDF + the CTC CSV.)
 
+
+### STRICT CTC pricing (no placeholders)
+`build-estimate-ctc.mjs` is now strict: each line prices ONLY from a matched CTC
+task (material/equip from the task, labor = task hours × owner wage). Unmatched
+lines are `PENDING-CTC` ($0, never a placeholder) and listed in
+`output/ctc-missing-matches.json`. With the full catalog every line should match;
+any remaining pending line means add a keyword to `NAME_CW` in that script. The
+DB row (qualityTier='ctc') is tagged `ctc-incomplete` until matched==total.
+
 ### One-shot after the catalog is loaded
 ```bash
 node docs/estimates/5213-call-place-se/scripts/build-estimate-ctc.mjs

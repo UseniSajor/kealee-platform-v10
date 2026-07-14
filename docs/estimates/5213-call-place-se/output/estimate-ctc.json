@@ -14,22 +14,22 @@
       "note": "Labor = labor-hours × crew rate. Div 01 GC supervision salaried; subcontractor lump sums keep quoted value."
     },
     "scheduleMonths": 6,
-    "ctcCoveragePct": 22.4,
-    "matchedLines": 16,
+    "ctcCoveragePct": 32.1,
+    "matchedLines": 35,
     "totalLines": 109,
-    "generated": "2026-07-14T17:07:51.358Z"
+    "generated": "2026-07-14T17:14:45.653Z"
   },
   "totals": {
-    "direct": 1854311.5468000004,
-    "overhead": 222517.38561600004,
-    "profit": 278146.73202000005,
-    "contingency": 129801.80827600003,
-    "bondsIns": 35324.634966540005,
+    "direct": 643832.4868,
+    "overhead": 77259.898416,
+    "profit": 96574.87302,
+    "contingency": 45068.274075999994,
+    "bondsIns": 12265.008873539999,
     "permit": 22000,
-    "total": 2542102.1076785405,
-    "psf": 429.41,
-    "ctcDirect": 415502.79,
-    "allowDirect": 1438808.7567999999
+    "total": 897000.5411855398,
+    "psf": 151.52,
+    "ctcDirect": 616097.97,
+    "allowDirect": 27734.516799999998
   },
   "divisions": [
     {
@@ -43,16 +43,16 @@
           "qty": 26,
           "method": "CALC",
           "sheet": "",
-          "ctcTask": null,
-          "ctcDesc": null,
-          "pricedBy": "marketplace",
+          "ctcTask": "01-002",
+          "ctcDesc": "Project Management and Coordination",
+          "pricedBy": "CTC",
           "mat": 0,
-          "laborHrs": 208,
-          "laborRate": "salaried",
-          "labor": 20930,
+          "laborHrs": 26,
+          "laborRate": "$73/hr",
+          "labor": 1898,
           "equip": 0,
           "sub": 0,
-          "extended": 20930
+          "extended": 1898
         },
         {
           "division": "01",
@@ -63,14 +63,14 @@
           "sheet": "",
           "ctcTask": null,
           "ctcDesc": null,
-          "pricedBy": "ALLOWANCE",
+          "pricedBy": "PENDING-CTC",
           "mat": 0,
-          "laborHrs": 760,
-          "laborRate": "salaried",
-          "labor": 57000,
+          "laborHrs": 0,
+          "laborRate": "$73/hr",
+          "labor": 0,
           "equip": 0,
           "sub": 0,
-          "extended": 57000
+          "extended": 0
         },
         {
           "division": "01",
@@ -79,16 +79,16 @@
           "qty": 1,
           "method": "ASSUMED",
           "sheet": "",
-          "ctcTask": null,
-          "ctcDesc": null,
-          "pricedBy": "ALLOWANCE",
-          "mat": 0,
-          "laborHrs": 0,
-          "laborRate": "salaried",
-          "labor": 0,
-          "equip": 0,
-          "sub": 18000,
-          "extended": 18000
+          "ctcTask": "01-001",
+          "ctcDesc": "Mobilization and Demobilization",
+          "pricedBy": "CTC",
+          "mat": 424,
+          "laborHrs": 24,
+          "laborRate": "$73/hr",
+          "labor": 1752,
+          "equip": 283,
+          "sub": 0,
+          "extended": 2458
         },
         {
           "division": "01",
@@ -99,14 +99,14 @@
           "sheet": "",
           "ctcTask": null,
           "ctcDesc": null,
-          "pricedBy": "marketplace",
-          "mat": 2898,
-          "laborHrs": 24,
-          "laborRate": "salaried",
-          "labor": 2415,
+          "pricedBy": "PENDING-CTC",
+          "mat": 0,
+          "laborHrs": 0,
+          "laborRate": "$73/hr",
+          "labor": 0,
           "equip": 0,
           "sub": 0,
-          "extended": 5313
+          "extended": 0
         },
         {
           "division": "01",
@@ -115,16 +115,16 @@
           "qty": 6,
           "method": "ASSUMED",
           "sheet": "",
-          "ctcTask": null,
-          "ctcDesc": null,
-          "pricedBy": "ALLOWANCE",
-          "mat": 0,
-          "laborHrs": 0,
-          "laborRate": "salaried",
-          "labor": 0,
-          "equip": 0,
-          "sub": 5100,
-          "extended": 5100
+          "ctcTask": "01-003",
+          "ctcDesc": "Temporary Facilities and Controls",
+          "pricedBy": "CTC",
+          "mat": 4068,
+          "laborHrs": 48,
+          "laborRate": "$73/hr",
+          "labor": 3504,
+          "equip": 1356,
+          "sub": 0,
+          "extended": 8928
         },
         {
           "division": "01",
@@ -135,14 +135,14 @@
           "sheet": "",
           "ctcTask": null,
           "ctcDesc": null,
-          "pricedBy": "marketplace",
-          "mat": 1268,
+          "pricedBy": "PENDING-CTC",
+          "mat": 0,
           "laborHrs": 0,
-          "laborRate": "salaried",
+          "laborRate": "$73/hr",
           "labor": 0,
           "equip": 0,
           "sub": 0,
-          "extended": 1268
+          "extended": 0
         },
         {
           "division": "01",
@@ -153,14 +153,14 @@
           "sheet": "",
           "ctcTask": null,
           "ctcDesc": null,
-          "pricedBy": "ALLOWANCE",
+          "pricedBy": "PENDING-CTC",
           "mat": 0,
           "laborHrs": 0,
-          "laborRate": "salaried",
+          "laborRate": "$73/hr",
           "labor": 0,
           "equip": 0,
-          "sub": 14000,
-          "extended": 14000
+          "sub": 0,
+          "extended": 0
         },
         {
           "division": "01",
@@ -169,16 +169,16 @@
           "qty": 10,
           "method": "CALC",
           "sheet": "",
-          "ctcTask": null,
-          "ctcDesc": null,
-          "pricedBy": "marketplace",
-          "mat": 7245,
-          "laborHrs": 0,
-          "laborRate": "salaried",
-          "labor": 0,
-          "equip": 0,
+          "ctcTask": "01-010",
+          "ctcDesc": "Construction Waste Disposal - Standard",
+          "pricedBy": "CTC",
+          "mat": 0,
+          "laborHrs": 3,
+          "laborRate": "$73/hr",
+          "labor": 183,
+          "equip": 339,
           "sub": 0,
-          "extended": 7245
+          "extended": 522
         },
         {
           "division": "01",
@@ -189,14 +189,14 @@
           "sheet": "A001-A002",
           "ctcTask": null,
           "ctcDesc": null,
-          "pricedBy": "marketplace",
-          "mat": 1776,
-          "laborHrs": 59,
-          "laborRate": "salaried",
-          "labor": 3078,
+          "pricedBy": "PENDING-CTC",
+          "mat": 0,
+          "laborHrs": 0,
+          "laborRate": "$73/hr",
+          "labor": 0,
           "equip": 0,
           "sub": 0,
-          "extended": 4854
+          "extended": 0
         },
         {
           "division": "01",
@@ -207,14 +207,14 @@
           "sheet": "A000/S101",
           "ctcTask": null,
           "ctcDesc": null,
-          "pricedBy": "ALLOWANCE",
+          "pricedBy": "PENDING-CTC",
           "mat": 0,
           "laborHrs": 0,
-          "laborRate": "salaried",
+          "laborRate": "$73/hr",
           "labor": 0,
           "equip": 0,
-          "sub": 18000,
-          "extended": 18000
+          "sub": 0,
+          "extended": 0
         },
         {
           "division": "01",
@@ -225,14 +225,14 @@
           "sheet": "",
           "ctcTask": null,
           "ctcDesc": null,
-          "pricedBy": "marketplace",
-          "mat": 725,
+          "pricedBy": "PENDING-CTC",
+          "mat": 0,
           "laborHrs": 0,
-          "laborRate": "salaried",
+          "laborRate": "$73/hr",
           "labor": 0,
           "equip": 0,
           "sub": 0,
-          "extended": 725
+          "extended": 0
         },
         {
           "division": "01",
@@ -243,14 +243,14 @@
           "sheet": "S101",
           "ctcTask": null,
           "ctcDesc": null,
-          "pricedBy": "marketplace",
-          "mat": 1449,
+          "pricedBy": "PENDING-CTC",
+          "mat": 0,
           "laborHrs": 0,
-          "laborRate": "salaried",
+          "laborRate": "$73/hr",
           "labor": 0,
           "equip": 0,
           "sub": 0,
-          "extended": 1449
+          "extended": 0
         },
         {
           "division": "01",
@@ -261,14 +261,14 @@
           "sheet": "",
           "ctcTask": null,
           "ctcDesc": null,
-          "pricedBy": "ALLOWANCE",
+          "pricedBy": "PENDING-CTC",
           "mat": 0,
           "laborHrs": 0,
-          "laborRate": "salaried",
+          "laborRate": "$73/hr",
           "labor": 0,
           "equip": 0,
-          "sub": 9000,
-          "extended": 9000
+          "sub": 0,
+          "extended": 0
         },
         {
           "division": "01",
@@ -279,18 +279,18 @@
           "mat": 0,
           "laborHrs": 0,
           "laborRate": "n/a",
-          "labor": 48067,
+          "labor": 27735,
           "equip": 0,
           "sub": 0,
-          "extended": 48067
+          "extended": 27735
         }
       ],
-      "mat": 15360.36,
-      "lab": 131490.57679999998,
-      "equip": 0,
-      "sub": 64100,
-      "hrs": 1051.2002,
-      "total": 210950.93680000002
+      "mat": 4491.75,
+      "lab": 35071.0168,
+      "equip": 1977.5,
+      "sub": 0,
+      "hrs": 100.5,
+      "total": 41540.2668
     },
     {
       "num": "02",
@@ -305,14 +305,14 @@
           "sheet": "A000",
           "ctcTask": null,
           "ctcDesc": null,
-          "pricedBy": "ALLOWANCE",
+          "pricedBy": "PENDING-CTC",
           "mat": 0,
-          "laborHrs": 32,
+          "laborHrs": 0,
           "laborRate": "$73/hr",
-          "labor": 2336,
-          "equip": 4800,
-          "sub": 4800,
-          "extended": 11936
+          "labor": 0,
+          "equip": 0,
+          "sub": 0,
+          "extended": 0
         },
         {
           "division": "02",
@@ -323,14 +323,14 @@
           "sheet": "A000",
           "ctcTask": null,
           "ctcDesc": null,
-          "pricedBy": "ALLOWANCE",
-          "mat": 2688,
-          "laborHrs": 24,
+          "pricedBy": "PENDING-CTC",
+          "mat": 0,
+          "laborHrs": 0,
           "laborRate": "$73/hr",
-          "labor": 1744,
+          "labor": 0,
           "equip": 0,
-          "sub": 4480,
-          "extended": 8912
+          "sub": 0,
+          "extended": 0
         },
         {
           "division": "02",
@@ -341,22 +341,22 @@
           "sheet": "A000",
           "ctcTask": null,
           "ctcDesc": null,
-          "pricedBy": "ALLOWANCE",
+          "pricedBy": "PENDING-CTC",
           "mat": 0,
           "laborHrs": 0,
           "laborRate": "$73/hr",
           "labor": 0,
           "equip": 0,
-          "sub": 12000,
-          "extended": 12000
+          "sub": 0,
+          "extended": 0
         }
       ],
-      "mat": 2688,
-      "lab": 4079.532,
-      "equip": 4800,
-      "sub": 21280,
-      "hrs": 55.884,
-      "total": 32847.532
+      "mat": 0,
+      "lab": 0,
+      "equip": 0,
+      "sub": 0,
+      "hrs": 0,
+      "total": 0
     },
     {
       "num": "03",
@@ -371,14 +371,14 @@
           "sheet": "S100",
           "ctcTask": null,
           "ctcDesc": null,
-          "pricedBy": "ALLOWANCE",
-          "mat": 4125,
+          "pricedBy": "PENDING-CTC",
+          "mat": 0,
           "laborHrs": 0,
           "laborRate": "$73/hr",
           "labor": 0,
-          "equip": 3300,
-          "sub": 9075,
-          "extended": 16500
+          "equip": 0,
+          "sub": 0,
+          "extended": 0
         },
         {
           "division": "03",
@@ -387,16 +387,16 @@
           "qty": 1584,
           "method": "CALC",
           "sheet": "S100",
-          "ctcTask": null,
-          "ctcDesc": null,
-          "pricedBy": "ALLOWANCE",
-          "mat": 13464,
-          "laborHrs": 144,
+          "ctcTask": "03-010",
+          "ctcDesc": "Concrete Forming - Wall, to 8 ft height",
+          "pricedBy": "CTC",
+          "mat": 3136,
+          "laborHrs": 238,
           "laborRate": "$73/hr",
-          "labor": 10488,
-          "equip": 0,
-          "sub": 29621,
-          "extended": 53573
+          "labor": 17345,
+          "equip": 903,
+          "sub": 0,
+          "extended": 21384
         },
         {
           "division": "03",
@@ -425,14 +425,14 @@
           "sheet": "S100",
           "ctcTask": null,
           "ctcDesc": null,
-          "pricedBy": "marketplace",
-          "mat": 888,
-          "laborHrs": 15,
+          "pricedBy": "PENDING-CTC",
+          "mat": 0,
+          "laborHrs": 0,
           "laborRate": "$73/hr",
-          "labor": 1080,
+          "labor": 0,
           "equip": 0,
           "sub": 0,
-          "extended": 1968
+          "extended": 0
         },
         {
           "division": "03",
@@ -443,14 +443,14 @@
           "sheet": "A001",
           "ctcTask": null,
           "ctcDesc": null,
-          "pricedBy": "ALLOWANCE",
+          "pricedBy": "PENDING-CTC",
           "mat": 0,
           "laborHrs": 0,
           "laborRate": "$73/hr",
           "labor": 0,
           "equip": 0,
-          "sub": 9500,
-          "extended": 9500
+          "sub": 0,
+          "extended": 0
         },
         {
           "division": "03",
@@ -459,16 +459,16 @@
           "qty": 400,
           "method": "MEASURED",
           "sheet": "A000/S100",
-          "ctcTask": null,
-          "ctcDesc": null,
-          "pricedBy": "ALLOWANCE",
-          "mat": 2400,
-          "laborHrs": 19,
+          "ctcTask": "03-001",
+          "ctcDesc": "Cast-in-Place Concrete - Sidewalk, 4\" thick",
+          "pricedBy": "CTC",
+          "mat": 2488,
+          "laborHrs": 48,
           "laborRate": "$73/hr",
-          "labor": 1402,
-          "equip": 0,
-          "sub": 5760,
-          "extended": 9562
+          "labor": 3504,
+          "equip": 904,
+          "sub": 0,
+          "extended": 6896
         },
         {
           "division": "03",
@@ -479,22 +479,22 @@
           "sheet": "S100",
           "ctcTask": null,
           "ctcDesc": null,
-          "pricedBy": "marketplace",
-          "mat": 21252,
-          "laborHrs": 264,
+          "pricedBy": "PENDING-CTC",
+          "mat": 0,
+          "laborHrs": 0,
           "laborRate": "$73/hr",
-          "labor": 19272,
+          "labor": 0,
           "equip": 0,
           "sub": 0,
-          "extended": 40524
+          "extended": 0
         }
       ],
-      "mat": 51334.6,
-      "lab": 45206.6224,
-      "equip": 6644.799999999999,
-      "sub": 53955.8,
-      "hrs": 619.2688,
-      "total": 157141.8224
+      "mat": 14829.92,
+      "lab": 33813.6,
+      "equip": 5151.679999999999,
+      "sub": 0,
+      "hrs": 463.2,
+      "total": 53795.2
     },
     {
       "num": "04",
@@ -509,14 +509,14 @@
           "sheet": "A004",
           "ctcTask": null,
           "ctcDesc": null,
-          "pricedBy": "marketplace",
-          "mat": 8694,
-          "laborHrs": 150,
+          "pricedBy": "PENDING-CTC",
+          "mat": 0,
+          "laborHrs": 0,
           "laborRate": "$73/hr",
-          "labor": 10950,
+          "labor": 0,
           "equip": 0,
           "sub": 0,
-          "extended": 19644
+          "extended": 0
         },
         {
           "division": "04",
@@ -527,22 +527,22 @@
           "sheet": "A004",
           "ctcTask": null,
           "ctcDesc": null,
-          "pricedBy": "ALLOWANCE",
+          "pricedBy": "PENDING-CTC",
           "mat": 0,
           "laborHrs": 0,
           "laborRate": "$73/hr",
           "labor": 0,
           "equip": 0,
-          "sub": 5500,
-          "extended": 5500
+          "sub": 0,
+          "extended": 0
         }
       ],
-      "mat": 8694,
-      "lab": 10950,
+      "mat": 0,
+      "lab": 0,
       "equip": 0,
-      "sub": 5500,
-      "hrs": 150,
-      "total": 25144
+      "sub": 0,
+      "hrs": 0,
+      "total": 0
     },
     {
       "num": "05",
@@ -557,14 +557,14 @@
           "sheet": "S101",
           "ctcTask": null,
           "ctcDesc": null,
-          "pricedBy": "marketplace",
-          "mat": 12678,
-          "laborHrs": 158,
+          "pricedBy": "PENDING-CTC",
+          "mat": 0,
+          "laborHrs": 0,
           "laborRate": "$73/hr",
-          "labor": 11498,
+          "labor": 0,
           "equip": 0,
           "sub": 0,
-          "extended": 24175
+          "extended": 0
         },
         {
           "division": "05",
@@ -575,14 +575,14 @@
           "sheet": "S100/S101",
           "ctcTask": null,
           "ctcDesc": null,
-          "pricedBy": "ALLOWANCE",
-          "mat": 6076,
-          "laborHrs": 35,
+          "pricedBy": "PENDING-CTC",
+          "mat": 0,
+          "laborHrs": 0,
           "laborRate": "$73/hr",
-          "labor": 2535,
+          "labor": 0,
           "equip": 0,
-          "sub": 8680,
-          "extended": 17291
+          "sub": 0,
+          "extended": 0
         },
         {
           "division": "05",
@@ -593,22 +593,22 @@
           "sheet": "S101",
           "ctcTask": null,
           "ctcDesc": null,
-          "pricedBy": "ALLOWANCE",
+          "pricedBy": "PENDING-CTC",
           "mat": 0,
           "laborHrs": 0,
           "laborRate": "$73/hr",
           "labor": 0,
           "equip": 0,
-          "sub": 14000,
-          "extended": 14000
+          "sub": 0,
+          "extended": 0
         }
       ],
-      "mat": 18753.699999999997,
-      "lab": 14032.06,
+      "mat": 0,
+      "lab": 0,
       "equip": 0,
-      "sub": 22680,
-      "hrs": 192.22,
-      "total": 55465.759999999995
+      "sub": 0,
+      "hrs": 0,
+      "total": 0
     },
     {
       "num": "06",
@@ -623,14 +623,14 @@
           "sheet": "S101",
           "ctcTask": null,
           "ctcDesc": null,
-          "pricedBy": "marketplace",
-          "mat": 33700,
-          "laborHrs": 266,
+          "pricedBy": "PENDING-CTC",
+          "mat": 0,
+          "laborHrs": 0,
           "laborRate": "$73/hr",
-          "labor": 19447,
+          "labor": 0,
           "equip": 0,
           "sub": 0,
-          "extended": 53147
+          "extended": 0
         },
         {
           "division": "06",
@@ -641,14 +641,14 @@
           "sheet": "S101",
           "ctcTask": null,
           "ctcDesc": null,
-          "pricedBy": "marketplace",
-          "mat": 12654,
-          "laborHrs": 133,
+          "pricedBy": "PENDING-CTC",
+          "mat": 0,
+          "laborHrs": 0,
           "laborRate": "$73/hr",
-          "labor": 9724,
+          "labor": 0,
           "equip": 0,
           "sub": 0,
-          "extended": 22378
+          "extended": 0
         },
         {
           "division": "06",
@@ -695,14 +695,14 @@
           "sheet": "A004",
           "ctcTask": null,
           "ctcDesc": null,
-          "pricedBy": "marketplace",
-          "mat": 10032,
-          "laborHrs": 106,
+          "pricedBy": "PENDING-CTC",
+          "mat": 0,
+          "laborHrs": 0,
           "laborRate": "$73/hr",
-          "labor": 7709,
+          "labor": 0,
           "equip": 0,
           "sub": 0,
-          "extended": 17741
+          "extended": 0
         },
         {
           "division": "06",
@@ -713,14 +713,14 @@
           "sheet": "S101/A003",
           "ctcTask": null,
           "ctcDesc": null,
-          "pricedBy": "ALLOWANCE",
-          "mat": 5550,
-          "laborHrs": 74,
+          "pricedBy": "PENDING-CTC",
+          "mat": 0,
+          "laborHrs": 0,
           "laborRate": "$73/hr",
-          "labor": 5402,
+          "labor": 0,
           "equip": 0,
           "sub": 0,
-          "extended": 10952
+          "extended": 0
         },
         {
           "division": "06",
@@ -731,14 +731,14 @@
           "sheet": "A003",
           "ctcTask": null,
           "ctcDesc": null,
-          "pricedBy": "marketplace",
-          "mat": 2990,
-          "laborHrs": 44,
+          "pricedBy": "PENDING-CTC",
+          "mat": 0,
+          "laborHrs": 0,
           "laborRate": "$73/hr",
-          "labor": 3241,
+          "labor": 0,
           "equip": 0,
           "sub": 0,
-          "extended": 6231
+          "extended": 0
         },
         {
           "division": "06",
@@ -749,14 +749,14 @@
           "sheet": "A001-A002",
           "ctcTask": null,
           "ctcDesc": null,
-          "pricedBy": "marketplace",
-          "mat": 725,
-          "laborHrs": 16,
+          "pricedBy": "PENDING-CTC",
+          "mat": 0,
+          "laborHrs": 0,
           "laborRate": "$73/hr",
-          "labor": 1168,
+          "labor": 0,
           "equip": 0,
           "sub": 0,
-          "extended": 1893
+          "extended": 0
         },
         {
           "division": "06",
@@ -767,14 +767,14 @@
           "sheet": "A001",
           "ctcTask": null,
           "ctcDesc": null,
-          "pricedBy": "ALLOWANCE",
+          "pricedBy": "PENDING-CTC",
           "mat": 0,
           "laborHrs": 0,
           "laborRate": "$73/hr",
           "labor": 0,
           "equip": 0,
-          "sub": 14000,
-          "extended": 14000
+          "sub": 0,
+          "extended": 0
         },
         {
           "division": "06",
@@ -785,22 +785,22 @@
           "sheet": "A001-A002",
           "ctcTask": null,
           "ctcDesc": null,
-          "pricedBy": "ALLOWANCE",
-          "mat": 3730,
-          "laborHrs": 50,
+          "pricedBy": "PENDING-CTC",
+          "mat": 0,
+          "laborHrs": 0,
           "laborRate": "$73/hr",
-          "labor": 3630,
+          "labor": 0,
           "equip": 0,
           "sub": 0,
-          "extended": 7360
+          "extended": 0
         }
       ],
-      "mat": 75629.84000000001,
-      "lab": 68249.74399999999,
+      "mat": 6250.52,
+      "lab": 17928.8,
       "equip": 1387.6399999999999,
-      "sub": 14000,
-      "hrs": 934.928,
-      "total": 159267.22400000002
+      "sub": 0,
+      "hrs": 245.60000000000002,
+      "total": 25566.96
     },
     {
       "num": "07",
@@ -833,14 +833,14 @@
           "sheet": "A004/A005",
           "ctcTask": null,
           "ctcDesc": null,
-          "pricedBy": "marketplace",
-          "mat": 33864,
-          "laborHrs": 408,
+          "pricedBy": "PENDING-CTC",
+          "mat": 0,
+          "laborHrs": 0,
           "laborRate": "$73/hr",
-          "labor": 29784,
+          "labor": 0,
           "equip": 0,
           "sub": 0,
-          "extended": 63648
+          "extended": 0
         },
         {
           "division": "07",
@@ -849,16 +849,16 @@
           "qty": 1480,
           "method": "MEASURED",
           "sheet": "A003",
-          "ctcTask": null,
-          "ctcDesc": null,
-          "pricedBy": "ALLOWANCE",
-          "mat": 2324,
-          "laborHrs": 22,
+          "ctcTask": "07-001",
+          "ctcDesc": "Batt Insulation - R-13, 2x4 Wall",
+          "pricedBy": "CTC",
+          "mat": 1169,
+          "laborHrs": 12,
           "laborRate": "$73/hr",
-          "labor": 1631,
-          "equip": 0,
-          "sub": 2664,
-          "extended": 6619
+          "labor": 864,
+          "equip": 163,
+          "sub": 0,
+          "extended": 2196
         },
         {
           "division": "07",
@@ -869,14 +869,14 @@
           "sheet": "A004",
           "ctcTask": null,
           "ctcDesc": null,
-          "pricedBy": "ALLOWANCE",
-          "mat": 3590,
-          "laborHrs": 48,
+          "pricedBy": "PENDING-CTC",
+          "mat": 0,
+          "laborHrs": 0,
           "laborRate": "$73/hr",
-          "labor": 3508,
+          "labor": 0,
           "equip": 0,
           "sub": 0,
-          "extended": 7098
+          "extended": 0
         },
         {
           "division": "07",
@@ -905,14 +905,14 @@
           "sheet": "A003/A004",
           "ctcTask": null,
           "ctcDesc": null,
-          "pricedBy": "ALLOWANCE",
+          "pricedBy": "PENDING-CTC",
           "mat": 0,
           "laborHrs": 0,
           "laborRate": "$73/hr",
           "labor": 0,
           "equip": 0,
-          "sub": 8500,
-          "extended": 8500
+          "sub": 0,
+          "extended": 0
         },
         {
           "division": "07",
@@ -923,14 +923,14 @@
           "sheet": "A000",
           "ctcTask": null,
           "ctcDesc": null,
-          "pricedBy": "ALLOWANCE",
-          "mat": 1302,
-          "laborHrs": 17,
+          "pricedBy": "PENDING-CTC",
+          "mat": 0,
+          "laborHrs": 0,
           "laborRate": "$73/hr",
-          "labor": 1253,
+          "labor": 0,
           "equip": 0,
-          "sub": 3907,
-          "extended": 6463
+          "sub": 0,
+          "extended": 0
         },
         {
           "division": "07",
@@ -941,22 +941,22 @@
           "sheet": "A004",
           "ctcTask": null,
           "ctcDesc": null,
-          "pricedBy": "ALLOWANCE",
+          "pricedBy": "PENDING-CTC",
           "mat": 0,
           "laborHrs": 0,
           "laborRate": "$73/hr",
           "labor": 0,
           "equip": 0,
-          "sub": 4500,
-          "extended": 4500
+          "sub": 0,
+          "extended": 0
         }
       ],
-      "mat": 48596.4,
-      "lab": 43581.292,
-      "equip": 1417,
-      "sub": 19571.2,
-      "hrs": 597.004,
-      "total": 113165.892
+      "mat": 8685.2,
+      "lab": 8269.44,
+      "equip": 1579.8,
+      "sub": 0,
+      "hrs": 113.28,
+      "total": 18534.44
     },
     {
       "num": "08",
@@ -1025,14 +1025,14 @@
           "sheet": "A004",
           "ctcTask": null,
           "ctcDesc": null,
-          "pricedBy": "ALLOWANCE",
+          "pricedBy": "PENDING-CTC",
           "mat": 0,
           "laborHrs": 0,
           "laborRate": "$73/hr",
           "labor": 0,
           "equip": 0,
-          "sub": 9500,
-          "extended": 9500
+          "sub": 0,
+          "extended": 0
         },
         {
           "division": "08",
@@ -1043,22 +1043,22 @@
           "sheet": "plans",
           "ctcTask": null,
           "ctcDesc": null,
-          "pricedBy": "ALLOWANCE",
-          "mat": 4466,
-          "laborHrs": 26,
+          "pricedBy": "PENDING-CTC",
+          "mat": 0,
+          "laborHrs": 0,
           "laborRate": "$73/hr",
-          "labor": 1863,
+          "labor": 0,
           "equip": 0,
           "sub": 0,
-          "extended": 6329
+          "extended": 0
         }
       ],
-      "mat": 24540.45,
-      "lab": 17557.96,
+      "mat": 20074.45,
+      "lab": 15695,
       "equip": 3220.5,
-      "sub": 9500,
-      "hrs": 240.52,
-      "total": 54818.91
+      "sub": 0,
+      "hrs": 215,
+      "total": 38989.95
     },
     {
       "num": "09",
@@ -1107,16 +1107,16 @@
           "qty": 3500,
           "method": "CALC",
           "sheet": "A001-A002",
-          "ctcTask": null,
-          "ctcDesc": null,
-          "pricedBy": "ALLOWANCE",
-          "mat": 1540,
-          "laborHrs": 31,
+          "ctcTask": "09-001",
+          "ctcDesc": "Drywall - 5/8\" Type X, Walls",
+          "pricedBy": "CTC",
+          "mat": 4935,
+          "laborHrs": 105,
           "laborRate": "$73/hr",
-          "labor": 2248,
-          "equip": 0,
+          "labor": 7665,
+          "equip": 980,
           "sub": 0,
-          "extended": 3788
+          "extended": 13580
         },
         {
           "division": "09",
@@ -1125,16 +1125,16 @@
           "qty": 1600,
           "method": "CALC",
           "sheet": "A001",
-          "ctcTask": null,
-          "ctcDesc": null,
-          "pricedBy": "ALLOWANCE",
-          "mat": 3456,
-          "laborHrs": 31,
+          "ctcTask": "09-030",
+          "ctcDesc": "Suspended Acoustical Ceiling - 2x4 Grid",
+          "pricedBy": "CTC",
+          "mat": 3616,
+          "laborHrs": 80,
           "laborRate": "$73/hr",
-          "labor": 2243,
-          "equip": 0,
-          "sub": 5760,
-          "extended": 11459
+          "labor": 5840,
+          "equip": 912,
+          "sub": 0,
+          "extended": 10368
         },
         {
           "division": "09",
@@ -1163,14 +1163,14 @@
           "sheet": "A001-A002",
           "ctcTask": null,
           "ctcDesc": null,
-          "pricedBy": "marketplace",
-          "mat": 21735,
-          "laborHrs": 270,
+          "pricedBy": "PENDING-CTC",
+          "mat": 0,
+          "laborHrs": 0,
           "laborRate": "$73/hr",
-          "labor": 19710,
+          "labor": 0,
           "equip": 0,
           "sub": 0,
-          "extended": 41445
+          "extended": 0
         },
         {
           "division": "09",
@@ -1199,22 +1199,22 @@
           "sheet": "A001-A002",
           "ctcTask": null,
           "ctcDesc": null,
-          "pricedBy": "ALLOWANCE",
-          "mat": 6157,
-          "laborHrs": 123,
+          "pricedBy": "PENDING-CTC",
+          "mat": 0,
+          "laborHrs": 0,
           "laborRate": "$73/hr",
-          "labor": 8989,
+          "labor": 0,
           "equip": 0,
           "sub": 0,
-          "extended": 15146
+          "extended": 0
         }
       ],
-      "mat": 124328.51999999999,
-      "lab": 204896.108,
-      "equip": 19554.32,
-      "sub": 5760,
-      "hrs": 2806.796,
-      "total": 354538.94800000003
+      "mat": 99991.71999999999,
+      "lab": 185211.21999999997,
+      "equip": 21446.32,
+      "sub": 0,
+      "hrs": 2537.14,
+      "total": 306649.25999999995
     },
     {
       "num": "10",
@@ -1229,14 +1229,14 @@
           "sheet": "A001-A002",
           "ctcTask": null,
           "ctcDesc": null,
-          "pricedBy": "marketplace",
-          "mat": 1521,
-          "laborHrs": 21,
+          "pricedBy": "PENDING-CTC",
+          "mat": 0,
+          "laborHrs": 0,
           "laborRate": "$73/hr",
-          "labor": 1533,
+          "labor": 0,
           "equip": 0,
           "sub": 0,
-          "extended": 3054
+          "extended": 0
         },
         {
           "division": "10",
@@ -1247,14 +1247,14 @@
           "sheet": "A001-A002",
           "ctcTask": null,
           "ctcDesc": null,
-          "pricedBy": "ALLOWANCE",
-          "mat": 1078,
-          "laborHrs": 6,
+          "pricedBy": "PENDING-CTC",
+          "mat": 0,
+          "laborHrs": 0,
           "laborRate": "$73/hr",
-          "labor": 450,
+          "labor": 0,
           "equip": 0,
           "sub": 0,
-          "extended": 1528
+          "extended": 0
         },
         {
           "division": "10",
@@ -1265,14 +1265,14 @@
           "sheet": "A001-A002",
           "ctcTask": null,
           "ctcDesc": null,
-          "pricedBy": "ALLOWANCE",
-          "mat": 2940,
-          "laborHrs": 17,
+          "pricedBy": "PENDING-CTC",
+          "mat": 0,
+          "laborHrs": 0,
           "laborRate": "$73/hr",
-          "labor": 1226,
+          "labor": 0,
           "equip": 0,
           "sub": 0,
-          "extended": 4166
+          "extended": 0
         },
         {
           "division": "10",
@@ -1283,14 +1283,14 @@
           "sheet": "A001-A002",
           "ctcTask": null,
           "ctcDesc": null,
-          "pricedBy": "ALLOWANCE",
-          "mat": 1056,
-          "laborHrs": 4,
+          "pricedBy": "PENDING-CTC",
+          "mat": 0,
+          "laborHrs": 0,
           "laborRate": "$73/hr",
-          "labor": 257,
+          "labor": 0,
           "equip": 0,
           "sub": 0,
-          "extended": 1313
+          "extended": 0
         },
         {
           "division": "10",
@@ -1301,22 +1301,22 @@
           "sheet": "A001-A002",
           "ctcTask": null,
           "ctcDesc": null,
-          "pricedBy": "ALLOWANCE",
+          "pricedBy": "PENDING-CTC",
           "mat": 0,
           "laborHrs": 0,
           "laborRate": "$73/hr",
           "labor": 0,
           "equip": 0,
-          "sub": 3500,
-          "extended": 3500
+          "sub": 0,
+          "extended": 0
         }
       ],
-      "mat": 6595.45,
-      "lab": 3466.04,
+      "mat": 0,
+      "lab": 0,
       "equip": 0,
-      "sub": 3500,
-      "hrs": 47.480000000000004,
-      "total": 13561.49
+      "sub": 0,
+      "hrs": 0,
+      "total": 0
     },
     {
       "num": "12",
@@ -1331,14 +1331,14 @@
           "sheet": "A001-A002",
           "ctcTask": null,
           "ctcDesc": null,
-          "pricedBy": "marketplace",
-          "mat": 4226,
-          "laborHrs": 21,
+          "pricedBy": "PENDING-CTC",
+          "mat": 0,
+          "laborHrs": 0,
           "laborRate": "$73/hr",
-          "labor": 1533,
+          "labor": 0,
           "equip": 0,
           "sub": 0,
-          "extended": 5759
+          "extended": 0
         },
         {
           "division": "12",
@@ -1349,14 +1349,14 @@
           "sheet": "A001",
           "ctcTask": null,
           "ctcDesc": null,
-          "pricedBy": "ALLOWANCE",
-          "mat": 3360,
-          "laborHrs": 19,
+          "pricedBy": "PENDING-CTC",
+          "mat": 0,
+          "laborHrs": 0,
           "laborRate": "$73/hr",
-          "labor": 1402,
+          "labor": 0,
           "equip": 0,
-          "sub": 4800,
-          "extended": 9562
+          "sub": 0,
+          "extended": 0
         },
         {
           "division": "12",
@@ -1367,22 +1367,22 @@
           "sheet": "A002",
           "ctcTask": null,
           "ctcDesc": null,
-          "pricedBy": "ALLOWANCE",
-          "mat": 3250,
-          "laborHrs": 43,
+          "pricedBy": "PENDING-CTC",
+          "mat": 0,
+          "laborHrs": 0,
           "laborRate": "$73/hr",
-          "labor": 3163,
+          "labor": 0,
           "equip": 0,
           "sub": 0,
-          "extended": 6413
+          "extended": 0
         }
       ],
-      "mat": 10836.25,
-      "lab": 6097.9236,
+      "mat": 0,
+      "lab": 0,
       "equip": 0,
-      "sub": 4800,
-      "hrs": 83.5332,
-      "total": 21734.173600000002
+      "sub": 0,
+      "hrs": 0,
+      "total": 0
     },
     {
       "num": "21",
@@ -1397,14 +1397,14 @@
           "sheet": "A002",
           "ctcTask": null,
           "ctcDesc": null,
-          "pricedBy": "ALLOWANCE",
+          "pricedBy": "PENDING-CTC",
           "mat": 0,
           "laborHrs": 0,
           "laborRate": "$124/hr",
           "labor": 0,
           "equip": 0,
-          "sub": 38480,
-          "extended": 38480
+          "sub": 0,
+          "extended": 0
         },
         {
           "division": "21",
@@ -1415,14 +1415,14 @@
           "sheet": "A002",
           "ctcTask": null,
           "ctcDesc": null,
-          "pricedBy": "ALLOWANCE",
+          "pricedBy": "PENDING-CTC",
           "mat": 0,
           "laborHrs": 0,
           "laborRate": "$124/hr",
           "labor": 0,
           "equip": 0,
-          "sub": 12000,
-          "extended": 12000
+          "sub": 0,
+          "extended": 0
         },
         {
           "division": "21",
@@ -1433,22 +1433,22 @@
           "sheet": "A002",
           "ctcTask": null,
           "ctcDesc": null,
-          "pricedBy": "ALLOWANCE",
+          "pricedBy": "PENDING-CTC",
           "mat": 0,
           "laborHrs": 0,
           "laborRate": "$124/hr",
           "labor": 0,
           "equip": 0,
-          "sub": 3500,
-          "extended": 3500
+          "sub": 0,
+          "extended": 0
         }
       ],
       "mat": 0,
       "lab": 0,
       "equip": 0,
-      "sub": 53980,
+      "sub": 0,
       "hrs": 0,
-      "total": 53980
+      "total": 0
     },
     {
       "num": "22",
@@ -1479,16 +1479,16 @@
           "qty": 12,
           "method": "MEASURED",
           "sheet": "P102-P104",
-          "ctcTask": null,
-          "ctcDesc": null,
-          "pricedBy": "ALLOWANCE",
-          "mat": 2232,
+          "ctcTask": "22-010",
+          "ctcDesc": "Lavatory - Wall-Hung, Vitreous China",
+          "pricedBy": "CTC",
+          "mat": 4407,
           "laborHrs": 48,
           "laborRate": "$124/hr",
           "labor": 5952,
-          "equip": 0,
-          "sub": 4092,
-          "extended": 12276
+          "equip": 678,
+          "sub": 0,
+          "extended": 11037
         },
         {
           "division": "22",
@@ -1499,14 +1499,14 @@
           "sheet": "A001-A002",
           "ctcTask": null,
           "ctcDesc": null,
-          "pricedBy": "marketplace",
-          "mat": 3381,
-          "laborHrs": 35,
+          "pricedBy": "PENDING-CTC",
+          "mat": 0,
+          "laborHrs": 0,
           "laborRate": "$124/hr",
-          "labor": 4340,
+          "labor": 0,
           "equip": 0,
           "sub": 0,
-          "extended": 7721
+          "extended": 0
         },
         {
           "division": "22",
@@ -1515,16 +1515,16 @@
           "qty": 36,
           "method": "MEASURED",
           "sheet": "P104/P105",
-          "ctcTask": null,
-          "ctcDesc": null,
-          "pricedBy": "ALLOWANCE",
-          "mat": 6840,
-          "laborHrs": 216,
+          "ctcTask": "22-001",
+          "ctcDesc": "Copper Water Pipe - 3/4\", Type L",
+          "pricedBy": "CTC",
+          "mat": 285,
+          "laborHrs": 7,
           "laborRate": "$124/hr",
-          "labor": 26784,
-          "equip": 0,
-          "sub": 17100,
-          "extended": 50724
+          "labor": 893,
+          "equip": 61,
+          "sub": 0,
+          "extended": 1239
         },
         {
           "division": "22",
@@ -1553,14 +1553,14 @@
           "sheet": "E101/P",
           "ctcTask": null,
           "ctcDesc": null,
-          "pricedBy": "ALLOWANCE",
-          "mat": 3360,
-          "laborHrs": 16,
+          "pricedBy": "PENDING-CTC",
+          "mat": 0,
+          "laborHrs": 0,
           "laborRate": "$124/hr",
-          "labor": 1984,
+          "labor": 0,
           "equip": 0,
-          "sub": 4200,
-          "extended": 9544
+          "sub": 0,
+          "extended": 0
         },
         {
           "division": "22",
@@ -1571,14 +1571,14 @@
           "sheet": "A002/E101",
           "ctcTask": null,
           "ctcDesc": null,
-          "pricedBy": "ALLOWANCE",
-          "mat": 480,
-          "laborHrs": 11,
+          "pricedBy": "PENDING-CTC",
+          "mat": 0,
+          "laborHrs": 0,
           "laborRate": "$124/hr",
-          "labor": 1323,
+          "labor": 0,
           "equip": 0,
-          "sub": 1920,
-          "extended": 3723
+          "sub": 0,
+          "extended": 0
         },
         {
           "division": "22",
@@ -1589,22 +1589,22 @@
           "sheet": "A001/P",
           "ctcTask": null,
           "ctcDesc": null,
-          "pricedBy": "ALLOWANCE",
+          "pricedBy": "PENDING-CTC",
           "mat": 0,
           "laborHrs": 0,
           "laborRate": "$124/hr",
           "labor": 0,
           "equip": 0,
-          "sub": 22000,
-          "extended": 22000
+          "sub": 0,
+          "extended": 0
         }
       ],
-      "mat": 20683.05,
-      "lab": 48752.6708,
-      "equip": 899.25,
-      "sub": 49312,
-      "hrs": 393.1667,
-      "total": 119646.9708
+      "mat": 9081.81,
+      "lab": 15214.8,
+      "equip": 1638.45,
+      "sub": 0,
+      "hrs": 122.7,
+      "total": 25935.06
     },
     {
       "num": "23",
@@ -1617,16 +1617,16 @@
           "qty": 4,
           "method": "MEASURED",
           "sheet": "E101/M103",
-          "ctcTask": null,
-          "ctcDesc": null,
-          "pricedBy": "ALLOWANCE",
-          "mat": 15680,
-          "laborHrs": 64,
+          "ctcTask": "23-010",
+          "ctcDesc": "Split System AC - 3 Ton, 14 SEER",
+          "pricedBy": "CTC",
+          "mat": 15820,
+          "laborHrs": 96,
           "laborRate": "$124/hr",
-          "labor": 7936,
-          "equip": 0,
-          "sub": 19600,
-          "extended": 43216
+          "labor": 11904,
+          "equip": 2260,
+          "sub": 0,
+          "extended": 29984
         },
         {
           "division": "23",
@@ -1635,16 +1635,16 @@
           "qty": 900,
           "method": "CALC",
           "sheet": "M103/M104",
-          "ctcTask": null,
-          "ctcDesc": null,
-          "pricedBy": "ALLOWANCE",
-          "mat": 5940,
-          "laborHrs": 270,
+          "ctcTask": "23-001",
+          "ctcDesc": "HVAC Ductwork - Galvanized Steel, Rectangular",
+          "pricedBy": "CTC",
+          "mat": 2799,
+          "laborHrs": 72,
           "laborRate": "$124/hr",
-          "labor": 33480,
-          "equip": 0,
-          "sub": 9900,
-          "extended": 49320
+          "labor": 8928,
+          "equip": 765,
+          "sub": 0,
+          "extended": 12492
         },
         {
           "division": "23",
@@ -1655,14 +1655,14 @@
           "sheet": "M103",
           "ctcTask": null,
           "ctcDesc": null,
-          "pricedBy": "ALLOWANCE",
+          "pricedBy": "PENDING-CTC",
           "mat": 0,
           "laborHrs": 0,
           "laborRate": "$124/hr",
           "labor": 0,
           "equip": 0,
-          "sub": 7500,
-          "extended": 7500
+          "sub": 0,
+          "extended": 0
         },
         {
           "division": "23",
@@ -1673,14 +1673,14 @@
           "sheet": "M103",
           "ctcTask": null,
           "ctcDesc": null,
-          "pricedBy": "marketplace",
-          "mat": 761,
-          "laborHrs": 18,
+          "pricedBy": "PENDING-CTC",
+          "mat": 0,
+          "laborHrs": 0,
           "laborRate": "$124/hr",
-          "labor": 2170,
+          "labor": 0,
           "equip": 0,
           "sub": 0,
-          "extended": 2931
+          "extended": 0
         },
         {
           "division": "23",
@@ -1691,14 +1691,14 @@
           "sheet": "E101/M",
           "ctcTask": null,
           "ctcDesc": null,
-          "pricedBy": "ALLOWANCE",
+          "pricedBy": "PENDING-CTC",
           "mat": 0,
           "laborHrs": 0,
           "laborRate": "$124/hr",
           "labor": 0,
           "equip": 0,
-          "sub": 26000,
-          "extended": 26000
+          "sub": 0,
+          "extended": 0
         },
         {
           "division": "23",
@@ -1709,22 +1709,22 @@
           "sheet": "E101",
           "ctcTask": null,
           "ctcDesc": null,
-          "pricedBy": "ALLOWANCE",
+          "pricedBy": "PENDING-CTC",
           "mat": 0,
           "laborHrs": 0,
           "laborRate": "$124/hr",
           "labor": 0,
           "equip": 0,
-          "sub": 6500,
-          "extended": 6500
+          "sub": 0,
+          "extended": 0
         }
       ],
-      "mat": 22380.69,
-      "lab": 43586,
-      "equip": 0,
-      "sub": 69500,
-      "hrs": 351.5,
-      "total": 135466.69
+      "mat": 18619,
+      "lab": 20832,
+      "equip": 3025,
+      "sub": 0,
+      "hrs": 168,
+      "total": 42476
     },
     {
       "num": "26",
@@ -1775,14 +1775,14 @@
           "sheet": "E101-E104",
           "ctcTask": null,
           "ctcDesc": null,
-          "pricedBy": "ALLOWANCE",
-          "mat": 19654,
-          "laborHrs": 296,
+          "pricedBy": "PENDING-CTC",
+          "mat": 0,
+          "laborHrs": 0,
           "laborRate": "$124/hr",
-          "labor": 36704,
+          "labor": 0,
           "equip": 0,
-          "sub": 22496,
-          "extended": 78854
+          "sub": 0,
+          "extended": 0
         },
         {
           "division": "26",
@@ -1791,16 +1791,16 @@
           "qty": 65,
           "method": "MEASURED",
           "sheet": "E104",
-          "ctcTask": null,
-          "ctcDesc": null,
-          "pricedBy": "ALLOWANCE",
-          "mat": 7605,
-          "laborHrs": 45,
+          "ctcTask": "26-020",
+          "ctcDesc": "LED Light Fixture - 2x4 Troffer",
+          "pricedBy": "CTC",
+          "mat": 11752,
+          "laborHrs": 98,
           "laborRate": "$124/hr",
-          "labor": 5588,
-          "equip": 0,
-          "sub": 5915,
-          "extended": 19108
+          "labor": 12090,
+          "equip": 1102,
+          "sub": 0,
+          "extended": 24944
         },
         {
           "division": "26",
@@ -1809,16 +1809,16 @@
           "qty": 220,
           "method": "CALC",
           "sheet": "E102-E103",
-          "ctcTask": null,
-          "ctcDesc": null,
-          "pricedBy": "ALLOWANCE",
-          "mat": 3696,
-          "laborHrs": 74,
+          "ctcTask": "26-010",
+          "ctcDesc": "Duplex Receptacle - 20A, Spec Grade",
+          "pricedBy": "CTC",
+          "mat": 10441,
+          "laborHrs": 220,
           "laborRate": "$124/hr",
-          "labor": 9166,
-          "equip": 0,
+          "labor": 27280,
+          "equip": 1989,
           "sub": 0,
-          "extended": 12862
+          "extended": 39710
         },
         {
           "division": "26",
@@ -1829,14 +1829,14 @@
           "sheet": "E101",
           "ctcTask": null,
           "ctcDesc": null,
-          "pricedBy": "ALLOWANCE",
-          "mat": 2600,
-          "laborHrs": 52,
+          "pricedBy": "PENDING-CTC",
+          "mat": 0,
+          "laborHrs": 0,
           "laborRate": "$124/hr",
-          "labor": 6448,
+          "labor": 0,
           "equip": 0,
           "sub": 0,
-          "extended": 9048
+          "extended": 0
         },
         {
           "division": "26",
@@ -1847,14 +1847,14 @@
           "sheet": "E101",
           "ctcTask": null,
           "ctcDesc": null,
-          "pricedBy": "ALLOWANCE",
+          "pricedBy": "PENDING-CTC",
           "mat": 0,
           "laborHrs": 0,
           "laborRate": "$124/hr",
           "labor": 0,
           "equip": 0,
-          "sub": 11000,
-          "extended": 11000
+          "sub": 0,
+          "extended": 0
         },
         {
           "division": "26",
@@ -1865,14 +1865,14 @@
           "sheet": "E101",
           "ctcTask": null,
           "ctcDesc": null,
-          "pricedBy": "ALLOWANCE",
+          "pricedBy": "PENDING-CTC",
           "mat": 0,
           "laborHrs": 0,
           "laborRate": "$124/hr",
           "labor": 0,
           "equip": 0,
-          "sub": 5200,
-          "extended": 5200
+          "sub": 0,
+          "extended": 0
         },
         {
           "division": "26",
@@ -1883,14 +1883,14 @@
           "sheet": "E104",
           "ctcTask": null,
           "ctcDesc": null,
-          "pricedBy": "ALLOWANCE",
-          "mat": 4608,
-          "laborHrs": 41,
+          "pricedBy": "PENDING-CTC",
+          "mat": 0,
+          "laborHrs": 0,
           "laborRate": "$124/hr",
-          "labor": 5079,
+          "labor": 0,
           "equip": 0,
           "sub": 0,
-          "extended": 9687
+          "extended": 0
         },
         {
           "division": "26",
@@ -1901,22 +1901,22 @@
           "sheet": "E101 legend",
           "ctcTask": null,
           "ctcDesc": null,
-          "pricedBy": "marketplace",
-          "mat": 592,
-          "laborHrs": 11,
+          "pricedBy": "PENDING-CTC",
+          "mat": 0,
+          "laborHrs": 0,
           "laborRate": "$124/hr",
-          "labor": 1302,
+          "labor": 0,
           "equip": 0,
           "sub": 0,
-          "extended": 1894
+          "extended": 0
         }
       ],
-      "mat": 44687.53999999999,
-      "lab": 70239.2172,
-      "equip": 847.5,
-      "sub": 44611,
-      "hrs": 566.4453000000001,
-      "total": 160385.2572
+      "mat": 28125.7,
+      "lab": 45322,
+      "equip": 3938.0499999999997,
+      "sub": 0,
+      "hrs": 365.5,
+      "total": 77385.75
     },
     {
       "num": "27/28",
@@ -1931,14 +1931,14 @@
           "sheet": "E101/A000",
           "ctcTask": null,
           "ctcDesc": null,
-          "pricedBy": "ALLOWANCE",
+          "pricedBy": "PENDING-CTC",
           "mat": 0,
           "laborHrs": 0,
           "laborRate": "$124/hr",
           "labor": 0,
           "equip": 0,
-          "sub": 15392,
-          "extended": 15392
+          "sub": 0,
+          "extended": 0
         },
         {
           "division": "27/28",
@@ -1949,14 +1949,14 @@
           "sheet": "E102 note A",
           "ctcTask": null,
           "ctcDesc": null,
-          "pricedBy": "marketplace",
-          "mat": 725,
-          "laborHrs": 20,
+          "pricedBy": "PENDING-CTC",
+          "mat": 0,
+          "laborHrs": 0,
           "laborRate": "$124/hr",
-          "labor": 2480,
+          "labor": 0,
           "equip": 0,
           "sub": 0,
-          "extended": 3205
+          "extended": 0
         },
         {
           "division": "27/28",
@@ -1967,22 +1967,22 @@
           "sheet": "",
           "ctcTask": null,
           "ctcDesc": null,
-          "pricedBy": "ALLOWANCE",
+          "pricedBy": "PENDING-CTC",
           "mat": 0,
           "laborHrs": 0,
           "laborRate": "$124/hr",
           "labor": 0,
           "equip": 0,
-          "sub": 18000,
-          "extended": 18000
+          "sub": 0,
+          "extended": 0
         }
       ],
-      "mat": 724.5999999999999,
-      "lab": 2480,
+      "mat": 0,
+      "lab": 0,
       "equip": 0,
-      "sub": 33392,
-      "hrs": 20,
-      "total": 36596.6
+      "sub": 0,
+      "hrs": 0,
+      "total": 0
     },
     {
       "num": "31",
@@ -1995,16 +1995,16 @@
           "qty": 550,
           "method": "CALC",
           "sheet": "S100",
-          "ctcTask": null,
-          "ctcDesc": null,
-          "pricedBy": "ALLOWANCE",
+          "ctcTask": "31-001",
+          "ctcDesc": "Excavation - Common Earth, Machine",
+          "pricedBy": "CTC",
           "mat": 0,
-          "laborHrs": 62,
+          "laborHrs": 28,
           "laborRate": "$73/hr",
-          "labor": 4497,
-          "equip": 11550,
-          "sub": 6930,
-          "extended": 22977
+          "labor": 2008,
+          "equip": 3729,
+          "sub": 0,
+          "extended": 5737
         },
         {
           "division": "31",
@@ -2015,14 +2015,14 @@
           "sheet": "S100",
           "ctcTask": null,
           "ctcDesc": null,
-          "pricedBy": "ALLOWANCE",
+          "pricedBy": "PENDING-CTC",
           "mat": 0,
-          "laborHrs": 41,
+          "laborHrs": 0,
           "laborRate": "$73/hr",
-          "labor": 2958,
-          "equip": 6080,
-          "sub": 6080,
-          "extended": 15118
+          "labor": 0,
+          "equip": 0,
+          "sub": 0,
+          "extended": 0
         },
         {
           "division": "31",
@@ -2031,16 +2031,16 @@
           "qty": 180,
           "method": "CALC",
           "sheet": "S100",
-          "ctcTask": null,
-          "ctcDesc": null,
-          "pricedBy": "ALLOWANCE",
+          "ctcTask": "31-002",
+          "ctcDesc": "Backfill - Compacted, On-Site Material",
+          "pricedBy": "CTC",
           "mat": 0,
-          "laborHrs": 24,
+          "laborHrs": 13,
           "laborRate": "$73/hr",
-          "labor": 1787,
-          "equip": 3060,
-          "sub": 1224,
-          "extended": 6071
+          "labor": 920,
+          "equip": 1730,
+          "sub": 0,
+          "extended": 2650
         },
         {
           "division": "31",
@@ -2051,14 +2051,14 @@
           "sheet": "S100",
           "ctcTask": null,
           "ctcDesc": null,
-          "pricedBy": "ALLOWANCE",
-          "mat": 2842,
-          "laborHrs": 25,
+          "pricedBy": "PENDING-CTC",
+          "mat": 0,
+          "laborHrs": 0,
           "laborRate": "$73/hr",
-          "labor": 1847,
+          "labor": 0,
           "equip": 0,
           "sub": 0,
-          "extended": 4689
+          "extended": 0
         },
         {
           "division": "31",
@@ -2069,22 +2069,22 @@
           "sheet": "A000",
           "ctcTask": null,
           "ctcDesc": null,
-          "pricedBy": "ALLOWANCE",
+          "pricedBy": "PENDING-CTC",
           "mat": 0,
-          "laborHrs": 35,
+          "laborHrs": 0,
           "laborRate": "$73/hr",
-          "labor": 2557,
-          "equip": 3931,
+          "labor": 0,
+          "equip": 0,
           "sub": 0,
-          "extended": 6488
+          "extended": 0
         }
       ],
-      "mat": 2841.6,
-      "lab": 13646.328,
-      "equip": 24621.2,
-      "sub": 14234,
-      "hrs": 186.936,
-      "total": 55343.128
+      "mat": 0,
+      "lab": 2927.3,
+      "equip": 5458.8,
+      "sub": 0,
+      "hrs": 40.1,
+      "total": 8386.1
     },
     {
       "num": "32",
@@ -2097,16 +2097,16 @@
           "qty": 500,
           "method": "CALC",
           "sheet": "A000",
-          "ctcTask": null,
-          "ctcDesc": null,
-          "pricedBy": "ALLOWANCE",
-          "mat": 2250,
-          "laborHrs": 18,
+          "ctcTask": "32-001",
+          "ctcDesc": "Asphalt Paving - 2\" Surface Course",
+          "pricedBy": "CTC",
+          "mat": 1270,
+          "laborHrs": 8,
           "laborRate": "$73/hr",
-          "labor": 1314,
-          "equip": 0,
-          "sub": 5400,
-          "extended": 8964
+          "labor": 548,
+          "equip": 425,
+          "sub": 0,
+          "extended": 2243
         },
         {
           "division": "32",
@@ -2117,14 +2117,14 @@
           "sheet": "A000",
           "ctcTask": null,
           "ctcDesc": null,
-          "pricedBy": "ALLOWANCE",
+          "pricedBy": "PENDING-CTC",
           "mat": 0,
           "laborHrs": 0,
           "laborRate": "$73/hr",
           "labor": 0,
           "equip": 0,
-          "sub": 9500,
-          "extended": 9500
+          "sub": 0,
+          "extended": 0
         },
         {
           "division": "32",
@@ -2133,24 +2133,24 @@
           "qty": 2520,
           "method": "CALC",
           "sheet": "A001",
-          "ctcTask": null,
-          "ctcDesc": null,
-          "pricedBy": "ALLOWANCE",
-          "mat": 4158,
-          "laborHrs": 37,
+          "ctcTask": "32-010",
+          "ctcDesc": "Sodding - Bermuda Grass",
+          "pricedBy": "CTC",
+          "mat": 1134,
+          "laborHrs": 13,
           "laborRate": "$73/hr",
-          "labor": 2704,
-          "equip": 0,
-          "sub": 6930,
-          "extended": 13792
+          "labor": 920,
+          "equip": 277,
+          "sub": 0,
+          "extended": 2331
         }
       ],
-      "mat": 6408,
-      "lab": 4018.212,
-      "equip": 0,
-      "sub": 21830,
-      "hrs": 55.044,
-      "total": 32256.212
+      "mat": 2404,
+      "lab": 1467.3,
+      "equip": 702.2,
+      "sub": 0,
+      "hrs": 20.1,
+      "total": 4573.5
     },
     {
       "num": "33",
@@ -2165,14 +2165,14 @@
           "sheet": "P102",
           "ctcTask": null,
           "ctcDesc": null,
-          "pricedBy": "ALLOWANCE",
+          "pricedBy": "PENDING-CTC",
           "mat": 0,
           "laborHrs": 0,
           "laborRate": "$73/hr",
           "labor": 0,
           "equip": 0,
-          "sub": 18000,
-          "extended": 18000
+          "sub": 0,
+          "extended": 0
         },
         {
           "division": "33",
@@ -2183,14 +2183,14 @@
           "sheet": "P104",
           "ctcTask": null,
           "ctcDesc": null,
-          "pricedBy": "ALLOWANCE",
+          "pricedBy": "PENDING-CTC",
           "mat": 0,
           "laborHrs": 0,
           "laborRate": "$73/hr",
           "labor": 0,
           "equip": 0,
-          "sub": 20000,
-          "extended": 20000
+          "sub": 0,
+          "extended": 0
         },
         {
           "division": "33",
@@ -2201,14 +2201,14 @@
           "sheet": "P106",
           "ctcTask": null,
           "ctcDesc": null,
-          "pricedBy": "ALLOWANCE",
+          "pricedBy": "PENDING-CTC",
           "mat": 0,
           "laborHrs": 0,
           "laborRate": "$73/hr",
           "labor": 0,
           "equip": 0,
-          "sub": 9000,
-          "extended": 9000
+          "sub": 0,
+          "extended": 0
         },
         {
           "division": "33",
@@ -2219,22 +2219,22 @@
           "sheet": "E101",
           "ctcTask": null,
           "ctcDesc": null,
-          "pricedBy": "ALLOWANCE",
+          "pricedBy": "PENDING-CTC",
           "mat": 0,
           "laborHrs": 0,
           "laborRate": "$73/hr",
           "labor": 0,
           "equip": 0,
-          "sub": 15000,
-          "extended": 15000
+          "sub": 0,
+          "extended": 0
         }
       ],
       "mat": 0,
       "lab": 0,
       "equip": 0,
-      "sub": 62000,
+      "sub": 0,
       "hrs": 0,
-      "total": 62000
+      "total": 0
     }
   ]
 }
