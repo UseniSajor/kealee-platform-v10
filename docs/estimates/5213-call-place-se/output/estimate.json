@@ -2,7 +2,7 @@
   "meta": {
     "project": "5213 Call Place SE, Washington DC 20019",
     "type": "New construction detached group home / residential care (R-2), Type IIIB",
-    "generated": "2026-07-14T04:39:28.780Z",
+    "generated": "2026-07-14T04:42:16.599Z",
     "engine": "Kealee packages/estimating (EstimatingService markup structure)",
     "catalogue": "MARKETPLACE_ASSEMBLIES (DC-Baltimore 2024-25) — mid tier, DC factor 1.15",
     "takeoff": "MEASURED from permit set (28 sheets) — see drawings/MEASURED-TAKEOFF.md",
@@ -36,9 +36,9 @@
     },
     "methodMix": {
       "measured": 733411,
-      "calcFromDims": 760186,
+      "calcFromDims": 803571,
       "notDimensioned": 201100,
-      "dimensionedPct": 88.1
+      "dimensionedPct": 88.4
     },
     "notDimensionedItems": [
       {
@@ -487,14 +487,42 @@
                 "rate": null
               },
               "laborRate": null
+            },
+            {
+              "code": "ACCEL",
+              "name": "Schedule acceleration premium (6-mo compressed, 8% on trade labor)",
+              "unit": "ls",
+              "qty": 1,
+              "allowance": true,
+              "waste": 0,
+              "method": "CALC",
+              "dim": "8% × $542,305 self-perform trade labor",
+              "sheet": "",
+              "conf": "MED",
+              "note": "Overtime + parallel crews + reduced productivity for compressed schedule",
+              "matUnit": 0,
+              "labUnit": 43384.40880000001,
+              "equipUnit": 0,
+              "subUnit": 0,
+              "lhrsUnit": 0,
+              "ext": {
+                "mat": 0,
+                "lab": 43384.40880000001,
+                "equip": 0,
+                "sub": 0,
+                "total": 43384.40880000001,
+                "lhrs": 0,
+                "rate": null
+              },
+              "laborRate": null
             }
           ],
           "mat": 15360.36,
-          "lab": 83423.4,
+          "lab": 126807.8088,
           "equip": 0,
           "sub": 64100,
           "hrs": 1051.2002,
-          "total": 162883.76
+          "total": 206268.1688
         },
         {
           "num": "02",
@@ -3561,18 +3589,18 @@
         }
       ],
       "material": 462741.8779999999,
-      "labor": 625728.51,
+      "labor": 669112.9188,
       "equipment": 32721.2,
       "subcontractor": 573506,
       "laborHours": 7553.2262,
-      "direct": 1694697.5879999998,
-      "overhead": 203363.71055999998,
-      "profit": 254204.63819999996,
-      "contingency": 118628.83115999999,
-      "bondsIns": 32283.9890514,
+      "direct": 1738081.9967999998,
+      "overhead": 208569.83961599998,
+      "profit": 260712.29951999997,
+      "contingency": 121665.739776,
+      "bondsIns": 33110.462039039994,
       "permit": 22000,
-      "total": 2325178.7569714,
-      "psf": 392.76668192084463
+      "total": 2384140.33775104,
+      "psf": 402.72640840389187
     },
     "B": {
       "scen": "B",
@@ -3963,14 +3991,42 @@
                 "rate": null
               },
               "laborRate": null
+            },
+            {
+              "code": "ACCEL",
+              "name": "Schedule acceleration premium (6-mo compressed, 8% on trade labor)",
+              "unit": "ls",
+              "qty": 1,
+              "allowance": true,
+              "waste": 0,
+              "method": "CALC",
+              "dim": "8% × $477,228 self-perform trade labor",
+              "sheet": "",
+              "conf": "MED",
+              "note": "Overtime + parallel crews + reduced productivity for compressed schedule",
+              "matUnit": 0,
+              "labUnit": 38178.279744000014,
+              "equipUnit": 0,
+              "subUnit": 0,
+              "lhrsUnit": 0,
+              "ext": {
+                "mat": 0,
+                "lab": 38178.279744000014,
+                "equip": 0,
+                "sub": 0,
+                "total": 38178.279744000014,
+                "lhrs": 0,
+                "rate": null
+              },
+              "laborRate": null
             }
           ],
           "mat": 13517.1168,
-          "lab": 73412.59199999999,
+          "lab": 111590.871744,
           "equip": 0,
           "sub": 56408,
           "hrs": 925.056176,
-          "total": 143337.7088
+          "total": 181515.98854400002
         },
         {
           "num": "02",
@@ -7037,18 +7093,18 @@
         }
       ],
       "material": 407212.85264,
-      "labor": 550641.0888,
+      "labor": 588819.3685440001,
       "equipment": 28794.656000000003,
       "subcontractor": 504685.27999999997,
       "laborHours": 6646.839056000001,
-      "direct": 1491333.87744,
-      "overhead": 178960.0652928,
-      "profit": 223700.08161599998,
-      "contingency": 74566.693872,
-      "bondsIns": 28409.910365232,
+      "direct": 1529512.1571840001,
+      "overhead": 183541.45886208,
+      "profit": 229426.8235776,
+      "contingency": 76475.60785920001,
+      "bondsIns": 29137.2065943552,
       "permit": 22000,
-      "total": 2018970.6285860322,
-      "psf": 341.0423359098027
+      "total": 2070093.2540772355,
+      "psf": 349.6779145400736
     },
     "C": {
       "scen": "C",
@@ -7439,14 +7495,42 @@
                 "rate": null
               },
               "laborRate": null
+            },
+            {
+              "code": "ACCEL",
+              "name": "Schedule acceleration premium (6-mo compressed, 8% on trade labor)",
+              "unit": "ls",
+              "qty": 1,
+              "allowance": true,
+              "waste": 0,
+              "method": "CALC",
+              "dim": "8% × $412,152 self-perform trade labor",
+              "sheet": "",
+              "conf": "MED",
+              "note": "Overtime + parallel crews + reduced productivity for compressed schedule",
+              "matUnit": 0,
+              "labUnit": 32972.15068800001,
+              "equipUnit": 0,
+              "subUnit": 0,
+              "lhrsUnit": 0,
+              "ext": {
+                "mat": 0,
+                "lab": 32972.15068800001,
+                "equip": 0,
+                "sub": 0,
+                "total": 32972.15068800001,
+                "lhrs": 0,
+                "rate": null
+              },
+              "laborRate": null
             }
           ],
           "mat": 11673.8736,
-          "lab": 63401.78400000001,
+          "lab": 96373.93468800001,
           "equip": 0,
           "sub": 48716,
           "hrs": 798.9121520000001,
-          "total": 123791.6576
+          "total": 156763.808288
         },
         {
           "num": "02",
@@ -10513,18 +10597,18 @@
         }
       ],
       "material": 351683.8272799999,
-      "labor": 475553.66760000004,
+      "labor": 508525.81828800007,
       "equipment": 24868.112,
       "subcontractor": 435864.56,
       "laborHours": 5740.4519119999995,
-      "direct": 1287970.16688,
-      "overhead": 154556.42002559997,
-      "profit": 193195.52503199998,
-      "contingency": 64398.508344,
-      "bondsIns": 24535.831679063995,
+      "direct": 1320942.317568,
+      "overhead": 158513.07810816,
+      "profit": 198141.34763519999,
+      "contingency": 66047.1158784,
+      "bondsIns": 25163.9511496704,
       "permit": 14000,
-      "total": 1738656.4519606638,
-      "psf": 293.6919682365986
+      "total": 1782807.8103394303,
+      "psf": 301.1499679627416
     }
   },
   "exclusions": {
@@ -10598,15 +10682,15 @@
     "beds": 14,
     "bedrooms": 8,
     "bathrooms": 7,
-    "recommendedBaseBuilding": 2325179,
-    "costPerGSF": 392.77,
-    "costPerBed": 166084,
-    "costPerBedroom": 290647,
-    "costPerBathroom": 332168,
-    "costExclElevatorAndKitchen": 2325179,
+    "recommendedBaseBuilding": 2384140,
+    "costPerGSF": 402.73,
+    "costPerBed": 170296,
+    "costPerBedroom": 298018,
+    "costPerBathroom": 340591,
+    "costExclElevatorAndKitchen": 2384140,
     "elevatorAllowanceSeparate": 142000,
     "kitchenEquipmentAllowanceSeparate": 120500,
-    "allInWithExcludedAllowances": 2587679
+    "allInWithExcludedAllowances": 2646640
   },
   "topDrivers": [
     {
@@ -10615,7 +10699,7 @@
     },
     {
       "k": "Div 01 General Conditions",
-      "v": 162883.76
+      "v": 206268.1688
     },
     {
       "k": "Div 26 Electrical",

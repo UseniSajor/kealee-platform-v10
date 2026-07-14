@@ -12,6 +12,7 @@
 "01","Property Survey","GEN-SURVEY","no","each","1","CALC","","","MED","724.5","0","salaried","0","0","0","725",""
 "01","Structural Engineering","GEN-ENGINEER","no","each","1","CALC","","S101","MED","1449","0","salaried","0","0","0","1449","Structural — Denababa Eng."
 "01","Closeout / as-builts / O&M / commissioning","ALLOWANCE","YES","ls","1","ASSUMED","","","LOW","0","0","salaried","0","0","9000","9000",""
+"01","Schedule acceleration premium (6-mo compressed, 8% on trade labor)","ACCEL","YES","ls","1","CALC","8% × $542;305 self-perform trade labor","","MED","0","0","salaried","43384","0","0","43384","Overtime + parallel crews + reduced productivity for compressed schedule"
 "02","Clearing & site preparation","ALLOWANCE","YES","sqft","4000","CALC","lot 4;000 SF (20'×100' / 40'×100')","A000","LOW","0","32","$73/hr","2336","4800","4800","11936",""
 "02","Erosion & sediment control (DOEE/SWM)","ALLOWANCE","YES","lf","280","CALC","lot perimeter silt fence ~280 LF","A000","LOW","9.6","24","$73/hr","1744","0","4480","8912",""
 "02","New rear areaway excavation/retaining","ALLOWANCE","YES","ls","1","MEASURED","rear areaway shown (scope note)","A000","LOW","0","0","$73/hr","0","0","12000","12000",""

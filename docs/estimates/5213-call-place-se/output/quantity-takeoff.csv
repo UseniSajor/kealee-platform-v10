@@ -12,6 +12,7 @@
 "01","Property Survey","each","1","CALC","","","MED","GEN-SURVEY","no"
 "01","Structural Engineering","each","1","CALC","","S101","MED","GEN-ENGINEER","no"
 "01","Closeout / as-builts / O&M / commissioning","ls","1","ASSUMED","","","LOW","ALLOWANCE","YES"
+"01","Schedule acceleration premium (6-mo compressed, 8% on trade labor)","ls","1","CALC","8% × $542;305 self-perform trade labor","","MED","ACCEL","YES"
 "02","Clearing & site preparation","sqft","4000","CALC","lot 4;000 SF (20'×100' / 40'×100')","A000","LOW","ALLOWANCE","YES"
 "02","Erosion & sediment control (DOEE/SWM)","lf","280","CALC","lot perimeter silt fence ~280 LF","A000","LOW","ALLOWANCE","YES"
 "02","New rear areaway excavation/retaining","ls","1","MEASURED","rear areaway shown (scope note)","A000","LOW","ALLOWANCE","YES"

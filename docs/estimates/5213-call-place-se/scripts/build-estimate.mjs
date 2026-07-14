@@ -28,6 +28,9 @@ const TARGET_PSF = 170, TARGET_TOTAL = 1006400;
 // Construction schedule — scales time-based general conditions (Div 01).
 const SCHEDULE_MONTHS = 6;
 const SCHEDULE_WEEKS = Math.round(SCHEDULE_MONTHS * 4.333); // 26
+// Acceleration premium for the compressed 6-month schedule (overtime + parallel
+// crews + reduced productivity). Applied to self-performed trade labor (Div 02-33).
+const ACCEL = 0.08;
 const DC = 1.15;
 const OH = 0.12, PROFIT = 0.15, CONTINGENCY = 0.07, BONDS_INS = 0.015;
 // ── Labor wage schedule (owner-directed) ────────────────────────────────────
@@ -300,6 +303,19 @@ function computeScenario(scen) {
     divs.push({ num, name, lines: litems, mat: m, lab: l, equip: e, sub: s, hrs: h, total: m + l + e + s });
     dMat += m; dLab += l; dEquip += e; dSub += s; dHrs += h;
   }
+  // Schedule acceleration premium on self-perform trade labor (Div 02-33)
+  const constrLabor = divs.filter((d) => d.num !== '01').reduce((a, d) => a + d.lab, 0);
+  const accel = constrLabor * ACCEL;
+  const d01 = divs.find((d) => d.num === '01');
+  const accelLine = {
+    code: 'ACCEL', name: `Schedule acceleration premium (${SCHEDULE_MONTHS}-mo compressed, ${(ACCEL * 100).toFixed(0)}% on trade labor)`,
+    unit: 'ls', qty: 1, allowance: true, waste: 0, method: 'CALC',
+    dim: `${(ACCEL * 100).toFixed(0)}% × $${Math.round(constrLabor).toLocaleString()} self-perform trade labor`,
+    sheet: '', conf: 'MED', note: 'Overtime + parallel crews + reduced productivity for compressed schedule',
+    matUnit: 0, labUnit: accel, equipUnit: 0, subUnit: 0, lhrsUnit: 0,
+    ext: { mat: 0, lab: accel, equip: 0, sub: 0, total: accel, lhrs: 0, rate: null }, laborRate: null,
+  };
+  d01.lines.push(accelLine); d01.lab += accel; d01.total += accel; dLab += accel;
   const direct = dMat + dLab + dEquip + dSub;
   const overhead = direct * OH, profit = direct * PROFIT;
   const contingency = direct * (scen === 'A' ? CONTINGENCY : 0.05);
@@ -339,7 +355,7 @@ console.log(`\nTARGET ${money(TARGET_TOTAL)} @ ${psf(TARGET_PSF)} — Scenario A
 console.log(`Excluded: elevator ${money(elevatorAllow)} | kitchen equip ${money(kitchenAllow)}`);
 console.log(`\nLABOR WAGE: apprentice $${APPRENTICE} · journeyman $${JOURNEYMAN} · master $${MASTER}/hr`);
 console.log(`  General-trades crew $${GENERAL_RATE}/hr (60% jrny + 40% appr) | Licensed MEP/fire $${LICENSED_RATE}/hr (master flat)`);
-console.log(`  ${Math.round(A.laborHours).toLocaleString()} total labor-hours | labor $${Math.round(A.labor).toLocaleString()}`);
+console.log(`  ${Math.round(A.laborHours).toLocaleString()} total labor-hours | labor $${Math.round(A.labor).toLocaleString()} (incl. ${(ACCEL * 100).toFixed(0)}% ${SCHEDULE_MONTHS}-mo acceleration premium)`);
 console.log(`\nTakeoff basis (Scenario A direct): MEASURED ${money(methodMix.MEASURED)} (${(methodMix.MEASURED / A.direct * 100).toFixed(0)}%) | CALC-from-dims ${money(methodMix.CALC)} (${(methodMix.CALC / A.direct * 100).toFixed(0)}%) | not-dimensioned ${money(methodMix.ASSUMED)} (${(methodMix.ASSUMED / A.direct * 100).toFixed(0)}%)`);
 console.log(`==> DIMENSIONED (measured + calc-from-dims): ${dimensionedPct.toFixed(1)}% of direct cost`);
 if (undimLines.length) { console.log(`Remaining not-dimensioned (not shown on drawings):`); for (const l of undimLines) console.log(`   - ${l.name} (${money(l.ext.total)})`); }
