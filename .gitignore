@@ -68,3 +68,7 @@ env-templates/railway-cli.env
 # scratch files
 scratch/
 apps/web-main/find_replicate.js
+
+# 5213 Call Place estimate — heavy drawing binaries (kept local, not committed)
+docs/estimates/5213-call-place-se/drawings/png/
+docs/estimates/5213-call-place-se/output/*.pdf
