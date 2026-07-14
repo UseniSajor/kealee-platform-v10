@@ -72,13 +72,13 @@ Do this:
    Note: the repo also has a native parser `scripts/parse-ctc-pdf.ts` (+ Prisma
    seed `packages/estimating/src/seed-ctc.ts`) — if node_modules + a Prisma DB are
    available, that path seeds the real `Assembly`/`CostDatabase` tables directly.
-5. Re-price 5213 Call Place ENTIRELY against the CTC: update
-   `scripts/build-estimate-ctc.mjs` to read the full `ctc-cost-tasks.json`, apply
-   the SAME measured quantities, wage schedule, 6-month schedule, and 8%
-   acceleration as `build-estimate.mjs`, and map each takeoff line to a CTC task
-   number (with the technical spec as the scope note). Report CTC coverage %
-   (should be ≫ the 45.7% the 41-task sample reached). Keep elevator + kitchen
-   equipment excluded.
+5. Re-price is ALREADY WIRED: `scripts/build-estimate-ctc.mjs` reuses the measured
+   takeoff + wage schedule + 6-month + 8% acceleration from output/estimate.json and
+   re-prices each line against the CTC (material/equip from the matched task, labor =
+   task hours × your crew wage). Just run `node scripts/build-estimate-ctc.mjs` after
+   loading the catalog. It auto-detects the full `data/ctc/ctc-cost-tasks.json` (falls
+   back to the 41-task sample). If coverage is low, extend the `CROSSWALK` map in that
+   file (catalogueCode -> {csi, kw}). Keep elevator + kitchen excluded (already handled).
 6. Persist and export: write the CTC-priced estimate to Postgres, regenerate the
    PDF, validate (division sums, markups, no NaN, excluded equipment not in base),
    commit, and push to the branch (PR #27).

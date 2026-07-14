@@ -1,15 +1,23 @@
 /**
- * build-estimate-ctc.mjs
- * ---------------------------------------------------------------------------
- * CTC-PRICED variant of the 5213 Call Place SE group-home estimate.
+ * build-estimate-ctc.mjs — CTC-priced version of the MEASURED 5213 Call Place
+ * estimate.
  *
- * Prices the SAME takeoff against the Construction Task Catalog (data/ctc/
- * ctc-tasks.json) using real CTC task numbers and their labor/material/
- * equipment splits, with a JOC-style adjustment factor. Every scope item the
- * 41-task CTC sample cannot reach is a clearly labeled allowance (ctc:null),
- * and the script reports exactly how much of the building CTC actually covers.
+ * Reuses the exact measured takeoff, wage schedule, 6-month schedule, and
+ * acceleration premium from output/estimate.json (produced by build-estimate.mjs),
+ * and RE-PRICES each line against the Construction Task Catalog:
+ *   - material + equipment  -> from the matched CTC task (current-year escalated)
+ *   - labor                 -> CTC task labor-hours × your crew wage rate
+ *   - unmatched lines        -> keep their marketplace/allowance value, flagged
+ *
+ * Catalog source (prefers the full import, falls back to the 41-task sample):
+ *   data/ctc/ctc-cost-tasks.json   (full — from scripts/ctc/ctc_extract.py)
+ *   data/ctc/ctc-tasks.json        (41-task sample)
  *
  *   node docs/estimates/5213-call-place-se/scripts/build-estimate-ctc.mjs
+ *
+ * The WSL/Antigravity agent only needs to run the CTC extract+load; this file
+ * already wires the re-pricing. If coverage is low after loading the full
+ * catalog, extend CROSSWALK below (catalogueCode -> { csi, kw }).
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -18,206 +26,170 @@ import url from 'node:url';
 const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 const REPO = path.resolve(__dirname, '../../../..');
 const OUT = path.join(__dirname, '../output');
-const CTC = JSON.parse(fs.readFileSync(path.join(REPO, 'data/ctc/ctc-tasks.json'), 'utf8'));
-const TASK = new Map(CTC.tasks.map((t) => [t.taskNumber, t]));
+const DATA = path.join(REPO, 'data/ctc');
+const ESCALATION = Number(process.env.CTC_ESCALATION || 1.13);
 
-// ── Project + pricing constants ─────────────────────────────────────────────
-const GSF = 5920, BEDS = 14, BEDROOMS = 8, BATHS = 7;
-const TARGET_PSF = 170, TARGET_TOTAL = 1006400;
-// CTC prices are DMV-2026 (Maryland DGS base). JOC adjustment factor (contractor
-// coefficient) for DC prevailing conditions on a small project — labeled assumption.
-const ADJ = 1.10;
-const OH = 0.12, PROFIT = 0.15, CONTINGENCY = 0.07, BONDS_INS = 0.015, PERMIT = 22000;
+// ── Inputs ──────────────────────────────────────────────────────────────────
+const E = JSON.parse(fs.readFileSync(path.join(OUT, 'estimate.json'), 'utf8'));
+const wage = E.meta.laborWage, mk = E.meta.markups;
+const GENERAL_RATE = wage.generalTradesRate, LICENSED_RATE = wage.licensedTradesRate;
+const MASTER_LED = new Set(['21', '22', '23', '26', '27/28']);
+const crewRate = (div) => (MASTER_LED.has(div) ? LICENSED_RATE : GENERAL_RATE);
+const ACCEL = 0.08, GSF = E.meta.basis.gsf;
 
-// Geometry (assumed — no drawings). Same basis as the marketplace-catalogue run.
-const P = 158, EXT_WALL_LF = 474, EXT_WALL_SF = 4740, CELLAR_WALL_SF = 1422;
-const FOOTPRINT = 1480, DRYWALL_SF = 20000;
-
-// ── Line helpers ────────────────────────────────────────────────────────────
-// CTC-priced line: pulls unit L/M/E from the catalogue task, applies ADJ.
-function ctc(taskNumber, qty, opts = {}) {
-  const t = TASK.get(taskNumber);
-  if (!t) throw new Error(`CTC task not found: ${taskNumber}`);
-  return {
-    ctc: taskNumber, csi: t.csiCode, name: opts.as || t.description, unit: t.uom, qty,
-    matUnit: +(t.materialCost * ADJ).toFixed(2),
-    labUnit: +(t.laborCost * ADJ).toFixed(2),
-    equipUnit: +(t.equipmentCost * ADJ).toFixed(2),
-    subUnit: 0,
-    lhrsUnit: t.laborHours || 0,
-    allowance: false, conf: opts.conf || 'MED', basis: opts.basis || '', note: opts.note || '',
-  };
-}
-// Allowance line: CTC sample has no matching task. DC all-in unit, mostly sub.
-function allow(name, unit, qty, aUnit, opts = {}) {
-  const s = opts.split || { sub: 1 };
-  return {
-    ctc: null, csi: opts.csi || '', name, unit, qty,
-    matUnit: +(aUnit * (s.mat || 0)).toFixed(2), labUnit: +(aUnit * (s.lab || 0)).toFixed(2),
-    equipUnit: +(aUnit * (s.equip || 0)).toFixed(2), subUnit: +(aUnit * (s.sub || 0)).toFixed(2),
-    lhrsUnit: opts.lhrsUnit || 0, allowance: true, conf: opts.conf || 'LOW',
-    basis: opts.basis || '', note: opts.note || 'CTC sample has no matching task', aUnit,
-  };
-}
-
-// ── Takeoff, priced through CTC where possible ──────────────────────────────
-const divisions = [
-  ['01', 'General Conditions', [
-    ctc('01-002', 2080, { as: 'PM & field supervision (12 mo)', basis: 'CALC full-time' }),
-    ctc('01-001', 4, { as: 'Mobilization / demobilization (phased)', basis: 'ASSUMED' }),
-    ctc('01-003', 12, { as: 'Temporary facilities & controls', basis: 'ASSUMED monthly' }),
-    ctc('01-010', 200, { as: 'Construction waste disposal', basis: 'ASSUMED 200 CY' }),
-    allow('Safety, testing & special inspections, survey, structural eng., closeout', 'ls', 1, 46000, { basis: 'ASSUMED' }),
-  ]],
-  ['02', 'Existing Conditions', [
-    allow('Clearing, erosion control, existing-condition allowance', 'ls', 1, 36000, { basis: 'ASSUMED', note: 'CTC has demo tasks but scope is new-build site prep — no match' }),
-  ]],
-  ['03', 'Concrete', [
-    ctc('03-010', CELLAR_WALL_SF, { as: 'Foundation wall forming (to 8 ft)', basis: 'CALC P×9' }),
-    ctc('03-020', 4400, { as: 'Reinforcing steel #4 (footings/slab/walls)', basis: 'CALC ~4,400 lb' }),
-    ctc('03-001', FOOTPRINT, { as: 'Cellar slab on grade (4")', basis: 'CALC footprint' }),
-    ctc('03-001', 400, { as: 'Exterior concrete (areaway/stoop/steps)', basis: 'ASSUMED' }),
-    allow('Foundation wall concrete placement + footings + elevator pit + waterproofing', 'ls', 1, 58000, { basis: 'ASSUMED', note: 'CTC forms rebar only; wall pour/pit/WP not in sample' }),
-  ]],
-  ['04', 'Masonry', [
-    allow('Brick veneer, CMU, lintels, flashing (full division)', 'ls', 1, 94316, { basis: 'CALC/ASSUMED', note: 'CTC sample has ZERO Division 04 tasks' }),
-  ]],
-  ['06', 'Wood, Plastics & Rough Carpentry', [
-    ctc('06-001', 900, { as: 'Interior partition framing 2x4', basis: 'ASSUMED 900 LF' }),
-    { ...ctc('06-001', EXT_WALL_LF, { as: 'Exterior wall framing 2x4 base', basis: 'CALC 474 LF' }) },
-    ctc('06-001.01', EXT_WALL_LF, { as: 'Add for 2x6 exterior framing', basis: 'CALC 474 LF' }),
-    ctc('06-010', 1200, { as: 'Base trim, paint grade', basis: 'ASSUMED 1,200 LF' }),
-    allow('Floor framing, subfloor + wall + roof sheathing, roof trusses, stairs, elevator shaft framing, blocking', 'ls', 1, 118000, { basis: 'CALC/ASSUMED', note: 'CTC sample framing = stud walls + trim only' }),
-  ]],
-  ['07', 'Thermal & Moisture Protection', [
-    ctc('07-001', EXT_WALL_SF, { as: 'Batt insulation R-13 (exterior walls)', basis: 'CALC facade' }),
-    allow('TPO/rigid roof, air barrier, gutters, firestopping, sealants', 'ls', 1, 44000, { basis: 'ASSUMED', note: 'Building has flat TPO roof; CTC sample only has asphalt shingles (N/A)' }),
-  ]],
-  ['08', 'Openings', [
-    ctc('08-001', 45, { as: 'Interior doors — hollow-core pre-hung', basis: 'ASSUMED 45' }),
-    ctc('08-001.01', 45, { as: 'Add for solid-core (R-2)', basis: 'ASSUMED 45' }),
-    ctc('08-010', 34, { as: 'Vinyl double-hung windows', basis: 'ASSUMED 34' }),
-    allow('Exterior steel doors, commercial hardware, glazing', 'ls', 1, 16000, { basis: 'ASSUMED', note: 'Not in CTC sample' }),
-  ]],
-  ['09', 'Finishes', [
-    ctc('09-001', DRYWALL_SF, { as: 'Drywall 5/8" Type X', basis: 'ASSUMED 20,000 SF' }),
-    ctc('09-010', DRYWALL_SF, { as: 'Interior painting, 2 coats', basis: 'ASSUMED 20,000 SF' }),
-    ctc('09-020', 840, { as: 'Ceramic floor tile (baths)', basis: 'CALC 7 baths' }),
-    ctc('09-030', 1600, { as: 'Suspended ACT (cellar/kitchen/support)', basis: 'ASSUMED' }),
-    allow('LVP flooring (bedrooms/common) + finish carpentry + rated shaft drywall', 'ls', 1, 42000, { basis: 'ASSUMED', note: 'LVP not in CTC sample' }),
-  ]],
-  ['10', 'Specialties', [
-    allow('Grab bars, toilet accessories, signage, extinguishers, specialties', 'ls', 1, 14134, { basis: 'ASSUMED', note: 'CTC sample has no Division 10' }),
-  ]],
-  ['12', 'Furnishings (built-in)', [
-    allow('Vanities, casework, countertops, built-in millwork', 'ls', 1, 22339, { basis: 'ASSUMED', note: 'CTC sample has no Division 12' }),
-  ]],
-  ['21', 'Fire Suppression', [
-    allow('NFPA-13 sprinkler system, standpipe, testing', 'sqft', GSF, 9.12, { basis: 'ASSUMED GSF', note: 'CTC sample has ZERO Division 21' }),
-  ]],
-  ['22', 'Plumbing', [
-    ctc('22-011', 7, { as: 'Water closets', basis: 'CALC 7 baths' }),
-    ctc('22-010', 10, { as: 'Lavatories / sinks', basis: 'CALC' }),
-    ctc('22-001', 800, { as: 'Copper water piping 3/4"', basis: 'ASSUMED 800 LF' }),
-    allow('Tubs/showers, DWV, gas, water heaters, commercial-kitchen rough-in, laundry', 'ls', 1, 58000, { basis: 'ASSUMED', note: 'Only WC/lav/water-pipe in CTC sample' }),
-  ]],
-  ['23', 'HVAC', [
-    ctc('23-010', 4, { as: 'Split systems (3-ton, 14 SEER) ×4 zones', basis: 'STATED four splits' }),
-    allow('Ductwork, controls, bath exhaust, kitchen hood/MUA, TAB', 'ls', 1, 62000, { basis: 'ASSUMED', note: 'CTC duct is per-lb (not usable here); rest not in sample' }),
-  ]],
-  ['26', 'Electrical', [
-    ctc('26-030', 2, { as: 'Distribution panels 200A', basis: 'ASSUMED' }),
-    ctc('26-001', 1500, { as: 'Conduit / raceway 3/4" EMT', basis: 'ASSUMED 1,500 LF' }),
-    ctc('26-010', 220, { as: 'Wiring devices (receptacles)', basis: 'ASSUMED' }),
-    ctc('26-020', 120, { as: 'LED lighting fixtures', basis: 'ASSUMED' }),
-    allow('400A service, branch wiring, kitchen/elevator rough-in, emergency & exit lighting, smoke detectors', 'ls', 1, 62000, { basis: 'ASSUMED', note: 'CTC sample panel only goes to 200A' }),
-  ]],
-  ['27/28', 'Communications & Electronic Safety', [
-    allow('Fire alarm (R-2), data, security/access/intercom', 'sqft', GSF, 6.15, { basis: 'ASSUMED GSF', note: 'CTC sample has no Div 27/28' }),
-  ]],
-  ['31', 'Earthwork', [
-    ctc('31-001', 550, { as: 'Mass & foundation excavation', basis: 'CALC cellar' }),
-    ctc('31-002', 180, { as: 'Backfill & compaction', basis: 'ASSUMED' }),
-    allow('Haul-off / spoil disposal, stone base, fine grading', 'ls', 1, 30000, { basis: 'ASSUMED', note: 'Not in CTC sample' }),
-  ]],
-  ['32', 'Exterior Improvements', [
-    ctc('32-010', 2000, { as: 'Sodding / restoration', basis: 'ASSUMED' }),
-    allow('Walks/steps, drainage, hardscape, landscaping', 'ls', 1, 28000, { basis: 'ASSUMED' }),
-  ]],
-  ['33', 'Utilities', [
-    allow('Water, sewer, gas, electrical service connections', 'ls', 1, 62000, { basis: 'ASSUMED', note: 'CTC sample has no Division 33' }),
-  ]],
-];
-
-// ── Compute ─────────────────────────────────────────────────────────────────
-let dMat = 0, dLab = 0, dEquip = 0, dSub = 0, dHrs = 0, ctcDirect = 0, allowDirect = 0;
-const divOut = [];
-for (const [num, name, lines] of divisions) {
-  let m = 0, l = 0, e = 0, s = 0, h = 0, ctcT = 0, allowT = 0;
-  const litems = lines.map((ln) => {
-    const mat = ln.matUnit * ln.qty, lab = ln.labUnit * ln.qty, eq = ln.equipUnit * ln.qty, sub = ln.subUnit * ln.qty;
-    const total = mat + lab + eq + sub, lhrs = (ln.lhrsUnit || 0) * ln.qty;
-    m += mat; l += lab; e += eq; s += sub; h += lhrs;
-    if (ln.allowance) allowT += total; else ctcT += total;
-    return { ...ln, ext: { mat, lab, equip: eq, sub, total, lhrs } };
+// CTC catalog (normalize full + sample shapes to current-year unit costs)
+function loadCTC() {
+  const full = path.join(DATA, 'ctc-cost-tasks.json');
+  const sample = path.join(DATA, 'ctc-tasks.json');
+  let src, isFull;
+  if (fs.existsSync(full)) { src = JSON.parse(fs.readFileSync(full, 'utf8')); isFull = true; }
+  else if (fs.existsSync(sample)) { src = JSON.parse(fs.readFileSync(sample, 'utf8')); isFull = false; }
+  else { return { tasks: [], isFull: false, label: 'NONE' }; }
+  const tasks = src.tasks.map((t) => {
+    const esc = isFull ? ESCALATION : 1; // sample is already current-year
+    return {
+      taskNumber: t.taskNumber, csi: (t.csiCode || '').replace(/\s+/g, ' ').trim(),
+      div: t.csiDivision, uom: (t.uom || '').toUpperCase(), desc: t.description || '',
+      matCur: +(((t.materialCost2023 ?? t.materialCost) || 0) * esc).toFixed(2),
+      equipCur: +(((t.equipmentCost2023 ?? t.equipmentCost) || 0) * esc).toFixed(2),
+      lhrs: t.laborHours || 0,
+    };
   });
-  divOut.push({ num, name, lines: litems, mat: m, lab: l, equip: e, sub: s, hrs: h, total: m + l + e + s, ctcT, allowT });
-  dMat += m; dLab += l; dEquip += e; dSub += s; dHrs += h; ctcDirect += ctcT; allowDirect += allowT;
+  return { tasks, isFull, label: isFull ? `full (${tasks.length})` : `41-task sample (${tasks.length})` };
 }
-const direct = dMat + dLab + dEquip + dSub;
-const overhead = direct * OH, profit = direct * PROFIT, contingency = direct * CONTINGENCY;
-const bondsIns = (direct + overhead + profit) * BONDS_INS;
-const total = direct + overhead + profit + contingency + bondsIns + PERMIT;
-const psf = total / GSF;
+const CTC = loadCTC();
+
+// ── Crosswalk: catalogue code -> target CSI prefix + boost keywords ─────────
+const CROSSWALK = {
+  'FOUND-FOOTER-NEW': { csi: '03', kw: ['footing', 'foundation', 'concrete'] },
+  'CONC-POUR-4': { csi: '03', kw: ['slab', 'concrete', 'cast'] },
+  'CONC-MESH': { csi: '03', kw: ['mesh', 'reinforc', 'wire'] },
+  'FOUND-WP-EXT': { csi: '07', kw: ['waterproof', 'damp'] },
+  'SID-BRICK-VEN': { csi: '04', kw: ['brick', 'masonry', 'veneer'] },
+  'FOUND-STEEL-BEAM': { csi: '05', kw: ['steel', 'beam', 'structural'] },
+  'FRAME-FLOOR-TJI': { csi: '06', kw: ['joist', 'i-joist', 'floor', 'framing'] },
+  'FRAME-SHEATH-SUB': { csi: '06', kw: ['subfloor', 'sheathing', 'plywood'] },
+  'FRAME-WALL-2X6': { csi: '06', kw: ['wall', 'framing', 'stud'] },
+  'FRAME-WALL-2X4': { csi: '06', kw: ['wall', 'framing', 'stud', 'partition'] },
+  'FRAME-SHEATH-WALL': { csi: '06', kw: ['sheathing', 'wall', 'osb'] },
+  'FRAME-SHEATH-ROOF': { csi: '06', kw: ['sheathing', 'roof', 'osb'] },
+  'FRAME-STAIR': { csi: '06', kw: ['stair', 'framing'] },
+  'FRAME-INSUL-BATT': { csi: '07', kw: ['insulation', 'batt'] },
+  'SID-FC-LAP': { csi: '07', kw: ['siding', 'lap', 'fiber', 'cement'] },
+  'ROOF-FLAT-TPO': { csi: '07', kw: ['tpo', 'membrane', 'roof'] },
+  'DOOR-INT-SOLID': { csi: '08', kw: ['door', 'interior', 'solid'] },
+  'DOOR-EXT-STEEL': { csi: '08', kw: ['door', 'exterior', 'steel'] },
+  'WIN-VIN-DH': { csi: '08', kw: ['window', 'vinyl', 'hung'] },
+  'DRY-HANG-STD': { csi: '09', kw: ['drywall', 'gypsum', 'board'] },
+  'DRY-TAPE-L4': { csi: '09', kw: ['drywall', 'finish', 'tape'] },
+  'FLR-TILE-PORC': { csi: '09', kw: ['tile', 'porcelain', 'ceramic', 'floor'] },
+  'FLR-LVP': { csi: '09', kw: ['vinyl', 'plank', 'resilient', 'lvp', 'floor'] },
+  'PAINT-INT-WALL': { csi: '09', kw: ['paint', 'painting'] },
+  'BATH-ACC-GRAB': { csi: '10', kw: ['grab', 'bar', 'accessor'] },
+  'BATH-VAN-STD': { csi: '12', kw: ['vanity', 'casework', 'cabinet'] },
+  'BATH-TOIL-STD': { csi: '22', kw: ['water closet', 'toilet'] },
+  'BATH-TUB-STD': { csi: '22', kw: ['tub', 'bath', 'shower'] },
+  'PLUMB-GAS-LINE': { csi: '22', kw: ['gas', 'pipe'] },
+  'BATH-VENT-STD': { csi: '23', kw: ['fan', 'exhaust', 'vent'] },
+  'ELEC-PNL-400': { csi: '26', kw: ['panel', 'board', 'service'] },
+  'ELEC-PNL-200': { csi: '26', kw: ['panel', 'board'] },
+  'ELEC-SMOKE': { csi: '28', kw: ['smoke', 'detector', 'alarm'] },
+  'ELEC-CAT6': { csi: '27', kw: ['data', 'cat6', 'ethernet', 'communication'] },
+};
+const STOP = new Set(['the', 'and', 'for', 'with', 'of', 'a', 'to', 'in', 'on', 'per', 'or', 'new', 'std', 'standard', 'base', 'bldg', 'building', 'system', 'allowance']);
+const tokens = (s) => (s || '').toLowerCase().replace(/[^a-z0-9 ]/g, ' ').split(/\s+/).filter((w) => w.length > 2 && !STOP.has(w));
+
+// ── Match a takeoff line to the best CTC task ───────────────────────────────
+function matchCTC(line, div) {
+  if (!CTC.tasks.length) return null;
+  const cw = CROSSWALK[line.code];
+  const targetDiv = cw?.csi || (div === '27/28' ? '27' : div);
+  const kw = new Set([...(cw?.kw || []), ...tokens(line.name)]);
+  const uom = (line.unit || '').toUpperCase();
+  let best = null, bestScore = 0;
+  for (const t of CTC.tasks) {
+    if (t.div !== targetDiv && !(div === '27/28' && (t.div === '27' || t.div === '28'))) continue;
+    const desc = t.desc.toLowerCase();
+    let score = 0;
+    for (const w of kw) if (desc.includes(w)) score += 2;
+    if (t.uom === uom) score += 2; else if (uomClass(t.uom) === uomClass(uom)) score += 1; else score -= 1;
+    if (score > bestScore) { bestScore = score; best = t; }
+  }
+  return bestScore >= 3 ? best : null;   // require a real match
+}
+const uomClass = (u) => (['SF', 'SQFT'].includes(u) ? 'area' : ['LF', 'LNFT'].includes(u) ? 'len' : ['EA', 'EACH'].includes(u) ? 'ea' : u);
+
+// ── Re-price ────────────────────────────────────────────────────────────────
+let ctcDirect = 0, allowDirect = 0, matchedLines = 0, totalLines = 0;
+const divs = [];
+for (const d of E.scenarios.A.divs) {
+  const lines = [];
+  let m = 0, l = 0, e = 0, s = 0, h = 0;
+  for (const ln of d.lines) {
+    if (ln.code === 'ACCEL') continue; // recomputed after
+    totalLines++;
+    let mat = ln.ext.mat, lab = ln.ext.lab, equip = ln.ext.equip, sub = ln.ext.sub, lhrs = ln.ext.lhrs;
+    let ctc = null;
+    if (d.num !== '01' && !ln.allowance) {   // reprice self-perform trade lines
+      ctc = matchCTC(ln, d.num);
+      if (ctc) {
+        mat = ctc.matCur * ln.qty;
+        equip = ctc.equipCur * ln.qty;
+        lhrs = ctc.lhrs * ln.qty;
+        lab = lhrs * crewRate(d.num);
+        sub = 0;
+      }
+    }
+    const total = mat + lab + equip + sub;
+    if (ctc) { matchedLines++; ctcDirect += total; } else allowDirect += total;
+    m += mat; l += lab; e += equip; s += sub; h += lhrs;
+    lines.push({ division: d.num, item: ln.name, unit: ln.unit, qty: ln.qty, method: ln.method, sheet: ln.sheet,
+      ctcTask: ctc?.taskNumber || null, ctcDesc: ctc?.desc || null, pricedBy: ctc ? 'CTC' : (ln.allowance ? 'ALLOWANCE' : 'marketplace'),
+      mat: Math.round(mat), laborHrs: Math.round(lhrs), laborRate: (d.num === '01' ? 'salaried' : '$' + crewRate(d.num) + '/hr'),
+      labor: Math.round(lab), equip: Math.round(equip), sub: Math.round(sub), extended: Math.round(total) });
+  }
+  divs.push({ num: d.num, name: d.name, lines, mat: m, lab: l, equip: e, sub: s, hrs: h, total: m + l + e + s });
+}
+// acceleration on construction trade labor (Div 02-33)
+const constrLabor = divs.filter((d) => d.num !== '01').reduce((a, d) => a + d.lab, 0);
+const accel = constrLabor * ACCEL;
+const d01 = divs.find((d) => d.num === '01');
+d01.lines.push({ division: '01', item: `Schedule acceleration premium (${E.meta.basis.scheduleMonths}-mo, ${ACCEL * 100}% on trade labor)`, unit: 'ls', qty: 1, pricedBy: 'CALC', mat: 0, laborHrs: 0, laborRate: 'n/a', labor: Math.round(accel), equip: 0, sub: 0, extended: Math.round(accel) });
+d01.lab += accel; d01.total += accel; allowDirect += accel; // premium is not CTC-priced
+
+const direct = divs.reduce((a, d) => a + d.total, 0);
+const overhead = direct * mk.overheadPct / 100, profit = direct * mk.profitPct / 100;
+const contingency = direct * mk.contingencyPct_A / 100;
+const bondsIns = (direct + overhead + profit) * mk.bondsInsPct / 100;
+const permit = E.scenarios.A.permit;
+const total = direct + overhead + profit + contingency + bondsIns + permit;
 const coveragePct = (ctcDirect / direct) * 100;
 
-// ── Console ─────────────────────────────────────────────────────────────────
+// ── Report ──────────────────────────────────────────────────────────────────
 const money = (n) => '$' + Math.round(n).toLocaleString();
 console.log('='.repeat(78));
-console.log('5213 CALL PLACE SE — CTC-PRICED ESTIMATE (data/ctc catalogue)');
-console.log(`GSF ${GSF.toLocaleString()} | JOC adjustment factor ${ADJ} | CTC 2026 DMV pricing`);
+console.log('5213 CALL PLACE SE — CTC-PRICED (measured takeoff + owner wage/schedule)');
+console.log(`CTC catalog: ${CTC.label} | escalation ×${ESCALATION} | wage gen $${GENERAL_RATE}/hr, MEP $${LICENSED_RATE}/hr`);
 console.log('='.repeat(78));
-for (const d of divOut) {
-  const cov = d.total > 0 ? Math.round((d.ctcT / d.total) * 100) : 0;
-  console.log(`Div ${d.num.padEnd(5)} ${d.name.padEnd(38)} ${money(d.total).padStart(12)}  CTC-priced ${String(cov).padStart(3)}%`);
+for (const d of divs) {
+  const cov = d.total > 0 ? Math.round((d.lines.filter((x) => x.pricedBy === 'CTC').reduce((a, x) => a + x.extended, 0) / d.total) * 100) : 0;
+  console.log(`Div ${d.num.padEnd(5)} ${d.name.padEnd(36)} ${money(d.total).padStart(12)}  CTC ${String(cov).padStart(3)}%`);
 }
 console.log('-'.repeat(78));
-console.log(`Direct construction        ${money(direct).padStart(14)}`);
-console.log(`  · CTC-priced (real tasks)${money(ctcDirect).padStart(14)}   ${coveragePct.toFixed(1)}% of direct`);
-console.log(`  · Allowance (CTC gaps)   ${money(allowDirect).padStart(14)}   ${(100 - coveragePct).toFixed(1)}% of direct`);
-console.log(`Overhead 12%               ${money(overhead).padStart(14)}`);
-console.log(`Profit 15%                 ${money(profit).padStart(14)}`);
-console.log(`Contingency 7%             ${money(contingency).padStart(14)}`);
-console.log(`Bonds & insurance 1.5%     ${money(bondsIns).padStart(14)}`);
-console.log(`Permit allowance           ${money(PERMIT).padStart(14)}`);
-console.log(`TOTAL (excl elev+kitchen)  ${money(total).padStart(14)}   $${psf.toFixed(0)}/SF`);
-console.log(`   material ${money(dMat)} | labor ${money(dLab)} | equip ${money(dEquip)} | sub ${money(dSub)} | ${Math.round(dHrs).toLocaleString()} lab-hrs`);
-console.log(`\nTarget ${money(TARGET_TOTAL)} @ $${TARGET_PSF}/SF — variance ${money(total - TARGET_TOTAL)} (${((psf / TARGET_PSF - 1) * 100).toFixed(0)}% over)`);
-console.log(`\nCTC COVERAGE: only ${coveragePct.toFixed(1)}% of direct cost maps to a real CTC task.`);
-console.log(`The 41-task sample cannot price ${(100 - coveragePct).toFixed(0)}% of the building — the licensed`);
-console.log(`full ~4,666-task catalog is required to remove the allowances.`);
+console.log(`Direct ${money(direct)} | OH ${money(overhead)} | Profit ${money(profit)} | Cont ${money(contingency)} | B&I ${money(bondsIns)} | Permit ${money(permit)}`);
+console.log(`TOTAL (excl elev+kitchen) ${money(total)}  $${(total / GSF).toFixed(0)}/SF`);
+console.log(`\nCTC COVERAGE: ${coveragePct.toFixed(1)}% of direct priced from real CTC tasks (${matchedLines}/${totalLines} lines matched).`);
+console.log(`Marketplace measured total was ${money(E.scenarios.A.total)} — CTC delta ${((total / E.scenarios.A.total - 1) * 100).toFixed(1)}%.`);
+if (!CTC.isFull) console.log('NOTE: using the 41-task SAMPLE. Load the full catalog (scripts/ctc/) for real coverage.');
 
-// ── Exports ─────────────────────────────────────────────────────────────────
-fs.mkdirSync(OUT, { recursive: true });
 fs.writeFileSync(path.join(OUT, 'estimate-ctc.json'), JSON.stringify({
-  meta: {
-    project: '5213 Call Place SE, Washington DC 20019',
-    catalogue: 'Construction Task Catalog (data/ctc/ctc-tasks.json) — 41-task DMV-2026 sample',
-    adjustmentFactor: ADJ, markups: { OH: 12, profit: 15, contingency: 7, bondsIns: 1.5 },
-    ctcCoveragePct: +coveragePct.toFixed(1),
-    caveats: [
-      'Priced against the 41-task CTC dev sample; ' + (100 - coveragePct).toFixed(0) + '% of direct is allowance.',
-      'No measured takeoff (permit PDF absent); quantities assumed/calculated.',
-      'JOC adjustment factor ' + ADJ + ' assumed for DC conditions.',
-    ],
-  },
-  totals: { direct, ctcDirect, allowDirect, coveragePct: +coveragePct.toFixed(1), overhead, profit, contingency, bondsIns, permit: PERMIT, total, psf: +psf.toFixed(2), laborHours: Math.round(dHrs) },
-  divisions: divOut,
+  meta: { project: E.meta.project, catalogue: `CTC ${CTC.label}`, escalation: ESCALATION,
+    laborWage: wage, scheduleMonths: E.meta.basis.scheduleMonths, ctcCoveragePct: +coveragePct.toFixed(1),
+    matchedLines, totalLines, generated: new Date().toISOString() },
+  totals: { direct, overhead, profit, contingency, bondsIns, permit, total, psf: +(total / GSF).toFixed(2), ctcDirect, allowDirect },
+  divisions: divs,
 }, null, 2));
-
-const rows = [['Div', 'CSI', 'Item', 'CTC_Task', 'PricedBy', 'Unit', 'Qty', 'MatUnit', 'LabUnit', 'EquipUnit', 'SubUnit', 'LaborHrs', 'Extended', 'Note']];
-for (const d of divOut) for (const ln of d.lines) rows.push([d.num, ln.csi || '', ln.name, ln.ctc || '', ln.allowance ? 'ALLOWANCE' : 'CTC', ln.unit, ln.qty,
-  ln.matUnit, ln.labUnit, ln.equipUnit, ln.subUnit, Math.round(ln.ext.lhrs), Math.round(ln.ext.total), (ln.note || '').replace(/,/g, ';')]);
+const rows = [['Division', 'Item', 'Unit', 'Qty', 'PricedBy', 'CTC_Task', 'CTC_Desc', 'Mat', 'LaborHrs', 'LaborRate', 'Labor', 'Equip', 'Sub', 'Extended']];
+for (const d of divs) for (const ln of d.lines) rows.push([d.num, ln.item, ln.unit, ln.qty, ln.pricedBy, ln.ctcTask || '', (ln.ctcDesc || '').replace(/,/g, ';'), ln.mat, ln.laborHrs, ln.laborRate, ln.labor, ln.equip, ln.sub, ln.extended]);
 fs.writeFileSync(path.join(OUT, 'estimate-ctc-lineitems.csv'), rows.map((r) => r.map((c) => `"${c}"`).join(',')).join('\n'));
-
-console.log(`\nWrote: output/estimate-ctc.json, output/estimate-ctc-lineitems.csv`);
+console.log('\nWrote: output/estimate-ctc.json, output/estimate-ctc-lineitems.csv');
