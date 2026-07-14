@@ -14,22 +14,22 @@
       "note": "Labor = labor-hours × crew rate. Div 01 GC supervision salaried; subcontractor lump sums keep quoted value."
     },
     "scheduleMonths": 6,
-    "ctcCoveragePct": 25.9,
-    "matchedLines": 17,
+    "ctcCoveragePct": 22.4,
+    "matchedLines": 16,
     "totalLines": 109,
-    "generated": "2026-07-14T16:50:13.239Z"
+    "generated": "2026-07-14T17:07:51.358Z"
   },
   "totals": {
-    "direct": 1889976.7468000005,
-    "overhead": 226797.20961600007,
-    "profit": 283496.5120200001,
-    "contingency": 132298.37227600004,
-    "bondsIns": 36004.05702654002,
+    "direct": 1854311.5468000004,
+    "overhead": 222517.38561600004,
+    "profit": 278146.73202000005,
+    "contingency": 129801.80827600003,
+    "bondsIns": 35324.634966540005,
     "permit": 22000,
-    "total": 2590572.897738541,
-    "psf": 437.6,
-    "ctcDirect": 490247.79,
-    "allowDirect": 1399728.9567999998
+    "total": 2542102.1076785405,
+    "psf": 429.41,
+    "ctcDirect": 415502.79,
+    "allowDirect": 1438808.7567999999
   },
   "divisions": [
     {
@@ -279,18 +279,18 @@
           "mat": 0,
           "laborHrs": 0,
           "laborRate": "n/a",
-          "labor": 50432,
+          "labor": 48067,
           "equip": 0,
           "sub": 0,
-          "extended": 50432
+          "extended": 48067
         }
       ],
       "mat": 15360.36,
-      "lab": 133855.7768,
+      "lab": 131490.57679999998,
       "equip": 0,
       "sub": 64100,
       "hrs": 1051.2002,
-      "total": 213316.1368
+      "total": 210950.93680000002
     },
     {
       "num": "02",
@@ -1161,16 +1161,16 @@
           "qty": 4500,
           "method": "CALC",
           "sheet": "A001-A002",
-          "ctcTask": "09-020",
-          "ctcDesc": "Ceramic Floor Tile - Standard Grade",
-          "pricedBy": "CTC",
-          "mat": 22905,
-          "laborHrs": 675,
+          "ctcTask": null,
+          "ctcDesc": null,
+          "pricedBy": "marketplace",
+          "mat": 21735,
+          "laborHrs": 270,
           "laborRate": "$73/hr",
-          "labor": 49275,
-          "equip": 2565,
+          "labor": 19710,
+          "equip": 0,
           "sub": 0,
-          "extended": 74745
+          "extended": 41445
         },
         {
           "division": "09",
@@ -1209,12 +1209,12 @@
           "extended": 15146
         }
       ],
-      "mat": 125498.51999999999,
-      "lab": 234461.108,
-      "equip": 22119.32,
+      "mat": 124328.51999999999,
+      "lab": 204896.108,
+      "equip": 19554.32,
       "sub": 5760,
-      "hrs": 3211.796,
-      "total": 387838.94800000003
+      "hrs": 2806.796,
+      "total": 354538.94800000003
     },
     {
       "num": "10",

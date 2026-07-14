@@ -82,8 +82,8 @@ const CROSSWALK = {
   'WIN-VIN-DH': { csi: '08', kw: ['window', 'vinyl', 'hung'] },
   'DRY-HANG-STD': { csi: '09', kw: ['drywall', 'gypsum', 'board'] },
   'DRY-TAPE-L4': { csi: '09', kw: ['drywall', 'finish', 'tape'] },
-  'FLR-TILE-PORC': { csi: '09', kw: ['tile', 'porcelain', 'ceramic', 'floor'] },
-  'FLR-LVP': { csi: '09', kw: ['vinyl', 'plank', 'resilient', 'lvp', 'floor'] },
+  'FLR-TILE-PORC': { csi: '09', kw: ['tile', 'porcelain', 'ceramic'] },
+  'FLR-LVP': { csi: '09', kw: ['vinyl', 'plank', 'resilient', 'lvp'] },
   'PAINT-INT-WALL': { csi: '09', kw: ['paint', 'painting'] },
   'BATH-ACC-GRAB': { csi: '10', kw: ['grab', 'bar', 'accessor'] },
   'BATH-VAN-STD': { csi: '12', kw: ['vanity', 'casework', 'cabinet'] },
@@ -104,15 +104,20 @@ function matchCTC(line, div) {
   if (!CTC.tasks.length) return null;
   const cw = CROSSWALK[line.code];
   const targetDiv = cw?.csi || (div === '27/28' ? '27' : div);
-  const kw = new Set([...(cw?.kw || []), ...tokens(line.name)]);
+  const distinctive = cw?.kw || [];               // crosswalk-specific, high-signal terms
+  const generic = tokens(line.name);              // name tokens, lower signal
   const uom = (line.unit || '').toUpperCase();
   let best = null, bestScore = 0;
   for (const t of CTC.tasks) {
     if (t.div !== targetDiv && !(div === '27/28' && (t.div === '27' || t.div === '28'))) continue;
     const desc = t.desc.toLowerCase();
-    let score = 0;
-    for (const w of kw) if (desc.includes(w)) score += 2;
-    if (t.uom === uom) score += 2; else if (uomClass(t.uom) === uomClass(uom)) score += 1; else score -= 1;
+    const distinctiveHits = distinctive.filter((w) => desc.includes(w)).length;
+    // When a crosswalk exists, require at least one distinctive keyword — this
+    // stops false matches like LVP -> ceramic tile that only share "floor".
+    if (cw && distinctiveHits === 0) continue;
+    let score = distinctiveHits * 3;
+    for (const w of generic) if (desc.includes(w)) score += 1;
+    if (t.uom === uom) score += 2; else if (uomClass(t.uom) === uomClass(uom)) score += 1; else score -= 2;
     if (score > bestScore) { bestScore = score; best = t; }
   }
   return bestScore >= 3 ? best : null;   // require a real match
@@ -192,4 +197,18 @@ fs.writeFileSync(path.join(OUT, 'estimate-ctc.json'), JSON.stringify({
 const rows = [['Division', 'Item', 'Unit', 'Qty', 'PricedBy', 'CTC_Task', 'CTC_Desc', 'Mat', 'LaborHrs', 'LaborRate', 'Labor', 'Equip', 'Sub', 'Extended']];
 for (const d of divs) for (const ln of d.lines) rows.push([d.num, ln.item, ln.unit, ln.qty, ln.pricedBy, ln.ctcTask || '', (ln.ctcDesc || '').replace(/,/g, ';'), ln.mat, ln.laborHrs, ln.laborRate, ln.labor, ln.equip, ln.sub, ln.extended]);
 fs.writeFileSync(path.join(OUT, 'estimate-ctc-lineitems.csv'), rows.map((r) => r.map((c) => `"${c}"`).join(',')).join('\n'));
-console.log('\nWrote: output/estimate-ctc.json, output/estimate-ctc-lineitems.csv');
+
+// Missing-match report: construction lines with no CTC task (candidates for
+// CROSSWALK tuning or full-catalog additions). Excludes Div 01 + pure allowances.
+const missing = [];
+for (const d of divs) for (const ln of d.lines) {
+  if (d.num === '01' || ln.pricedBy === 'CALC') continue;
+  if (ln.pricedBy !== 'CTC') missing.push({ division: d.num, item: ln.item, unit: ln.unit, pricedBy: ln.pricedBy, extended: ln.extended });
+}
+missing.sort((a, b) => b.extended - a.extended);
+fs.writeFileSync(path.join(OUT, 'ctc-missing-matches.json'), JSON.stringify({
+  meta: { catalogue: `CTC ${CTC.label}`, coveragePct: +coveragePct.toFixed(1), matched: matchedLines, total: totalLines, uncovered: missing.length },
+  note: 'Lines not priced from a CTC task. With the full catalog most should match; extend CROSSWALK in build-estimate-ctc.mjs for any that still miss.',
+  missing,
+}, null, 2));
+console.log(`\nWrote: output/estimate-ctc.json, output/estimate-ctc-lineitems.csv, output/ctc-missing-matches.json (${missing.length} uncovered)`);

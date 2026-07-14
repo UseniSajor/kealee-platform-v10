@@ -79,9 +79,20 @@ Do this:
    loading the catalog. It auto-detects the full `data/ctc/ctc-cost-tasks.json` (falls
    back to the 41-task sample). If coverage is low, extend the `CROSSWALK` map in that
    file (catalogueCode -> {csi, kw}). Keep elevator + kitchen excluded (already handled).
-6. Persist and export: write the CTC-priced estimate to Postgres, regenerate the
-   PDF, validate (division sums, markups, no NaN, excluded equipment not in base),
-   commit, and push to the branch (PR #27).
+6. Persist is ALSO WIRED: `node scripts/persist-ctc-db.mjs > /tmp/ctc-est.sql &&
+   psql "$DATABASE_URL" -f /tmp/ctc-est.sql` writes a `quick_estimates` row
+   (qualityTier='ctc') + `ctc_estimate_line_items` (with the matched CTC task per
+   line). `output/ctc-missing-matches.json` lists any uncovered lines to tune.
+   Then validate (division sums, markups, no NaN, excluded equipment not in base),
+   commit, and push to PR #27. (Optional: a CTC PDF — gen-pdf.mjs targets the A/B/C
+   estimate.json shape; adapt it or reuse the marketplace PDF + the CTC CSV.)
+
+### One-shot after the catalog is loaded
+```bash
+node docs/estimates/5213-call-place-se/scripts/build-estimate-ctc.mjs
+node docs/estimates/5213-call-place-se/scripts/persist-ctc-db.mjs > /tmp/ctc-est.sql
+psql "$DATABASE_URL" -f /tmp/ctc-est.sql
+```
 
 ### Conventions / gotchas
 - "CTC" is overloaded: **Construction Task Catalog** (the priced Gordian catalog,
