@@ -109,6 +109,28 @@ The following models were added for Command Center (APP-15):
 5. **IntegrationCredential** - Third-party service credentials with IntegrationService and IntegrationStatus enums
 6. **AIConversation** - AI assistant conversation history
 
+### Construction Task Catalog (CTC) — cost data for agents
+
+**The CTC is the priced cost catalogue. It is queryable at `data/ctc/` — do NOT
+parse the seed TS or the PDF directly.**
+
+```bash
+node scripts/ctc.mjs divisions            # coverage summary
+node scripts/ctc.mjs search concrete slab # keyword search (code + description)
+node scripts/ctc.mjs div 26               # all tasks in a CSI division
+node scripts/ctc.mjs show 26-030          # full labor/material/equipment for a task
+```
+
+- Canonical data: `data/ctc/ctc-tasks.json` (rebuild: `node scripts/ctc-build-data.mjs`).
+- Pricing ground rules: `data/ctc/ctc-ground-rules.txt`. Full guide: `data/ctc/README.md`.
+- **Coverage is a 41-task DEV SAMPLE**, not the full ~4,666-page Gordian catalog
+  (proprietary, not committed). Do not treat it as a complete cost basis; see
+  `data/ctc/README.md` to load the licensed catalog.
+- **Name collision:** "CTC" also names the unrelated *Complete Total Cost*
+  calculator at `services/ai-orchestrator/src/costing/ctc-calculator.ts`.
+- Source of truth for the sample: `packages/estimating/src/seed-ctc.ts`
+  (`CTC_SAMPLE_TASKS`); DB seeder creates `CostDatabase(source:'CTC-2026')`.
+
 ### Estimation Tool Package
 
 - **Location**: `packages/automation/apps/estimation-tool/`
