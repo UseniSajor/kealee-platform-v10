@@ -2,7 +2,7 @@
   "meta": {
     "project": "5213 Call Place SE, Washington DC 20019",
     "type": "New construction detached group home / residential care (R-2), Type IIIB",
-    "generated": "2026-07-14T04:31:10.114Z",
+    "generated": "2026-07-14T04:35:18.037Z",
     "engine": "Kealee packages/estimating (EstimatingService markup structure)",
     "catalogue": "MARKETPLACE_ASSEMBLIES (DC-Baltimore 2024-25) — mid tier, DC factor 1.15",
     "takeoff": "MEASURED from permit set (28 sheets) — see drawings/MEASURED-TAKEOFF.md",
@@ -18,9 +18,9 @@
       "journeyman": 85,
       "master": 124,
       "generalTradesRate": 73,
-      "licensedTradesRate": 87.25,
+      "licensedTradesRate": 124,
       "generalCrew": "60% journeyman + 40% apprentice",
-      "licensedCrew": "25% master + 50% journeyman + 25% apprentice (Div 21/22/23/26/27-28)",
+      "licensedCrew": "master flat (Div 21/22/23/26/27-28)",
       "note": "Labor = labor-hours × crew rate. Div 01 GC supervision salaried; subcontractor lump sums keep quoted value."
     },
     "basis": {
@@ -34,10 +34,10 @@
       "structure": "TJI 360×14 + W12×26 steel + HSS columns"
     },
     "methodMix": {
-      "measured": 710416,
-      "calcFromDims": 761940,
+      "measured": 733411,
+      "calcFromDims": 787697,
       "notDimensioned": 263200,
-      "dimensionedPct": 84.8
+      "dimensionedPct": 85.2
     },
     "notDimensionedItems": [
       {
@@ -2240,9 +2240,9 @@
                 "sub": 38480,
                 "total": 38480,
                 "lhrs": 0,
-                "rate": 87.25
+                "rate": 124
               },
-              "laborRate": 87.25
+              "laborRate": 124
             },
             {
               "code": "ALLOWANCE",
@@ -2270,9 +2270,9 @@
                 "sub": 12000,
                 "total": 12000,
                 "lhrs": 0,
-                "rate": 87.25
+                "rate": 124
               },
-              "laborRate": 87.25
+              "laborRate": 124
             },
             {
               "code": "ALLOWANCE",
@@ -2300,9 +2300,9 @@
                 "sub": 3500,
                 "total": 3500,
                 "lhrs": 0,
-                "rate": 87.25
+                "rate": 124
               },
-              "laborRate": 87.25
+              "laborRate": 124
             }
           ],
           "mat": 0,
@@ -2336,14 +2336,14 @@
               "note": "",
               "ext": {
                 "mat": 2324.42,
-                "lab": 1221.5,
+                "lab": 1736,
                 "equip": 0,
                 "sub": 0,
-                "total": 3545.92,
+                "total": 4060.42,
                 "lhrs": 14,
-                "rate": 87.25
+                "rate": 124
               },
-              "laborRate": 87.25
+              "laborRate": 124
             },
             {
               "code": "ALLOWANCE",
@@ -2366,14 +2366,14 @@
               "aUnit": 620,
               "ext": {
                 "mat": 2232,
-                "lab": 4188,
+                "lab": 5952,
                 "equip": 0,
                 "sub": 4092,
-                "total": 10512,
+                "total": 12276,
                 "lhrs": 48,
-                "rate": 87.25
+                "rate": 124
               },
-              "laborRate": 87.25
+              "laborRate": 124
             },
             {
               "code": "BATH-TUB-STD",
@@ -2395,14 +2395,14 @@
               "note": "",
               "ext": {
                 "mat": 3381,
-                "lab": 3053.75,
+                "lab": 4340,
                 "equip": 0,
                 "sub": 0,
-                "total": 6434.75,
+                "total": 7721,
                 "lhrs": 35,
-                "rate": 87.25
+                "rate": 124
               },
-              "laborRate": 87.25
+              "laborRate": 124
             },
             {
               "code": "ALLOWANCE",
@@ -2425,14 +2425,14 @@
               "aUnit": 950,
               "ext": {
                 "mat": 6840,
-                "lab": 18846,
+                "lab": 26784,
                 "equip": 0,
                 "sub": 17100,
-                "total": 42786,
+                "total": 50724,
                 "lhrs": 216,
-                "rate": 87.25
+                "rate": 124
               },
-              "laborRate": 87.25
+              "laborRate": 124
             },
             {
               "code": "PLUMB-GAS-LINE",
@@ -2454,14 +2454,14 @@
               "note": "",
               "ext": {
                 "mat": 2608.2,
-                "lab": 3926.25,
+                "lab": 5580,
                 "equip": 0,
                 "sub": 0,
-                "total": 6534.45,
+                "total": 8188.2,
                 "lhrs": 45,
-                "rate": 87.25
+                "rate": 124
               },
-              "laborRate": 87.25
+              "laborRate": 124
             },
             {
               "code": "ALLOWANCE",
@@ -2484,14 +2484,14 @@
               "aUnit": 4200,
               "ext": {
                 "mat": 3360,
-                "lab": 1396,
+                "lab": 1984,
                 "equip": 0,
                 "sub": 4200,
-                "total": 8956,
+                "total": 9544,
                 "lhrs": 16,
-                "rate": 87.25
+                "rate": 124
               },
-              "laborRate": 87.25
+              "laborRate": 124
             },
             {
               "code": "ALLOWANCE",
@@ -2514,14 +2514,14 @@
               "aUnit": 3200,
               "ext": {
                 "mat": 480,
-                "lab": 930.669575,
+                "lab": 1322.6708,
                 "equip": 0,
                 "sub": 1920,
-                "total": 3330.669575,
+                "total": 3722.6708,
                 "lhrs": 10.6667,
-                "rate": 87.25
+                "rate": 124
               },
-              "laborRate": 87.25
+              "laborRate": 124
             },
             {
               "code": "ALLOWANCE",
@@ -2549,17 +2549,17 @@
                 "sub": 22000,
                 "total": 22000,
                 "lhrs": 0,
-                "rate": 87.25
+                "rate": 124
               },
-              "laborRate": 87.25
+              "laborRate": 124
             }
           ],
           "mat": 21225.62,
-          "lab": 33562.169575,
+          "lab": 47698.6708,
           "equip": 0,
           "sub": 49312,
           "hrs": 384.6667,
-          "total": 104099.789575
+          "total": 118236.2908
         },
         {
           "num": "23",
@@ -2586,14 +2586,14 @@
               "aUnit": 9800,
               "ext": {
                 "mat": 15680,
-                "lab": 5584,
+                "lab": 7936,
                 "equip": 0,
                 "sub": 19600,
-                "total": 40864,
+                "total": 43216,
                 "lhrs": 64,
-                "rate": 87.25
+                "rate": 124
               },
-              "laborRate": 87.25
+              "laborRate": 124
             },
             {
               "code": "ALLOWANCE",
@@ -2616,14 +2616,14 @@
               "aUnit": 22,
               "ext": {
                 "mat": 5940,
-                "lab": 23557.5,
+                "lab": 33480,
                 "equip": 0,
                 "sub": 9900,
-                "total": 39397.5,
+                "total": 49320,
                 "lhrs": 270,
-                "rate": 87.25
+                "rate": 124
               },
-              "laborRate": 87.25
+              "laborRate": 124
             },
             {
               "code": "ALLOWANCE",
@@ -2651,9 +2651,9 @@
                 "sub": 7500,
                 "total": 7500,
                 "lhrs": 0,
-                "rate": 87.25
+                "rate": 124
               },
-              "laborRate": 87.25
+              "laborRate": 124
             },
             {
               "code": "BATH-VENT-STD",
@@ -2675,14 +2675,14 @@
               "note": "",
               "ext": {
                 "mat": 760.69,
-                "lab": 1526.875,
+                "lab": 2170,
                 "equip": 0,
                 "sub": 0,
-                "total": 2287.565,
+                "total": 2930.69,
                 "lhrs": 17.5,
-                "rate": 87.25
+                "rate": 124
               },
-              "laborRate": 87.25
+              "laborRate": 124
             },
             {
               "code": "ALLOWANCE",
@@ -2710,9 +2710,9 @@
                 "sub": 26000,
                 "total": 26000,
                 "lhrs": 0,
-                "rate": 87.25
+                "rate": 124
               },
-              "laborRate": 87.25
+              "laborRate": 124
             },
             {
               "code": "ALLOWANCE",
@@ -2740,17 +2740,17 @@
                 "sub": 6500,
                 "total": 6500,
                 "lhrs": 0,
-                "rate": 87.25
+                "rate": 124
               },
-              "laborRate": 87.25
+              "laborRate": 124
             }
           ],
           "mat": 22380.69,
-          "lab": 30668.375,
+          "lab": 43586,
           "equip": 0,
           "sub": 69500,
           "hrs": 351.5,
-          "total": 122549.065
+          "total": 135466.69
         },
         {
           "num": "26",
@@ -2776,14 +2776,14 @@
               "note": "",
               "ext": {
                 "mat": 4226.25,
-                "lab": 2094,
+                "lab": 2976,
                 "equip": 0,
                 "sub": 0,
-                "total": 6320.25,
+                "total": 7202.25,
                 "lhrs": 24,
-                "rate": 87.25
+                "rate": 124
               },
-              "laborRate": 87.25
+              "laborRate": 124
             },
             {
               "code": "ELEC-PNL-200",
@@ -2805,14 +2805,14 @@
               "note": "",
               "ext": {
                 "mat": 3381,
-                "lab": 2443,
+                "lab": 3472,
                 "equip": 0,
                 "sub": 0,
-                "total": 5824,
+                "total": 6853,
                 "lhrs": 28,
-                "rate": 87.25
+                "rate": 124
               },
-              "laborRate": 87.25
+              "laborRate": 124
             },
             {
               "code": "ALLOWANCE",
@@ -2835,14 +2835,14 @@
               "aUnit": 9.5,
               "ext": {
                 "mat": 19654.399999999998,
-                "lab": 25826,
+                "lab": 36704,
                 "equip": 0,
                 "sub": 22496,
-                "total": 67976.4,
+                "total": 78854.4,
                 "lhrs": 296,
-                "rate": 87.25
+                "rate": 124
               },
-              "laborRate": 87.25
+              "laborRate": 124
             },
             {
               "code": "ALLOWANCE",
@@ -2865,14 +2865,14 @@
               "aUnit": 260,
               "ext": {
                 "mat": 7605,
-                "lab": 3931.877625,
+                "lab": 5587.9980000000005,
                 "equip": 0,
                 "sub": 5915,
-                "total": 17451.877625,
+                "total": 19107.998,
                 "lhrs": 45.0645,
-                "rate": 87.25
+                "rate": 124
               },
-              "laborRate": 87.25
+              "laborRate": 124
             },
             {
               "code": "ALLOWANCE",
@@ -2895,14 +2895,14 @@
               "aUnit": 42,
               "ext": {
                 "mat": 3696,
-                "lab": 6449.52,
+                "lab": 9166.08,
                 "equip": 0,
                 "sub": 0,
-                "total": 10145.52,
+                "total": 12862.08,
                 "lhrs": 73.92,
-                "rate": 87.25
+                "rate": 124
               },
-              "laborRate": 87.25
+              "laborRate": 124
             },
             {
               "code": "ALLOWANCE",
@@ -2925,14 +2925,14 @@
               "aUnit": 650,
               "ext": {
                 "mat": 2600,
-                "lab": 4537,
+                "lab": 6448,
                 "equip": 0,
                 "sub": 0,
-                "total": 7137,
+                "total": 9048,
                 "lhrs": 52,
-                "rate": 87.25
+                "rate": 124
               },
-              "laborRate": 87.25
+              "laborRate": 124
             },
             {
               "code": "ALLOWANCE",
@@ -2960,9 +2960,9 @@
                 "sub": 11000,
                 "total": 11000,
                 "lhrs": 0,
-                "rate": 87.25
+                "rate": 124
               },
-              "laborRate": 87.25
+              "laborRate": 124
             },
             {
               "code": "ALLOWANCE",
@@ -2990,9 +2990,9 @@
                 "sub": 5200,
                 "total": 5200,
                 "lhrs": 0,
-                "rate": 87.25
+                "rate": 124
               },
-              "laborRate": 87.25
+              "laborRate": 124
             },
             {
               "code": "ALLOWANCE",
@@ -3015,14 +3015,14 @@
               "aUnit": 320,
               "ext": {
                 "mat": 4608,
-                "lab": 3573.8298000000004,
+                "lab": 5079.1392000000005,
                 "equip": 0,
                 "sub": 0,
-                "total": 8181.8298,
+                "total": 9687.139200000001,
                 "lhrs": 40.960800000000006,
-                "rate": 87.25
+                "rate": 124
               },
-              "laborRate": 87.25
+              "laborRate": 124
             },
             {
               "code": "ELEC-SMOKE",
@@ -3044,22 +3044,22 @@
               "note": "",
               "ext": {
                 "mat": 591.64,
-                "lab": 916.125,
+                "lab": 1302,
                 "equip": 0,
                 "sub": 0,
-                "total": 1507.7649999999999,
+                "total": 1893.6399999999999,
                 "lhrs": 10.5,
-                "rate": 87.25
+                "rate": 124
               },
-              "laborRate": 87.25
+              "laborRate": 124
             }
           ],
           "mat": 46362.28999999999,
-          "lab": 49771.352425,
+          "lab": 70735.2172,
           "equip": 0,
           "sub": 44611,
           "hrs": 570.4453000000001,
-          "total": 140744.642425
+          "total": 161708.5072
         },
         {
           "num": "27/28",
@@ -3091,9 +3091,9 @@
                 "sub": 15392,
                 "total": 15392,
                 "lhrs": 0,
-                "rate": 87.25
+                "rate": 124
               },
-              "laborRate": 87.25
+              "laborRate": 124
             },
             {
               "code": "ELEC-CAT6",
@@ -3115,14 +3115,14 @@
               "note": "",
               "ext": {
                 "mat": 724.5999999999999,
-                "lab": 1745,
+                "lab": 2480,
                 "equip": 0,
                 "sub": 0,
-                "total": 2469.6,
+                "total": 3204.6,
                 "lhrs": 20,
-                "rate": 87.25
+                "rate": 124
               },
-              "laborRate": 87.25
+              "laborRate": 124
             },
             {
               "code": "ALLOWANCE",
@@ -3150,17 +3150,17 @@
                 "sub": 18000,
                 "total": 18000,
                 "lhrs": 0,
-                "rate": 87.25
+                "rate": 124
               },
-              "laborRate": 87.25
+              "laborRate": 124
             }
           ],
           "mat": 724.5999999999999,
-          "lab": 1745,
+          "lab": 2480,
           "equip": 0,
           "sub": 33392,
           "hrs": 20,
-          "total": 35861.6
+          "total": 36596.6
         },
         {
           "num": "31",
@@ -3560,18 +3560,18 @@
         }
       ],
       "material": 466907.7379999999,
-      "labor": 657320.5190000001,
+      "labor": 706073.51,
       "equipment": 32721.2,
       "subcontractor": 578606,
       "laborHours": 8545.2264,
-      "direct": 1735555.457,
-      "overhead": 208266.65483999997,
-      "profit": 260333.31854999997,
-      "contingency": 121488.88199000001,
-      "bondsIns": 33062.33145585,
+      "direct": 1784308.4479999999,
+      "overhead": 214117.01375999997,
+      "profit": 267646.26719999994,
+      "contingency": 124901.59136,
+      "bondsIns": 33991.075934399996,
       "permit": 22000,
-      "total": 2380706.64383585,
-      "psf": 402.14639253983955
+      "total": 2446964.3962544,
+      "psf": 413.33858044837837
     },
     "B": {
       "scen": "B",
@@ -5716,9 +5716,9 @@
                 "sub": 33862.4,
                 "total": 33862.4,
                 "lhrs": 0,
-                "rate": 87.25
+                "rate": 124
               },
-              "laborRate": 87.25
+              "laborRate": 124
             },
             {
               "code": "ALLOWANCE",
@@ -5746,9 +5746,9 @@
                 "sub": 10560,
                 "total": 10560,
                 "lhrs": 0,
-                "rate": 87.25
+                "rate": 124
               },
-              "laborRate": 87.25
+              "laborRate": 124
             },
             {
               "code": "ALLOWANCE",
@@ -5776,9 +5776,9 @@
                 "sub": 3080,
                 "total": 3080,
                 "lhrs": 0,
-                "rate": 87.25
+                "rate": 124
               },
-              "laborRate": 87.25
+              "laborRate": 124
             }
           ],
           "mat": 0,
@@ -5812,14 +5812,14 @@
               "note": "",
               "ext": {
                 "mat": 2045.4896,
-                "lab": 1074.92,
+                "lab": 1527.68,
                 "equip": 0,
                 "sub": 0,
-                "total": 3120.4096,
+                "total": 3573.1696,
                 "lhrs": 12.32,
-                "rate": 87.25
+                "rate": 124
               },
-              "laborRate": 87.25
+              "laborRate": 124
             },
             {
               "code": "ALLOWANCE",
@@ -5842,14 +5842,14 @@
               "aUnit": 620,
               "ext": {
                 "mat": 1964.16,
-                "lab": 3685.44,
+                "lab": 5237.76,
                 "equip": 0,
                 "sub": 3600.96,
-                "total": 9250.560000000001,
+                "total": 10802.880000000001,
                 "lhrs": 42.24,
-                "rate": 87.25
+                "rate": 124
               },
-              "laborRate": 87.25
+              "laborRate": 124
             },
             {
               "code": "BATH-TUB-STD",
@@ -5871,14 +5871,14 @@
               "note": "",
               "ext": {
                 "mat": 2975.28,
-                "lab": 2687.3,
+                "lab": 3819.2000000000003,
                 "equip": 0,
                 "sub": 0,
-                "total": 5662.58,
+                "total": 6794.4800000000005,
                 "lhrs": 30.8,
-                "rate": 87.25
+                "rate": 124
               },
-              "laborRate": 87.25
+              "laborRate": 124
             },
             {
               "code": "ALLOWANCE",
@@ -5901,14 +5901,14 @@
               "aUnit": 950,
               "ext": {
                 "mat": 6019.2,
-                "lab": 16584.48,
+                "lab": 23569.920000000002,
                 "equip": 0,
                 "sub": 15048,
-                "total": 37651.68,
+                "total": 44637.12,
                 "lhrs": 190.08,
-                "rate": 87.25
+                "rate": 124
               },
-              "laborRate": 87.25
+              "laborRate": 124
             },
             {
               "code": "PLUMB-GAS-LINE",
@@ -5930,14 +5930,14 @@
               "note": "",
               "ext": {
                 "mat": 2295.216,
-                "lab": 3455.1,
+                "lab": 4910.400000000001,
                 "equip": 0,
                 "sub": 0,
-                "total": 5750.316,
+                "total": 7205.616,
                 "lhrs": 39.6,
-                "rate": 87.25
+                "rate": 124
               },
-              "laborRate": 87.25
+              "laborRate": 124
             },
             {
               "code": "ALLOWANCE",
@@ -5960,14 +5960,14 @@
               "aUnit": 4200,
               "ext": {
                 "mat": 2956.8,
-                "lab": 1228.48,
+                "lab": 1745.92,
                 "equip": 0,
                 "sub": 3696,
-                "total": 7881.280000000001,
+                "total": 8398.720000000001,
                 "lhrs": 14.08,
-                "rate": 87.25
+                "rate": 124
               },
-              "laborRate": 87.25
+              "laborRate": 124
             },
             {
               "code": "ALLOWANCE",
@@ -5990,14 +5990,14 @@
               "aUnit": 3200,
               "ext": {
                 "mat": 422.4,
-                "lab": 818.989226,
+                "lab": 1163.950304,
                 "equip": 0,
                 "sub": 1689.6,
-                "total": 2930.9892259999997,
+                "total": 3275.950304,
                 "lhrs": 9.386696,
-                "rate": 87.25
+                "rate": 124
               },
-              "laborRate": 87.25
+              "laborRate": 124
             },
             {
               "code": "ALLOWANCE",
@@ -6025,17 +6025,17 @@
                 "sub": 19360,
                 "total": 19360,
                 "lhrs": 0,
-                "rate": 87.25
+                "rate": 124
               },
-              "laborRate": 87.25
+              "laborRate": 124
             }
           ],
           "mat": 18678.5456,
-          "lab": 29534.709226,
+          "lab": 41974.830304,
           "equip": 0,
           "sub": 43394.56,
           "hrs": 338.50669600000003,
-          "total": 91607.814826
+          "total": 104047.935904
         },
         {
           "num": "23",
@@ -6062,14 +6062,14 @@
               "aUnit": 9800,
               "ext": {
                 "mat": 13798.4,
-                "lab": 4913.92,
+                "lab": 6983.68,
                 "equip": 0,
                 "sub": 17248,
-                "total": 35960.32,
+                "total": 38030.08,
                 "lhrs": 56.32,
-                "rate": 87.25
+                "rate": 124
               },
-              "laborRate": 87.25
+              "laborRate": 124
             },
             {
               "code": "ALLOWANCE",
@@ -6092,14 +6092,14 @@
               "aUnit": 22,
               "ext": {
                 "mat": 5227.2,
-                "lab": 20730.6,
+                "lab": 29462.399999999998,
                 "equip": 0,
                 "sub": 8712,
-                "total": 34669.8,
+                "total": 43401.6,
                 "lhrs": 237.6,
-                "rate": 87.25
+                "rate": 124
               },
-              "laborRate": 87.25
+              "laborRate": 124
             },
             {
               "code": "ALLOWANCE",
@@ -6127,9 +6127,9 @@
                 "sub": 6600,
                 "total": 6600,
                 "lhrs": 0,
-                "rate": 87.25
+                "rate": 124
               },
-              "laborRate": 87.25
+              "laborRate": 124
             },
             {
               "code": "BATH-VENT-STD",
@@ -6151,14 +6151,14 @@
               "note": "",
               "ext": {
                 "mat": 669.4072000000001,
-                "lab": 1343.65,
+                "lab": 1909.6000000000001,
                 "equip": 0,
                 "sub": 0,
-                "total": 2013.0572000000002,
+                "total": 2579.0072,
                 "lhrs": 15.4,
-                "rate": 87.25
+                "rate": 124
               },
-              "laborRate": 87.25
+              "laborRate": 124
             },
             {
               "code": "ALLOWANCE",
@@ -6186,9 +6186,9 @@
                 "sub": 22880,
                 "total": 22880,
                 "lhrs": 0,
-                "rate": 87.25
+                "rate": 124
               },
-              "laborRate": 87.25
+              "laborRate": 124
             },
             {
               "code": "ALLOWANCE",
@@ -6216,17 +6216,17 @@
                 "sub": 5720,
                 "total": 5720,
                 "lhrs": 0,
-                "rate": 87.25
+                "rate": 124
               },
-              "laborRate": 87.25
+              "laborRate": 124
             }
           ],
           "mat": 19695.0072,
-          "lab": 26988.17,
+          "lab": 38355.68,
           "equip": 0,
           "sub": 61160,
           "hrs": 309.32,
-          "total": 107843.1772
+          "total": 119210.6872
         },
         {
           "num": "26",
@@ -6252,14 +6252,14 @@
               "note": "",
               "ext": {
                 "mat": 3719.1,
-                "lab": 1842.72,
+                "lab": 2618.88,
                 "equip": 0,
                 "sub": 0,
-                "total": 5561.82,
+                "total": 6337.98,
                 "lhrs": 21.12,
-                "rate": 87.25
+                "rate": 124
               },
-              "laborRate": 87.25
+              "laborRate": 124
             },
             {
               "code": "ELEC-PNL-200",
@@ -6281,14 +6281,14 @@
               "note": "",
               "ext": {
                 "mat": 2975.28,
-                "lab": 2149.84,
+                "lab": 3055.36,
                 "equip": 0,
                 "sub": 0,
-                "total": 5125.120000000001,
+                "total": 6030.64,
                 "lhrs": 24.64,
-                "rate": 87.25
+                "rate": 124
               },
-              "laborRate": 87.25
+              "laborRate": 124
             },
             {
               "code": "ALLOWANCE",
@@ -6311,14 +6311,14 @@
               "aUnit": 9.5,
               "ext": {
                 "mat": 17295.872,
-                "lab": 22726.88,
+                "lab": 32299.520000000004,
                 "equip": 0,
                 "sub": 19796.48,
-                "total": 59819.232,
+                "total": 69391.872,
                 "lhrs": 260.48,
-                "rate": 87.25
+                "rate": 124
               },
-              "laborRate": 87.25
+              "laborRate": 124
             },
             {
               "code": "ALLOWANCE",
@@ -6341,14 +6341,14 @@
               "aUnit": 260,
               "ext": {
                 "mat": 6692.4,
-                "lab": 3460.0523100000005,
+                "lab": 4917.43824,
                 "equip": 0,
                 "sub": 5205.2,
-                "total": 15357.652310000001,
+                "total": 16815.03824,
                 "lhrs": 39.656760000000006,
-                "rate": 87.25
+                "rate": 124
               },
-              "laborRate": 87.25
+              "laborRate": 124
             },
             {
               "code": "ALLOWANCE",
@@ -6371,14 +6371,14 @@
               "aUnit": 42,
               "ext": {
                 "mat": 3252.48,
-                "lab": 5675.5776,
+                "lab": 8066.1503999999995,
                 "equip": 0,
                 "sub": 0,
-                "total": 8928.0576,
+                "total": 11318.6304,
                 "lhrs": 65.0496,
-                "rate": 87.25
+                "rate": 124
               },
-              "laborRate": 87.25
+              "laborRate": 124
             },
             {
               "code": "ALLOWANCE",
@@ -6401,14 +6401,14 @@
               "aUnit": 650,
               "ext": {
                 "mat": 2288,
-                "lab": 3992.56,
+                "lab": 5674.24,
                 "equip": 0,
                 "sub": 0,
-                "total": 6280.5599999999995,
+                "total": 7962.24,
                 "lhrs": 45.76,
-                "rate": 87.25
+                "rate": 124
               },
-              "laborRate": 87.25
+              "laborRate": 124
             },
             {
               "code": "ALLOWANCE",
@@ -6436,9 +6436,9 @@
                 "sub": 9680,
                 "total": 9680,
                 "lhrs": 0,
-                "rate": 87.25
+                "rate": 124
               },
-              "laborRate": 87.25
+              "laborRate": 124
             },
             {
               "code": "ALLOWANCE",
@@ -6466,9 +6466,9 @@
                 "sub": 4576,
                 "total": 4576,
                 "lhrs": 0,
-                "rate": 87.25
+                "rate": 124
               },
-              "laborRate": 87.25
+              "laborRate": 124
             },
             {
               "code": "ALLOWANCE",
@@ -6491,14 +6491,14 @@
               "aUnit": 320,
               "ext": {
                 "mat": 4055.04,
-                "lab": 3144.9702240000006,
+                "lab": 4469.642496000001,
                 "equip": 0,
                 "sub": 0,
-                "total": 7200.010224000001,
+                "total": 8524.682496000001,
                 "lhrs": 36.04550400000001,
-                "rate": 87.25
+                "rate": 124
               },
-              "laborRate": 87.25
+              "laborRate": 124
             },
             {
               "code": "ELEC-SMOKE",
@@ -6520,22 +6520,22 @@
               "note": "",
               "ext": {
                 "mat": 520.6432,
-                "lab": 806.19,
+                "lab": 1145.76,
                 "equip": 0,
                 "sub": 0,
-                "total": 1326.8332,
+                "total": 1666.4032,
                 "lhrs": 9.24,
-                "rate": 87.25
+                "rate": 124
               },
-              "laborRate": 87.25
+              "laborRate": 124
             }
           ],
           "mat": 40798.815200000005,
-          "lab": 43798.790133999995,
+          "lab": 62246.991136000004,
           "equip": 0,
           "sub": 39257.68,
           "hrs": 501.991864,
-          "total": 123855.28533399999
+          "total": 142303.486336
         },
         {
           "num": "27/28",
@@ -6567,9 +6567,9 @@
                 "sub": 13544.960000000001,
                 "total": 13544.960000000001,
                 "lhrs": 0,
-                "rate": 87.25
+                "rate": 124
               },
-              "laborRate": 87.25
+              "laborRate": 124
             },
             {
               "code": "ELEC-CAT6",
@@ -6591,14 +6591,14 @@
               "note": "",
               "ext": {
                 "mat": 637.6479999999999,
-                "lab": 1535.6000000000001,
+                "lab": 2182.4,
                 "equip": 0,
                 "sub": 0,
-                "total": 2173.248,
+                "total": 2820.048,
                 "lhrs": 17.6,
-                "rate": 87.25
+                "rate": 124
               },
-              "laborRate": 87.25
+              "laborRate": 124
             },
             {
               "code": "ALLOWANCE",
@@ -6626,17 +6626,17 @@
                 "sub": 15840,
                 "total": 15840,
                 "lhrs": 0,
-                "rate": 87.25
+                "rate": 124
               },
-              "laborRate": 87.25
+              "laborRate": 124
             }
           ],
           "mat": 637.6479999999999,
-          "lab": 1535.6000000000001,
+          "lab": 2182.4,
           "equip": 0,
           "sub": 29384.96,
           "hrs": 17.6,
-          "total": 31558.208
+          "total": 32205.007999999998
         },
         {
           "num": "31",
@@ -7036,18 +7036,18 @@
         }
       ],
       "material": 410878.80944000004,
-      "labor": 578442.05672,
+      "labor": 621344.6888000001,
       "equipment": 28794.656000000003,
       "subcontractor": 509173.27999999997,
       "laborHours": 7519.799232000001,
-      "direct": 1527288.80216,
-      "overhead": 183274.65625919998,
-      "profit": 229093.320324,
-      "contingency": 76364.440108,
-      "bondsIns": 29094.851681148,
+      "direct": 1570191.43424,
+      "overhead": 188422.9721088,
+      "profit": 235528.715136,
+      "contingency": 78509.571712,
+      "bondsIns": 29912.146822272,
       "permit": 22000,
-      "total": 2067116.070532348,
-      "psf": 349.175011914248
+      "total": 2124564.840019072,
+      "psf": 358.8791959491676
     },
     "C": {
       "scen": "C",
@@ -9192,9 +9192,9 @@
                 "sub": 29244.8,
                 "total": 29244.8,
                 "lhrs": 0,
-                "rate": 87.25
+                "rate": 124
               },
-              "laborRate": 87.25
+              "laborRate": 124
             },
             {
               "code": "ALLOWANCE",
@@ -9222,9 +9222,9 @@
                 "sub": 9120,
                 "total": 9120,
                 "lhrs": 0,
-                "rate": 87.25
+                "rate": 124
               },
-              "laborRate": 87.25
+              "laborRate": 124
             },
             {
               "code": "ALLOWANCE",
@@ -9252,9 +9252,9 @@
                 "sub": 2660,
                 "total": 2660,
                 "lhrs": 0,
-                "rate": 87.25
+                "rate": 124
               },
-              "laborRate": 87.25
+              "laborRate": 124
             }
           ],
           "mat": 0,
@@ -9288,14 +9288,14 @@
               "note": "",
               "ext": {
                 "mat": 1766.5592000000001,
-                "lab": 928.34,
+                "lab": 1319.3600000000001,
                 "equip": 0,
                 "sub": 0,
-                "total": 2694.8992000000003,
+                "total": 3085.9192000000003,
                 "lhrs": 10.64,
-                "rate": 87.25
+                "rate": 124
               },
-              "laborRate": 87.25
+              "laborRate": 124
             },
             {
               "code": "ALLOWANCE",
@@ -9318,14 +9318,14 @@
               "aUnit": 620,
               "ext": {
                 "mat": 1696.32,
-                "lab": 3182.8800000000006,
+                "lab": 4523.52,
                 "equip": 0,
                 "sub": 3109.92,
-                "total": 7989.120000000001,
+                "total": 9329.76,
                 "lhrs": 36.480000000000004,
-                "rate": 87.25
+                "rate": 124
               },
-              "laborRate": 87.25
+              "laborRate": 124
             },
             {
               "code": "BATH-TUB-STD",
@@ -9347,14 +9347,14 @@
               "note": "",
               "ext": {
                 "mat": 2569.56,
-                "lab": 2320.85,
+                "lab": 3298.4,
                 "equip": 0,
                 "sub": 0,
-                "total": 4890.41,
+                "total": 5867.96,
                 "lhrs": 26.6,
-                "rate": 87.25
+                "rate": 124
               },
-              "laborRate": 87.25
+              "laborRate": 124
             },
             {
               "code": "ALLOWANCE",
@@ -9377,14 +9377,14 @@
               "aUnit": 950,
               "ext": {
                 "mat": 5198.4,
-                "lab": 14322.96,
+                "lab": 20355.84,
                 "equip": 0,
                 "sub": 12996,
-                "total": 32517.36,
+                "total": 38550.24,
                 "lhrs": 164.16,
-                "rate": 87.25
+                "rate": 124
               },
-              "laborRate": 87.25
+              "laborRate": 124
             },
             {
               "code": "PLUMB-GAS-LINE",
@@ -9406,14 +9406,14 @@
               "note": "",
               "ext": {
                 "mat": 1982.232,
-                "lab": 2983.9500000000003,
+                "lab": 4240.8,
                 "equip": 0,
                 "sub": 0,
-                "total": 4966.182000000001,
+                "total": 6223.032,
                 "lhrs": 34.2,
-                "rate": 87.25
+                "rate": 124
               },
-              "laborRate": 87.25
+              "laborRate": 124
             },
             {
               "code": "ALLOWANCE",
@@ -9436,14 +9436,14 @@
               "aUnit": 4200,
               "ext": {
                 "mat": 2553.6,
-                "lab": 1060.96,
+                "lab": 1507.84,
                 "equip": 0,
                 "sub": 3192,
-                "total": 6806.5599999999995,
+                "total": 7253.44,
                 "lhrs": 12.16,
-                "rate": 87.25
+                "rate": 124
               },
-              "laborRate": 87.25
+              "laborRate": 124
             },
             {
               "code": "ALLOWANCE",
@@ -9466,14 +9466,14 @@
               "aUnit": 3200,
               "ext": {
                 "mat": 364.8,
-                "lab": 707.308877,
+                "lab": 1005.229808,
                 "equip": 0,
                 "sub": 1459.2,
-                "total": 2531.3088770000004,
+                "total": 2829.229808,
                 "lhrs": 8.106692,
-                "rate": 87.25
+                "rate": 124
               },
-              "laborRate": 87.25
+              "laborRate": 124
             },
             {
               "code": "ALLOWANCE",
@@ -9501,17 +9501,17 @@
                 "sub": 16720,
                 "total": 16720,
                 "lhrs": 0,
-                "rate": 87.25
+                "rate": 124
               },
-              "laborRate": 87.25
+              "laborRate": 124
             }
           ],
           "mat": 16131.4712,
-          "lab": 25507.248876999998,
+          "lab": 36250.989808,
           "equip": 0,
           "sub": 37477.119999999995,
           "hrs": 292.346692,
-          "total": 79115.840077
+          "total": 89859.581008
         },
         {
           "num": "23",
@@ -9538,14 +9538,14 @@
               "aUnit": 9800,
               "ext": {
                 "mat": 11916.8,
-                "lab": 4243.84,
+                "lab": 6031.36,
                 "equip": 0,
                 "sub": 14896,
-                "total": 31056.64,
+                "total": 32844.16,
                 "lhrs": 48.64,
-                "rate": 87.25
+                "rate": 124
               },
-              "laborRate": 87.25
+              "laborRate": 124
             },
             {
               "code": "ALLOWANCE",
@@ -9568,14 +9568,14 @@
               "aUnit": 22,
               "ext": {
                 "mat": 4514.4,
-                "lab": 17903.7,
+                "lab": 25444.8,
                 "equip": 0,
                 "sub": 7524,
-                "total": 29942.1,
+                "total": 37483.2,
                 "lhrs": 205.2,
-                "rate": 87.25
+                "rate": 124
               },
-              "laborRate": 87.25
+              "laborRate": 124
             },
             {
               "code": "ALLOWANCE",
@@ -9603,9 +9603,9 @@
                 "sub": 5700,
                 "total": 5700,
                 "lhrs": 0,
-                "rate": 87.25
+                "rate": 124
               },
-              "laborRate": 87.25
+              "laborRate": 124
             },
             {
               "code": "BATH-VENT-STD",
@@ -9627,14 +9627,14 @@
               "note": "",
               "ext": {
                 "mat": 578.1244,
-                "lab": 1160.425,
+                "lab": 1649.2,
                 "equip": 0,
                 "sub": 0,
-                "total": 1738.5493999999999,
+                "total": 2227.3244,
                 "lhrs": 13.3,
-                "rate": 87.25
+                "rate": 124
               },
-              "laborRate": 87.25
+              "laborRate": 124
             },
             {
               "code": "ALLOWANCE",
@@ -9662,9 +9662,9 @@
                 "sub": 19760,
                 "total": 19760,
                 "lhrs": 0,
-                "rate": 87.25
+                "rate": 124
               },
-              "laborRate": 87.25
+              "laborRate": 124
             },
             {
               "code": "ALLOWANCE",
@@ -9692,17 +9692,17 @@
                 "sub": 4940,
                 "total": 4940,
                 "lhrs": 0,
-                "rate": 87.25
+                "rate": 124
               },
-              "laborRate": 87.25
+              "laborRate": 124
             }
           ],
           "mat": 17009.324399999998,
-          "lab": 23307.965,
+          "lab": 33125.36,
           "equip": 0,
           "sub": 52820,
           "hrs": 267.14,
-          "total": 93137.2894
+          "total": 102954.6844
         },
         {
           "num": "26",
@@ -9728,14 +9728,14 @@
               "note": "",
               "ext": {
                 "mat": 3211.95,
-                "lab": 1591.4400000000003,
+                "lab": 2261.76,
                 "equip": 0,
                 "sub": 0,
-                "total": 4803.39,
+                "total": 5473.71,
                 "lhrs": 18.240000000000002,
-                "rate": 87.25
+                "rate": 124
               },
-              "laborRate": 87.25
+              "laborRate": 124
             },
             {
               "code": "ELEC-PNL-200",
@@ -9757,14 +9757,14 @@
               "note": "",
               "ext": {
                 "mat": 2569.56,
-                "lab": 1856.68,
+                "lab": 2638.7200000000003,
                 "equip": 0,
                 "sub": 0,
-                "total": 4426.24,
+                "total": 5208.280000000001,
                 "lhrs": 21.28,
-                "rate": 87.25
+                "rate": 124
               },
-              "laborRate": 87.25
+              "laborRate": 124
             },
             {
               "code": "ALLOWANCE",
@@ -9787,14 +9787,14 @@
               "aUnit": 9.5,
               "ext": {
                 "mat": 14937.344,
-                "lab": 19627.760000000002,
+                "lab": 27895.04,
                 "equip": 0,
                 "sub": 17096.96,
-                "total": 51662.064,
+                "total": 59929.344,
                 "lhrs": 224.96,
-                "rate": 87.25
+                "rate": 124
               },
-              "laborRate": 87.25
+              "laborRate": 124
             },
             {
               "code": "ALLOWANCE",
@@ -9817,14 +9817,14 @@
               "aUnit": 260,
               "ext": {
                 "mat": 5779.8,
-                "lab": 2988.226995,
+                "lab": 4246.87848,
                 "equip": 0,
                 "sub": 4495.4,
-                "total": 13263.426995,
+                "total": 14522.07848,
                 "lhrs": 34.24902,
-                "rate": 87.25
+                "rate": 124
               },
-              "laborRate": 87.25
+              "laborRate": 124
             },
             {
               "code": "ALLOWANCE",
@@ -9847,14 +9847,14 @@
               "aUnit": 42,
               "ext": {
                 "mat": 2808.96,
-                "lab": 4901.6352,
+                "lab": 6966.2208,
                 "equip": 0,
                 "sub": 0,
-                "total": 7710.5952,
+                "total": 9775.1808,
                 "lhrs": 56.1792,
-                "rate": 87.25
+                "rate": 124
               },
-              "laborRate": 87.25
+              "laborRate": 124
             },
             {
               "code": "ALLOWANCE",
@@ -9877,14 +9877,14 @@
               "aUnit": 650,
               "ext": {
                 "mat": 1976,
-                "lab": 3448.1200000000003,
+                "lab": 4900.4800000000005,
                 "equip": 0,
                 "sub": 0,
-                "total": 5424.120000000001,
+                "total": 6876.4800000000005,
                 "lhrs": 39.52,
-                "rate": 87.25
+                "rate": 124
               },
-              "laborRate": 87.25
+              "laborRate": 124
             },
             {
               "code": "ALLOWANCE",
@@ -9912,9 +9912,9 @@
                 "sub": 8360,
                 "total": 8360,
                 "lhrs": 0,
-                "rate": 87.25
+                "rate": 124
               },
-              "laborRate": 87.25
+              "laborRate": 124
             },
             {
               "code": "ALLOWANCE",
@@ -9942,9 +9942,9 @@
                 "sub": 3952,
                 "total": 3952,
                 "lhrs": 0,
-                "rate": 87.25
+                "rate": 124
               },
-              "laborRate": 87.25
+              "laborRate": 124
             },
             {
               "code": "ALLOWANCE",
@@ -9967,14 +9967,14 @@
               "aUnit": 320,
               "ext": {
                 "mat": 3502.08,
-                "lab": 2716.1106480000008,
+                "lab": 3860.1457920000007,
                 "equip": 0,
                 "sub": 0,
-                "total": 6218.190648000001,
+                "total": 7362.225792000001,
                 "lhrs": 31.130208000000007,
-                "rate": 87.25
+                "rate": 124
               },
-              "laborRate": 87.25
+              "laborRate": 124
             },
             {
               "code": "ELEC-SMOKE",
@@ -9996,22 +9996,22 @@
               "note": "",
               "ext": {
                 "mat": 449.64639999999997,
-                "lab": 696.255,
+                "lab": 989.5200000000001,
                 "equip": 0,
                 "sub": 0,
-                "total": 1145.9014,
+                "total": 1439.1664,
                 "lhrs": 7.98,
-                "rate": 87.25
+                "rate": 124
               },
-              "laborRate": 87.25
+              "laborRate": 124
             }
           ],
           "mat": 35235.340399999994,
-          "lab": 37826.227843,
+          "lab": 53758.76507200001,
           "equip": 0,
           "sub": 33904.36,
           "hrs": 433.53842799999995,
-          "total": 106965.92824299999
+          "total": 122898.465472
         },
         {
           "num": "27/28",
@@ -10043,9 +10043,9 @@
                 "sub": 11697.92,
                 "total": 11697.92,
                 "lhrs": 0,
-                "rate": 87.25
+                "rate": 124
               },
-              "laborRate": 87.25
+              "laborRate": 124
             },
             {
               "code": "ELEC-CAT6",
@@ -10067,14 +10067,14 @@
               "note": "",
               "ext": {
                 "mat": 550.6959999999999,
-                "lab": 1326.2,
+                "lab": 1884.8,
                 "equip": 0,
                 "sub": 0,
-                "total": 1876.896,
+                "total": 2435.496,
                 "lhrs": 15.2,
-                "rate": 87.25
+                "rate": 124
               },
-              "laborRate": 87.25
+              "laborRate": 124
             },
             {
               "code": "ALLOWANCE",
@@ -10102,17 +10102,17 @@
                 "sub": 13680,
                 "total": 13680,
                 "lhrs": 0,
-                "rate": 87.25
+                "rate": 124
               },
-              "laborRate": 87.25
+              "laborRate": 124
             }
           ],
           "mat": 550.6959999999999,
-          "lab": 1326.2,
+          "lab": 1884.8,
           "equip": 0,
           "sub": 25377.92,
           "hrs": 15.2,
-          "total": 27254.816
+          "total": 27813.415999999997
         },
         {
           "num": "31",
@@ -10512,18 +10512,18 @@
         }
       ],
       "material": 354849.88088,
-      "labor": 499563.59444000013,
+      "labor": 536615.8676,
       "equipment": 24868.112,
       "subcontractor": 439740.56,
       "laborHours": 6494.372064,
-      "direct": 1319022.1473200002,
-      "overhead": 158282.65767840002,
-      "profit": 197853.32209800003,
-      "contingency": 65951.10736600001,
-      "bondsIns": 25127.371906446002,
+      "direct": 1356074.42048,
+      "overhead": 162728.9304576,
+      "profit": 203411.163072,
+      "contingency": 67803.72102400001,
+      "bondsIns": 25833.217710144,
       "permit": 14000,
-      "total": 1780236.6063688463,
-      "psf": 300.7156429677105
+      "total": 1829851.452743744,
+      "psf": 309.0965291796865
     }
   },
   "exclusions": {
@@ -10597,15 +10597,15 @@
     "beds": 14,
     "bedrooms": 8,
     "bathrooms": 7,
-    "recommendedBaseBuilding": 2380707,
-    "costPerGSF": 402.15,
-    "costPerBed": 170050,
-    "costPerBedroom": 297588,
-    "costPerBathroom": 340101,
-    "costExclElevatorAndKitchen": 2380707,
+    "recommendedBaseBuilding": 2446964,
+    "costPerGSF": 413.34,
+    "costPerBed": 174783,
+    "costPerBedroom": 305871,
+    "costPerBathroom": 349566,
+    "costExclElevatorAndKitchen": 2446964,
     "elevatorAllowanceSeparate": 142000,
     "kitchenEquipmentAllowanceSeparate": 120500,
-    "allInWithExcludedAllowances": 2643207
+    "allInWithExcludedAllowances": 2709464
   },
   "topDrivers": [
     {
@@ -10617,6 +10617,10 @@
       "v": 246523.928
     },
     {
+      "k": "Div 26 Electrical",
+      "v": 161708.5072
+    },
+    {
       "k": "Div 06 Wood, Plastics & Rough Carpentry",
       "v": 159624.824
     },
@@ -10625,20 +10629,16 @@
       "v": 143984.6224
     },
     {
-      "k": "Div 26 Electrical",
-      "v": 140744.642425
+      "k": "Div 23 HVAC",
+      "v": 135466.69
     },
     {
-      "k": "Div 23 HVAC",
-      "v": 122549.065
+      "k": "Div 22 Plumbing",
+      "v": 118236.2908
     },
     {
       "k": "Div 07 Thermal, Moisture & Exterior",
       "v": 113419.26
-    },
-    {
-      "k": "Div 22 Plumbing",
-      "v": 104099.789575
     },
     {
       "k": "Div 08 Openings",
@@ -10662,7 +10662,7 @@
     },
     {
       "k": "Div 27/28 Communications & Electronic Safety",
-      "v": 35861.6
+      "v": 36596.6
     },
     {
       "k": "Div 02 Existing Conditions",

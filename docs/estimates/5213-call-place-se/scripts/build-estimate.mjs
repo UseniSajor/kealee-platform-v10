@@ -29,15 +29,15 @@ const DC = 1.15;
 const OH = 0.12, PROFIT = 0.15, CONTINGENCY = 0.07, BONDS_INS = 0.015;
 // ── Labor wage schedule (owner-directed) ────────────────────────────────────
 // Apprentice $55/hr · Journeyman $85/hr · Master $124/hr. Labor = hours × crew rate.
-// Crew blends (documented, adjustable):
-//   General trades   = 60% journeyman + 40% apprentice           => $73.00/hr
-//   Licensed MEP/fire = 25% master + 50% journeyman + 25% apprentice => $87.25/hr
+// Rates (documented, adjustable):
+//   General trades    = 60% journeyman + 40% apprentice  => $73.00/hr
+//   Licensed MEP/fire = master flat                       => $124.00/hr
 // Applied to self-performed construction labor (Div 02-33). Div 01 general
 // conditions are salaried/effort (not repriced); pure subcontractor lump sums
 // keep their quoted value (subs set their own wages).
 const APPRENTICE = 55, JOURNEYMAN = 85, MASTER = 124, EMBEDDED = 75;
 const GENERAL_RATE = +(0.6 * JOURNEYMAN + 0.4 * APPRENTICE).toFixed(2);          // 73.00
-const LICENSED_RATE = +(0.25 * MASTER + 0.5 * JOURNEYMAN + 0.25 * APPRENTICE).toFixed(2); // 87.25
+const LICENSED_RATE = MASTER;                                                    // 124.00 (master flat, MEP/fire)
 const MASTER_LED = new Set(['21', '22', '23', '26', '27/28']); // licensed MEP + fire trades
 const crewRate = (div) => MASTER_LED.has(div) ? LICENSED_RATE : GENERAL_RATE;
 // ── Measured geometry — dimensions scaled off the drawings ──────────────────
@@ -335,7 +335,7 @@ for (const S of [A, B, C]) {
 console.log(`\nTARGET ${money(TARGET_TOTAL)} @ ${psf(TARGET_PSF)} — Scenario A variance ${money(A.total - TARGET_TOTAL)} (${((A.psf / TARGET_PSF - 1) * 100).toFixed(0)}% over)`);
 console.log(`Excluded: elevator ${money(elevatorAllow)} | kitchen equip ${money(kitchenAllow)}`);
 console.log(`\nLABOR WAGE: apprentice $${APPRENTICE} · journeyman $${JOURNEYMAN} · master $${MASTER}/hr`);
-console.log(`  General-trades crew $${GENERAL_RATE}/hr (60% jrny + 40% appr) | Licensed MEP/fire crew $${LICENSED_RATE}/hr (25% master + 50% jrny + 25% appr)`);
+console.log(`  General-trades crew $${GENERAL_RATE}/hr (60% jrny + 40% appr) | Licensed MEP/fire $${LICENSED_RATE}/hr (master flat)`);
 console.log(`  ${Math.round(A.laborHours).toLocaleString()} total labor-hours | labor $${Math.round(A.labor).toLocaleString()}`);
 console.log(`\nTakeoff basis (Scenario A direct): MEASURED ${money(methodMix.MEASURED)} (${(methodMix.MEASURED / A.direct * 100).toFixed(0)}%) | CALC-from-dims ${money(methodMix.CALC)} (${(methodMix.CALC / A.direct * 100).toFixed(0)}%) | not-dimensioned ${money(methodMix.ASSUMED)} (${(methodMix.ASSUMED / A.direct * 100).toFixed(0)}%)`);
 console.log(`==> DIMENSIONED (measured + calc-from-dims): ${dimensionedPct.toFixed(1)}% of direct cost`);
@@ -363,7 +363,7 @@ const jsonExport = {
     catalogue: 'MARKETPLACE_ASSEMBLIES (DC-Baltimore 2024-25) — mid tier, DC factor 1.15',
     takeoff: 'MEASURED from permit set (28 sheets) — see drawings/MEASURED-TAKEOFF.md',
     markups: { overheadPct: 12, profitPct: 15, contingencyPct_A: 7, contingencyPct_BC: 5, bondsInsPct: 1.5 },
-    laborWage: { apprentice: APPRENTICE, journeyman: JOURNEYMAN, master: MASTER, generalTradesRate: GENERAL_RATE, licensedTradesRate: LICENSED_RATE, generalCrew: '60% journeyman + 40% apprentice', licensedCrew: '25% master + 50% journeyman + 25% apprentice (Div 21/22/23/26/27-28)', note: 'Labor = labor-hours × crew rate. Div 01 GC supervision salaried; subcontractor lump sums keep quoted value.' },
+    laborWage: { apprentice: APPRENTICE, journeyman: JOURNEYMAN, master: MASTER, generalTradesRate: GENERAL_RATE, licensedTradesRate: LICENSED_RATE, generalCrew: '60% journeyman + 40% apprentice', licensedCrew: 'master flat (Div 21/22/23/26/27-28)', note: 'Labor = labor-hours × crew rate. Div 01 GC supervision salaried; subcontractor lump sums keep quoted value.' },
     basis: { gsf: GSF, footprint: "24'×64'", stories: 'cellar + 3', beds: BEDS, bedrooms: BEDROOMS, baths: BATHS, height: "35'-4\"", structure: 'TJI 360×14 + W12×26 steel + HSS columns' },
     methodMix: { measured: Math.round(methodMix.MEASURED), calcFromDims: Math.round(methodMix.CALC), notDimensioned: Math.round(methodMix.ASSUMED), dimensionedPct: +dimensionedPct.toFixed(1) },
     notDimensionedItems: undimLines.map((l) => ({ item: l.name, extended: Math.round(l.ext.total) })),
