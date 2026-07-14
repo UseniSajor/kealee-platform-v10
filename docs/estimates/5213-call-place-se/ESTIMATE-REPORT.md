@@ -60,6 +60,27 @@ regional factor (1.15), and masonry construction — not by excess finish qualit
 
 ---
 
+## A2. CTC-catalogue cross-check (independent second pricing)
+
+The same takeoff was re-priced against the **Construction Task Catalog**
+(`data/ctc/ctc-tasks.json`, DMV-2026, JOC adjustment factor 1.10) —
+`scripts/build-estimate-ctc.mjs`, exports `output/estimate-ctc.json` +
+`output/estimate-ctc-lineitems.csv`.
+
+| | Marketplace catalogue (Scenario A) | CTC catalogue |
+|---|--:|--:|
+| Total (excl. elevator + kitchen) | $2,176,715 | **$2,234,427** |
+| $/GSF | $368 | **$377** |
+| Delta | — | **+2.7%** |
+
+Two unrelated catalogues landing within **2.7%** corroborates the ~$2.2M /
+~$370-per-SF result and reinforces that **$170/SF is not achievable** for this
+building. **But only 45.7% of direct cost maps to a real CTC task** — the
+41-task sample cannot price 54% of the building (all of Div 04, 10, 12, 21,
+27/28, 33 and most of MEP), which remains allowance. The licensed full
+~4,666-task Gordian catalog is required to replace those allowances with priced
+CTC line items.
+
 ## B / C. Detailed line items & CSI division summary
 
 Full line-item detail: `output/estimate-lineitems-scenarioA.csv` (106 lines).
