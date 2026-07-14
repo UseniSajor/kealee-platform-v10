@@ -53,6 +53,7 @@ CREATE TABLE IF NOT EXISTS quick_estimates (
   "createdAt"     timestamptz NOT NULL DEFAULT now()
 );
 
+DROP TABLE IF EXISTS estimate_line_items;
 CREATE TABLE IF NOT EXISTS estimate_line_items (
   id            bigserial PRIMARY KEY,
   "estimateId"  uuid NOT NULL REFERENCES quick_estimates(id) ON DELETE CASCADE,
@@ -63,6 +64,7 @@ CREATE TABLE IF NOT EXISTS estimate_line_items (
   unit          text,
   qty           numeric(14,3),
   method        text,
+  "dimensionBasis" text,
   sheet         text,
   confidence    text,
   "matUnit"     numeric(14,2),
@@ -104,8 +106,8 @@ for (const scen of ['A', 'B', 'C']) {
 
 // line items for the recommended Scenario A
 for (const d of J.scenarios.A.divs) for (const ln of d.lines) {
-  sql += `INSERT INTO estimate_line_items ("estimateId",division,item,"catalogueCode","isAllowance",unit,qty,method,sheet,confidence,"matUnit","labUnit","equipUnit","subUnit","laborHours",extended,note) VALUES (
-  '${IDS.A}', '${d.num}', ${sqlStr(ln.name)}, ${sqlStr(ln.code)}, ${ln.allowance}, ${sqlStr(ln.unit)}, ${ln.qty}, ${sqlStr(ln.method)}, ${sqlStr(ln.sheet)}, ${sqlStr(ln.conf)},
+  sql += `INSERT INTO estimate_line_items ("estimateId",division,item,"catalogueCode","isAllowance",unit,qty,method,"dimensionBasis",sheet,confidence,"matUnit","labUnit","equipUnit","subUnit","laborHours",extended,note) VALUES (
+  '${IDS.A}', '${d.num}', ${sqlStr(ln.name)}, ${sqlStr(ln.code)}, ${ln.allowance}, ${sqlStr(ln.unit)}, ${ln.qty}, ${sqlStr(ln.method)}, ${sqlStr(ln.dim || ln.basis || '')}, ${sqlStr(ln.sheet)}, ${sqlStr(ln.conf)},
   ${num(ln.matUnit)}, ${num(ln.labUnit)}, ${num(ln.equipUnit)}, ${num(ln.subUnit)}, ${num(ln.ext.lhrs)}, ${num(ln.ext.total)}, ${sqlStr(ln.note)});
 `;
 }

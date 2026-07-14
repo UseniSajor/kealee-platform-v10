@@ -31,16 +31,17 @@ const lineTables = A.divs.map((d) => {
   const rows = d.lines.map((ln) => `<tr class="${ln.allowance ? 'allow' : ''}">
     <td>${esc(ln.name)}</td>
     <td class="c mono">${esc(ln.code)}</td>
-    <td class="c">${esc(ln.unit)}</td>
+    <td class="c">${esc(ln.method || '')}</td>
+    <td class="dimc">${esc(ln.dim || ln.basis || '')}${ln.sheet ? ` <span class="sh">[${esc(ln.sheet)}]</span>` : ''}</td>
     <td class="r">${ln.qty.toLocaleString()}</td>
+    <td class="c">${esc(ln.unit)}</td>
     <td class="r">${m2(ln.matUnit)}</td>
     <td class="r">${m2(ln.labUnit)}</td>
     <td class="r">${ln.subUnit ? m2(ln.subUnit) : ln.equipUnit ? m2(ln.equipUnit) : '—'}</td>
-    <td class="c">${ln.conf}</td>
     <td class="r b">${m0(ln.ext.total)}</td></tr>`).join('');
   return `<table class="lines"><thead>
-    <tr><th colspan="9" class="divhead">DIVISION ${d.num} — ${esc(d.name)} &nbsp;·&nbsp; ${m0(d.total)}</th></tr>
-    <tr><th>Item</th><th>Code</th><th>Unit</th><th class="r">Qty</th><th class="r">Mat/u</th><th class="r">Lab/u</th><th class="r">Sub·Eq/u</th><th>Conf</th><th class="r">Extended</th></tr>
+    <tr><th colspan="10" class="divhead">DIVISION ${d.num} — ${esc(d.name)} &nbsp;·&nbsp; ${m0(d.total)}</th></tr>
+    <tr><th>Item</th><th>Code</th><th>Method</th><th>Dimension basis [sheet]</th><th class="r">Qty</th><th>Unit</th><th class="r">Mat/u</th><th class="r">Lab/u</th><th class="r">Sub·Eq/u</th><th class="r">Extended</th></tr>
     </thead><tbody>${rows}</tbody></table>`;
 }).join('');
 
@@ -65,7 +66,8 @@ const html = `<!doctype html><html><head><meta charset="utf-8"><title>Estimate �
   th, td { padding: 3px 7px; border-bottom: 1px solid #e2e8f0; text-align: left; vertical-align: top; }
   th { background: #f1f5f2; font-size: 10px; text-transform: uppercase; letter-spacing: .3px; color: #445; }
   .r { text-align: right; } .c { text-align: center; } .b { font-weight: 700; } .dim { color: #889; }
-  .mono { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 9.5px; }
+  .mono { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 9px; }
+  .dimc { font-size: 8.5px; color: #445; } .sh { color: #2a7; font-weight: 600; }
   .kpi { display: flex; gap: 10px; flex-wrap: wrap; margin: 8px 0; }
   .kpi div { flex: 1; min-width: 120px; background: #f7faf7; border: 1px solid #dfeadf; border-radius: 5px; padding: 8px 10px; }
   .kpi .n { font-size: 16px; font-weight: 700; color: #16321a; } .kpi .l { font-size: 9.5px; color: #667; text-transform: uppercase; }
@@ -86,7 +88,7 @@ const html = `<!doctype html><html><head><meta charset="utf-8"><title>Estimate �
 <div class="sub"><b>5213 Call Place SE, Washington DC 20019</b> · New-construction detached group home / residential care (R-2), Type IIIB · Cellar + 3 stories · ${o.gsf.toLocaleString()} GSF · ${o.bedrooms} BR / ${o.beds} beds / ${o.bathrooms} baths / 1 commercial kitchen / 1 elevator</div>
 <div class="sub">Priced through the Kealee catalogue (packages/estimating, DC factor 1.15) · Markups OH 12% / Profit 15% / Contingency 7% · Generated ${new Date(J.meta.generated).toISOString().slice(0, 10)}</div>
 
-<div class="warn"><b>Basis of estimate.</b> No permit drawings were available — <b>no measured takeoff</b> was performed. All quantities are calculated from the stated building basis or assumed as gross-area allowances (confidence LOW–MED). 66 of 106 line items are labeled temporary allowances for institutional scope the catalogue does not carry. Not persisted to a database (no DATABASE_URL in the run environment).</div>
+<div class="warn"><b>Basis of estimate — measured from the permit set (28 sheets).</b> ${J.meta.methodMix ? `<b>${J.meta.methodMix.dimensionedPct}% of direct cost is dimensioned</b> (measured off schedules/plans or calculated from drawing dimensions); every line below lists its dimensional basis and sheet. The remaining ${(100 - J.meta.methodMix.dimensionedPct).toFixed(0)}% is scope that cannot be measured from this set: Division 01 general conditions (time/effort-based), utility service laterals (no civil sheet), and security (not designed).` : ''} Drawings stamped NOT FOR PERMITTING — estimation only. Persisted to Postgres (quick_estimates + estimate_line_items).</div>
 
 <div class="banner"><span class="big">Recommended target: ${psf(C.psf)}–$300/SF &nbsp; (${m0(C.total)}–$1.78M base building)</span><br>
 <span style="font-size:11px">The $170/SF ($1,006,400) target is <b>not achievable</b> for a cellar+3, elevatored, sprinklered, masonry R-2 group home in DC without deleting code-required life-safety, accessibility, or structural scope.</span></div>
