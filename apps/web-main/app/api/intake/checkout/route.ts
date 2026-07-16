@@ -11,6 +11,22 @@ import { parseUtmFromBody } from '@/lib/marketing/utm-metadata'
 export const dynamic = 'force-dynamic'
 
 /**
+ * Premium+ (tier 3) promotional flat price. When PREMIUM_PLUS_PROMO_CODE is set
+ * and matches, the Premium+ checkout price is overridden to this flat amount
+ * regardless of the underlying per-service Premium+ price (which varies
+ * $599–$1,699) — a relative Stripe Coupon can't produce a fixed $5 across
+ * varying base prices, so the override happens here, server-side, before the
+ * Stripe line item is built. Falls back to a default code for local testing.
+ */
+const PREMIUM_PLUS_PROMO_CENTS = 500
+const DEFAULT_PREMIUM_PLUS_PROMO_CODE = 'PREMIUMPLUS5'
+
+function premiumPlusPromoCodes(): string[] {
+  const env = process.env.PREMIUM_PLUS_PROMO_CODE ?? DEFAULT_PREMIUM_PLUS_PROMO_CODE
+  return env.split(',').map((s) => s.trim().toUpperCase()).filter(Boolean)
+}
+
+/**
  * POST /api/intake/checkout
  *
  * Creates a Stripe Checkout Session for an intake-driven purchase.
@@ -18,6 +34,9 @@ export const dynamic = 'force-dynamic'
  * SECURITY: The price is looked up server-side from `@kealee/core-rules`
  * via `projectPath`. Any `amount` in the request body is IGNORED — the
  * client cannot influence what they pay. (P0-1 fix, audit 2026-05-09.)
+ * The one exception is `promoCode`, which can only ever move the price to
+ * the fixed Premium+ promo amount above — never to an arbitrary value —
+ * and only applies when the resolved tier is 3 (Premium+).
  */
 export async function POST(req: NextRequest) {
   try {
@@ -37,9 +56,11 @@ export async function POST(req: NextRequest) {
       // Legacy `amount` field is accepted for backward compatibility
       // but explicitly NOT used. Server price is authoritative.
       amount?: number
+      /** Premium+-only promo code — see premiumPlusPromoCodes() above. */
+      promoCode?: string
     }
 
-    const { intakeId, projectPath, successUrl, cancelUrl, returnUrl, embedded, siteVisitRequested, useV30Pricing, sourcePath, upsellSourceIntakeId } = body
+    const { intakeId, projectPath, successUrl, cancelUrl, returnUrl, embedded, siteVisitRequested, useV30Pricing, sourcePath, upsellSourceIntakeId, promoCode } = body
 
     if (!intakeId || !projectPath) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
@@ -53,6 +74,7 @@ export async function POST(req: NextRequest) {
 
     let unitAmountCents: number
     let productName: string
+    let premiumPlusPromoApplied = false
 
     if (useV30Pricing && isV30Enabled()) {
       const supabase = getSupabaseAdmin()
@@ -108,6 +130,16 @@ export async function POST(req: NextRequest) {
       }
       unitAmountCents = priceEntry.cents
       productName = priceEntry.label
+
+      // Premium+ promo: only applies when the resolved tier is 3 and the code matches.
+      // Silently ignored (normal price applies) if either condition fails — no error
+      // shown to the customer, since a code typed for one tier shouldn't block
+      // checkout on another.
+      if (promoCode && selectedTier === 3 && premiumPlusPromoCodes().includes(promoCode.trim().toUpperCase())) {
+        unitAmountCents = PREMIUM_PLUS_PROMO_CENTS
+        productName = `${priceEntry.label} — $5 Promo`
+        premiumPlusPromoApplied = true
+      }
     }
 
     const stripeKey = process.env.STRIPE_SECRET_KEY
@@ -156,6 +188,7 @@ export async function POST(req: NextRequest) {
         ...(sourcePath ? { sourcePath } : {}),
         ...(upsellSourceIntakeId ? { upsellSourceIntakeId } : {}),
         ...(isBundleProductKey(projectPath) ? { bundlePurchase: 'true' } : {}),
+        ...(premiumPlusPromoApplied ? { promoApplied: 'premium_plus_5' } : {}),
       },
       payment_intent_data: {
         metadata: {
@@ -166,6 +199,7 @@ export async function POST(req: NextRequest) {
           ...(sourcePath ? { sourcePath } : {}),
           ...(upsellSourceIntakeId ? { upsellSourceIntakeId } : {}),
           ...(isBundleProductKey(projectPath) ? { bundlePurchase: 'true' } : {}),
+          ...(premiumPlusPromoApplied ? { promoApplied: 'premium_plus_5' } : {}),
         },
       },
     }

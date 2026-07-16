@@ -167,6 +167,11 @@ function ConfirmInner() {
       }
 
       // ── Free promo code path — bypass Stripe entirely ──────────────────────
+      // A code that isn't a recognised free code isn't necessarily invalid — it
+      // may be a paid promo (e.g. the Premium+ $5 code), which only the Stripe
+      // checkout call below can validate. So an "Invalid promo code" response
+      // here just falls through to Stripe with the code attached, instead of
+      // blocking checkout.
       const code = promoCode.trim()
       if (code) {
         const redeemRes = await fetch('/api/intake/redeem', {
@@ -174,19 +179,14 @@ function ConfirmInner() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ intakeId, projectPath, promoCode: code }),
         })
-        if (!redeemRes.ok) {
-          const b = await redeemRes.json().catch(() => ({}))
-          if (b.error === 'Invalid promo code') {
-            setError('Promo code not recognised. Please check the code and try again, or proceed to payment.')
-            return
-          }
-          // Other redeem error → fall through to Stripe
-        } else {
+        if (redeemRes.ok) {
           const conceptPath  = `/concept/${intakeId}`
           const accessParams = new URLSearchParams({ next: conceptPath, email })
           window.location.href = `/concept/access?${accessParams.toString()}`
           return
         }
+        // Not a free code (or another redeem error) → fall through to Stripe,
+        // still carrying the code in case it's a paid promo for this tier.
       }
 
       // ── Stripe checkout path ───────────────────────────────────────────────
@@ -212,6 +212,7 @@ function ConfirmInner() {
             embedded: true,
             returnUrl,
             ...(v30Enabled && { useV30Pricing: true }),
+            ...(code && { promoCode: code }),
           }),
         })
         if (!checkoutRes.ok) {
@@ -234,6 +235,7 @@ function ConfirmInner() {
           successUrl: `${successUrl}&session_id={CHECKOUT_SESSION_ID}`,
           cancelUrl,
           ...(v30Enabled && { useV30Pricing: true }),
+          ...(code && { promoCode: code }),
         }),
       })
       if (!checkoutRes.ok) {
