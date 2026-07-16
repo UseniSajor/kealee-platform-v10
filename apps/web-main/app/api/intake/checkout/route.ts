@@ -7,24 +7,9 @@ import { isV30Enabled } from '@kealee/kealee-agent-stack'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { trackCheckoutStarted } from '@/lib/marketing/ga4-server'
 import { parseUtmFromBody } from '@/lib/marketing/utm-metadata'
+import { INTERNAL_TEST_PROMO_CENTS, INTERNAL_TEST_PROMO_METADATA_VALUE, internalTestPromoApplies } from '@/lib/internal-test-promo'
 
 export const dynamic = 'force-dynamic'
-
-/**
- * Premium+ (tier 3) promotional flat price. When PREMIUM_PLUS_PROMO_CODE is set
- * and matches, the Premium+ checkout price is overridden to this flat amount
- * regardless of the underlying per-service Premium+ price (which varies
- * $599–$1,699) — a relative Stripe Coupon can't produce a fixed $5 across
- * varying base prices, so the override happens here, server-side, before the
- * Stripe line item is built. Falls back to a default code for local testing.
- */
-const PREMIUM_PLUS_PROMO_CENTS = 500
-const DEFAULT_PREMIUM_PLUS_PROMO_CODE = 'PREMIUMPLUS5'
-
-function premiumPlusPromoCodes(): string[] {
-  const env = process.env.PREMIUM_PLUS_PROMO_CODE ?? DEFAULT_PREMIUM_PLUS_PROMO_CODE
-  return env.split(',').map((s) => s.trim().toUpperCase()).filter(Boolean)
-}
 
 /**
  * POST /api/intake/checkout
@@ -35,8 +20,8 @@ function premiumPlusPromoCodes(): string[] {
  * via `projectPath`. Any `amount` in the request body is IGNORED — the
  * client cannot influence what they pay. (P0-1 fix, audit 2026-05-09.)
  * The one exception is `promoCode`, which can only ever move the price to
- * the fixed Premium+ promo amount above — never to an arbitrary value —
- * and only applies when the resolved tier is 3 (Premium+).
+ * the fixed internal-test amount (see lib/internal-test-promo.ts) — never
+ * to an arbitrary value — and only for allowlisted internal emails.
  */
 export async function POST(req: NextRequest) {
   try {
@@ -56,7 +41,7 @@ export async function POST(req: NextRequest) {
       // Legacy `amount` field is accepted for backward compatibility
       // but explicitly NOT used. Server price is authoritative.
       amount?: number
-      /** Premium+-only promo code — see premiumPlusPromoCodes() above. */
+      /** Internal-testing promo code — see lib/internal-test-promo.ts. */
       promoCode?: string
     }
 
@@ -72,9 +57,19 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'successUrl and cancelUrl required for hosted checkout' }, { status: 400 })
     }
 
+    const stripeKey = process.env.STRIPE_SECRET_KEY
+    if (!stripeKey) {
+      return NextResponse.json({ error: 'Stripe not configured' }, { status: 503 })
+    }
+
+    const guard = guardStripeSecretForHttp(stripeKey)
+    if (guard) return guard
+
+    const stripe = createStripe(stripeKey)
+
     let unitAmountCents: number
     let productName: string
-    let premiumPlusPromoApplied = false
+    let internalTestPromoApplied = false
 
     if (useV30Pricing && isV30Enabled()) {
       const supabase = getSupabaseAdmin()
@@ -107,16 +102,21 @@ export async function POST(req: NextRequest) {
       unitAmountCents = bundle.cents
       productName = bundle.label
     } else {
-      // Server-trusted tier price (v20) — read tier from intake form_data
+      // Server-trusted tier price (v20) — read tier + contact email from intake
       let selectedTier: number | undefined
+      let contactEmail: string | undefined
+      const supabase = getSupabaseAdmin()
       try {
-        const supabase = getSupabaseAdmin()
         const { data: tierRow } = await supabase
           .from('public_intake_leads')
-          .select('form_data')
+          .select('form_data, contact_email')
           .eq('id', intakeId)
           .single()
-        selectedTier = ((tierRow?.form_data as Record<string, unknown>) ?? {}).tier as number | undefined
+        const formData = (tierRow?.form_data as Record<string, unknown>) ?? {}
+        selectedTier = formData.tier as number | undefined
+        contactEmail =
+          (tierRow?.contact_email as string | undefined) ??
+          (formData.email as string | undefined)
       } catch { /* non-fatal — falls back to flat price */ }
 
       const priceEntry = selectedTier
@@ -131,26 +131,16 @@ export async function POST(req: NextRequest) {
       unitAmountCents = priceEntry.cents
       productName = priceEntry.label
 
-      // Premium+ promo: only applies when the resolved tier is 3 and the code matches.
-      // Silently ignored (normal price applies) if either condition fails — no error
-      // shown to the customer, since a code typed for one tier shouldn't block
-      // checkout on another.
-      if (promoCode && selectedTier === 3 && premiumPlusPromoCodes().includes(promoCode.trim().toUpperCase())) {
-        unitAmountCents = PREMIUM_PLUS_PROMO_CENTS
-        productName = `${priceEntry.label} — $5 Promo`
-        premiumPlusPromoApplied = true
+      // Internal-testing promo: any tier, allowlisted email, capped uses.
+      // A failed check silently falls through to normal pricing (no error
+      // shown) — a code typed by someone outside the allowlist shouldn't
+      // reveal that a promo exists at all.
+      if (await internalTestPromoApplies(stripe, promoCode, contactEmail)) {
+        unitAmountCents = INTERNAL_TEST_PROMO_CENTS
+        productName = `${priceEntry.label} — $5 Internal Test`
+        internalTestPromoApplied = true
       }
     }
-
-    const stripeKey = process.env.STRIPE_SECRET_KEY
-    if (!stripeKey) {
-      return NextResponse.json({ error: 'Stripe not configured' }, { status: 503 })
-    }
-
-    const guard = guardStripeSecretForHttp(stripeKey)
-    if (guard) return guard
-
-    const stripe = createStripe(stripeKey)
 
     const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = [
       {
@@ -188,7 +178,7 @@ export async function POST(req: NextRequest) {
         ...(sourcePath ? { sourcePath } : {}),
         ...(upsellSourceIntakeId ? { upsellSourceIntakeId } : {}),
         ...(isBundleProductKey(projectPath) ? { bundlePurchase: 'true' } : {}),
-        ...(premiumPlusPromoApplied ? { promoApplied: 'premium_plus_5' } : {}),
+        ...(internalTestPromoApplied ? { promoApplied: INTERNAL_TEST_PROMO_METADATA_VALUE } : {}),
       },
       payment_intent_data: {
         metadata: {
@@ -199,7 +189,7 @@ export async function POST(req: NextRequest) {
           ...(sourcePath ? { sourcePath } : {}),
           ...(upsellSourceIntakeId ? { upsellSourceIntakeId } : {}),
           ...(isBundleProductKey(projectPath) ? { bundlePurchase: 'true' } : {}),
-          ...(premiumPlusPromoApplied ? { promoApplied: 'premium_plus_5' } : {}),
+          ...(internalTestPromoApplied ? { promoApplied: INTERNAL_TEST_PROMO_METADATA_VALUE } : {}),
         },
       },
     }

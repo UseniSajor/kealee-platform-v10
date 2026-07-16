@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { guardStripeSecretForHttp } from '@/lib/stripe-vercel-guard'
 import { createStripe } from '@/lib/stripe-client'
+import { INTERNAL_TEST_PROMO_CENTS, INTERNAL_TEST_PROMO_METADATA_VALUE, internalTestPromoApplies } from '@/lib/internal-test-promo'
 
 export const dynamic = 'force-dynamic'
 
@@ -13,11 +14,14 @@ const TIER_AMOUNTS: Record<string, { amount: number; name: string }> = {
 
 export async function POST(req: NextRequest) {
   try {
-    const { tier, intakeId, successUrl, cancelUrl } = await req.json() as {
+    const { tier, intakeId, successUrl, cancelUrl, email, promoCode } = await req.json() as {
       tier: string
       intakeId: string
       successUrl: string
       cancelUrl: string
+      /** Internal-testing promo — see lib/internal-test-promo.ts. Requires email to check the allowlist. */
+      email?: string
+      promoCode?: string
     }
 
     const stripeKey = process.env.STRIPE_SECRET_KEY
@@ -60,6 +64,13 @@ export async function POST(req: NextRequest) {
 
     const stripe = createStripe(stripeKey)
 
+    // Internal-testing promo: allowlisted email + code + under the usage cap.
+    // A failed check silently falls through to normal pricing — see
+    // lib/internal-test-promo.ts for why this isn't a Stripe Coupon.
+    const promoApplied = await internalTestPromoApplies(stripe, promoCode, email)
+    const unitAmount = promoApplied ? INTERNAL_TEST_PROMO_CENTS : tierData.amount
+    const productLabel = promoApplied ? `Kealee ${tierData.name} — $5 Internal Test` : `Kealee ${tierData.name}`
+
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
       allow_promotion_codes: true,
@@ -67,18 +78,24 @@ export async function POST(req: NextRequest) {
         {
           price_data: {
             currency: 'usd',
-            unit_amount: tierData.amount,
-            product_data: { name: `Kealee ${tierData.name}` },
+            unit_amount: unitAmount,
+            product_data: { name: productLabel },
           },
           quantity: 1,
         },
       ],
-      metadata: { source: 'permit-package', tier, intakeId: intakeId ?? 'pending' },
+      metadata: {
+        source: 'permit-package',
+        tier,
+        intakeId: intakeId ?? 'pending',
+        ...(promoApplied ? { promoApplied: INTERNAL_TEST_PROMO_METADATA_VALUE } : {}),
+      },
       payment_intent_data: {
         metadata: {
           source: 'permit-package',
           intakeId: intakeId ?? 'pending',
           projectPath: tier,
+          ...(promoApplied ? { promoApplied: INTERNAL_TEST_PROMO_METADATA_VALUE } : {}),
         },
       },
       success_url: successUrl ?? `${req.nextUrl.origin}/permits/success`,

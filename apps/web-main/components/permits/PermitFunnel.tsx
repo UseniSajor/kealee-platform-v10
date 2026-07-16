@@ -115,6 +115,8 @@ export function PermitFunnel({ countySlug }: PermitFunnelProps) {
   const [submitting, setSubmitting] = useState(false)
   const [checkingOut, setCheckingOut] = useState<PermitTier | null>(null)
   const [checkoutError, setCheckoutError] = useState<string | null>(null)
+  const [promoCode, setPromoCode] = useState('')
+  const [showPromo, setShowPromo] = useState(false)
   const [dragOver, setDragOver] = useState(false)
   const [availability, setAvailability] = useState<any | null>(null)
   const [availabilityError, setAvailabilityError] = useState<string | null>(null)
@@ -210,6 +212,8 @@ export function PermitFunnel({ countySlug }: PermitFunnelProps) {
           tier,
           successUrl: `${origin}/permits/success?tier=${tier}&email=${encodeURIComponent(state.email)}&intake_id=${state.intakeId ?? ''}`,
           cancelUrl: `${origin}/permits`,
+          email: state.email,
+          ...(promoCode.trim() && { promoCode: promoCode.trim() }),
         }),
       })
       const data = await res.json()
@@ -636,6 +640,25 @@ export function PermitFunnel({ countySlug }: PermitFunnelProps) {
                 </p>
               </div>
             )}
+            <div className="mt-4 text-center">
+              <button
+                type="button"
+                onClick={() => setShowPromo((s) => !s)}
+                className="text-xs font-medium underline"
+                style={{ color: '#9CA3AF' }}
+              >
+                {showPromo ? '↑ Hide promo code' : '+ Have a promo code?'}
+              </button>
+              {showPromo && (
+                <input
+                  type="text"
+                  value={promoCode}
+                  onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
+                  placeholder="Enter promo code"
+                  className="mt-2 w-full max-w-xs mx-auto block rounded-lg border border-gray-200 px-3 py-2 text-sm text-center"
+                />
+              )}
+            </div>
             <p className="text-center text-xs text-gray-400 mt-4">
               Secure payment via Stripe. You'll be redirected to complete your order.
             </p>
