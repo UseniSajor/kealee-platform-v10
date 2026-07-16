@@ -714,6 +714,9 @@ importers:
       '@kealee/intake':
         specifier: workspace:*
         version: link:../../packages/intake
+      '@kealee/intelligence':
+        specifier: workspace:*
+        version: link:../../packages/intelligence
       '@kealee/kealee-agent-stack':
         specifier: workspace:*
         version: link:../../packages/kealee-agent-stack
