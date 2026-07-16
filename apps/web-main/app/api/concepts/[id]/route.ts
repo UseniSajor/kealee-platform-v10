@@ -174,6 +174,9 @@ export async function GET(
           }
         : undefined,
       pdfUrl: typeof conceptOutput?.pdfUrl === 'string' ? conceptOutput.pdfUrl : undefined,
+      // CAD/DXF export (Premium+ / tier 3 only)
+      cadDxfInline: typeof conceptOutput?.cadDxfInline === 'string' ? conceptOutput.cadDxfInline : undefined,
+      cadUrl: typeof conceptOutput?.cadUrl === 'string' ? conceptOutput.cadUrl : undefined,
       mepSchematic: conceptOutput?.mepSchematic as Concept['mepSchematic'],
 
       // Financials

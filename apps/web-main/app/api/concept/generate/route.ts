@@ -43,7 +43,7 @@ export const maxDuration = 300 // Claude + Replicate render jobs can take 60–1
 // Statuses that authorise a concept generation. Stripe webhook flips intake
 // to `paid`; the first successful generation flips it to `concept_ready`
 // (regenerations are allowed and return cached output).
-const PAID_INTAKE_STATUSES = new Set(['paid', 'concept_ready', 'processing', 'delivered'])
+const PAID_INTAKE_STATUSES = new Set(['paid', 'concept_ready', 'processing'])
 
 function normalizeConceptTier(tier: number): ConceptTier {
   return (tier === 3 ? 3 : tier === 2 ? 2 : 1) as ConceptTier
@@ -105,6 +105,9 @@ interface ConceptOutput {
   beforeUrls?: string[]
   /** Storage URL for the generated concept package PDF (set after PDF generation). */
   pdfUrl?: string
+  /** Premium+ (tier 3) only: inline DXF text and/or permanent storage URL for the CAD export. */
+  cadDxfInline?: string
+  cadUrl?: string
 }
 
 /** Paths that ship both interior and exterior concept renders. */
@@ -320,31 +323,21 @@ async function fireConceptRenders(
 
   for (let i = 0; i < jobs.length; i++) {
     if (i > 0) await new Promise(r => setTimeout(r, RENDER_SUBMIT_DELAY_MS))
-    // Replicate throttles prediction creation hard when account credit is low
-    // (burst of 1/min). Retry 429s with a wait so bursts still complete.
-    for (let attempt = 1; attempt <= 3; attempt++) {
-      try {
-        const id = await submitOneRenderJob({
-          style,
-          roomType: jobs[i].roomType,
-          scope: jobs[i].scope,
-          renderMode: modes[i % modes.length],
-          inputImageUrl,
-        })
-        if (id) {
-          predictionIds.push(id)
-          renderJobScopes.push(jobs[i].scope)
-        }
-        break
-      } catch (err: unknown) {
-        const msg = err instanceof Error ? err.message : String(err)
-        if (msg.includes('429') && attempt < 3) {
-          await new Promise(r => setTimeout(r, 12_000))
-          continue
-        }
-        console.warn(`[concept/generate] Render ${i + 1}/${jobs.length} (${jobs[i].scope}) failed:`, msg)
-        break
+    try {
+      const id = await submitOneRenderJob({
+        style,
+        roomType: jobs[i].roomType,
+        scope: jobs[i].scope,
+        renderMode: modes[i % modes.length],
+        inputImageUrl,
+      })
+      if (id) {
+        predictionIds.push(id)
+        renderJobScopes.push(jobs[i].scope)
       }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err)
+      console.warn(`[concept/generate] Render ${i + 1}/${jobs.length} (${jobs[i].scope}) failed:`, msg)
     }
   }
 
@@ -523,18 +516,6 @@ function attachConceptVideoFields(conceptOutput: ConceptOutput, tier: number): v
  * Fire-and-forget call to /api/concept/video for tier 2+. Returns immediately;
  * the customer portal polls via GET to swap in the real video when ready.
  */
-/**
- * Base URL for fire-and-forget self-calls (video trigger/poll, render resolve,
- * deliverable-ready email). On Railway, fetching our own public domain from
- * inside the container fails ('fetch failed') — call the local server directly.
- */
-function internalApiBaseUrl(req: NextRequest): string {
-  if (process.env.RAILWAY_ENVIRONMENT_NAME && process.env.PORT) {
-    return `http://127.0.0.1:${process.env.PORT}`
-  }
-  return process.env.NEXT_PUBLIC_APP_URL ?? req.nextUrl.origin
-}
-
 function triggerConceptVideoGeneration(baseUrl: string, intakeId: string, tier: number): void {
   if (!conceptTierIncludesVideo(tier as ConceptTier)) return
   fetch(`${baseUrl}/api/concept/video`, {
@@ -966,7 +947,7 @@ export async function POST(req: NextRequest) {
       .filter((u) => u.length > 0 && /\.(jpe?g|png|webp|heic)/i.test(u))
 
     // Return cached concept if already generated
-    if (existingFormData.conceptOutput && (intake.status === 'concept_ready' || intake.status === 'delivered')) {
+    if (existingFormData.conceptOutput && intake.status === 'concept_ready') {
       const cachedRaw = existingFormData.conceptOutput as ConceptOutput & Record<string, unknown>
       const out = { ...cachedRaw }
       out.renderUrls = preferSelectedRender(out.renderUrls ?? [], existingFormData.selectedRenderUrl as string | undefined)
@@ -979,6 +960,7 @@ export async function POST(req: NextRequest) {
       const hadFloorplan =
         typeof cachedRaw.floorplanSvgInline === 'string' &&
         cachedRaw.floorplanSvgInline.trim().startsWith('<')
+      const hadCad = typeof cachedRaw.cadDxfInline === 'string' && cachedRaw.cadDxfInline.length > 0
       await generateAndAttachConceptFloorplan(
         intakeFloorplanInput(intake as Record<string, unknown>, intakeId),
         out,
@@ -988,13 +970,19 @@ export async function POST(req: NextRequest) {
         !hadFloorplan &&
         typeof out.floorplanSvgInline === 'string' &&
         out.floorplanSvgInline.trim().startsWith('<')
+      const cadBackfilled = !hadCad && typeof out.cadDxfInline === 'string' && out.cadDxfInline.length > 0
 
-      if (floorplanBackfilled) {
-        const pdfUrl = await generateAndAttachConceptPdf({
-          ...intakeFloorplanInput(intake as Record<string, unknown>, intakeId),
-          form_data: { ...existingFormData, conceptOutput: out },
-        })
-        if (pdfUrl) out.pdfUrl = pdfUrl
+      if (floorplanBackfilled || cadBackfilled) {
+        // Regenerate the PDF only when the floor plan itself changed — a CAD-only
+        // backfill (e.g. an older Premium+ order missing just its DXF) doesn't
+        // need a new PDF.
+        if (floorplanBackfilled) {
+          const pdfUrl = await generateAndAttachConceptPdf({
+            ...intakeFloorplanInput(intake as Record<string, unknown>, intakeId),
+            form_data: { ...existingFormData, conceptOutput: out },
+          })
+          if (pdfUrl) out.pdfUrl = pdfUrl
+        }
         await supabase
           .from('public_intake_leads')
           .update({
@@ -1006,12 +994,12 @@ export async function POST(req: NextRequest) {
           .eq('id', intakeId)
       }
 
-      const appBaseUrl = internalApiBaseUrl(req)
+      const appBaseUrl = process.env.NEXT_PUBLIC_APP_URL ?? req.nextUrl.origin
       if (shouldTriggerConceptVideo(tier, existingFormData.conceptVideo)) {
         triggerConceptVideoGeneration(appBaseUrl, intakeId, tier)
         kickConceptVideoPoll(appBaseUrl, intakeId, tier)
       }
-      return NextResponse.json({ conceptOutput: out, cached: true, floorplanBackfilled })
+      return NextResponse.json({ conceptOutput: out, cached: true, floorplanBackfilled, cadBackfilled })
     }
 
     const apiKey = process.env.ANTHROPIC_API_KEY
@@ -1059,9 +1047,7 @@ export async function POST(req: NextRequest) {
       budget: Math.max(1, Number(existingFormData.budget ?? 50000)),
       stylePreferences: existingFormData.style ? [existingFormData.style as string] : [],
       accessibility: Boolean(existingFormData.accessibility),
-      // Intake stores timeline as a label ('Flexible', 'ASAP (1-2 weeks)') — Number() of
-      // those is NaN and surfaces as 'NaN days' in the deliverable. Default to 30 days.
-      timeline: Number.isFinite(Number(existingFormData.timeline)) ? Number(existingFormData.timeline) : 30,
+      timeline: Number(existingFormData.timeline ?? 30),
       formData: { ...existingFormData, geometry },
     })
 
@@ -1213,8 +1199,7 @@ export async function POST(req: NextRequest) {
           renderJobScopes,
           conceptGeneratedAt: new Date().toISOString(),
         },
-        // DB enum lacks 'concept_ready'; 'delivered' = generated-and-delivered
-        status: 'delivered',
+        status: 'concept_ready',
       })
       .eq('id', intakeId)
 
@@ -1238,7 +1223,7 @@ export async function POST(req: NextRequest) {
 
     // Use canonical app URL for sub-fetches so they always hit production,
     // not a preview URL if this route was invoked from a webhook on a non-prod origin.
-    const appBaseUrl = internalApiBaseUrl(req)
+    const appBaseUrl = process.env.NEXT_PUBLIC_APP_URL ?? req.nextUrl.origin
 
     // Tier 2+ deliverables include a video. Fire-and-forget — portal polls GET to advance segments.
     if (shouldTriggerConceptVideo(tier, existingFormData.conceptVideo)) {

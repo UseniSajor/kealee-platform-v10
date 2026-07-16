@@ -890,6 +890,7 @@ export default function ConceptDeliverablePage() {
               floorplanSvgInline={concept.floorplanSvgInline}
               mepSchematic={concept.mepSchematic}
               conceptId={conceptId}
+              cadDownloadUrl={concept.cadDxfInline ? `/api/concept/cad/${conceptId}` : undefined}
             />
           </section>
         ) : null}

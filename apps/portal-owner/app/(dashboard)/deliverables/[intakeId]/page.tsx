@@ -9,12 +9,14 @@ import {
   Zap, Wrench, Droplets, Wind, Lightbulb, Download, Share2,
   ChevronDown, ChevronUp, Loader2, Video, ShieldCheck,
   AlertTriangle, MapPin, TrendingUp, Lock, Layers, Cpu, ImageIcon, FileText,
+  Calendar,
 } from 'lucide-react'
 import {
   isV30IntakeFormData,
   parseV30FloorplanDeliverables,
   parseV30LandscapePackage,
   v30WorkspaceUrl,
+  webMainBaseUrl,
 } from '@/lib/concept-output'
 import { V30LandscapeCadPanel } from '@/components/v30/V30LandscapeCadPanel'
 import { V30WorkspaceEmbed } from '@/components/v30/V30WorkspaceEmbed'
@@ -445,6 +447,8 @@ interface ConceptData {
   pdfUrl?: string
   /** Inline SVG from the floor plan generator */
   floorplanSvg?: string
+  /** Premium+ (tier 3), mainline (non-v30) pipeline: true once the CAD/DXF export has been generated */
+  cadAvailable?: boolean
   /** Human-readable package label, e.g. "Kitchen Design Package" */
   packageLabel: string
   /** What's included in this package (from the product catalog) */
@@ -717,7 +721,6 @@ export default function ConceptDeliverablePage() {
       const ready =
         conceptRaw &&
         (intake.status === 'concept_ready' ||
-          intake.status === 'delivered' ||
           (intake.status === 'paid' && Boolean(conceptRaw)) ||
           (formData.v30 && intake.status === 'processing'))
       if (!ready) return false
@@ -947,6 +950,7 @@ export default function ConceptDeliverablePage() {
         v30Floorplan:    parseV30FloorplanDeliverables(formData),
         v30LotContext:   (formData.v30LotContext as ConceptData['v30LotContext']) ?? null,
         floorplanSvg,
+        cadAvailable:    typeof co.cadDxfInline === 'string' && (co.cadDxfInline as string).length > 0,
         scope:           scopeDescription,
         budget:          typeof intake.budget_range === 'number' ? intake.budget_range : 0,
         location:        (intake.project_address as string) ?? '',
@@ -1136,15 +1140,22 @@ export default function ConceptDeliverablePage() {
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
         <div className="text-center max-w-md">
-          <p className="text-slate-700 font-semibold mb-2">Concept not ready yet</p>
+          <p className="text-slate-700 font-semibold mb-2">Your package is taking a little longer than usual</p>
           <p className="text-slate-500 text-sm mb-4">
-            Your package is still being generated. Check back in a few minutes or contact support.
+            Don&apos;t worry — your purchase went through and our team has been notified. We&apos;ll finish preparing your package shortly; refreshing often resolves this within a few minutes.
           </p>
-          <Link href="/deliverables"
-            className="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-medium text-white"
-            style={{ backgroundColor: '#1A2B4A' }}>
-            <ArrowLeft className="h-4 w-4" /> Back to Deliverables
-          </Link>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+            <Link href="/deliverables"
+              className="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-medium text-white"
+              style={{ backgroundColor: '#1A2B4A' }}>
+              <ArrowLeft className="h-4 w-4" /> Back to Deliverables
+            </Link>
+            <a href="mailto:support@kealee.com"
+              className="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold"
+              style={{ color: '#E8724B' }}>
+              Contact Support
+            </a>
+          </div>
         </div>
       </div>
     )
@@ -1335,6 +1346,49 @@ export default function ConceptDeliverablePage() {
                 dangerouslySetInnerHTML={{ __html: data.floorplanSvg }}
               />
             </div>
+            {data.tier >= 3 && !data.isV30 && (
+              <div className="px-6 py-4 border-t border-gray-100 flex items-center justify-between gap-4 flex-wrap">
+                <div>
+                  <p className="text-sm font-semibold text-gray-800">CAD export (DXF)</p>
+                  <p className="text-xs text-gray-500">
+                    {data.cadAvailable
+                      ? 'kealee-concept.dxf — opens in AutoCAD, SketchUp, Vectorworks, BricsCAD'
+                      : 'Generating — this typically finishes within a few minutes of your floor plan.'}
+                  </p>
+                </div>
+                {data.cadAvailable ? (
+                  <a
+                    href={`/api/concept/cad/${intakeId}`}
+                    className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold text-white"
+                    style={{ backgroundColor: '#7C3AED' }}
+                  >
+                    <Download className="h-3.5 w-3.5" /> Download DXF
+                  </a>
+                ) : (
+                  <span className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold text-gray-400 bg-gray-100">
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" /> Preparing
+                  </span>
+                )}
+              </div>
+            )}
+          </section>
+        )}
+
+        {/* ── Premium+ consultation call ───────────────────────────────────── */}
+        {data.tier >= 3 && (
+          <section className="rounded-2xl p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
+            style={{ background: 'linear-gradient(to right, #1A2B4A, #243B63)' }}>
+            <div>
+              <p className="text-xs font-bold uppercase tracking-widest text-orange-400 mb-1">Premium+ Exclusive</p>
+              <h3 className="text-base font-bold text-white mb-1">Complimentary 15-Min Design Consultation</h3>
+              <p className="text-sm text-slate-300">Talk through your concept, permit scope, or next steps with a Kealee specialist.</p>
+            </div>
+            <a
+              href={`${webMainBaseUrl()}/book-a-call`}
+              className="shrink-0 inline-flex items-center gap-2 bg-[#E8724B] hover:bg-[#D45C33] text-white font-bold px-5 py-2.5 rounded-xl text-sm transition-all"
+            >
+              <Calendar className="w-4 h-4" /> Book Consultation
+            </a>
           </section>
         )}
 
@@ -1507,27 +1561,35 @@ export default function ConceptDeliverablePage() {
           <section className="space-y-4">
             {data.conceptVideoStatus === 'failed' ? (
               /* Video failed — offer retry */
-              <div className="rounded-2xl overflow-hidden border border-red-200 bg-red-50">
+              <div className="rounded-2xl overflow-hidden border border-amber-200 bg-amber-50">
                 <div className="px-6 py-5 sm:px-8 flex flex-col sm:flex-row sm:items-center gap-4">
-                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-red-100">
-                    <Video className="h-5 w-5 text-red-600" />
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-amber-100">
+                    <Video className="h-5 w-5 text-amber-700" />
                   </div>
                   <div className="flex-1">
-                    <p className="text-sm font-bold text-red-900 mb-0.5">Video generation failed</p>
-                    <p className="text-sm text-red-700">The AI video job encountered an error. Retry to regenerate.</p>
+                    <p className="text-sm font-bold text-amber-900 mb-0.5">Your video needs one more pass</p>
+                    <p className="text-sm text-amber-700">
+                      This happens occasionally — one click regenerates it, or reach out and we&apos;ll handle it for you.
+                    </p>
                   </div>
-                  <button
-                    onClick={() => {
-                      const webMain = (process.env.NEXT_PUBLIC_WEB_MAIN_URL ?? 'https://kealee.com').replace(/\/$/, '')
-                      fetch(`${webMain}/api/concept/video`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ intakeId }),
-                      }).then(() => fetchData()).catch(() => {})
-                    }}
-                    className="shrink-0 rounded-xl bg-red-600 hover:bg-red-700 transition-colors px-4 py-2.5 text-sm font-semibold text-white">
-                    Retry Video →
-                  </button>
+                  <div className="flex shrink-0 flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                    <button
+                      onClick={() => {
+                        const webMain = (process.env.NEXT_PUBLIC_WEB_MAIN_URL ?? 'https://kealee.com').replace(/\/$/, '')
+                        fetch(`${webMain}/api/concept/video`, {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ intakeId }),
+                        }).then(() => fetchData()).catch(() => {})
+                      }}
+                      className="rounded-xl bg-amber-600 hover:bg-amber-700 transition-colors px-4 py-2.5 text-sm font-semibold text-white">
+                      Retry Video →
+                    </button>
+                    <a href="mailto:support@kealee.com"
+                      className="inline-flex items-center justify-center rounded-xl border border-amber-300 px-4 py-2.5 text-sm font-semibold text-amber-800 hover:bg-amber-100 transition-colors">
+                      Contact Support
+                    </a>
+                  </div>
                 </div>
               </div>
             ) : !data.conceptVideoStatus ? (

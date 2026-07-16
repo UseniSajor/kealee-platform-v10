@@ -49,7 +49,9 @@ export async function GET(req: NextRequest) {
 
   const { data, error } = await supabase
     .from('public_intake_leads')
-    .select('id, project_path, status, payment_amount, created_at')
+    .select(
+      'id, project_path, status, payment_amount, created_at, form_data, client_name, contact_email, contact_phone, project_address',
+    )
     .order('created_at', { ascending: false })
     .limit(100)
 
@@ -57,5 +59,35 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ purchases: [], live: false, error: error.message })
   }
 
-  return NextResponse.json({ purchases: data ?? [], live: true })
+  // Derive tier + CAD delivery readiness so staff can spot Premium+ orders that
+  // still need their CAD file delivered, without shipping raw form_data to the UI.
+  const purchases = (data ?? []).map((row) => {
+    const formData = (row.form_data as Record<string, unknown>) ?? {}
+    const isV30 = Boolean(formData.v30 || formData.v30Quote || formData.v30ProjectId)
+    const tier = typeof formData.tier === 'number' ? formData.tier : null
+    const conceptOutput = (formData.conceptOutput ?? formData.v30ConceptOutput) as
+      | { cadDxfInline?: string }
+      | undefined
+    const isPremiumPlusConcept = tier === 3 && Boolean(conceptOutput)
+    const cadReady = isV30
+      ? Boolean((formData.v30FloorplanDeliverables as { cadExport?: { dxf?: string } } | undefined)?.cadExport?.dxf)
+      : Boolean(conceptOutput?.cadDxfInline)
+
+    return {
+      id: row.id,
+      project_path: row.project_path,
+      status: row.status,
+      payment_amount: row.payment_amount,
+      created_at: row.created_at,
+      client_name: row.client_name,
+      contact_email: row.contact_email,
+      contact_phone: row.contact_phone,
+      project_address: row.project_address,
+      tier,
+      isV30,
+      needsCadDelivery: isPremiumPlusConcept && !cadReady,
+    }
+  })
+
+  return NextResponse.json({ purchases, live: true })
 }

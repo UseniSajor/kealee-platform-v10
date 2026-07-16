@@ -60,16 +60,26 @@ export default function EstimateCheckoutClient() {
         {error ? (
           <>
             <div className="flex items-center justify-center gap-3 mb-4">
-              <AlertCircle className="w-8 h-8 text-red-600" />
+              <AlertCircle className="w-8 h-8 text-amber-500" />
             </div>
-            <h1 className="text-2xl font-bold text-slate-900 text-center mb-4">Checkout Error</h1>
-            <p className="text-slate-600 text-center mb-6">{error}</p>
-            <button
-              onClick={() => router.push('/estimate')}
-              className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition"
-            >
-              Back to Estimation
-            </button>
+            <h1 className="text-2xl font-bold text-slate-900 text-center mb-2">One moment — checkout hiccup</h1>
+            <p className="text-slate-600 text-center mb-6">
+              We couldn&apos;t start checkout just now. No charge was made — try again, or contact us and we&apos;ll get you set up directly.
+            </p>
+            <div className="flex flex-col gap-3">
+              <button
+                onClick={() => router.push('/estimate')}
+                className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition"
+              >
+                Back to Estimation
+              </button>
+              <a
+                href="mailto:support@kealee.com"
+                className="w-full text-center px-4 py-2 border border-slate-200 text-slate-700 rounded-lg font-semibold hover:bg-slate-50 transition"
+              >
+                Contact Support
+              </a>
+            </div>
           </>
         ) : (
           <>

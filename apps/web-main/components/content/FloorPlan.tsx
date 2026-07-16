@@ -10,6 +10,8 @@ interface FloorPlanProps {
   floorplanSvgInline?: string
   mepSchematic?: Record<string, unknown>
   conceptId: string
+  /** Premium+ (tier 3): direct download link for the CAD/DXF export, once generated. */
+  cadDownloadUrl?: string
 }
 
 const LAYERS = [
@@ -125,7 +127,7 @@ function InteractiveSVG({ visible }: { visible: Set<string> }) {
   )
 }
 
-export function FloorPlan({ tier, floorPlanUrl, floorplanSvgInline, mepSchematic, conceptId }: FloorPlanProps) {
+export function FloorPlan({ tier, floorPlanUrl, floorplanSvgInline, mepSchematic, conceptId, cadDownloadUrl }: FloorPlanProps) {
   const [visibleLayers, setVisibleLayers] = useState<Set<string>>(new Set(['base']))
 
   function toggleLayer(id: string) {
@@ -203,19 +205,19 @@ export function FloorPlan({ tier, floorPlanUrl, floorplanSvgInline, mepSchematic
         </div>
       </div>
 
-      {/* Download buttons (Tier 3) */}
+      {/* CAD download (Tier 3) */}
       {tier === 3 && (
-        <div className="flex flex-wrap gap-2">
-          {LAYERS.map((layer) => (
-            <button
-              key={layer.id}
-              className="flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-600 hover:border-slate-300 hover:bg-slate-50 transition"
-            >
-              <Download className="w-3 h-3" />
-              {layer.label} (PDF)
-            </button>
-          ))}
-        </div>
+        cadDownloadUrl ? (
+          <a
+            href={cadDownloadUrl}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-600 hover:border-slate-300 hover:bg-slate-50 transition"
+          >
+            <Download className="w-3 h-3" />
+            Download CAD (DXF)
+          </a>
+        ) : (
+          <p className="text-xs text-slate-400">CAD export generating — check back shortly.</p>
+        )
       )}
     </div>
   )

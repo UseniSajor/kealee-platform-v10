@@ -45,6 +45,9 @@ export interface Concept {
   }
   /** Server-generated concept package PDF */
   pdfUrl?: string
+  /** Premium+ (tier 3) only: CAD/DXF export — inline text and/or permanent storage URL */
+  cadDxfInline?: string
+  cadUrl?: string
   mepSchematic?: Record<string, unknown>
   estimatedCost?: number
   timeline?: string

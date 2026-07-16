@@ -215,6 +215,9 @@ function EstimateSuccess({ deliverable }: { deliverable: ServiceDeliverable | nu
                 <ArrowRight className="w-5 h-5" />
               </button>
             </Link>
+            <p className="text-sm text-slate-400 mt-6">
+              Questions about your estimate? <a href="mailto:support@kealee.com" className="font-semibold text-orange-600 hover:underline">Contact Support</a>
+            </p>
           </div>
         </div>
       </section>

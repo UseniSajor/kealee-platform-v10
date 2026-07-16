@@ -93,6 +93,13 @@ function ConfirmationContent() {
           Return to Home
         </Link>
       </div>
+
+      <p style={{ fontSize: 13, color: '#6b7280', marginTop: 28 }}>
+        Questions about your application?{' '}
+        <a href="mailto:permits@kealee.com" style={{ color: '#16a34a', fontWeight: 700, textDecoration: 'none' }}>
+          Contact Support
+        </a>
+      </p>
     </div>
   )
 }

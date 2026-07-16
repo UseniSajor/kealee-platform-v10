@@ -146,7 +146,12 @@ export default function PreDesignProcessingPage() {
             </div>
 
             {error && (
-              <p className="mt-6 text-sm text-red-600 bg-red-50 rounded-lg p-3">{error}</p>
+              <div className="mt-6 text-sm text-slate-600 bg-slate-50 rounded-lg p-4">
+                <p className="mb-2">Still confirming your order — this can take a minute right after payment.</p>
+                <a href="mailto:hello@kealee.com" className="font-semibold" style={{ color: '#E8793A' }}>
+                  Contact Support
+                </a>
+              </div>
             )}
 
             <p className="mt-8 text-xs text-gray-400">

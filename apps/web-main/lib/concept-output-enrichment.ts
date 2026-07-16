@@ -7,6 +7,7 @@ import {
   intakePathToFamily,
   type ConceptTier,
 } from '@kealee/core-rules'
+import { floorplanToDxf } from '@kealee/kealee-agent-stack'
 
 export interface ConceptPermitScope {
   requiresPermit: boolean
@@ -26,6 +27,10 @@ export interface EnrichableConceptOutput {
   includes?: string[]
   floorplanSvgInline?: string
   floorPlanUrl?: string
+  /** Premium+ (tier 3): concept-level DXF text, embedded so the portal can offer a client-side download with no extra round trip. */
+  cadDxfInline?: string
+  /** Premium+ (tier 3): permanent storage URL for the DXF, once upload succeeds. */
+  cadUrl?: string
   packageJson?: Record<string, unknown>
 }
 
@@ -276,9 +281,13 @@ export async function generateAndAttachConceptFloorplan(
 ): Promise<void> {
   if (normalizeTier(tier) < 2) return
   if (NO_FLOORPLAN_PATHS.has(intake.project_path)) return
-  if (typeof output.floorplanSvgInline === 'string' && output.floorplanSvgInline.trim().startsWith('<')) {
-    return
-  }
+
+  // Skip only if there's nothing left to backfill. Tier 3 orders that already have an
+  // SVG floor plan (generated before CAD export existed, or from a prior regeneration)
+  // still need this to run once so the CAD/DXF deliverable gets attached.
+  const hasSvg = typeof output.floorplanSvgInline === 'string' && output.floorplanSvgInline.trim().startsWith('<')
+  const needsCad = normalizeTier(tier) >= 3 && !output.cadDxfInline
+  if (hasSvg && !needsCad) return
 
   try {
     const { generateFloorplan } = await import('@kealee/concept-engine')
@@ -362,6 +371,46 @@ export async function generateAndAttachConceptFloorplan(
     output.floorplanSvgInline = result.svgString
     if (floorPlanUrl) output.floorPlanUrl = floorPlanUrl
 
+    // Premium+ (tier 3): CAD file download is a named deliverable. Derive a concept-level
+    // DXF from the room rectangles — same converter used by the v30 pipeline
+    // (packages/kealee-agent-stack/src/v30/cad-export.ts), just fed from the mainline
+    // floorplan generator instead of the v30-only floorplan deliverables path.
+    if (normalizeTier(tier) >= 3) {
+      try {
+        const walls = result.floorplanJson.rooms.flatMap((r) => {
+          const x0 = r.x, y0 = r.y, x1 = r.x + r.widthFt, y1 = r.y + r.depthFt
+          return [
+            { start: { x: x0, y: y0 }, end: { x: x1, y: y0 } },
+            { start: { x: x1, y: y0 }, end: { x: x1, y: y1 } },
+            { start: { x: x1, y: y1 }, end: { x: x0, y: y1 } },
+            { start: { x: x0, y: y1 }, end: { x: x0, y: y0 } },
+          ]
+        })
+        const dxf = floorplanToDxf({
+          floorplan: { id: result.floorplanId, walls },
+          projectPath: intake.project_path,
+        })
+        output.cadDxfInline = dxf
+
+        try {
+          const { uploadFile } = await import('@kealee/storage')
+          const cadUpload = await uploadFile({
+            bucket: 'designs',
+            path: `concept-packages/${intake.id}/floorplan.dxf`,
+            file: Buffer.from(dxf, 'utf-8'),
+            contentType: 'application/dxf',
+          })
+          output.cadUrl = cadUpload.url
+        } catch (cadUploadErr: unknown) {
+          console.warn('[concept-floorplan] DXF upload failed (inline DXF still attached):',
+            cadUploadErr instanceof Error ? cadUploadErr.message : cadUploadErr)
+        }
+      } catch (cadErr: unknown) {
+        console.warn('[concept-floorplan] DXF generation failed (non-fatal):',
+          cadErr instanceof Error ? cadErr.message : cadErr)
+      }
+    }
+
     const existingPkg = (output.packageJson as Record<string, unknown> | undefined) ?? {}
     output.packageJson = {
       ...existingPkg,
@@ -381,6 +430,7 @@ export async function generateAndAttachConceptFloorplan(
         layoutNotes: generateAdjacencyNotes(result.floorplanJson),
         layoutIssues: result.layoutIssues,
         svgUrl: floorPlanUrl,
+        cadUrl: output.cadUrl,
       },
     }
   } catch (err: unknown) {

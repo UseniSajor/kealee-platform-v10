@@ -5,7 +5,7 @@ import { AppLayout } from '@/components/layout/app-layout'
 import { ProtectedRoute } from '@/components/auth/protected-route'
 import {
   ShoppingBag, CheckCircle, Clock, AlertCircle,
-  Search, RefreshCw, Loader2, Mail, MapPin,
+  Search, RefreshCw, Loader2, Mail, MapPin, Sparkles, Download,
 } from 'lucide-react'
 
 interface Purchase {
@@ -18,7 +18,9 @@ interface Purchase {
   status: string
   payment_amount: number
   created_at: string
-  form_data: Record<string, unknown> | null
+  tier: number | null
+  isV30: boolean
+  needsCadDelivery: boolean
 }
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string; icon: typeof CheckCircle }> = {
@@ -46,6 +48,24 @@ export default function PurchasesPage() {
   const [live, setLive]           = useState(false)
   const [search, setSearch]       = useState('')
   const [statusFilter, setStatus] = useState('all')
+  const [redelivering, setRedelivering] = useState<string | null>(null)
+  const [redeliverMsg, setRedeliverMsg] = useState<Record<string, string>>({})
+
+  async function redeliverCad(id: string) {
+    setRedelivering(id)
+    setRedeliverMsg(prev => ({ ...prev, [id]: '' }))
+    try {
+      const res = await fetch(`/api/purchases/${id}/redeliver`, { method: 'POST' })
+      const body = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(body?.error ?? 'Redelivery failed')
+      setRedeliverMsg(prev => ({ ...prev, [id]: body?.result?.cadBackfilled ? 'CAD delivered ✓' : 'Re-ran — check status' }))
+      await fetchPurchases()
+    } catch (err: any) {
+      setRedeliverMsg(prev => ({ ...prev, [id]: err.message || 'Failed — try again' }))
+    } finally {
+      setRedelivering(null)
+    }
+  }
 
   async function fetchPurchases() {
     setLoading(true)
@@ -177,6 +197,16 @@ export default function PurchasesPage() {
                             <Icon className="h-3 w-3" />
                             {cfg.label}
                           </span>
+                          {p.tier === 3 && (
+                            <span className="rounded-full px-2 py-0.5 text-xs font-semibold flex items-center gap-1 bg-violet-100 text-violet-700">
+                              <Sparkles className="h-3 w-3" /> Premium+
+                            </span>
+                          )}
+                          {p.needsCadDelivery && (
+                            <span className="rounded-full px-2 py-0.5 text-xs font-semibold bg-red-100 text-red-700">
+                              CAD not delivered
+                            </span>
+                          )}
                         </div>
                         <p className="text-xs text-gray-500 mt-0.5">
                           {p.project_path.replace(/_/g, ' ')}
@@ -193,6 +223,23 @@ export default function PurchasesPage() {
                             </span>
                           )}
                         </div>
+                        {p.needsCadDelivery && (
+                          <div className="mt-2 flex items-center gap-2">
+                            <button
+                              onClick={() => redeliverCad(p.id)}
+                              disabled={redelivering === p.id}
+                              className="inline-flex items-center gap-1.5 rounded-lg bg-violet-600 px-2.5 py-1 text-xs font-semibold text-white hover:bg-violet-700 disabled:opacity-60 transition"
+                            >
+                              {redelivering === p.id
+                                ? <Loader2 className="h-3 w-3 animate-spin" />
+                                : <Download className="h-3 w-3" />}
+                              Deliver CAD now
+                            </button>
+                            {redeliverMsg[p.id] && (
+                              <span className="text-xs text-gray-500">{redeliverMsg[p.id]}</span>
+                            )}
+                          </div>
+                        )}
                       </div>
                       <div className="shrink-0 text-right">
                         <p className="text-sm font-bold text-gray-900">{formatAmount(p.payment_amount)}</p>

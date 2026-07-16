@@ -63,6 +63,34 @@ export default function PermitsSuccessClient() {
     )
   }
 
+  if (error || !order) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center px-4">
+        <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8 text-center">
+          <Clock className="w-12 h-12 text-blue-500 mx-auto mb-4" />
+          <h1 className="text-2xl font-bold text-slate-900 mb-2">We couldn&apos;t pull up that order</h1>
+          <p className="text-slate-600 mb-6">
+            If you just completed payment, check your email for a confirmation — your order is still being processed. Otherwise, contact us and we&apos;ll look it up directly.
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <Link
+              href="/"
+              className="block text-center bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold py-3 rounded-lg transition"
+            >
+              Return Home
+            </Link>
+            <a
+              href="mailto:support@kealee.com"
+              className="block text-center bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition"
+            >
+              Contact Support
+            </a>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 py-12 px-4">
       <div className="max-w-2xl mx-auto">

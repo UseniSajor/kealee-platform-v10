@@ -114,6 +114,7 @@ export function PermitFunnel({ countySlug }: PermitFunnelProps) {
   })
   const [submitting, setSubmitting] = useState(false)
   const [checkingOut, setCheckingOut] = useState<PermitTier | null>(null)
+  const [checkoutError, setCheckoutError] = useState<string | null>(null)
   const [dragOver, setDragOver] = useState(false)
   const [availability, setAvailability] = useState<any | null>(null)
   const [availabilityError, setAvailabilityError] = useState<string | null>(null)
@@ -198,6 +199,7 @@ export function PermitFunnel({ countySlug }: PermitFunnelProps) {
   // Step 4 → select package → Stripe checkout
   const handleCheckout = async (tier: PermitTier) => {
     setCheckingOut(tier)
+    setCheckoutError(null)
     const origin = typeof window !== 'undefined' ? window.location.origin : ''
     try {
       const res = await fetch('/api/permits/checkout', {
@@ -215,10 +217,12 @@ export function PermitFunnel({ countySlug }: PermitFunnelProps) {
         window.location.href = data.url
       } else {
         console.error('No Stripe URL returned', data)
+        setCheckoutError('We couldn’t start checkout just now — no charge was made.')
         setCheckingOut(null)
       }
     } catch (err) {
       console.error('Checkout failed', err)
+      setCheckoutError('We couldn’t start checkout just now — no charge was made.')
       setCheckingOut(null)
     }
   }
@@ -624,6 +628,14 @@ export function PermitFunnel({ countySlug }: PermitFunnelProps) {
                 </div>
               ))}
             </div>
+            {checkoutError && (
+              <div className="mt-4 rounded-lg bg-amber-50 border border-amber-200 px-4 py-3 text-center">
+                <p className="text-sm text-amber-800">{checkoutError} Try again, or{' '}
+                  <a href="mailto:permits@kealee.com" className="font-semibold underline">contact support</a>
+                  {' '}and we&apos;ll get you set up directly.
+                </p>
+              </div>
+            )}
             <p className="text-center text-xs text-gray-400 mt-4">
               Secure payment via Stripe. You'll be redirected to complete your order.
             </p>

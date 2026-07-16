@@ -341,9 +341,28 @@ export default function PreDesignResultsPage() {
   if (error || !session) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <AlertCircle className="mx-auto h-12 w-12 text-red-400 mb-4" />
-          <p className="text-gray-500">{error ?? 'Session not found'}</p>
+        <div className="text-center max-w-md px-4">
+          <AlertCircle className="mx-auto h-12 w-12 mb-4" style={{ color: '#E8793A' }} />
+          <p className="text-lg font-bold mb-2" style={{ color: '#1A2B4A' }}>We&apos;re still pulling up your results</p>
+          <p className="text-gray-500 mb-6">
+            Your order is safe — this page just couldn&apos;t load it right now. Try refreshing, or reach out and we&apos;ll sort it out directly.
+          </p>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+            <a
+              href="mailto:hello@kealee.com"
+              className="inline-block rounded-xl px-6 py-3 text-sm font-bold text-white"
+              style={{ backgroundColor: '#E8793A' }}
+            >
+              Contact Support
+            </a>
+            <Link
+              href="/"
+              className="inline-block rounded-xl px-6 py-3 text-sm font-bold border"
+              style={{ color: '#1A2B4A', borderColor: '#E2E8F0' }}
+            >
+              Back to Home
+            </Link>
+          </div>
         </div>
       </div>
     )

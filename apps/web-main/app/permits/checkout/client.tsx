@@ -64,14 +64,24 @@ export default function PermitsCheckoutClient() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center px-4">
         <div className="bg-white rounded-lg shadow-lg p-8 max-w-md w-full">
-          <h1 className="text-2xl font-bold text-red-600 mb-4">Checkout Error</h1>
-          <p className="text-slate-600 mb-6">{error}</p>
-          <a
-            href="/permits"
-            className="inline-block w-full text-center bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition"
-          >
-            Return to Permits
-          </a>
+          <h1 className="text-2xl font-bold text-slate-900 mb-2">One moment — checkout hiccup</h1>
+          <p className="text-slate-600 mb-6">
+            We couldn&apos;t start checkout just now. No charge was made — try again, or contact us and we&apos;ll get you set up directly.
+          </p>
+          <div className="grid grid-cols-1 gap-3">
+            <a
+              href="/permits"
+              className="inline-block w-full text-center bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition"
+            >
+              Return to Permits
+            </a>
+            <a
+              href="mailto:permits@kealee.com"
+              className="inline-block w-full text-center border border-slate-200 text-slate-700 hover:bg-slate-50 font-semibold py-3 rounded-lg transition"
+            >
+              Contact Support
+            </a>
+          </div>
         </div>
       </div>
     )
