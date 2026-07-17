@@ -167,7 +167,12 @@ export async function POST(req: NextRequest) {
     const commonParams: Stripe.Checkout.SessionCreateParams = {
       mode: 'payment',
       payment_method_types: ['card'],
-      allow_promotion_codes: true,
+      // Stripe's own native promo-code field is intentionally off — the only
+      // working promo entry is the confirm page's field, which resolves and
+      // applies the internal-test price server-side before this session is
+      // created. Leaving this on just shows customers a second, non-functional
+      // "Enter promo code" box with no real Stripe Promotion Code behind it.
+      allow_promotion_codes: false,
       line_items: lineItems,
       metadata: {
         source: useV30Pricing ? 'public_intake_v30' : 'public_intake',

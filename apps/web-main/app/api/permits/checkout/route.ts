@@ -73,7 +73,9 @@ export async function POST(req: NextRequest) {
 
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
-      allow_promotion_codes: true,
+      // Off intentionally — see intake/checkout/route.ts for why. The working
+      // promo entry is PermitFunnel's own field, resolved server-side above.
+      allow_promotion_codes: false,
       line_items: [
         {
           price_data: {
