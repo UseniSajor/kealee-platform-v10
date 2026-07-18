@@ -50,7 +50,7 @@ export async function POST(req: NextRequest) {
       .from('public_intake_leads')
       .update({ status: 'paid' })
       .eq('id', intakeId)
-      .in('status', ['new', 'pending'])
+      .eq('status', 'new')
 
     if (updateErr) {
       console.error('[intake/redeem] Failed to mark intake as paid:', updateErr.message)
