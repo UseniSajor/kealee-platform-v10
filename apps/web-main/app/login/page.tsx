@@ -1,19 +1,17 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
-import { ArrowRight, ExternalLink } from 'lucide-react'
+import { ArrowRight } from 'lucide-react'
 
 export const metadata: Metadata = {
   title: 'Sign In | Kealee',
-  description: 'Sign in to your Kealee portal — Homeowner, Contractor, Developer, or Command Center.',
+  description: 'Sign in to your Kealee portal — Homeowner, Contractor, or Developer.',
 }
 
 // Portal URLs configured per environment
 const ownerUrl      = process.env.NEXT_PUBLIC_PORTAL_OWNER_URL      ?? ''
 const contractorUrl = process.env.NEXT_PUBLIC_PORTAL_CONTRACTOR_URL ?? ''
 const developerUrl  = process.env.NEXT_PUBLIC_PORTAL_DEVELOPER_URL  ?? ''
-const ccUrl         = process.env.NEXT_PUBLIC_COMMAND_CENTER_URL     ?? ''
-const adminUrl      = process.env.NEXT_PUBLIC_ADMIN_CONSOLE_URL      ?? ''
 
 const ROLE_PORTALS = [
   {
@@ -45,21 +43,6 @@ const ROLE_PORTALS = [
     loginUrl:    `${developerUrl}/login`,
     signupUrl:   `${developerUrl}/signup`,
     signupLabel: 'Request Access',
-  },
-]
-
-const STAFF_PORTALS = [
-  {
-    emoji:       '🧠',
-    role:        'Command Center',
-    description: 'Operations oversight, AI workflow queue, concept review, and integration management.',
-    loginUrl:    `${ccUrl}/login`,
-  },
-  {
-    emoji:       '⚙️',
-    role:        'Admin Console',
-    description: 'Organization and user management, subscriptions, and platform configuration.',
-    loginUrl:    `${adminUrl}/login`,
   },
 ]
 
@@ -150,36 +133,6 @@ export default function LoginPage({
           ))}
         </div>
 
-        {/* Divider */}
-        <div className="my-10 flex items-center gap-4">
-          <div className="flex-1 border-t border-gray-200" />
-          <span className="text-xs font-semibold uppercase tracking-widest text-gray-400">
-            Staff &amp; Internal Access
-          </span>
-          <div className="flex-1 border-t border-gray-200" />
-        </div>
-
-        {/* Staff portals */}
-        <div className="grid gap-4 sm:grid-cols-2">
-          {STAFF_PORTALS.map((portal) => (
-            <a
-              key={portal.role}
-              href={portal.loginUrl || '#'}
-              className="flex items-center gap-5 rounded-xl border border-gray-200 bg-white p-5 transition-all hover:border-gray-300 hover:shadow-sm"
-            >
-              <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl text-xl"
-                style={{ backgroundColor: '#1A2B4A14' }}>
-                {portal.emoji}
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="font-semibold font-display" style={{ color: '#1A2B4A' }}>{portal.role}</p>
-                <p className="mt-0.5 text-xs text-gray-500 leading-relaxed">{portal.description}</p>
-              </div>
-              <ExternalLink className="h-4 w-4 flex-shrink-0 text-gray-400" />
-            </a>
-          ))}
-        </div>
-
         {/* New to Kealee */}
         <p className="mt-10 text-center text-sm text-gray-500">
           New to Kealee?{' '}
@@ -189,6 +142,13 @@ export default function LoginPage({
           {' '}or{' '}
           <Link href="/contractor/register" className="font-semibold hover:underline" style={{ color: '#2ABFBF' }}>
             join as a contractor
+          </Link>
+        </p>
+
+        <p className="mt-16 text-center text-xs text-gray-400">
+          Kealee staff member?{' '}
+          <Link href="/staff-login" className="font-medium hover:underline text-gray-500">
+            Staff &amp; internal sign in
           </Link>
         </p>
       </div>
