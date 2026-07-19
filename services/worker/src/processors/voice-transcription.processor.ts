@@ -157,13 +157,13 @@ export async function pollAndTranscribePending(): Promise<void> {
 
   try {
     const pending = await prisma.$queryRaw`
-      SELECT id, storage_url, audio_duration_seconds
+      SELECT id, storage_url, duration_seconds
       FROM capture_voice_notes
       WHERE (transcription_status IS NULL OR transcription_status = 'pending')
         AND created_at > NOW() - INTERVAL '7 days'
       ORDER BY created_at DESC
       LIMIT 20
-    ` as Array<{ id: string; storage_url: string; audio_duration_seconds: number | null }>
+    ` as Array<{ id: string; storage_url: string; duration_seconds: number | null }>
 
     if (pending.length === 0) return
     console.log(`[voice-transcription] Poll found ${pending.length} pending voice note(s)`)
@@ -173,7 +173,7 @@ export async function pollAndTranscribePending(): Promise<void> {
         await captureAnalysisQueue.transcribeVoiceNote({
           voiceNoteId: note.id,
           storageUrl: note.storage_url,
-          audioDurationSeconds: note.audio_duration_seconds ?? undefined,
+          audioDurationSeconds: note.duration_seconds ?? undefined,
         })
       } catch (err: any) {
         if (!err?.message?.includes('already exists')) {
