@@ -15901,7 +15901,7 @@ model PropertyTwin {
   @@index([parcelId])
   @@index([jurisdiction])
   @@index([dataQualityScore])
-  @@map("property_twins")
+  @@map("market_property_twins")
 }
 
 model LeadTwin {
