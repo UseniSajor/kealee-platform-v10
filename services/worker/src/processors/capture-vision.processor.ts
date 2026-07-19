@@ -11,6 +11,7 @@ import https from 'https'
 import http from 'http'
 import { redis } from '../config/redis.config'
 import type { CaptureAnalysisJobData } from '../queues/capture-analysis.queue'
+import { transcribeVoiceNote } from './voice-transcription.processor'
 
 // ---------------------------------------------------------------------------
 // Anthropic client
@@ -120,7 +121,7 @@ function fallbackResult(rawText: string): VisionResult {
 // Core analysis
 // ---------------------------------------------------------------------------
 
-async function analyzeAsset(job: Job<CaptureAnalysisJobData>): Promise<void> {
+export async function analyzeAsset(job: Job<CaptureAnalysisJobData>): Promise<void> {
   const { assetId, storageUrl, zone } = job.data
 
   if (!assetId || !storageUrl) {
@@ -255,7 +256,10 @@ export function createCaptureVisionWorker(): Worker<CaptureAnalysisJobData> {
   const worker = new Worker<CaptureAnalysisJobData>(
     'capture-analysis',
     async (job) => {
-      if (job.data.jobType !== 'analyze_capture_asset') return
+      if (job.data.jobType === 'transcribe_voice_note') {
+        await transcribeVoiceNote(job)
+        return
+      }
       await analyzeAsset(job)
     },
     {

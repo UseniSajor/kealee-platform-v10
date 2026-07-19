@@ -11,6 +11,7 @@ import https from 'https'
 import http from 'http'
 import { redis } from '../config/redis.config'
 import type { CaptureAnalysisJobData } from '../queues/capture-analysis.queue'
+import { analyzeAsset } from './capture-vision.processor'
 
 // ---------------------------------------------------------------------------
 // OpenAI client (lazy, optional)
@@ -76,7 +77,7 @@ function extractKeywords(text: string): string[] {
 // Core transcription
 // ---------------------------------------------------------------------------
 
-async function transcribeVoiceNote(job: Job<CaptureAnalysisJobData>): Promise<void> {
+export async function transcribeVoiceNote(job: Job<CaptureAnalysisJobData>): Promise<void> {
   const { voiceNoteId, storageUrl, audioDurationSeconds } = job.data
 
   if (!voiceNoteId || !storageUrl) {
@@ -194,7 +195,10 @@ export function createVoiceTranscriptionWorker(): Worker<CaptureAnalysisJobData>
   const worker = new Worker<CaptureAnalysisJobData>(
     'capture-analysis',
     async (job) => {
-      if (job.data.jobType !== 'transcribe_voice_note') return
+      if (job.data.jobType === 'analyze_capture_asset') {
+        await analyzeAsset(job)
+        return
+      }
       await transcribeVoiceNote(job)
     },
     {
