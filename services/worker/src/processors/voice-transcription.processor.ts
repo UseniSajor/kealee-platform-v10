@@ -106,9 +106,10 @@ export async function transcribeVoiceNote(job: Job<CaptureAnalysisJobData>): Pro
       const audioBuffer = await fetchBuffer(storageUrl)
       await job.updateProgress(30)
 
+      const { toFile } = await import('openai')
       const urlPath = new URL(storageUrl).pathname
       const ext = urlPath.split('.').pop() || 'webm'
-      const file = new File([audioBuffer as unknown as BlobPart], `voice_note_${voiceNoteId}.${ext}`, { type: `audio/${ext}` })
+      const file = await toFile(audioBuffer, `voice_note_${voiceNoteId}.${ext}`, { type: `audio/${ext}` })
 
       const transcription = await client.audio.transcriptions.create({
         model: 'whisper-1',
