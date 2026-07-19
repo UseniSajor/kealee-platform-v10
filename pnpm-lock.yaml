@@ -3372,6 +3372,9 @@ importers:
       '@anthropic-ai/sdk':
         specifier: ^0.74.0
         version: 0.74.0(zod@3.25.76)
+      '@kealee/ai':
+        specifier: workspace:*
+        version: link:../../packages/ai
       '@kealee/api':
         specifier: workspace:*
         version: link:../api
@@ -3390,9 +3393,15 @@ importers:
       '@kealee/observability':
         specifier: workspace:^
         version: link:../../packages/observability
+      '@kealee/page-builder':
+        specifier: workspace:*
+        version: link:../../packages/page-builder
       '@kealee/queue':
         specifier: workspace:*
         version: link:../../packages/queue
+      '@kealee/realtime':
+        specifier: workspace:*
+        version: link:../../packages/realtime
       '@kealee/storage':
         specifier: workspace:*
         version: link:../../packages/storage
