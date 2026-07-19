@@ -3375,6 +3375,9 @@ importers:
       '@kealee/api':
         specifier: workspace:*
         version: link:../api
+      '@kealee/communications':
+        specifier: workspace:*
+        version: link:../../packages/communications
       '@kealee/concept-engine':
         specifier: workspace:*
         version: link:../../packages/concept-engine

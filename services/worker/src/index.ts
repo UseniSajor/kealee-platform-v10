@@ -3,6 +3,7 @@ import { logger } from './lib/logger'
 import { initWorkerSentry, captureWorkerError } from './lib/sentry'
 import { redis } from './config/redis.config'
 import { getWorkerHealth, setHealthStartTime, setRedisHealth, setDatabaseHealth, isWorkerReadyForProduction, getWorkerAlerts } from './lib/worker-health'
+import { BaseQueue } from './queues/base.queue'
 import { emailQueue } from './queues/email.queue'
 import { webhookQueue } from './queues/webhook.queue'
 import { mlQueue } from './queues/ml.queue'
@@ -59,7 +60,7 @@ let botJobsWorker: Worker | null = null
 let chainJobsWorker: Worker | null = null
 
 // Track queues and workers for health monitoring
-const allQueues = new Map<string, typeof emailQueue>()
+const allQueues = new Map<string, BaseQueue<any>>()
 const allWorkers = new Map<string, Worker | null>()
 
 // Validate required environment variables at startup (fail fast, not at first query)
@@ -553,7 +554,7 @@ async function start() {
   // Test database connection
   try {
     // Import Prisma to test database
-    const { prisma } = await import('./lib/prisma')
+    const { prisma } = await import('@kealee/database')
     await prisma.$queryRaw`SELECT 1`
     setDatabaseHealth(true)
     console.log('✅ Database connection successful')

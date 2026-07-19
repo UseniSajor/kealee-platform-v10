@@ -4,6 +4,7 @@ export {
   sendEmailWithTemplate,
   sendEmail,
   wrapInEmailLayout,
+  checkRateLimit,
 } from './email';
 export type {
   SendEmailResult,
