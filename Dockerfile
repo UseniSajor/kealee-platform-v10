@@ -36,7 +36,8 @@ ENV NEXT_PUBLIC_SUPABASE_URL=$NEXT_PUBLIC_SUPABASE_URL \
     NEXT_PUBLIC_APP_URL=$NEXT_PUBLIC_APP_URL
 
 # Build the right thing for the service. Any Next.js app (apps/<name>/next.config.js)
-# is built as a standalone server; everything else builds the API entrypoint.
+# is built as a standalone server; the BullMQ worker (services/worker) is its own
+# case since it isn't a Next app either; everything else builds the API entrypoint.
 # --filter="<name>..." builds the app plus its workspace dependencies; turbo
 # cache stays enabled (no --force).
 RUN set -eux; \
@@ -50,6 +51,10 @@ RUN set -eux; \
       echo "server.js: $SRV"; \
       test -n "$SRV"; \
       test -f "$SRV"; \
+  elif [ "$RAILWAY_SERVICE_NAME" = "worker" ]; then \
+      echo "Building @kealee/worker (BullMQ job processor)..."; \
+      pnpm --filter @kealee/worker... build; \
+      test -f services/worker/dist/index.js; \
   else \
       echo "No Next app for '$RAILWAY_SERVICE_NAME' — building @kealee/api"; \
       pnpm --filter @kealee/api... build; \
