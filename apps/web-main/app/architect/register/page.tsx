@@ -1,8 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import Link from 'next/link'
-import { ArrowLeft, ArrowRight, CheckCircle, Upload } from 'lucide-react'
+import { ArrowLeft, ArrowRight, CheckCircle, Loader2, Upload } from 'lucide-react'
+import { uploadIntakeFilesSequentially, type IntakeUploadedFile } from '@/lib/intake-file-upload'
 
 const US_STATES = [
   'AL','AK','AZ','AR','CA','CO','CT','DE','FL','GA','HI','ID','IL','IN','IA','KS','KY','LA','ME','MD',
@@ -44,6 +45,22 @@ export default function ArchitectRegisterPage() {
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>({})
+  const [documents, setDocuments] = useState<IntakeUploadedFile[]>([])
+  const [uploadingDocs, setUploadingDocs] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  async function handleDocumentSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files ?? [])
+    if (files.length === 0) return
+    setUploadingDocs(true)
+    try {
+      const uploaded = await uploadIntakeFilesSequentially(files)
+      setDocuments(prev => [...prev, ...uploaded])
+    } finally {
+      setUploadingDocs(false)
+      e.target.value = ''
+    }
+  }
 
   function update(key: keyof FormData, value: unknown) {
     setForm(prev => ({ ...prev, [key]: value }))
@@ -88,7 +105,7 @@ export default function ArchitectRegisterPage() {
       await fetch('/api/design-professionals/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...form, role: 'ARCHITECT' }),
+        body: JSON.stringify({ ...form, role: 'ARCHITECT', licenseDocumentUrls: documents.map(d => d.url) }),
       })
     } catch {
       // Proceed to success even if network fails — lead is always logged server-side
@@ -354,9 +371,33 @@ export default function ArchitectRegisterPage() {
                     Upload your AIA license, E&O insurance certificate, and any relevant certifications.
                     Our team will review them as part of the verification process.
                   </p>
-                  <button type="button" className="mt-3 rounded-lg border border-dashed border-gray-300 px-4 py-2 text-xs text-gray-500 hover:border-teal-400">
-                    + Upload Documents (PDF, JPG, PNG)
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept=".pdf,.jpg,.jpeg,.png"
+                    multiple
+                    className="hidden"
+                    onChange={handleDocumentSelect}
+                  />
+                  <button
+                    type="button"
+                    disabled={uploadingDocs}
+                    onClick={() => fileInputRef.current?.click()}
+                    className="mt-3 flex items-center gap-1.5 rounded-lg border border-dashed border-gray-300 px-4 py-2 text-xs text-gray-500 hover:border-teal-400 disabled:opacity-60"
+                  >
+                    {uploadingDocs && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+                    {uploadingDocs ? 'Uploading…' : '+ Upload Documents (PDF, JPG, PNG)'}
                   </button>
+                  {documents.length > 0 && (
+                    <ul className="mt-2 space-y-1">
+                      {documents.map((doc, i) => (
+                        <li key={i} className="flex items-center gap-1.5 text-xs text-gray-600">
+                          <CheckCircle className="h-3.5 w-3.5" style={{ color: '#2ABFBF' }} />
+                          {doc.name}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
 
                 <label className="flex cursor-pointer items-start gap-3">

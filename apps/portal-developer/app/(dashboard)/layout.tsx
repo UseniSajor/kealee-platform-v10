@@ -6,10 +6,11 @@ import { useState } from 'react'
 import {
   Map, FlaskConical, Landmark, LayoutGrid,
   FileBarChart, LogOut, Building, Briefcase,
-  Bell, Menu, ChevronRight,
+  Menu, ChevronRight,
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { PortalPageWithAskRail } from '@kealee/ui'
+import { NotificationCenter } from '@/components/notifications/NotificationCenter'
 
 const NAV_ITEMS = [
   { href: '/pipeline',    label: 'Land Pipeline',  icon: Map,          group: 'Acquisitions' },
@@ -128,9 +129,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </button>
           <span className="font-bold font-display text-sm" style={{ color: SIDEBAR }}>Developer Portal</span>
           <div className="ml-auto flex items-center gap-2">
-            <button className="relative rounded-lg p-1.5 text-slate-400 hover:bg-slate-100">
-              <Bell className="h-4 w-4" />
-            </button>
+            <NotificationCenter />
             <div className="flex h-7 w-7 items-center justify-center rounded-full text-[10px] font-bold text-white"
               style={{ background: 'linear-gradient(135deg, #6366F1, #4338CA)' }}>
               D
@@ -151,9 +150,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             )}
           </div>
           <div className="flex items-center gap-3">
-            <button className="relative rounded-lg p-1.5 text-slate-400 hover:bg-slate-100">
-              <Bell className="h-4 w-4" />
-            </button>
+            <NotificationCenter />
             <div className="flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold text-white"
               style={{ background: 'linear-gradient(135deg, #6366F1, #4338CA)' }}>
               D

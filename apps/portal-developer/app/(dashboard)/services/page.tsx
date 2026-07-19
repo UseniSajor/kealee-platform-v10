@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { BarChart3, TrendingUp, Layers, Building2, ArrowRight, X, CheckCircle } from 'lucide-react'
 import { PORTAL_DEVELOPER_SERVICE_DESCRIPTION_PLACEHOLDER } from '@kealee/shared'
 import { PortalServicesHub } from '@kealee/ui'
+import { apiFetch, ApiError } from '@/lib/api/client'
 
 const SERVICES = [
   {
@@ -67,10 +68,8 @@ export default function DeveloperServicesPage() {
     if (!activeService) return
     setSubmitting(true)
     try {
-      const res = await fetch('/api/v1/developer/services/request', {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
+      const data = await apiFetch<{ checkoutUrl?: string }>('/developer/services/request', {
+        method: 'POST',
         body: JSON.stringify({
           serviceType:     activeService,
           propertyAddress: form.propertyAddress,
@@ -80,12 +79,13 @@ export default function DeveloperServicesPage() {
           cancelUrl:       window.location.href,
         }),
       })
-      const data = await res.json()
-      if (res.ok && data.checkoutUrl) {
+      if (data.checkoutUrl) {
         window.location.href = data.checkoutUrl
       } else {
-        alert(data.error ?? 'Failed to start checkout')
+        alert('Failed to start checkout')
       }
+    } catch (err) {
+      alert(err instanceof ApiError ? err.message : 'Failed to start checkout')
     } finally {
       setSubmitting(false)
     }

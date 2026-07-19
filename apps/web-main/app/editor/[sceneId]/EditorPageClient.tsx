@@ -79,7 +79,7 @@ export default function EditorPageClient({ sceneId, initialScene, sceneName, pro
 
       {/* Sub-nav */}
       <div className="flex items-center gap-3 px-4 py-2 bg-white border-b border-slate-200 flex-shrink-0">
-        <Link href="/editor" className="flex items-center gap-1 text-xs text-slate-500 hover:text-slate-900 transition">
+        <Link href="/" className="flex items-center gap-1 text-xs text-slate-500 hover:text-slate-900 transition">
           <ChevronLeft className="w-3.5 h-3.5" /> Studio
         </Link>
         <span className="text-slate-300 text-xs">/</span>

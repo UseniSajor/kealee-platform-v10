@@ -217,9 +217,23 @@ function LeadCard({
         <div className="flex items-center gap-2 text-xs text-gray-500">
           <CheckCircle className="h-4 w-4 text-green-500" />
           <span>Accepted — awaiting project match</span>
-          <button className="ml-auto flex items-center gap-1 font-medium" style={{ color: '#2ABFBF' }}>
+          {/*
+            Accepting an assignment (POST /marketplace/assignments/:id/accept)
+            only flips the ProfessionalAssignment to ACCEPTED and moves the
+            Lead to stage DISTRIBUTED — it does not synchronously create or
+            return a Project. If the lead already has a project attached
+            (leads sourced from an existing Twin project), send the
+            contractor straight there; otherwise the real next stop is the
+            contractor's project pipeline, where the match will show up once
+            workflowOrchestratorService finishes provisioning it.
+          */}
+          <a
+            href={lead?.project?.id ? `/project/${lead.project.id}` : '/projects'}
+            className="ml-auto flex items-center gap-1 font-medium"
+            style={{ color: '#2ABFBF' }}
+          >
             View details <ChevronRight className="h-3 w-3" />
-          </button>
+          </a>
         </div>
       )}
 

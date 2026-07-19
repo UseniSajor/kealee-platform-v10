@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { Clock, CheckCircle, XCircle, AlertCircle, DollarSign, Calendar, Cpu, Layers, ChevronDown, ChevronUp } from 'lucide-react'
-import { useAuthToken } from '@/hooks/useAuth'
+import { apiFetch } from '@/lib/api/client'
 import { CSI_DIVISIONS, PAYMENT_MILESTONES, twinTierLabels } from '@/lib/constants'
 
 interface CsiBreakdown {
@@ -52,22 +52,19 @@ function ErrorMessage({ message, onRetry }: { message: string; onRetry: () => vo
 }
 
 export default function BidsPage() {
-  const token = useAuthToken()
   const [bids, setBids] = useState<Bid[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [filter, setFilter] = useState<string>('all')
+  const [retryCount, setRetryCount] = useState(0)
 
   useEffect(() => {
     const fetchBids = async () => {
-      if (!token) return
+      setLoading(true)
       try {
-        const res = await fetch('/api/v1/contractor/bids', {
-          headers: { 'Authorization': `Bearer ${token}` }
-        })
-        if (!res.ok) throw new Error('Failed to load bids')
-        const data = await res.json()
+        const data = await apiFetch<Bid[] | { bids: Bid[] }>('/bids')
         setBids(Array.isArray(data) ? data : data.bids || [])
+        setError(null)
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Unknown error')
         console.error('Failed to fetch bids:', err)
@@ -76,10 +73,10 @@ export default function BidsPage() {
       }
     }
     fetchBids()
-  }, [token])
+  }, [retryCount])
 
   if (loading) return <BidsSkeleton />
-  if (error) return <ErrorMessage message={error} onRetry={() => { setLoading(true); setError(null) }} />
+  if (error) return <ErrorMessage message={error} onRetry={() => setRetryCount(c => c + 1)} />
   if (!bids.length) return <div className="text-gray-500 text-center py-8">No bids yet</div>
 
   const filtered = filter === 'all' ? bids : bids.filter(b => b.status === filter)

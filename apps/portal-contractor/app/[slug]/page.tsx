@@ -19,6 +19,10 @@ interface ContractorProfile {
 }
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'https://api.kealee.com'
+// web-main is a separate Next.js app (the public marketing/intake site). It has no
+// /homeowners/start route — /concept is its actual intake entry point (Step 1 of 4),
+// and it ignores unrecognized query params, so ?contractor= passes through harmlessly.
+const WEB_MAIN_URL = (process.env.NEXT_PUBLIC_WEB_MAIN_URL ?? 'https://kealee.com').replace(/\/$/, '')
 
 async function getProfile(slug: string): Promise<ContractorProfile | null> {
   try {
@@ -181,7 +185,7 @@ export default async function ContractorProfilePage(
           </h2>
           <p className="mb-6 text-gray-500">Start your project on Kealee and get matched with verified contractors like this one.</p>
           <Link
-            href={`/homeowners/start?contractor=${profile.slug}`}
+            href={`${WEB_MAIN_URL}/concept?contractor=${profile.slug}`}
             className="inline-flex items-center gap-2 rounded-xl px-6 py-3 text-sm font-bold text-white"
             style={{ backgroundColor: '#E8793A' }}
           >

@@ -70,7 +70,7 @@ export function PortalAccessSection() {
 
         <p className="mt-8 text-center text-sm text-slate-500">
           First time?{' '}
-          <Link href="/intake" className="font-semibold hover:underline" style={{ color: '#E8793A' }}>
+          <Link href="/concept" className="font-semibold hover:underline" style={{ color: '#E8793A' }}>
             Start a project
           </Link>
           {' '}or{' '}

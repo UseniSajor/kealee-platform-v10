@@ -10,6 +10,34 @@
 
 import { useState, useCallback, useRef } from 'react'
 import { Upload, CheckCircle2, AlertCircle, Loader2, X, Eye } from 'lucide-react'
+import { ROOM_COLORS, DEFAULT_CEILING_HEIGHT_FT, type RoomType, type PascalSceneData } from '@kealee/pascal-wrapper'
+
+const VISION_ROOM_TYPE_MAP: Record<string, RoomType> = {
+  living: 'living', living_room: 'living', family_room: 'living',
+  dining: 'dining', dining_room: 'dining',
+  kitchen: 'kitchen',
+  bedroom: 'bedroom', primary_bedroom: 'bedroom', master_bedroom: 'bedroom',
+  bathroom: 'bathroom', bath: 'bathroom', primary_bathroom: 'bathroom',
+  half_bath: 'half_bath', powder_room: 'half_bath',
+  office: 'office', study: 'office',
+  garage: 'garage',
+  basement: 'basement',
+  utility: 'utility', laundry: 'utility', laundry_room: 'utility',
+  hallway: 'hallway', hall: 'hallway',
+  closet: 'closet',
+  mud_room: 'mud_room', mudroom: 'mud_room',
+  foyer: 'foyer', entry: 'foyer',
+  sunroom: 'sunroom',
+  game_room: 'game_room',
+  gym: 'gym',
+  studio: 'studio',
+  deck: 'deck',
+  patio: 'patio',
+}
+
+function toRoomType(label: string): RoomType {
+  return VISION_ROOM_TYPE_MAP[label.toLowerCase().trim().replace(/\s+/g, '_')] ?? 'other'
+}
 
 interface UploadedFile {
   id: string
@@ -42,6 +70,69 @@ export default function UploadZone({ sceneId }: Props) {
   const [isDragging, setIsDragging] = useState(false)
   const [activeType, setActiveType] = useState('PHOTO')
   const [isUploading, setIsUploading] = useState(false)
+  const [appliedIds, setAppliedIds] = useState<Set<string>>(new Set())
+  const [applyingId, setApplyingId] = useState<string | null>(null)
+
+  // The live canvas (PascalEditor) owns its own in-memory store and doesn't
+  // listen for external updates, so this persists rooms to the saved scene
+  // via the same PUT the editor's autosave uses, then reloads to pick it up.
+  const applyToScene = useCallback(async (upload: UploadedFile) => {
+    const rooms = upload.visionResult?.rooms
+    if (!rooms || rooms.length === 0) return
+    setApplyingId(upload.id)
+    try {
+      const getRes = await fetch(`/api/editor/scenes/${sceneId}`)
+      if (!getRes.ok) throw new Error('Failed to load scene')
+      const { scene } = await getRes.json()
+      const sceneData = scene.scene_data as PascalSceneData
+      const floor = sceneData.floors[0]
+      if (!floor) throw new Error('Scene has no floor to add rooms to')
+
+      let xOffset = floor.rooms.reduce((max, r) => {
+        const maxX = Math.max(...r.polygon.map(p => p.x))
+        return Math.max(max, maxX)
+      }, 0)
+      if (xOffset > 0) xOffset += 2
+
+      for (const room of rooms) {
+        const sqFt = Math.max(room.estimatedSqFt ?? 100, 16)
+        const side = Math.sqrt(sqFt)
+        const type = toRoomType(room.type)
+        floor.rooms.push({
+          id: crypto.randomUUID(),
+          floorId: floor.id,
+          name: room.description || room.type,
+          type,
+          polygon: [
+            { x: xOffset, y: 0 },
+            { x: xOffset + side, y: 0 },
+            { x: xOffset + side, y: side },
+            { x: xOffset, y: side },
+          ],
+          areaSqFt: sqFt,
+          floorMaterial: 'hardwood',
+          ceilingHeight: DEFAULT_CEILING_HEIGHT_FT,
+          color: ROOM_COLORS[type],
+          level: floor.level,
+        })
+        xOffset += side + 2
+      }
+
+      const putRes = await fetch(`/api/editor/scenes/${sceneId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sceneData }),
+      })
+      if (!putRes.ok) throw new Error('Failed to save scene')
+
+      setAppliedIds(prev => new Set(prev).add(upload.id))
+      window.location.reload()
+    } catch (err) {
+      console.error('[UploadZone] applyToScene failed:', err)
+    } finally {
+      setApplyingId(null)
+    }
+  }, [sceneId])
   const inputRef = useRef<HTMLInputElement>(null)
 
   const uploadFile = useCallback(async (file: File) => {
@@ -205,8 +296,13 @@ export default function UploadZone({ sceneId }: Props) {
                       <span className="text-[#6B46C1] font-semibold">
                         Confidence: {Math.round((u.visionResult.confidence ?? 0) * 100)}%
                       </span>
-                      <button className="flex items-center gap-1 text-[#E8724B] font-semibold text-[10px]">
-                        <Eye className="w-3 h-3" /> Apply to Scene
+                      <button
+                        onClick={() => applyToScene(u)}
+                        disabled={appliedIds.has(u.id) || applyingId === u.id}
+                        className="flex items-center gap-1 text-[#E8724B] font-semibold text-[10px] disabled:text-slate-400"
+                      >
+                        {applyingId === u.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Eye className="w-3 h-3" />}
+                        {applyingId === u.id ? 'Applying…' : appliedIds.has(u.id) ? 'Applied' : 'Apply to Scene'}
                       </button>
                     </div>
                   </div>

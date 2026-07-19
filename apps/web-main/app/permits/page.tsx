@@ -400,7 +400,7 @@ export default function PermitsPage() {
     setLoading(true)
     softCapture()
     try {
-      const res = await fetch('/api/v1/permits/intake', {
+      const res = await fetch('/api/permits/intake', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

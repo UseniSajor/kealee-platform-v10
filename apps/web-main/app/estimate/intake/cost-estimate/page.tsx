@@ -145,7 +145,7 @@ export default function CostEstimateIntakePage() {
         setStep('form')
         return
       }
-      const intakeRes = await fetch('/api/v1/estimation/intake', {
+      const intakeRes = await fetch('/api/estimate/intake', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Cormorant_Garamond, Barlow } from 'next/font/google'
 import { Play, Image as ImageIcon, Video } from 'lucide-react'
+import Link from 'next/link'
 import { CircularServiceCard } from './CircularServiceCard'
 import type { HomeJourneyService } from './home-services-data'
 
@@ -112,9 +113,12 @@ export function ServicesJourneySection({ services }: { services: HomeJourneyServ
             transition={{ duration: 0.8, delay: 0.8 }}
             className="mt-4"
           >
-            <button className="bg-[#E8724B] hover:bg-[#d65f39] text-white px-8 py-3.5 rounded-xl font-home-sans font-bold text-sm tracking-wide transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5">
+            <Link
+              href="/concept"
+              className="bg-[#E8724B] hover:bg-[#d65f39] text-white px-8 py-3.5 rounded-xl font-home-sans font-bold text-sm tracking-wide transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 inline-block"
+            >
               Start Your Project
-            </button>
+            </Link>
           </motion.div>
         </div>
         

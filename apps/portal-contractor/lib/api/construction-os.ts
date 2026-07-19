@@ -117,6 +117,25 @@ export interface BudgetLine {
   sortOrder?:       number
 }
 
+export interface Photo {
+  id:           string
+  projectId:    string
+  visitId?:     string
+  url:          string
+  thumbnailUrl?: string
+  caption?:     string
+  category?:    'PROGRESS' | 'INSPECTION' | 'ISSUE' | 'COMPLETION'
+  takenAt?:     string
+  takenBy?:     string
+  createdAt:    string
+}
+
+export interface PhotoListResult {
+  success:    boolean
+  data:       Photo[]
+  pagination: { page: number; limit: number; total: number; totalPages: number }
+}
+
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function qs(params: Record<string, string | number | boolean | undefined>): string {
@@ -248,6 +267,29 @@ const budget = {
     apiFetch<PaginatedResult<BudgetLine>>(`/pm/budget/lines${qs(params)}`),
 }
 
+// ── Photos ────────────────────────────────────────────────────────────────────
+// Backed by services/api/src/modules/site-tools/daily-log.routes.ts `photoRoutes`,
+// registered at /site-tools/photos. Authenticated, no ownerId restriction (unlike
+// /api/v1/projects/:id/photos, which is gated to the project owner and therefore
+// unusable by a contractor).
+
+const photos = {
+  list: (params: { projectId?: string; category?: string; page?: number; limit?: number }) =>
+    apiFetch<PhotoListResult>(`/site-tools/photos${qs(params)}`),
+
+  create: (data: {
+    projectId:    string
+    url:          string
+    thumbnailUrl?: string
+    caption?:     string
+    category?:    Photo['category']
+    takenAt?:     string
+  }) => apiFetch<{ success: boolean; data: Photo }>('/site-tools/photos', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }),
+}
+
 // ── Namespace export ──────────────────────────────────────────────────────────
 
 export const constructionOS = {
@@ -256,4 +298,5 @@ export const constructionOS = {
   punchList,
   schedule,
   budget,
+  photos,
 }

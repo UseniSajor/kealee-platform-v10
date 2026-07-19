@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, Download, CheckCircle, Clock, Loader } from 'lucide-react'
+import { apiFetch } from '@/lib/api/client'
 
 interface ServiceRequest {
   id: string
@@ -24,8 +25,7 @@ export default function ServiceRequestPage() {
 
   useEffect(() => {
     if (!id) return
-    fetch(`/api/v1/developer/services/${id}`, { credentials: 'include' })
-      .then(r => r.json())
+    apiFetch<ServiceRequest>(`/developer/services/${id}`)
       .then(setRequest)
       .catch(() => setRequest(null))
       .finally(() => setLoading(false))

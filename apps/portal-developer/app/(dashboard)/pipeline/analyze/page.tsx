@@ -2,11 +2,14 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import {
   ArrowLeft, ArrowRight, Check, MapPin, BarChart3,
   Layers, TrendingUp, Building2, DollarSign, FileText,
-  AlertCircle, Boxes, Target, Upload,
+  AlertCircle, Boxes, Target, Upload, Loader2,
 } from 'lucide-react'
+import { apiFetch, ApiError } from '@/lib/api/client'
+import { supabase } from '@/lib/supabase'
 
 type Step = 'parcel' | 'zoning' | 'feasibility' | 'capital' | 'decision'
 
@@ -79,11 +82,33 @@ const CAPITAL_STACK = {
   equity: { label: 'Developer Equity', amount: 93000, pct: 15, rate: 'IRR 28%', term: 'At exit', color: '#2ABFBF' },
 }
 
+// Finds the current user's org, or provisions a lightweight default one via the
+// real POST /orgs endpoint if they don't have one yet (dev-portal signup does not
+// create an org today, so first-time users legitimately have none).
+async function ensureOrgId(): Promise<string> {
+  const { orgs } = await apiFetch<{ orgs: Array<{ id: string }> }>('/orgs/my')
+  if (orgs && orgs.length > 0) return orgs[0].id
+
+  const { data: { user } } = await supabase.auth.getUser()
+  const label = (user?.user_metadata?.full_name as string | undefined) || user?.email?.split('@')[0] || 'developer'
+  const slugBase = label.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || 'developer'
+  const slug = `${slugBase}-${(user?.id ?? Date.now().toString(36)).slice(0, 8)}`.toLowerCase()
+
+  const { org } = await apiFetch<{ org: { id: string } }>('/orgs', {
+    method: 'POST',
+    body: JSON.stringify({ name: `${label}'s Organization`, slug }),
+  })
+  return org.id
+}
+
 export default function AnalyzePage() {
+  const router = useRouter()
   const [step, setStep] = useState<Step>('parcel')
   const [selectedScenario, setSelectedScenario] = useState(0)
   const [parcel, setParcel] = useState({ address: '', acreage: '', apn: '' })
   const [decision, setDecision] = useState<'go' | 'no-go' | null>(null)
+  const [submitting, setSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState<string | null>(null)
 
   const currentIdx = STEPS.findIndex(s => s.id === step)
 
@@ -92,6 +117,72 @@ export default function AnalyzePage() {
   }
   const prevStep = () => {
     if (currentIdx > 0) setStep(STEPS[currentIdx - 1].id)
+  }
+
+  const handleCreateProject = async () => {
+    setSubmitting(true)
+    setSubmitError(null)
+    try {
+      const orgId = await ensureOrgId()
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error('You must be signed in to create a project')
+
+      const scenario = FEASIBILITY.scenarios[selectedScenario]
+
+      // 1. Create the parcel record (OS-Land)
+      const { parcel: createdParcel } = await apiFetch<{ parcel: { id: string } }>('/api/v1/land/parcels', {
+        method: 'POST',
+        body: JSON.stringify({
+          orgId,
+          label: parcel.address || `Parcel ${parcel.apn || 'TBD'}`,
+          parcelNumber: parcel.apn || undefined,
+          address: parcel.address || undefined,
+          acreage: parcel.acreage ? Number(parcel.acreage) : undefined,
+          identifiedBy: user.id,
+        }),
+      })
+
+      // 2. Convert the parcel into a real Project — this also triggers ensureDigitalTwin()
+      const { project } = await apiFetch<{ project: { id: string } }>(`/api/v1/land/parcels/${createdParcel.id}/convert`, {
+        method: 'POST',
+        body: JSON.stringify({
+          name: `${parcel.address || 'New Development'} — ${scenario.name}`,
+          orgId,
+          ownerId: user.id,
+          description: `Land analysis (${scenario.name}): ${scenario.units} units, ${scenario.sqft.toLocaleString()} sqft, ROI ${scenario.roi}%, IRR ${scenario.irr}%.`,
+        }),
+      })
+
+      // 3. Archive the feasibility study against the new project and record the GO
+      //    decision — this is what actually advances the sacred pipeline
+      //    (creates ProjectOutput + enqueues execution). Non-fatal if it fails:
+      //    the project + twin from steps 1-2 are already real and persisted.
+      try {
+        const { study } = await apiFetch<{ study: { id: string } }>('/api/v1/feasibility/studies', {
+          method: 'POST',
+          body: JSON.stringify({
+            orgId,
+            projectId: project.id,
+            parcelId: createdParcel.id,
+            title: `${parcel.address || 'New Development'} Feasibility`,
+            targetUnits: scenario.units,
+            targetSqFt: scenario.sqft,
+            createdBy: user.id,
+          }),
+        })
+        await apiFetch(`/api/v1/feasibility/studies/${study.id}/decide`, {
+          method: 'POST',
+          body: JSON.stringify({ decision: 'GO', decisionBy: user.id, notes: 'Decided via Land Analysis wizard' }),
+        })
+      } catch (archiveErr) {
+        console.warn('Feasibility study archive step failed (non-fatal, project + twin already created):', archiveErr)
+      }
+
+      router.push(`/pipeline/${project.id}`)
+    } catch (err) {
+      setSubmitError(err instanceof ApiError ? err.message : err instanceof Error ? err.message : 'Failed to create project')
+      setSubmitting(false)
+    }
   }
 
   return (
@@ -405,18 +496,26 @@ export default function AnalyzePage() {
         )}
 
         {/* Navigation */}
+        {step === 'decision' && decision === 'go' && submitError && (
+          <div className="mt-6 flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+            <span>{submitError}</span>
+          </div>
+        )}
         <div className="mt-8 flex items-center justify-between">
           {currentIdx > 0 ? (
-            <button onClick={prevStep}
-              className="flex items-center gap-1.5 rounded-lg border border-gray-200 px-4 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-50">
+            <button onClick={prevStep} disabled={submitting}
+              className="flex items-center gap-1.5 rounded-lg border border-gray-200 px-4 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-50 disabled:opacity-50">
               <ArrowLeft className="h-4 w-4" /> Back
             </button>
           ) : <div />}
 
           {step === 'decision' && decision === 'go' ? (
-            <button className="flex items-center gap-2 rounded-lg px-6 py-2.5 text-sm font-semibold text-white hover:opacity-90"
+            <button onClick={handleCreateProject} disabled={submitting}
+              className="flex items-center gap-2 rounded-lg px-6 py-2.5 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-60"
               style={{ backgroundColor: '#38A169' }}>
-              <Layers className="h-4 w-4" /> Create Project & Activate Twin
+              {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Layers className="h-4 w-4" />}
+              {submitting ? 'Creating Project…' : 'Create Project & Activate Twin'}
             </button>
           ) : step !== 'decision' ? (
             <button onClick={nextStep}

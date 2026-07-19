@@ -24,7 +24,7 @@ export default function EstimateCheckoutClient() {
     // Create Stripe checkout session
     const createCheckout = async () => {
       try {
-        const checkoutRes = await fetch('/api/v1/estimation/checkout', {
+        const checkoutRes = await fetch('/api/estimate/checkout', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({

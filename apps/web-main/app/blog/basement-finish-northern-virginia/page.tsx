@@ -213,7 +213,7 @@ export default function BasementFinishNorthernVirginiaPage() {
             AI layout options, egress assessment, permit scope, and cost band — delivered in 24–48 hours.
           </p>
           <Link
-            href="/marketplace/bath-remodel"
+            href="/concept?service=interior"
             style={{ display: 'inline-block', background: '#2ABFBF', color: '#fff', textDecoration: 'none', fontWeight: 700, fontSize: 16, padding: '14px 32px', borderRadius: 12 }}
           >
             Start My Basement Concept — from ${CONCEPT_KITCHEN_PRICE} →

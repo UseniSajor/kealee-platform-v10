@@ -3,10 +3,11 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState } from 'react'
+import { NotificationCenter } from '@/components/notifications/NotificationCenter'
 import {
   Megaphone, Gavel, FolderKanban, DollarSign, ShieldCheck,
   UserCircle, LogOut, HardHat, Menu, ChevronRight,
-  Bell, TrendingUp, FileText,
+  TrendingUp, FileText,
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { PortalPageWithAskRail } from '@kealee/ui'
@@ -130,10 +131,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </button>
           <span className="font-bold font-display text-sm" style={{ color: SIDEBAR }}>Contractor Portal</span>
           <div className="ml-auto flex items-center gap-2">
-            <button className="relative rounded-lg p-1.5 text-slate-400 hover:bg-slate-100">
-              <Bell className="h-4 w-4" />
-              <span className="absolute right-1 top-1 h-1.5 w-1.5 rounded-full" style={{ backgroundColor: ACCENT }} />
-            </button>
+            <NotificationCenter />
             <div className="flex h-7 w-7 items-center justify-center rounded-full text-[10px] font-bold text-white"
               style={{ background: 'linear-gradient(135deg, #F59E0B, #D97706)' }}>
               SC
@@ -154,10 +152,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             )}
           </div>
           <div className="flex items-center gap-3">
-            <button className="relative rounded-lg p-1.5 text-slate-400 hover:bg-amber-50">
-              <Bell className="h-4 w-4" />
-              <span className="absolute right-1 top-1 h-1.5 w-1.5 rounded-full" style={{ backgroundColor: ACCENT }} />
-            </button>
+            <NotificationCenter />
             <div className="flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold text-white"
               style={{ background: 'linear-gradient(135deg, #F59E0B, #D97706)' }}>
               SC

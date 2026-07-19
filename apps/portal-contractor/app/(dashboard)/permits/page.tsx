@@ -1,39 +1,32 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { apiFetch } from '@/lib/api/client'
-
-type PermitStatus =
-  | 'DRAFT'
-  | 'SUBMITTED'
-  | 'UNDER_REVIEW'
-  | 'CORRECTIONS_REQUIRED'
-  | 'APPROVED'
-  | 'REJECTED'
-  | 'EXPIRED'
-
-interface PermitApplication {
-  id: string
-  permitType: string
-  status: PermitStatus
-  projectData: {
-    address?: string
-    scope?: string
-    valuation?: number
-  }
-  createdAt: string
-  updatedAt: string
-}
+import { getContractorPermits, type Permit, type PermitStatus } from '@/lib/api/permits'
 
 const STATUS_STYLES: Record<PermitStatus, { label: string; bg: string; color: string }> = {
-  DRAFT:                { label: 'Draft',              bg: '#F3F4F6', color: '#6B7280' },
-  SUBMITTED:            { label: 'Submitted',          bg: '#EFF6FF', color: '#2563EB' },
-  UNDER_REVIEW:         { label: 'Under Review',       bg: '#FEF9C3', color: '#CA8A04' },
-  CORRECTIONS_REQUIRED: { label: 'Corrections Needed', bg: '#FEF2F2', color: '#DC2626' },
-  APPROVED:             { label: 'Approved',           bg: '#F0FFF4', color: '#16A34A' },
-  REJECTED:             { label: 'Rejected',           bg: '#FEF2F2', color: '#DC2626' },
-  EXPIRED:              { label: 'Expired',            bg: '#F3F4F6', color: '#6B7280' },
+  DRAFT:                  { label: 'Draft',               bg: '#F3F4F6', color: '#6B7280' },
+  AI_PRE_REVIEW:          { label: 'AI Review',            bg: '#F3E8FF', color: '#7C3AED' },
+  READY_TO_SUBMIT:        { label: 'Ready to Submit',      bg: '#EFF6FF', color: '#2563EB' },
+  SUBMITTED:              { label: 'Submitted',            bg: '#EFF6FF', color: '#2563EB' },
+  UNDER_REVIEW:           { label: 'Under Review',         bg: '#FEF9C3', color: '#CA8A04' },
+  CORRECTIONS_REQUESTED:  { label: 'Corrections Needed',   bg: '#FEF2F2', color: '#DC2626' },
+  RESUBMITTED:            { label: 'Resubmitted',          bg: '#FEF9C3', color: '#CA8A04' },
+  APPROVED:               { label: 'Approved',             bg: '#F0FFF4', color: '#16A34A' },
+  ISSUED:                 { label: 'Issued',               bg: '#F0FFF4', color: '#16A34A' },
+  ACTIVE:                 { label: 'Active',               bg: '#F0FFF4', color: '#16A34A' },
+  INSPECTION_HOLD:        { label: 'Inspection Hold',      bg: '#FFF7ED', color: '#C2410C' },
+  EXPIRED:                { label: 'Expired',              bg: '#F3F4F6', color: '#6B7280' },
+  COMPLETED:              { label: 'Completed',            bg: '#F0FFF4', color: '#16A34A' },
+  CANCELLED:              { label: 'Cancelled',            bg: '#F3F4F6', color: '#6B7280' },
+  REJECTED:               { label: 'Rejected',             bg: '#FEF2F2', color: '#DC2626' },
 }
+
+const ACTIVE_STATUSES: PermitStatus[] = [
+  'AI_PRE_REVIEW', 'READY_TO_SUBMIT', 'SUBMITTED', 'UNDER_REVIEW',
+  'CORRECTIONS_REQUESTED', 'RESUBMITTED', 'INSPECTION_HOLD', 'ACTIVE',
+]
+const APPROVED_STATUSES: PermitStatus[] = ['APPROVED', 'ISSUED', 'COMPLETED']
+const OTHER_STATUSES: PermitStatus[] = ['DRAFT', 'REJECTED', 'EXPIRED', 'CANCELLED']
 
 function StatusBadge({ status }: { status: PermitStatus }) {
   const s = STATUS_STYLES[status] ?? STATUS_STYLES.DRAFT
@@ -52,20 +45,20 @@ function formatDate(iso: string) {
 }
 
 export default function ContractorPermitsPage() {
-  const [applications, setApplications] = useState<PermitApplication[]>([])
+  const [permits, setPermits] = useState<Permit[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    apiFetch<{ applications: PermitApplication[] }>('/api/v1/permits/applications')
+    getContractorPermits()
       .then((data) => {
-        setApplications(data.applications ?? [])
+        setPermits(data.permits ?? [])
         setLoading(false)
       })
       .catch((err) => {
         // 401 = not logged in; show empty state instead of error
         if (err?.status === 401) {
-          setApplications([])
+          setPermits([])
         } else {
           setError('Could not load permit applications')
         }
@@ -74,11 +67,9 @@ export default function ContractorPermitsPage() {
   }, [])
 
   const statusGroups = {
-    active: applications.filter((a) =>
-      ['SUBMITTED', 'UNDER_REVIEW', 'CORRECTIONS_REQUIRED'].includes(a.status)
-    ),
-    approved: applications.filter((a) => a.status === 'APPROVED'),
-    other: applications.filter((a) => ['DRAFT', 'REJECTED', 'EXPIRED'].includes(a.status)),
+    active: permits.filter((p) => ACTIVE_STATUSES.includes(p.status)),
+    approved: permits.filter((p) => APPROVED_STATUSES.includes(p.status)),
+    other: permits.filter((p) => OTHER_STATUSES.includes(p.status)),
   }
 
   return (
@@ -117,7 +108,7 @@ export default function ContractorPermitsPage() {
         </div>
       )}
 
-      {!loading && !error && applications.length === 0 && (
+      {!loading && !error && permits.length === 0 && (
         <div
           className="rounded-2xl border-2 border-dashed p-12 text-center"
           style={{ borderColor: '#E5E7EB' }}
@@ -145,7 +136,7 @@ export default function ContractorPermitsPage() {
         </div>
       )}
 
-      {!loading && applications.length > 0 && (
+      {!loading && permits.length > 0 && (
         <div className="space-y-8">
           {statusGroups.active.length > 0 && (
             <section>
@@ -153,8 +144,8 @@ export default function ContractorPermitsPage() {
                 Active ({statusGroups.active.length})
               </h2>
               <div className="space-y-3">
-                {statusGroups.active.map((app) => (
-                  <ApplicationCard key={app.id} app={app} />
+                {statusGroups.active.map((p) => (
+                  <ApplicationCard key={p.id} permit={p} />
                 ))}
               </div>
             </section>
@@ -166,8 +157,8 @@ export default function ContractorPermitsPage() {
                 Approved ({statusGroups.approved.length})
               </h2>
               <div className="space-y-3">
-                {statusGroups.approved.map((app) => (
-                  <ApplicationCard key={app.id} app={app} />
+                {statusGroups.approved.map((p) => (
+                  <ApplicationCard key={p.id} permit={p} />
                 ))}
               </div>
             </section>
@@ -179,8 +170,8 @@ export default function ContractorPermitsPage() {
                 Other ({statusGroups.other.length})
               </h2>
               <div className="space-y-3">
-                {statusGroups.other.map((app) => (
-                  <ApplicationCard key={app.id} app={app} />
+                {statusGroups.other.map((p) => (
+                  <ApplicationCard key={p.id} permit={p} />
                 ))}
               </div>
             </section>
@@ -191,10 +182,10 @@ export default function ContractorPermitsPage() {
   )
 }
 
-function ApplicationCard({ app }: { app: PermitApplication }) {
+function ApplicationCard({ permit }: { permit: Permit }) {
   return (
     <a
-      href={`/permits/${app.id}`}
+      href={`/permits/${permit.id}`}
       className="flex items-center justify-between bg-white rounded-xl border border-gray-100 p-4 hover:shadow-sm hover:border-gray-200 transition-all block"
     >
       <div className="flex items-start gap-4 min-w-0">
@@ -209,18 +200,18 @@ function ApplicationCard({ app }: { app: PermitApplication }) {
         </div>
         <div className="min-w-0">
           <p className="font-semibold text-sm truncate" style={{ color: '#1A2B4A' }}>
-            {app.projectData?.address ?? 'No address'}
+            {permit.address || 'No address'}
           </p>
           <p className="text-xs text-gray-400 mt-0.5">
-            {app.permitType} · {formatDate(app.createdAt)}
+            {permit.permitType} · {formatDate(permit.createdAt)}
           </p>
-          {app.projectData?.scope && (
-            <p className="text-xs text-gray-500 mt-1 truncate">{app.projectData.scope}</p>
+          {permit.scope && (
+            <p className="text-xs text-gray-500 mt-1 truncate">{permit.scope}</p>
           )}
         </div>
       </div>
       <div className="flex items-center gap-3 shrink-0 ml-4">
-        <StatusBadge status={app.status as PermitStatus} />
+        <StatusBadge status={permit.status} />
         <svg className="w-4 h-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
         </svg>

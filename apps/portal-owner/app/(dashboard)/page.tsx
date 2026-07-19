@@ -80,7 +80,7 @@ function FunnelProgressionCard({ project }: { project: Project }) {
       title: 'Match Vetted Contractors',
       desc: 'Find and connect with qualified local contractors matched to your project size and category.',
       ctaText: 'Find Contractor',
-      ctaLink: '/marketplace',
+      ctaLink: 'https://kealee.com/marketplace',
       bg: 'bg-orange-50/40',
       border: 'border-orange-100',
     },

@@ -3,6 +3,7 @@
 import { useEffect } from 'react'
 import { CheckCircle, Clock, FileText, Home } from 'lucide-react'
 import Link from 'next/link'
+import { getOwnerPortalBaseUrl } from '@/lib/owner-portal-urls'
 
 export default function EstimateSuccessPage() {
   useEffect(() => {
@@ -62,11 +63,11 @@ export default function EstimateSuccessPage() {
 
           {/* Next Steps CTA */}
           <div className="space-y-3 mb-8">
-            <Link href="/projects">
+            <a href={`${getOwnerPortalBaseUrl()}/projects`}>
               <button className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition">
                 View My Projects
               </button>
-            </Link>
+            </a>
             <Link href="/">
               <button className="w-full px-6 py-3 border border-slate-300 rounded-lg font-semibold text-slate-700 hover:bg-slate-50 transition">
                 Back to Home

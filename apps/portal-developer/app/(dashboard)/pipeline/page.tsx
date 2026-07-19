@@ -1,7 +1,12 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { Map, MapPin, DollarSign, Ruler, ChevronRight, Plus, Filter, Layers, Cpu, Box, AlertCircle } from 'lucide-react'
+
+// Key prefix used to hand a project record to /pipeline/[id] without a second
+// fetch — the list already has everything the detail page needs (mock or live).
+const PROJECT_CACHE_PREFIX = 'kealee:pipeline-project:'
 
 // ── v20 Seed: Lifecycle Phases ──────────────────────────────
 function normalizePhase(phase: string | null | undefined): string {
@@ -142,6 +147,7 @@ const tierColors: Record<string, string> = {
 }
 
 export default function PipelinePage() {
+  const router = useRouter()
   const [phaseFilter, setPhaseFilter] = useState<string>('All')
   const [projects, setProjects] = useState(() => PROJECTS.map(p => ({ ...p, phase: normalizePhase(p.phase) })))
   const [loading, setLoading] = useState(true)
@@ -218,7 +224,8 @@ export default function PipelinePage() {
             </p>
           )}
         </div>
-        <button className="inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold text-white" style={{ backgroundColor: '#E8793A' }}>
+        <button onClick={() => router.push('/pipeline/analyze')}
+          className="inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold text-white" style={{ backgroundColor: '#E8793A' }}>
           <Plus className="h-4 w-4" />
           New Project
         </button>
@@ -337,14 +344,25 @@ export default function PipelinePage() {
               </div>
 
               <div className="flex gap-2">
-                <button className="inline-flex items-center gap-1 rounded-lg border border-gray-300 px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50">
+                <button
+                  onClick={() => {
+                    sessionStorage.setItem(`${PROJECT_CACHE_PREFIX}${project.id}`, JSON.stringify(project))
+                    router.push(`/pipeline/${project.id}`)
+                  }}
+                  className="inline-flex items-center gap-1 rounded-lg border border-gray-300 px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50">
                   View Details <ChevronRight className="h-3 w-3" />
                 </button>
-                <button className="inline-flex items-center gap-1 rounded-lg border border-gray-300 px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50">
+                <button
+                  onClick={() => {
+                    sessionStorage.setItem(`${PROJECT_CACHE_PREFIX}${project.id}`, JSON.stringify(project))
+                    router.push(`/pipeline/${project.id}?tab=twin`)
+                  }}
+                  className="inline-flex items-center gap-1 rounded-lg border border-gray-300 px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50">
                   <Layers className="h-3 w-3" /> Twin Dashboard
                 </button>
-                <button className="inline-flex items-center gap-1 rounded-lg border border-gray-300 px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50">
-                  <Map className="h-3 w-3" /> Map View
+                <button disabled title="Map view coming soon"
+                  className="inline-flex cursor-not-allowed items-center gap-1 rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-400">
+                  <Map className="h-3 w-3" /> Map View (Coming Soon)
                 </button>
               </div>
             </div>

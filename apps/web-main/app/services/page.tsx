@@ -124,9 +124,9 @@ const SERVICES = [
 ]
 
 const BUNDLES = [
-  { name: 'Design + Permit Starter', desc: 'AI concept + simple permit filing', price: '$495', href: '/products/design-permit-starter' },
-  { name: 'Concept + Estimate', desc: 'AI design + cost estimate in one package', price: '$449', href: '/products/concept-estimate' },
-  { name: 'Permit + PM Advisory', desc: 'Permit filing + milestone payment oversight', price: '$1,799', href: '/products/permit-pm-advisory' },
+  { name: 'Design + Permit Starter', desc: 'AI concept + simple permit filing', price: '$495', href: '/get-started' },
+  { name: 'Concept + Estimate', desc: 'AI design + cost estimate in one package', price: '$449', href: '/get-started' },
+  { name: 'Permit + PM Advisory', desc: 'Permit filing + milestone payment oversight', price: '$1,799', href: '/get-started' },
   { name: 'Full Owner Package', desc: 'Concept, permit, PM, and contractor match', price: 'From $1,995', href: '/get-started' },
 ]
 

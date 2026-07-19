@@ -55,7 +55,7 @@ export default function OwnerPMPage() {
     }).finally(() => setLoading(false))
   }, [projectId])
 
-  const ownerBase = `/portal-owner/project/${projectId}`
+  const ownerBase = `/project/${projectId}`
 
   const MODULES = [
     { icon: <Calendar className="h-5 w-5" />, label: 'Schedule', sub: 'Tasks & timeline', href: `${ownerBase}/construction`, color: '#2ABFBF' },

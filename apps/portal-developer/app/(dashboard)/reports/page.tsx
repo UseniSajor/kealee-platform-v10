@@ -103,7 +103,10 @@ const MODULE_METRICS = [
 ]
 
 // ── Reports ────────────────────────────────────────────────
-const REPORTS = [
+// NOTE: this is seed/demo data, not fetched from the backend — none of these
+// entries carry a real `documentUrl`, so the Download action is disabled with
+// an honest label rather than pointing at a document that doesn't exist.
+const REPORTS: Array<{ id: string; name: string; type: string; project: string; date: string; status: string; documentUrl?: string }> = [
   { id: '1', name: 'Q1 2026 Investor Report', type: 'Quarterly Report', project: 'All Projects', date: '2026-03-10', status: 'draft' },
   { id: '2', name: 'Oak Hill - Monthly Update #4', type: 'Monthly Update', project: 'Oak Hill Mixed-Use', date: '2026-03-01', status: 'published' },
   { id: '3', name: 'Riverside - Monthly Update #9', type: 'Monthly Update', project: 'Riverside Multifamily', date: '2026-03-01', status: 'published' },
@@ -135,9 +138,10 @@ export default function ReportsPage() {
           <h1 className="font-display text-2xl font-bold" style={{ color: '#1A2B4A' }}>Reports & Analytics</h1>
           <p className="mt-1 text-sm text-gray-600">Twin KPIs (L1: 3, L2: 6, L3: 10), lifecycle analytics, and investor reports</p>
         </div>
-        <button className="inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold text-white" style={{ backgroundColor: '#E8793A' }}>
+        <button disabled title="Report generation is not yet available for developer projects"
+          className="inline-flex cursor-not-allowed items-center gap-2 rounded-lg border border-gray-200 px-4 py-2.5 text-sm font-semibold text-gray-400">
           <FileBarChart className="h-4 w-4" />
-          Generate Report
+          Generate Report (Coming Soon)
         </button>
       </div>
 
@@ -337,9 +341,17 @@ export default function ReportsPage() {
                 <div className="flex items-center gap-3">
                   <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium capitalize ${statusColors[report.status]}`}>{report.status}</span>
                   {report.status === 'published' && (
-                    <button className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600">
-                      <Download className="h-4 w-4" />
-                    </button>
+                    report.documentUrl ? (
+                      <a href={report.documentUrl} target="_blank" rel="noopener noreferrer"
+                        className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600">
+                        <Download className="h-4 w-4" />
+                      </a>
+                    ) : (
+                      <button disabled title="Document not yet available"
+                        className="cursor-not-allowed rounded-lg p-1.5 text-gray-300">
+                        <Download className="h-4 w-4" />
+                      </button>
+                    )
                   )}
                 </div>
               </div>

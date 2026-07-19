@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { DollarSign, Clock, CheckCircle, FileText, Download, Shield, AlertTriangle, Banknote, RefreshCw, Send } from 'lucide-react'
 import { getContractorProjects } from '@/lib/api/contractor'
-import { getProjectMilestones, submitDrawRequest, type ApiMilestone } from '@/lib/api/payments'
+import { getProjectMilestones, submitDrawRequest, getProjectLienWaivers, type ApiMilestone, type ApiLienWaiver } from '@/lib/api/payments'
 
 // ── Milestone Templates ──────────────────────────────────────────────────────────────
 const MILESTONE_TEMPLATES = [
@@ -79,9 +79,29 @@ const STATUS_CONFIG: Record<string, { label: string; color: string; bgColor: str
   pending_signature: { label: 'Needs Signature', color: '#92400E', bgColor: 'rgba(251,191,36,0.15)' },
 }
 
+interface LienWaiverRow {
+  id: string
+  project: string
+  type: string
+  milestoneKey: string
+  period: string
+  status: 'signed' | 'pending_signature'
+  /** Best available document link — signed copy if present, else the generated draft. Null when neither exists yet. */
+  documentUrl: string | null
+}
+
+function titleCase(s: string) {
+  return s.charAt(0) + s.slice(1).toLowerCase()
+}
+
+/** RECORDED counts as signed for display purposes — a notarized/recorded waiver has already been signed. */
+function mapWaiverStatus(status: ApiLienWaiver['status']): 'signed' | 'pending_signature' {
+  return status === 'SIGNED' || status === 'RECORDED' ? 'signed' : 'pending_signature'
+}
+
 export default function PaymentsPage() {
   const [projectPayments, setProjectPayments] = useState<ProjectPayment[]>([])
-  const [lienWaivers, setLienWaivers] = useState<Array<{ id: string; project: string; type: string; milestoneKey: string; period: string; status: 'signed' | 'pending_signature' }>>([])
+  const [lienWaivers, setLienWaivers] = useState<LienWaiverRow[]>([])
   const [isLive, setIsLive]     = useState(false)
   const [loading, setLoading]   = useState(true)
   const [activeTab, setActiveTab] = useState<'draws' | 'milestones' | 'waivers'>('draws')
@@ -94,6 +114,7 @@ export default function PaymentsPage() {
       if (!projects.length) { setLoading(false); return }
 
       const results: ProjectPayment[] = []
+      const waiverRows: LienWaiverRow[] = []
       for (const proj of projects.slice(0, 3)) {
         if (!proj.projectId) continue
         try {
@@ -108,12 +129,28 @@ export default function PaymentsPage() {
             ))
           }
         } catch { /* skip this project */ }
+
+        try {
+          const { waivers } = await getProjectLienWaivers(proj.projectId)
+          for (const w of waivers) {
+            waiverRows.push({
+              id: w.id,
+              project: proj.projectName,
+              type: `${titleCase(w.waiverType)} ${titleCase(w.waiverScope)}`,
+              milestoneKey: w.milestoneId ?? 'FINAL',
+              period: new Date(w.throughDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+              status: mapWaiverStatus(w.status),
+              documentUrl: w.signedDocumentUrl || w.documentUrl || null,
+            })
+          }
+        } catch { /* skip this project's waivers */ }
       }
 
       if (results.length > 0) {
         setProjectPayments(results)
         setIsLive(true)
       }
+      setLienWaivers(waiverRows)
     } catch {
       // keep seed
     } finally {
@@ -355,9 +392,35 @@ export default function PaymentsPage() {
                 <div className="flex items-center gap-3">
                   <span className="rounded-full px-2.5 py-0.5 text-xs font-medium" style={{ backgroundColor: config.bgColor, color: config.color }}>{config.label}</span>
                   {w.status === 'pending_signature' ? (
-                    <button className="rounded-lg px-3 py-1.5 text-xs font-medium text-white" style={{ backgroundColor: '#E8793A' }}>Sign Now</button>
+                    // No e-signature backend is reachable yet — the only sign route
+                    // (POST /lien-waivers/:id/sign) is never registered in the API
+                    // gateway. Disabled + labeled rather than a fake-working button.
+                    <button
+                      disabled
+                      title="E-signature coming soon"
+                      className="cursor-not-allowed rounded-lg px-3 py-1.5 text-xs font-medium text-gray-400"
+                      style={{ backgroundColor: '#F3F4F6' }}
+                    >
+                      E-signature coming soon
+                    </button>
+                  ) : w.documentUrl ? (
+                    <a
+                      href={w.documentUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+                      title="Download signed waiver"
+                    >
+                      <Download className="h-4 w-4" />
+                    </a>
                   ) : (
-                    <button className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600"><Download className="h-4 w-4" /></button>
+                    <button
+                      disabled
+                      title="No document on file yet"
+                      className="cursor-not-allowed rounded-lg p-1.5 text-gray-300"
+                    >
+                      <Download className="h-4 w-4" />
+                    </button>
                   )}
                 </div>
               </div>

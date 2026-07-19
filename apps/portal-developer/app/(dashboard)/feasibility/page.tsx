@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { FlaskConical, TrendingUp, DollarSign, Building2, Calculator, Plus, ChevronRight, CheckCircle, XCircle, AlertTriangle, Layers } from 'lucide-react'
 
 // ── v20 Seed: CSI Cost Categories ──────────────────────────
@@ -40,6 +41,7 @@ const decisionConfig: Record<string, { label: string; color: string; bg: string;
 }
 
 export default function FeasibilityPage() {
+  const router = useRouter()
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [studies, setStudies] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
@@ -104,7 +106,8 @@ export default function FeasibilityPage() {
             </p>
           )}
         </div>
-        <button className="inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold text-white" style={{ backgroundColor: '#E8793A' }}>
+        <button onClick={() => router.push('/pipeline/analyze')}
+          className="inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold text-white" style={{ backgroundColor: '#E8793A' }}>
           <Plus className="h-4 w-4" />
           New Study
         </button>

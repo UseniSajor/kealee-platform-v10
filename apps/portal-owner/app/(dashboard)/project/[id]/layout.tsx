@@ -2,12 +2,13 @@
 
 import Link from 'next/link'
 import { usePathname, useParams } from 'next/navigation'
-import { Activity, CheckCircle, FileText } from 'lucide-react'
+import { Activity, FileText } from 'lucide-react'
 
+// "Readiness" is not a separate route — it's the "Construction Readiness"
+// in-page tab on the Overview route (see project/[id]/page.tsx activeTab).
 const PROJECT_NAV = [
   { segment: '',        label: 'Overview',   icon: Activity,      exact: true },
   { segment: 'concept', label: 'Concept',    icon: FileText },
-  { segment: 'readiness', label: 'Readiness', icon: CheckCircle },
 ]
 
 export default function ProjectLayout({ children }: { children: React.ReactNode }) {

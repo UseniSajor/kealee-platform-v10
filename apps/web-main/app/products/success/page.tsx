@@ -56,7 +56,7 @@ function ProductSuccessContent() {
       </div>
 
       <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
-        <Link href="/auth/sign-in" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: '#1A1C1B', color: '#fff', padding: '12px 24px', borderRadius: 8, fontWeight: 600, fontSize: 14, textDecoration: 'none' }}>
+        <Link href="/auth/login" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: '#1A1C1B', color: '#fff', padding: '12px 24px', borderRadius: 8, fontWeight: 600, fontSize: 14, textDecoration: 'none' }}>
           View your dashboard →
         </Link>
         <Link href="/" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, border: '1.5px solid #E2E1DC', color: '#1A1C1B', padding: '12px 24px', borderRadius: 8, fontWeight: 500, fontSize: 14, textDecoration: 'none' }}>

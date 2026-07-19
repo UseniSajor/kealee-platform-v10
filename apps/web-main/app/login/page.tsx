@@ -183,7 +183,7 @@ export default function LoginPage({
         {/* New to Kealee */}
         <p className="mt-10 text-center text-sm text-gray-500">
           New to Kealee?{' '}
-          <Link href="/intake" className="font-semibold hover:underline" style={{ color: '#E8793A' }}>
+          <Link href="/concept" className="font-semibold hover:underline" style={{ color: '#E8793A' }}>
             Start a project →
           </Link>
           {' '}or{' '}

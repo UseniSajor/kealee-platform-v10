@@ -31,6 +31,7 @@ export async function POST(req: NextRequest) {
       portfolioUrl,
       specialties,
       jurisdictions,
+      licenseDocumentUrls,
     } = body
 
     if (!firstName || !lastName || !email || !role) {
@@ -66,6 +67,7 @@ export async function POST(req: NextRequest) {
           portfolioUrl: portfolioUrl ?? null,
           specialties: specialties ?? [],
           jurisdictions: jurisdictions ?? [],
+          licenseDocumentUrls: licenseDocumentUrls ?? [],
         },
       })
 
