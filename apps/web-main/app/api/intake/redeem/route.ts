@@ -12,6 +12,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { SERVICE_DELIVERABLES } from '@/lib/service-deliverables'
+import { sendPostPaymentCustomerEmail } from '@/lib/marketing/lifecycle'
 
 export const dynamic = 'force-dynamic'
 
@@ -46,15 +47,30 @@ export async function POST(req: NextRequest) {
     const supabase = getSupabaseAdmin()
 
     // Mark intake as paid (idempotent — update only if still 'new')
-    const { error: updateErr } = await supabase
+    const { data: updatedRows, error: updateErr } = await supabase
       .from('public_intake_leads')
       .update({ status: 'paid' })
       .eq('id', intakeId)
       .eq('status', 'new')
+      .select('id, contact_email, client_name')
 
     if (updateErr) {
       console.error('[intake/redeem] Failed to mark intake as paid:', updateErr.message)
       // Log but continue — generation trigger is more important
+    }
+
+    // Customer confirmation email (mirrors Stripe webhook's sendPostPaymentCustomerEmail —
+    // this path bypasses Stripe entirely so the webhook never fires for it)
+    const redeemedRow = updatedRows?.[0]
+    if (redeemedRow?.contact_email) {
+      sendPostPaymentCustomerEmail({
+        intakeId,
+        email: redeemedRow.contact_email,
+        clientName: redeemedRow.client_name ?? 'there',
+        projectPath,
+      }).catch((err: Error) => {
+        console.error('[intake/redeem] Customer confirmation email failed:', err.message)
+      })
     }
 
     // Trigger concept generation fire-and-forget (mirrors Stripe webhook behaviour)

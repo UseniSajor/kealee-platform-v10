@@ -80,7 +80,11 @@ Return only JSON.`,
       throw new Error("Unexpected response type from Claude");
     }
 
-    const zoningData = JSON.parse(content.text) as ZoningResponse;
+    const rawText = content.text.trim();
+    const jsonText = rawText.startsWith("```")
+      ? rawText.replace(/^```(?:json)?\s*/, "").replace(/```\s*$/, "")
+      : rawText;
+    const zoningData = JSON.parse(jsonText) as ZoningResponse;
 
     // Validate response structure
     if (
