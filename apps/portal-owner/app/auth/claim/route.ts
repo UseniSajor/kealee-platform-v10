@@ -21,7 +21,12 @@ function errorRedirect(origin: string, code: string, next?: string): NextRespons
 }
 
 export async function GET(request: NextRequest) {
-  const { searchParams, origin } = request.nextUrl
+  const { searchParams } = request.nextUrl
+  // NOT request.nextUrl.origin — behind Railway's proxy that can resolve to the
+  // container's internal bind address (e.g. http://0.0.0.0:3000) instead of the
+  // public domain, breaking every link built from it. Same safe pattern as
+  // web-main's getOwnerPortalBaseUrl().
+  const origin = (process.env.NEXT_PUBLIC_OWNER_PORTAL_URL ?? 'https://owner.kealee.com').replace(/\/$/, '')
   const token = searchParams.get('t')
   const intakeId = searchParams.get('i')
 
