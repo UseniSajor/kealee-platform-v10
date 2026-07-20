@@ -117,6 +117,17 @@ const DUAL_SCOPE_PROJECT_PATHS = new Set([
   'whole_home_concept',
 ])
 
+// Single-scope project paths whose subject is inherently exterior — the
+// projectPathToRoomType() text for these is already exterior content
+// ('garden landscape', 'exterior facade', ...); only the scope tag needs
+// to say so, otherwise every render gets miscategorized as "interior"
+// (renderJobScopes / interiorRenderUrls vs exteriorRenderUrls downstream).
+const EXTERIOR_ONLY_PROJECT_PATHS = new Set([
+  'exterior_concept',
+  'garden_concept',
+  'capture_site_concept',
+])
+
 // ── AI render helpers ─────────────────────────────────────────────────────────
 
 function projectPathToRoomType(projectPath: string): string {
@@ -318,7 +329,8 @@ async function fireConceptRenders(
     for (let i = 0; i < exterior; i++) jobs.push({ scope: 'exterior', roomType: exteriorRoom })
   } else {
     const roomType = projectPathToRoomType(projectPath)
-    for (let i = 0; i < count; i++) jobs.push({ scope: 'interior', roomType })
+    const scope = EXTERIOR_ONLY_PROJECT_PATHS.has(projectPath) ? 'exterior' : 'interior'
+    for (let i = 0; i < count; i++) jobs.push({ scope, roomType })
   }
 
   for (let i = 0; i < jobs.length; i++) {

@@ -835,6 +835,9 @@ importers:
       openai:
         specifier: ^4.77.0
         version: 4.104.0(zod@3.25.76)
+      pdfkit:
+        specifier: ^0.14.0
+        version: 0.14.0
       replicate:
         specifier: ^1.4.0
         version: 1.4.0

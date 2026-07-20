@@ -44,6 +44,14 @@ export function ServicesJourneySection({ services }: { services: HomeJourneyServ
     setCurrentVideoIndex((prev) => (prev + 1) % HERO_VIDEOS.length)
   }
 
+  // A clip that fails to load/decode never fires onEnded, which would
+  // otherwise stall the rotation on that one broken video forever — skip
+  // straight to the next one instead.
+  const handleVideoError = () => {
+    console.warn('Hero video failed to load, skipping:', HERO_VIDEOS[currentVideoIndex])
+    setCurrentVideoIndex((prev) => (prev + 1) % HERO_VIDEOS.length)
+  }
+
   useEffect(() => {
     if (videoRef.current) {
       videoRef.current.load()
@@ -69,6 +77,7 @@ export function ServicesJourneySection({ services }: { services: HomeJourneyServ
             muted
             playsInline
             onEnded={handleVideoEnded}
+            onError={handleVideoError}
             className="w-full h-full object-cover opacity-60"
             poster="/media/service-photos/home-design.jpg" // Optional fallback poster
           >

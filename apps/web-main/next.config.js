@@ -7,7 +7,7 @@ const nextConfig = {
   output: process.platform === 'win32' && !process.env.FORCE_STANDALONE ? undefined : 'standalone',
   optimizeFonts: false,
   experimental: {
-    serverComponentsExternalPackages: ['stripe', 'sharp', '@img/sharp-libvips-dev', '@img/sharp-wasm32', '@img/sharp-libvips-linux-x64', '@img/sharp-libvips-linux-arm64'],
+    serverComponentsExternalPackages: ['stripe', 'sharp', '@img/sharp-libvips-dev', '@img/sharp-wasm32', '@img/sharp-libvips-linux-x64', '@img/sharp-libvips-linux-arm64', 'pdfkit'],
   },
   eslint: {
     ignoreDuringBuilds: true,
