@@ -259,7 +259,7 @@ const COMBO_PACKAGES = [
     name: 'Design + Build',
     desc: 'Concept design through full construction management',
     price: 'Custom Quote',
-    href: '/new-construction',
+    href: '/new-construction/intake',
     color: '#1A2B4A',
     image: PHOTO.homeDesign,
     scope: ['AI concept + stamped drawings', 'Permitting & agency coordination', 'Vetted GC + milestone management'],
