@@ -37,29 +37,50 @@ const HERO_VIDEOS = [
  * Layout reserves space for sticky nav (4rem) and fixed AskChatBar (~7.5rem).
  */
 export function ServicesJourneySection({ services }: { services: HomeJourneyService[] }) {
-  const [currentVideoIndex, setCurrentVideoIndex] = useState(0)
-  const videoRef = useRef<HTMLVideoElement>(null)
-  
-  const handleVideoEnded = () => {
-    setCurrentVideoIndex((prev) => (prev + 1) % HERO_VIDEOS.length)
+  // Two stacked <video> layers crossfade between clips instead of hard-swapping
+  // a single element's source (which flashes to black on every transition).
+  // `activeLayer` is the one currently visible/playing; the other layer
+  // preloads the next clip in the background so it's ready to fade in.
+  const [activeLayer, setActiveLayer] = useState<0 | 1>(0)
+  const [layerIndex, setLayerIndex] = useState<[number, number]>([0, 1 % HERO_VIDEOS.length])
+  const videoRefs = [useRef<HTMLVideoElement>(null), useRef<HTMLVideoElement>(null)] as const
+
+  const advance = (fromLayer: 0 | 1) => {
+    if (fromLayer !== activeLayer) return // ignore events from the preloading layer
+    const toLayer: 0 | 1 = fromLayer === 0 ? 1 : 0
+    setActiveLayer(toLayer)
+    setLayerIndex((prev) => {
+      const next: [number, number] = [...prev]
+      next[fromLayer] = (prev[toLayer] + 1) % HERO_VIDEOS.length
+      return next
+    })
   }
+
+  const handleVideoEnded = (layer: 0 | 1) => () => advance(layer)
 
   // A clip that fails to load/decode never fires onEnded, which would
   // otherwise stall the rotation on that one broken video forever — skip
   // straight to the next one instead.
-  const handleVideoError = () => {
-    console.warn('Hero video failed to load, skipping:', HERO_VIDEOS[currentVideoIndex])
-    setCurrentVideoIndex((prev) => (prev + 1) % HERO_VIDEOS.length)
+  const handleVideoError = (layer: 0 | 1) => () => {
+    console.warn('Hero video failed to load, skipping:', HERO_VIDEOS[layerIndex[layer]])
+    advance(layer)
   }
 
   useEffect(() => {
-    if (videoRef.current) {
-      videoRef.current.load()
-      videoRef.current.play().catch((err) => {
+    const activeVideo = videoRefs[activeLayer].current
+    if (activeVideo) {
+      activeVideo.currentTime = 0
+      activeVideo.play().catch((err) => {
         console.warn('Hero video autoplay blocked:', err)
       })
     }
-  }, [currentVideoIndex])
+    // The other layer just got a fresh index queued up — load it now so it's
+    // decoded and ready by the time it needs to fade in.
+    const standbyLayer = activeLayer === 0 ? 1 : 0
+    const standbyVideo = videoRefs[standbyLayer].current
+    standbyVideo?.load()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeLayer, layerIndex])
 
   return (
     <section
@@ -70,19 +91,25 @@ export function ServicesJourneySection({ services }: { services: HomeJourneyServ
     >
       {/* Full Screen Hero Header */}
       <header className="relative w-full h-[100svh] min-h-[600px] flex items-center justify-center overflow-hidden">
-        {/* Background Video */}
+        {/* Background Video — two crossfading layers */}
         <div className="absolute inset-0 z-0 bg-kealee-black">
-          <video
-            ref={videoRef}
-            muted
-            playsInline
-            onEnded={handleVideoEnded}
-            onError={handleVideoError}
-            className="w-full h-full object-cover opacity-60"
-            poster="/media/service-photos/home-design.jpg" // Optional fallback poster
-          >
-            <source src={HERO_VIDEOS[currentVideoIndex]} type="video/mp4" />
-          </video>
+          {([0, 1] as const).map((layer) => (
+            <video
+              key={layer}
+              ref={videoRefs[layer]}
+              muted
+              playsInline
+              preload="auto"
+              autoPlay={layer === activeLayer}
+              onEnded={handleVideoEnded(layer)}
+              onError={handleVideoError(layer)}
+              className="absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ease-in-out"
+              style={{ opacity: layer === activeLayer ? 0.6 : 0 }}
+              poster="/media/service-photos/home-design.jpg" // Optional fallback poster
+            >
+              <source src={HERO_VIDEOS[layerIndex[layer]]} type="video/mp4" />
+            </video>
+          ))}
         </div>
 
         {/* Overlay gradient for readability */}
