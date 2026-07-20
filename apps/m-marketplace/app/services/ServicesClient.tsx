@@ -21,6 +21,10 @@ export function ServicesClient() {
     setActivePkgTab(tab)
   }, [])
 
+  const scrollToSection = useCallback((id: string) => {
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }, [])
+
   useEffect(() => {
     const reveals = containerRef.current?.querySelectorAll('.scroll-reveal:not(.visible)')
     if (!reveals) return
@@ -161,7 +165,7 @@ export function ServicesClient() {
               <p className="hero-sub fu2">Kealee&apos;s AI takeoff engine analyzes your drawings and generates detailed cost estimates using real material and labor databases — in hours, not weeks.</p>
               <div className="hero-btns fu3">
                 <Link href="/get-started" className="btn-hero-gold">Get Instant Estimate — $195</Link>
-                <button className="btn-hero-outline" onClick={() => {}}>View All Estimation Packages</button>
+                <button className="btn-hero-outline" onClick={() => scrollToSection('estimation-packages')}>View All Estimation Packages</button>
               </div>
             </div>
             <div className="stat-box fu4">
@@ -188,7 +192,7 @@ export function ServicesClient() {
           </div>
         </section>
 
-        <section className="sec-alt scroll-reveal">
+        <section id="estimation-packages" className="sec-alt scroll-reveal">
           <div className="sec-label accent-orange">Estimation Packages</div>
           <h2 className="sec-h">Estimation Services</h2>
           <p className="sec-p">Seven service levels from quick ballpark figures to comprehensive bid-ready takeoffs.</p>
@@ -221,7 +225,7 @@ export function ServicesClient() {
               <p className="hero-sub fu2">Kealee&apos;s AI pre-screens your drawings for jurisdiction-specific code compliance, auto-fills application forms, and submits electronically — cutting the typical permit timeline by 30% or more.</p>
               <div className="hero-btns fu3">
                 <Link href="/get-started" className="btn-hero-gold">Start Permit — From $495</Link>
-                <button className="btn-hero-outline" onClick={() => {}}>View All Permit Packages</button>
+                <button className="btn-hero-outline" onClick={() => scrollToSection('permit-packages')}>View All Permit Packages</button>
               </div>
             </div>
             <div className="stat-box fu4">
@@ -249,7 +253,7 @@ export function ServicesClient() {
           </div>
         </section>
 
-        <section className="sec-alt scroll-reveal">
+        <section id="permit-packages" className="sec-alt scroll-reveal">
           <div className="sec-label accent-green">Permit Packages</div>
           <h2 className="sec-h">Permit Services Pricing</h2>
           <p className="sec-p">From single-trade permits to full commercial permit management — covered for DC, Maryland, and Virginia jurisdictions.</p>
