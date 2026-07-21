@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { normalizeContactIdentity } from '../contact-identity'
 import { scoreLead } from '../lead-score-v2'
-import { evaluateOutreachPolicy } from '../outreach-policy'
+import { calculateContactWindow, evaluateOutreachPolicy } from '../outreach-policy'
 import { matchRevenueProducts, REVENUE_PRODUCT_KEYS } from '../product-matcher'
 
 describe('marketing foundation', () => {
@@ -62,5 +62,27 @@ describe('marketing foundation', () => {
     })
     expect(result.allowed).toBe(false)
   })
-})
 
+  it('requires affirmative consent for phone outreach', () => {
+    const decision = evaluateOutreachPolicy({
+      campaignStatus: 'active', campaignApproved: true, templateApproved: true,
+      channel: 'call_task',
+      suppressed: false, optedOut: false,
+      consentStatus: 'unknown',
+      sentToday: 0, mailboxDailyLimit: 20, domainSentToday: 0, domainDailyLimit: 100,
+      withinSendWindow: true,
+    })
+    expect(decision.allowed).toBe(false)
+    expect(decision.reasons).toContain('Phone outreach requires affirmative consent')
+  })
+
+  it('calculates a timezone-aware next contact window', () => {
+    const decision = calculateContactWindow({
+      now: new Date('2026-07-19T16:00:00.000Z'), // Sunday noon in New York
+      timezone: 'America/New_York',
+      allowedWeekdays: [1, 2, 3, 4, 5],
+    })
+    expect(decision.withinWindow).toBe(false)
+    expect(decision.nextAllowedAt.toISOString()).toBe('2026-07-20T13:00:00.000Z')
+  })
+})

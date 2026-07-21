@@ -26,6 +26,69 @@ export interface OutreachPolicyDecision {
   reasons: string[]
 }
 
+export interface ContactWindowInput {
+  now: Date
+  timezone: string
+  startHour?: number
+  endHour?: number
+  allowedWeekdays?: number[]
+}
+
+export interface ContactWindowDecision {
+  withinWindow: boolean
+  nextAllowedAt: Date
+  localWeekday: number
+  localHour: number
+}
+
+function localParts(at: Date, timezone: string): { weekday: number; hour: number; minute: number } {
+  const values = new Intl.DateTimeFormat('en-US', {
+    timeZone: timezone,
+    weekday: 'short',
+    hour: '2-digit',
+    minute: '2-digit',
+    hourCycle: 'h23',
+  }).formatToParts(at).reduce<Record<string, string>>((result, part) => {
+    result[part.type] = part.value
+    return result
+  }, {})
+  const weekdays: Record<string, number> = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 }
+  return { weekday: weekdays[values.weekday], hour: Number(values.hour), minute: Number(values.minute) }
+}
+
+/** DST-safe contact window calculation using the contact's IANA timezone. */
+export function calculateContactWindow(input: ContactWindowInput): ContactWindowDecision {
+  const startHour = input.startHour ?? 9
+  const endHour = input.endHour ?? 20
+  const allowedWeekdays = input.allowedWeekdays ?? [1, 2, 3, 4, 5, 6]
+  if (startHour < 0 || endHour > 24 || startHour >= endHour) throw new Error('Invalid contact window')
+
+  const isAllowed = (at: Date) => {
+    const local = localParts(at, input.timezone)
+    const localMinutes = local.hour * 60 + local.minute
+    return allowedWeekdays.includes(local.weekday)
+      && localMinutes >= startHour * 60
+      && localMinutes < endHour * 60
+  }
+
+  const current = localParts(input.now, input.timezone)
+  if (isAllowed(input.now)) {
+    return { withinWindow: true, nextAllowedAt: input.now, localWeekday: current.weekday, localHour: current.hour }
+  }
+
+  const candidate = new Date(input.now)
+  candidate.setUTCSeconds(0, 0)
+  candidate.setUTCMinutes(candidate.getUTCMinutes() + 1)
+  for (let minute = 0; minute < 8 * 24 * 60; minute += 1) {
+    if (isAllowed(candidate)) {
+      const local = localParts(candidate, input.timezone)
+      return { withinWindow: false, nextAllowedAt: candidate, localWeekday: local.weekday, localHour: local.hour }
+    }
+    candidate.setUTCMinutes(candidate.getUTCMinutes() + 1)
+  }
+  throw new Error('No allowed contact window exists in the next eight days')
+}
+
 export function evaluateOutreachPolicy(input: OutreachPolicyInput): OutreachPolicyDecision {
   const blocking: string[] = []
   const approval: string[] = []
@@ -48,9 +111,11 @@ export function evaluateOutreachPolicy(input: OutreachPolicyInput): OutreachPoli
   if (input.channel === 'sms' && input.consentStatus !== 'granted') {
     blocking.push('SMS requires affirmative consent')
   }
+  if (input.channel === 'call_task' && input.consentStatus !== 'granted') {
+    blocking.push('Phone outreach requires affirmative consent')
+  }
 
   if (blocking.length) return { allowed: false, executionMode: 'blocked', reasons: [...blocking, ...approval] }
   if (approval.length) return { allowed: false, executionMode: 'approval_required', reasons: approval }
   return { allowed: true, executionMode: 'automatic', reasons: ['All outreach policy checks passed'] }
 }
-
