@@ -4,6 +4,10 @@ export interface ApolloSearchPage {
   totalEntries?: number
 }
 
+export interface ApolloEnrichmentResult {
+  people: Array<Record<string, unknown>>
+}
+
 export class ApolloRateLimitError extends Error {
   constructor(public readonly retryAfterMs: number) {
     super('Apollo API rate limit exceeded')
@@ -28,7 +32,7 @@ export class ApolloClient {
   async searchPeople(input: Record<string, unknown>, page = 1, perPage = 25): Promise<ApolloSearchPage> {
     const cappedPerPage = Math.max(1, Math.min(perPage, 100))
     for (let attempt = 0; attempt <= this.maxRetries; attempt += 1) {
-      const response = await fetch(`${this.baseUrl}/mixed_people/search`, {
+      const response = await fetch(`${this.baseUrl}/mixed_people/api_search`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'X-Api-Key': this.apiKey },
         body: JSON.stringify({ ...input, page, per_page: cappedPerPage }),
@@ -59,5 +63,44 @@ export class ApolloClient {
       }
     }
     throw new Error('Apollo request exhausted retries')
+  }
+
+  async enrichPeople(people: Array<{ id: string }>): Promise<ApolloEnrichmentResult> {
+    const enriched: Array<Record<string, unknown>> = []
+    for (let offset = 0; offset < people.length; offset += 10) {
+      const details = people.slice(offset, offset + 10).map(({ id }) => ({ id }))
+      for (let attempt = 0; attempt <= this.maxRetries; attempt += 1) {
+        const enrichmentParams = new URLSearchParams({
+          reveal_personal_emails: 'false',
+          reveal_phone_number: 'false',
+          run_waterfall_email: 'false',
+          run_waterfall_phone: 'false',
+        })
+        const response = await fetch(`${this.baseUrl}/people/bulk_match?${enrichmentParams}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-Api-Key': this.apiKey },
+          body: JSON.stringify({ details }),
+          signal: AbortSignal.timeout(this.timeoutMs),
+        })
+        if (response.status === 429) {
+          const retryAfterMs = Math.max(1_000, Number(response.headers.get('retry-after') ?? 1) * 1_000)
+          if (attempt === this.maxRetries) throw new ApolloRateLimitError(retryAfterMs)
+          await new Promise((resolve) => setTimeout(resolve, retryAfterMs))
+          continue
+        }
+        if (response.status >= 500 && attempt < this.maxRetries) {
+          await new Promise((resolve) => setTimeout(resolve, 500 * (2 ** attempt)))
+          continue
+        }
+        if (!response.ok) throw new Error(`Apollo bulk enrichment failed (${response.status})`)
+        const body = await response.json() as {
+          matches?: Array<Record<string, unknown>>
+          people?: Array<Record<string, unknown>>
+        }
+        enriched.push(...(body.matches ?? body.people ?? []))
+        break
+      }
+    }
+    return { people: enriched }
   }
 }

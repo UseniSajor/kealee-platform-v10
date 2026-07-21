@@ -18,6 +18,7 @@ export interface CanonicalLeadInput extends LeadScoreInput {
   budgetRange?: string
   metadata?: Record<string, unknown>
   formData?: Record<string, unknown>
+  requiresPayment?: boolean
 }
 
 export interface CanonicalLeadResult {
@@ -71,7 +72,7 @@ export async function ingestCanonicalLead(
     budget_range: input.budgetRange ?? 'Not provided',
     source: input.source,
     status: 'new',
-    requires_payment: true,
+    requires_payment: input.requiresPayment ?? true,
     payment_amount: 0,
     metadata: { ...(input.metadata ?? {}), leadScore: score },
     form_data: input.formData ?? {},
