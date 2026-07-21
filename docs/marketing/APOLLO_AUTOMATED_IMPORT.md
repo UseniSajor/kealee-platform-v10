@@ -1,7 +1,9 @@
 # Apollo Automated Import
 
-The Apollo importer runs through `marketing-cron-apollo` every six hours and
-calls the authenticated `GET /api/cron/apollo-import` endpoint on `web-main`.
+The Apollo importer is triggered by the existing `marketing-cron-sequences`
+Railway service. Although that scheduler runs every five minutes, a persisted
+lease and a six-hour minimum interval ensure Apollo runs at most four times per
+day. It calls the authenticated `GET /api/cron/apollo-import` endpoint on `web-main`.
 It is fail-closed and performs no Apollo or database work unless explicitly
 enabled.
 
@@ -15,6 +17,7 @@ APOLLO_CAMPAIGN_ID=<approved marketing_campaigns_v2 UUID>
 APOLLO_AUDIENCE_JSON={"personTitles":["Owner","President"],"organizationLocations":["Washington, DC","Maryland","Virginia"],"personSeniorities":["owner","c_suite","vp","director"],"organizationEmployeeRanges":["1,10","11,50","51,200"],"organizationKeywords":["construction","design build","property management"],"requireVerifiedEmail":true}
 APOLLO_IMPORT_PER_RUN_CAP=25
 APOLLO_IMPORT_DAILY_CAP=100
+APOLLO_IMPORT_MIN_INTERVAL_MINUTES=360
 ```
 
 The campaign must belong to the configured organization and have status
@@ -36,6 +39,8 @@ records processed to 500 even if larger environment values are supplied.
   `outreachAuthorized=false`; import never enrolls or messages a contact.
 - A compare-and-set lease on `marketing_integration_cursors` prevents
   overlapping runs and expires after 30 minutes.
+- The minimum interval is clamped between 60 and 1,440 minutes and is enforced
+  from persisted cursor state, so restarts do not reset it.
 - Daily caps count every Apollo result examined, including duplicates,
   suppressed contacts, and rejected records.
 

@@ -29,6 +29,7 @@ describe('Apollo import configuration', () => {
     })
     expect(config.perRunCap).toBe(100)
     expect(config.dailyCap).toBe(500)
+    expect(config.minIntervalMinutes).toBe(360)
   })
 
   it('maps only verified contacts and never authorizes outreach', () => {

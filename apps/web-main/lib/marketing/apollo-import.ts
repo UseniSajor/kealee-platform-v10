@@ -26,6 +26,7 @@ export interface ApolloImportConfig {
   campaignId: string
   perRunCap: number
   dailyCap: number
+  minIntervalMinutes: number
   audience: ApolloAudienceRules
   audienceHash: string
 }
@@ -121,6 +122,7 @@ export function loadApolloImportConfig(env: NodeJS.ProcessEnv = process.env): Ap
     campaignId,
     perRunCap: clampInteger(env.APOLLO_IMPORT_PER_RUN_CAP, 25, MAX_PER_RUN),
     dailyCap: clampInteger(env.APOLLO_IMPORT_DAILY_CAP, 100, MAX_PER_DAY),
+    minIntervalMinutes: Math.max(60, clampInteger(env.APOLLO_IMPORT_MIN_INTERVAL_MINUTES, 360, 1_440)),
     audience,
     audienceHash,
   }
@@ -280,6 +282,9 @@ export async function runApolloImport(options: {
   }
   const dailyImported = metadata.dailyDate === today ? metadata.dailyImported ?? 0 : 0
   const dailyProcessed = metadata.dailyDate === today ? metadata.dailyProcessed ?? 0 : 0
+  if (metadata.lastRun && cursorAge < config.minIntervalMinutes * 60 * 1000) {
+    return { status: 'skipped', imported: 0, duplicates: 0, suppressed: 0, rejected: 0, processed: 0, page: Number(cursor.cursor_value ?? 1), nextPage: null, dailyImported, dailyProcessed, message: `Apollo import interval is ${config.minIntervalMinutes} minutes` }
+  }
   const remainingDaily = Math.max(0, config.dailyCap - dailyProcessed)
   if (remainingDaily === 0) {
     return { status: 'skipped', imported: 0, duplicates: 0, suppressed: 0, rejected: 0, processed: 0, page: Number(cursor.cursor_value ?? 1), nextPage: null, dailyImported, dailyProcessed, message: 'Apollo daily processing cap reached' }
