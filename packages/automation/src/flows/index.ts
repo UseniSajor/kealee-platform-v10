@@ -10,6 +10,7 @@ import { SubscriptionFlow } from './subscription-flow.js';
 
 export { OnboardingFlow } from './onboarding-flow.js';
 export { SubscriptionFlow } from './subscription-flow.js';
+export * from './sales-workflow.js';
 
 /**
  * Register all automation flows.
