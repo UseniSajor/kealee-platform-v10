@@ -64,6 +64,9 @@ const publicGenerateBodySchema = z.object({
     codeConsiderations: z.array(z.string()).default([]),
   }),
   features: z.array(z.string()).min(1),
+  fulfillmentBotTypes: z.array(z.enum(['intake','design','estimate','zoning','floorplan','permit','video','contractor','sales','marketing','support','project'])).optional(),
+  workflowTemplateId: z.string().min(1).optional(),
+  propertyIntelligenceDepth: z.enum(['basic', 'project', 'contractor', 'development']).optional(),
 })
 
 function v30Disabled(reply: FastifyReply) {
@@ -178,6 +181,9 @@ export async function v30Routes(fastify: FastifyInstance) {
           intakeLeadId: parsed.data.intakeLeadId,
           projectPath: parsed.data.projectPath,
           lotContext,
+          fulfillmentBotTypes: parsed.data.fulfillmentBotTypes,
+          workflowTemplateId: parsed.data.workflowTemplateId,
+          propertyIntelligenceDepth: parsed.data.propertyIntelligenceDepth,
         },
       })
 

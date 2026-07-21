@@ -1587,6 +1587,19 @@ importers:
         specifier: ^5.3.0
         version: 5.9.3
 
+  packages/autonomous-runtime:
+    dependencies:
+      '@kealee/database':
+        specifier: workspace:*
+        version: link:../database
+    devDependencies:
+      typescript:
+        specifier: ^5.9.0
+        version: 5.9.3
+      vitest:
+        specifier: ^1.6.1
+        version: 1.6.1(@types/node@20.19.39)
+
   packages/communications:
     dependencies:
       '@kealee/database':
@@ -2097,6 +2110,9 @@ importers:
       '@anthropic-ai/sdk':
         specifier: ^0.74.0
         version: 0.74.0(zod@3.25.76)
+      openai:
+        specifier: ^6.32.0
+        version: 6.34.0(zod@3.25.76)
     devDependencies:
       '@types/node':
         specifier: 20.19.39

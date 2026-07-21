@@ -7,8 +7,8 @@ import {
   type V30BotExecutionInput,
   type V30BotExecutionResult,
 } from '@kealee/kealee-agent-stack'
-import { DesignBotEnterprise, mapDesignOutputToConceptOutput } from '@kealee/core-llm'
 import { botTypesForPackageFeatures } from './feature-bots'
+import type { V30BotType } from '@kealee/kealee-agent-stack'
 import { executeV30BotForOrch } from './execute-v30-bot'
 import { syncV30DesignConceptToProject } from './sync-design-concept'
 
@@ -66,65 +66,13 @@ async function persistExecutionResult(
 }
 
 /**
- * Execute bot for the orchestration layer — uses DesignBotEnterprise for the
- * 'design' botType, falls back to executeV30BotForOrch for all others.
+ * Execute through the canonical v30 provider path. Design, estimate, zoning,
+ * and permit use OpenAI first with Claude as the configured fallback.
  */
 async function executeDesignBotOrOrch(
   input: V30BotExecutionInput,
 ): Promise<V30BotExecutionResult> {
-  if (input.botType !== 'design') {
-    return executeV30BotForOrch(input)
-  }
-
-  const startTime = Date.now()
-  const inputData = input.inputData
-  const intakeFormData =
-    ((inputData.intake as Record<string, unknown> | null | undefined)
-      ?.form_data as Record<string, unknown> | undefined) ?? {}
-
-  const designBot = new DesignBotEnterprise()
-  const botResult = await designBot.execute({
-    projectId: input.projectId,
-    projectType: (inputData.projectPath as string) ?? '',
-    squareFeet: Math.max(
-      1,
-      Number(intakeFormData.sqft ?? intakeFormData.squareFootage ?? 1000),
-    ),
-    budget: Math.max(1, Number(intakeFormData.budget ?? 50000)),
-    stylePreferences: intakeFormData.style ? [intakeFormData.style as string] : [],
-    accessibility: Boolean(intakeFormData.accessibility),
-    timeline: Number(intakeFormData.timeline ?? 30),
-    formData: intakeFormData,
-  })
-
-  if (botResult.success && botResult.data) {
-    const conceptOutput = mapDesignOutputToConceptOutput(botResult.data, {
-      tier: 1,
-      projectPath: (inputData.projectPath as string) ?? '',
-      includes: [],
-    })
-    return {
-      botType: 'design',
-      status: 'COMPLETE',
-      progress: 100,
-      outputData: { conceptOutput, ...botResult.data } as Record<string, unknown>,
-      modelUsed: 'DesignBotEnterprise',
-      tokensUsed: botResult.metrics.tokensUsed,
-      costUSD: botResult.metrics.costUSD,
-      durationMs: Date.now() - startTime,
-    }
-  }
-
-  return {
-    botType: 'design',
-    status: 'FAILED',
-    progress: 0,
-    modelUsed: 'DesignBotEnterprise',
-    tokensUsed: botResult.metrics.tokensUsed,
-    costUSD: botResult.metrics.costUSD,
-    durationMs: Date.now() - startTime,
-    errorMessage: botResult.error ?? 'DesignBot failed',
-  }
+  return executeV30BotForOrch(input)
 }
 
 /**
@@ -142,11 +90,17 @@ export async function startV30Generation(
     throw new Error('V30 package not found for project')
   }
 
-  const botTypes = botTypesForPackageFeatures(pkg.features)
+  const requestedBotTypes = input.sharedInput?.fulfillmentBotTypes as V30BotType[] | undefined
+  const botTypes = requestedBotTypes?.length ? requestedBotTypes : botTypesForPackageFeatures(pkg.features)
   const executionIds: Record<string, string> = {}
+  const botTypesToRun: V30BotType[] = []
 
   for (const botType of botTypes) {
-    const exec = await prisma.v30BotExecution.create({
+    const existing = await prisma.v30BotExecution.findFirst({
+      where: { projectId: input.projectId, packageId: input.packageId, botType },
+      orderBy: { createdAt: 'desc' },
+    })
+    const exec = existing ?? await prisma.v30BotExecution.create({
       data: {
         projectId: input.projectId,
         packageId: input.packageId,
@@ -162,6 +116,16 @@ export async function startV30Generation(
       },
     })
     executionIds[botType] = exec.id
+    if (!existing || existing.status === 'FAILED') botTypesToRun.push(botType)
+  }
+
+  if (botTypesToRun.length === 0) {
+    return {
+      projectId: input.projectId,
+      packageId: input.packageId,
+      executionIds,
+      estimatedCompletionTime: 'Already queued or completed',
+    }
   }
 
   await prisma.project.update({
@@ -186,8 +150,8 @@ export async function startV30Generation(
   }
 
   const orchOptions = shouldUseV30Llm()
-    ? { botTypes, executeBot: executeDesignBotOrOrch }
-    : { botTypes }
+    ? { botTypes: botTypesToRun, executeBot: executeDesignBotOrOrch }
+    : { botTypes: botTypesToRun }
 
   void runV30ParallelGeneration(input.projectId, input.packageId, sharedInput, orchOptions)
     .then(async summary => {

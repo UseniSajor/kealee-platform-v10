@@ -90,7 +90,7 @@ export default function HomeHero() {
       {/* Content */}
       <div className="relative z-10 mx-auto max-w-5xl px-4 sm:px-8 py-32 text-center">
         <p className="text-xs sm:text-sm font-bold uppercase tracking-[0.2em] text-orange-400 mb-6">
-          AI-Powered Construction Design
+          Home project planning, made understandable
         </p>
 
         <h1 className="text-4xl sm:text-5xl lg:text-7xl font-bold text-white leading-[1.08] tracking-tight">
@@ -107,7 +107,7 @@ export default function HomeHero() {
         <div className="mt-10 flex flex-wrap justify-center gap-8">
           {[
             { value: '3–5 days', label: 'Concept delivery' },
-            { value: '$99+', label: 'Starting price' },
+            { value: 'One clear plan', label: 'Design, cost, and permits' },
             { value: 'AI-Powered', label: 'Design Engine' },
           ].map(stat => (
             <div key={stat.label} className="text-center">
@@ -125,7 +125,7 @@ export default function HomeHero() {
             className="flex items-center gap-2 border-2 border-white/30 hover:border-white/60 text-white font-semibold text-base px-8 py-4 rounded-xl transition-all duration-200 hover:bg-white/10"
           >
             <Play className="w-4 h-4 fill-white" />
-            Explore Services
+            See the three ways to start
           </a>
         </div>
 

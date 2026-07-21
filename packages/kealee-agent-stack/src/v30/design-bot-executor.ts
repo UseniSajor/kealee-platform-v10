@@ -7,9 +7,8 @@ import { buildV30BotUserPrompt } from './bot-task-prompts'
 import { DESIGN_BOT_PROMPT } from './prompts/design-bot'
 import {
   maxTokensForV30Bot,
-  resolveV30AnthropicModel,
-  V30ClaudeCachedClient,
 } from './v30-claude-client'
+import { completeV30WithFallback, resolveV30OpenAIModel } from './v30-primary-client'
 import type { V30BotExecutionInput, V30BotExecutionResult } from './types'
 
 function extractJsonObject(text: string): Record<string, unknown> | null {
@@ -74,17 +73,17 @@ export async function executeV30DesignBot(
 ): Promise<V30BotExecutionResult> {
   const def = getV30Bot('design')
   const started = Date.now()
-  const model = resolveV30AnthropicModel(def.defaultModel)
-  const client = new V30ClaudeCachedClient()
+  let model = resolveV30OpenAIModel()
 
   try {
-    const result = await client.complete({
-      model,
+    const result = await completeV30WithFallback({
+      anthropicDefaultModel: def.defaultModel,
       maxTokens: maxTokensForV30Bot('design'),
       system: DESIGN_BOT_PROMPT,
       user: buildV30BotUserPrompt('design', input.inputData),
       botType: 'design',
     })
+    model = result.model
 
     const parsed = extractJsonObject(result.text)
     const tokens = result.inputTokens + result.outputTokens

@@ -1,0 +1,15 @@
+import type { V30BotType } from '@kealee/kealee-agent-stack'
+
+export type PropertyIntelligenceDepth = 'basic' | 'project' | 'contractor' | 'development'
+export type RevenueProductKey = 'home-project-readiness-review' | 'project-launch-package' | 'contractor-estimate-permit-package' | 'developer-feasibility-express'
+export interface RevenueProductConfig { productKey: RevenueProductKey; name: string; customerType: string; priceCents: number; stripePriceEnvVar: string; propertyIntelDepth: PropertyIntelligenceDepth; responsibleAgent: string; workflowTemplateId: string; botTypes: V30BotType[]; fulfillmentSlaHours: number; exclusions: string[] }
+
+export const REVENUE_PRODUCT_CATALOG: Record<RevenueProductKey, RevenueProductConfig> = {
+  'home-project-readiness-review': { productKey: 'home-project-readiness-review', name: 'Home Project Readiness Review', customerType: 'homeowner', priceCents: 29900, stripePriceEnvVar: 'STRIPE_PRICE_HOME_PROJECT_READINESS', propertyIntelDepth: 'basic', responsibleAgent: 'owner', workflowTemplateId: 'wf_home_readiness_v1', botTypes: ['estimate','zoning','project'], fulfillmentSlaHours: 48, exclusions: ['stamped drawings','final permit approval','construction documents'] },
+  'project-launch-package': { productKey: 'project-launch-package', name: 'Project Launch Package', customerType: 'homeowner', priceCents: 55000, stripePriceEnvVar: 'STRIPE_PRICE_PROJECT_LAUNCH', propertyIntelDepth: 'project', responsibleAgent: 'owner', workflowTemplateId: 'wf_project_launch_v1', botTypes: ['design','estimate','zoning','permit','contractor','project'], fulfillmentSlaHours: 72, exclusions: ['stamped drawings','permit submission','contractor guarantee'] },
+  'contractor-estimate-permit-package': { productKey: 'contractor-estimate-permit-package', name: 'Contractor Estimate and Permit Package', customerType: 'contractor', priceCents: 79500, stripePriceEnvVar: 'STRIPE_PRICE_CONTRACTOR_ESTIMATE_PERMIT', propertyIntelDepth: 'contractor', responsibleAgent: 'contractor', workflowTemplateId: 'wf_contractor_estimate_permit_v1', botTypes: ['estimate','zoning','permit','sales','project'], fulfillmentSlaHours: 72, exclusions: ['sealed estimate','stamped drawings','permit approval guarantee','final trade pricing'] },
+  'developer-feasibility-express': { productKey: 'developer-feasibility-express', name: 'Developer Feasibility Express', customerType: 'developer', priceCents: 109500, stripePriceEnvVar: 'STRIPE_PRICE_DEVELOPER_FEASIBILITY_EXPRESS', propertyIntelDepth: 'development', responsibleAgent: 'developer', workflowTemplateId: 'wf_developer_feasibility_v1', botTypes: ['estimate','zoning','permit','sales','project'], fulfillmentSlaHours: 96, exclusions: ['survey','environmental report','legal opinion','entitlement approval','stamped drawings'] },
+}
+
+export function getRevenueProduct(key: string): RevenueProductConfig | undefined { return REVENUE_PRODUCT_CATALOG[key as RevenueProductKey] }
+

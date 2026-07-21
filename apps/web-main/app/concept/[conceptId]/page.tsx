@@ -142,6 +142,58 @@ function ProjectCoordinatorCTA({ tier }: { tier: 1 | 2 | 3 }) {
   )
 }
 
+function HomeownerOverview({ concept }: { concept: Concept }) {
+  const likelyPermit = (concept.permits?.length ?? 0) > 0
+  const low = concept.estimatedCost ? Math.round(concept.estimatedCost * 0.85) : undefined
+  const high = concept.estimatedCost ? Math.round(concept.estimatedCost * 1.2) : undefined
+  const statusLabel = concept.status === 'completed' ? 'Your homeowner report is ready' : concept.status === 'error' ? 'We need to review part of your report' : 'We’re preparing your homeowner report'
+  return (
+    <section aria-labelledby="project-overview-heading" className="space-y-6">
+      <div className="rounded-2xl border border-slate-200 bg-white p-6 md:p-8 shadow-sm">
+        <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-widest text-orange-600">Project overview</p>
+            <h2 id="project-overview-heading" className="mt-2 text-2xl font-bold text-slate-900">Here’s what you’re planning</h2>
+            <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">{concept.scope || concept.description || 'Your submitted project details will appear here as the report is prepared.'}</p>
+          </div>
+          <span className={`rounded-full px-3 py-1.5 text-xs font-semibold ${concept.status === 'completed' ? 'bg-green-100 text-green-800' : concept.status === 'error' ? 'bg-red-100 text-red-800' : 'bg-amber-100 text-amber-800'}`}>{statusLabel}</span>
+        </div>
+        <dl className="mt-6 grid gap-4 border-t border-slate-100 pt-5 sm:grid-cols-3">
+          <div><dt className="text-xs font-semibold text-slate-500">Property</dt><dd className="mt-1 text-sm text-slate-900">{concept.location}</dd></div>
+          <div><dt className="text-xs font-semibold text-slate-500">Project type</dt><dd className="mt-1 text-sm text-slate-900">{concept.service}</dd></div>
+          <div><dt className="text-xs font-semibold text-slate-500">Desired timing</dt><dd className="mt-1 text-sm text-slate-900">{concept.timeline || 'To be confirmed'}</dd></div>
+        </dl>
+      </div>
+
+      <div className="grid gap-5 md:grid-cols-2">
+        <article className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <p className="text-xs font-bold uppercase tracking-widest text-slate-500">Expected cost</p>
+          <h2 className="mt-2 text-xl font-bold text-slate-900">A planning range you can use</h2>
+          {concept.estimatedCost ? <p className="mt-4 text-2xl font-black text-slate-900">${low?.toLocaleString()} – ${high?.toLocaleString()} <span className="text-sm font-normal text-slate-500">likely ${concept.estimatedCost.toLocaleString()}</span></p> : <p className="mt-4 text-sm text-slate-600">Your cost range is still being prepared.</p>}
+          <details className="mt-4 rounded-xl bg-slate-50 p-4"><summary className="cursor-pointer text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-orange-500">What may change the price</summary><p className="mt-3 text-sm leading-6 text-slate-600">Site conditions, product selections, structural work, trade availability, design and professional fees, permits, contingency, and optional upgrades are confirmed separately before construction.</p></details>
+        </article>
+        <article className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <p className="text-xs font-bold uppercase tracking-widest text-slate-500">Permits and approvals</p>
+          <h2 className="mt-2 text-xl font-bold text-slate-900">Do I likely need a permit?</h2>
+          <p className="mt-4 text-lg font-bold text-slate-900">{likelyPermit ? 'Likely yes — verify before work begins' : 'Not identified yet — verification is still required'}</p>
+          <p className="mt-2 text-sm leading-6 text-slate-600">This is preliminary guidance, not an approval. The local agency makes the final determination; filing responsibility must be agreed with your contractor or permit professional.</p>
+          {concept.permits?.length ? <details className="mt-4"><summary className="cursor-pointer text-sm font-semibold text-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-500">View likely approval checklist</summary><ul className="mt-3 space-y-2">{concept.permits.map(p => <li key={p.name} className="flex gap-2 text-sm text-slate-700"><CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />{p.name} — {p.jurisdiction}</li>)}</ul></details> : null}
+        </article>
+      </div>
+
+      <article className="rounded-2xl border border-slate-200 bg-white p-6 md:p-8 shadow-sm">
+        <p className="text-xs font-bold uppercase tracking-widest text-slate-500">Recommended next steps</p>
+        <h2 className="mt-2 text-xl font-bold text-slate-900">What happens from here</h2>
+        <ol className="mt-5 grid gap-4 md:grid-cols-3">
+          <li className="rounded-xl bg-slate-50 p-4"><strong className="text-sm text-slate-900">1. Review your concept</strong><p className="mt-1 text-sm text-slate-600">Check that the goals, must-keep items, and visual direction feel right.</p></li>
+          <li className="rounded-xl bg-slate-50 p-4"><strong className="text-sm text-slate-900">2. Confirm cost and approvals</strong><p className="mt-1 text-sm text-slate-600">A qualified estimator and your jurisdiction should confirm assumptions before you commit.</p></li>
+          <li className="rounded-xl bg-slate-50 p-4"><strong className="text-sm text-slate-900">3. Prepare for construction</strong><p className="mt-1 text-sm text-slate-600">Engage any required architect, engineer, contractor, estimator, or permit specialist.</p></li>
+        </ol>
+      </article>
+    </section>
+  )
+}
+
 // ── Design Concept Hero (all tiers) ───────────────────────────────────────────
 
 function DesignConceptHero({ concept }: { concept: Concept }) {
@@ -707,10 +759,10 @@ export default function ConceptDeliverablePage() {
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
             <div>
               <p className="text-xs font-extrabold uppercase tracking-widest text-[#E8724B] mb-2">
-                {concept.tier === 3 ? 'Premium+ Concept Package' : concept.tier === 2 ? 'Premium Concept Package' : 'Concept Package'}
+                Homeowner project report
               </p>
               <h1 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight leading-tight">
-                {concept.service} Concept
+                Your {concept.service}
               </h1>
               <p className="text-slate-400 text-sm mt-1.5">
                 Created on {new Date(concept.createdAt).toLocaleDateString()}
@@ -730,6 +782,7 @@ export default function ConceptDeliverablePage() {
       </div>
 
       <div className="mx-auto max-w-5xl px-4 py-12 space-y-16">
+        <HomeownerOverview concept={concept} />
         {(concept.status === 'processing' || genRetrying) && (
           <div className="bg-orange-50 border border-orange-200 rounded-2xl p-5 flex items-start gap-4 shadow-sm animate-pulse">
             <Loader2 className="w-5 h-5 text-[#E8724B] animate-spin shrink-0 mt-0.5" />
@@ -738,12 +791,16 @@ export default function ConceptDeliverablePage() {
                 {genRetrying ? 'Starting Concept Generation…' : 'Advisory Concept Generating'}
               </h3>
               <p className="text-xs text-slate-600 mt-0.5">
-                Our AI engines are drafting your design brief, renderings, cost breakdown, and permit scope.
+                We’re preparing your design direction, visuals, cost range, and permit roadmap.
                 This dashboard updates live — typically 1–3 minutes.
               </p>
             </div>
           </div>
         )}
+
+        <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-900" role="note">
+          Your design concept is preliminary and intended for planning. It is not permit-ready, stamped, or professionally certified unless a qualified professional has explicitly supplied and signed that document.
+        </div>
 
         {/* Design Concept Hero — all tiers */}
         <DesignConceptHero concept={concept} />

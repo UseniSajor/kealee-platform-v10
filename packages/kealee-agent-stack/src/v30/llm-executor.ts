@@ -3,11 +3,8 @@ import { buildV30BotUserPrompt } from './bot-task-prompts'
 import { executeV30DesignBot } from './design-bot-executor'
 import { getV30SystemPrompt } from './prompts'
 import { v30DryRunExecution } from './orchestrator'
-import {
-  maxTokensForV30Bot,
-  resolveV30AnthropicModel,
-  V30ClaudeCachedClient,
-} from './v30-claude-client'
+import { maxTokensForV30Bot } from './v30-claude-client'
+import { completeV30WithFallback, hasV30LlmProvider } from './v30-primary-client'
 import type { V30BotExecutionInput, V30BotExecutionResult, V30BotType } from './types'
 
 function extractJsonObject(text: string): Record<string, unknown> | null {
@@ -43,19 +40,19 @@ export async function executeV30BotWithLlm(
 
   const def = getV30Bot(input.botType)
   const started = Date.now()
-  const client = new V30ClaudeCachedClient()
   const system = input.systemPrompt || getV30SystemPrompt(input.botType)
   const user = buildV30BotUserPrompt(input.botType, input.inputData)
-  const model = resolveV30AnthropicModel(def.defaultModel)
+  let model = def.defaultModel
 
   try {
-    const result = await client.complete({
-      model,
+    const result = await completeV30WithFallback({
+      anthropicDefaultModel: def.defaultModel,
       maxTokens: maxTokensForV30Bot(input.botType),
       system,
       user,
       botType: input.botType,
     })
+    model = result.model
 
     const parsed = extractJsonObject(result.text)
     const tokens = result.inputTokens + result.outputTokens
@@ -93,7 +90,7 @@ export async function executeV30BotWithLlm(
 }
 
 export function shouldUseV30Llm(): boolean {
-  return Boolean(process.env.ANTHROPIC_API_KEY && process.env.KEALEE_V30_LLM_ENABLED !== 'false')
+  return hasV30LlmProvider()
 }
 
 /** All parallel post-payment bots (Kealee Platform Agents KeaBot v3.0). */

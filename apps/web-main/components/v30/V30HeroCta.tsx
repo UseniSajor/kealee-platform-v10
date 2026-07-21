@@ -2,12 +2,10 @@
 
 import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
-import { isV30EnabledClient } from '@/lib/v30'
 
 export function V30HeroCta() {
-  const v30 = isV30EnabledClient()
-  const href = v30 ? '/get-concept' : '/concept'
-  const label = v30 ? 'Get your custom quote' : 'Build Your Project'
+  const href = '/get-started'
+  const label = 'Plan my project'
 
   return (
     <Link href={href}>

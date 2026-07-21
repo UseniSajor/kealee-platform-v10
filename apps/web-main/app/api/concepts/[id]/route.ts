@@ -54,7 +54,11 @@ export async function GET(
     }
 
     const formData      = (intake.form_data ?? {}) as Record<string, unknown>
-    const conceptOutput = formData.conceptOutput as Record<string, unknown> | undefined
+    const designExecution = formData.designOutput as Record<string, unknown> | undefined
+    const conceptOutput = (formData.conceptOutput ?? formData.v30ConceptOutput ?? designExecution?.conceptOutput ?? designExecution) as Record<string, unknown> | undefined
+    const estimateOutput = formData.estimateOutput as Record<string, unknown> | undefined
+    const zoningOutput = formData.zoningOutput as Record<string, unknown> | undefined
+    const permitOutput = formData.permitOutput as Record<string, unknown> | undefined
     const tier          = typeof formData.tier === 'number' ? formData.tier as 1 | 2 | 3 : 1
     const deliverable   = SERVICE_DELIVERABLES[intake.project_path as string]
 
@@ -95,7 +99,18 @@ export async function GET(
 
     // Map permit scope → PermitItem array
     const permitScope = conceptOutput?.permitScope as Record<string, unknown> | undefined
-    const permits: PermitItem[] | undefined = permitScope?.requiresPermit
+    const generatedPermitNames = Array.isArray(permitOutput?.requiredPermits)
+      ? (permitOutput.requiredPermits as Array<string | Record<string, unknown>>).map(item => typeof item === 'string' ? item : String(item.name ?? item.permitType ?? 'Permit review'))
+      : []
+    const permits: PermitItem[] | undefined = generatedPermitNames.length
+      ? generatedPermitNames.map(name => ({
+          name,
+          jurisdiction: String(zoningOutput?.jurisdiction ?? intake.project_address ?? 'Local jurisdiction'),
+          estimatedFee: 0,
+          leadTime: String(permitOutput?.timeline ?? permitOutput?.processingTime ?? 'Verify with the jurisdiction'),
+          required: true,
+        }))
+      : permitScope?.requiresPermit
       ? (permitScope.permitTypes as string[] | undefined)?.map((name) => ({
           name,
           jurisdiction: String(intake.project_address ?? formData.zip ?? 'DMV region'),
@@ -180,11 +195,11 @@ export async function GET(
       mepSchematic: conceptOutput?.mepSchematic as Concept['mepSchematic'],
 
       // Financials
-      estimatedCost: conceptOutput?.estimatedCost as number | undefined,
+      estimatedCost: Number(estimateOutput?.costLikely ?? estimateOutput?.estimatedCost ?? conceptOutput?.estimatedCost ?? 0) || undefined,
       timeline:      conceptOutput?.projectTimeline as string | undefined,
 
       // Zoning
-      zoningAnalysis: {
+      zoningAnalysis: zoningOutput ?? {
         notes:          conceptOutput?.zoningNotes,
         buildability:   conceptOutput?.buildabilityFlag,
         readinessScore: conceptOutput?.readinessScore,

@@ -343,6 +343,12 @@ export default function IntakePage() {
     phone: '',
     address: '',
     description: '',
+    propertyDetails: '',
+    stylePreferences: '',
+    priorities: [] as string[],
+    mustStay: '',
+    problemsToSolve: '',
+    budgetComfort: '',
     squareFootage: sqftFromUrl,
     timeline: 'flexible',
   })
@@ -734,6 +740,12 @@ export default function IntakePage() {
           attribution,
           formData: {
             description: formData.description,
+            propertyDetails: formData.propertyDetails,
+            stylePreferences: formData.stylePreferences,
+            priorities: formData.priorities,
+            mustStay: formData.mustStay,
+            problemsToSolve: formData.problemsToSolve,
+            budgetComfort: formData.budgetComfort,
             squareFootage: formData.squareFootage,
             timeline: formData.timeline,
             uploadedFiles: [...uploadedFiles, ...uploadedDocs].map(f => f.url),
@@ -832,9 +844,9 @@ export default function IntakePage() {
                 </div>
 
                 <div>
-                  <h1 className="text-2xl font-extrabold text-slate-900">Tell us about your project</h1>
+                  <h1 className="text-2xl font-extrabold text-slate-900">Tell us what you’re hoping to change</h1>
                   <p className="text-slate-500 mt-1 text-sm">
-                    Secure checkout via Stripe after submission.
+                    Answer in your own words. Your progress saves on this device, and you can review everything before payment.
                   </p>
                 </div>
 
@@ -919,7 +931,7 @@ export default function IntakePage() {
                 {/* Description */}
                 <div>
                   <label className="block text-sm font-semibold text-slate-800 mb-1.5">
-                    Describe Your Project
+                    What are you hoping to change?
                   </label>
                   <textarea
                     value={formData.description}
@@ -928,6 +940,48 @@ export default function IntakePage() {
                     className="w-full rounded-lg border border-slate-300 px-4 py-3 text-sm focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20 resize-none"
                     placeholder={getIntakeCheckoutProjectDescriptionPlaceholder(projectPath)}
                   />
+                  <p className="mt-1.5 text-xs text-slate-500">Why we ask: this becomes the plain-language project brief used across your concept, estimate, and permit roadmap.</p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-slate-800 mb-1.5">Tell us about the property</label>
+                  <textarea value={formData.propertyDetails} onChange={e => setFormData(d => ({ ...d, propertyDetails: e.target.value }))} rows={3} className="w-full rounded-lg border border-slate-300 px-4 py-3 text-sm focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20 resize-none" placeholder="For example: 1960s two-story home, occupied during construction, narrow side access…" />
+                  <p className="mt-1.5 text-xs text-slate-500">This helps us flag site conditions that may affect layout, cost, or approvals.</p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-slate-800 mb-1.5">Show us styles or examples you like</label>
+                  <textarea value={formData.stylePreferences} onChange={e => setFormData(d => ({ ...d, stylePreferences: e.target.value }))} rows={3} className="w-full rounded-lg border border-slate-300 px-4 py-3 text-sm focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20 resize-none" placeholder="Describe colors, materials, rooms, or links that feel right. You can also add inspiration images below." />
+                </div>
+
+                <fieldset>
+                  <legend className="block text-sm font-semibold text-slate-800 mb-1.5">What matters most?</legend>
+                  <p className="text-xs text-slate-500 mb-3">Choose all that apply. We use this to explain tradeoffs in the concept.</p>
+                  <div className="flex flex-wrap gap-2">
+                    {['Budget', 'Appearance', 'More space', 'Speed', 'Accessibility', 'Resale value'].map(priority => {
+                      const selected = formData.priorities.includes(priority)
+                      return <button key={priority} type="button" aria-pressed={selected} onClick={() => setFormData(d => ({ ...d, priorities: selected ? d.priorities.filter(p => p !== priority) : [...d.priorities, priority] }))} className={`rounded-full border px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-orange-500 ${selected ? 'border-orange-500 bg-orange-50 text-orange-800' : 'border-slate-300 bg-white text-slate-700 hover:border-orange-300'}`}>{priority}</button>
+                    })}
+                  </div>
+                </fieldset>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-800 mb-1.5">What must stay?</label>
+                    <textarea value={formData.mustStay} onChange={e => setFormData(d => ({ ...d, mustStay: e.target.value }))} rows={3} className="w-full rounded-lg border border-slate-300 px-4 py-3 text-sm focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20 resize-none" placeholder="Walls, trees, appliances, furniture, features…" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-800 mb-1.5">What problems should this solve?</label>
+                    <textarea value={formData.problemsToSolve} onChange={e => setFormData(d => ({ ...d, problemsToSolve: e.target.value }))} rows={3} className="w-full rounded-lg border border-slate-300 px-4 py-3 text-sm focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20 resize-none" placeholder="Poor storage, dark room, difficult access, awkward flow…" />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-slate-800 mb-1.5">Budget comfort range</label>
+                  <select value={formData.budgetComfort} onChange={e => setFormData(d => ({ ...d, budgetComfort: e.target.value }))} className="w-full rounded-lg border border-slate-300 px-4 py-3 text-sm focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20">
+                    <option value="">I’m not sure yet</option><option value="under-25k">Under $25,000</option><option value="25k-50k">$25,000–$50,000</option><option value="50k-100k">$50,000–$100,000</option><option value="100k-250k">$100,000–$250,000</option><option value="250k-plus">$250,000+</option>
+                  </select>
+                  <p className="mt-1.5 text-xs text-slate-500">This is a planning comfort range—not a commitment or a contractor quote.</p>
                 </div>
 
                 {/* Q8 — Project Photos */}
@@ -1136,6 +1190,12 @@ export default function IntakePage() {
                     { label: 'Address', value: formData.address },
                     formData.phone ? { label: 'Phone', value: formData.phone } : null,
                     formData.description ? { label: 'Project description', value: formData.description } : null,
+                    formData.propertyDetails ? { label: 'About the property', value: formData.propertyDetails } : null,
+                    formData.stylePreferences ? { label: 'Style direction', value: formData.stylePreferences } : null,
+                    formData.priorities.length ? { label: 'Top priorities', value: formData.priorities.join(', ') } : null,
+                    formData.mustStay ? { label: 'Must stay', value: formData.mustStay } : null,
+                    formData.problemsToSolve ? { label: 'Problems to solve', value: formData.problemsToSolve } : null,
+                    formData.budgetComfort ? { label: 'Budget comfort', value: formData.budgetComfort.replace(/-/g, ' ') } : null,
                     (uploadedFiles.length > 0 || uploadedDocs.length > 0) ? { label: 'Files', value: [uploadedFiles.length > 0 ? `${uploadedFiles.length} photo${uploadedFiles.length > 1 ? 's' : ''}` : null, uploadedDocs.length > 0 ? `${uploadedDocs.length} document${uploadedDocs.length > 1 ? 's' : ''}` : null].filter(Boolean).join(', ') + ' uploaded' } : null,
                   ].filter(Boolean).map(row => (
                     <div key={row!.label} className="flex items-start gap-4 px-5 py-3">

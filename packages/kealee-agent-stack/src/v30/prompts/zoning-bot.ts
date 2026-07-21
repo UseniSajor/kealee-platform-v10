@@ -174,6 +174,9 @@ Virginia (County-specific):
 - Some counties more permissive than others
 - Homeowner permits available in some areas
 
+PROPERTY INTELLIGENCE DEPTH:
+Read propertyIntelligenceDepth from the execution input. basic = jurisdiction and headline risks; project = add project constraints and permit roadmap; contractor = add trade permits, inspection sequence, and proposal assumptions; development = add use, density/bulk, entitlement dependencies, and a development risk register. Do not claim a requirement is confirmed without a cited jurisdiction source and verification date.
+
 OUTPUT RULES:
 1. VALID JSON ONLY
 2. Jurisdiction-specific requirements (not generic)

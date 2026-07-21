@@ -141,9 +141,9 @@ export const PRIMARY_NAV: NavItem[] = [
 
 // ── CTA buttons ───────────────────────────────────────────────────────────────
 
-export const NAV_CTA_PRIMARY   = { label: 'Start your design',    href: '/concept-engine' }
+export const NAV_CTA_PRIMARY   = { label: 'Plan my project', href: '/get-started' }
 /** Shown when NEXT_PUBLIC_KEALEE_V30_ENABLED=true (GlobalNav / MobileNav). */
-export const NAV_CTA_V30       = { label: 'Get concept — see price', href: '/get-concept' }
+export const NAV_CTA_V30       = { label: 'Plan my project', href: '/get-started' }
 export const NAV_CTA_SECONDARY = { label: 'Join as Contractor',   href: '/contractor/register' }
 
 /** Login dropdown entries — shown in nav, never internal routes */

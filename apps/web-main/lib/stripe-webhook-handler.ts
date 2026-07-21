@@ -15,6 +15,9 @@ import {
 import { trackPurchase } from '@/lib/marketing/ga4-server'
 import { parseUtmFromBody } from '@/lib/marketing/utm-metadata'
 import { mergeMarketingMetadata } from '@/lib/marketing/types'
+import { fulfillRevenueProduct } from '@/lib/revenue-fulfillment'
+import { resolveProductAutomationRoute } from '@/lib/product-automation'
+import { ensureAutonomousFulfillmentRun } from '@/lib/autonomous-fulfillment'
 
 export async function processStripeWebhookEvent(
   event: Stripe.Event,
@@ -77,6 +80,16 @@ async function handleCheckoutCompleted(
 ): Promise<void> {
   const meta = session.metadata ?? {}
 
+  if (session.payment_status !== 'paid') {
+    console.log('[stripe-webhook] checkout completed before payment; waiting for paid event', session.id)
+    return
+  }
+
+  if (meta.source === 'revenue_product') {
+    await fulfillRevenueProduct(session, event.id)
+    return
+  }
+
   if (meta.source !== 'public_intake' && meta.source !== 'public_intake_v30') {
     console.log('[stripe-webhook] checkout.session.completed ignored source=', meta.source)
     return
@@ -88,6 +101,7 @@ async function handleCheckoutCompleted(
   const upsellSourceIntakeId = meta.upsellSourceIntakeId
   const sourcePath = meta.sourcePath
   const isBundlePurchase = isBundleProductKey(projectPath)
+  const automationRoute = resolveProductAutomationRoute({ source: meta.source, projectPath })
 
   if (!intakeId || !projectPath) {
     console.error('[stripe-webhook] Missing intakeId or projectPath in metadata', meta)
@@ -99,7 +113,7 @@ async function handleCheckoutCompleted(
 
   const { data: currentIntake, error: fetchErr } = await supabase
     .from('public_intake_leads')
-    .select('form_data, metadata')
+    .select('form_data, metadata, status, stripe_session_id')
     .eq('id', intakeId)
     .single()
 
@@ -131,6 +145,12 @@ async function handleCheckoutCompleted(
     if (sourcePath) mergedFormData.upsellSourcePath = sourcePath
   }
   mergedFormData.funnelStage = isBundlePurchase ? 'bundle_purchased' : 'paid_concept'
+  if (automationRoute) {
+    Object.assign(mergedFormData, automationRoute, {
+      fulfillmentStatus: 'queued',
+      fulfillmentQueuedAt: new Date().toISOString(),
+    })
+  }
 
   const { data: updatedRows, error: updateErr } = await supabase
     .from('public_intake_leads')
@@ -150,15 +170,33 @@ async function handleCheckoutCompleted(
   }
 
   const transitionedToPaid = Boolean(updatedRows && updatedRows.length > 0)
-  if (!transitionedToPaid) {
+  const canRetryAutomation = Boolean(
+    automationRoute &&
+    currentIntake?.status === 'paid' &&
+    currentIntake?.stripe_session_id === session.id &&
+    (!existingFormData.v30GenerationStartedAt || ['failed', 'retryable'].includes(String(existingFormData.fulfillmentStatus ?? ''))),
+  )
+  if (!transitionedToPaid && !canRetryAutomation) {
     console.log('[stripe-webhook] Intake already paid or not found; skip generation', intakeId)
     return
   }
 
-  if (isV30) {
-    triggerV30GenerationForIntake(intakeId).catch((err: Error) => {
-      console.error('[stripe-webhook] v30 generation trigger failed:', err.message)
-    })
+  if (isV30 || automationRoute) {
+    if (automationRoute) {
+      const run = await ensureAutonomousFulfillmentRun({
+        intakeId, stripeSessionId: session.id, productKey: projectPath,
+        botTypes: automationRoute.fulfillmentBotTypes,
+        workflowTemplateId: automationRoute.workflowTemplateId,
+        propertyIntelligenceDepth: automationRoute.propertyIntelligenceDepth,
+      })
+      const { data: latest } = await supabase.from('public_intake_leads').select('form_data').eq('id', intakeId).single()
+      await supabase.from('public_intake_leads').update({ form_data: {
+        ...((latest?.form_data as Record<string, unknown>) ?? mergedFormData),
+        autonomousRunId: run.runId,
+      } }).eq('id', intakeId)
+    }
+    const generation = await triggerV30GenerationForIntake(intakeId, automationRoute)
+    if (!generation) throw new Error(`Automation could not be queued for intake ${intakeId}`)
   } else if (deliverable?.generatesConcept && !upsellSourceIntakeId && !isBundlePurchase) {
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? req.nextUrl.origin
     fetch(`${baseUrl}/api/concept/generate`, {

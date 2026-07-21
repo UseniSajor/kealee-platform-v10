@@ -4,6 +4,14 @@ import { syncV30ConceptToIntakeLead } from '@/lib/v30-design-sync'
 import { finalizeV30FloorplanDeliverables } from '@/lib/v30-floorplan-deliverables'
 import { syncLandscapePremiumPlusPackage } from '@/lib/v30-landscape-package'
 import { isGardenLandscapeScope } from '@kealee/kealee-agent-stack'
+import type { V30BotType } from '@kealee/kealee-agent-stack'
+import type { PropertyIntelligenceDepth } from './revenue-product-catalog'
+
+export interface V30FulfillmentOptions {
+  fulfillmentBotTypes?: V30BotType[]
+  workflowTemplateId?: string
+  propertyIntelligenceDepth?: PropertyIntelligenceDepth
+}
 
 const API_BASE = () =>
   (process.env.INTERNAL_API_URL ?? process.env.NEXT_PUBLIC_API_URL ?? '').replace(/\/$/, '')
@@ -15,6 +23,7 @@ export function isV30IntakeMetadata(meta: Record<string, string | undefined>): b
 /** Server-side v30 generation (Stripe webhook + idempotent retries). */
 export async function triggerV30GenerationForIntake(
   intakeId: string,
+  options: V30FulfillmentOptions = {},
 ): Promise<{ projectId?: string; packageId?: string } | null> {
   if (!isV30Enabled()) {
     console.warn('[v30-trigger] KEALEE_V30_ENABLED is off — skip generation')
@@ -34,7 +43,10 @@ export async function triggerV30GenerationForIntake(
   }
 
   const formData = (intake.form_data as Record<string, unknown>) ?? {}
-  if (formData.v30ProjectId && formData.v30GenerationStartedAt) {
+  const fulfillmentBotTypes = options.fulfillmentBotTypes ?? formData.fulfillmentBotTypes as V30BotType[] | undefined
+  const workflowTemplateId = options.workflowTemplateId ?? formData.workflowTemplateId as string | undefined
+  const propertyIntelligenceDepth = options.propertyIntelligenceDepth ?? formData.propertyIntelligenceDepth as PropertyIntelligenceDepth | undefined
+  if (formData.v30ProjectId && formData.v30GenerationStartedAt && !['failed', 'retryable'].includes(String(formData.fulfillmentStatus ?? ''))) {
     console.log('[v30-trigger] generation already started', intakeId)
     return {
       projectId: formData.v30ProjectId as string,
@@ -58,7 +70,10 @@ export async function triggerV30GenerationForIntake(
       contactEmail: intake.contact_email,
       projectAddress: intake.project_address,
       answers: buildV30Answers(formData, intake.project_address),
-      features: getV30Features(formData),
+      features: getV30Features(formData, Boolean(fulfillmentBotTypes?.length)),
+      fulfillmentBotTypes,
+      workflowTemplateId,
+      propertyIntelligenceDepth,
     }),
   })
 
@@ -69,16 +84,20 @@ export async function triggerV30GenerationForIntake(
   }
 
   const payload = (await res.json()) as { projectId?: string; packageId?: string }
+  const { data: latest } = await supabase.from('public_intake_leads').select('form_data').eq('id', intakeId).single()
+  const latestFormData = (latest?.form_data as Record<string, unknown>) ?? formData
   await supabase
     .from('public_intake_leads')
     .update({
       form_data: {
-        ...formData,
+        ...latestFormData,
         v30ProjectId: payload.projectId,
         v30PackageId: payload.packageId,
         v30GenerationStartedAt: new Date().toISOString(),
         v30GenerationSource: 'webhook',
         v30SkipConceptGenerate: true,
+        fulfillmentStatus: 'processing',
+        fulfillmentProcessingAt: new Date().toISOString(),
       },
     })
     .eq('id', intakeId)
@@ -123,6 +142,10 @@ async function pollAndSyncV30Concept(intakeId: string, projectId?: string): Prom
         ws.executions?.length &&
         ws.executions.every(e => e.status === 'COMPLETE' || e.status === 'FAILED')
 
+      if (allComplete) {
+        await syncV30OutputsToIntake(intakeId, ws.executions ?? [])
+      }
+
       if (floorplanExec?.status === 'COMPLETE' && floorplanExec.outputData) {
         const supabase = getSupabaseAdmin()
         const { data: intake } = await supabase
@@ -164,9 +187,114 @@ async function pollAndSyncV30Concept(intakeId: string, projectId?: string): Prom
   }
 }
 
-function getV30Features(formData: Record<string, unknown>): string[] {
+async function syncV30OutputsToIntake(
+  intakeId: string,
+  executions: Array<{ botType: string; status: string; outputData?: Record<string, unknown> }>,
+): Promise<void> {
+  const supabase = getSupabaseAdmin()
+  const { data: intake } = await supabase.from('public_intake_leads').select('form_data, contact_email, client_name, project_path').eq('id', intakeId).single()
+  const formData = (intake?.form_data as Record<string, unknown>) ?? {}
+  const outputs = Object.fromEntries(executions.filter(e => e.outputData).map(e => [e.botType, e.outputData]))
+  const failed = executions.filter(e => e.status === 'FAILED').map(e => e.botType)
+  const status = failed.length === 0 ? 'completed' : failed.length < executions.length ? 'partially_completed' : 'failed'
+  await supabase.from('public_intake_leads').update({
+    status: status === 'completed' ? 'concept_ready' : 'processing',
+    form_data: {
+      ...formData,
+      fulfillmentOutputs: { ...((formData.fulfillmentOutputs as Record<string, unknown>) ?? {}), ...outputs },
+      estimateOutput: outputs.estimate ?? formData.estimateOutput,
+      zoningOutput: outputs.zoning ?? formData.zoningOutput,
+      permitOutput: outputs.permit ?? formData.permitOutput,
+      designOutput: outputs.design ?? formData.designOutput,
+      fulfillmentStatus: status,
+      fulfillmentFailedBotTypes: failed,
+      fulfillmentCompletedAt: new Date().toISOString(),
+    },
+  }).eq('id', intakeId)
+  const notificationSent = await notifyCustomerDeliverable({
+    intakeId,
+    email: typeof intake?.contact_email === 'string' ? intake.contact_email : undefined,
+    clientName: typeof intake?.client_name === 'string' ? intake.client_name : undefined,
+    projectPath: typeof intake?.project_path === 'string' ? intake.project_path : undefined,
+    partial: status !== 'completed',
+  })
+  await syncAutonomousProjection(String(formData.autonomousRunId ?? ''), executions, status, notificationSent)
+  await prismaRevenueStatus(intakeId, status)
+}
+
+async function notifyCustomerDeliverable(input: { intakeId: string; email?: string; clientName?: string; projectPath?: string; partial: boolean }): Promise<boolean> {
+  if (!input.email) return false
+  const appUrl = (process.env.NEXT_PUBLIC_APP_URL ?? '').replace(/\/$/, '')
+  if (!appUrl) return false
+  try {
+    const response = await fetch(`${appUrl}/api/emails/deliverable-ready`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        to: input.email, firstName: input.clientName?.split(' ')[0] ?? '',
+        service: input.projectPath ?? 'homeowner report', intakeId: input.intakeId,
+        headline: input.partial ? 'Your project report is ready with some items still under review' : 'Your homeowner project report is ready',
+      }),
+    })
+    return response.ok
+  } catch { return false }
+}
+
+async function syncAutonomousProjection(
+  runId: string,
+  executions: Array<{ botType: string; status: string; outputData?: Record<string, unknown> }>,
+  fulfillmentStatus: string,
+  notificationSent: boolean,
+): Promise<void> {
+  if (!runId) return
+  const { prisma } = await import('@kealee/database')
+  const capabilityByBot: Record<string, string> = {
+    design: 'design.concept.generate', estimate: 'estimate.plan.generate', zoning: 'zoning.property.analyze',
+    permit: 'permit.roadmap.generate', floorplan: 'floorplan.concept.generate', contractor: 'contractor.match',
+    project: 'project.plan.generate', sales: 'sales.support.prepare',
+  }
+  try {
+    await prisma.$transaction(async tx => {
+      await tx.autonomousStep.updateMany({ where: { runId, capability: 'intake.validate' }, data: { status: 'COMPLETE', completedAt: new Date() } })
+      for (const execution of executions) {
+        const capability = capabilityByBot[execution.botType]
+        if (!capability) continue
+        await tx.autonomousStep.updateMany({ where: { runId, capability }, data: {
+          status: execution.status === 'COMPLETE' ? 'COMPLETE' : 'FAILED', output: execution.outputData as any,
+          completedAt: new Date(), errorMessage: execution.status === 'FAILED' ? `${execution.botType} execution failed` : null,
+        } })
+      }
+      const reportReady = fulfillmentStatus === 'completed' || fulfillmentStatus === 'partially_completed'
+      if (reportReady) {
+        await tx.autonomousStep.updateMany({ where: { runId, capability: { in: ['deliverable.assemble', 'deliverable.publish'] } }, data: { status: 'COMPLETE', completedAt: new Date() } })
+        if (notificationSent) await tx.autonomousStep.updateMany({ where: { runId, capability: 'customer.notify' }, data: { status: 'COMPLETE', completedAt: new Date() } })
+        await tx.autonomousEvidence.create({ data: { runId, evidenceType: 'published-deliverable', sourceUri: `/concept/${runId}`, verifiedAt: new Date(), payload: { fulfillmentStatus } } })
+      }
+      await tx.autonomousRun.update({ where: { id: runId }, data: {
+        status: fulfillmentStatus === 'completed' && notificationSent ? 'COMPLETE' : reportReady ? 'PARTIAL' : 'FAILED',
+        completedAt: reportReady ? new Date() : undefined,
+      } })
+      if (fulfillmentStatus === 'completed' && notificationSent) {
+        const run = await tx.autonomousRun.findUnique({ where: { id: runId }, select: { goalId: true } })
+        if (run) await tx.autonomousGoal.update({ where: { id: run.goalId }, data: { status: 'COMPLETE', completedAt: new Date() } })
+      }
+    })
+  } catch (error) {
+    console.error('[v30-trigger] autonomous projection sync failed', error)
+  }
+}
+
+async function prismaRevenueStatus(intakeId: string, status: string): Promise<void> {
+  const { prisma } = await import('@kealee/database')
+  await prisma.revenueTransaction.updateMany({
+    where: { intakeId, status: 'processing' },
+    data: { status: status === 'completed' ? 'cleared' : status },
+  }).catch(() => undefined)
+}
+
+function getV30Features(formData: Record<string, unknown>, isProductAutomation = false): string[] {
   const quote = formData.v30Quote as { features?: string[] } | undefined
-  return quote?.features ?? (formData.v30Features as string[]) ?? []
+  const features = quote?.features ?? (formData.v30Features as string[]) ?? []
+  return features.length || !isProductAutomation ? features : ['product-automation']
 }
 
 function buildV30Answers(
@@ -180,7 +308,7 @@ function buildV30Answers(
     budgetRange: String(answers.budgetRange ?? ''),
     timeline: String(answers.timeline ?? ''),
     location: String(answers.location ?? projectAddress),
-    squareFeet: Number(answers.squareFeet ?? answers.squareFootage ?? 0),
+    squareFeet: Math.max(1, Number(answers.squareFeet ?? answers.squareFootage ?? 1) || 1),
     yearBuilt: String(answers.yearBuilt ?? ''),
     utilities: (answers.utilities as Record<string, boolean>) ?? {},
     codeConsiderations: (answers.codeConsiderations as string[]) ?? [],
