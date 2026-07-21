@@ -12,7 +12,7 @@
  * 5. Once ready, models embedded in portal and homeowner email
  */
 
-import { generate3DModel, qualityForTier, is3DAvailable } from '../../ai-3d'
+import { generate3DModel, get3DModelStatus, qualityForTier, is3DAvailable } from '../ai-3d'
 import type { V30DesignConcept, V30DesignBotOutput } from './types'
 
 export interface Design3DOrchestrationInput {
@@ -86,12 +86,12 @@ export async function orchestrateDesign3DGeneration(
       })
 
       // Store job ID in concept for later retrieval
-      if (!concept.threeDModels) {
-        concept.threeDModels = {} as any
+      concept.threeDModels = {
+        provider: result.provider,
+        jobId: result.jobId,
+        status: 'queued',
+        generatedAt: new Date().toISOString(),
       }
-      concept.threeDModels.provider = result.provider
-      concept.threeDModels.jobId = result.jobId
-      concept.threeDModels.status = 'queued'
     } catch (err) {
       console.error(`[Design3D] Failed to submit 3D job for concept ${concept.id}:`, err)
       // Continue with other concepts, but log the error
@@ -128,7 +128,6 @@ export async function checkDesignConceptModel3DStatus(
   jobId: string,
   tier: number,
 ) {
-  const { get3DModelStatus } = await import('../../ai-3d')
   const quality = qualityForTier(tier)
 
   const status = await get3DModelStatus(provider as any, jobId, quality)
@@ -145,15 +144,16 @@ export function storeDesignConcept3DUrls(
   previewUrl?: string,
   usdzUrl?: string,
 ) {
-  if (!concept.threeDModels) {
-    concept.threeDModels = {} as any
+  concept.threeDModels = {
+    provider: concept.threeDModels?.provider ?? 'unknown',
+    jobId: concept.threeDModels?.jobId ?? '',
+    ...concept.threeDModels,
+    modelUrl,
+    previewUrl,
+    usdzUrl,
+    status: 'completed',
+    generatedAt: new Date().toISOString(),
   }
-
-  concept.threeDModels.modelUrl = modelUrl
-  concept.threeDModels.previewUrl = previewUrl
-  concept.threeDModels.usdzUrl = usdzUrl
-  concept.threeDModels.status = 'completed'
-  concept.threeDModels.generatedAt = new Date().toISOString()
 
   return concept
 }

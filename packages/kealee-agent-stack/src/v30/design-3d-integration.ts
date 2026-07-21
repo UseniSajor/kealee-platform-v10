@@ -9,7 +9,7 @@
  * - Portal display readiness checks
  */
 
-import { is3DAvailable } from '../../../lib/ai-3d'
+import { get3DModelStatus, is3DAvailable } from '../ai-3d'
 import { orchestrateDesign3DGeneration, type Design3DOrchestrationInput } from './design-3d-orchestrator'
 import type { V30DesignBotOutput, V30DesignConcept } from './types'
 
@@ -97,7 +97,14 @@ function enhanceDesignOutputWith3D(
   designOutput: V30DesignBotOutput,
   orchestrationResult: any,
 ): V30DesignBotOutput {
-  const jobMap = new Map(orchestrationResult.conceptModels.map((m: any) => [m.conceptId, m]))
+  type ConceptModelJob = {
+    conceptId: string
+    provider: string
+    jobId: string
+    status: 'queued' | 'processing'
+  }
+  const jobs = orchestrationResult.conceptModels as ConceptModelJob[]
+  const jobMap = new Map<string, ConceptModelJob>(jobs.map(job => [job.conceptId, job]))
 
   const enhancedConcepts = designOutput.concepts.map((concept: V30DesignConcept) => {
     const job = jobMap.get(concept.id)
@@ -172,8 +179,6 @@ export function getDesignConcept3DUrl(concept: V30DesignConcept, format: 'glb' |
  * Called by portal client (e.g., every 10 seconds while "Generating..." badge shows).
  */
 export async function pollDesign3DStatus(designOutput: V30DesignBotOutput) {
-  const { get3DModelStatus } = await import('../../../lib/ai-3d')
-
   const results = await Promise.allSettled(
     designOutput.concepts.map(async concept => {
       const models = (concept as any).threeDModels

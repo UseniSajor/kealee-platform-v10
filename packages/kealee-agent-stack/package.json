@@ -8,6 +8,10 @@
     ".": {
       "types": "./src/index.ts",
       "default": "./dist/index.js"
+    },
+    "./v30/*": {
+      "types": "./src/v30/*.ts",
+      "default": "./dist/v30/*.js"
     }
   },
   "scripts": {
@@ -16,7 +20,8 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.74.0",
-    "openai": "^6.32.0"
+    "openai": "^6.32.0",
+    "replicate": "^1.4.0"
   },
   "devDependencies": {
     "@types/node": "20.19.39",
