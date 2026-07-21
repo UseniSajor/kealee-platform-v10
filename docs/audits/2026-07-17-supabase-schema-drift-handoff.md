@@ -1,4 +1,31 @@
-# Session Handoff — Supabase schema drift + pricing bug — 2026-07-17
+## ✅ RESOLVED — 2026-07-20
+
+Verified via Supabase MCP (now connected): all 4 tables
+(`public_intake_leads`, `agent_sessions`, `bot_prompts`, `keabot_events`)
+already have `DEFAULT gen_random_uuid()` on `id` — the fix below was applied
+by another agent/session sometime between 2026-07-17 and now (no matching
+commit found in `packages/database/supabase/migrations/`, so it was likely
+applied directly against the live DB, not checked into a migration file —
+worth doing later so the migration history matches live state).
+
+Confirmed end-to-end with a live test insert (`POST /api/intake`,
+`whole_home_concept` tier 3): real row created, no `fallback: true`, `tier: 3`
+persisted correctly in `form_data`. Traced `/api/intake/checkout`
+(`apps/web-main/app/api/intake/checkout/route.ts:110-131`) against
+`getIntakePriceByTier` (`packages/core-rules/src/pricing.ts:199`) —
+`whole_home_concept` tier 3 resolves to `169_900` cents = **$1,699**
+correctly now that the intake row lookup succeeds. Test row deleted after
+verification. The old fake `fallback:true` test row
+(`93bb3d72-bd72-4d40-bd07-7c1d1096430a`) did not exist in the DB.
+
+**Not yet done** (still open, lower urgency): items 1–3 under "Bigger,
+not-yet-scoped follow-up work" below — the ~44 unapplied migration files,
+the Prisma-vs-Supabase DB target question, and the 7 unverified Storage
+buckets. None of these block the pricing bug, which is fully resolved.
+
+---
+
+# Session Handoff — Supabase schema drift + pricing bug — 2026-07-17 (historical — see resolution above)
 
 **Read this first if you're a new Claude Code session picking up this work.**
 Previous session hit a hard wall: needed direct Postgres access to Supabase to

@@ -1,13 +1,12 @@
-## ⚠️ URGENT — Read `docs/audits/2026-07-17-supabase-schema-drift-handoff.md` FIRST
+## ✅ RESOLVED 2026-07-20 — was: URGENT pricing/data-loss bug
 
-Active, unresolved production bug as of 2026-07-17: tiered checkout prices
-are wrong and paid orders are being silently lost for some purchases, root
-cause confirmed (missing `DEFAULT gen_random_uuid()` on 4 Supabase tables,
-plus a much larger schema-drift finding across both the raw SQL migrations
-and the 414-model Prisma schema). Fix is drafted but not yet applied — needs
-the Supabase MCP connection approved first (`claude mcp list`, approve on
-fresh session startup if pending). Full context, exact SQL, and follow-up
-scope in that file — start there before reading anything below.
+The tiered-checkout pricing bug tracked in
+`docs/audits/2026-07-17-supabase-schema-drift-handoff.md` (customers charged
+flat $595 instead of tiered price, orders silently lost) is confirmed fixed
+and verified end-to-end — see the resolution note at the top of that file.
+The larger schema-drift follow-up work (unapplied migrations, Prisma vs.
+Supabase DB target question, unverified Storage buckets) remains open but is
+lower urgency and non-blocking; scope still lives in that same file.
 
 # Latest System Audit — 2026-04-27
 
