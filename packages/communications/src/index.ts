@@ -18,6 +18,9 @@ export {
   sendWhatsApp,
   SMS_TEMPLATES,
 } from './sms';
+
+// Voice transport (Twilio provider behind a replaceable contract)
+export * from './voice';
 export type {
   SendSMSOptions,
   SendSMSResult,
