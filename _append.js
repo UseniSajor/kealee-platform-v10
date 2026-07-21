@@ -1,1 +1,0 @@
-const fs=require("fs");const f=process.argv[2];const chunks=[];process.stdin.on("data",d=>chunks.push(d));process.stdin.on("end",()=>{fs.appendFileSync(f,Buffer.concat(chunks).toString("utf8"),"utf8");console.log("Appended to",f);});

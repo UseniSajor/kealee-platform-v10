@@ -1,5 +1,0 @@
-# Compiled JavaScript output (TypeScript source files are in src/)
-*.js
-*.js.map
-*.d.ts
-dist/

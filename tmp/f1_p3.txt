@@ -1,3 +1,0 @@
-export default function PunchListPage() {
-  const [query, setQuery] = useState("")
-  const [activeStatus, setActiveStatus] = useState("All")

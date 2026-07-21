@@ -1,3 +1,0 @@
-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
-
-webhook signing secret: whsec_BINJ6Cm10rVdzelCgDHiV3AqsEX1Asc2

@@ -93,3 +93,43 @@ export interface V30ParallelGenerationResult {
   failedCount: number
   successCount: number
 }
+
+/** Design concept with optional 3D models (tier-gated: Premium+). */
+export interface V30DesignConcept {
+  id: string
+  name: string
+  positioning: 'BUDGET' | 'BALANCED' | 'PREMIUM'
+  narrative: string
+  estimatedCostMin: number
+  estimatedCostMax: number
+  timeline: string
+  complexity: V30Complexity
+  riskLevel: V30RiskLevel
+  keyFeatures: string[]
+  materials: Record<string, Record<string, string>>
+  risks: string[]
+  imagePrompts: string[]
+  // 3D models (Premium+ only)
+  threeD?: {
+    modelPrompt: string
+    specifications: Record<string, unknown>
+    walkthrough?: 'basic' | 'full' | 'none'
+    renderFormats: string[]
+    quality: 'basic' | 'enhanced'
+  }
+  // 3D generation results (populated after async generation)
+  threeDModels?: {
+    provider: string
+    jobId: string
+    status: 'queued' | 'processing' | 'completed' | 'failed'
+    modelUrl?: string
+    usdzUrl?: string
+    previewUrl?: string
+    generatedAt?: string
+  }
+}
+
+export interface V30DesignBotOutput {
+  concepts: V30DesignConcept[]
+  summary: string
+}

@@ -1,7 +1,0 @@
-src/
-tsconfig.json
-*.test.ts
-*.spec.ts
-.env
-.env.local
-.DS_Store
