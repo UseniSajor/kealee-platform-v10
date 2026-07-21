@@ -59,6 +59,10 @@
       "schedule": "0 14 * * *"
     },
     {
+      "path": "/api/cron/reddit",
+      "schedule": "0 15 * * 3,4"
+    },
+    {
       "path": "/api/cron/youtube",
       "schedule": "0 15 * * 3,5"
     }

@@ -105,7 +105,7 @@ export const REDDIT_POSTS: RedditPost[] = [
     subreddit: 'r/HomeImprovement',
     type: 'permit-guide',
     flairSuggestion: 'Advice',
-    scheduledDate: '2026-05-27',
+    scheduledDate: '2026-07-22',
     title: 'What actually happens when you pull a permit (and why it protects you at resale)',
     body: `A lot of homeowners skip permits to save time and money. Here's what you're actually trading away.
 
@@ -150,7 +150,7 @@ Happy to answer questions about specific scopes or jurisdictions — I work in c
     subreddit: 'r/washingtondc',
     type: 'local-insight',
     flairSuggestion: 'Question',
-    scheduledDate: '2026-05-28',
+    scheduledDate: '2026-07-23',
     title: 'DC building permit timelines post-DLCP transition — what are people actually seeing?',
     body: `DCRA officially transitioned to DLCP (Department of Licensing and Consumer Protection) and the permit process has been evolving.
 
@@ -180,7 +180,7 @@ For anyone navigating this — the DLCP permit portal is at permits.dc.gov. For 
     subreddit: 'r/nova',
     type: 'adu-roi',
     flairSuggestion: 'Discussion',
-    scheduledDate: '2026-06-03',
+    scheduledDate: '2026-07-29',
     title: 'ADU feasibility in Northern Virginia — what I\'ve learned from doing this regularly',
     body: `ADUs (Accessory Dwelling Units) are getting a lot of attention in NoVA right now, and I get questions about them constantly. Here's what actually matters for feasibility before you spend money on plans.
 
@@ -219,7 +219,7 @@ Happy to answer specific questions about jurisdictions or scopes.`,
     subreddit: 'r/HomeImprovement',
     type: 'educational',
     flairSuggestion: 'Advice',
-    scheduledDate: '2026-06-04',
+    scheduledDate: '2026-07-30',
     title: 'Getting wildly different contractor quotes? Here\'s why it happens and how to fix it',
     body: `"I got three quotes: $42,000, $61,000, and $79,000. Which one do I pick?"
 
@@ -260,7 +260,7 @@ The $79,000 quote wasn't necessarily dishonest — it might have included things
     subreddit: 'r/FirstTimeHomeBuyer',
     type: 'educational',
     flairSuggestion: 'Tips & Tricks',
-    scheduledDate: '2026-06-10',
+    scheduledDate: '2026-08-05',
     title: 'Bought a house that needs work? Read this before contacting contractors',
     body: `First renovation project is overwhelming. Here's the order of operations that saves money and avoids the most common mistakes.
 
@@ -311,7 +311,7 @@ Feel free to ask about specific projects — happy to help think through scope a
     subreddit: 'r/realestateinvesting',
     type: 'adu-roi',
     flairSuggestion: 'Discussion',
-    scheduledDate: '2026-06-11',
+    scheduledDate: '2026-08-06',
     title: 'ADU economics in the DC/MD/VA market — actual numbers from projects we\'ve done',
     body: `Sharing some actual project data from ADU work we've done in the DMV, because the "ADU ROI" content online tends to use national averages that don't reflect local market reality.
 
@@ -359,7 +359,7 @@ Happy to discuss specific scenarios.`,
     subreddit: 'r/maryland',
     type: 'local-insight',
     flairSuggestion: 'Discussion',
-    scheduledDate: '2026-06-17',
+    scheduledDate: '2026-08-12',
     title: 'Montgomery County permit process — what\'s changed and what to expect in 2026',
     body: `For anyone doing renovation work in Montgomery County, here's what the permit process looks like right now based on current projects.
 
@@ -403,7 +403,7 @@ Let me know if you have questions about specific project types.`,
     subreddit: 'r/HomeImprovement',
     type: 'educational',
     flairSuggestion: 'Resource',
-    scheduledDate: '2026-06-24',
+    scheduledDate: '2026-08-13',
     title: 'Scope of work template for homeowners (the document that makes contractor quotes comparable)',
     body: `The biggest source of confusion in contractor quoting is an undefined scope. Here's a template format that works.
 
@@ -470,7 +470,7 @@ Adjust the checkboxes for your specific project. The key is being explicit about
     subreddit: 'r/washingtondc',
     type: 'ama',
     flairSuggestion: 'AMA',
-    scheduledDate: '2026-07-01',
+    scheduledDate: '2026-08-19',
     title: 'We help DC-area homeowners with construction planning (permits, scopes, contractor selection). AMA.',
     body: `We run a construction planning service based in the DMV — we help homeowners figure out what their project needs before they hire a contractor. Mostly permits, scopes, cost estimates, and AI-generated concepts for renovation projects.
 
