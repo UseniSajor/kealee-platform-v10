@@ -23,6 +23,101 @@ not-yet-scoped follow-up work" below — the ~44 unapplied migration files,
 the Prisma-vs-Supabase DB target question, and the 7 unverified Storage
 buckets. None of these block the pricing bug, which is fully resolved.
 
+## ✅ Follow-up items 1 & 3 RESOLVED — 2026-07-21
+
+**Item 1 (migration reconciliation) was already far more resolved than this
+doc stated** — `list_migrations` shows 16 migrations applied directly against
+Supabase between 2026-07-17 and 2026-07-20 with no corresponding repo file
+(including the pricing-bug fix itself, `restore_id_defaults_gen_random_uuid`,
+and `missing_prisma_tables` on 2026-07-19, which closed most of the original
+~44-table gap). Re-diffed the repo's 15 migration files (was 14) against live
+state: 52/73 defined tables existed; the remaining 21 were genuinely
+unapplied, concentrated in `20260701_marketing_agency_layer.sql` (3 tables)
+and `20260720_marketing_sales_foundation.sql` (17 tables), plus one stray
+(`build_journey_assessments`). **Found and fixed a real bug while applying
+them**: both files declared `intake_lead_id`/`concept_intake_id` as `uuid`
+with a `REFERENCES public_intake_leads(id)` FK — but that column is actually
+`text` (a legacy artifact, not something to "fix" back to uuid), so the
+migrations would have failed with `42804 incompatible types` the moment
+anyone tried to apply them. Corrected both files to `text` and applied all
+three via Supabase MCP (now tracked in migration history). All 21 tables
+verified present.
+
+**Item 3 (Storage buckets) was actually mis-scoped in the original list.**
+Of the 7 "referenced in code" buckets listed below, 2 were false positives:
+`organic` is a marketing-channel-attribution enum value, and
+`kealee-bim-models` is only an example string in an unrelated AWS-S3 module's
+JSDoc comment — neither is a real Supabase bucket. The real canonical list
+(documented in `packages/storage/src/storage.ts`'s header, 7 buckets total)
+was missing `documents`, `permits`, `receipts`, `site-photos` (all with real
+call sites) and `profiles` (documented, zero call sites yet). Created all 5,
+public (matching every existing bucket — `uploadFile()` calls
+`getPublicUrl()` unconditionally, never `createSignedUrl()`, so a private
+bucket would silently hand back a broken URL instead of erroring). Migration
+checked in at `packages/database/supabase/migrations/20260721_missing_storage_buckets.sql`.
+**Separate, not fixed here**: the storage.ts header comment claims
+`documents`/`permits`/`receipts`/`designs` should be *private* — worth a real
+fix later (switch reads to `getSignedUrl()`), since right now contracts,
+receipts, and permit documents sit in public buckets.
+
+## Item 2 (Prisma vs. Supabase) — now has a real answer, and it's worse than "which DB does Prisma use"
+
+Confirmed `web-main`'s `DATABASE_URL` targets Railway's bundled Postgres
+(`postgres.railway.internal`), not Supabase — that part of the original
+question is settled. But investigating further surfaced something the
+original framing missed: **this isn't one app pointed at the wrong DB, it's
+different apps in the monorepo using different clients for tables with the
+same names.**
+
+`apps/m-permits-inspections` queries `Permit`, `Inspection`,
+`PermitDocument`, etc. **directly via `supabase.from(...)`**
+(`NEXT_PUBLIC_SUPABASE_URL` in its `.env.local` points at this exact Supabase
+project, `rkreqfpkxavqpsqexbfs`) — while `packages/database/prisma/schema.prisma`
+defines its own `model Permit` / `model Inspection`, read/written via Prisma
+against Railway by web-main and presumably other services. Checked live data:
+`public."Permit"` and `public."Inspection"` are both **empty (0 rows)** in
+Supabase, and `public."PermitDocument"` doesn't exist there at all despite
+being queried — so this specific app does not appear to be live against
+Supabase in production yet. This is a **latent trap, not an active incident**:
+if `m-permits-inspections` gets deployed pointing at Supabase while other
+services keep writing permits via Prisma/Railway, the two would silently
+diverge with zero cross-visibility — no error, just two permit datasets that
+never see each other.
+
+Broader picture from spot-checking a few Supabase-side Prisma-shaped tables:
+`Org` = 1 row, `Account` = 0, `AuditLog` = 0, `RevenueProduct` = 4 (matches
+the `add_revenue_product_catalog` migration applied 2026-07-20 — looks like a
+manually-seeded copy, not live transaction data). `AutonomousRun` and
+`ProjectOutput` (a core model per `docs/decisions/architecture.md`) don't
+exist in Supabase **at all**, confirming Supabase's camelCase mirror is
+stale/partial, not a live replica — new Prisma models get created on Railway
+and only sometimes get manually replayed into Supabase.
+
+**Recommendation: consolidate onto Supabase's own Postgres as the single
+source of truth**, and point Prisma's `DATABASE_URL` there instead of
+Railway's bundled instance. Reasoning:
+- Supabase already hosts Storage, the MCP tooling, and (per the table count —
+  397 snake_case tables with real, growing usage) the large majority of the
+  application's actual live data.
+- The current split means anything that logically correlates data across a
+  Supabase-queried table (e.g. `public_intake_leads`) and a Prisma-queried
+  table (e.g. `RevenueTransaction`) — which `apps/web-main/lib/revenue-fulfillment.ts`
+  does today, joining on `intakeId` as a plain string, not a DB-level FK — is
+  trusting an assumption that only holds if both actually live in the same
+  physical database. Today they don't; the app works because it correlates
+  via string IDs across two databases rather than a real join, but that's
+  fragile and error-prone by design, not something to keep building on.
+- Railway's Postgres has no distinguishing integration (no Storage, no MCP,
+  no direct dashboard access this session used) beyond being where
+  `DATABASE_URL` happens to point today.
+
+**This was not executed.** It's a genuinely high-risk, hard-to-reverse
+change (switching `DATABASE_URL` for services already in production,
+verifying every app that queries Supabase directly for Prisma-shaped tables
+against the real target, migrating whatever real data lives on Railway
+first). Needs an explicit go-ahead and a proper migration plan, not a
+same-session cutover.
+
 ---
 
 # Session Handoff — Supabase schema drift + pricing bug — 2026-07-17 (historical — see resolution above)

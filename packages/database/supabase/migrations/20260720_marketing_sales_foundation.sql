@@ -6,7 +6,7 @@ CREATE EXTENSION IF NOT EXISTS pgcrypto;
 CREATE TABLE IF NOT EXISTS public.marketing_contacts (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   organization_id uuid NOT NULL,
-  intake_lead_id uuid REFERENCES public.public_intake_leads(id) ON DELETE SET NULL,
+  intake_lead_id text REFERENCES public.public_intake_leads(id) ON DELETE SET NULL,
   normalized_email text,
   normalized_phone text,
   company_name text,
@@ -187,7 +187,7 @@ CREATE TABLE IF NOT EXISTS public.marketing_consents (
 CREATE TABLE IF NOT EXISTS public.marketing_attributions (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   organization_id uuid NOT NULL,
-  intake_lead_id uuid REFERENCES public.public_intake_leads(id) ON DELETE CASCADE,
+  intake_lead_id text REFERENCES public.public_intake_leads(id) ON DELETE CASCADE,
   contact_id uuid REFERENCES public.marketing_contacts(id) ON DELETE SET NULL,
   campaign_id uuid REFERENCES public.marketing_campaigns_v2(id) ON DELETE SET NULL,
   referral_id uuid,
@@ -228,7 +228,7 @@ CREATE TABLE IF NOT EXISTS public.marketing_referrals (
   organization_id uuid NOT NULL,
   partner_id uuid NOT NULL REFERENCES public.marketing_partners(id),
   contact_id uuid REFERENCES public.marketing_contacts(id),
-  intake_lead_id uuid REFERENCES public.public_intake_leads(id),
+  intake_lead_id text REFERENCES public.public_intake_leads(id),
   status text NOT NULL DEFAULT 'captured' CHECK (status IN ('captured', 'qualified', 'converted', 'rejected', 'fraud_review')),
   attributed_revenue_cents integer NOT NULL DEFAULT 0,
   created_at timestamptz NOT NULL DEFAULT now(),

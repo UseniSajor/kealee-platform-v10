@@ -28,7 +28,7 @@ CREATE TABLE IF NOT EXISTS build_journey_assessments (
   has_contractor        BOOLEAN     NOT NULL DEFAULT false,
 
   -- Link to an existing concept intake if they have one
-  concept_intake_id     UUID        REFERENCES public_intake_leads(id) ON DELETE SET NULL,
+  concept_intake_id     TEXT        REFERENCES public_intake_leads(id) ON DELETE SET NULL,
 
   -- Routing outcome — what Kealee recommended as next step
   -- Values: 'design_concept' | 'professional_drawings' | 'permit_filing' | 'contractor_match' | 'build_management'
@@ -37,7 +37,7 @@ CREATE TABLE IF NOT EXISTS build_journey_assessments (
   -- Conversion tracking
   -- status: 'assessed' → 'converted' (clicked CTA) | 'abandoned'
   status                TEXT        NOT NULL DEFAULT 'assessed',
-  converted_intake_id   UUID        REFERENCES public_intake_leads(id) ON DELETE SET NULL,
+  converted_intake_id   TEXT        REFERENCES public_intake_leads(id) ON DELETE SET NULL,
 
   source                TEXT        NOT NULL DEFAULT 'build-page'
 );
