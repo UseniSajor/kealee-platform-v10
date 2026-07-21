@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getSupabaseAdmin } from '@/lib/supabase-server'
+import { storeContactInquiry } from '@/lib/contact-inquiry-store'
 
 export const dynamic = 'force-dynamic'
 
@@ -23,9 +23,8 @@ export async function POST(req: NextRequest) {
     }
 
     try {
-      const supabase = getSupabaseAdmin()
-      await supabase.from('contact_inquiries').insert({
-        name:        name || null,
+      const saved = await storeContactInquiry({
+        name:        name || 'Prospective client',
         email,
         phone:       phone || null,
         message:     `Soft capture — ${service || source || 'unknown flow'}`,
@@ -37,6 +36,7 @@ export async function POST(req: NextRequest) {
           userAgent:   req.headers.get('user-agent') ?? null,
         },
       })
+      if (!saved) console.warn('[soft-capture] lead could not be persisted')
     } catch {
       // DB unavailable — swallow silently, still log
       console.log('[soft-capture] DB write skipped:', { email, service, source })

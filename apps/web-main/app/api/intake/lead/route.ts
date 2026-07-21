@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getSupabaseAdmin } from '@/lib/supabase-server'
+import { storeContactInquiry } from '@/lib/contact-inquiry-store'
 
 export const dynamic = 'force-dynamic'
 
@@ -19,22 +19,16 @@ export async function POST(req: NextRequest) {
     let saved = false
 
     try {
-      const supabase = getSupabaseAdmin()
-      const { error: insertErr } = await supabase
-        .from('contact_inquiries')
-        .insert({
+      saved = await storeContactInquiry({
           name,
           email,
           phone: phone ?? null,
           message: description,
-          budget_range: budget ?? null,
+          budgetRange: budget ?? null,
           timeline: timeline ?? null,
           source: 'contractor-inquiry',
           metadata: { contractorId: contractorId ?? null },
         })
-
-      if (!insertErr) saved = true
-      else console.warn('[lead] Supabase insert failed:', insertErr.message)
     } catch (dbErr) {
       console.warn('[lead] DB unavailable, logging lead only:', dbErr)
     }

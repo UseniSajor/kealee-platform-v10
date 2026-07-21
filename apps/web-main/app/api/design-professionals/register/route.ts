@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getSupabaseAdmin } from '@/lib/supabase-server'
+import { storeContactInquiry } from '@/lib/contact-inquiry-store'
 
 export const dynamic = 'force-dynamic'
 
@@ -51,8 +51,7 @@ export async function POST(req: NextRequest) {
     let saved = false
 
     try {
-      const supabase = getSupabaseAdmin()
-      const { error: insertErr } = await supabase.from('contact_inquiries').insert({
+      saved = await storeContactInquiry({
         name: `${firstName} ${lastName}`.trim(),
         email,
         phone: phone ?? null,
@@ -70,9 +69,6 @@ export async function POST(req: NextRequest) {
           licenseDocumentUrls: licenseDocumentUrls ?? [],
         },
       })
-
-      if (!insertErr) saved = true
-      else console.warn('[design-pro] Supabase insert failed:', insertErr.message)
     } catch (dbErr) {
       console.warn('[design-pro] DB unavailable, logging application only:', dbErr)
     }
