@@ -9,6 +9,7 @@ import {
   KEALEE_SERVICE_AREAS,
   KEALEE_SITE_URL,
 } from '@/lib/site/contact'
+import { REVENUE_PRODUCT_CATALOG } from '@/lib/revenue-product-catalog'
 
 type JsonLd = Record<string, unknown>
 
@@ -18,7 +19,7 @@ export function buildOrganizationJsonLd(): JsonLd {
     '@type': 'Organization',
     '@id': `${KEALEE_SITE_URL}/#organization`,
     name: 'Kealee Platform',
-    legalName: 'Kealee Platform LLC',
+    legalName: 'Kealee Services LLC',
     url: KEALEE_SITE_URL,
     logo: `${KEALEE_SITE_URL}/media/service-photos/home-design.jpg`,
     email: KEALEE_EMAIL,
@@ -99,42 +100,20 @@ export function buildServiceJsonLd(): JsonLd {
     hasOfferCatalog: {
       '@type': 'OfferCatalog',
       name: 'Kealee project journey',
-      itemListElement: [
-        {
-          '@type': 'Offer',
-          itemOffered: {
-            '@type': 'Service',
-            name: 'AI Design Concepts',
-            url: `${KEALEE_SITE_URL}/concept`,
-          },
-        },
-        {
-          '@type': 'Offer',
-          itemOffered: {
-            '@type': 'Service',
-            name: 'Permit Analysis & Filing',
-            url: `${KEALEE_SITE_URL}/permits`,
-          },
-        },
-        {
-          '@type': 'Offer',
-          itemOffered: {
-            '@type': 'Service',
-            name: 'Cost Estimation',
-            url: `${KEALEE_SITE_URL}/estimate`,
-          },
-        },
-        {
-          '@type': 'Offer',
-          itemOffered: {
-            '@type': 'Service',
-            name: 'Contractor Marketplace',
-            url: `${KEALEE_SITE_URL}/marketplace`,
-          },
-        },
-      ],
+      itemListElement: Object.values(REVENUE_PRODUCT_CATALOG).map(product => ({
+        '@type': 'Offer',
+        price: (product.priceCents / 100).toFixed(2),
+        priceCurrency: 'USD',
+        url: `${KEALEE_SITE_URL}/products/${product.productKey}`,
+        itemOffered: { '@type': 'Service', name: product.name },
+        description: `Preliminary planning service. Excludes: ${product.exclusions.join(', ')}.`,
+      })),
     },
   }
+}
+
+export function buildBreadcrumbJsonLd(items: Array<{ name: string; url: string }>): JsonLd {
+  return { '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: items.map((item, index) => ({ '@type': 'ListItem', position: index + 1, name: item.name, item: item.url })) }
 }
 
 export function buildGlobalJsonLdGraph(): JsonLd {

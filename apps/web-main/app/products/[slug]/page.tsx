@@ -3,13 +3,19 @@ import Link from 'next/link'
 import { ArrowLeft, ArrowRight, CheckCircle, Clock, ShieldCheck, Star, Users } from 'lucide-react'
 import { getProduct, getAllProductSlugs } from '@/lib/products'
 import ProductCheckoutButton from '@/components/ProductCheckoutButton'
+import { getRevenueProduct, REVENUE_PRODUCT_CATALOG, type RevenueProductConfig } from '@/lib/revenue-product-catalog'
 
 export function generateStaticParams() {
-  return getAllProductSlugs().map(slug => ({ slug }))
+  return [...new Set([...getAllProductSlugs(), ...Object.keys(REVENUE_PRODUCT_CATALOG)])].map(slug => ({ slug }))
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
+  const revenueProduct = getRevenueProduct(slug)
+  if (revenueProduct) return {
+    title: `${revenueProduct.name} — Kealee`,
+    description: `Plain-language project planning for ${revenueProduct.customerType}s, including preliminary analysis and clearly stated professional boundaries.`,
+  }
   const product = getProduct(slug)
   if (!product) return { title: 'Product not found' }
   return {
@@ -23,6 +29,8 @@ const NEEDS_DISCLAIMER = ['ai-design', 'landscape', 'architectural']
 
 export default async function ProductPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
+  const revenueProduct = getRevenueProduct(slug)
+  if (revenueProduct) return <RevenueProductPage product={revenueProduct} />
   const product = getProduct(slug)
   if (!product) notFound()
 
@@ -375,6 +383,59 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
 
     </div>
   )
+}
+
+const CAPABILITY_LABELS: Record<string, string> = {
+  design: 'Design direction and concept options',
+  estimate: 'Expected cost range and major cost groups',
+  zoning: 'Property and zoning considerations',
+  permit: 'Plain-language permit roadmap',
+  contractor: 'Contractor-selection guidance',
+  sales: 'Scope and decision support',
+  project: 'Prioritized homeowner next steps',
+}
+
+function RevenueProductPage({ product }: { product: RevenueProductConfig }) {
+  const price = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(product.priceCents / 100)
+  const jsonLd = {
+    '@context': 'https://schema.org', '@type': 'Service', name: product.name,
+    provider: { '@type': 'Organization', name: 'Kealee Services LLC', url: 'https://kealee.com' },
+    audience: { '@type': 'Audience', audienceType: product.customerType },
+    offers: { '@type': 'Offer', price: (product.priceCents / 100).toFixed(2), priceCurrency: 'USD', availability: 'https://schema.org/InStock' },
+  }
+  return <main className="min-h-screen bg-slate-50">
+    <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+    <section className="bg-[#10213f] px-4 py-16 text-white sm:py-20">
+      <div className="mx-auto max-w-4xl">
+        <Link href="/products" className="inline-flex items-center gap-2 text-sm text-white/70 hover:text-white"><ArrowLeft className="h-4 w-4" /> All planning services</Link>
+        <p className="mt-10 text-xs font-bold uppercase tracking-[0.2em] text-orange-300">Preliminary project planning</p>
+        <h1 className="mt-3 max-w-3xl text-4xl font-black sm:text-5xl">{product.name}</h1>
+        <p className="mt-5 max-w-2xl text-lg leading-8 text-slate-200">Bring design, cost, property, and approval questions into one understandable homeowner plan before committing to construction.</p>
+        <div className="mt-8 flex flex-wrap items-center gap-5">
+          <Link href={`/get-started?product=${product.productKey}`} className="inline-flex items-center gap-2 rounded-xl bg-orange-600 px-6 py-3.5 font-bold text-white hover:bg-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-300">Plan my project <ArrowRight className="h-5 w-5" /></Link>
+          <span className="text-2xl font-black">{price}</span>
+          <span className="text-sm text-slate-300">one-time · target delivery within {product.fulfillmentSlaHours} hours</span>
+        </div>
+      </div>
+    </section>
+    <div className="mx-auto grid max-w-4xl gap-6 px-4 py-12 md:grid-cols-2">
+      <section aria-labelledby="included-heading" className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <h2 id="included-heading" className="text-xl font-bold text-slate-900">What you receive</h2>
+        <ul className="mt-5 space-y-3">{product.botTypes.map(capability => <li key={capability} className="flex gap-3 text-sm leading-6 text-slate-700"><CheckCircle className="mt-1 h-4 w-4 shrink-0 text-emerald-600" />{CAPABILITY_LABELS[capability] ?? 'Project planning support'}</li>)}</ul>
+      </section>
+      <section aria-labelledby="boundaries-heading" className="rounded-2xl border border-amber-200 bg-amber-50 p-6">
+        <h2 id="boundaries-heading" className="text-xl font-bold text-slate-900">What this does not claim</h2>
+        <p className="mt-2 text-sm leading-6 text-slate-700">These are preliminary planning materials. Qualified professionals and your jurisdiction remain responsible for regulated decisions.</p>
+        <ul className="mt-5 space-y-3">{product.exclusions.map(item => <li key={item} className="flex gap-3 text-sm text-slate-700"><ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-amber-700" />No {item}</li>)}</ul>
+      </section>
+      <section aria-labelledby="next-heading" className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm md:col-span-2">
+        <h2 id="next-heading" className="text-xl font-bold text-slate-900">What happens next</h2>
+        <ol className="mt-5 grid gap-4 sm:grid-cols-3">
+          {['Tell us about your property and goals', 'Review your recommended scope before payment', 'Receive one homeowner report with prioritized next steps'].map((step, index) => <li key={step} className="rounded-xl bg-slate-50 p-4 text-sm leading-6 text-slate-700"><span className="mb-2 block font-bold text-orange-600">Step {index + 1}</span>{step}</li>)}
+        </ol>
+      </section>
+    </div>
+  </main>
 }
 
 /** Darkens a hex color by ~25% for gradient start */

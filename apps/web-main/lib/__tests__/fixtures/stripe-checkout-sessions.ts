@@ -14,7 +14,11 @@ export function checkoutSessionFixture(index: number) {
     object: 'checkout.session',
     amount_total: 55000,
     payment_status: 'paid',
-    metadata: { source: fixture.source, intakeId: `intake-${index}`, productKey: fixture.productKey, projectPath: fixture.projectPath },
+    metadata: {
+      source: fixture.source,
+      intakeId: `intake-${index}`,
+      productKey: 'productKey' in fixture ? fixture.productKey : undefined,
+      projectPath: fixture.projectPath,
+    },
   }
 }
-

@@ -1,3 +1,5 @@
+import { REVENUE_PRODUCT_CATALOG } from '../../../lib/revenue-product-catalog'
+
 const serviceFacts = {
   '@context': 'https://schema.org',
   '@type': 'Organization',
@@ -10,13 +12,12 @@ const serviceFacts = {
     'Loudoun County, Virginia', 'Prince William County, Virginia',
   ],
   audience: ['Homeowners', 'Contractors', 'Property developers'],
-  serviceCatalog: [
-    { name: 'Preliminary design concepts', url: 'https://kealee.com/concept', boundary: 'Pre-design; not permit-ready drawings' },
-    { name: 'Construction cost estimation', url: 'https://kealee.com/estimate', boundary: 'Planning estimate unless professional certification is explicitly included' },
-    { name: 'Permit-path services', url: 'https://kealee.com/permits', boundary: 'Requirements must be verified with the responsible jurisdiction' },
-    { name: 'Professional design coordination', url: 'https://kealee.com/design-services' },
-    { name: 'Contractor matching', url: 'https://kealee.com/contractors', boundary: 'On-site work is performed by the contractor of record' },
-  ],
+  serviceCatalog: Object.values(REVENUE_PRODUCT_CATALOG).map(product => ({
+    key: product.productKey, name: product.name, priceCents: product.priceCents,
+    deliveryHours: product.fulfillmentSlaHours, exclusions: product.exclusions,
+    url: `https://kealee.com/products/${product.productKey}`,
+    boundary: 'Preliminary planning output unless a qualified professional explicitly supplies a reviewed, stamped, sealed, or certified artifact.',
+  })),
   lastReviewed: '2026-07-20',
   canonicalFacts: 'https://kealee.com/llms-full.txt',
 }

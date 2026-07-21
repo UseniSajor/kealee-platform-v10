@@ -13,6 +13,15 @@ type EventName =
   | 'lead_submitted'
   | 'checkout_started'
   | 'purchase'
+  | 'qualified_start'
+  | 'intake_completion'
+  | 'upload_completion'
+  | 'checkout_creation'
+  | 'payment_completion'
+  | 'first_useful_deliverable'
+  | 'revision_request'
+  | 'consultation_booking'
+  | 'next_product_conversion'
 
 declare global {
   interface Window {

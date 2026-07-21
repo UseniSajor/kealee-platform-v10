@@ -14,6 +14,7 @@ import { cookies } from 'next/headers'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { SERVICE_DELIVERABLES } from '@/lib/service-deliverables'
 import type { Concept, BOMItem, PermitItem } from '@/lib/types'
+import { resolveOwnerDeliveryState } from '@/lib/owner-portal-presentation'
 
 export const dynamic = 'force-dynamic'
 
@@ -132,6 +133,7 @@ export async function GET(
       phone:    intake.contact_phone ? String(intake.contact_phone) : undefined,
       tier,
       status,
+      deliveryState: resolveOwnerDeliveryState(formData),
 
       // Design concept (style, palette, features)
       designConcept: conceptOutput?.designConcept as Concept['designConcept'],

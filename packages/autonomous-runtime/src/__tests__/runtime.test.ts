@@ -145,4 +145,21 @@ describe('AutonomousRuntime', () => {
     await store.upsertMemory({ scope: 'project', key: 'old', projectId: 'p1', content: {}, expiresAt: '2020-01-01T00:00:00Z' })
     expect(await store.findMemory({ scope: 'project', projectId: 'p1' })).toHaveLength(1)
   })
+
+  it('deduplicates external worker completion events', async () => {
+    const store = new InMemoryRuntimeStore(); let calls = 0
+    const runtime = new AutonomousRuntime({ store, capabilities: { a: async () => ++calls === 1 ? { status: 'awaiting_input' } : { status: 'complete' } } })
+    const started = await runtime.start({ ...goal, successCriteria: [] }, { version: 1, steps: [{ key: 'a', title: 'A', capability: 'a', dependsOn: [] }] }, 'external-event')
+    const once = await runtime.completeExternalStep(started.runId, 'a', { status: 'complete' }, 'job:1:complete')
+    const twice = await runtime.completeExternalStep(started.runId, 'a', { status: 'complete' }, 'job:1:complete')
+    expect(once.status).toBe('complete'); expect(twice.status).toBe('complete')
+    expect(store.events.filter(event => event.idempotencyKey === 'job:1:complete')).toHaveLength(1)
+  })
+
+  it('runs a compensating action before dead-lettering a fatal step', async () => {
+    const compensate = vi.fn(async () => ({ status: 'complete' as const }))
+    const runtime = new AutonomousRuntime({ store: new InMemoryRuntimeStore(), capabilities: { a: async () => ({ status: 'fatal_failure', message: 'fatal' }), undo: compensate } })
+    const result = await runtime.start({ ...goal, successCriteria: [] }, { version: 1, steps: [{ key: 'a', title: 'A', capability: 'a', dependsOn: [], compensationCapability: 'undo' }] }, 'compensate')
+    expect(result.status).toBe('failed'); expect(result.deadLetterReason).toBe('fatal'); expect(compensate).toHaveBeenCalledOnce()
+  })
 })

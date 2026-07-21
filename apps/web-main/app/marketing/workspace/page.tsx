@@ -25,6 +25,13 @@ interface Asset {
   service_type?: string
 }
 
+interface MarketingTask {
+  id: string
+  title: string
+  status: string
+  due_at?: string
+}
+
 export default function MarketingWorkspacePage() {
   const [tab, setTab] = useState<Tab>('overview')
   const [loading, setLoading] = useState(true)
@@ -33,7 +40,7 @@ export default function MarketingWorkspacePage() {
   const [pending, setPending] = useState<Asset[]>([])
   const [leadSummary, setLeadSummary] = useState<Record<string, unknown>>({})
   const [analytics, setAnalytics] = useState<Record<string, unknown>>({})
-  const [tasks, setTasks] = useState<unknown[]>([])
+  const [tasks, setTasks] = useState<MarketingTask[]>([])
   const [generating, setGenerating] = useState(false)
   const [genError, setGenError] = useState<string | null>(null)
 
@@ -246,7 +253,7 @@ export default function MarketingWorkspacePage() {
               <p className="text-slate-500 text-sm">No open tasks.</p>
             ) : (
               <ul className="space-y-2">
-                {tasks.map((t: { id: string; title: string; status: string; due_at?: string }) => (
+                {tasks.map((t) => (
                   <li key={t.id} className="border rounded-lg p-3 text-sm flex justify-between">
                     <span>{t.title}</span>
                     <span className="text-slate-400">{t.status}</span>

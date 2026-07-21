@@ -7,11 +7,11 @@
  *   POST /api/agents/permit    → /api/v1/agents/permit/execute
  *   POST /api/agents/contractor → /api/v1/agents/contractor/execute
  *
- * Falls back to a direct Claude call (model from @kealee/core-rules AI_MODELS)
- * when INTERNAL_API_URL is not set.
+ * Falls back to OpenAI first, then Claude, when INTERNAL_API_URL is not set.
  */
 
 import { NextRequest, NextResponse } from 'next/server'
+import OpenAI from 'openai'
 import Anthropic from '@anthropic-ai/sdk'
 import { AI_MODELS } from '@kealee/core-rules'
 
@@ -93,18 +93,39 @@ Respond ONLY with valid JSON in this exact shape:
 }`,
 }
 
+function staticFallback() {
+  return {
+    success: true,
+    summary: 'Our team has reviewed projects like yours and is ready to help. Fill in your details to get started.',
+    confidence: 0.75,
+    risks: ['Permit requirements vary by jurisdiction', 'Material costs fluctuate with market conditions', 'Timeline depends on contractor availability'],
+    recommendation: 'Provide your project details so we can give you a precise analysis.',
+    nextStep: 'Complete the intake form to receive your personalized project plan.',
+  }
+}
+
+function parseAgentJson(raw: string) {
+  const jsonMatch = raw.match(/\{[\s\S]*\}/)
+  if (!jsonMatch) throw new Error('No JSON in agent response')
+  return JSON.parse(jsonMatch[0])
+}
+
+async function callOpenAIPrimary(agentType: string, body: Record<string, unknown>) {
+  const apiKey = process.env.OPENAI_API_KEY
+  if (!apiKey) throw new Error('OPENAI_API_KEY is not configured')
+  const client = new OpenAI({ apiKey })
+  const prompt = (AGENT_PROMPTS[agentType] ?? AGENT_PROMPTS.design)(body)
+  const completion = await client.chat.completions.create({
+    model: process.env.OPENAI_AGENT_MODEL ?? 'gpt-5.6-sol',
+    messages: [{ role: 'user', content: prompt }],
+    response_format: { type: 'json_object' },
+  })
+  return parseAgentJson(completion.choices[0]?.message?.content ?? '')
+}
+
 async function callClaudeFallback(agentType: string, body: Record<string, unknown>) {
   const apiKey = process.env.ANTHROPIC_API_KEY
-  if (!apiKey) {
-    return {
-      success: true,
-      summary: 'Our team has reviewed projects like yours and is ready to help. Fill in your details to get started.',
-      confidence: 0.75,
-      risks: ['Permit requirements vary by jurisdiction', 'Material costs fluctuate with market conditions', 'Timeline depends on contractor availability'],
-      recommendation: 'Provide your project details so we can give you a precise analysis.',
-      nextStep: 'Complete the intake form to receive your personalized project plan.',
-    }
-  }
+  if (!apiKey) return staticFallback()
 
   const client = new Anthropic({ apiKey })
   const promptFn = AGENT_PROMPTS[agentType] ?? AGENT_PROMPTS.design
@@ -117,9 +138,7 @@ async function callClaudeFallback(agentType: string, body: Record<string, unknow
   })
 
   const raw = message.content[0].type === 'text' ? message.content[0].text : ''
-  const jsonMatch = raw.match(/\{[\s\S]*\}/)
-  if (!jsonMatch) throw new Error('No JSON in Claude response')
-  return JSON.parse(jsonMatch[0])
+  return parseAgentJson(raw)
 }
 
 export async function POST(
@@ -132,7 +151,18 @@ export async function POST(
     return NextResponse.json({ error: `Unknown agent type: ${agentType}` }, { status: 400 })
   }
 
-  const body = await req.json()
+  const rawBody = await req.text()
+  if (!rawBody.trim()) {
+    return NextResponse.json({ error: 'A JSON request body is required.' }, { status: 400 })
+  }
+  let body: Record<string, unknown>
+  try {
+    const parsed = JSON.parse(rawBody)
+    if (!parsed || Array.isArray(parsed) || typeof parsed !== 'object') throw new Error('body must be an object')
+    body = parsed as Record<string, unknown>
+  } catch {
+    return NextResponse.json({ error: 'The request body must be a valid JSON object.' }, { status: 400 })
+  }
 
   // Try backend proxy first
   if (API) {
@@ -146,16 +176,21 @@ export async function POST(
       const data = await upstream.json()
       return NextResponse.json(data, { status: upstream.status })
     } catch (err: any) {
-      console.error(`[agents/${agentType}] backend proxy failed, falling back to Claude:`, err?.message)
+      console.error(`[agents/${agentType}] backend proxy failed, using provider fallback:`, err?.message)
     }
   }
 
-  // Fallback: call Claude directly
+  // Provider-neutral fallback: OpenAI is primary; Claude is retained as backup.
   try {
-    const result = await callClaudeFallback(agentType, body)
+    const result = await callOpenAIPrimary(agentType, body)
     return NextResponse.json(result)
   } catch (err: any) {
-    console.error(`[agents/${agentType}] Claude fallback error:`, err?.message)
-    return NextResponse.json({ error: 'Agent unavailable' }, { status: 503 })
+    console.error(`[agents/${agentType}] OpenAI primary unavailable; trying Claude backup:`, err?.message)
+    try {
+      return NextResponse.json(await callClaudeFallback(agentType, body))
+    } catch (fallbackError: any) {
+      console.error(`[agents/${agentType}] Claude backup error:`, fallbackError?.message)
+      return NextResponse.json({ error: 'Project insight is temporarily unavailable.' }, { status: 503 })
+    }
   }
 }

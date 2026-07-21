@@ -13,7 +13,10 @@ export async function ensureAutonomousFulfillmentRun(input: {
   return store.createOrLoadRun({
     id: `fulfillment:${input.intakeId}`,
     objective: `Deliver the purchased ${input.productKey} homeowner package`,
-    successCriteria: [{ key: 'homeowner-deliverable', description: 'Evidence-backed homeowner report is published and notification recorded', required: true, evidenceTypes: ['published-deliverable', 'notification-receipt'] }],
+    successCriteria: [
+      { key: 'homeowner-deliverable', description: 'Evidence-backed homeowner report is published', required: true, evidenceTypes: ['published-deliverable'] },
+      { key: 'customer-notified', description: 'Customer notification is recorded', required: true, evidenceTypes: ['notification-receipt'] },
+    ],
     constraints: {
       intakeId: input.intakeId, productKey: input.productKey,
       workflowTemplateId: input.workflowTemplateId,
@@ -22,6 +25,5 @@ export async function ensureAutonomousFulfillmentRun(input: {
     },
     authorityPolicy: { deniedCapabilities: ['permit.filing.authorize'], professionalActionsRequireApproval: true },
     budget: { maxSteps: 30, tokenLimit: 200_000, costLimitCents: 5_000, timeLimitMs: 4 * 24 * 60 * 60 * 1000 },
-  }, fulfillmentPlan(input.botTypes), `stripe:${input.stripeSessionId}`)
+  }, `stripe:${input.stripeSessionId}`, fulfillmentPlan(input.botTypes, { requireProfessionalReview: input.productKey === 'certified_estimate' }))
 }
-

@@ -196,7 +196,10 @@ async function syncV30OutputsToIntake(
   const formData = (intake?.form_data as Record<string, unknown>) ?? {}
   const outputs = Object.fromEntries(executions.filter(e => e.outputData).map(e => [e.botType, e.outputData]))
   const failed = executions.filter(e => e.status === 'FAILED').map(e => e.botType)
-  const status = failed.length === 0 ? 'completed' : failed.length < executions.length ? 'partially_completed' : 'failed'
+  const professionalReviewRequired = intake?.project_path === 'certified_estimate' && !formData.professionalReviewEvidence
+  const status = failed.length === 0
+    ? professionalReviewRequired ? 'partially_completed' : 'completed'
+    : failed.length < executions.length ? 'partially_completed' : 'failed'
   await supabase.from('public_intake_leads').update({
     status: status === 'completed' ? 'concept_ready' : 'processing',
     form_data: {
@@ -207,18 +210,21 @@ async function syncV30OutputsToIntake(
       permitOutput: outputs.permit ?? formData.permitOutput,
       designOutput: outputs.design ?? formData.designOutput,
       fulfillmentStatus: status,
+      professionalReviewStatus: professionalReviewRequired ? 'required' : formData.professionalReviewStatus,
       fulfillmentFailedBotTypes: failed,
       fulfillmentCompletedAt: new Date().toISOString(),
     },
   }).eq('id', intakeId)
-  const notificationSent = await notifyCustomerDeliverable({
+  const notificationSent = professionalReviewRequired ? false : await notifyCustomerDeliverable({
     intakeId,
     email: typeof intake?.contact_email === 'string' ? intake.contact_email : undefined,
     clientName: typeof intake?.client_name === 'string' ? intake.client_name : undefined,
     projectPath: typeof intake?.project_path === 'string' ? intake.project_path : undefined,
     partial: status !== 'completed',
   })
-  await syncAutonomousProjection(String(formData.autonomousRunId ?? ''), executions, status, notificationSent)
+  await syncAutonomousProjection(
+    String(formData.autonomousRunId ?? ''), intakeId, executions, status, notificationSent, professionalReviewRequired,
+  )
   await prismaRevenueStatus(intakeId, status)
 }
 
@@ -241,9 +247,11 @@ async function notifyCustomerDeliverable(input: { intakeId: string; email?: stri
 
 async function syncAutonomousProjection(
   runId: string,
+  intakeId: string,
   executions: Array<{ botType: string; status: string; outputData?: Record<string, unknown> }>,
   fulfillmentStatus: string,
   notificationSent: boolean,
+  professionalReviewRequired: boolean,
 ): Promise<void> {
   if (!runId) return
   const { prisma } = await import('@kealee/database')
@@ -263,14 +271,21 @@ async function syncAutonomousProjection(
           completedAt: new Date(), errorMessage: execution.status === 'FAILED' ? `${execution.botType} execution failed` : null,
         } })
       }
-      const reportReady = fulfillmentStatus === 'completed' || fulfillmentStatus === 'partially_completed'
+      if (professionalReviewRequired) {
+        await tx.autonomousStep.updateMany({
+          where: { runId, capability: 'professional.review' },
+          data: { status: 'AWAITING_APPROVAL' },
+        })
+      }
+      const reportReady = !professionalReviewRequired && (fulfillmentStatus === 'completed' || fulfillmentStatus === 'partially_completed')
       if (reportReady) {
         await tx.autonomousStep.updateMany({ where: { runId, capability: { in: ['deliverable.assemble', 'deliverable.publish'] } }, data: { status: 'COMPLETE', completedAt: new Date() } })
         if (notificationSent) await tx.autonomousStep.updateMany({ where: { runId, capability: 'customer.notify' }, data: { status: 'COMPLETE', completedAt: new Date() } })
-        await tx.autonomousEvidence.create({ data: { runId, evidenceType: 'published-deliverable', sourceUri: `/concept/${runId}`, verifiedAt: new Date(), payload: { fulfillmentStatus } } })
+        await tx.autonomousEvidence.create({ data: { runId, evidenceType: 'published-deliverable', sourceUri: `/concept/${intakeId}`, verifiedAt: new Date(), payload: { fulfillmentStatus } } })
+        if (notificationSent) await tx.autonomousEvidence.create({ data: { runId, evidenceType: 'notification-receipt', verifiedAt: new Date(), payload: { channel: 'email' } } })
       }
       await tx.autonomousRun.update({ where: { id: runId }, data: {
-        status: fulfillmentStatus === 'completed' && notificationSent ? 'COMPLETE' : reportReady ? 'PARTIAL' : 'FAILED',
+        status: professionalReviewRequired ? 'AWAITING_APPROVAL' : fulfillmentStatus === 'completed' && notificationSent ? 'COMPLETE' : reportReady ? 'PARTIAL' : 'FAILED',
         completedAt: reportReady ? new Date() : undefined,
       } })
       if (fulfillmentStatus === 'completed' && notificationSent) {

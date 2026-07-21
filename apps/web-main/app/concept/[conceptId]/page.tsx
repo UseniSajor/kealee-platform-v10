@@ -11,6 +11,7 @@ import { SpecificationTabs } from '@/components/content/SpecificationTabs'
 import { BillOfMaterials } from '@/components/content/BillOfMaterials'
 import { DownloadShare } from '@/components/content/DownloadShare'
 import type { Concept } from '@/lib/types'
+import { getOwnerPortalStatusLabel } from '@/lib/owner-portal-presentation'
 
 // ── Polling intervals ──────────────────────────────────────────────────────────
 const CONCEPT_POLL_MS  = 3_000   // while intake is processing
@@ -146,7 +147,7 @@ function HomeownerOverview({ concept }: { concept: Concept }) {
   const likelyPermit = (concept.permits?.length ?? 0) > 0
   const low = concept.estimatedCost ? Math.round(concept.estimatedCost * 0.85) : undefined
   const high = concept.estimatedCost ? Math.round(concept.estimatedCost * 1.2) : undefined
-  const statusLabel = concept.status === 'completed' ? 'Your homeowner report is ready' : concept.status === 'error' ? 'We need to review part of your report' : 'We’re preparing your homeowner report'
+  const statusLabel = getOwnerPortalStatusLabel(concept)
   return (
     <section aria-labelledby="project-overview-heading" className="space-y-6">
       <div className="rounded-2xl border border-slate-200 bg-white p-6 md:p-8 shadow-sm">

@@ -14,7 +14,7 @@ export interface V30CompletionResult {
 const OPENAI_PRIMARY_BOTS = new Set<V30BotType>(['design', 'estimate', 'zoning', 'permit'])
 
 export function resolveV30OpenAIModel(): string {
-  return process.env.KEALEE_OPENAI_PRIMARY_MODEL ?? 'gpt-5.5'
+  return process.env.KEALEE_OPENAI_PRIMARY_MODEL ?? 'gpt-5.6-sol'
 }
 
 /** OpenAI-first completion for customer deliverables, with Claude as operational fallback. */
@@ -34,6 +34,7 @@ export async function completeV30WithFallback(params: {
         instructions: params.system,
         input: params.user,
         max_output_tokens: params.maxTokens,
+        text: { format: { type: 'json_object' }, verbosity: 'low' },
       })
       return {
         text: response.output_text,
@@ -66,4 +67,3 @@ export async function completeV30WithFallback(params: {
 export function hasV30LlmProvider(): boolean {
   return Boolean((process.env.OPENAI_API_KEY || process.env.ANTHROPIC_API_KEY) && process.env.KEALEE_V30_LLM_ENABLED !== 'false')
 }
-

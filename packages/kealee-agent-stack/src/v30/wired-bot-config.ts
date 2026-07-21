@@ -11,10 +11,10 @@ export const V30_WIRED_BOT_CONFIG: Record<
 > = {
   intake: { timeoutSeconds: 30, cacheEphemeral: true, maxTokens: 4000 },
   design: { timeoutSeconds: 60, cacheEphemeral: true, maxTokens: 8192 },
-  estimate: { timeoutSeconds: 45, cacheEphemeral: true, maxTokens: 4096 },
-  zoning: { timeoutSeconds: 30, cacheEphemeral: true, maxTokens: 3072 },
+  estimate: { timeoutSeconds: 45, cacheEphemeral: true, maxTokens: 6144 },
+  zoning: { timeoutSeconds: 30, cacheEphemeral: true, maxTokens: 5120 },
   floorplan: { timeoutSeconds: 20, cacheEphemeral: false, maxTokens: 3072 },
-  permit: { timeoutSeconds: 40, cacheEphemeral: true, maxTokens: 4096 },
+  permit: { timeoutSeconds: 40, cacheEphemeral: true, maxTokens: 8192 },
   video: { timeoutSeconds: 15, cacheEphemeral: false, maxTokens: 2048 },
   contractor: { timeoutSeconds: 20, cacheEphemeral: true, maxTokens: 2048 },
   sales: { timeoutSeconds: 10, cacheEphemeral: false, maxTokens: 2048 },

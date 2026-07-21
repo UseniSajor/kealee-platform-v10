@@ -10,6 +10,7 @@ export interface Concept {
   phone?: string
   tier: 1 | 2 | 3
   status: 'processing' | 'completed' | 'error'
+  deliveryState?: 'queued' | 'processing' | 'completed' | 'partially_completed' | 'failed' | 'retryable' | 'professional_review'
   /** AI-generated design language: style name, materials/finishes palette, key features */
   designConcept?: {
     style: string

@@ -58,7 +58,9 @@
 |----------|----------|--------|-------|
 | `ANTHROPIC_API_KEY` | ✅ | 🔒 | `sk-ant-...` — needed by all KeaBots |
 | `ANTHROPIC_MODEL` | ⚠️ | No | Default: `claude-sonnet-4-20250514` |
-| `OPENAI_API_KEY` | ⚠️ | 🔒 | For embeddings / RAG only |
+| `OPENAI_API_KEY` | ✅ | 🔒 | Server-side OpenAI credential for primary design, estimate, zoning, permit, and public-assistant execution |
+| `KEALEE_OPENAI_PRIMARY_MODEL` | ⚠️ | No | Default: `gpt-5.6-sol`; V30 design/estimate/zoning/permit override |
+| `OPENAI_AGENT_MODEL` | ⚠️ | No | Default: `gpt-5.6-sol`; public project-assistant override |
 
 ---
 

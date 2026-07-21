@@ -21,7 +21,11 @@ export class InMemoryRuntimeStore implements RuntimeStore {
   }
 
   async save(snapshot: RuntimeSnapshot): Promise<void> { this.runs.set(snapshot.runId, structuredClone(snapshot)) }
-  async append(event: RuntimeEvent): Promise<void> { this.events.push(structuredClone(event)) }
+  async append(event: RuntimeEvent): Promise<void> {
+    if (event.idempotencyKey && await this.hasEvent(event.idempotencyKey)) return
+    this.events.push(structuredClone(event))
+  }
+  async hasEvent(idempotencyKey: string): Promise<boolean> { return this.events.some(event => event.idempotencyKey === idempotencyKey) }
   async load(runId: string): Promise<RuntimeSnapshot | null> { return structuredClone(this.runs.get(runId) ?? null) }
   async cancel(runId: string): Promise<void> {
     const run = this.runs.get(runId)

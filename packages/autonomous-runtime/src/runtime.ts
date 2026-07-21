@@ -109,7 +109,16 @@ export class AutonomousRuntime {
         } else {
           state.status = 'failed'
           snapshot.status = 'failed'
+          snapshot.deadLetterReason = result.message ?? 'Completion criteria not met'
           await this.emit(snapshot, 'step.failed', { message: result.message ?? 'Completion criteria not met' }, next.key)
+          if (next.compensationCapability) {
+            const compensation = this.options.capabilities[next.compensationCapability]
+            if (compensation) {
+              await this.execute(Array.isArray(compensation) ? compensation : [compensation], snapshot, { ...next, capability: next.compensationCapability })
+              await this.emit(snapshot, 'step.compensated', { capability: next.compensationCapability }, next.key)
+            }
+          }
+          await this.emit(snapshot, 'run.dead_lettered', { reason: snapshot.deadLetterReason }, next.key)
           await this.options.store.save(snapshot)
           return snapshot
         }
@@ -201,6 +210,21 @@ export class AutonomousRuntime {
     snapshot.steps[stepKey].status = 'ready'
     snapshot.status = 'running'
     await this.emit(snapshot, 'step.input_received', {}, stepKey)
+    await this.options.store.save(snapshot)
+    return this.resume(snapshot)
+  }
+
+  async completeExternalStep(runId: string, stepKey: string, result: StepResult, eventId: string): Promise<RuntimeSnapshot> {
+    if (await this.options.store.hasEvent?.(eventId)) return (await this.options.store.load?.(runId))!
+    const snapshot = await this.options.store.load?.(runId)
+    if (!snapshot) throw new Error('Run not found')
+    const state = snapshot.steps[stepKey]
+    if (!state) throw new Error('Step not found')
+    if (['complete', 'failed', 'cancelled'].includes(state.status)) return snapshot
+    state.result = result
+    state.status = result.status === 'complete' ? 'complete' : result.status === 'retryable_failure' ? 'retrying' : 'failed'
+    snapshot.status = 'running'
+    await this.options.store.append({ type: 'step.external_completed', runId, stepKey, payload: { status: result.status }, at: this.now().toISOString(), idempotencyKey: eventId })
     await this.options.store.save(snapshot)
     return this.resume(snapshot)
   }

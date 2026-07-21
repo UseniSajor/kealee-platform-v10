@@ -3,6 +3,8 @@ import { getRevenueProduct, REVENUE_PRODUCT_CATALOG } from '../revenue-product-c
 import { DEPTH_REQUIREMENTS } from '../revenue-zoning'
 import { mergeFulfillmentFormData, resolveProductAutomationRoute } from '../product-automation'
 import { STRIPE_CHECKOUT_SESSION_FIXTURES, checkoutSessionFixture } from './fixtures/stripe-checkout-sessions'
+import { fulfillmentPlan } from '@kealee/autonomous-runtime'
+import { resolveV30OpenAIModel, V30_BOT_REGISTRY } from '@kealee/kealee-agent-stack'
 
 describe('Revenue Product Catalog', () => {
   it('contains exactly the four approved products at approved prices', () => {
@@ -42,6 +44,31 @@ describe('Revenue Product Catalog', () => {
         propertyIntelligenceDepth: product.propertyIntelDepth,
       })
     }
+  })
+
+  it('uses GPT-5.6 Sol for customer design, estimate, zoning, and permit execution', () => {
+    expect(resolveV30OpenAIModel()).toBe(process.env.KEALEE_OPENAI_PRIMARY_MODEL ?? 'gpt-5.6-sol')
+    for (const botType of ['design', 'estimate', 'zoning', 'permit'] as const) {
+      expect(V30_BOT_REGISTRY[botType].defaultModel).toBe('gpt-5.6-sol')
+    }
+  })
+
+  it('projects every purchased bot set into a dependency-safe autonomous capability plan', () => {
+    for (const product of Object.values(REVENUE_PRODUCT_CATALOG)) {
+      const plan = fulfillmentPlan(product.botTypes)
+      expect(plan.steps[0].capability).toBe('intake.validate')
+      expect(plan.steps.at(-3)?.capability).toBe('deliverable.assemble')
+      expect(plan.steps.at(-2)?.capability).toBe('deliverable.publish')
+      expect(plan.steps.at(-1)?.capability).toBe('customer.notify')
+      expect(plan.steps.filter(step => step.key.startsWith('work_'))).toHaveLength(product.botTypes.length)
+    }
+  })
+
+  it('requires qualified human review before a certified estimate can assemble', () => {
+    const plan = fulfillmentPlan(['estimate', 'project'], { requireProfessionalReview: true })
+    const review = plan.steps.find(step => step.capability === 'professional.review')
+    expect(review).toEqual(expect.objectContaining({ requiresApproval: true, professionalService: true }))
+    expect(plan.steps.find(step => step.capability === 'deliverable.assemble')?.dependsOn).toEqual(['professional_review'])
   })
 
   it('routes standalone and bundled estimate/permit purchases without extra bots', () => {

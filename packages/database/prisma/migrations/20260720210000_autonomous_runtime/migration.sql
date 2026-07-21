@@ -65,7 +65,7 @@ CREATE TABLE "autonomous_evidence" (
   "verifiedAt" TIMESTAMP(3), "validUntil" TIMESTAMP(3), "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 CREATE TABLE "autonomous_events" (
-  "id" TEXT PRIMARY KEY, "runId" TEXT NOT NULL, "sequence" INTEGER NOT NULL, "eventType" TEXT NOT NULL,
+  "id" TEXT PRIMARY KEY, "runId" TEXT NOT NULL, "sequence" INTEGER NOT NULL, "idempotencyKey" TEXT, "eventType" TEXT NOT NULL,
   "actorType" TEXT NOT NULL, "actorId" TEXT, "payload" JSONB NOT NULL, "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -77,6 +77,7 @@ CREATE UNIQUE INDEX "autonomous_tool_invocations_idempotencyKey_key" ON "autonom
 CREATE UNIQUE INDEX "autonomous_approvals_tokenHash_key" ON "autonomous_approvals"("tokenHash");
 CREATE UNIQUE INDEX "autonomous_memories_scope_memoryKey_projectId_intakeId_agentSlug_key" ON "autonomous_memories"("scope","memoryKey","projectId","intakeId","agentSlug");
 CREATE UNIQUE INDEX "autonomous_events_runId_sequence_key" ON "autonomous_events"("runId","sequence");
+CREATE UNIQUE INDEX "autonomous_events_idempotencyKey_key" ON "autonomous_events"("idempotencyKey");
 CREATE INDEX "autonomous_goals_tenant_status_priority_idx" ON "autonomous_goals"("tenantId","status","priority");
 CREATE INDEX "autonomous_goals_project_status_idx" ON "autonomous_goals"("projectId","status");
 CREATE INDEX "autonomous_goals_intake_status_idx" ON "autonomous_goals"("intakeId","status");

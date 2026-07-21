@@ -77,6 +77,7 @@ export interface RuntimeEvent {
   stepKey?: string
   payload: Record<string, unknown>
   at: string
+  idempotencyKey?: string
 }
 
 export interface RuntimeSnapshot {
@@ -96,6 +97,7 @@ export interface RuntimeStore {
   createOrLoadRun(goal: GoalContract, idempotencyKey: string, plan: ExecutionPlan): Promise<RuntimeSnapshot>
   save(snapshot: RuntimeSnapshot): Promise<void>
   append(event: RuntimeEvent): Promise<void>
+  hasEvent?(idempotencyKey: string): Promise<boolean>
   load?(runId: string): Promise<RuntimeSnapshot | null>
   cancel?(runId: string): Promise<void>
   upsertMemory?(memory: RuntimeMemory): Promise<void>

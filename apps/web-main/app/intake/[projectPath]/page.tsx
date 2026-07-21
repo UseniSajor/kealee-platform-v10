@@ -626,6 +626,7 @@ export default function IntakePage() {
         setFormError('Some files could not be uploaded. Others were saved.')
       }
       setUploadedFiles(prev => [...prev, ...newFiles])
+      trackEvent('upload_completion', { project_path: projectPath, upload_type: 'photo', uploaded_count: newFiles.length })
     } catch {
       setFormError('Upload failed. Please try again.')
     } finally {
@@ -660,6 +661,7 @@ export default function IntakePage() {
         setFormError('Some documents could not be uploaded. Others were saved.')
       }
       setUploadedDocs(prev => [...prev, ...newFiles])
+      trackEvent('upload_completion', { project_path: projectPath, upload_type: 'document', uploaded_count: newFiles.length })
     } catch {
       setFormError('Document upload failed. Please try again.')
     } finally {
@@ -713,6 +715,7 @@ export default function IntakePage() {
     if (!formData.address.trim()) { setFormError('Project address is required.'); return }
     if (!validateUploadRequirements()) return
     softCapture() // capture lead before payment step
+    trackEvent('intake_completion', { project_path: projectPath, photo_count: uploadedFiles.length, document_count: uploadedDocs.length })
     setStep('review')
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
@@ -789,6 +792,8 @@ export default function IntakePage() {
         throw new Error(body.error || 'Could not create checkout session. Please try again.')
       }
       const { url } = await checkoutRes.json()
+
+      trackEvent('checkout_creation', { project_path: projectPath, intake_id: intakeId })
 
       trackEvent('checkout_started', {
         project_path: projectPath,

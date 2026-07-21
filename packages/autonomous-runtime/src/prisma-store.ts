@@ -86,17 +86,22 @@ export class PrismaRuntimeStore implements RuntimeStore {
   }
 
   async append(event: RuntimeEvent): Promise<void> {
+    if (event.idempotencyKey && await this.hasEvent(event.idempotencyKey)) return
     for (let attempt = 0; attempt < 4; attempt++) {
       try {
         await this.db.$transaction(async (tx: any) => {
           const last = await tx.autonomousEvent.findFirst({ where: { runId: event.runId }, orderBy: { sequence: 'desc' }, select: { sequence: true } })
-          await tx.autonomousEvent.create({ data: { runId: event.runId, sequence: (last?.sequence ?? 0) + 1, eventType: event.type, actorType: 'runtime', payload: event.payload as any, createdAt: new Date(event.at) } })
+          await tx.autonomousEvent.create({ data: { runId: event.runId, sequence: (last?.sequence ?? 0) + 1, idempotencyKey: event.idempotencyKey, eventType: event.type, actorType: 'runtime', payload: event.payload as any, createdAt: new Date(event.at) } })
         })
         return
       } catch (error: unknown) {
         if ((error as { code?: string }).code !== 'P2002' || attempt === 3) throw error
       }
     }
+  }
+
+  async hasEvent(idempotencyKey: string): Promise<boolean> {
+    return Boolean(await this.db.autonomousEvent.findUnique({ where: { idempotencyKey }, select: { id: true } }))
   }
 
   async cancel(runId: string): Promise<void> {

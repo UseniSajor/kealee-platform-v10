@@ -20,6 +20,9 @@ const HIGH_PRIORITY_ROUTES: MetadataRoute.Sitemap = [
   { url: `${BASE_URL}/build`, changeFrequency: 'monthly', priority: 0.75 },
   { url: `${BASE_URL}/design-services`, changeFrequency: 'monthly', priority: 0.8 },
   { url: `${BASE_URL}/book-a-call`, changeFrequency: 'monthly', priority: 0.75 },
+  { url: `${BASE_URL}/llms.txt`, changeFrequency: 'monthly', priority: 0.4 },
+  { url: `${BASE_URL}/llms-full.txt`, changeFrequency: 'monthly', priority: 0.4 },
+  { url: `${BASE_URL}/.well-known/kealee.json`, changeFrequency: 'monthly', priority: 0.4 },
 ]
 
 const STANDARD_ROUTES: MetadataRoute.Sitemap = [

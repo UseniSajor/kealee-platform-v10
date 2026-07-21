@@ -33,17 +33,17 @@ const BOT_CAPABILITIES: Record<string, string> = {
   project: 'project.plan.generate', sales: 'sales.support.prepare',
 }
 
-export function fulfillmentPlan(botTypes: string[]): ExecutionPlan {
+export function fulfillmentPlan(botTypes: string[], options: { requireProfessionalReview?: boolean } = {}): ExecutionPlan {
   const executionSteps = [...new Set(botTypes.map(type => BOT_CAPABILITIES[type]).filter(Boolean))]
   return {
     version: 1,
     steps: [
       { key: 'intake', title: 'Validate customer requirements', capability: 'intake.validate', dependsOn: [], completionCriteria: [{ key: 'validated', description: 'Requirements and uploads persisted', required: true, evidenceTypes: ['validated-intake'] }] },
       ...executionSteps.map((capability, index) => ({ key: `work_${index + 1}`, title: KEALEE_CAPABILITIES[capability].id, capability, dependsOn: ['intake'], maxAttempts: KEALEE_CAPABILITIES[capability].retryPolicy.maxAttempts })),
-      { key: 'assemble', title: 'Assemble homeowner report', capability: 'deliverable.assemble', dependsOn: executionSteps.map((_, index) => `work_${index + 1}`), completionCriteria: [{ key: 'deliverable', description: 'Homeowner report assembled', required: true, evidenceTypes: ['deliverable'] }] },
+      ...(options.requireProfessionalReview ? [{ key: 'professional_review', title: 'Qualified professional review', capability: 'professional.review', dependsOn: executionSteps.map((_, index) => `work_${index + 1}`), requiresApproval: true, professionalService: true }] : []),
+      { key: 'assemble', title: 'Assemble homeowner report', capability: 'deliverable.assemble', dependsOn: options.requireProfessionalReview ? ['professional_review'] : executionSteps.map((_, index) => `work_${index + 1}`), completionCriteria: [{ key: 'deliverable', description: 'Homeowner report assembled', required: true, evidenceTypes: ['deliverable'] }] },
       { key: 'publish', title: 'Publish homeowner report', capability: 'deliverable.publish', dependsOn: ['assemble'] },
       { key: 'notify', title: 'Notify customer', capability: 'customer.notify', dependsOn: ['publish'] },
     ],
   }
 }
-

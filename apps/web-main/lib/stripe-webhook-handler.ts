@@ -40,7 +40,7 @@ export async function processStripeWebhookEvent(
     return
   }
 
-  await handleCheckoutCompleted(event.data.object as Stripe.Checkout.Session, req)
+  await handleCheckoutCompleted(event.data.object as Stripe.Checkout.Session, req, event.id)
 }
 
 async function handlePaymentFailed(pi: Stripe.PaymentIntent, req: NextRequest): Promise<void> {
@@ -77,6 +77,7 @@ async function handlePaymentFailed(pi: Stripe.PaymentIntent, req: NextRequest): 
 async function handleCheckoutCompleted(
   session: Stripe.Checkout.Session,
   req: NextRequest,
+  stripeEventId: string,
 ): Promise<void> {
   const meta = session.metadata ?? {}
 
@@ -86,7 +87,7 @@ async function handleCheckoutCompleted(
   }
 
   if (meta.source === 'revenue_product') {
-    await fulfillRevenueProduct(session, event.id)
+    await fulfillRevenueProduct(session, stripeEventId)
     return
   }
 
