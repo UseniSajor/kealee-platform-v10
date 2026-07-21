@@ -1,0 +1,9 @@
+// Extended intelligence platform enums
+
+enum IntelligenceEngineType {
+  property
+  opportunity
+  lead
+  capital
+  project
+}

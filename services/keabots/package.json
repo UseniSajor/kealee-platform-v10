@@ -1,0 +1,22 @@
+{
+  "name": "@kealee/keabots-service",
+  "version": "1.0.0",
+  "description": "KeaBot orchestration service for Kealee Platform",
+  "type": "module",
+  "main": "dist/orchestrator.js",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx watch orchestrator.ts",
+    "health": "tsx health-check.ts",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@kealee/core-bots": "*",
+    "@kealee/database": "*"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "tsx": "^4.7.0",
+    "typescript": "^5.6.0"
+  }
+}

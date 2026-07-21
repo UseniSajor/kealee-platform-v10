@@ -1,0 +1,55 @@
+name: Orchestrate Launch
+
+on:
+  workflow_dispatch:
+    inputs:
+      api_url:
+        description: 'API base URL (no trailing slash)'
+        required: true
+        default: 'https://api.kealee.com'
+      web_url:
+        description: 'Web base URL for go-live-check page probes'
+        required: true
+        default: 'https://www.kealee.com'
+      with_marketing_prep:
+        description: 'After smoke, run pnpm setup:marketing (checklist + email stubs)'
+        type: boolean
+        default: false
+
+env:
+  NODE_VERSION: '20'
+  PNPM_VERSION: '8.15.9'
+
+jobs:
+  orchestrate:
+    name: Preflight + go-live-check + smoke
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v3
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true pnpm install --no-frozen-lockfile
+
+      - name: Orchestrate launch
+        env:
+          API_URL: ${{ inputs.api_url }}
+          NEXT_PUBLIC_APP_URL: ${{ inputs.web_url }}
+          ORCHESTRATE_WITH_MARKETING_PREP: ${{ inputs.with_marketing_prep }}
+        run: pnpm run orchestrate:launch
+
+      - name: Upload orchestration report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: orchestration-report
+          path: reports/orchestration/latest.json

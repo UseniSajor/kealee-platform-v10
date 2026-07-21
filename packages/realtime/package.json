@@ -1,0 +1,22 @@
+{
+  "name": "@kealee/realtime",
+  "version": "1.0.0",
+  "description": "Kealee Platform Realtime — Supabase Realtime broadcast and subscription",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.0",
+    "@types/react": "^18.2.0",
+    "typescript": "^5.9.3"
+  },
+  "peerDependencies": {
+    "react": "^18.2.0"
+  }
+}

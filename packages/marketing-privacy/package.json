@@ -1,0 +1,25 @@
+{
+  "name": "@kealee/marketing-privacy",
+  "version": "1.0.0",
+  "private": true,
+  "description": "PII redaction and export guards for marketing agency access",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "require": "./dist/index.js",
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.0",
+    "typescript": "^5.9.0",
+    "vitest": "^1.6.1"
+  }
+}

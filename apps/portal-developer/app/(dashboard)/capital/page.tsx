@@ -1,0 +1,304 @@
+'use client'
+
+import { useState, useEffect } from 'react'
+import { Landmark, DollarSign, TrendingUp, ArrowUpRight, ArrowDownLeft, Building2, Users, Clock, CheckCircle, AlertCircle } from 'lucide-react'
+
+// ── v20 Seed: Payment Milestone Templates (7 milestones) ──
+const PAYMENT_MILESTONES = [
+  { key: 'DEPOSIT', name: 'Deposit / Mobilization', percentage: 10, order: 1, typicalInspection: 'SITE' },
+  { key: 'FOUNDATION', name: 'Foundation Complete', percentage: 15, order: 2, typicalInspection: 'FOUNDATION' },
+  { key: 'FRAMING', name: 'Framing Complete', percentage: 20, order: 3, typicalInspection: 'ROUGH_FRAMING' },
+  { key: 'MEP_ROUGH', name: 'MEP Rough-In Complete', percentage: 15, order: 4, typicalInspection: 'ROUGH_MECHANICAL' },
+  { key: 'DRYWALL_INTERIOR', name: 'Drywall & Interior', percentage: 15, order: 5, typicalInspection: 'INSULATION' },
+  { key: 'FINISH', name: 'Finish Work', percentage: 15, order: 6, typicalInspection: 'FINAL_BUILDING' },
+  { key: 'COMPLETION', name: 'Substantial Completion', percentage: 10, order: 7, typicalInspection: 'CERTIFICATE_OF_OCCUPANCY' },
+] as const
+
+
+const drawStatusColors: Record<string, string> = {
+  pending: 'bg-gray-100 text-gray-700',
+  submitted: 'bg-amber-100 text-amber-700',
+  approved: 'bg-blue-100 text-blue-700',
+  funded: 'bg-green-100 text-green-700',
+}
+
+
+export default function CapitalPage() {
+  const [activeTab, setActiveTab] = useState<'stacks' | 'draws' | 'investors'>('stacks')
+  const [stacks, setStacks] = useState<any[]>([])
+  const [draws, setDraws] = useState<any[]>([])
+  const [investorSummary, setInvestorSummary] = useState({ totalCommitments: 0, capitalCalled: 0, distributions: 0, remainingCommitment: 0, weightedIRR: 0, investorCount: 0 })
+  const [loading, setLoading] = useState(true)
+  const [isLive, setIsLive] = useState(false)
+
+  useEffect(() => {
+    const fetchCapitalData = async () => {
+      try {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
+        const response = await fetch(`${apiUrl}/api/v1/projects?includeFinance=true&limit=20`, {
+          headers: {
+            'Content-Type': 'application/json',
+            ...(typeof window !== 'undefined' && localStorage.getItem('authToken') && {
+              'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+            })
+          },
+          signal: AbortSignal.timeout(5000),
+        })
+
+        if (response.ok) {
+          const data = await response.json()
+          const apiStacks = Array.isArray(data) ? data : data.projects || []
+          if (apiStacks.length > 0) {
+            setStacks(apiStacks)
+            setIsLive(true)
+          }
+        }
+      } catch (err) {
+        console.warn('Failed to fetch capital data from API, using local data:', err)
+        setIsLive(false)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchCapitalData()
+  }, [])
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const totalCapital = stacks.reduce((s: number, c: any) => s + c.totalCapital, 0)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const totalDebt = stacks.reduce((s: number, c: any) => s + (c.sources as any[]).filter((src: any) => src.name.includes('Debt') || src.name.includes('Loan')).reduce((ss: number, src: any) => ss + src.amount, 0), 0)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const totalLPEquity = stacks.reduce((s: number, c: any) => s + (c.sources as any[]).filter((src: any) => src.name.includes('LP')).reduce((ss: number, src: any) => ss + src.amount, 0), 0)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const pendingDraws = draws.filter((d: any) => d.status !== 'funded').reduce((s: number, d: any) => s + d.amount, 0)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const fundedDraws = draws.filter((d: any) => d.status === 'funded').reduce((s: number, d: any) => s + d.amount, 0)
+
+  return (
+    <div>
+      <div className="mb-6">
+        <div className="flex items-center gap-3">
+          <h1 className="font-display text-2xl font-bold" style={{ color: '#1A2B4A' }}>Capital Management</h1>
+          {isLive && (
+            <span className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium" style={{ backgroundColor: 'rgba(34, 197, 94, 0.1)', color: '#22c55e' }}>
+              <span className="h-2 w-2 rounded-full" style={{ backgroundColor: '#22c55e' }} />
+              Live Data
+            </span>
+          )}
+        </div>
+        {stacks.length === 0 && !loading ? (
+          <p className="mt-1 text-sm text-amber-600">No capital data available. Create projects with capital stacks to get started.</p>
+        ) : (
+          <p className="mt-1 text-sm text-gray-600">Capital stacks, draw tracking ({PAYMENT_MILESTONES.length}-milestone schedule), and investor reporting</p>
+        )}
+      </div>
+
+      {/* Summary Cards */}
+      <div className="mb-8 grid grid-cols-2 gap-4 sm:grid-cols-5">
+        <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+          <div className="flex items-center gap-2"><Landmark className="h-5 w-5" style={{ color: '#1A2B4A' }} /></div>
+          <p className="mt-2 text-2xl font-bold" style={{ color: '#1A2B4A' }}>${(totalCapital / 1000000).toFixed(1)}M</p>
+          <p className="text-xs text-gray-500">Total Capital Deployed</p>
+        </div>
+        <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+          <div className="flex items-center gap-2"><TrendingUp className="h-5 w-5" style={{ color: '#2ABFBF' }} /></div>
+          <p className="mt-2 text-2xl font-bold" style={{ color: '#1A2B4A' }}>${(totalDebt / 1000000).toFixed(1)}M</p>
+          <p className="text-xs text-gray-500">Total Debt</p>
+        </div>
+        <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+          <div className="flex items-center gap-2"><Users className="h-5 w-5" style={{ color: '#E8793A' }} /></div>
+          <p className="mt-2 text-2xl font-bold" style={{ color: '#1A2B4A' }}>${(totalLPEquity / 1000000).toFixed(1)}M</p>
+          <p className="text-xs text-gray-500">LP Equity</p>
+        </div>
+        <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+          <div className="flex items-center gap-2"><DollarSign className="h-5 w-5" style={{ color: '#38A169' }} /></div>
+          <p className="mt-2 text-2xl font-bold" style={{ color: '#1A2B4A' }}>${(fundedDraws / 1000000).toFixed(1)}M</p>
+          <p className="text-xs text-gray-500">Draws Funded</p>
+        </div>
+        <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+          <div className="flex items-center gap-2"><Clock className="h-5 w-5" style={{ color: '#D69E2E' }} /></div>
+          <p className="mt-2 text-2xl font-bold" style={{ color: '#1A2B4A' }}>${(pendingDraws / 1000000).toFixed(1)}M</p>
+          <p className="text-xs text-gray-500">Draws Pending</p>
+        </div>
+      </div>
+
+      {/* Tabs */}
+      <div className="mb-6 border-b border-gray-200">
+        <div className="flex gap-6">
+          {[
+            { key: 'stacks' as const, label: 'Capital Stacks' },
+            { key: 'draws' as const, label: `Draw Tracking (${PAYMENT_MILESTONES.length} Milestones)` },
+            { key: 'investors' as const, label: 'Investor Reporting' },
+          ].map((tab) => (
+            <button key={tab.key} onClick={() => setActiveTab(tab.key)}
+              className={`border-b-2 pb-3 text-sm font-medium ${activeTab === tab.key ? 'border-current' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+              style={activeTab === tab.key ? { color: '#2ABFBF', borderColor: '#2ABFBF' } : undefined}>{tab.label}</button>
+          ))}
+        </div>
+      </div>
+
+      {/* ── Capital Stacks Tab ── */}
+      {activeTab === 'stacks' && (
+        <div className="space-y-6">
+          {stacks.map((stack) => (
+            <div key={stack.id} className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+              <div className="mb-4 flex items-center justify-between">
+                <div>
+                  <h3 className="font-display text-lg font-semibold" style={{ color: '#1A2B4A' }}>{stack.project}</h3>
+                  <p className="text-xs text-gray-500">{stack.projectType.replace('_', ' ')} | {stack.twinTier} Twin</p>
+                </div>
+                <span className="text-sm font-bold" style={{ color: '#1A2B4A' }}>${(stack.totalCapital / 1000000).toFixed(2)}M total</span>
+              </div>
+
+              {/* Stacked bar */}
+              <div className="mb-4 flex h-6 w-full overflow-hidden rounded-full">
+                {(stack.sources as any[]).map((s: any, i: number) => {
+                  const barColors = ['#1A2B4A', '#2ABFBF', '#E8793A', '#D69E2E']
+                  return <div key={i} className="transition-all" style={{ width: `${s.pct}%`, backgroundColor: barColors[i % barColors.length] }} />
+                })}
+              </div>
+
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                {(stack.sources as any[]).map((s: any, i: number) => {
+                  const textColors = ['#1A2B4A', '#2ABFBF', '#E8793A', '#D69E2E']
+                  const dotColors = ['#1A2B4A', '#2ABFBF', '#E8793A', '#D69E2E']
+                  return (
+                    <div key={i} className="rounded-lg border border-gray-200 p-3">
+                      <div className="flex items-center gap-2">
+                        <div className="h-3 w-3 rounded-full" style={{ backgroundColor: dotColors[i % dotColors.length] }} />
+                        <p className="text-xs font-medium text-gray-500">{s.name} ({s.pct}%)</p>
+                      </div>
+                      <p className="mt-1 text-lg font-bold" style={{ color: textColors[i % textColors.length] }}>${(s.amount / 1000000).toFixed(2)}M</p>
+                      <p className="text-xs text-gray-500">{s.rate} | {s.lender}</p>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* ── Draws Tab (7-milestone schedule) ── */}
+      {activeTab === 'draws' && (
+        <div className="space-y-6">
+          {/* Milestone template reference */}
+          <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+            <h3 className="mb-3 text-sm font-semibold" style={{ color: '#1A2B4A' }}>Standard Draw Schedule ({PAYMENT_MILESTONES.length} Milestones)</h3>
+            <div className="flex h-8 w-full overflow-hidden rounded-lg">
+              {PAYMENT_MILESTONES.map((ms, i) => {
+                const milestoneColors = ['#6366F1', '#3B82F6', '#2ABFBF', '#38A169', '#E8793A', '#D69E2E', '#1A2B4A']
+                return (
+                  <div key={ms.key} className="flex items-center justify-center text-xs font-bold text-white"
+                    style={{ width: `${ms.percentage}%`, backgroundColor: milestoneColors[i], minWidth: '30px' }}
+                    title={`${ms.name}: ${ms.percentage}%`}>
+                    {ms.percentage}%
+                  </div>
+                )
+              })}
+            </div>
+            <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1">
+              {PAYMENT_MILESTONES.map((ms, i) => {
+                const milestoneColors = ['#6366F1', '#3B82F6', '#2ABFBF', '#38A169', '#E8793A', '#D69E2E', '#1A2B4A']
+                return (
+                  <div key={ms.key} className="flex items-center gap-1.5 text-xs text-gray-500">
+                    <span className="inline-block h-2 w-2 rounded-full" style={{ backgroundColor: milestoneColors[i] }} />
+                    {ms.name} ({ms.percentage}%)
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+
+          {/* Draw list */}
+          <div className="rounded-xl border border-gray-200 bg-white shadow-sm">
+            <div className="divide-y divide-gray-50">
+              {draws.map((draw) => (
+                <div key={draw.id} className="flex items-center justify-between px-5 py-4">
+                  <div className="flex items-center gap-3">
+                    <div className={`rounded-lg p-2 ${draw.status === 'funded' ? 'bg-green-100' : draw.status === 'approved' ? 'bg-blue-100' : 'bg-gray-100'}`}>
+                      {draw.status === 'funded' ? <CheckCircle className="h-4 w-4 text-green-600" /> :
+                       draw.status === 'approved' ? <ArrowDownLeft className="h-4 w-4 text-blue-600" /> :
+                       <Clock className="h-4 w-4 text-gray-500" />}
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium" style={{ color: '#1A2B4A' }}>{draw.milestoneName}</p>
+                      <p className="text-xs text-gray-500">
+                        {draw.project} | {draw.percentage}% of contract |
+                        Requested {new Date(draw.requested).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="text-sm font-semibold" style={{ color: '#1A2B4A' }}>${(draw.amount / 1000000).toFixed(2)}M</span>
+                    <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium capitalize ${drawStatusColors[draw.status]}`}>{draw.status}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Investor Reporting Tab ── */}
+      {activeTab === 'investors' && (
+        <div className="space-y-6">
+          <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
+            <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+              <p className="text-xs text-gray-500">Total LP Commitments</p>
+              <p className="mt-1 text-2xl font-bold" style={{ color: '#1A2B4A' }}>${(investorSummary.totalCommitments / 1000000).toFixed(2)}M</p>
+              <p className="mt-1 text-xs text-gray-400">{investorSummary.investorCount} investors across {stacks.length} projects</p>
+            </div>
+            <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+              <p className="text-xs text-gray-500">Capital Called</p>
+              <p className="mt-1 text-2xl font-bold" style={{ color: '#E8793A' }}>${(investorSummary.capitalCalled / 1000000).toFixed(2)}M</p>
+              <p className="mt-1 text-xs text-gray-400">{((investorSummary.capitalCalled / investorSummary.totalCommitments) * 100).toFixed(0)}% of total commitments</p>
+            </div>
+            <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+              <p className="text-xs text-gray-500">Remaining Unfunded</p>
+              <p className="mt-1 text-2xl font-bold" style={{ color: '#2ABFBF' }}>${(investorSummary.remainingCommitment / 1000000).toFixed(2)}M</p>
+              <p className="mt-1 text-xs text-gray-400">Next call anticipated Q2 2026</p>
+            </div>
+            <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+              <p className="text-xs text-gray-500">Distributions to Date</p>
+              <p className="mt-1 text-2xl font-bold" style={{ color: '#38A169' }}>${(investorSummary.distributions / 1000000).toFixed(2)}M</p>
+              <p className="mt-1 text-xs text-gray-400">All projects in development phase</p>
+            </div>
+            <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+              <p className="text-xs text-gray-500">Weighted Portfolio IRR</p>
+              <p className="mt-1 text-2xl font-bold" style={{ color: '#2ABFBF' }}>{investorSummary.weightedIRR}%</p>
+              <p className="mt-1 text-xs text-gray-400">Projected at stabilization</p>
+            </div>
+            <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+              <p className="text-xs text-gray-500">Active Investors</p>
+              <p className="mt-1 text-2xl font-bold" style={{ color: '#1A2B4A' }}>{investorSummary.investorCount}</p>
+              <p className="mt-1 text-xs text-gray-400">Across {stacks.length} project capital stacks</p>
+            </div>
+          </div>
+
+          {/* Per-project capital called */}
+          <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+            <h3 className="mb-4 text-sm font-semibold" style={{ color: '#1A2B4A' }}>Capital Called by Project</h3>
+            {stacks.map((stack) => {
+              const projectDraws = draws.filter(d => d.project === stack.project)
+              const funded = projectDraws.filter(d => d.status === 'funded').reduce((s, d) => s + d.amount, 0)
+              const pctDrawn = stack.totalCapital > 0 ? (funded / stack.totalCapital) * 100 : 0
+              return (
+                <div key={stack.id} className="mb-4 last:mb-0">
+                  <div className="mb-1 flex justify-between text-xs">
+                    <span className="font-medium" style={{ color: '#1A2B4A' }}>{stack.project}</span>
+                    <span className="text-gray-500">${(funded / 1000000).toFixed(1)}M / ${(stack.totalCapital / 1000000).toFixed(1)}M ({pctDrawn.toFixed(0)}%)</span>
+                  </div>
+                  <div className="h-3 w-full overflow-hidden rounded-full bg-gray-100">
+                    <div className="h-full rounded-full" style={{ width: `${pctDrawn}%`, backgroundColor: '#2ABFBF' }} />
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}

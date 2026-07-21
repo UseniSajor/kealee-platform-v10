@@ -1,0 +1,250 @@
+import { NextRequest, NextResponse } from 'next/server'
+import Stripe from 'stripe'
+import { guardStripeSecretForHttp } from '@/lib/stripe-vercel-guard'
+import { createStripe } from '@/lib/stripe-client'
+import { getIntakePrice, getIntakePriceByTier, SITE_VISIT_FEE_CENTS, getBundleCheckoutCents, isBundleProductKey } from '@kealee/core-rules'
+import { isV30Enabled } from '@kealee/kealee-agent-stack'
+import { getSupabaseAdmin } from '@/lib/supabase-server'
+import { trackCheckoutStarted } from '@/lib/marketing/ga4-server'
+import { parseUtmFromBody } from '@/lib/marketing/utm-metadata'
+import { INTERNAL_TEST_PROMO_CENTS, INTERNAL_TEST_PROMO_METADATA_VALUE, internalTestPromoApplies } from '@/lib/internal-test-promo'
+
+export const dynamic = 'force-dynamic'
+
+/**
+ * POST /api/intake/checkout
+ *
+ * Creates a Stripe Checkout Session for an intake-driven purchase.
+ *
+ * SECURITY: The price is looked up server-side from `@kealee/core-rules`
+ * via `projectPath`. Any `amount` in the request body is IGNORED — the
+ * client cannot influence what they pay. (P0-1 fix, audit 2026-05-09.)
+ * The one exception is `promoCode`, which can only ever move the price to
+ * the fixed internal-test amount (see lib/internal-test-promo.ts) — never
+ * to an arbitrary value — and only for allowlisted internal emails.
+ */
+export async function POST(req: NextRequest) {
+  try {
+    const body = await req.json() as {
+      intakeId: string
+      projectPath: string
+      successUrl?: string
+      cancelUrl?: string
+      returnUrl?: string    // used for embedded mode (replaces success/cancel)
+      embedded?: boolean    // true → ui_mode:'embedded', returns clientSecret
+      siteVisitRequested?: boolean
+      /** Source concept intake — used for project-type bundle pricing */
+      sourcePath?: string
+      upsellSourceIntakeId?: string
+      /** Whether to price this checkout from a v30 dynamic quote in form_data. */
+      useV30Pricing?: boolean
+      // Legacy `amount` field is accepted for backward compatibility
+      // but explicitly NOT used. Server price is authoritative.
+      amount?: number
+      /** Internal-testing promo code — see lib/internal-test-promo.ts. */
+      promoCode?: string
+    }
+
+    const { intakeId, projectPath, successUrl, cancelUrl, returnUrl, embedded, siteVisitRequested, useV30Pricing, sourcePath, upsellSourceIntakeId, promoCode } = body
+
+    if (!intakeId || !projectPath) {
+      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
+    }
+    if (embedded && !returnUrl) {
+      return NextResponse.json({ error: 'returnUrl required for embedded checkout' }, { status: 400 })
+    }
+    if (!embedded && (!successUrl || !cancelUrl)) {
+      return NextResponse.json({ error: 'successUrl and cancelUrl required for hosted checkout' }, { status: 400 })
+    }
+
+    const stripeKey = process.env.STRIPE_SECRET_KEY
+    if (!stripeKey) {
+      return NextResponse.json({ error: 'Stripe not configured' }, { status: 503 })
+    }
+
+    const guard = guardStripeSecretForHttp(stripeKey)
+    if (guard) return guard
+
+    const stripe = createStripe(stripeKey)
+
+    let unitAmountCents: number
+    let productName: string
+    let internalTestPromoApplied = false
+
+    if (useV30Pricing && isV30Enabled()) {
+      const supabase = getSupabaseAdmin()
+      const { data: intakeRow } = await supabase
+        .from('public_intake_leads')
+        .select('form_data')
+        .eq('id', intakeId)
+        .single()
+
+      const formData = (intakeRow?.form_data as Record<string, unknown>) ?? {}
+      const v30Quote = formData.v30Quote as { totalPriceCents?: number; features?: string[] } | undefined
+      const quoted = v30Quote?.totalPriceCents
+
+      if (!quoted || quoted < 9900 || quoted > 999_900) {
+        return NextResponse.json(
+          { error: 'Invalid or missing v30 quote — complete /get-concept intake first' },
+          { status: 400 },
+        )
+      }
+      unitAmountCents = Math.round(quoted)
+      productName = `Kealee Custom Package (${(v30Quote?.features ?? []).join(', ') || 'v30'})`
+    } else if (isBundleProductKey(projectPath) && sourcePath) {
+      const bundle = getBundleCheckoutCents(
+        projectPath as 'design_estimate_permit_bundle' | 'estimate_permit_bundle',
+        sourcePath,
+      )
+      if (!bundle.cents) {
+        return NextResponse.json({ error: 'Invalid bundle pricing' }, { status: 400 })
+      }
+      unitAmountCents = bundle.cents
+      productName = bundle.label
+    } else {
+      // Server-trusted tier price (v20) — read tier + contact email from intake
+      let selectedTier: number | undefined
+      let contactEmail: string | undefined
+      const supabase = getSupabaseAdmin()
+      try {
+        const { data: tierRow } = await supabase
+          .from('public_intake_leads')
+          .select('form_data, contact_email')
+          .eq('id', intakeId)
+          .single()
+        const formData = (tierRow?.form_data as Record<string, unknown>) ?? {}
+        selectedTier = formData.tier as number | undefined
+        contactEmail =
+          (tierRow?.contact_email as string | undefined) ??
+          (formData.email as string | undefined)
+      } catch { /* non-fatal — falls back to flat price */ }
+
+      const priceEntry = selectedTier
+        ? getIntakePriceByTier(projectPath, selectedTier)
+        : getIntakePrice(projectPath)
+      if (!priceEntry) {
+        return NextResponse.json(
+          { error: `Unknown projectPath: ${projectPath}` },
+          { status: 400 },
+        )
+      }
+      unitAmountCents = priceEntry.cents
+      productName = priceEntry.label
+
+      // Internal-testing promo: any tier, allowlisted email, capped uses.
+      // A failed check silently falls through to normal pricing (no error
+      // shown) — a code typed by someone outside the allowlist shouldn't
+      // reveal that a promo exists at all.
+      if (await internalTestPromoApplies(stripe, promoCode, contactEmail)) {
+        unitAmountCents = INTERNAL_TEST_PROMO_CENTS
+        productName = `${priceEntry.label} — $5 Internal Test`
+        internalTestPromoApplied = true
+      }
+    }
+
+    const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = [
+      {
+        price_data: {
+          currency: 'usd',
+          unit_amount: unitAmountCents,
+          product_data: { name: productName },
+        },
+        quantity: 1,
+      },
+    ]
+
+    if (siteVisitRequested) {
+      lineItems.push({
+        price_data: {
+          currency: 'usd',
+          unit_amount: SITE_VISIT_FEE_CENTS,
+          product_data: { name: 'Kealee Site Visit Scan' },
+        },
+        quantity: 1,
+      })
+    }
+
+    const commonParams: Stripe.Checkout.SessionCreateParams = {
+      mode: 'payment',
+      payment_method_types: ['card'],
+      // Stripe's own native promo-code field is intentionally off — the only
+      // working promo entry is the confirm page's field, which resolves and
+      // applies the internal-test price server-side before this session is
+      // created. Leaving this on just shows customers a second, non-functional
+      // "Enter promo code" box with no real Stripe Promotion Code behind it.
+      allow_promotion_codes: false,
+      line_items: lineItems,
+      metadata: {
+        source: useV30Pricing ? 'public_intake_v30' : 'public_intake',
+        intakeId,
+        projectPath,
+        siteVisitRequested: siteVisitRequested ? 'true' : 'false',
+        pricingModel: useV30Pricing ? 'v30_dynamic' : 'tier_fixed',
+        ...(sourcePath ? { sourcePath } : {}),
+        ...(upsellSourceIntakeId ? { upsellSourceIntakeId } : {}),
+        ...(isBundleProductKey(projectPath) ? { bundlePurchase: 'true' } : {}),
+        ...(internalTestPromoApplied ? { promoApplied: INTERNAL_TEST_PROMO_METADATA_VALUE } : {}),
+      },
+      payment_intent_data: {
+        metadata: {
+          source: useV30Pricing ? 'public_intake_v30' : 'public_intake',
+          intakeId,
+          projectPath,
+          pricingModel: useV30Pricing ? 'v30_dynamic' : 'tier_fixed',
+          ...(sourcePath ? { sourcePath } : {}),
+          ...(upsellSourceIntakeId ? { upsellSourceIntakeId } : {}),
+          ...(isBundleProductKey(projectPath) ? { bundlePurchase: 'true' } : {}),
+          ...(internalTestPromoApplied ? { promoApplied: INTERNAL_TEST_PROMO_METADATA_VALUE } : {}),
+        },
+      },
+    }
+
+    const totalCents =
+      unitAmountCents + (siteVisitRequested ? SITE_VISIT_FEE_CENTS : 0)
+
+    let checkoutUtm = parseUtmFromBody(body as Record<string, unknown>)
+    try {
+      const supabase = getSupabaseAdmin()
+      const { data: intakeRow } = await supabase
+        .from('public_intake_leads')
+        .select('metadata, form_data')
+        .eq('id', intakeId)
+        .single()
+      const bag = {
+        ...((intakeRow?.metadata as Record<string, unknown>) ?? {}),
+        ...((intakeRow?.form_data as Record<string, unknown>) ?? {}),
+      }
+      checkoutUtm = parseUtmFromBody(bag)
+    } catch {
+      // non-fatal
+    }
+
+    void trackCheckoutStarted({
+      intakeId,
+      projectPath,
+      valueCents: totalCents,
+      utm: checkoutUtm,
+    })
+
+    if (embedded) {
+      // Embedded checkout — Stripe renders the card form inside our page
+      const session = await stripe.checkout.sessions.create({
+        ...commonParams,
+        ui_mode: 'embedded',
+        return_url: returnUrl!,
+      })
+      return NextResponse.json({ clientSecret: session.client_secret })
+    }
+
+    // Hosted checkout — redirect to Stripe's hosted page (fallback / legacy)
+    const session = await stripe.checkout.sessions.create({
+      ...commonParams,
+      success_url: successUrl!,
+      cancel_url: cancelUrl!,
+    })
+    return NextResponse.json({ url: session.url })
+  } catch (err: any) {
+    console.error('[intake/checkout]', err?.message, err?.type, err?.code)
+    return NextResponse.json({ error: 'Failed to create checkout session', detail: err?.message, type: err?.type, code: err?.code }, { status: 500 })
+  }
+}

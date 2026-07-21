@@ -1,0 +1,12 @@
+{
+  "$schema": "https://railway.app/railway.schema.json",
+  "build": {
+    "builder": "DOCKERFILE",
+    "dockerfilePath": "services/marketing-cron-marketing-drip/Dockerfile"
+  },
+  "deploy": {
+    "startCommand": "/bin/sh /app/run.sh",
+    "cronSchedule": "0 14 * * *",
+    "restartPolicyType": "NEVER"
+  }
+}

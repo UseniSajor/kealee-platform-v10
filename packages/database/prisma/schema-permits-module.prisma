@@ -1,0 +1,435 @@
+// ============================================================================
+// KEALEE PERMITS MODULE - DC/BALTIMORE NATIVE SYSTEM
+// ============================================================================
+// This schema extends the main schema with permit-specific models
+// Designed for permits-first, inspection-second workflow
+
+// ============================================================================
+// ENUMS
+// ============================================================================
+
+enum PropertyType {
+  RESIDENTIAL_SFH
+  RESIDENTIAL_MF
+  COMMERCIAL
+  MIXED_USE
+}
+
+enum ProjectType {
+  RENOVATION
+  ADDITION
+  NEW_BUILD
+  CHANGE_OF_USE
+  SITEWORK
+}
+
+enum PermitProjectStatus {
+  INTAKE
+  FEASIBILITY
+  REQUIREMENTS
+  PACKET_BUILDING
+  SUBMITTED
+  IN_REVIEW
+  RESUBMITTING
+  ISSUED
+  CLOSED
+}
+
+enum PermitType {
+  BUILDING
+  ELECTRICAL
+  PLUMBING
+  MECHANICAL
+  FIRE
+  HEALTH
+  ROW
+  ZONING
+}
+
+enum PermitCaseStatus {
+  DRAFT
+  READY
+  SUBMITTED
+  IN_REVIEW
+  CORRECTIONS_REQUIRED
+  RESUBMITTED
+  ISSUED
+  WITHDRAWN
+}
+
+enum PacketStatus {
+  DRAFT
+  LOCKED
+  SUBMITTED
+}
+
+enum ReviewRoundStatus {
+  OPEN
+  RESOLVED
+  CLOSED
+}
+
+enum TaskStatus {
+  OPEN
+  WAITING_ON_CLIENT
+  IN_PROGRESS
+  DONE
+  BLOCKED
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum PortalType {
+  API
+  SCRAPE
+  MANUAL
+}
+
+enum ConnectorMode {
+  API
+  SCRAPE
+  MANUAL
+}
+
+enum SyncDirection {
+  PULL
+  PUSH
+}
+
+enum SyncStatus {
+  SUCCESS
+  FAIL
+}
+
+enum IntegrationType {
+  PERMITFLOW_REFERENCE
+  SYMBIUM_CHECK
+}
+
+enum IntegrationStatus {
+  PENDING
+  COMPLETE
+  FAIL
+}
+
+enum JurisdictionRegion {
+  DC
+  MD
+  VA
+  NATIONAL
+}
+
+// ============================================================================
+// CORE PERMIT MODELS
+// ============================================================================
+
+model PermitProject {
+  id             String  @id @default(uuid())
+  organizationId String
+  ownerUserId    String
+  
+  // Property Information
+  address1     String
+  address2     String?
+  city         String
+  state        String
+  zip          String
+  lat          Float?
+  lng          Float?
+  propertyType PropertyType
+  
+  // Project Details
+  projectType   ProjectType
+  scopeSummary  String @db.Text
+  status        PermitProjectStatus @default(INTAKE)
+  
+  // Jurisdiction Assignment
+  jurisdictionId String
+  
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relationships
+  organization Organization @relation(fields: [organizationId], references: [id])
+  owner        User         @relation("PermitProjectOwner", fields: [ownerUserId], references: [id])
+  jurisdiction Jurisdiction @relation("PermitProjectJurisdiction", fields: [jurisdictionId], references: [id])
+  cases        PermitCase[]
+  tasks        PermitTask[]
+  
+  @@index([organizationId])
+  @@index([ownerUserId])
+  @@index([jurisdictionId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model Jurisdiction {
+  id            String             @id @default(uuid())
+  name          String
+  region        JurisdictionRegion
+  authorityName String
+  
+  // Portal Configuration
+  portalType    PortalType
+  portalBaseUrl String?
+  timezone      String             @default("America/New_York")
+  
+  // Contact Info
+  phone   String?
+  email   String?
+  website String?
+  
+  // Status
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relationships
+  projects          PermitProject[]          @relation("PermitProjectJurisdiction")
+  cases             PermitCase[]
+  connectorAccounts ConnectorAccount[]
+  syncLogs          PortalSyncLog[]
+  
+  @@index([region])
+  @@index([portalType])
+  @@index([isActive])
+}
+
+model PermitCase {
+  id             String  @id @default(uuid())
+  permitProjectId String
+  jurisdictionId String
+  
+  // Case Details
+  permitType     PermitType
+  externalCaseId String? // ID in jurisdiction's system
+  status         PermitCaseStatus @default(DRAFT)
+  
+  // Timestamps
+  submittedAt  DateTime?
+  issuedAt     DateTime?
+  lastSyncedAt DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  
+  // Relationships
+  project            PermitProject        @relation(fields: [permitProjectId], references: [id])
+  jurisdiction       Jurisdiction         @relation(fields: [jurisdictionId], references: [id])
+  packets            SubmissionPacket[]
+  reviewRounds       ReviewRound[]
+  tasks              PermitTask[]
+  syncLogs           PortalSyncLog[]
+  integrationResults IntegrationResult[]
+  
+  @@index([permitProjectId])
+  @@index([jurisdictionId])
+  @@index([status])
+  @@index([submittedAt])
+  @@index([externalCaseId])
+}
+
+model SubmissionPacket {
+  id            String  @id @default(uuid())
+  permitCaseId  String
+  version       Int
+  status        PacketStatus @default(DRAFT)
+  
+  // Checklist (JSON structure of requirements)
+  checklistJson Json
+  
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relationships
+  permitCase PermitCase   @relation(fields: [permitCaseId], references: [id])
+  files      PacketFile[]
+  
+  @@unique([permitCaseId, version])
+  @@index([permitCaseId])
+  @@index([status])
+}
+
+model PacketFile {
+  id                 String @id @default(uuid())
+  submissionPacketId String
+  
+  // File Details
+  fileKey       String // S3/storage key
+  fileName      String
+  fileType      String
+  sizeBytes     BigInt
+  uploadedByUserId String
+  
+  // Timestamps
+  createdAt DateTime @default(now())
+  
+  // Relationships
+  submissionPacket SubmissionPacket @relation(fields: [submissionPacketId], references: [id])
+  uploadedBy       User             @relation("PacketFileUploader", fields: [uploadedByUserId], references: [id])
+  
+  @@index([submissionPacketId])
+  @@index([uploadedByUserId])
+}
+
+model ReviewRound {
+  id           String  @id @default(uuid())
+  permitCaseId String
+  roundNumber  Int
+  status       ReviewRoundStatus @default(OPEN)
+  
+  // Timestamps
+  openedAt DateTime  @default(now())
+  closedAt DateTime?
+  createdAt DateTime @default(now())
+  
+  // Relationships
+  permitCase PermitCase      @relation(fields: [permitCaseId], references: [id])
+  comments   ReviewComment[]
+  
+  @@unique([permitCaseId, roundNumber])
+  @@index([permitCaseId])
+  @@index([status])
+}
+
+model ReviewComment {
+  id            String  @id @default(uuid())
+  reviewRoundId String
+  
+  // Comment Details
+  category     String // STRUCTURAL, ELECTRICAL, ZONING, etc.
+  severity     String // INFO, WARNING, CRITICAL
+  commentText  String @db.Text
+  reviewerName String
+  
+  // Timestamps
+  createdAt DateTime @default(now())
+  
+  // Relationships
+  reviewRound ReviewRound  @relation(fields: [reviewRoundId], references: [id])
+  tasks       PermitTask[]
+  
+  @@index([reviewRoundId])
+  @@index([severity])
+}
+
+model PermitTask {
+  id              String  @id @default(uuid())
+  permitProjectId String
+  permitCaseId    String?
+  reviewCommentId String?
+  
+  // Task Details
+  title       String
+  description String       @db.Text
+  status      TaskStatus   @default(OPEN)
+  priority    TaskPriority @default(MEDIUM)
+  
+  // Assignment
+  assignedToUserId String?
+  dueDate          DateTime?
+  
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relationships
+  project       PermitProject  @relation(fields: [permitProjectId], references: [id])
+  permitCase    PermitCase?    @relation(fields: [permitCaseId], references: [id])
+  reviewComment ReviewComment? @relation(fields: [reviewCommentId], references: [id])
+  assignedTo    User?          @relation("PermitTaskAssignee", fields: [assignedToUserId], references: [id])
+  
+  @@index([permitProjectId])
+  @@index([permitCaseId])
+  @@index([status])
+  @@index([assignedToUserId])
+  @@index([priority])
+  @@index([dueDate])
+}
+
+model ConnectorAccount {
+  id             String @id @default(uuid())
+  organizationId String
+  jurisdictionId String
+  
+  // Account Info
+  label         String
+  credentialRef String // Reference to vault/secret manager key
+  
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relationships
+  organization Organization @relation("OrgConnectorAccounts", fields: [organizationId], references: [id])
+  jurisdiction Jurisdiction @relation(fields: [jurisdictionId], references: [id])
+  
+  @@unique([organizationId, jurisdictionId])
+  @@index([organizationId])
+  @@index([jurisdictionId])
+}
+
+model PortalSyncLog {
+  id            String  @id @default(uuid())
+  permitCaseId  String
+  jurisdictionId String
+  
+  // Sync Details
+  connectorMode ConnectorMode
+  direction     SyncDirection
+  status        SyncStatus
+  message       String?       @db.Text
+  rawJson       Json?
+  
+  // Timestamps
+  startedAt  DateTime
+  finishedAt DateTime
+  
+  // Relationships
+  permitCase   PermitCase   @relation(fields: [permitCaseId], references: [id])
+  jurisdiction Jurisdiction @relation(fields: [jurisdictionId], references: [id])
+  
+  @@index([permitCaseId])
+  @@index([jurisdictionId])
+  @@index([status])
+  @@index([startedAt])
+}
+
+model IntegrationResult {
+  id           String  @id @default(uuid())
+  permitCaseId String
+  
+  // Integration Details
+  type       IntegrationType
+  status     IntegrationStatus
+  resultJson Json
+  
+  // Timestamps
+  createdAt DateTime @default(now())
+  
+  // Relationships
+  permitCase PermitCase @relation(fields: [permitCaseId], references: [id])
+  
+  @@index([permitCaseId])
+  @@index([type])
+  @@index([status])
+}
+
+// ============================================================================
+// RELATIONS TO EXISTING MODELS
+// ============================================================================
+
+// Add to existing User model:
+// permitProjects PermitProject[] @relation("PermitProjectOwner")
+// assignedTasks  PermitTask[]    @relation("PermitTaskAssignee")
+// uploadedFiles  PacketFile[]    @relation("PacketFileUploader")
+
+// Add to existing Organization model:
+// permitProjects     PermitProject[]    @relation(fields: [...])
+// connectorAccounts  ConnectorAccount[] @relation("OrgConnectorAccounts")

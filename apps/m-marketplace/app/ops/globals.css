@@ -1,0 +1,28 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --radius: 0.75rem;
+  --background: hsl(0 0% 100%);
+  --foreground: hsl(0 0% 9%);
+  --primary: hsl(211 100% 50%);
+  --primary-foreground: hsl(0 0% 98%);
+}
+
+.dark {
+  --background: hsl(0 0% 9%);
+  --foreground: hsl(0 0% 98%);
+  --primary: hsl(211 100% 55%);
+  --primary-foreground: hsl(0 0% 9%);
+}
+
+body {
+  background-color: white;
+  color: #1a1a1a;
+}
+
+.dark body {
+  background-color: #1a1a1a;
+  color: white;
+}

@@ -1,0 +1,35 @@
+{
+  "name": "@kealee/core-bim",
+  "version": "1.0.0",
+  "private": true,
+  "description": "BIM Processing & 3D Visualization — IFC parsing, glTF conversion, clash detection, Three.js viewer",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "require": "./dist/index.js",
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "three": "^0.170.0",
+    "@react-three/fiber": "^8.17.0",
+    "@react-three/drei": "^9.114.0",
+    "web-ifc": "^0.0.57",
+    "zod": "^3.22.4"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0"
+  },
+  "devDependencies": {
+    "@types/three": "^0.170.0",
+    "typescript": "^5.3.3"
+  }
+}

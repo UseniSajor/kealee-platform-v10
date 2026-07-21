@@ -1,0 +1,35 @@
+{
+  "id": "preconstruction-launch-12-week",
+  "version": "1.0.0",
+  "updatedAt": "2026-06-08",
+  "landingPath": "/campaigns/preconstruction",
+  "primaryCta": "Request a scope review",
+  "utmCampaign": "preconstruction_services_2026",
+  "weeks": [
+    {"week": 1, "theme": "What preconstruction should resolve", "asset": "pillar article", "channel": "search + LinkedIn", "ctaService": "full_preconstruction"},
+    {"week": 2, "theme": "Why generic cost per square foot fails", "asset": "methodology post", "channel": "search + email", "ctaService": "cost_estimate"},
+    {"week": 3, "theme": "From idea to a defined concept", "asset": "visual workflow", "channel": "LinkedIn + email", "ctaService": "design_concept"},
+    {"week": 4, "theme": "The inputs a useful estimate needs", "asset": "checklist", "channel": "search + partner outreach", "ctaService": "cost_estimate"},
+    {"week": 5, "theme": "Permit planning before filing", "asset": "jurisdiction checklist", "channel": "search + LinkedIn", "ctaService": "permit_path_only"},
+    {"week": 6, "theme": "How assumptions change a project budget", "asset": "annotated estimate example", "channel": "email + LinkedIn", "ctaService": "cost_estimate"},
+    {"week": 7, "theme": "Scope gaps that create change orders", "asset": "risk guide", "channel": "search + partner outreach", "ctaService": "full_preconstruction"},
+    {"week": 8, "theme": "Unit count and building assumptions", "asset": "developer worksheet", "channel": "LinkedIn + email", "ctaService": "full_preconstruction"},
+    {"week": 9, "theme": "What permit-ready actually means", "asset": "requirements explainer", "channel": "search + email", "ctaService": "permit_path_only"},
+    {"week": 10, "theme": "Connecting concept, estimate, and permits", "asset": "platform walkthrough", "channel": "LinkedIn + partner demo", "ctaService": "full_preconstruction"},
+    {"week": 11, "theme": "Reading a division-level estimate", "asset": "estimate anatomy guide", "channel": "search + email", "ctaService": "cost_estimate"},
+    {"week": 12, "theme": "Preconstruction readiness review", "asset": "self-assessment", "channel": "all organic channels", "ctaService": "full_preconstruction"}
+  ],
+  "utmTemplate": {
+    "utm_source": "{channel}",
+    "utm_medium": "{format}",
+    "utm_campaign": "preconstruction_services_2026",
+    "utm_content": "week_{week}_{theme_slug}"
+  },
+  "weeklyReview": [
+    "sessions and CTA clicks by content asset",
+    "form starts and submissions by service",
+    "qualified leads by project type and location",
+    "scope reviews started",
+    "paid conversions and multi-service adoption"
+  ]
+}

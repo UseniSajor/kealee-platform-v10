@@ -1,0 +1,68 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: ai-model-training-{{ JOB_ID }}
+  namespace: kealee-ai
+spec:
+  parallelism: 4  # Number of GPUs/nodes
+  completions: 4
+  template:
+    metadata:
+      labels:
+        app: ai-training
+        job-id: "{{ JOB_ID }}"
+    spec:
+      containers:
+      - name: training
+        image: kealee/ai-training:latest
+        command: ["python", "-m", "torch.distributed.launch"]
+        args:
+          - "--nproc_per_node=1"
+          - "--nnodes=4"
+          - "--node_rank=${NODE_RANK}"
+          - "--master_addr=${MASTER_ADDR}"
+          - "--master_port=29500"
+          - "train.py"
+          - "--config=/config/training-config.yaml"
+        env:
+        - name: NODE_RANK
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.labels['node-rank']
+        - name: MASTER_ADDR
+          value: "training-master-service"
+        - name: WANDB_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: wandb-secret
+              key: api-key
+        - name: MLFLOW_TRACKING_URI
+          value: "http://mlflow-service:5000"
+        resources:
+          requests:
+            nvidia.com/gpu: 1
+            memory: "16Gi"
+            cpu: "4"
+          limits:
+            nvidia.com/gpu: 1
+            memory: "32Gi"
+            cpu: "8"
+        volumeMounts:
+        - name: config
+          mountPath: /config
+        - name: data
+          mountPath: /data
+        - name: models
+          mountPath: /models
+      volumes:
+      - name: config
+        configMap:
+          name: training-config
+      - name: data
+        persistentVolumeClaim:
+          claimName: training-data-pvc
+      - name: models
+        persistentVolumeClaim:
+          claimName: model-storage-pvc
+      restartPolicy: Never
+  backoffLimit: 3

@@ -1,0 +1,23 @@
+{
+  "name": "@kealee/cost-model",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Construction cost model service — 2026 DMV market benchmarks, CSI splits, risk scoring",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.3.3"
+  }
+}

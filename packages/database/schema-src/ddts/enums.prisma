@@ -1,0 +1,27 @@
+// DDTS — Enums
+// Auto-generated from schema splitter
+
+enum TwinTier {
+  L1  // Light — basic tracking, milestone updates
+  L2  // Standard — full scheduling, cost tracking, document management
+  L3  // Premium — AI-powered predictions, real-time IoT, advanced analytics
+}
+
+enum TwinStatus {
+  INTAKE        // Initial creation, data gathering
+  LAND_ANALYSIS // Land/parcel analysis phase
+  FEASIBILITY   // Feasibility study in progress
+  ENTITLEMENT   // Permits, zoning, approvals
+  PRE_CONSTRUCTION // Design, bidding, contracting
+  CONSTRUCTION  // Active construction
+  CLOSEOUT      // Punch list, final inspections
+  OPERATIONS    // Post-construction maintenance/warranty
+  ARCHIVED      // Project complete, twin archived
+}
+
+enum TwinHealthStatus {
+  HEALTHY       // All KPIs within thresholds
+  AT_RISK       // Some KPIs approaching thresholds
+  CRITICAL      // KPIs breached, intervention needed
+  UNKNOWN       // Insufficient data
+}

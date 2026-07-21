@@ -1,0 +1,425 @@
+// LAND — Models
+// Auto-generated from schema splitter
+
+model Property {
+  id        String   @id @default(uuid())
+  orgId     String?
+  address   String
+  city      String
+  state     String
+  zip       String
+  country   String   @default("US")
+  latitude  Float?
+  longitude Float?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  org      Org?      @relation(fields: [orgId], references: [id], onDelete: SetNull)
+  projects Project[]
+  permits  Permit[]
+
+  @@index([orgId])
+  @@index([city, state])
+}
+
+model ZoningProfile {
+  id               String            @id @default(uuid())
+  jurisdictionId   String
+  parcelNumber     String?
+  address          String
+  city             String
+  state            String
+  zipCode          String
+  latitude         Float?
+  longitude        Float?
+
+  // Zoning Classification
+  zoningDistrict    ZoningDistrictType @default(UNKNOWN)
+  zoningCode        String             @default("")
+  overlayDistricts  String[]           @default([])
+
+  // Permitted Uses
+  allowedHousingTypes HousingType[] @default([])
+  conditionalUses     HousingType[] @default([])
+  prohibitedUses      HousingType[] @default([])
+
+  // Dimensional Standards
+  maxDensity        Float?
+  maxHeight         Float?
+  maxStories        Int?
+  minLotSize        Float?
+  minLotWidth       Float?
+  frontSetback      Float?
+  sideSetback       Float?
+  rearSetback       Float?
+  maxLotCoverage    Float?
+  maxFAR            Float?
+  minOpenSpace      Float?
+
+  // Parking
+  parkingMinPerUnit Float?
+  parkingReductions Json?
+  bikeParking       Float?
+
+  // Special Provisions
+  densityBonuses    Json?
+  inclusionaryReq   Json?
+
+  // NEPA
+  nepaExemption       NEPAExemptionType @default(NONE)
+  nepaExemptionReason String?
+
+  // Transit-Oriented Development (Build More Housing Near Transit Act)
+  transitProximity    Float?
+  transitType         String?
+
+  // AI Analysis
+  aiAnalyzedAt      DateTime?
+  aiConfidence      Float?
+  aiRawResponse     Json?
+  sourceDocumentUrls String[] @default([])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  jurisdiction        Jurisdiction             @relation("JurisdictionZoning", fields: [jurisdictionId], references: [id])
+  complianceReports   ZoningComplianceReport[]
+  developmentPackages DevelopmentPackage[]
+
+  @@unique([parcelNumber, jurisdictionId])
+  @@index([jurisdictionId])
+  @@index([zoningDistrict])
+  @@index([city, state])
+  @@index([address])
+  @@map("zoning_profiles")
+}
+
+model ZoningComplianceReport {
+  id              String @id @default(uuid())
+  zoningProfileId String
+  requestedById   String
+
+  // Proposed Development
+  proposedHousingType HousingType
+  proposedUnits       Int
+  proposedStories     Int         @default(1)
+  proposedSqFt        Int?
+  proposedHeight      Float?
+  proposedLotCoverage Float?
+  proposedFAR         Float?
+  proposedParking     Int?
+
+  // Compliance Results
+  isCompliant     Boolean @default(false)
+  complianceScore Int?
+  violations      Json?
+  variances       Json?
+  conditionalApproval Json?
+
+  // NEPA Assessment
+  nepaExemptionEligible Boolean           @default(false)
+  nepaCategory          NEPAExemptionType @default(NONE)
+  nepaJustification     String?
+
+  // Required Permits
+  requiredPermits   Json?
+  estimatedTimeline Int?
+  estimatedFees     Decimal? @db.Decimal(10, 2)
+
+  // Density Bonus Analysis (Sec 209)
+  densityBonusEligible Boolean @default(false)
+  densityBonusDetails  Json?
+
+  // AI Analysis
+  aiModelUsed      String?
+  aiConfidence     Float?
+  aiAnalysisDetail Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  zoningProfile ZoningProfile @relation(fields: [zoningProfileId], references: [id], onDelete: Cascade)
+  requestedBy   User          @relation("ZoningComplianceRequester", fields: [requestedById], references: [id])
+
+  @@index([zoningProfileId])
+  @@index([requestedById])
+  @@index([proposedHousingType])
+  @@map("zoning_compliance_reports")
+}
+
+// Parcel record with location, characteristics, ownership
+model Parcel {
+  id    String @id @default(uuid())
+  orgId String
+
+  // Identification
+  parcelNumber  String?   // County parcel/APN number
+  legalDesc     String?   // Legal description
+  label         String    // Human-readable name
+
+  // Location
+  address       String?
+  city          String?
+  county        String?
+  state         String?
+  zipCode       String?
+  latitude      Float?
+  longitude     Float?
+  geoBoundary   Json?     // GeoJSON polygon
+
+  // Characteristics
+  acreage       Decimal?  @db.Decimal(10, 4)
+  squareFeet    Decimal?  @db.Decimal(14, 2)
+  frontage      Decimal?  @db.Decimal(10, 2) // Street frontage in feet
+  depth         Decimal?  @db.Decimal(10, 2)
+  topography    String?   // flat, sloped, hilly, etc.
+  currentUse    String?   // vacant, agricultural, residential, commercial
+
+  // Ownership
+  currentOwner  String?
+  ownerContact  Json?     // { name, phone, email, address }
+  taxAssessment Decimal?  @db.Decimal(14, 2)
+  annualTaxes   Decimal?  @db.Decimal(10, 2)
+
+  // Scoring
+  developmentScore Float?  // 0-100 AI-generated development readiness
+  scoringFactors   Json?   // Breakdown of scoring factors
+
+  // Status & lifecycle
+  status        ParcelStatus @default(IDENTIFIED)
+  identifiedAt  DateTime     @default(now())
+  identifiedBy  String?      // User ID who identified
+
+  // Conversion
+  projectId     String?      // Set when converted to project
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  zoning       ParcelZoning[]
+  assessments  SiteAssessment[]
+  comparables  ParcelComparable[]
+  documents    ParcelDocument[]
+  notes        ParcelNote[]
+  offers       LandOffer[]
+
+  @@index([orgId])
+  @@index([status])
+  @@index([state, county])
+  @@index([developmentScore])
+  @@index([projectId])
+  @@map("parcels")
+}
+
+// Zoning analysis with density, height, FAR, setbacks, uses
+model ParcelZoning {
+  id       String @id @default(uuid())
+  parcelId String
+
+  // Zoning designation
+  zoningCode       String    // R-1, C-2, MU-3, etc.
+  zoningDesc       String?   // "Single Family Residential"
+  overlay          String?   // Overlay district
+  jurisdiction     String?   // City/county name
+
+  // Development standards
+  maxDensity       Float?    // Units per acre
+  maxHeight        Float?    // Feet
+  maxFAR           Float?    // Floor Area Ratio
+  maxLotCoverage   Float?    // Percentage
+  minLotSize       Decimal?  @db.Decimal(10, 2) // Sq ft
+
+  // Setbacks (feet)
+  frontSetback     Float?
+  sideSetback      Float?
+  rearSetback      Float?
+
+  // Allowed uses
+  allowedUses      String[]  // ["single_family", "duplex", "townhome"]
+  conditionalUses  String[]  // Uses requiring special permit
+  prohibitedUses   String[]
+
+  // Parking requirements
+  parkingRatio     Float?    // Spaces per unit
+  parkingNotes     String?
+
+  // AI analysis
+  aiAnalysis       Json?     // AI-generated zoning summary
+  complianceNotes  String?
+
+  // Source
+  sourceUrl        String?   // Link to zoning ordinance
+  verifiedAt       DateTime?
+  verifiedBy       String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  parcel Parcel @relation(fields: [parcelId], references: [id], onDelete: Cascade)
+
+  @@index([parcelId])
+  @@index([zoningCode])
+  @@map("parcel_zonings")
+}
+
+// Site assessment — environmental, geotech, survey, title
+model SiteAssessment {
+  id       String @id @default(uuid())
+  parcelId String
+
+  // Assessment info
+  assessmentType  AssessmentType
+  status          AssessmentStatus @default(NOT_STARTED)
+  title           String?
+  description     String?
+
+  // Vendor/consultant
+  vendorName      String?
+  vendorContact   Json?
+  estimatedCost   Decimal?  @db.Decimal(10, 2)
+  actualCost      Decimal?  @db.Decimal(10, 2)
+
+  // Schedule
+  orderedAt       DateTime?
+  scheduledAt     DateTime?
+  completedAt     DateTime?
+
+  // Results
+  findings        Json?     // Structured findings
+  summary         String?   // Human-readable summary
+  riskLevel       String?   // LOW, MEDIUM, HIGH, CRITICAL
+  flaggedIssues   Json?     // Array of issues found
+
+  // Documents
+  reportUrl       String?
+  attachments     Json?     // Array of { name, url, type }
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  parcel Parcel @relation(fields: [parcelId], references: [id], onDelete: Cascade)
+
+  @@index([parcelId])
+  @@index([assessmentType])
+  @@index([status])
+  @@map("site_assessments")
+}
+
+// Comparable sales data
+model ParcelComparable {
+  id       String @id @default(uuid())
+  parcelId String
+
+  // Comparable property
+  address      String?
+  saleDate     DateTime?
+  salePrice    Decimal?  @db.Decimal(14, 2)
+  pricePerSqFt Decimal?  @db.Decimal(10, 2)
+  pricePerAcre Decimal?  @db.Decimal(14, 2)
+  acreage      Decimal?  @db.Decimal(10, 4)
+  zoningCode   String?
+
+  // Comparison metrics
+  distanceMiles Float?
+  similarity    Float?    // 0-100 similarity score
+  adjustments   Json?     // Price adjustments for differences
+  adjustedPrice Decimal?  @db.Decimal(14, 2)
+
+  sourceUrl     String?
+  notes         String?
+
+  createdAt DateTime @default(now())
+
+  parcel Parcel @relation(fields: [parcelId], references: [id], onDelete: Cascade)
+
+  @@index([parcelId])
+  @@map("parcel_comparables")
+}
+
+// Parcel documents — deed, survey, environmental reports
+model ParcelDocument {
+  id       String @id @default(uuid())
+  parcelId String
+
+  documentType String    // "deed", "survey", "phase_i_esa", "title_report", etc.
+  title        String
+  description  String?
+  fileUrl      String
+  fileSize     Int?
+  mimeType     String?
+
+  uploadedBy   String?   // User ID
+
+  createdAt DateTime @default(now())
+
+  parcel Parcel @relation(fields: [parcelId], references: [id], onDelete: Cascade)
+
+  @@index([parcelId])
+  @@index([documentType])
+  @@map("parcel_documents")
+}
+
+// Notes/comments on parcels
+model ParcelNote {
+  id       String @id @default(uuid())
+  parcelId String
+
+  content    String
+  authorId   String    // User ID
+  authorName String?
+  isPinned   Boolean   @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  parcel Parcel @relation(fields: [parcelId], references: [id], onDelete: Cascade)
+
+  @@index([parcelId])
+  @@map("parcel_notes")
+}
+
+// Land offers with due diligence tracking
+model LandOffer {
+  id       String @id @default(uuid())
+  parcelId String
+
+  // Offer details
+  offerAmount     Decimal   @db.Decimal(14, 2)
+  earnestMoney    Decimal?  @db.Decimal(10, 2)
+  offerDate       DateTime  @default(now())
+  expirationDate  DateTime?
+
+  // Status
+  status          String    @default("DRAFT") // DRAFT, SUBMITTED, COUNTERED, ACCEPTED, REJECTED, EXPIRED, WITHDRAWN
+
+  // Counter offer
+  counterAmount   Decimal?  @db.Decimal(14, 2)
+  counterDate     DateTime?
+  counterNotes    String?
+
+  // Due diligence
+  ddPeriodDays    Int?      // Due diligence period in days
+  ddStartDate     DateTime?
+  ddEndDate       DateTime?
+  ddCompleted     Boolean   @default(false)
+
+  // Closing
+  closingDate     DateTime?
+  closingAmount   Decimal?  @db.Decimal(14, 2)
+  closedAt        DateTime?
+
+  // Documents & notes
+  offerDocUrl     String?
+  notes           String?
+  createdBy       String?   // User ID
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  parcel Parcel @relation(fields: [parcelId], references: [id], onDelete: Cascade)
+
+  @@index([parcelId])
+  @@index([status])
+  @@map("land_offers")
+}

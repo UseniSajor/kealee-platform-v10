@@ -1,0 +1,170 @@
+// DDTS — Models
+// Auto-generated from schema splitter
+
+// Digital Twin — one per project, central nervous system
+model DigitalTwin {
+  id        String @id @default(uuid())
+  projectId String @unique
+  orgId     String
+
+  // Twin configuration
+  tier          TwinTier         @default(L1)
+  status        TwinStatus       @default(INTAKE)
+  healthStatus  TwinHealthStatus @default(UNKNOWN)
+  healthScore   Float            @default(0) // 0-100
+  label         String?          // Human-readable label
+
+  // Lifecycle tracking
+  currentPhase     String?       // Current lifecycle phase
+  phaseStartedAt   DateTime?
+  phaseHistory     Json?         // Array of { phase, startedAt, endedAt }
+
+  // Aggregate metrics (cached, updated by event handlers)
+  metrics          Json?         // { budgetVariance, scheduleVariance, riskScore, ... }
+  lastMetricsCalc  DateTime?
+
+  // Configuration
+  enabledModules   String[]      // Which OS modules are active: ["os-land", "os-pm", ...]
+  config           Json?         // Twin-specific configuration overrides
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  project    Project       @relation("ProjectTwin", fields: [projectId], references: [id], onDelete: Cascade)
+  snapshots  TwinSnapshot[]
+  events     TwinEvent[]
+  modules    TwinModule[]
+  kpis       TwinKPI[]
+
+  @@index([orgId])
+  @@index([status])
+  @@index([healthStatus])
+  @@index([tier])
+  @@map("digital_twins")
+}
+
+// Point-in-time state capture
+model TwinSnapshot {
+  id      String @id @default(uuid())
+  twinId  String
+
+  // Snapshot data
+  label       String?   // "Pre-construction baseline", "Month 3 review"
+  snapshotAt  DateTime  @default(now())
+  trigger     String?   // "manual", "phase_change", "scheduled", "event"
+
+  // Captured state
+  status      TwinStatus
+  healthScore Float
+  metrics     Json       // Full metrics at snapshot time
+  moduleState Json?      // State of all active modules
+  kpiValues   Json?      // All KPI values at snapshot time
+
+  createdAt DateTime @default(now())
+
+  twin DigitalTwin @relation(fields: [twinId], references: [id], onDelete: Cascade)
+
+  @@index([twinId])
+  @@index([snapshotAt])
+  @@map("twin_snapshots")
+}
+
+// Event log with causality tracking
+model TwinEvent {
+  id     String @id @default(uuid())
+  twinId String
+
+  // Event identification
+  eventType    String    // "phase.changed", "kpi.breached", "module.activated"
+  source       String    // Which OS service emitted: "os-land", "os-pm", etc.
+  severity     String    @default("INFO") // INFO, LOW, MEDIUM, HIGH, CRITICAL
+
+  // Event data
+  payload      Json      // Event-specific data
+  description  String?   // Human-readable description
+
+  // Causality
+  correlationId String?  // Links related events
+  causedBy      String?  // ID of event that triggered this one
+
+  // Actor
+  actorType    String    @default("SYSTEM") // USER, SYSTEM, AI, BOT
+  actorId      String?
+
+  createdAt DateTime @default(now())
+
+  twin DigitalTwin @relation(fields: [twinId], references: [id], onDelete: Cascade)
+
+  @@index([twinId])
+  @@index([eventType])
+  @@index([source])
+  @@index([correlationId])
+  @@index([createdAt])
+  @@map("twin_events")
+}
+
+// Active OS modules per twin
+model TwinModule {
+  id     String @id @default(uuid())
+  twinId String
+
+  moduleKey    String    // "os-land", "os-feas", "os-pm", etc.
+  isActive     Boolean   @default(true)
+  activatedAt  DateTime  @default(now())
+  deactivatedAt DateTime?
+
+  // Module-specific state
+  state        Json?     // Module-scoped state data
+  lastSyncAt   DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  twin DigitalTwin @relation(fields: [twinId], references: [id], onDelete: Cascade)
+
+  @@unique([twinId, moduleKey])
+  @@index([twinId])
+  @@index([moduleKey])
+  @@map("twin_modules")
+}
+
+// Key performance indicators with thresholds
+model TwinKPI {
+  id     String @id @default(uuid())
+  twinId String
+
+  // KPI definition
+  kpiKey       String    // "budget_variance", "schedule_spi", "risk_score"
+  label        String    // "Budget Variance %"
+  category     String    // "cost", "schedule", "quality", "risk", "safety"
+
+  // Current value
+  currentValue Float     @default(0)
+  unit         String?   // "%", "days", "score", "$"
+
+  // Thresholds
+  targetValue  Float?
+  warningMin   Float?    // Below this → AT_RISK
+  warningMax   Float?    // Above this → AT_RISK
+  criticalMin  Float?    // Below this → CRITICAL
+  criticalMax  Float?    // Above this → CRITICAL
+
+  // Status
+  status       String    @default("HEALTHY") // HEALTHY, AT_RISK, CRITICAL
+  lastUpdated  DateTime  @default(now())
+
+  // History (last N values for sparkline)
+  history      Json?     // Array of { value, timestamp }
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  twin DigitalTwin @relation(fields: [twinId], references: [id], onDelete: Cascade)
+
+  @@unique([twinId, kpiKey])
+  @@index([twinId])
+  @@index([category])
+  @@index([status])
+  @@map("twin_kpis")
+}

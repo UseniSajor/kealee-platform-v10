@@ -1,0 +1,6 @@
+# TypeScript incremental build artifacts
+*.tsbuildinfo
+.vercel
+.env.vercel.pull
+.env.vercel.production
+.env*.local

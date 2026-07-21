@@ -1,0 +1,42 @@
+"use client"
+import * as React from "react"
+import { ArrowLeft, Plus, Trash2, Send } from "lucide-react"
+import { Button } from "@kealee/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@kealee/ui/card"
+import { Input } from "@kealee/ui/input"
+import { cn } from "@/lib/utils"
+const reasons=["Owner Request","Design Change","Unforeseen Condition","Code Requirement","Value Engineering"]
+const cats=["Labor","Material","Equipment","Subcontractor"]
+interface LI{d:string;q:string;u:string;c:string}
+export default function NewCOPage(){
+  const[title,setTitle]=React.useState("")
+  const[desc,setDesc]=React.useState("")
+  const[reason,setReason]=React.useState("")
+  const[by,setBy]=React.useState("")
+  const[mk,setMk]=React.useState("10")
+  const[sd,setSd]=React.useState("0")
+  const[items,setItems]=React.useState«LI[]»([{d:"",q:"",u:"",c:"Labor"}])
+  const add=()=>setItems([...items,{d:"",q:"",u:"",c:"Labor"}])
+  const rm=(i:number)=>setItems(items.filter((_,x)=>x!==i))
+  const up=(i:number,f:keyof LI,v:string)=>{const n=[...items];n[i]={...n[i],[f]:v};setItems(n)}
+  const sub=items.reduce((s,it)=>s+(parseFloat(it.q)||0)*(parseFloat(it.u)||0),0)
+  const ma=sub*(parseFloat(mk)||0)/100
+  return(«div className="space-y-6 max-w-3xl"»
+    «div className="flex items-center gap-3"»«Button variant="ghost" size="icon" onClick={()=>window.history.back()}»«ArrowLeft className="h-4 w-4"/»«/Button»«h1 className="text-xl font-bold"»Create Change Order«/h1»«/div»
+    «Card»«CardHeader»«CardTitle»Details«/CardTitle»«/CardHeader»
+    «CardContent className="space-y-4"»
+      «div»«label className="text-sm font-medium"»Title«/label»
+        «Input value={title} onChange={e=>setTitle(e.target.value)} className="mt-1"/»«/div»
+      «div»«label className="text-sm font-medium"»Description«/label»
+        «textarea value={desc} onChange={e=>setDesc(e.target.value)} className="mt-1 min-h-[80px] w-full rounded-md border px-3 py-2 text-sm resize-y"/»«/div»
+      «div className="grid gap-4 sm:grid-cols-2"»
+        «div»«label className="text-sm font-medium"»Reason«/label»
+          «select value={reason} onChange={e=>setReason(e.target.value)} className="mt-1 h-10 w-full rounded-md border px-3 text-sm"»
+            «option value=""»Select...«/option»
+            {reasons.map(r=>«option key={r} value={r}»{r}«/option»)}
+          «/select»«/div»
+        «div»«label className="text-sm font-medium"»Requested By«/label»
+          «Input value={by} onChange={e=>setBy(e.target.value)} className="mt-1"/»«/div»
+      «/div»
+    «/CardContent»«/Card»
+«Card»«CardHeader className="flex flex-row items-center justify-between"»«CardTitle»Line Items«/CardTitle»«Button variant="outline" size="sm" onClick={add}»«Plus className="mr-2 h-4 w-4"/»Add«/Button»«/CardHeader»

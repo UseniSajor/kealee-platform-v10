@@ -1,0 +1,25 @@
+{
+  "name": "@kealee/os-ai-orch",
+  "version": "1.0.0",
+  "private": true,
+  "main": "./dist/index.js",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc --incremental false"
+  },
+  "dependencies": {
+    "@kealee/core-llm": "workspace:*",
+    "@kealee/database": "workspace:*",
+    "@kealee/kealee-agent-stack": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "20.19.39",
+    "typescript": "^5.9.3"
+  }
+}

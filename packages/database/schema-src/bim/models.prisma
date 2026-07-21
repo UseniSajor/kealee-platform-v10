@@ -1,0 +1,147 @@
+// BIM — Models
+// Domain: bim | Owner: OS-PM service
+
+// BIM Element — individual elements extracted from BIM models
+model BIMElement {
+  id         String @id @default(uuid())
+  bimModelId String
+  ifcGlobalId String?
+
+  // Classification
+  elementType    BIMElementType
+  name           String
+  description    String?
+
+  // Geometry
+  boundingBox    Json?   // { min: {x,y,z}, max: {x,y,z} }
+  centroid       Json?   // { x, y, z }
+  volume         Decimal? @db.Decimal(14, 4)
+  area           Decimal? @db.Decimal(14, 4)
+
+  // Properties
+  ifcProperties  Json?    // Full IFC property sets
+  materials      String[] // Material names
+  classification String?  // Uniformat / OmniClass code
+
+  // Status
+  status           BIMElementStatus @default(PLANNED)
+  lastInspectedAt  DateTime?
+
+  // Schedule & Cost links
+  scheduleItemId     String?
+  estimateLineItemId String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  bimModel BIMModel @relation(fields: [bimModelId], references: [id], onDelete: Cascade)
+
+  @@index([bimModelId])
+  @@index([elementType])
+  @@index([status])
+  @@index([scheduleItemId])
+  @@map("bim_elements")
+}
+
+// BIM Clash — clash detection results between elements
+model BIMClash {
+  id         String @id @default(uuid())
+  bimModelId String
+  elementAId String
+  elementBId String
+
+  // Clash details
+  clashType  String // HARD, SOFT, CLEARANCE
+  severity   String // LOW, MEDIUM, HIGH, CRITICAL
+  location   Json?  // { x, y, z }
+
+  // Resolution
+  status     String    @default("OPEN") // OPEN, RESOLVED, ACCEPTED
+  resolvedAt DateTime?
+  resolvedBy String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  bimModel BIMModel @relation(fields: [bimModelId], references: [id], onDelete: Cascade)
+
+  @@index([bimModelId])
+  @@index([status])
+  @@map("bim_clashes")
+}
+
+// BIM Viewer State — saved viewer states (camera positions, layer visibility)
+model BIMViewerState {
+  id         String @id @default(uuid())
+  bimModelId String
+  userId     String
+
+  // State info
+  name           String
+  description    String?
+
+  // Viewer configuration
+  cameraPosition Json?            // { x, y, z, target, up }
+  visibleLayers  ViewerLayerType[]
+  elementFilters Json?            // Filter criteria
+  colorScheme    String?          // Which coloring to apply
+  annotations    Json?            // Markup data
+
+  // Flags
+  isDefault Boolean @default(false)
+  isShared  Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  bimModel BIMModel @relation(fields: [bimModelId], references: [id], onDelete: Cascade)
+
+  @@index([bimModelId])
+  @@index([userId])
+  @@map("bim_viewer_states")
+}
+
+// Building Asset — physical assets tracked after construction (for operations)
+model BuildingAsset {
+  id              String  @id @default(uuid())
+  projectId       String
+  bimElementId    String?
+
+  // Identification
+  assetTag        String  @unique
+  name            String
+  description     String?
+  category        String  // "hvac", "plumbing", "electrical", "structural", etc.
+  manufacturer    String?
+  modelNumber     String?
+  serialNumber    String?
+
+  // Location
+  location        String? // Room/space identifier
+  floor           String?
+
+  // Lifecycle
+  installedAt     DateTime?
+  warrantyExpires DateTime?
+  condition       String?  // EXCELLENT, GOOD, FAIR, POOR
+
+  // Cost
+  replacementCost Decimal? @db.Decimal(12, 2)
+
+  // Maintenance
+  maintenanceScheduleId String?
+  lastServicedAt        DateTime?
+
+  // Extended data
+  metadata Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@index([assetTag])
+  @@index([category])
+  @@map("building_assets")
+}

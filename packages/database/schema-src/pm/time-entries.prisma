@@ -1,0 +1,35 @@
+// PM — TIME ENTRIES
+// Domain: pm | Owner: OS-PM service
+
+model TimeEntry {
+  id        String @id @default(uuid())
+  projectId String
+  userId    String
+
+  date         DateTime
+  hours        Decimal       @db.Decimal(5, 2)
+  type         TimeEntryType @default(REGULAR)
+  costCode     String?
+  description  String?       @db.Text
+  trade        String?
+  approved     Boolean       @default(false)
+  approvedById String?
+  approvedAt   DateTime?
+  billable     Boolean       @default(true)
+  hourlyRate   Decimal?      @db.Decimal(10, 2)
+  totalCost    Decimal?      @db.Decimal(12, 2)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  project    Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user       User    @relation("TimeEntryUser", fields: [userId], references: [id])
+  approvedBy User?   @relation("TimeEntryApprover", fields: [approvedById], references: [id])
+
+  @@index([projectId])
+  @@index([userId])
+  @@index([date])
+  @@index([approved])
+  @@index([projectId, userId, date])
+  @@map("time_entries")
+}

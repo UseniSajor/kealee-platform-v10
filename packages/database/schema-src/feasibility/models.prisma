@@ -1,0 +1,279 @@
+// FEASIBILITY — Models
+// Auto-generated from schema splitter
+
+model HUDEligibilityCheck {
+  id                   String  @id @default(uuid())
+  userId               String
+  projectId            String?
+  developmentPackageId String?
+
+  // Project Financials
+  totalProjectCost   Decimal @db.Decimal(14, 2)
+  landCost           Decimal @db.Decimal(14, 2)
+  constructionCost   Decimal @db.Decimal(14, 2)
+  softCosts          Decimal @db.Decimal(14, 2)
+  equityContribution Decimal @db.Decimal(14, 2)
+
+  // Unit Mix
+  totalUnits     Int
+  unitMix        Json
+  affordableUnits Int @default(0)
+  workforceUnits  Int @default(0)
+
+  // Income Analysis (HOME Program Modernization)
+  areaMedianIncome  Decimal? @db.Decimal(10, 2)
+  targetAMIPercent  Int?
+  workforceEligible Boolean  @default(false)
+
+  // FHA Multifamily Assessment
+  fhaEligible      Boolean  @default(false)
+  fhaProgramType   String?
+  maxLoanAmount    Decimal? @db.Decimal(14, 2)
+  loanToValue      Float?
+  debtServiceCoverage Float?
+
+  // Pro Forma
+  proForma           Json?
+  rentalProjections  Json?
+  operatingExpenses  Json?
+  netOperatingIncome Decimal? @db.Decimal(14, 2)
+  capRate            Float?
+  irr                Float?
+  cashOnCash         Float?
+
+  // Grant Eligibility (Sec 209 - $200M Housing Innovation Fund)
+  innovationFundEligible Boolean @default(false)
+  innovationFundDetails  Json?
+  cdbgEligible           Boolean @default(false)
+  homeEligible           Boolean @default(false)
+
+  // Lender Package
+  lenderPackagePdfUrl String?
+  investorDeckPdfUrl  String?
+
+  // AI
+  aiModelUsed  String?
+  aiConfidence Float?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation("HUDEligibilityUser", fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([fhaEligible])
+  @@index([workforceEligible])
+  @@map("hud_eligibility_checks")
+}
+
+// Feasibility study lifecycle
+model FeasibilityStudy {
+  id        String @id @default(uuid())
+  projectId String?  // Optional — may not have project yet
+  parcelId  String?  // May be linked to a parcel
+  orgId     String
+
+  // Study info
+  title       String
+  description String?
+  status      FeasibilityStatus @default(DRAFT)
+
+  // Key inputs
+  landCost        Decimal?  @db.Decimal(14, 2)
+  targetUnits     Int?
+  targetSqFt      Decimal?  @db.Decimal(14, 2)
+  productType     String?   // "single_family", "multifamily", "mixed_use", "commercial"
+  constructionType String?  // "wood_frame", "steel", "concrete", "masonry"
+
+  // AI analysis
+  aiAnalysis      Json?     // AI-generated feasibility assessment
+  aiConfidence    Float?    // 0-100
+  aiModelUsed     String?
+
+  // Decision
+  decision        String?   // "GO", "NO_GO", "CONDITIONAL"
+  decisionDate    DateTime?
+  decisionBy      String?   // User ID
+  decisionNotes   String?
+
+  // Summary metrics (best scenario)
+  bestIRR         Float?
+  bestROI         Float?
+  bestNOI         Decimal?  @db.Decimal(14, 2)
+  totalProjectCost Decimal? @db.Decimal(14, 2)
+
+  createdBy String? // User ID
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  project         Project?  @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  scenarios       FeasibilityScenario[]
+  costAssumptions FeasibilityCostAssumption[]
+  revenueAssumptions FeasibilityRevenueAssumption[]
+  comparisons     FeasibilityComparison[]
+
+  @@index([orgId])
+  @@index([projectId])
+  @@index([parcelId])
+  @@index([status])
+  @@map("feasibility_studies")
+}
+
+// Scenario with unit mix, costs, revenue, returns
+model FeasibilityScenario {
+  id      String @id @default(uuid())
+  studyId String
+
+  // Scenario info
+  name          String    // "Base Case", "Optimistic", "Conservative"
+  description   String?
+  isBaseline    Boolean   @default(false)
+  sortOrder     Int       @default(0)
+
+  // Unit mix
+  unitMix       Json      // Array of { type, count, avgSqFt, pricePerUnit }
+  totalUnits    Int       @default(0)
+  totalSqFt     Decimal?  @db.Decimal(14, 2)
+
+  // Cost summary
+  landCost          Decimal?  @db.Decimal(14, 2)
+  hardCosts         Decimal?  @db.Decimal(14, 2)
+  softCosts         Decimal?  @db.Decimal(14, 2)
+  contingency       Decimal?  @db.Decimal(14, 2)
+  totalDevelopCost  Decimal?  @db.Decimal(14, 2)
+  costPerUnit       Decimal?  @db.Decimal(10, 2)
+  costPerSqFt       Decimal?  @db.Decimal(10, 2)
+
+  // Revenue
+  grossRevenue      Decimal?  @db.Decimal(14, 2)
+  grossRentalIncome Decimal?  @db.Decimal(14, 2) // Monthly
+  vacancyRate       Float?    // Percentage
+  effectiveGrossIncome Decimal? @db.Decimal(14, 2)
+  operatingExpenses Decimal?  @db.Decimal(14, 2)
+  netOperatingIncome Decimal? @db.Decimal(14, 2)
+
+  // Returns
+  irr               Float?
+  roi               Float?
+  cashOnCash        Float?
+  capRate           Float?
+  equityMultiple    Float?
+  paybackMonths     Int?
+
+  // Proforma
+  proformaYears     Int       @default(10)
+  proforma          Json?     // Year-by-year projection
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  study FeasibilityStudy @relation(fields: [studyId], references: [id], onDelete: Cascade)
+
+  @@index([studyId])
+  @@map("feasibility_scenarios")
+}
+
+// Categorized cost assumptions with sources
+model FeasibilityCostAssumption {
+  id      String @id @default(uuid())
+  studyId String
+
+  // Category
+  category     String    // "land", "hard_cost", "soft_cost", "financing", "contingency"
+  subcategory  String?   // "sitework", "foundation", "framing", etc.
+  lineItem     String    // Description
+
+  // Cost
+  amount       Decimal   @db.Decimal(14, 2)
+  unit         String?   // "per_sf", "per_unit", "lump_sum", "percentage"
+  quantity     Decimal?  @db.Decimal(10, 2)
+  totalCost    Decimal?  @db.Decimal(14, 2)
+
+  // Source
+  source       String?   // "rsmeans", "contractor_bid", "historical", "estimate"
+  confidence   Float?    // 0-100
+  notes        String?
+
+  sortOrder    Int       @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  study FeasibilityStudy @relation(fields: [studyId], references: [id], onDelete: Cascade)
+
+  @@index([studyId])
+  @@index([category])
+  @@map("feasibility_cost_assumptions")
+}
+
+// Revenue by unit type with escalation
+model FeasibilityRevenueAssumption {
+  id      String @id @default(uuid())
+  studyId String
+
+  // Unit type
+  unitType     String    // "1BR", "2BR", "3BR", "studio", "retail", "parking"
+  unitCount    Int
+  avgSqFt      Decimal?  @db.Decimal(10, 2)
+
+  // For-sale revenue
+  pricePerUnit   Decimal?  @db.Decimal(14, 2)
+  pricePerSqFt   Decimal?  @db.Decimal(10, 2)
+
+  // Rental revenue
+  monthlyRent    Decimal?  @db.Decimal(10, 2)
+  annualEscalation Float?  // Percentage
+
+  // Occupancy
+  stabilizedOccupancy Float? // Percentage
+  absorptionMonths   Int?    // Months to stabilize
+
+  notes        String?
+  sortOrder    Int       @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  study FeasibilityStudy @relation(fields: [studyId], references: [id], onDelete: Cascade)
+
+  @@index([studyId])
+  @@map("feasibility_revenue_assumptions")
+}
+
+// Comparable project data
+model FeasibilityComparison {
+  id      String @id @default(uuid())
+  studyId String
+
+  // Comparable project
+  projectName  String
+  address      String?
+  completedAt  DateTime?
+  productType  String?
+  totalUnits   Int?
+  totalSqFt    Decimal?  @db.Decimal(14, 2)
+
+  // Cost metrics
+  totalCost    Decimal?  @db.Decimal(14, 2)
+  costPerUnit  Decimal?  @db.Decimal(10, 2)
+  costPerSqFt  Decimal?  @db.Decimal(10, 2)
+
+  // Revenue metrics
+  avgSalePrice Decimal?  @db.Decimal(14, 2)
+  avgRent      Decimal?  @db.Decimal(10, 2)
+  capRate      Float?
+
+  // Comparison
+  similarity   Float?    // 0-100
+  notes        String?
+  sourceUrl    String?
+
+  createdAt DateTime @default(now())
+
+  study FeasibilityStudy @relation(fields: [studyId], references: [id], onDelete: Cascade)
+
+  @@index([studyId])
+  @@map("feasibility_comparisons")
+}

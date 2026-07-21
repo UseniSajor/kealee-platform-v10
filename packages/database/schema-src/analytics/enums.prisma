@@ -1,0 +1,80 @@
+// ANALYTICS — Enums
+// Auto-generated from schema splitter
+
+enum SnapshotType {
+  DAILY
+  WEEKLY
+  MONTHLY
+  QUARTERLY
+  ANNUAL
+}
+
+enum KPIType {
+  FINANCIAL // Revenue, profit, cash flow
+  OPERATIONAL // Transaction success rate, processing time
+  CUSTOMER // Churn rate, NPS, LTV
+  COMPLIANCE // Dispute rate, fraud rate
+}
+
+enum TrendDirection {
+  UP
+  DOWN
+  FLAT
+}
+
+enum CalculationFrequency {
+  REALTIME // Calculate on every request
+  HOURLY
+  DAILY
+  WEEKLY
+  MONTHLY
+}
+
+enum RiskLevel {
+  VERY_LOW // 0-20
+  LOW // 21-40
+  MEDIUM // 41-60
+  HIGH // 61-80
+  VERY_HIGH // 81-100
+}
+
+enum AlertSeverity {
+  INFO
+  WARNING
+  CRITICAL
+  EMERGENCY
+}
+
+enum BudgetCategory {
+  LABOR
+  MATERIAL
+  EQUIPMENT
+  SUBCONTRACTOR
+  PERMITS
+  OVERHEAD
+  CONTINGENCY
+}
+
+enum SoftwareTier {
+  S1 // Starter: $29-$79/mo
+  S2 // Builder: $149-$349/mo
+  S3 // Pro: $599-$1,299/mo
+  S4 // Enterprise: $1,999-$4,999/mo
+}
+
+enum SoftwareSubscriptionStatus {
+  ACTIVE
+  TRIALING
+  PAST_DUE
+  CANCELLED
+  PAUSED
+  EXPIRED
+}
+
+enum ComparisonType {
+  REVISION
+  SIMILAR_PROJECT
+  MARKET_RATE
+  HISTORICAL
+  CONTRACTOR_BID
+}

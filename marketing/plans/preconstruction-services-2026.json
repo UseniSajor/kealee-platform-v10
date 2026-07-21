@@ -1,0 +1,85 @@
+{
+  "id": "preconstruction-services-2026",
+  "version": "1.0.0",
+  "status": "ready",
+  "updatedAt": "2026-06-08",
+  "campaignName": "Build With Clarity",
+  "landingPath": "/campaigns/preconstruction",
+  "objective": "Generate qualified project leads for Kealee design concept, catalogue-based estimate, and permit-planning workflows.",
+  "guardrails": [
+    "Do not use Argona Hills or any unrelated project as campaign context.",
+    "Do not publish generic cost-per-square-foot pricing as a project estimate.",
+    "Do not hardcode service prices; resolve current pricing from platform rules.",
+    "Describe catalogue-based estimates as project-specific outputs built from quantities and documented assumptions."
+  ],
+  "audiences": [
+    {
+      "id": "property_owner",
+      "jobsToBeDone": ["define project direction", "understand budget basis", "prepare next approval step"],
+      "primaryOffer": "full_preconstruction"
+    },
+    {
+      "id": "small_developer",
+      "jobsToBeDone": ["test unit or site assumptions", "identify cost exposure", "organize jurisdiction path"],
+      "primaryOffer": "full_preconstruction"
+    },
+    {
+      "id": "project_professional",
+      "jobsToBeDone": ["qualify client scope", "create a pricing basis", "reduce submission uncertainty"],
+      "primaryOffer": "cost_estimate"
+    }
+  ],
+  "services": [
+    {
+      "id": "design_concept",
+      "promise": "Define the project direction and decisions before detailed documentation.",
+      "cta": "Start a design scope review"
+    },
+    {
+      "id": "cost_estimate",
+      "promise": "Build a transparent cost basis from quantities, labor, materials, equipment, and assumptions.",
+      "cta": "Start an estimate scope review"
+    },
+    {
+      "id": "permit_path_only",
+      "promise": "Organize jurisdiction requirements, dependencies, and submission readiness.",
+      "cta": "Start a permit-path review"
+    },
+    {
+      "id": "full_preconstruction",
+      "promise": "Connect scope, cost, and permit planning in one project record.",
+      "cta": "Request a scope review"
+    }
+  ],
+  "funnel": [
+    {"stage": "qualified_visit", "event": "campaign_view"},
+    {"stage": "service_interest", "event": "service_selected"},
+    {"stage": "form_start", "event": "lead_form_started"},
+    {"stage": "lead", "event": "lead_submitted", "api": "POST /api/leads/capture"},
+    {"stage": "scope_review", "event": "scope_review_started"},
+    {"stage": "paid_service", "event": "purchase"}
+  ],
+  "launchTargets": {
+    "ctaClickRate": 0.08,
+    "formCompletionRate": 0.45,
+    "qualifiedLeadRate": 0.35,
+    "scopeReviewToPaidRate": 0.2,
+    "attributionCoverage": 0.9,
+    "responseTimeBusinessHours": 8
+  },
+  "reportingDimensions": ["service", "project_type", "project_stage", "location", "utm_source", "utm_medium", "utm_campaign"],
+  "systems": {
+    "leadStore": "supabase_public_intake_leads",
+    "leadApi": "apps/web-main/app/api/leads/marketing/route.ts",
+    "email": "resend",
+    "analytics": "ga4_data_layer",
+    "pricingAuthority": "@kealee/core-rules and catalogue estimating workflow",
+    "campaignMedia": {
+      "provider": "replicate",
+      "imageModel": "black-forest-labs/flux-1.1-pro-ultra",
+      "videoModel": "kwaivgi/kling-v2.5-turbo-pro",
+      "command": "pnpm --filter web-main generate:preconstruction-media",
+      "manifest": "apps/marketing/public/media/generated/manifest.json"
+    }
+  }
+}

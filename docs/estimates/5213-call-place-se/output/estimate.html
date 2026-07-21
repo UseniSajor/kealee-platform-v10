@@ -1,0 +1,1545 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Estimate — 5213 Call Place SE</title>
+<style>
+  * { box-sizing: border-box; }
+  body { font: 11px/1.45 -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: #1a2230; margin: 0; }
+  .page { padding: 28px 34px; }
+  h1 { font-size: 21px; margin: 0 0 2px; }
+  h2 { font-size: 14px; margin: 22px 0 8px; padding-bottom: 4px; border-bottom: 2px solid #204020; color: #16321a; }
+  h3 { font-size: 12px; margin: 14px 0 5px; color: #33475b; }
+  .sub { color: #5a6b7b; font-size: 11px; }
+  .banner { background: #16321a; color: #fff; padding: 14px 18px; border-radius: 6px; margin: 10px 0 4px; }
+  .banner .big { font-size: 20px; font-weight: 700; }
+  table { border-collapse: collapse; width: 100%; margin: 6px 0 10px; }
+  th, td { padding: 3px 7px; border-bottom: 1px solid #e2e8f0; text-align: left; vertical-align: top; }
+  th { background: #f1f5f2; font-size: 10px; text-transform: uppercase; letter-spacing: .3px; color: #445; }
+  .r { text-align: right; } .c { text-align: center; } .b { font-weight: 700; } .dim { color: #889; }
+  .mono { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 9px; }
+  .dimc { font-size: 8.5px; color: #445; } .sh { color: #2a7; font-weight: 600; }
+  .kpi { display: flex; gap: 10px; flex-wrap: wrap; margin: 8px 0; }
+  .kpi div { flex: 1; min-width: 120px; background: #f7faf7; border: 1px solid #dfeadf; border-radius: 5px; padding: 8px 10px; }
+  .kpi .n { font-size: 16px; font-weight: 700; color: #16321a; } .kpi .l { font-size: 9.5px; color: #667; text-transform: uppercase; }
+  tr.allow td { background: #fff8ec; }
+  tr.allow td.mono { color: #a15c00; font-weight: 600; }
+  .lines { page-break-inside: auto; font-size: 10px; }
+  .lines .divhead { background: #204020; color: #fff; font-size: 11px; text-transform: none; letter-spacing: 0; }
+  .warn { background: #fff4f4; border: 1px solid #f2c7c7; border-radius: 5px; padding: 9px 12px; font-size: 10.5px; color: #7a2b2b; margin: 8px 0; }
+  .note { font-size: 10px; color: #5a6b7b; }
+  .legend { font-size: 9.5px; color: #888; margin-top: 4px; }
+  .swatch { display:inline-block; width:10px; height:10px; background:#fff8ec; border:1px solid #e3b667; vertical-align:middle; margin-right:3px; }
+  @media print { h2 { page-break-after: avoid; } table { page-break-inside: auto; } tr { page-break-inside: avoid; } .pb { page-break-before: always; } }
+  @page { margin: 12mm 10mm; size: letter; }
+  .foot { margin-top: 14px; font-size: 9px; color: #99a; border-top: 1px solid #e2e8f0; padding-top: 6px; }
+</style></head><body><div class="page">
+
+<h1>Construction Estimate — Breakdown</h1>
+<div class="sub"><b>5213 Call Place SE, Washington DC 20019</b> · New-construction detached group home / residential care (R-2), Type IIIB · Cellar + 3 stories · 5,920 GSF · 8 BR / 14 beds / 7 baths / 1 commercial kitchen / 1 elevator</div>
+<div class="sub">Priced through the Kealee catalogue (packages/estimating, DC factor 1.15) · Markups OH 12% / Profit 15% / Contingency 7% · <b>6-month construction schedule</b> · Generated 2026-07-14</div>
+
+<div class="warn"><b>Basis of estimate — measured from the permit set (28 sheets).</b> <b>88.4% of direct cost is dimensioned</b> (measured off schedules/plans or calculated from drawing dimensions); every line below lists its dimensional basis and sheet. The remaining 12% is scope that cannot be measured from this set: Division 01 general conditions (time/effort-based), utility service laterals (no civil sheet), and security (not designed). Drawings stamped NOT FOR PERMITTING — estimation only. Persisted to Postgres (quick_estimates + estimate_line_items).</div>
+
+<div class="banner"><span class="big">Recommended target: $301/SF–$300/SF &nbsp; ($1,782,808–$1.78M base building)</span><br>
+<span style="font-size:11px">The $170/SF ($1,006,400) target is <b>not achievable</b> for a cellar+3, elevatored, sprinklered, masonry R-2 group home in DC without deleting code-required life-safety, accessibility, or structural scope.</span></div>
+
+<h2>Executive summary — scenario comparison</h2>
+<table>
+<thead><tr><th>Scenario</th><th class="r">Total (excl. elevator + kitchen equip)</th><th class="r">$/GSF</th><th class="r">$/bed</th><th class="r">vs $170/SF</th></tr></thead>
+<tbody>
+<tr><td><b>A — Catalogue Market</b></td><td class="r b">$2,384,140</td><td class="r">$403/SF</td><td class="r">$170,296</td><td class="r">+137%</td></tr>
+<tr><td><b>B — Value-Engineered</b></td><td class="r b">$2,070,093</td><td class="r">$350/SF</td><td class="r">$147,864</td><td class="r">+106%</td></tr>
+<tr><td><b>C — Minimum Viable</b></td><td class="r b">$1,782,808</td><td class="r">$301/SF</td><td class="r">$127,343</td><td class="r">+77%</td></tr>
+<tr><td class="dim">Target</td><td class="r dim">$1,006,400</td><td class="r dim">$170/SF</td><td class="r dim">$71,886</td><td class="r dim">—</td></tr>
+</tbody></table>
+<div class="note"><b>CTC cross-check:</b> the same takeoff priced against the Construction Task Catalog (data/ctc) totals <b>$2,234,427 ($377/SF)</b> — within <b>-6.3%</b> of Scenario A. Only <b>45.7%</b> of direct cost maps to a real CTC task (41-task sample); the rest is allowance.</div>
+
+<div class="note"><b>Labor wage schedule:</b> apprentice $55 · journeyman $85 · master $124/hr. Labor = labor-hours × crew rate — general trades <b>$73/hr</b> (60% journeyman + 40% apprentice); licensed MEP/fire <b>$124/hr</b> (master flat (Div 21/22/23/26/27-28)). Div 01 general conditions salaried; subcontractor lump sums keep quoted value.</div>
+<h2>Scenario A — cost build-up</h2>
+<div class="kpi">
+  <div><div class="l">Direct construction</div><div class="n">$1,738,082</div></div>
+  <div><div class="l">Material</div><div class="n">$462,742</div></div>
+  <div><div class="l">Labor</div><div class="n">$669,113</div></div>
+  <div><div class="l">Subcontractor</div><div class="n">$573,506</div></div>
+  <div><div class="l">Labor-hours</div><div class="n">7,553</div></div>
+</div>
+<table style="max-width:420px">
+<tr><td>Direct construction</td><td class="r">$1,738,082</td></tr>
+<tr><td>GC overhead (12%)</td><td class="r">$208,570</td></tr>
+<tr><td>GC profit (15%)</td><td class="r">$260,712</td></tr>
+<tr><td>Contingency (7%)</td><td class="r">$121,666</td></tr>
+<tr><td>Bonds &amp; insurance (1.5%)</td><td class="r">$33,110</td></tr>
+<tr><td>Permit allowance (DCRA)</td><td class="r">$22,000</td></tr>
+<tr class="b"><td>TOTAL (excl. elevator + kitchen equip)</td><td class="r">$2,384,140</td></tr>
+</table>
+
+<h2>CSI division summary</h2>
+<table>
+<thead><tr><th class="c">Div</th><th>Description</th><th class="r">Scenario A</th><th class="r">Scenario B</th><th class="r">Scenario C</th><th class="r">A lab-hrs</th></tr></thead>
+<tbody><tr>
+  <td class="c">01</td><td>General Conditions</td>
+  <td class="r">$206,268</td><td class="r">$181,516</td><td class="r">$156,764</td>
+  <td class="r dim">1,051</td></tr><tr>
+  <td class="c">02</td><td>Existing Conditions</td>
+  <td class="r">$32,848</td><td class="r">$28,906</td><td class="r">$24,964</td>
+  <td class="r dim">56</td></tr><tr>
+  <td class="c">03</td><td>Concrete</td>
+  <td class="r">$143,985</td><td class="r">$126,706</td><td class="r">$109,428</td>
+  <td class="r dim">501</td></tr><tr>
+  <td class="c">04</td><td>Masonry</td>
+  <td class="r">$25,144</td><td class="r">$22,127</td><td class="r">$19,109</td>
+  <td class="r dim">150</td></tr><tr>
+  <td class="c">05</td><td>Metals (structural steel)</td>
+  <td class="r">$55,466</td><td class="r">$48,810</td><td class="r">$42,154</td>
+  <td class="r dim">192</td></tr><tr>
+  <td class="c">06</td><td>Wood, Plastics &amp; Rough Carpentry</td>
+  <td class="r">$159,625</td><td class="r">$140,470</td><td class="r">$121,315</td>
+  <td class="r dim">889</td></tr><tr>
+  <td class="c">07</td><td>Thermal, Moisture &amp; Exterior</td>
+  <td class="r">$113,419</td><td class="r">$99,809</td><td class="r">$86,199</td>
+  <td class="r dim">585</td></tr><tr>
+  <td class="c">08</td><td>Openings</td>
+  <td class="r">$63,921</td><td class="r">$56,250</td><td class="r">$48,580</td>
+  <td class="r dim">229</td></tr><tr>
+  <td class="c">09</td><td>Finishes</td>
+  <td class="r">$246,524</td><td class="r">$216,941</td><td class="r">$187,358</td>
+  <td class="r dim">2,200</td></tr><tr>
+  <td class="c">10</td><td>Specialties</td>
+  <td class="r">$13,561</td><td class="r">$11,934</td><td class="r">$10,307</td>
+  <td class="r dim">47</td></tr><tr>
+  <td class="c">12</td><td>Furnishings (built-in)</td>
+  <td class="r">$21,734</td><td class="r">$19,126</td><td class="r">$16,518</td>
+  <td class="r dim">84</td></tr><tr>
+  <td class="c">21</td><td>Fire Suppression</td>
+  <td class="r">$53,980</td><td class="r">$47,502</td><td class="r">$41,025</td>
+  <td class="r dim">0</td></tr><tr>
+  <td class="c">22</td><td>Plumbing</td>
+  <td class="r">$118,236</td><td class="r">$104,048</td><td class="r">$89,860</td>
+  <td class="r dim">385</td></tr><tr>
+  <td class="c">23</td><td>HVAC</td>
+  <td class="r">$135,467</td><td class="r">$119,211</td><td class="r">$102,955</td>
+  <td class="r dim">352</td></tr><tr>
+  <td class="c">26</td><td>Electrical</td>
+  <td class="r">$161,709</td><td class="r">$142,303</td><td class="r">$122,898</td>
+  <td class="r dim">570</td></tr><tr>
+  <td class="c">27/28</td><td>Communications &amp; Electronic Safety</td>
+  <td class="r">$36,597</td><td class="r">$32,205</td><td class="r">$27,813</td>
+  <td class="r dim">20</td></tr><tr>
+  <td class="c">31</td><td>Earthwork</td>
+  <td class="r">$55,343</td><td class="r">$48,702</td><td class="r">$42,061</td>
+  <td class="r dim">187</td></tr><tr>
+  <td class="c">32</td><td>Exterior Improvements</td>
+  <td class="r">$32,256</td><td class="r">$28,385</td><td class="r">$24,515</td>
+  <td class="r dim">55</td></tr><tr>
+  <td class="c">33</td><td>Utilities</td>
+  <td class="r">$62,000</td><td class="r">$54,560</td><td class="r">$47,120</td>
+  <td class="r dim">0</td></tr>
+<tr class="b"><td></td><td>Direct construction</td><td class="r">$1,738,082</td><td class="r">$1,529,512</td><td class="r">$1,320,942</td><td class="r">7,553</td></tr>
+</tbody></table>
+
+<h2>Excluded-cost schedule <span class="sub">(NOT in any total above — owner procures separately)</span></h2>
+<h3>Elevator — $142,000 allowance</h3>
+<table style="max-width:460px"><tr><td>Passenger elevator equipment — 3,500# (A001)</td><td class="r">$72,000</td></tr><tr><td>Elevator cab, doors &amp; landing entrances</td><td class="r">$22,000</td></tr><tr><td>Rails, controls &amp; fixtures</td><td class="r">$18,000</td></tr><tr><td>Elevator installation labor</td><td class="r">$24,000</td></tr><tr><td>Testing, inspection &amp; DCRA certification</td><td class="r">$6,000</td></tr><tr class="b"><td>Elevator total</td><td class="r">$142,000</td></tr></table>
+<div class="note">Included in base building: elevator pit (Div 03), hoistway shaft framing + 2-hr rated enclosure (Div 06), power rough-in &amp; disconnect (Div 26).</div>
+<h3>Commercial kitchen equipment — $120,500 allowance</h3>
+<table style="max-width:460px"><tr><td>Type I exhaust hood package (KEF-1)</td><td class="r">$14,000</td></tr><tr><td>Hood fire suppression (Ansul)</td><td class="r">$6,500</td></tr><tr><td>Make-up air unit MAU-1 (if equipment-scoped)</td><td class="r">$12,000</td></tr><tr><td>Walk-in refrigerator (A001)</td><td class="r">$11,000</td></tr><tr><td>Walk-in freezer (A001)</td><td class="r">$13,000</td></tr><tr><td>Cooking equipment (double oven + line)</td><td class="r">$28,000</td></tr><tr><td>Commercial dishwasher</td><td class="r">$9,000</td></tr><tr><td>Stainless prep tables, sinks, shelving</td><td class="r">$12,000</td></tr><tr><td>Loose / owner-furnished food-service equipment</td><td class="r">$15,000</td></tr><tr class="b"><td>Kitchen equipment total</td><td class="r">$120,500</td></tr></table>
+<div class="note">Included in base building: kitchen plumbing/gas rough-in (Div 22), electrical rough-in (Div 26), hood curb + exhaust/MUA ductwork (Div 23), kitchen wall/floor/ceiling finishes (Div 09).</div>
+
+<h2>Owner cash-flow summary <span class="sub">(Scenario A base building)</span></h2>
+<div class="kpi">
+  <div><div class="l">Base building</div><div class="n">$2,384,140</div></div>
+  <div><div class="l">Per GSF</div><div class="n">$403/SF</div></div>
+  <div><div class="l">Per bed (14)</div><div class="n">$170,296</div></div>
+  <div><div class="l">Per bedroom (8)</div><div class="n">$298,018</div></div>
+  <div><div class="l">Per bathroom (7)</div><div class="n">$340,591</div></div>
+</div>
+<table style="max-width:520px">
+<tr><td>Base-building construction (excl. elevator + kitchen equip)</td><td class="r b">$2,384,140</td></tr>
+<tr><td>Separate elevator allowance</td><td class="r">$142,000</td></tr>
+<tr><td>Separate kitchen-equipment allowance</td><td class="r">$120,500</td></tr>
+<tr class="b"><td>All-in incl. excluded allowances</td><td class="r">$2,646,640</td></tr>
+</table>
+
+<h2 class="pb">Detailed line-item breakdown — Scenario A</h2>
+<div class="legend"><span class="swatch"></span> shaded rows = labeled temporary allowance (no catalogue assembly). Code column shows the Kealee catalogue code or ALLOWANCE. Sub·Eq/u = subcontractor or equipment unit cost.</div>
+<table class="lines"><thead>
+    <tr><th colspan="11" class="divhead">DIVISION 01 — General Conditions &nbsp;·&nbsp; $206,268</th></tr>
+    <tr><th>Item</th><th>Code</th><th>Method</th><th>Dimension basis [sheet]</th><th class="r">Qty</th><th>Unit</th><th class="r">Mat $</th><th class="r">Lab-hrs</th><th>Rate</th><th class="r">Labor $</th><th class="r">Sub·Eq $</th><th class="r">Total</th></tr>
+    </thead><tbody><tr class="">
+    <td>Project Management – Weekly</td>
+    <td class="c mono">GEN-PM-WEEKLY</td>
+    <td class="c">CALC</td>
+    <td class="dimc">6-mo schedule = 26 wk</td>
+    <td class="r">26</td>
+    <td class="c">each</td>
+    <td class="r">$0</td>
+    <td class="r">208</td>
+    <td class="c" style="font-size:8px">sal.</td>
+    <td class="r">$20,930</td>
+    <td class="r">—</td>
+    <td class="r b">$20,930</td></tr><tr class="allow">
+    <td>Site superintendent (6 mo)</td>
+    <td class="c mono">ALLOWANCE</td>
+    <td class="c">ASSUMED</td>
+    <td class="dimc">6-mo build</td>
+    <td class="r">6</td>
+    <td class="c">mo</td>
+    <td class="r">$0</td>
+    <td class="r">760</td>
+    <td class="c" style="font-size:8px">sal.</td>
+    <td class="r">$57,000</td>
+    <td class="r">—</td>
+    <td class="r b">$57,000</td></tr><tr class="allow">
+    <td>Mobilization / demobilization</td>
+    <td class="c mono">ALLOWANCE</td>
+    <td class="c">ASSUMED</td>
+    <td class="dimc"></td>
+    <td class="r">1</td>
+    <td class="c">ls</td>
+    <td class="r">$0</td>
+    <td class="r">0</td>
+    <td class="c" style="font-size:8px">sal.</td>
+    <td class="r">$0</td>
+    <td class="r">$18,000</td>
+    <td class="r b">$18,000</td></tr><tr class="">
+    <td>Temporary Power</td>
+    <td class="c mono">GEN-TEMP-POWER</td>
+    <td class="c">CALC</td>
+    <td class="dimc">6 months</td>
+    <td class="r">6</td>
+    <td class="c">each</td>
+    <td class="r">$2,898</td>
+    <td class="r">24</td>
+    <td class="c" style="font-size:8px">sal.</td>
+    <td class="r">$2,415</td>
+    <td class="r">—</td>
+    <td class="r b">$5,313</td></tr><tr class="allow">
+    <td>Temporary water / heat / enclosure</td>
+    <td class="c mono">ALLOWANCE</td>
+    <td class="c">ASSUMED</td>
+    <td class="dimc"></td>
+    <td class="r">6</td>
+    <td class="c">mo</td>
+    <td class="r">$0</td>
+    <td class="r">0</td>
+    <td class="c" style="font-size:8px">sal.</td>
+    <td class="r">$0</td>
+    <td class="r">$5,100</td>
+    <td class="r b">$5,100</td></tr><tr class="">
+    <td>Portable Toilet – Monthly</td>
+    <td class="c mono">GEN-PORT-TOILET</td>
+    <td class="c">CALC</td>
+    <td class="dimc">6 months</td>
+    <td class="r">6</td>
+    <td class="c">each</td>
+    <td class="r">$1,268</td>
+    <td class="r">0</td>
+    <td class="c" style="font-size:8px">sal.</td>
+    <td class="r">$0</td>
+    <td class="r">—</td>
+    <td class="r b">$1,268</td></tr><tr class="allow">
+    <td>Safety / OSHA / PPE program</td>
+    <td class="c mono">ALLOWANCE</td>
+    <td class="c">ASSUMED</td>
+    <td class="dimc"></td>
+    <td class="r">1</td>
+    <td class="c">ls</td>
+    <td class="r">$0</td>
+    <td class="r">0</td>
+    <td class="c" style="font-size:8px">sal.</td>
+    <td class="r">$0</td>
+    <td class="r">$14,000</td>
+    <td class="r b">$14,000</td></tr><tr class="">
+    <td>Dumpster – 30 Yard</td>
+    <td class="c mono">GEN-DUMP-30</td>
+    <td class="c">CALC</td>
+    <td class="dimc"></td>
+    <td class="r">10</td>
+    <td class="c">each</td>
+    <td class="r">$7,245</td>
+    <td class="r">0</td>
+    <td class="c" style="font-size:8px">sal.</td>
+    <td class="r">$0</td>
+    <td class="r">—</td>
+    <td class="r b">$7,245</td></tr><tr class="">
+    <td>Final Construction Cleanup</td>
+    <td class="c mono">GEN-CLEANUP-FINAL</td>
+    <td class="c">MEASURED</td>
+    <td class="dimc">GSF 5,920 <span class="sh">[A001-A002]</span></td>
+    <td class="r">5,920</td>
+    <td class="c">sqft</td>
+    <td class="r">$1,776</td>
+    <td class="r">59</td>
+    <td class="c" style="font-size:8px">sal.</td>
+    <td class="r">$3,078</td>
+    <td class="r">—</td>
+    <td class="r b">$4,854</td></tr><tr class="allow">
+    <td>Testing &amp; special inspections (Type IIIB + steel)</td>
+    <td class="c mono">ALLOWANCE</td>
+    <td class="c">ASSUMED</td>
+    <td class="dimc"> <span class="sh">[A000/S101]</span></td>
+    <td class="r">1</td>
+    <td class="c">ls</td>
+    <td class="r">$0</td>
+    <td class="r">0</td>
+    <td class="c" style="font-size:8px">sal.</td>
+    <td class="r">$0</td>
+    <td class="r">$18,000</td>
+    <td class="r b">$18,000</td></tr><tr class="">
+    <td>Property Survey</td>
+    <td class="c mono">GEN-SURVEY</td>
+    <td class="c">CALC</td>
+    <td class="dimc"></td>
+    <td class="r">1</td>
+    <td class="c">each</td>
+    <td class="r">$725</td>
+    <td class="r">0</td>
+    <td class="c" style="font-size:8px">sal.</td>
+    <td class="r">$0</td>
+    <td class="r">—</td>
+    <td class="r b">$725</td></tr><tr class="">
+    <td>Structural Engineering</td>
+    <td class="c mono">GEN-ENGINEER</td>
+    <td class="c">CALC</td>
+    <td class="dimc"> <span class="sh">[S101]</span></td>
+    <td class="r">1</td>
+    <td class="c">each</td>
+    <td class="r">$1,449</td>
+    <td class="r">0</td>
+    <td class="c" style="font-size:8px">sal.</td>
+    <td class="r">$0</td>
+    <td class="r">—</td>
+    <td class="r b">$1,449</td></tr><tr class="allow">
+    <td>Closeout / as-builts / O&amp;M / commissioning</td>
+    <td class="c mono">ALLOWANCE</td>
+    <td class="c">ASSUMED</td>
+    <td class="dimc"></td>
+    <td class="r">1</td>
+    <td class="c">ls</td>
+    <td class="r">$0</td>
+    <td class="r">0</td>
+    <td class="c" style="font-size:8px">sal.</td>
+    <td class="r">$0</td>
+    <td class="r">$9,000</td>
+    <td class="r b">$9,000</td></tr><tr class="allow">
+    <td>Schedule acceleration premium (6-mo compressed, 8% on trade labor)</td>
+    <td class="c mono">ACCEL</td>
+    <td class="c">CALC</td>
+    <td class="dimc">8% × $542,305 self-perform trade labor</td>
+    <td class="r">1</td>
+    <td class="c">ls</td>
+    <td class="r">$0</td>
+    <td class="r">0</td>
+    <td class="c" style="font-size:8px">sal.</td>
+    <td class="r">$43,384</td>
+    <td class="r">—</td>
+    <td class="r b">$43,384</td></tr></tbody></table><table class="lines"><thead>
+    <tr><th colspan="11" class="divhead">DIVISION 02 — Existing Conditions &nbsp;·&nbsp; $32,848</th></tr>
+    <tr><th>Item</th><th>Code</th><th>Method</th><th>Dimension basis [sheet]</th><th class="r">Qty</th><th>Unit</th><th class="r">Mat $</th><th class="r">Lab-hrs</th><th>Rate</th><th class="r">Labor $</th><th class="r">Sub·Eq $</th><th class="r">Total</th></tr>
+    </thead><tbody><tr class="allow">
+    <td>Clearing &amp; site preparation</td>
+    <td class="c mono">ALLOWANCE</td>
+    <td class="c">CALC</td>
+    <td class="dimc">lot 4,000 SF (20'×100' / 40'×100') <span class="sh">[A000]</span></td>
+    <td class="r">4,000</td>
+    <td class="c">sqft</td>
+    <td class="r">$0</td>
+    <td class="r">32</td>
+    <td class="c" style="font-size:8px">$73</td>
+    <td class="r">$2,336</td>
+    <td class="r">$9,600</td>
+    <td class="r b">$11,936</td></tr><tr class="allow">
+    <td>Erosion &amp; sediment control (DOEE/SWM)</td>
+    <td class="c mono">ALLOWANCE</td>
+    <td class="c">CALC</td>
+    <td class="dimc">lot perimeter silt fence ~280 LF <span class="sh">[A000]</span></td>
+    <td class="r">280</td>
+    <td class="c">lf</td>
+    <td class="r">$2,688</td>
+    <td class="r">24</td>
+    <td class="c" style="font-size:8px">$73</td>
+    <td class="r">$1,744</td>
+    <td class="r">$4,480</td>
+    <td class="r b">$8,912</td></tr><tr class="allow">
+    <td>New rear areaway excavation/retaining</td>
+    <td class="c mono">ALLOWANCE</td>
+    <td class="c">MEASURED</td>
+    <td class="dimc">rear areaway shown (scope note) <span class="sh">[A000]</span></td>
+    <td class="r">1</td>
+    <td class="c">ls</td>
+    <td class="r">$0</td>
+    <td class="r">0</td>
+    <td class="c" style="font-size:8px">$73</td>
+    <td class="r">$0</td>
+    <td class="r">$12,000</td>
+    <td class="r b">$12,000</td></tr></tbody></table><table class="lines"><thead>
+    <tr><th colspan="11" class="divhead">DIVISION 03 — Concrete &nbsp;·&nbsp; $143,985</th></tr>
+    <tr><th>Item</th><th>Code</th><th>Method</th><th>Dimension basis [sheet]</th><th class="r">Qty</th><th>Unit</th><th class="r">Mat $</th><th class="r">Lab-hrs</th><th>Rate</th><th class="r">Labor $</th><th class="r">Sub·Eq $</th><th class="r">Total</th></tr>
+    </thead><tbody><tr class="allow">
+    <td>Drilled piers 18"Ø×30" (4-#5 vert, #3 ties)</td>
+    <td class="c mono">ALLOWANCE</td>
+    <td class="c">MEASURED</td>
+    <td class="dimc">18"Ø×30" deep × ~10 at HSS cols/perimeter <span class="sh">[S100]</span></td>
+    <td class="r">10</td>
+    <td class="c">ea</td>
+    <td class="r">$4,125</td>
+    <td class="r">0</td>
+    <td class="c" style="font-size:8px">$73</td>
+    <td class="r">$0</td>
+    <td class="r">$12,375</td>
+    <td class="r b">$16,500</td></tr><tr class="allow">
+    <td>Grade beams / foundation wall — 8" CIP</td>
+    <td class="c mono">ALLOWANCE</td>
+    <td class="c">CALC</td>
+    <td class="dimc">P176 × 9' cellar = 1,584 SF <span class="sh">[S100]</span></td>
+    <td class="r">1,584</td>
+    <td class="c">sqft</td>
+    <td class="r">$13,464</td>
+    <td class="r">144</td>
+    <td class="c" style="font-size:8px">$73</td>
+    <td class="r">$10,488</td>
+    <td class="r">$29,621</td>
+    <td class="r b">$53,573</td></tr><tr class="">
+    <td>Concrete Pour – 4\</td>
+    <td class="c mono">CONC-POUR-4</td>
+    <td class="c">MEASURED</td>
+    <td class="dimc">4" SOG, 24×~62 = 1,480 SF <span class="sh">[S100]</span></td>
+    <td class="r">1,480</td>
+    <td class="c">sqft</td>
+    <td class="r">$8,036</td>
+    <td class="r">59</td>
+    <td class="c" style="font-size:8px">$73</td>
+    <td class="r">$4,322</td>
+    <td class="r">—</td>
+    <td class="r b">$12,358</td></tr><tr class="">
+    <td>Wire Mesh Placement</td>
+    <td class="c mono">CONC-MESH</td>
+    <td class="c">MEASURED</td>
+    <td class="dimc">W2.9×W2.9 WWF over slab area <span class="sh">[S100]</span></td>
+    <td class="r">1,480</td>
+    <td class="c">sqft</td>
+    <td class="r">$888</td>
+    <td class="r">15</td>
+    <td class="c" style="font-size:8px">$73</td>
+    <td class="r">$1,080</td>
+    <td class="r">—</td>
+    <td class="r b">$1,968</td></tr><tr class="allow">
+    <td>Elevator pit (excavate/form/pour/waterproof)</td>
+    <td class="c mono">ALLOWANCE</td>
+    <td class="c">MEASURED</td>
+    <td class="dimc">7'-9"×7'-9" hoistway pit <span class="sh">[A001]</span></td>
+    <td class="r">1</td>
+    <td class="c">ea</td>
+    <td class="r">$0</td>
+    <td class="r">0</td>
+    <td class="c" style="font-size:8px">$73</td>
+    <td class="r">$0</td>
+    <td class="r">$9,500</td>
+    <td class="r b">$9,500</td></tr><tr class="allow">
+    <td>Exterior concrete (rear areaway, stoop, steps)</td>
+    <td class="c mono">ALLOWANCE</td>
+    <td class="c">MEASURED</td>
+    <td class="dimc">rear areaway + front entry slab ~400 SF <span class="sh">[A000/S100]</span></td>
+    <td class="r">400</td>
+    <td class="c">sqft</td>
+    <td class="r">$2,400</td>
+    <td class="r">19</td>
+    <td class="c" style="font-size:8px">$73</td>
+    <td class="r">$1,402</td>
+    <td class="r">$5,760</td>
+    <td class="r b">$9,562</td></tr><tr class="">
+    <td>Exterior Waterproofing</td>
+    <td class="c mono">FOUND-WP-EXT</td>
+    <td class="c">CALC</td>
+    <td class="dimc">perimeter 176 LF <span class="sh">[S100]</span></td>
+    <td class="r">176</td>
+    <td class="c">lf</td>
+    <td class="r">$21,252</td>
+    <td class="r">264</td>
+    <td class="c" style="font-size:8px">$73</td>
+    <td class="r">$19,272</td>
+    <td class="r">—</td>
+    <td class="r b">$40,524</td></tr></tbody></table><table class="lines"><thead>
+    <tr><th colspan="11" class="divhead">DIVISION 04 — Masonry &nbsp;·&nbsp; $25,144</th></tr>
+    <tr><th>Item</th><th>Code</th><th>Method</th><th>Dimension basis [sheet]</th><th class="r">Qty</th><th>Unit</th><th class="r">Mat $</th><th class="r">Lab-hrs</th><th>Rate</th><th class="r">Labor $</th><th class="r">Sub·Eq $</th><th class="r">Total</th></tr>
+    </thead><tbody><tr class="">
+    <td>Brick Veneer</td>
+    <td class="c mono">SID-BRICK-VEN</td>
+    <td class="c">MEASURED</td>
+    <td class="dimc">front 24'×35.3' − openings = 600 SF <span class="sh">[A004]</span></td>
+    <td class="r">600</td>
+    <td class="c">sqft</td>
+    <td class="r">$8,694</td>
+    <td class="r">150</td>
+    <td class="c" style="font-size:8px">$73</td>
+    <td class="r">$10,950</td>
+    <td class="r">—</td>
+    <td class="r b">$19,644</td></tr><tr class="allow">
+    <td>Lintels, flashing, masonry accessories</td>
+    <td class="c mono">ALLOWANCE</td>
+    <td class="c">CALC</td>
+    <td class="dimc">front openings: storefront + 8 windows <span class="sh">[A004]</span></td>
+    <td class="r">1</td>
+    <td class="c">ls</td>
+    <td class="r">$0</td>
+    <td class="r">0</td>
+    <td class="c" style="font-size:8px">$73</td>
+    <td class="r">$0</td>
+    <td class="r">$5,500</td>
+    <td class="r b">$5,500</td></tr></tbody></table><table class="lines"><thead>
+    <tr><th colspan="11" class="divhead">DIVISION 05 — Metals (structural steel) &nbsp;·&nbsp; $55,466</th></tr>
+    <tr><th>Item</th><th>Code</th><th>Method</th><th>Dimension basis [sheet]</th><th class="r">Qty</th><th>Unit</th><th class="r">Mat $</th><th class="r">Lab-hrs</th><th>Rate</th><th class="r">Labor $</th><th class="r">Sub·Eq $</th><th class="r">Total</th></tr>
+    </thead><tbody><tr class="">
+    <td>Steel Beam Installation</td>
+    <td class="c mono">FOUND-STEEL-BEAM</td>
+    <td class="c">MEASURED</td>
+    <td class="dimc">W12×26: ~2 beams × 24' × 4 levels + roof <span class="sh">[S101]</span></td>
+    <td class="r">210</td>
+    <td class="c">lf</td>
+    <td class="r">$12,678</td>
+    <td class="r">158</td>
+    <td class="c" style="font-size:8px">$73</td>
+    <td class="r">$11,498</td>
+    <td class="r">—</td>
+    <td class="r b">$24,175</td></tr><tr class="allow">
+    <td>HSS 5×5×3/8 steel columns + base plates</td>
+    <td class="c mono">ALLOWANCE</td>
+    <td class="c">MEASURED</td>
+    <td class="dimc">~8 cols × 35' on 3/4"×8"×12 base plates <span class="sh">[S100/S101]</span></td>
+    <td class="r">280</td>
+    <td class="c">lf</td>
+    <td class="r">$6,076</td>
+    <td class="r">35</td>
+    <td class="c" style="font-size:8px">$73</td>
+    <td class="r">$2,535</td>
+    <td class="r">$8,680</td>
+    <td class="r b">$17,291</td></tr><tr class="allow">
+    <td>Steel connections, embeds, stair/rail steel, misc metals</td>
+    <td class="c mono">ALLOWANCE</td>
+    <td class="c">CALC</td>
+    <td class="dimc">beam/col connections + egress stair steel <span class="sh">[S101]</span></td>
+    <td class="r">1</td>
+    <td class="c">ls</td>
+    <td class="r">$0</td>
+    <td class="r">0</td>
+    <td class="c" style="font-size:8px">$73</td>
+    <td class="r">$0</td>
+    <td class="r">$14,000</td>
+    <td class="r b">$14,000</td></tr></tbody></table><table class="lines"><thead>
+    <tr><th colspan="11" class="divhead">DIVISION 06 — Wood, Plastics &amp; Rough Carpentry &nbsp;·&nbsp; $159,625</th></tr>
+    <tr><th>Item</th><th>Code</th><th>Method</th><th>Dimension basis [sheet]</th><th class="r">Qty</th><th>Unit</th><th class="r">Mat $</th><th class="r">Lab-hrs</th><th>Rate</th><th class="r">Labor $</th><th class="r">Sub·Eq $</th><th class="r">Total</th></tr>
+    </thead><tbody><tr class="">
+    <td>Floor System – I-Joist (TJI)</td>
+    <td class="c mono">FRAME-FLOOR-TJI</td>
+    <td class="c">MEASURED</td>
+    <td class="dimc">3 floors × 1,480 = 4,440 SF <span class="sh">[S101]</span></td>
+    <td class="r">4,440</td>
+    <td class="c">sqft</td>
+    <td class="r">$33,700</td>
+    <td class="r">266</td>
+    <td class="c" style="font-size:8px">$73</td>
+    <td class="r">$19,447</td>
+    <td class="r">—</td>
+    <td class="r b">$53,147</td></tr><tr class="">
+    <td>Subfloor Sheathing</td>
+    <td class="c mono">FRAME-SHEATH-SUB</td>
+    <td class="c">MEASURED</td>
+    <td class="dimc">3/4" ply, 4,440 SF <span class="sh">[S101]</span></td>
+    <td class="r">4,440</td>
+    <td class="c">sqft</td>
+    <td class="r">$12,654</td>
+    <td class="r">133</td>
+    <td class="c" style="font-size:8px">$73</td>
+    <td class="r">$9,724</td>
+    <td class="r">—</td>
+    <td class="r b">$22,378</td></tr><tr class="">
+    <td>Exterior Wall – 2x6</td>
+    <td class="c mono">FRAME-WALL-2X6</td>
+    <td class="c">CALC</td>
+    <td class="dimc">P176 × 3 stories = 528 LF <span class="sh">[A004]</span></td>
+    <td class="r">528</td>
+    <td class="c">lf</td>
+    <td class="r">$6,009</td>
+    <td class="r">95</td>
+    <td class="c" style="font-size:8px">$73</td>
+    <td class="r">$6,938</td>
+    <td class="r">—</td>
+    <td class="r b">$12,947</td></tr><tr class="">
+    <td>Interior Wall – 2x4</td>
+    <td class="c mono">FRAME-WALL-2X4</td>
+    <td class="c">MEASURED</td>
+    <td class="dimc">partitions: cellar130+1st120+2nd210+3rd210 = 700 LF <span class="sh">[A001-A002]</span></td>
+    <td class="r">700</td>
+    <td class="c">lf</td>
+    <td class="r">$5,313</td>
+    <td class="r">105</td>
+    <td class="c" style="font-size:8px">$73</td>
+    <td class="r">$7,665</td>
+    <td class="r">—</td>
+    <td class="r b">$12,978</td></tr><tr class="">
+    <td>Wall Sheathing – OSB/Plywood</td>
+    <td class="c mono">FRAME-SHEATH-WALL</td>
+    <td class="c">CALC</td>
+    <td class="dimc">P176 × 30' above grade = 5,280 SF <span class="sh">[A004]</span></td>
+    <td class="r">5,280</td>
+    <td class="c">sqft</td>
+    <td class="r">$10,032</td>
+    <td class="r">106</td>
+    <td class="c" style="font-size:8px">$73</td>
+    <td class="r">$7,709</td>
+    <td class="r">—</td>
+    <td class="r b">$17,741</td></tr><tr class="allow">
+    <td>Low-slope roof framing (PT 2x8 @24" + steel)</td>
+    <td class="c mono">ALLOWANCE</td>
+    <td class="c">MEASURED</td>
+    <td class="dimc">roof 1,480 SF <span class="sh">[S101/A003]</span></td>
+    <td class="r">1,480</td>
+    <td class="c">sqft</td>
+    <td class="r">$5,550</td>
+    <td class="r">74</td>
+    <td class="c" style="font-size:8px">$73</td>
+    <td class="r">$5,402</td>
+    <td class="r">—</td>
+    <td class="r b">$10,952</td></tr><tr class="">
+    <td>Roof Sheathing – OSB/Plywood</td>
+    <td class="c mono">FRAME-SHEATH-ROOF</td>
+    <td class="c">MEASURED</td>
+    <td class="dimc">1,480 SF <span class="sh">[A003]</span></td>
+    <td class="r">1,480</td>
+    <td class="c">sqft</td>
+    <td class="r">$2,990</td>
+    <td class="r">44</td>
+    <td class="c" style="font-size:8px">$73</td>
+    <td class="r">$3,241</td>
+    <td class="r">—</td>
+    <td class="r b">$6,231</td></tr><tr class="">
+    <td>Stair Framing</td>
+    <td class="c mono">FRAME-STAIR</td>
+    <td class="c">MEASURED</td>
+    <td class="dimc">cellar→3 = 4 flights, 18-19 risers ea <span class="sh">[A001-A002]</span></td>
+    <td class="r">4</td>
+    <td class="c">each</td>
+    <td class="r">$725</td>
+    <td class="r">16</td>
+    <td class="c" style="font-size:8px">$73</td>
+    <td class="r">$1,168</td>
+    <td class="r">—</td>
+    <td class="r b">$1,893</td></tr><tr class="allow">
+    <td>Elevator shaft framing &amp; 2-hr rated enclosure</td>
+    <td class="c mono">ALLOWANCE</td>
+    <td class="c">MEASURED</td>
+    <td class="dimc">7'-9"×7'-9" × 4 levels shaft <span class="sh">[A001]</span></td>
+    <td class="r">1</td>
+    <td class="c">ea</td>
+    <td class="r">$0</td>
+    <td class="r">0</td>
+    <td class="c" style="font-size:8px">$73</td>
+    <td class="r">$0</td>
+    <td class="r">$14,000</td>
+    <td class="r b">$14,000</td></tr><tr class="allow">
+    <td>Blocking, backing, misc rough carpentry</td>
+    <td class="c mono">ALLOWANCE</td>
+    <td class="c">CALC</td>
+    <td class="dimc">GSF 5,920 <span class="sh">[A001-A002]</span></td>
+    <td class="r">5,920</td>
+    <td class="c">sqft</td>
+    <td class="r">$3,730</td>
+    <td class="r">50</td>
+    <td class="c" style="font-size:8px">$73</td>
+    <td class="r">$3,630</td>
+    <td class="r">—</td>
+    <td class="r b">$7,360</td></tr></tbody></table><table class="lines"><thead>
+    <tr><th colspan="11" class="divhead">DIVISION 07 — Thermal, Moisture &amp; Exterior &nbsp;·&nbsp; $113,419</th></tr>
+    <tr><th>Item</th><th>Code</th><th>Method</th><th>Dimension basis [sheet]</th><th class="r">Qty</th><th>Unit</th><th class="r">Mat $</th><th class="r">Lab-hrs</th><th>Rate</th><th class="r">Labor $</th><th class="r">Sub·Eq $</th><th class="r">Total</th></tr>
+    </thead><tbody><tr class="">
+    <td>Batt Insulation – R-13/R-15</td>
+    <td class="c mono">FRAME-INSUL-BATT</td>
+    <td class="c">CALC</td>
+    <td class="dimc">exterior walls 5,280 SF <span class="sh">[A004]</span></td>
+    <td class="r">5,280</td>
+    <td class="c">sqft</td>
+    <td class="r">$5,122</td>
+    <td class="r">53</td>
+    <td class="c" style="font-size:8px">$73</td>
+    <td class="r">$3,854</td>
+    <td class="r">—</td>
+    <td class="r b">$8,976</td></tr><tr class="">
+    <td>Fiber Cement Siding – Lap</td>
+    <td class="c mono">SID-FC-LAP</td>
+    <td class="c">MEASURED</td>
+    <td class="dimc">rear 728 + 2 sides 4,372 = 5,100 SF <span class="sh">[A004/A005]</span></td>
+    <td class="r">5,100</td>
+    <td class="c">sqft</td>
+    <td class="r">$33,864</td>
+    <td class="r">408</td>
+    <td class="c" style="font-size:8px">$73</td>
+    <td class="r">$29,784</td>
+    <td class="r">—</td>
+    <td class="r b">$63,648</td></tr><tr class="allow">
+    <td>Roof / rigid insulation + air/vapor barrier</td>
+    <td class="c mono">ALLOWANCE</td>
+    <td class="c">MEASURED</td>
+    <td class="dimc">roof 1,480 SF <span class="sh">[A003]</span></td>
+    <td class="r">1,480</td>
+    <td class="c">sqft</td>
+    <td class="r">$2,324</td>
+    <td class="r">22</td>
+    <td class="c" style="font-size:8px">$73</td>
+    <td class="r">$1,631</td>
+    <td class="r">$2,664</td>
+    <td class="r b">$6,619</td></tr><tr class="allow">
+    <td>House wrap / weather-resistive barrier</td>
+    <td class="c mono">ALLOWANCE</td>
+    <td class="c">CALC</td>
+    <td class="dimc">5,280 SF <span class="sh">[A004]</span></td>
+    <td class="r">5,280</td>
+    <td class="c">sqft</td>
+    <td class="r">$3,590</td>
+    <td class="r">48</td>
+    <td class="c" style="font-size:8px">$73</td>
+    <td class="r">$3,508</td>
+    <td class="r">—</td>
+    <td class="r b">$7,098</td></tr><tr class="">
+    <td>TPO Flat Roof</td>
+    <td class="c mono">ROOF-FLAT-TPO</td>
+    <td class="c">MEASURED</td>
+    <td class="dimc">1,480 SF = 14.8 sq <span class="sh">[A003]</span></td>
+    <td class="r">14.8</td>
+    <td class="c">sq</td>
+    <td class="r">$4,914</td>
+    <td class="r">37</td>
+    <td class="c" style="font-size:8px">$73</td>
+    <td class="r">$2,701</td>
+    <td class="r">—</td>
+    <td class="r b">$7,615</td></tr><tr class="allow">
+    <td>Gutters, downspouts, flashing, coping</td>
+    <td class="c mono">ALLOWANCE</td>
+    <td class="c">CALC</td>
+    <td class="dimc">parapet perimeter + downspouts <span class="sh">[A003/A004]</span></td>
+    <td class="r">1</td>
+    <td class="c">ls</td>
+    <td class="r">$0</td>
+    <td class="r">0</td>
+    <td class="c" style="font-size:8px">$73</td>
+    <td class="r">$0</td>
+    <td class="r">$8,500</td>
+    <td class="r b">$8,500</td></tr><tr class="allow">
+    <td>Firestopping / rated assemblies (Type IIIB)</td>
+    <td class="c mono">ALLOWANCE</td>
+    <td class="c">CALC</td>
+    <td class="dimc">GSF 5,920 rated construction <span class="sh">[A000]</span></td>
+    <td class="r">5,920</td>
+    <td class="c">sqft</td>
+    <td class="r">$1,302</td>
+    <td class="r">17</td>
+    <td class="c" style="font-size:8px">$73</td>
+    <td class="r">$1,253</td>
+    <td class="r">$3,907</td>
+    <td class="r b">$6,463</td></tr><tr class="allow">
+    <td>Sealants &amp; caulking</td>
+    <td class="c mono">ALLOWANCE</td>
+    <td class="c">CALC</td>
+    <td class="dimc">openings + joints perimeter <span class="sh">[A004]</span></td>
+    <td class="r">1</td>
+    <td class="c">ls</td>
+    <td class="r">$0</td>
+    <td class="r">0</td>
+    <td class="c" style="font-size:8px">$73</td>
+    <td class="r">$0</td>
+    <td class="r">$4,500</td>
+    <td class="r b">$4,500</td></tr></tbody></table><table class="lines"><thead>
+    <tr><th colspan="11" class="divhead">DIVISION 08 — Openings &nbsp;·&nbsp; $63,921</th></tr>
+    <tr><th>Item</th><th>Code</th><th>Method</th><th>Dimension basis [sheet]</th><th class="r">Qty</th><th>Unit</th><th class="r">Mat $</th><th class="r">Lab-hrs</th><th>Rate</th><th class="r">Labor $</th><th class="r">Sub·Eq $</th><th class="r">Total</th></tr>
+    </thead><tbody><tr class="">
+    <td>Interior Door – Solid Core</td>
+    <td class="c mono">DOOR-INT-SOLID</td>
+    <td class="c">MEASURED</td>
+    <td class="dimc">D2xx/D3xx interior <span class="sh">[A006/plans]</span></td>
+    <td class="r">40</td>
+    <td class="c">each</td>
+    <td class="r">$14,490</td>
+    <td class="r">100</td>
+    <td class="c" style="font-size:8px">$73</td>
+    <td class="r">$7,300</td>
+    <td class="r">—</td>
+    <td class="r b">$21,790</td></tr><tr class="">
+    <td>Exterior Door – Steel</td>
+    <td class="c mono">DOOR-EXT-STEEL</td>
+    <td class="c">MEASURED</td>
+    <td class="dimc">front dbl + rear + side <span class="sh">[A004/A005]</span></td>
+    <td class="r">4</td>
+    <td class="c">each</td>
+    <td class="r">$2,898</td>
+    <td class="r">16</td>
+    <td class="c" style="font-size:8px">$73</td>
+    <td class="r">$1,168</td>
+    <td class="r">—</td>
+    <td class="r b">$4,066</td></tr><tr class="">
+    <td>Vinyl Double-Hung Window</td>
+    <td class="c mono">WIN-VIN-DH</td>
+    <td class="c">MEASURED</td>
+    <td class="dimc">window tags 01–35 <span class="sh">[A004/A005]</span></td>
+    <td class="r">35</td>
+    <td class="c">each</td>
+    <td class="r">$15,848</td>
+    <td class="r">88</td>
+    <td class="c" style="font-size:8px">$73</td>
+    <td class="r">$6,388</td>
+    <td class="r">—</td>
+    <td class="r b">$22,236</td></tr><tr class="allow">
+    <td>Storefront / WELCOME entry glazing</td>
+    <td class="c mono">ALLOWANCE</td>
+    <td class="c">MEASURED</td>
+    <td class="dimc">first-floor storefront + WELCOME entry (elevation) <span class="sh">[A004]</span></td>
+    <td class="r">1</td>
+    <td class="c">ls</td>
+    <td class="r">$0</td>
+    <td class="r">0</td>
+    <td class="c" style="font-size:8px">$73</td>
+    <td class="r">$0</td>
+    <td class="r">$9,500</td>
+    <td class="r b">$9,500</td></tr><tr class="allow">
+    <td>Commercial hardware (levers, closers, panic)</td>
+    <td class="c mono">ALLOWANCE</td>
+    <td class="c">CALC</td>
+    <td class="dimc">44 doors × commercial hardware set <span class="sh">[plans]</span></td>
+    <td class="r">44</td>
+    <td class="c">ea</td>
+    <td class="r">$4,466</td>
+    <td class="r">26</td>
+    <td class="c" style="font-size:8px">$73</td>
+    <td class="r">$1,863</td>
+    <td class="r">—</td>
+    <td class="r b">$6,329</td></tr></tbody></table><table class="lines"><thead>
+    <tr><th colspan="11" class="divhead">DIVISION 09 — Finishes &nbsp;·&nbsp; $246,524</th></tr>
+    <tr><th>Item</th><th>Code</th><th>Method</th><th>Dimension basis [sheet]</th><th class="r">Qty</th><th>Unit</th><th class="r">Mat $</th><th class="r">Lab-hrs</th><th>Rate</th><th class="r">Labor $</th><th class="r">Sub·Eq $</th><th class="r">Total</th></tr>
+    </thead><tbody><tr class="">
+    <td>Drywall Hang – Standard 1/2\</td>
+    <td class="c mono">DRY-HANG-STD</td>
+    <td class="c">CALC</td>
+    <td class="dimc">2.4×GSF walls + ceilings <span class="sh">[A001-A002]</span></td>
+    <td class="r">26,084</td>
+    <td class="c">sqft</td>
+    <td class="r">$18,259</td>
+    <td class="r">522</td>
+    <td class="c" style="font-size:8px">$73</td>
+    <td class="r">$38,083</td>
+    <td class="r">—</td>
+    <td class="r b">$56,341</td></tr><tr class="">
+    <td>Drywall Tape &amp; Finish – Level 4</td>
+    <td class="c mono">DRY-TAPE-L4</td>
+    <td class="c">CALC</td>
+    <td class="dimc">same drywall area, Level-4 finish <span class="sh">[A001-A002]</span></td>
+    <td class="r">26,084</td>
+    <td class="c">sqft</td>
+    <td class="r">$7,825</td>
+    <td class="r">522</td>
+    <td class="c" style="font-size:8px">$73</td>
+    <td class="r">$38,083</td>
+    <td class="r">—</td>
+    <td class="r b">$45,908</td></tr><tr class="allow">
+    <td>Rated shaft/corridor drywall upgrade (Type X)</td>
+    <td class="c mono">ALLOWANCE</td>
+    <td class="c">CALC</td>
+    <td class="dimc">elevator shaft + corridor rated walls ~3,500 SF <span class="sh">[A001-A002]</span></td>
+    <td class="r">3,500</td>
+    <td class="c">sqft</td>
+    <td class="r">$1,540</td>
+    <td class="r">31</td>
+    <td class="c" style="font-size:8px">$73</td>
+    <td class="r">$2,248</td>
+    <td class="r">—</td>
+    <td class="r b">$3,788</td></tr><tr class="allow">
+    <td>Suspended ACT ceilings (cellar/kitchen/support)</td>
+    <td class="c mono">ALLOWANCE</td>
+    <td class="c">CALC</td>
+    <td class="dimc">kitchen 470 + records/maint/support ~1,600 SF <span class="sh">[A001]</span></td>
+    <td class="r">1,600</td>
+    <td class="c">sqft</td>
+    <td class="r">$3,456</td>
+    <td class="r">31</td>
+    <td class="c" style="font-size:8px">$73</td>
+    <td class="r">$2,243</td>
+    <td class="r">$5,760</td>
+    <td class="r b">$11,459</td></tr><tr class="">
+    <td>Porcelain Floor Tile</td>
+    <td class="c mono">FLR-TILE-PORC</td>
+    <td class="c">MEASURED</td>
+    <td class="dimc">7 baths tile floor+base ~900 SF <span class="sh">[A001-A002]</span></td>
+    <td class="r">900</td>
+    <td class="c">sqft</td>
+    <td class="r">$8,694</td>
+    <td class="r">180</td>
+    <td class="c" style="font-size:8px">$73</td>
+    <td class="r">$13,140</td>
+    <td class="r">—</td>
+    <td class="r b">$21,834</td></tr><tr class="">
+    <td>Luxury Vinyl Plank (LVP)</td>
+    <td class="c mono">FLR-LVP</td>
+    <td class="c">CALC</td>
+    <td class="dimc">8 BR + lounge/office/common ~4,500 SF <span class="sh">[A001-A002]</span></td>
+    <td class="r">4,500</td>
+    <td class="c">sqft</td>
+    <td class="r">$21,735</td>
+    <td class="r">270</td>
+    <td class="c" style="font-size:8px">$73</td>
+    <td class="r">$19,710</td>
+    <td class="r">—</td>
+    <td class="r b">$41,445</td></tr><tr class="">
+    <td>Interior Wall Paint</td>
+    <td class="c mono">PAINT-INT-WALL</td>
+    <td class="c">CALC</td>
+    <td class="dimc">wall+ceiling drywall area <span class="sh">[A001-A002]</span></td>
+    <td class="r">26,084</td>
+    <td class="c">sqft</td>
+    <td class="r">$12,520</td>
+    <td class="r">522</td>
+    <td class="c" style="font-size:8px">$73</td>
+    <td class="r">$38,083</td>
+    <td class="r">—</td>
+    <td class="r b">$50,603</td></tr><tr class="allow">
+    <td>Finish carpentry — base, casing, trim</td>
+    <td class="c mono">ALLOWANCE</td>
+    <td class="c">CALC</td>
+    <td class="dimc">GSF 5,920 base/casing at doors+rooms <span class="sh">[A001-A002]</span></td>
+    <td class="r">5,920</td>
+    <td class="c">sqft</td>
+    <td class="r">$6,157</td>
+    <td class="r">123</td>
+    <td class="c" style="font-size:8px">$73</td>
+    <td class="r">$8,989</td>
+    <td class="r">—</td>
+    <td class="r b">$15,146</td></tr></tbody></table><table class="lines"><thead>
+    <tr><th colspan="11" class="divhead">DIVISION 10 — Specialties &nbsp;·&nbsp; $13,561</th></tr>
+    <tr><th>Item</th><th>Code</th><th>Method</th><th>Dimension basis [sheet]</th><th class="r">Qty</th><th>Unit</th><th class="r">Mat $</th><th class="r">Lab-hrs</th><th>Rate</th><th class="r">Labor $</th><th class="r">Sub·Eq $</th><th class="r">Total</th></tr>
+    </thead><tbody><tr class="">
+    <td>ADA Grab Bar</td>
+    <td class="c mono">BATH-ACC-GRAB</td>
+    <td class="c">MEASURED</td>
+    <td class="dimc">3 bars × 7 baths (ADA) <span class="sh">[A001-A002]</span></td>
+    <td class="r">21</td>
+    <td class="c">each</td>
+    <td class="r">$1,521</td>
+    <td class="r">21</td>
+    <td class="c" style="font-size:8px">$73</td>
+    <td class="r">$1,533</td>
+    <td class="r">—</td>
+    <td class="r b">$3,054</td></tr><tr class="allow">
+    <td>Toilet accessories sets (7 baths)</td>
+    <td class="c mono">ALLOWANCE</td>
+    <td class="c">MEASURED</td>
+    <td class="dimc">7 baths <span class="sh">[A001-A002]</span></td>
+    <td class="r">7</td>
+    <td class="c">ea</td>
+    <td class="r">$1,078</td>
+    <td class="r">6</td>
+    <td class="c" style="font-size:8px">$73</td>
+    <td class="r">$450</td>
+    <td class="r">—</td>
+    <td class="r b">$1,528</td></tr><tr class="allow">
+    <td>Signage — egress / ADA / room ID</td>
+    <td class="c mono">ALLOWANCE</td>
+    <td class="c">CALC</td>
+    <td class="dimc">~30 rooms/egress points × ID sign <span class="sh">[A001-A002]</span></td>
+    <td class="r">30</td>
+    <td class="c">ea</td>
+    <td class="r">$2,940</td>
+    <td class="r">17</td>
+    <td class="c" style="font-size:8px">$73</td>
+    <td class="r">$1,226</td>
+    <td class="r">—</td>
+    <td class="r b">$4,166</td></tr><tr class="allow">
+    <td>Fire extinguishers &amp; cabinets</td>
+    <td class="c mono">ALLOWANCE</td>
+    <td class="c">CALC</td>
+    <td class="dimc">4 levels, ~1 per 75' travel = 8 <span class="sh">[A001-A002]</span></td>
+    <td class="r">8</td>
+    <td class="c">ea</td>
+    <td class="r">$1,056</td>
+    <td class="r">4</td>
+    <td class="c" style="font-size:8px">$73</td>
+    <td class="r">$257</td>
+    <td class="r">—</td>
+    <td class="r b">$1,313</td></tr><tr class="allow">
+    <td>Misc specialties (lockers, mail, corner guards)</td>
+    <td class="c mono">ALLOWANCE</td>
+    <td class="c">CALC</td>
+    <td class="dimc">corner guards at corridors + mail <span class="sh">[A001-A002]</span></td>
+    <td class="r">1</td>
+    <td class="c">ls</td>
+    <td class="r">$0</td>
+    <td class="r">0</td>
+    <td class="c" style="font-size:8px">$73</td>
+    <td class="r">$0</td>
+    <td class="r">$3,500</td>
+    <td class="r b">$3,500</td></tr></tbody></table><table class="lines"><thead>
+    <tr><th colspan="11" class="divhead">DIVISION 12 — Furnishings (built-in) &nbsp;·&nbsp; $21,734</th></tr>
+    <tr><th>Item</th><th>Code</th><th>Method</th><th>Dimension basis [sheet]</th><th class="r">Qty</th><th>Unit</th><th class="r">Mat $</th><th class="r">Lab-hrs</th><th>Rate</th><th class="r">Labor $</th><th class="r">Sub·Eq $</th><th class="r">Total</th></tr>
+    </thead><tbody><tr class="">
+    <td>Standard Vanity with Top</td>
+    <td class="c mono">BATH-VAN-STD</td>
+    <td class="c">MEASURED</td>
+    <td class="dimc">7 baths <span class="sh">[A001-A002]</span></td>
+    <td class="r">7</td>
+    <td class="c">each</td>
+    <td class="r">$4,226</td>
+    <td class="r">21</td>
+    <td class="c" style="font-size:8px">$73</td>
+    <td class="r">$1,533</td>
+    <td class="r">—</td>
+    <td class="r b">$5,759</td></tr><tr class="allow">
+    <td>Common/kitchen casework &amp; countertops (base-bldg)</td>
+    <td class="c mono">ALLOWANCE</td>
+    <td class="c">MEASURED</td>
+    <td class="dimc">kitchen prep counters + server station ~40 LF <span class="sh">[A001]</span></td>
+    <td class="r">40</td>
+    <td class="c">lf</td>
+    <td class="r">$3,360</td>
+    <td class="r">19</td>
+    <td class="c" style="font-size:8px">$73</td>
+    <td class="r">$1,402</td>
+    <td class="r">$4,800</td>
+    <td class="r b">$9,562</td></tr><tr class="allow">
+    <td>Closet/pantry shelving &amp; built-ins</td>
+    <td class="c mono">ALLOWANCE</td>
+    <td class="c">MEASURED</td>
+    <td class="dimc">WIC 205/207 + closets 206 + pantry <span class="sh">[A002]</span></td>
+    <td class="r">4</td>
+    <td class="c">ea</td>
+    <td class="r">$3,250</td>
+    <td class="r">43</td>
+    <td class="c" style="font-size:8px">$73</td>
+    <td class="r">$3,163</td>
+    <td class="r">—</td>
+    <td class="r b">$6,413</td></tr></tbody></table><table class="lines"><thead>
+    <tr><th colspan="11" class="divhead">DIVISION 21 — Fire Suppression &nbsp;·&nbsp; $53,980</th></tr>
+    <tr><th>Item</th><th>Code</th><th>Method</th><th>Dimension basis [sheet]</th><th class="r">Qty</th><th>Unit</th><th class="r">Mat $</th><th class="r">Lab-hrs</th><th>Rate</th><th class="r">Labor $</th><th class="r">Sub·Eq $</th><th class="r">Total</th></tr>
+    </thead><tbody><tr class="allow">
+    <td>Sprinkler system — NFPA 13, full building</td>
+    <td class="c mono">ALLOWANCE</td>
+    <td class="c">MEASURED</td>
+    <td class="dimc">GSF 5,920; sprinkler closet L3 <span class="sh">[A002]</span></td>
+    <td class="r">5,920</td>
+    <td class="c">sqft</td>
+    <td class="r">$0</td>
+    <td class="r">0</td>
+    <td class="c" style="font-size:8px">$124</td>
+    <td class="r">$0</td>
+    <td class="r">$38,480</td>
+    <td class="r b">$38,480</td></tr><tr class="allow">
+    <td>Fire service / standpipe / FDC</td>
+    <td class="c mono">ALLOWANCE</td>
+    <td class="c">CALC</td>
+    <td class="dimc">1 fire service entry + riser, cellar→roof <span class="sh">[A002]</span></td>
+    <td class="r">1</td>
+    <td class="c">ls</td>
+    <td class="r">$0</td>
+    <td class="r">0</td>
+    <td class="c" style="font-size:8px">$124</td>
+    <td class="r">$0</td>
+    <td class="r">$12,000</td>
+    <td class="r b">$12,000</td></tr><tr class="allow">
+    <td>Sprinkler testing &amp; certification</td>
+    <td class="c mono">ALLOWANCE</td>
+    <td class="c">CALC</td>
+    <td class="dimc">per-system flush/test <span class="sh">[A002]</span></td>
+    <td class="r">1</td>
+    <td class="c">ls</td>
+    <td class="r">$0</td>
+    <td class="r">0</td>
+    <td class="c" style="font-size:8px">$124</td>
+    <td class="r">$0</td>
+    <td class="r">$3,500</td>
+    <td class="r b">$3,500</td></tr></tbody></table><table class="lines"><thead>
+    <tr><th colspan="11" class="divhead">DIVISION 22 — Plumbing &nbsp;·&nbsp; $118,236</th></tr>
+    <tr><th>Item</th><th>Code</th><th>Method</th><th>Dimension basis [sheet]</th><th class="r">Qty</th><th>Unit</th><th class="r">Mat $</th><th class="r">Lab-hrs</th><th>Rate</th><th class="r">Labor $</th><th class="r">Sub·Eq $</th><th class="r">Total</th></tr>
+    </thead><tbody><tr class="">
+    <td>Standard Toilet</td>
+    <td class="c mono">BATH-TOIL-STD</td>
+    <td class="c">MEASURED</td>
+    <td class="dimc">7 baths <span class="sh">[A001-A002]</span></td>
+    <td class="r">7</td>
+    <td class="c">each</td>
+    <td class="r">$2,324</td>
+    <td class="r">14</td>
+    <td class="c" style="font-size:8px">$124</td>
+    <td class="r">$1,736</td>
+    <td class="r">—</td>
+    <td class="r b">$4,060</td></tr><tr class="allow">
+    <td>Lavatories / sinks (7 baths + common + kitchen)</td>
+    <td class="c mono">ALLOWANCE</td>
+    <td class="c">MEASURED</td>
+    <td class="dimc">7 lav + kitchen/prep/mop sinks = 12 <span class="sh">[P102-P104]</span></td>
+    <td class="r">12</td>
+    <td class="c">ea</td>
+    <td class="r">$2,232</td>
+    <td class="r">48</td>
+    <td class="c" style="font-size:8px">$124</td>
+    <td class="r">$5,952</td>
+    <td class="r">$4,092</td>
+    <td class="r b">$12,276</td></tr><tr class="">
+    <td>Standard Bathtub</td>
+    <td class="c mono">BATH-TUB-STD</td>
+    <td class="c">MEASURED</td>
+    <td class="dimc">30×60 tub/shower × 7 baths <span class="sh">[A001-A002]</span></td>
+    <td class="r">7</td>
+    <td class="c">each</td>
+    <td class="r">$3,381</td>
+    <td class="r">35</td>
+    <td class="c" style="font-size:8px">$124</td>
+    <td class="r">$4,340</td>
+    <td class="r">—</td>
+    <td class="r b">$7,721</td></tr><tr class="allow">
+    <td>DWV + water supply distribution (by fixture)</td>
+    <td class="c mono">ALLOWANCE</td>
+    <td class="c">MEASURED</td>
+    <td class="dimc">~36 fixtures on sanitary/water risers <span class="sh">[P104/P105]</span></td>
+    <td class="r">36</td>
+    <td class="c">ea</td>
+    <td class="r">$6,840</td>
+    <td class="r">216</td>
+    <td class="c" style="font-size:8px">$124</td>
+    <td class="r">$26,784</td>
+    <td class="r">$17,100</td>
+    <td class="r b">$50,724</td></tr><tr class="">
+    <td>Gas Line – New Run</td>
+    <td class="c mono">PLUMB-GAS-LINE</td>
+    <td class="c">MEASURED</td>
+    <td class="dimc">gas riser: kitchen + 2 WH + dryer (~180 LF) <span class="sh">[P106]</span></td>
+    <td class="r">180</td>
+    <td class="c">lf</td>
+    <td class="r">$2,608</td>
+    <td class="r">45</td>
+    <td class="c" style="font-size:8px">$124</td>
+    <td class="r">$5,580</td>
+    <td class="r">—</td>
+    <td class="r b">$8,188</td></tr><tr class="allow">
+    <td>Water heaters — commercial (2 × WH-1)</td>
+    <td class="c mono">ALLOWANCE</td>
+    <td class="c">MEASURED</td>
+    <td class="dimc">2 × WH-1 scheduled <span class="sh">[E101/P]</span></td>
+    <td class="r">2</td>
+    <td class="c">ea</td>
+    <td class="r">$3,360</td>
+    <td class="r">16</td>
+    <td class="c" style="font-size:8px">$124</td>
+    <td class="r">$1,984</td>
+    <td class="r">$4,200</td>
+    <td class="r b">$9,544</td></tr><tr class="allow">
+    <td>Laundry rough-in + sump pump</td>
+    <td class="c mono">ALLOWANCE</td>
+    <td class="c">MEASURED</td>
+    <td class="dimc">washer/dryer 202 + sump pump <span class="sh">[A002/E101]</span></td>
+    <td class="r">1</td>
+    <td class="c">ls</td>
+    <td class="r">$480</td>
+    <td class="r">11</td>
+    <td class="c" style="font-size:8px">$124</td>
+    <td class="r">$1,323</td>
+    <td class="r">$1,920</td>
+    <td class="r b">$3,723</td></tr><tr class="allow">
+    <td>Commercial-kitchen plumbing/gas rough-in (base-bldg)</td>
+    <td class="c mono">ALLOWANCE</td>
+    <td class="c">MEASURED</td>
+    <td class="dimc">kitchen 470 SF: sinks, floor drains, gas, walk-in drains <span class="sh">[A001/P]</span></td>
+    <td class="r">1</td>
+    <td class="c">ls</td>
+    <td class="r">$0</td>
+    <td class="r">0</td>
+    <td class="c" style="font-size:8px">$124</td>
+    <td class="r">$0</td>
+    <td class="r">$22,000</td>
+    <td class="r b">$22,000</td></tr></tbody></table><table class="lines"><thead>
+    <tr><th colspan="11" class="divhead">DIVISION 23 — HVAC &nbsp;·&nbsp; $135,467</th></tr>
+    <tr><th>Item</th><th>Code</th><th>Method</th><th>Dimension basis [sheet]</th><th class="r">Qty</th><th>Unit</th><th class="r">Mat $</th><th class="r">Lab-hrs</th><th>Rate</th><th class="r">Labor $</th><th class="r">Sub·Eq $</th><th class="r">Total</th></tr>
+    </thead><tbody><tr class="allow">
+    <td>Split HVAC systems — 4 zones (CU-1..4 + AHU-1..4)</td>
+    <td class="c mono">ALLOWANCE</td>
+    <td class="c">MEASURED</td>
+    <td class="dimc">4 CU + 4 AHU scheduled <span class="sh">[E101/M103]</span></td>
+    <td class="r">4</td>
+    <td class="c">ea</td>
+    <td class="r">$15,680</td>
+    <td class="r">64</td>
+    <td class="c" style="font-size:8px">$124</td>
+    <td class="r">$7,936</td>
+    <td class="r">$19,600</td>
+    <td class="r b">$43,216</td></tr><tr class="allow">
+    <td>Ductwork distribution</td>
+    <td class="c mono">ALLOWANCE</td>
+    <td class="c">CALC</td>
+    <td class="dimc">4 systems × ~225 LF trunk+branch <span class="sh">[M103/M104]</span></td>
+    <td class="r">900</td>
+    <td class="c">lf</td>
+    <td class="r">$5,940</td>
+    <td class="r">270</td>
+    <td class="c" style="font-size:8px">$124</td>
+    <td class="r">$33,480</td>
+    <td class="r">$9,900</td>
+    <td class="r b">$49,320</td></tr><tr class="allow">
+    <td>Controls / thermostats / zoning</td>
+    <td class="c mono">ALLOWANCE</td>
+    <td class="c">CALC</td>
+    <td class="dimc">4 zones × thermostat/controls <span class="sh">[M103]</span></td>
+    <td class="r">4</td>
+    <td class="c">ea</td>
+    <td class="r">$0</td>
+    <td class="r">0</td>
+    <td class="c" style="font-size:8px">$124</td>
+    <td class="r">$0</td>
+    <td class="r">$7,500</td>
+    <td class="r b">$7,500</td></tr><tr class="">
+    <td>Bathroom Exhaust Fan – Standard</td>
+    <td class="c mono">BATH-VENT-STD</td>
+    <td class="c">MEASURED</td>
+    <td class="dimc">7 baths <span class="sh">[M103]</span></td>
+    <td class="r">7</td>
+    <td class="c">each</td>
+    <td class="r">$761</td>
+    <td class="r">18</td>
+    <td class="c" style="font-size:8px">$124</td>
+    <td class="r">$2,170</td>
+    <td class="r">—</td>
+    <td class="r b">$2,931</td></tr><tr class="allow">
+    <td>Kitchen hood curb, exhaust (KEF-1) &amp; make-up air (MAU-1) ductwork (base-bldg)</td>
+    <td class="c mono">ALLOWANCE</td>
+    <td class="c">MEASURED</td>
+    <td class="dimc">KEF-1 + MAU-1 scheduled <span class="sh">[E101/M]</span></td>
+    <td class="r">1</td>
+    <td class="c">ls</td>
+    <td class="r">$0</td>
+    <td class="r">0</td>
+    <td class="c" style="font-size:8px">$124</td>
+    <td class="r">$0</td>
+    <td class="r">$26,000</td>
+    <td class="r b">$26,000</td></tr><tr class="allow">
+    <td>Elevator machine-room mini-split + TAB</td>
+    <td class="c mono">ALLOWANCE</td>
+    <td class="c">MEASURED</td>
+    <td class="dimc">elevator mini-split scheduled <span class="sh">[E101]</span></td>
+    <td class="r">1</td>
+    <td class="c">ls</td>
+    <td class="r">$0</td>
+    <td class="r">0</td>
+    <td class="c" style="font-size:8px">$124</td>
+    <td class="r">$0</td>
+    <td class="r">$6,500</td>
+    <td class="r b">$6,500</td></tr></tbody></table><table class="lines"><thead>
+    <tr><th colspan="11" class="divhead">DIVISION 26 — Electrical &nbsp;·&nbsp; $161,709</th></tr>
+    <tr><th>Item</th><th>Code</th><th>Method</th><th>Dimension basis [sheet]</th><th class="r">Qty</th><th>Unit</th><th class="r">Mat $</th><th class="r">Lab-hrs</th><th>Rate</th><th class="r">Labor $</th><th class="r">Sub·Eq $</th><th class="r">Total</th></tr>
+    </thead><tbody><tr class="">
+    <td>Panel Upgrade – 400A</td>
+    <td class="c mono">ELEC-PNL-400</td>
+    <td class="c">MEASURED</td>
+    <td class="dimc">400A/208V/3Φ service + CT/meter (riser) <span class="sh">[E101]</span></td>
+    <td class="r">1</td>
+    <td class="c">each</td>
+    <td class="r">$4,226</td>
+    <td class="r">24</td>
+    <td class="c" style="font-size:8px">$124</td>
+    <td class="r">$2,976</td>
+    <td class="r">—</td>
+    <td class="r b">$7,202</td></tr><tr class="">
+    <td>Panel Upgrade – 200A</td>
+    <td class="c mono">ELEC-PNL-200</td>
+    <td class="c">MEASURED</td>
+    <td class="dimc">panels A + B (schedules) <span class="sh">[E101]</span></td>
+    <td class="r">2</td>
+    <td class="c">each</td>
+    <td class="r">$3,381</td>
+    <td class="r">28</td>
+    <td class="c" style="font-size:8px">$124</td>
+    <td class="r">$3,472</td>
+    <td class="r">—</td>
+    <td class="r b">$6,853</td></tr><tr class="allow">
+    <td>Feeders &amp; branch wiring (building-wide)</td>
+    <td class="c mono">ALLOWANCE</td>
+    <td class="c">CALC</td>
+    <td class="dimc">~80 circuits (panel A+B) × avg run over 5,920 SF <span class="sh">[E101-E104]</span></td>
+    <td class="r">5,920</td>
+    <td class="c">sqft</td>
+    <td class="r">$19,654</td>
+    <td class="r">296</td>
+    <td class="c" style="font-size:8px">$124</td>
+    <td class="r">$36,704</td>
+    <td class="r">$22,496</td>
+    <td class="r b">$78,854</td></tr><tr class="allow">
+    <td>Lighting package (LED recessed/surface, interior/exterior)</td>
+    <td class="c mono">ALLOWANCE</td>
+    <td class="c">MEASURED</td>
+    <td class="dimc">~65 fixtures counted on E104 + controls <span class="sh">[E104]</span></td>
+    <td class="r">65</td>
+    <td class="c">ea</td>
+    <td class="r">$7,605</td>
+    <td class="r">45</td>
+    <td class="c" style="font-size:8px">$124</td>
+    <td class="r">$5,588</td>
+    <td class="r">$5,915</td>
+    <td class="r b">$19,108</td></tr><tr class="allow">
+    <td>Wiring devices &amp; plates</td>
+    <td class="c mono">ALLOWANCE</td>
+    <td class="c">CALC</td>
+    <td class="dimc">receptacle circuits × devices/circuit <span class="sh">[E102-E103]</span></td>
+    <td class="r">220</td>
+    <td class="c">ea</td>
+    <td class="r">$3,696</td>
+    <td class="r">74</td>
+    <td class="c" style="font-size:8px">$124</td>
+    <td class="r">$9,166</td>
+    <td class="r">—</td>
+    <td class="r b">$12,862</td></tr><tr class="allow">
+    <td>HVAC power / equipment connections (CU/AHU/MAU/KEF)</td>
+    <td class="c mono">ALLOWANCE</td>
+    <td class="c">MEASURED</td>
+    <td class="dimc">4 CU + 4 AHU + MAU + KEF = 10 connections <span class="sh">[E101]</span></td>
+    <td class="r">10</td>
+    <td class="c">ea</td>
+    <td class="r">$2,600</td>
+    <td class="r">52</td>
+    <td class="c" style="font-size:8px">$124</td>
+    <td class="r">$6,448</td>
+    <td class="r">—</td>
+    <td class="r b">$9,048</td></tr><tr class="allow">
+    <td>Commercial-kitchen &amp; walk-in electrical rough-in (base-bldg)</td>
+    <td class="c mono">ALLOWANCE</td>
+    <td class="c">MEASURED</td>
+    <td class="dimc">kitchen + walk-in cooler circuits (panel A) <span class="sh">[E101]</span></td>
+    <td class="r">1</td>
+    <td class="c">ls</td>
+    <td class="r">$0</td>
+    <td class="r">0</td>
+    <td class="c" style="font-size:8px">$124</td>
+    <td class="r">$0</td>
+    <td class="r">$11,000</td>
+    <td class="r b">$11,000</td></tr><tr class="allow">
+    <td>Elevator power rough-in, disconnect &amp; cab-light circuit</td>
+    <td class="c mono">ALLOWANCE</td>
+    <td class="c">MEASURED</td>
+    <td class="dimc">elevator machine + cab-light circuits (panel B) <span class="sh">[E101]</span></td>
+    <td class="r">1</td>
+    <td class="c">ls</td>
+    <td class="r">$0</td>
+    <td class="r">0</td>
+    <td class="c" style="font-size:8px">$124</td>
+    <td class="r">$0</td>
+    <td class="r">$5,200</td>
+    <td class="r b">$5,200</td></tr><tr class="allow">
+    <td>Emergency &amp; exit lighting (egress)</td>
+    <td class="c mono">ALLOWANCE</td>
+    <td class="c">CALC</td>
+    <td class="dimc">egress path exit/EM combos, 4 levels <span class="sh">[E104]</span></td>
+    <td class="r">24</td>
+    <td class="c">ea</td>
+    <td class="r">$4,608</td>
+    <td class="r">41</td>
+    <td class="c" style="font-size:8px">$124</td>
+    <td class="r">$5,079</td>
+    <td class="r">—</td>
+    <td class="r b">$9,687</td></tr><tr class="">
+    <td>Smoke Detector – Hardwired</td>
+    <td class="c mono">ELEC-SMOKE</td>
+    <td class="c">MEASURED</td>
+    <td class="dimc">smoke/CO detectors, ~14 bedrooms/corridors <span class="sh">[E101 legend]</span></td>
+    <td class="r">14</td>
+    <td class="c">each</td>
+    <td class="r">$592</td>
+    <td class="r">11</td>
+    <td class="c" style="font-size:8px">$124</td>
+    <td class="r">$1,302</td>
+    <td class="r">—</td>
+    <td class="r b">$1,894</td></tr></tbody></table><table class="lines"><thead>
+    <tr><th colspan="11" class="divhead">DIVISION 27/28 — Communications &amp; Electronic Safety &nbsp;·&nbsp; $36,597</th></tr>
+    <tr><th>Item</th><th>Code</th><th>Method</th><th>Dimension basis [sheet]</th><th class="r">Qty</th><th>Unit</th><th class="r">Mat $</th><th class="r">Lab-hrs</th><th>Rate</th><th class="r">Labor $</th><th class="r">Sub·Eq $</th><th class="r">Total</th></tr>
+    </thead><tbody><tr class="allow">
+    <td>Fire alarm system — addressable (R-2)</td>
+    <td class="c mono">ALLOWANCE</td>
+    <td class="c">CALC</td>
+    <td class="dimc">GSF 5,920; smoke/CO devices per E101 legend <span class="sh">[E101/A000]</span></td>
+    <td class="r">5,920</td>
+    <td class="c">sqft</td>
+    <td class="r">$0</td>
+    <td class="r">0</td>
+    <td class="c" style="font-size:8px">$124</td>
+    <td class="r">$0</td>
+    <td class="r">$15,392</td>
+    <td class="r b">$15,392</td></tr><tr class="">
+    <td>Cat6 Ethernet Drop</td>
+    <td class="c mono">ELEC-CAT6</td>
+    <td class="c">CALC</td>
+    <td class="dimc">~20 data drops (1-2 per office/common) <span class="sh">[E102 note A]</span></td>
+    <td class="r">20</td>
+    <td class="c">each</td>
+    <td class="r">$725</td>
+    <td class="r">20</td>
+    <td class="c" style="font-size:8px">$124</td>
+    <td class="r">$2,480</td>
+    <td class="r">—</td>
+    <td class="r b">$3,205</td></tr><tr class="allow">
+    <td>Security / access control / intercom / CCTV</td>
+    <td class="c mono">ALLOWANCE</td>
+    <td class="c">ASSUMED</td>
+    <td class="dimc"></td>
+    <td class="r">1</td>
+    <td class="c">ls</td>
+    <td class="r">$0</td>
+    <td class="r">0</td>
+    <td class="c" style="font-size:8px">$124</td>
+    <td class="r">$0</td>
+    <td class="r">$18,000</td>
+    <td class="r b">$18,000</td></tr></tbody></table><table class="lines"><thead>
+    <tr><th colspan="11" class="divhead">DIVISION 31 — Earthwork &nbsp;·&nbsp; $55,343</th></tr>
+    <tr><th>Item</th><th>Code</th><th>Method</th><th>Dimension basis [sheet]</th><th class="r">Qty</th><th>Unit</th><th class="r">Mat $</th><th class="r">Lab-hrs</th><th>Rate</th><th class="r">Labor $</th><th class="r">Sub·Eq $</th><th class="r">Total</th></tr>
+    </thead><tbody><tr class="allow">
+    <td>Mass &amp; foundation excavation (cellar)</td>
+    <td class="c mono">ALLOWANCE</td>
+    <td class="c">CALC</td>
+    <td class="dimc">1,480 SF × 10' / 27 = 548 CY <span class="sh">[S100]</span></td>
+    <td class="r">550</td>
+    <td class="c">cy</td>
+    <td class="r">$0</td>
+    <td class="r">62</td>
+    <td class="c" style="font-size:8px">$73</td>
+    <td class="r">$4,497</td>
+    <td class="r">$18,480</td>
+    <td class="r b">$22,977</td></tr><tr class="allow">
+    <td>Haul-off / spoil disposal</td>
+    <td class="c mono">ALLOWANCE</td>
+    <td class="c">CALC</td>
+    <td class="dimc">excav 550 − backfill 180 = ~370 CY export <span class="sh">[S100]</span></td>
+    <td class="r">400</td>
+    <td class="c">cy</td>
+    <td class="r">$0</td>
+    <td class="r">41</td>
+    <td class="c" style="font-size:8px">$73</td>
+    <td class="r">$2,958</td>
+    <td class="r">$12,160</td>
+    <td class="r b">$15,118</td></tr><tr class="allow">
+    <td>Backfill &amp; compaction</td>
+    <td class="c mono">ALLOWANCE</td>
+    <td class="c">CALC</td>
+    <td class="dimc">perimeter over-dig backfill <span class="sh">[S100]</span></td>
+    <td class="r">180</td>
+    <td class="c">cy</td>
+    <td class="r">$0</td>
+    <td class="r">24</td>
+    <td class="c" style="font-size:8px">$73</td>
+    <td class="r">$1,787</td>
+    <td class="r">$4,284</td>
+    <td class="r b">$6,071</td></tr><tr class="allow">
+    <td>Stone base / under-slab drainage</td>
+    <td class="c mono">ALLOWANCE</td>
+    <td class="c">MEASURED</td>
+    <td class="dimc">4" gravel under slab = 1,480 SF (S100) <span class="sh">[S100]</span></td>
+    <td class="r">1,480</td>
+    <td class="c">sqft</td>
+    <td class="r">$2,842</td>
+    <td class="r">25</td>
+    <td class="c" style="font-size:8px">$73</td>
+    <td class="r">$1,847</td>
+    <td class="r">—</td>
+    <td class="r b">$4,689</td></tr><tr class="allow">
+    <td>Fine grading</td>
+    <td class="c mono">ALLOWANCE</td>
+    <td class="c">CALC</td>
+    <td class="dimc">yard = lot 4,000 − footprint 1,480 = 2,520 SF <span class="sh">[A000]</span></td>
+    <td class="r">2,520</td>
+    <td class="c">sqft</td>
+    <td class="r">$0</td>
+    <td class="r">35</td>
+    <td class="c" style="font-size:8px">$73</td>
+    <td class="r">$2,557</td>
+    <td class="r">$3,931</td>
+    <td class="r b">$6,488</td></tr></tbody></table><table class="lines"><thead>
+    <tr><th colspan="11" class="divhead">DIVISION 32 — Exterior Improvements &nbsp;·&nbsp; $32,256</th></tr>
+    <tr><th>Item</th><th>Code</th><th>Method</th><th>Dimension basis [sheet]</th><th class="r">Qty</th><th>Unit</th><th class="r">Mat $</th><th class="r">Lab-hrs</th><th>Rate</th><th class="r">Labor $</th><th class="r">Sub·Eq $</th><th class="r">Total</th></tr>
+    </thead><tbody><tr class="allow">
+    <td>Walks, steps &amp; entry hardscape</td>
+    <td class="c mono">ALLOWANCE</td>
+    <td class="c">CALC</td>
+    <td class="dimc">front walk + rear egress path ~500 SF <span class="sh">[A000]</span></td>
+    <td class="r">500</td>
+    <td class="c">sqft</td>
+    <td class="r">$2,250</td>
+    <td class="r">18</td>
+    <td class="c" style="font-size:8px">$73</td>
+    <td class="r">$1,314</td>
+    <td class="r">$5,400</td>
+    <td class="r b">$8,964</td></tr><tr class="allow">
+    <td>Site drainage / area drains</td>
+    <td class="c mono">ALLOWANCE</td>
+    <td class="c">CALC</td>
+    <td class="dimc">areaway + downspout tie-ins <span class="sh">[A000]</span></td>
+    <td class="r">1</td>
+    <td class="c">ls</td>
+    <td class="r">$0</td>
+    <td class="r">0</td>
+    <td class="c" style="font-size:8px">$73</td>
+    <td class="r">$0</td>
+    <td class="r">$9,500</td>
+    <td class="r b">$9,500</td></tr><tr class="allow">
+    <td>Landscaping, planter &amp; site restoration</td>
+    <td class="c mono">ALLOWANCE</td>
+    <td class="c">CALC</td>
+    <td class="dimc">yard 2,520 SF + front planter <span class="sh">[A001]</span></td>
+    <td class="r">2,520</td>
+    <td class="c">sqft</td>
+    <td class="r">$4,158</td>
+    <td class="r">37</td>
+    <td class="c" style="font-size:8px">$73</td>
+    <td class="r">$2,704</td>
+    <td class="r">$6,930</td>
+    <td class="r b">$13,792</td></tr></tbody></table><table class="lines"><thead>
+    <tr><th colspan="11" class="divhead">DIVISION 33 — Utilities &nbsp;·&nbsp; $62,000</th></tr>
+    <tr><th>Item</th><th>Code</th><th>Method</th><th>Dimension basis [sheet]</th><th class="r">Qty</th><th>Unit</th><th class="r">Mat $</th><th class="r">Lab-hrs</th><th>Rate</th><th class="r">Labor $</th><th class="r">Sub·Eq $</th><th class="r">Total</th></tr>
+    </thead><tbody><tr class="allow">
+    <td>Domestic water service &amp; tap</td>
+    <td class="c mono">ALLOWANCE</td>
+    <td class="c">ASSUMED</td>
+    <td class="dimc"> <span class="sh">[P102]</span></td>
+    <td class="r">1</td>
+    <td class="c">ls</td>
+    <td class="r">$0</td>
+    <td class="r">0</td>
+    <td class="c" style="font-size:8px">$73</td>
+    <td class="r">$0</td>
+    <td class="r">$18,000</td>
+    <td class="r b">$18,000</td></tr><tr class="allow">
+    <td>Sanitary sewer service &amp; connection</td>
+    <td class="c mono">ALLOWANCE</td>
+    <td class="c">ASSUMED</td>
+    <td class="dimc"> <span class="sh">[P104]</span></td>
+    <td class="r">1</td>
+    <td class="c">ls</td>
+    <td class="r">$0</td>
+    <td class="r">0</td>
+    <td class="c" style="font-size:8px">$73</td>
+    <td class="r">$0</td>
+    <td class="r">$20,000</td>
+    <td class="r b">$20,000</td></tr><tr class="allow">
+    <td>Gas service &amp; meter</td>
+    <td class="c mono">ALLOWANCE</td>
+    <td class="c">ASSUMED</td>
+    <td class="dimc"> <span class="sh">[P106]</span></td>
+    <td class="r">1</td>
+    <td class="c">ls</td>
+    <td class="r">$0</td>
+    <td class="r">0</td>
+    <td class="c" style="font-size:8px">$73</td>
+    <td class="r">$0</td>
+    <td class="r">$9,000</td>
+    <td class="r b">$9,000</td></tr><tr class="allow">
+    <td>Electrical service lateral / transformer coord (Pepco)</td>
+    <td class="c mono">ALLOWANCE</td>
+    <td class="c">ASSUMED</td>
+    <td class="dimc"> <span class="sh">[E101]</span></td>
+    <td class="r">1</td>
+    <td class="c">ls</td>
+    <td class="r">$0</td>
+    <td class="r">0</td>
+    <td class="c" style="font-size:8px">$73</td>
+    <td class="r">$0</td>
+    <td class="r">$15,000</td>
+    <td class="r b">$15,000</td></tr></tbody></table>
+
+<div class="foot">
+Kealee Platform · Estimate generated from packages/estimating catalogue (MARKETPLACE_ASSEMBLIES, DC-Baltimore 2024-25, DC region factor 1.15) and cross-checked against the Construction Task Catalog (data/ctc, DMV-2026). Planning-grade estimate: quantities assumed/calculated (no measured takeoff), ±25–35% likely until a drawing-based takeoff is performed. Not a bid. Elevator and commercial-kitchen equipment excluded from all base totals and scheduled separately.
+</div>
+
+</div></body></html>

@@ -1,0 +1,62 @@
+// PM — SELECTIONS
+// Domain: pm | Owner: OS-PM service
+
+model Selection {
+  id        String @id @default(uuid())
+  projectId String
+
+  title            String
+  description      String?         @db.Text
+  category         String // FLOORING, COUNTERTOPS, FIXTURES, PAINT, TILE, APPLIANCES, HARDWARE, LIGHTING, CABINETRY, OTHER
+  specSection      String?
+  location         String?
+  status           SelectionStatus @default(PENDING)
+  dueDate          DateTime?
+  selectedOptionId String?
+  approvedById     String?
+  approvedAt       DateTime?
+  budgetAllowance  Decimal?        @db.Decimal(12, 2)
+  actualCost       Decimal?        @db.Decimal(12, 2)
+  createdById      String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  project    Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdBy  User              @relation("SelectionCreator", fields: [createdById], references: [id])
+  approvedBy User?             @relation("SelectionApprover", fields: [approvedById], references: [id])
+  options    SelectionOption[]
+
+  @@index([projectId])
+  @@index([status])
+  @@index([category])
+  @@index([projectId, status])
+  @@map("selections")
+}
+
+model SelectionOption {
+  id            String   @id @default(uuid())
+  selectionId   String
+  name          String
+  description   String?  @db.Text
+  vendor        String?
+  manufacturer  String?
+  modelNumber   String?
+  color         String?
+  finish        String?
+  leadTime      String?
+  unitCost      Decimal? @db.Decimal(12, 2)
+  totalCost     Decimal? @db.Decimal(12, 2)
+  imageUrls     String[]
+  specSheetUrl  String?
+  isRecommended Boolean  @default(false)
+  isSelected    Boolean  @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  selection Selection @relation(fields: [selectionId], references: [id], onDelete: Cascade)
+
+  @@index([selectionId])
+  @@map("selection_options")
+}

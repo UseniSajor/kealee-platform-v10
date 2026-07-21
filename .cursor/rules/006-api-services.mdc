@@ -1,0 +1,40 @@
+---
+description: API router and Fastify service conventions. Apply when working in apps/api or any service in services/.
+alwaysApply: false
+globs:
+  - "apps/api/**"
+  - "services/**"
+---
+
+# API & Services Rules
+
+## Fastify Conventions
+- Use `fastify-plugin` for all shared decorators
+- All async route handlers wrapped in try/catch
+- Error response shape: `{ error: string, code: string, statusCode: number }`
+- Use `zod` for ALL API input validation — never trust raw `req.body`
+
+## Environment Variables
+Required at startup (throw if missing, never silently skip):
+DATABASE_URL, DIRECT_URL, REDIS_URL,
+STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET,
+ANTHROPIC_API_KEY, OPENAI_API_KEY,
+GHL_API_KEY, GHL_LOCATION_ID,
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+
+## Redis
+GAP-03: Redis silent fallback is a critical bug.
+ALWAYS throw on Redis connection failure — never degrade silently.
+
+## GHL Integration
+GoHighLevel is the confirmed marketing platform (NOT Zoho).
+Christine manages GHL — do not modify GHL contact flows without coordination.
+GHL webhook receiver: `apps/api/src/routes/ghl/`
+GAP-07: GHL env vars must be added to Railway + Vercel.
+
+## Database
+- Run `npx prisma generate && npx prisma migrate dev` before adding models
+- pgvector extension active — use for RAG embeddings in PermitBot
+- Never use `prisma.$queryRaw` for queries expressible in Prisma Client
+- Supabase RLS is enabled — test policies after every schema change
+- No barrel files (index.ts re-exports) — import directly

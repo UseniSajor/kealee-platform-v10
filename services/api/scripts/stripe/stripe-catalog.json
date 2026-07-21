@@ -1,0 +1,290 @@
+[
+  {
+    "productId": "prod_Tu7R0RL0CCnM9E",
+    "priceId": "price_1SwJCZIQghAs8OOIBMx2eiCB",
+    "name": "Package A - Solo GC",
+    "amount": 175000,
+    "category": "pm-packages",
+    "code": "PKG_A"
+  },
+  {
+    "productId": "prod_Tu7RZvO7hfqwbV",
+    "priceId": "price_1SwJCaIQghAs8OOI91v8URrR",
+    "name": "Package B - Growing Team",
+    "amount": 375000,
+    "category": "pm-packages",
+    "code": "PKG_B"
+  },
+  {
+    "productId": "prod_Tu7RPh3kmKduVH",
+    "priceId": "price_1SwJCaIQghAs8OOIq4vDyqVN",
+    "name": "Package C - Multiple Projects",
+    "amount": 950000,
+    "category": "pm-packages",
+    "code": "PKG_C"
+  },
+  {
+    "productId": "prod_Tu7RIWhHhudwUW",
+    "priceId": "price_1SwJCbIQghAs8OOIBZtGoIhe",
+    "name": "Package D - Enterprise GC",
+    "amount": 1650000,
+    "category": "pm-packages",
+    "code": "PKG_D"
+  },
+  {
+    "productId": "prod_Tu7RVi05yPqD9K",
+    "priceId": "price_1SwJCcIQghAs8OOIVm5syCDQ",
+    "name": "Package A - Annual",
+    "amount": 1890000,
+    "category": "pm-packages-annual",
+    "code": "PKG_A_ANNUAL"
+  },
+  {
+    "productId": "prod_Tu7Rm4PnB6x0Fw",
+    "priceId": "price_1SwJCcIQghAs8OOIjFp8HOBd",
+    "name": "Package B - Annual",
+    "amount": 4050000,
+    "category": "pm-packages-annual",
+    "code": "PKG_B_ANNUAL"
+  },
+  {
+    "productId": "prod_Tu7Rkrlo08SrLu",
+    "priceId": "price_1SwJCdIQghAs8OOIz5Tp2mWH",
+    "name": "Package C - Annual",
+    "amount": 10260000,
+    "category": "pm-packages-annual",
+    "code": "PKG_C_ANNUAL"
+  },
+  {
+    "productId": "prod_Tu7RqgcWVsulKs",
+    "priceId": "price_1SwJCdIQghAs8OOIkO9aLLcT",
+    "name": "Package D - Annual",
+    "amount": 17820000,
+    "category": "pm-packages-annual",
+    "code": "PKG_D_ANNUAL"
+  },
+  {
+    "productId": "prod_Tu7RsaqyqBC4XD",
+    "priceId": "price_1SwJCdIQghAs8OOI2pHSaiWV",
+    "name": "Permit Application Assistance",
+    "amount": 32500,
+    "category": "on-demand-permits",
+    "code": "OD_PERMIT_APP"
+  },
+  {
+    "productId": "prod_Tu7RUIx9IuusXA",
+    "priceId": "price_1SwJCeIQghAs8OOIjWFyCEBb",
+    "name": "Inspection Scheduling",
+    "amount": 20000,
+    "category": "on-demand-permits",
+    "code": "OD_INSPECTION"
+  },
+  {
+    "productId": "prod_Tu7RJlBPN8uFgN",
+    "priceId": "price_1SwJCeIQghAs8OOIZ90FI305",
+    "name": "Site Visit & Reporting",
+    "amount": 35000,
+    "category": "on-demand-permits",
+    "code": "OD_SITE_VISIT"
+  },
+  {
+    "productId": "prod_Tu7RrCPcO73Hny",
+    "priceId": "price_1SwJCfIQghAs8OOIICGcwlAL",
+    "name": "Quality Control Review",
+    "amount": 40000,
+    "category": "on-demand-permits",
+    "code": "OD_QC_REVIEW"
+  },
+  {
+    "productId": "prod_Tu7RXaoxRL9XPU",
+    "priceId": "price_1SwJCfIQghAs8OOI5v4yJMiZ",
+    "name": "Contractor Coordination",
+    "amount": 50000,
+    "category": "on-demand-coordination",
+    "code": "OD_CONTRACTOR_COORD"
+  },
+  {
+    "productId": "prod_Tu7RrSenxkxAmC",
+    "priceId": "price_1SwJCgIQghAs8OOIKbE0Frc2",
+    "name": "Change Order Management",
+    "amount": 47500,
+    "category": "on-demand-coordination",
+    "code": "OD_CHANGE_ORDER"
+  },
+  {
+    "productId": "prod_Tu7RfnEeXbdNFi",
+    "priceId": "price_1SwJCgIQghAs8OOIM0AUPP1P",
+    "name": "Document Organization",
+    "amount": 40000,
+    "category": "on-demand-coordination",
+    "code": "OD_DOCUMENT_ORG"
+  },
+  {
+    "productId": "prod_Tu7RvAggRYPEdq",
+    "priceId": "price_1SwJChIQghAs8OOIrEx2y8ro",
+    "name": "Progress Reporting",
+    "amount": 25000,
+    "category": "on-demand-coordination",
+    "code": "OD_PROGRESS_REPORT"
+  },
+  {
+    "productId": "prod_Tu7RMe5RxqVluU",
+    "priceId": "price_1SwJChIQghAs8OOI0X4Qs1Ha",
+    "name": "Budget Analysis",
+    "amount": 45000,
+    "category": "on-demand-estimating",
+    "code": "OD_BUDGET_ANALYSIS"
+  },
+  {
+    "productId": "prod_Tu7RSaNDoJyV1N",
+    "priceId": "price_1SwJCiIQghAs8OOIFwYPNq62",
+    "name": "Schedule Optimization",
+    "amount": 125000,
+    "category": "on-demand-estimating",
+    "code": "OD_SCHEDULE_OPT"
+  },
+  {
+    "productId": "prod_Tu7RSnCeJoa4nP",
+    "priceId": "price_1SwJCiIQghAs8OOIlrmmjQJX",
+    "name": "Scope Review - Hourly",
+    "amount": 30000,
+    "category": "on-demand-estimating",
+    "code": "OD_SCOPE_REVIEW"
+  },
+  {
+    "productId": "prod_Tu7RTtH1j3sCzn",
+    "priceId": "price_1SwJCjIQghAs8OOIW3UkF28s",
+    "name": "Value Engineering - Hourly",
+    "amount": 40000,
+    "category": "on-demand-estimating",
+    "code": "OD_VALUE_ENG"
+  },
+  {
+    "productId": "prod_Tu7REddYaqeFMf",
+    "priceId": "price_1SwJCjIQghAs8OOIcZxddJDk",
+    "name": "Basic Estimate",
+    "amount": 50000,
+    "category": "estimation",
+    "code": "EST_BASIC"
+  },
+  {
+    "productId": "prod_Tu7RZB3rwPGVxC",
+    "priceId": "price_1SwJCkIQghAs8OOIPX5jfOiP",
+    "name": "Standard Estimate",
+    "amount": 100000,
+    "category": "estimation",
+    "code": "EST_STANDARD"
+  },
+  {
+    "productId": "prod_Tu7RuZJg3g5XRz",
+    "priceId": "price_1SwJCkIQghAs8OOIoo3Yfs8w",
+    "name": "Premium Estimate",
+    "amount": 200000,
+    "category": "estimation",
+    "code": "EST_PREMIUM"
+  },
+  {
+    "productId": "prod_Tu7RrD6qPx501Y",
+    "priceId": "price_1SwJClIQghAs8OOIe0c4cPVr",
+    "name": "Schematic Design",
+    "amount": 250000,
+    "category": "architecture",
+    "code": "ARCH_SCHEMATIC"
+  },
+  {
+    "productId": "prod_Tu7RmnElKwW3EW",
+    "priceId": "price_1SwJClIQghAs8OOIOsuJfOUj",
+    "name": "Design Development",
+    "amount": 400000,
+    "category": "architecture",
+    "code": "ARCH_DD"
+  },
+  {
+    "productId": "prod_Tu7RoJviegXCb3",
+    "priceId": "price_1SwJClIQghAs8OOIkl7FjMQn",
+    "name": "Construction Documents",
+    "amount": 600000,
+    "category": "architecture",
+    "code": "ARCH_CD"
+  },
+  {
+    "productId": "prod_Tu7Rzw3bxu97P8",
+    "priceId": "price_1SwJCmIQghAs8OOIcR4M4IEo",
+    "name": "Structural Engineering - Residential",
+    "amount": 150000,
+    "category": "engineering",
+    "code": "ENG_STRUCT_RES"
+  },
+  {
+    "productId": "prod_Tu7RO39DGorMBv",
+    "priceId": "price_1SwJCmIQghAs8OOIx1aSY7uT",
+    "name": "MEP Engineering",
+    "amount": 350000,
+    "category": "engineering",
+    "code": "ENG_MEP"
+  },
+  {
+    "productId": "prod_Tu7R9IPh4qlCjF",
+    "priceId": "price_1SwJCnIQghAs8OOItPGpbwOr",
+    "name": "Standard Permit Package",
+    "amount": 50000,
+    "category": "permits",
+    "code": "PERMIT_STANDARD"
+  },
+  {
+    "productId": "prod_Tu7RGD7SA5D0GW",
+    "priceId": "price_1SwJCnIQghAs8OOIQBvCK2UD",
+    "name": "Expedited Permit Service",
+    "amount": 100000,
+    "category": "permits",
+    "code": "PERMIT_EXPEDITED"
+  },
+  {
+    "productId": "prod_Tu7RGbHvl9zc7i",
+    "priceId": "price_1SwJCoIQghAs8OOIqc55WSO4",
+    "name": "Escrow Service - Standard",
+    "amount": 0,
+    "category": "finance",
+    "code": "ESCROW_STANDARD"
+  },
+  {
+    "productId": "prod_Tu7RuFoltG0eP7",
+    "priceId": "price_1SwJCoIQghAs8OOI5jOKxqE2",
+    "name": "Payment Processing",
+    "amount": 0,
+    "category": "finance",
+    "code": "PAYMENT_PROCESSING"
+  },
+  {
+    "productId": "prod_Tu7RIi4GQDgNRH",
+    "priceId": "price_1SwJCpIQghAs8OOI7jjazBSv",
+    "name": "Contractor Lead",
+    "amount": 5000,
+    "category": "marketplace",
+    "code": "MKT_LEAD"
+  },
+  {
+    "productId": "prod_Tu7R90QKkbdGFX",
+    "priceId": "price_1SwJCpIQghAs8OOILK43sNj7",
+    "name": "Premium Contractor Listing",
+    "amount": 29900,
+    "category": "marketplace",
+    "code": "MKT_PREMIUM_LISTING"
+  },
+  {
+    "productId": "prod_Tu7RLqhONzDnvd",
+    "priceId": "price_1SwJCqIQghAs8OOI8isO4UXF",
+    "name": "Initial Consultation",
+    "amount": 0,
+    "category": "consultation",
+    "code": "CONSULT_INITIAL"
+  },
+  {
+    "productId": "prod_Tu7RfDCvKjl6TK",
+    "priceId": "price_1SwJCqIQghAs8OOIFu15LgA8",
+    "name": "Expert Consultation - Hourly",
+    "amount": 15000,
+    "category": "consultation",
+    "code": "CONSULT_HOURLY"
+  }
+]

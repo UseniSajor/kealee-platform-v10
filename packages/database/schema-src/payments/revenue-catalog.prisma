@@ -1,0 +1,99 @@
+// PAYMENTS — Revenue Product Catalog
+// Direct-consumer Stripe Checkout product config, credit ledger, and the
+// correction/credit resolution workflow (no-refund policy). Distinct from
+// ContractAgreement/Milestone/Escrow above, which are the contractor-facing
+// milestone-payment domain and do not apply to one-time product purchases.
+
+enum RevenueCreditSourceType {
+  CAMPAIGN_BONUS
+  QUALITY_CREDIT
+}
+
+enum DeliverableCorrectionStatus {
+  REQUESTED
+  IN_PROGRESS
+  DELIVERED
+  ESCALATED_TO_CREDIT
+}
+
+model RevenueProduct {
+  id                  String   @id @default(uuid())
+  productKey          String   @unique
+  name                String
+  customerType        String   // homeowner | contractor | developer
+  priceCents          Int
+  active              Boolean  @default(true)
+  intakeSchemaId      String
+  workflowTemplateId  String
+  responsibleAgent    String
+  propertyIntelDepth  String   // basic | project | contractor | development
+  requiredApprovals   Json
+  notificationRuleSetId String
+  fulfillmentSlaHours Int
+  slaAnchor           String   @default("payment") // payment | intake_complete
+  revisionLimit       Int
+  exclusions          Json
+  upsellProductIds    String[]
+  dailyCapacity       Int?
+  aiCostLimitCents    Int?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  creditLedgerEntries ProductCreditLedger[]
+  corrections         DeliverableCorrection[]
+}
+
+model ProductCreditLedger {
+  id                 String   @id @default(uuid())
+  intakeId           String
+  productId          String?
+  sourceType         RevenueCreditSourceType
+  amountCents        Int
+  reason             String?
+  approvedByUserId   String?
+  earnedAt           DateTime @default(now())
+  expiresAt          DateTime
+  redeemedAt         DateTime?
+  redeemedOnIntakeId String?
+
+  product RevenueProduct? @relation(fields: [productId], references: [id])
+
+  @@index([intakeId])
+}
+
+model DeliverableCorrection {
+  id              String   @id @default(uuid())
+  intakeId        String
+  productId       String?
+  requestedBy     String   // customer | staff
+  reason          String
+  affectedSection String
+  status          DeliverableCorrectionStatus @default(REQUESTED)
+  assignedAgent   String?
+  createdAt       DateTime @default(now())
+  resolvedAt      DateTime?
+
+  product RevenueProduct? @relation(fields: [productId], references: [id])
+
+  @@index([intakeId])
+}
+
+model RevenueTransaction {
+  id                    String   @id @default(uuid())
+  intakeId              String
+  productId             String?
+  stripeCheckoutSessionId String? @unique
+  stripePaymentIntentId String?
+  grossCents            Int
+  commissionCents       Int      @default(0)
+  fulfillmentCostCents   Int      @default(0)
+  netCents              Int
+  status                String   // pending | cleared | disputed | disputed_lost
+  disputedAt            DateTime?
+  recognizedAt          DateTime?
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  @@index([intakeId])
+  @@index([status])
+}

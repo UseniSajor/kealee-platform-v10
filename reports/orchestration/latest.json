@@ -1,0 +1,40 @@
+{
+  "startedAt": "2026-05-08T17:11:54.758Z",
+  "finishedAt": "2026-05-08T17:11:58.371Z",
+  "apiUrl": "http://localhost:3001",
+  "finalExitCode": 0,
+  "phases": [
+    {
+      "id": "preflight-api-health",
+      "command": "(skipped)",
+      "status": "skipped",
+      "exitCode": null,
+      "durationMs": 0
+    },
+    {
+      "id": "go-live-check",
+      "command": "(skipped)",
+      "status": "skipped",
+      "exitCode": null,
+      "durationMs": 0
+    },
+    {
+      "id": "smoke-integration",
+      "command": "(skipped)",
+      "status": "skipped",
+      "exitCode": null,
+      "durationMs": 0
+    },
+    {
+      "id": "setup-marketing",
+      "command": "pnpm run setup:marketing",
+      "status": "passed",
+      "exitCode": 0,
+      "durationMs": 2912
+    }
+  ],
+  "notes": [
+    "Full bash launch chain: pnpm run launch:all (Git Bash / WSL).",
+    "SESSION 12 smoke and production deploy gates remain manual policy per workspace rules."
+  ]
+}

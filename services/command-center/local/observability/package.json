@@ -1,0 +1,11 @@
+{
+  "name": "@kealee/observability",
+  "version": "1.0.0",
+  "main": "./index.js",
+  "types": "./index.d.ts",
+  "type": "module",
+  "dependencies": {
+    "pino": "^9.0.0",
+    "pino-pretty": "^11.0.0"
+  }
+}

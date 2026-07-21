@@ -1,0 +1,517 @@
+// IDENTITY — Models
+// Auto-generated from schema splitter
+
+model User {
+  id        String  @id @default(uuid())
+  email     String? @unique
+  name      String?
+  firstName String?
+  lastName  String?
+  password  String?
+  phone     String?
+
+  // User metadata
+  role              String?   @default("USER")
+  status            String?   @default("ACTIVE")
+  stripeCustomerId  String?
+  twoFactorEnabled  Boolean   @default(false)
+  passwordChangedAt DateTime? // Track when password was last changed
+
+  // Address fields
+  address String?
+  city    String?
+  state   String?
+  zipCode String?
+  ssn     String? // Encrypted
+  ein     String? // Tax ID
+
+  // Location
+  homeLatitude  Float?
+  homeLongitude Float?
+
+  // Notification preferences
+  notificationPreferences Json?
+
+  metadata  Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Organization relations
+  orgMemberships OrgMember[]
+  sessions       Session[]
+  notifications  Notification[]
+
+  // Relationships (example - adjust based on your existing schema)
+  // submittedPermits  Permit[]  @relation("PermitApplicant")
+  // reviewedPermits   Permit[]  @relation("PermitReviewer")
+  // pmPermits         Permit[]  @relation("PermitPM")
+
+  // PermitRouting relations
+  assignedPermitRoutings  PermitRouting[] @relation("PermitRoutingReviewer")
+  escalatedPermitRoutings PermitRouting[] @relation("PermitRoutingEscalatedTo")
+
+  // Architect Onboarding & Template Library relations
+  architectOnboarding           ArchitectOnboarding?     @relation("ArchitectOnboarding")
+  createdDesignTemplates        DesignTemplate[]         @relation("DesignTemplateCreated")
+  usedDesignTemplateInstances   DesignTemplateInstance[] @relation("DesignTemplateInstanceUsed")
+  createdStandardDetails        StandardDetail[]         @relation("StandardDetailCreated")
+  placedStandardDetailInstances StandardDetailInstance[] @relation("StandardDetailInstancePlaced")
+  createdBackupRecords          BackupRecord[]           @relation("BackupRecordCreated")
+  createdDisasterRecoveryPlans  DisasterRecoveryPlan[]   @relation("DisasterRecoveryPlanCreated")
+
+  // Permit & Inspection relations
+  createdPermitTemplates      PermitTemplate[]     @relation("PermitTemplateCreated")
+  createdRoutingRules         RoutingRule[]        @relation("RoutingRuleCreated")
+  receivedPermitNotifications PermitNotification[] @relation("PermitNotificationRecipient")
+
+  // Contract & Marketplace relations
+  ownedContracts      ContractAgreement[] @relation("ContractOwner")
+  contractorContracts ContractAgreement[] @relation("ContractContractor")
+  marketplaceProfile  MarketplaceProfile? @relation("MarketplaceProfileUser")
+  contractorProfile   ContractorProfile?  @relation("ContractorProfileUser")
+
+  // Approval Workflow relations
+  approvalRequests ApprovalRequest[] @relation("ApprovalRequestRequester")
+  approvalSteps    ApprovalStep[]    @relation("ApprovalStepApprover")
+  approvalComments ApprovalComment[] @relation("ApprovalCommentUser")
+
+  // Escrow & Finance relations
+  initiatedEscrowTransactions EscrowTransaction[] @relation("EscrowTransactionInitiator")
+  approvedEscrowTransactions  EscrowTransaction[] @relation("EscrowTransactionApprover")
+  placedEscrowHolds           EscrowHold[]        @relation("EscrowHoldPlacer")
+  releasedEscrowHolds         EscrowHold[]        @relation("EscrowHoldReleaser")
+
+  // Stripe Connect relations
+  connectedAccount ConnectedAccount? @relation("ConnectedAccountUser")
+  initiatedPayouts Payout[]          @relation("PayoutInitiator")
+  approvedPayouts  Payout[]          @relation("PayoutApprover")
+
+  // Dispute relations
+  initiatedDisputes     Dispute[]           @relation("DisputeInitiator")
+  respondentDisputes    Dispute[]           @relation("DisputeRespondent")
+  mediatedDisputes      Dispute[]           @relation("DisputeMediator")
+  submittedEvidence     DisputeEvidence[]   @relation("DisputeEvidenceSubmitter")
+  reviewedEvidence      DisputeEvidence[]   @relation("DisputeEvidenceReviewer")
+  sentDisputeMessages   DisputeMessage[]    @relation("DisputeMessageSender")
+  resolutionsAsMediator DisputeResolution[] @relation("DisputeResolutionMediator")
+  appealedResolutions   DisputeResolution[] @relation("DisputeResolutionAppealer")
+
+  // Lien Waiver relations
+  createdLienWaivers   LienWaiver[]          @relation("LienWaiverCreator")
+  lienWaiverSignatures LienWaiverSignature[] @relation("LienWaiverSigner")
+
+  // Statement & Compliance relations
+  statements                Statement[]         @relation("StatementRecipient")
+  statementSchedules        StatementSchedule[] @relation("StatementScheduleRecipient")
+  relatedComplianceReports  ComplianceReport[]  @relation("ComplianceReportUser")
+  reviewedComplianceReports ComplianceReport[]  @relation("ComplianceReportReviewer")
+  approvedComplianceReports ComplianceReport[]  @relation("ComplianceReportApprover")
+
+  // Analytics & Predictive Model relations
+  fraudScores              FraudScore[]      @relation("FraudScoreUser")
+  reviewedFraudScores      FraudScore[]      @relation("FraudScoreReviewer")
+  churnPrediction          ChurnPrediction?  @relation("ChurnPredictionUser")
+  reviewedChurnPredictions ChurnPrediction[] @relation("ChurnPredictionReviewer")
+  analyticsAlerts          AnalyticsAlert[]  @relation("AnalyticsAlertUser")
+  resolvedAnalyticsAlerts  AnalyticsAlert[]  @relation("AnalyticsAlertResolver")
+  customReports            CustomReport[]    @relation("CustomReportCreator")
+
+  // Compliance & Regulatory relations
+  complianceChecks          ComplianceCheck[]      @relation("ComplianceCheckUser")
+  performedComplianceChecks ComplianceCheck[]      @relation("ComplianceCheckPerformer")
+  licenses                  LicenseTracking[]      @relation("ContractorLicenses")
+  insuranceCertificates     InsuranceCertificate[] @relation("ContractorInsurance")
+  bonds                     BondTracking[]         @relation("ContractorBonds")
+  complianceAlerts          ComplianceAlert[]      @relation("ComplianceAlertUser")
+  resolvedComplianceAlerts  ComplianceAlert[]      @relation("ComplianceAlertResolver")
+
+  // Audit & Logging relations
+  auditLogsPerformed       AuditLog[]            @relation("AuditLogPerformer")
+  financialAuditsPerformed FinancialAuditEntry[] @relation("FinancialAuditAuditor")
+  financialAuditsVerified  FinancialAuditEntry[] @relation("FinancialAuditVerifier")
+  accessLogs               AccessLog[]           @relation("AccessLogUser")
+  auditReportsGenerated    AuditReport[]         @relation("AuditReportGenerator")
+
+  // Payment & Deposit relations
+  paymentMethods  PaymentMethod[]  @relation("UserPaymentMethods")
+  depositRequests DepositRequest[] @relation("UserDepositRequests")
+  taxForms        TaxForm[]        @relation("UserTaxForms")
+
+  // PreCon Project relations
+  preConProjects PreConProject[] @relation("PreConProjectOwner")
+
+  // Command Center relations
+  siteVisits           SiteVisit[]              @relation("SiteVisitPM")
+  siteCheckIns         SiteCheckIn[]            @relation("UserCheckIns")
+  changeOrderApprovals ChangeOrderApproval[]    @relation("ChangeOrderApprover")
+  notificationPrefs    NotificationPreference[] @relation("UserNotificationPrefs")
+  pushSubscriptions    PushSubscription[]       @relation("UserPushSubscriptions")
+  managedProjects      ProjectManager[]
+
+  // Command Center Infrastructure relations
+  dashboardWidgets DashboardWidget[]
+  aiConversations  AIConversation[]
+
+  // Cost Code Import relations
+  costCodeImportJobs CostCodeImportJob[] @relation("CostCodeImportJobs")
+  takeoffJobs        TakeoffJob[]        @relation("TakeoffJobs")
+
+  // Cost Database 3-Tier relations
+  submittedCostDatabases CostDatabase[]   @relation("CostDatabaseSubmitter")
+  reviewedCostDatabases  CostDatabase[]   @relation("CostDatabaseReviewer")
+  costDataReviews        CostDataReview[] @relation("CostDataReviewAdmin")
+
+  // Platform Knowledge Base relations
+  authoredKnowledgeEntries PlatformKnowledge[] @relation("PlatformKnowledgeAuthor")
+
+  // Auto Design & Design Queue relations
+  autoDesignSessions        AutoDesignSession[]        @relation("AutoDesignSessionOwner")
+  designProfessionalProfile DesignProfessionalProfile? @relation("DesignProfessionalProfile")
+  designHandoffs            DesignHandoff[]            @relation("DesignHandoffArchitect")
+
+  // Core Architect / DesignProject relations
+  createdDesignProjects  DesignProject[]       @relation("DesignProjectCreator")
+  leadDesignProjects     DesignProject[]       @relation("DesignProjectLead")
+  designTeamMemberships  DesignTeamMember[]    @relation("DesignTeamMembership")
+  approvedDesignPhases   DesignPhase[]         @relation("DesignPhaseApprover")
+  issuedDrawingSets      DrawingSet[]          @relation("DrawingSetIssuer")
+  uploadedBIMModels      BIMModel[]            @relation("BIMModelUploader")
+  uploadedDesignFiles    DesignFile[]          @relation("DesignFileUploader")
+  createdReviewRequests  ReviewRequest[]       @relation("ReviewRequestCreator")
+  assignedReviewRequests ReviewRequest[]       @relation("ReviewRequestAssignee")
+  createdDesignRevisions DesignRevision[]      @relation("DesignRevisionCreator")
+  createdVersionBranches VersionBranch[]       @relation("VersionBranchCreator")
+  createdPermitPackages  DesignPermitPackage[] @relation("DesignPermitPackageCreator")
+  createdQCChecklists    DesignQCChecklist[]   @relation("DesignQCChecklistCreator")
+
+  // User Responsibilities Tracking relations (from Kealee_User_Responsibilities_Guide.md)
+  dailyLogs        DailyLog[]   @relation("DailyLogContractor")
+  uploadedFiles    FileUpload[] @relation("FileUploadUser")
+  uploadedReceipts Receipt[]    @relation("ReceiptUploadedBy")
+  userActions      UserAction[] @relation("UserActionHistory")
+
+  // PM Feature relations
+  createdRFIs         RFI[]               @relation("RFICreator")
+  assignedRFIs        RFI[]               @relation("RFIAssignee")
+  closedRFIs          RFI[]               @relation("RFICloser")
+  rfiResponses        RFIResponse[]       @relation("RFIResponder")
+  createdSubmittals   Submittal[]         @relation("SubmittalCreator")
+  assignedSubmittals  Submittal[]         @relation("SubmittalAssignee")
+  submittalReviews    SubmittalReview[]   @relation("SubmittalReviewer")
+  createdMeetings     Meeting[]           @relation("MeetingCreator")
+  meetingActionItems  MeetingActionItem[] @relation("ActionItemAssignee")
+  createdSelections   Selection[]         @relation("SelectionCreator")
+  approvedSelections  Selection[]         @relation("SelectionApprover")
+  timeEntries         TimeEntry[]         @relation("TimeEntryUser")
+  approvedTimeEntries TimeEntry[]         @relation("TimeEntryApprover")
+  reportedIncidents   SafetyIncident[]    @relation("IncidentReporter")
+  filedWarrantyClaims WarrantyClaim[]     @relation("WarrantyClaimFiler")
+
+  // Kealee Messenger relations (Claw F)
+  conversationParticipants ConversationParticipant[] @relation("UserConversationParticipants")
+  chatMessages             ChatMessage[]             @relation("UserChatMessages")
+  chatMessageReads         ChatMessageRead[]         @relation("UserChatMessageReads")
+
+  // Software subscription relations
+  softwareSubscriptions SoftwareSubscription[] @relation("UserSoftwareSubscriptions")
+
+  // Project Membership relations
+  projectMemberships ProjectMembership[] @relation("ProjectMemberships")
+
+  // Spatial & Financing relations (Backend Consolidation v10)
+  spatialVerifications   SpatialVerification[] @relation("SpatialVerifier")
+  financingApplications  FinancingApplication[]
+  milestoneApprovals     MilestoneApproval[]   @relation("MilestoneApprover")
+
+  // Evidence relations
+  uploadedEvidence Evidence[] @relation("EvidenceUploader")
+
+  // GHL (GoHighLevel) CRM integration
+  ghlContactId String?   @unique
+  ghlSyncedAt  DateTime?
+
+  // Opportunities Phase 06 relations
+  postedOpportunityListings  OpportunityListing[]      @relation("OpportunityListingPostedBy")
+  opportunityApplications    OpportunityApplication[]  @relation("OpportunityApplicationApplicant")
+
+  // Contractor License Verification
+  contractorVerification ContractorVerification? @relation("ContractorVerificationUser")
+
+  // Customer Orders (concept packages, one-time purchases)
+  conceptPackageOrders ConceptPackageOrder[] @relation("ConceptPackageOrderUser")
+
+  // Housing Act – Zoning, Pattern Book, Development Package, HUD
+  zoningComplianceReports ZoningComplianceReport[] @relation("ZoningComplianceRequester")
+  patternBooksCreated     PatternBookDesign[]      @relation("PatternBookCreator")
+  patternBookSelections   PatternBookSelection[]   @relation("PatternBookSelector")
+  developmentPackages     DevelopmentPackage[]      @relation("DevelopmentPackageUser")
+  hudEligibilityChecks    HUDEligibilityCheck[]    @relation("HUDEligibilityUser")
+}
+
+model ModuleEntitlement {
+  id         String    @id @default(uuid())
+  orgId      String
+  moduleKey  String
+  enabled    Boolean   @default(false)
+  enabledAt  DateTime?
+  disabledAt DateTime?
+  expiresAt  DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  org Org @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@unique([orgId, moduleKey])
+  @@index([orgId])
+  @@index([moduleKey])
+  @@index([enabled])
+}
+
+model Org {
+  id          String   @id @default(uuid())
+  name        String
+  slug        String   @unique
+  description String?
+  logo        String?
+  status      String   @default("ACTIVE")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  members      OrgMember[]
+  projects     Project[]
+  properties   Property[]
+  entitlements ModuleEntitlement[]
+
+  // Command Center Infrastructure relations
+  integrationCredentials IntegrationCredential[]
+
+  @@index([slug])
+  @@index([status])
+}
+
+model OrgMember {
+  id       String   @id @default(uuid())
+  userId   String
+  orgId    String
+  roleKey  String
+  joinedAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  org  Org  @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  role Role @relation(fields: [roleKey], references: [key])
+
+  @@unique([userId, orgId])
+  @@index([userId])
+  @@index([orgId])
+  @@index([roleKey])
+}
+
+model Session {
+  id           String   @id @default(uuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([sessionToken])
+  @@index([expires])
+}
+
+// API Key Management
+model ApiKey {
+  id             String  @id @default(uuid())
+  keyHash        String  @unique // SHA-256 hash of the actual API key
+  keyPrefix      String? // First 8 chars for identification
+  name           String
+  jurisdictionId String?
+  userId         String?
+  organizationId String?
+
+  // Permissions
+  scopes    String[] // e.g., ["read", "write", "admin"]
+  rateLimit Int      @default(100) // requests per minute
+
+  // Status
+  active     Boolean   @default(true)
+  isRevoked  Boolean   @default(false)
+  expiresAt  DateTime?
+  lastUsedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relationships
+  usage     ApiKeyUsage[]
+  auditLogs SecurityAuditLog[]
+
+  @@index([keyHash])
+  @@index([userId])
+  @@index([organizationId])
+  @@index([jurisdictionId])
+  @@index([active])
+}
+
+// API Key Usage Tracking
+model ApiKeyUsage {
+  id           String   @id @default(uuid())
+  apiKeyId     String
+  endpoint     String
+  method       String
+  statusCode   Int
+  responseTime Int // milliseconds
+  timestamp    DateTime @default(now())
+
+  // Context
+  ipAddress      String?
+  userAgent      String?
+  jurisdictionId String?
+  organizationId String?
+
+  apiKey ApiKey @relation(fields: [apiKeyId], references: [id], onDelete: Cascade)
+
+  @@index([apiKeyId])
+  @@index([timestamp])
+  @@index([endpoint])
+}
+
+// API Usage Analytics (consolidated usage tracking)
+model ApiUsage {
+  id             String  @id @default(uuid())
+  apiKeyId       String?
+  userId         String?
+  organizationId String?
+  jurisdictionId String?
+
+  // Request details
+  endpoint     String
+  method       String
+  statusCode   Int
+  responseTime Int // milliseconds
+
+  // Context
+  ipAddress String?
+  userAgent String?
+
+  timestamp DateTime @default(now())
+
+  @@index([apiKeyId])
+  @@index([userId])
+  @@index([organizationId])
+  @@index([jurisdictionId])
+  @@index([timestamp])
+  @@index([endpoint])
+}
+
+model UserSession {
+  id           String   @id @default(uuid())
+  userId       String
+  sessionToken String   @unique
+  refreshToken String?  @unique
+  ipAddress    String?
+  userAgent    String?
+  expiresAt    DateTime
+  lastActivity DateTime @default(now()) // CORRECT FIELD NAME (not lastActivityAt!)
+  isActive     Boolean  @default(true)
+  isRevoked    Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([userId])
+  @@index([sessionToken])
+  @@index([expiresAt])
+}
+
+model TwoFactorSecret {
+  id         String    @id @default(uuid())
+  userId     String    @unique
+  secret     String
+  isEnabled  Boolean   @default(false)
+  isVerified Boolean   @default(false)
+  lastUsedAt DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  @@index([userId])
+}
+
+model BackupCode {
+  id        String    @id @default(uuid())
+  userId    String
+  code      String    @unique
+  isUsed    Boolean   @default(false)
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+  @@index([code])
+}
+
+model PasswordHistory {
+  id           String   @id @default(uuid())
+  userId       String
+  passwordHash String
+  createdAt    DateTime @default(now())
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model PasswordResetToken {
+  id        String    @id @default(uuid())
+  userId    String
+  token     String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+  @@index([token])
+  @@index([expiresAt])
+}
+
+model Role {
+  id          String  @id @default(uuid())
+  key         String  @unique
+  name        String
+  description String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  permissions RolePermission[]
+  orgMembers  OrgMember[]
+
+  @@map("roles")
+}
+
+model Permission {
+  id          String  @id @default(uuid())
+  key         String  @unique
+  name        String
+  description String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  roles RolePermission[]
+
+  @@map("permissions")
+}
+
+model RolePermission {
+  id            String @id @default(uuid())
+  roleKey       String
+  permissionKey String
+
+  createdAt DateTime @default(now())
+
+  role       Role       @relation(fields: [roleKey], references: [key], onDelete: Cascade)
+  permission Permission @relation(fields: [permissionKey], references: [key], onDelete: Cascade)
+
+  @@unique([roleKey, permissionKey])
+  @@map("role_permissions")
+}

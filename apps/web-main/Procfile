@@ -1,0 +1,1 @@
+web: sh -c 'SERVER=$(find /app -path "*/.next/standalone*server.js" -print -quit); cd $(dirname $SERVER); exec node $SERVER'

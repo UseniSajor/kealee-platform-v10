@@ -1,0 +1,752 @@
+// FOUNDATION — Models
+// Auto-generated from schema splitter
+
+// Performance benchmark record
+model PerformanceBenchmark {
+  id              String  @id @default(uuid())
+  designProjectId String?
+
+  // Benchmark information
+  benchmarkType     String // FILE_UPLOAD, VERSION_COMPARISON, LARGE_FILE_VIEW, etc.
+  operationName     String
+  operationDuration Int // Milliseconds
+
+  // Context
+  fileSize        Int? // Bytes
+  fileType        String?
+  recordCount     Int? // Number of records processed
+  concurrentUsers Int? // Number of concurrent users
+
+  // Results
+  success      Boolean @default(true)
+  errorMessage String?
+
+  recordedAt DateTime @default(now())
+
+  // designProject DesignProject? @relation(fields: [designProjectId], references: [id], onDelete: SetNull) // DesignProject model not defined yet
+
+  @@index([benchmarkType])
+  @@index([recordedAt])
+  @@index([designProjectId])
+}
+
+// Backup and disaster recovery record
+model BackupRecord {
+  id String @id @default(uuid())
+
+  // Backup information
+  backupType  String // FULL, INCREMENTAL, DATABASE_ONLY, FILES_ONLY
+  backupScope String // ALL, PROJECT, ORG, USER
+  scopeId     String? // ID of scope (project, org, user)
+
+  // Backup details
+  backupLocation String // S3 bucket, local path, etc.
+  backupSize     Int? // Bytes
+  fileCount      Int?
+  recordCount    Int?
+
+  // Status
+  status       String // IN_PROGRESS, COMPLETED, FAILED
+  startedAt    DateTime  @default(now())
+  completedAt  DateTime?
+  errorMessage String?
+
+  // Verification
+  isVerified Boolean   @default(false)
+  verifiedAt DateTime?
+  checksum   String? // Backup integrity checksum
+
+  createdAt   DateTime @default(now())
+  createdById String
+
+  createdBy User @relation("BackupRecordCreated", fields: [createdById], references: [id], onDelete: Cascade)
+
+  @@index([backupType])
+  @@index([status])
+  @@index([startedAt])
+  @@index([scopeId])
+}
+
+// Disaster recovery plan
+model DisasterRecoveryPlan {
+  id String @id @default(uuid())
+
+  // Plan information
+  planName    String
+  planType    String // RTO_PLAN, RPO_PLAN, FULL_DR_PLAN
+  description String?
+
+  // Recovery objectives
+  recoveryTimeObjective    Int? // Minutes (RTO)
+  recoveryPointObjective   Int? // Minutes (RPO)
+  maximumTolerableDowntime Int? // Minutes (MTD)
+
+  // Procedures
+  procedures         Json? // Step-by-step recovery procedures
+  contactInformation Json? // Emergency contacts
+  escalationPath     Json? // Escalation procedures
+
+  // Testing
+  lastTestedAt DateTime?
+  testResults  Json?
+  nextTestDate DateTime?
+
+  // Status
+  isActive Boolean @default(true)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdById String
+
+  createdBy User @relation("DisasterRecoveryPlanCreated", fields: [createdById], references: [id], onDelete: Cascade)
+
+  @@index([planType])
+  @@index([isActive])
+}
+
+model AccessLog {
+  id           String @id @default(uuid())
+  userId       String
+  resourceType String // "contract", "escrow", "transaction", "report", etc.
+  resourceId   String // ID of resource
+
+  // Action Details
+  action     AccessAction
+  accessedAt DateTime     @default(now())
+
+  // Context
+  ipAddress String?
+  userAgent String? @db.Text
+  location  String? // Geolocated location
+  sessionId String?
+
+  // Result
+  success       Boolean @default(true)
+  failureReason String? @db.Text
+
+  // Security Classification
+  sensitivityLevel SensitivityLevel @default(INTERNAL)
+
+  // Data Scope (for exports/downloads)
+  recordCount  Int? // Number of records accessed/exported
+  dataSize     Int? // Size in bytes
+  exportFormat String? // CSV, PDF, JSON, etc.
+
+  // Metadata
+  metadata Json?
+
+  // Timestamps
+  createdAt DateTime @default(now())
+
+  // Relationships
+  user User @relation("AccessLogUser", fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([resourceType, resourceId])
+  @@index([accessedAt])
+  @@index([action])
+  @@index([sensitivityLevel])
+  @@index([success])
+}
+
+model DataRetentionPolicy {
+  id            String @id @default(uuid())
+  dataType      String @unique // "audit_log", "access_log", "financial_audit", etc.
+  retentionDays Int // Days to retain in active storage
+
+  // Archive Settings
+  archiveEnabled   Boolean @default(true)
+  archiveAfterDays Int // Days after which to archive
+  archiveStorage   String  @default("s3_glacier") // Storage location
+
+  // Deletion Settings
+  deleteAfterDays Int // Days after which to permanently delete
+  requireApproval Boolean @default(true)
+
+  // Compliance
+  regulatoryRequirement String? @db.Text
+  legalHold             Boolean @default(false)
+
+  // Status
+  isActive Boolean @default(true)
+
+  // Metadata
+  metadata Json?
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([dataType])
+  @@index([isActive])
+}
+
+// Security Audit Logging
+model SecurityAuditLog {
+  id        String            @id @default(uuid())
+  eventType SecurityEventType
+  severity  SecuritySeverity
+
+  // Actor
+  userId    String?
+  apiKeyId  String?
+  ipAddress String
+  userAgent String
+
+  // Action
+  endpoint   String
+  method     String
+  statusCode Int
+
+  // Data
+  requestBody  Json?
+  responseBody Json?
+
+  // Context
+  jurisdictionId String?
+  organizationId String?
+  metadata       Json?
+
+  timestamp DateTime @default(now())
+
+  apiKey ApiKey? @relation(fields: [apiKeyId], references: [id], onDelete: SetNull)
+
+  @@index([eventType])
+  @@index([severity])
+  @@index([userId])
+  @@index([apiKeyId])
+  @@index([jurisdictionId])
+  @@index([organizationId])
+  @@index([timestamp])
+}
+
+model SecurityEvent {
+  id          String   @id @default(uuid())
+  userId      String?
+  eventType   String
+  type        String? // Alias for eventType
+  action      String? // Action performed
+  description String
+  resource    String? // Resource affected by the event
+  result      String? // Result of the action (success/failure)
+  severity    String   @default("INFO")
+  ipAddress   String?
+  userAgent   String?
+  metadata    Json?
+  timestamp   DateTime @default(now()) // Alias for createdAt
+  createdAt   DateTime @default(now())
+
+  @@index([userId])
+  @@index([eventType])
+  @@index([createdAt])
+}
+
+model Notification {
+  id      String @id @default(uuid())
+  userId  String
+  type    String // Notification type
+  title   String
+  message String
+  data    Json? // Additional notification data
+
+  // Delivery channels
+  channels String[] // email, push, sms
+
+  // Status tracking
+  status String    @default("PENDING") // PENDING, SENT, FAILED
+  sentAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relationships
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([type])
+  @@index([status])
+  @@index([createdAt])
+  // ── Performance: Compound indexes for notification bell ──
+  @@index([userId, status, createdAt]) // Notification bell: unread + recent
+}
+
+model SecurityAlert {
+  id          String    @id @default(uuid())
+  alertType   String
+  severity    String
+  title       String
+  description String
+  metadata    Json?
+  status      String    @default("OPEN")
+  resolvedBy  String?
+  resolvedAt  DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([alertType])
+  @@index([severity])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model CommunicationLog {
+  id             String    @id @default(uuid())
+  projectId      String?
+  clientId       String?
+  type           String // NOTIFICATION, REMINDER, UPDATE, ALERT
+  channel        String // EMAIL, SMS, PUSH, IN_APP
+  recipientEmail String?
+  recipientPhone String?
+  subject        String?
+  body           String    @db.Text
+  status         String    @default("PENDING") // PENDING, SENT, DELIVERED, FAILED
+  sentAt         DateTime?
+  deliveredAt    DateTime?
+  failedAt       DateTime?
+  errorMessage   String?
+  metadata       Json?
+
+  createdAt DateTime @default(now())
+
+  @@index([projectId])
+  @@index([clientId])
+  @@index([status])
+  @@index([channel])
+  @@index([createdAt])
+  @@map("communication_logs")
+}
+
+model Message {
+  id             String    @id @default(uuid())
+  projectId      String?
+  senderId       String
+  recipientId    String?
+  recipientEmail String?
+  recipientPhone String?
+  channel        String // EMAIL, SMS, PUSH, IN_APP
+  type           String // NOTIFICATION, REMINDER, UPDATE, ALERT, MESSAGE
+  subject        String?
+  body           String    @db.Text
+  templateId     String?
+  metadata       Json?
+  status         String    @default("PENDING") // PENDING, SENT, DELIVERED, READ, FAILED
+  sentAt         DateTime?
+  deliveredAt    DateTime?
+  readAt         DateTime?
+  failedAt       DateTime?
+  errorMessage   String?
+  retryCount     Int       @default(0)
+  parentId       String? // For threaded messages
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  template MessageTemplate? @relation(fields: [templateId], references: [id])
+
+  @@index([projectId])
+  @@index([senderId])
+  @@index([recipientId])
+  @@index([status])
+  @@index([channel])
+  @@index([createdAt])
+  @@map("messages")
+}
+
+model MessageTemplate {
+  id             String   @id @default(uuid())
+  name           String
+  description    String?
+  type           String // NOTIFICATION, REMINDER, UPDATE, ALERT
+  channel        String // EMAIL, SMS, PUSH, IN_APP, ALL
+  subject        String?
+  body           String   @db.Text
+  variables      String[] // List of variable placeholders
+  isActive       Boolean  @default(true)
+  isSystem       Boolean  @default(false)
+  organizationId String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  messages Message[]
+
+  @@unique([name, organizationId])
+  @@index([type])
+  @@index([channel])
+  @@index([isActive])
+  @@map("message_templates")
+}
+
+model NotificationPreference {
+  id              String  @id @default(uuid())
+  userId          String
+  category        String // PROJECT_UPDATES, INSPECTIONS, PAYMENTS, ALERTS, MARKETING
+  emailEnabled    Boolean @default(true)
+  smsEnabled      Boolean @default(false)
+  pushEnabled     Boolean @default(true)
+  inAppEnabled    Boolean @default(true)
+  frequency       String  @default("IMMEDIATE") // IMMEDIATE, DAILY_DIGEST, WEEKLY_DIGEST
+  quietHoursStart String? // HH:MM format
+  quietHoursEnd   String? // HH:MM format
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation("UserNotificationPrefs", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, category])
+  @@index([userId])
+  @@map("notification_preferences")
+}
+
+model PushSubscription {
+  id        String    @id @default(uuid())
+  userId    String
+  endpoint  String    @unique // Web Push endpoint URL
+  p256dh    String // Public key for encryption
+  auth      String // Authentication secret
+  userAgent String? // Device/browser identifier
+  platform  String? // "iOS", "Android", "Windows", "macOS"
+  active    Boolean   @default(true)
+  lastUsed  DateTime?
+  failCount Int       @default(0) // Consecutive delivery failures
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  user User @relation("UserPushSubscriptions", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([active])
+  @@map("push_subscriptions")
+}
+
+model DashboardWidget {
+  id              String     @id @default(uuid())
+  userId          String
+  type            WidgetType
+  title           String
+  position        Json // { x, y, width, height }
+  config          Json? // Widget-specific configuration
+  refreshInterval Int? // Refresh interval in seconds
+  isVisible       Boolean    @default(true)
+  sortOrder       Int        @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([type])
+  @@map("dashboard_widgets")
+}
+
+model JobQueue {
+  id          String    @id @default(uuid())
+  queueName   String
+  jobId       String
+  jobName     String?
+  status      JobStatus @default(WAITING)
+  priority    Int       @default(0)
+  data        Json // Job payload
+  result      Json? // Job result
+  error       String?   @db.Text
+  attempts    Int       @default(0)
+  maxAttempts Int       @default(3)
+  delay       Int? // Delay in milliseconds
+  progress    Int       @default(0) // 0-100 percentage
+
+  createdAt   DateTime  @default(now())
+  processedAt DateTime?
+  completedAt DateTime?
+  failedAt    DateTime?
+
+  @@unique([queueName, jobId])
+  @@index([queueName])
+  @@index([status])
+  @@index([createdAt])
+  @@map("job_queue")
+}
+
+// Job Schedule (cron-based scheduled jobs)
+model JobSchedule {
+  id             String    @id @default(uuid())
+  name           String
+  description    String?
+  queueName      String
+  cronExpression String
+  jobData        Json // Default job payload
+  timezone       String    @default("America/New_York")
+  isActive       Boolean   @default(true)
+  lastRunAt      DateTime?
+  nextRunAt      DateTime?
+  runCount       Int       @default(0)
+  failCount      Int       @default(0)
+  lastError      String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([name, queueName])
+  @@index([isActive])
+  @@index([nextRunAt])
+  @@index([queueName])
+  @@map("job_schedules")
+}
+
+// System Configuration
+model SystemConfig {
+  id             String  @id @default(uuid())
+  key            String  @unique
+  value          Json // Configuration value
+  description    String?
+  category       String? // Grouping category (e.g., "email", "security", "features")
+  dataType       String  @default("string") // string, number, boolean, json
+  isPublic       Boolean @default(false) // Can be exposed to frontend
+  isEncrypted    Boolean @default(false) // Value is encrypted
+  validationRule String? // JSON schema or regex for validation
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([category])
+  @@index([isPublic])
+  @@map("system_config")
+}
+
+// APP-15: App Health Metrics for Dashboard
+model AppHealthMetric {
+  id    String @id @default(uuid())
+  appId String // "APP-01" through "APP-15"
+
+  timestamp DateTime @default(now())
+
+  jobsTotal   Int
+  jobsSuccess Int
+  jobsFailed  Int
+
+  avgDuration Decimal @db.Decimal(10, 2) // ms
+  queueDepth  Int
+  errorRate   Decimal @db.Decimal(5, 4)
+
+  metadata Json?
+
+  @@index([appId])
+  @@index([timestamp])
+  @@map("app_health_metrics")
+}
+
+model DeadLetterLog {
+  id            String    @id @default(uuid())
+  originalQueue String
+  jobId         String
+  jobName       String
+  appId         String
+  data          Json
+  error         String    @db.Text
+  attempts      Int
+  status        String    @default("pending") // pending, retried, discarded
+  retriedAt     DateTime?
+  discardedAt   DateTime?
+  discardReason String?
+  pattern       String? // error pattern hash for grouping
+  createdAt     DateTime  @default(now())
+
+  @@index([appId, createdAt])
+  @@index([status])
+  @@index([originalQueue])
+  @@index([createdAt])
+  @@map("dead_letter_logs")
+}
+
+model Alert {
+  id             String    @id @default(uuid())
+  level          String // INFO, WARNING, ERROR, CRITICAL
+  source         String // appId or 'system'
+  title          String
+  message        String    @db.Text
+  data           Json?
+  acknowledged   Boolean   @default(false)
+  acknowledgedBy String?
+  acknowledgedAt DateTime?
+  resolvedAt     DateTime?
+  createdAt      DateTime  @default(now())
+
+  @@index([level, createdAt])
+  @@index([source])
+  @@index([acknowledged])
+  @@index([createdAt])
+  @@map("alerts")
+}
+
+model Conversation {
+  id             String           @id @default(cuid())
+  projectId      String
+  organizationId String
+  type           ConversationType
+  name           String?
+  isArchived     Boolean          @default(false)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  project      Project                   @relation("ProjectConversations", fields: [projectId], references: [id], onDelete: Cascade)
+  participants ConversationParticipant[]
+  messages     ChatMessage[]
+
+  @@index([projectId])
+  @@index([organizationId])
+  @@index([type])
+  @@map("conversations")
+}
+
+model ConversationParticipant {
+  id             String          @id @default(cuid())
+  conversationId String
+  userId         String
+  role           ParticipantRole
+  lastReadAt     DateTime?
+  isMuted        Boolean         @default(false)
+  joinedAt       DateTime        @default(now())
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user         User         @relation("UserConversationParticipants", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([conversationId, userId])
+  @@index([conversationId])
+  @@index([userId])
+  @@map("conversation_participants")
+}
+
+model ChatMessage {
+  id             String          @id @default(cuid())
+  conversationId String
+  senderId       String
+  content        String          @db.Text
+  type           ChatMessageType @default(TEXT)
+  replyToId      String?
+  isEdited       Boolean         @default(false)
+  isPinned       Boolean         @default(false)
+  metadata       Json?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  conversation Conversation            @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender       User                    @relation("UserChatMessages", fields: [senderId], references: [id], onDelete: Cascade)
+  replyTo      ChatMessage?            @relation("ChatMessageReplies", fields: [replyToId], references: [id], onDelete: SetNull)
+  replies      ChatMessage[]           @relation("ChatMessageReplies")
+  attachments  ChatMessageAttachment[]
+  readBy       ChatMessageRead[]
+
+  @@index([conversationId])
+  @@index([senderId])
+  @@index([createdAt])
+  @@map("chat_messages")
+}
+
+model ChatMessageAttachment {
+  id        String @id @default(cuid())
+  messageId String
+  fileName  String
+  fileUrl   String
+  fileType  String
+  fileSize  Int
+
+  message ChatMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  @@index([messageId])
+  @@map("chat_message_attachments")
+}
+
+model ChatMessageRead {
+  id        String   @id @default(cuid())
+  messageId String
+  userId    String
+  readAt    DateTime @default(now())
+
+  message ChatMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  user    User        @relation("UserChatMessageReads", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([messageId, userId])
+  @@index([messageId])
+  @@index([userId])
+  @@map("chat_message_reads")
+}
+
+model CommunicationTemplate {
+  id             String   @id @default(cuid())
+  organizationId String?
+  name           String
+  channel        String // EMAIL, SMS, IN_APP
+  subject        String?
+  body           String   @db.Text
+  variables      Json? // Template variables
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([channel])
+  @@index([organizationId])
+  @@map("communication_templates")
+}
+
+model PlatformKnowledge {
+  id       String                    @id @default(uuid())
+  category PlatformKnowledgeCategory
+  topic    String // Short topic label e.g. "Cost Book Architecture"
+  question String                    @db.Text // The prompt/question asked
+  answer   String                    @db.Text // The recommendation/answer given
+  decision String?                   @db.Text // Final decision made (if different from answer)
+
+  // Classification
+  domain   String? // e.g. "estimation", "auth", "billing", "permits"
+  appScope String[] @default([]) // Which apps this applies to: ["os-pm", "m-estimation"]
+  tags     String[] @default([])
+
+  // Status & Priority
+  status        KnowledgeStatus   @default(ACTIVE)
+  priority      KnowledgePriority @default(NORMAL)
+  isImplemented Boolean           @default(false)
+  implementedAt DateTime?
+
+  // Context
+  authorId     String? // Who authored/prompted this
+  sessionRef   String? // Reference to Claude session or commit hash
+  relatedFiles String[] @default([]) // Files affected by this decision
+
+  // Schema impact tracking
+  schemaModels  String[] @default([]) // Prisma models affected
+  apiEndpoints  String[] @default([]) // API routes affected
+  frontendPages String[] @default([]) // Frontend pages affected
+
+  metadata  Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  author User? @relation("PlatformKnowledgeAuthor", fields: [authorId], references: [id])
+
+  @@index([category])
+  @@index([domain])
+  @@index([status])
+  @@index([isImplemented])
+  @@index([authorId])
+  @@map("platform_knowledge")
+}
+
+model Faq {
+  id          String   @id @default(cuid())
+  number      Int      @unique
+  question    String
+  answer      String   @db.Text
+  section     String
+  sectionSlug String
+  tags        String[]
+  serviceArea String   @default("ai-concept-generation")
+  featured    Boolean  @default(false)
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([section])
+  @@index([serviceArea])
+  @@index([sectionSlug])
+}

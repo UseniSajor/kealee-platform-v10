@@ -1,0 +1,116 @@
+// DEVELOPMENT — Enums
+// Auto-generated from schema splitter
+
+enum DevelopmentLeadStatus {
+  NEW
+  CONTACTED
+  QUALIFIED
+  PROPOSAL_SENT
+  NEGOTIATING
+  WON
+  LOST
+  ARCHIVED
+}
+
+enum DevelopmentLeadSource {
+  WEBSITE
+  REFERRAL
+  LINKEDIN
+  EMAIL
+  PHONE
+  OTHER
+}
+
+enum DevelopmentLeadPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum DevelopmentProjectStage {
+  PRE_ACQUISITION
+  UNDER_CONTRACT
+  DESIGN
+  PERMITTING
+  BIDDING
+  IN_CONSTRUCTION
+  STALLED_RESCUE
+}
+
+enum DevelopmentAssetType {
+  MULTIFAMILY
+  MIXED_USE
+  TOWNHOMES
+  SFD
+  COMMERCIAL
+  INDUSTRIAL
+  OTHER
+}
+
+enum DevelopmentPackageStatus {
+  INTAKE
+  ZONING_ANALYSIS
+  DESIGN_GENERATION
+  COST_ESTIMATION
+  PRO_FORMA
+  PERMIT_CHECKLIST
+  COMPILING
+  READY
+  DELIVERED
+  EXPIRED
+}
+
+enum PatternBookStatus {
+  DRAFT
+  IN_REVIEW
+  PRE_APPROVED
+  PUBLISHED
+  ARCHIVED
+}
+
+enum CapitalSourceType {
+  SENIOR_DEBT     // Construction loan, permanent loan
+  MEZZANINE       // Mezzanine debt
+  PREFERRED_EQUITY // Preferred equity
+  COMMON_EQUITY   // Common equity / JV equity
+  GRANT           // Government grant
+  TAX_CREDIT      // LIHTC, Historic, etc.
+  SELLER_FINANCING // Seller carryback
+  OTHER
+}
+
+enum DrawStatus {
+  DRAFT          // Being prepared
+  SUBMITTED      // Submitted to lender
+  IN_REVIEW      // Under review
+  APPROVED       // Approved for funding
+  FUNDED         // Funds disbursed
+  REJECTED       // Rejected, needs revision
+  CANCELLED      // Cancelled
+}
+
+enum EntitlementType {
+  REZONING          // Zone change
+  VARIANCE          // Variance from code
+  CONDITIONAL_USE   // Conditional/special use permit
+  SITE_PLAN         // Site plan approval
+  SUBDIVISION       // Subdivision plat
+  PUD               // Planned unit development
+  ENVIRONMENTAL     // Environmental review/NEPA
+  HISTORIC          // Historic preservation
+  OTHER
+}
+
+enum EntitlementStatus {
+  NOT_STARTED
+  APPLICATION_PREP
+  SUBMITTED
+  UNDER_REVIEW
+  PUBLIC_HEARING
+  APPROVED
+  APPROVED_WITH_CONDITIONS
+  DENIED
+  APPEALED
+  EXPIRED
+}

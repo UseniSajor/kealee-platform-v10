@@ -1,0 +1,35 @@
+{
+  "name": "@kealee/keacore",
+  "version": "1.0.0",
+  "description": "KeaCore agent orchestration service — REST API for sessions, tasks, tools, and intake",
+  "main": "dist/index.js",
+  "scripts": {
+    "predev": "node ../../scripts/ensure-llm-deps-built.mjs",
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc --incremental false",
+    "start": "node dist/index.js",
+    "clean": "rm -rf dist",
+    "seeds:validate": "tsx src/scripts/validate-seeds.ts",
+    "seeds:warm": "tsx src/scripts/warm-retrieval.ts",
+    "providers:status": "tsx src/scripts/provider-status.ts"
+  },
+  "dependencies": {
+    "@fastify/cors": "^11.2.0",
+    "@fastify/sensible": "^5.5.0",
+    "@kealee/core": "workspace:*",
+    "@kealee/core-agents": "workspace:*",
+    "@kealee/core-ai-gateway": "workspace:*",
+    "@kealee/core-llm": "workspace:*",
+    "@kealee/core-tools": "workspace:*",
+    "@kealee/database": "workspace:*",
+    "@kealee/seeds": "workspace:*",
+    "dotenv": "^16.0.3",
+    "fastify": "^4.28.1",
+    "tsx": "^4.7.0",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "typescript": "^5.3.3"
+  }
+}

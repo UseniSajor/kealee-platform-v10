@@ -1,0 +1,2216 @@
+'use client'
+
+import { useState, useEffect, useCallback } from 'react'
+import Link from 'next/link'
+import Image from 'next/image'
+import { useParams } from 'next/navigation'
+import {
+  ArrowLeft, ArrowRight, CheckCircle, CheckCircle2, Clock, DollarSign,
+  Zap, Wrench, Droplets, Wind, Lightbulb, Download, Share2,
+  ChevronDown, ChevronUp, Loader2, Video, ShieldCheck,
+  AlertTriangle, MapPin, TrendingUp, Lock, Layers, Cpu, ImageIcon, FileText,
+  Calendar,
+} from 'lucide-react'
+import {
+  isV30IntakeFormData,
+  parseV30FloorplanDeliverables,
+  parseV30LandscapePackage,
+  v30WorkspaceUrl,
+  webMainBaseUrl,
+} from '@/lib/concept-output'
+import { V30LandscapeCadPanel } from '@/components/v30/V30LandscapeCadPanel'
+import { V30WorkspaceEmbed } from '@/components/v30/V30WorkspaceEmbed'
+import { ConceptPackageNav } from '@/components/concept/ConceptPackageNav'
+import { BeforeAfterMedia } from '@/components/concept/BeforeAfterMedia'
+import { ProcessVideoLoop } from '@/components/concept/ProcessVideoLoop'
+import { BuildPathUpsell, type OwnedUpsellProduct } from '@/components/BuildPathUpsell'
+import { AccountCompleteBanner } from '@/components/AccountCompleteBanner'
+import { BuildJourneyProgress } from '@/components/BuildJourneyProgress'
+import {
+  getConceptPackageDeliverableLabelsForIntake,
+  getIntakePriceByTier,
+  getPermitZoningLabels,
+  intakePathToFamily,
+  resolveConceptTier,
+  conceptTierIncludesVideo,
+  type ConceptTier,
+} from '@kealee/core-rules'
+
+// ─── Render stubs ─────────────────────────────────────────────────────────────
+
+type RenderStubValue = string[] | { interior: string[]; exterior: string[] }
+const RENDER_STUBS: Record<string, RenderStubValue> = {
+  kitchen_remodel: [
+    'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=1920&q=80',
+    'https://images.unsplash.com/photo-1565538810643-b5bdb714032a?w=1920&q=80',
+    'https://images.unsplash.com/photo-1600489000022-c2086d79f9d4?w=1920&q=80',
+    'https://images.unsplash.com/photo-1600566752355-35792bedcfea?w=1920&q=80',
+    'https://images.unsplash.com/photo-1556909172-54557c7e4fb7?w=1920&q=80',
+    'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=1920&q=80',
+  ],
+  bathroom_remodel: [
+    'https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?w=1920&q=80',
+    'https://images.unsplash.com/photo-1507652313519-d4e9174996dd?w=1920&q=80',
+    'https://images.unsplash.com/photo-1600566752734-2a0cd0e0da49?w=1920&q=80',
+    'https://images.unsplash.com/photo-1584568694244-14fbdf83bd30?w=1920&q=80',
+    'https://images.unsplash.com/photo-1620626011761-996317702574?w=1920&q=80',
+    'https://images.unsplash.com/photo-1571902943202-507ec2618e8f?w=1920&q=80',
+  ],
+  exterior_concept: [
+    'https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=1920&q=80',
+    'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1920&q=80',
+    'https://images.unsplash.com/photo-1583608205776-bfd35f0d9f83?w=1920&q=80',
+  ],
+  addition_expansion: {
+    interior: [
+      'https://images.unsplash.com/photo-1600210492493-0946911123ea?w=1920&q=80',
+      'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=1920&q=80',
+      'https://images.unsplash.com/photo-1618219908412-a29a1bb7b86e?w=1920&q=80',
+    ],
+    exterior: [
+      'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1920&q=80',
+      'https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=1920&q=80',
+    ],
+  },
+  whole_home_remodel: {
+    interior: [
+      'https://images.unsplash.com/photo-1600210492493-0946911123ea?w=1920&q=80',
+      'https://images.unsplash.com/photo-1600566752734-2a0cd0e0da49?w=1920&q=80',
+      'https://images.unsplash.com/photo-1618219908412-a29a1bb7b86e?w=1920&q=80',
+      'https://images.unsplash.com/photo-1600489000022-c2086d79f9d4?w=1920&q=80',
+    ],
+    exterior: [
+      'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1920&q=80',
+      'https://images.unsplash.com/photo-1583608205776-bfd35f0d9f83?w=1920&q=80',
+      'https://images.unsplash.com/photo-1565182999561-18d7dc61c393?w=1920&q=80',
+    ],
+  },
+  whole_home_concept: {
+    interior: [
+      'https://images.unsplash.com/photo-1600210492493-0946911123ea?w=1920&q=80',
+      'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=1920&q=80',
+      'https://images.unsplash.com/photo-1618219908412-a29a1bb7b86e?w=1920&q=80',
+      'https://images.unsplash.com/photo-1600489000022-c2086d79f9d4?w=1920&q=80',
+    ],
+    exterior: [
+      'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1920&q=80',
+      'https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=1920&q=80',
+      'https://images.unsplash.com/photo-1583608205776-bfd35f0d9f83?w=1920&q=80',
+    ],
+  },
+  default: [
+    'https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1920&q=80',
+    'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=1920&q=80',
+    'https://images.unsplash.com/photo-1600210492493-0946911123ea?w=1920&q=80',
+  ],
+}
+
+// ─── Package config (mirrors web-main/lib/service-deliverables.ts) ────────────
+
+const TIER_NAMES: Record<number, string> = {
+  1: 'Starter Concept',
+  2: 'Visualization Package',
+  3: 'Pre-Design Package',
+}
+
+interface PackageDef {
+  label: string
+  includes: string[]
+}
+
+const PACKAGE_CONFIG: Record<string, PackageDef> = {
+  kitchen_remodel: {
+    label: 'Kitchen Design Package',
+    includes: [
+      'Floor plan / layout direction',
+      '3–5 concept renderings',
+      'Permit roadmap (disciplines, AHJ checklist, fees)',
+      'Bill of Materials with line-item costs',
+      'MEP specification (electrical, plumbing, HVAC, lighting)',
+      'Basic cost estimate',
+      'Design brief with style direction',
+      'AI transformation video (Visualization & Pre-Design tiers)',
+      'Concept fee credited toward design plans (permits included in design plan package)',
+      'Direct support via portal ask bar',
+    ],
+  },
+  bathroom_remodel: {
+    label: 'Bathroom Design Package',
+    includes: [
+      'Floor plan / layout direction',
+      '3–5 concept renderings',
+      'Permit roadmap (disciplines, AHJ checklist, fees)',
+      'Bill of Materials with line-item costs',
+      'MEP specification (electrical, plumbing, HVAC, lighting)',
+      'Basic cost estimate',
+      'Design brief with style direction',
+      'AI transformation video (Visualization & Pre-Design tiers)',
+      'Concept fee credited toward design plans (permits included in design plan package)',
+      'Direct support via portal ask bar',
+    ],
+  },
+  exterior_concept: {
+    label: 'Exterior Concept Package',
+    includes: [
+      'Floor plan / layout direction',
+      '3–5 exterior renderings (front, side, rear)',
+      'Permit roadmap (disciplines, AHJ checklist, fees)',
+      'Material palette with finish selections',
+      'Landscape overview sketch',
+      'MEP specification (exterior systems)',
+      'Bill of Materials',
+      'AI transformation video (Visualization & Pre-Design tiers)',
+      'Concept fee credited toward design plans (permits included in design plan package)',
+      'Direct support via portal ask bar',
+    ],
+  },
+  garden_concept: {
+    label: 'Garden Concept',
+    includes: [
+      'Garden layout concept rendering',
+      'Permit roadmap',
+      'Irrigation design with smart controller spec',
+      'Plant list with seasonal selection',
+      'Seasonal maintenance calendar',
+      'Direct support via portal ask bar',
+    ],
+  },
+  whole_home_concept: {
+    label: 'Whole Home Concept',
+    includes: [
+      'Floor plan / layout direction',
+      'Full-home concept renderings',
+      'Permit roadmap across all disciplines',
+      'MEP specification for all systems',
+      'Bill of Materials',
+      'AI transformation video (Visualization & Pre-Design tiers)',
+      'Concept fee credited toward design plans (permits included in design plan package)',
+      'Direct support via portal ask bar',
+    ],
+  },
+  whole_home_remodel: {
+    label: 'Whole-Home Remodel',
+    includes: [
+      'Floor plan / layout direction',
+      'Full-home concept renderings',
+      'Permit roadmap across all disciplines',
+      'MEP specification for all systems',
+      'Bill of Materials',
+      'Remodel phase plan',
+      'AI transformation video (Visualization & Pre-Design tiers)',
+      'Concept fee credited toward design plans (permits included in design plan package)',
+      'Direct support via portal ask bar',
+    ],
+  },
+  addition_expansion: {
+    label: 'Addition / Expansion',
+    includes: [
+      'Floor plan / layout direction',
+      'Addition concept renderings (interior + exterior)',
+      'Permit roadmap (always required for additions)',
+      'Structural considerations brief',
+      'MEP specification for new addition',
+      'Bill of Materials',
+      'AI transformation video (Visualization & Pre-Design tiers)',
+      'Concept fee credited toward design plans (permits included in design plan package)',
+      'Direct support via portal ask bar',
+    ],
+  },
+  interior_reno_concept: {
+    label: 'Interior Reno Concept',
+    includes: [
+      'Floor plan / layout direction',
+      'Interior concept visuals (3–5 renders)',
+      'Permit roadmap (permit required)',
+      'Layout recommendations with flow analysis',
+      'MEP specification (electrical, plumbing, lighting)',
+      'Bill of Materials with cost breakdown',
+      'AI transformation video (Visualization & Pre-Design tiers)',
+      'Concept fee credited toward design plans (permits included in design plan package)',
+      'Direct support via portal ask bar',
+    ],
+  },
+  interior_renovation: {
+    label: 'Interior Renovation',
+    includes: [
+      'Floor plan / layout direction',
+      'Interior concept visuals (3–5 renders)',
+      'Permit roadmap (permit required)',
+      'Layout recommendations with flow analysis',
+      'MEP specification (electrical, plumbing, lighting)',
+      'Bill of Materials with cost breakdown',
+      'AI transformation video (Visualization & Pre-Design tiers)',
+      'Concept fee credited toward design plans (permits included in design plan package)',
+      'Direct support via portal ask bar',
+    ],
+  },
+  design_build: {
+    label: 'Design + Build Package',
+    includes: [
+      'Design concept renders',
+      'Site plan overview',
+      'Feasibility analysis',
+      'Cost estimate',
+      'Permit scope brief',
+      'AI transformation video (Pre-Design tier)',
+      'Direct support via portal ask bar',
+    ],
+  },
+  developer_concept: {
+    label: 'Developer Concept',
+    includes: [
+      'Design concept renders',
+      'Site plan overview',
+      'Feasibility analysis',
+      'Cost estimate',
+      'Permit scope brief',
+      'AI transformation video (Pre-Design tier)',
+      'Direct support via portal ask bar',
+    ],
+  },
+  design_estimate_permit_bundle: {
+    label: 'Design + Estimate + Permit Bundle',
+    includes: [
+      'Floor plan / layout direction',
+      'AI concept renderings (3–5 views)',
+      'Permit roadmap (disciplines, AHJ checklist, fees)',
+      'Zoning and setback analysis tied to your concept massing',
+      'Bill of Materials with line-item costs',
+      'MEP specification (electrical, plumbing, HVAC, lighting)',
+      'RSMeans-validated cost estimate (trade-by-trade)',
+      'AI transformation video (Visualization & Pre-Design tiers)',
+      'Concept fee credited toward permit drawings',
+      '15-min expert consultation call (booked after delivery)',
+      'Direct support via portal ask bar',
+    ],
+  },
+  cost_estimate: {
+    label: 'Catalogue-Based Construction Estimate',
+    includes: [
+      'Line-item cost breakdown by trade (labour, material, equipment)',
+      'Documented quantity takeoff from your scope',
+      'RSMeans market data for DMV region',
+      'Assumptions and risk register',
+      'Sources and uses schedule',
+      'Lender-grade hard cost model',
+      'Direct support via portal ask bar',
+    ],
+  },
+  permit_path_only: {
+    label: 'Permit Path Planning',
+    includes: [
+      'Jurisdiction-specific permit type identification',
+      'AHJ submission checklist',
+      'Estimated permit fees and processing timeline',
+      'Required inspection sequence',
+      'PE/architect sign-off requirements',
+      'Zoning compliance summary',
+      'Direct support via portal ask bar',
+    ],
+  },
+}
+
+// ─── Concept service price map (mirrors INTAKE_PRICE_CENTS in core-rules) ──────
+
+const CONCEPT_PRICE_DOLLARS: Record<string, number> = {
+  exterior_concept:       395,
+  garden_concept:         295,
+  whole_home_concept:     595,
+  interior_reno_concept:  345,
+  developer_concept:      795,
+  kitchen_remodel:        395,
+  bathroom_remodel:       295,
+  interior_renovation:    345,
+  whole_home_remodel:     695,
+  addition_expansion:     495,
+  permit_path_only:               499,
+  cost_estimate:                  595,
+  design_estimate_permit_bundle: 2499,
+  certified_estimate:    1850,
+  design_build:           795,
+  capture_site_concept:   125,
+  single_lot_development: 899,
+}
+
+function getPackageDef(projectPath: string): PackageDef {
+  return PACKAGE_CONFIG[projectPath] ?? {
+    label: projectPath.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
+    includes: [
+      'AI concept package',
+      'Design brief with style direction',
+      'Cost estimate',
+      'Direct support via portal ask bar',
+    ],
+  }
+}
+
+const DUAL_SCOPE_PATHS = new Set(['addition_expansion', 'whole_home_remodel', 'whole_home_concept'])
+
+function getDualStubRenders(projectPath: string, tier: number): {
+  interiorRenderUrls: string[]
+  exteriorRenderUrls: string[]
+  renderUrls: string[]
+} {
+  const pack = RENDER_STUBS[projectPath] as { interior: string[]; exterior: string[] } | undefined
+  const interiorSrc = pack?.interior ?? (RENDER_STUBS.addition_expansion as { interior: string[] }).interior
+  const exteriorSrc = pack?.exterior ?? (RENDER_STUBS.addition_expansion as { exterior: string[] }).exterior
+  const interiorCount = tier >= 3 ? interiorSrc.length : tier >= 2 ? Math.min(3, interiorSrc.length) : 2
+  const exteriorCount = tier >= 3 ? exteriorSrc.length : tier >= 2 ? Math.min(2, exteriorSrc.length) : 2
+  const interiorRenderUrls = interiorSrc.slice(0, interiorCount)
+  const exteriorRenderUrls = exteriorSrc.slice(0, exteriorCount)
+  return {
+    interiorRenderUrls,
+    exteriorRenderUrls,
+    renderUrls: [...interiorRenderUrls, ...exteriorRenderUrls],
+  }
+}
+
+function getStubRenders(projectPath: string, tier: number): string[] {
+  if (DUAL_SCOPE_PATHS.has(projectPath)) {
+    return getDualStubRenders(projectPath, tier).renderUrls
+  }
+  const stubs = RENDER_STUBS[projectPath]
+  const list: string[] = Array.isArray(stubs) ? stubs : (RENDER_STUBS.default as string[])
+  const count = tier >= 3 ? list.length : tier === 2 ? Math.min(6, list.length) : 3
+  return list.slice(0, count)
+}
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+interface BOMItem {
+  item: string
+  quantity: number
+  unit: string
+  estimatedCost: number
+  description: string
+}
+
+interface PermitScope {
+  requiresPermit: boolean
+  permitTypes: string[]
+  estimatedPermitFee: number
+  estimatedProcessingDays: number
+  requiresPE: boolean
+  notes: string
+}
+
+interface NarrativeRoom {
+  name: string
+  description: string
+}
+
+interface ConceptData {
+  conceptId: string
+  projectType: string
+  scope: string
+  budget: number
+  location: string
+  estimatedCost: number
+  projectTimeline: string
+  tier: number
+  renderUrls: string[]
+  interiorRenderUrls?: string[]
+  exteriorRenderUrls?: string[]
+  /** Photos uploaded by the user at intake — shown in before/after comparison. */
+  beforeUrls?: string[]
+  /** From `conceptOutput` when tier includes video (Premium+). */
+  videoUrl?: string
+  videoFormatUrls?: Record<string, string>
+  /** Raw status from form_data.conceptVideo.status — 'pending' | 'processing' | 'completed' | 'failed' */
+  conceptVideoStatus?: string
+  designConcept: {
+    style: string
+    colorPalette: string[]
+    keyFeatures: string[]
+  }
+  /** v2 concept engine: Claude-written architect narrative */
+  narrative: {
+    projectSummary:     string
+    designIntent:       string
+    styleNarrative:     string
+    materialDirection:  string
+    lifestyleAlignment: string
+    rooms:              NarrativeRoom[]
+    nextSteps:          string[]
+  }
+  mepSystem: {
+    electrical: string
+    plumbing: string
+    hvac: string
+    lighting: string
+  }
+  billOfMaterials: BOMItem[]
+  permitScope: PermitScope | null
+  zoningNotes: string
+  buildabilityFlag: 'feasible' | 'feasible-with-variance' | 'challenging'
+  readinessScore: number
+  pdfUrl?: string
+  /** Inline SVG from the floor plan generator */
+  floorplanSvg?: string
+  /** Premium+ (tier 3), mainline (non-v30) pipeline: true once the CAD/DXF export has been generated */
+  cadAvailable?: boolean
+  /** Human-readable package label, e.g. "Kitchen Design Package" */
+  packageLabel: string
+  /** What's included in this package (from the product catalog) */
+  packageIncludes: string[]
+  /** Tier name, e.g. "Starter Concept" */
+  tierName: string
+  /** True once permit has been submitted or approved — unlocks contractor matching */
+  contractorMatchingUnlocked: boolean
+  /** True when the permit step is done (submitted or approved) but before contractor is matched */
+  permitSubmitted: boolean
+  /** ContractorBot match profile — present once the AI chain has run and written back to Supabase */
+  contractorMatchResult?: {
+    matchCriteria: Record<string, unknown>
+    recommendations: string[]
+    nextStep: string
+    confidence: string
+    readinessScore: number
+  }
+  /** Price paid for the design concept service (USD) */
+  conceptServicePrice?: number
+  /** Construction cost estimate range from concept engine scope */
+  constructionCostMin?: number
+  constructionCostMax?: number
+  isV30?: boolean
+  v30WorkspaceUrl?: string
+  projectPath?: string
+  v30Landscape?: ReturnType<typeof parseV30LandscapePackage>
+  v30Floorplan?: ReturnType<typeof parseV30FloorplanDeliverables>
+  v30LotContext?: { satelliteImageUrl?: string; googleEarthHint?: string } | null
+}
+
+// ─── Sub-components ───────────────────────────────────────────────────────────
+
+function MEPRow({ icon: Icon, label, value, color }: {
+  icon: React.ElementType; label: string; value: string; color: string
+}) {
+  if (!value || value === 'N/A') return null
+  return (
+    <div className="flex gap-3 py-3 border-b border-gray-100 last:border-0">
+      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg"
+        style={{ backgroundColor: `${color}15` }}>
+        <Icon className="h-4 w-4" style={{ color }} />
+      </div>
+      <div>
+        <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-0.5">{label}</p>
+        <p className="text-sm text-gray-700 leading-relaxed">{value}</p>
+      </div>
+    </div>
+  )
+}
+
+function ConceptRenderGrid({
+  urls,
+  projectType,
+  labelPrefix,
+}: {
+  urls: string[]
+  projectType: string
+  labelPrefix: string
+}) {
+  if (urls.length === 0) return null
+  return (
+    <div className={`grid gap-3 ${urls.length === 1 ? 'grid-cols-1' : urls.length <= 3 ? 'grid-cols-1 sm:grid-cols-3' : 'grid-cols-2 sm:grid-cols-3'}`}>
+      {urls.map((url, i) => (
+        <div
+          key={`${labelPrefix}-${i}`}
+          className={`relative overflow-hidden rounded-xl bg-gray-100 ${i === 0 && urls.length > 3 ? 'col-span-2 row-span-2' : ''}`}
+          style={{ aspectRatio: '16/9' }}
+        >
+          <Image
+            src={url}
+            alt={`${projectType} ${labelPrefix} ${i + 1}`}
+            fill
+            className="object-cover"
+            sizes="(max-width: 768px) 100vw, 50vw"
+            unoptimized
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+          <span className="absolute bottom-2 left-3 text-white text-[10px] font-bold uppercase tracking-widest opacity-70">
+            {labelPrefix} {i + 1}
+          </span>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+// ─── Animated Polling State ───────────────────────────────────────────────────
+
+const PIPELINE_STEPS = [
+  { icon: Layers,    label: 'Analyzing project requirements',   duration: 8  },
+  { icon: Cpu,       label: 'Generating floor plan & layout',   duration: 14 },
+  { icon: ImageIcon, label: 'Creating AI concept renders',      duration: 22 },
+  { icon: FileText,  label: 'Building your concept package',    duration: 12 },
+  { icon: CheckCircle2, label: 'Design professional review',   duration: 4  },
+]
+
+function PollingState({ pollCount }: { pollCount: number }) {
+  const [activeStep, setActiveStep] = useState(0)
+  const [shimmerIndex, setShimmerIndex] = useState(0)
+
+  // Cycle through pipeline steps based on poll count + time
+  useEffect(() => {
+    const stepTotal = PIPELINE_STEPS.length
+    const step = Math.min(Math.floor(pollCount * 0.6), stepTotal - 1)
+    setActiveStep(step)
+  }, [pollCount])
+
+  // Shimmer cycle for the render placeholders
+  useEffect(() => {
+    const t = setInterval(() => setShimmerIndex(i => (i + 1) % 3), 1800)
+    return () => clearInterval(t)
+  }, [])
+
+  const progressPct = Math.min(10 + pollCount * 7, 90)
+
+  return (
+    <div className="max-w-2xl mx-auto py-12 px-4">
+      {/* Header */}
+      <div className="text-center mb-10">
+        <div className="inline-flex h-16 w-16 items-center justify-center rounded-2xl mb-5"
+          style={{ background: 'linear-gradient(135deg, #E8724B18, #E8724B08)', border: '1.5px solid #E8724B30' }}>
+          <Cpu className="h-7 w-7 animate-pulse" style={{ color: '#E8724B' }} />
+        </div>
+        <h1 className="text-xl font-bold mb-2" style={{ color: '#1A2B4A' }}>Building Your Concept Package</h1>
+        <p className="text-sm text-slate-500">Our AI is crafting your personalized design. This takes a few minutes.</p>
+      </div>
+
+      {/* Progress bar */}
+      <div className="mb-8">
+        <div className="flex justify-between text-xs text-slate-400 mb-2">
+          <span>Processing</span>
+          <span>{progressPct}%</span>
+        </div>
+        <div className="h-2 w-full rounded-full bg-slate-100 overflow-hidden">
+          <div
+            className="h-full rounded-full transition-all duration-1000 ease-out"
+            style={{
+              width: `${progressPct}%`,
+              background: 'linear-gradient(90deg, #E8724B, #2ABFBF)',
+            }}
+          />
+        </div>
+      </div>
+
+      {/* Pipeline steps */}
+      <div className="space-y-2 mb-10">
+        {PIPELINE_STEPS.map((step, i) => {
+          const done    = i < activeStep
+          const active  = i === activeStep
+          const pending = i > activeStep
+          return (
+            <div key={i}
+              className="flex items-center gap-3 rounded-xl px-4 py-3 transition-all duration-500"
+              style={{
+                backgroundColor: active ? '#E8724B08' : 'transparent',
+                border: active ? '1px solid #E8724B20' : '1px solid transparent',
+                opacity: pending ? 0.4 : 1,
+              }}>
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg"
+                style={{ backgroundColor: done ? '#2ABFBF15' : active ? '#E8724B15' : '#94A3B815' }}>
+                {done
+                  ? <CheckCircle2 className="h-4 w-4" style={{ color: '#2ABFBF' }} />
+                  : active
+                    ? <step.icon className="h-4 w-4 animate-pulse" style={{ color: '#E8724B' }} />
+                    : <step.icon className="h-4 w-4" style={{ color: '#94A3B8' }} />
+                }
+              </div>
+              <span className="text-sm font-medium" style={{ color: done ? '#2ABFBF' : active ? '#1A2B4A' : '#94A3B8' }}>
+                {step.label}
+              </span>
+              {active && (
+                <div className="ml-auto flex gap-1">
+                  {[0, 1, 2].map(d => (
+                    <div key={d} className="h-1.5 w-1.5 rounded-full animate-bounce"
+                      style={{ backgroundColor: '#E8724B', animationDelay: `${d * 0.15}s` }} />
+                  ))}
+                </div>
+              )}
+              {done && <CheckCircle2 className="ml-auto h-4 w-4" style={{ color: '#2ABFBF' }} />}
+            </div>
+          )
+        })}
+      </div>
+
+      {/* Shimmer render placeholders */}
+      <div className="grid grid-cols-3 gap-3 mb-8">
+        {[0, 1, 2].map(i => (
+          <div key={i} className="relative aspect-video rounded-xl overflow-hidden bg-slate-100">
+            <div
+              className="absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite]"
+              style={{
+                background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent)',
+                animationDelay: `${i * 0.4}s`,
+              }}
+            />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <ImageIcon className="h-6 w-6 text-slate-300" />
+            </div>
+            {shimmerIndex === i && (
+              <div className="absolute bottom-0 left-0 right-0 h-0.5"
+                style={{ background: 'linear-gradient(90deg, #E8724B, #2ABFBF)', animation: 'scan 1.8s ease-in-out' }} />
+            )}
+          </div>
+        ))}
+      </div>
+
+      {/* Footer hint */}
+      <div className="flex flex-col items-center gap-3 text-center">
+        <p className="text-xs text-slate-400">
+          We&apos;ll email you when your package is ready — you don&apos;t need to stay on this page.
+        </p>
+        <Link href="/deliverables"
+          className="text-xs font-medium transition-colors hover:opacity-80"
+          style={{ color: '#E8724B' }}>
+          ← Back to Deliverables
+        </Link>
+      </div>
+
+      <style>{`
+        @keyframes shimmer {
+          0%   { transform: translateX(-100%) }
+          100% { transform: translateX(300%) }
+        }
+        @keyframes scan {
+          0%   { transform: scaleX(0); transform-origin: left }
+          50%  { transform: scaleX(1); transform-origin: left }
+          100% { transform: scaleX(0); transform-origin: right }
+        }
+      `}</style>
+    </div>
+  )
+}
+
+// ─── Page ─────────────────────────────────────────────────────────────────────
+
+export default function ConceptDeliverablePage() {
+  const params  = useParams()
+  const intakeId = params.intakeId as string
+
+  const [data,       setData]       = useState<ConceptData | null>(null)
+  const [loadStatus, setLoadStatus] = useState<'loading' | 'polling' | 'ready' | 'error'>('loading')
+  const [pollCount,  setPollCount]  = useState(0)
+  const [showFullBOM, setShowFullBOM] = useState(false)
+  const [catalogPermitRequired, setCatalogPermitRequired] = useState<'always' | 'sometimes' | 'rarely' | null>(null)
+  const [ownedProducts, setOwnedProducts] = useState<OwnedUpsellProduct[]>([])
+  /** True while Replicate renders are still being produced (renderJobs present but renderUrls empty). */
+  const [rendersGenerating, setRendersGenerating] = useState(false)
+
+  useEffect(() => {
+    fetch('/api/deliverables')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((payload) => {
+        if (payload?.ownedProducts) setOwnedProducts(payload.ownedProducts)
+      })
+      .catch(() => {})
+  }, [])
+
+  const fetchData = useCallback(async (): Promise<boolean> => {
+    try {
+      // Use server-side API route — bypasses Supabase RLS on public_intake_leads
+      const res = await fetch(`/api/intake/${intakeId}`)
+      if (!res.ok) return false
+      const { intake, gate } = await res.json()
+
+      if (!intake) return false
+
+      const formData = (intake.form_data as Record<string, unknown>) ?? {}
+      const conceptRaw = formData.conceptOutput ?? formData.v30ConceptOutput
+      const ready =
+        conceptRaw &&
+        (intake.status === 'concept_ready' ||
+          (intake.status === 'paid' && Boolean(conceptRaw)) ||
+          (formData.v30 && intake.status === 'processing'))
+      if (!ready) return false
+
+      // Persist catalog-level permit requirement (set at Stripe purchase time)
+      const pr = formData.permitRequired as 'always' | 'sometimes' | 'rarely' | undefined
+      const catalogPermitReq = pr ?? 'sometimes'
+      setCatalogPermitRequired(pr ?? null)
+
+      const co = conceptRaw as Record<string, unknown>
+      const projectPath = (intake.project_path as string) ?? 'default'
+      const tier = resolveConceptTier(formData, { projectPath })
+
+      // ── Unpack packageJson (concept engine v2 format) with fallback to
+      //    legacy top-level fields (concept engine v1 / production format)
+      const pkg       = (co.packageJson as Record<string, unknown>) ?? {}
+      const narrative = (pkg.narrative  as Record<string, unknown>) ?? {}
+      const scope     = (pkg.scope      as Record<string, unknown>) ?? {}
+      const permit    = (pkg.permit     as Record<string, unknown>) ?? {}
+      const visuals   = (pkg.visuals    as Record<string, unknown>) ?? {}
+      const floorPlan = (pkg.floorPlan  as Record<string, unknown>) ?? {}
+      const project   = (pkg.project    as Record<string, unknown>) ?? {}
+
+      // Legacy v1 fields (may be present on older / production packages)
+      const dc  = (co.designConcept as Record<string, unknown>) ?? {}
+      const mep = (co.mepSystem     as Record<string, unknown>) ?? {}
+      const bom = (co.billOfMaterials as BOMItem[]) ?? []
+
+      // Style — v1 has dc.style; v2 has visuals.styleKeywords
+      const styleKeywords = (visuals.styleKeywords as string[]) ?? []
+      const styleLabel =
+        (dc.style as string) ||
+        (styleKeywords.length > 0 ? styleKeywords.slice(0, 3).join(', ') : 'Modern Contemporary')
+
+      // Key features — v1 has dc.keyFeatures; v2 has scope.topRequiredTrades
+      const keyFeatures =
+        (dc.keyFeatures as string[])?.length > 0
+          ? (dc.keyFeatures as string[])
+          : (scope.topRequiredTrades as string[]) ?? []
+
+      // Color palette — v1 has dc.colorPalette; v2 has visuals.styleKeywords tail
+      const colorPalette =
+        (dc.colorPalette as string[])?.length > 0
+          ? (dc.colorPalette as string[])
+          : styleKeywords.slice(3)
+
+      // Construction cost range — from v2 scope
+      const constructionCostMin = typeof scope.totalEstimatedMin === 'number' ? scope.totalEstimatedMin as number : undefined
+      const constructionCostMax = typeof scope.totalEstimatedMax === 'number' ? scope.totalEstimatedMax as number : undefined
+
+      // Concept service price paid — tier-aware from core-rules; falls back to flat map
+      const conceptServicePrice =
+        (getIntakePriceByTier(projectPath, tier)?.cents ?? 0) / 100 ||
+        (CONCEPT_PRICE_DOLLARS[projectPath] ?? 0)
+
+      // Estimated cost — v1 has co.estimatedCost; v2 has scope.totalEstimatedMax
+      const estimatedCost =
+        (co.estimatedCost as number) ||
+        constructionCostMax ||
+        (constructionCostMin && constructionCostMax ? Math.round((constructionCostMin + constructionCostMax) / 2) : 0) ||
+        0
+
+      // Timeline — v1 has co.projectTimeline; v2 has permit.estimatedTimeline or project.timeline
+      const projectTimeline =
+        (co.projectTimeline as string) ||
+        (permit.estimatedTimeline as string) ||
+        (project.timeline as string)?.replace(/_/g, '–') ||
+        '4–6 weeks'
+
+      // Permit scope — v1 has co.permitScope; v2 maps from permit.*
+      const permitScopeRaw = co.permitScope as PermitScope | null
+      const derivedPermitScope: PermitScope | null = permitScopeRaw ?? (
+        Object.keys(permit).length > 0 ? {
+          requiresPermit: !!(permit.requiresPermit),
+          permitTypes: [
+            ...((permit.likelyPermits as string[]) ?? []),
+            ...((permit.likelyTradePermits as string[]) ?? []),
+          ],
+          estimatedPermitFee: (() => {
+            const range = permit.estimatedCostRange as [number, number] | undefined
+            return range ? Math.round((range[0] + range[1]) / 2) : 0
+          })(),
+          estimatedProcessingDays: 21, // "2-6 weeks" → mid estimate
+          requiresPE: false,
+          notes: (permit.keyConsiderations as string[] | undefined)?.join(' ') ?? '',
+        } : null
+      )
+
+      // Zoning notes — v1 has co.zoningNotes; v2 has permit.disclaimer
+      let zoningNotes =
+        (co.zoningNotes as string) ||
+        (permit.disclaimer as string) ||
+        ''
+
+      const tierNorm = (tier === 3 ? 3 : tier === 2 ? 2 : 1) as ConceptTier
+      const permitZoningCatalog = getPermitZoningLabels(intakePathToFamily(projectPath), tierNorm)
+
+      let finalPermitScope = derivedPermitScope
+      if (!finalPermitScope?.permitTypes?.length) {
+        finalPermitScope = {
+          requiresPermit: catalogPermitReq !== 'rarely',
+          permitTypes: permitZoningCatalog
+            .filter((l) => /permit|AHJ|trade/i.test(l))
+            .slice(0, 5)
+            .map((l) => l.split('—')[0]?.trim() || l)
+            .filter(Boolean),
+          estimatedPermitFee: 0,
+          estimatedProcessingDays: 21,
+          requiresPE: ['addition_expansion', 'whole_home_remodel', 'whole_home_concept'].includes(projectPath),
+          notes:
+            'Permit scope brief is included in your design concept package. Agency filing and stamped drawings are available when you continue with Kealee.',
+        }
+        if (finalPermitScope.permitTypes.length === 0) {
+          finalPermitScope.permitTypes = ['Building / alteration permit (scope-dependent)']
+        }
+      }
+
+      if (!zoningNotes.trim() || /pending|confirm with local/i.test(zoningNotes)) {
+        zoningNotes = [
+          permitZoningCatalog.filter((l) => /zoning|buildability|variance|HOA|overlay|setback/i.test(l)).join('. '),
+          (intake.project_address as string)
+            ? `Property: ${intake.project_address as string}.`
+            : '',
+          'Confirm zoning district rules with your local planning department before construction.',
+        ]
+          .filter(Boolean)
+          .join(' ')
+      }
+
+      // Description / scope summary
+      const scopeDescription =
+        (co.description as string) ||
+        (narrative.projectSummary as string) ||
+        (formData.description as string) ||
+        ''
+
+      // Bill of materials — v1 has bom array; v2 doesn't have BOM, show empty
+      const billOfMaterials: BOMItem[] = bom.length > 0 ? bom : []
+
+      const dualStubs = DUAL_SCOPE_PATHS.has(projectPath) ? getDualStubRenders(projectPath, tier) : null
+      const interiorFromOutput = Array.isArray(co.interiorRenderUrls)
+        ? (co.interiorRenderUrls as string[]).filter(Boolean)
+        : []
+      const exteriorFromOutput = Array.isArray(co.exteriorRenderUrls)
+        ? (co.exteriorRenderUrls as string[]).filter(Boolean)
+        : []
+      const interiorRenderUrls =
+        interiorFromOutput.length > 0
+          ? interiorFromOutput
+          : dualStubs?.interiorRenderUrls ?? []
+      const exteriorRenderUrls =
+        exteriorFromOutput.length > 0
+          ? exteriorFromOutput
+          : dualStubs?.exteriorRenderUrls ?? []
+      const renderUrls = Array.isArray(co.renderUrls) && (co.renderUrls as string[]).length > 0
+        ? co.renderUrls as string[]
+        : dualStubs?.renderUrls ?? getStubRenders(projectPath, tier)
+
+      // Use AI-generated video (Sora 2 / Veo 3.1 / Kling 2.5) once completed.
+      // While the video is being produced, videoUrl is undefined and the portal
+      // shows the "In Production" banner — never the placeholder URL.
+      const conceptVideo = formData.conceptVideo as
+        | { status?: string; outputUrl?: string }
+        | undefined
+      const realVideoUrl =
+        conceptVideo?.status === 'completed' && typeof conceptVideo.outputUrl === 'string'
+          ? conceptVideo.outputUrl
+          : undefined
+
+      // Contractor matching unlock status — from the API route (includes gate record)
+      const contractorMatchingUnlocked = !!(
+        gate?.contractorMatchingUnlocked ||
+        gate?.permitSubmitted ||
+        gate?.permitApproved ||
+        gate?.noPermitRequired
+      )
+      // Permit submitted (stage 1) — true when permit step is done regardless of contractor match
+      const permitSubmitted = !!(gate?.permitSubmitted || gate?.permitApproved)
+
+      // Narrative rooms — concept engine produces {RoomName: description} object;
+      //   older/future shapes may be an array of {name, description}.
+      const rawRooms = narrative.rooms
+      const narrativeRooms: NarrativeRoom[] = Array.isArray(rawRooms)
+        ? (rawRooms as unknown[]).map(r => {
+            if (typeof r === 'object' && r !== null && 'name' in r) return r as NarrativeRoom
+            return { name: String(r), description: '' }
+          })
+        : typeof rawRooms === 'object' && rawRooms !== null
+          ? Object.entries(rawRooms as Record<string, string>).map(([name, description]) => ({ name, description }))
+          : []
+
+      // Next steps — narrative.nextSteps may be a string; pkg.nextSteps.actionItems is the array
+      const nextStepsData = (pkg.nextSteps as Record<string, unknown>) ?? {}
+      const narrativeNextSteps: string[] = Array.isArray(nextStepsData.actionItems)
+        ? (nextStepsData.actionItems as string[])
+        : typeof narrative.nextSteps === 'string' && (narrative.nextSteps as string).trim()
+          ? [(narrative.nextSteps as string)]
+          : Array.isArray(narrative.nextSteps)
+            ? (narrative.nextSteps as string[])
+            : []
+
+      const coIncludes = Array.isArray(co.includes) ? (co.includes as string[]) : []
+      const pkgDef = getPackageDef(projectPath)
+      const packageIncludes =
+        coIncludes.length > 0 ? coIncludes : getConceptPackageDeliverableLabelsForIntake(projectPath, tierNorm)
+      const floorplanSvg = typeof co.floorplanSvgInline === 'string' && co.floorplanSvgInline.trim().startsWith('<')
+        ? co.floorplanSvgInline as string
+        : undefined
+
+      // Detect pending Replicate renders: prediction IDs stored but no resolved URLs yet.
+      const renderJobsPending = Array.isArray(formData.renderJobs) && (formData.renderJobs as string[]).length > 0
+      const hasRealRenders = Array.isArray(co.renderUrls) && (co.renderUrls as string[]).length > 0
+      setRendersGenerating(renderJobsPending && !hasRealRenders)
+
+      setData({
+        conceptId:       typeof co.packageId === 'string' ? co.packageId.slice(0, 13) : `concept_${intakeId.slice(0, 8)}`,
+        projectType:     (intake.project_path as string)?.replace(/_/g, ' ') ?? 'Concept Package',
+        packageLabel:    pkgDef.label,
+        packageIncludes,
+        tierName:        isV30IntakeFormData(formData)
+          ? tier === 3 ? 'Premium+' : tier === 2 ? 'Premium' : 'Basic'
+          : TIER_NAMES[tier] ?? 'Starter Concept',
+        isV30:           isV30IntakeFormData(formData),
+        v30WorkspaceUrl: isV30IntakeFormData(formData) ? v30WorkspaceUrl(intakeId) : undefined,
+        projectPath,
+        v30Landscape:    parseV30LandscapePackage(formData),
+        v30Floorplan:    parseV30FloorplanDeliverables(formData),
+        v30LotContext:   (formData.v30LotContext as ConceptData['v30LotContext']) ?? null,
+        floorplanSvg,
+        cadAvailable:    typeof co.cadDxfInline === 'string' && (co.cadDxfInline as string).length > 0,
+        scope:           scopeDescription,
+        budget:          typeof intake.budget_range === 'number' ? intake.budget_range : 0,
+        location:        (intake.project_address as string) ?? '',
+        estimatedCost,
+        projectTimeline,
+        tier,
+        renderUrls,
+        interiorRenderUrls: interiorRenderUrls.length > 0 ? interiorRenderUrls : undefined,
+        exteriorRenderUrls: exteriorRenderUrls.length > 0 ? exteriorRenderUrls : undefined,
+        beforeUrls: Array.isArray(co.beforeUrls) && (co.beforeUrls as string[]).length > 0
+          ? (co.beforeUrls as string[]).filter(Boolean)
+          : undefined,
+        pdfUrl:          typeof co.pdfUrl === 'string' ? co.pdfUrl : undefined,
+        contractorMatchingUnlocked,
+        permitSubmitted,
+        // Never surface the ForBiggerBlazes.mp4 placeholder — customers see
+        // the "In Production" banner instead until the real video is ready.
+        videoUrl: realVideoUrl,
+        conceptVideoStatus: conceptVideo?.status,
+        videoFormatUrls:
+          co.videoFormatUrls && typeof co.videoFormatUrls === 'object'
+            ? (co.videoFormatUrls as Record<string, string>)
+            : undefined,
+        designConcept: {
+          style:        styleLabel,
+          colorPalette,
+          keyFeatures,
+        },
+        narrative: {
+          projectSummary:     (narrative.projectSummary as string) ?? '',
+          designIntent:       (narrative.designIntent as string) ?? '',
+          styleNarrative:     (narrative.styleNarrative as string) ?? '',
+          materialDirection:  (narrative.materialDirection as string) ?? '',
+          lifestyleAlignment: (narrative.lifestyleAlignment as string) ?? '',
+          rooms:              narrativeRooms,
+          nextSteps:          narrativeNextSteps,
+        },
+        mepSystem: {
+          electrical: (mep.electrical as string) ?? '',
+          plumbing:   (mep.plumbing as string)   ?? 'N/A',
+          hvac:       (mep.hvac as string)        ?? 'N/A',
+          lighting:   (mep.lighting as string)    ?? '',
+        },
+        billOfMaterials,
+        permitScope:      finalPermitScope,
+        zoningNotes,
+        buildabilityFlag:    ((co.buildabilityFlag as string) ?? 'feasible') as ConceptData['buildabilityFlag'],
+        readinessScore:      (co.readinessScore as number) ?? 70,
+        conceptServicePrice,
+        constructionCostMin,
+        constructionCostMax,
+        contractorMatchResult: (formData.contractorMatchResult as ConceptData['contractorMatchResult']) ?? undefined,
+      })
+      return true
+    } catch {
+      return false
+    }
+  }, [intakeId])
+
+  useEffect(() => {
+    fetchData().then(found => {
+      if (found) setLoadStatus('ready')
+      else setLoadStatus('polling')
+    })
+  }, [fetchData])
+
+  // Poll up to 60s for concept to be ready
+  useEffect(() => {
+    if (loadStatus !== 'polling') return
+    if (pollCount >= 12) { setLoadStatus('error'); return }
+    const timer = setTimeout(async () => {
+      const found = await fetchData()
+      if (found) setLoadStatus('ready')
+      else setPollCount(c => c + 1)
+    }, 5000)
+    return () => clearTimeout(timer)
+  }, [loadStatus, pollCount, fetchData])
+
+  // After the concept is ready, poll web-main video pipeline (POST start + GET advance segments).
+  useEffect(() => {
+    if (loadStatus !== 'ready') return
+    if (!data || !conceptTierIncludesVideo(data.tier as ConceptTier)) return
+
+    const webMain = (process.env.NEXT_PUBLIC_WEB_MAIN_URL ?? 'https://kealee.com').replace(/\/$/, '')
+    let stopped = false
+    let pollsLeft = 120
+    let kickoffAttempts = 0
+
+    const placeholderHosts = ['storage.googleapis.com', 'commondatastorage.googleapis.com']
+    const looksLikePlaceholder = (url?: string): boolean => {
+      if (!url) return true
+      try { return placeholderHosts.some(h => new URL(url).host.includes(h)) }
+      catch { return false }
+    }
+
+    const ensureVideoStarted = async () => {
+      if (kickoffAttempts >= 3) return
+      kickoffAttempts += 1
+      await fetch(`${webMain}/api/concept/video`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ intakeId }),
+      }).catch(() => {})
+    }
+
+    const tick = async () => {
+      if (stopped) return
+      pollsLeft -= 1
+
+      // GET advances multi-segment Sora/Kling jobs and mirrors finished MP4 to storage.
+      const pollRes = await fetch(
+        `${webMain}/api/concept/video?intakeId=${encodeURIComponent(intakeId)}`,
+      ).catch(() => null)
+
+      if (pollRes?.ok) {
+        const videoState = (await pollRes.json().catch(() => null)) as
+          | { status?: string; outputUrl?: string }
+          | null
+        if (videoState?.status === 'completed' && videoState.outputUrl) {
+          await fetchData()
+          return
+        }
+        if (videoState?.status === 'failed' && kickoffAttempts < 3) {
+          await ensureVideoStarted()
+        }
+      }
+
+      await fetchData()
+
+      if (pollsLeft <= 0) return
+      window.setTimeout(tick, 5000)
+    }
+
+    if (looksLikePlaceholder(data.videoUrl)) {
+      void ensureVideoStarted()
+      window.setTimeout(tick, 5000)
+    }
+
+    return () => { stopped = true }
+  }, [loadStatus, data?.tier, data?.videoUrl, intakeId, fetchData])
+
+  // When renders are pending: fire the resolve endpoint once on mount (fire-and-forget),
+  // then poll form_data every 15s until renderUrls is populated.
+  useEffect(() => {
+    if (!rendersGenerating || loadStatus !== 'ready') return
+    const webMain = (process.env.NEXT_PUBLIC_WEB_MAIN_URL ?? 'https://kealee.com').replace(/\/$/, '')
+    // Fire resolve endpoint — it polls Replicate and writes URLs back to Supabase.
+    // Fire-and-forget with a 200s timeout; the polling below will pick up the result.
+    const controller = new AbortController()
+    const resolveTimeout = setTimeout(() => controller.abort(), 200_000)
+    fetch(`${webMain}/api/concept/renders/resolve`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ intakeId }),
+      signal: controller.signal,
+    })
+      .then(() => fetchData())
+      .catch(() => {})
+      .finally(() => clearTimeout(resolveTimeout))
+
+    let pollsLeft = 20 // up to 5 min (20 × 15s)
+    const id = setInterval(async () => {
+      pollsLeft -= 1
+      if (pollsLeft <= 0) { clearInterval(id); setRendersGenerating(false); return }
+      await fetchData()
+    }, 15_000)
+    return () => {
+      controller.abort()
+      clearTimeout(resolveTimeout)
+      clearInterval(id)
+    }
+  }, [rendersGenerating, loadStatus, fetchData, intakeId])
+
+  if (loadStatus === 'loading') {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin" style={{ color: '#E8724B' }} />
+      </div>
+    )
+  }
+
+  if (loadStatus === 'polling') {
+    return <PollingState pollCount={pollCount} />
+  }
+
+  if (loadStatus === 'error' || !data) {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center">
+        <div className="text-center max-w-md">
+          <p className="text-slate-700 font-semibold mb-2">Your package is taking a little longer than usual</p>
+          <p className="text-slate-500 text-sm mb-4">
+            Don&apos;t worry — your purchase went through and our team has been notified. We&apos;ll finish preparing your package shortly; refreshing often resolves this within a few minutes.
+          </p>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+            <Link href="/deliverables"
+              className="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-medium text-white"
+              style={{ backgroundColor: '#1A2B4A' }}>
+              <ArrowLeft className="h-4 w-4" /> Back to Deliverables
+            </Link>
+            <a href="mailto:support@kealee.com"
+              className="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold"
+              style={{ color: '#E8724B' }}>
+              Contact Support
+            </a>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  const displayedBOM = showFullBOM ? data.billOfMaterials : data.billOfMaterials.slice(0, 4)
+  const totalBOM     = data.billOfMaterials.reduce((s, r) => s + r.estimatedCost, 0)
+
+  const hasNarrative =
+    Boolean(data.narrative?.projectSummary) ||
+    (data.narrative?.rooms?.length ?? 0) > 0
+  const visibleSectionIds = [
+    'package-overview',
+    ...(data.floorplanSvg ? ['floor-plan'] : []),
+    ...(hasNarrative ? ['narrative'] : []),
+    ...(data.billOfMaterials.length > 0 ? ['scope-bom'] : []),
+    ...(data.packageIncludes.some((i) => /permit|zoning/i.test(i)) ||
+      data.permitScope ||
+      data.zoningNotes
+      ? ['permit']
+      : []),
+    ...(data.renderUrls.length > 0 ||
+      (data.interiorRenderUrls?.length ?? 0) > 0 ||
+      (data.exteriorRenderUrls?.length ?? 0) > 0 ||
+      data.videoUrl
+      ? ['visuals']
+      : []),
+    ...(data.designConcept?.style || (data.designConcept?.keyFeatures?.length ?? 0) > 0
+      ? ['design-concept']
+      : []),
+    ...(data.mepSystem?.electrical || data.mepSystem?.plumbing ? ['mep'] : []),
+    ...(data.isV30 && data.v30Floorplan ? ['v30-landscape'] : []),
+    'next-steps',
+  ]
+
+  return (
+    <div className="mx-auto max-w-6xl">
+
+      <AccountCompleteBanner />
+
+      {data.isV30 && <V30WorkspaceEmbed intakeId={intakeId} />}
+
+      {/* ── Breadcrumb ──────────────────────────────────────────────────── */}
+      <div className="mb-5 flex items-center gap-2 text-sm text-gray-400">
+        <Link href="/deliverables" className="hover:text-gray-600 transition-colors flex items-center gap-1">
+          <ArrowLeft className="h-3.5 w-3.5" /> Concept Packages
+        </Link>
+        <span>/</span>
+        <span className="text-gray-700 font-medium truncate">{data.projectType}</span>
+      </div>
+
+      {/* ── Build Journey Progress ───────────────────────────────────────── */}
+      <BuildJourneyProgress
+        currentStage={
+          data.contractorMatchingUnlocked ? 2
+          : data.permitSubmitted ? 1
+          : 0
+        }
+        className="mb-6"
+      />
+
+      <div className="xl:grid xl:grid-cols-[minmax(0,1fr)_15rem] xl:gap-8 xl:items-start">
+        <div className="min-w-0">
+
+      {/* ── Header ──────────────────────────────────────────────────────── */}
+      <div className="rounded-2xl bg-white overflow-hidden mb-6"
+        style={{ boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.06)' }}>
+        <div className="h-1.5" style={{ background: 'linear-gradient(90deg, #E8724B, #2ABFBF)' }} />
+        <div className="px-6 py-5 sm:px-8">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2 mb-1.5">
+                <span className="rounded-full px-2.5 py-0.5 text-xs font-bold uppercase tracking-widest text-white"
+                  style={{ backgroundColor: '#2ABFBF' }}>
+                  Concept Ready
+                </span>
+                <span className="rounded-full px-2.5 py-0.5 text-xs font-semibold"
+                  style={{ backgroundColor: '#1A2B4A15', color: '#1A2B4A' }}>
+                  {data.tierName}
+                </span>
+                <span className="text-xs text-gray-400">{data.conceptId}</span>
+              </div>
+              <h1 className="text-2xl font-bold sm:text-3xl" style={{ color: '#1A2B4A' }}>
+                {data.packageLabel}
+              </h1>
+              {data.scope && (
+                <p className="mt-1 text-sm text-gray-500 max-w-xl">{data.scope}</p>
+              )}
+            </div>
+            <div className="shrink-0 text-right space-y-2">
+              {(data.constructionCostMin || data.constructionCostMax || data.estimatedCost > 0) && (
+                <div>
+                  <p className="text-xs text-gray-400 mb-0.5">Est. Construction</p>
+                  {data.constructionCostMin && data.constructionCostMax ? (
+                    <p className="text-2xl font-bold" style={{ color: '#1A2B4A' }}>
+                      ${Math.round(data.constructionCostMin / 1000)}K–${Math.round(data.constructionCostMax / 1000)}K
+                    </p>
+                  ) : (
+                    <p className="text-2xl font-bold" style={{ color: '#1A2B4A' }}>
+                      ${data.estimatedCost.toLocaleString()}
+                    </p>
+                  )}
+                </div>
+              )}
+              {data.conceptServicePrice && (
+                <div>
+                  <p className="text-xs text-gray-400 mb-0.5">Design Concept</p>
+                  <p className="text-lg font-bold" style={{ color: '#E8793A' }}>${data.conceptServicePrice.toLocaleString()}</p>
+                </div>
+              )}
+            </div>
+          </div>
+          <div className="mt-4 flex flex-wrap gap-4 text-sm text-gray-500">
+            <span className="flex items-center gap-1.5">
+              <Clock className="h-4 w-4 text-gray-400" />
+              {data.projectTimeline}
+            </span>
+            {data.budget > 0 && (
+              <span className="flex items-center gap-1.5">
+                <DollarSign className="h-4 w-4 text-gray-400" />
+                Budget: ${data.budget.toLocaleString()}
+              </span>
+            )}
+            {data.location && (
+              <span className="flex items-center gap-1.5">
+                <MapPin className="h-4 w-4 text-gray-400" />
+                {data.location}
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <div className="space-y-6">
+
+        {/* ── What's In Your Package ───────────────────────────────────────── */}
+        <section className="rounded-2xl bg-white overflow-hidden"
+          style={{ boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.06)' }}>
+          <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full" style={{ backgroundColor: '#1A2B4A' }} />
+              <h2 className="text-base font-bold" style={{ color: '#1A2B4A' }}>{data.packageLabel}</h2>
+            </div>
+            <span className="rounded-full px-2.5 py-1 text-xs font-semibold text-white"
+              style={{ backgroundColor: '#2ABFBF' }}>
+              {data.tierName}
+            </span>
+          </div>
+          <div className="px-6 py-4">
+            <ul className="grid sm:grid-cols-2 gap-x-6 gap-y-2">
+              {data.packageIncludes.map((item, i) => (
+                <li key={i} className="flex items-start gap-2 text-sm text-gray-700">
+                  <CheckCircle className="h-4 w-4 shrink-0 mt-0.5 text-green-500" />
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </section>
+
+        {data.isV30 && (
+          <div id="v30-landscape" className="scroll-mt-24">
+            <V30LandscapeCadPanel
+              intakeId={intakeId}
+              projectPath={data.projectPath ?? 'kitchen_remodel'}
+              tier={data.tier}
+              landscape={data.v30Landscape ?? null}
+              floorplan={data.v30Floorplan ?? null}
+              lotContext={data.v30LotContext}
+            />
+          </div>
+        )}
+
+        {/* ── Floor Plan ───────────────────────────────────────────────────── */}
+        {data.floorplanSvg && (
+          <section className="rounded-2xl bg-white overflow-hidden"
+            style={{ boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.06)' }}>
+            <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="h-2 w-2 rounded-full" style={{ backgroundColor: '#E8793A' }} />
+                <h2 className="text-base font-bold" style={{ color: '#1A2B4A' }}>Floor Plan</h2>
+              </div>
+              <span className="text-xs text-gray-400 font-medium">AI-generated layout</span>
+            </div>
+            <div className="p-6 flex items-center justify-center bg-gray-50 rounded-b-2xl">
+              <div
+                className="w-full max-w-lg"
+                dangerouslySetInnerHTML={{ __html: data.floorplanSvg }}
+              />
+            </div>
+            {data.tier >= 3 && !data.isV30 && (
+              <div className="px-6 py-4 border-t border-gray-100 flex items-center justify-between gap-4 flex-wrap">
+                <div>
+                  <p className="text-sm font-semibold text-gray-800">CAD export (DXF)</p>
+                  <p className="text-xs text-gray-500">
+                    {data.cadAvailable
+                      ? 'kealee-concept.dxf — opens in AutoCAD, SketchUp, Vectorworks, BricsCAD'
+                      : 'Generating — this typically finishes within a few minutes of your floor plan.'}
+                  </p>
+                </div>
+                {data.cadAvailable ? (
+                  <a
+                    href={`/api/concept/cad/${intakeId}`}
+                    className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold text-white"
+                    style={{ backgroundColor: '#7C3AED' }}
+                  >
+                    <Download className="h-3.5 w-3.5" /> Download DXF
+                  </a>
+                ) : (
+                  <span className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold text-gray-400 bg-gray-100">
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" /> Preparing
+                  </span>
+                )}
+              </div>
+            )}
+          </section>
+        )}
+
+        {/* ── Premium+ consultation call ───────────────────────────────────── */}
+        {data.tier >= 3 && (
+          <section className="rounded-2xl p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
+            style={{ background: 'linear-gradient(to right, #1A2B4A, #243B63)' }}>
+            <div>
+              <p className="text-xs font-bold uppercase tracking-widest text-orange-400 mb-1">Premium+ Exclusive</p>
+              <h3 className="text-base font-bold text-white mb-1">Complimentary 15-Min Design Consultation</h3>
+              <p className="text-sm text-slate-300">Talk through your concept, permit scope, or next steps with a Kealee specialist.</p>
+            </div>
+            <a
+              href={`${webMainBaseUrl()}/book-a-call`}
+              className="shrink-0 inline-flex items-center gap-2 bg-[#E8724B] hover:bg-[#D45C33] text-white font-bold px-5 py-2.5 rounded-xl text-sm transition-all"
+            >
+              <Calendar className="w-4 h-4" /> Book Consultation
+            </a>
+          </section>
+        )}
+
+        {/* ── Concept Renderings (interior + exterior for addition / whole-home) ─ */}
+        {(data.renderUrls.length > 0 ||
+          (data.interiorRenderUrls?.length ?? 0) > 0 ||
+          (data.exteriorRenderUrls?.length ?? 0) > 0) && (
+          <section id="visuals" className="scroll-mt-24 rounded-2xl bg-white overflow-hidden"
+            style={{ boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.06)' }}>
+            <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="h-2 w-2 rounded-full" style={{ backgroundColor: '#E8724B' }} />
+                <h2 className="text-base font-bold" style={{ color: '#1A2B4A' }}>Concept Renderings</h2>
+                {rendersGenerating && (
+                  <span className="flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full"
+                    style={{ backgroundColor: '#FFF7ED', color: '#C2410C' }}>
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                    Rendering…
+                  </span>
+                )}
+              </div>
+              <span className="text-xs text-gray-400 font-medium">
+                {(data.interiorRenderUrls?.length ?? 0) + (data.exteriorRenderUrls?.length ?? 0) || data.renderUrls.length} render
+                {((data.interiorRenderUrls?.length ?? 0) + (data.exteriorRenderUrls?.length ?? 0) || data.renderUrls.length) !== 1 ? 's' : ''}
+              </span>
+            </div>
+            <div className="p-4 space-y-8">
+              {(data.interiorRenderUrls?.length ?? 0) > 0 && (
+                <div>
+                  <h3 className="text-sm font-bold mb-3 flex items-center gap-2" style={{ color: '#1A2B4A' }}>
+                    <ImageIcon className="h-4 w-4" style={{ color: '#2ABFBF' }} />
+                    Interior views
+                  </h3>
+                  <ConceptRenderGrid
+                    urls={data.interiorRenderUrls!}
+                    projectType={data.projectType}
+                    labelPrefix="Interior"
+                  />
+                </div>
+              )}
+              {(data.exteriorRenderUrls?.length ?? 0) > 0 && (
+                <div>
+                  <h3 className="text-sm font-bold mb-3 flex items-center gap-2" style={{ color: '#1A2B4A' }}>
+                    <ImageIcon className="h-4 w-4" style={{ color: '#E8793A' }} />
+                    Exterior views
+                  </h3>
+                  <ConceptRenderGrid
+                    urls={data.exteriorRenderUrls!}
+                    projectType={data.projectType}
+                    labelPrefix="Exterior"
+                  />
+                </div>
+              )}
+              {!data.interiorRenderUrls?.length && !data.exteriorRenderUrls?.length && (
+                <ConceptRenderGrid
+                  urls={data.renderUrls}
+                  projectType={data.projectType}
+                  labelPrefix="Render"
+                />
+              )}
+              <p className="text-xs text-gray-400 text-center">
+                AI-curated concept images — Premium includes interior and exterior sets plus transformation video
+              </p>
+            </div>
+          </section>
+        )}
+
+        {/* ── Before / After comparison (when intake photos were uploaded) ─── */}
+        {(data.beforeUrls?.length ?? 0) > 0 && (data.renderUrls.length > 0 || (data.interiorRenderUrls?.length ?? 0) > 0) && (
+          <section
+            id="before-after"
+            className="scroll-mt-24 rounded-2xl bg-white overflow-hidden p-6"
+            style={{ boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.06)' }}
+          >
+            <div className="flex items-center gap-2 mb-5">
+              <span className="h-2 w-2 rounded-full" style={{ backgroundColor: '#2ABFBF' }} />
+              <h2 className="text-base font-bold" style={{ color: '#1A2B4A' }}>Before &amp; After</h2>
+            </div>
+            <BeforeAfterMedia
+              beforeUrls={data.beforeUrls!}
+              afterUrls={
+                (data.exteriorRenderUrls?.length ?? 0) > 0
+                  ? data.exteriorRenderUrls!
+                  : (data.interiorRenderUrls?.length ?? 0) > 0
+                  ? data.interiorRenderUrls!
+                  : data.renderUrls
+              }
+              projectType={data.projectType}
+            />
+          </section>
+        )}
+
+        {/* ── Video (tier 2+): playable when API stored videoUrl ───────────── */}
+        {data.tier >= 2 && data.videoUrl && (
+          <section
+            id={data.renderUrls.length === 0 ? 'visuals' : undefined}
+            className={`rounded-2xl border border-gray-200 bg-white overflow-hidden p-6 ${data.renderUrls.length === 0 ? 'scroll-mt-24' : ''}`}
+            style={{ boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.06)' }}>
+            <div className="flex items-center gap-2 mb-4">
+              <span className="h-2 w-2 rounded-full" style={{ backgroundColor: '#E8724B' }} />
+              <h2 className="text-base font-bold" style={{ color: '#1A2B4A' }}>
+                {data.tier >= 3 ? 'AI transformation video (master)' : 'AI transformation video'}
+              </h2>
+            </div>
+            <video
+              key={data.videoUrl}
+              src={data.videoUrl}
+              controls
+              playsInline
+              className="w-full max-h-[70vh] rounded-xl bg-black"
+            />
+            <div className="mt-4 flex flex-wrap gap-3">
+              <a
+                href={data.videoUrl}
+                download
+                className="inline-flex items-center gap-2 rounded-xl border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+              >
+                <Download className="h-4 w-4" />
+                Download MP4
+              </a>
+            </div>
+            {data.tier >= 3 && data.videoFormatUrls && (
+              data.videoFormatUrls['30s Mobile'] &&
+              data.videoFormatUrls['30s Mobile'] !== (data.videoFormatUrls['60s Full'] ?? data.videoUrl)
+                ? (
+                  <div className="mt-4 border-t border-gray-100 pt-4">
+                    <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">
+                      Short-format downloads
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {(['30s Mobile', '15s Social', '10s Preview'] as const)
+                        .filter(label => Boolean(data.videoFormatUrls![label]))
+                        .map(label => (
+                          <a
+                            key={label}
+                            href={data.videoFormatUrls![label]}
+                            download
+                            className="inline-flex items-center gap-2 rounded-xl border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50"
+                          >
+                            <Download className="h-3.5 w-3.5" />
+                            {label}
+                          </a>
+                        ))}
+                    </div>
+                  </div>
+                )
+                : (
+                  <p className="text-xs text-gray-500 mt-3">
+                    Premium+ short-format cuts (30s / 15s / 10s) are being prepared and will appear here once trimming completes — typically within a few minutes of your master video delivering.
+                  </p>
+                )
+            )}
+            {/* Compact muted loop — good for sharing or screencapture */}
+            <details className="mt-4">
+              <summary className="text-xs text-gray-400 cursor-pointer select-none hover:text-gray-600 w-fit">
+                Show loop preview (muted, shareable)
+              </summary>
+              <div className="mt-3">
+                <ProcessVideoLoop
+                  src={data.videoUrl!}
+                  label="Loop Preview"
+                  maxHeightPx={200}
+                />
+              </div>
+            </details>
+          </section>
+        )}
+
+        {data.tier >= 2 && !data.videoUrl && (
+          <section className="space-y-4">
+            {data.conceptVideoStatus === 'failed' ? (
+              /* Video failed — offer retry */
+              <div className="rounded-2xl overflow-hidden border border-amber-200 bg-amber-50">
+                <div className="px-6 py-5 sm:px-8 flex flex-col sm:flex-row sm:items-center gap-4">
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-amber-100">
+                    <Video className="h-5 w-5 text-amber-700" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-bold text-amber-900 mb-0.5">Your video needs one more pass</p>
+                    <p className="text-sm text-amber-700">
+                      This happens occasionally — one click regenerates it, or reach out and we&apos;ll handle it for you.
+                    </p>
+                  </div>
+                  <div className="flex shrink-0 flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                    <button
+                      onClick={() => {
+                        const webMain = (process.env.NEXT_PUBLIC_WEB_MAIN_URL ?? 'https://kealee.com').replace(/\/$/, '')
+                        fetch(`${webMain}/api/concept/video`, {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ intakeId }),
+                        }).then(() => fetchData()).catch(() => {})
+                      }}
+                      className="rounded-xl bg-amber-600 hover:bg-amber-700 transition-colors px-4 py-2.5 text-sm font-semibold text-white">
+                      Retry Video →
+                    </button>
+                    <a href="mailto:support@kealee.com"
+                      className="inline-flex items-center justify-center rounded-xl border border-amber-300 px-4 py-2.5 text-sm font-semibold text-amber-800 hover:bg-amber-100 transition-colors">
+                      Contact Support
+                    </a>
+                  </div>
+                </div>
+              </div>
+            ) : !data.conceptVideoStatus ? (
+              /* No conceptVideo field — older order or not yet triggered */
+              <div className="rounded-2xl overflow-hidden border border-gray-200 bg-white">
+                <div className="px-6 py-5 sm:px-8 flex flex-col sm:flex-row sm:items-center gap-4">
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gray-100">
+                    <Video className="h-5 w-5 text-gray-500" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-bold text-gray-900 mb-0.5">
+                      {data.tier >= 3 ? '4-Format AI Video' : 'AI Transformation Video'}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      {data.tier >= 3
+                        ? 'Your package includes 60s, 30s, 15s, and 10s cinematic AI videos. Click to start generation.'
+                        : 'Your package includes a 60-second AI transformation video. Click to start generation.'}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => {
+                      const webMain = (process.env.NEXT_PUBLIC_WEB_MAIN_URL ?? 'https://kealee.com').replace(/\/$/, '')
+                      fetch(`${webMain}/api/concept/video`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ intakeId }),
+                      }).then(() => fetchData()).catch(() => {})
+                    }}
+                    className="shrink-0 rounded-xl px-4 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+                    style={{ backgroundColor: '#E8724B' }}>
+                    Generate Video →
+                  </button>
+                </div>
+              </div>
+            ) : (
+              /* Processing/pending — show animated "In Production" banner */
+              <div className="rounded-2xl overflow-hidden"
+                style={{ background: 'linear-gradient(135deg, #E8724B 0%, #c75c35 100%)' }}>
+                <div className="px-6 py-6 sm:px-8 sm:py-7 flex flex-col sm:flex-row sm:items-center gap-4">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-white/20">
+                    <Loader2 className="h-6 w-6 text-white animate-spin" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-bold text-white text-base mb-1">
+                      {data.tier >= 3 ? '4 Video Formats — Generating' : 'AI Transformation Video — Generating'}
+                    </h3>
+                    <p className="text-white/80 text-sm leading-relaxed">
+                      {data.tier >= 3
+                        ? 'Your 60s, 30s, 15s, and 10s AI transformation videos are being rendered. This page updates automatically when complete.'
+                        : 'Your 60-second AI transformation video is rendering. This page refreshes automatically — no action needed.'}
+                    </p>
+                  </div>
+                  <div className="shrink-0 flex items-center gap-2">
+                    <div className="h-2 w-2 rounded-full bg-white/60 animate-bounce" style={{ animationDelay: '0ms' }} />
+                    <div className="h-2 w-2 rounded-full bg-white/60 animate-bounce" style={{ animationDelay: '150ms' }} />
+                    <div className="h-2 w-2 rounded-full bg-white/60 animate-bounce" style={{ animationDelay: '300ms' }} />
+                  </div>
+                </div>
+              </div>
+            )}
+            {/* Concept preview image — shown while video is rendering */}
+            {data.renderUrls[0] && (
+              <div className="rounded-2xl bg-white overflow-hidden p-5" style={{ boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.06)' }}>
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">
+                  Concept Preview
+                </p>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={data.renderUrls[0]}
+                  alt={`${data.projectType} concept preview`}
+                  className="w-full rounded-xl object-cover"
+                  style={{ maxHeight: '280px' }}
+                />
+                <p className="text-xs text-gray-400 mt-2 text-center">
+                  {data.conceptVideoStatus === 'processing' || data.conceptVideoStatus === 'pending'
+                    ? 'Full transformation video renders in the background — this page refreshes automatically.'
+                    : 'Your concept renders are ready. Generate your AI transformation video above.'}
+                </p>
+              </div>
+            )}
+          </section>
+        )}
+
+        {/* ── Design Narrative (v2 concept engine) ─────────────────────────── */}
+        {(data.narrative.projectSummary || data.narrative.designIntent || data.narrative.rooms.length > 0) && (
+          <section id="narrative" className="scroll-mt-24 rounded-2xl border border-gray-200 bg-white overflow-hidden"
+            style={{ boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.06)' }}>
+            <div className="px-6 py-4 border-b border-gray-100 flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full" style={{ backgroundColor: '#2ABFBF' }} />
+              <h2 className="text-base font-bold" style={{ color: '#1A2B4A' }}>Design Narrative</h2>
+              <span className="ml-auto text-xs text-gray-400 font-medium">AI Design Professional</span>
+            </div>
+            <div className="p-6 space-y-5">
+              {data.narrative.projectSummary && (
+                <p className="text-sm text-gray-700 leading-relaxed">{data.narrative.projectSummary}</p>
+              )}
+              {data.narrative.designIntent && (
+                <div>
+                  <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">Design Intent</p>
+                  <p className="text-sm text-gray-700 leading-relaxed">{data.narrative.designIntent}</p>
+                </div>
+              )}
+              {data.narrative.styleNarrative && (
+                <div>
+                  <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">Style Direction</p>
+                  <p className="text-sm text-gray-700 leading-relaxed">{data.narrative.styleNarrative}</p>
+                </div>
+              )}
+              {data.narrative.materialDirection && (
+                <div>
+                  <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">Materials &amp; Finishes</p>
+                  <p className="text-sm text-gray-700 leading-relaxed">{data.narrative.materialDirection}</p>
+                </div>
+              )}
+              {data.narrative.lifestyleAlignment && (
+                <div>
+                  <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">Lifestyle Fit</p>
+                  <p className="text-sm text-gray-700 leading-relaxed">{data.narrative.lifestyleAlignment}</p>
+                </div>
+              )}
+              {data.narrative.rooms.length > 0 && (
+                <div>
+                  <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Room-by-Room</p>
+                  <div className="space-y-2.5">
+                    {data.narrative.rooms.map((room, i) => (
+                      <div key={i} className="rounded-xl border border-gray-100 bg-gray-50 px-4 py-3">
+                        <p className="text-xs font-bold text-gray-700 mb-0.5 capitalize">{room.name}</p>
+                        {room.description && (
+                          <p className="text-sm text-gray-600 leading-relaxed">{room.description}</p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {data.narrative.nextSteps.length > 0 && (
+                <div>
+                  <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Recommended Next Steps</p>
+                  <ol className="space-y-2">
+                    {data.narrative.nextSteps.map((step, i) => (
+                      <li key={i} className="flex items-start gap-2.5 text-sm text-gray-700">
+                        <span className="shrink-0 mt-0.5 flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold text-white"
+                          style={{ backgroundColor: '#2ABFBF' }}>{i + 1}</span>
+                        {step}
+                      </li>
+                    ))}
+                  </ol>
+                </div>
+              )}
+            </div>
+          </section>
+        )}
+
+        {/* ── Design Concept ───────────────────────────────────────────────── */}
+        {data.designConcept.keyFeatures.length > 0 && (
+          <section id="design-concept" className="scroll-mt-24 rounded-2xl border border-gray-200 bg-white overflow-hidden"
+            style={{ boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.06)' }}>
+            <div className="px-6 py-4 border-b border-gray-100 flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full" style={{ backgroundColor: '#E8793A' }} />
+              <h2 className="text-base font-bold" style={{ color: '#1A2B4A' }}>Design Concept</h2>
+              <span className="ml-auto text-xs text-gray-400 font-medium">{data.designConcept.style}</span>
+            </div>
+            <div className="p-6 grid sm:grid-cols-2 gap-6">
+              <div>
+                <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Key Features</p>
+                <ul className="space-y-2">
+                  {data.designConcept.keyFeatures.map((f, i) => (
+                    <li key={i} className="flex items-start gap-2 text-sm text-gray-700">
+                      <CheckCircle className="h-4 w-4 shrink-0 mt-0.5 text-green-500" />
+                      {f}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div>
+                {data.designConcept.colorPalette.length > 0 && (
+                  <>
+                    <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Color Palette</p>
+                    <div className="flex flex-wrap gap-2">
+                      {data.designConcept.colorPalette.map((c, i) => (
+                        <span key={i} className="rounded-full border border-gray-200 px-3 py-1 text-xs font-medium text-gray-700">
+                          {c}
+                        </span>
+                      ))}
+                    </div>
+                  </>
+                )}
+                <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mt-5 mb-2">Timeline</p>
+                <div className="rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 text-sm">
+                  <span className="font-semibold text-gray-900">{data.projectTimeline}</span>
+                  <span className="text-gray-500 ml-2">estimated project duration</span>
+                </div>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* ── MEP Systems ─────────────────────────────────────────────────── */}
+        {(data.mepSystem.electrical || data.mepSystem.plumbing || data.mepSystem.lighting) && (
+          <section id="mep" className="scroll-mt-24 rounded-2xl border border-gray-200 bg-white overflow-hidden"
+            style={{ boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.06)' }}>
+            <div className="px-6 py-4 border-b border-gray-100 flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full" style={{ backgroundColor: '#7C3AED' }} />
+              <h2 className="text-base font-bold" style={{ color: '#1A2B4A' }}>MEP Systems Specification</h2>
+            </div>
+            <div className="px-6 py-2">
+              <MEPRow icon={Zap}       label="Electrical" value={data.mepSystem.electrical} color="#E8793A" />
+              <MEPRow icon={Droplets}  label="Plumbing"   value={data.mepSystem.plumbing}   color="#3B82F6" />
+              <MEPRow icon={Wind}      label="HVAC"       value={data.mepSystem.hvac}        color="#2ABFBF" />
+              <MEPRow icon={Lightbulb} label="Lighting"   value={data.mepSystem.lighting}    color="#F59E0B" />
+            </div>
+          </section>
+        )}
+
+        {/* ── Bill of Materials ────────────────────────────────────────────── */}
+        {data.billOfMaterials.length > 0 && (
+          <section id="scope-bom" className="scroll-mt-24 rounded-2xl border border-gray-200 bg-white overflow-hidden"
+            style={{ boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.06)' }}>
+            <div className="px-6 py-4 border-b border-gray-100 flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full" style={{ backgroundColor: '#38A169' }} />
+              <h2 className="text-base font-bold" style={{ color: '#1A2B4A' }}>Scope &amp; Bill of Materials</h2>
+              <span className="ml-auto text-xs text-gray-400">{data.billOfMaterials.length} line items</span>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-gray-100 bg-gray-50">
+                    <th className="px-6 py-3 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">Item</th>
+                    <th className="px-4 py-3 text-right text-xs font-bold text-gray-400 uppercase tracking-wider">Qty</th>
+                    <th className="px-4 py-3 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">Unit</th>
+                    <th className="px-4 py-3 text-right text-xs font-bold text-gray-400 uppercase tracking-wider">Est. Cost</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {displayedBOM.map((row, i) => (
+                    <tr key={i} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                      <td className="px-6 py-3">
+                        <p className="font-medium text-gray-900">{row.item}</p>
+                        <p className="text-xs text-gray-400 mt-0.5">{row.description}</p>
+                      </td>
+                      <td className="px-4 py-3 text-right text-gray-700 tabular-nums">{row.quantity.toLocaleString()}</td>
+                      <td className="px-4 py-3 text-gray-500">{row.unit}</td>
+                      <td className="px-4 py-3 text-right font-semibold text-gray-900 tabular-nums">
+                        ${row.estimatedCost.toLocaleString()}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+                <tfoot>
+                  <tr className="bg-gray-50 border-t-2 border-gray-200">
+                    <td colSpan={3} className="px-6 py-3 text-sm font-bold text-gray-700">Total Estimated Cost</td>
+                    <td className="px-4 py-3 text-right text-base font-bold" style={{ color: '#1A2B4A' }}>
+                      ${totalBOM.toLocaleString()}
+                    </td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+            {data.billOfMaterials.length > 4 && (
+              <button
+                onClick={() => setShowFullBOM(v => !v)}
+                className="w-full flex items-center justify-center gap-2 py-3 text-xs font-medium text-gray-500 hover:text-gray-700 border-t border-gray-100 transition-colors">
+                {showFullBOM
+                  ? <><ChevronUp className="h-4 w-4" /> Show less</>
+                  : <><ChevronDown className="h-4 w-4" /> Show all {data.billOfMaterials.length} items</>}
+              </button>
+            )}
+          </section>
+        )}
+
+        {/* ── Permit & Zoning ─────────────────────────────────────────────── */}
+        {(data.permitScope || data.zoningNotes) && (
+          <section id="permit" className="scroll-mt-24 rounded-2xl border border-gray-200 bg-white overflow-hidden"
+            style={{ boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.06)' }}>
+            <div className="px-6 py-4 border-b border-gray-100 flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full" style={{ backgroundColor: '#6B46C1' }} />
+              <h2 className="text-base font-bold" style={{ color: '#1A2B4A' }}>Permit &amp; Zoning Assessment</h2>
+              <span className="ml-auto rounded-full px-2.5 py-0.5 text-xs font-bold"
+                style={{
+                  backgroundColor: data.readinessScore >= 80 ? '#C6F6D5' : data.readinessScore >= 60 ? '#FEFCBF' : '#FED7D7',
+                  color: data.readinessScore >= 80 ? '#276749' : data.readinessScore >= 60 ? '#744210' : '#9B2C2C',
+                }}>
+                {data.readinessScore}% Ready
+              </span>
+            </div>
+            <div className="p-6 space-y-5">
+              {/* Readiness bar */}
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Permit Readiness Score</p>
+                  <p className="text-xs text-gray-500">{data.readinessScore}/100</p>
+                </div>
+                <div className="h-2 rounded-full bg-gray-100 overflow-hidden">
+                  <div className="h-2 rounded-full transition-all" style={{
+                    width: `${data.readinessScore}%`,
+                    backgroundColor: data.readinessScore >= 80 ? '#38A169' : data.readinessScore >= 60 ? '#D69E2E' : '#E53E3E',
+                  }} />
+                </div>
+              </div>
+
+              {/* Buildability */}
+              <div className="flex items-center gap-3 rounded-xl border px-4 py-3" style={{
+                borderColor: data.buildabilityFlag === 'feasible' ? '#C6F6D5' : data.buildabilityFlag === 'feasible-with-variance' ? '#FEFCBF' : '#FED7D7',
+                backgroundColor: data.buildabilityFlag === 'feasible' ? '#F0FFF4' : data.buildabilityFlag === 'feasible-with-variance' ? '#FFFFF0' : '#FFF5F5',
+              }}>
+                {data.buildabilityFlag === 'feasible'
+                  ? <TrendingUp className="h-5 w-5 shrink-0" style={{ color: '#38A169' }} />
+                  : <AlertTriangle className="h-5 w-5 shrink-0" style={{ color: data.buildabilityFlag === 'feasible-with-variance' ? '#D69E2E' : '#E53E3E' }} />}
+                <p className="text-sm font-semibold" style={{
+                  color: data.buildabilityFlag === 'feasible' ? '#276749' : data.buildabilityFlag === 'feasible-with-variance' ? '#744210' : '#9B2C2C',
+                }}>
+                  {data.buildabilityFlag === 'feasible'
+                    ? 'Buildable — no special approvals needed'
+                    : data.buildabilityFlag === 'feasible-with-variance'
+                      ? 'Feasible with zoning variance'
+                      : 'Challenging — additional review required'}
+                </p>
+              </div>
+
+              {/* Permit types */}
+              {data.permitScope && (
+                <div>
+                  {data.permitScope.requiresPermit ? (
+                    <>
+                      <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Required Permits</p>
+                      <div className="flex flex-wrap gap-2 mb-3">
+                        {data.permitScope.permitTypes.map(pt => (
+                          <span key={pt} className="flex items-center gap-1.5 rounded-lg border border-purple-200 bg-purple-50 px-3 py-1.5 text-xs font-medium text-purple-800">
+                            <ShieldCheck className="h-3 w-3" />{pt}
+                          </span>
+                        ))}
+                      </div>
+                      <div className="grid sm:grid-cols-2 gap-3 text-sm">
+                        {data.permitScope.estimatedPermitFee > 0 && (
+                          <div className="rounded-lg bg-gray-50 px-4 py-3">
+                            <p className="text-xs text-gray-400 mb-0.5">Estimated Permit Fee</p>
+                            <p className="font-bold text-gray-900">${data.permitScope.estimatedPermitFee.toLocaleString()}</p>
+                          </div>
+                        )}
+                        {data.permitScope.estimatedProcessingDays > 0 && (
+                          <div className="rounded-lg bg-gray-50 px-4 py-3">
+                            <p className="text-xs text-gray-400 mb-0.5">Est. Processing Time</p>
+                            <p className="font-bold text-gray-900">{data.permitScope.estimatedProcessingDays} days</p>
+                          </div>
+                        )}
+                      </div>
+                      {data.permitScope.requiresPE && (
+                        <div className="mt-3 flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">
+                          <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5 text-amber-600" />
+                          <p className="text-sm text-amber-800">
+                            <span className="font-semibold">PE stamp required.</span> Your design professional will coordinate licensed engineer stamping — included in your design plan package.
+                          </p>
+                        </div>
+                      )}
+                      {data.permitScope.notes && (
+                        <p className="mt-3 text-sm text-gray-600 leading-relaxed">{data.permitScope.notes}</p>
+                      )}
+                    </>
+                  ) : (
+                    <div className="flex items-start gap-2 rounded-lg border border-green-200 bg-green-50 px-4 py-3">
+                      <CheckCircle className="h-4 w-4 shrink-0 mt-0.5 text-green-600" />
+                      <p className="text-sm text-green-800">
+                        <span className="font-semibold">No permit required</span> for this scope. {data.permitScope.notes}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Zoning notes */}
+              {data.zoningNotes && (
+                <div className="flex items-start gap-3">
+                  <MapPin className="h-4 w-4 shrink-0 mt-0.5 text-gray-400" />
+                  <div>
+                    <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Zoning Notes</p>
+                    <p className="text-sm text-gray-700 leading-relaxed">{data.zoningNotes}</p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </section>
+        )}
+
+        {/* ── Permit Required Banner ───────────────────────────────────────── */}
+        {catalogPermitRequired === 'always' && (
+          <section className="rounded-2xl overflow-hidden"
+            style={{ border: '1.5px solid #6B46C1', backgroundColor: '#FAF5FF' }}>
+            <div className="px-6 py-5 flex flex-col sm:flex-row sm:items-center gap-4">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl"
+                style={{ backgroundColor: '#6B46C115' }}>
+                <ShieldCheck className="h-5 w-5" style={{ color: '#6B46C1' }} />
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-bold mb-0.5" style={{ color: '#44337A' }}>
+                  Permit Required — Included in Your Design Plans
+                </p>
+                <p className="text-sm text-purple-700">
+                  This project type requires a permit. When you connect with a Kealee design professional,
+                  permit preparation and submission are included in your design plan package — no separate filing needed.
+                </p>
+              </div>
+              <a href={`https://kealee.com/intake/professional_drawings?conceptId=${intakeId}`}
+                className="shrink-0 rounded-xl px-5 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+                style={{ backgroundColor: '#6B46C1' }}>
+                Get Design Plans →
+              </a>
+            </div>
+            <div className="px-6 pb-4 flex items-center gap-2">
+              <p className="text-xs text-purple-600 font-medium">From $4,999 · Licensed design professional · Permits + PE stamp included</p>
+            </div>
+          </section>
+        )}
+
+        {/* ── Next Steps CTA (intelligent — branches on permit requirement) ─── */}
+        {(() => {
+          const requiresPermit = data.permitScope?.requiresPermit ?? (catalogPermitRequired === 'always')
+          const processingDays = data.permitScope?.estimatedProcessingDays
+          const primaryHref = requiresPermit
+            ? `https://kealee.com/intake/permit_path_only?projectId=${intakeId}&from=concept`
+            : `https://kealee.com/intake/contractor_match?projectId=${intakeId}&from=concept`
+          const primaryLabel = requiresPermit
+            ? 'Get Permit-Ready Design'
+            : 'Match with Contractors + Get Firm Pricing'
+          const secondaryHref = requiresPermit ? '#permit' : `https://kealee.com/intake/certified_estimate?projectId=${intakeId}`
+          const secondaryLabel = requiresPermit ? 'Review Permit Requirements' : 'Get Full Cost Estimate'
+          return (
+            <section className="rounded-2xl overflow-hidden"
+              style={{ border: '1.5px solid #E8724B30', background: 'linear-gradient(135deg, #FFF7F3 0%, #FFF 100%)' }}>
+              <div className="px-6 py-5">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-3">Your Next Step</p>
+                <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                  <div className="flex-1">
+                    <h3 className="text-base font-bold mb-1" style={{ color: '#1A2B4A' }}>
+                      {requiresPermit ? 'Permit Required — Start Your Design Plans' : 'Ready to Build — Match with Contractors'}
+                    </h3>
+                    <p className="text-sm text-gray-600 leading-relaxed">
+                      {requiresPermit
+                        ? `Your project requires a permit${processingDays ? ` (estimated ${processingDays} days processing)` : ''}. A permit-ready design includes stamped drawings and agency filing — your concept fee is credited toward this package.`
+                        : 'No permit needed. Match with licensed contractors directly using your concept brief and get firm pricing before you commit.'}
+                    </p>
+                  </div>
+                  <div className="flex flex-col gap-2 shrink-0 min-w-[180px]">
+                    <a href={primaryHref}
+                      className="inline-flex items-center justify-center rounded-xl px-5 py-2.5 text-sm font-bold text-white text-center transition-opacity hover:opacity-90"
+                      style={{ backgroundColor: '#E8724B' }}>
+                      {primaryLabel} <ArrowRight className="ml-1.5 h-4 w-4 shrink-0" />
+                    </a>
+                    <a href={secondaryHref}
+                      className="inline-flex items-center justify-center rounded-xl border border-gray-200 px-5 py-2 text-xs font-semibold text-gray-700 text-center hover:bg-gray-50 transition-colors">
+                      {secondaryLabel}
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </section>
+          )
+        })()}
+
+        {/* ── Contractor Match Profile (ContractorBot output) ──────────────── */}
+        {(data.contractorMatchResult?.recommendations?.length ?? 0) > 0 && (
+          <section className="rounded-2xl bg-white overflow-hidden"
+            style={{ boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.06)', border: '1px solid #E8724B20' }}>
+            <div className="px-6 py-4 border-b border-gray-100 flex items-center gap-2">
+              <Wrench className="h-4 w-4" style={{ color: '#E8724B' }} />
+              <h2 className="text-base font-bold" style={{ color: '#1A2B4A' }}>Contractor Match Profile</h2>
+              {data.contractorMatchResult!.confidence && (
+                <span className="ml-auto rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider"
+                  style={{
+                    backgroundColor: data.contractorMatchResult!.confidence === 'high' ? '#ECFDF5' : data.contractorMatchResult!.confidence === 'medium' ? '#FFF7ED' : '#FEF2F2',
+                    color:           data.contractorMatchResult!.confidence === 'high' ? '#065F46' : data.contractorMatchResult!.confidence === 'medium' ? '#92400E' : '#991B1B',
+                  }}>
+                  {data.contractorMatchResult!.confidence} readiness
+                </span>
+              )}
+            </div>
+            <div className="p-6 space-y-4">
+              <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">
+                AI-generated requirements for your project type in {data.location || 'your jurisdiction'}
+              </p>
+              <ul className="space-y-2">
+                {data.contractorMatchResult!.recommendations.map((rec, i) => (
+                  <li key={i} className="flex items-start gap-2.5">
+                    <CheckCircle className="h-4 w-4 shrink-0 mt-0.5" style={{ color: '#2ABFBF' }} />
+                    <span className="text-sm text-gray-700 leading-relaxed">{rec}</span>
+                  </li>
+                ))}
+              </ul>
+              {data.contractorMatchResult!.nextStep && (
+                <p className="text-sm text-gray-600 leading-relaxed border-t border-gray-100 pt-4">
+                  <strong className="text-gray-800">Next step:</strong> {data.contractorMatchResult!.nextStep}
+                </p>
+              )}
+              <a
+                href={`https://kealee.com/marketplace?from=concept&intakeId=${intakeId}`}
+                className="inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold text-white transition-opacity hover:opacity-90"
+                style={{ backgroundColor: '#E8724B' }}
+              >
+                Browse Verified Contractors <ArrowRight className="h-4 w-4" />
+              </a>
+            </div>
+          </section>
+        )}
+
+        {/* ── Professional Design featured card ────────────────────────────── */}
+        {!ownedProducts.includes('professional_drawings') && (
+          <section className="rounded-2xl overflow-hidden border border-[#1A2B4A]/20"
+            style={{ background: 'linear-gradient(135deg, #1A2B4A 0%, #243d68 60%, #2d4a7a 100%)' }}>
+            <div className="px-6 py-5 flex flex-col sm:flex-row sm:items-start gap-5">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-white/10">
+                <FileText className="h-6 w-6 text-white" />
+              </div>
+              <div className="flex-1">
+                <span className="inline-flex items-center rounded-full bg-[#E8724B]/20 border border-[#E8724B]/30 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-widest text-[#FFB899] mb-2">
+                  Next Step — Professional Design
+                </span>
+                <h3 className="text-base font-bold text-white mb-1">
+                  Ready to Build? Get Permit-Ready Plans
+                </h3>
+                <p className="text-sm text-white/80 leading-relaxed mb-3">
+                  Your concept is the vision. A <strong className="text-white">Professional Design</strong> package converts it into
+                  a licensed, PE-stamped plan set — ready for permit filing and contractor bidding.
+                  Your concept fee is credited toward the package.
+                </p>
+                <ul className="space-y-1 mb-4">
+                  {['Stamped architectural + structural drawings', 'Permit-ready plan set (agency-formatted)', 'MEP coordination sheets', 'Permits included — Kealee files on your behalf'].map(item => (
+                    <li key={item} className="flex items-center gap-2 text-xs text-white/85">
+                      <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-[#E8724B]" />
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div className="shrink-0 flex flex-col items-end gap-2 min-w-[160px]">
+                <p className="text-2xl font-black text-white">From $4,995</p>
+                <p className="text-xs text-white/60">7–14 day delivery</p>
+                <a
+                  href={`https://kealee.com/intake/professional_drawings?conceptId=${intakeId}&from=concept`}
+                  className="mt-2 inline-flex items-center gap-2 rounded-xl bg-[#E8724B] hover:opacity-90 transition-opacity px-5 py-2.5 text-sm font-bold text-white whitespace-nowrap"
+                >
+                  Get Design Plans <ArrowRight className="h-4 w-4" />
+                </a>
+                <a
+                  href="https://kealee.com/services/professional_drawings"
+                  className="text-xs text-white/50 hover:text-white/80 transition-colors"
+                >
+                  What&apos;s included →
+                </a>
+              </div>
+            </div>
+          </section>
+        )}
+
+        <BuildPathUpsell
+          sourceProjectPath={data.projectPath ?? ''}
+          fromIntakeId={intakeId}
+          ownedProducts={ownedProducts}
+          contractorMatchingUnlocked={data.contractorMatchingUnlocked}
+          constructionCostMin={data.constructionCostMin}
+          constructionCostMax={data.constructionCostMax}
+          conceptServicePrice={data.conceptServicePrice}
+        />
+
+        {/* ── Download / Share ─────────────────────────────────────────────── */}
+        <div className="flex flex-wrap gap-3 pb-8">
+          <a
+            href={data.pdfUrl ?? `/api/concept/${intakeId}/pdf`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+          >
+            <Download className="h-4 w-4" />
+            Download Concept PDF
+          </a>
+          {data.contractorMatchingUnlocked ? (
+            <button
+              onClick={() => {
+                const shareUrl = window.location.href
+                navigator.clipboard?.writeText(shareUrl).then(() => alert('Link copied to clipboard!')).catch(() => {
+                  window.open(`mailto:?subject=My Concept Package&body=View my concept package: ${shareUrl}`)
+                })
+              }}
+              className="flex items-center gap-2 rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+              <Share2 className="h-4 w-4" />
+              Share with Contractor
+            </button>
+          ) : (
+            <button disabled
+              className="flex items-center gap-2 rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-medium text-gray-400 cursor-not-allowed"
+              title="Submit your permit to unlock contractor sharing">
+              <Lock className="h-3.5 w-3.5" />
+              Share with Contractor
+            </button>
+          )}
+          {data.contractorMatchingUnlocked ? (
+            <a href="https://kealee.com/marketplace"
+              className="flex items-center gap-2 rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+              <Wrench className="h-4 w-4" />
+              Browse Contractors
+            </a>
+          ) : (
+            <button disabled
+              className="flex items-center gap-2 rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-medium text-gray-400 cursor-not-allowed"
+              title="Submit your permit to browse contractors">
+              <Lock className="h-3.5 w-3.5" />
+              Browse Contractors
+            </button>
+          )}
+        </div>
+
+      </div>
+      </div>
+
+        <aside className="hidden xl:block">
+          <ConceptPackageNav
+            visibleSectionIds={visibleSectionIds}
+            intakeId={intakeId}
+            pdfUrl={data.pdfUrl}
+            packageLabel={data.packageLabel}
+          />
+        </aside>
+      </div>
+    </div>
+  )
+}

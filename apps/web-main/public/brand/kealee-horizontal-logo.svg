@@ -1,0 +1,15 @@
+<svg width="400" height="100" viewBox="0 0 400 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- HORIZONTAL LOGO: enclosed keystone K icon + wordmark -->
+  <g transform="translate(8,10) scale(0.8)">
+    <polygon points="11,15 91,7 85,93 15,93" fill="#EE7326" stroke="#EE7326" stroke-width="12" stroke-linejoin="round" />
+    <polygon points="14,17.5 87.5,10.5 82,89.5 18,89.5" fill="none" stroke="#FFFFFF" stroke-width="2.5" stroke-linejoin="round" opacity="0.9" />
+    <g transform="translate(20.5,21) scale(0.60)" fill="#FFFFFF">
+      <polygon points="12,4 40,4 32,96 16,96" />
+      <polygon points="86,4 56,4 40,46 64,46" />
+      <polygon points="60,54 40,54 62,96 88,96" />
+    </g>
+  </g>
+  <text x="102" y="52" fill="#0F172A" font-family="'Nunito', 'Nunito Sans', ui-rounded, sans-serif" font-weight="800" font-size="44" letter-spacing="-0.03em">Kealee</text>
+  <text x="104" y="74" fill="#4B5563" font-family="'Nunito Sans', 'Nunito', sans-serif" font-weight="600" font-size="13" letter-spacing="0.42em">CONSTRUCTION</text>
+  <text x="104" y="90" fill="#9CA3AF" font-family="'Nunito Sans', 'Nunito', sans-serif" font-weight="500" font-size="11" letter-spacing="0.1em">design<tspan fill="#EE7326">.</tspan> build<tspan fill="#EE7326">.</tspan> deliver<tspan fill="#EE7326">.</tspan></text>
+</svg>

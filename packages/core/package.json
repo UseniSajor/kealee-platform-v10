@@ -1,0 +1,26 @@
+{
+  "name": "@kealee/core",
+  "version": "1.0.0",
+  "private": true,
+  "description": "KeaCore canonical orchestration engine — decision, confidence, risk, authority, workflow governance",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "require": "./dist/index.js",
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "nanoid": "^3.3.7"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3"
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "name": "@kealee/core-ai-gateway",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Kealee AI gateway \u2014 single interface over all LLM providers with routing, retrieval, and logging",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "require": "./dist/index.js",
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@kealee/core-llm": "workspace:*",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3",
+    "@types/node": "^20.11.0"
+  }
+}

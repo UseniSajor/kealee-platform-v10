@@ -1,0 +1,74 @@
+# dependencies
+node_modules/
+.pnpm-store/
+
+# builds
+dist/
+.next/
+.turbo/
+*.tsbuildinfo
+
+# agent data
+.gemini/
+
+# env files
+.env
+.env.local
+.env.production
+.env.current
+.env.*
+.env.*.local
+*.env
+!.env.example
+!.env.production.template
+.env.v30.keys
+
+# Stripe catalog output (contains real price IDs)
+stripe-catalog-output.env
+
+# Figma config (contains PAT — use .env.local for FIGMA_TOKEN)
+.figma-config.json
+
+# logs
+*.log
+tmp/
+
+# OS files
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
+Kealee Platform Agents/Anthropic.txt
+ 
+.vercel
+.env*.local
+nul
+
+# Archived apps (merged into main apps)
+_archived-apps/
+
+# Large PDFs (stored locally, not in git)
+_docs/Construction Task Catalog® - Distribution.pdf
+
+Kealee Platform Agents/*.zip
+
+
+testskeabots/
+replicate/
+scripts/files*.zip
+
+# Replicate archive binaries (manifest.jsonl + manifests/*.json can be committed)
+data/replicate-archive/media/
+data/replicate-archive/manifest.jsonl
+
+railway-env-paste-web-main.txt
+env-templates/railway-cli.env
+
+# scratch files
+scratch/
+apps/web-main/find_replicate.js
+
+# 5213 Call Place estimate — heavy drawing binaries (kept local, not committed)
+docs/estimates/5213-call-place-se/drawings/png/
+docs/estimates/5213-call-place-se/output/*.pdf

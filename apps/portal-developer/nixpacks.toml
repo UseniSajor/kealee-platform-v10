@@ -1,0 +1,15 @@
+# Per-app NIXPACKS config — Railway reads this when service root = monorepo root.
+# Build + start are defined in railway.toml (buildCommand / startCommand).
+
+[phases.setup]
+nixPkgs = ["nodejs_20"]
+
+[phases.setup.env]
+PUPPETEER_SKIP_CHROMIUM_DOWNLOAD = "true"
+NODE_ENV = "production"
+
+[phases.install]
+cmds = [
+  "corepack enable && corepack prepare pnpm@8.15.9 --activate",
+  "pnpm install --no-frozen-lockfile"
+]

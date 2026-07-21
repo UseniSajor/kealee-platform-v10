@@ -1,0 +1,43 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { guardStripeSecretForHttp } from '@/lib/stripe-vercel-guard'
+import { createStripe } from '@/lib/stripe-client'
+
+export const dynamic = 'force-dynamic'
+
+export async function POST(req: NextRequest) {
+  try {
+    const body = await req.json() as {
+      customerId: string
+      returnUrl: string
+    }
+
+    const { customerId, returnUrl } = body
+
+    if (!customerId || !returnUrl) {
+      return NextResponse.json(
+        { error: 'Missing required fields: customerId, returnUrl' },
+        { status: 400 }
+      )
+    }
+
+    const stripeKey = process.env.STRIPE_SECRET_KEY
+    if (!stripeKey) {
+      return NextResponse.json({ error: 'Stripe not configured' }, { status: 500 })
+    }
+
+    const guard = guardStripeSecretForHttp(stripeKey)
+    if (guard) return guard
+
+    const stripe = createStripe(stripeKey)
+
+    const session = await stripe.billingPortal.sessions.create({
+      customer: customerId,
+      return_url: returnUrl,
+    })
+
+    return NextResponse.json({ url: session.url })
+  } catch (err: any) {
+    console.error('[api/billing/portal]', err?.message)
+    return NextResponse.json({ error: 'Portal session failed' }, { status: 500 })
+  }
+}

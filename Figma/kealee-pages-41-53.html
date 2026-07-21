@@ -1,0 +1,1002 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kealee Platform — Pages 41–53</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script>
+tailwind.config={theme:{extend:{colors:{navy:{DEFAULT:'#1A2B4A',light:'#243556',dark:'#0F1A2E','50':'#F0F2F5'},accent:{orange:'#E8793A',teal:'#2ABFBF',green:'#38A169'},kg:{50:'#F9FAFB',100:'#F3F4F6',200:'#E5E7EB',300:'#D1D5DB',400:'#9CA3AF',500:'#6B7280',600:'#4B5563',700:'#374151'}},fontFamily:{display:['"Plus Jakarta Sans"','system-ui','sans-serif'],mono:['"JetBrains Mono"','monospace']}}}}
+</script>
+<style>
+*{font-family:'Plus Jakarta Sans',system-ui,sans-serif}
+::selection{background:rgba(232,121,58,.2);color:#1A2B4A}
+.dot-bg{background-image:radial-gradient(circle,#D1D5DB 1px,transparent 1px);background-size:24px 24px}
+.sdiv{background:#1A2B4A;padding:18px 48px;text-align:center;color:rgba(255,255,255,.4);font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase}
+.ch{transition:all .25s cubic-bezier(.16,1,.3,1)}
+.ch:hover{transform:translateY(-3px);box-shadow:0 10px 28px rgba(26,43,74,.08)}
+.sl{transition:all .15s}
+.sl:hover{background:#F3F4F6}
+.sl.act{background:rgba(232,121,58,.06);color:#E8793A;border-right:3px solid #E8793A}
+.tb{transition:all .2s;border-bottom:3px solid transparent;padding:12px 20px;font-size:14px;cursor:pointer;background:none;border-top:none;border-left:none;border-right:none}
+.tb:hover{color:#1A2B4A}
+.tb.act{color:#1A2B4A;font-weight:700;border-bottom-color:#E8793A}
+.gb{border-radius:6px;height:28px;position:relative}
+.badge{display:inline-flex;align-items:center;padding:2px 10px;border-radius:20px;font-size:10px;font-weight:700}
+.btn-o{padding:10px 20px;border-radius:10px;background:#E8793A;color:#fff;font-size:14px;font-weight:600;border:none;cursor:pointer;box-shadow:0 4px 14px rgba(232,121,58,.3)}
+.btn-g{padding:10px 20px;border-radius:10px;background:transparent;color:#1A2B4A;font-size:14px;font-weight:600;border:2px solid #E5E7EB;cursor:pointer}
+.inp{width:100%;padding:8px 12px;border-radius:8px;border:1px solid #E5E7EB;font-size:14px;outline:none}
+.inp:focus{border-color:#2ABFBF;box-shadow:0 0 0 3px rgba(42,191,191,.1)}
+@media(max-width:1024px){.dsb{display:none!important}.dmn{margin-left:0!important}}
+@media(max-width:768px){.rg4{grid-template-columns:1fr!important}.rg3{grid-template-columns:1fr!important}.rg2{grid-template-columns:1fr!important}}
+</style>
+</head>
+<body class="bg-white text-kg-700">
+
+<!-- ══════════════════════════════════════════════ -->
+<!-- PROMPT 41: MULTI-PROJECT DASHBOARD            -->
+<!-- ══════════════════════════════════════════════ -->
+<div class="sdiv" id="p41">Prompt 41 — Multi-Project Dashboard</div>
+
+<section class="min-h-screen bg-kg-50 flex">
+  <!-- Sidebar -->
+  <aside class="dsb w-[260px] bg-white border-r border-kg-200 flex-shrink-0 flex flex-col h-screen sticky top-0 overflow-y-auto">
+    <div class="px-5 py-4 border-b border-kg-200 flex items-center gap-2.5">
+      <div class="relative w-8 h-8 flex-shrink-0">
+        <div class="absolute w-5 h-5 rounded-full bg-accent-orange border-2 border-navy top-0 left-0"></div>
+        <div class="absolute w-4 h-4 rounded-full bg-accent-teal border-2 border-navy top-1 left-3.5"></div>
+        <div class="absolute w-2.5 h-2.5 rounded-full bg-accent-green border-[1.5px] border-navy top-4 left-2"></div>
+      </div>
+      <span class="text-lg font-bold text-navy tracking-tight">Kealee</span>
+      <span class="ml-auto text-[10px] font-bold text-accent-orange bg-orange-50 px-2 py-0.5 rounded-full">PRO</span>
+    </div>
+    <nav class="flex-1 py-3">
+      <div class="px-4 mb-2 text-[10px] font-bold text-kg-400 uppercase tracking-widest">Main</div>
+      <a class="sl act flex items-center gap-3 px-5 py-2.5 text-sm font-semibold">📊 Dashboard</a>
+      <a class="sl flex items-center gap-3 px-5 py-2.5 text-sm text-kg-500">⚖️ Bids</a>
+      <a class="sl flex items-center gap-3 px-5 py-2.5 text-sm text-kg-500">🧮 Estimates</a>
+      <a class="sl flex items-center gap-3 px-5 py-2.5 text-sm text-kg-500">👥 Team</a>
+      <a class="sl flex items-center gap-3 px-5 py-2.5 text-sm text-kg-500">📅 Schedule</a>
+      <a class="sl flex items-center gap-3 px-5 py-2.5 text-sm text-kg-500">💰 Financials</a>
+      <div class="px-4 mt-5 mb-2 text-[10px] font-bold text-kg-400 uppercase tracking-widest">Services</div>
+      <a class="sl flex items-center gap-3 px-5 py-2.5 text-sm text-kg-500">🏪 Services Store</a>
+      <a class="sl flex items-center gap-3 px-5 py-2.5 text-sm text-kg-500">📦 Assembly Library <span class="ml-auto text-[9px] font-mono text-accent-teal bg-teal-50 px-1.5 py-0.5 rounded">1,000+</span></a>
+    </nav>
+    <div class="p-4 border-t border-kg-200">
+      <div class="bg-gradient-to-r from-orange-50 to-teal-50 rounded-xl p-3.5 border border-orange-100">
+        <div class="text-[10px] font-bold text-accent-orange uppercase tracking-wider mb-1">Professional Plan</div>
+        <div class="text-xs text-kg-500">10 projects · 15 members</div>
+        <div class="mt-2 text-[11px] font-semibold text-accent-teal cursor-pointer">Upgrade →</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Dashboard Main -->
+  <main class="dmn flex-1 min-h-screen">
+    <header class="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-kg-200 px-6 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-2 text-sm">
+        <span class="text-kg-400">Dashboard</span><span class="text-kg-300">/</span><span class="text-navy font-semibold">All Projects</span>
+      </div>
+      <div class="flex items-center gap-4">
+        <div class="relative"><input placeholder="Search projects..." class="w-56 pl-9 pr-4 py-2 rounded-lg border border-kg-200 text-sm focus:outline-none focus:border-accent-teal"><svg class="absolute left-3 top-2.5 w-4 h-4 text-kg-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
+        <div class="w-8 h-8 rounded-full bg-navy text-white flex items-center justify-center text-xs font-bold">MR</div>
+      </div>
+    </header>
+    <div class="p-6">
+      <div class="flex items-center justify-between mb-6">
+        <div><h1 class="text-2xl font-extrabold text-navy">Good morning, Mike</h1><p class="text-sm text-kg-500 mt-1">3 active projects · 2 pending bids</p></div>
+        <div class="flex gap-2"><button class="btn-g text-sm">+ New Estimate</button><button class="btn-o text-sm">+ New Project</button></div>
+      </div>
+      <!-- Stats -->
+      <div class="grid grid-cols-4 gap-4 mb-6 rg4" style="grid-template-columns:repeat(4,1fr)">
+        <div class="bg-white rounded-xl p-5 border border-kg-200 ch">
+          <div class="text-[10px] font-bold text-kg-400 uppercase tracking-wider mb-2">Active Projects</div>
+          <div class="text-3xl font-bold text-navy font-mono">12</div>
+          <div class="text-xs text-accent-green font-semibold mt-1">+3 this month</div>
+        </div>
+        <div class="bg-white rounded-xl p-5 border border-kg-200 ch">
+          <div class="text-[10px] font-bold text-kg-400 uppercase tracking-wider mb-2">Pending Bids</div>
+          <div class="text-3xl font-bold text-navy font-mono">5</div>
+          <div class="text-xs text-accent-orange font-semibold mt-1">2 expiring soon</div>
+        </div>
+        <div class="bg-white rounded-xl p-5 border border-kg-200 ch">
+          <div class="text-[10px] font-bold text-kg-400 uppercase tracking-wider mb-2">Revenue (MTD)</div>
+          <div class="text-3xl font-bold text-navy font-mono">$284K</div>
+          <div class="text-xs text-accent-green font-semibold mt-1">+12% vs last month</div>
+        </div>
+        <div class="bg-white rounded-xl p-5 border border-kg-200 ch">
+          <div class="text-[10px] font-bold text-kg-400 uppercase tracking-wider mb-2">Team Members</div>
+          <div class="text-3xl font-bold text-navy font-mono">8<span class="text-lg text-kg-400">/15</span></div>
+          <div class="text-xs text-accent-teal font-semibold mt-1">Pro plan limit</div>
+        </div>
+      </div>
+      <!-- Kanban -->
+      <h2 class="text-lg font-bold text-navy mb-4">Projects</h2>
+      <div class="grid grid-cols-4 gap-4 rg4" style="grid-template-columns:repeat(4,1fr)">
+        <!-- Pre-Construction -->
+        <div>
+          <div class="flex items-center gap-2 mb-3"><span class="w-2.5 h-2.5 rounded-full bg-accent-teal"></span><span class="text-sm font-bold text-navy">Pre-Construction</span><span class="text-xs font-mono text-kg-400 ml-auto">3</span></div>
+          <div class="space-y-3">
+            <div class="bg-white rounded-xl p-4 border border-kg-200 ch cursor-pointer">
+              <div class="flex items-center justify-between mb-2"><span class="badge text-accent-teal bg-teal-50">RESIDENTIAL</span><span class="text-[10px] font-mono text-kg-400">#KP-2401</span></div>
+              <h4 class="text-sm font-bold text-navy mb-1">Henderson Kitchen</h4><p class="text-xs text-kg-500 mb-3">Silver Spring, MD</p>
+              <div class="flex items-center justify-between"><span class="text-xs font-mono font-bold text-accent-orange">$84,200</span><div class="flex -space-x-1.5"><div class="w-6 h-6 rounded-full bg-navy text-white text-[9px] font-bold flex items-center justify-center border-2 border-white">MR</div><div class="w-6 h-6 rounded-full bg-accent-teal text-white text-[9px] font-bold flex items-center justify-center border-2 border-white">JB</div></div></div>
+            </div>
+            <div class="bg-white rounded-xl p-4 border border-kg-200 ch cursor-pointer">
+              <div class="flex items-center justify-between mb-2"><span class="badge text-accent-orange bg-orange-50">COMMERCIAL</span><span class="text-[10px] font-mono text-kg-400">#KP-2398</span></div>
+              <h4 class="text-sm font-bold text-navy mb-1">Bethesda Office TI</h4><p class="text-xs text-kg-500 mb-3">Bethesda, MD</p>
+              <div class="flex items-center justify-between"><span class="text-xs font-mono font-bold text-accent-orange">$342K</span><div class="w-6 h-6 rounded-full bg-accent-green text-white text-[9px] font-bold flex items-center justify-center">AK</div></div>
+            </div>
+          </div>
+        </div>
+        <!-- In Progress -->
+        <div>
+          <div class="flex items-center gap-2 mb-3"><span class="w-2.5 h-2.5 rounded-full bg-accent-orange"></span><span class="text-sm font-bold text-navy">In Progress</span><span class="text-xs font-mono text-kg-400 ml-auto">4</span></div>
+          <div class="space-y-3">
+            <div class="bg-white rounded-xl p-4 border border-kg-200 border-l-4 border-l-accent-orange ch cursor-pointer">
+              <div class="flex items-center justify-between mb-2"><span class="badge text-accent-teal bg-teal-50">RESIDENTIAL</span><span class="text-[10px] font-mono text-kg-400">#KP-2385</span></div>
+              <h4 class="text-sm font-bold text-navy mb-1">Columbia Whole Home</h4><p class="text-xs text-kg-500 mb-2">Columbia, MD</p>
+              <div class="w-full bg-kg-100 rounded-full h-1.5 mb-2"><div class="bg-accent-orange rounded-full h-1.5" style="width:65%"></div></div>
+              <div class="flex items-center justify-between"><span class="text-xs font-mono font-bold text-accent-orange">$1.2M</span><span class="text-[10px] text-kg-400 font-mono">65%</span></div>
+            </div>
+            <div class="bg-white rounded-xl p-4 border border-kg-200 border-l-4 border-l-accent-green ch cursor-pointer">
+              <div class="flex items-center justify-between mb-2"><span class="badge text-accent-orange bg-orange-50">COMMERCIAL</span><span class="text-[10px] font-mono text-kg-400">#KP-2390</span></div>
+              <h4 class="text-sm font-bold text-navy mb-1">DC Restaurant Buildout</h4><p class="text-xs text-kg-500 mb-2">Washington, DC</p>
+              <div class="w-full bg-kg-100 rounded-full h-1.5 mb-2"><div class="bg-accent-green rounded-full h-1.5" style="width:88%"></div></div>
+              <div class="flex items-center justify-between"><span class="text-xs font-mono font-bold text-accent-orange">$567K</span><span class="text-[10px] text-kg-400 font-mono">88%</span></div>
+            </div>
+          </div>
+        </div>
+        <!-- Permits -->
+        <div>
+          <div class="flex items-center gap-2 mb-3"><span class="w-2.5 h-2.5 rounded-full bg-accent-green"></span><span class="text-sm font-bold text-navy">Permits</span><span class="text-xs font-mono text-kg-400 ml-auto">2</span></div>
+          <div class="bg-white rounded-xl p-4 border border-kg-200 ch cursor-pointer">
+            <div class="flex items-center justify-between mb-2"><span class="badge text-accent-green bg-green-50">PERMIT FILED</span><span class="text-[10px] font-mono text-kg-400">#KP-2402</span></div>
+            <h4 class="text-sm font-bold text-navy mb-1">Rockville ADU</h4><p class="text-xs text-kg-500 mb-3">Rockville, MD</p>
+            <div class="flex items-center gap-2 p-2 rounded-lg bg-green-50 border border-green-100"><span class="text-[11px] text-accent-green font-semibold">✓ Under review — 5 days</span></div>
+          </div>
+        </div>
+        <!-- Complete -->
+        <div>
+          <div class="flex items-center gap-2 mb-3"><span class="w-2.5 h-2.5 rounded-full bg-kg-300"></span><span class="text-sm font-bold text-navy">Complete</span><span class="text-xs font-mono text-kg-400 ml-auto">3</span></div>
+          <div class="bg-white rounded-xl p-4 border border-kg-200 opacity-70 ch cursor-pointer">
+            <div class="flex items-center justify-between mb-2"><span class="badge text-kg-400 bg-kg-100">CLOSED</span><span class="text-[10px] font-mono text-kg-400">#KP-2350</span></div>
+            <h4 class="text-sm font-bold text-navy mb-1">Annapolis Bath</h4><p class="text-xs text-kg-500 mb-2">Annapolis, MD</p>
+            <div class="flex items-center justify-between"><span class="text-xs font-mono text-kg-400">$46,800</span><span class="text-[10px] font-semibold text-accent-green">✓ Paid</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</section>
+
+<!-- ══════════════════════════════════════════════ -->
+<!-- PROMPT 42: BID MANAGEMENT                     -->
+<!-- ══════════════════════════════════════════════ -->
+<div class="sdiv" id="p42">Prompt 42 — Bid Management</div>
+<section class="bg-kg-50 p-6">
+  <div class="max-w-[1280px] mx-auto">
+    <div class="flex items-center justify-between mb-6">
+      <h1 class="text-2xl font-extrabold text-navy">Bid Management</h1>
+      <div class="flex items-center gap-3"><span class="text-xs text-kg-400 bg-kg-100 px-3 py-1.5 rounded-lg font-mono">Commission: 3.5% on wins</span><button class="btn-o text-sm">Browse Opportunities →</button></div>
+    </div>
+    <div class="flex gap-0 border-b border-kg-200 mb-6">
+      <button class="tb act">Opportunities <span class="ml-1 text-[10px] bg-orange-50 text-accent-orange px-1.5 py-0.5 rounded-full font-bold">8</span></button>
+      <button class="tb text-kg-500">Submitted <span class="ml-1 text-[10px] bg-kg-100 text-kg-500 px-1.5 py-0.5 rounded-full font-bold">5</span></button>
+      <button class="tb text-kg-500">Won <span class="ml-1 text-[10px] bg-green-50 text-accent-green px-1.5 py-0.5 rounded-full font-bold">12</span></button>
+      <button class="tb text-kg-500">Lost</button>
+    </div>
+    <div class="grid grid-cols-3 gap-4 rg3" style="grid-template-columns:repeat(3,1fr)">
+      <!-- Bid Card 1 -->
+      <div class="bg-white rounded-xl p-5 border border-kg-200 ch">
+        <div class="flex items-center justify-between mb-3"><span class="badge text-accent-teal bg-teal-50">RESIDENTIAL</span><span class="text-[10px] font-mono text-kg-400">3d left</span></div>
+        <h4 class="text-base font-bold text-navy mb-1">Kitchen Renovation — Bethesda</h4>
+        <p class="text-sm text-kg-500 mb-3">Full gut, 250 sf, high-end finishes</p>
+        <div class="flex gap-4 mb-4"><div><span class="text-xs text-kg-400">Budget</span><div class="text-sm font-mono font-bold text-navy">$80K–$120K</div></div><div><span class="text-xs text-kg-400">Timeline</span><div class="text-sm font-semibold text-navy">8–12 wks</div></div></div>
+        <div class="flex items-center gap-1.5 mb-3 text-xs text-kg-500">🛡️ Escrow protected · Verified owner</div>
+        <button class="w-full py-2.5 rounded-lg bg-accent-orange text-white text-sm font-semibold">Submit Bid →</button>
+      </div>
+      <!-- Bid Card 2 -->
+      <div class="bg-white rounded-xl p-5 border border-kg-200 ch">
+        <div class="flex items-center justify-between mb-3"><span class="badge text-accent-orange bg-orange-50">COMMERCIAL</span><span class="text-[10px] font-mono text-kg-400">5d left</span></div>
+        <h4 class="text-base font-bold text-navy mb-1">Office Tenant Improvement</h4>
+        <p class="text-sm text-kg-500 mb-3">4,500 sf, Class A, MEP + finishes</p>
+        <div class="flex gap-4 mb-4"><div><span class="text-xs text-kg-400">Budget</span><div class="text-sm font-mono font-bold text-navy">$250K–$350K</div></div><div><span class="text-xs text-kg-400">Timeline</span><div class="text-sm font-semibold text-navy">16–20 wks</div></div></div>
+        <div class="flex items-center gap-1.5 mb-3 text-xs text-kg-500">🛡️ Escrow protected · Plans available</div>
+        <button class="w-full py-2.5 rounded-lg bg-accent-orange text-white text-sm font-semibold">Submit Bid →</button>
+      </div>
+      <!-- Bid Card 3 -->
+      <div class="bg-white rounded-xl p-5 border border-accent-orange ch">
+        <div class="flex items-center justify-between mb-3"><span class="badge text-accent-teal bg-teal-50">RESIDENTIAL</span><span class="text-[10px] font-mono text-accent-orange font-bold">Closes today!</span></div>
+        <h4 class="text-base font-bold text-navy mb-1">Basement Finish — Columbia</h4>
+        <p class="text-sm text-kg-500 mb-3">800 sf, bath + kitchenette + theater</p>
+        <div class="flex gap-4 mb-4"><div><span class="text-xs text-kg-400">Budget</span><div class="text-sm font-mono font-bold text-navy">$60K–$90K</div></div><div><span class="text-xs text-kg-400">Timeline</span><div class="text-sm font-semibold text-navy">10–14 wks</div></div></div>
+        <div class="flex items-center gap-1.5 mb-3 text-xs text-kg-500">🛡️ Escrow protected · 4 bids received</div>
+        <button class="w-full py-2.5 rounded-lg bg-accent-orange text-white text-sm font-semibold">Submit Bid →</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════ -->
+<!-- PROMPT 43: ESTIMATION TOOLS                   -->
+<!-- ══════════════════════════════════════════════ -->
+<div class="sdiv" id="p43">Prompt 43 — Estimation Tools</div>
+<section class="bg-kg-50 p-6">
+  <div class="max-w-[1280px] mx-auto">
+    <div class="flex items-center justify-between mb-6">
+      <h1 class="text-2xl font-extrabold text-navy">Estimation Tools</h1>
+      <button class="btn-o text-sm">+ New Estimate</button>
+    </div>
+    <div class="flex gap-0 border-b border-kg-200 mb-6">
+      <button class="tb act">Estimate Builder</button>
+      <button class="tb text-kg-500">Assembly Library <span class="ml-1 text-[10px] bg-teal-50 text-accent-teal px-1.5 py-0.5 rounded-full font-bold">1,000+</span></button>
+      <button class="tb text-kg-500">Templates</button>
+      <button class="tb text-kg-500">History</button>
+    </div>
+    <div class="flex gap-6" style="display:grid;grid-template-columns:1fr 340px">
+      <!-- Builder -->
+      <div class="space-y-4">
+        <div class="bg-white rounded-xl p-5 border border-kg-200">
+          <h3 class="text-sm font-bold text-navy mb-3">Project Information</h3>
+          <div class="grid grid-cols-3 gap-3 rg3" style="grid-template-columns:repeat(3,1fr)"><div><label class="text-xs text-kg-500 mb-1 block">Project Name</label><input value="Henderson Kitchen" class="inp" readonly></div><div><label class="text-xs text-kg-500 mb-1 block">Location</label><input value="Silver Spring, MD" class="inp" readonly></div><div><label class="text-xs text-kg-500 mb-1 block">Sq Footage</label><input value="250 sf" class="inp" readonly></div></div>
+        </div>
+        <!-- Division 03 -->
+        <div class="bg-white rounded-xl border border-kg-200 overflow-hidden">
+          <div class="px-5 py-3 bg-kg-50 border-b border-kg-200 flex items-center justify-between">
+            <div class="flex items-center gap-3"><span class="text-xs font-mono font-bold text-accent-teal bg-teal-50 px-2 py-0.5 rounded">03</span><span class="text-sm font-bold text-navy">Concrete</span></div>
+            <div class="flex items-center gap-3"><span class="text-sm font-mono font-bold text-navy">$18,400</span><button class="text-xs text-accent-teal font-semibold">+ Add Assembly</button></div>
+          </div>
+          <div class="overflow-x-auto">
+          <table class="w-full text-sm" style="min-width:640px">
+            <thead class="bg-kg-50 text-xs text-kg-500 uppercase tracking-wider"><tr><th class="text-left px-5 py-2">Assembly</th><th class="text-right px-3 py-2">Qty</th><th class="text-right px-3 py-2">Unit</th><th class="text-right px-3 py-2">Material</th><th class="text-right px-3 py-2">Labor</th><th class="text-right px-5 py-2">Total</th></tr></thead>
+            <tbody>
+              <tr class="border-t border-kg-100 hover:bg-kg-50"><td class="px-5 py-3 font-semibold text-navy">Foundation Footing — 24"×12"</td><td class="text-right px-3 py-3 font-mono">120</td><td class="text-right px-3 text-kg-400">LF</td><td class="text-right px-3 font-mono">$8,640</td><td class="text-right px-3 font-mono">$5,760</td><td class="text-right px-5 font-mono font-bold">$14,400</td></tr>
+              <tr class="border-t border-kg-100 hover:bg-kg-50"><td class="px-5 py-3 font-semibold text-navy">Slab on Grade — 4"</td><td class="text-right px-3 py-3 font-mono">250</td><td class="text-right px-3 text-kg-400">SF</td><td class="text-right px-3 font-mono">$2,250</td><td class="text-right px-3 font-mono">$1,750</td><td class="text-right px-5 font-mono font-bold">$4,000</td></tr>
+            </tbody>
+          </table></div>
+        </div>
+        <!-- Division 09 -->
+        <div class="bg-white rounded-xl border border-kg-200 overflow-hidden">
+          <div class="px-5 py-3 bg-kg-50 border-b border-kg-200 flex items-center justify-between">
+            <div class="flex items-center gap-3"><span class="text-xs font-mono font-bold text-accent-orange bg-orange-50 px-2 py-0.5 rounded">09</span><span class="text-sm font-bold text-navy">Finishes</span></div>
+            <div class="flex items-center gap-3"><span class="text-sm font-mono font-bold text-navy">$24,600</span><button class="text-xs text-accent-teal font-semibold">+ Add Assembly</button></div>
+          </div>
+          <div class="overflow-x-auto">
+          <table class="w-full text-sm" style="min-width:640px">
+            <thead class="bg-kg-50 text-xs text-kg-500 uppercase tracking-wider"><tr><th class="text-left px-5 py-2">Assembly</th><th class="text-right px-3 py-2">Qty</th><th class="text-right px-3 py-2">Unit</th><th class="text-right px-3 py-2">Material</th><th class="text-right px-3 py-2">Labor</th><th class="text-right px-5 py-2">Total</th></tr></thead>
+            <tbody>
+              <tr class="border-t border-kg-100 hover:bg-kg-50"><td class="px-5 py-3 font-semibold text-navy">Porcelain Tile 12×24</td><td class="text-right px-3 py-3 font-mono">180</td><td class="text-right px-3 text-kg-400">SF</td><td class="text-right px-3 font-mono">$3,960</td><td class="text-right px-3 font-mono">$2,700</td><td class="text-right px-5 font-mono font-bold">$6,660</td></tr>
+              <tr class="border-t border-kg-100 hover:bg-kg-50"><td class="px-5 py-3 font-semibold text-navy">Cabinet — Custom Shaker</td><td class="text-right px-3 py-3 font-mono">14</td><td class="text-right px-3 text-kg-400">EA</td><td class="text-right px-3 font-mono">$12,600</td><td class="text-right px-3 font-mono">$5,340</td><td class="text-right px-5 font-mono font-bold">$17,940</td></tr>
+            </tbody>
+          </table></div>
+        </div>
+      </div>
+      <!-- Summary -->
+      <div>
+        <div class="bg-white rounded-xl p-5 border border-kg-200 sticky top-20">
+          <h3 class="text-sm font-bold text-navy mb-4">Estimate Summary</h3>
+          <div class="space-y-2.5 mb-4 text-sm">
+            <div class="flex justify-between"><span class="text-kg-500">Materials</span><span class="font-mono font-semibold">$28,450</span></div>
+            <div class="flex justify-between"><span class="text-kg-500">Labor</span><span class="font-mono font-semibold">$21,310</span></div>
+            <div class="flex justify-between"><span class="text-kg-500">Equipment</span><span class="font-mono font-semibold">$3,200</span></div>
+            <div class="border-t border-kg-200 pt-2.5 flex justify-between"><span class="text-kg-500">Subtotal</span><span class="font-mono font-bold">$52,960</span></div>
+          </div>
+          <h4 class="text-[10px] font-bold text-kg-400 uppercase tracking-wider mb-3">Markup</h4>
+          <div class="space-y-2 mb-4">
+            <div class="flex items-center justify-between text-sm"><span class="text-kg-600">Overhead</span><div class="flex items-center gap-1.5"><input value="10" class="w-10 text-right px-1.5 py-1 rounded border border-kg-200 text-xs font-mono"><span class="text-kg-400 text-xs">%</span><span class="font-mono font-semibold">$5,296</span></div></div>
+            <div class="flex items-center justify-between text-sm"><span class="text-kg-600">Profit</span><div class="flex items-center gap-1.5"><input value="15" class="w-10 text-right px-1.5 py-1 rounded border border-kg-200 text-xs font-mono"><span class="text-kg-400 text-xs">%</span><span class="font-mono font-semibold">$7,944</span></div></div>
+            <div class="flex items-center justify-between text-sm"><span class="text-kg-600">Contingency</span><div class="flex items-center gap-1.5"><input value="5" class="w-10 text-right px-1.5 py-1 rounded border border-kg-200 text-xs font-mono"><span class="text-kg-400 text-xs">%</span><span class="font-mono font-semibold">$2,648</span></div></div>
+          </div>
+          <div class="bg-navy rounded-xl p-4 text-white mb-4">
+            <div class="text-xs font-semibold text-white/50 mb-1">Total Estimate</div>
+            <div class="text-3xl font-bold font-mono">$68,848</div>
+            <div class="text-xs text-white/40 mt-1">$275.39/SF</div>
+          </div>
+          <button class="w-full py-2.5 rounded-lg bg-accent-orange text-white text-sm font-bold mb-2">Export PDF →</button>
+          <button class="w-full py-2.5 rounded-lg border border-kg-200 text-sm font-semibold text-navy">Save as Template</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════ -->
+<!-- PROMPT 44: TEAM COLLABORATION                 -->
+<!-- ══════════════════════════════════════════════ -->
+<div class="sdiv" id="p44">Prompt 44 — Team Collaboration</div>
+<section class="bg-kg-50 p-6">
+  <div class="max-w-[1280px] mx-auto">
+    <div class="flex items-center justify-between mb-6">
+      <div><h1 class="text-2xl font-extrabold text-navy">Team</h1><p class="text-sm text-kg-500 mt-1">8 of 15 seats used · <span class="text-accent-teal font-semibold">Professional Plan</span></p></div>
+      <button class="btn-o text-sm">+ Invite Member</button>
+    </div>
+    <div class="flex gap-0 border-b border-kg-200 mb-6">
+      <button class="tb act">Team Members <span class="ml-1 text-[10px] bg-navy/10 text-navy px-1.5 py-0.5 rounded-full font-bold">8</span></button>
+      <button class="tb text-kg-500">Subcontractors <span class="ml-1 text-[10px] bg-kg-100 text-kg-500 px-1.5 py-0.5 rounded-full font-bold">14</span></button>
+      <button class="tb text-kg-500">Invitations <span class="ml-1 text-[10px] bg-orange-50 text-accent-orange px-1.5 py-0.5 rounded-full font-bold">3</span></button>
+    </div>
+    <!-- Team Table -->
+    <div class="bg-white rounded-xl border border-kg-200 overflow-hidden">
+      <div class="overflow-x-auto">
+      <table class="w-full text-sm" style="min-width:700px">
+        <thead class="bg-kg-50 text-xs text-kg-500 uppercase tracking-wider"><tr><th class="text-left px-5 py-3">Member</th><th class="text-left px-3 py-3">Role</th><th class="text-left px-3 py-3">Projects</th><th class="text-left px-3 py-3">Status</th><th class="text-right px-5 py-3">Actions</th></tr></thead>
+        <tbody>
+          <tr class="border-t border-kg-100 hover:bg-kg-50">
+            <td class="px-5 py-3"><div class="flex items-center gap-3"><div class="w-9 h-9 rounded-full bg-navy text-white text-xs font-bold flex items-center justify-center">MR</div><div><div class="font-semibold text-navy">Mike Rodriguez</div><div class="text-xs text-kg-400">mike@rodriguez-gc.com</div></div></div></td>
+            <td class="px-3 py-3"><span class="badge text-accent-orange bg-orange-50">Owner</span></td>
+            <td class="px-3 py-3 font-mono">12</td>
+            <td class="px-3 py-3"><span class="flex items-center gap-1.5 text-accent-green text-xs font-semibold"><span class="w-1.5 h-1.5 rounded-full bg-accent-green"></span>Online</span></td>
+            <td class="px-5 py-3 text-right"><button class="text-xs text-kg-400">⋯</button></td>
+          </tr>
+          <tr class="border-t border-kg-100 hover:bg-kg-50">
+            <td class="px-5 py-3"><div class="flex items-center gap-3"><div class="w-9 h-9 rounded-full bg-accent-teal text-white text-xs font-bold flex items-center justify-center">JB</div><div><div class="font-semibold text-navy">Jennifer Barnes</div><div class="text-xs text-kg-400">jen@rodriguez-gc.com</div></div></div></td>
+            <td class="px-3 py-3"><span class="badge text-accent-teal bg-teal-50">Project Manager</span></td>
+            <td class="px-3 py-3 font-mono">6</td>
+            <td class="px-3 py-3"><span class="flex items-center gap-1.5 text-accent-green text-xs font-semibold"><span class="w-1.5 h-1.5 rounded-full bg-accent-green"></span>Online</span></td>
+            <td class="px-5 py-3 text-right"><button class="text-xs text-kg-400">⋯</button></td>
+          </tr>
+          <tr class="border-t border-kg-100 hover:bg-kg-50">
+            <td class="px-5 py-3"><div class="flex items-center gap-3"><div class="w-9 h-9 rounded-full bg-accent-green text-white text-xs font-bold flex items-center justify-center">AK</div><div><div class="font-semibold text-navy">Alex Kim</div><div class="text-xs text-kg-400">alex@rodriguez-gc.com</div></div></div></td>
+            <td class="px-3 py-3"><span class="badge text-kg-500 bg-kg-100">Estimator</span></td>
+            <td class="px-3 py-3 font-mono">4</td>
+            <td class="px-3 py-3"><span class="text-kg-400 text-xs">Offline · 2h ago</span></td>
+            <td class="px-5 py-3 text-right"><button class="text-xs text-kg-400">⋯</button></td>
+          </tr>
+          <tr class="border-t border-kg-100 hover:bg-kg-50">
+            <td class="px-5 py-3"><div class="flex items-center gap-3"><div class="w-9 h-9 rounded-full bg-kg-300 text-white text-xs font-bold flex items-center justify-center">DT</div><div><div class="font-semibold text-navy">David Torres</div><div class="text-xs text-kg-400">david@rodriguez-gc.com</div></div></div></td>
+            <td class="px-3 py-3"><span class="badge text-kg-500 bg-kg-100">Superintendent</span></td>
+            <td class="px-3 py-3 font-mono">3</td>
+            <td class="px-3 py-3"><span class="text-kg-400 text-xs">Offline · 1d ago</span></td>
+            <td class="px-5 py-3 text-right"><button class="text-xs text-kg-400">⋯</button></td>
+          </tr>
+        </tbody>
+      </table></div>
+    </div>
+    <!-- Permissions -->
+    <div class="mt-6 bg-white rounded-xl p-5 border border-kg-200">
+      <h3 class="text-sm font-bold text-navy mb-3">Role Permissions</h3>
+      <div class="grid grid-cols-5 gap-0 text-xs rg3" style="grid-template-columns:160px repeat(4,1fr)">
+        <div class="p-2.5 font-bold text-kg-500 border-b border-kg-200">Permission</div>
+        <div class="p-2.5 text-center font-bold text-accent-orange border-b border-kg-200">Owner</div>
+        <div class="p-2.5 text-center font-bold text-accent-teal border-b border-kg-200">PM</div>
+        <div class="p-2.5 text-center font-bold text-kg-600 border-b border-kg-200">Estimator</div>
+        <div class="p-2.5 text-center font-bold text-kg-600 border-b border-kg-200">Viewer</div>
+        <div class="p-2.5 text-kg-600 border-b border-kg-100">Create projects</div><div class="p-2.5 text-center text-accent-green border-b border-kg-100">✓</div><div class="p-2.5 text-center text-accent-green border-b border-kg-100">✓</div><div class="p-2.5 text-center text-kg-300 border-b border-kg-100">—</div><div class="p-2.5 text-center text-kg-300 border-b border-kg-100">—</div>
+        <div class="p-2.5 text-kg-600 border-b border-kg-100">Submit bids</div><div class="p-2.5 text-center text-accent-green border-b border-kg-100">✓</div><div class="p-2.5 text-center text-accent-green border-b border-kg-100">✓</div><div class="p-2.5 text-center text-kg-300 border-b border-kg-100">—</div><div class="p-2.5 text-center text-kg-300 border-b border-kg-100">—</div>
+        <div class="p-2.5 text-kg-600 border-b border-kg-100">Create estimates</div><div class="p-2.5 text-center text-accent-green border-b border-kg-100">✓</div><div class="p-2.5 text-center text-accent-green border-b border-kg-100">✓</div><div class="p-2.5 text-center text-accent-green border-b border-kg-100">✓</div><div class="p-2.5 text-center text-kg-300 border-b border-kg-100">—</div>
+        <div class="p-2.5 text-kg-600">View financials</div><div class="p-2.5 text-center text-accent-green">✓</div><div class="p-2.5 text-center text-accent-green">✓</div><div class="p-2.5 text-center text-kg-300">—</div><div class="p-2.5 text-center text-kg-300">—</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════ -->
+<!-- PROMPT 45: SCHEDULING & GANTT                 -->
+<!-- ══════════════════════════════════════════════ -->
+<div class="sdiv" id="p45">Prompt 45 — Scheduling & Gantt</div>
+<section class="bg-kg-50 p-6">
+  <div class="max-w-[1280px] mx-auto">
+    <div class="flex items-center justify-between mb-6">
+      <h1 class="text-2xl font-extrabold text-navy">Schedule</h1>
+      <div class="flex gap-2"><button class="btn-g text-sm">📅 Calendar</button><button class="btn-g text-sm">≡ List</button><button class="btn-o text-sm">+ Add Task</button></div>
+    </div>
+    <!-- Gantt Chart -->
+    <div class="bg-white rounded-xl border border-kg-200 overflow-hidden">
+      <div class="px-5 py-3 bg-kg-50 border-b border-kg-200 flex items-center justify-between">
+        <div class="flex items-center gap-3"><span class="text-sm font-bold text-navy">Columbia Whole Home — #KP-2385</span><span class="badge text-accent-orange bg-orange-50">In Progress</span></div>
+        <div class="flex items-center gap-4 text-xs text-kg-400"><span>Start: Jan 15</span><span>End: Jul 30</span><span class="font-mono font-bold text-navy">168 days</span></div>
+      </div>
+      <!-- Timeline Header -->
+      <div class="overflow-x-auto">
+      <div style="min-width:900px">
+      <div class="grid border-b border-kg-200" style="grid-template-columns:200px 1fr">
+        <div class="px-4 py-2 text-xs font-bold text-kg-500 border-r border-kg-200">Task</div>
+        <div class="grid grid-cols-6 text-center">
+          <div class="py-2 text-[10px] font-mono text-kg-400 border-r border-kg-100">Feb</div>
+          <div class="py-2 text-[10px] font-mono text-kg-400 border-r border-kg-100">Mar</div>
+          <div class="py-2 text-[10px] font-mono text-kg-400 border-r border-kg-100">Apr</div>
+          <div class="py-2 text-[10px] font-mono text-kg-400 border-r border-kg-100">May</div>
+          <div class="py-2 text-[10px] font-mono text-kg-400 border-r border-kg-100">Jun</div>
+          <div class="py-2 text-[10px] font-mono text-kg-400">Jul</div>
+        </div>
+      </div>
+      <!-- Gantt Rows -->
+      <div class="grid border-b border-kg-100 hover:bg-kg-50" style="grid-template-columns:200px 1fr">
+        <div class="px-4 py-3 text-sm font-semibold text-navy border-r border-kg-100 flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-accent-green"></span>Demo & Prep</div>
+        <div class="py-3 px-2 relative"><div class="gb bg-accent-green/80 text-white text-[10px] font-bold flex items-center px-3" style="width:15%;margin-left:0">✓ Done</div></div>
+      </div>
+      <div class="grid border-b border-kg-100 hover:bg-kg-50" style="grid-template-columns:200px 1fr">
+        <div class="px-4 py-3 text-sm font-semibold text-navy border-r border-kg-100 flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-accent-green"></span>Foundation</div>
+        <div class="py-3 px-2 relative"><div class="gb bg-accent-green/80 text-white text-[10px] font-bold flex items-center px-3" style="width:18%;margin-left:8%">✓ Done</div></div>
+      </div>
+      <div class="grid border-b border-kg-100 hover:bg-kg-50" style="grid-template-columns:200px 1fr">
+        <div class="px-4 py-3 text-sm font-semibold text-navy border-r border-kg-100 flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-accent-orange"></span>Framing</div>
+        <div class="py-3 px-2 relative"><div class="gb bg-accent-orange text-white text-[10px] font-bold flex items-center px-3" style="width:20%;margin-left:20%">▶ Active</div></div>
+      </div>
+      <div class="grid border-b border-kg-100 hover:bg-kg-50" style="grid-template-columns:200px 1fr">
+        <div class="px-4 py-3 text-sm font-semibold text-navy border-r border-kg-100 flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-kg-300"></span>MEP Rough-In</div>
+        <div class="py-3 px-2 relative"><div class="gb bg-kg-200 text-kg-500 text-[10px] font-semibold flex items-center px-3" style="width:22%;margin-left:35%">Upcoming</div></div>
+      </div>
+      <div class="grid border-b border-kg-100 hover:bg-kg-50" style="grid-template-columns:200px 1fr">
+        <div class="px-4 py-3 text-sm font-semibold text-navy border-r border-kg-100 flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-kg-300"></span>Insulation & Drywall</div>
+        <div class="py-3 px-2 relative"><div class="gb bg-kg-200 text-kg-500 text-[10px] font-semibold flex items-center px-3" style="width:15%;margin-left:52%">Upcoming</div></div>
+      </div>
+      <div class="grid border-b border-kg-100 hover:bg-kg-50" style="grid-template-columns:200px 1fr">
+        <div class="px-4 py-3 text-sm font-semibold text-navy border-r border-kg-100 flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-kg-300"></span>Finishes</div>
+        <div class="py-3 px-2 relative"><div class="gb bg-kg-200 text-kg-500 text-[10px] font-semibold flex items-center px-3" style="width:20%;margin-left:62%">Upcoming</div></div>
+      </div>
+      <div class="grid hover:bg-kg-50" style="grid-template-columns:200px 1fr">
+        <div class="px-4 py-3 text-sm font-semibold text-navy border-r border-kg-100 flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-kg-300"></span>Punch & Closeout</div>
+        <div class="py-3 px-2 relative"><div class="gb bg-accent-teal/30 text-accent-teal text-[10px] font-semibold flex items-center px-3" style="width:10%;margin-left:82%">Final</div></div>
+      </div>
+      </div></div>
+    </div>
+    <!-- Resources -->
+    <div class="mt-6 grid grid-cols-3 gap-4 rg3" style="grid-template-columns:repeat(3,1fr)">
+      <div class="bg-white rounded-xl p-4 border border-kg-200">
+        <div class="text-xs font-bold text-kg-400 uppercase tracking-wider mb-3">Resource Allocation</div>
+        <div class="space-y-2.5">
+          <div><div class="flex justify-between text-xs mb-1"><span class="font-semibold text-navy">Framing Crew (4)</span><span class="text-accent-orange font-mono">100%</span></div><div class="w-full bg-kg-100 rounded-full h-1.5"><div class="bg-accent-orange rounded-full h-1.5 w-full"></div></div></div>
+          <div><div class="flex justify-between text-xs mb-1"><span class="font-semibold text-navy">Plumber</span><span class="text-accent-teal font-mono">0%</span></div><div class="w-full bg-kg-100 rounded-full h-1.5"><div class="bg-accent-teal rounded-full h-1.5 w-0"></div></div></div>
+          <div><div class="flex justify-between text-xs mb-1"><span class="font-semibold text-navy">Electrician</span><span class="text-accent-green font-mono">25%</span></div><div class="w-full bg-kg-100 rounded-full h-1.5"><div class="bg-accent-green rounded-full h-1.5 w-1/4"></div></div></div>
+        </div>
+      </div>
+      <div class="bg-white rounded-xl p-4 border border-kg-200">
+        <div class="text-xs font-bold text-kg-400 uppercase tracking-wider mb-3">Dependencies</div>
+        <div class="space-y-2 text-xs">
+          <div class="flex items-center gap-2 p-2 rounded-lg bg-kg-50"><span class="text-accent-green">✓</span><span>Demo → Foundation</span></div>
+          <div class="flex items-center gap-2 p-2 rounded-lg bg-kg-50"><span class="text-accent-green">✓</span><span>Foundation → Framing</span></div>
+          <div class="flex items-center gap-2 p-2 rounded-lg bg-orange-50"><span class="text-accent-orange">⏳</span><span>Framing → MEP Rough-In</span></div>
+          <div class="flex items-center gap-2 p-2 rounded-lg bg-kg-50"><span class="text-kg-400">○</span><span>MEP → Insulation</span></div>
+        </div>
+      </div>
+      <div class="bg-white rounded-xl p-4 border border-kg-200">
+        <div class="text-xs font-bold text-kg-400 uppercase tracking-wider mb-3">Schedule Health</div>
+        <div class="text-center py-4"><div class="text-4xl font-bold text-accent-green font-mono">On Track</div><div class="text-xs text-kg-500 mt-2">2 days ahead of schedule</div></div>
+        <div class="flex justify-between text-xs mt-3 pt-3 border-t border-kg-100"><span class="text-kg-500">Critical path</span><span class="font-mono font-bold text-navy">142 days</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════ -->
+<!-- PROMPT 46: FINANCIAL TRACKING                 -->
+<!-- ══════════════════════════════════════════════ -->
+<div class="sdiv" id="p46">Prompt 46 — Financial Tracking</div>
+<section class="bg-kg-50 p-6">
+  <div class="max-w-[1280px] mx-auto">
+    <div class="flex items-center justify-between mb-6">
+      <h1 class="text-2xl font-extrabold text-navy">Financials</h1>
+      <div class="flex gap-2"><button class="btn-g text-sm">📊 Reports</button><button class="btn-o text-sm">+ New Invoice</button></div>
+    </div>
+    <!-- Stats -->
+    <div class="grid grid-cols-4 gap-4 mb-6 rg4" style="grid-template-columns:repeat(4,1fr)">
+      <div class="bg-white rounded-xl p-5 border border-kg-200"><div class="text-[10px] font-bold text-kg-400 uppercase tracking-wider mb-2">Total Revenue</div><div class="text-2xl font-bold text-navy font-mono">$847,250</div><div class="text-xs text-accent-green font-semibold mt-1">+18% YTD</div></div>
+      <div class="bg-white rounded-xl p-5 border border-kg-200"><div class="text-[10px] font-bold text-kg-400 uppercase tracking-wider mb-2">Outstanding</div><div class="text-2xl font-bold text-accent-orange font-mono">$124,800</div><div class="text-xs text-kg-500 mt-1">4 invoices</div></div>
+      <div class="bg-white rounded-xl p-5 border border-kg-200"><div class="text-[10px] font-bold text-kg-400 uppercase tracking-wider mb-2">In Escrow</div><div class="text-2xl font-bold text-accent-teal font-mono">$89,200</div><div class="text-xs text-accent-green font-semibold mt-1">🛡️ Protected</div></div>
+      <div class="bg-white rounded-xl p-5 border border-kg-200"><div class="text-[10px] font-bold text-kg-400 uppercase tracking-wider mb-2">Profit Margin</div><div class="text-2xl font-bold text-accent-green font-mono">23.4%</div><div class="text-xs text-accent-green font-semibold mt-1">Above target (20%)</div></div>
+    </div>
+    <!-- Tabs + Invoice Table -->
+    <div class="flex gap-0 border-b border-kg-200 mb-6">
+      <button class="tb act">Invoices</button>
+      <button class="tb text-kg-500">Payments</button>
+      <button class="tb text-kg-500">Escrow</button>
+      <button class="tb text-kg-500">Reports</button>
+    </div>
+    <div class="bg-white rounded-xl border border-kg-200 overflow-hidden">
+      <div class="overflow-x-auto">
+      <table class="w-full text-sm" style="min-width:750px">
+        <thead class="bg-kg-50 text-xs text-kg-500 uppercase tracking-wider"><tr><th class="text-left px-5 py-3">Invoice</th><th class="text-left px-3">Client</th><th class="text-left px-3">Project</th><th class="text-right px-3">Amount</th><th class="text-center px-3">Status</th><th class="text-right px-5">Due</th></tr></thead>
+        <tbody>
+          <tr class="border-t border-kg-100 hover:bg-kg-50"><td class="px-5 py-3 font-mono font-semibold text-navy">#INV-1247</td><td class="px-3">Sarah Henderson</td><td class="px-3 text-kg-500">Kitchen Reno</td><td class="px-3 text-right font-mono font-bold">$28,400</td><td class="px-3 text-center"><span class="badge text-accent-green bg-green-50">Paid</span></td><td class="px-5 text-right text-kg-400 font-mono">Jan 15</td></tr>
+          <tr class="border-t border-kg-100 hover:bg-kg-50"><td class="px-5 py-3 font-mono font-semibold text-navy">#INV-1248</td><td class="px-3">DCR Holdings</td><td class="px-3 text-kg-500">Restaurant Build</td><td class="px-3 text-right font-mono font-bold">$67,500</td><td class="px-3 text-center"><span class="badge text-accent-orange bg-orange-50">Pending</span></td><td class="px-5 text-right text-accent-orange font-mono font-semibold">Feb 10</td></tr>
+          <tr class="border-t border-kg-100 hover:bg-kg-50"><td class="px-5 py-3 font-mono font-semibold text-navy">#INV-1249</td><td class="px-3">Columbia Dev LLC</td><td class="px-3 text-kg-500">Whole Home</td><td class="px-3 text-right font-mono font-bold">$142,000</td><td class="px-3 text-center"><span class="badge text-accent-teal bg-teal-50">In Escrow</span></td><td class="px-5 text-right text-kg-400 font-mono">Feb 28</td></tr>
+          <tr class="border-t border-kg-100 hover:bg-kg-50"><td class="px-5 py-3 font-mono font-semibold text-navy">#INV-1250</td><td class="px-3">J. Park</td><td class="px-3 text-kg-500">Rockville ADU</td><td class="px-3 text-right font-mono font-bold">$15,300</td><td class="px-3 text-center"><span class="badge text-red-500 bg-red-50">Overdue</span></td><td class="px-5 text-right text-red-500 font-mono font-semibold">Jan 28</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════ -->
+<!-- PROMPT 47: À LA CARTE SERVICES                -->
+<!-- ══════════════════════════════════════════════ -->
+<div class="sdiv" id="p47">Prompt 47 — À La Carte Services</div>
+<section class="bg-kg-50 p-6">
+  <div class="max-w-[1280px] mx-auto">
+    <div class="flex items-center justify-between mb-6">
+      <div><h1 class="text-2xl font-extrabold text-navy">Services Store</h1><p class="text-sm text-kg-500 mt-1">Order individual services per project — no subscription required</p></div>
+      <div class="flex items-center gap-3"><span class="text-sm text-kg-500">🛒 Cart: <span class="font-bold text-navy">2 items</span></span><button class="btn-o text-sm">View Cart ($420)</button></div>
+    </div>
+    <!-- Volume badge -->
+    <div class="mb-6 p-3.5 rounded-xl bg-gradient-to-r from-orange-50 to-teal-50 border border-orange-100 flex items-center gap-3">
+      <span class="text-sm">📦</span>
+      <span class="text-sm text-navy"><strong>Volume discount:</strong> 3+ services = 10% off · 5+ services = 15% off</span>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 320px;gap:24px">
+      <!-- Grid -->
+      <div>
+        <h3 class="text-xs font-bold text-kg-400 uppercase tracking-wider mb-3">Operations Services</h3>
+        <div class="grid grid-cols-2 gap-3 mb-6 rg2" style="grid-template-columns:repeat(2,1fr)">
+          <div class="bg-white rounded-xl p-5 border border-kg-200 ch cursor-pointer">
+            <span class="badge text-accent-teal bg-teal-50 mb-3">Project Controls</span>
+            <h4 class="text-base font-bold text-navy mb-1">Site Analysis Report</h4>
+            <p class="text-xs text-kg-500 mb-4 leading-relaxed">Site conditions, access, utilities, constructability assessment</p>
+            <div class="flex items-center justify-between"><span class="text-lg font-bold text-accent-orange font-mono">$125</span><button class="text-xs font-semibold text-accent-orange bg-orange-50 px-3 py-1.5 rounded-lg">+ Add</button></div>
+          </div>
+          <div class="bg-white rounded-xl p-5 border border-kg-200 ch cursor-pointer">
+            <span class="badge text-accent-orange bg-orange-50 mb-3">Pre-Construction</span>
+            <h4 class="text-base font-bold text-navy mb-1">Scope of Work</h4>
+            <p class="text-xs text-kg-500 mb-4 leading-relaxed">Detailed scope with deliverables, exclusions, specs</p>
+            <div class="flex items-center justify-between"><span class="text-lg font-bold text-accent-orange font-mono">$195</span><button class="text-xs font-semibold text-accent-orange bg-orange-50 px-3 py-1.5 rounded-lg">+ Add</button></div>
+          </div>
+          <div class="bg-white rounded-xl p-5 border border-kg-200 ch cursor-pointer">
+            <span class="badge text-navy bg-navy/10 mb-3">Procurement</span>
+            <h4 class="text-base font-bold text-navy mb-1">Contractor Vetting</h4>
+            <p class="text-xs text-kg-500 mb-4 leading-relaxed">License, insurance, reference, and performance review</p>
+            <div class="flex items-center justify-between"><span class="text-lg font-bold text-accent-orange font-mono">$175</span><button class="text-xs font-semibold text-accent-orange bg-orange-50 px-3 py-1.5 rounded-lg">+ Add</button></div>
+          </div>
+          <div class="bg-white rounded-xl p-5 border border-kg-200 ch cursor-pointer">
+            <span class="badge text-navy bg-navy/10 mb-3">Procurement</span>
+            <h4 class="text-base font-bold text-navy mb-1">Bid Leveling</h4>
+            <p class="text-xs text-kg-500 mb-4 leading-relaxed">Normalize and compare contractor bids across scopes</p>
+            <div class="flex items-center justify-between"><span class="text-lg font-bold text-accent-orange font-mono">$245</span><button class="text-xs font-semibold text-white bg-accent-orange px-3 py-1.5 rounded-lg">✓ In Cart</button></div>
+          </div>
+          <div class="bg-white rounded-xl p-5 border border-kg-200 ch cursor-pointer">
+            <span class="badge text-accent-teal bg-teal-50 mb-3">Project Controls</span>
+            <h4 class="text-base font-bold text-navy mb-1">Contract Review</h4>
+            <p class="text-xs text-kg-500 mb-4 leading-relaxed">Risk, liability, and missing provisions analysis</p>
+            <div class="flex items-center justify-between"><span class="text-lg font-bold text-accent-orange font-mono">$295</span><button class="text-xs font-semibold text-accent-orange bg-orange-50 px-3 py-1.5 rounded-lg">+ Add</button></div>
+          </div>
+          <div class="bg-white rounded-xl p-5 border border-kg-200 ch cursor-pointer">
+            <span class="badge text-accent-green bg-green-50 mb-3">Estimation</span>
+            <h4 class="text-base font-bold text-navy mb-1">Quick Estimate</h4>
+            <p class="text-xs text-kg-500 mb-4 leading-relaxed">Ballpark budget based on type, size, regional data</p>
+            <div class="flex items-center justify-between"><span class="text-lg font-bold text-accent-orange font-mono">$195</span><button class="text-xs font-semibold text-white bg-accent-orange px-3 py-1.5 rounded-lg">✓ In Cart</button></div>
+          </div>
+        </div>
+      </div>
+      <!-- Cart Sidebar -->
+      <div>
+        <div class="bg-white rounded-xl p-5 border border-kg-200 sticky top-20">
+          <h3 class="text-sm font-bold text-navy mb-4">🛒 Your Cart</h3>
+          <div class="space-y-3 mb-4">
+            <div class="flex items-center justify-between p-3 rounded-lg bg-kg-50 border border-kg-100">
+              <div><div class="text-sm font-semibold text-navy">Bid Leveling</div><div class="text-xs text-kg-400">Procurement</div></div>
+              <div class="flex items-center gap-2"><span class="font-mono font-bold text-sm">$245</span><button class="text-kg-400 text-xs">✕</button></div>
+            </div>
+            <div class="flex items-center justify-between p-3 rounded-lg bg-kg-50 border border-kg-100">
+              <div><div class="text-sm font-semibold text-navy">Quick Estimate</div><div class="text-xs text-kg-400">Estimation</div></div>
+              <div class="flex items-center gap-2"><span class="font-mono font-bold text-sm">$195</span><button class="text-kg-400 text-xs">✕</button></div>
+            </div>
+          </div>
+          <div class="border-t border-kg-200 pt-3 space-y-2 text-sm mb-4">
+            <div class="flex justify-between"><span class="text-kg-500">Subtotal</span><span class="font-mono font-semibold">$440</span></div>
+            <div class="flex justify-between text-accent-green"><span>Bundle discount (10%)</span><span class="font-mono font-semibold">—$0</span></div>
+            <div class="flex justify-between font-bold text-base pt-2 border-t border-kg-200"><span>Total</span><span class="font-mono">$440</span></div>
+          </div>
+          <div class="text-[11px] text-kg-400 mb-3 text-center">Add 1 more service for 10% off!</div>
+          <button class="w-full py-3 rounded-lg bg-accent-orange text-white text-sm font-bold">Checkout →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════ -->
+<!-- PROMPT 48: ASSEMBLY LIBRARY BROWSER           -->
+<!-- ══════════════════════════════════════════════ -->
+<div class="sdiv" id="p48">Prompt 48 — Assembly Library Browser</div>
+<section class="bg-kg-50 p-6">
+  <div class="max-w-[1280px] mx-auto">
+    <div class="flex items-center justify-between mb-6">
+      <div><h1 class="text-2xl font-extrabold text-navy">Assembly Library</h1><p class="text-sm text-kg-500 mt-1">1,000+ pre-built assemblies with labor and material costs</p></div>
+      <button class="btn-o text-sm">+ Create Custom Assembly</button>
+    </div>
+    <div style="display:grid;grid-template-columns:220px 1fr;gap:20px">
+      <!-- CSI Sidebar -->
+      <div class="bg-white rounded-xl border border-kg-200 p-4 h-fit sticky top-20">
+        <div class="text-xs font-bold text-kg-400 uppercase tracking-wider mb-3">CSI Divisions</div>
+        <div class="space-y-0.5 text-sm">
+          <a class="flex items-center justify-between px-3 py-2 rounded-lg bg-accent-teal/10 text-accent-teal font-semibold cursor-pointer"><span>03 Concrete</span><span class="text-[10px] font-mono">124</span></a>
+          <a class="flex items-center justify-between px-3 py-2 rounded-lg text-kg-600 hover:bg-kg-50 cursor-pointer"><span>04 Masonry</span><span class="text-[10px] font-mono text-kg-400">67</span></a>
+          <a class="flex items-center justify-between px-3 py-2 rounded-lg text-kg-600 hover:bg-kg-50 cursor-pointer"><span>05 Metals</span><span class="text-[10px] font-mono text-kg-400">89</span></a>
+          <a class="flex items-center justify-between px-3 py-2 rounded-lg text-kg-600 hover:bg-kg-50 cursor-pointer"><span>06 Wood & Plastics</span><span class="text-[10px] font-mono text-kg-400">156</span></a>
+          <a class="flex items-center justify-between px-3 py-2 rounded-lg text-kg-600 hover:bg-kg-50 cursor-pointer"><span>07 Thermal</span><span class="text-[10px] font-mono text-kg-400">78</span></a>
+          <a class="flex items-center justify-between px-3 py-2 rounded-lg text-kg-600 hover:bg-kg-50 cursor-pointer"><span>08 Openings</span><span class="text-[10px] font-mono text-kg-400">94</span></a>
+          <a class="flex items-center justify-between px-3 py-2 rounded-lg text-kg-600 hover:bg-kg-50 cursor-pointer"><span>09 Finishes</span><span class="text-[10px] font-mono text-kg-400">203</span></a>
+          <a class="flex items-center justify-between px-3 py-2 rounded-lg text-kg-600 hover:bg-kg-50 cursor-pointer"><span>22 Plumbing</span><span class="text-[10px] font-mono text-kg-400">86</span></a>
+          <a class="flex items-center justify-between px-3 py-2 rounded-lg text-kg-600 hover:bg-kg-50 cursor-pointer"><span>23 HVAC</span><span class="text-[10px] font-mono text-kg-400">112</span></a>
+          <a class="flex items-center justify-between px-3 py-2 rounded-lg text-kg-600 hover:bg-kg-50 cursor-pointer"><span>26 Electrical</span><span class="text-[10px] font-mono text-kg-400">98</span></a>
+        </div>
+      </div>
+      <!-- Main Grid -->
+      <div>
+        <!-- Search + Filters -->
+        <div class="flex gap-3 mb-5">
+          <div class="flex-1 relative"><input placeholder="Search assemblies..." class="inp pl-9"><svg class="absolute left-3 top-2.5 w-4 h-4 text-kg-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
+          <select class="inp" style="width:140px"><option>All Types</option><option>Residential</option><option>Commercial</option></select>
+          <select class="inp" style="width:140px"><option>Sort: Popular</option><option>Price ↑</option><option>Price ↓</option><option>Newest</option></select>
+        </div>
+        <div class="text-xs text-kg-400 mb-3">Showing 124 assemblies in <strong class="text-accent-teal">03 Concrete</strong></div>
+        <!-- Assembly Grid -->
+        <div class="grid grid-cols-3 gap-3 rg3" style="grid-template-columns:repeat(3,1fr)">
+          <div class="bg-white rounded-xl p-4 border border-kg-200 ch cursor-pointer">
+            <div class="flex items-center justify-between mb-2"><span class="text-[10px] font-mono text-accent-teal bg-teal-50 px-2 py-0.5 rounded font-bold">03 11 13</span><span class="text-[10px] text-kg-400">⭐ Popular</span></div>
+            <h4 class="text-sm font-bold text-navy mb-1">Foundation Footing — 24"×12"</h4>
+            <p class="text-xs text-kg-500 mb-3">Standard continuous footing, 3000 PSI concrete, #4 rebar</p>
+            <div class="flex items-center gap-4 text-xs mb-3"><div><span class="text-kg-400">Material</span><div class="font-mono font-semibold">$72.00/LF</div></div><div><span class="text-kg-400">Labor</span><div class="font-mono font-semibold">$48.00/LF</div></div></div>
+            <div class="flex items-center justify-between pt-3 border-t border-kg-100"><span class="text-base font-bold text-accent-orange font-mono">$120.00/LF</span><span class="text-xs text-accent-teal font-semibold">View →</span></div>
+          </div>
+          <div class="bg-white rounded-xl p-4 border border-kg-200 ch cursor-pointer">
+            <div class="flex items-center justify-between mb-2"><span class="text-[10px] font-mono text-accent-teal bg-teal-50 px-2 py-0.5 rounded font-bold">03 31 13</span></div>
+            <h4 class="text-sm font-bold text-navy mb-1">Slab on Grade — 4" Thick</h4>
+            <p class="text-xs text-kg-500 mb-3">4" slab, 6×6 WWF, vapor barrier, 4" gravel base</p>
+            <div class="flex items-center gap-4 text-xs mb-3"><div><span class="text-kg-400">Material</span><div class="font-mono font-semibold">$9.00/SF</div></div><div><span class="text-kg-400">Labor</span><div class="font-mono font-semibold">$7.00/SF</div></div></div>
+            <div class="flex items-center justify-between pt-3 border-t border-kg-100"><span class="text-base font-bold text-accent-orange font-mono">$16.00/SF</span><span class="text-xs text-accent-teal font-semibold">View →</span></div>
+          </div>
+          <div class="bg-white rounded-xl p-4 border border-kg-200 ch cursor-pointer">
+            <div class="flex items-center justify-between mb-2"><span class="text-[10px] font-mono text-accent-teal bg-teal-50 px-2 py-0.5 rounded font-bold">03 30 53</span><span class="text-[10px] text-accent-orange font-bold">NEW</span></div>
+            <h4 class="text-sm font-bold text-navy mb-1">Concrete Wall — 8" CMU</h4>
+            <p class="text-xs text-kg-500 mb-3">8" CMU block, grouted solid, #5 vertical rebar @ 32" OC</p>
+            <div class="flex items-center gap-4 text-xs mb-3"><div><span class="text-kg-400">Material</span><div class="font-mono font-semibold">$14.50/SF</div></div><div><span class="text-kg-400">Labor</span><div class="font-mono font-semibold">$18.00/SF</div></div></div>
+            <div class="flex items-center justify-between pt-3 border-t border-kg-100"><span class="text-base font-bold text-accent-orange font-mono">$32.50/SF</span><span class="text-xs text-accent-teal font-semibold">View →</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════ -->
+<!-- PROMPT 49: ASSEMBLY DETAIL MODAL              -->
+<!-- ══════════════════════════════════════════════ -->
+<div class="sdiv" id="p49">Prompt 49 — Assembly Detail Modal</div>
+<section class="bg-kg-50 p-6">
+  <div class="max-w-[900px] mx-auto">
+    <!-- Modal -->
+    <div class="bg-white rounded-2xl border border-kg-200 shadow-2xl overflow-hidden">
+      <!-- Modal Header -->
+      <div class="px-6 py-4 border-b border-kg-200 flex items-center justify-between bg-kg-50">
+        <div class="flex items-center gap-3">
+          <span class="text-xs font-mono font-bold text-accent-teal bg-teal-50 px-2.5 py-1 rounded">03 11 13</span>
+          <h2 class="text-lg font-bold text-navy">Foundation Footing — 24"×12"</h2>
+        </div>
+        <button class="w-8 h-8 rounded-lg bg-kg-100 flex items-center justify-center text-kg-400 text-lg">✕</button>
+      </div>
+      <!-- Content -->
+      <div class="p-6">
+        <p class="text-sm text-kg-500 mb-5">Standard continuous concrete footing for residential and light commercial foundations. 3000 PSI concrete with #4 rebar, formwork included.</p>
+        <!-- Cost Summary -->
+        <div class="grid grid-cols-3 gap-4 mb-6 rg3" style="grid-template-columns:repeat(3,1fr)">
+          <div class="bg-kg-50 rounded-xl p-4 text-center border border-kg-100"><div class="text-xs text-kg-400 mb-1">Material</div><div class="text-xl font-bold text-navy font-mono">$72.00</div><div class="text-[10px] text-kg-400">/LF</div></div>
+          <div class="bg-kg-50 rounded-xl p-4 text-center border border-kg-100"><div class="text-xs text-kg-400 mb-1">Labor</div><div class="text-xl font-bold text-navy font-mono">$48.00</div><div class="text-[10px] text-kg-400">/LF</div></div>
+          <div class="bg-accent-orange/10 rounded-xl p-4 text-center border border-accent-orange/20"><div class="text-xs text-accent-orange mb-1">Total</div><div class="text-xl font-bold text-accent-orange font-mono">$120.00</div><div class="text-[10px] text-kg-400">/LF</div></div>
+        </div>
+        <!-- Line Items -->
+        <h3 class="text-sm font-bold text-navy mb-3">Line Items</h3>
+        <div class="bg-kg-50 rounded-xl border border-kg-100 overflow-hidden mb-5">
+          <table class="w-full text-sm">
+            <thead class="text-xs text-kg-500 uppercase tracking-wider bg-kg-100"><tr><th class="text-left px-4 py-2">Item</th><th class="text-right px-3 py-2">Qty</th><th class="text-right px-3 py-2">Unit Cost</th><th class="text-right px-4 py-2">Total/LF</th></tr></thead>
+            <tbody>
+              <tr class="border-t border-kg-200"><td class="px-4 py-2.5 text-navy font-medium">Concrete — 3000 PSI</td><td class="text-right px-3 font-mono">0.44 CY</td><td class="text-right px-3 font-mono">$125/CY</td><td class="text-right px-4 font-mono font-semibold">$55.00</td></tr>
+              <tr class="border-t border-kg-200"><td class="px-4 py-2.5 text-navy font-medium">Rebar — #4</td><td class="text-right px-3 font-mono">4.0 LF</td><td class="text-right px-3 font-mono">$1.25/LF</td><td class="text-right px-4 font-mono font-semibold">$5.00</td></tr>
+              <tr class="border-t border-kg-200"><td class="px-4 py-2.5 text-navy font-medium">Formwork</td><td class="text-right px-3 font-mono">4.0 SF</td><td class="text-right px-3 font-mono">$3.00/SF</td><td class="text-right px-4 font-mono font-semibold">$12.00</td></tr>
+              <tr class="border-t border-kg-200"><td class="px-4 py-2.5 text-navy font-medium">Labor — Pour & Finish</td><td class="text-right px-3 font-mono">0.8 HR</td><td class="text-right px-3 font-mono">$60/HR</td><td class="text-right px-4 font-mono font-semibold">$48.00</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <!-- Regional Pricing -->
+        <h3 class="text-sm font-bold text-navy mb-3">Regional Pricing</h3>
+        <div class="grid grid-cols-3 gap-3 mb-5 rg3" style="grid-template-columns:repeat(3,1fr)">
+          <div class="p-3 rounded-lg bg-accent-orange/5 border border-accent-orange/15 text-center"><div class="text-xs text-kg-500 mb-1">DC Metro</div><div class="font-mono font-bold text-navy">$120.00/LF</div><div class="text-[10px] text-accent-orange font-semibold">Selected</div></div>
+          <div class="p-3 rounded-lg bg-kg-50 border border-kg-100 text-center"><div class="text-xs text-kg-500 mb-1">Baltimore</div><div class="font-mono font-bold text-navy">$108.00/LF</div><div class="text-[10px] text-kg-400">-10%</div></div>
+          <div class="p-3 rounded-lg bg-kg-50 border border-kg-100 text-center"><div class="text-xs text-kg-500 mb-1">National Avg</div><div class="font-mono font-bold text-navy">$95.00/LF</div><div class="text-[10px] text-kg-400">-21%</div></div>
+        </div>
+        <!-- Actions -->
+        <div class="flex gap-3"><button class="btn-o flex-1">Add to Estimate →</button><button class="btn-g flex-1">Duplicate & Customize</button></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════ -->
+<!-- PROMPT 50: CUSTOM ASSEMBLY CREATOR            -->
+<!-- ══════════════════════════════════════════════ -->
+<div class="sdiv" id="p50">Prompt 50 — Custom Assembly Creator (4-Step Wizard)</div>
+<section class="bg-kg-50 p-6">
+  <div class="max-w-[900px] mx-auto">
+    <h1 class="text-2xl font-extrabold text-navy mb-6">Create Custom Assembly</h1>
+    <!-- Stepper -->
+    <div class="flex items-center gap-0 mb-8">
+      <div class="flex items-center gap-2"><div class="w-9 h-9 rounded-full bg-accent-green text-white flex items-center justify-center text-sm font-bold">✓</div><span class="text-sm font-semibold text-accent-green">Basic Info</span></div>
+      <div class="flex-1 h-0.5 bg-accent-green mx-3"></div>
+      <div class="flex items-center gap-2"><div class="w-9 h-9 rounded-full bg-accent-orange text-white flex items-center justify-center text-sm font-bold">2</div><span class="text-sm font-bold text-navy">Line Items</span></div>
+      <div class="flex-1 h-0.5 bg-kg-200 mx-3"></div>
+      <div class="flex items-center gap-2"><div class="w-9 h-9 rounded-full bg-kg-200 text-kg-400 flex items-center justify-center text-sm font-bold">3</div><span class="text-sm text-kg-400">Pricing</span></div>
+      <div class="flex-1 h-0.5 bg-kg-200 mx-3"></div>
+      <div class="flex items-center gap-2"><div class="w-9 h-9 rounded-full bg-kg-200 text-kg-400 flex items-center justify-center text-sm font-bold">4</div><span class="text-sm text-kg-400">Review</span></div>
+    </div>
+    <!-- Step 2: Line Items (active) -->
+    <div class="bg-white rounded-xl border border-kg-200 p-6">
+      <h3 class="text-lg font-bold text-navy mb-1">Add Line Items</h3>
+      <p class="text-sm text-kg-500 mb-5">Define the materials, labor, and equipment for this assembly</p>
+      <div class="space-y-3 mb-5">
+        <!-- Line item row -->
+        <div class="grid gap-3 p-4 bg-kg-50 rounded-xl border border-kg-100" style="grid-template-columns:1fr 80px 100px 100px 100px 40px">
+          <div><label class="text-[10px] text-kg-400 mb-1 block">Description</label><input value="Concrete — 4000 PSI" class="inp text-sm"></div>
+          <div><label class="text-[10px] text-kg-400 mb-1 block">Qty</label><input value="1.2" class="inp text-sm font-mono text-right"></div>
+          <div><label class="text-[10px] text-kg-400 mb-1 block">Unit</label><select class="inp text-sm"><option>CY</option></select></div>
+          <div><label class="text-[10px] text-kg-400 mb-1 block">Unit Cost</label><input value="$135.00" class="inp text-sm font-mono text-right"></div>
+          <div><label class="text-[10px] text-kg-400 mb-1 block">Total</label><div class="inp bg-kg-100 text-sm font-mono font-bold text-right" style="padding-top:10px">$162.00</div></div>
+          <div class="flex items-end pb-1"><button class="text-kg-300 hover:text-red-400 text-lg">🗑</button></div>
+        </div>
+        <div class="grid gap-3 p-4 bg-kg-50 rounded-xl border border-kg-100" style="grid-template-columns:1fr 80px 100px 100px 100px 40px">
+          <div><label class="text-[10px] text-kg-400 mb-1 block">Description</label><input value="Rebar — #5 grade 60" class="inp text-sm"></div>
+          <div><label class="text-[10px] text-kg-400 mb-1 block">Qty</label><input value="6.0" class="inp text-sm font-mono text-right"></div>
+          <div><label class="text-[10px] text-kg-400 mb-1 block">Unit</label><select class="inp text-sm"><option>LF</option></select></div>
+          <div><label class="text-[10px] text-kg-400 mb-1 block">Unit Cost</label><input value="$1.85" class="inp text-sm font-mono text-right"></div>
+          <div><label class="text-[10px] text-kg-400 mb-1 block">Total</label><div class="inp bg-kg-100 text-sm font-mono font-bold text-right" style="padding-top:10px">$11.10</div></div>
+          <div class="flex items-end pb-1"><button class="text-kg-300 hover:text-red-400 text-lg">🗑</button></div>
+        </div>
+      </div>
+      <button class="text-sm font-semibold text-accent-teal mb-6">+ Add Line Item</button>
+      <div class="flex items-center justify-between pt-5 border-t border-kg-200">
+        <button class="btn-g text-sm">← Back to Basic Info</button>
+        <div class="flex items-center gap-4"><span class="text-sm text-kg-500">Running total: <span class="font-mono font-bold text-navy">$173.10/unit</span></span><button class="btn-o text-sm">Next: Pricing →</button></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════ -->
+<!-- PROMPT 51: ESTIMATE BUILDER (Assembly Integrated) -->
+<!-- ══════════════════════════════════════════════ -->
+<div class="sdiv" id="p51">Prompt 51 — Estimate Builder with Division Organization</div>
+<section class="bg-kg-50 p-6">
+  <div class="max-w-[1280px] mx-auto">
+    <div class="flex items-center justify-between mb-6">
+      <div class="flex items-center gap-3">
+        <h1 class="text-2xl font-extrabold text-navy">Estimate Builder</h1>
+        <span class="badge text-accent-orange bg-orange-50">Henderson Kitchen — #KP-2401</span>
+      </div>
+      <div class="flex gap-2"><button class="btn-g text-sm">📦 Browse Assemblies (1,000+)</button><button class="btn-o text-sm">Export PDF</button></div>
+    </div>
+    <!-- Division Accordion -->
+    <div class="space-y-3">
+      <!-- Div 03 - Expanded -->
+      <div class="bg-white rounded-xl border border-kg-200 overflow-hidden">
+        <div class="px-5 py-3.5 bg-kg-50 border-b border-kg-200 flex items-center justify-between cursor-pointer">
+          <div class="flex items-center gap-3"><span class="text-xs font-mono font-bold text-accent-teal bg-teal-50 px-2.5 py-1 rounded">03</span><span class="text-sm font-bold text-navy">Concrete</span><span class="text-xs text-kg-400 font-mono">2 assemblies</span></div>
+          <div class="flex items-center gap-4"><span class="text-sm font-mono font-bold text-navy">$18,400</span><span class="text-xs text-kg-400">▼</span></div>
+        </div>
+        <div class="p-4 space-y-2">
+          <div class="flex items-center justify-between p-3 rounded-lg bg-kg-50 border border-kg-100 hover:border-accent-teal/30 transition cursor-pointer">
+            <div class="flex items-center gap-3"><span class="text-[10px] font-mono text-accent-teal">03 11 13</span><span class="text-sm font-semibold text-navy">Foundation Footing — 24"×12"</span></div>
+            <div class="flex items-center gap-6 text-sm"><span class="font-mono text-kg-500">120 LF</span><span class="font-mono font-bold text-navy">$14,400</span><button class="text-kg-300 text-xs">⋯</button></div>
+          </div>
+          <div class="flex items-center justify-between p-3 rounded-lg bg-kg-50 border border-kg-100 hover:border-accent-teal/30 transition cursor-pointer">
+            <div class="flex items-center gap-3"><span class="text-[10px] font-mono text-accent-teal">03 31 13</span><span class="text-sm font-semibold text-navy">Slab on Grade — 4"</span></div>
+            <div class="flex items-center gap-6 text-sm"><span class="font-mono text-kg-500">250 SF</span><span class="font-mono font-bold text-navy">$4,000</span><button class="text-kg-300 text-xs">⋯</button></div>
+          </div>
+          <button class="text-xs font-semibold text-accent-teal mt-2">+ Add Assembly from Library →</button>
+        </div>
+      </div>
+      <!-- Div 09 - Collapsed -->
+      <div class="bg-white rounded-xl border border-kg-200">
+        <div class="px-5 py-3.5 flex items-center justify-between cursor-pointer hover:bg-kg-50 transition rounded-xl">
+          <div class="flex items-center gap-3"><span class="text-xs font-mono font-bold text-accent-orange bg-orange-50 px-2.5 py-1 rounded">09</span><span class="text-sm font-bold text-navy">Finishes</span><span class="text-xs text-kg-400 font-mono">4 assemblies</span></div>
+          <div class="flex items-center gap-4"><span class="text-sm font-mono font-bold text-navy">$24,600</span><span class="text-xs text-kg-400">▶</span></div>
+        </div>
+      </div>
+      <!-- Div 22 - Collapsed -->
+      <div class="bg-white rounded-xl border border-kg-200">
+        <div class="px-5 py-3.5 flex items-center justify-between cursor-pointer hover:bg-kg-50 transition rounded-xl">
+          <div class="flex items-center gap-3"><span class="text-xs font-mono font-bold text-navy bg-navy/10 px-2.5 py-1 rounded">22</span><span class="text-sm font-bold text-navy">Plumbing</span><span class="text-xs text-kg-400 font-mono">6 assemblies</span></div>
+          <div class="flex items-center gap-4"><span class="text-sm font-mono font-bold text-navy">$18,200</span><span class="text-xs text-kg-400">▶</span></div>
+        </div>
+      </div>
+      <!-- Div 26 - Collapsed -->
+      <div class="bg-white rounded-xl border border-kg-200">
+        <div class="px-5 py-3.5 flex items-center justify-between cursor-pointer hover:bg-kg-50 transition rounded-xl">
+          <div class="flex items-center gap-3"><span class="text-xs font-mono font-bold text-accent-green bg-green-50 px-2.5 py-1 rounded">26</span><span class="text-sm font-bold text-navy">Electrical</span><span class="text-xs text-kg-400 font-mono">5 assemblies</span></div>
+          <div class="flex items-center gap-4"><span class="text-sm font-mono font-bold text-navy">$12,400</span><span class="text-xs text-kg-400">▶</span></div>
+        </div>
+      </div>
+    </div>
+    <!-- Grand Total Bar -->
+    <div class="mt-6 bg-navy rounded-xl p-5 flex items-center justify-between">
+      <div class="text-white/60 text-sm">4 divisions · 17 assemblies · Henderson Kitchen Renovation</div>
+      <div class="flex items-center gap-6">
+        <div class="text-right"><div class="text-xs text-white/40">Subtotal</div><div class="text-lg font-bold text-white font-mono">$73,600</div></div>
+        <div class="text-right"><div class="text-xs text-white/40">w/ Markup (30%)</div><div class="text-2xl font-bold text-accent-orange font-mono">$95,680</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════ -->
+<!-- PROMPT 52: CSI DIVISION BROWSE                -->
+<!-- ══════════════════════════════════════════════ -->
+<div class="sdiv" id="p52">Prompt 52 — CSI Division Browse</div>
+<section class="bg-kg-50 p-6">
+  <div class="max-w-[1280px] mx-auto">
+    <div class="mb-6"><h1 class="text-2xl font-extrabold text-navy">CSI Divisions</h1><p class="text-sm text-kg-500 mt-1">Browse 1,000+ assemblies organized by CSI MasterFormat</p></div>
+    <div class="grid grid-cols-4 gap-4 rg4" style="grid-template-columns:repeat(4,1fr)">
+      <div class="bg-white rounded-xl p-5 border border-kg-200 ch cursor-pointer group">
+        <div class="flex items-center gap-3 mb-3"><span class="text-lg font-mono font-bold text-accent-teal">03</span><span class="text-base font-bold text-navy">Concrete</span></div>
+        <p class="text-xs text-kg-500 mb-3">Footings, slabs, walls, precast, repair</p>
+        <div class="flex items-center justify-between"><span class="text-sm font-mono font-bold text-navy">124 assemblies</span><span class="text-xs text-accent-teal font-semibold opacity-0 group-hover:opacity-100 transition">Browse →</span></div>
+        <div class="mt-3 pt-3 border-t border-kg-100 flex flex-wrap gap-1">
+          <span class="text-[9px] bg-teal-50 text-accent-teal px-1.5 py-0.5 rounded">Footings</span>
+          <span class="text-[9px] bg-teal-50 text-accent-teal px-1.5 py-0.5 rounded">Slabs</span>
+          <span class="text-[9px] bg-teal-50 text-accent-teal px-1.5 py-0.5 rounded">Walls</span>
+          <span class="text-[9px] bg-teal-50 text-accent-teal px-1.5 py-0.5 rounded">+5</span>
+        </div>
+      </div>
+      <div class="bg-white rounded-xl p-5 border border-kg-200 ch cursor-pointer group">
+        <div class="flex items-center gap-3 mb-3"><span class="text-lg font-mono font-bold text-accent-orange">05</span><span class="text-base font-bold text-navy">Metals</span></div>
+        <p class="text-xs text-kg-500 mb-3">Structural steel, joists, decking, stairs</p>
+        <div class="flex items-center justify-between"><span class="text-sm font-mono font-bold text-navy">89 assemblies</span><span class="text-xs text-accent-teal font-semibold opacity-0 group-hover:opacity-100 transition">Browse →</span></div>
+        <div class="mt-3 pt-3 border-t border-kg-100 flex flex-wrap gap-1">
+          <span class="text-[9px] bg-orange-50 text-accent-orange px-1.5 py-0.5 rounded">Beams</span>
+          <span class="text-[9px] bg-orange-50 text-accent-orange px-1.5 py-0.5 rounded">Columns</span>
+          <span class="text-[9px] bg-orange-50 text-accent-orange px-1.5 py-0.5 rounded">Stairs</span>
+          <span class="text-[9px] bg-orange-50 text-accent-orange px-1.5 py-0.5 rounded">+4</span>
+        </div>
+      </div>
+      <div class="bg-white rounded-xl p-5 border border-kg-200 ch cursor-pointer group">
+        <div class="flex items-center gap-3 mb-3"><span class="text-lg font-mono font-bold text-navy">09</span><span class="text-base font-bold text-navy">Finishes</span></div>
+        <p class="text-xs text-kg-500 mb-3">Plaster, tile, flooring, paint, ceilings</p>
+        <div class="flex items-center justify-between"><span class="text-sm font-mono font-bold text-navy">203 assemblies</span><span class="text-xs text-accent-teal font-semibold opacity-0 group-hover:opacity-100 transition">Browse →</span></div>
+        <div class="mt-3 pt-3 border-t border-kg-100 flex flex-wrap gap-1">
+          <span class="text-[9px] bg-kg-100 text-kg-600 px-1.5 py-0.5 rounded">Tile</span>
+          <span class="text-[9px] bg-kg-100 text-kg-600 px-1.5 py-0.5 rounded">Flooring</span>
+          <span class="text-[9px] bg-kg-100 text-kg-600 px-1.5 py-0.5 rounded">Paint</span>
+          <span class="text-[9px] bg-kg-100 text-kg-600 px-1.5 py-0.5 rounded">+8</span>
+        </div>
+      </div>
+      <div class="bg-white rounded-xl p-5 border border-kg-200 ch cursor-pointer group">
+        <div class="flex items-center gap-3 mb-3"><span class="text-lg font-mono font-bold text-accent-green">22</span><span class="text-base font-bold text-navy">Plumbing</span></div>
+        <p class="text-xs text-kg-500 mb-3">Piping, fixtures, equipment, drainage</p>
+        <div class="flex items-center justify-between"><span class="text-sm font-mono font-bold text-navy">86 assemblies</span><span class="text-xs text-accent-teal font-semibold opacity-0 group-hover:opacity-100 transition">Browse →</span></div>
+        <div class="mt-3 pt-3 border-t border-kg-100 flex flex-wrap gap-1">
+          <span class="text-[9px] bg-green-50 text-accent-green px-1.5 py-0.5 rounded">Fixtures</span>
+          <span class="text-[9px] bg-green-50 text-accent-green px-1.5 py-0.5 rounded">Piping</span>
+          <span class="text-[9px] bg-green-50 text-accent-green px-1.5 py-0.5 rounded">Drains</span>
+          <span class="text-[9px] bg-green-50 text-accent-green px-1.5 py-0.5 rounded">+3</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════ -->
+<!-- PROMPT 53: MOBILE ASSEMBLY LIBRARY            -->
+<!-- ══════════════════════════════════════════════ -->
+<div class="sdiv" id="p53">Prompt 53 — Mobile Assembly Library (375px + 768px)</div>
+<section class="bg-kg-50 p-6">
+  <div class="max-w-[1280px] mx-auto">
+    <h2 class="text-lg font-bold text-navy mb-6 text-center">Mobile & Tablet Views</h2>
+    <div class="flex gap-8 justify-center items-start flex-wrap">
+
+      <!-- Phone (375px) -->
+      <div>
+        <div class="text-xs font-mono text-kg-400 text-center mb-2">Phone — 375px</div>
+        <div class="bg-white rounded-[32px] border-[3px] border-kg-700 overflow-hidden shadow-2xl" style="width:375px">
+          <!-- Phone Notch -->
+          <div class="bg-kg-700 h-6 flex justify-center items-end pb-0.5"><div class="w-24 h-4 bg-black rounded-b-xl"></div></div>
+          <!-- Phone Screen -->
+          <div class="bg-kg-50" style="height:720px;overflow-y:auto">
+            <!-- Mobile Header -->
+            <div class="bg-white px-4 py-3 flex items-center justify-between border-b border-kg-200 sticky top-0 z-10">
+              <div class="flex items-center gap-2">
+                <button class="text-navy text-lg">☰</button>
+                <span class="text-base font-bold text-navy">Assemblies</span>
+              </div>
+              <span class="text-xs font-mono text-accent-teal bg-teal-50 px-2 py-1 rounded">1,000+</span>
+            </div>
+            <!-- Search -->
+            <div class="px-4 py-3"><div class="relative"><input placeholder="Search assemblies..." class="w-full pl-9 pr-4 py-2.5 rounded-xl border border-kg-200 text-sm bg-white"><svg class="absolute left-3 top-3 w-4 h-4 text-kg-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div></div>
+            <!-- CSI Pills -->
+            <div class="px-4 pb-3 flex gap-2 overflow-x-auto" style="-webkit-overflow-scrolling:touch">
+              <span class="flex-shrink-0 px-3 py-1.5 rounded-full bg-accent-teal text-white text-xs font-bold">03 Concrete</span>
+              <span class="flex-shrink-0 px-3 py-1.5 rounded-full bg-kg-100 text-kg-600 text-xs font-semibold">09 Finishes</span>
+              <span class="flex-shrink-0 px-3 py-1.5 rounded-full bg-kg-100 text-kg-600 text-xs font-semibold">22 Plumbing</span>
+              <span class="flex-shrink-0 px-3 py-1.5 rounded-full bg-kg-100 text-kg-600 text-xs font-semibold">26 Elec</span>
+            </div>
+            <!-- Assembly Cards (stacked) -->
+            <div class="px-4 space-y-3 pb-4">
+              <div class="bg-white rounded-xl p-4 border border-kg-200">
+                <div class="flex items-center justify-between mb-2"><span class="text-[10px] font-mono text-accent-teal bg-teal-50 px-2 py-0.5 rounded font-bold">03 11 13</span><span class="text-[10px] text-kg-400">⭐</span></div>
+                <h4 class="text-sm font-bold text-navy mb-1">Foundation Footing — 24"×12"</h4>
+                <p class="text-xs text-kg-500 mb-3">3000 PSI, #4 rebar, formwork included</p>
+                <div class="flex items-center justify-between"><span class="text-base font-bold text-accent-orange font-mono">$120.00/LF</span><button class="text-xs font-semibold text-white bg-accent-orange px-3 py-1.5 rounded-lg">+ Add</button></div>
+              </div>
+              <div class="bg-white rounded-xl p-4 border border-kg-200">
+                <div class="flex items-center justify-between mb-2"><span class="text-[10px] font-mono text-accent-teal bg-teal-50 px-2 py-0.5 rounded font-bold">03 31 13</span></div>
+                <h4 class="text-sm font-bold text-navy mb-1">Slab on Grade — 4"</h4>
+                <p class="text-xs text-kg-500 mb-3">Vapor barrier, WWF, 4" gravel</p>
+                <div class="flex items-center justify-between"><span class="text-base font-bold text-accent-orange font-mono">$16.00/SF</span><button class="text-xs font-semibold text-white bg-accent-orange px-3 py-1.5 rounded-lg">+ Add</button></div>
+              </div>
+              <div class="bg-white rounded-xl p-4 border border-kg-200">
+                <div class="flex items-center justify-between mb-2"><span class="text-[10px] font-mono text-accent-teal bg-teal-50 px-2 py-0.5 rounded font-bold">03 30 53</span><span class="text-[10px] text-accent-orange font-bold">NEW</span></div>
+                <h4 class="text-sm font-bold text-navy mb-1">Concrete Wall — 8" CMU</h4>
+                <p class="text-xs text-kg-500 mb-3">Grouted solid, #5 vert rebar</p>
+                <div class="flex items-center justify-between"><span class="text-base font-bold text-accent-orange font-mono">$32.50/SF</span><button class="text-xs font-semibold text-accent-orange bg-orange-50 px-3 py-1.5 rounded-lg">+ Add</button></div>
+              </div>
+            </div>
+          </div>
+          <!-- Phone Home Bar -->
+          <div class="bg-white h-5 flex justify-center items-center"><div class="w-32 h-1 bg-kg-300 rounded-full"></div></div>
+        </div>
+      </div>
+
+      <!-- Tablet (768px) -->
+      <div>
+        <div class="text-xs font-mono text-kg-400 text-center mb-2">Tablet — 768px</div>
+        <div class="bg-white rounded-2xl border-2 border-kg-600 overflow-hidden shadow-2xl" style="width:768px">
+          <div class="bg-kg-50" style="height:600px;overflow-y:auto">
+            <!-- Tablet Header -->
+            <div class="bg-white px-5 py-3 flex items-center justify-between border-b border-kg-200 sticky top-0 z-10">
+              <div class="flex items-center gap-3">
+                <div class="relative w-6 h-6"><div class="absolute w-4 h-4 rounded-full bg-accent-orange border-[1.5px] border-navy top-0 left-0"></div><div class="absolute w-3 h-3 rounded-full bg-accent-teal border-[1.5px] border-navy top-0.5 left-2.5"></div></div>
+                <span class="text-base font-bold text-navy">Assembly Library</span>
+                <span class="text-xs font-mono text-accent-teal bg-teal-50 px-2 py-0.5 rounded">1,000+</span>
+              </div>
+              <div class="flex gap-2"><button class="btn-g text-xs py-2 px-3">Filter</button><button class="btn-o text-xs py-2 px-3">+ Custom</button></div>
+            </div>
+            <!-- CSI Sidebar + Grid -->
+            <div class="flex" style="min-height:540px">
+              <div class="w-[180px] bg-white border-r border-kg-200 p-3 flex-shrink-0">
+                <div class="text-[9px] font-bold text-kg-400 uppercase tracking-wider mb-2">CSI Divisions</div>
+                <div class="space-y-0.5 text-xs">
+                  <div class="px-2.5 py-2 rounded-lg bg-accent-teal/10 text-accent-teal font-semibold flex justify-between"><span>03 Concrete</span><span class="font-mono">124</span></div>
+                  <div class="px-2.5 py-2 rounded-lg text-kg-600 hover:bg-kg-50 cursor-pointer flex justify-between"><span>05 Metals</span><span class="font-mono text-kg-400">89</span></div>
+                  <div class="px-2.5 py-2 rounded-lg text-kg-600 hover:bg-kg-50 cursor-pointer flex justify-between"><span>09 Finishes</span><span class="font-mono text-kg-400">203</span></div>
+                  <div class="px-2.5 py-2 rounded-lg text-kg-600 hover:bg-kg-50 cursor-pointer flex justify-between"><span>22 Plumbing</span><span class="font-mono text-kg-400">86</span></div>
+                  <div class="px-2.5 py-2 rounded-lg text-kg-600 hover:bg-kg-50 cursor-pointer flex justify-between"><span>23 HVAC</span><span class="font-mono text-kg-400">112</span></div>
+                  <div class="px-2.5 py-2 rounded-lg text-kg-600 hover:bg-kg-50 cursor-pointer flex justify-between"><span>26 Electrical</span><span class="font-mono text-kg-400">98</span></div>
+                </div>
+              </div>
+              <div class="flex-1 p-4">
+                <div class="relative mb-4"><input placeholder="Search in 03 Concrete..." class="w-full pl-9 pr-4 py-2 rounded-lg border border-kg-200 text-sm"><svg class="absolute left-3 top-2.5 w-4 h-4 text-kg-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
+                <div class="grid grid-cols-2 gap-3">
+                  <div class="bg-white rounded-xl p-4 border border-kg-200 ch cursor-pointer">
+                    <div class="flex items-center justify-between mb-2"><span class="text-[9px] font-mono text-accent-teal bg-teal-50 px-1.5 py-0.5 rounded font-bold">03 11 13</span><span class="text-[9px] text-kg-400">⭐</span></div>
+                    <h4 class="text-xs font-bold text-navy mb-1">Foundation Footing — 24"×12"</h4>
+                    <p class="text-[10px] text-kg-500 mb-2">3000 PSI, #4 rebar</p>
+                    <div class="flex items-center justify-between"><span class="text-sm font-bold text-accent-orange font-mono">$120/LF</span><span class="text-[10px] text-accent-teal font-semibold">View →</span></div>
+                  </div>
+                  <div class="bg-white rounded-xl p-4 border border-kg-200 ch cursor-pointer">
+                    <div class="mb-2"><span class="text-[9px] font-mono text-accent-teal bg-teal-50 px-1.5 py-0.5 rounded font-bold">03 31 13</span></div>
+                    <h4 class="text-xs font-bold text-navy mb-1">Slab on Grade — 4"</h4>
+                    <p class="text-[10px] text-kg-500 mb-2">Vapor barrier, WWF</p>
+                    <div class="flex items-center justify-between"><span class="text-sm font-bold text-accent-orange font-mono">$16/SF</span><span class="text-[10px] text-accent-teal font-semibold">View →</span></div>
+                  </div>
+                  <div class="bg-white rounded-xl p-4 border border-kg-200 ch cursor-pointer">
+                    <div class="flex items-center justify-between mb-2"><span class="text-[9px] font-mono text-accent-teal bg-teal-50 px-1.5 py-0.5 rounded font-bold">03 30 53</span><span class="text-[9px] text-accent-orange font-bold">NEW</span></div>
+                    <h4 class="text-xs font-bold text-navy mb-1">CMU Wall — 8"</h4>
+                    <p class="text-[10px] text-kg-500 mb-2">Grouted, #5 rebar</p>
+                    <div class="flex items-center justify-between"><span class="text-sm font-bold text-accent-orange font-mono">$32.50/SF</span><span class="text-[10px] text-accent-teal font-semibold">View →</span></div>
+                  </div>
+                  <div class="bg-white rounded-xl p-4 border border-kg-200 ch cursor-pointer">
+                    <div class="mb-2"><span class="text-[9px] font-mono text-accent-teal bg-teal-50 px-1.5 py-0.5 rounded font-bold">03 41 13</span></div>
+                    <h4 class="text-xs font-bold text-navy mb-1">Precast Beam</h4>
+                    <p class="text-[10px] text-kg-500 mb-2">Standard rect beam</p>
+                    <div class="flex items-center justify-between"><span class="text-sm font-bold text-accent-orange font-mono">$89/LF</span><span class="text-[10px] text-accent-teal font-semibold">View →</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</body>
+</html>

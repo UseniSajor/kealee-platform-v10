@@ -1,0 +1,110 @@
+// PM — DRAWINGS
+// Domain: pm | Owner: OS-PM service
+
+// Drawing Sheet — individual drawing within a set
+model DrawingSheet {
+  id              String  @id @default(uuid())
+  designProjectId String
+  drawingSetId    String?
+
+  // Sheet Info
+  sheetNumber String // "A1.1", "S2.3"
+  sheetTitle  String
+  discipline  DrawingDiscipline
+  status      SheetStatus       @default(NOT_STARTED_SH)
+
+  // Content
+  fileUrl      String?
+  thumbnailUrl String?
+  titleBlock   Json? // { project, date, drawnBy, checkedBy, scale }
+
+  // Revisions
+  currentRevision String @default("0")
+  revisionHistory Json? // Array of { rev, date, description, issuedBy }
+
+  // Scale & Size
+  scale     String? // "1/4\" = 1'-0\""
+  paperSize String? // "ARCH D", "24x36"
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  designProject DesignProject @relation(fields: [designProjectId], references: [id], onDelete: Cascade)
+  drawingSet    DrawingSet?   @relation(fields: [drawingSetId], references: [id])
+
+  @@index([designProjectId])
+  @@index([drawingSetId])
+  @@index([discipline])
+  @@index([status])
+  @@map("drawing_sheets")
+}
+
+// Drawing Set — grouped collection of sheets for a milestone
+model DrawingSet {
+  id              String @id @default(uuid())
+  designProjectId String
+
+  // Set Info
+  name        String // "SD Set", "50% CD", "Permit Set", "IFC Set"
+  description String?
+  setType     String // SD, DD, CD_50, CD_90, CD_100, PERMIT, IFC, ADDENDUM
+  version     String  @default("1.0")
+
+  // Status
+  isIssued   Boolean   @default(false)
+  issuedAt   DateTime?
+  issuedById String?
+
+  // Files
+  compiledPdfUrl String? // Combined PDF of all sheets in set
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  designProject DesignProject  @relation(fields: [designProjectId], references: [id], onDelete: Cascade)
+  sheets        DrawingSheet[]
+  issuedBy      User?          @relation("DrawingSetIssuer", fields: [issuedById], references: [id])
+
+  @@index([designProjectId])
+  @@index([setType])
+  @@map("drawing_sets")
+}
+
+// BIM Model
+model BIMModel {
+  id              String @id @default(uuid())
+  designProjectId String
+  uploadedById    String
+
+  // Model Info
+  name        String
+  description String?
+  format      BIMModelFormat
+  version     String         @default("1.0")
+
+  // File
+  fileUrl      String?
+  fileSize     Int? // bytes
+  thumbnailUrl String?
+
+  // Model Stats
+  elementCount    Int @default(0)
+  annotationCount Int @default(0)
+  clashCount      Int @default(0)
+  viewCount       Int @default(0)
+
+  // Conversion
+  conversionStatus String  @default("PENDING") // PENDING, PROCESSING, COMPLETED, FAILED
+  convertedUrl     String? // Web-viewable format (glTF, etc.)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  designProject DesignProject @relation(fields: [designProjectId], references: [id], onDelete: Cascade)
+  uploadedBy    User          @relation("BIMModelUploader", fields: [uploadedById], references: [id])
+
+  @@index([designProjectId])
+  @@index([format])
+  @@index([uploadedById])
+  @@map("bim_models")
+}

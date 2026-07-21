@@ -1,0 +1,17 @@
+{
+  "name": "@kealee/redis",
+  "version": "1.0.0",
+  "description": "Redis client for Kealee Platform",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch"
+  },
+  "dependencies": {
+    "redis": "^4.6.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  }
+}

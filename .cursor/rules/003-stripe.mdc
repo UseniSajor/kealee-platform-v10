@@ -1,0 +1,36 @@
+---
+description: Stripe integration rules for live payments, webhooks, and checkout flows. Apply when working on any payment, checkout, or Stripe-related code.
+alwaysApply: false
+globs:
+  - "apps/api/src/routes/stripe/**"
+  - "apps/portal-owner/**"
+  - "**/checkout/**"
+  - "**/payment**"
+  - "**/stripe**"
+---
+
+# Stripe Rules (Live Mode)
+
+## Webhook Handler
+- Single consolidated handler: `apps/api/src/routes/stripe/webhook.ts`
+- ALWAYS use `stripe.webhooks.constructEvent()` with raw body (never pre-parsed JSON)
+- Idempotency keys required on ALL `payment_intent` creates
+- Verify signature on EVERY incoming webhook — no exceptions in dev/staging
+
+## GAP-01 Status
+Stripe webhook is dead — consolidate all handlers before deploy.
+
+## GAP-02 Status  
+Anonymous checkout not wired — /concept must work without auth.
+
+## Stripe Products (43 total — import from core-rules)
+PM Packages A–D: $1,750–$16,500/mo
+Architecture A–D: $2,500–$35,000
+Project Owner A–D: $49–$999/mo
+Permit A–D: $495–$7,500
+Ops Services (11): $125–$595
+Estimation Services (7): $195–$5,995
+
+## Keys
+- Secret key: server-only, never NEXT_PUBLIC
+- Publishable key: NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY only

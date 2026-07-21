@@ -1,0 +1,490 @@
+Product ID,Product Name,Description,Category,Active,Price ID,Lookup Key,Amount,Currency,Type,Interval,Price Active,Created Date,Features,Metadata
+prod_TpYGUmP4j35r4U,Enterprise Project Estimation,"Enterprise-grade estimation with custom models, historical data analysis, and portfolio optimization
+
+Features:
+• Custom estimation models
+• Historical data analysis
+• Portfolio optimization
+• Risk analysis
+• Budget forecasting
+• Multiple scenarios
+• Unlimited revisions
+• Dedicated estimator
+• Custom reporting
+• Ongoing support",estimation,true,price_1Srt9xIQghAs8OOICw3pIigt,est-estimation-enterprise,$4999.00,usd,one_time,one-time,true,2026-01-21,,ai_powered:true;category:estimation;dedicated_estimator:true;project_size:portfolio;service_tier:enterprise
+prod_TpYGNbwWcC05Dl,Premium Project Estimation,"Professional estimate with AI-powered analysis, value engineering, and multiple scenarios
+
+Features:
+• AI-powered cost analysis
+• Detailed material specs
+• Labor estimates by trade & phase
+• Timeline with dependencies
+• Value engineering suggestions
+• Multiple scenario options
+• Unlimited revisions
+• Professional presentation
+• Consultation included",estimation,true,price_1Srt9wIQghAs8OOIiHAsbWG8,est-estimation-premium,$1999.00,usd,one_time,one-time,true,2026-01-21,,ai_powered:true;category:estimation;project_size:large;service_tier:premium
+prod_TpYGU3tb6zY8g5,Standard Project Estimation,"Comprehensive estimate with detailed breakdown, material specifications, and timeline
+
+Features:
+• Detailed cost breakdown
+• Material specifications
+• Labor estimates by trade
+• Timeline estimate
+• 2 revisions
+• PDF & Excel delivery",estimation,true,price_1Srt9vIQghAs8OOIOoFidV2u,est-estimation-standard,$799.00,usd,one_time,one-time,true,2026-01-21,,category:estimation;popular:true;project_size:medium;service_tier:standard
+prod_TpYGKm8zwHqGn8,Basic Project Estimation,"Quick estimate for small projects with basic material and labor costs
+
+Features:
+• Basic material cost estimate
+• Labor cost estimate
+• Single revision
+• Digital delivery",estimation,true,price_1Srt9uIQghAs8OOIa00e7ygY,est-estimation-basic,$299.00,usd,one_time,one-time,true,2026-01-21,,category:estimation;project_size:small;service_tier:basic
+prod_TpYGlf86qq8zkG,Quality Control Inspection,Professional quality control inspections and punch lists,ops,true,price_1Srt9tIQghAs8OOI87IULl40,ops-quality-control,$425.00,usd,one_time,one-time,true,2026-01-21,,audience:gc;category:ops;product_type:a-la-carte
+prod_TpYGDwESFAOfvV,Progress Reporting,Custom progress reports and project updates,ops,true,price_1Srt9sIQghAs8OOISva7Hr4Z,ops-progress-reporting,$275.00,usd,one_time,one-time,true,2026-01-21,,audience:gc;category:ops;product_type:a-la-carte
+prod_TpYGVOrtQrkY6T,Budget Analysis,Detailed budget review and cost optimization,ops,true,price_1Srt9sIQghAs8OOITuaDHWYW,ops-budget-analysis,$475.00,usd,one_time,one-time,true,2026-01-21,,audience:gc;category:ops;product_type:a-la-carte
+prod_TpYGP445xMYbKu,Site Visits,Professional on-site project visits and inspections,ops,true,price_1Srt9rIQghAs8OOIgl5a1mxb,ops-site-visits,$350.00,usd,one_time,one-time,true,2026-01-21,,audience:gc;category:ops;product_type:a-la-carte
+prod_TpYGm4NDhYonKb,Contractor Coordination,Coordinate multiple contractors and trades,ops,true,price_1Srt9qIQghAs8OOIrnDMOKA5,ops-contractor-coordination,$550.00,usd,one_time,one-time,true,2026-01-21,,audience:gc;category:ops;product_type:a-la-carte
+prod_TpYGzjAe1tiIAT,Document Organization,Organize and digitize project documents,ops,true,price_1Srt9pIQghAs8OOIL6Xm2tmR,ops-document-organization,$400.00,usd,one_time,one-time,true,2026-01-21,,audience:gc;category:ops;product_type:a-la-carte
+prod_TpYGuBRnAj5iJD,Inspection Scheduling,Coordinate and schedule all required inspections,ops,true,,,,,,,,2026-01-21,,audience:gc;category:ops;product_type:a-la-carte
+prod_TpYFQmVESzCTcC,Permit Application Help,"Applications, resubmittals, follow-ups, jurisdiction communications",ops,true,,,,,,,,2026-01-21,,audience:gc;category:ops;product_type:a-la-carte
+prod_TpYFDY2emMe5do,Permit & Inspection Package D - Enterprise,"Enterprise permit management with white-glove service, custom workflows, and portfolio management.
+
+Features:
+• Unlimited everything
+• AI-powered optimization
+• White-glove service
+• Dedicated permit team
+• Custom workflows
+• Portfolio permit management
+• Advanced analytics & reporting
+• API integrations
+• SLA guarantees
+• On-site coordination
+• Custom compliance rules",permits,true,price_1Srt8vIQghAs8OOIX90QId2D,permit-permit-package-d-year,$50989.80,usd,recurring,year,true,2026-01-21,,ai_review:true;category:permits;dedicated_specialist:true;enterprise_team:true;package_tier:D;permit_limit:unlimited;support_level:enterprise
+prod_TpYFDY2emMe5do,Permit & Inspection Package D - Enterprise,"Enterprise permit management with white-glove service, custom workflows, and portfolio management.
+
+Features:
+• Unlimited everything
+• AI-powered optimization
+• White-glove service
+• Dedicated permit team
+• Custom workflows
+• Portfolio permit management
+• Advanced analytics & reporting
+• API integrations
+• SLA guarantees
+• On-site coordination
+• Custom compliance rules",permits,true,price_1Srt8vIQghAs8OOIRuroL49n,permit-permit-package-d-month,$4999.00,usd,recurring,month,true,2026-01-21,,ai_review:true;category:permits;dedicated_specialist:true;enterprise_team:true;package_tier:D;permit_limit:unlimited;support_level:enterprise
+prod_TpYFI4lFoido6B,Permit & Inspection Package C - Professional,"Professional permit management with dedicated support, unlimited permits, and full-service coordination.
+
+Features:
+• Unlimited permit applications
+• AI-powered review & optimization
+• Full resubmittal management
+• Guaranteed inspection scheduling
+• Proactive compliance monitoring
+• Dedicated permit specialist
+• Priority support
+• Full jurisdiction coordination
+• Real-time status updates
+• Compliance reporting
+• Document management",permits,true,price_1Srt8uIQghAs8OOII5DQBxPC,permit-permit-package-c-year,$25489.80,usd,recurring,year,true,2026-01-21,,ai_review:true;category:permits;dedicated_specialist:true;package_tier:C;permit_limit:unlimited;support_level:dedicated
+prod_TpYFI4lFoido6B,Permit & Inspection Package C - Professional,"Professional permit management with dedicated support, unlimited permits, and full-service coordination.
+
+Features:
+• Unlimited permit applications
+• AI-powered review & optimization
+• Full resubmittal management
+• Guaranteed inspection scheduling
+• Proactive compliance monitoring
+• Dedicated permit specialist
+• Priority support
+• Full jurisdiction coordination
+• Real-time status updates
+• Compliance reporting
+• Document management",permits,true,price_1Srt8uIQghAs8OOIs3xuhJip,permit-permit-package-c-month,$2499.00,usd,recurring,month,true,2026-01-21,,ai_review:true;category:permits;dedicated_specialist:true;package_tier:C;permit_limit:unlimited;support_level:dedicated
+prod_TpYF6k81IzmSzz,Permit & Inspection Package B - Standard,"Standard permit management with AI review, resubmittal support, and priority scheduling.
+
+Features:
+• Full permit application support
+• AI-powered document review
+• Resubmittal management
+• Priority inspection scheduling
+• Compliance monitoring
+• Priority support
+• Up to 5 permits/month
+• Inspection coordination
+• Jurisdiction communication
+• Status tracking",permits,true,price_1Srt8tIQghAs8OOI88ykVSef,permit-permit-package-b-year,$13249.80,usd,recurring,year,true,2026-01-21,,ai_review:true;category:permits;package_tier:B;permit_limit:5;popular:true;support_level:priority
+prod_TpYF6k81IzmSzz,Permit & Inspection Package B - Standard,"Standard permit management with AI review, resubmittal support, and priority scheduling.
+
+Features:
+• Full permit application support
+• AI-powered document review
+• Resubmittal management
+• Priority inspection scheduling
+• Compliance monitoring
+• Priority support
+• Up to 5 permits/month
+• Inspection coordination
+• Jurisdiction communication
+• Status tracking",permits,true,price_1Srt8sIQghAs8OOItUBUfXD6,permit-permit-package-b-month,$1299.00,usd,recurring,month,true,2026-01-21,,ai_review:true;category:permits;package_tier:B;permit_limit:5;popular:true;support_level:priority
+prod_TpYFk8CzW4XW2I,Permit & Inspection Package A - Basic,"Basic permit application support and inspection scheduling for simple projects.
+
+Features:
+• Permit application assistance
+• Document preparation
+• Inspection scheduling
+• Basic compliance checking
+• Email support
+• Up to 2 permits/month
+• Inspection reminders",permits,true,price_1Srt8sIQghAs8OOIID7exSOA,permit-permit-package-a-year,$5089.80,usd,recurring,year,true,2026-01-21,,category:permits;package_tier:A;permit_limit:2;support_level:email
+prod_TpYFk8CzW4XW2I,Permit & Inspection Package A - Basic,"Basic permit application support and inspection scheduling for simple projects.
+
+Features:
+• Permit application assistance
+• Document preparation
+• Inspection scheduling
+• Basic compliance checking
+• Email support
+• Up to 2 permits/month
+• Inspection reminders",permits,true,price_1Srt8rIQghAs8OOIuWN4WHb3,permit-permit-package-a-month,$499.00,usd,recurring,month,true,2026-01-21,,category:permits;package_tier:A;permit_limit:2;support_level:email
+prod_TpYFGrhxJwV1ZM,Project Owner Package D - Enterprise,"Enterprise platform with white-glove service, custom integrations, and unlimited everything for large portfolios.
+
+Features:
+• Enterprise dashboard & analytics
+• AI-powered portfolio optimization
+• Unlimited everything
+• VIP contractor access
+• Dedicated enterprise team
+• Custom reporting & dashboards
+• White-glove onboarding
+• Custom integrations
+• SLA guarantees
+• On-site training
+• Unlimited API access
+• Dedicated infrastructure",project_owner,true,price_1Srt8qIQghAs8OOIffDWrnxn,po-po-package-d-year,$30589.80,usd,recurring,year,true,2026-01-21,,category:project_owner;dedicated_manager:true;enterprise_team:true;package_tier:D;storage_gb:unlimited;support_level:enterprise
+prod_TpYFGrhxJwV1ZM,Project Owner Package D - Enterprise,"Enterprise platform with white-glove service, custom integrations, and unlimited everything for large portfolios.
+
+Features:
+• Enterprise dashboard & analytics
+• AI-powered portfolio optimization
+• Unlimited everything
+• VIP contractor access
+• Dedicated enterprise team
+• Custom reporting & dashboards
+• White-glove onboarding
+• Custom integrations
+• SLA guarantees
+• On-site training
+• Unlimited API access
+• Dedicated infrastructure",project_owner,true,price_1Srt8qIQghAs8OOI1QFYQSr2,po-po-package-d-month,$2999.00,usd,recurring,month,true,2026-01-21,,category:project_owner;dedicated_manager:true;enterprise_team:true;package_tier:D;storage_gb:unlimited;support_level:enterprise
+prod_TpYFSczK3eI8qP,Project Owner Package C - Premium,"Premium platform access with AI insights, advanced analytics, and dedicated support for portfolio management.
+
+Features:
+• Premium dashboard & analytics
+• AI-powered insights
+• Unlimited document storage
+• Priority contractor matching
+• Dedicated account manager
+• Weekly reports & insights
+• Payment processing
+• Unlimited storage
+• Advanced budget & forecasting
+• Portfolio management
+• Custom reporting
+• API access",project_owner,true,price_1Srt8pIQghAs8OOIlMriPk3v,po-po-package-c-year,$15289.80,usd,recurring,year,true,2026-01-21,,category:project_owner;dedicated_manager:true;package_tier:C;storage_gb:unlimited;support_level:dedicated
+prod_TpYFSczK3eI8qP,Project Owner Package C - Premium,"Premium platform access with AI insights, advanced analytics, and dedicated support for portfolio management.
+
+Features:
+• Premium dashboard & analytics
+• AI-powered insights
+• Unlimited document storage
+• Priority contractor matching
+• Dedicated account manager
+• Weekly reports & insights
+• Payment processing
+• Unlimited storage
+• Advanced budget & forecasting
+• Portfolio management
+• Custom reporting
+• API access",project_owner,true,price_1Srt8pIQghAs8OOItR5zzHSP,po-po-package-c-month,$1499.00,usd,recurring,month,true,2026-01-21,,category:project_owner;dedicated_manager:true;package_tier:C;storage_gb:unlimited;support_level:dedicated
+prod_TpYFoOWPDab3Vf,Project Owner Package B - Professional,"Professional tools for active project owners with advanced tracking, reporting, and coordination features.
+
+Features:
+• Advanced project dashboard
+• Real-time project tracking
+• Document storage (100GB)
+• Full contractor network access
+• Priority email & chat support
+• Bi-weekly reports
+• Payment processing integration
+• Unlimited photo storage
+• Budget management tools
+• Timeline & scheduling",project_owner,true,price_1Srt8oIQghAs8OOIQhTgXdkK,po-po-package-b-year,$7129.80,usd,recurring,year,true,2026-01-21,,category:project_owner;package_tier:B;popular:true;storage_gb:100;support_level:priority
+prod_TpYFoOWPDab3Vf,Project Owner Package B - Professional,"Professional tools for active project owners with advanced tracking, reporting, and coordination features.
+
+Features:
+• Advanced project dashboard
+• Real-time project tracking
+• Document storage (100GB)
+• Full contractor network access
+• Priority email & chat support
+• Bi-weekly reports
+• Payment processing integration
+• Unlimited photo storage
+• Budget management tools
+• Timeline & scheduling",project_owner,true,price_1Srt8nIQghAs8OOI66s4kKo8,po-po-package-b-month,$699.00,usd,recurring,month,true,2026-01-21,,category:project_owner;package_tier:B;popular:true;storage_gb:100;support_level:priority
+prod_TpYFEf7beHICKm,Project Owner Package A - Essential,"Essential tools for project owners managing their own projects with basic oversight and tracking.
+
+Features:
+• Project dashboard access
+• Basic project tracking
+• Document storage (10GB)
+• Contractor directory
+• Email support
+• Monthly reports
+• Payment tracking
+• Photo storage",project_owner,true,price_1Srt8nIQghAs8OOISZDnrO2h,po-po-package-a-year,$3049.80,usd,recurring,year,true,2026-01-21,,category:project_owner;package_tier:A;storage_gb:10;support_level:email
+prod_TpYFEf7beHICKm,Project Owner Package A - Essential,"Essential tools for project owners managing their own projects with basic oversight and tracking.
+
+Features:
+• Project dashboard access
+• Basic project tracking
+• Document storage (10GB)
+• Contractor directory
+• Email support
+• Monthly reports
+• Payment tracking
+• Photo storage",project_owner,true,price_1Srt8mIQghAs8OOINAvyulWA,po-po-package-a-month,$299.00,usd,recurring,month,true,2026-01-21,,category:project_owner;package_tier:A;storage_gb:10;support_level:email
+prod_TpYFxW5QYeYRx7,Architecture Package D - Premium Custom Design,"Luxury architectural services with full design team. Includes all disciplines, unlimited revisions, and comprehensive construction administration.
+
+Features:
+• Dedicated design team
+• Luxury home specialization
+• Complete design development
+• Full construction documents
+• Structural & MEP engineering
+• Landscape architecture
+• Interior architecture
+• Custom specifications
+• Unlimited revisions
+• Full construction administration
+• Site visits & inspections
+• As-built documentation",architecture,true,price_1Srt8lIQghAs8OOIi7iVqzmD,arch-arch-package-d,$35000.00,usd,one_time,one-time,true,2026-01-21,,"category:architecture;includes_ca:true;includes_engineering:true;includes_interior:true;includes_landscape:true;includes_stamping:true;package_tier:D;project_size:custom;revisions:unlimited;square_footage:6,000+"
+prod_TpYFGUSSBX4bfb,Architecture Package C - Full Service Design,"Comprehensive architectural services from concept through construction administration. Perfect for custom homes and renovations.
+
+Features:
+• Full design development
+• Detailed construction documents
+• Structural engineering coordination
+• MEP coordination
+• Specifications & details
+• Multiple 3D renderings
+• Interior design consultation
+• Permit application support
+• Construction administration (limited)
+• 3 revision rounds",architecture,true,price_1Srt8lIQghAs8OOIwdumnlWK,arch-arch-package-c,$15000.00,usd,one_time,one-time,true,2026-01-21,,"category:architecture;includes_ca:true;includes_engineering:true;includes_stamping:true;package_tier:C;project_size:large;revisions:3;square_footage:3,500-6,000"
+prod_TpYFCcfz9pEQNR,Architecture Package B - Residential Design,"Complete residential design package including architectural drawings, 3D renderings, and permit-ready plans.
+
+Features:
+• Comprehensive site analysis
+• Conceptual design (3-4 options)
+• Detailed floor plans
+• Elevations & sections
+• 3D renderings (3 views)
+• Material selections
+• Permit-ready drawings
+• PE/Architect stamp
+• 2 revision rounds",architecture,true,price_1Srt8kIQghAs8OOIsSkMxbBg,arch-arch-package-b,$7500.00,usd,one_time,one-time,true,2026-01-21,,"category:architecture;includes_stamping:true;package_tier:B;popular:true;project_size:medium;revisions:2;square_footage:1,500-3,500"
+prod_TpYF9cabHBAY7C,Architecture Package A - Design Consultation,"Professional architectural consultation for small projects. Includes conceptual design, space planning, and basic drawings.
+
+Features:
+• Initial consultation (2 hours)
+• Site analysis
+• Conceptual design (1-2 options)
+• Basic floor plans
+• Preliminary budget estimate
+• 1 revision round
+• Digital delivery",architecture,true,price_1Srt8jIQghAs8OOIYLvI8u4M,arch-arch-package-a,$2500.00,usd,one_time,one-time,true,2026-01-21,,"category:architecture;includes_stamping:false;package_tier:A;project_size:small;revisions:1;square_footage:up to 1,500"
+prod_TpYFDDq4YwdUeO,PM Package D - Enterprise,"40+ hours/week of enterprise-level project management. White-glove service for portfolio management and strategic oversight.
+
+Features:
+• 40+ hours/week PM time
+• Portfolio management
+• Dedicated account manager
+• Custom reporting & analytics
+• Strategic planning support
+• Multi-project coordination
+• Executive-level insights
+• White-glove service
+• Custom integrations
+• On-site visits included",pm,true,price_1Srt8iIQghAs8OOIIM3S5129,pm-pm-package-d-year,$168300.00,usd,recurring,year,true,2026-01-21,,account_manager:true;category:pm;dedicated_pm:true;hours_per_week:40+;package_tier:D;project_limit:unlimited;support_level:enterprise
+prod_TpYFDDq4YwdUeO,PM Package D - Enterprise,"40+ hours/week of enterprise-level project management. White-glove service for portfolio management and strategic oversight.
+
+Features:
+• 40+ hours/week PM time
+• Portfolio management
+• Dedicated account manager
+• Custom reporting & analytics
+• Strategic planning support
+• Multi-project coordination
+• Executive-level insights
+• White-glove service
+• Custom integrations
+• On-site visits included",pm,true,price_1Srt8iIQghAs8OOIq4XGcuWc,pm-pm-package-d-month,$16500.00,usd,recurring,month,true,2026-01-21,,account_manager:true;category:pm;dedicated_pm:true;hours_per_week:40+;package_tier:D;project_limit:unlimited;support_level:enterprise
+prod_TpYFCx4ByUjuWj,PM Package C - Premium,"30-40 hours/week of dedicated project management. Comprehensive support for complex projects with full-service oversight.
+
+Features:
+• 30-40 hours/week PM time
+• Unlimited projects
+• 24/7 priority support
+• Daily progress reports
+• Dedicated PM assigned
+• Full contractor management
+• Budget optimization & forecasting
+• Advanced risk management
+• Quality control inspections
+• Owner representation at meetings",pm,true,price_1Srt8hIQghAs8OOIt5mIMFbU,pm-pm-package-c-year,$86700.00,usd,recurring,year,true,2026-01-21,,category:pm;dedicated_pm:true;hours_per_week:30-40;package_tier:C;project_limit:unlimited;support_level:premium
+prod_TpYFCx4ByUjuWj,PM Package C - Premium,"30-40 hours/week of dedicated project management. Comprehensive support for complex projects with full-service oversight.
+
+Features:
+• 30-40 hours/week PM time
+• Unlimited projects
+• 24/7 priority support
+• Daily progress reports
+• Dedicated PM assigned
+• Full contractor management
+• Budget optimization & forecasting
+• Advanced risk management
+• Quality control inspections
+• Owner representation at meetings",pm,true,price_1Srt8hIQghAs8OOILuNs7LVj,pm-pm-package-c-month,$8500.00,usd,recurring,month,true,2026-01-21,,category:pm;dedicated_pm:true;hours_per_week:30-40;package_tier:C;project_limit:unlimited;support_level:premium
+prod_TpYF3Jiiyr8Okv,PM Package B - Professional,"15-20 hours/week of professional project management. Ideal for growing projects requiring consistent oversight and coordination.
+
+Features:
+• 15-20 hours/week PM time
+• Up to 3 concurrent projects
+• Priority email & phone support
+• Bi-weekly progress reports
+• Advanced project tracking
+• Full contractor coordination
+• Budget optimization
+• Risk management",pm,true,price_1Srt8gIQghAs8OOIk58IhYct,pm-pm-package-b-year,$45900.00,usd,recurring,year,true,2026-01-21,,category:pm;hours_per_week:15-20;package_tier:B;popular:true;project_limit:3;support_level:priority
+prod_TpYF3Jiiyr8Okv,PM Package B - Professional,"15-20 hours/week of professional project management. Ideal for growing projects requiring consistent oversight and coordination.
+
+Features:
+• 15-20 hours/week PM time
+• Up to 3 concurrent projects
+• Priority email & phone support
+• Bi-weekly progress reports
+• Advanced project tracking
+• Full contractor coordination
+• Budget optimization
+• Risk management",pm,true,price_1Srt8fIQghAs8OOIjf8tqOVz,pm-pm-package-b-month,$4500.00,usd,recurring,month,true,2026-01-21,,category:pm;hours_per_week:15-20;package_tier:B;popular:true;project_limit:3;support_level:priority
+prod_TpYFdMGt2h6qQW,PM Package A - Starter,"5-10 hours/week of professional project management. Perfect for small projects and getting started with professional oversight.
+
+Features:
+• 5-10 hours/week PM time
+• Single project focus
+• Email support (48hr response)
+• Weekly progress reports
+• Basic task tracking
+• Contractor coordination
+• Budget monitoring",pm,true,price_1Srt8eIQghAs8OOIrloycppA,pm-pm-package-a-year,$17850.00,usd,recurring,year,true,2026-01-21,,category:pm;hours_per_week:5-10;package_tier:A;project_limit:1;support_level:standard
+prod_TpYFdMGt2h6qQW,PM Package A - Starter,"5-10 hours/week of professional project management. Perfect for small projects and getting started with professional oversight.
+
+Features:
+• 5-10 hours/week PM time
+• Single project focus
+• Email support (48hr response)
+• Weekly progress reports
+• Basic task tracking
+• Contractor coordination
+• Budget monitoring",pm,true,price_1Srt8eIQghAs8OOIPuazIrkS,pm-pm-package-a-month,$1750.00,usd,recurring,month,true,2026-01-21,,category:pm;hours_per_week:5-10;package_tier:A;project_limit:1;support_level:standard
+prod_TpXHoZSkLI4GTD,Kealee Ops Services - Other Operations Help,Anything ops-related that's slowing your team down,,true,price_1SrsCgIQghAs8OOIqANYbsnF,ops-other-operations-help,$600.00,usd,one_time,one-time,true,2026-01-21,,audience:gc;productSlug:other-operations-help;productType:a-la-carte
+prod_TpXHHFFcafvFWE,Kealee Ops Services - Document Preparation,"Submittals, closeout docs, plan sets, compliance files",,true,price_1SrsCgIQghAs8OOIAbDStEj0,ops-document-preparation,$325.00,usd,one_time,one-time,true,2026-01-21,,audience:gc;productSlug:document-preparation;productType:a-la-carte
+prod_TpXHUqlEUFKHQc,Kealee Ops Services - Schedule Optimization,"Tighten sequence, reduce downtime, protect milestones",,true,price_1SrsCfIQghAs8OOIfX1Kz0e4,ops-schedule-optimization,$1250.00,usd,one_time,one-time,true,2026-01-21,,audience:gc;productSlug:schedule-optimization;productType:a-la-carte
+prod_TpXHSJlWyiutvN,Kealee Ops Services - Billing & Invoicing,"Owner invoices, vendor bills, lien waivers, receipts",,true,price_1SrsCeIQghAs8OOI24tEvQoI,ops-billing-invoicing-month,$300.00,usd,recurring,month,true,2026-01-21,,audience:gc;productSlug:billing-invoicing;productType:a-la-carte
+prod_TpXHgLq8NLr6qt,Kealee Ops Services - Change Order Management,"CO drafting, approvals, documentation, client communications",,true,price_1SrsCdIQghAs8OOIihrrJ4a4,ops-change-order-management,$475.00,usd,one_time,one-time,true,2026-01-21,,audience:gc;productSlug:change-order-management;productType:a-la-carte
+prod_TpXHZinEbKa2ug,Kealee Ops Services - Contractor Coordination,"Subs/vendors scheduling, updates, and accountability",,true,price_1SrsCdIQghAs8OOIlz2xpVEY,ops-contractor-coordination-month,$500.00,usd,recurring,month,true,2026-01-21,,audience:gc;productSlug:contractor-coordination;productType:a-la-carte
+prod_TpXH7t1lfWWGPB,Kealee Ops Services - Inspection Scheduling,"Book inspections, coordinate trades, prep checklists",,true,price_1SrsCcIQghAs8OOIUSzUPlMt,ops-inspection-scheduling,$200.00,usd,one_time,one-time,true,2026-01-21,,audience:gc;productSlug:inspection-scheduling;productType:a-la-carte
+prod_TpXHVhDqRhCtwf,Kealee Ops Services - Permit Application Help,"Applications, resubmittals, follow-ups, jurisdiction communications",,true,price_1SrsCbIQghAs8OOIkNW3Hflr,ops-permit-application-help,$325.00,usd,one_time,one-time,true,2026-01-21,,audience:gc;productSlug:permit-application-help;productType:a-la-carte
+prod_TpXHSNQd1Tm1gx,Kealee Ops Services - Package D - Enterprise,"Enterprise package for portfolio management
+
+Features:
+• 40+ hours/week PM time
+• Portfolio management
+• Dedicated account manager
+• Custom reporting
+• Strategic planning support
+• Multi-project coordination
+• Executive-level insights
+• White-glove service",,true,price_1SrsCaIQghAs8OOIL3aa9REi,ops-package-d-year,$107100.00,usd,recurring,year,true,2026-01-21,,audience:gc;planSlug:package-d;productType:package
+prod_TpXHSNQd1Tm1gx,Kealee Ops Services - Package D - Enterprise,"Enterprise package for portfolio management
+
+Features:
+• 40+ hours/week PM time
+• Portfolio management
+• Dedicated account manager
+• Custom reporting
+• Strategic planning support
+• Multi-project coordination
+• Executive-level insights
+• White-glove service",,true,price_1SrsCaIQghAs8OOIRa8kHvlc,ops-package-d-month,$10500.00,usd,recurring,month,true,2026-01-21,,audience:gc;planSlug:package-d;productType:package
+prod_TpXHE3Qhw0hwUJ,Kealee Ops Services - Package C - Premium,"Premium package for complex projects
+
+Features:
+• 30-40 hours/week PM time
+• Unlimited projects
+• 24/7 priority support
+• Daily progress reports
+• Dedicated PM assigned
+• Full contractor management
+• Budget optimization
+• Risk management",,true,price_1SrsCZIQghAs8OOIGF3onak9,ops-package-c-year,$66300.00,usd,recurring,year,true,2026-01-21,,audience:gc;planSlug:package-c;productType:package
+prod_TpXHE3Qhw0hwUJ,Kealee Ops Services - Package C - Premium,"Premium package for complex projects
+
+Features:
+• 30-40 hours/week PM time
+• Unlimited projects
+• 24/7 priority support
+• Daily progress reports
+• Dedicated PM assigned
+• Full contractor management
+• Budget optimization
+• Risk management",,true,price_1SrsCZIQghAs8OOITmbGrYNW,ops-package-c-month,$6500.00,usd,recurring,month,true,2026-01-21,,audience:gc;planSlug:package-c;productType:package
+prod_TpXH2acuPpv2vy,Kealee Ops Services - Package B - Professional,"Professional package for growing projects
+
+Features:
+• 15-20 hours/week PM time
+• Up to 3 concurrent projects
+• Priority email & phone support
+• Bi-weekly progress reports
+• Advanced project tracking
+• Contractor coordination",,true,price_1SrsCYIQghAs8OOIRizvH4JL,ops-package-b-year,$38250.00,usd,recurring,year,true,2026-01-21,,audience:gc;planSlug:package-b;productType:package
+prod_TpXH2acuPpv2vy,Kealee Ops Services - Package B - Professional,"Professional package for growing projects
+
+Features:
+• 15-20 hours/week PM time
+• Up to 3 concurrent projects
+• Priority email & phone support
+• Bi-weekly progress reports
+• Advanced project tracking
+• Contractor coordination",,true,price_1SrsCYIQghAs8OOIpK4LMz3n,ops-package-b-month,$3750.00,usd,recurring,month,true,2026-01-21,,audience:gc;planSlug:package-b;productType:package
+prod_TpXGuNNWYfLhZC,Kealee Ops Services - Package A - Starter,"Starter package for small projects
+
+Features:
+• 5-10 hours/week PM time
+• Single project focus
+• Email support (48hr response)
+• Weekly progress reports
+• Basic task tracking",,true,price_1SrsBrIQghAs8OOIWT1k4syx,ops-package-a-year,$17850.00,usd,recurring,year,true,2026-01-21,,audience:gc;planSlug:package-a;productType:package
+prod_TpXGuNNWYfLhZC,Kealee Ops Services - Package A - Starter,"Starter package for small projects
+
+Features:
+• 5-10 hours/week PM time
+• Single project focus
+• Email support (48hr response)
+• Weekly progress reports
+• Basic task tracking",,true,price_1SrsBqIQghAs8OOI0GqDzIKH,ops-package-a-month,$1750.00,usd,recurring,month,true,2026-01-21,,audience:gc;planSlug:package-a;productType:package

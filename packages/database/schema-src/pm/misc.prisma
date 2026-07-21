@@ -1,0 +1,17 @@
+// PM — MISC
+// Domain: pm | Owner: OS-PM service
+
+model RiskAssessment {
+  id              String   @id @default(uuid())
+  projectId       String
+  overallScore    Int // 0-100
+  riskLevel       String // LOW, MEDIUM, HIGH, CRITICAL
+  categories      Json // Risk breakdown by category
+  recommendations Json? // AI recommendations
+  assessedAt      DateTime @default(now())
+  assessedBy      String? // USER or AI
+
+  @@index([projectId])
+  @@index([assessedAt])
+  @@map("risk_assessments")
+}

@@ -1,0 +1,55 @@
+{
+  "name": "@kealee/ai-infrastructure",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Unified AI infrastructure: LLM routing, agent orchestration, AI gateway, and utility tools",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "require": "./dist/index.js",
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./llm": {
+      "require": "./dist/llm/index.js",
+      "import": "./dist/llm/index.js",
+      "types": "./dist/llm/index.d.ts"
+    },
+    "./agents": {
+      "require": "./dist/agents/index.js",
+      "import": "./dist/agents/index.js",
+      "types": "./dist/agents/index.d.ts"
+    },
+    "./gateway": {
+      "require": "./dist/gateway/index.js",
+      "import": "./dist/gateway/index.js",
+      "types": "./dist/gateway/index.d.ts"
+    },
+    "./tools": {
+      "require": "./dist/tools/index.js",
+      "import": "./dist/tools/index.js",
+      "types": "./dist/tools/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.74.0",
+    "@kealee/database": "workspace:*",
+    "@kealee/seeds": "workspace:*",
+    "bottleneck": "^2.19.5",
+    "nanoid": "^3.3.7",
+    "openai": "^4.77.0",
+    "replicate": "^1.4.0",
+    "zod": "^3.22.4",
+    "csv-parse": "^5.5.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.30",
+    "typescript": "^5.3.3"
+  }
+}

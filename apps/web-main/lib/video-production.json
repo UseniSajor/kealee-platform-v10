@@ -1,0 +1,202 @@
+[
+  {
+    "service": "Whole House Renovation",
+    "video_type": "homepage_loop",
+    "duration": "20 sec",
+    "before_prompt": "Dated 1980s colonial home interior: worn oak parquet floors, outdated avocado-green kitchen cabinets, popcorn ceilings, brass fixtures, narrow doorways, low-wattage incandescent lighting, cramped layout — wide-angle lens, natural morning light, slightly desaturated",
+    "after_prompt": "Same floor plan completely transformed: white oak wide-plank floors, open-concept kitchen with quartz island, 10-foot ceilings, recessed LED lighting, floor-to-ceiling windows, modern fireplace, clean sightlines — architectural photography, bright, airy, luxury residential",
+    "visual_style": "modern, luxury, high-end residential",
+    "scene_timeline": [
+      { "time": "0-3", "scene": "before — wide exterior shot of dated colonial" },
+      { "time": "3-6", "scene": "transition — construction wipe sweep revealing new interior" },
+      { "time": "6-12", "scene": "after — slow dolly through transformed open-plan living" },
+      { "time": "12-18", "scene": "detail shots — kitchen quartz, flooring, custom millwork, lighting" },
+      { "time": "18-22", "scene": "cta overlay — aerial pull-back of finished home exterior" }
+    ],
+    "transition_style": "Horizontal wipe with construction dust particle effect — before on left, after revealed right",
+    "camera_motion": "Slow steady dolly forward through rooms; gentle crane rise on exterior; macro pull-focus on material details",
+    "text_overlays": ["Before", "After", "See Your Home's Potential"],
+    "cta": "Start Your Whole Home Concept →",
+    "caption": "Whole House Renovation — AI concepts delivered in 3-5 days",
+    "editing_instructions": [
+      "Color grade: warm golden tones in after sequence (LUT: warm daylight), cool-grey desaturation in before",
+      "Cut on movement: match-cut from before doorway to after open-plan reveal at frame edge",
+      "Add subtle ambient audio: construction fade-out, then airy interior room tone — no music, no narration"
+    ]
+  },
+  {
+    "service": "Exterior Upgrade",
+    "video_type": "homepage_loop",
+    "duration": "18 sec",
+    "before_prompt": "Suburban ranch house circa 1975: faded beige aluminum siding, mismatched windows, overgrown shrubs, cracked driveway, rusted gutters, flat uninspiring facade — overcast lighting, slightly flat perspective from street",
+    "after_prompt": "Same home, dramatic transformation: board-and-batten dark charcoal siding, black casement windows, horizontal hardwood garage door, statement front door in terracotta, curated drought-tolerant landscaping, modern concrete driveway — golden-hour side-lighting, crisp editorial photography",
+    "visual_style": "modern, luxury, high-end residential",
+    "scene_timeline": [
+      { "time": "0-3", "scene": "before — static street-level shot of dated facade" },
+      { "time": "3-6", "scene": "transition — vertical wipe from ground up, materials transforming" },
+      { "time": "6-12", "scene": "after — slow parallax push toward transformed front entrance" },
+      { "time": "12-18", "scene": "detail shots — siding texture, window profile, door hardware, landscaping" },
+      { "time": "18-22", "scene": "cta overlay — wide view of completed exterior at dusk" }
+    ],
+    "transition_style": "Ground-up vertical wipe — concrete to siding to roofline, synchronized with material change",
+    "camera_motion": "Tripod lock-off on before; smooth slider push-in on after; drone rise to reveal full facade at end",
+    "text_overlays": ["Before", "After", "New Look. Same Home."],
+    "cta": "Visualize Your Exterior →",
+    "caption": "Exterior Upgrade — Curb appeal concept in 3-5 days",
+    "editing_instructions": [
+      "After sequence: heavy warm grade with lifted shadows, increased saturation on landscaping greens",
+      "Before sequence: desaturate 30%, reduce contrast slightly to emphasize dull quality",
+      "End on a 2-second hold of the after facade before CTA text fades in"
+    ]
+  },
+  {
+    "service": "Kitchen Remodel",
+    "video_type": "homepage_loop",
+    "duration": "22 sec",
+    "before_prompt": "Cramped 1990s galley kitchen: laminate wood-grain cabinets, dropped fluorescent ceiling panel, linoleum floor, dated tile backsplash, side-by-side fridge blocking natural light, cluttered counters — realistic residential photo, slightly unflattering overhead lighting",
+    "after_prompt": "Same footprint, open concept transformation: floor-to-ceiling white shaker cabinets, waterfall quartz island with seating, pendant lighting, herringbone marble backsplash, professional range, wide plank white oak floors — bright editorial kitchen photography, window backlighting",
+    "visual_style": "modern, luxury, high-end residential",
+    "scene_timeline": [
+      { "time": "0-3", "scene": "before — wide shot of old kitchen from doorway" },
+      { "time": "3-6", "scene": "transition — counter-level wipe across surface, materials transforming" },
+      { "time": "6-12", "scene": "after — tracking shot along island, revealing full kitchen" },
+      { "time": "12-18", "scene": "detail shots — pendant drop, quartz edge, cabinet hardware, backsplash tile" },
+      { "time": "18-22", "scene": "cta overlay — pull-back to lifestyle shot with soft bokeh" }
+    ],
+    "transition_style": "Counter-surface horizontal wipe — old laminate swept away by quartz reveal at countertop level",
+    "camera_motion": "Smooth gimbal tracking shot along island length; macro detail inserts with shallow depth-of-field",
+    "text_overlays": ["Before", "After", "Your Dream Kitchen"],
+    "cta": "Design My Kitchen →",
+    "caption": "Kitchen Remodel — AI-generated concept with full cost estimate",
+    "editing_instructions": [
+      "Warm white balance (5500K) for after sequence — evoke magazine-quality warmth",
+      "Before sequence: slightly increase noise/grain, reduce warmth to emphasize age",
+      "Sound design: subtle clink of glass, faint morning ambience — no music required"
+    ]
+  },
+  {
+    "service": "Bathroom Remodel",
+    "video_type": "homepage_loop",
+    "duration": "18 sec",
+    "before_prompt": "Dated master bathroom: pink-beige tile from 1985, brass towel bars, cultured marble vanity top, jetted tub with dated surround, low frosted window, water-stained grout — honest residential photo with flat bathroom lighting",
+    "after_prompt": "Same bathroom, spa-level transformation: floor-to-ceiling large-format porcelain tile, floating walnut vanity with vessel sink, freestanding soaking tub, frameless glass shower with linear drain, heated towel rail, backlit mirror — soft warm lighting, luxury hotel aesthetic",
+    "visual_style": "modern, luxury, high-end residential",
+    "scene_timeline": [
+      { "time": "0-3", "scene": "before — static wide shot from bathroom doorway" },
+      { "time": "3-6", "scene": "transition — shower glass wipe effect — tiles replacing tiles" },
+      { "time": "6-12", "scene": "after — slow pan revealing vanity, tub, shower in sequence" },
+      { "time": "12-18", "scene": "detail shots — tile grout lines, brushed nickel fixtures, tub filler, mirror lighting" },
+      { "time": "18-22", "scene": "cta overlay — soft fade to white with text" }
+    ],
+    "transition_style": "Tile-replacement morph — old tiles digitally regrout and reface into new porcelain, left to right",
+    "camera_motion": "Smooth pan left to right on tripod head; pull-focus from tile to fixture; end on wide room reveal",
+    "text_overlays": ["Before", "After", "Your Personal Spa"],
+    "cta": "Start Bathroom Concept →",
+    "caption": "Bathroom Remodel — Spa-quality concepts in 2-4 days",
+    "editing_instructions": [
+      "Desaturate before footage to near-monochrome; restore warm saturation in after sequence",
+      "After sequence: add subtle bloom/glow around light sources for luxury feel",
+      "Keep total runtime under 20 seconds — cut detail shots to 1.5s each max"
+    ]
+  },
+  {
+    "service": "Home Addition",
+    "video_type": "homepage_loop",
+    "duration": "22 sec",
+    "before_prompt": "1,200 sq ft suburban home with small side yard — dated siding, visible constraints, cramped rear exterior, no deck or outdoor connection, original footprint clearly defined — aerial-angle shot from slightly elevated position, overcast sky",
+    "after_prompt": "Same home with seamlessly integrated 600 sq ft addition: new primary suite wing, transitional-style architecture matching original, covered outdoor living space, new landscaping connecting old and new — drone aerial shot, sunny golden-hour light, material continuity",
+    "visual_style": "modern, luxury, high-end residential",
+    "scene_timeline": [
+      { "time": "0-3", "scene": "before — aerial view of original home footprint" },
+      { "time": "3-6", "scene": "transition — blueprint/outline animation showing addition in plan view" },
+      { "time": "6-12", "scene": "after — drone reveal of completed addition from multiple angles" },
+      { "time": "12-18", "scene": "detail shots — interior of addition, connection to original, outdoor space" },
+      { "time": "18-22", "scene": "cta overlay — pull-back aerial showing full expanded property" }
+    ],
+    "transition_style": "Blueprint ghost-lines animation — floor plan appears, then 3D mass model, then photo-real reveal",
+    "camera_motion": "Drone orbital flight around original home; transition to interior dolly through new addition; reverse drone pull-back on completed project",
+    "text_overlays": ["Before", "After", "Add Space. Add Value."],
+    "cta": "Plan My Addition →",
+    "caption": "Home Addition — Feasibility concept with permit scope in 3-5 days",
+    "editing_instructions": [
+      "Animate floor plan lines drawing in at 2x speed during blueprint transition (3-6 sec)",
+      "Use HDR drone footage at golden hour for maximum impact on after sequence",
+      "Cut to interior detail shots at exact beat of ambient audio — keep rhythm tight at 2s per shot"
+    ]
+  },
+  {
+    "service": "New Construction",
+    "video_type": "homepage_loop",
+    "duration": "25 sec",
+    "before_prompt": "Raw vacant lot or teardown property: overgrown grass, no structures, survey stakes visible, neighboring homes on either side, concrete sidewalk — realistic aerial-adjacent wide shot from street elevation, flat overcast morning light",
+    "after_prompt": "Fully realized modern home on same lot: clean craftsman or transitional-style architecture, two-story, attached two-car garage, curated front landscaping, modern windows, metal-accent roof detail, exposed concrete driveway — bright afternoon light, sharp architectural photography",
+    "visual_style": "modern, luxury, high-end residential",
+    "scene_timeline": [
+      { "time": "0-3", "scene": "before — wide shot of empty lot from street level" },
+      { "time": "3-6", "scene": "transition — site plan drawn in animation with lot lines and footprint" },
+      { "time": "6-12", "scene": "after — architectural exterior reveal from multiple angles" },
+      { "time": "12-18", "scene": "detail shots — exterior material samples, window profiles, entry sequence, interior renders" },
+      { "time": "18-22", "scene": "cta overlay — final hero exterior shot at dusk with warm lighting" }
+    ],
+    "transition_style": "Site plan animation: lot boundaries appear, building footprint draws in, then 3D rendering materializes over real photo",
+    "camera_motion": "Street-level tripod for before; slow drone rise during transition; cinematic orbital around finished home; end on dramatic dusk wide",
+    "text_overlays": ["Empty Lot", "Your New Home", "Build With Confidence"],
+    "cta": "Design My Build →",
+    "caption": "New Construction — Site concept and feasibility in 5-7 days",
+    "editing_instructions": [
+      "Animate site plan with subtle architectural drawing sound effects — pencil on paper, not distracting",
+      "After exterior: ensure sky replacement with dramatic golden-hour gradient if source footage is flat",
+      "Run 10px 'AI-generated concept' disclosure text at bottom throughout after sequence"
+    ]
+  },
+  {
+    "service": "Permits & Approvals",
+    "video_type": "homepage_loop",
+    "duration": "15 sec",
+    "before_prompt": "Stack of disorganized permit paperwork on a kitchen table: confusing government forms, multiple department application packets, red stamp 'DENIED', confused homeowner at table — warm residential setting, natural light, realistic",
+    "after_prompt": "Clean digital dashboard showing permit approval status: green checkmarks across all permit types, jurisdiction map with approval zone highlighted, PDF download ready, clean modern UI on laptop screen, homeowner looking confident and relieved — bright modern home office",
+    "visual_style": "modern, clean, professional, reassuring",
+    "scene_timeline": [
+      { "time": "0-3", "scene": "before — close-up on messy permit stack and stressed expression" },
+      { "time": "3-6", "scene": "transition — papers digitize and animate into clean UI screens" },
+      { "time": "6-12", "scene": "after — permit dashboard with green status indicators loading" },
+      { "time": "12-18", "scene": "detail shots — individual permit cards, jurisdiction overlay, download button" },
+      { "time": "18-22", "scene": "cta overlay — clean laptop screen with dashboard on desk" }
+    ],
+    "transition_style": "Paper-to-screen digital morph — physical documents dissolve into matching digital permit cards",
+    "camera_motion": "Tight close-up on paper before; smooth zoom-out during transition revealing screen; slow pan across dashboard details",
+    "text_overlays": ["Permit Confusion", "Permit Clarity", "Approved. Fast."],
+    "cta": "Get My Permit Roadmap →",
+    "caption": "Permits & Approvals — Know exactly what you need before you build",
+    "editing_instructions": [
+      "Use screen-recording style animation for the permit dashboard reveal — mimics SaaS product demo",
+      "Add subtle UI sound design: soft keyboard clicks, success 'ding' on green checkmarks",
+      "Keep pacing fast — this is a functional value-prop video. 15 seconds max."
+    ]
+  },
+  {
+    "service": "AI Concept & Design",
+    "video_type": "homepage_loop",
+    "duration": "20 sec",
+    "before_prompt": "Empty blank page or whiteboard — minimalist frame, clean white background, faint pencil sketch lines barely visible, person holding pencil looking uncertain — soft studio lighting, abstract aesthetic",
+    "after_prompt": "Fully rendered AI-generated room concept appearing on screen in real-time: living room materializes from particles/pixels, design elements composing — photorealistic render at final frame, warm residential setting, architectural visualization quality",
+    "visual_style": "futuristic, AI-forward, modern, high-end",
+    "scene_timeline": [
+      { "time": "0-3", "scene": "before — blank canvas or rough sketch on white background" },
+      { "time": "3-6", "scene": "transition — AI generation animation: pixels/particles forming structure" },
+      { "time": "6-12", "scene": "after — final photorealistic AI concept render revealed room by room" },
+      { "time": "12-18", "scene": "detail shots — material tiles generating, color swatches appearing, floor plan preview" },
+      { "time": "18-22", "scene": "cta overlay — final concept image with Kealee branding" }
+    ],
+    "transition_style": "AI generation particle effect — dots aggregate from random positions into coherent room elements, ending on photo-real render",
+    "camera_motion": "Slow push in on blank canvas; zoom into 'generation zone'; pull back dramatically on completed render reveal",
+    "text_overlays": ["Your Vision", "AI Renders It", "In Minutes"],
+    "cta": "Try AI Concept Design →",
+    "caption": "AI Concept & Design — From description to photorealistic render in minutes",
+    "editing_instructions": [
+      "Particle generation effect: 2-3 seconds max using After Effects particle simulator or equivalent",
+      "Final render reveal: quick fade with upscale zoom from 80% to 100% scale — feels like resolution increasing",
+      "Color grade: cool neutral before sequence, warm amber grade on final render reveal for aspirational impact"
+    ]
+  }
+]

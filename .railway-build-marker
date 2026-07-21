@@ -1,0 +1,11 @@
+BUILD_ID=force-rebuild-v9-add-shared-package
+TIMESTAMP=2026-02-16T18:00:00Z
+COMMIT=8540d2e
+CHANGES=Added @kealee/shared package for software-tiers feature gating. Must rebuild all layers.
+PACKAGES=shared,database,workflow-engine,compliance,types,analytics,api-client,estimating,storage,api
+REQUIRED_PACKAGES=shared,database,workflow-engine,api
+NOTE=All build commands use pnpm --filter run build - NO TURBO
+CRITICAL_FIX=New workspace package @kealee/shared must be installed and built before API
+VERSION=6.3.0
+FORCE_REBUILD=true
+CACHE_BUST_METHOD=multiple-layers-timestamp-args

@@ -1,0 +1,127 @@
+// MARKETPLACE — ESTIMATION SERVICE LEADS
+// Domain: marketplace | Owner: web-main + estimation service
+// Public intake leads for cost estimation service
+
+enum EstimationServiceLeadStatus {
+  NEW
+  CONTACTED
+  QUOTE_PROVIDED
+  PAYMENT_PENDING
+  PAID
+  ESTIMATION_IN_PROGRESS
+  ESTIMATION_COMPLETED
+  DOWNLOADED
+  ARCHIVED
+}
+
+// Estimation/cost analysis service lead
+model EstimationServiceLead {
+  id String @id @default(uuid())
+
+  // Contact Information
+  fullName String
+  email    String
+  phone    String?
+  company  String? // Optional - contractor/developer company
+
+  // Project Details
+  projectScope      String // interior_remodel, exterior_renovation, addition, new_construction, etc.
+  projectStage      String // schematic, design_development, construction_documents, bidding, pricing
+  scopeDetail       String? // sketch, schematic_drawing, design_drawing, construction_documents
+  location          String?
+  zipCode           String?
+  description       String? @db.Text
+  estimatedBudget   Decimal? @db.Decimal(12, 2)
+
+  // Design Documentation
+  hasDesignDrawings Boolean @default(false)
+  designDocumentUrl String? // Link to uploaded design file
+  drawingCount      Int?
+
+  // Additional Context
+  hasContractorFeedback Boolean @default(false)
+  requiresArchitecturalReview Boolean @default(false)
+  requiresEngineeringReview Boolean @default(false)
+  isPhased          Boolean @default(false) // Multi-phase project
+
+  // Service Details
+  tier           String // cost_estimate, certified_estimate, bundle
+  tierPreference String? // User's preference if set
+  status         EstimationServiceLeadStatus @default(NEW)
+  priority       String                      @default("MEDIUM")
+  source         String                      @default("WEBSITE")
+  assignedTo     String? // User ID
+
+  // Lead Scoring
+  leadScore      Int? // Readiness score (0-100)
+  readinessState String? // NEEDS_MORE_INFO, READY_FOR_ESTIMATE
+
+  // Payment Information
+  stripeSessionId String?
+  stripePaymentId String?
+  pricePaidCents  Int?
+  paidAt          DateTime?
+
+  // Related Entities
+  relatedConceptIntakeId String? // If user came from concept service
+  estimateId             String? // Links to generated Estimate
+  costDatabaseId         String? // Links to cost data used
+  projectId              String? // If converted to full project
+
+  // Metadata & Notes
+  metadata  Json?
+  notes     EstimationServiceLeadNote[]
+  activities EstimationServiceLeadActivity[]
+  files     FileUpload[] // Uploaded design drawings, specifications, etc.
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([email])
+  @@index([status])
+  @@index([tier])
+  @@index([createdAt])
+  @@index([leadScore])
+  @@map("estimation_service_leads")
+}
+
+// Notes on estimation service leads
+model EstimationServiceLeadNote {
+  id     String @id @default(uuid())
+  leadId String
+
+  content   String  @db.Text
+  createdBy String // User ID
+  isPrivate Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  lead EstimationServiceLead @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  @@index([leadId])
+  @@index([createdBy])
+  @@index([createdAt])
+  @@map("estimation_service_lead_notes")
+}
+
+// Activity log for estimation service leads
+model EstimationServiceLeadActivity {
+  id     String @id @default(uuid())
+  leadId String
+
+  activityType String // STATUS_CHANGED, EMAIL_SENT, CALL_MADE, PAYMENT_COMPLETED, ESTIMATION_STARTED, etc.
+  description  String @db.Text
+  metadata     Json? // Additional activity data
+
+  createdBy String // User ID
+  createdAt DateTime @default(now())
+
+  lead EstimationServiceLead @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  @@index([leadId])
+  @@index([activityType])
+  @@index([createdAt])
+  @@map("estimation_service_lead_activities")
+}

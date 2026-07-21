@@ -1,0 +1,51 @@
+{
+  "name": "@kealee/database",
+  "version": "1.0.0",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "require": "./dist/index.js",
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "prisma generate --schema=./prisma/schema.prisma && tsc",
+    "postinstall": "prisma generate --schema=./prisma/schema.prisma",
+    "db:generate": "prisma generate --schema=./prisma/schema.prisma",
+    "schema:split": "tsx scripts/split-schema.ts",
+    "schema:merge": "tsx scripts/merge-schema.ts",
+    "schema:validate": "tsx scripts/validate-schema.ts",
+    "db:push": "prisma db push",
+    "db:migrate": "prisma migrate dev",
+    "db:migrate:dev": "prisma migrate dev",
+    "db:migrate:deploy": "prisma migrate deploy",
+    "db:migrate:status": "prisma migrate status",
+    "db:migrate:prod": "bash ../../scripts/db-migrate-prod.sh",
+    "db:migrate:staging": "bash ../../scripts/db-migrate-staging.sh",
+    "db:migrate:marketing-os": "node scripts/apply-marketing-os-migration.cjs --apply",
+    "db:verify:marketing-os": "node scripts/apply-marketing-os-migration.cjs",
+    "db:rollback:prod": "bash ../../scripts/db-rollback-prod.sh",
+    "db:create:migration": "bash ../../scripts/db-create-migration.sh",
+    "db:setup": "bash ../../scripts/setup-dev-database.sh",
+    "db:studio": "prisma studio",
+    "db:seed": "tsx prisma/seed.ts",
+    "db:reset": "prisma migrate reset",
+    "db:deploy:production": "bash deploy-production.sh",
+    "db:deploy:production:win": "deploy-production.bat",
+    "seed:gis": "tsx scripts/seed-gis-data.ts"
+  },
+  "dependencies": {
+    "@kealee/kealee-agent-stack": "workspace:*",
+    "@prisma/client": "^5.22.0",
+    "prisma": "^5.22.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.0",
+    "dotenv": "^17.2.3",
+    "pg": "^8.17.2",
+    "tsx": "^4.7.0",
+    "typescript": "^5.9.0"
+  }
+}

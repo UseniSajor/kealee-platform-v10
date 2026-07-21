@@ -1,0 +1,39 @@
+---
+description: Public site (web-main / kealee.com) routing and component rules. Apply when working in apps/web-main.
+alwaysApply: false
+globs:
+  - "apps/web-main/**"
+---
+
+# web-main Rules (kealee.com — Fully Public)
+
+## Auth State
+web-main has ZERO auth state.
+- No `useUser()` calls
+- No `getSession()` calls
+- No portal subdomain links in any CTA
+- No conditional rendering based on auth
+
+## Routing
+- "Build your project" CTA → `/concept` (public intake) — NEVER app.kealee.com
+- "Sign in" → `/auth/sign-in` (existing members only)
+- Milestone Pay → primary nav item
+
+## Project Paths (3 types only)
+1. Design + Permits
+2. Permits Only
+3. Contractor Only
+
+## Pricing
+NEVER hardcode prices in components or pages.
+Import ALL prices from `packages/core-rules/src/pricing.ts`.
+
+## Product Pages
+25+ product pages live in `apps/web-main/src/app/products/[slug]/page.tsx`
+Each must be fully public, server-rendered, prices from core-rules.
+
+## AskAnythingBar
+- Client component (needs useState)
+- On submit: POST to `/api/concept` with `{ query: string }`
+- Show loading skeleton during API call
+- Mobile-first responsive, Tailwind only

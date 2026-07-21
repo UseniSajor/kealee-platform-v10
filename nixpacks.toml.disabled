@@ -1,0 +1,23 @@
+# Nixpacks configuration for Railway
+# Optimized for faster builds and reduced timeouts
+
+[phases.setup]
+nixPkgs = ["nodejs_20", "pnpm"]
+
+[phases.setup.env]
+PUPPETEER_SKIP_CHROMIUM_DOWNLOAD = "true"
+NODE_ENV = "production"
+
+[phases.install]
+cmds = [
+  "pnpm install --frozen-lockfile || pnpm install",
+  "pnpm --filter @kealee/database db:generate"
+]
+
+[phases.build]
+cmds = [
+  "pnpm build --filter=@kealee/api"
+]
+
+[start]
+cmd = "cd services/api && node dist/index.js"

@@ -1,0 +1,1683 @@
+import type { ProjectPath } from "./project-path-config";
+
+export type FieldType =
+  | "text"
+  | "email"
+  | "tel"
+  | "address"
+  | "textarea"
+  | "select"
+  | "multiselect"
+  | "radio"
+  | "boolean"
+  | "numeric"
+  | "file"
+  | "camera"   // labeled photo zone capture — zones come from PROJECT_PATH_META.photoZones
+  | "video";   // video upload + camera record
+
+export interface FieldOption {
+  value: string;
+  label: string;
+}
+
+export interface IntakeField {
+  key: string;
+  label: string;
+  type: FieldType;
+  placeholder?: string;
+  required?: boolean;
+  options?: FieldOption[];
+  hint?: string;
+  rows?: number;
+}
+
+export interface IntakeFormStep {
+  id: string;
+  title: string;
+  fields: IntakeField[];
+}
+
+const CONTACT_STEP: IntakeFormStep = {
+  id: "contact",
+  title: "Your Contact Info",
+  fields: [
+    { key: "clientName", label: "Full Name", type: "text", placeholder: "Jane Smith", required: true },
+    { key: "contactEmail", label: "Email Address", type: "email", placeholder: "jane@example.com", required: true },
+    { key: "contactPhone", label: "Phone Number", type: "tel", placeholder: "(555) 000-0000" },
+    { key: "projectAddress", label: "Project Address", type: "address", placeholder: "123 Main St, City, State", required: true },
+  ],
+};
+
+const SHARED_BUDGET_FIELDS: IntakeField[] = [
+  {
+    key: "budgetRange",
+    label: "Estimated Budget",
+    type: "radio",
+    required: true,
+    options: [
+      { value: "under_50k", label: "Under $50K" },
+      { value: "50k_150k", label: "$50K – $150K" },
+      { value: "150k_300k", label: "$150K – $300K" },
+      { value: "300k_500k", label: "$300K – $500K" },
+      { value: "500k_plus", label: "$500K+" },
+    ],
+  },
+  {
+    key: "timelineGoal",
+    label: "When do you want to start?",
+    type: "radio",
+    options: [
+      { value: "asap", label: "As soon as possible" },
+      { value: "1_3_months", label: "1–3 months" },
+      { value: "3_6_months", label: "3–6 months" },
+      { value: "6_12_months", label: "6–12 months" },
+      { value: "planning", label: "Just planning ahead" },
+    ],
+  },
+];
+
+/** Generic media step for paths without specific photo zones */
+const ASSETS_STEP: IntakeFormStep = {
+  id: "media",
+  title: "Photos & Media",
+  fields: [
+    {
+      key: "uploadedPhotos",
+      label: "Property Photos",
+      type: "camera",
+      hint: "Upload or capture photos of your property, existing conditions, or inspiration images.",
+    },
+    {
+      key: "videoWalkthrough",
+      label: "Video Walkthrough (optional)",
+      type: "video",
+      hint: "A 2–3 min walkthrough dramatically improves AI deliverable quality.",
+    },
+  ],
+};
+
+/** Media step for paths that require labeled zone capture */
+function buildMediaStep(includeVideo: boolean): IntakeFormStep {
+  const fields: IntakeField[] = [
+    {
+      key: "uploadedPhotos",
+      label: "Labeled Photo Zones",
+      type: "camera",
+      hint: "Capture each zone listed below. Required zones must be completed to continue.",
+    },
+  ];
+  if (includeVideo) {
+    fields.push({
+      key: "videoWalkthrough",
+      label: "Video Walkthrough",
+      type: "video",
+      hint: "Record or upload a 2–3 min walkthrough. Dramatically improves AI deliverable quality.",
+    });
+  }
+  return { id: "media", title: "Photos & Video", fields };
+}
+
+export const FORM_FIELDS_BY_PATH: Record<ProjectPath, IntakeFormStep[]> = {
+  garden_concept: [
+    CONTACT_STEP,
+    {
+      id: "project",
+      title: "Garden Details",
+      fields: [
+        {
+          key: "gardenType",
+          label: "Type of Garden",
+          type: "multiselect",
+          required: true,
+          options: [
+            { value: "food_garden", label: "Food / Vegetable Garden" },
+            { value: "raised_beds", label: "Raised Bed System" },
+            { value: "ornamental", label: "Ornamental / Flower Garden" },
+            { value: "fruit_trees", label: "Fruit Trees & Orchard" },
+            { value: "herb_garden", label: "Herb Garden" },
+            { value: "lawn_conversion", label: "Lawn Conversion" },
+            { value: "outdoor_living", label: "Outdoor Living / Patio" },
+            { value: "irrigation", label: "Irrigation System" },
+          ],
+        },
+        {
+          key: "yardSize",
+          label: "Approximate Yard Size",
+          type: "select",
+          options: [
+            { value: "small_under_500", label: "Small (under 500 sq ft)" },
+            { value: "medium_500_1500", label: "Medium (500–1,500 sq ft)" },
+            { value: "large_1500_plus", label: "Large (1,500+ sq ft)" },
+          ],
+        },
+        {
+          key: "existingCondition",
+          label: "Existing Condition",
+          type: "select",
+          options: [
+            { value: "grass_lawn", label: "Grass lawn" },
+            { value: "overgrown", label: "Overgrown / neglected" },
+            { value: "partial_garden", label: "Partial garden already in place" },
+            { value: "bare_soil", label: "Bare soil / recent construction" },
+          ],
+        },
+      ],
+    },
+    {
+      id: "scope",
+      title: "Goals & Style",
+      fields: [
+        {
+          key: "gardenGoals",
+          label: "Garden Goals",
+          type: "textarea",
+          placeholder:
+            "E.g., Raised beds for vegetables, a small chicken coop with run, drip irrigation, compost bins, and a shaded gravel seating area…",
+          rows: 3,
+        },
+        {
+          key: "sustainabilityGoals",
+          label: "Sustainability Priorities",
+          type: "multiselect",
+          options: [
+            { value: "water_conservation", label: "Water Conservation" },
+            { value: "composting", label: "Composting" },
+            { value: "native_plants", label: "Native Plants" },
+            { value: "no_pesticides", label: "No Pesticides" },
+            { value: "pollinator_friendly", label: "Pollinator Friendly" },
+          ],
+        },
+        {
+          key: "knownConstraints",
+          label: "Known Constraints (HOA, sun exposure, soil issues)",
+          type: "textarea",
+          placeholder: "E.g., HOA limits fence height; back yard is full sun but soil stays soggy after rain…",
+          rows: 2,
+        },
+      ],
+    },
+    { id: "budget", title: "Budget & Timeline", fields: SHARED_BUDGET_FIELDS },
+    ASSETS_STEP,
+  ],
+
+  whole_home_concept: [
+    CONTACT_STEP,
+    {
+      id: "project",
+      title: "Home Details",
+      fields: [
+        { key: "squareFootage", label: "Approximate Square Footage", type: "numeric", placeholder: "2,400" },
+        {
+          key: "homeStyle",
+          label: "Current Home Style",
+          type: "select",
+          options: [
+            { value: "colonial", label: "Colonial" },
+            { value: "craftsman", label: "Craftsman" },
+            { value: "ranch", label: "Ranch" },
+            { value: "split_level", label: "Split Level" },
+            { value: "contemporary", label: "Contemporary" },
+            { value: "tudor", label: "Tudor" },
+            { value: "other", label: "Other" },
+          ],
+        },
+        {
+          key: "propertyUse",
+          label: "Property Use",
+          type: "select",
+          options: [
+            { value: "primary_residence", label: "Primary Residence" },
+            { value: "rental", label: "Rental / Investment" },
+            { value: "vacation_home", label: "Vacation Home" },
+          ],
+        },
+      ],
+    },
+    {
+      id: "scope",
+      title: "Transformation Scope",
+      fields: [
+        {
+          key: "transformationScope",
+          label: "Areas to Transform",
+          type: "multiselect",
+          required: true,
+          options: [
+            { value: "exterior_facade", label: "Exterior / Facade" },
+            { value: "kitchen", label: "Kitchen" },
+            { value: "bathrooms", label: "Bathrooms" },
+            { value: "living_areas", label: "Living Areas" },
+            { value: "primary_suite", label: "Primary Suite" },
+            { value: "basement", label: "Basement" },
+            { value: "landscape", label: "Landscape / Outdoor" },
+            { value: "addition", label: "Addition / Expansion" },
+          ],
+        },
+        {
+          key: "designStyle",
+          label: "Design Style Direction",
+          type: "multiselect",
+          options: [
+            { value: "modern", label: "Modern / Contemporary" },
+            { value: "transitional", label: "Transitional" },
+            { value: "traditional", label: "Traditional" },
+            { value: "farmhouse", label: "Farmhouse" },
+            { value: "coastal", label: "Coastal" },
+            { value: "scandinavian", label: "Scandinavian" },
+          ],
+        },
+        {
+          key: "goals",
+          label: "Vision & Goals",
+          type: "textarea",
+          placeholder:
+            "E.g., Open the first floor, refresh both full baths, finish the basement, update exterior trim and paint, and improve HVAC zoning…",
+          rows: 4,
+        },
+      ],
+    },
+    { id: "budget", title: "Budget & Timeline", fields: SHARED_BUDGET_FIELDS },
+    ASSETS_STEP,
+  ],
+
+  interior_reno_concept: [
+    CONTACT_STEP,
+    {
+      id: "project",
+      title: "Renovation Scope",
+      fields: [
+        {
+          key: "roomScope",
+          label: "Rooms to Renovate",
+          type: "multiselect",
+          required: true,
+          options: [
+            { value: "kitchen", label: "Kitchen" },
+            { value: "primary_bath", label: "Primary Bathroom" },
+            { value: "secondary_bath", label: "Secondary Bathroom" },
+            { value: "living_room", label: "Living Room" },
+            { value: "dining_room", label: "Dining Room" },
+            { value: "bedroom", label: "Bedroom(s)" },
+            { value: "basement", label: "Basement" },
+            { value: "addition_adu", label: "Addition / ADU" },
+          ],
+        },
+        {
+          key: "currentCondition",
+          label: "Current Condition",
+          type: "select",
+          options: [
+            { value: "dated_functional", label: "Dated but functional" },
+            { value: "needs_repairs", label: "Needs repairs" },
+            { value: "partial_demo", label: "Partial demo / gut" },
+            { value: "complete_gut", label: "Complete gut renovation" },
+          ],
+        },
+      ],
+    },
+    {
+      id: "scope",
+      title: "Design Direction",
+      fields: [
+        {
+          key: "designStyle",
+          label: "Design Style",
+          type: "multiselect",
+          options: [
+            { value: "modern", label: "Modern" },
+            { value: "transitional", label: "Transitional" },
+            { value: "traditional", label: "Traditional" },
+            { value: "farmhouse", label: "Farmhouse" },
+            { value: "coastal", label: "Coastal" },
+            { value: "scandinavian", label: "Scandinavian" },
+            { value: "industrial", label: "Industrial" },
+          ],
+        },
+        {
+          key: "renovationGoals",
+          label: "Renovation Goals & Priorities",
+          type: "textarea",
+          placeholder:
+            "E.g., Kitchen + dining refresh first, then primary bath; keep hardwood where possible; add storage in the mudroom…",
+          rows: 4,
+        },
+        {
+          key: "knownConstraints",
+          label: "Known Constraints",
+          type: "textarea",
+          placeholder: "E.g., Load-bearing wall between kitchen and living; HOA design review; asbestos test pending…",
+          rows: 2,
+        },
+      ],
+    },
+    { id: "budget", title: "Budget & Timeline", fields: SHARED_BUDGET_FIELDS },
+    ASSETS_STEP,
+  ],
+
+  developer_concept: [
+    CONTACT_STEP,
+    {
+      id: "property",
+      title: "Property & Deal",
+      fields: [
+        { key: "lotSizeSqFt", label: "Lot Size (sq ft)", type: "numeric", placeholder: "10,000" },
+        { key: "askingPrice", label: "Asking / Purchase Price", type: "text", placeholder: "$850,000" },
+        {
+          key: "developmentUseType",
+          label: "Intended Use Type",
+          type: "select",
+          required: true,
+          options: [
+            { value: "single_family", label: "Single Family" },
+            { value: "duplex_triplex", label: "Duplex / Triplex" },
+            { value: "adu", label: "ADU / Accessory Dwelling" },
+            { value: "multifamily", label: "Multifamily (4+ units)" },
+            { value: "mixed_use", label: "Mixed-Use (retail + residential)" },
+            { value: "commercial_office", label: "Commercial / Office" },
+            { value: "industrial_flex", label: "Industrial / Flex" },
+          ],
+        },
+        {
+          key: "currentZoning",
+          label: "Current Zoning (if known)",
+          type: "text",
+          placeholder: "e.g. R-2, MU-4, C-1",
+        },
+      ],
+    },
+    {
+      id: "goals",
+      title: "Investment Goals",
+      fields: [
+        {
+          key: "investmentStrategy",
+          label: "Investment Strategy",
+          type: "radio",
+          required: true,
+          options: [
+            { value: "build_sell", label: "Build & Sell" },
+            { value: "build_hold", label: "Build & Hold / Rent" },
+            { value: "flip", label: "Flip / Value-Add" },
+            { value: "ground_up", label: "Ground-Up Development" },
+          ],
+        },
+        {
+          key: "projectDescription",
+          label: "Project Description",
+          type: "textarea",
+          placeholder:
+            "E.g., Tear-down SFR on R-2 lot — target duplex + ADU, pro forma under $1.2M build, need massing study and utility tie-in assumptions…",
+          rows: 4,
+        },
+        {
+          key: "budgetRange",
+          label: "Total Project Budget",
+          type: "radio",
+          required: true,
+          options: [
+            { value: "under_500k", label: "Under $500K" },
+            { value: "500k_1m", label: "$500K – $1M" },
+            { value: "1m_3m", label: "$1M – $3M" },
+            { value: "3m_10m", label: "$3M – $10M" },
+            { value: "10m_plus", label: "$10M+" },
+          ],
+        },
+      ],
+    },
+  ],
+
+  exterior_concept: [
+    CONTACT_STEP,
+    {
+      id: "project",
+      title: "Project Details",
+      fields: [
+        {
+          key: "exteriorProjectType",
+          label: "Type of Exterior Work",
+          type: "radio",
+          required: true,
+          options: [
+            { value: "facade_redesign", label: "Facade Redesign" },
+            { value: "exterior_refresh", label: "Exterior Refresh" },
+            { value: "landscape_redesign", label: "Landscape Redesign" },
+            { value: "driveway_hardscape", label: "Driveway / Hardscape" },
+            { value: "porch_deck_concept", label: "Porch / Deck Concept" },
+            { value: "full_exterior", label: "Full Exterior" },
+          ],
+        },
+        {
+          key: "propertyUse",
+          label: "Property Use",
+          type: "select",
+          options: [
+            { value: "primary_residence", label: "Primary Residence" },
+            { value: "rental", label: "Rental / Investment" },
+            { value: "multifamily", label: "Multifamily" },
+          ],
+        },
+      ],
+    },
+    {
+      id: "scope",
+      title: "Scope & Style",
+      fields: [
+        {
+          key: "stylePreferences",
+          label: "Style Preferences",
+          type: "multiselect",
+          options: [
+            { value: "modern", label: "Modern / Contemporary" },
+            { value: "traditional", label: "Traditional" },
+            { value: "transitional", label: "Transitional" },
+            { value: "craftsman", label: "Craftsman" },
+            { value: "colonial", label: "Colonial" },
+            { value: "mediterranean", label: "Mediterranean" },
+            { value: "farmhouse", label: "Farmhouse" },
+          ],
+        },
+        {
+          key: "goals",
+          label: "Project Goals",
+          type: "textarea",
+          placeholder:
+            "E.g., Replace failing wood siding with fiber cement, new black windows, wider front steps, and low-maintenance foundation plantings…",
+          rows: 4,
+        },
+        {
+          key: "knownConstraints",
+          label: "Known Constraints (HOA, setbacks, etc.)",
+          type: "textarea",
+          placeholder: "E.g., Historic overlay on front facade; 5 ft side setback; no changes to roof pitch per HOA…",
+          rows: 3,
+        },
+      ],
+    },
+    {
+      id: "assessment",
+      title: "Property Details",
+      fields: [
+        {
+          key: "hoaApprovalStatus",
+          label: "HOA Approval Status",
+          type: "select",
+          options: [
+            { value: "no_hoa", label: "No HOA" },
+            { value: "not_submitted", label: "Not yet submitted" },
+            { value: "pending", label: "Pending review" },
+            { value: "approved", label: "Approved" },
+            { value: "denied", label: "Denied — revising" },
+          ],
+        },
+        {
+          key: "currentExteriorMaterial",
+          label: "Current Exterior Material",
+          type: "select",
+          options: [
+            { value: "brick", label: "Brick" },
+            { value: "wood_siding", label: "Wood Siding" },
+            { value: "vinyl_siding", label: "Vinyl Siding" },
+            { value: "fiber_cement", label: "Fiber Cement / HardiePlank" },
+            { value: "stucco", label: "Stucco" },
+            { value: "stone", label: "Stone / Cultured Stone" },
+            { value: "mixed", label: "Mixed Materials" },
+          ],
+        },
+        {
+          key: "drivewayMaterial",
+          label: "Driveway Material",
+          type: "select",
+          options: [
+            { value: "concrete", label: "Concrete" },
+            { value: "asphalt", label: "Asphalt" },
+            { value: "pavers", label: "Pavers" },
+            { value: "gravel", label: "Gravel" },
+            { value: "none", label: "No driveway" },
+          ],
+        },
+        { key: "fencingExists", label: "Existing Fencing?", type: "boolean" },
+        { key: "knownPermitRequirements", label: "Known Permit Requirements", type: "textarea", placeholder: "E.g., Electrical permit for panel upgrade; mechanical for HVAC; structural if removing a load-bearing wall…", rows: 2 },
+      ],
+    },
+    { id: "budget", title: "Budget & Timeline", fields: SHARED_BUDGET_FIELDS },
+    buildMediaStep(false),
+  ],
+
+  interior_renovation: [
+    CONTACT_STEP,
+    {
+      id: "project",
+      title: "Renovation Scope",
+      fields: [
+        {
+          key: "roomScope",
+          label: "Rooms to Renovate",
+          type: "multiselect",
+          required: true,
+          options: [
+            { value: "kitchen", label: "Kitchen" },
+            { value: "primary_bath", label: "Primary Bathroom" },
+            { value: "secondary_bath", label: "Secondary Bathroom" },
+            { value: "living_room", label: "Living Room" },
+            { value: "dining_room", label: "Dining Room" },
+            { value: "bedroom", label: "Bedroom(s)" },
+            { value: "basement", label: "Basement" },
+            { value: "laundry", label: "Laundry / Utility" },
+            { value: "other", label: "Other" },
+          ],
+        },
+        {
+          key: "currentCondition",
+          label: "Current Condition",
+          type: "select",
+          options: [
+            { value: "dated_but_functional", label: "Dated but functional" },
+            { value: "needs_repairs", label: "Needs repairs" },
+            { value: "partial_demo", label: "Partial demo / gut" },
+            { value: "complete_gut", label: "Complete gut renovation" },
+          ],
+        },
+      ],
+    },
+    {
+      id: "scope",
+      title: "Design Direction",
+      fields: [
+        {
+          key: "designStyle",
+          label: "Design Style",
+          type: "multiselect",
+          options: [
+            { value: "modern", label: "Modern" },
+            { value: "traditional", label: "Traditional" },
+            { value: "transitional", label: "Transitional" },
+            { value: "farmhouse", label: "Farmhouse" },
+            { value: "scandinavian", label: "Scandinavian" },
+            { value: "industrial", label: "Industrial" },
+            { value: "coastal", label: "Coastal" },
+          ],
+        },
+        {
+          key: "renovationGoals",
+          label: "Renovation Goals",
+          type: "textarea",
+          placeholder:
+            "E.g., Replace carpet with LVP on the first floor, new trim and doors, paint throughout, and add recessed lighting in the living room…",
+          rows: 4,
+        },
+        {
+          key: "knownConstraints",
+          label: "Known Constraints",
+          type: "textarea",
+          placeholder: "E.g., Budget capped at $X; plaster walls; limited electrical panel capacity until upgrade…",
+          rows: 3,
+        },
+      ],
+    },
+    {
+      id: "assessment",
+      title: "Condition Assessment",
+      fields: [
+        { key: "conditionPerRoom", label: "Condition Notes Per Room", type: "textarea", placeholder: "e.g. Kitchen: original 1970s cabinetry, dated tile. Bath: cracked grout, old fixtures...", rows: 4 },
+        { key: "structuralConcerns", label: "Any known structural concerns?", type: "boolean" },
+        {
+          key: "asbestosRisk",
+          label: "Asbestos / Lead Risk",
+          type: "select",
+          options: [
+            { value: "tested_clear", label: "Tested — clear" },
+            { value: "not_tested", label: "Not tested (pre-1980 home)" },
+            { value: "known_present", label: "Known to be present" },
+            { value: "not_applicable", label: "Post-1980 home — N/A" },
+          ],
+        },
+        {
+          key: "existingFlooringType",
+          label: "Existing Flooring Type",
+          type: "multiselect",
+          options: [
+            { value: "hardwood", label: "Hardwood" },
+            { value: "carpet", label: "Carpet" },
+            { value: "tile", label: "Tile / Stone" },
+            { value: "lvp", label: "LVP / Vinyl Plank" },
+            { value: "laminate", label: "Laminate" },
+            { value: "concrete", label: "Concrete (exposed)" },
+            { value: "mixed", label: "Mixed" },
+          ],
+        },
+      ],
+    },
+    { id: "budget", title: "Budget & Timeline", fields: SHARED_BUDGET_FIELDS },
+    buildMediaStep(true),
+  ],
+
+  whole_home_remodel: [
+    CONTACT_STEP,
+    {
+      id: "project",
+      title: "Home Details",
+      fields: [
+        { key: "squareFootage", label: "Approximate Square Footage", type: "numeric", placeholder: "2400" },
+        {
+          key: "bedroomCount",
+          label: "Number of Bedrooms",
+          type: "select",
+          options: [
+            { value: "2", label: "2 bedrooms" },
+            { value: "3", label: "3 bedrooms" },
+            { value: "4", label: "4 bedrooms" },
+            { value: "5plus", label: "5+ bedrooms" },
+          ],
+        },
+        {
+          key: "propertyUse",
+          label: "Property Use",
+          type: "select",
+          options: [
+            { value: "primary_residence", label: "Primary Residence" },
+            { value: "rental", label: "Rental / Investment" },
+            { value: "vacation_home", label: "Vacation Home" },
+          ],
+        },
+      ],
+    },
+    {
+      id: "scope",
+      title: "Remodel Scope",
+      fields: [
+        {
+          key: "remodelingScope",
+          label: "Areas to Remodel",
+          type: "multiselect",
+          options: [
+            { value: "kitchen", label: "Kitchen" },
+            { value: "bathrooms", label: "Bathrooms" },
+            { value: "primary_suite", label: "Primary Suite" },
+            { value: "living_areas", label: "Living Areas" },
+            { value: "basement", label: "Basement" },
+            { value: "exterior", label: "Exterior" },
+            { value: "full_property", label: "Full Property" },
+          ],
+        },
+        {
+          key: "designStyle",
+          label: "Design Style",
+          type: "multiselect",
+          options: [
+            { value: "modern", label: "Modern / Contemporary" },
+            { value: "traditional", label: "Traditional" },
+            { value: "transitional", label: "Transitional" },
+            { value: "luxury", label: "Luxury" },
+            { value: "farmhouse", label: "Farmhouse" },
+          ],
+        },
+        {
+          key: "priorities",
+          label: "Top Priorities",
+          type: "textarea",
+          placeholder:
+            "E.g., Phased reno while living in the home; upgrade kitchen and baths first; improve energy efficiency and roof before cosmetics…",
+          rows: 4,
+        },
+        {
+          key: "knownConstraints",
+          label: "Known Constraints",
+          type: "textarea",
+          placeholder: "E.g., HOA architectural review; knob-and-tube in part of the house; slab-on-grade limits basement plumbing…",
+          rows: 3,
+        },
+      ],
+    },
+    {
+      id: "assessment",
+      title: "Property Assessment",
+      fields: [
+        {
+          key: "yearBuilt",
+          label: "Year Built (approx.)",
+          type: "select",
+          options: [
+            { value: "pre_1950", label: "Before 1950" },
+            { value: "1950_1970", label: "1950–1970" },
+            { value: "1970_1990", label: "1970–1990" },
+            { value: "1990_2005", label: "1990–2005" },
+            { value: "2005_plus", label: "2005 or newer" },
+          ],
+        },
+        {
+          key: "hvacAge",
+          label: "HVAC System Age",
+          type: "select",
+          options: [
+            { value: "under_5", label: "Under 5 years" },
+            { value: "5_10", label: "5–10 years" },
+            { value: "10_15", label: "10–15 years" },
+            { value: "over_15", label: "Over 15 years / unknown" },
+          ],
+        },
+        {
+          key: "electricalPanelSize",
+          label: "Electrical Panel Size",
+          type: "select",
+          options: [
+            { value: "100a", label: "100 Amp" },
+            { value: "150a", label: "150 Amp" },
+            { value: "200a", label: "200 Amp" },
+            { value: "unknown", label: "Unknown" },
+          ],
+        },
+        { key: "liveInDuringReno", label: "Will you live in the home during renovation?", type: "boolean" },
+        {
+          key: "previousRenovations",
+          label: "Previous Renovations (describe)",
+          type: "textarea",
+          placeholder: "E.g., Kitchen refaced 2015; roof and windows 2018; baths and basement still original…",
+          rows: 3,
+        },
+        {
+          key: "roofAge",
+          label: "Roof Age",
+          type: "select",
+          options: [
+            { value: "under_5", label: "Under 5 years" },
+            { value: "5_10", label: "5–10 years" },
+            { value: "10_20", label: "10–20 years" },
+            { value: "over_20", label: "Over 20 years / unknown" },
+          ],
+        },
+      ],
+    },
+    {
+      id: "budget",
+      title: "Budget & Financing",
+      fields: [
+        {
+          key: "budgetRange",
+          label: "Estimated Budget",
+          type: "radio",
+          required: true,
+          options: [
+            { value: "under_100k", label: "Under $100K" },
+            { value: "100k_250k", label: "$100K – $250K" },
+            { value: "250k_500k", label: "$250K – $500K" },
+            { value: "500k_1m", label: "$500K – $1M" },
+            { value: "1m_plus", label: "$1M+" },
+          ],
+        },
+        {
+          key: "financingStatus",
+          label: "How are you financing?",
+          type: "select",
+          options: [
+            { value: "cash", label: "Cash" },
+            { value: "construction_loan", label: "Construction Loan" },
+            { value: "home_equity", label: "Home Equity / HELOC" },
+            { value: "refinance", label: "Cash-Out Refinance" },
+            { value: "not_sure", label: "Not sure yet" },
+          ],
+        },
+        {
+          key: "timelineGoal",
+          label: "When do you want to start?",
+          type: "radio",
+          options: [
+            { value: "asap", label: "As soon as possible" },
+            { value: "1_3_months", label: "1–3 months" },
+            { value: "3_6_months", label: "3–6 months" },
+            { value: "6_12_months", label: "6–12 months" },
+            { value: "planning", label: "Just planning ahead" },
+          ],
+        },
+      ],
+    },
+    buildMediaStep(true),
+  ],
+
+  addition_expansion: [
+    CONTACT_STEP,
+    {
+      id: "project",
+      title: "Addition Details",
+      fields: [
+        {
+          key: "additionType",
+          label: "Type of Addition",
+          type: "radio",
+          required: true,
+          options: [
+            { value: "rear_addition", label: "Rear Addition" },
+            { value: "side_addition", label: "Side Addition" },
+            { value: "vertical_addition", label: "Vertical (Second Floor)" },
+            { value: "garage_addition", label: "Garage Addition" },
+            { value: "adu_unit", label: "ADU / In-Law Suite" },
+            { value: "sunroom", label: "Sunroom / Screened Porch" },
+          ],
+        },
+        { key: "existingSquareFootage", label: "Existing Home Square Footage", type: "numeric", placeholder: "1800" },
+        { key: "targetAdditionalSqft", label: "Approximate Square Footage to Add", type: "numeric", placeholder: "400" },
+        {
+          key: "additionUseCase",
+          label: "What will the addition be used for?",
+          type: "select",
+          options: [
+            { value: "primary_bedroom", label: "Primary Bedroom / Suite" },
+            { value: "bedroom", label: "Bedroom(s)" },
+            { value: "bathroom", label: "Bathroom" },
+            { value: "living_space", label: "Living / Family Room" },
+            { value: "home_office", label: "Home Office" },
+            { value: "in_law_suite", label: "In-Law / Guest Suite" },
+            { value: "kitchen_expansion", label: "Kitchen Expansion" },
+            { value: "other", label: "Other" },
+          ],
+        },
+      ],
+    },
+    {
+      id: "scope",
+      title: "Scope & Constraints",
+      fields: [
+        { key: "hasArchitect", label: "Do you already have an architect or designer?", type: "boolean" },
+        {
+          key: "neighborhoodConstraints",
+          label: "Neighborhood / Zoning Constraints",
+          type: "textarea",
+          placeholder: "E.g., 5 ft side setback; max 35% lot coverage; rear setback 20 ft; design review board…",
+          rows: 3,
+        },
+        {
+          key: "goals",
+          label: "Project Goals",
+          type: "textarea",
+          placeholder:
+            "E.g., Add 400 sq ft rear addition for a new primary suite and enlarge the kitchen — match existing brick and roofline…",
+          rows: 4,
+        },
+      ],
+    },
+    {
+      id: "assessment",
+      title: "Site Assessment",
+      fields: [
+        { key: "lotSizeSqFt", label: "Lot Size (sq ft)", type: "numeric", placeholder: "8500" },
+        { key: "rearYardDepth", label: "Rear Yard Depth (ft)", type: "numeric", placeholder: "45" },
+        {
+          key: "existingStructures",
+          label: "Existing Structures on Lot",
+          type: "multiselect",
+          options: [
+            { value: "detached_garage", label: "Detached Garage" },
+            { value: "shed", label: "Shed / Workshop" },
+            { value: "pool", label: "Pool" },
+            { value: "deck_patio", label: "Deck / Patio" },
+            { value: "adu", label: "ADU / Guest House" },
+            { value: "none", label: "None" },
+          ],
+        },
+        { key: "utilityMarkings", label: "Have utilities been marked (811)?", type: "boolean" },
+        {
+          key: "soilCondition",
+          label: "Soil / Site Condition",
+          type: "select",
+          options: [
+            { value: "standard", label: "Standard / unknown" },
+            { value: "expansive_clay", label: "Expansive clay" },
+            { value: "sandy", label: "Sandy / poor bearing" },
+            { value: "rocky", label: "Rocky" },
+            { value: "fill", label: "Previously filled / disturbed" },
+          ],
+        },
+        {
+          key: "adjacentStructures",
+          label: "Adjacent Structures / Easements",
+          type: "textarea",
+          placeholder: "E.g., Neighbor garage 3 ft off shared line; utility easement along rear 8 ft; large oak in setback…",
+          rows: 2,
+        },
+        { key: "hoaApprovalStatus", label: "HOA Approval Status", type: "select", options: [
+            { value: "no_hoa", label: "No HOA" },
+            { value: "not_submitted", label: "Not yet submitted" },
+            { value: "pending", label: "Pending review" },
+            { value: "approved", label: "Approved" },
+            { value: "denied", label: "Denied — revising" },
+          ],
+        },
+        { key: "knownPermitRequirements", label: "Known Permit Requirements", type: "textarea", placeholder: "E.g., Electrical permit for panel upgrade; mechanical for HVAC; structural if removing a load-bearing wall…", rows: 2 },
+      ],
+    },
+    { id: "budget", title: "Budget & Timeline", fields: SHARED_BUDGET_FIELDS },
+    buildMediaStep(true),
+  ],
+
+  design_build: [
+    CONTACT_STEP,
+    {
+      id: "project",
+      title: "Project Overview",
+      fields: [
+        {
+          key: "projectScale",
+          label: "Project Scale",
+          type: "radio",
+          required: true,
+          options: [
+            { value: "small", label: "Small (under $100K)" },
+            { value: "medium", label: "Medium ($100K–$500K)" },
+            { value: "large", label: "Large ($500K–$1M)" },
+            { value: "luxury", label: "Luxury ($1M+)" },
+          ],
+        },
+        {
+          key: "currentStage",
+          label: "Current Project Stage",
+          type: "radio",
+          options: [
+            { value: "idea_stage", label: "Idea stage — no plans yet" },
+            { value: "concept_developed", label: "Concept developed" },
+            { value: "has_plans", label: "Have architectural plans" },
+            { value: "ready_to_build", label: "Plans approved, ready to build" },
+          ],
+        },
+      ],
+    },
+    {
+      id: "scope",
+      title: "Design + Build Scope",
+      fields: [
+        {
+          key: "designBuildScope",
+          label: "Services Needed",
+          type: "multiselect",
+          options: [
+            { value: "architecture", label: "Architecture / Engineering" },
+            { value: "interior_design", label: "Interior Design" },
+            { value: "construction", label: "Construction Management" },
+            { value: "permitting", label: "Permitting" },
+            { value: "landscaping", label: "Landscaping" },
+            { value: "full_service", label: "Full Design-Build" },
+          ],
+        },
+        { key: "hasExistingDesigns", label: "Do you have existing plans or designs to share?", type: "boolean" },
+        {
+          key: "deliverables",
+          label: "Desired Project Outcomes",
+          type: "textarea",
+          placeholder:
+            "E.g., Single contract for architecture through GC buyout — need coordinated CD set, phasing plan, and allowance schedule…",
+          rows: 4,
+        },
+        {
+          key: "knownConstraints",
+          label: "Known Constraints",
+          type: "textarea",
+          placeholder: "E.g., Occupied building; limited laydown; city noise ordinance; union requirements on site…",
+          rows: 3,
+        },
+      ],
+    },
+    { id: "budget", title: "Budget & Timeline", fields: SHARED_BUDGET_FIELDS },
+    ASSETS_STEP,
+  ],
+
+  permit_path_only: [
+    CONTACT_STEP,
+    {
+      id: "project",
+      title: "Permit Details",
+      fields: [
+        {
+          key: "permitType",
+          label: "Type of Permit",
+          type: "radio",
+          required: true,
+          options: [
+            { value: "residential_renovation", label: "Residential Renovation" },
+            { value: "addition", label: "Addition" },
+            { value: "new_construction", label: "New Construction" },
+            { value: "adu", label: "ADU" },
+            { value: "deck_fence", label: "Deck / Fence" },
+            { value: "commercial", label: "Commercial" },
+          ],
+        },
+        { key: "permitJurisdiction", label: "Jurisdiction / County", type: "text", placeholder: "e.g. Montgomery County, MD", required: true },
+        {
+          key: "currentApprovalStatus",
+          label: "Current Approval Status",
+          type: "select",
+          options: [
+            { value: "not_started", label: "Not started" },
+            { value: "pre_application", label: "Pre-application meeting scheduled" },
+            { value: "application_submitted", label: "Application submitted" },
+            { value: "revisions_requested", label: "Revisions requested" },
+            { value: "approved", label: "Approved" },
+          ],
+        },
+      ],
+    },
+    {
+      id: "scope",
+      title: "Project Description",
+      fields: [
+        {
+          key: "projectDescription",
+          label: "Project Description",
+          type: "textarea",
+          placeholder:
+            "E.g., Load-bearing wall removal between kitchen and dining; new rear deck with stairs to grade; or new detached ADU — list each scope item on the plans…",
+          rows: 5,
+          required: true,
+        },
+        {
+          key: "knownConstraints",
+          label: "Known Issues or Constraints",
+          type: "textarea",
+          placeholder: "E.g., Open permit from 2019 deck; neighbor easement on south property line; prior variance for setback…",
+          rows: 3,
+        },
+      ],
+    },
+    {
+      id: "assessment",
+      title: "Documentation Status",
+      fields: [
+        { key: "hasCertificateOfOccupancy", label: "Has Certificate of Occupancy?", type: "boolean" },
+        { key: "existingDrawingsAvailable", label: "Existing Architectural Drawings Available?", type: "boolean" },
+        { key: "anyOpenPermits", label: "Any open or expired permits on the property?", type: "boolean" },
+        { key: "codeViolations", label: "Any known code violations?", type: "boolean" },
+        { key: "hoaApprovalStatus", label: "HOA Approval Status", type: "select", options: [
+            { value: "no_hoa", label: "No HOA" },
+            { value: "not_submitted", label: "Not yet submitted" },
+            { value: "pending", label: "Pending review" },
+            { value: "approved", label: "Approved" },
+            { value: "denied", label: "Denied — revising" },
+          ],
+        },
+      ],
+    },
+    {
+      id: "budget",
+      title: "Budget & Timeline",
+      fields: [
+        {
+          key: "budgetRange",
+          label: "Project Budget (approx.)",
+          type: "radio",
+          options: [
+            { value: "under_50k", label: "Under $50K" },
+            { value: "50k_150k", label: "$50K – $150K" },
+            { value: "150k_300k", label: "$150K – $300K" },
+            { value: "300k_plus", label: "$300K+" },
+          ],
+        },
+        {
+          key: "timelineGoal",
+          label: "Target Approval Timeline",
+          type: "radio",
+          options: [
+            { value: "asap", label: "Urgent — as soon as possible" },
+            { value: "1_3_months", label: "1–3 months" },
+            { value: "3_6_months", label: "3–6 months" },
+            { value: "flexible", label: "Flexible" },
+          ],
+        },
+      ],
+    },
+    ASSETS_STEP,
+  ],
+
+  kitchen_remodel: [
+    CONTACT_STEP,
+    {
+      id: "project",
+      title: "Kitchen Details",
+      fields: [
+        {
+          key: "kitchenProjectType",
+          label: "Type of Kitchen Remodel",
+          type: "radio",
+          options: [
+            { value: "cosmetic", label: "Cosmetic update (paint, hardware, fixtures)" },
+            { value: "partial", label: "Partial remodel (cabinets or countertops)" },
+            { value: "full", label: "Full kitchen remodel" },
+            { value: "layout_change", label: "Full remodel with layout change" },
+          ],
+        },
+        {
+          key: "projectDescription",
+          label: "Describe your kitchen goals",
+          type: "textarea",
+          placeholder:
+            "E.g., Remove wall to dining, 10 ft island with seating, quartz counters, pantry wall, and relocate sink under the window…",
+          rows: 4,
+        },
+        {
+          key: "knownConstraints",
+          label: "Known Constraints",
+          type: "textarea",
+          placeholder: "E.g., Range on interior wall — venting through roof; HOA limits exterior window style…",
+          rows: 3,
+        },
+      ],
+    },
+    {
+      id: "style",
+      title: "Style & Budget",
+      fields: [
+        {
+          key: "stylePreferences",
+          label: "Preferred Kitchen Style",
+          type: "multiselect",
+          options: [
+            { value: "modern", label: "Modern / Contemporary" },
+            { value: "transitional", label: "Transitional" },
+            { value: "traditional", label: "Traditional / Classic" },
+            { value: "farmhouse", label: "Farmhouse" },
+            { value: "industrial", label: "Industrial" },
+          ],
+        },
+        ...SHARED_BUDGET_FIELDS,
+      ],
+    },
+    {
+      id: "assessment",
+      title: "Kitchen Assessment",
+      fields: [
+        {
+          key: "kitchenLayout",
+          label: "Current Kitchen Layout",
+          type: "select",
+          options: [
+            { value: "galley", label: "Galley (two parallel walls)" },
+            { value: "l_shaped", label: "L-Shaped" },
+            { value: "u_shaped", label: "U-Shaped" },
+            { value: "open_concept", label: "Open Concept" },
+            { value: "one_wall", label: "One-Wall" },
+          ],
+        },
+        { key: "cabinetCount", label: "Approximate Cabinet Count (uppers + lowers)", type: "numeric", placeholder: "24" },
+        {
+          key: "appliancesToReplace",
+          label: "Appliances to Replace",
+          type: "multiselect",
+          options: [
+            { value: "refrigerator", label: "Refrigerator" },
+            { value: "range_oven", label: "Range / Oven" },
+            { value: "dishwasher", label: "Dishwasher" },
+            { value: "microwave", label: "Microwave / Hood" },
+            { value: "sink_faucet", label: "Sink & Faucet" },
+            { value: "none", label: "Keeping existing appliances" },
+          ],
+        },
+        { key: "hasIsland", label: "Island (existing or planned)?", type: "boolean" },
+        {
+          key: "countertopMaterial",
+          label: "Target Countertop Material",
+          type: "select",
+          options: [
+            { value: "quartz", label: "Quartz" },
+            { value: "granite", label: "Granite" },
+            { value: "marble", label: "Marble" },
+            { value: "quartzite", label: "Quartzite" },
+            { value: "butcher_block", label: "Butcher Block" },
+            { value: "laminate", label: "Laminate" },
+            { value: "undecided", label: "Undecided" },
+          ],
+        },
+        { key: "plumbingRelocate", label: "Does the plumbing need to be relocated?", type: "boolean" },
+        {
+          key: "electricalUpgrade",
+          label: "Electrical Upgrade Needed?",
+          type: "select",
+          options: [
+            { value: "needed", label: "Yes — needed" },
+            { value: "maybe", label: "Maybe — need assessment" },
+            { value: "no", label: "No — existing circuits sufficient" },
+          ],
+        },
+        { key: "hoaApprovalStatus", label: "HOA Approval Status", type: "select", options: [
+            { value: "no_hoa", label: "No HOA" },
+            { value: "not_submitted", label: "Not yet submitted" },
+            { value: "pending", label: "Pending review" },
+            { value: "approved", label: "Approved" },
+            { value: "denied", label: "Denied — revising" },
+          ],
+        },
+        { key: "knownPermitRequirements", label: "Known Permit Requirements", type: "textarea", placeholder: "E.g., Electrical permit for panel upgrade; mechanical for HVAC; structural if removing a load-bearing wall…", rows: 2 },
+      ],
+    },
+    buildMediaStep(false),
+  ],
+
+  bathroom_remodel: [
+    CONTACT_STEP,
+    {
+      id: "project",
+      title: "Bathroom Details",
+      fields: [
+        {
+          key: "bathroomProjectType",
+          label: "Type of Bathroom Remodel",
+          type: "radio",
+          options: [
+            { value: "cosmetic", label: "Cosmetic update (fixtures, tile, paint)" },
+            { value: "partial", label: "Partial remodel (shower or vanity)" },
+            { value: "full", label: "Full bathroom remodel" },
+            { value: "addition", label: "New bathroom addition" },
+          ],
+        },
+        {
+          key: "projectDescription",
+          label: "Describe your bathroom goals",
+          type: "textarea",
+          placeholder:
+            "E.g., Primary bath: curbless shower with bench, heated floors, double vanity, better exhaust, and larger niche storage…",
+          rows: 4,
+        },
+        {
+          key: "knownConstraints",
+          label: "Known Constraints",
+          type: "textarea",
+          placeholder: "E.g., Joists under tub; concrete subfloor limits drain moves; window in shower zone…",
+          rows: 3,
+        },
+      ],
+    },
+    {
+      id: "style",
+      title: "Style & Budget",
+      fields: [
+        {
+          key: "stylePreferences",
+          label: "Preferred Bathroom Style",
+          type: "multiselect",
+          options: [
+            { value: "modern", label: "Modern / Spa" },
+            { value: "transitional", label: "Transitional" },
+            { value: "traditional", label: "Traditional / Classic" },
+            { value: "farmhouse", label: "Farmhouse" },
+            { value: "luxury", label: "Luxury" },
+          ],
+        },
+        ...SHARED_BUDGET_FIELDS,
+      ],
+    },
+    {
+      id: "assessment",
+      title: "Bathroom Assessment",
+      fields: [
+        {
+          key: "bathroomType",
+          label: "Bathroom Type",
+          type: "select",
+          options: [
+            { value: "master", label: "Master / Primary Bath" },
+            { value: "full", label: "Full Bath (tub + shower)" },
+            { value: "half", label: "Half Bath / Powder Room" },
+            { value: "three_quarter", label: "3/4 Bath (shower only)" },
+          ],
+        },
+        {
+          key: "existingShowerTub",
+          label: "Existing Shower / Tub",
+          type: "select",
+          options: [
+            { value: "tub_only", label: "Tub only" },
+            { value: "shower_only", label: "Shower only" },
+            { value: "tub_shower_combo", label: "Tub/shower combo" },
+            { value: "separate_both", label: "Separate tub and shower" },
+            { value: "none", label: "None (half bath)" },
+          ],
+        },
+        {
+          key: "fixtureCondition",
+          label: "Existing Fixture Condition",
+          type: "select",
+          options: [
+            { value: "good", label: "Good — keeping" },
+            { value: "dated", label: "Dated — replacing" },
+            { value: "damaged", label: "Damaged — must replace" },
+          ],
+        },
+        { key: "hasTileWork", label: "Existing tile that needs to be replaced?", type: "boolean" },
+        { key: "accessibilityNeeds", label: "Accessibility / ADA needs?", type: "boolean" },
+        {
+          key: "ventilation",
+          label: "Ventilation",
+          type: "select",
+          options: [
+            { value: "window", label: "Window only" },
+            { value: "fan_adequate", label: "Exhaust fan — adequate" },
+            { value: "fan_inadequate", label: "Exhaust fan — inadequate / noisy" },
+            { value: "none", label: "No ventilation" },
+          ],
+        },
+        { key: "hoaApprovalStatus", label: "HOA Approval Status", type: "select", options: [
+            { value: "no_hoa", label: "No HOA" },
+            { value: "not_submitted", label: "Not yet submitted" },
+            { value: "pending", label: "Pending review" },
+            { value: "approved", label: "Approved" },
+            { value: "denied", label: "Denied — revising" },
+          ],
+        },
+        { key: "knownPermitRequirements", label: "Known Permit Requirements", type: "textarea", placeholder: "E.g., Electrical permit for panel upgrade; mechanical for HVAC; structural if removing a load-bearing wall…", rows: 2 },
+      ],
+    },
+    buildMediaStep(false),
+  ],
+
+  capture_site_concept: [
+    CONTACT_STEP,
+    {
+      id: "capture",
+      title: "Site Capture",
+      fields: [
+        {
+          key: "captureGoal",
+          label: "What would you like to capture?",
+          type: "radio",
+          options: [
+            { value: "exterior_only", label: "Exterior only" },
+            { value: "interior_only", label: "Interior only" },
+            { value: "full_property", label: "Full property (interior + exterior)" },
+            { value: "specific_area", label: "Specific area or room" },
+          ],
+        },
+        {
+          key: "projectDescription",
+          label: "Describe your project vision",
+          type: "textarea",
+          placeholder:
+            "E.g., Document existing conditions before a second-story addition — capture exterior elevations and key interior rooms for as-built drawings…",
+          rows: 4,
+        },
+      ],
+    },
+    buildMediaStep(true),
+  ],
+
+  // ── Commercial / developer paths ─────────────────────────────────────────────
+
+  multi_unit_residential: [
+    CONTACT_STEP,
+    {
+      id: "site",
+      title: "Site & Zoning",
+      fields: [
+        { key: "lotSizeSqFt", label: "Lot Size (sq ft)", type: "numeric", placeholder: "10000", required: true },
+        { key: "askingPrice", label: "Land / Acquisition Cost ($)", type: "numeric", placeholder: "500000", required: true },
+        { key: "zoningCode", label: "Zoning Code (if known)", type: "text", placeholder: "e.g. R-3, MU-2" },
+        { key: "jurisdiction", label: "City / Jurisdiction", type: "text", placeholder: "e.g. Los Angeles, CA" },
+      ],
+    },
+    {
+      id: "program",
+      title: "Development Program",
+      fields: [
+        { key: "totalGfaSqFt", label: "Target GFA (sq ft, optional)", type: "numeric", placeholder: "15000" },
+        {
+          key: "targetDevelopmentType",
+          label: "Preferred Unit Type",
+          type: "radio",
+          options: [
+            { value: "low_rise_apartment", label: "Low-Rise Apartment (3 stories or less)" },
+            { value: "mid_rise_apartment", label: "Mid-Rise Apartment (4–8 stories)" },
+            { value: "adu_portfolio", label: "ADU Portfolio" },
+          ],
+        },
+        { key: "targetRoiPct", label: "Target ROI / IRR (%)", type: "numeric", placeholder: "15" },
+        { key: "notes", label: "Additional Notes", type: "textarea", rows: 3 },
+      ],
+    },
+    {
+      id: "assessment",
+      title: "Site Due Diligence",
+      fields: [
+        { key: "apn", label: "Assessor Parcel Number (APN)", type: "text", placeholder: "e.g. 1234-567-890" },
+        { key: "hasTitle", label: "Title report / preliminary title available?", type: "boolean" },
+        {
+          key: "infrastructureAccess",
+          label: "Infrastructure Access",
+          type: "multiselect",
+          options: [
+            { value: "water", label: "Water" },
+            { value: "sewer", label: "Sewer" },
+            { value: "gas", label: "Gas" },
+            { value: "electric", label: "Electric" },
+            { value: "fiber", label: "Fiber / Broadband" },
+          ],
+        },
+        {
+          key: "zoningOverlayDistricts",
+          label: "Zoning Overlay Districts",
+          type: "multiselect",
+          options: [
+            { value: "historic", label: "Historic District" },
+            { value: "flood", label: "Flood Zone" },
+            { value: "coastal", label: "Coastal Zone" },
+            { value: "none", label: "None known" },
+          ],
+        },
+      ],
+    },
+  ],
+
+  mixed_use: [
+    CONTACT_STEP,
+    {
+      id: "site",
+      title: "Site & Zoning",
+      fields: [
+        { key: "lotSizeSqFt", label: "Lot Size (sq ft)", type: "numeric", placeholder: "20000", required: true },
+        { key: "askingPrice", label: "Land / Acquisition Cost ($)", type: "numeric", placeholder: "1200000", required: true },
+        { key: "zoningCode", label: "Zoning Code", type: "text", placeholder: "e.g. MU-3, C-2" },
+        { key: "jurisdiction", label: "City / Jurisdiction", type: "text", placeholder: "e.g. Seattle, WA" },
+      ],
+    },
+    {
+      id: "program",
+      title: "Development Program",
+      fields: [
+        { key: "totalGfaSqFt", label: "Target GFA (sq ft)", type: "numeric", placeholder: "40000" },
+        { key: "targetRoiPct", label: "Target IRR (%)", type: "numeric", placeholder: "14" },
+        { key: "notes", label: "Additional Notes / Retail Tenants in Mind?", type: "textarea", rows: 3 },
+      ],
+    },
+  ],
+
+  commercial_office: [
+    CONTACT_STEP,
+    {
+      id: "program",
+      title: "Space Program",
+      fields: [
+        { key: "totalGfaSqFt", label: "Total Office Area (sq ft)", type: "numeric", placeholder: "25000", required: true },
+        { key: "askingPrice", label: "Fit-Out Budget ($)", type: "numeric", placeholder: "750000" },
+        {
+          key: "officeLayout",
+          label: "Preferred Layout",
+          type: "radio",
+          options: [
+            { value: "open_plan", label: "Open Plan" },
+            { value: "private_office", label: "Private Offices" },
+            { value: "hybrid", label: "Hybrid (open + private)" },
+          ],
+        },
+        { key: "headcount", label: "Approximate Headcount", type: "numeric", placeholder: "50" },
+        { key: "notes", label: "Workplace Priorities or Requirements", type: "textarea", rows: 3 },
+      ],
+    },
+    buildMediaStep(true),
+  ],
+
+  development_feasibility: [
+    CONTACT_STEP,
+    {
+      id: "site",
+      title: "Site & Acquisition",
+      fields: [
+        { key: "lotSizeSqFt", label: "Lot / Site Size (sq ft)", type: "numeric", placeholder: "43560", required: true },
+        { key: "askingPrice", label: "Asking / Acquisition Price ($)", type: "numeric", placeholder: "2000000", required: true },
+        { key: "zoningCode", label: "Zoning Code", type: "text", placeholder: "e.g. MU-3, C-2" },
+        { key: "jurisdiction", label: "City / Jurisdiction", type: "text", required: true },
+      ],
+    },
+    {
+      id: "goals",
+      title: "Development Vision",
+      fields: [
+        {
+          key: "targetDevelopmentType",
+          label: "Preferred Development Type",
+          type: "radio",
+          options: [
+            { value: "mid_rise_apartment", label: "Mid-Rise Residential" },
+            { value: "mixed_use_residential", label: "Mixed-Use" },
+            { value: "commercial_office", label: "Commercial Office" },
+            { value: "low_rise_apartment", label: "Low-Rise Residential" },
+          ],
+        },
+        { key: "targetRoiPct", label: "Target IRR (%)", type: "numeric", placeholder: "18" },
+        { key: "equityAvailable", label: "Equity Available ($)", type: "numeric", placeholder: "500000" },
+        { key: "notes", label: "Known Constraints or Opportunities", type: "textarea", rows: 3 },
+      ],
+    },
+    {
+      id: "assessment",
+      title: "Site Due Diligence",
+      fields: [
+        { key: "apn", label: "Assessor Parcel Number (APN)", type: "text", placeholder: "e.g. 1234-567-890" },
+        { key: "hasTitle", label: "Title report / preliminary title available?", type: "boolean" },
+        {
+          key: "infrastructureAccess",
+          label: "Infrastructure Access",
+          type: "multiselect",
+          options: [
+            { value: "water", label: "Water" },
+            { value: "sewer", label: "Sewer" },
+            { value: "gas", label: "Gas" },
+            { value: "electric", label: "Electric" },
+            { value: "fiber", label: "Fiber / Broadband" },
+          ],
+        },
+        {
+          key: "zoningOverlayDistricts",
+          label: "Zoning Overlay Districts",
+          type: "multiselect",
+          options: [
+            { value: "historic", label: "Historic District" },
+            { value: "flood", label: "Flood Zone" },
+            { value: "coastal", label: "Coastal Zone" },
+            { value: "none", label: "None known" },
+          ],
+        },
+      ],
+    },
+  ],
+
+  townhome_subdivision: [
+    CONTACT_STEP,
+    {
+      id: "site",
+      title: "Site Details",
+      fields: [
+        { key: "lotSizeSqFt", label: "Total Site Area (sq ft)", type: "numeric", placeholder: "87120", hint: "87,120 sf = 2 acres", required: true },
+        { key: "askingPrice", label: "Land Acquisition Cost ($)", type: "numeric", placeholder: "1200000", required: true },
+        { key: "zoningCode", label: "Zoning Code", type: "text", placeholder: "e.g. R-3, PUD" },
+        { key: "jurisdiction", label: "City / Jurisdiction", type: "text", required: true },
+      ],
+    },
+    {
+      id: "program",
+      title: "Subdivision Program",
+      fields: [
+        { key: "targetLotCount", label: "Target Unit Count (optional — AI will optimise)", type: "numeric", placeholder: "24" },
+        { key: "targetLotWidthFt", label: "Preferred Lot Width (ft)", type: "numeric", placeholder: "22" },
+        {
+          key: "buildToSell",
+          label: "Development Strategy",
+          type: "radio",
+          options: [
+            { value: "true", label: "Build-to-sell (full construction)" },
+            { value: "false", label: "Horizontal only (sell improved lots to a builder)" },
+          ],
+        },
+        { key: "targetSalesPrice", label: "Target Sales Price per Unit ($)", type: "numeric", placeholder: "490000" },
+        { key: "notes", label: "Additional Notes", type: "textarea", rows: 3 },
+      ],
+    },
+  ],
+
+  single_family_subdivision: [
+    CONTACT_STEP,
+    {
+      id: "site",
+      title: "Site Details",
+      fields: [
+        { key: "lotSizeSqFt", label: "Total Site Area (sq ft)", type: "numeric", placeholder: "217800", hint: "217,800 sf = 5 acres", required: true },
+        { key: "askingPrice", label: "Land Acquisition Cost ($)", type: "numeric", placeholder: "2500000", required: true },
+        { key: "zoningCode", label: "Zoning Code", type: "text", placeholder: "e.g. R-1, R-2" },
+        { key: "jurisdiction", label: "City / Jurisdiction", type: "text", required: true },
+      ],
+    },
+    {
+      id: "program",
+      title: "Subdivision Program",
+      fields: [
+        { key: "targetLotCount", label: "Target Lot Count (optional)", type: "numeric", placeholder: "18" },
+        { key: "targetLotWidthFt", label: "Typical Lot Width (ft)", type: "numeric", placeholder: "60" },
+        {
+          key: "buildToSell",
+          label: "Development Strategy",
+          type: "radio",
+          options: [
+            { value: "true", label: "Build-to-sell (full construction)" },
+            { value: "false", label: "Horizontal only (sell finished lots)" },
+          ],
+        },
+        { key: "targetSalesPrice", label: "Target Sales Price per Home ($)", type: "numeric", placeholder: "625000" },
+        { key: "notes", label: "Additional Notes", type: "textarea", rows: 3 },
+      ],
+    },
+  ],
+
+  single_lot_development: [
+    CONTACT_STEP,
+    {
+      id: "site",
+      title: "Lot Details",
+      fields: [
+        { key: "lotSizeSqFt", label: "Lot Size (sq ft)", type: "numeric", placeholder: "7500", required: true },
+        { key: "askingPrice", label: "Lot / Acquisition Cost ($)", type: "numeric", placeholder: "350000", required: true },
+        { key: "zoningCode", label: "Zoning Code", type: "text", placeholder: "e.g. R-2, R-MF" },
+        { key: "jurisdiction", label: "City / Jurisdiction", type: "text", required: true },
+      ],
+    },
+    {
+      id: "program",
+      title: "Building Program",
+      fields: [
+        {
+          key: "preferredBuildingType",
+          label: "Preferred Building Type",
+          type: "radio",
+          options: [
+            { value: "single_family", label: "Single-Family Home (SFR)" },
+            { value: "duplex", label: "Duplex (2 units)" },
+            { value: "triplex", label: "Triplex (3 units)" },
+          ],
+        },
+        {
+          key: "intendToSell",
+          label: "Exit Strategy",
+          type: "radio",
+          options: [
+            { value: "true", label: "Sell on completion" },
+            { value: "false", label: "Hold and rent" },
+          ],
+        },
+        { key: "targetSalesPrice", label: "Target Sales Price per Unit ($, optional)", type: "numeric", placeholder: "650000" },
+        { key: "targetRentPerUnit", label: "Target Monthly Rent per Unit ($, optional)", type: "numeric", placeholder: "3200" },
+        { key: "notes", label: "Additional Notes", type: "textarea", rows: 3 },
+      ],
+    },
+  ],
+};

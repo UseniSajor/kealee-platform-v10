@@ -1,0 +1,97 @@
+// PM — SCHEDULE
+// Domain: pm | Owner: OS-PM service
+
+model Task {
+  id          String    @id @default(uuid())
+  projectId   String?
+  clientId    String?
+  title       String
+  description String?
+  status      String    @default("PENDING")
+  priority    String    @default("NORMAL")
+  assignedTo  String?
+  dueDate     DateTime?
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  project  Project?      @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  client   Client?       @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  comments TaskComment[]
+
+  @@index([projectId])
+  @@index([clientId])
+  @@index([status])
+  @@index([assignedTo])
+  // ── Performance: Compound indexes for task boards ──
+  @@index([projectId, status]) // Project detail: tasks by status
+  @@index([projectId, status, dueDate]) // Task board: filtered + sorted by due date
+  @@index([assignedTo, status]) // "My tasks" filtered by status
+  @@index([status, createdAt])
+}
+
+model TaskComment {
+  id        String   @id @default(uuid())
+  taskId    String
+  userId    String
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@index([taskId])
+  @@index([userId])
+}
+
+model ScheduleItem {
+  id               String   @id @default(uuid())
+  projectId        String
+  taskName         String
+  description      String?
+  startDate        DateTime
+  endDate          DateTime
+  duration         Int // Days
+  progress         Int      @default(0) // 0-100
+  status           String   @default("PENDING") // PENDING, IN_PROGRESS, COMPLETED, DELAYED
+  dependencies     String[] // Array of dependent ScheduleItem IDs
+  assignedTo       String?
+  trade            String?
+  milestone        Boolean  @default(false)
+  criticalPath     Boolean  @default(false)
+  weatherSensitive Boolean  @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([projectId])
+  @@index([startDate])
+  @@index([status])
+  // ── Performance: Compound indexes for schedule views ──
+  @@index([projectId, status]) // Gantt chart: project tasks by status
+  @@index([projectId, startDate]) // Timeline: project tasks sorted by date
+  @@index([assignedTo, status]) // "My schedule" filtered by status
+  @@map("schedule_items")
+}
+
+model LookaheadItem {
+  id             String   @id @default(uuid())
+  projectId      String
+  scheduleItemId String?
+  name           String
+  description    String?
+  startDate      DateTime
+  endDate        DateTime
+  status         String   // NOT_STARTED, IN_PROGRESS, COMPLETED, AT_RISK
+  assignedTo     String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@index([startDate])
+  @@index([status])
+  @@map("lookahead_items")
+}

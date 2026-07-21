@@ -1,0 +1,201 @@
+// PM — SAFETY
+// Domain: pm | Owner: OS-PM service
+
+model SiteVisit {
+  id        String  @id @default(uuid())
+  projectId String
+  pmId      String
+  type      String // INITIAL, PROGRESS, INSPECTION, FINAL, EMERGENCY
+  visitType String? // Alias for type for backward compat
+  status    String  @default("SCHEDULED") // SCHEDULED, IN_PROGRESS, COMPLETED, CANCELLED, RESCHEDULED
+  priority  String  @default("NORMAL") // LOW, NORMAL, HIGH, URGENT
+
+  scheduledAt              DateTime
+  startedAt                DateTime?
+  completedAt              DateTime?
+  duration                 Int? // Minutes
+  estimatedDurationMinutes Int?
+
+  // Location
+  address   String?
+  latitude  Float?
+  longitude Float?
+
+  // Visit details
+  purpose       String?  @db.Text
+  notes         String?  @db.Text
+  findings      Json?
+  photos        String[]
+  checklistData Json?
+
+  // Client info
+  clientName  String?
+  clientEmail String?
+  clientPhone String?
+
+  // Cancellation
+  cancellationReason String?
+
+  // Calendar
+  calendarEventId String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  pm      User?   @relation("SiteVisitPM", fields: [pmId], references: [id])
+
+  // Before/After photo comparison pairs
+  beforePairs BeforeAfterPair[] @relation("BeforePairs")
+  afterPairs  BeforeAfterPair[] @relation("AfterPairs")
+
+  // Claw C: visit checklists
+  checklists VisitChecklist[] @relation("SiteVisitChecklists")
+
+  @@index([projectId])
+  @@index([pmId])
+  @@index([scheduledAt])
+  @@index([status])
+  // ── Performance: Compound indexes for visit calendar ──
+  @@index([projectId, scheduledAt]) // Project detail: upcoming visits
+  @@index([pmId, scheduledAt]) // PM calendar: my schedule
+  @@map("site_visits")
+}
+
+model SiteCheckIn {
+  id        String @id @default(uuid())
+  userId    String
+  projectId String
+
+  // Check-in / Check-out
+  checkInAt  DateTime  @default(now())
+  checkOutAt DateTime?
+
+  // GPS coordinates at check-in
+  latitude  Float?
+  longitude Float?
+
+  // Verification
+  verified       Boolean @default(false) // true if GPS within 200m of project
+  distanceMeters Float? // distance from project site
+  manualOverride Boolean @default(false) // user overrode GPS warning
+  overrideNote   String? @db.Text
+
+  // Time on site (calculated at check-out)
+  minutesOnSite Int?
+
+  // Context
+  role       String? // CONTRACTOR, PM, INSPECTOR, etc.
+  orgId      String?
+  deviceInfo String? // mobile/desktop/tablet
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relationships
+  user    User    @relation("UserCheckIns", fields: [userId], references: [id])
+  project Project @relation("ProjectCheckIns", fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId, checkInAt])
+  @@index([userId, checkInAt])
+  @@index([projectId, checkOutAt])
+  @@index([verified])
+  @@map("site_check_ins")
+}
+
+model SafetyIncident {
+  id        String @id @default(uuid())
+  projectId String
+
+  incidentNumber          Int              @default(autoincrement())
+  title                   String
+  description             String           @db.Text
+  date                    DateTime
+  time                    String? // "14:30"
+  location                String?
+  severity                IncidentSeverity @default(NEAR_MISS)
+  status                  IncidentStatus   @default(REPORTED)
+  reportedById            String
+  witnesses               String[]
+  injuredParty            String?
+  injuryDescription       String?          @db.Text
+  immediateAction         String?          @db.Text
+  rootCause               String?          @db.Text
+  correctiveAction        String?          @db.Text
+  correctiveActionDueDate DateTime?
+  photos                  String[]
+  oshaRecordable          Boolean          @default(false)
+  notifiedParties         String[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  project    Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  reportedBy User    @relation("IncidentReporter", fields: [reportedById], references: [id])
+
+  @@index([projectId])
+  @@index([severity])
+  @@index([status])
+  @@index([date])
+  @@index([projectId, status])
+  @@map("safety_incidents")
+}
+
+model ToolboxTalk {
+  id        String @id @default(uuid())
+  projectId String
+
+  title             String
+  topic             String
+  content           String?  @db.Text
+  presenterId       String?
+  presenterName     String?
+  date              DateTime
+  duration          Int? // minutes
+  weatherConditions String?
+  signInSheetUrl    String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  project   Project               @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  attendees ToolboxTalkAttendee[]
+
+  @@index([projectId])
+  @@index([date])
+  @@index([projectId, date])
+  @@map("toolbox_talks")
+}
+
+model ToolboxTalkAttendee {
+  id            String   @id @default(uuid())
+  toolboxTalkId String
+  name          String
+  company       String?
+  trade         String?
+  signedAt      DateTime @default(now())
+
+  createdAt DateTime @default(now())
+
+  toolboxTalk ToolboxTalk @relation(fields: [toolboxTalkId], references: [id], onDelete: Cascade)
+
+  @@index([toolboxTalkId])
+  @@map("toolbox_talk_attendees")
+}
+
+model VisitChecklist {
+  id          String    @id @default(cuid())
+  siteVisitId String
+  item        String
+  isChecked   Boolean   @default(false)
+  notes       String?
+  photoUrl    String?
+  checkedAt   DateTime?
+  checkedById String?
+  createdAt   DateTime  @default(now())
+
+  siteVisit SiteVisit @relation("SiteVisitChecklists", fields: [siteVisitId], references: [id], onDelete: Cascade)
+
+  @@index([siteVisitId])
+  @@map("visit_checklists")
+}

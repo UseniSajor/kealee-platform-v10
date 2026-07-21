@@ -1,0 +1,1 @@
+const fs=require("fs"),path=require("path");const chunks=[];process.stdin.on("data",d=>chunks.push(d));process.stdin.on("end",()=>{const content=Buffer.concat(chunks).toString("utf8");const target=process.argv[2];fs.writeFileSync(target,content,"utf8");console.log("OK:",target,content.length,"chars");});
