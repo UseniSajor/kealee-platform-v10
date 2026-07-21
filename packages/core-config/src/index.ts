@@ -56,6 +56,26 @@ export interface CommandCenterConfig {
   anthropicApiKey:     string;
 }
 
+export interface AiAutomationConfig {
+  aiVoiceEnabled: boolean;
+  aiOutboundCallingEnabled: boolean;
+  aiSmsEnabled: boolean;
+  conversationIntelligenceEnabled: boolean;
+  sitePlanAutomationEnabled: boolean;
+  professionalReviewRequired: boolean;
+  permitSubmissionAutomationEnabled: boolean;
+  pgCountyRulePackEnabled: boolean;
+  twilioAccountSid?: string;
+  twilioAuthToken?: string;
+  twilioVoiceNumber?: string;
+  twilioMessagingNumber?: string;
+  twilioConversationRelayUrl?: string;
+  twilioStatusCallbackUrl?: string;
+  twilioRecordingEnabled: boolean;
+  twilioConversationIntelligenceServiceSid?: string;
+  voiceHumanTransferNumber?: string;
+}
+
 // ─── Validation helpers ───────────────────────────────────────────────────────
 
 type EnvSpec = {
@@ -105,6 +125,18 @@ function isE164(val: string): string | null {
 
 function isEmail(val: string): string | null {
   return /.+@.+\..+/.test(val) ? null : 'must be a valid email address';
+}
+
+function parseBoolean(key: string, defaultValue: boolean): boolean {
+  const raw = process.env[key];
+  if (raw === undefined || raw.trim() === '') return defaultValue;
+  if (raw === 'true') return true;
+  if (raw === 'false') return false;
+  throw new Error(`${key}: must be exactly "true" or "false"`);
+}
+
+function requireWhen(enabled: boolean, specs: EnvSpec[]): string[] {
+  return enabled ? checkEnv(specs.map((spec) => ({ ...spec, required: true }))) : [];
 }
 
 // ─── API service validation ───────────────────────────────────────────────────
@@ -208,5 +240,78 @@ export function getCommandCenterConfig(): CommandCenterConfig {
     webMainUrl:          process.env.WEB_MAIN_URL ?? 'https://kealee.com',
     portalContractorUrl: process.env.PORTAL_CONTRACTOR_URL ?? 'https://contractor.kealee.com',
     anthropicApiKey:     process.env.ANTHROPIC_API_KEY!,
+  };
+}
+
+/**
+ * Validate external and consequential AI automation independently from the
+ * legacy service configuration. Disabled features require no provider secret;
+ * enabled features fail closed when their complete server-side config is absent.
+ */
+export function getAiAutomationConfig(): AiAutomationConfig {
+  const aiVoiceEnabled = parseBoolean('AI_VOICE_ENABLED', false);
+  const aiOutboundCallingEnabled = parseBoolean('AI_OUTBOUND_CALLING_ENABLED', false);
+  const aiSmsEnabled = parseBoolean('AI_SMS_ENABLED', false);
+  const conversationIntelligenceEnabled = parseBoolean('CONVERSATION_INTELLIGENCE_ENABLED', false);
+  const sitePlanAutomationEnabled = parseBoolean('SITE_PLAN_AUTOMATION_ENABLED', false);
+  const professionalReviewRequired = parseBoolean('PROFESSIONAL_REVIEW_REQUIRED', true);
+  const permitSubmissionAutomationEnabled = parseBoolean('PERMIT_SUBMISSION_AUTOMATION_ENABLED', false);
+  const pgCountyRulePackEnabled = parseBoolean('PG_COUNTY_RULE_PACK_ENABLED', false);
+  const twilioRecordingEnabled = parseBoolean('TWILIO_RECORDING_ENABLED', false);
+
+  const voiceOrMessagingEnabled = aiVoiceEnabled || aiOutboundCallingEnabled || aiSmsEnabled;
+  const errors = requireWhen(voiceOrMessagingEnabled, [
+    { key: 'TWILIO_ACCOUNT_SID', required: true, validate: startsWith('AC') },
+    { key: 'TWILIO_AUTH_TOKEN', required: true, validate: minLen(32) },
+  ]);
+
+  errors.push(...requireWhen(aiVoiceEnabled, [
+    { key: 'TWILIO_VOICE_NUMBER', required: true, validate: isE164 },
+    { key: 'TWILIO_CONVERSATION_RELAY_URL', required: true, validate: isUrl },
+    { key: 'TWILIO_STATUS_CALLBACK_URL', required: true, validate: isUrl },
+    { key: 'VOICE_HUMAN_TRANSFER_NUMBER', required: true, validate: isE164 },
+  ]));
+  errors.push(...requireWhen(aiSmsEnabled, [
+    { key: 'TWILIO_MESSAGING_NUMBER', required: true, validate: isE164 },
+  ]));
+  errors.push(...requireWhen(conversationIntelligenceEnabled, [
+    { key: 'TWILIO_CONVERSATION_INTELLIGENCE_SERVICE_SID', required: true, validate: minLen(4) },
+  ]));
+
+  if (aiOutboundCallingEnabled && !aiVoiceEnabled) {
+    errors.push('AI_OUTBOUND_CALLING_ENABLED requires AI_VOICE_ENABLED=true');
+  }
+  if (conversationIntelligenceEnabled && !aiVoiceEnabled) {
+    errors.push('CONVERSATION_INTELLIGENCE_ENABLED requires AI_VOICE_ENABLED=true');
+  }
+  if (permitSubmissionAutomationEnabled && !sitePlanAutomationEnabled) {
+    errors.push('PERMIT_SUBMISSION_AUTOMATION_ENABLED requires SITE_PLAN_AUTOMATION_ENABLED=true');
+  }
+  if (sitePlanAutomationEnabled && !professionalReviewRequired) {
+    errors.push('PROFESSIONAL_REVIEW_REQUIRED must remain true while SITE_PLAN_AUTOMATION_ENABLED=true');
+  }
+
+  if (errors.length > 0) {
+    throw new Error(`Invalid AI automation environment:\n${errors.map((error) => `- ${error}`).join('\n')}`);
+  }
+
+  return {
+    aiVoiceEnabled,
+    aiOutboundCallingEnabled,
+    aiSmsEnabled,
+    conversationIntelligenceEnabled,
+    sitePlanAutomationEnabled,
+    professionalReviewRequired,
+    permitSubmissionAutomationEnabled,
+    pgCountyRulePackEnabled,
+    twilioAccountSid: process.env.TWILIO_ACCOUNT_SID,
+    twilioAuthToken: process.env.TWILIO_AUTH_TOKEN,
+    twilioVoiceNumber: process.env.TWILIO_VOICE_NUMBER,
+    twilioMessagingNumber: process.env.TWILIO_MESSAGING_NUMBER,
+    twilioConversationRelayUrl: process.env.TWILIO_CONVERSATION_RELAY_URL,
+    twilioStatusCallbackUrl: process.env.TWILIO_STATUS_CALLBACK_URL,
+    twilioRecordingEnabled,
+    twilioConversationIntelligenceServiceSid: process.env.TWILIO_CONVERSATION_INTELLIGENCE_SERVICE_SID,
+    voiceHumanTransferNumber: process.env.VOICE_HUMAN_TRANSFER_NUMBER,
   };
 }

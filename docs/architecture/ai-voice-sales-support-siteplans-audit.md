@@ -55,7 +55,7 @@ This document records code that exists in the checkout. A module's presence is n
 | Rules/compliance | `packages/core-rules`, `packages/compliance`, compliance models | Partial | Yes | Versioned jurisdiction schema, six-result vocabulary, source/effective dates, blocking semantics. |
 | Prince George's County package | Scattered DMV endpoints and permit/zoning content | No | Yes | Official-source verified rule pack and scenario fixtures; never treat GIS as surveyed boundary. |
 | Concept DXF | `packages/kealee-agent-stack/src/v30/cad-export.ts` | Yes for concept output only | Yes | Add units/CRS/layers/entities/validation; retain explicit non-survey/non-permit disclaimer. |
-| Authoritative site-plan geometry | No survey-grade civil CAD pipeline found | No | — | Deterministic geometry kernel producing DXF, GeoJSON, vector PDF, quantities, metadata, revision lineage. |
+| CAD geometry and export foundation | `packages/concept-engine/src/autocad-engine` has a geometry kernel, constraint solver, DXF writer, converter, 3D/MEP/export pipeline, orchestrators, and tests | Partial | Yes | Reuse as the primary geometry foundation; add civil/site layers, CRS/units, survey provenance, grading/drainage calculations, vector PDF, quantities, and revision lineage. |
 | DWG interoperability | No supported DWG SDK/service found | No | — | Optional Autodesk Platform Services or ODA adapter for DWG fidelity/conversion; keep provider abstraction. |
 | Survey/document extraction | Core documents and storage exist | Partial | Yes | OCR/vector extraction, bearings/distances/contours/seals metadata, confidence and professional verification queue. |
 | Professional assignment | Existing `ProfessionalAssignment` and marketplace rotation/license/insurance fields | Partial | Yes | Jurisdiction licenses, conflicts, scope/fee, redlines, decisions, seal records, chain of custody, expiry. |
@@ -70,7 +70,7 @@ This document records code that exists in the checkout. A module's presence is n
 
 1. The v30 orchestrator defaults to successful dry-run stubs when no executor is provided. Production workflow code must fail closed when its live executor is absent.
 2. `packages/communications/src/sms.ts` defaults to Twilio's test number when a sender is absent. Production validation must reject missing sender configuration rather than silently using a test value.
-3. The current DXF exporter creates minimal R12 linework and labels it concept-only. It is useful interchange output, but it is not survey-grade CAD, a grading model, or a permit plan.
+3. The v30 DXF exporter creates minimal concept-only R12 linework. The more capable concept-engine AutoCAD pipeline is the preferred foundation, but its current floor-plan/MEP focus is not evidence of survey-grade civil calculations or permit readiness.
 4. Nominatim/Google imagery resolution in `lot-gis.ts` does not establish boundaries or official jurisdiction facts. Official parcel, record plat, survey, and agency sources must retain provenance and legal status.
 5. The repository contains both `packages/events` and `packages/core-events`, and several overlapping agent/bot generations. Deployment entrypoints must be traced before consolidation; destructive consolidation is out of scope without compatibility tests.
 6. Existing professional assignment data does not implement complete multi-jurisdiction license verification, seal custody, or immutable sealed document release.

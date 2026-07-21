@@ -36,7 +36,7 @@ BullMQ in `services/worker` owns delayed/retried work: outbound contact, callbac
 
 `PropertySourceProvider` returns observations with source URL/identifier, retrieval time, effective date when known, official/legal status, confidence, geometry CRS, and warnings.
 
-`CadProvider` accepts validated structured geometry and emits supported interchange artifacts. Kealee's deterministic engine owns geometry and DXF/GeoJSON/vector PDF. Optional Autodesk Platform Services or ODA adapters may provide DWG conversion/automation; no provider may apply a professional seal.
+`CadProvider` accepts validated structured geometry and emits supported interchange artifacts. The existing `packages/concept-engine/src/autocad-engine` geometry kernel, constraints, DXF writer, converter, and orchestrators are the primary implementation foundation. They must be extended for civil/site layers, CRS/units, survey provenance, grading/drainage, GeoJSON/vector PDF, quantities, and revisions. Optional Autodesk Platform Services or ODA adapters may provide DWG conversion/automation; no provider may apply a professional seal.
 
 `PermitSubmissionProvider` supports capability discovery. When automation is unavailable or unauthorized, the same workflow emits a staff instruction packet and evidence-upload task instead of simulating submission.
 
