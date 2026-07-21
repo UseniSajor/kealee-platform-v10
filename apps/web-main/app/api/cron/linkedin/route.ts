@@ -34,6 +34,16 @@ export const dynamic = 'force-dynamic'
 const CRON_SECRET              = process.env.CRON_SECRET              ?? ''
 const LINKEDIN_ORGANIZATION_ID = process.env.LINKEDIN_ORGANIZATION_ID ?? ''
 
+function hasLinkedInCredentials(): boolean {
+  const hasStaticToken = Boolean(process.env.LINKEDIN_ACCESS_TOKEN)
+  const hasRefreshCredentials = Boolean(
+    process.env.LINKEDIN_CLIENT_ID &&
+    process.env.LINKEDIN_CLIENT_SECRET &&
+    process.env.LINKEDIN_REFRESH_TOKEN,
+  )
+  return Boolean(LINKEDIN_ORGANIZATION_ID && (hasStaticToken || hasRefreshCredentials))
+}
+
 // ── Token resolution (Option B: refresh token; Option A: static token) ────────
 
 /**
@@ -149,6 +159,16 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     const today = new Date().toISOString().slice(0, 10)
     console.log(`[cron/linkedin] No post scheduled for ${today}`)
     return NextResponse.json({ skipped: true, reason: `No post scheduled for ${today}` })
+  }
+
+  if (!hasLinkedInCredentials()) {
+    console.warn(`[cron/linkedin] Post scheduled for ${new Date().toISOString().slice(0, 10)}, but LinkedIn credentials are not configured; skipping`)
+    return NextResponse.json({
+      skipped: true,
+      reason: 'LinkedIn credentials not configured',
+      week: post.week,
+      theme: post.theme,
+    })
   }
 
   try {
