@@ -61,7 +61,7 @@ async function watchAbandonedCheckouts(): Promise<number> {
   // Fetch new leads older than threshold that haven't been queued
   // We use metadata->>'followupQueued' as the idempotency flag
   const leads: any[] = await supabaseQuery(
-    `public_intake_leads?status=eq.new&created_at=lt.${cutoff}&select=id,contact_email,client_name,project_type,metadata`,
+    `public_intake_leads?status=eq.new&created_at=lt.${cutoff}&select=id,contact_email,client_name,project_path,metadata`,
     { method: 'GET', headers: { 'Prefer': 'return=representation' } }
   ).catch((err) => {
     console.warn('[marketing-sequences] abandoned checkout fetch failed (non-fatal):', err.message)
@@ -80,7 +80,7 @@ async function watchAbandonedCheckouts(): Promise<number> {
         leadId: lead.id,
         email: lead.contact_email,
         firstName: lead.client_name?.split(' ')[0] ?? '',
-        projectType: lead.project_type ?? 'your project',
+        projectType: lead.project_path ?? 'your project',
         stage: 'ABANDONED_CHECKOUT',
         source: 'abandoned_checkout',
       })
@@ -116,7 +116,11 @@ async function watchSoftCaptures(): Promise<number> {
     `contact_inquiries?source=eq.soft_capture&created_at=lt.${cutoff}&select=id,email,name,metadata`,
     { method: 'GET', headers: { 'Prefer': 'return=representation' } }
   ).catch((err) => {
-    console.warn('[marketing-sequences] soft capture fetch failed (non-fatal):', err.message)
+    if (err.message.includes('PGRST205')) {
+      console.log('[marketing-sequences] contact_inquiries is not deployed; soft-capture watcher skipped')
+    } else {
+      console.warn('[marketing-sequences] soft capture fetch failed (non-fatal):', err.message)
+    }
     return []
   })
 
@@ -165,7 +169,7 @@ async function watchSoftCaptures(): Promise<number> {
 
 async function watchPaidIntakes(): Promise<number> {
   const leads: any[] = await supabaseQuery(
-    `public_intake_leads?status=eq.paid&select=id,project_type,contact_email,amount_paid,stripe_session_id,metadata`,
+    `public_intake_leads?status=eq.paid&select=id,project_path,contact_email,payment_amount,stripe_session_id,metadata`,
     { method: 'GET', headers: { 'Prefer': 'return=representation' } }
   ).catch((err) => {
     console.warn('[marketing-sequences] paid intake fetch failed (non-fatal):', err.message)
@@ -182,8 +186,8 @@ async function watchPaidIntakes(): Promise<number> {
     try {
       await intakeProcessingQueue.processIntake({
         intakeId: lead.id,
-        projectPath: lead.project_type ?? 'unknown',
-        amount: lead.amount_paid ?? 0,
+        projectPath: lead.project_path ?? 'unknown',
+        amount: lead.payment_amount ?? 0,
         customerEmail: lead.contact_email,
         stripeSessionId: lead.stripe_session_id ?? 'unknown',
       })

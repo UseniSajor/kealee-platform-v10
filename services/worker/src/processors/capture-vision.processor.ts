@@ -12,6 +12,7 @@ import http from 'http'
 import { redis } from '../config/redis.config'
 import type { CaptureAnalysisJobData } from '../queues/capture-analysis.queue'
 import { transcribeVoiceNote } from './voice-transcription.processor'
+import { supabaseRest } from '../lib/supabase-rest'
 
 // ---------------------------------------------------------------------------
 // Anthropic client
@@ -128,14 +129,10 @@ export async function analyzeAsset(job: Job<CaptureAnalysisJobData>): Promise<vo
     throw new Error('[capture-vision] assetId and storageUrl are required')
   }
 
-  const { PrismaClient } = await import('@prisma/client')
-  const prisma = new PrismaClient() as any
-
-  try {
-    // Idempotency check
-    const existing = await prisma.$queryRaw`
-      SELECT ai_label FROM capture_assets WHERE id = ${assetId} LIMIT 1
-    ` as Array<{ ai_label: string | null }>
+  // Capture data is written by web-main to Supabase, not the Prisma/Railway DB.
+  const existing = await supabaseRest<Array<{ ai_label: string | null }>>(
+    `capture_assets?id=eq.${encodeURIComponent(assetId)}&select=ai_label&limit=1`,
+  )
 
     if (existing.length > 0 && existing[0].ai_label !== null) {
       console.log(`[capture-vision] Asset ${assetId} already analyzed — skipping`)
@@ -143,9 +140,11 @@ export async function analyzeAsset(job: Job<CaptureAnalysisJobData>): Promise<vo
     }
 
     if (!anthropic) {
-      await prisma.$executeRaw`
-        UPDATE capture_assets SET ai_label = 'skipped', ai_analyzed_at = NOW() WHERE id = ${assetId}
-      `
+      await supabaseRest(`capture_assets?id=eq.${encodeURIComponent(assetId)}`, {
+        method: 'PATCH',
+        headers: { Prefer: 'return=minimal' },
+        body: JSON.stringify({ ai_label: 'skipped', ai_analyzed_at: new Date().toISOString() }),
+      })
       return
     }
 
@@ -184,25 +183,24 @@ export async function analyzeAsset(job: Job<CaptureAnalysisJobData>): Promise<vo
     const rawText = response.content[0]?.type === 'text' ? response.content[0].text : ''
     const result = extractJson(rawText) ?? fallbackResult(rawText)
 
-    await prisma.$executeRaw`
-      UPDATE capture_assets SET
-        ai_label             = ${result.ai_label},
-        ai_description       = ${result.ai_description},
-        ai_tags              = ${JSON.stringify(result.ai_tags)}::jsonb,
-        ai_condition         = ${result.condition},
-        ai_room_type         = ${result.room_type},
-        ai_detected_elements = ${JSON.stringify(result.detected_elements)}::jsonb,
-        ai_potential_issues  = ${JSON.stringify(result.potential_issues)}::jsonb,
-        ai_confidence        = ${result.confidence},
-        ai_analyzed_at       = NOW()
-      WHERE id = ${assetId}
-    `
+    await supabaseRest(`capture_assets?id=eq.${encodeURIComponent(assetId)}`, {
+      method: 'PATCH',
+      headers: { Prefer: 'return=minimal' },
+      body: JSON.stringify({
+        ai_label: result.ai_label,
+        ai_description: result.ai_description,
+        ai_tags: result.ai_tags,
+        ai_condition: result.condition,
+        ai_room_type: result.room_type,
+        ai_detected_elements: result.detected_elements,
+        ai_potential_issues: result.potential_issues,
+        ai_confidence: result.confidence,
+        ai_analyzed_at: new Date().toISOString(),
+      }),
+    })
 
     await job.updateProgress(100)
     console.log(`[Event] capture.asset.analyzed assetId=${assetId} label="${result.ai_label}" confidence=${result.confidence}`)
-  } finally {
-    await prisma.$disconnect()
-  }
 }
 
 // ---------------------------------------------------------------------------
@@ -211,19 +209,10 @@ export async function analyzeAsset(job: Job<CaptureAnalysisJobData>): Promise<vo
 
 export async function pollAndAnalyzePending(): Promise<void> {
   const { captureAnalysisQueue } = await import('../queues/capture-analysis.queue')
-  const { PrismaClient } = await import('@prisma/client')
-  const prisma = new PrismaClient() as any
-
-  try {
-    const pending = await prisma.$queryRaw`
-      SELECT id, storage_url, zone, mime_type, capture_session_id
-      FROM capture_assets
-      WHERE ai_label IS NULL
-        AND mime_type LIKE 'image/%'
-        AND created_at > NOW() - INTERVAL '7 days'
-      ORDER BY created_at DESC
-      LIMIT 20
-    ` as Array<{ id: string; storage_url: string; zone: string; mime_type: string; capture_session_id: string }>
+  const cutoff = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
+  const pending = await supabaseRest<Array<{ id: string; storage_url: string; zone: string; mime_type: string; capture_session_id: string }>>(
+    `capture_assets?ai_label=is.null&mime_type=like.image%2F*&created_at=gt.${encodeURIComponent(cutoff)}&select=id,storage_url,zone,mime_type,capture_session_id&order=created_at.desc&limit=20`,
+  )
 
     if (pending.length === 0) return
     console.log(`[capture-vision] Poll found ${pending.length} pending asset(s)`)
@@ -243,9 +232,6 @@ export async function pollAndAnalyzePending(): Promise<void> {
         }
       }
     }
-  } finally {
-    await prisma.$disconnect()
-  }
 }
 
 // ---------------------------------------------------------------------------

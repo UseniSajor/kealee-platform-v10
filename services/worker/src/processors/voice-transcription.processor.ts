@@ -12,6 +12,7 @@ import http from 'http'
 import { redis } from '../config/redis.config'
 import type { CaptureAnalysisJobData } from '../queues/capture-analysis.queue'
 import { analyzeAsset } from './capture-vision.processor'
+import { supabaseRest } from '../lib/supabase-rest'
 
 // ---------------------------------------------------------------------------
 // OpenAI client (lazy, optional)
@@ -84,14 +85,9 @@ export async function transcribeVoiceNote(job: Job<CaptureAnalysisJobData>): Pro
     throw new Error('[voice-transcription] voiceNoteId and storageUrl are required')
   }
 
-  const { PrismaClient } = await import('@prisma/client')
-  const prisma = new PrismaClient() as any
-
-  try {
-    // Idempotency check
-    const existing = await prisma.$queryRaw`
-      SELECT transcription_status FROM capture_voice_notes WHERE id = ${voiceNoteId} LIMIT 1
-    ` as Array<{ transcription_status: string | null }>
+  const existing = await supabaseRest<Array<{ transcription_status: string | null }>>(
+    `capture_voice_notes?id=eq.${encodeURIComponent(voiceNoteId)}&select=transcription_status&limit=1`,
+  )
 
     if (existing.length > 0 && existing[0].transcription_status === 'completed') {
       console.log(`[voice-transcription] Voice note ${voiceNoteId} already transcribed — skipping`)
@@ -121,14 +117,16 @@ export async function transcribeVoiceNote(job: Job<CaptureAnalysisJobData>): Pro
       const text: string = transcription.text ?? ''
       const keywords = extractKeywords(text)
 
-      await prisma.$executeRaw`
-        UPDATE capture_voice_notes SET
-          transcription_text     = ${text},
-          transcription_status   = 'completed',
-          transcription_keywords = ${JSON.stringify(keywords)}::jsonb,
-          transcribed_at         = NOW()
-        WHERE id = ${voiceNoteId}
-      `
+      await supabaseRest(`capture_voice_notes?id=eq.${encodeURIComponent(voiceNoteId)}`, {
+        method: 'PATCH',
+        headers: { Prefer: 'return=minimal' },
+        body: JSON.stringify({
+          transcription_text: text,
+          transcription_status: 'completed',
+          transcription_keywords: keywords,
+          transcribed_at: new Date().toISOString(),
+        }),
+      })
 
       await job.updateProgress(100)
       console.log(`[Event] capture.voice_note.transcribed voiceNoteId=${voiceNoteId} words=${text.split(/\s+/).filter(Boolean).length}`)
@@ -136,16 +134,15 @@ export async function transcribeVoiceNote(job: Job<CaptureAnalysisJobData>): Pro
     }
 
     // No provider configured
-    await prisma.$executeRaw`
-      UPDATE capture_voice_notes SET
-        transcription_status = 'provider_not_configured',
-        transcribed_at = NOW()
-      WHERE id = ${voiceNoteId}
-    `
+    await supabaseRest(`capture_voice_notes?id=eq.${encodeURIComponent(voiceNoteId)}`, {
+      method: 'PATCH',
+      headers: { Prefer: 'return=minimal' },
+      body: JSON.stringify({
+        transcription_status: 'provider_not_configured',
+        transcribed_at: new Date().toISOString(),
+      }),
+    })
     console.warn(`[voice-transcription] No transcription provider configured for ${voiceNoteId}. Set OPENAI_API_KEY to enable Whisper.`)
-  } finally {
-    await prisma.$disconnect()
-  }
 }
 
 // ---------------------------------------------------------------------------
@@ -154,18 +151,10 @@ export async function transcribeVoiceNote(job: Job<CaptureAnalysisJobData>): Pro
 
 export async function pollAndTranscribePending(): Promise<void> {
   const { captureAnalysisQueue } = await import('../queues/capture-analysis.queue')
-  const { PrismaClient } = await import('@prisma/client')
-  const prisma = new PrismaClient() as any
-
-  try {
-    const pending = await prisma.$queryRaw`
-      SELECT id, storage_url, duration_seconds
-      FROM capture_voice_notes
-      WHERE (transcription_status IS NULL OR transcription_status = 'pending')
-        AND created_at > NOW() - INTERVAL '7 days'
-      ORDER BY created_at DESC
-      LIMIT 20
-    ` as Array<{ id: string; storage_url: string; duration_seconds: number | null }>
+  const cutoff = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
+  const pending = await supabaseRest<Array<{ id: string; storage_url: string; duration_seconds: number | null }>>(
+    `capture_voice_notes?transcription_status=in.(pending)&created_at=gt.${encodeURIComponent(cutoff)}&select=id,storage_url,duration_seconds&order=created_at.desc&limit=20`,
+  )
 
     if (pending.length === 0) return
     console.log(`[voice-transcription] Poll found ${pending.length} pending voice note(s)`)
@@ -183,9 +172,6 @@ export async function pollAndTranscribePending(): Promise<void> {
         }
       }
     }
-  } finally {
-    await prisma.$disconnect()
-  }
 }
 
 // ---------------------------------------------------------------------------
