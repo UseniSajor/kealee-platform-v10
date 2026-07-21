@@ -766,6 +766,9 @@ importers:
       '@kealee/automation':
         specifier: workspace:*
         version: link:../../packages/automation
+      '@kealee/autonomous-runtime':
+        specifier: workspace:*
+        version: link:../../packages/autonomous-runtime
       '@kealee/communications':
         specifier: workspace:*
         version: link:../../packages/communications
