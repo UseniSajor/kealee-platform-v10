@@ -55,3 +55,5 @@ export type {
   Constraint,
   ConstraintSolverResult,
 } from './types';
+export { CIVIL_SITE_LAYERS, generateCivilSitePlan } from './civil-site-plan';
+export type { CivilPolyline, CivilSiteLayer, CivilSitePlanInput, CivilSitePlanOutput, GeometryAuthority } from './civil-site-plan';
