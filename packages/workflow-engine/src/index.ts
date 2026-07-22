@@ -15,6 +15,7 @@ export type {
 } from './types'
 export { SITE_PLAN_STAGES, SitePlanTransitionError, applySitePlanEvent, createSitePlanWorkflow } from './site-plan-workflow'
 export type { SitePlanStage, SitePlanStageSnapshot, SitePlanStageState, SitePlanWorkflowEvent, SitePlanWorkflowSnapshot } from './site-plan-workflow'
-
+export { assignCorrection, generateCommentResponseLetter, ingestAgencyComments, recordCorrectionReapproval, recordCorrectionResubmission, resolveCorrection } from './permit-corrections'
+export type { AgencyComment, CorrectionCycleSnapshot, CorrectionDiscipline } from './permit-corrections'
 
 
