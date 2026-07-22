@@ -3,6 +3,13 @@ export type { TwilioVoiceProviderConfig } from './twilio-provider';
 export { VoiceProviderError } from './types';
 export { buildConversationRelayTwiML } from './twiml';
 export type { ConversationRelayTwiMLInput } from './twiml';
+export { ConversationRelaySessionController, parseConversationRelayMessage, redactVoiceSensitiveData } from './conversation-relay';
+export type {
+  ConversationRelayCallbacks,
+  ConversationRelayInbound,
+  ConversationRelayOutbound,
+  VoiceAgentTurnContext,
+} from './conversation-relay';
 export type {
   ScheduleCallbackInput,
   StartOutboundVoiceCallInput,
