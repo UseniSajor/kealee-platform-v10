@@ -79,3 +79,21 @@ export async function getProjectReadiness(
     `/marketplace/projects/${projectId}/readiness`,
   )
 }
+
+export interface AuthoritativeProjectStatus {
+  project: { id: string; name: string | null; status: string; currentPhase: string | null;
+    projectedEndDate: string | null; verifiedAt: string }
+  phases: Array<{ id: string; name: string; status: string; percentComplete: number; plannedEndDate: string | null }>
+  documents: Array<{ id: string; name: string; type: string; status: string; signatureStatus: string | null }>
+  permits: Array<{ id: string; permitType: string; status: string; jurisdictionStatus: string | null;
+    submittedAt: string | null; approvedAt: string | null; corrections: Array<{ id: string; status: string; rawText: string }> }>
+  sitePlan: null | { id: string; currentStage: string; status: string; releasedAt: string | null;
+    stages: Array<{ id: string; stage: string; status: string; blockers: unknown; updatedAt: string }>
+    professionalReviews: Array<{ id: string; discipline: string; decision: string; licenseVerifiedAt: string | null }> }
+  supportCases: Array<{ id: string; status: string; topic: string; urgency: string; slaDueAt: string | null }>
+  generatedAt: string
+}
+
+export async function getAuthoritativeProjectStatus(projectId: string): Promise<AuthoritativeProjectStatus> {
+  return apiFetch<AuthoritativeProjectStatus>(`/api/support/projects/${projectId}/status`)
+}

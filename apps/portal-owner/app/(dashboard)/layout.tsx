@@ -6,13 +6,14 @@ import { useState } from 'react'
 import { NotificationCenter } from '@/components/notifications/NotificationCenter'
 import {
   FolderKanban, DollarSign, FileText, MessageSquare,
-  LogOut, Package, Menu, Home, Sparkles, Calculator,
+  LogOut, Package, Menu, Home, Sparkles, Calculator, Map,
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { PortalPageWithAskRail } from '@kealee/ui'
 
 const NAV_ITEMS = [
   { href: '/projects',     label: 'Projects',          icon: FolderKanban, badge: null },
+  { href: '/site-plans',   label: 'Site Plans',        icon: Map,          badge: null },
   { href: '/deliverables', label: 'Concept Packages', icon: Package,      badge: null },
   { href: '/services',     label: 'Estimate & Permits', icon: Calculator, badge: null },
   { href: '/concepts',     label: 'Order Concept',    icon: Sparkles,     badge: null },
