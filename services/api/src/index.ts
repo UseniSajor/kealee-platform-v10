@@ -1118,6 +1118,11 @@ const start = async () => {
       await fastify.register(commsRoutes, { prefix: '/comms' })
     })
 
+    await safeRegisterBlock('Twilio AI voice routes', async () => {
+      const { voiceRoutes } = await import('./modules/voice/voice.routes')
+      await fastify.register(voiceRoutes, { prefix: '/api/voice' })
+    })
+
     await safeRegisterBlock('Revenue optimization routes (P17)', async () => {
       const { revenueRoutes } = await import('./modules/revenue/revenue.routes')
       await fastify.register(revenueRoutes, { prefix: '/revenue' })
