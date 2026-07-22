@@ -23,6 +23,7 @@ export type {
   PrinceGeorgesSiteInput,
   RuleAuthority,
 } from './jurisdiction-rules'
-
+export { evaluateProfessionalRelease } from './professional-release'
+export type { ProfessionalReleaseDecision, ProfessionalReleaseInput } from './professional-release'
 
 
