@@ -1128,6 +1128,11 @@ const start = async () => {
       await fastify.register(supportAutomationRoutes, { prefix: '/api/support' })
     })
 
+    await safeRegisterBlock('Site-plan production workflow routes', async () => {
+      const { sitePlanRoutes } = await import('./modules/site-plans/site-plan.routes')
+      await fastify.register(sitePlanRoutes, { prefix: '/api/site-plans' })
+    })
+
     await safeRegisterBlock('Revenue optimization routes (P17)', async () => {
       const { revenueRoutes } = await import('./modules/revenue/revenue.routes')
       await fastify.register(revenueRoutes, { prefix: '/revenue' })
