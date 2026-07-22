@@ -1123,6 +1123,11 @@ const start = async () => {
       await fastify.register(voiceRoutes, { prefix: '/api/voice' })
     })
 
+    await safeRegisterBlock('Authoritative support automation routes', async () => {
+      const { supportAutomationRoutes } = await import('./modules/support-automation/support-automation.routes')
+      await fastify.register(supportAutomationRoutes, { prefix: '/api/support' })
+    })
+
     await safeRegisterBlock('Revenue optimization routes (P17)', async () => {
       const { revenueRoutes } = await import('./modules/revenue/revenue.routes')
       await fastify.register(revenueRoutes, { prefix: '/revenue' })
