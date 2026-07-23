@@ -307,7 +307,45 @@ importers:
 
   apps/m-architect: {}
 
-  apps/m-engineer: {}
+  apps/m-engineer:
+    dependencies:
+      '@kealee/auth':
+        specifier: workspace:*
+        version: link:../../packages/auth
+      '@kealee/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
+      '@supabase/ssr':
+        specifier: ^0.5.2
+        version: 0.5.2(@supabase/supabase-js@2.104.0)
+      lucide-react:
+        specifier: ^0.562.0
+        version: 0.562.0(react@18.2.0)
+      next:
+        specifier: 14.2.35
+        version: 14.2.35(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(react-dom@18.2.0)(react@18.2.0)
+      react:
+        specifier: 18.2.0
+        version: 18.2.0
+      react-dom:
+        specifier: 18.2.0
+        version: 18.2.0(react@18.2.0)
+    devDependencies:
+      '@types/node':
+        specifier: ^20.19.30
+        version: 20.19.39
+      '@types/react':
+        specifier: ^18.2.0
+        version: 18.3.28
+      '@types/react-dom':
+        specifier: ^18.2.0
+        version: 18.3.7(@types/react@18.3.28)
+      tailwindcss:
+        specifier: ^3.4.0
+        version: 3.4.19(tsx@4.21.0)
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
 
   apps/m-estimation:
     dependencies:
@@ -2692,7 +2730,7 @@ importers:
         specifier: ^5.2.6
         version: 5.2.6
       '@fastify/websocket':
-        specifier: ^11.0.0
+        specifier: ^11.2.0
         version: 11.2.0
       '@kealee/agent-prompts':
         specifier: workspace:*
@@ -7813,7 +7851,7 @@ packages:
     peerDependencies:
       '@langchain/core': ^1.0.1
     dependencies:
-      '@langchain/core': 1.1.40(@opentelemetry/api@1.9.1)(@opentelemetry/sdk-trace-base@2.7.0)(openai@4.104.0)
+      '@langchain/core': 1.1.40(@opentelemetry/api@1.9.1)(@opentelemetry/sdk-trace-base@2.7.0)(openai@6.34.0)
       uuid: 10.0.0
     dev: false
 
@@ -7837,7 +7875,7 @@ packages:
       vue:
         optional: true
     dependencies:
-      '@langchain/core': 1.1.40(@opentelemetry/api@1.9.1)(@opentelemetry/sdk-trace-base@2.7.0)(openai@4.104.0)
+      '@langchain/core': 1.1.40(@opentelemetry/api@1.9.1)(@opentelemetry/sdk-trace-base@2.7.0)(openai@6.34.0)
       '@types/json-schema': 7.0.15
       p-queue: 9.1.2
       p-retry: 7.1.1
@@ -7857,7 +7895,7 @@ packages:
       zod-to-json-schema:
         optional: true
     dependencies:
-      '@langchain/core': 1.1.40(@opentelemetry/api@1.9.1)(@opentelemetry/sdk-trace-base@2.7.0)(openai@4.104.0)
+      '@langchain/core': 1.1.40(@opentelemetry/api@1.9.1)(@opentelemetry/sdk-trace-base@2.7.0)(openai@6.34.0)
       '@langchain/langgraph-checkpoint': 1.0.1(@langchain/core@1.1.40)
       '@langchain/langgraph-sdk': 1.8.9(@langchain/core@1.1.40)(react-dom@18.2.0)(react@18.2.0)
       '@standard-schema/spec': 1.1.0
@@ -7876,7 +7914,7 @@ packages:
     peerDependencies:
       '@langchain/core': ^1.1.39
     dependencies:
-      '@langchain/core': 1.1.40(@opentelemetry/api@1.9.1)(@opentelemetry/sdk-trace-base@2.7.0)(openai@4.104.0)
+      '@langchain/core': 1.1.40(@opentelemetry/api@1.9.1)(@opentelemetry/sdk-trace-base@2.7.0)(openai@6.34.0)
       js-tiktoken: 1.0.21
       openai: 6.34.0(zod@4.3.6)
       zod: 4.3.6

@@ -243,7 +243,7 @@ export default function StructuralEngineeringPage() {
                     ? "ring-2 shadow-lg"
                     : "border-zinc-200"
                 }`}
-                style={tier.popular ? { borderColor: "#2DD4BF", ringColor: "#2DD4BF" } : undefined}
+                style={tier.popular ? { borderColor: "#2DD4BF" } : undefined}
               >
                 {tier.popular && (
                   <span
