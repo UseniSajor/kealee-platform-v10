@@ -9,7 +9,7 @@ Status: Implemented locally; production deployment not performed
 - Command Center provides an organization-scoped operations queue and concept generator.
 - m-engineer provides assignment-scoped professional review, rejection, and revision-request controls.
 - The API provides authenticated workflow creation, transitions, generation, professional decisions, and operations status.
-- The generator returns DXF and GeoJSON, quantities, provenance, confidence, classification, and regulated-use warnings.
+- The generator returns a printable vector PDF, DXF, GeoJSON, quantities, provenance, confidence, classification, and regulated-use warnings.
 
 ## Safety gates
 
@@ -21,13 +21,12 @@ Status: Implemented locally; production deployment not performed
 
 ## Verification results
 
-- Command Center TypeScript: passed.
+- Command Center TypeScript and production build: passed.
 - API unit tests: 39 passed across 6 files, including 4 civil site-plan generation tests.
 - Whitespace/error-marker validation (`git diff --check`): passed.
 - API ESLint: unavailable because the API workspace has no discoverable ESLint configuration.
-- API full TypeScript check: did not complete in the available verification window and was stopped without emitting a diagnostic.
-- m-engineer full TypeScript/build: blocked by pre-existing missing workspace module declarations and unrelated styling/middleware type errors.
-- concept-engine build reports pre-existing AutoCAD phase 2–4/test typing errors; its script currently masks those failures with `|| true`.
+- m-engineer strict TypeScript and production build: passed after restoring its package dependencies and correcting legacy CSS/middleware types.
+- concept-engine strict TypeScript and build: passed after updating legacy phase 2–4 callers to the current typed 3D geometry API.
 - Production deployment and live provider/credential tests: not performed.
 
 ## Operational activation
