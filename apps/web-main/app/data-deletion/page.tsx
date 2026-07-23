@@ -153,7 +153,7 @@ export default function DataDeletionPage() {
             <FileText className="h-6 w-6" style={{ color: '#E8793A' }} />
             <h2 className="text-xl font-bold" style={{ color: '#1A2B4A' }}>Data We May Hold About You</h2>
           </div>
-          <div className="overflow-hidden rounded-2xl border border-gray-100">
+          <div className="overflow-x-auto rounded-2xl border border-gray-100">
             <table className="w-full text-sm">
               <thead>
                 <tr style={{ backgroundColor: '#1A2B4A' }}>
@@ -165,7 +165,7 @@ export default function DataDeletionPage() {
               <tbody className="divide-y divide-gray-100">
                 {DATA_CATEGORIES.map((cat, i) => (
                   <tr key={cat.name} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                    <td className="px-4 py-3 font-medium text-gray-800 whitespace-nowrap">{cat.name}</td>
+                    <td className="px-3 py-3 font-medium text-gray-800 sm:whitespace-nowrap sm:px-4">{cat.name}</td>
                     <td className="px-4 py-3 text-gray-500">{cat.examples}</td>
                     <td className="px-4 py-3 text-gray-500 hidden sm:table-cell">{cat.retention}</td>
                   </tr>

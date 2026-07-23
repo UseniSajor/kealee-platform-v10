@@ -27,7 +27,9 @@ function ServicesDropdown() {
   return (
     <div ref={ref} className="relative">
       <button
+        type="button"
         onClick={() => setOpen(!open)}
+        aria-expanded={open}
         className="flex items-center gap-1 font-medium text-sm text-slate-600 hover:text-slate-900 transition whitespace-nowrap"
       >
         Services <ChevronDown className={`w-3.5 h-3.5 transition-transform ${open ? 'rotate-180' : ''}`} />
@@ -149,7 +151,9 @@ function MobileServicesAccordion({ onClose }: { onClose: () => void }) {
   return (
     <div>
       <button
+        type="button"
         onClick={() => setOpen(!open)}
+        aria-expanded={open}
         className="w-full flex items-center justify-between rounded-lg px-3 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50"
       >
         Services
@@ -268,7 +272,10 @@ export function SiteNav() {
 
             {/* Mobile hamburger */}
             <button
+              type="button"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              aria-label={mobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
+              aria-expanded={mobileMenuOpen}
               className="lg:hidden p-2 text-slate-600 hover:text-slate-900 transition"
             >
               {mobileMenuOpen ? <X className="w-6 h-6" /> : <KealeeNavIcon className="w-6 h-6" />}
@@ -310,15 +317,19 @@ export function SiteNav() {
               >
                 Sign in
               </Link>
-              <Link href="/build" onClick={() => setMobileMenuOpen(false)}>
-                <button className="w-full bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-bold py-3 rounded-xl text-sm transition mb-2">
-                  Build
-                </button>
+              <Link
+                href="/build"
+                onClick={() => setMobileMenuOpen(false)}
+                className="mb-2 block w-full rounded-xl bg-[#2563EB] py-3 text-center text-sm font-bold text-white transition hover:bg-[#1D4ED8]"
+              >
+                Build
               </Link>
-              <Link href="/concept" onClick={() => setMobileMenuOpen(false)}>
-                <button className="w-full bg-[#E8724B] hover:bg-[#D45C33] text-white font-bold py-3.5 rounded-xl text-base transition">
-                  Start Your Project
-                </button>
+              <Link
+                href="/concept"
+                onClick={() => setMobileMenuOpen(false)}
+                className="block w-full rounded-xl bg-[#E8724B] py-3.5 text-center text-base font-bold text-white transition hover:bg-[#D45C33]"
+              >
+                Start Your Project
               </Link>
             </div>
           </div>

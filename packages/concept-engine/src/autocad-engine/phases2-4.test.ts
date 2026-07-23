@@ -101,7 +101,7 @@ describe('Phase 2: Geometry3D', () => {
   });
 
   it('creates floor slabs', () => {
-    const slab = Geometry3D.createSlab(mockModel.rooms[0].polygon, 0, 0.33);
+    const slab = Geometry3D.createSlab(mockModel.rooms[0].polygon, 0, { thickness: 0.33 });
 
     expect(slab.id).toBeDefined();
     expect(slab.points).toHaveLength(4);
@@ -113,11 +113,11 @@ describe('Phase 2: Geometry3D', () => {
       mockModel.rooms[0].polygon,
       0,
       9,
-      26.57,
+      { pitch: 26.57 },
     );
 
     expect(roof.id).toBeDefined();
-    expect(roof.points.length).toBeGreaterThan(0);
+    expect(roof.vertices.length).toBeGreaterThan(0);
     expect(roof.pitch).toBeCloseTo(26.57);
   });
 
@@ -142,9 +142,9 @@ describe('Phase 2: Geometry3D', () => {
       9,
       0,
     );
-    const elev = Geometry3D.generateElevationView(walls3D, 0);
+    const elevations = Geometry3D.generateElevationViews(walls3D, []);
 
-    expect(Array.isArray(elev)).toBe(true);
+    expect(Array.isArray(elevations.south)).toBe(true);
   });
 });
 

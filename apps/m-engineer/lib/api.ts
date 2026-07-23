@@ -125,6 +125,22 @@ export interface DashboardData {
   pendingActions: any[];
 }
 
+export interface SitePlanProfessionalReview {
+  id: string;
+  workflowId: string;
+  jurisdictionCode: string;
+  discipline: string;
+  licenseNumber: string;
+  licenseVerifiedAt?: string;
+  decision: 'PENDING' | 'APPROVED' | 'REJECTED' | 'REVISION_REQUESTED';
+  declaration?: string;
+  expiresAt?: string;
+  updatedAt: string;
+  blockingComplianceCount: number;
+  workflow: { id: string; projectId: string; currentStage: string; status: string } | null;
+  stages: Array<{ id: string; stage: string; status: string; blockers?: string[]; updatedAt: string }>;
+}
+
 // ============================================================================
 // PROJECTS
 // ============================================================================
@@ -195,6 +211,25 @@ export async function getDashboard() {
   return apiRequest<DashboardData>('/engineer/dashboard');
 }
 
+export async function getSitePlanReviews() {
+  return apiRequest<{ reviews: SitePlanProfessionalReview[] }>('/api/site-plans/professional/reviews');
+}
+
+export async function submitSitePlanReviewDecision(reviewId: string, data: {
+  decision: 'APPROVED' | 'REJECTED' | 'REVISION_REQUESTED';
+  declaration: string;
+  licenseNumber: string;
+  sourceDocumentId?: string;
+  sealedDocumentId?: string;
+  sourceContentHash?: string;
+  sealedContentHash?: string;
+  redlines?: string[];
+}) {
+  return apiRequest<{ review: SitePlanProfessionalReview }>(`/api/site-plans/professional/reviews/${reviewId}/decision`, {
+    method: 'POST', body: JSON.stringify(data),
+  });
+}
+
 // ============================================================================
 // Default export
 // ============================================================================
@@ -207,4 +242,6 @@ export const engineerApi = {
   getServices,
   getPricing,
   getDashboard,
+  getSitePlanReviews,
+  submitSitePlanReviewDecision,
 };

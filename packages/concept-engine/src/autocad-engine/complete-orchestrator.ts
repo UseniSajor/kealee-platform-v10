@@ -78,13 +78,18 @@ export class CompleteCADOrchestrator {
       const slab3D = Geometry3D.createSlab(
         geometryModel.rooms.length > 0 ? geometryModel.rooms[0].polygon : [],
         0,
-        0.33,
+        { thickness: 0.33 },
       );
 
       const roof3D =
         geometryModel.rooms.length > 0
-          ? Geometry3D.createPitchedRoof(geometryModel.rooms[0].polygon, 0, 9, 26.57)
-          : { id: 'roof_empty', points: [], pitch: 0, overhang: 0 };
+          ? Geometry3D.createPitchedRoof(geometryModel.rooms[0].polygon, 0, 9, { pitch: 26.57 })
+          : {
+              id: 'roof_empty', type: 'flat' as const, vertices: [], rafters: [],
+              sheathing: { type: 'plywood' as const, thickness: 0, grade: 'N/A' },
+              roofing: { type: 'membrane' as const, weight: 0, lifespan: 0, color: 'N/A' },
+              pitch: 0, overhang: 0, drainage: { gutters: false, downspouts: 0, grade: 0 },
+            };
 
       const bounds3D = Geometry3D.calculateBounds3D(walls3D, [slab3D], [roof3D]);
 

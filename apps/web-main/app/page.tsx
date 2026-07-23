@@ -6,7 +6,9 @@ import { PortalAccessSection } from '@/components/home/PortalAccessSection'
 import { loadCardMediaManifest } from '@/lib/marketing/card-media-manifest'
 import { mergeHomeServicesWithManifest } from '@/lib/marketing/merge-home-services'
 
-export const dynamic = 'force-dynamic'
+// The media manifest is deployment content, so the homepage can be served from
+// Next's full-route cache instead of doing filesystem work on every request.
+export const revalidate = 3600
 
 export const metadata: Metadata = {
   title: 'Kealee — Design-Build Platform | DC, MD & VA',
@@ -30,13 +32,15 @@ export default async function HomePage() {
       <ServicesJourneySection services={services} />
 
       {/* AI Concept Design — 4-step workflow */}
-      <ConceptPackageSection />
+      <div className="homepage-deferred-content">
+        <ConceptPackageSection />
 
-      {/* 4-phase unified lifecycle overview */}
-      <PipelineSection />
+        {/* 4-phase unified lifecycle overview */}
+        <PipelineSection />
 
-      {/* Portal dashboard access */}
-      <PortalAccessSection />
+        {/* Portal dashboard access */}
+        <PortalAccessSection />
+      </div>
     </>
   )
 }

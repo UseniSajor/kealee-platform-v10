@@ -140,7 +140,7 @@ export default function DesignServicesPage() {
             </h2>
           </div>
           <div className="overflow-hidden rounded-2xl border border-gray-200">
-            <div className="grid grid-cols-3 bg-gray-50 px-5 py-3 text-xs font-bold uppercase tracking-widest text-gray-400">
+            <div className="grid grid-cols-[minmax(82px,0.8fr)_repeat(2,minmax(0,1fr))] gap-2 bg-gray-50 px-3 py-3 text-[10px] font-bold uppercase tracking-wide text-gray-400 sm:grid-cols-3 sm:gap-0 sm:px-5 sm:text-xs sm:tracking-widest">
               <span />
               <span style={{ color: '#E8793A' }}>AI Concept</span>
               <span style={{ color: '#2ABFBF' }}>Design Services</span>
@@ -148,12 +148,12 @@ export default function DesignServicesPage() {
             {COMPARISON.map((row, i) => (
               <div
                 key={row.feature}
-                className="grid grid-cols-3 px-5 py-4"
+                className="grid grid-cols-[minmax(82px,0.8fr)_repeat(2,minmax(0,1fr))] gap-2 px-3 py-4 sm:grid-cols-3 sm:gap-0 sm:px-5"
                 style={{ backgroundColor: i % 2 === 0 ? 'white' : '#FAFAFA', borderTop: '1px solid #F3F4F6' }}
               >
-                <span className="text-sm font-semibold text-gray-500 pr-4">{row.feature}</span>
-                <span className="text-sm text-gray-700 pr-4">{row.concept}</span>
-                <span className="text-sm text-gray-700">{row.design}</span>
+                <span className="break-words text-xs font-semibold text-gray-500 sm:pr-4 sm:text-sm">{row.feature}</span>
+                <span className="break-words text-xs text-gray-700 sm:pr-4 sm:text-sm">{row.concept}</span>
+                <span className="break-words text-xs text-gray-700 sm:text-sm">{row.design}</span>
               </div>
             ))}
           </div>

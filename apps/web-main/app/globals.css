@@ -1,3 +1,25 @@
+@keyframes hero-reveal {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.hero-reveal {
+  animation: hero-reveal 700ms ease-out both;
+}
+
+.hero-reveal-delay-1 { animation-delay: 120ms; }
+.hero-reveal-delay-2 { animation-delay: 240ms; }
+.hero-reveal-delay-3 { animation-delay: 360ms; }
+
+.homepage-deferred-content {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 1800px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-reveal { animation: none; }
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

@@ -1,6 +1,10 @@
 import { prisma } from '@kealee/database';
 import { SITE_PLAN_STAGES, applySitePlanEvent, createSitePlanWorkflow } from '@kealee/workflow-engine';
 import type { SitePlanWorkflowEvent } from '@kealee/workflow-engine';
+import { generateCivilSitePlan } from '@kealee/concept-engine';
+import type { CivilSitePlanInput } from '@kealee/concept-engine';
+import { getAiAutomationConfig } from '@kealee/core-config';
+import { createHash } from 'node:crypto';
 import { AuthorizationError, NotFoundError, ValidationError } from '../../errors/app.error';
 
 const db = prisma as any;
@@ -11,6 +15,175 @@ async function assertProjectAccess(projectId: string, userId: string) {
   if (!project) throw new NotFoundError('Project', projectId);
   if (project.ownerId !== userId && !project.memberships.length) throw new AuthorizationError('Project access denied');
   return project;
+}
+
+const OPERATIONS_ROLES = new Set(['admin', 'super_admin', 'pm', 'operations']);
+
+export async function listProfessionalReviews(userId: string) {
+  const profile = await db.marketplaceProfile.findUnique({
+    where: { userId },
+    select: { id: true },
+  });
+  if (!profile) return [];
+
+  const assignments = await db.professionalAssignment.findMany({
+    where: { profileId: profile.id },
+    select: { id: true },
+  });
+  const assignmentIds = assignments.map((assignment: { id: string }) => assignment.id);
+  if (!assignmentIds.length) return [];
+
+  const reviews = await db.professionalReviewRecord.findMany({
+    where: { professionalAssignmentId: { in: assignmentIds } },
+    orderBy: [{ decision: 'asc' }, { updatedAt: 'desc' }],
+  });
+  const workflowIds = [...new Set(reviews.map((review: { workflowId: string }) => review.workflowId))];
+  const [workflows, stages, compliance] = await Promise.all([
+    db.sitePlanWorkflow.findMany({ where: { id: { in: workflowIds } } }),
+    db.sitePlanStageExecution.findMany({ where: { workflowId: { in: workflowIds } }, orderBy: { updatedAt: 'desc' } }),
+    db.sitePlanComplianceResult.findMany({ where: { workflowId: { in: workflowIds }, blocksSubmission: true } }),
+  ]);
+  const workflowById = new Map(workflows.map((workflow: any) => [workflow.id, workflow]));
+  return reviews.map((review: any) => ({
+    ...review,
+    workflow: workflowById.get(review.workflowId) ?? null,
+    stages: stages.filter((stage: any) => stage.workflowId === review.workflowId),
+    blockingComplianceCount: compliance.filter((result: any) => result.workflowId === review.workflowId).length,
+  }));
+}
+
+export async function recordProfessionalReviewDecision(userId: string, reviewId: string, input: {
+  decision: 'APPROVED' | 'REJECTED' | 'REVISION_REQUESTED';
+  declaration: string;
+  licenseNumber: string;
+  sourceDocumentId?: string;
+  sealedDocumentId?: string;
+  sourceContentHash?: string;
+  sealedContentHash?: string;
+  redlines?: string[];
+}) {
+  const review = await db.professionalReviewRecord.findUnique({ where: { id: reviewId } });
+  if (!review) throw new NotFoundError('ProfessionalReviewRecord', reviewId);
+  if (review.decision !== 'PENDING') throw new ValidationError('This professional review already has a final decision');
+  const assignment = await db.professionalAssignment.findFirst({
+    where: { id: review.professionalAssignmentId, profile: { userId } },
+    select: { id: true },
+  });
+  if (!assignment) throw new AuthorizationError('Professional assignment access denied');
+  if (review.licenseNumber !== input.licenseNumber) throw new ValidationError('License number does not match the assignment');
+  if (!review.licenseVerifiedAt || (review.expiresAt && review.expiresAt <= new Date())) {
+    throw new ValidationError('A current verified professional license is required');
+  }
+  if (input.decision === 'APPROVED') {
+    if (!input.sourceDocumentId || !input.sealedDocumentId || !input.sourceContentHash || !input.sealedContentHash) {
+      throw new ValidationError('Approval requires source and sealed document evidence');
+    }
+    if (input.sourceContentHash === input.sealedContentHash) {
+      throw new ValidationError('The sealed deliverable must be a separately signed, version-locked artifact');
+    }
+    const blockers = await db.sitePlanComplianceResult.count({ where: { workflowId: review.workflowId, blocksSubmission: true } });
+    if (blockers) throw new ValidationError('Blocking compliance findings must be resolved before approval');
+  }
+  if (input.decision === 'REVISION_REQUESTED' && !input.redlines?.length) {
+    throw new ValidationError('Revision requests require at least one redline');
+  }
+  const updated = await db.professionalReviewRecord.updateMany({
+    where: { id: reviewId, decision: 'PENDING' },
+    data: {
+      decision: input.decision,
+      declaration: input.declaration,
+      sourceDocumentId: input.sourceDocumentId,
+      sealedDocumentId: input.sealedDocumentId,
+      sourceContentHash: input.sourceContentHash,
+      sealedContentHash: input.sealedContentHash,
+      decidedAt: new Date(),
+      metadata: { ...(typeof review.metadata === 'object' && review.metadata ? review.metadata : {}), redlines: input.redlines ?? [] },
+    },
+  });
+  if (updated.count !== 1) throw new ValidationError('This professional review already has a final decision');
+  return db.professionalReviewRecord.findUnique({ where: { id: reviewId } });
+}
+
+export async function listOperationsQueue(user: { role: string; organizationId?: string | null }) {
+  if (!OPERATIONS_ROLES.has(user.role.toLowerCase())) throw new AuthorizationError('Operations access denied');
+  const where = ['admin', 'super_admin'].includes(user.role.toLowerCase())
+    ? {}
+    : { organizationId: user.organizationId ?? '__no_organization__' };
+  const workflows = await db.sitePlanWorkflow.findMany({ where, orderBy: { updatedAt: 'desc' }, take: 200 });
+  const workflowIds = workflows.map((workflow: { id: string }) => workflow.id);
+  const [stages, compliance, reviews, corrections] = await Promise.all([
+    db.sitePlanStageExecution.findMany({ where: { workflowId: { in: workflowIds } }, orderBy: { updatedAt: 'desc' } }),
+    db.sitePlanComplianceResult.findMany({ where: { workflowId: { in: workflowIds }, blocksSubmission: true } }),
+    db.professionalReviewRecord.findMany({ where: { workflowId: { in: workflowIds } }, orderBy: { updatedAt: 'desc' } }),
+    db.permitCorrectionCycle.findMany({ where: { workflowId: { in: workflowIds }, status: { not: 'CLOSED' } } }),
+  ]);
+  return workflows.map((workflow: any) => ({
+    ...workflow,
+    stages: stages.filter((stage: any) => stage.workflowId === workflow.id),
+    blockingComplianceCount: compliance.filter((result: any) => result.workflowId === workflow.id).length,
+    pendingReviewCount: reviews.filter((review: any) => review.workflowId === workflow.id && review.decision === 'PENDING').length,
+    openCorrectionCount: corrections.filter((cycle: any) => cycle.workflowId === workflow.id).length,
+  }));
+}
+
+export async function generateSitePlanArtifact(user: { id: string; role: string; organizationId?: string | null },
+  workflowId: string, idempotencyKey: string, input: Omit<CivilSitePlanInput, 'id'>) {
+  const config = getAiAutomationConfig();
+  if (!config.sitePlanAutomationEnabled) throw new ValidationError('Site-plan automation is disabled');
+  if (!OPERATIONS_ROLES.has(user.role.toLowerCase())) throw new AuthorizationError('Operations access denied');
+  const workflow = await db.sitePlanWorkflow.findUnique({ where: { id: workflowId } });
+  if (!workflow) throw new NotFoundError('SitePlanWorkflow', workflowId);
+  if (!['admin', 'super_admin'].includes(user.role.toLowerCase()) && workflow.organizationId !== user.organizationId) {
+    throw new AuthorizationError('Site-plan workflow access denied');
+  }
+  if (workflow.currentStage !== 'PLAN_GENERATION') {
+    throw new ValidationError('Site-plan artifacts can only be generated during the plan generation stage');
+  }
+  const stage = await db.sitePlanStageExecution.findFirst({
+    where: { workflowId, stage: 'PLAN_GENERATION' }, orderBy: { attempt: 'desc' },
+  });
+  if (!stage || !['IN_PROGRESS', 'UNDER_REVIEW'].includes(stage.status)) {
+    throw new ValidationError('The plan generation stage must be started before generating an artifact');
+  }
+  if (input.requestedClassification === 'PERMIT_READY') {
+    const [blockingFindings, approval] = await Promise.all([
+      db.sitePlanComplianceResult.count({ where: { workflowId, blocksSubmission: true } }),
+      input.professionalApprovalId ? db.professionalReviewRecord.findFirst({ where: {
+        id: input.professionalApprovalId, workflowId, decision: 'APPROVED',
+      } }) : null,
+    ]);
+    if (blockingFindings) throw new ValidationError('Blocking compliance findings must be resolved before permit-ready generation');
+    if (!approval || !approval.licenseVerifiedAt || (approval.expiresAt && approval.expiresAt <= new Date())) {
+      throw new ValidationError('Permit-ready generation requires a current verified professional approval for this workflow');
+    }
+    if (!approval.sourceDocumentId || !approval.sealedDocumentId || !approval.sourceContentHash || !approval.sealedContentHash) {
+      throw new ValidationError('Professional approval is missing immutable source and sealed document evidence');
+    }
+  }
+  const eventId = `site-plan-generation:${workflowId}:${idempotencyKey}`;
+  const inputHash = createHash('sha256').update(JSON.stringify(input)).digest('hex');
+  const priorEvent = await db.workflowEvent.findUnique({ where: { idempotencyKey: eventId } });
+  if (priorEvent?.payload?.inputHash && priorEvent.payload.inputHash !== inputHash) {
+    throw new ValidationError('Idempotency key was already used with different site-plan input');
+  }
+  const artifact = generateCivilSitePlan({ ...input, id: workflowId });
+  const outputSummary = {
+    idempotencyKey, revision: input.revision, classification: input.requestedClassification,
+    units: input.units, crs: input.crs, geometryCount: input.geometry.length,
+    quantities: artifact.quantities, warnings: artifact.warnings, generatedAt: new Date().toISOString(),
+  };
+  await db.$transaction(async (tx: any) => {
+    await tx.sitePlanStageExecution.update({ where: { id: stage.id }, data: {
+      inputs: { revision: input.revision, classification: input.requestedClassification,
+        units: input.units, crs: input.crs, geometry: input.geometry },
+      outputs: { ...(typeof stage.outputs === 'object' && stage.outputs ? stage.outputs : {}), generation: outputSummary },
+    } });
+    await tx.workflowEvent.upsert({ where: { idempotencyKey: eventId }, create: {
+      eventType: 'SITE_PLAN_ARTIFACT_GENERATED', subjectType: 'PROJECT', subjectId: workflow.projectId,
+      payload: { workflowId, actorId: user.id, inputHash, ...outputSummary }, idempotencyKey: eventId, processedAt: new Date(),
+    }, update: {} });
+  });
+  return { artifact, summary: outputSummary };
 }
 export async function createSitePlan(projectId: string, userId: string, input: {
   organizationId: string; propertyId?: string; parcelId?: string; productId?: string;

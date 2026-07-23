@@ -68,17 +68,26 @@ export function ServicesJourneySection({ services }: { services: HomeJourneyServ
 
   useEffect(() => {
     const activeVideo = videoRefs[activeLayer].current
-    if (activeVideo) {
+    if (!activeVideo) return
+
+    const connection = (navigator as Navigator & {
+      connection?: { saveData?: boolean; effectiveType?: string }
+    }).connection
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    const constrainedNetwork = connection?.saveData || connection?.effectiveType === '2g'
+    if (reducedMotion || constrainedNetwork) return
+
+    // Keep the poster as LCP and wait until the page has settled before the
+    // large background video competes for bandwidth.
+    const playVideo = () => {
       activeVideo.currentTime = 0
       activeVideo.play().catch((err) => {
         console.warn('Hero video autoplay blocked:', err)
       })
     }
-    // The other layer just got a fresh index queued up — load it now so it's
-    // decoded and ready by the time it needs to fade in.
-    const standbyLayer = activeLayer === 0 ? 1 : 0
-    const standbyVideo = videoRefs[standbyLayer].current
-    standbyVideo?.load()
+    const timer = window.setTimeout(playVideo, document.readyState === 'complete' ? 1200 : 2200)
+
+    return () => window.clearTimeout(timer)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeLayer, layerIndex])
 
@@ -99,8 +108,8 @@ export function ServicesJourneySection({ services }: { services: HomeJourneyServ
               ref={videoRefs[layer]}
               muted
               playsInline
-              preload="auto"
-              autoPlay={layer === activeLayer}
+              preload="none"
+              autoPlay={false}
               onEnded={handleVideoEnded(layer)}
               onError={handleVideoError(layer)}
               className="absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ease-in-out"

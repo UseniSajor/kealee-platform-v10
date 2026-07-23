@@ -14,6 +14,7 @@ import {
   Megaphone,
   ImageIcon,
   Orbit,
+  ClipboardCheck,
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
@@ -27,6 +28,7 @@ const NAV_ITEMS = [
   { href: '/marketing', label: 'Marketing', icon: Megaphone },
   { href: MARKETING_OS_URL, label: 'Marketing OS', icon: Orbit, external: true },
   { href: '/renderings', label: 'Renderings', icon: ImageIcon },
+  { href: '/site-plans', label: 'Site Plans', icon: ClipboardCheck },
   { href: '/integrations', label: 'Integrations', icon: Plug },
   { href: '/analytics', label: 'Analytics', icon: BarChart3 },
 ]

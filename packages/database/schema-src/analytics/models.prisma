@@ -567,3 +567,28 @@ model GovernmentContract {
   @@index([dueDate])
   @@map("government_contracts")
 }
+
+/// Added 2026-07-21 — request-logger.middleware.ts and monitoring-dashboard.service.ts
+/// in services/api have always referenced this table/model (with graceful stdout
+/// fallback when it's missing) but it was never migrated, so the monitoring
+/// dashboard's error/performance/user metrics have been silently non-functional.
+model ApiRequestLog {
+  id           String   @id @default(uuid())
+  method       String
+  path         String
+  statusCode   Int      @map("status_code")
+  durationMs   Int      @map("duration_ms")
+  userId       String?  @map("user_id")
+  ipAddress    String?  @map("ip_address")
+  userAgent    String?  @map("user_agent")
+  queryParams  Json?    @map("query_params")
+  bodySize     Int?     @map("body_size")
+  responseSize Int?     @map("response_size")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@index([path])
+  @@index([statusCode])
+  @@index([createdAt])
+  @@index([userId])
+  @@map("api_request_logs")
+}

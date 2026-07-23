@@ -67,3 +67,13 @@ export type { RouterInput, RouterOutput, ExecutionRoute as ConceptExecutionRoute
 // Export package builder
 export { buildExportPackage } from './export/export-package-builder';
 export type { ExportPackageInput, ExportManifest, HandoffSummary, ExportPackageResult } from './export/export-package-builder';
+
+// Civil site-plan generation
+export { CIVIL_SITE_LAYERS, generateCivilSitePlan } from './autocad-engine/civil-site-plan';
+export type {
+  CivilPolyline,
+  CivilSiteLayer,
+  CivilSitePlanInput,
+  CivilSitePlanOutput,
+  GeometryAuthority,
+} from './autocad-engine/civil-site-plan';

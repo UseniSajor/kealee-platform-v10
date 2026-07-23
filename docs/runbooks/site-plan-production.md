@@ -10,6 +10,8 @@ Stages run sequentially: parcel resolution, document collection, feasibility, pl
 
 The concept-engine civil exporter owns structured geometry, CRS, units, layers, provenance, confidence, quantities, DXF, and GeoJSON. GIS/aerial geometry is always labeled screening/concept data. Permit-ready output rejects unverified survey geometry and missing professional approval.
 
+Operator and API instructions are in [Site-Plan Generator User Guide](../guides/site-plan-generator.md).
+
 ## Compliance and release
 
 Checks return PASS, WARNING, FAIL, NOT_APPLICABLE, MISSING_DATA, or PROFESSIONAL_DETERMINATION_REQUIRED. A blocking result prevents permit-ready labeling and submission.

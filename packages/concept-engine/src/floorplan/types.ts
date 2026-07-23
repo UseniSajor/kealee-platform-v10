@@ -109,6 +109,9 @@ export interface FloorPlanRoom {
   issues?: string[];
 }
 
+/** @deprecated Use FloorPlanRoom. Retained for older CAD consumers. */
+export type FloorPlanRoomJson = FloorPlanRoom;
+
 export interface FloorPlanJson {
   id: string;
   intakeId: string;

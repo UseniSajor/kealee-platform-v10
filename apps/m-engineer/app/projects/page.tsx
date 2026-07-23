@@ -138,6 +138,7 @@ export default function ProjectsPage() {
               <Link href="/services" className="text-zinc-600 hover:text-zinc-900">Services</Link>
               <Link href="/pricing" className="text-zinc-600 hover:text-zinc-900">Pricing</Link>
               <Link href="/projects" className="text-blue-600 font-semibold">My Projects</Link>
+              <Link href="/site-plan-reviews" className="text-zinc-600 hover:text-zinc-900">Site Plan Reviews</Link>
               <Link href="/contact" className="px-4 py-2 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700">
                 New Project
               </Link>
