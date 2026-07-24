@@ -4,7 +4,7 @@ import { authenticateUser, requireRole } from '../../middleware/auth';
 import { applySitePlanWorkflowEvent, createSitePlan, getSitePlan, listOperationsQueue,
   listProfessionalReviews, recordProfessionalReviewDecision, generateSitePlanArtifact,
   cancelEngineeringJob, enqueueSitePlanDocumentExtraction, getEngineeringDrawingDownload,
-  getEngineeringJob, enqueueEngineeringTask } from './site-plan.service';
+  getEngineeringJob, enqueueEngineeringTask, saveProfessionalReviewEdits, releaseProfessionalReview } from './site-plan.service';
 
 const geometrySchema = z.object({
   id: z.string().min(1).max(200),
@@ -46,6 +46,17 @@ export async function sitePlanRoutes(fastify: FastifyInstance) {
       redlines: z.array(z.string().min(1).max(2000)).max(100).optional(),
     }).parse(request.body);
     return reply.send({ review: await recordProfessionalReviewDecision((request as any).user.id, reviewId, body) });
+  });
+  fastify.post('/professional/reviews/:reviewId/edits', async (request, reply) => {
+    const { reviewId } = z.object({ reviewId: z.string().uuid() }).parse(request.params);
+    const body = z.object({ revision: z.number().int().positive(), geometry: z.array(geometrySchema).min(1).max(1000),
+      redlines: z.array(z.string().min(1).max(2000)).max(100).default([]), notes: z.string().max(5000).optional() }).parse(request.body);
+    return reply.send({ review: await saveProfessionalReviewEdits((request as any).user.id, reviewId, body) });
+  });
+  fastify.post('/professional/reviews/:reviewId/release', async (request, reply) => {
+    const { reviewId } = z.object({ reviewId: z.string().uuid() }).parse(request.params);
+    const body = z.object({ declaration: z.string().min(10).max(5000) }).parse(request.body);
+    return reply.send(await releaseProfessionalReview((request as any).user.id, reviewId, body.declaration));
   });
   fastify.get('/operations/queue', { preHandler: requireRole(['admin', 'super_admin', 'pm', 'operations']) },
     async (request, reply) => reply.send({ workflows: await listOperationsQueue((request as any).user) }));

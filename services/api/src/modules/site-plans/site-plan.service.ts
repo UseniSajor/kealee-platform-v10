@@ -346,6 +346,70 @@ export async function recordProfessionalReviewDecision(userId: string, reviewId:
   return db.professionalReviewRecord.findUnique({ where: { id: reviewId } });
 }
 
+/** Persist a professional's review edits as an auditable revision before a decision. */
+export async function saveProfessionalReviewEdits(userId: string, reviewId: string, input: {
+  revision: number;
+  geometry: unknown;
+  redlines: string[];
+  notes?: string;
+}) {
+  const review = await db.professionalReviewRecord.findUnique({ where: { id: reviewId } });
+  if (!review) throw new NotFoundError('ProfessionalReviewRecord', reviewId);
+  const assignment = await db.professionalAssignment.findFirst({
+    where: { id: review.professionalAssignmentId, profile: { userId } }, select: { id: true },
+  });
+  if (!assignment) throw new AuthorizationError('Professional assignment access denied');
+  if (!['PENDING', 'CHANGES_REQUESTED'].includes(review.decision)) {
+    throw new ValidationError('Edits can only be saved before approval or release');
+  }
+  const metadata = typeof review.metadata === 'object' && review.metadata ? review.metadata as Record<string, unknown> : {};
+  const revisions = Array.isArray(metadata.revisions) ? metadata.revisions : [];
+  const revisionRecord = {
+    revision: input.revision, geometry: input.geometry, redlines: input.redlines,
+    notes: input.notes, editedById: userId, editedAt: new Date().toISOString(),
+  };
+  return db.professionalReviewRecord.update({ where: { id: reviewId }, data: {
+    metadata: { ...metadata, currentRevision: input.revision, revisions: [...revisions, revisionRecord], redlines: input.redlines },
+  } });
+}
+
+/** Release a signed/sealed professional deliverable. Kealee never fabricates a seal. */
+export async function releaseProfessionalReview(userId: string, reviewId: string, declaration: string) {
+  const review = await db.professionalReviewRecord.findUnique({ where: { id: reviewId } });
+  if (!review) throw new NotFoundError('ProfessionalReviewRecord', reviewId);
+  const assignment = await db.professionalAssignment.findFirst({
+    where: { id: review.professionalAssignmentId, profile: { userId } }, select: { id: true },
+  });
+  if (!assignment) throw new AuthorizationError('Professional assignment access denied');
+  if (review.decision !== 'APPROVED') throw new ValidationError('The review must be approved before release');
+  if (!review.sourceDocumentId || !review.sealedDocumentId || !review.sourceContentHash || !review.sealedContentHash) {
+    throw new ValidationError('Release requires immutable source and signed/sealed document evidence');
+  }
+  if (!review.licenseVerifiedAt || (review.expiresAt && review.expiresAt <= new Date())) {
+    throw new ValidationError('A current verified professional license is required for release');
+  }
+  const blockers = await db.sitePlanComplianceResult.count({ where: { workflowId: review.workflowId, blocksSubmission: true } });
+  if (blockers) throw new ValidationError('Blocking compliance findings must be resolved before release');
+  const workflow = await db.sitePlanWorkflow.findUnique({ where: { id: review.workflowId } });
+  if (!workflow) throw new NotFoundError('SitePlanWorkflow', review.workflowId);
+  if (workflow.releasedAt) return { review, workflow };
+  const releasedAt = new Date();
+  const updatedReview = await db.$transaction(async (tx: any) => {
+    const updated = await tx.sitePlanWorkflow.updateMany({ where: { id: workflow.id, releasedAt: null }, data: {
+      status: 'RELEASED', releasedAt, metadata: { ...(workflow.metadata ?? {}), releasedById: userId,
+        releasedAt: releasedAt.toISOString(), releaseDeclaration: declaration },
+    } });
+    if (updated.count !== 1) throw new ValidationError('The workflow was released by another request');
+    await tx.sitePlanStageExecution.updateMany({ where: { workflowId: workflow.id, stage: 'PROFESSIONAL_REVIEW' }, data: {
+      status: 'APPROVED', reviewedById: userId, reviewedAt: releasedAt, completedAt: releasedAt,
+    } });
+    return tx.professionalReviewRecord.update({ where: { id: review.id }, data: {
+      metadata: { ...(review.metadata ?? {}), releasedById: userId, releasedAt: releasedAt.toISOString(), releaseDeclaration: declaration },
+    } });
+  });
+  return { review: updatedReview, workflow: { ...workflow, status: 'RELEASED', releasedAt } };
+}
+
 export async function listOperationsQueue(user: { role: string; organizationId?: string | null }) {
   if (!OPERATIONS_ROLES.has(user.role.toLowerCase())) throw new AuthorizationError('Operations access denied');
   const where = ['admin', 'super_admin'].includes(user.role.toLowerCase())
