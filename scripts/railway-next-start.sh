@@ -11,6 +11,9 @@ if [ -z "$APP_NAME" ]; then
   exit 1
 fi
 
+# portal-owner is the legacy Railway service name; project-owner is canonical.
+if [ "$APP_NAME" = "portal-owner" ]; then APP_NAME="project-owner"; fi
+
 export NEXT_PUBLIC_SUPABASE_URL="${SUPABASE_URL:-$NEXT_PUBLIC_SUPABASE_URL}"
 export NEXT_PUBLIC_SUPABASE_ANON_KEY="${SUPABASE_ANON_KEY:-$NEXT_PUBLIC_SUPABASE_ANON_KEY}"
 export HOSTNAME=0.0.0.0

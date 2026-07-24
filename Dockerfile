@@ -42,11 +42,13 @@ ENV NEXT_PUBLIC_SUPABASE_URL=$NEXT_PUBLIC_SUPABASE_URL \
 # cache stays enabled (no --force).
 RUN set -eux; \
   echo "RAILWAY_SERVICE_NAME='$RAILWAY_SERVICE_NAME'"; \
-  APP_DIR="apps/$RAILWAY_SERVICE_NAME"; \
+  APP_NAME="$RAILWAY_SERVICE_NAME"; \
+  if [ "$APP_NAME" = "portal-owner" ]; then APP_NAME="project-owner"; fi; \
+  APP_DIR="apps/$APP_NAME"; \
   if [ -n "$RAILWAY_SERVICE_NAME" ] && { [ -f "$APP_DIR/next.config.js" ] || [ -f "$APP_DIR/next.config.ts" ] || [ -f "$APP_DIR/next.config.mjs" ]; }; then \
       rm -rf "$APP_DIR/.next"; \
-      echo "Building Next app $RAILWAY_SERVICE_NAME and dependencies..."; \
-      pnpm turbo run build --filter="$RAILWAY_SERVICE_NAME..."; \
+      echo "Building Next app $APP_NAME (service=$RAILWAY_SERVICE_NAME) and dependencies..."; \
+      pnpm turbo run build --filter="portal-owner..."; \
       SRV=$(find "$APP_DIR/.next/standalone/apps" -name server.js -print -quit); \
       echo "server.js: $SRV"; \
       test -n "$SRV"; \
