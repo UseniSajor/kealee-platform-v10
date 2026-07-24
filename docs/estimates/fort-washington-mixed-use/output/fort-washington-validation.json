@@ -1,0 +1,23 @@
+{
+  "generatedAt": "2026-07-24T11:36:23.054Z",
+  "checks": {
+    "unitCount": true,
+    "buildingResidentialGsf": true,
+    "occupiedGsf": true,
+    "rawLineItemsReconcile": true,
+    "divisionsReconcile": true,
+    "contractReconciles": true,
+    "totalDevelopmentReconciles": true,
+    "allExactIdsResolve": true,
+    "allExactPricesHavePages": true,
+    "noInventedIdsOnAllowances": true,
+    "allLaborRatesResolveToCtcTasks": true,
+    "laborCostHoursRateReconcile": true
+  },
+  "benchmarkVariance": {
+    "repositoryPrinceGeorgesMixedUsePerOccupiedGsf": 218,
+    "modeledContractPerOccupiedGsf": 491.7235692878247,
+    "variancePercent": 1.2556127031551592,
+    "explanation": "The repository record is a small-project diagnostic benchmark with unspecified parking/site/soft scope. The CTC model includes podium, structured parking, full horizontal development, prevailing-wage JOC pricing, complete-system residuals, contract markups and 10% conceptual contingency."
+  }
+}

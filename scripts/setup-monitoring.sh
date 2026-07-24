@@ -32,7 +32,7 @@ declare -A APPS=(
     ["os-admin"]="admin.kealee.com"
     ["os-pm"]="pm.kealee.com"
     ["m-ops-services"]="ops.kealee.com"
-    ["m-project-owner"]="app.kealee.com"
+    ["project-owner"]="app.kealee.com"
     ["m-architect"]="architect.kealee.com"
     ["m-permits-inspections"]="permits.kealee.com"
 )
@@ -135,9 +135,9 @@ cat > monitoring-config.json <<EOF
         "dsn": "https://...@sentry.io/...",
         "project": "m-ops-services"
       },
-      "m-project-owner": {
+      "project-owner": {
         "dsn": "https://...@sentry.io/...",
-        "project": "m-project-owner"
+        "project": "project-owner"
       },
       "m-architect": {
         "dsn": "https://...@sentry.io/...",
@@ -156,7 +156,7 @@ cat > monitoring-config.json <<EOF
       "os-admin": { "appId": "your_app_id" },
       "os-pm": { "appId": "your_app_id" },
       "m-ops-services": { "appId": "your_app_id" },
-      "m-project-owner": { "appId": "your_app_id" },
+      "project-owner": { "appId": "your_app_id" },
       "m-architect": { "appId": "your_app_id" },
       "m-permits-inspections": { "appId": "your_app_id" }
     }

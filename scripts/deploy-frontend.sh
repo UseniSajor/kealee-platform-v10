@@ -47,7 +47,7 @@ deploy_app() {
 if [ "$1" == "all" ]; then
     apps=(
         "m-marketplace"
-        "m-project-owner"
+        "project-owner"
         "m-permits-inspections"
         "m-ops-services"
         "m-architect"

@@ -1,0 +1,25 @@
+{
+  "name": "project-owner",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "android:key": "node scripts/generate-play-upload-key.mjs",
+    "android:doctor": "cd android && bubblewrap doctor",
+    "android:build": "cd android && bubblewrap build"
+  },
+  "dependencies": {
+    "@kealee/core-rules": "workspace:*",
+    "@kealee/auth": "workspace:*",
+    "@kealee/concept-engine": "workspace:*",
+    "@kealee/core-hooks": "workspace:*",
+    "@kealee/shared": "workspace:*",
+    "@kealee/storage": "workspace:*",
+    "@kealee/ui": "workspace:*",
+    "@kealee/communications": "workspace:*",
+    "resend": "^3.0.0"
+  }
+}

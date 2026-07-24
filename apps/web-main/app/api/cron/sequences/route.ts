@@ -10,6 +10,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
+import type { SupabaseClient } from '@supabase/supabase-js'
 import { getSupabaseAdmin }          from '@/lib/supabase-server'
 import { isGhlEnabled } from '@/lib/marketing/ghl-enabled'
 import { verifyCronRequest } from '@/lib/cron-auth'
@@ -38,6 +39,43 @@ interface QueueRow {
   payload:        Record<string, unknown>
   scheduled_at:   string
   status:         string
+  normalized_email: string | null
+  normalized_phone: string | null
+}
+
+/**
+ * Suppression check for the legacy ghl_sequence_queue send path.
+ *
+ * Scope note: this only enforces marketing_suppressions (opt-out, hard
+ * bounce, complaint, privacy request, manual/legal holds) — the unambiguous
+ * "stop contacting this person" signals. It deliberately does NOT run the
+ * full evaluateOutreachPolicy SMS-consent gate: that requires an affirmative
+ * 'granted' marketing_consents record, which isn't backfilled for contacts
+ * captured before the canonical consent pipeline existed. Wiring that in here
+ * today would silently block ~all legacy SMS sends. Consent-gated enforcement
+ * belongs to the canonical marketing_enrollments send path once capture
+ * routes persist consent at intake (tracked separately).
+ */
+async function isSuppressed(
+  supabase: SupabaseClient,
+  identity: { email: string | null; phone: string | null },
+): Promise<boolean> {
+  if (!identity.email && !identity.phone) return false
+  const now = new Date().toISOString()
+  const orFilters: string[] = []
+  if (identity.email) orFilters.push(`normalized_email.eq.${identity.email}`)
+  if (identity.phone) orFilters.push(`normalized_phone.eq.${identity.phone}`)
+  const { data, error } = await supabase
+    .from('marketing_suppressions')
+    .select('id, expires_at')
+    .or(orFilters.join(','))
+    .or(`expires_at.is.null,expires_at.gt.${now}`)
+    .limit(1)
+  if (error) {
+    console.error('[cron/sequences] suppression lookup failed:', error.message)
+    return false
+  }
+  return Boolean(data && data.length > 0)
 }
 
 export async function GET(req: NextRequest): Promise<NextResponse> {
@@ -68,11 +106,27 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: fetchError.message }, { status: 500 })
   }
 
-  const processed: string[] = []
-  const failed:    string[] = []
+  const processed:  string[] = []
+  const failed:     string[] = []
+  const suppressed: string[] = []
 
   for (const row of (rows ?? []) as QueueRow[]) {
     try {
+      if (row.step_type === 'sms' || row.step_type === 'email') {
+        const blocked = await isSuppressed(supabase, {
+          email: row.normalized_email,
+          phone: row.normalized_phone,
+        })
+        if (blocked) {
+          suppressed.push(row.id)
+          await supabase
+            .from('ghl_sequence_queue')
+            .update({ status: 'suppressed', processed_at: new Date().toISOString() })
+            .eq('id', row.id)
+          continue
+        }
+      }
+
       await processStep(row)
       processed.push(row.id)
 
@@ -91,12 +145,13 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     }
   }
 
-  console.log(`[cron/sequences] Processed ${processed.length}, Failed ${failed.length}`)
+  console.log(`[cron/sequences] Processed ${processed.length}, Suppressed ${suppressed.length}, Failed ${failed.length}`)
 
   return NextResponse.json({
-    processed: processed.length,
-    failed:    failed.length,
-    total:     (rows ?? []).length,
+    processed:  processed.length,
+    suppressed: suppressed.length,
+    failed:     failed.length,
+    total:      (rows ?? []).length,
   })
 }
 

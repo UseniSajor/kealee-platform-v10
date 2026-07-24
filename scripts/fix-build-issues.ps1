@@ -28,7 +28,7 @@ Write-Host "━━━━━━━━━━━━━━━━━━━━━━�
 Write-Host ""
 
 # Get app name
-$apps = @("m-marketplace", "os-admin", "os-pm", "m-ops-services", "m-project-owner", "m-architect", "m-permits-inspections")
+$apps = @("m-marketplace", "os-admin", "os-pm", "m-ops-services", "project-owner", "m-architect", "m-permits-inspections")
 
 if ($args.Count -eq 0) {
     Write-Host "Select app:"

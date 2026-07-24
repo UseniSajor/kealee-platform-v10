@@ -14,6 +14,12 @@ export { MARKETPLACE_ASSEMBLIES, seedAssemblyLibrary } from './seed-assemblies'
 
 export { CTC_SAMPLE_TASKS, seedCTCLibrary } from './seed-ctc'
 export type { CTCSeedTask } from './seed-ctc'
+export {
+  CTC_MASTER_DATABASE_ID,
+  CTC_LEGACY_DATABASE_IDS,
+  CTC_DATABASE_IDS,
+  CTC_MASTER_PROVENANCE,
+} from './ctc-master'
 
 export {
   ctcToMarketplace,

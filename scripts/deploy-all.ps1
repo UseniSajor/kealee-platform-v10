@@ -83,8 +83,8 @@ $appChoice = Read-Host "Choice (1-6)"
 
 $apps = @()
 switch ($appChoice) {
-    "1" { $apps = @("m-project-owner", "m-permits-inspections", "m-ops-services", "m-architect", "os-admin") }
-    "2" { $apps = @("m-project-owner") }
+    "1" { $apps = @("project-owner", "m-permits-inspections", "m-ops-services", "m-architect", "os-admin") }
+    "2" { $apps = @("project-owner") }
     "3" { $apps = @("m-permits-inspections") }
     "4" { $apps = @("m-ops-services") }
     "5" { $apps = @("m-architect") }

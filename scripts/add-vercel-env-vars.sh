@@ -85,7 +85,7 @@ echo ""
 APPS=(
     "m-marketplace"
     "m-ops-services"
-    "m-project-owner"
+    "project-owner"
     "m-permits-inspections"
     "m-architect"
     "os-admin"
@@ -151,7 +151,7 @@ for app in "${APPS[@]}"; do
                 add_env_var "$app" "$key" "${ALACARTE_PRODUCTS[$key]}"
             done
             ;;
-        "m-project-owner")
+        "project-owner")
             add_env_var "$app" "NEXT_PUBLIC_APP_URL" "https://app.kealee.com"
             ;;
         "m-permits-inspections")

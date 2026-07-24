@@ -1,9 +1,8 @@
 export default function Home() {
   const apps = [
-    { name: 'Owner Portal', slug: 'portal-owner', description: 'Project intake and homeowner dashboard' },
     { name: 'Contractor Portal', slug: 'portal-contractor', description: 'Bid management and job tracking' },
     { name: 'Developer Portal', slug: 'portal-developer', description: 'Feasibility and development pipeline' },
-    { name: 'Project Owner', slug: 'm-project-owner', description: 'Mobile-first project management' },
+    { name: 'Project Owner', slug: 'project-owner', description: 'Project intake and mobile-first owner dashboard' },
     { name: 'Marketplace', slug: 'm-marketplace', description: 'Services and contractor marketplace' },
     { name: 'Ops & Services', slug: 'm-ops-services', description: 'Operations and service delivery' },
     { name: 'Permits & Inspections', slug: 'm-permits-inspections', description: 'Permit tracking and inspections' },

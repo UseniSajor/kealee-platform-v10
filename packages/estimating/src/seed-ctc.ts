@@ -23,6 +23,11 @@ export interface CTCSeedTask {
   materialCost: number;
   equipmentCost: number;
   laborHours?: number;
+  laborRate?: number;
+  laborHoursMethod?: string;
+  laborRateSourceTask?: string;
+  laborRateTrade?: string;
+  laborRateEffectiveDate?: string;
   isModifier: boolean;
   modifierOf?: string;
   modifierType?: 'ADD' | 'DEDUCT' | 'REPLACE' | 'PERCENTAGE';
@@ -190,6 +195,13 @@ export async function seedCTCLibrary(
           materialCost: task.materialCost || 0,
           equipmentCost: task.equipmentCost || 0,
           laborHours: task.laborHours || 0,
+          appliedLaborRate: task.laborRate ?? null,
+          laborHoursMethod: task.laborHoursMethod ?? null,
+          laborRateSourceTask: task.laborRateSourceTask ?? null,
+          laborRateTrade: task.laborRateTrade ?? null,
+          laborRateEffectiveDate: task.laborRateEffectiveDate
+            ? new Date(task.laborRateEffectiveDate)
+            : null,
           isActive: true,
           isTemplate: false,
           tags: ['ctc', `div-${task.csiDivision}`, ...(task.isModifier ? ['modifier'] : [])],
@@ -201,6 +213,7 @@ export async function seedCTCLibrary(
             modifierOf: task.modifierOf || null,
             modifierType: task.modifierType || null,
             modifierValue: task.modifierValue || null,
+            laborHoursMethod: task.laborHoursMethod || null,
           },
           ctcTaskNumber: task.taskNumber,
           ctcModifierOf: task.isModifier ? (task.modifierOf || null) : null,

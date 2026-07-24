@@ -102,8 +102,8 @@ declare -A APP_PROJECTS=(
     ["admin"]="os-admin"
     ["pm"]="os-pm"
     ["ops"]="m-ops-services"
-    ["app"]="m-project-owner"
-    ["owner"]="m-project-owner"
+    ["app"]="project-owner"
+    ["owner"]="project-owner"
     ["architect"]="m-architect"
     ["permits"]="m-permits-inspections"
 )

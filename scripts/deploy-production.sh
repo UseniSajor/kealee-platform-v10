@@ -108,7 +108,7 @@ APPS=(
     "apps/os-admin"
     "apps/os-pm"
     "apps/m-ops-services"
-    "apps/m-project-owner"
+    "apps/project-owner"
     "apps/m-architect"
     "apps/m-permits-inspections"
 )

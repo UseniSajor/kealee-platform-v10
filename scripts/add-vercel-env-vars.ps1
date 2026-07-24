@@ -88,7 +88,7 @@ Write-Host ""
 $apps = @(
     "m-marketplace",
     "m-ops-services",
-    "m-project-owner",
+    "project-owner",
     "m-permits-inspections",
     "m-architect",
     "os-admin",
@@ -158,7 +158,7 @@ foreach ($app in $apps) {
                 Add-EnvVar -app $app -key $key -value $alacarteProducts[$key]
             }
         }
-        "m-project-owner" {
+        "project-owner" {
             Add-EnvVar -app $app -key "NEXT_PUBLIC_APP_URL" -value "https://app.kealee.com"
         }
         "m-permits-inspections" {

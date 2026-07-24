@@ -618,12 +618,6 @@ importers:
         specifier: workspace:*
         version: link:../../packages/shared
 
-  apps/m-project-owner:
-    dependencies:
-      '@kealee/shared':
-        specifier: workspace:*
-        version: link:../../packages/shared
-
   apps/marketing:
     dependencies:
       next:
@@ -763,7 +757,7 @@ importers:
         specifier: workspace:*
         version: link:../../packages/ui
 
-  apps/portal-owner:
+  apps/project-owner:
     dependencies:
       '@kealee/auth':
         specifier: workspace:*
@@ -2258,6 +2252,25 @@ importers:
         specifier: ^5.9.3
         version: 5.9.3
 
+  packages/os-engineering:
+    dependencies:
+      '@kealee/compliance':
+        specifier: workspace:*
+        version: link:../compliance
+      '@kealee/concept-engine':
+        specifier: workspace:*
+        version: link:../concept-engine
+      '@kealee/workflow-engine':
+        specifier: workspace:*
+        version: link:../workflow-engine
+    devDependencies:
+      '@types/node':
+        specifier: ^20.19.0
+        version: 20.19.39
+      typescript:
+        specifier: ^5.9.0
+        version: 5.9.3
+
   packages/os-intake:
     dependencies:
       '@kealee/database':
@@ -2789,6 +2802,9 @@ importers:
       '@kealee/os-ai-orch':
         specifier: workspace:*
         version: link:../../packages/os-ai-orch
+      '@kealee/os-engineering':
+        specifier: workspace:*
+        version: link:../../packages/os-engineering
       '@kealee/os-intake':
         specifier: workspace:*
         version: link:../../packages/os-intake
@@ -3052,6 +3068,37 @@ importers:
       typescript:
         specifier: ^5.3.3
         version: 5.9.3
+
+  services/engineering-worker:
+    dependencies:
+      '@kealee/database':
+        specifier: workspace:*
+        version: link:../../packages/database
+      '@kealee/queue':
+        specifier: workspace:*
+        version: link:../../packages/queue
+      '@kealee/storage':
+        specifier: workspace:*
+        version: link:../../packages/storage
+      bullmq:
+        specifier: ^5.0.0
+        version: 5.75.2
+      ioredis:
+        specifier: ^5.3.2
+        version: 5.10.1
+    devDependencies:
+      '@types/node':
+        specifier: ^20.19.0
+        version: 20.19.39
+      tsx:
+        specifier: ^4.7.0
+        version: 4.21.0
+      typescript:
+        specifier: ^5.9.0
+        version: 5.9.3
+      vitest:
+        specifier: ^1.6.1
+        version: 1.6.1(@types/node@20.19.39)
 
   services/external-data:
     devDependencies:
@@ -9303,7 +9350,7 @@ packages:
       extract-zip: 2.0.1
       progress: 2.0.3
       proxy-agent: 6.5.0
-      semver: 7.7.4
+      semver: 7.8.3
       tar-fs: 3.1.2
       unbzip2-stream: 1.4.3
       yargs: 17.7.2
@@ -10681,7 +10728,7 @@ packages:
       ip: 1.1.9
       node-stream-zip: 1.15.0
       ora: 5.4.1
-      semver: 7.7.4
+      semver: 7.8.3
       strip-ansi: 5.2.0
       wcwidth: 1.0.1
       yaml: 2.8.3
@@ -10779,7 +10826,7 @@ packages:
       node-fetch: 2.7.0
       open: 6.4.0
       ora: 5.4.1
-      semver: 7.7.4
+      semver: 7.8.3
       shell-quote: 1.8.3
       sudo-prompt: 9.2.1
     transitivePeerDependencies:
@@ -10796,7 +10843,7 @@ packages:
       node-fetch: 2.7.0
       open: 6.4.0
       ora: 5.4.1
-      semver: 7.7.4
+      semver: 7.8.3
       shell-quote: 1.8.3
       sudo-prompt: 9.2.1
     transitivePeerDependencies:
@@ -10831,7 +10878,7 @@ packages:
       fs-extra: 8.1.0
       graceful-fs: 4.2.11
       prompts: 2.4.2
-      semver: 7.7.4
+      semver: 7.8.3
     transitivePeerDependencies:
       - bufferutil
       - encoding
@@ -13700,7 +13747,7 @@ packages:
       graphemer: 1.4.0
       ignore: 5.3.2
       natural-compare-lite: 1.4.0
-      semver: 7.7.4
+      semver: 7.8.3
       tsutils: 3.21.0(typescript@5.9.3)
       typescript: 5.9.3
     transitivePeerDependencies:
@@ -13857,7 +13904,7 @@ packages:
       debug: 4.4.3(supports-color@5.5.0)
       globby: 11.1.0
       is-glob: 4.0.3
-      semver: 7.7.4
+      semver: 7.8.3
       tsutils: 3.21.0(typescript@5.9.3)
       typescript: 5.9.3
     transitivePeerDependencies:
@@ -13879,7 +13926,7 @@ packages:
       globby: 11.1.0
       is-glob: 4.0.3
       minimatch: 9.0.3
-      semver: 7.7.4
+      semver: 7.8.3
       ts-api-utils: 1.4.3(typescript@5.9.3)
       typescript: 5.9.3
     transitivePeerDependencies:
@@ -13900,7 +13947,7 @@ packages:
       '@typescript-eslint/typescript-estree': 5.62.0(typescript@5.9.3)
       eslint: 8.57.1
       eslint-scope: 5.1.1
-      semver: 7.7.4
+      semver: 7.8.3
     transitivePeerDependencies:
       - supports-color
       - typescript
@@ -13919,7 +13966,7 @@ packages:
       '@typescript-eslint/types': 6.21.0
       '@typescript-eslint/typescript-estree': 6.21.0(typescript@5.9.3)
       eslint: 8.57.1
-      semver: 7.7.4
+      semver: 7.8.3
     transitivePeerDependencies:
       - supports-color
       - typescript
@@ -16762,7 +16809,7 @@ packages:
       '@one-ini/wasm': 0.1.1
       commander: 10.0.1
       minimatch: 9.0.9
-      semver: 7.7.4
+      semver: 7.8.3
     dev: false
 
   /ee-first@1.1.1:
@@ -18519,7 +18566,7 @@ packages:
       es6-error: 4.1.1
       matcher: 3.0.0
       roarr: 2.15.4
-      semver: 7.7.4
+      semver: 7.8.3
       serialize-error: 7.0.1
     dev: false
 
@@ -19939,7 +19986,7 @@ packages:
       jest-util: 29.7.0
       natural-compare: 1.4.0
       pretty-format: 29.7.0
-      semver: 7.7.4
+      semver: 7.8.3
     transitivePeerDependencies:
       - supports-color
     dev: true
@@ -21461,7 +21508,7 @@ packages:
     resolution: {integrity: sha512-6u9UwL0HlAl21+agMN3YAMXcKByMqwGx+pq+P76vii5f7hTPtKDp08/H9py6DY+cfDw7kQNTGEj/rly3IgbNQA==}
     engines: {node: '>=10'}
     dependencies:
-      semver: 7.7.4
+      semver: 7.8.3
 
   /node-abort-controller@3.1.1:
     resolution: {integrity: sha512-AGK2yQKIjRuqnc6VkX2Xj5d+QW8xZ87pa1UK6yA6ouUyuxfHuMP6umE5QK7UmTeOAymo+Zx1Fxiuw9rVx8taHQ==}
@@ -24345,7 +24392,7 @@ packages:
     dependencies:
       '@img/colour': 1.1.0
       detect-libc: 2.1.2
-      semver: 7.7.4
+      semver: 7.8.3
     optionalDependencies:
       '@img/sharp-darwin-arm64': 0.34.5
       '@img/sharp-darwin-x64': 0.34.5
@@ -24474,7 +24521,7 @@ packages:
     resolution: {integrity: sha512-a2B9Y0KlNXl9u/vsW6sTIu9vGEpfKu2wRV6l1H3XEas/0gUIzGzBoP/IouTcUQbm9JWZLH3COxyn03TYlFax6w==}
     engines: {node: '>=10'}
     dependencies:
-      semver: 7.7.4
+      semver: 7.8.3
     dev: true
 
   /sisteransi@1.0.5:

@@ -9,7 +9,7 @@ APPS=(
   "apps/m-permits-inspections"
 )
 
-SOURCE_APP="apps/m-project-owner"
+SOURCE_APP="apps/project-owner"
 
 echo "📋 Copying authentication pages to all apps..."
 echo ""

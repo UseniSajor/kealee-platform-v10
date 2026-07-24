@@ -17,12 +17,18 @@ CREATE TABLE IF NOT EXISTS ctc_cost_database (
   escalation_year   int,                           -- year prices were escalated to
   escalation_factor numeric(6,4) NOT NULL DEFAULT 1.0,
   publisher         text,                          -- 'The Gordian Group, Inc.'
+  copyright_holder  text,                          -- owner of source publication
   licensee          text,                          -- 'Maryland Dept. of General Services'
+  rights_basis      text,                          -- contract/license/public-use basis; verify before production use
+  platform_custodian text NOT NULL DEFAULT 'Kealee Services LLC',
+  redistribution_allowed boolean NOT NULL DEFAULT false,
+  is_master         boolean NOT NULL DEFAULT true,
   cost_pdf          text,                          -- source filename (cost)
   technical_pdf     text,                          -- source filename (technical)
   task_count        int  DEFAULT 0,
   spec_count        int  DEFAULT 0,
-  imported_at       timestamptz NOT NULL DEFAULT now()
+  imported_at       timestamptz NOT NULL DEFAULT now(),
+  updated_at        timestamptz NOT NULL DEFAULT now()
 );
 
 -- ── Priced tasks (COST catalog) ─────────────────────────────────────────────
@@ -40,6 +46,11 @@ CREATE TABLE IF NOT EXISTS ctc_cost_tasks (
   material_cost_2023 numeric(14,4),
   equipment_cost_2023 numeric(14,4),
   labor_hours        numeric(12,4),
+  labor_rate_2023    numeric(10,2),
+  labor_hours_method text,
+  labor_rate_source_task text,
+  labor_rate_trade   text,
+  labor_rate_effective_date date,
   -- current-year escalation (base_year -> escalation_year)
   escalation_factor  numeric(6,4) DEFAULT 1.0,
   unit_price_current numeric(14,4),
@@ -50,11 +61,18 @@ CREATE TABLE IF NOT EXISTS ctc_cost_tasks (
   modifier_value     numeric(14,4),
   page               int,
   source             text NOT NULL DEFAULT 'CTC-2023',
+  created_at         timestamptz NOT NULL DEFAULT now(),
+  updated_at         timestamptz NOT NULL DEFAULT now(),
   UNIQUE (database_id, task_number)
 );
 CREATE INDEX IF NOT EXISTS idx_ctc_cost_div  ON ctc_cost_tasks (csi_division);
 CREATE INDEX IF NOT EXISTS idx_ctc_cost_code ON ctc_cost_tasks (csi_code);
 CREATE INDEX IF NOT EXISTS idx_ctc_cost_desc ON ctc_cost_tasks USING gin (to_tsvector('english', description));
+ALTER TABLE ctc_cost_tasks ADD COLUMN IF NOT EXISTS labor_rate_2023 numeric(10,2);
+ALTER TABLE ctc_cost_tasks ADD COLUMN IF NOT EXISTS labor_hours_method text;
+ALTER TABLE ctc_cost_tasks ADD COLUMN IF NOT EXISTS labor_rate_source_task text;
+ALTER TABLE ctc_cost_tasks ADD COLUMN IF NOT EXISTS labor_rate_trade text;
+ALTER TABLE ctc_cost_tasks ADD COLUMN IF NOT EXISTS labor_rate_effective_date date;
 
 -- ── Technical specifications (TECHNICAL catalog) ────────────────────────────
 CREATE TABLE IF NOT EXISTS ctc_technical_specs (
@@ -67,6 +85,8 @@ CREATE TABLE IF NOT EXISTS ctc_technical_specs (
   body          text,                              -- scope / inclusions / execution
   page          int,
   source        text NOT NULL DEFAULT 'CTC-2023',
+  created_at    timestamptz NOT NULL DEFAULT now(),
+  updated_at    timestamptz NOT NULL DEFAULT now(),
   UNIQUE (database_id, spec_number)
 );
 CREATE INDEX IF NOT EXISTS idx_ctc_spec_code ON ctc_technical_specs (csi_code);
@@ -101,3 +121,14 @@ CREATE TABLE IF NOT EXISTS ctc_assembly (
   is_active      boolean NOT NULL DEFAULT true
 );
 CREATE INDEX IF NOT EXISTS idx_ctc_assembly_code ON ctc_assembly (csi_code);
+
+ALTER TABLE ctc_cost_database ADD COLUMN IF NOT EXISTS copyright_holder text;
+ALTER TABLE ctc_cost_database ADD COLUMN IF NOT EXISTS rights_basis text;
+ALTER TABLE ctc_cost_database ADD COLUMN IF NOT EXISTS platform_custodian text NOT NULL DEFAULT 'Kealee Services LLC';
+ALTER TABLE ctc_cost_database ADD COLUMN IF NOT EXISTS redistribution_allowed boolean NOT NULL DEFAULT false;
+ALTER TABLE ctc_cost_database ADD COLUMN IF NOT EXISTS is_master boolean NOT NULL DEFAULT true;
+ALTER TABLE ctc_cost_database ADD COLUMN IF NOT EXISTS updated_at timestamptz NOT NULL DEFAULT now();
+ALTER TABLE ctc_cost_tasks ADD COLUMN IF NOT EXISTS created_at timestamptz NOT NULL DEFAULT now();
+ALTER TABLE ctc_cost_tasks ADD COLUMN IF NOT EXISTS updated_at timestamptz NOT NULL DEFAULT now();
+ALTER TABLE ctc_technical_specs ADD COLUMN IF NOT EXISTS created_at timestamptz NOT NULL DEFAULT now();
+ALTER TABLE ctc_technical_specs ADD COLUMN IF NOT EXISTS updated_at timestamptz NOT NULL DEFAULT now();

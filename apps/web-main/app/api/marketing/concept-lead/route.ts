@@ -223,6 +223,7 @@ export async function POST(req: NextRequest) {
           conceptPrice:    String(CONCEPT_KITCHEN_PRICE),
           conceptPriceHigh: String(CONCEPT_WHOLE_HOME_PRICE),
         },
+        { email: body.email, phone: body.phone },
       )
     } catch (e: any) {
       console.error('[concept-lead] GHL/sequence error:', e?.message)

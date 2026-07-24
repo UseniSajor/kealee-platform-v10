@@ -24,7 +24,7 @@ export default function SitePlanReviewsPage() {
   }, []);
   useEffect(() => { void load(); }, [load]);
 
-  async function decide(decision: "REJECTED" | "REVISION_REQUESTED") {
+  async function decide(decision: "REJECTED" | "CHANGES_REQUESTED") {
     if (!selected || declaration.trim().length < 10) return setError("Enter a professional declaration of at least 10 characters.");
     setBusy(true); setError(null);
     const result = await submitSitePlanReviewDecision(selected.id, {
@@ -54,7 +54,7 @@ export default function SitePlanReviewsPage() {
         <h2 id="review-title" className="text-xl font-bold">Record professional decision</h2><p className="mt-1 text-sm text-slate-600">Approval requires immutable source/sealed document evidence and is completed through the controlled signing workflow. This form records rejection or redlines.</p>
         <label className="mt-5 block text-sm font-medium">Professional declaration<textarea value={declaration} onChange={(e) => setDeclaration(e.target.value)} rows={4} className="mt-1 w-full rounded-lg border p-3" /></label>
         <label className="mt-4 block text-sm font-medium">Redlines (one per line)<textarea value={redlines} onChange={(e) => setRedlines(e.target.value)} rows={5} className="mt-1 w-full rounded-lg border p-3" /></label>
-        <div className="mt-6 flex flex-wrap justify-end gap-2"><button type="button" onClick={() => setSelected(null)} disabled={busy} className="rounded-lg border px-4 py-2">Cancel</button><button type="button" onClick={() => void decide("REJECTED")} disabled={busy} className="rounded-lg bg-red-700 px-4 py-2 text-white">Reject</button><button type="button" onClick={() => void decide("REVISION_REQUESTED")} disabled={busy || !redlines.trim()} className="rounded-lg bg-amber-600 px-4 py-2 text-white">Request revisions</button></div>
+        <div className="mt-6 flex flex-wrap justify-end gap-2"><button type="button" onClick={() => setSelected(null)} disabled={busy} className="rounded-lg border px-4 py-2">Cancel</button><button type="button" onClick={() => void decide("REJECTED")} disabled={busy} className="rounded-lg bg-red-700 px-4 py-2 text-white">Reject</button><button type="button" onClick={() => void decide("CHANGES_REQUESTED")} disabled={busy || !redlines.trim()} className="rounded-lg bg-amber-600 px-4 py-2 text-white">Request revisions</button></div>
       </section></div>}
     </div>
   </main>;

@@ -101,7 +101,7 @@ Write-Host ""
 # 5. Update environment variables (if VERCEL_TOKEN is set)
 if ($env:VERCEL_TOKEN) {
     Write-Host "📝 Updating Vercel environment variables..." -ForegroundColor Cyan
-    $apps = @("m-ops-services", "m-project-owner")
+    $apps = @("m-ops-services", "project-owner")
     foreach ($app in $apps) {
         Write-Host "   Updating $app..." -ForegroundColor Cyan
         try {

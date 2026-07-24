@@ -15,7 +15,7 @@ case "$SERVICE" in
   "web-main")
     URL="https://www.kealee.com/api/health"
     ;;
-  "portal-owner")
+  "project-owner")
     URL="https://owner.kealee.com/"
     ;;
   "portal-contractor")

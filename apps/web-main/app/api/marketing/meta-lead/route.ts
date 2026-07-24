@@ -137,6 +137,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
                     conceptPrice:    '395',
                     conceptPriceHigh: '585',
                   },
+                  { email, phone },
                 )
               } catch (e: any) {
                 console.error('[meta-lead] GHL error:', e?.message)

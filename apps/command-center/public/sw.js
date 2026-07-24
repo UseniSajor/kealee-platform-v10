@@ -1,0 +1,17 @@
+const CACHE = 'kealee-command-center-v1'
+self.addEventListener('install', () => self.skipWaiting())
+self.addEventListener('activate', (event) => event.waitUntil(self.clients.claim()))
+self.addEventListener('fetch', (event) => {
+  if (event.request.method !== 'GET' || event.request.mode === 'navigate') return
+  event.respondWith(caches.open(CACHE).then(async (cache) => {
+    try {
+      const response = await fetch(event.request)
+      if (response.ok && new URL(event.request.url).origin === self.location.origin) {
+        cache.put(event.request, response.clone())
+      }
+      return response
+    } catch {
+      return (await cache.match(event.request)) || Response.error()
+    }
+  }))
+})

@@ -1,0 +1,10 @@
+.gradle/
+.idea/
+app/build/
+build/
+*.apk
+*.aab
+*.keystore
+*.jks
+play-signing.local.json
+local.properties

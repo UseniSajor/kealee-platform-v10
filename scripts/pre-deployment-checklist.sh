@@ -320,7 +320,7 @@ fi
 
 # 6.2 Frontend apps
 log "6.2 Checking frontend applications..."
-APPS=("apps/m-ops-services" "apps/os-admin" "apps/m-project-owner")
+APPS=("apps/m-ops-services" "apps/os-admin" "apps/project-owner")
 FOUND_APPS=0
 
 for app in "${APPS[@]}"; do

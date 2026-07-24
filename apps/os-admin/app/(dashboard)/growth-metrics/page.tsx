@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Card, LineChart, BarChart, Table } from '@kealee/ui';
+import { Card } from '@kealee/ui';
 import { GrowthAnalytics } from '@kealee/core-llm/analytics/growth-queries';
 
 interface ExecutiveSummary {
@@ -31,6 +31,27 @@ interface ChannelMetric {
   roi: number;
   conversionRate: number;
   retentionRate: number;
+}
+
+function MiniChart({
+  data,
+  color = '#2563eb',
+}: {
+  data: Array<{ value: number }>;
+  color?: string;
+}) {
+  const max = Math.max(...data.map((item) => item.value), 1);
+  return (
+    <div className="flex h-[300px] items-end gap-1" role="img" aria-label="Metric trend chart">
+      {data.map((item, index) => (
+        <div
+          key={index}
+          className="min-w-1 flex-1 rounded-t"
+          style={{ height: `${Math.max((item.value / max) * 100, 2)}%`, backgroundColor: color }}
+        />
+      ))}
+    </div>
+  );
 }
 
 export default function GrowthMetricsPage() {
@@ -113,23 +134,21 @@ export default function GrowthMetricsPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <Card className="p-6">
           <h2 className="text-xl font-bold mb-4">Owner Growth (30 Days)</h2>
-          <LineChart
+          <MiniChart
             data={trend.map((d) => ({
               date: d.date,
               value: d.owners,
             }))}
-            height={300}
           />
         </Card>
 
         <Card className="p-6">
           <h2 className="text-xl font-bold mb-4">CAC Trend</h2>
-          <LineChart
+          <MiniChart
             data={trend.map((d) => ({
               date: d.date,
               value: d.cac,
             }))}
-            height={300}
             color="#ef4444"
           />
         </Card>
@@ -138,46 +157,43 @@ export default function GrowthMetricsPage() {
       {/* Channel Performance */}
       <Card className="p-6">
         <h2 className="text-xl font-bold mb-4">Channel Performance</h2>
-        <Table>
-          <Table.Head>
-            <Table.Row>
-              <Table.Header>Channel</Table.Header>
-              <Table.Header>Users</Table.Header>
-              <Table.Header>Spend</Table.Header>
-              <Table.Header>CAC</Table.Header>
-              <Table.Header>ROI</Table.Header>
-              <Table.Header>Conv. Rate</Table.Header>
-              <Table.Header>Retention</Table.Header>
-            </Table.Row>
-          </Table.Head>
-          <Table.Body>
+        <div className="overflow-x-auto">
+        <table className="w-full text-left text-sm">
+          <thead>
+            <tr className="border-b">
+              {['Channel', 'Users', 'Spend', 'CAC', 'ROI', 'Conv. Rate', 'Retention'].map((label) => (
+                <th key={label} className="p-3 font-semibold">{label}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
             {channels.map((channel) => (
-              <Table.Row key={channel.channel}>
-                <Table.Cell className="font-medium">{channel.channel}</Table.Cell>
-                <Table.Cell>{channel.users.toLocaleString()}</Table.Cell>
-                <Table.Cell>${channel.spend.toLocaleString()}</Table.Cell>
-                <Table.Cell>${channel.cac.toFixed(0)}</Table.Cell>
-                <Table.Cell className={channel.roi > 0 ? 'text-green-600' : 'text-red-600'}>
+              <tr key={channel.channel} className="border-b">
+                <td className="p-3 font-medium">{channel.channel}</td>
+                <td className="p-3">{channel.users.toLocaleString()}</td>
+                <td className="p-3">${channel.spend.toLocaleString()}</td>
+                <td className="p-3">${channel.cac.toFixed(0)}</td>
+                <td className={`p-3 ${channel.roi > 0 ? 'text-green-600' : 'text-red-600'}`}>
                   {channel.roi.toFixed(1)}%
-                </Table.Cell>
-                <Table.Cell>{(channel.conversionRate * 100).toFixed(1)}%</Table.Cell>
-                <Table.Cell>{(channel.retentionRate * 100).toFixed(1)}%</Table.Cell>
-              </Table.Row>
+                </td>
+                <td className="p-3">{(channel.conversionRate * 100).toFixed(1)}%</td>
+                <td className="p-3">{(channel.retentionRate * 100).toFixed(1)}%</td>
+              </tr>
             ))}
-          </Table.Body>
-        </Table>
+          </tbody>
+        </table>
+        </div>
       </Card>
 
       {/* Acquisition Breakdown */}
       <Card className="p-6">
         <h2 className="text-xl font-bold mb-4">Monthly Acquisitions Breakdown</h2>
-        <BarChart
+        <MiniChart
           data={[
-            { name: 'Paid Ads', value: summary?.monthlyAcquisitions ? (summary.monthlyAcquisitions * 0.3) : 0 },
-            { name: 'Partnerships', value: summary?.monthlyAcquisitions ? (summary.monthlyAcquisitions * 0.5) : 0 },
-            { name: 'Organic', value: summary?.monthlyAcquisitions ? (summary.monthlyAcquisitions * 0.2) : 0 },
+            { value: summary?.monthlyAcquisitions ? (summary.monthlyAcquisitions * 0.3) : 0 },
+            { value: summary?.monthlyAcquisitions ? (summary.monthlyAcquisitions * 0.5) : 0 },
+            { value: summary?.monthlyAcquisitions ? (summary.monthlyAcquisitions * 0.2) : 0 },
           ]}
-          height={300}
         />
       </Card>
 

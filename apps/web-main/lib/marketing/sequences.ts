@@ -14,6 +14,7 @@ import {
   CONCEPT_KITCHEN_PRICE,
   CONCEPT_WHOLE_HOME_PRICE,
 } from '@/lib/marketing/pricing'
+import { normalizeEmail, normalizePhone } from '@/lib/marketing/contact-identity'
 
 // ── Step types ────────────────────────────────────────────────────────────────
 
@@ -254,16 +255,23 @@ export interface ScheduleSequenceResult {
  * scheduled_at = now() + step.delaySeconds.
  *
  * Template variables (e.g. {firstName}) are interpolated in message/html/subject strings.
+ *
+ * `contact.email`/`contact.phone` are stored per row (normalized) so the
+ * cron processor can check marketing_suppressions / marketing_consents
+ * before sending. Omitting them skips the send-time suppression check.
  */
 export async function scheduleSequence(
   contactId:  string,
   ghlContactId: string,
   sequenceId: SequenceId,
   vars:       Record<string, string>,
+  contact?:   { email?: string; phone?: string },
 ): Promise<ScheduleSequenceResult> {
   const supabase = getSupabaseAdmin()
   const steps    = SEQUENCES[sequenceId]
   const now      = Date.now()
+  const normalizedEmail = normalizeEmail(contact?.email)
+  const normalizedPhone = normalizePhone(contact?.phone)
 
   const rows = steps.map((step, i) => {
     const scheduledAt = new Date(now + step.delaySeconds * 1000).toISOString()
@@ -302,6 +310,8 @@ export async function scheduleSequence(
       payload,
       scheduled_at:   scheduledAt,
       status:         'pending',
+      normalized_email: normalizedEmail,
+      normalized_phone: normalizedPhone,
     }
   })
 

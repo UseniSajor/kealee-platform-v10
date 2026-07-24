@@ -5,7 +5,7 @@ echo "🔍 Validating all vercel.json files..."
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
 ERRORS=0
-APPS=("m-marketplace" "m-project-owner" "m-permits-inspections" "m-ops-services" "m-architect" "os-pm" "os-admin")
+APPS=("m-marketplace" "project-owner" "m-permits-inspections" "m-ops-services" "m-architect" "os-pm" "os-admin")
 
 for app in "${APPS[@]}"; do
   echo ""

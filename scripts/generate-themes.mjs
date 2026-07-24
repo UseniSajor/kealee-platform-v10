@@ -25,7 +25,7 @@ const moduleThemes = {
     accent: '#f97316',
     name: 'Marketplace Module',
   },
-  'm-project-owner': {
+  'project-owner': {
     primary: '#2563eb',
     accent: '#10b981',
     name: 'Project Owner Module',
@@ -224,7 +224,7 @@ export interface ThemeDefinition {
 export type ThemeKey =
   | 'm-architect'
   | 'm-marketplace'
-  | 'm-project-owner'
+  | 'project-owner'
   | 'm-engineer'
   | 'm-permits-inspections'
   | 'm-finance-trust'

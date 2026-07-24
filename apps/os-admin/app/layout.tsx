@@ -2,12 +2,14 @@ import type { Metadata } from "next";
 import { ErrorBoundary } from "../components/ErrorBoundary";
 import { ClientToaster } from "../components/client-toaster";
 import "./globals.css";
+import { PwaProvider } from "./pwa-provider";
 
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Kealee - Admin Console",
   description: "Internal admin console for Kealee staff",
+  manifest: '/site.webmanifest',
   icons: {
     icon: '/favicon.ico',
     apple: '/apple-touch-icon.png',
@@ -25,6 +27,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="font-sans antialiased">
+        <PwaProvider />
         <ErrorBoundary>
           {children}
           <ClientToaster />

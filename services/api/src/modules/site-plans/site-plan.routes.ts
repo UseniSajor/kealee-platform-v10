@@ -2,7 +2,9 @@ import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import { authenticateUser, requireRole } from '../../middleware/auth';
 import { applySitePlanWorkflowEvent, createSitePlan, getSitePlan, listOperationsQueue,
-  listProfessionalReviews, recordProfessionalReviewDecision, generateSitePlanArtifact } from './site-plan.service';
+  listProfessionalReviews, recordProfessionalReviewDecision, generateSitePlanArtifact,
+  cancelEngineeringJob, enqueueSitePlanDocumentExtraction, getEngineeringDrawingDownload,
+  getEngineeringJob, enqueueEngineeringTask } from './site-plan.service';
 
 const geometrySchema = z.object({
   id: z.string().min(1).max(200),
@@ -35,7 +37,7 @@ export async function sitePlanRoutes(fastify: FastifyInstance) {
   fastify.post('/professional/reviews/:reviewId/decision', async (request, reply) => {
     const { reviewId } = z.object({ reviewId: z.string().uuid() }).parse(request.params);
     const body = z.object({
-      decision: z.enum(['APPROVED', 'REJECTED', 'REVISION_REQUESTED']),
+      decision: z.enum(['APPROVED', 'REJECTED', 'CHANGES_REQUESTED']),
       declaration: z.string().min(10).max(5000),
       licenseNumber: z.string().min(2).max(100),
       sourceDocumentId: z.string().optional(), sealedDocumentId: z.string().optional(),
@@ -47,6 +49,56 @@ export async function sitePlanRoutes(fastify: FastifyInstance) {
   });
   fastify.get('/operations/queue', { preHandler: requireRole(['admin', 'super_admin', 'pm', 'operations']) },
     async (request, reply) => reply.send({ workflows: await listOperationsQueue((request as any).user) }));
+  fastify.post('/:workflowId/extract-document',
+    async (request, reply) => {
+      const { workflowId } = z.object({ workflowId: z.string().uuid() }).parse(request.params);
+      const upload = await (request as any).file();
+      if (!upload) return reply.code(400).send({ error: 'A plat or survey file is required' });
+      const mediaType = z.enum(['application/pdf']).parse(upload.mimetype);
+      const buffer = await upload.toBuffer();
+      if (buffer.length > 25 * 1024 * 1024) return reply.code(400).send({ error: 'Plat or survey exceeds the 25MB limit' });
+      const field = (name: string) => {
+        const value = upload.fields?.[name];
+        return typeof value?.value === 'string' ? value.value : undefined;
+      };
+      const options = z.object({ crs: z.string().min(1).max(100), units: z.enum(['FEET', 'METERS']),
+        idempotencyKey: z.string().min(8).max(200) }).parse({
+        crs: field('crs'), units: field('units'), idempotencyKey: field('idempotencyKey'),
+      });
+      return reply.code(202).send({ job: await enqueueSitePlanDocumentExtraction((request as any).user, workflowId,
+        { buffer, filename: upload.filename, mediaType }, options) });
+    });
+  fastify.get('/:workflowId/jobs/:jobId',
+    async (request, reply) => {
+      const { workflowId, jobId } = z.object({ workflowId: z.string().uuid(),
+        jobId: z.string().min(8).max(200) }).parse(request.params);
+      return reply.send({ job: await getEngineeringJob((request as any).user, workflowId, jobId) });
+    });
+  fastify.post('/:workflowId/jobs', { preHandler: requireRole(['admin', 'super_admin', 'pm', 'operations']) },
+    async (request, reply) => {
+      const { workflowId } = z.object({ workflowId: z.string().uuid() }).parse(request.params);
+      const body = z.object({
+        type: z.enum(['TRANSFORM_COORDINATES', 'GENERATE_SURFACE', 'GENERATE_CONTOURS',
+          'CALCULATE_CUT_FILL', 'ANALYZE_DRAINAGE', 'GENERATE_DXF', 'GENERATE_VECTOR_PDF',
+          'GENERATE_REPORT', 'RUN_COMPLIANCE_AUDIT']),
+        stageCode: z.enum(['BASE_GEOMETRY_CREATION', 'TERRAIN_GRADING_ANALYSIS', 'STORMWATER_SCREENING',
+          'EROSION_SEDIMENT_CONTROL', 'COMPLIANCE_AUDIT', 'DRAWING_REPORT_GENERATION']),
+        idempotencyKey: z.string().min(8).max(200), options: z.record(z.string(), z.unknown()),
+      }).parse(request.body);
+      return reply.code(202).send({ job: await enqueueEngineeringTask((request as any).user, workflowId, body) });
+    });
+  fastify.delete('/:workflowId/jobs/:jobId', { preHandler: requireRole(['admin', 'super_admin', 'pm', 'operations']) },
+    async (request, reply) => {
+      const { workflowId, jobId } = z.object({ workflowId: z.string().uuid(),
+        jobId: z.string().min(8).max(200) }).parse(request.params);
+      return reply.send({ job: await cancelEngineeringJob((request as any).user, workflowId, jobId) });
+    });
+  fastify.get('/:workflowId/drawings/:packageId/download', async (request, reply) => {
+    const { workflowId, packageId } = z.object({ workflowId: z.string().uuid(),
+      packageId: z.string().uuid() }).parse(request.params);
+    const { kind } = z.object({ kind: z.enum(['DXF', 'PDF', 'PREVIEW', 'REPORT']) }).parse(request.query);
+    return reply.send(await getEngineeringDrawingDownload((request as any).user.id, workflowId, packageId, kind));
+  });
   fastify.post('/:workflowId/generate', { preHandler: requireRole(['admin', 'super_admin', 'pm', 'operations']) },
     async (request, reply) => {
       const { workflowId } = z.object({ workflowId: z.string().uuid() }).parse(request.params);
@@ -61,8 +113,11 @@ export async function sitePlanRoutes(fastify: FastifyInstance) {
     });
   fastify.post('/projects/:projectId', async (request, reply) => {
     const { projectId } = z.object({ projectId: z.string().uuid() }).parse(request.params);
-    const body = z.object({ organizationId: z.string().uuid(), propertyId: z.string().uuid().optional(),
-      parcelId: z.string().uuid().optional(), productId: z.string().optional() }).parse(request.body);
+    const body = z.object({ organizationId: z.string().uuid().optional(), propertyId: z.string().uuid().optional(),
+      parcelId: z.string().uuid().optional(), productId: z.string().optional(),
+      jurisdictionCode: z.enum(['US-DC-DC', 'US-MD-MONTGOMERY', 'US-MD-PRINCE_GEORGES',
+        'US-VA-ARLINGTON', 'US-VA-ALEXANDRIA', 'US-VA-FAIRFAX_COUNTY', 'US-VA-LOUDOUN',
+        'US-VA-PRINCE_WILLIAM']) }).parse(request.body);
     return reply.status(201).send({ workflow: await createSitePlan(projectId, (request as any).user.id, body) });
   });
   fastify.get('/:workflowId', async (request, reply) => {

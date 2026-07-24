@@ -80,7 +80,7 @@ else
     # Array of apps to deploy
     apps=(
         "m-marketplace"
-        "m-project-owner"
+        "project-owner"
         "m-permits-inspections"
         "m-ops-services"
         "m-architect"

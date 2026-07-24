@@ -1,0 +1,27 @@
+{
+  "name": "@kealee/os-engineering",
+  "version": "1.0.0",
+  "private": true,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "require": "./dist/index.js",
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc --incremental false",
+    "dev": "tsc --watch"
+  },
+  "dependencies": {
+    "@kealee/compliance": "workspace:*",
+    "@kealee/concept-engine": "workspace:*",
+    "@kealee/workflow-engine": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.0",
+    "typescript": "^5.9.0"
+  }
+}

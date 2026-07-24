@@ -10,3 +10,14 @@ dist
 **/.turbo
 .next
 **/.next
+venv
+**/venv
+.venv
+**/.venv
+__pycache__
+**/__pycache__
+*.tsbuildinfo
+**/*.tsbuildinfo
+.agents
+.claude
+.codex

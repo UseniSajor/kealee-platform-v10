@@ -143,7 +143,7 @@ if [ -n "$VERCEL_TOKEN" ]; then
     read -p "Set environment variables in Vercel? (y/N): " SET_VERCEL
     
     if [ "$SET_VERCEL" = "y" ] || [ "$SET_VERCEL" = "Y" ]; then
-        APPS=("m-marketplace" "os-admin" "os-pm" "m-ops-services" "m-project-owner" "m-architect" "m-permits-inspections")
+        APPS=("m-marketplace" "os-admin" "os-pm" "m-ops-services" "project-owner" "m-architect" "m-permits-inspections")
         
         for app in "${APPS[@]}"; do
             if [ -n "$SLACK_WEBHOOK" ]; then

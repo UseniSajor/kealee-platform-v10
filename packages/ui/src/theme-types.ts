@@ -10,6 +10,7 @@ export type ThemeKey =
   | 'm-architect'
   | 'm-marketplace'
   | 'm-project-owner'
+  | 'project-owner'
   | 'm-engineer'
   | 'm-permits-inspections'
   | 'm-finance-trust'

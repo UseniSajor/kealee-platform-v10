@@ -1,21 +1,20 @@
-Category,Line Item,CTC Basis,Amount
-Hard Cost Detail,Catalog-priced hard cost,Sum of exact CTC task-code extensions,61013050.39
-Hard Cost Detail,Contractor adjustment factor,"1.10 all-in; no separate GC O&P, supervision, insurance/bonding or subcontractor O&P",6101305.04
-Hard Cost Detail,Contingency,10% of adjusted hard cost,6711435.54
-Uses,Total hard cost,CTC direct cost plus adjustment factor and contingency,73825790.97
-Uses,Land,Provided acquisition basis,7100000.00
-Uses,Catalog-priced professional services,Exact CTC professional-service task-code extensions,5780685.45
-Uses,Environmental Phase I/II and geotechnical,Project allowance; excludes services already included in CTC engineering/testing rows.,650000.00
-Uses,"Legal, zoning and entitlement","Project allowance for rezoning, land-use counsel and closing support.",1000000.00
-Uses,Permits and impact fees,Conservative project allowance pending agency fee schedules and actual receipts.,2500000.00
-Uses,Utility connection and meter fees,Connection/administrative fees only; physical utility construction is in CSI 33.,1250000.00
-Uses,Taxes during construction,"Allowance; builder risk, contractor insurance and bonding remain in the adjustment factor.",600000.00
-Uses,"Appraisal, lender reports and lender legal",Combined third-party allowance.,550000.00
-Uses,Leasing and marketing,Initial residential and commercial lease-up allowance.,1500000.00
-Uses,Owner legal/accounting/administration,Owner-side project administration allowance.,500000.00
-Uses,Developer fee,3% of hard and soft costs before land/financing,2644694.29
-Uses,Construction loan interest reserve,"8.75% annual rate, 27 months, 55% average drawn balance",6890559.74
-Uses,Construction loan origination fee,1.25% of preliminary loan basis,795447.01
-Uses,Total development cost,Complete project base case,105587177.47
-Sources,Construction loan,65% LTC,68631665.36
-Sources,Required equity,35% of TDC,36955512.12
+Category,Line Item,Basis,Amount
+Sources,Construction loan,65% LTC,280716670
+Sources,Required equity,TDC less loan,151155130
+Uses,Hard cost,"Base hard cost incl. general conditions, GC O&P and contingency",328596349
+Uses,Land,Known acquisition basis,7100000
+Uses,Architecture / design,4.2% of hard cost,13801047
+Uses,Civil engineering,0.8% of hard cost,2628771
+Uses,Structural engineering,0.6% of hard cost,1971578
+Uses,MEP engineering,0.9% of hard cost,2957367
+Uses,Geotech / environmental / survey / ALTA,Allowance,900000
+Uses,Legal / zoning / entitlement,Allowance,1600000
+Uses,Permits / impact / utility connection fees,4.0% of hard cost,13143854
+Uses,Insurance / taxes during construction,1.1% of hard cost,3614560
+Uses,Appraisal / third-party / lender legal,Allowance,850000
+Uses,Leasing and marketing,Allowance,1750000
+Uses,Owner contingency,3.0% of hard cost,9857890
+Uses,Developer fee,3% of TDC before financing,11663142
+Uses,Interest reserve,Average drawn balance method,28183710
+Uses,Construction loan origination,1.25% of pre-interest loan basis,3253531
+Uses,Total development cost,All uses,431871800

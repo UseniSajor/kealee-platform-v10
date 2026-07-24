@@ -1,0 +1,401 @@
+// Civil site-plan workflow persistence owned by the os-engineering domain.
+
+enum SitePlanStageCode {
+  PARCEL_RESOLUTION
+  DOCUMENT_COLLECTION
+  FEASIBILITY
+  PLAN_GENERATION
+  COMPLIANCE_AUDIT
+  PROFESSIONAL_REVIEW
+  SUBMISSION_CORRECTIONS
+}
+
+enum SitePlanStageStatus {
+  NOT_STARTED
+  READY
+  IN_PROGRESS
+  BLOCKED
+  AWAITING_REVIEW
+  APPROVED
+  REJECTED
+  COMPLETED
+}
+
+enum ComplianceOutcome {
+  PASS
+  WARNING
+  FAIL
+  NOT_APPLICABLE
+  MISSING_DATA
+  PROFESSIONAL_DETERMINATION_REQUIRED
+}
+
+enum ProfessionalReviewDecision {
+  PENDING
+  CHANGES_REQUESTED
+  APPROVED
+  REJECTED
+  SUPERSEDED
+}
+
+enum EngineeringValueClassification {
+  INFORMATIONAL
+  EXTRACTED
+  CUSTOMER_PROVIDED
+  OFFICIAL_GIS
+  SURVEYED
+  VERIFIED
+  ENGINEER_APPROVED
+  SEALED
+}
+
+enum EngineeringVerificationStatus {
+  UNVERIFIED
+  NEEDS_VERIFICATION
+  VERIFIED
+  REJECTED
+}
+
+enum EngineeringStageStatus {
+  NOT_STARTED
+  WAITING_FOR_INPUT
+  READY
+  PROCESSING
+  NEEDS_VERIFICATION
+  NEEDS_PROFESSIONAL_REVIEW
+  BLOCKED
+  FAILED
+  COMPLETE
+  SUPERSEDED
+}
+
+model JurisdictionRuleVersion {
+  id                String   @id @default(uuid())
+  jurisdictionCode  String
+  agency             String
+  ruleKey            String
+  version            Int
+  projectTypes       String[] @default([])
+  permitTypes        String[] @default([])
+  applicability      Json
+  requirements       Json
+  sourceUrl          String
+  sourceTitle        String
+  effectiveDate      DateTime?
+  lastVerifiedAt     DateTime
+  supersededAt       DateTime?
+  confidence         Decimal @db.Decimal(5, 4)
+  humanReviewRequired Boolean @default(false)
+  createdAt          DateTime @default(now())
+
+  @@unique([jurisdictionCode, ruleKey, version])
+  @@index([jurisdictionCode, supersededAt])
+  @@index([agency])
+  @@map("jurisdiction_rule_versions")
+}
+
+model SitePlanWorkflow {
+  id                         String            @id @default(uuid())
+  organizationId             String
+  projectId                  String
+  propertyId                 String?
+  parcelId                   String?
+  productId                  String?
+  currentStage               SitePlanStageCode @default(PARCEL_RESOLUTION)
+  status                     String            @default("ACTIVE")
+  version                    Int               @default(0)
+  professionalReviewRequired Boolean           @default(true)
+  releasedAt                 DateTime?
+  metadata                   Json?
+  createdAt                  DateTime          @default(now())
+  updatedAt                  DateTime          @updatedAt
+
+  @@unique([organizationId, projectId])
+  @@index([organizationId, status, updatedAt])
+  @@map("site_plan_workflows")
+}
+
+model SitePlanStageExecution {
+  id              String              @id @default(uuid())
+  workflowId      String
+  stage           SitePlanStageCode
+  status          SitePlanStageStatus @default(NOT_STARTED)
+  attempt         Int                 @default(1)
+  prerequisites   Json
+  inputs          Json?
+  outputs         Json?
+  blockers        Json?
+  assignedPartyId String?
+  startedAt       DateTime?
+  completedAt     DateTime?
+  reviewedById    String?
+  reviewedAt      DateTime?
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+
+  @@unique([workflowId, stage, attempt])
+  @@index([workflowId, stage, status])
+  @@index([status, updatedAt])
+  @@map("site_plan_stage_executions")
+}
+
+model SitePlanComplianceResult {
+  id                    String            @id @default(uuid())
+  workflowId            String
+  stageExecutionId      String
+  ruleVersionId         String
+  outcome               ComplianceOutcome
+  inputs                Json
+  result                Json
+  remediation           String?           @db.Text
+  responsibleDiscipline String?
+  blocksSubmission      Boolean           @default(false)
+  calculationVersion    String?
+  confidence            Decimal           @db.Decimal(5, 4)
+  createdAt             DateTime          @default(now())
+
+  @@unique([stageExecutionId, ruleVersionId])
+  @@index([workflowId, outcome])
+  @@index([blocksSubmission, createdAt])
+  @@map("site_plan_compliance_results")
+}
+
+model ProfessionalReviewRecord {
+  id                       String                     @id @default(uuid())
+  workflowId               String
+  professionalAssignmentId String
+  jurisdictionCode         String
+  discipline               String
+  licenseNumber            String
+  licenseVerifiedAt        DateTime?
+  decision                 ProfessionalReviewDecision @default(PENDING)
+  sourceDocumentId         String?
+  sealedDocumentId         String?
+  sourceContentHash        String?
+  sealedContentHash        String?
+  declaration              String?                    @db.Text
+  decidedAt                DateTime?
+  expiresAt                DateTime?
+  metadata                 Json?
+  createdAt                DateTime                   @default(now())
+  updatedAt                DateTime                   @updatedAt
+
+  @@index([workflowId, decision])
+  @@index([professionalAssignmentId])
+  @@map("professional_review_records")
+}
+
+model PermitCorrectionCycle {
+  id                   String   @id @default(uuid())
+  workflowId           String
+  permitId             String?
+  submissionId         String?
+  cycleNumber          Int
+  agencyReference      String?
+  commentsDocumentId   String?
+  comments             Json
+  assignments          Json
+  responseLetterId     String?
+  resubmissionEvidence Json?
+  status               String   @default("OPEN")
+  submittedAt          DateTime?
+  closedAt             DateTime?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  @@unique([workflowId, cycleNumber])
+  @@index([workflowId, status])
+  @@map("permit_correction_cycles")
+}
+
+model EngineeringProject {
+  id               String   @id @default(uuid())
+  organizationId   String
+  projectId        String
+  sitePlanWorkflowId String?
+  jurisdictionCode String
+  digitalTwinId    String?
+  status           String   @default("ACTIVE")
+  metadata         Json?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@unique([organizationId, projectId])
+  @@index([jurisdictionCode, status])
+  @@map("engineering_projects")
+}
+
+model EngineeringStage {
+  id                 String                 @id @default(uuid())
+  engineeringProjectId String
+  stageCode          String
+  status             EngineeringStageStatus @default(NOT_STARTED)
+  attempt            Int                    @default(1)
+  inputs             Json
+  outputs            Json
+  sourceProvenance   Json
+  confidence         Decimal                @db.Decimal(5, 4)
+  blockingIssues     Json
+  assignedPartyId    String?
+  startedAt          DateTime?
+  completedAt        DateTime?
+  calculationVersion String
+  auditHistory       Json
+  idempotencyKey     String                 @unique
+  createdAt          DateTime               @default(now())
+  updatedAt          DateTime               @updatedAt
+
+  @@unique([engineeringProjectId, stageCode, attempt])
+  @@index([engineeringProjectId, status])
+  @@map("engineering_stages")
+}
+
+model EngineeringArtifactValue {
+  id                 String                        @id @default(uuid())
+  engineeringProjectId String
+  artifactType       String
+  logicalKey         String
+  version            Int
+  value              Json
+  unit               String
+  classification     EngineeringValueClassification
+  sourceDocumentId   String?
+  sourceDataId       String?
+  sourceLocation     Json?
+  extractionMethod   String
+  rawText            String?                       @db.Text
+  confidence         Decimal                       @db.Decimal(5, 4)
+  verificationStatus EngineeringVerificationStatus @default(UNVERIFIED)
+  verifiedById       String?
+  verifiedAt         DateTime?
+  toolVersion        String
+  supersedesId       String?
+  createdAt          DateTime                      @default(now())
+
+  @@unique([engineeringProjectId, artifactType, logicalKey, version])
+  @@index([engineeringProjectId, verificationStatus])
+  @@map("engineering_artifact_values")
+}
+
+model EngineeringGeometry {
+  id                 String   @id @default(uuid())
+  engineeringProjectId String
+  geometryType       String
+  layerCode          String
+  revision           Int
+  geometryGeoJson    Json
+  crs                String
+  unit               String
+  classification     EngineeringValueClassification
+  sourceRefs         Json
+  confidence         Decimal  @db.Decimal(5, 4)
+  verificationStatus EngineeringVerificationStatus
+  calculationVersion String
+  supersedesId       String?
+  createdAt          DateTime @default(now())
+
+  @@unique([engineeringProjectId, layerCode, revision, id])
+  @@index([engineeringProjectId, layerCode, revision])
+  @@map("engineering_geometries")
+}
+
+model EngineeringCalculation {
+  id                 String   @id @default(uuid())
+  engineeringProjectId String
+  calculationType    String
+  version            Int
+  formula            String
+  inputs             Json
+  intermediateResults Json
+  result             Json
+  unit               String
+  assumptions        Json
+  missingInformation Json
+  sourceRefs         Json
+  jurisdictionCode   String
+  jurisdictionRuleVersion String
+  calculationVersion String
+  professionalReviewStatus String
+  supersedesId       String?
+  createdAt          DateTime @default(now())
+
+  @@unique([engineeringProjectId, calculationType, version])
+  @@index([engineeringProjectId, professionalReviewStatus])
+  @@map("engineering_calculations")
+}
+
+model EngineeringDrawingPackage {
+  id                 String   @id @default(uuid())
+  engineeringProjectId String
+  revision           Int
+  classification     EngineeringValueClassification
+  status             String
+  dxfDocumentId      String?
+  pdfDocumentId      String?
+  previewDocumentId  String?
+  reportDocumentId   String?
+  manifest           Json
+  validationReport   Json
+  sourceRefs         Json
+  contentHash        String?
+  lockedAt           DateTime?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@unique([engineeringProjectId, revision])
+  @@index([engineeringProjectId, status])
+  @@map("engineering_drawing_packages")
+}
+
+model EngineeringDrawingSheet {
+  id               String   @id @default(uuid())
+  drawingPackageId String
+  sheetNumber      String
+  title            String
+  status           String
+  documentId       String?
+  manifest         Json
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@unique([drawingPackageId, sheetNumber])
+  @@map("engineering_drawing_sheets")
+}
+
+model EngineeringRedline {
+  id                 String   @id @default(uuid())
+  drawingPackageId   String
+  professionalReviewId String
+  assignedToId       String?
+  discipline         String
+  sheetNumber        String?
+  geometry           Json?
+  comment            String   @db.Text
+  status             String   @default("OPEN")
+  resolution         String?  @db.Text
+  resolvedById       String?
+  resolvedAt         DateTime?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@index([drawingPackageId, status])
+  @@index([professionalReviewId, status])
+  @@map("engineering_redlines")
+}
+
+model EngineeringCostRecord {
+  id                 String   @id @default(uuid())
+  engineeringProjectId String
+  stageCode          String
+  costType           String
+  amountUsd          Decimal  @db.Decimal(12, 4)
+  processingMs       Int?
+  humanMinutes       Int?
+  provider           String?
+  metadata           Json?
+  occurredAt         DateTime @default(now())
+
+  @@index([engineeringProjectId, occurredAt])
+  @@index([stageCode, costType])
+  @@map("engineering_cost_records")
+}

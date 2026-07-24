@@ -5,7 +5,7 @@ Write-Host "🔍 Validating all vercel.json files..." -ForegroundColor Cyan
 Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
 $ERRORS = 0
-$APPS = @("m-marketplace", "m-project-owner", "m-permits-inspections", "m-ops-services", "m-architect", "os-pm", "os-admin")
+$APPS = @("m-marketplace", "project-owner", "m-permits-inspections", "m-ops-services", "m-architect", "os-pm", "os-admin")
 
 foreach ($app in $APPS) {
     Write-Host ""

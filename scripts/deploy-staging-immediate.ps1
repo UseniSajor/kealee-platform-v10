@@ -46,7 +46,7 @@ Write-Host ""
 $vercelApps = @(
     "m-marketplace",
     "m-ops-services",
-    "m-project-owner",
+    "project-owner",
     "m-permits-inspections",
     "m-architect",
     "os-admin",

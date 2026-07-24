@@ -15,6 +15,7 @@ export async function runRevenueZoningBot(
   const response = await runZoningBot({
     ...request,
     projectType: request.projectType,
+    propertyIntelligenceDepth: depth,
   })
   return { ...response, propertyIntelligenceDepth: depth, depthRequirements: DEPTH_REQUIREMENTS[depth] }
 }

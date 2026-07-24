@@ -10,7 +10,6 @@ import {
   Plug,
   BarChart3,
   LogOut,
-  Radar,
   Megaphone,
   ImageIcon,
   Orbit,
@@ -46,10 +45,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <aside className="hidden w-64 flex-shrink-0 border-r lg:block" style={{ borderColor: '#2A3D5F', backgroundColor: '#1A2B4A' }}>
         <div className="flex h-16 items-center border-b px-6" style={{ borderColor: 'rgba(255,255,255,0.1)' }}>
           <Link href="/" className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg" style={{ backgroundColor: '#E8793A' }}>
-              <Radar className="h-4 w-4 text-white" />
-            </div>
-            <span className="text-lg font-bold text-white font-display">Command</span>
+            <img src="/kealee-icon-192x192.png" alt="" className="h-8 w-8 rounded-lg" />
+            <span className="text-lg font-bold text-white font-display">Kealee Command</span>
           </Link>
         </div>
         <nav className="space-y-1 p-4">
@@ -84,7 +81,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
       <div className="flex flex-1 flex-col">
         <header className="flex h-16 items-center justify-between border-b px-4 lg:hidden" style={{ borderColor: '#2A3D5F', backgroundColor: '#1A2B4A' }}>
-          <Link href="/" className="text-lg font-bold font-display" style={{ color: '#2ABFBF' }}>Command Center</Link>
+          <Link href="/" className="flex items-center gap-2 text-lg font-bold font-display" style={{ color: '#2ABFBF' }}>
+            <img src="/kealee-icon-192x192.png" alt="" className="h-7 w-7 rounded-md" /> Kealee Command
+          </Link>
           <button onClick={handleSignOut} className="rounded-lg p-2 text-white/50 hover:bg-white/5">
             <LogOut className="h-5 w-5" />
           </button>

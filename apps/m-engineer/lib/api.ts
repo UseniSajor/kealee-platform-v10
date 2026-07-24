@@ -132,7 +132,7 @@ export interface SitePlanProfessionalReview {
   discipline: string;
   licenseNumber: string;
   licenseVerifiedAt?: string;
-  decision: 'PENDING' | 'APPROVED' | 'REJECTED' | 'REVISION_REQUESTED';
+  decision: 'PENDING' | 'APPROVED' | 'REJECTED' | 'CHANGES_REQUESTED';
   declaration?: string;
   expiresAt?: string;
   updatedAt: string;
@@ -216,7 +216,7 @@ export async function getSitePlanReviews() {
 }
 
 export async function submitSitePlanReviewDecision(reviewId: string, data: {
-  decision: 'APPROVED' | 'REJECTED' | 'REVISION_REQUESTED';
+  decision: 'APPROVED' | 'REJECTED' | 'CHANGES_REQUESTED';
   declaration: string;
   licenseNumber: string;
   sourceDocumentId?: string;

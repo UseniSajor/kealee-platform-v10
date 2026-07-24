@@ -359,7 +359,7 @@ function main() {
     { name: 'os-admin', additional: [] },
     { name: 'os-pm', additional: ['NEXT_PUBLIC_PM_WS_URL'] },
     { name: 'm-ops-services', additional: ['NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY'] },
-    { name: 'm-project-owner', additional: [] },
+    { name: 'project-owner', additional: [] },
     { name: 'm-architect', additional: [] },
     { name: 'm-permits-inspections', additional: [] },
   ]
