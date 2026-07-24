@@ -5,6 +5,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { MobileCaptureChecklist } from '@kealee/ui/components/intake/mobile-capture-checklist'
 import { MobileCaptureCamera } from '@kealee/ui/components/intake/mobile-capture-camera'
 import { MobileCaptureVoiceNote } from '@kealee/ui/components/intake/mobile-capture-voice-note'
+import { MobileCaptureVideo } from '@kealee/ui/components/intake/mobile-capture-video'
 import { MobileScanStep } from '@kealee/ui/components/intake/mobile-scan-step'
 import { CheckCircle2, Loader2, Mic, Camera, List, Scan, AlertTriangle } from 'lucide-react'
 
@@ -33,7 +34,7 @@ interface CaptureSession {
   scan_completed: boolean
 }
 
-type MobileView = 'checklist' | 'camera' | 'voice' | 'scan'
+type MobileView = 'checklist' | 'camera' | 'voice' | 'video' | 'scan'
 
 export default function MobileCapturePage() {
   const params = useParams()
@@ -221,6 +222,7 @@ export default function MobileCapturePage() {
             <>
               <TabBtn active={view === 'camera'} onClick={() => setView('camera')} label="Camera" icon={<Camera className="h-4 w-4" />} />
               <TabBtn active={view === 'voice'} onClick={() => setView('voice')} label="Voice" icon={<Mic className="h-4 w-4" />} />
+              <TabBtn active={view === 'video'} onClick={() => setView('video')} label="Video" icon={<Camera className="h-4 w-4" />} />
             </>
           )}
           {session.scan_enabled && (
@@ -310,6 +312,17 @@ export default function MobileCapturePage() {
             captureToken={captureSessionToken}
             zone={selectedZoneMeta.zone}
             onRecorded={handleVoiceNoteRecorded}
+          />
+        )}
+
+        {view === 'video' && selectedZoneMeta && (
+          <MobileCaptureVideo
+            captureSessionId={session.id}
+            captureToken={captureSessionToken}
+            zone={selectedZoneMeta.zone}
+            zoneName={selectedZoneMeta.displayName}
+            prompt={selectedZoneMeta.prompt}
+            onUploaded={handleAssetUploaded}
           />
         )}
 
