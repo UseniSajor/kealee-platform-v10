@@ -2763,6 +2763,9 @@ importers:
       '@kealee/audit':
         specifier: workspace:*
         version: link:../../packages/audit
+      '@kealee/automation':
+        specifier: workspace:*
+        version: link:../../packages/automation
       '@kealee/communications':
         specifier: workspace:^
         version: link:../../packages/communications
@@ -2781,6 +2784,9 @@ importers:
       '@kealee/core-llm':
         specifier: workspace:*
         version: link:../../packages/core-llm
+      '@kealee/core-rules':
+        specifier: workspace:*
+        version: link:../../packages/core-rules
       '@kealee/database':
         specifier: workspace:*
         version: link:../../packages/database
