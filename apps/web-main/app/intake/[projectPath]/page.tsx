@@ -386,7 +386,8 @@ export default function IntakePage() {
 
   useEffect(() => {
     try {
-      const saved = sessionStorage.getItem(`intake_form_${projectPath}`)
+      const storageKey = `kealee_intake_draft_${projectPath}`
+      const saved = localStorage.getItem(storageKey) ?? sessionStorage.getItem(`intake_form_${projectPath}`)
       if (saved) {
         const parsed = JSON.parse(saved)
         if (parsed.formData) {
@@ -412,10 +413,12 @@ export default function IntakePage() {
   useEffect(() => {
     if (!isPersistedDataLoaded) return
     try {
-      sessionStorage.setItem(
-        `intake_form_${projectPath}`,
-        JSON.stringify({ formData, uploadedFiles, uploadedDocs, step })
-      )
+      const snapshot = JSON.stringify({ formData, uploadedFiles, uploadedDocs, step, savedAt: new Date().toISOString() })
+      // localStorage survives tab closes/restarts while the user walks the
+      // property. Keep sessionStorage as a compatibility fallback for older
+      // browsers and existing drafts.
+      localStorage.setItem(`kealee_intake_draft_${projectPath}`, snapshot)
+      sessionStorage.setItem(`intake_form_${projectPath}`, snapshot)
     } catch (e) {
       console.error('Failed to persist intake form:', e)
     }

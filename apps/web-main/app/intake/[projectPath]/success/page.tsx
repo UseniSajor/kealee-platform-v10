@@ -19,6 +19,7 @@ export default function IntakeSuccessPage() {
     if (typeof window !== 'undefined' && projectPath) {
       try {
         sessionStorage.removeItem(`intake_form_${projectPath}`)
+        localStorage.removeItem(`kealee_intake_draft_${projectPath}`)
       } catch (e) {
         console.error('Failed to clear persisted intake form:', e)
       }
