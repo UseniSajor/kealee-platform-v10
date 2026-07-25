@@ -45,11 +45,13 @@ RUN set -eux; \
   APP_NAME="$RAILWAY_SERVICE_NAME"; \
   if [ "$APP_NAME" = "portal-owner" ]; then APP_NAME="project-owner"; fi; \
   APP_DIR="apps/$APP_NAME"; \
+  BUILD_FILTER="$APP_NAME"; \
+  if [ "$APP_NAME" = "project-owner" ]; then BUILD_FILTER="portal-owner"; fi; \
   if [ -n "$RAILWAY_SERVICE_NAME" ] && { [ -f "$APP_DIR/next.config.js" ] || [ -f "$APP_DIR/next.config.ts" ] || [ -f "$APP_DIR/next.config.mjs" ]; }; then \
       rm -rf "$APP_DIR/.next"; \
       echo "Building Next app $APP_NAME (service=$RAILWAY_SERVICE_NAME) and dependencies..."; \
-      pnpm turbo run build --filter="portal-owner..."; \
-      SRV=$(find "$APP_DIR/.next/standalone/apps" -name server.js -print -quit); \
+      pnpm turbo run build --filter="$BUILD_FILTER..."; \
+      SRV=$(find "$APP_DIR/.next/standalone" -name server.js -print -quit 2>/dev/null); \
       echo "server.js: $SRV"; \
       test -n "$SRV"; \
       test -f "$SRV"; \
