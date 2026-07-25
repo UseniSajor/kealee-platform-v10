@@ -1,8 +1,7 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-
-const ALLOWED_ROLES = ['admin', 'super_admin'];
+import { hasOsAdminRole } from '@kealee/auth/ops-api-auth';
 
 export async function middleware(request: NextRequest) {
   let response = NextResponse.next({
@@ -44,10 +43,12 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(redirectUrl);
   }
 
-  // Check role from app_metadata (set via Supabase SQL: UPDATE auth.users SET raw_app_meta_data = raw_app_meta_data || '{"role":"admin"}' WHERE email = '...')
+  // Role comes from app_metadata.role, kept in sync with the os-admin RBAC
+  // UI's Staff Access tab via app_metadata.permissions (see staff-access.service.ts).
   const role = (session.user.app_metadata?.role ?? 'user').toLowerCase();
+  const permissions = session.user.app_metadata?.permissions as string[] | undefined;
 
-  if (!ALLOWED_ROLES.includes(role)) {
+  if (!hasOsAdminRole(role, permissions)) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = '/unauthorized';
     return NextResponse.redirect(redirectUrl);

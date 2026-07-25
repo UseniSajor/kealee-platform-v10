@@ -1,8 +1,9 @@
 import { FastifyInstance } from 'fastify'
 import { rbacService } from './rbac.service'
-import { authenticateUser } from '../auth/auth.middleware'
+import { listStaffAssignments, assignStaffRole, revokeStaffRole } from './staff-access.service'
+import { authenticateUser, requireRole } from '../auth/auth.middleware'
 import { validateBody, validateParams } from '../../middleware/validation.middleware'
-import { createRoleSchema, createPermissionSchema, checkPermissionSchema } from '../../schemas'
+import { createRoleSchema, createPermissionSchema, checkPermissionSchema, assignStaffRoleSchema } from '../../schemas'
 import { NotFoundError } from '../../errors/app.error'
 import { z } from 'zod'
 import { sanitizeErrorMessage } from '../../utils/sanitize-error'
@@ -278,6 +279,68 @@ export async function rbacRoutes(fastify: FastifyInstance) {
         fastify.log.error(error)
         return reply.code(500).send({
           error: sanitizeErrorMessage(error, 'Failed to check permission'),
+        })
+      }
+    }
+  )
+
+  // ============================================================================
+  // STAFF ACCESS (os-admin / Command Center login gating)
+  // ============================================================================
+  // Restricted to admin/super_admin — these routes control who can sign into
+  // the internal admin apps, not customer-org permissions.
+
+  // GET /rbac/staff - List current staff role assignments
+  fastify.get(
+    '/staff',
+    { preHandler: [authenticateUser, requireRole(['admin', 'super_admin'])] },
+    async (_request, reply) => {
+      try {
+        const staff = await listStaffAssignments()
+        return reply.send({ staff })
+      } catch (error: any) {
+        fastify.log.error(error)
+        return reply.code(500).send({
+          error: sanitizeErrorMessage(error, 'Failed to list staff assignments'),
+        })
+      }
+    }
+  )
+
+  // POST /rbac/staff - Assign a staff role to a user by email
+  fastify.post(
+    '/staff',
+    {
+      preHandler: [authenticateUser, requireRole(['admin', 'super_admin']), validateBody(assignStaffRoleSchema)],
+    },
+    async (request, reply) => {
+      try {
+        const { email, roleKey } = request.body as { email: string; roleKey: string }
+        const actingUser = (request as any).user
+        const assignment = await assignStaffRole(email, roleKey, actingUser?.email ?? actingUser?.id)
+        return reply.code(201).send({ assignment })
+      } catch (error: any) {
+        fastify.log.error(error)
+        return reply.code(400).send({
+          error: sanitizeErrorMessage(error, 'Failed to assign staff role'),
+        })
+      }
+    }
+  )
+
+  // DELETE /rbac/staff/:authUserId - Revoke a staff role assignment
+  fastify.delete(
+    '/staff/:authUserId',
+    { preHandler: [authenticateUser, requireRole(['admin', 'super_admin'])] },
+    async (request, reply) => {
+      try {
+        const { authUserId } = request.params as { authUserId: string }
+        await revokeStaffRole(authUserId)
+        return reply.send({ message: 'Staff role assignment revoked' })
+      } catch (error: any) {
+        fastify.log.error(error)
+        return reply.code(400).send({
+          error: sanitizeErrorMessage(error, 'Failed to revoke staff role'),
         })
       }
     }

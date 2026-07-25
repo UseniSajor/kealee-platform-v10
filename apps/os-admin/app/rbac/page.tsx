@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Plus, Shield, Key, X } from 'lucide-react'
+import { Plus, Shield, Key, X, Users } from 'lucide-react'
 import { toast } from 'sonner'
 
 interface Role {
@@ -34,15 +34,24 @@ interface Permission {
   createdAt: string
 }
 
+interface StaffAssignment {
+  id: string
+  authUserId: string
+  email: string
+  roleKey: string
+  createdAt: string
+}
+
 export default function RBACPage() {
   const [roles, setRoles] = useState<Role[]>([])
   const [permissions, setPermissions] = useState<Permission[]>([])
+  const [staff, setStaff] = useState<StaffAssignment[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [permModalOpen, setPermModalOpen] = useState(false)
   const [selRole, setSelRole] = useState(null as Role | null)
   const [rolePerms, setRolePerms] = useState([] as Permission[])
-  const [activeTab, setActiveTab] = useState<'roles' | 'permissions'>('roles')
+  const [activeTab, setActiveTab] = useState<'roles' | 'permissions' | 'staff'>('roles')
 
   useEffect(() => {
     fetchData()
@@ -54,9 +63,12 @@ export default function RBACPage() {
       if (activeTab === 'roles') {
         const data = await api.getRoles()
         setRoles(data.roles || [])
-      } else {
+      } else if (activeTab === 'permissions') {
         const data = await api.getPermissions()
         setPermissions(data.permissions || [])
+      } else {
+        const data = await api.getStaffAssignments()
+        setStaff(data.staff || [])
       }
     } catch (err: any) {
       setError(err.message || 'Failed to load data')
@@ -72,7 +84,7 @@ export default function RBACPage() {
           <div className="flex items-center justify-between mb-6">
             <div>
               <h1 className="text-3xl font-bold">RBAC Management</h1>
-              <p className="text-gray-600 mt-2">Manage roles and permissions</p>
+              <p className="text-gray-600 mt-2">Manage roles, permissions, and staff access to os-admin / Command Center</p>
             </div>
             <Button
               onClick={async () => {
@@ -88,7 +100,7 @@ export default function RBACPage() {
                       toast.error('Failed to create role: ' + err.message)
                     }
                   }
-                } else {
+                } else if (activeTab === 'permissions') {
                   const name = prompt('Enter permission name:')
                   const key = prompt('Enter permission key (e.g., custom_permission):')
                   if (name && key) {
@@ -100,11 +112,23 @@ export default function RBACPage() {
                       toast.error('Failed to create permission: ' + err.message)
                     }
                   }
+                } else {
+                  const email = prompt('Staff email (must have signed in at least once):')
+                  const roleKey = prompt('Role key (e.g., admin, super_admin, ops, marketing_admin):')
+                  if (email && roleKey) {
+                    try {
+                      await api.assignStaffRole({ email, roleKey })
+                      toast.success('Staff role assigned — access syncs immediately')
+                      fetchData()
+                    } catch (err: any) {
+                      toast.error('Failed to assign staff role: ' + err.message)
+                    }
+                  }
                 }
               }}
             >
               <Plus className="mr-2 h-4 w-4" />
-              {activeTab === 'roles' ? 'New Role' : 'New Permission'}
+              {activeTab === 'roles' ? 'New Role' : activeTab === 'permissions' ? 'New Permission' : 'Assign Staff Role'}
             </Button>
           </div>
 
@@ -131,6 +155,17 @@ export default function RBACPage() {
             >
               <Key className="inline mr-2 h-4 w-4" />
               Permissions
+            </button>
+            <button
+              onClick={() => setActiveTab('staff')}
+              className={`px-4 py-2 font-medium border-b-2 transition-colors ${
+                activeTab === 'staff'
+                  ? 'border-blue-600 text-blue-600'
+                  : 'border-transparent text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              <Users className="inline mr-2 h-4 w-4" />
+              Staff Access
             </button>
           </div>
 
@@ -210,7 +245,7 @@ export default function RBACPage() {
                 </Table>
               </CardContent>
             </Card>
-          ) : (
+          ) : activeTab === 'permissions' ? (
             <Card>
               <CardHeader>
                 <CardTitle>Permissions</CardTitle>
@@ -245,6 +280,67 @@ export default function RBACPage() {
                           </TableCell>
                           <TableCell className="text-gray-600">
                             {new Date(permission.createdAt).toLocaleDateString()}
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          ) : (
+            <Card>
+              <CardHeader>
+                <CardTitle>Staff Access</CardTitle>
+                <CardDescription>
+                  Who can sign into os-admin and Command Center — drives app_metadata.permissions directly
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Role</TableHead>
+                      <TableHead>Assigned</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {staff.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={4} className="text-center py-8 text-gray-500">
+                          No staff assignments found
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      staff.map((assignment) => (
+                        <TableRow key={assignment.id}>
+                          <TableCell className="font-medium">{assignment.email}</TableCell>
+                          <TableCell>
+                            <Badge variant="outline">{assignment.roleKey}</Badge>
+                          </TableCell>
+                          <TableCell className="text-gray-600">
+                            {new Date(assignment.createdAt).toLocaleDateString()}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={async () => {
+                                if (!confirm(`Revoke staff access for ${assignment.email}?`)) return
+                                try {
+                                  await api.revokeStaffRole(assignment.authUserId)
+                                  toast.success('Staff access revoked')
+                                  fetchData()
+                                } catch (err: any) {
+                                  toast.error('Failed to revoke: ' + err.message)
+                                }
+                              }}
+                            >
+                              <X className="mr-2 h-4 w-4" />
+                              Revoke
+                            </Button>
                           </TableCell>
                         </TableRow>
                       ))

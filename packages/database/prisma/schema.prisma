@@ -1601,10 +1601,25 @@ model Role {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  permissions RolePermission[]
-  orgMembers  OrgMember[]
+  permissions      RolePermission[]
+  orgMembers       OrgMember[]
+  staffAssignments StaffRoleAssignment[]
 
   @@map("roles")
+}
+
+model StaffRoleAssignment {
+  id         String   @id @default(uuid())
+  authUserId String   @unique
+  email      String
+  roleKey    String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  createdBy  String?
+
+  role Role @relation(fields: [roleKey], references: [key])
+
+  @@map("staff_role_assignments")
 }
 
 model Permission {

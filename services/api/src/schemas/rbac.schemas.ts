@@ -19,3 +19,8 @@ export const checkPermissionSchema = z.object({
   orgId: z.string().uuid('Invalid organization ID'),
   permissionKey: z.string().min(1, 'Permission key is required'),
 })
+
+export const assignStaffRoleSchema = z.object({
+  email: z.string().email('Valid email is required'),
+  roleKey: z.string().min(1, 'Role key is required'),
+})

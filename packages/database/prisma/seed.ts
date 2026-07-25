@@ -151,6 +151,21 @@ async function main() {
       name: "Member",
       description: "Basic organization member",
     },
+    {
+      key: "super_admin",
+      name: "Super Administrator",
+      description: "Full platform access, superset of admin",
+    },
+    {
+      key: "ops",
+      name: "Operations Staff",
+      description: "Command Center access for operations monitoring",
+    },
+    {
+      key: "marketing_admin",
+      name: "Marketing Administrator",
+      description: "Command Center access for marketing automation",
+    },
   ];
 
   for (const role of roles) {
@@ -229,6 +244,10 @@ async function main() {
     { key: "tasks.update", name: "Update Task", description: "Update tasks" },
     { key: "tasks.delete", name: "Delete Task", description: "Delete tasks" },
     { key: "tasks.*", name: "All Task Permissions", description: "Full task management access" },
+
+    // Staff app-access permissions (os-admin / Command Center login gates)
+    { key: "os_admin:access", name: "os-admin Access", description: "Can sign into the os-admin back office" },
+    { key: "command_center:access", name: "Command Center Access", description: "Can sign into Command Center" },
   ];
 
   for (const perm of permissions) {
@@ -270,6 +289,43 @@ async function main() {
         },
       });
     }
+  }
+
+  // Super admin gets all permissions too (superset of admin)
+  const superAdminRole = await prisma.role.findUnique({ where: { key: "super_admin" } });
+  if (superAdminRole) {
+    for (const perm of permissions) {
+      await prisma.rolePermission.upsert({
+        where: {
+          roleKey_permissionKey: {
+            roleKey: "super_admin",
+            permissionKey: perm.key,
+          },
+        },
+        update: {},
+        create: {
+          roleKey: "super_admin",
+          permissionKey: perm.key,
+        },
+      });
+    }
+  }
+
+  // Ops and marketing_admin: Command Center access only
+  for (const staffRoleKey of ["ops", "marketing_admin"]) {
+    await prisma.rolePermission.upsert({
+      where: {
+        roleKey_permissionKey: {
+          roleKey: staffRoleKey,
+          permissionKey: "command_center:access",
+        },
+      },
+      update: {},
+      create: {
+        roleKey: staffRoleKey,
+        permissionKey: "command_center:access",
+      },
+    });
   }
 
   // PM permissions
@@ -381,6 +437,42 @@ async function main() {
   }
 
   console.log("✅ Permissions assigned to roles");
+
+  // ============================================================================
+  // 4b. BACKFILL KNOWN STAFF ROLE ASSIGNMENTS
+  // ============================================================================
+  // Resolves against auth.users (Supabase Auth) — requires DATABASE_URL to point
+  // at the Supabase-hosted Postgres instance, not a separate app DB. Safe to skip
+  // (no-op) if a given email has no matching auth user yet.
+  console.log("🛡️ Backfilling known staff role assignments...");
+  const staffBackfill: Array<{ email: string; roleKey: "admin" | "super_admin" }> = [
+    { email: "admin-platform@kealee.com", roleKey: "admin" },
+    { email: "admin@kealee.com", roleKey: "admin" },
+    { email: "tim.chamberlain24@gmail.com", roleKey: "super_admin" },
+    { email: "timc@kealee.com", roleKey: "super_admin" },
+    { email: "timothy@kealeeservices.com", roleKey: "super_admin" },
+  ];
+  for (const staff of staffBackfill) {
+    const authUsers = await prisma.$queryRaw<Array<{ id: string }>>`
+      SELECT id FROM auth.users WHERE email = ${staff.email} LIMIT 1
+    `;
+    const authUserId = authUsers[0]?.id;
+    if (!authUserId) {
+      console.log(`  ⚠️  No auth user found for ${staff.email}, skipping`);
+      continue;
+    }
+    await prisma.staffRoleAssignment.upsert({
+      where: { authUserId },
+      update: { roleKey: staff.roleKey, email: staff.email },
+      create: {
+        authUserId,
+        email: staff.email,
+        roleKey: staff.roleKey,
+        createdBy: "seed:staff-backfill",
+      },
+    });
+  }
+  console.log("✅ Staff role assignments backfilled");
 
   // ============================================================================
   // 5. CREATE ADMIN USER

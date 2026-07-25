@@ -66,17 +66,34 @@ export function verifyCronRequest(req: NextRequest): NextResponse | null {
   return null
 }
 
-export function hasCommandCenterApiRole(appRole: string | undefined | null): boolean {
+// `permissions` comes from app_metadata.permissions, kept in sync with the
+// os-admin RBAC UI's Staff Access tab (see staff-access.service.ts). This is
+// additive on top of the hardcoded sets below, never a replacement — the
+// hardcoded sets stay as a permanent fallback so these 5 original accounts
+// can never be locked out by a bad RBAC edit or a failed sync.
+export function hasCommandCenterApiRole(
+  appRole: string | undefined | null,
+  permissions?: string[] | null,
+): boolean {
+  if (permissions?.includes('command_center:access')) return true
   if (!appRole) return false
   return COMMAND_CENTER_API_ROLES.has(appRole.toLowerCase())
 }
 
-export function hasIntelligenceUiRole(appRole: string | undefined | null): boolean {
+export function hasIntelligenceUiRole(
+  appRole: string | undefined | null,
+  permissions?: string[] | null,
+): boolean {
+  if (permissions?.includes('command_center:access')) return true
   if (!appRole) return false
   return INTELLIGENCE_UI_ROLES.has(appRole.toLowerCase())
 }
 
-export function hasOsAdminRole(appRole: string | undefined | null): boolean {
+export function hasOsAdminRole(
+  appRole: string | undefined | null,
+  permissions?: string[] | null,
+): boolean {
+  if (permissions?.includes('os_admin:access')) return true
   if (!appRole) return false
   return ['admin', 'super_admin'].includes(appRole.toLowerCase())
 }

@@ -122,6 +122,11 @@ export const api = {
     apiRequest<{ role: any }>('/rbac/roles', { method: 'POST', body: data }),
   createPermission: (data: { key: string; name: string; description?: string }) =>
     apiRequest<{ permission: any }>('/rbac/permissions', { method: 'POST', body: data }),
+  getStaffAssignments: () => apiRequest<{ staff: any[] }>('/rbac/staff'),
+  assignStaffRole: (data: { email: string; roleKey: string }) =>
+    apiRequest<{ assignment: any }>('/rbac/staff', { method: 'POST', body: data }),
+  revokeStaffRole: (authUserId: string) =>
+    apiRequest<{ message: string }>(`/rbac/staff/${authUserId}`, { method: 'DELETE' }),
 
   // Audit Logs
   getAuditLogs: (params?: { page?: number; limit?: number; action?: string; entityType?: string; entityId?: string; userId?: string; startDate?: string; endDate?: string }) => {

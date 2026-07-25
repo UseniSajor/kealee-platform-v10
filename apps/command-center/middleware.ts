@@ -50,7 +50,8 @@ export async function middleware(request: NextRequest) {
     )
     const { data: { user } } = await supabaseApi.auth.getUser()
     const role = (user?.app_metadata?.role as string | undefined)?.toLowerCase()
-    if (user && hasCommandCenterApiRole(role)) {
+    const permissions = user?.app_metadata?.permissions as string[] | undefined
+    if (user && hasCommandCenterApiRole(role, permissions)) {
       return apiResponse
     }
 
@@ -86,7 +87,8 @@ export async function middleware(request: NextRequest) {
     }
 
     const role = (session.user.app_metadata?.role as string | undefined)?.toLowerCase()
-    if (!hasCommandCenterApiRole(role)) {
+    const permissions = session.user.app_metadata?.permissions as string[] | undefined
+    if (!hasCommandCenterApiRole(role, permissions)) {
       const redirectUrl = request.nextUrl.clone()
       redirectUrl.pathname = '/login'
       redirectUrl.searchParams.set('error', 'unauthorized')
