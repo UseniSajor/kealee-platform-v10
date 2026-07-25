@@ -49,7 +49,9 @@ export function createSupportCase(id: string): SupportCaseSnapshot {
 export function applySupportEvent(snapshot: SupportCaseSnapshot, event: SupportEvent): SupportCaseSnapshot {
   if (snapshot.appliedEventIds.includes(event.id)) return snapshot;
   if (snapshot.state === 'CLOSED') throw new Error('Closed support case is immutable');
-  let state = snapshot.state; let authenticated = snapshot.authenticated;
+  // Explicitly widen after the immutable-closed guard; otherwise TypeScript
+  // narrows `state` to the non-closed union and rejects the CLOSE transition.
+  let state: SupportState = snapshot.state; let authenticated = snapshot.authenticated;
   let resolutionCriteria = snapshot.resolutionCriteria;
   switch (event.type) {
     case 'START_AUTHENTICATION': state = 'AUTHENTICATING'; break;
