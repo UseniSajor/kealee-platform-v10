@@ -14,7 +14,7 @@ available_services=(
   "kealee-api"
   "worker"
   "web-main"
-  "portal-owner"
+  "project-owner"
   "portal-contractor"
   "portal-developer"
   "command-center"

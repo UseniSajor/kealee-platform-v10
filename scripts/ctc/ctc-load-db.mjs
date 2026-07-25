@@ -42,16 +42,19 @@ sql += `DELETE FROM ctc_assembly WHERE cost_database_id='${DB_ID}';\n`;
 sql += `DELETE FROM ctc_technical_specs WHERE database_id='${DB_ID}';\n`;
 sql += `DELETE FROM ctc_cost_tasks WHERE database_id='${DB_ID}';\n`;
 sql += `DELETE FROM ctc_cost_database WHERE id='${DB_ID}';\n`;
-sql += `INSERT INTO ctc_cost_database (id,name,source,region,base_year,escalation_year,escalation_factor,publisher,licensee,cost_pdf,technical_pdf,task_count,spec_count)
+sql += `INSERT INTO ctc_cost_database (id,name,source,region,base_year,escalation_year,escalation_factor,publisher,copyright_holder,licensee,rights_basis,platform_custodian,redistribution_allowed,is_master,cost_pdf,technical_pdf,task_count,spec_count)
 VALUES ('${DB_ID}', ${S('Construction Task Catalog — Gordian/MD DGS (June 2023)')}, '${DB_ID}', 'MD-DC-VA', 2023, ${ESC_YEAR}, ${ESCALATION},
-  ${S('The Gordian Group, Inc.')}, ${S('Maryland Department of General Services')},
+  ${S('The Gordian Group, Inc.')}, ${S('The Gordian Group, Inc.')}, ${S('Maryland Department of General Services')},
+  ${S('License/contract authority must be verified by Kealee before production redistribution or external reuse.')},
+  ${S('Kealee Services LLC')}, false, true,
   ${S(cost.meta?.source || '')}, ${S(tech.meta?.source || '')}, ${cost.tasks.length}, ${tech.specs.length});\n`;
 
 for (const t of cost.tasks) {
   const escalated = t.unitPrice2023 == null ? null : +(t.unitPrice2023 * ESCALATION).toFixed(4);
-  sql += `INSERT INTO ctc_cost_tasks (database_id,task_number,csi_code,csi_division,description,uom,unit_price_2023,labor_cost_2023,material_cost_2023,equipment_cost_2023,labor_hours,escalation_factor,unit_price_current,is_modifier,modifier_of,modifier_type,modifier_value,page,source)
+  sql += `INSERT INTO ctc_cost_tasks (database_id,task_number,csi_code,csi_division,description,uom,unit_price_2023,labor_cost_2023,material_cost_2023,equipment_cost_2023,labor_hours,labor_rate_2023,labor_hours_method,labor_rate_source_task,labor_rate_trade,labor_rate_effective_date,escalation_factor,unit_price_current,is_modifier,modifier_of,modifier_type,modifier_value,page,source)
 VALUES ('${DB_ID}', ${S(t.taskNumber)}, ${S(t.csiCode)}, ${S(t.csiDivision)}, ${S(t.description)}, ${S(t.uom)},
   ${N(t.unitPrice2023)}, ${N(t.laborCost2023)}, ${N(t.materialCost2023)}, ${N(t.equipmentCost2023)}, ${N(t.laborHours)},
+  ${N(t.laborRate2023)}, ${S(t.laborHoursMethod)}, ${S(t.laborRateSourceTask)}, ${S(t.laborRateTrade)}, ${S(t.laborRateEffectiveDate)},
   ${ESCALATION}, ${N(escalated)}, ${B(t.isModifier)}, ${S(t.modifierOf)}, ${S(t.modifierType)}, ${N(t.modifierValue)}, ${t.page || 'NULL'}, '${DB_ID}')
   ON CONFLICT (database_id,task_number) DO NOTHING;\n`;
 

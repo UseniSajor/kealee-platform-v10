@@ -1,13 +1,24 @@
 import { prisma } from '@kealee/database';
-import { SITE_PLAN_STAGES, applySitePlanEvent, createSitePlanWorkflow } from '@kealee/workflow-engine';
-import type { SitePlanWorkflowEvent } from '@kealee/workflow-engine';
-import { generateCivilSitePlan } from '@kealee/concept-engine';
-import type { CivilSitePlanInput } from '@kealee/concept-engine';
+import { SITE_PLAN_STAGES, applySitePlanEvent, assertJurisdictionAutomationReady,
+  classifyEngineeringDocument, createSitePlanWorkflow, generateCivilSitePlan } from '@kealee/os-engineering';
+import type { CivilSitePlanInput, SitePlanWorkflowEvent } from '@kealee/os-engineering';
+import { createQueue, KEALEE_QUEUES } from '@kealee/queue';
+import type { EngineeringJobData } from '@kealee/queue';
 import { getAiAutomationConfig } from '@kealee/core-config';
 import { createHash } from 'node:crypto';
+import Anthropic from '@anthropic-ai/sdk';
+import { getSignedUrl, uploadDocument } from '@kealee/storage';
 import { AuthorizationError, NotFoundError, ValidationError } from '../../errors/app.error';
 
 const db = prisma as any;
+let engineeringQueue: ReturnType<typeof createQueue> | undefined;
+function getEngineeringQueue() {
+  engineeringQueue ??= createQueue(KEALEE_QUEUES.ENGINEERING_PROCESSING);
+  return engineeringQueue;
+}
+function engineeringQueueJobId(idempotencyKey: string) {
+  return createHash('sha256').update(idempotencyKey).digest('hex');
+}
 async function assertProjectAccess(projectId: string, userId: string) {
   const project = await db.project.findUnique({ where: { id: projectId }, select: {
     id: true, orgId: true, ownerId: true, memberships: { where: { userId }, select: { id: true } },
@@ -18,6 +29,237 @@ async function assertProjectAccess(projectId: string, userId: string) {
 }
 
 const OPERATIONS_ROLES = new Set(['admin', 'super_admin', 'pm', 'operations']);
+const EXTRACTION_LAYERS = new Set(['BOUNDARY', 'EASEMENTS', 'RIGHT-OF-WAY', 'EXISTING-CONTOURS',
+  'PROPOSED-CONTOURS', 'EXISTING-STRUCTURES', 'PROPOSED-STRUCTURES', 'SETBACKS', 'UTILITIES',
+  'STORM-DRAIN', 'SWM-BMP', 'EROSION-CONTROL', 'LIMIT-OF-DISTURBANCE', 'TREE-SAVE',
+  'WOODLAND-CLEARING', 'FLOODPLAIN', 'STREAM-BUFFER', 'WETLAND', 'ANNOTATIONS']);
+
+export async function extractSitePlanDocument(user: { id: string; role: string; organizationId?: string | null },
+  workflowId: string, file: { buffer: Buffer; filename: string; mediaType: string },
+  options: { crs: string; units: 'FEET' | 'METERS' }) {
+  const config = getAiAutomationConfig();
+  if (!config.sitePlanAutomationEnabled) throw new ValidationError('Site-plan automation is disabled');
+  if (!OPERATIONS_ROLES.has(user.role.toLowerCase())) throw new AuthorizationError('Operations access denied');
+  if (!process.env.ANTHROPIC_API_KEY) throw new ValidationError('Document extraction is unavailable: AI provider is not configured');
+  const workflow = await db.sitePlanWorkflow.findUnique({ where: { id: workflowId } });
+  if (!workflow) throw new NotFoundError('SitePlanWorkflow', workflowId);
+  if (!['admin', 'super_admin'].includes(user.role.toLowerCase()) && workflow.organizationId !== user.organizationId) {
+    throw new AuthorizationError('Site-plan workflow access denied');
+  }
+  if (!['DOCUMENT_COLLECTION', 'PLAN_GENERATION'].includes(workflow.currentStage)) {
+    throw new ValidationError('Plat and survey extraction is only available during document collection or plan generation');
+  }
+  const uploaded = await uploadDocument({ projectId: workflow.projectId, type: 'design', file: file.buffer,
+    filename: file.filename, uploadedBy: user.id }, { prisma: db });
+  const sourceRetrievedAt = new Date().toISOString();
+  const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+  const content = file.mediaType === 'application/pdf'
+    ? [{ type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: file.buffer.toString('base64') } },
+      { type: 'text', text: sitePlanExtractionPrompt(options.crs, options.units, uploaded.documentId, sourceRetrievedAt) }]
+    : [{ type: 'image', source: { type: 'base64', media_type: file.mediaType, data: file.buffer.toString('base64') } },
+      { type: 'text', text: sitePlanExtractionPrompt(options.crs, options.units, uploaded.documentId, sourceRetrievedAt) }];
+  const response = await client.messages.create({ model: 'claude-sonnet-4-6', max_tokens: 8192,
+    system: 'You extract reviewable civil geometry from plats and surveys. Never infer a surveyed fact that is not legible.',
+    messages: [{ role: 'user', content: content as any }] });
+  const raw = response.content.find(block => block.type === 'text');
+  if (!raw || raw.type !== 'text') throw new ValidationError('Document extraction returned no structured result');
+  let parsed: any;
+  try { parsed = JSON.parse(raw.text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '')); }
+  catch { throw new ValidationError('Document extraction returned invalid JSON'); }
+  const geometry = normalizeExtractedGeometry(parsed.geometry, uploaded.documentId, sourceRetrievedAt);
+  if (!geometry.length) throw new ValidationError('No reliable coordinate geometry could be extracted; enter geometry manually or provide a clearer scaled survey');
+  const warnings = Array.isArray(parsed.warnings) ? parsed.warnings.map(String).slice(0, 50) : [];
+  warnings.push('AI-extracted geometry requires operator verification against the source document.');
+  const extraction = { documentId: uploaded.documentId, documentUrl: uploaded.url, filename: file.filename,
+    crs: options.crs, units: options.units, geometry, warnings, reviewRequired: true, extractedAt: sourceRetrievedAt };
+  const stage = await db.sitePlanStageExecution.findFirst({ where: { workflowId, stage: 'DOCUMENT_COLLECTION' },
+    orderBy: { attempt: 'desc' } });
+  await db.$transaction(async (tx: any) => {
+    if (stage) await tx.sitePlanStageExecution.update({ where: { id: stage.id }, data: {
+      outputs: { ...(typeof stage.outputs === 'object' && stage.outputs ? stage.outputs : {}), latestExtraction: extraction },
+    } });
+    await tx.workflowEvent.create({ data: { eventType: 'SITE_PLAN_DOCUMENT_EXTRACTED', subjectType: 'PROJECT',
+      subjectId: workflow.projectId, payload: { workflowId, actorId: user.id, documentId: uploaded.documentId,
+        geometryCount: geometry.length, reviewRequired: true },
+      idempotencyKey: `site-plan-extraction:${workflowId}:${uploaded.documentId}`, processedAt: new Date() } });
+  });
+  return extraction;
+}
+
+export async function enqueueSitePlanDocumentExtraction(
+  user: { id: string; role: string; organizationId?: string | null },
+  workflowId: string,
+  file: { buffer: Buffer; filename: string; mediaType: string },
+  options: { crs: string; units: 'FEET' | 'METERS'; idempotencyKey: string },
+) {
+  const config = getAiAutomationConfig();
+  if (!config.sitePlanAutomationEnabled || !config.engineeringInfillPhase1Enabled) {
+    throw new ValidationError('Phase 1 engineering automation is disabled');
+  }
+  if (!config.engineeringSurveyOcrEnabled) throw new ValidationError('Engineering survey OCR is disabled');
+  const workflow = await db.sitePlanWorkflow.findUnique({ where: { id: workflowId } });
+  if (!workflow) throw new NotFoundError('SitePlanWorkflow', workflowId);
+  if (OPERATIONS_ROLES.has(user.role.toLowerCase())) {
+    if (!['admin', 'super_admin'].includes(user.role.toLowerCase()) && workflow.organizationId !== user.organizationId) {
+      throw new AuthorizationError('Site-plan workflow access denied');
+    }
+  } else await assertProjectAccess(workflow.projectId, user.id);
+  const classification = classifyEngineeringDocument(file.filename, file.mediaType, file.buffer.length, 100 * 1024 * 1024);
+  if (!['BOUNDARY_SURVEY', 'TOPOGRAPHIC_SURVEY', 'RECORDED_PLAT'].includes(classification.documentType)) {
+    throw new ValidationError('This endpoint accepts a boundary survey, topographic survey, or recorded plat');
+  }
+  const contentHash = createHash('sha256').update(file.buffer).digest('hex');
+  const duplicate = await db.fileUpload.findFirst({ where: { projectId: workflow.projectId,
+    metadata: { path: ['engineeringContentHash'], equals: contentHash } } });
+  const uploaded = duplicate
+    ? { documentId: duplicate.id, url: duplicate.fileUrl }
+    : await uploadDocument({ projectId: workflow.projectId, type: 'design', file: file.buffer,
+      filename: file.filename, uploadedBy: user.id }, { prisma: db });
+  if (!duplicate) {
+    const newlyUploaded = await db.fileUpload.findUnique({ where: { id: uploaded.documentId } });
+    await db.fileUpload.update({ where: { id: uploaded.documentId }, data: { metadata: {
+      ...(newlyUploaded?.metadata ?? {}), engineeringContentHash: contentHash,
+      documentType: classification.documentType, antivirusStatus: classification.antivirusStatus,
+      classificationVersion: classification.toolVersion,
+    } } });
+  }
+  const sourceFile = duplicate ?? await db.fileUpload.findUnique({ where: { id: uploaded.documentId } });
+  const sourceBucket = String(sourceFile?.metadata?.bucket ?? '');
+  const sourcePath = String(sourceFile?.metadata?.storagePath ?? '');
+  if (!sourceBucket || !sourcePath) throw new ValidationError('Survey storage metadata is incomplete');
+  const workerSourceUrl = await getSignedUrl(sourceBucket, sourcePath, 21600);
+  const jurisdictionCode = String(workflow.metadata?.jurisdictionCode ?? '');
+  const engineeringProject = await db.engineeringProject.upsert({
+    where: { organizationId_projectId: { organizationId: workflow.organizationId, projectId: workflow.projectId } },
+    create: { organizationId: workflow.organizationId, projectId: workflow.projectId,
+      sitePlanWorkflowId: workflow.id, jurisdictionCode, status: 'ACTIVE' },
+    update: { sitePlanWorkflowId: workflow.id, jurisdictionCode },
+  });
+  const jobData: EngineeringJobData = {
+    type: 'SURVEY_OCR', organizationId: workflow.organizationId, projectId: workflow.projectId,
+    engineeringProjectId: engineeringProject.id, workflowId, stageCode: 'SURVEY_EXTRACTION',
+    idempotencyKey: options.idempotencyKey, actorId: user.id, documentId: uploaded.documentId,
+    sourceUrl: workerSourceUrl, sourceContentHash: contentHash,
+    options: { crs: options.crs, units: options.units },
+    requestedAt: new Date().toISOString(),
+  };
+  await db.engineeringStage.upsert({ where: { idempotencyKey: options.idempotencyKey },
+    create: { engineeringProjectId: engineeringProject.id, stageCode: 'SURVEY_EXTRACTION',
+      status: 'READY', inputs: jobData, outputs: {}, sourceProvenance: { documentId: uploaded.documentId,
+        contentHash, classification }, confidence: 0, blockingIssues: [],
+      calculationVersion: 'kealee-engineering-worker-1.0.0', auditHistory: [{
+        at: new Date().toISOString(), action: 'QUEUED', actorId: user.id,
+      }], idempotencyKey: options.idempotencyKey },
+    update: {} });
+  const job = await getEngineeringQueue().add('SURVEY_OCR', jobData, {
+    jobId: engineeringQueueJobId(options.idempotencyKey),
+    attempts: 3, backoff: { type: 'exponential', delay: 5000 } });
+  return { jobId: String(job.id), status: await job.getState(), documentId: uploaded.documentId,
+    duplicate: Boolean(duplicate), reviewRequired: true };
+}
+
+export async function getEngineeringJob(user: { id: string; role: string; organizationId?: string | null },
+  workflowId: string, jobId: string) {
+  const workflow = await db.sitePlanWorkflow.findUnique({ where: { id: workflowId } });
+  if (!workflow) throw new NotFoundError('SitePlanWorkflow', workflowId);
+  if (OPERATIONS_ROLES.has(user.role.toLowerCase())) {
+    if (!['admin', 'super_admin'].includes(user.role.toLowerCase()) && workflow.organizationId !== user.organizationId) {
+      throw new AuthorizationError('Site-plan workflow access denied');
+    }
+  } else await assertProjectAccess(workflow.projectId, user.id);
+  const job = await getEngineeringQueue().getJob(jobId);
+  if (!job || job.data.workflowId !== workflowId || job.data.organizationId !== workflow.organizationId) {
+    throw new NotFoundError('EngineeringJob', jobId);
+  }
+  return { id: String(job.id), state: await job.getState(), progress: job.progress,
+    result: job.returnvalue ?? null, failedReason: job.failedReason || null };
+}
+
+export async function enqueueEngineeringTask(
+  user: { id: string; role: string; organizationId?: string | null },
+  workflowId: string,
+  input: { type: EngineeringJobData['type']; stageCode: string; idempotencyKey: string;
+    options: Record<string, unknown> },
+) {
+  if (!OPERATIONS_ROLES.has(user.role.toLowerCase())) throw new AuthorizationError('Operations access denied');
+  const workflow = await db.sitePlanWorkflow.findUnique({ where: { id: workflowId } });
+  if (!workflow) throw new NotFoundError('SitePlanWorkflow', workflowId);
+  if (!['admin', 'super_admin'].includes(user.role.toLowerCase()) && workflow.organizationId !== user.organizationId) {
+    throw new AuthorizationError('Site-plan workflow access denied');
+  }
+  const engineeringProject = await db.engineeringProject.findFirst({ where: { sitePlanWorkflowId: workflowId } });
+  if (!engineeringProject) throw new ValidationError('Upload and classify source documents before running engineering tasks');
+  const data: EngineeringJobData = { type: input.type, organizationId: workflow.organizationId,
+    projectId: workflow.projectId, engineeringProjectId: engineeringProject.id, workflowId,
+    stageCode: input.stageCode, idempotencyKey: input.idempotencyKey, actorId: user.id,
+    options: input.options, requestedAt: new Date().toISOString() };
+  await db.engineeringStage.upsert({ where: { idempotencyKey: input.idempotencyKey },
+    create: { engineeringProjectId: engineeringProject.id, stageCode: input.stageCode, status: 'READY',
+      inputs: data, outputs: {}, sourceProvenance: {}, confidence: 0, blockingIssues: [],
+      calculationVersion: 'kealee-engineering-worker-1.0.0', auditHistory: [{
+        at: new Date().toISOString(), action: 'QUEUED', actorId: user.id,
+      }], idempotencyKey: input.idempotencyKey },
+    update: {} });
+  const job = await getEngineeringQueue().add(input.type, data, {
+    jobId: engineeringQueueJobId(input.idempotencyKey),
+    attempts: 3, backoff: { type: 'exponential', delay: 5000 } });
+  return { jobId: String(job.id), status: await job.getState() };
+}
+
+export async function cancelEngineeringJob(user: { id: string; role: string; organizationId?: string | null },
+  workflowId: string, jobId: string) {
+  const current = await getEngineeringJob(user, workflowId, jobId);
+  const job = await getEngineeringQueue().getJob(jobId);
+  if (!job) throw new NotFoundError('EngineeringJob', jobId);
+  if (['completed', 'failed'].includes(current.state)) throw new ValidationError('Completed engineering jobs cannot be cancelled');
+  await job.remove();
+  await db.engineeringStage.updateMany({ where: { idempotencyKey: job.data.idempotencyKey },
+    data: { status: 'SUPERSEDED', blockingIssues: ['Cancelled by operator'] } });
+  return { id: jobId, state: 'cancelled' };
+}
+
+export async function getEngineeringDrawingDownload(userId: string, workflowId: string,
+  packageId: string, kind: 'DXF' | 'PDF' | 'PREVIEW' | 'REPORT') {
+  const workflow = await db.sitePlanWorkflow.findUnique({ where: { id: workflowId } });
+  if (!workflow) throw new NotFoundError('SitePlanWorkflow', workflowId);
+  await assertProjectAccess(workflow.projectId, userId);
+  const engineeringProject = await db.engineeringProject.findFirst({ where: { sitePlanWorkflowId: workflowId } });
+  if (!engineeringProject) throw new NotFoundError('EngineeringProject', workflowId);
+  const drawing = await db.engineeringDrawingPackage.findFirst({ where: {
+    id: packageId, engineeringProjectId: engineeringProject.id,
+  } });
+  if (!drawing) throw new NotFoundError('EngineeringDrawingPackage', packageId);
+  const documentId = { DXF: drawing.dxfDocumentId, PDF: drawing.pdfDocumentId,
+    PREVIEW: drawing.previewDocumentId, REPORT: drawing.reportDocumentId }[kind];
+  if (!documentId) throw new ValidationError(`${kind} artifact is not available`);
+  const file = await db.fileUpload.findUnique({ where: { id: documentId } });
+  if (!file) throw new NotFoundError('FileUpload', documentId);
+  const bucket = String(file.metadata?.bucket ?? '');
+  const path = String(file.metadata?.storagePath ?? '');
+  if (!bucket || !path) throw new ValidationError('Artifact storage metadata is incomplete');
+  return { url: await getSignedUrl(bucket, path, 900), expiresInSeconds: 900, kind };
+}
+
+function sitePlanExtractionPrompt(crs: string, units: 'FEET' | 'METERS', sourceId: string, retrievedAt: string) {
+  return `Extract only clearly supported site geometry from this plat or survey as JSON.
+Target CRS label: ${crs}. Units: ${units}. Do not transform coordinates unless the document supplies enough information.
+Return {"geometry": [...], "warnings": [...]} only. Each geometry item must be:
+{"id":"string","layer":"BOUNDARY|EASEMENTS|RIGHT-OF-WAY|EXISTING-CONTOURS|PROPOSED-CONTOURS|EXISTING-STRUCTURES|PROPOSED-STRUCTURES|SETBACKS|UTILITIES|STORM-DRAIN|SWM-BMP|EROSION-CONTROL|LIMIT-OF-DISTURBANCE|TREE-SAVE|WOODLAND-CLEARING|FLOODPLAIN|STREAM-BUFFER|WETLAND|ANNOTATIONS","vertices":[{"x":number,"y":number}],"closed":boolean,"authority":"EXTRACTED","sourceId":"${sourceId}","sourceRetrievedAt":"${retrievedAt}","confidence":number}.
+Use a local origin if the sheet gives bearings/distances but no coordinates, preserving stated dimensions in ${units}. Confidence must not exceed 0.85. Closed geometry requires at least 3 vertices. Return an empty geometry array when scale or dimensions are insufficient. Record illegible, missing, or ambiguous facts in warnings.`;
+}
+
+export function normalizeExtractedGeometry(value: unknown, sourceId: string, sourceRetrievedAt: string) {
+  if (!Array.isArray(value)) return [];
+  return value.flatMap((item: any, index: number) => {
+    if (!item || !EXTRACTION_LAYERS.has(item.layer) || !Array.isArray(item.vertices)) return [];
+    const vertices = item.vertices.map((point: any) => ({ x: Number(point?.x), y: Number(point?.y) }))
+      .filter((point: { x: number; y: number }) => Number.isFinite(point.x) && Number.isFinite(point.y));
+    const closed = Boolean(item.closed);
+    if (vertices.length < (closed ? 3 : 2)) return [];
+    return [{ id: String(item.id || `extracted-${index + 1}`).slice(0, 200), layer: item.layer, vertices, closed,
+      authority: 'EXTRACTED', sourceId, sourceRetrievedAt, confidence: Math.min(0.85, Math.max(0, Number(item.confidence) || 0)) }];
+  });
+}
 
 export async function listProfessionalReviews(userId: string) {
   const profile = await db.marketplaceProfile.findUnique({
@@ -53,7 +295,7 @@ export async function listProfessionalReviews(userId: string) {
 }
 
 export async function recordProfessionalReviewDecision(userId: string, reviewId: string, input: {
-  decision: 'APPROVED' | 'REJECTED' | 'REVISION_REQUESTED';
+  decision: 'APPROVED' | 'REJECTED' | 'CHANGES_REQUESTED';
   declaration: string;
   licenseNumber: string;
   sourceDocumentId?: string;
@@ -84,7 +326,7 @@ export async function recordProfessionalReviewDecision(userId: string, reviewId:
     const blockers = await db.sitePlanComplianceResult.count({ where: { workflowId: review.workflowId, blocksSubmission: true } });
     if (blockers) throw new ValidationError('Blocking compliance findings must be resolved before approval');
   }
-  if (input.decision === 'REVISION_REQUESTED' && !input.redlines?.length) {
+  if (input.decision === 'CHANGES_REQUESTED' && !input.redlines?.length) {
     throw new ValidationError('Revision requests require at least one redline');
   }
   const updated = await db.professionalReviewRecord.updateMany({
@@ -104,6 +346,70 @@ export async function recordProfessionalReviewDecision(userId: string, reviewId:
   return db.professionalReviewRecord.findUnique({ where: { id: reviewId } });
 }
 
+/** Persist a professional's review edits as an auditable revision before a decision. */
+export async function saveProfessionalReviewEdits(userId: string, reviewId: string, input: {
+  revision: number;
+  geometry: unknown;
+  redlines: string[];
+  notes?: string;
+}) {
+  const review = await db.professionalReviewRecord.findUnique({ where: { id: reviewId } });
+  if (!review) throw new NotFoundError('ProfessionalReviewRecord', reviewId);
+  const assignment = await db.professionalAssignment.findFirst({
+    where: { id: review.professionalAssignmentId, profile: { userId } }, select: { id: true },
+  });
+  if (!assignment) throw new AuthorizationError('Professional assignment access denied');
+  if (!['PENDING', 'CHANGES_REQUESTED'].includes(review.decision)) {
+    throw new ValidationError('Edits can only be saved before approval or release');
+  }
+  const metadata = typeof review.metadata === 'object' && review.metadata ? review.metadata as Record<string, unknown> : {};
+  const revisions = Array.isArray(metadata.revisions) ? metadata.revisions : [];
+  const revisionRecord = {
+    revision: input.revision, geometry: input.geometry, redlines: input.redlines,
+    notes: input.notes, editedById: userId, editedAt: new Date().toISOString(),
+  };
+  return db.professionalReviewRecord.update({ where: { id: reviewId }, data: {
+    metadata: { ...metadata, currentRevision: input.revision, revisions: [...revisions, revisionRecord], redlines: input.redlines },
+  } });
+}
+
+/** Release a signed/sealed professional deliverable. Kealee never fabricates a seal. */
+export async function releaseProfessionalReview(userId: string, reviewId: string, declaration: string) {
+  const review = await db.professionalReviewRecord.findUnique({ where: { id: reviewId } });
+  if (!review) throw new NotFoundError('ProfessionalReviewRecord', reviewId);
+  const assignment = await db.professionalAssignment.findFirst({
+    where: { id: review.professionalAssignmentId, profile: { userId } }, select: { id: true },
+  });
+  if (!assignment) throw new AuthorizationError('Professional assignment access denied');
+  if (review.decision !== 'APPROVED') throw new ValidationError('The review must be approved before release');
+  if (!review.sourceDocumentId || !review.sealedDocumentId || !review.sourceContentHash || !review.sealedContentHash) {
+    throw new ValidationError('Release requires immutable source and signed/sealed document evidence');
+  }
+  if (!review.licenseVerifiedAt || (review.expiresAt && review.expiresAt <= new Date())) {
+    throw new ValidationError('A current verified professional license is required for release');
+  }
+  const blockers = await db.sitePlanComplianceResult.count({ where: { workflowId: review.workflowId, blocksSubmission: true } });
+  if (blockers) throw new ValidationError('Blocking compliance findings must be resolved before release');
+  const workflow = await db.sitePlanWorkflow.findUnique({ where: { id: review.workflowId } });
+  if (!workflow) throw new NotFoundError('SitePlanWorkflow', review.workflowId);
+  if (workflow.releasedAt) return { review, workflow };
+  const releasedAt = new Date();
+  const updatedReview = await db.$transaction(async (tx: any) => {
+    const updated = await tx.sitePlanWorkflow.updateMany({ where: { id: workflow.id, releasedAt: null }, data: {
+      status: 'RELEASED', releasedAt, metadata: { ...(workflow.metadata ?? {}), releasedById: userId,
+        releasedAt: releasedAt.toISOString(), releaseDeclaration: declaration },
+    } });
+    if (updated.count !== 1) throw new ValidationError('The workflow was released by another request');
+    await tx.sitePlanStageExecution.updateMany({ where: { workflowId: workflow.id, stage: 'PROFESSIONAL_REVIEW' }, data: {
+      status: 'APPROVED', reviewedById: userId, reviewedAt: releasedAt, completedAt: releasedAt,
+    } });
+    return tx.professionalReviewRecord.update({ where: { id: review.id }, data: {
+      metadata: { ...(review.metadata ?? {}), releasedById: userId, releasedAt: releasedAt.toISOString(), releaseDeclaration: declaration },
+    } });
+  });
+  return { review: updatedReview, workflow: { ...workflow, status: 'RELEASED', releasedAt } };
+}
+
 export async function listOperationsQueue(user: { role: string; organizationId?: string | null }) {
   if (!OPERATIONS_ROLES.has(user.role.toLowerCase())) throw new AuthorizationError('Operations access denied');
   const where = ['admin', 'super_admin'].includes(user.role.toLowerCase())
@@ -117,12 +423,22 @@ export async function listOperationsQueue(user: { role: string; organizationId?:
     db.professionalReviewRecord.findMany({ where: { workflowId: { in: workflowIds } }, orderBy: { updatedAt: 'desc' } }),
     db.permitCorrectionCycle.findMany({ where: { workflowId: { in: workflowIds }, status: { not: 'CLOSED' } } }),
   ]);
+  const engineeringProjects = await db.engineeringProject.findMany({ where: { sitePlanWorkflowId: { in: workflowIds } } });
+  const drawingPackages = await db.engineeringDrawingPackage.findMany({ where: {
+    engineeringProjectId: { in: engineeringProjects.map((project: any) => project.id) },
+  } });
+  const redlines = await db.engineeringRedline.findMany({ where: {
+    drawingPackageId: { in: drawingPackages.map((drawing: any) => drawing.id) }, status: { not: 'RESOLVED' },
+  } });
   return workflows.map((workflow: any) => ({
     ...workflow,
     stages: stages.filter((stage: any) => stage.workflowId === workflow.id),
     blockingComplianceCount: compliance.filter((result: any) => result.workflowId === workflow.id).length,
     pendingReviewCount: reviews.filter((review: any) => review.workflowId === workflow.id && review.decision === 'PENDING').length,
     openCorrectionCount: corrections.filter((cycle: any) => cycle.workflowId === workflow.id).length,
+    openRedlineCount: redlines.filter((redline: any) => drawingPackages.some((drawing: any) =>
+      drawing.id === redline.drawingPackageId && engineeringProjects.some((project: any) =>
+        project.id === drawing.engineeringProjectId && project.sitePlanWorkflowId === workflow.id))).length,
   }));
 }
 
@@ -144,6 +460,16 @@ export async function generateSitePlanArtifact(user: { id: string; role: string;
   });
   if (!stage || !['IN_PROGRESS', 'UNDER_REVIEW'].includes(stage.status)) {
     throw new ValidationError('The plan generation stage must be started before generating an artifact');
+  }
+  const jurisdictionCode = typeof workflow.metadata?.jurisdictionCode === 'string'
+    ? workflow.metadata.jurisdictionCode : undefined;
+  if (!jurisdictionCode) {
+    throw new ValidationError('Site-plan generation requires a resolved local jurisdiction');
+  }
+  try {
+    assertJurisdictionAutomationReady(jurisdictionCode);
+  } catch (error) {
+    throw new ValidationError(error instanceof Error ? error.message : 'Local jurisdiction rules are not automation-ready');
   }
   if (input.requestedClassification === 'PERMIT_READY') {
     const [blockingFindings, approval] = await Promise.all([
@@ -169,7 +495,7 @@ export async function generateSitePlanArtifact(user: { id: string; role: string;
   const artifact = generateCivilSitePlan({ ...input, id: workflowId });
   const outputSummary = {
     idempotencyKey, revision: input.revision, classification: input.requestedClassification,
-    units: input.units, crs: input.crs, geometryCount: input.geometry.length,
+    jurisdictionCode, units: input.units, crs: input.crs, geometryCount: input.geometry.length,
     quantities: artifact.quantities, warnings: artifact.warnings, generatedAt: new Date().toISOString(),
   };
   await db.$transaction(async (tx: any) => {
@@ -186,18 +512,20 @@ export async function generateSitePlanArtifact(user: { id: string; role: string;
   return { artifact, summary: outputSummary };
 }
 export async function createSitePlan(projectId: string, userId: string, input: {
-  organizationId: string; propertyId?: string; parcelId?: string; productId?: string;
+  organizationId?: string; jurisdictionCode: string; propertyId?: string; parcelId?: string; productId?: string;
 }) {
   const project = await assertProjectAccess(projectId, userId);
-  if (project.orgId && project.orgId !== input.organizationId) throw new AuthorizationError('Organization mismatch');
+  const organizationId = input.organizationId ?? project.orgId;
+  if (!organizationId) throw new ValidationError('Project organization must be resolved before ordering a site plan');
+  if (project.orgId && project.orgId !== organizationId) throw new AuthorizationError('Organization mismatch');
   const existing = await db.sitePlanWorkflow.findUnique({ where: {
-    organizationId_projectId: { organizationId: input.organizationId, projectId },
+    organizationId_projectId: { organizationId, projectId },
   } });
   if (existing) return getSitePlan(existing.id, userId);
   return db.$transaction(async (tx: any) => {
-    const workflow = await tx.sitePlanWorkflow.create({ data: { organizationId: input.organizationId,
+    const workflow = await tx.sitePlanWorkflow.create({ data: { organizationId,
       projectId, propertyId: input.propertyId, parcelId: input.parcelId, productId: input.productId,
-      professionalReviewRequired: true } });
+      professionalReviewRequired: true, metadata: { jurisdictionCode: input.jurisdictionCode } } });
     const snapshot = createSitePlanWorkflow(workflow.id);
     await tx.sitePlanStageExecution.createMany({ data: snapshot.stages.map((stage) => ({
       workflowId: workflow.id, stage: stage.stage, status: stage.state, attempt: stage.attempt,

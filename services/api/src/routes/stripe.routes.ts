@@ -131,7 +131,7 @@ export async function stripeRoutes(fastify: FastifyInstance) {
             webhookSecret
           );
         } catch (err: any) {
-          fastify.log.error('Webhook signature verification failed:', err.message);
+          fastify.log.error({ err }, 'Webhook signature verification failed');
           return reply.code(400).send({ error: 'Invalid signature' });
         }
 
@@ -166,13 +166,13 @@ export async function stripeRoutes(fastify: FastifyInstance) {
               fastify.log.info(`Unhandled event type: ${event.type}`);
           }
         } catch (error: any) {
-          fastify.log.error('Error handling webhook:', error);
+          fastify.log.error({ err: error }, 'Error handling webhook');
           return reply.code(500).send({ error: 'Webhook handler failed' });
         }
 
         return { received: true };
       } catch (error: any) {
-        fastify.log.error('Webhook error:', error);
+        fastify.log.error({ err: error }, 'Webhook error');
         return reply.code(500).send({ error: 'Webhook processing failed' });
       }
     }

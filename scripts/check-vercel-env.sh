@@ -48,7 +48,7 @@ APP_VARS=(
 APPS=(
     "m-marketplace"
     "m-ops-services"
-    "m-project-owner"
+    "project-owner"
     "m-permits-inspections"
     "m-architect"
     "os-admin"

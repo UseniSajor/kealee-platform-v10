@@ -41,6 +41,16 @@ export interface PrinceGeorgesSiteInput {
   woodlandDocumentationPresent: boolean;
   sedimentControlPlanPresent: boolean;
   stormwaterConceptPresent: boolean;
+  municipalityResolved?: boolean;
+  zoningUseAllowed?: boolean;
+  publicWaterSewerAvailable?: boolean;
+  wellSepticApprovalPresent?: boolean;
+  gradeChangeFeet?: number;
+  stormDrainPlanRequired?: boolean;
+  stormDrainPlanPresent?: boolean;
+  signedSealedPlotPlanPresent?: boolean;
+  conceptApprovalPresent?: boolean;
+  utilityConflictsResolved?: boolean;
 }
 
 const VERIFIED = '2026-07-21';
@@ -149,6 +159,52 @@ export const princeGeorgesCountyRulePack: JurisdictionRulePack<PrinceGeorgesSite
       ? result('PG_PROFESSIONAL_RELEASE', 'PASS', 'Required professional approval is recorded.', {}, PGC_PERMITS, 'LICENSED_PROFESSIONAL')
       : result('PG_PROFESSIONAL_RELEASE', 'FAIL', 'No regulated plan may be released without required licensed-professional approval.',
         {}, PGC_PERMITS, 'LICENSED_PROFESSIONAL', true));
+
+    checks.push(input.municipalityResolved === undefined
+      ? result('PG_MUNICIPALITY_RESOLUTION', 'MISSING_DATA', 'Resolve municipal or County authority.', {}, PGC_PERMITS, 'PERMIT_SPECIALIST', true)
+      : result('PG_MUNICIPALITY_RESOLUTION', input.municipalityResolved ? 'PASS' : 'FAIL',
+        'The reviewing municipality/County authority must be resolved.', {}, PGC_PERMITS, 'PERMIT_SPECIALIST',
+        !input.municipalityResolved));
+    checks.push(input.zoningUseAllowed === undefined
+      ? result('PG_ZONING_USE', 'MISSING_DATA', 'Resolve exact zoning, overlays and proposed residential use.', {}, MNCPPC, 'LAND_PLANNER', true)
+      : result('PG_ZONING_USE', input.zoningUseAllowed ? 'PASS' : 'FAIL',
+        'Proposed residential use and dimensional standards must comply with current zoning.', {}, MNCPPC, 'LAND_PLANNER',
+        !input.zoningUseAllowed, input.zoningUseAllowed ? undefined : 'Revise the concept or obtain applicable zoning relief.'));
+    const serviceResolved = input.publicWaterSewerAvailable === true || input.wellSepticApprovalPresent === true;
+    checks.push(input.publicWaterSewerAvailable === undefined && input.wellSepticApprovalPresent === undefined
+      ? result('PG_WATER_SEWER_SERVICE', 'MISSING_DATA', 'Resolve public water/sewer category or well/septic path.', {}, PGC_PERMITS, 'CIVIL_ENGINEER', true)
+      : result('PG_WATER_SEWER_SERVICE', serviceResolved ? 'PASS' : 'PROFESSIONAL_DETERMINATION_REQUIRED',
+        'Establish a feasible water and wastewater service path.', {
+          publicWaterSewerAvailable: input.publicWaterSewerAvailable,
+          wellSepticApprovalPresent: input.wellSepticApprovalPresent,
+        }, PGC_PERMITS, 'CIVIL_ENGINEER', !serviceResolved));
+    checks.push(input.gradeChangeFeet === undefined
+      ? result('PG_GRADE_CHANGE', 'MISSING_DATA', 'Calculate maximum proposed grade change.', {}, PGC_PERMITS, 'CIVIL_ENGINEER', true)
+      : result('PG_GRADE_CHANGE', Math.abs(input.gradeChangeFeet) > 0
+        ? 'PROFESSIONAL_DETERMINATION_REQUIRED' : 'NOT_APPLICABLE',
+      'Proposed grade changes require grading, drainage and permit-path review.',
+      { gradeChangeFeet: input.gradeChangeFeet }, PGC_PERMITS, 'CIVIL_ENGINEER', Math.abs(input.gradeChangeFeet) > 0));
+    checks.push(input.stormDrainPlanRequired
+      ? result('PG_STORM_DRAIN_PLAN', input.stormDrainPlanPresent ? 'PASS' : 'FAIL',
+        'Provide the storm-drain plan when required by the resolved design and review path.', {},
+        PGC_PERMITS, 'CIVIL_ENGINEER', !input.stormDrainPlanPresent)
+      : result('PG_STORM_DRAIN_PLAN', input.stormDrainPlanRequired === false ? 'NOT_APPLICABLE' : 'MISSING_DATA',
+        'Determine storm-drain plan applicability.', {}, PGC_PERMITS, 'CIVIL_ENGINEER',
+        input.stormDrainPlanRequired === undefined));
+    checks.push(input.utilityConflictsResolved === undefined
+      ? result('PG_UTILITY_CONFLICTS', 'MISSING_DATA', 'Screen utility connections and conflicts.', {}, PGC_PERMITS, 'CIVIL_ENGINEER', true)
+      : result('PG_UTILITY_CONFLICTS', input.utilityConflictsResolved ? 'PASS' : 'FAIL',
+        'Utility conflicts and service routes must be resolved.', {}, PGC_PERMITS, 'CIVIL_ENGINEER',
+        !input.utilityConflictsResolved));
+    checks.push(input.signedSealedPlotPlanPresent
+      ? result('PG_SIGNED_SEALED_PLOT_PLAN', 'PASS', 'Signed/sealed plot-plan evidence is recorded.', {}, PGC_PERMITS, 'LICENSED_PROFESSIONAL')
+      : result('PG_SIGNED_SEALED_PLOT_PLAN', 'FAIL', 'A signed/sealed plot plan is required when applicable before regulated release.',
+        {}, PGC_PERMITS, 'LICENSED_PROFESSIONAL', true));
+    checks.push(input.conceptApprovalPresent === undefined
+      ? result('PG_CONCEPT_APPROVAL', 'MISSING_DATA', 'Determine and record applicable concept approval.', {}, PGC_PERMITS, 'PERMIT_SPECIALIST', true)
+      : result('PG_CONCEPT_APPROVAL', input.conceptApprovalPresent ? 'PASS' : 'PROFESSIONAL_DETERMINATION_REQUIRED',
+        'Required site/stormwater concept approval must be recorded before submission.', {}, PGC_PERMITS,
+        'PERMIT_SPECIALIST', !input.conceptApprovalPresent));
     return checks;
   },
 };

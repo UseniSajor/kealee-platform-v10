@@ -15,6 +15,7 @@ export type { AgenticBotWorkerConfig } from './agentic-bot-worker';
 
 export { setupAgenticBotWorker, getAgenticBotWorkerHealth, shutdownAgenticBotWorker } from './agentic-bot-worker-setup';
 export type { AgenticBotWorkerSetupConfig } from './agentic-bot-worker-setup';
+export type { EngineeringJobData, EngineeringJobResult, EngineeringJobType } from './engineering-jobs';
 
 export { BotDispatcher, MemoryFeatureFlagProvider, createBotDispatcher } from './bot-dispatcher';
 export type { BotDispatcherConfig, FeatureFlagProvider } from './bot-dispatcher';

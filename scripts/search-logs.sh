@@ -14,7 +14,7 @@ echo "App: $APP"
 echo ""
 
 if [ "$APP" = "all" ]; then
-    APPS=("m-marketplace" "os-admin" "os-pm" "m-ops-services" "m-project-owner" "m-architect" "m-permits-inspections")
+    APPS=("m-marketplace" "os-admin" "os-pm" "m-ops-services" "project-owner" "m-architect" "m-permits-inspections")
     
     for app in "${APPS[@]}"; do
         if [ -n "$VERCEL_TOKEN" ]; then

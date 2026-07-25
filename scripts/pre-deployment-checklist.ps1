@@ -352,7 +352,7 @@ if (Test-Path "services/api") {
 
 # 6.2 Frontend apps
 Log-Check "6.2 Checking frontend applications..."
-$apps = @("apps/m-ops-services", "apps/os-admin", "apps/m-project-owner")
+$apps = @("apps/m-ops-services", "apps/os-admin", "apps/project-owner")
 $foundApps = 0
 
 foreach ($app in $apps) {

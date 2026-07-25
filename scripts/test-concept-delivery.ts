@@ -21,7 +21,7 @@
  * Reads env from:
  *   services/api/.env           → ANTHROPIC_API_KEY
  *   services/api/.env.local     → SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
- *   apps/portal-owner/.env.local → OWNER_PORTAL_URL
+ *   apps/project-owner/.env.local → OWNER_PORTAL_URL
  */
 
 import * as fs   from 'node:fs'
@@ -53,7 +53,7 @@ const ROOT = process.cwd()
 loadEnvFile(path.join(ROOT, 'apps', 'web-main', '.env.local'))
 loadEnvFile(path.join(ROOT, 'services', 'api', '.env'))
 loadEnvFile(path.join(ROOT, 'services', 'api', '.env.local'))
-loadEnvFile(path.join(ROOT, 'apps', 'portal-owner', '.env.local'))
+loadEnvFile(path.join(ROOT, 'apps', 'project-owner', '.env.local'))
 
 // ── Config ─────────────────────────────────────────────────────────────────────
 

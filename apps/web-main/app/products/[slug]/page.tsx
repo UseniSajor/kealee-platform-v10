@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { ArrowLeft, ArrowRight, CheckCircle, Clock, ShieldCheck, Star, Users } from 'lucide-react'
 import { getProduct, getAllProductSlugs } from '@/lib/products'
 import ProductCheckoutButton from '@/components/ProductCheckoutButton'
+import RevenueProductCheckout from '@/components/RevenueProductCheckout'
 import { getRevenueProduct, REVENUE_PRODUCT_CATALOG, type RevenueProductConfig } from '@/lib/revenue-product-catalog'
 
 export function generateStaticParams() {
@@ -395,8 +396,33 @@ const CAPABILITY_LABELS: Record<string, string> = {
   project: 'Prioritized homeowner next steps',
 }
 
+const CUSTOMER_TYPE_COPY: Record<RevenueProductConfig['customerType'], { eyebrow: string; subtitle: string; cta: string; steps: string[]; recipientLabel: string }> = {
+  homeowner: {
+    eyebrow: 'Preliminary project planning',
+    subtitle: 'Bring design, cost, property, and approval questions into one understandable homeowner plan before committing to construction.',
+    cta: 'Plan my project',
+    steps: ['Tell us about your property and goals', 'Review your recommended scope before payment', 'Receive one homeowner report with prioritized next steps'],
+    recipientLabel: 'homeowner report',
+  },
+  contractor: {
+    eyebrow: 'Bid-ready project intelligence',
+    subtitle: 'Get a scoped estimate, zoning check, and permit roadmap for a client project so you can bid with confidence and move straight to submission.',
+    cta: 'Order project package',
+    steps: ['Tell us about the client property and scope', 'Review the recommended workflow before payment', 'Receive one contractor package with estimate, zoning, and permit roadmap'],
+    recipientLabel: 'contractor package',
+  },
+  developer: {
+    eyebrow: 'Development feasibility intelligence',
+    subtitle: 'Get zoning, cost, and permit feasibility on a property or portfolio before you commit capital or submit an entitlement application.',
+    cta: 'Order feasibility package',
+    steps: ['Tell us about the property or portfolio and goals', 'Review the recommended workflow before payment', 'Receive one feasibility package with prioritized next steps'],
+    recipientLabel: 'feasibility package',
+  },
+}
+
 function RevenueProductPage({ product }: { product: RevenueProductConfig }) {
   const price = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(product.priceCents / 100)
+  const copy = CUSTOMER_TYPE_COPY[product.customerType]
   const jsonLd = {
     '@context': 'https://schema.org', '@type': 'Service', name: product.name,
     provider: { '@type': 'Organization', name: 'Kealee Services LLC', url: 'https://kealee.com' },
@@ -408,11 +434,18 @@ function RevenueProductPage({ product }: { product: RevenueProductConfig }) {
     <section className="bg-[#10213f] px-4 py-16 text-white sm:py-20">
       <div className="mx-auto max-w-4xl">
         <Link href="/products" className="inline-flex items-center gap-2 text-sm text-white/70 hover:text-white"><ArrowLeft className="h-4 w-4" /> All planning services</Link>
-        <p className="mt-10 text-xs font-bold uppercase tracking-[0.2em] text-orange-300">Preliminary project planning</p>
+        <p className="mt-10 text-xs font-bold uppercase tracking-[0.2em] text-orange-300">{copy.eyebrow}</p>
         <h1 className="mt-3 max-w-3xl text-4xl font-black sm:text-5xl">{product.name}</h1>
-        <p className="mt-5 max-w-2xl text-lg leading-8 text-slate-200">Bring design, cost, property, and approval questions into one understandable homeowner plan before committing to construction.</p>
+        <p className="mt-5 max-w-2xl text-lg leading-8 text-slate-200">{copy.subtitle}</p>
         <div className="mt-8 flex flex-wrap items-center gap-5">
-          <Link href={`/get-started?product=${product.productKey}`} className="inline-flex items-center gap-2 rounded-xl bg-orange-600 px-6 py-3.5 font-bold text-white hover:bg-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-300">Plan my project <ArrowRight className="h-5 w-5" /></Link>
+          <RevenueProductCheckout
+            productKey={product.productKey}
+            productName={product.name}
+            cta={copy.cta}
+            price={price}
+            requiresAddress={product.propertyIntelDepth !== 'basic'}
+            style={{ padding: '14px 24px', fontSize: 16 }}
+          />
           <span className="text-2xl font-black">{price}</span>
           <span className="text-sm text-slate-300">one-time · target delivery within {product.fulfillmentSlaHours} hours</span>
         </div>
@@ -431,7 +464,7 @@ function RevenueProductPage({ product }: { product: RevenueProductConfig }) {
       <section aria-labelledby="next-heading" className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm md:col-span-2">
         <h2 id="next-heading" className="text-xl font-bold text-slate-900">What happens next</h2>
         <ol className="mt-5 grid gap-4 sm:grid-cols-3">
-          {['Tell us about your property and goals', 'Review your recommended scope before payment', 'Receive one homeowner report with prioritized next steps'].map((step, index) => <li key={step} className="rounded-xl bg-slate-50 p-4 text-sm leading-6 text-slate-700"><span className="mb-2 block font-bold text-orange-600">Step {index + 1}</span>{step}</li>)}
+          {copy.steps.map((step, index) => <li key={step} className="rounded-xl bg-slate-50 p-4 text-sm leading-6 text-slate-700"><span className="mb-2 block font-bold text-orange-600">Step {index + 1}</span>{step}</li>)}
         </ol>
       </section>
     </div>

@@ -132,13 +132,17 @@ export interface SitePlanProfessionalReview {
   discipline: string;
   licenseNumber: string;
   licenseVerifiedAt?: string;
-  decision: 'PENDING' | 'APPROVED' | 'REJECTED' | 'REVISION_REQUESTED';
+  decision: 'PENDING' | 'APPROVED' | 'REJECTED' | 'CHANGES_REQUESTED';
   declaration?: string;
+  sourceDocumentId?: string;
+  sealedDocumentId?: string;
+  sourceContentHash?: string;
+  sealedContentHash?: string;
   expiresAt?: string;
   updatedAt: string;
   blockingComplianceCount: number;
   workflow: { id: string; projectId: string; currentStage: string; status: string } | null;
-  stages: Array<{ id: string; stage: string; status: string; blockers?: string[]; updatedAt: string }>;
+  stages: Array<{ id: string; stage: string; status: string; blockers?: string[]; inputs?: { geometry?: unknown[]; revision?: number; crs?: string; units?: string }; outputs?: Record<string, any>; updatedAt: string }>;
 }
 
 // ============================================================================
@@ -216,7 +220,7 @@ export async function getSitePlanReviews() {
 }
 
 export async function submitSitePlanReviewDecision(reviewId: string, data: {
-  decision: 'APPROVED' | 'REJECTED' | 'REVISION_REQUESTED';
+  decision: 'APPROVED' | 'REJECTED' | 'CHANGES_REQUESTED';
   declaration: string;
   licenseNumber: string;
   sourceDocumentId?: string;
@@ -227,6 +231,20 @@ export async function submitSitePlanReviewDecision(reviewId: string, data: {
 }) {
   return apiRequest<{ review: SitePlanProfessionalReview }>(`/api/site-plans/professional/reviews/${reviewId}/decision`, {
     method: 'POST', body: JSON.stringify(data),
+  });
+}
+
+export async function saveSitePlanReviewEdits(reviewId: string, data: {
+  revision: number; geometry: unknown[]; redlines: string[]; notes?: string;
+}) {
+  return apiRequest<{ review: SitePlanProfessionalReview }>(`/api/site-plans/professional/reviews/${reviewId}/edits`, {
+    method: 'POST', body: JSON.stringify(data),
+  });
+}
+
+export async function releaseSitePlanReview(reviewId: string, declaration: string) {
+  return apiRequest<{ review: SitePlanProfessionalReview; workflow: any }>(`/api/site-plans/professional/reviews/${reviewId}/release`, {
+    method: 'POST', body: JSON.stringify({ declaration }),
   });
 }
 
@@ -244,4 +262,6 @@ export const engineerApi = {
   getDashboard,
   getSitePlanReviews,
   submitSitePlanReviewDecision,
+  saveSitePlanReviewEdits,
+  releaseSitePlanReview,
 };

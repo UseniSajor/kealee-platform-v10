@@ -223,7 +223,7 @@ check_vercel() {
     fi
     
     # Check deployments for each app
-    APPS=("m-marketplace" "os-admin" "os-pm" "m-ops-services" "m-project-owner" "m-architect" "m-permits-inspections")
+    APPS=("m-marketplace" "os-admin" "os-pm" "m-ops-services" "project-owner" "m-architect" "m-permits-inspections")
     
     log "Checking deployment status..."
     for app in "${APPS[@]}"; do

@@ -39,6 +39,14 @@ export async function POST(req: NextRequest) {
     const path = String(projectPath)
     const supabase = getSupabaseAdmin()
     const fd = formData && typeof formData === 'object' ? (formData as Record<string, unknown>) : {}
+    const uploadedFiles = Array.isArray(fd.uploadedFiles)
+      ? fd.uploadedFiles.filter((value): value is string => typeof value === 'string' && value.trim().length > 0)
+      : []
+    if (uploadedFiles.length === 0) {
+      return NextResponse.json({
+        error: 'Add at least one project photo, sketch/plan, or voice description before submitting your intake.',
+      }, { status: 400 })
+    }
 
     const deliverable = SERVICE_DELIVERABLES[path]
     const resolvedFormData: Record<string, unknown> = { ...fd, funnelStage: 'lead' }

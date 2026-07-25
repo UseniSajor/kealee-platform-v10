@@ -38,6 +38,9 @@ export const KEALEE_QUEUES = {
   // Claw H: Command Center & Automation
   TASK_ORCHESTRATOR: 'task-orchestrator',
   JOB_SCHEDULER: 'job-scheduler',
+
+  // os-engineering — long-running OCR/GIS/surface/CAD/report jobs
+  ENGINEERING_PROCESSING: 'engineering-processing',
 } as const;
 
 export type QueueName = (typeof KEALEE_QUEUES)[keyof typeof KEALEE_QUEUES];

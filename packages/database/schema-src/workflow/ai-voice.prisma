@@ -1,0 +1,128 @@
+// AI communications and sales/support persistence.
+// Voice providers are transport adapters; site-plan engineering is a separate domain.
+
+enum AiCommunicationChannel {
+  VOICE
+  SMS
+  WHATSAPP
+  EMAIL
+  WEB_CHAT
+  PORTAL_CHAT
+}
+
+enum AiCommunicationSessionStatus {
+  PENDING
+  ACTIVE
+  TRANSFERRING
+  COMPLETED
+  FAILED
+  REDACTED
+}
+
+enum SupportCaseStatus {
+  OPEN
+  AUTHENTICATING
+  INVESTIGATING
+  WAITING_CUSTOMER
+  WAITING_STAFF
+  ESCALATED
+  RESOLVED
+  CLOSED
+}
+
+model AiCommunicationSession {
+  id                String                       @id @default(uuid())
+  organizationId    String?
+  contactId         String?
+  leadId            String?
+  projectId         String?
+  provider          String
+  providerSessionId String?                      @unique
+  channel           AiCommunicationChannel
+  direction         String
+  status            AiCommunicationSessionStatus @default(PENDING)
+  locale            String                       @default("en-US")
+  consentId         String?
+  disclosureVersion String?
+  recordingEnabled  Boolean                      @default(false)
+  retentionUntil    DateTime?
+  startedAt         DateTime?
+  endedAt           DateTime?
+  metadata          Json?
+  createdAt         DateTime                     @default(now())
+  updatedAt         DateTime                     @updatedAt
+
+  @@index([organizationId, createdAt])
+  @@index([contactId, createdAt])
+  @@index([projectId, createdAt])
+  @@index([status, createdAt])
+  @@map("ai_communication_sessions")
+}
+
+model AiConversationArtifact {
+  id              String   @id @default(uuid())
+  sessionId       String
+  artifactType    String
+  encryptedBody   String?  @db.Text
+  redactedBody    String?  @db.Text
+  storageUrl      String?
+  encryptionKeyId String?
+  contentHash     String
+  model           String?
+  confidence      Decimal? @db.Decimal(5, 4)
+  metadata        Json?
+  createdAt       DateTime @default(now())
+
+  @@unique([sessionId, artifactType, contentHash])
+  @@index([sessionId, createdAt])
+  @@map("ai_conversation_artifacts")
+}
+
+model AiSalesWorkflow {
+  id             String   @id @default(uuid())
+  organizationId String
+  contactId      String?
+  leadId         String?
+  projectId      String?
+  state           String   @default("NEW")
+  completedSteps  String[] @default([])
+  appliedEventIds String[] @default([])
+  version         Int      @default(0)
+  humanOwnerId    String?
+  stoppedAt       DateTime?
+  stopReason      String?
+  metadata        Json?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([organizationId, state, updatedAt])
+  @@index([leadId])
+  @@index([projectId])
+  @@map("ai_sales_workflows")
+}
+
+model CustomerSupportCase {
+  id                 String            @id @default(uuid())
+  organizationId     String
+  contactId          String?
+  projectId          String?
+  sessionId          String?
+  status             SupportCaseStatus @default(OPEN)
+  topic              String
+  urgency            String
+  sentiment          String?
+  confidence         Decimal?          @db.Decimal(5, 4)
+  assignedToUserId   String?
+  slaDueAt           DateTime?
+  resolutionCriteria String?           @db.Text
+  resolvedAt         DateTime?
+  closedAt           DateTime?
+  metadata           Json?
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+
+  @@index([organizationId, status, slaDueAt])
+  @@index([projectId, createdAt])
+  @@index([assignedToUserId, status])
+  @@map("customer_support_cases")
+}

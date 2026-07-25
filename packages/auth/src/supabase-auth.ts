@@ -39,6 +39,8 @@ export interface CookieStore {
 export const APP_ALLOWED_ROLES: Record<string, string[]> = {
   'os-admin': ['admin', 'super_admin'],
   'os-pm': ['pm', 'admin', 'super_admin'],
+  'project-owner': ['homeowner', 'developer', 'property_manager', 'business_owner', 'client'],
+  // Compatibility for events and persisted access policies created before the app consolidation.
   'm-project-owner': ['homeowner', 'developer', 'property_manager', 'business_owner', 'client'],
   'm-architect': ['architect', 'engineer', 'admin'],
   'm-marketplace': ['contractor', 'vendor', 'homeowner', 'developer', 'admin'],

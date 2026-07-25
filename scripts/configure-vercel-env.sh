@@ -103,7 +103,7 @@ APPS=(
   "os-admin"
   "os-pm"
   "m-ops-services"
-  "m-project-owner"
+  "project-owner"
   "m-architect"
   "m-permits-inspections"
 )
@@ -232,7 +232,7 @@ for app in "${APPS[@]}"; do
         done
         ;;
         
-      "m-project-owner")
+      "project-owner")
         PROJECT_VARS=()
         [ -n "$DOCUSIGN_INTEGRATION_KEY" ] && PROJECT_VARS+=("DOCUSIGN_INTEGRATION_KEY=$DOCUSIGN_INTEGRATION_KEY")
         [ -n "$DOCUSIGN_SECRET_KEY" ] && PROJECT_VARS+=("DOCUSIGN_SECRET_KEY=$DOCUSIGN_SECRET_KEY")

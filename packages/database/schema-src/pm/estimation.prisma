@@ -59,6 +59,101 @@ model CostDatabase {
   @@map("cost_databases")
 }
 
+/// Canonical registry for imported Construction Task Catalog cost books.
+/// Kealee owns this platform record and its derived normalization; publisher
+/// and rights fields preserve ownership of the underlying source publication.
+model CtcCostDatabase {
+  id                    String   @id
+  name                  String
+  source                String
+  region                String?
+  baseYear              Int      @default(2023) @map("base_year")
+  escalationYear        Int?     @map("escalation_year")
+  escalationFactor      Decimal  @default(1.0) @db.Decimal(8, 4) @map("escalation_factor")
+  publisher             String?
+  copyrightHolder       String?  @map("copyright_holder")
+  licensee              String?
+  rightsBasis           String?  @map("rights_basis")
+  platformCustodian     String   @default("Kealee Services LLC") @map("platform_custodian")
+  redistributionAllowed Boolean  @default(false) @map("redistribution_allowed")
+  isMaster              Boolean  @default(true) @map("is_master")
+  costPdf               String?  @map("cost_pdf")
+  technicalPdf          String?  @map("technical_pdf")
+  taskCount             Int      @default(0) @map("task_count")
+  specCount             Int      @default(0) @map("spec_count")
+  importedAt            DateTime @default(now()) @map("imported_at")
+  updatedAt             DateTime @updatedAt @map("updated_at")
+
+  tasks CtcCostTask[]
+  specs CtcTechnicalSpec[]
+
+  @@index([isMaster])
+  @@index([source])
+  @@map("ctc_cost_database")
+}
+
+/// Master CTC priced-task record used by estimation, takeoff, cost-book search,
+/// and AI cost grounding. Published price and Kealee-derived allocations remain
+/// separately labeled.
+model CtcCostTask {
+  id                     BigInt   @id @default(autoincrement())
+  databaseId             String   @map("database_id")
+  taskNumber             String   @map("task_number")
+  csiCode                String?  @map("csi_code")
+  csiDivision            String?  @map("csi_division")
+  description            String
+  uom                    String?
+  unitPrice2023          Decimal? @db.Decimal(14, 4) @map("unit_price_2023")
+  laborCost2023          Decimal? @db.Decimal(14, 4) @map("labor_cost_2023")
+  materialCost2023       Decimal? @db.Decimal(14, 4) @map("material_cost_2023")
+  equipmentCost2023      Decimal? @db.Decimal(14, 4) @map("equipment_cost_2023")
+  laborHours             Decimal? @db.Decimal(12, 4) @map("labor_hours")
+  laborRate2023          Decimal? @db.Decimal(10, 2) @map("labor_rate_2023")
+  laborHoursMethod       String?  @map("labor_hours_method")
+  laborRateSourceTask    String?  @map("labor_rate_source_task")
+  laborRateTrade         String?  @map("labor_rate_trade")
+  laborRateEffectiveDate DateTime? @db.Date @map("labor_rate_effective_date")
+  escalationFactor       Decimal  @default(1.0) @db.Decimal(8, 4) @map("escalation_factor")
+  unitPriceCurrent       Decimal? @db.Decimal(14, 4) @map("unit_price_current")
+  isModifier             Boolean  @default(false) @map("is_modifier")
+  modifierOf             String?  @map("modifier_of")
+  modifierType           String?  @map("modifier_type")
+  modifierValue          Decimal? @db.Decimal(14, 4) @map("modifier_value")
+  page                   Int?
+  source                 String   @default("CTC-2023")
+  createdAt              DateTime @default(now()) @map("created_at")
+  updatedAt              DateTime @updatedAt @map("updated_at")
+
+  database CtcCostDatabase @relation(fields: [databaseId], references: [id], onDelete: Cascade)
+
+  @@unique([databaseId, taskNumber])
+  @@index([csiDivision])
+  @@index([csiCode])
+  @@index([taskNumber])
+  @@map("ctc_cost_tasks")
+}
+
+model CtcTechnicalSpec {
+  id          BigInt   @id @default(autoincrement())
+  databaseId  String   @map("database_id")
+  specNumber  String?  @map("spec_number")
+  csiCode     String?  @map("csi_code")
+  csiDivision String?  @map("csi_division")
+  title       String?
+  body        String?  @db.Text
+  page        Int?
+  source      String   @default("CTC-2023")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  database CtcCostDatabase @relation(fields: [databaseId], references: [id], onDelete: Cascade)
+
+  @@unique([databaseId, specNumber])
+  @@index([csiCode])
+  @@index([csiDivision])
+  @@map("ctc_technical_specs")
+}
+
 model MaterialCost {
   id             String           @id @default(uuid())
   costDatabaseId String
@@ -186,6 +281,11 @@ model Assembly {
   laborCostMid      Decimal? @db.Decimal(10, 2)
   laborCostHigh     Decimal? @db.Decimal(10, 2)
   laborHoursPerUnit Decimal? @db.Decimal(6, 2)
+  appliedLaborRate   Decimal? @db.Decimal(10, 2)
+  laborHoursMethod   String?
+  laborRateSourceTask String?
+  laborRateTrade      String?
+  laborRateEffectiveDate DateTime?
 
   // Regional cost multipliers (JSON map: { "DC": 1.15, "Baltimore": 1.0, ... })
   regionMultiplier Json?
@@ -400,6 +500,11 @@ model EstimateLineItem {
   unitCost          Decimal  @db.Decimal(12, 2)
   totalCost         Decimal  @db.Decimal(14, 2)
   laborHours        Decimal? @db.Decimal(8, 2)
+  appliedLaborRate  Decimal? @db.Decimal(10, 2)
+  laborHoursMethod  String?
+  laborRateSourceTask String?
+  laborRateTrade    String?
+  laborRateEffectiveDate DateTime?
   laborCost         Decimal? @db.Decimal(14, 2)
   materialCostAmt   Decimal? @db.Decimal(14, 2)
   equipmentCostAmt  Decimal? @db.Decimal(14, 2)

@@ -1,6 +1,6 @@
 # Copy authentication pages to all client-facing apps (PowerShell)
 
-$sourceApp = "apps/m-project-owner"
+$sourceApp = "apps/project-owner"
 $apps = @(
   "apps/m-ops-services",
   "apps/m-architect",

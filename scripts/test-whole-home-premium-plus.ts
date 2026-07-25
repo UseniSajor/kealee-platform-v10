@@ -36,8 +36,8 @@ const ROOT = process.cwd()
 loadEnvFile(path.join(ROOT, 'services', 'api', '.env.local'))
 loadEnvFile(path.join(ROOT, 'apps', 'web-main', '.env.local'))
 loadEnvFile(path.join(ROOT, 'apps', 'web-main', '.env.test-pull'), true)
-loadEnvFile(path.join(ROOT, 'apps', 'portal-owner', '.env.local'))
-loadEnvFile(path.join(ROOT, 'apps', 'portal-owner', '.env.test-pull'), true)
+loadEnvFile(path.join(ROOT, 'apps', 'project-owner', '.env.local'))
+loadEnvFile(path.join(ROOT, 'apps', 'project-owner', '.env.test-pull'), true)
 
 function resolveSupabaseUrl(): string {
   const candidates = [process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_URL].filter(Boolean)

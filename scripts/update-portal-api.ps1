@@ -132,7 +132,7 @@ function Show-Config {
 function Generate-ManualInstructions {
     Write-Header "Manual Update Instructions (Railway Dashboard)"
     
-    $portals = @("portal-owner", "portal-contractor", "portal-developer")
+    $portals = @("project-owner", "portal-contractor", "portal-developer")
     
     foreach ($portal in $portals) {
         Write-Host ""
@@ -164,7 +164,7 @@ function Generate-ManualInstructions {
 function Generate-EnvFiles {
     Write-Header "Generating Local .env Files"
     
-    $portals = @("portal-owner", "portal-contractor", "portal-developer")
+    $portals = @("project-owner", "portal-contractor", "portal-developer")
     
     foreach ($portal in $portals) {
         $envFile = "apps\$portal\.env.local"

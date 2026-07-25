@@ -35,7 +35,7 @@ const USERS = [
     password: 'KeaOwner2026!',
     name: 'Demo Owner',
     role: 'homeowner',
-    portal: 'portal-owner',
+    portal: 'project-owner',
   },
   {
     email: 'contractor@kealee.com',
@@ -151,7 +151,7 @@ console.log('📋  Login Credentials\n')
 
 const PORTALS = {
   'os-admin / command-center': 'OS Admin + Command Center',
-  'portal-owner':              'Portal Owner',
+  'project-owner':              'Portal Owner',
   'portal-contractor':         'Portal Contractor',
   'portal-developer':          'Portal Developer',
 }

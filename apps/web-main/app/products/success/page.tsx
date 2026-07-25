@@ -17,6 +17,10 @@ const PRODUCT_MESSAGES: Record<string, { title: string; next: string; timeline: 
   'historic-renovation': { title: 'Historic Renovation order received', next: 'A preservation specialist will review your property designation and contact you within 2 business days.', timeline: 'Initial assessment within 2 business days' },
   'water-mitigation':    { title: 'Water Mitigation Assessment ordered', next: 'Submit photos of the affected areas and your property address in your dashboard.', timeline: 'Assessment delivered within 48 hours' },
   'basement':            { title: 'Basement Concept Report ordered', next: 'Upload photos of your basement space in your dashboard to start generation.', timeline: 'Delivered within 24 hours' },
+  'home-project-readiness-review':      { title: 'Home Project Readiness Review ordered', next: 'A specialist will review your intake and prepare your readiness report.', timeline: 'Delivered within 48 hours' },
+  'project-launch-package':             { title: 'Project Launch Package ordered', next: 'A specialist will review your intake and prepare your design, estimate, and permit roadmap.', timeline: 'Delivered within 72 hours' },
+  'contractor-estimate-permit-package': { title: 'Contractor Estimate and Permit Package ordered', next: 'A specialist will review your client project details and prepare your estimate, zoning, and permit roadmap.', timeline: 'Delivered within 72 hours' },
+  'developer-feasibility-express':      { title: 'Developer Feasibility Express ordered', next: 'A specialist will review your property or portfolio details and prepare your feasibility package.', timeline: 'Delivered within 96 hours' },
 }
 
 function ProductSuccessContent() {

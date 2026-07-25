@@ -130,7 +130,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
             location: body.location ?? body.neighborhood ?? 'your area',
             conceptPrice: '395',
             conceptPriceHigh: '585',
-          })
+          }, { email: body.email, phone: body.phone })
         }
       } catch (e: unknown) {
         console.error('[nextdoor-lead] GHL error:', e instanceof Error ? e.message : e)

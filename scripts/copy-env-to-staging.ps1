@@ -195,7 +195,7 @@ if ($App) {
         "os-admin",
         "os-pm",
         "m-ops-services",
-        "m-project-owner",
+        "project-owner",
         "m-architect",
         "m-permits-inspections"
     )

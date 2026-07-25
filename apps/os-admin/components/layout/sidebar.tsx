@@ -67,10 +67,10 @@ export function Sidebar({ className }: SidebarProps) {
       <div className="flex h-16 items-center justify-center border-b border-gray-800">
         <Link
           href="/"
-          className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white font-bold text-lg"
+          className="w-10 h-10 rounded-xl flex items-center justify-center"
           aria-label="Kealee Admin"
         >
-          K
+          <img src="/kealee-icon-192x192.png" alt="" className="h-10 w-10 rounded-xl" />
         </Link>
       </div>
 

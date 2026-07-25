@@ -32,7 +32,7 @@
  *   services/api/.env             → ANTHROPIC_API_KEY, SUPABASE_*
  *   services/api/.env.local       → overrides
  *   apps/web-main/.env.local      → REPLICATE_API_TOKEN, OPENAI_API_KEY, GEMINI_API_KEY
- *   apps/portal-owner/.env.local  → OWNER_PORTAL_URL
+ *   apps/project-owner/.env.local  → OWNER_PORTAL_URL
  */
 
 import * as fs   from 'node:fs'
@@ -60,7 +60,7 @@ const ROOT = process.cwd()
 loadEnvFile(path.join(ROOT, 'services', 'api', '.env'))
 loadEnvFile(path.join(ROOT, 'services', 'api', '.env.local'))
 loadEnvFile(path.join(ROOT, 'apps', 'web-main', '.env.local'))
-loadEnvFile(path.join(ROOT, 'apps', 'portal-owner', '.env.local'))
+loadEnvFile(path.join(ROOT, 'apps', 'project-owner', '.env.local'))
 
 // ── Config ───────────────────────────────────────────────────────────────────
 

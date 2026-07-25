@@ -5,6 +5,7 @@ export const themes = {
   'm-architect': { primary: '#4f46e5', accent: '#f97316', name: 'Architect Module' },
   'm-marketplace': { primary: '#2563eb', accent: '#f97316', name: 'Marketplace Module' },
   'm-project-owner': { primary: '#2563eb', accent: '#10b981', name: 'Project Owner Module' },
+  'project-owner': { primary: '#1A2B4A', accent: '#2ABFBF', name: 'Project Owner' },
   'm-engineer': { primary: '#0891b2', accent: '#f97316', name: 'Engineer Module' },
   'm-permits-inspections': { primary: '#7c3aed', accent: '#10b981', name: 'Permits & Inspections' },
   'm-finance-trust': { primary: '#2563eb', accent: '#2563eb', name: 'Finance & Trust' },

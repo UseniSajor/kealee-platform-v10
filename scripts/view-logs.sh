@@ -13,7 +13,7 @@ echo "App: $APP"
 echo "Hours: $HOURS"
 echo ""
 
-APPS=("m-marketplace" "os-admin" "os-pm" "m-ops-services" "m-project-owner" "m-architect" "m-permits-inspections")
+APPS=("m-marketplace" "os-admin" "os-pm" "m-ops-services" "project-owner" "m-architect" "m-permits-inspections")
 
 if [ "$APP" = "all" ]; then
     for app in "${APPS[@]}"; do

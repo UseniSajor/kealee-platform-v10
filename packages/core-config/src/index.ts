@@ -62,6 +62,12 @@ export interface AiAutomationConfig {
   aiSmsEnabled: boolean;
   conversationIntelligenceEnabled: boolean;
   sitePlanAutomationEnabled: boolean;
+  engineeringInfillPhase1Enabled: boolean;
+  engineeringSurveyOcrEnabled: boolean;
+  engineeringDxfGenerationEnabled: boolean;
+  engineeringTerrainAnalysisEnabled: boolean;
+  engineeringStormwaterEnabled: boolean;
+  engineeringProfessionalReviewRequired: boolean;
   professionalReviewRequired: boolean;
   permitSubmissionAutomationEnabled: boolean;
   pgCountyRulePackEnabled: boolean;
@@ -254,6 +260,12 @@ export function getAiAutomationConfig(): AiAutomationConfig {
   const aiSmsEnabled = parseBoolean('AI_SMS_ENABLED', false);
   const conversationIntelligenceEnabled = parseBoolean('CONVERSATION_INTELLIGENCE_ENABLED', false);
   const sitePlanAutomationEnabled = parseBoolean('SITE_PLAN_AUTOMATION_ENABLED', false);
+  const engineeringInfillPhase1Enabled = parseBoolean('ENGINEERING_INFILL_PHASE1_ENABLED', false);
+  const engineeringSurveyOcrEnabled = parseBoolean('ENGINEERING_SURVEY_OCR_ENABLED', false);
+  const engineeringDxfGenerationEnabled = parseBoolean('ENGINEERING_DXF_GENERATION_ENABLED', false);
+  const engineeringTerrainAnalysisEnabled = parseBoolean('ENGINEERING_TERRAIN_ANALYSIS_ENABLED', false);
+  const engineeringStormwaterEnabled = parseBoolean('ENGINEERING_STORMWATER_ENABLED', false);
+  const engineeringProfessionalReviewRequired = parseBoolean('ENGINEERING_PROFESSIONAL_REVIEW_REQUIRED', true);
   const professionalReviewRequired = parseBoolean('PROFESSIONAL_REVIEW_REQUIRED', true);
   const permitSubmissionAutomationEnabled = parseBoolean('PERMIT_SUBMISSION_AUTOMATION_ENABLED', false);
   const pgCountyRulePackEnabled = parseBoolean('PG_COUNTY_RULE_PACK_ENABLED', false);
@@ -290,6 +302,12 @@ export function getAiAutomationConfig(): AiAutomationConfig {
   if (sitePlanAutomationEnabled && !professionalReviewRequired) {
     errors.push('PROFESSIONAL_REVIEW_REQUIRED must remain true while SITE_PLAN_AUTOMATION_ENABLED=true');
   }
+  if (engineeringInfillPhase1Enabled && !sitePlanAutomationEnabled) {
+    errors.push('ENGINEERING_INFILL_PHASE1_ENABLED requires SITE_PLAN_AUTOMATION_ENABLED=true');
+  }
+  if (engineeringInfillPhase1Enabled && !engineeringProfessionalReviewRequired) {
+    errors.push('ENGINEERING_PROFESSIONAL_REVIEW_REQUIRED must remain true for Phase 1');
+  }
 
   if (errors.length > 0) {
     throw new Error(`Invalid AI automation environment:\n${errors.map((error) => `- ${error}`).join('\n')}`);
@@ -301,6 +319,12 @@ export function getAiAutomationConfig(): AiAutomationConfig {
     aiSmsEnabled,
     conversationIntelligenceEnabled,
     sitePlanAutomationEnabled,
+    engineeringInfillPhase1Enabled,
+    engineeringSurveyOcrEnabled,
+    engineeringDxfGenerationEnabled,
+    engineeringTerrainAnalysisEnabled,
+    engineeringStormwaterEnabled,
+    engineeringProfessionalReviewRequired,
     professionalReviewRequired,
     permitSubmissionAutomationEnabled,
     pgCountyRulePackEnabled,

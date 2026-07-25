@@ -179,7 +179,7 @@ update_via_cli() {
     
     print_header "Updating Portal Services via Railway CLI"
     
-    PORTALS=("portal-owner" "portal-contractor" "portal-developer")
+    PORTALS=("project-owner" "portal-contractor" "portal-developer")
     
     for portal in "${PORTALS[@]}"; do
         echo ""
@@ -201,7 +201,7 @@ update_via_cli() {
 generate_manual_instructions() {
     print_header "Manual Update Instructions (Railway Dashboard)"
     
-    PORTALS=("portal-owner" "portal-contractor" "portal-developer")
+    PORTALS=("project-owner" "portal-contractor" "portal-developer")
     
     for portal in "${PORTALS[@]}"; do
         echo ""
@@ -234,7 +234,7 @@ generate_manual_instructions() {
 generate_env_files() {
     print_header "Generating Local .env Files"
     
-    PORTALS=("portal-owner" "portal-contractor" "portal-developer")
+    PORTALS=("project-owner" "portal-contractor" "portal-developer")
     
     for portal in "${PORTALS[@]}"; do
         env_file="apps/$portal/.env.local"

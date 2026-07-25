@@ -17,7 +17,7 @@ vercel login
 # Apps configuration
 declare -A apps=(
     ["m-marketplace"]="kealee.com"
-    ["m-project-owner"]="app.kealee.com"
+    ["project-owner"]="app.kealee.com"
     ["m-permits-inspections"]="permits.kealee.com"
     ["m-ops-services"]="ops.kealee.com"
     ["m-architect"]="architect.kealee.com"

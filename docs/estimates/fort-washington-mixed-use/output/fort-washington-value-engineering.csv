@@ -1,0 +1,13 @@
+Alternate,Cost Delta,Schedule Effect,Operating Cost Effect,Leasing/Revenue Risk,Durability,Recommendation
+One podium + three wood buildings,0,Baseline,Baseline,Balanced durability/cost; podium risk remains,Recommended baseline,
+Two podium buildings,5896686,+2–4 months,Potentially lower envelope maintenance,Higher rent needed to cover cost,More concrete/steel durability,Use only if density/site constraints require
+All four podium buildings,17690058,+5–8 months,Potentially lower envelope maintenance,Material feasibility pressure,More concrete/steel durability,Not recommended at current program
+300 structured + 450 surface spaces,0,Baseline,Baseline,Large surface footprint,Baseline,Recommended if site layout works
+450 structured + 300 surface spaces,4840037.549019608,+2–4 months,Higher garage O&M,Improves land efficiency,Structured deck maintenance,Consider only if entitlement/site yield requires
+"Construct 80,000 SF retail shell at once",0,Baseline,Carries vacant-shell expense,Absorption risk,Baseline,Require leasing evidence
+"50,000 SF Phase 1; defer 30,000 SF",-8609945.765740123,Reduces Phase 1 duration; deferred scope later,Lower initial carrying cost,Future mobilization/escalation,No material change,Recommended without preleasing
+Reduce average unit size 5%,-7921150.104480913,-2–3 months,Slightly lower utility/turn cost,Marketability risk for larger units,Neutral,Test with market study
+Standardize Buildings B and C,-3392892.628085991,-1–2 months,Simpler spares/maintenance,Reduced product differentiation,Neutral,Recommended
+Centralize amenities,-2544669.4710644926,-1 month,Lower staffing/maintenance,Longer walk for some residents,Fewer duplicated systems,Recommended
+Brick major elevations; fiber cement elsewhere,-138899.1726515689,-2–4 weeks,More repainting/recalking,Manageable if key elevations retain masonry,Lower impact resistance,Recommended with disciplined elevations
+Developer direct-purchase packages,-3396702.9733503163,Neutral to -1 month if procured early,Owner assumes warranty/spares coordination,Low if substitutions are controlled,Depends on product,Recommended selectively

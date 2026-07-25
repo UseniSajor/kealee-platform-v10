@@ -1,10 +1,12 @@
 import type { Metadata, Viewport } from 'next'
+import { PwaProvider } from './pwa-provider'
 import './globals.css'
 
 export const metadata: Metadata = {
   title: 'Kealee - Command Center',
   description: 'Operations command center for managing digital twins, integrations, and analytics',
-  icons: { icon: '/favicon.ico' },
+  manifest: '/site.webmanifest',
+  icons: { icon: '/kealee-icon-192x192.png', apple: '/apple-touch-icon.png' },
 }
 
 export const viewport: Viewport = {
@@ -20,7 +22,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className="font-body">
-      <body className="antialiased">{children}</body>
+      <body className="antialiased"><PwaProvider />{children}</body>
     </html>
   )
 }

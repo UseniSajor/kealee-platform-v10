@@ -1,0 +1,24 @@
+CSI,Division,Equipment Cost,Primary Basis
+10,Specialties,111671.51817492,"One bath tissue dispenser per bathroom; One towel bar per bathroom; One shower rod per bathroom; Complete residential/common specialties, signage and mail/package systems."
+11,Equipment,363005.7804960001,One 20–22 CF refrigerator per unit; One 30-inch electric range per unit; One 24-inch dishwasher per unit; Complete appliance and common-equipment packages; retail equipment excluded.
+12,Furnishings and Casework,83825.42332560002,"Twenty-four SF countertop per unit; Countertop sink/faucet cutouts; Complete casework, counters, blinds and amenity furnishings allowance."
+13,Special Construction,149676.50891184,"Entry canopies and amenity shade structures; Pool access ladders; pool vessel carried as unresolved allowance; Pool vessel/equipment, canopies and normal site amenities."
+14,Conveying Equipment,730557.7544349999,"Eight 3,000-lb six-stop traction elevators; final code/core analysis required; Eight complete elevator systems including controls and normal cab allowance."
+21,Fire Suppression,420157.7115467742,"Light-hazard wet-pipe coverage; Garage ordinary-hazard wet-pipe coverage; Complete sprinkler distribution, standpipe/fire-pump allowance and garage coverage."
+22,Plumbing,1141976.18367456,One water closet per bathroom; One tub/shower assembly per bathroom; One kitchen sink per unit; One kitchen faucet per unit
+23,HVAC,2283523.8417504,"One packaged terminal heat pump per studio/1BR; One 17,500-BTU ductless heat pump per 2BR; One 24,200-BTU ductless heat pump per 3BR; Retail/common-area packaged rooftop units at approximately one/3,300 SF"
+26,Electrical,973077.19334424,"One complete 100A, 24-circuit apartment panelboard; Twenty-four duplex device/box equivalents per unit; Twenty-foot site light poles; LED area fixtures"
+27,Communications,148695.79929599998,"Communications cable supports; backbone/cable allowance; Complete telecom backbone, cabling, pathways and rooms."
+28,Electronic Safety and Security,183747.95092540001,"One intelligent fire-alarm CPU per building; Complete fire alarm, access control, CCTV and security."
+31,Earthwork,1010821.0799999998,"Conceptual cut/shape/rough-grade volume over 78% disturbed site; Conceptual bulk excavation in soil; Clearing, grading, erosion control and normal soil handling."
+32,Exterior Improvements,234774.5482916667,Six-inch aggregate base at roads and surface parking; Asphalt binder course at roads and surface parking; Four-inch concrete walks; Concrete curb and gutter
+33,Utilities,1472276.613952,Conceptual eight-inch water distribution; Conceptual eight-inch PVC sanitary sewer; Conceptual 24-inch RCP storm drainage; Six-foot-deep catch basins
+01,General Requirements,1023031.4985,Four 40-CY pulls/month × 36 months; Six full-day subsurface survey visits/building; One vanity per bathroom; Two residential exhaust fans per unit
+02,Existing Conditions,37093.64464512,Eight large stump removals; existing conditions unresolved; Minor existing-conditions allowance; demolition survey absent.
+03,Concrete,5331856.179445624,6-inch slab-on-grade at building and garage ground footprints; 6-inch elevated garage decks plus 9-inch equivalent podium transfer slab; Welded reinforcing fabric at slabs; Conceptual continuous footing concrete
+04,Masonry,308669.915136,"CMU stairs, shafts, service and garage walls; Complete CMU, masonry veneer and accessories."
+05,Metals,1523716.4474999998,"Composite deck at garage elevated floors and podium; Conceptual cold-formed/secondary steel joist length; Primary/miscellaneous metals, podium/garage steel and railings."
+06,"Wood, Plastics and Composites",1367963.9975494444,2x6 stud length derived from residential GSF; 2x10 joist length equivalent for wood-framed floor assemblies; Exterior structural sheathing area; Eleven 24-inch base/wall cabinet equivalents per apartment
+07,Thermal and Moisture Protection,1370935.704527171,R-21 exterior wall insulation area; Exterior water-resistive membrane/air barrier; 65% fiber-cement cladding baseline; 60-mil fully adhered TPO roof; CTC unit is roofing square
+08,Openings,841938.8674965,"Four/six/eight windows by unit type; Building, amenity and retail entrance doors; 10-foot retail storefront framing; Unit entries plus rated common/core frames"
+09,Finishes,1115623.6837546402,3.2 SF Type-X board per residential GSF; Tape and finish matching board area; LVP at 70% of apartment NSF; Ceramic floor tile at 12% of apartment NSF

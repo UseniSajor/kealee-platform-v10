@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { ArrowRight, CheckCircle } from 'lucide-react'
 import { getProductsByCategory, type Product } from '@/lib/products'
+import { REVENUE_PRODUCT_CATALOG } from '@/lib/revenue-product-catalog'
 
 export const metadata: Metadata = {
   title: 'All Products & Services — Kealee',
@@ -163,6 +164,42 @@ export default function ProductsPage() {
           )
         })}
       </div>
+
+      {/* Professional & Developer Services */}
+      <section className="border-t border-gray-100 bg-[#0d1b33] py-16">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+          <div className="mb-8 border-b border-white/10 pb-4">
+            <span className="mb-1 block text-xs font-bold uppercase tracking-widest text-orange-300">For contractors &amp; developers</span>
+            <p className="text-sm text-white/60">Scoped estimates, zoning, and permit feasibility for client projects and property acquisitions.</p>
+          </div>
+          <div className="grid gap-5 sm:grid-cols-2">
+            {Object.values(REVENUE_PRODUCT_CATALOG)
+              .filter(product => product.customerType === 'contractor' || product.customerType === 'developer')
+              .map(product => {
+                const price = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(product.priceCents / 100)
+                return (
+                  <Link
+                    key={product.productKey}
+                    href={`/products/${product.productKey}`}
+                    className="group flex flex-col rounded-xl border border-white/10 bg-white/5 p-6 transition-all hover:border-orange-300/60 hover:bg-white/10"
+                  >
+                    <span className="mb-2 inline-block w-fit rounded-full bg-orange-500/20 px-2.5 py-0.5 text-xs font-bold uppercase tracking-wide text-orange-300">
+                      {product.customerType}
+                    </span>
+                    <h3 className="font-display text-lg font-bold text-white">{product.name}</h3>
+                    <p className="mt-2 flex-1 text-sm leading-relaxed text-white/60">Includes {product.botTypes.join(', ')} · target delivery within {product.fulfillmentSlaHours} hours.</p>
+                    <div className="mt-4 flex items-center justify-between">
+                      <span className="text-sm font-bold text-orange-300">{price}</span>
+                      <span className="flex items-center gap-1 text-sm font-semibold text-orange-300 transition-all group-hover:gap-2">
+                        View <ArrowRight className="h-3.5 w-3.5" />
+                      </span>
+                    </div>
+                  </Link>
+                )
+              })}
+          </div>
+        </div>
+      </section>
 
       {/* Bottom CTA */}
       <section className="py-16 border-t border-gray-100 bg-gray-50">

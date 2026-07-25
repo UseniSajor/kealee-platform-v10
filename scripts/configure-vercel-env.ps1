@@ -97,7 +97,7 @@ $APPS = @(
     "os-admin",
     "os-pm",
     "m-ops-services",
-    "m-project-owner",
+    "project-owner",
     "m-architect",
     "m-permits-inspections"
 )
@@ -225,7 +225,7 @@ foreach ($app in $APPS) {
                     Add-EnvVar -App $app -VarName $parts[0] -VarValue $parts[1] -EnvType $env
                 }
             }
-            "m-project-owner" {
+            "project-owner" {
                 $PROJECT_VARS = @()
                 if ($env:DOCUSIGN_INTEGRATION_KEY) { $PROJECT_VARS += "DOCUSIGN_INTEGRATION_KEY=$env:DOCUSIGN_INTEGRATION_KEY" }
                 if ($env:DOCUSIGN_SECRET_KEY) { $PROJECT_VARS += "DOCUSIGN_SECRET_KEY=$env:DOCUSIGN_SECRET_KEY" }

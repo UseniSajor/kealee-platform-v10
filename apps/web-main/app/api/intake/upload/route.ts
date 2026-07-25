@@ -7,6 +7,7 @@ export const dynamic = 'force-dynamic'
 const ALLOWED_TYPES = new Set([
   'image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif',
   'video/mp4', 'video/quicktime', 'video/mov',
+  'audio/webm', 'audio/ogg', 'audio/mp4', 'audio/mpeg',
   'application/pdf',
 ])
 
@@ -29,7 +30,9 @@ export async function POST(req: NextRequest) {
     const uploadedUrls: string[] = []
 
     for (const file of files) {
-      if (!ALLOWED_TYPES.has(file.type)) {
+      const lowerName = file.name.toLowerCase()
+      const allowedByExtension = lowerName.endsWith('.dwg') || lowerName.endsWith('.docx')
+      if (!ALLOWED_TYPES.has(file.type) && !allowedByExtension) {
         continue // skip unsupported types silently
       }
 

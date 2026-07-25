@@ -40,7 +40,7 @@ $vercelApps = @(
     @{ name = "m-marketplace"; path = "apps/m-marketplace" },
     @{ name = "m-ops-services"; path = "apps/m-ops-services" },
     @{ name = "m-permits-inspections"; path = "apps/m-permits-inspections" },
-    @{ name = "m-project-owner"; path = "apps/m-project-owner" }
+    @{ name = "project-owner"; path = "apps/project-owner" }
 )
 
 $deploymentResults = @()

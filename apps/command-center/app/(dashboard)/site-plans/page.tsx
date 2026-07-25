@@ -2,7 +2,9 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { AlertTriangle, CheckCircle2, ClipboardCheck, Loader2, RefreshCw, RotateCcw } from 'lucide-react'
-import { generateSitePlan, getSitePlanOperationsQueue, type GeneratedSitePlan, type SitePlanQueueItem } from '@/lib/api/site-plans'
+import { extractSitePlanDocument, generateSitePlan, getSitePlanOperationsQueue,
+  runEngineeringTask,
+  type GeneratedSitePlan, type SitePlanDocumentExtraction, type SitePlanQueueItem } from '@/lib/api/site-plans'
 
 const label = (value: string) => value.replaceAll('_', ' ').toLowerCase().replace(/\b\w/g, character => character.toUpperCase())
 
@@ -26,7 +28,8 @@ export default function SitePlanOperationsPage() {
     blockers: result.blockers + workflow.blockingComplianceCount,
     reviews: result.reviews + workflow.pendingReviewCount,
     corrections: result.corrections + workflow.openCorrectionCount,
-  }), { blockers: 0, reviews: 0, corrections: 0 }), [workflows])
+    redlines: result.redlines + workflow.openRedlineCount,
+  }), { blockers: 0, reviews: 0, corrections: 0, redlines: 0 }), [workflows])
 
   return <div className="space-y-6">
     <header className="flex flex-col gap-4 border-b border-slate-800 pb-5 sm:flex-row sm:items-center sm:justify-between">
@@ -38,7 +41,7 @@ export default function SitePlanOperationsPage() {
       {[{ name: 'Workflows', value: workflows.length, Icon: ClipboardCheck, color: '#2ABFBF' },
         { name: 'Blocking findings', value: totals.blockers, Icon: AlertTriangle, color: '#F87171' },
         { name: 'Pending reviews', value: totals.reviews, Icon: CheckCircle2, color: '#FBBF24' },
-        { name: 'Open corrections', value: totals.corrections, Icon: RotateCcw, color: '#A78BFA' },
+        { name: 'Redlines / corrections', value: totals.redlines + totals.corrections, Icon: RotateCcw, color: '#A78BFA' },
       ].map(({ name, value, Icon, color }) => <div key={name} className="rounded-2xl border border-slate-800 bg-[#111C30] p-5"><div className="flex items-center justify-between"><p className="text-xs font-bold uppercase tracking-wide text-slate-400">{name}</p><Icon className="h-5 w-5" style={{ color }} /></div><p className="mt-3 text-3xl font-black text-white">{value}</p></div>)}
     </section>
 
@@ -65,6 +68,40 @@ function GeneratorDialog({ workflow, onClose }: { workflow: SitePlanQueueItem; o
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [result, setResult] = useState<GeneratedSitePlan | null>(null)
+  const [extracting, setExtracting] = useState(false)
+  const [extraction, setExtraction] = useState<SitePlanDocumentExtraction | null>(null)
+  const [analysisInput, setAnalysisInput] = useState(JSON.stringify({
+    points: [{ x: 0, y: 0, z: 100, sourcePointId: 'P1' }, { x: 100, y: 0, z: 102, sourcePointId: 'P2' },
+      { x: 100, y: 80, z: 105, sourcePointId: 'P3' }, { x: 0, y: 80, z: 101, sourcePointId: 'P4' }],
+    interval: 1, areaSqFt: 8000, runoffCoefficient: 0.55, rainfallIntensityInPerHour: 2.5,
+    rainfallSource: 'NOAA Atlas 14 / jurisdiction-approved source required', ruleVersion: 'PG-PHASE1-2026',
+  }, null, 2))
+  const [analysisResult, setAnalysisResult] = useState<unknown>(null)
+  async function runTask(type: Parameters<typeof runEngineeringTask>[1]['type'], stageCode: string) {
+    setBusy(true); setError(null)
+    try {
+      const options = JSON.parse(analysisInput) as Record<string, unknown>
+      if (type.startsWith('GENERATE_') && ['GENERATE_DXF', 'GENERATE_VECTOR_PDF', 'GENERATE_REPORT'].includes(type)) {
+        options.geometry = JSON.parse(geometry)
+        options.name = name; options.crs = crs; options.units = 'FEET'; options.revision = 1
+      }
+      setAnalysisResult(await runEngineeringTask(workflow.id, { type, stageCode, options }))
+    } catch (cause) { setError(cause instanceof Error ? cause.message : 'Engineering analysis failed.') }
+    finally { setBusy(false) }
+  }
+
+  async function extract(file: File | undefined) {
+    if (!file) return
+    setExtracting(true); setError(null); setResult(null)
+    try {
+      const next = await extractSitePlanDocument(workflow.id, file, crs, 'FEET')
+      setExtraction(next)
+      if (next.geometry.length > 0) {
+        setGeometry(JSON.stringify(next.geometry, null, 2))
+      }
+    } catch (cause) { setError(cause instanceof Error ? cause.message : 'Document extraction failed.') }
+    finally { setExtracting(false) }
+  }
 
   async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault(); setBusy(true); setError(null)
@@ -94,10 +131,30 @@ function GeneratorDialog({ workflow, onClose }: { workflow: SitePlanQueueItem; o
     <h2 id="generator-title" className="text-xl font-bold text-white">Generate concept site plan</h2><p className="mt-1 text-sm text-slate-400">Supply coordinate geometry with source provenance. Concept output is never a boundary survey or permit-ready plan.</p>
     <div className="mt-4 rounded-lg border border-cyan-500/20 bg-cyan-500/5 p-4 text-sm text-slate-300"><p className="font-semibold text-cyan-300">Your deliverable</p><p className="mt-1">A printable PDF plan sheet plus coordinate-accurate DXF and GeoJSON. Included features depend on the plat or survey source: boundaries, structures, setbacks, easements, contours, utilities, drainage, buffers, and disturbance areas are shown only when supplied.</p></div>
     <form onSubmit={submit} className="mt-5 space-y-4"><div className="grid gap-4 sm:grid-cols-2"><label className="text-sm font-medium text-slate-300">Plan name<input required value={name} onChange={event => setName(event.target.value)} className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-900 p-2.5 text-white" /></label><label className="text-sm font-medium text-slate-300">Coordinate reference system<input required value={crs} onChange={event => setCrs(event.target.value)} className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-900 p-2.5 font-mono text-white" /></label></div>
+      <label className="block rounded-lg border border-dashed border-slate-600 bg-slate-900/50 p-4 text-sm font-medium text-slate-300">Upload plat or survey
+        <input type="file" accept="application/pdf" disabled={extracting} onChange={event => void extract(event.target.files?.[0])} className="mt-2 block w-full text-sm text-slate-400 file:mr-3 file:rounded-md file:border-0 file:bg-cyan-500 file:px-3 file:py-2 file:font-semibold file:text-slate-950" />
+        <span className="mt-2 block text-xs font-normal text-slate-500">PDF, JPG, or PNG up to 25 MB. Extraction is AI-assisted and must be checked against the source.</span>
+      </label>
+      {extracting && <p aria-live="polite" className="rounded-lg bg-cyan-500/10 p-3 text-sm text-cyan-300">Extracting boundaries, site features, dimensions, and source provenance…</p>}
+      {extraction && <div className="rounded-lg border border-amber-500/20 bg-amber-500/10 p-3 text-sm text-amber-200"><p className="font-semibold">Review required: {extraction.geometry.length} features extracted from {extraction.filename}</p>{extraction.warnings.length > 0 && <ul className="mt-2 list-disc space-y-1 pl-5 text-xs">{extraction.warnings.map(warning => <li key={warning}>{warning}</li>)}</ul>}</div>}
       <label className="block text-sm font-medium text-slate-300">Geometry JSON<textarea required rows={14} value={geometry} onChange={event => setGeometry(event.target.value)} className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-900 p-3 font-mono text-xs text-white" /></label>
+      <section className="rounded-xl border border-slate-700 bg-slate-900/60 p-4">
+        <h3 className="font-semibold text-white">Terrain, drainage, BMP and drawing workers</h3>
+        <p className="mt-1 text-xs text-slate-400">Inputs must reference verified sources. Results remain preliminary until professional approval.</p>
+        <textarea rows={8} value={analysisInput} onChange={event => setAnalysisInput(event.target.value)}
+          className="mt-3 w-full rounded-lg border border-slate-700 bg-slate-950 p-3 font-mono text-xs text-white" />
+        <div className="mt-3 flex flex-wrap gap-2">
+          <button type="button" disabled={busy} onClick={() => void runTask('GENERATE_SURFACE', 'TERRAIN_GRADING_ANALYSIS')} className="rounded-lg border border-cyan-500 px-3 py-2 text-xs font-bold text-cyan-300">Build terrain</button>
+          <button type="button" disabled={busy} onClick={() => void runTask('GENERATE_CONTOURS', 'TERRAIN_GRADING_ANALYSIS')} className="rounded-lg border border-cyan-500 px-3 py-2 text-xs font-bold text-cyan-300">Generate contours</button>
+          <button type="button" disabled={busy} onClick={() => void runTask('ANALYZE_DRAINAGE', 'STORMWATER_SCREENING')} className="rounded-lg border border-blue-500 px-3 py-2 text-xs font-bold text-blue-300">Run runoff/BMP screen</button>
+          <button type="button" disabled={busy} onClick={() => void runTask('RUN_COMPLIANCE_AUDIT', 'COMPLIANCE_AUDIT')} className="rounded-lg border border-amber-500 px-3 py-2 text-xs font-bold text-amber-300">Run compliance</button>
+          <button type="button" disabled={busy} onClick={() => void runTask('GENERATE_DXF', 'DRAWING_REPORT_GENERATION')} className="rounded-lg border border-emerald-500 px-3 py-2 text-xs font-bold text-emerald-300">Queue DXF/PDF/preview</button>
+        </div>
+        {analysisResult !== null && <pre className="mt-3 max-h-64 overflow-auto rounded-lg bg-black/30 p-3 text-xs text-slate-300">{JSON.stringify(analysisResult, null, 2)}</pre>}
+      </section>
       {error && <p role="alert" className="rounded-lg bg-red-500/10 p-3 text-sm text-red-300">{error}</p>}
       {result && <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-4"><p className="font-semibold text-emerald-300">Concept artifacts generated</p><div className="mt-3 flex flex-wrap gap-2"><button type="button" onClick={() => downloadBase64(`site-plan-r${result.summary.revision}.pdf`, result.artifact.pdfBase64, 'application/pdf')} className="rounded-lg bg-emerald-500 px-3 py-2 text-sm font-bold text-slate-950">Download PDF</button><button type="button" onClick={() => download(`site-plan-r${result.summary.revision}.dxf`, result.artifact.dxf, 'application/dxf')} className="rounded-lg border border-emerald-500 px-3 py-2 text-sm font-bold text-emerald-300">Download DXF</button><button type="button" onClick={() => download(`site-plan-r${result.summary.revision}.geojson`, JSON.stringify(result.artifact.geoJson, null, 2), 'application/geo+json')} className="rounded-lg border border-emerald-500 px-3 py-2 text-sm font-bold text-emerald-300">Download GeoJSON</button></div></div>}
-      <div className="flex justify-end gap-2"><button type="button" onClick={onClose} disabled={busy} className="rounded-lg border border-slate-600 px-4 py-2 text-slate-300">Close</button><button type="submit" disabled={busy} className="rounded-lg bg-[#2ABFBF] px-4 py-2 font-bold text-slate-950 disabled:opacity-50">{busy ? 'Generating…' : 'Generate concept'}</button></div>
+      <div className="flex justify-end gap-2"><button type="button" onClick={onClose} disabled={busy || extracting} className="rounded-lg border border-slate-600 px-4 py-2 text-slate-300">Close</button><button type="submit" disabled={busy || extracting} className="rounded-lg bg-[#2ABFBF] px-4 py-2 font-bold text-slate-950 disabled:opacity-50">{busy ? 'Generating…' : 'Generate concept'}</button></div>
     </form>
   </div></div>
 }

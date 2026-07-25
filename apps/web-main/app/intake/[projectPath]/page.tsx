@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { Loader2, AlertCircle, ArrowRight, CheckCircle2, Clock, Shield, Zap, Package, ImagePlus, X, FileVideo, FileText } from 'lucide-react'
+import { Loader2, AlertCircle, ArrowRight, CheckCircle2, Clock, Shield, Zap, Package, ImagePlus, X, FileVideo, FileText, Mic, Square } from 'lucide-react'
 import { SERVICE_DELIVERABLES } from '@/lib/service-deliverables'
 import { uploadIntakeFilesSequentially, type IntakeUploadedFile } from '@/lib/intake-file-upload'
 import { getIntakeCheckoutProjectDescriptionPlaceholder } from '@kealee/shared'
@@ -371,6 +371,10 @@ export default function IntakePage() {
   const [uploadedFiles, setUploadedFiles] = useState<IntakeUploadedFile[]>([])
   const [uploading, setUploading] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const [recordingVoice, setRecordingVoice] = useState(false)
+  const [uploadingVoice, setUploadingVoice] = useState(false)
+  const voiceRecorderRef = useRef<MediaRecorder | null>(null)
+  const voiceChunksRef = useRef<Blob[]>([])
 
   // Q9: construction documents (PDF / DWG / DOCX)
   const [uploadedDocs, setUploadedDocs] = useState<IntakeUploadedFile[]>([])
@@ -382,7 +386,8 @@ export default function IntakePage() {
 
   useEffect(() => {
     try {
-      const saved = sessionStorage.getItem(`intake_form_${projectPath}`)
+      const storageKey = `kealee_intake_draft_${projectPath}`
+      const saved = localStorage.getItem(storageKey) ?? sessionStorage.getItem(`intake_form_${projectPath}`)
       if (saved) {
         const parsed = JSON.parse(saved)
         if (parsed.formData) {
@@ -408,10 +413,12 @@ export default function IntakePage() {
   useEffect(() => {
     if (!isPersistedDataLoaded) return
     try {
-      sessionStorage.setItem(
-        `intake_form_${projectPath}`,
-        JSON.stringify({ formData, uploadedFiles, uploadedDocs, step })
-      )
+      const snapshot = JSON.stringify({ formData, uploadedFiles, uploadedDocs, step, savedAt: new Date().toISOString() })
+      // localStorage survives tab closes/restarts while the user walks the
+      // property. Keep sessionStorage as a compatibility fallback for older
+      // browsers and existing drafts.
+      localStorage.setItem(`kealee_intake_draft_${projectPath}`, snapshot)
+      sessionStorage.setItem(`intake_form_${projectPath}`, snapshot)
     } catch (e) {
       console.error('Failed to persist intake form:', e)
     }
@@ -635,6 +642,48 @@ export default function IntakePage() {
     }
   }
 
+  async function toggleVoiceRecording() {
+    if (recordingVoice) {
+      voiceRecorderRef.current?.stop()
+      return
+    }
+    if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === 'undefined') {
+      setFormError('Voice recording is not supported in this browser. Upload a photo or sketch instead.')
+      return
+    }
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      const recorder = new MediaRecorder(stream)
+      voiceChunksRef.current = []
+      recorder.ondataavailable = event => {
+        if (event.data.size > 0) voiceChunksRef.current.push(event.data)
+      }
+      recorder.onstop = async () => {
+        stream.getTracks().forEach(track => track.stop())
+        setRecordingVoice(false)
+        const blob = new Blob(voiceChunksRef.current, { type: recorder.mimeType || 'audio/webm' })
+        if (!blob.size) return
+        setUploadingVoice(true)
+        try {
+          const ext = blob.type.includes('mp4') ? 'm4a' : 'webm'
+          const files = await uploadIntakeFilesSequentially([
+            new File([blob], `voice-description-${Date.now()}.${ext}`, { type: blob.type }),
+          ])
+          if (files[0]) setUploadedFiles(prev => [...prev, files[0]])
+          else setFormError('Voice upload failed. Please try again or upload a photo/sketch.')
+        } finally {
+          setUploadingVoice(false)
+        }
+      }
+      recorder.start()
+      voiceRecorderRef.current = recorder
+      setRecordingVoice(true)
+      setFormError('')
+    } catch {
+      setFormError('Microphone access was unavailable. Allow microphone access or upload a photo/sketch instead.')
+    }
+  }
+
   // ── Q9: Construction document upload handler ───────────────────────────────
   async function handleDocChange(e: React.ChangeEvent<HTMLInputElement>) {
     const selected = Array.from(e.target.files ?? [])
@@ -687,12 +736,12 @@ export default function IntakePage() {
 
   // ── Step: details ──────────────────────────────────────────────────────────
   function validateUploadRequirements(): boolean {
-    if (needsAreaPhoto) {
-      const hasStillImage = uploadedFiles.some(f => f.type === 'image')
-      if (!hasStillImage) {
-        setFormError('Please upload at least one photo of the project area (JPG or PNG).')
-        return false
-      }
+    const hasStillImage = uploadedFiles.some(f => f.type === 'image')
+    const hasSketchOrDocument = uploadedDocs.some(f => f.type === 'document') || uploadedFiles.some(f => f.type === 'document')
+    const hasVoiceDescription = uploadedFiles.some(f => f.type === 'voice')
+    if (!hasStillImage && !hasSketchOrDocument && !hasVoiceDescription) {
+      setFormError('Add at least one project photo, sketch/plan, or voice description before continuing.')
+      return false
     }
     if (needsConstructionDocs) {
       // Check Q9 doc section first; fall back to checking Q8 for backwards compat
@@ -1032,6 +1081,7 @@ export default function IntakePage() {
                     type="file"
                     multiple
                     accept="image/jpeg,image/png"
+                    capture="environment"
                     onChange={handleFileChange}
                     className="sr-only"
                     id="intake-file-upload"
@@ -1052,6 +1102,18 @@ export default function IntakePage() {
                       )}
                     </label>
                   )}
+                </div>
+
+                {/* Voice description — mobile-friendly alternative to photos/sketches */}
+                <div className="rounded-xl border border-indigo-200 bg-indigo-50/60 p-4">
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="block text-sm font-semibold text-slate-800">Voice description</label>
+                    {uploadedFiles.some(f => f.type === 'voice') && <span className="text-xs text-green-700">Recorded</span>}
+                  </div>
+                  <p className="text-xs text-slate-600 mb-3">Prefer to talk? Describe the property, project area, and what you want changed. A photo, sketch, or voice description is required.</p>
+                  <button type="button" onClick={toggleVoiceRecording} disabled={uploadingVoice} className={`inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold transition ${recordingVoice ? 'bg-red-600 text-white' : 'bg-indigo-600 text-white hover:bg-indigo-700'} disabled:opacity-60`}>
+                    {recordingVoice ? <><Square className="h-4 w-4" /> Stop recording</> : <><Mic className="h-4 w-4" /> {uploadingVoice ? 'Uploading voice note…' : 'Record voice description'}</>}
+                  </button>
                 </div>
 
                 {/* Q9 — Floor plan sketch / construction documents (path-aware) */}

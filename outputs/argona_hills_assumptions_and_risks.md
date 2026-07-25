@@ -1,29 +1,33 @@
-# Argona Hills Catalog-Only Assumptions And Risks
+# Argona Hills Assumptions And Risks
 
-## Exactness Boundary
+## Critical Corrections
 
-Every priced row in the cost CSV contains an exact CTC task code and June 2023 direct unit price. Exact extended cost still depends on assumed quantities. Without drawings, the model cannot be an exact construction takeoff even though its unit prices are exact catalog values.
+- The prior 36,000 / 31,000 / 22,000 GSF building assumptions are unrealistic for the stated unit counts. The corrected 450-unit base case requires roughly **543,777 residential GSF** before commercial and parking.
+- The stated unit mix totals **370 units**, not 450. The model normalizes the listed mix to 450 units using the same blended NSF.
+- A $85M-$90M TDC is not supportable. The base TDC is approximately **$431,871,800**; hard cost alone is approximately **$328,596,349**.
 
-## Quantity Assumptions Requiring Verification
+## Fit And Program Risks
 
-- Five residential/mixed-use buildings, six stories each.
-- Listed unit mix normalized proportionally from 370 to 450 units: 112 one-bedroom, 236 two-bedroom and 102 three-bedroom.
-- Residential efficiency of 80.5%, 99,000 commercial GSF, and 400 structured stalls at 365 GSF/stall.
-- Structural framing, facade area, wall factors, utility lengths, grading quantities and site paving quantities are conceptual.
-- Apartment fixture counts, windows, appliances, HVAC units and electrical/low-voltage quantities are formula-based by unit type.
+- 450 units may fit mathematically on 28 acres and on 12 acres of CGO-zoned land at 48 DU/acre, but the real test is building footprint, parking, stormwater, roads, buffers, grades, utility easements, fire access and commercial massing.
+- 99,000 SF of commercial space is aggressive for lender underwriting unless there is strong preleasing, a credible tenant mix, and parking/traffic support. 150,000 SF is substantially higher risk.
+- 400 structured stalls plus 185 assumed surface stalls gives about 1.30 spaces/unit before commercial demand. That may be tight once retail/commercial parking, accessible stalls, loading, visitors and zoning requirements are included.
 
-## Catalog Limitations
+## Cost Risks
 
-- The PDF's visible pricing column is Total Direct Unit Cost. Labor, materials, equipment and man-hours are not separately printed.
-- The "Using" guide places overhead, profit, insurance/bonding, project supervision and subcontractor O&P in the contractor adjustment factor. The complete-project model uses one conservative 1.10 factor and does not add these costs elsewhere.
-- Financing, contingency, impact fees and utility connection fees are separately labeled underwriting assumptions because the CTC does not publish project-specific values.
-- Task selection does not replace architect, engineer, civil and GC quantity takeoffs.
+- Sitework is the largest unknown: geotech, rock, unsuitable soils, retaining walls, stormwater management, off-site utility upgrades and road improvements can move the budget by tens of millions.
+- Structured parking is highly sensitive to below-grade scope. Any meaningful below-grade component should be repriced separately.
+- MEP scope is unresolved: all-electric strategy, DOAS/VRF/PTAC selection, commercial shell requirements, fire pump/standpipe needs and utility service capacity can materially change Divisions 21-28.
+- The CTC is a Job Order Contracting catalog. It is useful for locally priced task calibration, but it is not a substitute for schematic design takeoffs or a GC/subcontractor market bid.
 
-## Required Platform Inputs For Bid-Level Accuracy
+## Assumptions To Verify
 
-- Building count, footprint and floor-by-floor area.
-- Wall type schedules, structural system and member quantities.
-- Door/window schedules and room finish schedules.
-- Plumbing fixture, HVAC equipment, electrical device and fire-protection schedules.
-- Civil grading, paving, stormwater and wet/dry utility plans.
-- Contractor adjustment factor and agency receipts/fee schedules.
+- Architect: final unit mix, net-to-gross efficiency, building type, egress/core count, amenity area, facade system, commercial shell/TI split, height and code classification.
+- Civil engineer: disturbed acreage, grading, SWM/BMP strategy, road layout, frontage improvements, utility routing, dry utility relocations, fire access and parking counts.
+- Structural engineer: foundation system, podium/transfer requirements, garage structural bay, below-grade scope, lateral system and material selection.
+- MEP engineer: HVAC basis, electrical service, fire pump/standpipe requirements, plumbing fixture counts, water/sewer capacity and EV charging strategy.
+- GC/Estimator: current Prince George County subcontractor pricing, labor availability, escalation to midpoint, logistics, phasing, procurement risk and buyout strategy.
+- Lender: acceptable developer fee treatment, contingency, interest reserve sizing, recourse, LTC/LTV constraint, DSCR, preleasing requirements and required third-party reports.
+
+## Required Next Documents
+
+- ALTA/survey, topo, concept civil plan, geotech report, environmental Phase I/II, zoning confirmation, parking study, traffic study, utility will-serve letters, schematic architecture, structural narrative, MEP narrative and preliminary GC estimate.

@@ -6,9 +6,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         <div className="absolute inset-0 bg-gradient-to-br from-blue-600/20 via-indigo-600/10 to-transparent" />
         <div className="relative z-10">
           <div className="flex items-center gap-3 mb-2">
-            <div className="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-lg">K</span>
-            </div>
+            <img src="/kealee-icon-192x192.png" alt="" className="h-10 w-10 rounded-lg" />
             <span className="text-white text-2xl font-bold tracking-tight">Kealee</span>
           </div>
           <p className="text-slate-400 text-sm">Admin Console</p>
