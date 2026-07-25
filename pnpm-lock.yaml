@@ -2853,6 +2853,9 @@ importers:
       '@sentry/node':
         specifier: ^10.49.0
         version: 10.49.0
+      '@supabase/supabase-js':
+        specifier: ^2.39.0
+        version: 2.104.0
       axios:
         specifier: ^1.6.7
         version: 1.15.2
