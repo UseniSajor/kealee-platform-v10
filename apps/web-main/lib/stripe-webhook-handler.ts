@@ -251,7 +251,7 @@ async function handleCheckoutCompleted(
           `  Time:        ${new Date().toISOString()}`,
           premiumPlusNote,
           '',
-          'Review in Command Center: https://cc.kealee.com/events',
+          'Review in Command Center: https://command.kealee.com/events',
         ].join('\n'),
       }),
     }).catch((err: Error) => {
