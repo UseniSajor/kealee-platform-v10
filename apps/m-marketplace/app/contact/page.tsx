@@ -125,25 +125,13 @@ export default function ContactPage() {
 
                       <div className="flex items-start gap-4">
                         <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                          <Phone className="text-blue-600" size={24} />
-                        </div>
-                        <div>
-                          <div className="font-semibold text-gray-900 mb-1">Phone</div>
-                          <a href="tel:+1234567890" className="text-blue-600 hover:text-blue-700">
-                            (123) 456-7890
-                          </a>
-                        </div>
-                      </div>
-
-                      <div className="flex items-start gap-4">
-                        <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
                           <MapPin className="text-blue-600" size={24} />
                         </div>
                         <div>
-                          <div className="font-semibold text-gray-900 mb-1">Office</div>
+                          <div className="font-semibold text-gray-900 mb-1">Headquarters</div>
                           <p className="text-gray-600">
                             Washington, DC<br />
-                            Baltimore, MD
+                            <span className="text-sm">Serving DC, MD, VA</span>
                           </p>
                         </div>
                       </div>

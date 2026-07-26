@@ -56,7 +56,7 @@ export const metadata: Metadata = {
     siteName: 'Kealee Marketplace',
     images: [
       {
-        url: '/og-image.png',
+        url: '/kealee-og-image.jpg',
         width: 1200,
         height: 630,
         alt: 'Kealee — The Construction Platform for the Entire Project',
@@ -70,7 +70,7 @@ export const metadata: Metadata = {
     title: 'Kealee — The Construction Platform for the Entire Project',
     description:
       'Design → Estimate → Permit → Build → Closeout. One platform. No gaps. Every professional verified. Every payment protected.',
-    images: ['/og-image.png'],
+    images: ['/kealee-og-image.jpg'],
   },
   alternates: {
     canonical: 'https://kealee.com',
