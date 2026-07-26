@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { Loader2, AlertCircle, ArrowRight, CheckCircle2, Clock, Shield, Zap, Package, ImagePlus, X, FileVideo, FileText, Mic, Square } from 'lucide-react'
+import { Loader2, AlertCircle, ArrowRight, CheckCircle2, Clock, Shield, Zap, Package, ImagePlus, X, FileVideo, FileText, Mic, Square, Smartphone, Copy, Check } from 'lucide-react'
 import { SERVICE_DELIVERABLES } from '@/lib/service-deliverables'
 import { uploadIntakeFilesSequentially, type IntakeUploadedFile } from '@/lib/intake-file-upload'
 import { getIntakeCheckoutProjectDescriptionPlaceholder } from '@kealee/shared'
@@ -283,6 +283,10 @@ export default function IntakePage() {
   // AI insight loads in background — does NOT block the form
   const [agentInsight, setAgentInsight] = useState<AgentInsight | null>(null)
   const [insightLoading, setInsightLoading] = useState(true)
+
+  // Send to phone feature
+  const [sendingToPhone, setSendingToPhone] = useState(false)
+  const [phoneLinkCopied, setPhoneLinkCopied] = useState(false)
 
   // Blocker checks for contractor matching
   const projectId = searchParams.get('projectId') ?? ''
@@ -868,6 +872,41 @@ export default function IntakePage() {
     }
   }
 
+  async function handleSendToPhone() {
+    if (!formData.phone.trim()) {
+      setFormError('Please enter your phone number first')
+      return
+    }
+
+    setSendingToPhone(true)
+    try {
+      const intakeUrl = `${typeof window !== 'undefined' ? window.location.origin : ''}/intake/${projectPath}`
+
+      const response = await fetch('/api/intake/send-to-phone', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          phone: formData.phone,
+          projectPath,
+          intakeUrl,
+        }),
+      })
+
+      if (response.ok) {
+        // Copy URL to clipboard for fallback
+        navigator.clipboard.writeText(intakeUrl).catch(() => {})
+        setPhoneLinkCopied(true)
+        setTimeout(() => setPhoneLinkCopied(false), 3000)
+      } else {
+        setFormError('Failed to send link. Please copy the URL manually.')
+      }
+    } catch (error) {
+      setFormError('Could not send to phone. Please try again.')
+    } finally {
+      setSendingToPhone(false)
+    }
+  }
+
   return (
     <div className="min-h-screen bg-slate-50">
       <StepBar step={step} />
@@ -957,14 +996,41 @@ export default function IntakePage() {
                 {/* Phone */}
                 <div>
                   <label className="block text-sm font-semibold text-slate-800 mb-1.5">Phone (optional)</label>
-                  <input
-                    type="tel"
-                    value={formData.phone}
-                    onChange={e => setFormData(d => ({ ...d, phone: e.target.value }))}
-                    className="w-full rounded-lg border border-slate-300 px-4 py-3 text-sm focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20"
-                    placeholder="(202) 555-0100"
-                    autoComplete="tel"
-                  />
+                  <div className="flex gap-3">
+                    <input
+                      type="tel"
+                      value={formData.phone}
+                      onChange={e => setFormData(d => ({ ...d, phone: e.target.value }))}
+                      className="flex-1 rounded-lg border border-slate-300 px-4 py-3 text-sm focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20"
+                      placeholder="(202) 555-0100"
+                      autoComplete="tel"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleSendToPhone}
+                      disabled={sendingToPhone || !formData.phone.trim()}
+                      className="px-4 py-3 rounded-lg bg-slate-200 hover:bg-slate-300 text-slate-700 font-medium text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 whitespace-nowrap"
+                      title="Send intake link to your phone"
+                    >
+                      {sendingToPhone ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          Sending...
+                        </>
+                      ) : phoneLinkCopied ? (
+                        <>
+                          <Check className="h-4 w-4" />
+                          Sent
+                        </>
+                      ) : (
+                        <>
+                          <Smartphone className="h-4 w-4" />
+                          <span className="hidden sm:inline">Send to Phone</span>
+                          <Copy className="h-4 w-4 sm:hidden" />
+                        </>
+                      )}
+                    </button>
+                  </div>
                 </div>
 
                 {/* Address */}
