@@ -90,18 +90,18 @@ export interface IntakePriceEntry {
 
 export const INTAKE_PRICE_CENTS: Record<string, IntakePriceEntry> = {
   // ── Concept packages ────────────────────────────────────────────────────
-  exterior_concept:          { label: 'Exterior Concept Package',                 cents: 39_500,  deliveryDays: '3–5 days'  },
-  garden_concept:            { label: 'Garden Concept',                           cents: 29_500,  deliveryDays: '2–4 days'  },
-  whole_home_concept:        { label: 'Whole Home Concept',                       cents: 59_500,  deliveryDays: '4–6 days'  },
-  interior_reno_concept:     { label: 'Interior Reno Concept',                    cents: 34_500,  deliveryDays: '3–5 days'  },
-  developer_concept:         { label: 'Developer Concept',                        cents: 79_500,  deliveryDays: '5–7 days'  },
+  exterior_concept:          { label: 'Exterior Concept Package',                 cents: 27_500,  deliveryDays: '3–5 days'  },
+  garden_concept:            { label: 'Garden Concept',                           cents: 19_900,  deliveryDays: '2–4 days'  },
+  whole_home_concept:        { label: 'Whole Home Concept',                       cents: 39_900,  deliveryDays: '4–6 days'  },
+  interior_reno_concept:     { label: 'Interior Reno Concept',                    cents: 19_900,  deliveryDays: '3–5 days'  },
+  developer_concept:         { label: 'Developer Concept',                        cents: 59_900,  deliveryDays: '5–7 days'  },
 
   // ── Remodels ────────────────────────────────────────────────────────────
-  kitchen_remodel:           { label: 'Kitchen Design Package',                   cents: 39_500,  deliveryDays: '3–5 days'  },
-  bathroom_remodel:          { label: 'Bathroom Design Package',                  cents: 29_500,  deliveryDays: '2–4 days'  },
-  interior_renovation:       { label: 'Interior Renovation',                      cents: 34_500,  deliveryDays: '3–5 days'  },
-  whole_home_remodel:        { label: 'Whole-Home Remodel',                       cents: 69_500,  deliveryDays: '4–6 days'  },
-  addition_expansion:        { label: 'Addition / Expansion',                     cents: 49_500,  deliveryDays: '3–5 days'  },
+  kitchen_remodel:           { label: 'Kitchen Design Package',                   cents: 19_900,  deliveryDays: '3–5 days'  },
+  bathroom_remodel:          { label: 'Bathroom Design Package',                  cents: 15_900,  deliveryDays: '2–4 days'  },
+  interior_renovation:       { label: 'Interior Renovation',                      cents: 19_900,  deliveryDays: '3–5 days'  },
+  whole_home_remodel:        { label: 'Whole-Home Remodel',                       cents: 49_900,  deliveryDays: '4–6 days'  },
+  addition_expansion:        { label: 'Addition / Expansion',                     cents: 34_900,  deliveryDays: '3–5 days'  },
 
   // ── Permits + estimation ────────────────────────────────────────────────
   permit_path_only:          { label: 'Permit Package',                           cents: 49_900,  deliveryDays: '3–5 days'  },
@@ -153,39 +153,39 @@ export function getIntakePrice(projectPath: string): IntakePriceEntry | null {
 
 export const INTAKE_TIER_PRICE_CENTS: Record<string, Partial<Record<1 | 2 | 3, IntakePriceEntry>>> = {
   kitchen_remodel: {
-    1: { label: 'Kitchen Design Package — Basic',    cents: 14_900,  deliveryDays: '3–5 days' },
-    2: { label: 'Kitchen Design Package — Premium',  cents: 69_900,  deliveryDays: '3–5 days' },
-    3: { label: 'Kitchen Design Package — Premium+', cents: 129_900, deliveryDays: '3–5 days' },
+    1: { label: 'Kitchen Design Package — Basic',    cents: 8_900,   deliveryDays: '3–5 days' },
+    2: { label: 'Kitchen Design Package — Premium',  cents: 34_900,  deliveryDays: '3–5 days' },
+    3: { label: 'Kitchen Design Package — Premium+', cents: 69_900,  deliveryDays: '3–5 days' },
   },
   bathroom_remodel: {
-    1: { label: 'Bathroom Design Package — Basic',    cents: 12_900, deliveryDays: '2–4 days' },
-    2: { label: 'Bathroom Design Package — Premium',  cents: 54_900, deliveryDays: '2–4 days' },
-    3: { label: 'Bathroom Design Package — Premium+', cents: 99_900, deliveryDays: '2–4 days' },
+    1: { label: 'Bathroom Design Package — Basic',    cents: 7_900,  deliveryDays: '2–4 days' },
+    2: { label: 'Bathroom Design Package — Premium',  cents: 29_900, deliveryDays: '2–4 days' },
+    3: { label: 'Bathroom Design Package — Premium+', cents: 59_900, deliveryDays: '2–4 days' },
   },
   garden_concept: {
     1: { label: 'Garden Concept — Basic',    cents: 9_900,  deliveryDays: '2–4 days' },
-    2: { label: 'Garden Concept — Premium',  cents: 39_900, deliveryDays: '2–4 days' },
-    3: { label: 'Garden Concept — Premium+', cents: 79_900, deliveryDays: '2–4 days' },
+    2: { label: 'Garden Concept — Premium',  cents: 24_900, deliveryDays: '2–4 days' },
+    3: { label: 'Garden Concept — Premium+', cents: 49_900, deliveryDays: '2–4 days' },
   },
   addition_expansion: {
-    1: { label: 'Home Addition — Basic',    cents: 19_900,  deliveryDays: '3–5 days' },
-    2: { label: 'Home Addition — Premium',  cents: 79_900,  deliveryDays: '3–5 days' },
-    3: { label: 'Home Addition — Premium+', cents: 149_900, deliveryDays: '3–5 days' },
+    1: { label: 'Home Addition — Basic',    cents: 14_900,  deliveryDays: '3–5 days' },
+    2: { label: 'Home Addition — Premium',  cents: 49_900,  deliveryDays: '3–5 days' },
+    3: { label: 'Home Addition — Premium+', cents: 99_900,  deliveryDays: '3–5 days' },
   },
   whole_home_concept: {
-    1: { label: 'Whole Home Concept — Basic',    cents: 24_900,  deliveryDays: '4–6 days' },
-    2: { label: 'Whole Home Concept — Premium',  cents: 89_900,  deliveryDays: '4–6 days' },
-    3: { label: 'Whole Home Concept — Premium+', cents: 169_900, deliveryDays: '4–6 days' },
+    1: { label: 'Whole Home Concept — Basic',    cents: 14_900,  deliveryDays: '4–6 days' },
+    2: { label: 'Whole Home Concept — Premium',  cents: 49_900,  deliveryDays: '4–6 days' },
+    3: { label: 'Whole Home Concept — Premium+', cents: 99_900,  deliveryDays: '4–6 days' },
   },
   interior_renovation: {
-    1: { label: 'Interior Renovation — Basic',    cents: 14_900,  deliveryDays: '3–5 days' },
-    2: { label: 'Interior Renovation — Premium',  cents: 64_900,  deliveryDays: '3–5 days' },
-    3: { label: 'Interior Renovation — Premium+', cents: 119_900, deliveryDays: '3–5 days' },
+    1: { label: 'Interior Renovation — Basic',    cents: 9_900,   deliveryDays: '3–5 days' },
+    2: { label: 'Interior Renovation — Premium',  cents: 34_900,  deliveryDays: '3–5 days' },
+    3: { label: 'Interior Renovation — Premium+', cents: 69_900,  deliveryDays: '3–5 days' },
   },
   exterior_concept: {
-    1: { label: 'Exterior Concept — Basic',    cents: 13_900,  deliveryDays: '3–5 days' },
-    2: { label: 'Exterior Concept — Premium',  cents: 59_900,  deliveryDays: '3–5 days' },
-    3: { label: 'Exterior Concept — Premium+', cents: 109_900, deliveryDays: '3–5 days' },
+    1: { label: 'Exterior Concept — Basic',    cents: 9_900,   deliveryDays: '3–5 days' },
+    2: { label: 'Exterior Concept — Premium',  cents: 39_900,  deliveryDays: '3–5 days' },
+    3: { label: 'Exterior Concept — Premium+', cents: 79_900,  deliveryDays: '3–5 days' },
   },
   interior_reno_concept: {
     1: { label: 'Design Services', cents: 7_900, deliveryDays: '2–3 days' },
