@@ -1,8 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import Link from 'next/link'
-import { ArrowRight, ArrowLeft, CheckCircle2, Building2, MapPin, DollarSign, Calendar, User } from 'lucide-react'
+import { ArrowRight, ArrowLeft, CheckCircle2, Building2, MapPin, DollarSign, Calendar, User, Camera, X } from 'lucide-react'
 import { NEW_CONSTRUCTION_SPECIAL_REQUIREMENTS_PLACEHOLDER } from '@kealee/shared'
 
 type FormData = {
@@ -17,6 +17,7 @@ type FormData = {
   state: string
   zip: string
   county: string
+  photos: File[]
   // Step 3: Budget & timeline
   budget: string
   timeline: string
@@ -36,7 +37,7 @@ type FormData = {
 
 const INITIAL: FormData = {
   lotStatus: '', lotSize: '', projectType: '', squareFootage: '',
-  address: '', city: '', state: '', zip: '', county: '',
+  address: '', city: '', state: '', zip: '', county: '', photos: [],
   budget: '', timeline: '', financing: '',
   style: '', stories: '', garage: '', specialFeatures: '',
   firstName: '', lastName: '', email: '', phone: '', howHeard: '',
@@ -111,6 +112,64 @@ function OptionGrid({ options, value, onChange }: { options: string[]; value: st
   )
 }
 
+function PhotoCapture({ photos, onPhotosChange }: { photos: File[]; onPhotosChange: (files: File[]) => void }) {
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || [])
+    onPhotosChange([...photos, ...files])
+  }
+
+  const removePhoto = (index: number) => {
+    onPhotosChange(photos.filter((_, i) => i !== index))
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="flex gap-2">
+        <button
+          type="button"
+          onClick={() => fileInputRef.current?.click()}
+          className="flex-1 flex items-center justify-center gap-2 rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 py-6 text-sm font-medium text-slate-600 hover:border-slate-400 hover:bg-slate-100 transition"
+        >
+          <Camera className="w-4 h-4" />
+          Add Photo
+        </button>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          capture="environment"
+          onChange={handleFileSelect}
+          className="hidden"
+          multiple
+        />
+      </div>
+      {photos.length > 0 && (
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          {photos.map((file, i) => (
+            <div key={i} className="relative group">
+              <img
+                src={URL.createObjectURL(file)}
+                alt={`Photo ${i + 1}`}
+                className="w-full h-24 object-cover rounded-lg border border-slate-200"
+              />
+              <button
+                type="button"
+                onClick={() => removePhoto(i)}
+                className="absolute top-1 right-1 rounded-full bg-red-500 text-white p-1 opacity-0 group-hover:opacity-100 transition"
+              >
+                <X className="w-3 h-3" />
+              </button>
+              <p className="text-xs text-slate-500 mt-1">{file.name}</p>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 function Field({ label, children, hint }: { label: string; children: React.ReactNode; hint?: string }) {
   return (
     <div>
@@ -134,21 +193,27 @@ export default function NewConstructionIntakePage() {
   async function handleSubmit() {
     setLoading(true)
     try {
+      const formData = new FormData()
+      formData.append('project_path', 'design_build')
+      formData.append('client_name', `${form.firstName} ${form.lastName}`.trim())
+      formData.append('contact_email', form.email)
+      formData.append('contact_phone', form.phone)
+      formData.append('project_address', `${form.address}, ${form.city}, ${form.state} ${form.zip}`)
+      formData.append('budget_range', form.budget)
+      formData.append('source', 'new-construction-intake')
+      formData.append('status', 'new')
+      formData.append('requires_payment', 'false')
+
+      const { photos, ...formDataWithoutPhotos } = form
+      formData.append('form_data', JSON.stringify(formDataWithoutPhotos))
+
+      photos.forEach((photo) => {
+        formData.append('photos', photo)
+      })
+
       await fetch('/api/intake/lead', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          project_path: 'design_build',
-          client_name: `${form.firstName} ${form.lastName}`.trim(),
-          contact_email: form.email,
-          contact_phone: form.phone,
-          project_address: `${form.address}, ${form.city}, ${form.state} ${form.zip}`,
-          budget_range: form.budget,
-          source: 'new-construction-intake',
-          status: 'new',
-          requires_payment: false,
-          form_data: form,
-        }),
+        body: formData,
       })
       setSubmitted(true)
     } catch {
@@ -256,6 +321,9 @@ export default function NewConstructionIntakePage() {
                   <input type="text" className={inputClass} placeholder="e.g. Montgomery County" value={form.county} onChange={(e) => set('county')(e.target.value)} />
                 </Field>
               </div>
+              <Field label="Site photos (optional)" hint="Upload photos of the lot or existing structure">
+                <PhotoCapture photos={form.photos} onPhotosChange={(photos) => setForm((p) => ({ ...p, photos }))} />
+              </Field>
             </div>
           )}
 
