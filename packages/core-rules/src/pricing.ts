@@ -122,7 +122,7 @@ export const INTAKE_PRICE_CENTS: Record<string, IntakePriceEntry> = {
 
   // ── Bundles + matchmaking ───────────────────────────────────────────────
   contractor_match:          { label: 'Contractor Match',                         cents: 0,       deliveryDays: '1 day'     },
-  design_build:              { label: 'Design + Build Package',                   cents: 189_900, deliveryDays: '5–7 days'  },
+  design_build:              { label: 'Design + Execution Planning Package',       cents: 189_900, deliveryDays: '5–7 days'  },
   capture_site_concept:      { label: 'Site Capture + Concept',                   cents: 12_500,  deliveryDays: '1–2 days'  },
 
   // ── Commercial / multi-family / development ─────────────────────────────
