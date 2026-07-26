@@ -2,8 +2,9 @@
 
 import { useState, useRef } from 'react'
 import Link from 'next/link'
-import { ArrowRight, ArrowLeft, CheckCircle2, Building2, MapPin, DollarSign, Calendar, User, Camera, X } from 'lucide-react'
+import { ArrowRight, ArrowLeft, CheckCircle2, Building2, MapPin, DollarSign, Calendar, User, ImagePlus, X, FileText, Mic, Square, Loader2 } from 'lucide-react'
 import { NEW_CONSTRUCTION_SPECIAL_REQUIREMENTS_PLACEHOLDER } from '@kealee/shared'
+import { uploadIntakeFilesSequentially, type IntakeUploadedFile } from '@/lib/intake-file-upload'
 
 type FormData = {
   // Step 1: Project basics
@@ -17,7 +18,7 @@ type FormData = {
   state: string
   zip: string
   county: string
-  photos: File[]
+  uploadedFiles: IntakeUploadedFile[]
   // Step 3: Budget & timeline
   budget: string
   timeline: string
@@ -37,7 +38,7 @@ type FormData = {
 
 const INITIAL: FormData = {
   lotStatus: '', lotSize: '', projectType: '', squareFootage: '',
-  address: '', city: '', state: '', zip: '', county: '', photos: [],
+  address: '', city: '', state: '', zip: '', county: '', uploadedFiles: [],
   budget: '', timeline: '', financing: '',
   style: '', stories: '', garage: '', specialFeatures: '',
   firstName: '', lastName: '', email: '', phone: '', howHeard: '',
@@ -112,58 +113,175 @@ function OptionGrid({ options, value, onChange }: { options: string[]; value: st
   )
 }
 
-function PhotoCapture({ photos, onPhotosChange }: { photos: File[]; onPhotosChange: (files: File[]) => void }) {
+function CaptureSection({
+  uploadedFiles,
+  onFilesChange,
+  formError,
+  setFormError
+}: {
+  uploadedFiles: IntakeUploadedFile[]
+  onFilesChange: (files: IntakeUploadedFile[]) => void
+  formError: string
+  setFormError: (error: string) => void
+}) {
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const voiceRecorderRef = useRef<MediaRecorder | null>(null)
+  const voiceChunksRef = useRef<Blob[]>([])
+  const [uploading, setUploading] = useState(false)
+  const [recordingVoice, setRecordingVoice] = useState(false)
+  const [uploadingVoice, setUploadingVoice] = useState(false)
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || [])
-    onPhotosChange([...photos, ...files])
+  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const selected = Array.from(e.target.files ?? [])
+    if (!selected.length) return
+    if (uploadedFiles.length + selected.length > 10) {
+      setFormError('You can upload a maximum of 10 photos / videos.')
+      return
+    }
+    const oversized = selected.filter(f => f.size > 10 * 1024 * 1024)
+    if (oversized.length > 0) {
+      setFormError(`File too large: "${oversized[0].name}". Photos must be under 10 MB each.`)
+      return
+    }
+    setFormError('')
+    setUploading(true)
+    try {
+      const newFiles = await uploadIntakeFilesSequentially(selected)
+      if (newFiles.length === 0) {
+        setFormError('Upload failed. Check file type (JPG, PNG, or MP4) and size (max 10 MB each), then try again.')
+        return
+      }
+      onFilesChange([...uploadedFiles, ...newFiles])
+    } catch {
+      setFormError('Upload failed. Please try again.')
+    } finally {
+      setUploading(false)
+      if (fileInputRef.current) fileInputRef.current.value = ''
+    }
   }
 
-  const removePhoto = (index: number) => {
-    onPhotosChange(photos.filter((_, i) => i !== index))
+  async function toggleVoiceRecording() {
+    if (recordingVoice) {
+      voiceRecorderRef.current?.stop()
+      return
+    }
+    if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === 'undefined') {
+      setFormError('Voice recording is not supported in this browser. Upload a photo instead.')
+      return
+    }
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      const recorder = new MediaRecorder(stream)
+      voiceChunksRef.current = []
+      recorder.ondataavailable = event => {
+        if (event.data.size > 0) voiceChunksRef.current.push(event.data)
+      }
+      recorder.onstop = async () => {
+        stream.getTracks().forEach(track => track.stop())
+        setRecordingVoice(false)
+        const blob = new Blob(voiceChunksRef.current, { type: recorder.mimeType || 'audio/webm' })
+        if (!blob.size) return
+        setUploadingVoice(true)
+        try {
+          const ext = blob.type.includes('mp4') ? 'm4a' : 'webm'
+          const files = await uploadIntakeFilesSequentially([
+            new File([blob], `voice-description-${Date.now()}.${ext}`, { type: blob.type }),
+          ])
+          if (files[0]) onFilesChange([...uploadedFiles, files[0]])
+          else setFormError('Voice upload failed. Please try again or upload a photo.')
+        } finally {
+          setUploadingVoice(false)
+        }
+      }
+      recorder.start()
+      voiceRecorderRef.current = recorder
+      setRecordingVoice(true)
+      setFormError('')
+    } catch {
+      setFormError('Microphone access unavailable. Upload a photo instead.')
+    }
   }
 
   return (
     <div className="space-y-4">
-      <div className="flex gap-2">
-        <button
-          type="button"
-          onClick={() => fileInputRef.current?.click()}
-          className="flex-1 flex items-center justify-center gap-2 rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 py-6 text-sm font-medium text-slate-600 hover:border-slate-400 hover:bg-slate-100 transition"
-        >
-          <Camera className="w-4 h-4" />
-          Add Photo
-        </button>
+      {/* Photo/Video Upload */}
+      <div className="rounded-xl border border-slate-200 bg-white p-4">
+        <div className="flex items-center justify-between mb-1.5">
+          <label className="block text-sm font-semibold text-slate-800">Site photos or video (optional)</label>
+          {uploadedFiles.some(f => f.type === 'image' || f.type === 'video') && (
+            <span className="text-xs text-green-700">{uploadedFiles.filter(f => f.type === 'image' || f.type === 'video').length} uploaded</span>
+          )}
+        </div>
+        <p className="text-xs text-slate-500 mb-3">Upload photos or video of the lot or existing structure. Accepted: JPG, PNG, MP4 (max 10 MB each, up to 10 files).</p>
+
+        {uploadedFiles.some(f => f.type === 'image' || f.type === 'video') && (
+          <div className="flex flex-wrap gap-2 mb-3">
+            {uploadedFiles.filter(f => f.type === 'image' || f.type === 'video').map((f, i) => (
+              <div key={i} className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs text-slate-700">
+                <ImagePlus className="h-3.5 w-3.5 text-green-500 shrink-0" />
+                <span className="max-w-[120px] truncate">{f.name}</span>
+                <button
+                  type="button"
+                  onClick={() => onFilesChange(uploadedFiles.filter((_, j) => j !== i))}
+                  className="ml-0.5 text-slate-400 hover:text-red-500 transition"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+
         <input
           ref={fileInputRef}
           type="file"
-          accept="image/*"
-          capture="environment"
-          onChange={handleFileSelect}
-          className="hidden"
           multiple
+          accept="image/jpeg,image/png,video/mp4"
+          capture="environment"
+          onChange={handleFileChange}
+          className="sr-only"
+          id="capture-file-upload"
         />
+        {uploadedFiles.filter(f => f.type === 'image' || f.type === 'video').length < 10 && (
+          <label
+            htmlFor="capture-file-upload"
+            className={`flex items-center justify-center gap-2 w-full rounded-lg border-2 border-dashed px-4 py-4 text-sm font-medium transition cursor-pointer ${
+              uploading
+                ? 'border-orange-300 bg-orange-50 text-orange-500'
+                : 'border-slate-300 bg-white text-slate-500 hover:border-orange-400 hover:bg-orange-50 hover:text-orange-600'
+            }`}
+          >
+            {uploading ? (
+              <><Loader2 className="h-4 w-4 animate-spin" /> Uploading...</>
+            ) : (
+              <><ImagePlus className="h-4 w-4" /> Add photos or video</>
+            )}
+          </label>
+        )}
       </div>
-      {photos.length > 0 && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          {photos.map((file, i) => (
-            <div key={i} className="relative group">
-              <img
-                src={URL.createObjectURL(file)}
-                alt={`Photo ${i + 1}`}
-                className="w-full h-24 object-cover rounded-lg border border-slate-200"
-              />
-              <button
-                type="button"
-                onClick={() => removePhoto(i)}
-                className="absolute top-1 right-1 rounded-full bg-red-500 text-white p-1 opacity-0 group-hover:opacity-100 transition"
-              >
-                <X className="w-3 h-3" />
-              </button>
-              <p className="text-xs text-slate-500 mt-1">{file.name}</p>
-            </div>
-          ))}
+
+      {/* Voice Description */}
+      <div className="rounded-xl border border-indigo-200 bg-indigo-50/60 p-4">
+        <div className="flex items-center justify-between mb-1.5">
+          <label className="block text-sm font-semibold text-slate-800">Voice description (optional)</label>
+          {uploadedFiles.some(f => f.type === 'voice') && <span className="text-xs text-green-700">Recorded</span>}
+        </div>
+        <p className="text-xs text-slate-600 mb-3">Describe the property and what you're looking to build. Quick way to capture your vision.</p>
+        <button
+          type="button"
+          onClick={toggleVoiceRecording}
+          disabled={uploadingVoice}
+          className={`inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold transition ${
+            recordingVoice ? 'bg-red-600 text-white' : 'bg-indigo-600 text-white hover:bg-indigo-700'
+          } disabled:opacity-60`}
+        >
+          {recordingVoice ? <><Square className="h-4 w-4" /> Stop recording</> : <><Mic className="h-4 w-4" /> {uploadingVoice ? 'Uploading voice note…' : 'Record voice description'}</>}
+        </button>
+      </div>
+
+      {formError && (
+        <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-xs text-red-700">
+          {formError}
         </div>
       )}
     </div>
@@ -187,33 +305,30 @@ export default function NewConstructionIntakePage() {
   const [form, setForm] = useState<FormData>(INITIAL)
   const [submitted, setSubmitted] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [formError, setFormError] = useState('')
 
   const set = (key: keyof FormData) => (val: string) => setForm((p) => ({ ...p, [key]: val }))
 
   async function handleSubmit() {
     setLoading(true)
     try {
-      const formData = new FormData()
-      formData.append('project_path', 'design_build')
-      formData.append('client_name', `${form.firstName} ${form.lastName}`.trim())
-      formData.append('contact_email', form.email)
-      formData.append('contact_phone', form.phone)
-      formData.append('project_address', `${form.address}, ${form.city}, ${form.state} ${form.zip}`)
-      formData.append('budget_range', form.budget)
-      formData.append('source', 'new-construction-intake')
-      formData.append('status', 'new')
-      formData.append('requires_payment', 'false')
-
-      const { photos, ...formDataWithoutPhotos } = form
-      formData.append('form_data', JSON.stringify(formDataWithoutPhotos))
-
-      photos.forEach((photo) => {
-        formData.append('photos', photo)
-      })
-
+      const { uploadedFiles, ...formDataWithoutFiles } = form
       await fetch('/api/intake/lead', {
         method: 'POST',
-        body: formData,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          project_path: 'design_build',
+          client_name: `${form.firstName} ${form.lastName}`.trim(),
+          contact_email: form.email,
+          contact_phone: form.phone,
+          project_address: `${form.address}, ${form.city}, ${form.state} ${form.zip}`,
+          budget_range: form.budget,
+          source: 'new-construction-intake',
+          status: 'new',
+          requires_payment: false,
+          form_data: formDataWithoutFiles,
+          uploaded_files: uploadedFiles,
+        }),
       })
       setSubmitted(true)
     } catch {
@@ -298,10 +413,10 @@ export default function NewConstructionIntakePage() {
             </div>
           )}
 
-          {/* Step 2: Location */}
+          {/* Step 2: Location & Capture */}
           {step === 2 && (
             <div className="space-y-6">
-              <h2 className="text-xl font-bold text-slate-900">Project location</h2>
+              <h2 className="text-xl font-bold text-slate-900">Project location & details</h2>
               <Field label="Street address or intersection">
                 <input type="text" className={inputClass} placeholder="123 Main St" value={form.address} onChange={(e) => set('address')(e.target.value)} />
               </Field>
@@ -321,9 +436,16 @@ export default function NewConstructionIntakePage() {
                   <input type="text" className={inputClass} placeholder="e.g. Montgomery County" value={form.county} onChange={(e) => set('county')(e.target.value)} />
                 </Field>
               </div>
-              <Field label="Site photos (optional)" hint="Upload photos of the lot or existing structure">
-                <PhotoCapture photos={form.photos} onPhotosChange={(photos) => setForm((p) => ({ ...p, photos }))} />
-              </Field>
+
+              <div className="border-t border-slate-200 pt-6">
+                <p className="text-sm font-semibold text-slate-800 mb-4">Help us understand your project better</p>
+                <CaptureSection
+                  uploadedFiles={form.uploadedFiles}
+                  onFilesChange={(files) => setForm((p) => ({ ...p, uploadedFiles: files }))}
+                  formError={formError}
+                  setFormError={setFormError}
+                />
+              </div>
             </div>
           )}
 
