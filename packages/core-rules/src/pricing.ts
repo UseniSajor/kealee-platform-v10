@@ -7,26 +7,26 @@
 
 // ── Concept Package Prices ────────────────────────────────────────────────────
 
-export const CONCEPT_KITCHEN_PRICE        = 395   // dollars
-export const CONCEPT_KITCHEN_ADVANCED     = 695
-export const CONCEPT_KITCHEN_FULL         = 2500  // "from"
+export const CONCEPT_KITCHEN_PRICE        = 199   // entry funnel price
+export const CONCEPT_KITCHEN_ADVANCED     = 349
+export const CONCEPT_KITCHEN_FULL         = 699   // "from"
 
-export const CONCEPT_BATH_PRICE           = 395
-export const CONCEPT_BATH_ADVANCED        = 695
-export const CONCEPT_BATH_FULL            = 2000  // "from"
+export const CONCEPT_BATH_PRICE           = 159
+export const CONCEPT_BATH_ADVANCED        = 299
+export const CONCEPT_BATH_FULL            = 599   // "from"
 
-export const CONCEPT_WHOLE_HOME_PRICE     = 585
-export const CONCEPT_WHOLE_HOME_ADVANCED  = 1200
-export const CONCEPT_WHOLE_HOME_FULL      = 6500  // "from"
+export const CONCEPT_WHOLE_HOME_PRICE     = 349
+export const CONCEPT_WHOLE_HOME_ADVANCED  = 499
+export const CONCEPT_WHOLE_HOME_FULL      = 999   // "from"
 
-export const CONCEPT_INTERIOR_RENO_PRICE  = 395   // interior reno/addition base
-export const CONCEPT_EXTERIOR_PRICE       = 295
-export const CONCEPT_LANDSCAPE_PRICE      = 195
-export const CONCEPT_COMMERCIAL_PRICE     = 1200  // "from"
-export const CONCEPT_DEVELOPER_PRICE      = 1500  // "from"
+export const CONCEPT_INTERIOR_RENO_PRICE  = 199   // interior reno/addition base
+export const CONCEPT_EXTERIOR_PRICE       = 275
+export const CONCEPT_LANDSCAPE_PRICE      = 199
+export const CONCEPT_COMMERCIAL_PRICE     = 799   // "from"
+export const CONCEPT_DEVELOPER_PRICE      = 999   // "from"
 
 /** Generic lowest starting price shown in broad marketing */
-export const CONCEPT_START_PRICE         = 195
+export const CONCEPT_START_PRICE         = 79
 
 // ── Tier label map (numeric tier → display string) ────────────────────────────
 
@@ -104,35 +104,35 @@ export const INTAKE_PRICE_CENTS: Record<string, IntakePriceEntry> = {
   addition_expansion:        { label: 'Addition / Expansion',                     cents: 34_900,  deliveryDays: '3–5 days'  },
 
   // ── Permits + estimation ────────────────────────────────────────────────
-  permit_path_only:          { label: 'Permit Package',                           cents: 49_900,  deliveryDays: '3–5 days'  },
-  cost_estimate:             { label: 'Detailed Cost Estimate — RSMeans validated', cents: 59_500, deliveryDays: '3–5 days'  },
-  certified_estimate:        { label: 'Certified Estimate — Notarized for lenders', cents: 185_000, deliveryDays: '5–7 days' },
-  professional_drawings:     { label: 'Permit-Ready Design Plans',                cents: 149_900, deliveryDays: '7–14 days' },
+  permit_path_only:          { label: 'Permit Package',                           cents: 59_900,  deliveryDays: '3–5 days'  },
+  cost_estimate:             { label: 'Detailed Cost Estimate — RSMeans validated', cents: 34_900, deliveryDays: '3–5 days'  },
+  certified_estimate:        { label: 'Certified Estimate — Notarized for lenders', cents: 79_900, deliveryDays: '5–7 days' },
+  professional_drawings:     { label: 'Permit-Ready Design Plans',                cents: 499_900, deliveryDays: '7–14 days' },
   design_estimate_permit_bundle: {
     label: 'Design + Estimate + Permit Bundle',
-    cents: 249_900,
+    cents: 189_900,
     deliveryDays: '7–14 days',
   },
   /** Estimate + permit only (no stamped plans) — upsell bundle for interior/kitchen paths. */
   estimate_permit_bundle: {
     label: 'Estimate + Permit Package',
-    cents: 99_900,
+    cents: 79_900,
     deliveryDays: '5–8 days',
   },
 
   // ── Bundles + matchmaking ───────────────────────────────────────────────
-  contractor_match:          { label: 'Contractor Match',                         cents: 19_900,  deliveryDays: '1 day'     },
-  design_build:              { label: 'Design + Build Package',                   cents: 79_500,  deliveryDays: '5–7 days'  },
+  contractor_match:          { label: 'Contractor Match',                         cents: 0,       deliveryDays: '1 day'     },
+  design_build:              { label: 'Design + Build Package',                   cents: 59_900,  deliveryDays: '5–7 days'  },
   capture_site_concept:      { label: 'Site Capture + Concept',                   cents: 12_500,  deliveryDays: '1–2 days'  },
 
   // ── Commercial / multi-family / development ─────────────────────────────
-  multi_unit_residential:    { label: 'Multi-Unit Residential',                   cents: 99_900,  deliveryDays: '5–7 days'  },
-  mixed_use:                 { label: 'Mixed-Use Concept',                        cents: 129_900, deliveryDays: '6–8 days'  },
-  commercial_office:         { label: 'Commercial Office',                        cents: 119_900, deliveryDays: '5–7 days'  },
-  development_feasibility:   { label: 'Feasibility Study',                        cents: 149_900, deliveryDays: '5–7 days'  },
-  townhome_subdivision:      { label: 'Townhome Subdivision',                     cents: 169_900, deliveryDays: '7–10 days' },
-  single_family_subdivision: { label: 'Single-Family Subdivision',                cents: 149_900, deliveryDays: '6–8 days'  },
-  single_lot_development:    { label: 'Single-Lot Development',                   cents: 89_900,  deliveryDays: '4–6 days'  },
+  multi_unit_residential:    { label: 'Multi-Unit Residential',                   cents: 74_900,  deliveryDays: '5–7 days'  },
+  mixed_use:                 { label: 'Mixed-Use Concept',                        cents: 99_900,  deliveryDays: '6–8 days'  },
+  commercial_office:         { label: 'Commercial Office',                        cents: 89_900,  deliveryDays: '5–7 days'  },
+  development_feasibility:   { label: 'Feasibility Study',                        cents: 119_900, deliveryDays: '5–7 days'  },
+  townhome_subdivision:      { label: 'Townhome Subdivision',                     cents: 129_900, deliveryDays: '7–10 days' },
+  single_family_subdivision: { label: 'Single-Family Subdivision',                cents: 109_900, deliveryDays: '6–8 days'  },
+  single_lot_development:    { label: 'Single-Lot Development',                   cents: 69_900,  deliveryDays: '4–6 days'  },
 }
 
 /** Site-visit add-on (additive line item on Stripe checkout). */
@@ -188,7 +188,7 @@ export const INTAKE_TIER_PRICE_CENTS: Record<string, Partial<Record<1 | 2 | 3, I
     3: { label: 'Exterior Concept — Premium+', cents: 79_900,  deliveryDays: '3–5 days' },
   },
   interior_reno_concept: {
-    1: { label: 'Design Services', cents: 7_900, deliveryDays: '2–3 days' },
+    1: { label: 'Interior Reno Concept — Basic', cents: 9_900, deliveryDays: '3–5 days' },
   },
 }
 
