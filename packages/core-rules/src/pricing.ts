@@ -107,22 +107,22 @@ export const INTAKE_PRICE_CENTS: Record<string, IntakePriceEntry> = {
   permit_path_only:          { label: 'Permit Package',                           cents: 59_900,  deliveryDays: '3–5 days'  },
   cost_estimate:             { label: 'Detailed Cost Estimate — RSMeans validated', cents: 34_900, deliveryDays: '3–5 days'  },
   certified_estimate:        { label: 'Certified Estimate — Notarized for lenders', cents: 79_900, deliveryDays: '5–7 days' },
-  professional_drawings:     { label: 'Permit-Ready Design Plans',                cents: 499_900, deliveryDays: '7–14 days' },
+  professional_drawings:     { label: 'Permit-Ready Design Plans — Starting at $4,990 (contact for estimate)',  cents: 499_000, deliveryDays: '7–14 days' },
   design_estimate_permit_bundle: {
     label: 'Design + Estimate + Permit Bundle',
-    cents: 189_900,
+    cents: 239_900,
     deliveryDays: '7–14 days',
   },
   /** Estimate + permit only (no stamped plans) — upsell bundle for interior/kitchen paths. */
   estimate_permit_bundle: {
     label: 'Estimate + Permit Package',
-    cents: 79_900,
+    cents: 109_900,
     deliveryDays: '5–8 days',
   },
 
   // ── Bundles + matchmaking ───────────────────────────────────────────────
   contractor_match:          { label: 'Contractor Match',                         cents: 0,       deliveryDays: '1 day'     },
-  design_build:              { label: 'Design + Build Package',                   cents: 59_900,  deliveryDays: '5–7 days'  },
+  design_build:              { label: 'Design + Build Package',                   cents: 189_900, deliveryDays: '5–7 days'  },
   capture_site_concept:      { label: 'Site Capture + Concept',                   cents: 12_500,  deliveryDays: '1–2 days'  },
 
   // ── Commercial / multi-family / development ─────────────────────────────
