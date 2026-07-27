@@ -1,10 +1,15 @@
 /**
- * Measurements API
- * Handles incoming measurements from mobile capture tool
+ * Measurements API — Record and retrieve measurements from mobile LiDAR capture
+ * Handles MeasurementSession creation, Measurement storage, and SMS/email confirmations
  */
 
 import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth/next'
+import { PrismaClient } from '@prisma/client'
+import { sendMeasurementConfirmation as sendMeasurementEmail } from '@/lib/services/resend'
+import { sendMeasurementConfirmation as sendMeasurementSMS } from '@/lib/services/twilio'
+
+const prisma = new PrismaClient()
 
 export interface MeasurementData {
   projectId?: string
@@ -12,8 +17,8 @@ export interface MeasurementData {
   distance: number
   unit: 'mm' | 'cm' | 'inches' | 'feet' | 'meters'
   method: 'lidar_direct' | 'tof_sensor' | 'reference_object' | 'ai_detection' | 'perspective_estimation'
-  accuracy: 'high' | 'medium' | 'low'
-  confidence: number // 0-100
+  accuracy?: 'high' | 'medium' | 'low'
+  confidence: number
   timestamp: string
   metadata?: {
     deviceModel?: string
@@ -26,7 +31,6 @@ export async function POST(req: Request) {
   try {
     const body = await req.json() as MeasurementData
 
-    // Validate required fields
     if (!body.distance || !body.unit || !body.method) {
       return NextResponse.json(
         { error: 'Missing required fields: distance, unit, method' },
@@ -34,46 +38,89 @@ export async function POST(req: Request) {
       )
     }
 
-    // Get session (optional - for authenticated endpoints)
     const session = await getServerSession()
+    const userId = session?.user?.id || null
 
-    // Prepare measurement record
-    const measurement = {
-      distance: body.distance,
-      unit: body.unit,
-      method: body.method,
-      accuracy: body.accuracy,
-      confidence: body.confidence,
-      timestamp: new Date(body.timestamp),
-      metadata: body.metadata || {},
-      deviceModel: body.metadata?.deviceModel || 'Unknown',
-      sourceApp: 'mobile-capture',
-      userId: session?.user?.email || null,
-      projectId: body.projectId || null,
-      intakeId: body.intakeId || null,
+    // Create or get active measurement session
+    let sessionRecord = await prisma.measurementSession.findFirst({
+      where: {
+        userId: userId,
+        projectId: body.projectId || undefined,
+        endedAt: null,
+      },
+    })
+
+    if (!sessionRecord) {
+      sessionRecord = await prisma.measurementSession.create({
+        data: {
+          userId: userId,
+          projectId: body.projectId || undefined,
+          deviceModel: body.metadata?.deviceModel || 'Unknown',
+          capabilities: {},
+        },
+      })
     }
 
-    // Store measurement in database
-    // TODO: Wire to Prisma once DB is set up
-    // const stored = await prisma.measurement.create({ data: measurement })
+    // Record measurement
+    const measurement = await prisma.measurement.create({
+      data: {
+        sessionId: sessionRecord.id,
+        distance: body.distance,
+        unit: body.unit,
+        method: body.method,
+        accuracy: body.accuracy || 'medium',
+        confidence: Math.min(100, Math.max(0, body.confidence)),
+        projectId: body.projectId || undefined,
+        intakeId: body.intakeId || undefined,
+        userId: userId,
+        metadata: body.metadata || {},
+        recordedAt: new Date(body.timestamp),
+      },
+    })
 
-    // Log measurement for analytics
     console.log('[Measurement] Recorded:', {
+      id: measurement.id,
       method: measurement.method,
       distance: `${measurement.distance}${measurement.unit}`,
       confidence: measurement.confidence,
-      device: measurement.deviceModel,
     })
 
-    // Trigger any dependent services
-    if (body.intakeId) {
-      await triggerIntakeUpdate(body.intakeId, measurement)
+    // Send confirmations
+    if (session?.user) {
+      try {
+        if (session.user.email) {
+          await sendMeasurementEmail(
+            session.user.email,
+            body.distance,
+            body.unit,
+            body.confidence,
+            body.method,
+            body.projectId
+          )
+        }
+        if (session.user.phone) {
+          await sendMeasurementSMS(
+            session.user.phone,
+            body.distance,
+            body.unit,
+            body.confidence
+          )
+        }
+      } catch (notificationError) {
+        console.error('[Measurements] Failed to send confirmation:', notificationError)
+      }
     }
 
     return NextResponse.json({
       success: true,
-      measurementId: `meas-${Date.now()}`,
-      recorded: measurement,
+      measurementId: measurement.id,
+      sessionId: sessionRecord.id,
+      recorded: {
+        distance: measurement.distance,
+        unit: measurement.unit,
+        method: measurement.method,
+        confidence: measurement.confidence,
+      },
     })
   } catch (error) {
     console.error('[Measurements API] Error:', error)
@@ -84,22 +131,41 @@ export async function POST(req: Request) {
   }
 }
 
-/**
- * Update intake with measurement data
- */
-async function triggerIntakeUpdate(intakeId: string, measurement: any) {
+export async function GET(req: Request) {
   try {
-    // Update intake record with measurement
-    // TODO: Prisma update
-    // await prisma.intake.update({
-    //   where: { id: intakeId },
-    //   data: {
-    //     measurements: { push: measurement }
-    //   }
-    // })
+    const { searchParams } = new URL(req.url)
+    const projectId = searchParams.get('projectId')
+    const intakeId = searchParams.get('intakeId')
+    const limit = parseInt(searchParams.get('limit') || '50')
 
-    console.log('[Measurements] Updated intake:', intakeId)
+    if (!projectId && !intakeId) {
+      return NextResponse.json(
+        { error: 'Either projectId or intakeId required' },
+        { status: 400 }
+      )
+    }
+
+    const measurements = await prisma.measurement.findMany({
+      where: {
+        OR: [
+          { projectId: projectId || undefined },
+          { intakeId: intakeId || undefined },
+        ],
+      },
+      orderBy: { recordedAt: 'desc' },
+      take: limit,
+    })
+
+    return NextResponse.json({
+      success: true,
+      measurements,
+      count: measurements.length,
+    })
   } catch (error) {
-    console.error('[Measurements] Failed to update intake:', error)
+    console.error('[Measurements GET] Error:', error)
+    return NextResponse.json(
+      { error: 'Failed to retrieve measurements' },
+      { status: 500 }
+    )
   }
 }

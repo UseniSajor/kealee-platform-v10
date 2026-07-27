@@ -17558,3 +17558,80 @@ model ArchitectEngagement {
   @@index([status])
 }
 
+// ── MEASUREMENTS — Mobile LiDAR + Reference Object Measurement ──────────────
+
+model MeasurementSession {
+  id            String   @id @default(cuid())
+  userId        String?
+  projectId     String?
+  intakeId      String?
+
+  deviceModel   String   // e.g., "iPhone 14 Pro", "Pixel 7"
+  capabilities  Json     // { hasLiDAR: true, hasTof: false }
+
+  startedAt     DateTime @default(now())
+  endedAt       DateTime?
+
+  measurements  Measurement[]
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([userId])
+  @@index([projectId])
+  @@index([intakeId])
+}
+
+model Measurement {
+  id              String   @id @default(cuid())
+
+  sessionId       String
+  session         MeasurementSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  // Measurement data
+  distance        Float
+  unit            String   // 'mm' | 'cm' | 'inches' | 'feet' | 'meters'
+  method          String   // 'lidar_direct' | 'tof_sensor' | 'reference_object' | 'ai_detection' | 'perspective_estimation'
+  accuracy        String   // 'high' | 'medium' | 'low'
+  confidence      Int      // 0-100
+
+  // Context
+  projectId       String?
+  intakeId        String?
+  userId          String?
+
+  // Metadata
+  metadata        Json?    // { deviceModel, calibrationObject, perspectiveCorrection }
+
+  // Timestamps
+  recordedAt      DateTime @default(now())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([sessionId])
+  @@index([projectId])
+  @@index([intakeId])
+  @@index([userId])
+  @@index([method])
+  @@index([confidence])
+}
+
+model CalibrationObject {
+  id              String   @id @default(cuid())
+
+  sessionId       String
+  session         MeasurementSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  // Object being used as reference
+  objectType      String   // 'credit_card' | 'ruler' | 'door' | 'coin'
+  knownDimension  Float    // Real-world size (mm)
+
+  // Calibration result
+  pixelSize       Float    // Detected size in pixels
+  calibrationScore Float  // 0-1 confidence
+
+  createdAt       DateTime @default(now())
+
+  @@index([sessionId])
+}
+
