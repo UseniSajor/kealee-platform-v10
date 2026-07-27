@@ -1,73 +1,65 @@
 import { NextResponse } from 'next/server'
+import { sendIntakeToPhone } from '@/lib/services/twilio'
+import { sendIntakeLink } from '@/lib/services/resend'
 
 export async function POST(req: Request) {
   try {
     const body = await req.json()
-    const { phone, projectPath, intakeUrl } = body
+    const { phone, email, projectPath, intakeUrl } = body
 
-    if (!phone || !projectPath) {
+    if (!projectPath || !intakeUrl) {
       return NextResponse.json(
-        { success: false, message: 'Phone and projectPath are required' },
+        { success: false, message: 'projectPath and intakeUrl are required' },
         { status: 400 }
       )
     }
 
-    // Validate phone format (basic E.164 format)
-    const cleanPhone = phone.replace(/\D/g, '')
-    if (cleanPhone.length < 10) {
-      return NextResponse.json(
-        { success: false, message: 'Invalid phone number' },
-        { status: 400 }
-      )
-    }
+    const results: {
+      sms?: { success: boolean; error?: string }
+      email?: { success: boolean; error?: string }
+    } = {}
 
-    // Send SMS via Twilio if configured
-    if (process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN && process.env.TWILIO_PHONE_NUMBER) {
-      try {
-        const twilioResponse = await fetch('https://api.twilio.com/2010-04-01/Accounts/' + process.env.TWILIO_ACCOUNT_SID + '/Messages.json', {
-          method: 'POST',
-          headers: {
-            'Authorization': 'Basic ' + Buffer.from(`${process.env.TWILIO_ACCOUNT_SID}:${process.env.TWILIO_AUTH_TOKEN}`).toString('base64'),
-            'Content-Type': 'application/x-www-form-urlencoded',
-          },
-          body: new URLSearchParams({
-            From: process.env.TWILIO_PHONE_NUMBER,
-            To: '+1' + cleanPhone,
-            Body: `Kealee: Continue your ${projectPath.replace(/_/g, ' ')} intake here: ${intakeUrl}`,
-          }).toString(),
-        })
-
-        if (!twilioResponse.ok) {
-          console.error('[SendToPhone] Twilio failed:', await twilioResponse.text())
-          throw new Error('SMS delivery failed')
-        }
-
-        return NextResponse.json({ success: true, message: 'SMS sent successfully' })
-      } catch (smsError) {
-        console.error('[SendToPhone] SMS error:', smsError)
-        // Don't fail - fall back to alternative
+    // Send SMS if phone provided
+    if (phone) {
+      const cleanPhone = phone.replace(/\D/g, '')
+      if (cleanPhone.length >= 10) {
+        const smsResult = await sendIntakeToPhone(cleanPhone, projectPath, intakeUrl)
+        results.sms = smsResult
       }
     }
 
-    // Fallback: Track as engagement event and log for manual follow-up
-    if (process.env.ANALYTICS_API) {
-      try {
-        await fetch(`${process.env.ANALYTICS_API}/events`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            event: 'intake_send_to_phone',
-            projectPath,
-            phone: cleanPhone.slice(-4), // Log last 4 digits for privacy
-            timestamp: new Date().toISOString(),
-          }),
-        }).catch(() => {}) // Fire and forget
-      } catch {}
+    // Send email if email provided
+    if (email) {
+      const emailResult = await sendIntakeLink(email, intakeUrl, projectPath)
+      results.email = emailResult
     }
+
+    // At least one delivery method should succeed
+    const smsSent = results.sms?.success ?? false
+    const emailSent = results.email?.success ?? false
+
+    if (!smsSent && !emailSent) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: 'Could not send via SMS or email. Try copying the link manually.',
+          results,
+        },
+        { status: 500 }
+      )
+    }
+
+    // Log successful delivery
+    console.log('[SendToPhone] Delivery:', {
+      sms: results.sms?.success,
+      email: results.email?.success,
+      projectPath,
+    })
 
     return NextResponse.json({
       success: true,
-      message: 'Link copied to clipboard. You can share the URL or manually send it to your phone.',
+      message: `Link sent via ${[smsSent && 'SMS', emailSent && 'email'].filter(Boolean).join(' and ')}`,
+      results,
     })
   } catch (error) {
     console.error('[SendToPhone] Error:', error)
