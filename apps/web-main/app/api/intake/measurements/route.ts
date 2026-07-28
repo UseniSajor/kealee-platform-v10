@@ -4,7 +4,8 @@
  */
 
 import { NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth/next'
+import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
+import { cookies } from 'next/headers'
 import { PrismaClient } from '@prisma/client'
 import { sendMeasurementConfirmation as sendMeasurementEmail } from '@/lib/services/resend'
 import { sendMeasurementConfirmation as sendMeasurementSMS } from '@/lib/services/twilio'
@@ -38,8 +39,9 @@ export async function POST(req: Request) {
       )
     }
 
-    const session = await getServerSession()
-    const userId = session?.user?.id || null
+    const supabaseAuth = createRouteHandlerClient({ cookies })
+    const { data: { user: sessionUser } } = await supabaseAuth.auth.getUser()
+    const userId = sessionUser?.id || null
 
     // Create or get active measurement session
     let sessionRecord = await prisma.measurementSession.findFirst({
@@ -86,11 +88,11 @@ export async function POST(req: Request) {
     })
 
     // Send confirmations
-    if (session?.user) {
+    if (sessionUser) {
       try {
-        if (session.user.email) {
+        if (sessionUser.email) {
           await sendMeasurementEmail(
-            session.user.email,
+            sessionUser.email,
             body.distance,
             body.unit,
             body.confidence,
@@ -98,9 +100,9 @@ export async function POST(req: Request) {
             body.projectId
           )
         }
-        if (session.user.phone) {
+        if (sessionUser.phone) {
           await sendMeasurementSMS(
-            session.user.phone,
+            sessionUser.phone,
             body.distance,
             body.unit,
             body.confidence
