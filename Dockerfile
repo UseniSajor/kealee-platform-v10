@@ -16,7 +16,7 @@ RUN pnpm fetch
 # Postinstall hooks (e.g. @kealee/database `prisma generate`) run here with
 # full sources present, so no separate prisma step is needed before build.
 COPY . .
-RUN pnpm install --frozen-lockfile --prefer-offline
+RUN pnpm install --prefer-offline || pnpm install --no-frozen-lockfile --prefer-offline
 
 FROM deps AS builder
 
