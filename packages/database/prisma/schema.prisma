@@ -17573,6 +17573,7 @@ model MeasurementSession {
   endedAt       DateTime?
 
   measurements  Measurement[]
+  calibrationObjects CalibrationObject[]
 
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
