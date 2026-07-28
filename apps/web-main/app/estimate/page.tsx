@@ -126,6 +126,18 @@ export default function EstimatePage() {
                   View Pricing Packages
                 </Link>
               </div>
+              <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm">
+                <span className="text-slate-500">Built for your role:</span>
+                <Link href="/intake/cost_estimate?client=contractor" className="font-semibold text-[#2ABFBF] hover:text-white transition-colors">
+                  Contractor / GC intake →
+                </Link>
+                <Link href="/intake/cost_estimate?client=developer" className="font-semibold text-[#2ABFBF] hover:text-white transition-colors">
+                  Developer intake →
+                </Link>
+                <Link href="/intake/cost_estimate?client=service-provider" className="font-semibold text-[#2ABFBF] hover:text-white transition-colors">
+                  Trade / service firm intake →
+                </Link>
+              </div>
             </div>
 
             {/* Right: Interactive media showcase */}
