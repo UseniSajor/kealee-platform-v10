@@ -8,6 +8,7 @@ import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { trackCheckoutStarted } from '@/lib/marketing/ga4-server'
 import { parseUtmFromBody } from '@/lib/marketing/utm-metadata'
 import { INTERNAL_TEST_PROMO_CENTS, INTERNAL_TEST_PROMO_METADATA_VALUE, internalTestPromoApplies } from '@/lib/internal-test-promo'
+import * as Sentry from '@sentry/nextjs'
 
 export const dynamic = 'force-dynamic'
 
@@ -66,6 +67,37 @@ export async function POST(req: NextRequest) {
     if (guard) return guard
 
     const stripe = createStripe(stripeKey)
+
+    // Never create a payment session for an intake that was not durably saved.
+    // This prevents paid orders with no lead/project record for fulfillment.
+    const intakeStore = getSupabaseAdmin()
+    const { data: persistedIntake, error: intakeLookupError } = await intakeStore
+      .from('public_intake_leads')
+      .select('id')
+      .eq('id', intakeId)
+      .maybeSingle()
+    if (intakeLookupError) {
+      Sentry.captureMessage('Checkout intake verification failed', {
+        level: 'error',
+        tags: { area: 'sales-funnel', stage: 'checkout-intake-verification', projectPath },
+        extra: { intakeId, databaseError: intakeLookupError.message },
+      })
+      return NextResponse.json(
+        { error: 'We could not verify your saved project. Nothing was charged. Please try again.' },
+        { status: 503 },
+      )
+    }
+    if (!persistedIntake) {
+      Sentry.captureMessage('Checkout blocked for missing intake', {
+        level: 'error',
+        tags: { area: 'sales-funnel', stage: 'orphan-checkout-blocked', projectPath },
+        extra: { intakeId },
+      })
+      return NextResponse.json(
+        { error: 'Your saved project could not be found. Nothing was charged. Please restart the intake.' },
+        { status: 409 },
+      )
+    }
 
     let unitAmountCents: number
     let productName: string
@@ -245,6 +277,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ url: session.url })
   } catch (err: any) {
     console.error('[intake/checkout]', err?.message, err?.type, err?.code)
+    Sentry.captureException(err, {
+      tags: { area: 'sales-funnel', stage: 'checkout-creation' },
+    })
     return NextResponse.json({ error: 'Failed to create checkout session', detail: err?.message, type: err?.type, code: err?.code }, { status: 500 })
   }
 }

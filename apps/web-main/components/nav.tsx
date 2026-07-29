@@ -60,36 +60,40 @@ function ServicesDropdown() {
               </ul>
             </div>
 
-            {/* COLUMN 2: CONSTRUCTION & BUILD */}
+            {/* COLUMN 2: ESTIMATION & PERMITS */}
             <div className="pl-8">
               <p className="text-[11px] font-bold uppercase tracking-widest text-blue-600 mb-4 flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
-                Construction & Build
+                Estimate & Permit
               </p>
               <ul className="space-y-1">
-                {SERVICES.filter(s => s.slug !== 'design-services').map((svc) => (
-                  <li key={`build-${svc.slug}`}>
+                {[
+                  { href: '/estimate', label: 'Cost Estimation', detail: 'Scope · quantities · assumptions' },
+                  { href: '/permits', label: 'Permit Preparation', detail: 'Requirements · documents · filing options' },
+                  { href: '/design-services', label: 'Professional Drawings', detail: 'Qualified professional when scoped' },
+                  { href: '/service-policies', label: 'Service Policies', detail: 'Delivery · revisions · limitations' },
+                ].map(item => (
+                  <li key={item.href}>
                     <Link
-                      href={svc.slug === 'new-construction' ? `/services/${svc.slug}` : `/services/${svc.slug}#build`}
+                      href={item.href}
                       onClick={() => setOpen(false)}
                       className="block rounded-lg px-2.5 py-2 text-sm text-slate-700 hover:bg-blue-50 hover:text-blue-700 transition"
                     >
-                      <span className="font-semibold block">{svc.label} Build</span>
-                      <span className="block text-[11px] text-slate-400 mt-0.5">Vetted GCs · {svc.timeline}</span>
+                      <span className="font-semibold block">{item.label}</span>
+                      <span className="block text-[11px] text-slate-400 mt-0.5">{item.detail}</span>
                     </Link>
                   </li>
                 ))}
-                {/* Special design-services note/cta in construction column */}
                 <li className="pt-2">
                   <div className="rounded-xl bg-slate-50 border border-slate-100 p-3">
-                    <p className="text-xs font-semibold text-slate-700">Need contractor matching?</p>
-                    <p className="text-[11px] text-slate-400 mt-0.5 mb-2">We match permit-ready plans to vetted local contractors.</p>
+                    <p className="text-xs font-semibold text-slate-700">Ready after preconstruction?</p>
+                    <p className="text-[11px] text-slate-400 mt-0.5 mb-2">Use Marketplace for contractor, developer, and construction-service handoff.</p>
                     <Link
-                      href="/build"
+                      href="/marketplace"
                       onClick={() => setOpen(false)}
                       className="inline-flex items-center gap-1 text-xs font-bold text-[#E8724B] hover:text-[#D45C33]"
                     >
-                      Explore Build Platform →
+                      Explore Marketplace →
                     </Link>
                   </div>
                 </li>
@@ -97,7 +101,7 @@ function ServicesDropdown() {
             </div>
           </div>
           <div className="mt-4 pt-4 border-t border-slate-100 flex items-center justify-between">
-            <p className="text-xs text-slate-500">Design concepts in 2–6 days · Bids in 24–48 hours</p>
+            <p className="text-xs text-slate-500">Concept → estimate → permit path → Marketplace handoff</p>
             <Link
               href="/gallery"
               onClick={() => setOpen(false)}

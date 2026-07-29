@@ -34,6 +34,7 @@ const CRON_SERVICES = {
   'marketing-cron-parcel-enrichment': { root: 'services/marketing-cron-parcel-enrichment', schedule: '0 12 * * *' },
   'marketing-cron-parcel-outreach': { root: 'services/marketing-cron-parcel-outreach', schedule: '0 13 * * *' },
   'marketing-cron-marketing-drip': { root: 'services/marketing-cron-marketing-drip', schedule: '0 14 * * *' },
+  'launch-integrity': { root: 'services/launch-integrity', schedule: '*/10 * * * *' },
 }
 
 const WEB_MAIN_SERVICE = 'web-main'

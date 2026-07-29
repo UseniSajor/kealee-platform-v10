@@ -792,9 +792,9 @@ export default function PermitsPage() {
         <div className="py-20 px-6 bg-white border-t border-slate-100">
           <div className="mx-auto max-w-[1200px] grid md:grid-cols-3 gap-8 sm:gap-12">
             {[
-              { icon: Shield,     title: 'Licensed Professionals',   body: 'Every application is verified and stamped by licensed permit expediters with over 10 years of DMV local agency experience.' },
-              { icon: Clock,      title: '5–7 Day Preparation',      body: 'Your complete plan and form assembly is finalized within 5–7 business days, with optional 5-day rush services.' },
-              { icon: Phone,      title: 'Comment Coordination',     body: 'We coordinate plan review commentary, municipal information requests, and inspector follow-up until your permit issues.' },
+              { icon: Shield,     title: 'Professional Coordination', body: 'When a licensed architect or engineer is required, that professional’s identity, scope, jurisdiction, and deliverables are confirmed before work begins.' },
+              { icon: Clock,      title: 'Preparation Schedule',      body: 'Your order confirmation identifies the preparation target for the selected scope. Agency review time is controlled by the jurisdiction.' },
+              { icon: Phone,      title: 'Comment Coordination',      body: 'Purchased coordination packages identify how plan-review comments and agency information requests are handled.' },
             ].map(({ icon: Icon, title, body }) => (
               <div key={title} className="flex gap-4 text-left">
                 <div className="w-11 h-11 rounded-2xl bg-emerald-500/10 flex items-center justify-center shrink-0">

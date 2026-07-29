@@ -106,9 +106,9 @@ export default function PermitsOnlyPage() {
           <h2 style={{ fontSize: 32, fontWeight: 800, textAlign: 'center', margin: '0 0 48px', color: '#14532d' }}>Why Kealee Permits?</h2>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 24 }}>
             {[
-              { icon: '⚡', title: 'Faster Approvals', body: 'Our relationships with building departments mean fewer rejections and faster review cycles. Average approval: 2–3 weeks.' },
-              { icon: '🎯', title: 'Code Compliant', body: 'Every application reviewed by permit experts before submission. No surprises, no rejections.' },
-              { icon: '📋', title: 'Full Coordination', body: 'We handle inspections, follow-ups, and all communication with building departments.' },
+              { icon: '⚡', title: 'Clear Submission Path', body: 'We organize the selected application scope and identify known jurisdiction requirements. Review timing and approval remain under agency control.' },
+              { icon: '🎯', title: 'Pre-Submission Review', body: 'Purchased packages identify the included completeness review. Agencies may still request corrections, supporting documents, or revisions.' },
+              { icon: '📋', title: 'Defined Coordination', body: 'The selected package states whether submission, follow-up, comment response, or inspection coordination is included.' },
             ].map(f => (
               <div key={f.title} style={{ background: '#fff', borderRadius: 16, padding: 32, boxShadow: '0 1px 4px rgba(0,0,0,.06)' }}>
                 <div style={{ fontSize: 32, marginBottom: 12 }}>{f.icon}</div>

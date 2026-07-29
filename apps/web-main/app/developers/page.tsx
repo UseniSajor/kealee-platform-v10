@@ -110,7 +110,7 @@ export default function DevelopersPage() {
         headline="7 Operating Systems. One Development Platform."
         highlight="One Development Platform."
         subhead="From identifying a parcel to delivering a stabilized asset, Kealee's integrated OS modules give developers data, AI insights, and automated workflows at every phase of the development lifecycle."
-        cta={{ label: 'Schedule a Developer Consultation', href: '/developers/start' }}
+        cta={{ label: 'Explore the Developer Marketplace', href: '/marketplace?audience=developer' }}
         secondaryCta={{ label: 'See Feasibility Demo', href: '/contact' }}
         trustItems={['Pro forma in minutes', 'Capital stack builder', 'Investor-grade reporting', 'Portfolio analytics']}
         dark
@@ -165,7 +165,7 @@ export default function DevelopersPage() {
 
           <div className="mt-8 text-center">
             <Link
-              href="/developers/start"
+              href="/marketplace?audience=developer"
               className="inline-flex items-center gap-2 rounded-xl px-7 py-3.5 text-sm font-semibold text-white transition-all hover:opacity-90"
               style={{ backgroundColor: '#E8793A' }}
             >

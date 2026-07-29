@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { guardStripeSecretForHttp } from '@/lib/stripe-vercel-guard'
 import { createStripe } from '@/lib/stripe-client'
 import { INTERNAL_TEST_PROMO_CENTS, INTERNAL_TEST_PROMO_METADATA_VALUE, internalTestPromoApplies } from '@/lib/internal-test-promo'
+import * as Sentry from '@sentry/nextjs'
 
 export const dynamic = 'force-dynamic'
 
@@ -36,6 +37,12 @@ export async function POST(req: NextRequest) {
     if (!tierData) {
       return NextResponse.json({ error: 'Invalid tier' }, { status: 400 })
     }
+    if (!intakeId || intakeId === 'pending') {
+      return NextResponse.json(
+        { error: 'A saved permit intake is required before payment.' },
+        { status: 409 },
+      )
+    }
 
     // Verify intake hasn't been blocked for unavailability (safety check)
     // This shouldn't happen since frontend also checks, but double-check here
@@ -57,8 +64,15 @@ export async function POST(req: NextRequest) {
           }
         }
       } catch (err) {
-        // Fail-open: allow checkout to proceed if verification fails
-        console.warn('[permits/checkout] Availability verification failed (non-blocking):', err)
+        console.error('[permits/checkout] Availability verification failed:', err)
+        Sentry.captureException(err, {
+          tags: { area: 'sales-funnel', stage: 'permit-checkout-verification', tier },
+          extra: { intakeId },
+        })
+        return NextResponse.json(
+          { error: 'We could not verify your saved permit request. Nothing was charged. Please try again.' },
+          { status: 503 },
+        )
       }
     }
 
@@ -107,6 +121,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ url: session.url })
   } catch (err: any) {
     console.error('[permits/checkout]', err?.message)
+    Sentry.captureException(err, {
+      tags: { area: 'sales-funnel', stage: 'permit-checkout-creation' },
+    })
     return NextResponse.json({ error: 'Checkout failed' }, { status: 500 })
   }
 }

@@ -8,10 +8,9 @@ export const metadata: Metadata = {
   description: 'Sign in to your Kealee portal — Homeowner, Contractor, or Developer.',
 }
 
-// Portal URLs configured per environment
-const ownerUrl      = process.env.NEXT_PUBLIC_PORTAL_OWNER_URL      ?? ''
-const contractorUrl = process.env.NEXT_PUBLIC_PORTAL_CONTRACTOR_URL ?? ''
-const developerUrl  = process.env.NEXT_PUBLIC_PORTAL_DEVELOPER_URL  ?? ''
+// The owner has a dedicated portal. Contractor and developer acquisition and
+// account entry are intentionally consolidated in the Marketplace.
+const ownerUrl = process.env.NEXT_PUBLIC_PORTAL_OWNER_URL ?? ''
 
 const ROLE_PORTALS = [
   {
@@ -30,8 +29,8 @@ const ROLE_PORTALS = [
     tagline:     'Contractor Portal',
     description: 'Manage leads, active projects, bids, field operations, and payments.',
     accent:      '#E8793A',
-    loginUrl:    `${contractorUrl}/login`,
-    signupUrl:   `${contractorUrl}/signup`,
+    loginUrl:    '/auth/login?next=/marketplace',
+    signupUrl:   '/marketplace?audience=contractor',
     signupLabel: 'Apply to Join',
   },
   {
@@ -40,8 +39,8 @@ const ROLE_PORTALS = [
     tagline:     'Developer Portal',
     description: 'Land pipeline, feasibility analysis, capital stack, and multi-project portfolio analytics.',
     accent:      '#805AD5',
-    loginUrl:    `${developerUrl}/login`,
-    signupUrl:   `${developerUrl}/signup`,
+    loginUrl:    '/auth/login?next=/marketplace',
+    signupUrl:   '/marketplace?audience=developer',
     signupLabel: 'Request Access',
   },
 ]

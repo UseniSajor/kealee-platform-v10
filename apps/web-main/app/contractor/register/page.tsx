@@ -574,7 +574,7 @@ export default function ContractorRegisterPage() {
                   type="button"
                   variant="ghost"
                   size="lg"
-                  href="/contractors"
+                  href="/marketplace?audience=contractor"
                 >
                   Cancel
                 </Button>
@@ -610,7 +610,7 @@ export default function ContractorRegisterPage() {
         <p className="text-center text-sm text-gray-500 mt-6">
           Already a member?{' '}
           <a
-            href={`${process.env.NEXT_PUBLIC_PORTAL_CONTRACTOR_URL ?? 'http://localhost:3021'}/login`}
+            href="/auth/login?next=/marketplace"
             className="font-medium hover:underline"
             style={{ color: '#2ABFBF' }}
           >

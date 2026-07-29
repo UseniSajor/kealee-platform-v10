@@ -37,7 +37,7 @@ const CATEGORIES = [
   {
     id: 'estimation' as const,
     label: 'Cost Estimation',
-    description: 'RSMeans-validated, lender-ready cost documentation.',
+    description: 'Regional cost-reference documentation with professional-review options.',
     accent: '#4A8FA8',
   },
   {

@@ -196,7 +196,7 @@ export default function CostEstimateIntakePage() {
             <h1 className="text-3xl font-bold text-slate-900">Cost Estimate</h1>
           </div>
           <p className="text-lg text-slate-600">
-            Trade-by-trade cost breakdown validated against RSMeans data
+            Trade-by-trade cost breakdown using documented DMV regional references
           </p>
           <p className="text-xl font-bold text-blue-600 mt-2">{formatPrice(pricing.amount, 'display')}</p>
         </div>

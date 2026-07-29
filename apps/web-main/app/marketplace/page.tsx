@@ -200,7 +200,7 @@ const SERVICE_CATEGORIES: ServiceCategory[] = [
 const BUILD_VIDEOS = [
   { tag: 'Design',   title: 'AI Design + Validation',  description: 'See how upload-to-concept works: AI generates layouts, then staff validate zoning, structure, and cost band.', thumb: 'https://rkreqfpkxavqpsqexbfs.supabase.co/storage/v1/object/public/marketing-media/home/design.jpg',   video: '/media/service-videos/home-design-video.mp4' },
   { tag: 'Permits',  title: 'Permits We File & Track', description: 'We prepare the drawing package, submit to the agency, and respond to reviewer comments for you.',         thumb: 'https://rkreqfpkxavqpsqexbfs.supabase.co/storage/v1/object/public/marketing-media/home/permits.jpg', video: '/media/service-videos/home-permits-video.mp4' },
-  { tag: 'Estimate', title: 'Real Construction Costs', description: 'RSMeans-validated, line-item estimates your contractors can bid against with confidence.',                thumb: 'https://rkreqfpkxavqpsqexbfs.supabase.co/storage/v1/object/public/marketing-media/home/estimate.jpg', video: '/media/service-videos/home-estimate-video.mp4' },
+  { tag: 'Estimate', title: 'Documented Cost Planning', description: 'Line-item planning estimates with regional references, scope assumptions, and optional professional review.', thumb: 'https://rkreqfpkxavqpsqexbfs.supabase.co/storage/v1/object/public/marketing-media/home/estimate.jpg', video: '/media/service-videos/home-estimate-video.mp4' },
   { tag: 'Build',    title: 'From Foundation to Final', description: 'Every milestone, payment, document, and site photo tracked end-to-end in your project workspace.',       thumb: 'https://rkreqfpkxavqpsqexbfs.supabase.co/storage/v1/object/public/marketing-media/home/build.jpg',    video: '/media/service-videos/home-build-video.mp4' },
 ]
 
@@ -248,7 +248,7 @@ function SeeItBuiltBand() {
 
 const CROSS_SERVICES = [
   { label: 'Design Concept',      price: 'From $149', href: '/concept',                  Icon: Zap,        desc: 'AI renders, materials & layout for your project' },
-  { label: 'Contractor Match',    price: '$199',       href: '/intake/contractor_match',  Icon: Users,      desc: 'Matched to 3 vetted local contractors' },
+  { label: 'Contractor Match',    price: '$199',       href: '/intake/contractor_match',  Icon: Users,      desc: 'Request matches from available marketplace professionals' },
   { label: 'Project Estimate',    price: 'From $595',  href: '/estimate',                 Icon: Calculator, desc: 'Detailed cost breakdown for contractor bidding' },
 ]
 
@@ -304,7 +304,7 @@ const COMBO_PACKAGES = [
 
 // ─── Contractors ───────────────────────────────────────────────────────────────
 
-const CONTRACTORS: ContractorCardData[] = [
+const PROFILE_DEMOS_DO_NOT_PUBLISH: ContractorCardData[] = [
   {
     id: 'c1',
     name: 'Carlos Rivera',
@@ -466,6 +466,10 @@ const CONTRACTORS: ContractorCardData[] = [
     accentColor: '#6B46C1',
   },
 ]
+
+// Public profiles must come from verified production records. Demo people,
+// reviews, credentials, and project counts are never customer-facing evidence.
+const CONTRACTORS: ContractorCardData[] = []
 
 const DEFAULT_FILTERS: Filters = {
   minRating: 0,
@@ -705,7 +709,7 @@ export default function MarketplacePage() {
             What are you building?
           </h1>
           <p className="mt-2 text-sm text-gray-500 mb-6">
-            Browse renovation types and connect with vetted local contractors in your area.
+            Browse project types, request contractor matches, or join the professional marketplace.
           </p>
 
           {/* Search */}
@@ -753,11 +757,11 @@ export default function MarketplacePage() {
           <div className="mx-auto max-w-3xl px-4 flex flex-wrap items-center justify-center gap-x-6 gap-y-1 text-xs text-gray-500">
             <span className="flex items-center gap-1.5">
               <Shield className="h-3.5 w-3.5 text-green-500" />
-              Licensed contractors
+              Credential status shown on profiles
             </span>
             <span className="flex items-center gap-1.5">
               <Users className="h-3.5 w-3.5 text-blue-500" />
-              Escrow-protected
+              Payment terms shown before purchase
             </span>
             <span className="flex items-center gap-1.5">
               <Zap className="h-3.5 w-3.5 text-orange-500" />
@@ -902,24 +906,16 @@ export default function MarketplacePage() {
         {filtered.length === 0 ? (
           <EmptyState
             icon="🔍"
-            title={activeTrade ? `No ${activeTrade} contractors yet` : 'No contractors found'}
+            title={activeTrade ? `No published ${activeTrade} profiles yet` : 'Marketplace directory is opening soon'}
             description={
               activeTrade
                 ? 'Be the first to join our contractor network for this trade.'
-                : 'Try adjusting your filters or search terms to find contractors in your area.'
+                : 'Only real profiles with confirmed business information will be published. Contractors and construction service firms can apply now.'
             }
             action={
               activeTrade
                 ? { label: 'Join Our Network', href: '/contractor/register' }
-                : {
-                    label: 'Clear Filters',
-                    onClick: () => {
-                      setFilters(DEFAULT_FILTERS)
-                      setActiveTrade('')
-                      setActiveCategory('')
-                      setSearch('')
-                    },
-                  }
+                : { label: 'Apply to Join', href: '/contractor/register' }
             }
           />
         ) : (

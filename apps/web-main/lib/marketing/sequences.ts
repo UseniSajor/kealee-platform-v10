@@ -237,7 +237,7 @@ export const SEQUENCES: Record<SequenceId, SequenceStep[]> = {
       type:         'email',
       delaySeconds: 3 * DAY,
       subject:      'Your concept is ready — permit-ready drawings are your next step',
-      html:         `<p>Hi {firstName},</p><p>Your concept package should have arrived by now — <strong>including your RSMeans cost estimate</strong> (no separate purchase).</p><p>Your next step:</p><ul><li><strong>Permit-ready drawings?</strong> Licensed architect/PE drawing set — <a href="https://kealee.com/intake/professional_drawings">professional drawings</a></li><li><strong>Ready to file?</strong> Full permit package — <a href="https://kealee.com/permits">permit filing from $${PERMIT_BASIC_PRICE}</a></li><li><strong>Ready to hire?</strong> Vetted contractor bids — <a href="https://kealee.com/contractors">contractor match</a></li></ul>`,
+      html:         `<p>Hi {firstName},</p><p>Your concept package should have arrived by now — including its planning-level cost range.</p><p>Your next step:</p><ul><li><strong>Permit-ready drawings?</strong> Purchase a qualified-professional drawing package — <a href="https://kealee.com/intake/professional_drawings">professional drawings</a></li><li><strong>Ready to file?</strong> Choose a permit coordination package — <a href="https://kealee.com/permits">permit services from $${PERMIT_BASIC_PRICE}</a></li><li><strong>Ready to hire?</strong> Review available screened providers — <a href="https://kealee.com/marketplace">construction marketplace</a></li></ul>`,
     },
   ],
 }

@@ -6,7 +6,7 @@ export default function MilestonePaySection() {
       <div className="sec-s-i">
         <div className="ey">Milestone pay &amp; escrow</div>
         <h2 className="h2">Your money does not move until you say so.</h2>
-        <p className="sub">Every project funded through Kealee uses milestone-based escrow. Payments release when you approve completed work — not before.</p>
+        <p className="sub">Eligible marketplace engagements may offer milestone-based payment protection. Provider, funding, release, fee, dispute, and approval terms are shown before enrollment.</p>
 
         <div className="mp-layout">
           {/* Visual */}
@@ -15,8 +15,8 @@ export default function MilestonePaySection() {
             <div className="mp-step">
               <div className="mp-ico ico-lock">🔒</div>
               <div className="mp-step-body">
-                <h5>Project funded — funds deposited to escrow</h5>
-                <p>Your project budget is held in a secure escrow account. The contractor cannot access it.</p>
+                <h5>Eligible project funded under the displayed payment terms</h5>
+                <p>When payment protection is offered, the provider and account terms are identified before funds are collected.</p>
               </div>
             </div>
             <div className="mp-step">
@@ -38,8 +38,8 @@ export default function MilestonePaySection() {
             <div className="mp-step">
               <div className="mp-ico ico-done">✓✓</div>
               <div className="mp-step-body">
-                <h5>Project complete — final payment + lien waiver</h5>
-                <p>Lien waiver collected automatically. Final 10% retainage released after punch list sign-off.</p>
+                <h5>Project complete — final review</h5>
+                <p>Final release, retainage, and lien-waiver requirements follow the agreement accepted for that engagement.</p>
                 <div className="rel">→ Project closed</div>
               </div>
             </div>
@@ -50,22 +50,22 @@ export default function MilestonePaySection() {
             <div className="mp-feat">
               <div className="mp-ficon">🔒</div>
               <div>
-                <h4>Escrow on every project</h4>
-                <p>Project funds are held in escrow from day one. No payment leaves until you approve a milestone. Standard on all Kealee-coordinated projects at no extra cost.</p>
+                <h4>Payment protection when explicitly enabled</h4>
+                <p>Payment protection is available only for engagements that explicitly show it as enabled. Funding, release, fee, dispute, and approval terms are presented before enrollment.</p>
               </div>
             </div>
             <div className="mp-feat">
               <div className="mp-ficon">📄</div>
               <div>
-                <h4>Lien waivers collected automatically</h4>
-                <p>At each payment release, your contractor submits a conditional lien waiver. At final payment, an unconditional waiver is collected. Your property title stays clean.</p>
+                <h4>Lien-waiver workflow when included</h4>
+                <p>The engagement terms identify any conditional or final lien-waiver requirements. Owners should confirm local requirements and retain appropriate legal advice.</p>
               </div>
             </div>
             <div className="mp-feat">
               <div className="mp-ficon">💰</div>
               <div>
-                <h4>10% retainage until final sign-off</h4>
-                <p>Standard 10% holdback on the final payment. Released after punch list is complete and you confirm the work is done to spec.</p>
+                <h4>Retainage defined by agreement</h4>
+                <p>Any holdback percentage, release condition, and punch-list process is stated in the project agreement.</p>
               </div>
             </div>
             <div className="mp-feat">
@@ -76,11 +76,11 @@ export default function MilestonePaySection() {
               </div>
             </div>
             <div className="mp-tiers">
-              <div className="tr"><span className="trn">Milestone pay &amp; escrow</span><span className="trp">Free with project</span></div>
+              <div className="tr"><span className="trn">Milestone payment protection</span><span className="trp">When offered</span></div>
               <div className="tr"><span className="trn">Custom contract</span><span className="trp">$999</span></div>
               <div className="tr"><span className="trn">Full legal package</span><span className="trp">$3,499</span></div>
             </div>
-            <Link href="/developers#payments" className="scta" style={{ marginTop: 4 }}>Learn about payment protection</Link>
+            <Link href="/marketplace?audience=developer" className="scta" style={{ marginTop: 4 }}>Explore the developer marketplace</Link>
           </div>
         </div>
       </div>

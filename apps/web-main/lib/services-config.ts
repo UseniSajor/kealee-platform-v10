@@ -85,7 +85,7 @@ export const SERVICES: Service[] = [
     intakePath: 'kitchen_remodel',
     label: 'Kitchen Remodel',
     shortLabel: 'Kitchen',
-    description: 'Transform your kitchen with AI-generated concepts, detailed cost estimates, and permit-ready plans. From updated cabinets to full gut-renovations with custom islands.',
+    description: 'Transform your kitchen with AI-generated planning concepts, cost ranges, and a permit-path summary. Permit-ready professional drawings are a separate service when required.',
     priceDisplay: 'From $149',
     heroImage: '/images/services/kitchen-concept.jpg',
     phase: 'precon',

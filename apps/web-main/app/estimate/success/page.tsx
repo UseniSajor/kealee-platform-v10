@@ -45,7 +45,7 @@ export default function EstimateSuccessPage() {
               <div>
                 <h3 className="font-semibold text-slate-900">RSMeans Validation</h3>
                 <p className="text-sm text-slate-600">
-                  Pricing is validated against RSMeans data and local DMV market rates. Lender-ready PDF included.
+                  Pricing uses documented regional references and project assumptions. Professional or lender-facing review is included only when stated in your purchased package.
                 </p>
               </div>
             </div>

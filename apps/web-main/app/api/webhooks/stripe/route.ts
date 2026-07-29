@@ -14,6 +14,7 @@ import { createStripe } from '@/lib/stripe-client'
 import { isStripeWebhookSideEffectsDisabledOnThisDeployment } from '@/lib/stripe-vercel-guard'
 import { getStripeWebhookSecrets, verifyStripeWebhookEvent } from '@/lib/stripe-webhook-verify'
 import { processStripeWebhookEvent } from '@/lib/stripe-webhook-handler'
+import * as Sentry from '@sentry/nextjs'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 60
@@ -40,11 +41,19 @@ export async function POST(req: NextRequest) {
 
   if (!stripeKey) {
     console.error('[stripe-webhook] Missing STRIPE_SECRET_KEY')
+    Sentry.captureMessage('Stripe webhook missing secret key', {
+      level: 'fatal',
+      tags: { area: 'payment-fulfillment', stage: 'webhook-configuration' },
+    })
     return NextResponse.json({ error: 'STRIPE_SECRET_KEY not configured' }, { status: 503 })
   }
 
   if (webhookSecrets.length === 0) {
     console.error('[stripe-webhook] Missing STRIPE_WEBHOOK_SECRET (whsec_…) on this deployment')
+    Sentry.captureMessage('Stripe webhook signing secret missing', {
+      level: 'fatal',
+      tags: { area: 'payment-fulfillment', stage: 'webhook-configuration' },
+    })
     return NextResponse.json(
       {
         error: 'STRIPE_WEBHOOK_SECRET not configured',
@@ -83,6 +92,14 @@ export async function POST(req: NextRequest) {
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err)
     console.error('[stripe-webhook] processing failed:', event.type, event.id, message)
+    Sentry.captureException(err, {
+      tags: {
+        area: 'payment-fulfillment',
+        stage: 'webhook-processing',
+        stripeEventType: event.type,
+      },
+      extra: { stripeEventId: event.id },
+    })
     return NextResponse.json(
       { error: 'Webhook processing failed', eventId: event.id, message },
       { status: 500 },

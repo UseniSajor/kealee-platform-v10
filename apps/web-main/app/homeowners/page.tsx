@@ -19,8 +19,8 @@ const BENEFITS = [
   },
   {
     icon: '💳',
-    title: 'Escrow-Protected Payments',
-    desc: "Funds are held securely until each milestone is verified complete. You never pay for work that hasn't been done.",
+    title: 'Defined Payment Milestones',
+    desc: 'For eligible marketplace engagements, the payment provider, release conditions, fees, and dispute terms are shown before enrollment.',
   },
   {
     icon: '🤖',
@@ -30,7 +30,7 @@ const BENEFITS = [
   {
     icon: '🔨',
     title: 'Vetted Contractor Network',
-    desc: 'Every contractor is licensed, insured, background-checked, and reputation-scored before entering the Kealee network.',
+    desc: 'Marketplace providers display credential-review status, service area, and project fit so you can evaluate each candidate before hiring.',
   },
   {
     icon: '📊',
@@ -53,7 +53,7 @@ const WORKFLOW = [
   {
     number: 2,
     title: 'Price Your Project',
-    desc: 'AI cost estimate included with all projects. Upgrade to a Detailed Estimate ($595) or Certified Estimate ($1,850) for lender-ready reports.',
+    desc: 'Planning cost ranges are included where stated. Detailed and professionally reviewed estimate packages are available separately; confirm lender requirements before purchase.',
   },
   {
     number: 3,
@@ -62,8 +62,8 @@ const WORKFLOW = [
   },
   {
     number: 4,
-    title: 'Get Matched to Contractors',
-    desc: 'AI matching surfaces verified contractors in your area with the right trade, license, and capacity for your project.',
+    title: 'Explore the Marketplace',
+    desc: 'After preconstruction, request available provider matches and review the business and credential status displayed on each profile before hiring.',
   },
   {
     number: 5,
@@ -73,7 +73,7 @@ const WORKFLOW = [
   {
     number: 6,
     title: 'Track Every Milestone',
-    desc: 'Escrow-protected payments release only when you approve each milestone. Full project visibility from day one.',
+    desc: 'Track agreed milestones and documents. Payment protection applies only when explicitly enabled under the terms shown for the engagement.',
   },
 ]
 
@@ -98,7 +98,7 @@ const PRICING = [
     items: [
       { name: 'AI Estimate', price: 'Free', note: 'Included with all projects' },
       { name: 'Detailed Estimate', price: '$595', note: 'Professional cost analyst review' },
-      { name: 'Certified Estimate', price: '$1,850', note: 'Lender-ready certified report' },
+      { name: 'Certified Estimate', price: '$1,850', note: 'Professionally reviewed format as described in the package; confirm lender requirements before purchase' },
     ],
   },
   {
@@ -132,7 +132,7 @@ export default function HomeownersPage() {
         subhead="Plan, price, permit, and control your project. Transparent pricing at every step — pay only for what your project needs."
         cta={{ label: 'Start with $585 AI Concept Package', href: '/homeowners/start' }}
         secondaryCta={{ label: 'Browse Contractors', href: '/marketplace' }}
-        trustItems={['No surprise invoices', 'Escrow-protected payments', 'Licensed & insured contractors', 'AI advisor included']}
+        trustItems={['Upfront package scope', 'Documented assumptions', 'Provider status shown before hiring', 'AI planning assistant included']}
         dark
       />
 

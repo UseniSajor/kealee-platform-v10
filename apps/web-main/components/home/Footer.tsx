@@ -165,7 +165,7 @@ export function Footer() {
       <div className="border-t border-white/10">
         <Container>
           <div className="flex flex-col gap-3 py-5 text-xs text-gray-500 sm:flex-row sm:items-center sm:justify-between">
-            <p>&copy; {new Date().getFullYear()} Kealee Services LLC. All rights reserved.</p>
+            <p>Copyright © 2026 Kealee. All Rights Reserved.</p>
             <div className="flex flex-wrap items-center gap-4">
               {FOOTER_NAV.legal.map(link => (
                 <Link

@@ -26,7 +26,7 @@ export default function HowItWorksSection() {
         <div className="fwst">
           <div className="fwn">4</div>
           <h4>Pick a contractor</h4>
-          <p>Matched bids from verified contractors. Escrow and custom contract included.</p>
+          <p>Optional Marketplace handoff after preconstruction. Review provider status, bids, payment terms, and contracts before hiring.</p>
           <div className="fwpr">Free → $2,499</div>
         </div>
         <div className="fwst">

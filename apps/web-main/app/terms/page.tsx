@@ -9,7 +9,7 @@ export default function TermsPage() {
   return (
     <main className="mx-auto max-w-3xl px-6 py-16 text-slate-800">
       <h1 className="text-3xl font-bold mb-2">Terms of Service</h1>
-      <p className="text-sm text-slate-500 mb-10">Effective date: May 23, 2026 · Last updated: May 23, 2026</p>
+      <p className="text-sm text-slate-500 mb-10">Effective date: May 23, 2026 · Last updated: July 29, 2026</p>
 
       <section className="space-y-8 text-sm leading-7">
 
@@ -21,8 +21,10 @@ export default function TermsPage() {
             (&ldquo;Terms&rdquo;). If you do not agree, do not use the Platform.
           </p>
           <p className="mt-2">
-            These Terms constitute a binding agreement between you and <strong>Kealee Services LLC</strong>
-            (&ldquo;Kealee,&rdquo; &ldquo;we,&rdquo; &ldquo;us,&rdquo; or &ldquo;our&rdquo;).
+            The Platform is operated by <strong>Kealee Construction LLC</strong> (&ldquo;Kealee,&rdquo;
+            &ldquo;we,&rdquo; &ldquo;us,&rdquo; or &ldquo;our&rdquo;). The order summary, statement of
+            work, professional engagement, or construction agreement for a project identifies the legal
+            entity or independent platform professional responsible for each contracted service.
           </p>
         </div>
 
@@ -32,7 +34,7 @@ export default function TermsPage() {
           <ul className="list-disc pl-5 space-y-1 mt-2">
             <li><strong>AI Concept Packages</strong> — AI-generated design concepts, floor plan options, scope summaries, and cost estimates for home improvement projects</li>
             <li><strong>Permit Services</strong> — preparation and filing assistance for building permits in DC, Maryland, and Virginia</li>
-            <li><strong>Contractor Marketplace</strong> — a platform to connect homeowners with vetted contractors and design professionals</li>
+            <li><strong>Professional Marketplace</strong> — a platform handoff to contractors, architects, engineers, estimators, permit specialists, and related construction professionals after preconstruction</li>
             <li><strong>Owner Portal</strong> — a dashboard to view and manage your project deliverables</li>
             <li><strong>Estimation Tools</strong> — construction cost estimation based on project scope</li>
           </ul>
@@ -83,21 +85,33 @@ export default function TermsPage() {
         <div>
           <h2 className="text-lg font-semibold mb-2">6. Permit Services Disclaimer</h2>
           <p>
-            Kealee assists with permit application preparation and submission but does not guarantee permit
-            approval. Permit approvals are at the sole discretion of the applicable jurisdiction. Kealee is not
-            a licensed architectural or engineering firm. Complex projects may require additional professional
-            services beyond what Kealee provides.
+            Kealee provides preconstruction coordination that may include permit-path research, document
+            collection, application preparation, submission assistance, and status coordination as stated in
+            the purchased scope. Kealee does not guarantee permit approval; the applicable jurisdiction controls
+            acceptance, comments, inspections, timing, and approval.
+          </p>
+          <p className="mt-2">
+            When law or project scope requires architectural, engineering, estimating, trade, or contracting
+            licensure, the project agreement identifies the licensed and insured professional or contractor of
+            record before that regulated work begins. That party is responsible for its professional judgment,
+            seals, certifications, filings, insurance, and work within its contracted scope.
           </p>
         </div>
 
         <div>
-          <h2 className="text-lg font-semibold mb-2">7. Contractor Marketplace</h2>
+          <h2 className="text-lg font-semibold mb-2">7. Professional Handoff and Marketplace</h2>
           <p>
-            Kealee does not employ contractors and is not a party to any agreement between homeowners and
-            contractors. We vet contractors for licensing and insurance but do not guarantee the quality of
-            their work. Disputes between homeowners and contractors must be resolved between the parties.
-            Kealee&apos;s milestone payment system is a convenience feature and does not create any contractual
-            obligation on Kealee&apos;s part.
+            A professional matched through the Platform becomes the professional or contractor of record only
+            after the project owner and that professional accept a written engagement identifying scope,
+            jurisdiction, license information, insurance status, fees, and responsibilities. Platform status
+            alone does not appoint a professional of record.
+          </p>
+          <p className="mt-2">
+            Marketplace professionals are independent businesses unless a project agreement expressly identifies
+            Kealee Construction LLC as the contracting party. When Kealee Construction LLC is expressly named as
+            the contractor for a project, its agreement identifies the licensed scope, jurisdiction, insurance,
+            responsible parties, and applicable subcontractor or professional relationships. Payment protection
+            applies only when the agreement and checkout terms explicitly enable it.
           </p>
         </div>
 
@@ -174,7 +188,7 @@ export default function TermsPage() {
           <h2 className="text-lg font-semibold mb-2">15. Contact</h2>
           <p>
             Questions about these Terms? Contact us at:<br />
-            <strong>Kealee Services LLC</strong><br />
+            <strong>Kealee Construction LLC</strong><br />
             <a href="mailto:contact@kealee.com" className="text-[#E8724B] underline">contact@kealee.com</a>
           </p>
         </div>

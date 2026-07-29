@@ -3,6 +3,7 @@ import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { PROJECT_PATH_META } from '@kealee/intake'
 import { mergeAttributionMetadata, parseUtmFromRequest } from '@/lib/marketing/utm-metadata'
 import { trackLeadSubmitted } from '@/lib/marketing/ga4-server'
+import * as Sentry from '@sentry/nextjs'
 
 export const dynamic = 'force-dynamic'
 
@@ -107,22 +108,29 @@ export async function POST(req: NextRequest) {
           paymentAmount: totalAmount,
         })
       }
-      console.warn('[intake/submit] Supabase save failed, using fallback id:', error?.message)
+      console.error('[intake/submit] Supabase save failed:', error?.message)
+      Sentry.captureMessage('Structured intake persistence failed', {
+        level: 'error',
+        tags: { area: 'sales-funnel', stage: 'structured-intake-persistence', projectPath },
+        extra: { databaseError: error?.message },
+      })
     } catch (sbErr) {
-      console.warn('[intake/submit] Supabase unavailable, using fallback id:', (sbErr as Error)?.message)
+      console.error('[intake/submit] Supabase unavailable:', (sbErr as Error)?.message)
+      Sentry.captureException(sbErr, {
+        tags: { area: 'sales-funnel', stage: 'structured-intake-persistence', projectPath },
+      })
     }
 
-    // Fail-open: generate a temporary ID so the user can still proceed to payment.
-    // The intake data is embedded in Stripe metadata at checkout time.
-    const fallbackId = `tmp_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`
     return NextResponse.json({
-      ok: true,
-      intakeId: fallbackId,
-      requiresPayment: meta?.requiresPayment ?? true,
-      paymentAmount: totalAmount,
-    })
+      ok: false,
+      errors: ['We could not save your project securely. Nothing was charged. Please try again or contact hello@kealee.com.'],
+      code: 'INTAKE_PERSISTENCE_FAILED',
+    }, { status: 503 })
   } catch (err) {
     console.error('[intake/submit]', err)
+    Sentry.captureException(err, {
+      tags: { area: 'sales-funnel', stage: 'structured-intake-create' },
+    })
     return NextResponse.json({ ok: false, errors: ['Internal error'] }, { status: 500 })
   }
 }

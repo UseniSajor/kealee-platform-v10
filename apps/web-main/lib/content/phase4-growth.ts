@@ -19,14 +19,14 @@ export const audiencePaths = [
     audience: 'Contractors',
     intent: 'I want better qualified leads, bid context, and workflow tools.',
     outcome: 'Get matched to scoped projects, manage bids, and use Kealee workspace tools to reduce preconstruction drag.',
-    href: '/contractors',
+    href: '/marketplace?audience=contractor',
     cta: 'Explore contractor path',
   },
   {
     audience: 'Developers and project owners',
     intent: 'I need feasibility, budget control, approvals, and project oversight.',
     outcome: 'Use feasibility, pro forma, estimate, permit, and project-management workflows around the lifecycle of a deal.',
-    href: '/developers',
+    href: '/marketplace?audience=developer',
     cta: 'Explore developer path',
   },
 ]

@@ -3,9 +3,9 @@ import { Heading } from '@/components/ui/Heading'
 
 const PHASES = [
   { n: 1, title: 'AI Design Concepts', emoji: '📐', group: 'design',   desc: 'AI renders, floor plan options, and zoning/permit path reports in 2–5 days.' },
-  { n: 2, title: 'Cost Estimating',   emoji: '📊', group: 'estimate', desc: 'Line-item material and labor estimates validated against RSMeans regional data.' },
-  { n: 3, title: 'Permit Filing',      emoji: '📋', group: 'permit',   desc: 'Preparation and submission of full permit packets to county/city agencies.' },
-  { n: 4, title: 'Build & Manage',     emoji: '🏗️', group: 'build',    desc: 'Match with vetted local builders, secure funds in escrow, and track construction progress.' },
+  { n: 2, title: 'Cost Estimating',   emoji: '📊', group: 'estimate', desc: 'Planning estimates use regional cost references; professional review is included only when stated in the selected package.' },
+  { n: 3, title: 'Permit Filing',      emoji: '📋', group: 'permit',   desc: 'Application preparation and filing are available when purchased; jurisdictions control acceptance, review, and approval.' },
+  { n: 4, title: 'Build & Manage',     emoji: '🏗️', group: 'build',    desc: 'Find screened construction providers in the Marketplace and use project controls available for your engagement.' },
 ]
 
 const GROUP_COLOR: Record<string, string> = {

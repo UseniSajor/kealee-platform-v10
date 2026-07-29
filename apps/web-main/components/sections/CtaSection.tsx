@@ -24,7 +24,7 @@ export default function CtaSection() {
             <span className="ccarr">→</span>
           </Link>
           <a
-            href={process.env.NEXT_PUBLIC_CONTRACTOR_PORTAL_URL ?? '/auth/login'}
+            href="/marketplace?audience=contractor"
             className="cc"
           >
             <div>

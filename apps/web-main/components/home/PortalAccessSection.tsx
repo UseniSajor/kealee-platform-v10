@@ -13,11 +13,11 @@ const PORTALS = [
   },
   {
     emoji:   '🔨',
-    title:   'Contractor Portal',
-    role:    'Contractors',
-    desc:    'Manage leads, submit bids, run field operations, and track payments across all active projects.',
+    title:   'Construction Marketplace',
+    role:    'Contractors & Developers',
+    desc:    'Find opportunities, complete business onboarding, and access available contractor and developer services in one place.',
     accent:  '#E8793A',
-    href:    '/login',
+    href:    '/marketplace',
   },
 ]
 
@@ -62,7 +62,7 @@ export function PortalAccessSection() {
               <p className="text-sm text-slate-500 leading-relaxed flex-1">{portal.desc}</p>
 
               <div className="mt-4 flex items-center gap-1 text-sm font-semibold transition-all group-hover:gap-2" style={{ color: portal.accent }}>
-                Sign In <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+                {portal.href === '/marketplace' ? 'Open Marketplace' : 'Sign In'} <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
               </div>
             </Link>
           ))}
@@ -74,8 +74,8 @@ export function PortalAccessSection() {
             Start a project
           </Link>
           {' '}or{' '}
-          <Link href="/contractor/register" className="font-semibold hover:underline" style={{ color: '#2ABFBF' }}>
-            join as a contractor
+          <Link href="/marketplace?audience=contractor" className="font-semibold hover:underline" style={{ color: '#2ABFBF' }}>
+            join the marketplace
           </Link>
         </p>
       </Container>

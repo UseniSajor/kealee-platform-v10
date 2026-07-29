@@ -49,7 +49,7 @@ const FAQS = [
   },
   {
     q: 'How does Kealee screen contractors?',
-    a: 'Every contractor in our network goes through state license verification (DC, MD, or VA), general liability insurance check, bond verification where required, identity verification, and a credentials review. Verified status is re-checked annually. Contractors are removed immediately on failed re-verification.',
+    a: 'Marketplace profiles display the credential checks completed by Kealee and the date or status of available license and insurance records. Requirements vary by trade and jurisdiction. Customers should confirm current credentials and engagement terms before hiring.',
   },
   {
     q: 'How does contractor verification work?',
@@ -57,11 +57,11 @@ const FAQS = [
   },
   {
     q: 'What does milestone pay / escrow protect me from?',
-    a: 'Milestone pay prevents contractors from demanding large upfront payments. Funds are held in escrow and released only after you approve each completed phase. You are never required to pay for work not yet done. Each release collects a conditional lien waiver, and the final 10% retainage releases only after punch list sign-off and an unconditional lien waiver.',
+    a: 'For engagements where payment protection is explicitly enabled, the funding, milestone approval, lien-waiver, retainage, fee, and dispute rules are shown before enrollment. Availability and terms vary by engagement.',
   },
   {
     q: 'How does milestone escrow work?',
-    a: 'Your project funds are held in escrow from project start. They release to the contractor only after you approve a completed milestone. Each release collects a conditional lien waiver. Final 10% retainage releases after punch list sign-off and unconditional lien waiver receipt. Escrow is standard on all Kealee-coordinated projects at no extra cost.',
+    a: 'Payment protection is not assumed for every project. When available and selected, the engagement summary identifies the payment provider, funding rules, approval sequence, fees, lien-waiver requirements, and retainage terms.',
   },
   {
     q: 'What areas do you cover?',

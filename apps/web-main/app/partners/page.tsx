@@ -85,7 +85,7 @@ export default function PartnersPage() {
             Customer intake demo
           </Link>
           {' · '}
-          <Link href="/contractors/subscribe" className="underline text-violet-300">
+          <Link href="/marketplace?audience=contractor" className="underline text-violet-300">
             Contractor network
           </Link>
         </p>

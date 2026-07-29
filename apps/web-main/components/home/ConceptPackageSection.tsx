@@ -46,7 +46,7 @@ export function ConceptPackageSection() {
             </div>
 
             <h2 className="text-3xl font-bold text-slate-900 font-display sm:text-4xl lg:text-[40px] leading-tight">
-              From Design Concept to permit ready Plans
+              From Design Concept to a Clear Permit Path
             </h2>
 
             <p className="mt-5 text-lg text-slate-600 leading-relaxed">
@@ -60,7 +60,7 @@ export function ConceptPackageSection() {
                 'AI concept renderings (3–12 based on package tier)',
                 'Layout direction brief (Essential); scaled floor plans (Premium & Premium+)',
                 'Zoning & permit path analysis for your parcel',
-                'Bill of materials with line-item cost estimates',
+                'Planning-level bill of materials and cost ranges',
                 'Design direction brief with materials & finishes',
                 'Email support on all tiers; live consultation on Premium+',
               ].map((item) => (
@@ -85,6 +85,12 @@ export function ConceptPackageSection() {
                 {' '}· 2–5 day concept delivery
               </div>
             </div>
+
+            <p className="mt-4 text-xs leading-relaxed text-slate-500">
+              AI concepts are preliminary planning documents. Permit-ready drawings, stamps,
+              certifications, filing, and agency approval are separate services performed or
+              reviewed by qualified professionals when explicitly included in your order.
+            </p>
 
             <Link
               href="/capture/demo"

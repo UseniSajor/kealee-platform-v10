@@ -425,7 +425,7 @@ function RevenueProductPage({ product }: { product: RevenueProductConfig }) {
   const copy = CUSTOMER_TYPE_COPY[product.customerType]
   const jsonLd = {
     '@context': 'https://schema.org', '@type': 'Service', name: product.name,
-    provider: { '@type': 'Organization', name: 'Kealee Services LLC', url: 'https://kealee.com' },
+    provider: { '@type': 'Organization', name: 'Kealee Construction LLC', url: 'https://kealee.com' },
     audience: { '@type': 'Audience', audienceType: product.customerType },
     offers: { '@type': 'Offer', price: (product.priceCents / 100).toFixed(2), priceCurrency: 'USD', availability: 'https://schema.org/InStock' },
   }

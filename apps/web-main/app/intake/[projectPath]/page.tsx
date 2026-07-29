@@ -275,12 +275,6 @@ export default function IntakePage() {
   const sqftFromUrl = searchParams.get('sqft') ?? ''
   const upsellFromIntake = searchParams.get('fromIntake') ?? ''
   const upsellSourcePath = searchParams.get('sourcePath') ?? ''
-  const requestedClientType = searchParams.get('client')
-  const initialClientType =
-    requestedClientType === 'contractor' || requestedClientType === 'developer' || requestedClientType === 'service-provider'
-      ? requestedClientType
-      : 'owner'
-
   const [step, setStep] = useState<'details' | 'review'>('details')
   const [formError, setFormError] = useState('')
   const [submitting, setSubmitting] = useState(false)
@@ -346,7 +340,7 @@ export default function IntakePage() {
   }, [projectPath, projectId])
 
   const [formData, setFormData] = useState({
-    clientType: initialClientType as 'owner' | 'contractor' | 'developer' | 'service-provider',
+    clientType: 'owner' as 'owner' | 'contractor' | 'developer' | 'service-provider',
     companyName: '',
     proposalClientName: '',
     industryType: '',
@@ -418,9 +412,9 @@ export default function IntakePage() {
           setFormData(prev => ({
             ...prev,
             ...parsed.formData,
-            ...(requestedClientType === 'contractor' || requestedClientType === 'developer' || requestedClientType === 'service-provider'
-              ? { clientType: requestedClientType }
-              : {}),
+            // Professional estimate requests belong exclusively in the
+            // marketplace. Never restore an older professional draft here.
+            clientType: 'owner',
           }))
         }
         if (parsed.uploadedFiles) {
@@ -438,7 +432,7 @@ export default function IntakePage() {
     } finally {
       setIsPersistedDataLoaded(true)
     }
-  }, [projectPath, requestedClientType])
+  }, [projectPath])
 
   useEffect(() => {
     if (!isPersistedDataLoaded) return
@@ -1006,56 +1000,6 @@ export default function IntakePage() {
                   <div className="flex items-start gap-3 rounded-xl bg-red-50 border border-red-200 p-4 text-red-700">
                     <AlertCircle className="h-5 w-5 shrink-0 mt-0.5" />
                     <span className="text-sm">{formError}</span>
-                  </div>
-                )}
-
-                {isEstimateIntake && (
-                  <fieldset>
-                    <legend className="block text-sm font-semibold text-slate-800 mb-2">I’m requesting this estimate as</legend>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
-                      {[
-                        { value: 'owner', label: 'Project owner', hint: 'Plan my project' },
-                        { value: 'contractor', label: 'Contractor / GC', hint: 'Price a bid or change' },
-                        { value: 'developer', label: 'Developer', hint: 'Underwrite a project' },
-                        { value: 'service-provider', label: 'Trade / service firm', hint: 'Price services for a client' },
-                      ].map(option => {
-                        const selected = formData.clientType === option.value
-                        return (
-                          <button
-                            key={option.value}
-                            type="button"
-                            aria-pressed={selected}
-                            onClick={() => setFormData(d => ({ ...d, clientType: option.value as typeof d.clientType }))}
-                            className={`rounded-xl border p-3 text-left transition focus:outline-none focus:ring-2 focus:ring-orange-500 ${
-                              selected ? 'border-orange-500 bg-orange-50' : 'border-slate-300 bg-white hover:border-orange-300'
-                            }`}
-                          >
-                            <span className={`block text-sm font-bold ${selected ? 'text-orange-800' : 'text-slate-800'}`}>{option.label}</span>
-                            <span className="block mt-0.5 text-xs text-slate-500">{option.hint}</span>
-                          </button>
-                        )
-                      })}
-                    </div>
-                  </fieldset>
-                )}
-
-                {isEstimateIntake && formData.clientType !== 'owner' && (
-                  <div>
-                    <label className="block text-sm font-semibold text-slate-800 mb-1.5">Company / organization</label>
-                    <input
-                      type="text"
-                      value={formData.companyName}
-                      onChange={e => setFormData(d => ({ ...d, companyName: e.target.value }))}
-                      className="w-full rounded-lg border border-slate-300 px-4 py-3 text-sm focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20"
-                      placeholder={
-                        formData.clientType === 'contractor'
-                          ? 'ABC General Contractors'
-                          : formData.clientType === 'developer'
-                            ? 'Development entity or sponsor'
-                            : 'Construction trade or service company'
-                      }
-                      autoComplete="organization"
-                    />
                   </div>
                 )}
 
