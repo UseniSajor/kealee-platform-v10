@@ -124,7 +124,7 @@ const statusConfig: Record<string, { label: string; color: string; bg: string; i
   operational: { label: 'Operational', color: '#38A169',              bg: 'rgba(56, 161, 105, 0.1)',  icon: CheckCircle },
   degraded:    { label: 'Degraded',    color: '#E8793A',              bg: 'rgba(232, 121, 58, 0.1)', icon: AlertTriangle },
   warning:     { label: 'Warning',     color: '#E8793A',              bg: 'rgba(232, 121, 58, 0.1)', icon: AlertTriangle },
-  unknown:     { label: 'Unknown',     color: 'rgba(255,255,255,0.3)', bg: 'rgba(255,255,255,0.05)',  icon: XCircle },
+  unknown:     { label: 'Unknown',     color: '#94A3B8', bg: '#F1F5F9',  icon: XCircle },
   not_configured: { label: 'Not configured', color: '#94A3B8', bg: 'rgba(148,163,184,0.1)', icon: XCircle },
   down:        { label: 'Down',        color: '#E53E3E',              bg: 'rgba(229, 62, 62, 0.1)',  icon: XCircle },
 }
@@ -167,8 +167,8 @@ export default function IntegrationsPage() {
     <div>
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="font-display text-2xl font-bold text-white">Integrations</h1>
-          <p className="mt-1 text-sm" style={{ color: 'rgba(255,255,255,0.5)' }}>
+          <h1 className="font-display text-2xl font-bold text-slate-900">Integrations</h1>
+          <p className="mt-1 text-sm" style={{ color: '#64748B' }}>
             {loading
               ? '○ Pinging services…'
               : `${totalOperational}/${totalServices} operational · ${OS_MODULE_INTEGRATIONS.length} OS modules + ${externalServices.length} external · ${intake.total} total intakes · ${intake.today} today`}
@@ -178,7 +178,7 @@ export default function IntegrationsPage() {
           onClick={() => load(true)}
           disabled={refreshing}
           className="inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium"
-          style={{ backgroundColor: '#2A3D5F', color: 'rgba(255,255,255,0.7)' }}
+          style={{ backgroundColor: '#E2E8F0', color: '#334155' }}
         >
           <RefreshCw className={`h-4 w-4 ${(loading || refreshing) ? 'animate-spin' : ''}`} />
           {refreshing ? 'Checking…' : 'Check All'}
@@ -189,7 +189,7 @@ export default function IntegrationsPage() {
         <div className="flex items-center justify-center py-20">
           <div className="text-center">
             <Loader2 className="h-10 w-10 animate-spin mx-auto mb-4" style={{ color: '#2ABFBF' }} />
-            <p className="text-sm" style={{ color: 'rgba(255,255,255,0.4)' }}>Pinging integrations…</p>
+            <p className="text-sm" style={{ color: '#94A3B8' }}>Pinging integrations…</p>
           </div>
         </div>
       )}
@@ -198,7 +198,7 @@ export default function IntegrationsPage() {
         <>
           {/* ── OS Module Integration Points ── */}
           <div className="mb-6">
-            <h2 className="font-display mb-3 text-lg font-semibold text-white">
+            <h2 className="font-display mb-3 text-lg font-semibold text-slate-900">
               OS Modules ({OS_MODULE_INTEGRATIONS.length})
             </h2>
             <div className="space-y-3">
@@ -207,7 +207,7 @@ export default function IntegrationsPage() {
                 const StatusIcon = config.icon
                 return (
                   <div key={mod.id} className="rounded-xl border p-5"
-                    style={{ borderColor: '#2A3D5F', backgroundColor: '#1A2B4A' }}>
+                    style={{ borderColor: '#E2E8F0', backgroundColor: '#FFFFFF' }}>
                     <div className="mb-3 flex items-start justify-between">
                       <div className="flex items-start gap-4">
                         <div className="rounded-lg p-2.5" style={{ backgroundColor: config.bg }}>
@@ -215,23 +215,23 @@ export default function IntegrationsPage() {
                         </div>
                         <div>
                           <div className="flex items-center gap-2">
-                            <h3 className="font-semibold text-white">{mod.name}</h3>
+                            <h3 className="font-semibold text-slate-900">{mod.name}</h3>
                             <span className="rounded px-2 py-0.5 text-xs"
                               style={{ backgroundColor: 'rgba(42, 191, 191, 0.1)', color: '#2ABFBF' }}>
                               {mod.key}
                             </span>
                             <span className="rounded px-2 py-0.5 text-xs"
-                              style={{ backgroundColor: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.4)' }}>
+                              style={{ backgroundColor: '#F1F5F9', color: '#94A3B8' }}>
                               {mod.category}
                             </span>
                           </div>
-                          <p className="mt-0.5 text-sm" style={{ color: 'rgba(255,255,255,0.5)' }}>
+                          <p className="mt-0.5 text-sm" style={{ color: '#64748B' }}>
                             {mod.description}
                           </p>
                           <div className="mt-1 flex flex-wrap gap-1">
                             {mod.defaultPhases.map((phase) => (
                               <span key={phase} className="rounded px-1.5 py-0.5 text-xs"
-                                style={{ backgroundColor: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.3)' }}>
+                                style={{ backgroundColor: '#F1F5F9', color: '#94A3B8' }}>
                                 {phase}
                               </span>
                             ))}
@@ -246,17 +246,17 @@ export default function IntegrationsPage() {
                     </div>
 
                     <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-                      <div className="rounded-lg p-2.5" style={{ backgroundColor: 'rgba(15, 26, 46, 0.5)' }}>
-                        <p className="text-xs" style={{ color: 'rgba(255,255,255,0.3)' }}>Total Intakes</p>
-                        <p className="text-sm font-semibold text-white">{intake.total}</p>
+                      <div className="rounded-lg p-2.5" style={{ backgroundColor: '#F8FAFC' }}>
+                        <p className="text-xs" style={{ color: '#94A3B8' }}>Total Intakes</p>
+                        <p className="text-sm font-semibold text-slate-900">{intake.total}</p>
                       </div>
-                      <div className="rounded-lg p-2.5" style={{ backgroundColor: 'rgba(15, 26, 46, 0.5)' }}>
-                        <p className="text-xs" style={{ color: 'rgba(255,255,255,0.3)' }}>Today</p>
-                        <p className="text-sm font-semibold text-white">{intake.today}</p>
+                      <div className="rounded-lg p-2.5" style={{ backgroundColor: '#F8FAFC' }}>
+                        <p className="text-xs" style={{ color: '#94A3B8' }}>Today</p>
+                        <p className="text-sm font-semibold text-slate-900">{intake.today}</p>
                       </div>
-                      <div className="rounded-lg p-2.5" style={{ backgroundColor: 'rgba(15, 26, 46, 0.5)' }}>
-                        <p className="text-xs" style={{ color: 'rgba(255,255,255,0.3)' }}>Paid Concepts</p>
-                        <p className="text-sm font-semibold text-white">{intake.paid}</p>
+                      <div className="rounded-lg p-2.5" style={{ backgroundColor: '#F8FAFC' }}>
+                        <p className="text-xs" style={{ color: '#94A3B8' }}>Paid Concepts</p>
+                        <p className="text-sm font-semibold text-slate-900">{intake.paid}</p>
                       </div>
                     </div>
                   </div>
@@ -267,11 +267,11 @@ export default function IntegrationsPage() {
 
           {/* ── External Service Integrations ── */}
           <div>
-            <h2 className="font-display mb-3 text-lg font-semibold text-white">
+            <h2 className="font-display mb-3 text-lg font-semibold text-slate-900">
               External Services ({externalServices.length})
             </h2>
             {externalServices.length === 0 ? (
-              <p className="text-xs py-4 text-center" style={{ color: 'rgba(255,255,255,0.3)' }}>
+              <p className="text-xs py-4 text-center" style={{ color: '#94A3B8' }}>
                 No ping data available.
               </p>
             ) : (
@@ -286,7 +286,7 @@ export default function IntegrationsPage() {
 
                   return (
                     <div key={svc.key} className="rounded-xl border p-5"
-                      style={{ borderColor: '#2A3D5F', backgroundColor: '#1A2B4A' }}>
+                      style={{ borderColor: '#E2E8F0', backgroundColor: '#FFFFFF' }}>
                       <div className="mb-3 flex items-start justify-between">
                         <div className="flex items-start gap-4">
                           <div className="rounded-lg p-2.5" style={{ backgroundColor: config.bg }}>
@@ -294,14 +294,14 @@ export default function IntegrationsPage() {
                           </div>
                           <div>
                             <div className="flex items-center gap-2">
-                              <h3 className="font-semibold text-white">{svc.name}</h3>
+                              <h3 className="font-semibold text-slate-900">{svc.name}</h3>
                               <span className="rounded px-2 py-0.5 text-xs"
-                                style={{ backgroundColor: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.4)' }}>
+                                style={{ backgroundColor: '#F1F5F9', color: '#94A3B8' }}>
                                 {svc.category}
                               </span>
                             </div>
                             {meta.description && (
-                              <p className="mt-0.5 text-sm" style={{ color: 'rgba(255,255,255,0.5)' }}>
+                              <p className="mt-0.5 text-sm" style={{ color: '#64748B' }}>
                                 {meta.description}
                               </p>
                             )}
@@ -309,7 +309,7 @@ export default function IntegrationsPage() {
                               <div className="mt-1 flex flex-wrap gap-1">
                                 {meta.connectedModules.map((mod) => (
                                   <span key={mod} className="rounded px-1.5 py-0.5 text-xs"
-                                    style={{ backgroundColor: 'rgba(42, 191, 191, 0.08)', color: 'rgba(42, 191, 191, 0.6)' }}>
+                                    style={{ backgroundColor: 'rgba(42, 191, 191, 0.08)', color: '#1A8F8F' }}>
                                     {MODULE_NAMES[mod] ?? mod}
                                   </span>
                                 ))}
@@ -325,17 +325,17 @@ export default function IntegrationsPage() {
                       </div>
 
                       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-                        <div className="rounded-lg p-2.5" style={{ backgroundColor: 'rgba(15, 26, 46, 0.5)' }}>
-                          <p className="text-xs" style={{ color: 'rgba(255,255,255,0.3)' }}>Latency</p>
-                          <p className="text-sm font-semibold text-white">{latencyLabel(svc.latencyMs)}</p>
+                        <div className="rounded-lg p-2.5" style={{ backgroundColor: '#F8FAFC' }}>
+                          <p className="text-xs" style={{ color: '#94A3B8' }}>Latency</p>
+                          <p className="text-sm font-semibold text-slate-900">{latencyLabel(svc.latencyMs)}</p>
                         </div>
-                        <div className="rounded-lg p-2.5" style={{ backgroundColor: 'rgba(15, 26, 46, 0.5)' }}>
-                          <p className="text-xs" style={{ color: 'rgba(255,255,255,0.3)' }}>Status</p>
+                        <div className="rounded-lg p-2.5" style={{ backgroundColor: '#F8FAFC' }}>
+                          <p className="text-xs" style={{ color: '#94A3B8' }}>Status</p>
                           <p className="text-sm font-semibold" style={{ color: config.color }}>{config.label}</p>
                         </div>
-                        <div className="rounded-lg p-2.5" style={{ backgroundColor: 'rgba(15, 26, 46, 0.5)' }}>
-                          <p className="text-xs" style={{ color: 'rgba(255,255,255,0.3)' }}>Last Checked</p>
-                          <p className="text-sm font-semibold text-white">
+                        <div className="rounded-lg p-2.5" style={{ backgroundColor: '#F8FAFC' }}>
+                          <p className="text-xs" style={{ color: '#94A3B8' }}>Last Checked</p>
+                          <p className="text-sm font-semibold text-slate-900">
                             {data?.generatedAt
                               ? new Date(data.generatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
                               : '—'}

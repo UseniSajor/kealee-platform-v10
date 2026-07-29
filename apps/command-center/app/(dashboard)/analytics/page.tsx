@@ -101,8 +101,8 @@ export default function AnalyticsPage() {
     <div>
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="font-display text-2xl font-bold text-white">Analytics</h1>
-          <p className="mt-1 text-sm" style={{ color: 'rgba(255,255,255,0.5)' }}>
+          <h1 className="font-display text-2xl font-bold text-slate-900">Analytics</h1>
+          <p className="mt-1 text-sm" style={{ color: '#64748B' }}>
             {loading
               ? '○ Connecting…'
               : data?.live
@@ -114,7 +114,7 @@ export default function AnalyticsPage() {
           onClick={() => load(true)}
           disabled={refreshing}
           className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium"
-          style={{ color: data?.live ? '#38A169' : 'rgba(255,255,255,0.3)', backgroundColor: 'rgba(255,255,255,0.05)' }}
+          style={{ color: data?.live ? '#38A169' : '#94A3B8', backgroundColor: '#F1F5F9' }}
         >
           <RefreshCw className={`h-3.5 w-3.5 ${(loading || refreshing) ? 'animate-spin' : ''}`} />
           {refreshing ? 'Refreshing…' : data?.live ? 'Live' : 'Retry'}
@@ -125,7 +125,7 @@ export default function AnalyticsPage() {
         <div className="flex items-center justify-center py-20">
           <div className="text-center">
             <Loader2 className="h-10 w-10 animate-spin mx-auto mb-4" style={{ color: '#2ABFBF' }} />
-            <p className="text-sm" style={{ color: 'rgba(255,255,255,0.4)' }}>Loading analytics…</p>
+            <p className="text-sm" style={{ color: '#94A3B8' }}>Loading analytics…</p>
           </div>
         </div>
       )}
@@ -136,9 +136,9 @@ export default function AnalyticsPage() {
           <div className="mb-8 grid grid-cols-2 gap-4 lg:grid-cols-4">
             {kpiCards.map((kpi) => (
               <div key={kpi.label} className="rounded-xl border p-5"
-                style={{ borderColor: '#2A3D5F', backgroundColor: '#1A2B4A' }}>
+                style={{ borderColor: '#E2E8F0', backgroundColor: '#FFFFFF' }}>
                 <div className="flex items-center justify-between">
-                  <kpi.icon className="h-5 w-5" style={{ color: 'rgba(255,255,255,0.4)' }} />
+                  <kpi.icon className="h-5 w-5" style={{ color: '#94A3B8' }} />
                   {kpi.change && (
                     <span className="flex items-center gap-1 text-xs font-medium"
                       style={{ color: kpi.positive ? '#38A169' : '#E53E3E' }}>
@@ -149,29 +149,29 @@ export default function AnalyticsPage() {
                     </span>
                   )}
                 </div>
-                <p className="mt-3 text-2xl font-bold text-white">{kpi.value}</p>
-                <p className="text-xs" style={{ color: 'rgba(255,255,255,0.3)' }}>{kpi.label}</p>
+                <p className="mt-3 text-2xl font-bold text-slate-900">{kpi.value}</p>
+                <p className="text-xs" style={{ color: '#94A3B8' }}>{kpi.label}</p>
               </div>
             ))}
           </div>
 
           <div className="grid gap-6 lg:grid-cols-2">
             {/* Revenue by Service Type */}
-            <div className="rounded-xl border p-6" style={{ borderColor: '#2A3D5F', backgroundColor: '#1A2B4A' }}>
-              <h2 className="font-display mb-4 text-lg font-semibold text-white">Revenue by Service Type</h2>
+            <div className="rounded-xl border p-6" style={{ borderColor: '#E2E8F0', backgroundColor: '#FFFFFF' }}>
+              <h2 className="font-display mb-4 text-lg font-semibold text-slate-900">Revenue by Service Type</h2>
               {(data?.revenueByPackage ?? []).length === 0 ? (
-                <p className="text-xs py-8 text-center" style={{ color: 'rgba(255,255,255,0.3)' }}>No paid intakes yet.</p>
+                <p className="text-xs py-8 text-center" style={{ color: '#94A3B8' }}>No paid intakes yet.</p>
               ) : (
                 <div className="space-y-4">
                   {(data?.revenueByPackage ?? []).map((pkg) => (
                     <div key={pkg.name}>
                       <div className="mb-1 flex items-center justify-between text-sm">
-                        <span style={{ color: 'rgba(255,255,255,0.7)' }}>{pkg.name}</span>
-                        <span className="font-medium text-white">
+                        <span style={{ color: '#334155' }}>{pkg.name}</span>
+                        <span className="font-medium text-slate-900">
                           {fmt$(pkg.revenue)} ({pkg.count})
                         </span>
                       </div>
-                      <div className="h-2 w-full overflow-hidden rounded-full" style={{ backgroundColor: '#0F1A2E' }}>
+                      <div className="h-2 w-full overflow-hidden rounded-full" style={{ backgroundColor: '#F1F5F9' }}>
                         <div className="h-full rounded-full"
                           style={{ width: `${Math.round((pkg.revenue / maxRevenue) * 100)}%`, backgroundColor: '#2ABFBF' }} />
                       </div>
@@ -182,10 +182,10 @@ export default function AnalyticsPage() {
             </div>
 
             {/* Conversion Funnel */}
-            <div className="rounded-xl border p-6" style={{ borderColor: '#2A3D5F', backgroundColor: '#1A2B4A' }}>
-              <h2 className="font-display mb-4 text-lg font-semibold text-white">Intake Funnel</h2>
+            <div className="rounded-xl border p-6" style={{ borderColor: '#E2E8F0', backgroundColor: '#FFFFFF' }}>
+              <h2 className="font-display mb-4 text-lg font-semibold text-slate-900">Intake Funnel</h2>
               {(data?.funnel ?? []).length === 0 ? (
-                <p className="text-xs py-8 text-center" style={{ color: 'rgba(255,255,255,0.3)' }}>No data yet.</p>
+                <p className="text-xs py-8 text-center" style={{ color: '#94A3B8' }}>No data yet.</p>
               ) : (
                 <div className="space-y-3">
                   {(data?.funnel ?? []).map((stage, i) => {
@@ -193,13 +193,13 @@ export default function AnalyticsPage() {
                     return (
                       <div key={stage.stage}>
                         <div className="mb-1 flex items-center justify-between text-sm">
-                          <span style={{ color: 'rgba(255,255,255,0.7)' }}>{stage.stage}</span>
-                          <span className="font-medium text-white">
+                          <span style={{ color: '#334155' }}>{stage.stage}</span>
+                          <span className="font-medium text-slate-900">
                             {stage.count.toLocaleString()} ({stage.pct}%)
                           </span>
                         </div>
-                        <div className="h-8 w-full overflow-hidden rounded-lg" style={{ backgroundColor: '#0F1A2E' }}>
-                          <div className="flex h-full items-center justify-center rounded-lg text-xs font-medium text-white"
+                        <div className="h-8 w-full overflow-hidden rounded-lg" style={{ backgroundColor: '#F1F5F9' }}>
+                          <div className="flex h-full items-center justify-center rounded-lg text-xs font-medium text-slate-900"
                             style={{
                               width: `${Math.max(stage.pct, 5)}%`,
                               backgroundColor: funnelColors[i % funnelColors.length],
@@ -214,30 +214,30 @@ export default function AnalyticsPage() {
 
             {/* Top Markets */}
             <div className="rounded-xl border p-6 lg:col-span-2"
-              style={{ borderColor: '#2A3D5F', backgroundColor: '#1A2B4A' }}>
-              <h2 className="font-display mb-4 text-lg font-semibold text-white">Top Markets</h2>
+              style={{ borderColor: '#E2E8F0', backgroundColor: '#FFFFFF' }}>
+              <h2 className="font-display mb-4 text-lg font-semibold text-slate-900">Top Markets</h2>
               {(data?.topMarkets ?? []).length === 0 ? (
-                <p className="text-xs py-8 text-center" style={{ color: 'rgba(255,255,255,0.3)' }}>
+                <p className="text-xs py-8 text-center" style={{ color: '#94A3B8' }}>
                   No market data — project addresses needed to derive city breakdown.
                 </p>
               ) : (
                 <div className="overflow-x-auto">
                   <table className="w-full">
                     <thead>
-                      <tr style={{ borderColor: '#2A3D5F', borderBottomWidth: '1px' }}>
-                        <th className="px-4 py-3 text-left text-xs font-medium" style={{ color: 'rgba(255,255,255,0.4)' }}>Market</th>
-                        <th className="px-4 py-3 text-right text-xs font-medium" style={{ color: 'rgba(255,255,255,0.4)' }}>Paid Concepts</th>
-                        <th className="px-4 py-3 text-right text-xs font-medium" style={{ color: 'rgba(255,255,255,0.4)' }}>Est. Revenue</th>
-                        <th className="px-4 py-3 text-right text-xs font-medium" style={{ color: 'rgba(255,255,255,0.4)' }}>Share</th>
+                      <tr style={{ borderColor: '#E2E8F0', borderBottomWidth: '1px' }}>
+                        <th className="px-4 py-3 text-left text-xs font-medium" style={{ color: '#94A3B8' }}>Market</th>
+                        <th className="px-4 py-3 text-right text-xs font-medium" style={{ color: '#94A3B8' }}>Paid Concepts</th>
+                        <th className="px-4 py-3 text-right text-xs font-medium" style={{ color: '#94A3B8' }}>Est. Revenue</th>
+                        <th className="px-4 py-3 text-right text-xs font-medium" style={{ color: '#94A3B8' }}>Share</th>
                       </tr>
                     </thead>
                     <tbody>
                       {(data?.topMarkets ?? []).map((m) => (
-                        <tr key={m.city} style={{ borderColor: 'rgba(42, 61, 95, 0.5)', borderBottomWidth: '1px' }}>
-                          <td className="px-4 py-3 text-sm font-medium" style={{ color: 'rgba(255,255,255,0.8)' }}>{m.city}</td>
-                          <td className="px-4 py-3 text-right text-sm" style={{ color: 'rgba(255,255,255,0.7)' }}>{m.projects}</td>
-                          <td className="px-4 py-3 text-right text-sm" style={{ color: 'rgba(255,255,255,0.7)' }}>{fmt$(m.revenue)}</td>
-                          <td className="px-4 py-3 text-right text-sm" style={{ color: 'rgba(255,255,255,0.7)' }}>
+                        <tr key={m.city} style={{ borderColor: '#E2E8F0', borderBottomWidth: '1px' }}>
+                          <td className="px-4 py-3 text-sm font-medium" style={{ color: '#1A2B4A' }}>{m.city}</td>
+                          <td className="px-4 py-3 text-right text-sm" style={{ color: '#334155' }}>{m.projects}</td>
+                          <td className="px-4 py-3 text-right text-sm" style={{ color: '#334155' }}>{fmt$(m.revenue)}</td>
+                          <td className="px-4 py-3 text-right text-sm" style={{ color: '#334155' }}>
                             {kpis?.paidCount
                               ? `${Math.round((m.projects / kpis.paidCount) * 100)}%`
                               : '—'}

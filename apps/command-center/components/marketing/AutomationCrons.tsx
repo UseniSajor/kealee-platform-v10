@@ -70,9 +70,9 @@ export function AutomationCrons() {
   return (
     <div className="space-y-6">
       <OpsPanel title="Vercel cron jobs (web-main)" icon={Clock} accent="#A78BFA">
-        <p className="mb-4 text-sm text-white/50">
-          Scheduled on <strong className="text-white/80">kealee-web-main</strong>. Manual runs proxy through
-          Command Center when <code className="text-teal-400">CRON_SECRET</code> matches web-main.
+        <p className="mb-4 text-sm text-slate-500">
+          Scheduled on <strong className="text-slate-700">kealee-web-main</strong>. Manual runs proxy through
+          Command Center when <code className="text-teal-700">CRON_SECRET</code> matches web-main.
         </p>
 
         {!hasSecret && (
@@ -89,12 +89,12 @@ export function AutomationCrons() {
               <div
                 key={cron.id}
                 className="flex flex-col gap-2 rounded-xl border p-4 sm:flex-row sm:items-center sm:justify-between"
-                style={{ borderColor: '#2A3D5F', backgroundColor: 'rgba(15,26,46,0.4)' }}
+                style={{ borderColor: '#E2E8F0', backgroundColor: '#FFFFFF' }}
               >
                 <div className="min-w-0 flex-1">
-                  <p className="font-mono text-sm font-semibold text-white">{cron.id}</p>
-                  <p className="mt-0.5 text-xs text-white/50">{cron.description}</p>
-                  <p className="mt-1 font-mono text-[10px] text-white/35">{cron.schedule}</p>
+                  <p className="font-mono text-sm font-semibold text-slate-900">{cron.id}</p>
+                  <p className="mt-0.5 text-xs text-slate-500">{cron.description}</p>
+                  <p className="mt-1 font-mono text-[10px] text-slate-400">{cron.schedule}</p>
                   {log[cron.id] && (
                     <p className="mt-2 text-xs break-all" style={{ color: '#2ABFBF' }}>
                       {log[cron.id]}
@@ -106,8 +106,8 @@ export function AutomationCrons() {
                     href={cron.triggerUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-1 rounded-lg border px-3 py-1.5 text-xs text-white/60 hover:text-white"
-                    style={{ borderColor: '#2A3D5F' }}
+                    className="flex items-center gap-1 rounded-lg border px-3 py-1.5 text-xs text-slate-500 hover:text-slate-900"
+                    style={{ borderColor: '#E2E8F0' }}
                     title="Opens cron URL (needs Authorization in production)"
                   >
                     <ExternalLink className="h-3.5 w-3.5" />
@@ -136,7 +136,7 @@ export function AutomationCrons() {
         <button
           type="button"
           onClick={load}
-          className="mt-4 flex items-center gap-1 text-xs text-white/50 hover:text-white"
+          className="mt-4 flex items-center gap-1 text-xs text-slate-500 hover:text-slate-900"
         >
           <RefreshCw className="h-3.5 w-3.5" />
           Refresh status
@@ -144,9 +144,9 @@ export function AutomationCrons() {
       </OpsPanel>
 
       <OpsPanel title="Weekly campaign (manual)" icon={Zap} accent="#E8793A">
-        <p className="text-sm text-white/50">
-          Use the <strong className="text-white/80">Weekly product campaign</strong> bar at the top of Marketing,
-          or run <code className="text-teal-400">POST /api/marketing/campaign/start</code> from the Content tab
+        <p className="text-sm text-slate-500">
+          Use the <strong className="text-slate-700">Weekly product campaign</strong> bar at the top of Marketing,
+          or run <code className="text-teal-700">POST /api/marketing/campaign/start</code> from the Content tab
           launcher.
         </p>
         <a

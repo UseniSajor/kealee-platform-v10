@@ -54,23 +54,23 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="rounded-2xl border p-8 shadow-2xl" style={{ borderColor: '#2A3D5F', backgroundColor: '#1A2B4A' }}>
+    <div className="rounded-2xl border p-8 shadow-lg" style={{ borderColor: '#E2E8F0', backgroundColor: '#FFFFFF' }}>
       <div className="mb-6 text-center">
         <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-xl" style={{ backgroundColor: '#E8793A' }}>
           <Radar className="h-7 w-7 text-white" />
         </div>
-        <h1 className="font-display text-2xl font-bold text-white">Command Center</h1>
-        <p className="mt-1 text-sm" style={{ color: 'rgba(255,255,255,0.5)' }}>Operations access required</p>
+        <h1 className="font-display text-2xl font-bold" style={{ color: '#1A2B4A' }}>Command Center</h1>
+        <p className="mt-1 text-sm text-slate-500">Operations access required</p>
       </div>
 
       {/* Mode tabs */}
-      <div className="flex rounded-lg overflow-hidden mb-6 border" style={{ borderColor: '#2A3D5F' }}>
+      <div className="flex rounded-lg overflow-hidden mb-6 border" style={{ borderColor: '#E2E8F0' }}>
         <button
           onClick={() => { setMode('magic'); setError(''); setSent(false) }}
           className="flex-1 py-2 text-sm font-medium transition-colors"
           style={{
             backgroundColor: mode === 'magic' ? '#E8793A' : 'transparent',
-            color: mode === 'magic' ? '#fff' : 'rgba(255,255,255,0.5)',
+            color: mode === 'magic' ? '#fff' : '#64748B',
           }}
         >
           Magic Link
@@ -79,8 +79,8 @@ export default function LoginPage() {
           onClick={() => { setMode('password'); setError(''); setSent(false) }}
           className="flex-1 py-2 text-sm font-medium transition-colors"
           style={{
-            backgroundColor: mode === 'password' ? '#2A3D5F' : 'transparent',
-            color: mode === 'password' ? '#fff' : 'rgba(255,255,255,0.5)',
+            backgroundColor: mode === 'password' ? '#1A2B4A' : 'transparent',
+            color: mode === 'password' ? '#fff' : '#64748B',
           }}
         >
           Password
@@ -89,14 +89,14 @@ export default function LoginPage() {
 
       {/* Magic link sent confirmation */}
       {sent && (
-        <div className="rounded-lg p-4 text-sm text-center space-y-2" style={{ backgroundColor: 'rgba(232,121,58,0.15)', border: '1px solid rgba(232,121,58,0.3)' }}>
+        <div className="rounded-lg p-4 text-sm text-center space-y-2" style={{ backgroundColor: 'rgba(232,121,58,0.08)', border: '1px solid rgba(232,121,58,0.25)' }}>
           <CheckCircle2 className="h-6 w-6 mx-auto" style={{ color: '#E8793A' }} />
-          <p className="font-semibold text-white">Check your inbox</p>
-          <p style={{ color: 'rgba(255,255,255,0.6)' }}>
-            Sent a sign-in link to <strong className="text-white">{email}</strong>.
+          <p className="font-semibold" style={{ color: '#1A2B4A' }}>Check your inbox</p>
+          <p className="text-slate-600">
+            Sent a sign-in link to <strong style={{ color: '#1A2B4A' }}>{email}</strong>.
             Click it to open Command Center.
           </p>
-          <p className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>
+          <p className="text-xs text-slate-400">
             Link expires in 1 hour. Check spam if not found.
           </p>
           <button onClick={() => setSent(false)} className="text-xs underline hover:no-underline" style={{ color: '#E8793A' }}>
@@ -109,25 +109,25 @@ export default function LoginPage() {
         <form onSubmit={handleMagicLink} className="space-y-4">
           {error && (
             <div className="rounded-lg p-3 text-sm" style={{
-              backgroundColor: rateLimit ? 'rgba(234,179,8,0.15)' : 'rgba(220,38,38,0.2)',
-              color: rateLimit ? '#FDE68A' : '#FCA5A5',
+              backgroundColor: rateLimit ? 'rgba(234,179,8,0.12)' : 'rgba(220,38,38,0.1)',
+              color: rateLimit ? '#92400E' : '#B91C1C',
             }}>
               {error}
             </div>
           )}
           <div>
-            <label htmlFor="magic-email" className="mb-1 block text-sm font-medium" style={{ color: 'rgba(255,255,255,0.7)' }}>
+            <label htmlFor="magic-email" className="mb-1 block text-sm font-medium text-slate-600">
               Email address
             </label>
             <div className="relative">
-              <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2" style={{ color: 'rgba(255,255,255,0.3)' }} />
+              <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
               <input
                 id="magic-email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full rounded-lg border py-2.5 pl-10 pr-4 text-sm text-white placeholder-white/30 focus:outline-none focus:ring-1"
-                style={{ borderColor: '#2A3D5F', backgroundColor: '#0F1A2E', '--tw-ring-color': '#E8793A' } as React.CSSProperties}
+                className="w-full rounded-lg border py-2.5 pl-10 pr-4 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-1"
+                style={{ borderColor: '#E2E8F0', backgroundColor: '#F8FAFC', '--tw-ring-color': '#E8793A' } as React.CSSProperties}
                 placeholder="contact@kealee.com"
                 required
               />
@@ -148,30 +148,30 @@ export default function LoginPage() {
       {!sent && mode === 'password' && (
         <form onSubmit={handlePasswordLogin} className="space-y-4">
           {error && (
-            <div className="rounded-lg p-3 text-sm" style={{ backgroundColor: 'rgba(220,38,38,0.2)', color: '#FCA5A5' }}>
+            <div className="rounded-lg p-3 text-sm" style={{ backgroundColor: 'rgba(220,38,38,0.1)', color: '#B91C1C' }}>
               {error}
             </div>
           )}
           <div>
-            <label htmlFor="email" className="mb-1 block text-sm font-medium" style={{ color: 'rgba(255,255,255,0.7)' }}>Email</label>
+            <label htmlFor="email" className="mb-1 block text-sm font-medium text-slate-600">Email</label>
             <div className="relative">
-              <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2" style={{ color: 'rgba(255,255,255,0.3)' }} />
+              <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
               <input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)}
-                className="w-full rounded-lg border py-2.5 pl-10 pr-4 text-sm text-white placeholder-white/30 focus:outline-none focus:ring-1"
-                style={{ borderColor: '#2A3D5F', backgroundColor: '#0F1A2E', '--tw-ring-color': '#E8793A' } as React.CSSProperties}
+                className="w-full rounded-lg border py-2.5 pl-10 pr-4 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-1"
+                style={{ borderColor: '#E2E8F0', backgroundColor: '#F8FAFC', '--tw-ring-color': '#E8793A' } as React.CSSProperties}
                 placeholder="operator@kealee.com" required />
             </div>
           </div>
           <div>
-            <label htmlFor="password" className="mb-1 block text-sm font-medium" style={{ color: 'rgba(255,255,255,0.7)' }}>Password</label>
+            <label htmlFor="password" className="mb-1 block text-sm font-medium text-slate-600">Password</label>
             <div className="relative">
-              <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2" style={{ color: 'rgba(255,255,255,0.3)' }} />
+              <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
               <input id="password" type={showPassword ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)}
-                className="w-full rounded-lg border py-2.5 pl-10 pr-10 text-sm text-white placeholder-white/30 focus:outline-none focus:ring-1"
-                style={{ borderColor: '#2A3D5F', backgroundColor: '#0F1A2E', '--tw-ring-color': '#E8793A' } as React.CSSProperties}
+                className="w-full rounded-lg border py-2.5 pl-10 pr-10 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-1"
+                style={{ borderColor: '#E2E8F0', backgroundColor: '#F8FAFC', '--tw-ring-color': '#E8793A' } as React.CSSProperties}
                 placeholder="Enter your password" required />
               <button type="button" onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2" style={{ color: 'rgba(255,255,255,0.3)' }}>
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">
                 {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
             </div>

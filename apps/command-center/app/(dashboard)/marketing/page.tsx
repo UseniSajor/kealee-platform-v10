@@ -89,17 +89,17 @@ function BreakdownTable({
   const entries = Object.entries(data).sort((a, b) => b[1] - a[1]).slice(0, 8)
   if (entries.length === 0) return null
   return (
-    <div className="rounded-xl border p-4" style={{ borderColor: '#2A3D5F', backgroundColor: '#1A2B4A' }}>
-      <p className="mb-3 text-xs font-semibold uppercase tracking-widest" style={{ color: 'rgba(255,255,255,0.4)' }}>
+    <div className="rounded-xl border p-4" style={{ borderColor: '#E2E8F0', backgroundColor: '#FFFFFF' }}>
+      <p className="mb-3 text-xs font-semibold uppercase tracking-widest" style={{ color: '#94A3B8' }}>
         {title}
       </p>
       <ul className="space-y-1.5">
         {entries.map(([key, count]) => (
           <li key={key} className="flex justify-between text-sm">
-            <span className="truncate pr-2" style={{ color: 'rgba(255,255,255,0.7)' }}>
+            <span className="truncate pr-2" style={{ color: '#334155' }}>
               {key.replace(/_/g, ' ')}
             </span>
-            <span className="font-medium text-white">{count}</span>
+            <span className="font-medium text-slate-900">{count}</span>
           </li>
         ))}
       </ul>
@@ -132,18 +132,18 @@ const AUDIENCE_OPTIONS = [
 ]
 
 const SOURCE_COLORS: Record<string, string> = {
-  marketing_bot:  'bg-purple-900/40 text-purple-300',
-  facebook_bot:   'bg-blue-900/40 text-blue-300',
-  instagram_dm:   'bg-pink-900/40 text-pink-300',
-  email_bot:      'bg-teal-900/40 text-teal-300',
-  chatbot:        'bg-amber-900/40 text-amber-300',
-  reddit:         'bg-orange-900/40 text-orange-300',
+  marketing_bot:  'bg-purple-50 text-purple-700',
+  facebook_bot:   'bg-blue-50 text-blue-700',
+  instagram_dm:   'bg-pink-50 text-pink-700',
+  email_bot:      'bg-teal-50 text-teal-700',
+  chatbot:        'bg-amber-50 text-amber-700',
+  reddit:         'bg-orange-50 text-orange-700',
 }
 
 const SEQ_STATUS_COLORS: Record<string, string> = {
-  pending:       'text-amber-400',
-  sent:          'text-emerald-400',
-  failed:        'text-rose-400',
+  pending:       'text-amber-600',
+  sent:          'text-emerald-600',
+  failed:        'text-rose-600',
   unsubscribed:  'text-gray-500',
 }
 
@@ -164,9 +164,9 @@ function CopyBtn({ text, id }: { text: string; id: string }) {
   return (
     <button
       onClick={() => copy(text, id)}
-      className="ml-auto flex items-center gap-1 rounded px-2 py-1 text-xs text-white/40 hover:text-white/80 hover:bg-white/5 transition-colors"
+      className="ml-auto flex items-center gap-1 rounded px-2 py-1 text-xs text-slate-400 hover:text-slate-700 hover:bg-slate-50 transition-colors"
     >
-      {copied === id ? <Check className="h-3 w-3 text-emerald-400" /> : <Copy className="h-3 w-3" />}
+      {copied === id ? <Check className="h-3 w-3 text-emerald-600" /> : <Copy className="h-3 w-3" />}
       {copied === id ? 'Copied' : 'Copy'}
     </button>
   )
@@ -180,19 +180,19 @@ function ContentCard({ title, icon: Icon, content, id }: {
 }) {
   const [open, setOpen] = useState(true)
   return (
-    <div className="rounded-xl border" style={{ borderColor: '#2A3D5F', backgroundColor: '#1A2B4A' }}>
+    <div className="rounded-xl border" style={{ borderColor: '#E2E8F0', backgroundColor: '#FFFFFF' }}>
       <div
         className="flex cursor-pointer items-center gap-2 px-4 py-3"
         onClick={() => setOpen(o => !o)}
       >
         <Icon className="h-4 w-4" style={{ color: '#2ABFBF' }} />
-        <span className="text-sm font-medium text-white">{title}</span>
+        <span className="text-sm font-medium text-slate-900">{title}</span>
         <CopyBtn text={content} id={id} />
-        <ChevronDown className={`h-4 w-4 text-white/30 transition-transform ${open ? '' : '-rotate-90'}`} />
+        <ChevronDown className={`h-4 w-4 text-slate-400 transition-transform ${open ? '' : '-rotate-90'}`} />
       </div>
       {open && (
-        <div className="border-t px-4 py-3" style={{ borderColor: '#2A3D5F' }}>
-          <p className="whitespace-pre-wrap text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.7)' }}>
+        <div className="border-t px-4 py-3" style={{ borderColor: '#E2E8F0' }}>
+          <p className="whitespace-pre-wrap text-sm leading-relaxed" style={{ color: '#334155' }}>
             {content}
           </p>
         </div>
@@ -239,12 +239,12 @@ function ContentGenerator() {
       {/* Controls */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
         <div>
-          <label className="mb-1 block text-xs font-medium" style={{ color: 'rgba(255,255,255,0.5)' }}>Service Type</label>
+          <label className="mb-1 block text-xs font-medium" style={{ color: '#64748B' }}>Service Type</label>
           <select
             value={serviceType}
             onChange={e => setServiceType(e.target.value)}
-            className="w-full rounded-lg border px-3 py-2 text-sm text-white focus:outline-none"
-            style={{ borderColor: '#2A3D5F', backgroundColor: '#0F1A2E' }}
+            className="w-full rounded-lg border px-3 py-2 text-sm text-slate-900 focus:outline-none"
+            style={{ borderColor: '#E2E8F0', backgroundColor: '#F8FAFC' }}
           >
             {SERVICE_OPTIONS.map(o => (
               <option key={o.value} value={o.value}>{o.label}</option>
@@ -252,36 +252,36 @@ function ContentGenerator() {
           </select>
         </div>
         <div>
-          <label className="mb-1 block text-xs font-medium" style={{ color: 'rgba(255,255,255,0.5)' }}>Target Audience</label>
+          <label className="mb-1 block text-xs font-medium" style={{ color: '#64748B' }}>Target Audience</label>
           <select
             value={targetAudience}
             onChange={e => { setTargetAudience(e.target.value); setCustomAudience('') }}
-            className="w-full rounded-lg border px-3 py-2 text-sm text-white focus:outline-none"
-            style={{ borderColor: '#2A3D5F', backgroundColor: '#0F1A2E' }}
+            className="w-full rounded-lg border px-3 py-2 text-sm text-slate-900 focus:outline-none"
+            style={{ borderColor: '#E2E8F0', backgroundColor: '#F8FAFC' }}
           >
             {AUDIENCE_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
           </select>
         </div>
         <div>
-          <label className="mb-1 block text-xs font-medium" style={{ color: 'rgba(255,255,255,0.5)' }}>Custom Audience (override)</label>
+          <label className="mb-1 block text-xs font-medium" style={{ color: '#64748B' }}>Custom Audience (override)</label>
           <input
             value={customAudience}
             onChange={e => setCustomAudience(e.target.value)}
             placeholder="e.g. Reddit r/HomeImprovement users"
-            className="w-full rounded-lg border px-3 py-2 text-sm text-white placeholder-white/20 focus:outline-none"
-            style={{ borderColor: '#2A3D5F', backgroundColor: '#0F1A2E' }}
+            className="w-full rounded-lg border px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none"
+            style={{ borderColor: '#E2E8F0', backgroundColor: '#F8FAFC' }}
           />
         </div>
       </div>
 
       <div className="flex items-center gap-4">
         <div className="flex-1">
-          <label className="mb-1 block text-xs font-medium" style={{ color: 'rgba(255,255,255,0.5)' }}>Tone</label>
+          <label className="mb-1 block text-xs font-medium" style={{ color: '#64748B' }}>Tone</label>
           <input
             value={tone}
             onChange={e => setTone(e.target.value)}
-            className="w-full rounded-lg border px-3 py-2 text-sm text-white focus:outline-none"
-            style={{ borderColor: '#2A3D5F', backgroundColor: '#0F1A2E' }}
+            className="w-full rounded-lg border px-3 py-2 text-sm text-slate-900 focus:outline-none"
+            style={{ borderColor: '#E2E8F0', backgroundColor: '#F8FAFC' }}
           />
         </div>
         <button
@@ -304,7 +304,7 @@ function ContentGenerator() {
       {/* Output */}
       {content && (
         <div className="space-y-3">
-          <h3 className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'rgba(255,255,255,0.4)' }}>
+          <h3 className="text-xs font-semibold uppercase tracking-widest" style={{ color: '#94A3B8' }}>
             Generated Content — {SERVICE_OPTIONS.find(s => s.value === serviceType)?.label} · {audience}
           </h3>
 
@@ -339,11 +339,11 @@ function ContentGenerator() {
             />
           )}
           {content.keyBenefits && content.keyBenefits.length > 0 && (
-            <div className="rounded-xl border px-4 py-3" style={{ borderColor: '#2A3D5F', backgroundColor: '#1A2B4A' }}>
-              <p className="mb-2 text-sm font-medium text-white">Key Benefits (for ads / landing pages)</p>
+            <div className="rounded-xl border px-4 py-3" style={{ borderColor: '#E2E8F0', backgroundColor: '#FFFFFF' }}>
+              <p className="mb-2 text-sm font-medium text-slate-900">Key Benefits (for ads / landing pages)</p>
               <ul className="space-y-1">
                 {content.keyBenefits.map((b, i) => (
-                  <li key={i} className="flex items-start gap-2 text-sm" style={{ color: 'rgba(255,255,255,0.7)' }}>
+                  <li key={i} className="flex items-start gap-2 text-sm" style={{ color: '#334155' }}>
                     <span style={{ color: '#2ABFBF' }}>•</span> {b}
                   </li>
                 ))}
@@ -383,7 +383,7 @@ function LeadPipeline({ stats }: { stats: MarketingStats | null }) {
       <Loader2 className="h-6 w-6 animate-spin" style={{ color: '#2ABFBF' }} />
     </div>
   )
-  if (error) return <p className="text-rose-400 text-sm">{error}</p>
+  if (error) return <p className="text-rose-600 text-sm">{error}</p>
 
   return (
     <div className="space-y-4">
@@ -399,14 +399,14 @@ function LeadPipeline({ stats }: { stats: MarketingStats | null }) {
               { label: 'Conversion', value: stats.conversionRate },
               { label: 'Drip pending', value: stats.sequencesPending },
             ].map(s => (
-              <div key={s.label} className="rounded-xl border p-4" style={{ borderColor: '#2A3D5F', backgroundColor: '#1A2B4A' }}>
-                <p className="text-2xl font-bold text-white">{s.value}</p>
-                <p className="mt-0.5 text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>{s.label}</p>
+              <div key={s.label} className="rounded-xl border p-4" style={{ borderColor: '#E2E8F0', backgroundColor: '#FFFFFF' }}>
+                <p className="text-2xl font-bold text-slate-900">{s.value}</p>
+                <p className="mt-0.5 text-xs" style={{ color: '#94A3B8' }}>{s.label}</p>
               </div>
             ))}
           </div>
           {(stats.last7DaysLeads != null || stats.byUtmSource) && (
-            <p className="text-xs" style={{ color: 'rgba(255,255,255,0.45)' }}>
+            <p className="text-xs" style={{ color: '#64748B' }}>
               Last 7 days: {stats.last7DaysLeads ?? 0} leads · {stats.last7DaysPaid ?? 0} converted
             </p>
           )}
@@ -419,19 +419,19 @@ function LeadPipeline({ stats }: { stats: MarketingStats | null }) {
       )}
 
       {/* Leads table */}
-      <div className="rounded-xl border overflow-hidden" style={{ borderColor: '#2A3D5F' }}>
+      <div className="rounded-xl border overflow-hidden" style={{ borderColor: '#E2E8F0' }}>
         <table className="w-full text-sm">
-          <thead style={{ backgroundColor: '#1A2B4A' }}>
+          <thead style={{ backgroundColor: '#FFFFFF' }}>
             <tr>
               {['Name / Email', 'Service', 'Channel', 'UTM', 'Budget', 'Status', 'Date'].map(h => (
-                <th key={h} className="px-4 py-3 text-left text-xs font-medium" style={{ color: 'rgba(255,255,255,0.4)' }}>{h}</th>
+                <th key={h} className="px-4 py-3 text-left text-xs font-medium" style={{ color: '#94A3B8' }}>{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {leads.length === 0 ? (
               <tr>
-                <td colSpan={7} className="px-4 py-12 text-center text-sm" style={{ color: 'rgba(255,255,255,0.3)' }}>
+                <td colSpan={7} className="px-4 py-12 text-center text-sm" style={{ color: '#94A3B8' }}>
                   No intakes yet.
                 </td>
               </tr>
@@ -443,37 +443,37 @@ function LeadPipeline({ stats }: { stats: MarketingStats | null }) {
                 '—'
               const channel = (lead as Lead & { source?: string }).source ?? lead.form_data?.source ?? 'unknown'
               return (
-              <tr key={lead.id} className="border-t hover:bg-white/5 transition-colors" style={{ borderColor: '#2A3D5F' }}>
+              <tr key={lead.id} className="border-t hover:bg-slate-50 transition-colors" style={{ borderColor: '#E2E8F0' }}>
                 <td className="px-4 py-3">
-                  <p className="font-medium text-white">{lead.client_name}</p>
-                  <p className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>{lead.contact_email}</p>
+                  <p className="font-medium text-slate-900">{lead.client_name}</p>
+                  <p className="text-xs" style={{ color: '#94A3B8' }}>{lead.contact_email}</p>
                 </td>
-                <td className="px-4 py-3" style={{ color: 'rgba(255,255,255,0.7)' }}>
+                <td className="px-4 py-3" style={{ color: '#334155' }}>
                   {lead.project_path.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}
                 </td>
                 <td className="px-4 py-3">
-                  <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${SOURCE_COLORS[channel] ?? 'bg-gray-700 text-gray-300'}`}>
+                  <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${SOURCE_COLORS[channel] ?? 'bg-slate-100 text-slate-600'}`}>
                     {channel}
                   </span>
                 </td>
-                <td className="px-4 py-3 text-xs" style={{ color: 'rgba(255,255,255,0.5)' }}>
+                <td className="px-4 py-3 text-xs" style={{ color: '#64748B' }}>
                   {utm}
                 </td>
-                <td className="px-4 py-3 text-xs" style={{ color: 'rgba(255,255,255,0.5)' }}>
+                <td className="px-4 py-3 text-xs" style={{ color: '#64748B' }}>
                   {lead.budget_range ?? '—'}
                 </td>
                 <td className="px-4 py-3">
                   <span className={`rounded-full px-2 py-0.5 text-xs ${
                     lead.status === 'paid' || (lead.status === 'concept_ready' || lead.status === 'delivered')
-                      ? 'bg-emerald-900/40 text-emerald-400'
+                      ? 'bg-emerald-50 text-emerald-700'
                       : lead.status === 'processing'
-                        ? 'bg-blue-900/40 text-blue-300'
-                        : 'bg-gray-700 text-gray-400'
+                        ? 'bg-blue-50 text-blue-700'
+                        : 'bg-slate-100 text-slate-500'
                   }`}>
                     {lead.status}
                   </span>
                 </td>
-                <td className="px-4 py-3 text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>
+                <td className="px-4 py-3 text-xs" style={{ color: '#94A3B8' }}>
                   {new Date(lead.created_at).toLocaleDateString()}
                 </td>
               </tr>
@@ -509,44 +509,44 @@ function DripSequences() {
 
   return (
     <div className="space-y-4">
-      <div className="rounded-xl border p-4 text-sm" style={{ borderColor: '#2A3D5F', backgroundColor: 'rgba(42,191,191,0.05)' }}>
+      <div className="rounded-xl border p-4 text-sm" style={{ borderColor: '#E2E8F0', backgroundColor: 'rgba(42,191,191,0.05)' }}>
         <p className="font-medium" style={{ color: '#2ABFBF' }}>3-Email Drip Sequence</p>
-        <p className="mt-1" style={{ color: 'rgba(255,255,255,0.5)' }}>
+        <p className="mt-1" style={{ color: '#64748B' }}>
           Every marketing lead automatically receives: Day 1 — concept package details · Day 3 — social proof + examples · Day 7 — final offer
         </p>
       </div>
 
-      {error && <p className="text-sm text-rose-400">{error}</p>}
+      {error && <p className="text-sm text-rose-600">{error}</p>}
 
-      <div className="rounded-xl border overflow-hidden" style={{ borderColor: '#2A3D5F' }}>
+      <div className="rounded-xl border overflow-hidden" style={{ borderColor: '#E2E8F0' }}>
         <table className="w-full text-sm">
-          <thead style={{ backgroundColor: '#1A2B4A' }}>
+          <thead style={{ backgroundColor: '#FFFFFF' }}>
             <tr>
               {['Email', 'Service', 'Step', 'Send At', 'Status'].map(h => (
-                <th key={h} className="px-4 py-3 text-left text-xs font-medium" style={{ color: 'rgba(255,255,255,0.4)' }}>{h}</th>
+                <th key={h} className="px-4 py-3 text-left text-xs font-medium" style={{ color: '#94A3B8' }}>{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {sequences.length === 0 ? (
               <tr>
-                <td colSpan={5} className="px-4 py-12 text-center text-sm" style={{ color: 'rgba(255,255,255,0.3)' }}>
+                <td colSpan={5} className="px-4 py-12 text-center text-sm" style={{ color: '#94A3B8' }}>
                   No drip sequences yet. Note: run the Supabase SQL to create the marketing_drip_queue table first.
                 </td>
               </tr>
             ) : sequences.map(s => (
-              <tr key={s.id} className="border-t hover:bg-white/5" style={{ borderColor: '#2A3D5F' }}>
-                <td className="px-4 py-3 text-white">{s.email}</td>
-                <td className="px-4 py-3 text-xs" style={{ color: 'rgba(255,255,255,0.6)' }}>{s.service_label}</td>
+              <tr key={s.id} className="border-t hover:bg-slate-50" style={{ borderColor: '#E2E8F0' }}>
+                <td className="px-4 py-3 text-slate-900">{s.email}</td>
+                <td className="px-4 py-3 text-xs" style={{ color: '#475569' }}>{s.service_label}</td>
                 <td className="px-4 py-3">
                   <span className="rounded-full px-2 py-0.5 text-xs" style={{ backgroundColor: 'rgba(42,191,191,0.15)', color: '#2ABFBF' }}>
                     Step {s.sequence_step}/4
                   </span>
                 </td>
-                <td className="px-4 py-3 text-xs" style={{ color: 'rgba(255,255,255,0.5)' }}>
+                <td className="px-4 py-3 text-xs" style={{ color: '#64748B' }}>
                   {new Date(s.send_at).toLocaleString()}
                 </td>
-                <td className={`px-4 py-3 text-xs font-medium ${SEQ_STATUS_COLORS[s.status] ?? 'text-gray-400'}`}>
+                <td className={`px-4 py-3 text-xs font-medium ${SEQ_STATUS_COLORS[s.status] ?? 'text-slate-400'}`}>
                   {s.status}
                 </td>
               </tr>
@@ -575,9 +575,9 @@ const CATEGORY_COLORS: Record<string, string> = {
 }
 
 const STATUS_STYLES: Record<string, string> = {
-  success: 'text-emerald-400 bg-emerald-900/30 border-emerald-800',
-  partial: 'text-amber-400 bg-amber-900/30 border-amber-800',
-  error:   'text-rose-400 bg-rose-900/30 border-rose-800',
+  success: 'text-emerald-700 bg-emerald-50 border-emerald-200',
+  partial: 'text-amber-700 bg-amber-50 border-amber-200',
+  error:   'text-rose-700 bg-rose-50 border-rose-200',
 }
 
 function FieldInput({
@@ -591,8 +591,8 @@ function FieldInput({
   value:    string
   onChange: (v: string) => void
 }) {
-  const base = 'w-full rounded-lg border bg-[#0f1c30] px-3 py-2 text-sm text-white placeholder-white/20 focus:outline-none focus:ring-1 focus:ring-[#2ABFBF] transition-colors'
-  const borderStyle = { borderColor: '#2A3D5F' }
+  const base = 'w-full rounded-lg border bg-slate-50 px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-[#2ABFBF] transition-colors'
+  const borderStyle = { borderColor: '#E2E8F0' }
 
   if (schema.type === 'textarea') {
     return (
@@ -639,29 +639,29 @@ function StepOutput({ step, index }: { step: CommandResult['steps'][0]; index: n
   const [open, setOpen] = useState(true)
   const isError = step.status === 'error'
   return (
-    <div className="rounded-lg border overflow-hidden" style={{ borderColor: '#2A3D5F' }}>
+    <div className="rounded-lg border overflow-hidden" style={{ borderColor: '#E2E8F0' }}>
       <button
-        className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-white/5 transition-colors"
+        className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-slate-50 transition-colors"
         onClick={() => setOpen(o => !o)}
       >
         <span className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0"
           style={{ backgroundColor: isError ? 'rgba(239,68,68,0.2)' : 'rgba(42,191,191,0.2)', color: isError ? '#f87171' : '#2ABFBF' }}>
           {index + 1}
         </span>
-        <span className="text-sm font-medium text-white flex-1">{step.command ?? step.step}</span>
+        <span className="text-sm font-medium text-slate-900 flex-1">{step.command ?? step.step}</span>
         <span className={`text-xs px-2 py-0.5 rounded-full border ${STATUS_STYLES[step.status]}`}>
           {step.status}
         </span>
-        <span className="text-xs" style={{ color: 'rgba(255,255,255,0.3)' }}>{step.durationMs}ms</span>
-        <ChevronDown className={`h-3.5 w-3.5 text-white/30 transition-transform ${open ? '' : '-rotate-90'}`} />
+        <span className="text-xs" style={{ color: '#94A3B8' }}>{step.durationMs}ms</span>
+        <ChevronDown className={`h-3.5 w-3.5 text-slate-400 transition-transform ${open ? '' : '-rotate-90'}`} />
       </button>
       {open && (
-        <div className="border-t px-4 py-3" style={{ borderColor: '#2A3D5F' }}>
+        <div className="border-t px-4 py-3" style={{ borderColor: '#E2E8F0' }}>
           {step.error ? (
-            <p className="text-sm text-rose-400">{step.error}</p>
+            <p className="text-sm text-rose-600">{step.error}</p>
           ) : (
             <pre className="text-xs leading-relaxed overflow-x-auto whitespace-pre-wrap break-all"
-              style={{ color: 'rgba(255,255,255,0.6)' }}>
+              style={{ color: '#475569' }}>
               {JSON.stringify(step.output, null, 2)}
             </pre>
           )}
@@ -745,7 +745,7 @@ function CommandRunner() {
             <div key={cat}>
               <div className="flex items-center gap-2 mb-2 px-1">
                 <Icon className="h-3.5 w-3.5" style={{ color }} />
-                <span className="text-xs font-bold uppercase tracking-widest" style={{ color: 'rgba(255,255,255,0.4)' }}>
+                <span className="text-xs font-bold uppercase tracking-widest" style={{ color: '#94A3B8' }}>
                   {cat}
                 </span>
               </div>
@@ -757,12 +757,12 @@ function CommandRunner() {
                     className={`w-full flex items-start gap-3 rounded-xl border px-3 py-3 text-left transition-all ${
                       selected?.id === cmd.id
                         ? 'border-[#2ABFBF] bg-[#2ABFBF]/10'
-                        : 'border-transparent hover:border-[#2A3D5F] hover:bg-white/5'
+                        : 'border-transparent hover:border-slate-200 hover:bg-slate-50'
                     }`}
                   >
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-0.5">
-                        <p className="text-sm font-semibold text-white truncate">{cmd.name}</p>
+                        <p className="text-sm font-semibold text-slate-900 truncate">{cmd.name}</p>
                         {cmd.isPipeline && (
                           <span className="shrink-0 text-[10px] px-1.5 py-0.5 rounded font-bold"
                             style={{ backgroundColor: 'rgba(232,121,58,0.2)', color: '#E8793A' }}>
@@ -770,7 +770,7 @@ function CommandRunner() {
                           </span>
                         )}
                       </div>
-                      <p className="text-xs leading-snug line-clamp-2" style={{ color: 'rgba(255,255,255,0.4)' }}>
+                      <p className="text-xs leading-snug line-clamp-2" style={{ color: '#94A3B8' }}>
                         {cmd.description}
                       </p>
                       <div className="flex flex-wrap gap-1 mt-1.5">
@@ -782,7 +782,7 @@ function CommandRunner() {
                         ))}
                       </div>
                     </div>
-                    <ChevronRight className="h-4 w-4 shrink-0 mt-0.5" style={{ color: 'rgba(255,255,255,0.2)' }} />
+                    <ChevronRight className="h-4 w-4 shrink-0 mt-0.5" style={{ color: '#CBD5E1' }} />
                   </button>
                 ))}
               </div>
@@ -795,23 +795,23 @@ function CommandRunner() {
       <div className="lg:col-span-2 space-y-5">
         {!selected ? (
           <div className="flex flex-col items-center justify-center rounded-2xl border py-20 text-center"
-            style={{ borderColor: '#2A3D5F', borderStyle: 'dashed' }}>
-            <Terminal className="h-10 w-10 mb-3" style={{ color: 'rgba(255,255,255,0.15)' }} />
-            <p className="text-sm font-medium" style={{ color: 'rgba(255,255,255,0.4)' }}>
+            style={{ borderColor: '#E2E8F0', borderStyle: 'dashed' }}>
+            <Terminal className="h-10 w-10 mb-3" style={{ color: '#CBD5E1' }} />
+            <p className="text-sm font-medium" style={{ color: '#94A3B8' }}>
               Select a command to run
             </p>
-            <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.2)' }}>
+            <p className="text-xs mt-1" style={{ color: '#CBD5E1' }}>
               Single commands or chained pipelines
             </p>
           </div>
         ) : (
           <>
             {/* Command header */}
-            <div className="rounded-xl border p-5" style={{ borderColor: '#2A3D5F', backgroundColor: '#1A2B4A' }}>
+            <div className="rounded-xl border p-5" style={{ borderColor: '#E2E8F0', backgroundColor: '#FFFFFF' }}>
               <div className="flex items-start justify-between gap-3 mb-3">
                 <div>
                   <div className="flex items-center gap-2 mb-1">
-                    <h3 className="font-bold text-white">{selected.name}</h3>
+                    <h3 className="font-bold text-slate-900">{selected.name}</h3>
                     {selected.isPipeline && (
                       <span className="text-[10px] px-1.5 py-0.5 rounded font-bold"
                         style={{ backgroundColor: 'rgba(232,121,58,0.2)', color: '#E8793A' }}>
@@ -819,7 +819,7 @@ function CommandRunner() {
                       </span>
                     )}
                   </div>
-                  <p className="text-sm" style={{ color: 'rgba(255,255,255,0.5)' }}>{selected.description}</p>
+                  <p className="text-sm" style={{ color: '#64748B' }}>{selected.description}</p>
                 </div>
                 <code className="shrink-0 text-xs rounded px-2 py-1"
                   style={{ backgroundColor: 'rgba(0,0,0,0.4)', color: '#2ABFBF' }}>
@@ -827,9 +827,9 @@ function CommandRunner() {
                 </code>
               </div>
               {/* Steps */}
-              <div className="space-y-1 mt-3 pt-3 border-t" style={{ borderColor: '#2A3D5F' }}>
+              <div className="space-y-1 mt-3 pt-3 border-t" style={{ borderColor: '#E2E8F0' }}>
                 {selected.steps.map((s, i) => (
-                  <div key={i} className="flex items-start gap-2 text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>
+                  <div key={i} className="flex items-start gap-2 text-xs" style={{ color: '#94A3B8' }}>
                     <span className="shrink-0 w-4 h-4 rounded-full flex items-center justify-center text-[10px] font-bold mt-0.5"
                       style={{ backgroundColor: 'rgba(42,191,191,0.15)', color: '#2ABFBF' }}>
                       {i + 1}
@@ -841,15 +841,15 @@ function CommandRunner() {
             </div>
 
             {/* Inputs */}
-            <div className="rounded-xl border p-5 space-y-4" style={{ borderColor: '#2A3D5F', backgroundColor: '#1A2B4A' }}>
-              <h4 className="text-sm font-bold text-white mb-1">Parameters</h4>
+            <div className="rounded-xl border p-5 space-y-4" style={{ borderColor: '#E2E8F0', backgroundColor: '#FFFFFF' }}>
+              <h4 className="text-sm font-bold text-slate-900 mb-1">Parameters</h4>
               {Object.entries(selected.inputs).map(([key, field]) => (
                 <div key={key}>
-                  <label className="block text-xs font-semibold mb-1.5" style={{ color: 'rgba(255,255,255,0.6)' }}>
+                  <label className="block text-xs font-semibold mb-1.5" style={{ color: '#475569' }}>
                     {field.label}
-                    {field.required && <span className="text-rose-400 ml-1">*</span>}
+                    {field.required && <span className="text-rose-600 ml-1">*</span>}
                     {field.description && (
-                      <span className="ml-2 font-normal" style={{ color: 'rgba(255,255,255,0.3)' }}>
+                      <span className="ml-2 font-normal" style={{ color: '#94A3B8' }}>
                         — {field.description}
                       </span>
                     )}
@@ -864,7 +864,7 @@ function CommandRunner() {
               ))}
 
               {error && (
-                <div className="rounded-lg border border-rose-800 bg-rose-900/20 px-4 py-3 text-sm text-rose-400">
+                <div className="rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-600">
                   {error}
                 </div>
               )}
@@ -886,12 +886,12 @@ function CommandRunner() {
             {result && (
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <h4 className="text-sm font-bold text-white">Result</h4>
+                  <h4 className="text-sm font-bold text-slate-900">Result</h4>
                   <div className="flex items-center gap-3">
                     <span className={`text-xs px-2.5 py-1 rounded-full border font-semibold ${STATUS_STYLES[result.status]}`}>
                       {result.status.toUpperCase()}
                     </span>
-                    <span className="text-xs" style={{ color: 'rgba(255,255,255,0.3)' }}>
+                    <span className="text-xs" style={{ color: '#94A3B8' }}>
                       {result.durationMs}ms total
                     </span>
                   </div>
@@ -904,9 +904,9 @@ function CommandRunner() {
                   ))
                 ) : (
                   /* Single command — show output directly */
-                  <div className="rounded-xl border p-4" style={{ borderColor: '#2A3D5F', backgroundColor: '#1A2B4A' }}>
+                  <div className="rounded-xl border p-4" style={{ borderColor: '#E2E8F0', backgroundColor: '#FFFFFF' }}>
                     <pre className="text-xs leading-relaxed overflow-x-auto whitespace-pre-wrap break-all"
-                      style={{ color: 'rgba(255,255,255,0.7)' }}>
+                      style={{ color: '#334155' }}>
                       {JSON.stringify(result.output, null, 2)}
                     </pre>
                   </div>
@@ -961,18 +961,18 @@ function CampaignLauncher({ onComplete }: { onComplete: () => void }) {
   return (
     <div
       className="rounded-xl border p-4 flex flex-col gap-4 md:flex-row md:items-center md:justify-between"
-      style={{ borderColor: '#2A3D5F', backgroundColor: 'rgba(232,121,58,0.08)' }}
+      style={{ borderColor: '#E2E8F0', backgroundColor: 'rgba(232,121,58,0.08)' }}
     >
       <div>
-        <p className="flex items-center gap-2 text-sm font-semibold text-white">
+        <p className="flex items-center gap-2 text-sm font-semibold text-slate-900">
           <Rocket className="h-4 w-4" style={{ color: '#E8793A' }} />
           Weekly product campaign
         </p>
-        <p className="mt-1 text-xs" style={{ color: 'rgba(255,255,255,0.5)' }}>
+        <p className="mt-1 text-xs" style={{ color: '#64748B' }}>
           {preview?.theme ?? 'Generate 7 days · send today’s email via Resend'}
           {preview?.today ? ` · Today: ${preview.today}` : ''}
         </p>
-        <label className="mt-2 flex items-center gap-4 text-xs" style={{ color: 'rgba(255,255,255,0.55)' }}>
+        <label className="mt-2 flex items-center gap-4 text-xs" style={{ color: '#64748B' }}>
           <span className="flex items-center gap-1.5">
             <input type="checkbox" checked={dryRun} onChange={e => setDryRun(e.target.checked)} />
             Dry run (no emails)
@@ -995,9 +995,9 @@ function CampaignLauncher({ onComplete }: { onComplete: () => void }) {
       </button>
       {(error || result) && (
         <div className="md:basis-full md:order-last w-full">
-          {error && <p className="text-sm text-rose-400">{error}</p>}
+          {error && <p className="text-sm text-rose-600">{error}</p>}
           {result && (
-            <pre className="mt-2 max-h-32 overflow-auto rounded-lg border p-2 text-xs" style={{ borderColor: '#2A3D5F', color: 'rgba(255,255,255,0.7)' }}>
+            <pre className="mt-2 max-h-32 overflow-auto rounded-lg border p-2 text-xs" style={{ borderColor: '#E2E8F0', color: '#334155' }}>
               {JSON.stringify(result, null, 2)}
             </pre>
           )}
@@ -1042,25 +1042,25 @@ export default function MarketingPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white flex items-center gap-2">
+          <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
             <Megaphone className="h-6 w-6" style={{ color: '#E8793A' }} />
             Marketing
           </h1>
-          <p className="mt-1 text-sm" style={{ color: 'rgba(255,255,255,0.4)' }}>
+          <p className="mt-1 text-sm" style={{ color: '#94A3B8' }}>
             v30 marketing ops · Card media · Crons · Leads · Drip · MarketingBot commands
           </p>
         </div>
         <div className="flex items-center gap-3">
           <Link
             href="/marketing/strategy"
-            className="rounded-lg border px-3 py-1.5 text-xs font-medium text-white/60 hover:text-white"
-            style={{ borderColor: '#2A3D5F' }}
+            className="rounded-lg border px-3 py-1.5 text-xs font-medium text-slate-500 hover:text-slate-900"
+            style={{ borderColor: '#E2E8F0' }}
           >
             Brand strategy
           </Link>
           {stats && (
-            <div className="flex items-center gap-2 text-sm" style={{ color: 'rgba(255,255,255,0.5)' }}>
-              <span className="font-semibold text-white">{stats.totalLeads}</span> marketing leads ·
+            <div className="flex items-center gap-2 text-sm" style={{ color: '#64748B' }}>
+              <span className="font-semibold text-slate-900">{stats.totalLeads}</span> marketing leads ·
               <span className="font-semibold" style={{ color: '#2ABFBF' }}>{stats.conversionRate}</span> conversion
             </div>
           )}
@@ -1070,13 +1070,13 @@ export default function MarketingPage() {
       <CampaignLauncher onComplete={refreshStats} />
 
       {/* Tabs */}
-      <div className="flex gap-1 border-b" style={{ borderColor: '#2A3D5F' }}>
+      <div className="flex gap-1 border-b" style={{ borderColor: '#E2E8F0' }}>
         {tabs.map(t => (
           <button
             key={t.id}
             onClick={() => setTab(t.id)}
             className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors ${
-              tab === t.id ? 'border-current' : 'border-transparent text-white/40 hover:text-white/70'
+              tab === t.id ? 'border-current' : 'border-transparent text-slate-400 hover:text-slate-600'
             }`}
             style={tab === t.id ? { color: '#2ABFBF', borderColor: '#2ABFBF' } : undefined}
           >
