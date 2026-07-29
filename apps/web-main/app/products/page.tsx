@@ -31,7 +31,7 @@ const CATEGORIES = [
   {
     id: 'permits' as const,
     label: 'Permits & Compliance',
-    description: 'We file, track, and respond to comments. DC · MD · VA.',
+    description: 'Jurisdiction-aware filing, tracking, and reviewer response where available nationwide.',
     accent: '#4A8FA8',
   },
   {

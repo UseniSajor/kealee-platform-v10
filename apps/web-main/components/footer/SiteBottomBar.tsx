@@ -25,7 +25,7 @@ export function SiteBottomBar({
         >
           <Link href="/privacy" className="hover:underline underline-offset-2">Privacy Policy</Link>
           <Link href="/terms" className="hover:underline underline-offset-2">Terms of Service</Link>
-          <span>Serving the Washington DC Metro Area · DC · MD · VA</span>
+          <span>Serving project owners nationwide · Local requirements vary by jurisdiction</span>
         </nav>
       </div>
     </div>

@@ -11,9 +11,9 @@ import { mergeHomeServicesWithManifest } from '@/lib/marketing/merge-home-servic
 export const revalidate = 3600
 
 export const metadata: Metadata = {
-  title: 'Kealee — Design-Build Platform | DC, MD & VA',
+  title: 'Kealee — Nationwide AI Preconstruction Platform',
   description:
-    'Kealee is the end-to-end design-build platform for homeowners. AI design concepts, RSMeans cost estimates, permit filing, and a personal project workspace — from first idea to final build. Serving DC, MD & VA.',
+    'Kealee is a nationwide AI preconstruction platform for homeowners, developers, and project owners. Move from design concepts to estimates, jurisdiction-aware permit coordination, and professional handoff.',
   openGraph: {
     title: 'Kealee — Plan, Design, Permit & Build in One Platform',
     description:

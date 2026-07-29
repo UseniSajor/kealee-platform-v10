@@ -29,7 +29,7 @@ export function buildOrganizationJsonLd(): JsonLd {
       'https://www.facebook.com/kealee',
     ],
     description:
-      'AI-powered design concepts, permit analysis, cost estimation, and contractor matching for construction projects in DC, Maryland, and Virginia.',
+      'Nationwide AI-powered design concepts, jurisdiction-aware permit analysis, cost estimation, and contractor matching for construction projects.',
     areaServed: KEALEE_SERVICE_AREAS.map((name) => ({
       '@type': 'AdministrativeArea',
       name,
@@ -45,7 +45,7 @@ export function buildWebSiteJsonLd(): JsonLd {
     url: KEALEE_SITE_URL,
     name: 'Kealee',
     description:
-      'Design → Permits → Estimate → Build — AI construction platform for the DC metro.',
+      'Design → Permits → Estimate → Build — a nationwide AI construction platform.',
     publisher: { '@id': `${KEALEE_SITE_URL}/#organization` },
     potentialAction: {
       '@type': 'SearchAction',
@@ -86,7 +86,7 @@ export function buildLocalBusinessJsonLd(): JsonLd {
       closes: '18:00',
     },
     parentOrganization: { '@id': `${KEALEE_SITE_URL}/#organization` },
-    description: `Headquarters in ${KEALEE_HQ_DISPLAY}. DC metro design-build and AI platform services. Call ${KEALEE_PHONE_DISPLAY}.`,
+    description: `Headquarters in ${KEALEE_HQ_DISPLAY}. Nationwide AI preconstruction services with jurisdiction-aware professional handoff. Call ${KEALEE_PHONE_DISPLAY}.`,
   }
 }
 

@@ -1,10 +1,10 @@
 export const phase4Hero = {
-  eyebrow: 'AI construction platform for DC, Maryland, and Virginia',
+  eyebrow: 'Nationwide AI preconstruction platform',
   title: 'Plan, price, permit, and build construction projects from one guided workspace.',
   summary:
     'Kealee combines AI concept planning, RSMeans-informed estimates, permit guidance, contractor matching, and project workspaces so homeowners and construction teams can move from idea to approved scope with less friction.',
   directAnswer:
-    'Kealee is an AI construction platform for the DC metro that helps homeowners, contractors, and project teams turn a renovation or construction idea into a scoped project with concept visuals, cost estimates, permit support, marketplace matching, and a managed project workspace.',
+    'Kealee is a nationwide AI preconstruction platform that helps homeowners, developers, contractors, and project teams turn a construction idea into a scoped project with concept visuals, cost estimates, jurisdiction-aware permit support, marketplace matching, and a managed project workspace.',
 }
 
 export const audiencePaths = [
@@ -119,7 +119,7 @@ export const purchasePaths = [
 export const aiSearchFaqs = [
   {
     q: 'What is Kealee?',
-    a: 'Kealee is an AI-assisted construction and design-build platform serving DC, Maryland, and Virginia. It helps users move from project idea to concept planning, estimate, permit support, contractor matching, and project workspace coordination.',
+    a: 'Kealee is a nationwide AI-assisted preconstruction and design-build platform. It helps users move from project idea to concept planning, estimates, jurisdiction-aware permit support, contractor matching, and project workspace coordination.',
   },
   {
     q: 'Can Kealee help before I hire a contractor?',
@@ -131,7 +131,7 @@ export const aiSearchFaqs = [
   },
   {
     q: 'What areas does Kealee serve?',
-    a: 'Kealee serves the DC metro area, including Washington DC, Prince George County, Montgomery County, Northern Virginia, Fairfax County, Arlington, Alexandria, Silver Spring, and Oxon Hill.',
+    a: 'Kealee serves project owners nationwide. Service availability, licensed professional assignments, permit requirements, pricing, and timelines are determined by the project location and jurisdiction.',
   },
   {
     q: 'How do I buy or start a Kealee service?',

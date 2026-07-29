@@ -33,7 +33,7 @@ export default function TermsPage() {
           <p>Kealee provides:</p>
           <ul className="list-disc pl-5 space-y-1 mt-2">
             <li><strong>AI Concept Packages</strong> — AI-generated design concepts, floor plan options, scope summaries, and cost estimates for home improvement projects</li>
-            <li><strong>Permit Services</strong> — preparation and filing assistance for building permits in DC, Maryland, and Virginia</li>
+            <li><strong>Permit Services</strong> — jurisdiction-aware preparation, coordination, and filing assistance for building permits where available nationwide</li>
             <li><strong>Professional Marketplace</strong> — a platform handoff to contractors, architects, engineers, estimators, permit specialists, and related construction professionals after preconstruction</li>
             <li><strong>Owner Portal</strong> — a dashboard to view and manage your project deliverables</li>
             <li><strong>Estimation Tools</strong> — construction cost estimation based on project scope</li>

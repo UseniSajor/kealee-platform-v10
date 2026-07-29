@@ -24,7 +24,7 @@ export default function FeaturedProductsSection() {
           <div className="fci">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=700&q=60&auto=format&fit=crop" alt="Permit" />
-            <span className="fbg bgs">DC · MD · VA</span>
+            <span className="fbg bgs">Nationwide</span>
           </div>
           <div className="fcb">
             <div className="fclbl">Permit services</div>

@@ -13,7 +13,7 @@ import {
 import { KEALEE_SERVICE_AREAS, KEALEE_SITE_URL } from '@/lib/site/contact'
 
 const phase4Description =
-  'Kealee is an AI construction platform for DC, Maryland, and Virginia. Plan projects, compare costs, prepare permits, match contractors, and move into a guided project workspace.'
+  'Kealee is a nationwide AI preconstruction platform. Plan projects, compare costs, prepare jurisdiction-aware permits, match professionals, and move into a guided project workspace.'
 
 export const metadata: Metadata = {
   title: 'AI Construction Platform for Design, Permits, Estimates and Build',
@@ -23,15 +23,15 @@ export const metadata: Metadata = {
     'AI construction platform',
     'AI design build platform',
     'construction project planning software',
-    'DC permit and estimate platform',
-    'Maryland renovation estimate',
-    'Virginia contractor marketplace',
+    'nationwide permit and estimate platform',
+    'construction preplanning',
+    'licensed professional marketplace',
     'AI construction estimate',
   ],
   openGraph: {
     title: 'Kealee AI Construction Platform',
     description:
-      'Plan, price, permit, and build construction projects from one guided workspace for DC, Maryland, and Virginia.',
+      'Plan, price, permit, and prepare construction projects nationwide from one guided workspace.',
     url: `${KEALEE_SITE_URL}/ai-construction-platform`,
     type: 'website',
   },
@@ -39,8 +39,8 @@ export const metadata: Metadata = {
 
 const trustProof = [
   {
-    title: 'Local context',
-    body: 'DC, Maryland, and Virginia workflows need jurisdiction-aware planning.',
+    title: 'Jurisdiction-aware context',
+    body: 'State and local workflows require location-specific planning, permits, and licensed professionals.',
     Icon: MapPinned,
   },
   {

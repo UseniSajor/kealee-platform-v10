@@ -17,7 +17,7 @@ const PILLS = [
 ]
 
 const AREAS = [
-  'All DMV areas',
+  'Nationwide',
   'Washington DC',
   'Montgomery County MD',
   "Prince George's County MD",
@@ -30,7 +30,7 @@ const AREAS = [
 export default function HeroSection() {
   const router = useRouter()
   const [query, setQuery] = useState('')
-  const [area, setArea] = useState('All DMV areas')
+  const [area, setArea] = useState('Nationwide')
   const [suggestions, setSuggestions] = useState<Suggestion[]>([])
   const [suggestOpen, setSuggestOpen] = useState(false)
   const [activeIdx, setActiveIdx] = useState(-1)

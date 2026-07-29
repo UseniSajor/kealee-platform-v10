@@ -9,11 +9,11 @@ const FAQS = [
   },
   {
     q: 'Do I need a permit for my project?',
-    a: 'Most construction in DC, Maryland, and Virginia requires a permit — remodels that touch plumbing or electrical, additions, ADUs, finished basements, decks over a certain size. Simple cosmetic work typically does not. The free Permit Guidance Checklist tells you exactly what your project requires in your county.',
+    a: 'Permit requirements vary by state and local jurisdiction. Remodels that affect plumbing, electrical, structure, occupancy, or exterior work commonly require approval, while simple cosmetic work often does not. The Permit Guidance Checklist identifies the likely requirements for your project location.',
   },
   {
-    q: 'How long does a permit take in the DMV?',
-    a: 'Fairfax County simple residential: 2–4 weeks. Montgomery County DPS residential: 4–8 weeks. DC Department of Buildings with plan review: 2–5 months. Commercial projects take longer across all jurisdictions. We include current average timelines for your specific jurisdiction in the $395 concept report.',
+    q: 'How long does a permit take?',
+    a: 'Timelines vary by jurisdiction, scope, review type, and agency workload—from a few weeks for simple residential work to several months for complex or commercial projects. Your concept report identifies the applicable agency and a planning timeline for the project location.',
   },
   {
     q: 'What if my project needs an architect?',
