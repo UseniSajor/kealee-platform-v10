@@ -125,6 +125,7 @@ const statusConfig: Record<string, { label: string; color: string; bg: string; i
   degraded:    { label: 'Degraded',    color: '#E8793A',              bg: 'rgba(232, 121, 58, 0.1)', icon: AlertTriangle },
   warning:     { label: 'Warning',     color: '#E8793A',              bg: 'rgba(232, 121, 58, 0.1)', icon: AlertTriangle },
   unknown:     { label: 'Unknown',     color: 'rgba(255,255,255,0.3)', bg: 'rgba(255,255,255,0.05)',  icon: XCircle },
+  not_configured: { label: 'Not configured', color: '#94A3B8', bg: 'rgba(148,163,184,0.1)', icon: XCircle },
   down:        { label: 'Down',        color: '#E53E3E',              bg: 'rgba(229, 62, 62, 0.1)',  icon: XCircle },
 }
 

@@ -29,16 +29,11 @@ const sourceColors: Record<string, { bg: string; text: string }> = {
   worker:       { bg: 'rgba(232, 121, 58, 0.15)',   text: '#E8793A' },
 }
 
-const FALLBACK_EVENTS: PlatformEvent[] = [
-  { id: 'f1', timestamp: new Date(Date.now() - 60000).toISOString(), source: 'stripe', type: 'webhook', message: 'checkout.session.completed — Kitchen Remodel · Sample Client', severity: 'success' },
-  { id: 'f2', timestamp: new Date(Date.now() - 180000).toISOString(), source: 'web', type: 'intake', message: 'New intake submitted: exterior concept · Sample User', severity: 'info' },
-  { id: 'f3', timestamp: new Date(Date.now() - 360000).toISOString(), source: 'keabot', type: 'conversation', message: 'New lead captured via KeaBot chat widget', severity: 'info' },
-]
-
 export default function EventsPage() {
   const [events, setEvents]           = useState<PlatformEvent[]>([])
   const [loading, setLoading]         = useState(true)
   const [live, setLive]               = useState(false)
+  const [error, setError]             = useState<string | null>(null)
   const [search, setSearch]           = useState('')
   const [severityFilter, setSeverity] = useState('all')
   const [lastFetched, setLastFetched] = useState<Date | null>(null)
@@ -49,11 +44,13 @@ export default function EventsPage() {
       const res = await fetch('/api/events')
       if (!res.ok) throw new Error('fetch failed')
       const body = await res.json()
-      setEvents(body.events?.length ? body.events : FALLBACK_EVENTS)
+      setEvents(body.events ?? [])
       setLive(body.live ?? false)
+      setError(body.error ?? null)
     } catch {
-      setEvents(FALLBACK_EVENTS)
+      setEvents([])
       setLive(false)
+      setError('Unable to load the live event stream.')
     } finally {
       setLoading(false)
       setLastFetched(new Date())
@@ -78,7 +75,7 @@ export default function EventsPage() {
         <div>
           <h1 className="font-display text-2xl font-bold text-white">Event Stream</h1>
           <p className="mt-1 text-sm" style={{ color: 'rgba(255,255,255,0.5)' }}>
-            {live ? 'Live events from platform services' : 'Platform events · sample data until DB connected'}
+            {live ? 'Live events from platform services' : error ?? 'Live event stream unavailable'}
           </p>
         </div>
         <button
@@ -135,7 +132,7 @@ export default function EventsPage() {
         </div>
       ) : filtered.length === 0 ? (
         <div className="py-16 text-center text-sm" style={{ color: 'rgba(255,255,255,0.3)' }}>
-          No events match the current filter.
+          {events.length === 0 ? 'No live platform events recorded yet.' : 'No events match the current filter.'}
         </div>
       ) : (
         <div className="space-y-2">

@@ -45,7 +45,7 @@ function rangeQuery(preset: DatePreset): string {
 function ChannelComparisonTable({ buckets }: { buckets: ChannelBucketMetrics[] }) {
   const active = buckets.filter(b => b.leads > 0)
   if (active.length === 0) {
-    return <p className="text-sm text-white/50">No leads in sample yet.</p>
+    return <p className="text-sm text-white/50">No leads recorded for this period.</p>
   }
   return (
     <div className="overflow-x-auto">
@@ -214,7 +214,7 @@ export function OpsOverview() {
       )}
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard label="Total leads (sample)" value={s.totalLeads} sub={`${s.last7DaysLeads} last 7d`} />
+        <StatCard label="Total leads" value={s.totalLeads} sub={`${s.last7DaysLeads} last 7d`} />
         <StatCard label="Conversion" value={s.conversionRate} sub={`${s.converted} converted`} accent="#E8793A" />
         <StatCard label="Leads today" value={data.leadsToday} sub={`${data.paidToday} paid today`} />
         <StatCard

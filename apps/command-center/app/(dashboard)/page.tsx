@@ -152,7 +152,7 @@ export default function CommandCenterOverview() {
 
   const displayIntegrations = (data?.integrations ?? []).map(int => ({
     name: int.name,
-    status: int.status === 'operational' ? 'operational' : int.status === 'unknown' ? 'unknown' : 'degraded',
+    status: int.status === 'operational' ? 'operational' : int.status === 'not_configured' ? 'not_configured' : 'degraded',
     latency: latencyLabel(int.latencyMs),
   }))
 
