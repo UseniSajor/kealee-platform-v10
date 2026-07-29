@@ -14,6 +14,10 @@ const nextConfig = {
         __dirname,
         '../../packages/ai/src/exterior-concept/index.ts',
       ),
+      '@kealee/auth/ops-api-auth': path.resolve(
+        __dirname,
+        '../../packages/auth/src/ops-api-auth.ts',
+      ),
       '@kealee/redis': path.resolve(__dirname, '../../packages/redis/src/index.ts'),
     }
     return config
