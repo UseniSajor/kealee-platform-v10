@@ -2196,6 +2196,19 @@ importers:
         specifier: ^1.6.1
         version: 1.6.1(@types/node@20.19.39)
 
+  packages/mobile-measurement:
+    optionalDependencies:
+      '@types/jest':
+        specifier: ^29.5.0
+        version: 29.5.14
+      jest:
+        specifier: ^29.7.0
+        version: 29.7.0(@types/node@20.19.39)
+    devDependencies:
+      typescript:
+        specifier: ^5.3.0
+        version: 5.9.3
+
   packages/observability:
     dependencies:
       '@opentelemetry/api':
