@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev -p 3023",
-    "build": "next build",
+    "build": "next build && node scripts/prepare-standalone.mjs",
     "start": "next start -p 3023",
     "lint": "next lint"
   },
