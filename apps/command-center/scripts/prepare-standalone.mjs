@@ -10,7 +10,7 @@ await mkdir(path.join(standaloneApp, '.next'), { recursive: true })
 
 await writeFile(
   path.join(standaloneRoot, 'server.js'),
-  "require('./apps/command-center/server.js')\n",
+  "process.env.HOSTNAME = '0.0.0.0'\nrequire('./apps/command-center/server.js')\n",
 )
 
 await cp(
