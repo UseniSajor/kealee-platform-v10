@@ -225,8 +225,8 @@ export default function BotsPage() {
     <div>
       {/* Header */}
       <div className="mb-6">
-        <h1 className="font-display text-2xl font-bold" style={{ color: '#1A2B4A' }}>KeaBots</h1>
-        <p className="mt-1 text-sm text-gray-500">AI automation layer — execute, monitor, and trace bot runs</p>
+        <h1 className="font-display text-2xl font-bold" style={{ color: '#1A2B4A' }}>Bot Operations</h1>
+        <p className="mt-1 text-sm text-gray-500">Platform-wide automation — execute, monitor, and trace KeaBot runs</p>
       </div>
 
       {/* Stats */}

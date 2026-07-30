@@ -1044,10 +1044,10 @@ export default function MarketingPage() {
         <div>
           <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
             <Megaphone className="h-6 w-6" style={{ color: '#E8793A' }} />
-            Marketing
+            Marketing Operations
           </h1>
           <p className="mt-1 text-sm" style={{ color: '#94A3B8' }}>
-            v30 marketing ops · Card media · Crons · Leads · Drip · MarketingBot commands
+            Tactical campaigns · Card media · Crons · Leads · Drip · MarketingBot commands
           </p>
         </div>
         <div className="flex items-center gap-3">
