@@ -172,6 +172,11 @@ export function defaultBeforeAfterDescriptions(
         before: `Plain suburban backyard, patchy grass, no hardscape, same viewpoint`,
         after: `Designed ${style} garden with patio, planting beds, path, same viewpoint`,
       }
+    case 'exterior-install':
+      return {
+        before: `Older-style traditional house exterior before renovation, dated and faded siding, worn trim and shutters, overgrown foundation plantings, same camera angle as hero shot — the house's original traditional architecture (not a modern build)`,
+        after: `Same older-style traditional house exterior after a tasteful curb-appeal refresh — fresh siding and trim in a color true to the home's traditional character, refreshed shutters and entry door, tidy foundation landscaping, identical camera angle — architecture stays traditional, not converted to a modern design`,
+      }
   }
   return {
     before: `Older ${style} ${title} before renovation, worn finishes, same camera angle`,

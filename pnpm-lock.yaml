@@ -240,6 +240,9 @@ importers:
       '@kealee/auth':
         specifier: workspace:*
         version: link:../../packages/auth
+      '@kealee/core-rules':
+        specifier: workspace:*
+        version: link:../../packages/core-rules
       '@kealee/database':
         specifier: workspace:*
         version: link:../../packages/database

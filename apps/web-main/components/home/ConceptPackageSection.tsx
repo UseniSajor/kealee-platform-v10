@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { ArrowRight, Camera, Brain, FileText, MessageSquare, Zap } from 'lucide-react'
 import { Container } from '@/components/ui/Container'
+import { CONCEPT_START_PRICE, formatPrice } from '@kealee/core-rules'
 
 const STEPS = [
   {
@@ -24,7 +25,7 @@ const STEPS = [
   {
     icon:  MessageSquare,
     title: 'Consult with an Expert',
-    desc:  'Premium+ includes a live 15-minute call with a Kealee consultant. All tiers get email support within 1 business day.',
+    desc:  'The Preconstruction Package includes a live 15-minute call with a Kealee consultant. Every outcome includes email support.',
     color: '#38A169',
   },
 ]
@@ -58,11 +59,11 @@ export function ConceptPackageSection() {
             <ul className="mt-6 space-y-2.5">
               {[
                 'AI concept renderings (3–12 based on package tier)',
-                'Layout direction brief (Essential); scaled floor plans (Premium & Premium+)',
+                'Layout direction in Concept; scaled floor plans in Concept + Budget and Preconstruction',
                 'Zoning & permit path analysis for your parcel',
                 'Planning-level bill of materials and cost ranges',
                 'Design direction brief with materials & finishes',
-                'Email support on all tiers; live consultation on Premium+',
+                'Email support on every outcome; live consultation in Preconstruction',
               ].map((item) => (
                 <li key={item} className="flex items-start gap-3 text-sm text-slate-700">
                   <span className="mt-0.5 flex-shrink-0 text-base" style={{ color: '#2ABFBF' }}>✓</span>
@@ -81,7 +82,7 @@ export function ConceptPackageSection() {
               </Link>
               <div className="text-sm" style={{ color: '#64748B' }}>
                 Starting at{' '}
-                <span className="font-bold text-slate-900">$585</span>
+                <span className="font-bold text-slate-900">{formatPrice(CONCEPT_START_PRICE)}</span>
                 {' '}· 2–5 day concept delivery
               </div>
             </div>

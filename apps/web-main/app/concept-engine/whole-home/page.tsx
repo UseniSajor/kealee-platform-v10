@@ -2,6 +2,10 @@
 
 import Link from 'next/link'
 import { ArrowRight, ArrowLeft, CheckCircle, Layers, Home, Layout, Hammer, Clock } from 'lucide-react'
+import { INTAKE_TIER_PRICE_CENTS, formatPriceFromCents } from '@kealee/core-rules'
+
+const wholeHomeTiers = INTAKE_TIER_PRICE_CENTS.whole_home_concept
+const tierPrice = (tier: 1 | 2 | 3) => formatPriceFromCents(wholeHomeTiers[tier]!.cents).replace('.00', '')
 
 const STEPS = [
   {
@@ -118,7 +122,7 @@ export default function WholeHomeConceptEnginePage() {
                 </ul>
                 <div className="mt-6 border-t border-white/10 pt-4 flex items-baseline justify-between">
                   <span className="text-sm text-white/50">Starting at</span>
-                  <span className="text-3xl font-bold text-white">$585</span>
+                  <span className="text-3xl font-bold text-white">{tierPrice(1)}</span>
                 </div>
               </div>
             </div>
@@ -139,8 +143,8 @@ export default function WholeHomeConceptEnginePage() {
           <div className="mt-12 grid gap-6 lg:grid-cols-3">
             {([
               {
-                name: 'AI Whole Home Concept',
-                price: '$585',
+                name: wholeHomeTiers[1]!.label,
+                price: tierPrice(1),
                 rounds: '1 feedback round',
                 turnaround: '7–10 business days',
                 desc: 'Floor plan direction, scope summary, material palette, and rough cost range.',
@@ -150,8 +154,8 @@ export default function WholeHomeConceptEnginePage() {
                 popular: false,
               },
               {
-                name: 'Advanced Whole Home Design',
-                price: '$1,200',
+                name: wholeHomeTiers[2]!.label,
+                price: tierPrice(2),
                 rounds: 'Up to 3 feedback rounds',
                 turnaround: '2–3 weeks',
                 desc: '3D views, detailed floor plans, and a full contractor-ready scope package.',
@@ -161,14 +165,14 @@ export default function WholeHomeConceptEnginePage() {
                 popular: true,
               },
               {
-                name: 'Full Design Package',
-                price: 'From $6,500',
-                rounds: 'Up to 5 rounds',
-                turnaround: '4–6 weeks',
-                desc: 'Permit-ready drawing set with structural coordination and full project specifications.',
-                items: ['Everything in Advanced', 'Permit-ready drawing set', 'Structural coordination', 'Full specification package', 'Contractor bid documents'],
-                cta: 'Contact Us',
-                href: '/contact',
+                name: wholeHomeTiers[3]!.label,
+                price: tierPrice(3),
+                rounds: 'Up to 3 feedback rounds',
+                turnaround: '4–6 business days',
+                desc: 'Enhanced preconstruction concept with CAD handoff, deeper cost and permit planning, and consultation.',
+                items: ['Everything in Concept + Budget', '12 4K renders', 'CAD handoff', 'Permit and zoning deep-dive', '15-minute consultation'],
+                cta: 'Start Preconstruction',
+                href: '/intake/whole_home_concept',
                 popular: false,
               },
             ] as const).map((tier) => (

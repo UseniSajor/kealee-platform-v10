@@ -2,6 +2,7 @@
 
 import { useState, useRef } from 'react'
 import { getPermitFunnelProjectDescriptionPlaceholder } from '@kealee/shared'
+import { CANONICAL_PRICE_CENTS, formatPriceFromCents } from '@kealee/core-rules'
 
 interface PermitFunnelProps {
   countySlug?: string
@@ -46,8 +47,8 @@ const PERMIT_PACKAGES: {
 }[] = [
   {
     tier: 'simple',
-    name: 'Permit Research',
-    price: '$297',
+    name: 'Permit Path Assessment',
+    price: formatPriceFromCents(CANONICAL_PRICE_CENTS.permits.assessment).replace('.00', ''),
     description: 'Know exactly what you need before you start',
     includes: [
       'Jurisdiction requirements report',
@@ -58,8 +59,8 @@ const PERMIT_PACKAGES: {
   },
   {
     tier: 'package',
-    name: 'Full Permit Package',
-    price: '$497',
+    name: 'Permit Application Package',
+    price: formatPriceFromCents(CANONICAL_PRICE_CENTS.permits.standard).replace('.00', ''),
     description: 'Everything prepared for first-cycle approval',
     includes: [
       'Everything in Permit Research',
@@ -73,7 +74,7 @@ const PERMIT_PACKAGES: {
   {
     tier: 'coordination',
     name: 'Permit Coordination',
-    price: '$997',
+    price: formatPriceFromCents(CANONICAL_PRICE_CENTS.permits.managed).replace('.00', ''),
     description: 'We manage the entire process for you',
     includes: [
       'Everything in Full Permit Package',
@@ -85,8 +86,8 @@ const PERMIT_PACKAGES: {
   },
   {
     tier: 'expediting',
-    name: 'Expedited Filing',
-    price: 'Starting at $1,997',
+    name: 'Expedited Permit Coordination',
+    price: `Starting at ${formatPriceFromCents(CANONICAL_PRICE_CENTS.permits.expedited).replace('.00', '')}`,
     description: 'Priority processing — fastest path to approval',
     includes: [
       'Everything in Permit Coordination',

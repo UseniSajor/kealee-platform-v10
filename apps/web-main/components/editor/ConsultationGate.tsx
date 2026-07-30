@@ -19,6 +19,9 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Lock, ArrowRight, CheckCircle2, Loader2 } from 'lucide-react'
+import { CANONICAL_PRICE_CENTS, formatPriceFromCents } from '@kealee/core-rules'
+
+const conceptStartPrice = formatPriceFromCents(CANONICAL_PRICE_CENTS.concept.genericStart)
 
 interface GateResult {
   allowed: boolean
@@ -59,7 +62,7 @@ export default function ConsultationGate({ email, userId, intakeId, hasPlans, ch
           allowed: false,
           reason: 'Gate check failed',
           upgradeUrl: '/intake/concept',
-          upgradePrice: '$149',
+          upgradePrice: conceptStartPrice,
           upgradeProduct: 'concept',
         })
       } finally {
@@ -115,7 +118,7 @@ export default function ConsultationGate({ email, userId, intakeId, hasPlans, ch
 
       <ul className="space-y-2.5 mb-6">
         {[
-          'AI Concept package purchased ($149)',
+          `Concept Plan purchased (${conceptStartPrice})`,
           'Professional Drawings package purchased',
           'Permit Package purchased',
           'Approved architect drawings uploaded',
@@ -136,7 +139,7 @@ export default function ConsultationGate({ email, userId, intakeId, hasPlans, ch
           href={result?.upgradeUrl ?? '/intake/concept'}
           className="flex-1 flex items-center justify-center gap-2 bg-[#E8724B] hover:bg-[#D45C33] text-white font-bold px-5 py-3 rounded-xl text-sm transition"
         >
-          Start with AI Concept — {result?.upgradePrice ?? '$149'} <ArrowRight className="w-4 h-4" />
+          Start with Concept Plan — {result?.upgradePrice ?? conceptStartPrice} <ArrowRight className="w-4 h-4" />
         </Link>
         <Link
           href="/contact"

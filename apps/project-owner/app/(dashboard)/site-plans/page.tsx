@@ -6,11 +6,26 @@ import { AlertTriangle, CheckCircle, Clock, FileText, Loader2, Map, ShieldCheck 
 import { getAuthoritativeProjectStatus, getSiteFitScenario, listProjects, solveSiteFitScenario,
   startInfillSitePlan, uploadSitePlanSurvey } from '@/lib/api/owner'
 import type { AuthoritativeProjectStatus, Project, SiteFitScenarioResult } from '@/lib/api/owner'
+import { formatCatalogPrice, getPublicCatalogProduct } from '@kealee/core-rules'
 
 const STAGES = ['PARCEL_RESOLUTION', 'DOCUMENT_COLLECTION', 'FEASIBILITY', 'PLAN_GENERATION',
   'COMPLIANCE_AUDIT', 'PROFESSIONAL_REVIEW', 'SUBMISSION_CORRECTIONS']
 const label = (value: string) => value.toLowerCase().replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
 const DISCLAIMER = 'Preliminary feasibility / not for construction / subject to licensed professional review.'
+const SITE_NEXT_STEPS = [
+  {
+    product: getPublicCatalogProduct('verified_site_feasibility'),
+    text: 'Operations verifies zoning sources, parcel assumptions, overlays, and the buildable envelope.',
+  },
+  {
+    product: getPublicCatalogProduct('project_launch'),
+    text: 'Advance a selected footprint into a concept plan, quantities, and preliminary cost range.',
+  },
+  {
+    product: getPublicCatalogProduct('professional_design'),
+    text: 'Professional design review, permit coordination, and handoff toward Kealee design-build execution.',
+  },
+].filter((item): item is { product: NonNullable<typeof item.product>; text: string } => item.product !== null)
 
 export default function SitePlansPage() {
   const [rows, setRows] = useState<Array<{ project: Project; status: AuthoritativeProjectStatus }>>([])
@@ -217,18 +232,11 @@ export default function SitePlansPage() {
               <td className="p-2">{option.score.toFixed(1)}</td><td className="p-2 text-amber-700">Required</td>
             </tr>)}</tbody></table></div> : null}
           <div className="mt-5 grid gap-3 md:grid-cols-3">
-            {[
-              { title: 'Verified Zoning + Site Feasibility', price: '$149–$299', href: '/services',
-                text: 'Operations verifies zoning sources, parcel assumptions, overlays, and the buildable envelope.' },
-              { title: 'Concept Plan + Budget Range', price: '$299–$595', href: '/concepts/new',
-                text: 'Advance a selected footprint into a concept plan, quantities, and preliminary cost range.' },
-              { title: 'Permit-Ready Package / Construction Consultation', price: '$799+', href: '/services',
-                text: 'Professional design review, permit coordination, and handoff toward Kealee design-build execution.' },
-            ].map(next => <div key={next.title} className="rounded-lg border border-teal-200 bg-teal-50 p-4">
-              <p className="text-sm font-semibold text-slate-900">{next.title}</p>
-              <p className="mt-1 text-lg font-bold text-teal-800">{next.price}</p>
+            {SITE_NEXT_STEPS.map(next => <div key={next.product.key} className="rounded-lg border border-teal-200 bg-teal-50 p-4">
+              <p className="text-sm font-semibold text-slate-900">{next.product.name}</p>
+              <p className="mt-1 text-lg font-bold text-teal-800">{formatCatalogPrice(next.product)}</p>
               <p className="mt-2 text-xs text-slate-600">{next.text}</p>
-              <Link href={next.href} className="mt-3 inline-block rounded bg-teal-700 px-3 py-2 text-xs font-semibold text-white">
+              <Link href={next.product.href} className="mt-3 inline-block rounded bg-teal-700 px-3 py-2 text-xs font-semibold text-white">
                 Continue
               </Link>
             </div>)}

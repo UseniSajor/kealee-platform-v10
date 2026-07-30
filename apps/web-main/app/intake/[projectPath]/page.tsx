@@ -459,7 +459,7 @@ export default function IntakePage() {
     : null
   const priceInfo = bundlePreview && (projectPath === bundlePreview.productKey)
     ? { label: bundlePreview.label, amount: bundlePreview.bundleCents, delivery: bundlePreview.deliveryDays }
-    : (PRICE_MAP[projectPath] || { label: 'Project Package', amount: 39500, delivery: '3–5 days' })
+    : (PRICE_MAP[projectPath] || { label: 'Project Package', amount: 0, delivery: 'Price confirmed before checkout' })
   const deliverable = SERVICE_DELIVERABLES[projectPath]
   const includes = deliverable?.includes ?? []
 

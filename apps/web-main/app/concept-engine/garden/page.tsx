@@ -2,6 +2,10 @@
 
 import Link from 'next/link'
 import { ArrowRight, ArrowLeft, CheckCircle, Leaf, MapPin, Droplets, Sun, Clock } from 'lucide-react'
+import { INTAKE_TIER_PRICE_CENTS, formatPriceFromCents } from '@kealee/core-rules'
+
+const gardenTiers = INTAKE_TIER_PRICE_CENTS.garden_concept
+const tierPrice = (tier: 1 | 2 | 3) => formatPriceFromCents(gardenTiers[tier]!.cents).replace('.00', '')
 
 const STEPS = [
   {
@@ -117,7 +121,7 @@ export default function GardenConceptEnginePage() {
                 </ul>
                 <div className="mt-6 border-t border-white/10 pt-4 flex items-baseline justify-between">
                   <span className="text-sm text-white/50">Starting at</span>
-                  <span className="text-3xl font-bold text-white">$395</span>
+                  <span className="text-3xl font-bold text-white">{tierPrice(1)}</span>
                 </div>
               </div>
             </div>
@@ -138,8 +142,8 @@ export default function GardenConceptEnginePage() {
           <div className="mt-12 grid gap-6 lg:grid-cols-3">
             {([
               {
-                name: 'AI Garden Concept',
-                price: '$395',
+                name: gardenTiers[1]!.label,
+                price: tierPrice(1),
                 rounds: '1 feedback round',
                 turnaround: '5–7 business days',
                 desc: 'Property-specific garden layout with raised beds, irrigation overview, and planting guide.',
@@ -149,8 +153,8 @@ export default function GardenConceptEnginePage() {
                 popular: false,
               },
               {
-                name: 'Advanced Garden Design',
-                price: '$695',
+                name: gardenTiers[2]!.label,
+                price: tierPrice(2),
                 rounds: 'Up to 3 feedback rounds',
                 turnaround: '10–14 business days',
                 desc: 'Detailed garden design with plant lists, irrigation specs, and 3D garden views.',
@@ -160,14 +164,14 @@ export default function GardenConceptEnginePage() {
                 popular: true,
               },
               {
-                name: 'Full Landscape Design',
-                price: 'From $2,500',
-                rounds: 'Up to 5 rounds',
-                turnaround: '2–3 weeks',
-                desc: 'Permit-ready landscape plans with full contractor bid documents.',
-                items: ['Everything in Advanced', 'Permit-ready drawings', 'Contractor bid documents', 'Irrigation system plan', 'Grading + drainage plan'],
-                cta: 'Contact Us',
-                href: '/contact',
+                name: gardenTiers[3]!.label,
+                price: tierPrice(3),
+                rounds: 'Up to 3 feedback rounds',
+                turnaround: '2–4 business days',
+                desc: 'Enhanced preconstruction concept with CAD handoff, deeper feasibility, and consultation.',
+                items: ['Everything in Concept + Budget', '12 4K renders', 'DXF handoff', 'Irrigation and grading concept', '15-minute consultation'],
+                cta: 'Start Preconstruction',
+                href: '/intake/garden_concept',
                 popular: false,
               },
             ] as const).map((tier, i) => (
@@ -272,9 +276,9 @@ export default function GardenConceptEnginePage() {
           <h2 className="mb-6 text-xl font-bold text-center" style={{ color: '#1A2B4A' }}>Garden design packages</h2>
           <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
             {[
-              { tier: 'AI Garden Concept', price: '$395', revisions: '1 round (3 layouts)', note: 'AI layout + raised beds + irrigation overview + planting guide' },
-              { tier: 'Advanced Garden Design', price: '$695', revisions: 'Up to 3 rounds', note: 'Detailed plant lists + irrigation specs + 3D garden views', highlight: true },
-              { tier: 'Full Landscape Design', price: '$2,500+', revisions: 'Up to 5 rounds', note: 'Permit-ready landscape plans + full contractor package' },
+              { tier: gardenTiers[1]!.label, price: tierPrice(1), revisions: '1 round (3 layouts)', note: 'AI layout + raised beds + irrigation overview + planting guide' },
+              { tier: gardenTiers[2]!.label, price: tierPrice(2), revisions: 'Up to 3 rounds', note: 'Detailed plant lists + irrigation direction + 3D garden views', highlight: true },
+              { tier: gardenTiers[3]!.label, price: tierPrice(3), revisions: 'Up to 3 rounds', note: 'Preliminary CAD handoff + cost and permit-path planning' },
             ].map((row, i) => (
               <div
                 key={row.tier}

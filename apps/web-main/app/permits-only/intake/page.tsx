@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { FileText, ImagePlus, FileVideo, X } from 'lucide-react'
 import { getPermitsOnlyScopePlaceholder } from '@kealee/shared'
 import { uploadIntakeFilesSequentially, type IntakeUploadedFile } from '@/lib/intake-file-upload'
+import { CANONICAL_PRICE_CENTS, formatPriceFromCents } from '@kealee/core-rules'
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? 'https://api.kealee.com'
 
@@ -29,9 +30,9 @@ const BUDGET_RANGES = [
 ]
 
 const TIERS = [
-  { value: 'basic', label: 'Basic', price: '$99–$299', note: 'Permit checklist + code summary. You submit.' },
-  { value: 'professional', label: 'Professional', price: '$349', note: 'We file all permits and coordinate inspections.' },
-  { value: 'premium', label: 'Premium', price: '$599', note: 'Expedited + white-glove inspection support.' },
+  { value: 'basic', label: 'Permit Path Assessment', price: formatPriceFromCents(CANONICAL_PRICE_CENTS.permits.assessment), note: 'Permit checklist, requirements, and submission roadmap.' },
+  { value: 'professional', label: 'Permit Application Package', price: formatPriceFromCents(CANONICAL_PRICE_CENTS.permits.standard), note: 'Application preparation and coordinated filing support.' },
+  { value: 'premium', label: 'Permit Coordination', price: formatPriceFromCents(CANONICAL_PRICE_CENTS.permits.managed), note: 'Multi-permit coordination and comment-response support.' },
 ]
 
 interface FormData {

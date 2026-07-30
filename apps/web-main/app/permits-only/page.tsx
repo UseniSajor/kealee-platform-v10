@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
+import { CANONICAL_PRICE_CENTS, formatPriceFromCents } from '@kealee/core-rules'
 
 export const metadata: Metadata = {
   title: 'Professional Permit Services | Kealee',
@@ -8,8 +9,8 @@ export const metadata: Metadata = {
 
 const TIERS = [
   {
-    name: 'Basic',
-    price: '$99–$299',
+    name: 'Permit Path Assessment',
+    price: formatPriceFromCents(CANONICAL_PRICE_CENTS.permits.assessment),
     description: 'DIY with expert guidance',
     features: [
       'Permit requirements checklist',
@@ -22,8 +23,8 @@ const TIERS = [
     highlight: false,
   },
   {
-    name: 'Professional',
-    price: '$349',
+    name: 'Permit Application Package',
+    price: formatPriceFromCents(CANONICAL_PRICE_CENTS.permits.standard),
     description: 'We handle everything',
     features: [
       'Complete permit applications',
@@ -37,8 +38,8 @@ const TIERS = [
     highlight: true,
   },
   {
-    name: 'Premium',
-    price: '$599',
+    name: 'Permit Coordination',
+    price: formatPriceFromCents(CANONICAL_PRICE_CENTS.permits.managed),
     description: 'White-glove service',
     features: [
       'Everything in Professional',

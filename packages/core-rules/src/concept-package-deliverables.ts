@@ -71,6 +71,30 @@ export const CONCEPT_PACKAGE_RULES = {
     'Design concept fee credited toward permit-ready drawings or architect handoff when you continue with Kealee.',
 } as const
 
+/**
+ * Fulfillment ownership for every concept-package family.
+ * The Design Agent coordinates the package, but specialist outputs retain
+ * bounded ownership and the package cannot be released without human review.
+ */
+export const CONCEPT_PACKAGE_FULFILLMENT = {
+  accountableAgent: 'owner',
+  orchestrationAgent: 'design',
+  contributingAgents: {
+    intake: ['intake normalization', 'missing-input requests'],
+    design: ['concept direction', 'layout', 'MEP scope', 'render brief'],
+    estimate: ['BOM', 'cost ranges', 'budget scenarios'],
+    zoning: ['zoning and buildability snapshot', 'source and confidence labels'],
+    permit: ['permit scope', 'likely disciplines', 'AHJ checklist', 'fee and timeline ranges'],
+    project: ['workflow status', 'artifact completeness', 'customer handoff'],
+  },
+  artifactOwners: {
+    renderWorker: ['concept images', 'transformation video when purchased'],
+    documentPipeline: ['PDF report', 'DXF export when purchased', 'portal artifacts'],
+  },
+  releaseGate: 'human_review',
+  professionalReviewRequiredForConstructionUse: true,
+} as const
+
 // ── Permit + zoning (ALL tiers — depth scales) ─────────────────────────────
 
 function permitZoningForTier(tier: ConceptTier): ConceptPackageDeliverable[] {

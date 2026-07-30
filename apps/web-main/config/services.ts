@@ -1,6 +1,16 @@
 import type { ServiceMedia } from '@/components/media/types'
 import { STOCK_IMAGES } from '@/lib/stock-images'
 import { STOCK_VIDEOS } from '@/lib/stock-videos'
+import { INTAKE_PRICE_CENTS, formatPriceFromCents } from '@kealee/core-rules'
+
+const canonicalPrice = (key: string) => {
+  const entry = INTAKE_PRICE_CENTS[key]
+  if (!entry) throw new Error(`Missing canonical intake price: ${key}`)
+  return {
+    display: formatPriceFromCents(entry.cents).replace('.00', ''),
+    range: [entry.cents, entry.cents] as [number, number],
+  }
+}
 
 export type ServiceCategory = 'design' | 'development' | 'permit' | 'estimate' | 'match'
 
@@ -31,8 +41,8 @@ export const SERVICES: ServiceConfig[] = [
     description:
       'Get 3 concept visuals, a detailed bill of materials, full MEP specification, and a cost estimate—all in 3–5 days. Our AI design engine combined with staff review ensures every deliverable is project-ready.',
     category: 'design',
-    priceDisplay: '$395',
-    priceRange: [39500, 39500],
+    priceDisplay: canonicalPrice('kitchen_remodel').display,
+    priceRange: canonicalPrice('kitchen_remodel').range,
     deliveryDays: '3–5 days',
     permitRequired: true,
     features: [
@@ -61,8 +71,8 @@ export const SERVICES: ServiceConfig[] = [
     description:
       'Full concept package for your bathroom renovation—renders, BOM, plumbing and electrical specification, and a permit scope brief. Everything your contractor needs to bid accurately.',
     category: 'design',
-    priceDisplay: '$295',
-    priceRange: [29500, 29500],
+    priceDisplay: canonicalPrice('bathroom_remodel').display,
+    priceRange: canonicalPrice('bathroom_remodel').range,
     deliveryDays: '2–4 days',
     permitRequired: true,
     features: [
@@ -90,8 +100,8 @@ export const SERVICES: ServiceConfig[] = [
     description:
       'Planning a home addition or expansion? Get concept renderings, structural considerations, permit scope, and full MEP specification—designed to move directly into permitting.',
     category: 'design',
-    priceDisplay: '$495',
-    priceRange: [49500, 49500],
+    priceDisplay: canonicalPrice('addition_expansion').display,
+    priceRange: canonicalPrice('addition_expansion').range,
     deliveryDays: '3–5 days',
     permitRequired: true,
     features: [
@@ -118,8 +128,8 @@ export const SERVICES: ServiceConfig[] = [
     description:
       'Full-home concept renderings, floor plan direction, complete MEP specification, and a phased remodel plan. Ideal for homeowners doing a full renovation before selling or moving in.',
     category: 'design',
-    priceDisplay: '$695',
-    priceRange: [69500, 69500],
+    priceDisplay: canonicalPrice('whole_home_remodel').display,
+    priceRange: canonicalPrice('whole_home_remodel').range,
     deliveryDays: '4–6 days',
     permitRequired: true,
     features: [
@@ -146,8 +156,8 @@ export const SERVICES: ServiceConfig[] = [
     description:
       'Get a full garden layout concept, smart irrigation design, plant list with seasonal selections, and a maintenance calendar—all in 2–4 days.',
     category: 'design',
-    priceDisplay: '$295',
-    priceRange: [29500, 29500],
+    priceDisplay: canonicalPrice('garden_concept').display,
+    priceRange: canonicalPrice('garden_concept').range,
     deliveryDays: '2–4 days',
     permitRequired: false,
     features: [
@@ -174,8 +184,8 @@ export const SERVICES: ServiceConfig[] = [
     description:
       'Interior concept visuals, layout recommendations, MEP specification, and a detailed BOM—covering flooring, paint, lighting, and finishes for your renovation.',
     category: 'design',
-    priceDisplay: '$345',
-    priceRange: [34500, 34500],
+    priceDisplay: canonicalPrice('interior_renovation').display,
+    priceRange: canonicalPrice('interior_renovation').range,
     deliveryDays: '3–5 days',
     permitRequired: false,
     features: [
@@ -201,8 +211,8 @@ export const SERVICES: ServiceConfig[] = [
     description:
       'Three exterior renderings (front, side, rear), a complete material palette, landscape overview, and exterior MEP specification. Ideal for facade upgrades, additions, or pre-sale renovations.',
     category: 'design',
-    priceDisplay: '$395',
-    priceRange: [39500, 39500],
+    priceDisplay: canonicalPrice('exterior_concept').display,
+    priceRange: canonicalPrice('exterior_concept').range,
     deliveryDays: '3–5 days',
     permitRequired: true,
     features: [
@@ -229,8 +239,8 @@ export const SERVICES: ServiceConfig[] = [
     description:
       'Interior renders, layout flow analysis, MEP scope, and cost breakdown—tailored for homeowners who want a clear design direction before hiring a contractor.',
     category: 'design',
-    priceDisplay: '$345',
-    priceRange: [34500, 34500],
+    priceDisplay: canonicalPrice('interior_reno_concept').display,
+    priceRange: canonicalPrice('interior_reno_concept').range,
     deliveryDays: '3–5 days',
     permitRequired: false,
     features: [
@@ -256,8 +266,8 @@ export const SERVICES: ServiceConfig[] = [
     description:
       'The complete package: design concept, build-ready scope, MEP specification, BOM, permit scope brief, and a contractor match recommendation. Start building faster with everything in one place.',
     category: 'design',
-    priceDisplay: '$795',
-    priceRange: [79500, 79500],
+    priceDisplay: canonicalPrice('design_build').display,
+    priceRange: canonicalPrice('design_build').range,
     deliveryDays: '5–7 days',
     permitRequired: true,
     features: [

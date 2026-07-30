@@ -6,7 +6,7 @@ import { INTAKE_TIER_PRICE_CENTS, formatPriceFromCents } from '@kealee/core-rule
 
 export interface ServiceTier {
   tier: 1 | 2 | 3
-  name: 'Basic' | 'Premium' | 'Premium+'
+  name: string
   price: number            // 0 = not available
   available: boolean
   video: boolean
@@ -44,13 +44,13 @@ export interface Service {
 // ── Tier helper ────────────────────────────────────────────────────────────────
 
 function tier1(price: number): ServiceTier {
-  return { tier: 1, name: 'Basic', price, available: true, video: false }
+  return { tier: 1, name: 'Concept', price, available: true, video: false }
 }
 
 function tier2(price: number): ServiceTier {
   return {
     tier: 2,
-    name: 'Premium',
+    name: 'Concept + Budget',
     price,
     available: price > 0,
     video: price > 0,
@@ -62,7 +62,7 @@ function tier2(price: number): ServiceTier {
 function tier3(price: number): ServiceTier {
   return {
     tier: 3,
-    name: 'Premium+',
+    name: 'Preconstruction Package',
     price,
     available: price > 0,
     video: price > 0,
@@ -83,7 +83,8 @@ function canonicalTiers(intakePath: string): ServiceTier[] {
   return [1, 2, 3].map(tier => {
     const entry = prices[tier as 1 | 2 | 3]
     const dollars = entry ? entry.cents / 100 : 0
-    return tier === 1 ? tier1(dollars) : tier === 2 ? tier2(dollars) : tier3(dollars)
+    const result = tier === 1 ? tier1(dollars) : tier === 2 ? tier2(dollars) : tier3(dollars)
+    return { ...result, name: entry?.label ?? result.name }
   })
 }
 

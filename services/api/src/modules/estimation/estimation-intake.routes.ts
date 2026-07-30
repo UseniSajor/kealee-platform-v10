@@ -14,6 +14,7 @@ import Stripe from 'stripe'
 import { z } from 'zod'
 import { RedisClient } from '@kealee/redis'
 import { sanitizeErrorMessage } from '../../utils/sanitize-error'
+import { CANONICAL_PRICE_CENTS } from '@kealee/core-rules'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY ?? '', { apiVersion: '2024-04-10' as any })
 
@@ -21,19 +22,19 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY ?? '', { apiVersion: '20
 const ESTIMATION_TIERS = {
   cost_estimate: {
     name: 'Detailed Cost Estimate',
-    amount: 59500, // $595 in cents
+    amount: CANONICAL_PRICE_CENTS.estimation.detailed,
     turnaround: 3,
     description: 'Human-reviewed, trade-by-trade breakdown validated against RSMeans',
   },
   certified_estimate: {
     name: 'Certified Cost Estimate',
-    amount: 185000, // $1,850 in cents
+    amount: CANONICAL_PRICE_CENTS.estimation.certified,
     turnaround: 5,
     description: 'Notarized licensed estimator sign-off, full RSMeans source documentation',
   },
   bundle: {
     name: 'Estimate + Permit Bundle',
-    amount: 110000, // $1,100 in cents
+    amount: CANONICAL_PRICE_CENTS.estimation.estimatePermitBundle,
     turnaround: 5,
     description: 'Detailed cost estimate plus permit package preparation',
   },

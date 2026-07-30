@@ -4,13 +4,16 @@ import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { ArrowLeft, ArrowRight, Home, CheckCircle } from 'lucide-react'
 import { useState } from 'react'
+import { INTAKE_TIER_PRICE_CENTS, formatPriceFromCents } from '@kealee/core-rules'
 
 const ACCENT = '#E8793A'
+const exteriorTiers = INTAKE_TIER_PRICE_CENTS.exterior_concept
+const tierPrice = (tier: 1 | 2 | 3) => formatPriceFromCents(exteriorTiers[tier]!.cents).replace('.00', '')
 
 const TIERS = [
   {
-    name: 'AI Exterior Concept',
-    price: '$595',
+    name: exteriorTiers[1]!.label,
+    price: tierPrice(1),
     rounds: '1 feedback round',
     turnaround: '5–7 business days',
     desc: 'AI-generated exterior concept with 3 renderings, material palette, and landscape layout.',
@@ -18,8 +21,8 @@ const TIERS = [
     cta: 'Start My Exterior Concept',
   },
   {
-    name: 'Advanced Exterior Design',
-    price: '$1,200',
+    name: exteriorTiers[2]!.label,
+    price: tierPrice(2),
     rounds: 'Up to 3 feedback rounds',
     turnaround: '10–14 business days',
     desc: 'Full exterior design with detailed landscape plan, hardscape specifications, and lighting layout.',
@@ -34,19 +37,19 @@ const TIERS = [
     popular: true,
   },
   {
-    name: 'Full Landscape Design',
-    price: 'From $3,500',
-    rounds: 'Up to 5 rounds',
-    turnaround: '3–4 weeks',
-    desc: 'Complete landscape + exterior design package with permit-ready drawings and contractor bid documents.',
+    name: exteriorTiers[3]!.label,
+    price: tierPrice(3),
+    rounds: 'Up to 3 feedback rounds',
+    turnaround: '3–5 business days',
+    desc: 'Enhanced preconstruction concept with CAD handoff, deeper cost and permit planning, and consultation.',
     items: [
       'Everything in Advanced',
-      'Permit-level drawings',
-      'Contractor bid documents',
+      'DXF handoff',
+      'Permit and zoning deep-dive',
       'Irrigation system plan',
       'Full grading + drainage plan',
     ],
-    cta: 'Contact Us',
+    cta: 'Start Preconstruction',
   },
 ]
 
@@ -87,7 +90,7 @@ const INCLUDED = [
 const FAQ = [
   {
     q: 'What is the AI Exterior Concept Package?',
-    a: "It's a $595 AI-generated concept design package for your home's exterior. You submit your property details and goals; we deliver 3 rendered concepts, a material palette, a landscape overview, and a consultation call — all within 5–7 business days.",
+    a: `It's a ${tierPrice(1)} AI-generated preliminary concept for your home's exterior. You submit property details and goals; we deliver rendered concepts, a material palette, and landscape direction within 5–7 business days.`,
   },
   {
     q: 'Does this include contractor services?',
@@ -107,7 +110,7 @@ const FAQ = [
   },
   {
     q: 'Can I use the concept package to get contractor bids?',
-    a: "Yes — that's the point. Every concept package is designed to be contractor-ready so you can get accurate bids from multiple contractors without paying for an architect first.",
+    a: 'It can support early contractor conversations, but it is preliminary and not for construction. Exact bids and permit submissions require the appropriate verified scope and licensed professional review.',
   },
 ]
 
@@ -197,7 +200,7 @@ export default function ExteriorConceptPage() {
                 style={{ backgroundColor: ACCENT, boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.3)' }}
               >
                 <p className="text-xs font-semibold text-white">AI Exterior Concept</p>
-                <p className="text-2xl font-bold text-white font-mono">$595</p>
+                <p className="text-2xl font-bold text-white font-mono">{tierPrice(1)}</p>
               </div>
             </motion.div>
           </div>
@@ -372,7 +375,7 @@ export default function ExteriorConceptPage() {
         <div className="mx-auto max-w-3xl px-4 text-center sm:px-6 lg:px-8">
           <h2 className="text-3xl font-bold text-white font-display">Start Your Exterior Concept Today</h2>
           <p className="mt-4 text-lg text-gray-300">
-            $595 · 3 renderings · 5–7 business days · Consultation included
+            {tierPrice(1)} · 3 renderings · 5–7 business days · Preliminary concept
           </p>
           <div className="mt-8 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
             <Link

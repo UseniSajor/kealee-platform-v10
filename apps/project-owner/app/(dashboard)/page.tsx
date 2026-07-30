@@ -9,6 +9,7 @@ import {
 import { listProjects, getProjectReadiness } from '@/lib/api/owner'
 import type { Project, ReadinessStatus } from '@/lib/api/owner'
 import { RevenueHookModal } from '@kealee/core-hooks'
+import { CANONICAL_PRICE_CENTS, formatPriceFromCents } from '@kealee/core-rules'
 import { BuildPathUpsell, type OwnedUpsellProduct } from '@/components/BuildPathUpsell'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -428,7 +429,7 @@ export default function OwnerDashboard() {
             <div className="flex items-center gap-3 flex-wrap">
               <h3 className="text-lg font-bold text-white tracking-tight">Full Design Package</h3>
               <span className="rounded-full px-3 py-0.5 text-xs font-bold bg-[#E8793A]/10 text-[#E8793A] border border-[#E8793A]/20">
-                Starting at $4,499
+                Starting at {formatPriceFromCents(CANONICAL_PRICE_CENTS.professionalDesign)}
               </span>
             </div>
             <p className="mt-1.5 text-sm text-slate-400 max-w-xl leading-relaxed">

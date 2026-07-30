@@ -18,6 +18,7 @@ import {
   v30WorkspaceUrl,
   webMainBaseUrl,
 } from '@/lib/concept-output'
+import { CANONICAL_PRICE_CENTS, formatPriceFromCents } from '@kealee/core-rules'
 import { V30LandscapeCadPanel } from '@/components/v30/V30LandscapeCadPanel'
 import { V30WorkspaceEmbed } from '@/components/v30/V30WorkspaceEmbed'
 import { ConceptPackageNav } from '@/components/concept/ConceptPackageNav'
@@ -1998,7 +1999,7 @@ export default function ConceptDeliverablePage() {
               </a>
             </div>
             <div className="px-6 pb-4 flex items-center gap-2">
-              <p className="text-xs text-purple-600 font-medium">From $4,999 · Licensed design professional · Permits + PE stamp included</p>
+              <p className="text-xs text-purple-600 font-medium">From {formatPriceFromCents(CANONICAL_PRICE_CENTS.professionalDesign)} · Licensed design professional · Scope and required seals confirmed before engagement</p>
             </div>
           </section>
         )}
@@ -2123,7 +2124,7 @@ export default function ConceptDeliverablePage() {
                 </ul>
               </div>
               <div className="shrink-0 flex flex-col items-end gap-2 min-w-[160px]">
-                <p className="text-2xl font-black text-white">From $4,995</p>
+                <p className="text-2xl font-black text-white">From {formatPriceFromCents(CANONICAL_PRICE_CENTS.professionalDesign)}</p>
                 <p className="text-xs text-white/60">7–14 day delivery</p>
                 <a
                   href={`https://kealee.com/intake/professional_drawings?conceptId=${intakeId}&from=concept`}

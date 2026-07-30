@@ -5,6 +5,7 @@ import { PipelineSection } from '@/components/home/PipelineSection'
 import { PortalAccessSection } from '@/components/home/PortalAccessSection'
 import { loadCardMediaManifest } from '@/lib/marketing/card-media-manifest'
 import { mergeHomeServicesWithManifest } from '@/lib/marketing/merge-home-services'
+import { CONCEPT_START_PRICE, formatPrice } from '@kealee/core-rules'
 
 // The media manifest is deployment content, so the homepage can be served from
 // Next's full-route cache instead of doing filesystem work on every request.
@@ -17,7 +18,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Kealee — Plan, Design, Permit & Build in One Platform',
     description:
-      'AI design concepts, validated cost estimates, permit filing, and a project workspace for every homeowner. Starting at $295.',
+      `AI design concepts, validated cost estimates, permit coordination, and a project workspace for every homeowner. Starting at ${formatPrice(CONCEPT_START_PRICE)}.`,
     url: 'https://kealee.com',
   },
   alternates: { canonical: '/' },

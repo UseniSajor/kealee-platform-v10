@@ -17,12 +17,13 @@ import {
   type ConceptIntake,
   type ConceptIntakeResponse,
 } from '@kealee/intake/schemas'
+import { CANONICAL_PRICE_CENTS } from '@kealee/core-rules'
 
 // Pricing model for concept tiers
 const CONCEPT_PACKAGE_PRICES = {
   concept_basic: {
-    name: 'Concept Visualization',
-    amount: 29500, // $295 in cents
+    name: 'Concept',
+    amount: CANONICAL_PRICE_CENTS.concept.kitchen,
     turnaround: 2,
     description: '2-3 AI-generated concept renderings with scope summary',
     conceptCount: 3,
@@ -30,8 +31,8 @@ const CONCEPT_PACKAGE_PRICES = {
     withFeasibilityFlags: true,
   },
   concept_advanced: {
-    name: 'Advanced Concept + Validation',
-    amount: 69500, // $695 in cents
+    name: 'Concept + Budget',
+    amount: CANONICAL_PRICE_CENTS.concept.kitchenAdvanced,
     turnaround: 3,
     description: '5 concept variations + feasibility analysis + style direction',
     conceptCount: 5,
@@ -39,8 +40,8 @@ const CONCEPT_PACKAGE_PRICES = {
     withFeasibilityFlags: true,
   },
   concept_full: {
-    name: 'Concept + Design Package',
-    amount: 149500, // $1,495 in cents
+    name: 'Preconstruction Package',
+    amount: CANONICAL_PRICE_CENTS.concept.kitchenFull,
     turnaround: 5,
     description: 'Advanced concepts + preliminary design drawings + specification start',
     conceptCount: 5,

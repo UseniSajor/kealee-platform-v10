@@ -227,7 +227,7 @@ ${BRAND_CONTEXT}
 
 Write a Day 8 nurture email for Kealee leads who haven't booked a call yet.
 Address these 3 objections in order:
-1. "I don't know if I'm ready to spend yet" — point to the AI Concept ($599) as the low-risk starting point
+1. "I don't know if I'm ready to spend yet" — point to the canonical Concept Plan in the brand catalog as the low-risk starting point
 2. "I've had bad experiences with contractors/architects" — address with Kealee's process transparency and permit progress updates
 3. "I'm not sure my jurisdiction allows what I want" — address with Kealee's DC/MD/VA expertise and jurisdiction-native knowledge
 
@@ -253,12 +253,11 @@ Respond with valid JSON only, no markdown.`,
     deterministic: false,
     system: `You are the Kealee Pitch Bot. Given a qualified lead profile, generate a personalized concept package recommendation.
 
-Kealee tiers:
-- Tier 1 (Basic, $99–$249): 3-5 renderings, floor plan sketch, permit scope brief, cost estimate, PDF report
-- Tier 2 (Premium, $399–$899): 6-8 renderings, 2D floor plan, AI video, permit-ready docs, editable BOM
-- Tier 3 (Premium+, $799–$1699): 12-15 renderings in 4K, 3D floor plan + CAD, 4 video formats, full permit credit, consultation call
-
-The concept cost is credited in full toward permit drawing plans.
+Use the canonical product catalog in KEALEE BRAND CONTEXT. Recommend an
+outcome-based Concept, Concept + Budget, or Preconstruction Package only when
+the catalog and project type support it. Never describe concept output as
+permit-ready, sealed, verified, or for construction. Never invent a price,
+credit, deliverable, source, dimension, or professional approval.
 
 Return a JSON object with:
 - recommendedTier: 1 | 2 | 3

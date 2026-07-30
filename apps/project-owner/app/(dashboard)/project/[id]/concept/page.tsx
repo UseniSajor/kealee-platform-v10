@@ -6,6 +6,7 @@ import {
   CheckCircle, Clock, AlertTriangle, Download, ArrowRight,
   FileText, Shield, DollarSign, Wrench
 } from 'lucide-react'
+import { CANONICAL_PRICE_CENTS, formatPriceFromCents } from '@kealee/core-rules'
 
 interface ConceptRecord {
   exists: boolean
@@ -97,7 +98,9 @@ export default function ConceptPage() {
           <h1 className="mb-2 text-2xl font-bold" style={{ color: '#1A2B4A' }}>
             Project Concept + Validation
           </h1>
-          <p className="mb-2 text-3xl font-bold" style={{ color: '#E8793A' }}>$395</p>
+          <p className="mb-2 text-3xl font-bold" style={{ color: '#E8793A' }}>
+            {formatPriceFromCents(CANONICAL_PRICE_CENTS.concept.genericStart)}
+          </p>
           <p className="mb-6 text-gray-500">
             AI-generated concept + zoning check + structural risk + cost band + permit risk — all delivered in 24 hours.
           </p>
@@ -130,7 +133,7 @@ export default function ConceptPage() {
               <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
             ) : (
               <>
-                Get Started — $395
+                Get Started — {formatPriceFromCents(CANONICAL_PRICE_CENTS.concept.genericStart)}
                 <ArrowRight className="h-5 w-5" />
               </>
             )}

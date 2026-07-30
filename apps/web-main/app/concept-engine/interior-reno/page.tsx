@@ -2,6 +2,10 @@
 
 import Link from 'next/link'
 import { ArrowRight, ArrowLeft, CheckCircle, PaintBucket, Home, Layout, Plus, Clock } from 'lucide-react'
+import { INTAKE_TIER_PRICE_CENTS, formatPriceFromCents } from '@kealee/core-rules'
+
+const interiorTiers = INTAKE_TIER_PRICE_CENTS.interior_renovation
+const tierPrice = (tier: 1 | 2 | 3) => formatPriceFromCents(interiorTiers[tier]!.cents).replace('.00', '')
 
 const STEPS = [
   {
@@ -118,7 +122,7 @@ export default function InteriorRenoConceptEnginePage() {
                 </ul>
                 <div className="mt-6 border-t border-white/10 pt-4 flex items-baseline justify-between">
                   <span className="text-sm text-white/50">Starting at</span>
-                  <span className="text-3xl font-bold text-white">$395</span>
+                  <span className="text-3xl font-bold text-white">{tierPrice(1)}</span>
                 </div>
               </div>
             </div>
@@ -139,8 +143,8 @@ export default function InteriorRenoConceptEnginePage() {
           <div className="mt-12 grid gap-6 lg:grid-cols-3">
             {([
               {
-                name: 'AI Interior Concept',
-                price: '$395',
+                name: interiorTiers[1]!.label,
+                price: tierPrice(1),
                 rounds: '1 feedback round',
                 turnaround: '5–7 business days',
                 desc: 'AI layout concept with finish direction and rough cost range.',
@@ -150,8 +154,8 @@ export default function InteriorRenoConceptEnginePage() {
                 popular: false,
               },
               {
-                name: 'Advanced Interior Design',
-                price: '$899',
+                name: interiorTiers[2]!.label,
+                price: tierPrice(2),
                 rounds: 'Up to 3 feedback rounds',
                 turnaround: '10–14 business days',
                 desc: 'Detailed floor plans, 3D views, material boards, and contractor-ready scope.',
@@ -161,14 +165,14 @@ export default function InteriorRenoConceptEnginePage() {
                 popular: true,
               },
               {
-                name: 'Full Design Package',
-                price: 'From $4,500',
-                rounds: 'Up to 5 rounds',
-                turnaround: '3–5 weeks',
-                desc: 'Permit-ready drawings with structural coordination and full specifications.',
-                items: ['Everything in Advanced', 'Permit-ready drawings', 'Structural coordination', 'Full specifications', 'Contractor bid documents'],
-                cta: 'Contact Us',
-                href: '/contact',
+                name: interiorTiers[3]!.label,
+                price: tierPrice(3),
+                rounds: 'Up to 3 feedback rounds',
+                turnaround: '3–5 business days',
+                desc: 'Enhanced preconstruction concept with CAD handoff, deeper cost and permit planning, and consultation.',
+                items: ['Everything in Concept + Budget', '12 4K renders', 'DXF handoff', 'Permit and zoning deep-dive', '15-minute consultation'],
+                cta: 'Start Preconstruction',
+                href: '/intake/interior_renovation',
                 popular: false,
               },
             ] as const).map((tier) => (

@@ -103,11 +103,15 @@ function productSpecFromService(s: Service): CardMediaSpec {
             : 'interior'
 
   const narrativeId = narrativeForServiceSlug(s.slug, s.category)
-  const { before, after } = defaultBeforeAfterDescriptions(narrativeId, s.label, 'modern')
+  // Facade before/after must show a real, older-style house getting a
+  // curb-appeal refresh — not a "modernize the whole house" conversion.
+  const style = narrativeId === 'exterior-install' ? 'traditional' : 'modern'
+  const { before, after } = defaultBeforeAfterDescriptions(narrativeId, s.label, style)
   const generatesBefore =
     narrativeId === 'kitchen-install' ||
     narrativeId === 'bath-install' ||
-    narrativeId === 'landscape-install'
+    narrativeId === 'landscape-install' ||
+    narrativeId === 'exterior-install'
 
   return {
     key: cardKey('product', s.slug),
@@ -115,7 +119,7 @@ function productSpecFromService(s: Service): CardMediaSpec {
     id: s.slug,
     title: s.label,
     imageType: 'after',
-    style: 'modern',
+    style,
     roomType: room,
     narrativeId,
     generatesBefore,

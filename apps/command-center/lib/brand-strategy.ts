@@ -4,6 +4,16 @@
  * These constants are injected into marketing bot system prompts so every
  * AI-generated output stays on-brand. Do not modify without a strategy review.
  */
+import {
+  formatCatalogPrice,
+  getPublicCatalogProduct,
+  getPublicCatalogAssistantContext,
+} from '@kealee/core-rules'
+
+const catalogPrice = (key: string): string => {
+  const product = getPublicCatalogProduct(key)
+  return product ? formatCatalogPrice(product) : 'Scoped'
+}
 
 // ── Core brand identity ───────────────────────────────────────────────────────
 
@@ -34,7 +44,7 @@ export const AUDIENCE_SEGMENTS = {
   homeowners: {
     label: 'DC/MD/VA Homeowners',
     demographics: 'HHI $120K+, ages 34–58, own primary home 3+ years, researching online before hiring anyone.',
-    primaryPath: 'AI Concept + Architect — $599 → $4,400+',
+    primaryPath: `Concept Plan ${catalogPrice('concept')} → Professional Design ${catalogPrice('professional_design')}`,
     painPoints: [
       "Don't know what's actually possible on their lot",
       'Fear cost overruns',
@@ -90,7 +100,7 @@ export const COPY_PILLARS = {
 // ── Pricing decisions ─────────────────────────────────────────────────────────
 
 export const PRICING_STRATEGY = {
-  entryPoint: 'AI Concept — position as the low-risk starting point for all segments. $599 converts cold traffic and naturally upsells.',
+  entryPoint: `Concept Plan — position ${catalogPrice('concept')} as the low-risk preliminary starting point, then scope professional services separately.`,
   anchor: 'Anchor on timeline, not price. "Permit-ready drawings in 1–2 weeks" differentiates more than competing on price.',
   segmentation: 'Segment email lists by jurisdiction. Montgomery County leads get MC-specific copy. Arlington leads get Arlington-specific.',
   creative: 'Test investor vs. homeowner creative separately. Investor copy leads with ROI/timeline. Homeowner copy leads with vision/possibility.',
@@ -111,12 +121,12 @@ export const JURISDICTIONS = [
 // ── Service price anchors (for ad copy) ──────────────────────────────────────
 
 export const PRICE_ANCHORS = {
-  concept:              'from $599',
-  permitResearch:       '$495',
-  professionalDrawings: 'from $4,999',
-  fullArchPackage:      '$2,999',
-  costEstimate:         '$595',
-  contractorMatch:      '$199',
+  concept:              catalogPrice('concept'),
+  permitResearch:       catalogPrice('permit_assessment'),
+  professionalDrawings: catalogPrice('professional_design'),
+  fullArchPackage:      catalogPrice('professional_design'),
+  costEstimate:         catalogPrice('detailed_estimate'),
+  contractorMatch:      catalogPrice('contractor_match'),
 }
 
 // ── Shared brand context string (injected into all strategy bot prompts) ──────
@@ -144,4 +154,7 @@ Cost estimate: ${PRICE_ANCHORS.costEstimate}
 
 Target markets: DC, MD, VA (DMV region)
 Key jurisdictions: ${JURISDICTIONS.join(', ')}
+
+CANONICAL PUBLIC CATALOG
+${getPublicCatalogAssistantContext()}
 `.trim()

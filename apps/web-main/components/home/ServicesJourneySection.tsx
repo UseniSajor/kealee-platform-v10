@@ -44,6 +44,11 @@ export function ServicesJourneySection({ services }: { services: HomeJourneyServ
   // preloads the next clip in the background so it's ready to fade in.
   const [activeLayer, setActiveLayer] = useState<0 | 1>(0)
   const [layerIndex, setLayerIndex] = useState<[number, number]>([0, 1 % HERO_VIDEOS.length])
+  // Stays false until the first clip actually starts playing, so the initial
+  // pageload never competes with a ~20MB video fetch. Once true, both layers
+  // preload eagerly — this is what makes the *next* clip already buffered by
+  // the time the crossfade needs it, instead of stalling mid-rotation.
+  const [rotationStarted, setRotationStarted] = useState(false)
   const videoRefs = [useRef<HTMLVideoElement>(null), useRef<HTMLVideoElement>(null)] as const
 
   const advance = (fromLayer: 0 | 1) => {
@@ -85,12 +90,25 @@ export function ServicesJourneySection({ services }: { services: HomeJourneyServ
       activeVideo.play().catch((err) => {
         console.warn('Hero video autoplay blocked:', err)
       })
+      setRotationStarted(true)
     }
     const timer = window.setTimeout(playVideo, document.readyState === 'complete' ? 1200 : 2200)
 
     return () => window.clearTimeout(timer)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeLayer, layerIndex])
+
+  // Whenever the inactive layer gets assigned a new "next" clip, force the
+  // browser to pick it up. Changing a <source src> attribute alone doesn't
+  // reliably trigger a re-fetch — without an explicit load() call here, the
+  // preload="auto" below can silently do nothing and the clip has to fetch
+  // from zero the moment it's swapped in, which is the stall this fixes.
+  useEffect(() => {
+    if (!rotationStarted) return
+    const inactiveLayer = activeLayer === 0 ? 1 : 0
+    videoRefs[inactiveLayer].current?.load()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [layerIndex, rotationStarted])
 
   return (
     <section
@@ -109,7 +127,7 @@ export function ServicesJourneySection({ services }: { services: HomeJourneyServ
               ref={videoRefs[layer]}
               muted
               playsInline
-              preload="none"
+              preload={rotationStarted ? 'auto' : 'none'}
               autoPlay={false}
               onEnded={handleVideoEnded(layer)}
               onError={handleVideoError(layer)}

@@ -16,30 +16,31 @@ import {
   type PermitIntake,
   type PermitIntakeResponse,
 } from '@kealee/intake/schemas'
+import { CANONICAL_PRICE_CENTS } from '@kealee/core-rules'
 
 // Pricing model for permit service tiers
 const PERMIT_PACKAGE_PRICES = {
   document_assembly: {
     name: 'Permit Document Assembly',
-    amount: 49500, // $495 in cents
+    amount: CANONICAL_PRICE_CENTS.permits.assessment,
     turnaround: 2,
     description: 'We prepare all permit documents based on your estimate and design',
   },
   submission: {
     name: 'Permit Submission',
-    amount: 79500, // $795 in cents
+    amount: CANONICAL_PRICE_CENTS.permits.standard,
     turnaround: 1,
     description: 'Full service: document assembly + submission to correct agency',
   },
   tracking: {
     name: 'Permit Tracking & Management',
-    amount: 149500, // $1,495 in cents
+    amount: CANONICAL_PRICE_CENTS.permits.managed,
     turnaround: 3,
     description: 'Full service + review coordination + status tracking',
   },
   inspection_coordination: {
     name: 'Full Inspection Coordination',
-    amount: 249500, // $2,495 in cents
+    amount: CANONICAL_PRICE_CENTS.permits.expedited,
     turnaround: 7,
     description: 'Full service + inspection scheduling + coordination through issuance',
   },

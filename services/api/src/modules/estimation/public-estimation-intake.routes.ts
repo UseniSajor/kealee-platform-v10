@@ -17,24 +17,25 @@ import {
   type EstimationIntake,
   type EstimationIntakeResponse,
 } from '@kealee/intake/schemas'
+import { CANONICAL_PRICE_CENTS } from '@kealee/core-rules'
 
 // Pricing model for estimation tiers
 const ESTIMATION_PACKAGE_PRICES = {
   cost_estimate: {
     name: 'Detailed Cost Estimate',
-    amount: 59500, // $595 in cents
+    amount: CANONICAL_PRICE_CENTS.estimation.detailed,
     turnaround: 3,
     description: 'Human-reviewed, trade-by-trade breakdown validated against RSMeans',
   },
   certified_estimate: {
     name: 'Certified Cost Estimate',
-    amount: 185000, // $1,850 in cents
+    amount: CANONICAL_PRICE_CENTS.estimation.certified,
     turnaround: 5,
     description: 'Notarized licensed estimator sign-off, full RSMeans source documentation',
   },
   bundle: {
     name: 'Estimate + Permit Bundle',
-    amount: 110000, // $1,100 (starting) in cents
+    amount: CANONICAL_PRICE_CENTS.estimation.estimatePermitBundle,
     turnaround: 5,
     description: 'Detailed cost estimate plus permit package preparation',
   },

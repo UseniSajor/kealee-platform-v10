@@ -3,14 +3,15 @@ import { guardStripeSecretForHttp } from '@/lib/stripe-vercel-guard'
 import { createStripe } from '@/lib/stripe-client'
 import { INTERNAL_TEST_PROMO_CENTS, INTERNAL_TEST_PROMO_METADATA_VALUE, internalTestPromoApplies } from '@/lib/internal-test-promo'
 import * as Sentry from '@sentry/nextjs'
+import { CANONICAL_PRICE_CENTS } from '@kealee/core-rules'
 
 export const dynamic = 'force-dynamic'
 
 const TIER_AMOUNTS: Record<string, { amount: number; name: string }> = {
-  simple:       { amount: 29700,  name: 'Permit Research' },
-  package:      { amount: 49700,  name: 'Full Permit Package' },
-  coordination: { amount: 99700,  name: 'Permit Coordination' },
-  expediting:   { amount: 199700, name: 'Expedited Filing' },
+  simple:       { amount: CANONICAL_PRICE_CENTS.permits.assessment, name: 'Permit Path Assessment' },
+  package:      { amount: CANONICAL_PRICE_CENTS.permits.standard, name: 'Permit Application Package' },
+  coordination: { amount: CANONICAL_PRICE_CENTS.permits.managed, name: 'Permit Coordination' },
+  expediting:   { amount: CANONICAL_PRICE_CENTS.permits.expedited, name: 'Expedited Permit Coordination' },
 }
 
 export async function POST(req: NextRequest) {

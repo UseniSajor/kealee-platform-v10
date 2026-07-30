@@ -12,6 +12,7 @@
     "@ai-sdk/react": "^3.0.118",
     "@kealee/ai": "workspace:*",
     "@kealee/auth": "workspace:*",
+    "@kealee/core-rules": "workspace:*",
     "@kealee/database": "workspace:*",
     "@kealee/observability": "workspace:*",
     "@kealee/redis": "workspace:*",

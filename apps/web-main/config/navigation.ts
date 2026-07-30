@@ -4,6 +4,7 @@
  * Single source of truth for all Kealee navigation structure.
  * Used by GlobalNav, MobileNav, and sitemap generation.
  */
+import { CONCEPT_START_PRICE, formatPrice } from '@kealee/core-rules'
 
 export interface NavLink {
   type?: 'link'
@@ -75,7 +76,7 @@ export const PRIMARY_NAV: NavItem[] = [
       },
     ],
     featured: {
-      label:       'AI Concept Engine — From $395',
+      label:       `AI Concept Engine — From ${formatPrice(CONCEPT_START_PRICE)}`,
       href:        '/concept-engine',
       description: 'AI-generated design + contractor-ready PDF · 5–7 business day delivery',
     },

@@ -10,11 +10,11 @@
 export const CANONICAL_PRICE_CENTS = {
   concept: {
     kitchen: 19_900,
-    kitchenAdvanced: 34_900,
-    kitchenFull: 69_900,
+    kitchenAdvanced: 44_900,
+    kitchenFull: 89_900,
     bath: 15_900,
-    bathAdvanced: 29_900,
-    bathFull: 59_900,
+    bathAdvanced: 34_900,
+    bathFull: 69_900,
     wholeHome: 39_900,
     wholeHomeAdvanced: 49_900,
     wholeHomeFull: 99_900,
@@ -23,12 +23,12 @@ export const CANONICAL_PRICE_CENTS = {
     landscape: 19_900,
     commercial: 99_900,
     developer: 59_900,
-    genericStart: 7_900,
+    genericStart: 15_900,
   },
   conceptTierReference: {
-    basic: 8_900,
-    premium: 34_900,
-    premiumPlus: 69_900,
+    basic: 19_900,
+    premium: 44_900,
+    premiumPlus: 89_900,
   },
   permits: {
     assessment: 59_900,
@@ -509,10 +509,8 @@ export const SERVICE_PRICING = {
 // The server MUST look up `cents` here using the URL-safe `projectPath`. It
 // MUST NOT trust an `amount` field supplied by the client (P0-1 fix).
 //
-// Values represent prices currently being charged in production. Some entries
-// intentionally diverge from the dollar constants above (which are surfaced in
-// marketing copy / ads) — reconciling the two is a separate business decision.
-// Until that decision is made, *checkout* is the source of truth.
+// Values are derived from the canonical primitives above. Checkout remains the
+// enforcement point, while public pages consume the same values for display.
 export interface IntakePriceEntry {
   /** Display label shown on the intake card and Stripe checkout line item. */
   label: string
@@ -590,42 +588,42 @@ export function getIntakePrice(projectPath: string): IntakePriceEntry | null {
 
 export const INTAKE_TIER_PRICE_CENTS: Record<string, Partial<Record<1 | 2 | 3, IntakePriceEntry>>> = {
   kitchen_remodel: {
-    1: { label: 'Kitchen Design Package — Basic', cents: CANONICAL_PRICE_CENTS.conceptTierReference.basic, deliveryDays: '3–5 days' },
-    2: { label: 'Kitchen Design Package — Premium', cents: CANONICAL_PRICE_CENTS.conceptTierReference.premium, deliveryDays: '3–5 days' },
-    3: { label: 'Kitchen Design Package — Premium+', cents: CANONICAL_PRICE_CENTS.conceptTierReference.premiumPlus, deliveryDays: '3–5 days' },
+    1: { label: 'Kitchen Concept', cents: CANONICAL_PRICE_CENTS.concept.kitchen, deliveryDays: '3–5 days' },
+    2: { label: 'Kitchen Concept + Budget', cents: CANONICAL_PRICE_CENTS.concept.kitchenAdvanced, deliveryDays: '3–5 days' },
+    3: { label: 'Kitchen Preconstruction Package', cents: CANONICAL_PRICE_CENTS.concept.kitchenFull, deliveryDays: '3–5 days' },
   },
   bathroom_remodel: {
-    1: { label: 'Bathroom Design Package — Basic',    cents: 7_900,  deliveryDays: '2–4 days' },
-    2: { label: 'Bathroom Design Package — Premium',  cents: 29_900, deliveryDays: '2–4 days' },
-    3: { label: 'Bathroom Design Package — Premium+', cents: 59_900, deliveryDays: '2–4 days' },
+    1: { label: 'Bathroom Concept', cents: CANONICAL_PRICE_CENTS.concept.bath, deliveryDays: '2–4 days' },
+    2: { label: 'Bathroom Concept + Budget', cents: CANONICAL_PRICE_CENTS.concept.bathAdvanced, deliveryDays: '2–4 days' },
+    3: { label: 'Bathroom Preconstruction Package', cents: CANONICAL_PRICE_CENTS.concept.bathFull, deliveryDays: '2–4 days' },
   },
   garden_concept: {
-    1: { label: 'Garden Concept — Basic',    cents: 9_900,  deliveryDays: '2–4 days' },
-    2: { label: 'Garden Concept — Premium',  cents: 24_900, deliveryDays: '2–4 days' },
-    3: { label: 'Garden Concept — Premium+', cents: 49_900, deliveryDays: '2–4 days' },
+    1: { label: 'Garden Concept', cents: CANONICAL_PRICE_CENTS.concept.landscape, deliveryDays: '2–4 days' },
+    2: { label: 'Garden Concept + Budget', cents: CANONICAL_PRICE_CENTS.conceptTierReference.premium, deliveryDays: '2–4 days' },
+    3: { label: 'Garden Preconstruction Package', cents: CANONICAL_PRICE_CENTS.conceptTierReference.premiumPlus, deliveryDays: '2–4 days' },
   },
   addition_expansion: {
-    1: { label: 'Home Addition — Basic',    cents: 14_900,  deliveryDays: '3–5 days' },
-    2: { label: 'Home Addition — Premium',  cents: 49_900,  deliveryDays: '3–5 days' },
-    3: { label: 'Home Addition — Premium+', cents: 99_900,  deliveryDays: '3–5 days' },
+    1: { label: 'Home Addition Concept', cents: CANONICAL_PRICE_CENTS.concept.interiorReno, deliveryDays: '3–5 days' },
+    2: { label: 'Home Addition Concept + Budget', cents: CANONICAL_PRICE_CENTS.conceptTierReference.premium, deliveryDays: '3–5 days' },
+    3: { label: 'Home Addition Preconstruction Package', cents: CANONICAL_PRICE_CENTS.conceptTierReference.premiumPlus, deliveryDays: '3–5 days' },
   },
   whole_home_concept: {
-    1: { label: 'Whole Home Concept — Basic',    cents: 14_900,  deliveryDays: '4–6 days' },
-    2: { label: 'Whole Home Concept — Premium',  cents: 49_900,  deliveryDays: '4–6 days' },
-    3: { label: 'Whole Home Concept — Premium+', cents: 99_900,  deliveryDays: '4–6 days' },
+    1: { label: 'Whole Home Concept', cents: CANONICAL_PRICE_CENTS.concept.wholeHome, deliveryDays: '4–6 days' },
+    2: { label: 'Whole Home Concept + Budget', cents: CANONICAL_PRICE_CENTS.concept.wholeHomeAdvanced, deliveryDays: '4–6 days' },
+    3: { label: 'Whole Home Preconstruction Package', cents: CANONICAL_PRICE_CENTS.concept.wholeHomeFull, deliveryDays: '4–6 days' },
   },
   interior_renovation: {
-    1: { label: 'Interior Renovation — Basic',    cents: 9_900,   deliveryDays: '3–5 days' },
-    2: { label: 'Interior Renovation — Premium',  cents: 34_900,  deliveryDays: '3–5 days' },
-    3: { label: 'Interior Renovation — Premium+', cents: 69_900,  deliveryDays: '3–5 days' },
+    1: { label: 'Interior Renovation Concept', cents: CANONICAL_PRICE_CENTS.concept.interiorReno, deliveryDays: '3–5 days' },
+    2: { label: 'Interior Renovation Concept + Budget', cents: CANONICAL_PRICE_CENTS.conceptTierReference.premium, deliveryDays: '3–5 days' },
+    3: { label: 'Interior Renovation Preconstruction Package', cents: CANONICAL_PRICE_CENTS.conceptTierReference.premiumPlus, deliveryDays: '3–5 days' },
   },
   exterior_concept: {
-    1: { label: 'Exterior Concept — Basic',    cents: 9_900,   deliveryDays: '3–5 days' },
-    2: { label: 'Exterior Concept — Premium',  cents: 39_900,  deliveryDays: '3–5 days' },
-    3: { label: 'Exterior Concept — Premium+', cents: 79_900,  deliveryDays: '3–5 days' },
+    1: { label: 'Exterior Concept', cents: CANONICAL_PRICE_CENTS.concept.exterior, deliveryDays: '3–5 days' },
+    2: { label: 'Exterior Concept + Budget', cents: CANONICAL_PRICE_CENTS.conceptTierReference.premium, deliveryDays: '3–5 days' },
+    3: { label: 'Exterior Preconstruction Package', cents: CANONICAL_PRICE_CENTS.conceptTierReference.premiumPlus, deliveryDays: '3–5 days' },
   },
   interior_reno_concept: {
-    1: { label: 'Interior Reno Concept — Basic', cents: 9_900, deliveryDays: '3–5 days' },
+    1: { label: 'Interior Renovation Concept', cents: CANONICAL_PRICE_CENTS.concept.interiorReno, deliveryDays: '3–5 days' },
   },
 }
 

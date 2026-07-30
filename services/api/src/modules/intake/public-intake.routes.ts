@@ -9,60 +9,13 @@ import { z } from "zod";
 import { prismaAny } from "../../utils/prisma-helper";
 import { sanitizeErrorMessage } from "../../utils/sanitize-error";
 import { LeadIntelligenceService } from "../../services/lead-intelligence.service.js";
+import { getIntakePrice, SITE_VISIT_FEE_CENTS } from "@kealee/core-rules";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY ?? "", {
   apiVersion: "2023-10-16",
 });
 
-// ── Payment amounts per project path ─────────────────────────────────────────
-const PATH_AMOUNTS: Record<string, number> = {
-  // Concept engine paths
-  exterior_concept:         58500, // $585 Tier 2 AI Concept Package
-  garden_concept:           39500, // $395
-  whole_home_concept:       58500, // $585
-  interior_reno_concept:    39500, // $395
-  developer_concept:        58500, // $585
-  // Remodel / renovation paths
-  interior_renovation:      58500,
-  kitchen_remodel:          58500,
-  bathroom_remodel:         58500,
-  whole_home_remodel:       58500,
-  addition_expansion:       58500,
-  design_build:             58500,
-  permit_path_only:         14900, // $149 Permit Path Intake
-  // Commercial paths
-  multi_unit_residential:   79900,
-  mixed_use:               129900,
-  commercial_office:        99900,
-  development_feasibility: 149900,
-  townhome_subdivision:     99900,
-  single_family_subdivision:119900,
-  single_lot_development:   59900,
-};
-
-const PATH_NAMES: Record<string, string> = {
-  exterior_concept:         "Exterior Concept AI Package",
-  garden_concept:           "Garden Concept AI Package",
-  whole_home_concept:       "Whole Home Concept AI Package",
-  interior_reno_concept:    "Interior Reno Concept AI Package",
-  developer_concept:        "Developer Concept AI Package",
-  interior_renovation:      "Interior Renovation AI Package",
-  kitchen_remodel:          "Kitchen Remodel AI Package",
-  bathroom_remodel:         "Bathroom Remodel AI Package",
-  whole_home_remodel:       "Whole-Home Remodel AI Package",
-  addition_expansion:       "Addition / Expansion AI Package",
-  design_build:             "Design + Build AI Package",
-  permit_path_only:         "Permit Path Intake",
-  multi_unit_residential:   "Multi-Unit Residential Concept",
-  mixed_use:                "Mixed-Use Development Concept",
-  commercial_office:        "Commercial Office Concept",
-  development_feasibility:  "Development Feasibility Package",
-  townhome_subdivision:     "Townhome Subdivision Package",
-  single_family_subdivision:"Single-Family Subdivision Package",
-  single_lot_development:   "Single-Lot Development Package",
-};
-
-const SITE_VISIT_FEE = 12500; // $125
+const pathName = (projectPath: string) => getIntakePrice(projectPath)?.label ?? projectPath;
 
 // ── Schemas ───────────────────────────────────────────────────────────────────
 const PublicIntakeBody = z.object({
@@ -109,7 +62,6 @@ const PublicIntakeBody = z.object({
 const CheckoutBody = z.object({
   intakeId: z.string(),
   projectPath: z.string(),
-  amount: z.number().int().positive(),
   successUrl: z.string().url(),
   cancelUrl: z.string().url(),
   siteVisitRequested: z.boolean().default(false),
@@ -252,7 +204,11 @@ export async function publicIntakeRoutes(fastify: FastifyInstance) {
     const score = scoreLead(data as Record<string, unknown>);
 
     try {
-      const paymentAmount = PATH_AMOUNTS[data.projectPath] ?? 29900;
+      const price = getIntakePrice(data.projectPath);
+      if (!price) {
+        return reply.status(400).send({ ok: false, errors: ["Unknown project product"] });
+      }
+      const paymentAmount = price.cents;
       const intake = await prismaAny.publicIntakeLead.create({
         data: {
           clientName: data.clientName,
@@ -326,7 +282,7 @@ export async function publicIntakeRoutes(fastify: FastifyInstance) {
       return reply.status(400).send({ error: "Invalid request" });
     }
 
-    const { intakeId, projectPath, amount, successUrl, cancelUrl, siteVisitRequested } = parse.data;
+    const { intakeId, projectPath, successUrl, cancelUrl, siteVisitRequested } = parse.data;
 
     try {
       // Fetch intake to get assigned team
@@ -335,14 +291,18 @@ export async function publicIntakeRoutes(fastify: FastifyInstance) {
       }).catch(() => null);
 
       const assignedTeam = intake?.metadata?.assignedTeam ?? 'design';
-      const baseAmount = siteVisitRequested ? amount - SITE_VISIT_FEE : amount;
+      const price = getIntakePrice(projectPath);
+      if (!price) {
+        return reply.status(400).send({ error: "Unknown project product" });
+      }
+      const baseAmount = price.cents;
 
       const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = [
         {
           price_data: {
             currency: "usd",
             unit_amount: baseAmount,
-            product_data: { name: PATH_NAMES[projectPath] ?? "Project Intake" },
+            product_data: { name: price.label },
           },
           quantity: 1,
         },
@@ -352,7 +312,7 @@ export async function publicIntakeRoutes(fastify: FastifyInstance) {
         lineItems.push({
           price_data: {
             currency: "usd",
-            unit_amount: SITE_VISIT_FEE,
+            unit_amount: SITE_VISIT_FEE_CENTS,
             product_data: { name: "Kealee Site Visit Scan" },
           },
           quantity: 1,
@@ -396,7 +356,7 @@ export async function publicIntakeRoutes(fastify: FastifyInstance) {
       // Create standard intake review task
       const task = await prismaAny.commandCenterTask?.create?.({
         data: {
-          title: `New public intake: ${PATH_NAMES[projectPath] ?? projectPath}`,
+          title: `New public intake: ${pathName(projectPath)}`,
           referenceId: intakeId,
           referenceType: "public_intake_lead",
           tags,
@@ -417,7 +377,7 @@ export async function publicIntakeRoutes(fastify: FastifyInstance) {
 
         const siteVisitTask = await prismaAny.commandCenterTask?.create?.({
           data: {
-            title: `Schedule Site Visit: ${clientName ?? "New Client"} — ${PATH_NAMES[projectPath] ?? projectPath}`,
+            title: `Schedule Site Visit: ${clientName ?? "New Client"} — ${pathName(projectPath)}`,
             referenceId: intakeId,
             referenceType: "public_intake_lead",
             tags: ["site_visit", "needs_scheduling", "operations"],

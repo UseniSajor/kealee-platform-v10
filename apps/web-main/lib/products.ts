@@ -1,3 +1,12 @@
+import {
+  CANONICAL_PRICE_CENTS,
+  INTAKE_PRICE_CENTS,
+  INTAKE_TIER_PRICE_CENTS,
+  formatPriceFromCents,
+} from '@kealee/core-rules'
+
+const price = (cents: number) => formatPriceFromCents(cents).replace('.00', '')
+
 export interface PackageTier {
   name: string
   price: string
@@ -129,7 +138,7 @@ export const PRODUCTS: Record<string, Product> = {
     slug: 'kitchen-remodel',
     name: 'Kitchen Remodel',
     tagline: 'AI concept with multiple layout options, permit scope, and cost band — delivered in 24 hours.',
-    price: 'Starting at $395',
+    price: `Starting at ${price(CANONICAL_PRICE_CENTS.concept.kitchen)}`,
     priceNote: 'one-time · no subscription',
     label: 'AI design engine',
     badge: 'Most common project',
@@ -152,9 +161,9 @@ export const PRODUCTS: Record<string, Product> = {
     ],
     packages: [
       {
-        name: 'AI Kitchen Concept',
-        price: '$395',
-        turnaround: '24–48 hours',
+        name: 'Kitchen Concept',
+        price: price(CANONICAL_PRICE_CENTS.concept.kitchen),
+        turnaround: '3–5 days',
         rounds: '1 feedback round',
         desc: 'Multiple layout options, permit scope, cost band, and contractor brief.',
         items: ['3+ layout options', 'Permit scope assessment', 'Cost band estimate', 'Material tier guide', 'Staff review'],
@@ -163,9 +172,9 @@ export const PRODUCTS: Record<string, Product> = {
         popular: false,
       },
       {
-        name: 'Advanced Kitchen Design',
-        price: '$695',
-        turnaround: '5–7 business days',
+        name: 'Kitchen Concept + Budget',
+        price: price(CANONICAL_PRICE_CENTS.concept.kitchenAdvanced),
+        turnaround: '3–5 days',
         rounds: 'Up to 3 feedback rounds',
         desc: 'Detailed design with appliance specs, material selections, and 3D views.',
         items: ['Everything in AI Concept', '3D kitchen views', 'Appliance + fixture specs', 'Full material selections', '60-min consultation'],
@@ -174,14 +183,14 @@ export const PRODUCTS: Record<string, Product> = {
         popular: true,
       },
       {
-        name: 'Full Kitchen Design',
-        price: 'From $2,500',
-        turnaround: '2–3 weeks',
-        rounds: 'Up to 5 rounds',
-        desc: 'Permit-ready drawings, contractor documents, and full specifications.',
-        items: ['Everything in Advanced', 'Permit-ready drawings', 'Contractor bid documents', 'Cabinet schedule', 'MEP coordination'],
-        cta: 'Contact Us',
-        href: '/contact',
+        name: 'Kitchen Preconstruction Package',
+        price: price(CANONICAL_PRICE_CENTS.concept.kitchenFull),
+        turnaround: '3–5 days',
+        rounds: 'Up to 3 feedback rounds',
+        desc: 'Enhanced concept package, CAD handoff, deeper cost and permit planning, and expert consultation.',
+        items: ['Everything in Concept + Budget', '12 4K renders', 'Kitchen plan sheet + DXF', 'Permit and zoning deep-dive', '15-minute expert consultation'],
+        cta: 'Start Preconstruction',
+        href: '/intake/kitchen_remodel',
         popular: false,
       },
     ],
@@ -210,7 +219,7 @@ export const PRODUCTS: Record<string, Product> = {
     slug: 'bath-remodel',
     name: 'Bathroom Remodel',
     tagline: 'Layout options, fixture placement, permit scope, and cost band — for primary baths, guest baths, and additions.',
-    price: 'Starting at $395',
+    price: `Starting at ${price(CANONICAL_PRICE_CENTS.concept.bath)}`,
     priceNote: 'one-time · no subscription',
     label: 'AI design engine',
     badge: 'High ROI',
@@ -233,36 +242,36 @@ export const PRODUCTS: Record<string, Product> = {
     ],
     packages: [
       {
-        name: 'AI Bath Concept',
-        price: '$395',
-        turnaround: '24–48 hours',
+        name: 'Bathroom Concept',
+        price: price(CANONICAL_PRICE_CENTS.concept.bath),
+        turnaround: '2–4 days',
         rounds: '1 feedback round',
         desc: 'Layout options, permit scope, fixture guide, and cost band.',
         items: ['2–3 layout options', 'Fixture placement plan', 'Permit scope assessment', 'Material tier guide', 'Staff review'],
         cta: 'Start Bath Concept',
-        href: '/intake/bath_remodel',
+        href: '/intake/bathroom_remodel',
         popular: false,
       },
       {
-        name: 'Advanced Bath Design',
-        price: '$695',
-        turnaround: '5–7 business days',
+        name: 'Bathroom Concept + Budget',
+        price: price(CANONICAL_PRICE_CENTS.concept.bathAdvanced),
+        turnaround: '2–4 days',
         rounds: 'Up to 3 feedback rounds',
         desc: 'Detailed design with tile selections, fixture specs, and 3D views.',
         items: ['Everything in AI Concept', '3D bath views', 'Full tile + fixture specs', 'Plumbing layout plan', '60-min consultation'],
         cta: 'Start Advanced Design',
-        href: '/intake/bath_remodel',
+        href: '/intake/bathroom_remodel',
         popular: true,
       },
       {
-        name: 'Full Bath Design',
-        price: 'From $2,000',
-        turnaround: '2–3 weeks',
-        rounds: 'Up to 5 rounds',
-        desc: 'Permit-ready drawings, contractor documents, and full specifications.',
-        items: ['Everything in Advanced', 'Permit-ready drawings', 'Contractor bid documents', 'Plumbing schedule', 'Tile and finish schedule'],
-        cta: 'Contact Us',
-        href: '/contact',
+        name: 'Bathroom Preconstruction Package',
+        price: price(CANONICAL_PRICE_CENTS.concept.bathFull),
+        turnaround: '2–4 days',
+        rounds: 'Up to 3 feedback rounds',
+        desc: 'Enhanced concept package, CAD handoff, deeper cost and permit planning, and expert consultation.',
+        items: ['Everything in Concept + Budget', '12 4K renders', 'Bath plan sheet + DXF', 'Permit and zoning deep-dive', '15-minute expert consultation'],
+        cta: 'Start Preconstruction',
+        href: '/intake/bathroom_remodel',
         popular: false,
       },
     ],
@@ -274,7 +283,7 @@ export const PRODUCTS: Record<string, Product> = {
     ],
     forWho: 'Homeowners planning a bathroom remodel, primary suite upgrade, or new bathroom addition in your metro area.',
     cta: 'Start My Bath Concept',
-    ctaHref: '/intake/bath_remodel',
+    ctaHref: '/intake/bathroom_remodel',
     stripeEnvVar: 'STRIPE_PRICE_BATH_REMODEL',
     faq: [
       { q: 'Does a bathroom remodel require a permit?', a: 'In-place fixture replacements often do not. Any plumbing relocation, new circuits, structural changes, or bathroom additions require permits in all most jurisdictions.' },
@@ -1834,8 +1843,82 @@ export const PRODUCTS: Record<string, Product> = {
   },
 }
 
+const PRODUCT_INTAKE_KEYS: Record<string, string> = {
+  'whole-home': 'whole_home_concept',
+  'kitchen-remodel': 'kitchen_remodel',
+  'bath-remodel': 'bathroom_remodel',
+  'interior-reno': 'interior_renovation',
+  exterior: 'exterior_concept',
+  garden: 'garden_concept',
+  landscape: 'garden_concept',
+  basement: 'interior_renovation',
+  adu: 'addition_expansion',
+  'tiny-home': 'addition_expansion',
+  'new-build': 'whole_home_concept',
+  'ai-design': 'bathroom_remodel',
+  'cost-estimate': 'cost_estimate',
+  'certified-estimate': 'certified_estimate',
+  'professional-drawings': 'professional_drawings',
+}
+
+const PRODUCT_DIRECT_PRICE_CENTS: Record<string, number> = {
+  'permit-research': CANONICAL_PRICE_CENTS.permits.assessment,
+  'permit-package': CANONICAL_PRICE_CENTS.permits.standard,
+  'permit-coordination': CANONICAL_PRICE_CENTS.permits.managed,
+  'permit-expediting': CANONICAL_PRICE_CENTS.permits.expedited,
+  'design-starter': CANONICAL_PRICE_CENTS.professionalDesign,
+  'design-visualization': CANONICAL_PRICE_CENTS.professionalDesign,
+  'design-full': CANONICAL_PRICE_CENTS.professionalDesign,
+  'professional-drawings': CANONICAL_PRICE_CENTS.professionalDesign,
+  'pm-advisory': CANONICAL_PRICE_CENTS.pmAdvisoryMonthly,
+  'adu-bundle': CANONICAL_PRICE_CENTS.aduBundle,
+}
+
+/**
+ * Compatibility normalization for legacy product-detail copy. The source
+ * descriptions remain useful, but no route may expose their archived prices.
+ */
+function withCanonicalProductPricing(product: Product): Product {
+  const intakeKey = PRODUCT_INTAKE_KEYS[product.slug]
+  const directPriceCents = PRODUCT_DIRECT_PRICE_CENTS[product.slug]
+  if (!intakeKey && directPriceCents == null) return product
+  const base = intakeKey ? INTAKE_PRICE_CENTS[intakeKey] : null
+  const priceCents = directPriceCents ?? base?.cents
+  if (priceCents == null) return product
+  const tiers = intakeKey ? INTAKE_TIER_PRICE_CENTS[intakeKey] : undefined
+  const packages = tiers && product.packages
+    ? product.packages.map((pkg, index) => {
+        const tier = tiers[(index + 1) as 1 | 2 | 3]
+        return tier
+          ? {
+              ...pkg,
+              name: tier.label,
+              price: formatPriceFromCents(tier.cents).replace('.00', ''),
+              turnaround: tier.deliveryDays,
+              rounds: index === 0 ? '1 revision' : 'Up to 3 revisions',
+              ...(index === 2
+                ? {
+                    desc: 'Preconstruction concept and professional handoff—not permit-ready or for construction.',
+                    cta: 'Start Preconstruction',
+                    href: `/intake/${intakeKey}`,
+                  }
+                : {}),
+            }
+          : pkg
+      })
+    : product.packages
+
+  return {
+    ...product,
+    price: `Starting at ${formatPriceFromCents(priceCents).replace('.00', '')}`,
+    priceNote: 'one-time · exact amount shown before checkout',
+    packages,
+  }
+}
+
 export function getProduct(slug: string): Product | null {
-  return PRODUCTS[slug] ?? null
+  const product = PRODUCTS[slug]
+  return product ? withCanonicalProductPricing(product) : null
 }
 
 export function getAllProductSlugs(): string[] {
@@ -1843,5 +1926,7 @@ export function getAllProductSlugs(): string[] {
 }
 
 export function getProductsByCategory(category: Product['category']): Product[] {
-  return Object.values(PRODUCTS).filter(p => p.category === category)
+  return Object.values(PRODUCTS)
+    .filter(p => p.category === category)
+    .map(withCanonicalProductPricing)
 }

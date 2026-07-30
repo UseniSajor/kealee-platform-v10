@@ -1,4 +1,13 @@
 import { FastifyPluginAsync } from 'fastify'
+import {
+  formatCatalogPrice,
+  getPublicCatalogProduct,
+} from '@kealee/core-rules'
+
+const catalogPrice = (key: string): string => {
+  const product = getPublicCatalogProduct(key)
+  return product ? formatCatalogPrice(product) : 'Scoped'
+}
 
 // ── Routing intent → path mapping ────────────────────────────────────────────
 
@@ -95,15 +104,15 @@ function generateAnswer(query: string, intent: RoutingIntent): string {
 
     case 'DESIGN':
       if (/permit/.test(q)) {
-        return "Most projects require architect-stamped drawings before you can pull a building permit. An AI concept package shows you the vision, but permit-ready plans are a separate step. Our Design Services start at $1,200 and produce stamped documents your jurisdiction will accept."
+        return `Many projects require drawings prepared or reviewed by a licensed professional before permit submission. A Kealee concept is preliminary and not for construction; professional design is a separate, scoped step starting at ${catalogPrice('professional_design')}.`
       }
-      return "For permit-ready plans, our Design Services team produces architect-stamped construction documents starting at $1,200. If you want to visualize the project first before committing to full design, start with an AI concept package from $395."
+      return `For construction documents, Kealee coordinates the required licensed professionals through Professional Design starting at ${catalogPrice('professional_design')}. To visualize and define the project first, a preliminary Concept Plan starts at ${catalogPrice('concept')}.`
 
     case 'ESTIMATE':
-      return "We offer three levels of estimation: AI Design Estimates (from $395, 48-hr delivery) for early budgeting, Detailed Cost Estimates (from $695) for contractor bid comparison, and Certified Estimates (from $1,200) for permit applications and financing."
+      return `Kealee offers a Detailed Construction Estimate at ${catalogPrice('detailed_estimate')} and a Professionally Reviewed Estimate at ${catalogPrice('certified_estimate')}. Early concept packages can include a preliminary budget range, but they are not contractor bids or certified estimates.`
 
     case 'AI_CONCEPT':
-      return "An AI Concept Package gives you 3 property-specific design concepts — renderings, layout direction, material palette, and a rough cost range — delivered in 5–7 business days with a consultation call included. Note: concepts are pre-design visualization, not permit-ready plans."
+      return `A Concept Plan starts at ${catalogPrice('concept')} and provides property-specific visualization, preliminary layout, scope, and permit-path direction. Outputs are preliminary, not for construction, and subject to licensed professional review.`
 
     case 'MARKETPLACE':
       return "Our contractor network is screened for active licensing, liability insurance, and project fit. You describe your project and we surface matched, verified contractors in your area. Matching is free — you only pay when you hire."
