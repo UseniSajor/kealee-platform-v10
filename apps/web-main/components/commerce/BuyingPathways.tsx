@@ -1,5 +1,14 @@
 import Link from 'next/link'
 import { ArrowRight, Building2, Check, HardHat, Home } from 'lucide-react'
+import { ROLE_BUYING_PATHWAYS, formatPriceFromCents } from '@kealee/core-rules'
+
+const displayPrice = (cents: number) => formatPriceFromCents(cents).replace('.00', '')
+type PathwayStep = (typeof ROLE_BUYING_PATHWAYS)[keyof typeof ROLE_BUYING_PATHWAYS][number]
+
+function stepPrice(step: PathwayStep): string {
+  if ('priceLabel' in step) return step.priceLabel
+  return `${'pricePrefix' in step ? step.pricePrefix : ''}${displayPrice(step.priceCents)}${step.priceSuffix}`
+}
 
 const PATHWAYS = [
   {
@@ -9,11 +18,7 @@ const PATHWAYS = [
     description: 'One-time services that reduce uncertainty before you commit to drawings, permits, or construction.',
     icon: Home,
     accent: '#E8793A',
-    steps: [
-      { label: 'Start', title: 'Project Readiness Review', price: '$299', detail: 'Property, zoning, early scope, and budget direction.' },
-      { label: 'Define', title: 'Project Launch Package', price: '$550', detail: 'Concept, estimate, zoning, permit, and contractor handoff.' },
-      { label: 'Advance', title: 'Design, permits & build support', price: 'Scoped', detail: 'Add only the professional services your project requires.' },
-    ],
+    steps: ROLE_BUYING_PATHWAYS.homeowners,
     cta: 'Start a homeowner project',
     href: '/products/home-project-readiness-review',
     secondaryCta: 'Browse renovation services',
@@ -26,11 +31,7 @@ const PATHWAYS = [
     description: 'Marketplace subscriptions support visibility and lead management. Client estimate and permit work is purchased separately.',
     icon: HardHat,
     accent: '#2ABFBF',
-    steps: [
-      { label: 'Join', title: 'Marketplace membership', price: 'From $99/mo', detail: 'Business profile, verification, matching, and bid tools.' },
-      { label: 'Deliver', title: 'Estimate + Permit Package', price: '$795/project', detail: 'A client-facing estimate, zoning, and permit roadmap.' },
-      { label: 'Grow', title: 'Construction operations', price: 'By tier', detail: 'Pipeline, bid assistance, analytics, and team workflows.' },
-    ],
+    steps: ROLE_BUYING_PATHWAYS.contractors,
     cta: 'Join the contractor marketplace',
     href: '/contractor/register',
     secondaryCta: 'View client project package',
@@ -43,11 +44,7 @@ const PATHWAYS = [
     description: 'Property-level feasibility that can progress into professional review, permit coordination, and GC execution.',
     icon: Building2,
     accent: '#7C3AED',
-    steps: [
-      { label: 'Screen', title: 'Feasibility Express', price: '$1,095/site', detail: 'Early zoning, estimate, permit, and project analysis.' },
-      { label: 'Validate', title: 'Professional feasibility', price: 'Scoped', detail: 'Yield, parking, massing, earthwork, cost, and NOI review.' },
-      { label: 'Execute', title: 'Entitlement + GC handoff', price: 'Scoped', detail: 'Coordination with licensed professionals and construction teams.' },
-    ],
+    steps: ROLE_BUYING_PATHWAYS.developers,
     cta: 'Start developer feasibility',
     href: '/products/developer-feasibility-express',
     secondaryCta: 'Talk to development services',
@@ -105,7 +102,7 @@ export function BuyingPathways({
                         <div className="flex flex-wrap items-baseline gap-x-2">
                           <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">{step.label}</span>
                           <span className="text-sm font-bold text-slate-900">{step.title}</span>
-                          <span className="text-xs font-bold" style={{ color: path.accent }}>{step.price}</span>
+                          <span className="text-xs font-bold" style={{ color: path.accent }}>{stepPrice(step)}</span>
                         </div>
                         <p className="mt-1 text-xs leading-relaxed text-slate-500">{step.detail}</p>
                       </div>

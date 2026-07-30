@@ -69,6 +69,7 @@
     "typescript": "^5.3.3"
   },
   "dependencies": {
+    "@kealee/core-rules": "workspace:*",
     "zod": "^3.22.4"
   }
 }

@@ -5,28 +5,80 @@
  * All marketing files MUST import from here — never hardcode prices.
  */
 
-// ── Concept Package Prices ────────────────────────────────────────────────────
+// ── Canonical price primitives (USD cents) ──────────────────────────────────
 
-export const CONCEPT_KITCHEN_PRICE        = 199   // entry funnel price
-export const CONCEPT_KITCHEN_ADVANCED     = 349
-export const CONCEPT_KITCHEN_FULL         = 699   // "from"
+export const CANONICAL_PRICE_CENTS = {
+  concept: {
+    kitchen: 19_900,
+    kitchenAdvanced: 34_900,
+    kitchenFull: 69_900,
+    bath: 15_900,
+    bathAdvanced: 29_900,
+    bathFull: 59_900,
+    wholeHome: 39_900,
+    wholeHomeAdvanced: 49_900,
+    wholeHomeFull: 99_900,
+    interiorReno: 19_900,
+    exterior: 27_500,
+    landscape: 19_900,
+    commercial: 99_900,
+    developer: 59_900,
+    genericStart: 7_900,
+  },
+  conceptTierReference: {
+    basic: 8_900,
+    premium: 34_900,
+    premiumPlus: 69_900,
+  },
+  permits: {
+    assessment: 59_900,
+    standard: 79_900,
+    managed: 149_900,
+    expedited: 249_500,
+  },
+  estimation: {
+    detailed: 34_900,
+    certified: 79_900,
+    estimatePermitBundle: 109_900,
+  },
+  professionalDesign: 499_000,
+  aduBundle: 99_900,
+  pmAdvisoryMonthly: 29_900,
+  contractorMatch: 0,
+  designEstimatePermitBundle: 239_900,
+  platform: {
+    homeownerReadiness: 29_900,
+    homeownerLaunch: 55_000,
+    contractorStarterMonthly: 9_900,
+    contractorGrowthMonthly: 19_900,
+    contractorProMonthly: 49_900,
+    contractorEstimatePermit: 79_500,
+    developerFeasibility: 109_500,
+  },
+} as const
 
-export const CONCEPT_BATH_PRICE           = 159
-export const CONCEPT_BATH_ADVANCED        = 299
-export const CONCEPT_BATH_FULL            = 599   // "from"
+// ── Legacy dollar exports (derived compatibility aliases) ───────────────────
 
-export const CONCEPT_WHOLE_HOME_PRICE     = 349
-export const CONCEPT_WHOLE_HOME_ADVANCED  = 499
-export const CONCEPT_WHOLE_HOME_FULL      = 999   // "from"
+export const CONCEPT_KITCHEN_PRICE        = CANONICAL_PRICE_CENTS.concept.kitchen / 100
+export const CONCEPT_KITCHEN_ADVANCED     = CANONICAL_PRICE_CENTS.concept.kitchenAdvanced / 100
+export const CONCEPT_KITCHEN_FULL         = CANONICAL_PRICE_CENTS.concept.kitchenFull / 100
 
-export const CONCEPT_INTERIOR_RENO_PRICE  = 199   // interior reno/addition base
-export const CONCEPT_EXTERIOR_PRICE       = 275
-export const CONCEPT_LANDSCAPE_PRICE      = 199
-export const CONCEPT_COMMERCIAL_PRICE     = 799   // "from"
-export const CONCEPT_DEVELOPER_PRICE      = 999   // "from"
+export const CONCEPT_BATH_PRICE           = CANONICAL_PRICE_CENTS.concept.bath / 100
+export const CONCEPT_BATH_ADVANCED        = CANONICAL_PRICE_CENTS.concept.bathAdvanced / 100
+export const CONCEPT_BATH_FULL            = CANONICAL_PRICE_CENTS.concept.bathFull / 100
+
+export const CONCEPT_WHOLE_HOME_PRICE     = CANONICAL_PRICE_CENTS.concept.wholeHome / 100
+export const CONCEPT_WHOLE_HOME_ADVANCED  = CANONICAL_PRICE_CENTS.concept.wholeHomeAdvanced / 100
+export const CONCEPT_WHOLE_HOME_FULL      = CANONICAL_PRICE_CENTS.concept.wholeHomeFull / 100
+
+export const CONCEPT_INTERIOR_RENO_PRICE  = CANONICAL_PRICE_CENTS.concept.interiorReno / 100
+export const CONCEPT_EXTERIOR_PRICE       = CANONICAL_PRICE_CENTS.concept.exterior / 100
+export const CONCEPT_LANDSCAPE_PRICE      = CANONICAL_PRICE_CENTS.concept.landscape / 100
+export const CONCEPT_COMMERCIAL_PRICE     = CANONICAL_PRICE_CENTS.concept.commercial / 100
+export const CONCEPT_DEVELOPER_PRICE      = CANONICAL_PRICE_CENTS.concept.developer / 100
 
 /** Generic lowest starting price shown in broad marketing */
-export const CONCEPT_START_PRICE         = 79
+export const CONCEPT_START_PRICE = CANONICAL_PRICE_CENTS.concept.genericStart / 100
 
 // ── Tier label map (numeric tier → display string) ────────────────────────────
 
@@ -41,30 +93,196 @@ export const CONCEPT_TIER_PRICES: Record<1 | 2 | 3, number> = {
 // Used on marketing surfaces (concept page tier blurbs, ads, banners).
 // Checkout amounts are determined by INTAKE_TIER_PRICE_CENTS (per project path).
 //
-export const AI_CONCEPT_BASIC        = 599   // Basic tier  — 3 AI renders + cost summary
-export const AI_CONCEPT_PREMIUM      = 999   // Premium tier — 6 renders + video + BOM
-export const AI_CONCEPT_PREMIUM_PLUS = 1499  // Premium+ tier — 12 renders + 4K video + floorplan
-
 /** Starting price for Professional Design services (permit-ready stamped plan set). */
-export const PROFESSIONAL_DESIGN_BASE = 4995
+export const PROFESSIONAL_DESIGN_BASE = CANONICAL_PRICE_CENTS.professionalDesign / 100
 
 // ── Permit Prices ─────────────────────────────────────────────────────────────
 
-export const PERMIT_BASIC_PRICE    = 299   // permit path assessment
-export const PERMIT_STANDARD_PRICE = 799   // permit package filing
-export const PERMIT_PREMIUM_PRICE  = 1499  // full permit management
+export const PERMIT_BASIC_PRICE = CANONICAL_PRICE_CENTS.permits.assessment / 100
+export const PERMIT_STANDARD_PRICE = CANONICAL_PRICE_CENTS.permits.standard / 100
+export const PERMIT_PREMIUM_PRICE = CANONICAL_PRICE_CENTS.permits.managed / 100
 
 // ── Estimation Prices ─────────────────────────────────────────────────────────
 
-export const ESTIMATION_PRICE           = 249  // standalone cost estimate
-export const ESTIMATION_CERTIFIED_PRICE = 499  // RSMeans-certified estimate
+export const ESTIMATION_PRICE = CANONICAL_PRICE_CENTS.estimation.detailed / 100
+export const ESTIMATION_CERTIFIED_PRICE = CANONICAL_PRICE_CENTS.estimation.certified / 100
 
 // ── Other Products ────────────────────────────────────────────────────────────
 
-export const ADU_BUNDLE_PRICE           = 999
-export const PM_ADVISORY_PRICE          = 299   // per month
-export const CONTRACTOR_MATCH_PRICE     = 0     // free (monetized via contractor)
-export const DESIGN_ESTIMATE_PERMIT_BUNDLE = 1499
+export const ADU_BUNDLE_PRICE = CANONICAL_PRICE_CENTS.aduBundle / 100
+export const PM_ADVISORY_PRICE = CANONICAL_PRICE_CENTS.pmAdvisoryMonthly / 100
+export const CONTRACTOR_MATCH_PRICE = CANONICAL_PRICE_CENTS.contractorMatch / 100
+export const DESIGN_ESTIMATE_PERMIT_BUNDLE = CANONICAL_PRICE_CENTS.designEstimatePermitBundle / 100
+
+// ── Platform role and professional-service pricing ──────────────────────────
+//
+// These values back public reference pages and product configuration. Checkout
+// routes must continue to use INTAKE_PRICE_CENTS or a configured Stripe Price.
+
+export const PLATFORM_PRICING = {
+  homeowner: {
+    readinessReviewCents: CANONICAL_PRICE_CENTS.platform.homeownerReadiness,
+    projectLaunchCents: CANONICAL_PRICE_CENTS.platform.homeownerLaunch,
+  },
+  contractor: {
+    marketplaceMonthlyCents: {
+      starter: CANONICAL_PRICE_CENTS.platform.contractorStarterMonthly,
+      growth: CANONICAL_PRICE_CENTS.platform.contractorGrowthMonthly,
+      pro: CANONICAL_PRICE_CENTS.platform.contractorProMonthly,
+    },
+    estimatePermitPackageCents: CANONICAL_PRICE_CENTS.platform.contractorEstimatePermit,
+  },
+  developer: {
+    feasibilityExpressCents: CANONICAL_PRICE_CENTS.platform.developerFeasibility,
+  },
+} as const
+
+/**
+ * Canonical role-based purchase journey copy.
+ * Marketing surfaces may add presentation (icons, color, links), but must not
+ * restate product names, price labels, or scope descriptions elsewhere.
+ */
+export const ROLE_BUYING_PATHWAYS = {
+  homeowners: [
+    {
+      label: 'Start',
+      title: 'Project Readiness Review',
+      priceCents: PLATFORM_PRICING.homeowner.readinessReviewCents,
+      priceSuffix: '',
+      detail: 'Property, zoning, early scope, and budget direction.',
+    },
+    {
+      label: 'Define',
+      title: 'Project Launch Package',
+      priceCents: PLATFORM_PRICING.homeowner.projectLaunchCents,
+      priceSuffix: '',
+      detail: 'Concept, estimate, zoning, permit, and contractor handoff.',
+    },
+    {
+      label: 'Advance',
+      title: 'Design, permits & build support',
+      priceLabel: 'Scoped',
+      detail: 'Add only the professional services your project requires.',
+    },
+  ],
+  contractors: [
+    {
+      label: 'Join',
+      title: 'Marketplace membership',
+      priceCents: PLATFORM_PRICING.contractor.marketplaceMonthlyCents.starter,
+      pricePrefix: 'From ',
+      priceSuffix: '/mo',
+      detail: 'Business profile, verification, matching, and bid tools.',
+    },
+    {
+      label: 'Deliver',
+      title: 'Estimate + Permit Package',
+      priceCents: PLATFORM_PRICING.contractor.estimatePermitPackageCents,
+      priceSuffix: '/project',
+      detail: 'A client-facing estimate, zoning, and permit roadmap.',
+    },
+    {
+      label: 'Grow',
+      title: 'Construction operations',
+      priceLabel: 'By tier',
+      detail: 'Pipeline, bid assistance, analytics, and team workflows.',
+    },
+  ],
+  developers: [
+    {
+      label: 'Screen',
+      title: 'Feasibility Express',
+      priceCents: PLATFORM_PRICING.developer.feasibilityExpressCents,
+      priceSuffix: '/site',
+      detail: 'Early zoning, estimate, permit, and project analysis.',
+    },
+    {
+      label: 'Validate',
+      title: 'Professional feasibility',
+      priceLabel: 'Scoped',
+      detail: 'Yield, parking, massing, earthwork, cost, and NOI review.',
+    },
+    {
+      label: 'Execute',
+      title: 'Entitlement + GC handoff',
+      priceLabel: 'Scoped',
+      detail: 'Coordination with licensed professionals and construction teams.',
+    },
+  ],
+} as const
+
+export const SERVICE_PRICING = {
+  estimation: {
+    cost_estimate: {
+      name: 'Detailed Cost Estimate',
+      amount: CANONICAL_PRICE_CENTS.estimation.detailed,
+      turnaround: 3,
+      description: 'Human-reviewed, trade-by-trade breakdown validated against RSMeans',
+      features: ['CSI MasterFormat line-item breakdown', 'RSMeans unit cost validation', 'Base / mid / high scenarios', 'Professional estimator review', 'Lender-ready PDF'],
+    },
+    certified_estimate: {
+      name: 'Certified Cost Estimate',
+      amount: CANONICAL_PRICE_CENTS.estimation.certified,
+      turnaround: 5,
+      description: 'Notarized professional estimate with source documentation',
+      features: ['Everything in Detailed Estimate', 'Notarized estimator signature', 'Source citations', 'Investor-grade executive summary', 'Excel + PDF deliverable'],
+    },
+    bundle: {
+      name: 'Estimate + Permit Bundle',
+      amount: CANONICAL_PRICE_CENTS.estimation.estimatePermitBundle,
+      turnaround: 5,
+      description: 'Detailed cost estimate plus permit package preparation',
+      features: ['Detailed Cost Estimate', 'Permit package preparation', 'Submission roadmap', 'Single project intake'],
+    },
+  },
+  permits: {
+    document_assembly: {
+      name: 'Permit Path Assessment',
+      amount: CANONICAL_PRICE_CENTS.permits.assessment,
+      description: 'Jurisdiction-specific requirements, documents, and submission roadmap',
+      features: ['Jurisdiction requirements', 'Application checklist', 'Agency fee guidance', 'Submission instructions'],
+      submissionMethods: { SELF: 1 },
+    },
+    simple_permit: {
+      name: 'Permit Package',
+      amount: CANONICAL_PRICE_CENTS.permits.assessment,
+      description: 'Application preparation and coordinated submission support',
+      features: ['Document assembly', 'Application preparation', 'Status tracking', 'First comment-response coordination'],
+      submissionMethods: { SELF: 0.8, ASSISTED: 1 },
+    },
+    complex_permit: {
+      name: 'Complex Permit Coordination',
+      amount: CANONICAL_PRICE_CENTS.permits.managed,
+      description: 'Multi-permit coordination across required trades',
+      features: ['Multi-trade coordination', 'Code compliance review', 'Comment-response coordination', 'Dedicated permit specialist'],
+      submissionMethods: { ASSISTED: 1, KEALEE_MANAGED: 1.3 },
+    },
+    expedited: {
+      name: 'Expedited Permit Coordination',
+      amount: CANONICAL_PRICE_CENTS.permits.expedited,
+      description: 'Priority coordination where the jurisdiction supports expedited processing',
+      features: ['Priority handling', 'Dedicated coordinator', 'Frequent status updates', 'Inspection coordination'],
+      submissionMethods: { KEALEE_MANAGED: 1 },
+    },
+  },
+  preDesign: {
+    starter: { name: 'Concept Package — Starter', amount: CANONICAL_PRICE_CENTS.conceptTierReference.basic, description: 'AI-generated concept design with basic visualization' },
+    visualization: { name: 'Concept Package — Visualization', amount: CANONICAL_PRICE_CENTS.conceptTierReference.premium, description: 'Photorealistic renderings and detailed design concept' },
+    preDesign: { name: 'Pre-Design Package', amount: CANONICAL_PRICE_CENTS.conceptTierReference.premiumPlus, description: 'Pre-design with zoning, buildability, and cost framework' },
+  },
+  contractorMatch: {
+    name: 'Contractor Matching Service',
+    amount: CONTRACTOR_MATCH_PRICE * 100,
+    description: 'Connect with verified contractors for your project',
+    features: ['Profile-based matching', 'Credential verification', 'Project-fit review'],
+  },
+  architectConsultation: {
+    name: 'Architect Consultation',
+    amount: 14_900,
+    description: 'Professional project guidance and review',
+    features: ['Consultation call', 'Design review', 'Feasibility discussion', 'Permit-path guidance'],
+  },
+} as const
 
 // ── Intake checkout — the single, server-trusted price book ──────────────────
 //
@@ -90,38 +308,38 @@ export interface IntakePriceEntry {
 
 export const INTAKE_PRICE_CENTS: Record<string, IntakePriceEntry> = {
   // ── Concept packages ────────────────────────────────────────────────────
-  exterior_concept:          { label: 'Exterior Concept Package',                 cents: 27_500,  deliveryDays: '3–5 days'  },
-  garden_concept:            { label: 'Garden Concept',                           cents: 19_900,  deliveryDays: '2–4 days'  },
-  whole_home_concept:        { label: 'Whole Home Concept',                       cents: 39_900,  deliveryDays: '4–6 days'  },
-  interior_reno_concept:     { label: 'Interior Reno Concept',                    cents: 19_900,  deliveryDays: '3–5 days'  },
-  developer_concept:         { label: 'Developer Concept',                        cents: 59_900,  deliveryDays: '5–7 days'  },
+  exterior_concept:          { label: 'Exterior Concept Package',                 cents: CANONICAL_PRICE_CENTS.concept.exterior,  deliveryDays: '3–5 days'  },
+  garden_concept:            { label: 'Garden Concept',                           cents: CANONICAL_PRICE_CENTS.concept.landscape,  deliveryDays: '2–4 days'  },
+  whole_home_concept:        { label: 'Whole Home Concept',                       cents: CANONICAL_PRICE_CENTS.concept.wholeHome,  deliveryDays: '4–6 days'  },
+  interior_reno_concept:     { label: 'Interior Reno Concept',                    cents: CANONICAL_PRICE_CENTS.concept.interiorReno,  deliveryDays: '3–5 days'  },
+  developer_concept:         { label: 'Developer Concept',                        cents: CANONICAL_PRICE_CENTS.concept.developer,  deliveryDays: '5–7 days'  },
 
   // ── Remodels ────────────────────────────────────────────────────────────
-  kitchen_remodel:           { label: 'Kitchen Design Package',                   cents: 19_900,  deliveryDays: '3–5 days'  },
-  bathroom_remodel:          { label: 'Bathroom Design Package',                  cents: 15_900,  deliveryDays: '2–4 days'  },
-  interior_renovation:       { label: 'Interior Renovation',                      cents: 19_900,  deliveryDays: '3–5 days'  },
+  kitchen_remodel:           { label: 'Kitchen Design Package',                   cents: CANONICAL_PRICE_CENTS.concept.kitchen,  deliveryDays: '3–5 days'  },
+  bathroom_remodel:          { label: 'Bathroom Design Package',                  cents: CANONICAL_PRICE_CENTS.concept.bath,  deliveryDays: '2–4 days'  },
+  interior_renovation:       { label: 'Interior Renovation',                      cents: CANONICAL_PRICE_CENTS.concept.interiorReno,  deliveryDays: '3–5 days'  },
   whole_home_remodel:        { label: 'Whole-Home Remodel',                       cents: 49_900,  deliveryDays: '4–6 days'  },
   addition_expansion:        { label: 'Addition / Expansion',                     cents: 34_900,  deliveryDays: '3–5 days'  },
 
   // ── Permits + estimation ────────────────────────────────────────────────
-  permit_path_only:          { label: 'Permit Package',                           cents: 59_900,  deliveryDays: '3–5 days'  },
-  cost_estimate:             { label: 'Detailed Cost Estimate — RSMeans validated', cents: 34_900, deliveryDays: '3–5 days'  },
-  certified_estimate:        { label: 'Certified Estimate — Notarized for lenders', cents: 79_900, deliveryDays: '5–7 days' },
-  professional_drawings:     { label: 'Permit-Ready Design Plans — Starting at $4,990 (contact for estimate)',  cents: 499_000, deliveryDays: '7–14 days' },
+  permit_path_only:          { label: 'Permit Package',                           cents: CANONICAL_PRICE_CENTS.permits.assessment,  deliveryDays: '3–5 days'  },
+  cost_estimate:             { label: 'Detailed Cost Estimate — RSMeans validated', cents: CANONICAL_PRICE_CENTS.estimation.detailed, deliveryDays: '3–5 days'  },
+  certified_estimate:        { label: 'Certified Estimate — Notarized for lenders', cents: CANONICAL_PRICE_CENTS.estimation.certified, deliveryDays: '5–7 days' },
+  professional_drawings:     { label: 'Permit-Ready Design Plans — priced after scope review', cents: CANONICAL_PRICE_CENTS.professionalDesign, deliveryDays: '7–14 days' },
   design_estimate_permit_bundle: {
     label: 'Design + Estimate + Permit Bundle',
-    cents: 239_900,
+    cents: CANONICAL_PRICE_CENTS.designEstimatePermitBundle,
     deliveryDays: '7–14 days',
   },
   /** Estimate + permit only (no stamped plans) — upsell bundle for interior/kitchen paths. */
   estimate_permit_bundle: {
     label: 'Estimate + Permit Package',
-    cents: 109_900,
+    cents: CANONICAL_PRICE_CENTS.estimation.estimatePermitBundle,
     deliveryDays: '5–8 days',
   },
 
   // ── Bundles + matchmaking ───────────────────────────────────────────────
-  contractor_match:          { label: 'Contractor Match',                         cents: 0,       deliveryDays: '1 day'     },
+  contractor_match:          { label: 'Contractor Match',                         cents: CANONICAL_PRICE_CENTS.contractorMatch, deliveryDays: '1 day' },
   design_build:              { label: 'Design + Execution Planning Package',       cents: 189_900, deliveryDays: '5–7 days'  },
   capture_site_concept:      { label: 'Site Capture + Concept',                   cents: 12_500,  deliveryDays: '1–2 days'  },
 
@@ -153,9 +371,9 @@ export function getIntakePrice(projectPath: string): IntakePriceEntry | null {
 
 export const INTAKE_TIER_PRICE_CENTS: Record<string, Partial<Record<1 | 2 | 3, IntakePriceEntry>>> = {
   kitchen_remodel: {
-    1: { label: 'Kitchen Design Package — Basic',    cents: 8_900,   deliveryDays: '3–5 days' },
-    2: { label: 'Kitchen Design Package — Premium',  cents: 34_900,  deliveryDays: '3–5 days' },
-    3: { label: 'Kitchen Design Package — Premium+', cents: 69_900,  deliveryDays: '3–5 days' },
+    1: { label: 'Kitchen Design Package — Basic', cents: CANONICAL_PRICE_CENTS.conceptTierReference.basic, deliveryDays: '3–5 days' },
+    2: { label: 'Kitchen Design Package — Premium', cents: CANONICAL_PRICE_CENTS.conceptTierReference.premium, deliveryDays: '3–5 days' },
+    3: { label: 'Kitchen Design Package — Premium+', cents: CANONICAL_PRICE_CENTS.conceptTierReference.premiumPlus, deliveryDays: '3–5 days' },
   },
   bathroom_remodel: {
     1: { label: 'Bathroom Design Package — Basic',    cents: 7_900,  deliveryDays: '2–4 days' },
@@ -191,6 +409,12 @@ export const INTAKE_TIER_PRICE_CENTS: Record<string, Partial<Record<1 | 2 | 3, I
     1: { label: 'Interior Reno Concept — Basic', cents: 9_900, deliveryDays: '3–5 days' },
   },
 }
+
+/** Compatibility aliases derived from the canonical kitchen checkout tiers.
+ * Project-specific UIs must use INTAKE_TIER_PRICE_CENTS directly. */
+export const AI_CONCEPT_BASIC = INTAKE_TIER_PRICE_CENTS.kitchen_remodel![1]!.cents / 100
+export const AI_CONCEPT_PREMIUM = INTAKE_TIER_PRICE_CENTS.kitchen_remodel![2]!.cents / 100
+export const AI_CONCEPT_PREMIUM_PLUS = INTAKE_TIER_PRICE_CENTS.kitchen_remodel![3]!.cents / 100
 
 /**
  * Tier-aware price lookup. Uses tier-specific price from INTAKE_TIER_PRICE_CENTS

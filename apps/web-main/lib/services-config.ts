@@ -2,6 +2,7 @@
  * Kealee Services Configuration — single source of truth for all services.
  * Used by homepage, service detail pages, concept intake, and pricing.
  */
+import { INTAKE_TIER_PRICE_CENTS, formatPriceFromCents } from '@kealee/core-rules'
 
 export interface ServiceTier {
   tier: 1 | 2 | 3
@@ -77,6 +78,20 @@ function tier3(price: number): ServiceTier {
   }
 }
 
+function canonicalTiers(intakePath: string): ServiceTier[] {
+  const prices = INTAKE_TIER_PRICE_CENTS[intakePath] ?? {}
+  return [1, 2, 3].map(tier => {
+    const entry = prices[tier as 1 | 2 | 3]
+    const dollars = entry ? entry.cents / 100 : 0
+    return tier === 1 ? tier1(dollars) : tier === 2 ? tier2(dollars) : tier3(dollars)
+  })
+}
+
+function canonicalStartingPrice(intakePath: string): string {
+  const first = INTAKE_TIER_PRICE_CENTS[intakePath]?.[1]
+  return first ? `From ${formatPriceFromCents(first.cents).replace('.00', '')}` : 'Custom Quote'
+}
+
 // ── Service catalog ────────────────────────────────────────────────────────────
 
 export const SERVICES: Service[] = [
@@ -86,13 +101,13 @@ export const SERVICES: Service[] = [
     label: 'Kitchen Remodel',
     shortLabel: 'Kitchen',
     description: 'Transform your kitchen with AI-generated planning concepts, cost ranges, and a permit-path summary. Permit-ready professional drawings are a separate service when required.',
-    priceDisplay: 'From $149',
+    priceDisplay: canonicalStartingPrice('kitchen_remodel'),
     heroImage: '/images/services/kitchen-concept.jpg',
     phase: 'precon',
     deliverableLabel: 'Design Package',
     category: 'remodel',
     deliveryDays: '3–5 days',
-    tiers: [tier1(149), tier2(699), tier3(1299)],
+    tiers: canonicalTiers('kitchen_remodel'),
     usesConceptIntake: true,
     features: ['3 concept visuals (before/after)', 'Bill of Materials with line-item costs', 'MEP specification', 'Detailed cost estimate', 'Zoning & permit scope brief', 'Direct support via portal ask bar'],
     costRange: '$25K – $120K',
@@ -105,13 +120,13 @@ export const SERVICES: Service[] = [
     label: 'Bathroom Remodel',
     shortLabel: 'Bathroom',
     description: 'Create your dream bathroom — from spa-level primary suites to efficient powder room refreshes. Full AI concepts with plumbing, electrical, and tile specifications.',
-    priceDisplay: 'From $129',
+    priceDisplay: canonicalStartingPrice('bathroom_remodel'),
     heroImage: '/images/services/bathroom-concept.jpg',
     phase: 'precon',
     deliverableLabel: 'Design Package',
     category: 'remodel',
     deliveryDays: '2–4 days',
-    tiers: [tier1(129), tier2(549), tier3(999)],
+    tiers: canonicalTiers('bathroom_remodel'),
     usesConceptIntake: true,
     features: ['3 concept visuals (before/after)', 'Plumbing fixture specification', 'Tile & material palette', 'Electrical & lighting plan', 'Permit scope brief', 'Direct support via portal ask bar'],
     costRange: '$10K – $60K',
@@ -124,13 +139,13 @@ export const SERVICES: Service[] = [
     label: 'Garden & Landscape',
     shortLabel: 'Garden',
     description: 'Design your outdoor living space with AI-generated landscape concepts, plant selection guides, irrigation overviews, and hardscape design — tailored to your climate zone.',
-    priceDisplay: 'From $99',
+    priceDisplay: canonicalStartingPrice('garden_concept'),
     heroImage: 'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=900&q=80&auto=format&fit=crop',
     phase: 'precon',
     deliverableLabel: 'Landscape Package',
     category: 'landscape',
     deliveryDays: '2–4 days',
-    tiers: [tier1(99), tier2(399), tier3(799)],
+    tiers: canonicalTiers('garden_concept'),
     usesConceptIntake: true,
     features: ['Landscape layout plan', 'Plant species guide', 'Irrigation overview', 'Hardscape design concept', 'Seasonal planting schedule', 'Direct support via portal ask bar'],
     costRange: '$8K – $80K',
@@ -143,13 +158,13 @@ export const SERVICES: Service[] = [
     label: 'Home Addition',
     shortLabel: 'Addition',
     description: 'Add space and value with a seamlessly integrated addition — primary suite, family room, ADU, or garage. Full feasibility analysis with zoning, structural, and permit scope.',
-    priceDisplay: 'From $199',
+    priceDisplay: canonicalStartingPrice('addition_expansion'),
     heroImage: '/images/services/addition-concept.jpg',
     phase: 'precon',
     deliverableLabel: 'Feasibility Package',
     category: 'addition',
     deliveryDays: '3–5 days',
-    tiers: [tier1(199), tier2(799), tier3(1499)],
+    tiers: canonicalTiers('addition_expansion'),
     usesConceptIntake: true,
     features: ['Architectural concept renders', 'Feasibility & zoning analysis', 'Site plan overview', 'Full permit scope brief', 'MEP systems plan', 'Direct support via portal ask bar'],
     costRange: '$80K – $400K',
@@ -162,13 +177,13 @@ export const SERVICES: Service[] = [
     label: 'Whole House Renovation',
     shortLabel: 'Whole House',
     description: 'Complete home transformation — coordinated interior, exterior, and systems upgrade. One unified design direction, one master cost plan, one permit scope covering every trade.',
-    priceDisplay: 'From $249',
+    priceDisplay: canonicalStartingPrice('whole_home_concept'),
     heroImage: 'https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?w=900&q=80&auto=format&fit=crop',
     phase: 'precon',
     deliverableLabel: 'Design Package',
     category: 'remodel',
     deliveryDays: '4–6 days',
-    tiers: [tier1(249), tier2(899), tier3(1699)],
+    tiers: canonicalTiers('whole_home_concept'),
     usesConceptIntake: true,
     features: ['Full interior concept (all rooms)', 'Exterior elevation concept', 'Room-by-room renders', 'Master cost estimate', 'All MEP systems scoped', 'Direct support via portal ask bar'],
     costRange: '$150K – $800K',
@@ -181,13 +196,13 @@ export const SERVICES: Service[] = [
     label: 'Interior Renovation',
     shortLabel: 'Interior',
     description: 'Refresh your home\'s interior spaces — flooring, walls, trim, lighting, and built-ins — with cohesive design direction and room-by-room specifications.',
-    priceDisplay: 'From $149',
+    priceDisplay: canonicalStartingPrice('interior_renovation'),
     heroImage: 'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?w=900&q=80&auto=format&fit=crop',
     phase: 'precon',
     deliverableLabel: 'Design Package',
     category: 'remodel',
     deliveryDays: '3–5 days',
-    tiers: [tier1(149), tier2(649), tier3(1199)],
+    tiers: canonicalTiers('interior_renovation'),
     usesConceptIntake: true,
     features: ['3 concept visuals', 'Room-by-room specification', 'Material & finish palette', 'Lighting design overview', 'Cost estimate by room', 'Direct support via portal ask bar'],
     costRange: '$20K – $150K',
@@ -200,13 +215,13 @@ export const SERVICES: Service[] = [
     label: 'Exterior Facade',
     shortLabel: 'Exterior',
     description: 'Dramatically improve your home\'s curb appeal — new siding, windows, roofline, entry, and landscaping — with AI-generated concepts and a full material specification.',
-    priceDisplay: 'From $139',
+    priceDisplay: canonicalStartingPrice('exterior_concept'),
     heroImage: 'https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=900&q=80&auto=format&fit=crop',
     phase: 'precon',
     deliverableLabel: 'Design Package',
     category: 'remodel',
     deliveryDays: '3–5 days',
-    tiers: [tier1(139), tier2(599), tier3(1099)],
+    tiers: canonicalTiers('exterior_concept'),
     usesConceptIntake: true,
     features: ['3 exterior renderings (front, side, rear)', 'Material & finish palette', 'Landscape overview sketch', 'MEP exterior spec', 'Detailed cost estimate', 'Direct support via portal ask bar'],
     costRange: '$15K – $80K',
@@ -219,13 +234,13 @@ export const SERVICES: Service[] = [
     label: 'Deck & Patio',
     shortLabel: 'Deck',
     description: 'Design your outdoor living and entertaining space — deck, patio, pergola, or covered outdoor room — with structural plans, material specs, and permit requirements.',
-    priceDisplay: 'From $119',
+    priceDisplay: canonicalStartingPrice('exterior_concept'),
     heroImage: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=900&q=80&auto=format&fit=crop',
     phase: 'precon',
     deliverableLabel: 'Design Package',
     category: 'addition',
     deliveryDays: '2–4 days',
-    tiers: [tier1(119), tier2(449), tier3(899)],
+    tiers: canonicalTiers('exterior_concept'),
     usesConceptIntake: true,
     features: ['Deck/patio layout concept', 'Material specification', 'Structural overview', 'Lighting & electrical plan', 'Permit requirements', 'Direct support via portal ask bar'],
     costRange: '$12K – $60K',
@@ -238,14 +253,14 @@ export const SERVICES: Service[] = [
     label: 'Design Services',
     shortLabel: 'Design',
     description: 'Get professional-grade interior design direction — mood boards, material palettes, furniture layout, and space planning — without committing to a full renovation.',
-    priceDisplay: 'From $79',
+    priceDisplay: canonicalStartingPrice('interior_reno_concept'),
     heroImage: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=900&q=80&auto=format&fit=crop',
     phase: 'precon',
     deliverableLabel: 'Design Package',
     category: 'design',
     deliveryDays: '2–3 days',
     // Tier 2 + 3 NOT available for design services (no video)
-    tiers: [tier1(79), tier2(0), tier3(0)],
+    tiers: canonicalTiers('interior_reno_concept'),
     usesConceptIntake: true,
     features: ['Mood board & design direction', 'Material & finish palette', 'Furniture layout plan', 'Color scheme specification', 'Shopping list with links', 'Direct support via portal ask bar'],
     costRange: 'Design fee only',
