@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { ArrowRight, CheckCircle } from 'lucide-react'
 import { getProductsByCategory, type Product } from '@/lib/products'
 import { REVENUE_PRODUCT_CATALOG } from '@/lib/revenue-product-catalog'
+import { BuyingPathways } from '@/components/commerce/BuyingPathways'
 
 export const metadata: Metadata = {
   title: 'All Products & Services — Kealee',
@@ -108,11 +109,11 @@ export default function ProductsPage() {
             Every Kealee service.<br />One place.
           </h1>
           <p className="mt-5 text-lg text-white/70 max-w-2xl mx-auto leading-relaxed">
-            Start with an AI concept. Add permits if required. Match with a verified contractor when you're ready.
-            Each service is separate — stop at any step.
+            Choose the right path for a homeowner project, contractor business, or development site.
+            Start small, then advance only when the project is ready.
           </p>
           <div className="mt-8 flex flex-wrap gap-3 justify-center text-sm text-white/60">
-            {['No subscription', 'Per-service pricing', 'Staff reviewed', 'DMV-specific expertise'].map(t => (
+            {['Role-specific paths', 'Clear starting prices', 'Staff reviewed', 'Nationwide intake'].map(t => (
               <span key={t} className="flex items-center gap-1.5">
                 <CheckCircle className="h-3.5 w-3.5 text-green-400" />
                 {t}
@@ -122,23 +123,20 @@ export default function ProductsPage() {
         </div>
       </section>
 
-      {/* Journey callout */}
-      <section className="py-10 border-b border-gray-100 bg-orange-50">
-        <div className="mx-auto max-w-3xl px-4 sm:px-6 text-center">
-          <p className="text-sm font-medium text-gray-700">
-            <strong style={{ color: '#E8793A' }}>How it works:</strong>{' '}
-            AI Concept Package
-            <span className="mx-2 text-gray-400">→</span>
-            Permits (if required)
-            <span className="mx-2 text-gray-400">→</span>
-            Contractor Match (if elected)
-          </p>
-          <p className="text-xs text-gray-500 mt-1.5">Garden, landscape, kitchen, bath, exterior, basement, ADU — all start with AI concept.</p>
-        </div>
+      <section className="border-b border-gray-100 bg-slate-50">
+        <BuyingPathways />
       </section>
 
       {/* Category sections */}
-      <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-16 space-y-20">
+      <div id="homeowner-services" className="mx-auto max-w-6xl scroll-mt-24 px-4 sm:px-6 lg:px-8 py-16 space-y-20">
+        <div className="mx-auto max-w-3xl text-center">
+          <span className="text-xs font-bold uppercase tracking-widest text-orange-600">Homeowner service catalog</span>
+          <h2 className="mt-3 font-display text-3xl font-bold text-[#1A2B4A]">Shop by project need</h2>
+          <p className="mt-3 text-sm leading-relaxed text-gray-500">
+            These are one-time services for an individual property or project. Select a project type to see its exact
+            deliverables, intake, turnaround, and checkout options.
+          </p>
+        </div>
         {CATEGORIES.map(cat => {
           const products = getProductsByCategory(cat.id)
           if (products.length === 0) return null
@@ -165,12 +163,12 @@ export default function ProductsPage() {
         })}
       </div>
 
-      {/* Professional & Developer Services */}
+      {/* Professional project services */}
       <section className="border-t border-gray-100 bg-[#0d1b33] py-16">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="mb-8 border-b border-white/10 pb-4">
-            <span className="mb-1 block text-xs font-bold uppercase tracking-widest text-orange-300">For contractors &amp; developers</span>
-            <p className="text-sm text-white/60">Scoped estimates, zoning, and permit feasibility for client projects and property acquisitions.</p>
+            <span className="mb-1 block text-xs font-bold uppercase tracking-widest text-orange-300">Professional project services</span>
+            <p className="text-sm text-white/60">Separate per-project deliverables for contractor clients and development sites. Contractor marketplace membership is not included.</p>
           </div>
           <div className="grid gap-5 sm:grid-cols-2">
             {Object.values(REVENUE_PRODUCT_CATALOG)

@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { ArrowRight, Plus, Minus } from 'lucide-react'
 import { useState } from 'react'
+import { BuyingPathways } from '@/components/commerce/BuyingPathways'
 
 const fadeInUp = {
   initial: { opacity: 0, y: 20 },
@@ -183,9 +184,14 @@ export default function PricingPage() {
           <motion.p
             className="mx-auto mt-6 max-w-2xl text-lg text-slate-600 leading-relaxed"
           >
-            Homeowners pay per project. Contractors choose a listing tier. No hidden fees, no surprises.
+            One-time project services for homeowners, marketplace memberships for contractors, and site-based
+            feasibility for developers.
           </motion.p>
         </div>
+      </section>
+
+      <section className="border-b border-slate-200 bg-white">
+        <BuyingPathways />
       </section>
 
       {/* ── Homeowner Project Services ── */}
@@ -193,8 +199,8 @@ export default function PricingPage() {
         <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
           <SectionHeader
             label="For Homeowners"
-            title="Pay only for what your project needs"
-            subtitle="All homeowner fees are one-time per project — no subscriptions."
+            title="Add services as the project becomes more certain"
+            subtitle="Start with readiness or a concept. Add estimating, permits, and oversight only when the scope calls for them. All homeowner fees are one-time per project."
           />
 
           <div className="mt-12 space-y-10">
@@ -243,16 +249,14 @@ export default function PricingPage() {
               <p className="mt-2 text-xs text-slate-400">One-time per project fee — not a subscription.</p>
             </div>
 
-            {/* Typical path callout */}
+            {/* Purchase boundary callout */}
             <div className="rounded-2xl p-8 border border-slate-200" style={{ backgroundColor: '#F8FAFC' }}>
               <p className="text-center text-sm font-semibold text-slate-700">
-                Typical fully-managed project:
-                <span className="ml-2 font-black text-slate-900">
-                  $585 + $595 + $950 + $2,950 = $5,080
-                </span>
+                You do not need to buy every service at once.
               </p>
               <p className="mt-2 text-center text-xs text-slate-500">
-                Concept + Validation · Detailed Estimate · Permit Package · PM Oversight
+                Your intake and project findings carry forward, so each next step builds on the same property and scope.
+                Final professional, agency, and construction fees depend on the project.
               </p>
             </div>
           </div>
@@ -264,8 +268,8 @@ export default function PricingPage() {
         <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
           <SectionHeader
             label="For Contractors"
-            title="Marketplace listing tiers"
-            subtitle="Get verified, get matched, get paid. Pick the tier that fits your business."
+            title="Marketplace membership"
+            subtitle="Subscription tiers cover business visibility, lead matching, and platform tools. Estimate and permit deliverables for a specific client are separate per-project purchases."
           />
 
           <div className="mt-12 grid gap-6 sm:grid-cols-3">
@@ -318,8 +322,40 @@ export default function PricingPage() {
           </div>
 
           <p className="mt-6 text-xs text-slate-400 text-center">
-            Cancel anytime. All plans include a 14-day free trial. Verify your contractor account to unlock full features.
+            Contractor business verification is required before marketplace activation. Contact sales for current trial,
+            billing, and enterprise terms.
           </p>
+
+          <div className="mt-10 rounded-2xl border border-teal-200 bg-teal-50 p-6 sm:flex sm:items-center sm:justify-between sm:gap-8">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-widest text-teal-700">Per client project</p>
+              <h3 className="mt-2 text-lg font-bold text-slate-900">Contractor Estimate and Permit Package — $795</h3>
+              <p className="mt-1 text-sm text-slate-600">Client-facing estimate, zoning, permit, sales, and project roadmap. This does not replace a marketplace membership.</p>
+            </div>
+            <Link href="/products/contractor-estimate-permit-package" className="mt-4 inline-flex shrink-0 items-center gap-2 rounded-xl bg-teal-700 px-5 py-3 text-sm font-bold text-white hover:bg-teal-800 sm:mt-0">
+              View package <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      <section className="border-b border-slate-200 bg-slate-950 py-20 text-white">
+        <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+          <div className="grid gap-8 lg:grid-cols-[1fr_auto] lg:items-center">
+            <div>
+              <span className="text-xs font-bold uppercase tracking-[0.15em] text-violet-300">For developers</span>
+              <h2 className="mt-3 font-display text-3xl font-bold">Feasibility starts at $1,095 per site</h2>
+              <p className="mt-4 max-w-2xl text-sm leading-relaxed text-white/65">
+                Developer Feasibility Express provides an early zoning, estimate, permit, sales, and project analysis.
+                Higher-detail yield, massing, parking, earthwork, NOI, entitlement, and execution services are scoped
+                after the initial site screen.
+              </p>
+              <p className="mt-3 text-xs text-white/45">Preliminary feasibility / not for construction / subject to licensed professional review.</p>
+            </div>
+            <Link href="/products/developer-feasibility-express" className="inline-flex items-center justify-center gap-2 rounded-xl bg-violet-600 px-6 py-3.5 text-sm font-bold text-white hover:bg-violet-500">
+              View developer package <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
         </div>
       </section>
 
