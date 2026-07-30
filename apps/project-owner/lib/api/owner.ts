@@ -142,11 +142,14 @@ export async function solveSiteFitScenario(workflowId: string, input: {
   crs: string
   sourceReference: string
   setback: number
+  setbacks?: { front: number; rear: number; leftSide: number; rightSide: number }
+  frontageDirection?: 'NORTH' | 'EAST' | 'SOUTH' | 'WEST'
   targetUnits: number
   averageUnitSqFt: number
   stories: number
   typology: 'SINGLE_FAMILY' | 'TOWNHOME' | 'GARDEN_MULTIFAMILY' |
     'WRAP_PODIUM_MULTIFAMILY' | 'SURFACE_PARKING' | 'SMALL_MIXED_USE'
+    | 'ADU' | 'ADDITION' | 'POOL' | 'NEW_HOME'
 }) {
   const boundaryKey = JSON.stringify(input)
   let checksum = 0
@@ -165,6 +168,8 @@ export async function solveSiteFitScenario(workflowId: string, input: {
         ruleSet: {
           version: `owner-confirmed-${new Date().toISOString().slice(0, 10)}`,
           uniformSetback: input.setback,
+          setbacks: input.setbacks,
+          frontageDirection: input.frontageDirection,
           sourceReferences: [input.sourceReference],
           humanVerified: false,
         },

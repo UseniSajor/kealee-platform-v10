@@ -18,7 +18,11 @@ export type SiteFitTypology =
   | 'GARDEN_MULTIFAMILY'
   | 'WRAP_PODIUM_MULTIFAMILY'
   | 'SURFACE_PARKING'
-  | 'SMALL_MIXED_USE';
+  | 'SMALL_MIXED_USE'
+  | 'ADU'
+  | 'ADDITION'
+  | 'POOL'
+  | 'NEW_HOME';
 
 export interface GeoJsonPolygon {
   type: 'Polygon';
@@ -28,6 +32,13 @@ export interface GeoJsonPolygon {
 export interface SiteFitRuleSet {
   version: string;
   uniformSetback: number;
+  setbacks?: {
+    front: number;
+    rear: number;
+    leftSide: number;
+    rightSide: number;
+  };
+  frontageDirection?: 'NORTH' | 'EAST' | 'SOUTH' | 'WEST';
   maxLotCoveragePercent?: number;
   maxFar?: number;
   maxHeightFeet?: number;

@@ -59,7 +59,15 @@ export default function SitePlansPage() {
         boundary: { type: 'Polygon', coordinates: boundary.coordinates },
         crs: String(data.get('crs') || 'EPSG:2248'),
         sourceReference: String(data.get('sourceReference')),
-        setback: Number(data.get('setback')),
+        setback: Math.min(Number(data.get('frontSetback')), Number(data.get('rearSetback')),
+          Number(data.get('leftSetback')), Number(data.get('rightSetback'))),
+        setbacks: {
+          front: Number(data.get('frontSetback')),
+          rear: Number(data.get('rearSetback')),
+          leftSide: Number(data.get('leftSetback')),
+          rightSide: Number(data.get('rightSetback')),
+        },
+        frontageDirection: String(data.get('frontageDirection')) as 'NORTH' | 'EAST' | 'SOUTH' | 'WEST',
         targetUnits: Number(data.get('targetUnits')),
         averageUnitSqFt: Number(data.get('averageUnitSqFt')),
         stories: Number(data.get('stories')),
@@ -161,10 +169,27 @@ export default function SitePlansPage() {
                 <option value="SINGLE_FAMILY">Single family</option><option value="TOWNHOME">Townhome</option>
                 <option value="GARDEN_MULTIFAMILY">Garden multifamily</option><option value="WRAP_PODIUM_MULTIFAMILY">Wrap/podium</option>
                 <option value="SURFACE_PARKING">Surface parking</option><option value="SMALL_MIXED_USE">Small mixed-use</option>
+                <option value="ADU">ADU</option><option value="ADDITION">Home addition</option>
+                <option value="POOL">Pool</option><option value="NEW_HOME">New home</option>
               </select>
             </label>
-            <label className="text-xs font-medium text-slate-700">Uniform setback (ft)
-              <input name="setback" type="number" min="0" step="0.1" defaultValue="10" required className="mt-1 w-full rounded border border-slate-300 px-2 py-1.5" />
+            <label className="text-xs font-medium text-slate-700">Front faces
+              <select name="frontageDirection" defaultValue="NORTH" className="mt-1 w-full rounded border border-slate-300 px-2 py-1.5">
+                <option value="NORTH">North</option><option value="EAST">East</option>
+                <option value="SOUTH">South</option><option value="WEST">West</option>
+              </select>
+            </label>
+            <label className="text-xs font-medium text-slate-700">Front setback (ft)
+              <input name="frontSetback" type="number" min="0" step="0.1" defaultValue="25" required className="mt-1 w-full rounded border border-slate-300 px-2 py-1.5" />
+            </label>
+            <label className="text-xs font-medium text-slate-700">Rear setback (ft)
+              <input name="rearSetback" type="number" min="0" step="0.1" defaultValue="20" required className="mt-1 w-full rounded border border-slate-300 px-2 py-1.5" />
+            </label>
+            <label className="text-xs font-medium text-slate-700">Left-side setback (ft)
+              <input name="leftSetback" type="number" min="0" step="0.1" defaultValue="8" required className="mt-1 w-full rounded border border-slate-300 px-2 py-1.5" />
+            </label>
+            <label className="text-xs font-medium text-slate-700">Right-side setback (ft)
+              <input name="rightSetback" type="number" min="0" step="0.1" defaultValue="8" required className="mt-1 w-full rounded border border-slate-300 px-2 py-1.5" />
             </label>
             <label className="text-xs font-medium text-slate-700">Target units
               <input name="targetUnits" type="number" min="1" defaultValue="1" required className="mt-1 w-full rounded border border-slate-300 px-2 py-1.5" />
@@ -191,6 +216,23 @@ export default function SitePlansPage() {
               <td className="p-2">{option.far.toFixed(2)}</td><td className="p-2">{option.parkingSpaces}</td>
               <td className="p-2">{option.score.toFixed(1)}</td><td className="p-2 text-amber-700">Required</td>
             </tr>)}</tbody></table></div> : null}
+          <div className="mt-5 grid gap-3 md:grid-cols-3">
+            {[
+              { title: 'Verified Zoning + Site Feasibility', price: '$149–$299', href: '/services',
+                text: 'Operations verifies zoning sources, parcel assumptions, overlays, and the buildable envelope.' },
+              { title: 'Concept Plan + Budget Range', price: '$299–$595', href: '/concepts/new',
+                text: 'Advance a selected footprint into a concept plan, quantities, and preliminary cost range.' },
+              { title: 'Permit-Ready Package / Construction Consultation', price: '$799+', href: '/services',
+                text: 'Professional design review, permit coordination, and handoff toward Kealee design-build execution.' },
+            ].map(next => <div key={next.title} className="rounded-lg border border-teal-200 bg-teal-50 p-4">
+              <p className="text-sm font-semibold text-slate-900">{next.title}</p>
+              <p className="mt-1 text-lg font-bold text-teal-800">{next.price}</p>
+              <p className="mt-2 text-xs text-slate-600">{next.text}</p>
+              <Link href={next.href} className="mt-3 inline-block rounded bg-teal-700 px-3 py-2 text-xs font-semibold text-white">
+                Continue
+              </Link>
+            </div>)}
+          </div>
         </div>}
       </section>
     })}

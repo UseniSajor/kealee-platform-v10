@@ -12,7 +12,14 @@ interface Study {
   targetUnits?: number | null
   targetSqFt?: number | string | null
   updatedAt: string
-  scenarios: Array<{ id: string; name: string; irr?: number | null; roi?: number | null }>
+  scenarios: Array<{
+    id: string; name: string; totalUnits?: number | null; totalSqFt?: number | string | null
+    options?: Array<{ parkingSpaces: number; preliminaryCutFill?: unknown; score: number }>
+    hardCosts?: number | string | null; softCosts?: number | string | null
+    totalDevelopCost?: number | string | null; netOperatingIncome?: number | string | null
+    irr?: number | null; roi?: number | null; capRate?: number | null
+    siteFitStatus?: string | null; reviewStatus?: string | null
+  }>
 }
 
 export default function FeasibilityPage() {
@@ -75,6 +82,22 @@ export default function FeasibilityPage() {
               <div><span className="text-gray-500">Persisted scenarios</span><p className="font-semibold">{study.scenarios.length}</p></div>
             </div>
             <p className="mt-4 text-xs font-medium text-amber-800">Preliminary feasibility / not for construction / subject to licensed professional review.</p>
+            {study.scenarios.map(scenario => <div key={scenario.id} className="mt-4 rounded-lg border border-slate-200 bg-slate-50 p-4">
+              <div className="flex flex-wrap justify-between gap-2"><p className="text-sm font-semibold text-slate-900">{scenario.name}</p>
+                <span className="text-xs text-slate-500">{scenario.siteFitStatus ?? 'Financial scenario'} · {scenario.reviewStatus ?? 'Needs review'}</span></div>
+              <div className="mt-3 grid gap-3 text-xs sm:grid-cols-3 lg:grid-cols-6">
+                <div><span className="text-slate-500">Yield</span><p className="font-semibold">{scenario.totalUnits ?? '—'} units</p></div>
+                <div><span className="text-slate-500">Parking</span><p className="font-semibold">{scenario.options?.[0]?.parkingSpaces ?? '—'}</p></div>
+                <div><span className="text-slate-500">Development cost</span><p className="font-semibold">{scenario.totalDevelopCost != null ? `$${Number(scenario.totalDevelopCost).toLocaleString()}` : '—'}</p></div>
+                <div><span className="text-slate-500">NOI</span><p className="font-semibold">{scenario.netOperatingIncome != null ? `$${Number(scenario.netOperatingIncome).toLocaleString()}` : '—'}</p></div>
+                <div><span className="text-slate-500">IRR</span><p className="font-semibold">{scenario.irr != null ? `${scenario.irr.toFixed(1)}%` : '—'}</p></div>
+                <div><span className="text-slate-500">Cap rate</span><p className="font-semibold">{scenario.capRate != null ? `${scenario.capRate.toFixed(1)}%` : '—'}</p></div>
+              </div>
+              <div className="mt-3 flex flex-wrap gap-2 text-[11px] text-slate-600">
+                {['Massing + yield', 'Parking validation', 'Rough earthwork', 'Cost + NOI', 'Entitlement checklist', 'Permit coordination', 'GC execution handoff']
+                  .map(item => <span key={item} className="rounded-full border border-slate-200 bg-white px-2 py-1">{item}</span>)}
+              </div>
+            </div>)}
           </article>)}
         </div>}
     </div>

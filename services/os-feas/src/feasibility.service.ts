@@ -97,7 +97,13 @@ async function listStudies(
   const [studies, total] = await Promise.all([
     prisma.feasibilityStudy.findMany({
       where,
-      include: { scenarios: { select: { id: true, name: true, irr: true, roi: true } } },
+      include: { scenarios: { select: {
+        id: true, name: true, totalUnits: true, totalSqFt: true,
+        hardCosts: true, softCosts: true, totalDevelopCost: true, netOperatingIncome: true,
+        irr: true, roi: true, capRate: true, siteFitStatus: true, reviewStatus: true,
+        metrics: true, warnings: true,
+        options: { select: { parkingSpaces: true, preliminaryCutFill: true, score: true }, orderBy: { score: 'desc' }, take: 1 },
+      } } },
       orderBy: { updatedAt: 'desc' },
       take: options?.limit ?? 50,
       skip: options?.offset ?? 0,

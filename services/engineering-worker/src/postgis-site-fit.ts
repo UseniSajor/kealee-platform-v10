@@ -26,11 +26,34 @@ export async function buildPostgisEnvelope(
   input: SolveSiteFitInput,
 ): Promise<NonNullable<SolveSiteFitInput['precomputedEnvelope']>> {
   const srid = epsgCode(input.crs);
+  const setback = input.ruleSet.setbacks;
+  const direction = input.ruleSet.frontageDirection ?? 'NORTH';
+  const cardinal = (() => {
+    if (!setback) {
+      return { north: input.ruleSet.uniformSetback, east: input.ruleSet.uniformSetback,
+        south: input.ruleSet.uniformSetback, west: input.ruleSet.uniformSetback };
+    }
+    if (direction === 'EAST') return { north: setback.leftSide, east: setback.front,
+      south: setback.rightSide, west: setback.rear };
+    if (direction === 'SOUTH') return { north: setback.rear, east: setback.leftSide,
+      south: setback.front, west: setback.rightSide };
+    if (direction === 'WEST') return { north: setback.rightSide, east: setback.rear,
+      south: setback.leftSide, west: setback.front };
+    return { north: setback.front, east: setback.rightSide,
+      south: setback.rear, west: setback.leftSide };
+  })();
+  const baseSetback = Math.min(cardinal.north, cardinal.east, cardinal.south, cardinal.west);
+  const extra = {
+    north: (cardinal.north - baseSetback) * 0.3048,
+    east: (cardinal.east - baseSetback) * 0.3048,
+    south: (cardinal.south - baseSetback) * 0.3048,
+    west: (cardinal.west - baseSetback) * 0.3048,
+  };
   const rows = await db.$queryRawUnsafe<EnvelopeRow[]>(`
     WITH source AS (
       SELECT extensions.ST_SetSRID(
         extensions.ST_GeomFromGeoJSON($1),
-        $2
+        $2::integer
       ) AS boundary
     ),
     checked AS (
@@ -46,13 +69,32 @@ export async function buildPostgisEnvelope(
           extensions.ST_Transform(boundary, 4326)::extensions.geography,
           -$3
         )::extensions.geometry,
-        $2
+        $2::integer
       ) AS geometry
       FROM checked
     ),
+    cardinal_inset AS (
+      SELECT extensions.ST_Transform(
+        extensions.ST_Intersection(
+          projected,
+          extensions.ST_MakeEnvelope(
+            extensions.ST_XMin(projected) + $5,
+            extensions.ST_YMin(projected) + $6,
+            extensions.ST_XMax(projected) - $7,
+            extensions.ST_YMax(projected) - $8,
+            3857
+          )
+        ),
+        $2::integer
+      ) AS geometry
+      FROM (
+        SELECT extensions.ST_Transform(geometry, 3857) AS projected
+        FROM inset
+      ) projected_geometry
+    ),
     exclusions AS (
       SELECT extensions.ST_UnaryUnion(extensions.ST_Collect(
-        extensions.ST_SetSRID(extensions.ST_GeomFromGeoJSON(value::text), $2)
+        extensions.ST_SetSRID(extensions.ST_GeomFromGeoJSON(value::text), $2::integer)
       )) AS geometry
       FROM jsonb_array_elements($4::jsonb)
     ),
@@ -61,7 +103,7 @@ export async function buildPostgisEnvelope(
         WHEN exclusions.geometry IS NULL THEN inset.geometry
         ELSE extensions.ST_Difference(inset.geometry, exclusions.geometry)
       END AS geometry
-      FROM inset CROSS JOIN exclusions
+      FROM cardinal_inset AS inset CROSS JOIN exclusions
     ),
     polygons AS (
       SELECT (extensions.ST_Dump(
@@ -86,8 +128,8 @@ export async function buildPostgisEnvelope(
       ) * 10.76391041671 AS area_sq_ft,
       extensions.PostGIS_Lib_Version() AS postgis_version
     FROM largest
-  `, JSON.stringify(input.boundary), srid, input.ruleSet.uniformSetback * 0.3048,
-  JSON.stringify(input.exclusions ?? []));
+  `, JSON.stringify(input.boundary), srid, baseSetback * 0.3048,
+  JSON.stringify(input.exclusions ?? []), extra.west, extra.south, extra.east, extra.north);
 
   const row = rows[0];
   if (!row) {
@@ -118,11 +160,11 @@ export async function validateOptionsWithPostgis(
     const rows = await db.$queryRawUnsafe<Array<{ covered: boolean; valid: boolean }>>(`
       SELECT
         extensions.ST_CoveredBy(
-          extensions.ST_SetSRID(extensions.ST_GeomFromGeoJSON($1), $3),
-          extensions.ST_SetSRID(extensions.ST_GeomFromGeoJSON($2), $3)
+          extensions.ST_SetSRID(extensions.ST_GeomFromGeoJSON($1), $3::integer),
+          extensions.ST_SetSRID(extensions.ST_GeomFromGeoJSON($2), $3::integer)
         ) AS covered,
         extensions.ST_IsValid(
-          extensions.ST_SetSRID(extensions.ST_GeomFromGeoJSON($1), $3)
+          extensions.ST_SetSRID(extensions.ST_GeomFromGeoJSON($1), $3::integer)
         ) AS valid
     `, JSON.stringify(footprint), JSON.stringify(envelope.geometry), srid);
     const result = rows[0];

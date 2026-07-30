@@ -37,6 +37,10 @@ enum FeasibilityTypology {
   WRAP_PODIUM_MULTIFAMILY
   SURFACE_PARKING
   SMALL_MIXED_USE
+  ADU
+  ADDITION
+  POOL
+  NEW_HOME
 }
 
 enum FeasibilityReviewStatus {

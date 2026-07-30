@@ -45,6 +45,10 @@ describe('PostGIS site-fit adapter', () => {
       2248,
       3.048,
       JSON.stringify(input.exclusions),
+      0,
+      0,
+      0,
+      0,
     ]);
   });
 

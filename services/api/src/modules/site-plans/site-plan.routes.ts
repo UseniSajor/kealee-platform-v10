@@ -105,6 +105,13 @@ export async function sitePlanRoutes(fastify: FastifyInstance) {
       ruleSet: z.object({
         version: z.string().min(1).max(200),
         uniformSetback: z.number().nonnegative().max(1000),
+        setbacks: z.object({
+          front: z.number().nonnegative().max(1000),
+          rear: z.number().nonnegative().max(1000),
+          leftSide: z.number().nonnegative().max(1000),
+          rightSide: z.number().nonnegative().max(1000),
+        }).optional(),
+        frontageDirection: z.enum(['NORTH', 'EAST', 'SOUTH', 'WEST']).optional(),
         maxLotCoveragePercent: z.number().positive().max(100).optional(),
         maxFar: z.number().positive().max(100).optional(),
         maxHeightFeet: z.number().positive().max(5000).optional(),
@@ -114,7 +121,8 @@ export async function sitePlanRoutes(fastify: FastifyInstance) {
       }),
       program: z.object({
         typology: z.enum(['SINGLE_FAMILY', 'TOWNHOME', 'GARDEN_MULTIFAMILY',
-          'WRAP_PODIUM_MULTIFAMILY', 'SURFACE_PARKING', 'SMALL_MIXED_USE']),
+          'WRAP_PODIUM_MULTIFAMILY', 'SURFACE_PARKING', 'SMALL_MIXED_USE',
+          'ADU', 'ADDITION', 'POOL', 'NEW_HOME']),
         targetUnits: z.number().int().positive().max(100000),
         averageUnitSqFt: z.number().positive().max(1000000),
         stories: z.number().int().positive().max(200),

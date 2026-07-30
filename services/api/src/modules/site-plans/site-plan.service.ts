@@ -222,6 +222,8 @@ export async function createAndSolveSiteFitScenario(
     ruleSet: {
       version: string;
       uniformSetback: number;
+      setbacks?: { front: number; rear: number; leftSide: number; rightSide: number };
+      frontageDirection?: 'NORTH' | 'EAST' | 'SOUTH' | 'WEST';
       maxLotCoveragePercent?: number;
       maxFar?: number;
       maxHeightFeet?: number;
@@ -231,7 +233,8 @@ export async function createAndSolveSiteFitScenario(
     };
     program: {
       typology: 'SINGLE_FAMILY' | 'TOWNHOME' | 'GARDEN_MULTIFAMILY' |
-        'WRAP_PODIUM_MULTIFAMILY' | 'SURFACE_PARKING' | 'SMALL_MIXED_USE';
+        'WRAP_PODIUM_MULTIFAMILY' | 'SURFACE_PARKING' | 'SMALL_MIXED_USE' |
+        'ADU' | 'ADDITION' | 'POOL' | 'NEW_HOME';
       targetUnits: number;
       averageUnitSqFt: number;
       stories: number;
@@ -302,7 +305,7 @@ export async function createAndSolveSiteFitScenario(
       UPDATE "site_source_datasets"
       SET "spatialGeometry" = extensions.ST_SetSRID(
         extensions.ST_GeomFromGeoJSON($1),
-        $2
+        $2::integer
       )
       WHERE "id" = $3
     `, JSON.stringify(input.boundary), srid, dataset.id);

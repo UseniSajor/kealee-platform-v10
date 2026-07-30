@@ -11,9 +11,9 @@
     }
   },
   "scripts": {
-    "build": "prisma generate --schema=./prisma/schema.prisma && tsc",
-    "postinstall": "prisma generate --schema=./prisma/schema.prisma",
-    "db:generate": "prisma generate --schema=./prisma/schema.prisma",
+    "build": "pnpm schema:merge && prisma generate --schema=./prisma/schema.generated.prisma && tsc",
+    "postinstall": "pnpm schema:merge && prisma generate --schema=./prisma/schema.generated.prisma",
+    "db:generate": "pnpm schema:merge && prisma generate --schema=./prisma/schema.generated.prisma",
     "schema:split": "tsx scripts/split-schema.ts",
     "schema:merge": "tsx scripts/merge-schema.ts",
     "schema:validate": "tsx scripts/validate-schema.ts",

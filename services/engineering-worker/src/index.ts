@@ -122,7 +122,7 @@ async function persistScenarioResult(data: EngineeringJobData, result: Record<st
         UPDATE "feasibility_scenario_options"
         SET "spatialGeometry" = extensions.ST_SetSRID(
           extensions.ST_GeomFromGeoJSON($1),
-          $2
+          $2::integer
         )
         WHERE "id" = $3
       `, JSON.stringify(spatialGeometry), srid, saved.id);

@@ -7,8 +7,9 @@ export { SITE_PLAN_STAGES, SitePlanTransitionError, applySitePlanEvent, createSi
 export type { SitePlanStage, SitePlanStageSnapshot, SitePlanStageState, SitePlanWorkflowEvent,
   SitePlanWorkflowSnapshot, AgencyComment, CorrectionCycleSnapshot,
   CorrectionDiscipline } from '@kealee/workflow-engine';
-export { princeGeorgesCountyRulePack, canLabelPermitReady, evaluateProfessionalRelease } from '@kealee/compliance';
-export type { JurisdictionCheckResult, JurisdictionOutcome, JurisdictionRulePack, PrinceGeorgesSiteInput,
+export { canLabelPermitReady, evaluateProfessionalRelease,
+  evaluateJurisdictionRules, assertJurisdictionHasActiveRules } from '@kealee/compliance';
+export type { JurisdictionCheckResult, JurisdictionOutcome, JurisdictionRulePack,
   RuleAuthority, ProfessionalReleaseDecision, ProfessionalReleaseInput } from '@kealee/compliance';
 export { AutodeskCadProviderUnavailable } from './providers';
 export { LocalOcrProviderUnavailable } from './providers';
