@@ -1,6 +1,7 @@
 import { prisma } from '@kealee/database';
-import { SITE_PLAN_STAGES, applySitePlanEvent, assertJurisdictionAutomationReady,
-  classifyEngineeringDocument, createSitePlanWorkflow, generateCivilSitePlan } from '@kealee/os-engineering';
+import { SITE_PLAN_STAGES, applySitePlanEvent,
+  classifyEngineeringDocument, createSitePlanWorkflow, generateCivilSitePlan,
+  evaluateJurisdictionRules, assertJurisdictionHasActiveRules, evaluateProfessionalRelease } from '@kealee/os-engineering';
 import type { CivilSitePlanInput, SitePlanWorkflowEvent } from '@kealee/os-engineering';
 import { PRELIMINARY_FEASIBILITY_DISCLAIMER } from '@kealee/os-engineering';
 import { createQueue, KEALEE_QUEUES } from '@kealee/queue';
@@ -505,6 +506,44 @@ export async function listProfessionalReviews(userId: string) {
   }));
 }
 
+/**
+ * Creates the ProfessionalReviewRecord that assigns a workflow's professional review to a
+ * licensed professional. No production code path created this row before — the entire
+ * review UI had nothing to review. Has no dependency on compliance-result cleanliness or an
+ * existing seal: this is one of the "preceding steps" the seal must never block.
+ */
+export async function assignProfessionalReview(
+  user: { id: string; role: string; organizationId?: string | null },
+  workflowId: string,
+  input: { professionalAssignmentId: string; discipline: string },
+) {
+  if (!OPERATIONS_ROLES.has(user.role.toLowerCase())) throw new AuthorizationError('Operations access denied');
+  const workflow = await db.sitePlanWorkflow.findUnique({ where: { id: workflowId } });
+  if (!workflow) throw new NotFoundError('SitePlanWorkflow', workflowId);
+  if (!['admin', 'super_admin'].includes(user.role.toLowerCase()) && workflow.organizationId !== user.organizationId) {
+    throw new AuthorizationError('Site-plan workflow access denied');
+  }
+  const jurisdictionCode = typeof workflow.metadata?.jurisdictionCode === 'string'
+    ? workflow.metadata.jurisdictionCode : undefined;
+  if (!jurisdictionCode) throw new ValidationError('Professional review requires a resolved local jurisdiction');
+  const assignment = await db.professionalAssignment.findUnique({
+    where: { id: input.professionalAssignmentId }, include: { profile: true },
+  });
+  if (!assignment) throw new NotFoundError('ProfessionalAssignment', input.professionalAssignmentId);
+  if (assignment.status !== 'ACCEPTED') {
+    throw new ValidationError('The professional assignment must be accepted before review can begin');
+  }
+  const license = await db.licenseTracking.findFirst({
+    where: { userId: assignment.profile.userId, status: 'ACTIVE' },
+    orderBy: { verifiedAt: 'desc' },
+  });
+  return db.professionalReviewRecord.create({ data: {
+    workflowId, professionalAssignmentId: assignment.id, jurisdictionCode, discipline: input.discipline,
+    licenseNumber: license?.licenseNumber ?? '', licenseVerifiedAt: license?.verifiedAt ?? null,
+    decision: 'PENDING', expiresAt: license?.expirationDate ?? null,
+  } });
+}
+
 export async function recordProfessionalReviewDecision(userId: string, reviewId: string, input: {
   decision: 'APPROVED' | 'REJECTED' | 'CHANGES_REQUESTED';
   declaration: string;
@@ -584,41 +623,100 @@ export async function saveProfessionalReviewEdits(userId: string, reviewId: stri
   } });
 }
 
-/** Release a signed/sealed professional deliverable. Kealee never fabricates a seal. */
-export async function releaseProfessionalReview(userId: string, reviewId: string, declaration: string) {
+/**
+ * The one real hard gate in this whole pipeline: submits a sealed site plan to the
+ * jurisdiction. Every earlier step (geometry, compliance screening, draft generation,
+ * assigning/approving a review) works with no seal in place; this is the single place that
+ * refuses to proceed without one. Kealee never fabricates a seal — evaluateProfessionalRelease
+ * only accepts externally-produced hash evidence of a genuinely distinct sealed artifact.
+ */
+export async function submitSitePlanToJurisdiction(userId: string, reviewId: string, input: {
+  declaration: string;
+  permitId?: string;
+}) {
   const review = await db.professionalReviewRecord.findUnique({ where: { id: reviewId } });
   if (!review) throw new NotFoundError('ProfessionalReviewRecord', reviewId);
   const assignment = await db.professionalAssignment.findFirst({
     where: { id: review.professionalAssignmentId, profile: { userId } }, select: { id: true },
   });
   if (!assignment) throw new AuthorizationError('Professional assignment access denied');
-  if (review.decision !== 'APPROVED') throw new ValidationError('The review must be approved before release');
-  if (!review.sourceDocumentId || !review.sealedDocumentId || !review.sourceContentHash || !review.sealedContentHash) {
-    throw new ValidationError('Release requires immutable source and signed/sealed document evidence');
-  }
-  if (!review.licenseVerifiedAt || (review.expiresAt && review.expiresAt <= new Date())) {
-    throw new ValidationError('A current verified professional license is required for release');
-  }
-  const blockers = await db.sitePlanComplianceResult.count({ where: { workflowId: review.workflowId, blocksSubmission: true } });
-  if (blockers) throw new ValidationError('Blocking compliance findings must be resolved before release');
+
+  const complianceRows = await db.sitePlanComplianceResult.findMany({ where: { workflowId: review.workflowId } });
+  const decision = evaluateProfessionalRelease({
+    jurisdictionCode: review.jurisdictionCode,
+    professionalId: review.professionalAssignmentId,
+    licenseNumber: review.licenseNumber,
+    // The license was verified specifically for this review's jurisdiction at assignment time
+    // (assignProfessionalReview); there is no separate multi-jurisdiction license roster to join.
+    licensedJurisdictions: review.licenseVerifiedAt ? [review.jurisdictionCode] : [],
+    licenseVerifiedAt: review.licenseVerifiedAt?.toISOString(),
+    licenseExpiresAt: review.expiresAt?.toISOString(),
+    reviewDecision: review.decision,
+    sourceContentHash: review.sourceContentHash ?? '',
+    sealedContentHash: review.sealedContentHash ?? undefined,
+    // recordProfessionalReviewDecision already required the caller to be the assigned
+    // professional before a decision of APPROVED could be recorded.
+    sealControlledByProfessional: review.decision === 'APPROVED',
+    complianceResults: complianceRows.map((row: any) => ({
+      ruleKey: row.result?.ruleKey ?? row.ruleVersionId,
+      outcome: row.outcome,
+      requirement: row.result?.requirement ?? '',
+      inputs: row.inputs ?? {},
+      authority: row.result?.authority ?? { agency: '', title: '', url: '', lastVerifiedDate: '' },
+      responsibleDiscipline: row.responsibleDiscipline ?? '',
+      remediation: row.remediation ?? undefined,
+      blocksSubmission: row.blocksSubmission,
+    })),
+  });
+  if (!decision.allowed) throw new ValidationError(`Cannot submit to jurisdiction: ${decision.blockers.join('; ')}`);
+
   const workflow = await db.sitePlanWorkflow.findUnique({ where: { id: review.workflowId } });
   if (!workflow) throw new NotFoundError('SitePlanWorkflow', review.workflowId);
-  if (workflow.releasedAt) return { review, workflow };
+  if (workflow.releasedAt) return { review, workflow, permitSubmission: null };
+
   const releasedAt = new Date();
-  const updatedReview = await db.$transaction(async (tx: any) => {
+  const result = await db.$transaction(async (tx: any) => {
+    let permitSubmission: any = null;
+    if (input.permitId) {
+      const permit = await tx.permit.findUnique({ where: { id: input.permitId } });
+      if (!permit || permit.projectId !== workflow.projectId) {
+        throw new ValidationError('Permit does not belong to this project');
+      }
+      permitSubmission = await tx.permitSubmission.create({ data: {
+        permitId: permit.id, sitePlanWorkflowId: workflow.id,
+        submissionType: 'INITIAL', submittedVia: 'SITE_PLAN_ENGINE', submittedBy: userId,
+        documents: { sealedDocumentId: review.sealedDocumentId, sourceDocumentId: review.sourceDocumentId },
+        formData: { declaration: input.declaration, chainOfCustody: decision.chainOfCustody },
+      } });
+    }
     const updated = await tx.sitePlanWorkflow.updateMany({ where: { id: workflow.id, releasedAt: null }, data: {
-      status: 'RELEASED', releasedAt, metadata: { ...(workflow.metadata ?? {}), releasedById: userId,
-        releasedAt: releasedAt.toISOString(), releaseDeclaration: declaration },
+      status: 'SUBMITTED', currentStage: 'SUBMITTED_TO_JURISDICTION', releasedAt,
+      metadata: { ...(workflow.metadata ?? {}), releasedById: userId, releasedAt: releasedAt.toISOString(),
+        releaseDeclaration: input.declaration, permitSubmissionId: permitSubmission?.id },
     } });
     if (updated.count !== 1) throw new ValidationError('The workflow was released by another request');
     await tx.sitePlanStageExecution.updateMany({ where: { workflowId: workflow.id, stage: 'PROFESSIONAL_REVIEW' }, data: {
       status: 'APPROVED', reviewedById: userId, reviewedAt: releasedAt, completedAt: releasedAt,
     } });
-    return tx.professionalReviewRecord.update({ where: { id: review.id }, data: {
-      metadata: { ...(review.metadata ?? {}), releasedById: userId, releasedAt: releasedAt.toISOString(), releaseDeclaration: declaration },
+    await tx.sitePlanStageExecution.upsert({
+      where: { workflowId_stage_attempt: { workflowId: workflow.id, stage: 'SUBMITTED_TO_JURISDICTION', attempt: 1 } },
+      create: { workflowId: workflow.id, stage: 'SUBMITTED_TO_JURISDICTION', status: 'COMPLETED', attempt: 1,
+        prerequisites: ['PROFESSIONAL_REVIEW'], completedAt: releasedAt,
+        outputs: { permitSubmissionId: permitSubmission?.id, declaration: input.declaration } },
+      update: { status: 'COMPLETED', completedAt: releasedAt,
+        outputs: { permitSubmissionId: permitSubmission?.id, declaration: input.declaration } },
+    });
+    const updatedReview = await tx.professionalReviewRecord.update({ where: { id: review.id }, data: {
+      metadata: { ...(review.metadata ?? {}), releasedById: userId, releasedAt: releasedAt.toISOString(),
+        releaseDeclaration: input.declaration },
     } });
+    return { review: updatedReview, permitSubmission };
   });
-  return { review: updatedReview, workflow: { ...workflow, status: 'RELEASED', releasedAt } };
+  return {
+    review: result.review,
+    workflow: { ...workflow, status: 'SUBMITTED', currentStage: 'SUBMITTED_TO_JURISDICTION', releasedAt },
+    permitSubmission: result.permitSubmission,
+  };
 }
 
 export async function listOperationsQueue(user: { role: string; organizationId?: string | null }) {
@@ -678,7 +776,7 @@ export async function generateSitePlanArtifact(user: { id: string; role: string;
     throw new ValidationError('Site-plan generation requires a resolved local jurisdiction');
   }
   try {
-    assertJurisdictionAutomationReady(jurisdictionCode);
+    await assertJurisdictionHasActiveRules(jurisdictionCode);
   } catch (error) {
     throw new ValidationError(error instanceof Error ? error.message : 'Local jurisdiction rules are not automation-ready');
   }
@@ -722,6 +820,63 @@ export async function generateSitePlanArtifact(user: { id: string; role: string;
   });
   return { artifact, summary: outputSummary };
 }
+
+/**
+ * Evaluates the jurisdiction's data-driven CHECK rules against the supplied facts and writes
+ * real findings to SitePlanComplianceResult. Never gates on how many findings block
+ * submission — advancing past compliance audit is a separate concern from having a clean
+ * result; the only hard gate on the seal is submitSitePlanToJurisdiction, not this.
+ */
+export async function runComplianceAudit(
+  user: { id: string; role: string; organizationId?: string | null },
+  workflowId: string,
+  input: { projectType: string; facts: Record<string, unknown> },
+) {
+  if (!OPERATIONS_ROLES.has(user.role.toLowerCase())) throw new AuthorizationError('Operations access denied');
+  const workflow = await db.sitePlanWorkflow.findUnique({ where: { id: workflowId } });
+  if (!workflow) throw new NotFoundError('SitePlanWorkflow', workflowId);
+  if (!['admin', 'super_admin'].includes(user.role.toLowerCase()) && workflow.organizationId !== user.organizationId) {
+    throw new AuthorizationError('Site-plan workflow access denied');
+  }
+  const jurisdictionCode = typeof workflow.metadata?.jurisdictionCode === 'string'
+    ? workflow.metadata.jurisdictionCode : undefined;
+  if (!jurisdictionCode) throw new ValidationError('Compliance audit requires a resolved local jurisdiction');
+  await assertJurisdictionHasActiveRules(jurisdictionCode);
+  const stage = await db.sitePlanStageExecution.findFirst({
+    where: { workflowId, stage: 'COMPLIANCE_AUDIT' }, orderBy: { attempt: 'desc' },
+  });
+  if (!stage) throw new ValidationError('The compliance audit stage has not been initialized for this workflow');
+
+  const results = await evaluateJurisdictionRules(jurisdictionCode, input.projectType, input.facts);
+  const ruleVersions = await db.jurisdictionRuleVersion.findMany({
+    where: { jurisdictionCode, kind: 'CHECK', supersededAt: null },
+  });
+  const ruleVersionByKey = new Map(ruleVersions.map((row: any) => [row.ruleKey, row]));
+
+  await db.$transaction(async (tx: any) => {
+    for (const result of results) {
+      const ruleVersion: any = ruleVersionByKey.get(result.ruleKey);
+      if (!ruleVersion) continue;
+      await tx.sitePlanComplianceResult.upsert({
+        where: { stageExecutionId_ruleVersionId: { stageExecutionId: stage.id, ruleVersionId: ruleVersion.id } },
+        create: { workflowId, stageExecutionId: stage.id, ruleVersionId: ruleVersion.id,
+          outcome: result.outcome, inputs: result.inputs, result: result as any,
+          remediation: result.remediation, responsibleDiscipline: result.responsibleDiscipline,
+          blocksSubmission: result.blocksSubmission, confidence: 0.95 },
+        update: { outcome: result.outcome, inputs: result.inputs, result: result as any,
+          remediation: result.remediation, blocksSubmission: result.blocksSubmission },
+      });
+    }
+    await tx.sitePlanStageExecution.update({ where: { id: stage.id }, data: {
+      inputs: { projectType: input.projectType, facts: input.facts },
+      outputs: { ...(typeof stage.outputs === 'object' && stage.outputs ? stage.outputs : {}),
+        complianceAuditedAt: new Date().toISOString(), ruleCount: results.length },
+    } });
+  });
+
+  return { results, blockingCount: results.filter((result) => result.blocksSubmission).length };
+}
+
 export async function createSitePlan(projectId: string, userId: string, input: {
   organizationId?: string; jurisdictionCode: string; propertyId?: string; parcelId?: string; productId?: string;
 }) {
@@ -759,6 +914,17 @@ export async function getSitePlan(workflowId: string, userId: string) {
 }
 export async function applySitePlanWorkflowEvent(workflowId: string, userId: string,
   expectedVersion: number, event: SitePlanWorkflowEvent) {
+  // RELEASE and approving PROFESSIONAL_REVIEW are the seal-adjacent transitions. This generic,
+  // caller-supplied-event endpoint must never be able to drive either one: it would let any
+  // project member self-supply an approvalId/sealedDocumentId with no validation against a
+  // real ProfessionalReviewRecord. Those transitions only happen through
+  // recordProfessionalReviewDecision / submitSitePlanToJurisdiction, which do the real checks.
+  if (event.type === 'RELEASE') {
+    throw new ValidationError('Use submitSitePlanToJurisdiction to submit a site plan to the jurisdiction');
+  }
+  if (event.type === 'APPROVE_STAGE' && event.stage === 'PROFESSIONAL_REVIEW') {
+    throw new ValidationError('Professional-review approval must go through recordProfessionalReviewDecision');
+  }
   const workflow = await db.sitePlanWorkflow.findUnique({ where: { id: workflowId } });
   if (!workflow) throw new NotFoundError('SitePlanWorkflow', workflowId);
   await assertProjectAccess(workflow.projectId, userId);

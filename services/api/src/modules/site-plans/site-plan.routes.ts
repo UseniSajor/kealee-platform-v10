@@ -4,7 +4,8 @@ import { authenticateUser, requireRole } from '../../middleware/auth';
 import { applySitePlanWorkflowEvent, createSitePlan, getSitePlan, listOperationsQueue,
   listProfessionalReviews, recordProfessionalReviewDecision, generateSitePlanArtifact,
   cancelEngineeringJob, enqueueSitePlanDocumentExtraction, getEngineeringDrawingDownload,
-  getEngineeringJob, enqueueEngineeringTask, saveProfessionalReviewEdits, releaseProfessionalReview,
+  getEngineeringJob, enqueueEngineeringTask, saveProfessionalReviewEdits, submitSitePlanToJurisdiction,
+  runComplianceAudit, assignProfessionalReview,
   createAndSolveSiteFitScenario, getSiteFitScenario } from './site-plan.service';
 
 const geometrySchema = z.object({
@@ -28,7 +29,7 @@ const geometrySchema = z.object({
 const eventSchema = z.object({ id: z.string().min(8), type: z.enum(['START_STAGE', 'BLOCK_STAGE',
   'SUBMIT_STAGE_REVIEW', 'APPROVE_STAGE', 'REJECT_STAGE', 'COMPLETE_STAGE', 'RELEASE']),
   stage: z.enum(['PARCEL_RESOLUTION', 'DOCUMENT_COLLECTION', 'FEASIBILITY', 'PLAN_GENERATION',
-    'COMPLIANCE_AUDIT', 'PROFESSIONAL_REVIEW', 'SUBMISSION_CORRECTIONS']),
+    'COMPLIANCE_AUDIT', 'PROFESSIONAL_REVIEW', 'SUBMITTED_TO_JURISDICTION', 'SUBMISSION_CORRECTIONS']),
   assignedPartyId: z.string().optional(), blockers: z.array(z.string()).optional(),
   outputRefs: z.array(z.string()).optional(), approvalId: z.string().optional(), sealedDocumentId: z.string().optional() });
 export async function sitePlanRoutes(fastify: FastifyInstance) {
@@ -56,9 +57,24 @@ export async function sitePlanRoutes(fastify: FastifyInstance) {
   });
   fastify.post('/professional/reviews/:reviewId/release', async (request, reply) => {
     const { reviewId } = z.object({ reviewId: z.string().uuid() }).parse(request.params);
-    const body = z.object({ declaration: z.string().min(10).max(5000) }).parse(request.body);
-    return reply.send(await releaseProfessionalReview((request as any).user.id, reviewId, body.declaration));
+    const body = z.object({ declaration: z.string().min(10).max(5000),
+      permitId: z.string().uuid().optional() }).parse(request.body);
+    return reply.send(await submitSitePlanToJurisdiction((request as any).user.id, reviewId, body));
   });
+  fastify.post('/:workflowId/professional-review', { preHandler: requireRole(['admin', 'super_admin', 'pm', 'operations']) },
+    async (request, reply) => {
+      const { workflowId } = z.object({ workflowId: z.string().uuid() }).parse(request.params);
+      const body = z.object({ professionalAssignmentId: z.string().uuid(),
+        discipline: z.string().min(1).max(100) }).parse(request.body);
+      return reply.code(201).send({ review: await assignProfessionalReview((request as any).user, workflowId, body) });
+    });
+  fastify.post('/:workflowId/compliance-audit', { preHandler: requireRole(['admin', 'super_admin', 'pm', 'operations']) },
+    async (request, reply) => {
+      const { workflowId } = z.object({ workflowId: z.string().uuid() }).parse(request.params);
+      const body = z.object({ projectType: z.string().min(1).max(100),
+        facts: z.record(z.string(), z.unknown()) }).parse(request.body);
+      return reply.send(await runComplianceAudit((request as any).user, workflowId, body));
+    });
   fastify.get('/operations/queue', { preHandler: requireRole(['admin', 'super_admin', 'pm', 'operations']) },
     async (request, reply) => reply.send({ workflows: await listOperationsQueue((request as any).user) }));
   fastify.post('/:workflowId/extract-document',
@@ -189,9 +205,10 @@ export async function sitePlanRoutes(fastify: FastifyInstance) {
     const { projectId } = z.object({ projectId: z.string().uuid() }).parse(request.params);
     const body = z.object({ organizationId: z.string().uuid().optional(), propertyId: z.string().uuid().optional(),
       parcelId: z.string().uuid().optional(), productId: z.string().optional(),
-      jurisdictionCode: z.enum(['US-DC-DC', 'US-MD-MONTGOMERY', 'US-MD-PRINCE_GEORGES',
-        'US-VA-ARLINGTON', 'US-VA-ALEXANDRIA', 'US-VA-FAIRFAX_COUNTY', 'US-VA-LOUDOUN',
-        'US-VA-PRINCE_WILLIAM']) }).parse(request.body);
+      // Any jurisdiction can start a workflow — whether it's actually automation-ready (has
+      // seeded compliance rules) is checked later, at compliance-audit/generation time, not
+      // here. This is what makes the platform work for any lot, not a fixed DMV allowlist.
+      jurisdictionCode: z.string().min(1).max(100) }).parse(request.body);
     return reply.status(201).send({ workflow: await createSitePlan(projectId, (request as any).user.id, body) });
   });
   fastify.get('/:workflowId', async (request, reply) => {

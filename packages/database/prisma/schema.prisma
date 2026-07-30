@@ -8387,9 +8387,15 @@ model PermitSubmission {
 
   permit Permit @relation(fields: [permitId], references: [id], onDelete: Cascade)
 
+  /// The site-plan workflow this submission was released from, when the submission
+  /// originated from the site-plan engine's submitSitePlanToJurisdiction gate.
+  sitePlanWorkflowId String?
+  sitePlanWorkflow   SitePlanWorkflow? @relation(fields: [sitePlanWorkflowId], references: [id])
+
   @@index([permitId])
   @@index([submittedAt])
   @@index([confirmationNumber])
+  @@index([sitePlanWorkflowId])
 }
 
 model PermitCorrection {
@@ -11555,9 +11561,32 @@ model Product {
   updatedAt      DateTime        @updatedAt
 
   projectItems ProjectItem[]
+  productImages ProductImage[]
 
   @@index([category])
   @@index([sku])
+}
+
+/// Added to unblock `prisma generate` — Product.productImages referenced this model before
+/// it existed in schema.prisma. The table itself already existed live (created independently
+/// of this schema file, likely orphaned when the model definition was lost); this definition
+/// was written to match that live table exactly (columns/FK/indexes verified via
+/// information_schema before writing), not a new migration.
+model ProductImage {
+  id          String   @id @default(uuid())
+  productId   String
+  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  type        String
+  url         String
+  prompt      String?
+  style       String?
+  generatedAt DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([productId])
+  @@index([type])
+  @@index([style])
 }
 
 model ProjectItem {
@@ -13427,6 +13456,8 @@ model ProfessionalAssignment {
 
   createdAt        DateTime           @default(now())
   updatedAt        DateTime           @updatedAt
+
+  reviewRecords    ProfessionalReviewRecord[]
 
   @@index([leadId])
   @@index([profileId])
@@ -15430,6 +15461,7 @@ enum SitePlanStageCode {
   PLAN_GENERATION
   COMPLIANCE_AUDIT
   PROFESSIONAL_REVIEW
+  SUBMITTED_TO_JURISDICTION
   SUBMISSION_CORRECTIONS
 }
 
@@ -15492,12 +15524,26 @@ enum EngineeringStageStatus {
   SUPERSEDED
 }
 
+enum JurisdictionRuleKind {
+  /// An evaluable compliance rule — requirements holds a { dslVersion, logic } RuleNode tree.
+  CHECK
+  /// One sentinel row per jurisdiction declaring the evaluator's expected input field shape.
+  INPUT_SCHEMA
+  /// Discovery-gate metadata rows (e.g. the OFFICIAL_SOURCE_REGISTRY rows seeded in
+  /// 20260722090200_dmv_jurisdiction_sources) — not evaluable checks.
+  SOURCE_REGISTRY
+  /// Escape hatch for logic that can't fit the condition-tree DSL — requirements holds
+  /// { predicateKey } naming a function registered in compiled-predicates.ts.
+  COMPILED
+}
+
 model JurisdictionRuleVersion {
   id                String   @id @default(uuid())
   jurisdictionCode  String
   agency             String
   ruleKey            String
   version            Int
+  kind               JurisdictionRuleKind @default(CHECK)
   projectTypes       String[] @default([])
   permitTypes        String[] @default([])
   applicability      Json
@@ -15511,8 +15557,11 @@ model JurisdictionRuleVersion {
   humanReviewRequired Boolean @default(false)
   createdAt          DateTime @default(now())
 
+  complianceResults SitePlanComplianceResult[]
+
   @@unique([jurisdictionCode, ruleKey, version])
   @@index([jurisdictionCode, supersededAt])
+  @@index([jurisdictionCode, kind, supersededAt])
   @@index([agency])
   @@map("jurisdiction_rule_versions")
 }
@@ -15533,6 +15582,11 @@ model SitePlanWorkflow {
   createdAt                  DateTime          @default(now())
   updatedAt                  DateTime          @updatedAt
 
+  stageExecutions     SitePlanStageExecution[]
+  complianceResults   SitePlanComplianceResult[]
+  professionalReviews ProfessionalReviewRecord[]
+  permitSubmissions   PermitSubmission[]
+
   @@unique([organizationId, projectId])
   @@index([organizationId, status, updatedAt])
   @@map("site_plan_workflows")
@@ -15541,6 +15595,7 @@ model SitePlanWorkflow {
 model SitePlanStageExecution {
   id              String              @id @default(uuid())
   workflowId      String
+  workflow        SitePlanWorkflow    @relation(fields: [workflowId], references: [id], onDelete: Cascade)
   stage           SitePlanStageCode
   status          SitePlanStageStatus @default(NOT_STARTED)
   attempt         Int                 @default(1)
@@ -15556,6 +15611,8 @@ model SitePlanStageExecution {
   createdAt       DateTime            @default(now())
   updatedAt       DateTime            @updatedAt
 
+  complianceResults SitePlanComplianceResult[]
+
   @@unique([workflowId, stage, attempt])
   @@index([workflowId, stage, status])
   @@index([status, updatedAt])
@@ -15563,19 +15620,22 @@ model SitePlanStageExecution {
 }
 
 model SitePlanComplianceResult {
-  id                    String            @id @default(uuid())
+  id                    String                  @id @default(uuid())
   workflowId            String
+  workflow              SitePlanWorkflow        @relation(fields: [workflowId], references: [id], onDelete: Cascade)
   stageExecutionId      String
+  stageExecution        SitePlanStageExecution  @relation(fields: [stageExecutionId], references: [id], onDelete: Cascade)
   ruleVersionId         String
+  ruleVersion           JurisdictionRuleVersion @relation(fields: [ruleVersionId], references: [id])
   outcome               ComplianceOutcome
   inputs                Json
   result                Json
-  remediation           String?           @db.Text
+  remediation           String?                 @db.Text
   responsibleDiscipline String?
-  blocksSubmission      Boolean           @default(false)
+  blocksSubmission      Boolean                 @default(false)
   calculationVersion    String?
-  confidence            Decimal           @db.Decimal(5, 4)
-  createdAt             DateTime          @default(now())
+  confidence            Decimal                 @db.Decimal(5, 4)
+  createdAt             DateTime                @default(now())
 
   @@unique([stageExecutionId, ruleVersionId])
   @@index([workflowId, outcome])
@@ -15586,7 +15646,9 @@ model SitePlanComplianceResult {
 model ProfessionalReviewRecord {
   id                       String                     @id @default(uuid())
   workflowId               String
+  workflow                 SitePlanWorkflow          @relation(fields: [workflowId], references: [id], onDelete: Cascade)
   professionalAssignmentId String
+  professionalAssignment   ProfessionalAssignment    @relation(fields: [professionalAssignmentId], references: [id])
   jurisdictionCode         String
   discipline               String
   licenseNumber            String

@@ -1,6 +1,6 @@
 export const SITE_PLAN_STAGES = [
   'PARCEL_RESOLUTION', 'DOCUMENT_COLLECTION', 'FEASIBILITY', 'PLAN_GENERATION',
-  'COMPLIANCE_AUDIT', 'PROFESSIONAL_REVIEW', 'SUBMISSION_CORRECTIONS',
+  'COMPLIANCE_AUDIT', 'PROFESSIONAL_REVIEW', 'SUBMITTED_TO_JURISDICTION', 'SUBMISSION_CORRECTIONS',
 ] as const;
 export type SitePlanStage = typeof SITE_PLAN_STAGES[number];
 export type SitePlanStageState = 'NOT_STARTED' | 'READY' | 'IN_PROGRESS' | 'BLOCKED'
@@ -30,7 +30,7 @@ export type SitePlanWorkflowEvent =
   | { id: string; type: 'APPROVE_STAGE'; stage: SitePlanStage; approvalId?: string; sealedDocumentId?: string }
   | { id: string; type: 'REJECT_STAGE'; stage: SitePlanStage; blockers: string[] }
   | { id: string; type: 'COMPLETE_STAGE'; stage: SitePlanStage; outputRefs: string[] }
-  | { id: string; type: 'RELEASE'; stage: 'SUBMISSION_CORRECTIONS' };
+  | { id: string; type: 'RELEASE'; stage: 'SUBMITTED_TO_JURISDICTION' };
 
 export class SitePlanTransitionError extends Error {
   constructor(message: string) { super(message); this.name = 'SitePlanTransitionError'; }
@@ -50,7 +50,10 @@ function priorComplete(snapshot: SitePlanWorkflowSnapshot, stage: SitePlanStage)
 }
 export function applySitePlanEvent(snapshot: SitePlanWorkflowSnapshot, event: SitePlanWorkflowEvent): SitePlanWorkflowSnapshot {
   if (snapshot.appliedEventIds.includes(event.id)) return snapshot;
-  if (snapshot.releasedAt) throw new SitePlanTransitionError('Released workflow is immutable');
+  // A second RELEASE is a no-op, not an error — but release itself does NOT freeze the whole
+  // workflow: SUBMISSION_CORRECTIONS legitimately happens after submission, via the
+  // correction-cycle machinery (assignCorrection/ingestAgencyComments/etc.).
+  if (event.type === 'RELEASE' && snapshot.releasedAt) return snapshot;
   const index = SITE_PLAN_STAGES.indexOf(event.stage);
   const current = snapshot.stages[index];
   if (!current) throw new SitePlanTransitionError('Unknown stage');
@@ -84,9 +87,13 @@ export function applySitePlanEvent(snapshot: SitePlanWorkflowSnapshot, event: Si
       if (target.state !== 'IN_PROGRESS') throw new SitePlanTransitionError('Only an active stage can complete');
       target.state = 'COMPLETED'; target.outputRefs = event.outputRefs; break;
     case 'RELEASE':
-      if (target.state !== 'APPROVED' && target.state !== 'COMPLETED') throw new SitePlanTransitionError('Submission stage is incomplete');
+      // The seal is the ONLY hard gate here, and it gates exactly this transition — every
+      // earlier stage (geometry, compliance screening, draft generation) runs regardless of
+      // whether a professional review/seal exists yet.
+      if (!priorComplete(snapshot, event.stage)) throw new SitePlanTransitionError('Professional review must be approved before submission to the jurisdiction');
       if (!professionalApprovalId || !sealedDocumentId) throw new SitePlanTransitionError('Regulated release requires professional approval and sealed document');
       if (stages.some((stage) => stage.blockers.length)) throw new SitePlanTransitionError('Blocking issues remain');
+      target.state = 'COMPLETED';
       releasedAt = new Date().toISOString(); break;
   }
   const next = index + 1;

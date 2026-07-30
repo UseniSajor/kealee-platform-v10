@@ -16,9 +16,5 @@ export { LocalOcrProviderUnavailable } from './providers';
 export type { AutodeskCadProviderConfig, CadProvider, CadProviderCapability, CadExportProvider,
   ElevationProvider, EngineeringDocumentParser, EngineeringReportProvider, GeospatialProvider,
   OcrProvider, OcrToken } from './providers';
-export { DMV_ENGINEERING_JURISDICTIONS, assertJurisdictionAutomationReady,
-  getEngineeringJurisdiction } from './jurisdictions';
-export type { EngineeringJurisdiction, JurisdictionAutomationStatus,
-  JurisdictionSource } from './jurisdictions';
 export * from './phase1';
 export * from './site-feasibility';

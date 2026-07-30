@@ -7,7 +7,15 @@ enum SitePlanStageCode {
   PLAN_GENERATION
   COMPLIANCE_AUDIT
   PROFESSIONAL_REVIEW
+  SUBMITTED_TO_JURISDICTION
   SUBMISSION_CORRECTIONS
+}
+
+enum JurisdictionRuleKind {
+  CHECK
+  INPUT_SCHEMA
+  SOURCE_REGISTRY
+  COMPILED
 }
 
 enum SitePlanStageStatus {
@@ -75,6 +83,7 @@ model JurisdictionRuleVersion {
   agency             String
   ruleKey            String
   version            Int
+  kind               JurisdictionRuleKind @default(CHECK)
   projectTypes       String[] @default([])
   permitTypes        String[] @default([])
   applicability      Json
@@ -90,6 +99,7 @@ model JurisdictionRuleVersion {
 
   @@unique([jurisdictionCode, ruleKey, version])
   @@index([jurisdictionCode, supersededAt])
+  @@index([jurisdictionCode, kind, supersededAt])
   @@index([agency])
   @@map("jurisdiction_rule_versions")
 }
