@@ -1,10 +1,12 @@
 import { spawn } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import { Worker } from 'bullmq';
 import IORedis from 'ioredis';
 import { prisma } from '@kealee/database';
 import { KEALEE_QUEUES } from '@kealee/queue';
 import type { EngineeringJobData, EngineeringJobResult } from '@kealee/queue';
 import { uploadDocument } from '@kealee/storage';
+import { solveSiteFit, type SolveSiteFitInput } from '@kealee/os-engineering';
 
 if (!process.env.REDIS_URL || !process.env.DATABASE_URL) {
   throw new Error('engineering-worker requires REDIS_URL and DATABASE_URL');
@@ -14,6 +16,15 @@ const db = prisma as any;
 const TOOL_VERSION = 'kealee-engineering-worker-1.0.0';
 
 function runProcessor(data: EngineeringJobData, signal: AbortSignal): Promise<Record<string, unknown>> {
+  if (data.type === 'SOLVE_SCENARIO') {
+    const solved = solveSiteFit(data.options as unknown as SolveSiteFitInput);
+    return Promise.resolve({
+      ...solved,
+      confidence: solved.options.every(option => option.valid) ? 0.85 : 0.65,
+      automaticPercent: 100,
+      estimatedCostUsd: 0,
+    });
+  }
   return new Promise((resolve, reject) => {
     const child = spawn(process.env.ENGINEERING_PYTHON ?? 'python3',
       [process.env.ENGINEERING_PROCESSOR ?? '/app/services/engineering-worker/python/processor.py'],
@@ -30,6 +41,99 @@ function runProcessor(data: EngineeringJobData, signal: AbortSignal): Promise<Re
       try { resolve(JSON.parse(stdout)); } catch { reject(new Error('Engineering processor returned invalid JSON')); }
     });
     child.stdin.end(JSON.stringify(data));
+  });
+}
+
+async function persistScenarioResult(data: EngineeringJobData, result: Record<string, unknown>) {
+  if (data.type !== 'SOLVE_SCENARIO' || !data.scenarioId) return;
+  const solved = result as unknown as ReturnType<typeof solveSiteFit>;
+  const inputHash = createHash('sha256').update(JSON.stringify(data.options)).digest('hex');
+  await db.$transaction(async (tx: any) => {
+    await tx.feasibilityScenario.update({
+      where: { id: data.scenarioId },
+      data: {
+        siteFitStatus: 'SOLVED',
+        solverVersion: solved.solverVersion,
+        ruleSetVersion: solved.ruleSetVersion,
+        randomSeed: solved.randomSeed,
+        warnings: solved.warnings,
+        metrics: { options: solved.options.map(option => option.metrics) },
+        reviewStatus: 'PENDING',
+      },
+    });
+    for (const option of solved.options) {
+      const proposedBuilding = option.geometry.features.find(feature =>
+        feature.properties.layer === 'PROPOSED_BUILDING');
+      const saved = await tx.feasibilityScenarioOption.upsert({
+        where: { scenarioId_ordinal: { scenarioId: data.scenarioId, ordinal: option.ordinal } },
+        create: {
+          scenarioId: data.scenarioId,
+          ordinal: option.ordinal,
+          name: option.name,
+          geometryGeoJson: option.geometry,
+          buildingModel: proposedBuilding ?? {},
+          siteCoverage: option.metrics.siteCoveragePercent,
+          far: option.metrics.far,
+          grossFloorArea: option.metrics.grossFloorAreaSqFt,
+          netRentableArea: option.metrics.netRentableAreaSqFt,
+          unitCount: option.metrics.unitCount,
+          unitMix: data.options.program ?? {},
+          parkingSpaces: option.metrics.parkingSpaces,
+          landscapeArea: option.metrics.openSpaceSqFt,
+          imperviousArea: option.metrics.footprintAreaSqFt,
+          score: option.score,
+          validationReport: option.validationReport,
+          solverVersion: solved.solverVersion,
+          inputHash,
+        },
+        update: {
+          name: option.name,
+          geometryGeoJson: option.geometry,
+          buildingModel: proposedBuilding ?? {},
+          siteCoverage: option.metrics.siteCoveragePercent,
+          far: option.metrics.far,
+          grossFloorArea: option.metrics.grossFloorAreaSqFt,
+          netRentableArea: option.metrics.netRentableAreaSqFt,
+          unitCount: option.metrics.unitCount,
+          unitMix: data.options.program ?? {},
+          parkingSpaces: option.metrics.parkingSpaces,
+          landscapeArea: option.metrics.openSpaceSqFt,
+          imperviousArea: option.metrics.footprintAreaSqFt,
+          score: option.score,
+          validationReport: option.validationReport,
+          solverVersion: solved.solverVersion,
+          inputHash,
+        },
+      });
+      await tx.geometryValidationRun.upsert({
+        where: {
+          scenarioOptionId_inputHash: {
+            scenarioOptionId: saved.id,
+            inputHash,
+          },
+        },
+        create: {
+          scenarioOptionId: saved.id,
+          ruleSetVersion: solved.ruleSetVersion,
+          solverVersion: solved.solverVersion,
+          inputHash,
+          inputs: data.options,
+          results: option.validationReport.ruleResults,
+          errors: option.errors,
+          warnings: option.warnings,
+          valid: option.valid,
+        },
+        update: {
+          ruleSetVersion: solved.ruleSetVersion,
+          solverVersion: solved.solverVersion,
+          inputs: data.options,
+          results: option.validationReport.ruleResults,
+          errors: option.errors,
+          warnings: option.warnings,
+          valid: option.valid,
+        },
+      });
+    }
   });
 }
 
@@ -72,6 +176,7 @@ const worker = new Worker<EngineeringJobData, EngineeringJobResult>(KEALEE_QUEUE
         outputRefs: uploadedArtifacts.map(item => item.documentId),
         warnings, metrics: { processingMs: Date.now() - started,
           automaticPercent: Number(result.automaticPercent ?? 0) }, result, toolVersion: TOOL_VERSION };
+      await persistScenarioResult(job.data, result);
       await db.engineeringStage.update({ where: { idempotencyKey: job.data.idempotencyKey }, data: {
         status: output.status === 'COMPLETE' ? 'COMPLETE' : 'NEEDS_VERIFICATION',
         outputs: output, confidence: Math.min(1, Math.max(0, Number(result.confidence ?? 0))),

@@ -114,3 +114,74 @@ export async function uploadSitePlanSurvey(workflowId: string, file: File, crs: 
     `/api/site-plans/${workflowId}/extract-document`, { method: 'POST', body: form },
   )
 }
+
+export interface SiteFitScenarioResult {
+  id: string
+  name: string
+  siteFitStatus: string
+  reviewStatus: string
+  disclaimer: string
+  options: Array<{
+    id: string
+    ordinal: number
+    name: string
+    geometryGeoJson: unknown
+    siteCoverage: number
+    far: number
+    grossFloorArea: number | string
+    unitCount: number
+    parkingSpaces: number
+    score: number
+    validationReport: { professionalReviewRequired?: boolean; ruleResults?: unknown[] }
+  }>
+}
+
+export async function solveSiteFitScenario(workflowId: string, input: {
+  name: string
+  boundary: { type: 'Polygon'; coordinates: number[][][] }
+  crs: string
+  sourceReference: string
+  setback: number
+  targetUnits: number
+  averageUnitSqFt: number
+  stories: number
+  typology: 'SINGLE_FAMILY' | 'TOWNHOME' | 'GARDEN_MULTIFAMILY' |
+    'WRAP_PODIUM_MULTIFAMILY' | 'SURFACE_PARKING' | 'SMALL_MIXED_USE'
+}) {
+  const boundaryKey = JSON.stringify(input)
+  let checksum = 0
+  for (let index = 0; index < boundaryKey.length; index += 1) {
+    checksum = ((checksum << 5) - checksum + boundaryKey.charCodeAt(index)) | 0
+  }
+  return apiFetch<{ scenario: { scenarioId: string; jobId: string; status: string; disclaimer: string } }>(
+    `/api/site-plans/${workflowId}/feasibility/scenarios`, {
+      method: 'POST',
+      body: JSON.stringify({
+        name: input.name,
+        idempotencyKey: `owner-site-fit-${workflowId}-${Math.abs(checksum)}`,
+        boundary: input.boundary,
+        crs: input.crs,
+        source: { provider: 'project-owner GeoJSON upload', confidence: 0.8 },
+        ruleSet: {
+          version: `owner-confirmed-${new Date().toISOString().slice(0, 10)}`,
+          uniformSetback: input.setback,
+          sourceReferences: [input.sourceReference],
+          humanVerified: false,
+        },
+        program: {
+          typology: input.typology,
+          targetUnits: input.targetUnits,
+          averageUnitSqFt: input.averageUnitSqFt,
+          stories: input.stories,
+        },
+        randomSeed: Math.abs(checksum),
+      }),
+    },
+  )
+}
+
+export async function getSiteFitScenario(workflowId: string, scenarioId: string) {
+  return apiFetch<{ scenario: SiteFitScenarioResult }>(
+    `/api/site-plans/${workflowId}/feasibility/scenarios/${scenarioId}`,
+  )
+}

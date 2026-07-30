@@ -3099,6 +3099,9 @@ importers:
       '@kealee/database':
         specifier: workspace:*
         version: link:../../packages/database
+      '@kealee/os-engineering':
+        specifier: workspace:*
+        version: link:../../packages/os-engineering
       '@kealee/queue':
         specifier: workspace:*
         version: link:../../packages/queue

@@ -20,3 +20,4 @@ export { DMV_ENGINEERING_JURISDICTIONS, assertJurisdictionAutomationReady,
 export type { EngineeringJurisdiction, JurisdictionAutomationStatus,
   JurisdictionSource } from './jurisdictions';
 export * from './phase1';
+export * from './site-feasibility';

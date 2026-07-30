@@ -4,7 +4,8 @@ import { authenticateUser, requireRole } from '../../middleware/auth';
 import { applySitePlanWorkflowEvent, createSitePlan, getSitePlan, listOperationsQueue,
   listProfessionalReviews, recordProfessionalReviewDecision, generateSitePlanArtifact,
   cancelEngineeringJob, enqueueSitePlanDocumentExtraction, getEngineeringDrawingDownload,
-  getEngineeringJob, enqueueEngineeringTask, saveProfessionalReviewEdits, releaseProfessionalReview } from './site-plan.service';
+  getEngineeringJob, enqueueEngineeringTask, saveProfessionalReviewEdits, releaseProfessionalReview,
+  createAndSolveSiteFitScenario, getSiteFitScenario } from './site-plan.service';
 
 const geometrySchema = z.object({
   id: z.string().min(1).max(200),
@@ -85,15 +86,69 @@ export async function sitePlanRoutes(fastify: FastifyInstance) {
         jobId: z.string().min(8).max(200) }).parse(request.params);
       return reply.send({ job: await getEngineeringJob((request as any).user, workflowId, jobId) });
     });
+  fastify.post('/:workflowId/feasibility/scenarios', async (request, reply) => {
+    const { workflowId } = z.object({ workflowId: z.string().uuid() }).parse(request.params);
+    const polygon = z.object({
+      type: z.literal('Polygon'),
+      coordinates: z.array(z.array(z.array(z.number().finite()).length(2)).min(4)).length(1),
+    });
+    const body = z.object({
+      name: z.string().min(1).max(200),
+      idempotencyKey: z.string().min(8).max(200),
+      boundary: polygon,
+      crs: z.string().regex(/^EPSG:\d+$/i),
+      source: z.object({
+        provider: z.string().min(1).max(200),
+        effectiveDate: z.string().datetime().optional(),
+        confidence: z.number().min(0).max(1),
+      }),
+      ruleSet: z.object({
+        version: z.string().min(1).max(200),
+        uniformSetback: z.number().nonnegative().max(1000),
+        maxLotCoveragePercent: z.number().positive().max(100).optional(),
+        maxFar: z.number().positive().max(100).optional(),
+        maxHeightFeet: z.number().positive().max(5000).optional(),
+        parkingSpacesPerUnit: z.number().nonnegative().max(20).optional(),
+        sourceReferences: z.array(z.string().url()).min(1).max(20),
+        humanVerified: z.boolean(),
+      }),
+      program: z.object({
+        typology: z.enum(['SINGLE_FAMILY', 'TOWNHOME', 'GARDEN_MULTIFAMILY',
+          'WRAP_PODIUM_MULTIFAMILY', 'SURFACE_PARKING', 'SMALL_MIXED_USE']),
+        targetUnits: z.number().int().positive().max(100000),
+        averageUnitSqFt: z.number().positive().max(1000000),
+        stories: z.number().int().positive().max(200),
+        parkingSpacesPerUnit: z.number().nonnegative().max(20).optional(),
+      }),
+      objectiveWeights: z.record(z.string(), z.number().nonnegative()).optional(),
+      randomSeed: z.number().int(),
+    }).parse(request.body);
+    return reply.code(202).send({
+      scenario: await createAndSolveSiteFitScenario((request as any).user, workflowId, body as any),
+    });
+  });
+  fastify.get('/:workflowId/feasibility/scenarios/:scenarioId', async (request, reply) => {
+    const { workflowId, scenarioId } = z.object({
+      workflowId: z.string().uuid(),
+      scenarioId: z.string().uuid(),
+    }).parse(request.params);
+    return reply.send({
+      scenario: await getSiteFitScenario((request as any).user, workflowId, scenarioId),
+    });
+  });
   fastify.post('/:workflowId/jobs', { preHandler: requireRole(['admin', 'super_admin', 'pm', 'operations']) },
     async (request, reply) => {
       const { workflowId } = z.object({ workflowId: z.string().uuid() }).parse(request.params);
       const body = z.object({
         type: z.enum(['TRANSFORM_COORDINATES', 'GENERATE_SURFACE', 'GENERATE_CONTOURS',
-          'CALCULATE_CUT_FILL', 'ANALYZE_DRAINAGE', 'GENERATE_DXF', 'GENERATE_VECTOR_PDF',
+          'CALCULATE_CUT_FILL', 'ANALYZE_DRAINAGE', 'INGEST_SITE_DATA', 'PROCESS_SURVEY',
+          'EVALUATE_ZONING', 'SOLVE_SCENARIO', 'VALIDATE_SCENARIO', 'GENERATE_GEOJSON',
+          'GENERATE_GEOPACKAGE', 'GENERATE_DXF', 'GENERATE_IFC', 'GENERATE_VECTOR_PDF',
           'GENERATE_REPORT', 'RUN_COMPLIANCE_AUDIT']),
         stageCode: z.enum(['BASE_GEOMETRY_CREATION', 'TERRAIN_GRADING_ANALYSIS', 'STORMWATER_SCREENING',
-          'EROSION_SEDIMENT_CONTROL', 'COMPLIANCE_AUDIT', 'DRAWING_REPORT_GENERATION']),
+          'EROSION_SEDIMENT_CONTROL', 'FEASIBILITY_SCENARIO', 'COMPLIANCE_AUDIT',
+          'DRAWING_REPORT_GENERATION']),
+        scenarioId: z.string().uuid().optional(),
         idempotencyKey: z.string().min(8).max(200), options: z.record(z.string(), z.unknown()),
       }).parse(request.body);
       return reply.code(202).send({ job: await enqueueEngineeringTask((request as any).user, workflowId, body) });

@@ -3,12 +3,14 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { AlertTriangle, CheckCircle, Clock, FileText, Loader2, Map, ShieldCheck } from 'lucide-react'
-import { getAuthoritativeProjectStatus, listProjects, startInfillSitePlan, uploadSitePlanSurvey } from '@/lib/api/owner'
-import type { AuthoritativeProjectStatus, Project } from '@/lib/api/owner'
+import { getAuthoritativeProjectStatus, getSiteFitScenario, listProjects, solveSiteFitScenario,
+  startInfillSitePlan, uploadSitePlanSurvey } from '@/lib/api/owner'
+import type { AuthoritativeProjectStatus, Project, SiteFitScenarioResult } from '@/lib/api/owner'
 
 const STAGES = ['PARCEL_RESOLUTION', 'DOCUMENT_COLLECTION', 'FEASIBILITY', 'PLAN_GENERATION',
   'COMPLIANCE_AUDIT', 'PROFESSIONAL_REVIEW', 'SUBMISSION_CORRECTIONS']
 const label = (value: string) => value.toLowerCase().replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+const DISCLAIMER = 'Preliminary feasibility / not for construction / subject to licensed professional review.'
 
 export default function SitePlansPage() {
   const [rows, setRows] = useState<Array<{ project: Project; status: AuthoritativeProjectStatus }>>([])
@@ -16,6 +18,7 @@ export default function SitePlansPage() {
   const [error, setError] = useState<string | null>(null)
   const [busyProjectId, setBusyProjectId] = useState<string | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
+  const [siteFit, setSiteFit] = useState<Record<string, SiteFitScenarioResult>>({})
   async function refreshProject(project: Project) {
     const next = await getAuthoritativeProjectStatus(project.id)
     setRows(current => current.map(row => row.project.id === project.id ? { project, status: next } : row))
@@ -37,6 +40,41 @@ export default function SitePlansPage() {
       setNotice(`Survey accepted. Extraction job ${result.job.jobId} is queued for verification.`)
       await refreshProject(project)
     } catch (reason) { setError(reason instanceof Error ? reason.message : 'Unable to upload survey') }
+    finally { setBusyProjectId(null) }
+  }
+  async function solve(project: Project, workflowId: string, form: HTMLFormElement) {
+    const data = new FormData(form)
+    const file = data.get('boundary')
+    if (!(file instanceof File) || !file.size) return
+    setBusyProjectId(project.id); setError(null)
+    try {
+      const parsed = JSON.parse(await file.text()) as { type?: string; coordinates?: number[][][];
+        geometry?: { type?: string; coordinates?: number[][][] } }
+      const boundary = parsed.type === 'Polygon' ? parsed : parsed.geometry
+      if (boundary?.type !== 'Polygon' || !Array.isArray(boundary.coordinates)) {
+        throw new Error('Upload a GeoJSON Polygon or Feature with a Polygon geometry.')
+      }
+      const queued = await solveSiteFitScenario(workflowId, {
+        name: String(data.get('name') || 'Concept feasibility'),
+        boundary: { type: 'Polygon', coordinates: boundary.coordinates },
+        crs: String(data.get('crs') || 'EPSG:2248'),
+        sourceReference: String(data.get('sourceReference')),
+        setback: Number(data.get('setback')),
+        targetUnits: Number(data.get('targetUnits')),
+        averageUnitSqFt: Number(data.get('averageUnitSqFt')),
+        stories: Number(data.get('stories')),
+        typology: String(data.get('typology')) as Parameters<typeof solveSiteFitScenario>[1]['typology'],
+      })
+      setNotice(`Two deterministic site-fit options are being generated in job ${queued.scenario.jobId}.`)
+      for (let attempt = 0; attempt < 20; attempt += 1) {
+        await new Promise(resolve => setTimeout(resolve, 1500))
+        const result = await getSiteFitScenario(workflowId, queued.scenario.scenarioId)
+        if (result.scenario.siteFitStatus !== 'SOLVING') {
+          setSiteFit(current => ({ ...current, [workflowId]: result.scenario }))
+          break
+        }
+      }
+    } catch (reason) { setError(reason instanceof Error ? reason.message : 'Unable to solve site feasibility') }
     finally { setBusyProjectId(null) }
   }
   useEffect(() => {
@@ -99,6 +137,60 @@ export default function SitePlansPage() {
             onChange={event => void upload(project, workflow.id, event.target.files?.[0])}
             className="mt-2 block w-full text-sm text-slate-600" />
           <p className="mt-2 text-xs text-slate-500">Extracted values remain unverified until reviewed beside the source survey.</p>
+        </div>}
+        {workflow && <div className="mt-4 rounded-lg border border-slate-200 bg-white p-4">
+          <h3 className="text-sm font-semibold text-slate-900">Concept site-fit scenarios</h3>
+          <p className="mt-1 text-xs text-slate-600">Upload a projected GeoJSON boundary and confirm the sourced zoning assumptions used by the deterministic solver.</p>
+          <form className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4" onSubmit={event => {
+            event.preventDefault(); void solve(project, workflow.id, event.currentTarget)
+          }}>
+            <label className="text-xs font-medium text-slate-700">Boundary GeoJSON
+              <input name="boundary" type="file" accept=".geojson,application/geo+json,application/json" required className="mt-1 block w-full text-xs" />
+            </label>
+            <label className="text-xs font-medium text-slate-700">Scenario name
+              <input name="name" defaultValue="Concept feasibility" required className="mt-1 w-full rounded border border-slate-300 px-2 py-1.5" />
+            </label>
+            <label className="text-xs font-medium text-slate-700">Projected CRS
+              <input name="crs" defaultValue="EPSG:2248" pattern="EPSG:\d+" required className="mt-1 w-full rounded border border-slate-300 px-2 py-1.5" />
+            </label>
+            <label className="text-xs font-medium text-slate-700">Zoning source URL
+              <input name="sourceReference" type="url" required placeholder="https://…" className="mt-1 w-full rounded border border-slate-300 px-2 py-1.5" />
+            </label>
+            <label className="text-xs font-medium text-slate-700">Typology
+              <select name="typology" defaultValue="SINGLE_FAMILY" className="mt-1 w-full rounded border border-slate-300 px-2 py-1.5">
+                <option value="SINGLE_FAMILY">Single family</option><option value="TOWNHOME">Townhome</option>
+                <option value="GARDEN_MULTIFAMILY">Garden multifamily</option><option value="WRAP_PODIUM_MULTIFAMILY">Wrap/podium</option>
+                <option value="SURFACE_PARKING">Surface parking</option><option value="SMALL_MIXED_USE">Small mixed-use</option>
+              </select>
+            </label>
+            <label className="text-xs font-medium text-slate-700">Uniform setback (ft)
+              <input name="setback" type="number" min="0" step="0.1" defaultValue="10" required className="mt-1 w-full rounded border border-slate-300 px-2 py-1.5" />
+            </label>
+            <label className="text-xs font-medium text-slate-700">Target units
+              <input name="targetUnits" type="number" min="1" defaultValue="1" required className="mt-1 w-full rounded border border-slate-300 px-2 py-1.5" />
+            </label>
+            <label className="text-xs font-medium text-slate-700">Average unit area (sf)
+              <input name="averageUnitSqFt" type="number" min="1" defaultValue="1800" required className="mt-1 w-full rounded border border-slate-300 px-2 py-1.5" />
+            </label>
+            <label className="text-xs font-medium text-slate-700">Stories
+              <input name="stories" type="number" min="1" defaultValue="2" required className="mt-1 w-full rounded border border-slate-300 px-2 py-1.5" />
+            </label>
+            <div className="flex items-end"><button type="submit" disabled={busyProjectId === project.id}
+              className="rounded-lg bg-teal-700 px-4 py-2 text-xs font-semibold text-white disabled:opacity-50">
+              {busyProjectId === project.id ? 'Solving…' : 'Generate two options'}
+            </button></div>
+          </form>
+          <p className="mt-3 text-xs font-medium text-amber-800">{DISCLAIMER}</p>
+          {siteFit[workflow.id]?.options.length ? <div className="mt-4 overflow-x-auto"><table className="min-w-full text-left text-xs">
+            <thead><tr className="border-b text-slate-500"><th className="p-2">Option</th><th className="p-2">Units</th>
+              <th className="p-2">GFA</th><th className="p-2">Coverage</th><th className="p-2">FAR</th>
+              <th className="p-2">Parking</th><th className="p-2">Score</th><th className="p-2">Review</th></tr></thead>
+            <tbody>{siteFit[workflow.id].options.map(option => <tr key={option.id} className="border-b border-slate-100">
+              <td className="p-2 font-medium">{option.name}</td><td className="p-2">{option.unitCount}</td>
+              <td className="p-2">{Number(option.grossFloorArea).toLocaleString()} sf</td><td className="p-2">{option.siteCoverage.toFixed(1)}%</td>
+              <td className="p-2">{option.far.toFixed(2)}</td><td className="p-2">{option.parkingSpaces}</td>
+              <td className="p-2">{option.score.toFixed(1)}</td><td className="p-2 text-amber-700">Required</td>
+            </tr>)}</tbody></table></div> : null}
         </div>}
       </section>
     })}

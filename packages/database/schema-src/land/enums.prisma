@@ -58,3 +58,38 @@ enum AssessmentStatus {
   FLAGGED       // Issues found
   CLEARED       // Issues resolved
 }
+
+enum SiteSourceDatasetType {
+  SURVEY
+  PARCEL
+  ZONING
+  EASEMENT
+  FLOOD
+  WETLAND
+  UTILITY
+  TOPO
+  LIDAR
+  SOILS
+  AERIAL
+  USER_UPLOAD
+}
+
+enum SiteConstraintType {
+  PROPERTY_LINE
+  SETBACK
+  EASEMENT
+  FLOODPLAIN
+  WETLAND
+  BUFFER
+  UTILITY
+  RIGHT_OF_WAY
+  CRITICAL_AREA
+  SLOPE_LIMIT
+  EXCLUSION_ZONE
+}
+
+enum SiteConstraintSeverity {
+  INFORMATIONAL
+  WARNING
+  BLOCKING
+}

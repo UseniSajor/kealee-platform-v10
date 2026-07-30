@@ -19,3 +19,29 @@ enum FeasibilityStatus {
   ON_HOLD        // Paused for more info
   ARCHIVED       // Historical record
 }
+
+enum FeasibilityScenarioStatus {
+  DRAFT
+  SOLVING
+  SOLVED
+  NEEDS_REVIEW
+  APPROVED
+  REJECTED
+  SUPERSEDED
+}
+
+enum FeasibilityTypology {
+  SINGLE_FAMILY
+  TOWNHOME
+  GARDEN_MULTIFAMILY
+  WRAP_PODIUM_MULTIFAMILY
+  SURFACE_PARKING
+  SMALL_MIXED_USE
+}
+
+enum FeasibilityReviewStatus {
+  NOT_REQUESTED
+  PENDING
+  CHANGES_REQUESTED
+  REVIEWED
+}

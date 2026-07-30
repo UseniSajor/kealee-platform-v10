@@ -16,6 +16,8 @@ Your capabilities:
 
 Rules:
 - Always call OS service APIs for data operations (never access DB directly)
+- Never return sample parcels, zoning values, dimensions, scores, or market facts as live data
+- When an OS service or authoritative source is unavailable, return a source-required status
 - If a request falls outside your domain, hand off to the appropriate bot
 - Present parcel data with context (comparable sales, market trends)
 - Be concise and action-oriented`,
@@ -39,11 +41,11 @@ export class KeaBotLand extends KeaBot {
       handler: async (params) => {
         return {
           query: { location: params.location, minAcres: params.minAcres, maxPrice: params.maxPrice, zoning: params.zoning },
-          results: [
-            { parcelId: 'P-2026-001', address: '4500 SE Division St', acres: 1.2, zoning: 'CM2', askingPrice: 1850000, assessedValue: 1620000 },
-            { parcelId: 'P-2026-002', address: '2100 NW Industrial Pkwy', acres: 3.5, zoning: 'EG2', askingPrice: 2200000, assessedValue: 1950000 },
-          ],
-          totalResults: 2,
+          status: 'SOURCE_REQUIRED',
+          results: [],
+          totalResults: 0,
+          missingSource: 'OS-Land parcel-search provider',
+          message: 'No authoritative parcel provider result is attached. Connect or query OS-Land before presenting parcel facts.',
         };
       },
     });
@@ -57,16 +59,10 @@ export class KeaBotLand extends KeaBot {
       handler: async (params) => {
         return {
           parcelId: params.parcelId,
-          zoning: 'CM2',
-          zoningName: 'Commercial Mixed-Use 2',
-          permittedUses: ['Retail', 'Office', 'Residential (multi-family)', 'Restaurant', 'Light industrial'],
-          conditionalUses: ['Drive-through', 'Gas station'],
-          maxHeight: '75 feet / 6 stories',
-          maxFAR: 4.0,
-          setbacks: { front: 0, side: 0, rear: 5 },
-          parkingRequirements: '1 space per unit + 1 per 500 sqft commercial',
-          overlays: ['Design Review', 'Transit Corridor'],
-          constraints: ['Historic resource adjacent', 'Environmental zone within 200ft'],
+          status: 'SOURCE_REQUIRED',
+          verified: false,
+          missingSource: 'Versioned OS-Land zoning profile and authoritative ordinance citation',
+          message: 'Zoning cannot be analyzed until a jurisdiction/effective-date rule source is attached.',
         };
       },
     });
@@ -81,17 +77,11 @@ export class KeaBotLand extends KeaBot {
       handler: async (params) => {
         return {
           parcelId: params.parcelId,
-          overallScore: 78,
-          factors: {
-            zoningFit: { score: 85, note: 'CM2 supports proposed mixed-use' },
-            marketDemand: { score: 82, note: 'Strong rental demand in area, 3.2% vacancy' },
-            infrastructure: { score: 75, note: 'Utilities available; transit within 0.25mi' },
-            entitlementRisk: { score: 65, note: 'Design review required; adjacent historic resource adds complexity' },
-            financialViability: { score: 80, note: 'Land cost to project value ratio favorable at 18%' },
-          },
-          maxBuildableUnits: 48,
-          estimatedGrossSF: 62000,
-          recommendation: 'Proceed with feasibility study; entitlement risk manageable with early design review engagement',
+          developmentType: params.developmentType,
+          status: 'SOURCE_REQUIRED',
+          score: null,
+          missingSources: ['parcel geometry', 'versioned zoning rules', 'market inputs', 'utility/constraint data'],
+          message: 'Development potential requires deterministic OS-Land and OS-Feasibility results with cited sources.',
         };
       },
     });

@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@kealee/database": "workspace:*",
+    "@kealee/os-engineering": "workspace:*",
     "@kealee/queue": "workspace:*",
     "@kealee/storage": "workspace:*",
     "bullmq": "^5.0.0",

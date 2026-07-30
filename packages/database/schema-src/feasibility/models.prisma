@@ -132,6 +132,21 @@ model FeasibilityScenario {
   isBaseline    Boolean   @default(false)
   sortOrder     Int       @default(0)
 
+  // Deterministic site-fit scenario versioning
+  parentScenarioId  String?
+  typology          FeasibilityTypology?
+  siteFitStatus     FeasibilityScenarioStatus @default(DRAFT)
+  inputs            Json?
+  objectiveWeights  Json?
+  ruleSetVersion    String?
+  solverVersion     String?
+  randomSeed        Int?
+  metrics           Json?
+  score             Float?
+  warnings          Json?
+  reviewStatus      FeasibilityReviewStatus @default(NOT_REQUESTED)
+  selectedOptionId  String?
+
   // Unit mix
   unitMix       Json      // Array of { type, count, avgSqFt, pricePerUnit }
   totalUnits    Int       @default(0)
@@ -170,9 +185,75 @@ model FeasibilityScenario {
   updatedAt DateTime @updatedAt
 
   study FeasibilityStudy @relation(fields: [studyId], references: [id], onDelete: Cascade)
+  parentScenario FeasibilityScenario? @relation("FeasibilityScenarioVersions", fields: [parentScenarioId], references: [id], onDelete: SetNull)
+  childScenarios FeasibilityScenario[] @relation("FeasibilityScenarioVersions")
+  options FeasibilityScenarioOption[]
 
   @@index([studyId])
+  @@index([studyId, siteFitStatus])
+  @@index([parentScenarioId])
   @@map("feasibility_scenarios")
+}
+
+model FeasibilityScenarioOption {
+  id                 String   @id @default(uuid())
+  scenarioId         String
+  ordinal            Int
+  name               String
+  geometryGeoJson    Json
+  buildingModel      Json
+  siteCoverage       Float
+  far                Float
+  grossFloorArea     Decimal  @db.Decimal(14, 2)
+  netRentableArea    Decimal? @db.Decimal(14, 2)
+  unitCount          Int
+  unitMix            Json
+  parkingSpaces      Int
+  circulationArea    Decimal? @db.Decimal(14, 2)
+  landscapeArea      Decimal? @db.Decimal(14, 2)
+  imperviousArea     Decimal? @db.Decimal(14, 2)
+  preliminaryCutFill Json?
+  earthworkConfidence Decimal? @db.Decimal(5, 4)
+  estimateId         String?
+  proFormaReference  String?
+  score              Float
+  validationReport   Json
+  geoJsonArtifactId  String?
+  dxfArtifactId      String?
+  ifcArtifactId      String?
+  pdfArtifactId      String?
+  solverVersion      String
+  inputHash          String
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  scenario FeasibilityScenario @relation(fields: [scenarioId], references: [id], onDelete: Cascade)
+  validationRuns GeometryValidationRun[]
+
+  @@unique([scenarioId, ordinal])
+  @@index([scenarioId, score])
+  @@map("feasibility_scenario_options")
+}
+
+model GeometryValidationRun {
+  id              String   @id @default(uuid())
+  scenarioOptionId String
+  ruleSetVersion  String
+  solverVersion   String
+  inputHash       String
+  inputs          Json
+  results         Json
+  errors          Json
+  warnings        Json
+  valid           Boolean
+  createdAt       DateTime @default(now())
+
+  scenarioOption FeasibilityScenarioOption @relation(fields: [scenarioOptionId], references: [id], onDelete: Cascade)
+
+  @@unique([scenarioOptionId, inputHash])
+  @@index([scenarioOptionId, createdAt])
+  @@index([valid, createdAt])
+  @@map("geometry_validation_runs")
 }
 
 // Categorized cost assumptions with sources

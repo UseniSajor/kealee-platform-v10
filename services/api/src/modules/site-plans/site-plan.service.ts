@@ -2,6 +2,7 @@ import { prisma } from '@kealee/database';
 import { SITE_PLAN_STAGES, applySitePlanEvent, assertJurisdictionAutomationReady,
   classifyEngineeringDocument, createSitePlanWorkflow, generateCivilSitePlan } from '@kealee/os-engineering';
 import type { CivilSitePlanInput, SitePlanWorkflowEvent } from '@kealee/os-engineering';
+import { PRELIMINARY_FEASIBILITY_DISCLAIMER } from '@kealee/os-engineering';
 import { createQueue, KEALEE_QUEUES } from '@kealee/queue';
 import type { EngineeringJobData } from '@kealee/queue';
 import { getAiAutomationConfig } from '@kealee/core-config';
@@ -62,7 +63,9 @@ export async function extractSitePlanDocument(user: { id: string; role: string; 
     system: 'You extract reviewable civil geometry from plats and surveys. Never infer a surveyed fact that is not legible.',
     messages: [{ role: 'user', content: content as any }] });
   const raw = response.content.find(block => block.type === 'text');
-  if (!raw || raw.type !== 'text') throw new ValidationError('Document extraction returned no structured result');
+  if (!raw || raw.type !== 'text' || typeof raw.text !== 'string') {
+    throw new ValidationError('Document extraction returned no structured result');
+  }
   let parsed: any;
   try { parsed = JSON.parse(raw.text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '')); }
   catch { throw new ValidationError('Document extraction returned invalid JSON'); }
@@ -179,7 +182,7 @@ export async function enqueueEngineeringTask(
   user: { id: string; role: string; organizationId?: string | null },
   workflowId: string,
   input: { type: EngineeringJobData['type']; stageCode: string; idempotencyKey: string;
-    options: Record<string, unknown> },
+    scenarioId?: string; options: Record<string, unknown> },
 ) {
   if (!OPERATIONS_ROLES.has(user.role.toLowerCase())) throw new AuthorizationError('Operations access denied');
   const workflow = await db.sitePlanWorkflow.findUnique({ where: { id: workflowId } });
@@ -191,6 +194,7 @@ export async function enqueueEngineeringTask(
   if (!engineeringProject) throw new ValidationError('Upload and classify source documents before running engineering tasks');
   const data: EngineeringJobData = { type: input.type, organizationId: workflow.organizationId,
     projectId: workflow.projectId, engineeringProjectId: engineeringProject.id, workflowId,
+    scenarioId: input.scenarioId,
     stageCode: input.stageCode, idempotencyKey: input.idempotencyKey, actorId: user.id,
     options: input.options, requestedAt: new Date().toISOString() };
   await db.engineeringStage.upsert({ where: { idempotencyKey: input.idempotencyKey },
@@ -204,6 +208,201 @@ export async function enqueueEngineeringTask(
     jobId: engineeringQueueJobId(input.idempotencyKey),
     attempts: 3, backoff: { type: 'exponential', delay: 5000 } });
   return { jobId: String(job.id), status: await job.getState() };
+}
+
+export async function createAndSolveSiteFitScenario(
+  user: { id: string; role: string; organizationId?: string | null },
+  workflowId: string,
+  input: {
+    name: string;
+    idempotencyKey: string;
+    boundary: { type: 'Polygon'; coordinates: number[][][] };
+    crs: string;
+    source: { provider: string; effectiveDate?: string; confidence: number };
+    ruleSet: {
+      version: string;
+      uniformSetback: number;
+      maxLotCoveragePercent?: number;
+      maxFar?: number;
+      maxHeightFeet?: number;
+      parkingSpacesPerUnit?: number;
+      sourceReferences: string[];
+      humanVerified: boolean;
+    };
+    program: {
+      typology: 'SINGLE_FAMILY' | 'TOWNHOME' | 'GARDEN_MULTIFAMILY' |
+        'WRAP_PODIUM_MULTIFAMILY' | 'SURFACE_PARKING' | 'SMALL_MIXED_USE';
+      targetUnits: number;
+      averageUnitSqFt: number;
+      stories: number;
+      parkingSpacesPerUnit?: number;
+    };
+    objectiveWeights?: Record<string, number>;
+    randomSeed: number;
+  },
+) {
+  const workflow = await db.sitePlanWorkflow.findUnique({ where: { id: workflowId } });
+  if (!workflow) throw new NotFoundError('SitePlanWorkflow', workflowId);
+  await assertProjectAccess(workflow.projectId, user.id);
+  if (!['DOCUMENT_COLLECTION', 'FEASIBILITY', 'PLAN_GENERATION'].includes(workflow.currentStage)) {
+    throw new ValidationError('Site-fit scenarios are available during document collection, feasibility, or plan generation');
+  }
+  const boundaryHash = createHash('sha256').update(JSON.stringify(input.boundary)).digest('hex');
+  const existingStage = await db.engineeringStage.findUnique({ where: { idempotencyKey: input.idempotencyKey } });
+  if (existingStage) {
+    const existingJob = await getEngineeringQueue().getJob(engineeringQueueJobId(input.idempotencyKey));
+    return {
+      scenarioId: String(existingStage.inputs?.scenarioId ?? ''),
+      jobId: existingJob ? String(existingJob.id) : engineeringQueueJobId(input.idempotencyKey),
+      status: existingJob ? await existingJob.getState() : existingStage.status,
+      disclaimer: PRELIMINARY_FEASIBILITY_DISCLAIMER,
+    };
+  }
+  const engineeringProject = await db.engineeringProject.upsert({
+    where: { organizationId_projectId: {
+      organizationId: workflow.organizationId,
+      projectId: workflow.projectId,
+    } },
+    create: {
+      organizationId: workflow.organizationId,
+      projectId: workflow.projectId,
+      sitePlanWorkflowId: workflow.id,
+      jurisdictionCode: String(workflow.metadata?.jurisdictionCode ?? 'UNVERIFIED'),
+      status: 'ACTIVE',
+    },
+    update: { sitePlanWorkflowId: workflow.id },
+  });
+  const created = await db.$transaction(async (tx: any) => {
+    const dataset = await tx.siteSourceDataset.upsert({
+      where: { organizationId_projectId_type_checksum: {
+        organizationId: workflow.organizationId,
+        projectId: workflow.projectId,
+        type: 'USER_UPLOAD',
+        checksum: boundaryHash,
+      } },
+      create: {
+        organizationId: workflow.organizationId,
+        projectId: workflow.projectId,
+        parcelId: workflow.parcelId,
+        type: 'USER_UPLOAD',
+        provider: input.source.provider,
+        retrievedAt: new Date(),
+        effectiveDate: input.source.effectiveDate ? new Date(input.source.effectiveDate) : null,
+        crs: input.crs,
+        linearUnit: 'FT',
+        checksum: boundaryHash,
+        confidence: input.source.confidence,
+        metadata: { format: 'GeoJSON', boundary: input.boundary },
+        createdBy: user.id,
+      },
+      update: {},
+    });
+    let study = await tx.feasibilityStudy.findFirst({
+      where: { projectId: workflow.projectId, orgId: workflow.organizationId },
+      orderBy: { updatedAt: 'desc' },
+    });
+    study ??= await tx.feasibilityStudy.create({
+      data: {
+        projectId: workflow.projectId,
+        parcelId: workflow.parcelId,
+        orgId: workflow.organizationId,
+        title: `${input.name} feasibility`,
+        productType: input.program.typology.toLowerCase(),
+        targetUnits: input.program.targetUnits,
+        createdBy: user.id,
+      },
+    });
+    const solverInput = {
+      boundary: input.boundary,
+      crs: input.crs,
+      linearUnit: 'FT',
+      sourceDatasetIds: [dataset.id],
+      ruleSet: input.ruleSet,
+      program: input.program,
+      objectiveWeights: input.objectiveWeights,
+      randomSeed: input.randomSeed,
+    };
+    const scenario = await tx.feasibilityScenario.create({
+      data: {
+        studyId: study.id,
+        name: input.name,
+        typology: input.program.typology,
+        siteFitStatus: 'SOLVING',
+        inputs: solverInput,
+        objectiveWeights: input.objectiveWeights ?? {},
+        ruleSetVersion: input.ruleSet.version,
+        randomSeed: input.randomSeed,
+        unitMix: input.program,
+        totalUnits: input.program.targetUnits,
+        reviewStatus: 'NOT_REQUESTED',
+        warnings: [PRELIMINARY_FEASIBILITY_DISCLAIMER],
+      },
+    });
+    const data: EngineeringJobData = {
+      type: 'SOLVE_SCENARIO',
+      organizationId: workflow.organizationId,
+      projectId: workflow.projectId,
+      engineeringProjectId: engineeringProject.id,
+      workflowId,
+      scenarioId: scenario.id,
+      stageCode: 'FEASIBILITY_SCENARIO',
+      idempotencyKey: input.idempotencyKey,
+      actorId: user.id,
+      options: solverInput,
+      requestedAt: new Date().toISOString(),
+    };
+    await tx.engineeringStage.create({
+      data: {
+        engineeringProjectId: engineeringProject.id,
+        stageCode: 'FEASIBILITY_SCENARIO',
+        status: 'READY',
+        inputs: data,
+        outputs: {},
+        sourceProvenance: { sourceDatasetId: dataset.id, boundaryHash },
+        confidence: 0,
+        blockingIssues: [],
+        calculationVersion: 'kealee-site-fit-1.0.0',
+        auditHistory: [{ at: new Date().toISOString(), action: 'QUEUED', actorId: user.id }],
+        idempotencyKey: input.idempotencyKey,
+      },
+    });
+    return { scenario, data };
+  });
+  const job = await getEngineeringQueue().add('SOLVE_SCENARIO', created.data, {
+    jobId: engineeringQueueJobId(input.idempotencyKey),
+    attempts: 3,
+    backoff: { type: 'exponential', delay: 5000 },
+  });
+  return {
+    scenarioId: created.scenario.id,
+    jobId: String(job.id),
+    status: await job.getState(),
+    disclaimer: PRELIMINARY_FEASIBILITY_DISCLAIMER,
+  };
+}
+
+export async function getSiteFitScenario(
+  user: { id: string; role: string; organizationId?: string | null },
+  workflowId: string,
+  scenarioId: string,
+) {
+  const workflow = await db.sitePlanWorkflow.findUnique({ where: { id: workflowId } });
+  if (!workflow) throw new NotFoundError('SitePlanWorkflow', workflowId);
+  await assertProjectAccess(workflow.projectId, user.id);
+  const scenario = await db.feasibilityScenario.findFirst({
+    where: {
+      id: scenarioId,
+      study: { projectId: workflow.projectId, orgId: workflow.organizationId },
+    },
+    include: {
+      options: {
+        orderBy: { ordinal: 'asc' },
+        include: { validationRuns: { orderBy: { createdAt: 'desc' }, take: 1 } },
+      },
+    },
+  });
+  if (!scenario) throw new NotFoundError('FeasibilityScenario', scenarioId);
+  return { ...scenario, disclaimer: PRELIMINARY_FEASIBILITY_DISCLAIMER };
 }
 
 export async function cancelEngineeringJob(user: { id: string; role: string; organizationId?: string | null },

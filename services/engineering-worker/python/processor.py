@@ -157,6 +157,7 @@ def analyze_drainage(data):
 def drawing_artifacts(data):
     options = data["options"]
     geometries = options.get("geometry", [])
+    disclaimer = "Preliminary feasibility / not for construction / subject to licensed professional review."
     doc = ezdxf.new("R2010")
     doc.header["$INSUNITS"] = 2 if options.get("units", "FEET") == "FEET" else 6
     model = doc.modelspace()
@@ -178,7 +179,7 @@ def drawing_artifacts(data):
     pdf_buffer = io.BytesIO()
     pdf = canvas.Canvas(pdf_buffer, pagesize=landscape(ARCH_D))
     pdf.setTitle(options.get("name", "Kealee Infill Site Plan"))
-    pdf.drawString(36, 36, "PRELIMINARY — NOT FOR CONSTRUCTION — PROFESSIONAL REVIEW REQUIRED")
+    pdf.drawString(36, 36, disclaimer)
     for item in geometries:
         pts = item["vertices"]
         if len(pts) < 2:
@@ -194,7 +195,7 @@ def drawing_artifacts(data):
     report_buffer = io.BytesIO()
     report = canvas.Canvas(report_buffer, pagesize=landscape(ARCH_D))
     report.setTitle("Kealee Preliminary Civil Calculation Report")
-    report.drawString(36, 560, "PRELIMINARY CIVIL CALCULATION REPORT — PROFESSIONAL REVIEW REQUIRED")
+    report.drawString(36, 560, disclaimer)
     report.drawString(36, 535, f'Coordinate system: {options.get("crs", "UNKNOWN")}')
     report.drawString(36, 515, f'Units: {options.get("units", "UNKNOWN")}')
     report.drawString(36, 495, f'Geometry layers: {len(geometries)}')
@@ -202,8 +203,11 @@ def drawing_artifacts(data):
     report.save()
     manifest = {"crs": options.get("crs"), "units": options.get("units"), "revision": options.get("revision", 1),
                 "layers": sorted(set(item["layer"] for item in geometries)),
-                "notes": ["NOT A BOUNDARY SURVEY", "PRELIMINARY — PROFESSIONAL REVIEW REQUIRED"]}
+                "notes": ["NOT A BOUNDARY SURVEY", disclaimer]}
+    geojson = options.get("geoJson", {"type": "FeatureCollection", "features": []})
     return {"artifacts": [
+        {"kind": "GEOJSON", "filename": "site-feasibility.geojson",
+         "base64": base64.b64encode(json.dumps(geojson, separators=(",", ":")).encode()).decode()},
         {"kind": "DXF", "filename": "site-plan.dxf",
          "base64": base64.b64encode(dxf_buffer.getvalue().encode()).decode()},
         {"kind": "PREVIEW", "filename": "site-plan.svg",
@@ -213,7 +217,7 @@ def drawing_artifacts(data):
         {"kind": "REPORT", "filename": "civil-calculation-report.pdf",
          "base64": base64.b64encode(report_buffer.getvalue()).decode()},
     ], "manifest": manifest, "validationReport": {"valid": bool(geometries), "warnings": []},
-        "warnings": ["Drawing package is preliminary and unsealed."], "confidence": .9,
+        "warnings": [disclaimer], "confidence": .9,
         "automaticPercent": 90, "estimatedCostUsd": .25, "toolVersion": TOOL_VERSION}
 
 def compliance_audit(data):

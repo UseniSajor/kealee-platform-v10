@@ -1,0 +1,10 @@
+# Pin native worker dependencies independently from the lightweight API image.
+# GDAL is supplied by Debian so its Python binding matches the system library.
+geopandas==1.0.1
+shapely==2.1.1
+pyproj==3.7.1
+rasterio==1.4.3
+numpy==2.2.6
+ezdxf==1.4.2
+ifcopenshell==0.8.3
+reportlab==4.4.2
