@@ -1,5 +1,6 @@
 import { spawn } from 'node:child_process';
 import { createHash } from 'node:crypto';
+import { createServer } from 'node:http';
 import { Worker } from 'bullmq';
 import IORedis from 'ioredis';
 import { prisma } from '@kealee/database';
@@ -15,6 +16,15 @@ if (!process.env.REDIS_URL || !process.env.DATABASE_URL) {
 const connection = new IORedis(process.env.REDIS_URL, { maxRetriesPerRequest: null });
 const db = prisma as any;
 const TOOL_VERSION = 'kealee-engineering-worker-1.0.0';
+const healthServer = createServer((request, response) => {
+  if (request.url !== '/health') {
+    response.writeHead(404).end();
+    return;
+  }
+  response.writeHead(200, { 'content-type': 'application/json' });
+  response.end(JSON.stringify({ status: 'ok', service: 'engineering-worker', toolVersion: TOOL_VERSION }));
+});
+healthServer.listen(Number(process.env.PORT ?? 3000), '0.0.0.0');
 
 async function runProcessor(data: EngineeringJobData, signal: AbortSignal): Promise<Record<string, unknown>> {
   if (data.type === 'SOLVE_SCENARIO') {
@@ -241,6 +251,7 @@ worker.on('completed', job => console.log(JSON.stringify({ event: 'engineering_j
   type: job.data.type })));
 
 async function shutdown() {
+  healthServer.close();
   await worker.close(); await connection.quit(); await db.$disconnect(); process.exit(0);
 }
 process.on('SIGTERM', shutdown);
