@@ -7,12 +7,12 @@ import urllib.parse
 import base64
 import io
 
-import numpy as np
-from scipy.spatial import Delaunay
-from pyproj import Transformer
 import ezdxf
 from reportlab.pdfgen import canvas
-from reportlab.lib.pagesizes import landscape, ARCH_D
+from reportlab.lib.pagesizes import landscape
+from reportlab.lib.units import inch
+
+ARCH_D = (24 * inch, 36 * inch)
 
 TOOL_VERSION = "kealee-engineering-python-1.0.0"
 
@@ -77,6 +77,8 @@ def survey_ocr(data):
         os.unlink(path)
 
 def transform_coordinates(data):
+    from pyproj import Transformer
+
     options = data["options"]
     transformer = Transformer.from_crs(options["sourceCrs"], options["targetCrs"], always_xy=True)
     points = [{"x": x, "y": y, **({"z": point["z"]} if "z" in point else {})}
@@ -86,6 +88,9 @@ def transform_coordinates(data):
             "estimatedCostUsd": 0.01, "toolVersion": TOOL_VERSION}
 
 def generate_surface(data):
+    import numpy as np
+    from scipy.spatial import Delaunay
+
     points = data["options"]["points"]
     if len(points) < 3:
         raise ValueError("At least three verified points are required")
@@ -99,6 +104,9 @@ def generate_surface(data):
             "toolVersion": TOOL_VERSION}
 
 def generate_contours(data):
+    import numpy as np
+    from scipy.spatial import Delaunay
+
     points = data["options"]["points"]
     interval = float(data["options"].get("interval", 1))
     if len(points) < 3 or interval <= 0:

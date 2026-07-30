@@ -297,6 +297,15 @@ export async function createAndSolveSiteFitScenario(
       },
       update: {},
     });
+    const srid = Number(input.crs.split(':')[1]);
+    await tx.$executeRawUnsafe(`
+      UPDATE "site_source_datasets"
+      SET "spatialGeometry" = extensions.ST_SetSRID(
+        extensions.ST_GeomFromGeoJSON($1),
+        $2
+      )
+      WHERE "id" = $3
+    `, JSON.stringify(input.boundary), srid, dataset.id);
     let study = await tx.feasibilityStudy.findFirst({
       where: { projectId: workflow.projectId, orgId: workflow.organizationId },
       orderBy: { updatedAt: 'desc' },

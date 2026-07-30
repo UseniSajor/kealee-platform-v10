@@ -61,6 +61,17 @@ export interface SolveSiteFitInput {
   program: SiteFitProgram;
   objectiveWeights?: Partial<SiteFitObjectiveWeights>;
   randomSeed: number;
+  /**
+   * Exact topology result produced by the PostGIS worker. Production scenario
+   * jobs require this value; the pure solver keeps its local fallback for unit
+   * tests and offline design tooling only.
+   */
+  precomputedEnvelope?: {
+    geometry: GeoJsonPolygon;
+    areaSqFt: number;
+    engine: 'POSTGIS';
+    engineVersion: string;
+  };
 }
 
 export interface SiteFitOption {
@@ -177,10 +188,18 @@ export function solveSiteFit(input: SolveSiteFitInput): SolveSiteFitResult {
   const topology = validateGeometryTopology(boundary);
   if (!topology.valid) throw new Error(`Invalid boundary geometry: ${topology.errors.join('; ')}`);
   const exclusions = (input.exclusions ?? []).map(ringPoints);
-  if (exclusions.length) {
+  if (exclusions.length && !input.precomputedEnvelope) {
     throw new Error('Exclusion polygons require the topology-safe PostGIS/Shapely worker and are not supported by the initial solver');
   }
-  const envelope = calculateBuildableEnvelope(boundary, exclusions, input.ruleSet.uniformSetback);
+  const envelope = input.precomputedEnvelope
+    ? {
+        geometry: ringPoints(input.precomputedEnvelope.geometry),
+        grossArea: input.precomputedEnvelope.areaSqFt,
+        excludedArea: 0,
+        netArea: input.precomputedEnvelope.areaSqFt,
+        warnings: [`Buildable envelope calculated by PostGIS ${input.precomputedEnvelope.engineVersion}.`],
+      }
+    : calculateBuildableEnvelope(boundary, exclusions, input.ruleSet.uniformSetback);
   if (envelope.netArea <= 0) throw new Error('Constraints leave no positive buildable area');
 
   const parcelArea = polygonArea(boundary);

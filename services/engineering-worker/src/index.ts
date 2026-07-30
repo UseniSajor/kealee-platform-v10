@@ -7,6 +7,7 @@ import { KEALEE_QUEUES } from '@kealee/queue';
 import type { EngineeringJobData, EngineeringJobResult } from '@kealee/queue';
 import { uploadDocument } from '@kealee/storage';
 import { solveSiteFit, type SolveSiteFitInput } from '@kealee/os-engineering';
+import { buildPostgisEnvelope, validateOptionsWithPostgis } from './postgis-site-fit';
 
 if (!process.env.REDIS_URL || !process.env.DATABASE_URL) {
   throw new Error('engineering-worker requires REDIS_URL and DATABASE_URL');
@@ -15,15 +16,22 @@ const connection = new IORedis(process.env.REDIS_URL, { maxRetriesPerRequest: nu
 const db = prisma as any;
 const TOOL_VERSION = 'kealee-engineering-worker-1.0.0';
 
-function runProcessor(data: EngineeringJobData, signal: AbortSignal): Promise<Record<string, unknown>> {
+async function runProcessor(data: EngineeringJobData, signal: AbortSignal): Promise<Record<string, unknown>> {
   if (data.type === 'SOLVE_SCENARIO') {
-    const solved = solveSiteFit(data.options as unknown as SolveSiteFitInput);
-    return Promise.resolve({
+    const input = data.options as unknown as SolveSiteFitInput;
+    const precomputedEnvelope = await buildPostgisEnvelope(db, input);
+    const solved = solveSiteFit({ ...input, precomputedEnvelope });
+    solved.options = await validateOptionsWithPostgis(
+      db,
+      { ...input, precomputedEnvelope },
+      solved.options,
+    );
+    return {
       ...solved,
       confidence: solved.options.every(option => option.valid) ? 0.85 : 0.65,
       automaticPercent: 100,
       estimatedCostUsd: 0,
-    });
+    };
   }
   return new Promise((resolve, reject) => {
     const child = spawn(process.env.ENGINEERING_PYTHON ?? 'python3',
@@ -105,6 +113,19 @@ async function persistScenarioResult(data: EngineeringJobData, result: Record<st
           inputHash,
         },
       });
+      const spatialGeometry = proposedBuilding?.geometry;
+      const srid = Number(String((data.options as any).crs).split(':')[1]);
+      if (!spatialGeometry || !Number.isInteger(srid)) {
+        throw new Error(`Option ${option.ordinal} is missing valid PostGIS persistence inputs`);
+      }
+      await tx.$executeRawUnsafe(`
+        UPDATE "feasibility_scenario_options"
+        SET "spatialGeometry" = extensions.ST_SetSRID(
+          extensions.ST_GeomFromGeoJSON($1),
+          $2
+        )
+        WHERE "id" = $3
+      `, JSON.stringify(spatialGeometry), srid, saved.id);
       await tx.geometryValidationRun.upsert({
         where: {
           scenarioOptionId_inputHash: {

@@ -63,7 +63,7 @@ export async function generateText(opts: {
   );
 
   const block = response.content[0];
-  const text = block.type === 'text' ? block.text : '';
+  const text = block.type === 'text' ? (block.text ?? '') : '';
 
   return {
     text,
@@ -178,7 +178,7 @@ export async function analyzeImage(opts: {
   );
 
   const block = response.content[0];
-  const text = block.type === 'text' ? block.text : '';
+  const text = block.type === 'text' ? (block.text ?? '') : '';
 
   return {
     text,

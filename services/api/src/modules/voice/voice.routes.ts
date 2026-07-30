@@ -88,7 +88,7 @@ export async function voiceRoutes(fastify: FastifyInstance) {
     const websocketPlugin = require('@fastify/websocket');
     await fastify.register(websocketPlugin);
 
-    fastify.get('/conversation-relay', { websocket: true } as any, (socket: any, request: FastifyRequest) => {
+    const conversationRelayHandler = (socket: any, request: FastifyRequest) => {
       const provider = new TwilioVoiceProvider({
         accountSid: config.twilioAccountSid!, authToken: config.twilioAuthToken!,
         voiceNumber: config.twilioVoiceNumber!, conversationRelayUrl: config.twilioConversationRelayUrl!,
@@ -163,6 +163,7 @@ export async function voiceRoutes(fastify: FastifyInstance) {
         }).catch((error: Error) => fastify.log.error({ event: 'voice.persistence.failure', callSid,
           error: error.message }, 'Unable to close voice session record'));
       });
-    });
+    };
+    fastify.get('/conversation-relay', { websocket: true } as any, conversationRelayHandler as any);
   }
 }

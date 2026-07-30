@@ -21,3 +21,14 @@ running `CREATE EXTENSION postgis`, then verify `PostGIS_Full_Version()`, the
 engineering geometry GiST index, RLS, and pre-migration row counts. Revert the
 service image if startup fails; do not attempt an ephemeral package install in a
 running database container.
+
+Production feasibility jobs fail closed when PostGIS is unavailable. The
+engineering worker calculates setback/exclusion geometry in PostGIS and
+revalidates proposed footprints with exact topology predicates before
+persisting an option.
+
+The Railway `postgis/postgis:17-3.5` image does not provide the SSL wrapper used
+by Railway's `postgres-ssl` template. Application services should use the
+private Railway database URL. After an image change, compare `datcollversion`
+with `pg_database_collation_actual_version`; if they differ, schedule `REINDEX`
+before refreshing collation metadata.
