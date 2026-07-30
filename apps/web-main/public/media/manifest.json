@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "updatedAt": "2026-07-30T21:04:23.778Z",
+  "updatedAt": "2026-07-30T23:10:22.662Z",
   "cards": {
     "home:design": {
       "photoUrl": "https://rkreqfpkxavqpsqexbfs.supabase.co/storage/v1/object/public/marketing-media/home/design.jpg",
@@ -118,15 +118,15 @@
       "beforePhotoUrl": "/media/service-photos/product-interior-before.jpg"
     },
     "product:facade": {
-      "photoUrl": "/media/service-photos/product-facade.jpg",
+      "photoUrl": "https://rkreqfpkxavqpsqexbfs.supabase.co/storage/v1/object/public/marketing-media/product/facade.jpg",
+      "beforePhotoUrl": "https://rkreqfpkxavqpsqexbfs.supabase.co/storage/v1/object/public/marketing-media/product/facade-before.jpg",
       "photoAlt": "Exterior Facade — Kealee AI concept",
       "mediaType": "video",
       "narrativeId": "exterior-install",
-      "videoNarrative": "Photorealistic construction documentary, DMV suburban home, natural daylight, no on-screen text, no logos, workers in PPE with faces away from camera, believable tools and materials, 24fps cinematic timelapse feel, seamless timelapse showing full project process: Prep → Install → Curb appeal. DMV suburban home, natural daylight, no on-screen text, no logos, workers in PPE with faces away from camera, believable tools and materials, 24fps cinematic timelapse feel, exterior scaffold, siding removal, window protection; DMV suburban home, natural daylight, no on-screen text, no logos, workers in PPE with faces away from camera, believable tools and materials, 24fps cinematic timelapse feel, new fiber cement siding and trim install, coordinated crew; DMV suburban home, natural daylight, no on-screen text, no logos, workers in PPE with faces away from camera, believable tools and materials, 24fps cinematic timelapse feel, completed facade refresh, clean landscaping, inviting front entry. Smooth transitions, no text overlays.",
+      "videoNarrative": "Photorealistic construction documentary, DMV suburban home, natural daylight, no on-screen text, no logos, diverse crew of professional construction workers including black, white, and Hispanic men and women, wearing standard safety vests, hard hats, work shirts and jeans, no hazmat suits, believable tools and materials, 24fps cinematic slow-motion feel, slow-paced motion, seamless slow-motion process showing project flow: Prep → Install → Curb appeal. DMV suburban home, natural daylight, no on-screen text, no logos, diverse crew of professional construction workers including black, white, and Hispanic men and women, wearing standard safety vests, hard hats, work shirts and jeans, no hazmat suits, believable tools and materials, 24fps cinematic slow-motion feel, slow-paced motion, exterior scaffold, siding removal, window protection; DMV suburban home, natural daylight, no on-screen text, no logos, diverse crew of professional construction workers including black, white, and Hispanic men and women, wearing standard safety vests, hard hats, work shirts and jeans, no hazmat suits, believable tools and materials, 24fps cinematic slow-motion feel, slow-paced motion, new fiber cement siding and trim install, coordinated crew; DMV suburban home, natural daylight, no on-screen text, no logos, diverse crew of professional construction workers including black, white, and Hispanic men and women, wearing standard safety vests, hard hats, work shirts and jeans, no hazmat suits, believable tools and materials, 24fps cinematic slow-motion feel, slow-paced motion, completed facade refresh, clean landscaping, inviting front entry. Slow steady pacing, regular speed movement of workers, smooth transitions, no text overlays.",
       "generatedAt": "2026-05-26T02:56:28.993Z",
-      "promptUsed": "Completed modern Exterior Facade after professional renovation, magazine quality, same camera angle. Magazine-quality interior renovation hero, Kealee AI concept aesthetic",
-      "source": "generated",
-      "beforePhotoUrl": "/media/service-photos/product-facade-before.jpg"
+      "promptUsed": "Photorealistic square photo of a traditional American home exterior after curb-appeal refresh, fresh painted clapboard siding in classic colonial white, crisp black shutters, bold red entry door, tidy boxwood foundation plantings, warm golden hour light, magazine editorial quality, no people",
+      "source": "generated"
     },
     "product:deck": {
       "photoUrl": "/media/service-photos/product-deck.jpg",
