@@ -1,7 +1,7 @@
 FROM node:22-bookworm-slim
 
 RUN apt-get update \
-  && apt-get install -y --no-install-recommends python3 python3-pip python3-venv \
+  && apt-get install -y --no-install-recommends python3 python3-dev python3-pip python3-venv \
      tesseract-ocr tesseract-ocr-eng libgdal-dev gdal-bin proj-bin libproj-dev \
      libgl1 libglib2.0-0 build-essential \
   && rm -rf /var/lib/apt/lists/*
