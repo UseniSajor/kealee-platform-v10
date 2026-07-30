@@ -31,13 +31,13 @@ const CATEGORIES = [
   {
     id: 'permits' as const,
     label: 'Permits & Compliance',
-    description: 'We file, track, and respond to comments. DC · MD · VA.',
+    description: 'Jurisdiction-aware filing, tracking, and reviewer response where available nationwide.',
     accent: '#4A8FA8',
   },
   {
     id: 'estimation' as const,
     label: 'Cost Estimation',
-    description: 'RSMeans-validated, lender-ready cost documentation.',
+    description: 'Regional cost-reference documentation with professional-review options.',
     accent: '#4A8FA8',
   },
   {

@@ -93,7 +93,7 @@ export default function DeveloperConceptEnginePage() {
                   Start Developer Concept <ArrowRight className="h-5 w-5" />
                 </Link>
                 <Link
-                  href="/developers"
+                  href="/marketplace?audience=developer"
                   className="inline-flex items-center gap-2 rounded-xl border border-white/20 px-7 py-3.5 text-base font-semibold text-white/80 hover:text-white hover:border-white/40 transition-all"
                 >
                   View Developer Platform

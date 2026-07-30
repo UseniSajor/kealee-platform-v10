@@ -24,7 +24,7 @@ export function MarketplaceSection() {
             </span>
             <Heading className="mt-3">Vetted Contractors, Every Trade</Heading>
             <p className="mt-4 text-lg text-gray-600">
-              Every contractor in the Kealee network is licensed, insured, background-checked, and reputation-scored. No random directories — just verified professionals ready to build.
+              Marketplace providers display their current credential-review status, service area, and project fit. Confirm the license, insurance, contract, and scope shown for your engagement before hiring.
             </p>
 
             <ul className="mt-6 space-y-2.5">

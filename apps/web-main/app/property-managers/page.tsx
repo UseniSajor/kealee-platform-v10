@@ -25,7 +25,7 @@ const BENEFITS = [
   {
     icon: '🔨',
     title: 'Vetted Contractor Network',
-    desc: 'Every contractor is licensed, insured, background-checked, and scored. AI matching finds the right trade for each job.',
+    desc: 'Marketplace providers display credential-review status, coverage, and project fit for evaluation before engagement.',
   },
   {
     icon: '💳',
@@ -94,7 +94,7 @@ export default function PropertyManagersPage() {
         badge="For Property Managers"
         headline="Manage Every Improvement Project with Confidence"
         highlight="with Confidence"
-        subhead="Capital improvements, tenant work, maintenance upgrades, and building renovations — all coordinated through one platform. AI scoping, vetted contractors, escrow-protected payments."
+        subhead="Capital improvements, tenant work, maintenance upgrades, and building renovations — coordinated through one platform with planning tools, marketplace sourcing, and payment controls when enabled."
         cta={{ label: 'Start a Project', href: '/intake' }}
         secondaryCta={{ label: 'Talk to Our Team', href: '/contact' }}
         trustItems={['Portfolio-wide visibility', 'Escrow-protected payments', 'Vetted contractor network', 'AI scoping included']}
@@ -163,7 +163,7 @@ export default function PropertyManagersPage() {
           },
           {
             question: 'How does escrow-protected payment work for my clients?',
-            answer: "Funds are held in escrow and released only when you verify each milestone is complete. Your clients' capital is never released without your approval.",
+            answer: "When payment protection is enabled for an engagement, its displayed release rules and customer approvals govern each milestone. Review the engagement terms before funding.",
           },
           {
             question: 'What contractor types are in the Kealee network?',

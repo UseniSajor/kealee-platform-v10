@@ -22,7 +22,7 @@ const ROLES = [
     icon:        '🔨',
     label:       'Contractor',
     description: 'General contractors, specialty trades, and construction professionals',
-    href:        '/contractors',
+    href:        '/marketplace?audience=contractor',
     accent:      '#E8793A',
   },
 ]

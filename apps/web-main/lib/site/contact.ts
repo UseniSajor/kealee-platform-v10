@@ -14,13 +14,14 @@ export const KEALEE_EMAIL = 'hello@kealee.com'
 export const KEALEE_HQ_CITY = 'Oxon Hill'
 export const KEALEE_HQ_STATE = 'MD'
 export const KEALEE_HQ_ZIP = '20745'
-export const KEALEE_HQ_DISPLAY = 'Oxon Hill, MD (HQ) — serving DC · MD · VA'
+export const KEALEE_HQ_DISPLAY = 'Oxon Hill, MD headquarters — serving project owners nationwide'
 
 /** Geo for JSON-LD (Oxon Hill town center) */
 export const KEALEE_GEO_LAT = 38.8037
 export const KEALEE_GEO_LNG = -76.9897
 
 export const KEALEE_SERVICE_AREAS = [
+  'United States',
   'Oxon Hill MD',
   'Prince George\'s County MD',
   'Washington DC',

@@ -275,7 +275,6 @@ export default function IntakePage() {
   const sqftFromUrl = searchParams.get('sqft') ?? ''
   const upsellFromIntake = searchParams.get('fromIntake') ?? ''
   const upsellSourcePath = searchParams.get('sourcePath') ?? ''
-
   const [step, setStep] = useState<'details' | 'review'>('details')
   const [formError, setFormError] = useState('')
   const [submitting, setSubmitting] = useState(false)
@@ -341,6 +340,10 @@ export default function IntakePage() {
   }, [projectPath, projectId])
 
   const [formData, setFormData] = useState({
+    clientType: 'owner' as 'owner' | 'contractor' | 'developer' | 'service-provider',
+    companyName: '',
+    proposalClientName: '',
+    industryType: '',
     firstName: '',
     lastName: '',
     email: '',
@@ -355,6 +358,17 @@ export default function IntakePage() {
     budgetComfort: '',
     squareFootage: sqftFromUrl,
     timeline: 'flexible',
+    estimatePurpose: '',
+    projectPhase: '',
+    unitCount: '',
+    bidDueDate: '',
+    procurementApproach: '',
+    pricingInstructions: '',
+    riskNotes: '',
+    scopeQuantities: '',
+    equipmentPlan: '',
+    serviceFrequency: '',
+    costAssumptions: '',
   })
 
   // Pre-fill squareFootage from Pascal estimate context stored in sessionStorage
@@ -395,7 +409,13 @@ export default function IntakePage() {
       if (saved) {
         const parsed = JSON.parse(saved)
         if (parsed.formData) {
-          setFormData(prev => ({ ...prev, ...parsed.formData }))
+          setFormData(prev => ({
+            ...prev,
+            ...parsed.formData,
+            // Professional estimate requests belong exclusively in the
+            // marketplace. Never restore an older professional draft here.
+            clientType: 'owner',
+          }))
         }
         if (parsed.uploadedFiles) {
           setUploadedFiles(parsed.uploadedFiles)
@@ -431,6 +451,7 @@ export default function IntakePage() {
   const needsAreaPhoto = intakeRequiresAreaPhoto(projectPath)
   const needsConstructionDocs = intakeRequiresConstructionDocuments(projectPath)
   const benefitsFromFloorplan = intakeBenefitsFromFloorplanSketch(projectPath)
+  const isEstimateIntake = projectPath === 'cost_estimate' || projectPath === 'certified_estimate'
 
   const agentType = AGENT_MAP[projectPath] || 'design'
   const bundlePreview = upsellSourcePath
@@ -766,6 +787,14 @@ export default function IntakePage() {
     if (!formData.firstName.trim()) { setFormError('First name is required.'); return }
     if (!formData.email.trim()) { setFormError('Email is required.'); return }
     if (!formData.address.trim()) { setFormError('Project address is required.'); return }
+    if (isEstimateIntake && formData.clientType !== 'owner' && !formData.estimatePurpose) {
+      setFormError('Select how you plan to use the estimate.')
+      return
+    }
+    if (isEstimateIntake && formData.clientType !== 'owner' && formData.description.trim().length < 10) {
+      setFormError('Add a brief scope of work so the estimator can price the correct work.')
+      return
+    }
     if (!validateUploadRequirements()) return
     softCapture() // capture lead before payment step
     trackEvent('intake_completion', { project_path: projectPath, photo_count: uploadedFiles.length, document_count: uploadedDocs.length })
@@ -795,6 +824,10 @@ export default function IntakePage() {
           projectAddress: formData.address,
           attribution,
           formData: {
+            clientType: formData.clientType,
+            companyName: formData.companyName,
+            proposalClientName: formData.proposalClientName,
+            industryType: formData.industryType,
             description: formData.description,
             propertyDetails: formData.propertyDetails,
             stylePreferences: formData.stylePreferences,
@@ -804,6 +837,17 @@ export default function IntakePage() {
             budgetComfort: formData.budgetComfort,
             squareFootage: formData.squareFootage,
             timeline: formData.timeline,
+            estimatePurpose: formData.estimatePurpose,
+            projectPhase: formData.projectPhase,
+            unitCount: formData.unitCount,
+            bidDueDate: formData.bidDueDate,
+            procurementApproach: formData.procurementApproach,
+            pricingInstructions: formData.pricingInstructions,
+            riskNotes: formData.riskNotes,
+            scopeQuantities: formData.scopeQuantities,
+            equipmentPlan: formData.equipmentPlan,
+            serviceFrequency: formData.serviceFrequency,
+            costAssumptions: formData.costAssumptions,
             uploadedFiles: [...uploadedFiles, ...uploadedDocs].map(f => f.url),
             ...attribution,
             ...(sceneId ? { sceneId } : {}),
@@ -937,12 +981,21 @@ export default function IntakePage() {
                 </div>
 
                 <div>
-                  <h1 className="text-2xl font-extrabold text-slate-900">Tell us what you’re hoping to change</h1>
+                  <h1 className="text-2xl font-extrabold text-slate-900">
+                    {isEstimateIntake && formData.clientType === 'contractor'
+                      ? 'Price the job with confidence'
+                      : isEstimateIntake && formData.clientType === 'developer'
+                        ? 'Build an estimate for your development'
+                        : isEstimateIntake && formData.clientType === 'service-provider'
+                          ? 'Build a client-ready estimate and proposal'
+                        : 'Tell us what you’re hoping to change'}
+                  </h1>
                   <p className="text-slate-500 mt-1 text-sm">
-                    Answer in your own words. Your progress saves on this device, and you can review everything before payment.
+                    {isEstimateIntake && formData.clientType !== 'owner'
+                      ? 'Share the commercial and technical inputs your estimator needs. Your progress saves on this device.'
+                      : 'Answer in your own words. Your progress saves on this device, and you can review everything before payment.'}
                   </p>
                 </div>
-
                 {formError && (
                   <div className="flex items-start gap-3 rounded-xl bg-red-50 border border-red-200 p-4 text-red-700">
                     <AlertCircle className="h-5 w-5 shrink-0 mt-0.5" />
@@ -1048,21 +1101,137 @@ export default function IntakePage() {
                   />
                 </div>
 
+                {isEstimateIntake && formData.clientType !== 'owner' && (
+                  <div className="space-y-5 rounded-xl border border-slate-200 bg-slate-50/70 p-5">
+                    <div>
+                      <h2 className="text-base font-bold text-slate-900">
+                        {formData.clientType === 'contractor'
+                          ? 'Bid and pricing brief'
+                          : formData.clientType === 'developer'
+                            ? 'Development underwriting brief'
+                            : 'Client estimate and proposal brief'}
+                      </h2>
+                      <p className="mt-1 text-xs text-slate-500">
+                        These preset questions help us structure divisions, allowances, alternates, and estimate assumptions correctly.
+                      </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-semibold text-slate-800 mb-1.5">Estimate use</label>
+                        <select value={formData.estimatePurpose} onChange={e => setFormData(d => ({ ...d, estimatePurpose: e.target.value }))} className="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20">
+                          <option value="">Select the primary use</option>
+                          {(formData.clientType === 'contractor'
+                            ? ['Hard bid / tender', 'Conceptual pricing', 'Subcontractor leveling', 'Change order pricing', 'Value engineering']
+                            : formData.clientType === 'developer'
+                              ? ['Site acquisition', 'Concept underwriting', 'Capital approval', 'Lender package', 'GMP / budget validation']
+                              : ['Client estimate / proposal', 'Hard bid / tender', 'Recurring service agreement', 'Change order', 'Maintenance or service call']
+                          ).map(value => <option key={value} value={value}>{value}</option>)}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-slate-800 mb-1.5">
+                          {formData.clientType === 'service-provider' ? 'Client project stage' : 'Current project phase'}
+                        </label>
+                        <select value={formData.projectPhase} onChange={e => setFormData(d => ({ ...d, projectPhase: e.target.value }))} className="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20">
+                          <option value="">Select a phase</option>
+                          {['Due diligence', 'Concept / programming', 'Schematic design', 'Design development', 'Construction documents', 'Bidding / procurement', 'In construction'].map(value => <option key={value} value={value}>{value}</option>)}
+                        </select>
+                      </div>
+                    </div>
+
+                    {formData.clientType === 'developer' && (
+                      <div>
+                        <label className="block text-sm font-semibold text-slate-800 mb-1.5">Program size / unit count</label>
+                        <input type="text" value={formData.unitCount} onChange={e => setFormData(d => ({ ...d, unitCount: e.target.value }))} className="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20" placeholder="e.g. 24 apartments + 3,500 SF retail, 18 parking spaces" />
+                      </div>
+                    )}
+
+                    {formData.clientType === 'contractor' && (
+                      <div>
+                        <label className="block text-sm font-semibold text-slate-800 mb-1.5">Bid due date</label>
+                        <input type="date" value={formData.bidDueDate} onChange={e => setFormData(d => ({ ...d, bidDueDate: e.target.value }))} className="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20" />
+                      </div>
+                    )}
+
+                    {formData.clientType === 'service-provider' && (
+                      <>
+                        <div>
+                          <label className="block text-sm font-semibold text-slate-800 mb-1.5">Industry / trade</label>
+                          <select value={formData.industryType} onChange={e => setFormData(d => ({ ...d, industryType: e.target.value }))} className="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20">
+                            <option value="">Select the primary service</option>
+                            {['General contracting', 'Demolition', 'Waste management / hauling', 'Excavation / sitework', 'Concrete / masonry', 'Carpentry / framing', 'Roofing / exterior', 'Electrical', 'Plumbing', 'HVAC / mechanical', 'Fire protection', 'Drywall / painting / finishes', 'Landscaping', 'Equipment rental', 'Material supplier', 'Engineering / consulting', 'Inspection / testing', 'Other specialty service'].map(value => <option key={value} value={value}>{value}</option>)}
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-semibold text-slate-800 mb-1.5">Proposal client / recipient</label>
+                          <input type="text" value={formData.proposalClientName} onChange={e => setFormData(d => ({ ...d, proposalClientName: e.target.value }))} className="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20" placeholder="Client company and decision-maker, if known" />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-semibold text-slate-800 mb-1.5">Scope items and estimated quantities</label>
+                          <textarea value={formData.scopeQuantities} onChange={e => setFormData(d => ({ ...d, scopeQuantities: e.target.value }))} rows={3} className="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20 resize-none" placeholder="List labor, materials, service items, and quantities using the units your company prices: hours, square feet, tons, cubic yards, fixtures, pulls…" />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-semibold text-slate-800 mb-1.5">Crew, equipment, and material plan</label>
+                          <textarea value={formData.equipmentPlan} onChange={e => setFormData(d => ({ ...d, equipmentPlan: e.target.value }))} rows={3} className="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20 resize-none" placeholder="Crew composition, equipment, containers, rentals, major materials, subcontractors, mobilizations, or client-furnished items…" />
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-semibold text-slate-800 mb-1.5">Schedule / service frequency</label>
+                            <input type="text" value={formData.serviceFrequency} onChange={e => setFormData(d => ({ ...d, serviceFrequency: e.target.value }))} className="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20" placeholder="e.g. 3 pulls/week for 6 months" />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-semibold text-slate-800 mb-1.5">Cost and fee assumptions</label>
+                            <input type="text" value={formData.costAssumptions} onChange={e => setFormData(d => ({ ...d, costAssumptions: e.target.value }))} className="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20" placeholder="Labor rates, material basis, travel, delivery, disposal, rental, minimum charge, taxes…" />
+                          </div>
+                        </div>
+                      </>
+                    )}
+
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-800 mb-1.5">
+                        {formData.clientType === 'service-provider' ? 'Service and commercial approach' : 'Procurement and contracting approach'}
+                      </label>
+                      <textarea value={formData.procurementApproach} onChange={e => setFormData(d => ({ ...d, procurementApproach: e.target.value }))} rows={3} className="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20 resize-none" placeholder={formData.clientType === 'contractor' ? 'Self-performed trades, known subcontractors, union/open shop, owner-furnished items, prevailing wage…' : formData.clientType === 'developer' ? 'Design-bid-build, design-build, negotiated GMP, phased packages, public/private procurement…' : 'Lump sum, unit price, time and materials, recurring fee, minimum charge, included quantities, overages, mobilization, markup…'} />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-800 mb-1.5">Pricing instructions, alternates, and allowances</label>
+                      <textarea value={formData.pricingInstructions} onChange={e => setFormData(d => ({ ...d, pricingInstructions: e.target.value }))} rows={3} className="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20 resize-none" placeholder="Required alternates, tax/bond/insurance treatment, escalation date, contingency, general conditions, fee, exclusions, or allowance targets…" />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-800 mb-1.5">Known site, schedule, and scope risks</label>
+                      <textarea value={formData.riskNotes} onChange={e => setFormData(d => ({ ...d, riskNotes: e.target.value }))} rows={3} className="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20 resize-none" placeholder={formData.clientType === 'contractor' ? 'Occupied work, restricted access, night work, long-lead equipment, incomplete details, hazardous materials…' : formData.clientType === 'developer' ? 'Entitlements, utility upgrades, demolition, environmental conditions, tenant phasing, affordability requirements…' : 'Access, work hours, permits, safety requirements, concealed conditions, hazardous materials, exclusions, long-lead items, client dependencies…'} />
+                    </div>
+                  </div>
+                )}
+
                 {/* Description */}
                 <div>
                   <label className="block text-sm font-semibold text-slate-800 mb-1.5">
-                    What are you hoping to change?
+                    {isEstimateIntake && formData.clientType !== 'owner' ? 'Scope of work and deliverable expectations' : 'What are you hoping to change?'}
                   </label>
                   <textarea
                     value={formData.description}
                     onChange={e => setFormData(d => ({ ...d, description: e.target.value }))}
                     rows={4}
                     className="w-full rounded-lg border border-slate-300 px-4 py-3 text-sm focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20 resize-none"
-                    placeholder={getIntakeCheckoutProjectDescriptionPlaceholder(projectPath)}
+                    placeholder={isEstimateIntake && formData.clientType !== 'owner'
+                      ? formData.clientType === 'service-provider'
+                        ? 'Describe the client site, requested service, schedule, proposal format, and what the customer expects to see.'
+                        : 'Describe the work by building area or trade, what is included, and the level of estimate detail you need.'
+                      : getIntakeCheckoutProjectDescriptionPlaceholder(projectPath)}
                   />
-                  <p className="mt-1.5 text-xs text-slate-500">Why we ask: this becomes the plain-language project brief used across your concept, estimate, and permit roadmap.</p>
+                  <p className="mt-1.5 text-xs text-slate-500">
+                    {isEstimateIntake && formData.clientType !== 'owner'
+                      ? 'This becomes the estimator’s scope narrative and basis-of-estimate brief.'
+                      : 'Why we ask: this becomes the plain-language project brief used across your concept, estimate, and permit roadmap.'}
+                  </p>
                 </div>
 
+                {(!isEstimateIntake || formData.clientType === 'owner') && (
+                  <>
                 <div>
                   <label className="block text-sm font-semibold text-slate-800 mb-1.5">Tell us about the property</label>
                   <textarea value={formData.propertyDetails} onChange={e => setFormData(d => ({ ...d, propertyDetails: e.target.value }))} rows={3} className="w-full rounded-lg border border-slate-300 px-4 py-3 text-sm focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20 resize-none" placeholder="For example: 1960s two-story home, occupied during construction, narrow side access…" />
@@ -1103,6 +1272,8 @@ export default function IntakePage() {
                   </select>
                   <p className="mt-1.5 text-xs text-slate-500">This is a planning comfort range—not a commitment or a contractor quote.</p>
                 </div>
+                  </>
+                )}
 
                 {/* Q8 — Project Photos */}
                 <div>
@@ -1319,6 +1490,9 @@ export default function IntakePage() {
                 <div className="rounded-xl bg-white border border-slate-200 divide-y divide-slate-100 shadow-sm">
                   {[
                     { label: 'Name', value: `${formData.firstName} ${formData.lastName}`.trim() || '—' },
+                    isEstimateIntake ? { label: 'Client type', value: formData.clientType === 'owner' ? 'Project owner' : formData.clientType === 'contractor' ? 'Contractor / GC' : formData.clientType === 'developer' ? 'Developer' : 'Trade / service provider' } : null,
+                    formData.companyName ? { label: 'Company', value: formData.companyName } : null,
+                    formData.proposalClientName ? { label: 'Proposal client', value: formData.proposalClientName } : null,
                     { label: 'Email', value: formData.email },
                     { label: 'Address', value: formData.address },
                     formData.phone ? { label: 'Phone', value: formData.phone } : null,
@@ -1329,6 +1503,18 @@ export default function IntakePage() {
                     formData.mustStay ? { label: 'Must stay', value: formData.mustStay } : null,
                     formData.problemsToSolve ? { label: 'Problems to solve', value: formData.problemsToSolve } : null,
                     formData.budgetComfort ? { label: 'Budget comfort', value: formData.budgetComfort.replace(/-/g, ' ') } : null,
+                    formData.estimatePurpose ? { label: 'Estimate use', value: formData.estimatePurpose } : null,
+                    formData.projectPhase ? { label: 'Project phase', value: formData.projectPhase } : null,
+                    formData.unitCount ? { label: 'Program / units', value: formData.unitCount } : null,
+                    formData.bidDueDate ? { label: 'Bid due', value: formData.bidDueDate } : null,
+                    formData.procurementApproach ? { label: 'Procurement', value: formData.procurementApproach } : null,
+                    formData.pricingInstructions ? { label: 'Pricing instructions', value: formData.pricingInstructions } : null,
+                    formData.riskNotes ? { label: 'Known risks', value: formData.riskNotes } : null,
+                    formData.industryType ? { label: 'Industry / trade', value: formData.industryType } : null,
+                    formData.scopeQuantities ? { label: 'Scope quantities', value: formData.scopeQuantities } : null,
+                    formData.equipmentPlan ? { label: 'Crew / equipment', value: formData.equipmentPlan } : null,
+                    formData.serviceFrequency ? { label: 'Service frequency', value: formData.serviceFrequency } : null,
+                    formData.costAssumptions ? { label: 'Cost assumptions', value: formData.costAssumptions } : null,
                     (uploadedFiles.length > 0 || uploadedDocs.length > 0) ? { label: 'Files', value: [uploadedFiles.length > 0 ? `${uploadedFiles.length} photo${uploadedFiles.length > 1 ? 's' : ''}` : null, uploadedDocs.length > 0 ? `${uploadedDocs.length} document${uploadedDocs.length > 1 ? 's' : ''}` : null].filter(Boolean).join(', ') + ' uploaded' } : null,
                   ].filter(Boolean).map(row => (
                     <div key={row!.label} className="flex items-start gap-4 px-5 py-3">

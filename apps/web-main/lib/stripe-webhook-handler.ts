@@ -18,6 +18,7 @@ import { mergeMarketingMetadata } from '@/lib/marketing/types'
 import { fulfillRevenueProduct } from '@/lib/revenue-fulfillment'
 import { resolveProductAutomationRoute } from '@/lib/product-automation'
 import { ensureAutonomousFulfillmentRun } from '@/lib/autonomous-fulfillment'
+import * as Sentry from '@sentry/nextjs'
 
 export async function processStripeWebhookEvent(
   event: Stripe.Event,
@@ -53,6 +54,11 @@ async function handlePaymentFailed(pi: Stripe.PaymentIntent, req: NextRequest): 
   console.log(
     `[stripe-webhook] payment_intent.payment_failed intakeId=${intakeId} reason="${failureMessage}"`,
   )
+  Sentry.captureMessage('Customer payment failed', {
+    level: 'warning',
+    tags: { area: 'sales-funnel', stage: 'payment-failed', projectPath: projectPath ?? 'unknown' },
+    extra: { intakeId, paymentIntentId: pi.id, failureMessage },
+  })
 
   if (!intakeId || !source) return
 
@@ -106,7 +112,12 @@ async function handleCheckoutCompleted(
 
   if (!intakeId || !projectPath) {
     console.error('[stripe-webhook] Missing intakeId or projectPath in metadata', meta)
-    return
+    Sentry.captureMessage('Paid checkout missing fulfillment metadata', {
+      level: 'fatal',
+      tags: { area: 'payment-fulfillment', stage: 'orphan-paid-order' },
+      extra: { stripeSessionId: session.id, stripeEventId, metadata: meta },
+    })
+    throw new Error(`Paid checkout ${session.id} is missing intakeId or projectPath`)
   }
 
   const supabase = getSupabaseAdmin()
@@ -120,6 +131,11 @@ async function handleCheckoutCompleted(
 
   if (fetchErr) {
     console.error('[stripe-webhook] intake fetch failed:', fetchErr.message, intakeId)
+    Sentry.captureMessage('Paid checkout has no retrievable intake', {
+      level: 'fatal',
+      tags: { area: 'payment-fulfillment', stage: 'orphan-paid-order', projectPath },
+      extra: { intakeId, stripeSessionId: session.id, databaseError: fetchErr.message },
+    })
     throw new Error(`Intake fetch failed: ${fetchErr.message}`)
   }
 

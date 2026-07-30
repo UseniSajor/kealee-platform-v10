@@ -77,7 +77,7 @@ const SECTIONS = [
       },
       {
         q: 'How are contractors verified?',
-        a: 'Every contractor in our network undergoes license verification, insurance confirmation, and background screening. We also collect and display verified project reviews.',
+        a: 'Marketplace profiles display the credential-review steps completed and available license or insurance status. Requirements vary by trade and jurisdiction, and customers should confirm current credentials before engagement.',
       },
       {
         q: 'How does Kealee screen contractors?',

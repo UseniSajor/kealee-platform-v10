@@ -37,7 +37,7 @@ const JOURNEY_STEPS = [
     color: '#6B46C1',
     href: '/intake/professional_drawings',
     cta: 'Get Permit-Ready Drawings',
-    description: 'Licensed architect and PE assigned through the Kealee platform. Permit-ready drawing set stamped and delivered — required by every DMV jurisdiction before permit submission.',
+    description: 'A jurisdiction-qualified architect and PE are assigned through the Kealee platform when required. Permit-ready drawings are prepared and stamped for the project location.',
   },
   {
     n: '03',
@@ -49,7 +49,7 @@ const JOURNEY_STEPS = [
     color: '#16A34A',
     href: '/permits',
     cta: 'File My Permit',
-    description: 'Kealee files your permit with the correct agency, responds to reviewer comments, and tracks approval — across DC, Maryland, and Virginia.',
+    description: 'Kealee coordinates filing with the correct local agency, responds to reviewer comments, and tracks approval based on the project jurisdiction.',
   },
   {
     n: '04',
@@ -305,7 +305,7 @@ export default function BuildPageClient() {
       <div className="bg-[#1A2B4A] pt-20 pb-28 px-4">
         <div className="mx-auto max-w-4xl text-center">
           <p className="text-[#E8724B] text-xs font-bold uppercase tracking-widest mb-4">
-            The Complete Build Platform · DC · MD · VA
+            The Complete Preconstruction Platform · Nationwide
           </p>
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-white mb-5 leading-tight">
             Your project gets built here.
@@ -564,7 +564,7 @@ export default function BuildPageClient() {
             ))}
           </div>
           <p className="text-center text-xs text-slate-400 mt-5">
-            Ranges reflect completed projects in the DMV area. Your concept report includes a property-specific estimate.
+            Ranges are national planning allowances. Your concept report includes a location- and property-specific estimate.
           </p>
         </div>
       </div>

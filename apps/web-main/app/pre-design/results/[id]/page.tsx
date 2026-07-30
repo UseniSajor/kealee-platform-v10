@@ -687,7 +687,7 @@ export default function PreDesignResultsPage() {
           </p>
           <div className="flex flex-wrap justify-center gap-3">
             <Link
-              href="/contractors"
+              href="/marketplace?audience=contractor"
               className="inline-flex items-center gap-2 rounded-xl px-6 py-3 text-sm font-bold text-white"
               style={{ backgroundColor: '#E8793A' }}
             >

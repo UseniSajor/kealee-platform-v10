@@ -100,30 +100,30 @@ export function CardMediaOps() {
             type="button"
             onClick={load}
             disabled={loading}
-            className="flex items-center gap-1 text-xs text-white/50 hover:text-white"
+            className="flex items-center gap-1 text-xs text-slate-500 hover:text-slate-900"
           >
             <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} />
             Refresh
           </button>
         }
       >
-        <p className="mb-4 text-sm text-white/50">
-          MarketingBot prompts + DALL-E/Replicate on <strong className="text-white/80">web-main</strong>.
-          Manifest powers homepage circles and <code className="text-teal-400">/services/*</code> heroes.
+        <p className="mb-4 text-sm text-slate-500">
+          MarketingBot prompts + DALL-E/Replicate on <strong className="text-slate-700">web-main</strong>.
+          Manifest powers homepage circles and <code className="text-teal-700">/services/*</code> heroes.
         </p>
 
         <div className="mb-4 flex flex-wrap items-center gap-3">
           <select
             value={scope}
             onChange={e => setScope(e.target.value as typeof scope)}
-            className="rounded-lg border px-3 py-2 text-sm text-white"
-            style={{ borderColor: '#2A3D5F', backgroundColor: '#0F1A2E' }}
+            className="rounded-lg border px-3 py-2 text-sm text-slate-900"
+            style={{ borderColor: '#E2E8F0', backgroundColor: '#F8FAFC' }}
           >
             <option value="all">All cards</option>
             <option value="home">Homepage only (4)</option>
             <option value="product">Product pages only</option>
           </select>
-          <label className="flex items-center gap-2 text-xs text-white/55">
+          <label className="flex items-center gap-2 text-xs text-slate-500">
             <input type="checkbox" checked={skipVideo} onChange={e => setSkipVideo(e.target.checked)} />
             Images only (skip video)
           </label>
@@ -144,7 +144,7 @@ export function CardMediaOps() {
         </div>
 
         {manifest?.updatedAt && (
-          <p className="mb-3 text-xs text-white/40">
+          <p className="mb-3 text-xs text-slate-500">
             Manifest updated {new Date(manifest.updatedAt).toLocaleString()}
           </p>
         )}
@@ -158,8 +158,8 @@ export function CardMediaOps() {
 
         {lastResult && (
           <pre
-            className="mb-4 max-h-28 overflow-auto rounded-lg border p-3 text-xs text-white/70"
-            style={{ borderColor: '#2A3D5F' }}
+            className="mb-4 max-h-28 overflow-auto rounded-lg border p-3 text-xs text-slate-600"
+            style={{ borderColor: '#E2E8F0' }}
           >
             {JSON.stringify(lastResult, null, 2)}
           </pre>
@@ -212,7 +212,7 @@ function CardGrid({
             <div
               key={key}
               className="rounded-xl border overflow-hidden"
-              style={{ borderColor: '#2A3D5F', backgroundColor: 'rgba(15,26,46,0.5)' }}
+              style={{ borderColor: '#E2E8F0', backgroundColor: '#FFFFFF' }}
             >
               <div className="relative aspect-[4/3] bg-black/30">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -232,8 +232,8 @@ function CardGrid({
                 )}
               </div>
               <div className="p-3">
-                <p className="font-mono text-xs font-semibold text-white">{key}</p>
-                <p className="mt-0.5 truncate text-xs text-white/40">{entry.photoAlt}</p>
+                <p className="font-mono text-xs font-semibold text-slate-900">{key}</p>
+                <p className="mt-0.5 truncate text-xs text-slate-500">{entry.photoAlt}</p>
                 <div className="mt-2 flex items-center justify-between">
                   <span
                     className="rounded-full px-2 py-0.5 text-[10px] font-semibold"

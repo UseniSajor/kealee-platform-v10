@@ -57,7 +57,13 @@ class RedisClient {
       return;
     }
 
-    const client = createClient({ url }) as RedisClientType;
+    const client = createClient({
+      url,
+      socket: {
+        connectTimeout: 3000,
+        reconnectStrategy: false,
+      },
+    }) as RedisClientType;
     client.on('error', (err: Error) => console.error('[Redis] Error:', err.message));
 
     this._ready = client
@@ -125,6 +131,18 @@ class RedisClient {
     return this.realClient!.lRange(key, start, stop);
   }
 
+  /** Returns true only when the configured Redis server answers PING. */
+  async ping(): Promise<boolean> {
+    await this.ready();
+    if (this._useMock || !this.realClient?.isReady) return false;
+
+    try {
+      return (await this.realClient.ping()) === 'PONG';
+    } catch {
+      return false;
+    }
+  }
+
   /** @deprecated — kept for legacy callers; all operations auto-connect now */
   async connect(): Promise<void> { return this._ready; }
 
@@ -133,7 +151,9 @@ class RedisClient {
     if (this.realClient) await this.realClient.disconnect();
   }
 
-  isReady(): boolean { return !this._useMock || true; /* mock is always "ready" */ }
+  isReady(): boolean {
+    return !this._useMock && this.realClient?.isReady === true;
+  }
 
   // ── Singleton ──────────────────────────────────────────────────────────────
 

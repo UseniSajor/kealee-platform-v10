@@ -18,11 +18,11 @@ export function OpsPanel({
   return (
     <section
       className="rounded-xl border overflow-hidden"
-      style={{ borderColor: '#2A3D5F', backgroundColor: '#1A2B4A' }}
+      style={{ borderColor: '#E2E8F0', backgroundColor: '#FFFFFF' }}
     >
       <div
         className="flex items-center justify-between gap-3 px-4 py-3 border-b"
-        style={{ borderColor: '#2A3D5F' }}
+        style={{ borderColor: '#E2E8F0' }}
       >
         <div className="flex items-center gap-2">
           {Icon && (
@@ -33,7 +33,7 @@ export function OpsPanel({
               <Icon className="h-4 w-4" style={{ color: accent }} />
             </div>
           )}
-          <h2 className="text-sm font-bold text-white">{title}</h2>
+          <h2 className="text-sm font-bold" style={{ color: '#1A2B4A' }}>{title}</h2>
         </div>
         {action}
       </div>
@@ -56,12 +56,12 @@ export function StatCard({
   return (
     <div
       className="rounded-xl border p-4"
-      style={{ borderColor: '#2A3D5F', backgroundColor: 'rgba(15,26,46,0.6)' }}
+      style={{ borderColor: '#E2E8F0', backgroundColor: '#F8FAFC' }}
     >
-      <p className="text-xs font-medium uppercase tracking-wide" style={{ color: 'rgba(255,255,255,0.4)' }}>
+      <p className="text-xs font-medium uppercase tracking-wide" style={{ color: '#94A3B8' }}>
         {label}
       </p>
-      <p className="mt-1 text-2xl font-bold text-white">{value}</p>
+      <p className="mt-1 text-2xl font-bold" style={{ color: '#1A2B4A' }}>{value}</p>
       {sub && (
         <p className="mt-0.5 text-xs" style={{ color: accent }}>
           {sub}

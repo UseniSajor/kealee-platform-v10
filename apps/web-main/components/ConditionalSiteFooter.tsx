@@ -14,7 +14,7 @@ const HIDDEN_EXACT    = ['/concept']
 
 export function ConditionalSiteFooter() {
   const pathname = usePathname()
-  if (isAgencyPartnerShellPath(pathname)) return null
+  if (isAgencyPartnerShellPath(pathname)) return <SiteBottomBar variant="light" />
   const isFunnelPage =
     HIDDEN_PREFIXES.some(p => pathname.startsWith(p)) ||
     HIDDEN_EXACT.includes(pathname) ||

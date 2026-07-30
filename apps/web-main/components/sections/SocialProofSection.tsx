@@ -3,7 +3,7 @@ export default function SocialProofSection() {
     <div className="sec">
       <div className="ey">Results</div>
       <h2 className="h2">What happens when it works</h2>
-      <p className="sub">Homeowners and project owners across DC, Maryland, and Virginia.</p>
+      <p className="sub">Homeowners, developers, and project owners nationwide.</p>
       <div className="pns">
         <div className="pn"><div className="pnv">23yr</div><div className="pnl">In DMV construction — Kealee LLC est. 2002</div></div>
         <div className="pn"><div className="pnv">$4,890</div><div className="pnl">Typical fully-managed project cost</div></div>

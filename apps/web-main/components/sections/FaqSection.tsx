@@ -9,11 +9,11 @@ const FAQS = [
   },
   {
     q: 'Do I need a permit for my project?',
-    a: 'Most construction in DC, Maryland, and Virginia requires a permit — remodels that touch plumbing or electrical, additions, ADUs, finished basements, decks over a certain size. Simple cosmetic work typically does not. The free Permit Guidance Checklist tells you exactly what your project requires in your county.',
+    a: 'Permit requirements vary by state and local jurisdiction. Remodels that affect plumbing, electrical, structure, occupancy, or exterior work commonly require approval, while simple cosmetic work often does not. The Permit Guidance Checklist identifies the likely requirements for your project location.',
   },
   {
-    q: 'How long does a permit take in the DMV?',
-    a: 'Fairfax County simple residential: 2–4 weeks. Montgomery County DPS residential: 4–8 weeks. DC Department of Buildings with plan review: 2–5 months. Commercial projects take longer across all jurisdictions. We include current average timelines for your specific jurisdiction in the $395 concept report.',
+    q: 'How long does a permit take?',
+    a: 'Timelines vary by jurisdiction, scope, review type, and agency workload—from a few weeks for simple residential work to several months for complex or commercial projects. Your concept report identifies the applicable agency and a planning timeline for the project location.',
   },
   {
     q: 'What if my project needs an architect?',
@@ -49,7 +49,7 @@ const FAQS = [
   },
   {
     q: 'How does Kealee screen contractors?',
-    a: 'Every contractor in our network goes through state license verification (DC, MD, or VA), general liability insurance check, bond verification where required, identity verification, and a credentials review. Verified status is re-checked annually. Contractors are removed immediately on failed re-verification.',
+    a: 'Marketplace profiles display the credential checks completed by Kealee and the date or status of available license and insurance records. Requirements vary by trade and jurisdiction. Customers should confirm current credentials and engagement terms before hiring.',
   },
   {
     q: 'How does contractor verification work?',
@@ -57,11 +57,11 @@ const FAQS = [
   },
   {
     q: 'What does milestone pay / escrow protect me from?',
-    a: 'Milestone pay prevents contractors from demanding large upfront payments. Funds are held in escrow and released only after you approve each completed phase. You are never required to pay for work not yet done. Each release collects a conditional lien waiver, and the final 10% retainage releases only after punch list sign-off and an unconditional lien waiver.',
+    a: 'For engagements where payment protection is explicitly enabled, the funding, milestone approval, lien-waiver, retainage, fee, and dispute rules are shown before enrollment. Availability and terms vary by engagement.',
   },
   {
     q: 'How does milestone escrow work?',
-    a: 'Your project funds are held in escrow from project start. They release to the contractor only after you approve a completed milestone. Each release collects a conditional lien waiver. Final 10% retainage releases after punch list sign-off and unconditional lien waiver receipt. Escrow is standard on all Kealee-coordinated projects at no extra cost.',
+    a: 'Payment protection is not assumed for every project. When available and selected, the engagement summary identifies the payment provider, funding rules, approval sequence, fees, lien-waiver requirements, and retainage terms.',
   },
   {
     q: 'What areas do you cover?',

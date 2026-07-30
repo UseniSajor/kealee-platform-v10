@@ -6,8 +6,8 @@ import { ExternalLink } from 'lucide-react'
 // ── Row 1: Role navigation ─────────────────────────────────────────────────
 const ROLES = [
   { label: 'Homeowners',           href: '/homeowners' },
-  { label: 'GC / Contractors',     href: '/contractors' },
-  { label: 'Developers',           href: '/developers' },
+  { label: 'GC / Contractors',     href: '/marketplace?audience=contractor' },
+  { label: 'Developers',           href: '/marketplace?audience=developer' },
   { label: 'Property Managers',    href: '/property-managers' },
 ]
 
@@ -20,8 +20,7 @@ const UTILITY_LINKS = [
 ]
 
 const PORTAL_LINKS = [
-  { label: 'Contractor Portal', href: process.env.NEXT_PUBLIC_CONTRACTOR_PORTAL_URL ?? '/portal-contractor' },
-  { label: 'Developer Portal',  href: process.env.NEXT_PUBLIC_DEVELOPER_PORTAL_URL  ?? '/portal-developer' },
+  { label: 'Marketplace Login', href: '/auth/login?next=/marketplace' },
 ]
 
 export function MarketplaceTopbar() {

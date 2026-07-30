@@ -192,7 +192,7 @@ function EstimateSuccess({ deliverable }: { deliverable: ServiceDeliverable | nu
             </div>
           </div>
           <h1 className="text-4xl font-bold text-slate-900 mb-3">Estimate In Progress</h1>
-          <p className="text-xl text-slate-600">Our cost analyst is preparing your RSMeans-validated estimate.</p>
+          <p className="text-xl text-slate-600">Your cost estimate is being prepared using the scope, assumptions, and regional references identified in your package.</p>
           <p className="text-slate-500 mt-2">Delivered within {deliverable?.deliveryDays ?? '2-3 days'}</p>
         </div>
       </section>
@@ -238,13 +238,13 @@ function ContractorMatchSuccess({ deliverable }: { deliverable: ServiceDeliverab
             </div>
           </div>
           <h1 className="text-4xl font-bold text-slate-900 mb-3">Matching in Progress</h1>
-          <p className="text-xl text-slate-600">Expect 3 vetted contractor matches within 24 hours.</p>
+          <p className="text-xl text-slate-600">Marketplace Operations will review provider availability and the credential status shown with each available match.</p>
         </div>
       </section>
       <section className="px-4 py-16">
         <div className="mx-auto max-w-2xl">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-            {['License Verified', 'Insurance Confirmed', 'Project Fit Scored'].map((badge, i) => (
+            {['Business Status Shown', 'Credential Status Shown', 'Project Fit Reviewed'].map((badge, i) => (
               <div key={i} className="bg-white rounded-xl p-4 border border-teal-200 text-center">
                 <CheckCircle2 className="w-8 h-8 text-teal-600 mx-auto mb-2" />
                 <p className="text-sm font-semibold text-slate-700">{badge}</p>

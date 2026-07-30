@@ -17,19 +17,23 @@ export function GlobalChatBar() {
   if (EXCLUDED_EXACT.includes(pathname)) return null
 
   return (
-    <div
-      id="kealee-global-chat"
-      className="fixed bottom-0 left-0 right-0 z-40 px-4 pb-4 pt-3"
-      style={{
-        background: 'linear-gradient(to top, rgba(248,246,242,0.98) 70%, transparent)',
-      }}
-    >
-      <AskChatBar
-        context="default"
-        variant="light"
-        suggestionsUp
-        className="max-w-2xl"
-      />
-    </div>
+    <>
+      {/* Keep the end of the page scrollable above the fixed chat control. */}
+      <div className="h-24 sm:h-28" aria-hidden="true" />
+      <div
+        id="kealee-global-chat"
+        className="fixed bottom-0 left-0 right-0 z-40 px-4 pb-4 pt-3"
+        style={{
+          background: 'linear-gradient(to top, rgba(248,246,242,0.98) 70%, transparent)',
+        }}
+      >
+        <AskChatBar
+          context="default"
+          variant="light"
+          suggestionsUp
+          className="max-w-2xl"
+        />
+      </div>
+    </>
   )
 }

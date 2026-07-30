@@ -5,7 +5,7 @@ import { SERVICE_PRICING, formatPrice } from '@kealee/shared/pricing'
 
 export const metadata: Metadata = {
   title: 'Get a Cost Estimate — Kealee',
-  description: 'Trade-by-trade cost estimates validated against RSMeans data for the DMV market. Lender-ready. Licensed estimator sign-off.',
+  description: 'Trade-by-trade DMV construction cost estimates with regional cost references and clearly identified professional-review options.',
 }
 
 // Build tiers from shared pricing configuration
@@ -64,7 +64,7 @@ const FAQS = [
   },
   {
     q: 'What is the difference between the Detailed and Certified estimate?',
-    a: 'The Detailed Estimate covers most residential and small commercial needs. The Certified Estimate adds notarized sign-off and is accepted by virtually all DMV lenders for construction loan draw schedules.',
+    a: 'The Detailed Estimate is a planning document for residential and small commercial scopes. A Certified Estimate adds the professional review and sign-off explicitly described in that package. Because lender standards vary, confirm the required format and signer qualifications with your lender before purchasing.',
   },
   {
     q: 'Can I use the estimate to evaluate contractor bids?',
@@ -72,7 +72,7 @@ const FAQS = [
   },
   {
     q: 'How accurate are the estimates?',
-    a: 'All estimates are validated against current RSMeans unit cost data for the DMV market, reviewed by a licensed estimator. Accuracy depends on the completeness of scope provided.',
+    a: 'Estimate quality depends on the completeness of the scope, drawings, quantities, site conditions, and selected finish level. Each package identifies its cost-data references and whether professional review is included.',
   },
 ]
 
@@ -103,11 +103,11 @@ export default function EstimatePage() {
                 <span className="text-[#E8724B]">before you commit.</span>
               </h1>
               <p className="font-home-sans text-lg text-slate-300 leading-relaxed max-w-xl">
-                RSMeans-validated, trade-by-trade cost breakdowns for residential and commercial construction. Verified by licensed estimators. Lender-ready PDF reports.
+                Trade-by-trade cost planning for residential and commercial construction using DMV regional references. Professional sign-off is included only in packages that explicitly identify it.
               </p>
               
               <div className="pt-2 flex flex-wrap gap-x-6 gap-y-3 text-sm text-slate-300">
-                {['RSMeans unit cost data', 'Licensed estimator review', 'Lender-ready PDF', 'DMV market rates'].map(t => (
+                {['Regional unit-cost references', 'Documented estimate assumptions', 'Optional professional review', 'DMV market context'].map(t => (
                   <span key={t} className="flex items-center gap-2">
                     <CheckCircle className="h-4 w-4 text-[#2ABFBF]" />
                     {t}
@@ -124,6 +124,12 @@ export default function EstimatePage() {
                 </Link>
                 <Link href="#pricing" className="text-sm font-semibold text-slate-300 hover:text-white transition-colors py-3 px-4 border border-slate-700 hover:border-slate-500 rounded-xl">
                   View Pricing Packages
+                </Link>
+              </div>
+              <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm">
+                <span className="text-slate-500">Built for your role:</span>
+                <Link href="/marketplace" className="font-semibold text-[#2ABFBF] hover:text-white transition-colors">
+                  Contractor and developer services →
                 </Link>
               </div>
             </div>

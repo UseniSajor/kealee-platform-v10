@@ -56,7 +56,7 @@ export default function MoreProductsSection() {
             <div className="fcb">
               <div className="fclbl">Cost estimation</div>
               <h4>Certified Cost Estimate</h4>
-              <p>Licensed estimator sign-off, RSMeans citations, investor-ready format. Accepted by most DMV lenders.</p>
+              <p>Professionally reviewed format with documented cost references and sign-off when confirmed. Verify recipient requirements before ordering.</p>
               <div className="fcp">$1,850 <small>one-time</small></div>
             </div>
           </Link>

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { SERVICE_DELIVERABLES } from '@/lib/service-deliverables'
-import { randomUUID } from 'crypto'
+import * as Sentry from '@sentry/nextjs'
 import { mergeAttributionMetadata, parseUtmFromRequest } from '@/lib/marketing/utm-metadata'
 import { trackLeadSubmitted } from '@/lib/marketing/ga4-server'
 import {
@@ -90,12 +90,19 @@ export async function POST(req: NextRequest) {
       .single()
 
     if (intakeErr || !intake) {
-      // Table may not exist yet in this environment — return a deterministic
-      // fallback UUID so the Stripe checkout can still proceed.
-      // Concept generation will fail gracefully with a 404 in this case.
       console.error('[intake] Supabase insert failed:', intakeErr?.message)
-      const fallbackId = randomUUID()
-      return NextResponse.json({ intakeId: fallbackId, fallback: true })
+      Sentry.captureMessage('Public intake persistence failed', {
+        level: 'error',
+        tags: { area: 'sales-funnel', stage: 'lead-persistence', projectPath: path },
+        extra: { databaseError: intakeErr?.message, contactEmail: String(contactEmail) },
+      })
+      return NextResponse.json(
+        {
+          error: 'We could not save your project securely. Nothing was charged. Please try again or contact hello@kealee.com.',
+          code: 'INTAKE_PERSISTENCE_FAILED',
+        },
+        { status: 503 },
+      )
     }
 
     void trackLeadSubmitted({
@@ -126,8 +133,16 @@ export async function POST(req: NextRequest) {
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : 'Internal error'
     console.error('[intake] Unexpected error:', msg)
-    // Fallback so Stripe checkout is never blocked by a DB error
-    return NextResponse.json({ intakeId: randomUUID(), fallback: true })
+    Sentry.captureException(err, {
+      tags: { area: 'sales-funnel', stage: 'lead-creation' },
+    })
+    return NextResponse.json(
+      {
+        error: 'We could not save your project securely. Nothing was charged. Please try again or contact hello@kealee.com.',
+        code: 'INTAKE_CREATE_FAILED',
+      },
+      { status: 503 },
+    )
   }
 }
 

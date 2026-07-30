@@ -16,7 +16,7 @@ export const ESTIMATE_INCLUDED_WITH = [
 ] as const
 
 export const ESTIMATE_INCLUDED_COPY =
-  'RSMeans-validated cost estimate is included with your design concept, professional design drawings, and permit packages — no separate estimate purchase required.'
+  'A planning cost estimate with documented assumptions is included where the selected design or permit package explicitly lists it.'
 
 export const POST_CONCEPT_NEXT_STEP_COPY =
   'Your next step is permit-ready professional drawings — estimate is already included in your concept package.'

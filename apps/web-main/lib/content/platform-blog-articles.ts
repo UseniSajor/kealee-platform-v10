@@ -117,7 +117,7 @@ export const PLATFORM_BLOG_ARTICLES: PlatformBlogArticle[] = [
     datePublished: '2026-02-15',
     readTime: '7 min',
     keywords: ['parcel analysis', 'zoning analysis DC', 'land development feasibility'],
-    cta: { label: 'Developer intake', href: '/developers/start' },
+    cta: { label: 'Developer marketplace', href: '/marketplace?audience=developer' },
     sections: [
       {
         heading: 'From address to go/no-go',

@@ -18,7 +18,7 @@ const ROLES = [
     title:       'Contractors',
     tagline:     'Win more. Build better.',
     description: 'Join the vetted marketplace, receive matched project bids after permits are filed/approved, track field operations, and grow your reputation through verified work.',
-    href:        '/contractors',
+    href:        '/marketplace?audience=contractor',
     cta:         'Join as GC / Contractor',
     accent:      '#E8793A',
   },

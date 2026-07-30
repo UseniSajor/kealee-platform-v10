@@ -24,7 +24,7 @@ export default function FeaturedProductsSection() {
           <div className="fci">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=700&q=60&auto=format&fit=crop" alt="Permit" />
-            <span className="fbg bgs">DC · MD · VA</span>
+            <span className="fbg bgs">Nationwide</span>
           </div>
           <div className="fcb">
             <div className="fclbl">Permit services</div>
@@ -37,12 +37,12 @@ export default function FeaturedProductsSection() {
           <div className="fci">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=700&q=60&auto=format&fit=crop" alt="Estimate" />
-            <span className="fbg bgs">RSMeans data</span>
+            <span className="fbg bgs">Regional cost data</span>
           </div>
           <div className="fcb">
             <div className="fclbl">Cost estimation</div>
             <h4>Detailed Cost Estimate</h4>
-            <p>Human-reviewed, RSMeans-validated, trade-by-trade breakdown. Lender-ready PDF.</p>
+            <p>Trade-by-trade planning breakdown with documented assumptions. The package identifies any included professional review.</p>
             <div className="fcp">$595 <small>one-time</small></div>
           </div>
         </Link>
@@ -68,7 +68,7 @@ export default function FeaturedProductsSection() {
           <div className="fcb">
             <div className="fclbl">Outdoor services</div>
             <h4>Landscape Design &amp; Install</h4>
-            <p>Beds, hardscape, drainage, and planting — designed and installed by verified landscape contractors.</p>
+            <p>Beds, hardscape, drainage, and planting planning, with optional marketplace handoff to available landscape providers.</p>
             <div className="fcp">per service <small>custom quote</small></div>
           </div>
         </Link>

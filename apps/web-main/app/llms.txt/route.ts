@@ -31,7 +31,7 @@ Kealee helps customers clarify a project before construction through preliminary
 ## Contact
 
 - Website: https://kealee.com/contact
-- Company: Kealee Services LLC
+- Company: Kealee Construction LLC
 `
 
 export function GET() {

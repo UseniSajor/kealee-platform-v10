@@ -135,8 +135,8 @@ export const PRIMARY_NAV: NavItem[] = [
   // 4 — Get Estimate
   { label: 'Get Estimate', href: '/estimate' },
 
-  // 5 — For Contractors (direct link to landing page)
-  { label: 'For Contractors', href: '/contractors' },
+  // 5 — Contractor and developer services are marketplace-only.
+  { label: 'Marketplace', href: '/marketplace' },
 ]
 
 // ── CTA buttons ───────────────────────────────────────────────────────────────
@@ -144,7 +144,7 @@ export const PRIMARY_NAV: NavItem[] = [
 export const NAV_CTA_PRIMARY   = { label: 'Plan my project', href: '/get-started' }
 /** Shown when NEXT_PUBLIC_KEALEE_V30_ENABLED=true (GlobalNav / MobileNav). */
 export const NAV_CTA_V30       = { label: 'Plan my project', href: '/get-started' }
-export const NAV_CTA_SECONDARY = { label: 'Join as Contractor',   href: '/contractor/register' }
+export const NAV_CTA_SECONDARY = { label: 'Join Marketplace', href: '/marketplace?audience=contractor' }
 
 /** Login dropdown entries — shown in nav, never internal routes */
 export const NAV_LOGIN_OPTIONS = [
@@ -167,7 +167,7 @@ export const FOOTER_NAV = {
   solutions: [
     { label: 'For Homeowners',             href: '/homeowners' },
     { label: 'Garden & Farming',           href: '/homeowners/garden-farming' },
-    { label: 'For Contractors',            href: '/contractors' },
+    { label: 'Construction Marketplace',   href: '/marketplace' },
     { label: 'Get Estimate',               href: '/estimate' },
     { label: 'Design Services',            href: '/design-services' },
     { label: 'Milestone Pay',              href: '/milestone-pay' },
@@ -175,7 +175,7 @@ export const FOOTER_NAV = {
   portals: [
     { label: 'Client Login',               href: '/auth/login' },
     { label: 'Owner Portal',               href: process.env.NEXT_PUBLIC_OWNER_PORTAL_URL ?? '/login' },
-    { label: 'Contractor Portal',          href: process.env.NEXT_PUBLIC_CONTRACTOR_PORTAL_URL ?? '/login' },
+    { label: 'Marketplace Login',          href: '/auth/login?next=/marketplace' },
   ],
   company: [
     { label: 'About Us',                   href: '/about' },
@@ -187,5 +187,6 @@ export const FOOTER_NAV = {
   legal: [
     { label: 'Terms of Service',           href: '/terms' },
     { label: 'Privacy Policy',             href: '/privacy' },
+    { label: 'Delivery & Refund Policy',   href: '/service-policies' },
   ],
 }

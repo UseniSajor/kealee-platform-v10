@@ -17,7 +17,7 @@ const PILLS = [
 ]
 
 const AREAS = [
-  'All DMV areas',
+  'Nationwide',
   'Washington DC',
   'Montgomery County MD',
   "Prince George's County MD",
@@ -30,7 +30,7 @@ const AREAS = [
 export default function HeroSection() {
   const router = useRouter()
   const [query, setQuery] = useState('')
-  const [area, setArea] = useState('All DMV areas')
+  const [area, setArea] = useState('Nationwide')
   const [suggestions, setSuggestions] = useState<Suggestion[]>([])
   const [suggestOpen, setSuggestOpen] = useState(false)
   const [activeIdx, setActiveIdx] = useState(-1)
@@ -123,7 +123,7 @@ export default function HeroSection() {
         <div className="hi-top">
         <div className="search-wrap">
           <h1 className="sh1">What are you<br />building<em>?</em></h1>
-          <p className="sh2">Upload photos. Get a floor plan in 24 hours. We file your permit. You hire from verified contractors. Every payment is held in escrow.</p>
+          <p className="sh2">Upload project information, receive planning deliverables, choose permit coordination when needed, and evaluate screened providers in the Marketplace.</p>
 
           <div ref={wrapRef} style={{ position: 'relative' }}>
             <form className="sbar" onSubmit={handleSubmit}>
@@ -193,13 +193,13 @@ export default function HeroSection() {
             <div className="rtag"><span className="rdot" style={{ background: 'var(--blue)' }} />&nbsp;Contractor / General contractor</div>
             <h3>Project leads and PM platform</h3>
             <p>Verified leads matched to your trade, location, and license. PM platform and operations services.</p>
-            <a href="/contractors" className="rlink" style={{ color: 'var(--blue)' }}>Contractor portal</a>
+            <a href="/marketplace?audience=contractor" className="rlink" style={{ color: 'var(--blue)' }}>Contractor marketplace</a>
           </div>
           <div className="rcard">
             <div className="rtag"><span className="rdot" style={{ background: 'var(--green)' }} />&nbsp;Developer / Investor</div>
             <h3>Feasibility, capital stack, permits</h3>
             <p>Parcel scoring, pro forma modeling, capital stack structuring, and DMV entitlement support.</p>
-            <a href="/developers" className="rlink" style={{ color: 'var(--green)' }}>Developer portal</a>
+            <a href="/marketplace?audience=developer" className="rlink" style={{ color: 'var(--green)' }}>Developer marketplace</a>
           </div>
         </div>
       </div>

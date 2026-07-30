@@ -12,24 +12,10 @@
 
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { checkPlatformIntegrations } from '@/lib/integration-health'
 
 export const runtime = 'nodejs'
 export const revalidate = 0
-
-// ── Integration health ping ───────────────────────────────────────────────────
-
-async function pingUrl(url: string, timeoutMs = 4000): Promise<{ ok: boolean; latencyMs: number }> {
-  const start = Date.now()
-  try {
-    const controller = new AbortController()
-    const timer = setTimeout(() => controller.abort(), timeoutMs)
-    const res = await fetch(url, { method: 'HEAD', signal: controller.signal, cache: 'no-store' })
-    clearTimeout(timer)
-    return { ok: res.ok || res.status < 500, latencyMs: Date.now() - start }
-  } catch {
-    return { ok: false, latencyMs: Date.now() - start }
-  }
-}
 
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -57,13 +43,7 @@ export async function GET() {
     supabase.auth.admin.listUsers({ page: 1, perPage: 1 }),
 
     // Ping integrations
-    Promise.allSettled([
-      pingUrl('https://api.stripe.com').then(r => ({ name: 'Stripe', ...r })),
-      pingUrl(supabaseUrl + '/rest/v1/').then(r => ({ name: 'Supabase', ...r })),
-      pingUrl('https://api.anthropic.com').then(r => ({ name: 'Anthropic AI', ...r })),
-      pingUrl('https://api.resend.com').then(r => ({ name: 'Resend', ...r })),
-      pingUrl('https://api.twilio.com').then(r => ({ name: 'Twilio', ...r })),
-    ]),
+    checkPlatformIntegrations(),
   ])
 
   // ── Process intakes ─────────────────────────────────────────────────────────
@@ -126,25 +106,9 @@ export async function GET() {
 
   // ── Integration health ──────────────────────────────────────────────────────
 
-  const integrations: Array<{ name: string; status: string; latencyMs: number }> = []
-
-  if (integrationPings.status === 'fulfilled') {
-    for (const result of integrationPings.value) {
-      if (result.status === 'fulfilled') {
-        const { name, ok, latencyMs } = result.value as { name: string; ok: boolean; latencyMs: number }
-        integrations.push({
-          name,
-          status: ok ? 'operational' : 'degraded',
-          latencyMs,
-        })
-      }
-    }
-  }
-
-  // GoHighLevel — not publicly pingable, report as unknown
-  integrations.push({ name: 'GoHighLevel', status: 'unknown', latencyMs: 0 })
-  // Redis — internal, can't ping externally
-  integrations.push({ name: 'Redis', status: 'unknown', latencyMs: 0 })
+  const integrations = integrationPings.status === 'fulfilled'
+    ? integrationPings.value.map(({ name, status, latencyMs }) => ({ name, status, latencyMs }))
+    : []
 
   // ── Response ────────────────────────────────────────────────────────────────
 

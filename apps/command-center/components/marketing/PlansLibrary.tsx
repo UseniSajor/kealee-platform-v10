@@ -86,8 +86,8 @@ export function PlansLibrary() {
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="text-sm text-white/50 max-w-2xl">
-          Saved plans, stacks, and campaigns live in <code className="text-teal-400">marketing/</code> (git).
+        <p className="text-sm text-slate-500 max-w-2xl">
+          Saved plans, stacks, and campaigns live in <code className="text-teal-700">marketing/</code> (git).
           No paid ads or marketing SaaS subscriptions required.
         </p>
         <div className="flex gap-2">
@@ -99,8 +99,8 @@ export function PlansLibrary() {
           <button
             type="button"
             onClick={load}
-            className="flex items-center gap-1 rounded-lg border px-3 py-1.5 text-xs text-white/60"
-            style={{ borderColor: '#2A3D5F' }}
+            className="flex items-center gap-1 rounded-lg border px-3 py-1.5 text-xs text-slate-500"
+            style={{ borderColor: '#E2E8F0' }}
           >
             <RefreshCw className="h-3.5 w-3.5" />
             Reload
@@ -108,7 +108,7 @@ export function PlansLibrary() {
         </div>
       </div>
 
-      <div className="flex flex-wrap gap-1 border-b pb-0" style={{ borderColor: '#2A3D5F' }}>
+      <div className="flex flex-wrap gap-1 border-b pb-0" style={{ borderColor: '#E2E8F0' }}>
         {(
           [
             { id: 'plan' as LibTab, label: 'Plans', icon: FileText },
@@ -125,7 +125,7 @@ export function PlansLibrary() {
               setSelectedId(null)
             }}
             className={`flex items-center gap-1.5 px-3 py-2 text-xs font-medium border-b-2 -mb-px ${
-              tab === t.id ? 'text-teal-400 border-teal-400' : 'text-white/40 border-transparent'
+              tab === t.id ? 'text-teal-700 border-teal-600' : 'text-slate-500 border-transparent'
             }`}
           >
             <t.icon className="h-3.5 w-3.5" />
@@ -138,7 +138,7 @@ export function PlansLibrary() {
         <OpsPanel title="Assets" icon={BookOpen}>
           <ul className="max-h-96 space-y-1 overflow-y-auto">
             {tab === 'index' ? (
-              <li className="text-xs text-white/50 p-2">{data.index?.description}</li>
+              <li className="text-xs text-slate-500 p-2">{data.index?.description}</li>
             ) : (
               items.map(item => (
                 <li key={item.id}>
@@ -146,11 +146,11 @@ export function PlansLibrary() {
                     type="button"
                     onClick={() => setSelectedId(item.id)}
                     className={`w-full rounded-lg px-3 py-2 text-left text-sm transition-colors ${
-                      selectedId === item.id ? 'bg-teal-900/30 text-teal-300' : 'text-white/70 hover:bg-white/5'
+                      selectedId === item.id ? 'bg-teal-50 text-teal-700' : 'text-slate-600 hover:bg-slate-50'
                     }`}
                   >
                     {item.title}
-                    <span className="block font-mono text-[10px] text-white/30">{item.path}</span>
+                    <span className="block font-mono text-[10px] text-slate-400">{item.path}</span>
                   </button>
                 </li>
               ))
@@ -164,29 +164,29 @@ export function PlansLibrary() {
             icon={FileText}
             action={
               tab === 'campaigns' ? (
-                <span className="text-[10px] text-white/40">pnpm run generate:marketing-library</span>
+                <span className="text-[10px] text-slate-500">pnpm run generate:marketing-library</span>
               ) : undefined
             }
           >
             {detail ? (
               <pre
-                className="max-h-[32rem] overflow-auto rounded-lg border p-3 text-xs text-white/75"
-                style={{ borderColor: '#2A3D5F', backgroundColor: '#0F1A2E' }}
+                className="max-h-[32rem] overflow-auto rounded-lg border p-3 text-xs text-slate-700"
+                style={{ borderColor: '#E2E8F0', backgroundColor: '#F8FAFC' }}
               >
                 {JSON.stringify(detail, null, 2)}
               </pre>
             ) : (
-              <p className="text-sm text-white/40">Select an item from the list.</p>
+              <p className="text-sm text-slate-500">Select an item from the list.</p>
             )}
           </OpsPanel>
         </div>
       </div>
 
       <OpsPanel title="Organic playbook (repo)" icon={ExternalLink} accent="#E8793A">
-        <p className="text-sm text-white/60 mb-2">
-          Full narrative: <strong className="text-white/80">marketing/ORGANIC-AUTOMATION-PLAN.md</strong>
+        <p className="text-sm text-slate-500 mb-2">
+          Full narrative: <strong className="text-slate-700">marketing/ORGANIC-AUTOMATION-PLAN.md</strong>
         </p>
-        <ul className="list-disc space-y-1 pl-5 text-xs text-white/50">
+        <ul className="list-disc space-y-1 pl-5 text-xs text-slate-500">
           <li>Email + crons (Resend) — no Klaviyo</li>
           <li>Supabase leads — no GHL</li>
           <li>Reddit / LinkedIn / IG organic — no ad boost</li>

@@ -45,13 +45,13 @@ function rangeQuery(preset: DatePreset): string {
 function ChannelComparisonTable({ buckets }: { buckets: ChannelBucketMetrics[] }) {
   const active = buckets.filter(b => b.leads > 0)
   if (active.length === 0) {
-    return <p className="text-sm text-white/50">No leads in sample yet.</p>
+    return <p className="text-sm text-slate-500">No leads recorded for this period.</p>
   }
   return (
     <div className="overflow-x-auto">
       <table className="w-full min-w-[640px] text-left text-sm">
         <thead>
-          <tr className="border-b text-xs uppercase tracking-wide text-white/40" style={{ borderColor: '#2A3D5F' }}>
+          <tr className="border-b text-xs uppercase tracking-wide text-slate-500" style={{ borderColor: '#E2E8F0' }}>
             <th className="pb-2 pr-3 font-semibold">Channel</th>
             <th className="pb-2 pr-3 font-semibold">Projects</th>
             <th className="pb-2 pr-3 font-semibold">Leads</th>
@@ -63,19 +63,19 @@ function ChannelComparisonTable({ buckets }: { buckets: ChannelBucketMetrics[] }
         </thead>
         <tbody>
           {active.map(b => (
-            <tr key={b.bucket} className="border-b border-white/5">
-              <td className="py-2.5 pr-3 font-medium text-white">{b.label}</td>
-              <td className="py-2.5 pr-3 text-white/80">{b.projects}</td>
-              <td className="py-2.5 pr-3 text-white/80">
+            <tr key={b.bucket} className="border-b border-slate-100">
+              <td className="py-2.5 pr-3 font-medium text-slate-900">{b.label}</td>
+              <td className="py-2.5 pr-3 text-slate-700">{b.projects}</td>
+              <td className="py-2.5 pr-3 text-slate-700">
                 {b.leads}
-                <span className="ml-1 text-xs text-white/40">({b.conversionRate} paid)</span>
+                <span className="ml-1 text-xs text-slate-500">({b.conversionRate} paid)</span>
               </td>
-              <td className="py-2.5 pr-3 text-white/80">{b.sales}</td>
+              <td className="py-2.5 pr-3 text-slate-700">{b.sales}</td>
               <td className="py-2.5 pr-3 font-medium" style={{ color: '#2ABFBF' }}>
                 {b.revenueUsd}
               </td>
-              <td className="py-2.5 pr-3 text-white/60">{b.costUsd}</td>
-              <td className="py-2.5 text-white/80">{b.roi}</td>
+              <td className="py-2.5 pr-3 text-slate-500">{b.costUsd}</td>
+              <td className="py-2.5 text-slate-700">{b.roi}</td>
             </tr>
           ))}
         </tbody>
@@ -97,12 +97,12 @@ function Breakdown({
   if (entries.length === 0) return null
   return (
     <div>
-      <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-white/40">{title}</p>
+      <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">{title}</p>
       <ul className="space-y-1">
         {entries.map(([k, n]) => (
           <li key={k} className="flex justify-between text-sm">
-            <span className="truncate pr-2 text-white/70">{k.replace(/_/g, ' ')}</span>
-            <span className="font-medium text-white">{n}</span>
+            <span className="truncate pr-2 text-slate-600">{k.replace(/_/g, ' ')}</span>
+            <span className="font-medium text-slate-900">{n}</span>
           </li>
         ))}
       </ul>
@@ -140,8 +140,8 @@ export function OpsOverview() {
     return (
       <OpsPanel title="Marketing ops" icon={AlertCircle} accent="#EF4444">
         <p className="text-sm text-rose-300">{data?.error ?? 'Could not load ops data'}</p>
-        <p className="mt-2 text-xs text-white/50">
-          Set <code className="text-teal-400">SUPABASE_SERVICE_ROLE_KEY</code> on Command Center.
+        <p className="mt-2 text-xs text-slate-500">
+          Set <code className="text-teal-700">SUPABASE_SERVICE_ROLE_KEY</code> on Command Center.
         </p>
         <button
           type="button"
@@ -161,12 +161,12 @@ export function OpsOverview() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <p className="text-xs text-white/40">Funnel + automation health (live Supabase)</p>
+          <p className="text-xs text-slate-500">Funnel + automation health (live Supabase)</p>
           {data.dateRange && (
-            <p className="text-xs text-white/30">
+            <p className="text-xs text-slate-400">
               {data.dateRange.from} → {data.dateRange.to}
               {s.channelComparison.costSource && (
-                <span className="ml-2 rounded px-1.5 py-0.5" style={{ backgroundColor: '#2A3D5F' }}>
+                <span className="ml-2 rounded px-1.5 py-0.5" style={{ backgroundColor: '#E2E8F0' }}>
                   cost: {s.channelComparison.costSource}
                 </span>
               )}
@@ -181,8 +181,8 @@ export function OpsOverview() {
               onClick={() => setPreset(p)}
               className="rounded-lg border px-2.5 py-1 text-xs"
               style={{
-                borderColor: preset === p ? '#2ABFBF' : '#2A3D5F',
-                color: preset === p ? '#2ABFBF' : 'rgba(255,255,255,0.5)',
+                borderColor: preset === p ? '#2ABFBF' : '#E2E8F0',
+                color: preset === p ? '#2ABFBF' : '#64748B',
               }}
             >
               {p === 'all' ? 'All' : p}
@@ -191,8 +191,8 @@ export function OpsOverview() {
           <button
             type="button"
             onClick={load}
-            className="flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs text-white/60 hover:text-white"
-            style={{ borderColor: '#2A3D5F' }}
+            className="flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs text-slate-500 hover:text-slate-900"
+            style={{ borderColor: '#E2E8F0' }}
           >
             <RefreshCw className="h-3.5 w-3.5" />
             Refresh
@@ -214,7 +214,7 @@ export function OpsOverview() {
       )}
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard label="Total leads (sample)" value={s.totalLeads} sub={`${s.last7DaysLeads} last 7d`} />
+        <StatCard label="Total leads" value={s.totalLeads} sub={`${s.last7DaysLeads} last 7d`} />
         <StatCard label="Conversion" value={s.conversionRate} sub={`${s.converted} converted`} accent="#E8793A" />
         <StatCard label="Leads today" value={data.leadsToday} sub={`${data.paidToday} paid today`} />
         <StatCard
@@ -227,27 +227,27 @@ export function OpsOverview() {
 
       <OpsPanel title="Organic vs paid ads vs marketing SaaS" icon={BarChart2} accent="#2ABFBF">
         <ChannelComparisonTable buckets={s.channelComparison.buckets} />
-        <div className="mt-4 flex flex-wrap gap-4 border-t pt-4 text-sm" style={{ borderColor: '#2A3D5F' }}>
+        <div className="mt-4 flex flex-wrap gap-4 border-t pt-4 text-sm" style={{ borderColor: '#E2E8F0' }}>
           <div>
-            <span className="text-white/40">Total revenue </span>
-            <span className="font-semibold text-white">
+            <span className="text-slate-500">Total revenue </span>
+            <span className="font-semibold text-slate-900">
               ${(s.channelComparison.totals.revenueCents / 100).toLocaleString('en-US', { maximumFractionDigits: 0 })}
             </span>
           </div>
           <div>
-            <span className="text-white/40">Total est. cost </span>
-            <span className="font-semibold text-white">
+            <span className="text-slate-500">Total est. cost </span>
+            <span className="font-semibold text-slate-900">
               ${(s.channelComparison.totals.estimatedCostCents / 100).toLocaleString('en-US', { maximumFractionDigits: 0 })}
             </span>
           </div>
           <div>
-            <span className="text-white/40">Blended ROI </span>
+            <span className="text-slate-500">Blended ROI </span>
             <span className="font-semibold" style={{ color: '#E8793A' }}>
               {s.channelComparison.totals.roi}
             </span>
           </div>
         </div>
-        <ul className="mt-3 list-inside list-disc space-y-1 text-xs text-white/40">
+        <ul className="mt-3 list-inside list-disc space-y-1 text-xs text-slate-500">
           {s.channelComparison.notes.map((note: string) => (
             <li key={note}>{note}</li>
           ))}
@@ -266,13 +266,13 @@ export function OpsOverview() {
         <OpsPanel title="Attribution" icon={BarChart2} accent="#E8793A">
           <Breakdown title="By UTM source" data={s.byUtmSource} />
           <div className="mt-4 grid grid-cols-2 gap-2 text-center">
-            <div className="rounded-lg border p-3" style={{ borderColor: '#2A3D5F' }}>
-              <p className="text-lg font-bold text-white">{s.paidCount}</p>
-              <p className="text-xs text-white/40">Paid</p>
+            <div className="rounded-lg border p-3" style={{ borderColor: '#E2E8F0' }}>
+              <p className="text-lg font-bold text-slate-900">{s.paidCount}</p>
+              <p className="text-xs text-slate-500">Paid</p>
             </div>
-            <div className="rounded-lg border p-3" style={{ borderColor: '#2A3D5F' }}>
-              <p className="text-lg font-bold text-white">{s.conceptReadyCount}</p>
-              <p className="text-xs text-white/40">Concept ready</p>
+            <div className="rounded-lg border p-3" style={{ borderColor: '#E2E8F0' }}>
+              <p className="text-lg font-bold text-slate-900">{s.conceptReadyCount}</p>
+              <p className="text-xs text-slate-500">Concept ready</p>
             </div>
           </div>
         </OpsPanel>
@@ -301,7 +301,7 @@ export function OpsOverview() {
             ))}
           </ul>
           {Object.keys(data.dripByStatus).length > 0 && (
-            <div className="mt-4 border-t pt-4" style={{ borderColor: '#2A3D5F' }}>
+            <div className="mt-4 border-t pt-4" style={{ borderColor: '#E2E8F0' }}>
               <Breakdown title="Drip queue (7d)" data={data.dripByStatus} />
             </div>
           )}

@@ -201,28 +201,6 @@ export default function ConceptLayout({ children }: { children: React.ReactNode 
         </div>
       </section>
 
-      {/* Testimonials */}
-      <section className='testimonials'>
-        <h2>What Homeowners Say</h2>
-        <div className='testimonial-grid'>
-          <Testimonial
-            quote='Got a professional concept in days instead of months. Saved us $5K in architect fees.'
-            author='Sarah M., Arlington, VA'
-            project='Kitchen Renovation'
-          />
-          <Testimonial
-            quote='The zoning analysis saved us from pursuing something impossible. Huge time-saver.'
-            author='James T., Washington, DC'
-            project='Home Addition'
-          />
-          <Testimonial
-            quote='Detailed scope made it easy to get contractor estimates. Everyone understood the project.'
-            author='Lisa R., Bethesda, MD'
-            project='Bathroom Remodel'
-          />
-        </div>
-      </section>
-
       {/* CTA */}
       <section className='final-cta'>
         <h2>Ready to Get Started?</h2>

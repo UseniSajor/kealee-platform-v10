@@ -8,6 +8,7 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import { hasIntelligenceUiRole } from '@kealee/auth/ops-api-auth'
 import { getOwnerPortalBaseUrl, getOwnerPortalDeliverableUrl } from '@/lib/owner-portal-urls'
+import { getMarketplaceAudience } from '@/lib/marketplace-routing'
 
 // Public routes that don't require authentication
 // NOTE: /concept/deliverable is not a viewer — middleware redirects to the owner portal.
@@ -61,6 +62,9 @@ const PUBLIC_ROUTES = [
   '/pm',
   '/exterior',
   '/data-deletion',
+  '/privacy',
+  '/terms',
+  '/service-policies',
   '/get-started',
   '/features',
   '/concept-package',
@@ -96,6 +100,18 @@ function authLoginUrl(request: NextRequest, nextPath: string, extra?: Record<str
 
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname
+
+  // Contractor, developer, and trade-service acquisition lives exclusively in
+  // Marketplace. Keep legacy URLs working without competing sales surfaces.
+  const marketplaceAudience = getMarketplaceAudience(
+    pathname,
+    request.nextUrl.searchParams.get('client'),
+  )
+  if (marketplaceAudience) {
+    const url = new URL('/marketplace', request.url)
+    url.searchParams.set('audience', marketplaceAudience)
+    return NextResponse.redirect(url, 308)
+  }
 
   // /concept (exact) is the public service/package select page.
   // /concept/[uuid] pages are paid deliverables that require auth — they do NOT appear here.

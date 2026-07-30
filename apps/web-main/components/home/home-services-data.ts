@@ -78,9 +78,9 @@ export const HOME_JOURNEY_SERVICES: HomeJourneyService[] = [
     id: 'estimate',
     // Cost estimate document — delivered with the concept package, not a construction milestone.
     title: 'Cost Estimation',
-    subtitle: 'RSMeans-validated · lender-ready PDF',
+    subtitle: 'Regional cost references · review options',
     description:
-      'Line-item material and labor breakdown validated against RSMeans DMV regional data. Not a ballpark — a certified cost plan your lender will accept.',
+      'Line-item material and labor planning ranges using DMV regional cost references. Certified or lender-facing review is included only in packages that explicitly say so.',
     priceHint: usdRange(ESTIMATION_PRICE, ESTIMATION_CERTIFIED_PRICE),
     ctaText: 'Get Cost Estimate',
     ctaLink: '/estimate',
@@ -98,7 +98,7 @@ export const HOME_JOURNEY_SERVICES: HomeJourneyService[] = [
     title: 'Permit Filing',
     subtitle: 'Kealee files · jurisdiction approves',
     description:
-      'Licensed specialists prepare and submit every form to DC, MD, or VA agencies. Kealee manages all comment cycles. Permit approval is set by the jurisdiction — typically 4–12 weeks after submission.',
+      'Kealee coordinates application preparation and submission for purchased filing packages, with qualified professionals engaged when required. The jurisdiction controls requirements, review time, and approval.',
     priceHint: usdRange(PERMIT_BASIC_PRICE, PERMIT_PREMIUM_PRICE),
     ctaText: 'File Permits',
     ctaLink: '/permits',
@@ -116,10 +116,10 @@ export const HOME_JOURNEY_SERVICES: HomeJourneyService[] = [
     // Construction execution phase — weeks to months of active build work, not package delivery.
     subtitle: 'Active construction · contractor-matched',
     description:
-      'Vetted DMV contractor bids, milestone-based escrow, and a live owner dashboard. Scope and schedule set by permit-approved plans.',
+      'Browse screened DMV construction providers in the Marketplace. Credential status, payment protection, and project controls are shown for each available engagement.',
     priceHint: `From $${PM_ADVISORY_PRICE}/mo advisory`,
     ctaText: 'View Build Services',
-    ctaLink: '/contractors',
+    ctaLink: '/marketplace',
     gradientFrom: '#38A169',
     gradientTo: '#68D391',
     progress: 100,

@@ -17,14 +17,14 @@ const fadeInUp = {
 
 const VALUES = [
   { icon: Target, title: 'Transparency', description: 'Every dollar tracked, every milestone visible. Project owners deserve full visibility into their investment.', color: '#2ABFBF' },
-  { icon: Heart, title: 'Trust', description: 'Escrow-protected payments, verified contractors, and honest communication. Trust is the foundation of great construction.', color: '#E8793A' },
+  { icon: Heart, title: 'Trust', description: 'Clear scope, documented assumptions, visible limitations, and honest communication before construction begins.', color: '#E8793A' },
   { icon: Zap, title: 'Innovation', description: 'AI-powered tools, digital twins, and smart automation. We bring technology to an industry that needs it most.', color: '#38A169' },
-  { icon: Building2, title: 'Quality', description: 'From vetted contractors to inspection management, we never compromise on the quality of what gets built.', color: '#1E293B' },
+  { icon: Building2, title: 'Quality', description: 'Structured preconstruction information helps owners and professionals make better-informed design, cost, and permit decisions.', color: '#1E293B' },
 ]
 
 const TEAM = [
-  { name: 'Engineering', role: 'Product & Engineering', bio: 'Full-stack team building the platform that construction deserves — from design studio integrations to real-time monitoring and escrow payments.', initials: 'ENG' },
-  { name: 'Operations', role: 'Client Success', bio: 'Dedicated project managers and client advisors with deep construction experience, ensuring every project succeeds on the platform.', initials: 'OPS' },
+  { name: 'Engineering', role: 'Product & Engineering', bio: 'Building the project intake, concept, estimation, permit, and document workflows that support preconstruction decisions.', initials: 'ENG' },
+  { name: 'Operations', role: 'Client Operations', bio: 'Coordinating customer intake, package scope, delivery status, and the next preconstruction step.', initials: 'OPS' },
 ]
 
 export default function AboutPage() {
@@ -52,8 +52,8 @@ export default function AboutPage() {
             transition={{ duration: 0.5, delay: 0.2 }}
             className="mx-auto mt-6 max-w-2xl text-lg text-slate-600 leading-relaxed"
           >
-            Kealee was founded on a simple idea: construction project coordination should be transparent,
-            efficient, and accessible to every project owner — from design concept to final build.
+            Kealee is built around a simple idea: preconstruction should be transparent,
+            efficient, and accessible to every project owner — from design concept through estimate and permit preparation.
           </motion.p>
         </div>
       </section>
@@ -74,17 +74,14 @@ export default function AboutPage() {
                   manage bids on legacy spreadsheets, and budgets often run out of control.
                 </p>
                 <p>
-                  With 25 years of combined experience in construction management and real estate development,
-                  our founding team experienced these problems firsthand. Kealee was born from the conviction
-                  that interactive design tools, validated cost estimates, permit filing, and real-time project
-                  workspaces could transform construction for project owners — homeowners, developers, and
-                  commercial owners alike.
+                  Kealee is built around the conviction that interactive design tools, documented cost planning,
+                  permit preparation, and shared project information can improve decisions before construction
+                  commitments are made.
                 </p>
                 <p>
-                  Today, Kealee guides project owners through their build projects with 4 integrated lifecycle
-                  stages and 2 dedicated portals. We coordinate design concepts, RSMeans cost planning, and permit
-                  filing before contractor bidding, eliminating surprises and ensuring projects break ground with
-                  certainty.
+                  Kealee guides project owners through design concepts, estimation, and permit preparation before
+                  contractor bidding. The Marketplace is an optional handoff after the preconstruction scope is
+                  clear; it is not a substitute for evaluating the professionals you hire.
                 </p>
               </div>
             </motion.div>
@@ -98,9 +95,9 @@ export default function AboutPage() {
                     { value: '4', label: 'Lifecycle Phases' },
                     { value: '4', label: 'Core Services' },
                     { value: '2', label: 'Dedicated Portals' },
-                    { value: '100%', label: ' DMV Coverage' },
-                    { value: '25+', label: 'Years Experience' },
-                    { value: '0', label: 'Opaque Fees' },
+                    { value: 'DC', label: 'District Coverage' },
+                    { value: 'MD', label: 'Maryland Coverage' },
+                    { value: 'VA', label: 'Virginia Coverage' },
                   ].map((stat) => (
                     <div key={stat.label}>
                       <div className="text-2xl font-black font-display text-orange-600">{stat.value}</div>

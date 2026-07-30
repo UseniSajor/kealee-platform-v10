@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev -p 3023",
-    "build": "next build",
+    "build": "next build && node scripts/prepare-standalone.mjs",
     "start": "next start -p 3023",
     "lint": "next lint"
   },
@@ -14,6 +14,7 @@
     "@kealee/auth": "workspace:*",
     "@kealee/database": "workspace:*",
     "@kealee/observability": "workspace:*",
+    "@kealee/redis": "workspace:*",
     "@kealee/ui": "workspace:*",
     "@langchain/core": "^1.1.34",
     "@langchain/langgraph": "^1.2.3",

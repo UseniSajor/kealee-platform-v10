@@ -5,7 +5,7 @@ const CATEGORIES = [
   {
     title: 'AI Design + Permits',
     price: 'From $395',
-    desc: 'Ask our AI what your project could look like. Get AI-generated concept visuals and a permit-ready package delivered in days.',
+    desc: 'Ask our AI what your project could look like. Get concept visuals and a permit-path planning package delivered in days.',
     img: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&q=80',
     cta: 'Start a design',
     href: '/concept',
