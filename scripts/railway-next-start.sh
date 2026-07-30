@@ -25,6 +25,12 @@ if [ "$APP_NAME" = "worker" ]; then
   exec node dist/index.js
 fi
 
+if [ "$APP_NAME" = "engineering-worker" ]; then
+  echo "Starting @kealee/engineering-worker (isolated GIS/BIM processor)"
+  cd /app
+  exec node services/engineering-worker/dist/index.js
+fi
+
 APP_DIR="/app/apps/${APP_NAME}"
 SERVER="${APP_DIR}/.next/standalone/apps/${APP_NAME}/server.js"
 
