@@ -7,6 +7,7 @@
  */
 
 import type { Metadata } from 'next'
+import Link from 'next/link'
 import CalendarEmbed from './CalendarEmbed'
 import { Phone, Clock, Shield, MessageCircle } from 'lucide-react'
 
@@ -36,6 +37,13 @@ export default function BookACallPage() {
           </h1>
           <p className="text-slate-300 text-base max-w-xl mx-auto">
             Talk directly with a Kealee construction specialist about your project — design direction, cost questions, permit scope, or next steps. Real humans, real answers.
+          </p>
+          <p className="mt-5 text-sm text-slate-300">
+            This consultation is for eligible Premium+ customers. For a new project,{' '}
+            <Link href="/get-started" className="font-bold text-white underline underline-offset-4">
+              start with the project guide
+            </Link>
+            .
           </p>
         </div>
       </section>

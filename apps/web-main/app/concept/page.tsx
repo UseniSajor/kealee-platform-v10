@@ -26,7 +26,12 @@ function ConceptStep1Inner() {
     <div>
       {/* Header */}
       <div className="mb-8">
-        <p className="text-xs font-bold uppercase tracking-widest text-[#E8724B] mb-2">Step 1 of 4</p>
+        <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+          <p className="text-xs font-bold uppercase tracking-widest text-[#E8724B]">Self-serve concept intake · Step 1 of 4</p>
+          <Link href="/get-started" className="text-xs font-semibold text-slate-500 underline-offset-4 hover:text-[#E8724B] hover:underline">
+            Not sure where to start?
+          </Link>
+        </div>
         <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-2">What are you designing?</h1>
         <p className="text-slate-500">
           Choose a project type to get started. Your design package — AI-generated renders, cost estimate, and permit scope — delivered in 2–6 days.{' '}
