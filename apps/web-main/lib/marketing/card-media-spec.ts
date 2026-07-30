@@ -77,13 +77,16 @@ const HOME_SPECS: Record<HomeServiceId, Omit<CardMediaSpec, 'key' | 'scope' | 'i
     imageType: 'after',
     style: 'transitional',
     roomType: 'new construction home',
+    generatesBefore: true,
+    beforeImageDescription:
+      'Vacant undeveloped residential lot before construction, bare dirt and overgrown brush, no landscaping or hardscape, raw graded site — realistic documentary construction photography, matches a real DMV new-construction project prior to groundbreaking',
     imageDescription:
-      'Completed modern house exterior after new construction, lush landscaping, golden hour sunset',
+      'Completed modern house exterior after new construction, lush finished landscaping with mature plantings and hardscape, golden hour sunset — realistic documentary construction photography, matches a real DMV new-construction project after final landscaping',
     videoMotion: 'walkthrough',
     mediaType: 'video',
     fallbackPhoto:
       'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=900&q=80&auto=format&fit=crop',
-    photoAlt: 'Completed modern new construction home exterior',
+    photoAlt: 'Completed modern new construction home exterior with finished landscaping',
   },
 }
 

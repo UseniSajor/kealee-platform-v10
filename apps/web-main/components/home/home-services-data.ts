@@ -25,6 +25,7 @@ export interface HomeJourneyService {
   mediaType: HomeServiceMediaType
   photoSrc: string
   photoAlt: string
+  beforePhotoSrc?: string
   videoSrc?: string
   videoWebM?: string
 }
@@ -33,27 +34,6 @@ function usdRange(min: number, max: number): string {
   const fmt = (n: number) => `$${n.toLocaleString('en-US')}`
   return `${fmt(min)} – ${fmt(max)}`
 }
-
-/**
- * Square photos for the four home journey circle cards.
- * Rules: must show live residential/commercial construction content.
- * No tax forms, no spreadsheets, no financial paperwork.
- * Swap for /public/media/service-photos/* when AI-generated assets are uploaded.
- */
-const PHOTOS = {
-  // AI Design Concepts — stunning interior/exterior design render
-  design:
-    'https://images.unsplash.com/photo-1618219908412-a29a1bb7b86e?w=900&q=80&auto=format&fit=crop',
-  // Permit Analysis — architect reviewing blueprints at construction site
-  permits:
-    'https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=900&q=80&auto=format&fit=crop',
-  // Cost Estimation — construction materials and lumber at active job site
-  estimate:
-    'https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?w=900&q=80&auto=format&fit=crop',
-  // Build & Manage — construction crew framing a residential home
-  build:
-    'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=900&q=80&auto=format&fit=crop',
-} as const
 
 export const HOME_JOURNEY_SERVICES: HomeJourneyService[] = [
   {
@@ -70,8 +50,9 @@ export const HOME_JOURNEY_SERVICES: HomeJourneyService[] = [
     gradientTo: '#00A3C4',
     progress: 25,
     mediaType: 'video',
-    photoSrc: PHOTOS.design,
-    photoAlt: 'Modern home interior AI design concept render',
+    photoSrc: '/media/service-photos/interior-reno-concept-after.jpg',
+    beforePhotoSrc: '/media/service-photos/interior-reno-concept-before.jpg',
+    photoAlt: 'Renovated open-plan home interior concept',
     videoSrc: '/media/service-videos/home-design-video.mp4',
   },
   {
@@ -88,8 +69,9 @@ export const HOME_JOURNEY_SERVICES: HomeJourneyService[] = [
     gradientTo: '#F6AD55',
     progress: 50,
     mediaType: 'video',
-    photoSrc: PHOTOS.estimate,
-    photoAlt: 'Construction materials and lumber at active residential job site',
+    photoSrc: '/media/service-photos/product-addition.jpg',
+    beforePhotoSrc: '/media/service-photos/product-addition-before.jpg',
+    photoAlt: 'Completed residential home addition',
     videoSrc: '/media/service-videos/home-estimate-video.mp4',
   },
   {
@@ -106,8 +88,9 @@ export const HOME_JOURNEY_SERVICES: HomeJourneyService[] = [
     gradientTo: '#B794F4',
     progress: 75,
     mediaType: 'video',
-    photoSrc: PHOTOS.permits,
-    photoAlt: 'Architect reviewing blueprints at residential construction site',
+    photoSrc: '/media/service-photos/product-facade.jpg',
+    beforePhotoSrc: '/media/service-photos/product-facade-before.jpg',
+    photoAlt: 'Completed permitted residential facade renovation',
     videoSrc: '/media/service-videos/home-permits-video.mp4',
   },
   {
@@ -124,8 +107,9 @@ export const HOME_JOURNEY_SERVICES: HomeJourneyService[] = [
     gradientTo: '#68D391',
     progress: 100,
     mediaType: 'video',
-    photoSrc: PHOTOS.build,
-    photoAlt: 'Construction crew framing a residential home addition on an active job site',
+    photoSrc: '/media/service-photos/design-build-after.jpg',
+    beforePhotoSrc: '/media/service-photos/design-build-before.jpg',
+    photoAlt: 'Completed professionally managed residential renovation',
     videoSrc: '/media/service-videos/home-build-video.mp4',
   },
 ]

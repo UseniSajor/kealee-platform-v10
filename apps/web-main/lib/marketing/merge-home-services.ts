@@ -14,6 +14,7 @@ export function mergeHomeServicesWithManifest(
       ...service,
       photoSrc: media.photoUrl || service.photoSrc,
       photoAlt: media.photoAlt || service.photoAlt,
+      beforePhotoSrc: media.beforePhotoUrl ?? service.beforePhotoSrc,
       mediaType: media.mediaType ?? service.mediaType,
       videoSrc: media.videoUrl ?? service.videoSrc,
       videoWebM: media.videoWebM ?? service.videoWebM,

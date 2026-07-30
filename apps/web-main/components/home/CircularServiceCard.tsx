@@ -27,6 +27,7 @@ export function CircularServiceCard({ service, index }: CircularServiceCardProps
   const [hovered, setHovered] = useState(false)
   const [showVideo, setShowVideo] = useState(service.mediaType === 'video')
   const [videoReady, setVideoReady] = useState(false)
+  const [showBefore, setShowBefore] = useState(false)
   const videoRef = useRef<HTMLVideoElement>(null)
   const rootRef = useRef<HTMLDivElement>(null)
   const Icon = ICONS[service.id]
@@ -117,14 +118,47 @@ export function CircularServiceCard({ service, index }: CircularServiceCardProps
           }`}
         >
           <Image
-            src={service.photoSrc}
-            alt={service.photoAlt}
+            src={showBefore && service.beforePhotoSrc ? service.beforePhotoSrc : service.photoSrc}
+            alt={showBefore && service.beforePhotoSrc ? `${service.photoAlt} — before` : service.photoAlt}
             fill
             className={`object-cover group-hover:scale-[1.03] transition-transform duration-700`}
             sizes="(max-width: 640px) 90vw, (max-width: 1024px) 45vw, 550px"
             priority={index < 2}
           />
         </div>
+
+        {/* Before/After toggle — sits above the readability overlay, clear of the bottom text block.
+            Hidden once the video takes over, since the video already shows the transformation. */}
+        {service.beforePhotoSrc && !(useVideo && videoReady) && (
+          <div className="absolute top-8 left-1/2 -translate-x-1/2 sm:top-10 lg:top-12 z-10 flex rounded-full bg-black/55 p-0.5 backdrop-blur-sm">
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                setShowBefore(true)
+              }}
+              className={`rounded-full px-3 py-1 text-[10px] font-semibold transition-colors ${
+                showBefore ? 'bg-white text-slate-900' : 'text-white/90 hover:text-white'
+              }`}
+            >
+              Before
+            </button>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                setShowBefore(false)
+              }}
+              className={`rounded-full px-3 py-1 text-[10px] font-semibold transition-colors ${
+                !showBefore ? 'bg-white text-slate-900' : 'text-white/90 hover:text-white'
+              }`}
+            >
+              After
+            </button>
+          </div>
+        )}
 
         {/* Readability overlays */}
         <div className="absolute inset-0 z-[2] bg-gradient-to-t from-slate-950 via-slate-900/60 to-black/35" />

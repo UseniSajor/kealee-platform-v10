@@ -6,6 +6,7 @@ import { Cormorant_Garamond, Barlow } from 'next/font/google'
 import { Play, Image as ImageIcon, Video } from 'lucide-react'
 import Link from 'next/link'
 import { CircularServiceCard } from './CircularServiceCard'
+import { HeroWalkthroughStrip } from './HeroWalkthroughStrip'
 import type { HomeJourneyService } from './home-services-data'
 
 const cormorant = Cormorant_Garamond({
@@ -174,6 +175,8 @@ export function ServicesJourneySection({ services }: { services: HomeJourneyServ
           <div className="w-px h-8 bg-white/50" />
         </div>
       </header>
+
+      <HeroWalkthroughStrip services={services} />
 
       {/* Cards listed in single column */}
       <div className="flex flex-col px-4 py-16 sm:px-6 sm:py-20 lg:px-8 lg:py-24 bg-[#F5F5F5] relative z-20">
