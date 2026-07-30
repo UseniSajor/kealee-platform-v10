@@ -88,37 +88,19 @@ export const PRIMARY_NAV: NavItem[] = [
     href:  '/products',
     groups: [
       {
-        title: 'AI Design',
+        title: 'Plan & Understand',
         links: [
-          { label: 'Whole Home Renovation',    href: '/products/whole-home',      description: 'Full concept, permits, contractor — From $585' },
-          { label: 'Kitchen Remodel',          href: '/products/kitchen-remodel', description: 'Layouts, permit scope, cost band — From $395' },
-          { label: 'Bathroom Remodel',         href: '/products/bath-remodel',    description: 'Layout, fixtures, permit scope — From $395' },
-          { label: 'Exterior Renovation',      href: '/products/exterior',        description: 'Facade, deck, siding, windows — From $395' },
-          { label: 'ADU & In-Law Suite',       href: '/products/adu',             description: 'Zoning check, concept, permit — From $395' },
-          { label: 'Basement Finish',          href: '/products/basement',        description: 'Egress check, layouts, permits — From $395' },
+          { label: 'Site Intelligence',         href: '/products#site-intelligence', description: 'Site plans, zoning, constraints, and buildability' },
+          { label: 'Concept & Planning',        href: '/products#concept-planning', description: 'Concepts, preliminary layouts, scope, and feasibility' },
+          { label: 'Estimation',                href: '/products#estimation', description: 'Planning and professionally reviewed estimates' },
         ],
       },
       {
-        title: 'Garden & Landscape',
+        title: 'Advance & Execute',
         links: [
-          { label: 'Garden & Farming Design',  href: '/products/garden',          description: 'Raised beds, irrigation, AI concept — From $395' },
-          { label: 'Landscape Design & Install', href: '/products/landscape',     description: 'Beds, hardscape, drainage — From $395' },
-        ],
-      },
-      {
-        title: 'Permits & Estimation',
-        links: [
-          { label: 'Permit Package',           href: '/products/permit-package',   description: 'File, track, respond — From $149' },
-          { label: 'Permit Research',          href: '/products/permit-research',  description: 'Know what you need before filing — $297' },
-          { label: 'Cost Estimate',            href: '/products/cost-estimate',    description: 'RSMeans-validated, lender-ready — From $595' },
-        ],
-      },
-      {
-        title: 'Design & Construction',
-        links: [
-          { label: 'Design Starter',           href: '/products/design-starter',  description: 'Schematic drawings from licensed pro — $1,200' },
-          { label: 'PM Advisory',              href: '/products/pm-advisory',     description: 'Monthly site visits, milestone approvals — $950' },
-          { label: 'ADU Bundle',               href: '/products/adu-bundle',      description: 'Concept + permit bundled — $1,345' },
+          { label: 'Permits & Professional',    href: '/products#permits-professional', description: 'Permit path, drawings, filing, and coordination' },
+          { label: 'Construction Execution',    href: '/products#construction-execution', description: 'Professional handoff, contractor match, and support' },
+          { label: 'Marketplace',               href: '/marketplace', description: 'Contractor and developer services' },
         ],
       },
     ],
@@ -149,7 +131,7 @@ export const NAV_CTA_SECONDARY = { label: 'Join Marketplace', href: '/marketplac
 /** Login dropdown entries — shown in nav, never internal routes */
 export const NAV_LOGIN_OPTIONS = [
   { label: 'Client / Contractor Login', href: '/auth/login',  description: 'Owner, contractor, and developer accounts' },
-  { label: 'Choose your portal',        href: '/login',       description: 'Pick Homeowner, Contractor, Developer, or staff' },
+  { label: 'Choose your portal',        href: '/signin',      description: 'Pick Homeowner, Contractor, Developer, or staff' },
 ]
 
 // ── Footer links ──────────────────────────────────────────────────────────────
@@ -174,7 +156,7 @@ export const FOOTER_NAV = {
   ],
   portals: [
     { label: 'Client Login',               href: '/auth/login' },
-    { label: 'Owner Portal',               href: process.env.NEXT_PUBLIC_OWNER_PORTAL_URL ?? '/login' },
+    { label: 'Owner Portal',               href: process.env.NEXT_PUBLIC_OWNER_PORTAL_URL ?? '/signin' },
     { label: 'Marketplace Login',          href: '/auth/login?next=/marketplace' },
   ],
   company: [

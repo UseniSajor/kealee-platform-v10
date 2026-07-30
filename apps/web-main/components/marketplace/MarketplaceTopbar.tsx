@@ -67,7 +67,7 @@ export function MarketplaceTopbar() {
               </Link>
             ))}
             <Link
-              href="/login"
+              href="/signin"
               className="text-xs font-medium text-gray-600 hover:text-[#1A2B4A]"
             >
               Sign In

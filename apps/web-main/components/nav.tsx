@@ -9,7 +9,35 @@ import { KealeeLogo } from '@/components/KealeeLogo'
 import { SERVICES } from '@/lib/services-config'
 import { isAgencyPartnerShellPath } from '@/lib/agency-partner-shell'
 
-// Services dropdown shows design and construction side-by-side
+const PUBLIC_CATALOG_NAV = [
+  {
+    label: 'Site Intelligence',
+    href: '/products#site-intelligence',
+    detail: 'Site plans · zoning · buildability',
+  },
+  {
+    label: 'Concept & Planning',
+    href: '/products#concept-planning',
+    detail: 'Concepts · scope · feasibility',
+  },
+  {
+    label: 'Estimation',
+    href: '/products#estimation',
+    detail: 'Planning · reviewed estimates',
+  },
+  {
+    label: 'Permits & Professional',
+    href: '/products#permits-professional',
+    detail: 'Permit path · drawings · coordination',
+  },
+  {
+    label: 'Construction Execution',
+    href: '/products#construction-execution',
+    detail: 'Professional handoff · contractor match',
+  },
+] as const
+
+// Product dropdown uses buyer outcomes; project types remain intake choices.
 function ServicesDropdown() {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
@@ -32,28 +60,28 @@ function ServicesDropdown() {
         aria-expanded={open}
         className="flex items-center gap-1 font-medium text-sm text-slate-600 hover:text-slate-900 transition whitespace-nowrap"
       >
-        Services <ChevronDown className={`w-3.5 h-3.5 transition-transform ${open ? 'rotate-180' : ''}`} />
+        Products <ChevronDown className={`w-3.5 h-3.5 transition-transform ${open ? 'rotate-180' : ''}`} />
       </button>
 
       {open && (
         <div className="absolute left-0 top-full mt-1 w-[640px] bg-white rounded-2xl shadow-xl border border-slate-200 p-5 z-50">
           <div className="grid grid-cols-2 gap-8 divide-x divide-slate-100">
-            {/* COLUMN 1: DESIGN & PLANNING */}
+            {/* COLUMN 1: PUBLIC CATALOG */}
             <div>
               <p className="text-[11px] font-bold uppercase tracking-widest text-[#E8724B] mb-4 flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-[#E8724B]"></span>
-                Design & Planning
+                Product catalog
               </p>
               <ul className="space-y-1">
-                {SERVICES.map((svc) => (
-                  <li key={`design-${svc.slug}`}>
+                {PUBLIC_CATALOG_NAV.map((item) => (
+                  <li key={item.href}>
                     <Link
-                      href={`/services/${svc.slug}`}
+                      href={item.href}
                       onClick={() => setOpen(false)}
                       className="block rounded-lg px-2.5 py-2 text-sm text-slate-700 hover:bg-orange-50 hover:text-[#E8724B] transition"
                     >
-                      <span className="font-semibold block">{svc.label}</span>
-                      <span className="block text-[11px] text-slate-400 mt-0.5">{svc.deliverableLabel} · {svc.deliveryDays}</span>
+                      <span className="font-semibold block">{item.label}</span>
+                      <span className="block text-[11px] text-slate-400 mt-0.5">{item.detail}</span>
                     </Link>
                   </li>
                 ))}
@@ -64,14 +92,14 @@ function ServicesDropdown() {
             <div className="pl-8">
               <p className="text-[11px] font-bold uppercase tracking-widest text-blue-600 mb-4 flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
-                Estimate & Permit
+                Guided entry points
               </p>
               <ul className="space-y-1">
                 {[
                   { href: '/estimate', label: 'Cost Estimation', detail: 'Scope · quantities · assumptions' },
                   { href: '/permits', label: 'Permit Preparation', detail: 'Requirements · documents · filing options' },
+                  { href: '/concept', label: 'Design Concepts', detail: 'Choose a project type and concept outcome' },
                   { href: '/design-services', label: 'Professional Drawings', detail: 'Qualified professional when scoped' },
-                  { href: '/service-policies', label: 'Service Policies', detail: 'Delivery · revisions · limitations' },
                 ].map(item => (
                   <li key={item.href}>
                     <Link
@@ -101,13 +129,13 @@ function ServicesDropdown() {
             </div>
           </div>
           <div className="mt-4 pt-4 border-t border-slate-100 flex items-center justify-between">
-            <p className="text-xs text-slate-500">Concept → estimate → permit path → Marketplace handoff</p>
+            <p className="text-xs text-slate-500">Site intelligence → concept → estimate → permits → execution</p>
             <Link
-              href="/gallery"
+              href="/products"
               onClick={() => setOpen(false)}
               className="text-xs font-semibold text-orange-600 hover:text-orange-700"
             >
-              Browse Project Gallery →
+              View all products →
             </Link>
           </div>
         </div>
@@ -160,22 +188,22 @@ function MobileServicesAccordion({ onClose }: { onClose: () => void }) {
         aria-expanded={open}
         className="w-full flex items-center justify-between rounded-lg px-3 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50"
       >
-        Services
+        Products
         <ChevronDown className={`w-4 h-4 transition-transform ${open ? 'rotate-180' : ''}`} />
       </button>
       {open && (
         <div className="ml-4 mt-2 space-y-4 pl-2 border-l border-slate-100">
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-widest text-[#E8724B] mb-1">Design & Planning</p>
+            <p className="text-[10px] font-bold uppercase tracking-widest text-[#E8724B] mb-1">Product catalog</p>
             <div className="space-y-0.5">
-              {SERVICES.map((svc) => (
+              {PUBLIC_CATALOG_NAV.map((item) => (
                 <Link
-                  key={`mobile-design-${svc.slug}`}
-                  href={`/services/${svc.slug}`}
+                  key={item.href}
+                  href={item.href}
                   onClick={onClose}
                   className="block rounded-lg px-3 py-1.5 text-sm text-slate-500 hover:bg-slate-50 hover:text-slate-800 transition"
                 >
-                  {svc.label}
+                  {item.label}
                 </Link>
               ))}
             </div>
@@ -261,7 +289,7 @@ export function SiteNav() {
             <div className="hidden lg:block w-px h-6 bg-gray-300" />
 
             <Link
-              href="/auth/login"
+              href="/signin"
               className="hidden sm:block text-sm text-slate-600 hover:text-slate-900 font-medium transition whitespace-nowrap"
             >
               Sign in
@@ -315,7 +343,7 @@ export function SiteNav() {
             {/* Account */}
             <div className="border-t border-slate-200 mt-3 pt-3 space-y-2">
               <Link
-                href="/auth/login"
+                href="/signin"
                 onClick={() => setMobileMenuOpen(false)}
                 className="block rounded-lg px-3 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50 transition"
               >

@@ -9,7 +9,7 @@ const PORTALS = [
     role:    'Homeowners',
     desc:    'Track builds, approve payments, view your project dashboard, and message your team — all in one place.',
     accent:  '#2ABFBF',
-    href:    '/login',
+    href:    '/signin',
   },
   {
     emoji:   '🔨',

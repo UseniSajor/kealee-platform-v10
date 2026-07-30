@@ -12,10 +12,10 @@ interface Message {
 
 const SUGGESTED_PROMPTS: Record<string, string[]> = {
   homepage: [
-    'How much does a kitchen remodel cost?',
-    'Do I need a permit for my addition?',
-    'What is an AI concept package?',
-    'How do I find a contractor?',
+    'What can I build on my property?',
+    'How much could my project cost?',
+    'Compare Kealee site plan options',
+    'How do I evaluate land for development?',
   ],
   permit: [
     'Do I need plans before submitting a permit?',
@@ -30,16 +30,18 @@ const SUGGESTED_PROMPTS: Record<string, string[]> = {
     'How accurate are the renderings?',
   ],
   default: [
-    'What services does Kealee offer?',
-    'How does the AI concept work?',
-    'How are contractors vetted?',
-    'Where do I start my project?',
+    'What can I build on this parcel?',
+    'Explain zoning, setbacks, and overlays',
+    'How do I estimate development yield?',
+    'Which Kealee product should I start with?',
   ],
 }
 
 // Infer a CTA link from assistant response text
 function detectCTA(content: string): { label: string; href: string } | null {
   const c = content.toLowerCase()
+  if (/site plan|site feasibility|buildable|parcel|setback|land development/i.test(c)) return { label: 'Explore Site Intelligence', href: '/products#site-intelligence' }
+  if (/kealee.*product|service fee|public catalog/i.test(c)) return { label: 'View Products & Pricing', href: '/products' }
   if (/permit/i.test(c) && /have.*plan|existing plan/i.test(c)) return { label: 'Get Permit Services', href: '/permits' }
   if (/permit/i.test(c) && /need.*plan|design service/i.test(c)) return { label: 'Get Permit-Ready Drawings', href: '/intake/professional_drawings' }
   if (/permit/i.test(c)) return { label: 'Get Permit Services', href: '/permits' }
@@ -288,7 +290,7 @@ export function AskChatBar({
               ? 'Ask a follow-up…'
               : context === 'concept-intake'
                 ? 'Ask about photos, deliverables, timelines…'
-                : 'Ask anything — permits, costs, design, contractors…'
+                : 'Ask about construction, real estate, land, costs, zoning…'
           }
           className={`flex-1 bg-transparent px-5 py-3.5 text-sm outline-none ${inputTextColor} ${inputPlaceholderColor}`}
           disabled={isLoading}

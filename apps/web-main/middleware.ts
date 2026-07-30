@@ -15,6 +15,8 @@ import { getMarketplaceAudience } from '@/lib/marketplace-routing'
 // Keep in sync with marketing + checkout funnels (anonymous users must never hit auth wall).
 const PUBLIC_ROUTES = [
   '/login',
+  '/staff-login',
+  '/signin',
   '/marketing/login',
   '/auth/login',
   '/auth/signup',
@@ -154,6 +156,8 @@ export async function middleware(request: NextRequest) {
     // Redirect authenticated users away from sign-in entry (web-main has no /dashboard — use home)
     const isAuthEntry =
       pathname === '/login' ||
+      pathname === '/staff-login' ||
+      pathname === '/signin' ||
       pathname === '/marketing/login' ||
       (pathname.startsWith('/auth/') && !pathname.startsWith('/auth/callback'))
     if (isAuthEntry && user) {

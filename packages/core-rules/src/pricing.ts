@@ -41,6 +41,11 @@ export const CANONICAL_PRICE_CENTS = {
     certified: 79_900,
     estimatePermitBundle: 109_900,
   },
+  siteIntelligence: {
+    preliminarySitePlan: 24_900,
+    verifiedSiteFeasibility: 59_900,
+    permitSitePlanCoordination: 199_500,
+  },
   professionalDesign: 499_000,
   aduBundle: 99_900,
   pmAdvisoryMonthly: 29_900,
@@ -136,6 +141,217 @@ export const PLATFORM_PRICING = {
     feasibilityExpressCents: CANONICAL_PRICE_CENTS.platform.developerFeasibility,
   },
 } as const
+
+export type PublicCatalogCategoryId =
+  | 'site-intelligence'
+  | 'concept-planning'
+  | 'estimation'
+  | 'permits-professional'
+  | 'construction-execution'
+
+export interface PublicCatalogProduct {
+  key: string
+  categoryId: PublicCatalogCategoryId
+  name: string
+  shortDescription: string
+  href: string
+  priceCents?: number
+  pricePrefix?: string
+  priceLabel?: string
+  priceSuffix?: string
+  deliveryDays?: string
+  audience: readonly ('homeowner' | 'contractor' | 'developer')[]
+  preliminary?: boolean
+}
+
+/**
+ * Buyer-facing catalog. Project types (kitchen, bath, ADU, pool, landscape,
+ * multifamily, and so on) are intake variants, not separate top-level SKUs.
+ */
+export const PUBLIC_CATALOG_CATEGORIES: ReadonlyArray<{
+  id: PublicCatalogCategoryId
+  label: string
+  description: string
+}> = [
+  {
+    id: 'site-intelligence',
+    label: 'Site Intelligence',
+    description: 'Understand the property, constraints, and preliminary buildable area before design.',
+  },
+  {
+    id: 'concept-planning',
+    label: 'Concept & Planning',
+    description: 'Turn a project idea into a visual concept, scope, and budget direction.',
+  },
+  {
+    id: 'estimation',
+    label: 'Estimation',
+    description: 'Build a decision-ready cost plan before bids and construction.',
+  },
+  {
+    id: 'permits-professional',
+    label: 'Permits & Professional Services',
+    description: 'Advance verified project data through drawings, applications, and professional review.',
+  },
+  {
+    id: 'construction-execution',
+    label: 'Construction Execution',
+    description: 'Move approved preconstruction work into professional and contractor handoff.',
+  },
+] as const
+
+export const PUBLIC_PRODUCT_CATALOG: readonly PublicCatalogProduct[] = [
+  {
+    key: 'preliminary_site_plan',
+    categoryId: 'site-intelligence',
+    name: 'Preliminary Site Plan',
+    shortDescription: 'Parcel, setbacks, overlays, preliminary buildable area, and one proposed footprint.',
+    href: '/get-started?service=preliminary_site_plan',
+    priceCents: CANONICAL_PRICE_CENTS.siteIntelligence.preliminarySitePlan,
+    deliveryDays: '2–5 days',
+    audience: ['homeowner', 'contractor'],
+    preliminary: true,
+  },
+  {
+    key: 'verified_site_feasibility',
+    categoryId: 'site-intelligence',
+    name: 'Verified Site Feasibility Plan',
+    shortDescription: 'Verified zoning inputs, constraints, buildable envelope, source record, and proposed footprint.',
+    href: '/get-started?service=verified_site_feasibility',
+    priceCents: CANONICAL_PRICE_CENTS.siteIntelligence.verifiedSiteFeasibility,
+    deliveryDays: '3–7 days',
+    audience: ['homeowner', 'contractor', 'developer'],
+    preliminary: true,
+  },
+  {
+    key: 'developer_feasibility',
+    categoryId: 'site-intelligence',
+    name: 'Developer Feasibility Express',
+    shortDescription: 'Yield, parking, massing, preliminary earthwork, cost and NOI inputs, and entitlement checklist.',
+    href: '/products/developer-feasibility-express',
+    priceCents: CANONICAL_PRICE_CENTS.platform.developerFeasibility,
+    priceSuffix: '/site',
+    deliveryDays: '4–7 days',
+    audience: ['developer'],
+    preliminary: true,
+  },
+  {
+    key: 'concept',
+    categoryId: 'concept-planning',
+    name: 'Concept Plan',
+    shortDescription: 'Property-specific visualization, preliminary layout, scope, and permit-path direction.',
+    href: '/concept',
+    priceCents: CANONICAL_PRICE_CENTS.concept.genericStart,
+    pricePrefix: 'From ',
+    audience: ['homeowner', 'contractor'],
+    preliminary: true,
+  },
+  {
+    key: 'project_launch',
+    categoryId: 'concept-planning',
+    name: 'Concept + Feasibility',
+    shortDescription: 'Concept, early estimate, zoning and permit direction, and contractor handoff.',
+    href: '/products/project-launch-package',
+    priceCents: CANONICAL_PRICE_CENTS.platform.homeownerLaunch,
+    audience: ['homeowner'],
+    preliminary: true,
+  },
+  {
+    key: 'detailed_estimate',
+    categoryId: 'estimation',
+    name: 'Detailed Construction Estimate',
+    shortDescription: 'Trade-by-trade planning estimate with quantities, assumptions, and regional cost references.',
+    href: '/estimate',
+    priceCents: CANONICAL_PRICE_CENTS.estimation.detailed,
+    deliveryDays: '3–5 days',
+    audience: ['homeowner', 'contractor', 'developer'],
+  },
+  {
+    key: 'certified_estimate',
+    categoryId: 'estimation',
+    name: 'Professionally Reviewed Estimate',
+    shortDescription: 'A documented estimate prepared for higher-stakes financing, bid, or investment review.',
+    href: '/intake/certified_estimate',
+    priceCents: CANONICAL_PRICE_CENTS.estimation.certified,
+    deliveryDays: '5–7 days',
+    audience: ['homeowner', 'contractor', 'developer'],
+  },
+  {
+    key: 'permit_assessment',
+    categoryId: 'permits-professional',
+    name: 'Permit Path Assessment',
+    shortDescription: 'Jurisdiction requirements, application checklist, agency-fee guidance, and submission roadmap.',
+    href: '/permits',
+    priceCents: CANONICAL_PRICE_CENTS.permits.assessment,
+    audience: ['homeowner', 'contractor', 'developer'],
+    preliminary: true,
+  },
+  {
+    key: 'permit_coordination',
+    categoryId: 'permits-professional',
+    name: 'Permit Application & Coordination',
+    shortDescription: 'Application preparation, filing support, tracking, and coordinated comment response.',
+    href: '/permits',
+    priceCents: CANONICAL_PRICE_CENTS.permits.managed,
+    pricePrefix: 'From ',
+    audience: ['homeowner', 'contractor', 'developer'],
+  },
+  {
+    key: 'permit_site_plan',
+    categoryId: 'permits-professional',
+    name: 'Survey-Based Permit Site Plan',
+    shortDescription: 'Survey-backed site-plan coordination and professional review for jurisdiction-specific submission.',
+    href: '/get-started?service=permit_site_plan',
+    priceCents: CANONICAL_PRICE_CENTS.siteIntelligence.permitSitePlanCoordination,
+    pricePrefix: 'From ',
+    audience: ['homeowner', 'contractor', 'developer'],
+  },
+  {
+    key: 'professional_design',
+    categoryId: 'permits-professional',
+    name: 'Professional Design / Permit-Ready Package',
+    shortDescription: 'Scoped construction-document services with the required licensed professionals.',
+    href: '/design-services',
+    priceCents: CANONICAL_PRICE_CENTS.professionalDesign,
+    pricePrefix: 'From ',
+    audience: ['homeowner', 'contractor', 'developer'],
+  },
+  {
+    key: 'contractor_match',
+    categoryId: 'construction-execution',
+    name: 'Contractor Match',
+    shortDescription: 'Match approved project scope with marketplace professionals suited to the location and work.',
+    href: '/marketplace',
+    priceLabel: 'Included / no fee',
+    audience: ['homeowner'],
+  },
+  {
+    key: 'construction_consultation',
+    categoryId: 'construction-execution',
+    name: 'Construction Consultation & Owner Support',
+    shortDescription: 'Preconstruction, owner-representation, and design-build execution support scoped to the project.',
+    href: '/build',
+    priceLabel: 'Scoped',
+    audience: ['homeowner', 'developer'],
+  },
+] as const
+
+export function getPublicCatalogProduct(key: string): PublicCatalogProduct | null {
+  return PUBLIC_PRODUCT_CATALOG.find(product => product.key === key) ?? null
+}
+
+export function formatCatalogPrice(product: PublicCatalogProduct): string {
+  if (product.priceLabel) return product.priceLabel
+  if (product.priceCents == null) return 'Scoped'
+  return `${product.pricePrefix ?? ''}${formatPriceFromCents(product.priceCents).replace('.00', '')}${product.priceSuffix ?? ''}`
+}
+
+/** Compact, server-generated context for public assistants and search tools. */
+export function getPublicCatalogAssistantContext(): string {
+  return PUBLIC_PRODUCT_CATALOG.map(product =>
+    `- ${product.name}: ${formatCatalogPrice(product)}. ${product.shortDescription} Next step: ${product.href}`
+  ).join('\n')
+}
 
 /**
  * Canonical role-based purchase journey copy.
@@ -323,6 +539,9 @@ export const INTAKE_PRICE_CENTS: Record<string, IntakePriceEntry> = {
 
   // ── Permits + estimation ────────────────────────────────────────────────
   permit_path_only:          { label: 'Permit Package',                           cents: CANONICAL_PRICE_CENTS.permits.assessment,  deliveryDays: '3–5 days'  },
+  preliminary_site_plan:     { label: 'Preliminary Site Plan',                    cents: CANONICAL_PRICE_CENTS.siteIntelligence.preliminarySitePlan, deliveryDays: '2–5 days' },
+  verified_site_feasibility: { label: 'Verified Site Feasibility Plan',           cents: CANONICAL_PRICE_CENTS.siteIntelligence.verifiedSiteFeasibility, deliveryDays: '3–7 days' },
+  permit_site_plan:          { label: 'Survey-Based Permit Site Plan Coordination', cents: CANONICAL_PRICE_CENTS.siteIntelligence.permitSitePlanCoordination, deliveryDays: 'Scoped after survey review' },
   cost_estimate:             { label: 'Detailed Cost Estimate — RSMeans validated', cents: CANONICAL_PRICE_CENTS.estimation.detailed, deliveryDays: '3–5 days'  },
   certified_estimate:        { label: 'Certified Estimate — Notarized for lenders', cents: CANONICAL_PRICE_CENTS.estimation.certified, deliveryDays: '5–7 days' },
   professional_drawings:     { label: 'Permit-Ready Design Plans — priced after scope review', cents: CANONICAL_PRICE_CENTS.professionalDesign, deliveryDays: '7–14 days' },

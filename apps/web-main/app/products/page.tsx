@@ -1,7 +1,12 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { ArrowRight, CheckCircle } from 'lucide-react'
-import { getProductsByCategory, type Product } from '@/lib/products'
+import {
+  PUBLIC_CATALOG_CATEGORIES,
+  PUBLIC_PRODUCT_CATALOG,
+  formatCatalogPrice,
+  type PublicCatalogProduct,
+} from '@kealee/core-rules'
 import { REVENUE_PRODUCT_CATALOG } from '@/lib/revenue-product-catalog'
 import { BuyingPathways } from '@/components/commerce/BuyingPathways'
 
@@ -10,87 +15,34 @@ export const metadata: Metadata = {
   description: 'Every Kealee service in one place. AI design, permits, cost estimation, construction management, and landscape — all starting with AI concept.',
 }
 
-const CATEGORIES = [
-  {
-    id: 'ai-design' as const,
-    label: 'AI Design Engine',
-    description: 'Start here. See your project before anything is built.',
-    accent: '#E8793A',
-  },
-  {
-    id: 'landscape' as const,
-    label: 'Garden & Landscape',
-    description: 'AI concept, then permits if needed, then contractor match.',
-    accent: '#38A169',
-  },
-  {
-    id: 'architectural' as const,
-    label: 'Architectural & Engineering',
-    description: 'Licensed professionals. Schematic through permit-ready.',
-    accent: '#1A2B4A',
-  },
-  {
-    id: 'permits' as const,
-    label: 'Permits & Compliance',
-    description: 'Jurisdiction-aware filing, tracking, and reviewer response where available nationwide.',
-    accent: '#4A8FA8',
-  },
-  {
-    id: 'estimation' as const,
-    label: 'Cost Estimation',
-    description: 'Regional cost-reference documentation with professional-review options.',
-    accent: '#4A8FA8',
-  },
-  {
-    id: 'construction' as const,
-    label: 'Construction & PM',
-    description: 'Project management, bundles, and oversight for active builds.',
-    accent: '#1A2B4A',
-  },
-  {
-    id: 'specialty' as const,
-    label: 'Specialty Services',
-    description: 'Historic preservation, water mitigation, and site remediation.',
-    accent: '#3A7D52',
-  },
-]
+const CATEGORY_ACCENTS = {
+  'site-intelligence': '#0F766E',
+  'concept-planning': '#E8793A',
+  estimation: '#2563EB',
+  'permits-professional': '#7C3AED',
+  'construction-execution': '#1A2B4A',
+} as const
 
-function ProductCard({ product }: { product: Product }) {
-  const accent = product.accentColor ?? '#E8793A'
+function CatalogProductCard({ product }: { product: PublicCatalogProduct }) {
+  const accent = CATEGORY_ACCENTS[product.categoryId]
   return (
     <Link
-      href={`/products/${product.slug}`}
-      className="group flex flex-col rounded-xl bg-white border border-gray-200 overflow-hidden hover:shadow-md transition-all hover:-translate-y-0.5"
+      href={product.href}
+      className="group flex flex-col rounded-xl bg-white border border-gray-200 p-5 hover:shadow-md transition-all hover:-translate-y-0.5"
     >
-      {/* Image */}
-      <div className="relative h-44 overflow-hidden">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={product.imageUrl}
-          alt={product.name}
-          className="w-full h-full object-cover transition-transform group-hover:scale-105"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
-        <span
-          className="absolute bottom-3 left-3 rounded-full px-2.5 py-0.5 text-xs font-bold text-white"
-          style={{ backgroundColor: accent }}
-        >
-          {product.badge}
+      <div className="flex items-start justify-between gap-4">
+        <span className="rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-white" style={{ backgroundColor: accent }}>
+          {product.audience.join(' · ')}
         </span>
+        <span className="shrink-0 text-sm font-black" style={{ color: accent }}>{formatCatalogPrice(product)}</span>
       </div>
-      {/* Content */}
-      <div className="flex flex-col flex-1 p-5">
-        <div className="text-xs font-semibold uppercase tracking-widest mb-1.5" style={{ color: accent }}>
-          {product.label}
-        </div>
-        <h3 className="font-bold text-base font-display mb-2" style={{ color: '#1A2B4A' }}>{product.name}</h3>
-        <p className="text-sm text-gray-500 leading-relaxed flex-1 line-clamp-2">{product.tagline}</p>
-        <div className="mt-4 flex items-center justify-between">
-          <span className="text-sm font-bold" style={{ color: accent }}>{product.price}</span>
-          <span className="flex items-center gap-1 text-sm font-semibold group-hover:gap-2 transition-all" style={{ color: accent }}>
-            View <ArrowRight className="h-3.5 w-3.5" />
-          </span>
-        </div>
+      <h3 className="mt-4 font-bold text-lg font-display" style={{ color: '#1A2B4A' }}>{product.name}</h3>
+      <p className="mt-2 flex-1 text-sm text-gray-500 leading-relaxed">{product.shortDescription}</p>
+      <div className="mt-5 flex items-center justify-between border-t border-slate-100 pt-4">
+        <span className="text-xs text-slate-400">{product.deliveryDays ?? 'Scope confirmed after intake'}</span>
+        <span className="flex items-center gap-1 text-sm font-semibold group-hover:gap-2 transition-all" style={{ color: accent }}>
+          Start <ArrowRight className="h-3.5 w-3.5" />
+        </span>
       </div>
     </Link>
   )
@@ -130,23 +82,23 @@ export default function ProductsPage() {
       {/* Category sections */}
       <div id="homeowner-services" className="mx-auto max-w-6xl scroll-mt-24 px-4 sm:px-6 lg:px-8 py-16 space-y-20">
         <div className="mx-auto max-w-3xl text-center">
-          <span className="text-xs font-bold uppercase tracking-widest text-orange-600">Homeowner service catalog</span>
-          <h2 className="mt-3 font-display text-3xl font-bold text-[#1A2B4A]">Shop by project need</h2>
+          <span className="text-xs font-bold uppercase tracking-widest text-orange-600">Public product catalog</span>
+          <h2 className="mt-3 font-display text-3xl font-bold text-[#1A2B4A]">Buy the next project outcome</h2>
           <p className="mt-3 text-sm leading-relaxed text-gray-500">
-            These are one-time services for an individual property or project. Select a project type to see its exact
-            deliverables, intake, turnaround, and checkout options.
+            Kitchens, additions, ADUs, pools, landscapes, commercial projects, and multifamily sites are selected during
+            intake. The products below remain consistent across project types.
           </p>
         </div>
-        {CATEGORIES.map(cat => {
-          const products = getProductsByCategory(cat.id)
+        {PUBLIC_CATALOG_CATEGORIES.map(cat => {
+          const products = PUBLIC_PRODUCT_CATALOG.filter(product => product.categoryId === cat.id)
           if (products.length === 0) return null
           return (
-            <section key={cat.id}>
+            <section key={cat.id} id={cat.id} className="scroll-mt-24">
               <div className="flex items-end justify-between mb-8 border-b border-gray-100 pb-4">
                 <div>
                   <span
                     className="text-xs font-bold uppercase tracking-widest block mb-1"
-                    style={{ color: cat.accent }}
+                    style={{ color: CATEGORY_ACCENTS[cat.id] }}
                   >
                     {cat.label}
                   </span>
@@ -155,7 +107,7 @@ export default function ProductsPage() {
               </div>
               <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                 {products.map(product => (
-                  <ProductCard key={product.slug} product={product} />
+                  <CatalogProductCard key={product.key} product={product} />
                 ))}
               </div>
             </section>
