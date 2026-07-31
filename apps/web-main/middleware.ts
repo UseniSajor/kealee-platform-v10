@@ -153,11 +153,12 @@ export async function middleware(request: NextRequest) {
 
   // Allow public routes
   if (PUBLIC_ROUTES.some(route => pathname === route || pathname.startsWith(route + '/'))) {
-    // Redirect authenticated users away from sign-in entry (web-main has no /dashboard — use home)
+    // Redirect authenticated users away from credential-entry forms (pointless once logged in).
+    // /signin (and the /login, /staff-login redirects into it) is NOT included here — it's a
+    // navigation hub covering owner, contractor, developer, AND staff portals, so an already
+    // -authenticated user (e.g. via a shared .kealee.com session cookie from the owner portal)
+    // still needs to reach it to get to Command Center / Admin Console links.
     const isAuthEntry =
-      pathname === '/login' ||
-      pathname === '/staff-login' ||
-      pathname === '/signin' ||
       pathname === '/marketing/login' ||
       (pathname.startsWith('/auth/') && !pathname.startsWith('/auth/callback'))
     if (isAuthEntry && user) {

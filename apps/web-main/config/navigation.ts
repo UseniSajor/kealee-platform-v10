@@ -157,6 +157,7 @@ export const FOOTER_NAV = {
     { label: 'Milestone Pay',              href: '/milestone-pay' },
   ],
   portals: [
+    { label: 'Kealee Sign In',             href: '/staff-login' },
     { label: 'Client Login',               href: '/auth/login' },
     { label: 'Owner Portal',               href: process.env.NEXT_PUBLIC_OWNER_PORTAL_URL ?? '/signin' },
     { label: 'Marketplace Login',          href: '/auth/login?next=/marketplace' },

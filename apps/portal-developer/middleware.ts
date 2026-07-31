@@ -31,6 +31,20 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(redirectUrl)
   }
 
+  // A homeowner or contractor account signed in elsewhere still carries a valid
+  // Supabase session (auth cookies are shared across .kealee.com) — that alone
+  // must not grant developer-portal access. Only block on an explicit
+  // mismatch so accounts predating this field aren't locked out.
+  if (isProtectedPath && session) {
+    const role = session.user.user_metadata?.role
+    if (role && role !== 'developer') {
+      const redirectUrl = request.nextUrl.clone()
+      redirectUrl.pathname = '/login'
+      redirectUrl.search = '?error=wrong_portal'
+      return NextResponse.redirect(redirectUrl)
+    }
+  }
+
   const authPaths = ['/login', '/signup']
   const isAuthPath = authPaths.some(path => request.nextUrl.pathname.startsWith(path))
 
