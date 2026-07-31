@@ -28,6 +28,7 @@ export function GlobalChatBar() {
         }}
       >
         <AskChatBar
+          key={pathname}
           context="default"
           variant="light"
           suggestionsUp

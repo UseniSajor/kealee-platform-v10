@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect, useCallback } from 'react'
-import { ArrowUp, Loader2 } from 'lucide-react'
+import { ArrowUp, Loader2, X } from 'lucide-react'
 import Link from 'next/link'
 
 interface Message {
@@ -96,6 +96,30 @@ export function AskChatBar({
       threadRef.current.scrollTop = threadRef.current.scrollHeight
     }
   }, [messages])
+
+  const closeSession = useCallback(() => {
+    abortRef.current?.abort()
+    abortRef.current = null
+    setMessages([])
+    setInput('')
+    setIsLoading(false)
+    setStreamingId(null)
+    setIsFocused(false)
+    inputRef.current?.blur()
+  }, [])
+
+  useEffect(() => {
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape' || (!hasMessages && !isFocused)) return
+      event.preventDefault()
+      closeSession()
+    }
+
+    document.addEventListener('keydown', handleEscape)
+    return () => document.removeEventListener('keydown', handleEscape)
+  }, [closeSession, hasMessages, isFocused])
+
+  useEffect(() => () => abortRef.current?.abort(), [])
 
   const sendMessage = useCallback(async (text: string) => {
     const trimmed = text.trim()
@@ -194,6 +218,22 @@ export function AskChatBar({
           }`}
           style={{ backgroundColor: threadBg, borderColor: threadBorder, backdropFilter: 'blur(12px)' }}
         >
+          <div className="sticky top-0 z-10 flex justify-end">
+            <button
+              type="button"
+              onClick={closeSession}
+              className={`inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-semibold transition-colors ${
+                isDark
+                  ? 'bg-slate-950/70 text-white/80 hover:bg-slate-950 hover:text-white'
+                  : 'bg-white text-slate-600 shadow-sm ring-1 ring-slate-200 hover:text-slate-950'
+              }`}
+              aria-label="Close Ask Kealee conversation"
+              title="Close conversation (Esc)"
+            >
+              <X className="h-3.5 w-3.5" />
+              Close
+            </button>
+          </div>
           {messages.map(msg => {
             const isStreaming = msg.id === streamingId
             const cta =

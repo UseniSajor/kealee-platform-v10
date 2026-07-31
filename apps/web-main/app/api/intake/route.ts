@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { SERVICE_DELIVERABLES } from '@/lib/service-deliverables'
+import { buildImmediateIntakeDeliverables } from '@/lib/immediate-intake-deliverables'
 import * as Sentry from '@sentry/nextjs'
 import { mergeAttributionMetadata, parseUtmFromRequest } from '@/lib/marketing/utm-metadata'
 import { trackLeadSubmitted } from '@/lib/marketing/ga4-server'
@@ -50,6 +51,11 @@ export async function POST(req: NextRequest) {
 
     const deliverable = SERVICE_DELIVERABLES[path]
     const resolvedFormData: Record<string, unknown> = { ...fd, funnelStage: 'lead' }
+    resolvedFormData.immediateDeliverables = buildImmediateIntakeDeliverables({
+      projectPath: path,
+      projectAddress: String(projectAddress),
+      formData: fd,
+    })
     if (utm.source) resolvedFormData.utm_source = utm.source
     if (utm.medium) resolvedFormData.utm_medium = utm.medium
     if (utm.campaign) resolvedFormData.utm_campaign = utm.campaign
@@ -184,6 +190,8 @@ export async function GET(req: NextRequest) {
     ...data,
     hasDesign,
     hasPermit,
+    immediateDeliveryReady: Boolean(data.form_data?.immediateDeliverables),
+    immediateDeliverables: data.form_data?.immediateDeliverables ?? null,
     contractorMatchingUnlocked
   })
 }

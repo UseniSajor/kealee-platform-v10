@@ -11,7 +11,7 @@ const VIDEO_PREMIUM_TIERS =
  * @see docs/system/concept-package-deliverables.md
  */
 const PERMIT_ROADMAP_IN_DESIGN_BUNDLE =
-  'Permit + zoning in every package: scope brief, buildability snapshot, AHJ checklist, and fee/timeline ranges (depth increases by tier; not agency filing).'
+  'First-hour automated project summary plus permit/zoning scope brief, buildability snapshot, AHJ checklist, and fee/timeline ranges (depth increases by tier; not agency filing). Full concept images, videos, and design package follow in the published delivery window.'
 const CREDIT_TOWARD_PERMIT_DRAWINGS = CONCEPT_PACKAGE_RULES.creditTowardDrawings
 
 export interface ServiceDeliverable {

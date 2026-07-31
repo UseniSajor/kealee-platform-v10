@@ -24,6 +24,18 @@ Prepare source geometry for the property boundary and any available structures, 
 
 Do not label GIS or aerial-screened geometry as surveyed geometry.
 
+## First-hour portal delivery
+
+When intake is accepted and the configured parcel, zoning, and permit sources are available, the portal may publish these automated outputs within one hour without human interaction:
+
+- project summary and stated site goal;
+- jurisdiction, parcel, and source-status record;
+- preliminary zoning, overlay, setback, and likely permit-path requirements;
+- known constraints, assumptions, confidence, limitations, and open questions; and
+- a readiness checklist showing which documents and reviews are complete, pending, or still required.
+
+These are source-based preliminary outputs. They do not represent a boundary survey, professional verification, permit approval, seal, or permit submission. The full site-plan drawing package, concept imagery, video, and any professional review remain on their stated multi-day or scoped timeline.
+
 ## Generate through Command Center
 
 1. Sign in to Kealee Command Center.

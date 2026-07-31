@@ -85,6 +85,38 @@ describe('public intake payment safety', () => {
     expect(mocks.captureMessage).toHaveBeenCalled()
   })
 
+  it('persists first-hour preliminary deliverables with a successful intake', async () => {
+    const insert = vi.fn(() => ({
+      select: vi.fn(() => ({
+        single: vi.fn(async () => ({ data: { id: 'intake-ready-1' }, error: null })),
+      })),
+    }))
+    mocks.getSupabaseAdmin.mockReturnValue({ from: vi.fn(() => ({ insert })) })
+
+    const { POST } = await import('@/app/api/intake/route')
+    const response = await POST(request('http://localhost/api/intake', {
+      projectPath: 'preliminary_site_plan',
+      clientName: 'Project Owner',
+      contactEmail: 'owner@example.com',
+      projectAddress: '100 Main Street',
+      formData: {
+        siteGoal: 'Test a detached ADU',
+        sourceStatus: 'Parcel map or plat',
+        uploadedFiles: ['plat.pdf'],
+      },
+    }))
+    const body = await response.json()
+    const row = insert.mock.calls[0]?.[0] as { form_data?: Record<string, any> }
+
+    expect(response.status).toBe(200)
+    expect(body.intakeId).toBe('intake-ready-1')
+    expect(row.form_data?.immediateDeliverables).toMatchObject({
+      status: 'READY',
+      deliveryWindow: 'WITHIN_1_HOUR',
+      classification: 'PRELIMINARY',
+    })
+  })
+
   it('blocks checkout when the intake record does not exist', async () => {
     mocks.getSupabaseAdmin.mockReturnValue({
       from: vi.fn(() => ({
