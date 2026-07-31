@@ -1,7 +1,12 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { ArrowRight, Palette, BadgeDollarSign, ShieldCheck } from 'lucide-react'
+import { ArrowRight, Palette, BadgeDollarSign, MapPinned, ShieldCheck } from 'lucide-react'
 import { getRevenueProduct } from '@/lib/revenue-product-catalog'
+import {
+  formatCatalogPrice,
+  getPublicCatalogProduct,
+  type PublicCatalogProduct,
+} from '@kealee/core-rules'
 
 export const metadata: Metadata = {
   title: 'Plan My Project — Kealee',
@@ -9,8 +14,85 @@ export const metadata: Metadata = {
 }
 
 const recommended = getRevenueProduct('project-launch-package')!
+const SITE_PLAN_SERVICES = new Set([
+  'preliminary_site_plan',
+  'verified_site_feasibility',
+  'permit_site_plan',
+])
 
-export default function GetStartedPage() {
+function SitePlanGetStarted({ product }: { product: PublicCatalogProduct }) {
+  return <main className="min-h-screen bg-slate-50 px-4 py-12 sm:py-16">
+    <div className="mx-auto max-w-3xl">
+      <header className="text-center">
+        <p className="text-xs font-bold uppercase tracking-[0.2em] text-teal-700">Site intelligence intake</p>
+        <h1 className="mt-3 text-3xl font-black text-slate-900 sm:text-5xl">{product.name}</h1>
+        <p className="mx-auto mt-4 max-w-2xl text-base leading-7 text-slate-600">{product.shortDescription}</p>
+        <p className="mt-3 text-2xl font-black text-teal-800">{formatCatalogPrice(product)}</p>
+      </header>
+
+      <form action={`/intake/${product.key}`} method="get" className="mt-10 space-y-6 rounded-2xl border border-teal-200 bg-white p-6 shadow-sm sm:p-8">
+        <input type="hidden" name="service" value={product.key} />
+        <div>
+          <label htmlFor="address" className="block text-sm font-bold text-slate-900">1. What property should we evaluate?</label>
+          <input id="address" name="address" required autoComplete="street-address" className="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-600" placeholder="Street address, city, state, ZIP" />
+          <p className="mt-1 text-xs text-slate-500">An address starts the parcel search. Add an APN below if you have one.</p>
+        </div>
+        <div>
+          <label htmlFor="parcelId" className="block text-sm font-bold text-slate-900">2. Parcel/APN <span className="font-normal text-slate-400">(optional)</span></label>
+          <input id="parcelId" name="parcelId" className="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-600" placeholder="Assessor parcel number" />
+        </div>
+        <div>
+          <label htmlFor="projectType" className="block text-sm font-bold text-slate-900">3. What are you testing on the site?</label>
+          <select id="projectType" name="projectType" required className="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-600">
+            <option value="">Select an option</option>
+            <option value="adu">ADU</option>
+            <option value="addition">Home addition</option>
+            <option value="pool">Pool or outdoor structure</option>
+            <option value="new_home">New home</option>
+            <option value="landscape">Landscape or garden structure</option>
+            <option value="multifamily">Multifamily or development yield</option>
+            <option value="other">Other proposed footprint</option>
+          </select>
+        </div>
+        <div>
+          <label htmlFor="sourceStatus" className="block text-sm font-bold text-slate-900">4. What property information do you have?</label>
+          <select id="sourceStatus" name="sourceStatus" className="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-600">
+            <option>Address only</option>
+            <option>Boundary or topographic survey</option>
+            <option>Parcel map or plat</option>
+            <option>Existing site plan</option>
+            <option>Zoning or permit documents</option>
+          </select>
+          <p className="mt-1 text-xs text-slate-500">You can upload surveys, plats, plans, GeoJSON, or supporting documents in the next step.</p>
+        </div>
+        <div>
+          <label htmlFor="siteGoal" className="block text-sm font-bold text-slate-900">5. Describe the proposed footprint and key questions.</label>
+          <textarea id="siteGoal" name="siteGoal" required rows={4} className="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-600" placeholder="Example: Test a detached 800 sq ft ADU behind the existing house and show likely setbacks, access, and preliminary buildable area." />
+        </div>
+        <button className="flex w-full items-center justify-center gap-2 rounded-xl bg-teal-700 px-6 py-4 text-sm font-bold text-white hover:bg-teal-800 focus:outline-none focus:ring-2 focus:ring-teal-600 focus:ring-offset-2">
+          Continue to source upload <ArrowRight className="h-4 w-4" />
+        </button>
+      </form>
+
+      <div className="mt-6 rounded-xl border border-amber-200 bg-amber-50 p-4 text-xs leading-5 text-amber-900">
+        Preliminary feasibility / not for construction / subject to licensed professional review.
+        Parcel boundaries and zoning must be confirmed against authoritative sources. A preliminary site plan is not a boundary survey.
+      </div>
+    </div>
+  </main>
+}
+
+export default function GetStartedPage({
+  searchParams,
+}: {
+  searchParams?: { service?: string }
+}) {
+  const service = searchParams?.service
+  if (service && SITE_PLAN_SERVICES.has(service)) {
+    const product = getPublicCatalogProduct(service)
+    if (product) return <SitePlanGetStarted product={product} />
+  }
+
   return <main className="min-h-screen bg-slate-50 px-4 py-12 sm:py-16">
     <div className="mx-auto max-w-3xl">
       <header className="text-center">
@@ -36,8 +118,9 @@ export default function GetStartedPage() {
 
       <section aria-labelledby="other-starts" className="mt-10">
         <h2 id="other-starts" className="text-center text-sm font-bold text-slate-900">Or start with one question</h2>
-        <div className="mt-4 grid gap-4 sm:grid-cols-3">
+        <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {[
+            { icon: MapPinned, label: 'Check site buildability', href: '/site-plans' },
             { icon: Palette, label: 'Explore a concept', href: '/concept' },
             { icon: BadgeDollarSign, label: 'Understand cost', href: '/estimate' },
             { icon: ShieldCheck, label: 'Check permits', href: '/permits' },
@@ -47,4 +130,3 @@ export default function GetStartedPage() {
     </div>
   </main>
 }
-

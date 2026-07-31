@@ -5,16 +5,21 @@ export interface SendMobileCaptureLinkInput {
   baseUrl: string;
   projectPath: string;
   clientName?: string;
+  returnPath?: string;
 }
 
 export interface SendMobileCaptureLinkResult {
   ok: boolean;
   messageId?: string;
   error?: string;
+  unavailable?: boolean;
 }
 
-export function buildCaptureUrl(baseUrl: string, token: string): string {
-  return `${baseUrl}/capture/${token}`;
+export function buildCaptureUrl(baseUrl: string, token: string, returnPath?: string): string {
+  const captureUrl = `${baseUrl}/capture/${token}`;
+  return returnPath
+    ? `${captureUrl}?returnTo=${encodeURIComponent(returnPath)}`
+    : captureUrl;
 }
 
 export function buildCaptureSmsBody(args: {
@@ -32,14 +37,18 @@ export async function sendMobileCaptureLinkViaTwilio(
 ): Promise<SendMobileCaptureLinkResult> {
   const accountSid = process.env.TWILIO_ACCOUNT_SID;
   const authToken = process.env.TWILIO_AUTH_TOKEN;
-  const fromNumber = process.env.TWILIO_PHONE_NUMBER;
+  const fromNumber = process.env.TWILIO_PHONE_NUMBER ?? process.env.TWILIO_PHONE;
 
   if (!accountSid || !authToken || !fromNumber) {
-    console.warn("[sendMobileCaptureLink] Twilio not configured — skipping SMS");
-    return { ok: true, messageId: "mock_sms_not_configured" };
+    console.warn("[sendMobileCaptureLink] Twilio not configured — SMS unavailable");
+    return {
+      ok: false,
+      unavailable: true,
+      error: "SMS delivery is currently unavailable. Copy or open the secure capture link instead.",
+    };
   }
 
-  const captureUrl = buildCaptureUrl(input.baseUrl, input.captureSessionToken);
+  const captureUrl = buildCaptureUrl(input.baseUrl, input.captureSessionToken, input.returnPath);
   const body = buildCaptureSmsBody({
     captureUrl,
     clientName: input.clientName,

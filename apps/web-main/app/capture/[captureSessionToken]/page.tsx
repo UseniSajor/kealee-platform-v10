@@ -1,19 +1,21 @@
 'use client'
 
-import { useParams } from 'next/navigation'
+import { useParams, useSearchParams } from 'next/navigation'
 import { useState, useEffect, useCallback } from 'react'
 import { MobileCaptureChecklist } from '@kealee/ui/components/intake/mobile-capture-checklist'
 import { MobileCaptureCamera } from '@kealee/ui/components/intake/mobile-capture-camera'
 import { MobileCaptureVoiceNote } from '@kealee/ui/components/intake/mobile-capture-voice-note'
 import { MobileCaptureVideo } from '@kealee/ui/components/intake/mobile-capture-video'
 import { MobileScanStep } from '@kealee/ui/components/intake/mobile-scan-step'
-import { CheckCircle2, Loader2, Mic, Camera, List, Scan, AlertTriangle } from 'lucide-react'
+import { ArrowLeft, CheckCircle2, Loader2, Mic, Camera, List, Scan, AlertTriangle } from 'lucide-react'
 
 interface ZoneMeta {
   zone: string
   displayName: string
   prompt: string
   hvacPrompt: string | null
+  allowsVideo: boolean
+  videoPrompt: string | null
   isRequired: boolean
   isCompleted: boolean
   assetCount: number
@@ -38,6 +40,7 @@ type MobileView = 'checklist' | 'camera' | 'voice' | 'video' | 'scan'
 
 export default function MobileCapturePage() {
   const params = useParams()
+  const searchParams = useSearchParams()
   const captureSessionToken = params.captureSessionToken as string
 
   const [loading, setLoading] = useState(true)
@@ -50,6 +53,7 @@ export default function MobileCapturePage() {
   const [completed, setCompleted] = useState(false)
   const [showScanStep, setShowScanStep] = useState(false)
   const [scanDone, setScanDone] = useState(false)
+  const [uploadSaved, setUploadSaved] = useState(false)
 
   const loadSession = useCallback(async () => {
     try {
@@ -81,6 +85,7 @@ export default function MobileCapturePage() {
   }
 
   function handleAssetUploaded() {
+    setUploadSaved(true)
     loadSession()
   }
 
@@ -141,6 +146,17 @@ export default function MobileCapturePage() {
   const allRequiredDone = requiredComplete === requiredTotal && requiredTotal > 0
   const needsScan = session?.scan_enabled && !scanDone
   const canComplete = allRequiredDone && !needsScan
+  const requestedReturnPath = searchParams.get('returnTo')
+  const safeReturnPath = requestedReturnPath?.startsWith('/') && !requestedReturnPath.startsWith('//')
+    ? requestedReturnPath
+    : `/intake/${session?.project_path ?? 'kitchen_remodel'}`
+  const returnToIntake = () => {
+    if (!session) return
+    const separator = safeReturnPath.includes('?') ? '&' : '?'
+    window.location.assign(
+      `${safeReturnPath}${separator}captureSessionId=${encodeURIComponent(session.id)}&captureToken=${encodeURIComponent(captureSessionToken)}`,
+    )
+  }
 
   // ─── Loading ───────────────────────────────────────────────────────────────
   if (loading) {
@@ -181,6 +197,13 @@ export default function MobileCapturePage() {
         <p className="mt-2 text-sm text-gray-400">
           You can close this tab. Your team is reviewing the capture.
         </p>
+        <button
+          type="button"
+          onClick={returnToIntake}
+          className="mt-6 inline-flex items-center gap-2 rounded-xl bg-[#1A2B4A] px-5 py-3 text-sm font-semibold text-white"
+        >
+          <ArrowLeft className="h-4 w-4" /> Return to intake
+        </button>
       </div>
     )
   }
@@ -194,12 +217,20 @@ export default function MobileCapturePage() {
         className="sticky top-0 z-10 flex items-center justify-between px-4 py-3"
         style={{ backgroundColor: '#1A2B4A' }}
       >
-        <div>
+        <button
+          type="button"
+          onClick={returnToIntake}
+          className="flex items-center gap-2 text-left"
+          aria-label="Return to intake"
+        >
+          <ArrowLeft className="h-4 w-4 text-blue-200" />
+          <div>
           <p className="text-xs text-blue-200">Kealee Capture</p>
           <p className="text-sm font-semibold text-white truncate max-w-[180px]">
             {session.address}
           </p>
-        </div>
+          </div>
+        </button>
         <div className="flex items-center gap-1.5">
           <span className="text-xs text-blue-200">{requiredComplete}/{requiredTotal}</span>
           <div className="h-1.5 w-20 overflow-hidden rounded-full bg-blue-900">
@@ -222,7 +253,9 @@ export default function MobileCapturePage() {
             <>
               <TabBtn active={view === 'camera'} onClick={() => setView('camera')} label="Camera" icon={<Camera className="h-4 w-4" />} />
               <TabBtn active={view === 'voice'} onClick={() => setView('voice')} label="Voice" icon={<Mic className="h-4 w-4" />} />
-              <TabBtn active={view === 'video'} onClick={() => setView('video')} label="Video" icon={<Camera className="h-4 w-4" />} />
+              {selectedZoneMeta?.allowsVideo && (
+                <TabBtn active={view === 'video'} onClick={() => setView('video')} label="Video" icon={<Camera className="h-4 w-4" />} />
+              )}
             </>
           )}
           {session.scan_enabled && (
@@ -239,6 +272,25 @@ export default function MobileCapturePage() {
 
       {/* Content */}
       <div className="px-4 pt-4">
+        {uploadSaved && (
+          <div className="mb-4 rounded-2xl border border-green-200 bg-green-50 p-4">
+            <div className="flex items-start gap-3">
+              <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-green-600" />
+              <div className="flex-1">
+                <p className="text-sm font-semibold text-green-900">Saved to your project</p>
+                <p className="mt-1 text-xs text-green-700">Your photo or video was uploaded. Capture another item or return to the intake on this device.</p>
+              </div>
+            </div>
+            <div className="mt-3 grid grid-cols-2 gap-2">
+              <button type="button" onClick={() => { setUploadSaved(false); setView('checklist') }} className="rounded-xl border border-green-300 bg-white px-3 py-2 text-xs font-semibold text-green-800">
+                Capture more
+              </button>
+              <button type="button" onClick={returnToIntake} className="rounded-xl bg-[#1A2B4A] px-3 py-2 text-xs font-semibold text-white">
+                Return to intake
+              </button>
+            </div>
+          </div>
+        )}
         {view === 'checklist' && (
           <>
             <MobileCaptureChecklist
@@ -315,13 +367,13 @@ export default function MobileCapturePage() {
           />
         )}
 
-        {view === 'video' && selectedZoneMeta && (
+        {view === 'video' && selectedZoneMeta?.allowsVideo && (
           <MobileCaptureVideo
             captureSessionId={session.id}
             captureToken={captureSessionToken}
             zone={selectedZoneMeta.zone}
             zoneName={selectedZoneMeta.displayName}
-            prompt={selectedZoneMeta.prompt}
+            prompt={selectedZoneMeta.videoPrompt ?? selectedZoneMeta.prompt}
             onUploaded={handleAssetUploaded}
           />
         )}

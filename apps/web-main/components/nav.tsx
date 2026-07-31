@@ -147,32 +147,32 @@ function ServicesDropdown() {
 // Color config per nav tab
 const NAV_TABS = [
   {
+    href: '/site-plans',
+    label: 'Site Plans',
+    hoverColor: 'hover:text-teal-600',
+    activeColor: 'text-teal-700 border-b-2 border-teal-600',
+  },
+  {
     href: '/concept',
-    label: 'Design Concept',
+    label: 'Design Concepts',
     hoverColor: 'hover:text-orange-500',
     activeColor: 'text-orange-500 border-b-2 border-orange-500',
   },
   {
     href: '/estimate',
-    label: 'What does it Cost',
+    label: 'Estimates',
     hoverColor: 'hover:text-blue-500',
     activeColor: 'text-blue-500 border-b-2 border-blue-500',
   },
   {
     href: '/permits',
-    label: 'Get Permits',
+    label: 'Permits',
     hoverColor: 'hover:text-green-600',
     activeColor: 'text-green-600 border-b-2 border-green-600',
   },
   {
     href: '/marketplace',
     label: 'Marketplace',
-    hoverColor: 'hover:text-orange-500',
-    activeColor: 'text-orange-500 border-b-2 border-orange-500',
-  },
-  {
-    href: '/faq',
-    label: 'FAQ',
     hoverColor: 'hover:text-orange-500',
     activeColor: 'text-orange-500 border-b-2 border-orange-500',
   },

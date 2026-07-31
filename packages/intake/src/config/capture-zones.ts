@@ -95,6 +95,77 @@ export const REQUIRED_CAPTURE_ZONES_BY_PROJECT_PATH: Record<string, CaptureZone[
   capture_site_concept: ["front_exterior", "rear_exterior", "entry", "kitchen", "living_room", "problem_area_interior"],
 };
 
+/** Common route/catalog aliases normalized before a capture session is stored. */
+export const CAPTURE_PROJECT_PATH_ALIASES: Record<string, string> = {
+  kitchen: "kitchen_remodel",
+  kitchen_renovation: "kitchen_remodel",
+  bath: "bathroom_remodel",
+  bathroom: "bathroom_remodel",
+  bathroom_renovation: "bathroom_remodel",
+  interior: "interior_renovation",
+  interior_remodel: "interior_renovation",
+  whole_home: "whole_home_remodel",
+  whole_house: "whole_home_remodel",
+  addition: "addition_expansion",
+  home_addition: "addition_expansion",
+  exterior: "exterior_concept",
+  facade: "exterior_concept",
+  site_capture: "capture_site_concept",
+};
+
+export function normalizeCaptureProjectPath(projectPath: string): string {
+  const normalized = projectPath.trim().toLowerCase().replace(/[\s-]+/g, "_");
+  return CAPTURE_PROJECT_PATH_ALIASES[normalized] ?? normalized;
+}
+
+export interface CaptureVideoPlan {
+  zones: CaptureZone[];
+  prompt: string;
+}
+
+/**
+ * Videos are service-specific and only offered for the zones that benefit from
+ * a continuous walkthrough. Photo-only detail zones do not show a video tab.
+ */
+export const VIDEO_CAPTURE_PLAN_BY_PROJECT_PATH: Record<string, CaptureVideoPlan> = {
+  kitchen_remodel: {
+    zones: ["kitchen"],
+    prompt: "Record one slow kitchen walkthrough. Start at the entrance, pan across every cabinet and appliance wall, circle the island if present, and finish at the connection to dining or living space.",
+  },
+  bathroom_remodel: {
+    zones: ["primary_bath", "bathroom_2"],
+    prompt: "Record one slow bathroom walkthrough from the doorway. Show the vanity, toilet, shower or tub, floor, ceiling, ventilation, and how the door and fixtures relate to each other.",
+  },
+  interior_renovation: {
+    zones: ["living_room", "problem_area_interior"],
+    prompt: "Walk slowly through the renovation area from its main entry. Show all walls, openings, windows, ceiling, flooring, adjoining rooms, and the specific areas you want changed.",
+  },
+  whole_home_remodel: {
+    zones: ["entry", "living_room", "kitchen", "primary_bedroom", "primary_bath", "stairs"],
+    prompt: "Record a slow, continuous whole-home walkthrough in room order. Pause at transitions, stairs, structural openings, and the principal kitchen, bath, and living areas.",
+  },
+  addition_expansion: {
+    zones: ["rear_exterior", "left_side_exterior", "right_side_exterior"],
+    prompt: "Walk the proposed addition area slowly. Show the existing wall connection, available yard clearance, grade, drainage, roof connection, neighboring structures, and access for construction.",
+  },
+  exterior_concept: {
+    zones: ["front_exterior", "rear_exterior", "left_side_exterior", "right_side_exterior"],
+    prompt: "Walk slowly around the applicable exterior elevation. Keep the full facade in frame and show materials, openings, roofline, grade, landscaping, and adjoining elevations.",
+  },
+  design_build: {
+    zones: ["front_exterior", "rear_exterior", "left_side_exterior", "right_side_exterior"],
+    prompt: "Record a slow property walkthrough focused on the proposed work area, access, existing conditions, adjacent spaces, utilities, and any visible constraints.",
+  },
+  capture_site_concept: {
+    zones: ["front_exterior", "rear_exterior", "entry", "kitchen", "living_room"],
+    prompt: "Record a slow property walkthrough from exterior approach through the principal interior spaces. Pause at room transitions and keep walls, openings, floors, and ceilings visible.",
+  },
+};
+
+export function getCaptureVideoPlan(projectPath: string): CaptureVideoPlan | null {
+  return VIDEO_CAPTURE_PLAN_BY_PROJECT_PATH[normalizeCaptureProjectPath(projectPath)] ?? null;
+}
+
 // Paths that require a capture step before payment/review
 export const CAPTURE_REQUIRED_PROJECT_PATHS = new Set([
   "kitchen_remodel",
@@ -111,7 +182,7 @@ export const HVAC_CAPTURE_ZONES: CaptureZone[] = [
 ];
 
 export function getRequiredZones(projectPath: string): CaptureZone[] {
-  return REQUIRED_CAPTURE_ZONES_BY_PROJECT_PATH[projectPath] ?? ["front_exterior"];
+  return REQUIRED_CAPTURE_ZONES_BY_PROJECT_PATH[normalizeCaptureProjectPath(projectPath)] ?? [];
 }
 
 export function isCaptureRequired(projectPath: string): boolean {

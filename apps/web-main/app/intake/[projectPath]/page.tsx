@@ -21,6 +21,7 @@ const AGENT_MAP: Record<string, string> = {
   development_feasibility: 'land', design_build: 'design', capture_site_concept: 'design',
   townhome_subdivision: 'land', single_family_subdivision: 'land', single_lot_development: 'land',
   interior_renovation: 'design',
+  preliminary_site_plan: 'land', verified_site_feasibility: 'land', permit_site_plan: 'land',
 }
 
 // Display shape matches what the rest of this file expects. Sourced from
@@ -118,6 +119,7 @@ function intakeBenefitsFromFloorplanSketch(projectPath: string): boolean {
 
 /** PDF (or other document upload) required for estimate / permit style intakes. */
 function intakeRequiresConstructionDocuments(projectPath: string): boolean {
+  if (projectPath === 'permit_site_plan') return true
   if (projectPath === 'certified_estimate' || projectPath === 'cost_estimate' || projectPath === 'permit_path_only') return true
   if (projectPath === 'design_estimate_permit_bundle') return true
   const d = deliverableForPath(projectPath)
@@ -348,9 +350,13 @@ export default function IntakePage() {
     lastName: '',
     email: '',
     phone: '',
-    address: '',
-    description: '',
-    propertyDetails: '',
+    address: searchParams.get('address') ?? '',
+    description: searchParams.get('siteGoal') ?? '',
+    propertyDetails: [
+      searchParams.get('parcelId') ? `Parcel/APN: ${searchParams.get('parcelId')}` : '',
+      searchParams.get('projectType') ? `Proposed use: ${searchParams.get('projectType')}` : '',
+      searchParams.get('sourceStatus') ? `Available source: ${searchParams.get('sourceStatus')}` : '',
+    ].filter(Boolean).join('\n'),
     stylePreferences: '',
     priorities: [] as string[],
     mustStay: '',
@@ -452,6 +458,7 @@ export default function IntakePage() {
   const needsConstructionDocs = intakeRequiresConstructionDocuments(projectPath)
   const benefitsFromFloorplan = intakeBenefitsFromFloorplanSketch(projectPath)
   const isEstimateIntake = projectPath === 'cost_estimate' || projectPath === 'certified_estimate'
+  const isSitePlanIntake = ['preliminary_site_plan', 'verified_site_feasibility', 'permit_site_plan'].includes(projectPath)
 
   const agentType = AGENT_MAP[projectPath] || 'design'
   const bundlePreview = upsellSourcePath
@@ -728,7 +735,9 @@ export default function IntakePage() {
     try {
       const newFiles = await uploadIntakeFilesSequentially(selected)
       if (newFiles.length === 0) {
-        setFormError('Upload failed. Check file type (PDF, DWG, or DOCX) and size (max 25 MB each), then try again.')
+        setFormError(`Upload failed. Check the file type and size (max 25 MB each), then try again. ${
+          isSitePlanIntake ? 'Supported site formats include PDF, DWG, DXF, GeoJSON, KML/KMZ, LandXML, SHP, and ZIP.' : 'Supported document formats include PDF, DWG, and DOCX.'
+        }`)
         return
       }
       if (newFiles.length < selected.length) {
@@ -774,7 +783,9 @@ export default function IntakePage() {
         uploadedDocs.some(f => f.type === 'document') ||
         uploadedFiles.some(f => f.type === 'document')
       if (!hasDoc) {
-        setFormError('Please upload at least one construction document (PDF, DWG, or DOCX) in the Documents section.')
+        setFormError(isSitePlanIntake
+          ? 'Please upload at least one boundary survey, plat, parcel map, or existing site-plan source document.'
+          : 'Please upload at least one construction document (PDF, DWG, or DOCX) in the Documents section.')
         return false
       }
     }
@@ -988,12 +999,16 @@ export default function IntakePage() {
                         ? 'Build an estimate for your development'
                         : isEstimateIntake && formData.clientType === 'service-provider'
                           ? 'Build a client-ready estimate and proposal'
-                        : 'Tell us what you’re hoping to change'}
+                        : isSitePlanIntake
+                          ? 'Tell us what you want to test on the property'
+                          : 'Tell us what you’re hoping to change'}
                   </h1>
                   <p className="text-slate-500 mt-1 text-sm">
                     {isEstimateIntake && formData.clientType !== 'owner'
                       ? 'Share the commercial and technical inputs your estimator needs. Your progress saves on this device.'
-                      : 'Answer in your own words. Your progress saves on this device, and you can review everything before payment.'}
+                      : isSitePlanIntake
+                        ? 'Confirm the parcel, proposed footprint, available source documents, and site questions. Your progress saves on this device.'
+                        : 'Answer in your own words. Your progress saves on this device, and you can review everything before payment.'}
                   </p>
                 </div>
                 {formError && (
@@ -1210,7 +1225,11 @@ export default function IntakePage() {
                 {/* Description */}
                 <div>
                   <label className="block text-sm font-semibold text-slate-800 mb-1.5">
-                    {isEstimateIntake && formData.clientType !== 'owner' ? 'Scope of work and deliverable expectations' : 'What are you hoping to change?'}
+                    {isEstimateIntake && formData.clientType !== 'owner'
+                      ? 'Scope of work and deliverable expectations'
+                      : isSitePlanIntake
+                        ? 'What footprint or development option should we test?'
+                        : 'What are you hoping to change?'}
                   </label>
                   <textarea
                     value={formData.description}
@@ -1221,33 +1240,39 @@ export default function IntakePage() {
                       ? formData.clientType === 'service-provider'
                         ? 'Describe the client site, requested service, schedule, proposal format, and what the customer expects to see.'
                         : 'Describe the work by building area or trade, what is included, and the level of estimate detail you need.'
-                      : getIntakeCheckoutProjectDescriptionPlaceholder(projectPath)}
+                      : isSitePlanIntake
+                        ? 'Describe the proposed ADU, addition, pool, new home, landscape structure, or development program. Include target size, placement, access, parking, or other site questions.'
+                        : getIntakeCheckoutProjectDescriptionPlaceholder(projectPath)}
                   />
                   <p className="mt-1.5 text-xs text-slate-500">
                     {isEstimateIntake && formData.clientType !== 'owner'
                       ? 'This becomes the estimator’s scope narrative and basis-of-estimate brief.'
-                      : 'Why we ask: this becomes the plain-language project brief used across your concept, estimate, and permit roadmap.'}
+                      : isSitePlanIntake
+                        ? 'Why we ask: this becomes the site-analysis program tested against available parcel, zoning, setback, and constraint sources.'
+                        : 'Why we ask: this becomes the plain-language project brief used across your concept, estimate, and permit roadmap.'}
                   </p>
                 </div>
 
                 {(!isEstimateIntake || formData.clientType === 'owner') && (
                   <>
                 <div>
-                  <label className="block text-sm font-semibold text-slate-800 mb-1.5">Tell us about the property</label>
-                  <textarea value={formData.propertyDetails} onChange={e => setFormData(d => ({ ...d, propertyDetails: e.target.value }))} rows={3} className="w-full rounded-lg border border-slate-300 px-4 py-3 text-sm focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20 resize-none" placeholder="For example: 1960s two-story home, occupied during construction, narrow side access…" />
-                  <p className="mt-1.5 text-xs text-slate-500">This helps us flag site conditions that may affect layout, cost, or approvals.</p>
+                  <label className="block text-sm font-semibold text-slate-800 mb-1.5">{isSitePlanIntake ? 'Parcel and existing-site information' : 'Tell us about the property'}</label>
+                  <textarea value={formData.propertyDetails} onChange={e => setFormData(d => ({ ...d, propertyDetails: e.target.value }))} rows={3} className="w-full rounded-lg border border-slate-300 px-4 py-3 text-sm focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20 resize-none" placeholder={isSitePlanIntake ? 'Parcel/APN, lot dimensions if known, existing structures, access, slope, utilities, easements, survey date, or known zoning.' : 'For example: 1960s two-story home, occupied during construction, narrow side access…'} />
+                  <p className="mt-1.5 text-xs text-slate-500">{isSitePlanIntake ? 'Include only what you know. Kealee records source, date, confidence, jurisdiction, CRS, and units where available.' : 'This helps us flag site conditions that may affect layout, cost, or approvals.'}</p>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-slate-800 mb-1.5">Show us styles or examples you like</label>
-                  <textarea value={formData.stylePreferences} onChange={e => setFormData(d => ({ ...d, stylePreferences: e.target.value }))} rows={3} className="w-full rounded-lg border border-slate-300 px-4 py-3 text-sm focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20 resize-none" placeholder="Describe colors, materials, rooms, or links that feel right. You can also add inspiration images below." />
+                  <label className="block text-sm font-semibold text-slate-800 mb-1.5">{isSitePlanIntake ? 'Known zoning, overlays, or site constraints' : 'Show us styles or examples you like'}</label>
+                  <textarea value={formData.stylePreferences} onChange={e => setFormData(d => ({ ...d, stylePreferences: e.target.value }))} rows={3} className="w-full rounded-lg border border-slate-300 px-4 py-3 text-sm focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20 resize-none" placeholder={isSitePlanIntake ? 'Zone code, historic district, floodplain, wetland, easement, HOA, utility, access, tree, slope, or setback information—if known.' : 'Describe colors, materials, rooms, or links that feel right. You can also add inspiration images below.'} />
                 </div>
 
                 <fieldset>
                   <legend className="block text-sm font-semibold text-slate-800 mb-1.5">What matters most?</legend>
                   <p className="text-xs text-slate-500 mb-3">Choose all that apply. We use this to explain tradeoffs in the concept.</p>
                   <div className="flex flex-wrap gap-2">
-                    {['Budget', 'Appearance', 'More space', 'Speed', 'Accessibility', 'Resale value'].map(priority => {
+                    {(isSitePlanIntake
+                      ? ['Buildable area', 'Zoning confidence', 'Footprint fit', 'Access / parking', 'Open space', 'Permit path']
+                      : ['Budget', 'Appearance', 'More space', 'Speed', 'Accessibility', 'Resale value']).map(priority => {
                       const selected = formData.priorities.includes(priority)
                       return <button key={priority} type="button" aria-pressed={selected} onClick={() => setFormData(d => ({ ...d, priorities: selected ? d.priorities.filter(p => p !== priority) : [...d.priorities, priority] }))} className={`rounded-full border px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-orange-500 ${selected ? 'border-orange-500 bg-orange-50 text-orange-800' : 'border-slate-300 bg-white text-slate-700 hover:border-orange-300'}`}>{priority}</button>
                     })}
@@ -1279,10 +1304,10 @@ export default function IntakePage() {
                 <div>
                   <div className="flex items-center justify-between mb-1.5">
                     <label className="block text-sm font-semibold text-slate-800">
-                      {needsAreaPhoto ? (
-                        <>Project photos <span className="text-red-500">*</span></>
+                    {needsAreaPhoto ? (
+                        <>{isSitePlanIntake ? 'Site photos' : 'Project photos'} <span className="text-red-500">*</span></>
                       ) : (
-                        <>Project photos <span className="text-slate-400 font-normal">(optional)</span></>
+                        <>{isSitePlanIntake ? 'Site photos' : 'Project photos'} <span className="text-slate-400 font-normal">(optional)</span></>
                       )}
                     </label>
                     {uploadedFiles.length > 0 && (
@@ -1292,7 +1317,9 @@ export default function IntakePage() {
                   <p className="text-xs text-slate-500 mb-3">
                     {needsAreaPhoto
                       ? 'Upload at least one clear photo of the project area. Accepted: JPG, PNG (max 10 MB each, up to 10 photos).'
-                      : 'For best output, upload a photo of your space or reference images. Accepted: JPG, PNG (max 10 MB each, up to 10 photos).'}
+                      : isSitePlanIntake
+                        ? 'Optionally upload street, front/rear yard, boundary-marker, access, slope, drainage, utility, or proposed-footprint photos. Accepted: JPG, PNG.'
+                        : 'For best output, upload a photo of your space or reference images. Accepted: JPG, PNG (max 10 MB each, up to 10 photos).'}
                   </p>
 
                   {uploadedFiles.length > 0 && (
@@ -1335,7 +1362,7 @@ export default function IntakePage() {
                       {uploading ? (
                         <><Loader2 className="h-4 w-4 animate-spin" /> Uploading...</>
                       ) : (
-                        <><ImagePlus className="h-4 w-4" /> Add project photos (JPG / PNG)</>
+                        <><ImagePlus className="h-4 w-4" /> {isSitePlanIntake ? 'Add site photos' : 'Add project photos'} (JPG / PNG)</>
                       )}
                     </label>
                   )}
@@ -1358,14 +1385,14 @@ export default function IntakePage() {
                   <div className="flex items-center justify-between mb-1.5">
                     <label className="block text-sm font-semibold text-slate-800">
                       {needsConstructionDocs ? (
-                        <>Construction documents <span className="text-red-500">*</span></>
+                        <>{isSitePlanIntake ? 'Boundary survey or site source document' : 'Construction documents'} <span className="text-red-500">*</span></>
                       ) : benefitsFromFloorplan ? (
                         <>
                           Floor plan sketch or existing drawings{' '}
                           <span className="text-amber-600 font-normal">(recommended)</span>
                         </>
                       ) : (
-                        <>Documents <span className="text-slate-400 font-normal">(optional)</span></>
+                        <>{isSitePlanIntake ? 'Survey, plat, parcel map, or existing site plan' : 'Documents'} <span className="text-slate-400 font-normal">(optional)</span></>
                       )}
                     </label>
                     {uploadedDocs.length > 0 && (
@@ -1374,10 +1401,14 @@ export default function IntakePage() {
                   </div>
                   <p className="text-xs text-slate-500 mb-3">
                     {needsConstructionDocs
-                      ? 'Upload at least one construction document — existing plans, specs, or drawings. Accepted: PDF, DWG, DOCX (max 25 MB each, up to 5 files).'
+                      ? isSitePlanIntake
+                        ? 'Upload the current boundary/topographic survey, plat, parcel map, or existing site plan used for professional coordination. Accepted: PDF, DWG, DOCX.'
+                        : 'Upload at least one construction document — existing plans, specs, or drawings. Accepted: PDF, DWG, DOCX (max 25 MB each, up to 5 files).'
                       : benefitsFromFloorplan
                         ? 'A rough hand-drawn sketch or photo of your existing floor plan helps us match your actual room dimensions and layout — especially useful for multi-room and addition projects. Accepted: PDF, DWG, DOCX (max 25 MB each, up to 5 files).'
-                        : 'Optionally upload existing plans, specs, or reference drawings. Accepted: PDF, DWG, DOCX (max 25 MB each, up to 5 files).'}
+                        : isSitePlanIntake
+                          ? 'Upload any available survey, plat, parcel map, zoning exhibit, easement document, GeoJSON exported as a supported document, or existing site plan.'
+                          : 'Optionally upload existing plans, specs, or reference drawings. Accepted: PDF, DWG, DOCX (max 25 MB each, up to 5 files).'}
                   </p>
 
                   {uploadedDocs.length > 0 && (
@@ -1402,7 +1433,9 @@ export default function IntakePage() {
                     ref={docInputRef}
                     type="file"
                     multiple
-                    accept="application/pdf,.dwg,.docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                    accept={isSitePlanIntake
+                      ? 'application/pdf,.dwg,.dxf,.geojson,.json,.kml,.kmz,.landxml,.shp,.zip'
+                      : 'application/pdf,.dwg,.docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document'}
                     onChange={handleDocChange}
                     className="sr-only"
                     id="intake-doc-upload"
@@ -1421,7 +1454,7 @@ export default function IntakePage() {
                       ) : benefitsFromFloorplan ? (
                         <><FileText className="h-4 w-4" /> Add floor plan sketch or drawings (PDF / DWG / DOCX)</>
                       ) : (
-                        <><FileText className="h-4 w-4" /> Add plans, specs, or drawings (PDF / DWG / DOCX)</>
+                        <><FileText className="h-4 w-4" /> {isSitePlanIntake ? 'Add survey, parcel, GIS, or site-plan file' : 'Add plans, specs, or drawings (PDF / DWG / DOCX)'}</>
                       )}
                     </label>
                   )}

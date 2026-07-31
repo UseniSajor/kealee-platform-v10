@@ -56,8 +56,8 @@ export { submitIntake } from "./lib/submit-intake";
 export type { SubmitIntakeResult, SubmitIntakeOptions } from "./lib/submit-intake";
 
 // Capture
-export { CAPTURE_ZONE_META, REQUIRED_CAPTURE_ZONES_BY_PROJECT_PATH, HVAC_CAPTURE_ZONES, CAPTURE_REQUIRED_PROJECT_PATHS, getRequiredZones, isCaptureRequired, getZoneMeta } from "./config/capture-zones";
-export type { CaptureZoneMeta } from "./config/capture-zones";
+export { CAPTURE_ZONE_META, REQUIRED_CAPTURE_ZONES_BY_PROJECT_PATH, VIDEO_CAPTURE_PLAN_BY_PROJECT_PATH, HVAC_CAPTURE_ZONES, CAPTURE_REQUIRED_PROJECT_PATHS, normalizeCaptureProjectPath, getCaptureVideoPlan, getRequiredZones, isCaptureRequired, getZoneMeta } from "./config/capture-zones";
+export type { CaptureZoneMeta, CaptureVideoPlan } from "./config/capture-zones";
 
 export { CreateCaptureSessionSchema, SendCaptureLinkSchema, StartCaptureSessionSchema, CaptureAssetUploadSchema, CaptureVoiceNoteSchema, CompleteCaptureSessionSchema, CaptureZoneEnum, SystemCategoryEnum, CaptureModeEnum, SiteVisitStatusEnum } from "./schemas/capture-schemas";
 export type { CaptureZone, CaptureMode, SiteVisitStatus, SystemCategory, CaptureSessionRecord, CaptureAssetRecord, CaptureCompletenessReport } from "./schemas/capture-schemas";

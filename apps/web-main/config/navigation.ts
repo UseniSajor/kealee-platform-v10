@@ -112,11 +112,12 @@ export const PRIMARY_NAV: NavItem[] = [
     },
   },
 
-  // 3 — Get Permits
-  { label: 'Get Permits', href: '/permits' },
+  // 3 — Site intelligence / site plans
+  { label: 'Site Plans', href: '/site-plans' },
 
-  // 4 — Get Estimate
-  { label: 'Get Estimate', href: '/estimate' },
+  // 4 — Permits and estimation
+  { label: 'Estimates', href: '/estimate' },
+  { label: 'Permits', href: '/permits' },
 
   // 5 — Contractor and developer services are marketplace-only.
   { label: 'Marketplace', href: '/marketplace' },

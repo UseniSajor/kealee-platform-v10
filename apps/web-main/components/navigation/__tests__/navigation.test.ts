@@ -63,9 +63,14 @@ describe('PRIMARY_NAV', () => {
     expect(products).toBeDefined()
   })
 
-  it('includes a For Contractors role nav item', () => {
+  it('routes contractor and developer services through Marketplace', () => {
     const labels = PRIMARY_NAV.map(i => i.label)
-    expect(labels).toContain('For Contractors')
+    expect(labels).toContain('Marketplace')
+  })
+
+  it('includes the public Site Plans entry point', () => {
+    const sitePlans = PRIMARY_NAV.find(i => i.label === 'Site Plans')
+    expect(sitePlans?.href).toBe('/site-plans')
   })
 
   it('Start your design item points to /concept-engine', () => {

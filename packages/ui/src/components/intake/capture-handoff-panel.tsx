@@ -1,12 +1,13 @@
 'use client'
 
-import { useState } from 'react'
-import { Smartphone, Send, CheckCircle, Loader2, Copy } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { ArrowRight, Smartphone, Send, CheckCircle, Loader2, Copy, WifiOff } from 'lucide-react'
 
 interface CaptureHandoffPanelProps {
   captureSessionId: string
   captureToken: string
   projectPath: string
+  returnPath?: string
   onLinkSent?: () => void
 }
 
@@ -14,6 +15,7 @@ export function CaptureHandoffPanel({
   captureSessionId,
   captureToken,
   projectPath,
+  returnPath,
   onLinkSent,
 }: CaptureHandoffPanelProps) {
   const [phone, setPhone] = useState('')
@@ -22,11 +24,25 @@ export function CaptureHandoffPanel({
   const [sent, setSent] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
+  const [smsAvailable, setSmsAvailable] = useState<boolean | null>(null)
 
   const captureUrl =
     typeof window !== 'undefined'
-      ? `${window.location.origin}/capture/${captureToken}`
-      : `/capture/${captureToken}`
+      ? `${window.location.origin}/capture/${captureToken}${returnPath ? `?returnTo=${encodeURIComponent(returnPath)}` : ''}`
+      : `/capture/${captureToken}${returnPath ? `?returnTo=${encodeURIComponent(returnPath)}` : ''}`
+
+  useEffect(() => {
+    let active = true
+    fetch('/api/capture/send-link')
+      .then(response => response.json())
+      .then((status: { available?: boolean }) => {
+        if (active) setSmsAvailable(Boolean(status.available))
+      })
+      .catch(() => {
+        if (active) setSmsAvailable(false)
+      })
+    return () => { active = false }
+  }, [])
 
   async function handleSend(e: React.FormEvent) {
     e.preventDefault()
@@ -42,6 +58,7 @@ export function CaptureHandoffPanel({
           phoneNumber: phone,
           clientName: clientName || undefined,
           projectPath,
+          returnPath,
         }),
       })
       const json = await resp.json()
@@ -75,7 +92,7 @@ export function CaptureHandoffPanel({
         </div>
         <div>
           <h2 className="text-lg font-semibold" style={{ color: '#1A2B4A' }}>
-            Send to Phone
+            Open on Your Phone
           </h2>
           <p className="text-sm text-gray-500">
             Open the guided capture on your mobile device
@@ -83,7 +100,41 @@ export function CaptureHandoffPanel({
         </div>
       </div>
 
-      {sent ? (
+      <div className="mb-5 rounded-xl border border-blue-100 bg-blue-50 p-4">
+        <p className="text-sm font-semibold text-blue-950">Secure capture link</p>
+        <p className="mt-1 text-xs text-blue-700">Open directly on this device, or copy the link and send it to your phone using any messaging app.</p>
+        <div className="mt-3 grid grid-cols-2 gap-2">
+          <button
+            type="button"
+            onClick={() => window.location.assign(captureUrl)}
+            className="flex items-center justify-center gap-2 rounded-lg bg-[#1A2B4A] px-3 py-2.5 text-xs font-semibold text-white"
+          >
+            Open capture <ArrowRight className="h-3.5 w-3.5" />
+          </button>
+          <button
+            type="button"
+            onClick={handleCopy}
+            className="flex items-center justify-center gap-2 rounded-lg border border-blue-200 bg-white px-3 py-2.5 text-xs font-semibold text-blue-900"
+          >
+            <Copy className="h-3.5 w-3.5" /> {copied ? 'Copied!' : 'Copy link'}
+          </button>
+        </div>
+      </div>
+
+      {smsAvailable === false && (
+        <div className="mb-5 flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-3 text-sm text-amber-800">
+          <WifiOff className="mt-0.5 h-4 w-4 shrink-0" />
+          <span>SMS delivery is offline. Use <strong>Open capture</strong> or <strong>Copy link</strong>; photos and videos still upload normally.</span>
+        </div>
+      )}
+
+      {smsAvailable === null && (
+        <div className="mb-5 flex items-center gap-2 text-xs text-gray-400">
+          <Loader2 className="h-3.5 w-3.5 animate-spin" /> Checking SMS availability…
+        </div>
+      )}
+
+      {smsAvailable && (sent ? (
         <div className="flex flex-col items-center gap-3 py-4 text-center">
           <CheckCircle className="h-12 w-12" style={{ color: '#E8793A' }} />
           <p className="font-medium" style={{ color: '#1A2B4A' }}>
@@ -143,10 +194,10 @@ export function CaptureHandoffPanel({
             {sending ? 'Sending…' : 'Send Capture Link via SMS'}
           </button>
         </form>
-      )}
+      ))}
 
       <div className="mt-5 border-t border-gray-100 pt-4">
-        <p className="mb-2 text-xs font-medium text-gray-400 uppercase tracking-wide">Or copy link</p>
+        <p className="mb-2 text-xs font-medium text-gray-400 uppercase tracking-wide">Capture URL</p>
         <div className="flex items-center gap-2">
           <input
             readOnly

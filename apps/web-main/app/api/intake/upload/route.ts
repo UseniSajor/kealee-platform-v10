@@ -9,6 +9,12 @@ const ALLOWED_TYPES = new Set([
   'video/mp4', 'video/quicktime', 'video/mov',
   'audio/webm', 'audio/ogg', 'audio/mp4', 'audio/mpeg',
   'application/pdf',
+  'application/json', 'application/geo+json', 'application/zip',
+  'application/vnd.google-earth.kml+xml', 'application/dxf',
+])
+
+const ALLOWED_DOCUMENT_EXTENSIONS = new Set([
+  'dwg', 'dxf', 'docx', 'geojson', 'json', 'kml', 'kmz', 'landxml', 'shp', 'zip',
 ])
 
 const MAX_FILE_SIZE = 50 * 1024 * 1024 // 50 MB
@@ -31,7 +37,8 @@ export async function POST(req: NextRequest) {
 
     for (const file of files) {
       const lowerName = file.name.toLowerCase()
-      const allowedByExtension = lowerName.endsWith('.dwg') || lowerName.endsWith('.docx')
+      const extension = lowerName.split('.').pop() ?? ''
+      const allowedByExtension = ALLOWED_DOCUMENT_EXTENSIONS.has(extension)
       if (!ALLOWED_TYPES.has(file.type) && !allowedByExtension) {
         continue // skip unsupported types silently
       }

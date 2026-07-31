@@ -164,8 +164,19 @@ function DetailsInner() {
   const [dragActive, setDragActive] = useState(false)
   const [photoAckNoUpload, setPhotoAckNoUpload] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
-  const [uploadMode, setUploadMode] = useState<'device' | 'phone'>('device')
-  const [captureSession, setCaptureSession] = useState<{ id: string; token: string } | null>(null)
+  const resumedCaptureId = searchParams.get('captureSessionId')
+  const resumedCaptureToken = searchParams.get('captureToken')
+  const captureReturnParams = new URLSearchParams(searchParams.toString())
+  captureReturnParams.delete('captureSessionId')
+  captureReturnParams.delete('captureToken')
+  const [uploadMode, setUploadMode] = useState<'device' | 'phone'>(
+    resumedCaptureId && resumedCaptureToken ? 'phone' : 'device',
+  )
+  const [captureSession, setCaptureSession] = useState<{ id: string; token: string } | null>(
+    resumedCaptureId && resumedCaptureToken
+      ? { id: resumedCaptureId, token: resumedCaptureToken }
+      : null,
+  )
   const [captureStarting, setCaptureStarting] = useState(false)
   const [captureStatus, setCaptureStatus] = useState<string>('pending')
   const seenAssetIds = useRef<Set<string>>(new Set())
@@ -718,6 +729,7 @@ function DetailsInner() {
                     captureSessionId={captureSession.id}
                     captureToken={captureSession.token}
                     projectPath={serviceSlug}
+                    returnPath={`/concept/details${captureReturnParams.size ? `?${captureReturnParams.toString()}` : ''}`}
                   />
                   <div className="mt-3 flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
                     {captureStatus === 'in_progress' || uploadedFiles.length > 0 ? (

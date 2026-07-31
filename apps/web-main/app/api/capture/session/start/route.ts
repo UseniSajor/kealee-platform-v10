@@ -1,6 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
-import { isTokenExpired, normalizeCaptureSession, getZoneMeta } from '@kealee/intake'
+import {
+  getCaptureVideoPlan,
+  getRequiredZones,
+  getZoneMeta,
+  isTokenExpired,
+  normalizeCaptureProjectPath,
+  normalizeCaptureSession,
+} from '@kealee/intake'
 
 export const dynamic = 'force-dynamic'
 
@@ -30,6 +37,34 @@ export async function GET(req: NextRequest) {
   }
 
   const session = normalizeCaptureSession(raw)
+  const normalizedProjectPath = normalizeCaptureProjectPath(session.project_path)
+  const configuredZones = getRequiredZones(normalizedProjectPath)
+  if (configuredZones.length === 0) {
+    return NextResponse.json(
+      { error: `Capture is not configured for project path "${session.project_path}"` },
+      { status: 400 },
+    )
+  }
+  const videoPlan = getCaptureVideoPlan(normalizedProjectPath)
+
+  // Repair legacy/aliased sessions at read time so a kitchen capture created
+  // with a generic fallback cannot continue requesting exterior photos.
+  const storedZones = session.required_zones
+  const zonesChanged =
+    session.project_path !== normalizedProjectPath ||
+    storedZones.length !== configuredZones.length ||
+    storedZones.some((zone, index) => zone !== configuredZones[index])
+  if (zonesChanged) {
+    await supabase
+      .from('capture_sessions')
+      .update({
+        project_path: normalizedProjectPath,
+        required_zones: configuredZones,
+      })
+      .eq('id', session.id)
+    session.project_path = normalizedProjectPath
+    session.required_zones = configuredZones
+  }
 
   // Get existing assets for this session
   const { data: assetsRaw } = await supabase
@@ -48,6 +83,8 @@ export async function GET(req: NextRequest) {
       displayName: meta?.displayName ?? zone,
       prompt: meta?.prompt ?? '',
       hvacPrompt: meta?.hvacPrompt ?? null,
+      allowsVideo: videoPlan?.zones.includes(zone) ?? false,
+      videoPrompt: videoPlan?.prompt ?? null,
       isRequired: true,
       isCompleted: session.completed_zones.includes(zone),
       assetCount: zoneAssets.length,

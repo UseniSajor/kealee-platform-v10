@@ -4,10 +4,19 @@ import { sendMobileCaptureLinkViaTwilio } from '@kealee/intake'
 
 export const dynamic = 'force-dynamic'
 
+export async function GET() {
+  const available = Boolean(
+    process.env.TWILIO_ACCOUNT_SID &&
+    process.env.TWILIO_AUTH_TOKEN &&
+    (process.env.TWILIO_PHONE_NUMBER || process.env.TWILIO_PHONE),
+  )
+  return NextResponse.json({ available })
+}
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
-    const { captureSessionId, phoneNumber, clientName, projectPath } = body
+    const { captureSessionId, phoneNumber, clientName, projectPath, returnPath } = body
 
     if (!captureSessionId || !phoneNumber) {
       return NextResponse.json({ error: 'captureSessionId and phoneNumber required' }, { status: 400 })
@@ -33,10 +42,19 @@ export async function POST(req: NextRequest) {
       baseUrl,
       projectPath: projectPath ?? 'your project',
       clientName: clientName ?? undefined,
+      returnPath: typeof returnPath === 'string' && returnPath.startsWith('/') && !returnPath.startsWith('//')
+        ? returnPath
+        : undefined,
     })
 
     if (!result.ok) {
-      return NextResponse.json({ error: result.error ?? 'SMS failed to send' }, { status: 500 })
+      return NextResponse.json(
+        {
+          error: result.error ?? 'SMS failed to send',
+          unavailable: result.unavailable ?? false,
+        },
+        { status: result.unavailable ? 503 : 502 },
+      )
     }
 
     // Log SMS send
