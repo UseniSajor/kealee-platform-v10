@@ -1,0 +1,189 @@
+{
+  "provenance": {
+    "source": "CTC_SAMPLE_TASKS (packages/estimating/src/seed-ctc.ts)",
+    "catalog": "Construction Task Catalog® methodology — Gordian Group / Maryland DGS, June 2023",
+    "pricing": "DMV region, 2026 basis (June-2023 base × 1.13 inflation adjustment)",
+    "coverage": "DEV SAMPLE ONLY — representative tasks, not the full ~4,666-page priced Gordian catalog",
+    "licensing": "The full Gordian CTC is proprietary and its redistribution is prohibited; only this Kealee-authored sample is included in the repo."
+  },
+  "divisions": [
+    {
+      "division": "01",
+      "name": "General Requirements",
+      "count": 5,
+      "csiCodes": [
+        "01 10 00",
+        "01 50 00",
+        "01 74 00"
+      ],
+      "tasks": [
+        "01-001",
+        "01-002",
+        "01-003",
+        "01-010",
+        "01-010.01"
+      ]
+    },
+    {
+      "division": "02",
+      "name": "Existing Conditions",
+      "count": 5,
+      "csiCodes": [
+        "02 41 00"
+      ],
+      "tasks": [
+        "02-001",
+        "02-002",
+        "02-010",
+        "02-011",
+        "02-020"
+      ]
+    },
+    {
+      "division": "03",
+      "name": "Concrete",
+      "count": 5,
+      "csiCodes": [
+        "03 30 00",
+        "03 11 00",
+        "03 21 00"
+      ],
+      "tasks": [
+        "03-001",
+        "03-001.01",
+        "03-002",
+        "03-010",
+        "03-020"
+      ]
+    },
+    {
+      "division": "06",
+      "name": "Wood, Plastics & Composites",
+      "count": 4,
+      "csiCodes": [
+        "06 10 00",
+        "06 20 00"
+      ],
+      "tasks": [
+        "06-001",
+        "06-001.01",
+        "06-010",
+        "06-011"
+      ]
+    },
+    {
+      "division": "07",
+      "name": "Thermal & Moisture Protection",
+      "count": 2,
+      "csiCodes": [
+        "07 21 00",
+        "07 31 00"
+      ],
+      "tasks": [
+        "07-001",
+        "07-010"
+      ]
+    },
+    {
+      "division": "08",
+      "name": "Openings",
+      "count": 3,
+      "csiCodes": [
+        "08 11 00",
+        "08 51 00"
+      ],
+      "tasks": [
+        "08-001",
+        "08-001.01",
+        "08-010"
+      ]
+    },
+    {
+      "division": "09",
+      "name": "Finishes",
+      "count": 4,
+      "csiCodes": [
+        "09 29 00",
+        "09 91 00",
+        "09 30 00",
+        "09 51 00"
+      ],
+      "tasks": [
+        "09-001",
+        "09-010",
+        "09-020",
+        "09-030"
+      ]
+    },
+    {
+      "division": "22",
+      "name": "Plumbing",
+      "count": 3,
+      "csiCodes": [
+        "22 11 00",
+        "22 41 00",
+        "22 42 00"
+      ],
+      "tasks": [
+        "22-001",
+        "22-010",
+        "22-011"
+      ]
+    },
+    {
+      "division": "23",
+      "name": "HVAC",
+      "count": 2,
+      "csiCodes": [
+        "23 31 00",
+        "23 74 00"
+      ],
+      "tasks": [
+        "23-001",
+        "23-010"
+      ]
+    },
+    {
+      "division": "26",
+      "name": "Electrical",
+      "count": 4,
+      "csiCodes": [
+        "26 05 00",
+        "26 27 00",
+        "26 51 00",
+        "26 24 00"
+      ],
+      "tasks": [
+        "26-001",
+        "26-010",
+        "26-020",
+        "26-030"
+      ]
+    },
+    {
+      "division": "31",
+      "name": "Earthwork",
+      "count": 2,
+      "csiCodes": [
+        "31 23 00"
+      ],
+      "tasks": [
+        "31-001",
+        "31-002"
+      ]
+    },
+    {
+      "division": "32",
+      "name": "Exterior Improvements",
+      "count": 2,
+      "csiCodes": [
+        "32 12 00",
+        "32 92 00"
+      ],
+      "tasks": [
+        "32-001",
+        "32-010"
+      ]
+    }
+  ]
+}

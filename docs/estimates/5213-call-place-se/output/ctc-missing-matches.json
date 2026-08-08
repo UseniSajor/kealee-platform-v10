@@ -1,0 +1,467 @@
+{
+  "meta": {
+    "catalogue": "CTC 41-task sample (41)",
+    "coveragePct": 32.1,
+    "matched": 35,
+    "total": 109,
+    "uncovered": 65
+  },
+  "note": "Lines not priced from a CTC task. With the full catalog most should match; extend CROSSWALK in build-estimate-ctc.mjs for any that still miss.",
+  "missing": [
+    {
+      "division": "02",
+      "item": "Clearing & site preparation",
+      "unit": "sqft",
+      "pricedBy": "PENDING-CTC",
+      "extended": 0
+    },
+    {
+      "division": "02",
+      "item": "Erosion & sediment control (DOEE/SWM)",
+      "unit": "lf",
+      "pricedBy": "PENDING-CTC",
+      "extended": 0
+    },
+    {
+      "division": "02",
+      "item": "New rear areaway excavation/retaining",
+      "unit": "ls",
+      "pricedBy": "PENDING-CTC",
+      "extended": 0
+    },
+    {
+      "division": "03",
+      "item": "Drilled piers 18\"Ø×30\" (4-#5 vert, #3 ties)",
+      "unit": "ea",
+      "pricedBy": "PENDING-CTC",
+      "extended": 0
+    },
+    {
+      "division": "03",
+      "item": "Wire Mesh Placement",
+      "unit": "sqft",
+      "pricedBy": "PENDING-CTC",
+      "extended": 0
+    },
+    {
+      "division": "03",
+      "item": "Elevator pit (excavate/form/pour/waterproof)",
+      "unit": "ea",
+      "pricedBy": "PENDING-CTC",
+      "extended": 0
+    },
+    {
+      "division": "03",
+      "item": "Exterior Waterproofing",
+      "unit": "lf",
+      "pricedBy": "PENDING-CTC",
+      "extended": 0
+    },
+    {
+      "division": "04",
+      "item": "Brick Veneer",
+      "unit": "sqft",
+      "pricedBy": "PENDING-CTC",
+      "extended": 0
+    },
+    {
+      "division": "04",
+      "item": "Lintels, flashing, masonry accessories",
+      "unit": "ls",
+      "pricedBy": "PENDING-CTC",
+      "extended": 0
+    },
+    {
+      "division": "05",
+      "item": "Steel Beam Installation",
+      "unit": "lf",
+      "pricedBy": "PENDING-CTC",
+      "extended": 0
+    },
+    {
+      "division": "05",
+      "item": "HSS 5×5×3/8 steel columns + base plates",
+      "unit": "lf",
+      "pricedBy": "PENDING-CTC",
+      "extended": 0
+    },
+    {
+      "division": "05",
+      "item": "Steel connections, embeds, stair/rail steel, misc metals",
+      "unit": "ls",
+      "pricedBy": "PENDING-CTC",
+      "extended": 0
+    },
+    {
+      "division": "06",
+      "item": "Floor System – I-Joist (TJI)",
+      "unit": "sqft",
+      "pricedBy": "PENDING-CTC",
+      "extended": 0
+    },
+    {
+      "division": "06",
+      "item": "Subfloor Sheathing",
+      "unit": "sqft",
+      "pricedBy": "PENDING-CTC",
+      "extended": 0
+    },
+    {
+      "division": "06",
+      "item": "Wall Sheathing – OSB/Plywood",
+      "unit": "sqft",
+      "pricedBy": "PENDING-CTC",
+      "extended": 0
+    },
+    {
+      "division": "06",
+      "item": "Low-slope roof framing (PT 2x8 @24\" + steel)",
+      "unit": "sqft",
+      "pricedBy": "PENDING-CTC",
+      "extended": 0
+    },
+    {
+      "division": "06",
+      "item": "Roof Sheathing – OSB/Plywood",
+      "unit": "sqft",
+      "pricedBy": "PENDING-CTC",
+      "extended": 0
+    },
+    {
+      "division": "06",
+      "item": "Stair Framing",
+      "unit": "each",
+      "pricedBy": "PENDING-CTC",
+      "extended": 0
+    },
+    {
+      "division": "06",
+      "item": "Elevator shaft framing & 2-hr rated enclosure",
+      "unit": "ea",
+      "pricedBy": "PENDING-CTC",
+      "extended": 0
+    },
+    {
+      "division": "06",
+      "item": "Blocking, backing, misc rough carpentry",
+      "unit": "sqft",
+      "pricedBy": "PENDING-CTC",
+      "extended": 0
+    },
+    {
+      "division": "07",
+      "item": "Fiber Cement Siding – Lap",
+      "unit": "sqft",
+      "pricedBy": "PENDING-CTC",
+      "extended": 0
+    },
+    {
+      "division": "07",
+      "item": "House wrap / weather-resistive barrier",
+      "unit": "sqft",
+      "pricedBy": "PENDING-CTC",
+      "extended": 0
+    },
+    {
+      "division": "07",
+      "item": "Gutters, downspouts, flashing, coping",
+      "unit": "ls",
+      "pricedBy": "PENDING-CTC",
+      "extended": 0
+    },
+    {
+      "division": "07",
+      "item": "Firestopping / rated assemblies (Type IIIB)",
+      "unit": "sqft",
+      "pricedBy": "PENDING-CTC",
+      "extended": 0
+    },
+    {
+      "division": "07",
+      "item": "Sealants & caulking",
+      "unit": "ls",
+      "pricedBy": "PENDING-CTC",
+      "extended": 0
+    },
+    {
+      "division": "08",
+      "item": "Storefront / WELCOME entry glazing",
+      "unit": "ls",
+      "pricedBy": "PENDING-CTC",
+      "extended": 0
+    },
+    {
+      "division": "08",
+      "item": "Commercial hardware (levers, closers, panic)",
+      "unit": "ea",
+      "pricedBy": "PENDING-CTC",
+      "extended": 0
+    },
+    {
+      "division": "09",
+      "item": "Luxury Vinyl Plank (LVP)",
+      "unit": "sqft",
+      "pricedBy": "PENDING-CTC",
+      "extended": 0
+    },
+    {
+      "division": "09",
+      "item": "Finish carpentry — base, casing, trim",
+      "unit": "sqft",
+      "pricedBy": "PENDING-CTC",
+      "extended": 0
+    },
+    {
+      "division": "10",
+      "item": "ADA Grab Bar",
+      "unit": "each",
+      "pricedBy": "PENDING-CTC",
+      "extended": 0
+    },
+    {
+      "division": "10",
+      "item": "Toilet accessories sets (7 baths)",
+      "unit": "ea",
+      "pricedBy": "PENDING-CTC",
+      "extended": 0
+    },
+    {
+      "division": "10",
+      "item": "Signage — egress / ADA / room ID",
+      "unit": "ea",
+      "pricedBy": "PENDING-CTC",
+      "extended": 0
+    },
+    {
+      "division": "10",
+      "item": "Fire extinguishers & cabinets",
+      "unit": "ea",
+      "pricedBy": "PENDING-CTC",
+      "extended": 0
+    },
+    {
+      "division": "10",
+      "item": "Misc specialties (lockers, mail, corner guards)",
+      "unit": "ls",
+      "pricedBy": "PENDING-CTC",
+      "extended": 0
+    },
+    {
+      "division": "12",
+      "item": "Standard Vanity with Top",
+      "unit": "each",
+      "pricedBy": "PENDING-CTC",
+      "extended": 0
+    },
+    {
+      "division": "12",
+      "item": "Common/kitchen casework & countertops (base-bldg)",
+      "unit": "lf",
+      "pricedBy": "PENDING-CTC",
+      "extended": 0
+    },
+    {
+      "division": "12",
+      "item": "Closet/pantry shelving & built-ins",
+      "unit": "ea",
+      "pricedBy": "PENDING-CTC",
+      "extended": 0
+    },
+    {
+      "division": "21",
+      "item": "Sprinkler system — NFPA 13, full building",
+      "unit": "sqft",
+      "pricedBy": "PENDING-CTC",
+      "extended": 0
+    },
+    {
+      "division": "21",
+      "item": "Fire service / standpipe / FDC",
+      "unit": "ls",
+      "pricedBy": "PENDING-CTC",
+      "extended": 0
+    },
+    {
+      "division": "21",
+      "item": "Sprinkler testing & certification",
+      "unit": "ls",
+      "pricedBy": "PENDING-CTC",
+      "extended": 0
+    },
+    {
+      "division": "22",
+      "item": "Standard Bathtub",
+      "unit": "each",
+      "pricedBy": "PENDING-CTC",
+      "extended": 0
+    },
+    {
+      "division": "22",
+      "item": "Water heaters — commercial (2 × WH-1)",
+      "unit": "ea",
+      "pricedBy": "PENDING-CTC",
+      "extended": 0
+    },
+    {
+      "division": "22",
+      "item": "Laundry rough-in + sump pump",
+      "unit": "ls",
+      "pricedBy": "PENDING-CTC",
+      "extended": 0
+    },
+    {
+      "division": "22",
+      "item": "Commercial-kitchen plumbing/gas rough-in (base-bldg)",
+      "unit": "ls",
+      "pricedBy": "PENDING-CTC",
+      "extended": 0
+    },
+    {
+      "division": "23",
+      "item": "Controls / thermostats / zoning",
+      "unit": "ea",
+      "pricedBy": "PENDING-CTC",
+      "extended": 0
+    },
+    {
+      "division": "23",
+      "item": "Bathroom Exhaust Fan – Standard",
+      "unit": "each",
+      "pricedBy": "PENDING-CTC",
+      "extended": 0
+    },
+    {
+      "division": "23",
+      "item": "Kitchen hood curb, exhaust (KEF-1) & make-up air (MAU-1) ductwork (base-bldg)",
+      "unit": "ls",
+      "pricedBy": "PENDING-CTC",
+      "extended": 0
+    },
+    {
+      "division": "23",
+      "item": "Elevator machine-room mini-split + TAB",
+      "unit": "ls",
+      "pricedBy": "PENDING-CTC",
+      "extended": 0
+    },
+    {
+      "division": "26",
+      "item": "Feeders & branch wiring (building-wide)",
+      "unit": "sqft",
+      "pricedBy": "PENDING-CTC",
+      "extended": 0
+    },
+    {
+      "division": "26",
+      "item": "HVAC power / equipment connections (CU/AHU/MAU/KEF)",
+      "unit": "ea",
+      "pricedBy": "PENDING-CTC",
+      "extended": 0
+    },
+    {
+      "division": "26",
+      "item": "Commercial-kitchen & walk-in electrical rough-in (base-bldg)",
+      "unit": "ls",
+      "pricedBy": "PENDING-CTC",
+      "extended": 0
+    },
+    {
+      "division": "26",
+      "item": "Elevator power rough-in, disconnect & cab-light circuit",
+      "unit": "ls",
+      "pricedBy": "PENDING-CTC",
+      "extended": 0
+    },
+    {
+      "division": "26",
+      "item": "Emergency & exit lighting (egress)",
+      "unit": "ea",
+      "pricedBy": "PENDING-CTC",
+      "extended": 0
+    },
+    {
+      "division": "26",
+      "item": "Smoke Detector – Hardwired",
+      "unit": "each",
+      "pricedBy": "PENDING-CTC",
+      "extended": 0
+    },
+    {
+      "division": "27/28",
+      "item": "Fire alarm system — addressable (R-2)",
+      "unit": "sqft",
+      "pricedBy": "PENDING-CTC",
+      "extended": 0
+    },
+    {
+      "division": "27/28",
+      "item": "Cat6 Ethernet Drop",
+      "unit": "each",
+      "pricedBy": "PENDING-CTC",
+      "extended": 0
+    },
+    {
+      "division": "27/28",
+      "item": "Security / access control / intercom / CCTV",
+      "unit": "ls",
+      "pricedBy": "PENDING-CTC",
+      "extended": 0
+    },
+    {
+      "division": "31",
+      "item": "Haul-off / spoil disposal",
+      "unit": "cy",
+      "pricedBy": "PENDING-CTC",
+      "extended": 0
+    },
+    {
+      "division": "31",
+      "item": "Stone base / under-slab drainage",
+      "unit": "sqft",
+      "pricedBy": "PENDING-CTC",
+      "extended": 0
+    },
+    {
+      "division": "31",
+      "item": "Fine grading",
+      "unit": "sqft",
+      "pricedBy": "PENDING-CTC",
+      "extended": 0
+    },
+    {
+      "division": "32",
+      "item": "Site drainage / area drains",
+      "unit": "ls",
+      "pricedBy": "PENDING-CTC",
+      "extended": 0
+    },
+    {
+      "division": "33",
+      "item": "Domestic water service & tap",
+      "unit": "ls",
+      "pricedBy": "PENDING-CTC",
+      "extended": 0
+    },
+    {
+      "division": "33",
+      "item": "Sanitary sewer service & connection",
+      "unit": "ls",
+      "pricedBy": "PENDING-CTC",
+      "extended": 0
+    },
+    {
+      "division": "33",
+      "item": "Gas service & meter",
+      "unit": "ls",
+      "pricedBy": "PENDING-CTC",
+      "extended": 0
+    },
+    {
+      "division": "33",
+      "item": "Electrical service lateral / transformer coord (Pepco)",
+      "unit": "ls",
+      "pricedBy": "PENDING-CTC",
+      "extended": 0
+    }
+  ]
+}
