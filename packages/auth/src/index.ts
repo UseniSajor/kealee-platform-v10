@@ -138,3 +138,28 @@ export {
   COMMAND_CENTER_API_ROLES,
   INTELLIGENCE_UI_ROLES,
 } from './ops-api-auth';
+
+// Clerk + Supabase Unified Auth
+export {
+  getClerkUser,
+  getSupabaseUser,
+  getUnifiedUser,
+  getUserFromBoth,
+  isAuthenticated,
+  hasRole,
+  setupClerkCookies,
+} from './clerk-adapter';
+export type { UnifiedUser } from './clerk-adapter';
+
+// Authorization Service (centralized permission checks)
+export {
+  requireAuthenticatedUser,
+  requireOrganizationMember,
+  requireOrganizationRole,
+  requireProjectAccess,
+  requirePlatformAdmin,
+  canAccessResource,
+  getAuditLog,
+  clearAuditLog,
+} from './authorization-service';
+export type { AuthorizationContext, AuditLogEntry } from './authorization-service';

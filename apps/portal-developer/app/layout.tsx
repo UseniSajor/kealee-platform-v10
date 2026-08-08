@@ -1,3 +1,4 @@
+import { ClerkProvider } from '@clerk/nextjs'
 import type { Metadata, Viewport } from 'next'
 import './globals.css'
 
@@ -22,5 +23,6 @@ export default function RootLayout({
     <html lang="en" className="font-body">
       <body className="antialiased">{children}</body>
     </html>
+    </ClerkProvider>
   )
 }

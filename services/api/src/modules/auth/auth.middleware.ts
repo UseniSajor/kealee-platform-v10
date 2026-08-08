@@ -1,6 +1,7 @@
 import { FastifyRequest, FastifyReply } from 'fastify'
 import { authService } from './auth.service'
 import { sanitizeErrorMessage } from '../../utils/sanitize-error'
+import { verifyClerkJWT } from '../../utils/clerk-jwt.utils'
 
 export interface AuthenticatedRequest extends FastifyRequest {
   user: {
@@ -10,6 +11,8 @@ export interface AuthenticatedRequest extends FastifyRequest {
     role: string
     organizationId?: string | null
     profile?: any
+    clerkUserId?: string // Clerk user ID if authenticated via Clerk
+    authSource?: 'clerk' | 'supabase' // Which auth provider was used
     [key: string]: any
   }
 }
@@ -28,7 +31,36 @@ export async function authenticateUser(
     }
 
     const token = authHeader.substring(7) // Remove 'Bearer ' prefix
-    const user = await authService.verifyToken(token)
+
+    // Try Clerk first, then fall back to Supabase
+    let user: any
+    let authSource: 'clerk' | 'supabase' = 'supabase'
+
+    // Try Clerk JWT (if CLERK_SECRET_KEY is set)
+    if (process.env.CLERK_SECRET_KEY) {
+      try {
+        const clerkClaims = await verifyClerkJWT(token)
+        if (clerkClaims) {
+          user = {
+            id: clerkClaims.sub,
+            userId: clerkClaims.sub,
+            email: clerkClaims.email,
+            clerkUserId: clerkClaims.sub,
+            role: clerkClaims.role || 'USER',
+            authSource: 'clerk',
+          }
+          authSource = 'clerk'
+        }
+      } catch (clerkError) {
+        // Clerk verification failed, try Supabase
+      }
+    }
+
+    // Fall back to Supabase if Clerk didn't work
+    if (!user) {
+      user = await authService.verifyToken(token)
+      user.authSource = 'supabase'
+    }
 
     // Attach user to request for use in routes
     ;(request as any).user = user

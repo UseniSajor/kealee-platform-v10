@@ -1128,6 +1128,7 @@ model User {
   lastName  String?
   password  String?
   phone     String?
+  clerkUserId String? @unique // External Clerk user ID for authentication
 
   // User metadata
   role              String?   @default("USER")
@@ -1390,6 +1391,7 @@ model Org {
   id          String   @id @default(uuid())
   name        String
   slug        String   @unique
+  clerkOrgId  String?  @unique // External Clerk organization ID (optional)
   description String?
   logo        String?
   status      String   @default("ACTIVE")

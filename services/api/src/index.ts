@@ -303,6 +303,7 @@ import { complianceCheckpointRoutes } from './modules/compliance/compliance-chec
 // import { depositRoutes } from './routes/deposit.routes'
 // Stripe webhook handlers for checkout and payment events
 import { registerStripeWebhookRoutes } from './modules/webhooks/stripe-webhook.routes'
+import { registerClerkWebhookRoutes } from './modules/clerk/clerk-webhook.routes'
 // Oversight temporarily disabled
 // import { oversightRoutes } from './routes/oversight.routes'
 import testRoutes from './routes/test.routes'
@@ -526,6 +527,11 @@ const start = async () => {
     // ── Stripe Webhook Handlers ──
     await safeRegisterBlock('Stripe webhook handlers (payment events)', async () => {
       await registerStripeWebhookRoutes(fastify)
+    })
+
+    // ── Clerk Webhook Handlers ──
+    await safeRegisterBlock('Clerk webhook handlers (auth events)', async () => {
+      await registerClerkWebhookRoutes(fastify)
     })
 
     // ── Checkout Pricing Calculation ──

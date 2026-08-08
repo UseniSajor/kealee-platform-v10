@@ -1,3 +1,4 @@
+import { ClerkProvider } from '@clerk/nextjs'
 import type { Metadata, Viewport } from 'next'
 import './globals.css'
 
@@ -19,8 +20,10 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
+    <ClerkProvider>
+      <html lang="en">
       <body className="font-body antialiased">{children}</body>
     </html>
+    </ClerkProvider>
   )
 }
