@@ -1,94 +1,52 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { ArrowRight, CheckCircle } from 'lucide-react'
-import { getProductsByCategory, type Product } from '@/lib/products'
+import { ArrowRight } from 'lucide-react'
+import {
+  PUBLIC_CATALOG_CATEGORIES,
+  PUBLIC_PRODUCT_CATALOG,
+  formatCatalogPrice,
+  type PublicCatalogProduct,
+} from '@kealee/core-rules'
+import { REVENUE_PRODUCT_CATALOG } from '@/lib/revenue-product-catalog'
+import { BuyingPathways } from '@/components/commerce/BuyingPathways'
+import { availabilityLabel, getProductAvailability } from '@/lib/product-availability'
+import { EditorialVideoHero } from '@/components/marketing/EditorialVideoHero'
+import { ServiceExamplesGallery } from '@/components/marketing/ServiceExamplesGallery'
 
 export const metadata: Metadata = {
   title: 'All Products & Services — Kealee',
-  description: 'Every Kealee service in one place. design, permits, cost estimation, construction management, and landscape — all starting with design concept.',
+  description: 'Every Kealee service in one place. AI design, permits, cost estimation, construction management, and landscape — all starting with AI concept.',
 }
 
-const CATEGORIES = [
-  {
-    id: 'ai-design' as const,
-    label: 'Design Engine',
-    description: 'Start here. See your project before anything is built.',
-    accent: '#E8793A',
-  },
-  {
-    id: 'landscape' as const,
-    label: 'Garden & Landscape',
-    description: 'design concept, then permits if needed, then contractor match.',
-    accent: '#38A169',
-  },
-  {
-    id: 'architectural' as const,
-    label: 'Architectural & Engineering',
-    description: 'Licensed professionals. Schematic through permit-ready.',
-    accent: '#1A2B4A',
-  },
-  {
-    id: 'permits' as const,
-    label: 'Permits & Compliance',
-    description: 'We file, track, and respond to comments. DC · MD · VA.',
-    accent: '#4A8FA8',
-  },
-  {
-    id: 'estimation' as const,
-    label: 'Cost Estimation',
-    description: 'RSMeans-validated, lender-ready cost documentation.',
-    accent: '#4A8FA8',
-  },
-  {
-    id: 'construction' as const,
-    label: 'Construction & PM',
-    description: 'Project management, bundles, and oversight for active builds.',
-    accent: '#1A2B4A',
-  },
-  {
-    id: 'specialty' as const,
-    label: 'Specialty Services',
-    description: 'Historic preservation, water mitigation, and site remediation.',
-    accent: '#3A7D52',
-  },
-]
+const CATEGORY_ACCENTS = {
+  'site-intelligence': '#0F766E',
+  'concept-planning': '#D4A017',
+  estimation: '#147D92',
+  'permits-professional': '#8A5A3C',
+  'construction-execution': '#1F3D38',
+} as const
 
-function ProductCard({ product }: { product: Product }) {
-  const accent = product.accentColor ?? '#E8793A'
+function CatalogProductCard({ product }: { product: PublicCatalogProduct }) {
+  const accent = CATEGORY_ACCENTS[product.categoryId]
+  const availability = getProductAvailability(product.key)
   return (
     <Link
-      href={`/products/${product.slug}`}
-      className="group flex flex-col rounded-xl bg-white border border-gray-200 overflow-hidden hover:shadow-md transition-all hover:-translate-y-0.5"
+      href={product.href}
+      className="group flex flex-col overflow-hidden rounded-xl border-2 border-teal-100 bg-gradient-to-br from-white via-white to-teal-50/70 p-5 shadow-sm transition-all hover:-translate-y-1 hover:border-yellow-300 hover:shadow-lg"
     >
-      {/* Image */}
-      <div className="relative h-44 overflow-hidden">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={product.imageUrl}
-          alt={product.name}
-          className="w-full h-full object-cover transition-transform group-hover:scale-105"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
-        <span
-          className="absolute bottom-3 left-3 rounded-full px-2.5 py-0.5 text-xs font-bold text-white"
-          style={{ backgroundColor: accent }}
-        >
-          {product.badge}
+      <div className="flex items-start justify-between gap-4">
+        <span className="rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-white" style={{ backgroundColor: accent }}>
+          {product.audience.join(' · ')}
         </span>
+        <span className="shrink-0 text-xs font-black" style={{ color: accent }}>{availabilityLabel(availability)}</span>
       </div>
-      {/* Content */}
-      <div className="flex flex-col flex-1 p-5">
-        <div className="text-xs font-semibold uppercase tracking-widest mb-1.5" style={{ color: accent }}>
-          {product.label}
-        </div>
-        <h3 className="font-bold text-base font-display mb-2" style={{ color: '#1A2B4A' }}>{product.name}</h3>
-        <p className="text-sm text-gray-500 leading-relaxed flex-1 line-clamp-2">{product.tagline}</p>
-        <div className="mt-4 flex items-center justify-between">
-          <span className="text-sm font-bold" style={{ color: accent }}>{product.price}</span>
-          <span className="flex items-center gap-1 text-sm font-semibold group-hover:gap-2 transition-all" style={{ color: accent }}>
-            View <ArrowRight className="h-3.5 w-3.5" />
-          </span>
-        </div>
+      <h3 className="mt-4 font-bold text-lg font-display" style={{ color: '#1A2B4A' }}>{product.name}</h3>
+      <p className="mt-2 flex-1 text-sm text-gray-500 leading-relaxed">{product.shortDescription}</p>
+      <div className="mt-5 flex items-center justify-between border-t border-[#8a5a3c]/20 pt-4">
+        <span className="text-xs text-slate-400">Scope and price confirmed after review</span>
+        <span className="flex items-center gap-1 text-sm font-semibold group-hover:gap-2 transition-all" style={{ color: accent }}>
+          View <ArrowRight className="h-3.5 w-3.5" />
+        </span>
       </div>
     </Link>
   )
@@ -97,57 +55,34 @@ function ProductCard({ product }: { product: Product }) {
 export default function ProductsPage() {
   return (
     <div className="min-h-screen bg-white">
-      {/* Hero */}
-      <section className="py-20 border-b border-gray-100" style={{ background: 'linear-gradient(135deg, #1A2B4A 0%, #2d4a72 100%)' }}>
-        <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 text-center">
-          <span className="inline-block rounded-full px-3 py-1 text-xs font-bold uppercase tracking-widest mb-4" style={{ backgroundColor: 'rgba(232,121,58,0.2)', color: '#FBB98A' }}>
-            All Services
-          </span>
-          <h1 className="text-4xl font-bold text-white font-display sm:text-5xl">
-            Every Kealee service.<br />One place.
-          </h1>
-          <p className="mt-5 text-lg text-white/70 max-w-2xl mx-auto leading-relaxed">
-            Start with an design concept. Add permits if required. Match with a verified contractor when you're ready.
-            Each service is separate — stop at any step.
-          </p>
-          <div className="mt-8 flex flex-wrap gap-3 justify-center text-sm text-white/60">
-            {['No subscription', 'Per-service pricing', 'Staff reviewed', 'DMV-specific expertise'].map(t => (
-              <span key={t} className="flex items-center gap-1.5">
-                <CheckCircle className="h-3.5 w-3.5 text-green-400" />
-                {t}
-              </span>
-            ))}
-          </div>
-        </div>
-      </section>
+      <EditorialVideoHero eyebrow="Preconstruction services" title="Every service. One path toward construction." description="Explore what Kealee can produce across design, site planning, cost intelligence, permits, professional coordination, and construction readiness." videoSrc="/media/service-videos/home-build-video.mp4" poster="/media/service-photos/home-build.jpg" primary={{ label: 'Get project clarity', href: '/products/home-project-readiness-review' }} secondary={{ label: 'Explore 24 examples', href: '/inspiration' }} />
 
-      {/* Journey callout */}
-      <section className="py-10 border-b border-gray-100 bg-orange-50">
-        <div className="mx-auto max-w-3xl px-4 sm:px-6 text-center">
-          <p className="text-sm font-medium text-gray-700">
-            <strong style={{ color: '#E8793A' }}>How it works:</strong>{' '}
-            Concept Package
-            <span className="mx-2 text-gray-400">→</span>
-            Permits (if required)
-            <span className="mx-2 text-gray-400">→</span>
-            Contractor Match (if elected)
-          </p>
-          <p className="text-xs text-gray-500 mt-1.5">Garden, landscape, kitchen, bath, exterior, basement, ADU — all start with design concept.</p>
-        </div>
+      <ServiceExamplesGallery serviceKey="all-services" limit={9} />
+
+      <section className="border-b border-gray-100 bg-slate-50">
+        <BuyingPathways />
       </section>
 
       {/* Category sections */}
-      <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-16 space-y-20">
-        {CATEGORIES.map(cat => {
-          const products = getProductsByCategory(cat.id)
+      <div id="homeowner-services" className="mx-auto max-w-6xl scroll-mt-24 px-4 sm:px-6 lg:px-8 py-16 space-y-20">
+        <div className="mx-auto max-w-3xl text-center">
+          <span className="text-xs font-bold uppercase tracking-widest text-orange-600">Public product catalog</span>
+          <h2 className="mt-3 font-display text-3xl font-bold text-[#1A2B4A]">Buy the next project outcome</h2>
+          <p className="mt-3 text-sm leading-relaxed text-gray-500">
+            Kitchens, additions, ADUs, pools, landscapes, commercial projects, and multifamily sites are selected during
+            intake. The products below remain consistent across project types.
+          </p>
+        </div>
+        {PUBLIC_CATALOG_CATEGORIES.map(cat => {
+          const products = PUBLIC_PRODUCT_CATALOG.filter(product => product.categoryId === cat.id)
           if (products.length === 0) return null
           return (
-            <section key={cat.id}>
+            <section key={cat.id} id={cat.id} className="scroll-mt-24">
               <div className="flex items-end justify-between mb-8 border-b border-gray-100 pb-4">
                 <div>
                   <span
                     className="text-xs font-bold uppercase tracking-widest block mb-1"
-                    style={{ color: cat.accent }}
+                    style={{ color: CATEGORY_ACCENTS[cat.id] }}
                   >
                     {cat.label}
                   </span>
@@ -156,7 +91,7 @@ export default function ProductsPage() {
               </div>
               <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                 {products.map(product => (
-                  <ProductCard key={product.slug} product={product} />
+                  <CatalogProductCard key={product.key} product={product} />
                 ))}
               </div>
             </section>
@@ -164,18 +99,54 @@ export default function ProductsPage() {
         })}
       </div>
 
+      {/* Professional project services */}
+      <section className="border-t border-[#ded8cc] bg-[#ece7dc] py-16">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+          <div className="mb-8 border-b border-[#cfc7b9] pb-4">
+            <span className="mb-1 block text-xs font-bold uppercase tracking-widest text-[#b85831]">Professional project services</span>
+            <p className="text-sm text-[#68746f]">Separate per-project deliverables for contractor clients and development sites. Contractor marketplace membership is not included.</p>
+          </div>
+          <div className="grid gap-5 sm:grid-cols-2">
+            {Object.values(REVENUE_PRODUCT_CATALOG)
+              .filter(product => product.customerType === 'contractor' || product.customerType === 'developer')
+              .map(product => {
+                const price = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(product.priceCents / 100)
+                return (
+                  <Link
+                    key={product.productKey}
+                    href={`/products/${product.productKey}`}
+                    className="group flex flex-col rounded-2xl border border-[#d5cec1] bg-white p-6 transition-all hover:-translate-y-1 hover:shadow-lg"
+                  >
+                    <span className="mb-2 inline-block w-fit rounded-full bg-orange-500/20 px-2.5 py-0.5 text-xs font-bold uppercase tracking-wide text-orange-300">
+                      {product.customerType}
+                    </span>
+                    <h3 className="font-display text-lg font-bold text-[#263831]">{product.name}</h3>
+                    <p className="mt-2 flex-1 text-sm leading-relaxed text-[#68746f]">Includes {product.botTypes.join(', ')}. Scope, professional involvement, price, and timing are confirmed before purchase.</p>
+                    <div className="mt-4 flex items-center justify-between">
+                      <span className="text-sm font-bold text-orange-300">Scope confirmation required</span>
+                      <span className="flex items-center gap-1 text-sm font-semibold text-orange-300 transition-all group-hover:gap-2">
+                        View <ArrowRight className="h-3.5 w-3.5" />
+                      </span>
+                    </div>
+                  </Link>
+                )
+              })}
+          </div>
+        </div>
+      </section>
+
       {/* Bottom CTA */}
       <section className="py-16 border-t border-gray-100 bg-gray-50">
         <div className="mx-auto max-w-2xl px-4 text-center sm:px-6">
           <h2 className="text-2xl font-bold font-display" style={{ color: '#1A2B4A' }}>Not sure where to start?</h2>
-          <p className="mt-3 text-gray-500">Most projects start with an Concept Package. If you're not sure which one fits, tell us about your project.</p>
+          <p className="mt-3 text-gray-500">Most projects start with project clarity. If you&apos;re not sure which service fits, tell us about your project.</p>
           <div className="mt-6 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
             <Link
-              href="/concept-engine"
+              href="/products/home-project-readiness-review"
               className="inline-flex items-center gap-2 rounded-xl px-7 py-3.5 text-base font-semibold text-white transition-opacity hover:opacity-90"
               style={{ backgroundColor: '#E8793A' }}
             >
-              Browse design Paths <ArrowRight className="h-5 w-5" />
+              Get Project Clarity <ArrowRight className="h-5 w-5" />
             </Link>
             <Link
               href="/contact"

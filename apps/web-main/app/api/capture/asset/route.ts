@@ -50,6 +50,7 @@ export async function POST(req: NextRequest) {
     })
 
     if (assetErr) {
+      console.error('[capture/asset] Registration failed', { captureSessionId, zone, storagePath, mimeType, error: assetErr.message })
       return NextResponse.json({ error: assetErr.message }, { status: 500 })
     }
 
@@ -112,9 +113,11 @@ export async function POST(req: NextRequest) {
       },
     })
 
+    console.info('[capture/asset] Registered', { captureSessionId, assetId, zone, mimeType, progressPercent })
     return NextResponse.json({ assetId, progressPercent, completedZones })
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : 'Internal error'
+    console.error('[capture/asset] Request failed', { error: msg })
     return NextResponse.json({ error: msg }, { status: 500 })
   }
 }

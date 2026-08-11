@@ -1,107 +1,77 @@
 /**
  * Navigation system unit tests
  * Tests config structure, type safety, and link integrity — no DOM rendering needed.
+ *
+ * NAV_SECTIONS is the real topbar nav (components/nav.tsx, rendered via SiteNav
+ * in app/layout.tsx). config/navigation.ts only holds the footer nav now — the
+ * old PRIMARY_NAV/GlobalNav/MobileNav system was dead code, never rendered
+ * anywhere, and has been removed along with its tests.
  */
 
-import {
-  PRIMARY_NAV,
-  NAV_CTA_PRIMARY,
-  NAV_LOGIN_OPTIONS,
-  FOOTER_NAV,
-  type NavItem,
-} from '../../../config/navigation'
+import { describe, it, expect } from 'vitest'
+import { NAV_SECTIONS } from '../../nav'
+import { FOOTER_NAV } from '../../../config/navigation'
 
-// ─── PRIMARY_NAV ────────────────────────────────────────────────────────────
+// ─── NAV_SECTIONS ───────────────────────────────────────────────────────────
 
-describe('PRIMARY_NAV', () => {
-  it('exports an array of nav items', () => {
-    expect(Array.isArray(PRIMARY_NAV)).toBe(true)
-    expect(PRIMARY_NAV.length).toBeGreaterThan(0)
+describe('NAV_SECTIONS', () => {
+  it('exports a non-empty array of nav sections', () => {
+    expect(Array.isArray(NAV_SECTIONS)).toBe(true)
+    expect(NAV_SECTIONS.length).toBeGreaterThan(0)
   })
 
-  it('every item has a label', () => {
-    PRIMARY_NAV.forEach(item => {
-      expect(typeof item.label).toBe('string')
-      expect(item.label.length).toBeGreaterThan(0)
+  it('every section has a label and an href starting with /', () => {
+    NAV_SECTIONS.forEach(section => {
+      expect(typeof section.label).toBe('string')
+      expect(section.label.length).toBeGreaterThan(0)
+      expect(section.href).toMatch(/^\//)
     })
   })
 
-  it('every non-dropdown item has an href starting with /', () => {
-    PRIMARY_NAV.forEach(item => {
-      if (!('type' in item) || item.type !== 'dropdown') {
+  it('every dropdown item has a label and an href starting with /', () => {
+    NAV_SECTIONS.filter(s => s.dropdown).forEach(section => {
+      section.dropdown!.forEach(item => {
+        expect(typeof item.label).toBe('string')
         expect(item.href).toMatch(/^\//)
-      }
+      })
     })
   })
 
-  it('every dropdown-type item has groups array', () => {
-    const dropdowns = PRIMARY_NAV.filter(i => i.type === 'dropdown')
-    expect(dropdowns.length).toBeGreaterThan(0)
-    dropdowns.forEach(item => {
-      if (item.type === 'dropdown') {
-        expect(Array.isArray(item.groups)).toBe(true)
-        expect(item.groups.length).toBeGreaterThan(0)
-      }
-    })
+  it('is organized around outcome questions, not internal catalog terminology', () => {
+    const labels = NAV_SECTIONS.map(s => s.label)
+    expect(labels).toContain('Site Plans & Feasibility')
+    expect(labels).toContain('Design My Project')
+    expect(labels).toContain('What Will It Cost?')
+    expect(labels).toContain('Permits & Plans')
+    expect(labels).not.toContain('Find a Professional')
   })
 
-  it('all dropdown group links have href and label', () => {
-    PRIMARY_NAV.filter(i => i.type === 'dropdown').forEach(item => {
-      if (item.type === 'dropdown') {
-        item.groups.forEach(group => {
-          group.links.forEach(link => {
-            expect(typeof link.label).toBe('string')
-            expect(link.href).toMatch(/^\//)
-          })
-        })
-      }
-    })
+  it('does not advertise the professional marketplace in the topbar', () => {
+    expect(NAV_SECTIONS.some(s => s.href === '/marketplace')).toBe(false)
   })
 
-  it('includes a Products nav item', () => {
-    const products = PRIMARY_NAV.find(i => i.label === 'Products')
-    expect(products).toBeDefined()
+  it('includes the public Site Plans entry point', () => {
+    const sitePlans = NAV_SECTIONS.find(s => s.label === 'Site Plans & Feasibility')
+    expect(sitePlans?.href).toBe('/site-plans')
   })
 
-  it('includes a For Contractors role nav item', () => {
-    const labels = PRIMARY_NAV.map(i => i.label)
-    expect(labels).toContain('For Contractors')
+  it('no duplicate labels', () => {
+    const labels = NAV_SECTIONS.map(s => s.label)
+    const unique = new Set(labels)
+    expect(unique.size).toBe(labels.length)
   })
 
-  it('Start your design item points to /concept-engine', () => {
-    const conceptItem = PRIMARY_NAV.find(i => i.label === 'Start your design')
-    expect(conceptItem?.href).toBe('/concept-engine')
-  })
-})
-
-// ─── CTAs ────────────────────────────────────────────────────────────────────
-
-describe('NAV CTAs', () => {
-  it('NAV_CTA_PRIMARY has label and href', () => {
-    expect(typeof NAV_CTA_PRIMARY.label).toBe('string')
-    expect(NAV_CTA_PRIMARY.href).toMatch(/^\//)
-  })
-
-  it('NAV_LOGIN_OPTIONS is a non-empty array with label and href', () => {
-    expect(Array.isArray(NAV_LOGIN_OPTIONS)).toBe(true)
-    expect(NAV_LOGIN_OPTIONS.length).toBeGreaterThan(0)
-    NAV_LOGIN_OPTIONS.forEach(opt => {
-      expect(typeof opt.label).toBe('string')
-      expect(opt.href).toMatch(/^\//)
-    })
-  })
-
-  it('NAV_LOGIN_OPTIONS includes a client/contractor login option', () => {
-    const client = NAV_LOGIN_OPTIONS.find(o => o.href === '/auth/login')
-    expect(client).toBeDefined()
+  it('no duplicate top-level hrefs', () => {
+    const hrefs = NAV_SECTIONS.map(s => s.href)
+    const unique = new Set(hrefs)
+    expect(unique.size).toBe(hrefs.length)
   })
 })
 
 // ─── FOOTER_NAV ──────────────────────────────────────────────────────────────
 
 describe('FOOTER_NAV', () => {
-  it('has platform, portals, company, and legal sections', () => {
-    expect(Array.isArray(FOOTER_NAV.platform)).toBe(true)
+  it('has portals, company, and legal sections (services live in the topbar nav, not the footer)', () => {
     expect(Array.isArray(FOOTER_NAV.portals)).toBe(true)
     expect(Array.isArray(FOOTER_NAV.company)).toBe(true)
     expect(Array.isArray(FOOTER_NAV.legal)).toBe(true)
@@ -109,7 +79,6 @@ describe('FOOTER_NAV', () => {
 
   it('every footer link has a label and href', () => {
     const allLinks = [
-      ...FOOTER_NAV.platform,
       ...FOOTER_NAV.portals,
       ...FOOTER_NAV.company,
       ...FOOTER_NAV.legal,
@@ -132,19 +101,9 @@ describe('FOOTER_NAV', () => {
     const labels = FOOTER_NAV.portals.map(l => l.label.toLowerCase())
     expect(labels.every(l => !l.includes('command') && !l.includes('admin'))).toBe(true)
   })
-})
 
-// ─── Deduplication ───────────────────────────────────────────────────────────
-
-describe('Navigation deduplication', () => {
-  it('no duplicate labels in PRIMARY_NAV', () => {
-    const labels = PRIMARY_NAV.map(i => i.label)
-    const unique = new Set(labels)
-    expect(unique.size).toBe(labels.length)
-  })
-
-  it('no duplicate hrefs in footer platform section', () => {
-    const hrefs = FOOTER_NAV.platform.map(l => l.href)
+  it('no duplicate hrefs in footer portals section', () => {
+    const hrefs = FOOTER_NAV.portals.map(l => l.href)
     const unique = new Set(hrefs)
     expect(unique.size).toBe(hrefs.length)
   })

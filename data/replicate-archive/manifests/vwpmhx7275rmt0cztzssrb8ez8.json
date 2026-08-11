@@ -1,0 +1,21 @@
+{
+  "predictionId": "vwpmhx7275rmt0cztzssrb8ez8",
+  "source": "concept-generate-resolve",
+  "mediaKind": "image",
+  "model": "black-forest-labs/flux-1.1-pro-ultra",
+  "context": {
+    "route": "/api/concept/generate"
+  },
+  "archivedAt": "2026-08-06T16:42:36.208Z",
+  "assets": [
+    {
+      "index": 0,
+      "sourceUrl": "https://replicate.delivery/xezq/eYt8sd0HVtxrRqTL2ZD6VyBfz6kGXQvB8kQVA4NOBAp6tmAXA/tmp8y5364o1.jpg",
+      "storagePath": "concept-generate-resolve/vwpmhx7275rmt0cztzssrb8ez8/0.jpg",
+      "publicUrl": "https://rkreqfpkxavqpsqexbfs.supabase.co/storage/v1/object/public/replicate-archive/concept-generate-resolve/vwpmhx7275rmt0cztzssrb8ez8/0.jpg",
+      "localPath": "/home/tim_chamberlain/kealee-platform-v10/data/replicate-archive/media/vwpmhx7275rmt0cztzssrb8ez8/0.jpg",
+      "contentType": "image/jpeg",
+      "byteSize": 1394680
+    }
+  ]
+}

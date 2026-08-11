@@ -1,13 +1,22 @@
 .git/
 .gemini/
 node_modules/
+**/node_modules/
 dist/
+**/dist/
 build/
 .next/
+**/.next/
 .turbo/
+**/.turbo/
 *.log
 .venv*/
+**/.venv*/
+**/venv/
 _docs/
+docs/
+data/
+website-versions/
 services/
 bots/
 testskeabots/
@@ -19,6 +28,7 @@ _archived-apps/
 apps/web-main/.next/
 apps/web-main/node_modules/
 apps/web-main/.turbo/
+apps/web-main/android/
 
 apps/api/
 apps/api-service/

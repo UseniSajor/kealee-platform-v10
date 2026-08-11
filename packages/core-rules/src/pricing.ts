@@ -5,28 +5,96 @@
  * All marketing files MUST import from here — never hardcode prices.
  */
 
-// ── Concept Package Prices ────────────────────────────────────────────────────
+// ── Canonical price primitives (USD cents) ──────────────────────────────────
 
-export const CONCEPT_KITCHEN_PRICE        = 395   // dollars
-export const CONCEPT_KITCHEN_ADVANCED     = 695
-export const CONCEPT_KITCHEN_FULL         = 2500  // "from"
+export const CANONICAL_PRICE_CENTS = {
+  concept: {
+    kitchen: 19_900,
+    kitchenAdvanced: 44_900,
+    kitchenFull: 89_900,
+    bath: 15_900,
+    bathAdvanced: 34_900,
+    bathFull: 69_900,
+    wholeHome: 39_900,
+    wholeHomeAdvanced: 49_900,
+    wholeHomeFull: 99_900,
+    interiorReno: 19_900,
+    exterior: 27_500,
+    landscape: 19_900,
+    commercial: 99_900,
+    developer: 59_900,
+    genericStart: 15_900,
+  },
+  conceptTierReference: {
+    basic: 19_900,
+    premium: 44_900,
+    premiumPlus: 89_900,
+  },
+  permits: {
+    assessment: 59_900,
+    standard: 79_900,
+    managed: 149_900,
+    expedited: 249_500,
+  },
+  estimation: {
+    detailed: 34_900,
+    certified: 79_900,
+    estimatePermitBundle: 109_900,
+  },
+  siteIntelligence: {
+    preliminarySitePlan: 24_900,
+    verifiedSiteFeasibility: 59_900,
+    permitSitePlanCoordination: 199_500,
+  },
+  professionalDesign: 499_000,
+  aduBundle: 99_900,
+  pmAdvisoryMonthly: 29_900,
+  contractorMatch: 0,
+  designEstimatePermitBundle: 239_900,
+  platform: {
+    homeownerReadiness: 29_900,
+    homeownerLaunch: 55_000,
+    contractorStarterMonthly: 9_900,
+    contractorGrowthMonthly: 19_900,
+    contractorProMonthly: 49_900,
+    contractorEstimatePermit: 79_500,
+    developerFeasibility: 109_500,
+  },
+} as const
 
-export const CONCEPT_BATH_PRICE           = 395
-export const CONCEPT_BATH_ADVANCED        = 695
-export const CONCEPT_BATH_FULL            = 2000  // "from"
+/**
+ * Customer-facing upgrade credit applied consistently across paid packages.
+ * The credit is commercial consideration on a later Kealee agreement—not a
+ * cash refund, transferable balance, or promise that construction is included.
+ */
+export const PURCHASE_CREDIT_POLICY = {
+  label: 'Your package purchase is credited toward the next phase',
+  shortCopy: '100% of this package fee can be applied once toward eligible Kealee professional design or managed-build services for the same project.',
+  terms: 'Credit requires a later written Kealee scope for the same project, cannot exceed that later service fee, has no cash value, is non-transferable, and cannot be combined with another purchase credit unless the written scope says otherwise.',
+} as const
 
-export const CONCEPT_WHOLE_HOME_PRICE     = 585
-export const CONCEPT_WHOLE_HOME_ADVANCED  = 1200
-export const CONCEPT_WHOLE_HOME_FULL      = 6500  // "from"
+// ── Legacy dollar exports (derived compatibility aliases) ───────────────────
 
-export const CONCEPT_INTERIOR_RENO_PRICE  = 395   // interior reno/addition base
-export const CONCEPT_EXTERIOR_PRICE       = 295
-export const CONCEPT_LANDSCAPE_PRICE      = 195
-export const CONCEPT_COMMERCIAL_PRICE     = 1200  // "from"
-export const CONCEPT_DEVELOPER_PRICE      = 1500  // "from"
+export const CONCEPT_KITCHEN_PRICE        = CANONICAL_PRICE_CENTS.concept.kitchen / 100
+export const CONCEPT_KITCHEN_ADVANCED     = CANONICAL_PRICE_CENTS.concept.kitchenAdvanced / 100
+export const CONCEPT_KITCHEN_FULL         = CANONICAL_PRICE_CENTS.concept.kitchenFull / 100
+
+export const CONCEPT_BATH_PRICE           = CANONICAL_PRICE_CENTS.concept.bath / 100
+export const CONCEPT_BATH_ADVANCED        = CANONICAL_PRICE_CENTS.concept.bathAdvanced / 100
+export const CONCEPT_BATH_FULL            = CANONICAL_PRICE_CENTS.concept.bathFull / 100
+
+export const CONCEPT_WHOLE_HOME_PRICE     = CANONICAL_PRICE_CENTS.concept.wholeHome / 100
+export const CONCEPT_WHOLE_HOME_ADVANCED  = CANONICAL_PRICE_CENTS.concept.wholeHomeAdvanced / 100
+export const CONCEPT_WHOLE_HOME_FULL      = CANONICAL_PRICE_CENTS.concept.wholeHomeFull / 100
+
+export const CONCEPT_INTERIOR_RENO_PRICE  = CANONICAL_PRICE_CENTS.concept.interiorReno / 100
+export const CONCEPT_EXTERIOR_PRICE       = CANONICAL_PRICE_CENTS.concept.exterior / 100
+export const CONCEPT_LANDSCAPE_PRICE      = CANONICAL_PRICE_CENTS.concept.landscape / 100
+export const CONCEPT_COMMERCIAL_PRICE     = CANONICAL_PRICE_CENTS.concept.commercial / 100
+export const CONCEPT_DEVELOPER_PRICE      = CANONICAL_PRICE_CENTS.concept.developer / 100
 
 /** Generic lowest starting price shown in broad marketing */
-export const CONCEPT_START_PRICE         = 195
+export const CONCEPT_START_PRICE = CANONICAL_PRICE_CENTS.concept.genericStart / 100
 
 // ── Tier label map (numeric tier → display string) ────────────────────────────
 
@@ -36,35 +104,548 @@ export const CONCEPT_TIER_PRICES: Record<1 | 2 | 3, number> = {
   3: CONCEPT_DEVELOPER_PRICE,     // high-tier concept
 }
 
-// ── design concept tier marketing display prices ──────────────────────────────────
+// ── AI Concept tier marketing display prices ──────────────────────────────────
 //
 // Used on marketing surfaces (concept page tier blurbs, ads, banners).
 // Checkout amounts are determined by INTAKE_TIER_PRICE_CENTS (per project path).
 //
-export const AI_CONCEPT_BASIC        = 599   // Basic tier  — 3 AI renders + cost summary
-export const AI_CONCEPT_PREMIUM      = 999   // Premium tier — 6 renders + video + BOM
-export const AI_CONCEPT_PREMIUM_PLUS = 1499  // Premium+ tier — 12 renders + 4K video + floorplan
-
 /** Starting price for Professional Design services (permit-ready stamped plan set). */
-export const PROFESSIONAL_DESIGN_BASE = 4995
+export const PROFESSIONAL_DESIGN_BASE = CANONICAL_PRICE_CENTS.professionalDesign / 100
 
 // ── Permit Prices ─────────────────────────────────────────────────────────────
 
-export const PERMIT_BASIC_PRICE    = 299   // permit path assessment
-export const PERMIT_STANDARD_PRICE = 799   // permit package filing
-export const PERMIT_PREMIUM_PRICE  = 1499  // full permit management
+export const PERMIT_BASIC_PRICE = CANONICAL_PRICE_CENTS.permits.assessment / 100
+export const PERMIT_STANDARD_PRICE = CANONICAL_PRICE_CENTS.permits.standard / 100
+export const PERMIT_PREMIUM_PRICE = CANONICAL_PRICE_CENTS.permits.managed / 100
 
 // ── Estimation Prices ─────────────────────────────────────────────────────────
 
-export const ESTIMATION_PRICE           = 249  // standalone cost estimate
-export const ESTIMATION_CERTIFIED_PRICE = 499  // RSMeans-certified estimate
+export const ESTIMATION_PRICE = CANONICAL_PRICE_CENTS.estimation.detailed / 100
+export const ESTIMATION_CERTIFIED_PRICE = CANONICAL_PRICE_CENTS.estimation.certified / 100
 
 // ── Other Products ────────────────────────────────────────────────────────────
 
-export const ADU_BUNDLE_PRICE           = 999
-export const PM_ADVISORY_PRICE          = 299   // per month
-export const CONTRACTOR_MATCH_PRICE     = 0     // free (monetized via contractor)
-export const DESIGN_ESTIMATE_PERMIT_BUNDLE = 1499
+export const ADU_BUNDLE_PRICE = CANONICAL_PRICE_CENTS.aduBundle / 100
+export const PM_ADVISORY_PRICE = CANONICAL_PRICE_CENTS.pmAdvisoryMonthly / 100
+export const CONTRACTOR_MATCH_PRICE = CANONICAL_PRICE_CENTS.contractorMatch / 100
+export const DESIGN_ESTIMATE_PERMIT_BUNDLE = CANONICAL_PRICE_CENTS.designEstimatePermitBundle / 100
+
+// ── Platform role and professional-service pricing ──────────────────────────
+//
+// These values back public reference pages and product configuration. Checkout
+// routes must continue to use INTAKE_PRICE_CENTS or a configured Stripe Price.
+
+export const PLATFORM_PRICING = {
+  homeowner: {
+    readinessReviewCents: 0,
+    projectLaunchCents: CANONICAL_PRICE_CENTS.platform.homeownerLaunch,
+  },
+  contractor: {
+    marketplaceMonthlyCents: {
+      starter: CANONICAL_PRICE_CENTS.platform.contractorStarterMonthly,
+      growth: CANONICAL_PRICE_CENTS.platform.contractorGrowthMonthly,
+      pro: CANONICAL_PRICE_CENTS.platform.contractorProMonthly,
+    },
+    estimatePermitPackageCents: CANONICAL_PRICE_CENTS.platform.contractorEstimatePermit,
+  },
+  developer: {
+    feasibilityExpressCents: CANONICAL_PRICE_CENTS.platform.developerFeasibility,
+  },
+} as const
+
+export type PublicCatalogCategoryId =
+  | 'site-intelligence'
+  | 'concept-planning'
+  | 'estimation'
+  | 'permits-professional'
+  | 'construction-execution'
+
+export interface PublicCatalogProduct {
+  key: string
+  categoryId: PublicCatalogCategoryId
+  name: string
+  shortDescription: string
+  href: string
+  /** Direct purchase/intake destination. `href` is always the public detail page. */
+  startHref: string
+  priceCents?: number
+  pricePrefix?: string
+  priceLabel?: string
+  priceSuffix?: string
+  deliveryDays?: string
+  audience: readonly ('homeowner' | 'contractor' | 'developer')[]
+  preliminary?: boolean
+  outcome: string
+  includes: readonly string[]
+  customerProvides: readonly string[]
+  sampleAsset: string
+  sampleAlt: string
+  limitations: readonly string[]
+  nextStep: string
+  /** Outputs that can be published automatically as soon as intake is accepted. */
+  immediateDeliverables?: readonly string[]
+}
+
+/**
+ * Buyer-facing catalog. Project types (kitchen, bath, ADU, pool, landscape,
+ * multifamily, and so on) are intake variants, not separate top-level SKUs.
+ */
+export const PUBLIC_CATALOG_CATEGORIES: ReadonlyArray<{
+  id: PublicCatalogCategoryId
+  label: string
+  description: string
+}> = [
+  {
+    id: 'site-intelligence',
+    label: 'Site Intelligence',
+    description: 'Understand the property, constraints, and preliminary buildable area before design.',
+  },
+  {
+    id: 'concept-planning',
+    label: 'Concept & Planning',
+    description: 'Turn a project idea into a visual concept, scope, and budget direction.',
+  },
+  {
+    id: 'estimation',
+    label: 'Estimation',
+    description: 'Build a decision-ready cost plan before bids and construction.',
+  },
+  {
+    id: 'permits-professional',
+    label: 'Permits & Professional Services',
+    description: 'Advance verified project data through drawings, applications, and professional review.',
+  },
+  {
+    id: 'construction-execution',
+    label: 'Construction Execution',
+    description: 'Move approved preconstruction work into professional and contractor handoff.',
+  },
+] as const
+
+export const PUBLIC_PRODUCT_CATALOG: readonly PublicCatalogProduct[] = [
+  {
+    key: 'preliminary_site_plan',
+    categoryId: 'site-intelligence',
+    name: 'Preliminary Site Plan',
+    shortDescription: 'Parcel, setbacks, overlays, preliminary buildable area, and one proposed footprint.',
+    href: '/products/preliminary_site_plan',
+    startHref: '/intake/development_feasibility?product=preliminary_site_plan',
+    priceCents: CANONICAL_PRICE_CENTS.siteIntelligence.preliminarySitePlan,
+    deliveryDays: 'First-hour summary; full site plan in 2–5 days',
+    audience: ['homeowner', 'contractor'],
+    preliminary: true,
+    outcome: 'A property-specific screening package showing the available parcel context and a preliminary placeable footprint.',
+    includes: ['Parcel and available zoning-source summary', 'Preliminary setbacks, overlays, and buildable-area diagram', 'One proposed footprint with assumptions', 'Source, date, coverage, and confidence labels', 'Downloadable preliminary report'],
+    customerProvides: ['Property address', 'Project goal and approximate footprint', 'Survey or site documents when available'],
+    sampleAsset: '/media/product-samples/site-intelligence.svg',
+    sampleAlt: 'Representative Kealee site-intelligence deliverable showing a parcel, setbacks, buildable envelope, footprint, and source labels',
+    limitations: ['Not a boundary survey', 'Source coverage and accuracy vary by jurisdiction', 'No permit or construction use without required professional review'],
+    nextStep: 'Upgrade to verified feasibility or survey-based permit-site-plan coordination when the project advances.',
+    immediateDeliverables: [
+      'Project summary and stated site goal',
+      'Parcel/jurisdiction lookup and source-status record',
+      'Preliminary zoning, overlay, setback, and permit-path requirements',
+      'Known constraints, assumptions, confidence, and limitations',
+      'Portal checklist showing completed, pending, and source-needed items',
+    ],
+  },
+  {
+    key: 'verified_site_feasibility',
+    categoryId: 'site-intelligence',
+    name: 'Verified Site Feasibility Plan',
+    shortDescription: 'Verified zoning inputs, constraints, buildable envelope, source record, and proposed footprint.',
+    href: '/products/verified_site_feasibility',
+    startHref: '/intake/development_feasibility?product=verified_site_feasibility',
+    priceCents: CANONICAL_PRICE_CENTS.siteIntelligence.verifiedSiteFeasibility,
+    deliveryDays: 'First-hour source summary; verified feasibility plan in 3–7 days',
+    audience: ['homeowner', 'contractor', 'developer'],
+    preliminary: true,
+    outcome: 'A reviewed feasibility record connecting verified zoning inputs, constraints, and a proposed footprint.',
+    includes: ['Verified zoning and overlay source record', 'Constraint and buildable-envelope review', 'Proposed footprint validation', 'Assumptions, exceptions, and confidence register', 'Professional-review checklist'],
+    customerProvides: ['Property address and intended use', 'Known survey, title, or site documents', 'Target program or footprint requirements'],
+    sampleAsset: '/media/product-samples/site-intelligence.svg',
+    sampleAlt: 'Representative verified-feasibility deliverable with parcel geometry, constraints, metrics, and provenance',
+    limitations: ['Verification is limited to sources listed in the report', 'No professional seal is implied', 'Final jurisdiction acceptance depends on its current rules and review'],
+    nextStep: 'Advance the selected footprint into concept, professional drawings, or permit coordination.',
+    immediateDeliverables: [
+      'Project summary and intended-use record',
+      'Available zoning, overlay, setback, and permit-path source summary',
+      'Constraint and source-coverage checklist',
+      'Assumptions, exceptions, confidence, and verification-needed register',
+      'Portal status showing what is ready for review and what requires validation',
+    ],
+  },
+  {
+    key: 'developer_feasibility',
+    categoryId: 'site-intelligence',
+    name: 'Developer Feasibility Express',
+    shortDescription: 'Yield, parking, massing, preliminary earthwork, cost and NOI inputs, and entitlement checklist.',
+    href: '/products/developer_feasibility',
+    startHref: '/intake/development_feasibility?product=developer_feasibility',
+    priceCents: CANONICAL_PRICE_CENTS.platform.developerFeasibility,
+    priceSuffix: '/site',
+    deliveryDays: '4–7 days',
+    audience: ['developer'],
+    preliminary: true,
+    outcome: 'A comparable set of early development options with yield, parking, massing, cost, NOI, and entitlement assumptions.',
+    includes: ['Parcel and constraint basis', 'Multifamily yield and unit-mix options', 'Parking and massing metrics', 'Preliminary earthwork and cost/NOI inputs', 'Entitlement checklist and option comparison'],
+    customerProvides: ['Site address or parcel identifiers', 'Target use, unit mix, and parking assumptions', 'Available survey, topo, and financial assumptions'],
+    sampleAsset: '/media/product-samples/developer-feasibility.svg',
+    sampleAlt: 'Representative developer feasibility comparison with yield, parking, massing, cost, and NOI metrics',
+    limitations: ['Preliminary underwriting inputs are not an appraisal or investment advice', 'Earthwork requires survey/topographic validation', 'Entitlements and engineering require licensed review'],
+    nextStep: 'Select an option for verified feasibility, entitlement planning, and professional design.',
+  },
+  {
+    key: 'concept',
+    categoryId: 'concept-planning',
+    name: 'Concept Plan',
+    shortDescription: 'Property-specific visualization, preliminary layout, scope, and permit-path direction.',
+    href: '/products/concept',
+    startHref: '/intake/whole_home_concept?product=concept',
+    priceCents: CANONICAL_PRICE_CENTS.concept.genericStart,
+    pricePrefix: 'From ',
+    audience: ['homeowner', 'contractor'],
+    preliminary: true,
+    outcome: 'A visual, property-specific direction that makes scope, layout, budget, and permit questions easier to decide.',
+    includes: ['Project-specific concept visualization', 'Preliminary layout or plan direction', 'Scope and material direction', 'Planning cost band', 'Permit-path and professional-review flags'],
+    customerProvides: ['Project type and goals', 'Service-specific photos or video', 'Measurements, plans, or address when available'],
+    sampleAsset: '/media/product-samples/concept-plan.svg',
+    sampleAlt: 'Representative Kealee concept-plan deliverable with existing conditions, proposed direction, scope, and cost band',
+    limitations: ['Concept geometry and visuals are preliminary', 'Not permit-ready or for construction', 'Existing conditions must be field verified'],
+    nextStep: 'Add detailed estimating, verified feasibility, or professional design as the project requires.',
+  },
+  {
+    key: 'project_launch',
+    categoryId: 'concept-planning',
+    name: 'Concept + Feasibility',
+    shortDescription: 'Concept, early estimate, zoning and permit direction, and contractor handoff.',
+    href: '/products/project_launch',
+    startHref: '/intake/design_build?product=project_launch',
+    priceCents: CANONICAL_PRICE_CENTS.platform.homeownerLaunch,
+    audience: ['homeowner'],
+    preliminary: true,
+    outcome: 'A combined decision package for owners who need concept direction and early feasibility before engaging execution professionals.',
+    includes: ['Concept visualization and preliminary layout', 'Early estimate and assumptions', 'Zoning and permit-path direction', 'Scope brief for professional handoff', 'Contractor-ready project summary'],
+    customerProvides: ['Address and project objective', 'Photos, video, or existing plans', 'Budget range and desired schedule'],
+    sampleAsset: '/media/product-samples/concept-plan.svg',
+    sampleAlt: 'Representative concept and feasibility package with visualization, plan direction, scope, and budget',
+    limitations: ['Not a construction-document package', 'Professional services and filing are separate unless expressly included', 'Budget remains a planning range'],
+    nextStep: 'Move the approved direction into professional drawings, permits, and Marketplace handoff.',
+  },
+  {
+    key: 'detailed_estimate',
+    categoryId: 'estimation',
+    name: 'Detailed Construction Estimate',
+    shortDescription: 'Trade-by-trade planning estimate with quantities, assumptions, and regional cost references.',
+    href: '/products/detailed_estimate',
+    startHref: '/intake/cost_estimate',
+    priceCents: CANONICAL_PRICE_CENTS.estimation.detailed,
+    deliveryDays: '3–5 days',
+    audience: ['homeowner', 'contractor', 'developer'],
+    outcome: 'A documented planning estimate organized by trade, quantities, assumptions, and regional references.',
+    includes: ['Trade-by-trade cost breakdown', 'Material and labor planning ranges', 'Quantity and scope assumptions', 'Regional cost reference basis', 'Allowances, exclusions, and risk notes'],
+    customerProvides: ['Project location and scope', 'Plans, photos, or measurements', 'Finish level and target schedule'],
+    sampleAsset: '/media/product-samples/estimate.svg',
+    sampleAlt: 'Representative detailed estimate with trades, quantities, unit costs, assumptions, and total planning range',
+    limitations: ['Not a contractor bid or guaranteed construction price', 'Unknown conditions and market changes affect cost', 'Taxes, design, agency, and financing costs are listed only when scoped'],
+    nextStep: 'Use the estimate for scope decisions, bid comparison, or professional estimate review.',
+  },
+  {
+    key: 'certified_estimate',
+    categoryId: 'estimation',
+    name: 'Professionally Reviewed Estimate',
+    shortDescription: 'A documented estimate prepared for higher-stakes financing, bid, or investment review.',
+    href: '/products/certified_estimate',
+    startHref: '/intake/certified_estimate',
+    priceCents: CANONICAL_PRICE_CENTS.estimation.certified,
+    deliveryDays: '5–7 days',
+    audience: ['homeowner', 'contractor', 'developer'],
+    outcome: 'A professionally reviewed estimate package for higher-stakes financing, bid, or investment decisions.',
+    includes: ['Detailed trade and quantity estimate', 'Documented source and assumption register', 'Professional reasonableness review', 'Review notes and identified exceptions', 'Downloadable lender/investor-oriented report'],
+    customerProvides: ['Complete available plans and specifications', 'Project location and schedule', 'Required recipient or review purpose'],
+    sampleAsset: '/media/product-samples/estimate.svg',
+    sampleAlt: 'Representative professionally reviewed estimate with cost schedule, assumptions, and review status',
+    limitations: ['Review is not a contractor commitment to build', 'Certification scope depends on supplied documents', 'Changes after review require an updated estimate'],
+    nextStep: 'Proceed to bid comparison, permit coordination, or construction consultation.',
+  },
+  {
+    key: 'permit_assessment',
+    categoryId: 'permits-professional',
+    name: 'Permit Path Assessment',
+    shortDescription: 'Jurisdiction requirements, application checklist, agency-fee guidance, and submission roadmap.',
+    href: '/products/permit_assessment',
+    startHref: '/intake/permit_path_only?product=permit_assessment',
+    priceCents: CANONICAL_PRICE_CENTS.permits.assessment,
+    audience: ['homeowner', 'contractor', 'developer'],
+    preliminary: true,
+    outcome: 'A jurisdiction-specific roadmap identifying likely approvals, application materials, fees, and next actions.',
+    includes: ['Confirm the correct permitting authority and permit type', 'Identify every application form, plan, and supporting document required to file', 'Verify agency fees, submission portal, and applicant authorization steps', 'Sequence zoning, building, trade, and prerequisite approvals', 'Deliver a filing-ready action plan that closes missing-document gaps'],
+    customerProvides: ['Project address and complete scope', 'Existing plans or sketches', 'Known violations, approvals, or agency correspondence'],
+    sampleAsset: '/media/product-samples/permit-roadmap.svg',
+    sampleAlt: 'Representative permit-path roadmap with required documents, agencies, dependencies, and verification status',
+    limitations: ['Requirements and agency timelines can change', 'Assessment does not include filing or drawings', 'Jurisdiction confirmation controls'],
+    nextStep: 'Purchase coordination once the required plans and supporting documents are ready.',
+  },
+  {
+    key: 'permit_coordination',
+    categoryId: 'permits-professional',
+    name: 'Permit Application & Coordination',
+    shortDescription: 'Application preparation, filing support, tracking, and coordinated comment response.',
+    href: '/products/permit_coordination',
+    startHref: '/intake/permit_path_only?product=permit_coordination',
+    priceCents: CANONICAL_PRICE_CENTS.permits.managed,
+    pricePrefix: 'From ',
+    audience: ['homeowner', 'contractor', 'developer'],
+    outcome: 'An organized application, submission, tracking, and comment-response workflow for a defined permit scope.',
+    includes: ['Complete the jurisdiction application forms for the approved project scope', 'Assemble plans and supporting documents into the agency-required submission order', 'File the permit package through the correct agency portal', 'Track reviewer assignments, fees, status changes, and agency correspondence', 'Coordinate correction responses and resubmit until the application reaches an agency decision'],
+    customerProvides: ['Permit-ready plans when required', 'Property and applicant information', 'Authorizations and jurisdiction fees'],
+    sampleAsset: '/media/product-samples/permit-roadmap.svg',
+    sampleAlt: 'Representative permit coordination tracker with application documents, status, and agency responses',
+    limitations: ['Agency fees and third-party professional services are separate', 'Kealee cannot guarantee jurisdiction approval or timing', 'Scope changes may require repricing'],
+    nextStep: 'Track approval, complete required responses, and hand the approved scope to execution professionals.',
+  },
+  {
+    key: 'permit_site_plan',
+    categoryId: 'permits-professional',
+    name: 'Survey-Based Permit Site Plan',
+    shortDescription: 'Survey-backed site-plan coordination and professional review for jurisdiction-specific submission.',
+    href: '/products/permit_site_plan',
+    startHref: '/intake/permit_path_only?product=permit_site_plan',
+    priceCents: CANONICAL_PRICE_CENTS.siteIntelligence.permitSitePlanCoordination,
+    pricePrefix: 'From ',
+    audience: ['homeowner', 'contractor', 'developer'],
+    outcome: 'A survey-backed site-plan workflow coordinated for the target jurisdiction and required professional review.',
+    includes: ['Validate the boundary survey and proposed-work dimensions needed for filing', 'Draft the jurisdiction-specific permit site plan', 'Add required setbacks, lot coverage, structures, utilities, and zoning notes', 'Route the plan through required licensed review and sealing', 'Revise the site plan for agency comments and place it into the permit submission set'],
+    customerProvides: ['Current boundary survey or approved equivalent', 'Proposed improvement dimensions', 'Jurisdiction and application requirements'],
+    sampleAsset: '/media/product-samples/site-intelligence.svg',
+    sampleAlt: 'Representative survey-based permit site plan with property lines, dimensions, proposed work, and review status',
+    limitations: ['Starting price assumes usable survey information', 'Seal and survey services are provided only when expressly scoped', 'Jurisdiction comments can expand scope'],
+    nextStep: 'Submit through permit coordination and retain the approved plan for construction handoff.',
+    immediateDeliverables: [
+      'Project summary and proposed-work record',
+      'Jurisdiction and likely permit-type checklist',
+      'Required survey, drawing, professional-review, and agency-document checklist',
+      'Known fees, dependencies, assumptions, and open questions',
+      'Portal readiness status for the survey-based drawing workflow',
+    ],
+  },
+  {
+    key: 'professional_design',
+    categoryId: 'permits-professional',
+    name: 'Professional Design / Permit-Ready Package',
+    shortDescription: 'Scoped construction-document services with the required licensed professionals.',
+    href: '/products/professional_design',
+    startHref: '/intake/professional_drawings',
+    priceCents: CANONICAL_PRICE_CENTS.professionalDesign,
+    pricePrefix: 'From ',
+    audience: ['homeowner', 'contractor', 'developer'],
+    outcome: 'A scoped construction-document package produced with the licensed professionals required for the project and jurisdiction.',
+    includes: ['Confirm the code path and drawing list required by the permitting authority', 'Produce the architectural and engineering sheets required for the application', 'Coordinate structural, architectural, and applicable trade-plan information', 'Complete required licensed review, signatures, and seals', 'Assemble the final drawing set in the agency-required format for permit filing'],
+    customerProvides: ['Verified existing conditions and survey when applicable', 'Approved concept and scope', 'Jurisdiction requirements and professional-service agreement'],
+    sampleAsset: '/media/product-samples/professional-design.svg',
+    sampleAlt: 'Representative professional drawing index and review matrix without implying a project-specific seal',
+    limitations: ['Final price follows scope review', 'Only an engaged licensed professional may seal applicable documents', 'Revisions outside the agreed scope are separate'],
+    nextStep: 'Coordinate permit submission and construction bidding after the professional package is complete.',
+  },
+  {
+    key: 'contractor_match',
+    categoryId: 'construction-execution',
+    name: 'Contractor Match',
+    shortDescription: 'Match approved project scope with marketplace professionals suited to the location and work.',
+    href: '/products/contractor_match',
+    startHref: '/intake/contractor_match',
+    priceLabel: 'Included / no fee',
+    audience: ['homeowner'],
+    outcome: 'A structured handoff of an approved project scope to available Marketplace professionals suited to the work and location.',
+    includes: ['Project and trade-fit intake', 'Available professional profiles', 'Credential and insurance status display', 'Comparable scope handoff', 'Marketplace communication path'],
+    customerProvides: ['Approved scope and project location', 'Target schedule and budget', 'Any required plans or approvals'],
+    sampleAsset: '/media/product-samples/professional-handoff.svg',
+    sampleAlt: 'Representative contractor handoff showing project fit, credential status, scope, and next actions',
+    limitations: ['Availability varies by trade and location', 'Displayed verification status must be reviewed at engagement', 'The hired professional becomes the licensed and insured contractor of record'],
+    nextStep: 'Review proposals, confirm credentials and contract terms, then begin the controlled execution workflow.',
+  },
+  {
+    key: 'construction_consultation',
+    categoryId: 'construction-execution',
+    name: 'Construction Consultation & Owner Support',
+    shortDescription: 'Preconstruction, owner-representation, and design-build execution support scoped to the project.',
+    href: '/products/construction_consultation',
+    startHref: '/intake/design_build?product=construction_consultation',
+    priceLabel: 'Scoped',
+    audience: ['homeowner', 'developer'],
+    outcome: 'A scoped professional consultation for preconstruction, owner representation, or design-build execution planning.',
+    includes: ['Project-readiness review', 'Scope, schedule, and procurement guidance', 'Risk and decision register', 'Professional handoff plan', 'Written consultation summary'],
+    customerProvides: ['Current project documents and decisions', 'Budget and schedule constraints', 'Specific questions or execution risks'],
+    sampleAsset: '/media/product-samples/professional-handoff.svg',
+    sampleAlt: 'Representative construction consultation summary with decisions, risks, responsibilities, and next actions',
+    limitations: ['Exact services and fees require scope confirmation', 'Consultation is not a construction contract', 'Licensed responsibilities remain with the engaged professionals of record'],
+    nextStep: 'Engage the appropriate professional or Marketplace contractor under a project-specific agreement.',
+  },
+] as const
+
+export function getPublicCatalogProduct(key: string): PublicCatalogProduct | null {
+  return PUBLIC_PRODUCT_CATALOG.find(product => product.key === key) ?? null
+}
+
+export function formatCatalogPrice(product: PublicCatalogProduct): string {
+  if (product.priceLabel) return product.priceLabel
+  if (product.priceCents == null) return 'Scoped'
+  return `${product.pricePrefix ?? ''}${formatPriceFromCents(product.priceCents).replace('.00', '')}${product.priceSuffix ?? ''}`
+}
+
+/** Compact, server-generated context for public assistants and search tools. */
+export function getPublicCatalogAssistantContext(): string {
+  return PUBLIC_PRODUCT_CATALOG.map(product =>
+    `- ${product.name}: ${formatCatalogPrice(product)}. ${product.shortDescription} Included: ${product.includes.join('; ')}. Learn more: ${product.href}. Start: ${product.startHref}`
+  ).join('\n')
+}
+
+/**
+ * Canonical role-based purchase journey copy.
+ * Marketing surfaces may add presentation (icons, color, links), but must not
+ * restate product names, price labels, or scope descriptions elsewhere.
+ */
+export const ROLE_BUYING_PATHWAYS = {
+  homeowners: [
+    {
+      label: 'Start',
+      title: 'Project Readiness Review',
+      priceCents: PLATFORM_PRICING.homeowner.readinessReviewCents,
+      priceSuffix: '',
+      detail: 'Property, zoning, early scope, and budget direction.',
+    },
+    {
+      label: 'Define',
+      title: 'Project Launch Package',
+      priceCents: PLATFORM_PRICING.homeowner.projectLaunchCents,
+      priceSuffix: '',
+      detail: 'Concept, estimate, zoning, permit, and contractor handoff.',
+    },
+    {
+      label: 'Advance',
+      title: 'Design, permits & build support',
+      priceLabel: 'Scoped',
+      detail: 'Add only the professional services your project requires.',
+    },
+  ],
+  contractors: [
+    {
+      label: 'Join',
+      title: 'Marketplace membership',
+      priceCents: PLATFORM_PRICING.contractor.marketplaceMonthlyCents.starter,
+      pricePrefix: 'From ',
+      priceSuffix: '/mo',
+      detail: 'Business profile, verification, matching, and bid tools.',
+    },
+    {
+      label: 'Deliver',
+      title: 'Estimate + Permit Package',
+      priceCents: PLATFORM_PRICING.contractor.estimatePermitPackageCents,
+      priceSuffix: '/project',
+      detail: 'A client-facing estimate, zoning, and permit roadmap.',
+    },
+    {
+      label: 'Grow',
+      title: 'Construction operations',
+      priceLabel: 'By tier',
+      detail: 'Pipeline, bid assistance, analytics, and team workflows.',
+    },
+  ],
+  developers: [
+    {
+      label: 'Screen',
+      title: 'Feasibility Express',
+      priceCents: PLATFORM_PRICING.developer.feasibilityExpressCents,
+      priceSuffix: '/site',
+      detail: 'Early zoning, estimate, permit, and project analysis.',
+    },
+    {
+      label: 'Validate',
+      title: 'Professional feasibility',
+      priceLabel: 'Scoped',
+      detail: 'Yield, parking, massing, earthwork, cost, and NOI review.',
+    },
+    {
+      label: 'Execute',
+      title: 'Entitlement + GC handoff',
+      priceLabel: 'Scoped',
+      detail: 'Coordination with licensed professionals and construction teams.',
+    },
+  ],
+} as const
+
+export const SERVICE_PRICING = {
+  estimation: {
+    cost_estimate: {
+      name: 'Detailed Cost Estimate',
+      amount: CANONICAL_PRICE_CENTS.estimation.detailed,
+      turnaround: 3,
+      description: 'Human-reviewed, trade-by-trade breakdown validated against documented regional cost data',
+      features: ['CSI MasterFormat line-item breakdown', 'Verified regional unit cost data', 'Base / mid / high scenarios', 'Professional estimator review', 'Lender-ready PDF'],
+    },
+    certified_estimate: {
+      name: 'Certified Cost Estimate',
+      amount: CANONICAL_PRICE_CENTS.estimation.certified,
+      turnaround: 5,
+      description: 'Notarized professional estimate with source documentation',
+      features: ['Everything in Detailed Estimate', 'Notarized estimator signature', 'Source citations', 'Investor-grade executive summary', 'Excel + PDF deliverable'],
+    },
+    bundle: {
+      name: 'Estimate + Permit Bundle',
+      amount: CANONICAL_PRICE_CENTS.estimation.estimatePermitBundle,
+      turnaround: 5,
+      description: 'Detailed cost estimate plus permit package preparation',
+      features: ['Detailed Cost Estimate', 'Permit package preparation', 'Submission roadmap', 'Single project intake'],
+    },
+  },
+  permits: {
+    document_assembly: {
+      name: 'Permit Path Assessment',
+      amount: CANONICAL_PRICE_CENTS.permits.assessment,
+      description: 'Jurisdiction-specific requirements, documents, and submission roadmap',
+      features: ['Jurisdiction requirements', 'Application checklist', 'Agency fee guidance', 'Submission instructions'],
+      submissionMethods: { SELF: 1 },
+    },
+    simple_permit: {
+      name: 'Permit Package',
+      amount: CANONICAL_PRICE_CENTS.permits.assessment,
+      description: 'Application preparation and coordinated submission support',
+      features: ['Document assembly', 'Application preparation', 'Status tracking', 'First comment-response coordination'],
+      submissionMethods: { SELF: 0.8, ASSISTED: 1 },
+    },
+    complex_permit: {
+      name: 'Complex Permit Coordination',
+      amount: CANONICAL_PRICE_CENTS.permits.managed,
+      description: 'Multi-permit coordination across required trades',
+      features: ['Multi-trade coordination', 'Code compliance review', 'Comment-response coordination', 'Dedicated permit specialist'],
+      submissionMethods: { ASSISTED: 1, KEALEE_MANAGED: 1.3 },
+    },
+    expedited: {
+      name: 'Expedited Permit Coordination',
+      amount: CANONICAL_PRICE_CENTS.permits.expedited,
+      description: 'Priority coordination where the jurisdiction supports expedited processing',
+      features: ['Priority handling', 'Dedicated coordinator', 'Frequent status updates', 'Inspection coordination'],
+      submissionMethods: { KEALEE_MANAGED: 1 },
+    },
+  },
+  preDesign: {
+    starter: { name: 'Concept Package — Starter', amount: CANONICAL_PRICE_CENTS.conceptTierReference.basic, description: 'AI-generated concept design with basic visualization' },
+    visualization: { name: 'Concept Package — Visualization', amount: CANONICAL_PRICE_CENTS.conceptTierReference.premium, description: 'Photorealistic renderings and detailed design concept' },
+    preDesign: { name: 'Pre-Design Package', amount: CANONICAL_PRICE_CENTS.conceptTierReference.premiumPlus, description: 'Pre-design with zoning, buildability, and cost framework' },
+  },
+  contractorMatch: {
+    name: 'Contractor Matching Service',
+    amount: CONTRACTOR_MATCH_PRICE * 100,
+    description: 'Connect with verified contractors for your project',
+    features: ['Profile-based matching', 'Credential verification', 'Project-fit review'],
+  },
+  architectConsultation: {
+    name: 'Architect Consultation',
+    amount: 14_900,
+    description: 'Professional project guidance and review',
+    features: ['Consultation call', 'Design review', 'Feasibility discussion', 'Permit-path guidance'],
+  },
+} as const
 
 // ── Intake checkout — the single, server-trusted price book ──────────────────
 //
@@ -75,10 +656,8 @@ export const DESIGN_ESTIMATE_PERMIT_BUNDLE = 1499
 // The server MUST look up `cents` here using the URL-safe `projectPath`. It
 // MUST NOT trust an `amount` field supplied by the client (P0-1 fix).
 //
-// Values represent prices currently being charged in production. Some entries
-// intentionally diverge from the dollar constants above (which are surfaced in
-// marketing copy / ads) — reconciling the two is a separate business decision.
-// Until that decision is made, *checkout* is the source of truth.
+// Values are derived from the canonical primitives above. Checkout remains the
+// enforcement point, while public pages consume the same values for display.
 export interface IntakePriceEntry {
   /** Display label shown on the intake card and Stripe checkout line item. */
   label: string
@@ -90,49 +669,52 @@ export interface IntakePriceEntry {
 
 export const INTAKE_PRICE_CENTS: Record<string, IntakePriceEntry> = {
   // ── Concept packages ────────────────────────────────────────────────────
-  exterior_concept:          { label: 'Exterior Concept Package',                 cents: 39_500,  deliveryDays: '3–5 days'  },
-  garden_concept:            { label: 'Garden Concept',                           cents: 29_500,  deliveryDays: '2–4 days'  },
-  whole_home_concept:        { label: 'Whole Home Concept',                       cents: 59_500,  deliveryDays: '4–6 days'  },
-  interior_reno_concept:     { label: 'Interior Reno Concept',                    cents: 34_500,  deliveryDays: '3–5 days'  },
-  developer_concept:         { label: 'Developer Concept',                        cents: 79_500,  deliveryDays: '5–7 days'  },
+  exterior_concept:          { label: 'Exterior Concept Package',                 cents: CANONICAL_PRICE_CENTS.concept.exterior,  deliveryDays: '3–5 days'  },
+  garden_concept:            { label: 'Garden Concept',                           cents: CANONICAL_PRICE_CENTS.concept.landscape,  deliveryDays: '2–4 days'  },
+  whole_home_concept:        { label: 'Whole Home Concept',                       cents: CANONICAL_PRICE_CENTS.concept.wholeHome,  deliveryDays: '4–6 days'  },
+  interior_reno_concept:     { label: 'Interior Reno Concept',                    cents: CANONICAL_PRICE_CENTS.concept.interiorReno,  deliveryDays: '3–5 days'  },
+  developer_concept:         { label: 'Developer Concept',                        cents: CANONICAL_PRICE_CENTS.concept.developer,  deliveryDays: '5–7 days'  },
 
   // ── Remodels ────────────────────────────────────────────────────────────
-  kitchen_remodel:           { label: 'Kitchen Design Package',                   cents: 39_500,  deliveryDays: '3–5 days'  },
-  bathroom_remodel:          { label: 'Bathroom Design Package',                  cents: 29_500,  deliveryDays: '2–4 days'  },
-  interior_renovation:       { label: 'Interior Renovation',                      cents: 34_500,  deliveryDays: '3–5 days'  },
-  whole_home_remodel:        { label: 'Whole-Home Remodel',                       cents: 69_500,  deliveryDays: '4–6 days'  },
-  addition_expansion:        { label: 'Addition / Expansion',                     cents: 49_500,  deliveryDays: '3–5 days'  },
+  kitchen_remodel:           { label: 'Kitchen Design Package',                   cents: CANONICAL_PRICE_CENTS.concept.kitchen,  deliveryDays: '3–5 days'  },
+  bathroom_remodel:          { label: 'Bathroom Design Package',                  cents: CANONICAL_PRICE_CENTS.concept.bath,  deliveryDays: '2–4 days'  },
+  interior_renovation:       { label: 'Interior Renovation',                      cents: CANONICAL_PRICE_CENTS.concept.interiorReno,  deliveryDays: '3–5 days'  },
+  whole_home_remodel:        { label: 'Whole-Home Remodel',                       cents: 49_900,  deliveryDays: '4–6 days'  },
+  addition_expansion:        { label: 'Addition / Expansion',                     cents: 34_900,  deliveryDays: '3–5 days'  },
 
   // ── Permits + estimation ────────────────────────────────────────────────
-  permit_path_only:          { label: 'Permit Package',                           cents: 49_900,  deliveryDays: '3–5 days'  },
-  cost_estimate:             { label: 'Detailed Cost Estimate — RSMeans validated', cents: 59_500, deliveryDays: '3–5 days'  },
-  certified_estimate:        { label: 'Certified Estimate — Notarized for lenders', cents: 185_000, deliveryDays: '5–7 days' },
-  professional_drawings:     { label: 'Permit-Ready Design Plans',                cents: 149_900, deliveryDays: '7–14 days' },
+  permit_path_only:          { label: 'Permit Package',                           cents: CANONICAL_PRICE_CENTS.permits.assessment,  deliveryDays: '3–5 days'  },
+  preliminary_site_plan:     { label: 'Preliminary Site Plan',                    cents: CANONICAL_PRICE_CENTS.siteIntelligence.preliminarySitePlan, deliveryDays: 'First-hour summary; full site plan in 2–5 days' },
+  verified_site_feasibility: { label: 'Verified Site Feasibility Plan',           cents: CANONICAL_PRICE_CENTS.siteIntelligence.verifiedSiteFeasibility, deliveryDays: 'First-hour source summary; verified feasibility plan in 3–7 days' },
+  permit_site_plan:          { label: 'Survey-Based Permit Site Plan Coordination', cents: CANONICAL_PRICE_CENTS.siteIntelligence.permitSitePlanCoordination, deliveryDays: 'First-hour permit-requirements summary; drawing coordination scoped after survey review' },
+  cost_estimate:             { label: 'Detailed Cost Estimate — verified regional pricing', cents: CANONICAL_PRICE_CENTS.estimation.detailed, deliveryDays: '3–5 days'  },
+  certified_estimate:        { label: 'Certified Estimate — Notarized for lenders', cents: CANONICAL_PRICE_CENTS.estimation.certified, deliveryDays: '5–7 days' },
+  professional_drawings:     { label: 'Permit-Ready Design Plans — priced after scope review', cents: CANONICAL_PRICE_CENTS.professionalDesign, deliveryDays: '7–14 days' },
   design_estimate_permit_bundle: {
     label: 'Design + Estimate + Permit Bundle',
-    cents: 249_900,
+    cents: CANONICAL_PRICE_CENTS.designEstimatePermitBundle,
     deliveryDays: '7–14 days',
   },
   /** Estimate + permit only (no stamped plans) — upsell bundle for interior/kitchen paths. */
   estimate_permit_bundle: {
     label: 'Estimate + Permit Package',
-    cents: 99_900,
+    cents: CANONICAL_PRICE_CENTS.estimation.estimatePermitBundle,
     deliveryDays: '5–8 days',
   },
 
   // ── Bundles + matchmaking ───────────────────────────────────────────────
-  contractor_match:          { label: 'Contractor Match',                         cents: 19_900,  deliveryDays: '1 day'     },
-  design_build:              { label: 'Design + Build Package',                   cents: 79_500,  deliveryDays: '5–7 days'  },
+  contractor_match:          { label: 'Contractor Match',                         cents: CANONICAL_PRICE_CENTS.contractorMatch, deliveryDays: '1 day' },
+  design_build:              { label: 'Design + Execution Planning Package',       cents: 189_900, deliveryDays: '5–7 days'  },
   capture_site_concept:      { label: 'Site Capture + Concept',                   cents: 12_500,  deliveryDays: '1–2 days'  },
 
   // ── Commercial / multi-family / development ─────────────────────────────
-  multi_unit_residential:    { label: 'Multi-Unit Residential',                   cents: 99_900,  deliveryDays: '5–7 days'  },
-  mixed_use:                 { label: 'Mixed-Use Concept',                        cents: 129_900, deliveryDays: '6–8 days'  },
-  commercial_office:         { label: 'Commercial Office',                        cents: 119_900, deliveryDays: '5–7 days'  },
-  development_feasibility:   { label: 'Feasibility Study',                        cents: 149_900, deliveryDays: '5–7 days'  },
-  townhome_subdivision:      { label: 'Townhome Subdivision',                     cents: 169_900, deliveryDays: '7–10 days' },
-  single_family_subdivision: { label: 'Single-Family Subdivision',                cents: 149_900, deliveryDays: '6–8 days'  },
-  single_lot_development:    { label: 'Single-Lot Development',                   cents: 89_900,  deliveryDays: '4–6 days'  },
+  multi_unit_residential:    { label: 'Multi-Unit Residential',                   cents: 74_900,  deliveryDays: '5–7 days'  },
+  mixed_use:                 { label: 'Mixed-Use Concept',                        cents: 99_900,  deliveryDays: '6–8 days'  },
+  commercial_office:         { label: 'Commercial Office',                        cents: 89_900,  deliveryDays: '5–7 days'  },
+  development_feasibility:   { label: 'Feasibility Study',                        cents: 119_900, deliveryDays: '5–7 days'  },
+  townhome_subdivision:      { label: 'Townhome Subdivision',                     cents: 129_900, deliveryDays: '7–10 days' },
+  single_family_subdivision: { label: 'Single-Family Subdivision',                cents: 109_900, deliveryDays: '6–8 days'  },
+  single_lot_development:    { label: 'Single-Lot Development',                   cents: 69_900,  deliveryDays: '4–6 days'  },
 }
 
 /** Site-visit add-on (additive line item on Stripe checkout). */
@@ -153,44 +735,50 @@ export function getIntakePrice(projectPath: string): IntakePriceEntry | null {
 
 export const INTAKE_TIER_PRICE_CENTS: Record<string, Partial<Record<1 | 2 | 3, IntakePriceEntry>>> = {
   kitchen_remodel: {
-    1: { label: 'Kitchen Design Package — Basic',    cents: 14_900,  deliveryDays: '3–5 days' },
-    2: { label: 'Kitchen Design Package — Premium',  cents: 69_900,  deliveryDays: '3–5 days' },
-    3: { label: 'Kitchen Design Package — Premium+', cents: 129_900, deliveryDays: '3–5 days' },
+    1: { label: 'Kitchen Concept', cents: CANONICAL_PRICE_CENTS.concept.kitchen, deliveryDays: '3–5 days' },
+    2: { label: 'Kitchen Concept + Budget', cents: CANONICAL_PRICE_CENTS.concept.kitchenAdvanced, deliveryDays: '3–5 days' },
+    3: { label: 'Kitchen Preconstruction Package', cents: CANONICAL_PRICE_CENTS.concept.kitchenFull, deliveryDays: '3–5 days' },
   },
   bathroom_remodel: {
-    1: { label: 'Bathroom Design Package — Basic',    cents: 12_900, deliveryDays: '2–4 days' },
-    2: { label: 'Bathroom Design Package — Premium',  cents: 54_900, deliveryDays: '2–4 days' },
-    3: { label: 'Bathroom Design Package — Premium+', cents: 99_900, deliveryDays: '2–4 days' },
+    1: { label: 'Bathroom Concept', cents: CANONICAL_PRICE_CENTS.concept.bath, deliveryDays: '2–4 days' },
+    2: { label: 'Bathroom Concept + Budget', cents: CANONICAL_PRICE_CENTS.concept.bathAdvanced, deliveryDays: '2–4 days' },
+    3: { label: 'Bathroom Preconstruction Package', cents: CANONICAL_PRICE_CENTS.concept.bathFull, deliveryDays: '2–4 days' },
   },
   garden_concept: {
-    1: { label: 'Garden Concept — Basic',    cents: 9_900,  deliveryDays: '2–4 days' },
-    2: { label: 'Garden Concept — Premium',  cents: 39_900, deliveryDays: '2–4 days' },
-    3: { label: 'Garden Concept — Premium+', cents: 79_900, deliveryDays: '2–4 days' },
+    1: { label: 'Garden Concept', cents: CANONICAL_PRICE_CENTS.concept.landscape, deliveryDays: '2–4 days' },
+    2: { label: 'Garden Concept + Budget', cents: CANONICAL_PRICE_CENTS.conceptTierReference.premium, deliveryDays: '2–4 days' },
+    3: { label: 'Garden Preconstruction Package', cents: CANONICAL_PRICE_CENTS.conceptTierReference.premiumPlus, deliveryDays: '2–4 days' },
   },
   addition_expansion: {
-    1: { label: 'Home Addition — Basic',    cents: 19_900,  deliveryDays: '3–5 days' },
-    2: { label: 'Home Addition — Premium',  cents: 79_900,  deliveryDays: '3–5 days' },
-    3: { label: 'Home Addition — Premium+', cents: 149_900, deliveryDays: '3–5 days' },
+    1: { label: 'Home Addition Concept', cents: CANONICAL_PRICE_CENTS.concept.interiorReno, deliveryDays: '3–5 days' },
+    2: { label: 'Home Addition Concept + Budget', cents: CANONICAL_PRICE_CENTS.conceptTierReference.premium, deliveryDays: '3–5 days' },
+    3: { label: 'Home Addition Preconstruction Package', cents: CANONICAL_PRICE_CENTS.conceptTierReference.premiumPlus, deliveryDays: '3–5 days' },
   },
   whole_home_concept: {
-    1: { label: 'Whole Home Concept — Basic',    cents: 24_900,  deliveryDays: '4–6 days' },
-    2: { label: 'Whole Home Concept — Premium',  cents: 89_900,  deliveryDays: '4–6 days' },
-    3: { label: 'Whole Home Concept — Premium+', cents: 169_900, deliveryDays: '4–6 days' },
+    1: { label: 'Whole Home Concept', cents: CANONICAL_PRICE_CENTS.concept.wholeHome, deliveryDays: '4–6 days' },
+    2: { label: 'Whole Home Concept + Budget', cents: CANONICAL_PRICE_CENTS.concept.wholeHomeAdvanced, deliveryDays: '4–6 days' },
+    3: { label: 'Whole Home Preconstruction Package', cents: CANONICAL_PRICE_CENTS.concept.wholeHomeFull, deliveryDays: '4–6 days' },
   },
   interior_renovation: {
-    1: { label: 'Interior Renovation — Basic',    cents: 14_900,  deliveryDays: '3–5 days' },
-    2: { label: 'Interior Renovation — Premium',  cents: 64_900,  deliveryDays: '3–5 days' },
-    3: { label: 'Interior Renovation — Premium+', cents: 119_900, deliveryDays: '3–5 days' },
+    1: { label: 'Interior Renovation Concept', cents: CANONICAL_PRICE_CENTS.concept.interiorReno, deliveryDays: '3–5 days' },
+    2: { label: 'Interior Renovation Concept + Budget', cents: CANONICAL_PRICE_CENTS.conceptTierReference.premium, deliveryDays: '3–5 days' },
+    3: { label: 'Interior Renovation Preconstruction Package', cents: CANONICAL_PRICE_CENTS.conceptTierReference.premiumPlus, deliveryDays: '3–5 days' },
   },
   exterior_concept: {
-    1: { label: 'Exterior Concept — Basic',    cents: 13_900,  deliveryDays: '3–5 days' },
-    2: { label: 'Exterior Concept — Premium',  cents: 59_900,  deliveryDays: '3–5 days' },
-    3: { label: 'Exterior Concept — Premium+', cents: 109_900, deliveryDays: '3–5 days' },
+    1: { label: 'Exterior Concept', cents: CANONICAL_PRICE_CENTS.concept.exterior, deliveryDays: '3–5 days' },
+    2: { label: 'Exterior Concept + Budget', cents: CANONICAL_PRICE_CENTS.conceptTierReference.premium, deliveryDays: '3–5 days' },
+    3: { label: 'Exterior Preconstruction Package', cents: CANONICAL_PRICE_CENTS.conceptTierReference.premiumPlus, deliveryDays: '3–5 days' },
   },
   interior_reno_concept: {
-    1: { label: 'Design Services', cents: 7_900, deliveryDays: '2–3 days' },
+    1: { label: 'Interior Renovation Concept', cents: CANONICAL_PRICE_CENTS.concept.interiorReno, deliveryDays: '3–5 days' },
   },
 }
+
+/** Compatibility aliases derived from the canonical kitchen checkout tiers.
+ * Project-specific UIs must use INTAKE_TIER_PRICE_CENTS directly. */
+export const AI_CONCEPT_BASIC = INTAKE_TIER_PRICE_CENTS.kitchen_remodel![1]!.cents / 100
+export const AI_CONCEPT_PREMIUM = INTAKE_TIER_PRICE_CENTS.kitchen_remodel![2]!.cents / 100
+export const AI_CONCEPT_PREMIUM_PLUS = INTAKE_TIER_PRICE_CENTS.kitchen_remodel![3]!.cents / 100
 
 /**
  * Tier-aware price lookup. Uses tier-specific price from INTAKE_TIER_PRICE_CENTS

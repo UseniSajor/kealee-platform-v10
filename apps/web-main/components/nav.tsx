@@ -1,214 +1,295 @@
-'use client'
+"use client";
 
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
-import { X, ChevronDown } from 'lucide-react'
-import { useState, useRef, useEffect } from 'react'
-import { KealeeNavIcon } from '@/components/brand/KealeeNavIcon'
-import { KealeeLogo } from '@/components/KealeeLogo'
-import { SERVICES } from '@/lib/services-config'
-import { isAgencyPartnerShellPath } from '@/lib/agency-partner-shell'
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { X, ChevronDown } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { KealeeNavIcon } from "@/components/brand/KealeeNavIcon";
+import { KealeeLogo } from "@/components/KealeeLogo";
+import { isAgencyPartnerShellPath } from "@/lib/agency-partner-shell";
 
-// Services dropdown shows design and construction side-by-side
-function ServicesDropdown() {
-  const [open, setOpen] = useState(false)
-  const ref = useRef<HTMLDivElement>(null)
+// Navigation is organized around the five questions a visitor actually
+// arrives with, not internal service-catalog terminology. Every href below
+// is a live, verified route (checked against the deployed site, not guessed).
+interface NavDropdownItem {
+  label: string;
+  href: string;
+  detail: string;
+}
+
+interface NavSection {
+  label: string;
+  href: string;
+  hoverColor: string;
+  activeColor: string;
+  dropdown?: NavDropdownItem[];
+}
+
+export const NAV_SECTIONS: NavSection[] = [
+  {
+    label: "Ideas & Projects",
+    href: "/inspiration",
+    hoverColor: "hover:text-orange-500",
+    activeColor: "text-orange-500 border-b-2 border-orange-500",
+  },
+  {
+    label: "Site Plans & Feasibility",
+    href: "/site-plans",
+    hoverColor: "hover:text-teal-600",
+    activeColor: "text-teal-700 border-b-2 border-teal-600",
+    dropdown: [
+      {
+        label: "Preliminary Site Plan",
+        href: "/products/preliminary_site_plan",
+        detail: "Parcel, setbacks, buildable area",
+      },
+      {
+        label: "Verified Site Feasibility",
+        href: "/products/verified_site_feasibility",
+        detail: "Verified zoning + constraints",
+      },
+      {
+        label: "Developer Feasibility",
+        href: "/products/developer_feasibility",
+        detail: "Yield, parking, massing, NOI",
+      },
+    ],
+  },
+  {
+    label: "Design My Project",
+    href: "/concept",
+    hoverColor: "hover:text-orange-500",
+    activeColor: "text-orange-500 border-b-2 border-orange-500",
+    dropdown: [
+      {
+        label: "Kitchen Remodel",
+        href: "/products/kitchen-remodel",
+        detail: "Layout, materials, permit scope",
+      },
+      {
+        label: "Bathroom Remodel",
+        href: "/products/bath-remodel",
+        detail: "Fixtures, layout, permit scope",
+      },
+      {
+        label: "Exterior Design",
+        href: "/concept-engine/exterior",
+        detail: "Facade, curb appeal, landscaping",
+      },
+      {
+        label: "Garden & Farming",
+        href: "/concept-engine/garden",
+        detail: "Raised beds, irrigation, greenhouse",
+      },
+      {
+        label: "Whole Home Renovation",
+        href: "/concept-engine/whole-home",
+        detail: "Full floor plan redesign",
+      },
+      {
+        label: "Interior Reno & Addition",
+        href: "/concept-engine/interior-reno",
+        detail: "Additions, ADUs, layout changes",
+      },
+    ],
+  },
+  {
+    label: "What Will It Cost?",
+    href: "/estimate",
+    hoverColor: "hover:text-blue-500",
+    activeColor: "text-blue-500 border-b-2 border-blue-500",
+    dropdown: [
+      {
+        label: "Detailed Estimate",
+        href: "/products/detailed_estimate",
+        detail: "Trade-by-trade planning estimate",
+      },
+      {
+        label: "Professionally Reviewed Estimate",
+        href: "/products/certified_estimate",
+        detail: "Review and sign-off only as identified in the written package",
+      },
+    ],
+  },
+  {
+    label: "Permits & Plans",
+    href: "/permits",
+    hoverColor: "hover:text-green-600",
+    activeColor: "text-green-600 border-b-2 border-green-600",
+    dropdown: [
+      {
+        label: "Permit Assessment",
+        href: "/products/permit_assessment",
+        detail: "Requirements + jurisdiction review",
+      },
+      {
+        label: "Permit Coordination",
+        href: "/products/permit_coordination",
+        detail: "Submission, tracking, response",
+      },
+      {
+        label: "Survey-Based Permit Site Plan",
+        href: "/products/permit_site_plan",
+        detail: "Sealed, submission-ready",
+      },
+      {
+        label: "Professional Drawings",
+        href: "/products/professional_design",
+        detail: "Architect-stamped construction docs",
+      },
+    ],
+  },
+];
+
+function NavSectionMenu({ section }: { section: NavSection }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const pathname = usePathname();
+  const active =
+    pathname === section.href || pathname?.startsWith(section.href + "/");
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
-        setOpen(false)
-      }
+      if (ref.current && !ref.current.contains(e.target as Node))
+        setOpen(false);
     }
-    document.addEventListener('mousedown', handleClick)
-    return () => document.removeEventListener('mousedown', handleClick)
-  }, [])
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+
+  if (!section.dropdown) {
+    return (
+      <Link
+        href={section.href}
+        className={`whitespace-nowrap px-3 py-1 font-medium text-sm transition-colors ${
+          active
+            ? section.activeColor
+            : `text-slate-600 ${section.hoverColor} hover:underline`
+        }`}
+      >
+        {section.label}
+      </Link>
+    );
+  }
 
   return (
     <div ref={ref} className="relative">
       <button
+        type="button"
         onClick={() => setOpen(!open)}
-        className="flex items-center gap-1 font-medium text-sm text-slate-600 hover:text-slate-900 transition whitespace-nowrap"
+        aria-expanded={open}
+        className={`flex items-center gap-1 whitespace-nowrap px-3 py-1 font-medium text-sm transition-colors ${
+          active ? section.activeColor : `text-slate-600 ${section.hoverColor}`
+        }`}
       >
-        Services <ChevronDown className={`w-3.5 h-3.5 transition-transform ${open ? 'rotate-180' : ''}`} />
+        {section.label}
+        <ChevronDown
+          className={`h-3.5 w-3.5 transition-transform ${open ? "rotate-180" : ""}`}
+        />
       </button>
 
       {open && (
-        <div className="absolute left-0 top-full mt-1 w-[640px] bg-white rounded-2xl shadow-xl border border-slate-200 p-5 z-50">
-          <div className="grid grid-cols-2 gap-8 divide-x divide-slate-100">
-            {/* COLUMN 1: DESIGN & PLANNING */}
-            <div>
-              <p className="text-[11px] font-bold uppercase tracking-widest text-[#E8724B] mb-4 flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#E8724B]"></span>
-                Design & Planning
-              </p>
-              <ul className="space-y-1">
-                {SERVICES.map((svc) => (
-                  <li key={`design-${svc.slug}`}>
-                    <Link
-                      href={`/services/${svc.slug}`}
-                      onClick={() => setOpen(false)}
-                      className="block rounded-lg px-2.5 py-2 text-sm text-slate-700 hover:bg-orange-50 hover:text-[#E8724B] transition"
-                    >
-                      <span className="font-semibold block">{svc.label}</span>
-                      <span className="block text-[11px] text-slate-400 mt-0.5">{svc.deliverableLabel} · {svc.deliveryDays}</span>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* COLUMN 2: CONSTRUCTION & BUILD */}
-            <div className="pl-8">
-              <p className="text-[11px] font-bold uppercase tracking-widest text-blue-600 mb-4 flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
-                Construction & Build
-              </p>
-              <ul className="space-y-1">
-                {SERVICES.filter(s => s.slug !== 'design-services').map((svc) => (
-                  <li key={`build-${svc.slug}`}>
-                    <Link
-                      href={svc.slug === 'new-construction' ? `/services/${svc.slug}` : `/services/${svc.slug}#build`}
-                      onClick={() => setOpen(false)}
-                      className="block rounded-lg px-2.5 py-2 text-sm text-slate-700 hover:bg-blue-50 hover:text-blue-700 transition"
-                    >
-                      <span className="font-semibold block">{svc.label} Build</span>
-                      <span className="block text-[11px] text-slate-400 mt-0.5">Vetted GCs · {svc.timeline}</span>
-                    </Link>
-                  </li>
-                ))}
-                {/* Special design-services note/cta in construction column */}
-                <li className="pt-2">
-                  <div className="rounded-xl bg-slate-50 border border-slate-100 p-3">
-                    <p className="text-xs font-semibold text-slate-700">Need contractor matching?</p>
-                    <p className="text-[11px] text-slate-400 mt-0.5 mb-2">We match permit-ready plans to vetted local contractors.</p>
-                    <Link
-                      href="/build"
-                      onClick={() => setOpen(false)}
-                      className="inline-flex items-center gap-1 text-xs font-bold text-[#E8724B] hover:text-[#D45C33]"
-                    >
-                      Explore Build Platform →
-                    </Link>
-                  </div>
-                </li>
-              </ul>
-            </div>
-          </div>
-          <div className="mt-4 pt-4 border-t border-slate-100 flex items-center justify-between">
-            <p className="text-xs text-slate-500">Design concepts in 2–6 days · Bids in 24–48 hours</p>
+        <div className="absolute left-0 top-full mt-1 w-80 rounded-2xl border border-slate-200 bg-white p-3 shadow-xl z-50">
+          <ul className="space-y-0.5">
+            {section.dropdown.map((item) => (
+              <li key={item.href}>
+                <Link
+                  href={item.href}
+                  onClick={() => setOpen(false)}
+                  className="block rounded-lg px-2.5 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition"
+                >
+                  <span className="font-semibold block">{item.label}</span>
+                  <span className="block text-[11px] text-slate-400 mt-0.5">
+                    {item.detail}
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+          <div className="mt-2 border-t border-slate-100 pt-2">
             <Link
-              href="/gallery"
+              href={section.href}
               onClick={() => setOpen(false)}
-              className="text-xs font-semibold text-orange-600 hover:text-orange-700"
+              className="block rounded-lg px-2.5 py-2 text-xs font-semibold text-slate-500 hover:bg-slate-50 hover:text-slate-800 transition"
             >
-              Browse Project Gallery →
+              View all →
             </Link>
           </div>
         </div>
       )}
     </div>
-  )
+  );
 }
 
-// Color config per nav tab
-const NAV_TABS = [
-  {
-    href: '/concept',
-    label: 'Design Concept',
-    hoverColor: 'hover:text-orange-500',
-    activeColor: 'text-orange-500 border-b-2 border-orange-500',
-  },
-  {
-    href: '/estimate',
-    label: 'What does it Cost',
-    hoverColor: 'hover:text-blue-500',
-    activeColor: 'text-blue-500 border-b-2 border-blue-500',
-  },
-  {
-    href: '/permits',
-    label: 'Get Permits',
-    hoverColor: 'hover:text-green-600',
-    activeColor: 'text-green-600 border-b-2 border-green-600',
-  },
-  {
-    href: '/marketplace',
-    label: 'Marketplace',
-    hoverColor: 'hover:text-orange-500',
-    activeColor: 'text-orange-500 border-b-2 border-orange-500',
-  },
-  {
-    href: '/faq',
-    label: 'FAQ',
-    hoverColor: 'hover:text-orange-500',
-    activeColor: 'text-orange-500 border-b-2 border-orange-500',
-  },
-]
+function MobileNavAccordion({
+  section,
+  onClose,
+}: {
+  section: NavSection;
+  onClose: () => void;
+}) {
+  const [open, setOpen] = useState(false);
 
-function MobileServicesAccordion({ onClose }: { onClose: () => void }) {
-  const [open, setOpen] = useState(false)
-  return (
-    <div>
-      <button
-        onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between rounded-lg px-3 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50"
+  if (!section.dropdown) {
+    return (
+      <Link
+        href={section.href}
+        onClick={onClose}
+        className="block rounded-lg px-3 py-2.5 font-medium text-sm text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition"
       >
-        Services
-        <ChevronDown className={`w-4 h-4 transition-transform ${open ? 'rotate-180' : ''}`} />
-      </button>
-      {open && (
-        <div className="ml-4 mt-2 space-y-4 pl-2 border-l border-slate-100">
-          <div>
-            <p className="text-[10px] font-bold uppercase tracking-widest text-[#E8724B] mb-1">Design & Planning</p>
-            <div className="space-y-0.5">
-              {SERVICES.map((svc) => (
-                <Link
-                  key={`mobile-design-${svc.slug}`}
-                  href={`/services/${svc.slug}`}
-                  onClick={onClose}
-                  className="block rounded-lg px-3 py-1.5 text-sm text-slate-500 hover:bg-slate-50 hover:text-slate-800 transition"
-                >
-                  {svc.label}
-                </Link>
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <p className="text-[10px] font-bold uppercase tracking-widest text-blue-600 mb-1">Construction & Build</p>
-            <div className="space-y-0.5">
-              {SERVICES.filter(s => s.slug !== 'design-services').map((svc) => (
-                <Link
-                  key={`mobile-build-${svc.slug}`}
-                  href={svc.slug === 'new-construction' ? `/services/${svc.slug}` : `/services/${svc.slug}#build`}
-                  onClick={onClose}
-                  className="block rounded-lg px-3 py-1.5 text-sm text-slate-500 hover:bg-slate-50 hover:text-slate-800 transition"
-                >
-                  {svc.label} Build
-                </Link>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  )
-}
-
-export function SiteNav() {
-  const pathname = usePathname()
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-
-  if (isAgencyPartnerShellPath(pathname)) return null
-
-  function isActive(href: string) {
-    return pathname === href || (href !== '/' && pathname?.startsWith(href + '/'))
+        {section.label}
+      </Link>
+    );
   }
 
   return (
-    <nav className="sticky top-0 z-50 bg-white shadow-sm border-b border-gray-200">
-      <div className="mx-auto max-w-screen-2xl px-4 sm:px-6 lg:px-8">
-        <div className="flex h-16 items-center justify-between">
+    <div>
+      <button
+        type="button"
+        onClick={() => setOpen(!open)}
+        aria-expanded={open}
+        className="w-full flex items-center justify-between rounded-lg px-3 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50"
+      >
+        {section.label}
+        <ChevronDown
+          className={`w-4 h-4 transition-transform ${open ? "rotate-180" : ""}`}
+        />
+      </button>
+      {open && (
+        <div className="ml-4 mt-1 space-y-0.5 border-l border-slate-100 pl-2">
+          {section.dropdown.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              onClick={onClose}
+              className="block rounded-lg px-3 py-1.5 text-sm text-slate-500 hover:bg-slate-50 hover:text-slate-800 transition"
+            >
+              {item.label}
+            </Link>
+          ))}
+          <Link
+            href={section.href}
+            onClick={onClose}
+            className="block rounded-lg px-3 py-1.5 text-xs font-semibold text-slate-400 hover:bg-slate-50 hover:text-slate-700 transition"
+          >
+            View all →
+          </Link>
+        </div>
+      )}
+    </div>
+  );
+}
 
+export function SiteNav() {
+  const pathname = usePathname();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  if (isAgencyPartnerShellPath(pathname)) return null;
+
+  return (
+    <nav className="sticky top-0 z-50 border-b border-[#10233e]/10 bg-white/95 shadow-[0_8px_30px_rgba(16,35,62,.05)] backdrop-blur-xl">
+      <div className="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-8">
+        <div className="flex h-[72px] items-center justify-between">
           {/* LEFT: Logo + Desktop Nav */}
           <div className="flex items-center gap-6">
             <Link href="/" className="flex shrink-0 items-center">
@@ -219,31 +300,16 @@ export function SiteNav() {
             {/* Build button — desktop left section */}
             <Link
               href="/build"
-              className="hidden lg:flex items-center px-4 py-2 bg-[#2563EB] hover:bg-[#1D4ED8] active:bg-[#1E40AF] text-white font-semibold rounded-lg text-sm transition-all shadow-sm hover:shadow-md whitespace-nowrap"
+              className="hidden items-center rounded-xl bg-[#e8f2fa] px-4 py-2 text-sm font-bold text-[#147d92] transition hover:bg-[#d7eaf5] lg:flex"
             >
               Build
             </Link>
 
-            {/* Desktop tabs */}
+            {/* Desktop tabs — the five questions a visitor arrives with */}
             <div className="hidden lg:flex items-center gap-1">
-              <ServicesDropdown />
-
-              {NAV_TABS.map((tab) => {
-                const active = isActive(tab.href)
-                return (
-                  <Link
-                    key={tab.href}
-                    href={tab.href}
-                    className={`whitespace-nowrap px-3 py-1 font-medium text-sm transition-colors ${
-                      active
-                        ? tab.activeColor
-                        : `text-slate-600 ${tab.hoverColor} hover:underline`
-                    }`}
-                  >
-                    {tab.label}
-                  </Link>
-                )
-              })}
+              {NAV_SECTIONS.map((section) => (
+                <NavSectionMenu key={section.href} section={section} />
+              ))}
             </div>
           </div>
 
@@ -253,25 +319,36 @@ export function SiteNav() {
             <div className="hidden lg:block w-px h-6 bg-gray-300" />
 
             <Link
-              href="/auth/login"
+              href="/signin"
               className="hidden sm:block text-sm text-slate-600 hover:text-slate-900 font-medium transition whitespace-nowrap"
             >
               Sign in
             </Link>
 
             <Link
-              href="/concept"
-              className="hidden sm:flex items-center px-5 py-2 bg-[#E8724B] hover:bg-[#D45C33] active:bg-[#C04820] text-white font-semibold rounded-lg text-sm transition-all shadow-sm hover:shadow-md whitespace-nowrap"
+              href="/products/home-project-readiness-review"
+              className="hidden items-center rounded-xl bg-[#f36b2b] px-5 py-2.5 text-sm font-extrabold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-[#df581f] hover:shadow-md sm:flex"
             >
-              Start Your Project
+              Get Project Clarity
             </Link>
 
             {/* Mobile hamburger */}
             <button
+              type="button"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              aria-label={
+                mobileMenuOpen
+                  ? "Close navigation menu"
+                  : "Open navigation menu"
+              }
+              aria-expanded={mobileMenuOpen}
               className="lg:hidden p-2 text-slate-600 hover:text-slate-900 transition"
             >
-              {mobileMenuOpen ? <X className="w-6 h-6" /> : <KealeeNavIcon className="w-6 h-6" />}
+              {mobileMenuOpen ? (
+                <X className="w-6 h-6" />
+              ) : (
+                <KealeeNavIcon className="w-6 h-6" />
+              )}
             </button>
           </div>
         </div>
@@ -281,49 +358,41 @@ export function SiteNav() {
       {mobileMenuOpen && (
         <div className="lg:hidden border-t border-slate-200 bg-white max-h-[80vh] overflow-y-auto">
           <div className="px-4 py-4 space-y-1">
-            {/* Services accordion */}
-            <MobileServicesAccordion onClose={() => setMobileMenuOpen(false)} />
-
-            {/* Main tabs */}
-            {NAV_TABS.map((tab) => {
-              const active = isActive(tab.href)
-              return (
-                <Link
-                  key={tab.href}
-                  href={tab.href}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className={`block rounded-lg px-3 py-2.5 font-medium text-sm transition ${
-                    active ? 'bg-orange-50 text-[#E8724B]' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
-                  }`}
-                >
-                  {tab.label}
-                </Link>
-              )
-            })}
+            {NAV_SECTIONS.map((section) => (
+              <MobileNavAccordion
+                key={section.href}
+                section={section}
+                onClose={() => setMobileMenuOpen(false)}
+              />
+            ))}
 
             {/* Account */}
             <div className="border-t border-slate-200 mt-3 pt-3 space-y-2">
               <Link
-                href="/auth/login"
+                href="/signin"
                 onClick={() => setMobileMenuOpen(false)}
                 className="block rounded-lg px-3 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50 transition"
               >
                 Sign in
               </Link>
-              <Link href="/build" onClick={() => setMobileMenuOpen(false)}>
-                <button className="w-full bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-bold py-3 rounded-xl text-sm transition mb-2">
-                  Build
-                </button>
+              <Link
+                href="/build"
+                onClick={() => setMobileMenuOpen(false)}
+                className="mb-2 block w-full rounded-xl bg-[#2563EB] py-3 text-center text-sm font-bold text-white transition hover:bg-[#1D4ED8]"
+              >
+                Build
               </Link>
-              <Link href="/concept" onClick={() => setMobileMenuOpen(false)}>
-                <button className="w-full bg-[#E8724B] hover:bg-[#D45C33] text-white font-bold py-3.5 rounded-xl text-base transition">
-                  Start Your Project
-                </button>
+              <Link
+                href="/products/home-project-readiness-review"
+                onClick={() => setMobileMenuOpen(false)}
+                className="block w-full rounded-xl bg-[#f36b2b] py-3.5 text-center text-base font-extrabold text-white transition hover:bg-[#df581f]"
+              >
+                Start Your Project
               </Link>
             </div>
           </div>
         </div>
       )}
     </nav>
-  )
+  );
 }

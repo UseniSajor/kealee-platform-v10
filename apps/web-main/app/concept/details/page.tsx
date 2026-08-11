@@ -1,9 +1,9 @@
 'use client'
 
-import { useState, useEffect, Suspense } from 'react'
+import { useState, useEffect, useRef, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowRight, ArrowLeft, Paperclip, X, ImageIcon, FileText, Video, Info, Loader2 } from 'lucide-react'
+import { ArrowRight, ArrowLeft, Paperclip, X, ImageIcon, FileText, Video, Info, Loader2, Smartphone, Monitor } from 'lucide-react'
 import { SERVICE_MAP } from '@/lib/services-config'
 import { getConceptSqftHint, CONCEPT_PHOTO_RENDERING_DISCLAIMER } from '@/lib/concept-scope-placeholders'
 import {
@@ -18,6 +18,8 @@ import {
   uploadIntakeFilesSequentially,
   type IntakeUploadedFile,
 } from '@/lib/intake-file-upload'
+import { CaptureHandoffPanel } from '@kealee/ui/components/intake/capture-handoff-panel'
+import { supabase } from '@/lib/supabase-browser'
 
 const inputClass =
   'w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-[#E8724B] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#E8724B]/20 transition'
@@ -162,6 +164,22 @@ function DetailsInner() {
   const [dragActive, setDragActive] = useState(false)
   const [photoAckNoUpload, setPhotoAckNoUpload] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
+  const resumedCaptureId = searchParams.get('captureSessionId')
+  const resumedCaptureToken = searchParams.get('captureToken')
+  const captureReturnParams = new URLSearchParams(searchParams.toString())
+  captureReturnParams.delete('captureSessionId')
+  captureReturnParams.delete('captureToken')
+  const [uploadMode, setUploadMode] = useState<'device' | 'phone'>(
+    resumedCaptureId && resumedCaptureToken ? 'phone' : 'device',
+  )
+  const [captureSession, setCaptureSession] = useState<{ id: string; token: string } | null>(
+    resumedCaptureId && resumedCaptureToken
+      ? { id: resumedCaptureId, token: resumedCaptureToken }
+      : null,
+  )
+  const [captureStarting, setCaptureStarting] = useState(false)
+  const [captureStatus, setCaptureStatus] = useState<string>('pending')
+  const seenAssetIds = useRef<Set<string>>(new Set())
 
   function handleDrag(e: React.DragEvent) {
     e.preventDefault()
@@ -194,7 +212,84 @@ function DetailsInner() {
     }
   }, [uploadedFiles])
 
+  async function startCaptureSession() {
+    if (captureSession || captureStarting) return
+    setCaptureStarting(true)
+    try {
+      // No real intake exists yet at this step — capture_sessions.intake_id is a
+      // loosely-correlated TEXT column (no FK), so a client-generated id just
+      // satisfies CreateCaptureSessionSchema's required field.
+      const resp = await fetch('/api/capture/session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          intake_id: `pre-intake-${crypto.randomUUID()}`,
+          project_path: serviceSlug,
+          address: zip.trim() ? `ZIP ${zip.trim()}` : 'Not yet provided',
+          capture_mode: 'self_capture',
+        }),
+      })
+      const json = await resp.json()
+      if (resp.ok) {
+        setCaptureSession({ id: json.captureSessionId, token: json.captureToken })
+      }
+    } catch {
+      // handoff panel stays hidden; user can retry via the tab
+    } finally {
+      setCaptureStarting(false)
+    }
+  }
 
+  // Poll the mobile capture session for new assets while it's active — the
+  // /api/capture/progress endpoint was already built for this ("polling
+  // endpoint for desktop progress panel") but had no consumer until now.
+  useEffect(() => {
+    if (!captureSession) return
+    let cancelled = false
+
+    async function poll() {
+      if (!captureSession) return
+      try {
+        const resp = await fetch(`/api/capture/progress?captureSessionId=${captureSession.id}`)
+        if (!resp.ok) return
+        const progress = await resp.json()
+        if (cancelled) return
+        setCaptureStatus(progress.status ?? 'pending')
+
+        if ((progress.uploadedAssetsCount ?? 0) > 0) {
+          const { data: assets } = await supabase
+            .from('capture_assets')
+            .select('id, storage_url, mime_type, zone')
+            .eq('capture_session_id', captureSession.id)
+          if (cancelled || !assets) return
+          const newAssets = assets.filter((a: { id: string }) => !seenAssetIds.current.has(a.id))
+          if (newAssets.length > 0) {
+            newAssets.forEach((a: { id: string }) => seenAssetIds.current.add(a.id))
+            setUploadedFiles((prev) => [
+              ...prev,
+              ...newAssets.map(
+                (a: { id: string; storage_url: string; mime_type: string; zone: string }) =>
+                  ({
+                    url: a.storage_url,
+                    name: `${a.zone.replace(/_/g, ' ')} photo`,
+                    type: a.mime_type?.startsWith('video') ? 'video' : 'image',
+                  }) as IntakeUploadedFile,
+              ),
+            ])
+          }
+        }
+      } catch {
+        // transient network error — next poll tick will retry
+      }
+    }
+
+    poll()
+    const interval = setInterval(poll, 4000)
+    return () => {
+      cancelled = true
+      clearInterval(interval)
+    }
+  }, [captureSession])
 
   async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const selected = Array.from(e.target.files ?? [])
@@ -273,10 +368,10 @@ function DetailsInner() {
       if (!gardenIrrigation) e.gardenIrrigation = 'Please select an irrigation preference.'
       if (!gardenMaintenance) e.gardenMaintenance = 'Please select a maintenance commitment.'
     }
-    const hasPhoto = uploadedFiles.some((f) => f.type === 'image')
-    if (!hasPhoto && !photoAckNoUpload) {
+    const hasVisualEvidence = uploadedFiles.some((file) => file.type === 'image' || file.type === 'video')
+    if (!hasVisualEvidence && !photoAckNoUpload) {
       e.photos =
-        'Upload at least one photo of existing conditions, or check the acknowledgment below to continue without photos.'
+        'Upload at least one photo or walkthrough video of existing conditions, or check the acknowledgment below to continue without visual evidence.'
     }
     setErrors(e)
     return Object.keys(e).length === 0
@@ -522,7 +617,7 @@ function DetailsInner() {
             />
           </div>
           {errors.budget && <p className="text-xs text-red-500 mt-1">{errors.budget}</p>}
-          <p className="text-xs text-slate-400 mt-1">Your total budget for construction — not the design concept fee</p>
+          <p className="text-xs text-slate-400 mt-1">Your total budget for construction — not the AI concept fee</p>
         </div>
 
         {/* Timeline */}
@@ -593,42 +688,104 @@ function DetailsInner() {
             <p>{CONCEPT_PHOTO_RENDERING_DISCLAIMER}</p>
           </div>
 
-          {/* Drag & Drop zone */}
-          <div
-            onDragEnter={handleDrag}
-            onDragOver={handleDrag}
-            onDragLeave={handleDrag}
-            onDrop={handleDrop}
-            className={`relative rounded-2xl border-2 border-dashed p-6 transition-all flex flex-col items-center justify-center text-center cursor-pointer ${
-              dragActive
-                ? 'border-[#E8724B] bg-orange-50/30'
-                : 'border-slate-300 bg-slate-50 hover:border-[#E8724B] hover:bg-orange-50/10'
-            }`}
-          >
-            <input
-              type="file"
-              accept="image/jpeg,image/png,image/webp,image/heic,video/mp4,video/quicktime,application/pdf"
-              multiple
-              disabled={uploading}
-              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-              onChange={handleFileChange}
-            />
-            <div className="w-12 h-12 rounded-full bg-slate-200/60 flex items-center justify-center mb-3 text-slate-500 group-hover:text-[#E8724B] transition-colors">
-              <Paperclip className="w-5 h-5" />
-            </div>
-            <p className="text-sm font-semibold text-slate-800 mb-1">
-              Drag &amp; drop photos here, or <span className="text-[#E8724B] hover:underline">browse files</span>
-            </p>
-            <p className="text-xs text-slate-400">
-              Up to 5 files, 50 MB each (JPG, PNG, WEBP, MP4, PDF)
-            </p>
-            {uploading && (
-              <div className="absolute inset-0 bg-white/95 rounded-2xl flex flex-col items-center justify-center gap-2">
-                <Loader2 className="w-6 h-6 text-[#E8724B] animate-spin" />
-                <span className="text-xs font-semibold text-slate-700">Uploading files, please wait...</span>
-              </div>
-            )}
+          {/* Upload mode tabs */}
+          <div className="flex gap-2 mb-4">
+            <button
+              type="button"
+              onClick={() => setUploadMode('device')}
+              className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition ${
+                uploadMode === 'device'
+                  ? 'bg-slate-900 text-white'
+                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+              }`}
+            >
+              <Monitor className="w-4 h-4" /> Upload from this device
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setUploadMode('phone')
+                startCaptureSession()
+              }}
+              className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition ${
+                uploadMode === 'phone'
+                  ? 'bg-slate-900 text-white'
+                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+              }`}
+            >
+              <Smartphone className="w-4 h-4" /> Capture on my phone
+            </button>
           </div>
+
+          {uploadMode === 'phone' ? (
+            <div>
+              {captureStarting || !captureSession ? (
+                <div className="flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 p-6 text-sm text-slate-500">
+                  <Loader2 className="w-4 h-4 animate-spin" /> Setting up your capture link…
+                </div>
+              ) : (
+                <>
+                  <CaptureHandoffPanel
+                    captureSessionId={captureSession.id}
+                    captureToken={captureSession.token}
+                    projectPath={serviceSlug}
+                    returnPath={`/concept/details${captureReturnParams.size ? `?${captureReturnParams.toString()}` : ''}`}
+                  />
+                  <div className="mt-3 flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
+                    {captureStatus === 'in_progress' || uploadedFiles.length > 0 ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin text-[#E8724B]" />
+                        <span>
+                          {uploadedFiles.length > 0
+                            ? `${uploadedFiles.length} photo${uploadedFiles.length === 1 ? '' : 's'} received from your phone — keep going or continue below.`
+                            : 'Waiting for photos from your phone…'}
+                        </span>
+                      </>
+                    ) : (
+                      <span>Open the link on your phone to start capturing — photos will appear here automatically.</span>
+                    )}
+                  </div>
+                </>
+              )}
+            </div>
+          ) : (
+            /* Drag & Drop zone */
+            <div
+              onDragEnter={handleDrag}
+              onDragOver={handleDrag}
+              onDragLeave={handleDrag}
+              onDrop={handleDrop}
+              className={`relative rounded-2xl border-2 border-dashed p-6 transition-all flex flex-col items-center justify-center text-center cursor-pointer ${
+                dragActive
+                  ? 'border-[#E8724B] bg-orange-50/30'
+                  : 'border-slate-300 bg-slate-50 hover:border-[#E8724B] hover:bg-orange-50/10'
+              }`}
+            >
+              <input
+                type="file"
+                accept="image/jpeg,image/png,image/webp,image/heic,video/mp4,video/quicktime,application/pdf"
+                multiple
+                disabled={uploading}
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                onChange={handleFileChange}
+              />
+              <div className="w-12 h-12 rounded-full bg-slate-200/60 flex items-center justify-center mb-3 text-slate-500 group-hover:text-[#E8724B] transition-colors">
+                <Paperclip className="w-5 h-5" />
+              </div>
+              <p className="text-sm font-semibold text-slate-800 mb-1">
+                Drag &amp; drop photos here, or <span className="text-[#E8724B] hover:underline">browse files</span>
+              </p>
+              <p className="text-xs text-slate-400">
+                Up to 5 files, 50 MB each (JPG, PNG, WEBP, MP4, PDF)
+              </p>
+              {uploading && (
+                <div className="absolute inset-0 bg-white/95 rounded-2xl flex flex-col items-center justify-center gap-2">
+                  <Loader2 className="w-6 h-6 text-[#E8724B] animate-spin" />
+                  <span className="text-xs font-semibold text-slate-700">Uploading files, please wait...</span>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Uploaded file previews grid */}
           {uploadedFiles.length > 0 && (

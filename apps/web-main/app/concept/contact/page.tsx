@@ -52,11 +52,9 @@ function ContactInner() {
     router.push(`/concept/confirm?${params.toString()}`)
   }
 
-  const backParams = new URLSearchParams()
-  ;['service', 'scope', 'budget', 'zip', 'style', 'priority', 'timeline', 'sqft'].forEach((k) => {
-    const v = searchParams.get(k)
-    if (v) backParams.set(k, v)
-  })
+  // Preserve the complete concept payload on Back, including attachments,
+  // capture handoff IDs, garden answers, and future intake fields.
+  const backParams = new URLSearchParams(searchParams.toString())
 
   return (
     <div>

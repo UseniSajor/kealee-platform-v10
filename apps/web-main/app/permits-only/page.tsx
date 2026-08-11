@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
+import { CANONICAL_PRICE_CENTS, formatPriceFromCents } from '@kealee/core-rules'
 
 export const metadata: Metadata = {
   title: 'Professional Permit Services | Kealee',
@@ -8,45 +9,48 @@ export const metadata: Metadata = {
 
 const TIERS = [
   {
-    name: 'Basic',
-    price: '$99–$299',
+    tier: 1,
+    name: 'Permit Path Assessment',
+    price: formatPriceFromCents(CANONICAL_PRICE_CENTS.permits.assessment),
     description: 'DIY with expert guidance',
     features: [
-      'Permit requirements checklist',
-      'Code summary overview',
-      'Inspection schedule outline',
-      'You submit the applications',
-      'Email support',
+      'Confirm the permitting authority and permit type',
+      'Identify every required form, plan, and attachment',
+      'Verify fees, portal, and applicant authorization steps',
+      'Sequence prerequisite and trade approvals',
+      'Receive a filing-ready action plan',
     ],
     cta: 'Get Started',
     highlight: false,
   },
   {
-    name: 'Professional',
-    price: '$349',
+    tier: 2,
+    name: 'Permit Application Package',
+    price: formatPriceFromCents(CANONICAL_PRICE_CENTS.permits.standard),
     description: 'We handle everything',
     features: [
-      'Complete permit applications',
-      'Full code compliance review',
-      'We file with the building dept',
-      'Inspection coordination',
-      'Plan review follow-up',
-      'Phone & email support',
+      'Complete jurisdiction application forms',
+      'Assemble plans and attachments in filing order',
+      'File through the correct agency portal',
+      'Track fees, reviewer assignment, and status',
+      'Coordinate corrections and resubmission',
+      'Maintain the agency correspondence record',
     ],
     cta: 'Get Started',
     highlight: true,
   },
   {
-    name: 'Premium',
-    price: '$599',
+    tier: 3,
+    name: 'Permit Coordination',
+    price: formatPriceFromCents(CANONICAL_PRICE_CENTS.permits.managed),
     description: 'White-glove service',
     features: [
-      'Everything in Professional',
-      'Expedited processing',
-      'Inspector relationship used',
-      'Construction administration',
-      'Inspection day presence',
-      '90-day premium support',
+      'Everything in the Application Package',
+      'Manage agency questions and plan-review comments',
+      'Coordinate revised drawings and supporting documents',
+      'Resubmit corrected packages through agency decision',
+      'Prepare the approved permit handoff',
+      'Coordinate required inspection scheduling',
     ],
     cta: 'Get Started',
     highlight: false,
@@ -92,7 +96,7 @@ export default function PermitsOnlyPage() {
             Already working with a designer or contractor? Get permits approved faster with our expert coordination.
           </p>
           <Link
-            href="/permits-only/intake"
+            href="/intake/permit_path_only"
             style={{ display: 'inline-block', background: '#fff', color: '#15803d', fontWeight: 700, fontSize: 16, padding: '14px 36px', borderRadius: 12, textDecoration: 'none' }}
           >
             Start Your Application →
@@ -106,9 +110,9 @@ export default function PermitsOnlyPage() {
           <h2 style={{ fontSize: 32, fontWeight: 800, textAlign: 'center', margin: '0 0 48px', color: '#14532d' }}>Why Kealee Permits?</h2>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 24 }}>
             {[
-              { icon: '⚡', title: 'Faster Approvals', body: 'Our relationships with building departments mean fewer rejections and faster review cycles. Average approval: 2–3 weeks.' },
-              { icon: '🎯', title: 'Code Compliant', body: 'Every application reviewed by permit experts before submission. No surprises, no rejections.' },
-              { icon: '📋', title: 'Full Coordination', body: 'We handle inspections, follow-ups, and all communication with building departments.' },
+              { icon: '⚡', title: 'Clear Submission Path', body: 'We organize the selected application scope and identify known jurisdiction requirements. Review timing and approval remain under agency control.' },
+              { icon: '🎯', title: 'Pre-Submission Review', body: 'Purchased packages identify the included completeness review. Agencies may still request corrections, supporting documents, or revisions.' },
+              { icon: '📋', title: 'Defined Coordination', body: 'The selected package states whether submission, follow-up, comment response, or inspection coordination is included.' },
             ].map(f => (
               <div key={f.title} style={{ background: '#fff', borderRadius: 16, padding: 32, boxShadow: '0 1px 4px rgba(0,0,0,.06)' }}>
                 <div style={{ fontSize: 32, marginBottom: 12 }}>{f.icon}</div>
@@ -124,27 +128,27 @@ export default function PermitsOnlyPage() {
       <section style={{ padding: '72px 24px', background: '#fff' }}>
         <div style={{ maxWidth: 960, margin: '0 auto' }}>
           <h2 style={{ fontSize: 32, fontWeight: 800, textAlign: 'center', margin: '0 0 12px', color: '#111' }}>Choose Your Service</h2>
-          <p style={{ textAlign: 'center', color: '#6b7280', marginBottom: 48, fontSize: 15 }}>All tiers include powered by AI tools roadmap generation with human specialist review before submission.</p>
+          <p style={{ textAlign: 'center', color: '#6b7280', marginBottom: 48, fontSize: 15 }}>All tiers include AI-powered roadmap generation with human specialist review before submission.</p>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 24 }}>
             {TIERS.map(t => (
               <div
                 key={t.name}
                 style={{
-                  border: t.highlight ? '2px solid #16a34a' : '1px solid #e5e7eb',
+                  border: t.highlight ? '2px solid #0f766e' : t.tier === 1 ? '2px solid #f0c94d' : '2px solid #9a7659',
                   borderRadius: 20,
                   padding: 32,
                   position: 'relative',
-                  background: t.highlight ? '#f0fdf4' : '#fff',
+                  background: t.highlight ? 'linear-gradient(145deg, #f0fdfa, #ffffff)' : t.tier === 1 ? 'linear-gradient(145deg, #fffbea, #ffffff)' : 'linear-gradient(145deg, #f7efe7, #ffffff)',
                 }}
               >
                 {t.highlight && (
-                  <div style={{ position: 'absolute', top: -14, left: '50%', transform: 'translateX(-50%)', background: '#16a34a', color: '#fff', fontSize: 12, fontWeight: 700, padding: '4px 16px', borderRadius: 100 }}>
+                  <div style={{ position: 'absolute', top: -14, left: '50%', transform: 'translateX(-50%)', background: '#0f766e', color: '#fef08a', fontSize: 12, fontWeight: 700, padding: '4px 16px', borderRadius: 100 }}>
                     Most Popular
                   </div>
                 )}
                 <h3 style={{ fontSize: 22, fontWeight: 800, margin: '0 0 4px', color: '#111' }}>{t.name}</h3>
                 <p style={{ fontSize: 13, color: '#6b7280', margin: '0 0 12px' }}>{t.description}</p>
-                <p style={{ fontSize: 36, fontWeight: 800, color: '#16a34a', margin: '0 0 20px' }}>{t.price}</p>
+                <p style={{ fontSize: 36, fontWeight: 800, color: t.highlight ? '#0f766e' : '#7a563d', margin: '0 0 20px' }}>{t.price}</p>
                 <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 28px', display: 'flex', flexDirection: 'column', gap: 10 }}>
                   {t.features.map(f => (
                     <li key={f} style={{ fontSize: 14, color: '#374151', display: 'flex', gap: 8 }}>
@@ -153,7 +157,7 @@ export default function PermitsOnlyPage() {
                   ))}
                 </ul>
                 <Link
-                  href={`/permits-only/intake?tier=${t.name.toLowerCase()}`}
+                  href={`/intake/permit_path_only?tier=${t.tier}`}
                   style={{
                     display: 'block', textAlign: 'center', padding: '12px 0', borderRadius: 10, fontWeight: 700, fontSize: 15, textDecoration: 'none',
                     background: t.highlight ? '#16a34a' : 'transparent',
@@ -196,7 +200,7 @@ export default function PermitsOnlyPage() {
           Join homeowners and contractors who get permits approved faster with Kealee.
         </p>
         <Link
-          href="/permits-only/intake"
+          href="/intake/permit_path_only"
           style={{ display: 'inline-block', background: '#fff', color: '#15803d', fontWeight: 700, fontSize: 16, padding: '14px 36px', borderRadius: 12, textDecoration: 'none' }}
         >
           Start Your Permit Application

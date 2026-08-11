@@ -1,59 +1,129 @@
-'use client'
+"use client";
 
-import { useEffect, useRef, useState } from 'react'
-import { useParams, useRouter, useSearchParams } from 'next/navigation'
-import Link from 'next/link'
-import { Loader2, AlertCircle, ArrowRight, CheckCircle2, Clock, Shield, Zap, Package, ImagePlus, X, FileVideo, FileText } from 'lucide-react'
-import { SERVICE_DELIVERABLES } from '@/lib/service-deliverables'
-import { uploadIntakeFilesSequentially, type IntakeUploadedFile } from '@/lib/intake-file-upload'
-import { getIntakeCheckoutProjectDescriptionPlaceholder } from '@kealee/shared'
-import { INTAKE_PRICE_CENTS, getBuildPathBundle } from '@kealee/core-rules'
-import { trackEvent } from '@/lib/analytics'
-import { utmForApiBody } from '@/lib/marketing/client-utm'
+import { useEffect, useRef, useState } from "react";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
+import Image from "next/image";
+import {
+  Loader2,
+  AlertCircle,
+  ArrowRight,
+  CheckCircle2,
+  Clock,
+  Shield,
+  Zap,
+  Package,
+  ImagePlus,
+  X,
+  FileVideo,
+  FileText,
+  Mic,
+  Square,
+  Smartphone,
+  Copy,
+  Check,
+} from "lucide-react";
+import { SERVICE_DELIVERABLES } from "@/lib/service-deliverables";
+import {
+  uploadIntakeFilesSequentially,
+  type IntakeUploadedFile,
+} from "@/lib/intake-file-upload";
+import {
+  INTAKE_PRICE_CENTS,
+  INTAKE_TIER_PRICE_CENTS,
+  PURCHASE_CREDIT_POLICY,
+  getBuildPathBundle,
+} from "@kealee/core-rules";
+import { trackEvent } from "@/lib/analytics";
+import { utmForApiBody } from "@/lib/marketing/client-utm";
+import { getIntakePrefill } from "@/lib/intake-prefill-schema";
+import type { AddressParcelResolution, ScaledParcelGeometry } from "@/lib/site-intelligence/authoritative-gis";
+import { AskChatBar } from "@/components/ui/AskChatBar";
+import { getPermitServiceRecommendation } from "@/lib/permit-service-recommendation";
 
 const AGENT_MAP: Record<string, string> = {
-  exterior_concept: 'design', garden_concept: 'design', whole_home_concept: 'design',
-  interior_reno_concept: 'design', developer_concept: 'land', kitchen_remodel: 'design',
-  bathroom_remodel: 'design', whole_home_remodel: 'design', addition_expansion: 'design',
-  permit_path_only: 'permit', cost_estimate: 'design', certified_estimate: 'design', contractor_match: 'contractor',
-  design_estimate_permit_bundle: 'design', estimate_permit_bundle: 'design', professional_drawings: 'permit',
-  multi_unit_residential: 'land', mixed_use: 'land', commercial_office: 'land',
-  development_feasibility: 'land', design_build: 'design', capture_site_concept: 'design',
-  townhome_subdivision: 'land', single_family_subdivision: 'land', single_lot_development: 'land',
-  interior_renovation: 'design',
-}
+  exterior_concept: "design",
+  garden_concept: "design",
+  whole_home_concept: "design",
+  interior_reno_concept: "design",
+  developer_concept: "land",
+  kitchen_remodel: "design",
+  bathroom_remodel: "design",
+  whole_home_remodel: "design",
+  addition_expansion: "design",
+  permit_path_only: "permit",
+  cost_estimate: "design",
+  certified_estimate: "design",
+  contractor_match: "contractor",
+  design_estimate_permit_bundle: "design",
+  estimate_permit_bundle: "design",
+  professional_drawings: "permit",
+  multi_unit_residential: "land",
+  mixed_use: "land",
+  commercial_office: "land",
+  development_feasibility: "land",
+  design_build: "design",
+  capture_site_concept: "design",
+  townhome_subdivision: "land",
+  single_family_subdivision: "land",
+  single_lot_development: "land",
+  interior_renovation: "design",
+  preliminary_site_plan: "land",
+  verified_site_feasibility: "land",
+  permit_site_plan: "land",
+};
 
 // Display shape matches what the rest of this file expects. Sourced from
 // `INTAKE_PRICE_CENTS` in @kealee/core-rules — single source of truth.
 // The server (api/intake/checkout) ignores any client-supplied amount and
 // re-reads the same map, so even tampering with this object does nothing.
-const PRICE_MAP: Record<string, { label: string; amount: number; delivery: string }> =
-  Object.fromEntries(
-    Object.entries(INTAKE_PRICE_CENTS).map(([key, entry]) => [
-      key,
-      { label: entry.label, amount: entry.cents, delivery: entry.deliveryDays },
-    ]),
-  )
+const PRICE_MAP: Record<
+  string,
+  { label: string; amount: number; delivery: string }
+> = Object.fromEntries(
+  Object.entries(INTAKE_PRICE_CENTS).map(([key, entry]) => [
+    key,
+    { label: entry.label, amount: entry.cents, delivery: entry.deliveryDays },
+  ]),
+);
 
 interface AgentInsight {
-  summary?: string
-  confidence?: number
-  risks?: string[]
-  recommendation?: string
+  summary?: string;
+  confidence?: number;
+  risks?: string[];
+  recommendation?: string;
 }
 
 function formatPrice(cents: number) {
-  return `$${(cents / 100).toFixed(2)}`
+  return `$${(cents / 100).toFixed(2)}`;
+}
+
+function ParcelGeometryPreview({ geometry }: { geometry: ScaledParcelGeometry }) {
+  const xs = geometry.vertices.map(point => point.x);
+  const ys = geometry.vertices.map(point => point.y);
+  const minX = Math.min(...xs);
+  const maxX = Math.max(...xs);
+  const minY = Math.min(...ys);
+  const maxY = Math.max(...ys);
+  const width = Math.max(maxX - minX, 1);
+  const height = Math.max(maxY - minY, 1);
+  const points = geometry.vertices.map(point => `${10 + ((point.x - minX) / width) * 140},${150 - ((point.y - minY) / height) * 140}`).join(" ");
+  return (
+    <svg viewBox="0 0 160 160" role="img" aria-label="Scaled preliminary parcel geometry" className="h-40 w-40 rounded-xl border border-emerald-200 bg-white p-2">
+      <polygon points={points} fill="#d1fae5" stroke="#047857" strokeWidth="3" vectorEffect="non-scaling-stroke" />
+      <text x="80" y="154" textAnchor="middle" fontSize="8" fill="#047857">GIS parcel · local feet</text>
+    </svg>
+  );
 }
 
 function BundleUpsellBanner({
   bundle,
   sourcePath,
 }: {
-  bundle: NonNullable<ReturnType<typeof getBuildPathBundle>>
-  sourcePath: string
+  bundle: NonNullable<ReturnType<typeof getBuildPathBundle>>;
+  sourcePath: string;
 }) {
-  const sourceLabel = sourcePath.replace(/_/g, ' ')
+  const sourceLabel = sourcePath.replace(/_/g, " ");
   return (
     <div className="rounded-xl border border-orange-200 bg-gradient-to-br from-orange-50 via-amber-50 to-white p-5 mb-5">
       <div className="flex items-start gap-3">
@@ -64,42 +134,61 @@ function BundleUpsellBanner({
           <p className="text-xs font-bold uppercase tracking-wider text-orange-700 mb-1">
             Package deal from your {sourceLabel}
           </p>
-          <h2 className="text-lg font-bold text-slate-900 mb-1">{bundle.label}</h2>
-          <p className="text-sm text-slate-600 leading-relaxed mb-3">{bundle.description}</p>
+          <h2 className="text-lg font-bold text-slate-900 mb-1">
+            {bundle.label}
+          </h2>
+          <p className="text-sm text-slate-600 leading-relaxed mb-3">
+            {bundle.description}
+          </p>
           <ul className="space-y-1 mb-3">
             {bundle.includes.map((item) => (
-              <li key={item} className="flex items-start gap-2 text-xs text-slate-600">
+              <li
+                key={item}
+                className="flex items-start gap-2 text-xs text-slate-600"
+              >
                 <CheckCircle2 className="h-3.5 w-3.5 shrink-0 mt-0.5 text-green-600" />
                 {item}
               </li>
             ))}
           </ul>
           <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-            <span className="text-2xl font-black text-orange-700">{bundle.priceLabel}</span>
+            <span className="text-2xl font-black text-orange-700">
+              {bundle.priceLabel}
+            </span>
             <span className="text-sm text-slate-400 line-through">
               {formatPrice(bundle.retailCents)}
             </span>
-            <span className="text-xs font-semibold text-green-700">{bundle.savingsLabel}</span>
+            <span className="text-xs font-semibold text-green-700">
+              {bundle.savingsLabel}
+            </span>
           </div>
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 function deliverableForPath(projectPath: string) {
   return projectPath in SERVICE_DELIVERABLES
     ? SERVICE_DELIVERABLES[projectPath as keyof typeof SERVICE_DELIVERABLES]
-    : undefined
+    : undefined;
+}
+
+function intakeGuideImage(projectPath: string): string {
+  if (/kitchen/.test(projectPath)) return "/media/service-photos/interior-reno-concept-after.jpg";
+  if (/bathroom/.test(projectPath)) return "/media/service-photos/product-bathroom.jpg";
+  if (/exterior|garden|site|development|subdivision|lot/.test(projectPath)) return "/media/service-photos/product-addition.jpg";
+  if (/permit/.test(projectPath)) return "/media/service-photos/product-facade.jpg";
+  return "/media/service-photos/design-build-after.jpg";
 }
 
 /** At least one still image of the project area (videos alone do not satisfy). */
 function intakeRequiresAreaPhoto(projectPath: string): boolean {
-  if (projectPath === 'certified_estimate') return true
-  const d = deliverableForPath(projectPath)
-  if (d?.generatesConcept) return true
-  if (d?.category === 'estimate' || d?.category === 'permit') return true
-  return false
+  if (projectPath === "certified_estimate") return true;
+  const d = deliverableForPath(projectPath);
+  if (d?.generatesConcept) return true;
+  if (d?.category === "estimate" || d?.category === "permit") return true;
+  return false;
 }
 
 /**
@@ -108,54 +197,84 @@ function intakeRequiresAreaPhoto(projectPath: string): boolean {
  */
 function intakeBenefitsFromFloorplanSketch(projectPath: string): boolean {
   return [
-    'whole_home_remodel',
-    'whole_home_concept',
-    'addition_expansion',
-    'interior_renovation',
-    'interior_reno_concept',
-  ].includes(projectPath)
+    "whole_home_remodel",
+    "whole_home_concept",
+    "addition_expansion",
+    "interior_renovation",
+    "interior_reno_concept",
+  ].includes(projectPath);
 }
 
 /** PDF (or other document upload) required for estimate / permit style intakes. */
 function intakeRequiresConstructionDocuments(projectPath: string): boolean {
-  if (projectPath === 'certified_estimate' || projectPath === 'cost_estimate' || projectPath === 'permit_path_only') return true
-  if (projectPath === 'design_estimate_permit_bundle') return true
-  const d = deliverableForPath(projectPath)
-  if (d?.category === 'estimate' || d?.category === 'permit') return true
-  return false
+  // All three site-plan products share the get-started intake step, which
+  // explicitly promises "upload surveys, plats, plans... in the next step"
+  // (app/get-started/page.tsx) — and this file already carries a tailored
+  // validation message for all of them (search isSitePlanIntake below).
+  // Only permit_site_plan was actually wired to show/require it; the other
+  // two silently had no upload section at all despite the promise.
+  if (
+    [
+      "verified_site_feasibility",
+      "permit_site_plan",
+    ].includes(projectPath)
+  )
+    return true;
+  if (
+    projectPath === "certified_estimate" ||
+    projectPath === "cost_estimate" ||
+    projectPath === "permit_path_only"
+  )
+    return true;
+  if (projectPath === "design_estimate_permit_bundle") return true;
+  const d = deliverableForPath(projectPath);
+  if (d?.category === "estimate" || d?.category === "permit") return true;
+  return false;
 }
 
 // ── Step indicator ─────────────────────────────────────────────────────────────
-function StepBar({ step }: { step: 'details' | 'review' }) {
-  const steps = ['details', 'review'] as const
+function StepBar({ step }: { step: "details" | "review" }) {
+  const steps = ["details", "review"] as const;
   return (
     <div className="bg-white border-b border-slate-200">
       <div className="mx-auto max-w-3xl px-4 py-4">
         <div className="flex items-center gap-0">
           {steps.map((s, i) => (
             <div key={s} className="flex items-center flex-1">
-              <div className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold transition ${
-                step === s
-                  ? 'bg-orange-600 text-white'
-                  : steps.indexOf(step) > i
-                  ? 'bg-orange-200 text-orange-700'
-                  : 'bg-slate-200 text-slate-500'
-              }`}>
-                {steps.indexOf(step) > i ? '✓' : i + 1}
+              <div
+                className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold transition ${
+                  step === s
+                    ? "bg-orange-600 text-white"
+                    : steps.indexOf(step) > i
+                      ? "bg-orange-200 text-orange-700"
+                      : "bg-slate-200 text-slate-500"
+                }`}
+              >
+                {steps.indexOf(step) > i ? "✓" : i + 1}
               </div>
               {i < steps.length - 1 && (
-                <div className={`flex-1 h-1 mx-2 rounded-full ${steps.indexOf(step) > i ? 'bg-orange-400' : 'bg-slate-200'}`} />
+                <div
+                  className={`flex-1 h-1 mx-2 rounded-full ${steps.indexOf(step) > i ? "bg-orange-400" : "bg-slate-200"}`}
+                />
               )}
             </div>
           ))}
         </div>
         <div className="flex justify-between mt-2">
-          <span className={`text-xs font-semibold ${step === 'details' ? 'text-orange-600' : 'text-slate-400'}`}>Your Details</span>
-          <span className={`text-xs font-semibold ${step === 'review' ? 'text-orange-600' : 'text-slate-400'}`}>Review & Pay</span>
+          <span
+            className={`text-xs font-semibold ${step === "details" ? "text-orange-600" : "text-slate-400"}`}
+          >
+            Your Details
+          </span>
+          <span
+            className={`text-xs font-semibold ${step === "review" ? "text-orange-600" : "text-slate-400"}`}
+          >
+            Review & Pay
+          </span>
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 // ── Order summary sidebar ──────────────────────────────────────────────────────
@@ -165,10 +284,10 @@ function OrderSummary({
   agentInsight,
   insightLoading,
 }: {
-  priceInfo: { label: string; amount: number; delivery: string }
-  includes: string[]
-  agentInsight: AgentInsight | null
-  insightLoading: boolean
+  priceInfo: { label: string; amount: number; delivery: string };
+  includes: string[];
+  agentInsight: AgentInsight | null;
+  insightLoading: boolean;
 }) {
   return (
     <div className="space-y-4">
@@ -176,20 +295,29 @@ function OrderSummary({
       <div className="rounded-xl bg-white border border-slate-200 p-5 shadow-sm">
         <div className="flex items-start justify-between mb-3">
           <div>
-            <p className="text-xs font-bold uppercase tracking-widest text-orange-600 mb-1">Your Package</p>
-            <h3 className="text-base font-bold text-slate-900">{priceInfo.label}</h3>
+            <p className="text-xs font-bold uppercase tracking-widest text-orange-600 mb-1">
+              Your Package
+            </p>
+            <h3 className="text-base font-bold text-slate-900">
+              {priceInfo.label}
+            </h3>
           </div>
-          <span className="text-xl font-black text-slate-900">{formatPrice(priceInfo.amount)}</span>
+          <span className="text-xl font-black text-slate-900">
+            {formatPrice(priceInfo.amount)}
+          </span>
         </div>
         <div className="flex flex-col gap-2 mb-4">
           <span className="flex items-center gap-2 text-sm text-slate-600">
-            <Clock className="h-4 w-4 text-orange-500" /> Delivered in {priceInfo.delivery}
+            <Clock className="h-4 w-4 text-orange-500" /> Delivered in{" "}
+            {priceInfo.delivery}
           </span>
           <span className="flex items-center gap-2 text-sm text-slate-600">
-            <Shield className="h-4 w-4 text-green-500" /> Secure checkout via Stripe
+            <Shield className="h-4 w-4 text-green-500" /> Secure checkout via
+            Stripe
           </span>
           <span className="flex items-center gap-2 text-sm text-slate-600">
-            <CheckCircle2 className="h-4 w-4 text-blue-500" /> 30-min consultation included
+            <CheckCircle2 className="h-4 w-4 text-blue-500" /> 30-min
+            consultation included
           </span>
         </div>
 
@@ -198,11 +326,16 @@ function OrderSummary({
           <div className="border-t border-slate-100 pt-4">
             <div className="flex items-center gap-1.5 mb-2">
               <Package className="h-3.5 w-3.5 text-slate-400" />
-              <p className="text-xs font-bold uppercase tracking-widest text-slate-400">What's Included</p>
+              <p className="text-xs font-bold uppercase tracking-widest text-slate-400">
+                What&apos;s Included
+              </p>
             </div>
             <ul className="space-y-1.5">
               {includes.map((item, i) => (
-                <li key={i} className="flex items-start gap-2 text-xs text-slate-600">
+                <li
+                  key={i}
+                  className="flex items-start gap-2 text-xs text-slate-600"
+                >
                   <CheckCircle2 className="h-3.5 w-3.5 text-green-500 shrink-0 mt-0.5" />
                   {item}
                 </li>
@@ -212,7 +345,15 @@ function OrderSummary({
         )}
 
         <div className="mt-4 pt-3 border-t border-slate-100">
-          <Link href="/gallery" className="text-xs text-orange-600 hover:text-orange-700 font-semibold">
+          <div className="mb-3 rounded-lg border border-emerald-200 bg-emerald-50 p-3">
+            <p className="text-xs font-bold text-emerald-900">{PURCHASE_CREDIT_POLICY.label}</p>
+            <p className="mt-1 text-[11px] leading-relaxed text-emerald-800">{PURCHASE_CREDIT_POLICY.shortCopy}</p>
+            <p className="mt-1 text-[10px] leading-relaxed text-emerald-700">{PURCHASE_CREDIT_POLICY.terms}</p>
+          </div>
+          <Link
+            href="/gallery"
+            className="text-xs text-orange-600 hover:text-orange-700 font-semibold"
+          >
             Browse all packages →
           </Link>
         </div>
@@ -222,7 +363,9 @@ function OrderSummary({
       <div className="rounded-xl bg-slate-900 p-5 text-white">
         <div className="flex items-center gap-2 mb-3">
           <Zap className="h-4 w-4 text-orange-400" />
-          <span className="text-xs font-bold uppercase tracking-widest text-orange-400">AI Project Insight</span>
+          <span className="text-xs font-bold uppercase tracking-widest text-orange-400">
+            AI Project Insight
+          </span>
         </div>
         {insightLoading ? (
           <div className="flex items-center gap-2 text-sm text-slate-400">
@@ -232,7 +375,9 @@ function OrderSummary({
         ) : agentInsight ? (
           <div className="space-y-3">
             {agentInsight.summary && (
-              <p className="text-sm text-slate-300 leading-relaxed">{agentInsight.summary}</p>
+              <p className="text-sm text-slate-300 leading-relaxed">
+                {agentInsight.summary}
+              </p>
             )}
             {agentInsight.recommendation && (
               <p className="text-xs text-orange-300 font-medium leading-relaxed">
@@ -241,10 +386,15 @@ function OrderSummary({
             )}
             {agentInsight.risks && agentInsight.risks.length > 0 && (
               <div>
-                <p className="text-xs font-semibold text-slate-400 mb-1.5">Key considerations:</p>
+                <p className="text-xs font-semibold text-slate-400 mb-1.5">
+                  Key considerations:
+                </p>
                 <ul className="space-y-1">
                   {agentInsight.risks.slice(0, 2).map((r, i) => (
-                    <li key={i} className="text-xs text-slate-400 flex items-start gap-1.5">
+                    <li
+                      key={i}
+                      className="text-xs text-slate-400 flex items-start gap-1.5"
+                    >
                       <span className="text-orange-500 mt-0.5">•</span>
                       {r}
                     </li>
@@ -255,262 +405,576 @@ function OrderSummary({
           </div>
         ) : (
           <p className="text-sm text-slate-400 leading-relaxed">
-            Our team will review your project details and begin work immediately after payment.
+            Our team will review your project details and begin work immediately
+            after payment.
           </p>
         )}
       </div>
     </div>
-  )
+  );
 }
 
 // ── Main page ──────────────────────────────────────────────────────────────────
 export default function IntakePage() {
-  const params = useParams()
-  const router = useRouter()
-  const searchParams = useSearchParams()
-  const projectPath = Array.isArray(params.projectPath) ? params.projectPath[0] : params.projectPath as string
+  const params = useParams();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const projectPath = Array.isArray(params.projectPath)
+    ? params.projectPath[0]
+    : (params.projectPath as string);
 
   // Pascal Design Studio handoff — sceneId forwarded from /editor/[sceneId]
-  const sceneId = searchParams.get('sceneId') ?? ''
-  const sqftFromUrl = searchParams.get('sqft') ?? ''
-  const upsellFromIntake = searchParams.get('fromIntake') ?? ''
-  const upsellSourcePath = searchParams.get('sourcePath') ?? ''
+  const sceneId = searchParams.get("sceneId") ?? "";
+  const requestedTier = Number.parseInt(searchParams.get("tier") ?? "1", 10);
+  const selectedTier =
+    Number.isInteger(requestedTier) && requestedTier >= 1 && requestedTier <= 3
+      ? requestedTier
+      : 1;
+  const prefill = getIntakePrefill(projectPath);
+  const sqftFromUrl = searchParams.get("sqft") ?? "";
+  const upsellFromIntake = searchParams.get("fromIntake") ?? "";
+  const upsellSourcePath = searchParams.get("sourcePath") ?? "";
+  const [step, setStep] = useState<"details" | "review">("details");
+  const [formError, setFormError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
-  const [step, setStep] = useState<'details' | 'review'>('details')
-  const [formError, setFormError] = useState('')
-  const [submitting, setSubmitting] = useState(false)
+  // Optional promo code — the same "resolve server-side, silently fall through
+  // to normal pricing if invalid/expired/exhausted" design as /concept/confirm.
+  // Shown on every intake path (not just the ones with a real promo) so the
+  // field's presence never reveals which paths actually have one.
+  const [showPromo, setShowPromo] = useState(false);
+  const [promoCode, setPromoCode] = useState("");
 
   // AI insight loads in background — does NOT block the form
-  const [agentInsight, setAgentInsight] = useState<AgentInsight | null>(null)
-  const [insightLoading, setInsightLoading] = useState(true)
+  const [agentInsight, setAgentInsight] = useState<AgentInsight | null>(null);
+  const [insightLoading, setInsightLoading] = useState(true);
+
+  // Send to phone feature
+  const [sendingToPhone, setSendingToPhone] = useState(false);
+  const [phoneLinkCopied, setPhoneLinkCopied] = useState(false);
+  const [activeCaptureSession, setActiveCaptureSession] = useState<{ id: string; token: string } | null>(null);
 
   // Blocker checks for contractor matching
-  const projectId = searchParams.get('projectId') ?? ''
-  const [showBlocker, setShowBlocker] = useState(false)
-  const [checkingProject, setCheckingProject] = useState(true)
-  const [projectData, setProjectData] = useState<any>(null)
+  const projectId = searchParams.get("projectId") ?? "";
+  const [showBlocker, setShowBlocker] = useState(false);
+  const [checkingProject, setCheckingProject] = useState(true);
+  const [projectData, setProjectData] = useState<any>(null);
 
   useEffect(() => {
-    if (projectPath !== 'contractor_match') {
-      setCheckingProject(false)
-      return
+    if (projectPath !== "contractor_match") {
+      setCheckingProject(false);
+      return;
     }
 
     if (!projectId) {
-      setShowBlocker(true)
-      setCheckingProject(false)
-      return
+      setShowBlocker(true);
+      setCheckingProject(false);
+      return;
     }
 
-    let active = true
-    setCheckingProject(true)
+    let active = true;
+    setCheckingProject(true);
 
     fetch(`/api/intake?intakeId=${projectId}`)
-      .then(r => {
-        if (!r.ok) throw new Error('Not found')
-        return r.json()
+      .then((r) => {
+        if (!r.ok) throw new Error("Not found");
+        return r.json();
       })
-      .then(data => {
+      .then((data) => {
         if (active) {
-          setProjectData(data)
+          setProjectData(data);
           if (!data.contractorMatchingUnlocked) {
-            setShowBlocker(true)
+            setShowBlocker(true);
           } else {
-            setShowBlocker(false)
+            setShowBlocker(false);
           }
         }
       })
       .catch(() => {
         if (active) {
-          setShowBlocker(true)
+          setShowBlocker(true);
         }
       })
       .finally(() => {
         if (active) {
-          setCheckingProject(false)
+          setCheckingProject(false);
         }
-      })
+      });
 
     return () => {
-      active = false
-    }
-  }, [projectPath, projectId])
+      active = false;
+    };
+  }, [projectPath, projectId]);
 
+  const requestedClientType = searchParams.get("clientType");
+  const initialClientType =
+    requestedClientType === "Contractor / GC"
+      ? "contractor"
+      : requestedClientType === "Developer"
+        ? "developer"
+        : requestedClientType === "Trade / service provider"
+          ? "service-provider"
+          : "owner";
   const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    phone: '',
-    address: '',
-    description: '',
+    clientType: initialClientType as
+      | "owner"
+      | "contractor"
+      | "developer"
+      | "service-provider",
+    companyName: "",
+    proposalClientName: "",
+    industryType: "",
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    address: searchParams.get("address") ?? "",
+    description: searchParams.get("siteGoal") ?? prefill.description,
+    propertyDetails:
+      [
+        searchParams.get("parcelId")
+          ? `Parcel/APN: ${searchParams.get("parcelId")}`
+          : "",
+        searchParams.get("projectType")
+          ? `Proposed use: ${searchParams.get("projectType")}`
+          : "",
+        searchParams.get("sourceStatus")
+          ? `Available source: ${searchParams.get("sourceStatus")}`
+          : "",
+        searchParams.get("jurisdiction")
+          ? `Known jurisdiction: ${searchParams.get("jurisdiction")}`
+          : "",
+      ]
+        .filter(Boolean)
+        .join("\n") || prefill.propertyDetails,
+    stylePreferences: prefill.stylePreferences,
+    priorities: prefill.priorities,
+    mustStay: prefill.mustStay,
+    problemsToSolve: prefill.problemsToSolve,
+    budgetComfort: prefill.budgetComfort,
     squareFootage: sqftFromUrl,
-    timeline: 'flexible',
-  })
+    timeline: prefill.timeline,
+    estimatePurpose: searchParams.get("estimatePurpose") ?? "Planning a budget",
+    projectPhase: searchParams.get("projectPhase") ?? "Early planning",
+    unitCount: "",
+    bidDueDate: "",
+    procurementApproach: "",
+    pricingInstructions: "",
+    riskNotes: "",
+    scopeQuantities: "",
+    equipmentPlan: "",
+    serviceFrequency: "",
+    costAssumptions: "",
+    tier: selectedTier,
+  });
 
   // Pre-fill squareFootage from Pascal estimate context stored in sessionStorage
   useEffect(() => {
-    if (sqftFromUrl || !sceneId) return
+    if (sqftFromUrl || !sceneId) return;
     try {
-      const ctx = sessionStorage.getItem('pascal_estimate_context')
+      const ctx = sessionStorage.getItem("pascal_estimate_context");
       if (ctx) {
-        const parsed = JSON.parse(ctx)
+        const parsed = JSON.parse(ctx);
         if (parsed?.totalSqFt) {
-          setFormData(prev => ({ ...prev, squareFootage: String(Math.round(parsed.totalSqFt)) }))
+          setFormData((prev) => ({
+            ...prev,
+            squareFootage: String(Math.round(parsed.totalSqFt)),
+          }));
         }
       }
-    } catch { /* ignore */ }
-  }, [sceneId, sqftFromUrl])
+    } catch {
+      /* ignore */
+    }
+  }, [sceneId, sqftFromUrl]);
 
   // File upload state — Q8: project photos / videos
-  const [uploadedFiles, setUploadedFiles] = useState<IntakeUploadedFile[]>([])
-  const [uploading, setUploading] = useState(false)
-  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [uploadedFiles, setUploadedFiles] = useState<IntakeUploadedFile[]>([]);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [recordingVoice, setRecordingVoice] = useState(false);
+  const [uploadingVoice, setUploadingVoice] = useState(false);
+  const voiceRecorderRef = useRef<MediaRecorder | null>(null);
+  const voiceChunksRef = useRef<Blob[]>([]);
 
   // Q9: construction documents (PDF / DWG / DOCX)
-  const [uploadedDocs, setUploadedDocs] = useState<IntakeUploadedFile[]>([])
-  const [uploadingDocs, setUploadingDocs] = useState(false)
-  const docInputRef = useRef<HTMLInputElement>(null)
+  const [uploadedDocs, setUploadedDocs] = useState<IntakeUploadedFile[]>([]);
+  const [uploadingDocs, setUploadingDocs] = useState(false);
+  const docInputRef = useRef<HTMLInputElement>(null);
+  const captureAssetsLoadedRef = useRef<string | null>(null);
+  const [siteIntelligence, setSiteIntelligence] = useState<AddressParcelResolution | null>(null);
+  const [resolvingParcel, setResolvingParcel] = useState(false);
+  const [parcelConfirmed, setParcelConfirmed] = useState(false);
 
   // Session storage persistence
-  const [isPersistedDataLoaded, setIsPersistedDataLoaded] = useState(false)
+  const [isPersistedDataLoaded, setIsPersistedDataLoaded] = useState(false);
 
   useEffect(() => {
     try {
-      const saved = sessionStorage.getItem(`intake_form_${projectPath}`)
+      const storageKey = `kealee_intake_draft_${projectPath}_${selectedTier}`;
+      const sessionKey = `intake_form_${projectPath}_${selectedTier}`;
+      const saved =
+        localStorage.getItem(storageKey) ?? sessionStorage.getItem(sessionKey);
       if (saved) {
-        const parsed = JSON.parse(saved)
+        const parsed = JSON.parse(saved);
+        // Drafts exist so a tab close/restart mid-walkthrough doesn't lose
+        // progress — not to resurface an old project indefinitely. Past this
+        // window, treat it as a stale, unrelated draft and start clean.
+        const DRAFT_MAX_AGE_MS = 24 * 60 * 60 * 1000;
+        const savedAt = parsed.savedAt
+          ? new Date(parsed.savedAt).getTime()
+          : NaN;
+        if (
+          !Number.isFinite(savedAt) ||
+          Date.now() - savedAt > DRAFT_MAX_AGE_MS
+        ) {
+          localStorage.removeItem(storageKey);
+          sessionStorage.removeItem(sessionKey);
+          setIsPersistedDataLoaded(true);
+          return;
+        }
         if (parsed.formData) {
-          setFormData(prev => ({ ...prev, ...parsed.formData }))
+          setFormData((prev) => ({
+            ...prev,
+            ...parsed.formData,
+            // Keep the current entry-point role authoritative while restoring
+            // the rest of a recently saved draft.
+            clientType: initialClientType,
+            tier: selectedTier,
+          }));
         }
         if (parsed.uploadedFiles) {
-          setUploadedFiles(parsed.uploadedFiles)
+          setUploadedFiles(parsed.uploadedFiles);
         }
         if (parsed.uploadedDocs) {
-          setUploadedDocs(parsed.uploadedDocs)
+          setUploadedDocs(parsed.uploadedDocs);
         }
         if (parsed.step) {
-          setStep(parsed.step)
+          setStep(parsed.step);
         }
+        if (parsed.siteIntelligence) setSiteIntelligence(parsed.siteIntelligence);
+        if (parsed.parcelConfirmed) setParcelConfirmed(true);
       }
     } catch (e) {
-      console.error('Failed to load persisted intake form:', e)
+      console.error("Failed to load persisted intake form:", e);
     } finally {
-      setIsPersistedDataLoaded(true)
+      setIsPersistedDataLoaded(true);
     }
-  }, [projectPath])
+  }, [projectPath, selectedTier, initialClientType]);
 
   useEffect(() => {
-    if (!isPersistedDataLoaded) return
+    if (!isPersistedDataLoaded) return;
     try {
+      const snapshot = JSON.stringify({
+        formData,
+        uploadedFiles,
+        uploadedDocs,
+        siteIntelligence,
+        parcelConfirmed,
+        step,
+        savedAt: new Date().toISOString(),
+      });
+      // localStorage survives tab closes/restarts while the user walks the
+      // property. Keep sessionStorage as a compatibility fallback for older
+      // browsers and existing drafts.
+      localStorage.setItem(
+        `kealee_intake_draft_${projectPath}_${selectedTier}`,
+        snapshot,
+      );
       sessionStorage.setItem(
-        `intake_form_${projectPath}`,
-        JSON.stringify({ formData, uploadedFiles, uploadedDocs, step })
-      )
+        `intake_form_${projectPath}_${selectedTier}`,
+        snapshot,
+      );
     } catch (e) {
-      console.error('Failed to persist intake form:', e)
+      console.error("Failed to persist intake form:", e);
     }
-  }, [formData, uploadedFiles, uploadedDocs, step, projectPath, isPersistedDataLoaded])
+  }, [
+    formData,
+    uploadedFiles,
+    uploadedDocs,
+    siteIntelligence,
+    parcelConfirmed,
+    step,
+    projectPath,
+    selectedTier,
+    isPersistedDataLoaded,
+  ]);
 
-  const needsAreaPhoto = intakeRequiresAreaPhoto(projectPath)
-  const needsConstructionDocs = intakeRequiresConstructionDocuments(projectPath)
-  const benefitsFromFloorplan = intakeBenefitsFromFloorplanSketch(projectPath)
+  // Capture uploads live in Supabase, not browser memory. Hydrate them back
+  // into the intake after the mobile capture route returns so photos/videos
+  // remain visible and are submitted with the rest of the intake.
+  useEffect(() => {
+    const captureToken = searchParams.get("captureToken");
+    const captureSessionId = searchParams.get("captureSessionId");
+    if (!captureToken || !captureSessionId || !isPersistedDataLoaded) return;
+    if (captureAssetsLoadedRef.current === captureSessionId) return;
+    captureAssetsLoadedRef.current = captureSessionId;
 
-  const agentType = AGENT_MAP[projectPath] || 'design'
+    fetch(`/api/capture/session/start?token=${encodeURIComponent(captureToken)}`)
+      .then(async (response) => {
+        if (!response.ok) throw new Error("Could not restore captured media");
+        return response.json() as Promise<{
+          session?: { id?: string };
+          assets?: Array<{ id: string; storageUrl: string; storagePath: string | null; mimeType: string | null }>;
+        }>;
+      })
+      .then((payload) => {
+        if (payload.session?.id !== captureSessionId) throw new Error("Capture session mismatch");
+        const capturedFiles: IntakeUploadedFile[] = (payload.assets ?? [])
+          .filter((asset) => asset.storageUrl)
+          .map((asset) => {
+            const mimeType = asset.mimeType ?? "";
+            const type: IntakeUploadedFile["type"] = mimeType.startsWith("video/") ? "video" : mimeType.startsWith("audio/") ? "voice" : "image";
+            return {
+              name: asset.storagePath?.split("/").pop() ?? `capture-${asset.id}`,
+              url: asset.storageUrl,
+              type,
+            };
+          });
+        setUploadedFiles((previous) => {
+          const byUrl = new Map(previous.map((file) => [file.url, file]));
+          capturedFiles.forEach((file) => byUrl.set(file.url, file));
+          return Array.from(byUrl.values());
+        });
+        setFormError("");
+      })
+      .catch((error) => {
+        captureAssetsLoadedRef.current = null;
+        setFormError(error instanceof Error ? error.message : "Could not restore captured media");
+      });
+  }, [isPersistedDataLoaded, searchParams]);
+
+  // Keep the originating intake synchronized while capture happens on a
+  // second device. This closes the cross-device gap where the phone saved to
+  // Supabase but the desktop form never learned about the new assets.
+  useEffect(() => {
+    if (!activeCaptureSession) return;
+    let cancelled = false;
+    const syncAssets = async () => {
+      try {
+        const response = await fetch(`/api/capture/session/start?token=${encodeURIComponent(activeCaptureSession.token)}`);
+        if (!response.ok) return;
+        const payload = await response.json() as {
+          assets?: Array<{ id: string; storageUrl: string; storagePath: string | null; mimeType: string | null }>;
+        };
+        if (cancelled) return;
+        const capturedFiles: IntakeUploadedFile[] = (payload.assets ?? []).map((asset) => ({
+          name: asset.storagePath?.split("/").pop() ?? `capture-${asset.id}`,
+          url: asset.storageUrl,
+          type: asset.mimeType?.startsWith("video/") ? "video" : asset.mimeType?.startsWith("audio/") ? "voice" : "image",
+        }));
+        setUploadedFiles((previous) => {
+          const byUrl = new Map(previous.map((file) => [file.url, file]));
+          capturedFiles.forEach((file) => byUrl.set(file.url, file));
+          return Array.from(byUrl.values());
+        });
+      } catch (error) {
+        console.error("[intake/capture-sync] Failed to synchronize mobile assets", error);
+      }
+    };
+    void syncAssets();
+    const interval = window.setInterval(syncAssets, 4000);
+    return () => { cancelled = true; window.clearInterval(interval); };
+  }, [activeCaptureSession]);
+
+  const needsAreaPhoto = intakeRequiresAreaPhoto(projectPath);
+  const needsConstructionDocs =
+    intakeRequiresConstructionDocuments(projectPath);
+  const benefitsFromFloorplan = intakeBenefitsFromFloorplanSketch(projectPath);
+  const isEstimateIntake =
+    projectPath === "cost_estimate" || projectPath === "certified_estimate";
+  const isSitePlanIntake = [
+    "preliminary_site_plan",
+    "verified_site_feasibility",
+    "permit_site_plan",
+  ].includes(projectPath);
+  const isPermitIntake = projectPath === "permit_path_only";
+  const guidedIntake = true;
+  const hasPermitSubmissionDocument =
+    uploadedDocs.some((file) => file.type === "document") ||
+    uploadedFiles.some((file) => file.type === "document");
+  const permitPreparationRecommendation = isPermitIntake
+    ? getPermitServiceRecommendation(
+        `${formData.description} ${formData.propertyDetails}`,
+        hasPermitSubmissionDocument,
+      )
+    : null;
+
+  async function resolveProjectParcel() {
+    if (!formData.address.trim()) {
+      setFormError("Enter the complete project address first.");
+      return;
+    }
+    setResolvingParcel(true);
+    setParcelConfirmed(false);
+    setFormError("");
+    try {
+      const response = await fetch("/api/site-intelligence/resolve", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ address: formData.address }),
+      });
+      const payload = await response.json();
+      if (!response.ok) throw new Error(payload.error ?? "Parcel lookup failed");
+      setSiteIntelligence(payload as AddressParcelResolution);
+      if (payload.standardizedAddress) setFormData(previous => ({ ...previous, address: payload.standardizedAddress }));
+    } catch (error) {
+      setFormError(error instanceof Error ? error.message : "Parcel lookup failed");
+    } finally {
+      setResolvingParcel(false);
+    }
+  }
+
+  function selectParcelCandidate(candidate: NonNullable<AddressParcelResolution["parcelCandidates"]>[number]) {
+    setSiteIntelligence(previous => previous ? {
+      ...previous,
+      status: "resolved",
+      parcel: candidate,
+      warnings: [
+        "Confirm that the selected tax parcel is the project parcel.",
+        "Tax/GIS parcel geometry may be offset from surveyed boundaries.",
+      ],
+    } : previous);
+    setParcelConfirmed(false);
+  }
+
+  const agentType = AGENT_MAP[projectPath] || "design";
   const bundlePreview = upsellSourcePath
-    ? getBuildPathBundle({ sourceProjectPath: upsellSourcePath, fromIntakeId: upsellFromIntake || undefined })
-    : null
-  const priceInfo = bundlePreview && (projectPath === bundlePreview.productKey)
-    ? { label: bundlePreview.label, amount: bundlePreview.bundleCents, delivery: bundlePreview.deliveryDays }
-    : (PRICE_MAP[projectPath] || { label: 'Project Package', amount: 39500, delivery: '3–5 days' })
-  const deliverable = SERVICE_DELIVERABLES[projectPath]
-  const includes = deliverable?.includes ?? []
+    ? getBuildPathBundle({
+        sourceProjectPath: upsellSourcePath,
+        fromIntakeId: upsellFromIntake || undefined,
+      })
+    : null;
+  const tierPrice =
+    INTAKE_TIER_PRICE_CENTS[projectPath]?.[selectedTier as 1 | 2 | 3];
+  const priceInfo =
+    bundlePreview && projectPath === bundlePreview.productKey
+      ? {
+          label: bundlePreview.label,
+          amount: bundlePreview.bundleCents,
+          delivery: bundlePreview.deliveryDays,
+        }
+      : tierPrice
+        ? {
+            label: tierPrice.label,
+            amount: tierPrice.cents,
+            delivery: tierPrice.deliveryDays,
+          }
+        : PRICE_MAP[projectPath] || {
+            label: "Project Package",
+            amount: 0,
+            delivery: "Price confirmed before checkout",
+          };
+  const deliverable = SERVICE_DELIVERABLES[projectPath];
+  const includes = deliverable?.includes ?? [];
 
   useEffect(() => {
-    if (!upsellFromIntake || !upsellSourcePath || !bundlePreview) return
-    if (projectPath !== bundlePreview.productKey) return
-    fetch('/api/marketing/bundle-interest', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+    if (!upsellFromIntake || !upsellSourcePath || !bundlePreview) return;
+    if (projectPath !== bundlePreview.productKey) return;
+    fetch("/api/marketing/bundle-interest", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         intakeId: upsellFromIntake,
         bundleProjectPath: projectPath,
         sourcePath: upsellSourcePath,
       }),
-    }).catch(() => {})
-  }, [upsellFromIntake, upsellSourcePath, projectPath, bundlePreview])
+    }).catch(() => {});
+  }, [upsellFromIntake, upsellSourcePath, projectPath, bundlePreview]);
 
   // Fetch AI insight in background — form is already visible
   useEffect(() => {
-    let cancelled = false
-    const controller = new AbortController()
-    const timeout = setTimeout(() => controller.abort(), 8000)
+    let cancelled = false;
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 8000);
 
     fetch(`/api/agents/${agentType}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ projectType: projectPath, context: 'intake_funnel' }),
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        projectType: projectPath,
+        context: "intake_funnel",
+      }),
       signal: controller.signal,
     })
-      .then(r => r.ok ? r.json() : null)
-      .then(data => { if (!cancelled && data) setAgentInsight(data) })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (!cancelled && data) setAgentInsight(data);
+      })
       .catch(() => null)
       .finally(() => {
-        clearTimeout(timeout)
-        if (!cancelled) setInsightLoading(false)
-      })
+        clearTimeout(timeout);
+        if (!cancelled) setInsightLoading(false);
+      });
 
-    return () => { cancelled = true; controller.abort() }
-  }, [agentType, projectPath])
+    return () => {
+      cancelled = true;
+      controller.abort();
+    };
+  }, [agentType, projectPath]);
 
   // ── Contractor Match Blocker Guard ─────────────────────────────────────────
-  if (projectPath === 'contractor_match' && checkingProject) {
+  if (projectPath === "contractor_match" && checkingProject) {
     return (
       <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4">
         <Loader2 className="w-10 h-10 animate-spin text-orange-600 mb-4" />
-        <p className="text-sm text-slate-500 font-semibold">Verifying design and permit status...</p>
+        <p className="text-sm text-slate-500 font-semibold">
+          Verifying design and permit status...
+        </p>
       </div>
-    )
+    );
   }
 
-  if (projectPath === 'contractor_match' && showBlocker) {
-    const hasDesign = projectData?.hasDesign ?? false
+  if (projectPath === "contractor_match" && showBlocker) {
+    const hasDesign = projectData?.hasDesign ?? false;
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-slate-100 to-slate-200 flex items-center justify-center px-4 py-12">
         <div className="max-w-2xl w-full bg-white/80 backdrop-blur-md border border-slate-200 rounded-3xl p-8 md:p-10 shadow-xl relative overflow-hidden">
           {/* Subtle background glow */}
           <div className="absolute -top-20 -right-20 w-60 h-60 bg-orange-200/40 rounded-full blur-3xl pointer-events-none" />
           <div className="absolute -bottom-20 -left-20 w-60 h-60 bg-teal-200/30 rounded-full blur-3xl pointer-events-none" />
-          
+
           <div className="relative z-10 flex flex-col items-center text-center">
             {/* Lock/Workflow Icon */}
             <div className="h-16 w-16 bg-orange-100 rounded-2xl flex items-center justify-center mb-6 shadow-sm border border-orange-200">
               <Shield className="h-8 w-8 text-orange-600" />
             </div>
-            
+
             <span className="text-[10px] font-extrabold uppercase tracking-widest text-orange-600 bg-orange-50 border border-orange-200/50 px-3 py-1 rounded-full mb-3">
               Lifecycle Coordination Gate
             </span>
-            
+
             <h1 className="text-3xl font-black text-slate-900 tracking-tight mb-4 animate-fade-in">
               Bidding Requires Plans & Permits
             </h1>
-            
+
             <p className="text-sm text-slate-600 leading-relaxed mb-8 max-w-lg text-slate-600">
-              To guarantee construction quality and eliminate cost uncertainty, Kealee operates as a unified workflow that coordinates design, estimating, permit filing, and build execution. 
-              Licensed contractors cannot submit accurate, binding bids without completed architectural drawings and municipal permit filings. By coordinating these phases in order, we protect your project from zoning violations and expensive change orders.
+              To guarantee construction quality and eliminate cost uncertainty,
+              Kealee operates as a unified workflow that coordinates design,
+              estimating, permit filing, and build execution. Licensed
+              contractors cannot submit accurate, binding bids without completed
+              architectural drawings and municipal permit filings. By
+              coordinating these phases in order, we protect your project from
+              zoning violations and expensive change orders.
             </p>
-            
+
             {/* Next Steps cards */}
             <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-4 mb-8 text-left">
-              <div className={`p-5 rounded-2xl border transition-all duration-300 ${!hasDesign ? 'border-orange-500 bg-orange-50/50 ring-2 ring-orange-500/20' : 'border-slate-200 bg-white'}`}>
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Phase 1: Design & Estimate</span>
-                <h3 className="font-bold text-slate-900 mt-1">Design Concepts</h3>
+              <div
+                className={`p-5 rounded-2xl border transition-all duration-300 ${!hasDesign ? "border-orange-500 bg-orange-50/50 ring-2 ring-orange-500/20" : "border-slate-200 bg-white"}`}
+              >
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                  Phase 1: Design & Estimate
+                </span>
+                <h3 className="font-bold text-slate-900 mt-1">
+                  Design Concepts
+                </h3>
                 <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-                  Visualize your layout, capture site dimensions, and get a trade-by-trade cost estimate.
+                  Visualize your layout, capture site dimensions, and get a
+                  trade-by-trade cost estimate.
                 </p>
                 {!hasDesign && (
-                  <Link 
-                    href="/intake/whole_home_concept" 
+                  <Link
+                    href="/intake/whole_home_concept"
                     className="inline-flex items-center gap-1.5 text-xs font-bold text-orange-600 hover:text-orange-700 mt-4"
                   >
                     Start Design Concept <ArrowRight className="w-3.5 h-3.5" />
@@ -522,16 +986,23 @@ export default function IntakePage() {
                   </span>
                 )}
               </div>
-              
-              <div className={`p-5 rounded-2xl border transition-all duration-300 ${hasDesign ? 'border-orange-500 bg-orange-50/50 ring-2 ring-orange-500/20' : 'border-slate-200 bg-white'}`}>
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Phase 2: Permitting</span>
-                <h3 className="font-bold text-slate-900 mt-1">Permit Preparation</h3>
+
+              <div
+                className={`p-5 rounded-2xl border transition-all duration-300 ${hasDesign ? "border-orange-500 bg-orange-50/50 ring-2 ring-orange-500/20" : "border-slate-200 bg-white"}`}
+              >
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                  Phase 2: Permitting
+                </span>
+                <h3 className="font-bold text-slate-900 mt-1">
+                  Permit Preparation
+                </h3>
                 <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-                  Convert drawings to permit plans and file with local building agencies before bidding.
+                  Convert drawings to permit plans and file with local building
+                  agencies before bidding.
                 </p>
                 {hasDesign ? (
-                  <Link 
-                    href={`/intake/permit_path_only?projectId=${projectId}`} 
+                  <Link
+                    href={`/intake/permit_path_only?projectId=${projectId}`}
                     className="inline-flex items-center gap-1.5 text-xs font-bold text-orange-600 hover:text-orange-700 mt-4"
                   >
                     File Permit Package <ArrowRight className="w-3.5 h-3.5" />
@@ -543,7 +1014,7 @@ export default function IntakePage() {
                 )}
               </div>
             </div>
-            
+
             {/* Primary Action Button */}
             <div className="flex flex-col sm:flex-row gap-3 w-full justify-center">
               {!hasDesign ? (
@@ -568,14 +1039,21 @@ export default function IntakePage() {
                 Browse All Services
               </Link>
             </div>
-            
+
             <p className="text-xs text-slate-400 mt-6">
-              Already have stamped drawings and approved permits? Contact us at <a href="mailto:hello@kealee.com" className="text-orange-600 hover:underline font-semibold">hello@kealee.com</a> to verify and unlock matching.
+              Already have stamped drawings and approved permits? Contact us at{" "}
+              <a
+                href="mailto:hello@kealee.com"
+                className="text-orange-600 hover:underline font-semibold"
+              >
+                hello@kealee.com
+              </a>{" "}
+              to verify and unlock matching.
             </p>
           </div>
         </div>
       </div>
-    )
+    );
   }
 
   // ── Unknown project path guard ─────────────────────────────────────────────
@@ -584,147 +1062,269 @@ export default function IntakePage() {
       <div className="min-h-screen bg-white flex items-center justify-center px-4">
         <div className="rounded-xl bg-white shadow-lg p-8 max-w-md w-full text-center">
           <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-slate-900 mb-2">Service Not Found</h1>
-          <p className="text-slate-500 mb-6">We couldn't find that service. Please choose from our available packages.</p>
-          <Link href="/gallery" className="inline-flex items-center gap-2 bg-orange-600 hover:bg-orange-700 text-white font-bold py-3 px-6 rounded-xl transition">
+          <h1 className="text-2xl font-bold text-slate-900 mb-2">
+            Service Not Found
+          </h1>
+          <p className="text-slate-500 mb-6">
+            We couldn&apos;t find that service. Please choose from our available
+            packages.
+          </p>
+          <Link
+            href="/gallery"
+            className="inline-flex items-center gap-2 bg-orange-600 hover:bg-orange-700 text-white font-bold py-3 px-6 rounded-xl transition"
+          >
             Browse Services <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
       </div>
-    )
+    );
   }
 
   // ── Q8: Photo / video upload handler ──────────────────────────────────────
   async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const selected = Array.from(e.target.files ?? [])
-    if (!selected.length) return
+    const selected = Array.from(e.target.files ?? []);
+    if (!selected.length) return;
     if (uploadedFiles.length + selected.length > 10) {
-      setFormError('You can upload a maximum of 10 photos / videos.')
-      return
+      setFormError("You can upload a maximum of 10 photos / videos.");
+      return;
     }
-    // 10 MB per image limit
-    const oversized = selected.filter(f => f.size > 10 * 1024 * 1024)
+    // Images stay lightweight; mobile walkthrough video may use the API's
+    // larger 50 MB allowance.
+    const oversized = selected.filter((file) =>
+      file.size > (file.type.startsWith("video/") ? 50 : 10) * 1024 * 1024,
+    );
     if (oversized.length > 0) {
-      setFormError(`File too large: "${oversized[0].name}". Photos must be under 10 MB each.`)
-      return
+      setFormError(
+        `File too large: "${oversized[0].name}". Images must be under 10 MB and videos under 50 MB.`,
+      );
+      return;
     }
-    setFormError('')
-    setUploading(true)
+    setFormError("");
+    setUploading(true);
     try {
-      const newFiles = await uploadIntakeFilesSequentially(selected)
+      const newFiles = await uploadIntakeFilesSequentially(selected);
       if (newFiles.length === 0) {
-        setFormError('Upload failed. Check file type (JPG or PNG) and size (max 10 MB each), then try again.')
-        return
+        setFormError(
+          "Upload failed. Check file type (JPG or PNG) and size (max 10 MB each), then try again.",
+        );
+        return;
       }
       if (newFiles.length < selected.length) {
-        setFormError('Some files could not be uploaded. Others were saved.')
+        setFormError("Some files could not be uploaded. Others were saved.");
       }
-      setUploadedFiles(prev => [...prev, ...newFiles])
+      setUploadedFiles((prev) => [...prev, ...newFiles]);
+      trackEvent("upload_completion", {
+        project_path: projectPath,
+        upload_type: "photo",
+        uploaded_count: newFiles.length,
+      });
     } catch {
-      setFormError('Upload failed. Please try again.')
+      setFormError("Upload failed. Please try again.");
     } finally {
-      setUploading(false)
-      if (fileInputRef.current) fileInputRef.current.value = ''
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  }
+
+  async function toggleVoiceRecording() {
+    if (recordingVoice) {
+      voiceRecorderRef.current?.stop();
+      return;
+    }
+    if (
+      !navigator.mediaDevices?.getUserMedia ||
+      typeof MediaRecorder === "undefined"
+    ) {
+      setFormError(
+        "Voice recording is not supported in this browser. Upload a photo or sketch instead.",
+      );
+      return;
+    }
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const recorder = new MediaRecorder(stream);
+      voiceChunksRef.current = [];
+      recorder.ondataavailable = (event) => {
+        if (event.data.size > 0) voiceChunksRef.current.push(event.data);
+      };
+      recorder.onstop = async () => {
+        stream.getTracks().forEach((track) => track.stop());
+        setRecordingVoice(false);
+        const blob = new Blob(voiceChunksRef.current, {
+          type: recorder.mimeType || "audio/webm",
+        });
+        if (!blob.size) return;
+        setUploadingVoice(true);
+        try {
+          const ext = blob.type.includes("mp4") ? "m4a" : "webm";
+          const files = await uploadIntakeFilesSequentially([
+            new File([blob], `voice-description-${Date.now()}.${ext}`, {
+              type: blob.type,
+            }),
+          ]);
+          if (files[0]) setUploadedFiles((prev) => [...prev, files[0]]);
+          else
+            setFormError(
+              "Voice upload failed. Please try again or upload a photo/sketch.",
+            );
+        } finally {
+          setUploadingVoice(false);
+        }
+      };
+      recorder.start();
+      voiceRecorderRef.current = recorder;
+      setRecordingVoice(true);
+      setFormError("");
+    } catch {
+      setFormError(
+        "Microphone access was unavailable. Allow microphone access or upload a photo/sketch instead.",
+      );
     }
   }
 
   // ── Q9: Construction document upload handler ───────────────────────────────
   async function handleDocChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const selected = Array.from(e.target.files ?? [])
-    if (!selected.length) return
+    const selected = Array.from(e.target.files ?? []);
+    if (!selected.length) return;
     if (uploadedDocs.length + selected.length > 5) {
-      setFormError('You can upload a maximum of 5 construction documents.')
-      return
+      setFormError("You can upload a maximum of 5 construction documents.");
+      return;
     }
     // 25 MB per document limit
-    const oversized = selected.filter(f => f.size > 25 * 1024 * 1024)
+    const oversized = selected.filter((f) => f.size > 25 * 1024 * 1024);
     if (oversized.length > 0) {
-      setFormError(`File too large: "${oversized[0].name}". Documents must be under 25 MB each.`)
-      return
+      setFormError(
+        `File too large: "${oversized[0].name}". Documents must be under 25 MB each.`,
+      );
+      return;
     }
-    setFormError('')
-    setUploadingDocs(true)
+    setFormError("");
+    setUploadingDocs(true);
     try {
-      const newFiles = await uploadIntakeFilesSequentially(selected)
+      const newFiles = await uploadIntakeFilesSequentially(selected);
       if (newFiles.length === 0) {
-        setFormError('Upload failed. Check file type (PDF, DWG, or DOCX) and size (max 25 MB each), then try again.')
-        return
+        setFormError(
+          `Upload failed. Check the file type and size (max 25 MB each), then try again. ${
+            isSitePlanIntake
+              ? "Supported site formats include PDF, DWG, DXF, GeoJSON, KML/KMZ, LandXML, SHP, and ZIP."
+              : "Supported document formats include PDF, DWG, and DOCX."
+          }`,
+        );
+        return;
       }
       if (newFiles.length < selected.length) {
-        setFormError('Some documents could not be uploaded. Others were saved.')
+        setFormError(
+          "Some documents could not be uploaded. Others were saved.",
+        );
       }
-      setUploadedDocs(prev => [...prev, ...newFiles])
+      setUploadedDocs((prev) => [...prev, ...newFiles]);
+      trackEvent("upload_completion", {
+        project_path: projectPath,
+        upload_type: "document",
+        uploaded_count: newFiles.length,
+      });
     } catch {
-      setFormError('Document upload failed. Please try again.')
+      setFormError("Document upload failed. Please try again.");
     } finally {
-      setUploadingDocs(false)
-      if (docInputRef.current) docInputRef.current.value = ''
+      setUploadingDocs(false);
+      if (docInputRef.current) docInputRef.current.value = "";
     }
   }
 
   // Fire-and-forget soft capture — never blocks user flow
   function softCapture() {
-    if (!formData.email) return
-    fetch('/api/intake/soft-capture', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+    if (!formData.email) return;
+    fetch("/api/intake/soft-capture", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        email:   formData.email,
-        name:    `${formData.firstName} ${formData.lastName}`.trim(),
+        email: formData.email,
+        name: `${formData.firstName} ${formData.lastName}`.trim(),
         service: projectPath,
-        source:  'intake',
+        source: "intake",
       }),
-    }).catch(() => {})
+    }).catch(() => {});
   }
 
   // ── Step: details ──────────────────────────────────────────────────────────
   function validateUploadRequirements(): boolean {
-    if (needsAreaPhoto) {
-      const hasStillImage = uploadedFiles.some(f => f.type === 'image')
-      if (!hasStillImage) {
-        setFormError('Please upload at least one photo of the project area (JPG or PNG).')
-        return false
-      }
+    const hasStillImage = uploadedFiles.some((f) => f.type === "image");
+    const hasVideo = uploadedFiles.some((f) => f.type === "video");
+    const hasSketchOrDocument =
+      uploadedDocs.some((f) => f.type === "document") ||
+      uploadedFiles.some((f) => f.type === "document");
+    const hasVoiceDescription = uploadedFiles.some((f) => f.type === "voice");
+    if (!hasStillImage && !hasVideo && !hasSketchOrDocument && !hasVoiceDescription && !isSitePlanIntake && !isPermitIntake) {
+      setFormError(
+        "Add at least one project photo, sketch/plan, or voice description before continuing.",
+      );
+      return false;
     }
     if (needsConstructionDocs) {
       // Check Q9 doc section first; fall back to checking Q8 for backwards compat
       const hasDoc =
-        uploadedDocs.some(f => f.type === 'document') ||
-        uploadedFiles.some(f => f.type === 'document')
-      if (!hasDoc) {
-        setFormError('Please upload at least one construction document (PDF, DWG, or DOCX) in the Documents section.')
-        return false
+        uploadedDocs.some((f) => f.type === "document") ||
+        uploadedFiles.some((f) => f.type === "document");
+      if (!hasDoc && !isPermitIntake) {
+        setFormError(
+          isSitePlanIntake
+            ? "Please upload at least one boundary survey, plat, parcel map, or existing site-plan source document."
+            : "Please upload at least one construction document (PDF, DWG, or DOCX) in the Documents section.",
+        );
+        return false;
       }
     }
-    return true
+    return true;
   }
 
   function handleDetailsSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    setFormError('')
-    if (!formData.firstName.trim()) { setFormError('First name is required.'); return }
-    if (!formData.email.trim()) { setFormError('Email is required.'); return }
-    if (!formData.address.trim()) { setFormError('Project address is required.'); return }
-    if (!validateUploadRequirements()) return
-    softCapture() // capture lead before payment step
-    setStep('review')
-    window.scrollTo({ top: 0, behavior: 'smooth' })
+    e.preventDefault();
+    setFormError("");
+    if (!formData.firstName.trim()) {
+      setFormError("First name is required.");
+      return;
+    }
+    if (!formData.email.trim()) {
+      setFormError("Email is required.");
+      return;
+    }
+    if (!formData.address.trim()) {
+      setFormError("Project address is required.");
+      return;
+    }
+    if (isSitePlanIntake && siteIntelligence?.status === "resolved" && !parcelConfirmed) {
+      setFormError("Confirm that the matched parcel is the project parcel before continuing.");
+      return;
+    }
+    if (isEstimateIntake && !formData.estimatePurpose) {
+      setFormError("Select what the estimate will be used for.");
+      return;
+    }
+    if (!validateUploadRequirements()) return;
+    softCapture(); // capture lead before payment step
+    trackEvent("intake_completion", {
+      project_path: projectPath,
+      photo_count: uploadedFiles.length,
+      document_count: uploadedDocs.length,
+    });
+    setStep("review");
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   // ── Step: payment ──────────────────────────────────────────────────────────
   async function handlePayment() {
-    setSubmitting(true)
-    setFormError('')
+    setSubmitting(true);
+    setFormError("");
     if (!validateUploadRequirements()) {
-      setSubmitting(false)
-      return
+      setSubmitting(false);
+      return;
     }
     try {
       // 1. Create intake record
-      const attribution = utmForApiBody()
-      const intakeRes = await fetch('/api/intake', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const attribution = utmForApiBody();
+      const intakeRes = await fetch("/api/intake", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           projectPath,
           clientName: `${formData.firstName} ${formData.lastName}`.trim(),
@@ -733,72 +1333,208 @@ export default function IntakePage() {
           projectAddress: formData.address,
           attribution,
           formData: {
+            clientType: formData.clientType,
+            companyName: formData.companyName,
+            proposalClientName: formData.proposalClientName,
+            industryType: formData.industryType,
             description: formData.description,
+            propertyDetails: formData.propertyDetails,
+            stylePreferences: formData.stylePreferences,
+            priorities: formData.priorities,
+            mustStay: formData.mustStay,
+            problemsToSolve: formData.problemsToSolve,
+            budgetComfort: formData.budgetComfort,
             squareFootage: formData.squareFootage,
             timeline: formData.timeline,
-            uploadedFiles: [...uploadedFiles, ...uploadedDocs].map(f => f.url),
+            estimatePurpose: formData.estimatePurpose,
+            projectPhase: formData.projectPhase,
+            unitCount: formData.unitCount,
+            bidDueDate: formData.bidDueDate,
+            procurementApproach: formData.procurementApproach,
+            pricingInstructions: formData.pricingInstructions,
+            riskNotes: formData.riskNotes,
+            scopeQuantities: formData.scopeQuantities,
+            equipmentPlan: formData.equipmentPlan,
+            serviceFrequency: formData.serviceFrequency,
+            costAssumptions: formData.costAssumptions,
+            siteIntelligence,
+            parcelConfirmed,
+            tier: selectedTier,
+            uploadedFiles: [...uploadedFiles, ...uploadedDocs].map(
+              (f) => f.url,
+            ),
+            uploadedFileMeta: [...uploadedFiles, ...uploadedDocs].map((f) => ({
+              name: f.name,
+              url: f.url,
+              type: f.type,
+            })),
+            permitReadiness: isPermitIntake
+              ? {
+                  hasSubmissionDocument: hasPermitSubmissionDocument,
+                  recommendationKey: permitPreparationRecommendation?.key ?? null,
+                  recommendationHref: permitPreparationRecommendation?.href ?? null,
+                  requiresPlanPreparation: !hasPermitSubmissionDocument,
+                }
+              : undefined,
             ...attribution,
             ...(sceneId ? { sceneId } : {}),
-            ...(upsellFromIntake ? { upsellSourceIntakeId: upsellFromIntake, upsellSourcePath: upsellSourcePath } : {}),
+            ...(upsellFromIntake
+              ? {
+                  upsellSourceIntakeId: upsellFromIntake,
+                  upsellSourcePath: upsellSourcePath,
+                }
+              : {}),
           },
         }),
-      })
+      });
 
       if (!intakeRes.ok) {
-        const body = await intakeRes.json().catch(() => ({}))
-        throw new Error(body.error || 'Failed to save your intake. Please try again.')
+        const body = await intakeRes.json().catch(() => ({}));
+        throw new Error(
+          body.error || "Failed to save your intake. Please try again.",
+        );
       }
-      const { intakeId } = await intakeRes.json()
+      const { intakeId } = await intakeRes.json();
 
-      trackEvent('lead_submitted', {
+      trackEvent("lead_submitted", {
         project_path: projectPath,
         intake_id: intakeId,
         ...attribution,
-      })
+      });
+
+      const appUrl =
+        typeof window !== "undefined" ? window.location.origin : "";
+
+      // Free promo codes are redeemed against the saved intake before Stripe
+      // checkout. This keeps KEALEE-ALLIN-2026 on the server-side redemption
+      // path instead of sending it to Stripe as an unsupported coupon.
+      const normalizedPromoCode = promoCode.trim();
+      if (normalizedPromoCode) {
+        const redeemRes = await fetch("/api/intake/redeem", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            intakeId,
+            projectPath,
+            promoCode: normalizedPromoCode,
+          }),
+        });
+
+        if (redeemRes.ok) {
+          trackEvent("promo_redeemed", {
+            project_path: projectPath,
+            intake_id: intakeId,
+          });
+          window.location.assign(
+            `${appUrl}/intake/${projectPath}/success?promo=1&intakeId=${intakeId}`,
+          );
+          return;
+        }
+      }
 
       // 2. Create Stripe checkout session
-      const appUrl = typeof window !== 'undefined' ? window.location.origin : ''
-      const checkoutRes = await fetch('/api/intake/checkout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const checkoutRes = await fetch("/api/intake/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           intakeId,
           projectPath,
           amount: priceInfo.amount,
           sourcePath: upsellSourcePath || undefined,
           upsellSourceIntakeId: upsellFromIntake || undefined,
-          successUrl: `${appUrl}/intake/${projectPath}/success?session_id={CHECKOUT_SESSION_ID}&intakeId=${intakeId}`,
+          successUrl: `${appUrl}/intake/${projectPath}/success?session_id={CHECKOUT_SESSION_ID}&intakeId=${intakeId}&tier=${selectedTier}`,
           cancelUrl: `${appUrl}/intake/${projectPath}?canceled=true`,
+          ...(promoCode.trim() ? { promoCode: promoCode.trim() } : {}),
         }),
-      })
+      });
 
       if (!checkoutRes.ok) {
-        const body = await checkoutRes.json().catch(() => ({}))
-        throw new Error(body.error || 'Could not create checkout session. Please try again.')
+        const body = await checkoutRes.json().catch(() => ({}));
+        throw new Error(
+          body.error || "Could not create checkout session. Please try again.",
+        );
       }
-      const { url } = await checkoutRes.json()
+      const { url } = await checkoutRes.json();
 
-      trackEvent('checkout_started', {
+      trackEvent("checkout_creation", {
+        project_path: projectPath,
+        intake_id: intakeId,
+      });
+
+      trackEvent("checkout_started", {
         project_path: projectPath,
         intake_id: intakeId,
         value: priceInfo.amount / 100,
-      })
+      });
 
       if (url) {
-        window.location.href = url
+        window.location.href = url;
       } else {
-        throw new Error('No checkout URL returned from payment processor.')
+        throw new Error("No checkout URL returned from payment processor.");
       }
     } catch {
       // Non-recoverable — redirect to soft landing so no one hits a dead end
       const params = new URLSearchParams({
-        source:  projectPath,
+        source: projectPath,
         service: projectPath,
-        email:   formData.email,
-        name:    `${formData.firstName} ${formData.lastName}`.trim(),
-        status:  'payment_failed',
-      })
-      router.push(`/got-you?${params.toString()}`)
+        email: formData.email,
+        name: `${formData.firstName} ${formData.lastName}`.trim(),
+        status: "payment_failed",
+      });
+      router.push(`/got-you?${params.toString()}`);
+    }
+  }
+
+  async function handleSendToPhone() {
+    if (!formData.phone.trim()) {
+      setFormError("Please enter your phone number first");
+      return;
+    }
+
+    setSendingToPhone(true);
+    try {
+      const returnPath = `${window.location.pathname}${window.location.search}`;
+      const captureResponse = await fetch("/api/capture/session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          intake_id: `pre-intake-${crypto.randomUUID()}`,
+          project_path: projectPath,
+          address: formData.address || "Not yet provided",
+          client_name: `${formData.firstName} ${formData.lastName}`.trim() || undefined,
+          capture_mode: "self_capture",
+        }),
+      });
+      const capture = await captureResponse.json();
+      if (!captureResponse.ok || !capture.captureToken || !capture.captureSessionId) {
+        throw new Error(capture.error ?? "Could not create mobile capture session");
+      }
+      setActiveCaptureSession({ id: capture.captureSessionId, token: capture.captureToken });
+      const intakeUrl = `${window.location.origin}/capture/${capture.captureToken}?returnTo=${encodeURIComponent(returnPath)}`;
+
+      const response = await fetch("/api/intake/send-to-phone", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          phone: formData.phone,
+          projectPath,
+          intakeUrl,
+        }),
+      });
+
+      if (response.ok) {
+        // Copy URL to clipboard for fallback
+        navigator.clipboard.writeText(intakeUrl).catch(() => {});
+        setPhoneLinkCopied(true);
+        setTimeout(() => setPhoneLinkCopied(false), 3000);
+      } else {
+        setFormError("Failed to send link. Please copy the URL manually.");
+      }
+    } catch (error) {
+      console.error("[intake/send-to-phone] Mobile capture handoff failed", error);
+      setFormError(error instanceof Error ? error.message : "Could not send to phone. Please try again.");
+    } finally {
+      setSendingToPhone(false);
     }
   }
 
@@ -808,36 +1544,88 @@ export default function IntakePage() {
 
       <div className="mx-auto max-w-5xl px-4 py-10 lg:py-14">
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 items-start">
-
           {/* ── Left: Form ──────────────────────────────────────────────────── */}
           <div className="lg:col-span-3">
-
             {/* ── DETAILS FORM ─────────────────────────────────────────────── */}
-            {step === 'details' && (
-              <form onSubmit={handleDetailsSubmit} className="space-y-5" noValidate>
+            {step === "details" && (
+              <form
+                onSubmit={handleDetailsSubmit}
+                className="space-y-5"
+                noValidate
+              >
                 {bundlePreview && projectPath === bundlePreview.productKey && (
-                  <BundleUpsellBanner bundle={bundlePreview} sourcePath={upsellSourcePath} />
+                  <BundleUpsellBanner
+                    bundle={bundlePreview}
+                    sourcePath={upsellSourcePath}
+                  />
                 )}
                 {/* Package context — visible on mobile (sidebar is hidden) */}
                 <div className="lg:hidden rounded-xl bg-orange-50 border border-orange-200 p-4 flex items-center justify-between">
                   <div>
-                    <p className="text-xs font-bold text-orange-700 uppercase tracking-widest mb-0.5">Ordering</p>
-                    <p className="text-sm font-bold text-slate-900">{priceInfo.label}</p>
-                    <p className="text-xs text-slate-500">Delivered in {priceInfo.delivery}</p>
+                    <p className="text-xs font-bold text-orange-700 uppercase tracking-widest mb-0.5">
+                      Ordering
+                    </p>
+                    <p className="text-sm font-bold text-slate-900">
+                      {priceInfo.label}
+                    </p>
+                    <p className="text-xs text-slate-500">
+                      Delivered in {priceInfo.delivery}
+                    </p>
                   </div>
                   <div className="text-right">
-                    <p className="text-xl font-black text-slate-900">{formatPrice(priceInfo.amount)}</p>
-                    <Link href="/gallery" className="text-xs text-orange-600 font-semibold">change</Link>
+                    <p className="text-xl font-black text-slate-900">
+                      {formatPrice(priceInfo.amount)}
+                    </p>
+                    <Link
+                      href="/gallery"
+                      className="text-xs text-orange-600 font-semibold"
+                    >
+                      change
+                    </Link>
                   </div>
                 </div>
 
                 <div>
-                  <h1 className="text-2xl font-extrabold text-slate-900">Tell us about your project</h1>
+                  <h1 className="text-2xl font-extrabold text-slate-900">
+                    {isEstimateIntake && formData.clientType === "contractor"
+                      ? "Price the job with confidence"
+                      : isEstimateIntake && formData.clientType === "developer"
+                        ? "Build an estimate for your development"
+                        : isEstimateIntake &&
+                            formData.clientType === "service-provider"
+                          ? "Build a client-ready estimate and proposal"
+                          : isPermitIntake
+                            ? "Organize your permit path"
+                            : isSitePlanIntake
+                              ? "Tell us what you want to test on the property"
+                              : "Tell us what you’re hoping to change"}
+                  </h1>
                   <p className="text-slate-500 mt-1 text-sm">
-                    Secure checkout via Stripe after submission.
+                    {isEstimateIntake && formData.clientType !== "owner"
+                      ? "Share the commercial and technical inputs your estimator needs. Your progress saves on this device."
+                      : isPermitIntake
+                        ? "Confirm the project, jurisdiction, current plan status, and supporting evidence. Your progress saves on this device."
+                        : isSitePlanIntake
+                          ? "Confirm the parcel, proposed footprint, available source documents, and site questions. Your progress saves on this device."
+                          : "Common answers are already selected. Adjust only what differs, add files, and review before payment."}
                   </p>
                 </div>
-
+                <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+                  <div className="relative h-40 sm:h-48">
+                    <Image src={intakeGuideImage(projectPath)} alt={`${priceInfo.label} project example`} fill priority sizes="(max-width: 1024px) 100vw, 600px" className="object-cover" />
+                    <div className="absolute inset-0 bg-gradient-to-r from-slate-950/85 via-slate-900/60 to-transparent" />
+                    <div className="absolute inset-y-0 left-0 flex max-w-sm flex-col justify-center p-5 text-white sm:p-7">
+                      <p className="text-xs font-bold uppercase tracking-[0.2em] text-orange-300">Two simple screens</p>
+                      <h2 className="mt-2 text-xl font-black">Choose, upload, review.</h2>
+                      <p className="mt-2 text-xs leading-relaxed text-slate-200 sm:text-sm">Common answers are preselected. Add project files if required, then review before checkout.</p>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-3 divide-x divide-slate-200 text-center text-xs font-semibold text-slate-700">
+                    <div className="p-3"><span className="block text-orange-600">1</span>Confirm choices</div>
+                    <div className="p-3"><span className="block text-orange-600">2</span>Add files</div>
+                    <div className="p-3"><span className="block text-orange-600">3</span>Review & pay</div>
+                  </div>
+                </div>
                 {formError && (
                   <div className="flex items-start gap-3 rounded-xl bg-red-50 border border-red-200 p-4 text-red-700">
                     <AlertCircle className="h-5 w-5 shrink-0 mt-0.5" />
@@ -854,18 +1642,27 @@ export default function IntakePage() {
                     <input
                       type="text"
                       value={formData.firstName}
-                      onChange={e => setFormData(d => ({ ...d, firstName: e.target.value }))}
+                      onChange={(e) =>
+                        setFormData((d) => ({
+                          ...d,
+                          firstName: e.target.value,
+                        }))
+                      }
                       className="w-full rounded-lg border border-slate-300 px-4 py-3 text-sm focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20"
                       placeholder="Jane"
                       autoComplete="given-name"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold text-slate-800 mb-1.5">Last Name</label>
+                    <label className="block text-sm font-semibold text-slate-800 mb-1.5">
+                      Last Name
+                    </label>
                     <input
                       type="text"
                       value={formData.lastName}
-                      onChange={e => setFormData(d => ({ ...d, lastName: e.target.value }))}
+                      onChange={(e) =>
+                        setFormData((d) => ({ ...d, lastName: e.target.value }))
+                      }
                       className="w-full rounded-lg border border-slate-300 px-4 py-3 text-sm focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20"
                       placeholder="Smith"
                       autoComplete="family-name"
@@ -881,7 +1678,9 @@ export default function IntakePage() {
                   <input
                     type="email"
                     value={formData.email}
-                    onChange={e => setFormData(d => ({ ...d, email: e.target.value }))}
+                    onChange={(e) =>
+                      setFormData((d) => ({ ...d, email: e.target.value }))
+                    }
                     className="w-full rounded-lg border border-slate-300 px-4 py-3 text-sm focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20"
                     placeholder="jane@example.com"
                     autoComplete="email"
@@ -890,15 +1689,48 @@ export default function IntakePage() {
 
                 {/* Phone */}
                 <div>
-                  <label className="block text-sm font-semibold text-slate-800 mb-1.5">Phone (optional)</label>
-                  <input
-                    type="tel"
-                    value={formData.phone}
-                    onChange={e => setFormData(d => ({ ...d, phone: e.target.value }))}
-                    className="w-full rounded-lg border border-slate-300 px-4 py-3 text-sm focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20"
-                    placeholder="(202) 555-0100"
-                    autoComplete="tel"
-                  />
+                  <label className="block text-sm font-semibold text-slate-800 mb-1.5">
+                    Phone (optional)
+                  </label>
+                  <div className="flex gap-3">
+                    <input
+                      type="tel"
+                      value={formData.phone}
+                      onChange={(e) =>
+                        setFormData((d) => ({ ...d, phone: e.target.value }))
+                      }
+                      className="flex-1 rounded-lg border border-slate-300 px-4 py-3 text-sm focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20"
+                      placeholder="(202) 555-0100"
+                      autoComplete="tel"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleSendToPhone}
+                      disabled={sendingToPhone || !formData.phone.trim()}
+                      className="px-4 py-3 rounded-lg bg-slate-200 hover:bg-slate-300 text-slate-700 font-medium text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 whitespace-nowrap"
+                      title="Send intake link to your phone"
+                    >
+                      {sendingToPhone ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          Sending...
+                        </>
+                      ) : phoneLinkCopied ? (
+                        <>
+                          <Check className="h-4 w-4" />
+                          Sent
+                        </>
+                      ) : (
+                        <>
+                          <Smartphone className="h-4 w-4" />
+                          <span className="hidden sm:inline">
+                            Send to Phone
+                          </span>
+                          <Copy className="h-4 w-4 sm:hidden" />
+                        </>
+                      )}
+                    </button>
+                  </div>
                 </div>
 
                 {/* Address */}
@@ -909,56 +1741,733 @@ export default function IntakePage() {
                   <input
                     type="text"
                     value={formData.address}
-                    onChange={e => setFormData(d => ({ ...d, address: e.target.value }))}
+                    onChange={(e) => {
+                      setFormData((d) => ({ ...d, address: e.target.value }));
+                      setSiteIntelligence(null);
+                      setParcelConfirmed(false);
+                    }}
                     className="w-full rounded-lg border border-slate-300 px-4 py-3 text-sm focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20"
                     placeholder="123 Main St, Bethesda, MD 20814"
                     autoComplete="street-address"
+                    onBlur={() => { if (isSitePlanIntake && !siteIntelligence && formData.address.trim()) void resolveProjectParcel(); }}
                   />
+                  {isSitePlanIntake && (
+                    <div className="mt-3 rounded-xl border border-emerald-200 bg-emerald-50/70 p-4">
+                      <div className="flex flex-wrap items-center justify-between gap-3">
+                        <div>
+                          <p className="text-sm font-bold text-emerald-950">Automatic property lookup</p>
+                          <p className="mt-1 text-xs leading-relaxed text-emerald-800">Kealee checks the address against registered jurisdiction parcel services and creates scaled preliminary geometry. Surveys and plats remain optional unless the selected deliverable requires surveyed geometry.</p>
+                        </div>
+                        <button type="button" onClick={resolveProjectParcel} disabled={resolvingParcel || !formData.address.trim()} className="inline-flex items-center gap-2 rounded-lg bg-emerald-700 px-4 py-2.5 text-sm font-bold text-white disabled:opacity-50">
+                          {resolvingParcel && <Loader2 className="h-4 w-4 animate-spin" />}
+                          {resolvingParcel ? "Locating parcel…" : siteIntelligence ? "Refresh parcel" : "Find my parcel"}
+                        </button>
+                      </div>
+                      {siteIntelligence && (
+                        <div className="mt-4 border-t border-emerald-200 pt-4">
+                          <div className="grid gap-3 text-xs sm:grid-cols-3">
+                            <div><span className="block text-emerald-700">Status</span><strong className="text-emerald-950">{siteIntelligence.status.replace("_", " ")}</strong></div>
+                            <div><span className="block text-emerald-700">Jurisdiction</span><strong className="text-emerald-950">{siteIntelligence.jurisdiction.county ?? "Pending"}{siteIntelligence.jurisdiction.state ? `, ${siteIntelligence.jurisdiction.state}` : ""}</strong></div>
+                            <div><span className="block text-emerald-700">Confidence</span><strong className="text-emerald-950">{Math.round(siteIntelligence.confidence * 100)}%</strong></div>
+                          </div>
+                          {siteIntelligence.parcel && (
+                            <div className="mt-4 grid gap-4 sm:grid-cols-[160px_1fr] sm:items-center">
+                              <ParcelGeometryPreview geometry={siteIntelligence.parcel.scaledGeometry} />
+                              <div className="space-y-2 text-xs text-emerald-900">
+                                <p><strong>Parcel:</strong> {siteIntelligence.parcel.parcelId ?? "Identifier unavailable"}</p>
+                                <p><strong>Approximate GIS dimensions:</strong> {Math.round(siteIntelligence.parcel.scaledGeometry.widthFeet)} × {Math.round(siteIntelligence.parcel.scaledGeometry.depthFeet)} ft</p>
+                                <p><strong>GIS area:</strong> {Math.round(siteIntelligence.parcel.scaledGeometry.areaSquareFeet).toLocaleString()} sq ft</p>
+                                <label className="flex cursor-pointer items-start gap-2 rounded-lg border border-emerald-300 bg-white p-3 font-semibold">
+                                  <input type="checkbox" checked={parcelConfirmed} onChange={event => setParcelConfirmed(event.target.checked)} className="mt-0.5" />
+                                  <span>I confirm this is the property parcel for my project.</span>
+                                </label>
+                              </div>
+                            </div>
+                          )}
+                          {!siteIntelligence.parcel && siteIntelligence.parcelCandidates && siteIntelligence.parcelCandidates.length > 1 && (
+                            <div className="mt-4">
+                              <p className="text-xs font-bold text-emerald-950">Select the project parcel</p>
+                              <div className="mt-2 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                                {siteIntelligence.parcelCandidates.map((candidate, index) => (
+                                  <button
+                                    type="button"
+                                    key={`${candidate.parcelId ?? "parcel"}-${index}`}
+                                    onClick={() => selectParcelCandidate(candidate)}
+                                    className="rounded-xl border border-emerald-200 bg-white p-3 text-left transition hover:border-emerald-500 hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                                  >
+                                    <ParcelGeometryPreview geometry={candidate.scaledGeometry} />
+                                    <span className="mt-2 block text-xs font-bold text-emerald-950">Parcel {candidate.parcelId ?? index + 1}</span>
+                                    <span className="mt-1 block text-[11px] text-emerald-700">{Math.round(candidate.scaledGeometry.areaSquareFeet).toLocaleString()} sq ft</span>
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                          {siteIntelligence.source && <p className="mt-3 text-[11px] text-emerald-700">Source: {siteIntelligence.source.authority} · retrieved {new Date(siteIntelligence.source.retrievedAt).toLocaleDateString()}</p>}
+                          {siteIntelligence.warnings.map(warning => <p key={warning} className="mt-2 text-xs text-amber-800">• {warning}</p>)}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {isEstimateIntake && formData.clientType !== "owner" && !guidedIntake && (
+                  <div className="space-y-5 rounded-xl border border-slate-200 bg-slate-50/70 p-5">
+                    <div>
+                      <h2 className="text-base font-bold text-slate-900">
+                        {formData.clientType === "contractor"
+                          ? "Bid and pricing brief"
+                          : formData.clientType === "developer"
+                            ? "Development underwriting brief"
+                            : "Client estimate and proposal brief"}
+                      </h2>
+                      <p className="mt-1 text-xs text-slate-500">
+                        These preset questions help us structure divisions,
+                        allowances, alternates, and estimate assumptions
+                        correctly.
+                      </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-semibold text-slate-800 mb-1.5">
+                          Estimate use
+                        </label>
+                        <select
+                          value={formData.estimatePurpose}
+                          onChange={(e) =>
+                            setFormData((d) => ({
+                              ...d,
+                              estimatePurpose: e.target.value,
+                            }))
+                          }
+                          className="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20"
+                        >
+                          <option value="">Select the primary use</option>
+                          {(formData.clientType === "contractor"
+                            ? [
+                                "Hard bid / tender",
+                                "Conceptual pricing",
+                                "Subcontractor leveling",
+                                "Change order pricing",
+                                "Value engineering",
+                              ]
+                            : formData.clientType === "developer"
+                              ? [
+                                  "Site acquisition",
+                                  "Concept underwriting",
+                                  "Capital approval",
+                                  "Lender package",
+                                  "GMP / budget validation",
+                                ]
+                              : [
+                                  "Client estimate / proposal",
+                                  "Hard bid / tender",
+                                  "Recurring service agreement",
+                                  "Change order",
+                                  "Maintenance or service call",
+                                ]
+                          ).map((value) => (
+                            <option key={value} value={value}>
+                              {value}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-slate-800 mb-1.5">
+                          {formData.clientType === "service-provider"
+                            ? "Client project stage"
+                            : "Current project phase"}
+                        </label>
+                        <select
+                          value={formData.projectPhase}
+                          onChange={(e) =>
+                            setFormData((d) => ({
+                              ...d,
+                              projectPhase: e.target.value,
+                            }))
+                          }
+                          className="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20"
+                        >
+                          <option value="">Select a phase</option>
+                          {[
+                            "Due diligence",
+                            "Concept / programming",
+                            "Schematic design",
+                            "Design development",
+                            "Construction documents",
+                            "Bidding / procurement",
+                            "In construction",
+                          ].map((value) => (
+                            <option key={value} value={value}>
+                              {value}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+
+                    {formData.clientType === "developer" && (
+                      <div>
+                        <label className="block text-sm font-semibold text-slate-800 mb-1.5">
+                          Program size / unit count
+                        </label>
+                        <input
+                          type="text"
+                          value={formData.unitCount}
+                          onChange={(e) =>
+                            setFormData((d) => ({
+                              ...d,
+                              unitCount: e.target.value,
+                            }))
+                          }
+                          className="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20"
+                          placeholder="e.g. 24 apartments + 3,500 SF retail, 18 parking spaces"
+                        />
+                      </div>
+                    )}
+
+                    {formData.clientType === "contractor" && (
+                      <div>
+                        <label className="block text-sm font-semibold text-slate-800 mb-1.5">
+                          Bid due date
+                        </label>
+                        <input
+                          type="date"
+                          value={formData.bidDueDate}
+                          onChange={(e) =>
+                            setFormData((d) => ({
+                              ...d,
+                              bidDueDate: e.target.value,
+                            }))
+                          }
+                          className="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20"
+                        />
+                      </div>
+                    )}
+
+                    {formData.clientType === "service-provider" && (
+                      <>
+                        <div>
+                          <label className="block text-sm font-semibold text-slate-800 mb-1.5">
+                            Industry / trade
+                          </label>
+                          <select
+                            value={formData.industryType}
+                            onChange={(e) =>
+                              setFormData((d) => ({
+                                ...d,
+                                industryType: e.target.value,
+                              }))
+                            }
+                            className="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20"
+                          >
+                            <option value="">Select the primary service</option>
+                            {[
+                              "General contracting",
+                              "Demolition",
+                              "Waste management / hauling",
+                              "Excavation / sitework",
+                              "Concrete / masonry",
+                              "Carpentry / framing",
+                              "Roofing / exterior",
+                              "Electrical",
+                              "Plumbing",
+                              "HVAC / mechanical",
+                              "Fire protection",
+                              "Drywall / painting / finishes",
+                              "Landscaping",
+                              "Equipment rental",
+                              "Material supplier",
+                              "Engineering / consulting",
+                              "Inspection / testing",
+                              "Other specialty service",
+                            ].map((value) => (
+                              <option key={value} value={value}>
+                                {value}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-semibold text-slate-800 mb-1.5">
+                            Proposal client / recipient
+                          </label>
+                          <input
+                            type="text"
+                            value={formData.proposalClientName}
+                            onChange={(e) =>
+                              setFormData((d) => ({
+                                ...d,
+                                proposalClientName: e.target.value,
+                              }))
+                            }
+                            className="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20"
+                            placeholder="Client company and decision-maker, if known"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-semibold text-slate-800 mb-1.5">
+                            Scope items and estimated quantities
+                          </label>
+                          <textarea
+                            value={formData.scopeQuantities}
+                            onChange={(e) =>
+                              setFormData((d) => ({
+                                ...d,
+                                scopeQuantities: e.target.value,
+                              }))
+                            }
+                            rows={3}
+                            className="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20 resize-none"
+                            placeholder="List labor, materials, service items, and quantities using the units your company prices: hours, square feet, tons, cubic yards, fixtures, pulls…"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-semibold text-slate-800 mb-1.5">
+                            Crew, equipment, and material plan
+                          </label>
+                          <textarea
+                            value={formData.equipmentPlan}
+                            onChange={(e) =>
+                              setFormData((d) => ({
+                                ...d,
+                                equipmentPlan: e.target.value,
+                              }))
+                            }
+                            rows={3}
+                            className="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20 resize-none"
+                            placeholder="Crew composition, equipment, containers, rentals, major materials, subcontractors, mobilizations, or client-furnished items…"
+                          />
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-semibold text-slate-800 mb-1.5">
+                              Schedule / service frequency
+                            </label>
+                            <input
+                              type="text"
+                              value={formData.serviceFrequency}
+                              onChange={(e) =>
+                                setFormData((d) => ({
+                                  ...d,
+                                  serviceFrequency: e.target.value,
+                                }))
+                              }
+                              className="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20"
+                              placeholder="e.g. 3 pulls/week for 6 months"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-semibold text-slate-800 mb-1.5">
+                              Cost and fee assumptions
+                            </label>
+                            <input
+                              type="text"
+                              value={formData.costAssumptions}
+                              onChange={(e) =>
+                                setFormData((d) => ({
+                                  ...d,
+                                  costAssumptions: e.target.value,
+                                }))
+                              }
+                              className="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20"
+                              placeholder="Labor rates, material basis, travel, delivery, disposal, rental, minimum charge, taxes…"
+                            />
+                          </div>
+                        </div>
+                      </>
+                    )}
+
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-800 mb-1.5">
+                        {formData.clientType === "service-provider"
+                          ? "Service and commercial approach"
+                          : "Procurement and contracting approach"}
+                      </label>
+                      <textarea
+                        value={formData.procurementApproach}
+                        onChange={(e) =>
+                          setFormData((d) => ({
+                            ...d,
+                            procurementApproach: e.target.value,
+                          }))
+                        }
+                        rows={3}
+                        className="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20 resize-none"
+                        placeholder={
+                          formData.clientType === "contractor"
+                            ? "Self-performed trades, known subcontractors, union/open shop, owner-furnished items, prevailing wage…"
+                            : formData.clientType === "developer"
+                              ? "Design-bid-build, design-build, negotiated GMP, phased packages, public/private procurement…"
+                              : "Lump sum, unit price, time and materials, recurring fee, minimum charge, included quantities, overages, mobilization, markup…"
+                        }
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-800 mb-1.5">
+                        Pricing instructions, alternates, and allowances
+                      </label>
+                      <textarea
+                        value={formData.pricingInstructions}
+                        onChange={(e) =>
+                          setFormData((d) => ({
+                            ...d,
+                            pricingInstructions: e.target.value,
+                          }))
+                        }
+                        rows={3}
+                        className="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20 resize-none"
+                        placeholder="Required alternates, tax/bond/insurance treatment, escalation date, contingency, general conditions, fee, exclusions, or allowance targets…"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-800 mb-1.5">
+                        Known site, schedule, and scope risks
+                      </label>
+                      <textarea
+                        value={formData.riskNotes}
+                        onChange={(e) =>
+                          setFormData((d) => ({
+                            ...d,
+                            riskNotes: e.target.value,
+                          }))
+                        }
+                        rows={3}
+                        className="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20 resize-none"
+                        placeholder={
+                          formData.clientType === "contractor"
+                            ? "Occupied work, restricted access, night work, long-lead equipment, incomplete details, hazardous materials…"
+                            : formData.clientType === "developer"
+                              ? "Entitlements, utility upgrades, demolition, environmental conditions, tenant phasing, affordability requirements…"
+                              : "Access, work hours, permits, safety requirements, concealed conditions, hazardous materials, exclusions, long-lead items, client dependencies…"
+                        }
+                      />
+                    </div>
+                  </div>
+                )}
+
+                <div
+                  className={`rounded-xl border p-4 ${isPermitIntake ? "border-emerald-200 bg-emerald-50/70" : "border-orange-200 bg-orange-50/70"}`}
+                >
+                  <p className="text-sm font-semibold text-slate-800">
+                    {isPermitIntake
+                      ? "Permit evidence profile"
+                      : "Quick-start project profile"}
+                  </p>
+                  <p className="mt-1 text-xs leading-relaxed text-slate-600">
+                    {isPermitIntake
+                      ? "Confirm only what you know. Kealee organizes the likely review lanes and evidence gaps; the jurisdiction retains control of requirements, timing, and approval."
+                      : "Common goals, constraints, priorities, budget, and timeline are pre-filled below for this service. Change any choice that does not fit; the project brief is the single custom notes field."}
+                  </p>
                 </div>
 
                 {/* Description */}
                 <div>
                   <label className="block text-sm font-semibold text-slate-800 mb-1.5">
-                    Describe Your Project
+                    Additional project information <span className="font-normal text-slate-400">(optional)</span>
                   </label>
                   <textarea
                     value={formData.description}
-                    onChange={e => setFormData(d => ({ ...d, description: e.target.value }))}
+                    onChange={(e) =>
+                      setFormData((d) => ({
+                        ...d,
+                        description: e.target.value,
+                      }))
+                    }
                     rows={4}
                     className="w-full rounded-lg border border-slate-300 px-4 py-3 text-sm focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20 resize-none"
-                    placeholder={getIntakeCheckoutProjectDescriptionPlaceholder(projectPath)}
+                    placeholder={`The standard ${priceInfo.label.toLowerCase()} assumptions are prefilled. Add only anything unusual or especially important.`}
                   />
+                  <p className="mt-1.5 text-xs text-slate-500">
+                    Leave the prefilled description unchanged when it fits your project.
+                  </p>
                 </div>
+
+                <div className="space-y-5 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+                  <div>
+                    <h2 className="text-base font-bold text-slate-900">Quick project choices</h2>
+                    <p className="mt-1 text-xs text-slate-500">Common answers are selected. Tap only what you want to change.</p>
+                  </div>
+                  {isEstimateIntake && (
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                      <label className="block text-sm font-semibold text-slate-800">Estimate use
+                        <select value={formData.estimatePurpose} onChange={(e) => setFormData((d) => ({ ...d, estimatePurpose: e.target.value }))} className="mt-1.5 w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm">
+                          <option>Planning a budget</option><option>Comparing contractor bids</option><option>Financing or lender review</option><option>Insurance or claim documentation</option><option>Client proposal or hard bid</option>
+                        </select>
+                      </label>
+                      <label className="block text-sm font-semibold text-slate-800">Project phase
+                        <select value={formData.projectPhase} onChange={(e) => setFormData((d) => ({ ...d, projectPhase: e.target.value }))} className="mt-1.5 w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm">
+                          <option>Early planning</option><option>Concept or schematic design</option><option>Construction documents ready</option><option>Collecting bids</option><option>Already in construction</option>
+                        </select>
+                      </label>
+                    </div>
+                  )}
+                  <fieldset>
+                    <legend className="mb-2 block text-sm font-semibold text-slate-800">What matters most?</legend>
+                    <div className="flex flex-wrap gap-2">
+                      {(isPermitIntake ? ["Completeness", "Code path", "Zoning", "Speed"] : isSitePlanIntake ? ["Buildable area", "Zoning confidence", "Footprint fit", "Permit path"] : ["Budget", "Appearance", "More space", "Speed", "Accessibility", "Resale value"]).map((priority) => {
+                        const selected = formData.priorities.includes(priority);
+                        return <button key={priority} type="button" aria-pressed={selected} onClick={() => setFormData((d) => ({ ...d, priorities: selected ? d.priorities.filter((item) => item !== priority) : [...d.priorities, priority] }))} className={`rounded-full border px-3 py-2 text-sm font-medium ${selected ? "border-orange-500 bg-orange-50 text-orange-800" : "border-slate-300 bg-white text-slate-700"}`}>{priority}</button>;
+                      })}
+                    </div>
+                  </fieldset>
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <label className="block text-sm font-semibold text-slate-800">Budget comfort range
+                      <select value={formData.budgetComfort} onChange={(e) => setFormData((d) => ({ ...d, budgetComfort: e.target.value }))} className="mt-1.5 w-full rounded-lg border border-slate-300 px-4 py-3 text-sm">
+                        <option value="under-25k">Under $25,000</option><option value="25k-50k">$25,000–$50,000</option><option value="50k-100k">$50,000–$100,000</option><option value="100k-250k">$100,000–$250,000</option><option value="250k-plus">$250,000+</option><option value="unsure">Not sure yet</option>
+                      </select>
+                    </label>
+                    <label className="block text-sm font-semibold text-slate-800">Approximate project size
+                      <select value={formData.squareFootage} onChange={(e) => setFormData((d) => ({ ...d, squareFootage: e.target.value }))} className="mt-1.5 w-full rounded-lg border border-slate-300 px-4 py-3 text-sm">
+                        <option value="">Not sure</option><option value="250">Under 500 sq ft</option><option value="750">500–1,000 sq ft</option><option value="1500">1,000–2,000 sq ft</option><option value="2500">2,000–3,000 sq ft</option><option value="4000">3,000–5,000 sq ft</option><option value="6000">Over 5,000 sq ft</option>
+                      </select>
+                    </label>
+                  </div>
+                </div>
+
+                {(!isEstimateIntake || formData.clientType === "owner") && !guidedIntake && (
+                  <>
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-800 mb-1.5">
+                        {isPermitIntake
+                          ? "Jurisdiction and current plan status"
+                          : isSitePlanIntake
+                            ? "Parcel and existing-site information"
+                            : "Tell us about the property"}
+                      </label>
+                      <textarea
+                        value={formData.propertyDetails}
+                        onChange={(e) =>
+                          setFormData((d) => ({
+                            ...d,
+                            propertyDetails: e.target.value,
+                          }))
+                        }
+                        rows={3}
+                        className="w-full rounded-lg border border-slate-300 px-4 py-3 text-sm focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20 resize-none"
+                        placeholder={
+                          isPermitIntake
+                            ? "County or municipality, current plan stage, prior submissions, application number, and known agency contacts or comments."
+                            : isSitePlanIntake
+                              ? "Parcel/APN, lot dimensions if known, existing structures, access, slope, utilities, easements, survey date, or known zoning."
+                              : "For example: 1960s two-story home, occupied during construction, narrow side access…"
+                        }
+                      />
+                      <p className="mt-1.5 text-xs text-slate-500">
+                        {isSitePlanIntake
+                          ? "Include only what you know. Kealee records source, date, confidence, jurisdiction, CRS, and units where available."
+                          : "This helps us flag site conditions that may affect layout, cost, or approvals."}
+                      </p>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-800 mb-1.5">
+                        {isPermitIntake
+                          ? "Known code, zoning, or agency constraints"
+                          : isSitePlanIntake
+                            ? "Known zoning, overlays, or site constraints"
+                            : "Show us styles or examples you like"}
+                      </label>
+                      <textarea
+                        value={formData.stylePreferences}
+                        onChange={(e) =>
+                          setFormData((d) => ({
+                            ...d,
+                            stylePreferences: e.target.value,
+                          }))
+                        }
+                        rows={3}
+                        className="w-full rounded-lg border border-slate-300 px-4 py-3 text-sm focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20 resize-none"
+                        placeholder={
+                          isPermitIntake
+                            ? "Known occupancy, construction type, historic district, zoning issue, variance, fire/life-safety concern, or agency correction."
+                            : isSitePlanIntake
+                              ? "Zone code, historic district, floodplain, wetland, easement, HOA, utility, access, tree, slope, or setback information—if known."
+                              : "Describe colors, materials, rooms, or links that feel right. You can also add inspiration images below."
+                        }
+                      />
+                    </div>
+
+                    <fieldset>
+                      <legend className="block text-sm font-semibold text-slate-800 mb-1.5">
+                        What matters most?
+                      </legend>
+                      <p className="text-xs text-slate-500 mb-3">
+                        Choose all that apply. We use this to explain tradeoffs
+                        in the concept.
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {(isPermitIntake
+                          ? [
+                              "Completeness",
+                              "Code path",
+                              "Zoning",
+                              "Trade permits",
+                              "Review comments",
+                              "Inspection plan",
+                            ]
+                          : isSitePlanIntake
+                            ? [
+                                "Buildable area",
+                                "Zoning confidence",
+                                "Footprint fit",
+                                "Access / parking",
+                                "Open space",
+                                "Permit path",
+                              ]
+                            : [
+                                "Budget",
+                                "Appearance",
+                                "More space",
+                                "Speed",
+                                "Accessibility",
+                                "Resale value",
+                              ]
+                        ).map((priority) => {
+                          const selected =
+                            formData.priorities.includes(priority);
+                          return (
+                            <button
+                              key={priority}
+                              type="button"
+                              aria-pressed={selected}
+                              onClick={() =>
+                                setFormData((d) => ({
+                                  ...d,
+                                  priorities: selected
+                                    ? d.priorities.filter((p) => p !== priority)
+                                    : [...d.priorities, priority],
+                                }))
+                              }
+                              className={`rounded-full border px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-orange-500 ${selected ? "border-orange-500 bg-orange-50 text-orange-800" : "border-slate-300 bg-white text-slate-700 hover:border-orange-300"}`}
+                            >
+                              {priority}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </fieldset>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-semibold text-slate-800 mb-1.5">
+                          What must stay?
+                        </label>
+                        <textarea
+                          value={formData.mustStay}
+                          onChange={(e) =>
+                            setFormData((d) => ({
+                              ...d,
+                              mustStay: e.target.value,
+                            }))
+                          }
+                          rows={3}
+                          className="w-full rounded-lg border border-slate-300 px-4 py-3 text-sm focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20 resize-none"
+                          placeholder="Walls, trees, appliances, furniture, features…"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-slate-800 mb-1.5">
+                          What problems should this solve?
+                        </label>
+                        <textarea
+                          value={formData.problemsToSolve}
+                          onChange={(e) =>
+                            setFormData((d) => ({
+                              ...d,
+                              problemsToSolve: e.target.value,
+                            }))
+                          }
+                          rows={3}
+                          className="w-full rounded-lg border border-slate-300 px-4 py-3 text-sm focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20 resize-none"
+                          placeholder="Poor storage, dark room, difficult access, awkward flow…"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-800 mb-1.5">
+                        Budget comfort range
+                      </label>
+                      <select
+                        value={formData.budgetComfort}
+                        onChange={(e) =>
+                          setFormData((d) => ({
+                            ...d,
+                            budgetComfort: e.target.value,
+                          }))
+                        }
+                        className="w-full rounded-lg border border-slate-300 px-4 py-3 text-sm focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20"
+                      >
+                        <option value="">I’m not sure yet</option>
+                        <option value="under-25k">Under $25,000</option>
+                        <option value="25k-50k">$25,000–$50,000</option>
+                        <option value="50k-100k">$50,000–$100,000</option>
+                        <option value="100k-250k">$100,000–$250,000</option>
+                        <option value="250k-plus">$250,000+</option>
+                      </select>
+                      <p className="mt-1.5 text-xs text-slate-500">
+                        This is a planning comfort range—not a commitment or a
+                        contractor quote.
+                      </p>
+                    </div>
+                  </>
+                )}
 
                 {/* Q8 — Project Photos */}
                 <div>
                   <div className="flex items-center justify-between mb-1.5">
                     <label className="block text-sm font-semibold text-slate-800">
                       {needsAreaPhoto ? (
-                        <>Project photos <span className="text-red-500">*</span></>
+                        <>
+                          {isSitePlanIntake ? "Site photos" : "Project photos"}{" "}
+                          <span className="text-red-500">*</span>
+                        </>
                       ) : (
-                        <>Project photos <span className="text-slate-400 font-normal">(optional)</span></>
+                        <>
+                          {isSitePlanIntake ? "Site photos" : "Project photos"}{" "}
+                          <span className="text-slate-400 font-normal">
+                            (optional)
+                          </span>
+                        </>
                       )}
                     </label>
                     {uploadedFiles.length > 0 && (
-                      <span className="text-xs text-slate-400">{uploadedFiles.length}/10 uploaded</span>
+                      <span className="text-xs text-slate-400">
+                        {uploadedFiles.length}/10 uploaded
+                      </span>
                     )}
                   </div>
                   <p className="text-xs text-slate-500 mb-3">
                     {needsAreaPhoto
-                      ? 'Upload at least one clear photo of the project area. Accepted: JPG, PNG (max 10 MB each, up to 10 photos).'
-                      : 'For best output, upload a photo of your space or reference images. Accepted: JPG, PNG (max 10 MB each, up to 10 photos).'}
+                      ? "Upload at least one clear photo or walkthrough video of the project area. Images may be up to 10 MB and videos up to 50 MB."
+                      : isSitePlanIntake
+                        ? "Optionally upload street, front/rear yard, boundary-marker, access, slope, drainage, utility, or proposed-footprint photos. Accepted: JPG, PNG."
+                        : "For best output, upload a photo of your space or reference images. Accepted: JPG, PNG (max 10 MB each, up to 10 photos)."}
                   </p>
 
                   {uploadedFiles.length > 0 && (
                     <div className="flex flex-wrap gap-2 mb-3">
                       {uploadedFiles.map((f, i) => (
-                        <div key={i} className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs text-slate-700">
+                        <div
+                          key={i}
+                          className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs text-slate-700"
+                        >
                           <ImagePlus className="h-3.5 w-3.5 text-green-500 shrink-0" />
-                          <span className="max-w-[120px] truncate">{f.name}</span>
+                          <span className="max-w-[120px] truncate">
+                            {f.name}
+                          </span>
                           <button
                             type="button"
-                            onClick={() => setUploadedFiles(prev => prev.filter((_, j) => j !== i))}
+                            onClick={() =>
+                              setUploadedFiles((prev) =>
+                                prev.filter((_, j) => j !== i),
+                              )
+                            }
                             className="ml-0.5 text-slate-400 hover:text-red-500 transition"
                           >
                             <X className="h-3 w-3" />
@@ -972,7 +2481,8 @@ export default function IntakePage() {
                     ref={fileInputRef}
                     type="file"
                     multiple
-                    accept="image/jpeg,image/png"
+                    accept="image/jpeg,image/png,image/webp,image/heic,image/heif,video/mp4,video/quicktime"
+                    capture="environment"
                     onChange={handleFileChange}
                     className="sr-only"
                     id="intake-file-upload"
@@ -982,17 +2492,62 @@ export default function IntakePage() {
                       htmlFor="intake-file-upload"
                       className={`flex items-center justify-center gap-2 w-full rounded-lg border-2 border-dashed px-4 py-4 text-sm font-medium transition cursor-pointer ${
                         uploading
-                          ? 'border-orange-300 bg-orange-50 text-orange-500'
-                          : 'border-slate-300 bg-white text-slate-500 hover:border-orange-400 hover:bg-orange-50 hover:text-orange-600'
+                          ? "border-orange-300 bg-orange-50 text-orange-500"
+                          : "border-slate-300 bg-white text-slate-500 hover:border-orange-400 hover:bg-orange-50 hover:text-orange-600"
                       }`}
                     >
                       {uploading ? (
-                        <><Loader2 className="h-4 w-4 animate-spin" /> Uploading...</>
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin" />{" "}
+                          Uploading...
+                        </>
                       ) : (
-                        <><ImagePlus className="h-4 w-4" /> Add project photos (JPG / PNG)</>
+                        <>
+                          <ImagePlus className="h-4 w-4" />{" "}
+                          {isSitePlanIntake
+                            ? "Add site photos"
+                            : "Add project photos"}{" "}
+                          (photo or video)
+                        </>
                       )}
                     </label>
                   )}
+                </div>
+
+                {/* Voice description — mobile-friendly alternative to photos/sketches */}
+                <div className="rounded-xl border border-indigo-200 bg-indigo-50/60 p-4">
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="block text-sm font-semibold text-slate-800">
+                      Voice description
+                    </label>
+                    {uploadedFiles.some((f) => f.type === "voice") && (
+                      <span className="text-xs text-green-700">Recorded</span>
+                    )}
+                  </div>
+                  <p className="text-xs text-slate-600 mb-3">
+                    Prefer to talk? Describe the property, project area, and
+                    what you want changed. A photo, sketch, or voice description
+                    is required.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={toggleVoiceRecording}
+                    disabled={uploadingVoice}
+                    className={`inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold transition ${recordingVoice ? "bg-red-600 text-white" : "bg-indigo-600 text-white hover:bg-indigo-700"} disabled:opacity-60`}
+                  >
+                    {recordingVoice ? (
+                      <>
+                        <Square className="h-4 w-4" /> Stop recording
+                      </>
+                    ) : (
+                      <>
+                        <Mic className="h-4 w-4" />{" "}
+                        {uploadingVoice
+                          ? "Uploading voice note…"
+                          : "Record voice description"}
+                      </>
+                    )}
+                  </button>
                 </div>
 
                 {/* Q9 — Floor plan sketch / construction documents (path-aware) */}
@@ -1000,37 +2555,70 @@ export default function IntakePage() {
                   <div className="flex items-center justify-between mb-1.5">
                     <label className="block text-sm font-semibold text-slate-800">
                       {needsConstructionDocs ? (
-                        <>Construction documents <span className="text-red-500">*</span></>
+                        <>
+                          {isPermitIntake
+                            ? "Plans and supporting permit documents"
+                            : isSitePlanIntake
+                              ? "Boundary survey or site source document"
+                              : "Construction documents"}{" "}
+                          <span className="text-red-500">*</span>
+                        </>
                       ) : benefitsFromFloorplan ? (
                         <>
-                          Floor plan sketch or existing drawings{' '}
-                          <span className="text-amber-600 font-normal">(recommended)</span>
+                          Floor plan sketch or existing drawings{" "}
+                          <span className="text-amber-600 font-normal">
+                            (recommended)
+                          </span>
                         </>
                       ) : (
-                        <>Documents <span className="text-slate-400 font-normal">(optional)</span></>
+                        <>
+                          {isSitePlanIntake
+                            ? "Survey, plat, parcel map, or existing site plan"
+                            : "Documents"}{" "}
+                          <span className="text-slate-400 font-normal">
+                            (optional)
+                          </span>
+                        </>
                       )}
                     </label>
                     {uploadedDocs.length > 0 && (
-                      <span className="text-xs text-slate-400">{uploadedDocs.length}/5 uploaded</span>
+                      <span className="text-xs text-slate-400">
+                        {uploadedDocs.length}/5 uploaded
+                      </span>
                     )}
                   </div>
                   <p className="text-xs text-slate-500 mb-3">
                     {needsConstructionDocs
-                      ? 'Upload at least one construction document — existing plans, specs, or drawings. Accepted: PDF, DWG, DOCX (max 25 MB each, up to 5 files).'
+                      ? isPermitIntake
+                        ? "Upload at least one current plan, drawing, survey, specification, prior application, or agency comment document. Accepted: PDF, DWG, DOCX."
+                        : isSitePlanIntake
+                          ? "Upload the current boundary/topographic survey, plat, parcel map, or existing site plan used for professional coordination. Accepted: PDF, DWG, DOCX."
+                          : "Upload at least one construction document — existing plans, specs, or drawings. Accepted: PDF, DWG, DOCX (max 25 MB each, up to 5 files)."
                       : benefitsFromFloorplan
-                        ? 'A rough hand-drawn sketch or photo of your existing floor plan helps us match your actual room dimensions and layout — especially useful for multi-room and addition projects. Accepted: PDF, DWG, DOCX (max 25 MB each, up to 5 files).'
-                        : 'Optionally upload existing plans, specs, or reference drawings. Accepted: PDF, DWG, DOCX (max 25 MB each, up to 5 files).'}
+                        ? "A rough hand-drawn sketch or photo of your existing floor plan helps us match your actual room dimensions and layout — especially useful for multi-room and addition projects. Accepted: PDF, DWG, DOCX (max 25 MB each, up to 5 files)."
+                        : isSitePlanIntake
+                          ? "Upload any available survey, plat, parcel map, zoning exhibit, easement document, GeoJSON exported as a supported document, or existing site plan."
+                          : "Optionally upload existing plans, specs, or reference drawings. Accepted: PDF, DWG, DOCX (max 25 MB each, up to 5 files)."}
                   </p>
 
                   {uploadedDocs.length > 0 && (
                     <div className="flex flex-wrap gap-2 mb-3">
                       {uploadedDocs.map((f, i) => (
-                        <div key={i} className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs text-slate-700">
+                        <div
+                          key={i}
+                          className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs text-slate-700"
+                        >
                           <FileText className="h-3.5 w-3.5 text-amber-600 shrink-0" />
-                          <span className="max-w-[120px] truncate">{f.name}</span>
+                          <span className="max-w-[120px] truncate">
+                            {f.name}
+                          </span>
                           <button
                             type="button"
-                            onClick={() => setUploadedDocs(prev => prev.filter((_, j) => j !== i))}
+                            onClick={() =>
+                              setUploadedDocs((prev) =>
+                                prev.filter((_, j) => j !== i),
+                              )
+                            }
                             className="ml-0.5 text-slate-400 hover:text-red-500 transition"
                           >
                             <X className="h-3 w-3" />
@@ -1044,7 +2632,11 @@ export default function IntakePage() {
                     ref={docInputRef}
                     type="file"
                     multiple
-                    accept="application/pdf,.dwg,.docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                    accept={
+                      isSitePlanIntake
+                        ? "application/pdf,.dwg,.dxf,.geojson,.json,.kml,.kmz,.landxml,.shp,.zip"
+                        : "application/pdf,.dwg,.docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                    }
                     onChange={handleDocChange}
                     className="sr-only"
                     id="intake-doc-upload"
@@ -1054,39 +2646,110 @@ export default function IntakePage() {
                       htmlFor="intake-doc-upload"
                       className={`flex items-center justify-center gap-2 w-full rounded-lg border-2 border-dashed px-4 py-4 text-sm font-medium transition cursor-pointer ${
                         uploadingDocs
-                          ? 'border-amber-300 bg-amber-50 text-amber-600'
-                          : 'border-slate-300 bg-white text-slate-500 hover:border-amber-400 hover:bg-amber-50 hover:text-amber-700'
+                          ? "border-amber-300 bg-amber-50 text-amber-600"
+                          : "border-slate-300 bg-white text-slate-500 hover:border-amber-400 hover:bg-amber-50 hover:text-amber-700"
                       }`}
                     >
                       {uploadingDocs ? (
-                        <><Loader2 className="h-4 w-4 animate-spin" /> Uploading document...</>
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin" /> Uploading
+                          document...
+                        </>
                       ) : benefitsFromFloorplan ? (
-                        <><FileText className="h-4 w-4" /> Add floor plan sketch or drawings (PDF / DWG / DOCX)</>
+                        <>
+                          <FileText className="h-4 w-4" /> Add floor plan sketch
+                          or drawings (PDF / DWG / DOCX)
+                        </>
                       ) : (
-                        <><FileText className="h-4 w-4" /> Add plans, specs, or drawings (PDF / DWG / DOCX)</>
+                        <>
+                          <FileText className="h-4 w-4" />{" "}
+                          {isSitePlanIntake
+                            ? "Add survey, parcel, GIS, or site-plan file"
+                            : "Add plans, specs, or drawings (PDF / DWG / DOCX)"}
+                        </>
                       )}
                     </label>
                   )}
+
+                  {isPermitIntake && (
+                    <aside className={`mt-4 rounded-2xl border-2 p-5 ${permitPreparationRecommendation ? "border-yellow-300 bg-gradient-to-br from-yellow-50 to-teal-50" : "border-teal-200 bg-teal-50"}`}>
+                      {permitPreparationRecommendation ? (
+                        <>
+                          <p className="text-xs font-black uppercase tracking-[0.16em] text-[#7a563d]">
+                            Plans needed before permit submission
+                          </p>
+                          <h3 className="mt-2 text-lg font-black text-slate-950">
+                            {permitPreparationRecommendation.title}
+                          </h3>
+                          <p className="mt-2 text-sm leading-6 text-slate-700">
+                            {permitPreparationRecommendation.description}
+                          </p>
+                          <div className="mt-4 flex flex-wrap gap-3">
+                            <Link
+                              href={permitPreparationRecommendation.href}
+                              className="inline-flex items-center gap-2 rounded-xl bg-teal-700 px-4 py-2.5 text-sm font-bold text-white hover:bg-teal-800"
+                            >
+                              {permitPreparationRecommendation.cta}
+                              <ArrowRight className="h-4 w-4" />
+                            </Link>
+                            <Link
+                              href="/products/professional_design"
+                              className="inline-flex items-center rounded-xl border-2 border-[#8a5a3c] bg-white px-4 py-2.5 text-sm font-bold text-[#6f472f] hover:bg-[#f7efe7]"
+                            >
+                              View permit-ready plans
+                            </Link>
+                          </div>
+                          <p className="mt-3 text-xs leading-5 text-slate-600">
+                            You can continue this permit purchase now. Kealee will preserve this readiness recommendation with your project and coordinate the next required service.
+                          </p>
+                        </>
+                      ) : (
+                        <div className="flex items-start gap-3">
+                          <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-teal-700" />
+                          <div>
+                            <h3 className="text-sm font-black text-slate-950">Submission documents added</h3>
+                            <p className="mt-1 text-xs leading-5 text-slate-600">
+                              Kealee will review these files and recommend professional drawings, a site plan, or design development if the agency requires additional plan work.
+                            </p>
+                          </div>
+                        </div>
+                      )}
+                    </aside>
+                  )}
                 </div>
 
-                {/* Sq ft + Timeline */}
+                {/* Timeline; project-size choice is included in the guided profile above. */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-semibold text-slate-800 mb-1.5">Sq. Footage (optional)</label>
+                  {!guidedIntake && <div>
+                    <label className="block text-sm font-semibold text-slate-800 mb-1.5">
+                      Sq. Footage (optional)
+                    </label>
                     <input
                       type="number"
                       value={formData.squareFootage}
-                      onChange={e => setFormData(d => ({ ...d, squareFootage: e.target.value }))}
+                      onChange={(e) =>
+                        setFormData((d) => ({
+                          ...d,
+                          squareFootage: e.target.value,
+                        }))
+                      }
                       className="w-full rounded-lg border border-slate-300 px-4 py-3 text-sm focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20"
                       placeholder="e.g. 2,500"
                       min={0}
                     />
-                  </div>
+                  </div>}
                   <div>
-                    <label className="block text-sm font-semibold text-slate-800 mb-1.5">Timeline</label>
+                    <label className="block text-sm font-semibold text-slate-800 mb-1.5">
+                      Timeline
+                    </label>
                     <select
                       value={formData.timeline}
-                      onChange={e => setFormData(d => ({ ...d, timeline: e.target.value }))}
+                      onChange={(e) =>
+                        setFormData((d) => ({
+                          ...d,
+                          timeline: e.target.value as typeof d.timeline,
+                        }))
+                      }
                       className="w-full rounded-lg border border-slate-300 px-4 py-3 text-sm focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20"
                     >
                       <option value="asap">ASAP (1–2 weeks)</option>
@@ -1105,20 +2768,28 @@ export default function IntakePage() {
                 </button>
 
                 <p className="text-center text-xs text-slate-400">
-                  🔒 Secure payment powered by Stripe. You won't be charged until the next step.
+                  🔒 Secure payment powered by Stripe. You won&apos;t be charged
+                  until the next step.
                 </p>
               </form>
             )}
 
             {/* ── REVIEW STEP ──────────────────────────────────────────────── */}
-            {step === 'review' && (
+            {step === "review" && (
               <div className="space-y-6">
                 {bundlePreview && projectPath === bundlePreview.productKey && (
-                  <BundleUpsellBanner bundle={bundlePreview} sourcePath={upsellSourcePath} />
+                  <BundleUpsellBanner
+                    bundle={bundlePreview}
+                    sourcePath={upsellSourcePath}
+                  />
                 )}
                 <div>
-                  <h1 className="text-2xl font-extrabold text-slate-900">Review your order</h1>
-                  <p className="text-slate-500 mt-1 text-sm">Confirm your details, then proceed to secure payment.</p>
+                  <h1 className="text-2xl font-extrabold text-slate-900">
+                    Review your order
+                  </h1>
+                  <p className="text-slate-500 mt-1 text-sm">
+                    Confirm your details, then proceed to secure payment.
+                  </p>
                 </div>
 
                 {formError && (
@@ -1131,44 +2802,239 @@ export default function IntakePage() {
                 {/* Details summary */}
                 <div className="rounded-xl bg-white border border-slate-200 divide-y divide-slate-100 shadow-sm">
                   {[
-                    { label: 'Name', value: `${formData.firstName} ${formData.lastName}`.trim() || '—' },
-                    { label: 'Email', value: formData.email },
-                    { label: 'Address', value: formData.address },
-                    formData.phone ? { label: 'Phone', value: formData.phone } : null,
-                    formData.description ? { label: 'Project description', value: formData.description } : null,
-                    (uploadedFiles.length > 0 || uploadedDocs.length > 0) ? { label: 'Files', value: [uploadedFiles.length > 0 ? `${uploadedFiles.length} photo${uploadedFiles.length > 1 ? 's' : ''}` : null, uploadedDocs.length > 0 ? `${uploadedDocs.length} document${uploadedDocs.length > 1 ? 's' : ''}` : null].filter(Boolean).join(', ') + ' uploaded' } : null,
-                  ].filter(Boolean).map(row => (
-                    <div key={row!.label} className="flex items-start gap-4 px-5 py-3">
-                      <span className="text-xs font-semibold text-slate-400 w-28 shrink-0 pt-0.5">{row!.label}</span>
-                      <span className="text-sm text-slate-800 leading-relaxed">{row!.value}</span>
-                    </div>
-                  ))}
+                    {
+                      label: "Name",
+                      value:
+                        `${formData.firstName} ${formData.lastName}`.trim() ||
+                        "—",
+                    },
+                    isEstimateIntake
+                      ? {
+                          label: "Client type",
+                          value:
+                            formData.clientType === "owner"
+                              ? "Project owner"
+                              : formData.clientType === "contractor"
+                                ? "Contractor / GC"
+                                : formData.clientType === "developer"
+                                  ? "Developer"
+                                  : "Trade / service provider",
+                        }
+                      : null,
+                    formData.companyName
+                      ? { label: "Company", value: formData.companyName }
+                      : null,
+                    formData.proposalClientName
+                      ? {
+                          label: "Proposal client",
+                          value: formData.proposalClientName,
+                        }
+                      : null,
+                    { label: "Email", value: formData.email },
+                    { label: "Address", value: formData.address },
+                    formData.phone
+                      ? { label: "Phone", value: formData.phone }
+                      : null,
+                    formData.description
+                      ? {
+                          label: "Project description",
+                          value: formData.description,
+                        }
+                      : null,
+                    formData.propertyDetails
+                      ? {
+                          label: "About the property",
+                          value: formData.propertyDetails,
+                        }
+                      : null,
+                    formData.stylePreferences
+                      ? {
+                          label: "Style direction",
+                          value: formData.stylePreferences,
+                        }
+                      : null,
+                    formData.priorities.length
+                      ? {
+                          label: "Top priorities",
+                          value: formData.priorities.join(", "),
+                        }
+                      : null,
+                    formData.mustStay
+                      ? { label: "Must stay", value: formData.mustStay }
+                      : null,
+                    formData.problemsToSolve
+                      ? {
+                          label: "Problems to solve",
+                          value: formData.problemsToSolve,
+                        }
+                      : null,
+                    formData.budgetComfort
+                      ? {
+                          label: "Budget comfort",
+                          value: formData.budgetComfort.replace(/-/g, " "),
+                        }
+                      : null,
+                    formData.estimatePurpose
+                      ? {
+                          label: "Estimate use",
+                          value: formData.estimatePurpose,
+                        }
+                      : null,
+                    formData.projectPhase
+                      ? { label: "Project phase", value: formData.projectPhase }
+                      : null,
+                    formData.unitCount
+                      ? { label: "Program / units", value: formData.unitCount }
+                      : null,
+                    formData.bidDueDate
+                      ? { label: "Bid due", value: formData.bidDueDate }
+                      : null,
+                    formData.procurementApproach
+                      ? {
+                          label: "Procurement",
+                          value: formData.procurementApproach,
+                        }
+                      : null,
+                    formData.pricingInstructions
+                      ? {
+                          label: "Pricing instructions",
+                          value: formData.pricingInstructions,
+                        }
+                      : null,
+                    formData.riskNotes
+                      ? { label: "Known risks", value: formData.riskNotes }
+                      : null,
+                    formData.industryType
+                      ? {
+                          label: "Industry / trade",
+                          value: formData.industryType,
+                        }
+                      : null,
+                    formData.scopeQuantities
+                      ? {
+                          label: "Scope quantities",
+                          value: formData.scopeQuantities,
+                        }
+                      : null,
+                    formData.equipmentPlan
+                      ? {
+                          label: "Crew / equipment",
+                          value: formData.equipmentPlan,
+                        }
+                      : null,
+                    formData.serviceFrequency
+                      ? {
+                          label: "Service frequency",
+                          value: formData.serviceFrequency,
+                        }
+                      : null,
+                    formData.costAssumptions
+                      ? {
+                          label: "Cost assumptions",
+                          value: formData.costAssumptions,
+                        }
+                      : null,
+                    uploadedFiles.length > 0 || uploadedDocs.length > 0
+                      ? {
+                          label: "Files",
+                          value:
+                            [
+                              uploadedFiles.length > 0
+                                ? `${uploadedFiles.length} photo${uploadedFiles.length > 1 ? "s" : ""}`
+                                : null,
+                              uploadedDocs.length > 0
+                                ? `${uploadedDocs.length} document${uploadedDocs.length > 1 ? "s" : ""}`
+                                : null,
+                            ]
+                              .filter(Boolean)
+                              .join(", ") + " uploaded",
+                        }
+                      : null,
+                  ]
+                    .filter(Boolean)
+                    .map((row) => (
+                      <div
+                        key={row!.label}
+                        className="flex items-start gap-4 px-5 py-3"
+                      >
+                        <span className="text-xs font-semibold text-slate-400 w-28 shrink-0 pt-0.5">
+                          {row!.label}
+                        </span>
+                        <span className="text-sm text-slate-800 leading-relaxed">
+                          {row!.value}
+                        </span>
+                      </div>
+                    ))}
                 </div>
 
                 {/* Price summary */}
                 <div className="rounded-xl bg-blue-50 border border-blue-200 p-5">
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-sm font-semibold text-slate-700">{priceInfo.label}</span>
-                    <span className="text-sm font-bold text-slate-900">{formatPrice(priceInfo.amount)}</span>
+                    <span className="text-sm font-semibold text-slate-700">
+                      {priceInfo.label}
+                    </span>
+                    <span className="text-sm font-bold text-slate-900">
+                      {formatPrice(priceInfo.amount)}
+                    </span>
                   </div>
-                  {bundlePreview && projectPath === bundlePreview.productKey && (
-                    <p className="text-xs text-green-700 font-medium mb-2">{bundlePreview.savingsLabel}</p>
-                  )}
+                  {bundlePreview &&
+                    projectPath === bundlePreview.productKey && (
+                      <p className="text-xs text-green-700 font-medium mb-2">
+                        {bundlePreview.savingsLabel}
+                      </p>
+                    )}
                   <div className="flex items-center justify-between text-xs text-slate-500">
                     <span>Delivered in {priceInfo.delivery}</span>
                     <span>One-time payment</span>
                   </div>
                   <div className="mt-3 pt-3 border-t border-blue-200 flex items-center justify-between">
-                    <span className="text-sm font-bold text-slate-900">Total due today</span>
-                    <span className="text-2xl font-black text-blue-700">{formatPrice(priceInfo.amount)}</span>
+                    <span className="text-sm font-bold text-slate-900">
+                      Total due today
+                    </span>
+                    <span className="text-2xl font-black text-blue-700">
+                      {formatPrice(priceInfo.amount)}
+                    </span>
                   </div>
+                </div>
+
+                {/* Optional promo code */}
+                <div className="text-sm">
+                  {!showPromo ? (
+                    <button
+                      type="button"
+                      onClick={() => setShowPromo(true)}
+                      className="font-semibold text-blue-700 hover:text-blue-800"
+                    >
+                      + Have a promo code?
+                    </button>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        value={promoCode}
+                        onChange={(e) => setPromoCode(e.target.value)}
+                        placeholder="Enter promo code"
+                        className="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm uppercase focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPromo(false)}
+                        className="text-xs font-semibold text-slate-400 hover:text-slate-600"
+                      >
+                        Hide
+                      </button>
+                    </div>
+                  )}
                 </div>
 
                 {/* Buttons */}
                 <div className="flex gap-3">
                   <button
                     type="button"
-                    onClick={() => { setStep('details'); setFormError('') }}
+                    onClick={() => {
+                      setStep("details");
+                      setFormError("");
+                    }}
                     disabled={submitting}
                     className="flex-1 rounded-xl border-2 border-slate-200 py-3.5 text-sm font-bold text-slate-700 hover:bg-slate-50 transition disabled:opacity-50"
                   >
@@ -1194,7 +3060,8 @@ export default function IntakePage() {
                 </div>
 
                 <p className="text-center text-xs text-slate-400">
-                  🔒 You'll be redirected to Stripe to complete payment. Your data is encrypted.
+                  🔒 You&apos;ll be redirected to Stripe to complete payment. Your
+                  data is encrypted.
                 </p>
               </div>
             )}
@@ -1208,9 +3075,16 @@ export default function IntakePage() {
               agentInsight={agentInsight}
               insightLoading={insightLoading}
             />
+            {step === "details" && (
+              <div className="mt-4 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+                <p className="text-xs font-bold uppercase tracking-widest text-slate-500">Need help?</p>
+                <p className="mb-3 mt-1 text-xs leading-relaxed text-slate-500">Ask a quick question without leaving this intake. Checkout stays above.</p>
+                <AskChatBar context={isPermitIntake ? "permit" : "concept-intake"} variant="light" serviceSlug={projectPath} />
+              </div>
+            )}
           </div>
         </div>
       </div>
     </div>
-  )
+  );
 }

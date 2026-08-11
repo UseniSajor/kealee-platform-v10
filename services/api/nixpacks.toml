@@ -2,6 +2,17 @@
 # pnpm traverses up to find pnpm-workspace.yaml at repo root, so workspace deps work.
 # TypeScript errors are suppressed via || true — noEmitOnError:false in tsconfig
 # ensures dist/index.js is emitted even when type errors exist.
+#
+# IMPORTANT: this MUST run `pnpm run build` (the package's own build script),
+# not a bare `tsc`. Running tsc directly here only compiles services/api's own
+# src/ — it silently skips building every workspace package services/api
+# imports at runtime (@kealee/os-intake, @kealee/kealee-agent-stack, etc.),
+# each of which is its own separate TypeScript project with its own dist/.
+# That gap is exactly what caused the entire "Kealee v30 routes" block to
+# fail registration in production (Cannot find module
+# '.../@kealee/os-intake/dist/index.js') while /health kept passing —
+# discovered 2026-08-07. `pnpm run build` chains through every required
+# workspace dependency; a bare `tsc` here does not.
 
 [phases.install]
 cmds = [
@@ -12,7 +23,7 @@ cmds = [
 [phases.build]
 cmds = [
   "DATABASE_URL='postgresql://placeholder:placeholder@localhost:5432/placeholder' pnpm --filter @kealee/database db:generate 2>&1 || true",
-  "(tsc --incremental false 2>&1; true)"
+  "(pnpm run build 2>&1; true)"
 ]
 
 [start]

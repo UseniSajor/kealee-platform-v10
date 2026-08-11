@@ -1,388 +1,96 @@
-'use client'
-
+import type { Metadata } from 'next'
 import Link from 'next/link'
-import { motion } from 'framer-motion'
-import { ArrowRight, Plus, Minus } from 'lucide-react'
-import { useState } from 'react'
+import { ArrowRight } from 'lucide-react'
+import {
+  PLATFORM_PRICING,
+  PUBLIC_CATALOG_CATEGORIES,
+  PUBLIC_PRODUCT_CATALOG,
+  formatCatalogPrice,
+  formatPriceFromCents,
+} from '@kealee/core-rules'
 
-const fadeInUp = {
-  initial: { opacity: 0, y: 20 },
-  whileInView: { opacity: 1, y: 0 },
-  viewport: { once: true as const },
-  transition: { duration: 0.5 },
+export const metadata: Metadata = {
+  title: 'Price Reference — Kealee',
+  description: 'Reference pricing for Kealee project services, contractor marketplace access, and developer feasibility.',
 }
 
-// ── Homeowner project services (one-time per project) ─────────────────────────
+const display = (cents: number) => cents === 0 ? 'Included / no fee' : formatPriceFromCents(cents).replace('.00', '')
 
-const PLAN_ITEMS = [
-  { name: 'Concept Design Package', price: '$585', note: 'Property-specific visuals, design direction, zoning brief, path-to-approval plan + consultation included.', highlight: true },
-  { name: 'Advanced Concept', price: '$899', note: '3 floor plan options, 3D views, material suggestions' },
-  { name: 'Full Design Package', price: '$4,499', note: 'Permit-ready drawing set with licensed architect' },
-]
-
-const ESTIMATE_ITEMS = [
-  { name: 'AI Estimate', price: 'Free', note: 'Included with all projects' },
-  { name: 'Detailed Estimate', price: '$595', note: 'Professional cost analyst review' },
-  { name: 'Certified Estimate', price: '$1,850', note: 'Lender-ready certified report' },
-]
-
-const PERMIT_ITEMS = [
-  { name: 'Permit Guidance', price: 'Free', note: 'AI checklist + jurisdiction info' },
-  { name: 'Simple Permit Filing', price: '$149', note: 'Single-trade permits' },
-  { name: 'Permit Package', price: '$950', note: 'Full application prep + submission', highlight: true },
-  { name: 'Permit Coordination', price: '$2,750', note: 'Submission, tracking + comment response' },
-  { name: 'Permit Expediting', price: 'Starting at $5,500', note: 'Priority approval service' },
-]
-
-const PM_ITEMS = [
-  { name: 'Self-Managed', price: 'Free', note: 'Platform tools included' },
-  { name: 'PM Advisory', price: '$950', note: 'Milestone reviews + budget oversight', highlight: true },
-  { name: 'PM Oversight', price: '$2,950', note: 'Full PM from groundbreaking to closeout' },
-]
-
-// ── Contractor marketplace ────────────────────────────────────────────────────
-
-const CONTRACTOR_LISTING = [
-  {
-    name: 'Starter',
-    price: '$99',
-    period: '/mo',
-    description: 'Get listed, verified, and start receiving AI-matched leads.',
-    features: [
-      'Verified contractor profile',
-      'AI-matched lead delivery',
-      'Up to 10 active bid responses/mo',
-      'Basic analytics dashboard',
-      'Reputation score tracking',
-    ],
-    highlight: false,
-    cta: 'Join as Contractor',
-    ctaHref: '/contractor/register',
-  },
-  {
-    name: 'Growth',
-    price: '$199',
-    period: '/mo',
-    description: 'Priority matching, KeaBot GC, and full pipeline tools.',
-    features: [
-      'Everything in Starter',
-      'Priority lead matching',
-      'Unlimited bid responses',
-      'KeaBot GC bid assistant',
-      'Pipeline CRM + follow-up tools',
-      'Reputation score badge',
-    ],
-    highlight: true,
-    cta: 'Join as Contractor',
-    ctaHref: '/contractor/register',
-  },
-  {
-    name: 'Pro',
-    price: '$499',
-    period: '/mo',
-    description: 'Full Construction OS, top placement, and enterprise ops.',
-    features: [
-      'Everything in Growth',
-      'Top-of-feed placement',
-      'Full Construction OS access',
-      'Advanced analytics & profitability',
-      'Custom integrations + API access',
-      'Dedicated account support',
-    ],
-    highlight: false,
-    cta: 'Contact Sales',
-    ctaHref: '/contact',
-  },
-]
-
-// ── FAQ ───────────────────────────────────────────────────────────────────────
-
-const FAQ_ITEMS = [
-  {
-    question: 'What does the $585 Concept Design Package include?',
-    answer: 'You get 8 structured deliverables: property-specific concept visuals (2–4 options), a design direction summary, layout and flow recommendations, a property-based zoning analysis, a path-to-approval plan, rough scope direction, a downloadable digital concept package, and an included design consultation call. Everything is built around your specific property — not generic AI outputs.',
-  },
-  {
-    question: 'Are homeowner fees subscriptions?',
-    answer: 'No. All homeowner project fees are one-time per project. You pay for the services your project needs — Concept, estimate, permits, and PM — without any ongoing subscription.',
-  },
-  {
-    question: 'How does contractor pricing work?',
-    answer: 'Contractor packages (Starter $99/mo, Growth $199/mo, Pro $499/mo) are monthly subscriptions that control your lead volume, AI bid tools, Contractor Portal access, and platform visibility. Cancel anytime. All plans include a 14-day free trial.',
-  },
-  {
-    question: 'Is there a free tier?',
-    answer: 'Yes. AI Estimate and Permit Guidance are both free for all homeowners. Contractors can explore the platform before subscribing. Contact us to learn more about what is included at no cost.',
-  },
-]
-
-// ── Helpers ───────────────────────────────────────────────────────────────────
-
-function PriceRow({
-  name, price, note, highlight = false, index, total,
-}: {
-  name: string; price: string; note: string; highlight?: boolean; index: number; total: number
-}) {
-  return (
-    <div
-      className="flex items-center justify-between px-5 py-4"
-      style={{
-        backgroundColor: highlight ? 'rgba(42,191,191,0.04)' : index % 2 === 0 ? 'white' : '#FAFAFA',
-        borderBottom: index < total - 1 ? '1px solid #F3F4F6' : undefined,
-      }}
-    >
-      <div>
-        <p className="text-sm font-semibold text-slate-900">
-          {name}
-          {highlight && (
-            <span
-              className="ml-2 rounded-full px-2 py-0.5 text-[10px] font-bold"
-              style={{ backgroundColor: 'rgba(42,191,191,0.1)', color: '#2ABFBF' }}
-            >
-              Popular
-            </span>
-          )}
-        </p>
-        <p className="mt-0.5 text-xs text-slate-400">{note}</p>
-      </div>
-      <span className="ml-4 flex-shrink-0 text-sm font-bold text-orange-600">
-        {price}
-      </span>
-    </div>
-  )
-}
-
-function SectionHeader({ label, title, subtitle }: { label: string; title: string; subtitle?: string }) {
-  return (
-    <motion.div {...fadeInUp} className="mx-auto max-w-2xl text-center">
-      <span className="text-xs font-bold uppercase tracking-[0.15em] text-[#2ABFBF]">{label}</span>
-      <h2 className="mt-3 text-2xl font-bold font-display sm:text-3xl text-slate-900">{title}</h2>
-      {subtitle && <p className="mt-4 text-slate-600 text-sm leading-relaxed">{subtitle}</p>}
-    </motion.div>
-  )
-}
-
-// ── Page ──────────────────────────────────────────────────────────────────────
+const ROLE_PRICES = [
+  { audience: 'Homeowner', service: 'Project Clarity Review', price: 'Free', unit: 'project entry review', href: '/products/home-project-readiness-review' },
+  { audience: 'Homeowner', service: 'Project Launch Package', price: display(PLATFORM_PRICING.homeowner.projectLaunchCents), unit: 'one time', href: '/products/project-launch-package' },
+  { audience: 'Contractor', service: 'Marketplace Starter', price: display(PLATFORM_PRICING.contractor.marketplaceMonthlyCents.starter), unit: 'per month', href: '/contractor/register' },
+  { audience: 'Contractor', service: 'Marketplace Growth', price: display(PLATFORM_PRICING.contractor.marketplaceMonthlyCents.growth), unit: 'per month', href: '/contractor/register' },
+  { audience: 'Contractor', service: 'Marketplace Pro', price: display(PLATFORM_PRICING.contractor.marketplaceMonthlyCents.pro), unit: 'per month', href: '/contact' },
+  { audience: 'Contractor', service: 'Estimate and Permit Package', price: display(PLATFORM_PRICING.contractor.estimatePermitPackageCents), unit: 'per client project', href: '/products/contractor-estimate-permit-package' },
+  { audience: 'Developer', service: 'Feasibility Express', price: display(PLATFORM_PRICING.developer.feasibilityExpressCents), unit: 'per site', href: '/products/developer-feasibility-express' },
+] as const
 
 export default function PricingPage() {
-  const [openFaq, setOpenFaq] = useState<number | null>(0)
-
   return (
-    <div>
-      {/* Hero */}
-      <section className="py-16 lg:py-24 bg-gradient-to-br from-slate-50 via-slate-100 to-slate-200">
-        <div className="mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
-          <motion.span {...fadeInUp} className="text-xs font-bold uppercase tracking-[0.15em] text-[#2ABFBF]">
-            Pricing
-          </motion.span>
-          <motion.h1
-            className="mt-3 text-4xl font-black font-display sm:text-5xl text-slate-900 tracking-tight"
-          >
-            Transparent Pricing
-          </motion.h1>
-          <motion.p
-            className="mx-auto mt-6 max-w-2xl text-lg text-slate-600 leading-relaxed"
-          >
-            Homeowners pay per project. Contractors choose a listing tier. No hidden fees, no surprises.
-          </motion.p>
+    <main className="min-h-screen bg-slate-50">
+      <section className="border-b border-slate-200 bg-white px-4 py-16 text-center sm:py-20">
+        <div className="mx-auto max-w-3xl">
+          <span className="text-xs font-bold uppercase tracking-[0.16em] text-orange-600">Price reference</span>
+          <h1 className="mt-3 font-display text-4xl font-black text-slate-950 sm:text-5xl">Current Kealee pricing</h1>
+          <p className="mx-auto mt-5 max-w-2xl text-base leading-relaxed text-slate-600">
+            A plain reference list for comparing services. For a guided homeowner, contractor, or developer path,
+            use the products page.
+          </p>
+          <Link href="/products" className="mt-7 inline-flex items-center gap-2 rounded-xl bg-orange-600 px-6 py-3 text-sm font-bold text-white hover:bg-orange-700">
+            Find my product path <ArrowRight className="h-4 w-4" />
+          </Link>
         </div>
       </section>
 
-      {/* ── Homeowner Project Services ── */}
-      <section className="py-20 bg-white">
-        <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
-          <SectionHeader
-            label="For Homeowners"
-            title="Pay only for what your project needs"
-            subtitle="All homeowner fees are one-time per project — no subscriptions."
-          />
-
-          <div className="mt-12 space-y-10">
-
-            {/* Plan */}
-            <div>
-              <h3 className="mb-3 text-base font-bold text-slate-900">Plan Your Project</h3>
-              <div className="overflow-hidden rounded-xl border border-slate-200 shadow-sm">
-                {PLAN_ITEMS.map((item, i) => (
-                  <PriceRow key={item.name} {...item} index={i} total={PLAN_ITEMS.length} />
-                ))}
-              </div>
-              <p className="mt-2 text-xs text-slate-400">
-                Projects over $65,000 or with structural complexity are connected with a licensed architect.
-              </p>
-            </div>
-
-            {/* Estimate */}
-            <div>
-              <h3 className="mb-3 text-base font-bold text-slate-900">Price Your Project</h3>
-              <div className="overflow-hidden rounded-xl border border-slate-200 shadow-sm">
-                {ESTIMATE_ITEMS.map((item, i) => (
-                  <PriceRow key={item.name} {...item} index={i} total={ESTIMATE_ITEMS.length} />
-                ))}
-              </div>
-            </div>
-
-            {/* Permits */}
-            <div>
-              <h3 className="mb-3 text-base font-bold text-slate-900">Permit Your Project</h3>
-              <div className="overflow-hidden rounded-xl border border-slate-200 shadow-sm">
-                {PERMIT_ITEMS.map((item, i) => (
-                  <PriceRow key={item.name} {...item} index={i} total={PERMIT_ITEMS.length} />
-                ))}
-              </div>
-            </div>
-
-            {/* PM */}
-            <div>
-              <h3 className="mb-3 text-base font-bold text-slate-900">Control Your Project</h3>
-              <div className="overflow-hidden rounded-xl border border-slate-200 shadow-sm">
-                {PM_ITEMS.map((item, i) => (
-                  <PriceRow key={item.name} {...item} index={i} total={PM_ITEMS.length} />
-                ))}
-              </div>
-              <p className="mt-2 text-xs text-slate-400">One-time per project fee — not a subscription.</p>
-            </div>
-
-            {/* Typical path callout */}
-            <div className="rounded-2xl p-8 border border-slate-200" style={{ backgroundColor: '#F8FAFC' }}>
-              <p className="text-center text-sm font-semibold text-slate-700">
-                Typical fully-managed project:
-                <span className="ml-2 font-black text-slate-900">
-                  $585 + $595 + $950 + $2,950 = $5,080
-                </span>
-              </p>
-              <p className="mt-2 text-center text-xs text-slate-500">
-                Concept + Validation · Detailed Estimate · Permit Package · PM Oversight
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── Contractor Marketplace Listings ── */}
-      <section className="py-20 border-t border-b border-slate-200" style={{ backgroundColor: '#F8FAFC' }}>
-        <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
-          <SectionHeader
-            label="For Contractors"
-            title="Marketplace listing tiers"
-            subtitle="Get verified, get matched, get paid. Pick the tier that fits your business."
-          />
-
-          <div className="mt-12 grid gap-6 sm:grid-cols-3">
-            {CONTRACTOR_LISTING.map((pkg, i) => (
-              <motion.div
-                key={pkg.name}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.4, delay: i * 0.1 }}
-                className="flex flex-col overflow-hidden rounded-2xl bg-white border border-slate-200 shadow-sm hover:shadow-md transition-all duration-300"
-              >
-                <div className="flex flex-1 flex-col p-6">
-                  {pkg.highlight && (
-                    <span
-                      className="mb-3 inline-block self-start rounded-full px-3 py-1 text-[10px] font-bold text-white uppercase tracking-wider bg-orange-600"
-                    >
-                      Most Popular
-                    </span>
-                  )}
-                  <h3 className="text-lg font-bold text-slate-900">{pkg.name}</h3>
-                  <div className="my-3">
-                    <span className="text-3xl font-black font-display text-slate-950">
-                      {pkg.price}
-                    </span>
-                    <span className="text-xs text-slate-500 font-medium">{pkg.period}</span>
-                  </div>
-                  <p className="mb-4 text-xs text-slate-500 leading-relaxed">{pkg.description}</p>
-                  <ul className="mb-6 flex-1 space-y-2">
-                    {pkg.features.map(f => (
-                      <li key={f} className="flex items-start gap-2 text-xs text-slate-700 leading-relaxed">
-                        <span className="text-green-600 font-bold">✓</span> {f}
-                      </li>
-                    ))}
-                  </ul>
-                  <Link
-                    href={pkg.ctaHref}
-                    className="flex w-full items-center justify-center rounded-xl py-3 px-4 text-xs font-bold transition-all hover:scale-[1.02]"
-                    style={{
-                      backgroundColor: pkg.highlight ? '#E8724B' : 'transparent',
-                      color: pkg.highlight ? '#FFFFFF' : '#E8724B',
-                      border: pkg.highlight ? 'none' : '1.5px solid #E8724B',
-                    }}
-                  >
-                    {pkg.cta}
-                  </Link>
-                </div>
-              </motion.div>
+      <section className="py-14">
+        <div className="mx-auto max-w-5xl px-4 sm:px-6">
+          <h2 className="font-display text-2xl font-bold text-slate-950">Role-based platform products</h2>
+          <p className="mt-2 text-sm text-slate-600">Subscriptions and per-project products are separate purchases.</p>
+          <div className="mt-6 overflow-hidden rounded-2xl border border-slate-200 bg-white">
+            {ROLE_PRICES.map((item, index) => (
+              <Link key={`${item.audience}-${item.service}`} href={item.href} className={`grid gap-2 px-5 py-4 transition-colors hover:bg-slate-50 sm:grid-cols-[110px_1fr_auto] sm:items-center ${index ? 'border-t border-slate-100' : ''}`}>
+                <span className="text-xs font-bold uppercase tracking-widest text-slate-400">{item.audience}</span>
+                <span className="text-sm font-semibold text-slate-900">{item.service}</span>
+                <span className="text-sm font-bold text-orange-600">{item.price} <span className="font-normal text-slate-400">{item.unit}</span></span>
+              </Link>
             ))}
           </div>
-
-          <p className="mt-6 text-xs text-slate-400 text-center">
-            Cancel anytime. All plans include a 14-day free trial. Verify your contractor account to unlock full features.
-          </p>
         </div>
       </section>
 
-      {/* ── FAQ ── */}
-      <section className="py-20 bg-white">
-        <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
-          <div className="mb-12 text-center">
-            <span className="text-xs font-bold uppercase tracking-[0.15em] text-[#2ABFBF]">FAQ</span>
-            <h2 className="mt-3 text-2xl font-bold font-display sm:text-3xl text-slate-900">
-              Frequently Asked Questions
-            </h2>
-          </div>
-
-          <div className="space-y-3">
-            {FAQ_ITEMS.map((item, i) => {
-              const isOpen = openFaq === i
-              return (
-                <div key={i} className="overflow-hidden rounded-xl border border-slate-200 bg-white">
-                  <button
-                    onClick={() => setOpenFaq(isOpen ? null : i)}
-                    className="flex w-full items-center justify-between gap-4 p-5 text-left transition-colors hover:bg-slate-50"
-                  >
-                    <span className="text-base font-bold text-slate-900">{item.question}</span>
-                    {isOpen
-                      ? <Minus className="h-4 w-4 flex-shrink-0 text-slate-500" />
-                      : <Plus className="h-4 w-4 flex-shrink-0 text-slate-500" />
-                    }
-                  </button>
-                  {isOpen && (
-                    <div className="px-5 pb-5 text-sm leading-relaxed text-slate-600 border-t border-slate-100 pt-3">
-                      {item.answer}
-                    </div>
-                  )}
+      <section className="border-y border-slate-200 bg-white py-14">
+        <div className="mx-auto max-w-5xl px-4 sm:px-6">
+          <h2 className="font-display text-2xl font-bold text-slate-950">Public service price list</h2>
+          <p className="mt-2 text-sm text-slate-600">Project types are intake choices. Pricing is organized by the outcome Kealee delivers.</p>
+          <div className="mt-8 space-y-8">
+            {PUBLIC_CATALOG_CATEGORIES.map(category => (
+              <div key={category.id}>
+                <h3 className="text-sm font-bold uppercase tracking-widest text-slate-500">{category.label}</h3>
+                <div className="mt-3 overflow-hidden rounded-2xl border border-slate-200">
+                  {PUBLIC_PRODUCT_CATALOG.filter(product => product.categoryId === category.id).map((product, index) => (
+                    <Link key={product.key} href={product.href} className={`grid gap-2 px-5 py-4 transition-colors hover:bg-slate-50 sm:grid-cols-[1fr_auto_140px] sm:items-center ${index ? 'border-t border-slate-100' : ''}`}>
+                      <span>
+                        <span className="block text-sm font-semibold text-slate-900">{product.name}</span>
+                        <span className="mt-1 block text-xs text-slate-500">{product.shortDescription}</span>
+                      </span>
+                      <span className="text-sm font-bold text-orange-600">{formatCatalogPrice(product)}</span>
+                      <span className="text-xs text-slate-400 sm:text-right">{product.deliveryDays ?? 'Scoped after intake'}</span>
+                    </Link>
+                  ))}
                 </div>
-              )
-            })}
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="py-20 border-t border-slate-200 bg-slate-50">
-        <div className="mx-auto max-w-3xl px-4 text-center sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-black font-display text-slate-900 tracking-tight">Not sure which option is right?</h2>
-          <p className="mt-4 text-lg text-slate-600 leading-relaxed">
-            Our team can help you find the right fit. Schedule a call and we&apos;ll walk you through the platform.
-          </p>
-          <div className="mt-8 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
-            <Link 
-              href="/contact" 
-              className="w-full sm:w-auto rounded-xl bg-orange-600 hover:bg-orange-700 text-white font-bold py-3.5 px-8 text-sm transition-all hover:shadow-md text-center"
-            >
-              Schedule a Call
-            </Link>
-            <Link 
-              href="/concept" 
-              className="w-full sm:w-auto rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-semibold py-3.5 px-8 text-sm transition-all text-center"
-            >
-              Start Design Concept
-            </Link>
-          </div>
+      <section className="py-12">
+        <div className="mx-auto max-w-3xl px-4 text-center text-xs leading-relaxed text-slate-500 sm:px-6">
+          <p>Checkout shows the binding Kealee service amount before payment. Agency fees, surveys, engineering, architecture, taxes, and other third-party costs are separate unless expressly included.</p>
+          <p className="mt-2">Preliminary feasibility and concept outputs are not for construction and are subject to licensed professional review.</p>
         </div>
       </section>
-    </div>
+    </main>
   )
 }

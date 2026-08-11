@@ -1,5 +1,4 @@
 import Link from 'next/link'
-import { SERVICES } from '@/lib/services-config'
 import { SiteBottomBar } from '@/components/footer/SiteBottomBar'
 
 const COMPANY_LINKS = [
@@ -41,7 +40,7 @@ export function SiteFooter() {
   return (
     <footer className="bg-slate-50 border-t border-slate-200 text-slate-800">
       <div className="mx-auto max-w-7xl px-4 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
 
           {/* Col 1 — Brand */}
           <div className="lg:col-span-1">
@@ -52,7 +51,7 @@ export function SiteFooter() {
               <span className="font-bold text-xl text-slate-900">Kealee</span>
             </div>
             <p className="text-slate-500 text-sm leading-relaxed mb-6">
-              End-to-end design-build platform for homeowners — design concepts, RSMeans cost estimates, permit filing, and a personal project workspace from first idea to final build.
+              End-to-end design-build platform for homeowners — AI design concepts, verified cost estimates, permit filing, and a personal project workspace from first idea to final build.
             </p>
             <div className="flex items-center gap-3">
               {SOCIAL.map((s) => (
@@ -70,24 +69,7 @@ export function SiteFooter() {
             </div>
           </div>
 
-          {/* Col 2 — Services */}
-          <div>
-            <p className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-4">Services</p>
-            <ul className="space-y-2">
-              {SERVICES.map((svc) => (
-                <li key={svc.slug}>
-                  <Link
-                    href={`/services/${svc.slug}`}
-                    className="text-sm text-slate-600 hover:text-slate-900 transition-colors"
-                  >
-                    {svc.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Col 3 — Company */}
+          {/* Col 2 — Company */}
           <div>
             <p className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-4">Company</p>
             <ul className="space-y-2">
@@ -104,7 +86,7 @@ export function SiteFooter() {
             </ul>
           </div>
 
-          {/* Col 4 — Legal + CTA */}
+          {/* Col 3 — Legal + CTA */}
           <div>
             <p className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-4">Legal</p>
             <ul className="space-y-2 mb-8">

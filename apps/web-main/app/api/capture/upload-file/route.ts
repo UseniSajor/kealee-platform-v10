@@ -50,15 +50,18 @@ export async function POST(req: NextRequest) {
       })
 
     if (uploadErr) {
+      console.error('[capture/upload-file] Storage upload failed', { captureSessionId: session.id, zone, name: file.name, type: file.type, size: file.size, error: uploadErr.message })
       return NextResponse.json({ error: uploadErr.message }, { status: 500 })
     }
 
     const { data: publicData } = supabase.storage.from(bucket).getPublicUrl(storagePath)
     const storageUrl = publicData.publicUrl
 
+    console.info('[capture/upload-file] Upload saved', { captureSessionId: session.id, zone, type, size: file.size })
     return NextResponse.json({ storageUrl, storagePath })
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : 'Internal error'
+    console.error('[capture/upload-file] Request failed', { error: msg })
     return NextResponse.json({ error: msg }, { status: 500 })
   }
 }

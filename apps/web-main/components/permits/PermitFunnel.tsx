@@ -1,7 +1,8 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { getPermitFunnelProjectDescriptionPlaceholder } from '@kealee/shared'
+import { CANONICAL_PRICE_CENTS, formatPriceFromCents } from '@kealee/core-rules'
 
 interface PermitFunnelProps {
   countySlug?: string
@@ -46,54 +47,54 @@ const PERMIT_PACKAGES: {
 }[] = [
   {
     tier: 'simple',
-    name: 'Permit Research',
-    price: '$297',
+    name: 'Permit Path Assessment',
+    price: formatPriceFromCents(CANONICAL_PRICE_CENTS.permits.assessment).replace('.00', ''),
     description: 'Know exactly what you need before you start',
     includes: [
-      'Jurisdiction requirements report',
-      'Complete document checklist',
-      'Fee schedule + timeline estimate',
-      'Common rejection reasons for your project type',
+      'Confirm the permitting authority and permit type',
+      'Identify every required form, plan, and attachment',
+      'Verify agency fees, portal, and authorization steps',
+      'Deliver a sequenced, filing-ready action plan',
     ],
   },
   {
     tier: 'package',
-    name: 'Full Permit Package',
-    price: '$497',
+    name: 'Permit Application Package',
+    price: formatPriceFromCents(CANONICAL_PRICE_CENTS.permits.standard).replace('.00', ''),
     description: 'Everything prepared for first-cycle approval',
     includes: [
-      'Everything in Permit Research',
-      'Complete submission package review',
-      'Setback + code compliance check',
-      'Cover letter drafted for your jurisdiction',
-      '2 revision rounds',
+      'Complete jurisdiction application forms',
+      'Assemble plans and attachments in filing order',
+      'Check setbacks and code-path requirements',
+      'Prepare the jurisdiction submission package',
+      'Coordinate two agency correction rounds',
     ],
     highlight: true,
   },
   {
     tier: 'coordination',
     name: 'Permit Coordination',
-    price: '$997',
+    price: formatPriceFromCents(CANONICAL_PRICE_CENTS.permits.managed).replace('.00', ''),
     description: 'We manage the entire process for you',
     includes: [
-      'Everything in Full Permit Package',
-      'Direct examiner communication',
-      'Correction responses handled',
-      'Status tracking + weekly updates',
-      'Unlimited revisions',
+      'File through the correct agency portal',
+      'Manage reviewer and examiner correspondence',
+      'Coordinate correction responses and revised documents',
+      'Resubmit through the agency decision',
+      'Track status, fees, and approval documents',
     ],
   },
   {
     tier: 'expediting',
-    name: 'Expedited Filing',
-    price: 'Starting at $1,997',
+    name: 'Expedited Permit Coordination',
+    price: `Starting at ${formatPriceFromCents(CANONICAL_PRICE_CENTS.permits.expedited).replace('.00', '')}`,
     description: 'Priority processing — fastest path to approval',
     includes: [
       'Everything in Permit Coordination',
-      'Priority queue placement',
-      'Direct jurisdiction contact',
-      'Same-day issue response',
-      'Guaranteed first submission within 5 business days',
+      'Prepare the filing package on the priority production schedule',
+      'Contact the jurisdiction on open submission issues',
+      'Coordinate same-day responses to new agency requests',
+      'Target first submission within five business days after complete documents',
     ],
   },
 ]
@@ -114,10 +115,27 @@ export function PermitFunnel({ countySlug }: PermitFunnelProps) {
   })
   const [submitting, setSubmitting] = useState(false)
   const [checkingOut, setCheckingOut] = useState<PermitTier | null>(null)
+  const [checkoutError, setCheckoutError] = useState<string | null>(null)
+  const [promoCode, setPromoCode] = useState('')
+  const [showPromo, setShowPromo] = useState(false)
   const [dragOver, setDragOver] = useState(false)
   const [availability, setAvailability] = useState<any | null>(null)
   const [availabilityError, setAvailabilityError] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    try {
+      const saved = sessionStorage.getItem(`kealee_permit_intake_${countySlug ?? 'general'}`)
+      if (saved) setState(previous => ({ ...previous, ...JSON.parse(saved), uploadedFiles: [] }))
+    } catch {}
+  }, [countySlug])
+
+  useEffect(() => {
+    try {
+      const { uploadedFiles: _uploadedFiles, ...serializableState } = state
+      sessionStorage.setItem(`kealee_permit_intake_${countySlug ?? 'general'}`, JSON.stringify(serializableState))
+    } catch {}
+  }, [countySlug, state])
 
   const set = (patch: Partial<FunnelState>) =>
     setState((prev) => ({ ...prev, ...patch }))
@@ -198,6 +216,7 @@ export function PermitFunnel({ countySlug }: PermitFunnelProps) {
   // Step 4 → select package → Stripe checkout
   const handleCheckout = async (tier: PermitTier) => {
     setCheckingOut(tier)
+    setCheckoutError(null)
     const origin = typeof window !== 'undefined' ? window.location.origin : ''
     try {
       const res = await fetch('/api/permits/checkout', {
@@ -208,6 +227,8 @@ export function PermitFunnel({ countySlug }: PermitFunnelProps) {
           tier,
           successUrl: `${origin}/permits/success?tier=${tier}&email=${encodeURIComponent(state.email)}&intake_id=${state.intakeId ?? ''}`,
           cancelUrl: `${origin}/permits`,
+          email: state.email,
+          ...(promoCode.trim() && { promoCode: promoCode.trim() }),
         }),
       })
       const data = await res.json()
@@ -215,10 +236,12 @@ export function PermitFunnel({ countySlug }: PermitFunnelProps) {
         window.location.href = data.url
       } else {
         console.error('No Stripe URL returned', data)
+        setCheckoutError('We couldn’t start checkout just now — no charge was made.')
         setCheckingOut(null)
       }
     } catch (err) {
       console.error('Checkout failed', err)
+      setCheckoutError('We couldn’t start checkout just now — no charge was made.')
       setCheckingOut(null)
     }
   }
@@ -478,7 +501,7 @@ export function PermitFunnel({ countySlug }: PermitFunnelProps) {
               Your contact info
             </h3>
             <p className="text-gray-500 text-sm mb-5">
-              We'll use this to send your permit package and updates
+              We&apos;ll use this to send your permit package and updates
             </p>
             <div className="space-y-3 mb-6">
               <div>
@@ -570,7 +593,7 @@ export function PermitFunnel({ countySlug }: PermitFunnelProps) {
               Choose your permit package
             </h3>
             <p className="text-gray-500 text-sm mb-5">
-              All packages include a 100% money-back guarantee if we can't help
+              All packages include a 100% money-back guarantee if we can&apos;t help
             </p>
             <div className="space-y-3">
               {PERMIT_PACKAGES.map((pkg) => (
@@ -624,8 +647,35 @@ export function PermitFunnel({ countySlug }: PermitFunnelProps) {
                 </div>
               ))}
             </div>
+            {checkoutError && (
+              <div className="mt-4 rounded-lg bg-amber-50 border border-amber-200 px-4 py-3 text-center">
+                <p className="text-sm text-amber-800">{checkoutError} Try again, or{' '}
+                  <a href="mailto:permits@kealee.com" className="font-semibold underline">contact support</a>
+                  {' '}and we&apos;ll get you set up directly.
+                </p>
+              </div>
+            )}
+            <div className="mt-4 text-center">
+              <button
+                type="button"
+                onClick={() => setShowPromo((s) => !s)}
+                className="text-xs font-medium underline"
+                style={{ color: '#9CA3AF' }}
+              >
+                {showPromo ? '↑ Hide promo code' : '+ Have a promo code?'}
+              </button>
+              {showPromo && (
+                <input
+                  type="text"
+                  value={promoCode}
+                  onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
+                  placeholder="Enter promo code"
+                  className="mt-2 w-full max-w-xs mx-auto block rounded-lg border border-gray-200 px-3 py-2 text-sm text-center"
+                />
+              )}
+            </div>
             <p className="text-center text-xs text-gray-400 mt-4">
-              Secure payment via Stripe. You'll be redirected to complete your order.
+              Secure payment via Stripe. You&apos;ll be redirected to complete your order.
             </p>
           </div>
         )}

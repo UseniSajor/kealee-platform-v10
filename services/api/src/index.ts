@@ -303,7 +303,7 @@ import { complianceCheckpointRoutes } from './modules/compliance/compliance-chec
 // import { depositRoutes } from './routes/deposit.routes'
 // Stripe webhook handlers for checkout and payment events
 import { registerStripeWebhookRoutes } from './modules/webhooks/stripe-webhook.routes'
-import { registerClerkWebhookRoutes } from './modules/clerk/clerk-webhook.routes'
+import { registerClerkWebhookRoutes } from './modules/webhooks/clerk-webhook.routes'
 // Oversight temporarily disabled
 // import { oversightRoutes } from './routes/oversight.routes'
 import testRoutes from './routes/test.routes'
@@ -529,8 +529,8 @@ const start = async () => {
       await registerStripeWebhookRoutes(fastify)
     })
 
-    // ── Clerk Webhook Handlers ──
-    await safeRegisterBlock('Clerk webhook handlers (auth events)', async () => {
+    // ── Clerk Webhook Handler (identity sync) ──
+    await safeRegisterBlock('Clerk webhook handler (identity sync)', async () => {
       await registerClerkWebhookRoutes(fastify)
     })
 
@@ -1122,6 +1122,21 @@ const start = async () => {
     await safeRegisterBlock('Unified communications routes (P16)', async () => {
       const { commsRoutes } = await import('./modules/comms/comms.routes')
       await fastify.register(commsRoutes, { prefix: '/comms' })
+    })
+
+    await safeRegisterBlock('Twilio AI voice routes', async () => {
+      const { voiceRoutes } = await import('./modules/voice/voice.routes')
+      await fastify.register(voiceRoutes, { prefix: '/api/voice' })
+    })
+
+    await safeRegisterBlock('Authoritative support automation routes', async () => {
+      const { supportAutomationRoutes } = await import('./modules/support-automation/support-automation.routes')
+      await fastify.register(supportAutomationRoutes, { prefix: '/api/support' })
+    })
+
+    await safeRegisterBlock('Site-plan production workflow routes', async () => {
+      const { sitePlanRoutes } = await import('./modules/site-plans/site-plan.routes')
+      await fastify.register(sitePlanRoutes, { prefix: '/api/site-plans' })
     })
 
     await safeRegisterBlock('Revenue optimization routes (P17)', async () => {
