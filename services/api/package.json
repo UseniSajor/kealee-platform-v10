@@ -56,7 +56,6 @@
     "@kealee/keabot-permit": "workspace:*",
     "@kealee/kealee-agent-stack": "workspace:*",
     "@kealee/observability": "workspace:*",
-    "@kealee/os-engineering": "workspace:*",
     "@kealee/os-ai-orch": "workspace:*",
     "@kealee/os-intake": "workspace:*",
     "@kealee/page-builder": "workspace:*",
