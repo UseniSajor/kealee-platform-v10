@@ -33,6 +33,7 @@ import {
   INTAKE_TIER_PRICE_CENTS,
   PURCHASE_CREDIT_POLICY,
   getBuildPathBundle,
+  getConceptPackageDeliverableLabelsForIntake,
 } from "@kealee/core-rules";
 import { trackEvent } from "@/lib/analytics";
 import { utmForApiBody } from "@/lib/marketing/client-utm";
@@ -177,7 +178,8 @@ function deliverableForPath(projectPath: string) {
 function intakeGuideImage(projectPath: string): string {
   if (/kitchen/.test(projectPath)) return "/media/service-photos/interior-reno-concept-after.jpg";
   if (/bathroom/.test(projectPath)) return "/media/service-photos/product-bathroom.jpg";
-  if (/exterior|garden|site|development|subdivision|lot/.test(projectPath)) return "/media/service-photos/product-addition.jpg";
+  if (/garden/.test(projectPath)) return "/media/service-photos/product-garden.jpg";
+  if (/exterior|site|development|subdivision|lot/.test(projectPath)) return "/media/service-photos/product-addition.jpg";
   if (/permit/.test(projectPath)) return "/media/service-photos/product-facade.jpg";
   return "/media/service-photos/design-build-after.jpg";
 }
@@ -314,10 +316,6 @@ function OrderSummary({
           <span className="flex items-center gap-2 text-sm text-slate-600">
             <Shield className="h-4 w-4 text-green-500" /> Secure checkout via
             Stripe
-          </span>
-          <span className="flex items-center gap-2 text-sm text-slate-600">
-            <CheckCircle2 className="h-4 w-4 text-blue-500" /> 30-min
-            consultation included
           </span>
         </div>
 
@@ -865,7 +863,12 @@ export default function IntakePage() {
             delivery: "Price confirmed before checkout",
           };
   const deliverable = SERVICE_DELIVERABLES[projectPath];
-  const includes = deliverable?.includes ?? [];
+  const includes = deliverable?.generatesConcept
+    ? getConceptPackageDeliverableLabelsForIntake(
+        projectPath,
+        selectedTier as 1 | 2 | 3,
+      )
+    : (deliverable?.includes ?? []);
 
   useEffect(() => {
     if (!upsellFromIntake || !upsellSourcePath || !bundlePreview) return;

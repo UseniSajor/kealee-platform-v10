@@ -53,6 +53,10 @@ function tierDeliverableIncludes(projectPath: string, tier: number): string[] {
   return getConceptPackageDeliverableLabelsForIntake(projectPath, normalizeConceptTier(tier))
 }
 
+function packageIncludesVideo(projectPath: string, tier: number): boolean {
+  return projectPath !== 'garden_concept' && conceptTierIncludesVideo(normalizeConceptTier(tier))
+}
+
 /** Until a Kealee transcode pipeline writes project-specific MP4s to storage, tier 2+ packages get a playable URL (override via env). */
 const DEFAULT_CONCEPT_PLACEHOLDER_VIDEO_URL =
   'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4'
@@ -500,8 +504,13 @@ function applyRenderBundle(conceptOutput: ConceptOutput, bundle: ConceptRenderBu
  * Once /api/concept/video reports `completed`, the customer portal swaps in
  * `form_data.conceptVideo.outputUrl`.
  */
-function attachConceptVideoFields(conceptOutput: ConceptOutput, tier: number): void {
-  if (tier < 2) return
+function attachConceptVideoFields(conceptOutput: ConceptOutput, projectPath: string, tier: number): void {
+  if (!packageIncludesVideo(projectPath, tier)) {
+    delete conceptOutput.videoUrl
+    delete conceptOutput.videoDuration
+    delete conceptOutput.videoFormatUrls
+    return
+  }
   if (conceptOutput.videoUrl) return
   const url =
     (typeof process.env.CONCEPT_PLACEHOLDER_VIDEO_URL === 'string' &&
@@ -593,7 +602,7 @@ function triggerConceptReadyEmail(
       intakeId:       args.intakeId,
       estimatedCost:  args.conceptOutput.estimatedCost,
       tier:           args.tier,
-      videoIncluded:  args.tier >= 2,
+      videoIncluded:  packageIncludesVideo(args.projectPath, args.tier),
     }),
   }).catch(err => {
     console.error('[concept/generate] deliverable-ready email trigger failed:', err?.message ?? err)
@@ -974,7 +983,7 @@ export async function POST(req: NextRequest) {
         projectAddress: intake.project_address as string | undefined,
         permitRequired: deliverable?.permitRequired,
       })
-      attachConceptVideoFields(out, tier)
+      attachConceptVideoFields(out, projectPath, tier)
 
       const hadFloorplan =
         typeof cachedRaw.floorplanSvgInline === 'string' &&
@@ -1007,7 +1016,7 @@ export async function POST(req: NextRequest) {
       }
 
       const appBaseUrl = internalApiBaseUrl(req)
-      if (shouldTriggerConceptVideo(tier, existingFormData.conceptVideo)) {
+      if (packageIncludesVideo(projectPath, tier) && shouldTriggerConceptVideo(tier, existingFormData.conceptVideo)) {
         triggerConceptVideoGeneration(appBaseUrl, intakeId, tier)
         kickConceptVideoPoll(appBaseUrl, intakeId, tier)
       }
@@ -1166,7 +1175,7 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    attachConceptVideoFields(conceptOutput, tier)
+    attachConceptVideoFields(conceptOutput, projectPath, tier)
 
     // Stamp a stable package ID and provenance metadata so agents and humans
     // can retrieve, audit, and track each delivered package by a durable key.
@@ -1241,7 +1250,7 @@ export async function POST(req: NextRequest) {
     const appBaseUrl = internalApiBaseUrl(req)
 
     // Tier 2+ deliverables include a video. Fire-and-forget — portal polls GET to advance segments.
-    if (shouldTriggerConceptVideo(tier, existingFormData.conceptVideo)) {
+    if (packageIncludesVideo(projectPath, tier) && shouldTriggerConceptVideo(tier, existingFormData.conceptVideo)) {
       triggerConceptVideoGeneration(appBaseUrl, intakeId, tier)
       kickConceptVideoPoll(appBaseUrl, intakeId, tier)
     }

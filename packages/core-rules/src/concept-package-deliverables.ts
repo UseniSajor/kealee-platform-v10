@@ -172,7 +172,13 @@ function portalAndSupport(tier: ConceptTier): ConceptPackageDeliverable[] {
   return items
 }
 
-function videoBlock(tier: ConceptTier): ConceptPackageDeliverable[] {
+function videoBlock(
+  tier: ConceptTier,
+  family: ServiceDeliverableFamily,
+): ConceptPackageDeliverable[] {
+  // Garden packages are plan-and-specification products. They do not include
+  // an AI video at any tier.
+  if (family === 'garden') return []
   if (tier === 1) {
     return [
       {
@@ -457,7 +463,7 @@ export function buildConceptTierPackage(
     ...renderBlock(tier, roomLabelForFamily(family)),
     ...costAndBom(tier),
     ...familyExtras(family, tier),
-    ...videoBlock(tier),
+    ...videoBlock(tier, family),
     ...portalAndSupport(tier),
   ]
 
@@ -473,7 +479,7 @@ export function buildConceptTierPackage(
     deliverables,
     permitAndZoning,
     renderCount: TIER_IMAGE_COUNT[tier],
-    includesVideo: tier >= 2,
+    includesVideo: family !== 'garden' && tier >= 2,
     revisions: tier === 1 ? 1 : 3,
     supportDays: tier === 1 ? 0 : tier === 2 ? 30 : 90,
   }

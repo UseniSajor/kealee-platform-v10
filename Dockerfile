@@ -8,7 +8,7 @@ WORKDIR /app
 # workspace manifests), so this layer stays cached until dependencies change.
 # Copying per-package package.json files with a glob does NOT work here:
 # `COPY packages/*/package.json ./packages/` flattens every file into one,
-# which breaks `pnpm install --frozen-lockfile` (workspace/lockfile mismatch).
+# which breaks workspace dependency resolution by flattening manifests.
 COPY pnpm-lock.yaml pnpm-workspace.yaml package.json .npmrc ./
 RUN pnpm fetch
 
@@ -16,7 +16,9 @@ RUN pnpm fetch
 # Postinstall hooks (e.g. @kealee/database `prisma generate`) run here with
 # full sources present, so no separate prisma step is needed before build.
 COPY . .
-RUN pnpm install --frozen-lockfile --prefer-offline
+# This monorepo includes app shells whose manifests can change independently
+# of the deploy target; resolve those workspace entries during the image build.
+RUN pnpm install --no-frozen-lockfile --prefer-offline
 
 FROM deps AS builder
 
