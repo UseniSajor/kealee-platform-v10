@@ -216,6 +216,8 @@ export const SERVICE_DELIVERABLES: Record<string, ServiceDeliverable> = {
       'Plant list with seasonal selection',
       'Seasonal maintenance calendar',
       'Bill of Materials (BOM)',
+      VIDEO_PREMIUM_TIERS,
+      CREDIT_TOWARD_PERMIT_DRAWINGS,
       'Direct support via portal ask bar',
     ],
     deliveryDays: '2-4 days',

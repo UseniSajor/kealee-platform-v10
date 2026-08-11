@@ -53,8 +53,8 @@ function tierDeliverableIncludes(projectPath: string, tier: number): string[] {
   return getConceptPackageDeliverableLabelsForIntake(projectPath, normalizeConceptTier(tier))
 }
 
-function packageIncludesVideo(projectPath: string, tier: number): boolean {
-  return projectPath !== 'garden_concept' && conceptTierIncludesVideo(normalizeConceptTier(tier))
+function packageIncludesVideo(_projectPath: string, tier: number): boolean {
+  return conceptTierIncludesVideo(normalizeConceptTier(tier))
 }
 
 /** Until a Kealee transcode pipeline writes project-specific MP4s to storage, tier 2+ packages get a playable URL (override via env). */
@@ -505,12 +505,7 @@ function applyRenderBundle(conceptOutput: ConceptOutput, bundle: ConceptRenderBu
  * `form_data.conceptVideo.outputUrl`.
  */
 function attachConceptVideoFields(conceptOutput: ConceptOutput, projectPath: string, tier: number): void {
-  if (!packageIncludesVideo(projectPath, tier)) {
-    delete conceptOutput.videoUrl
-    delete conceptOutput.videoDuration
-    delete conceptOutput.videoFormatUrls
-    return
-  }
+  if (!packageIncludesVideo(projectPath, tier)) return
   if (conceptOutput.videoUrl) return
   const url =
     (typeof process.env.CONCEPT_PLACEHOLDER_VIDEO_URL === 'string' &&

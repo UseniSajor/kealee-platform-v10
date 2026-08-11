@@ -6,7 +6,13 @@ import type Stripe from 'stripe'
 import type { NextRequest } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { SERVICE_DELIVERABLES } from '@/lib/service-deliverables'
-import { resolveConceptTier, isBundleProductKey } from '@kealee/core-rules'
+import {
+  getConceptPackageDeliverableLabelsForIntake,
+  renderCountForTier,
+  resolveConceptTier,
+  isBundleProductKey,
+  type ConceptTier,
+} from '@kealee/core-rules'
 import { isV30IntakeMetadata, triggerV30GenerationForIntake } from '@/lib/v30-trigger'
 import { isV30Enabled } from '@kealee/kealee-agent-stack'
 import {
@@ -164,6 +170,12 @@ async function handleCheckoutCompleted(
   }
 
   const existingFormData = (currentIntake?.form_data as Record<string, unknown>) ?? {}
+  const paidTierFromMetadata = Number(meta.tier)
+  const purchasedTier = (
+    paidTierFromMetadata === 1 || paidTierFromMetadata === 2 || paidTierFromMetadata === 3
+      ? paidTierFromMetadata
+      : resolveConceptTier(existingFormData, { projectPath })
+  ) as ConceptTier
   const purchaseUtm = parseUtmFromBody({
     ...((currentIntake?.metadata as Record<string, unknown>) ?? {}),
     ...existingFormData,
@@ -173,13 +185,17 @@ async function handleCheckoutCompleted(
   if (deliverable) {
     mergedFormData.serviceLabel = deliverable.label
     mergedFormData.serviceCategory = deliverable.category
-    mergedFormData.serviceIncludes = deliverable.includes
+    mergedFormData.serviceIncludes = deliverable.generatesConcept && !isBundlePurchase
+      ? getConceptPackageDeliverableLabelsForIntake(projectPath, purchasedTier)
+      : deliverable.includes
     mergedFormData.serviceDeliveryDays = deliverable.deliveryDays
-    if (deliverable.renderCount != null) mergedFormData.renderCount = deliverable.renderCount
+    if (deliverable.generatesConcept && !isBundlePurchase) {
+      mergedFormData.renderCount = renderCountForTier(purchasedTier, deliverable.renderCount ?? 3)
+      mergedFormData.tier = purchasedTier
+    } else if (deliverable.renderCount != null) {
+      mergedFormData.renderCount = deliverable.renderCount
+    }
     if (deliverable.permitRequired != null) mergedFormData.permitRequired = deliverable.permitRequired
-  }
-  if (typeof mergedFormData.tier !== 'number' && deliverable?.generatesConcept && !isBundlePurchase) {
-    mergedFormData.tier = resolveConceptTier(mergedFormData, { projectPath })
   }
   if (upsellSourceIntakeId) {
     mergedFormData.upsellSourceIntakeId = upsellSourceIntakeId

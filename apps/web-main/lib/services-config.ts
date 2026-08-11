@@ -130,11 +130,7 @@ export const SERVICES: Service[] = [
     deliverableLabel: 'Landscape Package',
     category: 'landscape',
     deliveryDays: '2–4 days',
-    tiers: [
-      tier1(99),
-      { tier: 2, name: 'Premium', price: 399, available: true, video: false, badge: 'Popular' },
-      { tier: 3, name: 'Premium+', price: 799, available: true, video: false, badge: 'Best Value' },
-    ],
+    tiers: [tier1(99), tier2(399), tier3(799)],
     usesConceptIntake: true,
     features: ['Landscape layout plan', 'Plant species guide', 'Irrigation overview', 'Hardscape design concept', 'Seasonal planting schedule', 'Direct support via portal ask bar'],
     costRange: '$8K – $80K',

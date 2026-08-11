@@ -172,22 +172,10 @@ function portalAndSupport(tier: ConceptTier): ConceptPackageDeliverable[] {
   return items
 }
 
-function videoBlock(
-  tier: ConceptTier,
-  family: ServiceDeliverableFamily,
-): ConceptPackageDeliverable[] {
-  // Garden packages are plan-and-specification products. They do not include
-  // an AI video at any tier.
-  if (family === 'garden') return []
-  if (tier === 1) {
-    return [
-      {
-        id: 'video-upgrade',
-        label: 'AI process / transformation video — upgrade to Premium or Premium+',
-        category: 'video',
-      },
-    ]
-  }
+function videoBlock(tier: ConceptTier): ConceptPackageDeliverable[] {
+  // Basic packages do not include video. Upgrade messaging belongs outside
+  // the purchased-deliverables list.
+  if (tier === 1) return []
   if (tier === 2) {
     return [
       {
@@ -463,7 +451,7 @@ export function buildConceptTierPackage(
     ...renderBlock(tier, roomLabelForFamily(family)),
     ...costAndBom(tier),
     ...familyExtras(family, tier),
-    ...videoBlock(tier, family),
+    ...videoBlock(tier),
     ...portalAndSupport(tier),
   ]
 
@@ -479,7 +467,7 @@ export function buildConceptTierPackage(
     deliverables,
     permitAndZoning,
     renderCount: TIER_IMAGE_COUNT[tier],
-    includesVideo: family !== 'garden' && tier >= 2,
+    includesVideo: tier >= 2,
     revisions: tier === 1 ? 1 : 3,
     supportDays: tier === 1 ? 0 : tier === 2 ? 30 : 90,
   }

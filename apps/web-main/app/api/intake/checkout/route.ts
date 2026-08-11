@@ -53,6 +53,7 @@ export async function POST(req: NextRequest) {
 
     let unitAmountCents: number
     let productName: string
+    let checkoutTier: number | undefined
 
     if (useV30Pricing && isV30Enabled()) {
       const supabase = getSupabaseAdmin()
@@ -86,7 +87,6 @@ export async function POST(req: NextRequest) {
       productName = bundle.label
     } else {
       // Server-trusted tier price (v20) — read tier from intake form_data
-      let selectedTier: number | undefined
       try {
         const supabase = getSupabaseAdmin()
         const { data: tierRow } = await supabase
@@ -94,11 +94,11 @@ export async function POST(req: NextRequest) {
           .select('form_data')
           .eq('id', intakeId)
           .single()
-        selectedTier = ((tierRow?.form_data as Record<string, unknown>) ?? {}).tier as number | undefined
+        checkoutTier = ((tierRow?.form_data as Record<string, unknown>) ?? {}).tier as number | undefined
       } catch { /* non-fatal — falls back to flat price */ }
 
-      const priceEntry = selectedTier
-        ? getIntakePriceByTier(projectPath, selectedTier)
+      const priceEntry = checkoutTier
+        ? getIntakePriceByTier(projectPath, checkoutTier)
         : getIntakePrice(projectPath)
       if (!priceEntry) {
         return NextResponse.json(
@@ -153,6 +153,7 @@ export async function POST(req: NextRequest) {
         projectPath,
         siteVisitRequested: siteVisitRequested ? 'true' : 'false',
         pricingModel: useV30Pricing ? 'v30_dynamic' : 'tier_fixed',
+        ...(checkoutTier ? { tier: String(checkoutTier) } : {}),
         ...(sourcePath ? { sourcePath } : {}),
         ...(upsellSourceIntakeId ? { upsellSourceIntakeId } : {}),
         ...(isBundleProductKey(projectPath) ? { bundlePurchase: 'true' } : {}),
@@ -163,6 +164,7 @@ export async function POST(req: NextRequest) {
           intakeId,
           projectPath,
           pricingModel: useV30Pricing ? 'v30_dynamic' : 'tier_fixed',
+          ...(checkoutTier ? { tier: String(checkoutTier) } : {}),
           ...(sourcePath ? { sourcePath } : {}),
           ...(upsellSourceIntakeId ? { upsellSourceIntakeId } : {}),
           ...(isBundleProductKey(projectPath) ? { bundlePurchase: 'true' } : {}),
