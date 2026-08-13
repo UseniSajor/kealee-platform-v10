@@ -117,7 +117,7 @@ describe('Phase 2: Geometry3D', () => {
     );
 
     expect(roof.id).toBeDefined();
-    expect(roof.points.length).toBeGreaterThan(0);
+    expect(roof.vertices.length).toBeGreaterThan(0);
     expect(roof.pitch).toBeCloseTo(26.57);
   });
 
@@ -142,9 +142,9 @@ describe('Phase 2: Geometry3D', () => {
       9,
       0,
     );
-    const elev = Geometry3D.generateElevationView(walls3D, 0);
+    const elevations = Geometry3D.generateElevationViews(walls3D, []);
 
-    expect(Array.isArray(elev)).toBe(true);
+    expect(Array.isArray(elevations.south)).toBe(true);
   });
 });
 

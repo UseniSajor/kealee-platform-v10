@@ -304,15 +304,18 @@ export class Geometry3D {
   static createSlab(
     polygon: Point[],
     elevation: number = 0,
-    specs?: {
-      thickness?: number;
-      strength?: number;
-      reinforcement?: 'wire-mesh' | 'rebar' | 'fibers';
-      reinforcementSpacing?: number;
-    },
+    specs?:
+      | number // shorthand for { thickness }
+      | {
+          thickness?: number;
+          strength?: number;
+          reinforcement?: 'wire-mesh' | 'rebar' | 'fibers';
+          reinforcementSpacing?: number;
+        },
   ): Slab3D {
-    const thickness = specs?.thickness ?? 4 / 12; // 4 inches in feet
-    const strength = specs?.strength ?? 3000; // PSI
+    const specsObj = typeof specs === 'number' ? { thickness: specs } : specs;
+    const thickness = specsObj?.thickness ?? 4 / 12; // 4 inches in feet
+    const strength = specsObj?.strength ?? 3000; // PSI
 
     return {
       id: `slab_${Date.now()}`,
@@ -326,8 +329,8 @@ export class Geometry3D {
         airContent: 6, // Percent
       },
       reinforcement: {
-        type: specs?.reinforcement ?? 'wire-mesh',
-        spacing: specs?.reinforcementSpacing ?? 6, // Inches
+        type: specsObj?.reinforcement ?? 'wire-mesh',
+        spacing: specsObj?.reinforcementSpacing ?? 6, // Inches
         size: '6x6-W1.4xW1.4', // 6"x6" mesh with W1.4 wire
       },
     };
@@ -340,18 +343,21 @@ export class Geometry3D {
     polygon: Point[],
     floorElevation: number,
     wallHeight: number,
-    specs?: {
-      pitch?: number;
-      overhang?: number;
-      roofingMaterial?: RoofingMaterial;
-      rafterSize?: string;
-      rafterSpacing?: number;
-    },
+    specs?:
+      | number // shorthand for { pitch }
+      | {
+          pitch?: number;
+          overhang?: number;
+          roofingMaterial?: RoofingMaterial;
+          rafterSize?: string;
+          rafterSpacing?: number;
+        },
   ): Roof3D {
-    const pitch = specs?.pitch ?? 26.57; // 6/12 pitch
-    const overhang = specs?.overhang ?? 1.5;
-    const rafterSize = specs?.rafterSize ?? '2x8';
-    const rafterSpacing = specs?.rafterSpacing ?? 16; // OC in inches
+    const specsObj = typeof specs === 'number' ? { pitch: specs } : specs;
+    const pitch = specsObj?.pitch ?? 26.57; // 6/12 pitch
+    const overhang = specsObj?.overhang ?? 1.5;
+    const rafterSize = specsObj?.rafterSize ?? '2x8';
+    const rafterSpacing = specsObj?.rafterSpacing ?? 16; // OC in inches
 
     // Find polygon center for ridge line
     const cx = polygon.reduce((s, p) => s + p.x, 0) / polygon.length;
@@ -400,7 +406,7 @@ export class Geometry3D {
         thickness: 0.5,
         grade: 'CD',
       },
-      roofing: specs?.roofingMaterial || {
+      roofing: specsObj?.roofingMaterial || {
         type: 'asphalt-shingles',
         weight: 200,
         lifespan: 20,

@@ -109,6 +109,8 @@ export interface FloorPlanRoom {
   issues?: string[];
 }
 
+export type FloorPlanRoomJson = FloorPlanRoom;
+
 export interface FloorPlanJson {
   id: string;
   intakeId: string;
