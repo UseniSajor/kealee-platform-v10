@@ -7,7 +7,6 @@
 
 import React, { useEffect, useRef } from 'react';
 import { useLoader, useThree } from '@react-three/fiber';
-// @ts-expect-error Types for three loaders are often incomplete
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import * as THREE from 'three';
 
