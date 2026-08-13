@@ -35,7 +35,7 @@ export async function requireAuthenticatedUser(clerkUserId: string) {
   }
 
   const user = await prisma.user.findUnique({
-    where: { clerkUserId },
+    where: { externalAuthId: clerkUserId },
   })
 
   if (!user || user.status !== 'ACTIVE') {
@@ -81,7 +81,7 @@ export async function requireOrganizationRole(
   allowedRoles: string[] | Set<string>,
 ) {
   const membership = await requireOrganizationMember(clerkUserId, orgId)
-  const user = await prisma.user.findUnique({ where: { clerkUserId } })
+  const user = await prisma.user.findUnique({ where: { externalAuthId: clerkUserId } })
 
   const roles = Array.isArray(allowedRoles) ? new Set(allowedRoles) : allowedRoles
   const hasRole = roles.has(membership.roleKey.toUpperCase())
@@ -111,7 +111,7 @@ export async function requireProjectAccess(clerkUserId: string, projectId: strin
     include: { org: true },
   })
 
-  if (!project) {
+  if (!project || !project.orgId) {
     throw new Error('Project not found')
   }
 
@@ -189,17 +189,16 @@ export async function canAccessResource(
       case 'estimate':
         const estimate = await prisma.estimate.findUnique({
           where: { id: resourceId },
-          include: { project: { include: { org: true } } },
         })
         if (!estimate) return false
-        await requireOrganizationMember(clerkUserId, estimate.project.orgId)
+        await requireOrganizationMember(clerkUserId, estimate.organizationId)
         return true
 
       case 'property':
         const property = await prisma.property.findUnique({
           where: { id: resourceId },
         })
-        if (!property) return false
+        if (!property || !property.orgId) return false
         await requireOrganizationMember(clerkUserId, property.orgId)
         return true
 

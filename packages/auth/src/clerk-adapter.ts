@@ -6,7 +6,6 @@
 
 import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import type { NextRequest } from 'next/server'
-import type { ClerkUser } from '@clerk/types'
 
 export interface UnifiedUser {
   id: string
