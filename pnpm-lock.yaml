@@ -775,6 +775,52 @@ importers:
         specifier: workspace:*
         version: link:../../packages/ui
 
+  apps/portal-engineer:
+    dependencies:
+      '@clerk/nextjs':
+        specifier: ^5.5.0
+        version: 5.7.6(next@14.2.35)(react-dom@18.2.0)(react@18.2.0)
+      '@kealee/core-rules':
+        specifier: workspace:*
+        version: link:../../packages/core-rules
+      '@kealee/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
+      lucide-react:
+        specifier: ^0.294.0
+        version: 0.294.0(react@18.2.0)
+      next:
+        specifier: 14.2.35
+        version: 14.2.35(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(react-dom@18.2.0)(react@18.2.0)
+      react:
+        specifier: 18.2.0
+        version: 18.2.0
+      react-dom:
+        specifier: 18.2.0
+        version: 18.2.0(react@18.2.0)
+    devDependencies:
+      '@types/node':
+        specifier: ^20.0.0
+        version: 20.19.39
+      '@types/react':
+        specifier: ^18
+        version: 18.3.28
+      '@types/react-dom':
+        specifier: ^18
+        version: 18.3.7(@types/react@18.3.28)
+      autoprefixer:
+        specifier: ^10.4.16
+        version: 10.5.0(postcss@8.5.10)
+      postcss:
+        specifier: ^8.4.32
+        version: 8.5.10
+      tailwindcss:
+        specifier: ^3.4.0
+        version: 3.4.19(tsx@4.21.0)
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+
   apps/portal-owner:
     dependencies:
       '@kealee/auth':
@@ -816,6 +862,9 @@ importers:
       '@kealee/automation':
         specifier: workspace:*
         version: link:../../packages/automation
+      '@kealee/autonomous-runtime':
+        specifier: workspace:*
+        version: link:../../packages/autonomous-runtime
       '@kealee/communications':
         specifier: workspace:*
         version: link:../../packages/communications
@@ -1645,6 +1694,19 @@ importers:
       typescript:
         specifier: ^5.3.0
         version: 5.9.3
+
+  packages/autonomous-runtime:
+    dependencies:
+      '@kealee/database':
+        specifier: workspace:*
+        version: link:../database
+    devDependencies:
+      typescript:
+        specifier: ^5.9.0
+        version: 5.9.3
+      vitest:
+        specifier: ^1.6.1
+        version: 1.6.1(@types/node@20.19.39)
 
   packages/communications:
     dependencies:
