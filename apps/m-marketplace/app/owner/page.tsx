@@ -4,8 +4,6 @@
 import { Metadata } from 'next';
 import { ProjectOwnerLandingClient } from './ProjectOwnerLandingClient';
 
-export const dynamic = 'force-static';
-
 export const metadata: Metadata = {
   title: 'Homeowner Project Services | Kealee - Design, Permits & Project Management',
   description: 'Professional project services for homeowners — from architectural design and permits to contractor selection and project management. Escrow-protected payments.',
