@@ -149,44 +149,121 @@ export const PG_ZONE_TYPE_CATEGORY: Record<number, PgZoneCategory> = {
 }
 
 /**
- * Every base zone class in the 2022 ordinance, as published by M-NCPPC.
+ * Every base zone class in the 2022 ordinance, with the county's own long names.
  *
- * Enumerated live 2026-08-20: the layer returns 36 distinct CLASS/ZONE_TYPE rows,
- * of which 32 carry a real class and 4 are null/empty (a data-quality artifact in
- * the county layer, spanning ZONE_TYPE 1, 3, 4 and 5). A null CLASS means the
- * polygon carries no zoning answer — treat it as unknown and route to review, not
- * as unzoned.
+ * Enumerated 2026-08-20 from the layer's SUBTYPE CODED-VALUE DOMAINS, which is the
+ * authoritative legal list. An earlier version of this file was built from
+ * `returnDistinctValues`, which returns only zones that are currently mapped
+ * somewhere in the county — that silently omitted TAC-PD, LTO-PD, MU-PD and IE-PD,
+ * four Planned Development zones that exist in the ordinance but are not yet
+ * applied to any parcel. Never enumerate a legal code list from observed data.
  *
- * `__tests__/pg-zone-registry.test.ts` asserts this list still matches the live
- * service, so a county amendment that adds or retires a zone fails a test rather
- * than silently mis-validating a project.
+ * `ZONE_TYPE` is the subtype field; the Residential domain sits at field level
+ * while the other five sit on their subtypes.
+ *
+ * These are BASE zones only. Overlay zones (Chesapeake Bay Critical Area,
+ * Transit District Overlay, Neighborhood Conservation Overlay, Development
+ * District Overlay, Military Installation) are separate layers and stack on top
+ * of a base zone — see PG_LAYERS.
  */
-export const PG_ZONE_CLASSES_2022: Record<PgZoneCategory, readonly string[]> = {
-  rural_agricultural_open_space: ['AG', 'AR', 'ROS'],
-  residential: ['RE', 'RR', 'RSF-A', 'RSF-65', 'RSF-95', 'RMF-12', 'RMF-20', 'RMF-48'],
-  commercial_industrial: ['CGO', 'CN', 'CS', 'IE', 'IH'],
-  transit_activity_center: [
-    'NAC', 'TAC-C', 'TAC-E',
-    'LTO-C', 'LTO-E',
-    'RTO-L-C', 'RTO-L-E', 'RTO-H-C', 'RTO-H-E',
-  ],
-  mixed_use_comprehensive_design: ['LCD', 'LMUTC', 'LMXC', 'RMH'],
-  planned_development: ['NAC-PD', 'R-PD', 'RTO-PD'],
+export interface PgZone {
+  code: string
+  /** The county's own description from the layer domain. */
+  name: string
+  category: PgZoneCategory
 }
 
-export const PG_ALL_ZONE_CLASSES_2022: readonly string[] =
-  Object.values(PG_ZONE_CLASSES_2022).flat()
+export const PG_ZONES_2022: readonly PgZone[] = [
+  // ZONE_TYPE 1 — Rural and Agricultural
+  { code: 'AG',      name: 'Agriculture and Preservation',                       category: 'rural_agricultural_open_space' },
+  { code: 'AR',      name: 'Agricultural-Residential',                           category: 'rural_agricultural_open_space' },
+  { code: 'ROS',     name: 'Reserved Open Space',                                category: 'rural_agricultural_open_space' },
+
+  // ZONE_TYPE 2 — Residential
+  { code: 'RE',      name: 'Residential Estate',                                 category: 'residential' },
+  { code: 'RR',      name: 'Residential, Rural',                                 category: 'residential' },
+  { code: 'RSF-A',   name: 'Residential, Single-Family - Attached',              category: 'residential' },
+  { code: 'RSF-65',  name: 'Residential, Single-Family - 65',                    category: 'residential' },
+  { code: 'RSF-95',  name: 'Residential, Single-Family - 95',                    category: 'residential' },
+  { code: 'RMF-12',  name: 'Residential, Multifamily-12',                        category: 'residential' },
+  { code: 'RMF-20',  name: 'Residential, Multifamily-20',                        category: 'residential' },
+  { code: 'RMF-48',  name: 'Residential, Multifamily-48',                        category: 'residential' },
+
+  // ZONE_TYPE 3 — Nonresidential
+  { code: 'CN',      name: 'Commercial, Neighborhood',                           category: 'commercial_industrial' },
+  { code: 'CS',      name: 'Commercial, Service',                                category: 'commercial_industrial' },
+  { code: 'CGO',     name: 'Commercial, General and Office',                     category: 'commercial_industrial' },
+  { code: 'IE',      name: 'Industrial, Employment',                             category: 'commercial_industrial' },
+  { code: 'IH',      name: 'Industrial, Heavy',                                  category: 'commercial_industrial' },
+
+  // ZONE_TYPE 4 — Transit-Oriented / Activity Center
+  { code: 'NAC',     name: 'Neighborhood Activity Center',                       category: 'transit_activity_center' },
+  { code: 'TAC-C',   name: 'Town Activity Center - Core',                        category: 'transit_activity_center' },
+  { code: 'TAC-E',   name: 'Town Activity Center - Edge',                        category: 'transit_activity_center' },
+  { code: 'LTO-C',   name: 'Local Transit-Oriented - Core',                      category: 'transit_activity_center' },
+  { code: 'LTO-E',   name: 'Local Transit-Oriented - Edge',                      category: 'transit_activity_center' },
+  { code: 'RTO-L-C', name: 'Regional Transit-Oriented, Low-Intensity - Core',    category: 'transit_activity_center' },
+  { code: 'RTO-L-E', name: 'Regional Transit-Oriented, Low-Intensity - Edge',    category: 'transit_activity_center' },
+  { code: 'RTO-H-C', name: 'Regional Transit-Oriented, High-Intensity - Core',   category: 'transit_activity_center' },
+  { code: 'RTO-H-E', name: 'Regional Transit-Oriented, High-Intensity - Edge',   category: 'transit_activity_center' },
+
+  // ZONE_TYPE 5 — Other (legacy comprehensive-design zones carried forward)
+  { code: 'RMH',     name: 'Planned Mobile Home Community',                      category: 'mixed_use_comprehensive_design' },
+  { code: 'LCD',     name: 'Legacy Comprehensive Design',                        category: 'mixed_use_comprehensive_design' },
+  { code: 'LMXC',    name: 'Legacy Mixed-Use Community',                         category: 'mixed_use_comprehensive_design' },
+  { code: 'LMUTC',   name: 'Legacy Mixed-Use Town Center',                       category: 'mixed_use_comprehensive_design' },
+
+  // ZONE_TYPE 6 — Planned Development
+  { code: 'R-PD',    name: 'Residential Planned Development',                    category: 'planned_development' },
+  { code: 'NAC-PD',  name: 'Neighborhood Activity Center Planned Development',   category: 'planned_development' },
+  { code: 'TAC-PD',  name: 'Town Activity Center Planned Development',           category: 'planned_development' },
+  { code: 'LTO-PD',  name: 'Local Transit-Oriented Planned Development',         category: 'planned_development' },
+  { code: 'RTO-PD',  name: 'Regional Transit-Oriented Planned Development',      category: 'planned_development' },
+  { code: 'MU-PD',   name: 'Mixed-Use Planned Development',                      category: 'planned_development' },
+  { code: 'IE-PD',   name: 'Industrial, Employment Planned Development',         category: 'planned_development' },
+]
+
+/**
+ * The layer also carries a literal "Not Assigned" coded value meaning
+ * "Please Contact M-NCPPC". It is NOT a zone — it means the county has no zoning
+ * answer for that polygon. Treat it as unknown and route to review; never read it
+ * as unzoned or as permission to proceed.
+ */
+export const PG_ZONE_NOT_ASSIGNED = 'Not Assigned'
+
+export const PG_ALL_ZONE_CLASSES_2022: readonly string[] = PG_ZONES_2022.map(z => z.code)
+
+export const PG_ZONE_CLASSES_2022: Record<PgZoneCategory, readonly string[]> = {
+  rural_agricultural_open_space: PG_ZONES_2022.filter(z => z.category === 'rural_agricultural_open_space').map(z => z.code),
+  residential:                   PG_ZONES_2022.filter(z => z.category === 'residential').map(z => z.code),
+  commercial_industrial:         PG_ZONES_2022.filter(z => z.category === 'commercial_industrial').map(z => z.code),
+  transit_activity_center:       PG_ZONES_2022.filter(z => z.category === 'transit_activity_center').map(z => z.code),
+  mixed_use_comprehensive_design: PG_ZONES_2022.filter(z => z.category === 'mixed_use_comprehensive_design').map(z => z.code),
+  planned_development:           PG_ZONES_2022.filter(z => z.category === 'planned_development').map(z => z.code),
+}
+
+function normalizeZone(zoneClass: string): string {
+  return zoneClass.toUpperCase().trim()
+}
 
 export function isCurrentPgZoneClass(zoneClass: string): boolean {
-  return PG_ALL_ZONE_CLASSES_2022.includes(zoneClass.toUpperCase().trim())
+  return PG_ALL_ZONE_CLASSES_2022.includes(normalizeZone(zoneClass))
+}
+
+/** True when the county explicitly has no zoning answer for the polygon. */
+export function isPgZoneNotAssigned(zoneClass: string | null | undefined): boolean {
+  if (zoneClass == null) return true
+  const v = zoneClass.trim()
+  return v === '' || v.toLowerCase() === PG_ZONE_NOT_ASSIGNED.toLowerCase()
+}
+
+export function pgZone(zoneClass: string): PgZone | null {
+  const target = normalizeZone(zoneClass)
+  return PG_ZONES_2022.find(z => z.code === target) ?? null
 }
 
 export function pgZoneCategory(zoneClass: string): PgZoneCategory | null {
-  const target = zoneClass.toUpperCase().trim()
-  for (const [category, classes] of Object.entries(PG_ZONE_CLASSES_2022)) {
-    if (classes.includes(target)) return category as PgZoneCategory
-  }
-  return null
+  return pgZone(zoneClass)?.category ?? null
 }
 
 // ── Query ───────────────────────────────────────────────────────────────────

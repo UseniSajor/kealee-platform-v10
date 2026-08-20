@@ -65,6 +65,16 @@ live M-NCPPC endpoint is `https://gisdata.pgplanning.org/arcgis/rest/services`
   nonconforming-use and vested-rights analysis.
   Verified side by side on the same envelope: current returned `AG`, `IE`, `LMUTC`,
   `NAC`, `RMF-20`; prior returned `R-55`, `U-L-I`, `M-U-I`, `O-S`, `R-10`.
+- **SECOND CORRECTION — enumerate legal code lists from DOMAINS, not from data.**
+  A first pass built the zone registry with `returnDistinctValues`, giving 32 zones.
+  That returns only zones currently *mapped* on some parcel. The layer's subtype
+  coded-value domains — the authoritative legal list — carry **36** base zones. The
+  four omitted (`TAC-PD`, `LTO-PD`, `MU-PD`, `IE-PD`) are adopted Planned Development
+  zones not yet applied anywhere. A drift test built on distinct values would never
+  have caught this; it now compares against the domains.
+  The layer also publishes a literal `Not Assigned` ("Please Contact M-NCPPC") coded
+  value. It is not a zone — it means the county has no zoning answer for that
+  polygon, and must route to review rather than read as unzoned.
 - Also live and queryable: `Applications/ZoningCertificationLetter` (address points,
   Chesapeake Bay Critical Area Overlay, Transit District Overlay, Planned Community,
   Special Exception), `Applications/Stream_and_Wetland_Buffer_Identifier` (ESA
