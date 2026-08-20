@@ -1,9 +1,15 @@
 // Email (Resend)
+//
+// `checkRateLimit` is imported from the package root by app/api/contact and
+// app/api/newsletter but was never re-exported here. Webpack reported
+// "Attempted import error" and the call resolved to undefined at runtime, so
+// neither form was rate limited and both threw on submit.
 export {
   sendInternalSystemEmail,
   sendEmailWithTemplate,
   sendEmail,
   wrapInEmailLayout,
+  checkRateLimit,
 } from './email';
 export type {
   SendEmailResult,

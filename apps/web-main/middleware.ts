@@ -90,6 +90,14 @@ const PUBLIC_ROUTES = [
   // fallback for every "Request pricing" product.
   '/site-plans',
   '/request-service',
+  // Legal and marketing pages that were also behind the auth wall. /terms and
+  // /privacy are linked from the footer and the homepage FAQ and must be
+  // readable by anyone — including before they buy.
+  '/terms',
+  '/privacy',
+  '/service-areas',
+  '/partners',
+  '/ai-construction-platform',
   // Order tracking is gated by a per-order access token inside the page, not
   // by a Supabase session — anonymous buyers must be able to follow their order.
   '/orders',
