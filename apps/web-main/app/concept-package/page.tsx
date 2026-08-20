@@ -15,7 +15,7 @@ const DELIVERABLES = [
     title: 'Exterior + Interior Concept Visuals',
     subtitle: '3 concept options, 1 round of feedback included',
     items: [
-      'generated using AI tools concepts based on your specific property',
+      'AI-generated concepts based on your specific property',
       'Style-driven variations — modern, transitional, luxury, farmhouse, and more',
       'Facade, materials, and architectural form exploration',
       'Optional landscape concepts where applicable',

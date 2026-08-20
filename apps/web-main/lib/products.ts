@@ -141,7 +141,7 @@ export const PRODUCTS: Record<string, Product> = {
     beforeAfterLabel: 'Dated closed kitchen → Modern open-plan layout',
     description: 'Kitchen remodels are the most common project nationally — and the most likely to encounter permit surprises. We identify electrical, plumbing, and structural permit requirements for your specific kitchen scope and deliver a concept floor plan with multiple layout options.',
     includes: [
-      'generated using AI tools kitchen floor plan (multiple layout options)',
+      'AI-generated kitchen floor plan (multiple layout options)',
       'Cabinet and appliance placement recommendations',
       'Electrical and plumbing permit scope identification',
       'Structural wall assessment (load-bearing flag)',
@@ -222,7 +222,7 @@ export const PRODUCTS: Record<string, Product> = {
     beforeAfterLabel: 'Original builder bath → Spa-style primary remodel',
     description: 'Bathroom remodels are among the highest-ROI projects nationally. Whether you are upgrading a builder-grade bath or adding a new bathroom, we identify your permit path and deliver concept options with fixture placement, tile direction, and scope outline.',
     includes: [
-      'generated using AI tools bathroom layout (multiple options)',
+      'AI-generated bathroom layout (multiple options)',
       'Fixture placement and clearance check',
       'Plumbing and electrical permit scope',
       'Structural assessment (for additions)',
@@ -303,7 +303,7 @@ export const PRODUCTS: Record<string, Product> = {
     beforeAfterLabel: 'Underutilized rooms → Open, redesigned living spaces',
     description: 'Interior renovation and addition projects span everything from room reconfiguration to full additions and ADU conversions. We deliver concept options with structural notes, permit scope, and cost direction tailored to your specific project and jurisdiction.',
     includes: [
-      'generated using AI tools interior concept (multiple options)',
+      'AI-generated interior concept (multiple options)',
       'Structural scope for load-bearing walls',
       'Room addition feasibility and setback check',
       'Permit path identification',
@@ -626,7 +626,7 @@ export const PRODUCTS: Record<string, Product> = {
     beforeAfterLabel: 'Unfinished basement → Finished living space with egress',
     description: 'Basement finishing projects are among the most permit-sensitive nationally. Egress window requirements, ceiling height minimums, electrical panel access, and HVAC zoning all affect what you can build. Our design concept checks all of these and delivers layout options in 24 hours.',
     includes: [
-      'generated using AI tools basement floor plan (2–3 layout options)',
+      'AI-generated basement floor plan (2–3 layout options)',
       'Egress window compliance check for your jurisdiction',
       'Ceiling height assessment and recommendations',
       'Structural column and beam layout noting',
@@ -708,7 +708,7 @@ export const PRODUCTS: Record<string, Product> = {
     description: 'ADUs are one of the highest-value additions nationally. Before you invest in designs or hire a contractor, we check your lot\'s eligibility, generate a concept layout, and identify your exact permit path. Then we file the permit and match you with ADU-experienced contractors.',
     includes: [
       'Lot setback and ADU eligibility check',
-      'generated using AI tools ADU concept floor plan',
+      'AI-generated ADU concept floor plan',
       'Zoning overlay and FAR analysis',
       'Permit path identification (by-right vs. variance)',
       'Utility connection requirements',
@@ -1804,7 +1804,7 @@ export const PRODUCTS: Record<string, Product> = {
     imageUrl: 'https://images.unsplash.com/photo-1581094794329-c8112a89af12?w=900&q=70&auto=format&fit=crop',
     description: 'Upload photos of your space or lot. Our AI generates a concept floor plan, a design brief, and a room-by-room scope outline. A staff architect checks zoning, structural risk, permit complexity, and cost band. The full report lands in your inbox within 24 hours.',
     includes: [
-      'generated using AI tools concept floor plan sketch',
+      'AI-generated concept floor plan sketch',
       'Design brief and room-by-room scope notes',
       'Zoning compliance check for your jurisdiction',
       'Structural risk rating (1–5 scale)',

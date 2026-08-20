@@ -67,7 +67,7 @@
     "camera_motion": "Smooth gimbal tracking shot along island length; macro detail inserts with shallow depth-of-field",
     "text_overlays": ["Before", "After", "Your Dream Kitchen"],
     "cta": "Design My Kitchen →",
-    "caption": "Kitchen Remodel — generated using AI tools concept with full cost estimate",
+    "caption": "Kitchen Remodel — AI-generated concept with full cost estimate",
     "editing_instructions": [
       "Warm white balance (5500K) for after sequence — evoke magazine-quality warmth",
       "Before sequence: slightly increase noise/grain, reduce warmth to emphasize age",
@@ -146,7 +146,7 @@
     "editing_instructions": [
       "Animate site plan with subtle architectural drawing sound effects — pencil on paper, not distracting",
       "After exterior: ensure sky replacement with dramatic golden-hour gradient if source footage is flat",
-      "Run 10px 'generated using AI tools concept' disclosure text at bottom throughout after sequence"
+      "Run 10px 'AI-generated concept' disclosure text at bottom throughout after sequence"
     ]
   },
   {
@@ -179,7 +179,7 @@
     "video_type": "homepage_loop",
     "duration": "20 sec",
     "before_prompt": "Empty blank page or whiteboard — minimalist frame, clean white background, faint pencil sketch lines barely visible, person holding pencil looking uncertain — soft studio lighting, abstract aesthetic",
-    "after_prompt": "Fully rendered generated using AI tools room concept appearing on screen in real-time: living room materializes from particles/pixels, design elements composing — photorealistic render at final frame, warm residential setting, architectural visualization quality",
+    "after_prompt": "Fully rendered AI-generated room concept appearing on screen in real-time: living room materializes from particles/pixels, design elements composing — photorealistic render at final frame, warm residential setting, architectural visualization quality",
     "visual_style": "futuristic, AI-forward, modern, high-end",
     "scene_timeline": [
       { "time": "0-3", "scene": "before — blank canvas or rough sketch on white background" },

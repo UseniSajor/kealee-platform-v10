@@ -156,7 +156,7 @@ design concepts from $${CONCEPT_KITCHEN_PRICE} → link in bio`,
     hashtags: [...CORE_TAGS, ...DESIGN_TAGS, 'kitchenrenovation', 'kitchenremodel', 'capitolhill', 'DCdesign'],
     imagePrompt: 'Three side-by-side kitchen floor plan concepts in architectural drawing style: galley layout, island layout, L-shape layout. Clean line drawings with room labels. Below each: a rendered concept photo of the finished kitchen.',
     imageFallback: '/media/service-photos/product-kitchen.jpg',
-    altText: 'Three generated using AI tools kitchen layout concepts for a DC rowhouse',
+    altText: 'Three AI-generated kitchen layout concepts for a DC rowhouse',
     storyText: '3 kitchen concepts in 48 hours — tap to see them 👀',
   },
 
@@ -276,7 +276,7 @@ AI bath concepts from $${CONCEPT_BATH_PRICE} → link in bio`,
     hashtags: [...CORE_TAGS, ...DESIGN_TAGS, 'bathroomremodel', 'bathroomdesign', 'Bethesda', 'masterbath'],
     imagePrompt: 'Three bathroom design concept images side by side: minimal spa style, classic white subway tile, bold black and zellige. Each is a photorealistic render of a master bathroom. Clean composition, natural lighting.',
     imageFallback: '/media/service-photos/product-bathroom.jpg',
-    altText: 'Three generated using AI tools bathroom design concepts showing different aesthetic directions',
+    altText: 'Three AI-generated bathroom design concepts showing different aesthetic directions',
     storyText: 'Which one would you pick? A, B, or C? 👇',
   },
 
@@ -431,7 +431,7 @@ Basement concepts from $${CONCEPT_KITCHEN_PRICE} → link in bio`,
     scheduledDate: '2026-06-30',
     caption: `What you get in 48 hours with Kealee 📦
 
-1. Three generated using AI tools layout concepts
+1. Three AI-generated layout concepts
 2. Itemized cost estimate by trade
 3. Permit scope for your jurisdiction
 4. Contractor-ready scope brief

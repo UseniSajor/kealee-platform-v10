@@ -1,10 +1,13 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { redirect } from 'next/navigation'
 import { ArrowRight, Home, Leaf, Layers, PaintBucket, Building2, Users, CheckCircle } from 'lucide-react'
+import { getPublicCatalogProduct } from '@kealee/core-rules'
+import { PreconstructionSuiteSection } from '@/components/home/PreconstructionSuiteSection'
 
 export const metadata: Metadata = {
   title: 'Get Started — Kealee',
-  description: 'Start your design concept design or join as a contractor. Choose your path and get started in minutes.',
+  description: 'Start a design concept, estimate, site plan, or permit package — or join as a contractor. Available nationwide.',
 }
 
 const CONCEPT_PATHS = [
@@ -71,7 +74,22 @@ const JOIN_PATHS = [
   },
 ]
 
-export default function GetStartedPage() {
+/**
+ * `?service=<catalog key>` deep links (used by the product pages' "Start"
+ * buttons) were previously ignored, dropping the customer on a generic page.
+ * Honour them by sending the customer straight into that product's intake.
+ */
+export default function GetStartedPage({
+  searchParams,
+}: {
+  searchParams?: { service?: string }
+}) {
+  const requested = searchParams?.service
+  if (requested) {
+    const product = getPublicCatalogProduct(requested)
+    if (product) redirect(product.startHref)
+  }
+
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#F7FAFC' }}>
       <div className="mx-auto max-w-4xl px-4 py-16 sm:px-6 lg:px-8">
@@ -88,9 +106,16 @@ export default function GetStartedPage() {
             What would you like to do?
           </h1>
           <p className="mt-4 text-lg text-gray-600">
-            Choose a design path or join the platform — we&apos;ll take it from there.
+            Start with one of the four preconstruction products, pick a design path, or join the
+            platform — we&apos;ll take it from there.
           </p>
         </div>
+      </div>
+
+      {/* The four core products come first — every one is purchasable here. */}
+      <PreconstructionSuiteSection />
+
+      <div className="mx-auto max-w-4xl px-4 pb-16 sm:px-6 lg:px-8">
 
         {/* Section 1: Concept Packages */}
         <div className="mb-14">

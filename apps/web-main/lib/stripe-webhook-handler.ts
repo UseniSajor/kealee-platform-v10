@@ -27,6 +27,8 @@ import { resolveProductAutomationRoute } from '@/lib/product-automation'
 import { ensureAutonomousFulfillmentRun } from '@/lib/autonomous-fulfillment'
 import * as Sentry from '@sentry/nextjs'
 import { recordPaidOrderIncident } from '@/lib/paid-order-incident'
+import { routeToManualFulfillment } from '@/lib/manual-fulfillment'
+import { orderStatusPatch } from '@/lib/order-status'
 
 export async function processStripeWebhookEvent(
   event: Stripe.Event,
@@ -202,6 +204,7 @@ async function handleCheckoutCompleted(
     if (sourcePath) mergedFormData.upsellSourcePath = sourcePath
   }
   mergedFormData.funnelStage = isBundlePurchase ? 'bundle_purchased' : 'paid_concept'
+  Object.assign(mergedFormData, orderStatusPatch('processing', { actor: 'system' }))
   if (automationRoute) {
     Object.assign(mergedFormData, automationRoute, {
       fulfillmentStatus: 'queued',
@@ -255,29 +258,66 @@ async function handleCheckoutCompleted(
     }
   }
 
+  // Shared context for every path that hands an order to a person.
+  const manualFallbackContext = {
+    intakeId,
+    projectPath,
+    stripeSessionId: session.id,
+    stripeEventId,
+    customerEmail: session.customer_details?.email ?? currentIntake?.contact_email ?? null,
+  }
+
   // Keep the legacy concept generator as the production fallback until the
   // parallel bot service is explicitly enabled. Previously any automation
   // route entered V30 even when the feature flag was off; triggerV30Generation
   // then returned null and the paid order was left without a delivery.
   if ((isV30Enabled() || isPermitAutomation) && (isV30 || automationRoute)) {
     if (automationRoute) {
-      const run = await ensureAutonomousFulfillmentRun({
-        intakeId, stripeSessionId: session.id, productKey: projectPath,
-        botTypes: automationRoute.fulfillmentBotTypes,
-        workflowTemplateId: automationRoute.workflowTemplateId,
-        propertyIntelligenceDepth: automationRoute.propertyIntelligenceDepth,
-      })
-      const { data: latest } = await supabase.from('public_intake_leads').select('form_data').eq('id', intakeId).single()
-      await supabase.from('public_intake_leads').update({ form_data: {
-        ...((latest?.form_data as Record<string, unknown>) ?? mergedFormData),
-        autonomousRunId: run.runId,
-      } }).eq('id', intakeId)
+      try {
+        const run = await ensureAutonomousFulfillmentRun({
+          intakeId, stripeSessionId: session.id, productKey: projectPath,
+          botTypes: automationRoute.fulfillmentBotTypes,
+          workflowTemplateId: automationRoute.workflowTemplateId,
+          propertyIntelligenceDepth: automationRoute.propertyIntelligenceDepth,
+        })
+        const { data: latest } = await supabase.from('public_intake_leads').select('form_data').eq('id', intakeId).single()
+        await supabase.from('public_intake_leads').update({ form_data: {
+          ...((latest?.form_data as Record<string, unknown>) ?? mergedFormData),
+          autonomousRunId: run.runId,
+        } }).eq('id', intakeId)
+      } catch (runError) {
+        // The autonomous run is bookkeeping around the generation call; losing
+        // it must not cost us the order.
+        console.error(
+          '[stripe-webhook] autonomous run bookkeeping failed:',
+          runError instanceof Error ? runError.message : runError,
+        )
+      }
     }
-    const generation = await triggerV30GenerationForIntake(intakeId, {
-      ...automationRoute,
-      forceEnabled: isPermitAutomation,
-    })
-    if (!generation) throw new Error(`Automation could not be queued for intake ${intakeId}`)
+
+    let generation: Awaited<ReturnType<typeof triggerV30GenerationForIntake>> = null
+    let generationError: string | undefined
+    try {
+      generation = await triggerV30GenerationForIntake(intakeId, {
+        ...automationRoute,
+        forceEnabled: isPermitAutomation,
+      })
+    } catch (error) {
+      generationError = error instanceof Error ? error.message : String(error)
+    }
+
+    if (!generation) {
+      // Previously this threw, which left Stripe retrying an already-paid
+      // order and produced no work item anyone could act on. Route it to a
+      // human instead: the customer keeps their order and ops gets a task.
+      await routeToManualFulfillment({
+        ...manualFallbackContext,
+        reason: generationError ? 'automation_failed' : 'automation_unavailable',
+        detail: generationError
+          ? `Automated fulfillment errored (${generationError}). Order routed to the human fulfillment queue.`
+          : undefined,
+      })
+    }
   } else if (deliverable?.generatesConcept && !upsellSourceIntakeId && !isBundlePurchase) {
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? req.nextUrl.origin
     fetch(`${baseUrl}/api/concept/generate`, {
@@ -286,6 +326,15 @@ async function handleCheckoutCompleted(
       body: JSON.stringify({ intakeId }),
     }).catch((err: Error) => {
       console.error('[stripe-webhook] Concept generation trigger failed:', err.message)
+      void routeToManualFulfillment({ ...manualFallbackContext, reason: 'automation_failed' })
+    })
+  } else {
+    // Everything else that was paid for but has no automated producer —
+    // Site Plan before its bots are live, quote-scoped products, bundles
+    // handled by hand. These used to fall through this branch silently.
+    await routeToManualFulfillment({
+      ...manualFallbackContext,
+      reason: automationRoute ? 'automation_disabled' : 'no_automated_route',
     })
   }
 

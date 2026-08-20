@@ -7,7 +7,7 @@ const DELIVERABLES = [
   {
     icon: '🎨',
     title: 'Design Concept',
-    desc: 'generated using AI tools renders, concept PDF, and 3–5 high-res visualisations — delivered within 24 hours.',
+    desc: 'AI-generated renders, concept PDF, and 3–5 high-res visualisations — delivered within 24 hours.',
     color: 'border-orange-200 bg-orange-50',
     badge: 'bg-orange-100 text-orange-700',
     label: 'Design',

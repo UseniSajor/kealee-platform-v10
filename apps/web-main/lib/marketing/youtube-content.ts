@@ -409,7 +409,7 @@ https://kealee.com
       {
         section:   'Permits + CTA',
         timestamp: '10:00',
-        script:    `On permits: if your kitchen remodel involves moving plumbing or adding electrical circuits, you need a permit. In the DMV that's 5 to 12 weeks depending on jurisdiction. Budget $800 to $2,500 for the permit itself. Make sure your contractor's quote includes the permit cost — not all of them do. If you want an generated using AI tools concept for your specific kitchen with an itemized cost estimate and permit scope for your jurisdiction, that's what we do at Kealee. Kitchen concepts are $${CONCEPT_KITCHEN_PRICE} and we deliver in 48 hours. Link in the description.`,
+        script:    `On permits: if your kitchen remodel involves moving plumbing or adding electrical circuits, you need a permit. In the DMV that's 5 to 12 weeks depending on jurisdiction. Budget $800 to $2,500 for the permit itself. Make sure your contractor's quote includes the permit cost — not all of them do. If you want an AI-generated concept for your specific kitchen with an itemized cost estimate and permit scope for your jurisdiction, that's what we do at Kealee. Kitchen concepts are $${CONCEPT_KITCHEN_PRICE} and we deliver in 48 hours. Link in the description.`,
       },
     ],
   },

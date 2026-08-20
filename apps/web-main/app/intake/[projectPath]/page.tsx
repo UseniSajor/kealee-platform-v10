@@ -41,6 +41,7 @@ import { getIntakePrefill } from "@/lib/intake-prefill-schema";
 import type { AddressParcelResolution, ScaledParcelGeometry } from "@/lib/site-intelligence/authoritative-gis";
 import { AskChatBar } from "@/components/ui/AskChatBar";
 import { getPermitServiceRecommendation } from "@/lib/permit-service-recommendation";
+import { buildOrderChecklist } from "@/lib/intake-checklist";
 
 const AGENT_MAP: Record<string, string> = {
   exterior_concept: "design",
@@ -97,6 +98,80 @@ interface AgentInsight {
 
 function formatPrice(cents: number) {
   return `$${(cents / 100).toFixed(2)}`;
+}
+
+function IntakeChecklistPanel({
+  projectPath,
+  formData,
+  siteIntelligence,
+  parcelConfirmed,
+  uploadedFiles,
+  uploadedDocs,
+}: {
+  projectPath: string;
+  formData: Record<string, unknown>;
+  siteIntelligence: unknown;
+  parcelConfirmed: boolean;
+  uploadedFiles: IntakeUploadedFile[];
+  uploadedDocs: IntakeUploadedFile[];
+}) {
+  const items = buildOrderChecklist(
+    projectPath,
+    {
+      ...formData,
+      siteIntelligence,
+      parcelConfirmed,
+      uploadedFileMeta: [...uploadedFiles, ...uploadedDocs].map((file) => ({
+        name: file.name,
+        url: file.url,
+        type: file.type,
+      })),
+    },
+    {
+      project_address: (formData.address as string) || null,
+      contact_email: (formData.email as string) || null,
+      contact_phone: (formData.phone as string) || null,
+    },
+  );
+
+  const missing = items.filter((item) => item.state === "missing");
+  const optional = items.filter((item) => item.state === "optional");
+
+  if (missing.length === 0 && optional.length === 0) return null;
+
+  return (
+    <div className="rounded-xl border border-amber-200 bg-amber-50/70 p-5">
+      <h2 className="text-sm font-bold text-amber-950">
+        {missing.length > 0
+          ? `We are still missing ${missing.length} item${missing.length === 1 ? "" : "s"}`
+          : "Optional items that would sharpen your deliverable"}
+      </h2>
+      <p className="mt-1 text-xs leading-relaxed text-amber-900">
+        You can order now — anything outstanding becomes a stated assumption in your
+        package, and you can send it to us at any point before delivery.
+      </p>
+      <ul className="mt-3 space-y-2">
+        {[...missing, ...optional].map((item) => (
+          <li key={item.key} className="flex items-start gap-2">
+            <span
+              className={`mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full ${item.state === "missing" ? "bg-amber-600" : "bg-slate-300"}`}
+            />
+            <span className="text-xs leading-relaxed text-amber-900">
+              <strong className={item.state === "missing" ? "font-bold" : "font-normal"}>
+                {item.label}
+              </strong>
+              {item.state === "optional" && (
+                <span className="ml-1.5 text-slate-500">optional</span>
+              )}
+              {item.detail && (
+                <span className="mt-0.5 block text-[11px] text-amber-800/80">{item.detail}</span>
+              )}
+            </span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
 }
 
 function ParcelGeometryPreview({ geometry }: { geometry: ScaledParcelGeometry }) {
@@ -786,6 +861,12 @@ export default function IntakePage() {
     "permit_site_plan",
   ].includes(projectPath);
   const isPermitIntake = projectPath === "permit_path_only";
+  // Every product needs the address validated and the jurisdiction identified:
+  // Site Plan draws the parcel, Permitting derives the agency and checklist,
+  // and Estimation needs the location for its geographic pricing adjustment.
+  // Only Site Plan gates submission on parcel confirmation, because only it
+  // publishes parcel geometry.
+  const showSiteIntelligence = true;
   const guidedIntake = true;
   const hasPermitSubmissionDocument =
     uploadedDocs.some((file) => file.type === "document") ||
@@ -1752,25 +1833,34 @@ export default function IntakePage() {
                     className="w-full rounded-lg border border-slate-300 px-4 py-3 text-sm focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20"
                     placeholder="123 Main St, Bethesda, MD 20814"
                     autoComplete="street-address"
-                    onBlur={() => { if (isSitePlanIntake && !siteIntelligence && formData.address.trim()) void resolveProjectParcel(); }}
+                    onBlur={() => { if (showSiteIntelligence && !siteIntelligence && formData.address.trim()) void resolveProjectParcel(); }}
                   />
-                  {isSitePlanIntake && (
+                  {showSiteIntelligence && (
                     <div className="mt-3 rounded-xl border border-emerald-200 bg-emerald-50/70 p-4">
                       <div className="flex flex-wrap items-center justify-between gap-3">
                         <div>
-                          <p className="text-sm font-bold text-emerald-950">Automatic property lookup</p>
-                          <p className="mt-1 text-xs leading-relaxed text-emerald-800">Kealee checks the address against registered jurisdiction parcel services and creates scaled preliminary geometry. Surveys and plats remain optional unless the selected deliverable requires surveyed geometry.</p>
+                          <p className="text-sm font-bold text-emerald-950">
+                            {isSitePlanIntake ? "Automatic property lookup — available nationwide" : "Confirm your jurisdiction — available nationwide"}
+                          </p>
+                          <p className="mt-1 text-xs leading-relaxed text-emerald-800">
+                            {isSitePlanIntake
+                              ? "Kealee identifies the state, county, and city for any US address, then pulls parcel geometry where a registered jurisdiction service covers it. Where it does not, the order continues under manual review — automation level varies by location, availability does not."
+                              : isPermitIntake
+                                ? "We identify the permitting authority for your address so the checklist and requirements match your actual jurisdiction. Where no automated source covers it, a Kealee reviewer confirms the agency by hand."
+                                : "We check the address against federal records to confirm the state, county, and city. Your location drives the regional pricing basis and the permit path in your package."}
+                          </p>
                         </div>
                         <button type="button" onClick={resolveProjectParcel} disabled={resolvingParcel || !formData.address.trim()} className="inline-flex items-center gap-2 rounded-lg bg-emerald-700 px-4 py-2.5 text-sm font-bold text-white disabled:opacity-50">
                           {resolvingParcel && <Loader2 className="h-4 w-4 animate-spin" />}
-                          {resolvingParcel ? "Locating parcel…" : siteIntelligence ? "Refresh parcel" : "Find my parcel"}
+                          {resolvingParcel ? "Checking…" : siteIntelligence ? "Re-check address" : isSitePlanIntake ? "Find my parcel" : "Confirm my jurisdiction"}
                         </button>
                       </div>
                       {siteIntelligence && (
                         <div className="mt-4 border-t border-emerald-200 pt-4">
-                          <div className="grid gap-3 text-xs sm:grid-cols-3">
+                          <div className="grid gap-3 text-xs sm:grid-cols-4">
                             <div><span className="block text-emerald-700">Status</span><strong className="text-emerald-950">{siteIntelligence.status.replace("_", " ")}</strong></div>
-                            <div><span className="block text-emerald-700">Jurisdiction</span><strong className="text-emerald-950">{siteIntelligence.jurisdiction.county ?? "Pending"}{siteIntelligence.jurisdiction.state ? `, ${siteIntelligence.jurisdiction.state}` : ""}</strong></div>
+                            <div><span className="block text-emerald-700">Jurisdiction</span><strong className="text-emerald-950">{siteIntelligence.jurisdiction.city ?? siteIntelligence.jurisdiction.county ?? "Pending"}{siteIntelligence.jurisdiction.state ? `, ${siteIntelligence.jurisdiction.state}` : ""}</strong></div>
+                            <div><span className="block text-emerald-700">Coverage</span><strong className="text-emerald-950">{siteIntelligence.coverageLabel}</strong></div>
                             <div><span className="block text-emerald-700">Confidence</span><strong className="text-emerald-950">{Math.round(siteIntelligence.confidence * 100)}%</strong></div>
                           </div>
                           {siteIntelligence.parcel && (
@@ -1806,7 +1896,24 @@ export default function IntakePage() {
                               </div>
                             </div>
                           )}
-                          {siteIntelligence.source && <p className="mt-3 text-[11px] text-emerald-700">Source: {siteIntelligence.source.authority} · retrieved {new Date(siteIntelligence.source.retrievedAt).toLocaleDateString()}</p>}
+                          {siteIntelligence.itemsRequiringConfirmation.length > 0 && (
+                            <div className="mt-4 rounded-lg border border-emerald-300 bg-white p-3">
+                              <p className="text-xs font-bold text-emerald-950">Requires confirmation before this package can be relied on</p>
+                              <ul className="mt-1.5 space-y-1">
+                                {siteIntelligence.itemsRequiringConfirmation.map(item => (
+                                  <li key={item} className="text-[11px] leading-relaxed text-emerald-800">• {item}</li>
+                                ))}
+                              </ul>
+                              <p className="mt-2 text-[11px] font-semibold text-emerald-900">
+                                Kealee never reports zoning, setbacks, permit requirements, or fees it has not verified against a named source.
+                              </p>
+                            </div>
+                          )}
+                          {siteIntelligence.dataSources.length > 0 && (
+                            <p className="mt-3 text-[11px] text-emerald-700">
+                              {siteIntelligence.dataSources.map(source => `${source.authority} (${source.dataset})`).join(' · ')} — retrieved {new Date(siteIntelligence.dataSources[0].retrievedAt).toLocaleDateString()}
+                            </p>
+                          )}
                           {siteIntelligence.warnings.map(warning => <p key={warning} className="mt-2 text-xs text-amber-800">• {warning}</p>)}
                         </div>
                       )}
@@ -2794,6 +2901,18 @@ export default function IntakePage() {
                     Confirm your details, then proceed to secure payment.
                   </p>
                 </div>
+
+                {/* Missing-information checklist — shown BEFORE payment, from the
+                    same logic the order page uses afterwards, so the customer is
+                    never told one thing at checkout and another once they pay. */}
+                <IntakeChecklistPanel
+                  projectPath={projectPath}
+                  formData={formData}
+                  siteIntelligence={siteIntelligence}
+                  parcelConfirmed={parcelConfirmed}
+                  uploadedFiles={uploadedFiles}
+                  uploadedDocs={uploadedDocs}
+                />
 
                 {formError && (
                   <div className="flex items-start gap-3 rounded-xl bg-red-50 border border-red-200 p-4 text-red-700">

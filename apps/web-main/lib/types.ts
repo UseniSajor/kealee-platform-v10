@@ -10,13 +10,13 @@ export interface Concept {
   phone?: string
   tier: 1 | 2 | 3
   status: 'processing' | 'completed' | 'error'
-  /** generated using AI tools design language: style name, materials/finishes palette, key features */
+  /** AI-generated design language: style name, materials/finishes palette, key features */
   designConcept?: {
     style: string
     colorPalette: string[]
     keyFeatures: string[]
   }
-  /** generated using AI tools MEP specification strings from Claude conceptOutput */
+  /** AI-generated MEP specification strings from Claude conceptOutput */
   mepSystem?: {
     electrical: string
     plumbing: string

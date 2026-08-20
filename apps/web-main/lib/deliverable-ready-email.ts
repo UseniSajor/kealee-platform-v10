@@ -50,8 +50,12 @@ export async function sendDeliverableReadyEmail(
   // "Create a password" link uses the portal's login page in create-account mode.
   // Previously pointed to kealee.com/auth/complete which requires an active session
   // the user doesn't have when arriving from email — causing a 404/auth error.
-  const portalBase = (process.env.NEXT_PUBLIC_PORTAL_URL ?? 'https://owner.kealee.com').replace(/\/$/, '')
-  const accountUrl = `${portalBase}/login?welcome=1&email=${encodeURIComponent(to)}&next=${encodeURIComponent(getOwnerPortalDeliverableUrl(intakeId, service))}`
+  // Only offer the "create a password" upsell when a portal is actually
+  // configured — otherwise it links to a host that does not resolve.
+  const portalBase = (process.env.NEXT_PUBLIC_PORTAL_URL ?? process.env.NEXT_PUBLIC_OWNER_PORTAL_URL ?? '').replace(/\/$/, '')
+  const accountUrl = portalBase
+    ? `${portalBase}/login?welcome=1&email=${encodeURIComponent(to)}&next=${encodeURIComponent(getOwnerPortalDeliverableUrl(intakeId, service))}`
+    : ''
 
   const upsells = getBuildPathUpsells({
     sourceProjectPath: service,
@@ -103,7 +107,7 @@ export async function sendDeliverableReadyEmail(
           </div>
           <div style="padding:32px 32px 0;text-align:center">
             <a href="${signInUrl}" style="display:inline-block;background:#E8793A;color:#fff;text-decoration:none;padding:16px 40px;border-radius:10px;font-weight:800;font-size:16px">View My Deliverable →</a>
-            <p style="margin:14px 0 0;font-size:12px;color:#999"><a href="${accountUrl}" style="color:#2ABFBF">Create a password</a> for faster return access.</p>
+            ${accountUrl ? `<p style="margin:14px 0 0;font-size:12px;color:#999"><a href="${accountUrl}" style="color:#2ABFBF">Create a password</a> for faster return access.</p>` : ''}
           </div>
           <div style="padding:24px 32px 32px;margin-top:24px;border-top:1px solid #E8E6DF">
             <p style="margin:0;font-size:12px;color:#bbb;word-break:break-all">${signInUrl}</p>

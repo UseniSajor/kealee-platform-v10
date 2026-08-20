@@ -4,7 +4,7 @@ import { Container } from '@/components/ui/Container'
 
 export const metadata: Metadata = {
   title: 'design Intake — Kealee',
-  description: 'Tell us about your project and get an generated using AI tools concept package.',
+  description: 'Tell us about your project and get an AI-generated concept package.',
 }
 
 interface Props {

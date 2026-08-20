@@ -111,7 +111,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
         </div>
       )}
 
-      <EditorialVideoHero eyebrow={product.label} title={product.name} description={product.tagline} videoSrc={heroMedia.videoSrc} poster={heroMedia.poster} primary={{ label: 'Request this service', href: requestHref }} secondary={{ label: 'See project examples', href: '/inspiration' }} />
+      <EditorialVideoHero eyebrow={product.label} title={product.name} description={product.tagline} videoSrc={heroMedia.videoSrc} poster={heroMedia.poster} primary={{ label: 'Request this service', href: requestHref }} secondary={{ label: 'See project examples', href: '/gallery' }} />
 
       {/* Hero */}
       <section className="hidden py-16 border-b border-gray-100" style={{ background: heroGradient }}>
@@ -436,7 +436,7 @@ function CatalogProductPage({ product }: { product: PublicCatalogProduct }) {
 
   return (
     <main className="min-h-screen bg-white pb-24 lg:pb-0">
-      <EditorialVideoHero eyebrow={product.categoryId.replaceAll('-', ' ')} title={product.name} description={product.outcome} videoSrc={heroMedia.videoSrc} poster={heroMedia.poster} primary={{ label: availability === 'online' ? `Start online · ${price}` : 'Request this service', href: startHref }} secondary={{ label: isDetailedEstimate ? 'See platform estimate examples' : 'See project examples', href: isDetailedEstimate ? '#platform-estimate-examples' : '/inspiration' }} />
+      <EditorialVideoHero eyebrow={product.categoryId.replaceAll('-', ' ')} title={product.name} description={product.outcome} videoSrc={heroMedia.videoSrc} poster={heroMedia.poster} primary={{ label: availability === 'online' ? `Start online · ${price}` : 'Request this service', href: startHref }} secondary={{ label: isDetailedEstimate ? 'See platform estimate examples' : 'See project examples', href: isDetailedEstimate ? '#platform-estimate-examples' : '/gallery' }} />
       <section className="hidden border-b border-slate-800 bg-[#10213d] px-4 py-16 text-white sm:px-6 lg:py-20">
         <div className="mx-auto grid max-w-6xl gap-10 lg:grid-cols-[1.05fr_.95fr] lg:items-center">
           <div>
@@ -628,7 +628,7 @@ function RevenueProductPage({ product }: { product: RevenueProductConfig }) {
   }
   return <main className="min-h-screen bg-slate-50">
     <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-    <EditorialVideoHero eyebrow={copy.eyebrow} title={product.name} description={copy.subtitle} videoSrc={product.customerType === 'developer' ? '/media/service-heroes/developer-feasibility-request.mp4' : product.customerType === 'contractor' ? '/media/portal-phase4/contractor-site.mp4' : '/media/service-heroes/project-planning-request.mp4'} poster={product.customerType === 'developer' ? '/media/service-heroes/developer-feasibility-request.jpg' : product.customerType === 'contractor' ? '/media/portal-phase4/contractor-site.jpg' : '/media/service-heroes/project-planning-request.jpg'} primary={{ label: copy.cta, href: intakeHref }} secondary={{ label: 'See project examples', href: '/inspiration' }}>
+    <EditorialVideoHero eyebrow={copy.eyebrow} title={product.name} description={copy.subtitle} videoSrc={product.customerType === 'developer' ? '/media/service-heroes/developer-feasibility-request.mp4' : product.customerType === 'contractor' ? '/media/portal-phase4/contractor-site.mp4' : '/media/service-heroes/project-planning-request.mp4'} poster={product.customerType === 'developer' ? '/media/service-heroes/developer-feasibility-request.jpg' : product.customerType === 'contractor' ? '/media/portal-phase4/contractor-site.jpg' : '/media/service-heroes/project-planning-request.jpg'} primary={{ label: copy.cta, href: intakeHref }} secondary={{ label: 'See project examples', href: '/gallery' }}>
       <p className="mt-7 text-xl font-black text-[#263831]">{price}</p>
     </EditorialVideoHero>
     <section className="hidden bg-[#10213f] px-4 py-16 text-white sm:py-20">

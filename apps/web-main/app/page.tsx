@@ -1,5 +1,7 @@
 import type { Metadata } from 'next'
 import { ServicesJourneySection } from '@/components/home/ServicesJourneySection'
+import { PreconstructionSuiteSection } from '@/components/home/PreconstructionSuiteSection'
+import { HowItWorksSection } from '@/components/home/HowItWorksSection'
 import { ConceptPackageSection } from '@/components/home/ConceptPackageSection'
 import { PipelineSection } from '@/components/home/PipelineSection'
 import { PortalAccessSection } from '@/components/home/PortalAccessSection'
@@ -9,13 +11,13 @@ import { mergeHomeServicesWithManifest } from '@/lib/marketing/merge-home-servic
 export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
-  title: 'Kealee — Design-Build Platform | DC, MD & VA',
+  title: 'Kealee — Preconstruction clarity before you build',
   description:
-    'Kealee is the end-to-end design-build platform for homeowners. design concepts, RSMeans cost estimates, permit filing, and a personal project workspace — from first idea to final build. Serving DC, MD & VA.',
+    'Turn your property, project idea, plans, or solicitation into a design concept, estimate, site plan, and permit-ready package. Available nationwide.',
   openGraph: {
-    title: 'Kealee — Plan, Design, Permit & Build in One Platform',
+    title: 'Kealee — Design Concept, Estimation, Site Plan & Permitting',
     description:
-      'design concepts, validated cost estimates, permit filing, and a project workspace for every homeowner. Starting at $295.',
+      'The four preconstruction products every project needs, in one place. Available nationwide — the level of automation varies by jurisdiction, availability does not.',
     url: 'https://kealee.com',
   },
   alternates: { canonical: '/' },
@@ -28,6 +30,12 @@ export default async function HomePage() {
     <>
       {/* Full-screen video hero + services (single hero — VideoHeroSection removed as duplicate) */}
       <ServicesJourneySection services={services} />
+
+      {/* The four core preconstruction products — primary commercial surface */}
+      <PreconstructionSuiteSection />
+
+      {/* Journey, nationwide statement, trust/QC, FAQ */}
+      <HowItWorksSection />
 
       {/* design concept Design — 4-step workflow */}
       <ConceptPackageSection />

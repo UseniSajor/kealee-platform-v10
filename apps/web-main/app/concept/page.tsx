@@ -29,7 +29,7 @@ function ConceptStep1Inner() {
         <p className="text-xs font-bold uppercase tracking-widest text-[#E8724B] mb-2">Step 1 of 4</p>
         <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-2">What are you designing?</h1>
         <p className="text-slate-500">
-          Choose a project type to get started. Your design package — generated using AI tools renders, cost estimate, and permit scope — delivered in 2–6 days.{' '}
+          Choose a project type to get started. Your design package — AI-generated renders, cost estimate, and permit scope — delivered in 2–6 days.{' '}
           <span className="text-slate-400">This is your planning package. Construction starts after permitting.</span>
         </p>
       </div>

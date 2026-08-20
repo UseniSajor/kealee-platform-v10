@@ -31,7 +31,7 @@ export const PLATFORM_BLOG_ARTICLES: PlatformBlogArticle[] = [
       {
         heading: 'What is a construction digital twin?',
         paragraphs: [
-          'A digital twin is a continuously updated model of your project — not just a 3D rendering, but schedule status, payment milestones, permit checkpoints, and generated using AI tools risk flags tied to real data.',
+          'A digital twin is a continuously updated model of your project — not just a 3D rendering, but schedule status, payment milestones, permit checkpoints, and AI-generated risk flags tied to real data.',
           'For residential and light commercial work in the DMV, twins help owners answer: Are we on budget? Is the permit still active? Did the last inspection pass?',
         ],
       },

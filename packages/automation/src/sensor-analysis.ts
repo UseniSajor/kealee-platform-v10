@@ -25,6 +25,18 @@ export interface SensorAnalysisData {
   alertSummary: string;
 }
 
+/**
+ * `Response.json()` is typed `unknown`, and this payload crosses a network
+ * boundary, so narrow it rather than asserting. Both callers already treat an
+ * unusable response as "no sensor data", and a malformed body takes that same
+ * path instead of throwing on `analysis.sensors`.
+ */
+export function isSensorAnalysisData(value: unknown): value is SensorAnalysisData {
+  if (!value || typeof value !== 'object') return false;
+  const candidate = value as Partial<SensorAnalysisData>;
+  return Array.isArray(candidate.sensors);
+}
+
 export interface SensorSnapshot {
   deviceId: string;
   name: string;
@@ -172,12 +184,14 @@ export async function buildSensorContext(
   try {
     const res = await fetch(`${apiBase}/api/v1/sensors/project/${projectId}/analysis`);
     if (!res.ok) return ''; // No sensor data available
-    analysis = await res.json();
+    const payload: unknown = await res.json();
+    if (!isSensorAnalysisData(payload)) return ''; // Unexpected response shape
+    analysis = payload;
   } catch {
     return ''; // API not reachable
   }
 
-  if (!analysis.sensors || analysis.sensors.length === 0) {
+  if (analysis.sensors.length === 0) {
     return ''; // No sensors on this project
   }
 
@@ -258,12 +272,14 @@ export async function buildSchedulerContext(
   try {
     const res = await fetch(`${apiBase}/api/v1/sensors/project/${projectId}/analysis`);
     if (!res.ok) return { prompt: '', recommendations: [] };
-    analysis = await res.json();
+    const payload: unknown = await res.json();
+    if (!isSensorAnalysisData(payload)) return { prompt: '', recommendations: [] };
+    analysis = payload;
   } catch {
     return { prompt: '', recommendations: [] };
   }
 
-  if (!analysis.sensors || analysis.sensors.length === 0) {
+  if (analysis.sensors.length === 0) {
     return { prompt: '', recommendations: [] };
   }
 

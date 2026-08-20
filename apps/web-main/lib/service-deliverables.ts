@@ -13,6 +13,16 @@ const VIDEO_PREMIUM_TIERS =
 const PERMIT_ROADMAP_IN_DESIGN_BUNDLE =
   'Permit + zoning in every package: scope brief, buildability snapshot, AHJ checklist, and fee/timeline ranges (depth increases by tier; not agency filing).'
 const CREDIT_TOWARD_PERMIT_DRAWINGS = CONCEPT_PACKAGE_RULES.creditTowardDrawings
+/**
+ * Required on every permit-category deliverable. Kealee prepares, coordinates,
+ * and assists with filing; only the jurisdiction approves a permit.
+ */
+const PERMIT_APPROVAL_DISCLAIMER =
+  'Kealee prepares, coordinates, and assists with permit filing. Kealee does not issue permits and cannot guarantee approval — permit approval, fees, and timelines are set by the jurisdiction.'
+const ESTIMATE_SCOPE_DISCLAIMER =
+  'An estimate is a priced opinion based on the stated scope and assumptions. It is not a bid, a contract price, or a guarantee of construction cost.'
+const SITE_PLAN_PRELIMINARY_DISCLAIMER =
+  'Preliminary and not for construction unless professionally reviewed. Not a boundary survey. Source coverage and accuracy vary by jurisdiction.'
 
 export interface ServiceDeliverable {
   label: string
@@ -393,34 +403,114 @@ export const SERVICE_DELIVERABLES: Record<string, ServiceDeliverable> = {
     nextStep: { label: 'Get Feasibility Study', href: '/intake/development_feasibility' },
   },
   permit_path_only: {
-    label: 'Permit Package',
+    label: 'Permit Readiness Package',
     category: 'permit',
     agentType: 'permit',
     generatesConcept: false,
     includes: [
-      'Permit application preparation',
-      'Jurisdiction-specific checklist',
-      'Submission to applicable agency (DC DOB, Montgomery DPS, Fairfax LDS, etc.)',
-      'Status tracking through approval',
-      'Comment response coordination',
+      'Jurisdiction identification from your property address (nationwide)',
+      'Likely permit types and submission requirements for your scope',
+      'Document checklist — what the agency will require from you',
+      'Permit application preparation and package assembly',
+      'Filing assistance and agency coordination where Kealee is authorized to act for you',
+      'Corrections and resubmission tracking',
+      PERMIT_APPROVAL_DISCLAIMER,
     ],
     deliveryDays: '3-5 days',
-    nextStep: { label: 'Find a Contractor', href: '/intake/contractor_match' },
+    nextStep: { label: 'Get a Cost Estimate', href: '/intake/cost_estimate' },
   },
-  cost_estimate: {
-    label: 'Cost Estimate Package',
+  certified_estimate: {
+    label: 'Certified Cost Estimate',
     category: 'estimate',
     agentType: 'design',
     generatesConcept: false,
     includes: [
-      'RSMeans-validated cost estimate',
-      'Trade-by-trade breakdown (GC, electrical, plumbing, HVAC, finishes)',
-      'Lender-ready PDF report',
-      'Contingency analysis',
-      'Value engineering notes',
+      'Everything in the Detailed Cost Estimate',
+      'Labor, material, equipment, subcontractor, general conditions, overhead, profit, and contingency lines',
+      'Geographic pricing adjustment for the project location',
+      'Written exclusions and allowances schedule',
+      'Estimate confidence level and the assumptions each number rests on',
+      'Professional review by a Kealee estimator before release',
+      'Notarized lender-ready PDF plus the web deliverable',
+      ESTIMATE_SCOPE_DISCLAIMER,
+    ],
+    deliveryDays: '5–7 days',
+    nextStep: { label: 'Plan Your Permit Path', href: '/intake/permit_path_only' },
+  },
+
+  // ── Site Plan suite ───────────────────────────────────────────────────────
+  // These three SKUs are sold on /site-plans and priced in INTAKE_PRICE_CENTS.
+  // Without entries here a paid Site Plan order reached the Stripe webhook with
+  // no deliverable definition and no automation route, so nothing was queued.
+  preliminary_site_plan: {
+    label: 'Preliminary Site Plan',
+    category: 'development',
+    agentType: 'land',
+    generatesConcept: false,
+    includes: [
+      'Property and parcel intake with jurisdiction identification (nationwide)',
+      'Available parcel and zoning source summary, each labelled with its source and date',
+      'Preliminary setbacks, lot coverage, and overlay findings where published data exists',
+      'Access, parking, grading/drainage, utility, stormwater, and flood or environmental flags where data is available',
+      'Preliminary buildable-area diagram and one proposed footprint',
+      'Coverage level, confidence, and the list of items still requiring confirmation',
+      SITE_PLAN_PRELIMINARY_DISCLAIMER,
+    ],
+    deliveryDays: 'First-hour summary; full site plan in 2–5 days',
+    nextStep: { label: 'Upgrade to Verified Feasibility', href: '/intake/verified_site_feasibility' },
+  },
+  verified_site_feasibility: {
+    label: 'Verified Site Feasibility Plan',
+    category: 'development',
+    agentType: 'land',
+    generatesConcept: false,
+    includes: [
+      'Everything in the Preliminary Site Plan',
+      'Verified zoning and overlay source record with effective dates',
+      'Constraint and buildable-envelope review against the verified inputs',
+      'Proposed footprint validation',
+      'Assumptions, exceptions, and confidence register',
+      'Professional-review checklist and reviewer sign-off status',
+      SITE_PLAN_PRELIMINARY_DISCLAIMER,
+    ],
+    deliveryDays: 'First-hour source summary; verified feasibility plan in 3–7 days',
+    nextStep: { label: 'Plan Your Permit Path', href: '/intake/permit_path_only' },
+  },
+  permit_site_plan: {
+    label: 'Survey-Based Permit Site Plan Coordination',
+    category: 'development',
+    agentType: 'land',
+    generatesConcept: false,
+    permitRequired: 'always',
+    includes: [
+      'Survey validation for permit filing',
+      'Jurisdiction-specific site plan drafted from your survey',
+      'Setbacks, lot coverage, structures, and required agency notes',
+      'Coordination of the professional review and sealing your jurisdiction requires',
+      'Revisions for agency comments and inclusion in the submission set',
+      'Required source documents identified up front',
+      PERMIT_APPROVAL_DISCLAIMER,
+    ],
+    deliveryDays: 'First-hour permit-requirements summary; drawing coordination scoped after survey review',
+    nextStep: { label: 'Prepare Your Permit Package', href: '/intake/permit_path_only' },
+  },
+  cost_estimate: {
+    label: 'Detailed Cost Estimate',
+    category: 'estimate',
+    agentType: 'design',
+    generatesConcept: false,
+    includes: [
+      'Scope extraction from your description, plans, and uploads',
+      'Quantity and cost assumptions stated line by line',
+      'Labor, material, equipment, subcontractor, general conditions, overhead, profit, and contingency where applicable',
+      'Geographic pricing adjustment for the project location',
+      'Written exclusions and allowances',
+      'Estimate confidence level and professional review status',
+      'PDF and web deliverable',
+      ESTIMATE_SCOPE_DISCLAIMER,
     ],
     deliveryDays: '2-3 days',
-    nextStep: { label: 'Find a Contractor', href: '/intake/contractor_match' },
+    nextStep: { label: 'Plan Your Permit Path', href: '/intake/permit_path_only' },
   },
   contractor_match: {
     label: 'Contractor Match',
@@ -487,7 +577,7 @@ export const SERVICE_DELIVERABLES: Record<string, ServiceDeliverable> = {
     includes: [
       'RSMeans-validated cost estimate aligned to your concept',
       'Permit package — application prep and agency filing',
-      'Jurisdiction checklist for DC / MD / VA',
+      'Jurisdiction-specific checklist for your property address (nationwide)',
       'Single checkout — one project team',
     ],
     deliveryDays: '5–10 days',

@@ -25,7 +25,7 @@ const DATA_CATEGORIES = [
   },
   {
     name: 'Digital Twin Data',
-    examples: 'Property spatial models, system nodes, observations, generated using AI tools summaries',
+    examples: 'Property spatial models, system nodes, observations, AI-generated summaries',
     retention: 'Until account deletion or on request',
   },
   {
@@ -45,7 +45,7 @@ const DATA_CATEGORIES = [
   },
   {
     name: 'AI Interaction Data',
-    examples: 'KeaBot conversation history, generated using AI tools concept packages',
+    examples: 'KeaBot conversation history, AI-generated concept packages',
     retention: 'Until account deletion or on request',
   },
 ]

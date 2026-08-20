@@ -25,7 +25,7 @@ const JOURNEY_STEPS = [
     color: '#E8724B',
     href: '/intake/concept',
     cta: 'Get Your Concept',
-    description: 'generated using AI tools renders, floor plan direction, itemised cost estimate, and permit scope brief. Your blueprint for everything that follows.',
+    description: 'AI-generated renders, floor plan direction, itemised cost estimate, and permit scope brief. Your blueprint for everything that follows.',
   },
   {
     n: '02',

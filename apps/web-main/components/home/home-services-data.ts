@@ -1,4 +1,5 @@
 import {
+  CANONICAL_PRICE_CENTS,
   CONCEPT_START_PRICE,
   CONCEPT_DEVELOPER_PRICE,
   PERMIT_BASIC_PRICE,
@@ -8,7 +9,7 @@ import {
   PM_ADVISORY_PRICE,
 } from '@kealee/core-rules'
 
-export type HomeServiceId = 'design' | 'permits' | 'estimate' | 'build'
+export type HomeServiceId = 'design' | 'estimate' | 'siteplan' | 'permits' | 'build'
 export type HomeServiceMediaType = 'video' | 'photo'
 
 export interface HomeJourneyService {
@@ -38,7 +39,7 @@ function usdRange(min: number, max: number): string {
  * Square photos for the four home journey circle cards.
  * Rules: must show live residential/commercial construction content.
  * No tax forms, no spreadsheets, no financial paperwork.
- * Swap for /public/media/service-photos/* when generated using AI tools assets are uploaded.
+ * Swap for /public/media/service-photos/* when AI-generated assets are uploaded.
  */
 const PHOTOS = {
   // design concepts — stunning interior/exterior design render
@@ -50,6 +51,9 @@ const PHOTOS = {
   // Cost Estimation — construction materials and lumber at active job site
   estimate:
     'https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?w=900&q=80&auto=format&fit=crop',
+  // Site Plan — surveyor / site layout work on a residential lot
+  siteplan:
+    'https://images.unsplash.com/photo-1590986701253-e0b0a9ac4f5f?w=900&q=80&auto=format&fit=crop',
   // Build & Manage — construction crew framing a residential home
   build:
     'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=900&q=80&auto=format&fit=crop',
@@ -93,18 +97,38 @@ export const HOME_JOURNEY_SERVICES: HomeJourneyService[] = [
     videoSrc: '/media/service-videos/home-estimate-video.mp4',
   },
   {
+    id: 'siteplan',
+    // Site intelligence — parcel constraints and buildable area, not construction.
+    title: 'Site Plan',
+    subtitle: 'Parcel constraints · buildable area',
+    description:
+      'Setbacks, lot coverage, access, utilities, and flood or environmental flags where data exists — with a preliminary buildable-area diagram. Every finding is labelled with its source, date, and confidence.',
+    priceHint: usdRange(
+      CANONICAL_PRICE_CENTS.siteIntelligence.preliminarySitePlan / 100,
+      CANONICAL_PRICE_CENTS.siteIntelligence.verifiedSiteFeasibility / 100,
+    ),
+    ctaText: 'Start Site Plan',
+    ctaLink: '/site-plans',
+    gradientFrom: '#0F766E',
+    gradientTo: '#2ABFBF',
+    progress: 60,
+    mediaType: 'photo',
+    photoSrc: PHOTOS.siteplan,
+    photoAlt: 'Site layout and grading work on a residential building lot',
+  },
+  {
     id: 'permits',
     // Kealee files the permit; jurisdiction determines approval timing (4–12 weeks).
-    title: 'Permit Filing',
-    subtitle: 'Kealee files · jurisdiction approves',
+    title: 'Permitting',
+    subtitle: 'Kealee prepares & coordinates · the jurisdiction approves',
     description:
-      'Licensed specialists prepare and submit every form to DC, MD, or VA agencies. Kealee manages all comment cycles. Permit approval is set by the jurisdiction — typically 4–12 weeks after submission.',
+      'We identify your jurisdiction anywhere in the US, determine the permit types your scope needs, build the document checklist, and prepare and coordinate the submission. Approval, fees, and timelines are set by the agency — Kealee does not issue permits.',
     priceHint: usdRange(PERMIT_BASIC_PRICE, PERMIT_PREMIUM_PRICE),
     ctaText: 'File Permits',
     ctaLink: '/permits',
     gradientFrom: '#805AD5',
     gradientTo: '#B794F4',
-    progress: 75,
+    progress: 80,
     mediaType: 'video',
     photoSrc: PHOTOS.permits,
     photoAlt: 'Architect reviewing blueprints at residential construction site',
@@ -116,7 +140,7 @@ export const HOME_JOURNEY_SERVICES: HomeJourneyService[] = [
     // Construction execution phase — weeks to months of active build work, not package delivery.
     subtitle: 'Active construction · contractor-matched',
     description:
-      'Vetted DMV contractor bids, milestone-based escrow, and a live owner dashboard. Scope and schedule set by permit-approved plans.',
+      'Vetted contractor bids, milestone-based escrow, and a live owner dashboard. Scope and schedule set by permit-approved plans. Contractor coverage varies by market.',
     priceHint: `From $${PM_ADVISORY_PRICE}/mo advisory`,
     ctaText: 'View Build Services',
     ctaLink: '/contractors',

@@ -47,9 +47,13 @@ export async function GET(req: NextRequest) {
     auth: { persistSession: false },
   })
 
+  // The purchases table renders client name, email, phone, address, and
+  // form_data — selecting only five columns left every one of those blank.
   const { data, error } = await supabase
     .from('public_intake_leads')
-    .select('id, project_path, status, payment_amount, created_at')
+    .select(
+      'id, project_path, client_name, contact_email, contact_phone, project_address, status, payment_amount, created_at, form_data',
+    )
     .order('created_at', { ascending: false })
     .limit(100)
 

@@ -12,6 +12,8 @@ import { BuyingPathways } from '@/components/commerce/BuyingPathways'
 import { availabilityLabel, getProductAvailability } from '@/lib/product-availability'
 import { EditorialVideoHero } from '@/components/marketing/EditorialVideoHero'
 import { ServiceExamplesGallery } from '@/components/marketing/ServiceExamplesGallery'
+import { SectionBoundary } from '@/components/ui/SectionBoundary'
+import { PreconstructionSuiteSection } from '@/components/home/PreconstructionSuiteSection'
 
 export const metadata: Metadata = {
   title: 'All Products & Services — Kealee',
@@ -55,13 +57,24 @@ function CatalogProductCard({ product }: { product: PublicCatalogProduct }) {
 export default function ProductsPage() {
   return (
     <div className="min-h-screen bg-white">
-      <EditorialVideoHero eyebrow="Preconstruction services" title="Every service. One path toward construction." description="Explore what Kealee can produce across design, site planning, cost intelligence, permits, professional coordination, and construction readiness." videoSrc="/media/service-videos/home-build-video.mp4" poster="/media/service-photos/home-build.jpg" primary={{ label: 'Get project clarity', href: '/products/home-project-readiness-review' }} secondary={{ label: 'Explore 24 examples', href: '/inspiration' }} />
+      {/* Supporting sections are isolated: none of them may take the catalog
+          — and its buy buttons — offline if they throw. */}
+      <SectionBoundary name="products-hero">
+        <EditorialVideoHero eyebrow="Preconstruction services" title="Every service. One path toward construction." description="Explore what Kealee can produce across design, site planning, cost intelligence, permits, professional coordination, and construction readiness." videoSrc="/media/service-videos/home-build-video.mp4" poster="/media/service-photos/home-build.jpg" primary={{ label: 'Get project clarity', href: '/products/home-project-readiness-review' }} secondary={{ label: 'Browse all products', href: '/products#homeowner-services' }} />
+      </SectionBoundary>
 
-      <ServiceExamplesGallery serviceKey="all-services" limit={9} />
+      {/* The four core products lead the catalog. */}
+      <PreconstructionSuiteSection />
 
-      <section className="border-b border-gray-100 bg-slate-50">
-        <BuyingPathways />
-      </section>
+      <SectionBoundary name="products-examples">
+        <ServiceExamplesGallery serviceKey="all-services" limit={9} />
+      </SectionBoundary>
+
+      <SectionBoundary name="products-buying-pathways">
+        <section className="border-b border-gray-100 bg-slate-50">
+          <BuyingPathways />
+        </section>
+      </SectionBoundary>
 
       {/* Category sections */}
       <div id="homeowner-services" className="mx-auto max-w-6xl scroll-mt-24 px-4 sm:px-6 lg:px-8 py-16 space-y-20">

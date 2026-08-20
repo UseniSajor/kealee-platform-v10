@@ -7,13 +7,22 @@ import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import { hasIntelligenceUiRole } from '@kealee/auth/ops-api-auth'
-import { getOwnerPortalBaseUrl, getOwnerPortalDeliverableUrl } from '@/lib/owner-portal-urls'
+import {
+  getOnSiteOrderUrl,
+  getOwnerPortalBaseUrl,
+  getOwnerPortalDeliverableUrl,
+  isOwnerPortalConfigured,
+} from '@/lib/owner-portal-urls'
 
 // Public routes that don't require authentication
 // NOTE: /concept/deliverable is not a viewer — middleware redirects to the owner portal.
 // Keep in sync with marketing + checkout funnels (anonymous users must never hit auth wall).
 const PUBLIC_ROUTES = [
   '/login',
+  // The Clerk sign-in/sign-up pages were themselves behind the auth wall,
+  // so /sign-in bounced to /auth/login instead of rendering.
+  '/sign-in',
+  '/sign-up',
   '/marketing/login',
   '/auth/login',
   '/auth/signup',
@@ -75,6 +84,15 @@ const PUBLIC_ROUTES = [
   '/faq',
   '/build',
   '/gallery',
+  // Preconstruction suite — the four core products must be reachable without
+  // an account. '/site-plans' and '/request-service' were previously behind the
+  // auth wall, which made Site Plan unbuyable and killed the quote-request
+  // fallback for every "Request pricing" product.
+  '/site-plans',
+  '/request-service',
+  // Order tracking is gated by a per-order access token inside the page, not
+  // by a Supabase session — anonymous buyers must be able to follow their order.
+  '/orders',
 ]
 
 function authLoginUrl(request: NextRequest, nextPath: string, extra?: Record<string, string>) {
@@ -101,10 +119,16 @@ export async function middleware(request: NextRequest) {
   // /concept/[uuid] pages are paid deliverables that require auth — they do NOT appear here.
   if (pathname === '/concept') return NextResponse.next()
 
-  // Deliverables live in the owner portal only — never render on web-main
+  // Deliverables render in the owner portal when it is configured. When it is
+  // not, they render here — redirecting to an unconfigured host would send
+  // every paying customer to a dead link.
   if (pathname.startsWith('/concept/deliverable')) {
     const intakeId = request.nextUrl.searchParams.get('intakeId')
     const projectPath = request.nextUrl.searchParams.get('projectPath') ?? undefined
+    if (!isOwnerPortalConfigured()) {
+      const target = intakeId ? getOnSiteOrderUrl(intakeId, projectPath) : '/orders'
+      return NextResponse.redirect(new URL(target, request.url))
+    }
     if (intakeId) {
       return NextResponse.redirect(getOwnerPortalDeliverableUrl(intakeId, projectPath))
     }
@@ -161,6 +185,11 @@ export async function middleware(request: NextRequest) {
     // external-portal login page, so redirect there directly.
     if (/^\/concept\/[^/]+$/.test(pathname)) {
       const intakeId = pathname.split('/')[2]
+      if (!isOwnerPortalConfigured()) {
+        return NextResponse.redirect(
+          new URL(intakeId ? getOnSiteOrderUrl(intakeId) : '/orders', request.url),
+        )
+      }
       if (intakeId) {
         return NextResponse.redirect(getOwnerPortalDeliverableUrl(intakeId))
       }

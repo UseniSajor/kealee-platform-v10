@@ -13,7 +13,7 @@ const TIERS = [
     price: '$595',
     rounds: '1 feedback round',
     turnaround: '5–7 business days',
-    desc: 'generated using AI tools exterior concept with 3 renderings, material palette, and landscape layout.',
+    desc: 'AI-generated exterior concept with 3 renderings, material palette, and landscape layout.',
     items: ['3 exterior concept renderings', 'Material + color palette', 'Landscape overview', '30-min consultation'],
     cta: 'Start My Exterior Concept',
   },
@@ -87,7 +87,7 @@ const INCLUDED = [
 const FAQ = [
   {
     q: 'What is the AI Exterior Concept Package?',
-    a: "It's a $595 generated using AI tools concept design package for your home's exterior. You submit your property details and goals; we deliver 3 rendered concepts, a material palette, a landscape overview, and a consultation call — all within 5–7 business days.",
+    a: "It's a $595 AI-generated concept design package for your home's exterior. You submit your property details and goals; we deliver 3 rendered concepts, a material palette, a landscape overview, and a consultation call — all within 5–7 business days.",
   },
   {
     q: 'Does this include contractor services?',
@@ -155,7 +155,7 @@ export default function ExteriorConceptPage() {
                 See your exterior before the first brushstroke
               </h1>
               <p className="mt-6 text-lg text-gray-300">
-                generated using AI tools exterior concepts covering facade redesign, landscaping, hardscaping, driveways, and outdoor
+                AI-generated exterior concepts covering facade redesign, landscaping, hardscaping, driveways, and outdoor
                 living — delivered as a contractor-ready package in 5–7 business days.
               </p>
               <div className="mt-8 flex flex-col gap-4 sm:flex-row">

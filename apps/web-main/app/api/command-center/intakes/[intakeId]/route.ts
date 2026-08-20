@@ -42,6 +42,11 @@ export async function GET(req: NextRequest, { params }: { params: { intakeId: st
 
 // PATCH /api/command-center/intakes/[intakeId] — update status or assign
 export async function PATCH(req: NextRequest, { params }: { params: { intakeId: string } }) {
+  // This write path was unauthenticated while the matching GET was gated —
+  // anyone could rewrite any order's status, assignee, and notes.
+  const denied = await requireCommandCenterApi(req)
+  if (denied) return denied
+
   const { intakeId } = params
   try {
     const body = await req.json()

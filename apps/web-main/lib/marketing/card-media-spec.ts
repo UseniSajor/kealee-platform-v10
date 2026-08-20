@@ -44,7 +44,7 @@ const HOME_SPECS: Record<HomeServiceId, Omit<CardMediaSpec, 'key' | 'scope' | 'i
     mediaType: 'video',
     fallbackPhoto:
       'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=900&q=80&auto=format&fit=crop',
-    photoAlt: 'Diverse generated using AI tools design concepts including kitchen, bath, addition, and garden',
+    photoAlt: 'Diverse AI-generated design concepts including kitchen, bath, addition, and garden',
   },
   permits: {
     title: 'Permit Filing',

@@ -1,11 +1,12 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { ArrowRight, CheckCircle2, Map, Ruler, ShieldCheck } from 'lucide-react'
+import { ArrowRight, CheckCircle2, Globe2, Map, Ruler, ShieldCheck } from 'lucide-react'
 import {
   formatCatalogPrice,
   getPublicCatalogProduct,
   type PublicCatalogProduct,
 } from '@kealee/core-rules'
+import { NATIONWIDE_STATEMENT } from '@/lib/preconstruction-suite'
 
 export const metadata: Metadata = {
   title: 'Site Plans & Buildability — Kealee',
@@ -97,12 +98,49 @@ export default function SitePlansPage() {
                     ))}
                   </ul>
                   <p className="mt-5 text-xs text-slate-400">{product.deliveryDays ?? 'Schedule confirmed after intake'}</p>
+                  {product.limitations.length > 0 && (
+                    <ul className="mt-3 space-y-0.5 rounded-lg bg-slate-50 p-3">
+                      {product.limitations.map(limitation => (
+                        <li key={limitation} className="text-[11px] leading-relaxed text-slate-500">
+                          • {limitation}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                   <Link href={product.href} className="mt-4 flex items-center justify-center gap-2 rounded-xl bg-teal-700 px-4 py-3 text-sm font-bold text-white hover:bg-teal-800">
                     Choose this level <ArrowRight className="h-4 w-4" />
                   </Link>
                 </article>
               )
             })}
+          </div>
+
+          <div className="mx-auto mt-12 max-w-4xl space-y-4">
+            <div className="rounded-2xl border border-emerald-200 bg-emerald-50/70 p-6">
+              <div className="flex items-start gap-4">
+                <Globe2 className="mt-0.5 h-6 w-6 shrink-0 text-emerald-700" />
+                <div>
+                  <h2 className="font-display text-lg font-bold text-emerald-950">
+                    Available nationwide — including where GIS data is thin
+                  </h2>
+                  <p className="mt-2 text-sm leading-relaxed text-emerald-900">{NATIONWIDE_STATEMENT}</p>
+                  <p className="mt-3 text-xs font-semibold text-emerald-800">
+                    If no parcel or zoning service covers your property, we say so, fall back to your
+                    survey, plat, and county records plus manual research, and label the result
+                    &ldquo;Manual review required&rdquo;. We never state zoning, setback, coverage,
+                    permit, fee, or approval information we have not verified against a named source.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <p className="rounded-xl border border-slate-200 bg-white p-5 text-xs leading-relaxed text-slate-500">
+              Site plans delivered at the preliminary and verified levels are preliminary and not for
+              construction unless professionally reviewed. They are not boundary surveys. Permit
+              site-plan coordination includes the professional review and sealing your jurisdiction
+              requires; Kealee prepares and coordinates the submission, but only the jurisdiction
+              approves a permit.
+            </p>
           </div>
         </div>
       </section>

@@ -258,7 +258,7 @@ Kealee fixes this on the front end.
 When a homeowner comes through the Kealee pipeline, contractors receive:
 
 → A scope brief with explicit demo, MEP, structural, and finish specifications
-→ An generated using AI tools cost estimate they can compare their own pricing against
+→ An AI-generated cost estimate they can compare their own pricing against
 → A permit status (applied, in process, or in hand) so no one is bidding blind on permit costs
 → Clear selection allowances or specified materials
 
@@ -368,7 +368,7 @@ Full finish with kitchen/ADU conversion: $90,000–$160,000
 
 The ADU conversion is the highest-ROI option if your jurisdiction allows it and the unit has an exterior entrance. Current basement apartment rental rates in DC: $1,600–$2,200/month.
 
-We do basement concept packages — generated using AI tools layout options, cost estimate, and permit path for your specific jurisdiction. Starting at $${CONCEPT_KITCHEN_PRICE} at kealee.com.`,
+We do basement concept packages — AI-generated layout options, cost estimate, and permit path for your specific jurisdiction. Starting at $${CONCEPT_KITCHEN_PRICE} at kealee.com.`,
     hashtags: ['basement', 'homeimprovement', 'ADU', 'renovation', 'DMV', 'construction', 'realestate'],
   },
 

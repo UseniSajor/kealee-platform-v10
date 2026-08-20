@@ -27,7 +27,7 @@ function SuccessContent() {
           {[
             {
               label: 'Design Concept',
-              detail: 'generated using AI tools renders and concept PDF — view in portal when ready',
+              detail: 'AI-generated renders and concept PDF — view in portal when ready',
               color: 'orange',
             },
             {

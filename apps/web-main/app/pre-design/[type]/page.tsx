@@ -40,7 +40,7 @@ const TIERS = [
     price: 149,
     priceLabel: '$149',
     tagline: 'Fast concept clarity',
-    description: 'generated using AI tools concept visuals + design direction brief. Ideal for early-stage homeowners who want to see possibilities.',
+    description: 'AI-generated concept visuals + design direction brief. Ideal for early-stage homeowners who want to see possibilities.',
     includes: [
       '3 design concept images (exterior or interior)',
       'Style + materials brief',

@@ -472,7 +472,7 @@ Adjust the checkboxes for your specific project. The key is being explicit about
     flairSuggestion: 'AMA',
     scheduledDate: '2026-07-01',
     title: 'We help DC-area homeowners with construction planning (permits, scopes, contractor selection). AMA.',
-    body: `We run a construction planning service based in the DMV — we help homeowners figure out what their project needs before they hire a contractor. Mostly permits, scopes, cost estimates, and generated using AI tools concepts for renovation projects.
+    body: `We run a construction planning service based in the DMV — we help homeowners figure out what their project needs before they hire a contractor. Mostly permits, scopes, cost estimates, and AI-generated concepts for renovation projects.
 
 Ask me anything about:
 

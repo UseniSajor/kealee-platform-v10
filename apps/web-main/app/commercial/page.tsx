@@ -24,7 +24,7 @@ const BENEFITS = [
   {
     icon: '📐',
     title: 'design concept + Feasibility',
-    desc: 'generated using AI tools commercial concept packages with pro forma modeling, IRR analysis, and go/no-go recommendations — delivered in days.',
+    desc: 'AI-generated commercial concept packages with pro forma modeling, IRR analysis, and go/no-go recommendations — delivered in days.',
   },
   {
     icon: '📋',

@@ -92,7 +92,7 @@
 
 export const COMPANY_DESCRIPTION = `Kealee is a construction planning platform for homeowners, contractors, and developers in Washington DC, Maryland, and Virginia.
 
-We help you plan your renovation or development project before you hire a contractor — generated using AI tools design concepts, permit filing, cost estimation, and contractor-ready scope documents.
+We help you plan your renovation or development project before you hire a contractor — AI-generated design concepts, permit filing, cost estimation, and contractor-ready scope documents.
 
 Our pipeline: design concept → permit path → scope brief → vetted contractor bids.
 

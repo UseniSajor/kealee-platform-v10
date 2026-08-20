@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Cormorant_Garamond, Barlow } from 'next/font/google'
+import Link from 'next/link'
 import { Play, Image as ImageIcon, Video } from 'lucide-react'
 import { CircularServiceCard } from './CircularServiceCard'
 import type { HomeJourneyService } from './home-services-data'
@@ -84,7 +85,7 @@ export function ServicesJourneySection({ services }: { services: HomeJourneyServ
             transition={{ duration: 0.8, delay: 0.2 }}
             className="inline-block rounded-full bg-white/10 backdrop-blur-md px-4 py-1.5 text-[10px] sm:text-xs font-bold uppercase tracking-[0.2em] text-white border border-white/20"
           >
-            End-to-end design-build platform · DC, MD &amp; VA
+            Preconstruction services · available nationwide
           </motion.div>
           
           <motion.h1 
@@ -93,8 +94,8 @@ export function ServicesJourneySection({ services }: { services: HomeJourneyServ
             transition={{ duration: 0.8, delay: 0.4 }}
             className="font-home-serif text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold leading-tight text-white max-w-4xl drop-shadow-lg"
           >
-            From First Concept to <br className="hidden sm:block" />
-            <span className="text-[#E8724B]">Final Build</span>
+            Preconstruction clarity <br className="hidden sm:block" />
+            <span className="text-[#E8724B]">before you build</span>
           </motion.h1>
           
           <motion.p 
@@ -103,7 +104,7 @@ export function ServicesJourneySection({ services }: { services: HomeJourneyServ
             transition={{ duration: 0.8, delay: 0.6 }}
             className="font-home-sans max-w-2xl mx-auto text-base sm:text-lg md:text-xl text-white/90 leading-relaxed drop-shadow-md font-medium"
           >
-            Design concepts · cost estimates · permit filing · project workspace — everything your project needs, in one place.
+            Turn your property, project idea, plans, or solicitation into a design concept, estimate, site plan, and permit-ready package.
           </motion.p>
           
           <motion.div
@@ -112,9 +113,26 @@ export function ServicesJourneySection({ services }: { services: HomeJourneyServ
             transition={{ duration: 0.8, delay: 0.8 }}
             className="mt-4"
           >
-            <button className="bg-[#E8724B] hover:bg-[#d65f39] text-white px-8 py-3.5 rounded-xl font-home-sans font-bold text-sm tracking-wide transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5">
-              Start Your Project
-            </button>
+            <div className="flex flex-wrap items-center justify-center gap-3">
+              <Link
+                href="/get-started"
+                className="bg-[#E8724B] hover:bg-[#d65f39] text-white px-8 py-3.5 rounded-xl font-home-sans font-bold text-sm tracking-wide transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5"
+              >
+                Start a Project
+              </Link>
+              <Link
+                href="/intake/cost_estimate"
+                className="border border-white/50 bg-white/10 backdrop-blur-md hover:bg-white/20 text-white px-8 py-3.5 rounded-xl font-home-sans font-bold text-sm tracking-wide transition-all"
+              >
+                Get an Estimate
+              </Link>
+              <Link
+                href="/intake/permit_path_only"
+                className="border border-white/50 bg-white/10 backdrop-blur-md hover:bg-white/20 text-white px-8 py-3.5 rounded-xl font-home-sans font-bold text-sm tracking-wide transition-all"
+              >
+                Upload Plans
+              </Link>
+            </div>
           </motion.div>
         </div>
         

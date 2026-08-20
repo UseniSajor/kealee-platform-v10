@@ -10,6 +10,8 @@
  */
 
 import { createClient } from '@supabase/supabase-js'
+import { isOwnerPortalConfigured } from '@/lib/owner-portal-urls'
+import { getWebMainUrl } from '@/lib/get-app-url'
 
 export interface PortalAccessTokenResult {
   claimUrl: string
@@ -28,6 +30,22 @@ function getAdminClient() {
 
 function getOwnerPortalBase(): string {
   return process.env.NEXT_PUBLIC_OWNER_PORTAL_URL ?? 'https://owner.kealee.com'
+}
+
+/**
+ * Where the emailed access link should point.
+ *
+ * The owner portal is a separately deployed app. If its hostname is not
+ * configured, sending customers there turns every deliverable email into a
+ * dead link, so fall back to the on-site order view — same token, same record,
+ * on the domain we know is serving.
+ */
+function buildClaimUrl(intakeId: string, token: string): string {
+  if (isOwnerPortalConfigured()) {
+    const portalBase = getOwnerPortalBase().replace(/\/$/, '')
+    return `${portalBase}/auth/claim?t=${token}&i=${encodeURIComponent(intakeId)}`
+  }
+  return `${getWebMainUrl().replace(/\/$/, '')}/orders/${encodeURIComponent(intakeId)}?t=${token}`
 }
 
 export async function generatePortalAccessToken(opts: {
@@ -81,8 +99,5 @@ export async function generatePortalAccessToken(opts: {
     return { claimUrl: '', token: '', error: updateError.message }
   }
 
-  const portalBase = getOwnerPortalBase()
-  const claimUrl = `${portalBase}/auth/claim?t=${token}&i=${encodeURIComponent(opts.intakeId)}`
-
-  return { claimUrl, token }
+  return { claimUrl: buildClaimUrl(opts.intakeId, token), token }
 }

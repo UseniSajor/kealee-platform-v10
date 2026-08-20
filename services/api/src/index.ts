@@ -482,17 +482,36 @@ const start = async () => {
     // The health endpoint is already registered and will respond regardless.
     // ========================================================================
 
-    // Helper: register a route group, log and continue on failure
+    // Route blocks fail open so one bad import cannot take the whole API down.
+    // The trade-off is that a failed block disappears silently — every route in
+    // it 404s with no signal. Record the outcome so /health/routes can report
+    // exactly which capabilities are missing from a running instance.
+    const registeredBlocks: string[] = []
+    const failedBlocks: { block: string; error: string }[] = []
+
     const safeRegisterBlock = async (blockName: string, fn: () => Promise<void>) => {
       try {
         await fn()
+        registeredBlocks.push(blockName)
         console.log(`✅ ${blockName}`)
       } catch (err: any) {
-        console.error(`⚠️  FAILED to register ${blockName}: ${err?.message || err}`)
+        const message = err?.message || String(err)
+        failedBlocks.push({ block: blockName, error: message })
+        console.error(`⚠️  FAILED to register ${blockName}: ${message}`)
         console.error(`   Stack: ${err?.stack || '(no stack)'}`)
         fastify.log.error(err, `Route block "${blockName}" failed to register`)
       }
     }
+
+    fastify.get('/health/routes', async (_request, reply) => {
+      return reply.status(failedBlocks.length > 0 ? 503 : 200).send({
+        ok: failedBlocks.length === 0,
+        registeredCount: registeredBlocks.length,
+        failedCount: failedBlocks.length,
+        failed: failedBlocks,
+        registered: registeredBlocks,
+      })
+    })
 
     // ── Core routes ──
     await safeRegisterBlock('Core routes (auth, orgs, users, billing, etc.)', async () => {

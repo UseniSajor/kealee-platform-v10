@@ -58,6 +58,43 @@ export async function POST(req: NextRequest) {
       capturedAt: new Date().toISOString(),
     })
 
+    // Refresh-and-retry on the payment step used to mint a fresh intake every
+    // time, leaving orphan lead rows and making the admin queue unreadable.
+    // Reuse an unpaid intake for the same person, product, and property when it
+    // is recent enough to be the same attempt.
+    const DUPLICATE_WINDOW_MS = 6 * 60 * 60 * 1000
+    const { data: recent } = await supabase
+      .from('public_intake_leads')
+      .select('id, created_at, form_data')
+      .eq('project_path', path)
+      .eq('contact_email', String(contactEmail))
+      .eq('project_address', String(projectAddress))
+      .eq('status', 'new')
+      .order('created_at', { ascending: false })
+      .limit(1)
+
+    const reusable = recent?.[0]
+    if (
+      reusable?.created_at &&
+      Date.now() - Date.parse(reusable.created_at) < DUPLICATE_WINDOW_MS
+    ) {
+      // Keep the newest answers — the customer may have edited before retrying.
+      await supabase
+        .from('public_intake_leads')
+        .update({
+          client_name: String(clientName),
+          contact_phone: contactPhone ? String(contactPhone) : null,
+          form_data: {
+            ...((reusable.form_data as Record<string, unknown>) ?? {}),
+            ...resolvedFormData,
+          },
+          metadata,
+        })
+        .eq('id', reusable.id)
+
+      return NextResponse.json({ intakeId: reusable.id, reused: true })
+    }
+
     const { data: intake, error: intakeErr } = await supabase
       .from('public_intake_leads')
       .insert({

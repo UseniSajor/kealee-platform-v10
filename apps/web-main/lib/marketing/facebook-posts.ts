@@ -554,7 +554,7 @@ CONCEPT PACKAGES (48-hour turnaround):
 • Landscape/deck concept: $${CONCEPT_LANDSCAPE_PRICE}
 
 WHAT'S INCLUDED:
-→ 3 generated using AI tools layout options for your space
+→ 3 AI-generated layout options for your space
 → Itemized cost estimate by trade (demo, framing, MEP, finishes)
 → Permit scope assessment for your jurisdiction (DC, MD, or VA)
 → Contractor-ready scope brief for comparable bids

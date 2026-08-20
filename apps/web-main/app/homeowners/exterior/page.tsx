@@ -13,7 +13,7 @@ const SERVICES = [
     image: 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=600&q=80&auto=format&fit=crop',
     imageAlt: 'Beautiful home exterior with professional curb appeal and landscaping',
     items: [
-      { name: 'AI Exterior Concept Package', price: '$595', desc: 'generated using AI tools exterior concept with 3 renderings, material palette, and landscape overview. 1 feedback round. 5–7 business days.' },
+      { name: 'AI Exterior Concept Package', price: '$595', desc: 'AI-generated exterior concept with 3 renderings, material palette, and landscape overview. 1 feedback round. 5–7 business days.' },
       { name: 'Advanced Exterior Design', price: '$1,200', desc: 'Full exterior design with detailed landscape plan, hardscape specs, and lighting layout. Up to 3 feedback rounds.' },
       { name: 'Full Landscape Design', price: 'From $3,500', desc: 'Permit-ready landscape + exterior design with contractor bid documents, irrigation plan, and grading overview.' },
     ],

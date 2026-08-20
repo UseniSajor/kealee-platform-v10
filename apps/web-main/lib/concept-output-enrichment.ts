@@ -119,7 +119,7 @@ export function ensureConceptPermitZoningFields(
         'Permit scope brief included — agency filing and stamped drawings are available as a separate Kealee service.',
     }
   } else if (jData && !jData.inferredByAI) {
-    // Real jurisdiction data found — override generated using AI tools fee/timeline estimates
+    // Real jurisdiction data found — override AI-generated fee/timeline estimates
     if (ps.estimatedPermitFee === 0 || ps.estimatedPermitFee === 850) {
       ps.estimatedPermitFee = permitFee
     }

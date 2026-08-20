@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { storeContactInquiry } from '@/lib/contact-inquiry-store'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
-import { getOwnerPortalBaseUrl } from '@/lib/owner-portal-urls'
+import { generatePortalAccessToken } from '@/lib/portal-access-token'
+import { orderStatusPatch } from '@/lib/order-status'
 import { buildProjectClarityReport } from '@/lib/project-clarity-report'
 
 export async function POST(req: NextRequest) {
@@ -30,15 +31,60 @@ export async function POST(req: NextRequest) {
       status: 'concept_ready',
       requires_payment: false,
       payment_amount: 0,
-      form_data: { projectDescription, timeline, projectClarityReport: report, paymentTaken: false },
+      form_data: {
+        projectDescription,
+        timeline,
+        projectClarityReport: report,
+        paymentTaken: false,
+        ...orderStatusPatch('delivered', { actor: 'system' }),
+      },
       metadata: { serviceKey, serviceName, freeEntryService: true, feedsPaidPlatformServices: true },
     })
     if (error) return NextResponse.json({ error: 'The free report could not be saved.' }, { status: 500 })
-    const downloadPath = `/api/project-clarity/${intakeId}/download`
-    const portalDownloadUrl = `${getOwnerPortalBaseUrl()}/login?next=${encodeURIComponent(downloadPath)}`
+    // Previously this pointed at an owner-portal download route that does not
+    // exist, so the free report was never retrievable. Hand back a tokenized
+    // link to the order view that renders the report and the next steps.
+    const access = await generatePortalAccessToken({ intakeId, email, nextPath: `/orders/${intakeId}` })
+    const portalDownloadUrl = access.claimUrl || `/orders/${intakeId}`
     return NextResponse.json({ ok: true, intakeId, report, portalDownloadUrl })
   }
   const ok = await storeContactInquiry({ name, email, phone: String(form.get('phone') ?? '') || null, source: `service_request_${serviceKey}`, budgetRange: String(form.get('budgetRange') ?? '') || null, timeline: String(form.get('timeline') ?? '') || null, message: projectDescription, metadata: { serviceKey, serviceName, projectAddress: address, contactPreference: String(form.get('contactPreference') ?? 'Email'), productionStatus: 'NEW_REQUEST', automationAllowed: false, architectureVersion: 'v30', executionMode: 'manual_controlled', paymentTaken: false } })
   if (!ok) return NextResponse.json({ error: 'The request could not be saved.' }, { status: 500 })
+  // Quote requests have no payment event to alert on, so notify ops directly —
+  // otherwise a scoped-pricing lead can sit unnoticed in the inquiries table.
+  await notifyOpsOfServiceRequest({ name, email, serviceName, address, projectDescription })
   return NextResponse.json({ ok: true })
+}
+
+async function notifyOpsOfServiceRequest(input: {
+  name: string
+  email: string
+  serviceName: string
+  address: string
+  projectDescription: string
+}): Promise<void> {
+  const resendApiKey = process.env.RESEND_API_KEY
+  if (!resendApiKey) return
+  try {
+    await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${resendApiKey}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        from: 'Kealee Notifications <notifications@kealee.com>',
+        to: ['hello@kealee.com'],
+        subject: `Quote request — ${input.serviceName}`,
+        text: [
+          'A customer requested pricing for a scoped service.',
+          '',
+          `  Service:  ${input.serviceName}`,
+          `  Name:     ${input.name} <${input.email}>`,
+          `  Address:  ${input.address}`,
+          '',
+          input.projectDescription,
+        ].join('\n'),
+      }),
+    })
+  } catch (error) {
+    console.error('[service-requests] ops notification failed:', error instanceof Error ? error.message : error)
+  }
 }

@@ -7,8 +7,13 @@ type PathwayStep = (typeof ROLE_BUYING_PATHWAYS)[keyof typeof ROLE_BUYING_PATHWA
 
 function stepPrice(step: PathwayStep): string {
   if ('priceLabel' in step) return step.priceLabel
+  // A step with no label and no usable price must degrade to a scope prompt —
+  // never to "$NaN" on a page customers buy from.
+  if (!('priceCents' in step) || !Number.isFinite(step.priceCents)) return 'Scoped'
   if (step.priceCents === 0) return 'Free'
-  return `${'pricePrefix' in step ? step.pricePrefix : ''}${displayPrice(step.priceCents)}${step.priceSuffix}`
+  const prefix = 'pricePrefix' in step ? step.pricePrefix : ''
+  const suffix = 'priceSuffix' in step ? step.priceSuffix : ''
+  return `${prefix}${displayPrice(step.priceCents)}${suffix}`
 }
 
 const PATHWAYS = [
