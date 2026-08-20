@@ -16,6 +16,7 @@
  */
 
 import fetch from 'node-fetch';
+import type { GeoJsonFeatureCollection } from './geojson-types';
 
 export interface ProviderConfig {
   apiKey: string;
@@ -159,7 +160,7 @@ export class MapboxProvider {
   async fetchParcelBoundaries(
     bbox: { minLng: number; minLat: number; maxLng: number; maxLat: number },
     zoom?: number
-  ): Promise<GeoJSON.FeatureCollection> {
+  ): Promise<GeoJsonFeatureCollection> {
     console.log(`Fetching Mapbox parcel boundaries for bbox`);
 
     const zoomLevel = zoom || 14;
@@ -173,7 +174,7 @@ export class MapboxProvider {
       throw new Error(`Mapbox API error: ${response.statusText}`);
     }
 
-    return (await response.json()) as GeoJSON.FeatureCollection;
+    return (await response.json()) as GeoJsonFeatureCollection;
   }
 
   /**

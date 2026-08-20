@@ -4,6 +4,7 @@
  */
 
 import fetch from 'node-fetch';
+import type { GeoJsonFeatureCollection, GeoJsonPolygon } from './geojson-types';
 
 export interface JurisdictionData {
   name: string;
@@ -20,7 +21,7 @@ export interface ParcelData {
   county: string;
   state: string;
   coordinates?: { lat: number; lng: number };
-  boundaries?: GeoJSON.Polygon;
+  boundaries?: GeoJsonPolygon;
   sqft?: number;
   lotSize?: number;
   zoning?: string;
@@ -387,7 +388,7 @@ export class OpenGovSource {
   /**
    * Fetch county boundaries and demographics
    */
-  static async fetchCountyBoundaries(state: string, county: string): Promise<GeoJSON.FeatureCollection | null> {
+  static async fetchCountyBoundaries(state: string, county: string): Promise<GeoJsonFeatureCollection | null> {
     console.log(`Fetching county boundaries for ${county}, ${state}`);
 
     try {
@@ -399,7 +400,7 @@ export class OpenGovSource {
       );
 
       if (!response.ok) return null;
-      return (await response.json()) as GeoJSON.FeatureCollection;
+      return (await response.json()) as GeoJsonFeatureCollection;
     } catch (error) {
       console.error('Failed to fetch county boundaries:', error);
       return null;
@@ -485,7 +486,7 @@ export class OpenStreetMapSource {
   /**
    * Fetch administrative boundaries from OpenStreetMap
    */
-  static async fetchAdministrativeBoundaries(state: string): Promise<GeoJSON.FeatureCollection | null> {
+  static async fetchAdministrativeBoundaries(state: string): Promise<GeoJsonFeatureCollection | null> {
     console.log(`Fetching administrative boundaries for ${state}`);
 
     const query = `
@@ -671,7 +672,7 @@ export class FreeDataSourceAggregator {
   /**
    * Fetch boundary data from free sources
    */
-  static async fetchBoundaries(state: string): Promise<GeoJSON.FeatureCollection | null> {
+  static async fetchBoundaries(state: string): Promise<GeoJsonFeatureCollection | null> {
     // Try OpenGov first
     const ogBoundaries = await OpenGovSource.fetchCountyBoundaries(state, '');
     if (ogBoundaries) return ogBoundaries;
