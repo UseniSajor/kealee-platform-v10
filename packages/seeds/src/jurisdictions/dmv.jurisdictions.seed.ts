@@ -68,18 +68,18 @@ export const jurisdictionSeeds: JurisdictionSeed[] = [
   },
   {
     code: "prince_georges_md",
-    version: "1.1.0",
+    version: "1.2.0",
     status: "active",
     source: "official_pgc_dpie_accela",
-    lastVerifiedAt: "2026-03-24",
+    lastVerifiedAt: "2026-08-20",
     name: "Prince George's County",
     state: "MD",
     permitAuthority: "Department of Permitting, Inspections and Enforcement (DPIE)",
     zoningAuthority: "Prince George's County Planning / M-NCPPC",
     permitPortalName: "DPIE Accela Portal",
     permitPortalUrl: "https://dpie.mypgc.us",
-    zoningMapUrl: "https://pgcgis.mypgc.us",
-    propertyLookupUrl: "https://pgcgis.mypgc.us",
+    zoningMapUrl: "https://gisdata.pgplanning.org/arcgis/rest/services",
+    propertyLookupUrl: "https://gisdata.pgplanning.org/arcgis/rest/services",
     inspectionUrl: "https://dpie.mypgc.us",
     permitStatusUrl: "https://dpie.mypgc.us",
     planUploadSystem: "ProjectDox (eplans.mypgc.us) via DPIE portal",
@@ -91,7 +91,9 @@ export const jurisdictionSeeds: JurisdictionSeed[] = [
     notesForKeaCore: [
       "DPIE uses Accela at dpie.mypgc.us for applications, status, and inspection scheduling.",
       "E-plan submission: eplans.mypgc.us (ProjectDox). Check DPIE portal for access.",
-      "PG GIS (pgcgis.mypgc.us) for zoning and parcel lookup.",
+      "PG GIS: gisdata.pgplanning.org (M-NCPPC ArcGIS). pgcgis.mypgc.us NO LONGER RESOLVES (verified 2026-08-20).",
+      "Zoning: use ZoningCertificationLetter layer 59 (current, 2022 ordinance). Layer 65 is the PRIOR pre-2022 ordinance. The Map_Services/C_I_Z 'Plan 2035 Zoning' layer also still serves superseded codes — do not use it for compliance.",
+      "Zoning layers are EPSG:2248 (NAD83 MD State Plane, US ft) and ignore inSR=4326.",
       "OTC for simple permits (HVAC, electrical service). New residential: 4–8 weeks. Commercial: 8–16 weeks.",
       "Note: mypgc.us is correct non-standard domain for PG County — verify subdomains annually."
     ]
