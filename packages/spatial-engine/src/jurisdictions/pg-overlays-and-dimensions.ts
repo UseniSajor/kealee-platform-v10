@@ -12,6 +12,14 @@
  */
 
 import type { PgZoneCategory } from './prince-georges-md'
+import {
+  PG_ZONE_DIMENSIONAL_TABLES,
+  PG_ZONES_REQUIRING_MANUAL_TRANSCRIPTION,
+  type PgZoneDimensionalTable,
+} from './pg-dimensional-standards.generated'
+
+export { PG_ZONE_DIMENSIONAL_TABLES, PG_ZONES_REQUIRING_MANUAL_TRANSCRIPTION }
+export type { PgZoneDimensionalTable }
 
 // ── Overlay zones ───────────────────────────────────────────────────────────
 //
@@ -153,77 +161,89 @@ export function pgOverlay(code: string): PgOverlay | null {
 // ── Dimensional standards ───────────────────────────────────────────────────
 
 /**
- * Minimum lot area, width, setbacks, height, coverage and density per zone.
+ * Dimensional standards per zone, sourced from the adopted Zoning Ordinance.
  *
- * INTENTIONALLY EMPTY.
+ * These values are law. They live in Subtitle 27 (effective 2022-04-01) and are
+ * published by the county at online.encodeplus.com. They are machine-extracted
+ * into `pg-dimensional-standards.generated.ts` and re-exported here.
  *
- * These values are law. They live in Subtitle 27 of the Prince George's County
- * Code (Zoning Ordinance, effective 2022-04-01) and are published only as legal
- * text — the county's GIS services carry zone geometry and classification, not
- * dimensional standards, and the "Visual Guide to Zoning Categories" is a
- * graphical overview brochure that contains none of these tables.
+ * Extraction is a strong starting point, not a signature. Every table reports
+ * `verifiedBy: null` until a qualified reviewer signs off, and the lookup keeps
+ * returning `requiresProfessionalVerification: true` until then.
  *
- * They must therefore be transcribed from the ordinance with a section citation
- * and signed off by a reviewer before the platform quotes them. Populating this
- * map from memory or from a model's recollection would fabricate a regulatory
- * value — the single thing this engine must never do. A wrong setback produces a
- * site plan that gets rejected at permit review, or worse, a building sited
- * illegally.
- *
- * Until an entry exists, `getPgDimensionalStandards()` returns null and callers
- * must degrade to "requires manual verification against Subtitle 27" rather than
- * emit a dimensional compliance finding.
+ * The county says "yard depth", not "setback". Values retain footnote markers
+ * because those carry legal conditions that change the number — use
+ * `parsePgStandardValue()` rather than coercing a string to a number.
  */
-export interface PgDimensionalStandards {
-  zoneCode: string
-  category: PgZoneCategory
-  minLotAreaSqFt: number | null
-  minLotWidthFt: number | null
-  minFrontSetbackFt: number | null
-  minSideSetbackFt: number | null
-  minRearSetbackFt: number | null
-  maxHeightFt: number | null
-  maxLotCoveragePercent: number | null
-  maxDensityUnitsPerAcre: number | null
-  /** Required provenance — no entry may exist without all of these. */
-  source: {
-    /** e.g. "Prince George's County Code, Subtitle 27, § 27-4202" */
-    citation: string
-    documentUrl: string
-    effectiveDate: string
-    /** Who transcribed and verified it. */
-    verifiedBy: string
-    verifiedAt: string
-  }
-}
-
-/** Populated only by reviewed transcription. Empty is the correct current state. */
-export const PG_DIMENSIONAL_STANDARDS: Readonly<Record<string, PgDimensionalStandards>> = {}
-
 export interface PgDimensionalLookup {
-  standards: PgDimensionalStandards | null
-  /** Present whenever standards are unavailable. */
+  /** The ordinance table, when one has been extracted for this zone. */
+  table: PgZoneDimensionalTable | null
+  /**
+   * True until a qualified reviewer signs off. Extraction is machine-made from
+   * the county's published ordinance, which is a strong starting point but is
+   * not a substitute for professional verification.
+   */
+  requiresProfessionalVerification: boolean
   unavailableReason?: string
-  requiresManualVerification: boolean
 }
 
 /**
- * Look up dimensional standards for a zone. Fails closed: an unknown zone and a
- * not-yet-transcribed zone both return `requiresManualVerification: true` rather
- * than a guess.
+ * Look up the dimensional standards table for a zone.
+ *
+ * Fails closed in both directions: a zone with no extracted table returns null
+ * with a reason, and a zone WITH a table still reports
+ * `requiresProfessionalVerification` until someone signs off. Callers must not
+ * present these as final compliance findings on that basis alone.
  */
 export function getPgDimensionalStandards(zoneCode: string): PgDimensionalLookup {
-  const standards = PG_DIMENSIONAL_STANDARDS[zoneCode.trim().toUpperCase()]
-  if (standards) return { standards, requiresManualVerification: false }
-  return {
-    standards: null,
-    requiresManualVerification: true,
-    unavailableReason:
-      `Dimensional standards for ${zoneCode} have not been transcribed from Subtitle 27 ` +
-      'of the Prince George\'s County Code and verified by a reviewer. Kealee does not ' +
-      'publish setback, lot, height, coverage or density values it has not sourced. ' +
-      'A qualified reviewer must confirm these against the adopted Zoning Ordinance.',
+  const code = zoneCode.trim().toUpperCase()
+  const table = PG_ZONE_DIMENSIONAL_TABLES[code]
+
+  if (table) {
+    return {
+      table,
+      requiresProfessionalVerification: table.source.verifiedBy == null,
+    }
   }
+
+  if (PG_ZONES_REQUIRING_MANUAL_TRANSCRIPTION.includes(code)) {
+    return {
+      table: null,
+      requiresProfessionalVerification: true,
+      unavailableReason:
+        `${code} publishes its standards in a table with nested Core/Edge column ` +
+        'headers (or, for the legacy comprehensive-design zones, no table at all — ' +
+        'those are governed by their prior approved plans). Automated extraction ' +
+        'would mis-assign columns and produce a wrong buildable envelope, so it has ' +
+        'been excluded pending manual transcription against Subtitle 27.',
+    }
+  }
+
+  return {
+    table: null,
+    requiresProfessionalVerification: true,
+    unavailableReason:
+      `No dimensional standards are on file for "${zoneCode}". Confirm the zone ` +
+      'code against the current Zoning Ordinance before relying on any envelope.',
+  }
+}
+
+/**
+ * Footnote markers such as "(4)" carry legal conditions that change the number,
+ * so values are kept as strings. This parses the bare numeric part and reports
+ * whether a footnote applies — it never discards that fact.
+ */
+export function parsePgStandardValue(value: string): {
+  numeric: number | null
+  footnotes: string[]
+  raw: string
+  hasCondition: boolean
+} {
+  const raw = value.trim()
+  const footnotes = [...raw.matchAll(/\((\d+)\)/g)].map(m => m[1])
+  const bare = raw.replace(/\(\d+\)/g, '').replace(/,/g, '').trim()
+  const numeric = /^-?\d+(\.\d+)?$/.test(bare) ? Number(bare) : null
+  return { numeric, footnotes, raw, hasCondition: footnotes.length > 0 }
 }
 
 /** Where a reviewer should go to transcribe the standards. */
