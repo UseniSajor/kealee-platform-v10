@@ -14,6 +14,17 @@ export function getProductAvailability(key: string): ProductAvailability {
   return 'request'
 }
 
+/**
+ * Buyer-facing label for a product's availability.
+ *
+ * `app/products/page.tsx` has always imported this, but it was never exported —
+ * so the call resolved to `undefined(...)` and threw, which is why /products
+ * returned HTTP 500 in production.
+ */
+export function availabilityLabel(availability: ProductAvailability): string {
+  return availability === 'online' ? 'Buy online' : 'Request pricing'
+}
+
 export function serviceRequestHref(key: string, name: string): string {
   const params = new URLSearchParams({ service: key, name })
   return `/request-service?${params.toString()}`

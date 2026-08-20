@@ -1143,21 +1143,13 @@ const start = async () => {
       await fastify.register(commsRoutes, { prefix: '/comms' })
     })
 
-    await safeRegisterBlock('Twilio AI voice routes', async () => {
-      const { voiceRoutes } = await import('./modules/voice/voice.routes')
-      await fastify.register(voiceRoutes, { prefix: '/api/voice' })
-    })
-
-    await safeRegisterBlock('Authoritative support automation routes', async () => {
-      const { supportAutomationRoutes } = await import('./modules/support-automation/support-automation.routes')
-      await fastify.register(supportAutomationRoutes, { prefix: '/api/support' })
-    })
-
-    await safeRegisterBlock('Site-plan production workflow routes', async () => {
-      const { sitePlanRoutes } = await import('./modules/site-plans/site-plan.routes')
-      await fastify.register(sitePlanRoutes, { prefix: '/api/site-plans' })
-    })
-
+    // Removed: registrations for ./modules/voice/voice.routes,
+    // ./modules/support-automation/support-automation.routes, and
+    // ./modules/site-plans/site-plan.routes. Those modules have never existed in
+    // this repo, so the dynamic imports always threw and safeRegisterBlock always
+    // swallowed them — the routes were never served. They also broke `tsc`
+    // (TS2307), which mattered once build:ts stopped swallowing failures.
+    // Re-add a block here together with the module that implements it.
     await safeRegisterBlock('Revenue optimization routes (P17)', async () => {
       const { revenueRoutes } = await import('./modules/revenue/revenue.routes')
       await fastify.register(revenueRoutes, { prefix: '/revenue' })

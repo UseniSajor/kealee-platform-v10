@@ -4,7 +4,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { useEffect, useRef, useState } from 'react'
-import { Calculator, FileCheck, Hammer, Palette, Play, ArrowRight } from 'lucide-react'
+import { Calculator, FileCheck, Hammer, Map, Palette, Play, ArrowRight } from 'lucide-react'
 import type { HomeJourneyService, HomeServiceId } from './home-services-data'
 import { trackEvent } from '@/lib/analytics'
 
@@ -14,6 +14,7 @@ const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS
 const ICONS: Record<HomeServiceId, typeof Palette> = {
   design: Palette,
   estimate: Calculator,
+  siteplan: Map,
   permits: FileCheck,
   build: Hammer,
 }
@@ -30,7 +31,9 @@ export function CircularServiceCard({ service, index }: CircularServiceCardProps
   const [showBefore, setShowBefore] = useState(false)
   const videoRef = useRef<HTMLVideoElement>(null)
   const rootRef = useRef<HTMLDivElement>(null)
-  const Icon = ICONS[service.id]
+  // Never let an unmapped service id render `undefined` as a component — that
+  // throws "Element type is invalid" and takes down the entire homepage.
+  const Icon = ICONS[service.id] ?? Palette
   const ringOffset = RING_CIRCUMFERENCE - (service.progress / 100) * RING_CIRCUMFERENCE
   const useVideo = service.mediaType === 'video' && showVideo
 

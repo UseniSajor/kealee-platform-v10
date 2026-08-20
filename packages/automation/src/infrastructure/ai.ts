@@ -62,8 +62,11 @@ export async function generateText(opts: {
     }),
   );
 
+  // The first content block is optional in the SDK types, and a non-text block
+  // (tool use, thinking) carries no `.text`. Both cases mean "no text", which is
+  // what this function already contracts to return.
   const block = response.content[0];
-  const text = block.type === 'text' ? block.text : '';
+  const text = block?.type === 'text' ? block.text ?? '' : '';
 
   return {
     text,
@@ -177,8 +180,11 @@ export async function analyzeImage(opts: {
     }),
   );
 
+  // The first content block is optional in the SDK types, and a non-text block
+  // (tool use, thinking) carries no `.text`. Both cases mean "no text", which is
+  // what this function already contracts to return.
   const block = response.content[0];
-  const text = block.type === 'text' ? block.text : '';
+  const text = block?.type === 'text' ? block.text ?? '' : '';
 
   return {
     text,
