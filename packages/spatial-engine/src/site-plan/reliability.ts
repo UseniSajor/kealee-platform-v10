@@ -92,9 +92,11 @@ export function disclosureFor(level: ReliabilityLevel): string | null {
 /**
  * Whether the underlying DATA could support a permit submission.
  *
- * This is a statement about data sufficiency only. It is not sign-off — a
- * package is permit-ready only when a human has also signed it off, which an
- * administrator handles at the package level.
+ * This never stops the platform drafting. The agents produce the complete plan
+ * set from whatever data exists; this reports what a reviewing professional will
+ * want in hand, and what the package should say about itself. Missing survey
+ * data means the drawings are drafted from GIS and labelled accordingly — not
+ * that they are withheld.
  */
 export function dataSupportsPermitSubmission(sources: SourceRecord[]): {
   sufficient: boolean

@@ -261,22 +261,26 @@ export function parsePgStandardValue(value: string): {
 /**
  * How review works on this platform.
  *
- * The agents generate the COMPLETE site-plan package — every sheet, every
- * calculation, every compliance finding — and an administrator routes it for
- * human sign-off once. Data lookups do not block, and no individual number
- * refuses to be used.
+ * Kealee is the DRAFTER. The v30 agents produce the complete site-plan package —
+ * every sheet, every calculation, every compliance finding — the way a designer
+ * or EIT does in a civil office. A licensed professional then reviews, corrects
+ * and seals it under their responsible charge.
  *
- * The one thing that survives from the legal guardrails: an unsigned package is
- * not permit-ready and must not be labelled as approved, sealed, or certified.
- * That status lives on the package (see `SitePlanWorkflow` and
- * `ProfessionalReviewRecord` in the Prisma schema), not on each field.
+ * Nothing in this codebase refuses to compute. There is no "cannot complete
+ * because" path: missing inputs become stated assumptions and open items on the
+ * drawings, which is exactly how a drafter handles them.
+ *
+ * Two things the platform still does not do, because they are not drafting:
+ * it does not apply a seal, and it does not label a package permit-approved.
+ * Those belong to the professional and the jurisdiction respectively.
  */
 export const SITE_PLAN_REVIEW_MODEL = {
-  generation: 'agents produce the full package without gating',
-  signOff: 'administrator routes the completed package for human review',
+  platformRole: 'drafter — produces finished plans for professional review',
+  generation: 'agents complete the full package; no gating, no refusal paths',
+  missingInputs: 'become stated assumptions and open items on the drawings',
+  signOff: 'licensed professional reviews, corrects and seals under responsible charge',
   packageStatuses: ['DRAFT', 'AWAITING_REVIEW', 'IN_REVIEW', 'APPROVED', 'REJECTED'] as const,
-  /** True only once a human has signed off. Never set by an agent. */
-  permitReadyRequiresSignOff: true,
+  platformNeverApplies: ['professional seal', 'permit-approved status'],
 } as const
 
 /** Where a reviewer should go to transcribe the standards. */
