@@ -1906,6 +1906,15 @@ enum AssessmentStatus {
   CLEARED       // Issues resolved
 }
 
+/// Positional accuracy of a site source, per the site-plan reliability model.
+enum SiteAccuracyClass {
+  SURVEY_GRADE
+  MAPPING_GRADE
+  APPROXIMATE
+  SCHEMATIC
+  UNKNOWN
+}
+
 enum SiteSourceDatasetType {
   SURVEY
   PARCEL
@@ -2174,6 +2183,14 @@ model SiteSourceDataset {
   effectiveDate    DateTime?
   crs              String
   linearUnit       String
+  // Provenance required on every site object: a GIS layer is not a field survey,
+  // and most parcel/zoning layers carry no elevation at all — verticalDatum null
+  // is a meaningful answer, distinct from UNKNOWN.
+  horizontalDatum  String?
+  verticalDatum    String?
+  accuracyClass    SiteAccuracyClass     @default(UNKNOWN)
+  reliabilityLevel Int                   @default(1)
+  responsibleProfessionalId String?
   checksum         String
   confidence       Decimal               @db.Decimal(5, 4)
   rawArtifactId    String?
