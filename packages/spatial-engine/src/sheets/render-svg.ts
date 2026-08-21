@@ -287,6 +287,39 @@ export function buildSheetContext(input: {
   }
 }
 
+
+/** Draws design-generated features of a given kind, with an optional attribute filter. */
+function drawDesign(
+  twin: SiteTwin, vp: Viewport, b: Bounds,
+  kind: SiteFeature['kind'], pen: Pen, attrType?: string,
+): string {
+  return twin.features
+    .filter(f => f.kind === kind)
+    .filter(f => !attrType || (f as { attributes?: Record<string, unknown> }).attributes?.type === attrType)
+    .map(f => {
+      const g = f as { ring?: Ring; line?: [number, number][]; point?: [number, number] }
+      if (g.ring) return poly(projectRing(g.ring, vp, b, PAD_FT), pen)
+      if (g.line) {
+        const pts = g.line.map(pt => project(pt as never, vp, b, PAD_FT))
+        return pts.slice(1).map((pt, i) => line(pts[i][0], pts[i][1], pt[0], pt[1], pen)).join('')
+      }
+      if (g.point) {
+        const [x, y] = project(g.point as never, vp, b, PAD_FT)
+        return `<circle cx="${x}" cy="${y}" r="3" fill="${pen.stroke ?? '#000'}"/>`
+      }
+      return ''
+    })
+    .join('')
+}
+
+/** Panel of stated assumptions — a drafter notes these on the drawing. */
+function assumptionsPanel(x: number, y: number, items: string[]): string {
+  if (items.length === 0) return ''
+  const out = [text(x, y, 'DESIGN ASSUMPTIONS', 8, { bold: true })]
+  items.slice(0, 5).forEach((a, i) => out.push(text(x, y + 12 + i * 10, `${i + 1}. ${a.slice(0, 130)}`, 6.5)))
+  return out.join('')
+}
+
 export interface RenderedSheet {
   sheet: SheetId
   svg: string
@@ -358,9 +391,91 @@ export function renderSheetSvg(ctx: SheetContext, sheetSize: SheetSize = ARCH_D)
       break
     }
 
+    case 'C-300': {
+      body.push(drawParcel(ctx.twin, vp, b))
+      body.push(drawBuildings(ctx.twin, vp, b, true))
+      body.push(drawDesign(ctx.twin, vp, b, 'DemolitionFeature', { stroke: '#c00', width: 1.4, dash: '3,3', fill: '#fee', opacity: 0.5 }))
+      body.push(legend(contentX, sheetSize.heightPt - 130, [
+        ['Property boundary', { stroke: '#000', width: 2 }],
+        ['To be removed', { stroke: '#c00', width: 1.4, dash: '3,3' }],
+      ]))
+      body.push(text(contentX, sheetSize.heightPt - 152, 'Protect adjacent structures and utilities during demolition.', 7))
+      break
+    }
+
+    case 'C-400': {
+      body.push(drawParcel(ctx.twin, vp, b))
+      body.push(drawDesign(ctx.twin, vp, b, 'ProposedFeature', { stroke: '#8a6d3b', width: 0.7, dash: '2,2' }, 'Graded area'))
+      body.push(drawBuildings(ctx.twin, vp, b, false))
+      body.push(drawDesign(ctx.twin, vp, b, 'SpotElevation', { stroke: '#000', width: 1 }))
+      body.push(drawLod(ctx.twin, vp, b))
+      body.push(legend(contentX, sheetSize.heightPt - 140, [
+        ['Proposed contour', { stroke: '#8a6d3b', width: 0.7, dash: '2,2' }],
+        ['Spot elevation / FFE', { stroke: '#000', width: 1 }],
+        ['Limit of disturbance', { stroke: '#e8793a', width: 1.6, dash: '12,4' }],
+      ]))
+      break
+    }
+
+    case 'C-500': {
+      body.push(drawParcel(ctx.twin, vp, b))
+      body.push(drawBuildings(ctx.twin, vp, b, false))
+      body.push(drawDesign(ctx.twin, vp, b, 'Utility', { stroke: '#0a0', width: 1.2, dash: '8,3' }))
+      body.push(legend(contentX, sheetSize.heightPt - 130, [
+        ['Property boundary', { stroke: '#000', width: 2 }],
+        ['Proposed service', { stroke: '#0a0', width: 1.2, dash: '8,3' }],
+      ]))
+      body.push(text(contentX, sheetSize.heightPt - 152,
+        'Utility locations are record information. Field verification required before excavation.', 7))
+      break
+    }
+
+    case 'C-600': {
+      body.push(drawParcel(ctx.twin, vp, b))
+      body.push(drawDesign(ctx.twin, vp, b, 'DrainageArea', { stroke: '#06c', width: 0.8, dash: '14,4', fill: '#eef5ff', opacity: 0.35 }))
+      body.push(drawBuildings(ctx.twin, vp, b, false))
+      body.push(drawDesign(ctx.twin, vp, b, 'SWMPractice', { stroke: '#060', width: 1.6, fill: '#dfd', opacity: 0.7 }))
+      body.push(legend(contentX, sheetSize.heightPt - 140, [
+        ['Drainage area', { stroke: '#06c', width: 0.8, dash: '14,4' }],
+        ['ESD practice', { stroke: '#060', width: 1.6 }],
+      ]))
+      break
+    }
+
+    case 'C-700': {
+      body.push(drawParcel(ctx.twin, vp, b))
+      body.push(drawDesign(ctx.twin, vp, b, 'ProposedFeature', { stroke: '#a50', width: 1.6, dash: '5,2' }, 'Silt fence / super silt fence'))
+      body.push(drawDesign(ctx.twin, vp, b, 'ProposedFeature', { stroke: '#630', width: 1.4, fill: '#f5e6cc', opacity: 0.8 }, 'Stabilized construction entrance'))
+      body.push(drawLod(ctx.twin, vp, b))
+      body.push(legend(contentX, sheetSize.heightPt - 140, [
+        ['Perimeter control', { stroke: '#a50', width: 1.6, dash: '5,2' }],
+        ['Stabilized entrance', { stroke: '#630', width: 1.4 }],
+        ['Limit of disturbance', { stroke: '#e8793a', width: 1.6, dash: '12,4' }],
+      ]))
+      break
+    }
+
+    case 'C-800': {
+      body.push(drawParcel(ctx.twin, vp, b))
+      body.push(drawDesign(ctx.twin, vp, b, 'Pavement', { stroke: '#333', width: 1.2, fill: '#e8e8e8', opacity: 0.9 }))
+      body.push(drawBuildings(ctx.twin, vp, b, false))
+      body.push(legend(contentX, sheetSize.heightPt - 130, [
+        ['Proposed paving', { stroke: '#333', width: 1.2 }],
+      ]))
+      break
+    }
+
+    case 'L-100': {
+      body.push(drawParcel(ctx.twin, vp, b))
+      body.push(drawBuildings(ctx.twin, vp, b, false))
+      body.push(drawDesign(ctx.twin, vp, b, 'Tree', { stroke: '#080', width: 1.1, fill: '#e6f5e6', opacity: 0.85 }))
+      body.push(legend(contentX, sheetSize.heightPt - 130, [
+        ['Proposed shade tree', { stroke: '#080', width: 1.1 }],
+      ]))
+      break
+    }
+
     default: {
-      // Every remaining sheet draws the same base geometry from the same model,
-      // then layers its own discipline content as it is populated.
       body.push(drawParcel(ctx.twin, vp, b))
       body.push(drawLod(ctx.twin, vp, b))
       body.push(text(contentX, sheetSize.heightPt - 150, SHEET_TITLES[ctx.sheet], 10, { bold: true }))
@@ -368,6 +483,10 @@ export function renderSheetSvg(ctx: SheetContext, sheetSize: SheetSize = ARCH_D)
         'Base geometry from the site model. Discipline content populated from the calculation package.', 7))
       break
     }
+  }
+
+  if (ctx.assumptions?.length) {
+    body.push(assumptionsPanel(contentX, sheetSize.heightPt - 250, ctx.assumptions))
   }
 
   const svg = [

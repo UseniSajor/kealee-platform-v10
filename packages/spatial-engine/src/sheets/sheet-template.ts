@@ -77,6 +77,8 @@ export interface SheetContext {
   preparedFor?: string
   sheetIndex: number
   sheetCount: number
+  /** Stated design assumptions printed on the sheet, as a drafter would note them. */
+  assumptions?: string[]
 }
 
 /** Every sheet frame element the brief requires. Used as an issuance checklist. */

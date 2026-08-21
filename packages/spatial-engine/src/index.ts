@@ -25,3 +25,4 @@ export * from './site-plan/engineering';
 export * from './sheets/sheet-template';
 export * from './sheets/viewport';
 export * from './sheets/render-svg';
+export * from './site-plan/design';
