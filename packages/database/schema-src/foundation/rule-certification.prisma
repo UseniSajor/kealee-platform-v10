@@ -1,0 +1,403 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// Site Plan Engine — Phase 3C: rule certification, provenance, change detection
+//
+// Extends Phase 3B. `JurisdictionRuleVersion` keeps its role as the extracted
+// rule-pack payload; these models add lifecycle, provenance, certification and
+// source-change tracking on top of it.
+// Migration: prisma/migrations/20260822090000_rule_certification
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum RuleLifecycleState {
+  EXTRACTED
+  PROVISIONAL
+  VERIFIED
+  CERTIFIED
+  SUPERSEDED
+  REVOKED
+}
+
+enum RuleSourceAuthority {
+  OFFICIAL_CODE
+  OFFICIAL_AGENCY_REGULATION
+  OFFICIAL_AGENCY_MANUAL
+  OFFICIAL_GIS
+  OFFICIAL_PDF
+  ADOPTED_ORDINANCE
+  SECONDARY_SOURCE
+  UNKNOWN
+}
+
+enum RuleExtractionMethod {
+  html_table_parser
+  pdf_text_extraction
+  pdf_ocr
+  gis_query
+  manual_entry
+  api_response
+  llm_assisted
+}
+
+enum RuleReconciliationStatus {
+  MATCH
+  MISMATCH
+  SINGLE_SOURCE_ONLY
+  NOT_REQUIRED
+  PENDING
+}
+
+enum RulePackStatus {
+  DRAFT
+  PARTIALLY_CERTIFIED
+  CERTIFIED
+  STALE
+  SUPERSEDED
+}
+
+enum RulePackTier {
+  core
+  supporting
+}
+
+enum RuleAuditAction {
+  extracted
+  validated
+  verified
+  certified
+  rejected
+  revoked
+  superseded
+  source_changed
+  reconciled
+  clarification_requested
+  interpretation_noted
+  certification_reused
+}
+
+enum SourceChangeKind {
+  UNCHANGED
+  REGION_CHANGED
+  REGION_ADDED
+  REGION_REMOVED
+  DOCUMENT_CHANGED_SCOPE_UNKNOWN
+  SOURCE_UNAVAILABLE
+}
+
+/// An authoritative source document. `documentHash` is over NORMALISED content,
+/// so a CMS reflowing whitespace does not read as an amendment.
+model RuleSource {
+  id               String              @id @default(uuid())
+  jurisdictionCode String
+  title            String
+  authority        RuleSourceAuthority @default(UNKNOWN)
+  url              String?
+  documentId       String?
+  documentHash     String
+  version          String
+  publicationDate  DateTime?           @db.Date
+  effectiveDate    DateTime?           @db.Date
+  retrievedAt      DateTime
+  /// Set when a fetch fails. An outage is recorded, never treated as an amendment.
+  lastFetchError   String?             @db.Text
+  lastFetchAttempt DateTime?
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+
+  versions RuleSourceVersion[]
+  regions  RuleSourceRegion[]
+
+  @@index([jurisdictionCode, id])
+  @@index([documentHash])
+  @@map("rule_sources")
+}
+
+/// Prior source versions. Append-only: a superseded hash is how "did this change
+/// since certification" stays answerable years later.
+model RuleSourceVersion {
+  id           String   @id @default(uuid())
+  sourceId     String
+  version      String
+  documentHash String
+  retrievedAt  DateTime
+  supersededAt DateTime
+  createdAt    DateTime @default(now())
+
+  source RuleSource @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+
+  @@unique([sourceId, documentHash])
+  @@index([sourceId, supersededAt])
+  @@map("rule_source_versions")
+}
+
+/// A region within a source. Rules bind to a REGION, which is what makes
+/// invalidation surgical instead of jurisdiction-wide.
+model RuleSourceRegion {
+  id             String   @id @default(uuid())
+  sourceId       String
+  regionId       String
+  label          String
+  hash           String
+  ruleIdentities Json     @default("[]")
+  retrievedAt    DateTime
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  source RuleSource @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+
+  @@unique([sourceId, regionId])
+  @@index([hash])
+  @@map("rule_source_regions")
+}
+
+/// A rule that can be certified once and reused. `identity` is the stable,
+/// project-independent scope key — two projects in the same zone resolve to the
+/// SAME identity and therefore the same certification.
+model CertifiableRule {
+  id                        String             @id @default(uuid())
+  identity                  String             @unique
+  jurisdictionCode          String
+  ruleKey                   String
+  version                   Int
+  state                     RuleLifecycleState @default(EXTRACTED)
+  codeSection               String
+  ruleType                  String
+  scopeKey                  Json               @default("{}")
+  effectiveVersion          String
+  value                     String?
+  payload                   Json?
+  /// Confidence dimensions are separate columns on purpose. Collapsing them into
+  /// one score lets a cleanly-parsed secondary source outrank an official table.
+  extractionConfidence      Decimal            @default(0) @db.Decimal(5, 4)
+  authorityConfidence       Decimal            @default(0) @db.Decimal(5, 4)
+  applicabilityConfidence   Decimal            @default(0) @db.Decimal(5, 4)
+  consistencyConfidence     Decimal?           @db.Decimal(5, 4)
+  sourceFreshnessConfidence Decimal?           @db.Decimal(5, 4)
+  sourceId                  String?
+  sourceRegionId            String?
+  supersededByIdentity      String?
+  sourceIssues              Json               @default("[]")
+  humanReviewRequired       Boolean            @default(true)
+  humanReviewReasons        Json               @default("[]")
+  createdAt                 DateTime           @default(now())
+  updatedAt                 DateTime           @updatedAt
+
+  @@unique([jurisdictionCode, ruleKey, version])
+  @@index([jurisdictionCode, state])
+  @@index([jurisdictionCode, humanReviewRequired])
+  @@index([jurisdictionCode, ruleType, state])
+  @@map("certifiable_rules")
+}
+
+/// Provenance, one row per rule — detailed enough that a reviewer can open the
+/// ordinance and find the governing sentence without asking anyone.
+model RuleProvenance {
+  id               String               @id @default(uuid())
+  ruleIdentity     String               @unique
+  jurisdiction     String
+  agency           String
+  sourceType       RuleSourceAuthority
+  sourceTitle      String
+  sourceUrl        String?
+  sourceDocumentId String?
+  codeTitle        String?
+  codeSection      String?
+  subsection       String?
+  table            String?
+  row              String?
+  column           String?
+  footnote         String?
+  appendix         String?
+  publicationDate  DateTime?            @db.Date
+  effectiveDate    DateTime?            @db.Date
+  retrievedAt      DateTime
+  sourceHash       String?
+  sourceVersion    String?
+  extractionMethod RuleExtractionMethod
+  pageNumber       Int?
+  textLocation     Json?
+  parserVersion    String
+  /// Why any field above is legitimately absent.
+  gaps             Json                 @default("[]")
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
+
+  @@index([sourceHash])
+  @@map("rule_provenance")
+}
+
+/// Applicability conditions and footnotes, kept structured rather than flattened.
+/// "45 (4)" is not the number 45; it is 45 subject to footnote 4.
+model RuleApplicabilityCondition {
+  id               String   @id @default(uuid())
+  ruleIdentity     String   @unique
+  condition        Json
+  overriddenBy     Json     @default("[]")
+  footnotes        Json     @default("[]")
+  incompleteReason String?  @db.Text
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@map("rule_applicability_conditions")
+}
+
+/// Independent-source reconciliation for high-risk rules.
+model RuleSourceReconciliation {
+  id                 String                   @id @default(uuid())
+  ruleIdentity       String
+  status             RuleReconciliationStatus
+  sourceALabel       String?
+  sourceAAuthority   RuleSourceAuthority?
+  sourceAUrl         String?
+  sourceAHash        String?
+  sourceARawValue    String?
+  sourceANormalized  String?
+  sourceBLabel       String?
+  sourceBAuthority   RuleSourceAuthority?
+  sourceBUrl         String?
+  sourceBHash        String?
+  sourceBRawValue    String?
+  sourceBNormalized  String?
+  matched            Boolean?
+  discrepancy        String?                  @db.Text
+  note               String                   @db.Text
+  reconciledAt       DateTime
+  createdAt          DateTime                 @default(now())
+
+  @@index([ruleIdentity, reconciledAt])
+  @@index([status])
+  @@map("rule_source_reconciliations")
+}
+
+/// A certification, bound to the exact source hash and version reviewed. That
+/// binding is what makes reuse safe and what makes a source change detach it.
+model RuleCertification {
+  id                    String    @id @default(uuid())
+  ruleIdentity          String
+  jurisdiction          String
+  ruleKey               String
+  ruleVersion           Int
+  reviewerId            String
+  reviewerName          String
+  reviewerRole          String
+  reviewerLicenceNumber String?
+  certifiedAt           DateTime
+  sourceHash            String
+  sourceVersion         String
+  note                  String    @db.Text
+  certificationScope    Json      @default("{}")
+  expiresAt             DateTime?
+  active                Boolean   @default(true)
+  revokedAt             DateTime?
+  revokedReason         String?   @db.Text
+  rulePackVersion       String?
+  reviewItemId          String?
+  createdAt             DateTime  @default(now())
+
+  @@index([ruleIdentity, certifiedAt])
+  @@index([ruleIdentity, sourceHash])
+  @@index([ruleIdentity, active])
+  @@index([reviewerId, certifiedAt])
+  @@map("rule_certifications")
+}
+
+model RulePackVersion {
+  id                        String         @id @default(uuid())
+  jurisdictionCode          String
+  packVersion               String
+  status                    RulePackStatus @default(DRAFT)
+  effectiveDate             DateTime       @db.Date
+  sources                   Json           @default("[]")
+  certifiedCount            Int            @default(0)
+  verifiedCount             Int            @default(0)
+  provisionalCount          Int            @default(0)
+  extractedCount            Int            @default(0)
+  supersededCount           Int            @default(0)
+  revokedCount              Int            @default(0)
+  humanReviewRequiredCount  Int            @default(0)
+  coreCount                 Int            @default(0)
+  coreCertifiedCount        Int            @default(0)
+  unresolvedSourceIssues    Json           @default("[]")
+  certificationCoverage     Decimal        @default(0) @db.Decimal(5, 4)
+  coreCertificationCoverage Decimal        @default(0) @db.Decimal(5, 4)
+  statusRationale           String         @db.Text
+  lastRefreshedAt           DateTime?
+  lastCertifiedAt           DateTime?
+  supersededByVersion       String?
+  createdAt                 DateTime       @default(now())
+  updatedAt                 DateTime       @updatedAt
+
+  members RulePackMember[]
+
+  @@unique([jurisdictionCode, packVersion])
+  @@index([jurisdictionCode, status])
+  @@map("rule_pack_versions")
+}
+
+model RulePackMember {
+  id                  String             @id @default(uuid())
+  rulePackId          String
+  ruleIdentity        String
+  ruleKey             String
+  tier                RulePackTier       @default(supporting)
+  state               RuleLifecycleState
+  humanReviewRequired Boolean            @default(true)
+  createdAt           DateTime           @default(now())
+
+  pack RulePackVersion @relation(fields: [rulePackId], references: [id], onDelete: Cascade)
+
+  @@unique([rulePackId, ruleIdentity])
+  @@index([rulePackId, tier, state])
+  @@map("rule_pack_members")
+}
+
+/// Append-only. Certification history is never overwritten.
+model RuleCertificationAuditEvent {
+  id                 String              @id @default(uuid())
+  sequence           BigInt              @default(autoincrement())
+  ruleIdentity       String
+  jurisdiction       String
+  ruleKey            String
+  ruleVersion        Int
+  previousState      RuleLifecycleState?
+  newState           RuleLifecycleState?
+  action             RuleAuditAction
+  actorId            String
+  actorName          String
+  actorRole          String
+  occurredAt         DateTime            @default(now())
+  reason             String              @db.Text
+  sourceHash         String?
+  sourceVersion      String?
+  reviewItemId       String?
+  rulePackVersion    String?
+  affectedProjectIds Json                @default("[]")
+  metadata           Json?
+
+  @@index([ruleIdentity, sequence])
+  @@index([jurisdiction, action, occurredAt])
+  @@index([actorId, occurredAt])
+  @@map("rule_certification_audit_events")
+}
+
+model RuleSourceChangeEvent {
+  id                       String   @id @default(uuid())
+  sourceId                 String
+  jurisdictionCode         String
+  changed                  Boolean
+  previousVersion          String
+  currentVersion           String
+  documentHashBefore       String
+  documentHashAfter        String
+  changes                  Json     @default("[]")
+  affectedRuleIdentities   Json     @default("[]")
+  unaffectedRuleIdentities Json     @default("[]")
+  /// False means the change could not be narrowed to regions; only then is a
+  /// jurisdiction-wide reopen correct.
+  scopeIsolated            Boolean  @default(true)
+  summary                  String   @db.Text
+  detectedAt               DateTime
+  createdAt                DateTime @default(now())
+
+  @@index([sourceId, detectedAt])
+  @@index([jurisdictionCode, changed, detectedAt])
+  @@map("rule_source_change_events")
+}
