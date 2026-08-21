@@ -1,0 +1,182 @@
+{
+ "siteId": "s",
+ "address": "4500 Rhode Island Ave, Brentwood, MD 20722",
+ "jurisdiction": "prince_georges_md",
+ "modelRevision": 4,
+ "crs": "EPSG:2248",
+ "horizontalDatum": "NAD83",
+ "verticalDatum": null,
+ "generatedAt": "2026-08-21T14:35:13.225Z",
+ "platformRole": "Kealee drafted this set. It requires review, correction and sealing by a licensed professional.",
+ "sheets": [
+  {
+   "id": "C-000",
+   "title": "Cover Sheet, Approvals and General Notes",
+   "discipline": "",
+   "scale": "1\"=10'",
+   "modelRevision": 4
+  },
+  {
+   "id": "C-100",
+   "title": "Existing Conditions and Boundary Plan",
+   "discipline": "",
+   "scale": "1\"=10'",
+   "modelRevision": 4
+  },
+  {
+   "id": "C-200",
+   "title": "Overall Site and Zoning Plan",
+   "discipline": "",
+   "scale": "1\"=10'",
+   "modelRevision": 4
+  },
+  {
+   "id": "C-300",
+   "title": "Demolition Plan",
+   "discipline": "",
+   "scale": "1\"=10'",
+   "modelRevision": 4
+  },
+  {
+   "id": "C-400",
+   "title": "Grading and Drainage Plan",
+   "discipline": "",
+   "scale": "1\"=10'",
+   "modelRevision": 4
+  },
+  {
+   "id": "C-500",
+   "title": "Utility Plan",
+   "discipline": "",
+   "scale": "1\"=10'",
+   "modelRevision": 4
+  },
+  {
+   "id": "C-600",
+   "title": "Stormwater Management Plan",
+   "discipline": "",
+   "scale": "1\"=10'",
+   "modelRevision": 4
+  },
+  {
+   "id": "C-700",
+   "title": "Sediment and Erosion Control Plan",
+   "discipline": "",
+   "scale": "1\"=10'",
+   "modelRevision": 4
+  },
+  {
+   "id": "C-800",
+   "title": "Road, Driveway and Paving Plan",
+   "discipline": "",
+   "scale": "1\"=10'",
+   "modelRevision": 4
+  },
+  {
+   "id": "C-900",
+   "title": "Civil Details",
+   "discipline": "",
+   "scale": "1\"=10'",
+   "modelRevision": 4
+  },
+  {
+   "id": "L-100",
+   "title": "Landscape and Tree Canopy Plan",
+   "discipline": "",
+   "scale": "1\"=10'",
+   "modelRevision": 4
+  }
+ ],
+ "calculations": [
+  {
+   "name": "waterQualityVolume",
+   "equation": "Rv = 0.05 + 0.009 × I ;  WQv = (P × Rv × A) / 12  [acre-ft] × 43,560 [cf]",
+   "value": {
+    "wqvCubicFeet": 192,
+    "rv": 0.3539
+   },
+   "assumptions": [
+    "P is the water quality storm depth for the site — confirm the value required by the Maryland Stormwater Design Manual.",
+    "Environmental Site Design to the maximum extent practicable is required before structural practices are considered."
+   ],
+   "reference": "Maryland Stormwater Design Manual, ESD / WQv",
+   "calcVersion": "kealee-civil-1.0.0"
+  },
+  {
+   "name": "practiceFootprint",
+   "equation": "A = V / (d × n)   where n is the media void ratio",
+   "value": {
+    "footprintSqFt": 240
+   },
+   "assumptions": [
+    "Void ratio 0.4 is typical for bioretention media; confirm against the specified mix.",
+    "Sizing excludes freeboard, underdrain and pretreatment volume.",
+    "Infiltration feasibility depends on geotechnical testing not represented here."
+   ],
+   "reference": "Storage volume / effective depth",
+   "calcVersion": "kealee-civil-1.0.0"
+  },
+  {
+   "name": "compositeRunoffCoefficient",
+   "equation": "C_composite = Σ(Cᵢ × Aᵢ) / ΣAᵢ",
+   "value": 0.486,
+   "assumptions": [
+    "Coefficients are standard published values; confirm against the County SWM manual."
+   ],
+   "reference": "Rational Method, composite C",
+   "calcVersion": "kealee-civil-1.0.0"
+  },
+  {
+   "name": "timeOfConcentration",
+   "equation": "tc = 0.0078 × L^0.77 × S^-0.385  (minutes; L ft, S ft/ft)",
+   "value": 5,
+   "assumptions": [
+    "Kirpich is calibrated for small rural watersheds with well-defined channels.",
+    "A 5-minute floor is applied, which is standard practice.",
+    "For sheet flow over developed surfaces, TR-55 segmental tc may be more appropriate."
+   ],
+   "reference": "Kirpich (1940)",
+   "calcVersion": "kealee-civil-1.0.0"
+  },
+  {
+   "name": "peakDischarge",
+   "equation": "Q = C × i × A   (Q cfs, i in/hr, A acres)",
+   "value": 0.45,
+   "assumptions": [
+    "Rational Method is appropriate for drainage areas up to roughly 200 acres.",
+    "Rainfall intensity must come from the applicable NOAA Atlas 14 IDF curve for the site and design storm.",
+    "The numeric coincidence that 1 in/hr over 1 acre ≈ 1 cfs is inherent to the method."
+   ],
+   "reference": "Rational Method",
+   "calcVersion": "kealee-civil-1.0.0"
+  },
+  {
+   "name": "sedimentTrapVolume",
+   "equation": "V = A × unit storage   (cf; A acres)",
+   "value": {
+    "requiredVolumeCf": 330
+   },
+   "assumptions": [
+    "Unit storage of 3,600 cf per acre is the common wet-storage standard; confirm against the Maryland Standards and Specifications for Soil Erosion and Sediment Control.",
+    "Trap versus basin selection depends on drainage area thresholds set by the standard."
+   ],
+   "reference": "MD Standards and Specifications for Soil Erosion and Sediment Control",
+   "calcVersion": "kealee-civil-1.0.0"
+  }
+ ],
+ "assumptions": [
+  "No vertical datum is established. Proposed contours are shown on an ASSUMED datum with the benchmark to be set by the surveyor; all elevations are relative until then.",
+  "Main locations and inverts are not in the model. Service runs are shown schematically from the frontage to the structure and must be confirmed against utility-owner records and field locates.",
+  "Infiltration feasibility is assumed pending geotechnical testing. Practice type and sizing change if infiltration rates or groundwater separation do not support ESD.",
+  "Canopy percentage required by Subtitle 25 § 25-128 Table 1 is not loaded. Planting shown meets the shade-tree layout intent; the quantity is confirmed once the percentage is applied to gross tract area."
+ ],
+ "sources": [
+  {
+   "dataset": "Zoning layer 59",
+   "authority": "M-NCPPC Prince George's County",
+   "retrievedAt": "2026-08-21T14:35:13.160Z",
+   "reliabilityLevel": 1
+  }
+ ],
+ "reviewStatus": "AWAITING_REVIEW"
+}

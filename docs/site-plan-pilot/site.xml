@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LandXML xmlns="http://www.landxml.org/schema/LandXML-1.2"
+         version="1.2"
+         date="2026-08-21" time="14:35:13">
+  <Units><Imperial areaUnit="squareFoot" linearUnit="USSurveyFoot" volumeUnit="cubicFeet"
+           temperatureUnit="fahrenheit" pressureUnit="inHG"/></Units>
+  <Project name="4500 Rhode Island Ave, Brentwood, MD 20722"/>
+  <Application name="Kealee Site Plan Engine" version="1.0"/>
+  <!-- Coordinate system EPSG:2248; horizontal datum NAD83;
+       vertical datum NOT ESTABLISHED. Model revision 4. -->
+  <CoordinateSystem desc="EPSG:2248" horizontalDatum="NAD83"
+                    verticalDatum=""/>
+  <Parcels>
+      <Parcel name="2844 0822" area="6500" parcelType="Single">
+        <CoordGeom>
+            <PntList2D>464763.1 1326382.7</PntList2D>
+            <PntList2D>464763.1 1326447.7</PntList2D>
+            <PntList2D>464863.1 1326447.7</PntList2D>
+            <PntList2D>464863.1 1326382.7</PntList2D>
+            <PntList2D>464763.1 1326382.7</PntList2D>
+        </CoordGeom>
+      </Parcel>
+  </Parcels>
+  <!-- No Surfaces element: no vertical datum or elevation data is established for this site. -->
+</LandXML>
