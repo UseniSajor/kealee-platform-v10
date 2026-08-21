@@ -11,34 +11,91 @@
 
 import type { SiteTwin, SiteFeature, Ring } from '../site-plan/site-twin'
 import type { Calculation } from '../site-plan/engineering'
+import {
+  resolveCrs, assertPlausibleWgs84, WGS84, CrsExportError,
+  type CrsTransformer, type Point2D,
+} from './crs'
 
 // ── GeoJSON ─────────────────────────────────────────────────────────────────
 
 /**
- * GeoJSON in the site's own projected CRS, declared explicitly.
+ * RFC 7946 GeoJSON — WGS84, longitude first.
  *
- * RFC 7946 assumes WGS84. This data is EPSG:2248 (feet), so the CRS is stated in
- * a `crs` member and on every feature. Emitting projected coordinates as if they
- * were degrees would put the site in the Gulf of Guinea.
+ * State Plane, local-grid and CAD coordinates are NEVER written into GeoJSON.
+ * RFC 7946 removed the `crs` member, so a conforming reader treats whatever
+ * numbers it finds as lon/lat degrees; emitting 1326382, 464763 would place this
+ * Maryland site off the coast of West Africa.
+ *
+ * Therefore:
+ *   - the source CRS is resolved and validated, and an unknown CRS or a datum
+ *     conflict BLOCKS the export rather than defaulting;
+ *   - geometry is transformed to EPSG:4326 through a real transformer;
+ *   - the result is range-checked, because out-of-range values are the
+ *     signature of untransformed coordinates;
+ *   - the original engineering coordinates are retained per feature under
+ *     `engineeringGeometry`, so the survey/CAD grid survives the round trip.
  */
-export function toGeoJson(twin: SiteTwin): string {
-  const features = twin.features.map(f => {
+export async function toGeoJson(
+  twin: SiteTwin,
+  transformer: CrsTransformer,
+): Promise<string> {
+  const sourceCrs = resolveCrs(twin.crs, twin.horizontalDatum)
+
+  // Collect every coordinate once so the transform is a single batched call.
+  const flat: Point2D[] = []
+  const index: { feature: SiteFeature; kind: 'ring' | 'line' | 'point'; start: number; count: number }[] = []
+  for (const f of twin.features) {
     const g = f as { ring?: Ring; line?: number[][]; point?: number[] }
-    let geometry: unknown = null
-    if (g.ring) geometry = { type: 'Polygon', coordinates: [g.ring.coordinates] }
-    else if (g.line) geometry = { type: 'LineString', coordinates: g.line }
-    else if (g.point) geometry = { type: 'Point', coordinates: g.point }
+    if (g.ring) {
+      const pts = g.ring.coordinates.map(c => [c[0], c[1]] as Point2D)
+      index.push({ feature: f, kind: 'ring', start: flat.length, count: pts.length })
+      flat.push(...pts)
+    } else if (g.line) {
+      const pts = g.line.map(c => [c[0], c[1]] as Point2D)
+      index.push({ feature: f, kind: 'line', start: flat.length, count: pts.length })
+      flat.push(...pts)
+    } else if (g.point) {
+      index.push({ feature: f, kind: 'point', start: flat.length, count: 1 })
+      flat.push([g.point[0], g.point[1]])
+    }
+  }
+
+  const transformed =
+    sourceCrs.epsg === WGS84.epsg ? flat : await transformer.transform(flat, sourceCrs, WGS84)
+  assertPlausibleWgs84(transformed)
+
+  const features = index.map(({ feature, kind, start, count }) => {
+    const wgs = transformed.slice(start, start + count)
+    const g = feature as { ring?: Ring; line?: number[][]; point?: number[] }
+    const original =
+      kind === 'ring' ? g.ring!.coordinates : kind === 'line' ? g.line! : [g.point!]
+
+    const geometry =
+      kind === 'ring'
+        ? { type: 'Polygon', coordinates: [wgs] }
+        : kind === 'line'
+          ? { type: 'LineString', coordinates: wgs }
+          : { type: 'Point', coordinates: wgs[0] }
+
     return {
       type: 'Feature',
       geometry,
       properties: {
-        id: f.id,
-        kind: f.kind,
-        sourceId: f.sourceId,
-        reliabilityLevel: f.reliabilityLevel,
-        crs: f.crs,
-        revision: f.revision,
-        ...((f as { attributes?: Record<string, unknown> }).attributes ?? {}),
+        id: feature.id,
+        kind: feature.kind,
+        sourceId: feature.sourceId,
+        reliabilityLevel: feature.reliabilityLevel,
+        revision: feature.revision,
+        // The engineering grid is retained, not discarded — a consultant needs
+        // the original survey coordinates, not degrees rounded through a datum.
+        engineeringGeometry: {
+          crs: sourceCrs.code,
+          crsName: sourceCrs.name,
+          datum: sourceCrs.datum,
+          unit: sourceCrs.unit,
+          coordinates: original,
+        },
+        ...((feature as { attributes?: Record<string, unknown> }).attributes ?? {}),
       },
     }
   })
@@ -46,16 +103,21 @@ export function toGeoJson(twin: SiteTwin): string {
   return JSON.stringify(
     {
       type: 'FeatureCollection',
-      // Non-standard but necessary: consumers must not assume WGS84.
-      crs: { type: 'name', properties: { name: twin.crs } },
+      // No `crs` member: RFC 7946 removed it. Coordinates below ARE WGS84.
+      features,
       kealee: {
         siteId: twin.siteId,
         modelRevision: twin.revision,
+        geoJsonCrs: 'EPSG:4326 (RFC 7946, longitude first)',
+        sourceCrs: sourceCrs.code,
+        sourceCrsName: sourceCrs.name,
         horizontalDatum: twin.horizontalDatum,
         verticalDatum: twin.verticalDatum,
-        note: `Coordinates are in ${twin.crs}, NOT WGS84 degrees. Reproject before combining with lat/long data.`,
+        transformer: transformer.name,
+        note:
+          'Geometry is WGS84 per RFC 7946. Original engineering coordinates are preserved ' +
+          'per feature under properties.engineeringGeometry.',
       },
-      features,
     },
     null,
     1,
