@@ -57,41 +57,50 @@ export const PG_SUBDIVISION_PROCEDURES: readonly string[] = [
 ]
 
 /**
- * Tree canopy coverage — NOT AVAILABLE HERE.
+ * Tree canopy coverage.
  *
- * The Landscape Manual states that activities subject to the Tree Canopy
- * Coverage Ordinance "shall provide the tree canopy percentages listed in
- * Table 1 of Section 25-128", and that requirements are based on GROSS TRACT
- * AREA. But §25-128 sits in Subtitle 25 Division 3 of the County Code, which is
- * not published in this viewer — the viewer carries Subtitles 27 and 24 and the
+ * The Landscape Manual states that regulated activities "shall provide the tree
+ * canopy percentages listed in Table 1 of Section 25-128", calculated on GROSS
+ * TRACT AREA. That table is in Subtitle 25 Division 3 of the County Code, which
+ * this viewer does not publish — it carries Subtitles 27 and 24 and the
  * Landscape Manual only.
  *
- * So the percentages themselves must come from Subtitle 25 via the County Code.
- * L-100 cannot compute a canopy schedule until they are loaded.
+ * Retrieval attempted 2026-08-21 via the EncodePlus viewer, the Municode API,
+ * the county's Specimen Tree/TCC bulletin PDF, eCode360, and a scan of all 121
+ * Landscape Manual tables. Not machine-retrievable from any of them.
+ *
+ * So the percentages are recorded as pending with their citation. L-100 can
+ * still be produced — the canopy schedule carries this as an open item for the
+ * reviewer, in the same way any other unresolved input does. Kealee does not
+ * print a canopy percentage it has not sourced.
  */
 export const PG_TREE_CANOPY_COVERAGE = {
   citation: 'Subtitle 25 Division 3, § 25-128 Table 1',
   basis: 'gross tract area',
-  percentagesAvailable: false,
+  percentagesLoaded: false,
   whereToFind:
     "https://library.municode.com/md/prince_george's_county/codes/code_of_ordinances",
   note:
     'The Landscape Manual references this table but does not reproduce it. ' +
-    'Kealee does not publish a canopy percentage it has not sourced.',
+    'Load the percentages from Subtitle 25 and record them with a citation.',
 } as const
 
-export function getPgTreeCanopyRequirement(): {
+export interface PgTreeCanopyRequirement {
   percent: number | null
-  requiresManualLookup: true
-  reason: string
-} {
+  basis: string
+  citation: string
+  /** Open item carried into the package for the reviewer to close. */
+  openItem: string | null
+}
+
+export function getPgTreeCanopyRequirement(): PgTreeCanopyRequirement {
   return {
     percent: null,
-    requiresManualLookup: true,
-    reason:
-      `Tree canopy percentages are set by ${PG_TREE_CANOPY_COVERAGE.citation}, ` +
-      'which is in Subtitle 25 of the County Code and is not published in the ' +
-      'Zoning Ordinance viewer. Look it up and record it with a citation before ' +
-      'producing an L-100 canopy schedule.',
+    basis: PG_TREE_CANOPY_COVERAGE.basis,
+    citation: PG_TREE_CANOPY_COVERAGE.citation,
+    openItem:
+      `Tree canopy percentage is set by ${PG_TREE_CANOPY_COVERAGE.citation}, in ` +
+      'Subtitle 25 of the County Code, which is not published in the Zoning ' +
+      'Ordinance viewer. Load it and cite it before the canopy schedule is final.',
   }
 }

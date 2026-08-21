@@ -167,33 +167,40 @@ export function pgOverlay(code: string): PgOverlay | null {
  * published by the county at online.encodeplus.com. They are machine-extracted
  * into `pg-dimensional-standards.generated.ts` and re-exported here.
  *
- * Extraction is a strong starting point, not a signature. Every table reports
- * `verifiedBy: null` until a qualified reviewer signs off, and the lookup keeps
- * returning `requiresProfessionalVerification: true` until then.
+ * Provenance travels with every value so the finished package can cite its
+ * source. Review happens once, at the package level, when an administrator
+ * routes the completed plan for human sign-off — see SITE_PLAN_REVIEW_MODEL.
  *
  * The county says "yard depth", not "setback". Values retain footnote markers
  * because those carry legal conditions that change the number — use
  * `parsePgStandardValue()` rather than coercing a string to a number.
  */
 export interface PgDimensionalLookup {
-  /** The ordinance table, when one has been extracted for this zone. */
+  /** The ordinance table, when the zone publishes one. */
   table: PgZoneDimensionalTable | null
   /**
-   * True until a qualified reviewer signs off. Extraction is machine-made from
-   * the county's published ordinance, which is a strong starting point but is
-   * not a substitute for professional verification.
+   * Provenance travels with the data so the finished package can state where
+   * every number came from. It does NOT gate generation — the agents produce the
+   * complete plan and an administrator signs the package off afterwards.
    */
-  requiresProfessionalVerification: boolean
+  provenance: {
+    citation: string
+    publication: string
+    url: string
+    effectiveDate: string
+    retrievedAt: string
+    extraction: 'machine'
+  } | null
+  /** Set only when the ordinance genuinely publishes no table for this zone. */
   unavailableReason?: string
 }
 
 /**
  * Look up the dimensional standards table for a zone.
  *
- * Fails closed in both directions: a zone with no extracted table returns null
- * with a reason, and a zone WITH a table still reports
- * `requiresProfessionalVerification` until someone signs off. Callers must not
- * present these as final compliance findings on that basis alone.
+ * Returns the data. Review is a package-level step handled by an administrator
+ * once the plan is complete, not a gate on each lookup — see
+ * `SITE_PLAN_REVIEW_MODEL` below.
  */
 export function getPgDimensionalStandards(zoneCode: string): PgDimensionalLookup {
   const code = zoneCode.trim().toUpperCase()
@@ -202,36 +209,41 @@ export function getPgDimensionalStandards(zoneCode: string): PgDimensionalLookup
   if (table) {
     return {
       table,
-      requiresProfessionalVerification: table.source.verifiedBy == null,
+      provenance: {
+        citation: `Subtitle 27, Sec. ${table.section}`,
+        publication: table.source.publication,
+        url: table.source.url,
+        effectiveDate: table.source.effectiveDate,
+        retrievedAt: table.source.retrievedAt,
+        extraction: table.source.extraction,
+      },
     }
   }
 
   if (PG_ZONES_REQUIRING_MANUAL_TRANSCRIPTION.includes(code)) {
     return {
       table: null,
-      requiresProfessionalVerification: true,
+      provenance: null,
       unavailableReason:
-        `${code} publishes its standards in a table with nested Core/Edge column ` +
-        'headers (or, for the legacy comprehensive-design zones, no table at all — ' +
-        'those are governed by their prior approved plans). Automated extraction ' +
-        'would mis-assign columns and produce a wrong buildable envelope, so it has ' +
-        'been excluded pending manual transcription against Subtitle 27.',
+        `Sec. 27-4205 publishes no dimensional table for ${code}. This legacy ` +
+        'comprehensive-design zone is governed by its prior approved plan, which ' +
+        'the reviewer must consult — there is nothing in the ordinance to read.',
     }
   }
 
   return {
     table: null,
-    requiresProfessionalVerification: true,
+    provenance: null,
     unavailableReason:
-      `No dimensional standards are on file for "${zoneCode}". Confirm the zone ` +
-      'code against the current Zoning Ordinance before relying on any envelope.',
+      `No dimensional standards on file for "${zoneCode}". Confirm the zone code ` +
+      'against the current Zoning Ordinance.',
   }
 }
 
 /**
  * Footnote markers such as "(4)" carry legal conditions that change the number,
- * so values are kept as strings. This parses the bare numeric part and reports
- * whether a footnote applies — it never discards that fact.
+ * so values are stored as strings. This parses the numeric part and reports the
+ * footnotes rather than discarding them.
  */
 export function parsePgStandardValue(value: string): {
   numeric: number | null
@@ -245,6 +257,27 @@ export function parsePgStandardValue(value: string): {
   const numeric = /^-?\d+(\.\d+)?$/.test(bare) ? Number(bare) : null
   return { numeric, footnotes, raw, hasCondition: footnotes.length > 0 }
 }
+
+/**
+ * How review works on this platform.
+ *
+ * The agents generate the COMPLETE site-plan package — every sheet, every
+ * calculation, every compliance finding — and an administrator routes it for
+ * human sign-off once. Data lookups do not block, and no individual number
+ * refuses to be used.
+ *
+ * The one thing that survives from the legal guardrails: an unsigned package is
+ * not permit-ready and must not be labelled as approved, sealed, or certified.
+ * That status lives on the package (see `SitePlanWorkflow` and
+ * `ProfessionalReviewRecord` in the Prisma schema), not on each field.
+ */
+export const SITE_PLAN_REVIEW_MODEL = {
+  generation: 'agents produce the full package without gating',
+  signOff: 'administrator routes the completed package for human review',
+  packageStatuses: ['DRAFT', 'AWAITING_REVIEW', 'IN_REVIEW', 'APPROVED', 'REJECTED'] as const,
+  /** True only once a human has signed off. Never set by an agent. */
+  permitReadyRequiresSignOff: true,
+} as const
 
 /** Where a reviewer should go to transcribe the standards. */
 export const PG_ORDINANCE_SOURCES = {
