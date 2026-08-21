@@ -23,3 +23,5 @@ export * from './site-plan/site-twin';
 export * from './site-plan/reports';
 export * from './site-plan/engineering';
 export * from './sheets/sheet-template';
+export * from './sheets/viewport';
+export * from './sheets/render-svg';
