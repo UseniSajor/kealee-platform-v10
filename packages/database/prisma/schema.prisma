@@ -18116,3 +18116,445 @@ model ArchitectEngagement {
   @@index([status])
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Site Plan Engine — Phase 3B persistence
+//
+// Survey ingestion, reconciliation, the evidence ledger that gates issuance,
+// content-scoped approvals, checklist and QC results, sheets and revisions,
+// issuance status, and one append-only audit stream over all of it.
+// Migration: 20260821120000_site_plan_persistence
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum SurveyImportFormat {
+  CSV
+  LANDXML
+  DXF
+  DWG
+  LAS
+  LAZ
+  PDF
+  GEOJSON
+  SHAPEFILE
+}
+
+enum SurveyVerificationStatus {
+  UNVERIFIED
+  CANDIDATE_CRS_PENDING_CONFIRMATION
+  CONFIRMED
+  PROFESSIONALLY_CERTIFIED
+}
+
+enum SurveySealEvidence {
+  DOCUMENT_REVIEWED
+  DECLARED_BY_UPLOADER
+  NONE
+}
+
+enum DiscrepancySeverity {
+  INFORMATIONAL
+  WARNING
+  BLOCKING
+}
+
+enum DiscrepancyStatus {
+  OPEN
+  ACKNOWLEDGED
+  RESOLVED
+  WAIVED
+  SUPERSEDED
+}
+
+enum SitePlanEvidenceKind {
+  CERTIFIED_SURVEY_FILE
+  SURVEYOR_LICENCE_VERIFICATION
+  SEAL_DOCUMENT_REVIEW
+  BENCHMARK_RECORD
+  VERTICAL_DATUM_STATEMENT
+  UNIT_CHECK
+  TRANSFORMATION_RECORD
+  TITLE_REPORT
+  GEOTECHNICAL_REPORT
+  ARCHITECTURAL_FOOTPRINT
+  UTILITY_FIELD_LOCATION
+}
+
+enum SitePlanContentSubject {
+  BOUNDARY_DETERMINATION
+  TOPOGRAPHIC_SURVEY
+  EASEMENT_DEPICTION
+  EXISTING_IMPROVEMENTS
+  ZONING_COMPLIANCE
+  SITE_LAYOUT
+  GRADING_DESIGN
+  STORMWATER_DESIGN
+  SEDIMENT_CONTROL
+  UTILITY_DESIGN
+  ROADWAY_DESIGN
+  DEMOLITION
+  PLANTING_DESIGN
+  TREE_CONSERVATION
+  ARCHITECTURAL_FOOTPRINT
+  GEOTECHNICAL
+  ENTITLEMENT
+}
+
+enum QcFindingSeverity {
+  WARNING
+  BLOCKING
+}
+
+enum QcFindingStatus {
+  OPEN
+  CLEARED_BY_EVIDENCE
+  WAIVED
+  SUPERSEDED
+}
+
+enum SheetIssuanceStatus {
+  PRELIMINARY
+  FOR_REVIEW
+  PERMIT_SET
+  NOT_FOR_CONSTRUCTION
+}
+
+enum ChecklistItemStatus {
+  OUTSTANDING
+  SATISFIED
+  NOT_APPLICABLE
+  PENDING_JURISDICTION
+}
+
+/// One uploaded survey file. `crs` is the CONFIRMED coordinate system;
+/// `candidateCrs` is a detection awaiting confirmation. They are separate
+/// columns on purpose — a guess must never silently become a fact.
+model SurveyImport {
+  id                        String                   @id @default(uuid())
+  organizationId            String
+  workflowId                String?
+  projectId                 String?
+  siteId                    String?
+  originalFilename          String
+  checksum                  String
+  format                    SurveyImportFormat
+  storageDocumentId         String?
+  uploadedAt                DateTime                 @default(now())
+  uploadedById              String?
+  /// Date the survey was PERFORMED. Never defaulted from uploadedAt.
+  surveyDate                DateTime?                @db.Date
+  surveyorName              String?
+  surveyorLicenceNumber     String?
+  surveyorLicenceState      String?
+  surveyorLicenceVerifiedAt DateTime?
+  sealed                    Boolean                  @default(false)
+  sealEvidence              SurveySealEvidence       @default(NONE)
+  sealSignedAt              DateTime?
+  crs                       String?
+  candidateCrs              String?
+  crsConfirmedById          String?
+  crsConfirmedAt            DateTime?
+  horizontalDatum           String?
+  verticalDatum             String?
+  coordinateUnit            String?
+  benchmark                 Json?
+  transformationPipeline    Json                     @default("[]")
+  parserVersion             String
+  sourceGeometryCount       Int                      @default(0)
+  normalizedGeometryCount   Int                      @default(0)
+  confidence                Decimal                  @default(0) @db.Decimal(5, 4)
+  verificationStatus        SurveyVerificationStatus @default(UNVERIFIED)
+  reliabilityLevel          Int                      @default(0)
+  levelRationale            String                   @db.Text
+  warnings                  Json                     @default("[]")
+  /// Raw parsed payload, retained so a reparse under a later parser version is
+  /// comparable against what this version produced.
+  parsedPayload             Json?
+  supersededById            String?
+  createdAt                 DateTime                 @default(now())
+  updatedAt                 DateTime                 @updatedAt
+
+  points SurveyPoint[]
+
+  @@unique([organizationId, checksum])
+  @@index([workflowId, uploadedAt])
+  @@index([verificationStatus, reliabilityLevel])
+  @@map("survey_imports")
+}
+
+/// Survey points as rows rather than a JSON blob, so a point can be cited,
+/// queried and corrected individually. The raw field description is kept
+/// verbatim beside the derived classification.
+model SurveyPoint {
+  id             String   @id @default(uuid())
+  importId       String
+  pointId        String
+  northing       Float
+  easting        Float
+  elevation      Float?
+  description    String   @default("")
+  classification String   @default("unclassified")
+  createdAt      DateTime @default(now())
+
+  import SurveyImport @relation(fields: [importId], references: [id], onDelete: Cascade)
+
+  @@unique([importId, pointId])
+  @@index([importId, classification])
+  @@map("survey_points")
+}
+
+/// A reconciliation run, recorded so a discrepancy set is reproducible: same
+/// inputs, same tolerances, same engine version.
+model SurveyReconciliationRun {
+  id                String   @id @default(uuid())
+  workflowId        String?
+  importId          String?
+  twinRevision      Int
+  tolerances        Json
+  comparisonSources Json
+  blockingCount     Int      @default(0)
+  warningCount      Int      @default(0)
+  /// Always false. Persisted so the guarantee is a stored fact rather than a
+  /// claim in a code comment.
+  geometryAltered   Boolean  @default(false)
+  summary           String   @db.Text
+  engineVersion     String
+  createdAt         DateTime @default(now())
+
+  discrepancies SurveyDiscrepancy[]
+
+  @@index([workflowId, createdAt])
+  @@map("survey_reconciliation_runs")
+}
+
+/// A difference between the survey and a comparison source. Certified geometry
+/// is never adjusted to close one of these — a professional resolves it.
+model SurveyDiscrepancy {
+  id               String              @id @default(uuid())
+  workflowId       String?
+  importId         String?
+  runId            String
+  code             String
+  severity         DiscrepancySeverity
+  status           DiscrepancyStatus   @default(OPEN)
+  subject          String
+  surveyValue      String              @db.Text
+  comparisonValue  String              @db.Text
+  delta            String
+  tolerance        String
+  locationNorthing Float?
+  locationEasting  Float?
+  interpretation   String              @db.Text
+  resolution       String              @db.Text
+  resolvedById     String?
+  resolvedAt       DateTime?
+  resolutionNote   String?             @db.Text
+  createdAt        DateTime            @default(now())
+
+  run SurveyReconciliationRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+
+  @@index([runId, severity])
+  @@index([workflowId, status, severity])
+  @@map("survey_discrepancies")
+}
+
+/// What clears an issuance block. A professional approval on its own never does.
+model SitePlanEvidence {
+  id                   String               @id @default(uuid())
+  workflowId           String
+  kind                 SitePlanEvidenceKind
+  reference            String
+  storageDocumentId    String?
+  checksum             String?
+  attachedAt           DateTime             @default(now())
+  attachedById         String
+  attestedByName       String?
+  attestedByLicence    String?
+  attestedByDiscipline String?
+  attestedByState      String?
+  notes                String?              @db.Text
+  revokedAt            DateTime?
+  revokedById          String?
+  revokedReason        String?              @db.Text
+  createdAt            DateTime             @default(now())
+
+  @@index([workflowId, kind, revokedAt])
+  @@map("site_plan_evidence")
+}
+
+/// A professional signs a SUBJECT once, across every sheet it appears on. A
+/// sheet is not owned by one profession; the title block divides responsibility
+/// and sheets are never duplicated to separate seals.
+model SitePlanScopedApproval {
+  id              String                     @id @default(uuid())
+  workflowId      String
+  subject         SitePlanContentSubject
+  discipline      String
+  appearsOnSheets Json                       @default("[]")
+  objectIds       Json                       @default("[]")
+  decision        ProfessionalReviewDecision @default(PENDING)
+  decidedById     String?
+  decidedByName   String?
+  licenceNumber   String?
+  licenceState    String?
+  decidedAt       DateTime?
+  comment         String?                    @db.Text
+  /// Binds the decision to the exact model revision that was reviewed.
+  twinRevision    Int?
+  contentHash     String?
+  reviewRecordId  String?
+  supersededById  String?
+  createdAt       DateTime                   @default(now())
+  updatedAt       DateTime                   @updatedAt
+
+  @@index([workflowId, decision])
+  @@index([workflowId, subject])
+  @@map("site_plan_scoped_approvals")
+}
+
+model SitePlanChecklistResult {
+  id                  String              @id @default(uuid())
+  workflowId          String
+  itemKey             String
+  label               String
+  citation            String?
+  ruleVersionId       String?
+  status              ChecklistItemStatus @default(OUTSTANDING)
+  detail              String?             @db.Text
+  evidenceId          String?
+  satisfiedAt         DateTime?
+  satisfiedById       String?
+  notApplicableReason String?             @db.Text
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+
+  @@unique([workflowId, itemKey])
+  @@index([workflowId, status])
+  @@map("site_plan_checklist_results")
+}
+
+/// An issuance QC finding. A block that cleared must name the evidence that
+/// cleared it, so the clearance can be audited or withdrawn.
+model SitePlanQcFinding {
+  id                       String            @id @default(uuid())
+  workflowId               String
+  runId                    String
+  code                     String
+  severity                 QcFindingSeverity
+  status                   QcFindingStatus   @default(OPEN)
+  message                  String            @db.Text
+  remedy                   String            @db.Text
+  outstanding              Json              @default("[]")
+  retainedLevelExplanation String?           @db.Text
+  clearedByEvidenceId      String?
+  clearedByApprovalId      String?
+  clearedAt                DateTime?
+  twinRevision             Int?
+  createdAt                DateTime          @default(now())
+
+  @@index([runId, severity])
+  @@index([workflowId, status, severity])
+  @@map("site_plan_qc_findings")
+}
+
+/// Sheets are composed dynamically. `sheetNumber` is the number in the issued
+/// set and `covers` lists the canonical content it carries, so a two-sheet
+/// infill package is a first-class outcome, not a missing set.
+model SitePlanSheet {
+  id                  String              @id @default(uuid())
+  workflowId          String
+  sheetNumber         String
+  title               String
+  covers              Json                @default("[]")
+  status              SheetIssuanceStatus @default(PRELIMINARY)
+  scaleFtPerIn        Int?
+  scaleLabel          String?
+  sheetSize           String?
+  disclosure          String?             @db.Text
+  responsibilityBlock Json?
+  currentRevision     Int                 @default(0)
+  twinRevision        Int                 @default(0)
+  documentId          String?
+  contentHash         String?
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+
+  revisions SitePlanSheetRevision[]
+
+  @@unique([workflowId, sheetNumber])
+  @@index([workflowId, status])
+  @@map("site_plan_sheets")
+}
+
+model SitePlanSheetRevision {
+  id                  String               @id @default(uuid())
+  sheetId             String
+  workflowId          String
+  revisionNumber      Int
+  revisionDate        DateTime             @db.Date
+  description         String               @db.Text
+  issuedBy            String
+  statusBefore        SheetIssuanceStatus?
+  statusAfter         SheetIssuanceStatus
+  twinRevisionBefore  Int?
+  twinRevisionAfter   Int
+  /// What changed and what it means, as shown to the reviewer.
+  changes             Json                 @default("[]")
+  /// Superseded object ids, retained rather than deleted from the model.
+  supersededObjectIds Json                 @default("[]")
+  documentId          String?
+  contentHash         String?
+  createdAt           DateTime             @default(now())
+
+  sheet SitePlanSheet @relation(fields: [sheetId], references: [id], onDelete: Cascade)
+
+  @@unique([sheetId, revisionNumber])
+  @@index([workflowId, createdAt])
+  @@map("site_plan_sheet_revisions")
+}
+
+model SitePlanIssuance {
+  id                        String              @id @default(uuid())
+  workflowId                String              @unique
+  status                    SheetIssuanceStatus @default(PRELIMINARY)
+  governingReliabilityLevel Int                 @default(0)
+  disclosure                String?             @db.Text
+  issuable                  Boolean             @default(false)
+  blockingFindingCount      Int                 @default(0)
+  qcRunId                   String?
+  sheetCount                Int                 @default(0)
+  compositionRationale      String?             @db.Text
+  issuedAt                  DateTime?
+  issuedById                String?
+  /// Set only when a jurisdiction actually acts. Never inferred from internal state.
+  submittedAt               DateTime?
+  jurisdictionReference     String?
+  createdAt                 DateTime            @default(now())
+  updatedAt                 DateTime            @updatedAt
+
+  @@map("site_plan_issuance")
+}
+
+/// Append-only. One stream over every table above, so "who changed what, when,
+/// and on what basis" is answerable without reconstructing it from timestamps.
+model SitePlanAuditEvent {
+  id            String   @id @default(uuid())
+  workflowId    String
+  sequence      BigInt   @default(autoincrement())
+  occurredAt    DateTime @default(now())
+  actorId       String?
+  actorType     String   @default("system")
+  actorLicence  String?
+  eventType     String
+  entityTable   String
+  entityId      String
+  summary       String   @db.Text
+  before        Json?
+  after         Json?
+  twinRevision  Int?
+  engineVersion String?
+  metadata      Json?
+
+  @@index([workflowId, sequence])
+  @@index([entityTable, entityId])
+  @@index([workflowId, eventType, occurredAt])
+  @@map("site_plan_audit_events")
+}

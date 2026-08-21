@@ -153,10 +153,16 @@ export function evaluatePromotion(req: PromotionRequest): PromotionDecision {
     ? hasVertical ? req.scope : req.scope.filter(k => !elevationDependent.includes(k))
     : []
 
+  // A parser can establish that an import QUALIFIES for Level 2 — confirmed CRS,
+  // datum, identified surveyor, reviewed seal. Only promotion GRANTS it, and a
+  // refused promotion means the geometry is held at Level 1 at most, whatever
+  // the import record says about itself.
+  const heldLevel: ReliabilityLevel = promoted ? 2 : (Math.min(r.reliabilityLevel, 1) as ReliabilityLevel)
+
   return {
     promoted,
     fromLevel: r.reliabilityLevel,
-    toLevel: promoted ? 2 : r.reliabilityLevel,
+    toLevel: heldLevel,
     checks,
     promotedScope,
     blockers,
@@ -164,7 +170,8 @@ export function evaluatePromotion(req: PromotionRequest): PromotionDecision {
       ? `Promoted to Level 2 for ${promotedScope.length} object kind(s) on the certification of ` +
         `${surveyor?.name}, ${surveyor?.state} licence ${surveyor?.licenceNumber}` +
         (hasVertical ? '.' : '. Elevation-dependent objects were held at their current level because no vertical datum is stated.')
-      : `Held at Level ${r.reliabilityLevel}. ${blockers.length} precondition(s) unmet.`,
+      : `Held at Level ${heldLevel}. ${blockers.length} precondition(s) unmet: ` +
+        blockers.map(b => b.split(':')[0]).join('; ') + '.',
   }
 }
 

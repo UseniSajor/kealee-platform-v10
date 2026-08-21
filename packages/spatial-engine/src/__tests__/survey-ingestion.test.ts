@@ -764,6 +764,45 @@ describe('fixture 12 — professional approval without evidence', () => {
     expect(decision.blockers.join(' ')).toMatch(/not evidence|not verified/i)
   })
 
+  it('qualifying for Level 2 is not the same as being granted it', async () => {
+    // The import self-assesses at Level 2 — confirmed CRS, datum, licence,
+    // reviewed seal. A blocking discrepancy still holds it at Level 1.
+    const csv = await certifiedCsvImport()
+    expect(csv.record.reliabilityLevel).toBe(2)
+
+    const blocking = reconcileSurvey({
+      surveyPoints: [], twin: baseTwin(), coordinateUnit: 'usSurveyFoot',
+      surveyVerticalDatum: 'NAVD88', gisVerticalDatum: 'NGVD29',
+    })
+    expect(blocking.blockingCount).toBeGreaterThan(0)
+
+    const decision = evaluatePromotion({
+      record: { ...csv.record, surveyor: { ...MD_SURVEYOR, licenceVerifiedAt: '2026-08-01' } },
+      discrepancies: blocking,
+      scope: ['Parcel'],
+    })
+    expect(decision.promoted).toBe(false)
+    expect(decision.fromLevel).toBe(2)
+    expect(decision.toLevel).toBe(1)
+    expect(decision.rationale).toMatch(/Held at Level 1/)
+  })
+
+  it('objects enter the twin at Level 1 until a promotion is granted', async () => {
+    const csv = await certifiedCsvImport()
+
+    const ungated = normalizeSurvey({ record: csv.record, points: csv.points })
+    expect(ungated.features.every(f => f.reliabilityLevel <= 1)).toBe(true)
+    expect(ungated.source.reliabilityLevel).toBe(1)
+    expect(ungated.warnings.join(' ')).toMatch(/no promotion has been granted/i)
+
+    const gated = normalizeSurvey({
+      record: csv.record, points: csv.points,
+      promotion: { promoted: true, promotedScope: ['Parcel', 'BoundarySegment'] },
+    })
+    expect(gated.source.reliabilityLevel).toBe(2)
+    expect(gated.features.some(f => f.reliabilityLevel === 2)).toBe(true)
+  })
+
   it('applyPromotion is a no-op on a refused decision', async () => {
     const twin = baseTwin()
     const csv = await parseSurveyCsv(CSV_STATE_PLANE, { originalFilename: 'x.csv' })

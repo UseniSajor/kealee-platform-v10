@@ -16,12 +16,19 @@ import type { SurveyImportRecord, SurveyPoint, BenchmarkRecord, SurveyPointClass
 import type { LandXmlSurface, LandXmlParcelCall } from './parse-landxml'
 import type { DxfEntity, DxfLayerRole } from './parse-dxf'
 import { classifyDxfLayer } from './parse-dxf'
-import type { SourceRecord, AccuracyClass } from '../site-plan/reliability'
+import type { SourceRecord, AccuracyClass, ReliabilityLevel } from '../site-plan/reliability'
 import type { SiteFeature, SiteTwin, Position, Ring, BoundarySegment } from '../site-plan/site-twin'
 import { addFeatures, addSource, ringAreaSqFt } from '../site-plan/site-twin'
 
 export interface NormalizeInput {
   record: SurveyImportRecord
+  /**
+   * A granted promotion. Without one, objects enter the twin at Level 1 at
+   * most, however well the import assesses itself: `assessReliability` says an
+   * import QUALIFIES for Level 2, `evaluatePromotion` is what GRANTS it, and
+   * that gate includes "no blocking discrepancies outstanding".
+   */
+  promotion?: { promoted: boolean; promotedScope: SiteFeature['kind'][] }
   points?: SurveyPoint[]
   benchmarks?: BenchmarkRecord[]
   surfaces?: LandXmlSurface[]
@@ -97,7 +104,7 @@ const DXF_ROLE_TO_KIND: Record<DxfLayerRole, SiteFeature['kind'] | null> = {
   unclassified: null,
 }
 
-function buildSource(record: SurveyImportRecord): SourceRecord {
+function buildSource(record: SurveyImportRecord, level: ReliabilityLevel): SourceRecord {
   return {
     sourceId: record.importId,
     authority: record.surveyor
@@ -110,7 +117,7 @@ function buildSource(record: SurveyImportRecord): SourceRecord {
     horizontalDatum: record.horizontalDatum,
     verticalDatum: record.verticalDatum,
     accuracyClass: ACCURACY_BY_FORMAT[record.format] ?? 'unknown',
-    reliabilityLevel: record.reliabilityLevel,
+    reliabilityLevel: level,
     responsibleProfessional: record.surveyor
       ? {
           name: record.surveyor.name,
@@ -151,13 +158,26 @@ export function normalizeSurvey(input: NormalizeInput): NormalizeResult {
     )
   }
 
-  const source = buildSource(record)
   const features: SiteFeature[] = []
   const unmapped: NormalizeResult['unmapped'] = []
   const warnings: string[] = []
+
+  const granted = input.promotion?.promoted === true
+  const effectiveLevel: ReliabilityLevel = granted
+    ? record.reliabilityLevel
+    : (Math.min(record.reliabilityLevel, 1) as ReliabilityLevel)
+  if (!granted && record.reliabilityLevel > effectiveLevel) {
+    warnings.push(
+      `This import qualifies for Level ${record.reliabilityLevel}, but no promotion has been granted, so ` +
+      `its objects enter the model at Level ${effectiveLevel}. Promotion additionally requires that no ` +
+      'blocking reconciliation discrepancy is outstanding.',
+    )
+  }
+
+  const source = buildSource(record, effectiveLevel)
   const base = {
     sourceId: source.sourceId,
-    reliabilityLevel: record.reliabilityLevel,
+    reliabilityLevel: effectiveLevel,
     crs: record.crs,
     revision: 1,
   }
@@ -427,10 +447,11 @@ export function normalizeSurvey(input: NormalizeInput): NormalizeResult {
     })
   }
 
-  if (record.reliabilityLevel < 2) {
+  if (effectiveLevel < 2) {
     warnings.push(
-      `Objects from this import carry reliability level ${record.reliabilityLevel}. ` +
-      'Level 2 requires a confirmed CRS and datum plus a reviewed seal from a licensed surveyor.',
+      `Objects from this import carry reliability level ${effectiveLevel}. ` +
+      'Level 2 requires a confirmed CRS and datum, a reviewed seal from a licensed surveyor, and a ' +
+      'granted promotion with no blocking discrepancies outstanding.',
     )
   }
 
