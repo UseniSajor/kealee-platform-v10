@@ -8,6 +8,12 @@
  *
  * The platform records comments, revisions, approvals and rejected items per
  * discipline. It never reproduces or places a seal.
+ *
+ * The `sheets` list on each discipline below is the LEAD assignment used for
+ * queue naming and the C-000 responsibility matrix. It does not mean a sheet
+ * belongs to one profession: a combined infill plan carries surveying, civil
+ * and landscape content on the same page. Object- and subject-level routing
+ * lives in `content-scope.ts`, and that is what governs who may certify what.
  */
 
 import type { SheetId } from '../sheets/sheet-template'

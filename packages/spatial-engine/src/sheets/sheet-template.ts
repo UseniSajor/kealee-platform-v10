@@ -35,8 +35,13 @@ export const SHEET_TITLES: Record<SheetId, string> = {
 }
 
 /**
- * Which discipline is responsible for the content of each sheet. Drives the
- * professional responsibility matrix on C-000 and the review routing.
+ * The LEAD discipline for each sheet — the one that coordinates it and is
+ * listed first in the title block. It is not an exclusive assignment: a sheet
+ * routinely carries content from several professions, and each certifies only
+ * the subjects and objects within their own scope. See
+ * `review/content-scope.ts` for the actual routing, which is by subject rather
+ * than by page, and for the divided-responsibility title block. Sheets are
+ * never duplicated merely to separate seals.
  */
 export const SHEET_DISCIPLINE: Record<SheetId, string> = {
   'C-000': 'Kealee (coordination)',
