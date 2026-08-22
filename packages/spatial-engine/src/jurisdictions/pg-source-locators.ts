@@ -415,6 +415,127 @@ export function buildPgSubtitle24Sources(
     })
 }
 
+// ── Overlay zones ───────────────────────────────────────────────────────────
+
+/**
+ * Which ordinance section ESTABLISHES each overlay.
+ *
+ * An overlay rule has two halves and they come from different documents. The
+ * ordinance establishes the overlay — its existence, purpose, applicability and
+ * general provisions. The adopted plan for a specific district sets the actual
+ * dimensional standards inside it. Only the first half is hashable here, and
+ * that is exactly what the overlay rule payloads contain: code, name, kind,
+ * source field and review note.
+ *
+ * Verified 2026-08-22 by full ordinance name with word boundaries. The overlay
+ * CODES in PG_OVERLAYS ("T-D-O", "MIOZ-NOISE") are Kealee/GIS shorthand and do
+ * not appear in the ordinance text — searching for them finds nothing, and
+ * searching for "NCO" as a substring finds NONCONFORMING on every page. The
+ * ordinance uses full names.
+ */
+export interface PgOverlaySection {
+  secid: number
+  section: string
+  title: string
+  /** Overlay codes this section establishes. */
+  overlayCodes: string[]
+  /** True when the section governs every overlay rather than establishing one. */
+  appliesToAllOverlays?: boolean
+  observedTables: number
+}
+
+export const PG_OVERLAY_SECTIONS: PgOverlaySection[] = [
+  // General provisions govern every overlay, so a change here legitimately
+  // reopens all of them. That is correct coupling, not over-reaction.
+  { secid: 644, section: '27-4401', title: 'General (Overlay Zones)',
+    overlayCodes: [], appliesToAllOverlays: true, observedTables: 0 },
+
+  // Confirmed present by name: Chesapeake Bay Critical Area, Intense
+  // Development, Limited Development, Resource Conservation, Military
+  // Installation. Six overlays, six tables.
+  { secid: 645, section: '27-4402', title: 'Policy Area Overlay Zones',
+    overlayCodes: ['I-D-O', 'L-D-O', 'R-C-O', 'MIOZ-SAFETY', 'MIOZ-NOISE', 'MIOZ-HEIGHT'],
+    observedTables: 6 },
+
+  // Confirmed present by name: Neighborhood Conservation Overlay.
+  { secid: 646, section: '27-4403', title: 'Other Overlay Zones',
+    overlayCodes: ['NCO'], observedTables: 2 },
+]
+
+/**
+ * Overlays the 2022 ordinance does not establish, with the reason.
+ *
+ * T-D-O and D-D-O are legacy designations carried over from the pre-2022
+ * ordinance; "transit district overlay" and "development district overlay"
+ * appear nowhere in 27-4401 through 27-4403. Development inside them is
+ * governed by the adopted Transit or Development District Plan, which is a
+ * separate document per district — so there is no single ordinance region to
+ * hash, and pretending otherwise would bind the rule to text that does not
+ * govern it.
+ */
+export const PG_OVERLAYS_NOT_IN_ORDINANCE: { code: string; reason: string }[] = [
+  {
+    code: 'T-D-O',
+    reason:
+      'Legacy overlay from the pre-2022 ordinance. Not established in Sec. 27-4401–27-4403 (verified by ' +
+      'name). Standards come from the adopted Transit District Development Plan for each district.',
+  },
+  {
+    code: 'D-D-O',
+    reason:
+      'Legacy overlay from the pre-2022 ordinance. Not established in Sec. 27-4401–27-4403 (verified by ' +
+      'name). Standards come from the adopted Development District Plan for each district.',
+  },
+  {
+    code: 'FLOOD-DPIE',
+    reason:
+      'A DPIE floodplain designation, not a Subtitle 27 overlay zone — "floodplain overlay" does not ' +
+      'appear in the overlay part. Its authority is the county floodplain regulation and the effective ' +
+      'FIRM panel, neither of which is in this publication.',
+  },
+]
+
+/** One source per overlay section, bound to the overlay rules it establishes. */
+export function buildPgOverlaySources(
+  rules: CertifiableRule[],
+  opts: { retrievedAt?: string; version?: string } = {},
+): PgSourceBundle[] {
+  const retrievedAt = opts.retrievedAt ?? new Date().toISOString()
+  const byKey = new Map(rules.map(r => [r.ruleKey, r.identity]))
+  const idFor = (code: string) => byKey.get(`zoning.overlay.${code}`)
+
+  // Every overlay the ordinance does establish — the audience for 27-4401.
+  const establishedCodes = PG_OVERLAY_SECTIONS.flatMap(s => s.overlayCodes)
+
+  return PG_OVERLAY_SECTIONS.map(section => {
+    const codes = section.appliesToAllOverlays ? establishedCodes : section.overlayCodes
+    const ruleIdentities = codes.map(idFor).filter((x): x is string => Boolean(x))
+
+    return {
+      authority: 'OFFICIAL_CODE' as SourceAuthority,
+      locators: [{
+        regionId: `sec-${section.section}`,
+        label: `Sec. ${section.section} ${section.title}`,
+        ruleIdentities,
+        extractRaw: ordinanceBody(section.secid),
+        extract: sectionTextWindow(section.section),
+      }],
+      source: {
+        sourceId: `pgc-encodeplus-${section.section}`,
+        jurisdiction: 'prince_georges_md',
+        title: `Prince George's County Zoning Ordinance, Sec. ${section.section} — ${section.title}`,
+        url: pgPrintUrl(section.secid),
+        documentId: null,
+        documentHash: '',
+        version: opts.version ?? '2022.1',
+        retrievedAt,
+        regions: [],
+        history: [],
+      },
+    }
+  })
+}
+
 /** Every PG source with a locator, ready to hand to `refreshAll`. */
 export function buildPgSourceBundles(
   rules: CertifiableRule[],
@@ -423,6 +544,7 @@ export function buildPgSourceBundles(
   return [
     ...buildPgOrdinanceSources(rules, opts),
     ...buildPgSubtitle24Sources(rules, opts),
+    ...buildPgOverlaySources(rules, opts),
     buildPgZoningLayerSource(rules, opts),
   ]
 }
@@ -447,7 +569,8 @@ export function pgRulesWithoutLocator(rules: CertifiableRule[]): { ruleKey: stri
         r.ruleKey === 'landscape.tree_canopy'
           ? 'Subtitle 25 §25-128 Table 1 is not published in any retrievable form, so there is nothing to hash.'
           : r.ruleKey.startsWith('zoning.overlay.')
-            ? 'Overlay standards come from each district\'s adopted plan, which is a separate document per district.'
+            ? PG_OVERLAYS_NOT_IN_ORDINANCE.find(o => r.ruleKey === `zoning.overlay.${o.code}`)?.reason
+              ?? 'Overlay standards come from each district\'s adopted plan, a separate document per district.'
             : r.ruleKey.startsWith('subdivision.') || r.ruleKey.startsWith('environment.')
               ? 'This Subtitle 24 rule has no mapped section yet. See PG_SUBTITLE_24_SECTIONS for the ' +
                 'sections already located but not yet bound to a rule.'

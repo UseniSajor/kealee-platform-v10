@@ -218,7 +218,7 @@ runs in a maintenance job, **never on a request path** — the point of
 certification is that evaluating an order touches no network.
 
 **The PG locators are written and verified** (`jurisdictions/pg-source-locators.ts`,
-29 tests). 38 of 51 rules have a locator across 14 sources.
+36 tests). 45 of 51 rules have a locator across 17 sources.
 
 ```ts
 import { Rules, buildPgSourceBundles, pgRulesWithoutLocator } from '@kealee/pascal-agents/engine'
@@ -305,14 +305,45 @@ This combined publication carries Subtitles 27 and 24 and the Landscape Manual
 only. Subtitle 25 Division 3 is not in it, which is the structural reason
 §25-128 Table 1 cannot be retrieved here.
 
-### The 13 rules with no locator
+### Overlay zones (verified 2026-08-22)
 
-`pgRulesWithoutLocator()` returns each with a reason:
+An overlay rule has two halves from two documents. The ordinance **establishes**
+the overlay — existence, purpose, applicability, general provisions — and that
+is what the rule payloads contain. The adopted plan for a specific district sets
+the dimensional standards inside it. Only the first half is hashable.
 
-- **10 overlay rules** — standards come from each district's adopted plan, a
-  separate document per district
-- **1 §25-128 tree canopy** — nothing published to hash
-- **2 process/reference** — advisory, not regulatory
+| secid | Section | Establishes |
+|---|---|---|
+| 644 | 27-4401 General | governs all 7 established overlays |
+| 645 | 27-4402 Policy Area Overlay Zones | I-D-O, L-D-O, R-C-O, MIOZ-SAFETY, MIOZ-NOISE, MIOZ-HEIGHT |
+| 646 | 27-4403 Other Overlay Zones | NCO |
+
+A change to 27-4401 reopens all seven. That is correct coupling — general
+provisions really do govern every overlay — not over-reaction.
+
+Verify by **full ordinance name with word boundaries**. The codes in
+`PG_OVERLAYS` (`T-D-O`, `MIOZ-NOISE`) are Kealee/GIS shorthand and appear
+nowhere in the ordinance text, and searching `NCO` as a substring matches
+NONCONFORMING on every page.
+
+Three overlays are deliberately unmapped, in `PG_OVERLAYS_NOT_IN_ORDINANCE`:
+
+- **T-D-O, D-D-O** — legacy designations from the pre-2022 ordinance, absent
+  from 27-4401 through 27-4403 (verified by name). Governed by each district's
+  adopted Transit or Development District Plan.
+- **FLOOD-DPIE** — a DPIE floodplain designation, not a Subtitle 27 overlay.
+  Its authority is the county floodplain regulation and the effective FIRM
+  panel, neither of which is in this publication.
+
+### The 6 rules with no locator
+
+`pgRulesWithoutLocator()` returns each with a specific reason:
+
+- **T-D-O, D-D-O, FLOOD-DPIE** — as above
+- **`flood.fema_zones`** — FEMA NFIP designations from `msc.fema.gov`, a
+  different publisher entirely; would need its own source definition
+- **`landscape.tree_canopy`** — §25-128 publishes nothing to hash
+- **`process.review_model`** — advisory, not regulatory
 
 A rule with no locator can never be proven current. That is surfaced in the
 maintenance queue rather than left for someone to discover.

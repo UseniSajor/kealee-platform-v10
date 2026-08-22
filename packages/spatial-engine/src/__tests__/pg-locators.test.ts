@@ -12,6 +12,7 @@ import {
   PG_ORDINANCE_SECTIONS, FORBIDDEN_HASH_URLS, pgPrintUrl, pgLayerDefinitionUrl,
   buildPgOrdinanceSources, buildPgZoningLayerSource, buildPgSourceBundles,
   buildPgSubtitle24Sources, PG_SUBTITLE_24_SECTIONS,
+  buildPgOverlaySources, PG_OVERLAY_SECTIONS, PG_OVERLAYS_NOT_IN_ORDINANCE,
   deriveZoneBlocks, arcgisStableRegion, pgRulesWithoutLocator,
 } from '../jurisdictions/pg-source-locators'
 import { PG_ZONE_DIMENSIONAL_TABLES } from '../jurisdictions/pg-dimensional-standards.generated'
@@ -277,10 +278,13 @@ describe('rules with no locator are reported, not hidden', () => {
     expect(canopy?.reason).toMatch(/not published in any retrievable form/i)
   })
 
-  it('explains why overlay rules have no single document', () => {
+  it('explains per overlay why it has no single document', () => {
     const gaps = pgRulesWithoutLocator(RULES)
-    const overlay = gaps.find(g => g.ruleKey.startsWith('zoning.overlay.'))
-    expect(overlay?.reason).toMatch(/adopted plan/i)
+    const overlay = gaps.filter(g => g.ruleKey.startsWith('zoning.overlay.'))
+    // Only the three the ordinance does not establish remain unmapped, and each
+    // names the document that does govern it rather than giving one blanket reason.
+    expect(overlay).toHaveLength(3)
+    for (const g of overlay) expect(g.reason).toMatch(/adopted .*Plan|FIRM panel/i)
   })
 
   it('every gap carries a reason', () => {
@@ -343,5 +347,65 @@ describe('Subtitle 24 sections', () => {
     const gaps = pgRulesWithoutLocator(RULES).map(g => g.ruleKey)
     expect(gaps).not.toContain('environment.stream_buffers')
     expect(gaps).not.toContain('subdivision.procedures')
+  })
+})
+
+// ── Overlay zones ───────────────────────────────────────────────────────────
+
+describe('overlay zones', () => {
+  const overlayId = (code: string) =>
+    RULES.find(r => r.ruleKey === `zoning.overlay.${code}`)!.identity
+
+  it('binds the Chesapeake Bay and Military Installation overlays to 27-4402', () => {
+    const s = buildPgOverlaySources(RULES).find(b => b.source.url?.includes('secid=645'))!
+    const ids = s.locators[0].ruleIdentities
+    for (const code of ['I-D-O', 'L-D-O', 'R-C-O', 'MIOZ-SAFETY', 'MIOZ-NOISE', 'MIOZ-HEIGHT']) {
+      expect(ids).toContain(overlayId(code))
+    }
+    expect(ids).not.toContain(overlayId('NCO'))
+  })
+
+  it('binds the Neighborhood Conservation overlay to 27-4403', () => {
+    const s = buildPgOverlaySources(RULES).find(b => b.source.url?.includes('secid=646'))!
+    expect(s.locators[0].ruleIdentities).toEqual([overlayId('NCO')])
+  })
+
+  it('makes general provisions reopen every established overlay', () => {
+    const general = buildPgOverlaySources(RULES).find(b => b.source.url?.includes('secid=644'))!
+    const established = PG_OVERLAY_SECTIONS.flatMap(x => x.overlayCodes)
+    expect(established).toHaveLength(7)
+    for (const code of established) {
+      expect(general.locators[0].ruleIdentities).toContain(overlayId(code))
+    }
+    // and only those — a legacy overlay is not governed by this section
+    expect(general.locators[0].ruleIdentities).not.toContain(overlayId('T-D-O'))
+  })
+
+  it('leaves the legacy and DPIE overlays unmapped, with evidence', () => {
+    const codes = PG_OVERLAYS_NOT_IN_ORDINANCE.map(o => o.code)
+    expect(codes.sort()).toEqual(['D-D-O', 'FLOOD-DPIE', 'T-D-O'])
+
+    const gaps = pgRulesWithoutLocator(RULES)
+    const tdo = gaps.find(g => g.ruleKey === 'zoning.overlay.T-D-O')
+    expect(tdo?.reason).toMatch(/verified by name/i)
+    expect(tdo?.reason).toMatch(/Transit District Development Plan/i)
+
+    const flood = gaps.find(g => g.ruleKey === 'zoning.overlay.FLOOD-DPIE')
+    expect(flood?.reason).toMatch(/not a Subtitle 27 overlay zone/i)
+  })
+
+  it('does not bind a legacy overlay to a section that never mentions it', () => {
+    for (const b of buildPgOverlaySources(RULES)) {
+      for (const code of ['T-D-O', 'D-D-O', 'FLOOD-DPIE']) {
+        expect(b.locators[0].ruleIdentities).not.toContain(overlayId(code))
+      }
+    }
+  })
+
+  it('covers 7 of the 10 overlays', () => {
+    const covered = new Set(buildPgOverlaySources(RULES).flatMap(b => b.locators[0].ruleIdentities))
+    const overlayRules = RULES.filter(r => r.ruleKey.startsWith('zoning.overlay.'))
+    expect(overlayRules).toHaveLength(10)
+    expect([...covered].filter(id => overlayRules.some(r => r.identity === id))).toHaveLength(7)
   })
 })
