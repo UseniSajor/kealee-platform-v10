@@ -417,4 +417,3 @@ export function buildPgCertifiableRules(opts: ToCertifiableOptions = {}): Certif
   return toCertifiableRules(buildPgRulePack({ verifiedAt: opts.retrievedAt }), opts)
 }
 
-export { PG_JURISDICTION_CODE, PG_ZONES_2022 }

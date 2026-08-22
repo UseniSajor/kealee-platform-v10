@@ -284,4 +284,3 @@ export function blocksFromFeatures(features: SiteFeature[]): ContentBlock[] {
   return out
 }
 
-export { ANSI_B }

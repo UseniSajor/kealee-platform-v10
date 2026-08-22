@@ -30,3 +30,14 @@ export * from './export/exporters';
 export * from './export/crs';
 export * from './review/disciplines';
 export * from './review/checklist';
+
+// ── Phase 3B / 3C — namespaced so the large surfaces do not collide ─────────
+// `Survey.parseSurveyCsv(...)`, `Rules.evaluateProjectRules(...)`,
+// `Persistence.persistIngestionCycle(...)`.
+export * as Survey from './survey/index';
+export * as Rules from './rules/index';
+export * as Persistence from './persistence/index';
+export * as SitePlanOrders from './integration/index';
+export * from './sheets/composer';
+export * from './review/content-scope';
+export * from './review/evidence';

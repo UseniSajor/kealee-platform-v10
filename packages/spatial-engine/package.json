@@ -17,6 +17,10 @@
     "./agents": {
       "types": "./src/agents.ts",
       "default": "./src/agents.ts"
+    },
+    "./engine": {
+      "types": "./src/engine.ts",
+      "default": "./src/engine.ts"
     }
   },
   "scripts": {

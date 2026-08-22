@@ -684,4 +684,3 @@ export function checkCertificationReuse(input: {
   return { reusable: blockers.length === 0, reasons, blockers }
 }
 
-export { ruleIdentity }

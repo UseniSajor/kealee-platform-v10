@@ -440,4 +440,3 @@ export class InMemorySitePlanStore implements SitePlanStore {
   }
 }
 
-export { ENGINE_VERSION }
