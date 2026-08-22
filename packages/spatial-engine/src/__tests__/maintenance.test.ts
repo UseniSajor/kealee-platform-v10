@@ -181,13 +181,32 @@ describe('pack health', () => {
 // ── The cycle ───────────────────────────────────────────────────────────────
 
 describe('the maintenance cycle', () => {
-  it('does nothing when no source changed', async () => {
+  it('does nothing to the rules when no source changed', async () => {
     const s = await scenario()
     const out = await runWithDocs(s, [DOC_A, DOC_B])
     expect(out.sourcesChanged).toEqual([])
     expect(out.rulesDowngraded).toEqual([])
     expect(out.rules.every(r => r.state === 'CERTIFIED')).toBe(true)
-    expect(out.packAfter.status).toBe(out.packBefore.status)
+  })
+
+  it('clears staleness when the sources were actually reached', async () => {
+    // The fixture was last retrieved in January against an August `now`, so the
+    // pack starts STALE. Reaching the sources and finding them unchanged is
+    // exactly what proves currency.
+    const s = await scenario()
+    const out = await runWithDocs(s, [DOC_A, DOC_B])
+    expect(out.packBefore.status).toBe('STALE')
+    expect(out.packAfter.status).toBe('CERTIFIED')
+  })
+
+  it('does NOT clear staleness when every source was unreachable', async () => {
+    // "We could not check" must never become "we checked and it is fine".
+    const s = await scenario()
+    const out = await runWithDocs(s, [null, null])
+    expect(out.sourcesUnreachable).toEqual(['src-a', 'src-b'])
+    expect(out.packAfter.status).toBe('STALE')
+    // and the certifications survive the outage regardless
+    expect(out.rules.every(r => r.state === 'CERTIFIED')).toBe(true)
   })
 
   it('downgrades only the rules of the source that changed', async () => {

@@ -327,7 +327,13 @@ export async function runMaintenanceCycle(
       documentHash: s.documentHash, retrievedAt: s.retrievedAt,
     })),
     unresolvedSourceIssues: input.unresolvedSourceIssues,
-    lastRefreshedAt: startedAt,
+    // Only a source we actually reached proves currency. An all-outage cycle
+    // must NOT mark the pack fresh — that would convert "we could not check"
+    // into "we checked and it is fine", which is the whole failure this system
+    // is built to avoid.
+    lastRefreshedAt: outcomes.some(o => o.fetched.ok)
+      ? startedAt
+      : (input.sources[0]?.source.retrievedAt ?? null),
     now,
   })
 
