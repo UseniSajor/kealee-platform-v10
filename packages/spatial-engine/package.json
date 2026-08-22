@@ -28,9 +28,11 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@kealee/pascal-wrapper": "workspace:*"
+    "@kealee/pascal-wrapper": "workspace:*",
+    "pdfkit": "^0.14.0"
   },
   "devDependencies": {
+    "@types/pdfkit": "^0.13.4",
     "typescript": "^5.3.3"
   }
 }

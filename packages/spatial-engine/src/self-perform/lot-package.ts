@@ -81,12 +81,42 @@ export interface LotPackage {
   summary: string
 }
 
-/** A rectangle in EPSG:2248, only so the composer has something to lay out. */
-function assumedRing(widthFt: number, depthFt: number): Ring {
-  const X = 1_326_382.7, Y = 464_763.1
-  return {
-    coordinates: [[X, Y], [X + widthFt, Y], [X + widthFt, Y + depthFt], [X, Y + depthFt], [X, Y]],
-  }
+/**
+ * Where a lot's boundary may come from.
+ *
+ * There is deliberately no fourth option. An earlier version of this file
+ * synthesised a rectangle from lot width and depth when nothing else was
+ * available, which was wrong: the area was whatever you typed and the position
+ * and shape were invented, yet it drew on the sheet looking exactly like a
+ * parcel boundary. Fabricated geometry that renders as authoritative is worse
+ * than no geometry, because nothing downstream can tell the difference.
+ */
+export type BoundaryProvenance = 'survey' | 'jurisdiction_gis' | 'none'
+
+export interface ResolvedBoundary {
+  ring: Ring
+  provenance: BoundaryProvenance
+  /** Who published it and when, for the source-and-accuracy note. */
+  authority: string
+  retrievedAt: string
+}
+
+/**
+ * Resolves a parcel boundary from a jurisdiction GIS service.
+ *
+ * NOT WIRED YET, and the reason is worth recording. PGAtlas
+ * (gisdata.pgplanning.org) publishes zoning, address points and overlays but no
+ * parcel service — checked across its Layers and Map_Services folders. Maryland
+ * parcel geometry is statewide MD iMAP property data, and the endpoint has not
+ * been confirmed. Until one is, this returns null and the caller gets no parcel
+ * rather than a plausible-looking rectangle.
+ */
+export async function resolveParcelBoundary(
+  _lot: Pick<LotInput, 'address' | 'jurisdictionCode'>,
+  resolver?: (lot: Pick<LotInput, 'address' | 'jurisdictionCode'>) => Promise<ResolvedBoundary | null>,
+): Promise<ResolvedBoundary | null> {
+  if (!resolver) return null
+  return resolver(_lot)
 }
 
 /** Reads the published envelope for a zone, keeping footnotes attached. */
@@ -142,10 +172,15 @@ export function readZoningEnvelope(zoneCode: string): ZoningEnvelope {
  * the drawing, and stating it is what keeps the output honest enough to hand to
  * a professional.
  */
-export function buildLotPackage(lot: LotInput): LotPackage {
-  const surveyed = Boolean(lot.boundary)
-  const ring = lot.boundary ?? assumedRing(lot.lotWidthFt ?? 65, lot.lotDepthFt ?? 100)
-  const areaSqFt = lot.lotAreaSqFt ?? ringAreaSqFt(ring)
+export function buildLotPackage(lot: LotInput, resolved?: ResolvedBoundary | null): LotPackage {
+  // A survey wins; a GIS parcel is second; nothing is third. Nothing is a real
+  // and common answer and it produces a package with no drawn boundary.
+  const boundary: ResolvedBoundary | null = lot.boundary
+    ? { ring: lot.boundary, provenance: 'survey', authority: 'Supplied with the lot', retrievedAt: new Date().toISOString() }
+    : resolved ?? null
+  const surveyed = boundary?.provenance === 'survey'
+  const ring = boundary?.ring ?? null
+  const areaSqFt = lot.lotAreaSqFt ?? (ring ? ringAreaSqFt(ring) : null)
 
   let twin = createSiteTwin({
     siteId: lot.name, projectId: lot.name, organizationId: 'self-perform',
@@ -154,16 +189,20 @@ export function buildLotPackage(lot: LotInput): LotPackage {
   })
   twin = addSource(twin, gisSourceRecord({
     sourceId: 'gis1',
-    authority: 'M-NCPPC',
-    dataset: surveyed ? 'Supplied boundary — provenance unverified' : 'Assumed lot geometry — no survey',
+    authority: boundary?.authority ?? 'No boundary source',
+    dataset: boundary
+      ? `Parcel boundary — ${boundary.provenance.replace(/_/g, ' ')}`
+      : 'No parcel boundary obtained',
     crs: 'EPSG:2248', horizontalDatum: 'NAD83',
   }))
   twin = { ...twin, zoneCode: lot.zoneCode, overlayCodes: lot.overlayCodes ?? [] }
 
   const base = { sourceId: 'gis1', reliabilityLevel: 1 as const, crs: 'EPSG:2248', revision: 1 }
-  twin = addFeatures(twin, [
-    { kind: 'Parcel', id: 'parcel', parcelId: lot.name, ring, areaSqFt, ...base } as never,
-  ])
+  if (ring) {
+    twin = addFeatures(twin, [
+      { kind: 'Parcel', id: 'parcel', parcelId: lot.name, ring, areaSqFt, ...base } as never,
+    ])
+  }
 
   const permitPath = classifyProject({
     zoneCode: lot.zoneCode,
@@ -194,11 +233,19 @@ export function buildLotPackage(lot: LotInput): LotPackage {
   )
 
   const beforeSeal: string[] = []
-  if (!surveyed) {
+  if (!ring) {
     beforeSeal.push(
-      'A boundary and topographic survey by a Maryland licensed surveyor. The lot geometry here is ' +
-      'assumed for layout only. In testing, county GIS was 4.3 ft off the surveyed boundary and a ' +
-      'front setback flipped from compliant to non-compliant once corrected.',
+      'No parcel boundary. Nothing is drawn, because a boundary invented from a lot width and depth ' +
+      'renders exactly like a real one and nothing downstream could tell them apart. Supply a survey, ' +
+      'or wire a jurisdiction GIS parcel service — PGAtlas publishes zoning and address points but no ' +
+      'parcel layer, so Maryland parcels come from statewide MD iMAP property data.',
+    )
+  }
+  if (ring && !surveyed) {
+    beforeSeal.push(
+      'A boundary and topographic survey by a Maryland licensed surveyor. The boundary here is GIS, ' +
+      'which is compiled rather than surveyed. In testing, county GIS was 4.3 ft off the surveyed ' +
+      'boundary and a front setback flipped from compliant to non-compliant once corrected.',
     )
   }
   if (disturbance.indeterminate) {
@@ -239,7 +286,8 @@ export function buildLotPackage(lot: LotInput): LotPackage {
     responsibility,
     beforeSeal,
     summary:
-      `${lot.name} — ${lot.zoneCode}, ${Math.round(areaSqFt).toLocaleString()} sq ft. ` +
+      `${lot.name} — ${lot.zoneCode}, ` +
+      (areaSqFt != null ? `${Math.round(areaSqFt).toLocaleString()} sq ft. ` : 'area unknown (no boundary). ') +
       `Disturbance ${Math.round(disturbance.knownTotalSqFt).toLocaleString()} sq ft (` +
       (disturbance.meetsThreshold ? 'EXCEEDS' : disturbance.indeterminate ? 'INDETERMINATE against' : 'under') +
       ` the ${disturbance.thresholdSqFt.toLocaleString()} sq ft threshold). ` +
@@ -249,12 +297,16 @@ export function buildLotPackage(lot: LotInput): LotPackage {
 }
 
 /** Builds packages for several lots, which is where the shared research shows. */
-export function buildLotPackages(lots: LotInput[]): {
+export function buildLotPackages(
+  lots: LotInput[],
+  /** Resolved boundaries by lot name, where any were obtained. */
+  boundaries: Record<string, ResolvedBoundary | null> = {},
+): {
   packages: LotPackage[]
   sharedZones: { zone: string; lots: string[] }[]
   summary: string
 } {
-  const packages = lots.map(buildLotPackage)
+  const packages = lots.map(l => buildLotPackage(l, boundaries[l.name] ?? null))
   const byZone = new Map<string, string[]>()
   for (const p of packages) byZone.set(p.envelope.zone, [...(byZone.get(p.envelope.zone) ?? []), p.lot])
   const sharedZones = [...byZone.entries()]
