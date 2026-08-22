@@ -35,6 +35,15 @@ interface FinancialData {
   }>
 }
 
+interface BillingStatsResponse {
+  totalRevenue?: number; mrr?: number; arr?: number; revenueGrowth?: number
+  churnRate?: number; churnCount?: number; churnGrowth?: number
+  avgLtv?: number; ltvGrowth?: number; totalSubscriptions?: number
+  activeSubscriptions?: number; trialingSubscriptions?: number; canceledSubscriptions?: number
+}
+
+interface RevenueReportResponse { byProduct?: FinancialData['revenueByProduct'] }
+
 export default function FinancialsPage() {
   const [data, setData] = useState<FinancialData | null>(null)
   const [loading, setLoading] = useState(true)
@@ -68,12 +77,12 @@ export default function FinancialsPage() {
           break
       }
 
-      const stats = await AdminApiClient.getBillingStats({
+      const stats = await AdminApiClient.getBillingStats<BillingStatsResponse>({
         start: startDate.toISOString(),
         end: endDate,
       })
 
-      const revenueReport = await AdminApiClient.getRevenueReport({
+      const revenueReport = await AdminApiClient.getRevenueReport<RevenueReportResponse>({
         startDate: startDate.toISOString(),
         endDate,
         groupBy: dateRange === '7d' ? 'day' : dateRange === '30d' ? 'day' : dateRange === '90d' ? 'week' : 'month',

@@ -3,41 +3,22 @@
  * Type-safe API methods for Ops Services features
  */
 
-import { createBrowserClient } from '@supabase/ssr'
+import { getClerkToken } from '@/lib/clerk-token'
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
 
-let _supabase: ReturnType<typeof createBrowserClient> | null = null
-function getSupabase() {
-  if (!_supabase) {
-    _supabase = createBrowserClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    )
-  }
-  return _supabase
-}
-
 async function getAuthToken(): Promise<string | null> {
-  if (typeof window === 'undefined') return null
-  try {
-    const { data: { session } } = await getSupabase().auth.getSession()
-    return session?.access_token || null
-  } catch {
-    return null
-  }
+  return getClerkToken()
 }
 
 async function apiRequest<T>(endpoint: string, options?: RequestInit): Promise<T> {
   const token = await getAuthToken()
   
-  const headers: HeadersInit = {
-    'Content-Type': 'application/json',
-    ...options?.headers,
-  }
+  const headers = new Headers(options?.headers)
+  headers.set('Content-Type', 'application/json')
   
   if (token) {
-    headers['Authorization'] = `Bearer ${token}`
+    headers.set('Authorization', `Bearer ${token}`)
   }
 
   const response = await fetch(`${API_BASE_URL}${endpoint}`, {

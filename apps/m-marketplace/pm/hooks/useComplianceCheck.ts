@@ -1,7 +1,7 @@
 "use client"
 
 import { useQuery } from "@tanstack/react-query"
-import { api } from "@pm/lib/api-client"
+import { getClerkToken } from '@/lib/clerk-token'
 
 /**
  * Hook to check if a task can be completed based on compliance
@@ -19,7 +19,7 @@ export function useComplianceCheck(
         `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"}/compliance/task/${taskId}/check?type=${type}`,
         {
           headers: {
-            Authorization: `Bearer ${await getAuthToken()}`,
+            Authorization: `Bearer ${await getClerkToken()}`,
           },
         }
       )
@@ -34,15 +34,3 @@ export function useComplianceCheck(
     refetchInterval: 30000, // Refetch every 30 seconds
   })
 }
-
-async function getAuthToken() {
-  const { supabase } = await import("@pm/lib/supabase")
-  const {
-    data: { session },
-  } = await supabase.auth.getSession()
-  return session?.access_token || ""
-}
-
-
-
-

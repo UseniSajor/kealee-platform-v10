@@ -25,18 +25,21 @@ export async function POST(
 
     const run = await prisma.loopRun.findUnique({
       where: { id: loopRunId },
+      include: { projectTwin: true },
     });
 
-    if (!run || run.status !== 'AWAITING_REVIEW') {
+    if (!run || run.status !== 'awaiting_review') {
       return NextResponse.json({ error: 'Loop run not found or not awaiting review' }, { status: 400 });
     }
+    const projectId = run.projectTwin?.projectId;
+    if (!projectId) return NextResponse.json({ error: 'Loop run has no project' }, { status: 409 });
 
-    const outputSnapshot = (run.outputSnapshot as any) || {};
+    const outputSnapshot = (run.result as any) || {};
 
     // 1. Queue Digital Twin updates (auto-updates relational tables)
     await addJob(getUpdateDigitalTwinQueue(), 'updateDigitalTwin', {
       loopRunId,
-      projectId: run.projectId,
+      projectId,
       updates: outputSnapshot.digitalTwinUpdates,
     });
 
@@ -44,7 +47,7 @@ export async function POST(
     if (outputSnapshot.deliverableUpdates && Object.keys(outputSnapshot.deliverableUpdates).length > 0) {
       await addJob(getGenerateDeliverableQueue(), 'generateDeliverable', {
         loopRunId,
-        projectId: run.projectId,
+        projectId,
         deliverables: outputSnapshot.deliverableUpdates,
       });
     }
@@ -53,8 +56,7 @@ export async function POST(
     await prisma.loopRun.update({
       where: { id: loopRunId },
       data: {
-        status: 'COMPLETED',
-        requiresReview: false,
+        status: 'completed',
         updatedAt: new Date(),
       },
     });
@@ -64,7 +66,7 @@ export async function POST(
       data: {
         eventType: 'ADMIN_OVERRIDE_SUBMITTED',
         sourceApp: 'ADMIN-PORTAL',
-        projectId: run.projectId,
+        projectId,
         payload: {
           loopRunId,
           approved: true,
@@ -77,13 +79,13 @@ export async function POST(
       eventId: nextEvent.id,
       eventType: 'ADMIN_OVERRIDE_SUBMITTED',
       sourceApp: 'ADMIN-PORTAL',
-      projectId: run.projectId,
+      projectId,
       payload: nextEvent.payload,
     });
 
     // Send customer notification
     await addJob(getSendNotificationQueue(), 'sendNotification', {
-      projectId: run.projectId,
+      projectId,
       type: 'loop_completed',
       title: 'Project Update Recommendations Approved',
       body: outputSnapshot.summary,

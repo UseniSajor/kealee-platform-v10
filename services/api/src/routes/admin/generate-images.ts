@@ -7,7 +7,7 @@
 
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify'
 import { prisma } from '@kealee/database'
-import Anthropic from '@anthropic-ai/sdk'
+import { AnthropicClient as Anthropic } from '@kealee/core-llm'
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 

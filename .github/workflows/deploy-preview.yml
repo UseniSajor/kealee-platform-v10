@@ -8,8 +8,8 @@ on:
       - staging
 
 env:
-  NODE_VERSION: '20'
-  PNPM_VERSION: '8.15.9'
+  NODE_VERSION: '24'
+  PNPM_VERSION: '11.22.0'
 
 jobs:
   deploy-preview:
@@ -61,7 +61,7 @@ jobs:
           echo "id=$PROJECT_ID" >> $GITHUB_OUTPUT
 
       - name: Install dependencies
-        run: PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true pnpm install --no-frozen-lockfile
+        run: PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true pnpm install --frozen-lockfile
 
       - name: Deploy to Vercel Preview
         uses: amondnet/vercel-action@v25

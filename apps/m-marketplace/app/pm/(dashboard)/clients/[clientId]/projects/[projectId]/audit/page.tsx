@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback, Fragment } from 'react'
 import { useParams } from 'next/navigation'
 import { ChevronDown, ChevronRight, Filter, Search } from 'lucide-react'
+import { getClerkToken } from '@/lib/clerk-token'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
 
@@ -109,15 +110,10 @@ export default function ProjectAuditPage() {
       if (filters.startDate) params.set('startDate', filters.startDate)
       if (filters.endDate) params.set('endDate', filters.endDate)
 
-      // Get auth token for backend API call
-      let authHeaders: Record<string, string> = {}
-      try {
-        const { supabase } = await import('@pm/lib/supabase')
-        const { data: { session } } = await supabase.auth.getSession()
-        if (session?.access_token) {
-          authHeaders['Authorization'] = `Bearer ${session.access_token}`
-        }
-      } catch {}
+      const token = await getClerkToken()
+      const authHeaders: Record<string, string> = token
+        ? { Authorization: `Bearer ${token}` }
+        : {}
       const res = await fetch(`${API_URL}/audit/project/${projectId}?${params}`, {
         headers: authHeaders,
         credentials: 'include',

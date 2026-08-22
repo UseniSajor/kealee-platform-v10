@@ -1,6 +1,4 @@
-import { Prisma } from '@prisma/client'
-import { prisma } from '@kealee/database'
-import { getActiveV30PricingFormula } from '@kealee/database'
+import { Prisma, getActiveV30PricingFormula, prisma } from '@kealee/database'
 import {
   adjustPackageFeaturesForScope,
   analyzeV30IntakeWithLlm,

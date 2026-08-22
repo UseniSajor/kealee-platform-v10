@@ -22,10 +22,6 @@ export default function PaymentReleasePanel({
   const [releaseNotes, setReleaseNotes] = useState('')
   const [isFinalPayment, setIsFinalPayment] = useState(false)
 
-  useEffect(() => {
-    loadCanRelease()
-  }, [milestoneId, loadCanRelease])
-
   const loadCanRelease = useCallback(async () => {
     try {
       const res = await api.canReleasePayment(milestoneId)
@@ -35,6 +31,10 @@ export default function PaymentReleasePanel({
       console.error('Failed to check payment release status:', e)
     }
   }, [milestoneId])
+
+  useEffect(() => {
+    loadCanRelease()
+  }, [loadCanRelease])
 
   const handleReleasePayment = useCallback(async () => {
     if (!canRelease) return

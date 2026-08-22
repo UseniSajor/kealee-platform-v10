@@ -75,15 +75,15 @@ export default function HandoffPage({
   const handleGenerate = useCallback(async () => {
     setGenerating(true)
     try {
-      const res = await api.generateHandoffPackage(params.id)
-      setPackage_(res.package)
+      await api.generateHandoffPackage(params.id)
+      await loadPackage()
       alert('Handoff package generated successfully!')
     } catch (e: unknown) {
       alert(e instanceof Error ? e.message : 'Failed to generate handoff package')
     } finally {
       setGenerating(false)
     }
-  }, [params.id])
+  }, [params.id, loadPackage])
 
   const handleDownload = useCallback(async () => {
     if (!package_) return

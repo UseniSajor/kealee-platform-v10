@@ -8,7 +8,7 @@ import { FastifyRequest } from 'fastify';
 import { prisma } from '@kealee/database';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-  apiVersion: '2023-10-16',
+  apiVersion: '2026-07-29.dahlia',
 });
 
 export interface WebhookVerificationResult {

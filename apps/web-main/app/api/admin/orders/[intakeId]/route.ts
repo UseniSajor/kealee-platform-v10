@@ -117,8 +117,12 @@ export async function PATCH(
   const patch: Record<string, unknown> = { ...formData }
 
   if (body.status) {
-    Object.assign(patch, orderStatusPatch(body.status, { actor }))
-    if (body.status === 'delivered') patch.deliveredAt = new Date().toISOString()
+    const status = body.status
+    if (!isOrderStatus(status)) {
+      return NextResponse.json({ error: `Unknown status: ${status}` }, { status: 400 })
+    }
+    Object.assign(patch, orderStatusPatch(status, { actor }))
+    if (status === 'delivered') patch.deliveredAt = new Date().toISOString()
   }
 
   if (body.assignedReviewer !== undefined) {

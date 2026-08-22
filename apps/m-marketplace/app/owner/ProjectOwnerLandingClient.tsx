@@ -330,7 +330,16 @@ const benefits = [
 
 // ── Package Card Component ──────────────────────────────
 function PackageCard({ pkg, ctaHref, ctaLabel }: {
-  pkg: (typeof preConPackages)[0] & { creditNote?: string };
+  pkg: {
+    tier: string;
+    price: string;
+    priceNote: string;
+    popular: boolean;
+    description: string;
+    includes: string[];
+    color: string;
+    creditNote?: string;
+  };
   ctaHref: string;
   ctaLabel: string;
 }) {

@@ -13,7 +13,7 @@ import { validateBody } from '../middleware/validation.middleware';
 import { sanitizeErrorMessage } from '../utils/sanitize-error'
 
 const stripe = new Stripe(config.stripeSecretKey || process.env.STRIPE_SECRET_KEY || '', {
-  apiVersion: '2023-10-16',
+  apiVersion: '2026-07-29.dahlia',
 });
 
 const createCheckoutSchema = z.object({
@@ -29,7 +29,7 @@ const createPortalSchema = z.object({
 });
 
 export async function stripeRoutes(fastify: FastifyInstance) {
-  
+
   // POST /api/stripe/create-checkout - Create checkout session
   fastify.post(
     '/create-checkout',
@@ -46,19 +46,19 @@ export async function stripeRoutes(fastify: FastifyInstance) {
         });
 
         if (!servicePlan) {
-          return reply.code(404).send({ 
+          return reply.code(404).send({
             error: 'Not Found',
-            message: 'Package not found' 
+            message: 'Package not found'
           });
         }
 
         // Use monthly price ID by default
         const stripePriceId = servicePlan.stripePriceIdMonthly || (servicePlan as any).stripePriceId;
-        
+
         if (!stripePriceId) {
-          return reply.code(400).send({ 
+          return reply.code(400).send({
             error: 'Bad Request',
-            message: 'Package not configured for Stripe' 
+            message: 'Package not configured for Stripe'
           });
         }
 
@@ -709,7 +709,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
 
   // Get user from client_reference_id or customer email
   let userId: string | null = null;
-  
+
   if (session.client_reference_id) {
     userId = session.client_reference_id;
   } else if (session.customer_email) {
@@ -728,7 +728,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
 
   // Get user's org (or use metadata orgId)
   let orgId: string | null = session.metadata?.orgId || null;
-  
+
   if (!orgId) {
     const orgMembership = await prismaAny.orgMember.findFirst({
       where: { userId },
@@ -795,7 +795,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
 
 async function handleSubscriptionCreated(subscription: Stripe.Subscription) {
   console.log('Subscription created:', subscription.id);
-  
+
   await prismaAny.serviceSubscription.updateMany({
     where: { stripeId: subscription.id },
     data: {
@@ -808,7 +808,7 @@ async function handleSubscriptionCreated(subscription: Stripe.Subscription) {
 
 async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
   console.log('Subscription updated:', subscription.id);
-  
+
   await prismaAny.serviceSubscription.updateMany({
     where: { stripeId: subscription.id },
     data: {
@@ -821,7 +821,7 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
 
 async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
   console.log('Subscription deleted:', subscription.id);
-  
+
   await prismaAny.serviceSubscription.updateMany({
     where: { stripeId: subscription.id },
     data: {
@@ -851,7 +851,7 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
 
 async function handleInvoicePaid(invoice: Stripe.Invoice) {
   console.log('Invoice paid:', invoice.id);
-  
+
   const subscription = await prismaAny.serviceSubscription.findFirst({
     where: { stripeId: (invoice as any).subscription as string },
     include: { org: { include: { members: { include: { user: true }, take: 1 } } } },
@@ -873,7 +873,7 @@ async function handleInvoicePaid(invoice: Stripe.Invoice) {
 
 async function handleInvoicePaymentFailed(invoice: Stripe.Invoice) {
   console.log('Invoice payment failed:', invoice.id);
-  
+
   const subscription = await prismaAny.serviceSubscription.findFirst({
     where: { stripeId: (invoice as any).subscription as string },
     include: { org: { include: { members: { include: { user: true }, take: 1 } } } },

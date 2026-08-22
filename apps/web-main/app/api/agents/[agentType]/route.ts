@@ -12,7 +12,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-import Anthropic from '@anthropic-ai/sdk'
+import { AnthropicClient as Anthropic } from '@kealee/core-llm'
 import { AI_MODELS } from '@kealee/core-rules'
 
 export const dynamic = 'force-dynamic'

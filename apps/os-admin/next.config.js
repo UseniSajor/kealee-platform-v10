@@ -14,12 +14,6 @@ const nextConfig = {
   },
   reactStrictMode: true,
   transpilePackages: ['@kealee/ui', '@kealee/auth'],
-  typescript: {
-    ignoreBuildErrors: true,
-  },
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
   webpack: (config, { isServer }) => {
     if (!isServer) {
       config.resolve = config.resolve || {};

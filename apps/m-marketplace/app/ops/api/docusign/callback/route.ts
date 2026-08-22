@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getRequestAuthToken } from '@/lib/clerk-server-auth';
 
 export const dynamic = 'force-dynamic';
 
@@ -15,44 +16,10 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || process.env.API_BASE_URL
 /**
  * Get authentication token for backend API
  */
-async function getAuthToken(request: NextRequest): Promise<string | null> {
-  try {
-    const authHeader = request.headers.get('authorization');
-    if (authHeader?.startsWith('Bearer ')) {
-      return authHeader.substring(7);
-    }
+const getAuthToken = getRequestAuthToken;
 
-    const cookies = request.cookies;
-    const accessToken = cookies.get('sb-access-token')?.value || 
-                       cookies.get('supabase.auth.token')?.value;
-
-    if (accessToken) {
-      try {
-        const parsed = JSON.parse(accessToken);
-        return parsed?.access_token || accessToken;
-      } catch {
-        return accessToken;
-      }
-    }
-
-    return null;
-  } catch (error) {
-    console.error('Error getting auth token:', error);
-    return null;
-  }
-}
-
-function isAuthenticated(request: NextRequest): boolean {
-  const authHeader = request.headers.get('authorization');
-  if (authHeader?.startsWith('Bearer ')) {
-    return true;
-  }
-
-  const cookies = request.cookies;
-  return !!(
-    cookies.get('sb-access-token')?.value || 
-    cookies.get('supabase.auth.token')?.value
-  );
+async function isAuthenticated(request: NextRequest): Promise<boolean> {
+  return Boolean(await getAuthToken(request));
 }
 
 /**
@@ -67,7 +34,7 @@ function isAuthenticated(request: NextRequest): boolean {
 export async function GET(request: NextRequest) {
   try {
     // Check if user is authenticated
-    if (!isAuthenticated(request)) {
+    if (!(await isAuthenticated(request))) {
       // Redirect to sign in if not authenticated
       const signInUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/auth/signin`;
       return NextResponse.redirect(signInUrl);

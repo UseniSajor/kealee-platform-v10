@@ -36,9 +36,10 @@ for (const name of ['.env.local', '.env.vercel.production', '.env']) {
   }
 }
 
-// Ensure the local env DATABASE_URL is set in process.env so prisma client connects correctly
+// Never embed a database credential in source; load it from an ignored env file
+// or the invoking process.
 if (!process.env.DATABASE_URL) {
-  process.env.DATABASE_URL = 'postgresql://postgres.rkreqfpkxavqpsqexbfs:mFGurIiScT9AlMw8@aws-1-us-east-2.pooler.supabase.com:6543/postgres?pgbouncer=true&connection_limit=20';
+  throw new Error('DATABASE_URL is required to run the property intelligence scanner');
 }
 
 // Recommended Concept 1 Ribbon logo SVG for Postcards

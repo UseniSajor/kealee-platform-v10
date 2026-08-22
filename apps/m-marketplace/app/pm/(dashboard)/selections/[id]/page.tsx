@@ -45,9 +45,9 @@ export default function SelectionDetailPage({ params }: { params: { id: string }
   )
 
   const sel = selection
-  const options = selection.options ?? []
-  const workflowSteps = selection.workflowSteps ?? []
-  const comments = selection.comments ?? []
+  const options = (selection.options ?? []) as any[]
+  const workflowSteps = (selection.workflowSteps ?? []) as any[]
+  const comments = (selection.comments ?? []) as any[]
   const variance = (sel.selectedCost ?? 0) - (sel.allowanceBudget ?? 0)
 
   return (
@@ -165,7 +165,7 @@ export default function SelectionDetailPage({ params }: { params: { id: string }
                     <div className="border-t pt-3">
                       <p className="text-xs font-medium text-gray-600 mb-1.5">Specifications</p>
                       <ul className="space-y-1">
-                        {opt.specs.map((spec, i) => (
+                        {opt.specs.map((spec: string, i: number) => (
                           <li key={i} className="text-xs text-gray-500 flex items-center gap-1.5">
                             <Check size={10} className="text-gray-400 shrink-0" />{spec}
                           </li>
@@ -190,7 +190,7 @@ export default function SelectionDetailPage({ params }: { params: { id: string }
             <div key={c.id} className="border rounded-lg p-4">
               <div className="flex items-center gap-2 mb-2">
                 <div className="w-7 h-7 rounded-full bg-gray-200 flex items-center justify-center text-xs font-bold text-gray-600">
-                  {c.user.split(" ").map((n) => n[0]).join("")}
+                  {c.user.split(" ").map((n: string) => n[0]).join("")}
                 </div>
                 <div>
                   <p className="text-sm font-medium">{c.user} <span className="text-xs text-gray-400 font-normal">({c.role})</span></p>

@@ -10,7 +10,7 @@
  * - EventEmitter: Broadcasts state changes across agent system
  */
 
-import Anthropic from "@anthropic-ai/sdk";
+import { AnthropicClient as Anthropic } from "@kealee/core-llm";
 
 // ============================================================================
 // CACHED CLAUDE CLIENT

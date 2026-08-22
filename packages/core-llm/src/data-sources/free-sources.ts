@@ -3,7 +3,6 @@
  * County Assessor APIs, OpenGov, OpenStreetMap, USGS
  */
 
-import fetch from 'node-fetch';
 import type { GeoJsonFeatureCollection, GeoJsonPolygon } from './geojson-types';
 
 export interface JurisdictionData {

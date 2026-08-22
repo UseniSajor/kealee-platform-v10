@@ -103,11 +103,11 @@ export default function SubmittalDetailPage({
     </div>
   )
 
-  const workflow = sub.workflow ?? []
-  const revisions = sub.revisions ?? []
-  const attachments = sub.attachments ?? []
-  const comments = sub.comments ?? []
-  const relatedItems = sub.relatedItems ?? []
+  const workflow = (sub.workflow ?? []) as any[]
+  const revisions = (sub.revisions ?? []) as any[]
+  const attachments = (sub.attachments ?? []) as any[]
+  const comments = (sub.comments ?? []) as any[]
+  const relatedItems = (sub.relatedItems ?? []) as any[]
 
   return (
     <div className="space-y-6">
@@ -129,10 +129,10 @@ export default function SubmittalDetailPage({
             <span
               className={cn(
                 "px-2 py-0.5 rounded-full text-xs font-medium",
-                STATUS_STYLES[sub.status]
+                STATUS_STYLES[sub.status as SubmittalStatus]
               )}
             >
-              {STATUS_LABELS[sub.status]}
+              {STATUS_LABELS[sub.status as SubmittalStatus]}
             </span>
           </div>
           <p className="text-lg text-gray-700">{sub.title}</p>
@@ -349,7 +349,7 @@ export default function SubmittalDetailPage({
                     <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-xs font-bold text-gray-600">
                       {c.user
                         .split(" ")
-                        .map((n) => n[0])
+                        .map((n: string) => n[0])
                         .join("")
                         .slice(0, 2)}
                     </div>
@@ -421,7 +421,7 @@ export default function SubmittalDetailPage({
                   }),
                 ],
                 ["Ball-in-Court", sub.ballInCourt],
-                ["Status", STATUS_LABELS[sub.status]],
+                ["Status", STATUS_LABELS[sub.status as SubmittalStatus]],
               ].map(([label, value]) => (
                 <div key={label as string}>
                   <p className="text-xs text-gray-500">{label}</p>

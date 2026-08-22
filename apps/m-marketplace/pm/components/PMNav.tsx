@@ -1,9 +1,9 @@
 "use client"
 
 import Link from "next/link"
-import { usePathname, useRouter } from "next/navigation"
+import { usePathname } from "next/navigation"
 import { Button } from "@kealee/ui/button"
-import { signOut } from "@pm/lib/auth"
+import { useClerk } from '@clerk/nextjs'
 import {
   Clock,
   FileText,
@@ -25,13 +25,12 @@ const navItems = [
 
 export function PMNav() {
   const pathname = usePathname()
-  const router = useRouter()
+  const { signOut } = useClerk()
 
   if (pathname.startsWith("/login")) return null
 
   async function handleLogout() {
-    await signOut()
-    router.push("/login")
+    await signOut({ redirectUrl: '/login' })
   }
 
   return (
@@ -74,4 +73,3 @@ export function PMNav() {
     </nav>
   )
 }
-

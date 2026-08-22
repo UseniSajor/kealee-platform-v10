@@ -20,7 +20,7 @@
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const pdfParse: (buffer: Buffer) => Promise<{ text: string; numpages: number; info: any }> =
   require('pdf-parse')
-import Anthropic from '@anthropic-ai/sdk'
+import { AnthropicClient as Anthropic } from '@kealee/core-llm'
 import { prisma } from '@kealee/database'
 
 // ---------------------------------------------------------------------------

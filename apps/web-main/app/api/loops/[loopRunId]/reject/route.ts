@@ -20,9 +20,10 @@ export async function POST(
 
     const run = await prisma.loopRun.findUnique({
       where: { id: loopRunId },
+      include: { projectTwin: true },
     });
 
-    if (!run || run.status !== 'AWAITING_REVIEW') {
+    if (!run || run.status !== 'awaiting_review') {
       return NextResponse.json({ error: 'Loop run not found or not awaiting review' }, { status: 400 });
     }
 
@@ -30,8 +31,7 @@ export async function POST(
     await prisma.loopRun.update({
       where: { id: loopRunId },
       data: {
-        status: 'FAILED',
-        requiresReview: false,
+        status: 'failed',
         updatedAt: new Date(),
       },
     });
@@ -41,7 +41,7 @@ export async function POST(
       data: {
         eventType: 'ADMIN_OVERRIDE_SUBMITTED',
         sourceApp: 'ADMIN-PORTAL',
-        projectId: run.projectId,
+        projectId: run.projectTwin?.projectId,
         payload: {
           loopRunId,
           approved: false,
@@ -55,7 +55,7 @@ export async function POST(
       eventId: nextEvent.id,
       eventType: 'ADMIN_OVERRIDE_SUBMITTED',
       sourceApp: 'ADMIN-PORTAL',
-      projectId: run.projectId,
+      projectId: run.projectTwin?.projectId,
       payload: nextEvent.payload,
     });
 

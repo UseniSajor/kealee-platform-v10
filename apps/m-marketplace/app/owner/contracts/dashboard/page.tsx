@@ -35,7 +35,7 @@ export default function ContractsDashboardPage() {
         api.getContractsDashboard().catch(() => ({ contracts: [] })),
         api.getPendingSignatures().catch(() => ({ pending: [] })),
       ])
-      setContracts(contractsRes.contracts || [])
+      setContracts((contractsRes.contracts || []) as ContractWithStatus[])
       setPendingSignatures(pendingRes.pending || [])
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Failed to load dashboard')

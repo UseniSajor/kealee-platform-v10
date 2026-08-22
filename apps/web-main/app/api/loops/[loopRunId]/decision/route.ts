@@ -20,23 +20,32 @@ export async function POST(
 
     const run = await prisma.loopRun.findUnique({
       where: { id: loopRunId },
+      include: { projectTwin: true },
     });
 
     if (!run) {
       return NextResponse.json({ error: 'Loop run not found' }, { status: 404 });
     }
+    if (!run.projectTwinId) {
+      return NextResponse.json({ error: 'Loop run has no project twin' }, { status: 409 });
+    }
 
     // Persist the decision
     const decision = await prisma.projectDecision.create({
       data: {
-        projectId: run.projectId,
+        projectTwinId: run.projectTwinId,
         loopRunId,
         decisionType,
-        selectedOption,
-        reason: reason || null,
-        budgetImpact: budgetImpact !== undefined ? Number(budgetImpact) : null,
-        scheduleImpact: scheduleImpact || null,
-        createdBy: userId || null,
+        title: `Decision: ${decisionType}`,
+        context: { selectedOption },
+        recommendation: reason || null,
+        status: 'decided',
+        decidedBy: userId || null,
+        decidedAt: new Date(),
+        metadata: {
+          budgetImpact: budgetImpact !== undefined ? Number(budgetImpact) : null,
+          scheduleImpact: scheduleImpact || null,
+        },
       },
     });
 
@@ -44,7 +53,7 @@ export async function POST(
     await prisma.loopRun.update({
       where: { id: loopRunId },
       data: {
-        status: 'COMPLETED',
+        status: 'completed',
         updatedAt: new Date(),
       },
     });
@@ -54,7 +63,7 @@ export async function POST(
       data: {
         eventType: 'USER_DECISION_SUBMITTED',
         sourceApp: 'USER-INTERFACE',
-        projectId: run.projectId,
+        projectId: run.projectTwin?.projectId,
         payload: {
           loopRunId,
           decisionId: decision.id,
@@ -68,7 +77,7 @@ export async function POST(
       eventId: nextEvent.id,
       eventType: 'USER_DECISION_SUBMITTED',
       sourceApp: 'USER-INTERFACE',
-      projectId: run.projectId,
+      projectId: run.projectTwin?.projectId,
       payload: nextEvent.payload,
     });
 

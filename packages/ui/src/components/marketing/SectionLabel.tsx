@@ -4,7 +4,7 @@ import { brand } from './brand';
 
 export interface SectionLabelProps {
   text: string;
-  color?: 'navy' | 'teal' | 'orange' | 'green' | 'gray';
+  color?: 'navy' | 'teal' | 'orange' | 'green' | 'gray' | 'white';
   className?: string;
 }
 
@@ -14,6 +14,7 @@ const colorMap = {
   orange: brand.orange,
   green: brand.success,
   gray: brand.gray[500],
+  white: brand.white,
 };
 
 export function SectionLabel({ text, color = 'teal', className = '' }: SectionLabelProps) {

@@ -12,7 +12,7 @@ import {
 import Link from 'next/link'
 import { Card, Badge, Button, Skeleton } from '@kealee/ui'
 import { getReports, type WeeklyReportSummary } from '@owner/lib/client-api'
-import { supabase } from '@owner/lib/supabase'
+import { getClerkToken } from '@/lib/clerk-token'
 
 export default function ReportsPage() {
   const [reports, setReports] = useState<WeeklyReportSummary[]>([])
@@ -25,15 +25,10 @@ export default function ReportsPage() {
 
   const loadReports = async () => {
     try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser()
-      if (!user) return
-
       // Get user's first project to fetch reports
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
-      const session = (await supabase.auth.getSession()).data.session
-      const token = session?.access_token
+      const token = await getClerkToken()
+      if (!token) return
       const projRes = await fetch(`${API_URL}/owner/projects`, {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       }).then((r) => r.json())

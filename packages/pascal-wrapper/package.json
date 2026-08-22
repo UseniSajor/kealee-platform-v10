@@ -12,7 +12,7 @@
     }
   },
   "scripts": {
-    "build": "(tsc --noEmit || exit 0)",
+    "build": "tsc --noEmit",
     "typecheck": "tsc --noEmit",
     "dev": "tsc --noEmit --watch",
     "clean": "rm -rf dist"

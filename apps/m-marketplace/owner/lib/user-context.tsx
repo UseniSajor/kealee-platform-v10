@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { supabase } from "./supabase"
+import { useUser } from '@clerk/nextjs'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -72,52 +72,29 @@ export function useOwnerProfile() {
 // ---------------------------------------------------------------------------
 
 export function OwnerProfileProvider({ children }: { children: React.ReactNode }) {
-  const [profile, setProfile] = React.useState<OwnerProfile | null>(null)
-  const [loading, setLoading] = React.useState(true)
+  const { user, isLoaded } = useUser()
+  const profile = React.useMemo<OwnerProfile | null>(() => {
+    if (!user) return null
+    const meta = user.publicMetadata as Record<string, unknown>
+    const role = String(meta.role || "homeowner") as OwnerRole
+    const projectType = String(meta.projectType || "residential_single") as ProjectType
+    const isMultifamily = meta.isMultifamily === true || MULTIFAMILY_TYPES.includes(projectType)
+    let portalTabs = Array.isArray(meta.portalTabs) ? meta.portalTabs.map(String) : ROLE_TAB_DEFAULTS[role]
+    if (!portalTabs) portalTabs = ROLE_TAB_DEFAULTS.homeowner
+    if (isMultifamily) portalTabs = [...new Set([...portalTabs, "units", "draws", "phasing"])]
 
-  React.useEffect(() => {
-    async function load() {
-      try {
-        const {
-          data: { user },
-        } = await supabase.auth.getUser()
-
-        if (user) {
-          const meta = (user.user_metadata || {}) as Record<string, any>
-          const role = (meta.role || "homeowner") as OwnerRole
-          const projectType = (meta.projectType || "residential_single") as ProjectType
-          const isMultifamily =
-            meta.isMultifamily === true || MULTIFAMILY_TYPES.includes(projectType)
-
-          // Portal tabs come from signup metadata, or fall back to role defaults
-          let portalTabs = meta.portalTabs as string[] | undefined
-          if (!portalTabs || !Array.isArray(portalTabs)) {
-            portalTabs = ROLE_TAB_DEFAULTS[role] || ROLE_TAB_DEFAULTS.homeowner
-            // If they have multifamily projects, add those tabs
-            if (isMultifamily) {
-              portalTabs = [...new Set([...portalTabs, "units", "draws", "phasing"])]
-            }
-          }
-
-          setProfile({
-            id: user.id,
-            email: user.email || "",
-            firstName: meta.firstName || "",
-            lastName: meta.lastName || "",
-            role,
-            projectType,
-            isMultifamily,
-            portalTabs,
-          })
-        }
-      } catch {
-        // User not authenticated
-      } finally {
-        setLoading(false)
-      }
+    return {
+      id: user.id,
+      email: user.primaryEmailAddress?.emailAddress || "",
+      firstName: user.firstName || "",
+      lastName: user.lastName || "",
+      role,
+      projectType,
+      isMultifamily,
+      portalTabs,
     }
-    load()
-  }, [])
+  }, [user])
+  const loading = !isLoaded
 
   const value = React.useMemo<UserContextValue>(() => {
     const role = profile?.role

@@ -17,6 +17,11 @@ model User {
   twoFactorEnabled  Boolean   @default(false)
   passwordChangedAt DateTime? // Track when password was last changed
 
+  // Clerk is the canonical external identity provider.
+  externalAuthId String? @unique
+  authProvider   String? @default("clerk")
+  imageUrl       String?
+
   // Address fields
   address String?
   city    String?
@@ -269,6 +274,7 @@ model ModuleEntitlement {
 
 model Org {
   id          String   @id @default(uuid())
+  externalAuthId String? @unique
   name        String
   slug        String   @unique
   description String?

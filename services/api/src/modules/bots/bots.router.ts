@@ -10,7 +10,7 @@
  *   - Conversation-format helper (multi-turn)
  */
 
-import Anthropic from '@anthropic-ai/sdk'
+import { AnthropicClient as Anthropic } from '@kealee/core-llm'
 import type { MessageParam, TextBlock } from '@anthropic-ai/sdk/resources/messages/messages'
 import type { ModelTier, ConvMessage } from './bots.types'
 

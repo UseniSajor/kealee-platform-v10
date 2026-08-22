@@ -11,8 +11,8 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "@kealee/core-bots": "*",
-    "@kealee/database": "*"
+    "@kealee/core-bots": "workspace:*",
+    "@kealee/database": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^20.10.0",

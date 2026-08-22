@@ -17,10 +17,11 @@ export interface PMTask {
   projectId?: string | null
   title: string
   description?: string | null
-  priority: "low" | "medium" | "high"
+  priority: "low" | "medium" | "high" | "urgent"
   status: "pending" | "in_progress" | "completed"
   dueDate?: string | null
   createdAt?: string | null
+  completedAt?: string | null
   estimatedTime?: number | null
   actualTime?: number | null
   assignedTo: string

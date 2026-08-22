@@ -15,28 +15,13 @@ import {
   Search,
   XCircle,
 } from "lucide-react"
-import { useInspections } from "@pm/hooks/useInspections"
+import { useInspections, type InspectionItem as Inspection, type InspectionStatus, type InspectionType } from "@pm/hooks/useInspections"
 import { Button } from "@kealee/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@kealee/ui/card"
 import { Input } from "@kealee/ui/input"
 import { cn } from "@pm/lib/utils"
 
-type InspectionStatus = "scheduled" | "passed" | "failed" | "pending-reinspection" | "cancelled"
-type InspectionType = "foundation" | "framing" | "rough-electrical" | "rough-plumbing" | "rough-hvac" | "insulation" | "drywall" | "final"
 type ViewMode = "list" | "calendar"
-
-interface Inspection {
-  id: string
-  type: InspectionType
-  description: string
-  date: string
-  time: string
-  inspector: string
-  status: InspectionStatus
-  project: string
-  location: string
-  notes: string
-}
 
 const STATUS_STYLES: Record<InspectionStatus, string> = {
   scheduled: "bg-blue-100 text-blue-800",

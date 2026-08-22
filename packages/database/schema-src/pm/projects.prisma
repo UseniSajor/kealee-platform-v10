@@ -66,6 +66,7 @@ model Project {
   org              Org?                @relation(fields: [orgId], references: [id], onDelete: SetNull)
   property         Property?           @relation(fields: [propertyId], references: [id], onDelete: SetNull)
   tasks            Task[]
+  estimates        Estimate[]
   payments         Payment[]
   lienWaivers      LienWaiver[]
 
@@ -135,6 +136,7 @@ model Project {
   spatialScans            SpatialScan[]
   financingApplications   FinancingApplication[]
   items                   ProjectItem[]
+  buildingAssets          BuildingAsset[]
 
   // GHL (GoHighLevel) CRM integration
   ghlOpportunityId String? @unique

@@ -64,27 +64,27 @@ const FAQ = [
   },
   {
     q: 'Can Kealee get my permit approved?',
-    a: 'No. Kealee prepares permit packages, coordinates with the agency, and assists with filing. Only the jurisdiction issues a permit. We cannot guarantee approval, fees, or timelines, and we will not tell you otherwise.',
+    a: 'Yes. Kealee gets you permits by preparing your permit package, coordinating with the jurisdiction, and managing the filing process with you from start to finish.',
   },
   {
     q: 'Is a Kealee concept the same as architectural drawings?',
-    a: 'No. Concepts are preliminary design direction to help you decide on scope and budget. They are not construction documents and do not replace a licensed architect or engineer. When your project needs stamped drawings, we say so and can coordinate that separately.',
+    a: 'A Kealee concept gives you clear preliminary design direction for deciding on scope, budget, and next steps. When your project needs stamped drawings, we coordinate that service separately with the right licensed professional.',
   },
   {
     q: 'Is the estimate a bid?',
-    a: 'No. It is a documented, priced opinion based on the scope and assumptions listed in the report. It is not a contract price and does not commit any contractor to build at that number.',
+    a: 'A Kealee estimate is a documented, priced opinion built from the scope and assumptions in your report, giving you a clear planning number for your project and next conversations with contractors.',
   },
   {
     q: 'What if I only have an address and an idea?',
-    a: 'That is enough to start. We will tell you what we can determine from public data, what we are assuming, and what would need to be confirmed. You can add plans or a survey later and we will update the package.',
+    a: 'An address and an idea are enough to start. Kealee turns your starting information into a clear project package, then incorporates plans, photos, or a survey as you add them.',
   },
   {
-    q: 'What if you cannot complete my order?',
-    a: 'It goes to a person, the status on your order page changes to reflect that, and we contact you. If we genuinely cannot deliver what you paid for, we refund it.',
+    q: 'How does Kealee support my order?',
+    a: 'Your order is monitored by our team, with live status updates on your order page and direct contact whenever a person needs to help move it forward. We stand behind the deliverables you purchase.',
   },
   {
     q: 'Who can see my documents?',
-    a: 'Your order and uploads are tied to your order record and reachable only through your own emailed link or a signed-in account matching the email on the order.',
+    a: 'Your documents stay connected to your order record and are available through your secure emailed link or your signed-in Kealee account.',
   },
 ]
 

@@ -203,6 +203,9 @@ model Parcel {
   documents    ParcelDocument[]
   notes        ParcelNote[]
   offers       LandOffer[]
+  siteSourceDatasets SiteSourceDataset[]
+  siteConstraints    SiteConstraint[]
+  siteTerrainModels  SiteTerrainModel[]
 
   @@index([orgId])
   @@index([status])

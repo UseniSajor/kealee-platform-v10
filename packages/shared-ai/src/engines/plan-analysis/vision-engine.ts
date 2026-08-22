@@ -3,7 +3,7 @@
 // GPT-4 Vision + Custom Models for Plan Analysis
 // ============================================================
 
-import OpenAI from 'openai';
+import { OpenAIClient as OpenAI } from '@kealee/core-llm';
 import { AIEngineConfig, AIResult, PlanImage, PlanAnalysisResult, PlanIssue } from '../../types';
 
 export class VisionEngine {

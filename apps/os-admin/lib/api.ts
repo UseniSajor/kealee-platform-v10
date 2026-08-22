@@ -1,4 +1,4 @@
-import { supabase } from './supabase'
+import { getClerkToken } from './clerk-token'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
 
@@ -8,16 +8,7 @@ interface ApiOptions {
   headers?: Record<string, string>
 }
 
-async function getAuthToken(): Promise<string | null> {
-  if (typeof window === 'undefined') return null
-
-  try {
-    const { data: { session } } = await supabase.auth.getSession()
-    return session?.access_token || null
-  } catch {
-    return null
-  }
-}
+const getAuthToken = getClerkToken
 
 export async function apiRequest<T>(
   endpoint: string,

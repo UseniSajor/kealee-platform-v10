@@ -2,7 +2,11 @@
   "name": "kealee-platform",
   "version": "20.0.0",
   "private": true,
-  "packageManager": "pnpm@8.15.9",
+  "packageManager": "pnpm@11.22.0",
+  "engines": {
+    "node": ">=24 <25",
+    "pnpm": ">=11 <12"
+  },
   "scripts": {
     "vercel-build": "NODE_OPTIONS=--max-old-space-size=6144 turbo run build --filter=portal-owner --filter=portal-contractor --filter=portal-developer --filter=os-admin --filter=m-project-owner --filter=m-marketplace --filter=m-ops-services --filter=m-permits-inspections --filter=m-architect --filter=m-finance-trust",
     "start": "cd services/api && node dist/index.js",
@@ -43,9 +47,9 @@
     "test:unit": "jest --no-coverage",
     "test:integration": "bash scripts/test-integrations.sh",
     "test:api": "bash scripts/test-integrations.sh",
-    "test:payment": "cd apps/m-ops-services && npm run test:payment || echo 'Payment tests not configured'",
+    "test:payment": "pnpm --dir apps/m-ops-services run test:payment",
     "test:upload": "bash scripts/test-file-upload.sh",
-    "test:subscription": "cd apps/m-ops-services && npm run test:subscription || echo 'Subscription tests not configured'",
+    "test:subscription": "pnpm --dir apps/m-ops-services run test:subscription",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:headed": "playwright test --headed",
@@ -111,7 +115,12 @@
     "test:whole-home-premium-plus": "tsx scripts/test-whole-home-premium-plus.ts --engine-only",
     "platform-ai-test": "tsx scripts/platform-ai-test.ts",
     "automation-validation": "tsx scripts/automation-validation.ts",
-    "production-deployment-check": "tsx scripts/production-deployment-check.ts"
+    "production-deployment-check": "tsx scripts/production-deployment-check.ts",
+    "platform:inventory": "node scripts/generate-workspace-inventory.mjs",
+    "platform:verify-vercel-plan": "node scripts/verify-vercel-migration-config.mjs"
+    ,"platform:provider-boundaries": "node scripts/check-provider-boundaries.mjs"
+    ,"security:committed-secrets": "node scripts/check-committed-secrets.mjs"
+    ,"platform:railway-catalog": "railway status --json | node scripts/verify-railway-service-catalog.mjs"
   },
   "workspaces": [
     "apps/*",
@@ -121,6 +130,7 @@
   ],
   "devDependencies": {
     "@playwright/test": "^1.40.0",
+    "@types/jest": "^29.5.0",
     "@types/jsonwebtoken": "^9.0.5",
     "@types/node": "20.19.39",
     "@types/react": "18.3.28",
@@ -133,11 +143,10 @@
     "dotenv": "^17.2.3",
     "ioredis": "^5.3.2",
     "isomorphic-dompurify": "^2.35.0",
+    "jest": "^29.7.0",
     "jsonwebtoken": "^9.0.3",
     "postcss": "^8.5.6",
     "tailwindcss": "^3.4.0",
-    "@types/jest": "^29.5.0",
-    "jest": "^29.7.0",
     "ts-jest": "^29.3.0",
     "tsx": "^4.21.0",
     "turbo": "^2.7.6",
@@ -157,7 +166,7 @@
     "@kealee/observability": "workspace:^",
     "@sentry/nextjs": "^10.38.0",
     "@sentry/node": "^10.37.0",
-    "@supabase/supabase-js": "^2.39.0",
+    "@supabase/supabase-js": "^2.112.3",
     "axios": "^1.13.6",
     "bullmq": "^5.0.0",
     "csv-parse": "^6.2.1",
@@ -179,14 +188,5 @@
     "@as-integrations/fastify": {
       "fastify": "^4.28.0"
     }
-  },
-  "pnpm": {
-    "neverBuiltDependencies": [
-      "@sentry/cli",
-      "canvas",
-      "msgpackr-extract",
-      "onnxruntime-node",
-      "unrs-resolver"
-    ]
   }
 }

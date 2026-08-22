@@ -1,17 +1,16 @@
-// @ts-ignore - @kealee/auth may not have types
-import { supabase } from '@kealee/auth';
-
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
-async function getAuthHeaders(): Promise<Record<string, string>> {
-  const { data: { session } } = await supabase.auth.getSession();
+type ClerkBrowser = { session?: { getToken(): Promise<string | null> } | null };
 
+async function getAuthHeaders(): Promise<Record<string, string>> {
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
   };
 
-  if (session?.access_token) {
-    headers['Authorization'] = `Bearer ${session.access_token}`;
+  if (typeof globalThis !== 'undefined') {
+    const clerk = (globalThis as unknown as { Clerk?: ClerkBrowser }).Clerk;
+    const token = await clerk?.session?.getToken();
+    if (token) headers.Authorization = `Bearer ${token}`;
   }
 
   return headers;

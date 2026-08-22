@@ -14,8 +14,8 @@ on:
   workflow_dispatch:
 
 env:
-  NODE_VERSION: '20'
-  PNPM_VERSION: '8.15.9'
+  NODE_VERSION: '24'
+  PNPM_VERSION: '11.22.0'
 
 jobs:
   deploy:

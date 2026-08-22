@@ -1,5 +1,4 @@
-import { Prisma } from '@prisma/client'
-import { prisma } from '@kealee/database'
+import { Prisma, prisma } from '@kealee/database'
 import { mapV30DesignToConceptOutput, type V30BotExecutionResult } from '@kealee/kealee-agent-stack'
 
 /**

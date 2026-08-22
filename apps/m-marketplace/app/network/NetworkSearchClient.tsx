@@ -613,7 +613,7 @@ function ProfileCard({ profile }: { profile: NetworkProfile }) {
     <Link
       href={`/network/${profile.slug}`}
       className="block bg-white rounded-xl overflow-hidden transition-all hover:shadow-lg"
-      style={{ boxShadow: shadows.level1 }}
+      style={{ boxShadow: shadows.DEFAULT }}
     >
       <div className="p-5">
         {/* Header */}

@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { Calendar, Diamond, GanttChart, LayoutList, Loader2, Search, Target, AlertTriangle, CheckCircle2 } from "lucide-react"
-import { useScheduleItems } from "@pm/hooks/useSchedule"
+import { useScheduleItems, type ScheduleItem } from "@pm/hooks/useSchedule"
 import { Button } from "@kealee/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@kealee/ui/card"
 import { Input } from "@kealee/ui/input"
@@ -10,12 +10,6 @@ import { cn } from "@pm/lib/utils"
 
 type TaskStatus = "not-started" | "in-progress" | "on-track" | "behind" | "complete"
 type ViewMode = "gantt" | "calendar" | "list"
-
-interface ScheduleTask {
-  id: string; name: string; phase: string; assignee: string; assigneeInitials: string
-  startDate: string; endDate: string; progress: number; status: TaskStatus
-  isMilestone: boolean; dependencies: string[]
-}
 
 const STATUS_COLORS: Record<TaskStatus, string> = {
   "not-started": "bg-gray-300", "in-progress": "bg-blue-500",
@@ -66,7 +60,7 @@ export default function SchedulePage() {
     }
     return result
   }, [])
-  function getBarStyle(task: ScheduleTask) {
+  function getBarStyle(task: ScheduleItem) {
     const start = daysBetween(ganttStart, parseDate(task.startDate))
     const duration = daysBetween(parseDate(task.startDate), parseDate(task.endDate)) + 1
     return { left: (start / totalDays * 100) + "%", width: (duration / totalDays * 100) + "%" }

@@ -3,7 +3,7 @@
  * Connects to backend estimation-tool package
  */
 
-import { supabase } from '@kealee/auth/client';
+import { getClerkToken } from '@/lib/clerk-token';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
@@ -21,14 +21,8 @@ class ApiClient {
   }
 
   private async getAuthHeader(): Promise<Record<string, string>> {
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.access_token) {
-        return { 'Authorization': `Bearer ${session.access_token}` };
-      }
-    } catch {
-      // Auth not available, proceed without token
-    }
+    const token = await getClerkToken();
+    if (token) return { Authorization: `Bearer ${token}` };
     return {};
   }
 

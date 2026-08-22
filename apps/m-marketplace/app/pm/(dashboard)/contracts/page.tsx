@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { Scale, FileText, Clock, CheckCircle, AlertCircle, Search } from 'lucide-react'
+import { getClerkToken } from '@/lib/clerk-token'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
 
@@ -31,9 +32,7 @@ export default function ContractsPage() {
     try {
       // Contracts are managed through the PM projects/pm/documents system
       // Try to fetch from the backend
-      const { supabase } = await import('@pm/lib/supabase')
-      const { data: { session } } = await supabase.auth.getSession()
-      const token = session?.access_token
+      const token = await getClerkToken()
 
       const res = await fetch(`${API_URL}/pm/documents?type=contract`, {
         headers: token ? { Authorization: `Bearer ${token}` } : {},

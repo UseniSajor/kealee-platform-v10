@@ -8,7 +8,7 @@ import {
 import { canApproveMarketingContent } from '@/lib/admin/access-roles'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { MarketingAgencyService, canAdminTransitionStatus } from '@kealee/marketing-agency'
-import { createServerClient } from '@supabase/ssr'
+import { getClerkUser } from '@kealee/auth'
 
 export const dynamic = 'force-dynamic'
 
@@ -18,14 +18,8 @@ const ApproveSchema = z.object({
   revision_notes: z.string().optional(),
 })
 
-async function getAppRole(req: NextRequest): Promise<string | null> {
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    { cookies: { getAll: () => req.cookies.getAll(), setAll: () => {} } },
-  )
-  const { data: { user } } = await supabase.auth.getUser()
-  return (user?.app_metadata?.role as string | undefined)?.toLowerCase() ?? null
+async function getAppRole(_req: NextRequest): Promise<string | null> {
+  return (await getClerkUser())?.role?.toLowerCase() ?? null
 }
 
 export async function GET(req: NextRequest) {

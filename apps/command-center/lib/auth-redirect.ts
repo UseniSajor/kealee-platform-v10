@@ -17,12 +17,12 @@ export async function getPostLoginRedirect(): Promise<string> {
     const user = await prisma.user.findUnique({
       where: { externalAuthId: userId },
       include: {
-        orgMembers: {
+        orgMemberships: {
           include: {
             org: true,
           },
           orderBy: {
-            createdAt: "desc",
+            joinedAt: "desc",
           },
         },
       },
@@ -32,20 +32,20 @@ export async function getPostLoginRedirect(): Promise<string> {
       return "/sign-in";
     }
 
-    if (user.isDeleted) {
+    if (user.status !== "ACTIVE") {
       return "/account-suspended";
     }
 
-    if (!user.orgMembers || user.orgMembers.length === 0) {
+    if (!user.orgMemberships || user.orgMemberships.length === 0) {
       return "/onboarding";
     }
 
-    const membership = user.orgMembers[0];
+    const membership = user.orgMemberships[0];
     const org = membership.org;
     const role = membership.roleKey;
 
     // Platform admin routes
-    if (org.isPlatformAdmin) {
+    if (user.role?.toUpperCase().includes("ADMIN")) {
       if (role.includes("admin")) {
         return "/admin";
       }

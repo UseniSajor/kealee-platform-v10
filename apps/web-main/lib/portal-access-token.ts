@@ -4,9 +4,9 @@
  * Generates a short-lived UUID token, writes it to the intake row's metadata,
  * and returns a claim URL pointing at portal-owner /auth/claim.
  *
- * The claim route validates the token server-side, creates a real Supabase session
- * via admin.generateLink + verifyOtp, sets session cookies, and redirects directly
- * to the deliverable — no Supabase redirect chain, no login loop.
+ * The claim route validates the token server-side, exchanges it for a short-lived
+ * Clerk sign-in ticket, links the intake to the Clerk identity, and redirects to
+ * the deliverable without a second login prompt.
  */
 
 import { createClient } from '@supabase/supabase-js'

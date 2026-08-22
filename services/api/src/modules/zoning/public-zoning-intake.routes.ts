@@ -1,5 +1,5 @@
 /**
- * Public Zoning & Feasibility Report Routes  
+ * Public Zoning & Feasibility Report Routes
  * Consumer-facing API for zoning analysis and buildability assessment
  * Pattern: Second-stage discovery service - analyze property zoning and constraints
  * Routes: /zoning/intake (public), /zoning/checkout (public)
@@ -195,7 +195,7 @@ function scoreZoningLead(data: ZoningIntake): {
 
 export async function registerPublicZoningRoutes(fastify: FastifyInstance) {
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-    apiVersion: '2024-04-10' as any,
+    apiVersion: '2026-07-29.dahlia' as any,
   })
 
   const redis = await RedisClient.getInstance()

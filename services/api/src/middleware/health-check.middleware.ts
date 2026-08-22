@@ -202,21 +202,11 @@ async function checkExternalServices(): Promise<Record<string, any>> {
     }
   }
 
-  // Check Supabase
-  if (process.env.SUPABASE_URL) {
-    const startTime = Date.now()
-    try {
-      const supabase = require('../../utils/supabase-client').getSupabaseClient()
-      const { error } = await supabase.auth.getSession()
-      services.supabase = {
-        status: error ? 'degraded' : 'healthy',
-        latency: Date.now() - startTime,
-        error: error?.message,
-      }
-    } catch (error: any) {
-      services.supabase = { status: 'down', latency: Date.now() - startTime, error: error.message }
-    }
-  }
+  // Clerk is the identity authority. Database connectivity is covered by the
+  // Prisma check above, so do not create a synthetic Supabase Auth session.
+  services.clerk = process.env.CLERK_SECRET_KEY
+    ? { status: 'healthy', configured: true }
+    : { status: 'down', configured: false, error: 'CLERK_SECRET_KEY not configured' }
 
   // Check Anthropic (Claude AI)
   if (process.env.ANTHROPIC_API_KEY) {

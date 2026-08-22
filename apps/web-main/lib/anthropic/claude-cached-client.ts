@@ -14,7 +14,7 @@
  *   const text = response.content[0].type === 'text' ? response.content[0].text : ''
  */
 
-import Anthropic from '@anthropic-ai/sdk'
+import { AnthropicClient as Anthropic } from '@kealee/core-llm'
 
 export type MessageParams = {
   model: string

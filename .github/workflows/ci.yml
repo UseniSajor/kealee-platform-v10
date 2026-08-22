@@ -21,12 +21,12 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v3
+        uses: pnpm/action-setup@v4
         with:
-          version: 8.15.9
+          version: 11.22.0
 
       - name: Get pnpm store directory
         shell: bash
@@ -57,12 +57,17 @@ jobs:
 
       - name: TypeScript Typecheck
         run: |
-          # Explicit typechecks on packages and key apps using tsc
-          pnpm exec tsc --noEmit --project packages/automation/tsconfig.json || echo "TypeScript checks complete"
-          pnpm exec tsc --noEmit --project apps/web-main/tsconfig.json || echo "TypeScript checks complete"
+          pnpm exec tsc --noEmit --project packages/automation/tsconfig.json
+          pnpm exec tsc --noEmit --project apps/web-main/tsconfig.json
 
       - name: Run Unit Tests
         run: pnpm test
 
+      - name: Committed Secret Scan
+        run: pnpm security:committed-secrets
+
       - name: Security & Dependency Scan
-        run: pnpm audit --audit-level=high || echo "Audit scan completed"
+        run: pnpm audit --audit-level=high
+
+      - name: Provider boundary guard
+        run: pnpm platform:provider-boundaries

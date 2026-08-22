@@ -3,7 +3,13 @@
  * Handles all permission checks for Clerk + Kealee database
  */
 
-import { PrismaClient } from '@kealee/database'
+import {
+  PrismaClient,
+  type OrgMember,
+  type Org,
+  type Project,
+  type User,
+} from '@kealee/database'
 
 const prisma = new PrismaClient()
 
@@ -29,7 +35,7 @@ const auditLog: AuditLogEntry[] = []
 /**
  * Verify user exists in Kealee database via Clerk ID
  */
-export async function requireAuthenticatedUser(clerkUserId: string) {
+export async function requireAuthenticatedUser(clerkUserId: string): Promise<User> {
   if (!clerkUserId) {
     throw new Error('Not authenticated')
   }
@@ -48,7 +54,7 @@ export async function requireAuthenticatedUser(clerkUserId: string) {
 /**
  * Check if user is member of organization
  */
-export async function requireOrganizationMember(clerkUserId: string, orgId: string) {
+export async function requireOrganizationMember(clerkUserId: string, orgId: string): Promise<OrgMember> {
   const user = await requireAuthenticatedUser(clerkUserId)
 
   const membership = await prisma.orgMember.findFirst({
@@ -103,7 +109,10 @@ export async function requireOrganizationRole(
 /**
  * Check if user can access a specific project
  */
-export async function requireProjectAccess(clerkUserId: string, projectId: string) {
+export async function requireProjectAccess(
+  clerkUserId: string,
+  projectId: string,
+): Promise<{ project: Project & { org: Org | null }; membership: OrgMember }> {
   const user = await requireAuthenticatedUser(clerkUserId)
 
   const project = await prisma.project.findUnique({
@@ -141,7 +150,7 @@ export async function requireProjectAccess(clerkUserId: string, projectId: strin
 /**
  * Check platform admin (super_admin, operations_admin, etc.)
  */
-export async function requirePlatformAdmin(clerkUserId: string, requiredRole?: string) {
+export async function requirePlatformAdmin(clerkUserId: string, requiredRole?: string): Promise<User> {
   const user = await requireAuthenticatedUser(clerkUserId)
   const platformAdminRoles = new Set(['SUPER_ADMIN', 'OPERATIONS_ADMIN', 'FINANCE_ADMIN', 'PERMIT_ADMIN'])
 

@@ -66,7 +66,7 @@ try {
             Write-Host ""
         }
         Write-Host "To check database status, set DATABASE_URL:" -ForegroundColor Yellow
-        Write-Host "  `$env:DATABASE_URL = 'postgresql://user:pass@host:5432/dbname'" -ForegroundColor Cyan
+        Write-Host "  `$env:DATABASE_URL = 'postgresql://user:password@host:5432/dbname'" -ForegroundColor Cyan
         Write-Host ""
         Write-Host "To apply migrations automatically:" -ForegroundColor Yellow
         Write-Host "  powershell -File scripts/apply-db-migrations.ps1" -ForegroundColor Cyan

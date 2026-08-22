@@ -13,16 +13,17 @@
     }
   },
   "scripts": {
-    "build": "(tsc --incremental false || exit 0)",
+    "build": "tsc --incremental false",
     "dev": "tsc --watch",
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.74.0",
+    "@kealee/core-llm": "workspace:*",
     "pdfkit": "^0.14.0",
     "zod": "^3.22.4"
   },
   "devDependencies": {
+    "@jest/globals": "^29.7.0",
     "@types/node": "^20.19.30",
     "typescript": "^5.3.3"
   }

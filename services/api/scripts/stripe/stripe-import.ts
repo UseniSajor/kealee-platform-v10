@@ -380,7 +380,7 @@ async function importProducts(dryRun: boolean = false) {
   let stripe: Stripe
   try {
     stripe = new Stripe(env('STRIPE_SECRET_KEY'), {
-      apiVersion: '2023-10-16'
+      apiVersion: '2026-07-29.dahlia'
     })
   } catch (error) {
     console.error(`❌ Error initializing Stripe: ${error instanceof Error ? error.message : 'Unknown error'}`)

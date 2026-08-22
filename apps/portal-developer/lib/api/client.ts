@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase'
+import { getAuthToken } from '@/lib/supabase'
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
 
@@ -10,8 +10,7 @@ export class ApiError extends Error {
 }
 
 export async function apiFetch<T = unknown>(path: string, options: RequestInit = {}): Promise<T> {
-  const { data: { session } } = await supabase.auth.getSession()
-  const token = session?.access_token
+  const token = await getAuthToken()
 
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',

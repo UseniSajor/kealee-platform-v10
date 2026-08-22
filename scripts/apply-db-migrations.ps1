@@ -24,7 +24,7 @@ try {
         Write-Host "💡 Set DATABASE_URL environment variable to apply migrations" -ForegroundColor Yellow
         Write-Host ""
         Write-Host "Example:" -ForegroundColor Cyan
-        Write-Host "  `$env:DATABASE_URL = 'postgresql://user:pass@host:5432/dbname'" -ForegroundColor Cyan
+        Write-Host "  `$env:DATABASE_URL = 'postgresql://user:password@host:5432/dbname'" -ForegroundColor Cyan
         exit 1
     }
 
@@ -100,4 +100,3 @@ try {
 } finally {
     Pop-Location
 }
-

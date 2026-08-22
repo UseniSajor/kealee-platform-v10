@@ -18,6 +18,8 @@ export type { CardProps } from './components/Card';
 
 export { default as Badge } from './components/Badge';
 export type { BadgeProps } from './components/Badge';
+export { Badge as MarketingBadge } from './components/marketing/Badge';
+export type { BadgeProps as MarketingBadgeProps } from './components/marketing/Badge';
 
 export { default as ProgressBar } from './components/ProgressBar';
 export type { ProgressBarProps } from './components/ProgressBar';

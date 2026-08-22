@@ -13,7 +13,7 @@
  *     (all DB calls are wrapped in try/catch — chain works without DB if needed)
  */
 
-import Anthropic from '@anthropic-ai/sdk'
+import { AnthropicClient as Anthropic } from '@kealee/core-llm'
 import { randomUUID, createHash } from 'crypto'
 
 // ── Response cache for bot outputs ─────────────────────────────────────────────

@@ -275,7 +275,7 @@ export function WeeklyReportViewer({
 
   function toggleAction(id: string) {
     const next = report.actionItems.map((a) =>
-      a.id === id ? { ...a, status: a.status === "Done" ? "Open" : "Done" } : a
+      a.id === id ? { ...a, status: (a.status === "Done" ? "Open" : "Done") as "Open" | "Done" } : a
     );
     onUpdate?.({ ...report, actionItems: next });
     persist({ actionItems: next });

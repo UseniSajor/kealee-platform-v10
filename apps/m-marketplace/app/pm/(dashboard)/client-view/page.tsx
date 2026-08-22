@@ -77,7 +77,7 @@ function formatFullDate(d: string) {
 
 export default function ClientViewPage() {
   const { data, isLoading } = useProjects()
-  const projects = data?.items ?? data ?? []
+  const projects = Array.isArray(data) ? data : data?.items ?? []
   const PROJECT = projects[0] ?? {
     name: "",
     address: "",

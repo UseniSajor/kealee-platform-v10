@@ -81,8 +81,8 @@ export default function WarrantyPage() {
   const [statusFilter, setStatusFilter] = React.useState<string>("all")
 
   const { data, isLoading } = useWarranties({ status: statusFilter !== "all" ? statusFilter : undefined, search: search || undefined })
-  const warranties = data?.items ?? []
-  const claims = data?.claims ?? []
+  const warranties = (data?.items ?? []) as WarrantyItem[]
+  const claims = (data?.claims ?? []) as WarrantyClaim[]
 
   if (isLoading) return (<div className="flex items-center justify-center h-64"><Loader2 className="h-8 w-8 animate-spin text-gray-400" /></div>)
 

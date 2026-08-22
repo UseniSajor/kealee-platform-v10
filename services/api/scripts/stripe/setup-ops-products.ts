@@ -276,7 +276,7 @@ async function main() {
   console.log('🚀 Setting up Ops Services Stripe products...\n')
 
   const stripe = new Stripe(env('STRIPE_SECRET_KEY'), {
-    apiVersion: '2023-10-16',
+    apiVersion: '2026-07-29.dahlia',
   })
 
   const output: Record<string, string> = {}

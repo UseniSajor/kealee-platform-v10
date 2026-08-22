@@ -1,7 +1,9 @@
 import { FastifyRequest, FastifyReply } from "fastify";
 import { verifyToken } from "@clerk/backend";
 import { prisma } from "@kealee/database";
-import { logger } from "@kealee/observability";
+import { createLogger } from "@kealee/observability";
+
+const logger = createLogger("api:clerk-auth");
 
 const clerkSecretKey = process.env.CLERK_SECRET_KEY;
 
@@ -56,7 +58,7 @@ export async function verifyClerkSession(
     const user = await prisma.user.findUnique({
       where: { externalAuthId: clerkUserId },
       include: {
-        orgMembers: {
+        orgMemberships: {
           include: {
             org: true,
           },
@@ -70,7 +72,7 @@ export async function verifyClerkSession(
       return;
     }
 
-    if (user.isDeleted) {
+    if (user.status !== "ACTIVE") {
       logger.warn("Attempted access by deleted user", {
         userId: user.id,
         clerkUserId,
@@ -83,17 +85,12 @@ export async function verifyClerkSession(
     const orgId =
       (request.query as any)?.org_id ||
       (request.body as any)?.org_id ||
-      user.orgMembers[0]?.orgId;
+      user.orgMemberships[0]?.orgId;
 
-    let org = null;
-    let membership = null;
-
-    if (orgId) {
-      membership = user.orgMembers.find((m) => m.orgId === orgId);
-      if (membership) {
-        org = membership.org;
-      }
-    }
+    const membership = orgId
+      ? user.orgMemberships.find((candidate) => candidate.orgId === orgId) ?? null
+      : null;
+    const org = membership?.org ?? null;
 
     // Attach auth context to request
     (request as AuthenticatedRequest).auth = {
@@ -132,15 +129,12 @@ export async function requirePlatformAdmin(
   }
 
   // Check if user has platform admin role
-  const hasAdminRole = await prisma.orgMember.findFirst({
-    where: {
-      userId: auth.userId,
-      org: {
-        isPlatformAdmin: true,
-      },
-      roleKey: { in: ["platform_owner", "super_admin", "ops_admin"] },
-    },
+  const admin = await prisma.user.findUnique({
+    where: { id: auth.userId },
+    select: { role: true, status: true },
   });
+  const hasAdminRole = !!admin && admin.status === "ACTIVE" &&
+    ["PLATFORM_OWNER", "SUPER_ADMIN", "OPS_ADMIN"].includes((admin.role || "").toUpperCase());
 
   if (!hasAdminRole) {
     logger.warn("Non-admin user attempted platform admin operation", {
@@ -240,7 +234,7 @@ export async function requireProjectAccess(projectId: string) {
       include: { org: true },
     });
 
-    if (!project) {
+    if (!project || !project.orgId) {
       reply.code(404).send({ error: "Project not found" });
       return;
     }

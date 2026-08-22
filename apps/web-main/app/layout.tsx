@@ -7,7 +7,6 @@ import { SiteNav } from '@/components/nav'
 import { VideoModalProvider } from '@/context/video-modal-context'
 import { VideoModal } from '@/components/video-modal'
 import { GlobalChatBar } from '@/components/GlobalChatBar'
-import { AuthHashExchange } from '@/components/AuthHashExchange'
 import { ConditionalSiteFooter } from '@/components/ConditionalSiteFooter'
 import { UtmCaptureRoot } from '@/components/marketing/UtmCaptureRoot'
 import { JsonLd } from '@/components/seo/JsonLd'
@@ -86,17 +85,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <html lang="en" className={`${nunitoDisplay.variable} ${nunitoBody.variable}`}>
         <body className="bg-warm-50">
           {process.env.NEXT_PUBLIC_FIGMA_CAPTURE === 'true' && (
-            <Script
+            <script
               src="https://mcp.figma.com/mcp/html-to-design/capture.js"
-              strategy="beforeInteractive"
+              defer
             />
           )}
           <JsonLd data={buildGlobalJsonLdGraph()} />
           {GA_ID && (
             <>
-              <Script
+              <script
                 src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
-                strategy="afterInteractive"
+                async
               />
               <Script id="google-analytics" strategy="afterInteractive">
                 {`
@@ -144,7 +143,6 @@ fbq('track', 'PageView');`}
             <VideoModal />
             <MobileConversionRail />
             <GlobalChatBar />
-            <AuthHashExchange />
           </VideoModalProvider>
         </body>
       </html>

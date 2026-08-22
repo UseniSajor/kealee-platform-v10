@@ -161,7 +161,7 @@ function scoreConceptLead(data: ConceptIntake): {
 
 export async function registerPublicConceptRoutes(fastify: FastifyInstance) {
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-    apiVersion: '2024-04-10' as any,
+    apiVersion: '2026-07-29.dahlia' as any,
   })
 
   const redis = await RedisClient.getInstance()

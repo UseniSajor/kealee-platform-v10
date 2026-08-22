@@ -4,7 +4,7 @@ export interface IntakePrefill {
   description: string
   propertyDetails: string
   stylePreferences: string
-  priorities: string
+  priorities: string[]
   mustStay: string
   problemsToSolve: string
   budgetComfort: string
@@ -15,7 +15,7 @@ const EMPTY_PREFILL: IntakePrefill = {
   description: '',
   propertyDetails: '',
   stylePreferences: '',
-  priorities: '',
+  priorities: [],
   mustStay: '',
   problemsToSolve: '',
   budgetComfort: '',

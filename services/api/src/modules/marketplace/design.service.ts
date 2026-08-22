@@ -3,7 +3,7 @@ import { prismaAny } from '../../utils/prisma-helper'
 import { NotFoundError } from '../../errors/app.error'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-    apiVersion: '2023-10-16',
+    apiVersion: '2026-07-29.dahlia',
 })
 
 // Source of truth for design packages (matching mock data in frontend)

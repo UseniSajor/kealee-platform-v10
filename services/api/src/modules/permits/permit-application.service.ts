@@ -3,7 +3,7 @@ import { NotFoundError, ValidationError } from '../../errors/app.error'
 import { auditService } from '../audit/audit.service'
 import { eventService } from '../events/event.service'
 import { permitRoutingService } from './permit-routing.service'
-import Anthropic from '@anthropic-ai/sdk'
+import { AnthropicClient as Anthropic } from '@kealee/core-llm'
 
 /**
  * Run AI review on permit application using Claude

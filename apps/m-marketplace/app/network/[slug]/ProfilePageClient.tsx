@@ -25,7 +25,7 @@ import {
   Loader2,
 } from 'lucide-react';
 
-import { Badge, brand, shadows } from '@kealee/ui';
+import { MarketingBadge as Badge, brand, shadows } from '@kealee/ui';
 import { createConversation, sendMessage, getConversation, type Conversation, type Message } from '@/lib/api';
 
 const PROFESSIONAL_TYPE_LABELS: Record<string, string> = {
@@ -216,7 +216,7 @@ function ProfilePageInner({ profile }: { profile: any }) {
                 style={{
                   backgroundColor: brand.navy,
                   fontFamily: '"Clash Display", sans-serif',
-                  boxShadow: shadows.level2,
+                  boxShadow: shadows.md,
                 }}
               >
                 {profile.businessName.substring(0, 2).toUpperCase()}

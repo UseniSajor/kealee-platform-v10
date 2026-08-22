@@ -6,7 +6,7 @@ import { format } from "date-fns"
 import { Button } from "@kealee/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@kealee/ui/card"
 import { Input } from "@kealee/ui/input"
-import { api } from "@pm/lib/api-client"
+import { api, type TaskUpdateRequest } from "@pm/lib/api-client"
 import type { PMTask } from "@pm/lib/types"
 import { Badge } from "@pm/components/badge"
 import { toast } from "sonner"
@@ -20,14 +20,7 @@ export default function TaskDetailPage() {
 
   const [comment, setComment] = useState("")
   const [isEditing, setIsEditing] = useState(false)
-  const [editData, setEditData] = useState<{
-    title?: string
-    description?: string
-    priority?: string
-    status?: string
-    dueDate?: string
-    assignedTo?: string
-  }>({})
+  const [editData, setEditData] = useState<TaskUpdateRequest>({})
 
   const { data, isLoading } = useQuery({
     queryKey: ["pm-task", taskId],
@@ -172,7 +165,7 @@ export default function TaskDetailPage() {
                   <select
                     className="mt-1 h-10 w-full rounded-md border bg-white px-3 text-sm"
                     value={editData.priority || ""}
-                    onChange={(e) => setEditData({ ...editData, priority: e.target.value })}
+                    onChange={(e) => setEditData({ ...editData, priority: e.target.value as TaskUpdateRequest['priority'] })}
                   >
                     <option value="low">Low</option>
                     <option value="medium">Medium</option>
@@ -185,7 +178,7 @@ export default function TaskDetailPage() {
                   <select
                     className="mt-1 h-10 w-full rounded-md border bg-white px-3 text-sm"
                     value={editData.status || ""}
-                    onChange={(e) => setEditData({ ...editData, status: e.target.value })}
+                    onChange={(e) => setEditData({ ...editData, status: e.target.value as TaskUpdateRequest['status'] })}
                   >
                     <option value="pending">Pending</option>
                     <option value="in_progress">In Progress</option>

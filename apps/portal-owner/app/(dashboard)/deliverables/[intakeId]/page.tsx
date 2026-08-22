@@ -22,7 +22,6 @@ import { ConceptPackageNav } from '@/components/concept/ConceptPackageNav'
 import { BeforeAfterMedia } from '@/components/concept/BeforeAfterMedia'
 import { ProcessVideoLoop } from '@/components/concept/ProcessVideoLoop'
 import { BuildPathUpsell, type OwnedUpsellProduct } from '@/components/BuildPathUpsell'
-import { AccountCompleteBanner } from '@/components/AccountCompleteBanner'
 import { BuildJourneyProgress } from '@/components/BuildJourneyProgress'
 import {
   getConceptPackageDeliverableLabelsForIntake,
@@ -1183,7 +1182,6 @@ export default function ConceptDeliverablePage() {
   return (
     <div className="mx-auto max-w-6xl">
 
-      <AccountCompleteBanner />
 
       {data.isV30 && <V30WorkspaceEmbed intakeId={intakeId} />}
 

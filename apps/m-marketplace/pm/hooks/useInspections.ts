@@ -4,10 +4,26 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 
 import { api } from "@pm/lib/api"
 
+export type InspectionStatus = "scheduled" | "passed" | "failed" | "pending-reinspection" | "cancelled"
+export type InspectionType = "foundation" | "framing" | "rough-electrical" | "rough-plumbing" | "rough-hvac" | "insulation" | "drywall" | "final"
+
+export interface InspectionItem {
+  id: string
+  type: InspectionType
+  description: string
+  date: string
+  time: string
+  inspector: string
+  status: InspectionStatus
+  project: string
+  location: string
+  notes: string
+}
+
 export function useInspections(filters?: Record<string, unknown>) {
   return useQuery({
     queryKey: ["inspections", filters ?? {}],
-    queryFn: () => api.inspections.list(filters),
+    queryFn: async (): Promise<{ items: InspectionItem[] }> => api.inspections.list(filters),
   })
 }
 
@@ -66,4 +82,3 @@ export function useAddFinding() {
     },
   })
 }
- 

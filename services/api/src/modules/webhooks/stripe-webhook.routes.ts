@@ -23,7 +23,7 @@ export async function registerStripeWebhookRoutes(fastify: FastifyInstance) {
         status: 'healthy',
         endpoint: '/webhooks/stripe',
         signature_verification: 'enabled',
-        api_version: '2024-04-10',
+        api_version: '2026-07-29.dahlia',
       })
     })
 

@@ -46,7 +46,7 @@ export default function SettingsPage() {
     try {
       setLoading(true)
       setError(null)
-      const data = await AdminApiClient.getSettings()
+      const data = await AdminApiClient.getSettings<{ settings?: Settings }>()
       setSettings(data.settings || getDefaultSettings())
     } catch (err: any) {
       console.error('Settings fetch error:', err)

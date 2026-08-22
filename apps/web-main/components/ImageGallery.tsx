@@ -161,7 +161,7 @@ export function ImageGallery({
               animate={{ scale: 1 }}
               exit={{ scale: 0.9 }}
               className="relative max-h-[90vh] max-w-5xl w-full"
-              onClick={(e) => e.stopPropagation()}
+              onClick={(e: React.MouseEvent<HTMLDivElement>) => e.stopPropagation()}
             >
               <div className="relative overflow-hidden rounded-2xl" style={{ aspectRatio: '4/3' }}>
                 <Image

@@ -15,7 +15,6 @@
  * Add Pitney Bowes for zoning optimization
  */
 
-import fetch from 'node-fetch';
 import type { GeoJsonFeatureCollection } from './geojson-types';
 
 export interface ProviderConfig {

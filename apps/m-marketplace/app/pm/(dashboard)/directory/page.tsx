@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { Users, Mail, Phone, Search, Building2 } from 'lucide-react'
+import { getClerkToken } from '@/lib/clerk-token'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
 
@@ -28,9 +29,7 @@ export default function DirectoryPage() {
   const loadDirectory = async () => {
     setLoading(true)
     try {
-      const { supabase } = await import('@pm/lib/supabase')
-      const { data: { session } } = await supabase.auth.getSession()
-      const token = session?.access_token
+      const token = await getClerkToken()
 
       const res = await fetch(`${API_URL}/pm/team`, {
         headers: token ? { Authorization: `Bearer ${token}` } : {},

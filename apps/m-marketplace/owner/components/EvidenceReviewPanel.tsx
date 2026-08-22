@@ -69,11 +69,6 @@ export default function EvidenceReviewPanel({
   } | null>(null)
   const commentInputRef = useRef<HTMLTextAreaElement>(null)
 
-  useEffect(() => {
-    loadComments()
-    loadPermitCompliance()
-  }, [milestoneId, loadComments, loadPermitCompliance])
-
   const loadPermitCompliance = useCallback(async () => {
     try {
       const res = await api.checkPermitCompliance(projectId, milestoneId)
@@ -93,6 +88,11 @@ export default function EvidenceReviewPanel({
       console.error('Failed to load comments:', e)
     }
   }, [milestoneId])
+
+  useEffect(() => {
+    loadComments()
+    loadPermitCompliance()
+  }, [loadComments, loadPermitCompliance])
 
   // Prompt 3.3: Commenting system with @mentions
   const handleAddComment = useCallback(async () => {

@@ -15,7 +15,7 @@
  */
 
 import { INTAKE_TIER_PRICE_CENTS, INTAKE_PRICE_CENTS } from '@kealee/core-rules'
-import { expect, describe, it, test } from '@jest/globals'
+import { expect, describe, it, test } from 'vitest'
 
 describe('Intake Tier Configuration', () => {
   describe('Tier-specific pricing (INTAKE_TIER_PRICE_CENTS)', () => {

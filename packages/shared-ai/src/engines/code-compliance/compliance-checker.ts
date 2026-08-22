@@ -5,7 +5,7 @@
 
 import { CodeParser } from './code-parser';
 import { RuleEngine } from './rule-engine';
-import OpenAI from 'openai';
+import { OpenAIClient as OpenAI } from '@kealee/core-llm';
 import { 
   AIResult, 
   ComplianceResult, 

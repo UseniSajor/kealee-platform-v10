@@ -78,7 +78,7 @@ function ConceptStep1Inner() {
                 {/* Watch overview — appears on hover, links to service page */}
                 <Link
                   href={`/services/${svc.slug}`}
-                  onClick={(e) => e.stopPropagation()}
+                  onClick={(e: React.MouseEvent<HTMLAnchorElement>) => e.stopPropagation()}
                   className="absolute bottom-3 right-3 flex items-center gap-1.5 rounded-full bg-white/20 backdrop-blur-sm border border-white/30 px-3 py-1.5 text-white text-xs font-semibold hover:bg-white/35 transition-all opacity-0 group-hover:opacity-100 duration-200 z-10"
                 >
                   <PlayCircle className="w-3.5 h-3.5" />

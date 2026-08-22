@@ -33,6 +33,11 @@ export { ClaudeProvider } from "./external/claude.provider";
 export { GptProvider } from "./external/gpt.provider";
 export type { VisionTextArgs } from "./internal/qwen-vl.provider";
 
+// Keep vendor SDK dependencies behind the core boundary. New code should use
+// the registry/router; these aliases let legacy callers migrate incrementally.
+export { default as AnthropicClient } from "@anthropic-ai/sdk";
+export { default as OpenAIClient } from "openai";
+
 // Retrieval
 export { ingestAllSeeds, getAllChunks, getChunksByType, resetIngest } from "./retrieval/seed-ingest";
 export { chunkText, estimateTokens } from "./retrieval/chunker";

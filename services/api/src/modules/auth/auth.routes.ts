@@ -3,12 +3,11 @@ import rateLimit from '@fastify/rate-limit'
 import { authService } from './auth.service'
 import { authenticateUser } from './auth.middleware'
 import { validateBody } from '../../middleware/validation.middleware'
-import { signupSchema, loginSchema, verifyTokenSchema } from '../../schemas'
-import { NotFoundError, AuthenticationError } from '../../errors/app.error'
+import { signupSchema, verifyTokenSchema } from '../../schemas'
+import { NotFoundError } from '../../errors/app.error'
 import { RATE_LIMIT_CONFIG } from '../../middleware/rate-limit.middleware'
 import { prismaAny } from '../../utils/prisma-helper'
 import { sanitizeErrorMessage } from '../../utils/sanitize-error'
-import { getSupabaseClient } from '../../utils/supabase-client'
 
 export async function authRoutes(fastify: FastifyInstance) {
   // Register stricter rate limiting for auth routes (prevent brute force)
@@ -110,7 +109,7 @@ export async function authRoutes(fastify: FastifyInstance) {
     '/login',
     {
       schema: {
-        description: 'Login with email and password',
+        description: 'Legacy login endpoint; use the Clerk application sign-in flow',
         tags: ['auth'],
         body: {
           type: 'object',
@@ -121,38 +120,25 @@ export async function authRoutes(fastify: FastifyInstance) {
           },
         },
         response: {
-          200: {
+          410: {
             type: 'object',
             properties: {
-              session: { type: 'object' },
-            },
-          },
-          401: {
-            type: 'object',
-            properties: {
-              error: { type: 'object' },
+              error: { type: 'string' },
+              code: { type: 'string' },
+              signInPath: { type: 'string' },
             },
           },
         },
       },
-      preHandler: validateBody(loginSchema),
     },
-    async (request, reply) => {
-      try {
-        const { email, password } = request.body as {
-          email: string
-          password: string
-        }
-
-        const result = await authService.login(email, password)
-
-      return reply.send({
-        session: result.session,
+    async (_request, reply) => {
+      return reply.code(410).send({
+        error: 'Password sign-in is managed by Clerk.',
+        code: 'CLERK_SIGN_IN_REQUIRED',
+        signInPath: '/login',
       })
-    } catch (error: any) {
-      throw new AuthenticationError(sanitizeErrorMessage(error, 'Login failed'))
-    }
-  })
+    },
+  )
 
   // POST /auth/logout
   fastify.post(
@@ -348,59 +334,11 @@ export async function authRoutes(fastify: FastifyInstance) {
         return reply.status(400).send({ error: 'Email does not match the setup token' })
       }
 
-      // Create Supabase auth user with same ID as Prisma user
-      const supabase = getSupabaseClient()
-
-      // Check if a Supabase auth user already exists for this email
-      const { data: existingUsers } = await supabase.auth.admin.listUsers()
-      const existingAuth = existingUsers?.users?.find(
-        (u: any) => u.email?.toLowerCase() === email.toLowerCase()
-      )
-
-      let session: any = null
-
-      if (existingAuth) {
-        // Auth user already exists — update password
-        await supabase.auth.admin.updateUserById(existingAuth.id, { password })
-
-        // Sign them in
-        const { data: signInData, error: signInErr } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        })
-        if (signInErr) throw signInErr
-        session = signInData.session
-      } else {
-        // Create new Supabase auth user with the Prisma user's ID
-        const { data: newAuth, error: createErr } = await supabase.auth.admin.createUser({
-          id: userId,
-          email,
-          password,
-          email_confirm: true,
-        })
-        if (createErr) throw createErr
-
-        // If Supabase assigned a different ID, update the Prisma user to match
-        if (newAuth.user && newAuth.user.id !== userId) {
-          // This shouldn't happen since we pass the ID, but handle gracefully
-          console.warn(`Supabase assigned different ID: ${newAuth.user.id} vs ${userId}`)
-        }
-
-        // Sign them in
-        const { data: signInData, error: signInErr } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        })
-        if (signInErr) throw signInErr
-        session = signInData.session
-      }
-
-      console.log(`✅ Account setup completed for ${email} (userId: ${userId})`)
-
-      return reply.send({
-        success: true,
-        session,
-        user: { id: user.id, email: user.email, name: user.name },
+      return reply.status(410).send({
+        error: 'Account setup has moved to Clerk.',
+        code: 'CLERK_ACCOUNT_SETUP_REQUIRED',
+        signInPath: '/login',
+        email: user.email,
       })
     } catch (error: any) {
       console.error('Account setup error:', error)

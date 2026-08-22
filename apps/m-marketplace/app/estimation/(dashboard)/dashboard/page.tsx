@@ -39,7 +39,7 @@ import {
   Tooltip,
   ResponsiveContainer,
   Legend,
-} from 'recharts';
+} from '@estimation/lib/charts';
 
 interface DashboardStats {
   totalEstimates: number;

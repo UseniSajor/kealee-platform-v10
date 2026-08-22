@@ -1,9 +1,9 @@
 /**
  * Permit API Service
- * Type-safe API client for permit operations using Supabase Auth
+ * Type-safe API client for permit operations using Clerk Auth
  */
 
-import { createClient } from '../supabase/client';
+import { getClerkToken } from '@/lib/clerk-token';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || process.env.API_BASE_URL || 'http://localhost:3001';
 
@@ -163,13 +163,11 @@ export interface Permit {
 
 export class PermitApiService {
   /**
-   * Get authentication token from Supabase session
+   * Get authentication token from Clerk session
    */
   private static async getAuthToken(): Promise<string | null> {
     try {
-      const supabase = createClient();
-      const { data: { session } } = await supabase.auth.getSession();
-      return session?.access_token || null;
+      return await getClerkToken();
     } catch (error) {
       console.error('Error getting auth token:', error);
       return null;
@@ -186,15 +184,13 @@ export class PermitApiService {
       throw new Error('Not authenticated');
     }
 
-    const headers: HeadersInit = {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
-      ...options.headers,
-    };
+    const headers = new Headers(options.headers);
+    headers.set('Content-Type', 'application/json');
+    headers.set('Authorization', `Bearer ${token}`);
 
     // Don't set Content-Type for FormData
     if (options.body instanceof FormData) {
-      delete headers['Content-Type'];
+      headers.delete('Content-Type');
     }
 
     const fullUrl = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}${endpoint}`

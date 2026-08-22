@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { api } from '@pm/lib/api-client';
-import { supabase } from '@pm/lib/supabase';
+import { useAuth } from '@clerk/nextjs';
 import { toast } from 'sonner';
 import { ArrowLeft, Users, CheckCircle, Loader2 } from 'lucide-react';
 import Link from 'next/link';
@@ -24,7 +24,7 @@ interface PM {
 }
 
 export default function AssignClientPage() {
-  const [userId, setUserId] = useState<string | null>(null);
+  const { userId } = useAuth();
   const [availableClients, setAvailableClients] = useState<UnassignedClient[]>([]);
   const [pms, setPMs] = useState<PM[]>([]);
   const [selectedClient, setSelectedClient] = useState<string | null>(null);
@@ -32,9 +32,6 @@ export default function AssignClientPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUserId(session?.userId ?? null);
-    });
     loadData();
   }, []);
 

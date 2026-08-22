@@ -1,4 +1,4 @@
-import Anthropic from '@anthropic-ai/sdk'
+import { AnthropicClient as Anthropic } from '@kealee/core-llm'
 import type { CardMediaSpec } from './card-media-spec'
 
 const MARKETING_MEDIA_SYSTEM = `You are MarketingBot for Kealee — DC/MD/VA construction platform.

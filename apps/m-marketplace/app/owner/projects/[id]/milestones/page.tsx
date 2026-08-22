@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import Link from 'next/link'
-import { api, Contract } from '@owner/lib/api'
+import { api, Contract, Milestone } from '@owner/lib/api'
 
 type MilestoneStatistics = {
   total: number

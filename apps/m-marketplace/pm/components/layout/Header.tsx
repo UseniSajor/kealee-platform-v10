@@ -8,7 +8,7 @@ import { Button } from "@kealee/ui/button"
 import { Input } from "@kealee/ui/input"
 import { cn } from "@pm/lib/utils"
 import { useRole } from "@pm/lib/role-context"
-import { supabase } from "@pm/lib/supabase"
+import { useClerk } from '@clerk/nextjs'
 
 const quickCreateItems = [
   { label: "New Project", href: "/pm/projects/new" },
@@ -21,6 +21,7 @@ const quickCreateItems = [
 
 export function Header({ leftSlot }: { leftSlot?: React.ReactNode }) {
   const { userName, companyName, isInternal, tier } = useRole()
+  const { signOut } = useClerk()
   const [now, setNow] = React.useState(() => new Date())
   const [userMenuOpen, setUserMenuOpen] = React.useState(false)
   const [createMenuOpen, setCreateMenuOpen] = React.useState(false)
@@ -40,8 +41,7 @@ export function Header({ leftSlot }: { leftSlot?: React.ReactNode }) {
   })
 
   async function handleSignOut() {
-    await supabase.auth.signOut()
-    window.location.href = "/login"
+    await signOut({ redirectUrl: '/login' })
   }
 
   return (

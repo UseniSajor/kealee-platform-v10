@@ -1,7 +1,11 @@
 # Deployment Guide — Kealee Platform v20
 
 **Current Status:** Railway-only deployment (both frontend and backend)
-**Last Updated:** 2026-07-07
+**Last Updated:** 2026-08-21
+
+The machine-readable source of truth is `config/railway-services.json`. Run
+`pnpm platform:railway-catalog` while authenticated to detect required services
+that are stopped or unhealthy and retired services that remain enabled.
 
 ## Overview
 

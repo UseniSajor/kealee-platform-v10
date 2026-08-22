@@ -330,6 +330,7 @@ model Estimate {
   updatedAt      DateTime @updatedAt
 
   costDatabase   CostDatabase?        @relation(fields: [costDatabaseId], references: [id])
+  project        Project?             @relation(fields: [projectId], references: [id], onDelete: SetNull)
   parentEstimate Estimate?            @relation("EstimateRevisions", fields: [parentEstimateId], references: [id])
   revisions      Estimate[]           @relation("EstimateRevisions")
   sections       EstimateSection[]

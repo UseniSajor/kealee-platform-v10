@@ -5,23 +5,24 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { createClient } from '@permits/src/lib/supabase/client';
+import { useAuth } from '@clerk/nextjs';
 
 export function usePermits(filters?: {
   status?: string;
   jurisdictionId?: string;
 }) {
   const supabase = createClient();
+  const { userId } = useAuth();
 
   return useQuery({
     queryKey: ['permits', filters],
     queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Not authenticated');
+      if (!userId) throw new Error('Not authenticated');
 
       let query = supabase
         .from('Permit')
         .select('*')
-        .eq('clientId', user.id);
+        .eq('clientId', userId);
 
       if (filters?.status) {
         query = query.eq('kealeeStatus', filters.status);
@@ -36,6 +37,7 @@ export function usePermits(filters?: {
       if (error) throw error;
       return data || [];
     },
+    enabled: !!userId,
   });
 }
 

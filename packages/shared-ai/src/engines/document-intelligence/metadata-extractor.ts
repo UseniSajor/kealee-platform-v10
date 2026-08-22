@@ -3,7 +3,7 @@
 // Extract structured data from documents
 // ============================================================
 
-import OpenAI from 'openai';
+import { OpenAIClient as OpenAI } from '@kealee/core-llm';
 import { PDFProcessor } from './pdf-processor';
 import { OCREngine } from './ocr-engine';
 import { AIResult, DocumentMetadata, ExtractedField, DocumentIntelligenceResult } from '../../types';

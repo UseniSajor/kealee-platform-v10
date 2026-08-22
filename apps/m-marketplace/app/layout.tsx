@@ -1,12 +1,9 @@
 import { ClerkProvider } from '@clerk/nextjs';
 import type { Metadata, Viewport } from 'next';
-import { Inter } from 'next/font/google';
 import './globals.css';
 import { PWAProvider } from './pwa-provider';
 import { CartProviderWrapper } from './cart-wrapper';
 import KeaBotChatWidget from '../components/KeaBotChatWidget';
-
-const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://kealee.com'),
@@ -89,7 +86,7 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="mobile-web-app-capable" content="yes" />
       </head>
-      <body className={`${inter.className} overscroll-none`}>
+      <body className="font-sans overscroll-none">
         <PWAProvider />
         <CartProviderWrapper>
           {children}

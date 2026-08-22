@@ -147,3 +147,4 @@ export function usePMWebSocket(callbacks?: WebSocketCallbacks) {
 }
 
 export { PMWebSocketClient }
+import React from 'react'

@@ -36,7 +36,7 @@ import {
   Tooltip,
   ResponsiveContainer,
   Legend,
-} from 'recharts';
+} from '@estimation/lib/charts';
 
 interface EstimateItem {
   id: string;

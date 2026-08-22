@@ -18,7 +18,7 @@
  *   - Contractors see assembly breakdown when bidding
  */
 
-import Anthropic from '@anthropic-ai/sdk'
+import { AnthropicClient as Anthropic } from '@kealee/core-llm'
 import Decimal from 'decimal.js'
 import {
   PROJECT_TYPE_ASSEMBLIES,

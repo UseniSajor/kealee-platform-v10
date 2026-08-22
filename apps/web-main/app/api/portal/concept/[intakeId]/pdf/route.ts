@@ -3,8 +3,7 @@
  * Auth-gated concept PDF for logged-in customers (web-main session).
  */
 import { NextRequest, NextResponse } from 'next/server'
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
-import { cookies } from 'next/headers'
+import { getClerkUser } from '@kealee/auth'
 import { serveConceptPackagePdf } from '@kealee/concept-engine'
 import { uploadFile } from '@kealee/storage'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
@@ -18,8 +17,7 @@ export async function GET(
   _req: NextRequest,
   { params }: { params: { intakeId: string } },
 ) {
-  const supabaseAuth = createRouteHandlerClient({ cookies })
-  const { data: { user } } = await supabaseAuth.auth.getUser()
+  const user = await getClerkUser()
 
   if (!user?.email) {
     return NextResponse.json({ error: 'Authentication required' }, { status: 401 })

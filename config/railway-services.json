@@ -1,0 +1,11 @@
+{
+  "project": { "id": "8187fcf6-9916-49aa-bc75-77407f83d319", "name": "artistic-kindness" },
+  "currentFrontendProvider": "railway",
+  "production": {
+    "required": ["Postgres", "Redis", "command-center", "kealee-platform-v10", "m-marketplace", "marketing-cron", "marketing-os", "os-admin", "portal-contractor", "portal-developer", "portal-owner", "web-main", "worker"],
+    "retired": ["engineering-worker", "launch-integrity", "marketing-cron-ad-spend-sync", "marketing-cron-facebook", "marketing-cron-generate-weekly-campaigns", "marketing-cron-instagram", "marketing-cron-lead-scoring", "marketing-cron-linkedin", "marketing-cron-marketing-drip", "marketing-cron-parcel-enrichment", "marketing-cron-parcel-outreach", "marketing-cron-reddit", "marketing-cron-requalify-cold", "marketing-cron-send-daily-campaigns", "marketing-cron-sequences", "marketing-cron-twitter", "marketing-cron-youtube"]
+  },
+  "staging": {
+    "required": ["Postgres", "Redis", "kealee-platform-v10", "portal-owner", "web-main", "worker"]
+  }
+}

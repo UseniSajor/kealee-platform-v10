@@ -7,7 +7,7 @@ import {
   type VideoNarrativeId,
 } from './installation-video-scripts'
 
-export type HomeServiceId = 'design' | 'permits' | 'estimate' | 'build'
+export type HomeServiceId = 'design' | 'permits' | 'estimate' | 'siteplan' | 'build'
 export type CardMediaScope = 'home' | 'product'
 
 export interface CardMediaSpec {
@@ -71,6 +71,19 @@ const HOME_SPECS: Record<HomeServiceId, Omit<CardMediaSpec, 'key' | 'scope' | 'i
     fallbackPhoto:
       'https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=900&q=80&auto=format&fit=crop',
     photoAlt: 'Construction cost estimation breakdown',
+  },
+  siteplan: {
+    title: 'Site Planning',
+    imageType: 'detail',
+    style: 'contemporary',
+    roomType: 'development site',
+    imageDescription:
+      'Licensed survey and site-planning team reviewing a detailed residential site plan over an aerial parcel map',
+    videoMotion: 'slow_pan',
+    mediaType: 'video',
+    fallbackPhoto:
+      'https://images.unsplash.com/photo-1590986701253-e0b0a9ac4f5f?w=900&q=80&auto=format&fit=crop',
+    photoAlt: 'Survey and site-planning work for a residential parcel',
   },
   build: {
     title: 'Build & Manage',

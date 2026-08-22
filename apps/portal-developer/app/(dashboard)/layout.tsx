@@ -3,12 +3,12 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState } from 'react'
+import { useClerk } from '@clerk/nextjs'
 import {
   Map, FlaskConical, Landmark, LayoutGrid,
   FileBarChart, LogOut, Building, Briefcase,
   Bell, Menu, ChevronRight,
 } from 'lucide-react'
-import { supabase } from '@/lib/supabase'
 import { PortalPageWithAskRail } from '@kealee/ui'
 
 const NAV_ITEMS = [
@@ -27,10 +27,10 @@ const SIDEBAR = '#1E1B4B'   // indigo-950
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const [mobileOpen, setMobileOpen] = useState(false)
+  const { signOut } = useClerk()
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut()
-    window.location.href = '/login'
+    await signOut({ redirectUrl: '/login' })
   }
 
   // Group nav items for section headers

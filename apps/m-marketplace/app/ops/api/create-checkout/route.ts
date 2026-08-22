@@ -5,7 +5,7 @@ import Stripe from 'stripe';
 // ── Stripe client — only initialize if secret key is available ──
 const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
 const stripe = stripeSecretKey
-  ? new Stripe(stripeSecretKey, { apiVersion: '2023-10-16' })
+  ? new Stripe(stripeSecretKey, { apiVersion: '2026-07-29.dahlia' })
   : null;
 
 // Price ID mapping — read from environment, filter out undefined

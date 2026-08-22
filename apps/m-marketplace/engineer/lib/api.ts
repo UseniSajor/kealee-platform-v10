@@ -4,6 +4,7 @@
  */
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+import { getClerkToken } from '@/lib/clerk-token';
 
 interface ApiResponse<T = any> {
   data?: T;
@@ -13,19 +14,8 @@ interface ApiResponse<T = any> {
 
 async function getAuthHeader(): Promise<Record<string, string>> {
   if (typeof window === 'undefined') return {};
-  try {
-    const { createBrowserClient } = await import('@supabase/ssr');
-    const supabase = createBrowserClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    );
-    const { data: { session } } = await supabase.auth.getSession();
-    if (session?.access_token) {
-      return { Authorization: `Bearer ${session.access_token}` };
-    }
-  } catch {
-    // Auth not available
-  }
+  const token = await getClerkToken();
+  if (token) return { Authorization: `Bearer ${token}` };
   return {};
 }
 

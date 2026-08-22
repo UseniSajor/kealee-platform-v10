@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import { createServerClient } from '@supabase/ssr'
+import { getClerkUser } from '@kealee/auth'
 import { hasOsAdminRole, verifyOpsBearer } from '@kealee/auth/ops-api-auth'
 
 export const runtime = 'nodejs'
@@ -8,23 +8,12 @@ export const runtime = 'nodejs'
 async function authorizePurchases(req: NextRequest): Promise<NextResponse | null> {
   if (verifyOpsBearer(req)) return null
 
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll: () => req.cookies.getAll(),
-        setAll: () => {},
-      },
-    },
-  )
-
-  const { data: { user } } = await supabase.auth.getUser()
+  const user = await getClerkUser()
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const role = (user.app_metadata?.role as string | undefined)?.toLowerCase()
+  const role = user.role?.toLowerCase()
   if (!hasOsAdminRole(role)) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }

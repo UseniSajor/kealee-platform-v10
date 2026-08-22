@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import {
   User,
@@ -21,7 +22,6 @@ import {
   Star
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { use } from 'react';
 
 /**
  * SOP v2 - CLIENT DETAIL PAGE (os-pm)
@@ -102,8 +102,8 @@ const PACKAGE_DETAILS = {
   }
 };
 
-export default function ClientDetailPage({ params }: { params: Promise<{ clientId: string }> }) {
-  const { clientId } = use(params);
+export default function ClientDetailPage() {
+  const { clientId } = useParams<{ clientId: string }>();
   const [client, setClient] = useState<ClientData | null>(null);
   const [loading, setLoading] = useState(true);
 

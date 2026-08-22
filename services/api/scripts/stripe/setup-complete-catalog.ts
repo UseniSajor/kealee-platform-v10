@@ -843,7 +843,7 @@ async function main() {
   console.log('🚀 Setting up Complete Kealee Platform Product Catalog...\n')
 
   const stripe = new Stripe(env('STRIPE_SECRET_KEY'), {
-    apiVersion: '2025-12-15.clover' as any
+    apiVersion: '2026-07-29.dahlia' as any
   })
 
   const output: Record<string, string> = {}

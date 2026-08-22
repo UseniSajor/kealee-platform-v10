@@ -1,5 +1,7 @@
 import { prisma } from "@kealee/database";
-import { logger } from "@kealee/observability";
+import { createLogger } from "@kealee/observability";
+
+const logger = createLogger("api:clerk-org-auth");
 
 /**
  * Centralized authorization helpers for Clerk + Kealee RBAC
@@ -52,7 +54,7 @@ export async function canAccessProject(
     return false;
   }
 
-  return canAccessOrganization(context, project.orgId);
+  return project.orgId ? canAccessOrganization(context, project.orgId) : false;
 }
 
 export async function getUserRole(
@@ -76,26 +78,18 @@ export async function isPlatformAdmin(context: AuthContext): Promise<boolean> {
     return false;
   }
 
-  const admin = await prisma.orgMember.findFirst({
-    where: {
-      userId: context.userId,
-      org: {
-        isPlatformAdmin: true,
-      },
-      roleKey: {
-        in: [
-          "platform_owner",
-          "super_admin",
-          "ops_admin",
-          "finance_admin",
-          "permit_admin",
-          "support_admin",
-        ],
-      },
-    },
+  const admin = await prisma.user.findUnique({
+    where: { id: context.userId },
+    select: { role: true, status: true },
   });
-
-  return !!admin;
+  return !!admin && admin.status === "ACTIVE" && [
+    "PLATFORM_OWNER",
+    "SUPER_ADMIN",
+    "OPS_ADMIN",
+    "FINANCE_ADMIN",
+    "PERMIT_ADMIN",
+    "SUPPORT_ADMIN",
+  ].includes((admin.role || "").toUpperCase());
 }
 
 // ============================================================================
@@ -133,7 +127,7 @@ export async function canEditProject(
     },
   });
 
-  if (!project) {
+  if (!project || !project.orgId) {
     return false;
   }
 
@@ -172,7 +166,7 @@ export async function canDeleteProject(
     where: { id: projectId },
   });
 
-  if (!project) {
+  if (!project || !project.orgId) {
     return false;
   }
 
@@ -212,16 +206,14 @@ export async function canViewEstimate(
 
   const estimate = await prisma.estimate.findUnique({
     where: { id: estimateId },
-    include: {
-      project: true,
-    },
+    select: { projectId: true },
   });
 
-  if (!estimate || !estimate.project) {
+  if (!estimate?.projectId) {
     return false;
   }
 
-  return canViewProject(context, estimate.project.id);
+  return canViewProject(context, estimate.projectId);
 }
 
 export async function canEditEstimate(
@@ -234,16 +226,14 @@ export async function canEditEstimate(
 
   const estimate = await prisma.estimate.findUnique({
     where: { id: estimateId },
-    include: {
-      project: true,
-    },
+    select: { projectId: true },
   });
 
-  if (!estimate || !estimate.project) {
+  if (!estimate?.projectId) {
     return false;
   }
 
-  return canEditProject(context, estimate.project.id);
+  return canEditProject(context, estimate.projectId);
 }
 
 export async function canApproveEstimate(
@@ -256,16 +246,10 @@ export async function canApproveEstimate(
 
   const estimate = await prisma.estimate.findUnique({
     where: { id: estimateId },
-    include: {
-      project: {
-        include: {
-          org: true,
-        },
-      },
-    },
+    select: { projectId: true },
   });
 
-  if (!estimate || !estimate.project) {
+  if (!estimate?.projectId) {
     return false;
   }
 
@@ -274,12 +258,18 @@ export async function canApproveEstimate(
     return true;
   }
 
+  const project = await prisma.project.findUnique({
+    where: { id: estimate.projectId },
+    select: { orgId: true },
+  });
+  if (!project?.orgId) return false;
+
   // Check org membership and role (owner, finance admin)
   const membership = await prisma.orgMember.findUnique({
     where: {
       userId_orgId: {
         userId: context.userId,
-        orgId: estimate.project.orgId,
+        orgId: project.orgId,
       },
     },
   });
@@ -310,7 +300,7 @@ export async function canViewPayment(
     },
   });
 
-  if (!payment || !payment.project) {
+  if (!payment || !payment.project?.orgId) {
     return false;
   }
 
@@ -341,7 +331,7 @@ export async function canRefundPayment(
     },
   });
 
-  if (!payment || !payment.project) {
+  if (!payment || !payment.project?.orgId) {
     return false;
   }
 

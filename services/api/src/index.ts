@@ -426,8 +426,10 @@ const start = async () => {
     })
 
     // Register Swagger/OpenAPI documentation
-    await fastify.register(swagger, swaggerConfig as any)
-    await fastify.register(swaggerUI, swaggerUIConfig)
+    // The pnpm workspace can expose duplicate Fastify type instances through
+    // plugin transitive dependencies even though the runtime majors match.
+    await fastify.register(swagger as any, swaggerConfig as any)
+    await fastify.register(swaggerUI as any, swaggerUIConfig)
 
     // Register rate limiting (50 req/min for anonymous IP, 100 req/min for authenticated users)
     await registerRateLimits(fastify)

@@ -19,13 +19,14 @@ import {
   resolveDecision,
   type ClientDecision,
 } from '@owner/lib/client-api'
-import { supabase } from '@owner/lib/supabase'
+import { useAuth } from '@clerk/nextjs'
 
 // ---------------------------------------------------------------------------
 // Page
 // ---------------------------------------------------------------------------
 
 export default function ApprovalsPage() {
+  const { userId } = useAuth()
   const [decisions, setDecisions] = useState<ClientDecision[]>([])
   const [loading, setLoading] = useState(true)
   const [tab, setTab] = useState<'pending' | 'completed'>('pending')
@@ -41,15 +42,12 @@ export default function ApprovalsPage() {
 
   useEffect(() => {
     loadDecisions()
-  }, [])
+  }, [userId])
 
   const loadDecisions = async () => {
     try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser()
-      if (!user) return
-      const result = await getClientDecisions(user.id)
+      if (!userId) return
+      const result = await getClientDecisions(userId)
       setDecisions(result.decisions)
     } catch {
       // empty state

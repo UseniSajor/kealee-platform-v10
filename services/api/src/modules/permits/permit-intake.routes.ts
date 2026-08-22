@@ -16,7 +16,7 @@ import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 import { LeadIntelligenceService } from '../../services/lead-intelligence.service.js'
 import { evaluateAvailability, persistAvailabilitySnapshot } from '../../services/availability.service.js'
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY ?? '', { apiVersion: '2023-10-16' })
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY ?? '', { apiVersion: '2026-07-29.dahlia' })
 
 // ── Permit tiers ──────────────────────────────────────────────────────────────
 const PERMIT_TIERS = {

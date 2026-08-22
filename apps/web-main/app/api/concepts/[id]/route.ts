@@ -9,8 +9,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
-import { cookies } from 'next/headers'
+import { getClerkUser } from '@kealee/auth'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { SERVICE_DELIVERABLES } from '@/lib/service-deliverables'
 import type { Concept, BOMItem, PermitItem } from '@/lib/types'
@@ -28,8 +27,7 @@ export async function GET(
     // ── Auth gate ────────────────────────────────────────────────────────────
     // Concept packages are paid deliverables. The requesting user must be
     // authenticated and their email must match the intake contact_email.
-    const supabaseAuth = createRouteHandlerClient({ cookies })
-    const { data: { user } } = await supabaseAuth.auth.getUser()
+    const user = await getClerkUser()
 
     if (!user) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 })

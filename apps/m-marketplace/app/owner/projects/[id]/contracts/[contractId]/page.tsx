@@ -60,7 +60,7 @@ export default function ContractDetailPage({
         api.checkDocumentRetention(params.contractId).catch(() => null),
       ])
       setContract(contractRes.contract)
-      setSignatureStatus(statusRes.status || statusRes)
+      setSignatureStatus(statusRes)
       if (complianceRes) setCompliance(complianceRes)
       if (retentionRes) setRetention(retentionRes)
     } catch (e: unknown) {
@@ -494,7 +494,7 @@ export default function ContractDetailPage({
                 Cancel Contract
               </button>
             ) : null}
-            {(contract.status === 'SIGNED' || contract.status === 'ACTIVE') && contract.status !== 'ARCHIVED' ? (
+            {contract.status === 'SIGNED' || contract.status === 'ACTIVE' ? (
               <button
                 type="button"
                 onClick={async () => {

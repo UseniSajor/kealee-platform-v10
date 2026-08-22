@@ -8,7 +8,7 @@
  * - Integrates with GHL for contact creation and lead tagging
  */
 
-import Anthropic from '@anthropic-ai/sdk';
+import { AnthropicClient as Anthropic } from '@kealee/core-llm';
 import { prisma } from '@kealee/database';
 import Redis from 'ioredis';
 

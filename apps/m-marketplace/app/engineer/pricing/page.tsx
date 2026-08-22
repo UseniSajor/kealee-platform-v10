@@ -198,7 +198,7 @@ export default function PricingPage() {
                 <li className="flex items-start gap-2"><span style={{ color: "#22C55E" }}>&#10003;</span> Digital delivery</li>
               </ul>
             </div>
-            <div className="p-6 rounded-2xl ring-2" style={{ borderColor: "#2DD4BF", ringColor: "#2DD4BF" }}>
+            <div className="p-6 rounded-2xl ring-2 ring-teal-400" style={{ borderColor: "#2DD4BF" }}>
               <h3 className="text-lg font-bold mb-1" style={{ color: "#1A2B4A" }}>Standard</h3>
               <span className="inline-block px-2 py-0.5 text-xs font-bold rounded-full text-white mb-4" style={{ backgroundColor: "#2DD4BF" }}>RECOMMENDED</span>
               <ul className="space-y-3 text-sm text-zinc-600">

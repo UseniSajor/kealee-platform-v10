@@ -98,7 +98,7 @@ export default function SubmittalsPage() {
   const [statusFilter, setStatusFilter] = React.useState<string>("all")
 
   const { data, isLoading } = useSubmittals({ status: statusFilter !== "all" ? statusFilter : undefined, search: search || undefined })
-  const submittals = data?.items ?? []
+  const submittals = (data?.items ?? []) as Submittal[]
 
   if (isLoading) return (<div className="flex items-center justify-center h-64"><Loader2 className="h-8 w-8 animate-spin text-gray-400" /></div>)
 

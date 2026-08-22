@@ -51,8 +51,8 @@ export default defineConfig({
   ],
 
   webServer: {
-    command: 'pnpm --filter web-main dev -- -p 3024',
-    url: 'http://localhost:3024',
+    command: './node_modules/.bin/next dev apps/web-main -p 3024',
+    url: 'http://localhost:3024/api/health',
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
     env: {
@@ -60,6 +60,8 @@ export default defineConfig({
         process.env.NEXT_PUBLIC_SUPABASE_URL ?? 'https://placeholder.supabase.co',
       NEXT_PUBLIC_SUPABASE_ANON_KEY:
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? 'placeholder-anon-key',
+      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY:
+        process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ?? 'pk_test_ZXhhbXBsZS5jb20k',
     },
   },
 })

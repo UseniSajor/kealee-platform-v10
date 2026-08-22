@@ -1,0 +1,779 @@
+{
+  "generatedAt": "2026-08-22T21:47:42.431Z",
+  "counts": {
+    "duplicate": 30,
+    "experimental": 7,
+    "production": 14,
+    "supporting": 45
+  },
+  "records": [
+    {
+      "path": "apps/api",
+      "name": "@kealee/api-enterprise-bots",
+      "lifecycle": "duplicate",
+      "private": true,
+      "build": "tsc",
+      "start": "node dist/server.js"
+    },
+    {
+      "path": "apps/command-center",
+      "name": "command-center",
+      "lifecycle": "experimental",
+      "private": true,
+      "build": "next build && node scripts/prepare-standalone.mjs",
+      "start": "next start -p 3023"
+    },
+    {
+      "path": "apps/m-marketplace",
+      "name": "m-marketplace",
+      "lifecycle": "production",
+      "private": true,
+      "build": "next build --no-lint",
+      "start": "next start"
+    },
+    {
+      "path": "apps/marketing",
+      "name": "@kealee/marketing",
+      "lifecycle": "experimental",
+      "private": true,
+      "build": "next build",
+      "start": "next start"
+    },
+    {
+      "path": "apps/marketing-os",
+      "name": "marketing-os",
+      "lifecycle": "experimental",
+      "private": true,
+      "build": "next build",
+      "start": "next start -p 3032"
+    },
+    {
+      "path": "apps/os-admin",
+      "name": "os-admin",
+      "lifecycle": "production",
+      "private": true,
+      "build": "node ./scripts/build.mjs",
+      "start": "next start"
+    },
+    {
+      "path": "apps/portal-contractor",
+      "name": "portal-contractor",
+      "lifecycle": "production",
+      "private": true,
+      "build": "next build",
+      "start": "next start"
+    },
+    {
+      "path": "apps/portal-developer",
+      "name": "portal-developer",
+      "lifecycle": "production",
+      "private": true,
+      "build": "next build",
+      "start": "next start"
+    },
+    {
+      "path": "apps/portal-owner",
+      "name": "portal-owner",
+      "lifecycle": "production",
+      "private": true,
+      "build": "next build",
+      "start": "next start"
+    },
+    {
+      "path": "apps/web-main",
+      "name": "web-main",
+      "lifecycle": "production",
+      "private": true,
+      "build": "cross-env NODE_OPTIONS=--max-old-space-size=4096 next build",
+      "start": "next start"
+    },
+    {
+      "path": "bots/keabot-command",
+      "name": "@kealee/keabot-command",
+      "lifecycle": "duplicate",
+      "private": false,
+      "build": "tsc --incremental false",
+      "start": "node dist/index.js"
+    },
+    {
+      "path": "bots/keabot-construction",
+      "name": "@kealee/keabot-construction",
+      "lifecycle": "duplicate",
+      "private": false,
+      "build": "tsc --incremental false",
+      "start": "node dist/index.js"
+    },
+    {
+      "path": "bots/keabot-contractor-match",
+      "name": "@kealee/keabot-contractor-match",
+      "lifecycle": "duplicate",
+      "private": false,
+      "build": "tsc",
+      "start": null
+    },
+    {
+      "path": "bots/keabot-design",
+      "name": "@kealee/keabot-design",
+      "lifecycle": "duplicate",
+      "private": true,
+      "build": "tsc",
+      "start": "node dist/index.js"
+    },
+    {
+      "path": "bots/keabot-developer",
+      "name": "@kealee/keabot-developer",
+      "lifecycle": "duplicate",
+      "private": false,
+      "build": "tsc --incremental false",
+      "start": "node dist/index.js"
+    },
+    {
+      "path": "bots/keabot-estimate",
+      "name": "@kealee/keabot-estimate",
+      "lifecycle": "duplicate",
+      "private": false,
+      "build": "tsc --incremental false",
+      "start": "node dist/index.js"
+    },
+    {
+      "path": "bots/keabot-feasibility",
+      "name": "@kealee/keabot-feasibility",
+      "lifecycle": "duplicate",
+      "private": false,
+      "build": "tsc --incremental false",
+      "start": "node dist/index.js"
+    },
+    {
+      "path": "bots/keabot-finance",
+      "name": "@kealee/keabot-finance",
+      "lifecycle": "duplicate",
+      "private": false,
+      "build": "tsc --incremental false",
+      "start": "node dist/index.js"
+    },
+    {
+      "path": "bots/keabot-gc",
+      "name": "@kealee/keabot-gc",
+      "lifecycle": "duplicate",
+      "private": false,
+      "build": "tsc --incremental false",
+      "start": "node dist/index.js"
+    },
+    {
+      "path": "bots/keabot-land",
+      "name": "@kealee/keabot-land",
+      "lifecycle": "duplicate",
+      "private": false,
+      "build": "tsc --incremental false",
+      "start": "node dist/index.js"
+    },
+    {
+      "path": "bots/keabot-marketing",
+      "name": "@kealee/keabot-marketing",
+      "lifecycle": "duplicate",
+      "private": false,
+      "build": "tsc",
+      "start": null
+    },
+    {
+      "path": "bots/keabot-marketplace",
+      "name": "@kealee/keabot-marketplace",
+      "lifecycle": "duplicate",
+      "private": false,
+      "build": "tsc --incremental false",
+      "start": "node dist/index.js"
+    },
+    {
+      "path": "bots/keabot-operations",
+      "name": "@kealee/keabot-operations",
+      "lifecycle": "duplicate",
+      "private": false,
+      "build": "tsc --incremental false",
+      "start": "node dist/index.js"
+    },
+    {
+      "path": "bots/keabot-owner",
+      "name": "@kealee/keabot-owner",
+      "lifecycle": "duplicate",
+      "private": false,
+      "build": "tsc --incremental false",
+      "start": "node dist/index.js"
+    },
+    {
+      "path": "bots/keabot-payments",
+      "name": "@kealee/keabot-payments",
+      "lifecycle": "duplicate",
+      "private": false,
+      "build": "tsc --incremental false",
+      "start": "node dist/index.js"
+    },
+    {
+      "path": "bots/keabot-permit",
+      "name": "@kealee/keabot-permit",
+      "lifecycle": "duplicate",
+      "private": false,
+      "build": "tsc --incremental false",
+      "start": "node dist/index.js"
+    },
+    {
+      "path": "bots/keabot-project-monitor",
+      "name": "@kealee/keabot-project-monitor",
+      "lifecycle": "duplicate",
+      "private": false,
+      "build": "tsc",
+      "start": null
+    },
+    {
+      "path": "bots/keabot-support",
+      "name": "@kealee/keabot-support",
+      "lifecycle": "duplicate",
+      "private": false,
+      "build": "tsc",
+      "start": null
+    },
+    {
+      "path": "packages/agent-prompts",
+      "name": "@kealee/agent-prompts",
+      "lifecycle": "supporting",
+      "private": true,
+      "build": "tsc",
+      "start": null
+    },
+    {
+      "path": "packages/agent-utils",
+      "name": "@kealee/agent-utils",
+      "lifecycle": "supporting",
+      "private": true,
+      "build": "tsc",
+      "start": null
+    },
+    {
+      "path": "packages/ai",
+      "name": "@kealee/ai",
+      "lifecycle": "supporting",
+      "private": true,
+      "build": "tsc",
+      "start": null
+    },
+    {
+      "path": "packages/ai-chat",
+      "name": "@kealee/ai-chat",
+      "lifecycle": "supporting",
+      "private": false,
+      "build": "tsc",
+      "start": null
+    },
+    {
+      "path": "packages/analytics",
+      "name": "@kealee/analytics",
+      "lifecycle": "supporting",
+      "private": false,
+      "build": "tsc",
+      "start": null
+    },
+    {
+      "path": "packages/api-client",
+      "name": "@kealee/api-client",
+      "lifecycle": "supporting",
+      "private": false,
+      "build": "tsc",
+      "start": null
+    },
+    {
+      "path": "packages/audit",
+      "name": "@kealee/audit",
+      "lifecycle": "supporting",
+      "private": false,
+      "build": "tsc",
+      "start": null
+    },
+    {
+      "path": "packages/auth",
+      "name": "@kealee/auth",
+      "lifecycle": "production",
+      "private": false,
+      "build": "tsc",
+      "start": null
+    },
+    {
+      "path": "packages/automation",
+      "name": "@kealee/automation",
+      "lifecycle": "production",
+      "private": true,
+      "build": "tsc",
+      "start": "node dist/workers/index.js"
+    },
+    {
+      "path": "packages/autonomous-runtime",
+      "name": "@kealee/autonomous-runtime",
+      "lifecycle": "supporting",
+      "private": true,
+      "build": "tsc",
+      "start": null
+    },
+    {
+      "path": "packages/communications",
+      "name": "@kealee/communications",
+      "lifecycle": "supporting",
+      "private": false,
+      "build": "tsc",
+      "start": null
+    },
+    {
+      "path": "packages/compliance",
+      "name": "@kealee/compliance",
+      "lifecycle": "supporting",
+      "private": false,
+      "build": "tsc",
+      "start": null
+    },
+    {
+      "path": "packages/concept-engine",
+      "name": "@kealee/concept-engine",
+      "lifecycle": "supporting",
+      "private": true,
+      "build": "tsc --incremental false",
+      "start": null
+    },
+    {
+      "path": "packages/core",
+      "name": "@kealee/core",
+      "lifecycle": "supporting",
+      "private": true,
+      "build": "tsc",
+      "start": null
+    },
+    {
+      "path": "packages/core-agents",
+      "name": "@kealee/core-agents",
+      "lifecycle": "supporting",
+      "private": true,
+      "build": "tsc",
+      "start": null
+    },
+    {
+      "path": "packages/core-ai-gateway",
+      "name": "@kealee/core-ai-gateway",
+      "lifecycle": "production",
+      "private": true,
+      "build": "tsc",
+      "start": null
+    },
+    {
+      "path": "packages/core-bim",
+      "name": "@kealee/core-bim",
+      "lifecycle": "supporting",
+      "private": true,
+      "build": "tsc",
+      "start": null
+    },
+    {
+      "path": "packages/core-bots",
+      "name": "@kealee/core-bots",
+      "lifecycle": "supporting",
+      "private": true,
+      "build": "tsc",
+      "start": null
+    },
+    {
+      "path": "packages/core-config",
+      "name": "@kealee/core-config",
+      "lifecycle": "supporting",
+      "private": true,
+      "build": "tsc",
+      "start": null
+    },
+    {
+      "path": "packages/core-ddts",
+      "name": "@kealee/core-ddts",
+      "lifecycle": "supporting",
+      "private": true,
+      "build": "tsc --incremental false",
+      "start": null
+    },
+    {
+      "path": "packages/core-events",
+      "name": "@kealee/core-events",
+      "lifecycle": "supporting",
+      "private": true,
+      "build": "tsc",
+      "start": null
+    },
+    {
+      "path": "packages/core-hooks",
+      "name": "@kealee/core-hooks",
+      "lifecycle": "supporting",
+      "private": true,
+      "build": "tsc",
+      "start": null
+    },
+    {
+      "path": "packages/core-llm",
+      "name": "@kealee/core-llm",
+      "lifecycle": "supporting",
+      "private": true,
+      "build": "tsc",
+      "start": null
+    },
+    {
+      "path": "packages/core-rules",
+      "name": "@kealee/core-rules",
+      "lifecycle": "supporting",
+      "private": true,
+      "build": "tsc",
+      "start": null
+    },
+    {
+      "path": "packages/core-tools",
+      "name": "@kealee/core-tools",
+      "lifecycle": "supporting",
+      "private": true,
+      "build": "tsc",
+      "start": null
+    },
+    {
+      "path": "packages/database",
+      "name": "@kealee/database",
+      "lifecycle": "production",
+      "private": false,
+      "build": "prisma generate --schema=./prisma/schema.prisma && tsc",
+      "start": null
+    },
+    {
+      "path": "packages/estimating",
+      "name": "@kealee/estimating",
+      "lifecycle": "supporting",
+      "private": false,
+      "build": "tsc",
+      "start": null
+    },
+    {
+      "path": "packages/events",
+      "name": "@kealee/events",
+      "lifecycle": "supporting",
+      "private": true,
+      "build": "tsc",
+      "start": null
+    },
+    {
+      "path": "packages/funnel-session",
+      "name": "@kealee/funnel-session",
+      "lifecycle": "supporting",
+      "private": true,
+      "build": "tsc",
+      "start": null
+    },
+    {
+      "path": "packages/intake",
+      "name": "@kealee/intake",
+      "lifecycle": "supporting",
+      "private": false,
+      "build": "tsc",
+      "start": null
+    },
+    {
+      "path": "packages/intelligence",
+      "name": "@kealee/intelligence",
+      "lifecycle": "supporting",
+      "private": true,
+      "build": "tsc",
+      "start": null
+    },
+    {
+      "path": "packages/kealee-agent-stack",
+      "name": "@kealee/kealee-agent-stack",
+      "lifecycle": "supporting",
+      "private": true,
+      "build": "tsc --incremental false",
+      "start": null
+    },
+    {
+      "path": "packages/marketing-agency",
+      "name": "@kealee/marketing-agency",
+      "lifecycle": "supporting",
+      "private": true,
+      "build": "tsc",
+      "start": null
+    },
+    {
+      "path": "packages/marketing-privacy",
+      "name": "@kealee/marketing-privacy",
+      "lifecycle": "supporting",
+      "private": true,
+      "build": "tsc",
+      "start": null
+    },
+    {
+      "path": "packages/observability",
+      "name": "@kealee/observability",
+      "lifecycle": "production",
+      "private": false,
+      "build": "tsc",
+      "start": null
+    },
+    {
+      "path": "packages/os-ai-orch",
+      "name": "@kealee/os-ai-orch",
+      "lifecycle": "supporting",
+      "private": true,
+      "build": "tsc --incremental false",
+      "start": null
+    },
+    {
+      "path": "packages/os-intake",
+      "name": "@kealee/os-intake",
+      "lifecycle": "supporting",
+      "private": true,
+      "build": "tsc --incremental false",
+      "start": null
+    },
+    {
+      "path": "packages/page-builder",
+      "name": "@kealee/page-builder",
+      "lifecycle": "supporting",
+      "private": true,
+      "build": "tsc",
+      "start": null
+    },
+    {
+      "path": "packages/pascal-wrapper",
+      "name": "@kealee/pascal-wrapper",
+      "lifecycle": "supporting",
+      "private": true,
+      "build": "tsc --noEmit",
+      "start": null
+    },
+    {
+      "path": "packages/queue",
+      "name": "@kealee/queue",
+      "lifecycle": "production",
+      "private": true,
+      "build": "tsc",
+      "start": null
+    },
+    {
+      "path": "packages/realtime",
+      "name": "@kealee/realtime",
+      "lifecycle": "supporting",
+      "private": false,
+      "build": "tsc",
+      "start": null
+    },
+    {
+      "path": "packages/redis",
+      "name": "@kealee/redis",
+      "lifecycle": "supporting",
+      "private": false,
+      "build": "tsc",
+      "start": null
+    },
+    {
+      "path": "packages/scoring",
+      "name": "@kealee/scoring",
+      "lifecycle": "supporting",
+      "private": false,
+      "build": "tsc",
+      "start": null
+    },
+    {
+      "path": "packages/seeds",
+      "name": "@kealee/seeds",
+      "lifecycle": "supporting",
+      "private": true,
+      "build": "tsc",
+      "start": null
+    },
+    {
+      "path": "packages/shared",
+      "name": "@kealee/shared",
+      "lifecycle": "supporting",
+      "private": false,
+      "build": "tsc",
+      "start": null
+    },
+    {
+      "path": "packages/shared-ai",
+      "name": "@kealee/shared-ai",
+      "lifecycle": "supporting",
+      "private": false,
+      "build": "tsc",
+      "start": null
+    },
+    {
+      "path": "packages/spatial-engine",
+      "name": "@kealee/pascal-agents",
+      "lifecycle": "supporting",
+      "private": true,
+      "build": "tsc --noEmit",
+      "start": null
+    },
+    {
+      "path": "packages/storage",
+      "name": "@kealee/storage",
+      "lifecycle": "supporting",
+      "private": false,
+      "build": "tsc",
+      "start": null
+    },
+    {
+      "path": "packages/types",
+      "name": "@kealee/types",
+      "lifecycle": "supporting",
+      "private": false,
+      "build": "tsc",
+      "start": null
+    },
+    {
+      "path": "packages/ui",
+      "name": "@kealee/ui",
+      "lifecycle": "supporting",
+      "private": false,
+      "build": "tsc",
+      "start": null
+    },
+    {
+      "path": "packages/workflow-engine",
+      "name": "@kealee/workflow-engine",
+      "lifecycle": "supporting",
+      "private": false,
+      "build": "tsc --incremental false",
+      "start": null
+    },
+    {
+      "path": "services/api",
+      "name": "@kealee/api",
+      "lifecycle": "production",
+      "private": false,
+      "build": "pnpm --filter @kealee/seeds build && pnpm --filter @kealee/core-llm build && pnpm --filter @kealee/core-rules build && pnpm --filter @kealee/automation build && pnpm --filter @kealee/kealee-agent-stack build && pnpm --filter @kealee/os-intake build && pnpm run build:ts",
+      "start": "node dist/index.js"
+    },
+    {
+      "path": "services/command-center",
+      "name": "@kealee/command-center",
+      "lifecycle": "production",
+      "private": true,
+      "build": "tsc -b",
+      "start": "node dist/gateway/src/server.js"
+    },
+    {
+      "path": "services/cost-model",
+      "name": "@kealee/cost-model",
+      "lifecycle": "experimental",
+      "private": true,
+      "build": "tsc",
+      "start": null
+    },
+    {
+      "path": "services/external-data",
+      "name": "@kealee/external-data",
+      "lifecycle": "experimental",
+      "private": true,
+      "build": "tsc",
+      "start": null
+    },
+    {
+      "path": "services/keabots",
+      "name": "@kealee/keabots-service",
+      "lifecycle": "duplicate",
+      "private": false,
+      "build": "tsc",
+      "start": null
+    },
+    {
+      "path": "services/keacore",
+      "name": "@kealee/keacore",
+      "lifecycle": "experimental",
+      "private": false,
+      "build": "tsc --incremental false",
+      "start": "node dist/index.js"
+    },
+    {
+      "path": "services/marketplace",
+      "name": "@kealee/marketplace",
+      "lifecycle": "experimental",
+      "private": false,
+      "build": "pnpm --filter @kealee/database db:generate && tsc --incremental false",
+      "start": "node dist/index.js"
+    },
+    {
+      "path": "services/orgbots",
+      "name": "@kealee/orgbots",
+      "lifecycle": "duplicate",
+      "private": true,
+      "build": "tsc",
+      "start": null
+    },
+    {
+      "path": "services/os-ai-orch",
+      "name": "@kealee/os-ai-orch-service",
+      "lifecycle": "duplicate",
+      "private": false,
+      "build": "pnpm --filter @kealee/database db:generate && tsc --incremental false",
+      "start": "node dist/index.js"
+    },
+    {
+      "path": "services/os-dev",
+      "name": "@kealee/os-dev",
+      "lifecycle": "duplicate",
+      "private": false,
+      "build": "pnpm --filter @kealee/database db:generate && tsc --incremental false",
+      "start": "node dist/index.js"
+    },
+    {
+      "path": "services/os-feas",
+      "name": "@kealee/os-feas",
+      "lifecycle": "duplicate",
+      "private": false,
+      "build": "pnpm --filter @kealee/database db:generate && tsc --incremental false",
+      "start": "node dist/index.js"
+    },
+    {
+      "path": "services/os-intake",
+      "name": "@kealee/os-intake-service",
+      "lifecycle": "duplicate",
+      "private": false,
+      "build": "pnpm --filter @kealee/database db:generate && tsc --incremental false",
+      "start": "node dist/index.js"
+    },
+    {
+      "path": "services/os-land",
+      "name": "@kealee/os-land",
+      "lifecycle": "duplicate",
+      "private": false,
+      "build": "pnpm --filter @kealee/database db:generate && tsc --incremental false",
+      "start": "node dist/index.js"
+    },
+    {
+      "path": "services/os-ops",
+      "name": "@kealee/os-ops",
+      "lifecycle": "duplicate",
+      "private": false,
+      "build": "pnpm --filter @kealee/database db:generate && tsc --incremental false",
+      "start": "node dist/index.js"
+    },
+    {
+      "path": "services/os-pay",
+      "name": "@kealee/os-pay",
+      "lifecycle": "duplicate",
+      "private": false,
+      "build": "pnpm --filter @kealee/database db:generate && tsc --incremental false",
+      "start": "node dist/index.js"
+    },
+    {
+      "path": "services/os-pm",
+      "name": "@kealee/os-pm",
+      "lifecycle": "duplicate",
+      "private": false,
+      "build": "pnpm --filter @kealee/database db:generate && tsc --incremental false",
+      "start": "node dist/index.js"
+    },
+    {
+      "path": "services/worker",
+      "name": "@kealee/worker",
+      "lifecycle": "duplicate",
+      "private": false,
+      "build": "pnpm --filter @kealee/database db:generate && tsc",
+      "start": "node dist/index.js"
+    }
+  ]
+}

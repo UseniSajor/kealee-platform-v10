@@ -19,7 +19,7 @@ services:
       - PORT=3001
       - HOST=0.0.0.0
       - REDIS_URL=redis://redis:6379
-      - DATABASE_URL=postgresql://kealee:kealee_dev@postgres:5432/kealee_command_center
+      - DATABASE_URL=postgresql://kealee:kealee_dev@postgres:5432/kealee_command_center # local example
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
       - SENDGRID_API_KEY=${SENDGRID_API_KEY}
       - TWILIO_ACCOUNT_SID=${TWILIO_ACCOUNT_SID}
@@ -54,7 +54,7 @@ services:
     environment:
       - NODE_ENV=development
       - REDIS_URL=redis://redis:6379
-      - DATABASE_URL=postgresql://kealee:kealee_dev@postgres:5432/kealee_command_center
+      - DATABASE_URL=postgresql://kealee:kealee_dev@postgres:5432/kealee_command_center # local example
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
       - SENDGRID_API_KEY=${SENDGRID_API_KEY}
       - TWILIO_ACCOUNT_SID=${TWILIO_ACCOUNT_SID}

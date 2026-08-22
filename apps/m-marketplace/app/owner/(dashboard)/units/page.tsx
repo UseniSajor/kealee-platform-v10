@@ -19,7 +19,7 @@ import {
   type MultifamilyUnit,
   type UnitStats,
 } from "@owner/lib/client-api"
-import { supabase } from "@owner/lib/supabase"
+import { getClerkToken } from '@/lib/clerk-token'
 
 // ---------------------------------------------------------------------------
 // Types & Config
@@ -54,13 +54,13 @@ export default function UnitTrackerPage() {
   React.useEffect(() => {
     async function load() {
       try {
-        const { data: { session } } = await supabase.auth.getSession()
-        if (!session) return
+        const token = await getClerkToken()
+        if (!token) return
 
         // Get user's first project (in production, this would be route-based)
         const res = await fetch(
           `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"}/owner/projects`,
-          { headers: { Authorization: `Bearer ${session.access_token}` } },
+          { headers: { Authorization: `Bearer ${token}` } },
         )
         if (!res.ok) throw new Error("Failed to load projects")
         const data = await res.json()

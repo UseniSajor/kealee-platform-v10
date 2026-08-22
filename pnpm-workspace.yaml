@@ -3,3 +3,32 @@ packages:
   - 'packages/*'
   - 'services/*'
   - 'bots/*'
+
+allowBuilds:
+  '@apollo/protobufjs': true
+  '@clerk/shared': true
+  '@prisma/client': true
+  '@prisma/engines': true
+  '@sentry/cli': false
+  canvas: false
+  core-js: true
+  esbuild: true
+  ffmpeg-static: false
+  msgpackr-extract: false
+  onnxruntime-node: false
+  prisma: true
+  protobufjs: true
+  puppeteer: false
+  sharp: true
+  tesseract.js: true
+  unrs-resolver: false
+
+minimumReleaseAgeExclude:
+  - resend@6.21.0
+
+neverBuiltDependencies:
+  - '@sentry/cli'
+  - canvas
+  - msgpackr-extract
+  - onnxruntime-node
+  - unrs-resolver

@@ -3,12 +3,12 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState } from 'react'
+import { useClerk } from '@clerk/nextjs'
 import {
   Megaphone, Gavel, FolderKanban, DollarSign, ShieldCheck,
   UserCircle, LogOut, HardHat, Menu, ChevronRight,
   Bell, TrendingUp, FileText,
 } from 'lucide-react'
-import { supabase } from '@/lib/supabase'
 import { PortalPageWithAskRail } from '@kealee/ui'
 
 const NAV_ITEMS = [
@@ -30,10 +30,10 @@ const SIDEBAR = '#1C1008'   // very dark warm brown-black
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const [mobileOpen, setMobileOpen] = useState(false)
+  const { signOut } = useClerk()
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut()
-    window.location.href = '/login'
+    await signOut({ redirectUrl: '/login' })
   }
 
   const groups = [

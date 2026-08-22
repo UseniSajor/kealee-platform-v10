@@ -62,7 +62,7 @@ import {
   NetworkProfileCard,
   ImageSection,
   PortalPreview,
-  Badge,
+  MarketingBadge as Badge,
   brand,
   heroImages,
   sectionImages,

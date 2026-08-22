@@ -9,10 +9,13 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@clerk/nextjs": "^5.5.0",
+    "@supabase/ssr": "^0.12.4",
     "@kealee/auth": "workspace:*",
     "@kealee/core-hooks": "workspace:*",
     "@kealee/observability": "workspace:*",
     "@kealee/shared": "workspace:*",
-    "@kealee/ui": "workspace:*"
+    "@kealee/ui": "workspace:*",
+    "lucide-react": "^0.469.0"
   }
 }

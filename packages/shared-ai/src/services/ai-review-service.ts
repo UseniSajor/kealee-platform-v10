@@ -1,4 +1,4 @@
-import OpenAI from 'openai';
+import { OpenAIClient as OpenAI } from '@kealee/core-llm';
 import {
   AIReviewConfig,
   AIReviewResult,

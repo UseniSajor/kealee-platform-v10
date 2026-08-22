@@ -52,7 +52,7 @@ export default function UsersPage() {
       setLoading(true);
       setError(null);
       
-      const data = await AdminApiClient.getUsers({
+      const data = await AdminApiClient.getUsers<{ users?: User[]; pagination?: { totalPages?: number } }>({
         page,
         limit: 20,
         search: search || undefined,

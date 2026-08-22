@@ -337,11 +337,12 @@ async function handleChargeFailed(
   // Queue payment failure notification email
   if (charge.receipt_email) {
     try {
+      const invoiceId = metadata.invoiceId || metadata.invoice_id || 'Unknown'
       await emailQueue.sendTemplatedEmail(charge.receipt_email, 'gc_payment_failed', {
         gcName: charge.billing_details?.name || 'there',
-        invoiceNumber: charge.invoice || 'Unknown',
+        invoiceNumber: invoiceId,
         billingPortalUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'https://kealee.com'}/billing`,
-        invoiceUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'https://kealee.com'}/invoices/${charge.invoice}`,
+        invoiceUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'https://kealee.com'}/invoices/${invoiceId}`,
       })
       logger.info({ email: charge.receipt_email, chargeId: charge.id }, 'Payment failure notification email queued')
     } catch (err) {
@@ -495,7 +496,7 @@ function getPackageName(source: string | undefined, tier: string | undefined): s
  */
 export async function registerStripeWebhookHandler(fastify: FastifyInstance) {
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-    apiVersion: '2024-04-10' as any,
+    apiVersion: '2026-07-29.dahlia' as any,
   })
 
   const redis = await RedisClient.getInstance()

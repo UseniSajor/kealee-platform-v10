@@ -37,7 +37,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           } as any);
         }
         return child;
-      }) as React.ReactElement;
+      }) as unknown as React.ReactElement;
     }
     
     return (

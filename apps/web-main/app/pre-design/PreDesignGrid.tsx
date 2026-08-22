@@ -44,10 +44,10 @@ export default function PreDesignGrid() {
             href={`/pre-design/${t.key}`}
             className="group relative flex flex-col rounded-2xl border-2 bg-white p-6 transition-all hover:shadow-lg hover:-translate-y-1"
             style={{ borderColor: 'transparent' }}
-            onMouseEnter={(e) => {
+            onMouseEnter={(e: React.MouseEvent<HTMLAnchorElement>) => {
               ;(e.currentTarget as HTMLElement).style.borderColor = t.color
             }}
-            onMouseLeave={(e) => {
+            onMouseLeave={(e: React.MouseEvent<HTMLAnchorElement>) => {
               ;(e.currentTarget as HTMLElement).style.borderColor = 'transparent'
             }}
           >

@@ -3,7 +3,7 @@
 // Generate human-readable reports from AI analysis
 // ============================================================
 
-import OpenAI from 'openai';
+import { OpenAIClient as OpenAI } from '@kealee/core-llm';
 import { 
   AIResult, 
   ReviewResult, 

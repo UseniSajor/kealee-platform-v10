@@ -1181,6 +1181,7 @@ model Product {
   updatedAt      DateTime        @updatedAt
 
   projectItems ProjectItem[]
+  images       ProductImage[]
 
   @@index([category])
   @@index([sku])

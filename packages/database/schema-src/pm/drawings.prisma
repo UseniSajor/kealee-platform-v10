@@ -102,6 +102,9 @@ model BIMModel {
 
   designProject DesignProject @relation(fields: [designProjectId], references: [id], onDelete: Cascade)
   uploadedBy    User          @relation("BIMModelUploader", fields: [uploadedById], references: [id])
+  elements      BIMElement[]
+  clashes       BIMClash[]
+  viewerStates  BIMViewerState[]
 
   @@index([designProjectId])
   @@index([format])

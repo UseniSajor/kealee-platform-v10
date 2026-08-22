@@ -204,7 +204,7 @@ export async function startCheckout(
 
   // Lazy Stripe import — only fails if STRIPE_SECRET_KEY is set but stripe package is missing
   const Stripe = (await import('stripe')).default
-  const stripe = new Stripe(stripeKey, { apiVersion: '2023-10-16' as any })
+  const stripe = new Stripe(stripeKey, { apiVersion: '2026-07-29.dahlia' as any })
 
   const user = await db.user.findUnique({ where: { id: userId }, select: { email: true } })
 

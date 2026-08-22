@@ -1,11 +1,11 @@
 /**
  * Approval Workflow API Service
- * Type-safe API client for approval workflow operations using Supabase Auth
+ * Type-safe API client for approval workflow operations using Clerk Auth
  * 
  * Note: Backend approval workflow endpoints may need to be created
  */
 
-import { supabase } from '../supabase';
+import { getClerkToken } from '@/lib/clerk-token';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || process.env.API_BASE_URL || 'http://localhost:3001';
 
@@ -96,8 +96,7 @@ export class ApprovalWorkflowService {
    */
   private static async getAuthToken(): Promise<string | null> {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      return session?.access_token || null;
+      return await getClerkToken();
     } catch (error) {
       console.error('Error getting auth token:', error);
       return null;
@@ -114,15 +113,13 @@ export class ApprovalWorkflowService {
       throw new Error('Not authenticated');
     }
 
-    const headers: HeadersInit = {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
-      ...options.headers,
-    };
+    const headers = new Headers(options.headers);
+    headers.set('Content-Type', 'application/json');
+    headers.set('Authorization', `Bearer ${token}`);
 
     // Don't set Content-Type for FormData
     if (options.body instanceof FormData) {
-      delete headers['Content-Type'];
+      headers.delete('Content-Type');
     }
 
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {

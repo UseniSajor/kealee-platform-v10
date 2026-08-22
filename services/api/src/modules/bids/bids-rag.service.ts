@@ -12,7 +12,7 @@ export class BidsRAGService {
   private getOpenAI() {
     // Lazy-load OpenAI to avoid hard dependency
     try {
-      const OpenAI = require('openai')
+      const { OpenAIClient: OpenAI } = require('@kealee/core-llm')
       return new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
     } catch {
       throw new Error('OpenAI SDK not installed. Run: pnpm add openai')

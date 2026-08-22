@@ -3,7 +3,7 @@
 // Parse correction emails and comments from jurisdictions
 // ============================================================
 
-import OpenAI from 'openai';
+import { OpenAIClient as OpenAI } from '@kealee/core-llm';
 import { AIResult, ParsedCorrection } from '../../types';
 
 export class CorrectionParser {

@@ -3,8 +3,9 @@
  * Type-safe API methods for all PM operations
  */
 
-import { supabase } from "./supabase"
+import { getClerkToken } from '@/lib/clerk-token'
 import type { PMClient, PMTask, SOPExecution, SOPTemplate } from "./types"
+export type { PMTask } from "./types"
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"
 
@@ -13,10 +14,7 @@ let csrfToken: string | null = null
 let csrfTokenExpiry: number = 0
 
 async function getAuthToken() {
-  const {
-    data: { session },
-  } = await supabase.auth.getSession()
-  return session?.access_token || null
+  return getClerkToken()
 }
 
 /**
@@ -177,6 +175,29 @@ export const api = {
   // PM Stats
   getMyStats: () => apiRequest<{ stats: unknown }>("/pm/stats"),
   getProductivityDashboard: () => apiRequest<{ dashboard: any }>("/pm/productivity"),
+
+  // Marketplace lead pipeline
+  getLead: (leadId: string) => apiRequest<{ lead: any }>(`/marketplace/leads/${leadId}`),
+  updateLeadStage: (leadId: string, stage: string) =>
+    apiRequest<{ lead: any }>(`/marketplace/leads/${leadId}/stage`, {
+      method: "PATCH",
+      body: JSON.stringify({ stage }),
+    }),
+  assignSalesRep: (leadId: string, salesRepId: string) =>
+    apiRequest<{ lead: any }>(`/marketplace/leads/${leadId}/assign-sales-rep`, {
+      method: "POST",
+      body: JSON.stringify({ salesRepId }),
+    }),
+  awardContractor: (leadId: string, profileId: string) =>
+    apiRequest<{ lead: any }>(`/marketplace/leads/${leadId}/award-contractor`, {
+      method: "POST",
+      body: JSON.stringify({ profileId }),
+    }),
+  closeLost: (leadId: string, reason: string) =>
+    apiRequest<{ lead: any }>(`/marketplace/leads/${leadId}/close-lost`, {
+      method: "POST",
+      body: JSON.stringify({ reason }),
+    }),
 
   // Tasks - List with filters, pagination, sorting
   getMyTasks: (filters?: TaskFilters) => {

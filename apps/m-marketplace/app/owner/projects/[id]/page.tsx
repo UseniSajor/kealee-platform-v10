@@ -321,7 +321,7 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
           </section>
 
           {/* Closeout Checklist (Prompt 3.7) */}
-          {(project.status === 'CLOSEOUT' || project.status === 'COMPLETED') ? (
+          {(project?.status === 'CLOSEOUT' || project?.status === 'COMPLETED') ? (
             <section className="mt-6 rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
               <h2 className="text-lg font-semibold text-neutral-900">Closeout Checklist</h2>
               <p className="mt-2 text-sm text-neutral-600">Complete final project closeout items</p>

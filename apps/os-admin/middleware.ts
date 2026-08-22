@@ -1,43 +1,14 @@
-import { createServerClient } from '@supabase/ssr';
+import { clerkMiddleware } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 const ALLOWED_ROLES = ['admin', 'super_admin'];
 
-export async function middleware(request: NextRequest) {
-  let response = NextResponse.next({
-    request: { headers: request.headers },
-  });
-
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll();
-        },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) => {
-            request.cookies.set(name, value);
-          });
-          response = NextResponse.next({
-            request: { headers: request.headers },
-          });
-          cookiesToSet.forEach(({ name, value, options }) => {
-            response.cookies.set(name, value, options);
-          });
-        },
-      },
-    }
-  );
-
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
+export default clerkMiddleware(async (auth, request: NextRequest) => {
+  const { userId, sessionClaims } = await auth();
 
   // Require authentication
-  if (!session) {
+  if (!userId) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = '/login';
     redirectUrl.searchParams.set('redirect', request.nextUrl.pathname);
@@ -45,7 +16,9 @@ export async function middleware(request: NextRequest) {
   }
 
   // Check role from app_metadata (set via Supabase SQL: UPDATE auth.users SET raw_app_meta_data = raw_app_meta_data || '{"role":"admin"}' WHERE email = '...')
-  const role = (session.user.app_metadata?.role ?? 'user').toLowerCase();
+  const claims = sessionClaims as Record<string, unknown> | null;
+  const metadata = (claims?.metadata ?? claims?.publicMetadata ?? {}) as Record<string, unknown>;
+  const role = String(metadata.role ?? 'user').toLowerCase();
 
   if (!ALLOWED_ROLES.includes(role)) {
     const redirectUrl = request.nextUrl.clone();
@@ -53,8 +26,8 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(redirectUrl);
   }
 
-  return response;
-}
+  return NextResponse.next({ request: { headers: request.headers } });
+});
 
 export const config = {
   matcher: [

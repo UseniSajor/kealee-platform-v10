@@ -16,7 +16,7 @@ import { sanitizeErrorMessage } from '../../utils/sanitize-error';
 import { Redis } from 'ioredis';
 
 const stripe = new Stripe(config.stripeSecretKey || process.env.STRIPE_SECRET_KEY || '', {
-  apiVersion: '2023-10-16',
+  apiVersion: '2026-07-29.dahlia',
 });
 
 const initiateSchema = z.object({

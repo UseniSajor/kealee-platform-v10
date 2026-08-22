@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useClerk } from '@clerk/nextjs'
 import {
   LayoutDashboard,
   Boxes,
@@ -15,7 +16,6 @@ import {
   ImageIcon,
   Orbit,
 } from 'lucide-react'
-import { supabase } from '@/lib/supabase'
 
 const MARKETING_OS_URL = process.env.NEXT_PUBLIC_MARKETING_OS_URL ?? 'http://localhost:3032'
 
@@ -33,10 +33,10 @@ const NAV_ITEMS = [
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
+  const { signOut } = useClerk()
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut()
-    window.location.href = '/login'
+    await signOut({ redirectUrl: '/login' })
   }
 
   return (

@@ -33,7 +33,7 @@ export default function MarketingWorkspacePage() {
   const [pending, setPending] = useState<Asset[]>([])
   const [leadSummary, setLeadSummary] = useState<Record<string, unknown>>({})
   const [analytics, setAnalytics] = useState<Record<string, unknown>>({})
-  const [tasks, setTasks] = useState<unknown[]>([])
+  const [tasks, setTasks] = useState<Array<{ id: string; title: string; status: string; due_at?: string }>>([])
   const [generating, setGenerating] = useState(false)
   const [genError, setGenError] = useState<string | null>(null)
 

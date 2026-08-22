@@ -19,6 +19,7 @@ import { useQuery } from '@tanstack/react-query';
 import { createClient } from '@permits/src/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 import { Upload, X, Camera } from 'lucide-react';
+import { useAuth } from '@clerk/nextjs';
 
 const inspectionSchema = z.object({
   permitId: z.string().min(1, 'Permit is required'),
@@ -60,6 +61,7 @@ export function InspectionRequestForm({ permitId: initialPermitId }: InspectionR
   const [sitePhotos, setSitePhotos] = useState<string[]>([]);
   const router = useRouter();
   const supabase = createClient();
+  const { userId } = useAuth();
 
   const form = useForm<InspectionFormData>({
     resolver: zodResolver(inspectionSchema),
@@ -73,19 +75,19 @@ export function InspectionRequestForm({ permitId: initialPermitId }: InspectionR
   const { data: permits } = useQuery({
     queryKey: ['permits', 'user'],
     queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return [];
+      if (!userId) return [];
 
       const { data, error } = await supabase
         .from('Permit')
         .select('id, permitNumber, permitType, scope')
-        .eq('clientId', user.id)
+        .eq('clientId', userId)
         .in('kealeeStatus', ['APPROVED', 'ISSUED', 'ACTIVE'])
         .limit(50);
 
       if (error) throw error;
       return data || [];
     },
+    enabled: !!userId,
   });
 
   const handlePhotoUpload = async (file: File) => {
@@ -123,8 +125,7 @@ export function InspectionRequestForm({ permitId: initialPermitId }: InspectionR
 
   const onSubmit = async (data: InspectionFormData) => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Not authenticated');
+      if (!userId) throw new Error('Not authenticated');
 
       const { error } = await supabase.from('Inspection').insert({
         permitId: data.permitId,
@@ -133,7 +134,7 @@ export function InspectionRequestForm({ permitId: initialPermitId }: InspectionR
         description: data.description,
         phaseRequired: data.phaseRequired,
         requestedDate: new Date(data.requestedDate),
-        requestedBy: user.id,
+        requestedBy: userId,
         sitePhotos: sitePhotos,
         notes: data.notes,
         readyToSchedule: true,

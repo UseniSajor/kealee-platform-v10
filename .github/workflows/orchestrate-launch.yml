@@ -17,8 +17,8 @@ on:
         default: false
 
 env:
-  NODE_VERSION: '20'
-  PNPM_VERSION: '8.15.9'
+  NODE_VERSION: '24'
+  PNPM_VERSION: '11.22.0'
 
 jobs:
   orchestrate:
@@ -27,7 +27,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: pnpm/action-setup@v3
+      - uses: pnpm/action-setup@v4
         with:
           version: ${{ env.PNPM_VERSION }}
 
@@ -38,7 +38,7 @@ jobs:
           cache-dependency-path: pnpm-lock.yaml
 
       - name: Install dependencies
-        run: PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true pnpm install --no-frozen-lockfile
+        run: PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true pnpm install --frozen-lockfile
 
       - name: Orchestrate launch
         env:

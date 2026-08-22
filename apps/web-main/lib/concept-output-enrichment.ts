@@ -209,7 +209,7 @@ async function analyzePhotosForFloorplan(photoUrls: string[]): Promise<{
   if (urls.length === 0) return { captureZones: [], roomSizeHints: {} }
 
   try {
-    const { default: Anthropic } = await import('@anthropic-ai/sdk')
+    const { AnthropicClient: Anthropic } = await import('@kealee/core-llm')
     const client = new Anthropic()
 
     // Build a content array with image blocks (URL source) + prompt text.

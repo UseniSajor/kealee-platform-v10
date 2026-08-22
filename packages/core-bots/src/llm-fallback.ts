@@ -5,7 +5,7 @@
  * if Claude is unavailable or fails. All responses include llmSource flag.
  */
 
-import Anthropic from '@anthropic-ai/sdk';
+import { AnthropicClient as Anthropic } from '@kealee/core-llm';
 
 export type LLMSource = 'CLAUDE' | 'LOCAL' | 'ERROR';
 

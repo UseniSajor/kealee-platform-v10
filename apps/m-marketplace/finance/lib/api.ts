@@ -1,22 +1,13 @@
-import { createClient } from '@supabase/supabase-js'
+import { getClerkToken } from '@/lib/clerk-token'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
 
-// Create Supabase client for auth
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-
-const supabase = createClient(supabaseUrl, supabaseAnonKey)
-
 /**
- * Get authentication token from Supabase session
+ * Get authentication token from Clerk session
  */
 async function getAuthToken(): Promise<string | null> {
   try {
-    const {
-      data: { session },
-    } = await supabase.auth.getSession()
-    return session?.access_token || null
+    return await getClerkToken()
   } catch (error) {
     console.error('Error getting auth token:', error)
     return null
@@ -125,4 +116,3 @@ export const api = {
     return response.json()
   },
 }
-

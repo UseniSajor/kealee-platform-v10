@@ -291,7 +291,7 @@ export default function PatternBookDetailPage({ params }: { params: { slug: stri
                   <Link
                     href="/permits/new"
                     className="w-full flex items-center justify-center gap-2 py-4 rounded-xl font-semibold text-white transition hover:opacity-90"
-                    style={{ backgroundColor: brand.green }}
+                    style={{ backgroundColor: brand.success }}
                   >
                     <FileCheck className="w-5 h-5" /> Start Permit Application
                   </Link>
@@ -370,7 +370,7 @@ export default function PatternBookDetailPage({ params }: { params: { slug: stri
                     <MapPin className="w-4 h-4" style={{ color: brand.teal }} /> Check Zoning Compliance
                   </Link>
                   <Link href="/permits/new" className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition text-sm text-gray-700">
-                    <FileCheck className="w-4 h-4" style={{ color: brand.green }} /> Start Permit Application
+                    <FileCheck className="w-4 h-4" style={{ color: brand.success }} /> Start Permit Application
                   </Link>
                   <Link href="/estimation" className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition text-sm text-gray-700">
                     <DollarSign className="w-4 h-4" style={{ color: brand.orange }} /> Detailed Cost Estimate

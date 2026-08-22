@@ -1,4 +1,4 @@
-import OpenAI from 'openai'
+import { OpenAIClient as OpenAI } from '@kealee/core-llm'
 import Replicate from 'replicate'
 import type { CardMediaSpec } from './card-media-spec'
 

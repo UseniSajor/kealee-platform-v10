@@ -13,8 +13,8 @@ on:
   workflow_dispatch:
 
 env:
-  NODE_VERSION: '20'
-  PNPM_VERSION: '8.15.9'
+  NODE_VERSION: '24'
+  PNPM_VERSION: '11.22.0'
   RAILWAY_PROJECT_ID: 8187fcf6-9916-49aa-bc75-77407f83d319
   RAILWAY_ENVIRONMENT: production
 

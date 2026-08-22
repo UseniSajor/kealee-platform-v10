@@ -9,7 +9,7 @@ import { PayoutMethod, PayoutStatus } from '@kealee/database'
 import { withRetry } from '../../utils/retry'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2023-10-16',
+  apiVersion: '2026-07-29.dahlia',
 })
 
 export interface CreatePayoutDTO {
@@ -460,7 +460,7 @@ export class PayoutService {
 
     // Fetch payout from Stripe
     const stripePayout = await withRetry(
-      () => stripe.payouts.retrieve(stripePayoutId, {
+      () => stripe.payouts.retrieve(stripePayoutId, {}, {
         stripeAccount: payout.connectedAccount.stripeAccountId,
       }),
       { label: 'Stripe.payouts.retrieve' }
@@ -482,4 +482,3 @@ export class PayoutService {
     return updated
   }
 }
-

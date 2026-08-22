@@ -1,7 +1,7 @@
 "use client"
 
 import axios, { AxiosError, type AxiosInstance } from "axios"
-import { createBrowserClient } from "@supabase/ssr"
+import { getClerkToken } from '@/lib/clerk-token'
 
 export type ApiErrorPayload = {
   message?: string
@@ -26,38 +26,8 @@ export class ApiError extends Error {
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"
 
-let cachedToken: string | null = null
-let tokenInit = false
-let supabaseClient: ReturnType<typeof createBrowserClient> | null = null
-
-function getSupabase() {
-  if (!supabaseClient) {
-    supabaseClient = createBrowserClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    )
-  }
-  return supabaseClient
-}
-
-async function ensureTokenCache() {
-  if (tokenInit) return
-  tokenInit = true
-
-  const supabase = getSupabase()
-  const {
-    data: { session },
-  } = await supabase.auth.getSession()
-  cachedToken = session?.access_token ?? null
-
-  supabase.auth.onAuthStateChange((_event, session2) => {
-    cachedToken = session2?.access_token ?? null
-  })
-}
-
 async function getToken(): Promise<string | null> {
-  await ensureTokenCache()
-  return cachedToken
+  return getClerkToken()
 }
 
 function redirectToLogin() {
@@ -95,11 +65,6 @@ export function createApiClient(): AxiosInstance {
       const message = payload?.message || payload?.error || err.message || "API request failed"
 
       if (status === 401) {
-        try {
-          await getSupabase().auth.signOut()
-        } catch {
-          // ignore
-        }
         redirectToLogin()
       }
 
@@ -111,4 +76,3 @@ export function createApiClient(): AxiosInstance {
 }
 
 export const apiClient = createApiClient()
-

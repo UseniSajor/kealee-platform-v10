@@ -3,8 +3,8 @@
  *
  * Pascal Editor /api/editor/* routes used to trust a `userId` value supplied
  * in the request body, which let any caller spoof scenes/uploads/renders for
- * any user. This helper derives the authenticated user id from the Supabase
- * auth cookie server-side and gates editor mutations.
+ * any user. This helper derives the authenticated user id from Clerk's
+ * verified server request context and gates editor mutations.
  *
  * Behaviour:
  *  - Authenticated user → returns { userId, mode: 'authenticated' }
@@ -18,8 +18,7 @@
  */
 
 import { NextResponse } from 'next/server'
-import { cookies } from 'next/headers'
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
+import { getClerkUser } from '@kealee/auth'
 
 export interface EditorAuthOk {
   ok: true
@@ -37,7 +36,7 @@ export type EditorAuthResult = EditorAuthOk | EditorAuthBlocked
 
 /** Returns true when the deployment allows anonymous editor access. */
 function anonymousAllowed(): boolean {
-  // Default: TRUE. Set ALLOW_ANONYMOUS_EDITOR=false to require Supabase login
+  // Default: TRUE. Set ALLOW_ANONYMOUS_EDITOR=false to require Clerk login
   // for every /api/editor/* call.
   const raw = process.env.ALLOW_ANONYMOUS_EDITOR
   if (raw == null) return true
@@ -45,7 +44,7 @@ function anonymousAllowed(): boolean {
 }
 
 /**
- * Derive the caller identity from the Supabase auth cookie.
+ * Derive the caller identity from Clerk's verified request context.
  * Returns either an `ok: true` result with the server-derived `userId` (which
  * is `null` for anonymous callers when allowed), or `ok: false` with a 401
  * response the route handler should return verbatim.
@@ -54,37 +53,18 @@ function anonymousAllowed(): boolean {
  * request-scoped `cookies()` helper).
  */
 export async function authorizeEditorRequest(): Promise<EditorAuthResult> {
-  const supabaseUrl  = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const supabaseAnon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-
-  // Without Supabase env vars we cannot verify; fail closed unless anon mode.
-  if (!supabaseUrl || !supabaseAnon) {
-    return anonymousAllowed()
-      ? { ok: true, userId: null, email: null, mode: 'anonymous' }
-      : { ok: false, response: NextResponse.json({ error: 'Auth not configured' }, { status: 500 }) }
-  }
-
   try {
-    const supabase = createRouteHandlerClient({ cookies })
-    const { data: { session }, error } = await supabase.auth.getSession()
-
-    if (error) {
-      console.warn('[editor-auth] getSession failed:', error.message)
-      return anonymousAllowed()
-        ? { ok: true, userId: null, email: null, mode: 'anonymous' }
-        : { ok: false, response: NextResponse.json({ error: 'Authentication failed' }, { status: 401 }) }
-    }
-
-    if (session?.user) {
+    const user = await getClerkUser()
+    if (user) {
       return {
         ok:    true,
-        userId: session.user.id,
-        email:  session.user.email ?? null,
+        userId: user.id,
+        email:  user.email,
         mode:   'authenticated',
       }
     }
   } catch (err: any) {
-    console.warn('[editor-auth] cookie/session lookup threw:', err?.message)
+    console.warn('[editor-auth] Clerk session lookup threw:', err?.message)
     // Fall through to anonymous handling
   }
 

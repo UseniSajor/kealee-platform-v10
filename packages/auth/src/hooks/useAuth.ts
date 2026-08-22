@@ -1,39 +1,14 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { supabase } from '../supabase-client';
-import type { User } from '@supabase/supabase-js';
+import { useUser } from '@clerk/nextjs';
 
-export function useAuth() {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+export interface AuthState {
+  user: { id: string } | null;
+  loading: boolean;
+}
 
-  useEffect(() => {
-    let mounted = true;
-
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (mounted) {
-        setUser(session?.user ?? null);
-        setLoading(false);
-      }
-    });
-
-    // Listen for auth changes
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (mounted) {
-        setUser(session?.user ?? null);
-        setLoading(false);
-      }
-    });
-
-    return () => {
-      mounted = false;
-      subscription.unsubscribe();
-    };
-  }, []);
-
-  return { user, loading };
+/** Shared client auth state. Clerk is the identity provider; Supabase is data only. */
+export function useAuth(): AuthState {
+  const { isLoaded, user } = useUser();
+  return { user: user ?? null, loading: !isLoaded };
 }

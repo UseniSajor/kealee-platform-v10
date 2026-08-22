@@ -3,13 +3,10 @@
 // ============================================================
 
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
 import { ErrorBoundary } from '@kealee/ui';
 import { Toaster } from 'sonner';
 import './globals.css';
 import { Providers } from '@permits/src/lib/providers';
-
-const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
   title: 'Kealee Permits & Inspections',
@@ -23,7 +20,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={inter.className}>
+      <body className="font-sans">
         <ErrorBoundary>
           <Providers>
             {children}

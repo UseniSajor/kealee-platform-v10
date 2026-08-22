@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query"
 import { CheckCircle2, XCircle, AlertTriangle, Lock, FileCheck } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@kealee/ui/card"
 import { api } from "@pm/lib/api-client"
+import { getClerkToken } from '@/lib/clerk-token'
 
 interface ComplianceCheckpointProps {
   checkpointId: string
@@ -44,11 +45,7 @@ export function ComplianceCheckpoint({
   })
 
   async function getAuthToken() {
-    const { supabase } = await import("@pm/lib/supabase")
-    const {
-      data: { session },
-    } = await supabase.auth.getSession()
-    return session?.access_token || ""
+    return await getClerkToken() || ''
   }
 
   if (isLoading) {
@@ -184,7 +181,6 @@ export function ComplianceCheckpoint({
     </Card>
   )
 }
-
 
 
 

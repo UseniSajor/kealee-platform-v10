@@ -2,11 +2,13 @@
 // Kealee Platform Button Component
 
 import React from 'react';
+import { Slot } from '@radix-ui/react-slot';
 import { cn } from '../lib/utils';
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'ghost' | 'danger';
-  size?: 'sm' | 'md' | 'lg';
+  variant?: 'primary' | 'secondary' | 'ghost' | 'danger' | 'default' | 'destructive' | 'outline' | 'link';
+  size?: 'sm' | 'md' | 'lg' | 'default' | 'icon' | 'icon-sm' | 'icon-lg';
+  asChild?: boolean;
   isLoading?: boolean;
   leftIcon?: React.ReactNode;
   rightIcon?: React.ReactNode;
@@ -21,6 +23,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       isLoading = false,
       leftIcon,
       rightIcon,
+      asChild = false,
       children,
       disabled,
       ...props
@@ -34,16 +37,26 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       secondary: 'border-2 border-gray-300 hover:border-primary-600 text-gray-700 hover:text-primary-600 focus:ring-primary-500',
       ghost: 'text-primary-600 hover:text-primary-700 hover:bg-primary-50 focus:ring-primary-500',
       danger: 'bg-red-600 hover:bg-red-700 text-white shadow-md hover:shadow-lg focus:ring-red-500',
+      default: 'bg-primary-600 hover:bg-primary-700 text-white shadow-md hover:shadow-lg focus:ring-primary-500',
+      destructive: 'bg-red-600 hover:bg-red-700 text-white shadow-md hover:shadow-lg focus:ring-red-500',
+      outline: 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 focus:ring-primary-500',
+      link: 'text-primary-600 underline-offset-4 hover:underline focus:ring-primary-500',
     };
     
     const sizes = {
       sm: 'px-4 py-2 text-sm',
       md: 'px-6 py-3 text-base',
       lg: 'px-8 py-4 text-lg',
+      default: 'px-6 py-3 text-base',
+      icon: 'h-10 w-10 p-0',
+      'icon-sm': 'h-8 w-8 p-0',
+      'icon-lg': 'h-12 w-12 p-0',
     };
+
+    const Comp = asChild ? Slot : 'button';
     
     return (
-      <button
+      <Comp
         ref={ref}
         className={cn(
           baseStyles,
@@ -85,7 +98,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
             {rightIcon && <span className="ml-2">{rightIcon}</span>}
           </>
         )}
-      </button>
+      </Comp>
     );
   }
 );

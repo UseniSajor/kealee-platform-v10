@@ -170,8 +170,8 @@ export default function MeetingDetailPage({ params }: { params: { id: string } }
                           {new Date(item.dueDate + "T00:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" })}
                         </td>
                         <td className="px-4 py-3">
-                          <span className={cn("px-2 py-0.5 rounded-full text-xs font-medium", ACTION_STATUS_STYLES[item.status])}>
-                            {ACTION_STATUS_LABELS[item.status]}
+                          <span className={cn("px-2 py-0.5 rounded-full text-xs font-medium", ACTION_STATUS_STYLES[item.status as ActionStatus])}>
+                            {ACTION_STATUS_LABELS[item.status as ActionStatus]}
                           </span>
                         </td>
                       </tr>

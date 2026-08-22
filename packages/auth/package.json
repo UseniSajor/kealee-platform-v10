@@ -1,7 +1,7 @@
 {
   "name": "@kealee/auth",
   "version": "1.0.0",
-  "description": "Kealee Platform Authentication Package - Supabase Integration",
+  "description": "Kealee Platform Authentication and Authorization Package - Clerk Identity",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
@@ -34,8 +34,8 @@
     "@clerk/types": "^4.0.0",
     "@kealee/database": "workspace:*",
     "@supabase/auth-helpers-nextjs": "^0.8.7",
-    "@supabase/ssr": "^0.5.2",
-    "@supabase/supabase-js": "^2.39.0",
+    "@supabase/ssr": "^0.12.4",
+    "@supabase/supabase-js": "^2.112.3",
     "next": ">=14.0.0",
     "react": "^18.2.0"
   },
@@ -45,7 +45,7 @@
     "typescript": "^5.9.3"
   },
   "peerDependencies": {
-    "react": ">=18.2.0",
-    "next": ">=14.0.0"
+    "next": ">=14.0.0",
+    "react": ">=18.2.0"
   }
 }

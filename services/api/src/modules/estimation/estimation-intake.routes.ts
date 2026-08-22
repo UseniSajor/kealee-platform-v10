@@ -15,7 +15,7 @@ import { z } from 'zod'
 import { RedisClient } from '@kealee/redis'
 import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY ?? '', { apiVersion: '2024-04-10' as any })
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY ?? '', { apiVersion: '2026-07-29.dahlia' as any })
 
 // ── Estimation tiers ──────────────────────────────────────────────────────────────
 const ESTIMATION_TIERS = {

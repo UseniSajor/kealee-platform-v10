@@ -15,7 +15,7 @@ import {
   type DrawRequest,
   type DrawStats,
 } from "@owner/lib/client-api"
-import { supabase } from "@owner/lib/supabase"
+import { getClerkToken } from '@/lib/clerk-token'
 
 // ---------------------------------------------------------------------------
 // Types & Config
@@ -53,12 +53,12 @@ export default function LenderDrawsPage() {
   React.useEffect(() => {
     async function load() {
       try {
-        const { data: { session } } = await supabase.auth.getSession()
-        if (!session) return
+        const token = await getClerkToken()
+        if (!token) return
 
         const res = await fetch(
           `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"}/owner/projects`,
-          { headers: { Authorization: `Bearer ${session.access_token}` } },
+          { headers: { Authorization: `Bearer ${token}` } },
         )
         if (!res.ok) throw new Error("Failed to load projects")
         const data = await res.json()

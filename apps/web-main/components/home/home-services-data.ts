@@ -25,6 +25,7 @@ export interface HomeJourneyService {
   progress: number
   mediaType: HomeServiceMediaType
   photoSrc: string
+  beforePhotoSrc?: string
   photoAlt: string
   videoSrc?: string
   videoWebM?: string

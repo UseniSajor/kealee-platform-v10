@@ -1,32 +1,13 @@
-import { createServerClient, type CookieOptions } from '@supabase/ssr'
+import { clerkMiddleware } from '@clerk/nextjs/server'
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
-export async function middleware(request: NextRequest) {
-  let response = NextResponse.next({ request: { headers: request.headers } })
-
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() { return request.cookies.getAll() },
-        setAll(cookiesToSet: { name: string; value: string; options?: CookieOptions }[]) {
-          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
-          response = NextResponse.next({ request: { headers: request.headers } })
-          cookiesToSet.forEach(({ name, value, options }) => response.cookies.set(name, value, options as Parameters<typeof response.cookies.set>[2]))
-        },
-      },
-    }
-  )
-
-  // Refresh session — getSession() alone can return stale/null cookies on edge.
-  const { data: { user } } = await supabase.auth.getUser()
-  const session = user ? { user } : null
+export default clerkMiddleware(async (auth, request: NextRequest) => {
+  const { userId } = await auth()
 
   const publicPaths = ['/auth/claim', '/auth/callback', '/account/complete', '/reset-password']
   if (publicPaths.some((p) => request.nextUrl.pathname.startsWith(p))) {
-    return response
+    return NextResponse.next({ request: { headers: request.headers } })
   }
 
   const protectedPaths = ['/', '/projects', '/project', '/payments', '/documents', '/messages', '/twin', '/concepts', '/deliverables', '/services']
@@ -34,7 +15,7 @@ export async function middleware(request: NextRequest) {
     path === '/' ? request.nextUrl.pathname === '/' : request.nextUrl.pathname.startsWith(path)
   )
 
-  if (isProtectedPath && !session) {
+  if (isProtectedPath && !userId) {
     const redirectUrl = request.nextUrl.clone()
     const next = request.nextUrl.pathname + request.nextUrl.search
     redirectUrl.pathname = '/login'
@@ -45,7 +26,7 @@ export async function middleware(request: NextRequest) {
   const authPaths = ['/login', '/signup']
   const isAuthPath = authPaths.some(path => request.nextUrl.pathname.startsWith(path))
 
-  if (isAuthPath && session) {
+  if (isAuthPath && userId) {
     const next = request.nextUrl.searchParams.get('next')
     const redirectUrl = request.nextUrl.clone()
     redirectUrl.pathname = next && next.startsWith('/') ? next : '/deliverables'
@@ -53,8 +34,8 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(redirectUrl)
   }
 
-  return response
-}
+  return NextResponse.next({ request: { headers: request.headers } })
+})
 
 export const config = {
   matcher: [

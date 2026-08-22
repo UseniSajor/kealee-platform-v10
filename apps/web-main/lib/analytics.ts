@@ -12,6 +12,10 @@ type EventName =
   | 'estimate_start'
   | 'lead_submitted'
   | 'checkout_started'
+  | 'checkout_creation'
+  | 'upload_completion'
+  | 'intake_completion'
+  | 'promo_redeemed'
   | 'purchase'
 
 declare global {

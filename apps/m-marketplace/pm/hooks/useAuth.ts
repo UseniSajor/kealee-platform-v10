@@ -2,39 +2,25 @@
 
 import * as React from "react"
 import { useRouter } from "next/navigation"
-import { createBrowserClient } from "@supabase/ssr"
+import { useAuth as useClerkAuth, useClerk } from '@clerk/nextjs'
 
 import { api } from "@pm/lib/api"
 import type { AuthUser } from "@pm/lib/types/index"
 
-let _supabase: ReturnType<typeof createBrowserClient> | null = null
-function getSupabase() {
-  if (!_supabase) {
-    _supabase = createBrowserClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    )
-  }
-  return _supabase
-}
-
 export function useAuth() {
   const router = useRouter()
+  const { isLoaded, isSignedIn } = useClerkAuth()
+  const { signOut: clerkSignOut } = useClerk()
   const [user, setUser] = React.useState<AuthUser | null>(null)
   const [loading, setLoading] = React.useState(true)
-  const supabase = getSupabase()
-
   React.useEffect(() => {
+    if (!isLoaded) return
     let mounted = true
 
     async function load() {
       setLoading(true)
       try {
-        const {
-          data: { session },
-        } = await supabase.auth.getSession()
-
-        if (!session?.access_token) {
+        if (!isSignedIn) {
           if (mounted) setUser(null)
           return
         }
@@ -50,21 +36,15 @@ export function useAuth() {
 
     load()
 
-    const { data: sub } = supabase.auth.onAuthStateChange(() => {
-      void load()
-    })
-
     return () => {
       mounted = false
-      sub.subscription.unsubscribe()
     }
-  }, [supabase])
+  }, [isLoaded, isSignedIn])
 
   const signOut = React.useCallback(async () => {
-    await supabase.auth.signOut()
+    await clerkSignOut()
     router.replace("/login")
-  }, [router, supabase])
+  }, [clerkSignOut, router])
 
   return { user, loading, signedIn: Boolean(user), signOut }
 }
-

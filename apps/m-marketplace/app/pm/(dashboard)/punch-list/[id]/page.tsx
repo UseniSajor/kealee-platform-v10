@@ -75,8 +75,8 @@ export default function PunchItemDetailPage({ params }: { params: { id: string }
         <div>
           <div className="flex items-center gap-3 mb-2">
             <h1 className="text-2xl font-bold text-gray-900">{item.number}</h1>
-            <span className={cn("px-2 py-0.5 rounded-full text-xs font-medium", STATUS_STYLES[item.status])}>
-              {STATUS_LABELS[item.status]}
+            <span className={cn("px-2 py-0.5 rounded-full text-xs font-medium", STATUS_STYLES[item.status as PunchStatus])}>
+              {STATUS_LABELS[item.status as PunchStatus]}
             </span>
             <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
               {item.priority.charAt(0).toUpperCase() + item.priority.slice(1)} Priority

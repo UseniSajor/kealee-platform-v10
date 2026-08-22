@@ -3,30 +3,9 @@ export const dynamic = 'force-dynamic';
 // API route for saving project drafts - proxies to backend pre-con API
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
+import { getRequestAuthToken } from '@/lib/clerk-server-auth';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-
-async function getSessionToken(): Promise<string | null> {
-  const cookieStore = await cookies();
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() { return cookieStore.getAll(); },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) => {
-            cookieStore.set(name, value, options);
-          });
-        },
-      },
-    }
-  );
-  const { data: { session } } = await supabase.auth.getSession();
-  return session?.access_token ?? null;
-}
 
 /**
  * Map the wizard form data to the backend createPreCon schema.
@@ -63,15 +42,13 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
-    // Get auth token from Supabase session
-    const token = await getSessionToken();
+    const token = await getRequestAuthToken(request);
+    if (!token) return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
 
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
     };
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
+    headers['Authorization'] = `Bearer ${token}`;
 
     // Map form data to precon schema and proxy to backend API
     const backendBody = mapFormToPrecon(body);

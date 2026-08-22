@@ -3,19 +3,11 @@
  * Phase 4: mark user as portal_user after account completion (password set).
  */
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerClient } from '@supabase/ssr'
-import { cookies } from 'next/headers'
+import { getClerkUser } from '@kealee/auth'
 import { linkUserToIntakesAfterAuth } from '@/lib/link-intake-user-portal'
 
 export async function POST(req: NextRequest) {
-  const cookieStore = cookies()
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    { cookies: { getAll: () => cookieStore.getAll(), setAll: () => {} } },
-  )
-
-  const { data: { user } } = await supabase.auth.getUser()
+  const user = await getClerkUser()
   if (!user?.email) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }

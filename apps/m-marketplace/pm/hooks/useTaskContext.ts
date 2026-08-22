@@ -1,7 +1,7 @@
 "use client"
 
 import { useQuery } from "@tanstack/react-query"
-import { api } from "@pm/lib/api-client"
+import { getClerkToken } from '@/lib/clerk-token'
 
 export interface TaskContext {
   id: string
@@ -39,7 +39,7 @@ export function useTaskContext(taskId: string | undefined) {
         `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"}/pm/tasks/${taskId}/context`,
         {
           headers: {
-            Authorization: `Bearer ${await getAuthToken()}`,
+            Authorization: `Bearer ${await getClerkToken()}`,
           },
         }
       )
@@ -53,15 +53,3 @@ export function useTaskContext(taskId: string | undefined) {
     enabled: !!taskId,
   })
 }
-
-async function getAuthToken() {
-  const { supabase } = await import("@pm/lib/supabase")
-  const {
-    data: { session },
-  } = await supabase.auth.getSession()
-  return session?.access_token || ""
-}
-
-
-
-

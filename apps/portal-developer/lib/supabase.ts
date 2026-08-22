@@ -12,8 +12,10 @@ export const supabase = createBrowserClient(supabaseUrl, supabaseAnonKey)
 export async function getAuthToken(): Promise<string | null> {
   if (typeof window === 'undefined') return null
   try {
-    const { data: { session } } = await supabase.auth.getSession()
-    return session?.access_token || null
+    const clerk = (window as typeof window & {
+      Clerk?: { session?: { getToken: () => Promise<string | null> } }
+    }).Clerk
+    return await clerk?.session?.getToken() ?? null
   } catch {
     return null
   }

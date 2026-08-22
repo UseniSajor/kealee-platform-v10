@@ -7,6 +7,7 @@ interface CaptureHandoffPanelProps {
   captureSessionId: string
   captureToken: string
   projectPath: string
+  returnPath?: string
   onLinkSent?: () => void
 }
 
@@ -14,6 +15,7 @@ export function CaptureHandoffPanel({
   captureSessionId,
   captureToken,
   projectPath,
+  returnPath,
   onLinkSent,
 }: CaptureHandoffPanelProps) {
   const [phone, setPhone] = useState('')
@@ -42,6 +44,7 @@ export function CaptureHandoffPanel({
           phoneNumber: phone,
           clientName: clientName || undefined,
           projectPath,
+          returnPath,
         }),
       })
       const json = await resp.json()

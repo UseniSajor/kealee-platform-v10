@@ -3,6 +3,7 @@
  */
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.kealee.com';
+import { getClerkToken } from '../clerk-token';
 
 export async function apiFetch<T = unknown>(
   path: string,
@@ -15,20 +16,8 @@ export async function apiFetch<T = unknown>(
     ...(options.headers as Record<string, string>),
   };
 
-  // Attach Supabase token if available
-  try {
-    const { createClient } = await import('@supabase/supabase-js');
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    );
-    const { data: { session } } = await supabase.auth.getSession();
-    if (session?.access_token) {
-      headers['Authorization'] = `Bearer ${session.access_token}`;
-    }
-  } catch {
-    // supabase not available — continue unauthenticated
-  }
+  const token = await getClerkToken();
+  if (token) headers['Authorization'] = `Bearer ${token}`;
 
   const res = await fetch(url, { ...options, headers });
 

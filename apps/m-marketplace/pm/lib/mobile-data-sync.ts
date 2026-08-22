@@ -2,6 +2,7 @@
  * Mobile Data Sync
  * Offline-first data synchronization for mobile PM app
  */
+import { getClerkToken } from '@/lib/clerk-token'
 
 interface PendingChange {
   id: string
@@ -146,11 +147,7 @@ class MobileDataSync {
    * Get auth token
    */
   private async getAuthToken(): Promise<string> {
-    const { supabase } = await import("@pm/lib/supabase")
-    const {
-      data: { session },
-    } = await supabase.auth.getSession()
-    return session?.access_token || ""
+    return await getClerkToken() || ''
   }
 
   /**
@@ -164,7 +161,6 @@ class MobileDataSync {
 
 // Export singleton instance
 export const mobileDataSync = new MobileDataSync()
-
 
 
 

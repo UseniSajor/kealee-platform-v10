@@ -3,7 +3,7 @@
  * Uses Claude API to generate task templates from SOW
  */
 
-import Anthropic from '@anthropic-ai/sdk'
+import { AnthropicClient as Anthropic } from '@kealee/core-llm'
 import type {
   TaskTemplate,
   TaskGenerationRequest,

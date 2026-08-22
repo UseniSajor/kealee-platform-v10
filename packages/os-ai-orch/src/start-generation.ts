@@ -1,5 +1,4 @@
-import { Prisma } from '@prisma/client'
-import { prisma } from '@kealee/database'
+import { Prisma, prisma } from '@kealee/database'
 import {
   getV30Bot,
   runV30ParallelGeneration,

@@ -7,6 +7,7 @@ import { Button } from "@kealee/ui/button"
 import { useComplianceCheck } from "@pm/hooks/useComplianceCheck"
 import { api } from "@pm/lib/api-client"
 import { ComplianceCheckpoint } from "./ComplianceCheckpoint"
+import { getClerkToken } from '@/lib/clerk-token'
 
 interface TaskCompletionButtonProps {
   taskId: string
@@ -77,11 +78,7 @@ export function TaskCompletionButton({
   }
 
   async function getAuthToken() {
-    const { supabase } = await import("@pm/lib/supabase")
-    const {
-      data: { session },
-    } = await supabase.auth.getSession()
-    return session?.access_token || ""
+    return await getClerkToken() || ''
   }
 
   if (complianceLoading) {
@@ -149,7 +146,6 @@ export function TaskCompletionButton({
     </div>
   )
 }
-
 
 
 

@@ -17,26 +17,23 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - uses: pnpm/action-setup@v3
+      - uses: pnpm/action-setup@v4
         with:
-          version: 8.15.9
+          version: 11.22.0
 
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
           cache: pnpm
 
       - name: Install dependencies
-        run: PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true pnpm install --no-frozen-lockfile
+        run: PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true pnpm install --frozen-lockfile
 
       - name: Apply Supabase migrations
         env:
           SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
         run: |
-          if [ -z "$SUPABASE_DB_URL" ]; then
-            echo "::warning::SUPABASE_DB_URL secret not set — run: pnpm run deploy:marketing-agency"
-            exit 0
-          fi
+          test -n "$SUPABASE_DB_URL" || { echo "::error::SUPABASE_DB_URL is required"; exit 1; }
           pnpm run migrate:marketing-agency
           pnpm run migrate:intelligence-rls
 
@@ -49,17 +46,17 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - uses: pnpm/action-setup@v3
+      - uses: pnpm/action-setup@v4
         with:
-          version: 8.15.9
+          version: 11.22.0
 
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
           cache: pnpm
 
       - name: Install dependencies
-        run: PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true pnpm install --no-frozen-lockfile
+        run: PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true pnpm install --frozen-lockfile
 
       - name: Build API
         run: pnpm build --filter=@kealee/api
@@ -71,7 +68,7 @@ jobs:
         run: railway link --project "$RAILWAY_PROJECT_ID" --environment "$RAILWAY_ENVIRONMENT"
 
       - name: Deploy API to Railway
-        run: railway redeploy --service api --yes
+        run: railway redeploy --service kealee-platform-v10 --yes
 
   deploy-services:
     name: Deploy ${{ matrix.service }} to Railway

@@ -9,24 +9,25 @@
  *   2. 01-datasource.prisma (datasource block)
  *   3. Domain directories in alphabetical order, enums.prisma then models.prisma
  *
- * Outputs: prisma/schema.generated.prisma
+ * Outputs: prisma/schema.prisma (the only generated runtime schema)
  *
  * Developer workflow:
  *   - Edit files in schema-src/<domain>/
  *   - Run `npx tsx scripts/merge-schema.ts` to regenerate
- *   - Run `npx prisma generate --schema=prisma/schema.generated.prisma`
+ *   - Run `npx prisma generate --schema=prisma/schema.prisma`
  */
 
 import * as fs from 'fs'
 import * as path from 'path'
 
 const SCHEMA_SRC = path.join(__dirname, '..', 'schema-src')
-const OUTPUT = path.join(__dirname, '..', 'prisma', 'schema.generated.prisma')
+const OUTPUT = path.join(__dirname, '..', 'prisma', 'schema.prisma')
 
 // Domain ordering — controls the order of blocks in the generated schema
 const DOMAIN_ORDER = [
   'foundation',
   'identity',
+  'bim',
   'ddts',
   'land',
   'feasibility',
@@ -95,7 +96,9 @@ function merge() {
 
   for (const filePath of files) {
     const relative = path.relative(SCHEMA_SRC, filePath)
-    const content = fs.readFileSync(filePath, 'utf-8').trim()
+    // Normalize source files checked out with Windows line endings so the
+    // generated schema is deterministic and passes git's whitespace gate.
+    const content = fs.readFileSync(filePath, 'utf-8').replace(/\r\n/g, '\n').trim()
     parts.push(`// --- ${relative} ---`)
     parts.push(content)
     parts.push('')

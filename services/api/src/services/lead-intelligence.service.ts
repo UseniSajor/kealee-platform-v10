@@ -4,6 +4,7 @@
  */
 
 import { prisma } from '@kealee/database'
+import { sendSMS } from '@kealee/communications'
 
 // ── Event scoring table ───────────────────────────────────────────────────────
 
@@ -59,15 +60,11 @@ async function triggerHotLead(email: string, phone?: string): Promise<void> {
   // Twilio SMS — only if phone provided
   if (phone) {
     try {
-      const twilio = (await import('twilio')).default
-      const client = twilio(
-        process.env.TWILIO_ACCOUNT_SID!,
-        process.env.TWILIO_AUTH_TOKEN!
-      )
-      await client.messages.create({
+      const alertPhone = process.env.INTERNAL_ALERT_PHONE ?? process.env.TWILIO_PHONE_NUMBER
+      if (!alertPhone) return
+      await sendSMS({
         body: `🔥 Hot lead alert: ${email} scored 70+ — assign immediately.`,
-        from: process.env.TWILIO_FROM_NUMBER!,
-        to: process.env.INTERNAL_ALERT_PHONE ?? process.env.TWILIO_FROM_NUMBER!,
+        to: alertPhone,
       })
     } catch {
       console.warn('[LeadIntelligence] Twilio SMS failed (non-critical)')

@@ -1,0 +1,9 @@
+# Platform-wide delivery and security controls require owner review.
+/.github/ @UseniSajor
+/Dockerfile @UseniSajor
+/railway.toml @UseniSajor
+/vercel.* @UseniSajor
+/packages/database/ @UseniSajor
+/packages/auth/ @UseniSajor
+/packages/core-ai-gateway/ @UseniSajor
+/services/api/ @UseniSajor

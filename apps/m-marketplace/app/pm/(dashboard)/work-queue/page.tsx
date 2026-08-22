@@ -169,6 +169,7 @@ export default function WorkQueuePage() {
       setWsStatus("disabled")
       return
     }
+    const wsUrl = url
 
     let ws: WebSocket | null = null
     let cancelled = false
@@ -179,7 +180,7 @@ export default function WorkQueuePage() {
 
       try {
         setWsStatus("connecting")
-        ws = new WebSocket(url)
+        ws = new WebSocket(wsUrl)
 
         ws.onopen = () => {
           if (cancelled) return

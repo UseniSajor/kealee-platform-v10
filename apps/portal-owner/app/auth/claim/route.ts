@@ -1,13 +1,13 @@
 /**
  * GET /auth/claim?t=TOKEN&i=INTAKE_ID
  *
- * Validates the portal access token on the intake row, then creates a Supabase
- * session server-side (generateLink + verifyOtp) and redirects to deliverables.
+ * Validates the portal access token, resolves/creates the matching Clerk user,
+ * and exchanges the claim for a short-lived Clerk sign-in ticket.
  * Used by concept-ready emails — one click, no login form.
  */
 
 import { createClient } from '@supabase/supabase-js'
-import { createServerClient, type CookieOptions } from '@supabase/ssr'
+import { clerkClient } from '@clerk/nextjs/server'
 import { NextRequest, NextResponse } from 'next/server'
 import { mergePortalAccessMeta, readPortalAccessMeta } from '@/lib/portal-access-meta'
 
@@ -31,9 +31,8 @@ export async function GET(request: NextRequest) {
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
-  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-  if (!supabaseUrl || !serviceRoleKey || !anonKey) {
+  if (!supabaseUrl || !serviceRoleKey) {
     console.error('[auth/claim] missing Supabase env vars')
     return errorRedirect(origin, 'config_error')
   }
@@ -81,57 +80,25 @@ export async function GET(request: NextRequest) {
   const nextPath = meta.portalNextPath ?? `/deliverables/${intakeId}`
   const safePath = nextPath.startsWith('/') ? nextPath : `/deliverables/${intakeId}`
 
-  const redirectTo = `${origin}/auth/callback?next=${encodeURIComponent(safePath)}`
-
-  const { data: linkData, error: linkError } = await admin.auth.admin.generateLink({
-    type: 'magiclink',
-    email,
-    options: { redirectTo },
+  const clerk = clerkClient()
+  const existingUsers = await clerk.users.getUserList({ emailAddress: [email], limit: 1 })
+  const clerkUser = existingUsers.data[0] ?? await clerk.users.createUser({
+    emailAddress: [email],
+    skipPasswordRequirement: true,
+    publicMetadata: { role: 'owner' },
   })
 
-  const tokenHash = linkData?.properties?.hashed_token
-  if (linkError || !tokenHash) {
-    console.error('[auth/claim] generateLink:', linkError?.message ?? 'no hashed_token')
-    return errorRedirect(origin, 'session_failed', safePath)
-  }
-
-  const redirectResponse = NextResponse.redirect(`${origin}${safePath}`)
-
-  const supabase = createServerClient(supabaseUrl, anonKey, {
-    cookies: {
-      getAll: () => request.cookies.getAll(),
-      setAll: (cookiesToSet: { name: string; value: string; options?: CookieOptions }[]) => {
-        cookiesToSet.forEach(({ name, value, options }) =>
-          redirectResponse.cookies.set(
-            name,
-            value,
-            options as Parameters<typeof redirectResponse.cookies.set>[2],
-          ),
-        )
-      },
-    },
+  const { linkIntakeToUser } = await import('@kealee/auth')
+  await linkIntakeToUser(admin, intakeId, clerkUser.id, email).catch((err: unknown) => {
+    console.warn('[auth/claim] link intake:', err instanceof Error ? err.message : err)
   })
 
-  const { error: verifyError } = await supabase.auth.verifyOtp({
-    token_hash: tokenHash,
-    type: 'magiclink',
+  const signInToken = await clerk.signInTokens.createSignInToken({
+    userId: clerkUser.id,
+    expiresInSeconds: 300,
   })
-
-  if (verifyError) {
-    console.error('[auth/claim] verifyOtp:', verifyError.message)
-    return errorRedirect(origin, 'session_failed', safePath)
-  }
-
-  const { data: { user: sessionUser } } = await supabase.auth.getUser()
-  if (sessionUser?.id && sessionUser.email) {
-    const { linkIntakeToUser } = await import('@kealee/auth')
-    await linkIntakeToUser(admin, intakeId, sessionUser.id, sessionUser.email).catch((err: unknown) => {
-      console.warn('[auth/claim] link intake:', err instanceof Error ? err.message : err)
-    })
-  }
-
-  // verifyOtp success = session cookies are set on redirectResponse.
-  // (getSession() reads from REQUEST cookies and returns null here — don't check it.)
+  const destination = new URL(signInToken.url)
+  destination.searchParams.set('redirect_url', `${origin}${safePath}`)
 
   // Invalidate claim token after successful sign-in (fresh token on resend email)
   const existingMetadata = (intake.metadata as Record<string, unknown> | null) ?? {}
@@ -152,5 +119,5 @@ export async function GET(request: NextRequest) {
       if (error) console.warn('[auth/claim] clear portalToken:', error.message)
     })
 
-  return redirectResponse
+  return NextResponse.redirect(destination)
 }

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-import { supabase } from "./supabase"
+import { useAuth, useClerk } from '@clerk/nextjs'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"
 
@@ -24,53 +24,46 @@ async function apiGet<T>(endpoint: string, accessToken: string): Promise<T> {
 
 export function useRequirePmAuth() {
   const router = useRouter()
+  const { isLoaded, isSignedIn, getToken } = useAuth()
+  const { signOut } = useClerk()
   const [ready, setReady] = useState(false)
 
   useEffect(() => {
     let cancelled = false
 
     async function check() {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession()
-
-      if (!session?.access_token) {
+      if (!isLoaded) return
+      const accessToken = isSignedIn ? await getToken() : null
+      if (!accessToken) {
         router.replace("/login")
         return
       }
 
       try {
-        const me = await apiGet<{ user: { id: string } }>("/auth/me", session.access_token)
+        const me = await apiGet<{ user: { id: string } }>("/auth/me", accessToken)
         const orgs = await apiGet<{ orgs: Array<{ role: string }> }>(
           `/users/${me.user.id}/orgs`,
-          session.access_token
+          accessToken
         )
         const role = orgs.orgs.find((o) => isAllowedPmRole(o.role))?.role
         if (!isAllowedPmRole(role)) {
-          await supabase.auth.signOut()
+          await signOut()
           router.replace("/login?error=unauthorized")
           return
         }
         if (!cancelled) setReady(true)
       } catch {
-        await supabase.auth.signOut()
+        await signOut()
         router.replace("/login")
       }
     }
 
     check()
 
-    const { data: sub } = supabase.auth.onAuthStateChange(() => {
-      setReady(false)
-      check()
-    })
-
     return () => {
       cancelled = true
-      sub.subscription.unsubscribe()
     }
-  }, [router])
+  }, [getToken, isLoaded, isSignedIn, router, signOut])
 
   return { ready }
 }
-

@@ -1,6 +1,6 @@
-FROM node:20-bullseye AS deps
+FROM node:24-bookworm-slim AS deps
 
-RUN corepack enable && corepack prepare pnpm@8.15.9 --activate
+RUN corepack enable && corepack prepare pnpm@11.22.0 --activate
 
 WORKDIR /app
 
@@ -18,9 +18,13 @@ RUN pnpm fetch
 COPY . .
 # This monorepo includes app shells whose manifests can change independently
 # of the deploy target; resolve those workspace entries during the image build.
-RUN pnpm install --no-frozen-lockfile --prefer-offline
+RUN pnpm install --frozen-lockfile --prefer-offline
 
 FROM deps AS builder
+
+# Large Next.js applications and the API type graph exceed Node's default
+# heap during optimized production compilation.
+ENV NODE_OPTIONS=--max-old-space-size=6144
 
 # Railway injects the service name as a build arg for Dockerfile deploys.
 ARG RAILWAY_SERVICE_NAME
@@ -33,9 +37,11 @@ ENV RAILWAY_SERVICE_NAME=$RAILWAY_SERVICE_NAME
 ARG NEXT_PUBLIC_SUPABASE_URL
 ARG NEXT_PUBLIC_SUPABASE_ANON_KEY
 ARG NEXT_PUBLIC_APP_URL
+ARG NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
 ENV NEXT_PUBLIC_SUPABASE_URL=$NEXT_PUBLIC_SUPABASE_URL \
     NEXT_PUBLIC_SUPABASE_ANON_KEY=$NEXT_PUBLIC_SUPABASE_ANON_KEY \
-    NEXT_PUBLIC_APP_URL=$NEXT_PUBLIC_APP_URL
+    NEXT_PUBLIC_APP_URL=$NEXT_PUBLIC_APP_URL \
+    NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=$NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
 
 # Build the right thing for the service. Any Next.js app (apps/<name>/next.config.js)
 # is built as a standalone server; everything else builds the API entrypoint.
@@ -59,9 +65,9 @@ RUN set -eux; \
   fi
 
 # Production stage: copy only what we need
-FROM node:20-bullseye
+FROM node:24-bookworm-slim
 
-RUN corepack enable && corepack prepare pnpm@8.15.9 --activate
+RUN corepack enable && corepack prepare pnpm@11.22.0 --activate
 
 WORKDIR /app
 

@@ -74,7 +74,7 @@ export default function SelectionsPage() {
   const [activeCategory, setActiveCategory] = React.useState<"All" | CategoryType>("All")
 
   const { data, isLoading } = useSelections({ category: activeCategory !== "All" ? activeCategory : undefined, search: search || undefined })
-  const selections = data?.items ?? []
+  const selections = (data?.items ?? []) as Selection[]
 
   if (isLoading) return (<div className="flex items-center justify-center h-64"><Loader2 className="h-8 w-8 animate-spin text-gray-400" /></div>)
 

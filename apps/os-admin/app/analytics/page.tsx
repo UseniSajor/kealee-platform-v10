@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { supabase } from '@/lib/supabase'
+import { getClerkToken } from '@/lib/clerk-token'
 import { ProtectedRoute } from '@/components/auth/protected-route'
 import { AppLayout } from '@/components/layout/app-layout'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -212,8 +212,7 @@ export default function AnalyticsPage() {
       setLoading(true)
       setError(null)
 
-      const { data: { session } } = await supabase.auth.getSession()
-      const token = session?.access_token
+      const token = await getClerkToken()
 
       const headers: Record<string, string> = {
         'Content-Type': 'application/json',

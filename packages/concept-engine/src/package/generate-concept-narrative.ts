@@ -3,7 +3,7 @@
  * Returns structured text sections for homeowner delivery and architect handoff.
  */
 
-import Anthropic from '@anthropic-ai/sdk';
+import { AnthropicClient as Anthropic } from '@kealee/core-llm';
 import type { ConceptIntakeInput } from '../floorplan/types';
 import type { FloorPlanJson } from '../floorplan/types';
 

@@ -432,7 +432,7 @@ function CatalogProductPage({ product }: { product: PublicCatalogProduct }) {
   const startHref = availability === 'online' ? product.startHref : requestHref
   const isDetailedEstimate = product.key === 'detailed_estimate'
   const heroMedia = getProductHeroMedia(product.key, product.name, product.categoryId, product.sampleAsset)
-  const price = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(product.priceCents / 100)
+  const price = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format((product.priceCents ?? 0) / 100)
 
   return (
     <main className="min-h-screen bg-white pb-24 lg:pb-0">

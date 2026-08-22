@@ -3,7 +3,7 @@
  * Upload and AI-powered processing of bid documents
  */
 
-import Anthropic from '@anthropic-ai/sdk'
+import { AnthropicClient as Anthropic } from '@kealee/core-llm'
 import { config } from '../../config'
 import { prismaAny } from '../../utils/prisma-helper'
 import { uploadFile } from '@kealee/storage'

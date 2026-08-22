@@ -3,14 +3,13 @@
  *
  * Two accepted proofs, both scoped to one intake:
  *   1. The per-order portal token issued into the customer's email link.
- *   2. A Supabase session whose email matches the order's contact email.
+ *   2. A Clerk session whose email matches the order's contact email.
  *
  * Anything else is denied. Nothing here ever reveals whether an order exists
  * to an unauthorised caller — callers surface a single generic 404.
  */
 
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
-import { cookies } from 'next/headers'
+import { getClerkUser } from '@kealee/auth'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
 
 export interface OrderRecord {
@@ -72,10 +71,7 @@ export async function authorizeOrderAccess(
   }
 
   try {
-    const supabaseAuth = createRouteHandlerClient({ cookies })
-    const {
-      data: { user },
-    } = await supabaseAuth.auth.getUser()
+    const user = await getClerkUser()
     const sessionEmail = user?.email?.toLowerCase()
     const orderEmail = order.contact_email?.toLowerCase()
     if (sessionEmail && orderEmail && sessionEmail === orderEmail) {

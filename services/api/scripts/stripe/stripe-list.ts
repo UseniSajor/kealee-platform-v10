@@ -95,7 +95,7 @@ async function listStripeProducts(outputFormat: 'csv' | 'json' = 'csv') {
 
   try {
     const stripe = new Stripe(env('STRIPE_SECRET_KEY'), {
-      apiVersion: '2025-12-15.clover' as any
+      apiVersion: '2026-07-29.dahlia' as any
     })
 
     // Fetch all products

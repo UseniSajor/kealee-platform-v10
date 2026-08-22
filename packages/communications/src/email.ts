@@ -136,7 +136,7 @@ export async function sendEmailWithTemplate(
     to: [opts.to],
     subject,
     html,
-    reply_to: DEFAULT_REPLY_TO,
+    replyTo: DEFAULT_REPLY_TO,
     tags: [
       { name: 'template', value: template.name },
       { name: 'eventId', value: emailEvent.id },
@@ -202,7 +202,7 @@ export async function sendEmail(
     to: [opts.to],
     subject: opts.subject,
     html: opts.html,
-    reply_to: opts.replyTo || DEFAULT_REPLY_TO,
+    replyTo: opts.replyTo || DEFAULT_REPLY_TO,
     tags: opts.tags || [],
   })
 

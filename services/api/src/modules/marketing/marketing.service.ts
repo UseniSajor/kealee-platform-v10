@@ -6,13 +6,14 @@
  */
 
 import { createLogger } from '@kealee/observability';
+import { sendSMS } from '@kealee/communications';
 import Stripe from 'stripe';
 import { MARKETING_PACKAGES, type MarketingPackageId } from './marketing.packages.js';
 
 const logger = createLogger('marketing-service');
 
 const stripe = process.env.STRIPE_SECRET_KEY
-  ? new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2023-10-16' as any })
+  ? new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2026-07-29.dahlia' as any })
   : null;
 
 const API_BASE = process.env.INTERNAL_API_URL ?? 'http://api:3000';
@@ -233,19 +234,11 @@ export async function notifyContractorLead(params: {
 
   // SMS notification
   if (contractorPhone) {
-    const accountSid = process.env.TWILIO_ACCOUNT_SID;
-    const authToken  = process.env.TWILIO_AUTH_TOKEN;
-    const from       = process.env.TWILIO_PHONE_NUMBER;
-
-    if (accountSid && authToken && from) {
-      const { default: twilio } = await import('twilio');
-      const client = twilio(accountSid, authToken);
-
+    if (process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN) {
       const body = `Kealee: New lead — ${leadName}${leadPhone ? ` (${leadPhone})` : ''}${trade ? ` — ${trade}` : ''}. Reply STOP to opt out.`;
 
-      await client.messages.create({
+      await sendSMS({
         to:   contractorPhone.startsWith('+') ? contractorPhone : `+1${contractorPhone.replace(/\D/g, '')}`,
-        from,
         body,
       }).catch(err => logger.error({ err }, 'Lead notification SMS failed'));
     }

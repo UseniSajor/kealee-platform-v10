@@ -236,7 +236,7 @@ export default function ConceptLayout({ children }: { children: React.ReactNode 
       {children}
 
       {/* Styles */}
-      <style jsx>{`
+      <style>{`
         .concept-page {
           font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
           color: #333;
@@ -406,7 +406,7 @@ function ValueCard({ icon, title, description }: { icon: string; title: string; 
       <div className='icon'>{icon}</div>
       <h3>{title}</h3>
       <p>{description}</p>
-      <style jsx>{`
+      <style>{`
         .value-card {
           padding: 24px;
           border-radius: 8px;
@@ -456,7 +456,7 @@ function TierCard({ name, price, features, recommended }: { name: string; price:
       <a href='#intake' className='cta-button'>
         Get Started
       </a>
-      <style jsx>{`
+      <style>{`
         .tier-card {
           border: 1px solid #e0e0e0;
           border-radius: 8px;
@@ -543,7 +543,7 @@ function Step({ number, title, description }: { number: number; title: string; d
       <div className='number'>{number}</div>
       <h4>{title}</h4>
       <p>{description}</p>
-      <style jsx>{`
+      <style>{`
         .step {
           display: flex;
           gap: 20px;
@@ -580,7 +580,7 @@ function UseCase({ emoji, title, description }: { emoji: string; title: string; 
       <div className='emoji'>{emoji}</div>
       <h4>{title}</h4>
       <p>{description}</p>
-      <style jsx>{`
+      <style>{`
         .use-case {
           padding: 24px;
           border-radius: 8px;
@@ -619,7 +619,7 @@ function FAQ({ question, answer }: { question: string; answer: string }) {
         <span className='icon'>{open ? '▼' : '▶'}</span>
       </button>
       {open && <p className='faq-answer'>{answer}</p>}
-      <style jsx>{`
+      <style>{`
         .faq-item {
           border-bottom: 1px solid #e0e0e0;
         }
@@ -666,7 +666,7 @@ function Testimonial({ quote, author, project }: { quote: string; author: string
       <p className='quote'>"{quote}"</p>
       <p className='author'>{author}</p>
       <p className='project'>{project}</p>
-      <style jsx>{`
+      <style>{`
         .testimonial {
           padding: 24px;
           background: #f9f9f9;

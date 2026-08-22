@@ -16,10 +16,10 @@
     "start-launch": "tsx src/start-launch.ts"
   },
   "dependencies": {
-    "@kealee/core-bots": "*",
-    "@kealee/core-llm": "*",
-    "@kealee/database": "*",
-    "@kealee/observability": "*"
+    "@kealee/core-bots": "workspace:*",
+    "@kealee/core-llm": "workspace:*",
+    "@kealee/database": "workspace:*",
+    "@kealee/observability": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^20.10.0",

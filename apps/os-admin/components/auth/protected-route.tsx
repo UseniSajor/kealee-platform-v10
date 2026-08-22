@@ -1,54 +1,17 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { supabase } from '@/lib/supabase'
+import { useAuth, useSession } from '@clerk/nextjs'
 
 interface ProtectedRouteProps {
   children: React.ReactNode
+  requiredRole?: string
 }
 
-export function ProtectedRoute({ children }: ProtectedRouteProps) {
-  const router = useRouter()
-  const [loading, setLoading] = useState(true)
-  const [authenticated, setAuthenticated] = useState(false)
+export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) {
+  const { isLoaded, isSignedIn } = useAuth()
+  const { session } = useSession()
 
-  useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        // Verify session with Supabase
-        const { data: { session }, error } = await supabase.auth.getSession()
-
-        if (error || !session) {
-          router.push('/login')
-          return
-        }
-
-        setAuthenticated(true)
-      } catch (error) {
-        router.push('/login')
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    checkAuth()
-
-    // Listen for auth state changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        if (event === 'SIGNED_OUT' || !session) {
-          router.push('/login')
-        }
-      }
-    )
-
-    return () => {
-      subscription.unsubscribe()
-    }
-  }, [router, supabase])
-
-  if (loading) {
+  if (!isLoaded) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">
@@ -59,8 +22,16 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
     )
   }
 
-  if (!authenticated) {
+  if (!isSignedIn) {
     return null
+  }
+
+  if (requiredRole) {
+    const claims = session?.lastActiveToken?.jwt?.claims as Record<string, unknown> | null | undefined
+    const metadata = (claims?.metadata ?? claims?.publicMetadata ?? {}) as Record<string, unknown>
+    const role = String(metadata.role ?? '').toLowerCase()
+    const required = requiredRole.toLowerCase()
+    if (role !== required && !(required === 'admin' && role === 'super_admin')) return null
   }
 
   return <>{children}</>

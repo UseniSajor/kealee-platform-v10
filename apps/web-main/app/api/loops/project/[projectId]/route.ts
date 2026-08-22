@@ -15,7 +15,7 @@ export async function GET(
     }
 
     const loops = await prisma.loopRun.findMany({
-      where: { projectId },
+      where: { projectTwin: { projectId } },
       include: {
         steps: {
           orderBy: { createdAt: 'asc' },

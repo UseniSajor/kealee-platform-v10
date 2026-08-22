@@ -1,83 +1,81 @@
+import { createClerkClient, verifyToken as verifyClerkToken } from '@clerk/backend'
 import { prismaAny } from '../../utils/prisma-helper'
-import { getSupabaseClient } from '../../utils/supabase-client'
 import { auditService } from '../audit/audit.service'
 import { syncNewUser } from '../integrations/ghl/ghl-sync'
 
+function clerk() {
+  const secretKey = process.env.CLERK_SECRET_KEY
+  if (!secretKey) throw new Error('CLERK_SECRET_KEY is required')
+  return createClerkClient({ secretKey })
+}
+
 export class AuthService {
   async signup(email: string, password: string, name: string) {
-    // 1. Create user in Supabase Auth
-    const supabase = getSupabaseClient()
-    const { data: authData, error: authError } = await supabase.auth.signUp({
-      email,
+    const [firstName, ...lastNameParts] = name.trim().split(/\s+/)
+    const identity = await clerk().users.createUser({
+      emailAddress: [email],
       password,
+      firstName: firstName || undefined,
+      lastName: lastNameParts.join(' ') || undefined,
     })
 
-    if (authError) throw authError
-
-    // 2. Create user record in our database — with Supabase rollback on failure
     let user: any
     try {
       user = await prismaAny.user.create({
         data: {
-          id: authData.user!.id,
           email,
           name,
+          firstName: firstName || null,
+          lastName: lastNameParts.join(' ') || null,
+          externalAuthId: identity.id,
+          authProvider: 'clerk',
           status: 'ACTIVE',
         },
       })
-    } catch (prismaErr: any) {
-      // Rollback: delete the Supabase auth user to prevent orphaned accounts
-      try {
-        await supabase.auth.admin.deleteUser(authData.user!.id)
-        console.log(`Auth rollback: Supabase user ${authData.user!.id} deleted after Prisma failure`)
-      } catch (rollbackErr: any) {
-        console.error(`Auth rollback failed for ${authData.user!.id}:`, rollbackErr.message)
-      }
-      throw prismaErr
+    } catch (databaseError) {
+      await clerk().users.deleteUser(identity.id).catch(() => undefined)
+      throw databaseError
     }
 
-    auditService.log({ userId: user.id, action: 'CREATE', entityType: 'USER', entityId: user.id, description: `User registered: ${email}`, category: 'SECURITY', severity: 'INFO' })
-
-    // Sync new user to GHL CRM (fire-and-forget)
-    const nameParts = name.split(' ')
+    auditService.log({ userId: user.id, action: 'CREATE', entityType: 'USER', entityId: user.id, description: `Clerk user registered: ${email}`, category: 'SECURITY', severity: 'INFO' })
     syncNewUser({
       id: user.id,
       email: user.email,
-      firstName: nameParts[0],
-      lastName: nameParts.slice(1).join(' ') || undefined,
+      firstName: firstName || undefined,
+      lastName: lastNameParts.join(' ') || undefined,
     }, 'Direct Sign-up').catch(() => {})
 
-    return { user, session: authData.session }
+    // Clerk creates the browser session in its hosted/client flow.
+    return { user, session: null, clerkUserId: identity.id }
   }
 
-  async login(email: string, password: string) {
-    const supabase = getSupabaseClient()
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    })
-
-    if (error) {
-      auditService.log({ userId: 'unknown', action: 'LOGIN', entityType: 'SESSION', entityId: email, description: `Failed login attempt: ${email}`, category: 'SECURITY', severity: 'WARNING' })
-      throw error
-    }
-
-    auditService.log({ userId: data.session?.user?.id || 'unknown', userEmail: email, action: 'LOGIN', entityType: 'SESSION', entityId: data.session?.access_token?.substring(0, 8) || 'unknown', description: `User logged in: ${email}`, category: 'SECURITY', severity: 'INFO' })
-
-    return { session: data.session }
+  async login(_email: string, _password: string): Promise<never> {
+    throw new Error('Password sign-in is managed by Clerk. Use the application sign-in flow.')
   }
 
-  async logout(accessToken: string) {
-    const supabase = getSupabaseClient()
-    auditService.log({ userId: 'unknown', action: 'LOGOUT', entityType: 'SESSION', entityId: accessToken.substring(0, 8), description: 'User logged out', category: 'SECURITY', severity: 'INFO' })
-    await supabase.auth.signOut()
+  async logout(_accessToken: string) {
+    // Session termination is performed by Clerk in the browser where the
+    // session ID and cookie context are available.
+    return
   }
 
   async verifyToken(token: string) {
-    const supabase = getSupabaseClient()
-    const { data, error } = await supabase.auth.getUser(token)
-    if (error) throw error
-    return data.user
+    const secretKey = process.env.CLERK_SECRET_KEY
+    if (!secretKey) throw new Error('CLERK_SECRET_KEY is required')
+    const claims = await verifyClerkToken(token, { secretKey })
+    const user = await prismaAny.user.findFirst({
+      where: {
+        OR: [{ externalAuthId: claims.sub }, { id: claims.sub }],
+      },
+    })
+    if (!user || user.status !== 'ACTIVE') throw new Error('User not found or inactive')
+    return {
+      ...user,
+      userId: user.id,
+      clerkUserId: claims.sub,
+      role: user.role || 'USER',
+      authSource: 'clerk' as const,
+    }
   }
 }
 

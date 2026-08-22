@@ -11,6 +11,11 @@ export interface V30BotDefinition {
   estimatedCostUsd: number
 }
 
+/** Centralized compatibility resolver for legacy OpenAI-backed v3.0 jobs. */
+export function resolveV30OpenAIModel(): string {
+  return process.env.KEALEE_OPENAI_PRIMARY_MODEL ?? 'gpt-5.6-sol'
+}
+
 /** KeaBot v3.0 registry — 11 post-payment parallel bots + IntakeBot. */
 export const V30_BOT_REGISTRY: Record<V30BotType, V30BotDefinition> = {
   intake: {

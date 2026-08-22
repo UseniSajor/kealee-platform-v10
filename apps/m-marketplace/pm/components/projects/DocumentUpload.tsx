@@ -107,17 +107,17 @@ export function DocumentUpload({ projectId, className }: DocumentUploadProps) {
       if (!projectId || projectId === "global") return
       try {
         const result = await api.documents.list(projectId)
-        if (result?.documents?.length) {
-          const loaded: DocumentItem[] = result.documents.map((doc: any) => {
+        if (result?.items?.length) {
+          const loaded: DocumentItem[] = result.items.map((doc) => {
             const version: DocumentVersion = {
               id: doc.id,
               version: doc.version || 1,
-              filename: doc.title || doc.name || "Untitled",
+                filename: doc.name || "Untitled",
               mimeType: doc.mimeType || "application/octet-stream",
               sizeBytes: doc.sizeBytes || 0,
-              uploadedAt: doc.createdAt || new Date().toISOString(),
-              uploader: doc.uploaderName || doc.uploader || "Unknown",
-              objectUrl: doc.url || doc.fileUrl,
+              uploadedAt: doc.uploadedAt || new Date().toISOString(),
+              uploader: doc.uploadedBy || "Unknown",
+              objectUrl: doc.url,
             }
             return {
               id: doc.id,
@@ -177,12 +177,12 @@ export function DocumentUpload({ projectId, className }: DocumentUploadProps) {
               const version: DocumentVersion = {
                 id: doc.id || uid("ver"),
                 version: 1,
-                filename: doc.title || doc.name,
+                filename: doc.name,
                 mimeType: doc.mimeType || "application/octet-stream",
                 sizeBytes: doc.sizeBytes || 0,
-                uploadedAt: doc.createdAt || now,
-                uploader: doc.uploader || uploader,
-                objectUrl: doc.url || doc.fileUrl,
+                uploadedAt: doc.uploadedAt || now,
+                uploader: doc.uploadedBy || uploader,
+                objectUrl: doc.url,
               }
               const item: DocumentItem = {
                 id: doc.id || uid("doc"),
@@ -753,4 +753,3 @@ export function DocumentUpload({ projectId, className }: DocumentUploadProps) {
     input.click()
   }
 }
-

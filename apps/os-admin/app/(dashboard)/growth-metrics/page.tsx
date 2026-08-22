@@ -1,8 +1,26 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Card, LineChart, BarChart, Table } from '@kealee/ui';
-import { GrowthAnalytics } from '@kealee/core-llm/analytics/growth-queries';
+import { Card } from '@kealee/ui';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+
+interface ChartPoint { value: number; date?: string; name?: string }
+
+function LineChart({ data, height, color = '#2563eb' }: { data: ChartPoint[]; height: number; color?: string }) {
+  const width = 600;
+  const max = Math.max(...data.map((point) => point.value), 1);
+  const points = data.map((point, index) => {
+    const x = data.length < 2 ? width / 2 : (index / (data.length - 1)) * width;
+    const y = height - (point.value / max) * (height - 24) - 12;
+    return `${x},${y}`;
+  }).join(' ');
+  return <svg viewBox={`0 0 ${width} ${height}`} className="w-full" role="img" aria-label="Trend chart"><polyline points={points} fill="none" stroke={color} strokeWidth="3" /></svg>;
+}
+
+function BarChart({ data, height }: { data: ChartPoint[]; height: number }) {
+  const max = Math.max(...data.map((point) => point.value), 1);
+  return <div className="flex items-end gap-4" style={{ height }} role="img" aria-label="Acquisition breakdown chart">{data.map((point) => <div key={point.name} className="flex h-full flex-1 flex-col justify-end gap-2 text-center text-xs"><div className="bg-blue-600 rounded-t" style={{ height: `${(point.value / max) * 85}%` }} /><span>{point.name}</span></div>)}</div>;
+}
 
 interface ExecutiveSummary {
   currentOwners: number;
@@ -139,32 +157,32 @@ export default function GrowthMetricsPage() {
       <Card className="p-6">
         <h2 className="text-xl font-bold mb-4">Channel Performance</h2>
         <Table>
-          <Table.Head>
-            <Table.Row>
-              <Table.Header>Channel</Table.Header>
-              <Table.Header>Users</Table.Header>
-              <Table.Header>Spend</Table.Header>
-              <Table.Header>CAC</Table.Header>
-              <Table.Header>ROI</Table.Header>
-              <Table.Header>Conv. Rate</Table.Header>
-              <Table.Header>Retention</Table.Header>
-            </Table.Row>
-          </Table.Head>
-          <Table.Body>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Channel</TableHead>
+              <TableHead>Users</TableHead>
+              <TableHead>Spend</TableHead>
+              <TableHead>CAC</TableHead>
+              <TableHead>ROI</TableHead>
+              <TableHead>Conv. Rate</TableHead>
+              <TableHead>Retention</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {channels.map((channel) => (
-              <Table.Row key={channel.channel}>
-                <Table.Cell className="font-medium">{channel.channel}</Table.Cell>
-                <Table.Cell>{channel.users.toLocaleString()}</Table.Cell>
-                <Table.Cell>${channel.spend.toLocaleString()}</Table.Cell>
-                <Table.Cell>${channel.cac.toFixed(0)}</Table.Cell>
-                <Table.Cell className={channel.roi > 0 ? 'text-green-600' : 'text-red-600'}>
+              <TableRow key={channel.channel}>
+                <TableCell className="font-medium">{channel.channel}</TableCell>
+                <TableCell>{channel.users.toLocaleString()}</TableCell>
+                <TableCell>${channel.spend.toLocaleString()}</TableCell>
+                <TableCell>${channel.cac.toFixed(0)}</TableCell>
+                <TableCell className={channel.roi > 0 ? 'text-green-600' : 'text-red-600'}>
                   {channel.roi.toFixed(1)}%
-                </Table.Cell>
-                <Table.Cell>{(channel.conversionRate * 100).toFixed(1)}%</Table.Cell>
-                <Table.Cell>{(channel.retentionRate * 100).toFixed(1)}%</Table.Cell>
-              </Table.Row>
+                </TableCell>
+                <TableCell>{(channel.conversionRate * 100).toFixed(1)}%</TableCell>
+                <TableCell>{(channel.retentionRate * 100).toFixed(1)}%</TableCell>
+              </TableRow>
             ))}
-          </Table.Body>
+          </TableBody>
         </Table>
       </Card>
 

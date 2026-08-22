@@ -63,6 +63,7 @@ export interface VerificationQueueResponse {
     REJECTED:   number
     SUSPENDED:  number
     NEEDS_INFO: number
+    UNDER_REVIEW: number
   }
 }
 
@@ -136,7 +137,7 @@ export class VerificationClient {
     if (params.dir)    qs.set('dir',    params.dir)
 
     const query = qs.toString() ? `?${qs.toString()}` : ''
-    return (AdminApiClient as any).request<VerificationQueueResponse>(
+    return AdminApiClient.request<VerificationQueueResponse>(
       `/admin/verification/queue${query}`
     )
   }
@@ -146,7 +147,7 @@ export class VerificationClient {
    * Full contractor detail with timeline, events, and open work items.
    */
   static async getDetail(profileId: string): Promise<ContractorDetailResponse> {
-    return (AdminApiClient as any).request<ContractorDetailResponse>(
+    return AdminApiClient.request<ContractorDetailResponse>(
       `/admin/verification/${profileId}`
     )
   }
@@ -155,7 +156,7 @@ export class VerificationClient {
    * POST /admin/verification/:profileId/approve
    */
   static async approve(profileId: string, note?: string): Promise<VerificationActionResponse> {
-    return (AdminApiClient as any).request<VerificationActionResponse>(
+    return AdminApiClient.request<VerificationActionResponse>(
       `/admin/verification/${profileId}/approve`,
       {
         method: 'POST',
@@ -174,7 +175,7 @@ export class VerificationClient {
     note:      string,
     final?:    boolean,
   ): Promise<VerificationActionResponse> {
-    return (AdminApiClient as any).request<VerificationActionResponse>(
+    return AdminApiClient.request<VerificationActionResponse>(
       `/admin/verification/${profileId}/reject`,
       {
         method: 'POST',
@@ -187,7 +188,7 @@ export class VerificationClient {
    * POST /admin/verification/:profileId/request-info
    */
   static async requestInfo(profileId: string, note: string): Promise<VerificationActionResponse> {
-    return (AdminApiClient as any).request<VerificationActionResponse>(
+    return AdminApiClient.request<VerificationActionResponse>(
       `/admin/verification/${profileId}/request-info`,
       {
         method: 'POST',
@@ -206,7 +207,7 @@ export class VerificationClient {
     note:      string,
     revert?:   boolean,
   ): Promise<VerificationActionResponse> {
-    return (AdminApiClient as any).request<VerificationActionResponse>(
+    return AdminApiClient.request<VerificationActionResponse>(
       `/admin/verification/${profileId}/suspend`,
       {
         method: 'POST',

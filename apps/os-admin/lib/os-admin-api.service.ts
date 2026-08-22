@@ -1,45 +1,23 @@
 /**
  * OS Admin API Service
- * Type-safe API client for admin operations using Supabase Auth
+ * Type-safe API client for admin operations using Clerk Auth
  * 
  * Usage:
  * - Client-side: Use directly (e.g., OsAdminApiService.getUsers())
  * - Server-side: Pass token from getSession() using fetchWithToken()
  */
 
-import { supabase } from './supabase';
-import { cookies } from 'next/headers';
+import { getClerkToken } from './clerk-token';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || process.env.API_BASE_URL || 'http://localhost:3001';
 
 export class OsAdminApiService {
   /**
-   * Get authentication token from Supabase session
+   * Get authentication token from Clerk.
    */
   private static async getAuthToken(): Promise<string | null> {
     try {
-      // Client-side: get from session
-      if (typeof window !== 'undefined') {
-        const { data: { session } } = await supabase.auth.getSession();
-        return session?.access_token || null;
-      }
-
-      // Server-side: get from cookies
-      const cookieStore = await cookies();
-      const accessToken = cookieStore.get('sb-access-token')?.value;
-      
-      if (accessToken) {
-        try {
-          // If it's JSON, parse it
-          const parsed = JSON.parse(accessToken);
-          return parsed?.access_token || accessToken;
-        } catch {
-          // If it's already a string, use it directly
-          return accessToken;
-        }
-      }
-      
-      return null;
+      return await getClerkToken();
     } catch (error) {
       console.error('Error getting auth token:', error);
       return null;

@@ -110,7 +110,7 @@ export default function AnalyticsDashboard({ days = 30 }: { days?: number }) {
       </div>
 
       {/* Styles */}
-      <style jsx>{`
+      <style>{`
         .analytics-dashboard {
           padding: 24px;
           font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -191,7 +191,7 @@ function MetricCard({ label, value, icon }: { label: string; value: string | num
         <p className='metric-label'>{label}</p>
         <p className='metric-value'>{value}</p>
       </div>
-      <style jsx>{`
+      <style>{`
         .metric-card {
           background: white;
           border-radius: 8px;
@@ -235,7 +235,7 @@ function InsightCard({ title, value, details }: { title: string; value: string; 
       <h4>{title}</h4>
       <p className='insight-value'>{value}</p>
       <p className='insight-details'>{details}</p>
-      <style jsx>{`
+      <style>{`
         .insight-card {
           background: white;
           border-radius: 8px;
@@ -289,7 +289,7 @@ function ServiceMetrics({ name, metrics, color }: { name: string; metrics: any; 
           <strong>${metrics?.totalRevenue || '0'}</strong>
         </div>
       </div>
-      <style jsx>{`
+      <style>{`
         .service-metrics {
           background: white;
           border-radius: 8px;

@@ -15,7 +15,7 @@ export function useBudgetOverview(projectId: string) {
 export function useBudgetLines(filters?: Record<string, unknown>) {
   return useQuery({
     queryKey: ["budget", "lines", filters ?? {}],
-    queryFn: () => api.budget.lines.list(filters),
+    queryFn: () => api.budget.listLines(filters),
   })
 }
 
@@ -23,7 +23,7 @@ export function useCreateBudgetLine() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async (input: Record<string, unknown>) => {
-      return api.budget.lines.create(input)
+      return api.budget.createLine(input)
     },
     onSuccess: async () => {
       await qc.invalidateQueries({ queryKey: ["budget"] })
@@ -45,4 +45,3 @@ export function useBudgetAlerts(filters?: Record<string, unknown>) {
     queryFn: () => api.budget.alerts(filters),
   })
 }
- 

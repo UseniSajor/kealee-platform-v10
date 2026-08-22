@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerClient } from '@supabase/ssr'
+import { getClerkUser } from '@kealee/auth'
 import {
   resolveRoleFromApiKey,
   roleHasScope,
@@ -46,23 +46,12 @@ export async function authorizeMarketingAgencySession(
   const apiResult = authorizeMarketingAgency(req, requiredScope)
   if (apiResult.authorized) return apiResult
 
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll: () => req.cookies.getAll(),
-        setAll: () => {},
-      },
-    },
-  )
-
-  const { data: { user } } = await supabase.auth.getUser()
+  const user = await getClerkUser()
   if (!user) {
     return { authorized: false, role: null, userId: null, authMethod: null }
   }
 
-  const appRole = (user.app_metadata?.role as string | undefined)?.toLowerCase()
+  const appRole = user.role?.toLowerCase()
   let role: KealeeAccessRole | null = null
 
   if (appRole === 'marketing_agency' || appRole === 'zem_marketing') {

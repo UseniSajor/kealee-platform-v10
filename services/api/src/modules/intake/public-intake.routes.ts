@@ -11,7 +11,7 @@ import { sanitizeErrorMessage } from "../../utils/sanitize-error";
 import { LeadIntelligenceService } from "../../services/lead-intelligence.service.js";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY ?? "", {
-  apiVersion: "2023-10-16",
+  apiVersion: "2026-07-29.dahlia",
 });
 
 // ── Payment amounts per project path ─────────────────────────────────────────
@@ -229,7 +229,7 @@ function scoreLead(data: Record<string, unknown>): LeadScore {
   if (tier === 'warm') {
     tier = total >= 70 ? 'hot' : total >= 45 ? 'warm' : 'cold';
   }
-  
+
   const route = tier === 'hot' ? 'fast_track' : tier === 'cold' ? 'nurture' : 'standard';
 
   return { total, tier, route, assignedTeam, flags };

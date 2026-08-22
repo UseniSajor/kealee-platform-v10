@@ -1,10 +1,5 @@
-import { Suspense } from "react"
-import { SignupClient } from "./signup-client"
+import { SignUp } from '@clerk/nextjs'
 
 export default function SignupPage() {
-  return (
-    <Suspense fallback={<div className="text-sm text-neutral-300">Loading...</div>}>
-      <SignupClient />
-    </Suspense>
-  )
+  return <SignUp path="/signup" routing="path" signInUrl="/login" fallbackRedirectUrl="/" />
 }

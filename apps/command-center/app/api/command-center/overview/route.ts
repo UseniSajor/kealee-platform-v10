@@ -12,6 +12,7 @@
 
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { clerkClient } from '@clerk/nextjs/server'
 
 export const runtime = 'nodejs'
 export const revalidate = 0
@@ -53,8 +54,8 @@ export async function GET() {
       .select('id, project_path, status, contact_email, created_at')
       .order('created_at', { ascending: false }),
 
-    // Auth users count via admin API
-    supabase.auth.admin.listUsers({ page: 1, perPage: 1 }),
+    // Clerk is the identity authority; Supabase is data only.
+    clerkClient().users.getCount(),
 
     // Ping integrations
     Promise.allSettled([
@@ -117,8 +118,8 @@ export async function GET() {
   // ── Auth user count ─────────────────────────────────────────────────────────
 
   let authUserTotal = 0
-  if (authRes.status === 'fulfilled' && authRes.value.data) {
-    authUserTotal = (authRes.value.data as { total?: number }).total ?? 0
+  if (authRes.status === 'fulfilled') {
+    authUserTotal = authRes.value
   }
 
   // Combine: prefer auth count, fall back to unique emails

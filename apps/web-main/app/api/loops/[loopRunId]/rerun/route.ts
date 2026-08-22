@@ -18,6 +18,7 @@ export async function POST(
 
     const run = await prisma.loopRun.findUnique({
       where: { id: loopRunId },
+      include: { projectTwin: true },
     });
 
     if (!run) {
@@ -28,7 +29,7 @@ export async function POST(
     await prisma.loopRun.update({
       where: { id: loopRunId },
       data: {
-        status: 'PENDING',
+        status: 'pending',
         updatedAt: new Date(),
       },
     });
@@ -36,7 +37,7 @@ export async function POST(
     // Queue for execution
     await addJob(getRunLoopQueue(), 'runLoop', {
       loopRunId,
-      projectId: run.projectId,
+      projectId: run.projectTwin?.projectId,
       loopType: run.loopType,
     });
 

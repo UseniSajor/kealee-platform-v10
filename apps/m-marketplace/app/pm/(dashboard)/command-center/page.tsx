@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
-import { supabase } from "@pm/lib/supabase"
+import { getClerkToken } from "@/lib/clerk-token"
 import { Card, CardContent, CardHeader, CardTitle } from "@kealee/ui/card"
 import { Button } from "@kealee/ui/button"
 import {
@@ -161,9 +161,9 @@ export default function CommandCenterPage() {
     try {
       setError(null)
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"
-      const { data: { session } } = await supabase.auth.getSession()
+      const token = await getClerkToken()
       const headers: Record<string, string> = { "Content-Type": "application/json" }
-      if (session?.access_token) headers["Authorization"] = `Bearer ${session.access_token}`
+      if (token) headers["Authorization"] = `Bearer ${token}`
       const res = await fetch(`${apiUrl}/api/v1/command-center/status`, { headers, credentials: "include" })
       if (!res.ok) throw new Error(`API error: ${res.status}`)
       const json = await res.json()

@@ -3,7 +3,7 @@
 // Understand jurisdiction-specific permit forms
 // ============================================================
 
-import OpenAI from 'openai';
+import { OpenAIClient as OpenAI } from '@kealee/core-llm';
 import { MetadataExtractor } from '../document-intelligence/metadata-extractor';
 import { AIResult, FormSchema, FormField, ExtractedField } from '../../types';
 

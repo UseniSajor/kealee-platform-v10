@@ -1,18 +1,15 @@
 /**
  * Client Dashboard API — fetch wrapper for Command Center v1 endpoints.
  *
- * Uses the same Supabase session token as the rest of the app.
+ * Uses the same Clerk session token as the rest of the app.
  */
 
-import { supabase } from './supabase'
+import { getClerkToken } from '@/lib/clerk-token'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
 
 async function getToken(): Promise<string | null> {
-  const {
-    data: { session },
-  } = await supabase.auth.getSession()
-  return session?.access_token ?? null
+  return getClerkToken()
 }
 
 async function fetchApi<T = any>(

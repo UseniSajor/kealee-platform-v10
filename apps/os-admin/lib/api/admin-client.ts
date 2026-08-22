@@ -2,28 +2,26 @@
  * AdminApiClient
  * Type-safe API client for admin operations
  * 
- * Uses Supabase for authentication (compatible with existing auth system)
+ * Uses Clerk for authentication.
  */
 
-import { supabase } from '../supabase';
+import { getClerkToken } from '../clerk-token';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.kealee.com';
 
 export class AdminApiClient {
-  private static async request<T>(
+  static async request<T = unknown>(
     endpoint: string, 
     options: RequestInit = {}
   ): Promise<T> {
-    // Get session from Supabase
-    const { data: { session }, error } = await supabase.auth.getSession();
-    
-    if (error || !session?.user?.email) {
+    const token = await getClerkToken();
+    if (!token) {
       throw new Error('Not authenticated');
     }
 
     const headers: HeadersInit = {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${session.access_token}`,
+      Authorization: `Bearer ${token}`,
       ...options.headers,
     };
 
@@ -55,7 +53,7 @@ export class AdminApiClient {
   // USER MANAGEMENT
   // ============================================================================
 
-  static async getUsers(params?: {
+  static async getUsers<T = unknown>(params?: {
     page?: number;
     limit?: number;
     search?: string;
@@ -69,7 +67,7 @@ export class AdminApiClient {
     if (params?.role) query.set('role', params.role);
     if (params?.status) query.set('status', params.status);
     
-    return this.request(`/users?${query.toString()}`);
+    return this.request<T>(`/users?${query.toString()}`);
   }
 
   static async createUser(userData: {
@@ -138,15 +136,15 @@ export class AdminApiClient {
   // BILLING DASHBOARD
   // ============================================================================
 
-  static async getBillingStats(dateRange?: { start: string; end: string }) {
+  static async getBillingStats<T = unknown>(dateRange?: { start: string; end: string }) {
     const query = new URLSearchParams();
     if (dateRange?.start) query.set('start', dateRange.start);
     if (dateRange?.end) query.set('end', dateRange.end);
     
-    return this.request(`/billing/stats?${query.toString()}`);
+    return this.request<T>(`/billing/stats?${query.toString()}`);
   }
 
-  static async getRevenueReport(params: {
+  static async getRevenueReport<T = unknown>(params: {
     startDate: string;
     endDate: string;
     groupBy: 'day' | 'week' | 'month';
@@ -157,7 +155,7 @@ export class AdminApiClient {
       groupBy: params.groupBy,
     });
     
-    return this.request(`/billing/reports/revenue?${query.toString()}`);
+    return this.request<T>(`/billing/reports/revenue?${query.toString()}`);
   }
 
   // ============================================================================
@@ -235,8 +233,8 @@ export class AdminApiClient {
   // CONFIGURATION SETTINGS
   // ============================================================================
 
-  static async getSettings() {
-    return this.request('/admin/settings');
+  static async getSettings<T = unknown>() {
+    return this.request<T>('/admin/settings');
   }
 
   static async updateSettings(settings: Record<string, any>) {

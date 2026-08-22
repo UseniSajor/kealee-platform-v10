@@ -9,14 +9,17 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@kealee/core-rules": "workspace:*",
+    "@clerk/nextjs": "^5.5.0",
+    "@supabase/ssr": "^0.12.4",
     "@kealee/auth": "workspace:*",
+    "@kealee/communications": "workspace:*",
     "@kealee/concept-engine": "workspace:*",
     "@kealee/core-hooks": "workspace:*",
+    "@kealee/core-rules": "workspace:*",
     "@kealee/shared": "workspace:*",
     "@kealee/storage": "workspace:*",
     "@kealee/ui": "workspace:*",
-    "@kealee/communications": "workspace:*",
-    "resend": "^3.0.0"
+    "lucide-react": "^0.469.0",
+    "resend": "^6.21.0"
   }
 }

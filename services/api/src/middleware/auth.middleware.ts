@@ -1,9 +1,6 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
-import { getSupabaseClient } from '../utils/supabase-client';
+import { verifyToken } from '@clerk/backend';
 import { sanitizeErrorMessage } from '../utils/sanitize-error'
-
-// Get the centralized Supabase client (handles missing credentials gracefully)
-const supabase = getSupabaseClient();
 
 export interface AuthenticatedUser {
   id: string
@@ -34,20 +31,32 @@ export async function authenticateUser(
 
     const token = authHeader.substring(7);
 
-    // Verify token with Supabase
-    const { data: { user }, error } = await supabase.auth.getUser(token);
-
-    if (error || !user) {
+    const secretKey = process.env.CLERK_SECRET_KEY
+    if (!secretKey) {
+      request.log.error('CLERK_SECRET_KEY is not configured')
+      return reply.code(503).send({
+        error: 'Authentication unavailable',
+        message: 'Identity verification is not configured',
+      })
+    }
+    const claims = await verifyToken(token, { secretKey })
+    const clerkUserId = claims.sub
+    if (!clerkUserId) {
       return reply.code(401).send({
         error: 'Invalid or expired token',
-        message: error?.message || 'Authentication failed'
+        message: 'Authentication failed'
       });
     }
 
     // Get user with organization memberships from database
     const { prismaAny } = await import('../utils/prisma-helper');
-    const userWithOrgs = await prismaAny.user.findUnique({
-      where: { id: user.id },
+    const userWithOrgs = await prismaAny.user.findFirst({
+      where: {
+        OR: [
+          { externalAuthId: clerkUserId },
+          { id: clerkUserId },
+        ],
+      },
       include: {
         orgMemberships: {
           include: {
@@ -71,14 +80,13 @@ export async function authenticateUser(
     const primaryOrg = primaryMembership?.org;
 
     // Attach user to request with proper type checking
-    const { id, email, ...userRest } = user
     const authenticatedUser: AuthenticatedUser = {
-      id,
-      email: email || undefined,
-      role: primaryMembership?.roleKey || 'user',
+      id: userWithOrgs.id,
+      email: userWithOrgs.email || undefined,
+      role: primaryMembership?.roleKey || userWithOrgs.role || 'user',
       organizationId: primaryOrg?.id || null,
       profile: userWithOrgs,
-      ...userRest
+      clerkUserId,
     }
 
     // Type guard to ensure user has required properties

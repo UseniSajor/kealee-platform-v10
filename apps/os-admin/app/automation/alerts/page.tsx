@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
+import { getClerkToken } from '@/lib/clerk-token'
 import { ProtectedRoute } from '@/components/auth/protected-route'
 import { AppLayout } from '@/components/layout/app-layout'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -101,14 +102,9 @@ interface CircuitStatus {
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
 
-/** Authenticated fetch helper - retrieves JWT from Supabase session and adds Authorization header */
+/** Authenticated fetch helper using the current Clerk session token. */
 async function authFetch(url: string, options: RequestInit = {}): Promise<Response> {
-  let token: string | null = null
-  if (typeof window !== 'undefined') {
-    const { supabase } = await import('@/lib/supabase')
-    const { data: { session } } = await supabase.auth.getSession()
-    token = session?.access_token || null
-  }
+  const token = await getClerkToken()
 
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',

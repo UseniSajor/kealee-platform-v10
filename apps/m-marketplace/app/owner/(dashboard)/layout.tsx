@@ -15,7 +15,7 @@ import {
   LogOut,
   User,
 } from 'lucide-react'
-import { supabase } from '@owner/lib/supabase'
+import { useClerk } from '@clerk/nextjs'
 import { OwnerProfileProvider, useOwnerProfile } from '@owner/lib/user-context'
 
 // ---------------------------------------------------------------------------
@@ -37,14 +37,14 @@ const ALL_NAV_ITEMS = [
 
 function LayoutInner({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
+  const { signOut } = useClerk()
   const { portalTabs, loading: profileLoading } = useOwnerProfile()
 
   // Filter nav items based on user's portal tabs
   const navItems = ALL_NAV_ITEMS.filter((item) => portalTabs.includes(item.key))
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut()
-    window.location.href = '/login'
+    await signOut({ redirectUrl: '/login' })
   }
 
   return (

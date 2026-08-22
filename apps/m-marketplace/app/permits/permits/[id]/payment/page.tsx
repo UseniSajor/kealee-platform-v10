@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react'
 import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import { PermitApiService as PermitAPI } from '@permits/src/lib/api/permits'
-import { createClient } from '@permits/lib/supabase/client'
 
 interface FeeBreakdown {
   permitFee: number
@@ -286,4 +285,3 @@ export default function PermitPaymentPage() {
     </div>
   )
 }
-

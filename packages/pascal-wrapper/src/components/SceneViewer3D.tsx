@@ -42,7 +42,7 @@ function WallMesh({ wall, isSelected }: { wall: Wall; isSelected: boolean }) {
       castShadow receiveShadow
     >
       <boxGeometry args={[len, wall.height, wall.thickness]} />
-      <meshStandardMaterial color={color} roughness={0.9} metalness={0.0} />
+      <meshStandardMaterial args={[{ color, roughness: 0.9, metalness: 0.0 }]} />
     </mesh>
   )
 }
@@ -72,7 +72,7 @@ function FloorMesh({ room }: { room: Room }) {
   return (
     <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.02, 0]} receiveShadow>
       <shapeGeometry args={[shape]} />
-      <meshStandardMaterial color={color} roughness={0.85} metalness={0.0} />
+      <meshStandardMaterial args={[{ color, roughness: 0.85, metalness: 0.0 }]} />
     </mesh>
   )
 }
@@ -89,7 +89,7 @@ function FurnitureMesh({ item }: { item: FurnitureElement }) {
       castShadow
     >
       <boxGeometry args={[item.width, item.height, item.depth]} />
-      <meshStandardMaterial color="#CBD5E1" roughness={0.7} />
+      <meshStandardMaterial args={[{ color: '#CBD5E1', roughness: 0.7 }]} />
     </mesh>
   )
 }
@@ -182,7 +182,7 @@ export const SceneViewer3D: React.FC<SceneViewer3DProps> = ({
         {/* Ground plane */}
         <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, 0]} receiveShadow>
           <planeGeometry args={[500, 500]} />
-          <meshStandardMaterial color="#E2E8F0" roughness={1} />
+          <meshStandardMaterial args={[{ color: '#E2E8F0', roughness: 1 }]} />
         </mesh>
 
         <OrbitControls

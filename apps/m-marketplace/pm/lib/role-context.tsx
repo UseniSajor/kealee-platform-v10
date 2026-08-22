@@ -1,7 +1,7 @@
 "use client"
 
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react"
-import { supabase } from "./supabase"
+import { useAuth } from '@clerk/nextjs'
 
 // ── Role Definitions ──────────────────────────────────────────────
 
@@ -72,7 +72,7 @@ function getPermissions(role: UserRole, tier: SubscriptionTier): RolePermissions
   if (isInternal) {
     return Object.fromEntries(
       Object.keys(DEFAULT_PERMISSIONS).map((k) => [k, true])
-    ) as RolePermissions
+    ) as unknown as RolePermissions
   }
 
   // Base permissions for all external users
@@ -115,7 +115,7 @@ function getPermissions(role: UserRole, tier: SubscriptionTier): RolePermissions
     // Enterprise gets all features
     return Object.fromEntries(
       Object.keys(base).map((k) => [k, true])
-    ) as RolePermissions
+    ) as unknown as RolePermissions
   }
 
   return base
@@ -254,6 +254,7 @@ function deriveActiveFeatures(
 }
 
 export function RoleProvider({ children }: { children: ReactNode }) {
+  const { isLoaded, isSignedIn, getToken } = useAuth()
   const [role, setRole] = useState<UserRole>("user")
   const [tier, setTier] = useState<SubscriptionTier>("none")
   const [userName, setUserName] = useState("")
@@ -267,15 +268,16 @@ export function RoleProvider({ children }: { children: ReactNode }) {
 
     async function fetchRole() {
       try {
-        const { data: { session } } = await supabase.auth.getSession()
-        if (!session?.access_token) {
+        if (!isLoaded) return
+        const accessToken = isSignedIn ? await getToken() : null
+        if (!accessToken) {
           if (!cancelled) setLoading(false)
           return
         }
 
         // Fetch user info
         const meRes = await fetch(`${API_URL}/auth/me`, {
-          headers: { Authorization: `Bearer ${session.access_token}` },
+          headers: { Authorization: `Bearer ${accessToken}` },
         })
 
         if (meRes.ok) {
@@ -288,7 +290,7 @@ export function RoleProvider({ children }: { children: ReactNode }) {
 
         // Fetch org membership to determine role
         const orgsRes = await fetch(`${API_URL}/orgs/my`, {
-          headers: { Authorization: `Bearer ${session.access_token}` },
+          headers: { Authorization: `Bearer ${accessToken}` },
         })
 
         if (orgsRes.ok) {
@@ -318,16 +320,10 @@ export function RoleProvider({ children }: { children: ReactNode }) {
 
     fetchRole()
 
-    const { data: sub } = supabase.auth.onAuthStateChange(() => {
-      setLoading(true)
-      fetchRole()
-    })
-
     return () => {
       cancelled = true
-      sub.subscription.unsubscribe()
     }
-  }, [])
+  }, [getToken, isLoaded, isSignedIn])
 
   const isInternal = INTERNAL_ROLES.includes(role)
   const isExternal = EXTERNAL_ROLES.includes(role)

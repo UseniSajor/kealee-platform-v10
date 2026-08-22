@@ -10,9 +10,9 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "@kealee/core-bots": "*",
-    "@kealee/ai": "*",
-    "@kealee/database": "*"
+    "@kealee/core-bots": "workspace:*",
+    "@kealee/ai": "workspace:*",
+    "@kealee/database": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^20.10.0",

@@ -356,7 +356,8 @@ export default function SiteToolsPage() {
       // Queue for background sync when offline
       if ("serviceWorker" in navigator && "SyncManager" in window) {
         const reg = await navigator.serviceWorker.getRegistration();
-        await reg?.sync.register("kealee-sync").catch(() => undefined);
+        await (reg as ServiceWorkerRegistration & { sync?: { register(tag: string): Promise<void> } } | undefined)
+          ?.sync?.register("kealee-sync").catch(() => undefined);
       }
     }
   }
@@ -1109,7 +1110,7 @@ export default function SiteToolsPage() {
                 onClick={async () => {
                   try {
                     const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-                    const completedItems = checklist.filter(c => c.done).map(c => c.label);
+                    const completedItems = checklist.filter(c => c.done).map(c => c.text);
                     const totalPhotos = photos.length;
                     const res = await fetch(`${API_URL}/ops-services/service-requests`, {
                       method: 'POST',
@@ -1218,4 +1219,3 @@ export default function SiteToolsPage() {
     </section>
   );
 }
-

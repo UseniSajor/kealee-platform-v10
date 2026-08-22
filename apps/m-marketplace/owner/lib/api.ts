@@ -58,6 +58,22 @@ export type Milestone = {
   description: string | null
   amount: number
   status: 'PENDING' | 'SUBMITTED' | 'UNDER_REVIEW' | 'APPROVED' | 'PAID' | 'REJECTED'
+  dueDate?: string | null
+  submittedAt?: string | null
+  approvedAt?: string | null
+  paidAt?: string | null
+  canSubmit?: boolean
+  blockedBy?: { id: string; name: string; status?: string } | null
+  dependsOn?: { id: string; name: string; status?: string } | null
+  evidence?: Array<{
+    id: string
+    type?: string
+    url?: string
+    fileName?: string | null
+    caption?: string | null
+    createdAt: string
+    createdBy?: { id: string; name: string; email: string } | null
+  }>
 }
 
 export type Contract = {
@@ -70,6 +86,8 @@ export type Contract = {
   totalAmount: number | null
   milestones?: Milestone[]
   template?: ContractTemplate
+  docusignEnvelopeId?: string | null
+  contractor?: { id: string; name: string; email: string } | null
 }
 
 export type CreateProjectInput = {
@@ -313,7 +331,7 @@ export const api = {
 
   // Contracts Dashboard (Prompt 2.5 & 2.6)
   getContractsDashboard: () => apiRequest<{ contracts: Contract[] }>(`/owner/contracts/owner/dashboard`),
-  getPendingSignatures: () => apiRequest<{ pending: Array<{ id: string; projectName: string; daysPending: number }> }>(`/owner/contracts/pending-signatures`),
+  getPendingSignatures: () => apiRequest<{ pending: Array<{ id: string; projectName: string; daysPending: number; projectId: string }> }>(`/owner/contracts/pending-signatures`),
   getContractAuditTrail: (contractId: string) =>
     apiRequest<{
       auditLogs: Array<{ id: string; action: string; details: unknown; user: { id: string; name: string }; createdAt: string }>
@@ -953,6 +971,7 @@ export const api = {
         whatCouldImprove: string | null
         additionalComments: string | null
         wouldRecommend: boolean | null
+        recommendationReason: string | null
         completedAt: string | null
       }
     }>(`/handoff/packages/${packageId}/survey`),
@@ -989,4 +1008,3 @@ export const api = {
       body: data,
     }),
 }
-

@@ -16,6 +16,7 @@ export async function POST(req: NextRequest) {
 
     const run = await prisma.loopRun.findUnique({
       where: { id: loopRunId },
+      include: { projectTwin: true },
     });
 
     if (!run) {
@@ -25,7 +26,7 @@ export async function POST(req: NextRequest) {
     // Force run loop immediately by adding to the queue
     await addJob(getRunLoopQueue(), 'runLoop', {
       loopRunId,
-      projectId: run.projectId,
+      projectId: run.projectTwin?.projectId,
       loopType: run.loopType,
     });
 

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getRequestAuthToken } from '@/lib/clerk-server-auth';
 export const dynamic = 'force-dynamic';
 
 /**
@@ -14,51 +15,13 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || process.env.API_BASE_URL
  * Get authentication token for backend API
  * Gets token from Authorization header or cookies (Supabase sets cookies)
  */
-async function getAuthToken(request: NextRequest): Promise<string | null> {
-  try {
-    // First, try to get from Authorization header
-    const authHeader = request.headers.get('authorization');
-    if (authHeader?.startsWith('Bearer ')) {
-      return authHeader.substring(7);
-    }
-
-    // Try to get from cookies (Supabase sets 'sb-access-token' cookie)
-    const cookies = request.cookies;
-    const accessToken = cookies.get('sb-access-token')?.value || 
-                       cookies.get('supabase.auth.token')?.value;
-
-    if (accessToken) {
-      try {
-        // If it's JSON, parse it
-        const parsed = JSON.parse(accessToken);
-        return parsed?.access_token || accessToken;
-      } catch {
-        // If it's already a string, use it directly
-        return accessToken;
-      }
-    }
-
-    return null;
-  } catch (error) {
-    console.error('Error getting auth token:', error);
-    return null;
-  }
-}
+const getAuthToken = getRequestAuthToken;
 
 /**
  * Check if user is authenticated (basic check)
  */
-function isAuthenticated(request: NextRequest): boolean {
-  const authHeader = request.headers.get('authorization');
-  if (authHeader?.startsWith('Bearer ')) {
-    return true;
-  }
-
-  const cookies = request.cookies;
-  return !!(
-    cookies.get('sb-access-token')?.value || 
-    cookies.get('supabase.auth.token')?.value
-  );
+async function isAuthenticated(request: NextRequest): Promise<boolean> {
+  return Boolean(await getAuthToken(request));
 }
 
 /**
@@ -68,7 +31,7 @@ function isAuthenticated(request: NextRequest): boolean {
 export async function POST(request: NextRequest) {
   try {
     // Check if user is authenticated
-    if (!isAuthenticated(request)) {
+    if (!(await isAuthenticated(request))) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
@@ -122,7 +85,7 @@ export async function POST(request: NextRequest) {
 export async function GET(request: NextRequest) {
   try {
     // Check if user is authenticated
-    if (!isAuthenticated(request)) {
+    if (!(await isAuthenticated(request))) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }

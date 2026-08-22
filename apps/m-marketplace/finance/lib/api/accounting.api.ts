@@ -1,9 +1,9 @@
 /**
  * Accounting API Client
- * Type-safe API client for accounting system operations using Supabase Auth
+ * Type-safe API client for accounting system operations using Clerk Auth
  */
 
-import { createClient } from '@supabase/supabase-js'
+import { getClerkToken } from '@/lib/clerk-token'
 import type {
   Account,
   AccountBalanceDTO,
@@ -28,21 +28,13 @@ import type {
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
 
 // Create Supabase client for auth
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-
-const supabase = createClient(supabaseUrl, supabaseAnonKey)
-
 export class AccountingApiService {
   /**
-   * Get authentication token from Supabase session
+   * Get authentication token from Clerk session
    */
   private static async getAuthToken(): Promise<string | null> {
     try {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession()
-      return session?.access_token || null
+      return await getClerkToken()
     } catch (error) {
       console.error('Error getting auth token:', error)
       return null
@@ -490,4 +482,3 @@ export class AccountingApiService {
 
 // Export as singleton for convenience
 export const accountingApi = AccountingApiService
-

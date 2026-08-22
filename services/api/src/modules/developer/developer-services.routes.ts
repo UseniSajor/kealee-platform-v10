@@ -12,7 +12,7 @@ import { authenticateUser } from '../../middleware/auth.middleware';
 import { sanitizeErrorMessage } from '../../utils/sanitize-error';
 
 const stripe = new Stripe(config.stripeSecretKey || process.env.STRIPE_SECRET_KEY || '', {
-  apiVersion: '2023-10-16',
+  apiVersion: '2026-07-29.dahlia',
 });
 
 const PRICE_MAP: Record<string, string | undefined> = {

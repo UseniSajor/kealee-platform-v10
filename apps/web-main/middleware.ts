@@ -3,7 +3,7 @@
  * Protects routes based on authentication status and user roles
  */
 
-import { createServerClient, type CookieOptions } from '@supabase/ssr'
+import { clerkMiddleware } from '@clerk/nextjs/server'
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import { hasIntelligenceUiRole } from '@kealee/auth/ops-api-auth'
@@ -120,7 +120,7 @@ function authLoginUrl(request: NextRequest, nextPath: string, extra?: Record<str
   return url
 }
 
-export async function middleware(request: NextRequest) {
+export default clerkMiddleware(async (auth, request: NextRequest) => {
   const pathname = request.nextUrl.pathname
 
   // /concept (exact) is the public service/package select page.
@@ -143,27 +143,13 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(`${getOwnerPortalBaseUrl()}/deliverables`)
   }
 
-  // Create Supabase client — must use @supabase/ssr so the refreshed session
-  // cookie is written back onto the response that reaches the browser.
-  let response = NextResponse.next({ request: { headers: request.headers } })
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll: () => request.cookies.getAll(),
-        setAll: (cookiesToSet: { name: string; value: string; options?: CookieOptions }[]) => {
-          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
-          response = NextResponse.next({ request: { headers: request.headers } })
-          cookiesToSet.forEach(({ name, value, options }) => response.cookies.set(name, value, options as Parameters<typeof response.cookies.set>[2]))
-        },
-      },
-    }
-  )
-
-  // Get session
-  const { data: { session } } = await supabase.auth.getSession()
-  const user = session?.user
+  const response = NextResponse.next({ request: { headers: request.headers } })
+  const { userId, sessionClaims } = await auth()
+  const claims = sessionClaims as Record<string, unknown> | null
+  const appMetadata = (claims?.metadata ?? claims?.publicMetadata ?? {}) as Record<string, unknown>
+  const user = userId
+    ? { id: userId, email_confirmed_at: claims?.email_verified, app_metadata: appMetadata }
+    : null
 
   // Allow public routes
   if (PUBLIC_ROUTES.some(route => pathname === route || pathname.startsWith(route + '/'))) {
@@ -239,7 +225,7 @@ export async function middleware(request: NextRequest) {
   }
 
   return response
-}
+})
 
 export const config = {
   matcher: [

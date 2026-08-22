@@ -203,11 +203,6 @@ test.describe('Data Flow — Intake API', () => {
       },
     })
 
-    if (res.status() === 500) {
-      // DB not available in CI — acceptable
-      return
-    }
-
     expect(res.status()).toBe(200)
     const body = await res.json()
     expect(body).toHaveProperty('intakeId')

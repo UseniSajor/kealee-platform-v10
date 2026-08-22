@@ -186,10 +186,10 @@ export default function PermitReviewDetailPage() {
           )}
 
           {/* Permits Required */}
-          {roadmap?.permitsRequired?.length > 0 && (
+          {(roadmap?.permitsRequired?.length ?? 0) > 0 && (
             <Section title="Permits Required">
               <div className="space-y-3">
-                {roadmap.permitsRequired.map((p, i) => (
+                {(roadmap?.permitsRequired ?? []).map((p, i) => (
                   <div key={i} className="flex items-start justify-between border-b border-gray-100 pb-3 last:border-0 last:pb-0">
                     <div>
                       <p className="text-sm font-semibold text-gray-900">{p.type}</p>
@@ -243,10 +243,10 @@ export default function PermitReviewDetailPage() {
           )}
 
           {/* Inspections */}
-          {roadmap?.inspectionsRequired?.length > 0 && (
+          {(roadmap?.inspectionsRequired?.length ?? 0) > 0 && (
             <Section title="Inspection Schedule">
               <div className="space-y-3">
-                {roadmap.inspectionsRequired.map((insp, i) => (
+                {(roadmap?.inspectionsRequired ?? []).map((insp, i) => (
                   <div key={i} className="border-b border-gray-100 pb-3 last:border-0 last:pb-0">
                     <p className="text-sm font-semibold text-gray-900">{insp.name}</p>
                     <p className="text-xs text-gray-500">{insp.timing}</p>

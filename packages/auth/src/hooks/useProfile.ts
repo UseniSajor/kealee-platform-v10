@@ -1,8 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { supabase } from '../supabase-client';
-import { useAuth } from './useAuth';
+import { useCallback, useMemo } from 'react';
+import { useUser } from '@clerk/nextjs';
 
 export interface Profile {
   id: string;
@@ -12,63 +11,44 @@ export interface Profile {
   role: string;
   organization_id?: string;
   created_at: string;
-  [key: string]: any;
+  [key: string]: unknown;
+}
+
+function stringValue(value: unknown): string | undefined {
+  return typeof value === 'string' && value.length > 0 ? value : undefined;
 }
 
 export function useProfile() {
-  const { user } = useAuth();
-  const [profile, setProfile] = useState<Profile | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    if (!user) {
-      setProfile(null);
-      setLoading(false);
-      return;
-    }
-
-    loadProfile();
+  const { isLoaded, user } = useUser();
+  const profile = useMemo<Profile | null>(() => {
+    if (!user) return null;
+    const metadata = user.unsafeMetadata as Record<string, unknown>;
+    return {
+      ...metadata,
+      id: user.id,
+      full_name: user.fullName ?? stringValue(metadata.full_name) ?? '',
+      email: user.primaryEmailAddress?.emailAddress ?? '',
+      avatar_url: user.imageUrl,
+      role: stringValue(user.publicMetadata.role) ?? stringValue(metadata.role) ?? 'customer',
+      organization_id: stringValue(user.publicMetadata.organization_id) ?? stringValue(metadata.organization_id),
+      created_at: user.createdAt?.toISOString() ?? new Date(0).toISOString(),
+    };
   }, [user]);
 
-  const loadProfile = async () => {
-    if (!user) return;
-
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .single();
-
-      if (error) throw error;
-      setProfile(data);
-    } catch (error) {
-      console.error('Error loading profile:', error);
-      setProfile(null);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const updateProfile = async (updates: Partial<Profile>) => {
+  const updateProfile = useCallback(async (updates: Partial<Profile>) => {
     if (!user) throw new Error('Not authenticated');
+    const { full_name, ...metadataUpdates } = updates;
+    const names = full_name?.trim().split(/\s+/) ?? [];
+    await user.update({
+      ...(full_name !== undefined ? { firstName: names[0] ?? '', lastName: names.slice(1).join(' ') } : {}),
+      unsafeMetadata: { ...user.unsafeMetadata, ...metadataUpdates },
+    });
+    return { ...profile, ...updates, id: user.id } as Profile;
+  }, [profile, user]);
 
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .update(updates)
-        .eq('id', user.id)
-        .select()
-        .single();
+  const refetch = useCallback(async () => {
+    if (user) await user.reload();
+  }, [user]);
 
-      if (error) throw error;
-      setProfile(data);
-      return data;
-    } catch (error) {
-      console.error('Error updating profile:', error);
-      throw error;
-    }
-  };
-
-  return { profile, loading, updateProfile, refetch: loadProfile };
+  return { profile, loading: !isLoaded, updateProfile, refetch };
 }

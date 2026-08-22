@@ -9,6 +9,10 @@ import PaymentReleasePanel from '@owner/components/PaymentReleasePanel'
 import DisputeInitiationForm from '@owner/components/DisputeInitiationForm'
 
 type MilestoneDetail = Milestone & {
+  dueDate?: string | null
+  submittedAt?: string | null
+  approvedAt?: string | null
+  paidAt?: string | null
   contract?: {
     id: string
     projectId: string
@@ -54,10 +58,6 @@ export default function MilestoneDetailPage({
     rejectedReason?: string | null
   }>>([])
 
-  useEffect(() => {
-    loadMilestone()
-  }, [params.milestoneId, loadMilestone])
-
   const loadMilestone = useCallback(async () => {
     try {
       const res = await api.getMilestone(params.milestoneId)
@@ -68,6 +68,10 @@ export default function MilestoneDetailPage({
       setLoading(false)
     }
   }, [params.milestoneId])
+
+  useEffect(() => {
+    loadMilestone()
+  }, [loadMilestone])
 
   const handleApprove = useCallback(
     async (reason: string, notes?: string) => {

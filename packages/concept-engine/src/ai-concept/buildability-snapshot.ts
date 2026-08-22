@@ -4,7 +4,7 @@
  * via Claude when live zoning data is unavailable.
  */
 
-import Anthropic from '@anthropic-ai/sdk'
+import { AnthropicClient as Anthropic } from '@kealee/core-llm'
 import type { ZoningLookupFn } from './zoning-lookup'
 
 export interface ZoningData {

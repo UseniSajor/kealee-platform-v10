@@ -170,6 +170,7 @@ model FeasibilityScenario {
   updatedAt DateTime @updatedAt
 
   study FeasibilityStudy @relation(fields: [studyId], references: [id], onDelete: Cascade)
+  options FeasibilityScenarioOption[]
 
   @@index([studyId])
   @@map("feasibility_scenarios")

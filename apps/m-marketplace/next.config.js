@@ -4,12 +4,6 @@ const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
   transpilePackages: ['@kealee/ui', '@kealee/auth', '@kealee/funnel-session', '@kealee/shared'],
-  typescript: {
-    ignoreBuildErrors: true,
-  },
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
   images: {
     domains: [
       'images.unsplash.com',
@@ -111,7 +105,11 @@ const nextConfig = {
   // Compress responses
   compress: true,
   // Enable React 18 concurrent features
-  experimental: {},
+  experimental: {
+    // Keep webpack in the main build process. The isolated worker discarded
+    // compiler diagnostics and exited generically on Railway-sized builds.
+    webpackBuildWorker: false,
+  },
 };
 
 module.exports = nextConfig;

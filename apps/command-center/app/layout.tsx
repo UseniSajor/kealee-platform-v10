@@ -28,7 +28,6 @@ export default function RootLayout({
           colorPrimary: '#FF8C22',
           colorText: '#1F2937',
           colorBackground: '#FFFFFF',
-          colorInputBorder: '#E5E7EB',
           colorInputText: '#1F2937',
           colorNeutral: '#F3F4F6',
           fontFamily: "'Nunito', sans-serif",

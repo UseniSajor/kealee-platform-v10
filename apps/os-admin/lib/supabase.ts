@@ -5,22 +5,20 @@ function supabaseEnv(): { url: string; anonKey: string } {
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim()
   if (url && anonKey) return { url, anonKey }
 
-  // Allow `next build` page-data collection when CI has no secrets (runtime still needs real env).
-  if (process.env.NODE_ENV === 'production' && process.env.VERCEL) {
+  if (process.env.NODE_ENV === 'production') {
     throw new Error(
-      'Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY on Vercel. Add them in Project → Settings → Environment Variables.',
+      'Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY in the deployment environment.',
     )
   }
 
+  // Non-secret placeholders keep local build-time imports deterministic.
   return {
     url: url || 'https://placeholder.supabase.co',
-    anonKey:
-      anonKey ||
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0',
+    anonKey: anonKey || 'placeholder-anon-key',
   }
 }
 
 const { url, anonKey } = supabaseEnv()
 
-// createBrowserClient from @supabase/ssr — shares auth cookies with middleware.
+// Supabase is the data provider only; Clerk owns browser identity and sessions.
 export const supabase = createBrowserClient(url, anonKey)

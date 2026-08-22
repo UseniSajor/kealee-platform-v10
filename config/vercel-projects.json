@@ -1,0 +1,13 @@
+{
+  "teamId": "team_0fysx1qe1pHEgsZ3mMpMQ7mF",
+  "migrationState": "planned",
+  "projects": [
+    { "app": "web-main", "projectId": "prj_RhuCu2Um0yeGa1MOO0OPIWYoEqeA", "domain": "www.kealee.com" },
+    { "app": "portal-owner", "projectId": "prj_6WZI4qeXe5noLL00iUY6YnfnzLGt", "domain": "owner.kealee.com" },
+    { "app": "portal-contractor", "projectId": "prj_NVUiaiFMw1SoabQsWWttxj8vremB", "domain": "contractor.kealee.com" },
+    { "app": "portal-developer", "projectId": "prj_2173DDg2LVX3tBosFnHFQPkMLg4c", "domain": "developer.kealee.com" },
+    { "app": "command-center", "projectId": "prj_29LSdCXCAeE8EM00CELcVeHuoP2i", "domain": "command.kealee.com" },
+    { "app": "os-admin", "projectId": "prj_zjOqG8HrfP1niOvSZC4JuuqTaXgi", "domain": "admin.kealee.com" },
+    { "app": "m-marketplace", "projectId": null, "domain": "marketplace.kealee.com", "action": "relink-to-kealee-team" }
+  ]
+}
