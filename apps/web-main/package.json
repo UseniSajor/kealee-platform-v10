@@ -24,7 +24,7 @@
     "sync:card-media:home": "node ./scripts/setup-and-run-card-media.mjs --scope=home --fallback-only --with-videos"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.74.0",
+    "@clerk/nextjs": "^5.5.0",
     "@kealee/auth": "workspace:*",
     "@kealee/automation": "workspace:*",
     "@kealee/autonomous-runtime": "workspace:*",
@@ -38,26 +38,29 @@
     "@kealee/kealee-agent-stack": "workspace:*",
     "@kealee/marketing-agency": "workspace:*",
     "@kealee/marketing-privacy": "workspace:*",
+    "@kealee/pascal-agents": "workspace:*",
     "@kealee/pascal-wrapper": "workspace:*",
     "@kealee/shared": "workspace:*",
     "@kealee/storage": "workspace:*",
     "@kealee/ui": "workspace:*",
     "@stripe/react-stripe-js": "^3.7.0",
     "@stripe/stripe-js": "^5.8.0",
-    "@supabase/ssr": "^0.5.2",
-    "@supabase/supabase-js": "^2.39.0",
+    "@supabase/ssr": "^0.12.4",
+    "@supabase/supabase-js": "^2.112.3",
+    "clsx": "^2.0.0",
     "ffmpeg-static": "^5.3.0",
     "framer-motion": "^11.15.0",
     "google-ads-api": "^23.0.0",
     "lucide-react": "^0.469.0",
-    "openai": "^4.77.0",
     "pdfkit": "^0.14.0",
     "replicate": "^1.4.0",
-    "resend": "^3.0.0",
-    "stripe": "^14.25.0",
+    "resend": "^6.21.0",
+    "stripe": "^22.5.0",
+    "tailwind-merge": "^2.0.0",
     "uuid": "^10.0.0"
   },
   "devDependencies": {
-    "cross-env": "^10.1.0"
+    "cross-env": "^10.1.0",
+    "vitest": "^2.1.2"
   }
 }

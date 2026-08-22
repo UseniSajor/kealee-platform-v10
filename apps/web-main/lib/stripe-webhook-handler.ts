@@ -24,6 +24,7 @@ import { parseUtmFromBody } from '@/lib/marketing/utm-metadata'
 import { mergeMarketingMetadata } from '@/lib/marketing/types'
 import { fulfillRevenueProduct } from '@/lib/revenue-fulfillment'
 import { resolveProductAutomationRoute } from '@/lib/product-automation'
+import { isSitePlanOrder, evaluateSitePlanOrder, sitePlanRuleFormData } from '@/lib/site-plan-rules'
 import { ensureAutonomousFulfillmentRun } from '@/lib/autonomous-fulfillment'
 import * as Sentry from '@sentry/nextjs'
 import { recordPaidOrderIncident } from '@/lib/paid-order-incident'
@@ -204,6 +205,33 @@ async function handleCheckoutCompleted(
     if (sourcePath) mergedFormData.upsellSourcePath = sourcePath
   }
   mergedFormData.funnelStage = isBundlePurchase ? 'bundle_purchased' : 'paid_concept'
+
+  // Site Plan orders get their zoning analysis from the rule engine. It runs
+  // synchronously because it touches no network and parses no ordinance — the
+  // certified pack was prepared by the maintenance workflow, which is the whole
+  // point of certifying rules rather than reading them per order.
+  //
+  // evaluateSitePlanOrder never throws: this is a paid order, and an exception
+  // here would leave Stripe retrying a completed payment. Every failure path
+  // returns a manual-review report instead.
+  if (isSitePlanOrder(projectPath)) {
+    const ruleOutcome = evaluateSitePlanOrder({ intakeId, projectPath, formData: mergedFormData })
+    Object.assign(mergedFormData, sitePlanRuleFormData(ruleOutcome))
+    if (ruleOutcome.error) {
+      Sentry.captureMessage('Site plan rule engine failed on a paid order', {
+        level: 'error',
+        tags: { area: 'payment-fulfillment', stage: 'site-plan-rules', projectPath },
+        extra: { intakeId, error: ruleOutcome.error },
+      })
+    }
+    console.log(
+      '[stripe-webhook] site-plan rules:', projectPath, intakeId,
+      'coverage=' + ruleOutcome.coverage,
+      'determined=' + ruleOutcome.determinedRequirements.length,
+      'review=' + ruleOutcome.reviewItems.length,
+    )
+  }
+
   Object.assign(mergedFormData, orderStatusPatch('processing', { actor: 'system' }))
   if (automationRoute) {
     Object.assign(mergedFormData, automationRoute, {
