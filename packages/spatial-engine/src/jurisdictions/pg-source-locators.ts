@@ -106,8 +106,12 @@ export const PG_ORDINANCE_SECTIONS: PgOrdinanceSection[] = [
     zones: ['LTO-PD', 'NAC-PD', 'RTO-PD', 'TAC-PD'], observedTables: 16 },
   { secid: 642, section: '27-4304', title: 'Other Planned Development Zones',
     zones: ['IE-PD', 'MU-PD'], observedTables: 0 },
-  { secid: 645, section: '27-4402', title: 'Policy Area Overlay Zones', zones: [], observedTables: 6 },
-  { secid: 646, section: '27-4403', title: 'Other Overlay Zones', zones: [], observedTables: 0 },
+  // 27-4402 and 27-4403 are NOT listed here. They are overlay sections and are
+  // owned by PG_OVERLAY_SECTIONS, which binds them to the overlay rules they
+  // actually establish. They were briefly in both lists, which produced two
+  // bundles with the same sourceId — one carrying the real rule bindings and
+  // one carrying none. Since upsertSource is keyed by id, the empty one could
+  // win and silently drop the region-to-rule binding for seven overlay rules.
 ]
 
 // ── Section-level locators ──────────────────────────────────────────────────

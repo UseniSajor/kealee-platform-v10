@@ -409,3 +409,44 @@ describe('overlay zones', () => {
     expect([...covered].filter(id => overlayRules.some(r => r.identity === id))).toHaveLength(7)
   })
 })
+
+// ── Source identity ─────────────────────────────────────────────────────────
+
+describe('source identity', () => {
+  it('never emits two bundles with the same sourceId', () => {
+    // 27-4402 and 27-4403 were once in both PG_ORDINANCE_SECTIONS and
+    // PG_OVERLAY_SECTIONS. That produced duplicate sourceIds where one bundle
+    // held the real overlay rule bindings and the other held none — and since
+    // persistence upserts sources by id, the empty one could win and drop the
+    // binding for seven rules. Only a live run surfaced it.
+    const ids = buildPgSourceBundles(RULES).map(b => b.source.sourceId)
+    expect(new Set(ids).size).toBe(ids.length)
+  })
+
+  it('binds the overlay sections to their overlay rules, not to nothing', () => {
+    const bundles = buildPgSourceBundles(RULES)
+    const policy = bundles.filter(b => b.source.url?.includes('secid=645'))
+    const other = bundles.filter(b => b.source.url?.includes('secid=646'))
+    expect(policy).toHaveLength(1)
+    expect(other).toHaveLength(1)
+    expect(policy[0].locators[0].ruleIdentities).toHaveLength(6)
+    expect(other[0].locators[0].ruleIdentities).toHaveLength(1)
+  })
+
+  it('keeps every rule identity reachable through exactly one source', () => {
+    const bundles = buildPgSourceBundles(RULES)
+    const seen = new Map<string, number>()
+    for (const b of bundles) {
+      for (const l of b.locators) {
+        for (const id of l.ruleIdentities) seen.set(id, (seen.get(id) ?? 0) + 1)
+      }
+    }
+    // 27-4401 general provisions legitimately covers the same overlay rules as
+    // their establishing sections, so an overlay rule appears twice by design.
+    const overlayIds = RULES.filter(r => r.ruleKey.startsWith('zoning.overlay.')).map(r => r.identity)
+    for (const [id, n] of seen) {
+      if (overlayIds.includes(id)) expect(n).toBeLessThanOrEqual(2)
+      else expect(n).toBe(1)
+    }
+  })
+})
