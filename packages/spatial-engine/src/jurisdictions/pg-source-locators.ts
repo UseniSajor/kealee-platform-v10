@@ -323,12 +323,108 @@ export function buildPgZoningLayerSource(
   }
 }
 
+// ── Subtitle 24, Subdivision Regulations ────────────────────────────────────
+
+/**
+ * Subtitle 24 lives in the same combined document as Subtitle 27, further in.
+ *
+ * The secid ordering is not obvious and is worth writing down so nobody has to
+ * rediscover it: definitions occupy roughly 80–580, Subtitle 27 runs from ~590
+ * to ~805, and Subtitle 24 starts immediately after and runs past 1060. The
+ * combined publication is "Zoning Ordinance, Subdivision Regulations &
+ * Landscape Manual (Effective 4/1/2022)" — Subtitle 25 Division 3 is NOT in it,
+ * which is the structural reason §25-128 Table 1 cannot be retrieved here.
+ *
+ * Verified against the live site on 2026-08-22, by title and content marker.
+ */
+export interface PgSubtitle24Section {
+  secid: number
+  section: string
+  title: string
+  /** Rule keys whose governing text lives in this section. */
+  ruleKeys: string[]
+  observedTables: number
+}
+
+export const PG_SUBTITLE_24_SECTIONS: PgSubtitle24Section[] = [
+  // Carries the summary table of subdivision review procedures — the five
+  // procedure types recorded in PG_SUBDIVISION_PROCEDURES. Content confirmed:
+  // "preliminary plan" and "major subdivision" both present, one table.
+  { secid: 992, section: '24-3200', title: 'Summary Table of Subdivision Review Procedures',
+    ruleKeys: ['subdivision.procedures'], observedTables: 1 },
+
+  // Table 24-4303(c), the regulated stream buffer widths (75 ft inside a
+  // Transit-Oriented Center, 100 ft outside). Content confirmed: "24-4303" and
+  // "buffer" both present, one table.
+  { secid: 1034, section: '24-4303', title: 'Stream, Wetland, and Water Quality Buffers',
+    ruleKeys: ['environment.stream_buffers'], observedTables: 1 },
+
+  // Mapped and verified but not yet the source of any rule. Recorded so the
+  // next person extending the pack does not repeat the probing, and so an
+  // over-eager mapping is a deliberate act rather than a guess.
+  { secid: 990, section: 'PART 24-3', title: 'Subdivision Administration', ruleKeys: [], observedTables: 0 },
+  { secid: 1020, section: '24-4102', title: 'Lot Standards', ruleKeys: [], observedTables: 0 },
+  { secid: 1026, section: '24-4201', title: 'General Street Design Standards', ruleKeys: [], observedTables: 0 },
+  { secid: 1032, section: '24-4301', title: 'General (Environmental)', ruleKeys: [], observedTables: 0 },
+  // The county's own floodplain regulation. Deliberately NOT bound to
+  // flood.fema_zones, whose payload is FEMA's NFIP designations from
+  // msc.fema.gov — a different authority and a different document.
+  { secid: 1033, section: '24-4302', title: '100-Year Floodplain', ruleKeys: [], observedTables: 0 },
+  { secid: 1035, section: '24-4304', title: 'Woodland and Wildlife Habitat Conservation', ruleKeys: [], observedTables: 0 },
+]
+
+/** One source per mapped Subtitle 24 section that actually backs a rule. */
+export function buildPgSubtitle24Sources(
+  rules: CertifiableRule[],
+  opts: { retrievedAt?: string; version?: string } = {},
+): PgSourceBundle[] {
+  const retrievedAt = opts.retrievedAt ?? new Date().toISOString()
+  const byKey = new Map(rules.map(r => [r.ruleKey, r.identity]))
+
+  return PG_SUBTITLE_24_SECTIONS
+    // A section with no rule behind it is documentation, not a refresh target:
+    // hashing it would produce change events nobody can act on.
+    .filter(section => section.ruleKeys.length > 0)
+    .map(section => {
+      const ruleIdentities = section.ruleKeys
+        .map(k => byKey.get(k))
+        .filter((x): x is string => Boolean(x))
+
+      return {
+        authority: 'OFFICIAL_CODE' as SourceAuthority,
+        locators: [{
+          regionId: `sec-${section.section}`,
+          label: `Sec. ${section.section} ${section.title}`,
+          ruleIdentities,
+          extractRaw: ordinanceBody(section.secid),
+          extract: sectionTextWindow(section.section),
+        }],
+        source: {
+          sourceId: `pgc-encodeplus-${section.section}`,
+          jurisdiction: 'prince_georges_md',
+          title: `Prince George's County Subdivision Regulations, Sec. ${section.section} — ${section.title}`,
+          url: pgPrintUrl(section.secid),
+          documentId: null,
+          documentHash: '',
+          version: opts.version ?? '2022.1',
+          retrievedAt,
+          regions: [],
+          history: [],
+        },
+      }
+    })
+}
+
 /** Every PG source with a locator, ready to hand to `refreshAll`. */
 export function buildPgSourceBundles(
   rules: CertifiableRule[],
   opts: { retrievedAt?: string; version?: string } = {},
 ): PgSourceBundle[] {
-  return [...buildPgOrdinanceSources(rules, opts), buildPgZoningLayerSource(rules, opts)]
+  return [
+    ...buildPgOrdinanceSources(rules, opts),
+    ...buildPgSubtitle24Sources(rules, opts),
+    buildPgZoningLayerSource(rules, opts),
+  ]
 }
 
 /**
@@ -353,7 +449,8 @@ export function pgRulesWithoutLocator(rules: CertifiableRule[]): { ruleKey: stri
           : r.ruleKey.startsWith('zoning.overlay.')
             ? 'Overlay standards come from each district\'s adopted plan, which is a separate document per district.'
             : r.ruleKey.startsWith('subdivision.') || r.ruleKey.startsWith('environment.')
-              ? 'Subtitle 24 sections need their own verified secid map; not yet written.'
+              ? 'This Subtitle 24 rule has no mapped section yet. See PG_SUBTITLE_24_SECTIONS for the ' +
+                'sections already located but not yet bound to a rule.'
               : 'No locator registered for this rule\'s source.',
     }))
 }

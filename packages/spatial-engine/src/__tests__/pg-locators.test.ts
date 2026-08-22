@@ -11,6 +11,7 @@
 import {
   PG_ORDINANCE_SECTIONS, FORBIDDEN_HASH_URLS, pgPrintUrl, pgLayerDefinitionUrl,
   buildPgOrdinanceSources, buildPgZoningLayerSource, buildPgSourceBundles,
+  buildPgSubtitle24Sources, PG_SUBTITLE_24_SECTIONS,
   deriveZoneBlocks, arcgisStableRegion, pgRulesWithoutLocator,
 } from '../jurisdictions/pg-source-locators'
 import { PG_ZONE_DIMENSIONAL_TABLES } from '../jurisdictions/pg-dimensional-standards.generated'
@@ -286,5 +287,61 @@ describe('rules with no locator are reported, not hidden', () => {
     for (const g of pgRulesWithoutLocator(RULES)) {
       expect(g.reason.length).toBeGreaterThan(20)
     }
+  })
+})
+
+// ── Subtitle 24 ─────────────────────────────────────────────────────────────
+
+describe('Subtitle 24 sections', () => {
+  it('binds the stream buffer rule to 24-4303, where Table 24-4303(c) lives', () => {
+    const bundles = buildPgSubtitle24Sources(RULES)
+    const buffers = bundles.find(b => b.source.url?.includes('secid=1034'))
+    expect(buffers).toBeDefined()
+    expect(buffers!.source.title).toMatch(/24-4303/)
+
+    const rule = RULES.find(r => r.ruleKey === 'environment.stream_buffers')!
+    expect(buffers!.locators[0].ruleIdentities).toContain(rule.identity)
+  })
+
+  it('binds the subdivision procedures rule to the 24-3200 summary table', () => {
+    const bundles = buildPgSubtitle24Sources(RULES)
+    const procedures = bundles.find(b => b.source.url?.includes('secid=992'))
+    expect(procedures).toBeDefined()
+
+    const rule = RULES.find(r => r.ruleKey === 'subdivision.procedures')!
+    expect(procedures!.locators[0].ruleIdentities).toContain(rule.identity)
+  })
+
+  it('does not create a refresh target for a section that backs no rule', () => {
+    const documented = PG_SUBTITLE_24_SECTIONS.filter(s => s.ruleKeys.length === 0)
+    expect(documented.length).toBeGreaterThan(0)
+
+    const bundles = buildPgSubtitle24Sources(RULES)
+    for (const s of documented) {
+      // Mapped for the next maintainer, but hashing it would emit change
+      // events nobody could act on.
+      expect(bundles.some(b => b.source.url?.includes(`secid=${s.secid}`))).toBe(false)
+    }
+  })
+
+  it('leaves the county floodplain section unbound to the FEMA rule', () => {
+    const floodplain = PG_SUBTITLE_24_SECTIONS.find(s => s.section === '24-4302')!
+    // Different authority, different document — FEMA's NFIP designations are
+    // not the county's floodplain regulation.
+    expect(floodplain.ruleKeys).toEqual([])
+  })
+
+  it('uses the print URL for Subtitle 24 too', () => {
+    for (const b of buildPgSubtitle24Sources(RULES)) {
+      expect(b.source.url).toContain('doc-view.aspx')
+      expect(b.source.url).toContain('print=1')
+      expect(b.source.url).not.toMatch(/doc-viewer/)
+    }
+  })
+
+  it('closes the Subtitle 24 gap in locator coverage', () => {
+    const gaps = pgRulesWithoutLocator(RULES).map(g => g.ruleKey)
+    expect(gaps).not.toContain('environment.stream_buffers')
+    expect(gaps).not.toContain('subdivision.procedures')
   })
 })

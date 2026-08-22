@@ -218,7 +218,7 @@ runs in a maintenance job, **never on a request path** — the point of
 certification is that evaluating an order touches no network.
 
 **The PG locators are written and verified** (`jurisdictions/pg-source-locators.ts`,
-23 tests). 36 of 51 rules have a locator across 12 sources.
+29 tests). 38 of 51 rules have a locator across 14 sources.
 
 ```ts
 import { Rules, buildPgSourceBundles, pgRulesWithoutLocator } from '@kealee/pascal-agents/engine'
@@ -276,14 +276,41 @@ ArcGIS layer definitions carry `currentVersion` and `cimVersion`, which move on
 Esri upgrades and have nothing to do with zoning. `arcgisStableRegion()` hashes
 only fields, subtypes and coded-value domains.
 
-### The 15 rules with no locator
+### Subtitle 24 (verified 2026-08-22)
+
+Subtitle 24 sits in the same combined document, further in. The secid ordering
+is not obvious, so it is written down rather than left to be rediscovered:
+definitions ~80–580, Subtitle 27 ~590–805, Subtitle 24 from ~810 past 1060.
+
+| secid | Section | Backs | Tables |
+|---|---|---|---|
+| 992 | 24-3200 Summary Table of Subdivision Review Procedures | `subdivision.procedures` | 1 |
+| 1034 | 24-4303 Stream, Wetland, and Water Quality Buffers | `environment.stream_buffers` | 1 |
+
+Both were content-verified, not just title-matched: 1034 contains `24-4303` and
+`buffer`, 992 contains `preliminary plan` and `major subdivision`.
+
+Also located and recorded but **not bound to any rule** — 24-3100, 24-4102,
+24-4201, 24-4301, 24-4302, 24-4304. They are in `PG_SUBTITLE_24_SECTIONS` so the
+next person extending the pack does not repeat the probing, and
+`buildPgSubtitle24Sources()` skips them: hashing a section that backs no rule
+emits change events nobody can act on.
+
+Note 24-4302 is the county's own 100-year floodplain regulation and is
+deliberately **not** bound to `flood.fema_zones`, whose payload is FEMA's NFIP
+designations from `msc.fema.gov` — a different authority and a different
+document.
+
+This combined publication carries Subtitles 27 and 24 and the Landscape Manual
+only. Subtitle 25 Division 3 is not in it, which is the structural reason
+§25-128 Table 1 cannot be retrieved here.
+
+### The 13 rules with no locator
 
 `pgRulesWithoutLocator()` returns each with a reason:
 
 - **10 overlay rules** — standards come from each district's adopted plan, a
   separate document per district
-- **2 Subtitle 24** (subdivision, stream buffers) — need their own verified
-  secid map; not yet written, and the same `doc-view.aspx` approach applies
 - **1 §25-128 tree canopy** — nothing published to hash
 - **2 process/reference** — advisory, not regulatory
 
