@@ -37,6 +37,7 @@ import type { RegionLocator } from '../rules/source-refresh'
 import type { AuthoritativeSource } from '../rules/change-detection'
 import type { CertifiableRule } from '../rules/certification'
 import type { SourceAuthority } from '../rules/model'
+import { buildPgFemaSources } from './fema-nfhl'
 
 export const PG_ENCODEPLUS_HOST = 'https://online.encodeplus.com/regs/princegeorgescounty-md'
 
@@ -561,6 +562,12 @@ export function pgRulesWithoutLocator(rules: CertifiableRule[]): { ruleKey: stri
   for (const b of buildPgSourceBundles(rules)) {
     for (const l of b.locators) for (const id of l.ruleIdentities) covered.add(id)
   }
+  // FEMA is a separate publisher with its own change model — panel effective
+  // dates rather than amended text — so it lives in its own family. Its
+  // coverage still counts here, because this reports on the PG rule set.
+  for (const b of buildPgFemaSources(rules)) {
+    for (const l of b.locators) for (const id of l.ruleIdentities) covered.add(id)
+  }
   return rules
     .filter(r => !covered.has(r.identity))
     .map(r => ({
@@ -574,6 +581,10 @@ export function pgRulesWithoutLocator(rules: CertifiableRule[]): { ruleKey: stri
             : r.ruleKey.startsWith('subdivision.') || r.ruleKey.startsWith('environment.')
               ? 'This Subtitle 24 rule has no mapped section yet. See PG_SUBTITLE_24_SECTIONS for the ' +
                 'sections already located but not yet bound to a rule.'
-              : 'No locator registered for this rule\'s source.',
+              : r.ruleKey === 'process.review_model'
+                ? 'Advisory. Kealee\'s own compiled description of the review process — a SECONDARY_SOURCE ' +
+                  'by construction, non-gating, and never usable as certification evidence. It has no ' +
+                  'authoritative publisher to hash and is not supposed to have one.'
+                : 'No locator registered for this rule\'s source.',
     }))
 }

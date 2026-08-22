@@ -217,8 +217,9 @@ Then, and only then, mark Phase 4 complete.
 runs in a maintenance job, **never on a request path** — the point of
 certification is that evaluating an order touches no network.
 
-**The PG locators are written and verified** (`jurisdictions/pg-source-locators.ts`,
-36 tests). 45 of 51 rules have a locator across 17 sources.
+**The locators are written and verified** — `jurisdictions/pg-source-locators.ts`
+(county, 36 tests) and `jurisdictions/fema-nfhl.ts` (FEMA, 26 tests). 46 of 51
+rules have a locator across 18 sources in two publisher families.
 
 ```ts
 import { Rules, buildPgSourceBundles, pgRulesWithoutLocator } from '@kealee/pascal-agents/engine'
@@ -335,15 +336,55 @@ Three overlays are deliberately unmapped, in `PG_OVERLAYS_NOT_IN_ORDINANCE`:
   Its authority is the county floodplain regulation and the effective FIRM
   panel, neither of which is in this publication.
 
-### The 6 rules with no locator
+### FEMA — a separate publisher with a different change model
+
+Flood mapping is not an ordinance and is not modelled as one. A county amends
+text; FEMA issues a new FIRM panel with an effective date. `fema-nfhl.ts` detects
+change the way the NFIP actually works — by the identity of the **effective
+panel set**, from NFHL layer 3 (`FIRM_PAN`, `SUFFIX`, `EFF_DATE`).
+
+```ts
+import { buildPgFemaSources, Rules } from '@kealee/pascal-agents/engine'
+const fema = buildPgFemaSources(rules)   // DFIRM 24033C for Prince George's
+```
+
+Four behaviours worth knowing, each with a test:
+
+- **A published panel is not an effective one.** FEMA issues panels months
+  ahead. `splitPanelsByEffectivity()` holds a future `EFF_DATE` as *pending*;
+  the hash changes on the day it takes effect, not when it was published.
+- **A truncated set is refused, not hashed.** ArcGIS returns
+  `exceededTransferLimit` with HTTP 200. A hash over a partial panel set is
+  stable and silently omits panels — the same failure class as hashing an
+  empty region. It routes to `REGION_LOCATOR_FAILED` instead.
+- **ArcGIS reports errors in the body**, not the status line. Checked explicitly.
+- **Printed vs Not Printed is ignored.** A publication detail, not a change in
+  what the map says.
+
+What FEMA covers here: panel currency — whether a determination made against
+this map is still current. What it does **not** cover, stated in the bundle's
+`scope.notCovered`: the zone notation list (no coded-value domain on layer 28,
+and 44 CFR 64.3 does not enumerate the letters — verified), and any individual
+property determination, since a LOMA or LOMR revises a property without
+touching the panel.
+
+`FEMA_DETERMINATION_CAVEATS` carries the statements that must survive into any
+output. A zone letter alone is never a flood determination.
+
+### The 5 rules with no locator — all correct
 
 `pgRulesWithoutLocator()` returns each with a specific reason:
 
-- **T-D-O, D-D-O, FLOOD-DPIE** — as above
-- **`flood.fema_zones`** — FEMA NFIP designations from `msc.fema.gov`, a
-  different publisher entirely; would need its own source definition
-- **`landscape.tree_canopy`** — §25-128 publishes nothing to hash
-- **`process.review_model`** — advisory, not regulatory
+- **T-D-O, D-D-O** — legacy pre-2022 overlays, verified absent from
+  27-4401–27-4403. Governed by each district's adopted plan. **Retained as
+  human-review** until their governing documents and locators are confirmed.
+- **FLOOD-DPIE** — a DPIE floodplain designation, not a Subtitle 27 overlay.
+  Same treatment.
+- **`landscape.tree_canopy`** — §25-128 publishes no usable canopy standard.
+  Correctly unresolved; certification prohibited.
+- **`process.review_model`** — advisory by construction. A SECONDARY_SOURCE,
+  non-gating, and never usable as certification evidence. It has no
+  authoritative publisher to hash and is not supposed to have one.
 
 A rule with no locator can never be proven current. That is surfaced in the
 maintenance queue rather than left for someone to discover.
