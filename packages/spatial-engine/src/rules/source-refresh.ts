@@ -18,7 +18,7 @@ import * as http from 'http'
 import * as https from 'https'
 import { hashSourceContent, normalizeSourceContent, detectSourceChanges, applySourceChange,
   advanceSourceVersion, type AuthoritativeSource, type SourceRegion, type ChangeDetectionResult } from './change-detection'
-import type { CertifiableRule, ReviewerRole } from './certification'
+import type { CertifiableRule, ReviewerRole, RuleAuditEvent } from './certification'
 
 export interface FetchResult {
   ok: boolean
@@ -167,6 +167,12 @@ export interface RefreshOutcome {
   rules: CertifiableRule[]
   downgraded: { identity: string; from: string; to: string; reason: string }[]
   retained: string[]
+  /**
+   * Audit events raised by applying the change. These were previously produced
+   * by applySourceChange and discarded here, which silently lost every
+   * `source_changed` entry — the audit trail is meant to be complete.
+   */
+  audits: RuleAuditEvent[]
   /** Maintenance items for a human, distinct from project review items. */
   maintenanceItems: { code: string; detail: string; ruleIdentities: string[] }[]
   summary: string
@@ -204,6 +210,7 @@ export async function refreshSource(input: RefreshInput): Promise<RefreshOutcome
       rules,
       downgraded: [],
       retained: rules.map(r => r.identity),
+      audits: [],
       maintenanceItems: [{
         code: 'SOURCE_NOT_FETCHABLE',
         detail: `${source.title} has no URL, so it cannot be refreshed automatically. Currency must be confirmed by hand.`,
@@ -231,6 +238,7 @@ export async function refreshSource(input: RefreshInput): Promise<RefreshOutcome
       rules,
       downgraded: [],
       retained: rules.map(r => r.identity),
+      audits: [],
       maintenanceItems: [{
         code: 'SOURCE_UNAVAILABLE',
         detail:
@@ -330,6 +338,7 @@ export async function refreshSource(input: RefreshInput): Promise<RefreshOutcome
     rules: applied.rules,
     downgraded: applied.downgraded,
     retained: applied.retained,
+    audits: applied.audits,
     maintenanceItems,
     summary: withUnlocatable.summary,
   }
@@ -352,6 +361,7 @@ export async function refreshAll(inputs: RefreshInput[]): Promise<RefreshOutcome
         rules: input.rules,
         downgraded: [],
         retained: input.rules.map(r => r.identity),
+        audits: [],
         maintenanceItems: [{
           code: 'REFRESH_FAILED',
           detail: `Refresh of ${input.source.title} threw: ${String(e)}. Certifications retained.`,

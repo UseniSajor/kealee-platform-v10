@@ -389,6 +389,62 @@ output. A zone letter alone is never a flood determination.
 A rule with no locator can never be proven current. That is surfaced in the
 maintenance queue rather than left for someone to discover.
 
+## Step 7 — Run the maintenance cycle (Phase 5)
+
+Certifications only pay off if they survive. A certification nobody re-checks is
+not an asset after a year — it is a claim about a document that may have been
+amended twice. `Rules.runMaintenanceCycle()` is the job that keeps them honest
+and reopens review only where something moved.
+
+It does not schedule itself. `JobQueue` and `JobSchedule` already exist in the
+platform; Phase 5 supplies the payload and the handler, not another scheduler.
+
+```ts
+import { Rules, buildPgSourceBundles, buildPgFemaSources } from '@kealee/pascal-agents/engine'
+
+const bundles = [...buildPgSourceBundles(rules), ...buildPgFemaSources(rules)]
+const result = await Rules.runMaintenanceCycle({
+  jurisdictionCode: 'prince_georges_md',
+  rules,
+  sources: bundles.map(b => ({ source: b.source, locators: b.locators })),
+  coreRuleKeys: PG_CORE_RULE_KEYS,
+  packVersion: '2022.1',
+  effectiveDate: '2022-04-01',
+  store,                    // omit for a dry run — computes everything, writes nothing
+  queueFor: reviewer,
+})
+```
+
+Enqueue with `Rules.ruleMaintenanceJob(jurisdiction, packVersion)`; the job id is
+stable per jurisdiction and pack, so `JobQueue`'s `(queueName, jobId)` uniqueness
+stops duplicate cycles piling up. `RULE_MAINTENANCE_SCHEDULE` suggests weekly
+(`0 4 * * 1`): counties amend on a scale of months, and a daily fetch is load on
+a public portal for no information gain.
+
+### The order is fixed inside the cycle, deliberately
+
+Refresh every source → apply scoped invalidation → sweep expired certifications
+→ rebuild the pack → assess health → build the queue → persist in one
+transaction. Wiring these by hand produced a real defect once (withdrawals
+applied before the appends they targeted), so the order lives in one place.
+
+### What it guarantees
+
+- **Idempotent.** With nothing changed and nothing expired it downgrades
+  nothing and writes the same state back.
+- **An outage is never an amendment.** A publisher returning 503 keeps every
+  certification and raises a maintenance item saying currency is unproven.
+- **Scoped.** One changed source downgrades only that source's rules.
+- **Isolated.** `refreshAll` contains a throw in one source so a single
+  publisher cannot abandon the cycle halfway.
+- **Expiry is real.** A certification granted with a review-by date returns to
+  PROVISIONAL when it lapses — a considered limit, not a formality.
+
+`assessPackHealth()` grades the pack (`healthy` / `attention` / `degraded` /
+`unusable`) and returns ordered actions. Its automation rate counts **gating
+rules only** — including advisory rules would flatter the number, since they
+were never going to need review.
+
 ## Genuinely blocked, not deferred
 
 - **§25-128 Table 1** — canopy percentages unretrievable from every published
