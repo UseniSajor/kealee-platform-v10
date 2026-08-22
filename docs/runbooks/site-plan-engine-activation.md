@@ -14,6 +14,25 @@ Owner as of 2026-08-22: unassigned. Last engine commit: `b2b2e819`.
 
 ---
 
+## Running the tests
+
+```bash
+pnpm jest --selectProjects spatial-engine     # 340 tests, ~60s
+```
+
+This only started working at `9d6aaaa0`. Before it, two Jest projects pointed at
+setup files deleted in `79bb01ae`, and Jest validates *every* project even when
+you select one — so the whole monorepo's test run failed on apps that no longer
+have tests. If you see `Module <rootDir>/apps/.../setup.ts ... was not found`,
+another decommissioned app has been left in `jest.config.js`.
+
+The suite was also intermittently red under parallel workers: these tests do real
+SHA-256 hashing and build the 51-rule pack at module scope, and on a
+Windows-backed filesystem individual tests exceeded Jest's default 5s.
+`packages/spatial-engine/jest.setup.ts` raises it to 30s for this project only.
+Worth knowing: `--runInBand` is about 3x faster here (38s vs 123s) because the
+workers contend on I/O.
+
 ## Step 0 — Preserve the in-flight work FIRST
 
 This is the step most likely to destroy someone else's day. At handoff there was
@@ -218,7 +237,7 @@ runs in a maintenance job, **never on a request path** — the point of
 certification is that evaluating an order touches no network.
 
 **The locators are written and verified** — `jurisdictions/pg-source-locators.ts`
-(county, 36 tests) and `jurisdictions/fema-nfhl.ts` (FEMA, 26 tests). 46 of 51
+(county, 35 tests) and `jurisdictions/fema-nfhl.ts` (FEMA, 26 tests). 46 of 51
 rules have a locator across 18 sources in two publisher families.
 
 ```ts
