@@ -130,6 +130,14 @@ export interface RegionLocator {
   ruleIdentities: string[]
   /** Applied to the NORMALISED document. */
   extract: (normalized: string) => string | null
+  /**
+   * Applied to the RAW document instead, when it is available and returns a
+   * slice. Some publishers delimit regions with markup that normalisation
+   * removes — anchor ids, for instance — and those are often the only reliable
+   * boundary between one section's tables and the next. The returned slice is
+   * normalised before hashing, so the hash is still immune to cosmetic churn.
+   */
+  extractRaw?: (raw: string) => string | null
 }
 
 // `betweenMarkers` lives in change-detection.ts and is re-exported through the
@@ -242,7 +250,13 @@ export async function refreshSource(input: RefreshInput): Promise<RefreshOutcome
   const regions: SourceRegion[] = []
   const unlocatableRegions: string[] = []
   for (const loc of locators) {
-    const slice = loc.extract(normalized)
+    // A raw locator wins when it finds something; otherwise fall back to the
+    // normalised one, so a publisher dropping an anchor degrades to coarser
+    // scope rather than to no region at all.
+    const rawSlice = loc.extractRaw?.(fetched.body)
+    const slice = rawSlice != null && rawSlice.trim() !== ''
+      ? normalizeSourceContent(rawSlice)
+      : loc.extract(normalized)
     if (slice == null || slice.trim() === '') {
       unlocatableRegions.push(loc.label)
       continue

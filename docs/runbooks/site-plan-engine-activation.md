@@ -217,12 +217,78 @@ Then, and only then, mark Phase 4 complete.
 runs in a maintenance job, **never on a request path** — the point of
 certification is that evaluating an order touches no network.
 
-Region locators for the real PG endpoints still need writing; the pilot uses
-synthesised content. Without them the detector cannot isolate scope and will
-reopen every rule from a source on any change. It says so when it does, so this
-degrades loudly rather than silently.
+**The PG locators are written and verified** (`jurisdictions/pg-source-locators.ts`,
+23 tests). 36 of 51 rules have a locator across 12 sources.
 
----
+```ts
+import { Rules, buildPgSourceBundles, pgRulesWithoutLocator } from '@kealee/pascal-agents/engine'
+
+const bundles = buildPgSourceBundles(rules)
+const outcomes = await Rules.refreshAll(
+  bundles.map(b => ({ source: b.source, locators: b.locators, rules })),
+)
+```
+
+### The one thing to not get wrong
+
+EncodePlus publishes the ordinance at two nearly identical URLs:
+
+| URL | What it returns |
+|---|---|
+| `doc-viewer.aspx` | JS shell — 41 KB, 18 scripts, **zero tables, no ordinance text** |
+| `doc-view.aspx?...&print=1` | Server-rendered — 128 KB, 24 tables for 27-4202 |
+
+`doc-viewer` is the URL a human lands on and the obvious one to copy. Hashing it
+gives a value that changes on CMS deploys and **stays identical through a real
+amendment** — a detector that is confidently wrong. `library.municode.com` is
+the same (6 KB shell).
+
+Never build these URLs by hand. `pgPrintUrl(secid)` is the only sanctioned
+constructor, and `FORBIDDEN_HASH_URLS` records both shells with reasons.
+
+### Verified secid map (fetched 2026-08-22)
+
+| secid | Section | Zones | Tables |
+|---|---|---|---|
+| 633 | 27-4201 Rural and Agricultural | AG, AR, ROS | 9 |
+| 634 | 27-4202 Residential | RE, RMF-12/20/48, RR, RSF-65/95/A | 24 |
+| 635 | 27-4203 Nonresidential | CGO, CN, CS, IE, IH | 15 |
+| 636 | 27-4204 Transit-Oriented/Activity Center | LTO, NAC, RTO, TAC | 18 |
+| 637 | 27-4205 Other Base Zones | — | **0** |
+| 639–642 | 27-4301…27-4304 Planned Development | R-PD, LTO-PD, NAC-PD, RTO-PD, TAC-PD, IE-PD, MU-PD | 17 |
+| 645–646 | 27-4402…27-4403 Overlay Zones | — | 6 |
+
+Sec. 27-4205 returning zero tables independently confirms the Phase 3C
+`zoning.dimensional.absent` finding: the ordinance genuinely publishes no
+dimensional table for those legacy zones.
+
+### Invalidation scope
+
+Section granularity: an amendment to the residential section reopens its eight
+zone rules, not all 51. `deriveZoneBlocks()` can narrow to one zone using the
+`secid-NNNbkM` bookmark anchors — it claims a block for a zone only when
+**exactly one** zone code appears in it, and leaves ambiguous blocks on the
+coarser section region. It is derived from the document on every run, never
+cached as an assumption: binding RSF-65's certification to RMF-20's text is the
+kind of error nobody would notice.
+
+ArcGIS layer definitions carry `currentVersion` and `cimVersion`, which move on
+Esri upgrades and have nothing to do with zoning. `arcgisStableRegion()` hashes
+only fields, subtypes and coded-value domains.
+
+### The 15 rules with no locator
+
+`pgRulesWithoutLocator()` returns each with a reason:
+
+- **10 overlay rules** — standards come from each district's adopted plan, a
+  separate document per district
+- **2 Subtitle 24** (subdivision, stream buffers) — need their own verified
+  secid map; not yet written, and the same `doc-view.aspx` approach applies
+- **1 §25-128 tree canopy** — nothing published to hash
+- **2 process/reference** — advisory, not regulatory
+
+A rule with no locator can never be proven current. That is surfaced in the
+maintenance queue rather than left for someone to discover.
 
 ## Genuinely blocked, not deferred
 
