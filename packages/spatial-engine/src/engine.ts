@@ -17,6 +17,7 @@ export * from './jurisdictions/pg-subdivision-and-landscape'
 export * from './jurisdictions/pg-source-locators'
 export * from './jurisdictions/fema-nfhl'
 export * from './jurisdictions/pg-site-data'
+export * from './jurisdictions/md-imap'
 
 // The digital site twin and the civil model
 export * from './site-plan/reliability'

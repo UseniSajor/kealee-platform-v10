@@ -24,6 +24,7 @@ import { composeSheets, blocksFromFeatures, type CompositionResult } from '../sh
 import { buildResponsibilityBlock, type DividedResponsibilityBlock } from '../review/content-scope'
 import { getPgDimensionalStandards, parsePgStandardValue } from '../jurisdictions/pg-overlays-and-dimensions'
 import type { SheetId } from '../sheets/sheet-template'
+import { fetchMdParcelAtPoint } from '../jurisdictions/md-imap'
 
 /** Everything you know about a lot before a surveyor has been out. */
 export interface LotInput {
@@ -112,11 +113,42 @@ export interface ResolvedBoundary {
  * rather than a plausible-looking rectangle.
  */
 export async function resolveParcelBoundary(
-  _lot: Pick<LotInput, 'address' | 'jurisdictionCode'>,
+  lot: Pick<LotInput, 'address' | 'jurisdictionCode'>,
   resolver?: (lot: Pick<LotInput, 'address' | 'jurisdictionCode'>) => Promise<ResolvedBoundary | null>,
 ): Promise<ResolvedBoundary | null> {
   if (!resolver) return null
-  return resolver(_lot)
+  return resolver(lot)
+}
+
+/**
+ * Resolves a Maryland lot boundary from state parcel data.
+ *
+ * This is what makes a survey unnecessary to RENDER. The drawing is produced
+ * from the state cadastral record and labelled Level 1 throughout; a survey is
+ * what makes it permit-grade, not what makes it exist.
+ *
+ * Takes a point already in EPSG:2248 — geocoding is the caller's job, and it
+ * belongs there because the address-to-point step has its own failure modes.
+ */
+export async function resolveMarylandParcel(
+  easting2248: number,
+  northing2248: number,
+  opts: { fetchImpl?: typeof fetch } = {},
+): Promise<{ boundary: ResolvedBoundary | null; attributes: Awaited<ReturnType<typeof fetchMdParcelAtPoint>>['attributes']; caveat: string; candidateCount: number }> {
+  const r = await fetchMdParcelAtPoint(easting2248, northing2248, opts)
+  return {
+    boundary: r.ring
+      ? {
+          ring: r.ring,
+          provenance: 'jurisdiction_gis',
+          authority: r.source.authority,
+          retrievedAt: r.source.retrievedAt,
+        }
+      : null,
+    attributes: r.attributes,
+    caveat: r.caveat,
+    candidateCount: r.candidateCount,
+  }
 }
 
 /** Reads the published envelope for a zone, keeping footnotes attached. */
