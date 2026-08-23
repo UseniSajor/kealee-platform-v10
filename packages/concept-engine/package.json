@@ -19,7 +19,7 @@
   },
   "dependencies": {
     "@kealee/core-llm": "workspace:*",
-    "pdfkit": "^0.14.0",
+    "pdfkit": "^0.19.1",
     "zod": "^3.22.4"
   },
   "devDependencies": {
