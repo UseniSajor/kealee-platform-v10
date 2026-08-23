@@ -38,7 +38,7 @@ just an internal QC artefact.
 
 ## Confirmed defects in the engine
 
-### 1. The scale chooser can emit a non-compliant scale
+### 1. The scale chooser can emit a non-compliant scale — FIXED
 
 `STANDARD_SCALES_FT_PER_IN = [10, 20, 30, 40, 50, 60, 100, 200]`
 (`sheets/viewport.ts:16`).
@@ -48,8 +48,33 @@ smaller than one (1) inch equals fifty (50) feet**".
 
 1"=60', 1"=100' and 1"=200' are all smaller than the floor. `fitViewport()`
 additionally *defaults* to 200 when nothing fits, so an oversized site silently
-produces a rejectable sheet. The floor must be enforced, and a site that cannot
-fit at 1"=50' needs match lines or a larger sheet — not a smaller scale.
+produces a rejectable sheet.
+
+Reproduced against the original chooser before fixing:
+
+| Site | Old chooser picked | |
+|---|---|---|
+| 65 x 100 ft infill lot | 1"=10' | compliant |
+| 2000 x 1500 ft | 1"=100' | exceeds the cap, emitted silently |
+| 8000 x 6000 ft | 1"=200' | exceeds the cap — and does not fit even at 200' |
+
+**Fixed.** Reading the code itself rather than the checklist changed the design.
+The checklist states the 1"=50' floor flatly; 32-130(a)(5) ends "...or as might
+otherwise clearly reflect existing conditions... **provided that such other
+interval and scale has the Director's approval in advance of plan
+preparation**", and (a)(6) makes 1"=200' *legal* for surplus earth disposal on
+sites of ten acres or more, except within fifty feet of a property line. A hard
+clamp to 50 — which is what the checklist alone would have produced — would have
+been stricter than the code and would have blocked legitimate plans.
+
+`sheets/viewport.ts` now carries `ScaleConstraint`, with `PG_SCALE_GENERAL`
+(a)(5) and `PG_SCALE_SURPLUS_EARTH_10AC` (a)(6). `scaleConstraintFor()` defaults
+to (a)(5) and requires the narrow exception to be asked for, never inferred.
+`fitViewport()` selects only from permitted scales and returns a
+`ScaleCompliance` record; when nothing fits it still draws, at the smallest
+scale that does, with `compliant: false` and a remedy naming match lines or a
+recorded Director approval. `runIssuanceQc()` raises `PLAN_SCALE_BELOW_MINIMUM`
+as **blocking**.
 
 ### 2. Vertical datum is unvalidated, and the county names a specific one
 
@@ -65,7 +90,7 @@ checklist was last edited 2013. Do **not** hard-code NGVD 1929 as the only
 acceptable value — confirm current DPIE practice first. What is certain is that
 the datum must be *stated* and *validated*, which today it is not.
 
-### 3. Subtitle 32 is entirely unmapped
+### 3. Subtitle 32 is entirely unmapped — MAPPED
 
 The grading code — the code that actually governs this product — has no locator,
 no rules and no bindings. Sections cited by the checklist:
@@ -82,8 +107,30 @@ no rules and no bindings. Sections cited by the checklist:
 | 24-128 | Private right-of-way easement for lots without public frontage |
 | 24-122.01 | Police/Fire/Rescue mitigation fee |
 
-Subtitles 24, 25 and 27 are mapped; 32 is the gap, and it is the most
+Subtitles 24, 25 and 27 are mapped; 32 was the gap, and it is the most
 load-bearing one for a grading/site plan.
+
+**Mapped** in `jurisdictions/pg-subtitle-32.ts`. Subtitle 32 is *not* on
+EncodePlus — it is in the Code of Ordinances at `princegeorges-md.elaws.us`,
+which is server-rendered and a valid hash target (21 KB of real section text,
+tables included).
+
+That host has its own trap, different from the EncodePlus shell. eLaws slugs
+encode the hierarchy and the hierarchy is not uniform:
+
+    coor_subtitle32_div2_sec32-130            Division 2, no subdivision
+    coor_subtitle32_div1_subdiv2_sec32-106    Division 1, SUBDIVISION 2
+
+A hand-built `div1_sec32-106` returns **HTTP 200** with a 28 KB fallback page
+carrying no section heading — verified. Hashing it would give a value that never
+changes when 32-106 is amended: silently inert. Every slug was therefore taken
+from the division table of contents and verified by reading back the section
+heading, and `assertSectionHeading()` re-checks that at refresh time.
+
+Sec. 32-130(a) is transcribed as `PG_PLAN_CONTENT_STANDARDS` — all fifteen
+paragraphs, each marked with what enforces it. Nine are currently unenforced and
+`unenforcedPlanContentStandards()` reports them rather than letting the gap go
+unrecorded.
 
 ### 4. Two verbatim notes are required on the plan and are absent
 

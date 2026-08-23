@@ -17,6 +17,7 @@ import { checkTwinConsistency, featuresOfKind } from '../site-plan/site-twin'
 import type { ApplicabilityReport } from '../site-plan/classification'
 import type { ReviewMatrix } from './disciplines'
 import type { SheetId } from '../sheets/sheet-template'
+import type { ScaleCompliance } from '../sheets/viewport'
 
 export interface ChecklistItem {
   code: string
@@ -162,6 +163,12 @@ export function runIssuanceQc(input: {
   checklist: CountyChecklist
   reviewMatrix: ReviewMatrix
   sheetFrameFailures: number
+  /**
+   * Viewports of the sheets being issued, for the Sec. 32-130(a)(5) scale
+   * check. Optional so existing callers keep working; when omitted the scale
+   * is simply not asserted, which is honest — it is not silently passed.
+   */
+  viewports?: { sheetId: string; scaleCompliance: ScaleCompliance }[]
 }): QcResult {
   const findings: QcFinding[] = []
   const { twin, applicability, checklist, reviewMatrix } = input
@@ -205,6 +212,19 @@ export function runIssuanceQc(input: {
     add('SHEET_FRAME_INCOMPLETE', 'blocking',
       `${input.sheetFrameFailures} sheet(s) are missing a required frame element.`,
       'Regenerate the sheets; every sheet must carry the full title block and notes.')
+  }
+
+  // Sec. 32-130(a)(5) caps how small the plan scale may be. A sheet drawn
+  // smaller than the cap is rejectable on intake, so it blocks issuance rather
+  // than merely warning — but the drawing itself is still produced.
+  for (const vp of input.viewports ?? []) {
+    if (!vp.scaleCompliance.compliant) {
+      add('PLAN_SCALE_BELOW_MINIMUM', 'blocking',
+        `Sheet ${vp.sheetId} is drawn smaller than ${vp.scaleCompliance.citation} permits ` +
+        `(cap 1"=${vp.scaleCompliance.limitFtPerIn}').`,
+        vp.scaleCompliance.remedy
+          ?? 'Split the site across match-lined sheets, or record the Director\'s advance approval.')
+    }
   }
 
   const staleDays = 365

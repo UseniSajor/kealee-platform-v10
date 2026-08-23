@@ -16,6 +16,106 @@ import type { Position, Ring } from '../site-plan/site-twin'
 export const STANDARD_SCALES_FT_PER_IN = [10, 20, 30, 40, 50, 60, 100, 200] as const
 export type StandardScale = (typeof STANDARD_SCALES_FT_PER_IN)[number]
 
+// ── Plan scale, as Subtitle 32 actually writes it ───────────────────────────
+
+/**
+ * Sec. 32-130(a)(5) and (a)(6), Prince George's County Code, Subtitle 32
+ * (Water Resources Protection and Grading Code).
+ *
+ * The general rule caps how SMALL the scale may be — "a scale no smaller than
+ * one (1) inch equals fifty (50) feet of the entire site, plus a minimum
+ * twenty (20) foot adjacent peripheral strip". Feet-per-inch therefore has a
+ * MAXIMUM: 1"=60' is a smaller scale than 1"=50' and does not comply.
+ *
+ * Two things stop this from being a hard clamp, and both are in the code:
+ *
+ *   (a)(6) surplus earth disposal on sites of ten (10) acres or larger may be
+ *          drawn at no smaller than 1"=200' with contours at no greater than
+ *          five (5) foot intervals — EXCEPT that work within fifty (50) feet
+ *          of any property line reverts to (a)(5).
+ *
+ *   (a)(5) any other interval and scale is permissible "provided that such
+ *          other interval and scale has the Director's approval IN ADVANCE of
+ *          plan preparation".
+ *
+ * The Director's approval is a real-world event, not something the engine may
+ * infer. It is carried as evidence or it does not exist.
+ */
+export interface DirectorScaleApproval {
+  /** Who at DPIE approved it, and the reference they gave. */
+  reference: string
+  /** Must predate plan preparation — (a)(5) says "in advance". */
+  approvedOn: string
+  approvedMaxFtPerIn: number
+}
+
+export interface ScaleConstraint {
+  /** Largest permissible feet-per-inch. Bigger number = smaller scale. */
+  maxFtPerIn: number
+  /** Permitted contour intervals, feet. */
+  contourIntervalsFt: number[]
+  /** Minimum strip beyond the site that must appear, feet. */
+  peripheralStripFt: number
+  /** The provision this comes from. */
+  citation: string
+  directorApproval?: DirectorScaleApproval
+}
+
+/** Sec. 32-130(a)(5) — the case nearly every site plan falls under. */
+export const PG_SCALE_GENERAL: ScaleConstraint = {
+  maxFtPerIn: 50,
+  contourIntervalsFt: [1, 2],
+  peripheralStripFt: 20,
+  citation: "PGC Code Sec. 32-130(a)(5)",
+}
+
+/** Sec. 32-130(a)(6) — surplus earth disposal, sites 10 acres or larger. */
+export const PG_SCALE_SURPLUS_EARTH_10AC: ScaleConstraint = {
+  maxFtPerIn: 200,
+  contourIntervalsFt: [1, 2, 5],
+  peripheralStripFt: 20,
+  citation: "PGC Code Sec. 32-130(a)(6)",
+}
+
+/**
+ * Picks the governing constraint.
+ *
+ * (a)(6) is narrow and self-limiting: it applies only to surplus earth disposal
+ * on ten acres or more, and any work within fifty feet of a property line falls
+ * back to (a)(5). Because a grading plan almost always touches its own property
+ * line, the fallback is the default and (a)(6) must be asked for explicitly.
+ */
+export function scaleConstraintFor(input: {
+  surplusEarthDisposal?: boolean
+  siteAreaAcres?: number
+  workWithin50FtOfPropertyLine?: boolean
+  directorApproval?: DirectorScaleApproval
+} = {}): ScaleConstraint {
+  const base =
+    input.surplusEarthDisposal === true &&
+    (input.siteAreaAcres ?? 0) >= 10 &&
+    input.workWithin50FtOfPropertyLine === false
+      ? PG_SCALE_SURPLUS_EARTH_10AC
+      : PG_SCALE_GENERAL
+
+  return input.directorApproval ? { ...base, directorApproval: input.directorApproval } : base
+}
+
+/** The effective cap, after any Director approval. */
+export function effectiveMaxFtPerIn(c: ScaleConstraint): number {
+  const approved = c.directorApproval?.approvedMaxFtPerIn
+  return approved !== undefined && approved > c.maxFtPerIn ? approved : c.maxFtPerIn
+}
+
+export interface ScaleCompliance {
+  compliant: boolean
+  /** The cap that applied, after any Director approval. */
+  limitFtPerIn: number
+  citation: string
+  /** Present only when non-compliant — what a drafter must actually do. */
+  remedy?: string
+}
+
 export interface SheetSize {
   widthPt: number
   heightPt: number
@@ -50,6 +150,12 @@ export interface Viewport {
   drawHeightPt: number
   sheet: SheetSize
   label: string
+  /**
+   * Whether the chosen scale satisfies Sec. 32-130. Never silently true — a
+   * drawing that cannot fit within the permitted scale is still produced, but
+   * it is produced with this flag down so issuance QC can block it.
+   */
+  scaleCompliance: ScaleCompliance
 }
 
 export interface Bounds { minX: number; minY: number; maxX: number; maxY: number }
@@ -74,6 +180,7 @@ export function fitViewport(
   bounds: Bounds,
   sheet: SheetSize = ARCH_D,
   paddingFt = 20,
+  constraint: ScaleConstraint = PG_SCALE_GENERAL,
 ): Viewport {
   const drawWidthPt = sheet.widthPt - sheet.marginPt * 2 - sheet.titleBlockWidthPt
   const drawHeightPt = sheet.heightPt - sheet.marginPt * 2
@@ -81,12 +188,40 @@ export function fitViewport(
   const contentWidthFt = bounds.maxX - bounds.minX + paddingFt * 2
   const contentHeightFt = bounds.maxY - bounds.minY + paddingFt * 2
 
-  let chosen: StandardScale = STANDARD_SCALES_FT_PER_IN[STANDARD_SCALES_FT_PER_IN.length - 1]
-  for (const s of STANDARD_SCALES_FT_PER_IN) {
+  const limit = effectiveMaxFtPerIn(constraint)
+  const fits = (s: number) => {
     const ppf = 72 / s
-    if (contentWidthFt * ppf <= drawWidthPt && contentHeightFt * ppf <= drawHeightPt) {
-      chosen = s
-      break
+    return contentWidthFt * ppf <= drawWidthPt && contentHeightFt * ppf <= drawHeightPt
+  }
+
+  // Only scales the code actually permits are candidates. Previously the loop
+  // fell through to the last entry of the table — 1"=200' — whenever nothing
+  // fitted, which silently produced a sheet DPIE would reject.
+  const permitted = STANDARD_SCALES_FT_PER_IN.filter(s => s <= limit)
+  const chosenPermitted = permitted.find(fits)
+
+  let chosen: StandardScale
+  let compliance: ScaleCompliance
+
+  if (chosenPermitted !== undefined) {
+    chosen = chosenPermitted
+    compliance = { compliant: true, limitFtPerIn: limit, citation: constraint.citation }
+  } else {
+    // The site does not fit at any permitted scale. Draw it at the smallest
+    // scale that does fit so the geometry is still inspectable, and say so.
+    const fallback = STANDARD_SCALES_FT_PER_IN.find(fits)
+      ?? STANDARD_SCALES_FT_PER_IN[STANDARD_SCALES_FT_PER_IN.length - 1]
+    chosen = fallback
+    compliance = {
+      compliant: false,
+      limitFtPerIn: limit,
+      citation: constraint.citation,
+      remedy:
+        `Site does not fit on ${sheet.widthPt / 72}" x ${sheet.heightPt / 72}" at 1"=${limit}' ` +
+        `(would need 1"=${fallback}'). ${constraint.citation} caps the scale at 1"=${limit}'. ` +
+        'Resolve by splitting the site across match-lined sheets, or obtain the Director\'s ' +
+        'approval of a smaller scale IN ADVANCE of plan preparation per Sec. 32-130(a)(5) and ' +
+        'record it as DirectorScaleApproval. Do not simply draw at the smaller scale.',
     }
   }
 
@@ -99,6 +234,7 @@ export function fitViewport(
 
   return {
     scaleFtPerIn: chosen,
+    scaleCompliance: compliance,
     pointsPerFoot,
     originX,
     originY,

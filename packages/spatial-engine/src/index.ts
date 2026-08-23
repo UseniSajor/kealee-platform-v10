@@ -18,7 +18,8 @@ export * from './site-plan/disturbance';
 export * from './site-plan/classification';
 export * from './jurisdictions/prince-georges-md';
 export * from './jurisdictions/pg-overlays-and-dimensions';
-export * from './jurisdictions/pg-subdivision-and-landscape';
+export * from './jurisdictions/pg-subdivision-and-landscape'
+export * from './jurisdictions/pg-subtitle-32';
 export * from './site-plan/site-twin';
 export * from './site-plan/reports';
 export * from './site-plan/engineering';
