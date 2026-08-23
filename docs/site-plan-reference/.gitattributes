@@ -1,0 +1,4 @@
+# Verbatim text extracted from county PDFs. Trailing whitespace and layout are
+# part of the source fidelity — do not let tooling normalise them.
+dpie/*.txt -whitespace -text
+dpie/*.pdf binary

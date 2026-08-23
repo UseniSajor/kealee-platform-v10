@@ -1,0 +1,49 @@
+MINIMUM PLAN SUBMISSION REQUIREMENTS  
+FOR NEW SINGLE -FAMILY HOUSE (S) AND 
+ADDITION (S) TO EXISTING HOUSE PROJECTS
+Applicants must provide complete architectural/structural plans for all residential construction projects.  
+Plans must be drawn to scale and be of sufficient quality to explain the proposed construction clearly and 
+completely.
+DESIGN CRITERIA
+• Cover Page: Must include Scope of Work, Drawing Index, Code Analysis, Current IBC/IRC/IECC Codes and 
+Prince George’s County Building Amendments, Subtitle 4, and Building Data (area of new house or addition).
+• Floor Live Load = 40 psf, except in sleeping rooms where the Live Load = 30 psf.
+• Roof Live Load = 30 psf, with additional load for roof areas subjected to drifting. Ground Snow Load = 35 psf.
+• Basic Wind Speed = 115 mph, 3-second gusts; Seismic Design Category B.
+• Frost/Footing Depth = 30-inches.
+REQUIRED DRAWINGS 
+1. Foundation Plan (Min. Scale ¼  = 1 -0 ): Must show all elements of the foundation with solid lines and 
+the footings with dashed lines; include complete dimensioning for the exterior walls and clearly dimension the 
+locations and sizes of all interior bearing walls and footings.
+2. Floor Plans (Min. Scale ¼  = 1-0 ): Include separate drawings for each floor. Show all architectural/structural 
+elements (rooms, doors, windows, stairs, railings, fixtures, etc.) Proposed uses of spaces (room names) and 
+dimensions locating all elements, stairway widths, and landing sizes must be included.
+3. Building Cross Section(s) (Min. Scale ¼  = 1 -0 ): The number of section drawings shall be as necessary 
+to explain the structural system completely. Must be a comprehensive drawing showing the entire building 
+and/or proposed construction. Vertical dimensions (floor-to-floor, construction heights) must be shown.
+4. Framing Plans (Min. Scale ¼  = 1-0 ): Include separate drawings for each floor and roof showing all framing 
+members and respective points of bearing. Materials, series, sizes and spacing of all structural members must 
+be specified (floor joists, rafters, ridges, valleys, hips, ceiling joists, collar ties, bearing walls, beams, posts, 
+headers). Accurately dimension the locations of all points of bearing.
+5. Elevations (Min. Scale ¼  = 1-0 ): Exterior views of each facade (front, rear & sides) showing the construction 
+in its finished condition. Indicate all door and window sizes and specify all finish building materials. For building 
+additions, the existing and proposed elevations on all sides of the building must be part of the permit set.
+6. Typical Wall Sections (Min. Scale ¾  = 1 -0 ): Demonstrate accurate detail of the construction drawn from 
+the footing up to and including the roof and/or top of the proposed construction, as applicable. Specify all 
+building materials, sizes and spacing.
+7. Details (Min. Scale ¾  = 1 -0 ): As required to show special conditions.
+8. Structural Lateral Bracing Drawings: Show method(s), size(s) of bracing on each of the floor plans. The 
+bracing plan must be on a separate sheet.
+9. ePLAN Submittals: Each PDF sheet must be named as “Sheet # — Sheet Title” before uploading to the 
+system. (Example: A101 — First Floor Plan. S101 — Foundation Plan.) The permit set must be uploaded in 
+the appropriate folders. (Example: Architectural drawings are uploaded in the “Architectural” folder; Structural 
+drawings are uploaded in the “Structural” folder, etc.)
+Page 1 of 1
+Prince George’s County
+Department of Permitting, Inspections 
+and Enforcement
+BUILDING PLAN REVIEW DIVISION  
+9400 Peppercorn Place, Suite 213
+Largo, Maryland  20774
+(301) 636–2070
+P.G.C. DPIE Form #E003 (Rev. 1/24)
