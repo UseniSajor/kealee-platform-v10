@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { isTokenExpired } from '@kealee/intake'
 
+import { parseCapturePosition } from '@/lib/capture-position'
+
 export const dynamic = 'force-dynamic'
 
 export async function POST(req: NextRequest) {
@@ -57,8 +59,34 @@ export async function POST(req: NextRequest) {
     const { data: publicData } = supabase.storage.from(bucket).getPublicUrl(storagePath)
     const storageUrl = publicData.publicUrl
 
-    console.info('[capture/upload-file] Upload saved', { captureSessionId: session.id, zone, type, size: file.size })
-    return NextResponse.json({ storageUrl, storagePath })
+    // Position is optional — indoors, or permission denied, there is none, and
+    // that is normal. What is rejected is a coordinate with no accuracy: it
+    // looks usable and nothing downstream could tell that it is not.
+    const { position, error: positionError } = parseCapturePosition(formData)
+    if (positionError) {
+      return NextResponse.json({ error: positionError }, { status: 400 })
+    }
+
+    console.info('[capture/upload-file] Upload saved', {
+      captureSessionId: session.id, zone, type, size: file.size,
+      positionGrade: position?.grade ?? 'none',
+      accuracyMetres: position?.accuracyMetres ?? null,
+    })
+    return NextResponse.json({
+      storageUrl,
+      storagePath,
+      position: position
+        ? {
+            latitude: position.latitude,
+            longitude: position.longitude,
+            accuracyMetres: position.accuracyMetres,
+            grade: position.grade,
+            permittedUses: position.permittedUses,
+            prohibitedUses: position.prohibitedUses,
+            rationale: position.rationale,
+          }
+        : null,
+    })
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : 'Internal error'
     console.error('[capture/upload-file] Request failed', { error: msg })
