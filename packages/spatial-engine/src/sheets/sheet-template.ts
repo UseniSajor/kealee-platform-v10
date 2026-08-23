@@ -13,6 +13,8 @@
 
 import type { SiteTwin } from '../site-plan/site-twin'
 import type { ReliabilityLevel } from '../site-plan/reliability'
+import type { RequiredPlanNote } from '../site-plan/required-notes'
+import { requiredNotesForSheet } from '../site-plan/required-notes'
 
 export type SheetId =
   | 'C-000' | 'C-100' | 'C-200' | 'C-300' | 'C-400'
@@ -84,6 +86,12 @@ export interface SheetContext {
   sheetCount: number
   /** Stated design assumptions printed on the sheet, as a drafter would note them. */
   assumptions?: string[]
+  /**
+   * County-required notes for this sheet, printed verbatim. Populated from
+   * `requiredNotesForSheet()`; never edited or shortened on the way to the
+   * drawing — a reviewer looks for this exact language.
+   */
+  requiredNotes?: RequiredPlanNote[]
 }
 
 /** Every sheet frame element the brief requires. Used as an issuance checklist. */
@@ -100,6 +108,7 @@ export const REQUIRED_FRAME_ELEMENTS = [
   'sourceDataNotes',
   'legendAndAbbreviations',
   'statusWatermark',
+  'requiredCountyNotes',
 ] as const
 
 export type FrameElement = (typeof REQUIRED_FRAME_ELEMENTS)[number]
@@ -135,6 +144,13 @@ export function auditSheetFrame(ctx: SheetContext): FrameAudit {
   check('revisionTable', Array.isArray(ctx.revisions))
   check('sourceDataNotes', ctx.twin.sources.length > 0)
   check('legendAndAbbreviations', true)
+  // A sheet that owes the County a verbatim note and does not carry it is
+  // incomplete, the same as one missing its north arrow.
+  check(
+    'requiredCountyNotes',
+    requiredNotesForSheet(ctx.sheet).length === 0 ||
+      (ctx.requiredNotes ?? []).length >= requiredNotesForSheet(ctx.sheet).length,
+  )
   check('statusWatermark', ctx.status !== 'PERMIT_SET' ? Boolean(ctx.disclosure ?? ctx.status) : true)
 
   return { present, missing, complete: missing.length === 0 }

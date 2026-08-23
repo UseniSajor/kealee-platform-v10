@@ -132,15 +132,37 @@ paragraphs, each marked with what enforces it. Nine are currently unenforced and
 `unenforcedPlanContentStandards()` reports them rather than letting the gap go
 unrecorded.
 
-### 4. Two verbatim notes are required on the plan and are absent
+### 4. Two verbatim notes are required on the plan and are absent — ADDED
 
 - **A-10 grading certificate** — a specific certification block naming Subtitle
   32 Division 2, signed/sealed by a Maryland PE.
-- **A-11 stabilization note** — COMAR 26.17.1.08G, with the 3-day / 7-day
-  stabilization deadlines.
+- **A-11 stabilization note** — the 3-day / 7-day stabilization deadlines.
 
-Both are fixed text the county expects to read on the sheet. Verbatim wording is
-in `dpie/design-review-checklist-site-rough-grading.txt`.
+**Added** in `site-plan/required-notes.ts`, rendered on C-400 and C-700 by both
+the SVG and PDF paths, and audited as a `requiredCountyNotes` frame element so a
+sheet missing one is blocked from issuance.
+
+Checking A-11 against its cited source changed what shipped. The checklist
+attributes the three/seven day rule to **COMAR 26.17.1.08G**. It is not there:
+26.17.01.08 is *"Approval or Denial of Erosion and Sediment Control Plans"* and
+its subsection G is *"Grandfathering of approved plans"*. The timing rule is
+published in the **2011 Maryland Standards and Specifications for Soil Erosion
+and Sediment Control** (page 45, the "Standard Stabilization Note"), which
+COMAR 26.17.01.08A(1) adopts by reference. Transcribing the checklist would have
+put a wrong citation on every sheet the platform issues.
+
+Two smaller defects in the same item: COMAR .08G(3) says stabilization must
+comply with "the requirements of **this chapter**", which the checklist rewrites
+as "the requirements of COMAR 26.17.1.08 G" — pointing the sentence at itself;
+and the checklist prints the slope ratio as `3:l` with a lowercase L.
+
+So the note is modelled as what it is — the State's operative text, plus a
+separately attributed County preamble carrying COMAR .08G(3). The preamble's
+deadline (January 9, 2013) has passed and it governs grandfathered plans only,
+so it is never the thing that carries the stabilization requirement.
+
+Both note texts were diffed word-for-word against their sources after whitespace
+and case normalisation: **exact match**, 482 and 403 characters respectively.
 
 ## Confirmed correct
 

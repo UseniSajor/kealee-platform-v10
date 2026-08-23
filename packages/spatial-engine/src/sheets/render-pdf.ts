@@ -286,6 +286,24 @@ export function renderSheetSetPdf(input: RenderPdfInput): Promise<RenderedPdf> {
       northArrow(doc, drawRight - 40, sheetSize.marginPt + 24)
       graphicScale(doc, sheetSize.marginPt + 16, sheetSize.heightPt - sheetSize.marginPt - 26, vp)
 
+      // County-required notes, printed in full. pdfkit wraps within `width`,
+      // so the certificate is never clipped — unlike the source-and-accuracy
+      // note above it, which is a summary and may ellipsis.
+      if (ctx.requiredNotes?.length) {
+        let cy = sheetSize.marginPt + 40
+        const noteWidth = drawRight - sheetSize.marginPt - 32
+        for (const note of ctx.requiredNotes) {
+          label(doc, sheetSize.marginPt + 16, cy, note.title.toUpperCase(), 7, { bold: true })
+          cy += 10
+          doc.font('Helvetica').fontSize(6).fillColor('#000000')
+             .text(note.text, sheetSize.marginPt + 16, cy, { width: noteWidth, align: 'left' })
+          cy = doc.y + 2
+          doc.font('Helvetica').fontSize(5.5).fillColor('#666666')
+             .text(note.source.citation, sheetSize.marginPt + 16, cy, { width: noteWidth })
+          cy = doc.y + 8
+        }
+      }
+
       // Source and accuracy note — where every number on the sheet came from.
       if (input.sourceNotes?.length) {
         let ny = sheetSize.heightPt - sheetSize.marginPt - 96

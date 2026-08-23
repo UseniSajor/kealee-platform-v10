@@ -19,6 +19,7 @@ import {
   SHEET_TITLES, SHEET_DISCIPLINE, type SheetContext, type SheetId, type SheetStatus,
   type RevisionEntry,
 } from './sheet-template'
+import { requiredNotesForSheet, type RequiredPlanNote } from '../site-plan/required-notes'
 
 const PAD_FT = 20
 
@@ -278,6 +279,7 @@ export function buildSheetContext(input: {
     twinRevision: input.twin.revision,
     status: input.status ?? 'PRELIMINARY',
     scale: vp.label,
+    requiredNotes: requiredNotesForSheet(input.sheet),
     revisions: input.revisions ?? [],
     reliabilityLevel: level,
     disclosure: input.disclosure ?? null,
@@ -310,6 +312,47 @@ function drawDesign(
       return ''
     })
     .join('')
+}
+
+/**
+ * County-required notes, printed in full.
+ *
+ * Deliberately does NOT reuse `assumptionsPanel`, which caps at five items and
+ * slices each to 130 characters. The grading certificate is over 400 characters
+ * and is a statement a Maryland PE seals: truncating it would put a
+ * professional's seal on a sentence that stops mid-clause.
+ */
+function requiredNotesPanel(x: number, y: number, notes: RequiredPlanNote[], widthPt: number): string {
+  if (notes.length === 0) return ''
+  const out: string[] = []
+  let cursor = y
+  const charsPerLine = Math.max(40, Math.floor(widthPt / 3.4))
+
+  for (const note of notes) {
+    out.push(text(x, cursor, note.title.toUpperCase(), 7.5, { bold: true }))
+    cursor += 10
+    for (const line of wrapText(note.text, charsPerLine)) {
+      out.push(text(x, cursor, line, 6))
+      cursor += 7.5
+    }
+    out.push(text(x, cursor, note.source.citation, 5.5))
+    cursor += 13
+  }
+  return out.join('')
+}
+
+/** Greedy word wrap. Long words are left intact rather than split mid-word. */
+function wrapText(s: string, maxChars: number): string[] {
+  const words = s.split(/\s+/).filter(Boolean)
+  const lines: string[] = []
+  let line = ''
+  for (const w of words) {
+    if (line.length === 0) line = w
+    else if (line.length + 1 + w.length <= maxChars) line += ' ' + w
+    else { lines.push(line); line = w }
+  }
+  if (line) lines.push(line)
+  return lines
 }
 
 /** Panel of stated assumptions — a drafter notes these on the drawing. */
@@ -483,6 +526,12 @@ export function renderSheetSvg(ctx: SheetContext, sheetSize: SheetSize = ARCH_D)
         'Base geometry from the site model. Discipline content populated from the calculation package.', 7))
       break
     }
+  }
+
+  if (ctx.requiredNotes?.length) {
+    body.push(requiredNotesPanel(
+      contentX, sheetSize.heightPt - 430, ctx.requiredNotes,
+      sheetSize.widthPt - sheetSize.titleBlockWidthPt - sheetSize.marginPt * 2))
   }
 
   if (ctx.assumptions?.length) {

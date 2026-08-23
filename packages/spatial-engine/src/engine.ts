@@ -28,6 +28,7 @@ export * from './site-plan/classification'
 export * from './site-plan/reports'
 export * from './site-plan/engineering'
 export * from './site-plan/design'
+export * from './site-plan/required-notes'
 
 // Sheets
 export * from './sheets/sheet-template'
