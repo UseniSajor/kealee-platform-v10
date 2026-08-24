@@ -9,7 +9,7 @@
     "start": "node dist/index.js"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.74.0",
+    "@anthropic-ai/sdk": "^0.120.0",
     "@kealee/core-bots": "workspace:*",
     "@kealee/core-events": "workspace:*",
     "@kealee/shared": "workspace:*",

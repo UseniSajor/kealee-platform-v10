@@ -33,7 +33,7 @@
     "@clerk/nextjs": "^5.0.0",
     "@clerk/types": "^4.0.0",
     "@kealee/database": "workspace:*",
-    "@supabase/auth-helpers-nextjs": "^0.8.7",
+    "@supabase/auth-helpers-nextjs": "^0.15.0",
     "@supabase/ssr": "^0.12.4",
     "@supabase/supabase-js": "^2.112.3",
     "next": ">=14.0.0",
