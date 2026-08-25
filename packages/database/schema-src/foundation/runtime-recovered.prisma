@@ -1084,6 +1084,12 @@ model SitePlanWorkflow {
 model SitePlanStageExecution {
   id              String              @id @default(uuid())
   workflowId      String
+  /// Detailed registered job name, e.g. siteplan.render_exports. `stage`
+  /// carries the coarse SitePlanStageCode the schema already had; the
+  /// state machine sequences on THIS, so resume needs it persisted.
+  job                String?
+  /// JobQueue row that executed this stage, for trace correlation.
+  jobQueueId         String?
   stage           SitePlanStageCode
   status          SitePlanStageStatus @default(NOT_STARTED)
   attempt         Int                 @default(1)

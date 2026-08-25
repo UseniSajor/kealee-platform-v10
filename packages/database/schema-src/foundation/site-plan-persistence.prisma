@@ -89,6 +89,17 @@ enum SitePlanContentSubject {
 /// plan and a human seals it afterwards; a reviewer cannot seal a plan that
 /// was never drawn. BLOCKING means the DRAWING is defective, not that
 /// delivery is refused.
+/// Delivery lifecycle for the customer-visible package.
+/// Jurisdiction approval is separate and is never implied by any of these.
+enum SitePlanDeliveryState {
+  GENERATING
+  PRELIMINARY_READY
+  PROFESSIONAL_REVIEW
+  REVISION_REQUIRED
+  SUBMISSION_PACKAGE_READY
+  FAILED
+}
+
 enum QcFindingSeverity {
   WARNING
   BLOCKING
@@ -417,6 +428,7 @@ model SitePlanIssuance {
   streetCenterlineSource   String?
   /// The plan was generated and handed over. Always true once a run
   /// completes — generation is never withheld for a missing seal.
+  deliveryState             SitePlanDeliveryState @default(GENERATING)
   delivered                 Boolean             @default(true)
   deliveredAt               DateTime?
   /// Ready to SUBMIT TO THE JURISDICTION. Not a delivery gate.
