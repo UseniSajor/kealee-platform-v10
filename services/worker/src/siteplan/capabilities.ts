@@ -139,21 +139,23 @@ export function productionCapabilities(opts: {
 
 /** Rebuilds the state-machine snapshot from persisted rows. This is resume. */
 export async function loadSnapshot(workflowId: string): Promise<Workflow.WorkflowSnapshot | null> {
+  // SitePlanWorkflow carries no `stageExecutions` relation, so the executions
+  // are read on their own rather than through an include that does not exist.
   const wf = await prisma.sitePlanWorkflow.findUnique({
     where: { id: workflowId },
-    select: {
-      id: true, definitionVersion: true,
-      stageExecutions: {
-        select: { job: true, status: true, attempt: true, completedAt: true },
-      },
-    },
+    select: { id: true, definitionVersion: true },
   })
   if (!wf) return null
+
+  const executions = await prisma.sitePlanStageExecution.findMany({
+    where: { workflowId },
+    select: { job: true, status: true, attempt: true, completedAt: true },
+  })
 
   return {
     workflowId: wf.id,
     definitionVersion: wf.definitionVersion,
-    stages: (wf.stageExecutions ?? [])
+    stages: executions
       .filter((e): e is typeof e & { job: string } => Boolean(e.job))
       .map(e => ({
         job: e.job as never,

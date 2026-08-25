@@ -32,6 +32,7 @@ import { leadFollowupQueue } from './queues/lead-followup.queue'
 import { createLeadFollowupWorker } from './processors/lead-followup.processor'
 import { cronManager } from './cron/cron.manager'
 import cron from 'node-cron'
+import { drainSitePlanQueue } from './siteplan/processor'
 import type { Worker } from 'bullmq'
 import { createBotJobsWorker, createChainJobsWorker } from './processors/bot-jobs.processor'
 
@@ -338,6 +339,33 @@ async function initializeCaptureAnalysisWorkers() {
     }, { scheduled: true, timezone: 'UTC' })
 
     console.log('Capture analysis poll cron registered (every 2 min)')
+
+    // ── Site plan ────────────────────────────────────────────────────────
+    // The Stripe webhook records intent in JobQueue rather than pushing to
+    // Redis, so a Redis outage delays a plan instead of losing a paid order.
+    // This drains those rows. Every stage runs through Workflow.runStage, so
+    // the transition guard and the persistence contract cannot be bypassed.
+    //
+    // Bounded per tick: a stage enqueues its successor, so an unbounded drain
+    // would run a whole workflow behind one long-held tick and hide failures.
+    cron.schedule('* * * * *', async () => {
+      try {
+        const r = await drainSitePlanQueue(10)
+        if (r.claimed > 0) {
+          console.log(
+            `[siteplan] claimed=${r.claimed} completed=${r.completed} ` +
+            `blocked=${r.blocked} failed=${r.failed} enqueued=${r.enqueued}`,
+          )
+          for (const d of r.details) {
+            console.log(`[siteplan]   ${d.job} ${d.disposition} — ${d.summary}`)
+          }
+        }
+      } catch (e: any) {
+        console.error('[siteplan] drain failed:', e.message)
+      }
+    }, { scheduled: true, timezone: 'UTC' })
+
+    console.log('Site-plan queue drain registered (every 1 min)')
   } catch (error) {
     console.error('Failed to initialize capture analysis workers:', error)
     throw error

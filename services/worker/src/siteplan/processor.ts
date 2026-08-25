@@ -44,7 +44,7 @@ async function claimNext(): Promise<{
 
   const claim = await prisma.jobQueue.updateMany({
     where: { id: candidate.id, status: 'WAITING' },
-    data: { status: 'ACTIVE', attempts: { increment: 1 }, startedAt: new Date() },
+    data: { status: 'ACTIVE', attempts: { increment: 1 }, processedAt: new Date() },
   })
   return claim.count === 1 ? candidate : null
 }
