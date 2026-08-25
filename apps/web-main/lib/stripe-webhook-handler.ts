@@ -25,6 +25,7 @@ import { mergeMarketingMetadata } from '@/lib/marketing/types'
 import { fulfillRevenueProduct } from '@/lib/revenue-fulfillment'
 import { resolveProductAutomationRoute } from '@/lib/product-automation'
 import { isSitePlanOrder, evaluateSitePlanOrder, sitePlanRuleFormData } from '@/lib/site-plan-rules'
+import { activateSitePlanForOrder, sitePlanWorkflowFormData } from '@/lib/site-plan-workflow'
 import { ensureAutonomousFulfillmentRun } from '@/lib/autonomous-fulfillment'
 import * as Sentry from '@sentry/nextjs'
 import { recordPaidOrderIncident } from '@/lib/paid-order-incident'
@@ -229,6 +230,32 @@ async function handleCheckoutCompleted(
       'coverage=' + ruleOutcome.coverage,
       'determined=' + ruleOutcome.determinedRequirements.length,
       'review=' + ruleOutcome.reviewItems.length,
+    )
+
+    // Activate the durable workflow. This creates or resumes the workflow row
+    // and enqueues the first permitted job — it does NOT run the civil engine,
+    // which has no business inside a Stripe webhook. Workers drain the queue
+    // asynchronously.
+    //
+    // Like the rule evaluation above, it never throws: a paid order must not be
+    // lost to an exception. A failure returns FAILED with the reason.
+    const activation = await activateSitePlanForOrder({
+      projectId: intakeId,
+      orderId: intakeId,
+      productId: projectPath,
+      isSitePlan: true,
+    })
+    Object.assign(mergedFormData, sitePlanWorkflowFormData(activation))
+    if (activation.disposition === 'FAILED') {
+      Sentry.captureMessage('Site plan workflow activation failed on a paid order', {
+        level: 'error',
+        tags: { area: 'payment-fulfillment', stage: 'site-plan-workflow', projectPath },
+        extra: { intakeId, summary: activation.summary },
+      })
+    }
+    console.log(
+      '[stripe-webhook] site-plan workflow:', activation.disposition,
+      activation.workflowId ?? '-', 'enqueued=' + activation.enqueued.join(','),
     )
   }
 

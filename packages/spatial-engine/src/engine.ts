@@ -22,10 +22,7 @@ export * from './jurisdictions/md-imap'
 export * from './jurisdictions/pg-elevation'
 export * from './jurisdictions/pgatlas'
 export * from './jurisdictions/pg-site-plan-code'
-export * from './workflow/definition'
-export * from './workflow/state-machine'
-export * from './workflow/registry'
-export * from './workflow/context'
+export * as Workflow from './workflow/index'
 
 // The digital site twin and the civil model
 export * from './site-plan/reliability'

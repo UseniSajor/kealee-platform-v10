@@ -2582,6 +2582,15 @@ model SitePlanWorkflow {
   propertyId                 String?
   parcelId                   String?
   productId                  String?
+  /// Workflow definition version this instance was started under. A worker
+  /// refuses to run a stage under a different version rather than mixing
+  /// definitions mid-flight.
+  definitionVersion         Int               @default(1)
+  /// The order that activated this workflow.
+  orderId                   String?
+  /// Stable key from order + definition version, so duplicate webhook
+  /// delivery resolves to the same workflow instead of creating a second.
+  idempotencyKey            String?           @unique
   currentStage               SitePlanStageCode @default(PARCEL_RESOLUTION)
   status                     String            @default("ACTIVE")
   version                    Int               @default(0)
