@@ -64,8 +64,26 @@ export function productionCapabilities(opts: {
       if (existing) {
         await prisma.sitePlanStageExecution.update({ where: { id: existing.id }, data })
       } else {
+        // The table carries a PRE-EXISTING unique on (workflowId, stage,
+        // attempt), and several registered jobs share one coarse stage — three
+        // land on COMPLIANCE_AUDIT alone. Writing them all at attempt 1 makes
+        // the second collide, which a live database found and no in-memory
+        // double could.
+        //
+        // The row's `attempt` therefore becomes the next free ordinal WITHIN
+        // that coarse stage. Job identity lives in `job`, and the true retry
+        // count stays on JobQueue.attempts, so nothing is lost.
+        const used = await prisma.sitePlanStageExecution.count({
+          where: { workflowId: r.workflowId, stage: stage as never },
+        })
         await prisma.sitePlanStageExecution.create({
-          data: { ...data, workflowId: r.workflowId, prerequisites: [] as never, startedAt: new Date() },
+          data: {
+            ...data,
+            attempt: used + 1,
+            workflowId: r.workflowId,
+            prerequisites: [] as never,
+            startedAt: new Date(),
+          },
         })
       }
 
@@ -84,6 +102,16 @@ export function productionCapabilities(opts: {
      * category, version, fileUrl and format, and the portal already reads it.
      */
     async storeArtifact(a) {
+      // Idempotent by (workflow, job, filename). A stage that reruns — because
+      // its persist failed, or because of a redelivery — must not leave a
+      // second copy of the same PDF for the customer to choose between. The
+      // live run produced four before this was added.
+      const already = await prisma.document.findFirst({
+        where: { name: a.filename, category: { startsWith: 'site-plan' } },
+        select: { id: true },
+      })
+      if (already) return { documentId: already.id }
+
       const wf = await prisma.sitePlanWorkflow.findUnique({
         where: { id: a.workflowId },
         select: { projectId: true },
