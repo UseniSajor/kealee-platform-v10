@@ -12,6 +12,7 @@
  */
 
 import { NextRequest } from 'next/server'
+import { vi } from 'vitest'
 
 // ── Mocks ─────────────────────────────────────────────────────────────────────
 
@@ -74,17 +75,18 @@ const mockDesignOutput = {
 
 let mockSupabaseSelect: jest.Mock
 let mockBotExecute: jest.Mock
+const mockDesignBotEnterprise = vi.hoisted(() => vi.fn())
 
-jest.mock('@/lib/supabase-server', () => ({
-  getSupabaseAdmin: jest.fn(() => ({
-    from: jest.fn(() => ({
-      select: jest.fn(() => ({
-        eq: jest.fn(() => ({
-          single: mockSupabaseSelect,
+vi.mock('@/lib/supabase-server', () => ({
+  getSupabaseAdmin: vi.fn(() => ({
+    from: vi.fn(() => ({
+      select: vi.fn(() => ({
+        eq: vi.fn(() => ({
+          single: (...args: unknown[]) => mockSupabaseSelect(...args),
         })),
       })),
-      update: jest.fn(() => ({
-        eq: jest.fn(() => Promise.resolve({ error: null })),
+      update: vi.fn(() => ({
+        eq: vi.fn(() => Promise.resolve({ error: null })),
       })),
     })),
   })),
@@ -92,11 +94,18 @@ jest.mock('@/lib/supabase-server', () => ({
 
 // Mock DesignBotEnterprise and mapDesignOutputToConceptOutput so tests never
 // hit the real Anthropic API.
-jest.mock('@kealee/core-llm', () => ({
-  DesignBotEnterprise: jest.fn().mockImplementation(() => ({
-    execute: jest.fn((..._args: unknown[]) => mockBotExecute()),
-  })),
-  mapDesignOutputToConceptOutput: jest.fn((_data: unknown, _opts: unknown) => mockConceptOutput),
+vi.mock('@kealee/core-llm', () => ({
+  DesignBotEnterprise: mockDesignBotEnterprise,
+  mapDesignOutputToConceptOutput: vi.fn((_data: unknown, _opts: unknown) => mockConceptOutput),
+}))
+
+vi.mock('@kealee/core-rules', async importOriginal => ({
+  ...(await importOriginal<typeof import('@kealee/core-rules')>()),
+  runZoningBot: vi.fn().mockResolvedValue({
+    zoningClassification: 'R-4',
+    permitRequirements: [],
+    confidence: 1,
+  }),
 }))
 
 async function getHandler() {
@@ -116,15 +125,12 @@ function makeRequest(body: Record<string, unknown>): NextRequest {
 
 describe('POST /api/concept/generate', () => {
   beforeEach(() => {
-    jest.clearAllMocks()
-    mockSupabaseSelect = jest.fn()
-    mockBotExecute = jest.fn()
+    vi.clearAllMocks()
+    mockSupabaseSelect = vi.fn()
+    mockBotExecute = vi.fn()
     // Re-wire the DesignBotEnterprise mock's execute to use the per-test mockBotExecute
-    const { DesignBotEnterprise } = require('@kealee/core-llm') as {
-      DesignBotEnterprise: jest.Mock
-    }
-    DesignBotEnterprise.mockImplementation(() => ({
-      execute: jest.fn((..._args: unknown[]) => mockBotExecute()),
+    mockDesignBotEnterprise.mockImplementation(() => ({
+      execute: vi.fn((..._args: unknown[]) => mockBotExecute()),
     }))
   })
 

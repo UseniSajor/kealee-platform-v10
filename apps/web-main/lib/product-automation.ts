@@ -44,19 +44,24 @@ const CANONICAL_ROUTES: Record<string, ProductAutomationRoute> = {
   // listed on /site-plans) but had no route here, so a paid Site Plan order
   // matched neither fulfillment branch in the Stripe webhook and nothing ran.
   preliminary_site_plan: {
-    fulfillmentBotTypes: ['zoning', 'project'],
-    workflowTemplateId: 'wf_preliminary_site_plan_v1',
+    fulfillmentBotTypes: ['zoning', 'permit', 'floorplan', 'project'],
+    workflowTemplateId: 'wf_permit_roadmap_v1',
     propertyIntelligenceDepth: 'project',
   },
   verified_site_feasibility: {
-    fulfillmentBotTypes: ['zoning', 'permit', 'project'],
-    workflowTemplateId: 'wf_verified_site_feasibility_v1',
-    propertyIntelligenceDepth: 'development',
+    fulfillmentBotTypes: ['zoning', 'permit', 'floorplan', 'project'],
+    workflowTemplateId: 'wf_permit_roadmap_v1',
+    propertyIntelligenceDepth: 'project',
   },
   permit_site_plan: {
-    fulfillmentBotTypes: ['zoning', 'permit', 'project'],
-    workflowTemplateId: 'wf_permit_site_plan_v1',
-    propertyIntelligenceDepth: 'development',
+    fulfillmentBotTypes: ['zoning', 'permit', 'floorplan', 'project'],
+    workflowTemplateId: 'wf_permit_roadmap_v1',
+    propertyIntelligenceDepth: 'project',
+  },
+  whole_home_concept: {
+    fulfillmentBotTypes: ['design', 'estimate', 'zoning', 'permit', 'floorplan', 'project'],
+    workflowTemplateId: 'wf_design_estimate_permit_bundle_v1',
+    propertyIntelligenceDepth: 'project',
   },
 }
 

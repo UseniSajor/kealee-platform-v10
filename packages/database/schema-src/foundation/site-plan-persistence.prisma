@@ -84,9 +84,15 @@ enum SitePlanContentSubject {
   ENTITLEMENT
 }
 
+/// PENDING_SEAL is work only a licensed professional can perform — a certified
+/// survey, a seal. It NEVER withholds a plan. The platform drafts a complete
+/// plan and a human seals it afterwards; a reviewer cannot seal a plan that
+/// was never drawn. BLOCKING means the DRAWING is defective, not that
+/// delivery is refused.
 enum QcFindingSeverity {
   WARNING
   BLOCKING
+  PENDING_SEAL
 }
 
 enum QcFindingStatus {
@@ -403,8 +409,18 @@ model SitePlanIssuance {
   status                    SheetIssuanceStatus @default(PRELIMINARY)
   governingReliabilityLevel Int                 @default(0)
   disclosure                String?             @db.Text
+  /// The plan was generated and handed over. Always true once a run
+  /// completes — generation is never withheld for a missing seal.
+  delivered                 Boolean             @default(true)
+  deliveredAt               DateTime?
+  /// Ready to SUBMIT TO THE JURISDICTION. Not a delivery gate.
   issuable                  Boolean             @default(false)
   blockingFindingCount      Int                 @default(0)
+  /// Items awaiting a licensed professional. Never a reason to withhold.
+  pendingSealCount          Int                 @default(0)
+  /// Set when a human applies the seal. The last step, never a precondition.
+  sealedAt                  DateTime?
+  sealedByLicence           String?
   qcRunId                   String?
   sheetCount                Int                 @default(0)
   compositionRationale      String?             @db.Text

@@ -284,6 +284,8 @@ export function applyEvidenceGate(qc: QcResult, input: ClearanceInput): Evidence
   return {
     findings,
     blocking,
+    pendingSeal: findings.filter(f => f.severity === 'pending_seal'),
+    deliverable: true as const,
     issuable: blocking.length === 0,
     clearedByEvidence: cleared,
     unclearedEvaluations: uncleared,

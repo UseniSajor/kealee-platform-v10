@@ -30,6 +30,7 @@ export * from './site-plan/reports'
 export * from './site-plan/engineering'
 export * from './site-plan/design'
 export * from './site-plan/required-notes'
+export * from './site-plan/buildable-envelope'
 
 // Sheets
 export * from './sheets/sheet-template'

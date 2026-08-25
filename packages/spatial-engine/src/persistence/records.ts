@@ -411,7 +411,10 @@ export function qcFindingRows(
       workflowId: ctx.workflowId,
       runId: ctx.runId,
       code: f.code,
-      severity: f.severity === 'blocking' ? 'BLOCKING' : 'WARNING',
+      severity:
+        f.severity === 'blocking' ? 'BLOCKING'
+        : f.severity === 'pending_seal' ? 'PENDING_SEAL'
+        : 'WARNING',
       status: 'OPEN',
       message: f.message,
       remedy: f.remedy,

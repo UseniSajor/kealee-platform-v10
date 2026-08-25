@@ -16,6 +16,8 @@
 import { writeFileSync } from 'node:fs'
 import { resolveMarylandParcel, buildLotPackage } from '../src/self-perform/lot-package'
 import { fetchPgContours, contourRelief, contoursOnLot, PG_CONTOUR_VERTICAL_DATUM } from '../src/jurisdictions/pg-elevation'
+import { deriveBuildableEnvelope } from '../src/site-plan/buildable-envelope'
+import { resolvePgAtlasSite } from '../src/jurisdictions/pgatlas'
 import { addFeatures, addSource } from '../src/site-plan/site-twin'
 import type { SiteFeature } from '../src/site-plan/site-twin'
 import { resolveCrs, createArcGisTransformer } from '../src/export/crs'
@@ -24,40 +26,64 @@ import { buildSheetContext } from '../src/sheets/render-svg'
 import { renderSheetSetPdf } from '../src/sheets/render-pdf'
 import type { SheetId } from '../src/sheets/sheet-template'
 import type { DividedResponsibilityBlock } from '../src/review/content-scope'
+import { requiredNotesForSheet } from '../src/site-plan/required-notes'
 
 const step = (n: number, s: string) => console.log(`\n[${n}] ${s}`)
 
 async function main() {
   const [address, zone, outPath = 'site-plan.pdf'] = process.argv.slice(2)
-  if (!address || !zone) {
+  if (!address) {
     console.error('usage: tsx scripts/generate-site-plan.ts "<address>" <ZONE> [out.pdf]')
     console.error('example: tsx scripts/generate-site-plan.ts "4102 Webster St, Brentwood, MD 20722" RSF-65')
     process.exit(2)
   }
 
-  step(1, `Geocoding ${address}`)
-  const coords = await geocodeAddress(address)
-  if (!coords) throw new Error('Geocoding returned nothing. Cannot place the site.')
-  console.log(`    ${coords.lat.toFixed(6)}, ${coords.lng.toFixed(6)} (EPSG:4326)`)
+  step(1, `Resolving ${address} against PGAtlas`)
+  const atlas = await resolvePgAtlasSite(address)
+  let easting: number, northing: number
+  let parcel: { boundary: { ring: any; provenance: string; authority: string; retrievedAt: string } | null; attributes: any; caveat: string; candidateCount: number }
+  let resolvedZone = zone
 
-  step(2, 'Reprojecting to EPSG:2248 (NAD83 Maryland State Plane, US survey feet)')
-  const tx = createArcGisTransformer()
-  const [[easting, northing]] = await tx.transform(
-    [[coords.lng, coords.lat]], resolveCrs('EPSG:4326'), resolveCrs('EPSG:2248'))
-  console.log(`    E ${easting.toFixed(1)}  N ${northing.toFixed(1)}`)
+  if (atlas) {
+    console.log(`    matched "${atlas.address.matchedAddress}" (locator score ${atlas.address.score})`)
+    easting = atlas.address.easting2248
+    northing = atlas.address.northing2248
+    console.log(`    E ${easting.toFixed(1)}  N ${northing.toFixed(1)} (EPSG:2248)`)
 
-  step(3, 'Resolving the parcel from MD iMAP')
-  const parcel = await resolveMarylandParcel(easting, northing)
-  if (parcel.boundary) {
-    console.log(`    ring with ${parcel.boundary.ring.coordinates.length} vertices`)
-    console.log(`    authority: ${parcel.boundary.authority}`)
-    const a = parcel.attributes as Record<string, unknown> | null
-    if (a) console.log(`    ${a.ADDRESS ?? a.address ?? '(no address attribute)'}`)
+    step(2, 'Zoning from PGAtlas')
+    if (atlas.zoning) {
+      console.log(`    ${atlas.zoning.zoneCode} — ${atlas.zoning.groupName}`)
+      if (!resolvedZone) resolvedZone = atlas.zoning.zoneCode
+      else if (resolvedZone !== atlas.zoning.zoneCode) {
+        console.log(`    NOTE: supplied zone ${resolvedZone} differs from PGAtlas ${atlas.zoning.zoneCode}; using PGAtlas.`)
+        resolvedZone = atlas.zoning.zoneCode
+      }
+    } else {
+      console.log('    no zoning polygon at this point')
+    }
+
+    step(3, 'Parcel from PGAtlas Property')
+    parcel = atlas.parcel
+      ? { boundary: { ring: atlas.parcel.ring, provenance: 'jurisdiction_gis', authority: atlas.parcel.source.authority, retrievedAt: atlas.parcel.source.retrievedAt },
+          attributes: { PROP_ID: atlas.parcel.propId }, caveat: '', candidateCount: 1 }
+      : { boundary: null, attributes: null, caveat: 'No parcel polygon at the geocoded point.', candidateCount: 0 }
+    if (atlas.parcel) console.log(`    ${Math.round(atlas.parcel.areaSqFt).toLocaleString()} sq ft, ${atlas.parcel.ring.coordinates.length} vertices`)
+    else console.log('    NO PARCEL — no rectangle will be invented.')
   } else {
-    console.log('    NO PARCEL RESOLVED — no rectangle will be invented.')
+    // PGAtlas could not match. Fall back rather than fabricate.
+    step(1, 'PGAtlas did not match — falling back to Nominatim + MD iMAP')
+    const coords = await geocodeAddress(address)
+    if (!coords) throw new Error('Neither PGAtlas nor Nominatim could locate this address.')
+    const tx = createArcGisTransformer()
+    const [[e2, n2]] = await tx.transform([[coords.lng, coords.lat]], resolveCrs('EPSG:4326'), resolveCrs('EPSG:2248'))
+    easting = e2; northing = n2
+    console.log(`    E ${easting.toFixed(1)}  N ${northing.toFixed(1)}`)
+    step(3, 'Parcel from MD iMAP')
+    parcel = await resolveMarylandParcel(easting, northing) as any
+    if (parcel.caveat) console.log(`    caveat: ${parcel.caveat.slice(0, 120)}...`)
   }
-  console.log(`    candidates considered: ${parcel.candidateCount}`)
-  if (parcel.caveat) console.log(`    caveat: ${parcel.caveat}`)
+
+  if (!resolvedZone) throw new Error('No zone resolved and none supplied.')
 
   step(4, 'Fetching 2-ft contours from PGAtlas')
   let contourResult = null as Awaited<ReturnType<typeof fetchPgContours>> | null
@@ -72,15 +98,26 @@ async function main() {
     console.log(`    contour fetch failed: ${(e as Error).message}`)
   }
 
-  step(5, `Building the lot package for zone ${zone}`)
+  step(5, `Building the lot package for zone ${resolvedZone}`)
+  const houseSqFt = Number(process.env.HOUSE_SQFT ?? 0)
+  const storeys = Number(process.env.STOREYS ?? 1)
   const pkg = buildLotPackage(
     {
       name: address.split(',')[0],
       address,
       jurisdictionCode: 'prince_georges_md',
-      zoneCode: zone,
+      zoneCode: resolvedZone,
       isResidentialSingleFamily: true,
       dwellingUnitCount: 1,
+      contours: contourResult?.contours.map(c => ({
+        elevationFt: c.elevationFt, path: c.path, weight: c.weight, hidden: c.hidden,
+      })),
+      verticalDatum: contourResult?.verticalDatum ?? null,
+      contourSourceAuthority: contourResult?.source.authority,
+      programme: houseSqFt > 0
+        ? { totalFloorAreaSqFt: houseSqFt, storeys, garage: (process.env.GARAGE as never) ?? 'none',
+            hasBasement: process.env.BASEMENT === '1', coveredPorch: process.env.PORCH === '1' }
+        : undefined,
     },
     parcel.boundary,
   )
@@ -90,55 +127,54 @@ async function main() {
   console.log(`    checklist         : ${pkg.checklist.summary}`)
   console.log(`    composed sheets   : ${pkg.sheets.sheets.length} (${pkg.sheets.rationale})`)
 
-  // Put the terrain into the model. Contours are what let C-400 show existing
-  // grade, and the vertical datum stops reading NOT ESTABLISHED.
-  if (contourResult && contourResult.contours.length) {
-    const onLot = parcel.boundary ? contoursOnLot(contourResult, parcel.boundary.ring) : contourResult.contours
-    const use = onLot.length ? onLot : contourResult.contours
-    let t = addSource(pkg.twin, {
-      sourceId: 'pgatlas-contour-2ft',
-      authority: contourResult.source.authority,
-      dataset: contourResult.source.layer,
-      url: contourResult.source.endpoint,
-      crs: 'EPSG:2248',
-      horizontalDatum: 'NAD83',
-      retrievedAt: contourResult.source.retrievedAt,
-      verticalDatum: PG_CONTOUR_VERTICAL_DATUM,
-      accuracyClass: 'mapping_grade',
-      reliabilityLevel: 1,
-    })
-    t = { ...t, verticalDatum: PG_CONTOUR_VERTICAL_DATUM }
-    t = addFeatures(t, use.map((c, i) => ({
-      kind: 'Contour', id: `ct-${i}`,
-      line: c.path.map(([x, y]) => [x, y, c.elevationFt]),
-      attributes: { elevationFt: c.elevationFt, weight: c.weight, hidden: c.hidden, depression: c.depression },
-      sourceId: 'pgatlas-contour-2ft', reliabilityLevel: 1, crs: 'EPSG:2248', revision: t.revision,
-    })) as unknown as SiteFeature[])
-    pkg.twin = t
-    console.log(`    contours added to model: ${use.length} (${onLot.length} on the lot)`)
-    console.log(`    vertical datum now: ${t.verticalDatum}`)
+  if (pkg.footprintEstimate) {
+    const fe = pkg.footprintEstimate
+    console.log(`\n    programme: ${houseSqFt.toLocaleString()} sq ft over ${storeys} storey(s)`)
+    console.log(`    ${fe.basis}`)
+    console.log(`    footprint estimate: ${fe.footprintSqFt.toLocaleString()} sq ft` +
+      (fe.garageFootprintSqFt ? ` (incl. ${fe.garageFootprintSqFt} garage)` : '') +
+      (fe.exact ? ' [exact]' : ' [estimated]'))
   }
-  if (pkg.beforeSeal.length) {
-    console.log('    before a professional will seal this:')
-    for (const b of pkg.beforeSeal) console.log(`      - ${b}`)
+  if (pkg.buildable) {
+    const be = pkg.buildable
+    console.log(`    setbacks: front ${be.setbacks.frontFt} ft, side ${be.setbacks.sideFt} ft, rear ${be.setbacks.rearFt} ft`)
+    for (const c of be.constraints) {
+      const lim = c.limitSqFt === null || !Number.isFinite(c.limitSqFt) ? 'n/a' : Math.round(c.limitSqFt) + ' sq ft'
+      console.log(`    ${c.binding ? '>>' : '  '} ${c.name}: ${lim}`)
+    }
+    console.log(`    footprint drawn: ${be.footprintAreaSqFt ? Math.round(be.footprintAreaSqFt) + ' sq ft' : 'NONE'}`)
   }
 
   step(6, 'Rendering the sheet set to PDF')
   // SHEETS=C-100,C-400 forces a specific set instead of the composed one, which
   // is how you see a sheet the composer had no content for yet.
-  const override = process.env.SHEETS?.split(',').map(s => s.trim()).filter(Boolean) as SheetId[] | undefined
-  const sheetIds: SheetId[] = override?.length ? override : pkg.sheets.sheets.flatMap(s => s.covers)
-  if (override?.length) console.log(`    sheet override: ${sheetIds.join(', ')}`)
-  const contexts = sheetIds.map((id, i) =>
-    buildSheetContext({
-      sheet: id,
+  const override = process.env.SHEETS?.split(',').map(x => x.trim()).filter(Boolean) as SheetId[] | undefined
+
+  // One PDF page per COMPOSED page, not per canonical sheet. An infill lot
+  // composes several canonical sheets onto one page; rendering one page each
+  // would contradict the composition and pad the set.
+  const pages: { primary: SheetId; covers: SheetId[] }[] = override?.length
+    ? override.map(id => ({ primary: id, covers: [id] }))
+    : pkg.sheets.sheets.map(s => ({ primary: s.covers[0] as SheetId, covers: s.covers as SheetId[] }))
+
+  console.log(`    ${pages.length} page(s): ` +
+    pages.map(p => p.covers.join('+')).join(' | '))
+
+  const contexts = pages.map((pg, i) => {
+    const ctx = buildSheetContext({
+      sheet: pg.primary,
       twin: pkg.twin,
       projectName: pkg.lot,
       sheetIndex: i + 1,
-      sheetCount: sheetIds.length,
+      sheetCount: pages.length,
       status: 'PRELIMINARY',
       disclosure: pkg.disclosure,
-    }))
+    })
+    // A composed page owes the County every note its covered sheets owe.
+    const notes = pg.covers.flatMap(c => requiredNotesForSheet(c))
+    const seen = new Set<string>()
+    return { ...ctx, requiredNotes: notes.filter(n => !seen.has(n.id) && seen.add(n.id)) }
+  })
 
   const responsibility: Partial<Record<SheetId, DividedResponsibilityBlock>> = {}
   for (const r of pkg.responsibility) responsibility[r.sheet] = r

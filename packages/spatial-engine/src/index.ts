@@ -29,6 +29,7 @@ export * from './sheets/viewport';
 export * from './sheets/render-svg';
 export * from './site-plan/design';
 export * from './site-plan/required-notes';
+export * from './site-plan/buildable-envelope';
 export * from './export/exporters';
 export * from './export/crs';
 export * from './review/disciplines';

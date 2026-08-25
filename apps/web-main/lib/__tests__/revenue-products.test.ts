@@ -46,10 +46,11 @@ describe('Revenue Product Catalog', () => {
     }
   })
 
-  it('uses GPT-5.6 Sol for customer design, estimate, zoning, and permit execution', () => {
+  it('uses the configured Claude models for customer design, estimate, zoning, and permit execution', () => {
     expect(resolveV30OpenAIModel()).toBe(process.env.KEALEE_OPENAI_PRIMARY_MODEL ?? 'gpt-5.6-sol')
-    for (const botType of ['design', 'estimate', 'zoning', 'permit'] as const) {
-      expect(V30_BOT_REGISTRY[botType].defaultModel).toBe('gpt-5.6-sol')
+    expect(V30_BOT_REGISTRY.design.defaultModel).toBe('claude-opus-4-6')
+    for (const botType of ['estimate', 'zoning', 'permit'] as const) {
+      expect(V30_BOT_REGISTRY[botType].defaultModel).toBe('claude-sonnet-4-6')
     }
   })
 

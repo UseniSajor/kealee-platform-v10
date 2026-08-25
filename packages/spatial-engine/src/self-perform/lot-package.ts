@@ -24,6 +24,8 @@ import { composeSheets, blocksFromFeatures, type CompositionResult } from '../sh
 import { buildResponsibilityBlock, type DividedResponsibilityBlock } from '../review/content-scope'
 import { getPgDimensionalStandards, parsePgStandardValue } from '../jurisdictions/pg-overlays-and-dimensions'
 import type { SheetId } from '../sheets/sheet-template'
+import { deriveBuildableEnvelope, type BuildableEnvelope } from '../site-plan/buildable-envelope'
+import { estimateFootprint, type FootprintEstimate, type HouseProgramme } from '../site-plan/footprint-programme'
 import { fetchMdParcelAtPoint } from '../jurisdictions/md-imap'
 
 /** Everything you know about a lot before a surveyor has been out. */
@@ -50,6 +52,18 @@ export interface LotInput {
 
   /** Disturbance components in sq ft. Omit a value you do not know. */
   disturbance?: Partial<DisturbanceComponents>
+
+  /**
+   * Existing contours, already in EPSG:2248. Supplied BEFORE composition so the
+   * composer sees the terrain and lays out the sheet set accordingly — adding
+   * them afterwards produces a bare existing-conditions sheet and hides the
+   * grading content the set is supposed to carry.
+   */
+  contours?: { elevationFt: number; path: [number, number][]; weight?: string; hidden?: boolean }[]
+  verticalDatum?: string | null
+  contourSourceAuthority?: string
+  /** What the customer wants to build. Drives the proposed footprint. */
+  programme?: HouseProgramme
 }
 
 export interface ZoningEnvelope {
@@ -77,7 +91,20 @@ export interface LotPackage {
   sheets: CompositionResult
   responsibility: DividedResponsibilityBlock[]
 
-  /** What must happen before a professional will seal this. */
+  /** Setback envelope, binding constraint and the drawn footprint. */
+  buildable: BuildableEnvelope | null
+  /** How the footprint was estimated, when the customer had no plans. */
+  footprintEstimate: FootprintEstimate | null
+  /**
+   * The plan is ALWAYS generated and delivered. Constant `true`, stated in the
+   * type so the guarantee is explicit rather than implied by the absence of a
+   * gate. Nothing in generation is withheld for want of a seal.
+   */
+  delivered: true
+  /**
+   * What a licensed professional does AFTER delivery, in order to seal.
+   * A worklist for the reviewer — never a precondition for producing the plan.
+   */
   beforeSeal: string[]
   summary: string
 }
@@ -236,6 +263,49 @@ export function buildLotPackage(lot: LotInput, resolved?: ResolvedBoundary | nul
     ])
   }
 
+  // ── Terrain ───────────────────────────────────────────────────────────────
+  if (lot.contours?.length) {
+    twin = addSource(twin, gisSourceRecord({
+      sourceId: 'contours',
+      authority: lot.contourSourceAuthority ?? 'Jurisdiction GIS',
+      dataset: 'Existing contours',
+      crs: 'EPSG:2248', horizontalDatum: 'NAD83',
+    }))
+    if (lot.verticalDatum) twin = { ...twin, verticalDatum: lot.verticalDatum }
+    twin = addFeatures(twin, lot.contours.map((c, i) => ({
+      kind: 'Contour', id: `ct-${i}`,
+      line: c.path.map(([x, y]) => [x, y, c.elevationFt]),
+      attributes: { elevationFt: c.elevationFt, weight: c.weight, hidden: c.hidden },
+      ...base, sourceId: 'contours',
+    })) as never[])
+  }
+
+  // ── Buildable envelope and proposed footprint ─────────────────────────────
+  const zoningEnvelope = readZoningEnvelope(lot.zoneCode)
+  let footprintEstimate: FootprintEstimate | null = null
+  let buildable: BuildableEnvelope | null = null
+  if (ring) {
+    footprintEstimate = lot.programme ? estimateFootprint(lot.programme) : null
+    buildable = deriveBuildableEnvelope({
+      parcel: ring,
+      standards: zoningEnvelope.standards,
+      citation: zoningEnvelope.citation ?? 'Sec. 27-4202',
+      netLotAreaSqFt: areaSqFt ?? undefined,
+      // No programme means no requested size, so only zoning limits the box.
+      maxFootprintSqFt: footprintEstimate?.footprintSqFt ?? Number.POSITIVE_INFINITY,
+    })
+    const feats: unknown[] = []
+    if (buildable.ring) {
+      feats.push({ kind: 'ProposedFeature', id: 'buildable-envelope', ring: buildable.ring,
+        attributes: { label: 'Buildable envelope', setbacks: buildable.setbacks }, ...base })
+    }
+    if (buildable.footprint) {
+      feats.push({ kind: 'Building', id: 'proposed-building', existing: false, ring: buildable.footprint,
+        attributes: { areaSqFt: buildable.footprintAreaSqFt, estimated: true }, ...base })
+    }
+    if (feats.length) twin = addFeatures(twin, feats as never[])
+  }
+
   const permitPath = classifyProject({
     zoneCode: lot.zoneCode,
     overlayCodes: lot.overlayCodes,
@@ -249,7 +319,7 @@ export function buildLotPackage(lot: LotInput, resolved?: ResolvedBoundary | nul
   })
 
   const disturbance = calculateDisturbance(lot.disturbance ?? {})
-  const envelope = readZoningEnvelope(lot.zoneCode)
+  const envelope = zoningEnvelope
   const missingInformation = buildMissingInformationReport(twin, permitPath)
 
   const blocks = blocksFromFeatures(twin.features)
@@ -267,17 +337,19 @@ export function buildLotPackage(lot: LotInput, resolved?: ResolvedBoundary | nul
   const beforeSeal: string[] = []
   if (!ring) {
     beforeSeal.push(
-      'No parcel boundary. Nothing is drawn, because a boundary invented from a lot width and depth ' +
-      'renders exactly like a real one and nothing downstream could tell them apart. Supply a survey, ' +
-      'or wire a jurisdiction GIS parcel service — PGAtlas publishes zoning and address points but no ' +
-      'parcel layer, so Maryland parcels come from statewide MD iMAP property data.',
+      'No parcel boundary resolved for this address, so the lot outline is absent from the drawing. ' +
+      'A boundary invented from a lot width and depth would render exactly like a real one and ' +
+      'nothing downstream could tell them apart, so none is invented. Parcel geometry is available ' +
+      'from PGAtlas (gis.pgatlas.com Property/MapServer/15) and from statewide MD iMAP; check the ' +
+      'address geocoded inside the lot.',
     )
   }
   if (ring && !surveyed) {
     beforeSeal.push(
-      'A boundary and topographic survey by a Maryland licensed surveyor. The boundary here is GIS, ' +
-      'which is compiled rather than surveyed. In testing, county GIS was 4.3 ft off the surveyed ' +
-      'boundary and a front setback flipped from compliant to non-compliant once corrected.',
+      'Certification of the boundary and topography by a Maryland licensed surveyor. The plan is ' +
+      'complete and delivered; this is the review step that follows. The boundary shown is GIS, ' +
+      'compiled rather than surveyed — in testing, county GIS was 4.3 ft off the surveyed line and ' +
+      'a front setback flipped from compliant to non-compliant once corrected.',
     )
   }
   if (disturbance.indeterminate) {
@@ -298,8 +370,8 @@ export function buildLotPackage(lot: LotInput, resolved?: ResolvedBoundary | nul
     beforeSeal.push(`${item.label} (${item.responsible}): ${item.why}`)
   }
   beforeSeal.push(
-    'Review and seal by the professionals responsible for each subject. The platform drafts; it does ' +
-    'not certify, and nothing here implies county approval.',
+    'Review and seal by the professionals responsible for each subject. The platform drafts a ' +
+    'complete plan; the seal is a human act that follows delivery. Nothing here implies county approval.',
   )
 
   return {
@@ -316,6 +388,9 @@ export function buildLotPackage(lot: LotInput, resolved?: ResolvedBoundary | nul
     checklist,
     sheets,
     responsibility,
+    buildable,
+    footprintEstimate,
+    delivered: true,
     beforeSeal,
     summary:
       `${lot.name} — ${lot.zoneCode}, ` +

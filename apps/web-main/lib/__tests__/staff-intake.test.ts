@@ -151,7 +151,7 @@ describe('an in-house job is still v30 automated', () => {
 
   it('attaches the same automation route the webhook would have', () => {
     const r = buildStaffIntakeRecord(IN_HOUSE)
-    expect(r.form_data.workflowTemplateId).toBe('wf_permit_site_plan_v1')
+    expect(r.form_data.workflowTemplateId).toBe('wf_permit_roadmap_v1')
     expect(r.form_data.fulfillmentBotTypes).toEqual(expect.arrayContaining(['zoning', 'permit']))
     expect(r.form_data.fulfillmentStatus).toBe('queued')
     expect(typeof r.form_data.fulfillmentQueuedAt).toBe('string')

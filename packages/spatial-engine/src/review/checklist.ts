@@ -140,7 +140,13 @@ export function buildCountyChecklist(input: {
 
 export interface QcFinding {
   code: string
-  severity: 'blocking' | 'warning'
+  /**
+   * `pending_seal` is for work only a licensed professional can do — a
+   * certified survey, a seal. It NEVER withholds the drawing. The platform
+   * drafts a complete plan and the professional reviews and seals it; a
+   * reviewer cannot seal a plan that was never drawn.
+   */
+  severity: 'blocking' | 'warning' | 'pending_seal'
   message: string
   remedy: string
 }
@@ -148,7 +154,15 @@ export interface QcFinding {
 export interface QcResult {
   findings: QcFinding[]
   blocking: QcFinding[]
-  /** Package may be labelled ready to submit. */
+  /** Items awaiting a licensed professional. Never a reason to withhold. */
+  pendingSeal: QcFinding[]
+  /**
+   * The plan is always delivered when requested. This is constant `true` and
+   * exists so the guarantee is explicit in the type rather than implied by the
+   * absence of a gate.
+   */
+  deliverable: true
+  /** Package may be labelled ready to SUBMIT TO THE COUNTY. Not a delivery gate. */
   issuable: boolean
   summary: string
 }
@@ -179,13 +193,15 @@ export function runIssuanceQc(input: {
   // Geometry and datum findings come from the twin itself.
   for (const c of checkTwinConsistency(twin)) {
     add(c.code, c.severity, c.message,
-      c.severity === 'blocking' ? 'Resolve in the site model before issuance.' : 'Review before issuance.')
+      c.severity === 'blocking' ? 'Correct in the site model.' : 'Review before submission.')
   }
 
   if (!twin.sources.some(s => s.reliabilityLevel === 2 && /survey/i.test(s.dataset))) {
-    add('MISSING_SURVEY_CERTIFICATION', 'blocking',
-      'No surveyor-certified boundary or topographic survey is on file.',
-      'Obtain a certified survey. Drawings remain valid as preliminary until then.')
+    add('MISSING_SURVEY_CERTIFICATION', 'pending_seal',
+      'No surveyor-certified boundary or topographic survey is on file. The plan is drawn from ' +
+      'jurisdiction GIS and is delivered in full.',
+      'A Maryland licensed surveyor certifies the boundary and topography. This happens after the ' +
+      'plan is drafted, not before.')
   }
 
   if (featuresOfKind(twin, 'Easement').length === 0) {
@@ -244,20 +260,30 @@ export function runIssuanceQc(input: {
   }
 
   if (!reviewMatrix.submissionReady) {
-    add('MISSING_PROFESSIONAL_REVIEW', 'blocking',
+    add('MISSING_PROFESSIONAL_REVIEW', 'pending_seal',
       reviewMatrix.summary,
-      'Route the package to the outstanding disciplines for review and seal.')
+      'Route the completed package to the outstanding disciplines for review and seal.')
   }
 
   const blocking = findings.filter(f => f.severity === 'blocking')
+  const pendingSeal = findings.filter(f => f.severity === 'pending_seal')
+
+  // A blocking finding means the DRAWING itself is wrong — an unclosed
+  // boundary, a scale the county rejects, a sheet missing its frame. Those are
+  // defects to fix. They are not, and must not become, a reason to withhold a
+  // plan somebody asked for.
+  const parts = ['Plan generated and delivered in full.']
+  if (blocking.length) parts.push(`${blocking.length} drawing defect${blocking.length === 1 ? '' : 's'} to correct.`)
+  if (pendingSeal.length) parts.push(`${pendingSeal.length} item${pendingSeal.length === 1 ? '' : 's'} awaiting professional seal.`)
+  if (!blocking.length && !pendingSeal.length) parts.push('Ready for submission.')
+
   return {
     findings,
     blocking,
+    pendingSeal,
+    deliverable: true,
     issuable: blocking.length === 0,
-    summary: blocking.length
-      ? `Not ready to submit — ${blocking.length} blocking finding${blocking.length === 1 ? '' : 's'}. ` +
-        'Drawings are still issued as preliminary.'
-      : 'No blocking findings. Package may be labelled ready for submission once sealed.',
+    summary: parts.join(' '),
   }
 }
 
