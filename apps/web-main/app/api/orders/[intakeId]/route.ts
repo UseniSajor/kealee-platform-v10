@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { authorizeOrderAccess } from '@/lib/order-access'
 import { SERVICE_DELIVERABLES } from '@/lib/service-deliverables'
-import { ORDER_STATUS_META, resolveOrderStatus } from '@/lib/order-status'
+import { customerOrderStatus, ORDER_STATUS_META, resolveOrderStatus } from '@/lib/order-status'
 import { buildOrderView } from '@/lib/order-view'
 
 export const dynamic = 'force-dynamic'
@@ -26,7 +26,7 @@ export async function GET(
 
   const { order } = access
   const formData = order.form_data ?? {}
-  const status = resolveOrderStatus(formData, order.status)
+  const status = customerOrderStatus(resolveOrderStatus(formData, order.status))
 
   return NextResponse.json({
     ...buildOrderView(order),

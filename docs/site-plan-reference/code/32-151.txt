@@ -1,0 +1,201 @@
+(a)
+Site grades shall be adapted to establish street grades and topography, preserving
+to the extent feasible the natural contours, existing woodlands, specimen trees and
+terrain features.
+(b)
+Concentrated surface drainage from each lot or parcel shall discharge directly, or
+through no more than one (1) adjacent lot unless suitable easements are granted to
+accommodate its flow into a publicly maintained drainage system, street or continuously
+flowing natural watercourse. Easements may not be required if, in the opinion of the
+Director, it can be demonstrated by a Maryland registered professional engineer that
+the concentrated surface drainage is insignificant and/or will not adversely affect
+adjacent properties.
+(1)
+Slope Limitations. In effecting the foregoing objectives, the slope limitations specified
+in Table 4 herein and elsewhere in this Division shall be followed. The exact value
+shall be determined by the preparer of the plan to suit each specified site.
+TABLE 4 - SITE SLOPE LIMITATIONS
+FEATURE
+MAXIMUM
+MINIMUM
+Setback of Building from edge Building Pad or Shelf
+—
+10 ft. *
+Slope of Pad or Shelf Away from Building,
+Residential
+30" in 10'
+10" in 10'
+Slope of Pad or Shelf Away from Building,
+All Others
+—
+10" in 10'
+Yards or Lawns
+3:1
+2 ½%
+Slope of Terraces, Slopes or Banks, Residential
+3:1
+—
+Slope of Terraces, Slopes or Banks, all others
+2:1
+—
+Side Slope of Swale or Ditch
+3:1
+10:1
+Longitudinal Gradient of Sodded Swale or Ditch
+4% or **
+2%
+Slope patios-longitudinal pitch (end to end) and Lateral pitch (side to side) away
+from the Building
+1/4" in 12"
+1/8" in 12"
+Driveways - lateral pitch
+(side to side) away from Building
+Sidewalks and leadwalks - lateral pitch
+1/2" in 12"
+48:1
+1/8" in 12"
+—
+Driveways - longitudinal
+pitch (end to end) away from the Building
+Sidewalks and leadwalks - longitudinal
+12.5%
+12:1
+1%
+—
+Parking Lots and Areas
+7%
+1%
+* Minimum from sides of single-family residences and from ends of a townhouse complex
+is four (4) feet.
+** The slope that will yield a velocity no greater than four (4) feet per second.
+(2)
+Exception. Slopes steeper than 3:1 may remain undisturbed and undeveloped when preserving
+a forested area; however, a soils analysis may be required by the Director if the
+long term stability of the slope is in question.
+(3)
+Building Types and Designs. Selection of building types and designs shall be coordinated
+with, and shall be considered secondary to, conformance of the site grading to the
+foregoing objectives, the preferred slope limitations, and other requirements of this
+Division.
+(4)
+Factor of Safety. All slopes shall have a factor of safety of 1.5.
+(CB-15-2011)
+if (Number('0') > 6 && '' == '-1' && confirm('Please finish your account information, then you can be a subscriber again.')) {
+else if ('' == '-1' && Number('0') > 6) {
+switch (keyCode)
+if ($('#simplemodal-overlay').length > 0) {
+$('#simplemodal-overlay').width(w - 21).height(h - 5);
+if (w > 730) {
+w = 730;
+w -= 40;
+if (h > 430) {
+h = 430;
+h -= 200;
+$('#simplemodal-container').width(w - 20).height(h - 20);
+$('#simplemodal-container').css("top", "40px");
+$('.simplemodal-wrap').width(w - 60).height(h - 60);
+$('.simplemodal-data iframe').width(w - 45).height(h - 45);
+$(".objPDF").css("height", embHeight);
+$(".embPDF").css("height", embHeight);
+$(function () {
+if (typeof bts == "undefined") {
+if ($(".addnotation_link").length > 0)
+$(".addnotation_link").attr("title", "Click to add a notation");
+$(".rule_historical h4 a.morelink").css('padding-right', '19px');
+$(".rule_historical h4 a.addnotation_link").css('padding-right', '0px');
+$(".rule_historical h4 a.morelink").click(function () {
+$(this).parent("h4").next("div.mybox").slideToggle();
+$(this).toggleClass("active");
+$(this).next("h4 a.morelink").removeClass("active");
+if ($(".rule_historical h4 a.morelink").text() == " ")
+bts = window.bts || {};
+if (typeof bt == "undefined") {
+$("#spread h4").click(function () {
+$(this).next("div").slideToggle("slow")
+.siblings("div:visible").slideUp("slow");
+$(this).toggleClass("active");
+$(this).siblings("h4").removeClass("active");
+bt = window.bt || {};
+if ($(".tip_notice").length > 0) {
+$(".tip_notice")[0].innerHTML = "
+" + $(".tip_notice")[0].innerHTML + "
+×
+";
+$(document).ready(function () {
+$(".rule_historical > a").click(function () {
+$(this).next().toggle(300);
+if ($(this).attr("class") == "Hid") {
+$(this).removeClass("Hid");
+$(this).addClass("Expand");
+$(this).removeClass("Expand");
+$(this).addClass("Hid");
+Disclaimer
+|
+Terms of Use
+|
+Privacy Policy
+|
+About Us
+|-->
+Contact Us
+|
+Feedback
+Copyright © 2026 by eLaws. All rights reserved.
+$(document).ready(function () {
+$('#searchBoxInput').attr("value", "");
+if ($('#searchBoxInput').val() == '')
+$('#searchBoxInput').attr("value", "");
+$('#searchBoxInput').css('color', '#BBB');
+$(function () {
+$('a').on('click', function (e) {
+if ($(this).attr('href') == '#') {
+e.preventDefault();
+$('body,html').animate({ scrollTop: 0 }, 100);
+if ($('footer')) {
+Cw = Cw == 0 ? $(document).height() : Cw;
+if (Cw
+';
+escClose: true,
+close: true,
+minHeight: height,
+minWidth: width,
+autoResize: true
+if (showfun == null) {
+option.onShow = function () {
+$('#simplemodal-container').css("left", (w - width) / 2 + "px").css("top", (h - height) / 2 + "px").css("width", (width) + "px").css("height", (height) + "px");
+$('.simplemodal-wrap').css("width", (width) + "px").css("height", (height) + "px");
+else {
+option.onShow = showfun();
+if (closefun != null) {
+option.onClose = function () { $.modal.close(); closefun(); }
+option.onClose = function () {
+$.modal.close();
+if (window.navigator.userAgent.toLowerCase().indexOf("msie") > 0 || window.navigator.userAgent.toLowerCase().indexOf("rv:11") > 0)
+$("embed").show();
+if (window.navigator.userAgent.toLowerCase().indexOf("msie") > 0 || window.navigator.userAgent.toLowerCase().indexOf("rv:11") > 0)
+$("embed").hide();
+$(document.body).css("overflow", "hidden");
+$.modal(frame, option);
+onScroll();
+$.modal.close();
+if (window.navigator.userAgent.toLowerCase().indexOf("msie") > 0 || window.navigator.userAgent.toLowerCase().indexOf("rv:11") > 0)
+$("embed").show();
+$(document.body).css("overflow", "auto");
+$(".searchresult_mynav li").each(function (i, o) {
+Tagstr += $(o).attr("class") != "mynavhover " && $(o).attr("class") != "Search_option" ? $(o).html() : "";
+$(obj).html(Tagstr != "" ? "
+" + Tagstr.replace("
+", "").replace("
+", "") + "
+" : "");
+if ($('#simplemodal-container').length > 0) {
+w = (w1 > w - padding) ? (w - padding) : w1;
+h = (h1 > h - padding) ? (h - padding) : h1;
+$('#simplemodal-container').width(w).height(h);
+$('.simplemodal-wrap').width(w - 60).height(h - 60);
+$('.simplemodal-data iframe').width(w - (padding + 5)).height(h - (padding + 5));
+onScroll();
+if ($('#simplemodal-container').length > 0) {
+oip.style.top = ($(window).height() / 2 - oip.offsetHeight / 2) + "px";
+oip.style.left = ($(window).width() / 2 - oip.offsetWidth / 2) + "px";
+$(window).resize(onResize);

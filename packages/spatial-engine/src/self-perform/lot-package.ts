@@ -64,6 +64,8 @@ export interface LotInput {
   contourSourceAuthority?: string
   /** What the customer wants to build. Drives the proposed footprint. */
   programme?: HouseProgramme
+  /** A point on the fronting street — identifies the front lot line. */
+  streetPoint?: [number, number] | null
 }
 
 export interface ZoningEnvelope {
@@ -291,6 +293,7 @@ export function buildLotPackage(lot: LotInput, resolved?: ResolvedBoundary | nul
       standards: zoningEnvelope.standards,
       citation: zoningEnvelope.citation ?? 'Sec. 27-4202',
       netLotAreaSqFt: areaSqFt ?? undefined,
+      streetPoint: lot.streetPoint ?? null,
       // No programme means no requested size, so only zoning limits the box.
       maxFootprintSqFt: footprintEstimate?.footprintSqFt ?? Number.POSITIVE_INFINITY,
     })

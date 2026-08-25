@@ -33,6 +33,14 @@ export interface FootprintConstraint {
 }
 
 export interface BuildableEnvelope {
+  /**
+   * Whether a fronting street was resolved. False means the lot has no
+   * established frontage, which is a Sec. 24-128 condition, not a drafting
+   * preference.
+   */
+  hasStreetFrontage: boolean
+  /** Which yard each lot line was treated as. */
+  edgeYards: EdgeYard[]
   /** Parcel inset by the setbacks. Null when there is no parcel to inset. */
   ring: Ring | null
   envelopeAreaSqFt: number | null
@@ -95,31 +103,122 @@ export function extractLotCoveragePct(
 }
 
 /**
- * Inward inset of the parcel's bounding box, by a perpendicular distance.
- *
- * NOT the centroid-based radial shrink used elsewhere in this package. That
- * method scales vertices toward the centroid, which is not a perpendicular
- * offset and OVER-CLAIMS: a true 25 ft inset of a 50 x 50 lot leaves zero
- * buildable area, while the radial method reports about 225 sq ft. Drawing a
- * footprint in that phantom area would put a building through the setback line.
- *
- * The bounding box is used rather than the parcel outline because a correct
- * polygon offset on an arbitrary lot is a different problem (mitre and
- * self-intersection handling). For a rectangular lot — most lots — the bbox IS
- * the outline. For an irregular lot the bbox is larger than the parcel, so this
- * is reported as approximate and must be checked against the plat.
+ * Signed area. Positive for counter-clockwise.
  */
-function insetBoundingBox(ring: Ring, feet: number): Ring | null {
-  const xs = ring.coordinates.map(c => c[0])
-  const ys = ring.coordinates.map(c => c[1])
-  const minX = Math.min(...xs) + feet, maxX = Math.max(...xs) - feet
-  const minY = Math.min(...ys) + feet, maxY = Math.max(...ys) - feet
-  if (maxX <= minX || maxY <= minY) return null
-  return {
-    coordinates: [
-      [minX, minY], [maxX, minY], [maxX, maxY], [minX, maxY], [minX, minY],
-    ] as Position[],
+function signedArea(pts: Position[]): number {
+  let a = 0
+  for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) {
+    a += pts[j][0] * pts[i][1] - pts[i][0] * pts[j][1]
   }
+  return a / 2
+}
+
+/** Open ring (no repeated last point), wound counter-clockwise. */
+function normaliseRing(ring: Ring): Position[] {
+  const pts = ring.coordinates.map(c => [c[0], c[1]] as Position)
+  if (pts.length > 1) {
+    const [fx, fy] = pts[0], [lx, ly] = pts[pts.length - 1]
+    if (Math.abs(fx - lx) < 1e-9 && Math.abs(fy - ly) < 1e-9) pts.pop()
+  }
+  return signedArea(pts) < 0 ? pts.reverse() : pts
+}
+
+/**
+ * Clips a convex-ish polygon by a half-plane, Sutherland-Hodgman.
+ *
+ * The half-plane keeps points where the signed distance to the directed line
+ * (a -> b) is >= 0, i.e. to the LEFT. With a counter-clockwise ring, left is
+ * inward.
+ */
+function clipHalfPlane(pts: Position[], a: Position, b: Position): Position[] {
+  const side = (p: Position) =>
+    (b[0] - a[0]) * (p[1] - a[1]) - (b[1] - a[1]) * (p[0] - a[0])
+  const out: Position[] = []
+  for (let i = 0; i < pts.length; i++) {
+    const cur = pts[i], nxt = pts[(i + 1) % pts.length]
+    const dc = side(cur), dn = side(nxt)
+    if (dc >= 0) out.push(cur)
+    if ((dc >= 0) !== (dn >= 0)) {
+      const t = dc / (dc - dn)
+      out.push([cur[0] + t * (nxt[0] - cur[0]), cur[1] + t * (nxt[1] - cur[1])] as Position)
+    }
+  }
+  return out
+}
+
+/**
+ * A TRUE per-edge inset of the lot outline.
+ *
+ * Each edge is pushed inward along its own perpendicular by its own setback,
+ * and the results are intersected as half-planes. This is the standard way a
+ * buildable envelope is constructed and it does three things the previous
+ * implementations did not:
+ *
+ *   - It follows the LOT OUTLINE, not the bounding box. An irregular lot's
+ *     bounding box is larger than the lot, so a bbox inset produces an envelope
+ *     that does not line up with the property lines.
+ *   - It applies the CORRECT setback per edge — front 25, side 8, rear 20 —
+ *     instead of the largest value on all four sides, which was throwing the
+ *     front setback out and shrinking the envelope everywhere else.
+ *   - It never over-claims, unlike the centroid-based radial shrink, which
+ *     reports buildable area on a lot that has none.
+ */
+function insetPerEdge(ring: Ring, setbackForEdge: (i: number) => number): Ring | null {
+  const pts = normaliseRing(ring)
+  if (pts.length < 3) return null
+
+  let poly = pts.slice()
+  for (let i = 0; i < pts.length; i++) {
+    const a = pts[i], b = pts[(i + 1) % pts.length]
+    const dx = b[0] - a[0], dy = b[1] - a[1]
+    const len = Math.hypot(dx, dy)
+    if (len < 1e-9) continue
+    // Inward normal for a CCW ring is the left normal of (a -> b).
+    const nx = -dy / len, ny = dx / len
+    const d = setbackForEdge(i)
+    const a2: Position = [a[0] + nx * d, a[1] + ny * d]
+    const b2: Position = [b[0] + nx * d, b[1] + ny * d]
+    poly = clipHalfPlane(poly, a2, b2)
+    if (poly.length < 3) return null
+  }
+
+  return { coordinates: [...poly, poly[0]] as Position[] }
+}
+
+/** Which yard each edge belongs to. */
+export type EdgeYard = 'front' | 'side' | 'rear'
+
+/**
+ * Classifies every lot edge as front, side or rear.
+ *
+ * The front is the edge nearest the street. Without a street the classification
+ * is not guessed — every edge is treated as FRONT, which is the conservative
+ * reading and is reported so a reviewer knows the envelope is understated
+ * rather than silently wrong.
+ */
+export function classifyEdges(ring: Ring, streetPoint?: Position | null): EdgeYard[] {
+  const pts = normaliseRing(ring)
+  const n = pts.length
+  if (!streetPoint) return new Array(n).fill('front')
+
+  const mid = (i: number): Position => {
+    const a = pts[i], b = pts[(i + 1) % n]
+    return [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2]
+  }
+  const dist = (i: number) =>
+    Math.hypot(mid(i)[0] - streetPoint[0], mid(i)[1] - streetPoint[1])
+
+  let front = 0
+  for (let i = 1; i < n; i++) if (dist(i) < dist(front)) front = i
+
+  // The rear is the edge furthest from the street.
+  let rear = 0
+  for (let i = 1; i < n; i++) if (dist(i) > dist(rear)) rear = i
+
+  const yards: EdgeYard[] = new Array(n).fill('side')
+  yards[front] = 'front'
+  if (rear !== front) yards[rear] = 'rear'
+  return yards
 }
 
 function centroid(ring: Ring): Position {
@@ -127,18 +226,60 @@ function centroid(ring: Ring): Position {
   return [p.reduce((s, q) => s + q[0], 0) / p.length, p.reduce((s, q) => s + q[1], 0) / p.length]
 }
 
-/** Axis-aligned rectangle of a given area, proportioned to the envelope. */
-function rectangleAt(center: Position, areaSqFt: number, aspect: number): Ring {
+/**
+ * Rectangle of a given area, ROTATED to the side lot line.
+ *
+ * A house is built parallel to its side property lines, not to grid north. An
+ * axis-aligned box on a lot whose lines run at an angle reads as a mistake to
+ * anyone looking at the sheet, and it misrepresents the side-yard clearance —
+ * the corners approach the line while the middle does not.
+ */
+function rectangleAt(center: Position, areaSqFt: number, aspect: number, angleRad = 0): Ring {
   const w = Math.sqrt(areaSqFt * aspect)
   const h = areaSqFt / w
-  const [x, y] = center
-  return {
-    coordinates: [
-      [x - w / 2, y - h / 2], [x + w / 2, y - h / 2],
-      [x + w / 2, y + h / 2], [x - w / 2, y + h / 2],
-      [x - w / 2, y - h / 2],
-    ] as Position[],
+  const [cx, cy] = center
+  const cos = Math.cos(angleRad), sin = Math.sin(angleRad)
+  const corners: [number, number][] = [
+    [-w / 2, -h / 2], [w / 2, -h / 2], [w / 2, h / 2], [-w / 2, h / 2],
+  ]
+  const pts = corners.map(([dx, dy]) =>
+    [cx + dx * cos - dy * sin, cy + dx * sin + dy * cos] as Position)
+  return { coordinates: [...pts, pts[0]] as Position[] }
+}
+
+/**
+ * Bearing the house is built to: the direction of the FRONT lot line.
+ *
+ * The rectangle's primary axis runs along this, so its front face comes out
+ * PARALLEL to the front property line and its sides parallel to the side lines.
+ * Using the side line as the primary axis instead turns the house ninety
+ * degrees and presents its gable end to the street.
+ */
+function frontLotLineAngle(ring: Ring, yards: EdgeYard[]): number {
+  const pts = normaliseRing(ring)
+  let best = -1, bestLen = 0
+  // Prefer the front edge itself.
+  for (let i = 0; i < pts.length; i++) {
+    if (yards[i] !== 'front') continue
+    const a = pts[i], b = pts[(i + 1) % pts.length]
+    const len = Math.hypot(b[0] - a[0], b[1] - a[1])
+    if (len > bestLen) { bestLen = len; best = i }
   }
+  // No front edge classified. The longest edge on a typical lot is a SIDE
+  // line, so take it and turn ninety degrees to face the street.
+  if (best < 0) {
+    let longest = -1
+    for (let i = 0; i < pts.length; i++) {
+      const a = pts[i], b = pts[(i + 1) % pts.length]
+      const len = Math.hypot(b[0] - a[0], b[1] - a[1])
+      if (len > bestLen) { bestLen = len; longest = i }
+    }
+    if (longest < 0) return 0
+    const a = pts[longest], b = pts[(longest + 1) % pts.length]
+    return Math.atan2(b[1] - a[1], b[0] - a[0]) + Math.PI / 2
+  }
+  const a = pts[best], b = pts[(best + 1) % pts.length]
+  return Math.atan2(b[1] - a[1], b[0] - a[0])
 }
 
 /**
@@ -160,6 +301,17 @@ export function deriveBuildableEnvelope(input: {
   maxFootprintSqFt?: number
   /** Net lot area for the coverage calculation. Defaults to the parcel area. */
   netLotAreaSqFt?: number
+  /**
+   * A point on the fronting street, in the same CRS as the parcel.
+   *
+   * REQUIRED. A lot without street frontage is not a buildable lot: PGC Code
+   * Sec. 24-128 requires a recorded private right-of-way easement for a parcel
+   * accessed only by ingress/egress easement, and DPIE Design Review item E-4
+   * asks for it. Absence is a finding, not a default — without a street there
+   * is no front lot line, so setbacks cannot be assigned and a house cannot be
+   * oriented. Resolve it from the jurisdiction's street centreline layer.
+   */
+  streetPoint: Position | null
 }): BuildableEnvelope {
   const { parcel, standards, maxFootprintSqFt = 1500 } = input
   const setbacks = extractSetbacks(standards, input.useColumn, input.citation)
@@ -169,6 +321,7 @@ export function deriveBuildableEnvelope(input: {
 
   if (!parcel) {
     return {
+      hasStreetFrontage: Boolean(input.streetPoint), edgeYards: [],
       ring: null, envelopeAreaSqFt: null, setbacks, constraints,
       allowedFootprintSqFt: null, footprint: null, footprintAreaSqFt: null,
       caveats: ['No parcel boundary, so no buildable envelope can be derived.'],
@@ -176,11 +329,19 @@ export function deriveBuildableEnvelope(input: {
   }
 
   const lotAreaSqFt = input.netLotAreaSqFt ?? ringArea(parcel)
-  const ring = insetBoundingBox(parcel, setbacks.maxFt)
+  const yards = classifyEdges(parcel, input.streetPoint ?? null)
+  const perEdge = (i: number): number => {
+    const y = yards[i] ?? 'front'
+    if (y === 'front') return setbacks.frontFt ?? setbacks.maxFt
+    if (y === 'rear') return setbacks.rearFt ?? setbacks.maxFt
+    return setbacks.sideFt ?? setbacks.maxFt
+  }
+  const ring = insetPerEdge(parcel, perEdge)
   const envelopeAreaSqFt = ring ? ringArea(ring) : 0
 
   if (!ring) {
     return {
+      hasStreetFrontage: Boolean(input.streetPoint), edgeYards: yards,
       ring: null, envelopeAreaSqFt: 0, setbacks,
       constraints: [{
         name: 'Setback envelope', limitSqFt: 0, binding: true,
@@ -204,8 +365,8 @@ export function deriveBuildableEnvelope(input: {
     limitSqFt: envelopeAreaSqFt,
     binding: false,
     detail: `Front ${setbacks.frontFt ?? '?'} ft, side ${setbacks.sideFt ?? '?'} ft, ` +
-      `rear ${setbacks.rearFt ?? '?'} ft (${setbacks.source}). Uniform inset applied at ` +
-      `${setbacks.maxFt} ft.`,
+      `rear ${setbacks.rearFt ?? '?'} ft (${setbacks.source}), applied per edge` +
+      (input.streetPoint ? '.' : ' — no street reference, so every edge took the front setback.'),
   })
 
   const coverageLimit = coveragePct !== null ? (lotAreaSqFt * coveragePct) / 100 : null
@@ -235,28 +396,28 @@ export function deriveBuildableEnvelope(input: {
       'the programme cap only — confirm coverage against the table before relying on it.')
   }
   caveats.push(
-    'The setback inset is UNIFORM at the largest of the three yard depths, because identifying which ' +
-    'boundary fronts the street requires more than the parcel geometry. Applying the LARGEST yard ' +
-    'depth to all four sides is the conservative reading of the setbacks; on a shallow lot it can ' +
-    'consume the whole envelope, which means "not established", not "unbuildable".')
-  caveats.push(
-    'The envelope is the parcel BOUNDING BOX inset perpendicular, not a true polygon offset of the ' +
-    'lot outline. For a rectangular lot these are the same. For an irregular lot the bounding box is ' +
-    'larger than the parcel, so the envelope may extend outside the real boundary — verify against ' +
-    'the plat before construction.')
+    'The envelope is a true per-edge inset of the lot outline: each property line is offset inward by ' +
+    'its own yard depth and the results intersected. It follows the lot, not its bounding box. ' +
+    'Verify against a surveyed plat before construction — the boundary itself is GIS, not survey.')
 
-  // Proportion the footprint to the envelope so it sits naturally on the lot.
-  const xs = ring.coordinates.map(c => c[0]), ys = ring.coordinates.map(c => c[1])
-  const envW = Math.max(...xs) - Math.min(...xs), envH = Math.max(...ys) - Math.min(...ys)
+  // Align the footprint with the FRONT lot line and proportion it to the
+  // envelope measured in that same rotated frame.
+  const angle = frontLotLineAngle(parcel, yards)
+  const cos = Math.cos(-angle), sin = Math.sin(-angle)
+  const rot = ring.coordinates.map(c => [c[0] * cos - c[1] * sin, c[0] * sin + c[1] * cos])
+  const envW = Math.max(...rot.map(c => c[0])) - Math.min(...rot.map(c => c[0]))
+  const envH = Math.max(...rot.map(c => c[1])) - Math.min(...rot.map(c => c[1]))
   const aspect = envH > 0 ? Math.max(0.25, Math.min(4, envW / envH)) : 1
 
-  const footprint = allowed > 0 ? rectangleAt(centroid(ring), allowed, aspect) : null
+  const footprint = allowed > 0 ? rectangleAt(centroid(ring), allowed, aspect, angle) : null
 
   if (allowed <= 0) {
     caveats.push('No buildable area remains after the setbacks. This lot cannot take a principal structure as zoned.')
   }
 
   return {
+    hasStreetFrontage: Boolean(input.streetPoint),
+    edgeYards: yards,
     ring,
     envelopeAreaSqFt,
     setbacks,

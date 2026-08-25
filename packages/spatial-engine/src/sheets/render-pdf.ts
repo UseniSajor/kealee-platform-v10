@@ -198,24 +198,147 @@ function genericOfKind(twin: SiteTwin, kind: GenericFeature['kind']): GenericFea
 
 function drawGeometry(doc: Doc, ctx: SheetContext, vp: Viewport, b: Bounds): void {
   const t = ctx.twin
+  const P = (pt: Position) => project(pt, vp, b, PAD_FT)
 
-  for (const p of featuresOfKind(t, 'Parcel')) {
-    polyline(doc, projectRing(p.ring, vp, b, PAD_FT), PEN.boundary, true)
+  // ── Existing topography, drawn first so everything sits over it ───────────
+  for (const c of genericOfKind(t, 'Contour')) {
+    if (!c.line?.length) continue
+    const a = c.attributes ?? {}
+    const index = a.weight === 'index'
+    polyline(doc, c.line.map((p: Position) => P(p)),
+      { ...PEN.contour, width: index ? 0.9 : 0.4 })
+    // Elevation label on the line, as a drafter breaks a contour to letter it.
+    const el = a.elevationFt
+    if (el != null && c.line.length > 2) {
+      const mid = P(c.line[Math.floor(c.line.length / 2)])
+      doc.save()
+      doc.font('Helvetica').fontSize(index ? 6.5 : 5.5).fillColor('#8a6d3b')
+         .text(String(el), mid[0] - 7, mid[1] - 3, { lineBreak: false })
+      doc.restore()
+    }
   }
-  for (const e of featuresOfKind(t, 'Easement')) {
-    polyline(doc, projectRing(e.ring, vp, b, PAD_FT), PEN.easement, true)
-  }
+
+  // ── Setback / buildable envelope, dashed ──────────────────────────────────
   for (const s of featuresOfKind(t, 'Setback')) {
     if (s.ring) polyline(doc, projectRing(s.ring, vp, b, PAD_FT), PEN.setback, true)
   }
+  for (const g of genericOfKind(t, 'ProposedFeature')) {
+    if (!g.ring) continue
+    polyline(doc, projectRing(g.ring, vp, b, PAD_FT), PEN.setback, true)
+    const r = projectRing(g.ring, vp, b, PAD_FT)
+    const cx = r.reduce((n, q) => n + q[0], 0) / r.length
+    const top = Math.min(...r.map(q => q[1]))
+    doc.font('Helvetica').fontSize(6).fillColor('#666666')
+       .text('BUILDABLE ENVELOPE', cx - 42, top - 9, { lineBreak: false })
+  }
+
+  // ── Easements ─────────────────────────────────────────────────────────────
+  for (const e of featuresOfKind(t, 'Easement')) {
+    polyline(doc, projectRing(e.ring, vp, b, PAD_FT), PEN.easement, true)
+  }
+
+  // ── Property boundary, heaviest line on the sheet ─────────────────────────
+  for (const p of featuresOfKind(t, 'Parcel')) {
+    const r = projectRing(p.ring, vp, b, PAD_FT)
+    polyline(doc, r, { ...PEN.boundary, width: 1.6 }, true)
+
+    // Bearing and distance on every line, which is what a reviewer checks.
+    const co = p.ring.coordinates
+    for (let i = 0; i < co.length - 1; i++) {
+      const [x1, y1] = co[i], [x2, y2] = co[i + 1]
+      const dx = x2 - x1, dy = y2 - y1
+      const lenFt = Math.hypot(dx, dy)
+      if (lenFt < 8) continue
+      const brg = bearingLabel(dx, dy)
+      const m1 = P(co[i]), m2 = P(co[i + 1])
+      const mx = (m1[0] + m2[0]) / 2, my = (m1[1] + m2[1]) / 2
+      let ang = Math.atan2(m2[1] - m1[1], m2[0] - m1[0])
+      if (ang > Math.PI / 2 || ang < -Math.PI / 2) ang += Math.PI
+      doc.save()
+      doc.translate(mx, my).rotate((ang * 180) / Math.PI)
+      doc.font('Helvetica').fontSize(5.5).fillColor('#000000')
+         .text(`${brg}  ${lenFt.toFixed(2)}'`, -34, -8, { lineBreak: false, width: 68, align: 'center' })
+      doc.restore()
+    }
+
+    // Lot identity and area at the centroid.
+    const cx = r.reduce((n, q) => n + q[0], 0) / r.length
+    const cy = r.reduce((n, q) => n + q[1], 0) / r.length
+    doc.font('Helvetica-Bold').fontSize(8).fillColor('#000000')
+       .text(p.parcelId ?? 'LOT', cx - 50, cy - 26, { width: 100, align: 'center', lineBreak: false })
+    if (p.areaSqFt) {
+      doc.font('Helvetica').fontSize(7).fillColor('#333333')
+         .text(`${Math.round(p.areaSqFt).toLocaleString()} SQ FT  (${(p.areaSqFt / 43560).toFixed(3)} AC)`,
+               cx - 60, cy - 15, { width: 120, align: 'center', lineBreak: false })
+    }
+  }
+
+  // ── Buildings ─────────────────────────────────────────────────────────────
   for (const bl of featuresOfKind(t, 'Building')) {
-    polyline(doc, projectRing(bl.ring, vp, b, PAD_FT), bl.existing ? PEN.building : PEN.proposed, true)
+    const r = projectRing(bl.ring, vp, b, PAD_FT)
+    polyline(doc, r, bl.existing ? PEN.building : { ...PEN.proposed, width: 1.4 }, true)
+    if (bl.existing) continue
+
+    // Cross-hatch the proposed structure so it reads at a glance.
+    const minX = Math.min(...r.map(q => q[0])), maxX = Math.max(...r.map(q => q[0]))
+    const minY = Math.min(...r.map(q => q[1])), maxY = Math.max(...r.map(q => q[1]))
+    doc.save()
+    doc.rect(minX, minY, maxX - minX, maxY - minY).clip()
+    doc.lineWidth(0.25).strokeColor('#c0392b').opacity(0.5)
+    for (let x = minX - (maxY - minY); x < maxX; x += 7) {
+      doc.moveTo(x, maxY).lineTo(x + (maxY - minY), minY).stroke()
+    }
+    doc.opacity(1).restore()
+
+    const cx = (minX + maxX) / 2, cy = (minY + maxY) / 2
+    const a = (bl as { attributes?: Record<string, unknown> }).attributes ?? {}
+    doc.font('Helvetica-Bold').fontSize(7.5).fillColor('#c0392b')
+       .text('PROPOSED', cx - 45, cy - 12, { width: 90, align: 'center', lineBreak: false })
+    doc.font('Helvetica').fontSize(6.5).fillColor('#c0392b')
+       .text('DWELLING', cx - 45, cy - 3, { width: 90, align: 'center', lineBreak: false })
+    if (a.areaSqFt) {
+      doc.font('Helvetica').fontSize(6).fillColor('#c0392b')
+         .text(`${Math.round(Number(a.areaSqFt)).toLocaleString()} SQ FT`,
+               cx - 45, cy + 6, { width: 90, align: 'center', lineBreak: false })
+    }
   }
-  for (const c of genericOfKind(t, 'Contour')) {
-    if (c.line?.length) polyline(doc, c.line.map((p: Position) => project(p, vp, b, PAD_FT)), PEN.contour)
-  }
+
   for (const seg of featuresOfKind(t, 'BoundarySegment')) {
-    polyline(doc, [project(seg.from, vp, b, PAD_FT), project(seg.to, vp, b, PAD_FT)], PEN.boundary)
+    polyline(doc, [P(seg.from), P(seg.to)], PEN.boundary)
+  }
+}
+
+/** Surveyor bearing, e.g. N 42°17'30" E. */
+function bearingLabel(dx: number, dy: number): string {
+  const ns = dy >= 0 ? 'N' : 'S'
+  const ew = dx >= 0 ? 'E' : 'W'
+  const deg = Math.abs(Math.atan2(dx, dy) * 180 / Math.PI)
+  const a = deg > 90 ? 180 - deg : deg
+  const d = Math.floor(a)
+  const m = Math.floor((a - d) * 60)
+  const sec = Math.round((((a - d) * 60) - m) * 60)
+  return `${ns} ${d}\u00b0${String(m).padStart(2, '0')}'${String(sec).padStart(2, '0')}" ${ew}`
+}
+
+/** Legend — a reviewer must not have to guess what a line means. */
+function legend(doc: Doc, x: number, y: number, ctx: SheetContext): void {
+  const rows: [string, string, boolean][] = [
+    ['#000000', 'PROPERTY BOUNDARY', false],
+    ['#7f8c8d', 'SETBACK / BUILDABLE ENVELOPE', true],
+    ['#c0392b', 'PROPOSED STRUCTURE', false],
+    ['#8a6d3b', 'EXISTING CONTOUR (2 FT)', false],
+    ['#2980b9', 'EASEMENT', true],
+  ]
+  doc.font('Helvetica-Bold').fontSize(7).fillColor('#000000').text('LEGEND', x, y, { lineBreak: false })
+  let cy = y + 11
+  for (const [color, label, dashed] of rows) {
+    doc.save().lineWidth(1.1).strokeColor(color)
+    if (dashed) doc.dash(3, { space: 2 })
+    doc.moveTo(x, cy + 3).lineTo(x + 26, cy + 3).stroke()
+    doc.undash().restore()
+    doc.font('Helvetica').fontSize(5.8).fillColor('#333333')
+       .text(label, x + 32, cy, { lineBreak: false })
+    cy += 10
   }
 }
 
@@ -315,6 +438,7 @@ export function renderSheetSetPdf(input: RenderPdfInput): Promise<RenderedPdf> {
         }
       }
 
+      legend(doc, sheetSize.marginPt + 16, sheetSize.heightPt - sheetSize.marginPt - 168, ctx)
       titleBlock(doc, ctx, sheetSize, input.responsibility?.[ctx.sheet])
       watermark(doc, ctx, sheetSize)
     }

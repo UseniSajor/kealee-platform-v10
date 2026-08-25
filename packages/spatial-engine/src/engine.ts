@@ -20,6 +20,8 @@ export * from './jurisdictions/fema-nfhl'
 export * from './jurisdictions/pg-site-data'
 export * from './jurisdictions/md-imap'
 export * from './jurisdictions/pg-elevation'
+export * from './jurisdictions/pgatlas'
+export * from './jurisdictions/pg-site-plan-code'
 
 // The digital site twin and the civil model
 export * from './site-plan/reliability'

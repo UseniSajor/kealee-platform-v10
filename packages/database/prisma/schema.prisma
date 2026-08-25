@@ -3542,6 +3542,12 @@ model SitePlanIssuance {
   status                    SheetIssuanceStatus @default(PRELIMINARY)
   governingReliabilityLevel Int                 @default(0)
   disclosure                String?             @db.Text
+  /// Street frontage. A legal buildable lot fronts a street; PGC Code
+  /// Sec. 24-128 requires a recorded private right-of-way easement where a
+  /// lot is reached only by ingress/egress easement. False means no front
+  /// lot line was established, so setbacks and orientation are not resolved.
+  hasStreetFrontage        Boolean             @default(false)
+  streetCenterlineSource   String?
   /// Generated and handed over. Always true once a run completes.
   delivered                 Boolean             @default(true)
   deliveredAt               DateTime?

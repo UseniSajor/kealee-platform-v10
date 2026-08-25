@@ -114,6 +114,7 @@ async function main() {
       })),
       verticalDatum: contourResult?.verticalDatum ?? null,
       contourSourceAuthority: contourResult?.source.authority,
+      streetPoint: atlas?.streetPoint ?? null,
       programme: houseSqFt > 0
         ? { totalFloorAreaSqFt: houseSqFt, storeys, garage: (process.env.GARAGE as never) ?? 'none',
             hasBasement: process.env.BASEMENT === '1', coveredPorch: process.env.PORCH === '1' }

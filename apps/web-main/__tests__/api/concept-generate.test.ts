@@ -73,16 +73,18 @@ const mockDesignOutput = {
   estimatedTimeline: 90,
 }
 
-let mockSupabaseSelect: jest.Mock
-let mockBotExecute: jest.Mock
-const mockDesignBotEnterprise = vi.hoisted(() => vi.fn())
+const conceptMocks = vi.hoisted(() => ({
+  supabaseSelect: vi.fn(),
+  botExecute: vi.fn(),
+  designBotEnterprise: vi.fn(),
+}))
 
 vi.mock('@/lib/supabase-server', () => ({
   getSupabaseAdmin: vi.fn(() => ({
     from: vi.fn(() => ({
       select: vi.fn(() => ({
         eq: vi.fn(() => ({
-          single: (...args: unknown[]) => mockSupabaseSelect(...args),
+          single: (...args: unknown[]) => conceptMocks.supabaseSelect(...args),
         })),
       })),
       update: vi.fn(() => ({
@@ -95,13 +97,19 @@ vi.mock('@/lib/supabase-server', () => ({
 // Mock DesignBotEnterprise and mapDesignOutputToConceptOutput so tests never
 // hit the real Anthropic API.
 vi.mock('@kealee/core-llm', () => ({
-  DesignBotEnterprise: mockDesignBotEnterprise,
+  DesignBotEnterprise: conceptMocks.designBotEnterprise,
   mapDesignOutputToConceptOutput: vi.fn((_data: unknown, _opts: unknown) => mockConceptOutput),
 }))
 
 vi.mock('@kealee/core-rules', async importOriginal => ({
   ...(await importOriginal<typeof import('@kealee/core-rules')>()),
   runZoningBot: vi.fn().mockResolvedValue({
+    jurisdiction: 'Test jurisdiction',
+    zoning: 'R-4',
+    setbacks: { front: 20, side: 8, rear: 25 },
+    far: 0.8,
+    requirements: [],
+    permitType: [],
     zoningClassification: 'R-4',
     permitRequirements: [],
     confidence: 1,
@@ -126,11 +134,12 @@ function makeRequest(body: Record<string, unknown>): NextRequest {
 describe('POST /api/concept/generate', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    mockSupabaseSelect = vi.fn()
-    mockBotExecute = vi.fn()
+    conceptMocks.supabaseSelect.mockReset()
+    conceptMocks.botExecute.mockReset()
     // Re-wire the DesignBotEnterprise mock's execute to use the per-test mockBotExecute
-    mockDesignBotEnterprise.mockImplementation(() => ({
-      execute: vi.fn((..._args: unknown[]) => mockBotExecute()),
+    conceptMocks.designBotEnterprise.mockReset()
+    conceptMocks.designBotEnterprise.mockImplementation(() => ({
+      execute: vi.fn((..._args: unknown[]) => conceptMocks.botExecute()),
     }))
   })
 
@@ -143,7 +152,7 @@ describe('POST /api/concept/generate', () => {
   })
 
   test('returns 404 when intake record not found', async () => {
-    mockSupabaseSelect.mockResolvedValueOnce({ data: null, error: { message: 'Not found' } })
+    conceptMocks.supabaseSelect.mockResolvedValueOnce({ data: null, error: { message: 'Not found' } })
 
     const POST = await getHandler()
     const res = await POST(makeRequest({ intakeId: 'nonexistent-uuid' }))
@@ -152,7 +161,7 @@ describe('POST /api/concept/generate', () => {
 
   test('returns 402 when intake is not paid (P0-4 gate)', async () => {
     const unpaidRecord = { ...mockIntakeRecord, status: 'new' }
-    mockSupabaseSelect.mockResolvedValueOnce({ data: unpaidRecord, error: null })
+    conceptMocks.supabaseSelect.mockResolvedValueOnce({ data: unpaidRecord, error: null })
 
     const POST = await getHandler()
     const res = await POST(makeRequest({ intakeId: 'test-intake-001' }))
@@ -165,7 +174,7 @@ describe('POST /api/concept/generate', () => {
     const originalKey = process.env.ANTHROPIC_API_KEY
     delete process.env.ANTHROPIC_API_KEY
 
-    mockSupabaseSelect.mockResolvedValueOnce({ data: mockIntakeRecord, error: null })
+    conceptMocks.supabaseSelect.mockResolvedValueOnce({ data: mockIntakeRecord, error: null })
 
     const POST = await getHandler()
     const res = await POST(makeRequest({ intakeId: 'test-intake-001' }))
@@ -180,7 +189,7 @@ describe('POST /api/concept/generate', () => {
       status: 'concept_ready',
       form_data: { ...mockIntakeRecord.form_data, conceptOutput: mockConceptOutput },
     }
-    mockSupabaseSelect.mockResolvedValueOnce({ data: cachedRecord, error: null })
+    conceptMocks.supabaseSelect.mockResolvedValueOnce({ data: cachedRecord, error: null })
 
     const POST = await getHandler()
     const res = await POST(makeRequest({ intakeId: 'test-intake-001' }))
@@ -192,8 +201,8 @@ describe('POST /api/concept/generate', () => {
 
   test('calls DesignBot and returns conceptOutput on success', async () => {
     process.env.ANTHROPIC_API_KEY = 'test-key-for-unit-tests'
-    mockSupabaseSelect.mockResolvedValueOnce({ data: mockIntakeRecord, error: null })
-    mockBotExecute.mockResolvedValueOnce({ success: true, data: mockDesignOutput })
+    conceptMocks.supabaseSelect.mockResolvedValueOnce({ data: mockIntakeRecord, error: null })
+    conceptMocks.botExecute.mockResolvedValueOnce({ success: true, data: mockDesignOutput })
 
     const POST = await getHandler()
     const res = await POST(makeRequest({ intakeId: 'test-intake-001' }))
@@ -205,8 +214,8 @@ describe('POST /api/concept/generate', () => {
 
   test('returns 500 with partial:true when DesignBot fails', async () => {
     process.env.ANTHROPIC_API_KEY = 'test-key-for-unit-tests'
-    mockSupabaseSelect.mockResolvedValueOnce({ data: mockIntakeRecord, error: null })
-    mockBotExecute.mockResolvedValueOnce({ success: false, error: 'DesignBot error: service unavailable' })
+    conceptMocks.supabaseSelect.mockResolvedValueOnce({ data: mockIntakeRecord, error: null })
+    conceptMocks.botExecute.mockResolvedValueOnce({ success: false, error: 'DesignBot error: service unavailable' })
 
     const POST = await getHandler()
     const res = await POST(makeRequest({ intakeId: 'test-intake-001' }))

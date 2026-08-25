@@ -62,8 +62,8 @@ export const ORDER_STATUS_META: Record<OrderStatus, OrderStatusMeta> = {
     terminal: false,
   },
   processing: {
-    label: 'Processing',
-    customerDescription: 'Your deliverable is being produced.',
+    label: 'Product being prepared',
+    customerDescription: 'Your product is being prepared. We’ll let you know when it’s ready.',
     actor: 'kealee',
     terminal: false,
   },
@@ -111,6 +111,15 @@ export const ORDER_STATUS_META: Record<OrderStatus, OrderStatusMeta> = {
     actor: 'kealee',
     terminal: false,
   },
+}
+
+/**
+ * Customer-safe projection of an internal lifecycle state. Provider or worker
+ * failures are retained in the order record for staff recovery, but customers
+ * should see that Kealee is preparing their product rather than an error state.
+ */
+export function customerOrderStatus(status: OrderStatus): OrderStatus {
+  return status === 'failed' ? 'processing' : status
 }
 
 export function isOrderStatus(value: unknown): value is OrderStatus {

@@ -21,6 +21,7 @@ export const PGATLAS_ENDPOINTS = {
   parcels: `${PGATLAS_ROOT}/Property/MapServer/15`,
   zoning: `${PGATLAS_ROOT}/Zoning/MapServer/63`,
   contours2ft: `${PGATLAS_ROOT}/Elevation/MapServer/1`,
+  streetCenterline: `${PGATLAS_ROOT}/Transportation/MapServer/2`,
 } as const
 
 export interface PgAtlasAddress {
@@ -166,10 +167,52 @@ export async function fetchPgAtlasZoning(
   }
 }
 
+/**
+ * Nearest point on the street centreline network.
+ *
+ * This is what identifies the FRONT lot line. Without it every edge takes the
+ * front setback, which understates the envelope, and the house cannot be
+ * oriented to the street.
+ */
+export async function nearestStreetPoint(
+  easting2248: number, northing2248: number,
+  opts: { searchFt?: number; fetchImpl?: typeof fetch } = {},
+): Promise<Position | null> {
+  const r = opts.searchFt ?? 250
+  const doFetch = opts.fetchImpl ?? fetch
+  const p = new URLSearchParams({
+    where: '1=1',
+    geometry: [easting2248 - r, northing2248 - r, easting2248 + r, northing2248 + r].join(','),
+    geometryType: 'esriGeometryEnvelope',
+    inSR: '2248', outSR: '2248',
+    spatialRel: 'esriSpatialRelIntersects',
+    outFields: 'OBJECTID', returnGeometry: 'true', f: 'json',
+  })
+  const res = await doFetch(`${PGATLAS_ENDPOINTS.streetCenterline}/query?${p}`,
+    { headers: { accept: 'application/json' } })
+  if (!res.ok) return null
+  const payload: any = await res.json().catch(() => null)
+  if (!payload || payload.error) return null
+
+  let best: Position | null = null
+  let bestD = Infinity
+  for (const f of payload.features ?? []) {
+    for (const path of f?.geometry?.paths ?? []) {
+      for (const pt of path) {
+        const d = Math.hypot(pt[0] - easting2248, pt[1] - northing2248)
+        if (d < bestD) { bestD = d; best = [pt[0], pt[1]] as Position }
+      }
+    }
+  }
+  return best
+}
+
 export interface PgAtlasSite {
   address: PgAtlasAddress
   parcel: PgAtlasParcel | null
   zoning: PgAtlasZoning | null
+  /** Nearest street centreline point — identifies the front lot line. */
+  streetPoint: Position | null
 }
 
 /** Address to lot, zone and position in one call. */
@@ -179,9 +222,10 @@ export async function resolvePgAtlasSite(
 ): Promise<PgAtlasSite | null> {
   const geo = await geocodePgAtlas(address, opts)
   if (!geo) return null
-  const [parcel, zoning] = await Promise.all([
+  const [parcel, zoning, streetPoint] = await Promise.all([
     fetchPgAtlasParcel(geo.easting2248, geo.northing2248, opts),
     fetchPgAtlasZoning(geo.easting2248, geo.northing2248, opts),
+    nearestStreetPoint(geo.easting2248, geo.northing2248, opts),
   ])
-  return { address: geo, parcel, zoning }
+  return { address: geo, parcel, zoning, streetPoint }
 }

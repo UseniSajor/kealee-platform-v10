@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { CheckCircle2, Loader2, AlertCircle } from 'lucide-react'
+import { CheckCircle2, Loader2 } from 'lucide-react'
 
 interface BotProgress {
   status: string
@@ -69,11 +69,14 @@ export function V30GenerationStatus({ intakeId }: { intakeId: string }) {
     )
   }
 
+  // Keep provider/worker details out of the customer surface. The status API
+  // and operations logs retain the real error for recovery; customers see the
+  // product continuing through preparation.
   if (status.error) {
     return (
-      <p className="text-sm text-red-700 flex items-center gap-2">
-        <AlertCircle className="h-4 w-4" />
-        {status.error}
+      <p className="text-sm text-slate-600 flex items-center gap-2">
+        <Loader2 className="h-4 w-4 animate-spin text-violet-600" />
+        Your product is being prepared. We’ll let you know when it’s ready.
       </p>
     )
   }
@@ -83,7 +86,7 @@ export function V30GenerationStatus({ intakeId }: { intakeId: string }) {
   return (
     <div className="rounded-xl border border-violet-200 bg-violet-50/50 p-4 text-left">
       <p className="text-xs font-bold uppercase tracking-widest text-violet-700 mb-3">
-        Kealee v30 — {status.stage === 'complete' ? 'Package ready' : status.stage === 'failed' ? 'Needs review' : 'Building your package'}
+        Kealee v30 — {status.stage === 'complete' ? 'Package ready' : 'Product being prepared'}
       </p>
       {entries.length > 0 ? (
         <ul className="space-y-2">
@@ -94,7 +97,7 @@ export function V30GenerationStatus({ intakeId }: { intakeId: string }) {
                 {p.status === 'COMPLETE' ? (
                   <CheckCircle2 className="h-4 w-4 text-green-600" />
                 ) : p.status === 'FAILED' ? (
-                  <AlertCircle className="h-4 w-4 text-red-600" />
+                  <Loader2 className="h-4 w-4 animate-spin text-violet-600" />
                 ) : (
                   <Loader2 className="h-4 w-4 animate-spin text-violet-600" />
                 )}

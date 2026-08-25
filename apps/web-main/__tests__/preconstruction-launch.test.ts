@@ -7,7 +7,7 @@
  */
 
 import { resolveAddressParcel } from '../lib/site-intelligence/authoritative-gis'
-import { resolveOrderStatus, ORDER_STATUS_META } from '../lib/order-status'
+import { customerOrderStatus, resolveOrderStatus, ORDER_STATUS_META } from '../lib/order-status'
 import { buildOrderChecklist } from '../lib/order-view'
 import { SERVICE_DELIVERABLES } from '../lib/service-deliverables'
 import { resolveProductAutomationRoute } from '../lib/product-automation'
@@ -108,6 +108,11 @@ describe('order lifecycle', () => {
       expect(['kealee', 'customer', 'none']).toContain(meta.actor)
       expect(meta.label.length).toBeGreaterThan(0)
     }
+  })
+
+  it('projects internal failures as preparation on the customer surface', () => {
+    expect(customerOrderStatus('failed')).toBe('processing')
+    expect(ORDER_STATUS_META.processing.label).toBe('Product being prepared')
   })
 })
 
