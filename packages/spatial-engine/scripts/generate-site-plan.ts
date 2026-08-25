@@ -15,6 +15,9 @@
 
 import { writeFileSync } from 'node:fs'
 import { resolveMarylandParcel, buildLotPackage } from '../src/self-perform/lot-package'
+import { fetchPgContours, contourRelief, contoursOnLot, PG_CONTOUR_VERTICAL_DATUM } from '../src/jurisdictions/pg-elevation'
+import { addFeatures, addSource } from '../src/site-plan/site-twin'
+import type { SiteFeature } from '../src/site-plan/site-twin'
 import { resolveCrs, createArcGisTransformer } from '../src/export/crs'
 import { geocodeAddress } from '../src/gis-client'
 import { buildSheetContext } from '../src/sheets/render-svg'
@@ -56,7 +59,20 @@ async function main() {
   console.log(`    candidates considered: ${parcel.candidateCount}`)
   if (parcel.caveat) console.log(`    caveat: ${parcel.caveat}`)
 
-  step(4, `Building the lot package for zone ${zone}`)
+  step(4, 'Fetching 2-ft contours from PGAtlas')
+  let contourResult = null as Awaited<ReturnType<typeof fetchPgContours>> | null
+  try {
+    contourResult = await fetchPgContours(easting, northing, { radiusFt: 150 })
+    const relief = contourRelief(contourResult)
+    console.log(`    ${contourResult.contours.length} contour lines, ${contourResult.elevationsFt.length} distinct elevations`)
+    console.log(`    range ${relief.minFt}–${relief.maxFt} ft, relief ${relief.reliefFt} ft, interval ${contourResult.intervalFt} ft`)
+    console.log(`    vertical datum: ${contourResult.verticalDatum}`)
+    if (contourResult.truncated) console.log('    *** TRUNCATED — contour set incomplete')
+  } catch (e) {
+    console.log(`    contour fetch failed: ${(e as Error).message}`)
+  }
+
+  step(5, `Building the lot package for zone ${zone}`)
   const pkg = buildLotPackage(
     {
       name: address.split(',')[0],
@@ -73,12 +89,41 @@ async function main() {
   console.log(`    permit path       : ${pkg.permitPath.summary ?? '(see report)'}`)
   console.log(`    checklist         : ${pkg.checklist.summary}`)
   console.log(`    composed sheets   : ${pkg.sheets.sheets.length} (${pkg.sheets.rationale})`)
+
+  // Put the terrain into the model. Contours are what let C-400 show existing
+  // grade, and the vertical datum stops reading NOT ESTABLISHED.
+  if (contourResult && contourResult.contours.length) {
+    const onLot = parcel.boundary ? contoursOnLot(contourResult, parcel.boundary.ring) : contourResult.contours
+    const use = onLot.length ? onLot : contourResult.contours
+    let t = addSource(pkg.twin, {
+      sourceId: 'pgatlas-contour-2ft',
+      authority: contourResult.source.authority,
+      dataset: contourResult.source.layer,
+      url: contourResult.source.endpoint,
+      crs: 'EPSG:2248',
+      horizontalDatum: 'NAD83',
+      retrievedAt: contourResult.source.retrievedAt,
+      verticalDatum: PG_CONTOUR_VERTICAL_DATUM,
+      accuracyClass: 'mapping_grade',
+      reliabilityLevel: 1,
+    })
+    t = { ...t, verticalDatum: PG_CONTOUR_VERTICAL_DATUM }
+    t = addFeatures(t, use.map((c, i) => ({
+      kind: 'Contour', id: `ct-${i}`,
+      line: c.path.map(([x, y]) => [x, y, c.elevationFt]),
+      attributes: { elevationFt: c.elevationFt, weight: c.weight, hidden: c.hidden, depression: c.depression },
+      sourceId: 'pgatlas-contour-2ft', reliabilityLevel: 1, crs: 'EPSG:2248', revision: t.revision,
+    })) as unknown as SiteFeature[])
+    pkg.twin = t
+    console.log(`    contours added to model: ${use.length} (${onLot.length} on the lot)`)
+    console.log(`    vertical datum now: ${t.verticalDatum}`)
+  }
   if (pkg.beforeSeal.length) {
     console.log('    before a professional will seal this:')
     for (const b of pkg.beforeSeal) console.log(`      - ${b}`)
   }
 
-  step(5, 'Rendering the sheet set to PDF')
+  step(6, 'Rendering the sheet set to PDF')
   // SHEETS=C-100,C-400 forces a specific set instead of the composed one, which
   // is how you see a sheet the composer had no content for yet.
   const override = process.env.SHEETS?.split(',').map(s => s.trim()).filter(Boolean) as SheetId[] | undefined
