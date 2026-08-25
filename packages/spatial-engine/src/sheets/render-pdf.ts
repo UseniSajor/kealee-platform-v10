@@ -99,7 +99,7 @@ function titleBlock(
   ctx: SheetContext,
   sheet: SheetSize,
   responsibility?: DividedResponsibilityBlock,
-): void {
+): number {
   const x = sheet.widthPt - sheet.marginPt - sheet.titleBlockWidthPt
   const y = sheet.marginPt
   const w = sheet.titleBlockWidthPt
@@ -159,6 +159,10 @@ function titleBlock(
       label(doc, x + 8, revY + i * 10, `${r.number}  ${r.date}  ${r.description.slice(0, 34)}`, 6)
     })
   }
+
+  // Bottom of the identity content. Everything else in this column stacks
+  // below it — the revisions band is bottom-anchored and is not in the way.
+  return cy
 }
 
 /**
@@ -228,8 +232,13 @@ function drawGeometry(doc: Doc, ctx: SheetContext, vp: Viewport, b: Bounds): voi
     const r = projectRing(g.ring, vp, b, PAD_FT)
     const cx = r.reduce((n, q) => n + q[0], 0) / r.length
     const top = Math.min(...r.map(q => q[1]))
-    doc.font('Helvetica').fontSize(6).fillColor('#666666')
-       .text('BUILDABLE ENVELOPE', cx - 42, top - 9, { lineBreak: false })
+    // The county draws and labels this as BRL — Building Restriction Line —
+    // with its distance. "Buildable envelope" is not the term a PG reviewer
+    // reads on a sheet.
+    const sb = (g.attributes?.setbacks ?? {}) as { frontFt?: number }
+    const brl = sb.frontFt != null ? `${sb.frontFt}' BRL` : 'BRL'
+    doc.font('Helvetica').fontSize(6.5).fillColor('#666666')
+       .text(brl, cx - 30, top - 9, { width: 60, align: 'center', lineBreak: false })
   }
 
   // ── Easements ─────────────────────────────────────────────────────────────
@@ -320,11 +329,184 @@ function bearingLabel(dx: number, dy: number): string {
   return `${ns} ${d}\u00b0${String(m).padStart(2, '0')}'${String(sec).padStart(2, '0')}" ${ew}`
 }
 
+/**
+ * SITE DATA table — the zoning compliance summary a reviewer reads first.
+ *
+ * Required vs provided, side by side, so a plan reviewer can check compliance
+ * without scaling anything. DPIE item B-4 also wants lot, block, parcel and
+ * owner on the cover, which is why the identity rows lead.
+ */
+function siteDataTable(doc: Doc, x: number, y: number, ctx: SheetContext): number {
+  const t = ctx.twin
+  const parcel = t.features.find(f => f.kind === 'Parcel') as
+    | { parcelId?: string | null; areaSqFt?: number | null } | undefined
+  const bld = t.features.find(f => f.kind === 'Building' && (f as { existing?: boolean }).existing === false) as
+    | { attributes?: Record<string, unknown> } | undefined
+  const env = (t as { buildableEnvelope?: Record<string, unknown> }).buildableEnvelope
+  const sb = (env?.setbacks ?? {}) as { frontFt?: number; sideFt?: number; rearFt?: number }
+
+  const lotArea = parcel?.areaSqFt ?? null
+  const fp = bld?.attributes?.areaSqFt ? Number(bld.attributes.areaSqFt) : null
+  const covPct = lotArea && fp ? (fp / lotArea) * 100 : null
+  const covMax = (env?.coveragePct as number | undefined) ?? null
+
+  const rows: [string, string, string][] = [
+    ['ZONE', String(t.zoneCode ?? '—'), ''],
+    ['TAX / PARCEL ID', String(parcel?.parcelId ?? '—'), ''],
+    ['GROSS LOT AREA', lotArea ? `${Math.round(lotArea).toLocaleString()} SF` : '—',
+      lotArea ? `${(lotArea / 43560).toFixed(3)} AC` : ''],
+    ['—SETBACKS—', 'REQUIRED', 'PROVIDED'],
+    ['FRONT YARD', sb.frontFt != null ? `${sb.frontFt}'` : '—', sb.frontFt != null ? `${sb.frontFt}'` : '—'],
+    ['SIDE YARD', sb.sideFt != null ? `${sb.sideFt}'` : '—', sb.sideFt != null ? `${sb.sideFt}'` : '—'],
+    ['REAR YARD', sb.rearFt != null ? `${sb.rearFt}'` : '—', sb.rearFt != null ? `${sb.rearFt}'` : '—'],
+    ['—COVERAGE—', 'MAX', 'PROPOSED'],
+    ['LOT COVERAGE', covMax != null ? `${covMax}%` : '—', covPct != null ? `${covPct.toFixed(1)}%` : '—'],
+    ['BUILDING FOOTPRINT', '—', fp ? `${Math.round(fp).toLocaleString()} SF` : '—'],
+    ['—DATUM—', '', ''],
+    ['HORIZONTAL', String(t.crs ?? '—'), String(t.horizontalDatum ?? '')],
+    ['VERTICAL', String(t.verticalDatum ?? 'NOT ESTABLISHED'), ''],
+  ]
+
+  const w = 256, rowH = 11
+  doc.save().lineWidth(0.7).strokeColor('#000000')
+     .rect(x, y, w, rowH * (rows.length + 1)).stroke().restore()
+  doc.font('Helvetica-Bold').fontSize(7.5).fillColor('#000000')
+     .text('SITE DATA', x + 5, y + 3, { lineBreak: false })
+
+  let cy = y + rowH
+  for (const [label, a, b] of rows) {
+    const header = label.startsWith('—')
+    doc.font(header ? 'Helvetica-Bold' : 'Helvetica').fontSize(6)
+       .fillColor(header ? '#000000' : '#333333')
+       .text(header ? label.replace(/—/g, '') : label, x + 5, cy + 2, { width: 108, lineBreak: false })
+    doc.font(header ? 'Helvetica-Bold' : 'Helvetica').fontSize(6).fillColor('#333333')
+       .text(a, x + 118, cy + 2, { width: 64, lineBreak: false })
+    doc.text(b, x + 186, cy + 2, { width: 60, lineBreak: false })
+    doc.save().lineWidth(0.25).strokeColor('#cccccc')
+       .moveTo(x, cy + rowH).lineTo(x + w, cy + rowH).stroke().restore()
+    cy += rowH
+  }
+  return cy
+}
+
+/** General notes every PG site plan carries. */
+function generalNotes(doc: Doc, x: number, y: number): number {
+  const notes = [
+    'CONTRACTOR SHALL CONTACT MISS UTILITY AT 811 A MINIMUM OF 48 HOURS PRIOR TO ANY EXCAVATION.',
+    'ALL EXISTING AND PROPOSED UTILITIES SHOWN PER PGC CODE SEC. 32-106.',
+    'PROPOSED GRADE SHOWN SOLID; EXISTING GRADE SHOWN DASHED.',
+    'ROUGH EARTHWORK GRADES AND UTILITY ELEVATIONS SHOWN TO TENTHS OF A FOOT.',
+    'BOUNDARY SHOWN IS COMPILED JURISDICTION GIS, NOT A BOUNDARY SURVEY.',
+  ]
+  doc.font('Helvetica-Bold').fontSize(7).fillColor('#000000')
+     .text('GENERAL NOTES', x, y, { lineBreak: false })
+  let cy = y + 11
+  notes.forEach((n, i) => {
+    doc.font('Helvetica').fontSize(5.6).fillColor('#333333')
+       .text(`${i + 1}.  ${n}`, x, cy, { width: 250 })
+    cy = doc.y + 2
+  })
+  return cy
+}
+
+/**
+ * SITE ANALYSIS — the area tabulation an approved PG plan carries.
+ *
+ * Taken from the Calvert Manor sheet: gross tract, area of dwelling, wooded
+ * area, floodplain area, net tract. A reviewer adds these up.
+ */
+function siteAnalysis(doc: Doc, x: number, y: number, ctx: SheetContext): number {
+  const t = ctx.twin
+  const parcel = t.features.find(f => f.kind === 'Parcel') as { areaSqFt?: number | null } | undefined
+  const bld = t.features.find(f => f.kind === 'Building' && (f as { existing?: boolean }).existing === false) as
+    | { attributes?: Record<string, unknown> } | undefined
+  const gross = parcel?.areaSqFt ?? null
+  const dwelling = bld?.attributes?.areaSqFt ? Number(bld.attributes.areaSqFt) : null
+  const dist = (t as { disturbedAreaSqFt?: number }).disturbedAreaSqFt ?? null
+
+  const fmt = (v: number | null) => v == null ? 'NOT ESTABLISHED' : `${Math.round(v).toLocaleString()} SF`
+  const rows: [string, string][] = [
+    ['1.  Gross tract area', fmt(gross)],
+    ['2.  Area of dwelling', fmt(dwelling)],
+    ['3.  Wooded area', 'NOT ESTABLISHED'],
+    ['4.  Floodplain area', 'NOT ESTABLISHED'],
+    ['5.  Net tract area', fmt(gross)],
+    ['6.  TOTAL AREA DISTURBED', dist == null ? 'NOT QUANTIFIED' : fmt(dist)],
+  ]
+  doc.font('Helvetica-Bold').fontSize(7).fillColor('#000000')
+     .text('SITE ANALYSIS', x, y, { lineBreak: false })
+  let cy = y + 11
+  for (const [a, b] of rows) {
+    doc.font('Helvetica').fontSize(5.8).fillColor('#333333')
+       .text(a, x, cy, { width: 150, lineBreak: false })
+    doc.text(b, x + 152, cy, { width: 104, lineBreak: false })
+    cy += 9
+  }
+  return cy
+}
+
+/** SEQUENCE OF CONSTRUCTION, with the duration each step takes. */
+function sequenceOfConstruction(doc: Doc, x: number, y: number): number {
+  const steps: [string, string][] = [
+    ['Pre-construction meeting', '1 DAY'],
+    ['Obtain necessary permits', '2 DAYS'],
+    ['Notify Miss Utility at 811 at least 48 hours prior to any excavation', '1 DAY'],
+    ['Construct stabilized construction entrance and perimeter sediment control', '2 DAYS'],
+    ['Rough grade; construct dwelling, utilities and driveway', '12 MONTHS'],
+    ['Fine grade and stabilize all disturbed areas', '1 DAY'],
+    ['Remove sediment control devices when written permission has been granted by the inspector', '1 DAY'],
+  ]
+  doc.font('Helvetica-Bold').fontSize(7).fillColor('#000000')
+     .text('SEQUENCE OF CONSTRUCTION', x, y, { lineBreak: false })
+  let cy = y + 11
+  steps.forEach(([label, dur], i) => {
+    doc.font('Helvetica').fontSize(5.6).fillColor('#333333')
+       .text(`${i + 1}.  ${label}`, x, cy, { width: 200 })
+    doc.font('Helvetica-Bold').fontSize(5.6).fillColor('#000000')
+       .text(dur, x + 204, cy, { width: 52, lineBreak: false })
+    cy = doc.y + 2
+  })
+  doc.font('Helvetica-Bold').fontSize(5.8).fillColor('#000000')
+     .text('TOTAL ESTIMATED TIME OF CONSTRUCTION:  12 MONTHS', x, cy + 3, { width: 256 })
+  return doc.y + 4
+}
+
+/**
+ * Agency approval blocks — empty boxes the county signs.
+ *
+ * An approved plan reserves these. The engine draws the box and never fills
+ * it: the platform does not sign for an agency.
+ */
+function approvalBlocks(doc: Doc, x: number, y: number): number {
+  const blocks = [
+    ["PRINCE GEORGE'S COUNTY SOIL CONSERVATION DISTRICT APPROVAL",
+     'SEDIMENT CONTROL, GRADING, SOILS & DRAINAGE'],
+    ['DPIE SITE/ROAD PLAN REVIEW DIVISION APPROVAL', ''],
+  ]
+  let cy = y
+  for (const [title, sub] of blocks) {
+    doc.font('Helvetica-Bold').fontSize(5.8).fillColor('#000000')
+       .text(title, x, cy, { width: 256 })
+    cy = doc.y
+    if (sub) {
+      doc.font('Helvetica').fontSize(5.2).fillColor('#666666').text(sub, x, cy, { width: 256 })
+      cy = doc.y
+    }
+    cy += 3
+    box(doc, x, cy, 256, 30, PEN.hair)
+    doc.font('Helvetica').fontSize(5).fillColor('#999999')
+       .text('SIGNATURE', x + 4, cy + 20, { lineBreak: false })
+       .text('DATE', x + 190, cy + 20, { lineBreak: false })
+    cy += 38
+  }
+  return cy
+}
+
 /** Legend — a reviewer must not have to guess what a line means. */
-function legend(doc: Doc, x: number, y: number, ctx: SheetContext): void {
+function legend(doc: Doc, x: number, y: number): number {
   const rows: [string, string, boolean][] = [
     ['#000000', 'PROPERTY BOUNDARY', false],
-    ['#7f8c8d', 'SETBACK / BUILDABLE ENVELOPE', true],
+    ['#7f8c8d', 'BRL — BUILDING RESTRICTION LINE', true],
     ['#c0392b', 'PROPOSED STRUCTURE', false],
     ['#8a6d3b', 'EXISTING CONTOUR (2 FT)', false],
     ['#2980b9', 'EASEMENT', true],
@@ -340,6 +522,7 @@ function legend(doc: Doc, x: number, y: number, ctx: SheetContext): void {
        .text(label, x + 32, cy, { lineBreak: false })
     cy += 10
   }
+  return cy
 }
 
 // ── Sheets ──────────────────────────────────────────────────────────────────
@@ -412,21 +595,6 @@ export function renderSheetSetPdf(input: RenderPdfInput): Promise<RenderedPdf> {
       // County-required notes, printed in full. pdfkit wraps within `width`,
       // so the certificate is never clipped — unlike the source-and-accuracy
       // note above it, which is a summary and may ellipsis.
-      if (ctx.requiredNotes?.length) {
-        let cy = sheetSize.marginPt + 40
-        const noteWidth = drawRight - sheetSize.marginPt - 32
-        for (const note of ctx.requiredNotes) {
-          label(doc, sheetSize.marginPt + 16, cy, note.title.toUpperCase(), 7, { bold: true })
-          cy += 10
-          doc.font('Helvetica').fontSize(6).fillColor('#000000')
-             .text(note.text, sheetSize.marginPt + 16, cy, { width: noteWidth, align: 'left' })
-          cy = doc.y + 2
-          doc.font('Helvetica').fontSize(5.5).fillColor('#666666')
-             .text(note.source.citation, sheetSize.marginPt + 16, cy, { width: noteWidth })
-          cy = doc.y + 8
-        }
-      }
-
       // Source and accuracy note — where every number on the sheet came from.
       if (input.sourceNotes?.length) {
         let ny = sheetSize.heightPt - sheetSize.marginPt - 96
@@ -438,8 +606,35 @@ export function renderSheetSetPdf(input: RenderPdfInput): Promise<RenderedPdf> {
         }
       }
 
-      legend(doc, sheetSize.marginPt + 16, sheetSize.heightPt - sheetSize.marginPt - 168, ctx)
-      titleBlock(doc, ctx, sheetSize, input.responsibility?.[ctx.sheet])
+      // All data lives in the right-hand block column, stacked in reading
+      // order. Nothing but drawing goes left of `drawRight`; nothing but data
+      // goes right of it, so contours and site geometry never run under the
+      // title block.
+      const blockX = drawRight + 10
+      const blockW = 256
+      // The title block owns the full-height right column, so its identity
+      // content is laid down first and everything else stacks BELOW it.
+      // Drawing the data first put it straight over the responsibility rows.
+      const tbBottom = titleBlock(doc, ctx, sheetSize, input.responsibility?.[ctx.sheet])
+      let by = siteDataTable(doc, blockX, tbBottom + 12, ctx) + 12
+      by = siteAnalysis(doc, blockX, by, ctx) + 12
+      by = sequenceOfConstruction(doc, blockX, by) + 10
+      by = generalNotes(doc, blockX, by) + 10
+      by = legend(doc, blockX, by) + 12
+      by = approvalBlocks(doc, blockX, by) + 6
+
+      // County-required notes, printed in full. pdfkit wraps within `width`,
+      // so the certificate is never clipped.
+      for (const note of ctx.requiredNotes ?? []) {
+        label(doc, blockX, by, note.title.toUpperCase(), 7, { bold: true })
+        by += 10
+        doc.font('Helvetica').fontSize(5.6).fillColor('#000000')
+           .text(note.text, blockX, by, { width: blockW, align: 'left' })
+        by = doc.y + 2
+        doc.font('Helvetica').fontSize(5).fillColor('#666666')
+           .text(note.source.citation, blockX, by, { width: blockW })
+        by = doc.y + 8
+      }
       watermark(doc, ctx, sheetSize)
     }
 

@@ -129,7 +129,9 @@ export const ARCH_D: SheetSize = {
   widthPt: 36 * 72,
   heightPt: 24 * 72,
   marginPt: 36,
-  titleBlockWidthPt: 4.5 * 72,
+  // Wide enough for the SITE DATA table, general notes and legend. Nothing but
+  // drawing goes left of this column; nothing but data goes right of it.
+  titleBlockWidthPt: 5.2 * 72,
 }
 
 /** ANSI B, 11 x 17 in — for check prints. */

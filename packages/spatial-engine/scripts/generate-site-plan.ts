@@ -26,7 +26,7 @@ import { buildSheetContext } from '../src/sheets/render-svg'
 import { renderSheetSetPdf } from '../src/sheets/render-pdf'
 import type { SheetId } from '../src/sheets/sheet-template'
 import type { DividedResponsibilityBlock } from '../src/review/content-scope'
-import { requiredNotesForSheet } from '../src/site-plan/required-notes'
+import { requiredNotesForSheet, PG_REQUIRED_PLAN_NOTES } from '../src/site-plan/required-notes'
 
 const step = (n: number, s: string) => console.log(`\n[${n}] ${s}`)
 
@@ -115,6 +115,7 @@ async function main() {
       verticalDatum: contourResult?.verticalDatum ?? null,
       contourSourceAuthority: contourResult?.source.authority,
       streetPoint: atlas?.streetPoint ?? null,
+      parcelId: atlas?.parcel?.propId ?? null,
       programme: houseSqFt > 0
         ? { totalFloorAreaSqFt: houseSqFt, storeys, garage: (process.env.GARAGE as never) ?? 'none',
             hasBasement: process.env.BASEMENT === '1', coveredPorch: process.env.PORCH === '1' }
@@ -171,14 +172,27 @@ async function main() {
       status: 'PRELIMINARY',
       disclosure: pkg.disclosure,
     })
-    // A composed page owes the County every note its covered sheets owe.
-    const notes = pg.covers.flatMap(c => requiredNotesForSheet(c))
+    // A composed page owes the County every note its covered sheets owe. When
+    // the whole plan is one sheet, that sheet owes ALL of them — the grading
+    // certificate does not disappear because the set was consolidated.
+    const notes = pages.length === 1
+      ? PG_REQUIRED_PLAN_NOTES
+      : pg.covers.flatMap(c => requiredNotesForSheet(c))
     const seen = new Set<string>()
     return { ...ctx, requiredNotes: notes.filter(n => !seen.has(n.id) && seen.add(n.id)) }
   })
 
+  // Responsibility is built per COMPOSED page and keyed by that page's first
+  // covered sheet. A page rendered under a different primary id would find
+  // nothing, so every covered sheet maps to the same block.
   const responsibility: Partial<Record<SheetId, DividedResponsibilityBlock>> = {}
   for (const r of pkg.responsibility) responsibility[r.sheet] = r
+  for (const pg of pages) {
+    if (responsibility[pg.primary]) continue
+    const found = pg.covers.map(c => responsibility[c]).find(Boolean)
+      ?? pkg.responsibility[0]
+    if (found) responsibility[pg.primary] = { ...found, sheet: pg.primary }
+  }
 
   const pdf = await renderSheetSetPdf({
     sheets: contexts,

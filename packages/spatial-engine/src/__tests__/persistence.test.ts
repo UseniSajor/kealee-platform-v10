@@ -114,7 +114,7 @@ async function buildCycle(opts: { evidence?: EvidenceItem[]; approvals?: ScopedA
         { code: 'MISSING_EASEMENT', severity: 'warning', message: 'No easements recorded.', remedy: 'Confirm against title.' },
       ],
       blocking: [{ code: 'MISSING_SURVEY_CERTIFICATION', severity: 'blocking', message: 'No certified survey on file.', remedy: 'Obtain a certified survey.' }],
-      issuable: false,
+      pendingSeal: [], deliverable: true as const, issuable: false,
       summary: '',
     },
     { twin: t, ledger, imports: [csv.record], promotions: [promotion], approvals },
@@ -286,7 +286,7 @@ describe('ingestion cycle persistence', () => {
       record: unconfirmed.record, points: unconfirmed.points,
       discrepancies: reconcileSurvey({ surveyPoints: [], twin: twin(), coordinateUnit: 'usSurveyFoot' }),
       reconciliationRunId: 'recon-2', twinRevision: 1, comparisonSources: [],
-      gatedQc: { findings: [], blocking: [], issuable: true, summary: '', clearedByEvidence: [], unclearedEvaluations: [] },
+      gatedQc: { findings: [], blocking: [], pendingSeal: [], deliverable: true as const, issuable: true, summary: '', clearedByEvidence: [], unclearedEvaluations: [] },
       qcRunId: 'qc-2', governingLevel: 1, disclosure: null,
     })
     const audit = store.audit.find(a => a.eventType === 'survey.crs_unconfirmed')
@@ -375,7 +375,7 @@ describe('QC findings record what cleared them', () => {
   it('issuanceRow honours an explicit status without inventing one', () => {
     const row = issuanceRow({
       workflowId: 'wf1',
-      gated: { findings: [], blocking: [], issuable: true, summary: '', clearedByEvidence: [], unclearedEvaluations: [] },
+      gated: { findings: [], blocking: [], pendingSeal: [], deliverable: true as const, issuable: true, summary: '', clearedByEvidence: [], unclearedEvaluations: [] },
       governingLevel: 2, disclosure: null, qcRunId: 'qc-1', sheetCount: 2,
       status: 'PERMIT_SET',
     })
@@ -424,7 +424,7 @@ describe('audit history', () => {
       record: unsealed.record, points: unsealed.points,
       discrepancies, reconciliationRunId: 'recon-3', twinRevision: 1, comparisonSources: [],
       promotion,
-      gatedQc: { findings: [], blocking: [], issuable: true, summary: '', clearedByEvidence: [], unclearedEvaluations: [] },
+      gatedQc: { findings: [], blocking: [], pendingSeal: [], deliverable: true as const, issuable: true, summary: '', clearedByEvidence: [], unclearedEvaluations: [] },
       qcRunId: 'qc-3', governingLevel: 1, disclosure: null,
     })
 
@@ -521,7 +521,7 @@ describe('row mappers', () => {
       {
         findings: [{ code: 'A', severity: 'warning', message: 'm', remedy: 'r' }],
         blocking: [],
-        issuable: true,
+        pendingSeal: [], deliverable: true as const, issuable: true,
         summary: '',
         clearedByEvidence: [{ code: 'B', cleared: true, requirements: [{ description: 'd', satisfied: true, detail: 'x' }], outstanding: [] }],
         unclearedEvaluations: [],

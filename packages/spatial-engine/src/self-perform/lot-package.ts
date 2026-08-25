@@ -24,7 +24,7 @@ import { composeSheets, blocksFromFeatures, type CompositionResult } from '../sh
 import { buildResponsibilityBlock, type DividedResponsibilityBlock } from '../review/content-scope'
 import { getPgDimensionalStandards, parsePgStandardValue } from '../jurisdictions/pg-overlays-and-dimensions'
 import type { SheetId } from '../sheets/sheet-template'
-import { deriveBuildableEnvelope, type BuildableEnvelope } from '../site-plan/buildable-envelope'
+import { deriveBuildableEnvelope, extractLotCoveragePct, type BuildableEnvelope } from '../site-plan/buildable-envelope'
 import { estimateFootprint, type FootprintEstimate, type HouseProgramme } from '../site-plan/footprint-programme'
 import { fetchMdParcelAtPoint } from '../jurisdictions/md-imap'
 
@@ -66,6 +66,8 @@ export interface LotInput {
   programme?: HouseProgramme
   /** A point on the fronting street — identifies the front lot line. */
   streetPoint?: [number, number] | null
+  /** Jurisdiction parcel identifier, printed in the SITE DATA table. */
+  parcelId?: string | null
 }
 
 export interface ZoningEnvelope {
@@ -261,7 +263,7 @@ export function buildLotPackage(lot: LotInput, resolved?: ResolvedBoundary | nul
   const base = { sourceId: 'gis1', reliabilityLevel: 1 as const, crs: 'EPSG:2248', revision: 1 }
   if (ring) {
     twin = addFeatures(twin, [
-      { kind: 'Parcel', id: 'parcel', parcelId: lot.name, ring, areaSqFt, ...base } as never,
+      { kind: 'Parcel', id: 'parcel', parcelId: lot.parcelId ?? lot.name, ring, areaSqFt, ...base } as never,
     ])
   }
 
@@ -307,6 +309,14 @@ export function buildLotPackage(lot: LotInput, resolved?: ResolvedBoundary | nul
         attributes: { areaSqFt: buildable.footprintAreaSqFt, estimated: true }, ...base })
     }
     if (feats.length) twin = addFeatures(twin, feats as never[])
+    // Carried on the twin so the sheet's SITE DATA table can print required
+    // versus provided without re-deriving anything.
+    twin = { ...twin, buildableEnvelope: {
+      setbacks: buildable.setbacks,
+      coveragePct: extractLotCoveragePct(zoningEnvelope.standards),
+      allowedFootprintSqFt: buildable.allowedFootprintSqFt,
+      hasStreetFrontage: buildable.hasStreetFrontage,
+    } } as typeof twin
   }
 
   const permitPath = classifyProject({

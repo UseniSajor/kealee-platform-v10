@@ -863,7 +863,7 @@ describe('fixture 13 — evidence plus approval clears the correct blocks', () =
         { code: 'FOOTPRINT_MISMATCH', severity: 'warning' as const, message: 'x', remedy: 'y' },
       ],
       blocking: [{ code: 'MISSING_SURVEY_CERTIFICATION', severity: 'blocking' as const, message: 'x', remedy: 'y' }],
-      issuable: false,
+      pendingSeal: [], deliverable: true as const, issuable: false,
       summary: '',
     }
     const gated = applyEvidenceGate(qc, {
@@ -881,7 +881,7 @@ describe('fixture 13 — evidence plus approval clears the correct blocks', () =
       {
         findings: [{ code: 'MISSING_SURVEY_CERTIFICATION', severity: 'blocking', message: 'x', remedy: 'Obtain a certified survey.' }],
         blocking: [{ code: 'MISSING_SURVEY_CERTIFICATION', severity: 'blocking', message: 'x', remedy: 'Obtain a certified survey.' }],
-        issuable: false, summary: '',
+        pendingSeal: [], deliverable: true as const, issuable: false, summary: '',
       },
       { twin: baseTwin(), ledger: { items: [] }, imports: [csv.record], promotions: [], approvals: [] },
     )

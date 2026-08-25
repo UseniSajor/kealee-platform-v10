@@ -142,17 +142,24 @@ describe('issuance quality control', () => {
     return runIssuanceQc({ twin, applicability: cls, checklist, reviewMatrix: matrix, sheetFrameFailures: 0 })
   }
 
-  it('blocks issuance without professional review', () => {
+  it('delivers the plan even with no professional review', () => {
+    // Outstanding review is a pending_seal item, never a delivery gate. The
+    // platform drafts a complete plan and a human seals it afterwards — a
+    // reviewer cannot seal a plan that was never drawn.
     const qc = build(fixture(), false)
-    expect(qc.issuable).toBe(false)
-    expect(qc.blocking.map(f => f.code)).toContain('MISSING_PROFESSIONAL_REVIEW')
+    expect(qc.deliverable).toBe(true)
+    expect(qc.pendingSeal.map(f => f.code)).toContain('MISSING_PROFESSIONAL_REVIEW')
+    // And it is not a DRAWING defect, so it must not appear as blocking.
+    expect(qc.blocking.map(f => f.code)).not.toContain('MISSING_PROFESSIONAL_REVIEW')
   })
 
   it('sign-off does NOT manufacture missing survey data', () => {
     // A PE approving the set cannot conjure a certified survey into existence.
+    // The finding stays open — it just no longer withholds the drawing.
     const qc = build(fixture(), true)
-    expect(qc.blocking.map(f => f.code)).toContain('MISSING_SURVEY_CERTIFICATION')
-    expect(qc.blocking.map(f => f.code)).not.toContain('MISSING_PROFESSIONAL_REVIEW')
+    expect(qc.pendingSeal.map(f => f.code)).toContain('MISSING_SURVEY_CERTIFICATION')
+    expect(qc.pendingSeal.map(f => f.code)).not.toContain('MISSING_PROFESSIONAL_REVIEW')
+    expect(qc.deliverable).toBe(true)
   })
 
   it('is issuable once data and review are both present', () => {

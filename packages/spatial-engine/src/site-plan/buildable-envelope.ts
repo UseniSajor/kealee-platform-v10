@@ -248,6 +248,41 @@ function rectangleAt(center: Position, areaSqFt: number, aspect: number, angleRa
 }
 
 /**
+ * Centre point for a footprint set against the front building line.
+ *
+ * A dwelling is built to the front setback — that is what the setback is for —
+ * and the yard it leaves behind is the rear yard. Centring the box in the
+ * envelope pushes the house into the back of the lot and reads as wrong.
+ */
+function frontSetPosition(
+  envelope: Ring, parcel: Ring, yards: EdgeYard[],
+  areaSqFt: number, aspect: number, _angle: number,
+): Position {
+  const c = centroid(envelope)
+  const pts = normaliseRing(parcel)
+  const frontIdx = yards.indexOf('front')
+  if (frontIdx < 0 || areaSqFt <= 0) return c
+
+  const w = Math.sqrt(areaSqFt * aspect)
+  const depth = areaSqFt / w
+
+  const a = pts[frontIdx], b = pts[(frontIdx + 1) % pts.length]
+  const dx = b[0] - a[0], dy = b[1] - a[1]
+  const len = Math.hypot(dx, dy) || 1
+  const nx = -dy / len, ny = dx / len
+
+  const env = normaliseRing(envelope)
+  let minProj = Infinity
+  for (const p of env) {
+    const proj = (p[0] - a[0]) * nx + (p[1] - a[1]) * ny
+    if (proj < minProj) minProj = proj
+  }
+  const cProj = (c[0] - a[0]) * nx + (c[1] - a[1]) * ny
+  const shift = Math.min(0, (minProj + depth / 2) - cProj)  // only toward the front
+  return [c[0] + nx * shift, c[1] + ny * shift] as Position
+}
+
+/**
  * Bearing the house is built to: the direction of the FRONT lot line.
  *
  * The rectangle's primary axis runs along this, so its front face comes out
@@ -409,7 +444,12 @@ export function deriveBuildableEnvelope(input: {
   const envH = Math.max(...rot.map(c => c[1])) - Math.min(...rot.map(c => c[1]))
   const aspect = envH > 0 ? Math.max(0.25, Math.min(4, envW / envH)) : 1
 
-  const footprint = allowed > 0 ? rectangleAt(centroid(ring), allowed, aspect, angle) : null
+  // Place the house against the FRONT building line, not in the middle of the
+  // envelope. A dwelling is built to the front setback — that is what the
+  // setback is for — and the yard it leaves behind is the rear yard. Centring
+  // it pushes the house into the back of the lot and reads as wrong.
+  const centre = frontSetPosition(ring, parcel, yards, allowed, aspect, angle)
+  const footprint = allowed > 0 ? rectangleAt(centre, allowed, aspect, angle) : null
 
   if (allowed <= 0) {
     caveats.push('No buildable area remains after the setbacks. This lot cannot take a principal structure as zoned.')

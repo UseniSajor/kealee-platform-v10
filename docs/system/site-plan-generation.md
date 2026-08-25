@@ -155,3 +155,82 @@ so the professional reviews and signs rather than drafts.
 Nine of the fifteen paragraphs of Sec. 32-130(a) are unimplemented;
 `unenforcedPlanContentStandards()` lists them rather than leaving the gap
 unrecorded.
+
+---
+
+# Drafting conventions, learned from approved plans
+
+Two approved PG plans are in `existing site plans/` and analysed in
+`docs/site-plan-reference/APPROVED-PLAN-ANALYSIS.md`. Read that before changing
+sheet layout. What follows is the short version an agent needs.
+
+## Terminology
+
+The county draws and labels a setback as **BRL — Building Restriction Line** —
+with its distance: `25' BRL`. "Buildable envelope" is an internal term and does
+not belong on a sheet a PG reviewer reads.
+
+## Sheet size depends on the instrument
+
+| Instrument | Size |
+|---|---|
+| Site grading / footprint and setbacks | 30" x 42" — the Sec. 32-130(a)(1) cap |
+| Street construction technical plans | 36" x 24" (ARCH D) |
+| CBCA conservation plan | 42" x 56" — a different instrument, not bound by (a)(1) |
+
+ARCH D is confirmed correct for the engineering set. Do not "fix" the (a)(1)
+cap on the strength of a 42" x 56" conservation plan.
+
+## Layout
+
+Title block is a vertical band down the RIGHT edge with rotated text. Tables go
+in a **bottom band** — soils, curves, key notes, legend, certification. The
+engine currently stacks everything in the right column, which overflows on a
+dense sheet; the bottom band is where the second half belongs.
+
+Nothing but drawing goes left of the block column. Nothing but data goes right
+of it. Contours and site geometry must never run under the title block.
+
+**The title block owns the full-height right column.** Draw it FIRST and stack
+data below its returned bottom. Drawing data first silently erases the
+professional responsibility and seal rows — and a check for "SEAL" will pass
+anyway, because it matches "SEALED" inside the grading certificate. Check for
+"SEAL AND SIGNATURE".
+
+## Footprint placement
+
+A dwelling is built TO the front setback — that is what the setback is for —
+and the yard left behind is the rear yard. Centring the footprint in the
+envelope pushes the house to the back of the lot and reads as wrong.
+
+Its front face must be PARALLEL to the front lot line, so the rectangle's
+primary axis is the FRONT line. Using the side line as the primary axis turns
+the house ninety degrees and presents its gable end to the street.
+
+## Setback geometry
+
+Per-edge, following the LOT OUTLINE. Three wrong ways, all of which shipped at
+some point in this engine:
+
+1. **Centroid-based radial shrink** — not a perpendicular offset. OVER-CLAIMS: a
+   true 25 ft inset of a 50 x 50 lot leaves zero buildable area while the radial
+   method reports about 225 sq ft. Draws a building through the setback line.
+2. **Bounding-box inset** — does not follow an irregular lot, so the envelope
+   does not line up with the property lines.
+3. **Largest setback applied uniformly** — throws the front setback out and
+   over-insets every other side.
+
+The correct method is each edge offset inward by its own yard depth, intersected
+as half-planes (Sutherland-Hodgman).
+
+## Still missing, in priority order
+
+1. **SOILS TABLE** — map unit, name, soil type, K-factor, hydric rating,
+   hydrologic soil group, drainage class. Sec. 32-130(a)(13). Every column is in
+   USDA SSURGO; the Soil Data Access endpoint is confirmed working for MD033 =
+   Prince George's County.
+2. **Street names and per-lot labels** — already in the PGAtlas responses.
+3. **Bottom band layout** — the right column will overflow.
+4. **Adjacent parcel references** — parcel number, owner, liber/folio, zone, use.
+5. **Match lines** — the scale-floor remedy names them; nothing draws them.
+6. **Spot elevations** — Sec. 32-130(a)(9), needs field survey.
