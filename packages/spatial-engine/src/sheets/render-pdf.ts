@@ -271,10 +271,37 @@ function drawGeometry(doc: Doc, ctx: SheetContext, vp: Viewport, b: Bounds): voi
     // The county draws and labels this as BRL — Building Restriction Line —
     // with its distance. "Buildable envelope" is not the term a PG reviewer
     // reads on a sheet.
-    const sb = (g.attributes?.setbacks ?? {}) as { frontFt?: number }
-    const brl = sb.frontFt != null ? `${sb.frontFt}' BRL` : 'BRL'
+    const sb = (g.attributes?.setbacks ?? {}) as
+      { frontFt?: number; sideFt?: number; rearFt?: number }
     doc.font('Helvetica').fontSize(6.5).fillColor('#666666')
-       .text(brl, cx - 30, top - 9, { width: 60, align: 'center', lineBreak: false })
+       .text(sb.frontFt != null ? `${sb.frontFt}' BRL` : 'BRL',
+             cx - 30, top - 9, { width: 60, align: 'center', lineBreak: false })
+
+    // Label every yard on its own run of the restriction line, so a reviewer
+    // reads the setback rather than scaling it.
+    const yards = (t as { buildableEnvelope?: { edgeYards?: string[] } })
+      .buildableEnvelope?.edgeYards
+    const parcelRing = featuresOfKind(t, 'Parcel')[0]
+    if (yards && parcelRing) {
+      const lp = parcelRing.ring.coordinates
+      const seen = new Set<string>()
+      for (let i = 0; i < Math.min(yards.length, lp.length - 1); i++) {
+        const y = yards[i]
+        const ft = y === 'front' ? sb.frontFt : y === 'rear' ? sb.rearFt : sb.sideFt
+        if (ft == null || seen.has(y)) continue
+        seen.add(y)
+        const m1 = P(lp[i] as Position), m2 = P(lp[i + 1] as Position)
+        const mx = (m1[0] + m2[0]) / 2, my = (m1[1] + m2[1]) / 2
+        let ang = Math.atan2(m2[1] - m1[1], m2[0] - m1[0])
+        if (ang > Math.PI / 2 || ang < -Math.PI / 2) ang += Math.PI
+        doc.save()
+        doc.translate(mx, my).rotate((ang * 180) / Math.PI)
+        doc.font('Helvetica').fontSize(5.6).fillColor('#7f8c8d')
+           .text(`${ft}' ${y.toUpperCase()} YARD`, -46, 6,
+                 { width: 92, align: 'center', lineBreak: false })
+        doc.restore()
+      }
+    }
   }
 
   // ── Easements ─────────────────────────────────────────────────────────────
@@ -373,7 +400,10 @@ function drawGeometry(doc: Doc, ctx: SheetContext, vp: Viewport, b: Bounds): voi
         doc.save()
         doc.translate(mid[0], mid[1]).rotate((ang * 180) / Math.PI)
         doc.font('Helvetica-Bold').fontSize(7).fillColor('#555555')
-           .text(`${st.name.toUpperCase()}`, -60, -10, { width: 120, align: 'center', lineBreak: false })
+           .text(`${st.name.toUpperCase()}`, -70, -12, { width: 140, align: 'center', lineBreak: false })
+        doc.font('Helvetica').fontSize(5).fillColor('#777777')
+           .text('R/W — WIDTH PER RECORD PLAT', -70, -3,
+                 { width: 140, align: 'center', lineBreak: false })
         doc.restore()
       }
     }
@@ -708,13 +738,16 @@ export function renderSheetSetPdf(input: RenderPdfInput): Promise<RenderedPdf> {
       // confirms the front lot line against it. Fitting to the parcel alone
       // pushed the centreline outside the drawing area, where the clip removed
       // it entirely.
-      const streetsForBounds =
-        (ctx.twin as { streets?: { paths: Position[][] }[] }).streets ?? []
-      const streetRings: Ring[] = streetsForBounds
-        .flatMap(st => st.paths)
-        .filter(path => path.length >= 2)
-        .map(path => ({ coordinates: path }))
-      const b = boundsOf([...rings, ...streetRings])
+      // Fit to the LOT plus a working margin, NOT to the street extent. A
+      // centreline runs for blocks: including it whole shrank a 9,600 sq ft lot
+      // to a smudge. The street still appears because the margin reaches it and
+      // the geometry clip trims the rest.
+      const lotB = boundsOf(rings)
+      const MARGIN_FT = 70
+      const b: Bounds = {
+        minX: lotB.minX - MARGIN_FT, maxX: lotB.maxX + MARGIN_FT,
+        minY: lotB.minY - MARGIN_FT, maxY: lotB.maxY + MARGIN_FT,
+      }
       const vp = fitViewport(b, sheetSize, PAD_FT)
 
       // Sheet border and drawing area

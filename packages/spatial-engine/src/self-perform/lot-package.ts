@@ -370,6 +370,7 @@ export function buildLotPackage(lot: LotInput, resolved?: ResolvedBoundary | nul
       coveragePct: extractLotCoveragePct(zoningEnvelope.standards),
       allowedFootprintSqFt: buildable.allowedFootprintSqFt,
       hasStreetFrontage: buildable.hasStreetFrontage,
+      edgeYards: buildable.edgeYards,
     } } as typeof twin
   }
 
