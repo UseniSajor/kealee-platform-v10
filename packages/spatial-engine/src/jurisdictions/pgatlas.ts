@@ -207,12 +207,59 @@ export async function nearestStreetPoint(
   return best
 }
 
+export interface PgAtlasStreet {
+  name: string | null
+  /** Centreline polylines in EPSG:2248. */
+  paths: Position[][]
+}
+
+/**
+ * Street centrelines near the site, with names.
+ *
+ * A site plan shows the fronting street and letters its name in the
+ * right-of-way — the approved Yocum plan does exactly that. It is also how a
+ * reviewer confirms the front lot line, which is what assigns the setbacks.
+ */
+export async function fetchPgAtlasStreets(
+  easting2248: number, northing2248: number,
+  opts: { searchFt?: number; fetchImpl?: typeof fetch } = {},
+): Promise<PgAtlasStreet[]> {
+  const r = opts.searchFt ?? 300
+  const doFetch = opts.fetchImpl ?? fetch
+  const p = new URLSearchParams({
+    where: '1=1',
+    geometry: [easting2248 - r, northing2248 - r, easting2248 + r, northing2248 + r].join(','),
+    geometryType: 'esriGeometryEnvelope',
+    inSR: '2248', outSR: '2248',
+    spatialRel: 'esriSpatialRelIntersects',
+    outFields: '*', returnGeometry: 'true', f: 'json',
+  })
+  const res = await doFetch(`${PGATLAS_ENDPOINTS.streetCenterline}/query?${p}`,
+    { headers: { accept: 'application/json' } })
+  if (!res.ok) return []
+  const payload: any = await res.json().catch(() => null)
+  if (!payload || payload.error) return []
+
+  return (payload.features ?? []).map((f: any) => {
+    const attrs = f.attributes ?? {}
+    const nameKey = Object.keys(attrs).find(k =>
+      /NAME|STREET|LABEL/i.test(k) && typeof attrs[k] === 'string' && attrs[k].trim())
+    return {
+      name: nameKey ? String(attrs[nameKey]).trim() : null,
+      paths: (f.geometry?.paths ?? []).map((path: number[][]) =>
+        path.map(pt => [pt[0], pt[1]] as Position)),
+    }
+  }).filter((s: PgAtlasStreet) => s.paths.length > 0)
+}
+
 export interface PgAtlasSite {
   address: PgAtlasAddress
   parcel: PgAtlasParcel | null
   zoning: PgAtlasZoning | null
   /** Nearest street centreline point — identifies the front lot line. */
   streetPoint: Position | null
+  /** Street centrelines to draw and letter in the right-of-way. */
+  streets: PgAtlasStreet[]
 }
 
 /** Address to lot, zone and position in one call. */
@@ -222,10 +269,11 @@ export async function resolvePgAtlasSite(
 ): Promise<PgAtlasSite | null> {
   const geo = await geocodePgAtlas(address, opts)
   if (!geo) return null
-  const [parcel, zoning, streetPoint] = await Promise.all([
+  const [parcel, zoning, streetPoint, streets] = await Promise.all([
     fetchPgAtlasParcel(geo.easting2248, geo.northing2248, opts),
     fetchPgAtlasZoning(geo.easting2248, geo.northing2248, opts),
     nearestStreetPoint(geo.easting2248, geo.northing2248, opts),
+    fetchPgAtlasStreets(geo.easting2248, geo.northing2248, opts),
   ])
-  return { address: geo, parcel, zoning, streetPoint }
+  return { address: geo, parcel, zoning, streetPoint, streets }
 }

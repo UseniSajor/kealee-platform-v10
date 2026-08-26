@@ -66,6 +66,12 @@ export interface LotInput {
   programme?: HouseProgramme
   /** A point on the fronting street — identifies the front lot line. */
   streetPoint?: [number, number] | null
+  /** Street centrelines to draw and letter in the right-of-way. */
+  streets?: { name: string | null; paths: [number, number][][] }[]
+  /** USDA soil map units, Sec. 32-130(a)(13). */
+  soils?: { mapUnitSymbol: string; mapUnitName: string; kFactor: string | null
+            hydricRating: string | null; hydrologicGroup: string | null
+            drainageClass: string | null }[]
   /** Jurisdiction parcel identifier, printed in the SITE DATA table. */
   parcelId?: string | null
 }
@@ -268,6 +274,24 @@ export function buildLotPackage(lot: LotInput, resolved?: ResolvedBoundary | nul
   }
 
   // ── Terrain ───────────────────────────────────────────────────────────────
+  if (lot.contours?.length && ring) {
+    // Clip terrain to the lot plus the twenty-foot adjacent peripheral strip
+    // that Sec. 32-130(a)(5) requires. Contours are fetched over a wider radius
+    // so the surface is complete at the boundary; drawing all of it puts the
+    // neighbourhood on the sheet and buries the lot.
+    const cx = ring.coordinates.map(c => c[0]), cy = ring.coordinates.map(c => c[1])
+    const PERIPHERAL_FT = 20
+    const bx0 = Math.min(...cx) - PERIPHERAL_FT, bx1 = Math.max(...cx) + PERIPHERAL_FT
+    const by0 = Math.min(...cy) - PERIPHERAL_FT, by1 = Math.max(...cy) + PERIPHERAL_FT
+    const near = (p: [number, number]) => p[0] >= bx0 && p[0] <= bx1 && p[1] >= by0 && p[1] <= by1
+    lot = {
+      ...lot,
+      contours: lot.contours
+        .map(c => ({ ...c, path: c.path.filter(near) }))
+        .filter(c => c.path.length >= 2),
+    }
+  }
+
   if (lot.contours?.length) {
     twin = addSource(twin, gisSourceRecord({
       sourceId: 'contours',
@@ -311,6 +335,8 @@ export function buildLotPackage(lot: LotInput, resolved?: ResolvedBoundary | nul
     if (feats.length) twin = addFeatures(twin, feats as never[])
     // Carried on the twin so the sheet's SITE DATA table can print required
     // versus provided without re-deriving anything.
+    if (lot.soils?.length) twin = { ...twin, soils: lot.soils } as typeof twin
+    if (lot.streets?.length) twin = { ...twin, streets: lot.streets } as typeof twin
     twin = { ...twin, buildableEnvelope: {
       setbacks: buildable.setbacks,
       coveragePct: extractLotCoveragePct(zoningEnvelope.standards),

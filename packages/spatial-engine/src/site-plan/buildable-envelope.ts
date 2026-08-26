@@ -482,7 +482,23 @@ export function deriveBuildableEnvelope(input: {
 
   // Align the footprint with the FRONT lot line and proportion it to the
   // envelope measured in that same rotated frame.
-  const angle = frontLotLineAngle(parcel, yards)
+  // Computed inline from the SAME normalised ring `yards` was built on. The
+  // separate helper re-derived the ring and could disagree about which index
+  // is the front, which silently dropped into its longest-edge fallback and
+  // turned the house ninety degrees — its gable to the street.
+  const angle = (() => {
+    const pts = normaliseRing(parcel)
+    let best = -1, bestLen = 0
+    for (let i = 0; i < pts.length; i++) {
+      if (yards[i] !== 'front') continue
+      const a = pts[i], b = pts[(i + 1) % pts.length]
+      const len = Math.hypot(b[0] - a[0], b[1] - a[1])
+      if (len > bestLen) { bestLen = len; best = i }
+    }
+    if (best < 0) return frontLotLineAngle(parcel, yards)
+    const a = pts[best], b = pts[(best + 1) % pts.length]
+    return Math.atan2(b[1] - a[1], b[0] - a[0])
+  })()
   const cos = Math.cos(-angle), sin = Math.sin(-angle)
   const rot = ring.coordinates.map(c => [c[0] * cos - c[1] * sin, c[0] * sin + c[1] * cos])
   const envW = Math.max(...rot.map(c => c[0])) - Math.min(...rot.map(c => c[0]))

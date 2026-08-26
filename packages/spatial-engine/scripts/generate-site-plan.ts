@@ -17,6 +17,7 @@ import { writeFileSync } from 'node:fs'
 import { resolveMarylandParcel, buildLotPackage } from '../src/self-perform/lot-package'
 import { fetchPgContours, contourRelief, contoursOnLot, PG_CONTOUR_VERTICAL_DATUM } from '../src/jurisdictions/pg-elevation'
 import { deriveBuildableEnvelope } from '../src/site-plan/buildable-envelope'
+import { fetchSoilMapUnits } from '../src/jurisdictions/usda-soils'
 import { resolvePgAtlasSite } from '../src/jurisdictions/pgatlas'
 import { addFeatures, addSource } from '../src/site-plan/site-twin'
 import type { SiteFeature } from '../src/site-plan/site-twin'
@@ -115,6 +116,8 @@ async function main() {
       verticalDatum: contourResult?.verticalDatum ?? null,
       contourSourceAuthority: contourResult?.source.authority,
       streetPoint: atlas?.streetPoint ?? null,
+      soils: (await fetchSoilMapUnits('prince_georges_md').catch(() => null))?.units,
+      streets: atlas?.streets as never,
       parcelId: atlas?.parcel?.propId ?? null,
       programme: houseSqFt > 0
         ? { totalFloorAreaSqFt: houseSqFt, storeys, garage: (process.env.GARAGE as never) ?? 'none',
@@ -197,7 +200,15 @@ async function main() {
   const pdf = await renderSheetSetPdf({
     sheets: contexts,
     responsibility,
-    sourceNotes: pkg.twin.sources.map(s => `${s.dataset} — ${s.authority} — level ${s.reliabilityLevel}`),
+    // Name the exact layer and interval. A reviewer must be able to see WHICH
+    // dataset the terrain came from without asking.
+    sourceNotes: [
+      ...pkg.twin.sources.map(s => `${s.dataset} — ${s.authority} — level ${s.reliabilityLevel}`),
+      ...(contourResult ? [
+        `Contours: PGAtlas ${contourResult.source.layer}, ${contourResult.intervalFt} ft interval, ` +
+        `${contourResult.verticalDatum}`,
+      ] : []),
+    ],
   })
 
   writeFileSync(outPath, pdf.buffer)

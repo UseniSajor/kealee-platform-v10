@@ -205,16 +205,37 @@ function drawGeometry(doc: Doc, ctx: SheetContext, vp: Viewport, b: Bounds): voi
   const P = (pt: Position) => project(pt, vp, b, PAD_FT)
 
   // ── Existing topography, drawn first so everything sits over it ───────────
+  //
+  // Clipped to the parcel plus the twenty-foot adjacent peripheral strip that
+  // Sec. 32-130(a)(5) requires. Terrain is fetched over a wider radius so the
+  // surface is complete at the boundary; drawing all of it puts the
+  // neighbourhood on the sheet and buries the lot.
+  const parcelForClip = featuresOfKind(t, 'Parcel')[0]
+  const strip = (() => {
+    if (!parcelForClip) return null
+    const xs = parcelForClip.ring.coordinates.map(q => q[0])
+    const ys = parcelForClip.ring.coordinates.map(q => q[1])
+    const PERIPHERAL_FT = 20
+    return {
+      x0: Math.min(...xs) - PERIPHERAL_FT, x1: Math.max(...xs) + PERIPHERAL_FT,
+      y0: Math.min(...ys) - PERIPHERAL_FT, y1: Math.max(...ys) + PERIPHERAL_FT,
+    }
+  })()
+  const onLot = (p: Position) =>
+    !strip || (p[0] >= strip.x0 && p[0] <= strip.x1 && p[1] >= strip.y0 && p[1] <= strip.y1)
+
   for (const c of genericOfKind(t, 'Contour')) {
     if (!c.line?.length) continue
+    const kept = (c.line as Position[]).filter(onLot)
+    if (kept.length < 2) continue
     const a = c.attributes ?? {}
     const index = a.weight === 'index'
-    polyline(doc, c.line.map((p: Position) => P(p)),
+    polyline(doc, kept.map((p: Position) => P(p)),
       { ...PEN.contour, width: index ? 0.9 : 0.4 })
     // Elevation label on the line, as a drafter breaks a contour to letter it.
     const el = a.elevationFt
-    if (el != null && c.line.length > 2) {
-      const mid = P(c.line[Math.floor(c.line.length / 2)])
+    if (el != null && kept.length > 2) {
+      const mid = P(kept[Math.floor(kept.length / 2)])
       doc.save()
       doc.font('Helvetica').fontSize(index ? 6.5 : 5.5).fillColor('#8a6d3b')
          .text(String(el), mid[0] - 7, mid[1] - 3, { lineBreak: false })
@@ -289,10 +310,17 @@ function drawGeometry(doc: Doc, ctx: SheetContext, vp: Viewport, b: Bounds): voi
     if (bl.existing) continue
 
     // Cross-hatch the proposed structure so it reads at a glance.
+    //
+    // Clipped to the POLYGON, not its bounding box. The footprint is rotated to
+    // the front lot line, so a bbox clip hatches ground the building does not
+    // occupy — which made the dwelling read as spilling past the BRL when its
+    // outline was correctly inside it.
     const minX = Math.min(...r.map(q => q[0])), maxX = Math.max(...r.map(q => q[0]))
     const minY = Math.min(...r.map(q => q[1])), maxY = Math.max(...r.map(q => q[1]))
     doc.save()
-    doc.rect(minX, minY, maxX - minX, maxY - minY).clip()
+    doc.moveTo(r[0][0], r[0][1])
+    for (const q of r.slice(1)) doc.lineTo(q[0], q[1])
+    doc.closePath().clip()
     doc.lineWidth(0.25).strokeColor('#c0392b').opacity(0.5)
     for (let x = minX - (maxY - minY); x < maxX; x += 7) {
       doc.moveTo(x, maxY).lineTo(x + (maxY - minY), minY).stroke()
@@ -309,6 +337,30 @@ function drawGeometry(doc: Doc, ctx: SheetContext, vp: Viewport, b: Bounds): voi
       doc.font('Helvetica').fontSize(6).fillColor('#c0392b')
          .text(`${Math.round(Number(a.areaSqFt)).toLocaleString()} SQ FT`,
                cx - 45, cy + 6, { width: 90, align: 'center', lineBreak: false })
+    }
+  }
+
+  // ── Street centrelines, lettered in the right-of-way ─────────────────────
+  //
+  // A site plan shows the fronting street and names it. It is also how a
+  // reviewer confirms which lot line is the front, and therefore which setback
+  // applies where.
+  const streets = (t as { streets?: { name: string | null; paths: Position[][] }[] }).streets ?? []
+  for (const st of streets) {
+    for (const path of st.paths) {
+      if (path.length < 2) continue
+      polyline(doc, path.map(p => P(p)), { width: 1.2, color: '#555555', dash: [6, 3] })
+      if (st.name && path.length >= 2) {
+        const mid = P(path[Math.floor(path.length / 2)])
+        const nxt = P(path[Math.min(path.length - 1, Math.floor(path.length / 2) + 1)])
+        let ang = Math.atan2(nxt[1] - mid[1], nxt[0] - mid[0])
+        if (ang > Math.PI / 2 || ang < -Math.PI / 2) ang += Math.PI
+        doc.save()
+        doc.translate(mid[0], mid[1]).rotate((ang * 180) / Math.PI)
+        doc.font('Helvetica-Bold').fontSize(7).fillColor('#555555')
+           .text(`${st.name.toUpperCase()}`, -60, -10, { width: 120, align: 'center', lineBreak: false })
+        doc.restore()
+      }
     }
   }
 
@@ -502,13 +554,70 @@ function approvalBlocks(doc: Doc, x: number, y: number): number {
   return cy
 }
 
+/**
+ * SOILS TABLE — Sec. 32-130(a)(13).
+ *
+ * The approved Yocum Property plan carries exactly these columns. Drawn along
+ * the BOTTOM of the drawing area, where an engineering set puts its tables,
+ * rather than in the right-hand block column which is already full.
+ */
+function soilsTable(doc: Doc, x: number, y: number, ctx: SheetContext, maxW: number): number {
+  const soils = (ctx.twin as { soils?: {
+    mapUnitSymbol: string; mapUnitName: string; kFactor: string | null
+    hydricRating: string | null; hydrologicGroup: string | null; drainageClass: string | null
+  }[] }).soils
+  if (!soils?.length) return y
+
+  const cols: [string, number][] = [
+    ['MAP UNIT', 52], ['MAP UNIT NAME', 210], ['K-FACTOR', 48],
+    ['HYDRIC', 44], ['HYD. GROUP', 56], ['DRAINAGE CLASS', 130],
+  ]
+  const rowH = 10
+  const totalW = Math.min(maxW, cols.reduce((n, c) => n + c[1], 0))
+
+  doc.font('Helvetica-Bold').fontSize(7).fillColor('#000000')
+     .text('SOILS TABLE', x, y, { lineBreak: false })
+  doc.font('Helvetica').fontSize(5).fillColor('#666666')
+     .text('USDA NRCS SSURGO — required by PGC Code Sec. 32-130(a)(13)', x + 62, y + 1, { lineBreak: false })
+
+  let cy = y + 11
+  doc.save().lineWidth(0.7).strokeColor('#000000')
+     .rect(x, cy, totalW, rowH * (soils.length + 1)).stroke().restore()
+
+  let cx = x
+  for (const [label, w] of cols) {
+    doc.font('Helvetica-Bold').fontSize(5.4).fillColor('#000000')
+       .text(label, cx + 3, cy + 3, { width: w - 5, lineBreak: false })
+    cx += w
+  }
+  doc.save().lineWidth(0.5).strokeColor('#000000')
+     .moveTo(x, cy + rowH).lineTo(x + totalW, cy + rowH).stroke().restore()
+  cy += rowH
+
+  for (const u of soils) {
+    const vals = [u.mapUnitSymbol, u.mapUnitName, u.kFactor ?? '—',
+                  u.hydricRating ?? '—', u.hydrologicGroup ?? '—', u.drainageClass ?? '—']
+    cx = x
+    vals.forEach((v, i) => {
+      doc.font('Helvetica').fontSize(5.2).fillColor('#333333')
+         .text(String(v), cx + 3, cy + 3, { width: cols[i][1] - 5, lineBreak: false, ellipsis: true })
+      cx += cols[i][1]
+    })
+    doc.save().lineWidth(0.2).strokeColor('#cccccc')
+       .moveTo(x, cy + rowH).lineTo(x + totalW, cy + rowH).stroke().restore()
+    cy += rowH
+  }
+  return cy
+}
+
 /** Legend — a reviewer must not have to guess what a line means. */
 function legend(doc: Doc, x: number, y: number): number {
   const rows: [string, string, boolean][] = [
     ['#000000', 'PROPERTY BOUNDARY', false],
     ['#7f8c8d', 'BRL — BUILDING RESTRICTION LINE', true],
     ['#c0392b', 'PROPOSED STRUCTURE', false],
-    ['#8a6d3b', 'EXISTING CONTOUR (2 FT)', false],
+    ['#8a6d3b', 'EXISTING CONTOUR — PGATLAS 2 FT (2023), NAVD88', false],
+    ['#555555', 'STREET CENTRELINE', true],
     ['#2980b9', 'EASEMENT', true],
   ]
   doc.font('Helvetica-Bold').fontSize(7).fillColor('#000000').text('LEGEND', x, y, { lineBreak: false })
@@ -586,7 +695,18 @@ export function renderSheetSetPdf(input: RenderPdfInput): Promise<RenderedPdf> {
       box(doc, sheetSize.marginPt / 2, sheetSize.marginPt / 2,
           sheetSize.widthPt - sheetSize.marginPt, sheetSize.heightPt - sheetSize.marginPt, PEN.frame)
 
+      // Geometry is clipped to the drawing area. Without this, a contour that
+      // projects beyond the drawing rectangle runs straight under the title
+      // block and the data column — nothing but drawing may sit left of
+      // `drawRight`, and nothing but drawing may cross it.
+      const clipX = sheetSize.marginPt
+      const clipY = sheetSize.marginPt
+      const clipW = sheetSize.widthPt - sheetSize.marginPt * 2 - sheetSize.titleBlockWidthPt
+      const clipH = sheetSize.heightPt - sheetSize.marginPt * 2
+      doc.save()
+      doc.rect(clipX, clipY, clipW, clipH).clip()
       drawGeometry(doc, ctx, vp, b)
+      doc.restore()
 
       const drawRight = sheetSize.widthPt - sheetSize.marginPt - sheetSize.titleBlockWidthPt
       northArrow(doc, drawRight - 40, sheetSize.marginPt + 24)
@@ -616,6 +736,11 @@ export function renderSheetSetPdf(input: RenderPdfInput): Promise<RenderedPdf> {
       // content is laid down first and everything else stacks BELOW it.
       // Drawing the data first put it straight over the responsibility rows.
       const tbBottom = titleBlock(doc, ctx, sheetSize, input.responsibility?.[ctx.sheet])
+      // Tables along the bottom of the DRAWING area, where an engineering set
+      // puts them — the right-hand column is already full.
+      soilsTable(doc, sheetSize.marginPt + 16,
+        sheetSize.heightPt - sheetSize.marginPt - 265, ctx, drawRight - sheetSize.marginPt - 40)
+
       let by = siteDataTable(doc, blockX, tbBottom + 12, ctx) + 12
       by = siteAnalysis(doc, blockX, by, ctx) + 12
       by = sequenceOfConstruction(doc, blockX, by) + 10
