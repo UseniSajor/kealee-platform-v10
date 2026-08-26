@@ -33,6 +33,8 @@ export interface FootprintConstraint {
 }
 
 export interface BuildableEnvelope {
+  /** Lot lines the footprint is closer to than its setback allows. Empty is correct. */
+  encroachments: { yard: EdgeYard; requiredFt: number; actualFt: number }[]
   /**
    * Whether a fronting street was resolved. False means the lot has no
    * established frontage, which is a Sec. 24-128 condition, not a drafting
@@ -196,6 +198,76 @@ export type EdgeYard = 'front' | 'side' | 'rear'
  * reading and is reported so a reviewer knows the envelope is understated
  * rather than silently wrong.
  */
+/** Perpendicular distance from a point to a segment. */
+function distToSegment(p: Position, a: Position, b: Position): number {
+  const dx = b[0] - a[0], dy = b[1] - a[1]
+  const len2 = dx * dx + dy * dy
+  if (len2 === 0) return Math.hypot(p[0] - a[0], p[1] - a[1])
+  const t = Math.max(0, Math.min(1, ((p[0] - a[0]) * dx + (p[1] - a[1]) * dy) / len2))
+  return Math.hypot(p[0] - (a[0] + dx * t), p[1] - (a[1] + dy * t))
+}
+
+/**
+ * Classifies lot edges against the street CENTRELINE, not a single point.
+ *
+ * Sec. 24-128: a lot must front a street. Which edge fronts it decides where
+ * the 25 ft front setback goes and where the 8 ft side setbacks go, so getting
+ * it wrong misplaces the building.
+ *
+ * A single nearest point is not enough. On an irregular lot where the street
+ * runs past a corner, the point-to-midpoint test can pick a side edge — the
+ * front setback then lands on the wrong line and the dwelling reads as sitting
+ * at the rear. Measuring each edge against the whole centreline, and preferring
+ * the edge that is both CLOSE and PARALLEL to it, is what a drafter does by eye.
+ */
+export function classifyEdgesFromStreet(
+  ring: Ring, streetPaths: Position[][],
+): EdgeYard[] {
+  const pts = normaliseRing(ring)
+  const n = pts.length
+  const segs: [Position, Position][] = []
+  for (const path of streetPaths) {
+    for (let i = 0; i < path.length - 1; i++) segs.push([path[i], path[i + 1]])
+  }
+  if (segs.length === 0) return new Array(n).fill('front')
+
+  const score = (i: number) => {
+    const a = pts[i], b = pts[(i + 1) % n]
+    const mid: Position = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2]
+    let best = Infinity, bestSeg: [Position, Position] | null = null
+    for (const sg of segs) {
+      const d = distToSegment(mid, sg[0], sg[1])
+      if (d < best) { best = d; bestSeg = sg }
+    }
+    // Parallelism: 1 when the edge runs along the street, 0 when perpendicular.
+    let para = 0
+    if (bestSeg) {
+      const e = Math.atan2(b[1] - a[1], b[0] - a[0])
+      const t = Math.atan2(bestSeg[1][1] - bestSeg[0][1], bestSeg[1][0] - bestSeg[0][0])
+      para = Math.abs(Math.cos(e - t))
+    }
+    // Distance dominates; parallelism breaks ties between comparable edges.
+    return best * (1.6 - 0.6 * para)
+  }
+
+  let front = 0
+  for (let i = 1; i < n; i++) if (score(i) < score(front)) front = i
+
+  // Rear is the edge furthest from the street.
+  const rawDist = (i: number) => {
+    const a = pts[i], b = pts[(i + 1) % n]
+    const mid: Position = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2]
+    return Math.min(...segs.map(sg => distToSegment(mid, sg[0], sg[1])))
+  }
+  let rear = 0
+  for (let i = 1; i < n; i++) if (rawDist(i) > rawDist(rear)) rear = i
+
+  const yards: EdgeYard[] = new Array(n).fill('side')
+  yards[front] = 'front'
+  if (rear !== front) yards[rear] = 'rear'
+  return yards
+}
+
 export function classifyEdges(ring: Ring, streetPoint?: Position | null): EdgeYard[] {
   const pts = normaliseRing(ring)
   const n = pts.length
@@ -392,6 +464,12 @@ export function deriveBuildableEnvelope(input: {
    * oriented. Resolve it from the jurisdiction's street centreline layer.
    */
   streetPoint: Position | null
+  /**
+   * Street centrelines. PREFERRED over `streetPoint` — a lot must front a
+   * street (Sec. 24-128), and which edge fronts it is measured against the
+   * centreline, not a single nearby point.
+   */
+  streetPaths?: Position[][] | null
 }): BuildableEnvelope {
   const { parcel, standards, maxFootprintSqFt = 1500 } = input
   const setbacks = extractSetbacks(standards, input.useColumn, input.citation)
@@ -401,7 +479,7 @@ export function deriveBuildableEnvelope(input: {
 
   if (!parcel) {
     return {
-      hasStreetFrontage: Boolean(input.streetPoint), edgeYards: [],
+      encroachments: [], hasStreetFrontage: Boolean(input.streetPoint), edgeYards: [],
       ring: null, envelopeAreaSqFt: null, setbacks, constraints,
       allowedFootprintSqFt: null, footprint: null, footprintAreaSqFt: null,
       caveats: ['No parcel boundary, so no buildable envelope can be derived.'],
@@ -409,7 +487,9 @@ export function deriveBuildableEnvelope(input: {
   }
 
   const lotAreaSqFt = input.netLotAreaSqFt ?? ringArea(parcel)
-  const yards = classifyEdges(parcel, input.streetPoint ?? null)
+  const yards = input.streetPaths?.length
+    ? classifyEdgesFromStreet(parcel, input.streetPaths)
+    : classifyEdges(parcel, input.streetPoint ?? null)
   const perEdge = (i: number): number => {
     const y = yards[i] ?? 'front'
     if (y === 'front') return setbacks.frontFt ?? setbacks.maxFt
@@ -421,7 +501,7 @@ export function deriveBuildableEnvelope(input: {
 
   if (!ring) {
     return {
-      hasStreetFrontage: Boolean(input.streetPoint), edgeYards: yards,
+      encroachments: [], hasStreetFrontage: Boolean(input.streetPoint), edgeYards: yards,
       ring: null, envelopeAreaSqFt: 0, setbacks,
       constraints: [{
         name: 'Setback envelope', limitSqFt: 0, binding: true,
@@ -522,6 +602,40 @@ export function deriveBuildableEnvelope(input: {
     caveats.push('No buildable area remains after the setbacks. This lot cannot take a principal structure as zoned.')
   }
 
+  // Verify the footprint against the LOT LINES themselves.
+  //
+  // Containment inside the envelope polygon is not sufficient. Half-plane
+  // clipping on an acute corner can leave an envelope vertex closer to a lot
+  // line than that line's offset, so a footprint can sit inside the envelope
+  // and still encroach — measured at 21.7 ft against a 25 ft front setback on
+  // this lot. The setback is a distance to the PROPERTY LINE; check that.
+  const encroachments: { yard: EdgeYard; requiredFt: number; actualFt: number }[] = []
+  if (footprint) {
+    const lotPts = normaliseRing(parcel)
+    const fpPts = normaliseRing(footprint)
+    for (let i = 0; i < lotPts.length; i++) {
+      const y = yards[i] ?? 'front'
+      const required = perEdge(i)
+      const a = lotPts[i], b2 = lotPts[(i + 1) % lotPts.length]
+      let nearest = Infinity
+      for (const c of fpPts) {
+        const dx = b2[0] - a[0], dy = b2[1] - a[1]
+        const len2 = dx * dx + dy * dy
+        const t = len2 ? Math.max(0, Math.min(1, ((c[0] - a[0]) * dx + (c[1] - a[1]) * dy) / len2)) : 0
+        nearest = Math.min(nearest, Math.hypot(c[0] - (a[0] + dx * t), c[1] - (a[1] + dy * t)))
+      }
+      if (nearest + 0.05 < required) {
+        encroachments.push({ yard: y, requiredFt: required, actualFt: Number(nearest.toFixed(2)) })
+      }
+    }
+  }
+  for (const e of encroachments) {
+    caveats.push(
+      `SETBACK ENCROACHMENT: the footprint sits ${e.actualFt} ft from a ${e.yard} lot line where ` +
+      `${e.requiredFt} ft is required. The drawing must not be issued in this state — a reviewer ` +
+      'rejects it on sight. Reduce or reshape the footprint.')
+  }
+
   const drawnAreaSqFt = footprint ? ringArea(footprint) : 0
   if (footprint && allowed - drawnAreaSqFt > 1) {
     caveats.push(
@@ -538,7 +652,8 @@ export function deriveBuildableEnvelope(input: {
   }
 
   return {
-    hasStreetFrontage: Boolean(input.streetPoint),
+    encroachments,
+    hasStreetFrontage: Boolean(input.streetPaths?.length || input.streetPoint),
     edgeYards: yards,
     ring,
     envelopeAreaSqFt,

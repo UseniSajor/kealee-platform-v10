@@ -173,16 +173,21 @@ function titleBlock(
  * and the placement is across the middle of the sheet rather than tucked in a
  * corner.
  */
-function watermark(doc: Doc, ctx: SheetContext, sheet: SheetSize): void {
-  if (!ctx.disclosure) return
-  const cx = (sheet.widthPt - sheet.titleBlockWidthPt) / 2
-  const cy = sheet.heightPt / 2
-  doc.save()
-  doc.rotate(-22, { origin: [cx, cy] })
-  doc.font('Helvetica-Bold').fontSize(26).fillColor('#d92b2b').opacity(0.16)
-     .text(ctx.disclosure, cx - 380, cy - 16, { width: 760, align: 'center' })
-  doc.opacity(1).restore()
+/**
+ * Status labelling is a HUMAN decision.
+ *
+ * The platform drafts; it does not decide what status a sheet carries. Stamping
+ * PRELIMINARY or NOT FOR PERMIT OR CONSTRUCTION pre-empts the professional who
+ * reviews and seals the drawing, and it is their call — and their liability —
+ * what the sheet says about its own status. The reliability of every source is
+ * still stated in the SOURCE AND ACCURACY note, which is fact rather than
+ * status.
+ */
+function watermark(_doc: Doc, _ctx: SheetContext, _sheet: SheetSize): void {
+  // Intentionally empty. Kept as a seam so a caller can reinstate a stamp
+  // deliberately rather than by editing the render path.
 }
+
 
 // ── Geometry ────────────────────────────────────────────────────────────────
 
@@ -226,7 +231,17 @@ function drawGeometry(doc: Doc, ctx: SheetContext, vp: Viewport, b: Bounds): voi
 
   for (const c of genericOfKind(t, 'Contour')) {
     if (!c.line?.length) continue
-    const kept = (c.line as Position[]).filter(onLot)
+    // Segment-level: keep a segment when EITHER end is on the lot, so a
+    // contour crossing the boundary reaches the edge of the strip instead of
+    // stopping at its last interior vertex and reading as incomplete.
+    const src = c.line as Position[]
+    const kept: Position[] = []
+    for (let i = 0; i < src.length - 1; i++) {
+      if (onLot(src[i]) || onLot(src[i + 1])) {
+        if (kept.length === 0) kept.push(src[i])
+        kept.push(src[i + 1])
+      }
+    }
     if (kept.length < 2) continue
     const a = c.attributes ?? {}
     const index = a.weight === 'index'
@@ -688,7 +703,18 @@ export function renderSheetSetPdf(input: RenderPdfInput): Promise<RenderedPdf> {
       doc.addPage({ size: [sheetSize.widthPt, sheetSize.heightPt], margin: 0 })
 
       const rings = ringsFor(ctx.twin)
-      const b = boundsOf(rings)
+      // The fronting street must be ON the sheet — Sec. 24-128 makes street
+      // frontage the thing that establishes a buildable lot, and a reviewer
+      // confirms the front lot line against it. Fitting to the parcel alone
+      // pushed the centreline outside the drawing area, where the clip removed
+      // it entirely.
+      const streetsForBounds =
+        (ctx.twin as { streets?: { paths: Position[][] }[] }).streets ?? []
+      const streetRings: Ring[] = streetsForBounds
+        .flatMap(st => st.paths)
+        .filter(path => path.length >= 2)
+        .map(path => ({ coordinates: path }))
+      const b = boundsOf([...rings, ...streetRings])
       const vp = fitViewport(b, sheetSize, PAD_FT)
 
       // Sheet border and drawing area

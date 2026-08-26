@@ -284,11 +284,27 @@ export function buildLotPackage(lot: LotInput, resolved?: ResolvedBoundary | nul
     const bx0 = Math.min(...cx) - PERIPHERAL_FT, bx1 = Math.max(...cx) + PERIPHERAL_FT
     const by0 = Math.min(...cy) - PERIPHERAL_FT, by1 = Math.max(...cy) + PERIPHERAL_FT
     const near = (p: [number, number]) => p[0] >= bx0 && p[0] <= bx1 && p[1] >= by0 && p[1] <= by1
+    // Clipped SEGMENT-BY-SEGMENT. A vertex filter drops the far end of any
+    // segment that crosses the boundary, so a contour entering the lot appears
+    // to stop short and the surface reads as incomplete. Keeping a segment when
+    // EITHER end is inside carries the line to the edge of the strip.
+    const clip = (path: [number, number][]): [number, number][][] => {
+      const out: [number, number][][] = []
+      let run: [number, number][] = []
+      for (let i = 0; i < path.length - 1; i++) {
+        const A = path[i], B = path[i + 1]
+        if (near(A) || near(B)) {
+          if (run.length === 0) run.push(A)
+          run.push(B)
+        } else if (run.length) { out.push(run); run = [] }
+      }
+      if (run.length >= 2) out.push(run)
+      return out
+    }
     lot = {
       ...lot,
-      contours: lot.contours
-        .map(c => ({ ...c, path: c.path.filter(near) }))
-        .filter(c => c.path.length >= 2),
+      contours: lot.contours.flatMap(c =>
+        clip(c.path).map(path => ({ ...c, path }))),
     }
   }
 
@@ -320,6 +336,18 @@ export function buildLotPackage(lot: LotInput, resolved?: ResolvedBoundary | nul
       citation: zoningEnvelope.citation ?? 'Sec. 27-4202',
       netLotAreaSqFt: areaSqFt ?? undefined,
       streetPoint: lot.streetPoint ?? null,
+      // Classify against the ADDRESS street, not every centreline in range.
+      // A cross street a block away pulled the front-lot-line assignment onto
+      // the wrong edge and put the dwelling 21.7 ft from a line needing 25.
+      streetPaths: (() => {
+        const all = lot.streets ?? []
+        if (!all.length) return null
+        const token = lot.address.replace(/^[0-9]+\s+/, '').split(/\s+/)[0]?.toUpperCase() ?? ''
+        const onAddress = token
+          ? all.filter(s => (s.name ?? '').toUpperCase().includes(token))
+          : []
+        return (onAddress.length ? onAddress : all).flatMap(s => s.paths)
+      })(),
       // No programme means no requested size, so only zoning limits the box.
       maxFootprintSqFt: footprintEstimate?.footprintSqFt ?? Number.POSITIVE_INFINITY,
     })

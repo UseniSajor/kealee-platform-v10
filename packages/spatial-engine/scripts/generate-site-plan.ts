@@ -117,7 +117,42 @@ async function main() {
       contourSourceAuthority: contourResult?.source.authority,
       streetPoint: atlas?.streetPoint ?? null,
       soils: (await fetchSoilMapUnits('prince_georges_md').catch(() => null))?.units,
-      streets: atlas?.streets as never,
+      // Street centrelines, clipped to a working window around the lot.
+      //
+      // Sec. 24-128 makes street frontage what establishes a buildable lot, so
+      // the fronting street must be ON the sheet and is the datum that fixes
+      // the front lot line. But a centreline runs for blocks: drawing it whole
+      // zoomed the lot down to nothing. Clipped SEGMENT-BY-SEGMENT rather than
+      // vertex-by-vertex, because a centreline carries a vertex only every
+      // 50-100 ft and a vertex filter deletes the street entirely.
+      streets: (() => {
+        const ring = atlas?.parcel?.ring.coordinates as [number, number][] | undefined
+        if (!atlas?.streets || !ring) return undefined
+        const xs = ring.map(p => p[0]), ys = ring.map(p => p[1])
+        const W = 90
+        const x0 = Math.min(...xs) - W, x1 = Math.max(...xs) + W
+        const y0 = Math.min(...ys) - W, y1 = Math.max(...ys) + W
+        const inside = (q: [number, number]) =>
+          q[0] >= x0 && q[0] <= x1 && q[1] >= y0 && q[1] <= y1
+
+        const clipPath = (path: [number, number][]): [number, number][][] => {
+          const out: [number, number][][] = []
+          let run: [number, number][] = []
+          for (let i = 0; i < path.length - 1; i++) {
+            const A = path[i], B = path[i + 1]
+            if (inside(A) || inside(B)) {
+              if (run.length === 0) run.push(A)
+              run.push(B)
+            } else if (run.length) { out.push(run); run = [] }
+          }
+          if (run.length >= 2) out.push(run)
+          return out
+        }
+
+        return atlas.streets
+          .map(st => ({ name: st.name, paths: st.paths.flatMap(clipPath) }))
+          .filter(st => st.paths.length > 0)
+      })() as never,
       parcelId: atlas?.parcel?.propId ?? null,
       programme: houseSqFt > 0
         ? { totalFloorAreaSqFt: houseSqFt, storeys, garage: (process.env.GARAGE as never) ?? 'none',
@@ -173,7 +208,7 @@ async function main() {
       sheetIndex: i + 1,
       sheetCount: pages.length,
       status: 'PRELIMINARY',
-      disclosure: pkg.disclosure,
+      disclosure: null,
     })
     // A composed page owes the County every note its covered sheets owe. When
     // the whole plan is one sheet, that sheet owes ALL of them — the grading
