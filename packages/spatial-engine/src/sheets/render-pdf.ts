@@ -345,6 +345,36 @@ function drawGeometry(doc: Doc, ctx: SheetContext, vp: Viewport, b: Bounds): voi
     }
   }
 
+  // ── Proposed site development: driveway, walks ───────────────────────────
+  for (const pv of genericOfKind(t, 'Pavement')) {
+    if (!pv.ring) continue
+    const r = projectRing(pv.ring, vp, b, PAD_FT)
+    polyline(doc, r, { width: 0.8, color: '#666666', dash: undefined }, true)
+
+    // Light stipple so pavement reads as surface without competing with the
+    // dwelling hatch.
+    const minX = Math.min(...r.map(q => q[0])), maxX = Math.max(...r.map(q => q[0]))
+    const minY = Math.min(...r.map(q => q[1])), maxY = Math.max(...r.map(q => q[1]))
+    doc.save()
+    doc.moveTo(r[0][0], r[0][1])
+    for (const q of r.slice(1)) doc.lineTo(q[0], q[1])
+    doc.closePath().clip()
+    doc.lineWidth(0.2).strokeColor('#999999').opacity(0.6)
+    for (let x = minX - (maxY - minY); x < maxX; x += 5) {
+      doc.moveTo(x, minY).lineTo(x + (maxY - minY), maxY).stroke()
+    }
+    doc.opacity(1).restore()
+
+    const a2 = (pv.attributes ?? {}) as { label?: string }
+    if (a2.label) {
+      const cx2 = r.reduce((n, q) => n + q[0], 0) / r.length
+      const cy2 = r.reduce((n, q) => n + q[1], 0) / r.length
+      doc.font('Helvetica').fontSize(5.4).fillColor('#555555')
+         .text(String(a2.label), cx2 - 55, cy2 - 3,
+               { width: 110, align: 'center', lineBreak: false })
+    }
+  }
+
   // ── Buildings ─────────────────────────────────────────────────────────────
   for (const bl of featuresOfKind(t, 'Building')) {
     const r = projectRing(bl.ring, vp, b, PAD_FT)
@@ -663,6 +693,7 @@ function legend(doc: Doc, x: number, y: number): number {
     ['#c0392b', 'PROPOSED STRUCTURE', false],
     ['#8a6d3b', 'EXISTING CONTOUR — PGATLAS 2 FT (2023), NAVD88', false],
     ['#555555', 'STREET CENTRELINE', true],
+    ['#666666', 'PROPOSED PAVEMENT — DRIVEWAY / WALK', false],
     ['#2980b9', 'EASEMENT', true],
   ]
   doc.font('Helvetica-Bold').fontSize(7).fillColor('#000000').text('LEGEND', x, y, { lineBreak: false })

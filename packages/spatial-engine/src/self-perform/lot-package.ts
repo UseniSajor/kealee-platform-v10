@@ -26,6 +26,7 @@ import { getPgDimensionalStandards, parsePgStandardValue } from '../jurisdiction
 import type { SheetId } from '../sheets/sheet-template'
 import { deriveBuildableEnvelope, extractLotCoveragePct, type BuildableEnvelope } from '../site-plan/buildable-envelope'
 import { estimateFootprint, type FootprintEstimate, type HouseProgramme } from '../site-plan/footprint-programme'
+import { deriveSiteImprovements, type SiteImprovementResult } from '../site-plan/site-improvements'
 import { fetchMdParcelAtPoint } from '../jurisdictions/md-imap'
 
 /** Everything you know about a lot before a surveyor has been out. */
@@ -101,6 +102,8 @@ export interface LotPackage {
   sheets: CompositionResult
   responsibility: DividedResponsibilityBlock[]
 
+  /** Driveway, walks and other proposed site development. */
+  siteImprovements: SiteImprovementResult | null
   /** Setback envelope, binding constraint and the drawn footprint. */
   buildable: BuildableEnvelope | null
   /** How the footprint was estimated, when the customer had no plans. */
@@ -326,6 +329,7 @@ export function buildLotPackage(lot: LotInput, resolved?: ResolvedBoundary | nul
 
   // ── Buildable envelope and proposed footprint ─────────────────────────────
   const zoningEnvelope = readZoningEnvelope(lot.zoneCode)
+  let siteImprovements: SiteImprovementResult | null = null
   let footprintEstimate: FootprintEstimate | null = null
   let buildable: BuildableEnvelope | null = null
   if (ring) {
@@ -360,6 +364,27 @@ export function buildLotPackage(lot: LotInput, resolved?: ResolvedBoundary | nul
       feats.push({ kind: 'Building', id: 'proposed-building', existing: false, ring: buildable.footprint,
         attributes: { areaSqFt: buildable.footprintAreaSqFt, estimated: true }, ...base })
     }
+    // ── Proposed site development ─────────────────────────────────────────
+    // Sec. 32-130(a)(10) requires the size and location of all proposed site
+    // development, and (a)(4) the disturbed-area calculation. A dwelling alone
+    // satisfies neither — the driveway is usually the second-largest
+    // impervious area on an infill lot.
+    if (buildable.footprint) {
+      siteImprovements = deriveSiteImprovements({
+        parcel: ring,
+        footprint: buildable.footprint,
+        edgeYards: buildable.edgeYards,
+        hasGarage: Boolean(lot.programme?.garage && lot.programme.garage !== 'none'),
+      })
+      for (const imp of siteImprovements.improvements) {
+        feats.push({
+          kind: 'Pavement', id: imp.id, ring: imp.ring,
+          attributes: { label: imp.label, areaSqFt: imp.areaSqFt, note: imp.note, improvement: imp.kind },
+          ...base,
+        })
+      }
+    }
+
     if (feats.length) twin = addFeatures(twin, feats as never[])
     // Carried on the twin so the sheet's SITE DATA table can print required
     // versus provided without re-deriving anything.
@@ -456,6 +481,7 @@ export function buildLotPackage(lot: LotInput, resolved?: ResolvedBoundary | nul
     checklist,
     sheets,
     responsibility,
+    siteImprovements,
     buildable,
     footprintEstimate,
     delivered: true,
