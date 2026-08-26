@@ -282,6 +282,51 @@ function frontSetPosition(
   return [c[0] + nx * shift, c[1] + ny * shift] as Position
 }
 
+/** True when the point lies inside the polygon. Ray casting. */
+function pointInRing(pt: Position, poly: Position[]): boolean {
+  let hit = false
+  for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+    const [xi, yi] = poly[i], [xj, yj] = poly[j]
+    if ((yi > pt[1]) !== (yj > pt[1])
+        && pt[0] < ((xj - xi) * (pt[1] - yi)) / ((yj - yi) || 1e-9) + xi) hit = !hit
+  }
+  return hit
+}
+
+function rectFits(rect: Ring, envelope: Ring): boolean {
+  const poly = normaliseRing(envelope)
+  return normaliseRing(rect).every(p => pointInRing(p, poly))
+}
+
+/**
+ * The largest rectangle at this angle and aspect that fits INSIDE the envelope,
+ * never exceeding the permitted area.
+ *
+ * Area alone does not guarantee containment: a 1,700 sq ft rectangle sized
+ * against a 4,701 sq ft envelope still put two of its four corners outside the
+ * BRL. That is a building drawn through the setback line, which is exactly what
+ * makes a plan rejectable.
+ *
+ * Binary search on a scale factor. Returning a SMALLER building than the
+ * programme asked for is the honest outcome when the envelope cannot hold it.
+ */
+function largestFittingRectangle(
+  envelope: Ring, centre: Position, targetAreaSqFt: number, aspect: number, angle: number,
+): Ring | null {
+  const at = (scale: number) => rectangleAt(centre, targetAreaSqFt * scale * scale, aspect, angle)
+
+  const full = at(1)
+  if (rectFits(full, envelope)) return full
+
+  let lo = 0, hi = 1
+  for (let i = 0; i < 24; i++) {
+    const mid = (lo + hi) / 2
+    if (rectFits(at(mid), envelope)) lo = mid
+    else hi = mid
+  }
+  return lo > 0.05 ? at(lo) : null
+}
+
 /**
  * Bearing the house is built to: the direction of the FRONT lot line.
  *
@@ -449,10 +494,31 @@ export function deriveBuildableEnvelope(input: {
   // setback is for — and the yard it leaves behind is the rear yard. Centring
   // it pushes the house into the back of the lot and reads as wrong.
   const centre = frontSetPosition(ring, parcel, yards, allowed, aspect, angle)
-  const footprint = allowed > 0 ? rectangleAt(centre, allowed, aspect, angle) : null
+  // Area alone does NOT guarantee containment. A 1,700 sq ft rectangle sized
+  // against a 4,701 sq ft envelope still put two of its four corners outside
+  // the BRL — a building drawn through the setback line, which is precisely
+  // what makes a plan rejectable. Shrink until it genuinely fits.
+  const footprint = allowed > 0
+    ? largestFittingRectangle(ring, centre, allowed, aspect, angle)
+    : null
 
   if (allowed <= 0) {
     caveats.push('No buildable area remains after the setbacks. This lot cannot take a principal structure as zoned.')
+  }
+
+  const drawnAreaSqFt = footprint ? ringArea(footprint) : 0
+  if (footprint && allowed - drawnAreaSqFt > 1) {
+    caveats.push(
+      `The permitted footprint is ${Math.round(allowed).toLocaleString()} sq ft, but the largest ` +
+      `rectangle that FITS inside the setback envelope at this orientation is ` +
+      `${Math.round(drawnAreaSqFt).toLocaleString()} sq ft. Area alone does not guarantee ` +
+      'containment on an irregular lot. A different footprint shape, or an L-plan, may recover ' +
+      'the difference — that is a design decision, not a drafting one.')
+  }
+  if (allowed > 0 && !footprint) {
+    caveats.push(
+      'No rectangle at this orientation fits inside the setback envelope. The lot may still be ' +
+      'buildable with a different building shape.')
   }
 
   return {
