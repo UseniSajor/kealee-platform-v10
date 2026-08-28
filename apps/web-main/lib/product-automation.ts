@@ -14,7 +14,12 @@ export function mergeFulfillmentFormData(
   return { ...existing, ...fulfillment }
 }
 
-const CANONICAL_ROUTES: Record<string, ProductAutomationRoute> = {
+/**
+ * Single source of truth for legacy/public project-path products. Consumers
+ * should resolve through `resolveProductAutomationRoute`; this export exists
+ * for audits and tooling and must remain read-only at runtime.
+ */
+export const CANONICAL_PRODUCT_WORKFLOWS: Readonly<Record<string, ProductAutomationRoute>> = {
   cost_estimate: {
     fulfillmentBotTypes: ['estimate', 'project'],
     workflowTemplateId: 'wf_estimate_v1',
@@ -79,5 +84,5 @@ export function resolveProductAutomationRoute(input: {
       propertyIntelligenceDepth: product.propertyIntelDepth,
     }
   }
-  return input.projectPath ? CANONICAL_ROUTES[input.projectPath] : undefined
+  return input.projectPath ? CANONICAL_PRODUCT_WORKFLOWS[input.projectPath] : undefined
 }

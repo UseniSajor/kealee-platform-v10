@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 const mocks = vi.hoisted(() => ({
   fulfillRevenueProduct: vi.fn(),
@@ -7,6 +7,7 @@ const mocks = vi.hoisted(() => ({
   patchStage: vi.fn().mockResolvedValue(undefined),
   sendCustomerEmail: vi.fn().mockResolvedValue(undefined),
   trackPurchase: vi.fn().mockResolvedValue(undefined),
+  routeToManual: vi.fn().mockResolvedValue(undefined),
   updates: [] as Array<Record<string, unknown>>,
   transitioned: true,
   current: {
@@ -30,6 +31,7 @@ vi.mock('@/lib/marketing/lifecycle', () => ({
   sendPostPaymentCustomerEmail: mocks.sendCustomerEmail,
 }))
 vi.mock('@/lib/marketing/ga4-server', () => ({ trackPurchase: mocks.trackPurchase }))
+vi.mock('@/lib/manual-fulfillment', () => ({ routeToManualFulfillment: mocks.routeToManual }))
 
 function queryBuilder() {
   let selected = ''
@@ -90,6 +92,10 @@ function checkoutEvent(input: { source: string; projectPath?: string; paid?: boo
 describe('shared Stripe webhook handler', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    // Automated fulfillment is behind a feature flag read from the environment.
+    // Without this the suite silently asserts the flag-off path on any machine
+    // that has no local .env, so pin it for the automation cases below.
+    vi.stubEnv('KEALEE_V30_ENABLED', 'true')
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('{}', { status: 200 })))
     mocks.updates.length = 0
     mocks.transitioned = true
@@ -100,6 +106,10 @@ describe('shared Stripe webhook handler', () => {
       },
       metadata: {}, status: 'new', stripe_session_id: null,
     }
+  })
+
+  afterEach(() => {
+    vi.unstubAllEnvs()
   })
 
   it('passes the signed Stripe event id into revenue fulfillment', async () => {
@@ -144,6 +154,19 @@ describe('shared Stripe webhook handler', () => {
         fulfillmentBotTypes: ['zoning', 'permit', 'project'],
         workflowTemplateId: 'wf_permit_roadmap_v1',
       }),
+    )
+  })
+
+  it('hands a paid order to the human queue when automation is switched off', async () => {
+    vi.stubEnv('KEALEE_V30_ENABLED', 'false')
+    await processStripeWebhookEvent(
+      checkoutEvent({ source: 'public_intake', projectPath: 'cost_estimate' }),
+      request,
+    )
+    expect(mocks.ensureRun).not.toHaveBeenCalled()
+    expect(mocks.triggerV30).not.toHaveBeenCalled()
+    expect(mocks.routeToManual).toHaveBeenCalledWith(
+      expect.objectContaining({ intakeId: 'intake-test', projectPath: 'cost_estimate', reason: 'automation_disabled' }),
     )
   })
 
