@@ -53,14 +53,19 @@ export function SignupClient() {
         role: "admin",
       })
 
-      // If Supabase email confirmation is enabled, the user object will exist
-      // but the session will be null until they verify. Redirect to verify-email page.
-      if (data.session) {
-        // Auto-confirmed (e.g. email confirmation disabled) — go to dashboard
+      // `signUp` returns Clerk's shape — { status, createdSessionId,
+      // createdUserId } — not Supabase's { session, user }. The comment and the
+      // `data.session` check here were left over from the Supabase auth path
+      // and had never compiled against the current signature.
+      //
+      // Clerk completes a sign-up in one step only when nothing further is
+      // required; anything else (email code, phone, extra fields) leaves the
+      // attempt open and creates no session.
+      if (data.status === "complete" && data.createdSessionId) {
         router.push("/dashboard")
         router.refresh()
       } else {
-        // Email confirmation required — show verification instructions
+        // Verification outstanding — show the instructions.
         router.push("/auth/verify-email")
       }
     } catch (err: unknown) {
