@@ -51,8 +51,20 @@ export async function execute(
     );
 
     if (response.ok) {
-      const result = await response.json();
-      const analysis = result.analysis;
+      // `response.json()` is `unknown` under the current lib typings, so the
+      // shape this block already assumed is written down rather than inferred.
+      interface BidAnalysis {
+        goNoGo?: string
+        winProbability?: number
+        scopeMatchScore?: number
+        competitiveAssessment?: string
+        reasoning?: string
+        strengths?: string[]
+        risks?: string[]
+        keyFactors?: string[]
+      }
+      const result = (await response.json()) as { analysis?: BidAnalysis };
+      const analysis: BidAnalysis = result.analysis ?? {};
 
       const lines: string[] = [
         `**AI Analysis: ${bid.projectName}**`,
@@ -65,23 +77,23 @@ export async function execute(
         `**Reasoning:** ${analysis.reasoning}`,
       ];
 
-      if (analysis.strengths?.length > 0) {
+      if ((analysis.strengths?.length ?? 0) > 0) {
         lines.push('', '**Strengths:**');
-        for (const s of analysis.strengths) {
+        for (const s of analysis.strengths ?? []) {
           lines.push(`- ${s}`);
         }
       }
 
-      if (analysis.risks?.length > 0) {
+      if ((analysis.risks?.length ?? 0) > 0) {
         lines.push('', '**Risks:**');
-        for (const r of analysis.risks) {
+        for (const r of analysis.risks ?? []) {
           lines.push(`- ${r}`);
         }
       }
 
-      if (analysis.keyFactors?.length > 0) {
+      if ((analysis.keyFactors?.length ?? 0) > 0) {
         lines.push('', '**Key Factors:**');
-        for (const f of analysis.keyFactors) {
+        for (const f of analysis.keyFactors ?? []) {
           lines.push(`- ${f}`);
         }
       }
