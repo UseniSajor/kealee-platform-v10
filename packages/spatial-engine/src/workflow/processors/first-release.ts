@@ -25,6 +25,11 @@ import { renderSheetSetPdf } from '../../sheets/render-pdf'
 import { buildSheetContext } from '../../sheets/render-svg'
 import { requiredNotesForSheet, PG_REQUIRED_PLAN_NOTES } from '../../site-plan/required-notes'
 import type { SheetId } from '../../sheets/sheet-template'
+import {
+  buildRecordedPlatBoundary, type RecordedPlatBoundary, type PlatReference,
+} from '../../survey/recorded-plat'
+import type { Course } from '../../survey/cogo'
+import { reconcileSurvey } from '../../survey/reconcile'
 
 // ── Stage payloads ──────────────────────────────────────────────────────────
 
@@ -54,6 +59,31 @@ export interface ExistingConditionsOutput {
   verticalDatum: string | null
   reliabilityLevel: number
   twinRevision: number
+}
+
+export interface IngestSurveyOutput {
+  /** Whether recorded-plat calls were supplied on the order. */
+  platProvided: boolean
+  reference: PlatReference | null
+  callCount: number
+  computedAreaSqFt: number | null
+  closureDistanceFt: number | null
+  precisionDenominator: number | null
+  positionSource: string | null
+  certifiable: boolean
+  problems: string[]
+  beforeCertification: string[]
+  summary: string
+}
+
+export interface ReconcileSurveyOutput {
+  ran: boolean
+  discrepancyCount: number
+  blockingCount: number
+  warningCount: number
+  /** Largest corner deviation between the plat figure and the county parcel. */
+  maxResidualFt: number | null
+  summary: string
 }
 
 export interface EnvelopeOutput {
@@ -138,6 +168,46 @@ function lotPackageFrom(ctx: StageContext): LotPackage {
   )
 }
 
+/**
+ * Reads recorded-plat calls off the order.
+ *
+ * The calls arrive already transcribed, and that is deliberate rather than a
+ * shortcut. Every recorded plat this platform has seen is a scan with no text
+ * layer, OCR routinely misreads a bearing — 8 for 3, 0 for O — and a misread
+ * bearing puts a corner in the wrong place while every downstream check still
+ * passes. Transcription is a human act; everything after it is arithmetic with
+ * a self-check, and that part is what the engine does.
+ */
+function platFrom(ctx: StageContext): RecordedPlatBoundary | null {
+  const f = ctx.subject.formData
+  const calls = f.platCalls
+  if (!Array.isArray(calls) || calls.length === 0) return null
+
+  const ref = (f.platReference ?? {}) as PlatReference
+  const pob = Array.isArray(f.platPointOfBeginning) && f.platPointOfBeginning.length >= 2
+    ? [Number(f.platPointOfBeginning[0]), Number(f.platPointOfBeginning[1])] as [number, number]
+    : null
+
+  const prop = ctx.priorOutputs['siteplan.resolve_property'] as ResolvePropertyOutput | undefined
+  return buildRecordedPlatBoundary({
+    calls: calls as Course[],
+    reference: ref,
+    basisOfBearings: str(f.platBasisOfBearings),
+    basisRotationDeg: Number.isFinite(Number(f.platBasisRotationDeg))
+      ? Number(f.platBasisRotationDeg)
+      : undefined,
+    pointOfBeginning: pob,
+    crs: 'EPSG:2248',
+    horizontalDatum: 'NAD83',
+    recordedAreaSqFt: Number.isFinite(Number(f.platRecordedAreaSqFt))
+      ? Number(f.platRecordedAreaSqFt)
+      : null,
+    // The county parcel positions the figure only when the instrument states no
+    // point of beginning. A fit is drawable and is never a surveyed position.
+    referenceParcel: prop?.parcelRing ? { coordinates: prop.parcelRing } : null,
+  })
+}
+
 function programmeFrom(ctx: StageContext) {
   const f = ctx.subject.formData
   const sqft = Number(f.houseSquareFeet ?? f.totalFloorAreaSqFt ?? 0)
@@ -211,9 +281,16 @@ const ingestDocuments: StageProcessor = async (ctx): Promise<StageResult> => {
   const uploads = Array.isArray(ctx.subject.formData.uploads)
     ? (ctx.subject.formData.uploads as unknown[])
     : []
+  // `surveyProvided` used to be hard-coded false, which meant an order that
+  // came with evidence looked identical to one that did not.
+  const platCalls = ctx.subject.formData.platCalls
   return {
     status: 'COMPLETED',
-    outputs: { documentCount: uploads.length, surveyProvided: false },
+    outputs: {
+      documentCount: uploads.length,
+      surveyProvided: false,
+      platCallsProvided: Array.isArray(platCalls) ? platCalls.length : 0,
+    },
   }
 }
 
@@ -411,6 +488,90 @@ const deliverPreliminary: StageProcessor = async (ctx): Promise<StageResult> => 
   }
 }
 
+/**
+ * Computes the boundary of a recorded plat supplied with the order.
+ *
+ * Not BLOCKED when no plat is supplied — most orders will not have one, and the
+ * preliminary package is produced from county GIS either way. This stage says
+ * what the plat is worth when there is one.
+ */
+const ingestSurvey: StageProcessor = async (ctx): Promise<StageResult> => {
+  const plat = platFrom(ctx)
+  if (!plat) {
+    return {
+      status: 'COMPLETED',
+      outputs: {
+        platProvided: false, reference: null, callCount: 0,
+        computedAreaSqFt: null, closureDistanceFt: null, precisionDenominator: null,
+        positionSource: null, certifiable: false, problems: [], beforeCertification: [],
+        summary:
+          'No recorded-plat calls were supplied with the order, so the boundary comes from county ' +
+          'GIS at Level 1 and the package says so.',
+      } satisfies IngestSurveyOutput,
+    }
+  }
+
+  return {
+    status: 'COMPLETED',
+    outputs: {
+      platProvided: true,
+      reference: plat.reference,
+      callCount: plat.traverse.courses.length,
+      computedAreaSqFt: plat.computedAreaSqFt,
+      closureDistanceFt: plat.traverse.closureDistanceFt,
+      precisionDenominator: plat.traverse.precisionDenominator,
+      positionSource: plat.georeference.positionSource,
+      certifiable: plat.certifiable,
+      problems: plat.problems,
+      beforeCertification: plat.beforeCertification,
+      summary: plat.summary,
+    } satisfies IngestSurveyOutput,
+  }
+}
+
+/**
+ * Compares the plat figure against the county parcel.
+ *
+ * Nothing is moved either way. County GIS is compiled, not surveyed, and is
+ * routinely offset by several feet — in testing by 4.3 ft, which flipped a
+ * front setback from compliant to non-compliant. The report says so and a human
+ * decides; the engine does not quietly fix a recorded instrument to match a tax
+ * map, nor the reverse.
+ */
+const reconcileSurveyStage: StageProcessor = async (ctx): Promise<StageResult> => {
+  const plat = platFrom(ctx)
+  if (!plat || plat.ring.coordinates.length === 0) {
+    return {
+      status: 'COMPLETED',
+      outputs: {
+        ran: false, discrepancyCount: 0, blockingCount: 0, warningCount: 0,
+        maxResidualFt: null,
+        summary: 'No plat geometry to reconcile against the county parcel.',
+      } satisfies ReconcileSurveyOutput,
+    }
+  }
+
+  const pkg = lotPackageFrom(ctx)
+  const report = reconcileSurvey({
+    surveyPoints: [],
+    surveyBoundary: plat.ring,
+    platAreaSqFt: plat.computedAreaSqFt,
+    twin: pkg.twin,
+  })
+
+  return {
+    status: 'COMPLETED',
+    outputs: {
+      ran: true,
+      discrepancyCount: report.discrepancies.length,
+      blockingCount: report.blockingCount,
+      warningCount: report.warningCount,
+      maxResidualFt: plat.georeference.maxResidualFt,
+      summary: report.summary,
+    } satisfies ReconcileSurveyOutput,
+  }
+}
+
 export const FIRST_RELEASE_PROCESSORS: Record<SitePlanJobName, StageProcessor | undefined> = {
   'siteplan.initialize': initialize,
   'siteplan.resolve_property': resolveProperty,
@@ -425,9 +586,9 @@ export const FIRST_RELEASE_PROCESSORS: Record<SitePlanJobName, StageProcessor | 
   'siteplan.run_draft_qc': runDraftQc,
   'siteplan.persist_package': persistPackage,
   'siteplan.deliver_preliminary': deliverPreliminary,
+  'siteplan.ingest_survey': ingestSurvey,
+  'siteplan.reconcile_survey': reconcileSurveyStage,
   // Connected in a later checkpoint.
-  'siteplan.ingest_survey': undefined,
-  'siteplan.reconcile_survey': undefined,
   'siteplan.generate_grading': undefined,
   'siteplan.generate_drainage': undefined,
   'siteplan.generate_swm': undefined,
