@@ -313,6 +313,28 @@ model SitePlanScopedApproval {
   @@map("site_plan_scoped_approvals")
 }
 
+/// Binds one verified professional to a site-plan review. Accepting an
+/// assignment never implies approval of any engineering subject.
+model SitePlanReviewAssignment {
+  id                    String   @id @default(uuid())
+  workflowId            String   @unique
+  professionalProfileId String
+  assignedById          String?
+  status                String   @default("ACTIVE")
+  discipline            String
+  assignedAt            DateTime @default(now())
+  acceptedAt            DateTime?
+  completedAt           DateTime?
+  dueAt                 DateTime?
+  notes                 String?  @db.Text
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  @@index([professionalProfileId, status, updatedAt])
+  @@index([status, assignedAt])
+  @@map("site_plan_review_assignments")
+}
+
 model SitePlanChecklistResult {
   id                  String              @id @default(uuid())
   workflowId          String
