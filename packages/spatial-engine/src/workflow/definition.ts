@@ -203,19 +203,19 @@ export const SITE_PLAN_STAGES: StageDefinition[] = [
   {
     job: 'siteplan.generate_grading', group: 'E_DESIGN', persistAs: 'PLAN_GENERATION',
     purpose: 'Proposed grading. Requires spot elevations that only a field survey supplies.',
-    implementation: 'site-plan/design#designSite',
+    implementation: 'site-plan/design#generateDesign',
     requires: ['siteplan.generate_layout'], deterministic: true, retrySafe: true, inFirstRelease: false,
   },
   {
     job: 'siteplan.generate_drainage', group: 'E_DESIGN', persistAs: 'PLAN_GENERATION',
     purpose: 'On-site drainage and the 100-year overflow path, Sec. 32-162.',
-    implementation: 'site-plan/engineering#designDrainage',
+    implementation: 'site-plan/design#generateDesign',
     requires: ['siteplan.generate_grading'], deterministic: true, retrySafe: true, inFirstRelease: false,
   },
   {
     job: 'siteplan.generate_swm', group: 'E_DESIGN', persistAs: 'PLAN_GENERATION',
     purpose: 'Stormwater management concept and computations.',
-    implementation: 'site-plan/engineering#designStormwater',
+    implementation: 'site-plan/engineering#waterQualityVolume',
     requires: ['siteplan.generate_drainage'], deterministic: true, retrySafe: true, inFirstRelease: false,
   },
   {
@@ -227,7 +227,7 @@ export const SITE_PLAN_STAGES: StageDefinition[] = [
   {
     job: 'siteplan.generate_environmental', group: 'E_DESIGN', persistAs: 'PLAN_GENERATION',
     purpose: 'Streams, wetlands, floodplain, buffers and woodland.',
-    implementation: 'jurisdictions/pg-site-data#partNearSite',
+    implementation: 'jurisdictions/pg-site-data#fetchPgSiteConstraints',
     requires: ['siteplan.build_existing_conditions'], deterministic: false, retrySafe: true, inFirstRelease: false,
   },
   {

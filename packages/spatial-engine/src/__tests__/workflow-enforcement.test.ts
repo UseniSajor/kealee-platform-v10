@@ -224,16 +224,26 @@ describe('synchronisation — the definition must name real code', () => {
     }
   })
 
-  it('resolves the first-release implementations against the real package', () => {
+  it('resolves EVERY named implementation against the real package', () => {
     // This is what stops the definition becoming documentation of modules
     // nobody wrote. If a stage names an export that does not exist, this fails.
-    const first = SITE_PLAN_STAGES.filter(s => s.inFirstRelease && s.implementation)
-    for (const s of first) {
+    //
+    // It used to check only the first-release stages, and four later-phase
+    // stages had drifted behind that gap: `design#designSite`,
+    // `engineering#designDrainage`, `engineering#designStormwater` and
+    // `pg-site-data#partNearSite` all named functions nobody ever wrote. The
+    // stages a release has not reached yet are exactly the ones nothing else
+    // exercises, so they are the ones this check is for.
+    const named = SITE_PLAN_STAGES.filter(s => s.implementation)
+    expect(named.length).toBeGreaterThan(15)
+    const missing: string[] = []
+    for (const s of named) {
       const [mod, exp] = (s.implementation as string).split('#')
       // eslint-disable-next-line @typescript-eslint/no-var-requires
       const loaded = require(`../${mod}`)
-      expect(typeof loaded[exp]).toBe('function')
+      if (typeof loaded[exp] !== 'function') missing.push(`${s.job} -> ${s.implementation}`)
     }
+    expect(missing).toEqual([])
   })
 
   it('keeps every first-release stage reachable from the first job', () => {
