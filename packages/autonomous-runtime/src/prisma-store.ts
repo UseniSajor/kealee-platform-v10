@@ -133,11 +133,11 @@ export class PrismaRuntimeStore implements RuntimeStore {
     return result.count === 1
   }
 
-  async recordInvocation(input: { stepId: string; idempotencyKey: string; toolName: string; payload?: Record<string, unknown> }) {
+  async recordInvocation(input: { stepId: string; idempotencyKey: string; toolName: string; payload?: Record<string, unknown> }): Promise<{ id: string }> {
     return this.db.autonomousToolInvocation.upsert({ where: { idempotencyKey: input.idempotencyKey }, update: {}, create: { stepId: input.stepId, idempotencyKey: input.idempotencyKey, toolName: input.toolName, input: input.payload as any } })
   }
 
-  async completeInvocation(idempotencyKey: string, result: StepResult, durationMs: number) {
+  async completeInvocation(idempotencyKey: string, result: StepResult, durationMs: number): Promise<{ id: string }> {
     return this.db.autonomousToolInvocation.update({ where: { idempotencyKey }, data: {
       status: result.status === 'complete' ? 'SUCCEEDED' : result.status === 'retryable_failure' ? 'RETRYABLE_FAILURE' : 'FATAL_FAILURE',
       output: result.output as any, errorMessage: result.message, durationMs, tokensUsed: result.tokensUsed ?? 0,

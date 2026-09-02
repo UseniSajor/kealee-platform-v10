@@ -64,7 +64,7 @@ export async function fetchPhase6DataBundle(input: Phase6ConnectorInput): Promis
         signal: AbortSignal.timeout(5000),
       })
       if (res.ok) {
-        gisData = { ...(gisData ?? {}), ...(await res.json()) }
+        gisData = { ...(gisData ?? {}), ...(await res.json() as Record<string, unknown>) }
         sources.push('gis_api')
         quality = Math.min(1, quality + 0.15)
       }
@@ -96,7 +96,7 @@ export async function fetchPhase6DataBundle(input: Phase6ConnectorInput): Promis
         signal: AbortSignal.timeout(5000),
       })
       if (res.ok) {
-        censusMarketData = { ...(censusMarketData ?? {}), ...(await res.json()) }
+        censusMarketData = { ...(censusMarketData ?? {}), ...(await res.json() as Record<string, unknown>) }
         sources.push('market_api')
         quality = Math.min(1, quality + 0.1)
       }

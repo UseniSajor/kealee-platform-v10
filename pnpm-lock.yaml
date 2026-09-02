@@ -1451,6 +1451,9 @@ importers:
       '@kealee/database':
         specifier: workspace:*
         version: link:../database
+      '@prisma/client':
+        specifier: ^5.22.0
+        version: 5.22.0(prisma@5.22.0)
       bullmq:
         specifier: ^5.0.0
         version: 5.81.3(redis@4.7.1)(supports-color@8.1.1)
