@@ -1725,6 +1725,9 @@ importers:
       '@kealee/observability':
         specifier: workspace:*
         version: link:../observability
+      lucide-react:
+        specifier: ^0.469.0
+        version: 0.469.0(react@18.2.0)
       react:
         specifier: ^18.0.0
         version: 18.2.0
