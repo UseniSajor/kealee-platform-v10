@@ -18,7 +18,8 @@
     "@opentelemetry/resources": "^1.25.0",
     "@opentelemetry/semantic-conventions": "^1.25.0",
     "pino": "^9.0.0",
-    "pino-pretty": "^11.0.0"
+    "pino-pretty": "^11.0.0",
+    "resend": "^6.21.0"
   },
   "devDependencies": {
     "@types/node": "^20.19.0",
