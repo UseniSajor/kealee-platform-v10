@@ -136,8 +136,8 @@ importers:
         specifier: ^17.2.3
         version: 17.4.2
       ioredis:
-        specifier: ^5.3.2
-        version: 5.11.1(supports-color@8.1.1)
+        specifier: ^6.0.0
+        version: 6.0.0(supports-color@8.1.1)
       isomorphic-dompurify:
         specifier: ^2.35.0
         version: 2.36.0(canvas@3.2.3)(supports-color@8.1.1)
@@ -475,8 +475,8 @@ importers:
         specifier: ^6.2.1
         version: 6.2.1
       ioredis:
-        specifier: ^5.3.2
-        version: 5.11.1(supports-color@8.1.1)
+        specifier: ^6.0.0
+        version: 6.0.0(supports-color@8.1.1)
       lucide-react:
         specifier: ^0.469.0
         version: 0.469.0(react@18.2.0)
@@ -1461,8 +1461,8 @@ importers:
         specifier: ^5.0.0
         version: 5.81.3(redis@4.7.1)(supports-color@8.1.1)
       ioredis:
-        specifier: ^5.3.0
-        version: 5.11.1(supports-color@8.1.1)
+        specifier: ^6.0.0
+        version: 6.0.0(supports-color@8.1.1)
       zod:
         specifier: ^3.22.4
         version: 3.25.76
@@ -1499,8 +1499,8 @@ importers:
         specifier: ^0.0.25
         version: 0.0.25(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
       ioredis:
-        specifier: ^5.3.2
-        version: 5.11.1(supports-color@8.1.1)
+        specifier: ^6.0.0
+        version: 6.0.0(supports-color@8.1.1)
       react:
         specifier: ^18.2.0
         version: 18.2.0
@@ -1697,8 +1697,8 @@ importers:
         specifier: ^5.22.0
         version: 5.22.0(prisma@5.22.0)
       ioredis:
-        specifier: ^5.3.2
-        version: 5.11.1(supports-color@8.1.1)
+        specifier: ^6.0.0
+        version: 6.0.0(supports-color@8.1.1)
       zod:
         specifier: ^3.22.4
         version: 3.25.76
@@ -1713,8 +1713,8 @@ importers:
   packages/core-events:
     dependencies:
       ioredis:
-        specifier: ^5.3.2
-        version: 5.11.1(supports-color@8.1.1)
+        specifier: ^6.0.0
+        version: 6.0.0(supports-color@8.1.1)
     devDependencies:
       '@types/node':
         specifier: ^20.19.30
@@ -1882,8 +1882,8 @@ importers:
   packages/events:
     dependencies:
       ioredis:
-        specifier: ^5.3.2
-        version: 5.11.1(supports-color@8.1.1)
+        specifier: ^6.0.0
+        version: 6.0.0(supports-color@8.1.1)
     devDependencies:
       typescript:
         specifier: ^5.6.0
@@ -2077,8 +2077,8 @@ importers:
         specifier: ^5.22.0
         version: 5.22.0(prisma@5.22.0)
       ioredis:
-        specifier: ^5.3.2
-        version: 5.11.1(supports-color@8.1.1)
+        specifier: ^6.0.0
+        version: 6.0.0(supports-color@8.1.1)
     devDependencies:
       typescript:
         specifier: ^5.6.0
@@ -2154,8 +2154,8 @@ importers:
         specifier: ^5.1.0
         version: 5.81.3(redis@4.7.1)(supports-color@8.1.1)
       ioredis:
-        specifier: ^5.3.2
-        version: 5.11.1(supports-color@8.1.1)
+        specifier: ^6.0.0
+        version: 6.0.0(supports-color@8.1.1)
     devDependencies:
       '@types/node':
         specifier: ^20.0.0
@@ -2594,8 +2594,8 @@ importers:
         specifier: ^5.0.0
         version: 5.0.0
       ioredis:
-        specifier: ^5.3.2
-        version: 5.11.1(supports-color@8.1.1)
+        specifier: ^6.0.0
+        version: 6.0.0(supports-color@8.1.1)
       isomorphic-dompurify:
         specifier: ^2.35.0
         version: 2.36.0(canvas@3.2.3)(supports-color@8.1.1)
@@ -2739,8 +2739,8 @@ importers:
         specifier: ^144.0.0
         version: 144.0.0(supports-color@8.1.1)
       ioredis:
-        specifier: ^5.4.1
-        version: 5.11.1(supports-color@8.1.1)
+        specifier: ^6.0.0
+        version: 6.0.0(supports-color@8.1.1)
       node-cron:
         specifier: ^3.0.3
         version: 3.0.3
@@ -2898,8 +2898,8 @@ importers:
         specifier: ^4.26.0
         version: 4.29.1
       ioredis:
-        specifier: ^5.3.2
-        version: 5.11.1(supports-color@8.1.1)
+        specifier: ^6.0.0
+        version: 6.0.0(supports-color@8.1.1)
       zod:
         specifier: ^3.22.4
         version: 3.25.76
@@ -2988,8 +2988,8 @@ importers:
         specifier: ^4.26.0
         version: 4.29.1
       ioredis:
-        specifier: ^5.3.2
-        version: 5.11.1(supports-color@8.1.1)
+        specifier: ^6.0.0
+        version: 6.0.0(supports-color@8.1.1)
       zod:
         specifier: ^3.22.4
         version: 3.25.76
@@ -3031,8 +3031,8 @@ importers:
         specifier: ^4.26.0
         version: 4.29.1
       ioredis:
-        specifier: ^5.3.2
-        version: 5.11.1(supports-color@8.1.1)
+        specifier: ^6.0.0
+        version: 6.0.0(supports-color@8.1.1)
       zod:
         specifier: ^3.22.4
         version: 3.25.76
@@ -3105,8 +3105,8 @@ importers:
         specifier: ^4.26.0
         version: 4.29.1
       ioredis:
-        specifier: ^5.3.2
-        version: 5.11.1(supports-color@8.1.1)
+        specifier: ^6.0.0
+        version: 6.0.0(supports-color@8.1.1)
       zod:
         specifier: ^3.22.4
         version: 3.25.76
@@ -3148,8 +3148,8 @@ importers:
         specifier: ^4.26.0
         version: 4.29.1
       ioredis:
-        specifier: ^5.3.2
-        version: 5.11.1(supports-color@8.1.1)
+        specifier: ^6.0.0
+        version: 6.0.0(supports-color@8.1.1)
       zod:
         specifier: ^3.22.4
         version: 3.25.76
@@ -3191,8 +3191,8 @@ importers:
         specifier: ^4.26.0
         version: 4.29.1
       ioredis:
-        specifier: ^5.3.2
-        version: 5.11.1(supports-color@8.1.1)
+        specifier: ^6.0.0
+        version: 6.0.0(supports-color@8.1.1)
       zod:
         specifier: ^3.22.4
         version: 3.25.76
@@ -3234,8 +3234,8 @@ importers:
         specifier: ^4.26.0
         version: 4.29.1
       ioredis:
-        specifier: ^5.3.2
-        version: 5.11.1(supports-color@8.1.1)
+        specifier: ^6.0.0
+        version: 6.0.0(supports-color@8.1.1)
       zod:
         specifier: ^3.22.4
         version: 3.25.76
@@ -3301,8 +3301,8 @@ importers:
         specifier: ^5.0.0
         version: 5.81.3(redis@4.7.1)(supports-color@8.1.1)
       ioredis:
-        specifier: ^5.3.2
-        version: 5.11.1(supports-color@8.1.1)
+        specifier: ^6.0.0
+        version: 6.0.0(supports-color@8.1.1)
       node-cron:
         specifier: ^3.0.3
         version: 3.0.3
@@ -4852,6 +4852,9 @@ packages:
 
   '@ioredis/commands@1.10.0':
     resolution: {integrity: sha512-UmeW7z4LfctwoQ5wkhVzgq8tXkreED2xZGpX+Bg+zA+WJFZCT6c062AfCK/Dfk81xZnnwdhJCUMkitihRaoC2Q==}
+
+  '@ioredis/commands@2.0.0':
+    resolution: {integrity: sha512-vrx0AE/T0h7cRZwfo1M39Cr+ZhZrkf0V8mQN75wucKCxCLD9l/VX6no3gFvrLqD1IlG/1LtzWovqEw3t0Vr9zg==}
 
   '@isaacs/cliui@8.0.2':
     resolution: {integrity: sha512-O8jcjabXaleOG9DQ0+ARXWZBTfnP4WNAqzuiJK7ll44AmxGKv/J2M4TPjxjY3znBCfvBXFzucm1twdyFybFqEA==}
@@ -9555,6 +9558,10 @@ packages:
   ioredis@5.11.1:
     resolution: {integrity: sha512-ehuGcf94bQXhfagULNXrJdfnWO38v070jxSx/qE87Kjzmu2fU7ro5EFAb+OPituLqgfyuQaym5DlrNydW2sJ9A==}
     engines: {node: '>=12.22.0'}
+
+  ioredis@6.0.0:
+    resolution: {integrity: sha512-f+Dtubxfpf6KYFq7WVXJoOLn0bk4TJrMrN9SzeE+jrWrCWj7XX3fA6vkryafhADX+GMymRxgDJDOI33COkJc0w==}
+    engines: {node: '>=20.0.0'}
 
   ip-address@10.5.0:
     resolution: {integrity: sha512-R5SnVLJmgYYvf2F2ZgwSBnelz5G4q5AxIC277GDfUaNbrZKNANcBC7RHqYYePlszf4kBolVkJauG0ZjHHFh55g==}
@@ -14571,6 +14578,8 @@ snapshots:
     optional: true
 
   '@ioredis/commands@1.10.0': {}
+
+  '@ioredis/commands@2.0.0': {}
 
   '@isaacs/cliui@8.0.2':
     dependencies:
@@ -20105,6 +20114,17 @@ snapshots:
       denque: 2.1.0
       redis-errors: 1.2.0
       redis-parser: 3.0.0
+      standard-as-callback: 2.1.0
+    transitivePeerDependencies:
+      - supports-color
+
+  ioredis@6.0.0(supports-color@8.1.1):
+    dependencies:
+      '@ioredis/commands': 2.0.0
+      cluster-key-slot: 1.1.1
+      debug: 4.4.3(supports-color@8.1.1)
+      denque: 2.1.0
+      redis-errors: 1.2.0
       standard-as-callback: 2.1.0
     transitivePeerDependencies:
       - supports-color
