@@ -31,25 +31,33 @@ function productionPorts(): Workflow.ActivationPorts {
     async findWorkflowByIdempotencyKey(key) {
       const wf = await prisma.sitePlanWorkflow.findUnique({
         where: { idempotencyKey: key },
-        select: {
-          id: true, definitionVersion: true,
-          stageExecutions: { select: { stage: true, status: true, attempt: true, completedAt: true } },
-        },
+        select: { id: true, definitionVersion: true },
       })
       if (!wf) return null
+
+      // Two queries, not a nested select. `SitePlanWorkflow` and
+      // `SitePlanStageExecution` are joined by a plain `workflowId` column with
+      // no Prisma relation declared on either side, so `stageExecutions` is not
+      // a field the client has ever had — this file has never compiled, which
+      // is why web-main last deployed on 21 August.
+      const executions = await prisma.sitePlanStageExecution.findMany({
+        where: { workflowId: wf.id },
+        select: { job: true, status: true, attempt: true, completedAt: true },
+      })
+
       return {
         workflowId: wf.id,
         definitionVersion: wf.definitionVersion,
-        // `stage` persists the coarse code; the detailed job name lives in the
-        // execution's own metadata, so the state machine reads job records that
-        // the worker writes. An empty list simply means nothing has completed.
-        stages: (wf.stageExecutions ?? []).flatMap(e => {
-          const job = (e as { job?: string }).job
-          return job
-            ? [{ job: job as never, status: e.status as StageStatus, attempt: e.attempt,
+        // The state machine sequences on the detailed job name, so a row
+        // without one tells it nothing and is dropped. `job` must be SELECTED
+        // for that to work: the previous version read it off an object that
+        // never contained it, so every workflow resumed as though no stage had
+        // ever completed.
+        stages: executions.flatMap(e =>
+          e.job
+            ? [{ job: e.job as never, status: e.status as StageStatus, attempt: e.attempt,
                  completedAt: e.completedAt?.toISOString() ?? null }]
-            : []
-        }),
+            : []),
       }
     },
 

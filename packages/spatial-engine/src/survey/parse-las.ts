@@ -90,7 +90,9 @@ export function parseLasHeader(buf: Buffer): LasHeader {
   let numberOfPointRecords = buf.readUInt32LE(107)
   if (versionMajor === 1 && versionMinor >= 4 && headerSize >= 375) {
     const big = buf.readBigUInt64LE(247)
-    if (big > 0n) numberOfPointRecords = Number(big)
+    // BigInt(0) rather than the 0n literal: web-main compiles this package at
+    // an ES2017 target, where a BigInt literal is a syntax-level error.
+    if (big > BigInt(0)) numberOfPointRecords = Number(big)
   }
 
   return {

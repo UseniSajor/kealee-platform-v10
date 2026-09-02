@@ -29,5 +29,5 @@
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  "exclude": ["node_modules", "app/api/loops", "app/api/events"]
+  "exclude": ["node_modules", "app/api/loops", "app/api/events", "__tests__", "**/__tests__/**"]
 }
