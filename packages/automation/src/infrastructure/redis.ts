@@ -19,9 +19,24 @@ let queueConnection: Redis | null = null;
 let pubConnection: Redis | null = null;
 let subConnection: Redis | null = null;
 
+/**
+ * Railway's private network is IPv6-only. Node's default resolution order tries
+ * the A record first, and a `.railway.internal` host publishes only AAAA — so
+ * every connection fails with `getaddrinfo ENOTFOUND` while the URL, the
+ * password and the port are all correct. `family: 6` is what makes ioredis ask
+ * for the address that exists.
+ *
+ * Conditional on purpose: forcing IPv6 would break localhost in development and
+ * the public TCP proxy, both of which resolve over IPv4.
+ */
+function railwayPrivateNetworkFamily(url: string): 6 | undefined {
+  return url.includes('.railway.internal') ? 6 : undefined;
+}
+
 function createConnection(name: string): Redis {
   const connection = new Redis(REDIS_URL, {
     ...DEFAULT_OPTIONS,
+    family: railwayPrivateNetworkFamily(REDIS_URL),
     connectionName: `kealee-${name}`,
   });
 
