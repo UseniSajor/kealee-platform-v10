@@ -253,7 +253,9 @@ export default function ValidationDetailPage() {
                     <div className="flex items-center gap-2">
                       <span className="text-sm font-mono text-gray-500">{room.sqft} sf</span>
                       {room.sqft < 70 && (
-                        <AlertTriangle className="h-3.5 w-3.5 text-orange-400" title="Below minimum size" />
+                        <span title="Below minimum size">
+                          <AlertTriangle className="h-3.5 w-3.5 text-orange-400" />
+                        </span>
                       )}
                     </div>
                   </div>
