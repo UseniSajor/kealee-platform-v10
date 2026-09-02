@@ -63,7 +63,7 @@ function ServiceCard({
   color,
   stats
 }: {
-  icon: React.ComponentType<{ className?: string; size?: number }>;
+  icon: React.ComponentType<{ className?: string; size?: string | number }>;
   title: string;
   description: string;
   href: string;
@@ -114,7 +114,7 @@ function QuickActionCard({
   href,
   badge
 }: {
-  icon: React.ComponentType<{ className?: string; size?: number }>;
+  icon: React.ComponentType<{ className?: string; size?: string | number }>;
   title: string;
   href: string;
   badge?: string;
@@ -170,7 +170,7 @@ function SidebarNavItem({
   active = false,
   badge
 }: {
-  icon: React.ComponentType<{ className?: string; size?: number }>;
+  icon: React.ComponentType<{ className?: string; size?: string | number }>;
   label: string;
   href: string;
   active?: boolean;
