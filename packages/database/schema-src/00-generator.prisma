@@ -1,3 +1,9 @@
 generator client {
   provider = "prisma-client-js"
+  // Pinned, not detected. The deploy image is node:24-bookworm-slim (Debian 12,
+  // OpenSSL 3.0). When `prisma generate` ran in an image with no libssl at all it
+  // could not detect a version, silently defaulted to openssl-1.1.x, and every
+  // service then threw PrismaClientInitializationError at runtime — with a green
+  // healthcheck in front of it, because the probe checks nothing downstream.
+  binaryTargets = ["native", "debian-openssl-3.0.x"]
 }

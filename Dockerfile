@@ -1,5 +1,9 @@
 FROM node:24-bookworm-slim AS deps
 
+RUN apt-get update -y \
+    && apt-get install -y --no-install-recommends openssl \
+    && rm -rf /var/lib/apt/lists/*
+
 RUN corepack enable && corepack prepare pnpm@11.22.0 --activate
 
 WORKDIR /app
@@ -66,6 +70,10 @@ RUN set -eux; \
 
 # Production stage: copy only what we need
 FROM node:24-bookworm-slim
+
+RUN apt-get update -y \
+    && apt-get install -y --no-install-recommends openssl \
+    && rm -rf /var/lib/apt/lists/*
 
 RUN corepack enable && corepack prepare pnpm@11.22.0 --activate
 
