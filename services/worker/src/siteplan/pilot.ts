@@ -27,8 +27,10 @@ async function main() {
   const project = await prisma.project.upsert({
     where: { id: 'pilot-project' },
     create: {
-      id: 'pilot-project', orgId: org.id, name: address,
-      status: 'ACTIVE' as never, projectNumber: 'PILOT-001',
+      // `Project` has no `projectNumber` column, and `status` is a plain String
+      // with an 'ACTIVE' default — the `as never` beside it was hiding exactly
+      // the kind of mismatch that `projectNumber` turned out to be.
+      id: 'pilot-project', orgId: org.id, name: address, status: 'ACTIVE',
     },
     update: {},
     select: { id: true },

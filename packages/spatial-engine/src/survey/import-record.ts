@@ -151,10 +151,24 @@ export function classifyDescription(description: string): SurveyPointClass {
   return 'unclassified'
 }
 
-/** SHA-256 without pulling a dependency — uses the platform crypto. */
+/**
+ * SHA-256 without pulling a dependency — uses the platform crypto.
+ *
+ * No `BufferSource` annotation. That name comes from the DOM lib, and this
+ * package is compiled by Node services whose tsconfig lists only `lib: ES2020`
+ * — `services/worker` among them, which hosts the site-plan processor. There
+ * the cast was a reference to a type that does not exist, so the engine failed
+ * to compile inside the very service that runs it. A `Uint8Array` already
+ * satisfies the parameter wherever the lib declares it.
+ */
 export async function checksumOf(bytes: string | Uint8Array): Promise<string> {
-  const data = typeof bytes === 'string' ? new TextEncoder().encode(bytes) : bytes
-  const digest = await crypto.subtle.digest('SHA-256', data as BufferSource)
+  const view = typeof bytes === 'string' ? new TextEncoder().encode(bytes) : bytes
+  // Copy into a plain ArrayBuffer. A Uint8Array is typed as
+  // `Uint8Array<ArrayBufferLike>`, and `ArrayBufferLike` admits
+  // SharedArrayBuffer, which `digest` does not accept — so passing the view
+  // straight through fails under the DOM lib even though it works at runtime.
+  // `ArrayBuffer` is an ES type, so this satisfies the Node tsconfigs too.
+  const digest = await crypto.subtle.digest('SHA-256', new Uint8Array(view).buffer)
   return [...new Uint8Array(digest)].map(b => b.toString(16).padStart(2, '0')).join('')
 }
 
