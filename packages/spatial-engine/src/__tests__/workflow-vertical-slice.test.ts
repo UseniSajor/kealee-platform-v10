@@ -203,10 +203,20 @@ describe('runner enforcement', () => {
   })
 
   it('reports NO_PROCESSOR for a declared but unconnected stage', async () => {
+    // The whole first release is marked complete so the guard lets a
+    // professional-review stage start — otherwise this would test the guard
+    // rejecting it, not the missing processor. The stage named here must be
+    // one nothing implements yet: it was `ingest_survey` until that stage was
+    // connected, at which point this test failed as it should have.
     const h = harness()
     let snap = newWorkflow('wf1')
-    snap = { ...snap, stages: [{ job: FIRST_JOB, status: 'COMPLETED', attempt: 1 }] }
-    const out = await runStage(h.ctxFor(snap, 'siteplan.ingest_survey'), h.deps)
+    snap = {
+      ...snap,
+      stages: FIRST_RELEASE_STAGES.map(s => ({
+        job: s.job, status: 'COMPLETED' as const, attempt: 1,
+      })),
+    }
+    const out = await runStage(h.ctxFor(snap, 'siteplan.route_review'), h.deps)
     expect(out.disposition).toBe('NO_PROCESSOR')
     expect(out.summary).toMatch(/declared and not yet connected/)
   })

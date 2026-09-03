@@ -103,7 +103,7 @@ async function runOne(
       priorOutputs: (await loadPriorOutputs(workflowId)) as never,
     },
     {
-      processors: Workflow.FIRST_RELEASE_PROCESSORS,
+      processors: Workflow.SITE_PLAN_PROCESSORS,
       loadPriorResult: async (w, j) => (await loadPriorOutputs(w))[j] ?? null,
     },
   )

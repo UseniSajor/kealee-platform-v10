@@ -56,6 +56,12 @@ export interface ResolvePropertyOutput {
 export interface ExistingConditionsOutput {
   contourCount: number
   elevationsFt: number[]
+  /**
+   * The interval the source publishes, in feet. The county's layer is 2-ft;
+   * null when no contours were obtained. Downstream grading is drawn at this
+   * interval rather than at a guess.
+   */
+  intervalFt: number | null
   verticalDatum: string | null
   reliabilityLevel: number
   twinRevision: number
@@ -130,8 +136,14 @@ function addressFrom(ctx: StageContext): string | null {
   return str(f.address) ?? str(f.propertyAddress) ?? str(f.site_address)
 }
 
-/** Rebuilds the lot package from persisted stage outputs. Deterministic. */
-function lotPackageFrom(ctx: StageContext): LotPackage {
+/**
+ * Rebuilds the lot package from persisted stage outputs. Deterministic.
+ *
+ * Exported because the design stages rebuild the same package rather than
+ * carrying the twin through the queue — a twin serialised into a job payload
+ * would be a second copy able to drift from the one the sheets were drawn from.
+ */
+export function lotPackageFrom(ctx: StageContext): LotPackage {
   const prop = requirePriorOutput<ResolvePropertyOutput>(ctx, 'siteplan.resolve_property')
   const cond = ctx.priorOutputs['siteplan.build_existing_conditions'] as
     | (ExistingConditionsOutput & { contours?: PgContourResult['contours'] })
@@ -335,6 +347,7 @@ const buildExistingConditions: StageProcessor = async (ctx): Promise<StageResult
   const out: ExistingConditionsOutput & { contours?: PgContourResult['contours'] } = {
     contourCount: contours?.contours.length ?? 0,
     elevationsFt: contours?.elevationsFt ?? [],
+    intervalFt: contours?.intervalFt ?? null,
     verticalDatum: contours?.verticalDatum ?? null,
     reliabilityLevel: 1,
     twinRevision: 1,
@@ -588,12 +601,13 @@ export const FIRST_RELEASE_PROCESSORS: Record<SitePlanJobName, StageProcessor | 
   'siteplan.deliver_preliminary': deliverPreliminary,
   'siteplan.ingest_survey': ingestSurvey,
   'siteplan.reconcile_survey': reconcileSurveyStage,
-  // Connected in a later checkpoint.
+  // The E_DESIGN group lives in ./design-stages and is merged in ./index.
   'siteplan.generate_grading': undefined,
   'siteplan.generate_drainage': undefined,
   'siteplan.generate_swm': undefined,
   'siteplan.generate_utilities': undefined,
   'siteplan.generate_environmental': undefined,
+  // Connected in a later checkpoint.
   'siteplan.route_review': undefined,
   'siteplan.apply_revisions': undefined,
   'siteplan.run_issuance_qc': undefined,

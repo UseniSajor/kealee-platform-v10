@@ -221,7 +221,7 @@ export const SITE_PLAN_STAGES: StageDefinition[] = [
   {
     job: 'siteplan.generate_utilities', group: 'E_DESIGN', persistAs: 'PLAN_GENERATION',
     purpose: 'Utility layout. Sec. 32-106 requires existing and proposed to be shown.',
-    implementation: null,
+    implementation: 'site-plan/design#generateDesign',
     requires: ['siteplan.generate_layout'], deterministic: true, retrySafe: true, inFirstRelease: false,
   },
   {
