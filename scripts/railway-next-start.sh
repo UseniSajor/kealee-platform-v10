@@ -16,6 +16,19 @@ export NEXT_PUBLIC_SUPABASE_ANON_KEY="${SUPABASE_ANON_KEY:-$NEXT_PUBLIC_SUPABASE
 export HOSTNAME=0.0.0.0
 export PORT="${PORT:-3000}"
 
+if [ "$APP_NAME" = "marketing-cron" ]; then
+  echo "Starting consolidated marketing cron on health port ${PORT}"
+  cd /app/packages/automation/apps/marketing-cron
+  exec node dist/index.js
+fi
+
+if [ "$APP_NAME" = "worker" ]; then
+  echo "Starting consolidated worker on health port ${PORT}"
+  export HEALTH_PORT="$PORT"
+  cd /app/services/worker
+  exec node dist/index.js
+fi
+
 APP_DIR="/app/apps/${APP_NAME}"
 SERVER="${APP_DIR}/.next/standalone/apps/${APP_NAME}/server.js"
 

@@ -1,4 +1,5 @@
 import { createServer } from 'http'
+import { prisma } from '@kealee/database'
 import { logger } from './lib/logger'
 import { initWorkerSentry, captureWorkerError } from './lib/sentry'
 import { redis } from './config/redis.config'
@@ -33,7 +34,7 @@ import { createLeadFollowupWorker } from './processors/lead-followup.processor'
 import { cronManager } from './cron/cron.manager'
 import cron from 'node-cron'
 import { drainSitePlanQueue } from './siteplan/processor'
-import type { Worker } from 'bullmq'
+import type { Queue, Worker } from 'bullmq'
 import { createBotJobsWorker, createChainJobsWorker } from './processors/bot-jobs.processor'
 
 logger.info('Starting Kealee Platform Worker Service')
@@ -60,7 +61,7 @@ let botJobsWorker: Worker | null = null
 let chainJobsWorker: Worker | null = null
 
 // Track queues and workers for health monitoring
-const allQueues = new Map<string, typeof emailQueue>()
+const allQueues = new Map<string, Queue>()
 const allWorkers = new Map<string, Worker | null>()
 
 // Validate required environment variables at startup (fail fast, not at first query)
@@ -580,8 +581,6 @@ async function start() {
 
   // Test database connection
   try {
-    // Import Prisma to test database
-    const { prisma } = await import('./lib/prisma')
     await prisma.$queryRaw`SELECT 1`
     setDatabaseHealth(true)
     console.log('✅ Database connection successful')
@@ -672,7 +671,7 @@ process.on('uncaughtException', (err: Error) => {
 start()
   .then(() => {
     // Health check HTTP server — required for Railway healthcheck probes
-    const HEALTH_PORT = Number(process.env.HEALTH_PORT) || 3099
+    const HEALTH_PORT = Number(process.env.HEALTH_PORT || process.env.PORT) || 3099
     const healthServer = createServer(async (req, res) => {
       try {
         // Get comprehensive health status
