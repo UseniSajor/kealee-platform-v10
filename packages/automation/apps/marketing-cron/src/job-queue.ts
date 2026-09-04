@@ -30,7 +30,8 @@ export async function initializeJobQueues(taskNames: string[]) {
     const redis = getRedisClient()
 
     for (const taskName of taskNames) {
-      const queue = new Queue(`cron:${taskName}`, { connection: redis })
+      const queueName = `cron-${taskName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}`
+      const queue = new Queue(queueName, { connection: redis })
       jobQueues.set(taskName, queue)
 
       // Cleanup old jobs
