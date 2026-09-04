@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@clerk/nextjs": "^5.5.0",
-    "@supabase/ssr": "^0.12.4",
+    "@supabase/ssr": "^0.12.5",
     "@kealee/auth": "workspace:*",
     "@kealee/communications": "workspace:*",
     "@kealee/concept-engine": "workspace:*",
@@ -20,6 +20,6 @@
     "@kealee/storage": "workspace:*",
     "@kealee/ui": "workspace:*",
     "lucide-react": "^0.469.0",
-    "resend": "^6.21.0"
+    "resend": "^6.25.0"
   }
 }
