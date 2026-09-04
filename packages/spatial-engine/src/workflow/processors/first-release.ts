@@ -49,6 +49,16 @@ export interface ResolvePropertyOutput {
   parcelAreaSqFt: number | null
   parcelId: string | null
   streetPoint: [number, number] | null
+  /**
+   * Fronting street centrelines, with names.
+   *
+   * Sec. 32-130 requires the street and right-of-way on the sheet, and the
+   * front lot line is defined BY the street — the edge classification uses
+   * these to decide which edge the dwelling faces. Production carried only a
+   * single street POINT, so sheets drew no centreline at all and the edge
+   * classification fell back to the weaker nearest-point method.
+   */
+  streets: { name: string | null; paths: [number, number][][] }[]
   /** Sec. 24-128 — a legal buildable lot fronts a street. */
   hasStreetFrontage: boolean
   /**
@@ -183,6 +193,7 @@ export function lotPackageFrom(ctx: StageContext): LotPackage {
       isResidentialSingleFamily: true,
       dwellingUnitCount: 1,
       streetPoint: prop.streetPoint,
+      streets: prop.streets ?? [],
       parcelId: prop.parcelId,
       contours: cond?.contours?.map(c => ({
         elevationFt: c.elevationFt, path: c.path, weight: c.weight, hidden: c.hidden,
@@ -295,6 +306,10 @@ const resolveProperty: StageProcessor = async (ctx): Promise<StageResult> => {
     parcelAreaSqFt: site.parcel?.areaSqFt ?? null,
     parcelId: site.parcel?.propId ?? null,
     streetPoint: site.streetPoint as [number, number] | null,
+    streets: site.streets.map(st => ({
+      name: st.name,
+      paths: st.paths as [number, number][][],
+    })),
     hasStreetFrontage: Boolean(site.streetPoint),
     municipality: {
       determined: site.municipality !== null,

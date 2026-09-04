@@ -14,7 +14,7 @@
  * several lots in one jurisdiction, that research happens once.
  */
 
-import { createSiteTwin, addFeatures, addSource, ringAreaSqFt, type SiteTwin, type Ring } from '../site-plan/site-twin'
+import { createSiteTwin, addFeatures, addSource, ringAreaSqFt, type SiteTwin, type Ring, type Position } from '../site-plan/site-twin'
 import { gisSourceRecord, LEVEL_1_DISCLOSURE, type ReliabilityLevel } from '../site-plan/reliability'
 import { classifyProject, type ApplicabilityReport } from '../site-plan/classification'
 import { calculateDisturbance, type DisturbanceComponents, type DisturbanceResult } from '../site-plan/disturbance'
@@ -26,6 +26,7 @@ import { getPgDimensionalStandards, parsePgStandardValue } from '../jurisdiction
 import type { SheetId } from '../sheets/sheet-template'
 import { deriveBuildableEnvelope, extractLotCoveragePct, type BuildableEnvelope } from '../site-plan/buildable-envelope'
 import { estimateFootprint, type FootprintEstimate, type HouseProgramme } from '../site-plan/footprint-programme'
+import { generateDesign } from '../site-plan/design'
 import { deriveSiteImprovements, type SiteImprovementResult } from '../site-plan/site-improvements'
 import { fetchMdParcelAtPoint } from '../jurisdictions/md-imap'
 
@@ -244,6 +245,28 @@ export function readZoningEnvelope(zoneCode: string): ZoningEnvelope {
  * the drawing, and stating it is what keeps the output honest enough to hand to
  * a professional.
  */
+/**
+ * Ray casting, with boundary points counted as inside.
+ *
+ * A design feature that shares a vertex with the lot line — a drainage area
+ * drawn to the parcel, say — must not be discarded for touching it.
+ */
+function pointInPolygon(pt: Position, poly: Position[]): boolean {
+  let inside = false
+  for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+    const [xi, yi] = poly[i]
+    const [xj, yj] = poly[j]
+    // On an edge, within a hair's breadth: treat as inside.
+    const onEdge = Math.abs((xj - xi) * (pt[1] - yi) - (pt[0] - xi) * (yj - yi)) < 1e-6
+      && Math.min(xi, xj) - 1e-6 <= pt[0] && pt[0] <= Math.max(xi, xj) + 1e-6
+      && Math.min(yi, yj) - 1e-6 <= pt[1] && pt[1] <= Math.max(yi, yj) + 1e-6
+    if (onEdge) return true
+    if ((yi > pt[1]) !== (yj > pt[1])
+      && pt[0] < ((xj - xi) * (pt[1] - yi)) / (yj - yi) + xi) inside = !inside
+  }
+  return inside
+}
+
 export function buildLotPackage(lot: LotInput, resolved?: ResolvedBoundary | null): LotPackage {
   // A survey wins; a GIS parcel is second; nothing is third. Nothing is a real
   // and common answer and it produces a package with no drawn boundary.
@@ -386,6 +409,43 @@ export function buildLotPackage(lot: LotInput, resolved?: ResolvedBoundary | nul
     }
 
     if (feats.length) twin = addFeatures(twin, feats as never[])
+
+    // Proposed design — grading, drainage, stormwater, sediment control,
+    // utilities, paving and planting.
+    //
+    // `blocksFromFeatures` maps FEATURES to canonical sheets, so a discipline
+    // with nothing on the twin produces no sheet. That is why a permit set
+    // arrived as C-100 and C-200 alone while the engine had already computed
+    // the rest and discarded it. PG requires those sheets, so the design
+    // belongs in the package. Every generated feature carries sourceId
+    // 'design', so a reviewer can still tell what Kealee drew from what was
+    // measured.
+    const design = generateDesign({ twin, contourIntervalFt: lot.contours?.length ? 2 : undefined })
+
+    // Two filters, both about not drawing something wrong on a sheet a
+    // reviewer reads.
+    //
+    // PAVEMENT is dropped because `deriveSiteImprovements` above already
+    // derives the driveway and leadwalk from the front edge normal and the
+    // garage face. The design module places its driveway from
+    // `site.coordinates[0]` — an arbitrary parcel VERTEX — so merging both put
+    // two driveways on the lot and ran one of them off the property.
+    //
+    // CONTAINMENT is required because the remaining placements are heuristics:
+    // a practice at the low corner plus an offset, trees at the centroid plus
+    // 30 ft. On a small infill lot those land outside the boundary. A feature
+    // drawn past the lot line is worse than an absent one — it is a defect a
+    // reviewer rejects, and the missing-information report already records
+    // what is not yet designed.
+    const parcelRing = ring.coordinates
+    const contained = (f: { ring?: Ring; line?: Position[]; point?: Position }): boolean => {
+      const pts = f.ring?.coordinates ?? f.line ?? (f.point ? [f.point] : [])
+      return pts.every(pt => pointInPolygon(pt, parcelRing))
+    }
+    const drawable = design.features.filter(
+      f => f.kind !== 'Pavement' && contained(f as never),
+    )
+    if (drawable.length) twin = addFeatures(twin, drawable as never[])
     // Carried on the twin so the sheet's SITE DATA table can print required
     // versus provided without re-deriving anything.
     if (lot.soils?.length) twin = { ...twin, soils: lot.soils } as typeof twin

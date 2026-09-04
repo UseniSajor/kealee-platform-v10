@@ -37,6 +37,18 @@ const RESOLVED: ResolvePropertyOutput = {
   parcelId: '368546',
   streetPoint: [1340400, 440120],
   hasStreetFrontage: true,
+  // Sec. 32-130 requires the street on the sheet, and the front lot line
+  // is defined by it.
+  streets: [{ name: 'ROLLINS AVE', paths: [[[1340300, 440120], [1340500, 440120]]] }],
+  // The county answered: outside every incorporated boundary, so no
+  // internal staff review is triggered. `determined: true` distinguishes
+  // that from a layer that never replied.
+  municipality: {
+    determined: true, incorporated: false, name: null,
+    nearestName: 'CAPITOL HEIGHTS', nearestWithin: 'quarter_mile',
+    mailingCity: 'Capitol Heights', zipCode: '20743',
+    internalStaffReviewRequired: false,
+  },
 }
 
 function ctx(formData: Record<string, unknown>, job: string): StageContext {
