@@ -2567,8 +2567,8 @@ importers:
         specifier: ^5.22.0
         version: 5.22.0(prisma@5.22.0)
       '@sendgrid/mail':
-        specifier: ^7.7.0
-        version: 7.7.0(debug@4.4.3(supports-color@8.1.1))
+        specifier: ^8.1.6
+        version: 8.1.6(debug@4.4.3(supports-color@8.1.1))(supports-color@8.1.1)
       '@sentry/node':
         specifier: ^10.49.0
         version: 10.70.0(@opentelemetry/core@2.10.0(@opentelemetry/api@1.9.1))(supports-color@8.1.1)
@@ -2721,7 +2721,7 @@ importers:
         specifier: ^5.22.0
         version: 5.22.0(prisma@5.22.0)
       '@sendgrid/mail':
-        specifier: ^8.1.3
+        specifier: ^8.1.6
         version: 8.1.6(debug@4.4.3(supports-color@8.1.1))(supports-color@8.1.1)
       axios:
         specifier: ^1.7.7
@@ -6350,25 +6350,13 @@ packages:
   '@selderee/plugin-htmlparser2@0.11.0':
     resolution: {integrity: sha512-P33hHGdldxGabLFjPPpaTxVolMrzrcegejx+0GxjrIb9Zv48D8yAIA/QTDR2dFl7Uz7urX8aX6+5bCZslr+gWQ==}
 
-  '@sendgrid/client@7.7.0':
-    resolution: {integrity: sha512-SxH+y8jeAQSnDavrTD0uGDXYIIkFylCo+eDofVmZLQ0f862nnqbC3Vd1ej6b7Le7lboyzQF6F7Fodv02rYspuA==}
-    engines: {node: 6.* || 8.* || >=10.*}
-
   '@sendgrid/client@8.1.6':
     resolution: {integrity: sha512-/BHu0hqwXNHr2aLhcXU7RmmlVqrdfrbY9KpaNj00KZHlVOVoRxRVrpOCabIB+91ISXJ6+mLM9vpaVUhK6TwBWA==}
     engines: {node: '>=12.*'}
 
-  '@sendgrid/helpers@7.7.0':
-    resolution: {integrity: sha512-3AsAxfN3GDBcXoZ/y1mzAAbKzTtUZ5+ZrHOmWQ279AuaFXUNCh9bPnRpN504bgveTqoW+11IzPg3I0WVgDINpw==}
-    engines: {node: '>= 6.0.0'}
-
   '@sendgrid/helpers@8.0.0':
     resolution: {integrity: sha512-Ze7WuW2Xzy5GT5WRx+yEv89fsg/pgy3T1E3FS0QEx0/VvRmigMZ5qyVGhJz4SxomegDkzXv/i0aFPpHKN8qdAA==}
     engines: {node: '>= 12.0.0'}
-
-  '@sendgrid/mail@7.7.0':
-    resolution: {integrity: sha512-5+nApPE9wINBvHSUxwOxkkQqM/IAAaBYoP9hw7WwgDNQPxraruVqHizeTitVtKGiqWCKm2mnjh4XGN3fvFLqaw==}
-    engines: {node: 6.* || 8.* || >=10.*}
 
   '@sendgrid/mail@8.1.6':
     resolution: {integrity: sha512-/ZqxUvKeEztU9drOoPC/8opEPOk+jLlB2q4+xpx6HVLq6aFu3pMpalkTpAQz8XfRfpLp8O25bh6pGPcHDCYpqg==}
@@ -7657,9 +7645,6 @@ packages:
   axe-core@4.13.0:
     resolution: {integrity: sha512-UzGt8zg7Ny8djbYMhxl2zuEevVa7r2gJjYY5Lwr1xM7+XU2nd6CkIWFTVcCIbAP63vSz71NaVyyuSk9lHKcy0A==}
     engines: {node: '>=4'}
-
-  axios@0.26.1:
-    resolution: {integrity: sha512-fPwcX4EvnSHuInCMItEhAGnaSEXRBjtzh9fOtsE6E1G6p7vl7edEeZe11QHf18+6+9gR5PbKV/sGKNaD8YaMeA==}
 
   axios@1.19.0:
     resolution: {integrity: sha512-ht/iuYZXEjFxLH/Hkezgd7m6JKlHHXEUSneaDz8uZe1Gj5QZtCnpyDsckvAiEnT89OEbCLmnte4R4sn7P0EKFw==}
@@ -16177,13 +16162,6 @@ snapshots:
       domhandler: 5.0.3
       selderee: 0.11.0
 
-  '@sendgrid/client@7.7.0(debug@4.4.3(supports-color@8.1.1))':
-    dependencies:
-      '@sendgrid/helpers': 7.7.0
-      axios: 0.26.1(debug@4.4.3(supports-color@8.1.1))
-    transitivePeerDependencies:
-      - debug
-
   '@sendgrid/client@8.1.6(debug@4.4.3(supports-color@8.1.1))(supports-color@8.1.1)':
     dependencies:
       '@sendgrid/helpers': 8.0.0
@@ -16192,20 +16170,9 @@ snapshots:
       - debug
       - supports-color
 
-  '@sendgrid/helpers@7.7.0':
-    dependencies:
-      deepmerge: 4.3.1
-
   '@sendgrid/helpers@8.0.0':
     dependencies:
       deepmerge: 4.3.1
-
-  '@sendgrid/mail@7.7.0(debug@4.4.3(supports-color@8.1.1))':
-    dependencies:
-      '@sendgrid/client': 7.7.0(debug@4.4.3(supports-color@8.1.1))
-      '@sendgrid/helpers': 7.7.0
-    transitivePeerDependencies:
-      - debug
 
   '@sendgrid/mail@8.1.6(debug@4.4.3(supports-color@8.1.1))(supports-color@8.1.1)':
     dependencies:
@@ -17716,12 +17683,6 @@ snapshots:
       fastq: 1.20.1
 
   axe-core@4.13.0: {}
-
-  axios@0.26.1(debug@4.4.3(supports-color@8.1.1)):
-    dependencies:
-      follow-redirects: 1.16.0(debug@4.4.3(supports-color@8.1.1))
-    transitivePeerDependencies:
-      - debug
 
   axios@1.19.0(debug@4.4.3(supports-color@8.1.1))(supports-color@8.1.1):
     dependencies:
