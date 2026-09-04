@@ -7,6 +7,7 @@
  * looks right but prints at 97% is worse than no PDF.
  */
 
+import { inflateSync } from 'zlib'
 import { renderSheetSetPdf } from '../sheets/render-pdf'
 import { buildSheetContext } from '../sheets/render-svg'
 import { ARCH_D, ANSI_B, fitViewport, boundsOf } from '../sheets/viewport'
@@ -69,6 +70,31 @@ describe('the file really is a PDF', () => {
   })
 })
 
+/**
+ * Decompressed page content — what the sheet actually draws.
+ *
+ * The raw PDF buffer holds Flate streams, so grepping it finds dictionary
+ * keys and nothing a reviewer would read. Inflating is the difference between
+ * asserting on the file and asserting on the drawing.
+ */
+function inflateStreams(buf: Buffer): string {
+  const raw = buf.toString('latin1')
+  let out = raw
+  const re = /stream\r?\n/g
+  let m: RegExpExecArray | null
+  while ((m = re.exec(raw)) !== null) {
+    const start = m.index + m[0].length
+    const end = raw.indexOf('endstream', start)
+    if (end < 0) continue
+    try {
+      out += inflateSync(Buffer.from(raw.slice(start, end), 'latin1')).toString('latin1')
+    } catch {
+      // Not every stream is Flate — images and metadata are not.
+    }
+  }
+  return out
+}
+
 describe('dimensional truth', () => {
   it('sets the page to exactly ARCH D — 36 x 24 inches at 72dpi', async () => {
     const out = await renderSheetSetPdf({ sheets: [ctxFor('C-100')] })
@@ -77,6 +103,28 @@ describe('dimensional truth', () => {
     expect(ARCH_D.widthPt).toBe(2592)
     expect(ARCH_D.heightPt).toBe(1728)
     expect(text).toMatch(/\/MediaBox\s*\[\s*0\s+0\s+2592\s+1728\s*\]/)
+  })
+
+  it('reports the scale it PLOTTED, not the scale the SVG path computes', async () => {
+    // A delivered production sheet said 1" = 10' in its title block over a
+    // drawing plotted, and scale-barred, at 1" = 20'. The title block was fed
+    // `ctx.scale` from buildSheetContext, which fits the lot alone, while this
+    // renderer fits the lot PLUS a 70 ft margin so the street centreline lands
+    // on the sheet. Two viewports, two answers, one sheet.
+    //
+    // The rendered text cannot be asserted here — pdfkit writes embedded-font
+    // glyph ids, so the drawn strings are not in the buffer at any level of
+    // decompression. The renderer therefore reports what it plotted.
+    const ctx = ctxFor('C-100')
+    const out = await renderSheetSetPdf({ sheets: [ctx] })
+    expect(out.plottedScales).toHaveLength(1)
+    expect(out.plottedScales[0].sheet).toBe('C-100')
+    expect(out.plottedScales[0].scaleLabel).toMatch(/^1" = [\d.]+'$/)
+    // The margin makes the plotted extent larger, so the plotted scale covers
+    // at least as many feet per inch as the tight SVG fit. If this ever
+    // inverts, the margin has stopped being applied.
+    const feet = (l: string) => Number(l.replace(/[^\d.]/g, ''))
+    expect(feet(out.plottedScales[0].scaleLabel)).toBeGreaterThanOrEqual(feet(ctx.scale))
   })
 
   it('honours a different sheet size when asked', async () => {

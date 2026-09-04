@@ -98,6 +98,16 @@ function titleBlock(
   doc: Doc,
   ctx: SheetContext,
   sheet: SheetSize,
+  /**
+   * The scale THIS page was actually plotted at.
+   *
+   * Not `ctx.scale`. That comes from the viewport `buildSheetContext` computed
+   * for the SVG path, while the PDF renderer fits its own — and when the two
+   * disagreed the sheet stated 1" = 10' in the title block over a drawing
+   * plotted, and scale-barred, at 1" = 20'. Anyone scaling off it was wrong by
+   * a factor of two.
+   */
+  scaleLabel: string,
   responsibility?: DividedResponsibilityBlock,
 ): number {
   const x = sheet.widthPt - sheet.marginPt - sheet.titleBlockWidthPt
@@ -119,7 +129,7 @@ function titleBlock(
   row('JURISDICTION', ctx.twin.jurisdictionCode.replace(/_/g, ' '))
   row('ZONE', ctx.twin.zoneCode ?? 'Not determined')
   row('SHEET', `${ctx.sheet} — ${SHEET_TITLES[ctx.sheet]}`)
-  row('SCALE', ctx.scale)
+  row('SCALE', scaleLabel)
   row('STATUS', ctx.status.replace(/_/g, ' '))
   row('SHEET NO.', `${ctx.sheetIndex} OF ${ctx.sheetCount}`)
 
@@ -726,6 +736,16 @@ export interface RenderedPdf {
   pageCount: number
   /** Frame elements missing on any sheet — an issuance blocker, not a warning. */
   frameFailures: { sheet: SheetId; missing: string[] }[]
+  /**
+   * The scale each page was actually plotted at.
+   *
+   * Reported because it is not knowable from the outside: this renderer fits
+   * the lot PLUS a 70 ft margin so the street centreline lands on the sheet,
+   * while `buildSheetContext` fits the lot alone. The two legitimately differ,
+   * and a delivered sheet once stated the SVG's scale over a PDF plotted at
+   * another. Surfacing it lets a caller check rather than assume.
+   */
+  plottedScales: { sheet: SheetId; scaleLabel: string }[]
 }
 
 /**
@@ -739,6 +759,7 @@ export interface RenderedPdf {
 export function renderSheetSetPdf(input: RenderPdfInput): Promise<RenderedPdf> {
   const sheetSize = input.sheetSize ?? ARCH_D
   const frameFailures: RenderedPdf['frameFailures'] = []
+  const plottedScales: RenderedPdf['plottedScales'] = []
 
   return new Promise((resolve, reject) => {
     const doc = new PDFDocument({
@@ -754,7 +775,9 @@ export function renderSheetSetPdf(input: RenderPdfInput): Promise<RenderedPdf> {
 
     const chunks: Buffer[] = []
     doc.on('data', (c: Buffer) => chunks.push(c))
-    doc.on('end', () => resolve({ buffer: Buffer.concat(chunks), pageCount: input.sheets.length, frameFailures }))
+    doc.on('end', () => resolve({
+      buffer: Buffer.concat(chunks), pageCount: input.sheets.length, frameFailures, plottedScales,
+    }))
     doc.on('error', reject)
 
     for (const ctx of input.sheets) {
@@ -780,6 +803,7 @@ export function renderSheetSetPdf(input: RenderPdfInput): Promise<RenderedPdf> {
         minY: lotB.minY - MARGIN_FT, maxY: lotB.maxY + MARGIN_FT,
       }
       const vp = fitViewport(b, sheetSize, PAD_FT)
+      plottedScales.push({ sheet: ctx.sheet, scaleLabel: vp.label })
 
       // Sheet border and drawing area
       box(doc, sheetSize.marginPt / 2, sheetSize.marginPt / 2,
@@ -825,7 +849,7 @@ export function renderSheetSetPdf(input: RenderPdfInput): Promise<RenderedPdf> {
       // The title block owns the full-height right column, so its identity
       // content is laid down first and everything else stacks BELOW it.
       // Drawing the data first put it straight over the responsibility rows.
-      const tbBottom = titleBlock(doc, ctx, sheetSize, input.responsibility?.[ctx.sheet])
+      const tbBottom = titleBlock(doc, ctx, sheetSize, vp.label, input.responsibility?.[ctx.sheet])
       // Tables along the bottom of the DRAWING area, where an engineering set
       // puts them — the right-hand column is already full.
       soilsTable(doc, sheetSize.marginPt + 16,
