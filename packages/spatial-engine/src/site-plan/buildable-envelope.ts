@@ -382,6 +382,57 @@ function rectFits(rect: Ring, envelope: Ring): boolean {
  * Binary search on a scale factor. Returning a SMALLER building than the
  * programme asked for is the honest outcome when the envelope cannot hold it.
  */
+/**
+ * Places the dwelling AGAINST the front building line, retreating only as far
+ * as it must to fit.
+ *
+ * A dwelling is built to the front setback — that is what the setback is for —
+ * and the yard left behind is the rear yard. `largestFittingRectangle` only
+ * ever SHRINKS at a fixed centre, so a front-set centre that could not take the
+ * full house collapsed it: a 1,640 sq ft dwelling became 7 sq ft rather than
+ * moving back a few feet. Area is what the customer asked for; position is what
+ * the engine may adjust.
+ *
+ * The front direction comes from the STREET, via the edge classification, which
+ * is why the street centrelines are fetched at all.
+ */
+function placeAgainstFront(
+  envelope: Ring, parcel: Ring, yards: EdgeYard[],
+  areaSqFt: number, aspect: number, angle: number,
+): Ring | null {
+  const pts = normaliseRing(parcel)
+  const frontIdx = yards.indexOf('front')
+  if (frontIdx < 0 || areaSqFt <= 0) return null
+
+  const a = pts[frontIdx], b = pts[(frontIdx + 1) % pts.length]
+  const dx = b[0] - a[0], dy = b[1] - a[1]
+  const len = Math.hypot(dx, dy) || 1
+  // Inward normal, matching insetPerEdge's convention for a CCW ring.
+  const nx = -dy / len, ny = dx / len
+
+  // Start with the front face on the envelope's front boundary, then walk
+  // back. One foot at a time is finer than any dimension a reviewer scales.
+  const env = normaliseRing(envelope)
+  const proj = (p: Position) => (p[0] - a[0]) * nx + (p[1] - a[1]) * ny
+  const frontOfEnvelope = Math.min(...env.map(proj))
+  const backOfEnvelope = Math.max(...env.map(proj))
+  const depth = areaSqFt / Math.sqrt(areaSqFt * aspect)
+
+  // Lateral position follows the envelope's own centre, so the house sits
+  // between the side yards rather than against one of them.
+  const c = centroid(envelope)
+  const cProj = proj(c)
+
+  for (let back = 0; back <= backOfEnvelope - frontOfEnvelope; back += 1) {
+    const want = frontOfEnvelope + depth / 2 + back
+    const shift = want - cProj
+    const centre: Position = [c[0] + nx * shift, c[1] + ny * shift]
+    const rect = rectangleAt(centre, areaSqFt, aspect, angle)
+    if (rectFits(rect, envelope)) return rect
+  }
+  return null
+}
+
 function largestFittingRectangle(
   envelope: Ring, centre: Position, targetAreaSqFt: number, aspect: number, angle: number,
 ): Ring | null {
@@ -594,8 +645,11 @@ export function deriveBuildableEnvelope(input: {
   // against a 4,701 sq ft envelope still put two of its four corners outside
   // the BRL — a building drawn through the setback line, which is precisely
   // what makes a plan rejectable. Shrink until it genuinely fits.
+  // Against the front line first, at the full requested area. Only if the
+  // house cannot fit anywhere along the lot's depth does it shrink in place.
   const footprint = allowed > 0
-    ? largestFittingRectangle(ring, centre, allowed, aspect, angle)
+    ? (placeAgainstFront(ring, parcel, yards, allowed, aspect, angle)
+       ?? largestFittingRectangle(ring, centre, allowed, aspect, angle))
     : null
 
   if (allowed <= 0) {
