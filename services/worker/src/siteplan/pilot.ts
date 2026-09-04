@@ -24,19 +24,24 @@ async function main() {
     update: {},
     select: { id: true },
   })
+  // One project per order, as a real order has. `sitePlanWorkflow` is unique on
+  // (organizationId, projectId), so a fixed project id meant the pilot could
+  // only ever run ONCE against a given database — the second run died on a
+  // constraint violation rather than on anything about the site plan.
+  const projectId = `pilot-project-${orderId}`
   const project = await prisma.project.upsert({
-    where: { id: 'pilot-project' },
+    where: { id: projectId },
     create: {
       // `Project` has no `projectNumber` column, and `status` is a plain String
       // with an 'ACTIVE' default — the `as never` beside it was hiding exactly
       // the kind of mismatch that `projectNumber` turned out to be.
-      id: 'pilot-project', orgId: org.id, name: address, status: 'ACTIVE',
+      id: projectId, orgId: org.id, name: address, status: 'ACTIVE',
     },
     update: {},
     select: { id: true },
   }).catch(async () => {
     const p = await prisma.project.findFirst({ select: { id: true } })
-    return p ?? { id: 'pilot-project' }
+    return p ?? { id: projectId }
   })
 
   // ── 1. The production entry point ────────────────────────────────────────
@@ -71,8 +76,10 @@ async function main() {
             orderId: i.orderId, productId: i.productId,
             currentStage: i.currentStage as never, status: 'ACTIVE',
             version: 1, professionalReviewRequired: true,
-            // Carried so the worker can read the programme back off the workflow.
-            metadata: { address, houseSquareFeet: 2400, storeys: 2, garage: 'attached_2_car' } as never,
+            // The port now carries the subject form data, so write THAT rather than a
+            // hardcoded copy — a second source of truth here is how the pilot
+            // passed while every real order reached the engine with nothing.
+            metadata: i.formData as never,
           },
           select: { id: true },
         })
