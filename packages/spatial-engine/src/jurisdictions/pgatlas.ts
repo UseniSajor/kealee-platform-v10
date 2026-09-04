@@ -22,6 +22,9 @@ export const PGATLAS_ENDPOINTS = {
   zoning: `${PGATLAS_ROOT}/Zoning/MapServer/63`,
   contours2ft: `${PGATLAS_ROOT}/Elevation/MapServer/1`,
   streetCenterline: `${PGATLAS_ROOT}/Transportation/MapServer/2`,
+  municipalBoundary: `${PGATLAS_ROOT}/Administrative/MapServer/30`,
+  municipalBufferQuarterMile: `${PGATLAS_ROOT}/Administrative/MapServer/31`,
+  municipalBufferHalfMile: `${PGATLAS_ROOT}/Administrative/MapServer/32`,
 } as const
 
 export interface PgAtlasAddress {
@@ -260,6 +263,107 @@ export interface PgAtlasSite {
   streetPoint: Position | null
   /** Street centrelines to draw and letter in the right-of-way. */
   streets: PgAtlasStreet[]
+}
+
+export interface PgAtlasMunicipality {
+  /**
+   * Whether the parcel sits INSIDE incorporated municipal limits.
+   *
+   * This is the whole point of the layer. A mailing address is not a
+   * jurisdiction: 1005 Rollins Ave carries a Capitol Heights address and ZIP
+   * 20743 while sitting outside the town limits.
+   */
+  incorporated: boolean
+  /** Incorporated municipality containing the parcel, when there is one. */
+  name: string | null
+  /** Nearest municipality when the parcel is outside every boundary. */
+  nearestName: string | null
+  /** How close that nearest municipality is, when known. */
+  nearestWithin: 'quarter_mile' | 'half_mile' | null
+  mailingCity: string | null
+  zipCode: string | null
+  /**
+   * Kealee routes an incorporated parcel to INTERNAL STAFF REVIEW.
+   *
+   * This is a Kealee workflow decision and nothing more. The engine asserts
+   * nothing about any municipality's own review process, which varies by town
+   * and is not published in a layer.
+   */
+  internalStaffReviewRequired: boolean
+  source: { authority: string; endpoint: string; retrievedAt: string }
+}
+
+/**
+ * Which municipality a parcel belongs to, from the county rather than a form.
+ *
+ * The address locator returns `Place_addr` alone — no city, no ZIP — and the
+ * parcel layer carries only OBJECTID, PROP_ID and acreage. Neither can answer
+ * this, so nothing in the engine could until this layer was wired in.
+ */
+export async function fetchPgMunicipality(
+  easting2248: number, northing2248: number,
+  opts: { fetchImpl?: typeof fetch } = {},
+): Promise<PgAtlasMunicipality | null> {
+  const doFetch = opts.fetchImpl ?? fetch
+  const str = (v: unknown): string | null =>
+    v == null || v === '' ? null : String(v)
+
+  const inside = await queryAtPoint(
+    PGATLAS_ENDPOINTS.municipalBoundary, easting2248, northing2248, '*', false, doFetch)
+  const insideAttrs = inside?.features?.[0]?.attributes
+
+  if (insideAttrs) {
+    return {
+      incorporated: true,
+      name: str(insideAttrs.NAME),
+      nearestName: null,
+      nearestWithin: null,
+      mailingCity: str(insideAttrs.CITY),
+      zipCode: str(insideAttrs.ZIP_CODE),
+      internalStaffReviewRequired: true,
+      source: {
+        authority: "Prince George's County / M-NCPPC — PGAtlas Municipal Boundary",
+        endpoint: PGATLAS_ENDPOINTS.municipalBoundary,
+        retrievedAt: new Date().toISOString(),
+      },
+    }
+  }
+
+  // Outside every boundary. The buffers say how close, which is worth
+  // recording — a lot a few hundred feet from a town line is where an
+  // applicant's assumption about their own jurisdiction is most likely wrong.
+  for (const [band, endpoint] of [
+    ['quarter_mile', PGATLAS_ENDPOINTS.municipalBufferQuarterMile],
+    ['half_mile', PGATLAS_ENDPOINTS.municipalBufferHalfMile],
+  ] as const) {
+    const near = await queryAtPoint(endpoint, easting2248, northing2248, '*', false, doFetch)
+    const attrs = near?.features?.[0]?.attributes
+    if (!attrs) continue
+    return {
+      incorporated: false,
+      name: null,
+      nearestName: str(attrs.NAME),
+      nearestWithin: band,
+      mailingCity: str(attrs.CITY),
+      zipCode: str(attrs.ZIP_CODE),
+      internalStaffReviewRequired: false,
+      source: {
+        authority: "Prince George's County / M-NCPPC — PGAtlas Municipal Buffer",
+        endpoint,
+        retrievedAt: new Date().toISOString(),
+      },
+    }
+  }
+
+  return {
+    incorporated: false, name: null, nearestName: null, nearestWithin: null,
+    mailingCity: null, zipCode: null, internalStaffReviewRequired: false,
+    source: {
+      authority: "Prince George's County / M-NCPPC — PGAtlas Municipal Boundary",
+      endpoint: PGATLAS_ENDPOINTS.municipalBoundary,
+      retrievedAt: new Date().toISOString(),
+    },
+  }
 }
 
 /** Address to lot, zone and position in one call. */

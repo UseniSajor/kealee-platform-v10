@@ -73,8 +73,9 @@ at 77 for a valid address; a weak match sites the plan on the wrong lot.
 The locator answers WHERE but not WHOSE. It returns `Place_addr` only — no
 city, no ZIP — and `Property/MapServer/15` carries just OBJECTID, PROP_ID and
 acreage. The municipality comes from `Administrative/MapServer/30`, and it
-matters: a parcel inside incorporated limits can need municipal review on top
-of DPIE and M-NCPPC.
+matters: a parcel inside incorporated limits is routed to Kealee internal
+staff review. That is a Kealee workflow decision — the engine does not assert
+anything about a municipality's own review process.
 
 1005 Rollins Ave is the worked example — it is OUTSIDE the Capitol Heights
 limits while carrying a Capitol Heights mailing address and ZIP 20743. Layer 30

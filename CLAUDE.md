@@ -219,8 +219,9 @@ free text, and do not use a public geocoder.
   STREET at 77 for a valid address. A weak match sites the plan on the wrong
   lot and every downstream check still passes.
 - **Jurisdiction comes from geometry, not from typing.** `Administrative/
-  MapServer/30` says whether a parcel is inside incorporated limits, which
-  decides whether a municipality reviews the plan on top of DPIE and M-NCPPC.
+  MapServer/30` says whether a parcel is inside incorporated limits. An
+  incorporated lot is routed to KEALEE INTERNAL STAFF REVIEW — that is a Kealee
+  workflow decision, not a claim about any municipality's own process.
   A town name in an intake field is an applicant's guess about their own
   address; the county's boundary layer is the answer.
 - **Never fabricate a fallback.** If a layer does not answer, the output says
