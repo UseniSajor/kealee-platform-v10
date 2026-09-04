@@ -20,6 +20,7 @@ function ports(seed: ExistingWorkflow | null = null) {
   const workflows = new Map<string, ExistingWorkflow>()
   const queue: Enqueued[] = []
   const jobKeys = new Set<string>()
+  const createInputs: { formData: Record<string, unknown> }[] = []
   let created = 0
   if (seed) workflows.set(workflowIdempotencyKey({ orderId: 'ord_1', definitionVersion: SITE_PLAN_WORKFLOW_VERSION }), seed)
 
@@ -27,6 +28,7 @@ function ports(seed: ExistingWorkflow | null = null) {
     async findWorkflowByIdempotencyKey(key) { return workflows.get(key) ?? null },
     async createWorkflow(input) {
       created++
+      createInputs.push({ formData: input.formData })
       const wf: ExistingWorkflow = {
         workflowId: `wf_${created}`, definitionVersion: input.definitionVersion, stages: [],
       }
@@ -40,7 +42,7 @@ function ports(seed: ExistingWorkflow | null = null) {
       queue.push({ queue: input.queue, job: input.job, jobKey: input.jobKey, workflowId: input.workflowId })
     },
   }
-  return { p, queue, workflows, createdCount: () => created }
+  return { p, queue, workflows, createInputs, createdCount: () => created }
 }
 
 const subject = {
@@ -48,6 +50,26 @@ const subject = {
 }
 
 describe('production reachability', () => {
+  it('hands the order form data to the store, or no stage can resolve a property', async () => {
+    // The subject has always carried formData and the port silently dropped it,
+    // so every real paid order reached `resolve_property` with an empty object
+    // and blocked on 'No address'. Only the pilot worked, because it supplies
+    // form data directly rather than through activation.
+    const { p, createInputs } = ports()
+    const formData = { address: '1005 Rollins Ave', houseSquareFeet: 2400, storeys: 2 }
+    await activateSitePlanWorkflow({
+      subject: { ...subject, formData }, ports: p, eligible: true,
+    })
+    expect(createInputs).toHaveLength(1)
+    expect(createInputs[0].formData).toEqual(formData)
+  })
+
+  it('passes an empty object rather than undefined when an order carries none', async () => {
+    const { p, createInputs } = ports()
+    await activateSitePlanWorkflow({ subject, ports: p, eligible: true })
+    expect(createInputs[0].formData).toEqual({})
+  })
+
   it('a paid site-plan order creates a workflow and enqueues the first job', async () => {
     const { p, queue, createdCount } = ports()
     const out = await activateSitePlanWorkflow({ subject, ports: p, eligible: true })

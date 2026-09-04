@@ -260,6 +260,7 @@ async function handleCheckoutCompleted(
       orderId: intakeId,
       productId: projectPath,
       isSitePlan: true,
+      formData: mergedFormData,
     })
     Object.assign(mergedFormData, sitePlanWorkflowFormData(activation))
     if (activation.disposition === 'FAILED') {

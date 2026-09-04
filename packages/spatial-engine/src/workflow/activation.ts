@@ -63,6 +63,14 @@ export interface ActivationPorts {
     orderId: string
     productId: string | null
     currentStage: string
+    /**
+     * The intake payload the stages read — address above all.
+     *
+     * Without it every stage after `initialize` runs against an empty object
+     * and `resolve_property` blocks on 'No address'. The subject has carried
+     * this field all along; the port dropped it, so nothing persisted it.
+     */
+    formData: Record<string, unknown>
   }) => Promise<{ workflowId: string }>
   enqueue: (input: {
     queue: string
@@ -178,6 +186,7 @@ export async function activateSitePlanWorkflow(input: {
       orderId: subject.orderId,
       productId: subject.productId ?? null,
       currentStage: currentStage({ workflowId: '', definitionVersion, stages: [] }),
+      formData: subject.formData ?? {},
     })
 
     const enqueued = await enqueueAll(ports, created.workflowId, [FIRST_JOB], definitionVersion)

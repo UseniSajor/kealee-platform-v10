@@ -74,6 +74,8 @@ function productionPorts(): Workflow.ActivationPorts {
           status: 'ACTIVE',
           version: 1,
           professionalReviewRequired: true,
+          // The worker reads stage formData straight off this column.
+          metadata: input.formData as never,
         },
         select: { id: true },
       })
@@ -161,6 +163,8 @@ export async function activateSitePlanForOrder(input: {
   orderId: string
   productId?: string | null
   isSitePlan: boolean
+  /** Intake form data. The stages cannot resolve a property without it. */
+  formData?: Record<string, unknown>
   ports?: Workflow.ActivationPorts
 }): Promise<SitePlanActivation> {
   const organizationId = input.organizationId ?? (await resolveOrganizationId().catch(() => null))
@@ -179,6 +183,7 @@ export async function activateSitePlanForOrder(input: {
       projectId: input.projectId,
       orderId: input.orderId,
       productId: input.productId ?? null,
+      formData: input.formData ?? {},
     },
     ports: input.ports ?? productionPorts(),
     eligible: input.isSitePlan,
