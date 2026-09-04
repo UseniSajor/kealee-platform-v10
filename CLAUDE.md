@@ -190,6 +190,60 @@ Rules:
 Execution pipeline is sacred:
 User → Agent → CTA → Stripe → Webhook → ProjectOutput → Queue → Worker → Output → Upsell
 
+## GEOSPATIAL & PROPERTY DATA — MANDATORY (PGAtlas is the authority)
+
+**Read this before touching anything that needs an address, parcel, zoning,
+terrain or jurisdiction. Do not execute first and reconcile later.**
+
+For any DC · MD · VA property fact the county publishes, **PGAtlas is the
+source of truth**. Query it. Do not ask the user, do not infer from intake
+free text, and do not use a public geocoder.
+
+| What | Endpoint (`gis.pgatlas.com/pgatlas/rest/services/…`) |
+|---|---|
+| Address locator | `Geocoders/Address/GeocodeServer` |
+| Parcel | `Property/MapServer/15` |
+| Zoning | `Zoning/MapServer/63` |
+| 2-ft contours (NAVD88) | `Elevation/MapServer/1` |
+| Street centrelines | `Transportation/MapServer/2` |
+| **Municipal boundary** | `Administrative/MapServer/30` (buffers: 31 ¼mi, 32 ½mi, 33 1mi) |
+| Soils | NOT PGAtlas — USDA SSURGO, area MD033 |
+
+### Rules that cost real time to learn
+
+- **Pass the street address ALONE.** Appending city, state or ZIP returns ZERO
+  candidates and the stage blocks. `1005 Rollins Ave` scores 100;
+  `1005 Rollins Ave, Capitol Heights, MD` matches nothing. Verified against the
+  live service.
+- **Minimum locator score is 90.** The composite locator offered a DIFFERENT
+  STREET at 77 for a valid address. A weak match sites the plan on the wrong
+  lot and every downstream check still passes.
+- **Jurisdiction comes from geometry, not from typing.** `Administrative/
+  MapServer/30` says whether a parcel is inside incorporated limits, which
+  decides whether a municipality reviews the plan on top of DPIE and M-NCPPC.
+  A town name in an intake field is an applicant's guess about their own
+  address; the county's boundary layer is the answer.
+- **Never fabricate a fallback.** If a layer does not answer, the output says
+  so and the feature is absent. A fabricated parcel or elevation renders
+  exactly like a real one and nothing downstream can tell them apart.
+- **Do not use `gisdata.pgplanning.org` for elevation.** It is the open-data
+  portal and has none; searching only it produced the false finding that the
+  county publishes no contours.
+- **`princegeorgescountymd.gov` blocks Anthropic egress IPs.** `WebFetch` gets
+  403 where a local `curl` gets 200. Never conclude a public document is
+  unreachable without trying locally.
+
+### Known violation — do not copy this pattern
+
+`resolveJurisdiction()` in `apps/web-main/lib/site-plan-rules.ts` regex-matches
+intake free text against a hardcoded list of twenty PG town names. It runs in
+the Stripe webhook, deliberately without network access. It is the one place in
+the site-plan path that trusts a text box over the county, and it is a known
+gap, not a pattern to follow.
+
+Full detail: `docs/system/site-plan-commands.md` and
+`docs/system/site-plan-generation.md`.
+
 ## AI CONTENT GENERATION — MANDATORY PROMPT RULES
 
 All AI generation prompts (Replicate, Kling, Sora, Claude Vision, any model) that produce

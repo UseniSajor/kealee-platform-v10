@@ -63,10 +63,23 @@ layout — it records what a real sheet carries and what this engine still lacks
 | Zoning | `.../Zoning/MapServer/63` |
 | **2-ft contours** | `.../Elevation/MapServer/1` — "Contour - 2 Ft (2023)", NAVD88 |
 | Street centrelines | `.../Transportation/MapServer/2` |
+| **Municipal boundary** | `.../Administrative/MapServer/30` — incorporated limits |
+| Municipal proximity | `.../Administrative/MapServer/31,32,33` — ¼, ½, 1 mile buffers |
 | Soils | USDA SSURGO `sdmdataaccess.sc.egov.usda.gov` — area MD033 |
 
 Minimum locator score is 90. The composite locator returned a DIFFERENT STREET
 at 77 for a valid address; a weak match sites the plan on the wrong lot.
+
+The locator answers WHERE but not WHOSE. It returns `Place_addr` only — no
+city, no ZIP — and `Property/MapServer/15` carries just OBJECTID, PROP_ID and
+acreage. The municipality comes from `Administrative/MapServer/30`, and it
+matters: a parcel inside incorporated limits can need municipal review on top
+of DPIE and M-NCPPC.
+
+1005 Rollins Ave is the worked example — it is OUTSIDE the Capitol Heights
+limits while carrying a Capitol Heights mailing address and ZIP 20743. Layer 30
+returns nothing for it; layers 31 and 32 return CAPITOL HEIGHTS. Mailing city
+is not jurisdiction, and only the boundary layer distinguishes them.
 
 Do not use `gisdata.pgplanning.org` for elevation — it is the open-data portal
 and has none. That mistake produced a false finding that the county publishes no
