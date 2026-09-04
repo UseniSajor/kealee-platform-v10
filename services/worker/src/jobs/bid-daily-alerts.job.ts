@@ -23,7 +23,13 @@ export async function executeBidDailyAlerts(): Promise<CronJobResult> {
       throw new Error(`API returned ${response.status}: ${response.statusText}`)
     }
 
-    const result = await response.json()
+    // `Response.json()` is typed `unknown`, not `any`. The endpoint's shape is
+    // stated here rather than asserted away, so a change in the API surfaces
+    // as a type error instead of an undefined count in an alert log line.
+    const result = (await response.json()) as {
+      alertCount?: number
+      success?: boolean
+    }
     const duration = Date.now() - startTime
 
     console.log(`Bid daily alerts completed: ${result.alertCount || 0} alerts sent`)

@@ -9,7 +9,7 @@ const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://app.kealee.com'
 const COMMAND_CENTER_URL = process.env.COMMAND_CENTER_URL || 'https://command-center.kealee.com'
 
 async function getPrisma() {
-  const { PrismaClient } = await import('@prisma/client')
+  const { PrismaClient } = await import('@kealee/database')
   return new PrismaClient() as any
 }
 

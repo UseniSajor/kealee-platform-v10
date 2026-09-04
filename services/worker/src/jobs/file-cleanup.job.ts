@@ -11,7 +11,7 @@ try {
   prismaAny = db.prisma || db.prismaAny || db.default
 } catch (error) {
   // Fallback: import directly if package not available
-  const { PrismaClient } = require('@prisma/client')
+  const { PrismaClient } = require('@kealee/database')
   prismaAny = new PrismaClient()
 }
 import { S3Client, ListObjectsV2Command, DeleteObjectCommand } from '@aws-sdk/client-s3'

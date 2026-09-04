@@ -15,7 +15,7 @@ import type { ConceptEngineJobData } from '../queues/concept-engine.queue';
 
 async function getPrisma() {
   try {
-    const { PrismaClient } = await import('@prisma/client');
+    const { PrismaClient } = await import('@kealee/database');
     return new PrismaClient() as any;
   } catch {
     console.warn('[concept-engine] Prisma client not available');
@@ -466,6 +466,21 @@ interface ConceptRenderInput {
   projectType?: string
 }
 
+/**
+ * The subset of a Replicate prediction this processor reads.
+ *
+ * `Response.json()` is typed `unknown`, so the polling loop below cannot read
+ * `status` off it without a stated shape. Every field is optional because the
+ * API returns a partial object on an error, and treating a missing `status` as
+ * a render that did not succeed is the correct reading.
+ */
+interface ReplicatePrediction {
+  id?: string
+  status?: 'starting' | 'processing' | 'succeeded' | 'failed' | 'canceled'
+  output?: string | string[]
+  error?: unknown
+}
+
 async function generateConceptRenders(input: ConceptRenderInput): Promise<string[]> {
   const token = process.env.REPLICATE_API_TOKEN;
   if (!token) {
@@ -511,7 +526,7 @@ async function generateConceptRenders(input: ConceptRenderInput): Promise<string
         continue;
       }
 
-      let prediction = await submitRes.json();
+      let prediction = (await submitRes.json()) as ReplicatePrediction;
 
       if (prediction.status !== 'succeeded') {
         const deadline = Date.now() + 120_000;
@@ -522,7 +537,7 @@ async function generateConceptRenders(input: ConceptRenderInput): Promise<string
             { headers: { Authorization: `Bearer ${token}` } }
           );
           if (!pollRes.ok) break;
-          prediction = await pollRes.json();
+          prediction = (await pollRes.json()) as ReplicatePrediction;
         }
       }
 

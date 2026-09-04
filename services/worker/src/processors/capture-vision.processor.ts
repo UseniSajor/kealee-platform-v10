@@ -127,7 +127,7 @@ async function analyzeAsset(job: Job<CaptureAnalysisJobData>): Promise<void> {
     throw new Error('[capture-vision] assetId and storageUrl are required')
   }
 
-  const { PrismaClient } = await import('@prisma/client')
+  const { PrismaClient } = await import('@kealee/database')
   const prisma = new PrismaClient() as any
 
   try {
@@ -210,7 +210,7 @@ async function analyzeAsset(job: Job<CaptureAnalysisJobData>): Promise<void> {
 
 export async function pollAndAnalyzePending(): Promise<void> {
   const { captureAnalysisQueue } = await import('../queues/capture-analysis.queue')
-  const { PrismaClient } = await import('@prisma/client')
+  const { PrismaClient } = await import('@kealee/database')
   const prisma = new PrismaClient() as any
 
   try {

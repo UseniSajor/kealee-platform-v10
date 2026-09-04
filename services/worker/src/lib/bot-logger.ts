@@ -5,7 +5,7 @@
  */
 
 async function getPrisma() {
-  const { PrismaClient } = await import('@prisma/client')
+  const { PrismaClient } = await import('@kealee/database')
   return new PrismaClient() as any
 }
 

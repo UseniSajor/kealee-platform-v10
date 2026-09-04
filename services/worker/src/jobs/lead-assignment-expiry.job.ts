@@ -16,7 +16,7 @@
  * (see bid-urgent-check.job.ts for reference).
  */
 
-import { PrismaClient } from '@prisma/client'
+import { PrismaClient } from '@kealee/database'
 import { CronJobResult } from '../types/cron.types'
 
 // We access prismaAny via a local PrismaClient because the worker service does

@@ -6,7 +6,7 @@ import { emailQueue } from '../queues/email.queue'
 // Lazy import prisma to avoid circular deps
 async function getPrisma() {
   try {
-    const { PrismaClient } = await import('@prisma/client')
+    const { PrismaClient } = await import('@kealee/database')
     return new PrismaClient() as any
   } catch {
     console.warn('Prisma client not available in worker — using direct import')

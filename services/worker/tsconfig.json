@@ -1,24 +1,26 @@
 {
+  // NOTE ON LAYOUT — this service is started as `node dist/index.js`, by both
+  // scripts/railway-next-start.sh and the Dockerfile artifact assertions.
+  //
+  // `rootDir` is pinned rather than inferred, and the `paths` block that used to
+  // map six @kealee packages to ../../packages/*/src/index.ts is gone. Those
+  // source files joined the program, so TypeScript computed the common root as
+  // the MONOREPO ROOT and emitted dist/services/worker/src/index.js — while
+  // everything downstream kept looking for dist/index.js and finding a stale
+  // artifact from an older build. The packages resolve through node_modules to
+  // their built dist and .d.ts, like every other workspace dependency.
   "compilerOptions": {
     "target": "ES2020",
     "module": "commonjs",
     "lib": ["ES2020"],
     "outDir": "./dist",
+    "rootDir": "./src",
     "strict": false,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
-    "moduleResolution": "node",
-    "baseUrl": ".",
-    "paths": {
-      "@kealee/ai": ["../../packages/ai/src/index.ts"],
-      "@kealee/page-builder": ["../../packages/page-builder/src/index.ts"],
-      "@kealee/realtime": ["../../packages/realtime/src/index.ts"],
-      "@kealee/concept-engine": ["../../packages/concept-engine/src/index.ts"],
-      "@kealee/storage": ["../../packages/storage/src/index.ts"],
-      "@kealee/core": ["../../packages/core/src/index.ts"]
-    }
+    "moduleResolution": "node"
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]

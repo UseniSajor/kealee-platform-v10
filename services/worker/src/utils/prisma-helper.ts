@@ -5,7 +5,7 @@
  * Used by processors that need to access models not yet in generated types.
  */
 
-import { PrismaClient } from '@prisma/client'
+import { PrismaClient } from '@kealee/database'
 
 let _client: PrismaClient | null = null
 

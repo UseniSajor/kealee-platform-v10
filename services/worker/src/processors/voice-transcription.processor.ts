@@ -83,7 +83,7 @@ async function transcribeVoiceNote(job: Job<CaptureAnalysisJobData>): Promise<vo
     throw new Error('[voice-transcription] voiceNoteId and storageUrl are required')
   }
 
-  const { PrismaClient } = await import('@prisma/client')
+  const { PrismaClient } = await import('@kealee/database')
   const prisma = new PrismaClient() as any
 
   try {
@@ -107,7 +107,15 @@ async function transcribeVoiceNote(job: Job<CaptureAnalysisJobData>): Promise<vo
 
       const urlPath = new URL(storageUrl).pathname
       const ext = urlPath.split('.').pop() || 'webm'
-      const file = new File([audioBuffer as unknown as BlobPart], `voice_note_${voiceNoteId}.${ext}`, { type: `audio/${ext}` })
+      // `BlobPart` comes from the DOM lib, which this service does not declare
+      // (tsconfig lib is ES2020) — the same trap as the `BufferSource` cast in
+      // 4b7bed1d. A Buffer already IS a Uint8Array at runtime, and Uint8Array is
+      // a valid File source with no DOM lib required.
+      const file = new File(
+        [audioBuffer as unknown as Uint8Array],
+        `voice_note_${voiceNoteId}.${ext}`,
+        { type: `audio/${ext}` },
+      )
 
       const transcription = await client.audio.transcriptions.create({
         model: 'whisper-1',
@@ -152,7 +160,7 @@ async function transcribeVoiceNote(job: Job<CaptureAnalysisJobData>): Promise<vo
 
 export async function pollAndTranscribePending(): Promise<void> {
   const { captureAnalysisQueue } = await import('../queues/capture-analysis.queue')
-  const { PrismaClient } = await import('@prisma/client')
+  const { PrismaClient } = await import('@kealee/database')
   const prisma = new PrismaClient() as any
 
   try {
