@@ -74,6 +74,16 @@ export interface DesignInput {
   designIntensityInPerHr?: number
   /** Assumed contour interval, feet. */
   contourIntervalFt?: number
+  /**
+   * Midpoint of the FRONT lot line, from the street-based edge classification.
+   *
+   * Service runs and the driveway start here. Without it this module used
+   * `site.coordinates[0]` — an arbitrary parcel vertex — which ran the utility
+   * runs off the property on any lot whose first vertex is not the frontage.
+   */
+  frontPoint?: Position
+  /** Buildable envelope. Planting and practices are kept inside the lot. */
+  envelope?: Ring
   hasDemolition?: boolean
   hasRoadWork?: boolean
 }
@@ -136,6 +146,9 @@ export function generateDesign(input: DesignInput): DesignResult {
       ring: insetRing(site, 5),
       attributes: {
         type: 'Graded area',
+        // Routes this to the grading sheet. Without it `ProposedFeature` maps
+        // to site_layout and the grading sheet draws no grading.
+        proposed: true,
         contourIntervalFt,
         note: 'Positive drainage away from structure at 2% minimum for the first 10 ft.',
       },
@@ -149,7 +162,7 @@ export function generateDesign(input: DesignInput): DesignResult {
   // ── C-500 Utilities ───────────────────────────────────────────────────────
   if (site && proposedBuildings[0]) {
     const bc = ringCentroid(proposedBuildings[0].ring)
-    const frontage = site.coordinates[0]
+    const frontage = input.frontPoint ?? site.coordinates[0]
     for (const [type, offset] of [['Water service', -4], ['Sanitary lateral', 0], ['Storm drain', 4]] as const) {
       features.push({
         ...base, kind: 'Utility', id: nextId('util'),
@@ -253,7 +266,7 @@ export function generateDesign(input: DesignInput): DesignResult {
   if (input.hasRoadWork || proposedBuildings[0]) {
     if (site && proposedBuildings[0]) {
       const bc = ringCentroid(proposedBuildings[0].ring)
-      const front = site.coordinates[0]
+      const front = input.frontPoint ?? site.coordinates[0]
       features.push({
         ...base, kind: 'Pavement', id: nextId('drive'),
         ring: {
@@ -270,10 +283,16 @@ export function generateDesign(input: DesignInput): DesignResult {
   // ── L-100 Landscape and canopy ────────────────────────────────────────────
   if (site) {
     const c = ringCentroid(site)
-    for (const [dx, dy] of [[-20, 30], [20, 30], [0, -30]]) {
+    // Inside the buildable envelope when there is one: a shade tree drawn
+    // over the neighbour's lot is a defect, and on an infill lot a fixed
+    // 30 ft offset from the centroid lands there.
+    const plantRef = input.envelope ?? { coordinates: site.coordinates }
+    const pc = ringCentroid(plantRef)
+    const spread = Math.max(8, Math.min(24, Math.sqrt(ringAreaSqFt(plantRef)) / 4))
+    for (const [dx, dy] of [[-spread, spread], [spread, spread], [0, -spread]]) {
       features.push({
         ...base, kind: 'Tree', id: nextId('tree'),
-        ring: boxAt([c[0] + dx, c[1] + dy], 16, 16),
+        ring: boxAt([pc[0] + dx, pc[1] + dy], 12, 12),
         designation: 'Proposed shade tree',
       } as SiteFeature)
     }

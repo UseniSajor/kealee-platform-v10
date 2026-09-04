@@ -253,6 +253,45 @@ export function composeInfillPackage(blocks: ContentBlock[]): CompositionResult 
 }
 
 /** Builds content blocks from twin features, grouped as a reviewer reads them. */
+/**
+ * Which subjects belong on which canonical sheet.
+ *
+ * Lifted out of `blocksFromFeatures` so the RENDERER can filter by it too. It
+ * could not before, and the consequence was that splitting a set by discipline
+ * produced five pages carrying the identical drawing — a reviewer stamping
+ * C-400 Grading would have been stamping the boundary sheet.
+ */
+export const SHEET_SUBJECTS: { sheet: SheetId; subjects: ContentSubject[] }[] = [
+  { sheet: 'C-100', subjects: ['boundary_determination', 'topographic_survey', 'easement_depiction', 'existing_improvements'] },
+  { sheet: 'C-200', subjects: ['zoning_compliance', 'site_layout', 'architectural_footprint'] },
+  { sheet: 'C-300', subjects: ['demolition'] },
+  { sheet: 'C-400', subjects: ['grading_design', 'stormwater_design', 'sediment_control'] },
+  { sheet: 'C-500', subjects: ['utility_design'] },
+  { sheet: 'C-800', subjects: ['roadway_design'] },
+  { sheet: 'L-100', subjects: ['planting_design', 'tree_conservation'] },
+]
+
+/**
+ * Features a given sheet draws.
+ *
+ * Every sheet carries the BASE: the parcel boundary, the building restriction
+ * line, easements and existing contours. A grading sheet without the lot lines
+ * on it is not a sheet a reviewer can use. On top of that base sits only the
+ * discipline the sheet is for.
+ */
+export function featuresForSheet(features: SiteFeature[], sheet: SheetId): SiteFeature[] {
+  const subjects = SHEET_SUBJECTS.find(g => g.sheet === sheet)?.subjects ?? []
+  const BASE: SiteFeature['kind'][] = [
+    'Parcel', 'BoundarySegment', 'Setback', 'Easement', 'Contour',
+  ]
+  return features.filter(f =>
+    BASE.includes(f.kind)
+    || subjects.includes(subjectForFeature(f))
+    // The buildable envelope is the BRL; it orients every discipline.
+    || (f.kind === 'ProposedFeature' && 'id' in f && f.id === 'buildable-envelope'),
+  )
+}
+
 export function blocksFromFeatures(features: SiteFeature[]): ContentBlock[] {
   const groups: { id: string; label: string; sheet: SheetId; subjects: ContentSubject[] }[] = [
     { id: 'existing', label: 'Existing Conditions and Boundary', sheet: 'C-100',

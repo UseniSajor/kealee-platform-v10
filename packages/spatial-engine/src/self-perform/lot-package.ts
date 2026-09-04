@@ -420,7 +420,22 @@ export function buildLotPackage(lot: LotInput, resolved?: ResolvedBoundary | nul
     // belongs in the package. Every generated feature carries sourceId
     // 'design', so a reviewer can still tell what Kealee drew from what was
     // measured.
-    const design = generateDesign({ twin, contourIntervalFt: lot.contours?.length ? 2 : undefined })
+    // The front lot line, from the STREET-based edge classification. Service
+    // runs and the driveway start here rather than at an arbitrary vertex.
+    const frontEdge = buildable.edgeYards?.indexOf('front') ?? -1
+    const frontPoint = frontEdge >= 0
+      ? ((): Position => {
+          const pts = ring.coordinates
+          const a = pts[frontEdge], b = pts[(frontEdge + 1) % pts.length]
+          return [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2]
+        })()
+      : undefined
+    const design = generateDesign({
+      twin,
+      contourIntervalFt: lot.contours?.length ? 2 : undefined,
+      frontPoint,
+      envelope: buildable.ring ?? undefined,
+    })
 
     // Two filters, both about not drawing something wrong on a sheet a
     // reviewer reads.

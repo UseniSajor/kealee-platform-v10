@@ -13,6 +13,7 @@
  * so the projection carries over unchanged.
  */
 
+import { featuresForSheet } from './composer'
 import PDFDocument from 'pdfkit'
 import type { SiteTwin, SiteFeature, GenericFeature, Ring, Position } from '../site-plan/site-twin'
 import { featuresOfKind } from '../site-plan/site-twin'
@@ -215,6 +216,30 @@ function genericOfKind(twin: SiteTwin, kind: GenericFeature['kind']): GenericFea
   return twin.features.filter(f => f.kind === kind) as GenericFeature[]
 }
 
+function centroidOf(r: [number, number][]): [number, number] {
+  return [r.reduce((a, q) => a + q[0], 0) / r.length,
+          r.reduce((a, q) => a + q[1], 0) / r.length]
+}
+
+/**
+ * Diagonal hatch clipped to the POLYGON, not its bounding box.
+ *
+ * A bbox clip hatches ground the feature does not occupy, which is what made
+ * the dwelling read as spilling past the BRL when its outline was inside it.
+ */
+function hatch(doc: Doc, r: [number, number][], color: string, spacing: number): void {
+  const minX = Math.min(...r.map(q => q[0])), maxX = Math.max(...r.map(q => q[0]))
+  const minY = Math.min(...r.map(q => q[1])), maxY = Math.max(...r.map(q => q[1]))
+  doc.save()
+  doc.moveTo(r[0][0], r[0][1])
+  for (const q of r.slice(1)) doc.lineTo(q[0], q[1])
+  doc.closePath().clip()
+  doc.lineWidth(0.25).strokeColor(color).opacity(0.45)
+  for (let x = minX - (maxY - minY); x < maxX; x += spacing) {
+    doc.moveTo(x, maxY).lineTo(x + (maxY - minY), minY).stroke()
+  }
+  doc.opacity(1).restore()
+}
 function drawGeometry(doc: Doc, ctx: SheetContext, vp: Viewport, b: Bounds): void {
   const t = ctx.twin
   const P = (pt: Position) => project(pt, vp, b, PAD_FT)
@@ -356,6 +381,61 @@ function drawGeometry(doc: Doc, ctx: SheetContext, vp: Viewport, b: Bounds): voi
   }
 
   // ── Proposed site development: driveway, walks ───────────────────────────
+  // ── Discipline content ─────────────────────────────────────────────────
+  //
+  // Utility, SWMPractice, DrainageArea and Tree had NO draw path. The features
+  // were computed, put on the twin and correctly filtered onto their sheets,
+  // and then nothing drew them — so the utility and landscape sheets came out
+  // identical to the boundary sheet.
+
+  for (const u of genericOfKind(t, 'Utility')) {
+    if (!u.line || u.line.length < 2) continue
+    const pts = u.line.map(q => P(q as Position))
+    // Long-dash, as an underground service run is drafted.
+    polyline(doc, pts, { width: 0.7, color: '#0066aa', dash: [8, 3] }, false)
+    const label_ = String(u.attributes?.type ?? 'Utility')
+    const mid = pts[Math.floor(pts.length / 2)]
+    label(doc, mid[0] + 3, mid[1] - 4, label_.toUpperCase(), 5, { color: '#0066aa' })
+  }
+
+  for (const d of genericOfKind(t, 'DrainageArea')) {
+    if (!d.ring) continue
+    const r = projectRing(d.ring, vp, b, PAD_FT)
+    polyline(doc, r, { width: 0.6, color: '#3388bb', dash: [10, 4, 2, 4] }, true)
+    const c = centroidOf(r)
+    const ac = d.attributes?.areaAcres
+    label(doc, c[0] - 26, c[1], `DA ${ac ?? ''} AC`.trim(), 5, { color: '#3388bb' })
+  }
+
+  for (const sw of genericOfKind(t, 'SWMPractice')) {
+    if (!sw.ring) continue
+    const r = projectRing(sw.ring, vp, b, PAD_FT)
+    polyline(doc, r, { width: 1.0, color: '#227744', dash: undefined }, true)
+    hatch(doc, r, '#227744', 5)
+    const c = centroidOf(r)
+    label(doc, c[0] - 20, c[1] - 4, 'ESD', 5, { bold: true, color: '#227744' })
+    const ft = sw.attributes?.footprintSqFt
+    if (ft) label(doc, c[0] - 20, c[1] + 3, `${ft} SF`, 4.5, { color: '#227744' })
+  }
+
+  // Planting. A circle at the canopy radius is how a landscape sheet draws a
+  // proposed tree; the L-100 canopy calculation is a separate, unresolved
+  // matter (Sec. 25-128 Table 1) and is NOT implied by drawing one.
+  // Tree lives in the EnvironmentalFeature union, whose members share one
+  // `kind` union — so Extract collapses to never, exactly as the comment on
+  // genericOfKind describes. Filter and cast, as the rest of this file does.
+  const trees = t.features.filter(f => f.kind === 'Tree') as { ring?: Ring }[]
+  for (const tr of trees) {
+    if (!tr.ring) continue
+    const r = projectRing(tr.ring, vp, b, PAD_FT)
+    const c = centroidOf(r)
+    const rad = Math.max(3, Math.min(...r.map(q => Math.hypot(q[0] - c[0], q[1] - c[1]))))
+    doc.circle(c[0], c[1], rad)
+    stroke(doc, { width: 0.6, color: '#2e7d32', dash: undefined })
+    doc.circle(c[0], c[1], 1.2)
+    stroke(doc, { width: 0.5, color: '#2e7d32', dash: undefined })
+  }
+
   for (const pv of genericOfKind(t, 'Pavement')) {
     if (!pv.ring) continue
     const r = projectRing(pv.ring, vp, b, PAD_FT)
@@ -780,7 +860,18 @@ export function renderSheetSetPdf(input: RenderPdfInput): Promise<RenderedPdf> {
     }))
     doc.on('error', reject)
 
-    for (const ctx of input.sheets) {
+    for (const ctxAll of input.sheets) {
+      // Draw only what belongs on THIS sheet. `ctx.sheet` used to drive the
+      // title block and nothing else, so a set split by discipline produced
+      // five pages carrying the identical drawing — different titles over the
+      // same lines. A reviewer stamping C-400 Grading was stamping C-100.
+      //
+      // The base — boundary, BRL, easements, existing contours — stays on every
+      // sheet. A grading sheet without lot lines is not usable.
+      const ctx: SheetContext = {
+        ...ctxAll,
+        twin: { ...ctxAll.twin, features: featuresForSheet(ctxAll.twin.features, ctxAll.sheet) },
+      }
       const audit = auditSheetFrame(ctx)
       if (!audit.complete) frameFailures.push({ sheet: ctx.sheet, missing: [...audit.missing] })
 
