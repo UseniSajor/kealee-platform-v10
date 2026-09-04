@@ -28,13 +28,29 @@ import type { DividedResponsibilityBlock } from '../review/content-scope'
 const PAD_FT = 20
 
 /** Line weights in points, following normal civil drafting hierarchy. */
+/**
+ * Pen weights, read off the approved PG plans in `existing site plans/`.
+ *
+ * A drafted sheet reads by WEIGHT before it reads by label: the property line
+ * is the heaviest thing on the page, the building sits just under it, and
+ * everything informational falls away beneath. Drawing them all at similar
+ * weight is what makes a generated sheet look generated.
+ *
+ * Existing contours are thin AND dashed; proposed grading is heavier and
+ * solid. That contrast is how a reviewer tells existing grade from design
+ * intent at a glance, and it is the convention APPROVED-PLAN-ANALYSIS.md
+ * records the engine as lacking.
+ */
 const PEN = {
-  boundary: { width: 1.6, color: '#000000', dash: undefined as number[] | undefined },
-  setback: { width: 0.7, color: '#555555', dash: [4, 3] },
-  building: { width: 1.0, color: '#000000', dash: undefined },
+  boundary: { width: 2.0, color: '#000000', dash: undefined as number[] | undefined },
+  setback: { width: 0.8, color: '#444444', dash: [7, 4] },
+  building: { width: 1.4, color: '#000000', dash: undefined },
   proposed: { width: 1.2, color: '#000000', dash: undefined },
-  easement: { width: 0.7, color: '#777777', dash: [6, 2, 1, 2] },
-  contour: { width: 0.4, color: '#8a6d3b', dash: undefined },
+  easement: { width: 0.6, color: '#777777', dash: [8, 2, 1, 2] },
+  /** EXISTING grade: thin and dashed. */
+  contour: { width: 0.35, color: '#8a6d3b', dash: [5, 3] },
+  /** PROPOSED grade: heavier and solid, so the two never read alike. */
+  contourProposed: { width: 0.9, color: '#8a6d3b', dash: undefined },
   frame: { width: 0.8, color: '#000000', dash: undefined },
   hair: { width: 0.35, color: '#000000', dash: undefined },
 }
@@ -281,7 +297,8 @@ function drawGeometry(doc: Doc, ctx: SheetContext, vp: Viewport, b: Bounds): voi
     const a = c.attributes ?? {}
     const index = a.weight === 'index'
     polyline(doc, kept.map((p: Position) => P(p)),
-      { ...PEN.contour, width: index ? 0.9 : 0.4 })
+      // An index contour is heavier and its dash longer, as a drafter draws it.
+      { ...PEN.contour, width: index ? 0.7 : 0.35, dash: index ? [9, 4] : [5, 3] })
     // Elevation label on the line, as a drafter breaks a contour to letter it.
     const el = a.elevationFt
     if (el != null && kept.length > 2) {
@@ -888,7 +905,14 @@ export function renderSheetSetPdf(input: RenderPdfInput): Promise<RenderedPdf> {
       // to a smudge. The street still appears because the margin reaches it and
       // the geometry clip trims the rest.
       const lotB = boundsOf(rings)
-      const MARGIN_FT = 70
+      // A working margin around the content, PROPORTIONAL to it.
+      //
+      // A flat 70 ft added 140 ft to a 185 ft extent — nearly doubling it — and
+      // that pushed the plot from 1" = 10' to 1" = 20', halving the drawing and
+      // leaving the lot as a small figure in a large white sheet. A drafter
+      // fills the sheet: the drawing is the reason the paper exists.
+      const span = Math.max(lotB.maxX - lotB.minX, lotB.maxY - lotB.minY)
+      const MARGIN_FT = Math.max(15, span * 0.12)
       const b: Bounds = {
         minX: lotB.minX - MARGIN_FT, maxX: lotB.maxX + MARGIN_FT,
         minY: lotB.minY - MARGIN_FT, maxY: lotB.maxY + MARGIN_FT,
