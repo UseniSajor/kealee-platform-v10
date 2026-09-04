@@ -31,7 +31,7 @@
   },
   "dependencies": {
     "@kealee/pascal-wrapper": "workspace:*",
-    "pdfkit": "^0.14.0"
+    "pdfkit": "^0.20.2"
   },
   "devDependencies": {
     "@types/pdfkit": "^0.13.4",
