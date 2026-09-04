@@ -476,7 +476,16 @@ export function buildLotPackage(lot: LotInput, resolved?: ResolvedBoundary | nul
   const missingInformation = buildMissingInformationReport(twin, permitPath)
 
   const blocks = blocksFromFeatures(twin.features)
-  const sheets = composeSheets({ blocks })
+  // One sheet per discipline. A permit submission is read by a different
+  // reviewer per subject — DPIE Site/Road for grading and drainage, the Soil
+  // Conservation District for sediment control, M-NCPPC for landscape — and
+  // each signs the sheet carrying their scope. Merging five disciplines onto
+  // one page saves paper and costs the reviewer the sheet they are meant to
+  // stamp.
+  //
+  // The composer's greedy merge stays available for a diagnostic or a quick
+  // look; it is not what a jurisdiction receives.
+  const sheets = composeSheets({ blocks, forceFullSet: true })
   const coveredSheets = [...new Set(sheets.sheets.flatMap(s => s.covers))] as SheetId[]
   const checklist = buildCountyChecklist({ twin, applicability: permitPath, sheets: coveredSheets })
 

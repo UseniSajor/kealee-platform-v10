@@ -148,12 +148,25 @@ describe('the vertical slice runs through the production runner', () => {
     expect(r.artifacts[0].bytes).toBeGreaterThan(1000)
   })
 
-  it('composes a PG infill lot to one or two sheets, never ten', async () => {
+  it('gives every discipline its own sheet, and never pads with empty ones', async () => {
+    // This used to assert one or two pages, from when the composer merged
+    // disciplines onto a page. A permit submission is read by a different
+    // reviewer per subject and each signs the sheet carrying their scope, so
+    // the set is now one sheet per discipline.
+    //
+    // The original concern survives and is what is actually asserted: the set
+    // must not be PADDED. A canonical sheet with no content earns no page —
+    // that is what would turn an infill lot into a ten-sheet set.
     const r = await driveSlice()
     const composed = r.persisted.find(p => p.job === 'siteplan.compose_sheets')
-      ?.outputs as { pages: unknown[] }
+      ?.outputs as { pages: { primary: string; covers: string[] }[] }
+
     expect(composed.pages.length).toBeGreaterThanOrEqual(1)
-    expect(composed.pages.length).toBeLessThanOrEqual(2)
+    // One canonical sheet per page: no merging, and no page covering two.
+    for (const page of composed.pages) expect(page.covers).toHaveLength(1)
+    // Every page is a distinct discipline.
+    const sheets = composed.pages.map(p => p.primary)
+    expect(new Set(sheets).size).toBe(sheets.length)
   })
 
   it('resolves street frontage, which Sec. 24-128 requires of a buildable lot', async () => {

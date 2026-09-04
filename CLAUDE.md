@@ -234,6 +234,28 @@ free text, and do not use a public geocoder.
   403 where a local `curl` gets 200. Never conclude a public document is
   unreachable without trying locally.
 
+### Reference plans and generated output — READ BEFORE DRAWING
+
+Every site plan the engine produces is a RECORD, kept for reference, review and
+model training. They are not temporary files and do not belong in a scratch
+directory.
+
+| Location | What it holds |
+|---|---|
+| `existing site plans/` | APPROVED PG plans uploaded by staff. `Rollins Ave lots.pdf` covers the engine's own test address. Read these for drafting convention — line weight, hatching, text height, colour, block placement. |
+| `output/site-plans/` | Plans this engine generated. Save every new generation here. |
+| `docs/site-plan-pilot/` | A full pilot set — C-000…C-900, L-100, plus `site.dxf`, `site.xml` and `manifest.json`. |
+| `docs/site-plan-reference/APPROVED-PLAN-ANALYSIS.md` | What an approved sheet carries versus what the engine draws, with a stated priority order. |
+
+Save a `*.manifest.json` beside any generated plan: the form data that drove
+the run, the stage outputs and the document record. A bare PDF records what came
+out and nothing about why, which makes it useless as training material.
+
+**Read `APPROVED-PLAN-ANALYSIS.md` before changing sheet layout.** It is the
+distilled reading of the approved plans and it sets the priority: bottom band
+for tables, adjacent parcel references, match lines, and existing contours
+thin/dashed against heavier proposed.
+
 ### Known violation — do not copy this pattern
 
 `resolveJurisdiction()` in `apps/web-main/lib/site-plan-rules.ts` regex-matches

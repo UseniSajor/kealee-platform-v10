@@ -1,0 +1,43 @@
+{
+  "run": "discipline-split permit set, generated locally from live PGAtlas",
+  "generatedAt": "2026-09-04T21:10:25.642661Z",
+  "address": "1005 Rollins Ave",
+  "jurisdiction": "prince_georges_md",
+  "zone": "RSF-65",
+  "parcelId": "348854",
+  "grossLotAreaSqFt": 9596,
+  "setbacks": {
+    "frontFt": 25,
+    "sideFt": 8,
+    "rearFt": 20,
+    "source": "Subtitle 27, Sec. 27-4202"
+  },
+  "programme": {
+    "totalFloorAreaSqFt": 2400,
+    "storeys": 2,
+    "garage": "attached_2_car"
+  },
+  "footprintSqFt": 1640,
+  "footprintBasis": "programme cap (envelope 4,701 SF, coverage max 3,359 SF)",
+  "sheets": [
+    "C-100",
+    "C-200",
+    "C-400",
+    "C-500",
+    "L-100"
+  ],
+  "sheetSize": "36x24 in ARCH D",
+  "scale": "1\" = 20'",
+  "verticalDatum": "NAVD88 (feet)",
+  "contours": "35 lines, 208-216 ft @ 2 ft, PGAtlas Elevation",
+  "pendingSealCount": 9,
+  "sources": [
+    "PGAtlas Geocoders/Address",
+    "PGAtlas Property/MapServer/15",
+    "PGAtlas Zoning/MapServer/63",
+    "PGAtlas Elevation/MapServer/1",
+    "PGAtlas Transportation/MapServer/2",
+    "USDA SSURGO MD033"
+  ],
+  "note": "Kealee drafted this set. It requires review, correction and sealing by the licensed professionals named in the title block. Jurisdiction approval is separate and not implied."
+}
