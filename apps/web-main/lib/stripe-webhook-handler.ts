@@ -62,7 +62,7 @@ export async function processStripeWebhookEvent(
     // Revenue-product checkouts key on productKey, not projectPath — fall back
     // so this whole order category isn't silently excluded from admin alerts.
     const productLabel = meta.projectPath ?? meta.productKey
-    if (session.payment_status === 'paid' && meta.intakeId && productLabel) {
+    if (isFulfillable(session) && meta.intakeId && productLabel) {
       await recordPaidOrderIncident({
         intakeId: meta.intakeId,
         projectPath: productLabel,
@@ -113,6 +113,22 @@ async function handlePaymentFailed(pi: Stripe.PaymentIntent, req: NextRequest): 
   })
 }
 
+/**
+ * Whether a completed Checkout Session is owed fulfillment.
+ *
+ * `paid` is the ordinary case. `no_payment_required` is a session a discount
+ * took to zero — it is COMPLETE and terminal, and no later event will ever
+ * arrive for it. Treating it as unpaid silently dropped every fully-discounted
+ * order: the customer completes checkout and receives nothing, permanently.
+ *
+ * `unpaid` is the one that genuinely waits. An async payment method settles
+ * later and fires checkout.session.async_payment_succeeded, so returning early
+ * there is correct.
+ */
+function isFulfillable(session: Stripe.Checkout.Session): boolean {
+  return session.payment_status === 'paid' || session.payment_status === 'no_payment_required'
+}
+
 async function handleCheckoutCompleted(
   session: Stripe.Checkout.Session,
   req: NextRequest,
@@ -120,7 +136,7 @@ async function handleCheckoutCompleted(
 ): Promise<void> {
   const meta = session.metadata ?? {}
 
-  if (session.payment_status !== 'paid') {
+  if (!isFulfillable(session)) {
     console.log('[stripe-webhook] checkout completed before payment; waiting for paid event', session.id)
     return
   }

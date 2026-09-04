@@ -78,11 +78,19 @@ import { processStripeWebhookEvent } from '../stripe-webhook-handler'
 
 const request = { nextUrl: { origin: 'http://localhost:3000' } } as never
 
-function checkoutEvent(input: { source: string; projectPath?: string; paid?: boolean; id?: string }) {
+function checkoutEvent(input: {
+  source: string; projectPath?: string; paid?: boolean; id?: string
+  /** A discount took the session to zero: complete, terminal, nothing owed. */
+  fullyDiscounted?: boolean
+}) {
   return {
     id: input.id ?? 'evt_test_1', type: 'checkout.session.completed',
     data: { object: {
-      id: 'cs_test_1', payment_status: input.paid === false ? 'unpaid' : 'paid', amount_total: 55_000,
+      id: 'cs_test_1',
+      payment_status: input.fullyDiscounted
+        ? 'no_payment_required'
+        : input.paid === false ? 'unpaid' : 'paid',
+      amount_total: input.fullyDiscounted ? 0 : 55_000,
       metadata: { source: input.source, intakeId: 'intake-test', projectPath: input.projectPath },
       customer_details: { email: 'fixture@example.com', name: 'Fixture Homeowner' },
     } },
@@ -122,6 +130,26 @@ describe('shared Stripe webhook handler', () => {
     await processStripeWebhookEvent(checkoutEvent({ source: 'unknown' }), request)
     expect(mocks.fulfillRevenueProduct).not.toHaveBeenCalled()
     expect(mocks.triggerV30).not.toHaveBeenCalled()
+  })
+
+  it('fulfills a session a promotion code took to zero', async () => {
+    // `no_payment_required` is NOT `unpaid`. The session is complete and no
+    // further Stripe event will ever arrive for it, so returning early here
+    // dropped every fully-discounted order permanently — the customer checks
+    // out and receives nothing. Eight checkout routes set
+    // allow_promotion_codes, so this was reachable from all of them.
+    await processStripeWebhookEvent(
+      checkoutEvent({ source: 'revenue_product', fullyDiscounted: true }), request)
+    expect(mocks.fulfillRevenueProduct).toHaveBeenCalledWith(
+      expect.objectContaining({ payment_status: 'no_payment_required' }), 'evt_test_1')
+  })
+
+  it('still waits on an unpaid session, which settles later', async () => {
+    // The async-payment case is the one the early return is FOR: an unpaid
+    // session fires checkout.session.async_payment_succeeded once it settles.
+    await processStripeWebhookEvent(
+      checkoutEvent({ source: 'revenue_product', paid: false }), request)
+    expect(mocks.fulfillRevenueProduct).not.toHaveBeenCalled()
   })
 
   it.each([
