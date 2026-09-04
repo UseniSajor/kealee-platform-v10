@@ -7,9 +7,9 @@
 
 import { Worker, Job } from 'bullmq'
 import { redis } from '../config/redis.config'
-import { getEmailQueue } from '../../src/utils/email-queue'
-import { prismaAny } from '../../src/utils/prisma-helper'
-import { withRetry } from '../../src/utils/db-retry'
+import { getEmailQueue } from '../utils/email-queue'
+import { prismaAny } from '../utils/prisma-helper'
+import { withRetry } from '../utils/db-retry'
 import type { ProjectExecutionJobData } from '../queues/project-execution.queue'
 import { createJobLogger } from '../lib/logger'
 
