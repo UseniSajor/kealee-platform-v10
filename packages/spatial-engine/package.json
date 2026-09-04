@@ -20,11 +20,13 @@
     },
     "./engine": {
       "types": "./src/engine.ts",
+      "require": "./dist/engine.js",
       "default": "./src/engine.ts"
     }
   },
   "scripts": {
-    "build": "tsc --noEmit",
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit",
     "clean": "rm -rf dist"
   },
   "dependencies": {

@@ -1,0 +1,23 @@
+{
+  // Emits a CommonJS build for Node consumers — the queue worker above all.
+  //
+  // The package's entry points are .ts source, which works for bundlers and for
+  // tsx but not for plain Node: it type-strips the file and then its ESM
+  // resolver rejects the first of ~488 extensionless relative imports. That is
+  // what crashed the worker on its first ever production start.
+  //
+  // CommonJS specifically, because the CJS resolver handles extensionless
+  // relative requires natively — emitting ESM would reproduce the same failure.
+  // The base config keeps `noEmit` for typechecking; this one is the build.
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "noEmit": false,
+    "outDir": "./dist",
+    "declaration": true,
+    "sourceMap": false
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist", "src/**/__tests__/**"]
+}

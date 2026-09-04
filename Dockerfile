@@ -73,6 +73,7 @@ RUN set -eux; \
       test -f services/worker/dist/processors/bot-jobs.processor.js; \
       test -f packages/database/dist/index.js; \
       test -f packages/queue/dist/index.js; \
+      test -f packages/spatial-engine/dist/engine.js; \
   elif [ -n "$RAILWAY_SERVICE_NAME" ] && { [ -f "$APP_DIR/next.config.js" ] || [ -f "$APP_DIR/next.config.ts" ] || [ -f "$APP_DIR/next.config.mjs" ]; }; then \
       rm -rf "$APP_DIR/.next"; \
       echo "Building Next app $RAILWAY_SERVICE_NAME and dependencies..."; \
