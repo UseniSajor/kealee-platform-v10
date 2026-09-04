@@ -281,8 +281,16 @@ export const SHEET_SUBJECTS: { sheet: SheetId; subjects: ContentSubject[] }[] = 
  */
 export function featuresForSheet(features: SiteFeature[], sheet: SheetId): SiteFeature[] {
   const subjects = SHEET_SUBJECTS.find(g => g.sheet === sheet)?.subjects ?? []
+  // The base every sheet carries.
+  //
+  // The BUILDING belongs here, not only on the zoning sheet. You grade around
+  // the house, run services to it and plant around it — a grading sheet with
+  // no dwelling on it is not a sheet anyone can work from, and it was the
+  // first thing missing when the set was split by discipline. Paving is the
+  // same: the driveway is context for every discipline.
   const BASE: SiteFeature['kind'][] = [
     'Parcel', 'BoundarySegment', 'Setback', 'Easement', 'Contour',
+    'Building', 'Pavement',
   ]
   return features.filter(f =>
     BASE.includes(f.kind)

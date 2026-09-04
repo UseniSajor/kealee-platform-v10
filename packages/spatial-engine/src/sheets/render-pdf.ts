@@ -905,17 +905,52 @@ export function renderSheetSetPdf(input: RenderPdfInput): Promise<RenderedPdf> {
       // to a smudge. The street still appears because the margin reaches it and
       // the geometry clip trims the rest.
       const lotB = boundsOf(rings)
-      // A working margin around the content, PROPORTIONAL to it.
+
+      // A tight working margin, PROPORTIONAL to the content.
       //
-      // A flat 70 ft added 140 ft to a 185 ft extent — nearly doubling it — and
-      // that pushed the plot from 1" = 10' to 1" = 20', halving the drawing and
-      // leaving the lot as a small figure in a large white sheet. A drafter
-      // fills the sheet: the drawing is the reason the paper exists.
+      // A flat 70 ft added 140 ft to a 185 ft extent — nearly doubling it —
+      // which pushed the plot from 1" = 10' to 1" = 20' and left the lot a
+      // small figure in a large white sheet. A drafter fills the sheet.
       const span = Math.max(lotB.maxX - lotB.minX, lotB.maxY - lotB.minY)
       const MARGIN_FT = Math.max(15, span * 0.12)
-      const b: Bounds = {
+      let b: Bounds = {
         minX: lotB.minX - MARGIN_FT, maxX: lotB.maxX + MARGIN_FT,
         minY: lotB.minY - MARGIN_FT, maxY: lotB.maxY + MARGIN_FT,
+      }
+
+      // Then reach ASYMMETRICALLY to the fronting street.
+      //
+      // Sec. 24-128 makes street frontage what establishes a buildable lot and
+      // a reviewer checks the front lot line against the centreline, so the
+      // street must be ON the sheet. A uniform margin big enough to catch it
+      // wastes the other three sides; extending only toward the nearest
+      // centreline point keeps the lot large AND puts the street on the page.
+      //
+      // Only the nearest point is chased. A centreline runs for blocks, and
+      // fitting its whole extent shrank a 9,600 sq ft lot to a smudge.
+      const cx = (lotB.minX + lotB.maxX) / 2, cy = (lotB.minY + lotB.maxY) / 2
+      let nearest: Position | null = null
+      let nearestD = Infinity
+      const twinStreets = (ctx.twin as {
+        streets?: { name: string | null; paths: Position[][] }[]
+      }).streets ?? []
+      for (const st of twinStreets) {
+        for (const path of st.paths ?? []) {
+          for (const q of path) {
+            const d = Math.hypot(q[0] - cx, q[1] - cy)
+            if (d < nearestD) { nearestD = d; nearest = q as Position }
+          }
+        }
+      }
+      if (nearest) {
+        // A little past the centreline, so the right-of-way lettering has room.
+        const REACH_FT = 25
+        b = {
+          minX: Math.min(b.minX, nearest[0] - REACH_FT),
+          maxX: Math.max(b.maxX, nearest[0] + REACH_FT),
+          minY: Math.min(b.minY, nearest[1] - REACH_FT),
+          maxY: Math.max(b.maxY, nearest[1] + REACH_FT),
+        }
       }
       const vp = fitViewport(b, sheetSize, PAD_FT)
       plottedScales.push({ sheet: ctx.sheet, scaleLabel: vp.label })
