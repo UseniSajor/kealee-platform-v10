@@ -86,6 +86,7 @@ RUN set -eux; \
       echo "No Next app for '$RAILWAY_SERVICE_NAME' — building @kealee/api"; \
       pnpm --filter @kealee/api... build; \
       test -f services/api/dist/index.js; \
+      test -f packages/os-intake/dist/index.js; \
   fi
 
 # Production stage: copy only what we need
