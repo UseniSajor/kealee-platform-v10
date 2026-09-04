@@ -54,7 +54,7 @@ export async function POST(req: NextRequest) {
         status: 'paid',
         requires_payment: false,
         payment_amount: 0,
-        created_by_user_id: null,
+        user_id: null,
       })
       .select('id')
       .single()

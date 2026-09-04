@@ -81,14 +81,14 @@ export async function POST(req: NextRequest) {
           contact_email: intake.contactEmail,
           contact_phone: intake.contactPhone ?? null,
           project_address: intake.projectAddress,
-          budget_range: intake.budgetRange ?? null,
+          budget_range: (intake.budgetRange as string | undefined) ?? 'not_specified',
           form_data: formPayload,
           metadata,
           source: 'web-main',
           status: 'new',
           requires_payment: meta?.requiresPayment ?? true,
           payment_amount: totalAmount,
-          created_by_user_id: null,
+          user_id: null,
         })
         .select('id')
         .single()
