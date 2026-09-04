@@ -17,6 +17,8 @@ interface Purchase {
   project_address: string
   status: string
   payment_amount: number
+  paid_at: string | null
+  stripe_session_id: string | null
   created_at: string
   form_data: Record<string, unknown> | null
 }
@@ -26,6 +28,7 @@ const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string; 
   new:         { label: 'New',         color: '#2ABFBF', bg: '#2ABFBF15', icon: Clock },
   processing:  { label: 'Processing',  color: '#E8793A', bg: '#E8793A15', icon: Clock },
   error:       { label: 'Error',       color: '#E53E3E', bg: '#E53E3E15', icon: AlertCircle },
+  attention:   { label: 'Operator review', color: '#E8793A', bg: '#E8793A15', icon: AlertCircle },
 }
 
 function formatAmount(cents: number) {
@@ -79,6 +82,13 @@ export default function PurchasesPage() {
   const totalRevenue = purchases
     .filter(p => p.status === 'paid')
     .reduce((sum, p) => sum + (p.payment_amount ?? 0), 0)
+  const attentionCount = purchases.filter(p => {
+    const form = p.form_data ?? {}
+    return p.status === 'paid' && (
+      form.requiresHumanFulfillment === true ||
+      ['failed', 'retryable', 'manual_review'].includes(String(form.fulfillmentStatus ?? ''))
+    )
+  }).length
 
   return (
     <ProtectedRoute>
@@ -107,7 +117,7 @@ export default function PurchasesPage() {
             {[
               { label: 'Total Intakes',     value: purchases.length, color: '#1A2B4A' },
               { label: 'Paid',              value: totalPaid,        color: '#38A169' },
-              { label: 'Pending',           value: purchases.filter(p => p.status === 'new').length, color: '#2ABFBF' },
+              { label: 'Needs Attention',   value: attentionCount, color: '#E8793A' },
               { label: 'Revenue (intakes)', value: formatAmount(totalRevenue), color: '#E8793A' },
             ].map(stat => (
               <div key={stat.label} className="rounded-xl border border-gray-200 bg-white p-4">
@@ -160,7 +170,12 @@ export default function PurchasesPage() {
             ) : (
               <div className="divide-y divide-gray-100">
                 {filtered.map(p => {
-                  const cfg = STATUS_CONFIG[p.status] ?? STATUS_CONFIG.new
+                  const form = p.form_data ?? {}
+                  const requiresAttention = p.status === 'paid' && (
+                    form.requiresHumanFulfillment === true ||
+                    ['failed', 'retryable', 'manual_review'].includes(String(form.fulfillmentStatus ?? ''))
+                  )
+                  const cfg = requiresAttention ? STATUS_CONFIG.attention : (STATUS_CONFIG[p.status] ?? STATUS_CONFIG.new)
                   const Icon = cfg.icon
                   return (
                     <div key={p.id} className="flex items-start gap-4 px-5 py-4 hover:bg-gray-50 transition-colors">
@@ -180,6 +195,9 @@ export default function PurchasesPage() {
                         </div>
                         <p className="text-xs text-gray-500 mt-0.5">
                           {p.project_path.replace(/_/g, ' ')}
+                          {p.status === 'paid' && form.fulfillmentStatus
+                            ? ` · ${String(form.fulfillmentStatus).replace(/_/g, ' ')}`
+                            : ''}
                         </p>
                         <div className="mt-1 flex flex-wrap items-center gap-3 text-xs text-gray-400">
                           <span className="flex items-center gap-1">
@@ -197,6 +215,7 @@ export default function PurchasesPage() {
                       <div className="shrink-0 text-right">
                         <p className="text-sm font-bold text-gray-900">{formatAmount(p.payment_amount)}</p>
                         <p className="text-xs text-gray-400 mt-0.5">{formatDate(p.created_at)}</p>
+                        {p.stripe_session_id && <p className="mt-1 text-[10px] text-gray-300">{p.stripe_session_id.slice(-12)}</p>}
                       </div>
                     </div>
                   )

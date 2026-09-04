@@ -15,6 +15,7 @@ import {
   Megaphone,
   ImageIcon,
   Orbit,
+  ShoppingBag,
 } from 'lucide-react'
 
 const MARKETING_OS_URL = process.env.NEXT_PUBLIC_MARKETING_OS_URL ?? 'http://localhost:3032'
@@ -23,6 +24,7 @@ const NAV_ITEMS = [
   { href: '/', label: 'Overview', icon: LayoutDashboard, exact: true },
   { href: '/twins', label: 'Digital Twins', icon: Boxes },
   { href: '/events', label: 'Events', icon: Radio },
+  { href: '/orders', label: 'Paid Orders', icon: ShoppingBag },
   { href: '/bots', label: 'Bots', icon: Bot },
   { href: '/marketing', label: 'Marketing', icon: Megaphone },
   { href: MARKETING_OS_URL, label: 'Marketing OS', icon: Orbit, external: true },

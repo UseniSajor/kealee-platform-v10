@@ -31,6 +31,6 @@ export default clerkMiddleware(async (auth, request: NextRequest) => {
 
 export const config = {
   matcher: [
-    '/((?!login|signup|unauthorized|auth|_next/static|_next/image|favicon.ico|api).*)',
+    '/((?!health|login|signup|unauthorized|auth|_next/static|_next/image|favicon.ico|api).*)',
   ],
 };

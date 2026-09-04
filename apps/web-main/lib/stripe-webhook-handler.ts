@@ -31,6 +31,10 @@ import * as Sentry from '@sentry/nextjs'
 import { recordPaidOrderIncident } from '@/lib/paid-order-incident'
 import { routeToManualFulfillment } from '@/lib/manual-fulfillment'
 import { orderStatusPatch } from '@/lib/order-status'
+import {
+  ensurePaidOrderLedgerEntry,
+  isServiceCheckoutSource,
+} from '@/lib/paid-order-ledger'
 
 export async function processStripeWebhookEvent(
   event: Stripe.Event,
@@ -49,7 +53,10 @@ export async function processStripeWebhookEvent(
     return
   }
 
-  if (event.type !== 'checkout.session.completed') {
+  if (
+    event.type !== 'checkout.session.completed' &&
+    event.type !== 'checkout.session.async_payment_succeeded'
+  ) {
     return
   }
 
@@ -134,20 +141,40 @@ async function handleCheckoutCompleted(
   req: NextRequest,
   stripeEventId: string,
 ): Promise<void> {
-  const meta = session.metadata ?? {}
+  let meta = session.metadata ?? {}
 
   if (!isFulfillable(session)) {
     console.log('[stripe-webhook] checkout completed before payment; waiting for paid event', session.id)
     return
   }
 
-  if (meta.source === 'revenue_product') {
-    await fulfillRevenueProduct(session, stripeEventId)
+  if (!isServiceCheckoutSource(meta.source)) {
+    console.log('[stripe-webhook] paid checkout ignored non-service source=', meta.source)
     return
   }
 
-  if (meta.source !== 'public_intake' && meta.source !== 'public_intake_v30') {
-    console.log('[stripe-webhook] checkout.session.completed ignored source=', meta.source)
+  // Public intake normally already has a durable row. Every other service
+  // path (and a temporary/missing intake id) is reconstructed from the signed
+  // Stripe session before any generator runs. A database failure is rethrown
+  // so Stripe retries; a generator failure is converted to manual work below.
+  const ledger = await ensurePaidOrderLedgerEntry(session, stripeEventId)
+  meta = { ...meta, intakeId: ledger.intakeId, projectPath: ledger.projectPath }
+
+  if (meta.source === 'revenue_product') {
+    try {
+      await fulfillRevenueProduct(session, stripeEventId)
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error)
+      await routeToManualFulfillment({
+        intakeId: meta.intakeId!,
+        projectPath: meta.projectPath!,
+        stripeSessionId: session.id,
+        stripeEventId,
+        customerEmail: session.customer_details?.email ?? null,
+        reason: 'automation_failed',
+        detail: `Revenue-product fulfillment failed (${message}). Payment is preserved and the order requires operator review.`,
+      })
+    }
     return
   }
 

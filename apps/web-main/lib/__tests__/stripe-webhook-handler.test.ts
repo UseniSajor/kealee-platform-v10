@@ -8,6 +8,7 @@ const mocks = vi.hoisted(() => ({
   sendCustomerEmail: vi.fn().mockResolvedValue(undefined),
   trackPurchase: vi.fn().mockResolvedValue(undefined),
   routeToManual: vi.fn().mockResolvedValue(undefined),
+  ensureLedger: vi.fn().mockResolvedValue({ intakeId: 'intake-test', projectPath: 'cost_estimate', created: true }),
   updates: [] as Array<Record<string, unknown>>,
   transitioned: true,
   current: {
@@ -32,6 +33,13 @@ vi.mock('@/lib/marketing/lifecycle', () => ({
 }))
 vi.mock('@/lib/marketing/ga4-server', () => ({ trackPurchase: mocks.trackPurchase }))
 vi.mock('@/lib/manual-fulfillment', () => ({ routeToManualFulfillment: mocks.routeToManual }))
+vi.mock('@/lib/paid-order-ledger', () => ({
+  isServiceCheckoutSource: (source?: string) => [
+    'public_intake', 'public_intake_v30', 'product-order', 'bundle',
+    'permit-package', 'pre-design', 'revenue_product',
+  ].includes(source ?? ''),
+  ensurePaidOrderLedgerEntry: mocks.ensureLedger,
+}))
 
 function queryBuilder() {
   let selected = ''
@@ -80,11 +88,17 @@ const request = { nextUrl: { origin: 'http://localhost:3000' } } as never
 
 function checkoutEvent(input: {
   source: string; projectPath?: string; paid?: boolean; id?: string
+  type?: 'checkout.session.completed' | 'checkout.session.async_payment_succeeded'
   /** A discount took the session to zero: complete, terminal, nothing owed. */
   fullyDiscounted?: boolean
 }) {
+  mocks.ensureLedger.mockResolvedValue({
+    intakeId: 'intake-test',
+    projectPath: input.projectPath ?? 'cost_estimate',
+    created: true,
+  })
   return {
-    id: input.id ?? 'evt_test_1', type: 'checkout.session.completed',
+    id: input.id ?? 'evt_test_1', type: input.type ?? 'checkout.session.completed',
     data: { object: {
       id: 'cs_test_1',
       payment_status: input.fullyDiscounted
@@ -150,6 +164,30 @@ describe('shared Stripe webhook handler', () => {
     await processStripeWebhookEvent(
       checkoutEvent({ source: 'revenue_product', paid: false }), request)
     expect(mocks.fulfillRevenueProduct).not.toHaveBeenCalled()
+  })
+
+  it('fulfills an asynchronous payment when Stripe reports settlement', async () => {
+    await processStripeWebhookEvent(checkoutEvent({
+      source: 'public_intake',
+      projectPath: 'cost_estimate',
+      type: 'checkout.session.async_payment_succeeded',
+    }), request)
+    expect(mocks.triggerV30).toHaveBeenCalledWith(
+      'intake-test',
+      expect.objectContaining({ workflowTemplateId: 'wf_estimate_v1' }),
+    )
+  })
+
+  it('creates an operational ledger entry for a direct product checkout', async () => {
+    await processStripeWebhookEvent(checkoutEvent({ source: 'product-order' }), request)
+    expect(mocks.ensureLedger).toHaveBeenCalledWith(
+      expect.objectContaining({ id: 'cs_test_1' }),
+      'evt_test_1',
+    )
+    expect(mocks.triggerV30).toHaveBeenCalledWith(
+      'intake-test',
+      expect.objectContaining({ workflowTemplateId: 'wf_estimate_v1' }),
+    )
   })
 
   it.each([

@@ -41,7 +41,7 @@ export async function GET(req: NextRequest) {
   const { data, error } = await supabase
     .from('public_intake_leads')
     .select(
-      'id, project_path, client_name, contact_email, contact_phone, project_address, status, payment_amount, created_at, form_data',
+      'id, project_path, client_name, contact_email, contact_phone, project_address, status, payment_amount, paid_at, stripe_session_id, created_at, form_data',
     )
     .order('created_at', { ascending: false })
     .limit(100)
