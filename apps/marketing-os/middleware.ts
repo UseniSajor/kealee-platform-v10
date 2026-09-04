@@ -18,5 +18,5 @@ export default clerkMiddleware(async (auth, request) => {
 })
 
 export const config = {
-  matcher: ['/((?!login|unauthorized|guides|sitemap.xml|robots.txt|api/health|api/webhooks|_next/static|_next/image|favicon.ico).*)'],
+  matcher: ['/((?!health|login|unauthorized|guides|sitemap.xml|robots.txt|api/health|api/webhooks|_next/static|_next/image|favicon.ico).*)'],
 }
