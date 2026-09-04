@@ -51,6 +51,25 @@ export interface ResolvePropertyOutput {
   streetPoint: [number, number] | null
   /** Sec. 24-128 — a legal buildable lot fronts a street. */
   hasStreetFrontage: boolean
+  /**
+   * Municipality, resolved from the county boundary layer rather than from
+   * anything the applicant typed.
+   *
+   * `determined: false` means the layer did not answer. That is NOT the same
+   * as a parcel outside every boundary, and conflating them would route an
+   * incorporated lot straight past internal review.
+   */
+  municipality: {
+    determined: boolean
+    incorporated: boolean
+    name: string | null
+    nearestName: string | null
+    nearestWithin: string | null
+    mailingCity: string | null
+    zipCode: string | null
+    /** Kealee routes an incorporated parcel to internal staff review. */
+    internalStaffReviewRequired: boolean
+  }
 }
 
 export interface ExistingConditionsOutput {
@@ -277,6 +296,17 @@ const resolveProperty: StageProcessor = async (ctx): Promise<StageResult> => {
     parcelId: site.parcel?.propId ?? null,
     streetPoint: site.streetPoint as [number, number] | null,
     hasStreetFrontage: Boolean(site.streetPoint),
+    municipality: {
+      determined: site.municipality !== null,
+      incorporated: site.municipality?.incorporated ?? false,
+      name: site.municipality?.name ?? null,
+      nearestName: site.municipality?.nearestName ?? null,
+      nearestWithin: site.municipality?.nearestWithin ?? null,
+      mailingCity: site.municipality?.mailingCity ?? null,
+      zipCode: site.municipality?.zipCode ?? null,
+      internalStaffReviewRequired:
+        site.municipality?.internalStaffReviewRequired ?? false,
+    },
   }
 
   // No parcel is a real answer, not an error — the plan proceeds without a lot

@@ -263,6 +263,13 @@ export interface PgAtlasSite {
   streetPoint: Position | null
   /** Street centrelines to draw and letter in the right-of-way. */
   streets: PgAtlasStreet[]
+  /**
+   * Incorporated municipality, from the county's boundary layer.
+   *
+   * Null only when the layer could not be reached — which is NOT the same as
+   * a parcel outside every boundary, and the two must never be conflated.
+   */
+  municipality: PgAtlasMunicipality | null
 }
 
 export interface PgAtlasMunicipality {
@@ -373,11 +380,13 @@ export async function resolvePgAtlasSite(
 ): Promise<PgAtlasSite | null> {
   const geo = await geocodePgAtlas(address, opts)
   if (!geo) return null
-  const [parcel, zoning, streetPoint, streets] = await Promise.all([
+  const [parcel, zoning, streetPoint, streets, municipality] = await Promise.all([
     fetchPgAtlasParcel(geo.easting2248, geo.northing2248, opts),
     fetchPgAtlasZoning(geo.easting2248, geo.northing2248, opts),
     nearestStreetPoint(geo.easting2248, geo.northing2248, opts),
     fetchPgAtlasStreets(geo.easting2248, geo.northing2248, opts),
+    // A layer outage must not read as 'not in a municipality'.
+    fetchPgMunicipality(geo.easting2248, geo.northing2248, opts).catch(() => null),
   ])
-  return { address: geo, parcel, zoning, streetPoint, streets }
+  return { address: geo, parcel, zoning, streetPoint, streets, municipality }
 }
