@@ -1,0 +1,24 @@
+{
+  "_note": "Transcribe the courses from 'existing site plans/Rollins Ave lots.pdf' (Plat Book PM 231 p.50). Transcription is a human act: the plat is a scan with no text layer and a misread bearing puts a corner in the wrong place while every downstream check still passes. The engine validates what you enter by closure, precision and area against the recorded area, and refuses to draw a traverse that does not close.",
+  "_usage": "pnpm tsx scripts/generate-from-plat.ts <this-file> <out.pdf>",
+  "address": "1005 Rollins Ave",
+  "reference": {
+    "liber": "PM 231",
+    "folio": "50",
+    "subdivisionName": "Porter Subdivision",
+    "lot": "1"
+  },
+  "basisOfBearings": "Maryland State Plane Coordinate System (NAD 83)",
+  "pointOfBeginning": [1340254.7066, 440194.1578],
+  "recordedAreaSqFt": 9598,
+  "programme": {
+    "totalFloorAreaSqFt": 2400,
+    "storeys": 2,
+    "hasBasement": false,
+    "garage": "attached_2_car",
+    "coveredPorch": false
+  },
+  "calls": [
+    { "kind": "line", "bearing": "N 79-29-14 E", "distanceFt": 70.64, "label": "REPLACE — one object per course, clockwise from the point of beginning" }
+  ]
+}
