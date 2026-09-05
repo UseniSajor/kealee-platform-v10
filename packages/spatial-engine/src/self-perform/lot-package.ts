@@ -90,6 +90,20 @@ export interface LotInput {
   soils?: { mapUnitSymbol: string; mapUnitName: string; kFactor: string | null
             hydricRating: string | null; hydrologicGroup: string | null
             drainageClass: string | null }[]
+  /**
+   * Recorded easements burdening the lot, Sec. 32-130(a)(6).
+   *
+   * `undefined` means NOT ASKED and `[]` means asked and none found — the
+   * missing-information report tells them apart, because 'no easements' is a
+   * statement a permit set carries and an unasked question is not one.
+   */
+  easements?: {
+    ring: Ring
+    easementType: string
+    beneficiary?: string
+    recordReference?: string
+    widthFt?: number
+  }[]
   /** Jurisdiction parcel identifier, printed in the SITE DATA table. */
   parcelId?: string | null
 }
@@ -356,10 +370,16 @@ export function buildLotPackage(lot: LotInput, resolved?: ResolvedBoundary | nul
   })
   twin = addSource(twin, gisSourceRecord({
     sourceId: 'gis1',
-    authority: boundary?.authority ?? 'No boundary source',
-    dataset: boundary
-      ? `Parcel boundary — ${boundary.provenance.replace(/_/g, ' ')}`
-      : 'No parcel boundary obtained',
+    // A recorded plat names itself in the source table. `provenance` only
+    // distinguishes surveyed from compiled, so a plat-derived boundary and a
+    // field survey both printed "Parcel boundary — survey" and the sheet gave
+    // no way to tell which one a reviewer was holding.
+    authority: lot.platRecord?.reference ?? boundary?.authority ?? 'No boundary source',
+    dataset: lot.platRecord
+      ? 'Parcel boundary — recorded plat'
+      : boundary
+        ? `Parcel boundary — ${boundary.provenance.replace(/_/g, ' ')}`
+        : 'No parcel boundary obtained',
     crs: 'EPSG:2248', horizontalDatum: 'NAD83',
   }))
   twin = { ...twin, zoneCode: lot.zoneCode, overlayCodes: lot.overlayCodes ?? [] }
@@ -555,6 +575,26 @@ export function buildLotPackage(lot: LotInput, resolved?: ResolvedBoundary | nul
     if (drawable.length) twin = addFeatures(twin, drawable as never[])
     // Carried on the twin so the sheet's SITE DATA table can print required
     // versus provided without re-deriving anything.
+    // The SOURCE is recorded whenever the layer was queried, including when it
+    // came back empty. `undefined` is not asked and `[]` is asked-and-clear;
+    // without the source record the report cannot tell them apart, and 'no
+    // easements of record' is a much stronger statement than 'we did not look'.
+    if (lot.easements !== undefined) {
+      twin = addSource(twin, gisSourceRecord({
+        sourceId: 'easements',
+        authority: 'PGAtlas Easement (platted)',
+        dataset: 'Recorded easements — platted',
+        crs: 'EPSG:2248', horizontalDatum: 'NAD83',
+      }))
+      if (lot.easements.length) twin = addFeatures(twin, lot.easements.map((e, i) => ({
+        kind: 'Easement', id: `esmt-${i}`,
+        ring: e.ring,
+        easementType: e.easementType,
+        ...(e.beneficiary ? { beneficiary: e.beneficiary } : {}),
+        ...(e.recordReference ? { recordReference: e.recordReference } : {}),
+        ...(e.widthFt != null ? { widthFt: e.widthFt } : {}),
+      })) as never[])
+    }
     if (lot.soils?.length) twin = { ...twin, soils: lot.soils } as typeof twin
     if (lot.streets?.length) twin = { ...twin, streets: lot.streets } as typeof twin
     if (lot.adjacentParcels?.length) {
@@ -570,18 +610,6 @@ export function buildLotPackage(lot: LotInput, resolved?: ResolvedBoundary | nul
       edgeYards: buildable.edgeYards,
     } } as typeof twin
   }
-
-  const permitPath = classifyProject({
-    zoneCode: lot.zoneCode,
-    overlayCodes: lot.overlayCodes,
-    proposedUse: lot.proposedUse,
-    dwellingUnitCount: lot.dwellingUnitCount,
-    isResidentialSingleFamily: lot.isResidentialSingleFamily,
-    demolition: lot.demolition,
-    createsNewLots: lot.createsNewLots,
-    newLotCount: lot.newLotCount,
-    disturbance: lot.disturbance,
-  })
 
   // Quantify what the engine has ALREADY COMPUTED.
   //
@@ -622,10 +650,29 @@ export function buildLotPackage(lot: LotInput, resolved?: ResolvedBoundary | nul
       ? Number(swmFeature.attributes.footprintSqFt)
       : null,
   }
-  const disturbance = calculateDisturbance({
+  const disturbanceComponents = {
     ...derivedDisturbance,
     ...(lot.disturbance ?? {}),
+  }
+  const disturbance = calculateDisturbance(disturbanceComponents)
+  const permitPath = classifyProject({
+    zoneCode: lot.zoneCode,
+    overlayCodes: lot.overlayCodes,
+    proposedUse: lot.proposedUse,
+    dwellingUnitCount: lot.dwellingUnitCount,
+    isResidentialSingleFamily: lot.isResidentialSingleFamily,
+    demolition: lot.demolition,
+    createsNewLots: lot.createsNewLots,
+    newLotCount: lot.newLotCount,
+    // The SAME disturbance the report and the drawing use. This read
+    // `lot.disturbance` — the caller's figure alone — so the permit path was
+    // classified against an unquantified project while `disturbance` above
+    // held real numbers. The two then disagreed: the drawing printed a
+    // quantified total and the missing-information report went on demanding
+    // the components it had just been given.
+    disturbance: disturbanceComponents,
   })
+
   const envelope = zoningEnvelope
   const missingInformation = buildMissingInformationReport(twin, permitPath)
 
@@ -681,11 +728,50 @@ export function buildLotPackage(lot: LotInput, resolved?: ResolvedBoundary | nul
       'for a specific use or lot type.',
     )
   }
-  if (!envelope.found) beforeSeal.push(envelope.caution)
-  for (const item of missingInformation.items.slice(0, 5)) {
-    beforeSeal.push(`${item.label} (${item.responsible}): ${item.why}`)
+  // A FOOTPRINT ON AN EASEMENT.
+  //
+  // The buildable envelope is cut from setbacks alone, so an easement crossing
+  // the envelope does not move the building — and a dwelling drawn over a
+  // public utility easement renders exactly like a compliant one. The placement
+  // is not silently changed here, because which way a building shifts is a
+  // design decision; the conflict is stated instead, before anyone seals it.
+  const footprintRing = buildable?.footprint?.coordinates
+  if (footprintRing) {
+    for (const e of twin.features.filter(f => f.kind === 'Easement')) {
+      const er = (e as { ring?: Ring }).ring?.coordinates
+      if (!er) continue
+      const hits = footprintRing.filter(pt => pointInPolygon(pt, er)).length
+      if (hits === 0) continue
+      const kind = (e as { easementType?: string }).easementType ?? 'easement'
+      const ref = (e as { recordReference?: string }).recordReference
+      beforeSeal.push(
+        `The building footprint encroaches on a ${kind} easement` +
+        `${ref ? ` (${ref})` : ''}. Relocate the dwelling clear of it, or obtain a release ` +
+        'from the beneficiary. An easement runs with the land and survives a building permit.',
+      )
+    }
   }
-  beforeSeal.push(
+  if (!envelope.found) beforeSeal.push(envelope.caution)
+  // Every REQUIRED item, not the first five. This was sliced to 5, so a list
+  // longer than that dropped its tail silently — and the tail is not the
+  // unimportant end, it is whatever the report happened to append last. An
+  // omitted easement or an unquantified component reads identically to one
+  // that was never raised. Recommended items stay out of the seal list; they
+  // are in `missingInformation` for anyone who wants them.
+  //
+  // The unquantified components are named ONCE, by the summary above. Three
+  // sources describe the same five unknowns — the summary, one
+  // `Disturbance area — X` per component from the report, and one
+  // `Quantify: X` per component from the applicability review — so an
+  // unfiltered list read as fifteen problems when there are four, and the
+  // repetition trains a reader to skim exactly the list that must be read.
+  const namedByTheSummary = disturbance.indeterminate
+  for (const item of missingInformation.items) {
+    if (item.severity !== 'required') continue
+    if (namedByTheSummary && item.key.startsWith('disturbance:')) continue
+    if (namedByTheSummary && /^open:Quantify:/.test(item.key)) continue
+    beforeSeal.push(`${item.label} (${item.responsible}): ${item.why}`)
+  }  beforeSeal.push(
     'Review and seal by the professionals responsible for each subject. The platform drafts a ' +
     'complete plan; the seal is a human act that follows delivery. Nothing here implies county approval.',
   )

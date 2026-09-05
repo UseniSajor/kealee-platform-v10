@@ -25,6 +25,12 @@ export const PGATLAS_ENDPOINTS = {
   municipalBoundary: `${PGATLAS_ROOT}/Administrative/MapServer/30`,
   municipalBufferQuarterMile: `${PGATLAS_ROOT}/Administrative/MapServer/31`,
   municipalBufferHalfMile: `${PGATLAS_ROOT}/Administrative/MapServer/32`,
+  // The three PLATTED easement layers. These are the ones recorded against a
+  // lot; the agricultural-preservation and scenic layers cover programmes that
+  // do not burden a residential building lot.
+  easementsEnvironmental: `${PGATLAS_ROOT}/Easement/MapServer/0`,
+  easementsMiscellaneous: `${PGATLAS_ROOT}/Easement/MapServer/3`,
+  easementsTransportation: `${PGATLAS_ROOT}/Easement/MapServer/5`,
 } as const
 
 export interface PgAtlasAddress {
@@ -428,6 +434,77 @@ export async function fetchPgAtlasAdjacentParcels(
     // An unavailable neighbour is an absent label, never a drawn guess.
     return []
   }
+}
+
+export interface PgAtlasEasement {
+  ring: Ring
+  /** Which platted layer answered — printed so a reviewer can trace it. */
+  category: 'Environmental and Cultural' | 'Miscellaneous' | 'Transportation and Circulation'
+  attributes: Record<string, unknown>
+}
+
+/**
+ * Platted easements over a point.
+ *
+ * This exists because the missing-information report demanded a title report
+ * for easements while making no attempt to find the ones the county has already
+ * mapped. A title report is still required — a mapped easement set is not a
+ * title search, and an easement recorded in the land records may never reach
+ * GIS — but drawing the ones that ARE published beats drawing none and asking
+ * the applicant for all of them.
+ *
+ * A LAYER OUTAGE IS NOT AN EMPTY RESULT. `null` means the question could not be
+ * asked; `[]` means it was asked and nothing burdens the lot. The caller must
+ * not collapse the two: 'no easements found' printed on a sheet because a
+ * server timed out is the kind of statement that survives into a permit set.
+ */
+export async function fetchPgAtlasEasements(
+  easting2248: number, northing2248: number,
+  opts: { fetchImpl?: typeof fetch; radiusFt?: number } = {},
+): Promise<PgAtlasEasement[] | null> {
+  const doFetch = opts.fetchImpl ?? fetch
+  const r = opts.radiusFt ?? 150
+  const layers: [string, PgAtlasEasement['category']][] = [
+    [PGATLAS_ENDPOINTS.easementsEnvironmental, 'Environmental and Cultural'],
+    [PGATLAS_ENDPOINTS.easementsMiscellaneous, 'Miscellaneous'],
+    [PGATLAS_ENDPOINTS.easementsTransportation, 'Transportation and Circulation'],
+  ]
+  const results = await Promise.all(layers.map(async ([endpoint, category]) => {
+    const url = `${endpoint}/query?` + new URLSearchParams({
+      where: '1=1',
+      geometry: `${easting2248 - r},${northing2248 - r},${easting2248 + r},${northing2248 + r}`,
+      geometryType: 'esriGeometryEnvelope',
+      inSR: '2248', outSR: '2248',
+      spatialRel: 'esriSpatialRelIntersects',
+      outFields: '*', returnGeometry: 'true', resultRecordCount: '25', f: 'json',
+    })
+    try {
+      const res = await doFetch(url)
+      if (!res.ok) return null
+      const j = (await res.json()) as {
+        error?: unknown
+        features?: { attributes?: Record<string, unknown>; geometry?: { rings?: number[][][] } }[]
+      }
+      if (j.error) return null
+      const out: PgAtlasEasement[] = []
+      for (const f of j.features ?? []) {
+        const rings = f.geometry?.rings
+        if (!rings?.length) continue
+        out.push({
+          ring: { coordinates: rings[0].map(c => [c[0], c[1]] as Position) },
+          category,
+          attributes: f.attributes ?? {},
+        })
+      }
+      return out
+    } catch {
+      return null
+    }
+  }))
+  // One layer failing loses that layer's easements silently, so the whole
+  // answer is withheld rather than reported as partial-but-complete.
+  if (results.some(x => x === null)) return null
+  return results.flat() as PgAtlasEasement[]
 }
 
 /** Address to lot, zone and position in one call. */

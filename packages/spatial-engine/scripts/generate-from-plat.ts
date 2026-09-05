@@ -39,7 +39,7 @@ import { renderAsciiPlan } from '../src/sheets/render-ascii'
 import { toDxf, toLandXml } from '../src/export/exporters'
 import { readFileSync, writeFileSync } from 'fs'
 import { buildRecordedPlatBoundary } from '../src/survey/recorded-plat'
-import { resolvePgAtlasSite } from '../src/jurisdictions/pgatlas'
+import { resolvePgAtlasSite, fetchPgAtlasEasements } from '../src/jurisdictions/pgatlas'
 import { fetchPgContours } from '../src/jurisdictions/pg-elevation'
 import { buildLotPackage } from '../src/self-perform/lot-package'
 import { renderSheetSetPdf } from '../src/sheets/render-pdf'
@@ -55,6 +55,9 @@ async function main(): Promise<void> {
   const spec = JSON.parse(readFileSync(specPath, 'utf8')) as {
     address: string
     reference: Record<string, string>
+    basisOfBearings?: string
+    recordedAreaSqFt?: number
+    platNotes?: string[]
     basisOfBearings?: string
     pointOfBeginning?: [number, number]
     recordedAreaSqFt?: number
@@ -111,6 +114,32 @@ async function main(): Promise<void> {
   const contours = await fetchPgContours(site.address.easting2248, site.address.northing2248,
     { radiusFt: 150 }).catch(() => null)
 
+  // Recorded easements. The lot's OWN plat carries a public utility easement —
+  // PGAtlas returns it keyed to record plat 231-050, this plat — and the
+  // drawing showed nothing, so a footprint could be placed across it and every
+  // sheet would look correct.
+  //
+  // Anything the county publishes within reach is fetched, then kept only if it
+  // actually touches THIS boundary: a 300 ft window over a subdivision picks up
+  // the neighbours' easements too, and a neighbour's easement drawn on this lot
+  // is a defect of the same kind as a missing one.
+  const centroid = plat.ring.coordinates.reduce(
+    (a, c) => [a[0] + c[0] / plat.ring.coordinates.length, a[1] + c[1] / plat.ring.coordinates.length],
+    [0, 0] as [number, number])
+  const nearby = await fetchPgAtlasEasements(centroid[0], centroid[1], { radiusFt: 300 })
+  const easements = nearby === null ? undefined : nearby
+    .filter(e => e.ring.coordinates.some(c => inRing(c, plat.ring.coordinates)))
+    .map(e => ({
+      ring: e.ring,
+      easementType: String(e.attributes.EASEMENT_TYPE ?? e.category),
+      beneficiary: e.attributes.NAME != null ? String(e.attributes.NAME) : undefined,
+      recordReference: e.attributes.RECORD_PLAT != null
+        ? `Record plat ${String(e.attributes.RECORD_PLAT)}`
+        : undefined,
+    }))
+  console.log(`    easements       ${nearby === null ? 'LAYER UNAVAILABLE — not asked'
+    : `${easements?.length ?? 0} on the lot, ${nearby.length} within 300 ft`}`)
+
   const pkg = buildLotPackage(
     {
       name: spec.address, address: spec.address,
@@ -119,6 +148,24 @@ async function main(): Promise<void> {
       isResidentialSingleFamily: true, dwellingUnitCount: 1,
       streetPoint: site.streetPoint, parcelId: site.parcel?.parcelId ?? null,
       streets: site.streets,
+      easements,
+      // Cite the instrument the boundary came FROM. The drawing was built on a
+      // recorded plat and said so nowhere on the sheet: the plat-record block
+      // reads `twin.platRecord`, this never set it, and a reviewer holding the
+      // sheet had no reference to check the geometry against.
+      platRecord: {
+        reference: `${spec.reference.subdivisionName ?? ''}, Plat Book `
+          + `${spec.reference.liber ?? ''} p.${spec.reference.folio ?? ''}`.trim(),
+        notes: [
+          `BASIS OF BEARINGS: ${spec.basisOfBearings ?? 'Maryland State Plane (NAD 83)'}.`,
+          `BOUNDARY OF RECORD transcribed from the recorded plat; traverse closes `
+            + `1:${plat.traverse.precisionDenominator?.toFixed(0) ?? '—'}`
+            + `${spec.recordedAreaSqFt ? `, ${plat.computedAreaSqFt?.toFixed(0)} SF computed against `
+              + `${spec.recordedAreaSqFt.toLocaleString()} SF recorded` : ''}.`,
+          'A transcription is not a field survey. Monumentation is not verified here.',
+          ...(spec.platNotes ?? []),
+        ],
+      },
       contours: contours?.contours, verticalDatum: contours?.verticalDatum ?? null,
       programme: spec.programme as never,
     },
@@ -177,7 +224,18 @@ async function main(): Promise<void> {
   console.log(`    setbacks ${pkg.buildable?.setbacks.frontFt}' / ${pkg.buildable?.setbacks.sideFt}' / ${pkg.buildable?.setbacks.rearFt}'`)
   console.log(`    envelope ${Math.round(pkg.buildable?.envelopeAreaSqFt ?? 0).toLocaleString()} sq ft`)
   console.log(`    footprint ${Math.round(pkg.buildable?.footprintAreaSqFt ?? 0).toLocaleString()} sq ft`)
-  console.log(`\n    ${pkg.beforeSeal.length} item(s) outstanding before a seal.`)
+  console.log(`\n    ${pkg.beforeSeal.length} item(s) outstanding before a seal:`)
+  for (const item of pkg.beforeSeal) console.log(`      · ${item}`)
 }
 
 main().catch(e => { console.error(e instanceof Error ? e.message : String(e)); process.exit(1) })
+
+/** Even-odd point-in-ring. Coordinates are EPSG:2248 feet, so no projection. */
+function inRing(p: readonly number[], ring: readonly (readonly number[])[]): boolean {
+  let inside = false
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    const [xi, yi] = ring[i], [xj, yj] = ring[j]
+    if ((yi > p[1]) !== (yj > p[1]) && p[0] < ((xj - xi) * (p[1] - yi)) / (yj - yi) + xi) inside = !inside
+  }
+  return inside
+}
