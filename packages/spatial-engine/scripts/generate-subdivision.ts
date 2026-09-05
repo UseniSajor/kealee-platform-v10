@@ -27,6 +27,7 @@ import { readFileSync, writeFileSync } from 'fs'
 import { renderAsciiPlan } from '../src/sheets/render-ascii'
 import { toDxf, toLandXml } from '../src/export/exporters'
 import { buildRecordedPlatBoundary } from '../src/survey/recorded-plat'
+import { normaliseRing } from '../src/site-plan/buildable-envelope'
 import { resolvePgAtlasSite, fetchPgAtlasEasements, fetchPgAtlasAdjacentParcels } from '../src/jurisdictions/pgatlas'
 import { fetchPgContours } from '../src/jurisdictions/pg-elevation'
 import { buildLotPackage } from '../src/self-perform/lot-package'
@@ -352,9 +353,37 @@ async function main(): Promise<void> {
         attributes: { label, improvement: id.replace('frontage-', '') },
       } as never)
     }
-    bandFrom(0, SW_W, 'frontage-sidewalk', 'Pavement', `CONCRETE SIDEWALK  ${SW_W}' WIDE`)
+    // CLIP TO THE LOTS' OWN FRONTAGE.
+    //
+    // The outer boundary's Rollins edge is 222.28 ft (the plat letters 222.27)
+    // while the two lots front only 199.65 of it (plat: 199.64). Running the
+    // walk and the kerb the full edge carried them 22.6 ft past Lot 2 and onto
+    // the neighbour — drawing work on land this application does not touch.
+    // Frontage improvements stop where the frontage does.
+    const frontExtents: number[] = []
+    for (const l of lots) {
+      const yards = l.pkg.buildable?.edgeYards ?? []
+      const pts = normaliseRing(l.plat.ring)
+      const fi = yards.indexOf('front')
+      if (fi < 0 || fi >= pts.length) continue
+      for (const q of [pts[fi], pts[(fi + 1) % pts.length]]) {
+        frontExtents.push((q[0] - o[0]) * ((o2[0] - o[0]) / (Math.hypot(o2[0] - o[0], o2[1] - o[1]) || 1))
+          + (q[1] - o[1]) * ((o2[1] - o[1]) / (Math.hypot(o2[0] - o[0], o2[1] - o[1]) || 1)))
+      }
+    }
+    const ux2 = (o2[0] - o[0]) / (Math.hypot(o2[0] - o[0], o2[1] - o[1]) || 1)
+    const uy2 = (o2[1] - o[1]) / (Math.hypot(o2[0] - o[0], o2[1] - o[1]) || 1)
+    const fullLen = Math.hypot(o2[0] - o[0], o2[1] - o[1])
+    const lotStart = frontExtents.length ? Math.max(0, Math.min(...frontExtents)) : 0
+    const lotEnd = frontExtents.length ? Math.min(fullLen, Math.max(...frontExtents)) : fullLen
+    const edgeLen = lotEnd - lotStart
+    // Endpoints of the frontage improvements: the lots' extent, not the edge's.
+    const lotA: Position = [o[0] + ux2 * lotStart, o[1] + uy2 * lotStart]
+    const lotB: Position = [o[0] + ux2 * lotEnd, o[1] + uy2 * lotEnd]
+    bandFrom(0, SW_W, 'frontage-sidewalk', 'Pavement', `CONCRETE SIDEWALK  ${SW_W}' WIDE`,
+      lotA, lotB)
     bandFrom(SW_W, VERGE_W, 'frontage-verge', 'Surface',
-      `PLANTING STRIP  ${VERGE_W}' WIDE  (STREET TREES)`)
+      `PLANTING STRIP  ${VERGE_W}' WIDE  (STREET TREES)`, lotA, lotB)
 
     // CURB AND GUTTER, INTERRUPTED AT EVERY APRON.
     //
@@ -362,10 +391,7 @@ async function main(): Promise<void> {
     // its face: the apron is where the kerb is depressed for a car to cross.
     // The gaps are taken from the aprons themselves, projected onto this edge,
     // so they cannot drift out of step with where the driveways actually are.
-    const ux2 = (o2[0] - o[0]) / (Math.hypot(o2[0] - o[0], o2[1] - o[1]) || 1)
-    const uy2 = (o2[1] - o[1]) / (Math.hypot(o2[0] - o[0], o2[1] - o[1]) || 1)
-    const edgeLen = Math.hypot(o2[0] - o[0], o2[1] - o[1])
-    const alongOf = (q: Position) => (q[0] - o[0]) * ux2 + (q[1] - o[1]) * uy2
+    const alongOf = (q: Position) => (q[0] - lotA[0]) * ux2 + (q[1] - lotA[1]) * uy2
     const gaps: [number, number][] = []
     for (const f of merged) {
       if (!/-apron$/.test(String(f.id))) continue
@@ -384,19 +410,45 @@ async function main(): Promise<void> {
     if (cursor < edgeLen) curbSegs.push([cursor, edgeLen])
     curbSegs.forEach(([s0, s1], k) => {
       if (s1 - s0 < 0.5) return
-      const p0: Position = [o[0] + ux2 * s0, o[1] + uy2 * s0]
-      const p1: Position = [o[0] + ux2 * s1, o[1] + uy2 * s1]
+      const p0: Position = [lotA[0] + ux2 * s0, lotA[1] + uy2 * s0]
+      const p1: Position = [lotA[0] + ux2 * s1, lotA[1] + uy2 * s1]
       bandFrom(SW_W + VERGE_W, 1.5, `frontage-curb-${k}`, 'Pavement', 'CURB AND GUTTER', p0, p1)
     })
     console.log(`    frontage run    ${edgeLen.toFixed(2)} ft along the lots' front line `
-      + `(lot frontages sum to ${lots.reduce((n, l) => n + (l.pkg.buildable?.frontage?.providedFt ?? 0), 0).toFixed(2)} ft)`)
+      + `· clipped from the ${fullLen.toFixed(2)} ft outer edge so nothing runs onto the neighbour`)
     console.log(`    curb            ${curbSegs.length} run(s), `
       + `${gaps.length} apron depression(s)`)
+    // THE STREET, ALIGNED TO THE PLAT AND POSITIONED BY PGATLAS.
+    //
+    // Each source is used for what it is good for. The plat gives the
+    // ALIGNMENT: it letters the frontage S 10°30'46" E and draws the existing
+    // pavement centreline parallel to it, so the street runs parallel to the
+    // lots' front line by construction. PGAtlas gives the POSITION: a measured
+    // distance to the centreline, which the plat draws but does not dimension.
+    //
+    // Using the PGAtlas polyline for alignment too put a compiled centreline's
+    // own wobble into the drawing — it is a digitised street, not a surveyed
+    // one, and it wandered against a boundary that closes 1:118,119.
+    const centreOut = toCentre + dedicationFt
+    frontageFeats.push({
+      kind: 'ExistingFeature', id: `centreline-plat-${i}`,
+      line: [
+        [lotA[0] + nx * centreOut, lotA[1] + ny * centreOut],
+        [lotB[0] + nx * centreOut, lotB[1] + ny * centreOut],
+      ],
+      attributes: {
+        label: 'EX. PAVEMENT CENTERLINE',
+        note: `Parallel to the lots' front line, as the recorded plat draws it; offset `
+          + `${centreOut.toFixed(1)} ft, measured against the county centreline. `
+          + `Alignment from the plat, position from PGAtlas.`,
+      },
+    } as never)
+
     // The far right-of-way line, mirrored across the measured centreline.
     const far = toCentre * 2 + dedicationFt
     frontageFeats.push({
       kind: 'ExistingFeature', id: `row-far-${i}`,
-      line: [[o[0] + nx * far, o[1] + ny * far], [o2[0] + nx * far, o2[1] + ny * far]],
+      line: [[lotA[0] + nx * far, lotA[1] + ny * far], [lotB[0] + nx * far, lotB[1] + ny * far]],
       attributes: {
         label: `FAR RIGHT-OF-WAY LINE (DERIVED — ${toCentre.toFixed(1)} ft each side)`,
       },
