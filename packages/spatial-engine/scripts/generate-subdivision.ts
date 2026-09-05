@@ -325,27 +325,85 @@ async function main(): Promise<void> {
       } as never)
     }
 
-    // The section, measured OUT from the front property line, all of it inside
-    // the dedicated right-of-way:
-    //   0 – 3 ft   concrete sidewalk
-    //   3 – 7 ft   planting strip (street trees)
-    //     7 ft     curb and gutter, then the travelled way to the centreline
-    band(0, SW_W, 'frontage-sidewalk', 'Pavement', `CONCRETE SIDEWALK  ${SW_W}' WIDE`)
-    band(SW_W, VERGE_W, 'frontage-verge', 'Surface',
+    // THE SECTION IS MEASURED FROM THE LOTS' FRONT LINE, NOT THIS EDGE.
+    //
+    // This edge belongs to the OUTER boundary, which still contains the 20 ft
+    // dedicated strip — the outer figure is 21,825 sq ft against the lots'
+    // 17,606. So it is the FAR side of the dedication, hard against the street,
+    // and every band measured outward from it landed in the travelled way: the
+    // walk and the kerb came out at the centreline.
+    //
+    // Stepping back by the dedication width puts the origin on the lots' front
+    // property line, which is what the section is dimensioned from.
+    const dedicationFt = platRecord?.dedicationWidthFt ?? 20
+    const o: Position = [a2[0] - nx * dedicationFt, a2[1] - ny * dedicationFt]
+    const o2: Position = [b2[0] - nx * dedicationFt, b2[1] - ny * dedicationFt]
+    const bandFrom = (from: number, width: number, id: string, kind: string, label: string,
+                      p0: Position = o, p1: Position = o2) => {
+      const ring: Ring = { coordinates: [
+        [p0[0] + nx * from, p0[1] + ny * from],
+        [p1[0] + nx * from, p1[1] + ny * from],
+        [p1[0] + nx * (from + width), p1[1] + ny * (from + width)],
+        [p0[0] + nx * (from + width), p0[1] + ny * (from + width)],
+        [p0[0] + nx * from, p0[1] + ny * from],
+      ] }
+      frontageFeats.push({
+        kind: kind as never, id: `${id}-${i}`, ring,
+        attributes: { label, improvement: id.replace('frontage-', '') },
+      } as never)
+    }
+    bandFrom(0, SW_W, 'frontage-sidewalk', 'Pavement', `CONCRETE SIDEWALK  ${SW_W}' WIDE`)
+    bandFrom(SW_W, VERGE_W, 'frontage-verge', 'Surface',
       `PLANTING STRIP  ${VERGE_W}' WIDE  (STREET TREES)`)
-    band(SW_W + VERGE_W, 2, 'frontage-curb', 'Pavement', 'CURB AND GUTTER')
 
+    // CURB AND GUTTER, INTERRUPTED AT EVERY APRON.
+    //
+    // A continuous kerb drawn straight through a driveway entrance is wrong on
+    // its face: the apron is where the kerb is depressed for a car to cross.
+    // The gaps are taken from the aprons themselves, projected onto this edge,
+    // so they cannot drift out of step with where the driveways actually are.
+    const ux2 = (o2[0] - o[0]) / (Math.hypot(o2[0] - o[0], o2[1] - o[1]) || 1)
+    const uy2 = (o2[1] - o[1]) / (Math.hypot(o2[0] - o[0], o2[1] - o[1]) || 1)
+    const edgeLen = Math.hypot(o2[0] - o[0], o2[1] - o[1])
+    const alongOf = (q: Position) => (q[0] - o[0]) * ux2 + (q[1] - o[1]) * uy2
+    const gaps: [number, number][] = []
+    for (const f of merged) {
+      if (!/-apron$/.test(String(f.id))) continue
+      const r = (f as { ring?: Ring }).ring?.coordinates as Position[] | undefined
+      if (!r?.length) continue
+      const proj = r.map(alongOf)
+      gaps.push([Math.min(...proj) - 1, Math.max(...proj) + 1])
+    }
+    gaps.sort((g, h) => g[0] - h[0])
+    let cursor = 0
+    const curbSegs: [number, number][] = []
+    for (const [g0, g1] of gaps) {
+      if (g0 > cursor) curbSegs.push([cursor, Math.min(g0, edgeLen)])
+      cursor = Math.max(cursor, g1)
+    }
+    if (cursor < edgeLen) curbSegs.push([cursor, edgeLen])
+    curbSegs.forEach(([s0, s1], k) => {
+      if (s1 - s0 < 0.5) return
+      const p0: Position = [o[0] + ux2 * s0, o[1] + uy2 * s0]
+      const p1: Position = [o[0] + ux2 * s1, o[1] + uy2 * s1]
+      bandFrom(SW_W + VERGE_W, 1.5, `frontage-curb-${k}`, 'Pavement', 'CURB AND GUTTER', p0, p1)
+    })
+    console.log(`    frontage run    ${edgeLen.toFixed(2)} ft along the lots' front line `
+      + `(lot frontages sum to ${lots.reduce((n, l) => n + (l.pkg.buildable?.frontage?.providedFt ?? 0), 0).toFixed(2)} ft)`)
+    console.log(`    curb            ${curbSegs.length} run(s), `
+      + `${gaps.length} apron depression(s)`)
     // The far right-of-way line, mirrored across the measured centreline.
-    const far = toCentre * 2
+    const far = toCentre * 2 + dedicationFt
     frontageFeats.push({
       kind: 'ExistingFeature', id: `row-far-${i}`,
-      line: [[a2[0] + nx * far, a2[1] + ny * far], [b2[0] + nx * far, b2[1] + ny * far]],
+      line: [[o[0] + nx * far, o[1] + ny * far], [o2[0] + nx * far, o2[1] + ny * far]],
       attributes: {
         label: `FAR RIGHT-OF-WAY LINE (DERIVED — ${toCentre.toFixed(1)} ft each side)`,
       },
     } as never)
     console.log(`    frontage        ${SW_W} ft walk, ${VERGE_W} ft strip, curb at `
-      + `${SW_W + VERGE_W} ft out; centreline ${toCentre.toFixed(1)} ft out, `
+      + `${SW_W + VERGE_W} ft out from the LOTS' front line; centreline `
+      + `${(toCentre + dedicationFt).toFixed(1)} ft out, `
       + `R/W to R/W ${far.toFixed(1)} ft`)
   })
   // MONUMENTS OF RECORD. The plat publishes corner coordinates to four decimals
