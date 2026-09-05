@@ -373,6 +373,63 @@ export async function fetchPgMunicipality(
   }
 }
 
+export interface PgAtlasAdjacentParcel {
+  ring: Ring
+  areaSqFt: number
+  propId: string | null
+}
+
+/**
+ * Abutting parcels, for the adjacent-lot references an approved plan carries.
+ *
+ * A PG plan letters every neighbouring lot with its number and area — 'LOT 9 /
+ * 71,399 SF' — because a reviewer checks the subject against what surrounds it.
+ * The engine labelled only the subject lot, so a two-lot subdivision drew as a
+ * single lot floating in white space.
+ *
+ * The subject parcel is excluded by PROP_ID, not by geometry: a parcel returned
+ * twice by an envelope query would otherwise draw over itself and letter twice.
+ */
+export async function fetchPgAtlasAdjacentParcels(
+  easting2248: number, northing2248: number,
+  opts: { fetchImpl?: typeof fetch; radiusFt?: number; excludePropId?: string | null } = {},
+): Promise<PgAtlasAdjacentParcel[]> {
+  const doFetch = opts.fetchImpl ?? fetch
+  const r = opts.radiusFt ?? 250
+  const url = `${PGATLAS_ENDPOINTS.parcels}/query?` + new URLSearchParams({
+    where: '1=1',
+    geometry: `${easting2248 - r},${northing2248 - r},${easting2248 + r},${northing2248 + r}`,
+    geometryType: 'esriGeometryEnvelope',
+    inSR: '2248', outSR: '2248',
+    spatialRel: 'esriSpatialRelIntersects',
+    outFields: '*', returnGeometry: 'true', resultRecordCount: '40', f: 'json',
+  })
+  try {
+    const res = await doFetch(url)
+    if (!res.ok) return []
+    const j = (await res.json()) as {
+      features?: { attributes?: Record<string, unknown>; geometry?: { rings?: number[][][] } }[]
+    }
+    const out: PgAtlasAdjacentParcel[] = []
+    for (const f of j.features ?? []) {
+      const rings = f.geometry?.rings
+      if (!rings?.length) continue
+      const a = f.attributes ?? {}
+      const propId = a.PROP_ID != null ? String(a.PROP_ID) : null
+      if (opts.excludePropId && propId === opts.excludePropId) continue
+      out.push({
+        ring: { coordinates: rings[0].map(c => [c[0], c[1]] as Position) },
+        areaSqFt: Number(a['SHAPE.AREA'] ?? 0),
+        propId,
+      })
+    }
+    return out
+  } catch {
+    // An unavailable neighbour is an absent label, never a drawn guess.
+    return []
+  }
+}
+
 /** Address to lot, zone and position in one call. */
 export async function resolvePgAtlasSite(
   address: string,

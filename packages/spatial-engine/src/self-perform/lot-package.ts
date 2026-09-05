@@ -70,6 +70,22 @@ export interface LotInput {
   streetPoint?: [number, number] | null
   /** Street centrelines to draw and letter in the right-of-way. */
   streets?: { name: string | null; paths: [number, number][][] }[]
+  /** Abutting parcels, lettered with number and area as an approved plan does. */
+  adjacentParcels?: { ring: Ring; areaSqFt: number; propId: string | null }[]
+  /**
+   * What the recorded plat says, carried onto the sheet.
+   *
+   * Reference and NOTES only. A surveyor's certificate and an owner's
+   * dedication attach to THAT instrument — reproducing them here would assert
+   * a certification nobody made about this drawing, which is the same reason
+   * the platform never seals. The notes are different: they are conditions of
+   * approval that run with the land, and a reviewer expects to see them.
+   */
+  platRecord?: {
+    reference: string
+    notes: string[]
+    legend?: string[]
+  }
   /** USDA soil map units, Sec. 32-130(a)(13). */
   soils?: { mapUnitSymbol: string; mapUnitName: string; kFactor: string | null
             hydricRating: string | null; hydrologicGroup: string | null
@@ -265,6 +281,62 @@ function pointInPolygon(pt: Position, poly: Position[]): boolean {
       && pt[0] < ((xj - xi) * (pt[1] - yi)) / (yj - yi) + xi) inside = !inside
   }
   return inside
+}
+
+/** Andrew's monotone chain. */
+function convexHull(pts: Position[]): Position[] {
+  const p = [...pts].sort((a, b) => a[0] - b[0] || a[1] - b[1])
+  if (p.length < 3) return p
+  const cross = (o: Position, a: Position, b: Position) =>
+    (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0])
+  const half = (src: Position[]) => {
+    const out: Position[] = []
+    for (const q of src) {
+      while (out.length >= 2 && cross(out[out.length - 2], out[out.length - 1], q) <= 0) out.pop()
+      out.push(q)
+    }
+    out.pop()
+    return out
+  }
+  return [...half(p), ...half([...p].reverse())]
+}
+
+/**
+ * Limits of disturbance around the proposed work.
+ *
+ * Sec. 32-130(a)(4) requires the limits AND the disturbed-area calculation, and
+ * the 5,000 sq ft threshold decides whether sediment-control and stormwater
+ * review apply at all. With no polygon the disturbance read NOT QUANTIFIED and
+ * the gate sat INDETERMINATE forever.
+ *
+ * The hull of the proposed work, pushed out by a working margin. Vertices are
+ * offset from the hull centroid, which OVER-states slightly at corners — and
+ * over-stating is the safe direction here, the same reasoning that makes an
+ * indeterminate disturbance count as triggered. Clipped to the parcel, because
+ * disturbance beyond the property is a different permit.
+ */
+function limitsOfDisturbance(
+  work: Position[], parcel: Position[], marginFt: number,
+): Ring | null {
+  if (work.length < 3) return null
+  const hull = convexHull(work)
+  if (hull.length < 3) return null
+  const cx = hull.reduce((a, q) => a + q[0], 0) / hull.length
+  const cy = hull.reduce((a, q) => a + q[1], 0) / hull.length
+  const grown = hull.map(q => {
+    const dx = q[0] - cx, dy = q[1] - cy
+    const d = Math.hypot(dx, dy) || 1
+    const k = (d + marginFt) / d
+    return [cx + dx * k, cy + dy * k] as Position
+  })
+  // Never past the property line.
+  const clipped = grown.map(q => (pointInPolygon(q, parcel) ? q : null))
+  if (clipped.some(q => q === null)) {
+    const safe = grown.filter(q => pointInPolygon(q, parcel))
+    if (safe.length < 3) return { coordinates: [...hull, hull[0]] }
+    return { coordinates: [...safe, safe[0]] }
+  }
+  return { coordinates: [...grown, grown[0]] }
 }
 
 export function buildLotPackage(lot: LotInput, resolved?: ResolvedBoundary | null): LotPackage {
@@ -465,6 +537,10 @@ export function buildLotPackage(lot: LotInput, resolved?: ResolvedBoundary | nul
     // versus provided without re-deriving anything.
     if (lot.soils?.length) twin = { ...twin, soils: lot.soils } as typeof twin
     if (lot.streets?.length) twin = { ...twin, streets: lot.streets } as typeof twin
+    if (lot.adjacentParcels?.length) {
+      twin = { ...twin, adjacentParcels: lot.adjacentParcels } as typeof twin
+    }
+    if (lot.platRecord) twin = { ...twin, platRecord: lot.platRecord } as typeof twin
     twin = { ...twin, buildableEnvelope: {
       setbacks: buildable.setbacks,
       coveragePct: extractLotCoveragePct(zoningEnvelope.standards),

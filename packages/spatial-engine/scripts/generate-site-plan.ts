@@ -13,6 +13,7 @@
  * what makes it sealable; it is not what makes it exist.
  */
 
+import { fetchPgAtlasAdjacentParcels } from '../src/jurisdictions/pgatlas'
 import { writeFileSync } from 'node:fs'
 import { resolveMarylandParcel, buildLotPackage } from '../src/self-perform/lot-package'
 import { fetchPgContours, contourRelief, contoursOnLot, PG_CONTOUR_VERTICAL_DATUM } from '../src/jurisdictions/pg-elevation'
@@ -116,6 +117,19 @@ async function main() {
       verticalDatum: contourResult?.verticalDatum ?? null,
       contourSourceAuthority: contourResult?.source.authority,
       streetPoint: atlas?.streetPoint ?? null,
+      // Abutting lots, so a subdivision reads as a subdivision. An approved PG
+      // plan letters every neighbour with its number and area.
+      adjacentParcels: atlas
+        ? await fetchPgAtlasAdjacentParcels(
+            atlas.address.easting2248, atlas.address.northing2248,
+            { excludePropId: atlas.parcel?.propId ?? null },
+          ).catch(() => [])
+        : [],
+      // Reference and notes of the recorded plat, when one is supplied.
+      // PLAT_RECORD=<file.json>
+      platRecord: process.env.PLAT_RECORD
+        ? JSON.parse(require('fs').readFileSync(process.env.PLAT_RECORD, 'utf8'))
+        : undefined,
       soils: (await fetchSoilMapUnits('prince_georges_md').catch(() => null))?.units,
       // Street centrelines, clipped to a working window around the lot.
       //

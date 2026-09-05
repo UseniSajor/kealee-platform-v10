@@ -280,6 +280,45 @@ function drawGeometry(doc: Doc, ctx: SheetContext, vp: Viewport, b: Bounds): voi
   const onLot = (p: Position) =>
     !strip || (p[0] >= strip.x0 && p[0] <= strip.x1 && p[1] >= strip.y0 && p[1] <= strip.y1)
 
+  // Abutting parcels, drawn light and lettered.
+  //
+  // An approved PG plan carries every neighbouring lot with its number and
+  // area — 'LOT 9 / 71,399 SF' — because a reviewer reads the subject against
+  // what surrounds it. The engine drew the subject alone, so a two-lot
+  // subdivision appeared as one lot in white space.
+  const adj = (t as { adjacentParcels?: { ring: Ring; areaSqFt: number; propId: string | null }[] })
+    .adjacentParcels ?? []
+  // Bounds of the drawing area, in points.
+  //
+  // A neighbour whose centroid projects OFF the page must not be lettered:
+  // pdfkit adds a PAGE when text is placed past the frame, and a 250 ft search
+  // returned 39 parcels — which turned a 5-sheet set into 65 pages while still
+  // reporting 5. Silent, because the page count came from the sheet list.
+  const INSET = 24
+  const drawMinX = INSET, drawMinY = INSET
+  const drawMaxX = doc.page.width - INSET
+  const drawMaxY = doc.page.height - INSET
+  const onSheet = (q: [number, number]) =>
+    q[0] > drawMinX && q[0] < drawMaxX && q[1] > drawMinY && q[1] < drawMaxY
+
+  for (const ap of adj) {
+    const r = projectRing(ap.ring, vp, b, PAD_FT)
+    const c = centroidOf(r)
+    // Outline only when some of it is on the sheet; letter only when the
+    // label itself will land on the sheet.
+    if (!r.some(onSheet)) continue
+    polyline(doc, r, { width: 0.6, color: '#9aa0a6', dash: undefined }, true)
+    if (!onSheet(c)) continue
+    doc.font('Helvetica').fontSize(5.2).fillColor('#9aa0a6')
+       .text(`${ap.propId ?? 'PARCEL'}`, c[0] - 30, c[1] - 4,
+             { width: 60, align: 'center', lineBreak: false })
+    if (ap.areaSqFt) {
+      doc.font('Helvetica').fontSize(4.6).fillColor('#9aa0a6')
+         .text(`${Math.round(ap.areaSqFt).toLocaleString()} SF`, c[0] - 30, c[1] + 2,
+               { width: 60, align: 'center', lineBreak: false })
+    }
+  }
+
   for (const c of genericOfKind(t, 'Contour')) {
     if (!c.line?.length) continue
     // Segment-level: keep a segment when EITHER end is on the lot, so a
@@ -666,6 +705,46 @@ function siteDataTable(doc: Doc, x: number, y: number, ctx: SheetContext): numbe
 }
 
 /** General notes every PG site plan carries. */
+/**
+ * What the recorded plat says, carried onto the sheet.
+ *
+ * Reference and NOTES only. The plat's surveyor certificate and owner's
+ * dedication attach to that instrument; reproducing them here would assert a
+ * certification nobody made about THIS drawing — the same reason the platform
+ * never seals. The notes are different: they are conditions of approval that
+ * run with the land, and a reviewer expects to see them restated.
+ */
+function platRecordBlock(
+  doc: Doc, t: SiteTwin, x: number, y: number,
+): number {
+  const rec = (t as { platRecord?: { reference: string; notes: string[]; legend?: string[] } }).platRecord
+  if (!rec) return y
+  doc.font('Helvetica-Bold').fontSize(7).fillColor('#000000')
+     .text('PLAT OF RECORD', x, y, { lineBreak: false })
+  let cy = y + 10
+  doc.font('Helvetica').fontSize(5.4).fillColor('#333333')
+     .text(rec.reference, x, cy, { width: 250, height: 54, ellipsis: true })
+  cy = doc.y + 4
+  doc.font('Helvetica-Bold').fontSize(5.4).fillColor('#333333')
+     .text('NOTES OF RECORD', x, cy, { lineBreak: false })
+  cy += 8
+  rec.notes.forEach((n, i) => {
+    doc.font('Helvetica').fontSize(5.2).fillColor('#333333')
+       .text(`${i + 1}.  ${n}`, x, cy, { width: 250, height: 40, ellipsis: true })
+    cy = doc.y + 2
+  })
+  if (rec.legend?.length) {
+    doc.font('Helvetica').fontSize(5).fillColor('#555555')
+       .text(rec.legend.join('   ·   '), x, cy + 2, { width: 250, height: 16, ellipsis: true })
+    cy = doc.y
+  }
+  // Stated, so nobody mistakes an absence for an omission.
+  doc.font('Helvetica-Oblique').fontSize(4.6).fillColor('#777777')
+     .text('The surveyor certificate, owner dedication and approval signatures of the '
+       + 'recorded plat are NOT reproduced here: they attach to that instrument, not to '
+       + 'this drawing.', x, cy + 3, { width: 250, height: 26, ellipsis: true })
+  return doc.y + 4
+}
 function generalNotes(doc: Doc, x: number, y: number): number {
   const notes = [
     'CONTRACTOR SHALL CONTACT MISS UTILITY AT 811 A MINIMUM OF 48 HOURS PRIOR TO ANY EXCAVATION.',
@@ -1051,6 +1130,7 @@ export function renderSheetSetPdf(input: RenderPdfInput): Promise<RenderedPdf> {
       by = siteAnalysis(doc, blockX, by, ctx) + 12
       by = sequenceOfConstruction(doc, blockX, by) + 10
       by = generalNotes(doc, blockX, by) + 10
+      by = platRecordBlock(doc, ctx.twin, blockX, by) + 10
       by = legend(doc, blockX, by) + 12
       by = approvalBlocks(doc, blockX, by) + 6
 
