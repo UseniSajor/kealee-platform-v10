@@ -5,7 +5,7 @@ const STEPS = [
   {
     n: '1',
     title: 'Tell us about the property',
-    body: 'Enter the address and project type. We identify the state, county, and city, and show you the data coverage for that location before you pay.',
+    body: 'Enter the property address and project type so we can tailor the package to your location, goals, and likely local requirements.',
   },
   {
     n: '2',
@@ -25,25 +25,25 @@ const STEPS = [
   {
     n: '5',
     title: 'We produce the deliverable',
-    body: 'Automated where the data supports it, by hand where it does not. Your order page shows the live status and who it is waiting on.',
+    body: 'Our team prepares your package and keeps its progress visible on your order page from start to release.',
   },
   {
     n: '6',
     title: 'Review, download, continue',
-    body: 'You get an email when the package is released, with every assumption and source listed — then the next preconstruction product if you want it.',
+    body: 'You get an email when the package is ready, along with clear recommendations and the next step for moving your project forward.',
   },
 ]
 
 const TRUST = [
   {
     icon: FileSearch,
-    title: 'Every number has a source',
-    body: 'Assumptions, source, data date, and confidence are attached to every generated result. Unknowns are listed as unknowns, never filled in.',
+    title: 'Clear, documented deliverables',
+    body: 'Your package explains the information used, the assumptions made, and anything that still needs confirmation before you proceed.',
   },
   {
     icon: UserCheck,
-    title: 'Humans in the loop by design',
-    body: 'Where jurisdiction data is thin or the stakes are high, a Kealee reviewer works the order by hand. You can see the review status on your order page.',
+    title: 'Professional review when needed',
+    body: 'When your project needs additional review or specialized input, Kealee identifies it and coordinates the right next step.',
   },
   {
     icon: ShieldCheck,
@@ -52,15 +52,15 @@ const TRUST = [
   },
   {
     icon: Eye,
-    title: 'Failures are visible',
-    body: 'If automation cannot complete your order, it is routed to a person and the status says so. Paid orders are never left silently unfinished.',
+    title: 'Visible progress and support',
+    body: 'Your order page shows current progress, and our team contacts you directly if more information is needed to keep the work moving.',
   },
 ]
 
 const FAQ = [
   {
     q: 'Do you work in my state?',
-    a: 'Yes. All four products are available in all 50 states and DC. What varies is how much of the jurisdiction research is automated. Where we have no automated data source, we do the research manually and label the result "Manual review required".',
+    a: 'Yes. Kealee serves all 50 states and the District of Columbia. Your package is tailored to the property location and local requirements, and we explain any additional documents or professional input needed for your project.',
   },
   {
     q: 'Can Kealee get my permit approved?',
@@ -122,7 +122,7 @@ export function HowItWorksSection() {
               Trust &amp; quality control
             </span>
             <h2 className="mt-3 font-display text-3xl font-bold text-slate-950">
-              How we keep AI output honest
+              Clear work, reviewed with care
             </h2>
           </div>
           <div className="mt-12 grid gap-6 sm:grid-cols-2">
@@ -165,10 +165,9 @@ export function HowItWorksSection() {
               .
             </p>
             <p className="mt-4 text-xs leading-relaxed text-slate-500">
-              Kealee uses AI to accelerate research, drafting, and visualization. AI output is always
-              labelled with its assumptions, sources, confidence, and review status, and is reviewed
-              by a person before release wherever a deliverable depends on jurisdiction-specific
-              facts. Read our{' '}
+              Each Kealee package is prepared for planning and coordination. When your project needs
+              licensed design, engineering, surveying, or jurisdictional approval, we identify that
+              requirement and help coordinate the next step. Read our{' '}
               <Link href="/terms" className="underline">terms</Link>,{' '}
               <Link href="/privacy" className="underline">privacy policy</Link>, and{' '}
               <Link href="/terms#refunds" className="underline">refund policy</Link>.
