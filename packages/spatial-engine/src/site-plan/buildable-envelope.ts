@@ -41,6 +41,20 @@ export interface BuildableEnvelope {
    * preference.
    */
   hasStreetFrontage: boolean
+  /**
+   * Length of the front lot line, in feet, and the zoning minimum it must
+   * meet.
+   *
+   * `hasStreetFrontage` was a boolean — a lot either touched a street or did
+   * not. RSF-65 requires 45 ft AT THE FRONT STREET LINE (Sec. 27-4202), so a
+   * lot can front a street and still fail. Nothing measured it, so nothing
+   * could catch that.
+   */
+  frontage: {
+    providedFt: number | null
+    requiredFt: number | null
+    meets: boolean | null
+  }
   /** Which yard each lot line was treated as. */
   edgeYards: EdgeYard[]
   /** Parcel inset by the setbacks. Null when there is no parcel to inset. */
@@ -495,6 +509,44 @@ function frontLotLineAngle(ring: Ring, yards: EdgeYard[]): number {
  * true one, so the footprint never over-claims buildable area. Identifying the
  * street frontage is what unlocks the larger, correct envelope.
  */
+/**
+ * Length of the front lot line, against the zoning minimum.
+ *
+ * Sec. 24-128 makes street frontage what establishes a buildable lot, and
+ * Sec. 27-4202 sets the minimum width AT the front street line — 45 ft in
+ * RSF-65. A lot can touch a street and still fail that, which a boolean cannot
+ * express.
+ */
+function measureFrontage(
+  parcel: Ring, yards: EdgeYard[],
+  standards: { standard: string; useColumn: string; numeric: number | null }[],
+  useColumn: string,
+): { providedFt: number | null; requiredFt: number | null; meets: boolean | null } {
+  const row = standards.find(r => /lot frontage|frontage \(width\)/i.test(r.standard) && r.useColumn === useColumn)
+    ?? standards.find(r => /lot frontage|frontage \(width\)/i.test(r.standard))
+  const requiredFt = row?.numeric ?? null
+
+  const pts = normaliseRing(parcel)
+  // Every edge classified front — a lot can front two streets on a corner.
+  let providedFt: number | null = null
+  for (let i = 0; i < pts.length; i++) {
+    if (yards[i] !== 'front') continue
+    const a = pts[i], b = pts[(i + 1) % pts.length]
+    const len = Math.hypot(b[0] - a[0], b[1] - a[1])
+    providedFt = (providedFt ?? 0) + len
+  }
+  if (providedFt !== null) providedFt = Math.round(providedFt * 100) / 100
+
+  return {
+    providedFt,
+    requiredFt,
+    // Null rather than false when either side is unknown: an unmeasured
+    // frontage is not a failing one, and saying so would be a fabricated
+    // finding.
+    meets: providedFt !== null && requiredFt !== null ? providedFt >= requiredFt : null,
+  }
+}
+
 export function deriveBuildableEnvelope(input: {
   parcel: Ring | null
   standards: { standard: string; useColumn: string; numeric: number | null }[]
@@ -531,6 +583,7 @@ export function deriveBuildableEnvelope(input: {
   if (!parcel) {
     return {
       encroachments: [], hasStreetFrontage: Boolean(input.streetPoint), edgeYards: [],
+      frontage: { providedFt: null, requiredFt: null, meets: null },
       ring: null, envelopeAreaSqFt: null, setbacks, constraints,
       allowedFootprintSqFt: null, footprint: null, footprintAreaSqFt: null,
       caveats: ['No parcel boundary, so no buildable envelope can be derived.'],
@@ -553,6 +606,7 @@ export function deriveBuildableEnvelope(input: {
   if (!ring) {
     return {
       encroachments: [], hasStreetFrontage: Boolean(input.streetPoint), edgeYards: yards,
+      frontage: measureFrontage(parcel, yards, input.standards, input.useColumn ?? 'Single-Family Detached Dwelling'),
       ring: null, envelopeAreaSqFt: 0, setbacks,
       constraints: [{
         name: 'Setback envelope', limitSqFt: 0, binding: true,
@@ -708,6 +762,7 @@ export function deriveBuildableEnvelope(input: {
   return {
     encroachments,
     hasStreetFrontage: Boolean(input.streetPaths?.length || input.streetPoint),
+    frontage: measureFrontage(parcel, yards, input.standards, input.useColumn ?? 'Single-Family Detached Dwelling'),
     edgeYards: yards,
     ring,
     envelopeAreaSqFt,

@@ -329,6 +329,39 @@ function drawGeometry(doc: Doc, ctx: SheetContext, vp: Viewport, b: Bounds): voi
        .text(sb.frontFt != null ? `${sb.frontFt}' BRL` : 'BRL',
              cx - 30, top - 9, { width: 60, align: 'center', lineBreak: false })
 
+    // Frontage lettered ON the front lot line.
+    //
+    // Sec. 24-128 makes street frontage what establishes a buildable lot, and
+    // Sec. 27-4202 sets a minimum width at the front street line. A reviewer
+    // checks that dimension first, and it was nowhere on the sheet — the front
+    // line carried a bearing and distance like any other edge, with nothing
+    // saying it IS the frontage.
+    const fro = (t as { buildableEnvelope?: {
+      edgeYards?: string[]
+      frontage?: { providedFt: number | null; requiredFt: number | null; meets: boolean | null }
+    } }).buildableEnvelope
+    const parcelF = featuresOfKind(t, 'Parcel')[0]
+    if (fro?.edgeYards && parcelF && fro.frontage?.providedFt != null) {
+      const lp = parcelF.ring.coordinates
+      const idx = fro.edgeYards.indexOf('front')
+      if (idx >= 0 && idx < lp.length - 1) {
+        const m1 = P(lp[idx] as Position), m2 = P(lp[idx + 1] as Position)
+        const mx = (m1[0] + m2[0]) / 2, my = (m1[1] + m2[1]) / 2
+        let ang = Math.atan2(m2[1] - m1[1], m2[0] - m1[0])
+        if (ang > Math.PI / 2 || ang < -Math.PI / 2) ang += Math.PI
+        const req = fro.frontage.requiredFt
+        const fails = fro.frontage.meets === false
+        doc.save()
+        doc.translate(mx, my).rotate((ang * 180) / Math.PI)
+        doc.font('Helvetica-Bold').fontSize(6)
+           .fillColor(fails ? '#c0392b' : '#000000')
+           .text(`FRONTAGE ${fro.frontage.providedFt.toFixed(2)}'`
+             + (req != null ? `  (${req}' MIN)` : ''),
+             -56, -13, { width: 112, align: 'center', lineBreak: false })
+        doc.restore()
+      }
+    }
+
     // Label every yard on its own run of the restriction line, so a reviewer
     // reads the setback rather than scaling it.
     const yards = (t as { buildableEnvelope?: { edgeYards?: string[] } })
@@ -578,6 +611,8 @@ function siteDataTable(doc: Doc, x: number, y: number, ctx: SheetContext): numbe
     | { attributes?: Record<string, unknown> } | undefined
   const env = (t as { buildableEnvelope?: Record<string, unknown> }).buildableEnvelope
   const sb = (env?.setbacks ?? {}) as { frontFt?: number; sideFt?: number; rearFt?: number }
+  const fr = env?.frontage as
+    { providedFt: number | null; requiredFt: number | null; meets: boolean | null } | undefined
 
   const lotArea = parcel?.areaSqFt ?? null
   const fp = bld?.attributes?.areaSqFt ? Number(bld.attributes.areaSqFt) : null
@@ -589,6 +624,13 @@ function siteDataTable(doc: Doc, x: number, y: number, ctx: SheetContext): numbe
     ['TAX / PARCEL ID', String(parcel?.parcelId ?? '—'), ''],
     ['GROSS LOT AREA', lotArea ? `${Math.round(lotArea).toLocaleString()} SF` : '—',
       lotArea ? `${(lotArea / 43560).toFixed(3)} AC` : ''],
+    // Sec. 24-128 makes frontage what establishes a buildable lot, and
+    // Sec. 27-4202 sets the minimum AT the front street line. Required beside
+    // provided, as the setback rows read.
+    ['LOT FRONTAGE', fr?.requiredFt != null ? `${fr.requiredFt}' MIN` : '—',
+      fr?.providedFt != null
+        ? `${fr.providedFt.toFixed(2)}'${fr.meets === false ? '  DOES NOT MEET' : ''}`
+        : 'NOT ESTABLISHED'],
     ['—SETBACKS—', 'REQUIRED', 'PROVIDED'],
     ['FRONT YARD', sb.frontFt != null ? `${sb.frontFt}'` : '—', sb.frontFt != null ? `${sb.frontFt}'` : '—'],
     ['SIDE YARD', sb.sideFt != null ? `${sb.sideFt}'` : '—', sb.sideFt != null ? `${sb.sideFt}'` : '—'],
