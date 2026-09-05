@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LandXML xmlns="http://www.landxml.org/schema/LandXML-1.2"
+         version="1.2"
+         date="2026-09-05" time="02:27:18">
+  <Units><Imperial areaUnit="squareFoot" linearUnit="USSurveyFoot" volumeUnit="cubicFeet"
+           temperatureUnit="fahrenheit" pressureUnit="inHG"/></Units>
+  <Project name="1009 Rollins Ave"/>
+  <Application name="Kealee Site Plan Engine" version="1.0"/>
+  <!-- Coordinate system EPSG:2248; horizontal datum NAD83;
+       vertical datum NAVD88 (feet). Model revision 7. -->
+  <CoordinateSystem desc="EPSG:2248" horizontalDatum="NAD83"
+                    verticalDatum="NAVD88 (feet)"/>
+  <Parcels>
+      <Parcel name="1009 Rollins Ave" area="8008.6866455078125" parcelType="Single">
+        <CoordGeom>
+            <PntList2D>440162.4389510336 1340439.984797532</PntList2D>
+            <PntList2D>440030.0487960438 1340464.550410933</PntList2D>
+            <PntList2D>440140.72441625566 1340323.0278943828</PntList2D>
+            <PntList2D>440162.4389510336 1340439.984797532</PntList2D>
+        </CoordGeom>
+      </Parcel>
+  </Parcels>
+  <!-- No Surfaces element: no vertical datum or elevation data is established for this site. -->
+</LandXML>

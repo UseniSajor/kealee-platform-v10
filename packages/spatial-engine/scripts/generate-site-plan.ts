@@ -13,6 +13,7 @@
  * what makes it sealable; it is not what makes it exist.
  */
 
+import { toDxf, toLandXml } from '../src/export/exporters'
 import { renderAsciiPlan } from '../src/sheets/render-ascii'
 import { fetchPgAtlasAdjacentParcels } from '../src/jurisdictions/pgatlas'
 import { writeFileSync } from 'node:fs'
@@ -262,6 +263,20 @@ async function main() {
   })
 
   writeFileSync(outPath, pdf.buffer)
+
+  // CAD alongside the PDF, always.
+  //
+  // A PDF is a picture of a drawing; a professional receiving this work
+  // needs the geometry itself. DXF opens in every CAD package and LandXML
+  // carries the survey semantics — parcels, coordinates, the datum — that
+  // a DXF flattens away. Emitting both at generation time means a handoff
+  // never depends on someone remembering to export.
+  const dxfPath = outPath.replace(/\.pdf$/i, '.dxf')
+  const xmlPath = outPath.replace(/\.pdf$/i, '.landxml.xml')
+  writeFileSync(dxfPath, toDxf(pkg.twin))
+  writeFileSync(xmlPath, toLandXml(pkg.twin))
+  console.log(`    CAD: ${dxfPath}`)
+  console.log(`         ${xmlPath}`)
 
   // ALWAYS render to the terminal for review.
   //

@@ -35,7 +35,8 @@
  *   }
  */
 
-import { readFileSync } from 'fs'
+import { toDxf, toLandXml } from '../src/export/exporters'
+import { readFileSync, writeFileSync } from 'fs'
 import { buildRecordedPlatBoundary } from '../src/survey/recorded-plat'
 import { resolvePgAtlasSite } from '../src/jurisdictions/pgatlas'
 import { fetchPgContours } from '../src/jurisdictions/pg-elevation'
@@ -135,7 +136,21 @@ async function main(): Promise<void> {
     status: 'PRELIMINARY', sheetIndex: i + 1, sheetCount: pkg.sheets.sheets.length,
   }))
   const out = await renderSheetSetPdf({ sheets, responsibility: undefined })
-  require('fs').writeFileSync(outPath, out.buffer)
+  writeFileSync(outPath, out.buffer)
+
+  // CAD alongside the PDF, always.
+  //
+  // A PDF is a picture of a drawing; a professional receiving this work
+  // needs the geometry itself. DXF opens in every CAD package and LandXML
+  // carries the survey semantics — parcels, coordinates, the datum — that
+  // a DXF flattens away. Emitting both at generation time means a handoff
+  // never depends on someone remembering to export.
+  const dxfPath = outPath.replace(/\.pdf$/i, '.dxf')
+  const xmlPath = outPath.replace(/\.pdf$/i, '.landxml.xml')
+  writeFileSync(dxfPath, toDxf(pkg.twin))
+  writeFileSync(xmlPath, toLandXml(pkg.twin))
+  console.log(`    CAD: ${dxfPath}`)
+  console.log(`         ${xmlPath}`)
 
   console.log(`\n[3] ${outPath}`)
   console.log(`    ${out.pageCount} sheet(s): ${pkg.sheets.sheets.map(s => s.covers[0]).join(' | ')}`)

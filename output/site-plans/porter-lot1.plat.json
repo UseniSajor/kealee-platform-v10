@@ -1,0 +1,47 @@
+{
+  "_source": "existing site plans/Rollins Ave lots.pdf \u2014 PORTER SUBDIVISION LOTS 1 AND 2, Plat Book PM 231 p.50 (MSA_C2381_19050), Seat Pleasant (18th) District, PG County MD. Capitol Development Design, Inc., 1\"=20', Nov 2007. M-NCPPC Record File 5-09121.",
+  "_derivation": "Outer boundary from the three corner coordinates the plat publishes to four decimals. Lots derived from it: the 20.00 ft strip along Rollins Avenue is the area dedicated to public use, and the lot divider is parallel to the north-east boundary, offset 65.00 ft.",
+  "_validation": "Outer boundary 21,826 sq ft computed against 21,825 recorded, closing 1:118,119. Dedication computes to 4,219 sq ft, the recorded figure exactly. The divider offset was solved from LOT 1's AREA alone, so its LENGTH was free to disagree with the plat and did not: 118.96 ft computed against 118.96 ft lettered. Every lettered dimension is accounted for \u2014 176.36 (lot 1 NE), 65.00 (lot 1 frontage), 118.96 (divider), 134.64 and 179.65 (lot 2). Lot 1's 65.00 ft frontage independently matches what the engine computes from PGAtlas.",
+  "basisOfBearings": "Maryland State Plane Coordinate System (NAD 83)",
+  "programme": {
+    "totalFloorAreaSqFt": 2400,
+    "storeys": 2,
+    "hasBasement": false,
+    "garage": "attached_2_car",
+    "coveredPorch": false
+  },
+  "address": "1005 Rollins Ave",
+  "reference": {
+    "liber": "PM 231",
+    "folio": "50",
+    "subdivisionName": "Porter Subdivision",
+    "lot": "1"
+  },
+  "pointOfBeginning": [
+    1340254.7066,
+    440194.1578
+  ],
+  "recordedAreaSqFt": 9598,
+  "calls": [
+    {
+      "kind": "line",
+      "bearing": "N 79-29-04 E",
+      "distanceFt": 176.38
+    },
+    {
+      "kind": "line",
+      "bearing": "S 10-30-43 E",
+      "distanceFt": 65.0
+    },
+    {
+      "kind": "line",
+      "bearing": "S 79-29-04 W",
+      "distanceFt": 118.96
+    },
+    {
+      "kind": "line",
+      "bearing": "N 51-58-24 W",
+      "distanceFt": 86.73
+    }
+  ]
+}
