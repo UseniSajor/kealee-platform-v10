@@ -59,6 +59,8 @@ async function main(): Promise<void> {
     recordedAreaSqFt?: number
     platNotes?: string[]
     triangleRearAsSide?: boolean
+    dedicationWidthFt?: number
+    platFrontageEasementFt?: number
     pointOfBeginning?: [number, number]
     programme?: Record<string, unknown>
     calls: unknown[]
@@ -166,6 +168,10 @@ async function main(): Promise<void> {
       streetPoint: site.streetPoint, parcelId: site.parcel?.parcelId ?? null,
       streets: site.streets,
       triangleRearAsSide: spec.triangleRearAsSide,
+      // PLAT FIRST for anything the recorded instrument carries; PGAtlas
+      // supplies only the layers it does not — contours, zoning, streets.
+      dedicationWidthFt: spec.dedicationWidthFt ?? null,
+      platFrontageEasementFt: spec.platFrontageEasementFt ?? null,
       easements,
       // Cite the instrument the boundary came FROM. The drawing was built on a
       // recorded plat and said so nowhere on the sheet: the plat-record block

@@ -408,7 +408,15 @@ export async function fetchPgAtlasAdjacentParcels(
     geometryType: 'esriGeometryEnvelope',
     inSR: '2248', outSR: '2248',
     spatialRel: 'esriSpatialRelIntersects',
-    outFields: '*', returnGeometry: 'true', resultRecordCount: '40', f: 'json',
+    // A CAP THAT SILENTLY DROPPED THE NEIGHBOURS.
+    //
+    // This asked for 40 and got exactly 40 — the truncation signature. ArcGIS
+    // returns whatever order it likes, so the parcels that came back were not
+    // the near ones: on the Porter boundary the closest survivor sat 232 ft
+    // away while the actual abutters were cut. A truncated result looks
+    // identical to a complete one, and 'these are the adjoining lots' is a
+    // statement a permit set makes.
+    outFields: '*', returnGeometry: 'true', resultRecordCount: '400', f: 'json',
   })
   try {
     const res = await doFetch(url)

@@ -46,5 +46,7 @@
       "distanceFt": 86.73
     }
   ],
-  "_footprintSource": "Kingsworth foundation/basement plan, custom designs unlimited inc., dwg 260811, 1/4\"=1'-0\" (existing site plans/Kingsworth 2nd & basement floor plan.pdf). The plan dimensions the main house 36'-0\" wide and adds 10'-0\" for the optional one-car garage, giving the 46'-0\" overall width; depth is 26'-0\", lettered (26'-4\" w/ optional brick veneer). The footprint is drawn at the 26'-0\" nominal. IF THE BRICK VENEER OPTION IS TAKEN the outermost projection is 4 in deeper than drawn, and a setback is measured to the outermost projection."
+  "_footprintSource": "Kingsworth foundation/basement plan, custom designs unlimited inc., dwg 260811, 1/4\"=1'-0\" (existing site plans/Kingsworth 2nd & basement floor plan.pdf). The plan dimensions the main house 36'-0\" wide and adds 10'-0\" for the optional one-car garage, giving the 46'-0\" overall width; depth is 26'-0\", lettered (26'-4\" w/ optional brick veneer). The footprint is drawn at the 26'-0\" nominal. IF THE BRICK VENEER OPTION IS TAKEN the outermost projection is 4 in deeper than drawn, and a setback is measured to the outermost projection.",
+  "dedicationWidthFt": 20.0,
+  "platFrontageEasementFt": 10.0
 }

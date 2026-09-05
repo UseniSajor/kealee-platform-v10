@@ -24,7 +24,7 @@ import { composeSheets, blocksFromFeatures, type CompositionResult } from '../sh
 import { buildResponsibilityBlock, type DividedResponsibilityBlock } from '../review/content-scope'
 import { getPgDimensionalStandards, parsePgStandardValue } from '../jurisdictions/pg-overlays-and-dimensions'
 import type { SheetId } from '../sheets/sheet-template'
-import { deriveBuildableEnvelope, extractLotCoveragePct, type BuildableEnvelope } from '../site-plan/buildable-envelope'
+import { deriveBuildableEnvelope, extractLotCoveragePct, normaliseRing, type BuildableEnvelope } from '../site-plan/buildable-envelope'
 import { estimateFootprint, type FootprintEstimate, type HouseProgramme } from '../site-plan/footprint-programme'
 import { generateDesign } from '../site-plan/design'
 import { deriveSiteImprovements, type SiteImprovementResult } from '../site-plan/site-improvements'
@@ -110,6 +110,19 @@ export interface LotInput {
    * A determination made by a person, carried into the drawing and labelled as
    * such. See `triangleRearAsSide` on the envelope.
    */
+  /**
+   * Width of a public utility easement the RECORDED PLAT letters along the
+   * frontage.
+   *
+   * Derived from the plat rather than taken from GIS, because the plat is the
+   * boundary of record and GIS is not complete: PGAtlas returned this easement
+   * for Lot 1 and nothing for Lot 2, while the plat letters 10.00' PUE along
+   * the frontage of BOTH. An easement the drawing omits is one a building can
+   * be sited across.
+   */
+  platFrontageEasementFt?: number | null
+  /** Width of the dedicated strip, dimensioned on the recorded plat. */
+  dedicationWidthFt?: number | null
   triangleRearAsSide?: boolean
   /** Jurisdiction parcel identifier, printed in the SITE DATA table. */
   parcelId?: string | null
@@ -507,6 +520,7 @@ export function buildLotPackage(lot: LotInput, resolved?: ResolvedBoundary | nul
         // The apron and the public walk are outside the property line and
         // cannot be placed without the street.
         streetPaths: lot.streets?.flatMap(st => st.paths) ?? null,
+        dedicationWidthFt: lot.dedicationWidthFt ?? null,
       })
       for (const imp of siteImprovements.improvements) {
         feats.push({
@@ -596,6 +610,40 @@ export function buildLotPackage(lot: LotInput, resolved?: ResolvedBoundary | nul
     // came back empty. `undefined` is not asked and `[]` is asked-and-clear;
     // without the source record the report cannot tell them apart, and 'no
     // easements of record' is a much stronger statement than 'we did not look'.
+    // The plat's frontage PUE, built from the front lot line itself.
+    if (lot.platFrontageEasementFt && ring && buildable?.edgeYards?.length) {
+      const pts = normaliseRing(ring)
+      const fi = buildable.edgeYards.indexOf('front')
+      if (fi >= 0 && fi < pts.length) {
+        const a2 = pts[fi], b2 = pts[(fi + 1) % pts.length]
+        const ex = b2[0] - a2[0], ey = b2[1] - a2[1]
+        const el = Math.hypot(ex, ey) || 1
+        // Inward normal of a counter-clockwise ring.
+        const nx = -ey / el, ny = ex / el
+        const w = lot.platFrontageEasementFt
+        const pueRing: Ring = { coordinates: [
+          [a2[0], a2[1]],
+          [b2[0], b2[1]],
+          [b2[0] + nx * w, b2[1] + ny * w],
+          [a2[0] + nx * w, a2[1] + ny * w],
+          [a2[0], a2[1]],
+        ] }
+        twin = addFeatures(twin, [{
+          kind: 'Easement', id: 'esmt-plat-frontage',
+          ring: pueRing,
+          easementType: 'Public Utility',
+          widthFt: w,
+          recordReference: lot.platRecord?.reference ?? 'Recorded plat',
+          beneficiary: 'Public utilities',
+        }] as never[])
+        twin = addSource(twin, gisSourceRecord({
+          sourceId: 'plat-pue',
+          authority: lot.platRecord?.reference ?? 'Recorded plat',
+          dataset: 'Recorded easements — plat frontage PUE',
+          crs: 'EPSG:2248', horizontalDatum: 'NAD83',
+        }))
+      }
+    }
     if (lot.easements !== undefined) {
       twin = addSource(twin, gisSourceRecord({
         sourceId: 'easements',

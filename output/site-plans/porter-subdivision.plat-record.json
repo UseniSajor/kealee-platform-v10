@@ -10,5 +10,60 @@
     "IPF — Iron Pipe Found",
     "For Public Water and Sewer Only"
   ],
-  "_omitted": "Signature blocks, the owner/surveyor certifications and the preparing firm are transcribed nowhere. The notes and legend are the recorded conditions and they carry over; a signature and a preparer's name attest to who did the work, and reproducing them on a drawing this engine generated would assert an authorship and a certification that do not exist."
+  "_omitted": "Signature blocks, the owner/surveyor certifications and the preparing firm are transcribed nowhere. The notes and legend are the recorded conditions and they carry over; a signature and a preparer's name attest to who did the work, and reproducing them on a drawing this engine generated would assert an authorship and a certification that do not exist.",
+  "adjoiners": [
+    {
+      "boundary": "northeast",
+      "label": "LOTS 13, 14 AND 15",
+      "reference": "Addition to Pleasant Park, Plat Book VJ 185, Plat 76"
+    },
+    {
+      "boundary": "southwest",
+      "label": "LOT 12",
+      "reference": "Addition to Pleasant Park, Plat Book VJ 185, Plat 76"
+    },
+    {
+      "boundary": "northwest",
+      "label": "OUTLOT A",
+      "reference": "Addition to Pleasant Park, Plat Book VJ 185, Plat 76"
+    },
+    {
+      "boundary": "northwest",
+      "label": "JEAN M. YOUNG",
+      "reference": "L.14377 F.589"
+    },
+    {
+      "boundary": "across Rollins Avenue",
+      "label": "MAITLAND W. DADE",
+      "reference": "L.11452 F.473"
+    },
+    {
+      "boundary": "across Rollins Avenue",
+      "label": "PATRICIA L. FERRELL",
+      "reference": "L.12766 F.721"
+    },
+    {
+      "boundary": "across Rollins Avenue",
+      "label": "VALLE GARGAN SUBDIVISION",
+      "reference": "P.B. WWW 19, P. 41"
+    },
+    {
+      "boundary": "across Rollins Avenue",
+      "label": "EDWARD B. ROLLINS, TRUSTEE, ET AL",
+      "reference": "L.12790 F.155"
+    }
+  ],
+  "platEasements": [
+    {
+      "type": "Public Utility Easement",
+      "widthFt": 10.0,
+      "along": "frontage",
+      "note": "10.00' PUE lettered along the Rollins Avenue frontage of BOTH Lot 1 and Lot 2, inside the property line."
+    }
+  ],
+  "existingPavement": {
+    "label": "EX. PAVEMENT CENTERLINE",
+    "note": "The plat draws the existing pavement centreline of Rollins Avenue and dimensions 222.27 ft along it. Its OFFSET from the right-of-way line is not dimensioned on the plat, so the distance to the edge of pavement cannot be transcribed — only the 20.00 ft dedication is a dimensioned figure."
+  },
+  "dedicationWidthFt": 20.0
 }

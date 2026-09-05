@@ -108,16 +108,52 @@ async function main(): Promise<void> {
   // The adjoining lots, as the plat shows them. A boundary of record is read
   // against what it abuts; the subject parcel is excluded so it is not drawn
   // twice, once as the subject and once as its own neighbour.
-  const adjacentParcels = await fetchPgAtlasAdjacentParcels(c0[0], c0[1], {
+  const swept = await fetchPgAtlasAdjacentParcels(c0[0], c0[1], {
     radiusFt: radiusFt + 200,
     excludePropId: site.parcel?.parcelId ?? null,
   })
-  console.log(`    adjoining lots  ${adjacentParcels.length}`)
+  // ONLY THE ABUTTERS. A radius sweep over a subdivision returns the
+  // neighbourhood — forty parcels here — and a plat shows the properties that
+  // actually touch the boundary, eight of them, each lettered with its owner or
+  // lot and its record reference. Forty outlines is not more information than
+  // eight; it is the same drawing with the adjoiners no longer legible.
+  const ABUT_TOLERANCE_FT = 3
+  const adjacentParcels = swept.filter(pcl =>
+    (pcl.ring.coordinates as Position[]).some(c =>
+      outerRing.some((o, i) => {
+        const n = outerRing[(i + 1) % outerRing.length]
+        const vx = n[0] - o[0], vy = n[1] - o[1]
+        const t = Math.max(0, Math.min(1,
+          ((c[0] - o[0]) * vx + (c[1] - o[1]) * vy) / (vx * vx + vy * vy || 1)))
+        return Math.hypot(c[0] - (o[0] + t * vx), c[1] - (o[1] + t * vy)) <= ABUT_TOLERANCE_FT
+      })))
+  console.log(`    adjoining lots  ${adjacentParcels.length} abutting `
+    + `(${swept.length} within the sweep, the rest are not neighbours)`)
 
   const platRecordPath = outerPath.replace(/\.plat\.json$/, '.plat-record.json')
-  let platRecord: { reference: string; notes: string[]; legend?: string[] } | undefined
+  let platRecord: {
+    reference: string; notes: string[]; legend?: string[]
+    adjoiners?: { boundary: string; label: string; reference: string }[]
+    platEasements?: { type: string; widthFt: number; along: string; note: string }[]
+    dedicationWidthFt?: number
+    existingPavement?: { label: string; note: string }
+  } | undefined
   try { platRecord = JSON.parse(readFileSync(platRecordPath, 'utf8')) } catch { platRecord = undefined }
   console.log(`    plat record     ${platRecord ? 'transcribed text attached' : 'none found'}`)
+  if (platRecord?.adjoiners?.length) {
+    // The plat letters each adjoiner against the boundary it touches. That is
+    // the information a reviewer uses; a GIS outline with no name on it is not.
+    platRecord = {
+      ...platRecord,
+      notes: [
+        ...platRecord.notes,
+        'ADJOINING PROPERTIES, per the recorded plat: '
+          + platRecord.adjoiners.map(a => `${a.label} (${a.reference}) — ${a.boundary}`).join('; ')
+          + '.',
+      ],
+    }
+    console.log(`    adjoiners       ${platRecord.adjoiners.length} lettered from the plat`)
+  }
 
   // ── Each lot, built exactly as the single-lot generator builds it ─────────
   const lots = []
@@ -150,12 +186,18 @@ async function main(): Promise<void> {
         streetPoint: site.streetPoint, parcelId: site.parcel?.parcelId ?? null,
         streets: site.streets,
         triangleRearAsSide: spec.triangleRearAsSide,
-        easements,
-        adjacentParcels,
+        // PLAT FIRST. The dedication width and the frontage easement are
+        // dimensioned on the recorded instrument; PGAtlas supplies the layers
+        // the plat does not carry — contours, zoning, streets.
+        dedicationWidthFt: platRecord?.dedicationWidthFt ?? null,
+        platFrontageEasementFt: platRecord?.platEasements?.find(
+          e => e.along === 'frontage')?.widthFt ?? null,
         // Each lot's own package must know it was drawn from a plat, or its
         // missing-information report falls back to the GIS wording and the set
         // tells a reviewer the boundary is compiled when it is transcribed.
         platRecord,
+        easements,
+        adjacentParcels,
         contours: contours?.contours, verticalDatum: contours?.verticalDatum ?? null,
         programme: spec.programme as never,
       },
@@ -171,7 +213,8 @@ async function main(): Promise<void> {
     console.log(`    ${`lot ${spec.reference.lot}`.padEnd(15)} ${plat.computedAreaSqFt?.toFixed(0)} sq ft`
       + `  (recorded ${spec.recordedAreaSqFt?.toLocaleString()})`
       + `  ·  ${Math.round(pkg.buildable?.footprintAreaSqFt ?? 0).toLocaleString()} sq ft footprint`
-      + `  ·  ${easements?.length ?? 0} easement(s)`)
+      + `  ·  ${easements?.length ?? 0} GIS + `
+      + `${platRecord?.platEasements?.filter(e => e.along === 'frontage').length ?? 0} plat easement(s)`)
   }
 
   // ── Compose one twin ──────────────────────────────────────────────────────

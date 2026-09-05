@@ -127,6 +127,17 @@ export function deriveSiteImprovements(input: {
    * guessed right-of-way width is a connection to nowhere.
    */
   streetPaths?: Position[][] | null
+  /**
+   * Width of the strip dedicated to public use, from the RECORDED PLAT.
+   *
+   * When the plat dimensions it, this is the distance from the front property
+   * line to the right-of-way line and the apron runs exactly that far. It
+   * replaces the assumed pavement half-width, which was the one figure on these
+   * sheets with nothing behind it. The plat draws the existing pavement
+   * centreline but does not dimension its offset, so the apron ends at the
+   * right-of-way line — which is where a private apron ends in any case.
+   */
+  dedicationWidthFt?: number | null
 }): SiteImprovementResult {
   const { parcel, footprint, edgeYards, hasGarage } = input
   const assumptions: string[] = []
@@ -289,8 +300,10 @@ export function deriveSiteImprovements(input: {
     // line and the street and stops where the road surface begins. Running it
     // to within a flare of the centreline drew it out across half the
     // travelled way.
-    const edgeOfPavementFt = toCentrelineFt - ASSUMED_PAVEMENT_HALF_WIDTH_FT
-    const apronRun = Math.max(4, edgeOfPavementFt)
+    const dedicated = input.dedicationWidthFt ?? null
+    const apronRun = dedicated != null && dedicated > 0
+      ? dedicated
+      : Math.max(4, toCentrelineFt - ASSUMED_PAVEMENT_HALF_WIDTH_FT)
     const outX = -inX, outY = -inY
     const along: Position = [
       a[0] + (dx / len) * (centreOffset + (hasGarage ? DRIVEWAY_WIDTH_FT : 0)),
@@ -334,10 +347,17 @@ export function deriveSiteImprovements(input: {
     })
 
     assumptions.push(
-      `The front lot line is ${toCentrelineFt.toFixed(0)} ft from the street centreline, measured ` +
-      `against the county centreline. The apron runs ${apronRun.toFixed(0)} ft from the property ` +
-      `line to the assumed edge of pavement ${ASSUMED_PAVEMENT_HALF_WIDTH_FT} ft off that ` +
-      `centreline, flaring ${APRON_FLARE_FT} ft each side.`,
+      dedicated != null && dedicated > 0
+        ? `The apron runs ${apronRun.toFixed(2)} ft from the front property line to the `
+          + `right-of-way line — the strip DEDICATED TO PUBLIC USE, dimensioned on the recorded `
+          + `plat — and flares ${APRON_FLARE_FT} ft each side. The plat draws the existing `
+          + `pavement centreline but does not dimension its offset, so the edge of pavement is not `
+          + `transcribed and the apron ends at the right-of-way line.`
+        : `The front lot line is ${toCentrelineFt.toFixed(0)} ft from the county street centreline, `
+          + `measured. NO DEDICATION WIDTH WAS SUPPLIED, so the apron runs `
+          + `${apronRun.toFixed(0)} ft to an ASSUMED edge of pavement `
+          + `${ASSUMED_PAVEMENT_HALF_WIDTH_FT} ft off that centreline — an assumption with no `
+          + `published source. Supply the plat's dedication width to replace it.`,
       `The sidewalk is ${SIDEWALK_WIDTH_FT} ft wide, set ${SIDEWALK_OFFSET_FT} ft INSIDE the front ` +
       'property line. Widths, flare and the pavement half-width are ordinary residential ' +
       'dimensions, NOT county-published values — the county publishes no pavement width and the ' +
