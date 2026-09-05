@@ -35,6 +35,7 @@
  *   }
  */
 
+import { renderAsciiPlan } from '../src/sheets/render-ascii'
 import { toDxf, toLandXml } from '../src/export/exporters'
 import { readFileSync, writeFileSync } from 'fs'
 import { buildRecordedPlatBoundary } from '../src/survey/recorded-plat'
@@ -131,9 +132,16 @@ async function main(): Promise<void> {
     },
   )
 
-  const sheets = pkg.sheets.sheets.map((s, i) => buildSheetContext({
-    sheet: s.covers[0] as SheetId, twin: pkg.twin, projectName: spec.address,
-    status: 'PRELIMINARY', sheetIndex: i + 1, sheetCount: pkg.sheets.sheets.length,
+  // SHEETS=C-000,C-100,… forces the full canonical set. The composer otherwise
+  // emits only sheets that carry content, which is right for a quick look and
+  // wrong for a submission: a permit set is expected to arrive complete, with
+  // the sheets that have nothing yet present and saying so, rather than absent
+  // and leaving the reviewer to wonder whether they were forgotten.
+  const override = process.env.SHEETS?.split(',').map(x => x.trim()).filter(Boolean) as SheetId[] | undefined
+  const sheetIds: SheetId[] = override ?? pkg.sheets.sheets.map(s => s.covers[0] as SheetId)
+  const sheets = sheetIds.map((sheetId, i) => buildSheetContext({
+    sheet: sheetId, twin: pkg.twin, projectName: spec.address,
+    status: 'PRELIMINARY', sheetIndex: i + 1, sheetCount: sheetIds.length,
   }))
   const out = await renderSheetSetPdf({ sheets, responsibility: undefined })
   writeFileSync(outPath, out.buffer)
@@ -152,8 +160,20 @@ async function main(): Promise<void> {
   console.log(`    CAD: ${dxfPath}`)
   console.log(`         ${xmlPath}`)
 
+  // Same standing rule as the other generator: the drawing is always shown.
+  console.log('')
+  console.log(renderAsciiPlan({
+    twin: pkg.twin,
+    envelope: pkg.buildable?.ring ?? null,
+    footprint: pkg.buildable?.footprint ?? null,
+    title: `${spec.address.toUpperCase()} — ${spec.reference.subdivisionName ?? ''} LOT ${spec.reference.lot ?? ''}`.trim(),
+    subtitle: `BOUNDARY OF RECORD · ${plat.computedAreaSqFt?.toFixed(0)} SF · `
+      + `1:${plat.traverse.precisionDenominator?.toFixed(0)} closure · `
+      + `${Math.round(pkg.buildable?.footprintAreaSqFt ?? 0).toLocaleString()} SF footprint`,
+  }))
+
   console.log(`\n[3] ${outPath}`)
-  console.log(`    ${out.pageCount} sheet(s): ${pkg.sheets.sheets.map(s => s.covers[0]).join(' | ')}`)
+  console.log(`    ${out.pageCount} sheet(s): ${sheetIds.join(' | ')}`)
   console.log(`    setbacks ${pkg.buildable?.setbacks.frontFt}' / ${pkg.buildable?.setbacks.sideFt}' / ${pkg.buildable?.setbacks.rearFt}'`)
   console.log(`    envelope ${Math.round(pkg.buildable?.envelopeAreaSqFt ?? 0).toLocaleString()} sq ft`)
   console.log(`    footprint ${Math.round(pkg.buildable?.footprintAreaSqFt ?? 0).toLocaleString()} sq ft`)

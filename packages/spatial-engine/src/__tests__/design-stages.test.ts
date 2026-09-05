@@ -206,14 +206,23 @@ describe('siteplan.generate_swm', () => {
     expect(out.summary).toContain(out.review.certain ? '' : 'INDETERMINATE')
   })
 
-  it('says the sediment control is missing rather than omitting it silently', async () => {
-    // No limit-of-disturbance polygon is in the twin, so silt fence and the
-    // stabilized construction entrance are not drawn. A required item absent
-    // from a sheet with nothing said about it is how a plan gets rejected.
+  it('draws the sediment control, now that a limit of disturbance is derived', async () => {
+    // This used to assert the OPPOSITE — that perimeter control was absent and
+    // the output said so — because nothing produced a limit-of-disturbance
+    // polygon and `generateDesign` keys silt fence and the stabilized
+    // construction entrance off that feature.
+    //
+    // The package now derives the limit from the proposed work plus a working
+    // margin, clipped to the property line, so the control is drawn. Saying an
+    // absent item is absent was the honest behaviour while it was absent; it is
+    // not an outcome worth preserving.
     const r = await run(ctx('siteplan.generate_swm'))
     const out = r.outputs as StormwaterOutput
-    expect(out.sedimentControlDrawn).toBe(false)
-    expect(out.beforeSeal.join(' ')).toContain('limit of disturbance')
+    expect(out.sedimentControlDrawn).toBe(true)
+    // The limit-of-disturbance caveat is retired with it.
+    expect(out.beforeSeal.join(' ')).not.toContain('limit of disturbance')
+    // What a PE must still decide is untouched.
+    expect(out.beforeSeal.join(' ')).toMatch(/geotechnical|Maryland PE/)
   })
 })
 

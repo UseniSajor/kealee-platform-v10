@@ -502,6 +502,26 @@ export function buildLotPackage(lot: LotInput, resolved?: ResolvedBoundary | nul
           return [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2]
         })()
       : undefined
+    // Limits of disturbance around the proposed work.
+    //
+    // Sec. 32-130(a)(4) requires the limits AND the disturbed-area figure. With
+    // no polygon the disturbance read NOT QUANTIFIED and the 5,000 sq ft gate
+    // sat INDETERMINATE forever — and the sediment-control sheet had nothing to
+    // draw, because `generateDesign` keys silt fence and the stabilized
+    // construction entrance off this feature.
+    const workPts: Position[] = [
+      ...(buildable?.footprint?.coordinates ?? []),
+      ...(siteImprovements?.improvements.flatMap(i => i.ring.coordinates) ?? []),
+    ] as Position[]
+    const lodRing = limitsOfDisturbance(workPts, ring.coordinates as Position[], 10)
+    if (lodRing) {
+      twin = addFeatures(twin, [{
+        kind: 'LimitOfDisturbance', id: 'lod', ring: lodRing,
+        attributes: { note: 'Limits of disturbance — proposed work plus a 10 ft working margin, clipped to the property line.' },
+        ...base,
+      }] as never[])
+    }
+
     const design = generateDesign({
       twin,
       contourIntervalFt: lot.contours?.length ? 2 : undefined,
@@ -563,7 +583,49 @@ export function buildLotPackage(lot: LotInput, resolved?: ResolvedBoundary | nul
     disturbance: lot.disturbance,
   })
 
-  const disturbance = calculateDisturbance(lot.disturbance ?? {})
+  // Quantify what the engine has ALREADY COMPUTED.
+  //
+  // This took `lot.disturbance ?? {}` — nothing — so every component read null
+  // and the total read NOT QUANTIFIED, while the footprint and the driveway
+  // were sitting in this same function. Sec. 32-130(a)(4) requires the
+  // disturbed-area calculation, and the 5,000 sq ft threshold decides whether
+  // sediment-control and stormwater review apply at all.
+  //
+  // A caller's explicit figure still wins: it may come from a designer who
+  // knows the staging and stockpile areas this cannot see. What stays null
+  // stays null — null means NOT YET KNOWN and is not the same as zero, which
+  // is why an indeterminate total still counts as over the threshold.
+  const lodFeature = twin.features.find(f => f.kind === 'LimitOfDisturbance') as
+    { ring?: Ring } | undefined
+  const swmFeature = twin.features.find(f => f.kind === 'SWMPractice') as
+    { attributes?: Record<string, unknown> } | undefined
+  const utilityLengthFt = twin.features
+    .filter(f => f.kind === 'Utility')
+    .reduce((sum, f) => {
+      const l = (f as { line?: Position[] }).line ?? []
+      let d = 0
+      for (let i = 1; i < l.length; i++) d += Math.hypot(l[i][0] - l[i - 1][0], l[i][1] - l[i - 1][1])
+      return sum + d
+    }, 0)
+
+  const derivedDisturbance: Partial<DisturbanceComponents> = {
+    buildingFootprintSqFt: buildable?.footprintAreaSqFt ?? null,
+    drivewaySqFt: siteImprovements
+      ? siteImprovements.improvements.reduce((sum, i) => sum + i.areaSqFt, 0)
+      : null,
+    // The graded area is the limit of disturbance itself.
+    gradingSqFt: lodFeature?.ring ? ringAreaSqFt(lodFeature.ring) : null,
+    // A 3 ft trench is the ordinary residential service width. Stated, not
+    // measured — a designer's figure replaces it.
+    utilityTrenchesSqFt: utilityLengthFt > 0 ? Math.round(utilityLengthFt * 3) : null,
+    stormwaterFacilitiesSqFt: swmFeature?.attributes?.footprintSqFt != null
+      ? Number(swmFeature.attributes.footprintSqFt)
+      : null,
+  }
+  const disturbance = calculateDisturbance({
+    ...derivedDisturbance,
+    ...(lot.disturbance ?? {}),
+  })
   const envelope = zoningEnvelope
   const missingInformation = buildMissingInformationReport(twin, permitPath)
 
