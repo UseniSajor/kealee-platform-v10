@@ -130,7 +130,7 @@ function signedArea(pts: Position[]): number {
 }
 
 /** Open ring (no repeated last point), wound counter-clockwise. */
-function normaliseRing(ring: Ring): Position[] {
+export function normaliseRing(ring: Ring): Position[] {
   const pts = ring.coordinates.map(c => [c[0], c[1]] as Position)
   if (pts.length > 1) {
     const [fx, fy] = pts[0], [lx, ly] = pts[pts.length - 1]
@@ -554,6 +554,25 @@ export function deriveBuildableEnvelope(input: {
   citation?: string
   /** Programme cap — what the client wants. */
   maxFootprintSqFt?: number
+  /**
+   * A STATED footprint proportion, width along the front lot line ÷ depth.
+   *
+   * Without it the footprint takes the ENVELOPE's proportion, which is a
+   * reasonable default for an estimated house and wrong for a real one: a
+   * 46 x 26 dwelling on a deep narrow envelope came out 33 x 36, the right
+   * area and the wrong building.
+   */
+  footprintAspect?: number
+  /**
+   * The footprint dimensions are STATED, not estimated.
+   *
+   * An estimated house may shrink to fit — its size was a guess and a smaller
+   * guess is still a guess. A stated one may not: shrinking 46 x 26 to 39 x 22
+   * draws a different building at the right area and tells no one. When a
+   * stated footprint does not fit, it is drawn at the stated size and the
+   * overrun is reported.
+   */
+  footprintStated?: boolean
   /** Net lot area for the coverage calculation. Defaults to the parcel area. */
   netLotAreaSqFt?: number
   /**
@@ -688,7 +707,12 @@ export function deriveBuildableEnvelope(input: {
   const rot = ring.coordinates.map(c => [c[0] * cos - c[1] * sin, c[0] * sin + c[1] * cos])
   const envW = Math.max(...rot.map(c => c[0])) - Math.min(...rot.map(c => c[0]))
   const envH = Math.max(...rot.map(c => c[1])) - Math.min(...rot.map(c => c[1]))
-  const aspect = envH > 0 ? Math.max(0.25, Math.min(4, envW / envH)) : 1
+  // A stated proportion wins over the envelope's. It is not clamped: the
+  // clamp exists to keep a DERIVED aspect sane, and a dimension someone
+  // measured is not the engine's to correct.
+  const aspect = input.footprintAspect && input.footprintAspect > 0
+    ? input.footprintAspect
+    : envH > 0 ? Math.max(0.25, Math.min(4, envW / envH)) : 1
 
   // Place the house against the FRONT building line, not in the middle of the
   // envelope. A dwelling is built to the front setback — that is what the
@@ -701,10 +725,20 @@ export function deriveBuildableEnvelope(input: {
   // what makes a plan rejectable. Shrink until it genuinely fits.
   // Against the front line first, at the full requested area. Only if the
   // house cannot fit anywhere along the lot's depth does it shrink in place.
+  const stated = input.footprintStated === true
   const footprint = allowed > 0
     ? (placeAgainstFront(ring, parcel, yards, allowed, aspect, angle)
-       ?? largestFittingRectangle(ring, centre, allowed, aspect, angle))
+       // A stated footprint keeps its size. Where it will not fit inside the
+       // BRL it is placed against the front line anyway, at full dimensions,
+       // and the encroachment is named below — a drawing that shows the real
+       // building breaking the setback is useful; one that quietly shows a
+       // smaller building is not.
+       ?? (stated
+           ? rectangleAt(frontSetPosition(ring, parcel, yards, allowed, aspect, angle),
+                         allowed, aspect, angle)
+           : largestFittingRectangle(ring, centre, allowed, aspect, angle)))
     : null
+  const statedFits = !stated || !footprint || rectFits(footprint, ring)
 
   if (allowed <= 0) {
     caveats.push('No buildable area remains after the setbacks. This lot cannot take a principal structure as zoned.')
@@ -745,6 +779,39 @@ export function deriveBuildableEnvelope(input: {
   }
 
   const drawnAreaSqFt = footprint ? ringArea(footprint) : 0
+  // A TRIANGULAR LOT HAS NO EDGE OPPOSITE THE FRONT.
+  //
+  // The rear is assigned here as the edge furthest from the street, which is
+  // right for a quadrilateral and is a choice on a triangle: the two non-front
+  // edges both run from the frontage to the apex, and calling one of them the
+  // rear applies a 20 ft rear yard along its whole length where an 8 ft side
+  // yard might apply instead. On Lot 2 that is the difference between a 2,051
+  // sq ft envelope and a materially larger one.
+  //
+  // Zoning ordinances commonly define the rear lot line for a triangular lot as
+  // a short line parallel to the front at the maximum distance, rather than a
+  // whole edge. WHETHER PRINCE GEORGE'S DOES SO HAS NOT BEEN VERIFIED against
+  // Subtitle 27 here, so the more restrictive assignment stands and the
+  // question is put to the reviewer rather than answered by assumption.
+  if (normaliseRing(parcel).length === 3) {
+    caveats.push(
+      'TRIANGULAR LOT — CONFIRM THE REAR LOT LINE. A triangle has no lot line opposite the front, ' +
+      'so the edge furthest from the street has been given the REAR yard and the remaining edge the ' +
+      'side yard. Many ordinances instead define the rear lot line of a triangular lot as a short ' +
+      'line parallel to the front at the maximum distance, which would apply the side yard to both ' +
+      'edges and enlarge the buildable envelope. Confirm the definition in Subtitle 27 before ' +
+      'relying on this envelope — the assignment drawn here is the more restrictive of the two.')
+  }
+
+  if (stated && !statedFits) {
+    const w = Math.sqrt(allowed * aspect)
+    caveats.push(
+      `THE STATED FOOTPRINT DOES NOT FIT THE BUILDING RESTRICTION LINE. ` +
+      `${w.toFixed(0)} ft by ${(allowed / w).toFixed(0)} ft is drawn at full size and crosses the ` +
+      `setback. Reduce the dwelling, seek a variance, or confirm the dimensions — the drawing ` +
+      `shows the building as stated, not a smaller one that would fit.`)
+  }
+
   if (footprint && allowed - drawnAreaSqFt > 1) {
     caveats.push(
       `The permitted footprint is ${Math.round(allowed).toLocaleString()} sq ft, but the largest ` +

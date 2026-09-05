@@ -11,7 +11,9 @@
  * missed by grepping. This exists so looking costs nothing.
  */
 
-import type { Position, Ring, SiteTwin } from '../site-plan/site-twin'
+import type { Position, Ring, SiteFeature, SiteTwin } from '../site-plan/site-twin'
+import { featuresForSheet, isBuildableEnvelope } from './composer'
+import type { SheetId } from './sheet-template'
 
 const W = 96, H = 40
 
@@ -32,7 +34,10 @@ function makeProjector(pts: Position[]) {
     const col = Math.round(((p[0] - minX) / spanX) * (W - 1 - pad * 2)) + pad
     // Y is flipped: northing increases upward, rows increase downward.
     const row = Math.round((1 - (p[1] - minY) / spanY) * (H - 1 - pad)) + 1
-    return [Math.max(0, Math.min(W - 1, col)), Math.max(0, Math.min(H - 1, row))]
+    // NOT clamped. Clamping drags anything off-frame onto the border, so an
+    // adjoining lot 200 ft away drew as a solid line down the edge of the
+    // frame. `plot` rejects out-of-range cells, which clips properly.
+    return [col, row]
   }
 }
 
@@ -89,7 +94,35 @@ export interface AsciiPlanInput {
   footprint?: Ring | null
   title: string
   subtitle?: string
+  /**
+   * Draw only what this sheet carries, through the SAME filter the PDF uses.
+   *
+   * Without it every sheet in the set renders identically in the terminal —
+   * which is exactly the defect that went unnoticed in the PDF until someone
+   * looked at five pixel-identical pages. Reviewing C-400 by eye means seeing
+   * C-400's content, not the boundary sheet again.
+   */
+  sheet?: SheetId
 }
+
+/** What each glyph is, in draw order. Only the ones actually drawn are shown. */
+const GLYPHS: { ch: string; label: string }[] = [
+  { ch: ':', label: 'adjoining lot' },
+  { ch: '#', label: 'lot line' },
+  { ch: '+', label: 'BRL setback' },
+  { ch: '█', label: 'dwelling' },
+  { ch: '~', label: 'index contour' },
+  { ch: '·', label: 'intermediate' },
+  { ch: 'E', label: 'easement' },
+  { ch: '▒', label: 'paving' },
+  { ch: 'L', label: 'limit of disturbance' },
+  { ch: 'x', label: 'sediment control' },
+  { ch: 'D', label: 'drainage area' },
+  { ch: 'S', label: 'SWM practice' },
+  { ch: 'u', label: 'utility' },
+  { ch: 'T', label: 'tree' },
+  { ch: '○', label: 'spot elevation' },
+]
 
 /**
  * Renders the plan for terminal review.
@@ -102,39 +135,98 @@ export function renderAsciiPlan(input: AsciiPlanInput): string {
   if (!parcel?.ring) return '  (no parcel geometry — nothing to draw)'
   const lot = parcel.ring.coordinates as Position[]
 
+  // The sheet's own content, filtered exactly as the PDF filters it.
+  const feats: SiteFeature[] = input.sheet
+    ? featuresForSheet(input.twin.features, input.sheet)
+    : input.twin.features
+
   const g = blank()
   const P = makeProjector(lot)
+  const used = new Set<string>()
+  const mark = (ch: string) => { used.add(ch); return ch }
+
+  const ringOf = (f: SiteFeature) => (f as { ring?: Ring }).ring?.coordinates as Position[] | undefined
+  const lineOf = (f: SiteFeature) => (f as { line?: Position[] }).line
+
+  // Adjoining lots, beneath everything. A recorded plat shows them because a
+  // boundary means nothing without what it abuts — which line is shared, where
+  // the subject sits in the block. They are context, so they are the faintest
+  // thing drawn and never compete with the subject boundary.
+  const adjoining = (input.twin as { adjacentParcels?: { ring: Ring }[] }).adjacentParcels ?? []
+  for (const a of adjoining) {
+    const r = a.ring?.coordinates as Position[] | undefined
+    if (r?.length) ring(g, r, P, mark(':'), -1)
+  }
 
   // Contours first and clipped: the county serves them on a radius, so
   // unclipped they draw the neighbourhood and bury the lot.
-  for (const f of input.twin.features) {
+  const lotProj = lot.map(P)
+  for (const f of feats) {
     if (f.kind !== 'Contour') continue
-    const line_ = (f as { line?: Position[] }).line
-    if (!line_?.length) continue
+    const l = lineOf(f)
+    if (!l?.length) continue
     const idx = ((f as { attributes?: Record<string, unknown> }).attributes?.weight === 'index')
-    for (let i = 0; i < line_.length - 1; i++) {
-      const a = line_[i], b2 = line_[i + 1]
-      if (!inside(P(a), lot.map(P)) && !inside(P(b2), lot.map(P))) continue
-      line(g, P(a), P(b2), idx ? '~' : '·', 0)
+    for (let i = 0; i < l.length - 1; i++) {
+      const a = l[i], b2 = l[i + 1]
+      if (!inside(P(a), lotProj) && !inside(P(b2), lotProj)) continue
+      line(g, P(a), P(b2), mark(idx ? '~' : '·'), 0)
     }
   }
 
-  // Easements before the envelope, under everything else. A recorded easement
-  // constrains where a building may go as hard as a setback does, and the
-  // terminal view is where a placement gets eyeballed — an easement visible
-  // only in the PDF is invisible at exactly the moment it matters.
-  let easementsDrawn = 0
-  for (const f of input.twin.features) {
-    if (f.kind !== 'Easement') continue
-    const r = (f as { ring?: Ring }).ring
-    if (!r?.coordinates?.length) continue
-    ring(g, r.coordinates as Position[], P, 'E', 1)
-    easementsDrawn++
+  // Areas below lines, lines below the boundary, the dwelling on top.
+  for (const f of feats) {
+    const r = ringOf(f)
+    if (f.kind === 'DrainageArea' && r) fill(g, r, P, mark('D'), 1)
+  }
+  for (const f of feats) {
+    const r = ringOf(f)
+    if (!r) continue
+    if (f.kind === 'LimitOfDisturbance') ring(g, r, P, mark('L'), 2)
+    else if (f.kind === 'Pavement' || f.kind === 'Sidewalk') fill(g, r, P, mark('▒'), 3)
+    else if (f.kind === 'SWMPractice') fill(g, r, P, mark('S'), 4)
+    else if (f.kind === 'Tree') fill(g, r, P, mark('T'), 5)
+    else if (f.kind === 'Easement') ring(g, r, P, mark('E'), 5)
   }
 
-  if (input.envelope) ring(g, input.envelope.coordinates as Position[], P, '+', 1)
-  ring(g, lot, P, '#', 2)
-  if (input.footprint) fill(g, input.footprint.coordinates as Position[], P, '█', 3)
+  for (const f of feats) {
+    const l = lineOf(f)
+    if (!l || l.length < 2) continue
+    if (f.kind !== 'Utility' && f.kind !== 'StormPipe') continue
+    for (let i = 0; i < l.length - 1; i++) line(g, P(l[i]), P(l[i + 1]), mark('u'), 6)
+  }
+
+  // Sediment control and any other proposed linework that is not the envelope.
+  // Envelopes are drawn with the BRL glyph below, including the lot-namespaced
+  // ones a subdivision drawing produces.
+  const envelopeFeats = feats.filter(f =>
+    f.kind === 'ProposedFeature' && 'id' in f && isBuildableEnvelope(String(f.id)))
+  for (const f of feats) {
+    if (f.kind !== 'ProposedFeature') continue
+    const id = 'id' in f ? String(f.id) : ''
+    if (isBuildableEnvelope(id)) continue
+    const r = ringOf(f), l = lineOf(f)
+    if (r) ring(g, r, P, mark('x'), 7)
+    else if (l && l.length > 1) {
+      for (let i = 0; i < l.length - 1; i++) line(g, P(l[i]), P(l[i + 1]), mark('x'), 7)
+    }
+  }
+
+  for (const f of feats) {
+    const pt = (f as { point?: Position }).point
+    if (f.kind === 'SpotElevation' && pt) plot(g, ...P(pt), mark('○'), 8)
+  }
+
+  if (input.envelope) ring(g, input.envelope.coordinates as Position[], P, mark('+'), 9)
+  for (const f of envelopeFeats) {
+    const r2 = ringOf(f)
+    if (r2) ring(g, r2, P, mark('+'), 9)
+  }
+  ring(g, lot, P, mark('#'), 10)
+  if (input.footprint) fill(g, input.footprint.coordinates as Position[], P, mark('█'), 11)
+  else for (const f of feats) {
+    const r = ringOf(f)
+    if (f.kind === 'Building' && r) fill(g, r, P, mark('█'), 11)
+  }
 
   const bar = '─'.repeat(W)
   const out: string[] = []
@@ -149,9 +241,10 @@ export function renderAsciiPlan(input: AsciiPlanInput): string {
   out.push('├' + bar + '┤')
   for (const row of g) out.push('│' + row.map(c => c.ch).join('') + '│')
   out.push('├' + bar + '┤')
-  const legend = '# lot line   + BRL setback   █ dwelling   ~ index contour   · intermediate'
-    + (easementsDrawn ? '   E easement' : '')
-  out.push('│' + pad(legend) + '│')
+  // Only what this sheet actually drew. A fixed legend listing symbols absent
+  // from the drawing is how an empty sheet passes for a full one.
+  const legend = GLYPHS.filter(x => used.has(x.ch)).map(x => `${x.ch} ${x.label}`).join('   ')
+  out.push('│' + pad(legend || '(nothing drawn on this sheet)') + '│')
   out.push('└' + bar + '┘')
   return out.join('\n')
 }

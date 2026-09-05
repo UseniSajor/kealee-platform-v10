@@ -40,6 +40,22 @@ export interface HouseProgramme {
    * quote finished living area, so this defaults to false.
    */
   areaIncludesGarage?: boolean
+  /**
+   * A STATED footprint, width along the front lot line by depth.
+   *
+   * Everything else here is an estimate: a floor area is divided by storeys and
+   * a garage is added, which produces a plausible house so the drawing is
+   * useful. When the dimensions are actually known — from an architect, a
+   * builder's model, a client who has measured — they are not an estimate and
+   * must not be re-derived. Given both, they set the footprint area AND its
+   * proportion, and the estimator says so rather than reporting its own
+   * arithmetic.
+   *
+   * They are still checked against the setbacks and the coverage maximum. A
+   * stated dimension that does not fit is reported, never silently shrunk.
+   */
+  footprintWidthFt?: number
+  footprintDepthFt?: number
 }
 
 export interface FootprintEstimate {
@@ -68,6 +84,26 @@ export const COVERED_PORCH_SQFT = 60
 export function estimateFootprint(p: HouseProgramme): FootprintEstimate {
   const assumptions: string[] = []
   const storeys = Math.max(1, Math.round(p.storeys || 1))
+
+  // A STATED footprint is not estimated.
+  const w = p.footprintWidthFt, d = p.footprintDepthFt
+  if (w != null && d != null && w > 0 && d > 0) {
+    const stated = w * d
+    return {
+      footprintSqFt: stated,
+      // The split is unknown and is not invented: a stated outline says nothing
+      // about how much of it is garage or porch.
+      livingFootprintSqFt: stated, garageFootprintSqFt: 0, porchFootprintSqFt: 0,
+      basis: `Stated footprint ${w} ft wide by ${d} ft deep = `
+        + `${stated.toLocaleString()} sq ft. Given, not derived from floor area.`,
+      assumptions: [
+        'Width is measured along the front lot line and depth away from it.',
+        'The garage and porch, if any, are inside this outline — the stated'
+        + ' dimensions are the whole footprint.',
+      ],
+      exact: true,
+    }
+  }
 
   if (p.totalFloorAreaSqFt <= 0) {
     return {

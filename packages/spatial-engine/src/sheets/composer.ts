@@ -279,6 +279,11 @@ export const SHEET_SUBJECTS: { sheet: SheetId; subjects: ContentSubject[] }[] = 
  * on it is not a sheet a reviewer can use. On top of that base sits only the
  * discipline the sheet is for.
  */
+/** True for the buildable envelope, whether or not its id is lot-namespaced. */
+export function isBuildableEnvelope(id: string): boolean {
+  return id === 'buildable-envelope' || id.endsWith('-buildable-envelope')
+}
+
 export function featuresForSheet(features: SiteFeature[], sheet: SheetId): SiteFeature[] {
   const subjects = SHEET_SUBJECTS.find(g => g.sheet === sheet)?.subjects ?? []
   // The base every sheet carries.
@@ -296,7 +301,14 @@ export function featuresForSheet(features: SiteFeature[], sheet: SheetId): SiteF
     BASE.includes(f.kind)
     || subjects.includes(subjectForFeature(f))
     // The buildable envelope is the BRL; it orients every discipline.
-    || (f.kind === 'ProposedFeature' && 'id' in f && f.id === 'buildable-envelope'),
+    // The buildable envelope is the BRL; it orients every discipline.
+    //
+    // Matched by SUFFIX because a multi-lot drawing namespaces feature ids per
+    // lot (`l2-buildable-envelope`). An exact match silently dropped every
+    // setback line from a subdivision set, and the same features then fell
+    // through to the generic proposed-linework branch and drew as sediment
+    // control — a building restriction line mislabelled as silt fence.
+    || (f.kind === 'ProposedFeature' && 'id' in f && isBuildableEnvelope(String(f.id))),
   )
 }
 

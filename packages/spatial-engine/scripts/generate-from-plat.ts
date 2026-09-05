@@ -44,7 +44,7 @@ import { fetchPgContours } from '../src/jurisdictions/pg-elevation'
 import { buildLotPackage } from '../src/self-perform/lot-package'
 import { renderSheetSetPdf } from '../src/sheets/render-pdf'
 import { buildSheetContext } from '../src/sheets/render-svg'
-import type { SheetId } from '../src/sheets/sheet-template'
+import { SHEET_TITLES, type SheetId } from '../src/sheets/sheet-template'
 
 async function main(): Promise<void> {
   const [specPath, outPath] = process.argv.slice(2)
@@ -58,9 +58,7 @@ async function main(): Promise<void> {
     basisOfBearings?: string
     recordedAreaSqFt?: number
     platNotes?: string[]
-    basisOfBearings?: string
     pointOfBeginning?: [number, number]
-    recordedAreaSqFt?: number
     programme?: Record<string, unknown>
     calls: unknown[]
   }
@@ -225,18 +223,29 @@ async function main(): Promise<void> {
   console.log(`    CAD: ${dxfPath}`)
   console.log(`         ${xmlPath}`)
 
-  // Same standing rule as the other generator: the drawing is always shown.
-  console.log('')
-  console.log(renderAsciiPlan({
-    twin: pkg.twin,
-    envelope: pkg.buildable?.ring ?? null,
-    footprint: pkg.buildable?.footprint ?? null,
-    title: `${spec.address.toUpperCase()} — ${spec.reference.subdivisionName ?? ''} LOT ${spec.reference.lot ?? ''}`.trim(),
-    subtitle: `BOUNDARY OF RECORD · ${plat.computedAreaSqFt?.toFixed(0)} SF · `
-      + `1:${plat.traverse.precisionDenominator?.toFixed(0)} closure · `
-      + `${Math.round(pkg.buildable?.footprintAreaSqFt ?? 0).toLocaleString()} SF footprint`,
-  }))
-
+  // Same standing rule as the other generator: the drawing is always shown —
+  // and EVERY sheet is, not just the plan.
+  //
+  // One rendered sheet cannot tell you the other ten carry the right content.
+  // The set was split by discipline precisely because a reviewer signs the
+  // sheet for their scope, and the last time these went unlooked-at, all five
+  // pages were pixel-identical and the PDF reported success either way.
+  //
+  // ASCII_SHEETS=C-400 narrows it when only one is being worked on.
+  const only = process.env.ASCII_SHEETS?.split(',').map(x => x.trim()).filter(Boolean)
+  const toDraw = only?.length ? sheetIds.filter(id => only.includes(id)) : sheetIds
+  for (const sheetId of toDraw) {
+    console.log('')
+    console.log(renderAsciiPlan({
+      twin: pkg.twin,
+      sheet: sheetId,
+      envelope: pkg.buildable?.ring ?? null,
+      footprint: pkg.buildable?.footprint ?? null,
+      title: `${sheetId}  ${SHEET_TITLES[sheetId]}`,
+      subtitle: `${spec.address.toUpperCase()} — ${spec.reference.subdivisionName ?? ''} `
+        + `LOT ${spec.reference.lot ?? ''} · ${plat.computedAreaSqFt?.toFixed(0)} SF of record`,
+    }))
+  }
   console.log(`\n[3] ${outPath}`)
   console.log(`    ${out.pageCount} sheet(s): ${sheetIds.join(' | ')}`)
   console.log(`    setbacks ${pkg.buildable?.setbacks.frontFt}' / ${pkg.buildable?.setbacks.sideFt}' / ${pkg.buildable?.setbacks.rearFt}'`)

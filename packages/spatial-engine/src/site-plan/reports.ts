@@ -108,8 +108,15 @@ export function buildMissingInformationReport(
     responsible: 'applicant',
   })
 
+  // Only while the THRESHOLD QUESTION is still open.
+  //
+  // Each of these says an unquantified component 'keeps the project above the
+  // 5,000 sq ft gate by default'. Once the known components alone clear the
+  // gate that sentence is moot — the determination is made and no unknown can
+  // unmake it — and six items demanding numbers that would change nothing read
+  // exactly like six items that matter.
   for (const c of applicability.disturbance.breakdown) {
-    if (c.sqFt == null) {
+    if (c.sqFt == null && applicability.disturbance.indeterminate) {
       add({
         key: `disturbance:${c.component}`,
         label: `Disturbance area — ${c.component}`,

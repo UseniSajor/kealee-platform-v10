@@ -1,16 +1,33 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <LandXML xmlns="http://www.landxml.org/schema/LandXML-1.2"
          version="1.2"
-         date="2026-09-05" time="19:22:30">
+         date="2026-09-05" time="19:22:52">
   <Units><Imperial areaUnit="squareFoot" linearUnit="USSurveyFoot" volumeUnit="cubicFeet"
            temperatureUnit="fahrenheit" pressureUnit="inHG"/></Units>
-  <Project name="1009 Rollins Ave"/>
+  <Project name="1005 Rollins Ave"/>
   <Application name="Kealee Site Plan Engine" version="1.0"/>
   <!-- Coordinate system EPSG:2248; horizontal datum NAD83;
-       vertical datum NAVD88 (feet). Model revision 9. -->
+       vertical datum NAVD88 (feet). Model revision 11. -->
   <CoordinateSystem desc="EPSG:2248" horizontalDatum="NAD83"
                     verticalDatum="NAVD88 (feet)"/>
   <Parcels>
+      <Parcel name="subdivision-outer" area="21825.673095703125" parcelType="Single">
+        <CoordGeom>
+            <PntList2D>440194.1578 1340254.7066</PntList2D>
+            <PntList2D>440229.9976347079 1340447.788475504</PntList2D>
+            <PntList2D>440011.44818315847 1340488.3413499699</PntList2D>
+            <PntList2D>440194.1578 1340254.7066</PntList2D>
+        </CoordGeom>
+      </Parcel>
+      <Parcel name="1005 Rollins Ave" area="9598.549926757812" parcelType="Single">
+        <CoordGeom>
+            <PntList2D>440194.1578 1340254.7066</PntList2D>
+            <PntList2D>440226.3475853436 1340428.1243676003</PntList2D>
+            <PntList2D>440162.4384871309 1340439.9830001371</PntList2D>
+            <PntList2D>440140.7279935122 1340323.0208863274</PntList2D>
+            <PntList2D>440194.1578 1340254.7066</PntList2D>
+        </CoordGeom>
+      </Parcel>
       <Parcel name="1009 Rollins Ave" area="8008.6866455078125" parcelType="Single">
         <CoordGeom>
             <PntList2D>440162.4389510336 1340439.984797532</PntList2D>

@@ -469,6 +469,12 @@ export function buildLotPackage(lot: LotInput, resolved?: ResolvedBoundary | nul
       })(),
       // No programme means no requested size, so only zoning limits the box.
       maxFootprintSqFt: footprintEstimate?.footprintSqFt ?? Number.POSITIVE_INFINITY,
+      // A stated width x depth carries its PROPORTION through, not just its
+      // area. Area alone let the envelope reshape the house.
+      footprintAspect: lot.programme?.footprintWidthFt && lot.programme?.footprintDepthFt
+        ? lot.programme.footprintWidthFt / lot.programme.footprintDepthFt
+        : undefined,
+      footprintStated: Boolean(lot.programme?.footprintWidthFt && lot.programme?.footprintDepthFt),
     })
     const feats: unknown[] = []
     if (buildable.ring) {
@@ -490,6 +496,9 @@ export function buildLotPackage(lot: LotInput, resolved?: ResolvedBoundary | nul
         footprint: buildable.footprint,
         edgeYards: buildable.edgeYards,
         hasGarage: Boolean(lot.programme?.garage && lot.programme.garage !== 'none'),
+        // The apron and the public walk are outside the property line and
+        // cannot be placed without the street.
+        streetPaths: lot.streets?.flatMap(st => st.paths) ?? null,
       })
       for (const imp of siteImprovements.improvements) {
         feats.push({
@@ -752,6 +761,13 @@ export function buildLotPackage(lot: LotInput, resolved?: ResolvedBoundary | nul
     }
   }
   if (!envelope.found) beforeSeal.push(envelope.caution)
+  // Envelope caveats that a REVIEWER must act on, not just read on the sheet.
+  // The triangular-lot rear line decides how much of the lot is buildable and
+  // the engine has taken the restrictive reading; that belongs in front of
+  // whoever seals the drawing, not only in the caveat block.
+  for (const c of buildable?.caveats ?? []) {
+    if (/TRIANGULAR LOT|DOES NOT FIT/.test(c)) beforeSeal.push(c)
+  }
   // Every REQUIRED item, not the first five. This was sliced to 5, so a list
   // longer than that dropped its tail silently — and the tail is not the
   // unimportant end, it is whatever the report happened to append last. An
