@@ -111,8 +111,29 @@ async function main(): Promise<void> {
   }
 
   // ── 4. Draw it ────────────────────────────────────────────────────────────
-  const contours = await fetchPgContours(site.address.easting2248, site.address.northing2248,
-    { radiusFt: 150 }).catch(() => null)
+  // Contours from PGAtlas Elevation/MapServer/1 — 2 ft, NAVD88 — centred on THE
+  // PLAT, not on the geocoded address point.
+  //
+  // This queried the locator's point with a fixed 150 ft radius. The locator
+  // returns an address point, which sits wherever the county put it, and Lot 1
+  // is 176 ft deep: the window did not span the boundary it was drawing, so the
+  // far end of the lot had no ground under it. The plat is the basis and PGAtlas
+  // adds the layer, so the layer is fetched over the plat's own extent with a
+  // margin for the contours that close just outside it.
+  const platCentroid = plat.ring.coordinates.reduce(
+    (a, c) => [a[0] + c[0] / plat.ring.coordinates.length, a[1] + c[1] / plat.ring.coordinates.length],
+    [0, 0] as [number, number])
+  const platRadiusFt = Math.ceil(Math.max(...plat.ring.coordinates.map(
+    c => Math.hypot(c[0] - platCentroid[0], c[1] - platCentroid[1]))) + 100)
+  const contours = await fetchPgContours(platCentroid[0], platCentroid[1],
+    { radiusFt: platRadiusFt }).catch(() => null)
+  if (!contours || !contours.contours.length) {
+    console.log(`    contours        NONE RETURNED — C-300 has no existing ground`)
+  } else {
+    const els = contours.contours.map(c => c.elevationFt)
+    console.log(`    contours        ${contours.contours.length} within ${platRadiusFt} ft`
+      + ` · ${Math.min(...els).toFixed(0)}–${Math.max(...els).toFixed(0)} ft ${contours.verticalDatum ?? 'datum not stated'}`)
+  }
 
   // Recorded easements. The lot's OWN plat carries a public utility easement —
   // PGAtlas returns it keyed to record plat 231-050, this plat — and the
@@ -123,10 +144,7 @@ async function main(): Promise<void> {
   // actually touches THIS boundary: a 300 ft window over a subdivision picks up
   // the neighbours' easements too, and a neighbour's easement drawn on this lot
   // is a defect of the same kind as a missing one.
-  const centroid = plat.ring.coordinates.reduce(
-    (a, c) => [a[0] + c[0] / plat.ring.coordinates.length, a[1] + c[1] / plat.ring.coordinates.length],
-    [0, 0] as [number, number])
-  const nearby = await fetchPgAtlasEasements(centroid[0], centroid[1], { radiusFt: 300 })
+  const nearby = await fetchPgAtlasEasements(platCentroid[0], platCentroid[1], { radiusFt: 300 })
   const easements = nearby === null ? undefined : nearby
     .filter(e => e.ring.coordinates.some(c => inRing(c, plat.ring.coordinates)))
     .map(e => ({

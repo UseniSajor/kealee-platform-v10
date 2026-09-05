@@ -119,6 +119,19 @@ export function renderAsciiPlan(input: AsciiPlanInput): string {
     }
   }
 
+  // Easements before the envelope, under everything else. A recorded easement
+  // constrains where a building may go as hard as a setback does, and the
+  // terminal view is where a placement gets eyeballed — an easement visible
+  // only in the PDF is invisible at exactly the moment it matters.
+  let easementsDrawn = 0
+  for (const f of input.twin.features) {
+    if (f.kind !== 'Easement') continue
+    const r = (f as { ring?: Ring }).ring
+    if (!r?.coordinates?.length) continue
+    ring(g, r.coordinates as Position[], P, 'E', 1)
+    easementsDrawn++
+  }
+
   if (input.envelope) ring(g, input.envelope.coordinates as Position[], P, '+', 1)
   ring(g, lot, P, '#', 2)
   if (input.footprint) fill(g, input.footprint.coordinates as Position[], P, '█', 3)
@@ -136,7 +149,9 @@ export function renderAsciiPlan(input: AsciiPlanInput): string {
   out.push('├' + bar + '┤')
   for (const row of g) out.push('│' + row.map(c => c.ch).join('') + '│')
   out.push('├' + bar + '┤')
-  out.push('│' + pad('# lot line   + BRL setback   █ dwelling   ~ index contour   · intermediate') + '│')
+  const legend = '# lot line   + BRL setback   █ dwelling   ~ index contour   · intermediate'
+    + (easementsDrawn ? '   E easement' : '')
+  out.push('│' + pad(legend) + '│')
   out.push('└' + bar + '┘')
   return out.join('\n')
 }
