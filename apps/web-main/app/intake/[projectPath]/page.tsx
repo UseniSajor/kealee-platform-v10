@@ -97,7 +97,8 @@ interface AgentInsight {
 }
 
 function formatPrice(cents: number) {
-  return `$${(cents / 100).toFixed(2)}`;
+  const dollars = cents / 100;
+  return dollars % 1 === 0 ? `$${dollars.toLocaleString()}` : `$${dollars.toFixed(2)}`;
 }
 
 function IntakeChecklistPanel({
@@ -360,12 +361,21 @@ function OrderSummary({
   includes,
   agentInsight,
   insightLoading,
+  compact = false,
 }: {
   priceInfo: { label: string; amount: number; delivery: string };
   includes: string[];
   agentInsight: AgentInsight | null;
   insightLoading: boolean;
+  compact?: boolean;
 }) {
+  const visibleIncludes = compact
+    ? [
+        "A clear room-by-room design direction",
+        "Layout guidance and photorealistic concepts",
+        "Cost estimate and permit roadmap",
+      ]
+    : includes;
   return (
     <div className="space-y-4">
       {/* Package card */}
@@ -373,7 +383,7 @@ function OrderSummary({
         <div className="flex items-start justify-between mb-3">
           <div>
             <p className="text-xs font-bold uppercase tracking-widest text-orange-600 mb-1">
-              Your Package
+              Your order
             </p>
             <h3 className="text-base font-bold text-slate-900">
               {priceInfo.label}
@@ -404,7 +414,7 @@ function OrderSummary({
               </p>
             </div>
             <ul className="space-y-1.5">
-              {includes.map((item, i) => (
+              {visibleIncludes.map((item, i) => (
                 <li
                   key={i}
                   className="flex items-start gap-2 text-xs text-slate-600"
@@ -421,19 +431,19 @@ function OrderSummary({
           <div className="mb-3 rounded-lg border border-emerald-200 bg-emerald-50 p-3">
             <p className="text-xs font-bold text-emerald-900">{PURCHASE_CREDIT_POLICY.label}</p>
             <p className="mt-1 text-[11px] leading-relaxed text-emerald-800">{PURCHASE_CREDIT_POLICY.shortCopy}</p>
-            <p className="mt-1 text-[10px] leading-relaxed text-emerald-700">{PURCHASE_CREDIT_POLICY.terms}</p>
+            {!compact && <p className="mt-1 text-[10px] leading-relaxed text-emerald-700">{PURCHASE_CREDIT_POLICY.terms}</p>}
           </div>
-          <Link
+          {!compact && <Link
             href="/gallery"
             className="text-xs text-orange-600 hover:text-orange-700 font-semibold"
           >
             Browse all packages →
-          </Link>
+          </Link>}
         </div>
       </div>
 
       {/* AI insight panel */}
-      <div className="rounded-xl bg-slate-900 p-5 text-white">
+      {!compact && <div className="rounded-xl bg-slate-900 p-5 text-white">
         <div className="flex items-center gap-2 mb-3">
           <Zap className="h-4 w-4 text-orange-400" />
           <span className="text-xs font-bold uppercase tracking-widest text-orange-400">
@@ -482,7 +492,7 @@ function OrderSummary({
             after payment.
           </p>
         )}
-      </div>
+      </div>}
     </div>
   );
 }
@@ -507,6 +517,8 @@ export default function IntakePage() {
   const sqftFromUrl = searchParams.get("sqft") ?? "";
   const upsellFromIntake = searchParams.get("fromIntake") ?? "";
   const upsellSourcePath = searchParams.get("sourcePath") ?? "";
+  const checkoutCanceled = searchParams.get("canceled") === "true";
+  const isInteriorReno = projectPath === "interior_reno_concept";
   const [step, setStep] = useState<"details" | "review">("details");
   const [formError, setFormError] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -680,6 +692,7 @@ export default function IntakePage() {
 
   // Session storage persistence
   const [isPersistedDataLoaded, setIsPersistedDataLoaded] = useState(false);
+  const cancellationCapturedRef = useRef(false);
 
   useEffect(() => {
     try {
@@ -771,6 +784,26 @@ export default function IntakePage() {
     selectedTier,
     isPersistedDataLoaded,
   ]);
+
+  // A Stripe cancellation is a resumable checkout, not a failed order. Record
+  // the recovery intent once the saved draft (including email) has hydrated so
+  // lifecycle automation can follow up without interrupting the customer.
+  useEffect(() => {
+    if (!checkoutCanceled || !isPersistedDataLoaded || cancellationCapturedRef.current) return;
+    cancellationCapturedRef.current = true;
+    trackEvent("checkout_canceled", { project_path: projectPath, step: "returned_from_stripe" });
+    if (!formData.email) return;
+    fetch("/api/intake/soft-capture", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email: formData.email,
+        name: `${formData.firstName} ${formData.lastName}`.trim(),
+        service: projectPath,
+        source: "checkout_canceled",
+      }),
+    }).catch(() => {});
+  }, [checkoutCanceled, formData.email, formData.firstName, formData.lastName, isPersistedDataLoaded, projectPath]);
 
   // Capture uploads live in Supabase, not browser memory. Hydrate them back
   // into the intake after the mobile capture route returns so photos/videos
@@ -967,6 +1000,10 @@ export default function IntakePage() {
 
   // Fetch AI insight in background — form is already visible
   useEffect(() => {
+    if (isInteriorReno) {
+      setInsightLoading(false);
+      return;
+    }
     let cancelled = false;
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 8000);
@@ -994,7 +1031,7 @@ export default function IntakePage() {
       cancelled = true;
       controller.abort();
     };
-  }, [agentType, projectPath]);
+  }, [agentType, isInteriorReno, projectPath]);
 
   // ── Contractor Match Blocker Guard ─────────────────────────────────────────
   if (projectPath === "contractor_match" && checkingProject) {
@@ -1623,10 +1660,19 @@ export default function IntakePage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className={`min-h-screen ${isInteriorReno ? "bg-[#f7f5f1]" : "bg-slate-50"}`}>
       <StepBar step={step} />
 
-      <div className="mx-auto max-w-5xl px-4 py-10 lg:py-14">
+      <div className="mx-auto max-w-5xl px-4 py-8 lg:py-12">
+        {checkoutCanceled && (
+          <div className="mb-6 flex items-start gap-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-4 text-amber-950" role="status">
+            <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-amber-700" />
+            <div>
+              <p className="text-sm font-bold">Your project details are saved.</p>
+              <p className="mt-1 text-xs leading-relaxed text-amber-800">You were not charged. Review anything you want to change, then continue when you are ready.</p>
+            </div>
+          </div>
+        )}
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 items-start">
           {/* ── Left: Form ──────────────────────────────────────────────────── */}
           <div className="lg:col-span-3">
@@ -1660,16 +1706,16 @@ export default function IntakePage() {
                     <p className="text-xl font-black text-slate-900">
                       {formatPrice(priceInfo.amount)}
                     </p>
-                    <Link
+                    {!isInteriorReno && <Link
                       href="/gallery"
                       className="text-xs text-orange-600 font-semibold"
                     >
                       change
-                    </Link>
+                    </Link>}
                   </div>
                 </div>
 
-                <div>
+                <div className={isInteriorReno ? "max-w-xl" : undefined}>
                   <h1 className="text-2xl font-extrabold text-slate-900">
                     {isEstimateIntake && formData.clientType === "contractor"
                       ? "Price the job with confidence"
@@ -1682,7 +1728,9 @@ export default function IntakePage() {
                             ? "Organize your permit path"
                             : isSitePlanIntake
                               ? "Tell us what you want to test on the property"
-                              : "Tell us what you’re hoping to change"}
+                              : isInteriorReno
+                                ? "Plan your interior renovation"
+                                : "Tell us what you’re hoping to change"}
                   </h1>
                   <p className="text-slate-500 mt-1 text-sm">
                     {isEstimateIntake && formData.clientType !== "owner"
@@ -1691,10 +1739,12 @@ export default function IntakePage() {
                         ? "Confirm the project, jurisdiction, current plan status, and supporting evidence. Your progress saves on this device."
                         : isSitePlanIntake
                           ? "Confirm the parcel, proposed footprint, available source documents, and site questions. Your progress saves on this device."
-                          : "Common answers are already selected. Adjust only what differs, add files, and review before payment."}
+                          : isInteriorReno
+                            ? "Tell us about the space and add one photo, sketch, or voice note. We’ll turn it into a clear design and budget direction."
+                            : "Common answers are already selected. Adjust only what differs, add files, and review before payment."}
                   </p>
                 </div>
-                <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+                {!isInteriorReno && <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
                   <div className="relative h-40 sm:h-48">
                     <Image src={intakeGuideImage(projectPath)} alt={`${priceInfo.label} project example`} fill priority sizes="(max-width: 1024px) 100vw, 600px" className="object-cover" />
                     <div className="absolute inset-0 bg-gradient-to-r from-slate-950/85 via-slate-900/60 to-transparent" />
@@ -1709,7 +1759,7 @@ export default function IntakePage() {
                     <div className="p-3"><span className="block text-orange-600">2</span>Add files</div>
                     <div className="p-3"><span className="block text-orange-600">3</span>Review & pay</div>
                   </div>
-                </div>
+                </div>}
                 {formError && (
                   <div className="flex items-start gap-3 rounded-xl bg-red-50 border border-red-200 p-4 text-red-700">
                     <AlertCircle className="h-5 w-5 shrink-0 mt-0.5" />
@@ -3196,8 +3246,9 @@ export default function IntakePage() {
               includes={includes}
               agentInsight={agentInsight}
               insightLoading={insightLoading}
+              compact={isInteriorReno}
             />
-            {step === "details" && (
+            {step === "details" && !isInteriorReno && (
               <div className="mt-4 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
                 <p className="text-xs font-bold uppercase tracking-widest text-slate-500">Need help?</p>
                 <p className="mb-3 mt-1 text-xs leading-relaxed text-slate-500">Ask a quick question without leaving this intake. Checkout stays above.</p>

@@ -13,6 +13,7 @@ type EventName =
   | 'lead_submitted'
   | 'checkout_started'
   | 'checkout_creation'
+  | 'checkout_canceled'
   | 'upload_completion'
   | 'intake_completion'
   | 'promo_redeemed'
