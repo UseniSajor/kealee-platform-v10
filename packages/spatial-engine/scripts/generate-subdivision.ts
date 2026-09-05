@@ -48,6 +48,7 @@ type PlatSpec = {
   recordedAreaSqFt?: number
   programme?: Record<string, unknown>
   triangleRearAsSide?: boolean
+  frontSetbackFt?: number
   calls: unknown[]
 }
 
@@ -189,6 +190,7 @@ async function main(): Promise<void> {
         // PLAT FIRST. The dedication width and the frontage easement are
         // dimensioned on the recorded instrument; PGAtlas supplies the layers
         // the plat does not carry — contours, zoning, streets.
+        frontSetbackFt: spec.frontSetbackFt ?? null,
         dedicationWidthFt: platRecord?.dedicationWidthFt ?? null,
         platFrontageEasementFt: platRecord?.platEasements?.find(
           e => e.along === 'frontage')?.widthFt ?? null,

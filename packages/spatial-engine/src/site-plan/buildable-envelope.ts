@@ -614,6 +614,16 @@ export function deriveBuildableEnvelope(input: {
    * of the code.
    */
   triangleRearAsSide?: boolean
+  /**
+   * A front setback STATED for this lot, overriding the zone table.
+   *
+   * The table gives RSF-65 a 25 ft front yard. A subdivision, a covenant or a
+   * platted building restriction line can require more, and the plat governs
+   * the lot. Stated here rather than inferred, and labelled on the sheet with
+   * the table value it replaces so the difference is visible instead of looking
+   * like the engine misread the table.
+   */
+  frontSetbackFt?: number | null
   /** Net lot area for the coverage calculation. Defaults to the parcel area. */
   netLotAreaSqFt?: number
   /**
@@ -635,7 +645,12 @@ export function deriveBuildableEnvelope(input: {
   streetPaths?: Position[][] | null
 }): BuildableEnvelope {
   const { parcel, standards, maxFootprintSqFt = 1500 } = input
-  const setbacks = extractSetbacks(standards, input.useColumn, input.citation)
+  const tableSetbacks = extractSetbacks(standards, input.useColumn, input.citation)
+  const setbacks = input.frontSetbackFt != null && input.frontSetbackFt > 0
+    ? { ...tableSetbacks, frontFt: input.frontSetbackFt,
+        source: `${tableSetbacks.source}; front yard stated as ` +
+          `${input.frontSetbackFt} ft for this lot` }
+    : tableSetbacks
   const coveragePct = extractLotCoveragePct(standards, input.useColumn)
   const caveats: string[] = []
   const constraints: FootprintConstraint[] = []
@@ -839,6 +854,14 @@ export function deriveBuildableEnvelope(input: {
   // whole edge. WHETHER PRINCE GEORGE'S DOES SO HAS NOT BEEN VERIFIED against
   // Subtitle 27 here, so the more restrictive assignment stands and the
   // question is put to the reviewer rather than answered by assumption.
+  if (input.frontSetbackFt != null && tableSetbacks.frontFt != null
+      && input.frontSetbackFt !== tableSetbacks.frontFt) {
+    caveats.push(
+      `FRONT SETBACK STATED AS ${input.frontSetbackFt} FT, not the ` +
+      `${tableSetbacks.frontFt} ft the zone table gives. The building restriction line is drawn at ` +
+      'the stated figure. Confirm the source — a platted building line, a covenant or a ' +
+      'subdivision condition — and cite it on the sheet.')
+  }
   if (normaliseRing(parcel).length === 3 && !triangleSided) {
     caveats.push(
       'TRIANGULAR LOT — CONFIRM THE REAR LOT LINE. A triangle has no lot line opposite the front, ' +

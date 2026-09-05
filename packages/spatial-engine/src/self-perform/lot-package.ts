@@ -24,6 +24,7 @@ import { composeSheets, blocksFromFeatures, type CompositionResult } from '../sh
 import { buildResponsibilityBlock, type DividedResponsibilityBlock } from '../review/content-scope'
 import { getPgDimensionalStandards, parsePgStandardValue } from '../jurisdictions/pg-overlays-and-dimensions'
 import type { SheetId } from '../sheets/sheet-template'
+import { getPgTreeCanopyRequirement, PG_SUBDIVISION_SOURCE } from '../jurisdictions/pg-subdivision-and-landscape'
 import { deriveBuildableEnvelope, extractLotCoveragePct, normaliseRing, type BuildableEnvelope } from '../site-plan/buildable-envelope'
 import { estimateFootprint, type FootprintEstimate, type HouseProgramme } from '../site-plan/footprint-programme'
 import { generateDesign } from '../site-plan/design'
@@ -121,6 +122,8 @@ export interface LotInput {
    * be sited across.
    */
   platFrontageEasementFt?: number | null
+  /** Front setback stated for this lot, overriding the zone table. */
+  frontSetbackFt?: number | null
   /** Width of the dedicated strip, dimensioned on the recorded plat. */
   dedicationWidthFt?: number | null
   triangleRearAsSide?: boolean
@@ -496,6 +499,7 @@ export function buildLotPackage(lot: LotInput, resolved?: ResolvedBoundary | nul
         : undefined,
       footprintStated: Boolean(lot.programme?.footprintWidthFt && lot.programme?.footprintDepthFt),
       triangleRearAsSide: lot.triangleRearAsSide,
+      frontSetbackFt: lot.frontSetbackFt ?? null,
     })
     const feats: unknown[] = []
     if (buildable.ring) {
@@ -822,7 +826,7 @@ export function buildLotPackage(lot: LotInput, resolved?: ResolvedBoundary | nul
   // the engine has taken the restrictive reading; that belongs in front of
   // whoever seals the drawing, not only in the caveat block.
   for (const c of buildable?.caveats ?? []) {
-    if (/TRIANGULAR LOT|DOES NOT FIT/.test(c)) beforeSeal.push(c)
+    if (/TRIANGULAR LOT|DOES NOT FIT|FRONT SETBACK STATED/.test(c)) beforeSeal.push(c)
   }
   // Every REQUIRED item, not the first five. This was sliced to 5, so a list
   // longer than that dropped its tail silently — and the tail is not the
@@ -843,7 +847,32 @@ export function buildLotPackage(lot: LotInput, resolved?: ResolvedBoundary | nul
     if (namedByTheSummary && item.key.startsWith('disturbance:')) continue
     if (namedByTheSummary && /^open:Quantify:/.test(item.key)) continue
     beforeSeal.push(`${item.label} (${item.responsible}): ${item.why}`)
-  }  beforeSeal.push(
+  }  // THE LANDSCAPE MANUAL. Adopted in the same publication as the Zoning
+  // Ordinance and loaded in this repo, but never reaching the drawing: L-100
+  // was composed without the canopy requirement that governs it.
+  //
+  // The percentage itself is NOT loaded — the Manual cites Subtitle 25 Table 1
+  // and does not reproduce it — so the requirement is carried as an open item
+  // rather than a number. A canopy schedule computed from a percentage nobody
+  // has read is worse than no schedule.
+  const canopy = getPgTreeCanopyRequirement()
+  if (canopy.openItem) {
+    beforeSeal.push(
+      `Landscape Manual — tree canopy coverage (${canopy.citation}, on ${canopy.basis}). ` +
+      `${canopy.openItem} Source: ${PG_SUBDIVISION_SOURCE.publication}, machine-extracted and ` +
+      'NOT verified by a reviewer.')
+  }
+  // WHEN A SIDEWALK IS REQUIRED is not encoded anywhere in this repo. The
+  // sidewalk is drawn at 4 ft because that dimension was given, not because a
+  // rule was applied, and saying so is the difference between a drawing and a
+  // determination.
+  beforeSeal.push(
+    'Sidewalk requirement NOT DETERMINED. Whether a sidewalk must be built, reconstructed or ' +
+    'waived along this frontage is a DPW&T decision at street construction permit, and no rule ' +
+    'for it is loaded in this engine — the Landscape Manual and Subtitle 24 as extracted here ' +
+    'contain none. The walk is drawn at the width given, not at a width derived from a standard.')
+
+  beforeSeal.push(
     'Review and seal by the professionals responsible for each subject. The platform drafts a ' +
     'complete plan; the seal is a human act that follows delivery. Nothing here implies county approval.',
   )

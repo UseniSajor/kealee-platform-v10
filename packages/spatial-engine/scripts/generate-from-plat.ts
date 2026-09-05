@@ -60,6 +60,7 @@ async function main(): Promise<void> {
     platNotes?: string[]
     triangleRearAsSide?: boolean
     dedicationWidthFt?: number
+    frontSetbackFt?: number
     platFrontageEasementFt?: number
     pointOfBeginning?: [number, number]
     programme?: Record<string, unknown>
@@ -170,6 +171,7 @@ async function main(): Promise<void> {
       triangleRearAsSide: spec.triangleRearAsSide,
       // PLAT FIRST for anything the recorded instrument carries; PGAtlas
       // supplies only the layers it does not — contours, zoning, streets.
+      frontSetbackFt: spec.frontSetbackFt ?? null,
       dedicationWidthFt: spec.dedicationWidthFt ?? null,
       platFrontageEasementFt: spec.platFrontageEasementFt ?? null,
       easements,

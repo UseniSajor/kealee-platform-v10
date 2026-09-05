@@ -67,10 +67,13 @@ export const SIDEWALK_OFFSET_FT = 1
  * 30 ft residential street; it is stated on the sheet and a survey replaces it.
  */
 export const ASSUMED_PAVEMENT_HALF_WIDTH_FT = 15
+/** Front stoop, from the architectural plans this engine has been given. */
+export const STOOP_WIDTH_FT = 8
+export const STOOP_DEPTH_FT = 5
 
 export interface SiteImprovement {
   id: string
-  kind: 'Driveway' | 'Walk' | 'Apron' | 'Sidewalk'
+  kind: 'Driveway' | 'Walk' | 'Apron' | 'Sidewalk' | 'Verge' | 'Stoop'
   label: string
   ring: Ring
   areaSqFt: number
@@ -259,6 +262,20 @@ export function deriveSiteImprovements(input: {
         `${TABLE_4_SLOPES.walkLateralMax} max, longitudinal ` +
         `${TABLE_4_SLOPES.walkLongitudinalMax} max. ${TABLE_4_SLOPES.citation}.`,
     })
+    // The STOOP at the entrance. A leadwalk that stops at a blank wall is not
+    // a route into the house; the plans letter a front concrete stoop.
+    const stoop = rectFromAxis(
+      [a[0] + (dx / len) * doorOffset + inX * (faceAtDoor - STOOP_DEPTH_FT / 2),
+       a[1] + (dy / len) * doorOffset + inY * (faceAtDoor - STOOP_DEPTH_FT / 2)],
+      inX, inY, STOOP_DEPTH_FT, STOOP_WIDTH_FT)
+    improvements.push({
+      id: 'stoop', kind: 'Stoop',
+      label: `CONCRETE STOOP  ${STOOP_WIDTH_FT}' x ${STOOP_DEPTH_FT}'`,
+      ring: stoop, areaSqFt: ringArea(stoop.coordinates.slice(0, -1)), impervious: true,
+      note:
+        'Front concrete stoop at the entrance, on the leadwalk. Riser count and handrail per the ' +
+        'architectural plans and the building code.',
+    })
   } else {
     assumptions.push(
       'No leadwalk is drawn: the driveway already meets the entrance, so there is nothing for a ' +
@@ -336,6 +353,28 @@ export function deriveSiteImprovements(input: {
     const walkOff = SIDEWALK_OFFSET_FT + SIDEWALK_WIDTH_FT / 2
     const swStart: Position = [a[0] + inX * walkOff, a[1] + inY * walkOff]
     const sidewalk = rectFromAxis(swStart, ux, uy, len, SIDEWALK_WIDTH_FT)
+    // The VERGE — the planting strip between the sidewalk and the street. The
+    // plat shows it and it is where street trees go; without it the sidewalk
+    // reads as abutting the kerb, which is a different street section.
+    const vergeWidth = Math.max(0, apronRun - SIDEWALK_OFFSET_FT - SIDEWALK_WIDTH_FT)
+    if (vergeWidth > 0.5) {
+      const vStart: Position = [
+        a[0] + outX * (vergeWidth / 2), a[1] + outY * (vergeWidth / 2),
+      ]
+      const verge = rectFromAxis(
+        [vStart[0] + (dx / len) * (len / 2), vStart[1] + (dy / len) * (len / 2)],
+        dx / len, dy / len, len, vergeWidth)
+      improvements.push({
+        id: 'verge', kind: 'Verge',
+        label: `PLANTING STRIP  ${vergeWidth.toFixed(1)}' WIDE  (STREET TREES)`,
+        ring: verge, areaSqFt: ringArea(verge.coordinates.slice(0, -1)), impervious: false,
+        note:
+          'Landscaped strip between the back of kerb and the sidewalk, within the dedicated ' +
+          'right-of-way. Street tree species, spacing and clear distances are set by the ' +
+          "Landscape Manual and by DPW&T; this shows the STRIP, not a planting schedule.",
+      })
+    }
+
     improvements.push({
       id: 'sidewalk', kind: 'Sidewalk',
       label: `PUBLIC SIDEWALK  ${SIDEWALK_WIDTH_FT}' WIDE`,
