@@ -296,6 +296,11 @@ export function featuresForSheet(features: SiteFeature[], sheet: SheetId): SiteF
   const BASE: SiteFeature['kind'][] = [
     'Parcel', 'BoundarySegment', 'Setback', 'Easement', 'Contour',
     'Building', 'Pavement',
+    // Surface carries the frontage planting strip and ExistingFeature the
+    // street right-of-way lines. Left out, both existed in the model and on
+    // none of the drawings — the sidewalk appeared to abut the kerb and the
+    // street had no far side.
+    'Surface', 'ExistingFeature',
   ]
   return features.filter(f =>
     BASE.includes(f.kind)

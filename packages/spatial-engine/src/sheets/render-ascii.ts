@@ -20,7 +20,10 @@ const W = 96, H = 40
 type Cell = { ch: string; z: number }
 
 function blank(): Cell[][] {
-  return Array.from({ length: H }, () => Array.from({ length: W }, () => ({ ch: ' ', z: -1 })))
+  // Empty ground sits BELOW every layer. It was -1, which is not below the
+  // street's -2, so the centreline failed its own depth test and never painted
+  // a single cell.
+  return Array.from({ length: H }, () => Array.from({ length: W }, () => ({ ch: ' ', z: -99 })))
 }
 
 function makeProjector(pts: Position[]) {
@@ -41,21 +44,30 @@ function makeProjector(pts: Position[]) {
   }
 }
 
-function plot(g: Cell[][], c: number, r: number, ch: string, z: number) {
-  if (r < 0 || r >= H || c < 0 || c >= W) return
-  if (g[r][c].z <= z) g[r][c] = { ch, z }
+// Returns whether the cell was actually painted. The legend is built from what
+// landed IN FRAME: it listed a street centreline that was clipped away
+// entirely, which is the same defect as a sheet whose legend describes content
+// it does not carry.
+function plot(g: Cell[][], c: number, r: number, ch: string, z: number): boolean {
+  if (r < 0 || r >= H || c < 0 || c >= W) return false
+  if (g[r][c].z <= z) { g[r][c] = { ch, z }; return true }
+  return false
 }
 
-function line(g: Cell[][], a: [number, number], b: [number, number], ch: string, z: number) {
+function line(g: Cell[][], a: [number, number], b: [number, number], ch: string, z: number): boolean {
   const steps = Math.max(Math.abs(b[0] - a[0]), Math.abs(b[1] - a[1]), 1)
+  let drew = false
   for (let i = 0; i <= steps; i++) {
-    plot(g, Math.round(a[0] + ((b[0] - a[0]) * i) / steps),
-            Math.round(a[1] + ((b[1] - a[1]) * i) / steps), ch, z)
+    if (plot(g, Math.round(a[0] + ((b[0] - a[0]) * i) / steps),
+             Math.round(a[1] + ((b[1] - a[1]) * i) / steps), ch, z)) drew = true
   }
+  return drew
 }
 
-function ring(g: Cell[][], pts: Position[], P: (p: Position) => [number, number], ch: string, z: number) {
-  for (let i = 0; i < pts.length - 1; i++) line(g, P(pts[i]), P(pts[i + 1]), ch, z)
+function ring(g: Cell[][], pts: Position[], P: (p: Position) => [number, number], ch: string, z: number): boolean {
+  let drew = false
+  for (let i = 0; i < pts.length - 1; i++) if (line(g, P(pts[i]), P(pts[i + 1]), ch, z)) drew = true
+  return drew
 }
 
 /** True when the point is inside the polygon. Ray casting. */
@@ -76,15 +88,17 @@ function inside(pt: [number, number], poly: [number, number][]): boolean {
  * the building does not occupy — on a 9,596 sq ft lot it made a 1,700 sq ft
  * house look like full coverage. Wrong in a way a reader would believe.
  */
-function fill(g: Cell[][], pts: Position[], P: (p: Position) => [number, number], ch: string, z: number) {
+function fill(g: Cell[][], pts: Position[], P: (p: Position) => [number, number], ch: string, z: number): boolean {
+  let drew = false
   const proj = pts.map(P)
   const minC = Math.min(...proj.map(p => p[0])), maxC = Math.max(...proj.map(p => p[0]))
   const minR = Math.min(...proj.map(p => p[1])), maxR = Math.max(...proj.map(p => p[1]))
   for (let r = minR; r <= maxR; r++) {
     for (let c = minC; c <= maxC; c++) {
-      if (inside([c, r], proj)) plot(g, c, r, ch, z)
+      if (inside([c, r], proj) && plot(g, c, r, ch, z)) drew = true
     }
   }
+  return drew
 }
 
 export interface AsciiPlanInput {
@@ -107,6 +121,7 @@ export interface AsciiPlanInput {
 
 /** What each glyph is, in draw order. Only the ones actually drawn are shown. */
 const GLYPHS: { ch: string; label: string }[] = [
+  { ch: '=', label: 'street centreline' },
   { ch: ':', label: 'adjoining lot' },
   { ch: '#', label: 'lot line' },
   { ch: '+', label: 'BRL setback' },
@@ -115,6 +130,7 @@ const GLYPHS: { ch: string; label: string }[] = [
   { ch: '·', label: 'intermediate' },
   { ch: 'E', label: 'easement' },
   { ch: '▒', label: 'paving' },
+  { ch: '"', label: 'planting strip' },
   { ch: 'L', label: 'limit of disturbance' },
   { ch: 'x', label: 'sediment control' },
   { ch: 'D', label: 'drainage area' },
@@ -141,12 +157,33 @@ export function renderAsciiPlan(input: AsciiPlanInput): string {
     : input.twin.features
 
   const g = blank()
-  const P = makeProjector(lot)
+  // The frame includes the street. The centreline sits beyond the frontage, so
+  // a projector fitted to the lot alone clipped it out entirely while the
+  // legend went on advertising it.
+  const streetsForFrame = (input.twin as { streets?: { paths: Position[][] }[] }).streets ?? []
+  const nearLot = (q: Position) => lot.some(c => Math.hypot(c[0] - q[0], c[1] - q[1]) <= 90)
+  const frame: Position[] = [...lot,
+    ...streetsForFrame.flatMap(st => st.paths.flat()).filter(nearLot)]
+  const P = makeProjector(frame)
   const used = new Set<string>()
-  const mark = (ch: string) => { used.add(ch); return ch }
+  // A glyph enters the legend only once it has actually been painted in frame.
+  const kept = (ch: string, drew: boolean) => { if (drew) used.add(ch); return ch }
+  const mark = (ch: string) => ch
 
   const ringOf = (f: SiteFeature) => (f as { ring?: Ring }).ring?.coordinates as Position[] | undefined
   const lineOf = (f: SiteFeature) => (f as { line?: Position[] }).line
+
+  // The STREET, drawn as the plat draws it: the existing pavement centreline
+  // running across the frontage, with the ground on the far side shown by the
+  // adjoining lots opposite. A frontage with no street on it gives a reviewer
+  // no way to see which way the lot faces.
+  const streets = (input.twin as { streets?: { name: string | null; paths: Position[][] }[] })
+    .streets ?? []
+  for (const st of streets) {
+    for (const path of st.paths) {
+      for (let i = 0; i < path.length - 1; i++) kept('=', line(g, P(path[i]), P(path[i + 1]), '=', -2))
+    }
+  }
 
   // Adjoining lots, beneath everything. A recorded plat shows them because a
   // boundary means nothing without what it abuts — which line is shared, where
@@ -155,7 +192,7 @@ export function renderAsciiPlan(input: AsciiPlanInput): string {
   const adjoining = (input.twin as { adjacentParcels?: { ring: Ring }[] }).adjacentParcels ?? []
   for (const a of adjoining) {
     const r = a.ring?.coordinates as Position[] | undefined
-    if (r?.length) ring(g, r, P, mark(':'), -1)
+    if (r?.length) kept(':', ring(g, r, P, ':', -1))
   }
 
   // Contours first and clipped: the county serves them on a radius, so
@@ -169,30 +206,31 @@ export function renderAsciiPlan(input: AsciiPlanInput): string {
     for (let i = 0; i < l.length - 1; i++) {
       const a = l[i], b2 = l[i + 1]
       if (!inside(P(a), lotProj) && !inside(P(b2), lotProj)) continue
-      line(g, P(a), P(b2), mark(idx ? '~' : '·'), 0)
+      kept(idx ? '~' : '·', line(g, P(a), P(b2), idx ? '~' : '·', 0))
     }
   }
 
   // Areas below lines, lines below the boundary, the dwelling on top.
   for (const f of feats) {
     const r = ringOf(f)
-    if (f.kind === 'DrainageArea' && r) fill(g, r, P, mark('D'), 1)
+    if (f.kind === 'DrainageArea' && r) kept('D', fill(g, r, P, 'D', 1))
   }
   for (const f of feats) {
     const r = ringOf(f)
     if (!r) continue
-    if (f.kind === 'LimitOfDisturbance') ring(g, r, P, mark('L'), 2)
-    else if (f.kind === 'Pavement' || f.kind === 'Sidewalk') fill(g, r, P, mark('▒'), 3)
-    else if (f.kind === 'SWMPractice') fill(g, r, P, mark('S'), 4)
-    else if (f.kind === 'Tree') fill(g, r, P, mark('T'), 5)
-    else if (f.kind === 'Easement') ring(g, r, P, mark('E'), 5)
+    if (f.kind === 'LimitOfDisturbance') kept('L', ring(g, r, P, 'L', 2))
+    else if (f.kind === 'Pavement' || f.kind === 'Sidewalk') kept('▒', fill(g, r, P, '▒', 3))
+    else if (f.kind === 'Surface') kept('"', fill(g, r, P, '"', 2))
+    else if (f.kind === 'SWMPractice') kept('S', fill(g, r, P, 'S', 4))
+    else if (f.kind === 'Tree') kept('T', fill(g, r, P, 'T', 5))
+    else if (f.kind === 'Easement') kept('E', ring(g, r, P, 'E', 5))
   }
 
   for (const f of feats) {
     const l = lineOf(f)
     if (!l || l.length < 2) continue
     if (f.kind !== 'Utility' && f.kind !== 'StormPipe') continue
-    for (let i = 0; i < l.length - 1; i++) line(g, P(l[i]), P(l[i + 1]), mark('u'), 6)
+    for (let i = 0; i < l.length - 1; i++) kept('u', line(g, P(l[i]), P(l[i + 1]), 'u', 6))
   }
 
   // Sediment control and any other proposed linework that is not the envelope.
@@ -205,27 +243,27 @@ export function renderAsciiPlan(input: AsciiPlanInput): string {
     const id = 'id' in f ? String(f.id) : ''
     if (isBuildableEnvelope(id)) continue
     const r = ringOf(f), l = lineOf(f)
-    if (r) ring(g, r, P, mark('x'), 7)
+    if (r) kept('x', ring(g, r, P, 'x', 7))
     else if (l && l.length > 1) {
-      for (let i = 0; i < l.length - 1; i++) line(g, P(l[i]), P(l[i + 1]), mark('x'), 7)
+      for (let i = 0; i < l.length - 1; i++) kept('x', line(g, P(l[i]), P(l[i + 1]), 'x', 7))
     }
   }
 
   for (const f of feats) {
     const pt = (f as { point?: Position }).point
-    if (f.kind === 'SpotElevation' && pt) plot(g, ...P(pt), mark('○'), 8)
+    if (f.kind === 'SpotElevation' && pt) kept('○', plot(g, ...P(pt), '○', 8))
   }
 
-  if (input.envelope) ring(g, input.envelope.coordinates as Position[], P, mark('+'), 9)
+  if (input.envelope) kept('+', ring(g, input.envelope.coordinates as Position[], P, '+', 9))
   for (const f of envelopeFeats) {
     const r2 = ringOf(f)
-    if (r2) ring(g, r2, P, mark('+'), 9)
+    if (r2) kept('+', ring(g, r2, P, '+', 9))
   }
-  ring(g, lot, P, mark('#'), 10)
-  if (input.footprint) fill(g, input.footprint.coordinates as Position[], P, mark('█'), 11)
+  kept('#', ring(g, lot, P, '#', 10))
+  if (input.footprint) kept('█', fill(g, input.footprint.coordinates as Position[], P, '█', 11))
   else for (const f of feats) {
     const r = ringOf(f)
-    if (f.kind === 'Building' && r) fill(g, r, P, mark('█'), 11)
+    if (f.kind === 'Building' && r) kept('█', fill(g, r, P, '█', 11))
   }
 
   const bar = '─'.repeat(W)

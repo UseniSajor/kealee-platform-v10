@@ -527,9 +527,18 @@ export function buildLotPackage(lot: LotInput, resolved?: ResolvedBoundary | nul
         dedicationWidthFt: lot.dedicationWidthFt ?? null,
       })
       for (const imp of siteImprovements.improvements) {
+        // THE VERGE IS NOT PAVEMENT. It is the planting strip the street trees
+        // stand in, and filing it under Pavement drew a 15 ft band of paving
+        // along the whole frontage that reads as a 15 ft sidewalk beside the
+        // 4 ft one. A landscaped strip and a paved one are different surfaces,
+        // different hatches and different impervious areas.
         feats.push({
-          kind: 'Pavement', id: imp.id, ring: imp.ring,
-          attributes: { label: imp.label, areaSqFt: imp.areaSqFt, note: imp.note, improvement: imp.kind },
+          kind: imp.kind === 'Verge' ? 'Surface' : 'Pavement',
+          id: imp.id, ring: imp.ring,
+          attributes: {
+            label: imp.label, areaSqFt: imp.areaSqFt, note: imp.note,
+            improvement: imp.kind, impervious: imp.impervious,
+          },
           ...base,
         })
       }

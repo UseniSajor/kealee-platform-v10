@@ -245,6 +245,107 @@ async function main(): Promise<void> {
     }
   })
 
+  // ONE CONTINUOUS SIDEWALK AND VERGE ACROSS THE WHOLE FRONTAGE.
+  //
+  // Each lot derived its own, so the walk was built in per-lot pieces that
+  // stopped at every internal lot line — and a sidewalk that stops at a
+  // property line is not a sidewalk. It runs the full frontage of the outer
+  // boundary of record, corner to corner, which is also how it will be built:
+  // the street construction permit covers the frontage, not the parcels.
+  const frontageEdges: [Position, Position][] = []
+  for (let i = 0; i < outerRing.length - 1; i++) {
+    const a2 = outerRing[i], b2 = outerRing[i + 1]
+    const mid: Position = [(a2[0] + b2[0]) / 2, (a2[1] + b2[1]) / 2]
+    let d = Infinity
+    for (const st of site.streets ?? []) {
+      for (const path of st.paths) {
+        for (let j = 0; j < path.length - 1; j++) {
+          const p0 = path[j], p1 = path[j + 1]
+          const vx = p1[0] - p0[0], vy = p1[1] - p0[1]
+          const t = Math.max(0, Math.min(1,
+            ((mid[0] - p0[0]) * vx + (mid[1] - p0[1]) * vy) / (vx * vx + vy * vy || 1)))
+          d = Math.min(d, Math.hypot(mid[0] - (p0[0] + t * vx), mid[1] - (p0[1] + t * vy)))
+        }
+      }
+    }
+    if (d <= 60) frontageEdges.push([a2, b2])
+  }
+
+  const frontageFeats: SiteFeature[] = []
+  const SW_W = 4, SW_OFF = 1
+  const dedication = platRecord?.dedicationWidthFt ?? 20
+  frontageEdges.forEach(([a2, b2], i) => {
+    const ex = b2[0] - a2[0], ey = b2[1] - a2[1]
+    const el = Math.hypot(ex, ey) || 1
+    const ux = ex / el, uy = ey / el
+    // Outward normal: away from the lots, into the dedication.
+    const nx = ey / el, ny = -ex / el
+    const band = (from: number, width: number, id: string, kind: string, label: string) => {
+      const ring: Ring = { coordinates: [
+        [a2[0] + nx * from, a2[1] + ny * from],
+        [b2[0] + nx * from, b2[1] + ny * from],
+        [b2[0] + nx * (from + width), b2[1] + ny * (from + width)],
+        [a2[0] + nx * (from + width), a2[1] + ny * (from + width)],
+        [a2[0] + nx * from, a2[1] + ny * from],
+      ] }
+      frontageFeats.push({
+        kind: kind as never, id: `${id}-${i}`, ring,
+        attributes: { label, improvement: id === 'frontage-verge' ? 'Verge' : 'Sidewalk' },
+      } as never)
+    }
+    void ux; void uy
+    band(SW_OFF, SW_W, 'frontage-sidewalk', 'Pavement', `PUBLIC SIDEWALK  ${SW_W}' WIDE`)
+    const vergeW = Math.max(0, dedication - SW_OFF - SW_W)
+    if (vergeW > 0.5) {
+      band(SW_OFF + SW_W, vergeW, 'frontage-verge', 'Surface',
+        `PLANTING STRIP  ${vergeW.toFixed(1)}' WIDE  (STREET TREES)`)
+    }
+  })
+  console.log(`    frontage        ${frontageEdges.length} edge(s) · continuous `
+    + `${SW_W} ft sidewalk + ${(dedication - SW_OFF - SW_W).toFixed(1)} ft planting strip`)
+
+  // BOTH SIDES OF THE STREET, as the plat draws them. The sheet carried a
+  // centreline and the near right-of-way line and nothing beyond, so Rollins
+  // Avenue read as an edge rather than a street. The near R/W is the outer
+  // boundary's own frontage; the far one is that distance mirrored across the
+  // measured centreline — DERIVED, and labelled as derived, because the plat
+  // does not dimension the far side.
+  const centreSegs: [Position, Position][] = (site.streets ?? [])
+    .flatMap(st => st.paths)
+    .flatMap(path => path.slice(0, -1).map((p, i) => [p, path[i + 1]] as [Position, Position]))
+  frontageEdges.forEach(([a2, b2], i) => {
+    const ex = b2[0] - a2[0], ey = b2[1] - a2[1]
+    const el = Math.hypot(ex, ey) || 1
+    const nx = ey / el, ny = -ex / el
+    const mid: Position = [(a2[0] + b2[0]) / 2, (a2[1] + b2[1]) / 2]
+    let toCentre = Infinity
+    for (const [p0, p1] of centreSegs) {
+      const vx = p1[0] - p0[0], vy = p1[1] - p0[1]
+      const tt = Math.max(0, Math.min(1,
+        ((mid[0] - p0[0]) * vx + (mid[1] - p0[1]) * vy) / (vx * vx + vy * vy || 1)))
+      toCentre = Math.min(toCentre,
+        Math.hypot(mid[0] - (p0[0] + tt * vx), mid[1] - (p0[1] + tt * vy)))
+    }
+    if (!Number.isFinite(toCentre)) return
+    const far = toCentre * 2
+    frontageFeats.push({
+      kind: 'ExistingFeature', id: `row-far-${i}`,
+      line: [[a2[0] + nx * far, a2[1] + ny * far], [b2[0] + nx * far, b2[1] + ny * far]],
+      attributes: {
+        label: `FAR RIGHT-OF-WAY LINE (DERIVED — ${toCentre.toFixed(1)} ft `
+          + `each side of the measured centreline)`,
+      },
+    } as never)
+    console.log(`    street width    ${far.toFixed(1)} ft R/W to R/W `
+      + `(${toCentre.toFixed(1)} ft each side of the centreline; far side DERIVED)`)
+  })
+
+  // The per-lot pieces are replaced by the continuous run.
+  const withoutPerLot = merged.filter(f =>
+    !/(^|-)(sidewalk|verge)$/.test(String(f.id)))
+  merged.length = 0
+  merged.push(...withoutPerLot, ...frontageFeats)
+
   let twin: SiteTwin = { ...base, features: merged, revision: base.revision + 1 }
   if (platRecord) twin = { ...twin, platRecord } as typeof twin
 
