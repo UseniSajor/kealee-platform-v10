@@ -121,7 +121,7 @@ export interface AsciiPlanInput {
 
 /** What each glyph is, in draw order. Only the ones actually drawn are shown. */
 const GLYPHS: { ch: string; label: string }[] = [
-  { ch: '=', label: 'street centreline' },
+  { ch: '-', label: 'street centreline' },
   { ch: ':', label: 'adjoining lot' },
   { ch: '#', label: 'lot line' },
   { ch: '+', label: 'BRL setback' },
@@ -181,7 +181,10 @@ export function renderAsciiPlan(input: AsciiPlanInput): string {
     .streets ?? []
   for (const st of streets) {
     for (const path of st.paths) {
-      for (let i = 0; i < path.length - 1; i++) kept('=', line(g, P(path[i]), P(path[i + 1]), '=', -2))
+      // Dash-dot in the terminal too, so it does not read as kerb line.
+      for (let i = 0; i < path.length - 1; i++) {
+        kept('-', line(g, P(path[i]), P(path[i + 1]), '-', -2))
+      }
     }
   }
 

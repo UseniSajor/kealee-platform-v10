@@ -600,7 +600,13 @@ function drawGeometry(doc: Doc, ctx: SheetContext, vp: Viewport, b: Bounds): voi
   for (const st of streets) {
     for (const path of st.paths) {
       if (path.length < 2) continue
-      polyline(doc, path.map(p => P(p)), { width: 1.2, color: '#555555', dash: [6, 3] })
+      // A CENTRELINE IS DASH-DOT, and thin. The [6,3] dash it had is the
+      // pattern a kerb line or a fence carries, so the centre of the street
+      // read as another edge of pavement on a sheet that also draws curb and
+      // gutter. Symbology is not decoration: a reviewer identifies a line by
+      // its pattern before reading any label.
+      polyline(doc, path.map(p => P(p)),
+        { width: 0.5, color: '#555555', dash: [14, 3, 1.5, 3] })
       if (st.name && path.length >= 2) {
         const mid = P(path[Math.floor(path.length / 2)])
         const nxt = P(path[Math.min(path.length - 1, Math.floor(path.length / 2) + 1)])

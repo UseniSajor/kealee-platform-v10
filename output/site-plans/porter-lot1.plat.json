@@ -49,6 +49,7 @@
   "_footprintSource": "Kingsworth foundation/basement plan, custom designs unlimited inc., dwg 260811, 1/4\"=1'-0\" (existing site plans/Kingsworth 2nd & basement floor plan.pdf). The plan dimensions the main house 36'-0\" wide and adds 10'-0\" for the optional one-car garage, giving the 46'-0\" overall width; depth is 26'-0\", lettered (26'-4\" w/ optional brick veneer). The footprint is drawn at the 26'-0\" nominal. IF THE BRICK VENEER OPTION IS TAKEN the outermost projection is 4 in deeper than drawn, and a setback is measured to the outermost projection.",
   "dedicationWidthFt": 20.0,
   "platFrontageEasementFt": 10.0,
-  "frontSetbackFt": 30.0,
-  "_frontSetbackNote": "30 ft front setback stated for this lot, with the 10.00' PUE lettered on the plat lying inside it. The RSF-65 table gives 25 ft; the stated figure governs and the sheet says so."
+  "_frontSetbackNote": "Face of building to the start of the street = 30 ft. The kerb sits 7 ft out from the front property line (3 ft sidewalk + 4 ft planting strip), so the front setback measured from the property line is 30 - 7 = 23 ft. Both figures print on the sheet. The RSF-65 table gives 25 ft; the stated 23 ft is LESS, so a zoning reviewer must confirm it against the plat's building restriction line before this is relied on.",
+  "frontFaceToCurbFt": 30.0,
+  "curbOffsetFt": 7.0
 }

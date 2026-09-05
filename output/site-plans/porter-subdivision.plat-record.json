@@ -65,5 +65,61 @@
     "label": "EX. PAVEMENT CENTERLINE",
     "note": "The plat draws the existing pavement centreline of Rollins Avenue and dimensions 222.27 ft along it. Its OFFSET from the right-of-way line is not dimensioned on the plat, so the distance to the edge of pavement cannot be transcribed — only the 20.00 ft dedication is a dimensioned figure."
   },
-  "dedicationWidthFt": 20.0
+  "dedicationWidthFt": 20.0,
+  "approvalsOfRecord": [
+    {
+      "kind": "Stormwater Management Concept",
+      "number": "41230-2006-00",
+      "confirmedBy": "Lettered in Note 1 of the PORTER SUBDIVISION plat itself (Plat Book PM 231 p.50), so it belongs to THESE lots and not to another subdivision — the number and the lots appear on the same recorded instrument. What is absent is the approved concept DOCUMENT, not the identification.",
+      "status": "identified; approved document not in repo"
+    },
+    {
+      "kind": "WSSC authorization",
+      "number": "DA 4916 Z 08",
+      "confirmedBy": "Lettered in Note 2 of the same plat, alongside the statement that approval is conditioned on fulfilling its commitments. Same instrument, same lots.",
+      "status": "identified; commitments document not in repo"
+    },
+    {
+      "kind": "M-NCPPC Record File",
+      "number": "5-09121",
+      "confirmedBy": "Lettered in the plat's approval block.",
+      "status": "identified"
+    },
+    {
+      "kind": "Preliminary Plan",
+      "number": "4-08111",
+      "confirmedBy": "Lettered in the plat's record block.",
+      "status": "identified"
+    }
+  ],
+  "frontageSection": {
+    "sidewalkWidthFt": 3.0,
+    "plantingStripWidthFt": 4.0,
+    "totalFt": 7.0,
+    "note": "3 ft concrete walk inside the front property line, 4 ft planting strip between the walk and the street. GIVEN DIMENSIONS. Whether a walk is required, reconstructed or waived on this frontage remains a DPW&T decision at street construction permit — the dimensions are settled, the requirement is not, and those are different questions."
+  },
+  "monuments": [
+    {
+      "id": "A",
+      "label": "IPF",
+      "easting": 1340254.7066,
+      "northing": 440194.1578,
+      "note": "Iron pipe found, north corner. Coordinate published on the plat to four decimals."
+    },
+    {
+      "id": "B",
+      "label": "IPF ON LINE",
+      "easting": 1340447.7902,
+      "northing": 440229.9981,
+      "note": "North-east corner. Plat letters IPF on line along this boundary."
+    },
+    {
+      "id": "C",
+      "label": "IPF",
+      "easting": 1340488.344,
+      "northing": 440011.445,
+      "note": "Rollins Avenue corner. Coordinate published on the plat."
+    }
+  ],
+  "monumentNote": "The plat publishes three corner coordinates and letters IPF / IPF-on-line at the corners. Carrying them onto the drawing does not make it a survey — a surveyor must still visit and certify — but it gives the field the record positions to recover, which is what the certification starts from."
 }

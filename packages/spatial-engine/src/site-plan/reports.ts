@@ -104,7 +104,13 @@ export function buildMissingInformationReport(
       : easementLayerQueried
         ? 'The county platted-easement layers were queried and none covers this lot. That is not a clear title: an easement granted by deed after the plat was recorded never reaches GIS. Only a title report closes this.'
         : 'An unmapped easement can invalidate a building location after approval.',
-    severity: 'required',
+    // RECOMMENDED, NOT REQUIRED. A title report is not a DPIE permit submittal
+    // item — what the submission must carry is the DEPICTION of recorded
+    // easements on the plan, and the recorded plat supplies that. Listing it as
+    // required put a due-diligence step in the same column as a certified
+    // survey, which is genuinely required, and a list that cannot tell those
+    // apart is not a checklist.
+    severity: 'recommended',
     responsible: 'applicant',
   })
 

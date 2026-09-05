@@ -49,6 +49,8 @@ type PlatSpec = {
   programme?: Record<string, unknown>
   triangleRearAsSide?: boolean
   frontSetbackFt?: number
+  frontFaceToCurbFt?: number
+  curbOffsetFt?: number
   calls: unknown[]
 }
 
@@ -138,6 +140,10 @@ async function main(): Promise<void> {
     platEasements?: { type: string; widthFt: number; along: string; note: string }[]
     dedicationWidthFt?: number
     existingPavement?: { label: string; note: string }
+    approvalsOfRecord?: { kind: string; number: string; confirmedBy: string; status: string }[]
+    monuments?: { id: string; label: string; easting: number; northing: number; note: string }[]
+    monumentNote?: string
+    frontageSection?: { sidewalkWidthFt: number; plantingStripWidthFt: number; totalFt: number; note: string }
   } | undefined
   try { platRecord = JSON.parse(readFileSync(platRecordPath, 'utf8')) } catch { platRecord = undefined }
   console.log(`    plat record     ${platRecord ? 'transcribed text attached' : 'none found'}`)
@@ -191,6 +197,8 @@ async function main(): Promise<void> {
         // dimensioned on the recorded instrument; PGAtlas supplies the layers
         // the plat does not carry — contours, zoning, streets.
         frontSetbackFt: spec.frontSetbackFt ?? null,
+        frontFaceToCurbFt: spec.frontFaceToCurbFt ?? null,
+        curbOffsetFt: spec.curbOffsetFt ?? null,
         dedicationWidthFt: platRecord?.dedicationWidthFt ?? null,
         platFrontageEasementFt: platRecord?.platEasements?.find(
           e => e.along === 'frontage')?.widthFt ?? null,
@@ -271,15 +279,38 @@ async function main(): Promise<void> {
     if (d <= 60) frontageEdges.push([a2, b2])
   }
 
+  const centreSegs: [Position, Position][] = (site.streets ?? [])
+    .flatMap(st => st.paths)
+    .flatMap(path => path.slice(0, -1).map((p, k) => [p, path[k + 1]] as [Position, Position]))
   const frontageFeats: SiteFeature[] = []
-  const SW_W = 4, SW_OFF = 1
-  const dedication = platRecord?.dedicationWidthFt ?? 20
+  const SW_W = platRecord?.frontageSection?.sidewalkWidthFt ?? 3
+  const VERGE_W = platRecord?.frontageSection?.plantingStripWidthFt ?? 4
   frontageEdges.forEach(([a2, b2], i) => {
     const ex = b2[0] - a2[0], ey = b2[1] - a2[1]
     const el = Math.hypot(ex, ey) || 1
-    const ux = ex / el, uy = ey / el
-    // Outward normal: away from the lots, into the dedication.
-    const nx = ey / el, ny = -ex / el
+    // THE OUTWARD NORMAL IS MEASURED, NOT ASSUMED.
+    //
+    // Its sign depends on the ring's winding, and getting it backwards put the
+    // walk and the kerb on the far side of the frontage — out at the street
+    // centreline instead of in the right-of-way. Both candidates are tested
+    // against the centreline and the one that moves TOWARD it is outward.
+    const distTo = (q: Position) => {
+      let d = Infinity
+      for (const [p0, p1] of centreSegs) {
+        const vx = p1[0] - p0[0], vy = p1[1] - p0[1]
+        const tt = Math.max(0, Math.min(1,
+          ((q[0] - p0[0]) * vx + (q[1] - p0[1]) * vy) / (vx * vx + vy * vy || 1)))
+        d = Math.min(d, Math.hypot(q[0] - (p0[0] + tt * vx), q[1] - (p0[1] + tt * vy)))
+      }
+      return d
+    }
+    const mid: Position = [(a2[0] + b2[0]) / 2, (a2[1] + b2[1]) / 2]
+    const cand: Position = [ey / el, -ex / el]
+    const probe: Position = [mid[0] + cand[0] * 5, mid[1] + cand[1] * 5]
+    const sign = distTo(probe) < distTo(mid) ? 1 : -1
+    const nx = cand[0] * sign, ny = cand[1] * sign
+    const toCentre = distTo(mid)
+
     const band = (from: number, width: number, id: string, kind: string, label: string) => {
       const ring: Ring = { coordinates: [
         [a2[0] + nx * from, a2[1] + ny * from],
@@ -290,55 +321,47 @@ async function main(): Promise<void> {
       ] }
       frontageFeats.push({
         kind: kind as never, id: `${id}-${i}`, ring,
-        attributes: { label, improvement: id === 'frontage-verge' ? 'Verge' : 'Sidewalk' },
+        attributes: { label, improvement: id.replace('frontage-', '') },
       } as never)
     }
-    void ux; void uy
-    band(SW_OFF, SW_W, 'frontage-sidewalk', 'Pavement', `PUBLIC SIDEWALK  ${SW_W}' WIDE`)
-    const vergeW = Math.max(0, dedication - SW_OFF - SW_W)
-    if (vergeW > 0.5) {
-      band(SW_OFF + SW_W, vergeW, 'frontage-verge', 'Surface',
-        `PLANTING STRIP  ${vergeW.toFixed(1)}' WIDE  (STREET TREES)`)
-    }
-  })
-  console.log(`    frontage        ${frontageEdges.length} edge(s) · continuous `
-    + `${SW_W} ft sidewalk + ${(dedication - SW_OFF - SW_W).toFixed(1)} ft planting strip`)
 
-  // BOTH SIDES OF THE STREET, as the plat draws them. The sheet carried a
-  // centreline and the near right-of-way line and nothing beyond, so Rollins
-  // Avenue read as an edge rather than a street. The near R/W is the outer
-  // boundary's own frontage; the far one is that distance mirrored across the
-  // measured centreline — DERIVED, and labelled as derived, because the plat
-  // does not dimension the far side.
-  const centreSegs: [Position, Position][] = (site.streets ?? [])
-    .flatMap(st => st.paths)
-    .flatMap(path => path.slice(0, -1).map((p, i) => [p, path[i + 1]] as [Position, Position]))
-  frontageEdges.forEach(([a2, b2], i) => {
-    const ex = b2[0] - a2[0], ey = b2[1] - a2[1]
-    const el = Math.hypot(ex, ey) || 1
-    const nx = ey / el, ny = -ex / el
-    const mid: Position = [(a2[0] + b2[0]) / 2, (a2[1] + b2[1]) / 2]
-    let toCentre = Infinity
-    for (const [p0, p1] of centreSegs) {
-      const vx = p1[0] - p0[0], vy = p1[1] - p0[1]
-      const tt = Math.max(0, Math.min(1,
-        ((mid[0] - p0[0]) * vx + (mid[1] - p0[1]) * vy) / (vx * vx + vy * vy || 1)))
-      toCentre = Math.min(toCentre,
-        Math.hypot(mid[0] - (p0[0] + tt * vx), mid[1] - (p0[1] + tt * vy)))
-    }
-    if (!Number.isFinite(toCentre)) return
+    // The section, measured OUT from the front property line, all of it inside
+    // the dedicated right-of-way:
+    //   0 – 3 ft   concrete sidewalk
+    //   3 – 7 ft   planting strip (street trees)
+    //     7 ft     curb and gutter, then the travelled way to the centreline
+    band(0, SW_W, 'frontage-sidewalk', 'Pavement', `CONCRETE SIDEWALK  ${SW_W}' WIDE`)
+    band(SW_W, VERGE_W, 'frontage-verge', 'Surface',
+      `PLANTING STRIP  ${VERGE_W}' WIDE  (STREET TREES)`)
+    band(SW_W + VERGE_W, 2, 'frontage-curb', 'Pavement', 'CURB AND GUTTER')
+
+    // The far right-of-way line, mirrored across the measured centreline.
     const far = toCentre * 2
     frontageFeats.push({
       kind: 'ExistingFeature', id: `row-far-${i}`,
       line: [[a2[0] + nx * far, a2[1] + ny * far], [b2[0] + nx * far, b2[1] + ny * far]],
       attributes: {
-        label: `FAR RIGHT-OF-WAY LINE (DERIVED — ${toCentre.toFixed(1)} ft `
-          + `each side of the measured centreline)`,
+        label: `FAR RIGHT-OF-WAY LINE (DERIVED — ${toCentre.toFixed(1)} ft each side)`,
       },
     } as never)
-    console.log(`    street width    ${far.toFixed(1)} ft R/W to R/W `
-      + `(${toCentre.toFixed(1)} ft each side of the centreline; far side DERIVED)`)
+    console.log(`    frontage        ${SW_W} ft walk, ${VERGE_W} ft strip, curb at `
+      + `${SW_W + VERGE_W} ft out; centreline ${toCentre.toFixed(1)} ft out, `
+      + `R/W to R/W ${far.toFixed(1)} ft`)
   })
+  // MONUMENTS OF RECORD. The plat publishes corner coordinates to four decimals
+  // and letters IPF at them. On the drawing they give the field the positions to
+  // recover — which is where a certification starts. Carrying them does not make
+  // this a survey and the sheet does not say it does.
+  for (const mon of platRecord?.monuments ?? []) {
+    frontageFeats.push({
+      kind: 'SpotElevation', id: `mon-${mon.id}`,
+      point: [mon.easting, mon.northing] as Position,
+      attributes: { label: `${mon.label} (${mon.id})`, note: mon.note, monument: true },
+    } as never)
+  }
+  if (platRecord?.monuments?.length) {
+    console.log(`    monuments       ${platRecord.monuments.length} of record, from the plat`)
+  }
 
   // The per-lot pieces are replaced by the continuous run.
   const withoutPerLot = merged.filter(f =>

@@ -124,6 +124,10 @@ export interface LotInput {
   platFrontageEasementFt?: number | null
   /** Front setback stated for this lot, overriding the zone table. */
   frontSetbackFt?: number | null
+  /** Face of building to the start of the street, when quoted that way. */
+  frontFaceToCurbFt?: number | null
+  /** Sidewalk + planting strip, from the property line out to the kerb. */
+  curbOffsetFt?: number | null
   /** Width of the dedicated strip, dimensioned on the recorded plat. */
   dedicationWidthFt?: number | null
   triangleRearAsSide?: boolean
@@ -500,6 +504,8 @@ export function buildLotPackage(lot: LotInput, resolved?: ResolvedBoundary | nul
       footprintStated: Boolean(lot.programme?.footprintWidthFt && lot.programme?.footprintDepthFt),
       triangleRearAsSide: lot.triangleRearAsSide,
       frontSetbackFt: lot.frontSetbackFt ?? null,
+      frontFaceToCurbFt: lot.frontFaceToCurbFt ?? null,
+      curbOffsetFt: lot.curbOffsetFt ?? null,
     })
     const feats: unknown[] = []
     if (buildable.ring) {
@@ -856,7 +862,23 @@ export function buildLotPackage(lot: LotInput, resolved?: ResolvedBoundary | nul
     if (namedByTheSummary && item.key.startsWith('disturbance:')) continue
     if (namedByTheSummary && /^open:Quantify:/.test(item.key)) continue
     beforeSeal.push(`${item.label} (${item.responsible}): ${item.why}`)
-  }  // THE LANDSCAPE MANUAL. Adopted in the same publication as the Zoning
+  }  // APPROVALS OF RECORD, named on the plat itself.
+  //
+  // Which subdivision an approval belongs to is answered by the instrument it
+  // is lettered on: the concept number and these lots appear on the SAME
+  // recorded plat, so it is not another subdivision's concept. What is missing
+  // is the approved DOCUMENT, and that is a different sentence from 'we do not
+  // know whether this applies here'.
+  const approvals = (lot.platRecord as { approvalsOfRecord?: {
+    kind: string; number: string; status: string }[] } | undefined)?.approvalsOfRecord ?? []
+  for (const ap of approvals) {
+    if (!/not in repo/.test(ap.status)) continue
+    beforeSeal.push(
+      `${ap.kind} ${ap.number} — identified on the recorded plat for THESE lots, but the approved ` +
+      'document itself is not held here. Obtain it: the plat conditions approval on it.')
+  }
+
+  // THE LANDSCAPE MANUAL. Adopted in the same publication as the Zoning
   // Ordinance and loaded in this repo, but never reaching the drawing: L-100
   // was composed without the canopy requirement that governs it.
   //
@@ -876,10 +898,12 @@ export function buildLotPackage(lot: LotInput, resolved?: ResolvedBoundary | nul
   // rule was applied, and saying so is the difference between a drawing and a
   // determination.
   beforeSeal.push(
-    'Sidewalk requirement NOT DETERMINED. Whether a sidewalk must be built, reconstructed or ' +
-    'waived along this frontage is a DPW&T decision at street construction permit, and no rule ' +
-    'for it is loaded in this engine — the Landscape Manual and Subtitle 24 as extracted here ' +
-    'contain none. The walk is drawn at the width given, not at a width derived from a standard.')
+    'Sidewalk REQUIREMENT (not its dimensions) is a DPW&T decision at street construction permit. ' +
+    'The section is settled — 3 ft walk then a 4 ft planting strip, both in the right-of-way, ' +
+    'with curb and gutter at 7 ft out — ' +
+    'but whether a walk must be built, reconstructed or waived on this frontage is not a rule this ' +
+    'engine holds: neither the Landscape Manual nor Subtitle 24 as extracted here contains one. ' +
+    'Dimensions given, requirement outstanding; they are different questions.')
 
   beforeSeal.push(
     'Review and seal by the professionals responsible for each subject. The platform drafts a ' +

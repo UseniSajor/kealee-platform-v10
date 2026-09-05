@@ -53,9 +53,26 @@ export const WALK_WIDTH_FT = 5
  * impervious area is counted; the detail is called out, not redrawn.
  */
 export const APRON_FLARE_FT = 3
-export const SIDEWALK_WIDTH_FT = 4
-/** Set-in from the front property line to the front edge of the walk. */
-export const SIDEWALK_OFFSET_FT = 1
+export const SIDEWALK_WIDTH_FT = 3
+/**
+ * The frontage section, given: 3 ft of concrete walk and a 4 ft planting strip
+ * between the walk and the street — 7 ft in all across the property line.
+ *
+ * The walk sits INSIDE the line and the strip OUTSIDE it, which is what "the
+ * land strip between the street and the sidewalk" describes.
+ */
+export const SIDEWALK_OFFSET_FT = 0
+export const VERGE_WIDTH_FT = 4
+/**
+ * Length of the apron, measured ON THE LOT from the front property line.
+ *
+ * The apron is the flared head of the driveway and it STOPS AT THE PROPERTY
+ * LINE — nothing here is drawn into the public street. Whatever is built beyond
+ * that line is DPW&T's, to their standard detail, and is not this drawing's to
+ * show.
+ */
+export const APRON_LENGTH_FT = 10
+
 /**
  * Half the travelled way, assumed.
  *
@@ -276,134 +293,84 @@ export function deriveSiteImprovements(input: {
         'Front concrete stoop at the entrance, on the leadwalk. Riser count and handrail per the ' +
         'architectural plans and the building code.',
     })
-  } else {
-    assumptions.push(
-      'No leadwalk is drawn: the driveway already meets the entrance, so there is nothing for a ' +
-      'walk to connect.')
-  }
-  // ── The public frontage: apron and sidewalk ──────────────────────────────
-  //
-  // The apron sits outside the property line and the walk just inside it. The
-  // distance from the front lot line
-  // to the street is MEASURED against the centreline rather than assumed from
-  // a right-of-way width, because the dedication varies lot by lot and this
-  // subdivision's is 20 ft where the county's default is not.
-  const streetPaths = input.streetPaths ?? []
-  const frontMid: Position = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2]
-  let toCentrelineFt = Infinity
-  for (const path of streetPaths) {
-    for (let i = 0; i < path.length - 1; i++) {
-      const p0 = path[i], p1 = path[i + 1]
-      const vx = p1[0] - p0[0], vy = p1[1] - p0[1]
-      const t = Math.max(0, Math.min(1,
-        ((frontMid[0] - p0[0]) * vx + (frontMid[1] - p0[1]) * vy) / (vx * vx + vy * vy || 1)))
-      const d = Math.hypot(frontMid[0] - (p0[0] + t * vx), frontMid[1] - (p0[1] + t * vy))
-      if (d < toCentrelineFt) toCentrelineFt = d
-    }
   }
 
-  if (!Number.isFinite(toCentrelineFt)) {
-    assumptions.push(
-      'NO DRIVEWAY APRON OR PUBLIC SIDEWALK IS DRAWN: no street centreline was available, so the ' +
-      'distance from the front lot line to the street is unknown. The recorded plat requires an ' +
-      'apron along the fronting street, so this is a gap in the drawing, not an omission by design.')
-  } else {
-    // The apron runs from the front lot line OUT to the street, the opposite
-    // direction to everything else here, and flares as it goes — the flare is
-    // what a DPW&T standard apron has and what makes it read as an apron
-    // rather than a driveway that overshot the property line.
-    // To the EDGE OF PAVEMENT, not toward the centreline. The apron is the
-    // entrance to the driveway: it crosses the ground between the property
-    // line and the street and stops where the road surface begins. Running it
-    // to within a flare of the centreline drew it out across half the
-    // travelled way.
-    const dedicated = input.dedicationWidthFt ?? null
-    const apronRun = dedicated != null && dedicated > 0
-      ? dedicated
-      : Math.max(4, toCentrelineFt - ASSUMED_PAVEMENT_HALF_WIDTH_FT)
-    const outX = -inX, outY = -inY
-    const along: Position = [
-      a[0] + (dx / len) * (centreOffset + (hasGarage ? DRIVEWAY_WIDTH_FT : 0)),
-      a[1] + (dy / len) * (centreOffset + (hasGarage ? DRIVEWAY_WIDTH_FT : 0)),
+  // ── The public frontage ──────────────────────────────────────────────────
+  //
+  // Measured OUT from the front property line, all inside the dedicated
+  // right-of-way:
+  //     0 – 3 ft   concrete sidewalk
+  //     3 – 7 ft   planting strip (street trees)
+  //       7 ft     curb and gutter, then the travelled way
+  //
+  // The apron spans that same 7 ft, kerb to property line, because that is what
+  // it connects — not a length chosen by a rule about where it ought to stop.
+  const curbOffsetFt = SIDEWALK_WIDTH_FT + VERGE_WIDTH_FT
+  const outX = -inX, outY = -inY
+  {
+    const ux = dx / len, uy = dy / len
+    const band = (from: number, width: number, id: string,
+                  kind: SiteImprovement['kind'], label: string,
+                  impervious: boolean, note: string) => {
+      const ring: Ring = { coordinates: [
+        [a[0] + outX * from, a[1] + outY * from],
+        [b[0] + outX * from, b[1] + outY * from],
+        [b[0] + outX * (from + width), b[1] + outY * (from + width)],
+        [a[0] + outX * (from + width), a[1] + outY * (from + width)],
+        [a[0] + outX * from, a[1] + outY * from],
+      ] }
+      improvements.push({
+        id, kind, label, ring,
+        areaSqFt: ringArea(ring.coordinates.slice(0, -1)), impervious, note,
+      })
+    }
+    band(0, SIDEWALK_WIDTH_FT, 'sidewalk', 'Sidewalk',
+      `CONCRETE SIDEWALK  ${SIDEWALK_WIDTH_FT}' WIDE`, true,
+      'Public sidewalk across the frontage, within the right-of-way. Whether it is to be built, ' +
+      'reconstructed or waived is a DPW&T determination at street construction permit.')
+    band(SIDEWALK_WIDTH_FT, VERGE_WIDTH_FT, 'verge', 'Verge',
+      `PLANTING STRIP  ${VERGE_WIDTH_FT}' WIDE  (STREET TREES)`, false,
+      'Landscaped strip between the kerb and the sidewalk. Street tree species, spacing and clear ' +
+      'distances are set by the Landscape Manual and by DPW&T; this shows the STRIP, not a ' +
+      'planting schedule.')
+    band(curbOffsetFt, 2, 'curb', 'Sidewalk', 'CURB AND GUTTER', true,
+      'Curb and gutter at the edge of the travelled way, per the DPW&T standard detail.')
+
+    // The apron: narrow at the property line, flaring out to the kerb.
+    const alongPt: Position = [
+      a[0] + ux * (centreOffset + (hasGarage ? DRIVEWAY_WIDTH_FT : 0)),
+      a[1] + uy * (centreOffset + (hasGarage ? DRIVEWAY_WIDTH_FT : 0)),
     ]
     const hw = DRIVEWAY_WIDTH_FT / 2, hwFlared = hw + APRON_FLARE_FT
-    const ux = dx / len, uy = dy / len
     const apron: Ring = { coordinates: [
-      [along[0] + ux * hw, along[1] + uy * hw],
-      [along[0] - ux * hw, along[1] - uy * hw],
-      [along[0] - ux * hwFlared + outX * apronRun, along[1] - uy * hwFlared + outY * apronRun],
-      [along[0] + ux * hwFlared + outX * apronRun, along[1] + uy * hwFlared + outY * apronRun],
-      [along[0] + ux * hw, along[1] + uy * hw],
+      [alongPt[0] + ux * hw, alongPt[1] + uy * hw],
+      [alongPt[0] - ux * hw, alongPt[1] - uy * hw],
+      [alongPt[0] - ux * hwFlared + outX * curbOffsetFt,
+       alongPt[1] - uy * hwFlared + outY * curbOffsetFt],
+      [alongPt[0] + ux * hwFlared + outX * curbOffsetFt,
+       alongPt[1] + uy * hwFlared + outY * curbOffsetFt],
+      [alongPt[0] + ux * hw, alongPt[1] + uy * hw],
     ] }
     improvements.push({
       id: 'apron', kind: 'Apron',
-      label: `PROPOSED DRIVEWAY APRON  PER DPW&T STANDARD`,
+      label: 'PROPOSED DRIVEWAY APRON  PER DPW&T STANDARD',
       ring: apron, areaSqFt: ringArea(apron.coordinates.slice(0, -1)), impervious: true,
       note:
-        'Standard residential driveway apron, constructed to the DPW&T standard detail and to the ' +
-        'abutting driveway design the recorded plat requires. Extent shown; the detail governs the ' +
-        'dimensions, jointing and depression. Curb cut per the same detail.',
-    })
-
-    // The public walk runs ALONG the frontage, inside the right-of-way, set
-    // off the property line by a green strip.
-    // INSIDE the front lot line, not in the right-of-way. It was placed out in
-    // the public strip on the reasoning that a public walk lives there; on this
-    // frontage it belongs on the lot, set in from the property line.
-    const walkOff = SIDEWALK_OFFSET_FT + SIDEWALK_WIDTH_FT / 2
-    const swStart: Position = [a[0] + inX * walkOff, a[1] + inY * walkOff]
-    const sidewalk = rectFromAxis(swStart, ux, uy, len, SIDEWALK_WIDTH_FT)
-    // The VERGE — the planting strip between the sidewalk and the street. The
-    // plat shows it and it is where street trees go; without it the sidewalk
-    // reads as abutting the kerb, which is a different street section.
-    const vergeWidth = Math.max(0, apronRun - SIDEWALK_OFFSET_FT - SIDEWALK_WIDTH_FT)
-    if (vergeWidth > 0.5) {
-      const vStart: Position = [
-        a[0] + outX * (vergeWidth / 2), a[1] + outY * (vergeWidth / 2),
-      ]
-      const verge = rectFromAxis(
-        [vStart[0] + (dx / len) * (len / 2), vStart[1] + (dy / len) * (len / 2)],
-        dx / len, dy / len, len, vergeWidth)
-      improvements.push({
-        id: 'verge', kind: 'Verge',
-        label: `PLANTING STRIP  ${vergeWidth.toFixed(1)}' WIDE  (STREET TREES)`,
-        ring: verge, areaSqFt: ringArea(verge.coordinates.slice(0, -1)), impervious: false,
-        note:
-          'Landscaped strip between the back of kerb and the sidewalk, within the dedicated ' +
-          'right-of-way. Street tree species, spacing and clear distances are set by the ' +
-          "Landscape Manual and by DPW&T; this shows the STRIP, not a planting schedule.",
-      })
-    }
-
-    improvements.push({
-      id: 'sidewalk', kind: 'Sidewalk',
-      label: `PUBLIC SIDEWALK  ${SIDEWALK_WIDTH_FT}' WIDE`,
-      ring: sidewalk, areaSqFt: ringArea(sidewalk.coordinates.slice(0, -1)), impervious: true,
-      note:
-        'Public sidewalk across the frontage, within the right-of-way. Shown for the full frontage ' +
-        'width; whether it is to be built, reconstructed or already exists is a DPW&T determination ' +
-        'at street construction permit.',
+        `Driveway apron from the curb and gutter to the front property line, ${curbOffsetFt} ft, ` +
+        'crossing the sidewalk and the planting strip. DPW&T standard detail governs the ' +
+        'depression, jointing and curb cut. Nothing is drawn beyond the kerb into the travelled way.',
     })
 
     assumptions.push(
-      dedicated != null && dedicated > 0
-        ? `The apron runs ${apronRun.toFixed(2)} ft from the front property line to the `
-          + `right-of-way line — the strip DEDICATED TO PUBLIC USE, dimensioned on the recorded `
-          + `plat — and flares ${APRON_FLARE_FT} ft each side. The plat draws the existing `
-          + `pavement centreline but does not dimension its offset, so the edge of pavement is not `
-          + `transcribed and the apron ends at the right-of-way line.`
-        : `The front lot line is ${toCentrelineFt.toFixed(0)} ft from the county street centreline, `
-          + `measured. NO DEDICATION WIDTH WAS SUPPLIED, so the apron runs `
-          + `${apronRun.toFixed(0)} ft to an ASSUMED edge of pavement `
-          + `${ASSUMED_PAVEMENT_HALF_WIDTH_FT} ft off that centreline — an assumption with no `
-          + `published source. Supply the plat's dedication width to replace it.`,
-      `The sidewalk is ${SIDEWALK_WIDTH_FT} ft wide, set ${SIDEWALK_OFFSET_FT} ft INSIDE the front ` +
-      'property line. Widths, flare and the pavement half-width are ordinary residential ' +
-      'dimensions, NOT county-published values — the county publishes no pavement width and the ' +
-      'DPW&T standard detail governs the apron.',
-      'The apron is in the public right-of-way, so its area is impervious and counted but is not ' +
-      'lot coverage. The sidewalk is on the lot and counts as both.')
+      `Frontage section, out from the front property line: ${SIDEWALK_WIDTH_FT} ft concrete walk, ` +
+      `${VERGE_WIDTH_FT} ft planting strip, then curb and gutter at ${curbOffsetFt} ft. Given ` +
+      'dimensions, not derived from a published standard.',
+      `The apron spans that same ${curbOffsetFt} ft, kerb to property line, flaring ` +
+      `${APRON_FLARE_FT} ft each side toward the kerb.`,
+      'Everything in the frontage lies in the public right-of-way: impervious and counted as ' +
+      'disturbance, but NOT lot coverage. The planting strip is not impervious at all.')
   }
+
 
   assumptions.push(
     `Driveway ${DRIVEWAY_WIDTH_FT} ft and walk ${WALK_WIDTH_FT} ft wide. Prince George's County ` +

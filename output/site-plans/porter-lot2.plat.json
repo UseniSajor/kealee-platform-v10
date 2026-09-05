@@ -46,6 +46,7 @@
   "_yardDetermination": "LOT 2 IS A TRIANGLE and has no lot line opposite the frontage. The NW boundary (179.66 ft) is treated as a SIDE yard at 8 ft, not a rear yard at 20 ft, on the determination that a triangular lot has no rear lot line. Stated by the applicant, carried into the drawing and labelled on the sheet; the zoning reviewer confirms it against Subtitle 27.",
   "dedicationWidthFt": 20.0,
   "platFrontageEasementFt": 10.0,
-  "frontSetbackFt": 30.0,
-  "_frontSetbackNote": "30 ft front setback stated for this lot, with the 10.00' PUE lettered on the plat lying inside it. The RSF-65 table gives 25 ft; the stated figure governs and the sheet says so."
+  "_frontSetbackNote": "Face of building to the start of the street = 30 ft. The kerb sits 7 ft out from the front property line (3 ft sidewalk + 4 ft planting strip), so the front setback measured from the property line is 30 - 7 = 23 ft. Both figures print on the sheet. The RSF-65 table gives 25 ft; the stated 23 ft is LESS, so a zoning reviewer must confirm it against the plat's building restriction line before this is relied on.",
+  "frontFaceToCurbFt": 30.0,
+  "curbOffsetFt": 7.0
 }

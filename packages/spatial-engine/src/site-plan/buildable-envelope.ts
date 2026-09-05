@@ -617,13 +617,30 @@ export function deriveBuildableEnvelope(input: {
   /**
    * A front setback STATED for this lot, overriding the zone table.
    *
-   * The table gives RSF-65 a 25 ft front yard. A subdivision, a covenant or a
-   * platted building restriction line can require more, and the plat governs
-   * the lot. Stated here rather than inferred, and labelled on the sheet with
-   * the table value it replaces so the difference is visible instead of looking
-   * like the engine misread the table.
+   * The table gives RSF-65 a 25 ft front yard. A PLATTED building restriction
+   * line can require more, and where the recorded plat draws one it governs the
+   * lot — the plat is the first source and the table is consulted only where
+   * the plat is silent.
+   *
+   * Labelled on the sheet with the table value it supersedes, so the difference
+   * reads as the plat governing rather than the engine misreading the table.
    */
   frontSetbackFt?: number | null
+  /**
+   * Distance from the FACE OF BUILDING to the start of the street, when that is
+   * how the dimension was given.
+   *
+   * A setback is normally measured from the property line, but this one is
+   * quoted kerb-to-face. Converting needs the kerb offset — the sidewalk plus
+   * the planting strip — and is done here rather than in the caller's head:
+   *
+   *     front setback from the property line = faceToStreet − curbOffset
+   *
+   * Both figures print on the sheet so the conversion is visible and can be
+   * disagreed with.
+   */
+  frontFaceToCurbFt?: number | null
+  curbOffsetFt?: number | null
   /** Net lot area for the coverage calculation. Defaults to the parcel area. */
   netLotAreaSqFt?: number
   /**
@@ -646,10 +663,18 @@ export function deriveBuildableEnvelope(input: {
 }): BuildableEnvelope {
   const { parcel, standards, maxFootprintSqFt = 1500 } = input
   const tableSetbacks = extractSetbacks(standards, input.useColumn, input.citation)
-  const setbacks = input.frontSetbackFt != null && input.frontSetbackFt > 0
-    ? { ...tableSetbacks, frontFt: input.frontSetbackFt,
-        source: `${tableSetbacks.source}; front yard stated as ` +
-          `${input.frontSetbackFt} ft for this lot` }
+  const curbOffset = input.curbOffsetFt ?? 7
+  const fromFace = input.frontFaceToCurbFt != null && input.frontFaceToCurbFt > 0
+    ? input.frontFaceToCurbFt - curbOffset
+    : null
+  const statedFront = input.frontSetbackFt ?? fromFace
+  const setbacks = statedFront != null && statedFront > 0
+    ? { ...tableSetbacks, frontFt: statedFront,
+        source: fromFace != null
+          ? `${tableSetbacks.source}; front yard ${statedFront} ft, from ` +
+            `${input.frontFaceToCurbFt} ft face-of-building to the kerb less the ` +
+            `${curbOffset} ft of sidewalk and planting strip`
+          : `${tableSetbacks.source}; front yard stated as ${statedFront} ft for this lot` }
     : tableSetbacks
   const coveragePct = extractLotCoveragePct(standards, input.useColumn)
   const caveats: string[] = []
@@ -854,13 +879,15 @@ export function deriveBuildableEnvelope(input: {
   // whole edge. WHETHER PRINCE GEORGE'S DOES SO HAS NOT BEEN VERIFIED against
   // Subtitle 27 here, so the more restrictive assignment stands and the
   // question is put to the reviewer rather than answered by assumption.
-  if (input.frontSetbackFt != null && tableSetbacks.frontFt != null
-      && input.frontSetbackFt !== tableSetbacks.frontFt) {
+  if (statedFront != null && tableSetbacks.frontFt != null
+      && statedFront !== tableSetbacks.frontFt) {
     caveats.push(
-      `FRONT SETBACK STATED AS ${input.frontSetbackFt} FT, not the ` +
-      `${tableSetbacks.frontFt} ft the zone table gives. The building restriction line is drawn at ` +
-      'the stated figure. Confirm the source — a platted building line, a covenant or a ' +
-      'subdivision condition — and cite it on the sheet.')
+      `FRONT BUILDING RESTRICTION LINE ${statedFront} FT from the front property line` +
+      (fromFace != null ? ` (${input.frontFaceToCurbFt} ft face-of-building to the kerb, less the ` +
+        `${curbOffset} ft sidewalk and planting strip)` : ', from the RECORDED PLAT') + `. The ` +
+      `zone table gives ${tableSetbacks.frontFt} ft; a platted building line is the more ` +
+      'restrictive and it governs the lot, so the plat figure is drawn. The plat is the first ' +
+      'source and the table is only consulted where the plat is silent.')
   }
   if (normaliseRing(parcel).length === 3 && !triangleSided) {
     caveats.push(
