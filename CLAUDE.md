@@ -195,8 +195,27 @@ User → Agent → CTA → Stripe → Webhook → ProjectOutput → Queue → Wo
 **Read this before touching anything that needs an address, parcel, zoning,
 terrain or jurisdiction. Do not execute first and reconcile later.**
 
-For any DC · MD · VA property fact the county publishes, **PGAtlas is the
-source of truth**. Query it. Do not ask the user, do not infer from intake
+### Precedence — the plat is the basis, PGAtlas adds layers
+
+**A RECORDED PLAT SUPERSEDES EVERY OTHER SOURCE, PGAtlas included.** It is the
+instrument the county holds and the boundary of record. Where a plat exists,
+the lot boundary, its bearings, distances and areas come from the plat, and
+nothing may overwrite them.
+
+PGAtlas ADDS what the plat does not carry: zoning, contours and datum, street
+centrelines, soils, environmental constraints, municipal boundary. It is the
+authority for those LAYERS, not for the boundary.
+
+County GIS is compiled from plats and tax maps, not surveyed. In this engine's
+own testing it sat 4.3 ft off a surveyed line — enough to flip a front setback
+from compliant to non-compliant. It is Level 1: good enough to draw a lot when
+no plat has been supplied, never a reason to move a recorded boundary.
+
+When the two disagree, REPORT IT AND MOVE NEITHER. `reconcile_survey` exists
+for exactly that, and a human decides.
+
+For any property fact the county publishes and the plat does not, **PGAtlas is
+the source of truth**. Query it. Do not ask the user, do not infer from intake
 free text, and do not use a public geocoder.
 
 | What | Endpoint (`gis.pgatlas.com/pgatlas/rest/services/…`) |

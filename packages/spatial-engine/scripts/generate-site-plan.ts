@@ -13,6 +13,7 @@
  * what makes it sealable; it is not what makes it exist.
  */
 
+import { renderAsciiPlan } from '../src/sheets/render-ascii'
 import { fetchPgAtlasAdjacentParcels } from '../src/jurisdictions/pgatlas'
 import { writeFileSync } from 'node:fs'
 import { resolveMarylandParcel, buildLotPackage } from '../src/self-perform/lot-package'
@@ -261,6 +262,23 @@ async function main() {
   })
 
   writeFileSync(outPath, pdf.buffer)
+
+  // ALWAYS render to the terminal for review.
+  //
+  // A PDF has to be opened, and a defect that is obvious at a glance survives
+  // a status line saying the render succeeded — a five-sheet set once came out
+  // at sixty-five pages while reporting five. Every drawing defect in this
+  // engine's history was found by looking.
+  console.log('')
+  console.log(renderAsciiPlan({
+    twin: pkg.twin,
+    envelope: pkg.buildable?.ring ?? null,
+    footprint: pkg.buildable?.footprint ?? null,
+    title: `${address.split(',')[0].toUpperCase()}`,
+    subtitle: `${pkg.twin.zoneCode ?? '—'}  ·  `
+      + `${Math.round(pkg.buildable?.envelopeAreaSqFt ?? 0).toLocaleString()} SF BRL envelope  ·  `
+      + `${Math.round(pkg.buildable?.footprintAreaSqFt ?? 0).toLocaleString()} SF footprint`,
+  }))
   console.log(`    ${outPath}  ${(pdf.buffer.length / 1024).toFixed(0)} KB  ${pdf.pageCount} pages`)
   if (pdf.frameFailures.length) {
     console.log('    FRAME FAILURES (issuance blockers):')
