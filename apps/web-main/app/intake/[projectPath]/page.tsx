@@ -1897,7 +1897,7 @@ export default function IntakePage() {
                               ? "Kealee identifies the state, county, and city for any US address, then pulls parcel geometry where a registered jurisdiction service covers it. Where it does not, the order continues under manual review — automation level varies by location, availability does not."
                               : isPermitIntake
                                 ? "We identify the permitting authority for your address so the checklist and requirements match your actual jurisdiction. Where no automated source covers it, a Kealee reviewer confirms the agency by hand."
-                                : "We check the address against federal records to confirm the state, county, and city. Your location drives the regional pricing basis and the permit path in your package."}
+                                : "We use your project address to identify the local jurisdiction, regional pricing basis, and relevant permit path for your package."}
                           </p>
                         </div>
                         <button type="button" onClick={resolveProjectParcel} disabled={resolvingParcel || !formData.address.trim()} className="inline-flex items-center gap-2 rounded-lg bg-emerald-700 px-4 py-2.5 text-sm font-bold text-white disabled:opacity-50">
