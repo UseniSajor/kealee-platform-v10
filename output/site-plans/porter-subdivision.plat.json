@@ -1,0 +1,33 @@
+{
+  "_source": "existing site plans/Rollins Ave lots.pdf — PORTER SUBDIVISION, LOTS 1 AND 2, Plat Book PM 231 p. 50 (MSA_C2381_19050), Seat Pleasant (18th) Election District, Prince George's County MD. Capitol Development Design, Inc. Scale 1\"=20', November 2007. M-NCPPC Record File 5-09121.",
+  "_transcription": "OUTER BOUNDARY of the subdivision (Lots 1 + 2 + the area dedicated to public use). Courses derived from the three corner coordinates the plat publishes to four decimals, which are more precise than its lettered distances. Every course was cross-checked against the plat's own lettering and agrees within 0.16 ft and 10 arc-seconds; the computed area agrees with the recorded total within 1 sq ft of 21,825.",
+  "_validation": "misclosure 0.0061 ft over 715.26 ft = 1:118,119. Recorded area 21,825 sq ft, computed 21,826. certifiable: true.",
+  "_still_needed": "The INTERNAL lines that split this into Lot 1 (9,598 sq ft), Lot 2 (8,008 sq ft) and the 4,219 sq ft dedicated to public use: the lot divider is lettered N 79-29-14 E 118.96' and the dedication strip carries 20.00', 199.64' and 134.64' with a 10.00' PUE. Those are read but not yet closure-validated as separate figures.",
+  "address": "1005 Rollins Ave",
+  "reference": {
+    "liber": "PM 231",
+    "folio": "50",
+    "subdivisionName": "Porter Subdivision",
+    "lot": "1 and 2 — outer boundary"
+  },
+  "basisOfBearings": "Maryland State Plane Coordinate System (NAD 83)",
+  "pointOfBeginning": [1340254.7066, 440194.1578],
+  "recordedAreaSqFt": 21825,
+  "programme": {
+    "totalFloorAreaSqFt": 2400,
+    "storeys": 2,
+    "hasBasement": false,
+    "garage": "attached_2_car",
+    "coveredPorch": false
+  },
+  "calls": [
+    { "kind": "line", "bearing": "N 79-29-04 E", "distanceFt": 196.38, "label": "NE — abutting Lots 13/14/15, Addition to Pleasant Park (plat letters N 79-29-14 E 196.36')" },
+    { "kind": "line", "bearing": "S 10-30-43 E", "distanceFt": 222.28, "label": "SE — Rollins Avenue right-of-way (plat letters S 10-30-46 E 222.12')" },
+    { "kind": "line", "bearing": "N 51-58-24 W", "distanceFt": 296.60, "label": "W — Outlot A (plat letters N 51-58-25 W 296.60')" }
+  ],
+  "cornerCoordinates": {
+    "A_north_IPF": [1340254.7066, 440194.1578],
+    "B_northeast": [1340447.7902, 440229.9981],
+    "C_rollins_ave": [1340488.3440, 440011.4450]
+  }
+}
