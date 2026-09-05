@@ -47,6 +47,7 @@ type PlatSpec = {
   pointOfBeginning?: [number, number]
   recordedAreaSqFt?: number
   programme?: Record<string, unknown>
+  triangleRearAsSide?: boolean
   calls: unknown[]
 }
 
@@ -148,6 +149,7 @@ async function main(): Promise<void> {
         isResidentialSingleFamily: true, dwellingUnitCount: 1,
         streetPoint: site.streetPoint, parcelId: site.parcel?.parcelId ?? null,
         streets: site.streets,
+        triangleRearAsSide: spec.triangleRearAsSide,
         easements,
         adjacentParcels,
         // Each lot's own package must know it was drawn from a plat, or its

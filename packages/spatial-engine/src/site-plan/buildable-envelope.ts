@@ -437,12 +437,38 @@ function placeAgainstFront(
   const c = centroid(envelope)
   const cProj = proj(c)
 
+  // Lateral position is searched too, not just depth.
+  //
+  // The house was centred on the ENVELOPE'S CENTROID sideways, which is not the
+  // middle of the side yards on a lot whose boundaries converge: the centroid
+  // is pulled toward the wide end. On Lot 1 that left 4.6 ft against the 8 ft
+  // divider while 14.4 ft went spare on the far side — a side-setback violation
+  // with three feet of room available, caused by placement alone.
+  //
+  // Fitting inside the envelope IS meeting the setbacks: the envelope is the
+  // per-edge inset. So the search takes the position that fits and sits most
+  // nearly centred between the sides, preferring the smallest lateral shift so
+  // the house does not slide to one boundary when it does not need to.
+  const along = (p: Position) => (p[0] - a[0]) * (dx / len) + (p[1] - a[1]) * (dy / len)
+  const env2 = env.map(along)
+  const lateralRange = Math.max(...env2) - Math.min(...env2)
   for (let back = 0; back <= backOfEnvelope - frontOfEnvelope; back += 1) {
     const want = frontOfEnvelope + depth / 2 + back
     const shift = want - cProj
-    const centre: Position = [c[0] + nx * shift, c[1] + ny * shift]
-    const rect = rectangleAt(centre, areaSqFt, aspect, angle)
-    if (rectFits(rect, envelope)) return rect
+    const base: Position = [c[0] + nx * shift, c[1] + ny * shift]
+    let best: Ring | null = null, bestOff = Infinity
+    for (let off = 0; off <= lateralRange / 2; off += 0.5) {
+      for (const sgn of off === 0 ? [1] : [1, -1]) {
+        const centre: Position = [
+          base[0] + (dx / len) * off * sgn,
+          base[1] + (dy / len) * off * sgn,
+        ]
+        const rect = rectangleAt(centre, areaSqFt, aspect, angle)
+        if (rectFits(rect, envelope) && off < bestOff) { best = rect; bestOff = off }
+      }
+      if (best) break
+    }
+    if (best) return best
   }
   return null
 }
@@ -573,6 +599,21 @@ export function deriveBuildableEnvelope(input: {
    * overrun is reported.
    */
   footprintStated?: boolean
+  /**
+   * On a TRIANGULAR lot, give every non-front edge the SIDE yard.
+   *
+   * A triangle has no lot line opposite the front, so the default here — rear
+   * goes to the edge furthest from the street — applies a 20 ft yard along a
+   * boundary that is arguably a side. Ordinances commonly define a triangular
+   * lot's rear line as a short line parallel to the front at maximum distance,
+   * which leaves the two converging edges as sides.
+   *
+   * Off by default: the restrictive reading is the safe one to draw when nobody
+   * has ruled. Turned on, it is a STATED DETERMINATION by whoever set it, and
+   * the drawing says so rather than presenting it as the engine's own reading
+   * of the code.
+   */
+  triangleRearAsSide?: boolean
   /** Net lot area for the coverage calculation. Defaults to the parcel area. */
   netLotAreaSqFt?: number
   /**
@@ -613,6 +654,11 @@ export function deriveBuildableEnvelope(input: {
   const yards = input.streetPaths?.length
     ? classifyEdgesFromStreet(parcel, input.streetPaths)
     : classifyEdges(parcel, input.streetPoint ?? null)
+  // A stated determination that a triangle has no rear lot line.
+  const triangleSided = Boolean(input.triangleRearAsSide) && yards.length === 3
+  if (triangleSided) {
+    for (let i = 0; i < yards.length; i++) if (yards[i] === 'rear') yards[i] = 'side'
+  }
   const perEdge = (i: number): number => {
     const y = yards[i] ?? 'front'
     if (y === 'front') return setbacks.frontFt ?? setbacks.maxFt
@@ -793,7 +839,7 @@ export function deriveBuildableEnvelope(input: {
   // whole edge. WHETHER PRINCE GEORGE'S DOES SO HAS NOT BEEN VERIFIED against
   // Subtitle 27 here, so the more restrictive assignment stands and the
   // question is put to the reviewer rather than answered by assumption.
-  if (normaliseRing(parcel).length === 3) {
+  if (normaliseRing(parcel).length === 3 && !triangleSided) {
     caveats.push(
       'TRIANGULAR LOT — CONFIRM THE REAR LOT LINE. A triangle has no lot line opposite the front, ' +
       'so the edge furthest from the street has been given the REAR yard and the remaining edge the ' +
@@ -801,6 +847,13 @@ export function deriveBuildableEnvelope(input: {
       'line parallel to the front at the maximum distance, which would apply the side yard to both ' +
       'edges and enlarge the buildable envelope. Confirm the definition in Subtitle 27 before ' +
       'relying on this envelope — the assignment drawn here is the more restrictive of the two.')
+  }
+  if (triangleSided) {
+    caveats.push(
+      'TRIANGULAR LOT — NO REAR LOT LINE APPLIED. Every boundary other than the frontage takes the ' +
+      'SIDE yard, on the reading that a triangle has no lot line opposite the front. This is a ' +
+      'STATED DETERMINATION carried into the drawing, not the engine reading the code: it enlarges ' +
+      'the buildable envelope against the default, and the zoning reviewer confirms it.')
   }
 
   if (stated && !statedFits) {

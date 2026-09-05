@@ -58,6 +58,7 @@ async function main(): Promise<void> {
     basisOfBearings?: string
     recordedAreaSqFt?: number
     platNotes?: string[]
+    triangleRearAsSide?: boolean
     pointOfBeginning?: [number, number]
     programme?: Record<string, unknown>
     calls: unknown[]
@@ -164,6 +165,7 @@ async function main(): Promise<void> {
       isResidentialSingleFamily: true, dwellingUnitCount: 1,
       streetPoint: site.streetPoint, parcelId: site.parcel?.parcelId ?? null,
       streets: site.streets,
+      triangleRearAsSide: spec.triangleRearAsSide,
       easements,
       // Cite the instrument the boundary came FROM. The drawing was built on a
       // recorded plat and said so nowhere on the sheet: the plat-record block

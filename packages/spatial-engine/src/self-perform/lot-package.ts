@@ -104,6 +104,13 @@ export interface LotInput {
     recordReference?: string
     widthFt?: number
   }[]
+  /**
+   * On a triangular lot, treat every non-front boundary as a SIDE yard.
+   *
+   * A determination made by a person, carried into the drawing and labelled as
+   * such. See `triangleRearAsSide` on the envelope.
+   */
+  triangleRearAsSide?: boolean
   /** Jurisdiction parcel identifier, printed in the SITE DATA table. */
   parcelId?: string | null
 }
@@ -475,6 +482,7 @@ export function buildLotPackage(lot: LotInput, resolved?: ResolvedBoundary | nul
         ? lot.programme.footprintWidthFt / lot.programme.footprintDepthFt
         : undefined,
       footprintStated: Boolean(lot.programme?.footprintWidthFt && lot.programme?.footprintDepthFt),
+      triangleRearAsSide: lot.triangleRearAsSide,
     })
     const feats: unknown[] = []
     if (buildable.ring) {

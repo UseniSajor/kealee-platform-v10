@@ -54,8 +54,19 @@ export const WALK_WIDTH_FT = 5
  */
 export const APRON_FLARE_FT = 3
 export const SIDEWALK_WIDTH_FT = 4
-/** Green strip between the back of walk and the property line. */
+/** Set-in from the front property line to the front edge of the walk. */
 export const SIDEWALK_OFFSET_FT = 1
+/**
+ * Half the travelled way, assumed.
+ *
+ * The apron ends at the EDGE OF PAVEMENT — it is the entrance to the driveway,
+ * not a strip of the road — and the centreline layer is the only street
+ * geometry the county publishes. `Transportation/MapServer/2` carries name,
+ * class, speed and address ranges and NO pavement width, so the edge is placed
+ * at an assumed half-width off the measured centreline. 15 ft suits an ordinary
+ * 30 ft residential street; it is stated on the sheet and a survey replaces it.
+ */
+export const ASSUMED_PAVEMENT_HALF_WIDTH_FT = 15
 
 export interface SiteImprovement {
   id: string
@@ -205,27 +216,47 @@ export function deriveSiteImprovements(input: {
       `building. ${TABLE_4_SLOPES.citation}.`,
   })
 
-  // ── Leadwalk: driveway to the middle of the front elevation ──────────────
-  const walkStart: Position = [
-    driveStart[0] - (dx / len) * (WALK_WIDTH_FT * 1.5),
-    driveStart[1] - (dy / len) * (WALK_WIDTH_FT * 1.5),
-  ]
-  // The walk stops at the wall in front of the WALK, which is not where the
-  // driveway stops once the house is rotated.
-  const walkLength = Math.max(4, faceDepthAt(centreOffset - WALK_WIDTH_FT * 1.5, WALK_WIDTH_FT))
-  const walk = rectFromAxis(walkStart, inX, inY, walkLength, WALK_WIDTH_FT)
-  improvements.push({
-    id: 'walk', kind: 'Walk',
-    label: `CONCRETE WALK  ${WALK_WIDTH_FT}' WIDE`,
-    ring: walk, areaSqFt: ringArea(walk.coordinates.slice(0, -1)), impervious: true,
-    note:
-      `Lateral pitch ${TABLE_4_SLOPES.walkLateralMax} max, longitudinal ` +
-      `${TABLE_4_SLOPES.walkLongitudinalMax} max. ${TABLE_4_SLOPES.citation}.`,
-  })
-
+  // ── Leadwalk: DRIVEWAY to the front door ─────────────────────────────────
+  //
+  // This ran from the STREET to the house, parallel to the driveway and beside
+  // it — two separate paved strips reaching the road, one of which nobody
+  // walks. A leadwalk connects where you park to where you go in. It now
+  // starts at the edge of the driveway and runs ACROSS the frontage to the
+  // middle of the front elevation, at the depth of the house face.
+  const doorOffset = centreOffset
+  const driveEdge = bandCentre - (DRIVEWAY_WIDTH_FT / 2) * Math.sign(bandCentre - doorOffset || 1)
+  const runFt = Math.abs(doorOffset - driveEdge)
+  const faceAtDoor = faceDepthAt(doorOffset, WALK_WIDTH_FT)
+  if (runFt >= 1) {
+    // Set the walk just outside the wall so it abuts the elevation rather than
+    // running under it.
+    const standoff = faceAtDoor - WALK_WIDTH_FT / 2
+    const startAlong = Math.min(driveEdge, doorOffset)
+    const wStart: Position = [
+      a[0] + (dx / len) * startAlong + inX * standoff,
+      a[1] + (dy / len) * startAlong + inY * standoff,
+    ]
+    const walk = rectFromAxis(
+      [wStart[0] + (dx / len) * (runFt / 2), wStart[1] + (dy / len) * (runFt / 2)],
+      dx / len, dy / len, runFt, WALK_WIDTH_FT)
+    improvements.push({
+      id: 'walk', kind: 'Walk',
+      label: `CONCRETE WALK  ${WALK_WIDTH_FT}' WIDE`,
+      ring: walk, areaSqFt: ringArea(walk.coordinates.slice(0, -1)), impervious: true,
+      note:
+        `Leadwalk from the driveway to the front entrance. Lateral pitch ` +
+        `${TABLE_4_SLOPES.walkLateralMax} max, longitudinal ` +
+        `${TABLE_4_SLOPES.walkLongitudinalMax} max. ${TABLE_4_SLOPES.citation}.`,
+    })
+  } else {
+    assumptions.push(
+      'No leadwalk is drawn: the driveway already meets the entrance, so there is nothing for a ' +
+      'walk to connect.')
+  }
   // ── The public frontage: apron and sidewalk ──────────────────────────────
   //
-  // Both sit outside the property line. The distance from the front lot line
+  // The apron sits outside the property line and the walk just inside it. The
+  // distance from the front lot line
   // to the street is MEASURED against the centreline rather than assumed from
   // a right-of-way width, because the dedication varies lot by lot and this
   // subdivision's is 20 ft where the county's default is not.
@@ -253,7 +284,13 @@ export function deriveSiteImprovements(input: {
     // direction to everything else here, and flares as it goes — the flare is
     // what a DPW&T standard apron has and what makes it read as an apron
     // rather than a driveway that overshot the property line.
-    const apronRun = Math.max(4, toCentrelineFt - APRON_FLARE_FT * 2)
+    // To the EDGE OF PAVEMENT, not toward the centreline. The apron is the
+    // entrance to the driveway: it crosses the ground between the property
+    // line and the street and stops where the road surface begins. Running it
+    // to within a flare of the centreline drew it out across half the
+    // travelled way.
+    const edgeOfPavementFt = toCentrelineFt - ASSUMED_PAVEMENT_HALF_WIDTH_FT
+    const apronRun = Math.max(4, edgeOfPavementFt)
     const outX = -inX, outY = -inY
     const along: Position = [
       a[0] + (dx / len) * (centreOffset + (hasGarage ? DRIVEWAY_WIDTH_FT : 0)),
@@ -280,8 +317,11 @@ export function deriveSiteImprovements(input: {
 
     // The public walk runs ALONG the frontage, inside the right-of-way, set
     // off the property line by a green strip.
+    // INSIDE the front lot line, not in the right-of-way. It was placed out in
+    // the public strip on the reasoning that a public walk lives there; on this
+    // frontage it belongs on the lot, set in from the property line.
     const walkOff = SIDEWALK_OFFSET_FT + SIDEWALK_WIDTH_FT / 2
-    const swStart: Position = [a[0] + outX * walkOff, a[1] + outY * walkOff]
+    const swStart: Position = [a[0] + inX * walkOff, a[1] + inY * walkOff]
     const sidewalk = rectFromAxis(swStart, ux, uy, len, SIDEWALK_WIDTH_FT)
     improvements.push({
       id: 'sidewalk', kind: 'Sidewalk',
@@ -294,13 +334,16 @@ export function deriveSiteImprovements(input: {
     })
 
     assumptions.push(
-      `The front lot line is ${toCentrelineFt.toFixed(0)} ft from the street centreline, measured. ` +
-      `The apron runs ${apronRun.toFixed(0)} ft from the property line toward the street and flares ` +
-      `${APRON_FLARE_FT} ft each side; the sidewalk is ${SIDEWALK_WIDTH_FT} ft wide, set ` +
-      `${SIDEWALK_OFFSET_FT} ft off the property line. Widths and flare are ordinary residential ` +
-      'dimensions, NOT county-published values — the DPW&T standard detail governs.',
-      'The apron and sidewalk are in the PUBLIC right-of-way. Their area is impervious and is ' +
-      'counted, but it is not lot coverage and does not count against the zone maximum.')
+      `The front lot line is ${toCentrelineFt.toFixed(0)} ft from the street centreline, measured ` +
+      `against the county centreline. The apron runs ${apronRun.toFixed(0)} ft from the property ` +
+      `line to the assumed edge of pavement ${ASSUMED_PAVEMENT_HALF_WIDTH_FT} ft off that ` +
+      `centreline, flaring ${APRON_FLARE_FT} ft each side.`,
+      `The sidewalk is ${SIDEWALK_WIDTH_FT} ft wide, set ${SIDEWALK_OFFSET_FT} ft INSIDE the front ` +
+      'property line. Widths, flare and the pavement half-width are ordinary residential ' +
+      'dimensions, NOT county-published values — the county publishes no pavement width and the ' +
+      'DPW&T standard detail governs the apron.',
+      'The apron is in the public right-of-way, so its area is impervious and counted but is not ' +
+      'lot coverage. The sidewalk is on the lot and counts as both.')
   }
 
   assumptions.push(
@@ -308,7 +351,8 @@ export function deriveSiteImprovements(input: {
     'publishes SLOPE limits for both in Sec. 32-151 Table 4 but not widths; these are ordinary ' +
     'single-family dimensions and the approved Yocum Property plan letters a 5 ft walk. Confirm ' +
     'against the design before relying on the impervious area.',
-    'Both run perpendicular to the front lot line and stop at the nearest face of the dwelling.',
+    'The driveway runs perpendicular to the front lot line and stops at the wall in front of it. ' +
+    'The leadwalk runs across the frontage from the driveway edge to the entrance.',
   )
 
   return {
