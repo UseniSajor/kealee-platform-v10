@@ -465,7 +465,7 @@ export async function resolveAddressParcel(
 
     // Step 3 — jurisdiction identified, no automated parcel geometry.
     warnings.push(
-      'No registered parcel service covers this jurisdiction yet. Kealee will use your survey, plat, or county records — and manual research where needed — to establish site geometry.',
+      'Additional property documentation may be needed to complete the site geometry for this location. Our team will let you know what to provide.',
     )
     itemsRequiringConfirmation.unshift(
       'Parcel boundary and lot dimensions (upload a survey or plat if you have one)',

@@ -131,19 +131,19 @@ export function PreconstructionSuiteSection() {
 
         <div className="mt-10 flex flex-wrap justify-center gap-3">
           <Link
-            href="/get-started"
+            href="/products/home-project-readiness-review"
             className="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-7 py-3.5 text-sm font-bold text-white hover:bg-slate-800"
           >
             Start a Project <ArrowRight className="h-4 w-4" />
           </Link>
           <Link
-            href="/intake/cost_estimate"
+            href="/products/detailed_estimate"
             className="inline-flex items-center gap-2 rounded-xl border-2 border-slate-300 px-7 py-3.5 text-sm font-bold text-slate-800 hover:border-slate-500"
           >
             Get an Estimate
           </Link>
           <Link
-            href="/intake/permit_path_only"
+            href="/products/permit_assessment"
             className="inline-flex items-center gap-2 rounded-xl border-2 border-slate-300 px-7 py-3.5 text-sm font-bold text-slate-800 hover:border-slate-500"
           >
             Upload Plans &amp; Documents
@@ -167,9 +167,8 @@ export function PreconstructionSuiteSection() {
                 {NATIONWIDE_STATEMENT}
               </p>
               <p className="mt-3 text-xs font-semibold text-emerald-800">
-                Every result shows its jurisdiction, data source, coverage level, confidence, and
-                what still needs confirmation. Kealee never states zoning, setback, permit, code,
-                fee, or approval information it has not verified against a named source.
+                Receive a clear, professionally reviewed package built to help you make the next
+                project decision with confidence.
               </p>
             </div>
           </div>

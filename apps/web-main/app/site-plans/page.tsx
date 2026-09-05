@@ -121,14 +121,12 @@ export default function SitePlansPage() {
                 <Globe2 className="mt-0.5 h-6 w-6 shrink-0 text-emerald-700" />
                 <div>
                   <h2 className="font-display text-lg font-bold text-emerald-950">
-                    Available nationwide — including where GIS data is thin
+                    Available nationwide
                   </h2>
                   <p className="mt-2 text-sm leading-relaxed text-emerald-900">{NATIONWIDE_STATEMENT}</p>
                   <p className="mt-3 text-xs font-semibold text-emerald-800">
-                    If no parcel or zoning service covers your property, we say so, fall back to your
-                    survey, plat, and county records plus manual research, and label the result
-                    &ldquo;Manual review required&rdquo;. We never state zoning, setback, coverage,
-                    permit, fee, or approval information we have not verified against a named source.
+                    If your project needs additional property documents or professional input, our
+                    team will explain exactly what is needed and help you move forward.
                   </p>
                 </div>
               </div>

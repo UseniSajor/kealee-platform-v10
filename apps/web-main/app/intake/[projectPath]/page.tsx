@@ -1955,7 +1955,7 @@ export default function IntakePage() {
                                 ))}
                               </ul>
                               <p className="mt-2 text-[11px] font-semibold text-emerald-900">
-                                Kealee never reports zoning, setbacks, permit requirements, or fees it has not verified against a named source.
+                                We will clearly flag anything that needs your confirmation before you rely on the completed package.
                               </p>
                             </div>
                           )}

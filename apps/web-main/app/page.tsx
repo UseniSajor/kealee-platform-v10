@@ -17,7 +17,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Kealee — Design Concept, Estimation, Site Plan & Permitting',
     description:
-      'The four preconstruction products every project needs, in one place. Available nationwide — the level of automation varies by jurisdiction, availability does not.',
+      'The four preconstruction products every project needs, in one place. Available nationwide with packages tailored to your property and project.',
     url: 'https://kealee.com',
   },
   alternates: { canonical: '/' },

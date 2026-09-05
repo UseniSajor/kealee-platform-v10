@@ -168,4 +168,4 @@ export function getSuiteProduct(id: SuiteProductId): SuiteProduct | undefined {
 
 /** The nationwide availability statement, used verbatim across the site. */
 export const NATIONWIDE_STATEMENT =
-  'Kealee serves all 50 states and the District of Columbia. We identify your state, county, and city from the property address, then use automated jurisdiction data where it exists and manual research and professional review where it does not. Availability is nationwide; the level of automation varies by location, and every deliverable tells you which applies to yours.'
+  'Kealee serves all 50 states and the District of Columbia. Your package is tailored to your property location and local requirements, with clear recommendations and next steps for your project.'
