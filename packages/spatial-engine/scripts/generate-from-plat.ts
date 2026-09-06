@@ -220,7 +220,7 @@ async function main(): Promise<void> {
   const sheetIds: SheetId[] = override ?? pkg.sheets.sheets.map(s => s.covers[0] as SheetId)
   const sheets = sheetIds.map((sheetId, i) => buildSheetContext({
     sheet: sheetId, twin: pkg.twin, projectName: spec.address,
-    status: 'PRELIMINARY', sheetIndex: i + 1, sheetCount: sheetIds.length,
+    status: 'PRELIMINARY', sheetIndex: i + 1, sheetCount: sheetIds.length, sheetIds,
   }))
   const out = await renderSheetSetPdf({ sheets, responsibility: undefined })
   writeFileSync(outPath, out.buffer)

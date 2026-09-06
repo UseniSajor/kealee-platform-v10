@@ -181,7 +181,7 @@ export function renderAsciiPlan(input: AsciiPlanInput): string {
     .streets ?? []
   for (const st of streets) {
     for (const path of st.paths) {
-      // Dash-dot in the terminal too, so it does not read as kerb line.
+      // Dash-dot in the terminal too, so it does not read as curb line.
       for (let i = 0; i < path.length - 1; i++) {
         kept('-', line(g, P(path[i]), P(path[i + 1]), '-', -2))
       }

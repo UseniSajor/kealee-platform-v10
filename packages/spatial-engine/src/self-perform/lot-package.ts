@@ -126,7 +126,7 @@ export interface LotInput {
   frontSetbackFt?: number | null
   /** Face of building to the start of the street, when quoted that way. */
   frontFaceToCurbFt?: number | null
-  /** Sidewalk + planting strip, from the property line out to the kerb. */
+  /** Sidewalk + planting strip, from the property line out to the curb. */
   curbOffsetFt?: number | null
   /** Width of the dedicated strip, dimensioned on the recorded plat. */
   dedicationWidthFt?: number | null

@@ -528,21 +528,57 @@ function drawGeometry(doc: Doc, ctx: SheetContext, vp: Viewport, b: Bounds): voi
   for (const pv of genericOfKind(t, 'Pavement')) {
     if (!pv.ring) continue
     const r = projectRing(pv.ring, vp, b, PAD_FT)
-    polyline(doc, r, { width: 0.8, color: '#666666', dash: undefined }, true)
+    // EACH PAVED SURFACE READS DIFFERENTLY.
+    //
+    // One stipple served walk, curb, apron and driveway alike, so on a 2D sheet
+    // the sidewalk and the curb and gutter were the same object drawn twice.
+    // The approved sets distinguish them — concrete walk, concrete pavement and
+    // bituminous each carry their own hatch in the legend — and a reviewer
+    // identifies a surface by its pattern before reading its label.
+    const kindOf = String((pv.attributes as { improvement?: string } | undefined)?.improvement ?? '')
+    const isWalk = /sidewalk|walk/i.test(kindOf)
+    const isCurb = /curb/i.test(kindOf)
+    // Weight is a signal, so it is spent on the things a reviewer checks. The
+    // curb was heavier than the building line; it is street furniture, not a
+    // boundary, and it should sit quietly under the geometry that matters.
+    polyline(doc, r,
+      isCurb ? { width: 0.45, color: '#8c8c8c', dash: undefined }
+      : isWalk ? { width: 0.4, color: '#a0a0a0', dash: undefined }
+      : { width: 0.8, color: '#666666', dash: undefined }, true)
 
-    // Light stipple so pavement reads as surface without competing with the
-    // dwelling hatch.
     const minX = Math.min(...r.map(q => q[0])), maxX = Math.max(...r.map(q => q[0]))
     const minY = Math.min(...r.map(q => q[1])), maxY = Math.max(...r.map(q => q[1]))
     doc.save()
     doc.moveTo(r[0][0], r[0][1])
     for (const q of r.slice(1)) doc.lineTo(q[0], q[1])
     doc.closePath().clip()
-    doc.lineWidth(0.2).strokeColor('#999999').opacity(0.6)
-    for (let x = minX - (maxY - minY); x < maxX; x += 5) {
-      doc.moveTo(x, minY).lineTo(x + (maxY - minY), maxY).stroke()
+    if (isCurb) {
+      // Curb and gutter: a light wash, no fill weight. It reads as a band
+      // without becoming the darkest thing on the sheet.
+      doc.fillColor('#e2e2e2').opacity(0.5)
+      doc.moveTo(r[0][0], r[0][1])
+      for (const q of r.slice(1)) doc.lineTo(q[0], q[1])
+      doc.closePath().fill()
+      doc.opacity(1)
+    } else if (isWalk) {
+      // Concrete walk: a light DOT stipple. Dots read as concrete at any scale
+      // and never resolve into lines that could be mistaken for edges — which
+      // is what the earlier cross-hatch did against the curb beside it.
+      doc.fillColor('#b4b4b4').opacity(0.85)
+      for (let x = minX; x < maxX; x += 2.6) {
+        for (let y2 = minY + ((Math.round(x / 2.6) % 2) ? 1.3 : 0); y2 < maxY; y2 += 2.6) {
+          doc.circle(x, y2, 0.22).fill()
+        }
+      }
+      doc.opacity(1)
+    } else {
+      doc.lineWidth(0.2).strokeColor('#999999').opacity(0.6)
+      for (let x = minX - (maxY - minY); x < maxX; x += 5) {
+        doc.moveTo(x, minY).lineTo(x + (maxY - minY), maxY).stroke()
+      }
+      doc.opacity(1)
     }
-    doc.opacity(1).restore()
+    doc.restore()
 
     const a2 = (pv.attributes ?? {}) as { label?: string }
     if (a2.label) {
@@ -601,7 +637,7 @@ function drawGeometry(doc: Doc, ctx: SheetContext, vp: Viewport, b: Bounds): voi
     for (const path of st.paths) {
       if (path.length < 2) continue
       // A CENTRELINE IS DASH-DOT, and thin. The [6,3] dash it had is the
-      // pattern a kerb line or a fence carries, so the centre of the street
+      // pattern a curb line or a fence carries, so the centre of the street
       // read as another edge of pavement on a sheet that also draws curb and
       // gutter. Symbology is not decoration: a reviewer identifies a line by
       // its pattern before reading any label.
@@ -751,13 +787,64 @@ function platRecordBlock(
        + 'this drawing.', x, cy + 3, { width: 250, height: 26, ellipsis: true })
   return doc.y + 4
 }
-function generalNotes(doc: Doc, x: number, y: number): number {
+/**
+ * INDEX OF DRAWINGS.
+ *
+ * Every approved Prince George's set carries one — the Yocum street
+ * construction permit lists all twenty sheets in groups on its cover. Without
+ * it a reviewer cannot tell a set that is complete from one that is missing
+ * sheets, which is exactly the question a first check asks.
+ */
+function indexOfDrawings(doc: Doc, x: number, y: number, ctx: SheetContext): number {
+  const ids = ctx.sheetIds ?? []
+  if (!ids.length) return y
+  doc.font('Helvetica-Bold').fontSize(7).fillColor('#000000')
+     .text('INDEX OF DRAWINGS', x, y, { lineBreak: false })
+  let cy = y + 11
+  ids.forEach((id, i) => {
+    doc.font('Helvetica').fontSize(5.6).fillColor('#333333')
+       .text(`${String(i + 1).padStart(2, ' ')}   ${id}`, x, cy, { width: 46, lineBreak: false })
+    doc.font('Helvetica').fontSize(5.6).fillColor('#333333')
+       .text(SHEET_TITLES[id] ?? '', x + 48, cy, { width: 210, lineBreak: false })
+    cy += 8
+  })
+  return cy
+}
+
+function generalNotes(doc: Doc, x: number, y: number, twin?: SiteTwin): number {
+  // The boundary note has to match where the boundary CAME FROM.
+  //
+  // It said flatly that the boundary is compiled GIS and not a survey. On a
+  // drawing built from a RECORDED PLAT that is false twice over: the plat is
+  // the surveyor's certified instrument, and it IS the boundary survey. A
+  // reviewer who reads the note and then the plat call table on the same sheet
+  // learns the notes are boilerplate, which costs the true ones their weight.
+  const plat = (twin as { platRecord?: { reference?: string } } | undefined)?.platRecord
   const notes = [
-    'CONTRACTOR SHALL CONTACT MISS UTILITY AT 811 A MINIMUM OF 48 HOURS PRIOR TO ANY EXCAVATION.',
+    'CONTRACTOR SHALL CONTACT MISS UTILITY AT 811 A MINIMUM OF 48 HOURS PRIOR TO ANY EXCAVATION. ' +
+    'FIELD-VERIFY LOCATION AND DEPTH BY TEST PIT BEFORE CONSTRUCTION.',
     'ALL EXISTING AND PROPOSED UTILITIES SHOWN PER PGC CODE SEC. 32-106.',
     'PROPOSED GRADE SHOWN SOLID; EXISTING GRADE SHOWN DASHED.',
     'ROUGH EARTHWORK GRADES AND UTILITY ELEVATIONS SHOWN TO TENTHS OF A FOOT.',
-    'BOUNDARY SHOWN IS COMPILED JURISDICTION GIS, NOT A BOUNDARY SURVEY.',
+    plat?.reference
+      ? `BOUNDARY SHOWN IS THE RECORDED PLAT OF SUBDIVISION — ${plat.reference.toUpperCase()} — ` +
+        'TRANSCRIBED AND CHECKED FOR CLOSURE. THE PLAT IS THE BOUNDARY SURVEY. NO FIELD ' +
+        'TOPOGRAPHY IS INCLUDED; EXISTING GRADE IS COUNTY LIDAR CONTOUR MAPPING.'
+      : 'BOUNDARY SHOWN IS COMPILED JURISDICTION GIS, NOT A BOUNDARY SURVEY.',
+    // NO STABILIZATION NOTE HERE. It was added by copying an approved sheet's
+    // wording, which cites COMAR 26.17.1.08 G — and this repo already
+    // established that citation is WRONG: 26.17.01.08 is 'Approval or Denial of
+    // Erosion and Sediment Control Plans' and its G is 'Grandfathering'. The
+    // three/seven day rule lives in the 2011 Maryland Standards and
+    // Specifications for Soil Erosion and Sediment Control, p.45, adopted by
+    // reference at COMAR 26.17.01.08A(1). See docs/site-plan-reference/
+    // CHECKLIST-FINDINGS.md.
+    //
+    // The correct text already ships in `site-plan/required-notes.ts`, verified
+    // word-for-word against the State source and rendered on C-400 and C-700.
+    // Duplicating it here — with the wrong citation — would put the error the
+    // repo went to the trouble of catching back onto every sheet.
+    'CONNECT TO EXISTING PAVEMENT, CURB AND GUTTER, DRIVEWAY AND SIDEWALK IN LINE AND GRADE.',
   ]
   doc.font('Helvetica-Bold').fontSize(7).fillColor('#000000')
      .text('GENERAL NOTES', x, y, { lineBreak: false })
@@ -1132,10 +1219,11 @@ export function renderSheetSetPdf(input: RenderPdfInput): Promise<RenderedPdf> {
       soilsTable(doc, sheetSize.marginPt + 16,
         sheetSize.heightPt - sheetSize.marginPt - 265, ctx, drawRight - sheetSize.marginPt - 40)
 
-      let by = siteDataTable(doc, blockX, tbBottom + 12, ctx) + 12
+      let by = indexOfDrawings(doc, blockX, tbBottom + 12, ctx) + 12
+      by = siteDataTable(doc, blockX, by, ctx) + 12
       by = siteAnalysis(doc, blockX, by, ctx) + 12
       by = sequenceOfConstruction(doc, blockX, by) + 10
-      by = generalNotes(doc, blockX, by) + 10
+      by = generalNotes(doc, blockX, by, ctx.twin) + 10
       by = platRecordBlock(doc, ctx.twin, blockX, by) + 10
       by = legend(doc, blockX, by) + 12
       by = approvalBlocks(doc, blockX, by) + 6

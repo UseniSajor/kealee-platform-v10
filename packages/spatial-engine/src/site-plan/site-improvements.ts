@@ -303,7 +303,7 @@ export function deriveSiteImprovements(input: {
   //     3 – 7 ft   planting strip (street trees)
   //       7 ft     curb and gutter, then the travelled way
   //
-  // The apron spans that same 7 ft, kerb to property line, because that is what
+  // The apron spans that same 7 ft, curb to property line, because that is what
   // it connects — not a length chosen by a rule about where it ought to stop.
   const curbOffsetFt = SIDEWALK_WIDTH_FT + VERGE_WIDTH_FT
   const outX = -inX, outY = -inY
@@ -330,13 +330,13 @@ export function deriveSiteImprovements(input: {
       'reconstructed or waived is a DPW&T determination at street construction permit.')
     band(SIDEWALK_WIDTH_FT, VERGE_WIDTH_FT, 'verge', 'Verge',
       `PLANTING STRIP  ${VERGE_WIDTH_FT}' WIDE  (STREET TREES)`, false,
-      'Landscaped strip between the kerb and the sidewalk. Street tree species, spacing and clear ' +
+      'Landscaped strip between the curb and the sidewalk. Street tree species, spacing and clear ' +
       'distances are set by the Landscape Manual and by DPW&T; this shows the STRIP, not a ' +
       'planting schedule.')
     band(curbOffsetFt, 2, 'curb', 'Sidewalk', 'CURB AND GUTTER', true,
       'Curb and gutter at the edge of the travelled way, per the DPW&T standard detail.')
 
-    // The apron: narrow at the property line, flaring out to the kerb.
+    // The apron: narrow at the property line, flaring out to the curb.
     const alongPt: Position = [
       a[0] + ux * (centreOffset + (hasGarage ? DRIVEWAY_WIDTH_FT : 0)),
       a[1] + uy * (centreOffset + (hasGarage ? DRIVEWAY_WIDTH_FT : 0)),
@@ -358,15 +358,15 @@ export function deriveSiteImprovements(input: {
       note:
         `Driveway apron from the curb and gutter to the front property line, ${curbOffsetFt} ft, ` +
         'crossing the sidewalk and the planting strip. DPW&T standard detail governs the ' +
-        'depression, jointing and curb cut. Nothing is drawn beyond the kerb into the travelled way.',
+        'depression, jointing and curb cut. Nothing is drawn beyond the curb into the travelled way.',
     })
 
     assumptions.push(
       `Frontage section, out from the front property line: ${SIDEWALK_WIDTH_FT} ft concrete walk, ` +
       `${VERGE_WIDTH_FT} ft planting strip, then curb and gutter at ${curbOffsetFt} ft. Given ` +
       'dimensions, not derived from a published standard.',
-      `The apron spans that same ${curbOffsetFt} ft, kerb to property line, flaring ` +
-      `${APRON_FLARE_FT} ft each side toward the kerb.`,
+      `The apron spans that same ${curbOffsetFt} ft, curb to property line, flaring ` +
+      `${APRON_FLARE_FT} ft each side toward the curb.`,
       'Everything in the frontage lies in the public right-of-way: impervious and counted as ' +
       'disturbance, but NOT lot coverage. The planting strip is not impervious at all.')
   }

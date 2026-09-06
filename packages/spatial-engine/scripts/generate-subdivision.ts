@@ -31,6 +31,7 @@ import { normaliseRing } from '../src/site-plan/buildable-envelope'
 import { resolvePgAtlasSite, fetchPgAtlasEasements, fetchPgAtlasAdjacentParcels } from '../src/jurisdictions/pgatlas'
 import { fetchPgContours } from '../src/jurisdictions/pg-elevation'
 import { buildLotPackage } from '../src/self-perform/lot-package'
+import { composeSheets, blocksFromFeatures } from '../src/sheets/composer'
 import { renderSheetSetPdf } from '../src/sheets/render-pdf'
 import { buildSheetContext } from '../src/sheets/render-svg'
 import { SHEET_TITLES, type SheetId } from '../src/sheets/sheet-template'
@@ -292,7 +293,7 @@ async function main(): Promise<void> {
     // THE OUTWARD NORMAL IS MEASURED, NOT ASSUMED.
     //
     // Its sign depends on the ring's winding, and getting it backwards put the
-    // walk and the kerb on the far side of the frontage — out at the street
+    // walk and the curb on the far side of the frontage — out at the street
     // centreline instead of in the right-of-way. Both candidates are tested
     // against the centreline and the one that moves TOWARD it is outward.
     const distTo = (q: Position) => {
@@ -332,7 +333,7 @@ async function main(): Promise<void> {
     // dedicated strip — the outer figure is 21,825 sq ft against the lots'
     // 17,606. So it is the FAR side of the dedication, hard against the street,
     // and every band measured outward from it landed in the travelled way: the
-    // walk and the kerb came out at the centreline.
+    // walk and the curb came out at the centreline.
     //
     // Stepping back by the dedication width puts the origin on the lots' front
     // property line, which is what the section is dimensioned from.
@@ -357,7 +358,7 @@ async function main(): Promise<void> {
     //
     // The outer boundary's Rollins edge is 222.28 ft (the plat letters 222.27)
     // while the two lots front only 199.65 of it (plat: 199.64). Running the
-    // walk and the kerb the full edge carried them 22.6 ft past Lot 2 and onto
+    // walk and the curb the full edge carried them 22.6 ft past Lot 2 and onto
     // the neighbour — drawing work on land this application does not touch.
     // Frontage improvements stop where the frontage does.
     const frontExtents: number[] = []
@@ -380,17 +381,11 @@ async function main(): Promise<void> {
     // Endpoints of the frontage improvements: the lots' extent, not the edge's.
     const lotA: Position = [o[0] + ux2 * lotStart, o[1] + uy2 * lotStart]
     const lotB: Position = [o[0] + ux2 * lotEnd, o[1] + uy2 * lotEnd]
-    bandFrom(0, SW_W, 'frontage-sidewalk', 'Pavement', `CONCRETE SIDEWALK  ${SW_W}' WIDE`,
-      lotA, lotB)
-    bandFrom(SW_W, VERGE_W, 'frontage-verge', 'Surface',
-      `PLANTING STRIP  ${VERGE_W}' WIDE  (STREET TREES)`, lotA, lotB)
-
-    // CURB AND GUTTER, INTERRUPTED AT EVERY APRON.
-    //
-    // A continuous kerb drawn straight through a driveway entrance is wrong on
-    // its face: the apron is where the kerb is depressed for a car to cross.
-    // The gaps are taken from the aprons themselves, projected onto this edge,
-    // so they cannot drift out of step with where the driveways actually are.
+    // The gaps the driveways cut through the frontage, computed once and
+    // applied to EVERY band. The curb alone was interrupted, so the sidewalk
+    // and the planting strip ran straight over each driveway — a walk drawn
+    // through an apron is a drafting error a reviewer sees immediately, and it
+    // is also just wrong: the apron replaces the walk where it crosses.
     const alongOf = (q: Position) => (q[0] - lotA[0]) * ux2 + (q[1] - lotA[1]) * uy2
     const gaps: [number, number][] = []
     for (const f of merged) {
@@ -398,26 +393,34 @@ async function main(): Promise<void> {
       const r = (f as { ring?: Ring }).ring?.coordinates as Position[] | undefined
       if (!r?.length) continue
       const proj = r.map(alongOf)
-      gaps.push([Math.min(...proj) - 1, Math.max(...proj) + 1])
+      // NO PADDING. The band must BUTT the apron, not stop half a foot short:
+      // a white gap between the walk and the driveway it meets reads as a
+      // construction gap, and at 1"=20' half a foot is a visible sliver.
+      gaps.push([Math.min(...proj), Math.max(...proj)])
     }
     gaps.sort((g, h) => g[0] - h[0])
+    const runs: [number, number][] = []
     let cursor = 0
-    const curbSegs: [number, number][] = []
     for (const [g0, g1] of gaps) {
-      if (g0 > cursor) curbSegs.push([cursor, Math.min(g0, edgeLen)])
+      if (g0 > cursor) runs.push([cursor, Math.min(g0, edgeLen)])
       cursor = Math.max(cursor, g1)
     }
-    if (cursor < edgeLen) curbSegs.push([cursor, edgeLen])
-    curbSegs.forEach(([s0, s1], k) => {
-      if (s1 - s0 < 0.5) return
-      const p0: Position = [lotA[0] + ux2 * s0, lotA[1] + uy2 * s0]
-      const p1: Position = [lotA[0] + ux2 * s1, lotA[1] + uy2 * s1]
-      bandFrom(SW_W + VERGE_W, 1.5, `frontage-curb-${k}`, 'Pavement', 'CURB AND GUTTER', p0, p1)
+    if (cursor < edgeLen) runs.push([cursor, edgeLen])
+    const at = (d: number): Position => [lotA[0] + ux2 * d, lotA[1] + uy2 * d]
+
+    runs.forEach(([s0, s1], k) => {
+      // Keep even a short run: it is the piece that reaches the lot line.
+      if (s1 - s0 < 0.05) return
+      bandFrom(0, SW_W, `frontage-sidewalk-${k}`, 'Pavement',
+        `CONCRETE SIDEWALK  ${SW_W}' WIDE`, at(s0), at(s1))
+      bandFrom(SW_W, VERGE_W, `frontage-verge-${k}`, 'Surface',
+        `PLANTING STRIP  ${VERGE_W}' WIDE  (STREET TREES)`, at(s0), at(s1))
+      bandFrom(SW_W + VERGE_W, 1.5, `frontage-curb-${k}`, 'Pavement',
+        'CURB AND GUTTER', at(s0), at(s1))
     })
-    console.log(`    frontage run    ${edgeLen.toFixed(2)} ft along the lots' front line `
-      + `· clipped from the ${fullLen.toFixed(2)} ft outer edge so nothing runs onto the neighbour`)
-    console.log(`    curb            ${curbSegs.length} run(s), `
-      + `${gaps.length} apron depression(s)`)
+    console.log(`    frontage bands  ${runs.length} run(s) broken by `
+      + `${gaps.length} driveway crossing(s)`)
+
     // THE STREET, ALIGNED TO THE PLAT AND POSITIONED BY PGATLAS.
     //
     // Each source is used for what it is good for. The plat gives the
@@ -497,11 +500,38 @@ async function main(): Promise<void> {
 
   // ── Sheets ────────────────────────────────────────────────────────────────
   const override = process.env.SHEETS?.split(',').map(x => x.trim()).filter(Boolean) as SheetId[] | undefined
-  const sheetIds: SheetId[] = override ?? FULL_SET
+  // THE SET IS SIZED TO THE PROJECT, BUT NOT BY THE GREEDY MERGE.
+  //
+  // Eleven sheets is what a subdivision with roads, storm drain and lighting
+  // needs; two infill houses on an existing street do not need a demolition
+  // plan with nothing to demolish or a details sheet with no details.
+  //
+  // The composer's content merge alone is the wrong tool for choosing: it
+  // folded the PROPOSED site plan into the existing-conditions sheet and
+  // dropped the landscape sheet, because it merges by what is drawn and not by
+  // what a reviewer must be handed. Existing and proposed are separate sheets
+  // even when both would fit on one — they are read against each other — and
+  // the landscape sheet carries a canopy requirement that is code, not content.
+  //
+  // So the condensed set is named, and each entry says why it is in it:
+  //
+  //   C-000  cover, approvals, index, general notes, plat record
+  //   C-100  EXISTING conditions and boundary of record
+  //   C-200  PROPOSED site, zoning and dimensional compliance
+  //   C-400  grading and drainage — carries the required county notes
+  //   C-700  sediment and erosion control — carries them too
+  //   L-100  landscape and tree canopy — Sec. 25-128 is a requirement
+  //
+  // FULL_SET=1 forces the canonical eleven; SHEETS=... names any list.
+  const CONDENSED: SheetId[] = ['C-000', 'C-100', 'C-200', 'C-400', 'C-700', 'L-100']
+  const sheetIds: SheetId[] = override ?? (process.env.FULL_SET ? FULL_SET : CONDENSED)
+  console.log(`    sheets          ${sheetIds.length}: ${sheetIds.join(', ')}`)
+  console.log(`                    condensed from the canonical ${FULL_SET.length}; `
+    + 'FULL_SET=1 forces all, SHEETS=... names a list')
   const projectName = `${subdivisionName} — ${lots.map(l => l.label).join(' & ')}`
   const sheets = sheetIds.map((sheet, i) => buildSheetContext({
     sheet, twin, projectName,
-    status: 'PRELIMINARY', sheetIndex: i + 1, sheetCount: sheetIds.length,
+    status: 'PRELIMINARY', sheetIndex: i + 1, sheetCount: sheetIds.length, sheetIds, sheetIds,
   }))
   const out = await renderSheetSetPdf({ sheets, responsibility: undefined })
   writeFileSync(outPath, out.buffer)

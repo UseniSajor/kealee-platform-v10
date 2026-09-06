@@ -298,7 +298,7 @@ export function featuresForSheet(features: SiteFeature[], sheet: SheetId): SiteF
     'Building', 'Pavement',
     // Surface carries the frontage planting strip and ExistingFeature the
     // street right-of-way lines. Left out, both existed in the model and on
-    // none of the drawings — the sidewalk appeared to abut the kerb and the
+    // none of the drawings — the sidewalk appeared to abut the curb and the
     // street had no far side.
     'Surface', 'ExistingFeature',
   ]

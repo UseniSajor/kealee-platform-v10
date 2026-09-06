@@ -631,7 +631,7 @@ export function deriveBuildableEnvelope(input: {
    * how the dimension was given.
    *
    * A setback is normally measured from the property line, but this one is
-   * quoted kerb-to-face. Converting needs the kerb offset — the sidewalk plus
+   * quoted curb-to-face. Converting needs the curb offset — the sidewalk plus
    * the planting strip — and is done here rather than in the caller's head:
    *
    *     front setback from the property line = faceToStreet − curbOffset
@@ -672,7 +672,7 @@ export function deriveBuildableEnvelope(input: {
     ? { ...tableSetbacks, frontFt: statedFront,
         source: fromFace != null
           ? `${tableSetbacks.source}; front yard ${statedFront} ft, from ` +
-            `${input.frontFaceToCurbFt} ft face-of-building to the kerb less the ` +
+            `${input.frontFaceToCurbFt} ft face-of-building to the curb less the ` +
             `${curbOffset} ft of sidewalk and planting strip`
           : `${tableSetbacks.source}; front yard stated as ${statedFront} ft for this lot` }
     : tableSetbacks
@@ -883,7 +883,7 @@ export function deriveBuildableEnvelope(input: {
       && statedFront !== tableSetbacks.frontFt) {
     caveats.push(
       `FRONT BUILDING RESTRICTION LINE ${statedFront} FT from the front property line` +
-      (fromFace != null ? ` (${input.frontFaceToCurbFt} ft face-of-building to the kerb, less the ` +
+      (fromFace != null ? ` (${input.frontFaceToCurbFt} ft face-of-building to the curb, less the ` +
         `${curbOffset} ft sidewalk and planting strip)` : ', from the RECORDED PLAT') + `. The ` +
       `zone table gives ${tableSetbacks.frontFt} ft; a platted building line is the more ` +
       'restrictive and it governs the lot, so the plat figure is drawn. The plat is the first ' +

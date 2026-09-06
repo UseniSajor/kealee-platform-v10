@@ -92,6 +92,8 @@ export interface SheetContext {
    * drawing — a reviewer looks for this exact language.
    */
   requiredNotes?: RequiredPlanNote[]
+  /** Every sheet in the set, for the INDEX OF DRAWINGS on the cover. */
+  sheetIds?: SheetId[]
 }
 
 /** Every sheet frame element the brief requires. Used as an issuance checklist. */
