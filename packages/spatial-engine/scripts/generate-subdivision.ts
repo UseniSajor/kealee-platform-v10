@@ -430,12 +430,22 @@ async function main(): Promise<void> {
     // own wobble into the drawing — it is a digitised street, not a surveyed
     // one, and it wandered against a boundary that closes 1:118,119.
     const centreOut = toCentre + dedicationFt
+    // The centreline runs the FULL STREET, not just the frontage. The plat
+    // draws Rollins Avenue across the whole sheet and dimensions 222.27 ft
+    // along it — a centreline clipped to the lots stops being a street and
+    // becomes a tick mark. It is extended past both ends of the frontage.
+    const RUN_PAST_FT = 60
+    const cA: Position = [
+      lotA[0] + nx * centreOut - ux2 * RUN_PAST_FT,
+      lotA[1] + ny * centreOut - uy2 * RUN_PAST_FT,
+    ]
+    const cB: Position = [
+      lotB[0] + nx * centreOut + ux2 * RUN_PAST_FT,
+      lotB[1] + ny * centreOut + uy2 * RUN_PAST_FT,
+    ]
     frontageFeats.push({
       kind: 'ExistingFeature', id: `centreline-plat-${i}`,
-      line: [
-        [lotA[0] + nx * centreOut, lotA[1] + ny * centreOut],
-        [lotB[0] + nx * centreOut, lotB[1] + ny * centreOut],
-      ],
+      line: [cA, cB],
       attributes: {
         label: 'EX. PAVEMENT CENTERLINE',
         note: `Parallel to the lots' front line, as the recorded plat draws it; offset `
@@ -448,7 +458,10 @@ async function main(): Promise<void> {
     const far = toCentre * 2 + dedicationFt
     frontageFeats.push({
       kind: 'ExistingFeature', id: `row-far-${i}`,
-      line: [[lotA[0] + nx * far, lotA[1] + ny * far], [lotB[0] + nx * far, lotB[1] + ny * far]],
+      line: [
+        [lotA[0] + nx * far - ux2 * RUN_PAST_FT, lotA[1] + ny * far - uy2 * RUN_PAST_FT],
+        [lotB[0] + nx * far + ux2 * RUN_PAST_FT, lotB[1] + ny * far + uy2 * RUN_PAST_FT],
+      ],
       attributes: {
         label: `FAR RIGHT-OF-WAY LINE (DERIVED — ${toCentre.toFixed(1)} ft each side)`,
       },

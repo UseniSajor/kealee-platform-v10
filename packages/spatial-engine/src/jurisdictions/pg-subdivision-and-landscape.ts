@@ -74,15 +74,42 @@ export const PG_SUBDIVISION_PROCEDURES: readonly string[] = [
  * reviewer, in the same way any other unresolved input does. Kealee does not
  * print a canopy percentage it has not sourced.
  */
+/**
+ * Sec. 25-128 Table 1 — Tree Canopy Requirements by Zone.
+ *
+ * RETRIEVED AND LOADED. This was recorded as unavailable — the Landscape
+ * Manual cites the table without reproducing it and it is not in the zoning
+ * viewer — so the engine carried `percent: null` and told every reader the
+ * canopy schedule could not be finalised. It is published in the County Code
+ * on Municode, a host the earlier search never asked.
+ *
+ * Basis is the NET TRACT AREA and the requirement must be met WITHIN it.
+ *
+ * SOURCE  Prince George's County Code, Subtitle 25 Division 3, Sec. 25-128,
+ *         via Municode (client 14221, product 15209). Retrieved 2026-09-06.
+ *         Amendments in the text: CB-27-2010, CB-33-2011, CB-19-2013,
+ *         CB-99-2021, CB-021-2024.
+ */
 export const PG_TREE_CANOPY_COVERAGE = {
-  citation: 'Subtitle 25 Division 3, § 25-128 Table 1',
-  basis: 'gross tract area',
-  percentagesLoaded: false,
-  whereToFind:
-    "https://library.municode.com/md/prince_george's_county/codes/code_of_ordinances",
-  note:
-    'The Landscape Manual references this table but does not reproduce it. ' +
-    'Load the percentages from Subtitle 25 and record them with a citation.',
+  citation: 'Subtitle 25 Division 3, Sec. 25-128 Table 1',
+  basis: 'net tract area',
+  percentagesLoaded: true,
+  retrieved: '2026-09-06',
+  byZone: [
+    { zones: ['ROS', 'AG', 'AR'], percent: null, note: 'Exempt' },
+    { zones: ['RE'], percent: 25, note: null },
+    { zones: ['RR', 'RSF-95', 'RSF-65', 'RSF-A', 'RMF-12', 'RMF-20', 'RMF-48', 'RMH', 'R-PD'],
+      percent: 20, note: null },
+    { zones: ['CGO', 'CS', 'IH', 'IE', 'IE-PD', 'CN', 'NAC', 'TAC', 'LTO', 'RTO-L', 'RTO-H',
+              'NAC-PD', 'TAC-PD', 'LTO-PD', 'RTO-PD', 'MU-PD'], percent: 15, note: null },
+    { zones: ['LCD', 'LMXC', 'LMUTC'], percent: null,
+      note: 'Thresholds per CB-27-2010 for the prior zoning before legacy designation' },
+  ] as { zones: string[]; percent: number | null; note: string | null }[],
+  credits:
+    'Sec. 25-129: existing trees preserved, on-site woodland conservation, trees planted through ' +
+    'the site, and STREET TREES in the right-of-way along the property frontage may all count. ' +
+    'Credit is the canopy a planted tree provides in ten years.',
+  waiver: 'A waiver may be granted under Sec. 25-130.',
 } as const
 
 export interface PgTreeCanopyRequirement {
@@ -93,14 +120,61 @@ export interface PgTreeCanopyRequirement {
   openItem: string | null
 }
 
-export function getPgTreeCanopyRequirement(): PgTreeCanopyRequirement {
+export function getPgTreeCanopyRequirement(zoneCode?: string | null): PgTreeCanopyRequirement {
+  const zone = (zoneCode ?? '').trim().toUpperCase()
+  const row = PG_TREE_CANOPY_COVERAGE.byZone.find(r => r.zones.includes(zone))
+  if (!zone) {
+    return {
+      percent: null, basis: PG_TREE_CANOPY_COVERAGE.basis,
+      citation: PG_TREE_CANOPY_COVERAGE.citation,
+      openItem: 'No zone is established, so the canopy percentage cannot be selected from ' +
+        `${PG_TREE_CANOPY_COVERAGE.citation}.`,
+    }
+  }
+  if (!row) {
+    return {
+      percent: null, basis: PG_TREE_CANOPY_COVERAGE.basis,
+      citation: PG_TREE_CANOPY_COVERAGE.citation,
+      openItem: `Zone ${zone} is not listed in ${PG_TREE_CANOPY_COVERAGE.citation}.`,
+    }
+  }
   return {
-    percent: null,
-    basis: PG_TREE_CANOPY_COVERAGE.basis,
+    percent: row.percent, basis: PG_TREE_CANOPY_COVERAGE.basis,
     citation: PG_TREE_CANOPY_COVERAGE.citation,
-    openItem:
-      `Tree canopy percentage is set by ${PG_TREE_CANOPY_COVERAGE.citation}, in ` +
-      'Subtitle 25 of the County Code, which is not published in the Zoning ' +
-      'Ordinance viewer. Load it and cite it before the canopy schedule is final.',
+    openItem: row.percent == null
+      ? `Zone ${zone}: ${row.note ?? 'no percentage published'}.`
+      : null,
   }
 }
+
+/**
+ * Sec. 23-135 — Curb and gutter; hiker-biker trails; sidewalk.
+ *
+ * SOURCE  Prince George's County Code, Subtitle 23 Division 3, Sec. 23-135,
+ *         via Municode. Retrieved 2026-09-06. CB-98-1989, CB-19-2018.
+ */
+export const PG_CURB_AND_SIDEWALK = {
+  citation: 'Subtitle 23 Division 3, Sec. 23-135',
+  curbRequiredWhen: [
+    'The majority of individual lots abutting the road have a frontage of 100 ft or less',
+    'The road abuts property developed for multidwelling, commercial or industrial use and not ' +
+      'subdivided into individual building lots',
+    'The road abuts townhouse, cluster or similar development whose building lots are interior ' +
+      'and the road abuts common or open space',
+    'Traffic or pedestrian conditions require it, as determined by the Director',
+  ],
+  curbFrontageThresholdFt: 100,
+  sidewalkByRoadClass: {
+    arterial: 'both sides',
+    collector: 'both sides',
+    commercial_industrial: 'as determined by the Director',
+    primary_residential: 'one side',
+    secondary_residential: 'one side',
+  } as Record<string, string>,
+  bothSidesContinuation:
+    'Where existing sidewalks are on BOTH sides, both are continued to the next intersection ' +
+    'before transitioning to one-sided construction.',
+  stateRoads:
+    'Sec. 23-135(d): along State roads a sidewalk may be required where there is concrete curb ' +
+    'and gutter, or where SHA requires it.',
+} as const

@@ -24,7 +24,7 @@ import { composeSheets, blocksFromFeatures, type CompositionResult } from '../sh
 import { buildResponsibilityBlock, type DividedResponsibilityBlock } from '../review/content-scope'
 import { getPgDimensionalStandards, parsePgStandardValue } from '../jurisdictions/pg-overlays-and-dimensions'
 import type { SheetId } from '../sheets/sheet-template'
-import { getPgTreeCanopyRequirement, PG_SUBDIVISION_SOURCE } from '../jurisdictions/pg-subdivision-and-landscape'
+import { getPgTreeCanopyRequirement, PG_CURB_AND_SIDEWALK, PG_SUBDIVISION_SOURCE } from '../jurisdictions/pg-subdivision-and-landscape'
 import { deriveBuildableEnvelope, extractLotCoveragePct, normaliseRing, type BuildableEnvelope } from '../site-plan/buildable-envelope'
 import { estimateFootprint, type FootprintEstimate, type HouseProgramme } from '../site-plan/footprint-programme'
 import { generateDesign } from '../site-plan/design'
@@ -862,7 +862,9 @@ export function buildLotPackage(lot: LotInput, resolved?: ResolvedBoundary | nul
     if (namedByTheSummary && item.key.startsWith('disturbance:')) continue
     if (namedByTheSummary && /^open:Quantify:/.test(item.key)) continue
     beforeSeal.push(`${item.label} (${item.responsible}): ${item.why}`)
-  }  // APPROVALS OF RECORD, named on the plat itself.
+  }
+
+  // APPROVALS OF RECORD, named on the plat itself.
   //
   // Which subdivision an approval belongs to is answered by the instrument it
   // is lettered on: the concept number and these lots appear on the SAME
@@ -878,33 +880,47 @@ export function buildLotPackage(lot: LotInput, resolved?: ResolvedBoundary | nul
       'document itself is not held here. Obtain it: the plat conditions approval on it.')
   }
 
-  // THE LANDSCAPE MANUAL. Adopted in the same publication as the Zoning
-  // Ordinance and loaded in this repo, but never reaching the drawing: L-100
-  // was composed without the canopy requirement that governs it.
+  // THE LANDSCAPE MANUAL, with the canopy table now LOADED.
   //
-  // The percentage itself is NOT loaded — the Manual cites Subtitle 25 Table 1
-  // and does not reproduce it — so the requirement is carried as an open item
-  // rather than a number. A canopy schedule computed from a percentage nobody
-  // has read is worse than no schedule.
-  const canopy = getPgTreeCanopyRequirement()
+  // This carried the requirement as an open item because the percentage was
+  // not held: the Manual cites Sec. 25-128 Table 1 without reproducing it and
+  // it is absent from the zoning viewer. It is published in the County Code on
+  // Municode, a host the earlier search never asked — the same mistake, on the
+  // same county, as concluding there were no contours after searching only the
+  // open-data portal.
+  const canopy = getPgTreeCanopyRequirement(lot.zoneCode)
   if (canopy.openItem) {
+    beforeSeal.push(`Tree canopy — ${canopy.openItem} ${canopy.citation}.`)
+  } else if (canopy.percent != null && areaSqFt) {
+    const req = Math.round((areaSqFt * canopy.percent) / 100)
     beforeSeal.push(
-      `Landscape Manual — tree canopy coverage (${canopy.citation}, on ${canopy.basis}). ` +
-      `${canopy.openItem} Source: ${PG_SUBDIVISION_SOURCE.publication}, machine-extracted and ` +
-      'NOT verified by a reviewer.')
+      `Tree canopy schedule: ${canopy.percent}% of the ${canopy.basis} = ` +
+      `${req.toLocaleString()} sq ft required on ${Math.round(areaSqFt).toLocaleString()} sq ft ` +
+      `(${lot.zoneCode}, ${canopy.citation}). The REQUIREMENT is settled; the schedule showing ` +
+      'how it is met is drawn per the Landscape Manual. Existing trees preserved, on-site ' +
+      'planting and street trees in the right-of-way all count at ten-year canopy (Sec. 25-129), ' +
+      'which is why the planting strip is on the frontage. Waiver available under Sec. 25-130.')
   }
-  // WHEN A SIDEWALK IS REQUIRED is not encoded anywhere in this repo. The
-  // sidewalk is drawn at 4 ft because that dimension was given, not because a
-  // rule was applied, and saying so is the difference between a drawing and a
-  // determination.
-  beforeSeal.push(
-    'Sidewalk REQUIREMENT (not its dimensions) is a DPW&T decision at street construction permit. ' +
-    'The section is settled — 3 ft walk then a 4 ft planting strip, both in the right-of-way, ' +
-    'with curb and gutter at 7 ft out — ' +
-    'but whether a walk must be built, reconstructed or waived on this frontage is not a rule this ' +
-    'engine holds: neither the Landscape Manual nor Subtitle 24 as extracted here contains one. ' +
-    'Dimensions given, requirement outstanding; they are different questions.')
 
+  // Sec. 23-135 — curb and gutter, and when a sidewalk is required. Retrieved
+  // and applied rather than left to DPW&T as an unanswered question.
+  {
+    const front = buildable?.frontage?.providedFt ?? null
+    const thresh = PG_CURB_AND_SIDEWALK.curbFrontageThresholdFt
+    beforeSeal.push(
+      `Curb and gutter, ${PG_CURB_AND_SIDEWALK.citation}(a)(1): required where the MAJORITY of ` +
+      `lots abutting the road front ${thresh} ft or less. This lot fronts ` +
+      `${front != null ? front.toFixed(2) + ' ft' : 'an unmeasured length'}` +
+      `${front != null && front <= thresh ? ', at or under the threshold' : ''}. The majority is ` +
+      'taken over every lot on the road rather than this one, so DPW&T confirms it; curb and ' +
+      'gutter is drawn on that basis.')
+    beforeSeal.push(
+      `Sidewalk, ${PG_CURB_AND_SIDEWALK.citation}(c): a residential road takes a walk on ONE ` +
+      'side (arterials and collectors take both). Rollins Avenue is a local residential street by ' +
+      'the county centreline layer — FCC A41, 35 mph — so ONE side is the requirement. WHICH side ' +
+      'is DPW&T\'s at street construction permit, and where walks already exist on both sides ' +
+      'they continue to the next intersection before transitioning.')
+  }
   beforeSeal.push(
     'Review and seal by the professionals responsible for each subject. The platform drafts a ' +
     'complete plan; the seal is a human act that follows delivery. Nothing here implies county approval.',

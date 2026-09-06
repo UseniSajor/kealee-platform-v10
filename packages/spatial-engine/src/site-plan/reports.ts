@@ -57,22 +57,32 @@ export function buildMissingInformationReport(
   // render-pdf reads it to print the plat call table.
   const platBased = (twin as { platRecord?: unknown }).platRecord != null
   if (!hasCertifiedSurvey) {
+    // A RECORDED PLAT IS A BOUNDARY SURVEY. It is the surveyor's certified
+    // instrument, signed and recorded, and the county holds it — so demanding
+    // a fresh boundary survey on top of it asks for work already done and
+    // sitting in the land records.
+    //
+    // What a plat does NOT carry is TOPOGRAPHY: it shows no contours, no spot
+    // elevations and no datum. That is the single survey product still
+    // outstanding, and saying 'boundary and topographic survey' hid a real gap
+    // behind a redundant demand.
     add({
       key: 'survey',
-      label: 'Maryland surveyor-certified boundary and topographic survey',
-      // The reason depends on where the boundary came from. Saying "GIS parcel
-      // geometry is preliminary" on a drawing built from a RECORDED PLAT is
-      // simply false, and a reader who checks it against the plat call table on
-      // the sheet learns the caveats are boilerplate — which costs the accurate
-      // ones their weight too.
+      label: platBased
+        ? 'Field-run topographic survey'
+        : 'Maryland surveyor-certified boundary and topographic survey',
       why: platBased
-        ? 'The boundary of record is transcribed from the recorded plat and closes, but a transcription is not a field survey: it cannot confirm the monuments are set where the plat says, nor supply topography. A permit submission needs a certified survey.'
-        : 'GIS parcel geometry is preliminary and may be offset from surveyed boundaries. A permit submission needs certified geometry.',
+        ? 'The RECORDED PLAT IS THE BOUNDARY SURVEY — certified, signed and in the land records — ' +
+          'and the boundary here is transcribed from it and closes. A plat carries no topography, ' +
+          'though: county lidar contours are drawn for existing grade, which is survey-grade ' +
+          'mapping and not a field-run survey. A licensed professional will want field topography ' +
+          'before sealing grading and drainage.'
+        : 'GIS parcel geometry is preliminary and may be offset from surveyed boundaries. A permit ' +
+          'submission needs certified geometry.',
       severity: 'required',
       responsible: 'surveyor',
     })
   }
-
   if (!twin.verticalDatum) {
     add({
       key: 'vertical_datum',
