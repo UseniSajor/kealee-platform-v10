@@ -262,7 +262,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
               <p className="mt-3 text-gray-500">These examples help frame the conversation. Kealee confirms suitability, scope, timing, and price before purchase.</p>
             </div>
             <div className="grid gap-6 lg:grid-cols-3">
-              {product.packages.map(tier => (
+              {product.packages.map((tier, tierIndex) => (
                 <div
                   key={tier.name}
                   className="relative flex flex-col rounded-xl bg-white p-6"
@@ -298,7 +298,11 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
                     ))}
                   </ul>
                   <Link
-                    href={requestHref}
+                    href={
+                      isAiProduct
+                        ? `${product.ctaHref}${product.ctaHref.includes('?') ? '&' : '?'}tier=${tierIndex + 1}`
+                        : tier.href
+                    }
                     className="flex w-full items-center justify-center gap-2 rounded-lg py-3 text-sm font-semibold transition-all hover:opacity-90"
                     style={{
                       backgroundColor: tier.popular ? accentColor : 'transparent',
@@ -306,7 +310,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
                       border: tier.popular ? 'none' : `2px solid ${accentColor}`,
                     }}
                   >
-                    Request this scope
+                    {isAiProduct ? tier.cta : 'Request this scope'}
                   </Link>
                 </div>
               ))}
