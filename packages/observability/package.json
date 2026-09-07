@@ -10,16 +10,16 @@
   },
   "dependencies": {
     "@opentelemetry/api": "^1.9.0",
-    "@opentelemetry/sdk-node": "^0.52.0",
-    "@opentelemetry/exporter-trace-otlp-http": "^0.52.0",
-    "@opentelemetry/instrumentation-http": "^0.52.0",
-    "@opentelemetry/instrumentation-fastify": "^0.38.0",
-    "@opentelemetry/instrumentation-ioredis": "^0.42.0",
+    "@opentelemetry/sdk-node": "^0.222.0",
+    "@opentelemetry/exporter-trace-otlp-http": "^0.222.0",
+    "@opentelemetry/instrumentation-http": "^0.222.0",
+    "@opentelemetry/instrumentation-fastify": "^0.57.0",
+    "@opentelemetry/instrumentation-ioredis": "^0.70.0",
     "@opentelemetry/resources": "^1.25.0",
     "@opentelemetry/semantic-conventions": "^1.25.0",
     "pino": "^9.0.0",
     "pino-pretty": "^11.0.0",
-    "resend": "^6.21.0"
+    "resend": "^6.25.0"
   },
   "devDependencies": {
     "@types/node": "^20.19.0",

@@ -19,7 +19,7 @@
   },
   "dependencies": {
     "@kealee/marketing-privacy": "workspace:*",
-    "@supabase/supabase-js": "^2.112.3",
+    "@supabase/supabase-js": "^2.112.4",
     "zod": "^3.22.4"
   },
   "devDependencies": {

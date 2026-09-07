@@ -49,7 +49,7 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.74.0",
+    "@anthropic-ai/sdk": "^0.122.0",
     "@kealee/database": "workspace:*",
     "@kealee/core-agents": "workspace:*",
     "@kealee/seeds": "workspace:*",

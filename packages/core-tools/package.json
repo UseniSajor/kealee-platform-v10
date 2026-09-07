@@ -18,10 +18,10 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.74.0",
+    "@anthropic-ai/sdk": "^0.122.0",
     "@kealee/core-agents": "workspace:*",
     "@kealee/database": "workspace:*",
-    "stripe": "^22.5.0",
+    "stripe": "^22.6.0",
     "zod": "^3.22.4"
   },
   "devDependencies": {
