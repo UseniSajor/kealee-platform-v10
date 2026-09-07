@@ -523,7 +523,15 @@ async function main(): Promise<void> {
   //   L-100  landscape and tree canopy — Sec. 25-128 is a requirement
   //
   // FULL_SET=1 forces the canonical eleven; SHEETS=... names any list.
-  const CONDENSED: SheetId[] = ['C-000', 'C-100', 'C-200', 'C-400', 'C-700', 'L-100']
+  // ONE SHEET. C-001 carries every discipline — existing, proposed, grading,
+  // paving, landscape — with the tables and notes in the right-hand column,
+  // which is what the approved plans in this repo do for an individual lot.
+  // Two houses on an existing street do not need a set; a reviewer comparing
+  // proposed against existing should not have to turn a page to do it.
+  //
+  // SHEETS=... still names a list and FULL_SET=1 forces the canonical eleven,
+  // for a project that genuinely needs them.
+  const CONDENSED: SheetId[] = ['C-001']
   const sheetIds: SheetId[] = override ?? (process.env.FULL_SET ? FULL_SET : CONDENSED)
   console.log(`    sheets          ${sheetIds.length}: ${sheetIds.join(', ')}`)
   console.log(`                    condensed from the canonical ${FULL_SET.length}; `

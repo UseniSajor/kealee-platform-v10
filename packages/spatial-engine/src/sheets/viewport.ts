@@ -131,7 +131,12 @@ export const ARCH_D: SheetSize = {
   marginPt: 36,
   // Wide enough for the SITE DATA table, general notes and legend. Nothing but
   // drawing goes left of this column; nothing but data goes right of it.
-  titleBlockWidthPt: 5.2 * 72,
+  // 7 inches, not 5.2. The column holds the site data, the analysis, the
+  // construction sequence, the general notes, the plat record, the legend and
+  // the approval blocks — and at 5.2 in they were set at 5.4 pt to fit, which
+  // is unreadable on a printed 36 in sheet. A reviewer and a builder both read
+  // this column; width bought here is what lets the type be legible.
+  titleBlockWidthPt: 7 * 72,
 }
 
 /** ANSI B, 11 x 17 in — for check prints. */

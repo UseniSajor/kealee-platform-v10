@@ -20,8 +20,20 @@ export type SheetId =
   | 'C-000' | 'C-100' | 'C-200' | 'C-300' | 'C-400'
   | 'C-500' | 'C-600' | 'C-700' | 'C-800' | 'C-900'
   | 'L-100' | 'TCP-NRI'
+  /**
+   * EVERYTHING ON ONE SHEET.
+   *
+   * Two infill lots on an existing street do not need a set. The approved
+   * plans in this repo put a whole lot — existing, proposed, grading, paving,
+   * landscape, tables and notes — on a single sheet, and that is what a
+   * reviewer and a builder actually want to hold. A six-sheet set for two
+   * houses makes a reader flip between pages to compare things that belong
+   * side by side.
+   */
+  | 'C-001'
 
 export const SHEET_TITLES: Record<SheetId, string> = {
+  'C-001': 'Site Development Plan — Existing, Proposed, Grading, Paving and Landscape',
   'C-000': 'Cover Sheet, Approvals and General Notes',
   'C-100': 'Existing Conditions and Boundary Plan',
   'C-200': 'Overall Site and Zoning Plan',
@@ -46,6 +58,7 @@ export const SHEET_TITLES: Record<SheetId, string> = {
  * never duplicated merely to separate seals.
  */
 export const SHEET_DISCIPLINE: Record<SheetId, string> = {
+  'C-001': 'Maryland Professional Engineer / Surveyor (see divided responsibility)',
   'C-000': 'Kealee (coordination)',
   'C-100': 'Maryland Licensed Surveyor',
   'C-200': 'Maryland Professional Engineer',

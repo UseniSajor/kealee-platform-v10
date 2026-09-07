@@ -203,6 +203,13 @@ export function applyPromotion(twin: SiteTwin, decision: PromotionDecision, sour
  * of a claim.
  */
 export const SHEET_DEPENDENCIES: Record<SheetId, SiteFeature['kind'][]> = {
+  // C-001 carries every discipline, so it depends on every kind: any model
+  // change regenerates it.
+  'C-001': ['Parcel', 'BoundarySegment', 'Easement', 'Building', 'Setback',
+    'EnvironmentalBuffer', 'Floodplain', 'Woodland', 'Tree', 'LimitOfDisturbance',
+    'ExistingFeature', 'ProposedFeature', 'Surface', 'Contour', 'Breakline',
+    'SpotElevation', 'Pavement', 'ParkingSpace', 'Sidewalk', 'Utility',
+    'StormPipe', 'Structure', 'DrainageArea', 'SWMPractice', 'DemolitionFeature'],
   'C-000': ['Parcel'],
   'C-100': ['Parcel', 'BoundarySegment', 'Easement', 'Building', 'ExistingFeature', 'Contour', 'SpotElevation', 'Utility', 'Tree'],
   'C-200': ['Parcel', 'BoundarySegment', 'Setback', 'Building', 'Easement', 'Pavement', 'ParkingSpace', 'ProposedFeature'],

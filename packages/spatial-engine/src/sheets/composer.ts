@@ -285,6 +285,9 @@ export function isBuildableEnvelope(id: string): boolean {
 }
 
 export function featuresForSheet(features: SiteFeature[], sheet: SheetId): SiteFeature[] {
+  // C-001 is the ALL-DISCIPLINE sheet: it carries everything, because that is
+  // what putting a whole small project on one page means.
+  if (sheet === 'C-001') return features
   const subjects = SHEET_SUBJECTS.find(g => g.sheet === sheet)?.subjects ?? []
   // The base every sheet carries.
   //

@@ -66,6 +66,17 @@ function boxAt(center: Position, widthFt: number, heightFt: number): Ring {
 let seq = 0
 const nextId = (p: string) => `${p}-${++seq}`
 
+/** Even-odd point-in-ring. EPSG:2248 feet, so no projection. */
+function pointInRing(p: Position, ring: readonly Position[]): boolean {
+  let inside = false
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    const [xi, yi] = ring[i], [xj, yj] = ring[j]
+    if ((yi > p[1]) !== (yj > p[1])
+        && p[0] < ((xj - xi) * (p[1] - yi)) / (yj - yi || 1e-9) + xi) inside = !inside
+  }
+  return inside
+}
+
 export interface DesignInput {
   twin: SiteTwin
   /** Design storm depth for water quality, inches. */
@@ -289,19 +300,58 @@ export function generateDesign(input: DesignInput): DesignResult {
     const plantRef = input.envelope ?? { coordinates: site.coordinates }
     const pc = ringCentroid(plantRef)
     const spread = Math.max(8, Math.min(24, Math.sqrt(ringAreaSqFt(plantRef)) / 4))
-    for (const [dx, dy] of [[-spread, spread], [spread, spread], [0, -spread]]) {
+
+    // TREES GO IN THE YARD, NOT ON THE HOUSE.
+    //
+    // They were offset from the ENVELOPE centroid — which is where the dwelling
+    // sits, because the dwelling is placed against the front of that same
+    // envelope. All three landed on the roof.
+    //
+    // Candidates now ring the footprint and are kept only where they fall
+    // inside the lot and clear of the building. A tree that cannot be placed is
+    // not placed: a shade tree drawn through a wall is a defect a reviewer sees
+    // before anything else on the sheet.
+    const footprintRing = proposedBuildings[0]?.ring?.coordinates as Position[] | undefined
+    const TREE_HALF = 6, CLEAR_FT = 8
+    const clearOfHouse = (q: Position) => {
+      if (!footprintRing) return true
+      let near = Infinity
+      for (let i = 0; i < footprintRing.length - 1; i++) {
+        const a2 = footprintRing[i], b2 = footprintRing[i + 1]
+        const vx = b2[0] - a2[0], vy = b2[1] - a2[1]
+        const t = Math.max(0, Math.min(1,
+          ((q[0] - a2[0]) * vx + (q[1] - a2[1]) * vy) / (vx * vx + vy * vy || 1)))
+        near = Math.min(near, Math.hypot(q[0] - (a2[0] + t * vx), q[1] - (a2[1] + t * vy)))
+      }
+      return near >= CLEAR_FT + TREE_HALF && !pointInRing(q, footprintRing)
+    }
+    const inLot = (q: Position) => pointInRing(q, site.coordinates as Position[])
+    const anchor: Position = footprintRing ? ringCentroid({ coordinates: footprintRing }) : pc
+    const placed: Position[] = []
+    for (let ring2 = 1; ring2 <= 4 && placed.length < 3; ring2++) {
+      const r2 = spread * ring2
+      for (let k = 0; k < 12 && placed.length < 3; k++) {
+        const th = (k / 12) * Math.PI * 2
+        const q: Position = [anchor[0] + Math.cos(th) * r2, anchor[1] + Math.sin(th) * r2]
+        if (!inLot(q) || !clearOfHouse(q)) continue
+        if (placed.some(p2 => Math.hypot(p2[0] - q[0], p2[1] - q[1]) < spread)) continue
+        placed.push(q)
+      }
+    }
+    for (const q of placed) {
       features.push({
         ...base, kind: 'Tree', id: nextId('tree'),
-        ring: boxAt([pc[0] + dx, pc[1] + dy], 12, 12),
+        ring: boxAt(q, TREE_HALF * 2, TREE_HALF * 2),
         designation: 'Proposed shade tree',
       } as SiteFeature)
     }
     assumptions.push({
       feature: 'Tree canopy schedule',
       assumption:
-        'Canopy percentage required by Subtitle 25 § 25-128 Table 1 is not loaded. Planting shown ' +
-        'meets the shade-tree layout intent; the quantity is confirmed once the percentage is applied ' +
-        'to gross tract area.',
+        'Subtitle 25 § 25-128 Table 1 is loaded: RSF-65 requires 20% canopy on the NET TRACT AREA. ' +
+        'The trees drawn are a layout, not the schedule — quantity and species come from the ' +
+        'Landscape Manual, and § 25-129 lets preserved trees and street trees in the right-of-way ' +
+        'count at ten-year canopy.',
       resolvedBy: 'engineer',
     })
   }

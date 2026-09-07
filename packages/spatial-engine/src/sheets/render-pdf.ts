@@ -22,7 +22,7 @@ import {
   type SheetSize, type Viewport, type Bounds,
 } from './viewport'
 import type { SheetContext, SheetId } from './sheet-template'
-import { SHEET_TITLES, auditSheetFrame } from './sheet-template'
+import { SHEET_TITLES, SHEET_DISCIPLINE, auditSheetFrame } from './sheet-template'
 import type { DividedResponsibilityBlock } from '../review/content-scope'
 
 const PAD_FT = 20
@@ -164,14 +164,14 @@ function titleBlock(
     label(doc, x + 8, cy, 'PROFESSIONAL RESPONSIBILITY', 6, { color: '#666666' }); cy += 10
     for (const r of responsibility.rows) {
       label(doc, x + 8, cy, r.title, 7, { bold: true }); cy += 9
-      doc.font('Helvetica').fontSize(6).fillColor('#444444')
+      doc.font('Helvetica').fontSize(7.5).fillColor('#444444')
          .text(`certifies: ${r.certifies.join(', ')}`, x + 8, cy, { width: w - 16 })
       cy = doc.y + 3
       box(doc, x + 8, cy, w - 16, 34, PEN.hair)
       label(doc, x + 12, cy + 13, 'SEAL AND SIGNATURE', 5, { color: '#999999' })
       cy += 40
     }
-    doc.font('Helvetica').fontSize(5).fillColor('#666666')
+    doc.font('Helvetica').fontSize(7).fillColor('#666666')
        .text(responsibility.divisionNote, x + 8, cy, { width: w - 16 })
     cy = doc.y + 6
   }
@@ -309,11 +309,11 @@ function drawGeometry(doc: Doc, ctx: SheetContext, vp: Viewport, b: Bounds): voi
     if (!r.some(onSheet)) continue
     polyline(doc, r, { width: 0.6, color: '#9aa0a6', dash: undefined }, true)
     if (!onSheet(c)) continue
-    doc.font('Helvetica').fontSize(5.2).fillColor('#9aa0a6')
+    doc.font('Helvetica').fontSize(7).fillColor('#9aa0a6')
        .text(`${ap.propId ?? 'PARCEL'}`, c[0] - 30, c[1] - 4,
              { width: 60, align: 'center', lineBreak: false })
     if (ap.areaSqFt) {
-      doc.font('Helvetica').fontSize(4.6).fillColor('#9aa0a6')
+      doc.font('Helvetica').fontSize(7).fillColor('#9aa0a6')
          .text(`${Math.round(ap.areaSqFt).toLocaleString()} SF`, c[0] - 30, c[1] + 2,
                { width: 60, align: 'center', lineBreak: false })
     }
@@ -364,7 +364,7 @@ function drawGeometry(doc: Doc, ctx: SheetContext, vp: Viewport, b: Bounds): voi
     // reads on a sheet.
     const sb = (g.attributes?.setbacks ?? {}) as
       { frontFt?: number; sideFt?: number; rearFt?: number }
-    doc.font('Helvetica').fontSize(6.5).fillColor('#666666')
+    doc.font('Helvetica').fontSize(8).fillColor('#666666')
        .text(sb.frontFt != null ? `${sb.frontFt}' BRL` : 'BRL',
              cx - 30, top - 9, { width: 60, align: 'center', lineBreak: false })
 
@@ -392,7 +392,7 @@ function drawGeometry(doc: Doc, ctx: SheetContext, vp: Viewport, b: Bounds): voi
         const fails = fro.frontage.meets === false
         doc.save()
         doc.translate(mx, my).rotate((ang * 180) / Math.PI)
-        doc.font('Helvetica-Bold').fontSize(6)
+        doc.font('Helvetica-Bold').fontSize(7.5)
            .fillColor(fails ? '#c0392b' : '#000000')
            .text(`FRONTAGE ${fro.frontage.providedFt.toFixed(2)}'`
              + (req != null ? `  (${req}' MIN)` : ''),
@@ -420,7 +420,7 @@ function drawGeometry(doc: Doc, ctx: SheetContext, vp: Viewport, b: Bounds): voi
         if (ang > Math.PI / 2 || ang < -Math.PI / 2) ang += Math.PI
         doc.save()
         doc.translate(mx, my).rotate((ang * 180) / Math.PI)
-        doc.font('Helvetica').fontSize(5.6).fillColor('#7f8c8d')
+        doc.font('Helvetica').fontSize(7).fillColor('#7f8c8d')
            .text(`${ft}' ${y.toUpperCase()} YARD`, -46, 6,
                  { width: 92, align: 'center', lineBreak: false })
         doc.restore()
@@ -452,7 +452,7 @@ function drawGeometry(doc: Doc, ctx: SheetContext, vp: Viewport, b: Bounds): voi
       if (ang > Math.PI / 2 || ang < -Math.PI / 2) ang += Math.PI
       doc.save()
       doc.translate(mx, my).rotate((ang * 180) / Math.PI)
-      doc.font('Helvetica').fontSize(5.5).fillColor('#000000')
+      doc.font('Helvetica').fontSize(7).fillColor('#000000')
          .text(`${brg}  ${lenFt.toFixed(2)}'`, -34, -8, { lineBreak: false, width: 68, align: 'center' })
       doc.restore()
     }
@@ -463,7 +463,7 @@ function drawGeometry(doc: Doc, ctx: SheetContext, vp: Viewport, b: Bounds): voi
     doc.font('Helvetica-Bold').fontSize(8).fillColor('#000000')
        .text(p.parcelId ?? 'LOT', cx - 50, cy - 26, { width: 100, align: 'center', lineBreak: false })
     if (p.areaSqFt) {
-      doc.font('Helvetica').fontSize(7).fillColor('#333333')
+      doc.font('Helvetica').fontSize(9).fillColor('#333333')
          .text(`${Math.round(p.areaSqFt).toLocaleString()} SQ FT  (${(p.areaSqFt / 43560).toFixed(3)} AC)`,
                cx - 60, cy - 15, { width: 120, align: 'center', lineBreak: false })
     }
@@ -538,6 +538,11 @@ function drawGeometry(doc: Doc, ctx: SheetContext, vp: Viewport, b: Bounds): voi
     const kindOf = String((pv.attributes as { improvement?: string } | undefined)?.improvement ?? '')
     const isWalk = /sidewalk|walk/i.test(kindOf)
     const isCurb = /curb/i.test(kindOf)
+    // The apron is CONCRETE and the driveway is BITUMINOUS — two materials, two
+    // hatches, exactly as the approved legend separates them. Drawn with one
+    // stipple they read as a single paved area and the apron, which is the part
+    // built to the DPW&T detail under a different permit, disappears into it.
+    const isApron = /apron/i.test(kindOf)
     // Weight is a signal, so it is spent on the things a reviewer checks. The
     // curb was heavier than the building line; it is street furniture, not a
     // boundary, and it should sit quietly under the geometry that matters.
@@ -571,22 +576,46 @@ function drawGeometry(doc: Doc, ctx: SheetContext, vp: Viewport, b: Bounds): voi
         }
       }
       doc.opacity(1)
-    } else {
-      doc.lineWidth(0.2).strokeColor('#999999').opacity(0.6)
-      for (let x = minX - (maxY - minY); x < maxX; x += 5) {
-        doc.moveTo(x, minY).lineTo(x + (maxY - minY), maxY).stroke()
+    } else if (isApron) {
+      // CONCRETE: a pale ground with a fine speckle, distinct from asphalt.
+      doc.fillColor('#efefef').opacity(0.9)
+      doc.moveTo(r[0][0], r[0][1])
+      for (const q of r.slice(1)) doc.lineTo(q[0], q[1])
+      doc.closePath().fill()
+      doc.fillColor('#9a9a9a').opacity(0.9)
+      for (let x = minX; x < maxX; x += 3.4) {
+        for (let y2 = minY + ((Math.round(x / 3.4) % 2) ? 1.7 : 0); y2 < maxY; y2 += 3.4) {
+          doc.circle(x, y2, 0.3).fill()
+        }
       }
+      doc.opacity(1)
+    } else {
+      // BITUMINOUS: a solid mid-grey, the way the approved legend shows it.
+      doc.fillColor('#b9b9b9').opacity(0.75)
+      doc.moveTo(r[0][0], r[0][1])
+      for (const q of r.slice(1)) doc.lineTo(q[0], q[1])
+      doc.closePath().fill()
       doc.opacity(1)
     }
     doc.restore()
 
+    // The label sits OUTSIDE the strip with a LEADER back to it.
+    //
+    // Centred inside, a label on a 3 ft walk at 1" = 20' overflows its own
+    // strip and lands on the two beside it, so the sheet carried three
+    // overlapping words and no way to tell which named what. A leader is how a
+    // drafter names something too narrow to letter inside.
     const a2 = (pv.attributes ?? {}) as { label?: string }
     if (a2.label) {
       const cx2 = r.reduce((n, q) => n + q[0], 0) / r.length
       const cy2 = r.reduce((n, q) => n + q[1], 0) / r.length
-      doc.font('Helvetica').fontSize(5.4).fillColor('#555555')
-         .text(String(a2.label), cx2 - 55, cy2 - 3,
-               { width: 110, align: 'center', lineBreak: false })
+      const lead = isCurb ? 46 : isWalk ? 30 : 16
+      const tx = cx2 + lead + 6, ty = cy2 - lead - 4
+      doc.moveTo(cx2, cy2).lineTo(cx2 + lead, cy2 - lead)
+         .lineWidth(0.3).strokeColor('#777777').stroke()
+      doc.circle(cx2, cy2, 0.9).fillColor('#777777').fill()
+      doc.font('Helvetica').fontSize(6.5).fillColor('#444444')
+         .text(String(a2.label), tx, ty, { width: 150, lineBreak: false })
     }
   }
 
@@ -594,6 +623,31 @@ function drawGeometry(doc: Doc, ctx: SheetContext, vp: Viewport, b: Bounds): voi
   for (const bl of featuresOfKind(t, 'Building')) {
     const r = projectRing(bl.ring, vp, b, PAD_FT)
     polyline(doc, r, bl.existing ? PEN.building : { ...PEN.proposed, width: 1.4 }, true)
+
+    // NO DATA BLOCK ON THE FOOTPRINT.
+    //
+    // It was drawn here first, following the approved sheets, and it covered
+    // the dwelling it described — on a 46 x 26 ft house at 1"=20' the box is
+    // wider than the building. Tables belong in the right-hand column where
+    // they can be read; the drawing area carries geometry and dimensions.
+    // The footprint's own dimensions, lettered on its sides.
+    if (bl.ring.coordinates.length >= 3) {
+      const cc = bl.ring.coordinates
+      for (let i = 0; i < Math.min(2, cc.length - 1); i++) {
+        const ftLen = Math.hypot(cc[i + 1][0] - cc[i][0], cc[i + 1][1] - cc[i][1])
+        const p0 = r[i], p1 = r[i + 1]
+        const mx = (p0[0] + p1[0]) / 2, my = (p0[1] + p1[1]) / 2
+        let ang = Math.atan2(p1[1] - p0[1], p1[0] - p0[0])
+        if (ang > Math.PI / 2 || ang < -Math.PI / 2) ang += Math.PI
+        const feet = Math.floor(ftLen)
+        const inches = Math.round((ftLen - feet) * 12)
+        doc.save()
+        doc.translate(mx, my).rotate((ang * 180) / Math.PI)
+        doc.font('Helvetica-Bold').fontSize(6.5).fillColor('#000000')
+           .text(`${feet}'-${inches}"`, -34, -9, { width: 68, align: 'center', lineBreak: false })
+        doc.restore()
+      }
+    }
     if (bl.existing) continue
 
     // Cross-hatch the proposed structure so it reads at a glance.
@@ -614,16 +668,18 @@ function drawGeometry(doc: Doc, ctx: SheetContext, vp: Viewport, b: Bounds): voi
     }
     doc.opacity(1).restore()
 
-    const cx = (minX + maxX) / 2, cy = (minY + maxY) / 2
+    // The label sits ABOVE the footprint, not in it. The data block occupies
+    // the centre now, and the two were printing over each other — the one place
+    // on the sheet where a builder reads a finished-floor elevation.
+    const cx = (minX + maxX) / 2
     const a = (bl as { attributes?: Record<string, unknown> }).attributes ?? {}
+    const labelY = minY - 22
     doc.font('Helvetica-Bold').fontSize(7.5).fillColor('#c0392b')
-       .text('PROPOSED', cx - 45, cy - 12, { width: 90, align: 'center', lineBreak: false })
-    doc.font('Helvetica').fontSize(6.5).fillColor('#c0392b')
-       .text('DWELLING', cx - 45, cy - 3, { width: 90, align: 'center', lineBreak: false })
+       .text('PROPOSED DWELLING', cx - 60, labelY, { width: 120, align: 'center', lineBreak: false })
     if (a.areaSqFt) {
-      doc.font('Helvetica').fontSize(6).fillColor('#c0392b')
+      doc.font('Helvetica').fontSize(7.5).fillColor('#c0392b')
          .text(`${Math.round(Number(a.areaSqFt)).toLocaleString()} SQ FT`,
-               cx - 45, cy + 6, { width: 90, align: 'center', lineBreak: false })
+               cx - 60, labelY + 9, { width: 120, align: 'center', lineBreak: false })
     }
   }
 
@@ -650,9 +706,9 @@ function drawGeometry(doc: Doc, ctx: SheetContext, vp: Viewport, b: Bounds): voi
         if (ang > Math.PI / 2 || ang < -Math.PI / 2) ang += Math.PI
         doc.save()
         doc.translate(mid[0], mid[1]).rotate((ang * 180) / Math.PI)
-        doc.font('Helvetica-Bold').fontSize(7).fillColor('#555555')
+        doc.font('Helvetica-Bold').fontSize(9).fillColor('#555555')
            .text(`${st.name.toUpperCase()}`, -70, -12, { width: 140, align: 'center', lineBreak: false })
-        doc.font('Helvetica').fontSize(5).fillColor('#777777')
+        doc.font('Helvetica').fontSize(7).fillColor('#777777')
            .text('R/W — WIDTH PER RECORD PLAT', -70, -3,
                  { width: 140, align: 'center', lineBreak: false })
         doc.restore()
@@ -733,10 +789,10 @@ function siteDataTable(doc: Doc, x: number, y: number, ctx: SheetContext): numbe
   let cy = y + rowH
   for (const [label, a, b] of rows) {
     const header = label.startsWith('—')
-    doc.font(header ? 'Helvetica-Bold' : 'Helvetica').fontSize(6)
+    doc.font(header ? 'Helvetica-Bold' : 'Helvetica').fontSize(7.5)
        .fillColor(header ? '#000000' : '#333333')
        .text(header ? label.replace(/—/g, '') : label, x + 5, cy + 2, { width: 108, lineBreak: false })
-    doc.font(header ? 'Helvetica-Bold' : 'Helvetica').fontSize(6).fillColor('#333333')
+    doc.font(header ? 'Helvetica-Bold' : 'Helvetica').fontSize(7.5).fillColor('#333333')
        .text(a, x + 118, cy + 2, { width: 64, lineBreak: false })
     doc.text(b, x + 186, cy + 2, { width: 60, lineBreak: false })
     doc.save().lineWidth(0.25).strokeColor('#cccccc')
@@ -761,27 +817,27 @@ function platRecordBlock(
 ): number {
   const rec = (t as { platRecord?: { reference: string; notes: string[]; legend?: string[] } }).platRecord
   if (!rec) return y
-  doc.font('Helvetica-Bold').fontSize(7).fillColor('#000000')
+  doc.font('Helvetica-Bold').fontSize(9).fillColor('#000000')
      .text('PLAT OF RECORD', x, y, { lineBreak: false })
   let cy = y + 10
-  doc.font('Helvetica').fontSize(5.4).fillColor('#333333')
+  doc.font('Helvetica').fontSize(7).fillColor('#333333')
      .text(rec.reference, x, cy, { width: 250, height: 54, ellipsis: true })
   cy = doc.y + 4
-  doc.font('Helvetica-Bold').fontSize(5.4).fillColor('#333333')
+  doc.font('Helvetica-Bold').fontSize(7).fillColor('#333333')
      .text('NOTES OF RECORD', x, cy, { lineBreak: false })
   cy += 8
   rec.notes.forEach((n, i) => {
-    doc.font('Helvetica').fontSize(5.2).fillColor('#333333')
+    doc.font('Helvetica').fontSize(7).fillColor('#333333')
        .text(`${i + 1}.  ${n}`, x, cy, { width: 250, height: 40, ellipsis: true })
     cy = doc.y + 2
   })
   if (rec.legend?.length) {
-    doc.font('Helvetica').fontSize(5).fillColor('#555555')
+    doc.font('Helvetica').fontSize(7).fillColor('#555555')
        .text(rec.legend.join('   ·   '), x, cy + 2, { width: 250, height: 16, ellipsis: true })
     cy = doc.y
   }
   // Stated, so nobody mistakes an absence for an omission.
-  doc.font('Helvetica-Oblique').fontSize(4.6).fillColor('#777777')
+  doc.font('Helvetica-Oblique').fontSize(7).fillColor('#777777')
      .text('The surveyor certificate, owner dedication and approval signatures of the '
        + 'recorded plat are NOT reproduced here: they attach to that instrument, not to '
        + 'this drawing.', x, cy + 3, { width: 250, height: 26, ellipsis: true })
@@ -798,17 +854,218 @@ function platRecordBlock(
 function indexOfDrawings(doc: Doc, x: number, y: number, ctx: SheetContext): number {
   const ids = ctx.sheetIds ?? []
   if (!ids.length) return y
-  doc.font('Helvetica-Bold').fontSize(7).fillColor('#000000')
+  doc.font('Helvetica-Bold').fontSize(9).fillColor('#000000')
      .text('INDEX OF DRAWINGS', x, y, { lineBreak: false })
   let cy = y + 11
   ids.forEach((id, i) => {
-    doc.font('Helvetica').fontSize(5.6).fillColor('#333333')
+    doc.font('Helvetica').fontSize(7).fillColor('#333333')
        .text(`${String(i + 1).padStart(2, ' ')}   ${id}`, x, cy, { width: 46, lineBreak: false })
-    doc.font('Helvetica').fontSize(5.6).fillColor('#333333')
+    doc.font('Helvetica').fontSize(7).fillColor('#333333')
        .text(SHEET_TITLES[id] ?? '', x + 48, cy, { width: 210, lineBreak: false })
     cy += 8
   })
   return cy
+}
+
+/**
+ * BUILDING DATA — one row per proposed dwelling.
+ *
+ * The approved plans letter these five elevations on each footprint: garage
+ * slab, basement, finished floor, subfloor, plus height and storeys. A builder
+ * sets the house from them and a reviewer checks them against the grading.
+ *
+ * They live in the COLUMN, not on the building. At 1" = 20' a six-row box is
+ * wider than a 46 x 26 ft dwelling, so drawn on the footprint it hid the thing
+ * it described.
+ *
+ * An elevation that has not been computed prints as a dash. A builder pours
+ * concrete to these numbers; an invented one is worse than a blank.
+ */
+function buildingData(doc: Doc, x: number, y: number, w: number, ctx: SheetContext): number {
+  const blds = ctx.twin.features.filter(f => f.kind === 'Building') as
+    { id: string; attributes?: Record<string, unknown> }[]
+  if (!blds.length) return y
+  doc.font('Helvetica-Bold').fontSize(9).fillColor('#000000')
+     .text('BUILDING DATA', x, y, { lineBreak: false })
+  let cy = y + 12
+  const cols = ['', 'G', 'B', 'FF', 'SF', 'HT', 'STY']
+  const cw = w / cols.length
+  cols.forEach((c, i) => {
+    doc.font('Helvetica-Bold').fontSize(6.5).fillColor('#555555')
+       .text(c, x + i * cw, cy, { width: cw - 2, align: i ? 'right' : 'left', lineBreak: false })
+  })
+  cy += 9
+  doc.moveTo(x, cy).lineTo(x + w, cy).lineWidth(0.4).strokeColor('#000000').stroke()
+  cy += 3
+  blds.forEach((bl, n) => {
+    const a = bl.attributes ?? {}
+    const num = (k: string) => a[k] != null && Number.isFinite(Number(a[k]))
+      ? Number(a[k]).toFixed(2) : '—'
+    const label = String(a.lotLabel ?? a.address ?? `DWELLING ${n + 1}`)
+    const vals = [label, num('garageSlabElevFt'), num('basementElevFt'),
+      num('finishedFloorElevFt'), num('subFloorElevFt'),
+      a.heightFt != null ? `${a.heightFt}'` : '—',
+      a.storeys != null ? String(a.storeys) : '—']
+    vals.forEach((v, i) => {
+      doc.font(i ? 'Helvetica' : 'Helvetica-Bold').fontSize(6.5).fillColor('#000000')
+         .text(v, x + i * cw, cy, { width: cw - 2, align: i ? 'right' : 'left', lineBreak: false })
+    })
+    cy += 9
+  })
+  doc.font('Helvetica').fontSize(6).fillColor('#666666')
+     .text('G garage slab · B basement · FF finished floor · SF subfloor · HT height · ' +
+           'STY storeys.  A DASH IS NOT ZERO: the elevation has not been established and must be ' +
+           'set from a field-run topographic survey before construction.', x, cy + 2, { width: w })
+  return doc.y + 2
+}
+
+/**
+ * TYPICAL SECTIONS, in the space the plan does not use.
+ *
+ * The approved sets devote whole sheets to DPW&T standard details. A two-lot
+ * plan does not need that, and the sheet has empty area below the drawing that
+ * a reviewer would rather see used than blank.
+ *
+ * These are ARRANGEMENT sections, not reproductions. Each names the DPW&T
+ * standard that governs it and says the standard carries the dimensions. The
+ * standard details themselves are the county's drawings — copying them from
+ * memory would put dimensions on a permit set that nobody has checked against
+ * the source.
+ */
+function typicalSections(doc: Doc, x: number, y: number, w: number, h: number): number {
+  const items: { title: string; std: string; draw: (bx: number, by: number, bw: number, bh: number) => void }[] = [
+    {
+      title: 'TYPICAL FRONTAGE SECTION', std: 'DPW&T STD. 300.01',
+      draw: (bx, by, bw, bh) => {
+        const gy = by + bh - 26, sc = (bw - 24) / 26
+        const seg = (x0: number, wFt: number, label: string, fill: string) => {
+          doc.rect(bx + 12 + x0 * sc, gy - 7, wFt * sc, 7).fillColor(fill).fill()
+          box(doc, bx + 12 + x0 * sc, gy - 7, wFt * sc, 7, PEN.hair)
+          doc.font('Helvetica').fontSize(5.4).fillColor('#333333')
+             .text(label, bx + 12 + x0 * sc, gy + 3, { width: wFt * sc, align: 'center', lineBreak: false })
+        }
+        seg(0, 3, "3' WALK", '#e8e8e8')
+        seg(3, 4, "4' STRIP", '#f6f6f6')
+        seg(7, 2, 'C&G', '#d8d8d8')
+        seg(9, 17, 'TRAVELLED WAY', '#bcbcbc')
+        doc.moveTo(bx + 12, gy).lineTo(bx + 12 + 26 * sc, gy)
+           .lineWidth(0.6).strokeColor('#000000').stroke()
+        doc.font('Helvetica-Bold').fontSize(5.6).fillColor('#000000')
+           .text('PROPERTY LINE', bx + 4, gy - 20, { width: 60, lineBreak: false })
+        doc.moveTo(bx + 12, gy - 14).lineTo(bx + 12, gy + 2)
+           .lineWidth(0.5).strokeColor('#000000').stroke()
+      },
+    },
+    {
+      title: 'DRIVEWAY APRON', std: 'DPW&T STD. 300.01 (DEPRESSED C&G AT DRIVEWAY)',
+      draw: (bx, by, bw, bh) => {
+        const cy2 = by + bh - 34, sc = (bw - 24) / 26
+        doc.rect(bx + 12, cy2, 7 * sc, 10).fillColor('#efefef').fill()
+        box(doc, bx + 12, cy2, 7 * sc, 10, PEN.hair)
+        doc.font('Helvetica').fontSize(5.4).fillColor('#333333')
+           .text("7' CONCRETE APRON", bx + 12, cy2 + 13, { width: 7 * sc, align: 'center', lineBreak: false })
+        doc.rect(bx + 12 + 7 * sc, cy2, 17 * sc, 10).fillColor('#bcbcbc').fill()
+        box(doc, bx + 12 + 7 * sc, cy2, 17 * sc, 10, PEN.hair)
+        doc.font('Helvetica').fontSize(5.4).fillColor('#333333')
+           .text('TRAVELLED WAY', bx + 12 + 7 * sc, cy2 + 13,
+                 { width: 17 * sc, align: 'center', lineBreak: false })
+        doc.font('Helvetica').fontSize(5.4).fillColor('#000000')
+           .text('CURB DEPRESSED THROUGH APRON; WALK AND STRIP INTERRUPTED.',
+                 bx + 12, cy2 - 12, { width: bw - 24, lineBreak: false })
+      },
+    },
+    {
+      title: 'SEDIMENT CONTROL — SILT FENCE', std: '2011 MD STANDARDS AND SPECIFICATIONS',
+      draw: (bx, by, bw, bh) => {
+        const gy = by + bh - 26
+        doc.moveTo(bx + 12, gy).lineTo(bx + bw - 12, gy)
+           .lineWidth(0.6).strokeColor('#000000').stroke()
+        for (let px = bx + 24; px < bx + bw - 24; px += 26) {
+          doc.moveTo(px, gy).lineTo(px, gy - 16).lineWidth(0.5).strokeColor('#333333').stroke()
+        }
+        doc.moveTo(bx + 20, gy - 12).lineTo(bx + bw - 20, gy - 12)
+           .lineWidth(0.4).strokeColor('#333333').stroke()
+        doc.font('Helvetica').fontSize(5.4).fillColor('#333333')
+           .text('POSTS AT 6 FT MAX · FABRIC TOED IN · SEE STABILIZATION NOTE',
+                 bx + 12, gy + 5, { width: bw - 24, lineBreak: false })
+      },
+    },
+  ]
+  const gap = 10
+  const bw = (w - gap * (items.length - 1)) / items.length
+  items.forEach((it, i) => {
+    const bx = x + i * (bw + gap)
+    box(doc, bx, y, bw, h, PEN.frame)
+    doc.rect(bx, y, bw, 13).fillColor('#eeeeee').fill()
+    box(doc, bx, y, bw, 13, PEN.hair)
+    doc.font('Helvetica-Bold').fontSize(7).fillColor('#000000')
+       .text(it.title, bx + 5, y + 3.5, { width: bw - 10, lineBreak: false })
+    it.draw(bx, y + 13, bw, h - 13)
+    doc.font('Helvetica').fontSize(5.4).fillColor('#666666')
+       .text(`${it.std} — THE STANDARD DETAIL GOVERNS ALL DIMENSIONS. NOT TO SCALE.`,
+             bx + 5, y + h - 11, { width: bw - 10, lineBreak: false })
+  })
+  return y + h
+}
+
+/**
+ * A bordered, headed panel — the unit the approved title blocks are built from.
+ *
+ * The column was a flat stack of headings and rows with nothing separating one
+ * subject from the next, so a reader had to work out where the revisions ended
+ * and the approvals began. Every approved sheet in this repo sections its block
+ * into ruled panels instead.
+ */
+function panel(doc: Doc, x: number, y: number, w: number, h: number, title: string): number {
+  box(doc, x, y, w, h, PEN.frame)
+  doc.rect(x, y, w, 13).fillColor('#eeeeee').fill()
+  box(doc, x, y, w, 13, PEN.hair)
+  doc.font('Helvetica-Bold').fontSize(7.5).fillColor('#000000')
+     .text(title, x + 5, y + 3.5, { width: w - 10, lineBreak: false })
+  return y + 13
+}
+
+/** REVISIONS — ruled empty rows, as every approved sheet carries. */
+function revisionsPanel(doc: Doc, x: number, y: number, w: number): number {
+  const rows = 4, rowH = 13
+  const h = 13 + rows * rowH
+  const top = panel(doc, x, y, w, h, 'REVISIONS')
+  const c1 = 34, c2 = 62
+  doc.font('Helvetica-Bold').fontSize(6).fillColor('#555555')
+  doc.text('NO.', x + 4, top + 3, { width: c1 - 8, lineBreak: false })
+  doc.text('DATE', x + c1 + 4, top + 3, { width: c2 - 8, lineBreak: false })
+  doc.text('DESCRIPTION', x + c1 + c2 + 4, top + 3, { width: w - c1 - c2 - 8, lineBreak: false })
+  for (let i = 0; i <= rows; i++) {
+    const ly = top + 11 + i * ((h - 13 - 11) / rows)
+    doc.moveTo(x, ly).lineTo(x + w, ly).lineWidth(0.3).strokeColor('#999999').stroke()
+  }
+  for (const cx of [x + c1, x + c1 + c2]) {
+    doc.moveTo(cx, top).lineTo(cx, y + h).lineWidth(0.3).strokeColor('#999999').stroke()
+  }
+  return y + h
+}
+
+/** PLAN TYPE, PREPARER AND CHECKING — who made the sheet and in what capacity. */
+function preparerPanel(doc: Doc, x: number, y: number, w: number, ctx: SheetContext): number {
+  const rows: [string, string][] = [
+    ['PLAN TYPE', 'SITE DEVELOPMENT / FINE GRADING'],
+    ['SHEET', `${ctx.sheet} — ${SHEET_TITLES[ctx.sheet]}`],
+    ['DISCIPLINE', SHEET_DISCIPLINE[ctx.sheet] ?? '—'],
+    ['DRAWN BY', 'KEALEE SITE-PLAN ENGINE (AUTOMATED)'],
+    ['DESIGNED BY', '— (TO BE COMPLETED BY THE DESIGN PROFESSIONAL)'],
+    ['CHECKED BY', '— (TO BE COMPLETED BY THE DESIGN PROFESSIONAL)'],
+  ]
+  const h = 13 + rows.length * 12 + 4
+  const top = panel(doc, x, y, w, h, 'PLAN TYPE AND PREPARATION')
+  let cy = top + 4
+  for (const [k, v] of rows) {
+    doc.font('Helvetica-Bold').fontSize(6.2).fillColor('#555555')
+       .text(k, x + 5, cy, { width: 74, lineBreak: false })
+    doc.font('Helvetica').fontSize(6.5).fillColor('#000000')
+       .text(v, x + 82, cy, { width: w - 88, lineBreak: false })
+    cy += 12
+  }
+  return y + h
 }
 
 function generalNotes(doc: Doc, x: number, y: number, twin?: SiteTwin): number {
@@ -846,11 +1103,11 @@ function generalNotes(doc: Doc, x: number, y: number, twin?: SiteTwin): number {
     // repo went to the trouble of catching back onto every sheet.
     'CONNECT TO EXISTING PAVEMENT, CURB AND GUTTER, DRIVEWAY AND SIDEWALK IN LINE AND GRADE.',
   ]
-  doc.font('Helvetica-Bold').fontSize(7).fillColor('#000000')
+  doc.font('Helvetica-Bold').fontSize(9).fillColor('#000000')
      .text('GENERAL NOTES', x, y, { lineBreak: false })
   let cy = y + 11
   notes.forEach((n, i) => {
-    doc.font('Helvetica').fontSize(5.6).fillColor('#333333')
+    doc.font('Helvetica').fontSize(7).fillColor('#333333')
        .text(`${i + 1}.  ${n}`, x, cy, { width: 250 })
     cy = doc.y + 2
   })
@@ -881,11 +1138,11 @@ function siteAnalysis(doc: Doc, x: number, y: number, ctx: SheetContext): number
     ['5.  Net tract area', fmt(gross)],
     ['6.  TOTAL AREA DISTURBED', dist == null ? 'NOT QUANTIFIED' : fmt(dist)],
   ]
-  doc.font('Helvetica-Bold').fontSize(7).fillColor('#000000')
+  doc.font('Helvetica-Bold').fontSize(9).fillColor('#000000')
      .text('SITE ANALYSIS', x, y, { lineBreak: false })
   let cy = y + 11
   for (const [a, b] of rows) {
-    doc.font('Helvetica').fontSize(5.8).fillColor('#333333')
+    doc.font('Helvetica').fontSize(7.5).fillColor('#333333')
        .text(a, x, cy, { width: 150, lineBreak: false })
     doc.text(b, x + 152, cy, { width: 104, lineBreak: false })
     cy += 9
@@ -904,17 +1161,17 @@ function sequenceOfConstruction(doc: Doc, x: number, y: number): number {
     ['Fine grade and stabilize all disturbed areas', '1 DAY'],
     ['Remove sediment control devices when written permission has been granted by the inspector', '1 DAY'],
   ]
-  doc.font('Helvetica-Bold').fontSize(7).fillColor('#000000')
+  doc.font('Helvetica-Bold').fontSize(9).fillColor('#000000')
      .text('SEQUENCE OF CONSTRUCTION', x, y, { lineBreak: false })
   let cy = y + 11
   steps.forEach(([label, dur], i) => {
-    doc.font('Helvetica').fontSize(5.6).fillColor('#333333')
+    doc.font('Helvetica').fontSize(7).fillColor('#333333')
        .text(`${i + 1}.  ${label}`, x, cy, { width: 200 })
-    doc.font('Helvetica-Bold').fontSize(5.6).fillColor('#000000')
+    doc.font('Helvetica-Bold').fontSize(7).fillColor('#000000')
        .text(dur, x + 204, cy, { width: 52, lineBreak: false })
     cy = doc.y + 2
   })
-  doc.font('Helvetica-Bold').fontSize(5.8).fillColor('#000000')
+  doc.font('Helvetica-Bold').fontSize(7.5).fillColor('#000000')
      .text('TOTAL ESTIMATED TIME OF CONSTRUCTION:  12 MONTHS', x, cy + 3, { width: 256 })
   return doc.y + 4
 }
@@ -933,16 +1190,16 @@ function approvalBlocks(doc: Doc, x: number, y: number): number {
   ]
   let cy = y
   for (const [title, sub] of blocks) {
-    doc.font('Helvetica-Bold').fontSize(5.8).fillColor('#000000')
+    doc.font('Helvetica-Bold').fontSize(7.5).fillColor('#000000')
        .text(title, x, cy, { width: 256 })
     cy = doc.y
     if (sub) {
-      doc.font('Helvetica').fontSize(5.2).fillColor('#666666').text(sub, x, cy, { width: 256 })
+      doc.font('Helvetica').fontSize(7).fillColor('#666666').text(sub, x, cy, { width: 256 })
       cy = doc.y
     }
     cy += 3
     box(doc, x, cy, 256, 30, PEN.hair)
-    doc.font('Helvetica').fontSize(5).fillColor('#999999')
+    doc.font('Helvetica').fontSize(7).fillColor('#999999')
        .text('SIGNATURE', x + 4, cy + 20, { lineBreak: false })
        .text('DATE', x + 190, cy + 20, { lineBreak: false })
     cy += 38
@@ -971,9 +1228,9 @@ function soilsTable(doc: Doc, x: number, y: number, ctx: SheetContext, maxW: num
   const rowH = 10
   const totalW = Math.min(maxW, cols.reduce((n, c) => n + c[1], 0))
 
-  doc.font('Helvetica-Bold').fontSize(7).fillColor('#000000')
+  doc.font('Helvetica-Bold').fontSize(9).fillColor('#000000')
      .text('SOILS TABLE', x, y, { lineBreak: false })
-  doc.font('Helvetica').fontSize(5).fillColor('#666666')
+  doc.font('Helvetica').fontSize(7).fillColor('#666666')
      .text('USDA NRCS SSURGO — required by PGC Code Sec. 32-130(a)(13)', x + 62, y + 1, { lineBreak: false })
 
   let cy = y + 11
@@ -982,7 +1239,7 @@ function soilsTable(doc: Doc, x: number, y: number, ctx: SheetContext, maxW: num
 
   let cx = x
   for (const [label, w] of cols) {
-    doc.font('Helvetica-Bold').fontSize(5.4).fillColor('#000000')
+    doc.font('Helvetica-Bold').fontSize(7).fillColor('#000000')
        .text(label, cx + 3, cy + 3, { width: w - 5, lineBreak: false })
     cx += w
   }
@@ -995,7 +1252,7 @@ function soilsTable(doc: Doc, x: number, y: number, ctx: SheetContext, maxW: num
                   u.hydricRating ?? '—', u.hydrologicGroup ?? '—', u.drainageClass ?? '—']
     cx = x
     vals.forEach((v, i) => {
-      doc.font('Helvetica').fontSize(5.2).fillColor('#333333')
+      doc.font('Helvetica').fontSize(7).fillColor('#333333')
          .text(String(v), cx + 3, cy + 3, { width: cols[i][1] - 5, lineBreak: false, ellipsis: true })
       cx += cols[i][1]
     })
@@ -1017,14 +1274,14 @@ function legend(doc: Doc, x: number, y: number): number {
     ['#666666', 'PROPOSED PAVEMENT — DRIVEWAY / WALK', false],
     ['#2980b9', 'EASEMENT', true],
   ]
-  doc.font('Helvetica-Bold').fontSize(7).fillColor('#000000').text('LEGEND', x, y, { lineBreak: false })
+  doc.font('Helvetica-Bold').fontSize(9).fillColor('#000000').text('LEGEND', x, y, { lineBreak: false })
   let cy = y + 11
   for (const [color, label, dashed] of rows) {
     doc.save().lineWidth(1.1).strokeColor(color)
     if (dashed) doc.dash(3, { space: 2 })
     doc.moveTo(x, cy + 3).lineTo(x + 26, cy + 3).stroke()
     doc.undash().restore()
-    doc.font('Helvetica').fontSize(5.8).fillColor('#333333')
+    doc.font('Helvetica').fontSize(7.5).fillColor('#333333')
        .text(label, x + 32, cy, { lineBreak: false })
     cy += 10
   }
@@ -1188,7 +1445,21 @@ export function renderSheetSetPdf(input: RenderPdfInput): Promise<RenderedPdf> {
 
       const drawRight = sheetSize.widthPt - sheetSize.marginPt - sheetSize.titleBlockWidthPt
       northArrow(doc, drawRight - 40, sheetSize.marginPt + 24)
+      // TYPICAL SECTIONS fill the band the plan does not reach, above the
+      // graphic scale. The drawing is centred vertically, so on a site taller
+      // than it is wide the sheet is left with usable empty width; a reviewer
+      // would rather have the frontage section there than white paper.
+      const usedBottom = vp.originY + (b.maxY - b.minY + PAD_FT * 2) * vp.pointsPerFoot
+      const scaleTop = sheetSize.heightPt - sheetSize.marginPt - 44
+      const bandTop = usedBottom + 14
+      const bandH = scaleTop - bandTop - 8
+      if (bandH > 60) {
+        typicalSections(doc, sheetSize.marginPt + 16, bandTop,
+          drawRight - sheetSize.marginPt - 32, Math.min(bandH, 140))
+      }
+
       graphicScale(doc, sheetSize.marginPt + 16, sheetSize.heightPt - sheetSize.marginPt - 26, vp)
+
 
       // County-required notes, printed in full. pdfkit wraps within `width`,
       // so the certificate is never clipped — unlike the source-and-accuracy
@@ -1199,7 +1470,7 @@ export function renderSheetSetPdf(input: RenderPdfInput): Promise<RenderedPdf> {
         label(doc, sheetSize.marginPt + 16, ny, 'SOURCE AND ACCURACY', 6, { color: '#666666' })
         for (const n of input.sourceNotes.slice(0, 4)) {
           ny += 9
-          doc.font('Helvetica').fontSize(6).fillColor('#444444')
+          doc.font('Helvetica').fontSize(7.5).fillColor('#444444')
              .text(n, sheetSize.marginPt + 16, ny, { width: 380, lineBreak: false, ellipsis: true })
         }
       }
@@ -1209,7 +1480,11 @@ export function renderSheetSetPdf(input: RenderPdfInput): Promise<RenderedPdf> {
       // goes right of it, so contours and site geometry never run under the
       // title block.
       const blockX = drawRight + 10
-      const blockW = 256
+      // The column's FULL width, computed rather than typed. It was a hardcoded
+      // 256 pt while the column is 7 in wide, so every table and note was set
+      // into two-thirds of the space available and wrapped far more than it
+      // needed to.
+      const blockW = sheetSize.widthPt - sheetSize.marginPt - blockX - 6
       // The title block owns the full-height right column, so its identity
       // content is laid down first and everything else stacks BELOW it.
       // Drawing the data first put it straight over the responsibility rows.
@@ -1219,24 +1494,75 @@ export function renderSheetSetPdf(input: RenderPdfInput): Promise<RenderedPdf> {
       soilsTable(doc, sheetSize.marginPt + 16,
         sheetSize.heightPt - sheetSize.marginPt - 265, ctx, drawRight - sheetSize.marginPt - 40)
 
-      let by = indexOfDrawings(doc, blockX, tbBottom + 12, ctx) + 12
-      by = siteDataTable(doc, blockX, by, ctx) + 12
-      by = siteAnalysis(doc, blockX, by, ctx) + 12
-      by = sequenceOfConstruction(doc, blockX, by) + 10
-      by = generalNotes(doc, blockX, by, ctx.twin) + 10
-      by = platRecordBlock(doc, ctx.twin, blockX, by) + 10
-      by = legend(doc, blockX, by) + 12
-      by = approvalBlocks(doc, blockX, by) + 6
+      // THE CERTIFICATION IS ANCHORED TO THE BOTTOM OF THE COLUMN, and the
+      // stack above it is clipped to what fits.
+      //
+      // Laid out in flow order it ran past the page edge, and pdfkit responds
+      // to that by starting a NEW PAGE — so a one-sheet plan silently became a
+      // two-page PDF with the seal alone on the second. The same failure once
+      // turned a five-sheet set into sixty-five pages here.
+      const pageBottom = sheetSize.heightPt - sheetSize.marginPt - 8
+      const CERT_H = 150
+      const certTop = pageBottom - CERT_H
+      const room = (want: number, cur: number) => cur + want <= certTop - 6
+
+      let by = preparerPanel(doc, blockX, tbBottom + 12, blockW, ctx) + 8
+      if (room(80, by)) by = revisionsPanel(doc, blockX, by, blockW) + 8
+      if (room(40, by)) by = indexOfDrawings(doc, blockX, by, ctx) + 12
+      if (room(150, by)) by = siteDataTable(doc, blockX, by, ctx) + 12
+      if (room(90, by)) by = siteAnalysis(doc, blockX, by, ctx) + 12
+      if (room(80, by)) by = buildingData(doc, blockX, by, blockW, ctx) + 12
+      if (room(100, by)) by = sequenceOfConstruction(doc, blockX, by) + 10
+      if (room(180, by)) by = generalNotes(doc, blockX, by, ctx.twin) + 10
+      if (room(200, by)) by = platRecordBlock(doc, ctx.twin, blockX, by) + 10
+      if (room(80, by)) by = legend(doc, blockX, by) + 12
+      if (room(110, by)) by = approvalBlocks(doc, blockX, by) + 6
+
+      // ENGINEER'S SEAL AND SIGNATURE AREA.
+      //
+      // Every approved sheet in this repo carries one — a reserved area for the
+      // Maryland PE's embossed seal beside a signature and date. It is left
+      // EMPTY: the platform draws the plan and a licensed professional seals it,
+      // and a box that pre-fills a name or draws a seal would assert a
+      // certification that does not exist.
+      let certY = certTop
+      label(doc, blockX, certY, "PROFESSIONAL CERTIFICATION", 8.5, { bold: true })
+      certY += 11
+      doc.font('Helvetica').fontSize(7).fillColor('#000000')
+         .text('I HEREBY CERTIFY THAT THESE DOCUMENTS WERE PREPARED OR APPROVED BY ME, AND THAT ' +
+               'I AM A DULY LICENSED PROFESSIONAL ENGINEER UNDER THE LAWS OF THE STATE OF ' +
+               'MARYLAND.', blockX, certY, { width: blockW })
+      certY = doc.y + 4
+      const sealH = 84
+      box(doc, blockX, certY, blockW, sealH, PEN.hair)
+      doc.font('Helvetica').fontSize(6.5).fillColor('#999999')
+         .text('SEAL', blockX + 8, certY + sealH - 14, { width: 60, lineBreak: false })
+      // Signature, licence and expiry, on ruled lines the PE completes.
+      const colW = (blockW - 12) / 2
+      let sy = certY + 12
+      for (const [l, rlab] of [['SIGNATURE', 'DATE'], ['LICENSE NO.', 'EXPIRATION DATE']]) {
+        doc.moveTo(blockX + 96, sy + 16).lineTo(blockX + 96 + colW - 20, sy + 16)
+           .lineWidth(0.4).strokeColor('#000000').stroke()
+        doc.moveTo(blockX + 96 + colW, sy + 16).lineTo(blockX + blockW - 8, sy + 16).stroke()
+        doc.font('Helvetica').fontSize(6).fillColor('#666666')
+           .text(l, blockX + 96, sy + 18, { width: colW - 20, lineBreak: false })
+        doc.font('Helvetica').fontSize(6).fillColor('#666666')
+           .text(rlab, blockX + 96 + colW, sy + 18, { width: colW - 8, lineBreak: false })
+        sy += 34
+      }
+      by = certY + sealH + 8
+
+
 
       // County-required notes, printed in full. pdfkit wraps within `width`,
       // so the certificate is never clipped.
       for (const note of ctx.requiredNotes ?? []) {
         label(doc, blockX, by, note.title.toUpperCase(), 7, { bold: true })
         by += 10
-        doc.font('Helvetica').fontSize(5.6).fillColor('#000000')
+        doc.font('Helvetica').fontSize(7).fillColor('#000000')
            .text(note.text, blockX, by, { width: blockW, align: 'left' })
         by = doc.y + 2
-        doc.font('Helvetica').fontSize(5).fillColor('#666666')
+        doc.font('Helvetica').fontSize(7).fillColor('#666666')
            .text(note.source.citation, blockX, by, { width: blockW })
         by = doc.y + 8
       }
