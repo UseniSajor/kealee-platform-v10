@@ -240,7 +240,7 @@ export async function fetchPgContours(
     truncated,
     caveats,
     source: {
-      authority: "Prince George's County / M-NCPPC — PGAtlas",
+      authority: "Prince George's County / M-NCPPC",
       endpoint: url,
       retrievedAt,
       layer: 'Elevation/MapServer/1 — Contour - 2 Ft (2023)',

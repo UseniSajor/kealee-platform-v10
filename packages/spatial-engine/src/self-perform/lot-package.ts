@@ -19,6 +19,7 @@ import { gisSourceRecord, LEVEL_1_DISCLOSURE, type ReliabilityLevel } from '../s
 import { classifyProject, type ApplicabilityReport } from '../site-plan/classification'
 import { calculateDisturbance, type DisturbanceComponents, type DisturbanceResult } from '../site-plan/disturbance'
 import { buildMissingInformationReport, type MissingInformationReport } from '../site-plan/reports'
+import { computeDrainage } from '../site-plan/drainage'
 import { buildCountyChecklist, type CountyChecklist } from '../review/checklist'
 import { composeSheets, blocksFromFeatures, type CompositionResult } from '../sheets/composer'
 import { buildResponsibilityBlock, type DividedResponsibilityBlock } from '../review/content-scope'
@@ -122,6 +123,14 @@ export interface LotInput {
    * be sited across.
    */
   platFrontageEasementFt?: number | null
+  /** Which main the sanitary lateral runs to — frontage, or a main behind. */
+  sanitaryFrom?: 'frontage' | 'rear'
+  /** Rainfall intensity, in/hr, from NOAA Atlas 14 for this site and storm. */
+  rainfallIntensityInPerHr?: number | null
+  /** Slope of the longest flow path, ft/ft, from the grading design. */
+  flowPathSlopeFtPerFt?: number | null
+  /** Water quality storm depth, in, per the Maryland Stormwater Design Manual. */
+  waterQualityRainfallIn?: number | null
   /** Front setback stated for this lot, overriding the zone table. */
   frontSetbackFt?: number | null
   /** Face of building to the start of the street, when quoted that way. */
@@ -592,11 +601,24 @@ export function buildLotPackage(lot: LotInput, resolved?: ResolvedBoundary | nul
       }] as never[])
     }
 
+    // The rear point: the mid of the edge furthest from the street, for a lot
+    // sewered from a main behind it rather than from the frontage.
+    const rearPoint = (() => {
+      if (!ring) return null
+      const pts = normaliseRing(ring)
+      const ri = buildable.edgeYards.indexOf('rear')
+      const i = ri >= 0 ? ri : buildable.edgeYards.findIndex(y => y === 'side')
+      if (i < 0 || i >= pts.length) return null
+      const a2 = pts[i], b2 = pts[(i + 1) % pts.length]
+      return [(a2[0] + b2[0]) / 2, (a2[1] + b2[1]) / 2] as Position
+    })()
     const design = generateDesign({
       twin,
       contourIntervalFt: lot.contours?.length ? 2 : undefined,
       frontPoint,
       envelope: buildable.ring ?? undefined,
+      rearPoint,
+      sanitaryFrom: lot.sanitaryFrom,
     })
 
     // Two filters, both about not drawing something wrong on a sheet a
@@ -619,9 +641,46 @@ export function buildLotPackage(lot: LotInput, resolved?: ResolvedBoundary | nul
       const pts = f.ring?.coordinates ?? f.line ?? (f.point ? [f.point] : [])
       return pts.every(pt => pointInPolygon(pt, parcelRing))
     }
-    const drawable = design.features.filter(
-      f => f.kind !== 'Pavement' && contained(f as never),
-    )
+    // A SERVICE LATERAL STARTS AT THE FRONTAGE, WHICH IS ON THE LOT LINE.
+    //
+    // `contained` demands every point strictly inside, and a point exactly on
+    // the boundary fails an even-odd test. So the water, sewer and storm runs —
+    // which by definition begin at the connection in the street and end at the
+    // house — were being dropped as 'outside the lot'. A dwelling drawn with no
+    // sewer connection is not a plan a reviewer can approve, and the plat's own
+    // note is FOR PUBLIC WATER AND SEWER ONLY.
+    //
+    // Lines are therefore CLIPPED rather than discarded: any endpoint outside is
+    // walked in along its own segment until it lands inside. The run still
+    // reaches the frontage; it just stops at the property line, which is where
+    // the lot's responsibility stops.
+    const clipToLot = (pts: Position[]): Position[] | null => {
+      const inside = pts.map(pt => pointInPolygon(pt, parcelRing))
+      if (inside.every(Boolean)) return pts
+      if (!inside.some(Boolean)) return null
+      return pts.map((pt, i) => {
+        if (inside[i]) return pt
+        const anchor = pts.find((_, j) => inside[j])
+        if (!anchor) return pt
+        let lo = 0, hi = 1
+        for (let k = 0; k < 24; k++) {
+          const mid = (lo + hi) / 2
+          const q: Position = [pt[0] + (anchor[0] - pt[0]) * mid, pt[1] + (anchor[1] - pt[1]) * mid]
+          if (pointInPolygon(q, parcelRing)) hi = mid
+          else lo = mid
+        }
+        return [pt[0] + (anchor[0] - pt[0]) * hi, pt[1] + (anchor[1] - pt[1]) * hi] as Position
+      })
+    }
+    const drawable = design.features.flatMap(f => {
+      if (f.kind === 'Pavement') return []
+      const line = (f as { line?: Position[] }).line
+      if (line?.length) {
+        const cl = clipToLot(line)
+        return cl ? [{ ...f, line: cl }] : []
+      }
+      return contained(f as never) ? [f] : []
+    })
     if (drawable.length) twin = addFeatures(twin, drawable as never[])
     // Carried on the twin so the sheet's SITE DATA table can print required
     // versus provided without re-deriving anything.
@@ -666,7 +725,7 @@ export function buildLotPackage(lot: LotInput, resolved?: ResolvedBoundary | nul
     if (lot.easements !== undefined) {
       twin = addSource(twin, gisSourceRecord({
         sourceId: 'easements',
-        authority: 'PGAtlas Easement (platted)',
+        authority: "Prince George's County — platted easements",
         dataset: 'Recorded easements — platted',
         crs: 'EPSG:2248', horizontalDatum: 'NAD83',
       }))
@@ -678,6 +737,18 @@ export function buildLotPackage(lot: LotInput, resolved?: ResolvedBoundary | nul
         ...(e.recordReference ? { recordReference: e.recordReference } : {}),
         ...(e.widthFt != null ? { widthFt: e.widthFt } : {}),
       })) as never[])
+    }
+    // DRAINAGE COMPUTATIONS. The engineering module has carried the rational
+    // method since it was written and nothing called it: the plan drew a
+    // catchment and computed nothing from it.
+    if (ring) {
+      const drainage = computeDrainage({
+        twin, catchment: ring,
+        intensityInPerHr: lot.rainfallIntensityInPerHr ?? null,
+        flowPathSlopeFtPerFt: lot.flowPathSlopeFtPerFt ?? null,
+        waterQualityRainfallIn: lot.waterQualityRainfallIn ?? null,
+      })
+      if (drainage) twin = { ...twin, drainage } as typeof twin
     }
     if (lot.soils?.length) twin = { ...twin, soils: lot.soils } as typeof twin
     if (lot.streets?.length) twin = { ...twin, streets: lot.streets } as typeof twin
@@ -787,7 +858,7 @@ export function buildLotPackage(lot: LotInput, resolved?: ResolvedBoundary | nul
       'No parcel boundary resolved for this address, so the lot outline is absent from the drawing. ' +
       'A boundary invented from a lot width and depth would render exactly like a real one and ' +
       'nothing downstream could tell them apart, so none is invented. Parcel geometry is available ' +
-      'from PGAtlas (gis.pgatlas.com Property/MapServer/15) and from statewide MD iMAP; check the ' +
+      'from the county parcel layer and from statewide MD iMAP; check the ' +
       'address geocoded inside the lot.',
     )
   }

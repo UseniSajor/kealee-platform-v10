@@ -93,6 +93,10 @@ export interface DesignInput {
    * runs off the property on any lot whose first vertex is not the frontage.
    */
   frontPoint?: Position
+  /** Mid of the lot line furthest from the street, for a rear connection. */
+  rearPoint?: Position | null
+  /** Which main the sanitary lateral runs to. Defaults to the frontage. */
+  sanitaryFrom?: 'frontage' | 'rear'
   /** Buildable envelope. Planting and practices are kept inside the lot. */
   envelope?: Ring
   hasDemolition?: boolean
@@ -174,12 +178,27 @@ export function generateDesign(input: DesignInput): DesignResult {
   if (site && proposedBuildings[0]) {
     const bc = ringCentroid(proposedBuildings[0].ring)
     const frontage = input.frontPoint ?? site.coordinates[0]
-    for (const [type, offset] of [['Water service', -4], ['Sanitary lateral', 0], ['Storm drain', 4]] as const) {
+    // WHERE EACH SERVICE COMES FROM IS A FACT ABOUT THE SITE, not a default.
+    //
+    // All three ran from the frontage because that is the usual case. It is not
+    // always the case: a lot can be sewered from a main in the rear, and drawing
+    // that lateral out to the street instead is a connection to the wrong main.
+    // `sanitaryFrom` says which, and the rear point is the mid of the edge
+    // furthest from the street.
+    const rearPoint: Position | null = input.rearPoint ?? null
+    const runs: [string, number, Position][] = [
+      ['Water service', -4, frontage],
+      ['Sanitary lateral', 0,
+        input.sanitaryFrom === 'rear' && rearPoint ? rearPoint : frontage],
+      ['Storm drain', 4, frontage],
+    ]
+    for (const [type, offset, from] of runs) {
       features.push({
         ...base, kind: 'Utility', id: nextId('util'),
-        line: [[frontage[0] + offset, frontage[1]], [bc[0] + offset, bc[1]]],
+        line: [[from[0] + offset, from[1]], [bc[0] + offset, bc[1]]],
         attributes: {
           type,
+          from: from === frontage ? 'frontage' : 'rear',
           note: 'Record information. Field verification required before excavation — call Miss Utility.',
         },
       } as SiteFeature)

@@ -51,6 +51,7 @@ type PlatSpec = {
   programme?: Record<string, unknown>
   triangleRearAsSide?: boolean
   frontSetbackFt?: number
+  sanitaryFrom?: 'frontage' | 'rear'
   frontFaceToCurbFt?: number
   curbOffsetFt?: number
   calls: unknown[]
@@ -199,6 +200,7 @@ async function main(): Promise<void> {
         // dimensioned on the recorded instrument; PGAtlas supplies the layers
         // the plat does not carry — contours, zoning, streets.
         frontSetbackFt: spec.frontSetbackFt ?? null,
+        sanitaryFrom: spec.sanitaryFrom,
         frontFaceToCurbFt: spec.frontFaceToCurbFt ?? null,
         curbOffsetFt: spec.curbOffsetFt ?? null,
         dedicationWidthFt: platRecord?.dedicationWidthFt ?? null,
@@ -412,11 +414,14 @@ async function main(): Promise<void> {
       // Keep even a short run: it is the piece that reaches the lot line.
       if (s1 - s0 < 0.05) return
       bandFrom(0, SW_W, `frontage-sidewalk-${k}`, 'Pavement',
-        `CONCRETE SIDEWALK  ${SW_W}' WIDE`, at(s0), at(s1))
+        k === 0 ? `CONCRETE SIDEWALK  ${SW_W}' WIDE` : '', at(s0), at(s1))
       bandFrom(SW_W, VERGE_W, `frontage-verge-${k}`, 'Surface',
-        `PLANTING STRIP  ${VERGE_W}' WIDE  (STREET TREES)`, at(s0), at(s1))
+        k === 0 ? `PLANTING STRIP  ${VERGE_W}' WIDE  (STREET TREES)` : '', at(s0), at(s1))
+      // The curb is ONE thing lettered ONCE, even though the driveways break it
+      // into three runs. Labelling each run put CURB AND GUTTER on the sheet
+      // three times for one continuous kerb line.
       bandFrom(SW_W + VERGE_W, 1.5, `frontage-curb-${k}`, 'Pavement',
-        'CURB AND GUTTER', at(s0), at(s1))
+        k === 0 ? 'CURB AND GUTTER' : '', at(s0), at(s1))
     })
     console.log(`    frontage bands  ${runs.length} run(s) broken by `
       + `${gaps.length} driveway crossing(s)`)

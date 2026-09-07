@@ -23,6 +23,9 @@ import {
 } from './viewport'
 import type { SheetContext, SheetId } from './sheet-template'
 import { SHEET_TITLES, SHEET_DISCIPLINE, auditSheetFrame } from './sheet-template'
+import type { DrainageComputation } from '../site-plan/drainage'
+import { existsSync } from 'fs'
+import { join } from 'path'
 import type { DividedResponsibilityBlock } from '../review/content-scope'
 
 const PAD_FT = 20
@@ -321,34 +324,60 @@ function drawGeometry(doc: Doc, ctx: SheetContext, vp: Viewport, b: Bounds): voi
 
   for (const c of genericOfKind(t, 'Contour')) {
     if (!c.line?.length) continue
-    // Segment-level: keep a segment when EITHER end is on the lot, so a
-    // contour crossing the boundary reaches the edge of the strip instead of
-    // stopping at its last interior vertex and reading as incomplete.
+    // CLIPPED TO THE DRAWING FRAME, not to the lot.
+    //
+    // Keeping only what crossed the boundary left two contours on the sheet:
+    // the lots fall about four feet, so at a 2 ft interval that is all they
+    // contain. Existing ground does not stop at a property line and no drafter
+    // draws it that way — the contours run across the sheet, over the street
+    // and the adjoining land, which is what shows a reviewer where the water
+    // goes.
+    const inFrame = (q: Position) =>
+      q[0] >= b.minX - PAD_FT && q[0] <= b.maxX + PAD_FT &&
+      q[1] >= b.minY - PAD_FT && q[1] <= b.maxY + PAD_FT
     const src = c.line as Position[]
-    const kept: Position[] = []
+    const runs: Position[][] = []
+    let cur: Position[] = []
     for (let i = 0; i < src.length - 1; i++) {
-      if (onLot(src[i]) || onLot(src[i + 1])) {
-        if (kept.length === 0) kept.push(src[i])
-        kept.push(src[i + 1])
-      }
+      if (inFrame(src[i]) || inFrame(src[i + 1])) {
+        if (cur.length === 0) cur.push(src[i])
+        cur.push(src[i + 1])
+      } else if (cur.length) { runs.push(cur); cur = [] }
     }
-    if (kept.length < 2) continue
+    if (cur.length) runs.push(cur)
     const a = c.attributes ?? {}
     const index = a.weight === 'index'
-    polyline(doc, kept.map((p: Position) => P(p)),
-      // An index contour is heavier and its dash longer, as a drafter draws it.
-      { ...PEN.contour, width: index ? 0.7 : 0.35, dash: index ? [9, 4] : [5, 3] })
-    // Elevation label on the line, as a drafter breaks a contour to letter it.
     const el = a.elevationFt
-    if (el != null && kept.length > 2) {
-      const mid = P(kept[Math.floor(kept.length / 2)])
-      doc.save()
-      doc.font('Helvetica').fontSize(index ? 6.5 : 5.5).fillColor('#8a6d3b')
-         .text(String(el), mid[0] - 7, mid[1] - 3, { lineBreak: false })
-      doc.restore()
+    for (const kept of runs) {
+      if (kept.length < 2) continue
+      polyline(doc, kept.map((q: Position) => P(q)),
+        // An index contour is heavier and its dash longer, as a drafter draws it.
+        { ...PEN.contour, width: index ? 0.7 : 0.35, dash: index ? [9, 4] : [5, 3] })
+      // LABELLED REPEATEDLY along the line. One label at the midpoint leaves a
+      // contour that crosses the whole sheet unnamed at both ends, and a
+      // reviewer reads elevations where the contour meets what they are
+      // looking at, not where its midpoint happens to fall.
+      if (el == null || kept.length < 3) continue
+      const pj = kept.map((q: Position) => P(q))
+      let run = 0
+      for (let i = 1; i < pj.length; i++) {
+        run += Math.hypot(pj[i][0] - pj[i - 1][0], pj[i][1] - pj[i - 1][1])
+      }
+      const every = 210
+      const marks = Math.max(1, Math.min(6, Math.floor(run / every)))
+      for (let m = 1; m <= marks; m++) {
+        const at = Math.floor((pj.length - 1) * (m / (marks + 1)))
+        const q = pj[at]
+        doc.save()
+        doc.rect(q[0] - 9, q[1] - 4, 18, 8).fillColor('#ffffff').opacity(0.85).fill()
+        doc.opacity(1)
+        doc.font(index ? 'Helvetica-Bold' : 'Helvetica').fontSize(index ? 6.5 : 5.5)
+           .fillColor('#8a6d3b')
+           .text(String(el), q[0] - 8, q[1] - 3, { width: 16, align: 'center', lineBreak: false })
+        doc.restore()
+      }
     }
   }
-
   // ── Setback / buildable envelope, dashed ──────────────────────────────────
   for (const s of featuresOfKind(t, 'Setback')) {
     if (s.ring) polyline(doc, projectRing(s.ring, vp, b, PAD_FT), PEN.setback, true)
@@ -482,9 +511,18 @@ function drawGeometry(doc: Doc, ctx: SheetContext, vp: Viewport, b: Bounds): voi
     const pts = u.line.map(q => P(q as Position))
     // Long-dash, as an underground service run is drafted.
     polyline(doc, pts, { width: 0.7, color: '#0066aa', dash: [8, 3] }, false)
+    // Labels STAGGERED along their own run. The three services are parallel
+    // offsets a few feet apart, so at 1" = 20' their midpoints are within a
+    // dozen points of each other and all three names printed in the same place —
+    // legible as none of them.
     const label_ = String(u.attributes?.type ?? 'Utility')
-    const mid = pts[Math.floor(pts.length / 2)]
-    label(doc, mid[0] + 3, mid[1] - 4, label_.toUpperCase(), 5, { color: '#0066aa' })
+    const order = /water/i.test(label_) ? 0 : /sanitary|sewer/i.test(label_) ? 1 : 2
+    const t2 = 0.32 + order * 0.18
+    const i0 = Math.min(pts.length - 2, Math.floor(t2 * (pts.length - 1)))
+    const f2 = t2 * (pts.length - 1) - i0
+    const ax = pts[i0][0] + (pts[i0 + 1][0] - pts[i0][0]) * f2
+    const ay = pts[i0][1] + (pts[i0 + 1][1] - pts[i0][1]) * f2
+    label(doc, ax + 4, ay - 4 - order * 8, label_.toUpperCase(), 5.6, { color: '#0066aa' })
   }
 
   for (const d of genericOfKind(t, 'DrainageArea')) {
@@ -606,7 +644,7 @@ function drawGeometry(doc: Doc, ctx: SheetContext, vp: Viewport, b: Bounds): voi
     // overlapping words and no way to tell which named what. A leader is how a
     // drafter names something too narrow to letter inside.
     const a2 = (pv.attributes ?? {}) as { label?: string }
-    if (a2.label) {
+    if (a2.label && a2.label.trim()) {
       const cx2 = r.reduce((n, q) => n + q[0], 0) / r.length
       const cy2 = r.reduce((n, q) => n + q[1], 0) / r.length
       const lead = isCurb ? 46 : isWalk ? 30 : 16
@@ -638,9 +676,14 @@ function drawGeometry(doc: Doc, ctx: SheetContext, vp: Viewport, b: Bounds): voi
         const p0 = r[i], p1 = r[i + 1]
         const mx = (p0[0] + p1[0]) / 2, my = (p0[1] + p1[1]) / 2
         let ang = Math.atan2(p1[1] - p0[1], p1[0] - p0[0])
-        if (ang > Math.PI / 2 || ang < -Math.PI / 2) ang += Math.PI
-        const feet = Math.floor(ftLen)
-        const inches = Math.round((ftLen - feet) * 12)
+        // Normalised into [-90, 90] so the text is never inverted. Adding PI
+        // once is not enough: an angle already past PI comes back out of range.
+        while (ang > Math.PI / 2) ang -= Math.PI
+        while (ang < -Math.PI / 2) ang += Math.PI
+        // 25.99 ft rounded to 25'-12", which is not a dimension. Inches carry.
+        let feet = Math.floor(ftLen)
+        let inches = Math.round((ftLen - feet) * 12)
+        if (inches === 12) { feet += 1; inches = 0 }
         doc.save()
         doc.translate(mx, my).rotate((ang * 180) / Math.PI)
         doc.font('Helvetica-Bold').fontSize(6.5).fillColor('#000000')
@@ -667,6 +710,38 @@ function drawGeometry(doc: Doc, ctx: SheetContext, vp: Viewport, b: Bounds): voi
       doc.moveTo(x, maxY).lineTo(x + (maxY - minY), minY).stroke()
     }
     doc.opacity(1).restore()
+
+    // THE THREE ELEVATIONS A BUILDER SETS THE HOUSE FROM, inside the footprint
+    // and nothing else. The full six-row table is in the column: at 1"=20' it
+    // is wider than a 46 x 26 ft house and covered what it described.
+    //
+    // ALWAYS HORIZONTAL — rotated to the building's own axis they came out
+    // upside down on any wall facing away, and an elevation read upside down is
+    // a misread elevation.
+    {
+      const bAt = (bl as { attributes?: Record<string, unknown> }).attributes ?? {}
+      const ev = (k: string) => bAt[k] != null && Number.isFinite(Number(bAt[k]))
+        ? Number(bAt[k]).toFixed(2) : '—'
+      const rows2: [string, string][] = [
+        ['B', ev('basementElevFt')], ['FF', ev('finishedFloorElevFt')], ['SF', ev('subFloorElevFt')],
+      ]
+      const fx = r.reduce((n, q) => n + q[0], 0) / r.length
+      const fy = r.reduce((n, q) => n + q[1], 0) / r.length
+      const ew = 44, eh = rows2.length * 8 + 4
+      doc.save()
+      doc.rect(fx - ew / 2, fy - eh / 2, ew, eh).fillColor('#ffffff').opacity(0.85).fill()
+      doc.opacity(1)
+      box(doc, fx - ew / 2, fy - eh / 2, ew, eh, PEN.hair)
+      let ey = fy - eh / 2 + 2
+      for (const [k, v] of rows2) {
+        doc.font('Helvetica-Bold').fontSize(6).fillColor('#000000')
+           .text(k, fx - ew / 2 + 3, ey, { width: 14, lineBreak: false })
+        doc.font('Helvetica').fontSize(6).fillColor('#000000')
+           .text(v, fx - ew / 2 + 16, ey, { width: ew - 19, align: 'right', lineBreak: false })
+        ey += 8
+      }
+      doc.restore()
+    }
 
     // The label sits ABOVE the footprint, not in it. The data block occupies
     // the centre now, and the two were printing over each other — the one place
@@ -920,94 +995,120 @@ function buildingData(doc: Doc, x: number, y: number, w: number, ctx: SheetConte
 }
 
 /**
- * TYPICAL SECTIONS, in the space the plan does not use.
+ * DRAINAGE AREA COMPUTATIONS.
  *
- * The approved sets devote whole sheets to DPW&T standard details. A two-lot
- * plan does not need that, and the sheet has empty area below the drawing that
- * a reviewer would rather see used than blank.
- *
- * These are ARRANGEMENT sections, not reproductions. Each names the DPW&T
- * standard that governs it and says the standard carries the dimensions. The
- * standard details themselves are the county's drawings — copying them from
- * memory would put dimensions on a permit set that nobody has checked against
- * the source.
+ * A drainage area drawn without the numbers behind it asserts a catchment and
+ * proves nothing. What a reviewer reads is PRE against POST peak discharge: the
+ * increase is what the stormwater management answers for.
  */
-function typicalSections(doc: Doc, x: number, y: number, w: number, h: number): number {
-  const items: { title: string; std: string; draw: (bx: number, by: number, bw: number, bh: number) => void }[] = [
-    {
-      title: 'TYPICAL FRONTAGE SECTION', std: 'DPW&T STD. 300.01',
-      draw: (bx, by, bw, bh) => {
-        const gy = by + bh - 26, sc = (bw - 24) / 26
-        const seg = (x0: number, wFt: number, label: string, fill: string) => {
-          doc.rect(bx + 12 + x0 * sc, gy - 7, wFt * sc, 7).fillColor(fill).fill()
-          box(doc, bx + 12 + x0 * sc, gy - 7, wFt * sc, 7, PEN.hair)
-          doc.font('Helvetica').fontSize(5.4).fillColor('#333333')
-             .text(label, bx + 12 + x0 * sc, gy + 3, { width: wFt * sc, align: 'center', lineBreak: false })
-        }
-        seg(0, 3, "3' WALK", '#e8e8e8')
-        seg(3, 4, "4' STRIP", '#f6f6f6')
-        seg(7, 2, 'C&G', '#d8d8d8')
-        seg(9, 17, 'TRAVELLED WAY', '#bcbcbc')
-        doc.moveTo(bx + 12, gy).lineTo(bx + 12 + 26 * sc, gy)
-           .lineWidth(0.6).strokeColor('#000000').stroke()
-        doc.font('Helvetica-Bold').fontSize(5.6).fillColor('#000000')
-           .text('PROPERTY LINE', bx + 4, gy - 20, { width: 60, lineBreak: false })
-        doc.moveTo(bx + 12, gy - 14).lineTo(bx + 12, gy + 2)
-           .lineWidth(0.5).strokeColor('#000000').stroke()
-      },
-    },
-    {
-      title: 'DRIVEWAY APRON', std: 'DPW&T STD. 300.01 (DEPRESSED C&G AT DRIVEWAY)',
-      draw: (bx, by, bw, bh) => {
-        const cy2 = by + bh - 34, sc = (bw - 24) / 26
-        doc.rect(bx + 12, cy2, 7 * sc, 10).fillColor('#efefef').fill()
-        box(doc, bx + 12, cy2, 7 * sc, 10, PEN.hair)
-        doc.font('Helvetica').fontSize(5.4).fillColor('#333333')
-           .text("7' CONCRETE APRON", bx + 12, cy2 + 13, { width: 7 * sc, align: 'center', lineBreak: false })
-        doc.rect(bx + 12 + 7 * sc, cy2, 17 * sc, 10).fillColor('#bcbcbc').fill()
-        box(doc, bx + 12 + 7 * sc, cy2, 17 * sc, 10, PEN.hair)
-        doc.font('Helvetica').fontSize(5.4).fillColor('#333333')
-           .text('TRAVELLED WAY', bx + 12 + 7 * sc, cy2 + 13,
-                 { width: 17 * sc, align: 'center', lineBreak: false })
-        doc.font('Helvetica').fontSize(5.4).fillColor('#000000')
-           .text('CURB DEPRESSED THROUGH APRON; WALK AND STRIP INTERRUPTED.',
-                 bx + 12, cy2 - 12, { width: bw - 24, lineBreak: false })
-      },
-    },
-    {
-      title: 'SEDIMENT CONTROL — SILT FENCE', std: '2011 MD STANDARDS AND SPECIFICATIONS',
-      draw: (bx, by, bw, bh) => {
-        const gy = by + bh - 26
-        doc.moveTo(bx + 12, gy).lineTo(bx + bw - 12, gy)
-           .lineWidth(0.6).strokeColor('#000000').stroke()
-        for (let px = bx + 24; px < bx + bw - 24; px += 26) {
-          doc.moveTo(px, gy).lineTo(px, gy - 16).lineWidth(0.5).strokeColor('#333333').stroke()
-        }
-        doc.moveTo(bx + 20, gy - 12).lineTo(bx + bw - 20, gy - 12)
-           .lineWidth(0.4).strokeColor('#333333').stroke()
-        doc.font('Helvetica').fontSize(5.4).fillColor('#333333')
-           .text('POSTS AT 6 FT MAX · FABRIC TOED IN · SEE STABILIZATION NOTE',
-                 bx + 12, gy + 5, { width: bw - 24, lineBreak: false })
-      },
-    },
-  ]
-  const gap = 10
-  const bw = (w - gap * (items.length - 1)) / items.length
-  items.forEach((it, i) => {
+function drainageComputations(
+  doc: Doc, x: number, y: number, w: number, d: DrainageComputation | null,
+): number {
+  if (!d) return y
+  doc.font('Helvetica-Bold').fontSize(9).fillColor('#000000')
+     .text('DRAINAGE AREA COMPUTATIONS', x, y, { lineBreak: false })
+  let cy = y + 12
+  const cA = w * 0.52, cB = w * 0.16, cC = w * 0.16, cD = w * 0.16
+  const row = (a: string, b: string, c: string, dd: string, bold = false) => {
+    doc.font(bold ? 'Helvetica-Bold' : 'Helvetica').fontSize(6.5).fillColor('#000000')
+    doc.text(a, x, cy, { width: cA - 3, lineBreak: false })
+    doc.text(b, x + cA, cy, { width: cB - 3, align: 'right', lineBreak: false })
+    doc.text(c, x + cA + cB, cy, { width: cC - 3, align: 'right', lineBreak: false })
+    doc.text(dd, x + cA + cB + cC, cy, { width: cD - 3, align: 'right', lineBreak: false })
+    cy += 9
+  }
+  row('CATCHMENT', 'SF', 'ACRES', 'C', true)
+  row(`Total — ${d.percentImpervious.toFixed(1)}% impervious`,
+      Math.round(d.totalAreaSqFt).toLocaleString(), d.totalAreaAcres.toFixed(3), '')
+  doc.moveTo(x, cy).lineTo(x + w, cy).lineWidth(0.4).strokeColor('#999999').stroke()
+  cy += 3
+  row('PRE-DEVELOPMENT', 'SF', '', 'C', true)
+  for (const sa of d.preDevelopment.subAreas) {
+    row(`  ${sa.label}`, Math.round(sa.areaSqFt).toLocaleString(), '', sa.c.toFixed(2))
+  }
+  row('  Composite C', '', '', d.preDevelopment.compositeC.toFixed(3), true)
+  cy += 2
+  row('POST-DEVELOPMENT', 'SF', '', 'C', true)
+  for (const sa of d.postDevelopment.subAreas) {
+    row(`  ${sa.label}`, Math.round(sa.areaSqFt).toLocaleString(), '', sa.c.toFixed(2))
+  }
+  row('  Composite C', '', '', d.postDevelopment.compositeC.toFixed(3), true)
+  doc.moveTo(x, cy).lineTo(x + w, cy).lineWidth(0.4).strokeColor('#999999').stroke()
+  cy += 3
+  const nn = (v: number | null, u: string, dp = 2) => v == null ? '—' : `${v.toFixed(dp)} ${u}`
+  row('Flow path', '', '', nn(d.flowPathFt, 'ft', 0))
+  row('Flow path slope', '', '', d.flowPathSlopePct == null ? '—' : `${d.flowPathSlopePct.toFixed(1)} %`)
+  row('Time of concentration (Kirpich)', '', '', nn(d.timeOfConcentrationMin, 'min', 1))
+  row(`Rainfall intensity, ${d.returnPeriodYr ?? 10}-yr`, '', '', nn(d.intensityInPerHr, 'in/hr'))
+  row('Peak discharge PRE, Q = CiA', '', '', nn(d.preDevelopment.peakCfs, 'cfs'))
+  row('Peak discharge POST, Q = CiA', '', '', nn(d.postDevelopment.peakCfs, 'cfs'))
+  row('INCREASE TO BE MANAGED', '', '', nn(d.increaseCfs, 'cfs'), true)
+  row('Rv = 0.05 + 0.009 I', '', '', d.rv == null ? '—' : d.rv.toFixed(4))
+  row('Water quality volume WQv', '', '',
+      d.waterQualityVolumeCf == null ? '—' : `${Math.round(d.waterQualityVolumeCf).toLocaleString()} cf`, true)
+  cy += 3
+  for (const a of d.assumptions) {
+    doc.font('Helvetica').fontSize(6).fillColor('#555555').text(a, x, cy, { width: w })
+    cy = doc.y + 2
+  }
+  return cy
+}
+
+/**
+ * COUNTY STANDARD DETAILS, reproduced — not redrawn.
+ *
+ * The first attempt here drew invented 'typical sections': little diagrams of
+ * a walk, a strip and a curb with the widths this plan uses. They looked like
+ * details and carried no authority, and a section on a permit set that is not
+ * the county's standard is a section a reviewer has to check against one.
+ *
+ * These are the DPW&T standards themselves, lifted from the approved plan set
+ * in `existing site plans/`, with their dimensions, general notes and approval
+ * blocks intact:
+ *
+ *   STD. 300.01  Concrete Curb and Gutter — standard, depressed at driveway,
+ *                depressed at sidewalk ramp, spill. Note 6 requires the
+ *                depressed section at every driveway apron, which is why the
+ *                curb on this plan is interrupted at each one.
+ *   STD. 300.07  Concrete Sidewalk Ramp Type A.
+ *
+ * Reproducing them is the point: the builder builds to these and the reviewer
+ * checks against them. Redrawing them from memory would put unverified
+ * dimensions on a sheet over the county's own standard number.
+ */
+const COUNTY_DETAILS: { file: string; title: string; std: string }[] = [
+  { file: 'dpwt-300-01-curb-and-gutter.png',
+    title: 'CONCRETE CURB AND GUTTER', std: 'PGC DPW&T STD. 300.01' },
+  { file: 'dpwt-300-07-sidewalk-ramp.png',
+    title: 'CONCRETE SIDEWALK RAMP TYPE A', std: 'PGC DPW&T STD. 300.07' },
+]
+
+function countyDetails(doc: Doc, x: number, y: number, w: number, h: number): number {
+  const dir = join(__dirname, '..', '..', 'assets', 'details')
+  const avail = COUNTY_DETAILS.filter(d => existsSync(join(dir, d.file)))
+  if (!avail.length) return y
+  const gap = 12
+  const bw = (w - gap * (avail.length - 1)) / avail.length
+  avail.forEach((d, i) => {
     const bx = x + i * (bw + gap)
     box(doc, bx, y, bw, h, PEN.frame)
     doc.rect(bx, y, bw, 13).fillColor('#eeeeee').fill()
     box(doc, bx, y, bw, 13, PEN.hair)
     doc.font('Helvetica-Bold').fontSize(7).fillColor('#000000')
-       .text(it.title, bx + 5, y + 3.5, { width: bw - 10, lineBreak: false })
-    it.draw(bx, y + 13, bw, h - 13)
+       .text(`${d.title} — ${d.std}`, bx + 5, y + 3.5, { width: bw - 10, lineBreak: false })
+    try {
+      doc.image(join(dir, d.file), bx + 4, y + 16,
+        { fit: [bw - 8, h - 30], align: 'center' })
+    } catch {
+      doc.font('Helvetica').fontSize(6).fillColor('#8a3a2a')
+         .text('DETAIL IMAGE NOT AVAILABLE', bx + 6, y + 20, { width: bw - 12 })
+    }
     doc.font('Helvetica').fontSize(5.4).fillColor('#666666')
-       .text(`${it.std} — THE STANDARD DETAIL GOVERNS ALL DIMENSIONS. NOT TO SCALE.`,
-             bx + 5, y + h - 11, { width: bw - 10, lineBreak: false })
+       .text('REPRODUCED FROM THE PRINCE GEORGE\'S COUNTY DPW&T STANDARD. THE STANDARD GOVERNS.',
+             bx + 5, y + h - 10, { width: bw - 10, lineBreak: false })
   })
   return y + h
 }
-
 /**
  * A bordered, headed panel — the unit the approved title blocks are built from.
  *
@@ -1151,28 +1252,36 @@ function siteAnalysis(doc: Doc, x: number, y: number, ctx: SheetContext): number
 }
 
 /** SEQUENCE OF CONSTRUCTION, with the duration each step takes. */
-function sequenceOfConstruction(doc: Doc, x: number, y: number): number {
+function sequenceOfConstruction(doc: Doc, x: number, y: number, w = 256): number {
   const steps: [string, string][] = [
     ['Pre-construction meeting', '1 DAY'],
     ['Obtain necessary permits', '2 DAYS'],
     ['Notify Miss Utility at 811 at least 48 hours prior to any excavation', '1 DAY'],
-    ['Construct stabilized construction entrance and perimeter sediment control', '2 DAYS'],
-    ['Rough grade; construct dwelling, utilities and driveway', '12 MONTHS'],
-    ['Fine grade and stabilize all disturbed areas', '1 DAY'],
-    ['Remove sediment control devices when written permission has been granted by the inspector', '1 DAY'],
+    ['Install stabilized construction entrance and perimeter sediment control', '2 DAYS'],
+    ['Rough grade the lot', '5 DAYS'],
+    ['Construct dwelling', '6 MONTHS'],
+    ['Install water, sewer and storm services and the driveway', '10 DAYS'],
+    ['Fine grade and stabilize all disturbed areas', '5 DAYS'],
+    ['Remove sediment control once the inspector gives written permission', '1 DAY'],
   ]
   doc.font('Helvetica-Bold').fontSize(9).fillColor('#000000')
      .text('SEQUENCE OF CONSTRUCTION', x, y, { lineBreak: false })
   let cy = y + 11
-  steps.forEach(([label, dur], i) => {
+  // The duration column is measured off the panel width. It was pinned at
+  // x + 204 with the text wrapping to 200, so on a wider column the text ran
+  // under the duration and the two printed on top of each other.
+  const durW = 58
+  const textW = w - durW - 8
+  steps.forEach(([labelText, dur], i) => {
+    const rowTop = cy
     doc.font('Helvetica').fontSize(7).fillColor('#333333')
-       .text(`${i + 1}.  ${label}`, x, cy, { width: 200 })
+       .text(`${i + 1}.  ${labelText}`, x, cy, { width: textW })
     doc.font('Helvetica-Bold').fontSize(7).fillColor('#000000')
-       .text(dur, x + 204, cy, { width: 52, lineBreak: false })
+       .text(dur, x + textW + 8, rowTop, { width: durW, align: 'right', lineBreak: false })
     cy = doc.y + 2
   })
   doc.font('Helvetica-Bold').fontSize(7.5).fillColor('#000000')
-     .text('TOTAL ESTIMATED TIME OF CONSTRUCTION:  12 MONTHS', x, cy + 3, { width: 256 })
+     .text('TOTAL ESTIMATED TIME OF CONSTRUCTION:  8 MONTHS', x, cy + 3, { width: w })
   return doc.y + 4
 }
 
@@ -1269,7 +1378,10 @@ function legend(doc: Doc, x: number, y: number): number {
     ['#000000', 'PROPERTY BOUNDARY', false],
     ['#7f8c8d', 'BRL — BUILDING RESTRICTION LINE', true],
     ['#c0392b', 'PROPOSED STRUCTURE', false],
-    ['#8a6d3b', 'EXISTING CONTOUR — PGATLAS 2 FT (2023), NAVD88', false],
+    // The plan names the DATUM and the interval, not the software the data
+    // came from. A source system is provenance for the file, not information
+    // for a builder or a reviewer, and it does not belong on a sheet.
+    ['#8a6d3b', 'EXISTING CONTOUR — 2 FT INTERVAL, NAVD88', false],
     ['#555555', 'STREET CENTRELINE', true],
     ['#666666', 'PROPOSED PAVEMENT — DRIVEWAY / WALK', false],
     ['#2980b9', 'EASEMENT', true],
@@ -1454,7 +1566,7 @@ export function renderSheetSetPdf(input: RenderPdfInput): Promise<RenderedPdf> {
       const bandTop = usedBottom + 14
       const bandH = scaleTop - bandTop - 8
       if (bandH > 60) {
-        typicalSections(doc, sheetSize.marginPt + 16, bandTop,
+        countyDetails(doc, sheetSize.marginPt + 16, bandTop,
           drawRight - sheetSize.marginPt - 32, Math.min(bandH, 140))
       }
 
@@ -1512,7 +1624,9 @@ export function renderSheetSetPdf(input: RenderPdfInput): Promise<RenderedPdf> {
       if (room(150, by)) by = siteDataTable(doc, blockX, by, ctx) + 12
       if (room(90, by)) by = siteAnalysis(doc, blockX, by, ctx) + 12
       if (room(80, by)) by = buildingData(doc, blockX, by, blockW, ctx) + 12
-      if (room(100, by)) by = sequenceOfConstruction(doc, blockX, by) + 10
+      const drain = (ctx.twin as { drainage?: DrainageComputation }).drainage ?? null
+      if (drain && room(230, by)) by = drainageComputations(doc, blockX, by, blockW, drain) + 12
+      if (room(120, by)) by = sequenceOfConstruction(doc, blockX, by, blockW) + 10
       if (room(180, by)) by = generalNotes(doc, blockX, by, ctx.twin) + 10
       if (room(200, by)) by = platRecordBlock(doc, ctx.twin, blockX, by) + 10
       if (room(80, by)) by = legend(doc, blockX, by) + 12

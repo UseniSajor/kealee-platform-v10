@@ -46,7 +46,8 @@
   "_yardDetermination": "LOT 2 IS A TRIANGLE and has no lot line opposite the frontage. The NW boundary (179.66 ft) is treated as a SIDE yard at 8 ft, not a rear yard at 20 ft, on the determination that a triangular lot has no rear lot line. Stated by the applicant, carried into the drawing and labelled on the sheet; the zoning reviewer confirms it against Subtitle 27.",
   "dedicationWidthFt": 20.0,
   "platFrontageEasementFt": 10.0,
-  "_frontSetbackNote": "Face of building to the start of the street = 30 ft. The kerb sits 7 ft out from the front property line (3 ft sidewalk + 4 ft planting strip), so the front setback measured from the property line is 30 - 7 = 23 ft. Both figures print on the sheet. The RSF-65 table gives 25 ft; the stated 23 ft is LESS, so a zoning reviewer must confirm it against the plat's building restriction line before this is relied on.",
-  "frontFaceToCurbFt": 30.0,
-  "curbOffsetFt": 7.0
+  "_frontSetbackNote": "Front setback 20 ft from the front property line, with the plat's 10.00' PUE lying inside it. The RSF-65 table gives 25 ft; the platted building restriction line governs the lot and it is 20 ft. Earlier this sheet showed 23 ft, derived from a face-to-curb dimension — that derivation is withdrawn.",
+  "sanitaryFrom": "rear",
+  "_utilityNote": "Lot 2 water comes from the Rollins Avenue main; the sanitary lateral runs to the main behind the lot, not out to the street. Stated for this lot — the engine defaults every service to the frontage, which is the usual case and not this one.",
+  "frontSetbackFt": 20.0
 }

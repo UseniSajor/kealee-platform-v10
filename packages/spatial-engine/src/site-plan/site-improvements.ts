@@ -256,7 +256,10 @@ export function deriveSiteImprovements(input: {
   // middle of the front elevation, at the depth of the house face.
   const doorOffset = centreOffset
   const driveEdge = bandCentre - (DRIVEWAY_WIDTH_FT / 2) * Math.sign(bandCentre - doorOffset || 1)
-  const runFt = Math.abs(doorOffset - driveEdge)
+  // The walk runs from the EDGE of the driveway to the door, not from its
+  // centreline. Measured to the centre it ran a half-width into the driveway
+  // and drew concrete over asphalt.
+  const runFt = Math.max(0, Math.abs(doorOffset - driveEdge))
   const faceAtDoor = faceDepthAt(doorOffset, WALK_WIDTH_FT)
   if (runFt >= 1) {
     // Set the walk just outside the wall so it abuts the elevation rather than
@@ -281,9 +284,13 @@ export function deriveSiteImprovements(input: {
     })
     // The STOOP at the entrance. A leadwalk that stops at a blank wall is not
     // a route into the house; the plans letter a front concrete stoop.
+    // The stoop sits OUTSIDE the front wall, abutting it. Centred on the wall
+    // line it pushed half its depth into the dwelling — a stoop inside the
+    // house is not a stoop, and it also double-counted its area as both
+    // building footprint and paving.
     const stoop = rectFromAxis(
-      [a[0] + (dx / len) * doorOffset + inX * (faceAtDoor - STOOP_DEPTH_FT / 2),
-       a[1] + (dy / len) * doorOffset + inY * (faceAtDoor - STOOP_DEPTH_FT / 2)],
+      [a[0] + (dx / len) * doorOffset + inX * (faceAtDoor - STOOP_DEPTH_FT),
+       a[1] + (dy / len) * doorOffset + inY * (faceAtDoor - STOOP_DEPTH_FT)],
       inX, inY, STOOP_DEPTH_FT, STOOP_WIDTH_FT)
     improvements.push({
       id: 'stoop', kind: 'Stoop',

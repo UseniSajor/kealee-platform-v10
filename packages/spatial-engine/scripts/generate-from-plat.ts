@@ -61,6 +61,8 @@ async function main(): Promise<void> {
     triangleRearAsSide?: boolean
     dedicationWidthFt?: number
     frontSetbackFt?: number
+  sanitaryFrom?: 'frontage' | 'rear'
+    sanitaryFrom?: 'frontage' | 'rear'
   frontFaceToCurbFt?: number
   curbOffsetFt?: number
     frontFaceToCurbFt?: number
@@ -176,6 +178,7 @@ async function main(): Promise<void> {
       // PLAT FIRST for anything the recorded instrument carries; PGAtlas
       // supplies only the layers it does not — contours, zoning, streets.
       frontSetbackFt: spec.frontSetbackFt ?? null,
+      sanitaryFrom: spec.sanitaryFrom,
       frontFaceToCurbFt: spec.frontFaceToCurbFt ?? null,
       curbOffsetFt: spec.curbOffsetFt ?? null,
       dedicationWidthFt: spec.dedicationWidthFt ?? null,
