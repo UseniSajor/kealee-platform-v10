@@ -672,10 +672,41 @@ export function buildLotPackage(lot: LotInput, resolved?: ResolvedBoundary | nul
         return [pt[0] + (anchor[0] - pt[0]) * hi, pt[1] + (anchor[1] - pt[1]) * hi] as Position
       })
     }
+    // A SERVICE RUNS TO ITS TAP IN THE STREET, not to the property line.
+    //
+    // Water and storm connect to mains under the travelled way, so the run has
+    // to cross the frontage and reach them — that crossing is the part the
+    // permit is for. Clipped at the lot line the drawing showed a service that
+    // stops at the boundary and connects to nothing.
+    const tapPoint: Position | null = (() => {
+      const paths = lot.streets?.flatMap(st => st.paths) ?? []
+      if (!paths.length || !frontPoint) return null
+      let best: Position | null = null, bestD = Infinity
+      for (const path of paths) {
+        for (let i = 0; i < path.length - 1; i++) {
+          const p0 = path[i], p1 = path[i + 1]
+          const vx = p1[0] - p0[0], vy = p1[1] - p0[1]
+          const t = Math.max(0, Math.min(1,
+            ((frontPoint[0] - p0[0]) * vx + (frontPoint[1] - p0[1]) * vy) / (vx * vx + vy * vy || 1)))
+          const q: Position = [p0[0] + t * vx, p0[1] + t * vy]
+          const d = Math.hypot(frontPoint[0] - q[0], frontPoint[1] - q[1])
+          if (d < bestD) { bestD = d; best = q }
+        }
+      }
+      return best
+    })()
+    const runsToStreet = (f: { kind: string; attributes?: Record<string, unknown> }) =>
+      f.kind === 'Utility' && String(f.attributes?.from ?? 'frontage') === 'frontage'
+
     const drawable = design.features.flatMap(f => {
       if (f.kind === 'Pavement') return []
       const line = (f as { line?: Position[] }).line
       if (line?.length) {
+        if (runsToStreet(f as never) && tapPoint) {
+          // Extend the outer end to the tap and leave the rest as designed.
+          const inner = line[line.length - 1]
+          return [{ ...f, line: [tapPoint, inner] as Position[] }]
+        }
         const cl = clipToLot(line)
         return cl ? [{ ...f, line: cl }] : []
       }

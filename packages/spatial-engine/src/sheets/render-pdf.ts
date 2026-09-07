@@ -23,6 +23,7 @@ import {
 } from './viewport'
 import type { SheetContext, SheetId } from './sheet-template'
 import { SHEET_TITLES, SHEET_DISCIPLINE, auditSheetFrame } from './sheet-template'
+import { isBuildableEnvelope } from './composer'
 import type { DrainageComputation } from '../site-plan/drainage'
 import { existsSync } from 'fs'
 import { join } from 'path'
@@ -289,113 +290,87 @@ function drawGeometry(doc: Doc, ctx: SheetContext, vp: Viewport, b: Bounds): voi
   // area — 'LOT 9 / 71,399 SF' — because a reviewer reads the subject against
   // what surrounds it. The engine drew the subject alone, so a two-lot
   // subdivision appeared as one lot in white space.
-  const adj = (t as { adjacentParcels?: { ring: Ring; areaSqFt: number; propId: string | null }[] })
-    .adjacentParcels ?? []
-  // Bounds of the drawing area, in points.
+  // ADJOINING LOTS ARE CONTEXT, DRAWN AS STUBS.
   //
-  // A neighbour whose centroid projects OFF the page must not be lettered:
-  // pdfkit adds a PAGE when text is placed past the frame, and a 250 ft search
-  // returned 39 parcels — which turned a 5-sheet set into 65 pages while still
-  // reporting 5. Silent, because the page count came from the sheet list.
-  const INSET = 24
-  const drawMinX = INSET, drawMinY = INSET
-  const drawMaxX = doc.page.width - INSET
-  const drawMaxY = doc.page.height - INSET
-  const onSheet = (q: [number, number]) =>
-    q[0] > drawMinX && q[0] < drawMaxX && q[1] > drawMinY && q[1] < drawMaxY
-
-  for (const ap of adj) {
-    const r = projectRing(ap.ring, vp, b, PAD_FT)
-    const c = centroidOf(r)
-    // Outline only when some of it is on the sheet; letter only when the
-    // label itself will land on the sheet.
-    if (!r.some(onSheet)) continue
-    polyline(doc, r, { width: 0.6, color: '#9aa0a6', dash: undefined }, true)
-    if (!onSheet(c)) continue
-    doc.font('Helvetica').fontSize(7).fillColor('#9aa0a6')
-       .text(`${ap.propId ?? 'PARCEL'}`, c[0] - 30, c[1] - 4,
-             { width: 60, align: 'center', lineBreak: false })
-    if (ap.areaSqFt) {
-      doc.font('Helvetica').fontSize(7).fillColor('#9aa0a6')
-         .text(`${Math.round(ap.areaSqFt).toLocaleString()} SF`, c[0] - 30, c[1] + 2,
-               { width: 60, align: 'center', lineBreak: false })
+  // Drawn whole they sprawl across the sheet, cross the detail band at the
+  // bottom and swamp the two lots the plan is about. A plat shows an adjoiner
+  // by the line it SHARES and its name — that is what tells a reviewer what
+  // abuts what. Everything past a short reach from the subject boundary is
+  // trimmed away.
+  const adjAll = (t as { adjacentParcels?: { ring: Ring; areaSqFt: number; propId: string | null }[] })
+    .adjacentParcels ?? []
+  const subjectRings = featuresOfKind(t, 'Parcel').map(f => f.ring.coordinates as Position[])
+  const REACH_FT = 45
+  const nearSubject = (q: Position) => subjectRings.some(rg => {
+    for (let n = 0; n < rg.length - 1; n++) {
+      const a2 = rg[n], b2 = rg[n + 1]
+      const vx = b2[0] - a2[0], vy = b2[1] - a2[1]
+      const tt = Math.max(0, Math.min(1,
+        ((q[0] - a2[0]) * vx + (q[1] - a2[1]) * vy) / (vx * vx + vy * vy || 1)))
+      if (Math.hypot(q[0] - (a2[0] + tt * vx), q[1] - (a2[1] + tt * vy)) <= REACH_FT) return true
     }
-  }
-
-  for (const c of genericOfKind(t, 'Contour')) {
-    if (!c.line?.length) continue
-    // CLIPPED TO THE DRAWING FRAME, not to the lot.
-    //
-    // Keeping only what crossed the boundary left two contours on the sheet:
-    // the lots fall about four feet, so at a 2 ft interval that is all they
-    // contain. Existing ground does not stop at a property line and no drafter
-    // draws it that way — the contours run across the sheet, over the street
-    // and the adjoining land, which is what shows a reviewer where the water
-    // goes.
-    const inFrame = (q: Position) =>
-      q[0] >= b.minX - PAD_FT && q[0] <= b.maxX + PAD_FT &&
-      q[1] >= b.minY - PAD_FT && q[1] <= b.maxY + PAD_FT
-    const src = c.line as Position[]
-    const runs: Position[][] = []
-    let cur: Position[] = []
-    for (let i = 0; i < src.length - 1; i++) {
-      if (inFrame(src[i]) || inFrame(src[i + 1])) {
-        if (cur.length === 0) cur.push(src[i])
-        cur.push(src[i + 1])
-      } else if (cur.length) { runs.push(cur); cur = [] }
+    return false
+  })
+  for (const ap of adjAll) {
+    const co = ap.ring.coordinates as Position[]
+    let run: Position[] = []
+    for (let n = 0; n < co.length - 1; n++) {
+      if (nearSubject(co[n]) || nearSubject(co[n + 1])) {
+        if (!run.length) run.push(co[n])
+        run.push(co[n + 1])
+      } else if (run.length >= 2) {
+        polyline(doc, run.map(q => P(q)), { width: 0.35, color: '#aaaaaa', dash: undefined })
+        run = []
+      } else run = []
     }
-    if (cur.length) runs.push(cur)
-    const a = c.attributes ?? {}
-    const index = a.weight === 'index'
-    const el = a.elevationFt
-    for (const kept of runs) {
-      if (kept.length < 2) continue
-      polyline(doc, kept.map((q: Position) => P(q)),
-        // An index contour is heavier and its dash longer, as a drafter draws it.
-        { ...PEN.contour, width: index ? 0.7 : 0.35, dash: index ? [9, 4] : [5, 3] })
-      // LABELLED REPEATEDLY along the line. One label at the midpoint leaves a
-      // contour that crosses the whole sheet unnamed at both ends, and a
-      // reviewer reads elevations where the contour meets what they are
-      // looking at, not where its midpoint happens to fall.
-      if (el == null || kept.length < 3) continue
-      const pj = kept.map((q: Position) => P(q))
-      let run = 0
-      for (let i = 1; i < pj.length; i++) {
-        run += Math.hypot(pj[i][0] - pj[i - 1][0], pj[i][1] - pj[i - 1][1])
-      }
-      const every = 210
-      const marks = Math.max(1, Math.min(6, Math.floor(run / every)))
-      for (let m = 1; m <= marks; m++) {
-        const at = Math.floor((pj.length - 1) * (m / (marks + 1)))
-        const q = pj[at]
-        doc.save()
-        doc.rect(q[0] - 9, q[1] - 4, 18, 8).fillColor('#ffffff').opacity(0.85).fill()
-        doc.opacity(1)
-        doc.font(index ? 'Helvetica-Bold' : 'Helvetica').fontSize(index ? 6.5 : 5.5)
-           .fillColor('#8a6d3b')
-           .text(String(el), q[0] - 8, q[1] - 3, { width: 16, align: 'center', lineBreak: false })
-        doc.restore()
-      }
+    if (run.length >= 2) {
+      polyline(doc, run.map(q => P(q)), { width: 0.35, color: '#aaaaaa', dash: undefined })
     }
   }
   // ── Setback / buildable envelope, dashed ──────────────────────────────────
   for (const s of featuresOfKind(t, 'Setback')) {
     if (s.ring) polyline(doc, projectRing(s.ring, vp, b, PAD_FT), PEN.setback, true)
   }
+  // ONE BRL PER LOT, AND ONLY THE BRL IS DRAWN LIKE ONE.
+  //
+  // This drew EVERY ProposedFeature with the setback pen and lettered each one
+  // 'BRL'. A lot carries three of them — the buildable envelope, the graded
+  // area and the construction entrance — so the sheet showed two dashed rings
+  // around each property, both labelled BRL, and neither said which was which.
+  // The limit of disturbance is a different line with a different meaning and
+  // it gets its own weight and its own name.
   for (const g of genericOfKind(t, 'ProposedFeature')) {
     if (!g.ring) continue
-    polyline(doc, projectRing(g.ring, vp, b, PAD_FT), PEN.setback, true)
+    const gid = String(g.id ?? '')
+    const isEnvelope = isBuildableEnvelope(gid)
+    const gLabel = String(g.attributes?.label ?? '')
+    const isLod = /graded|disturb/i.test(gLabel)
     const r = projectRing(g.ring, vp, b, PAD_FT)
     const cx = r.reduce((n, q) => n + q[0], 0) / r.length
     const top = Math.min(...r.map(q => q[1]))
-    // The county draws and labels this as BRL — Building Restriction Line —
-    // with its distance. "Buildable envelope" is not the term a PG reviewer
-    // reads on a sheet.
-    const sb = (g.attributes?.setbacks ?? {}) as
-      { frontFt?: number; sideFt?: number; rearFt?: number }
-    doc.font('Helvetica').fontSize(8).fillColor('#666666')
-       .text(sb.frontFt != null ? `${sb.frontFt}' BRL` : 'BRL',
-             cx - 30, top - 9, { width: 60, align: 'center', lineBreak: false })
+
+    if (isEnvelope) {
+      polyline(doc, r, PEN.setback, true)
+      // The county letters this BRL — Building Restriction Line — with its
+      // distance. 'Buildable envelope' is not a term a PG reviewer reads.
+      const sb = (g.attributes?.setbacks ?? {}) as
+        { frontFt?: number; sideFt?: number; rearFt?: number }
+      doc.font('Helvetica-Bold').fontSize(8).fillColor('#666666')
+         .text(sb.frontFt != null ? `${sb.frontFt}' BRL` : 'BRL',
+               cx - 34, top - 10, { width: 68, align: 'center', lineBreak: false })
+    } else if (isLod) {
+      polyline(doc, r, { width: 0.8, color: '#2e7d32', dash: [14, 4, 3, 4] }, true)
+      doc.font('Helvetica-Bold').fontSize(7).fillColor('#2e7d32')
+         .text('LIMIT OF DISTURBANCE', cx - 60, top - 10,
+               { width: 120, align: 'center', lineBreak: false })
+    } else {
+      polyline(doc, r, { width: 0.7, color: '#8a5a2a', dash: [4, 3] }, true)
+      if (gLabel) {
+        doc.font('Helvetica').fontSize(6).fillColor('#8a5a2a')
+           .text(gLabel.toUpperCase(), cx - 60, top - 8,
+                 { width: 120, align: 'center', lineBreak: false })
+      }
+    }
 
     // Frontage lettered ON the front lot line.
     //
@@ -432,6 +407,11 @@ function drawGeometry(doc: Doc, ctx: SheetContext, vp: Viewport, b: Bounds): voi
 
     // Label every yard on its own run of the restriction line, so a reviewer
     // reads the setback rather than scaling it.
+    // The per-edge setback dimensions read from the ENVELOPE feature, which is
+    // the only one that carries them. `sb` used to be in scope from the loop
+    // head, where it was read off whichever proposed feature came round.
+    const sb = (g.attributes?.setbacks ?? {}) as
+      { frontFt?: number; sideFt?: number; rearFt?: number }
     const yards = (t as { buildableEnvelope?: { edgeYards?: string[] } })
       .buildableEnvelope?.edgeYards
     const parcelRing = featuresOfKind(t, 'Parcel')[0]
@@ -731,7 +711,8 @@ function drawGeometry(doc: Doc, ctx: SheetContext, vp: Viewport, b: Bounds): voi
       doc.save()
       doc.rect(fx - ew / 2, fy - eh / 2, ew, eh).fillColor('#ffffff').opacity(0.85).fill()
       doc.opacity(1)
-      box(doc, fx - ew / 2, fy - eh / 2, ew, eh, PEN.hair)
+      // NO BORDER. A ruled box inside the footprint reads as a feature — a slab,
+      // a chase, something built — and it is only a place to put three numbers.
       let ey = fy - eh / 2 + 2
       for (const [k, v] of rows2) {
         doc.font('Helvetica-Bold').fontSize(6).fillColor('#000000')
@@ -758,6 +739,25 @@ function drawGeometry(doc: Doc, ctx: SheetContext, vp: Viewport, b: Bounds): voi
     }
   }
 
+/**
+ * A street's full name for the sheet.
+ *
+ * The centreline layer carries the base name only — ROLLINS — so the sheet
+ * lettered a street called 'ROLLINS'. A plan names the street the way the
+ * address and the plat do.
+ */
+function streetLabel(name: string | null): string {
+  const n = (name ?? '').trim().toUpperCase()
+  if (!n) return 'STREET NAME NOT ESTABLISHED'
+  if (/\b(AVE|AVENUE|ST|STREET|RD|ROAD|DR|DRIVE|LN|LANE|WAY|CT|COURT|PL|PLACE|BLVD)\b/.test(n)) {
+    return n.replace(/\bAVE\b/, 'AVENUE').replace(/\bST\b/, 'STREET')
+      .replace(/\bRD\b/, 'ROAD').replace(/\bDR\b/, 'DRIVE')
+      .replace(/\bLN\b/, 'LANE').replace(/\bCT\b/, 'COURT')
+      .replace(/\bPL\b/, 'PLACE').replace(/\bBLVD\b/, 'BOULEVARD')
+  }
+  return n
+}
+
   // ── Street centrelines, lettered in the right-of-way ─────────────────────
   //
   // A site plan shows the fronting street and names it. It is also how a
@@ -782,10 +782,10 @@ function drawGeometry(doc: Doc, ctx: SheetContext, vp: Viewport, b: Bounds): voi
         doc.save()
         doc.translate(mid[0], mid[1]).rotate((ang * 180) / Math.PI)
         doc.font('Helvetica-Bold').fontSize(9).fillColor('#555555')
-           .text(`${st.name.toUpperCase()}`, -70, -12, { width: 140, align: 'center', lineBreak: false })
+           .text(streetLabel(st.name), -80, -12, { width: 160, align: 'center', lineBreak: false })
         doc.font('Helvetica').fontSize(7).fillColor('#777777')
-           .text('R/W — WIDTH PER RECORD PLAT', -70, -3,
-                 { width: 140, align: 'center', lineBreak: false })
+           .text('EX. PAVEMENT CENTERLINE  ·  R/W WIDTH PER RECORD PLAT', -80, -3,
+                 { width: 160, align: 'center', lineBreak: false })
         doc.restore()
       }
     }
@@ -1087,25 +1087,39 @@ function countyDetails(doc: Doc, x: number, y: number, w: number, h: number): nu
   const dir = join(__dirname, '..', '..', 'assets', 'details')
   const avail = COUNTY_DETAILS.filter(d => existsSync(join(dir, d.file)))
   if (!avail.length) return y
-  const gap = 12
+
+  // SIZED TO BE READ, not to fit whatever space was left.
+  //
+  // Squeezed into a shallow band the sections were thumbnails: the dimension
+  // strings on a curb section are the whole point of it and at that size they
+  // are grey texture. A detail that cannot be read on a printed blueprint is a
+  // detail that is not on the sheet.
+  //
+  // Each is given its natural aspect and a minimum height. If the band cannot
+  // hold them the band is not used — the details go where they can be read or
+  // they are left for a details sheet.
+  const MIN_H = 200
+  if (h < MIN_H) return y
+  const gap = 14
   const bw = (w - gap * (avail.length - 1)) / avail.length
   avail.forEach((d, i) => {
     const bx = x + i * (bw + gap)
     box(doc, bx, y, bw, h, PEN.frame)
-    doc.rect(bx, y, bw, 13).fillColor('#eeeeee').fill()
-    box(doc, bx, y, bw, 13, PEN.hair)
-    doc.font('Helvetica-Bold').fontSize(7).fillColor('#000000')
-       .text(`${d.title} — ${d.std}`, bx + 5, y + 3.5, { width: bw - 10, lineBreak: false })
+    doc.rect(bx, y, bw, 15).fillColor('#eeeeee').fill()
+    box(doc, bx, y, bw, 15, PEN.hair)
+    doc.font('Helvetica-Bold').fontSize(8).fillColor('#000000')
+       .text(`${d.title}  —  ${d.std}`, bx + 6, y + 4, { width: bw - 12, lineBreak: false })
     try {
-      doc.image(join(dir, d.file), bx + 4, y + 16,
-        { fit: [bw - 8, h - 30], align: 'center' })
+      // `fit` preserves the aspect, so the image uses the full panel and the
+      // dimensions scale with it.
+      doc.image(join(dir, d.file), bx + 5, y + 18, { fit: [bw - 10, h - 34], align: 'center' })
     } catch {
-      doc.font('Helvetica').fontSize(6).fillColor('#8a3a2a')
-         .text('DETAIL IMAGE NOT AVAILABLE', bx + 6, y + 20, { width: bw - 12 })
+      doc.font('Helvetica').fontSize(7).fillColor('#8a3a2a')
+         .text('DETAIL IMAGE NOT AVAILABLE', bx + 8, y + 24, { width: bw - 16 })
     }
-    doc.font('Helvetica').fontSize(5.4).fillColor('#666666')
-       .text('REPRODUCED FROM THE PRINCE GEORGE\'S COUNTY DPW&T STANDARD. THE STANDARD GOVERNS.',
-             bx + 5, y + h - 10, { width: bw - 10, lineBreak: false })
+    doc.font('Helvetica').fontSize(6).fillColor('#666666')
+       .text("REPRODUCED FROM THE PRINCE GEORGE'S COUNTY DPW&T STANDARD. THE STANDARD GOVERNS.",
+             bx + 6, y + h - 11, { width: bw - 12, lineBreak: false })
   })
   return y + h
 }
@@ -1565,10 +1579,10 @@ export function renderSheetSetPdf(input: RenderPdfInput): Promise<RenderedPdf> {
       const scaleTop = sheetSize.heightPt - sheetSize.marginPt - 44
       const bandTop = usedBottom + 14
       const bandH = scaleTop - bandTop - 8
-      if (bandH > 60) {
-        countyDetails(doc, sheetSize.marginPt + 16, bandTop,
-          drawRight - sheetSize.marginPt - 32, Math.min(bandH, 140))
-      }
+      // The whole remaining band, not a capped strip. These are the county's
+      // standard sections and their dimensions have to survive printing.
+      countyDetails(doc, sheetSize.marginPt + 16, bandTop,
+        drawRight - sheetSize.marginPt - 32, bandH)
 
       graphicScale(doc, sheetSize.marginPt + 16, sheetSize.heightPt - sheetSize.marginPt - 26, vp)
 
