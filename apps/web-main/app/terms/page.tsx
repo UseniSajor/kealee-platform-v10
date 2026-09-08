@@ -21,7 +21,7 @@ export default function TermsPage() {
             (&ldquo;Terms&rdquo;). If you do not agree, do not use the Platform.
           </p>
           <p className="mt-2">
-            These Terms constitute a binding agreement between you and <strong>Kealee Services LLC</strong>
+            These Terms constitute a binding agreement between you and <strong>Kealee Construction LLC</strong>
             (&ldquo;Kealee,&rdquo; &ldquo;we,&rdquo; &ldquo;us,&rdquo; or &ldquo;our&rdquo;).
           </p>
         </div>
@@ -174,7 +174,7 @@ export default function TermsPage() {
           <h2 className="text-lg font-semibold mb-2">15. Contact</h2>
           <p>
             Questions about these Terms? Contact us at:<br />
-            <strong>Kealee Services LLC</strong><br />
+            <strong>Kealee Construction LLC</strong><br />
             <a href="mailto:contact@kealee.com" className="text-[#E8724B] underline">contact@kealee.com</a>
           </p>
         </div>

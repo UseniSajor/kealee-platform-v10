@@ -17,7 +17,7 @@ export default function PrivacyPage() {
           <h2 className="text-lg font-semibold mb-2">1. Who We Are</h2>
           <p>
             Kealee (&ldquo;Kealee,&rdquo; &ldquo;we,&rdquo; &ldquo;us,&rdquo; or &ldquo;our&rdquo;) is a construction
-            and home-improvement platform operated by Kealee Services LLC, located in the Washington DC metropolitan
+            and home-improvement platform operated by Kealee Construction LLC, located in the Washington DC metropolitan
             area. We operate the website <strong>kealee.com</strong> and related portals (collectively, the
             &ldquo;Platform&rdquo;).
           </p>
@@ -155,7 +155,7 @@ export default function PrivacyPage() {
           <h2 className="text-lg font-semibold mb-2">12. Contact</h2>
           <p>
             For privacy questions or requests, contact us at:<br />
-            <strong>Kealee Services LLC</strong><br />
+            <strong>Kealee Construction LLC</strong><br />
             Washington DC Metropolitan Area<br />
             <a href="mailto:contact@kealee.com" className="text-[#E8724B] underline">contact@kealee.com</a>
           </p>
