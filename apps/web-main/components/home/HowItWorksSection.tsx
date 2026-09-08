@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { ShieldCheck, UserCheck, FileSearch, Eye } from 'lucide-react'
+import { ArrowRight, ShieldCheck, UserCheck, FileSearch } from 'lucide-react'
 
 const STEPS = [
   {
@@ -10,27 +10,17 @@ const STEPS = [
   {
     n: '2',
     title: 'Upload what you have',
-    body: 'Plans, photos, surveys, or a solicitation package. Nothing is required — we tell you what is missing and what each missing item costs you in accuracy.',
+    body: 'Add photos, plans, a survey, or other documents if you have them. An address and an idea are enough to begin.',
   },
   {
     n: '3',
-    title: 'Get your missing-information checklist',
-    body: 'Before you commit, you see exactly what we have, what we still need, and what we will assume if it never arrives.',
+    title: 'Review our recommendation',
+    body: 'See the package that fits your project, what it includes, what it costs, and anything else we need before you purchase.',
   },
   {
     n: '4',
-    title: 'Pay or request pricing',
-    body: 'Fixed-price products check out online. Scope-dependent work goes through a quote request instead — you are never charged before scope is agreed.',
-  },
-  {
-    n: '5',
-    title: 'We produce the deliverable',
-    body: 'Our team prepares your package and keeps its progress visible on your order page from start to release.',
-  },
-  {
-    n: '6',
-    title: 'Review, download, continue',
-    body: 'You get an email when the package is ready, along with clear recommendations and the next step for moving your project forward.',
+    title: 'Receive clear next steps',
+    body: 'Get your completed package, practical recommendations, and guidance on the next professional or approval step when needed.',
   },
 ]
 
@@ -47,13 +37,8 @@ const TRUST = [
   },
   {
     icon: ShieldCheck,
-    title: 'We do not overstate what we are',
-    body: 'Kealee output is preconstruction planning work. It is not an architectural, engineering, legal, code, or jurisdictional approval, and we say so on every deliverable.',
-  },
-  {
-    icon: Eye,
-    title: 'Visible progress and support',
-    body: 'Your order page shows current progress, and our team contacts you directly if more information is needed to keep the work moving.',
+    title: 'Know exactly what you are buying',
+    body: 'We clearly distinguish planning concepts from professional drawings, engineering, surveys, and approvals so you know what is ready to use and what comes next.',
   },
 ]
 
@@ -64,7 +49,7 @@ const FAQ = [
   },
   {
     q: 'Can Kealee get my permit approved?',
-    a: 'Yes. Kealee gets you permits by preparing your permit package, coordinating with the jurisdiction, and managing the filing process with you from start to finish.',
+    a: 'Kealee can prepare your permit package, coordinate with the jurisdiction, and manage filing with you. The local agency makes the final approval decision.',
   },
   {
     q: 'Is a Kealee concept the same as architectural drawings?',
@@ -78,14 +63,6 @@ const FAQ = [
     q: 'What if I only have an address and an idea?',
     a: 'An address and an idea are enough to start. Kealee turns your starting information into a clear project package, then incorporates plans, photos, or a survey as you add them.',
   },
-  {
-    q: 'How does Kealee support my order?',
-    a: 'Your order is monitored by our team, with live status updates on your order page and direct contact whenever a person needs to help move it forward. We stand behind the deliverables you purchase.',
-  },
-  {
-    q: 'Who can see my documents?',
-    a: 'Your documents stay connected to your order record and are available through your secure emailed link or your signed-in Kealee account.',
-  },
 ]
 
 export function HowItWorksSection() {
@@ -98,10 +75,13 @@ export function HowItWorksSection() {
               How it works
             </span>
             <h2 className="mt-3 font-display text-3xl font-bold text-slate-950">
-              From an address to a deliverable
+              From your idea to a clear plan
             </h2>
+            <p className="mt-4 text-base leading-relaxed text-slate-600">
+              You do not need to know which service to buy before you start.
+            </p>
           </div>
-          <ol className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <ol className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {STEPS.map(step => (
               <li key={step.n} className="rounded-2xl border border-slate-200 bg-white p-6">
                 <span className="flex h-9 w-9 items-center justify-center rounded-full bg-orange-600 text-sm font-black text-white">
@@ -112,6 +92,14 @@ export function HowItWorksSection() {
               </li>
             ))}
           </ol>
+          <div className="mt-10 text-center">
+            <Link
+              href="/request-service"
+              className="inline-flex items-center gap-2 rounded-xl bg-orange-600 px-7 py-3.5 text-sm font-bold text-white transition hover:bg-orange-700"
+            >
+              Tell Us About Your Project <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
         </div>
       </section>
 
@@ -125,7 +113,7 @@ export function HowItWorksSection() {
               Clear work, reviewed with care
             </h2>
           </div>
-          <div className="mt-12 grid gap-6 sm:grid-cols-2">
+          <div className="mt-12 grid gap-6 md:grid-cols-3">
             {TRUST.map(item => {
               const Icon = item.icon
               return (

@@ -1,10 +1,9 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { Cormorant_Garamond, Barlow } from 'next/font/google'
 import Link from 'next/link'
-import { Play, Image as ImageIcon, Video } from 'lucide-react'
 import { CircularServiceCard } from './CircularServiceCard'
 import type { HomeJourneyService } from './home-services-data'
 
@@ -32,7 +31,7 @@ const HERO_VIDEOS = [
 ]
 
 /**
- * Full-viewport homepage: Full-screen video hero + 2×2 service cards + site bottom bar.
+ * Full-viewport homepage: full-screen video hero followed by service cards.
  * Layout reserves space for sticky nav (4rem) and fixed AskChatBar (~7.5rem).
  */
 export function ServicesJourneySection({ services }: { services: HomeJourneyService[] }) {
@@ -85,7 +84,7 @@ export function ServicesJourneySection({ services }: { services: HomeJourneyServ
             transition={{ duration: 0.8, delay: 0.2 }}
             className="inline-block rounded-full bg-white/10 backdrop-blur-md px-4 py-1.5 text-[10px] sm:text-xs font-bold uppercase tracking-[0.2em] text-white border border-white/20"
           >
-            Preconstruction services · available nationwide
+            Home project planning · available nationwide
           </motion.div>
           
           <motion.h1 
@@ -94,8 +93,9 @@ export function ServicesJourneySection({ services }: { services: HomeJourneyServ
             transition={{ duration: 0.8, delay: 0.4 }}
             className="font-home-serif text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold leading-tight text-white max-w-4xl drop-shadow-lg"
           >
-            Preconstruction clarity <br className="hidden sm:block" />
-            <span className="text-[#E8724B]">before you build</span>
+            Tell us what you want to build.
+            <br className="hidden sm:block" />
+            <span className="text-[#E8724B]">We&apos;ll help you plan it.</span>
           </motion.h1>
           
           <motion.p 
@@ -104,7 +104,7 @@ export function ServicesJourneySection({ services }: { services: HomeJourneyServ
             transition={{ duration: 0.8, delay: 0.6 }}
             className="font-home-sans max-w-2xl mx-auto text-base sm:text-lg md:text-xl text-white/90 leading-relaxed drop-shadow-md font-medium"
           >
-            Turn your property, project idea, plans, or solicitation into a design concept, estimate, site plan, and permit-ready package.
+            Understand the design, likely cost, permit requirements, and next steps before you commit to construction.
           </motion.p>
           
           <motion.div
@@ -113,25 +113,16 @@ export function ServicesJourneySection({ services }: { services: HomeJourneyServ
             transition={{ duration: 0.8, delay: 0.8 }}
             className="mt-4"
           >
-            <div className="flex flex-wrap items-center justify-center gap-3">
+            <div className="flex flex-col items-center gap-3">
               <Link
-                href="/get-started"
+                href="/request-service"
                 className="bg-[#E8724B] hover:bg-[#d65f39] text-white px-8 py-3.5 rounded-xl font-home-sans font-bold text-sm tracking-wide transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5"
               >
-                Start a Project
+                Tell Us About Your Project
               </Link>
-              <Link
-                href="/intake/cost_estimate"
-                className="border border-white/50 bg-white/10 backdrop-blur-md hover:bg-white/20 text-white px-8 py-3.5 rounded-xl font-home-sans font-bold text-sm tracking-wide transition-all"
-              >
-                Get an Estimate
-              </Link>
-              <Link
-                href="/intake/permit_path_only"
-                className="border border-white/50 bg-white/10 backdrop-blur-md hover:bg-white/20 text-white px-8 py-3.5 rounded-xl font-home-sans font-bold text-sm tracking-wide transition-all"
-              >
-                Upload Plans
-              </Link>
+              <p className="font-home-sans text-xs text-white/75">
+                Start with an address and an idea. Add photos or plans if you have them.
+              </p>
             </div>
           </motion.div>
         </div>
@@ -143,12 +134,15 @@ export function ServicesJourneySection({ services }: { services: HomeJourneyServ
         </div>
       </header>
 
-      {/* Cards listed in single column */}
+      {/* Content cards use restrained rounded corners; pills are reserved for compact controls. */}
       <div className="flex flex-col px-4 py-16 sm:px-6 sm:py-20 lg:px-8 lg:py-24 bg-[#F5F5F5] relative z-20">
         <div className="text-center mb-12 sm:mb-16">
           <h2 className="font-home-serif text-3xl sm:text-4xl font-bold text-kealee-black">
-            Explore Our Services
+            Choose where you need clarity
           </h2>
+          <p className="mx-auto mt-4 max-w-2xl font-home-sans text-sm leading-relaxed text-slate-600 sm:text-base">
+            Pick a service if you already know what you need, or start with your project and we&apos;ll recommend the right package.
+          </p>
           <div className="w-16 h-1 bg-[#E8724B] mx-auto mt-6 rounded-full" />
         </div>
         

@@ -64,13 +64,13 @@ export const HOME_JOURNEY_SERVICES: HomeJourneyService[] = [
   {
     id: 'design',
     // Concept package delivery — 2–5 business days. NOT construction.
-    title: 'design concepts',
-    subtitle: 'Concept package · 2–5 day delivery',
+    title: 'See Your Project Clearly',
+    subtitle: 'Design concepts and layout direction',
     description:
-      'AI renders, floor plan, permit scope outline, and cost band. This is your planning package — not construction. Order opens your project workspace.',
+      'Turn your ideas and property photos into visual concepts, layout direction, and a clear scope for deciding what to build.',
     priceHint: usdRange(CONCEPT_START_PRICE, CONCEPT_DEVELOPER_PRICE),
     ctaText: 'Start Design Concept',
-    ctaLink: '/concept',
+    ctaLink: '/products/concept',
     gradientFrom: '#2ABFBF',
     gradientTo: '#00A3C4',
     progress: 25,
@@ -83,12 +83,12 @@ export const HOME_JOURNEY_SERVICES: HomeJourneyService[] = [
     id: 'estimate',
     // Cost estimate document — delivered with the concept package, not a construction milestone.
     title: 'Cost Estimation',
-    subtitle: 'RSMeans-validated · lender-ready PDF',
+    subtitle: 'Understand the likely project cost',
     description:
-      'Line-item material and labor breakdown validated against RSMeans DMV regional data. Not a ballpark — a certified cost plan your lender will accept.',
+      'Get a trade-by-trade planning estimate with materials, labor, allowances, and assumptions explained in plain language.',
     priceHint: usdRange(ESTIMATION_PRICE, ESTIMATION_CERTIFIED_PRICE),
     ctaText: 'Get Cost Estimate',
-    ctaLink: '/estimate',
+    ctaLink: '/products/detailed_estimate',
     gradientFrom: '#E8793A',
     gradientTo: '#F6AD55',
     progress: 50,
@@ -101,15 +101,15 @@ export const HOME_JOURNEY_SERVICES: HomeJourneyService[] = [
     id: 'siteplan',
     // Site intelligence — parcel constraints and buildable area, not construction.
     title: 'Site Plan',
-    subtitle: 'Parcel constraints · buildable area',
+    subtitle: 'Understand what fits on your property',
     description:
-      'Setbacks, lot coverage, access, utilities, and flood or environmental flags where data exists — with a preliminary buildable-area diagram. Every finding is labelled with its source, date, and confidence.',
+      'See the likely buildable area, important property constraints, and the documents or professional input needed before moving forward.',
     priceHint: usdRange(
       CANONICAL_PRICE_CENTS.siteIntelligence.preliminarySitePlan / 100,
       CANONICAL_PRICE_CENTS.siteIntelligence.verifiedSiteFeasibility / 100,
     ),
     ctaText: 'Start Site Plan',
-    ctaLink: '/site-plans',
+    ctaLink: '/products/preliminary_site_plan',
     gradientFrom: '#0F766E',
     gradientTo: '#2ABFBF',
     progress: 60,
@@ -121,12 +121,12 @@ export const HOME_JOURNEY_SERVICES: HomeJourneyService[] = [
     id: 'permits',
     // Kealee files the permit; jurisdiction determines approval timing (4–12 weeks).
     title: 'Permitting',
-    subtitle: 'Kealee prepares & coordinates · the jurisdiction approves',
+    subtitle: 'Know what is required to file',
     description:
-      'We identify your jurisdiction anywhere in the US, determine the permit types your scope needs, build the document checklist, and prepare and coordinate the submission. Approval, fees, and timelines are set by the agency — Kealee does not issue permits.',
+      'Get a clear permit path, required-document checklist, and help preparing and coordinating your submission with the local agency.',
     priceHint: usdRange(PERMIT_BASIC_PRICE, PERMIT_PREMIUM_PRICE),
     ctaText: 'File Permits',
-    ctaLink: '/permits',
+    ctaLink: '/products/permit_assessment',
     gradientFrom: '#805AD5',
     gradientTo: '#B794F4',
     progress: 80,
@@ -139,12 +139,12 @@ export const HOME_JOURNEY_SERVICES: HomeJourneyService[] = [
     id: 'build',
     title: 'Build & Manage',
     // Construction execution phase — weeks to months of active build work, not package delivery.
-    subtitle: 'Active construction · contractor-matched',
+    subtitle: 'Move from planning into construction',
     description:
-      'Vetted contractor bids, milestone-based escrow, and a live owner dashboard. Scope and schedule set by permit-approved plans. Contractor coverage varies by market.',
+      'Compare qualified contractors, organize the approved scope, and follow project progress from one owner workspace.',
     priceHint: `From $${PM_ADVISORY_PRICE}/mo advisory`,
     ctaText: 'View Build Services',
-    ctaLink: '/contractors',
+    ctaLink: '/products/construction_consultation',
     gradientFrom: '#38A169',
     gradientTo: '#68D391',
     progress: 100,
