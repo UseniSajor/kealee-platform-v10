@@ -2842,8 +2842,12 @@ async function main(): Promise<void> {
   const sheets = sheetIds.map((sheet, i) => ({
     ...buildSheetContext({
       sheet, twin, projectName,
-      status: 'PRELIMINARY', sheetIndex: i + 1, sheetCount: sheetIds.length, sheetIds, sheetIds,
+      status: 'PRELIMINARY', sheetIndex: i + 1, sheetCount: sheetIds.length, sheetIds,
     }),
+    // Carried on the context explicitly: `buildSheetContext` does not pass the
+    // list through, and the cover sheet's index needs every sheet in the set,
+    // not just the one being drawn.
+    sheetIds,
     // Exhibits are per PROJECT. The connection sketch belongs to Rollins; the
     // field topo belongs to Indian Queen. Named by which plat record is loaded.
     exhibits: platRecord?.citation === 'PLAT BOOK WWW 65, P. 60'

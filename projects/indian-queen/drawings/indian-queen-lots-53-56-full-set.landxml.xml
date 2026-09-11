@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LandXML xmlns="http://www.landxml.org/schema/LandXML-1.2"
+         version="1.2"
+         date="2026-09-11" time="23:36:45">
+  <Units><Imperial areaUnit="squareFoot" linearUnit="USSurveyFoot" volumeUnit="cubicFeet"
+           temperatureUnit="fahrenheit" pressureUnit="inHG"/></Units>
+  <Project name="9588 Fort Foote Rd"/>
+  <Application name="Kealee Site Plan Engine" version="1.0"/>
+  <!-- Coordinate system EPSG:2248; horizontal datum NAD83;
+       vertical datum NAVD88 (feet). Model revision 10. -->
+  <CoordinateSystem desc="EPSG:2248" horizontalDatum="NAD83"
+                    verticalDatum="NAVD88 (feet)"/>
+  <Parcels>
+      <Parcel name="subdivision-outer" area="75177.99890136719" parcelType="Single">
+        <CoordGeom>
+            <PntList2D>398446.5242 1308713.9036</PntList2D>
+            <PntList2D>398450.7251447248 1308724.1563295594</PntList2D>
+            <PntList2D>398455.33380366577 1308736.0228017718</PntList2D>
+            <PntList2D>398459.2547524869 1308746.7059923224</PntList2D>
+            <PntList2D>398462.99423280824 1308757.4540473523</PntList2D>
+            <PntList2D>398466.54501225724 1308768.2764345799</PntList2D>
+            <PntList2D>398469.9058478382 1308779.1488392907</PntList2D>
+            <PntList2D>398473.0665650066 1308790.0810973824</PntList2D>
+            <PntList2D>398476.04708323174 1308801.0638525516</PntList2D>
+            <PntList2D>398478.8378151821 1308812.1066744365</PntList2D>
+            <PntList2D>398481.4283365596 1308823.1879017598</PntList2D>
+            <PntList2D>398483.8287906385 1308834.3118498095</PntList2D>
+            <PntList2D>398486.0280275168 1308845.477321459</PntList2D>
+            <PntList2D>398488.0383646843 1308856.678345719</PntList2D>
+            <PntList2D>398489.84761580854 1308867.9034742424</PntList2D>
+            <PntList2D>398491.45718918636 1308879.1690711437</PntList2D>
+            <PntList2D>398492.87696747395 1308890.460157434</PntList2D>
+            <PntList2D>398494.0975530395 1308901.7745098625</PntList2D>
+            <PntList2D>398495.12798835145 1308913.1178031703</PntList2D>
+            <PntList2D>398495.947572461 1308924.4682517028</PntList2D>
+            <PntList2D>398496.57797358226 1308935.830777585</PntList2D>
+            <PntList2D>398500.93834066397 1309105.8748812727</PntList2D>
+            <PntList2D>398651.85810399376 1309100.6551938793</PntList2D>
+            <PntList2D>398644.4584475712 1308881.7902465148</PntList2D>
+            <PntList2D>398591.52921030123 1308666.5217670712</PntList2D>
+            <PntList2D>398547.2289958455 1308579.7119600263</PntList2D>
+            <PntList2D>398413.44938097807 1308648.7213474016</PntList2D>
+            <PntList2D>398446.5242 1308713.9036</PntList2D>
+        </CoordGeom>
+      </Parcel>
+      <Parcel name="9588 Fort Foote Rd" area="12388.906463623047" parcelType="Single">
+        <CoordGeom>
+            <PntList2D>398649.1039 1309019.3032</PntList2D>
+            <PntList2D>398498.80487769353 1309022.8131136354</PntList2D>
+            <PntList2D>398500.9347082411 1309105.8558057994</PntList2D>
+            <PntList2D>398651.85447157087 1309100.636118406</PntList2D>
+            <PntList2D>398649.1039 1309019.3032</PntList2D>
+        </CoordGeom>
+      </Parcel>
+      <Parcel name="9584 Fort Foote Rd" area="23371.360290527344" parcelType="Single">
+        <CoordGeom>
+            <PntList2D>398644.4539 1308881.7638</PntList2D>
+            <PntList2D>398486.8194935034 1308849.9131125903</PntList2D>
+            <PntList2D>398488.02994113497 1308856.6654763639</PntList2D>
+            <PntList2D>398489.8391922592 1308867.8906048874</PntList2D>
+            <PntList2D>398491.448765637 1308879.1562017887</PntList2D>
+            <PntList2D>398492.8685439246 1308890.447288079</PntList2D>
+            <PntList2D>398494.08912949014 1308901.7616405075</PntList2D>
+            <PntList2D>398495.1195648021 1308913.1049338153</PntList2D>
+            <PntList2D>398495.9391489116 1308924.4553823478</PntList2D>
+            <PntList2D>398496.5695500329 1308935.81790823</PntList2D>
+            <PntList2D>398498.79964557994 1309022.8193310567</PntList2D>
+            <PntList2D>398649.0986678864 1309019.3094174212</PntList2D>
+            <PntList2D>398644.4539 1308881.7638</PntList2D>
+        </CoordGeom>
+      </Parcel>
+      <Parcel name="9580 Fort Foote Rd" area="25733.42315673828" parcelType="Single">
+        <CoordGeom>
+            <PntList2D>398591.5239 1308666.4932</PntList2D>
+            <PntList2D>398450.7230310604 1308724.153739417</PntList2D>
+            <PntList2D>398455.33169000136 1308736.0202116293</PntList2D>
+            <PntList2D>398459.2526388225 1308746.70340218</PntList2D>
+            <PntList2D>398462.99211914383 1308757.45145721</PntList2D>
+            <PntList2D>398466.54289859283 1308768.2738444374</PntList2D>
+            <PntList2D>398469.9037341738 1308779.1462491483</PntList2D>
+            <PntList2D>398473.0644513422 1308790.07850724</PntList2D>
+            <PntList2D>398476.04496956733 1308801.0612624092</PntList2D>
+            <PntList2D>398478.8357015177 1308812.104084294</PntList2D>
+            <PntList2D>398481.4262228952 1308823.1853116173</PntList2D>
+            <PntList2D>398483.8266769741 1308834.309259667</PntList2D>
+            <PntList2D>398486.0259138524 1308845.4747313166</PntList2D>
+            <PntList2D>398486.82579769153 1308849.923392446</PntList2D>
+            <PntList2D>398644.46020418813 1308881.7740798558</PntList2D>
+            <PntList2D>398591.5239 1308666.4932</PntList2D>
+        </CoordGeom>
+      </Parcel>
+      <Parcel name="9576 Fort Foote Rd" area="13690.159423828125" parcelType="Single">
+        <CoordGeom>
+            <PntList2D>398547.2238 1308579.6837</PntList2D>
+            <PntList2D>398413.44418513257 1308648.6930873753</PntList2D>
+            <PntList2D>398446.52431423275 1308713.9022850294</PntList2D>
+            <PntList2D>398450.7252589576 1308724.1550145887</PntList2D>
+            <PntList2D>398591.52612789714 1308666.4944751717</PntList2D>
+            <PntList2D>398547.2238 1308579.6837</PntList2D>
+        </CoordGeom>
+      </Parcel>
+  </Parcels>
+  <!-- No Surfaces element: no vertical datum or elevation data is established for this site. -->
+</LandXML>

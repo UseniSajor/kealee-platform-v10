@@ -35099,7 +35099,7 @@
       "dataset": "Parcel boundary — recorded plat",
       "crs": "EPSG:2248",
       "horizontalDatum": "NAD83",
-      "retrievedAt": "2026-09-11T22:42:24.572Z",
+      "retrievedAt": "2026-09-11T23:28:19.276Z",
       "verticalDatum": null,
       "accuracyClass": "mapping_grade",
       "reliabilityLevel": 1
@@ -35110,7 +35110,7 @@
       "dataset": "Existing contours",
       "crs": "EPSG:2248",
       "horizontalDatum": "NAD83",
-      "retrievedAt": "2026-09-11T22:42:24.574Z",
+      "retrievedAt": "2026-09-11T23:28:19.278Z",
       "verticalDatum": null,
       "accuracyClass": "mapping_grade",
       "reliabilityLevel": 1
@@ -35121,13 +35121,13 @@
       "dataset": "Recorded easements — platted",
       "crs": "EPSG:2248",
       "horizontalDatum": "NAD83",
-      "retrievedAt": "2026-09-11T22:42:24.588Z",
+      "retrievedAt": "2026-09-11T23:28:19.294Z",
       "verticalDatum": null,
       "accuracyClass": "mapping_grade",
       "reliabilityLevel": 1
     }
   ],
-  "updatedAt": "2026-09-11T22:42:24.588Z",
+  "updatedAt": "2026-09-11T23:28:19.294Z",
   "drainage": {
     "totalAreaSqFt": 12388.906463623047,
     "totalAreaAcres": 0.2844,
