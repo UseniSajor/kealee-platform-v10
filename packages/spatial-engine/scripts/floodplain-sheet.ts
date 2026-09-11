@@ -13,12 +13,18 @@ import { join } from 'node:path'
 import PDFDocument from 'pdfkit'
 import { ARCH_D } from '../src/sheets/viewport'
 
-const OUT = join(process.cwd(), 'output', 'site-plans')
-const R = JSON.parse(readFileSync(join(OUT, 'indian-queen.floodplain-study-results.json'), 'utf8'))
-const INU = JSON.parse(readFileSync(join(OUT, 'indian-queen.floodplain-inundation.json'), 'utf8'))
-const MODEL = JSON.parse(readFileSync(join(OUT, 'indian-queen.floodplain-model-input.json'), 'utf8'))
-const GEO = JSON.parse(readFileSync(join(OUT, 'indian-queen-floodplain-delineation.geojson'), 'utf8'))
-const TWIN = JSON.parse(readFileSync(join(OUT, 'indian-queen-lots-53-56.twin.json'), 'utf8'))
+const PROJ = join(process.cwd(), 'projects', 'indian-queen')
+const MODEL_DIR = join(PROJ, 'model')
+const OUT = join(PROJ, 'drawings')
+const R = JSON.parse(readFileSync(join(MODEL_DIR, 'indian-queen.floodplain-study-results.json'), 'utf8'))
+const INU = JSON.parse(readFileSync(join(MODEL_DIR, 'indian-queen.floodplain-inundation.json'), 'utf8'))
+const MODEL = JSON.parse(readFileSync(join(MODEL_DIR, 'indian-queen.floodplain-model-input.json'), 'utf8'))
+const GEO = JSON.parse(readFileSync(join(PROJ, 'drawings', 'indian-queen-floodplain-delineation.geojson'), 'utf8'))
+const TWIN = JSON.parse(readFileSync(join(PROJ, 'drawings', 'indian-queen-lots-53-56.twin.json'), 'utf8'))
+const MIT = JSON.parse(readFileSync(join(PROJ, 'model', 'indian-queen.mitigation-analysis.json'), 'utf8'))
+const CS = JSON.parse(readFileSync(join(PROJ, 'model', 'indian-queen.compensatory-storage.json'), 'utf8'))
+const ES = JSON.parse(readFileSync(join(PROJ, 'model', 'indian-queen.easement-storage.json'), 'utf8'))
+const FB = JSON.parse(readFileSync(join(PROJ, 'model', 'indian-queen.fill-breakdown.json'), 'utf8'))
 
 const S = ARCH_D
 const M = S.marginPt
@@ -233,7 +239,8 @@ for (const b of TWIN.features.filter((x: any) => x.kind === 'Building')) {
   const cyy = pts.reduce((s, p) => s + p[1], 0) / pts.length
   if (a.finishedFloorElevFt) {
     text(doc, cx - 22, cyy - 4, `FF ${f(a.finishedFloorElevFt)}`, 5.6, { bold: true })
-    text(doc, cx - 22, cyy + 3, `BSMT ${f(a.basementElevFt)}`, 5.6, { color: '#b71c1c' })
+    text(doc, cx - 22, cyy + 3, a.basementElevFt == null ? 'NO BASEMENT' : `BSMT ${f(a.basementElevFt)}`,
+      5.6, { color: '#b71c1c' })
   }
 }
 // cross-section lines
@@ -468,12 +475,12 @@ table(tcol(2), TAB_Y, colW, 'FLOODPLAIN ON THE LOTS, AND FREEBOARD — 100-YEAR'
   ['LOT', 'AREA (SF)', 'FLOODED EXIST', 'FLOODED PROP', 'FILL < FLOOD'],
   (lotRows as string[][]).concat([['', '', '', '', ''],
     [`LOWEST FLOOR CHECK AGAINST WS EL ${f(wsel100)}`, '', '', '', ''],
-    ['LOT', 'FIN FLOOR', 'FREEBOARD', 'BASEMENT FL', 'BELOW FLOOD'],
+    ['LOT', 'FIN FLOOR', 'FREEBOARD', 'BASEMENT', 'FOUNDATION'],
     ...bldg.map((b: any, i: number) => {
       const lot = ['53', '54', '55', '56'][i]
       const fb = b.finishedFloorElevFt - wsel100
-      return [`LOT ${lot}`, f(b.finishedFloorElevFt), `${fb >= 0 ? '+' : ''}${f(fb)}${fb < 1 ? ' FAIL' : ''}`,
-        f(b.basementElevFt), `${f(wsel100 - b.basementElevFt)} ft`]
+      return [`LOT ${lot}`, f(b.finishedFloorElevFt), `${fb >= 0 ? '+' : ''}${f(fb)}${fb < 2 ? ' LOW' : ''}`,
+        b.basementElevFt == null ? 'none' : f(b.basementElevFt), b.foundationType ?? 'slab']
     })]),
   [0.17, 0.19, 0.23, 0.23, 0.18])
 
@@ -514,6 +521,241 @@ table(tcol(2), TAB_Y, colW, 'FLOODPLAIN ON THE LOTS, AND FREEBOARD — 100-YEAR'
     doc.restore()
   }
 }
+
+// ═══════════════════════════════════════════════════════════════════════════
+// FP-102 — MITIGATION AND COMPENSATORY STORAGE DESIGN
+// ═══════════════════════════════════════════════════════════════════════════
+doc.addPage({ size: [S.widthPt, S.heightPt], margin: 0 })
+box(doc, M, M, S.widthPt - 2 * M, S.heightPt - 2 * M)
+doc.save().rotate(-24, { origin: [S.widthPt / 2 - 300, S.heightPt / 2 - 120] })
+  .fontSize(34).fillColor('#d32f2f').fillOpacity(0.07).font('Helvetica-Bold')
+  .text('PRELIMINARY — NOT FOR CONSTRUCTION', S.widthPt / 2 - 640, S.heightPt / 2 - 140, { lineBreak: false })
+doc.restore()
+
+// title block
+box(doc, tbx, M, TB, S.heightPt - 2 * M)
+cy = M + 12
+text(doc, tbx + 8, cy, 'KEALEE', 15, { bold: true }); cy += 18
+text(doc, tbx + 8, cy, 'design, build, deliver', 7, { color: '#666666' }); cy += 20
+row('PROJECT', 'Indian Queen East — Lots 53, 54, 55 and 56')
+row('ADDRESS', '9588  ·  9584  ·  9580  ·  9576 Fort Foote Road')
+row('JURISDICTION', "Prince George's County, Maryland")
+row('SHEET', 'FP-102 — MITIGATION ANALYSIS AND COMPENSATORY STORAGE DESIGN')
+row('DISCIPLINE', 'Maryland Professional Engineer')
+row('VERTICAL DATUM', 'NAVD 88')
+row('DATE', new Date(R.generatedAt).toISOString().slice(0, 10))
+cy += 4
+box(doc, tbx + 6, cy, TB - 12, 66)
+text(doc, tbx + 12, cy + 6, 'STATUS', 6, { color: '#666666' })
+doc.save().fontSize(7.4).font('Helvetica-Bold').fillColor('#b71c1c')
+  .text('PRELIMINARY FEASIBILITY. NOT A SEALED FLOODPLAIN STUDY. ' +
+    'Quantities are for concept evaluation and are not construction quantities. ' +
+    'No professional engineer has reviewed or sealed this sheet.',
+    tbx + 12, cy + 16, { width: TB - 24 })
+doc.restore()
+cy += 74
+box(doc, tbx + 6, cy, TB - 12, 88)
+text(doc, tbx + 12, cy + 6, 'PROFESSIONAL CERTIFICATION', 6, { color: '#666666' })
+text(doc, tbx + 12, cy + 66, 'Maryland P.E. No. ________  Date __________', 7, { color: '#999999' })
+cy += 96
+
+text(doc, tbx + 8, cy, 'DETERMINATIONS', 7, { bold: true }); cy += 11
+const dets: [string, string][] = [
+  ['Removal of all lots from floodplain', 'NOT ACHIEVABLE'],
+  ['Controlling tailwater, lower bound', `EL ${f(MIT.tailwaterFloorFt)}`],
+  ['Lowest ground, Lot 55', `EL ${f(Math.min(...Object.values(MIT.lotLowestGroundFt as Record<string, number>) as number[]))}`],
+  ['Basements', 'NOT PERMISSIBLE, ALL LOTS'],
+  ['Required lowest floor', `EL ${f(wsel100 + 2)}`],
+  ['Compensation required', `${n0(CS.requiredCurrentGradingCy)} cy`],
+  ['Compensation available on site', `${n0(CS.totalProvidedCy + ES.cutByFloor['48.0'])} cy`],
+  ['Crossing enlargement', 'NOT RECOMMENDED'],
+]
+for (const [k, v] of dets) {
+  text(doc, tbx + 8, cy, k, 6.4, { color: '#555555' })
+  text(doc, tbx + 8, cy, v, 6.4, { bold: true, align: 'right', width: TB - 16 })
+  cy += 9.6
+}
+cy += 8
+text(doc, tbx + 8, cy, 'DESIGN CRITERIA — COMPENSATORY STORAGE', 7, { bold: true }); cy += 11
+const crit = [
+  `1  Excavation floor EL ${f(CS.floorElFt)}, above the invert of the receiving channel, so each cell drains by gravity.`,
+  '2  Cells located within the existing-condition 100-year floodplain limit, being the area to be placed under floodplain easement.',
+  '3  Side slopes no steeper than 3:1, stabilised and mowable, no retaining structure.',
+  `4  Minimum ${f(CS.standoffFt, 0)} ft from every property line and 20 ft from every structure.`,
+  '5  Positive hydraulic connection to the recorded storm drain easement corridor at the cell invert.',
+  '6  Volume provided at the same elevation increments from which it is taken; stage-by-stage comparison required at final design.',
+]
+for (const c of crit) {
+  doc.save().fontSize(6).font('Helvetica').fillColor('#333333').text(c, tbx + 8, cy, { width: TB - 16 })
+  cy += doc.heightOfString(c, { width: TB - 16 }) + 3.5
+  doc.restore()
+}
+
+// ── PLAN: storage design ───────────────────────────────────────────────────
+const P2H = DRAW_H * 0.60
+box(doc, DRAW_X, DRAW_Y, DRAW_W, P2H)
+text(doc, DRAW_X + 8, DRAW_Y + 6, 'COMPENSATORY STORAGE DESIGN — PLAN', 11, { bold: true })
+text(doc, DRAW_X + 8, DRAW_Y + 20,
+  `Cells CS-53 to CS-56 excavated to EL ${f(CS.floorElFt)}; cell CS-E within the recorded 60 ft storm drain easement`,
+  7, { color: '#555555' })
+
+const p2pad = 34
+const sc2 = Math.min((DRAW_W - 30) / (bx1 - bx0), (P2H - p2pad - 20) / (by1 - by0))
+const ox2 = DRAW_X + 15 + ((DRAW_W - 30) - (bx1 - bx0) * sc2) / 2
+const oy2 = DRAW_Y + p2pad + ((P2H - p2pad - 20) - (by1 - by0) * sc2) / 2
+const T2 = (p: number[]): [number, number] => [ox2 + (p[0] - bx0) * sc2, oy2 + (by1 - p[1]) * sc2]
+
+doc.save().rect(DRAW_X + 2, DRAW_Y + p2pad - 6, DRAW_W - 4, P2H - p2pad).clip()
+for (const ftr of TWIN.features) {
+  if (ftr.kind !== 'Contour' || (ftr.attributes ?? {}).proposed) continue
+  line(doc, (ftr.line as number[][]).map(T2), PEN.contour)
+}
+for (const ftr of GEO.features) {
+  if (ftr.properties.returnPeriod !== 100 || ftr.properties.condition !== 'existing') continue
+  for (const ring of ftr.geometry.coordinates) {
+    const pts = (ring as number[][]).map(T2)
+    poly(doc, pts, '#1565c0', 0.07)
+    line(doc, pts, PEN.existingFp)
+  }
+}
+// recorded storm drain easement
+{
+  const ering = (ES.easement.ring as number[][]).map(T2)
+  poly(doc, ering, '#7b1fa2', 0.10)
+  line(doc, [...ering, ering[0]], { color: '#6a1b9a', width: 1.4, dash: [8, 3] })
+  const cxE = ering.reduce((s2, p) => s2 + p[0], 0) / ering.length
+  const cyE = ering.reduce((s2, p) => s2 + p[1], 0) / ering.length
+  text(doc, cxE - 44, cyE - 8, 'CS-E', 8, { bold: true, color: '#4a148c' })
+  text(doc, cxE - 44, cyE + 2, `RECORDED 60' STORM DRAIN ESMT`, 5.4, { color: '#4a148c' })
+  text(doc, cxE - 44, cyE + 9, `${n0(ES.cutByFloor['48.0'])} cy @ EL 48.0`, 5.4, { color: '#4a148c' })
+}
+// storage cells
+for (const c of CS.cells) {
+  for (const ring of c.rings as number[][][]) {
+    const pts = ring.map(T2)
+    poly(doc, pts, '#00897b', 0.28)
+    line(doc, pts, { color: '#00695c', width: 1.5 })
+  }
+  const all = (c.rings as number[][][]).flat().map(T2)
+  const cxc = all.reduce((s2, p) => s2 + p[0], 0) / all.length
+  const cyc = all.reduce((s2, p) => s2 + p[1], 0) / all.length
+  text(doc, cxc - 16, cyc - 9, `CS-${c.lot}`, 8, { bold: true, color: '#00695c' })
+  text(doc, cxc - 16, cyc + 1, `${n0(c.volumeCy)} cy`, 6, { bold: true, color: '#00695c' })
+  text(doc, cxc - 16, cyc + 8, `${n0(c.areaSqFt)} sf`, 5.4, { color: '#00695c' })
+}
+for (const [addr, ring] of Object.entries(MODEL.lots as Record<string, [number, number][]>)) {
+  const pts = (ring as number[][]).map(T2)
+  line(doc, [...pts, pts[0]], PEN.lot)
+  const cxl = pts.reduce((s2, p) => s2 + p[0], 0) / pts.length
+  const cyl = pts.reduce((s2, p) => s2 + p[1], 0) / pts.length
+  const lot = { '9588 Fort Foote Rd': '53', '9584 Fort Foote Rd': '54', '9580 Fort Foote Rd': '55', '9576 Fort Foote Rd': '56' }[addr]
+  text(doc, cxl - 14, cyl - 32, `LOT ${lot}`, 9, { bold: true })
+}
+for (const b of TWIN.features.filter((x: any) => x.kind === 'Building')) {
+  const r = (b.ring?.coordinates ?? b.ring) as number[][]
+  const pts = r.map(T2)
+  line(doc, [...pts, pts[0]], PEN.building)
+  const a = b.attributes ?? {}
+  const cxb = pts.reduce((s2, p) => s2 + p[0], 0) / pts.length
+  const cyb = pts.reduce((s2, p) => s2 + p[1], 0) / pts.length
+  text(doc, cxb - 26, cyb - 4, `REQ LF ${f(wsel100 + 2)}`, 5.6, { bold: true, color: '#b71c1c' })
+  text(doc, cxb - 26, cyb + 3, 'NO BASEMENT', 5.6, { color: '#b71c1c' })
+}
+doc.restore()
+{
+  const bar = 100 * sc2
+  const bxx = DRAW_X + 16
+  const byy2 = DRAW_Y + P2H - 20
+  line(doc, [[bxx, byy2], [bxx + bar, byy2]], { color: '#000', width: 1.2 })
+  for (let i = 0; i <= 4; i++) line(doc, [[bxx + (bar * i) / 4, byy2 - 4], [bxx + (bar * i) / 4, byy2 + 4]], { color: '#000', width: 1 })
+  text(doc, bxx, byy2 + 6, `0${' '.repeat(20)}100 FT`, 6.5)
+  text(doc, bxx + bar + 12, byy2 - 3, `1 in = ${f(72 / sc2, 0)} ft`, 7)
+  const nx2 = DRAW_X + DRAW_W - 70
+  const ny2 = DRAW_Y + 44
+  line(doc, [[nx2, ny2], [nx2, ny2 - 20]], { color: '#000000', width: 1.3 })
+  doc.save().fillColor('#000000').moveTo(nx2, ny2 - 25).lineTo(nx2 - 4.5, ny2 - 16)
+    .lineTo(nx2 + 4.5, ny2 - 16).closePath().fill().restore()
+  text(doc, nx2 - 12, ny2 + 3, 'NORTH', 8, { bold: true })
+}
+
+// ── tables row ─────────────────────────────────────────────────────────────
+const T2Y = DRAW_Y + P2H + 10
+const T2H = DRAW_Y + DRAW_H - T2Y
+const cw2 = DRAW_W / 3 - 7
+const tc2 = (i: number) => DRAW_X + i * (cw2 + 10)
+function table2(x: number, y: number, w: number, h: number, title: string, head: string[], rows: string[][], widths: number[]) {
+  box(doc, x, y, w, h)
+  text(doc, x + 6, y + 5, title, 8, { bold: true })
+  let ty = y + 18
+  const cxf = (i: number) => x + 6 + widths.slice(0, i).reduce((a, b) => a + b, 0) * w
+  head.forEach((hh, i) => text(doc, cxf(i), ty, hh, 5.8, { bold: true, color: '#555555' }))
+  ty += 8
+  line(doc, [[x + 5, ty], [x + w - 5, ty]], { color: '#999999', width: 0.5 })
+  ty += 3
+  for (const r of rows) { r.forEach((c, i) => text(doc, cxf(i), ty, c, 6.2)); ty += 9 }
+}
+const exR = MIT.routed['EXISTING 36 in RCP (assumed)']
+table2(tc2(0), T2Y, cw2, T2H, 'RESERVOIR ROUTING — EXISTING CROSSING',
+  ['STORM', 'INFLOW', 'OUTFLOW', 'ATTENUATED', 'PEAK STAGE'],
+  [10, 25, 50, 100].map(p => {
+    const r = exR[String(p)]
+    return [`${p}-year`, `${n0(r.inflowPeakCfs)} cfs`, `${n0(r.outflowPeakCfs)} cfs`,
+      `${f(100 * (1 - r.attenuation), 1)}%`, `EL ${f(r.peakStageFt)}`]
+  }).concat([['', '', '', '', ''],
+    ['CROSSING ALTERNATIVES — DOWNSTREAM TRANSFER', '', '', '', ''],
+    ['OPTION', '10-YR OUT', 'CHANGE', '100-YR OUT', 'CHANGE'],
+    ...Object.entries(MIT.routed as Record<string, any>).map(([k, v]) => [
+      k.replace(' (assumed)', '').replace('EXISTING 36 in RCP', 'existing 36 in'),
+      `${n0(v['10'].outflowPeakCfs)}`,
+      `${v['10'].outflowPeakCfs - exR['10'].outflowPeakCfs >= 0 ? '+' : ''}${n0(v['10'].outflowPeakCfs - exR['10'].outflowPeakCfs)}`,
+      `${n0(v['100'].outflowPeakCfs)}`,
+      `${v['100'].outflowPeakCfs - exR['100'].outflowPeakCfs >= 0 ? '+' : ''}${n0(v['100'].outflowPeakCfs - exR['100'].outflowPeakCfs)}`,
+    ])]),
+  [0.34, 0.17, 0.16, 0.17, 0.16])
+
+table2(tc2(1), T2Y, cw2, T2H, 'COMPENSATORY STORAGE SCHEDULE',
+  ['CELL', 'LOT', 'AREA (SF)', 'MEAN DEPTH', 'VOLUME'],
+  (CS.cells as any[]).map(c => [`CS-${c.lot}`, c.lot, n0(c.areaSqFt), `${f(c.meanDepthFt)} ft`, `${n0(c.volumeCy)} cy`])
+    .concat([['CS-E', '54/55', n0(ES.easement.areaSqFt), 'to EL 48.0', `${n0(ES.cutByFloor['48.0'])} cy`],
+      ['', '', '', '', ''],
+      ['PROVIDED', '', '', '', `${n0(CS.totalProvidedCy + ES.cutByFloor['48.0'])} cy`],
+      ['REQUIRED by proposed grading', '', '', '', `${n0(CS.requiredCurrentGradingCy)} cy`],
+      ['DEFICIT', '', '', '', `${n0(CS.requiredCurrentGradingCy - CS.totalProvidedCy - ES.cutByFloor['48.0'])} cy`],
+      ['', '', '', '', ''],
+      ['FILL BELOW EL ' + f(FB.bfe) + ' — DISTRIBUTION', '', '', '', ''],
+      ['beneath dwelling footprints', '', '', '', `${n0(FB.belowBfeCy.underFootprints)} cy`],
+      ['within 10 ft of a dwelling', '', '', '', `${n0(FB.belowBfeCy.within10ft)} cy`],
+      ['driveways, aprons, tie-out', '', '', '', `${n0(FB.belowBfeCy.drivewaysAndTieOut)} cy`],
+      ['', '', '', '', ''],
+      ['RESOLUTION: reduce fill. Vented stem-wall or', '', '', '', ''],
+      ['pier foundations and driveways at existing grade', '', '', '', ''],
+      ['bring the balance within the volume provided.', '', '', '', '']]),
+  [0.34, 0.12, 0.18, 0.19, 0.17])
+
+table2(tc2(2), T2Y, cw2, T2H, 'FLOODPLAIN REMOVAL AND FOUNDATION DETERMINATION',
+  ['LOT', 'LOWEST GROUND', 'WS MUST FALL BELOW', 'REQUIRED DROP', 'ACHIEVABLE'],
+  Object.entries(MIT.lotLowestGroundFt as Record<string, number>).map(([addr, lo]) => {
+    const lot = { '9588 Fort Foote Rd': '53', '9584 Fort Foote Rd': '54', '9580 Fort Foote Rd': '55', '9576 Fort Foote Rd': '56' }[addr]!
+    return [`LOT ${lot}`, `EL ${f(lo)}`, `EL ${f(lo)}`, `${f(R.existing[3].headwaterElFt - lo)} ft`,
+      lo > MIT.tailwaterFloorFt ? 'partial' : 'NO']
+  }).concat([['', '', '', '', ''],
+    [`Controlling tailwater lower bound: EL ${f(MIT.tailwaterFloorFt)}`, '', '', '', ''],
+    ['The upstream water surface cannot be lowered', '', '', '', ''],
+    ['below the downstream water surface.', '', '', '', ''],
+    ['', '', '', '', ''],
+    ['LOWEST FLOOR DETERMINATION', '', '', '', ''],
+    ['LOT', 'PROPOSED FF', 'BASEMENT', 'REQ LOWEST FLOOR', 'STATUS'],
+    ...bldg.map((b: any, i: number) => {
+      const lot = ['53', '54', '55', '56'][i]
+      return [`LOT ${lot}`, f(b.finishedFloorElevFt),
+        b.basementElevFt == null ? 'none' : f(b.basementElevFt), f(wsel100 + 2),
+        b.finishedFloorElevFt >= wsel100 + 2 ? 'COMPLIES' : 'LOW']
+    }),
+    ['', '', '', '', ''],
+    ['Basements are not permissible on any lot.', '', '', '', ''],
+    ['Vented stem-wall or pier foundations required', '', '', '', ''],
+    ['on Lots 54 and 55 per ASCE 24 and 44 CFR 60.3.', '', '', '', '']]),
+  [0.3, 0.18, 0.2, 0.16, 0.16])
 
 doc.end()
 doc.on('end', () => {

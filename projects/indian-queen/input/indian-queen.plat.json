@@ -1,0 +1,155 @@
+{
+  "_source": "INDIAN QUEEN EAST \u2014 Block \"E\" and parts of Blocks D & F, Plat Book WWW 65 p. 60 (MSA_S1289_51253), 12th Election District, Prince George's County, MD. Plat 6 June 1967, approved 26 June 1967 by M-NCPPC, Record File 5197863. Surveyor W. L. Meekins RLS #384. Scale 1\" = 100'. Zone RSF-95 confirmed by PGAtlas point query at each address.",
+  "_boundarySource": "Union of the four county parcel polygons (PROP_ID 213012, 213014, 213017, 213036).",
+  "basisOfBearings": "Maryland State Plane Coordinate System (NAD 83), EPSG:2248",
+  "address": "9588 Fort Foote Rd",
+  "reference": {
+    "liber": "WWW 65",
+    "folio": "60",
+    "subdivisionName": "Indian Queen East",
+    "lot": "53-56"
+  },
+  "pointOfBeginning": [
+    1308713.9036,
+    398446.5242
+  ],
+  "recordedAreaSqFt": 74751,
+  "calls": [
+    {
+      "kind": "line",
+      "bearing": "N 67-43-09 E",
+      "distanceFt": 11.08
+    },
+    {
+      "kind": "line",
+      "bearing": "N 68-46-30 E",
+      "distanceFt": 12.73
+    },
+    {
+      "kind": "line",
+      "bearing": "N 69-50-45 E",
+      "distanceFt": 11.38
+    },
+    {
+      "kind": "line",
+      "bearing": "N 70-48-58 E",
+      "distanceFt": 11.38
+    },
+    {
+      "kind": "line",
+      "bearing": "N 71-50-08 E",
+      "distanceFt": 11.39
+    },
+    {
+      "kind": "line",
+      "bearing": "N 72-49-22 E",
+      "distanceFt": 11.38
+    },
+    {
+      "kind": "line",
+      "bearing": "N 73-52-28 E",
+      "distanceFt": 11.38
+    },
+    {
+      "kind": "line",
+      "bearing": "N 74-49-00 E",
+      "distanceFt": 11.38
+    },
+    {
+      "kind": "line",
+      "bearing": "N 75-49-02 E",
+      "distanceFt": 11.39
+    },
+    {
+      "kind": "line",
+      "bearing": "N 76-50-31 E",
+      "distanceFt": 11.38
+    },
+    {
+      "kind": "line",
+      "bearing": "N 77-49-22 E",
+      "distanceFt": 11.38
+    },
+    {
+      "kind": "line",
+      "bearing": "N 78-51-26 E",
+      "distanceFt": 11.38
+    },
+    {
+      "kind": "line",
+      "bearing": "N 79-49-30 E",
+      "distanceFt": 11.38
+    },
+    {
+      "kind": "line",
+      "bearing": "N 80-50-38 E",
+      "distanceFt": 11.37
+    },
+    {
+      "kind": "line",
+      "bearing": "N 81-52-08 E",
+      "distanceFt": 11.38
+    },
+    {
+      "kind": "line",
+      "bearing": "N 82-49-59 E",
+      "distanceFt": 11.38
+    },
+    {
+      "kind": "line",
+      "bearing": "N 83-50-34 E",
+      "distanceFt": 11.38
+    },
+    {
+      "kind": "line",
+      "bearing": "N 84-48-34 E",
+      "distanceFt": 11.39
+    },
+    {
+      "kind": "line",
+      "bearing": "N 85-52-12 E",
+      "distanceFt": 11.38
+    },
+    {
+      "kind": "line",
+      "bearing": "N 86-49-28 E",
+      "distanceFt": 11.38
+    },
+    {
+      "kind": "line",
+      "bearing": "N 88-31-52 E",
+      "distanceFt": 170.1
+    },
+    {
+      "kind": "line",
+      "bearing": "N 01-58-51 W",
+      "distanceFt": 151.01
+    },
+    {
+      "kind": "line",
+      "bearing": "S 88-03-49 W",
+      "distanceFt": 218.99
+    },
+    {
+      "kind": "line",
+      "bearing": "S 76-11-11 W",
+      "distanceFt": 221.68
+    },
+    {
+      "kind": "line",
+      "bearing": "S 62-57-51 W",
+      "distanceFt": 97.46
+    },
+    {
+      "kind": "line",
+      "bearing": "S 27-17-12 E",
+      "distanceFt": 150.53
+    },
+    {
+      "kind": "line",
+      "bearing": "N 63-06-06 E",
+      "distanceFt": 73.12
+    }
+  ],
+  "_addressNote": "The tract carries lot 53 address for geocoding; the four lots are 9576, 9580, 9584 and 9588 Fort Foote Rd."
+}

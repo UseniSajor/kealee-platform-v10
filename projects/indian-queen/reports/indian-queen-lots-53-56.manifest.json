@@ -1,0 +1,400 @@
+{
+  "run": "indian-queen-lots-53-56 \u2014 landscape sheet made distinct; adjoiner reach; county manuals installed",
+  "generatedAt": "2026-09-10T22:22:42+00:00",
+  "pdf": "indian-queen-lots-53-56.1789055178839.pdf",
+  "pdfNote": "The canonical path output/site-plans/indian-queen-lots-53-56.pdf was LOCKED (open in a viewer) at write time, so the generator wrote this timestamped sibling instead. Close the viewer and re-run to update the canonical name.",
+  "cad": [
+    "indian-queen-lots-53-56.dxf",
+    "indian-queen-lots-53-56.landxml.xml"
+  ],
+  "model": "indian-queen-lots-53-56.twin.json",
+  "submissionReport": "indian-queen-lots-53-56.submission.md",
+  "command": "TWIN_JSON=../../output/site-plans/indian-queen-lots-53-56.twin.json pnpm tsx scripts/generate-subdivision.ts ../../output/site-plans/indian-queen.plat.json ../../output/site-plans/iq-lot53.plat.json ../../output/site-plans/iq-lot54.plat.json ../../output/site-plans/iq-lot55.plat.json ../../output/site-plans/iq-lot56.plat.json ../../output/site-plans/indian-queen-lots-53-56.pdf",
+  "formData": {
+    "subdivisionPlat": "output/site-plans/indian-queen.plat.json",
+    "lotPlats": [
+      "output/site-plans/iq-lot53.plat.json",
+      "output/site-plans/iq-lot54.plat.json",
+      "output/site-plans/iq-lot55.plat.json",
+      "output/site-plans/iq-lot56.plat.json"
+    ],
+    "stormTrunk": "output/site-plans/indian-queen.storm-trunk.json",
+    "platOfRecord": "PLAT BOOK WWW 65, P. 60",
+    "zone": "RSF-95",
+    "jurisdiction": "prince_georges_md",
+    "crs": "EPSG:2248",
+    "verticalDatum": "NAVD88 (feet)"
+  },
+  "sheets": [
+    "C-001 (1 of 3)",
+    "L-100 Landscape and Tree Canopy Plan (2 of 3)",
+    "C-400 (3 of 3)"
+  ],
+  "sheetSize": "36 x 24 in",
+  "lots": [
+    {
+      "label": "LOT 53",
+      "address": "9588 Fort Foote Rd",
+      "areaSqFt": 12389,
+      "recordedAreaSqFt": null,
+      "finishedFloorElFt": 59.22,
+      "garageSlabElFt": 58.89,
+      "basementElFt": 50.22,
+      "footprintSqFt": 1196,
+      "drivewaySqFt": 600,
+      "drivewayMeetsDwellingFace": true
+    },
+    {
+      "label": "LOT 54",
+      "address": "9584 Fort Foote Rd",
+      "areaSqFt": 23371,
+      "recordedAreaSqFt": null,
+      "finishedFloorElFt": 55.97,
+      "garageSlabElFt": 55.64,
+      "basementElFt": 46.97,
+      "footprintSqFt": 1196,
+      "drivewaySqFt": 939,
+      "drivewayMeetsDwellingFace": true
+    },
+    {
+      "label": "LOT 55",
+      "address": "9580 Fort Foote Rd",
+      "areaSqFt": 25733,
+      "recordedAreaSqFt": null,
+      "finishedFloorElFt": 56,
+      "garageSlabElFt": 55.67,
+      "basementElFt": 47,
+      "footprintSqFt": 1196,
+      "drivewaySqFt": 853,
+      "drivewayMeetsDwellingFace": true
+    },
+    {
+      "label": "LOT 56",
+      "address": "9576 Fort Foote Rd",
+      "areaSqFt": 13690,
+      "recordedAreaSqFt": null,
+      "finishedFloorElFt": 61.01,
+      "garageSlabElFt": 60.68,
+      "basementElFt": 52.01,
+      "footprintSqFt": 1196,
+      "drivewaySqFt": 680,
+      "drivewayMeetsDwellingFace": true
+    }
+  ],
+  "stageOutputs": {
+    "earthwork": {
+      "cutCubicYd": 145,
+      "fillCubicYd": 4920,
+      "netCubicYd": 4775,
+      "gradedAreaSqFt": 40500
+    },
+    "swaleDesign": {
+      "reaches": 3,
+      "maxSectionWidthFt": 6.98,
+      "findings": []
+    },
+    "disturbedAreaSqFt": 7800.649992687686,
+    "drainageIncreaseCfs": 0.2
+  },
+  "gradingVerification": {
+    "method": "Measured on the proposed surface itself, not asserted from design intent. Front yard: a grid outside the drainage apron, fall read toward the street and as steepest descent. Perimeter: rays off every wall, 10 ft out, checked for reversal and for the fall the county note promises. Toe: the fall built into the apron toe, which is what carries away water arriving from uphill ground.",
+    "result": "PASS on all four lots, after the design changes",
+    "perLot": {
+      "LOT 53": {
+        "frontYardPointsAgainst": 0,
+        "frontYardFallPct": [
+          6.4,
+          6.5
+        ],
+        "apronRays": 74,
+        "apronReversing": 0,
+        "apronFallPct": 2.0,
+        "beyondApronShedsToHouse": 30,
+        "ofPoints": 731,
+        "toeRingFallFt": 0.52
+      },
+      "LOT 54": {
+        "frontYardPointsAgainst": 0,
+        "frontYardFallPct": [
+          2.6,
+          3.5
+        ],
+        "apronRays": 72,
+        "apronReversing": 0,
+        "apronFallPct": 2.0,
+        "beyondApronShedsToHouse": 0,
+        "ofPoints": 811,
+        "toeRingFallFt": 0.52
+      },
+      "LOT 55": {
+        "frontYardPointsAgainst": 0,
+        "frontYardFallPct": [
+          2.2,
+          2.4
+        ],
+        "apronRays": 74,
+        "apronReversing": 0,
+        "apronFallPct": 2.0,
+        "beyondApronShedsToHouse": 0,
+        "ofPoints": 830,
+        "toeRingFallFt": 0.52
+      },
+      "LOT 56": {
+        "frontYardPointsAgainst": 0,
+        "frontYardFallPct": [
+          3.2,
+          3.2
+        ],
+        "apronRays": 76,
+        "apronReversing": 0,
+        "apronFallPct": 2.0,
+        "beyondApronShedsToHouse": 123,
+        "ofPoints": 795,
+        "toeRingFallFt": 0.52
+      }
+    },
+    "note": "\"Beyond the apron sheds toward the house\" counts ground standing ABOVE the pad \u2014 a bank, not a defect. What makes it safe is that the apron toe has fall, so what arrives there is carried away instead of standing against the foundation."
+  },
+  "openItems": [
+    "LABEL COLLISIONS are the largest remaining drafting defect. Lot and easement labels, frontage dimensions, the planting strip note and the apron note overprint each other and the bearings in several places. The sheet has no label-placement or collision-avoidance pass. This was invisible until the review rasteriser was given the standard font data \u2014 every earlier check in this thread was reading a text-free render.",
+    "LOT 54 reaches 39% (2.6:1) and LOT 55 40% (2.5:1) at the rear tie-out. Both are flatter than the 2:1 limit for a stabilised slope and are specified in ground cover, with the limit drawn.",
+    "SLOPING THE PAD DID NOT CUT THE IMPORT. 4,740 CY level against 4,775 CY sloped \u2014 the pad and its apron are a small part of a regrade dominated by the front-yard fill, which is what the 2 ft finished floor above the street costs on lots that fall away from the road. Lowering the finished floor is the lever that would move it, and that is a decision above this drawing.",
+    "Stoop stands 0.13 to 0.60 ft off the dwelling face on Lots 54, 55 and 56 \u2014 drawn square to the frontage while the house is square to itself. Under drafting tolerance at 1\" = 20'.",
+    "Field-run topographic survey outstanding; existing grade is county 2 ft lidar contour mapping. Swale inverts are set from it and must be reset from the field survey."
+  ],
+  "documentRecord": {
+    "boundarySource": "Recorded plat, PLAT BOOK WWW 65, P. 60 (MSA_S1289_51253); Lot 53 traverse closes 0.0000 ft.",
+    "topography": "PGAtlas Elevation/MapServer/1, 2 ft contours, NAVD88 (feet).",
+    "zoning": "PGAtlas Zoning/MapServer/63 \u2014 RSF-95 at all four addresses.",
+    "status": "PRELIMINARY \u2014 not reviewed or accepted by Prince George's County. Seal is a human act that follows delivery."
+  },
+  "designChanges": [
+    "RETAINING WALL REMOVED from Lot 55 per instruction. The 3 ft wall 22 ft behind the dwelling is gone; the rear tie-out runs at its natural steepness and is stabilised with ground cover.",
+    "PAD SLOPED per instruction. It was a level plane at finished floor less 0.5 ft; it now falls at 2% front-to-rear, square to the dwelling, from the finished-floor datum at the high end. The apron toe inherits that fall and so has an outlet at the low corner.",
+    "GROUND COVER specified for slopes steeper than 3:1, with the limit line drawn on the plan and a legend entry. Lot 53 has 4 limit lines, Lot 54 five, Lot 55 three; Lot 56 none.",
+    "SWALE INVERT PROFILE solved across the network and printed \u2014 invert in and out on every reach label, in the schedule, and in the grade control schedule beside the ground elevation.",
+    "CONTOURS regenerated: saddles resolved by cell centre, chaining tolerance cut from 3.6 ft to 0.001 ft, cell 6 ft to 3 ft, Chaikin smoothing.",
+    "LABEL PLACEMENT. Annotations were written the instant their geometry was drawn, at a fixed offset, so on a four-lot sheet they overprinted each other. They are now queued with an anchor, a preferred position and a ladder of fallbacks, and placed in one pass after all geometry: highest priority first, each taking the first position that does not overlap something already on the paper, with a leader drawn when a label has to move far from what it names.",
+    "LOT 54 REAR YARD. The rear transition ran 40 ft off the pad and then met existing ground, so the proposed contours behind the dwelling were a tight band a few feet off the wall. The rear apron now carries out as a level bench \u2014 21 ft at 2% \u2014 with the 9.2 ft drop taken in the 28 ft beyond it at 33%. Sized against two computed bounds: the nearest RECORDED easement (57 ft) less an 8 ft standoff, and the depth left to the tie line (69 ft). Steepest slope eased 39% to 37%.",
+    "LANDSCAPE SHEET L-100 added as sheet 2, carrying the easement areas, the trees, the planting strip and a new TREE CANOPY SCHEDULE. The bottom band is now routed by sheet: the soils table and storm drain schedule stay on the civil sheets, the canopy schedule is on the landscape one.",
+    "TITLE BLOCK: all four addresses instead of the subject address alone; jurisdiction spelled \"Prince George's County, Maryland\" instead of the slug \"prince georges md\"; \"(AUTOMATED)\" dropped from DRAWN BY; DESIGNED BY and CHECKED BY left blank instead of carrying an instruction to the reader in a field meant for a name.",
+    "ADJOINING LOT LINES were trimmed by their ENDPOINTS, so a call running three hundred feet from a corner near the frontage was drawn whole \u2014 down the sheet and through the schedules. The reach is now applied along the line. The plan is also clipped to its own viewport, so nothing can enter the table or detail bands again.",
+    "L-100 WAS THE GRADING PLAN WITH A CANOPY SCHEDULE UNDER IT. 29 of the 68 Contour features in the model are proposed:true, and `Contour` sat in the composer BASE list, so the grading design printed on every sheet. subjectForFeature already routed a proposed contour to grading_design \u2014 the blanket kind test ahead of it meant nothing ever asked. Existing contours now go everywhere as context; proposed ones only where grading is a subject of the sheet.",
+    "BASEMENT / FINISHED FLOOR / SUBFLOOR blocks were printing inside every dwelling on the landscape sheet. They are grading data and are now drawn only on C-001 and C-400. The address stays on all three \u2014 it says which house this is, which every discipline needs.",
+    "ADJOINER REACH 95 ft to 220 ft. 95 was set while the reach was applied to a segment's ENDS and was doing two jobs \u2014 how much neighbour to show, and keeping long calls out of the schedules. The viewport clip does the second job now, so the reach only has to do the first, and at 95 ft measured ALONG the line the lots across Fort Foote Road were stubs.",
+    "COUNTY MANUALS INSTALLED at docs/site-plan-reference/landscape/ \u2014 Landscape Manual (Dec 2010), Environmental Technical Manual (2010) and Part D (2018), the county tree canopy worksheet, and CB-021-2024. Text extracted beside each PDF, checksums, and a SOURCES.md.",
+    "LANDSCAPE MANUAL SEC. 4.1(c)(1) encoded as PG_ONE_FAMILY_DETACHED_PLANTING and shown on L-100 as provided against required. Every lot is short.",
+    "STORM DRAIN SIZE 42 \u2192 48 IN across the culvert, the easement extension and the outfall. See stormDrainSizing for the inlet/outlet control analysis. Three sheet notes hardcoded \"42 IN\" and now read the size from the model, so the drawing cannot drift from the design again."
+  ],
+  "swale": {
+    "method": "Rational method, NOAA Atlas 14; Manning n = 0.041, 2 ft bottom, 3:1 sides, 0.5 ft freeboard.",
+    "invertDatum": "Outlet invert set 1.0 ft below existing ground at ST-2; reaches lifted upstream by their own design fall. Nodes shared by two reaches carry one elevation.",
+    "reaches": [
+      {
+        "reach": "ST-1 \u2014 ST-2",
+        "lengthFt": 110,
+        "gradePct": 3.01,
+        "daAc": 0.2844,
+        "q10": 0.59,
+        "q100": 0.78,
+        "depth100Ft": 0.18,
+        "v100Fps": 1.73,
+        "invInFt": 50.2,
+        "invOutFt": 46.9,
+        "cutFt": 1.0
+      },
+      {
+        "reach": "ST-4 \u2014 ST-3",
+        "lengthFt": 157,
+        "gradePct": 4.98,
+        "daAc": 0.3143,
+        "q10": 0.65,
+        "q100": 0.86,
+        "depth100Ft": 0.16,
+        "v100Fps": 2.12,
+        "invInFt": 60.3,
+        "invOutFt": 52.5,
+        "cutFt": 1.0
+      },
+      {
+        "reach": "ST-3 \u2014 ST-2",
+        "lengthFt": 177,
+        "gradePct": 3.17,
+        "daAc": 0.9051,
+        "q10": 1.87,
+        "q100": 2.47,
+        "depth100Ft": 0.33,
+        "v100Fps": 2.51,
+        "invInFt": 52.5,
+        "invOutFt": 46.9,
+        "cutFt": 1.0
+      }
+    ],
+    "gradeControl": [
+      {
+        "point": "ST-1",
+        "lot": 53,
+        "groundFt": 51.2,
+        "swaleInvFt": 50.2
+      },
+      {
+        "point": "ST-2",
+        "lot": 54,
+        "groundFt": 47.9,
+        "swaleInvFt": 46.9
+      },
+      {
+        "point": "ST-3",
+        "lot": 55,
+        "groundFt": 53.5,
+        "swaleInvFt": 52.5
+      },
+      {
+        "point": "ST-4",
+        "lot": 56,
+        "groundFt": 61.3,
+        "swaleInvFt": 60.3
+      },
+      {
+        "point": "OUT",
+        "lot": null,
+        "groundFt": 48.9,
+        "swaleInvFt": null
+      }
+    ],
+    "note": "Worst velocity 2.51 fps at Q100 against 5 fps permissible for established grass. Grades and inverts to be set from the field-run topographic survey."
+  },
+  "culvert": {
+    "determination": "NO DRIVEWAY CULVERT REQUIRED.",
+    "why": "A driveway culvert is the OPEN DITCH SECTION detail. This frontage is an existing curb and gutter section, so gutter flow is carried through each entrance by the depressed curb at the apron per DPW&T STD. 300.01 note 6. On-lot drainage runs the other way, to the rear-yard swale in the rear drainage easement.",
+    "verified": "Every swale reach tested for intersection against every driveway and apron ring on all four lots: no crossings. Printed on the sheet as general note 7 so the question is answered rather than left to the absence of a pipe."
+  },
+  "labelPlacement": {
+    "method": "Deferred queue, priority-ordered, first-fit against occupied boxes. Candidates are the preferred position, hand-listed drafting-intent shifts, then a ladder of 56 offsets out to 70 pt. Rotated labels are boxed by the axis-aligned bounds of the rotated rectangle.",
+    "priorities": "Bearing and distance 100 \u00b7 building dimension 92 \u00b7 frontage 90 \u00b7 lot identity 88 \u00b7 street name 86 \u00b7 swale grade and inverts 84 \u00b7 easement identity 82 \u00b7 BRL 80 \u00b7 proposed dwelling 78 \u00b7 retaining wall 76 \u00b7 yard dimension 74 \u00b7 limit of disturbance 72 \u00b7 index contour 70 \u00b7 ground cover limit 66 \u00b7 intermediate contour 62 \u00b7 utility tick 58 \u00b7 service size 54 \u00b7 pavement note 48 \u00b7 graded area 44 \u00b7 centreline note 42 \u00b7 easement beneficiary 40 \u00b7 adjoining parcel 34",
+    "result": {
+      "C-001": {
+        "placed": 229,
+        "dropped": 3,
+        "forcedOverprints": 0
+      },
+      "C-400": {
+        "placed": 204,
+        "dropped": 3,
+        "forcedOverprints": 0
+      }
+    },
+    "reporting": "Anything that cannot be placed is counted and printed to the console. A required label with nowhere clear is placed anyway and reported separately as an overprint; none occurred on this run.",
+    "alsoFixed": [
+      "Single-line labels were measured against their wrap box rather than their natural width, so every long caption under-reported its extent and other labels were placed over its tail.",
+      "Knockout pads covered one line of a multi-line label.",
+      "The swale label wrapped between \"INV IN\" and its own elevation; the break is now chosen.",
+      "Caption and figure \u2014 dwelling name over area, lot number over area \u2014 were queued separately and placed separately, which put the area above the name on Lot 55. They are one label now."
+    ]
+  },
+  "swmConceptApproval": {
+    "question": "Does the latest plan generation pass SWM concept approval?",
+    "answer": "NO \u2014 not as it stands.",
+    "blocking": [
+      "NO ESD PRACTICE IS SIZED OR DRAWN. WQv is computed at 924 cf across the four lots and nothing treats it; SWMPractice features in the model: 0. Every lot carries omitSwmPractice: true. The Maryland Stormwater Management Act of 2007 requires ESD to the Maximum Extent Practicable BEFORE structural conveyance, and the set demonstrates neither the practice nor the MEP case.",
+      "THE SWALE IS A CONVEYANCE, NOT A CREDITED PRACTICE. It is designed and checked for capacity, normal depth, velocity and freeboard. A grass swale can earn ESD credit under the MDE Design Manual, but only with the media, ponding depth, drawdown and Pe computations that are not here.",
+      "THE OUTFALL IS NOT ESTABLISHED. The reach below the system low point leaves the property and crosses adjoining land with no easement of record, and the county mapping shows it RISING 1.0 ft. A concept needs a demonstrated point of discharge."
+    ],
+    "alsoOutstanding": [
+      "Existing grade is county 2 ft lidar contour mapping, not a field-run topographic survey. The swale inverts and any outfall analysis rest on it.",
+      "Runoff coefficients use a lawn C of 0.25 without tying it to the SSURGO hydrologic soil group, which the drainage assumptions already flag."
+    ],
+    "whatItDoesCarry": [
+      "Drainage area map and computations per lot \u2014 rational method, NOAA Atlas 14 Vol. 2 Ver. 3.",
+      "Pre and post peak discharge with the increase to be managed: 0.88 cfs across the four lots.",
+      "WQv by the Maryland Stormwater Design Manual on a 1.0 in rainfall.",
+      "A conveyance system with hydraulics, invert profile and a grade control schedule.",
+      "Disturbance 7,800 sq ft against the 5,000 sq ft threshold \u2014 Sec. 32-174(a)(3) engaged, stated on the sheet."
+    ]
+  },
+  "designStandardsCheck": {
+    "canopyRequirement": {
+      "verdict": "The engine was RIGHT. An earlier reading of this session was wrong.",
+      "correct": "20% of NET tract area on RSF-95, met within the net tract area.",
+      "authority": "Sec. 25-128 Table 1 as amended by CB-021-2024, reproduced at docs/site-plan-reference/landscape/cb-021-2024-subtitle-25-amendments.txt line 208.",
+      "trap": "Environmental Technical Manual Part D (2018) Table D-1 says 15% of GROSS tract area and is superseded on both counts. It also predates the 2018 zoning ordinance, so its table has no RSF zones in it at all. A search lands on Part D and is wrong twice."
+    },
+    "perLotPlanting": {
+      "authority": "Landscape Manual Sec. 4.1(c)(1), one-family detached, by lot size.",
+      "required": {
+        "LOT 53": "3 shade + 2 ornamental/evergreen",
+        "LOT 54": "4 + 3",
+        "LOT 55": "4 + 3",
+        "LOT 56": "3 + 2"
+      },
+      "provided": {
+        "LOT 53": "3 shade + 0",
+        "LOT 54": "2 + 0",
+        "LOT 55": "3 + 0",
+        "LOT 56": "1 + 0"
+      },
+      "verdict": "SHORT ON EVERY LOT. 9 of 14 shade trees, 0 of 10 ornamental or evergreen. Shade counts vary because trees that could not be placed clear of the dwelling and paving were not placed at all. Shown on L-100 as provided/required rather than corrected: species and final placement are the landscape architect's.",
+      "alsoRequired": "At least one major shade tree on the south and/or west within 30 ft of the dwelling where feasible, and at least one required tree in the front yard."
+    },
+    "partDSec3": "Canopy must be met ON-SITE absent a variance, and where a grading permit is the only application the canopy notes belong on the grading plan. Both now noted on L-100."
+  },
+  "stormDrainSizing": {
+    "decision": "48 in RCP CL IV \u2014 revised from 42 in.",
+    "appliesTo": "The whole run: the Fort Foote Road culvert, the 162 ft extension in the recorded 60 ft storm drain easement on the Lot 54 / Lot 55 party line, and the outfall. A 48 in discharging into a 36 in is worse than doing nothing.",
+    "watershed": "39.1 ac at the culvert, C = 0.40. Q10 = 71.9 cfs, Q100 = 94.9 cfs.",
+    "analysis": [
+      {
+        "barrel": "36 in existing",
+        "qFullCfs": 69.3,
+        "q10Util": "104%",
+        "q100Util": "137%",
+        "v100Fps": 13.43,
+        "control": "INLET",
+        "hw10Ft": 6.12,
+        "hw100Ft": 9.17
+      },
+      {
+        "barrel": "42 in",
+        "qFullCfs": 104.6,
+        "q10Util": "69%",
+        "q100Util": "91%",
+        "v100Fps": 9.87,
+        "control": "INLET",
+        "hw10Ft": 4.55,
+        "hw100Ft": 6.2
+      },
+      {
+        "barrel": "48 in SELECTED",
+        "qFullCfs": 149.3,
+        "q10Util": "48%",
+        "q100Util": "64%",
+        "v100Fps": 7.55,
+        "control": "OUTLET",
+        "hw10Ft": 3.96,
+        "hw100Ft": 4.94
+      },
+      {
+        "barrel": "54 in",
+        "qFullCfs": 204.4,
+        "q10Util": "35%",
+        "q100Util": "46%",
+        "v100Fps": 6.0,
+        "control": "OUTLET",
+        "hw10Ft": 3.9,
+        "hw100Ft": 4.82
+      }
+    ],
+    "marginalGainQ100": {
+      "36\u219242": "2.97 ft",
+      "42\u219248": "1.26 ft",
+      "48\u219254": "0.12 ft"
+    },
+    "why": "48 in is the knee of the marginal-gain curve. It takes Q100 utilisation from 91% (no margin) to 64%, drops velocity 9.87 \u2192 7.55 fps, and moves control from the INLET to the OUTLET \u2014 the point at which the barrel is actually being used rather than throttled by its inlet. It delivers 4.23 ft of headwater reduction against existing, versus 2.97 ft for a 42 in, which is the floodplain mitigation itself.",
+    "conditions": [
+      "COVER. 48 in OD is 4.83 ft, so finished grade must be at least invert + 6.33 ft \u2014 0.58 ft deeper than a 42 in. Confirm against the surveyed invert through a rear easement where existing ground is EL 46\u201348. If cover cannot be held, 42 in with an enlarged inlet is the fallback and still buys 2.97 ft.",
+      "INLET ENLARGEMENT IS NOT OPTIONAL. Inlet control governs at 36 in and 42 in; the 48 in only reaches outlet control with the inlet enlarged to suit.",
+      "Inverts and slope to be set from the field-run topographic survey."
+    ],
+    "engineFix": "Wall thickness was hardcoded at 4 in \u2014 right for a 42 in barrel, wrong for a 48 in. Every OD and cover figure would have been 0.17 ft short on the one dimension that decides whether the pipe fits under the rear yard. It now scales with the barrel."
+  }
+}

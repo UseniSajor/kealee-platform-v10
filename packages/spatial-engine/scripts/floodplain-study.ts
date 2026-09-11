@@ -38,8 +38,9 @@ import {
   timeOfConcentration,
 } from '../src/hydraulics/tr55'
 
-const OUT = join(process.cwd(), 'output', 'site-plans')
-const model = JSON.parse(readFileSync(join(OUT, 'indian-queen.floodplain-model-input.json'), 'utf8'))
+const PROJ = join(process.cwd(), 'projects', 'indian-queen')
+const MODEL_DIR = join(PROJ, 'model')
+const model = JSON.parse(readFileSync(join(MODEL_DIR, 'indian-queen.floodplain-model-input.json'), 'utf8'))
 
 const RETURN_PERIODS = [10, 25, 50, 100] as const
 
@@ -340,7 +341,7 @@ const result = {
   limits,
 }
 
-writeFileSync(join(OUT, 'indian-queen.floodplain-study-results.json'), JSON.stringify(result, null, 1))
+writeFileSync(join(MODEL_DIR, 'indian-queen.floodplain-study-results.json'), JSON.stringify(result, null, 1))
 
 // ── Console summary ────────────────────────────────────────────────────────
 const f2 = (n: number) => n.toFixed(2)
@@ -398,4 +399,4 @@ const scour = outletScourCheck(existing[existing.length - 1].culvert.outletVeloc
 })
 console.log('\n=== OUTLET ===')
 console.log('  ' + scour.finding)
-console.log('\nwrote output/site-plans/indian-queen.floodplain-study-results.json')
+console.log('\nwrote projects/indian-queen/model/indian-queen.floodplain-study-results.json')

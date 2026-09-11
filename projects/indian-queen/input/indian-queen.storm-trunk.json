@@ -1,0 +1,228 @@
+{
+  "_source": "Trunk laid out on the corrected drainage picture: lots 53 and 54 fall REARWARD into the valley (front 53.9/52.4, rear 48.8/48.0) while lots 55 and 56 sit on the western valley wall and fall EAST (front 52.7/54.0, rear 57.9/61.0). All four converge on the mapped channel, which the DEM shows falling monotonically from el 61.1 to 48.4 flowing north to south into the lots' rear.",
+  "_sizingBasis": "15 in RCP CL IV throughout. The county minimum governs every reach: the whole four-lot system delivers only Q100 = 4.71 cfs at the outfall (1.7260 ac at C=0.45, i100=6.07 in/hr), for which Manning needs under 12 in. Material, class and the 15 in minimum follow the DPW&T-approved 'STORM DRAIN & PAVING PLAN', Yocum Property/Joseph Drive, sheet 4 of 20, permit 25927-2020.",
+  "_invertCaveat": "INVERTS AND SLOPES ARE NOT SET HERE AND MUST COME FROM THE FIELD-RUN TOPOGRAPHIC SURVEY. The DEM used for the catchment was interpolated from 2 ft county contours on a 25 ft grid and smoothed; its spread is 2.4 ft over a 100 ft box, the same order as the 1-3 ft differences that set gravity direction and invert elevations. It is sound for catchment AREA, which is an integral and robust to that noise — hence the 39.1 ac used for the culvert — and unsound for inverts. Setting them from it would be inventing precision.",
+  "outfall": [
+    1308885.97,
+    398678.95
+  ],
+  "totalDaAc": 1.726,
+  "q10AtOutfall": 3.57,
+  "q100AtOutfall": 4.71,
+  "existingOutfallPipe": {
+    "sizeIn": 36,
+    "upgradeToIn": 48,
+    "class": "CL IV",
+    "material": "RCP",
+    "basis": "Delineated contributing area 39.1 ac (D8 on the contour DEM). At C=0.40, i10=4.60 the 10-yr flow is 71.9 cfs against a 36 in RCP capacity of 69.3 cfs at S=0.0108 — 104% of capacity, and 192% if the existing pipe is CMP. 42 in RCP carries 104.6 cfs, 110% of the 100-yr demand of 94.9 cfs. UPGRADE SIZE REVISED 42 -> 48 IN. See easementPipe5455._sizeBasis for the inlet/outlet control analysis that sets it."
+  },
+  "structures": [
+    {
+      "id": "ST-1",
+      "lot": "53",
+      "at": [
+        1309060.27,
+        398641.48
+      ],
+      "gradeEl": 51.2,
+      "type": "Type S inlet",
+      "symbol": "circle"
+    },
+    {
+      "id": "ST-2",
+      "lot": "54",
+      "at": [
+        1308950.84,
+        398637.78
+      ],
+      "gradeEl": 47.9,
+      "type": "Junction manhole — system low point",
+      "symbol": "circle"
+    },
+    {
+      "id": "ST-3",
+      "lot": "55",
+      "at": [
+        1308776.28,
+        398609.25
+      ],
+      "gradeEl": 53.5,
+      "type": "Junction manhole / inlet",
+      "symbol": "circle"
+    },
+    {
+      "id": "ST-4",
+      "lot": "56",
+      "at": [
+        1308627.18,
+        398561.36
+      ],
+      "gradeEl": 61.3,
+      "type": "Type S inlet",
+      "symbol": "circle"
+    },
+    {
+      "id": "OUT",
+      "lot": null,
+      "at": [
+        1308885.97,
+        398678.95
+      ],
+      "gradeEl": 48.9,
+      "type": "Endwall / outfall to existing channel",
+      "symbol": "circle"
+    }
+  ],
+  "pipes": [
+    {
+      "from": "ST-1",
+      "to": "ST-2",
+      "line": [
+        [
+          1309060.27,
+          398641.48
+        ],
+        [
+          1308950.84,
+          398637.78
+        ]
+      ],
+      "lengthFt": 109.5,
+      "sizeIn": 15,
+      "pipeClass": "CL IV",
+      "daCumAc": 0.2844,
+      "q10": 0.59,
+      "q100": 0.78,
+      "v100": 0.63,
+      "gradeFromEl": 51.2,
+      "gradeToEl": 47.9
+    },
+    {
+      "from": "ST-4",
+      "to": "ST-3",
+      "line": [
+        [
+          1308627.18,
+          398561.36
+        ],
+        [
+          1308776.28,
+          398609.25
+        ]
+      ],
+      "lengthFt": 156.6,
+      "sizeIn": 15,
+      "pipeClass": "CL IV",
+      "daCumAc": 0.3143,
+      "q10": 0.65,
+      "q100": 0.86,
+      "v100": 0.7,
+      "gradeFromEl": 61.3,
+      "gradeToEl": 53.5
+    },
+    {
+      "from": "ST-3",
+      "to": "ST-2",
+      "line": [
+        [
+          1308776.28,
+          398609.25
+        ],
+        [
+          1308950.84,
+          398637.78
+        ]
+      ],
+      "lengthFt": 176.9,
+      "sizeIn": 15,
+      "pipeClass": "CL IV",
+      "daCumAc": 0.9051,
+      "q10": 1.87,
+      "q100": 2.47,
+      "v100": 2.01,
+      "gradeFromEl": 53.5,
+      "gradeToEl": 47.9
+    },
+    {
+      "from": "ST-2",
+      "to": "OUT",
+      "line": [
+        [
+          1308950.84,
+          398637.78
+        ],
+        [
+          1308885.97,
+          398678.95
+        ]
+      ],
+      "lengthFt": 76.8,
+      "sizeIn": 15,
+      "pipeClass": "CL IV",
+      "daCumAc": 1.726,
+      "q10": 3.57,
+      "q100": 4.71,
+      "v100": 3.84,
+      "gradeFromEl": 47.9,
+      "gradeToEl": 48.9
+    }
+  ],
+  "outfallEl": 48.9,
+  "_alignment": "ROUTED ALONG THE REAR, in the rear-lot easement corridor, per instruction and because that is where the recorded storm drain easement runs. Each node sits on its lot's rear edge midpoint, 9.0 ft inside the rear property line so a 10 ft easement fits wholly within the lot. Total 443 ft across the four lots. The band CLEARS ALL FOUR DWELLINGS with 81.6 to 90.7 ft to the nearest — the earlier diagonal alignment cut across the lots and was replaced. Rear grades fall 51.2 (lot 53) to 47.9 (lot 54) and 61.3 (lot 56) through 53.5 (lot 55) to 47.9, so both branches gravity-feed to ST-2 at lot 54, the system low point, which discharges to the channel. Structures are drawn as CIRCLES, as the approved Yocum sheet draws them.",
+  "recordedEasement5455": {
+    "description": "Storm drain easement, 30 ft each side of the LOT 54 / LOT 55 party line",
+    "centreline": {
+      "from": [
+        1308849.21,
+        398486.35
+      ],
+      "to": [
+        1308881.29,
+        398645.16
+      ],
+      "lengthFt": 162.01,
+      "bearing": "N 11-25-23 E"
+    },
+    "halfWidthFt": 30.0,
+    "widthFt": 60.0,
+    "ring": [
+      [
+        1308819.8,
+        398492.3
+      ],
+      [
+        1308851.89,
+        398651.1
+      ],
+      [
+        1308910.7,
+        398639.22
+      ],
+      [
+        1308878.61,
+        398480.41
+      ]
+    ],
+    "areaSqFt": 9721.0,
+    "areaOnLot54SqFt": 4581,
+    "areaOnLot55SqFt": 4718,
+    "_basis": "Width given as 30 ft EACH SIDE of the lot 54 / lot 55 party line. The party line runs 162.01 ft on N 11-25-23 E between E1308849.21 N398486.35 and E1308881.29 N398645.16, giving a 60 ft corridor of 9,721 sq ft — 4,581 sq ft on lot 54 (19.6% of it) and 4,718 sq ft on lot 55 (18.3%), and none on lots 53 or 56. CORROBORATION: the computed party-line bearing N 11-25-23 E matches the N 11-30-00 lettered on the recorded plat's highlighted line to within five minutes of arc, which is what identifies that line as this easement's centreline. The plat's 286.75 ft on that bearing is the full line including the stretch across LOT 2; 162.01 ft is the part that is the 54/55 party line. The 299.06 ft dimension read elsewhere on the plat belongs to the separate storm drain easement lettered along the north and is NOT this corridor."
+  },
+  "easementPipe5455": {
+    "_source": "PER INSTRUCTION, SIZE REVISED TO 48 IN ON THE INLET/OUTLET CONTROL ANALYSIS — see _sizeBasis. A 48 in reinforced concrete pipe in the recorded 60 ft storm drain easement on the LOT 54 / LOT 55 party line, running the full length of both lots. It is an EXTENSION OF THE EXISTING INLET at the Fort Foote Road culvert, so it starts at the street end of the easement and runs to the rear.",
+    "sizeIn": 48,
+    "material": "RCP",
+    "pipeClass": "CL IV",
+    "from": [
+      1308849.21,
+      398486.35
+    ],
+    "to": [
+      1308881.29,
+      398645.16
+    ],
+    "lengthFt": 162.01,
+    "_sizeBasis": "48 in, not 42. Inlet and outlet control on the 39.1 ac watershed at the Fort Foote Road culvert gives Q100 = 94.9 cfs and headwater above the inlet invert of 9.17 ft on the existing 36 in, 6.20 ft on a 42 in and 4.94 ft on a 48 in. The marginal gain per size step is what decides it: 36 to 42 buys 2.97 ft of headwater, 42 to 48 buys a FURTHER 1.26 ft, and 48 to 54 buys 0.12 ft. 48 in is the knee. It is also where the 91% Q100 utilisation of a 42 in — which is no margin at all on a barrel whose whole purpose is lowering a water surface — falls to 64%, where velocity drops from 9.87 to 7.55 fps, and where CONTROL PASSES FROM THE INLET TO THE OUTLET. At 36 and 42 the inlet is still the constriction and the barrel is not being used. CONDITIONS: (1) COVER. 48 in OD is 4.83 ft, so finished grade must be at least invert + 6.33 ft — 0.58 ft deeper than the 42 in — and that must be confirmed against the surveyed invert through a rear easement where existing ground is EL 46 to 48. If cover cannot be held, 42 in with an enlarged inlet is the fallback and still buys 2.97 ft. (2) CONTINUITY. The whole run goes to 48 in — culvert, easement extension AND outfall. A 48 in discharging into a 36 in is worse than doing nothing. INVERTS AND SLOPE TO BE SET FROM THE FIELD-RUN TOPOGRAPHIC SURVEY.",
+    "_note": "Extension of the existing inlet at the Fort Foote Road culvert. Enlarging or replacing that inlet is NOT optional: inlet control governs at 36 in and 42 in, and the 48 in only reaches outlet control with the inlet enlarged to suit."
+  }
+}

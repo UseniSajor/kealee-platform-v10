@@ -1,0 +1,296 @@
+{
+  "reference": "INDIAN QUEEN EAST \u2014 BLOCK \"E\" AND PARTS OF BLOCKS D & F. Plat Book WWW 65, p. 60 (MSA_S1289_51253). 12th Election District, Prince George's County, Maryland. Tax Map 113, Block F, Grid E4. Plat dated 6 June 1967; approved 26 June 1967 by the Maryland-National Capital Park & Planning Commission, Prince George's County Planning Board. M-NCPPC Record File 5197863. Scale 1\" = 100'. Surveyor: W. L. Meekins, Registered Land Surveyor No. 384. Total subdivision area 20.9811 acres. Plat legend: FOR PUBLIC SEWER & WATER SYSTEMS ONLY.",
+  "citation": "PLAT BOOK WWW 65, P. 60",
+  "_source": "existing site plans/Indian Queen lots.pdf (4 image strips, the cleanest scan) with existing site plans/ScanIndian Queen easement Map.pdf as the easement-highlighted copy. Both scans are 1525-1655 px across a 1\"=100' sheet; dimension text was recovered by 6x nearest-neighbour upscale with a 100-200 luma contrast stretch.",
+  "ownersAtPlatting": [
+    "Robert E. Fastnaught",
+    "James P. Yates"
+  ],
+  "zone": {
+    "code": "RSF-95",
+    "confirmedBy": "PGAtlas Zoning/MapServer/63, point query at each lot's geocoded address; all four return CLASS=RSF-95. An RR polygon lies within the search envelope but contains none of the four lots.",
+    "standards": "Sec. 27-4202: net lot area min 9,500 sf; lot width min 75 ft; frontage at front street line min 50 ft; coverage max 30%; front yard 25 ft; side yard 8 ft; rear yard 20 ft; height max 40 ft."
+  },
+  "lots": {
+    "53": {
+      "account": "1312776",
+      "address": "9588 Fort Foote Rd",
+      "recordedAreaSqFt": 12001,
+      "propId": 213012,
+      "owner": "I & I Construction Co Inc",
+      "deed": "L.09202 F.056",
+      "calls": [
+        {
+          "kind": "line",
+          "bearing": "S 88-27-50 W",
+          "distanceFt": 150.01
+        },
+        {
+          "kind": "line",
+          "bearing": "S 01-32-10 E",
+          "distanceFt": 80.0
+        },
+        {
+          "kind": "line",
+          "bearing": "N 88-27-50 E",
+          "distanceFt": 150.01
+        },
+        {
+          "kind": "line",
+          "bearing": "N 01-32-10 W",
+          "distanceFt": 80.0
+        }
+      ],
+      "_validation": "TRANSCRIBED AND CLOSED. Traverse closes 0.0000 ft; shoelace area 12,000.8 sf against 12,001 recorded (-0.2 sf, -0.002%). Lies on the TANGENT section of Fort Foote Road north of P.T. 254+51.63, which is why it is a true rectangle while 54-56 are not. Lots 51 and 52 repeat the same 150.01 x 80.00 pattern; a deliberate mis-transcription of lot 51 at 81.00 came out 0.63% wrong on area, so the area check does discriminate."
+    },
+    "54": {
+      "account": "1312784",
+      "address": "9584 Fort Foote Rd",
+      "recordedAreaSqFt": 23860,
+      "propId": 213014,
+      "owner": "Interdonato Andrew G Etal",
+      "deed": "L.42743 F.456",
+      "partialCalls": {
+        "northLineFt": 140.15,
+        "line53to54Bearing": "N 01-32-10 W",
+        "frontageOn": "Fort Foote Rd curve R=623.13"
+      },
+      "_status": "INCOMPLETE \u2014 see missingCalls."
+    },
+    "55": {
+      "account": "1312792",
+      "address": "9580 Fort Foote Rd",
+      "recordedAreaSqFt": 25496,
+      "propId": 213017,
+      "owner": "Interdonato Andrew G Etal",
+      "deed": "L.42743 F.456",
+      "partialCalls": {
+        "northLine": {
+          "bearing": "N 75-56-00 E",
+          "distanceFt": 219.95
+        },
+        "line55to56": {
+          "bearing": "N 44-16-22 W",
+          "distanceFt": 167.86
+        },
+        "frontageArcFt": 96.98
+      },
+      "_conflict": "The plat area reads 25,096 sf; the 2025-26 tax bill states 25,496 sf. Third digit is not resolvable at this scan resolution. NOT RECONCILED.",
+      "_status": "INCOMPLETE \u2014 see missingCalls."
+    },
+    "56": {
+      "account": "1312800",
+      "address": "9576 Fort Foote Rd",
+      "recordedAreaSqFt": 13394,
+      "propId": 213036,
+      "owner": "I & I Construction Co Inc",
+      "deed": "L.09202 F.056",
+      "partialCalls": {
+        "northLine": {
+          "bearing": "N 63-16-20 W",
+          "distanceFt": 95.0
+        },
+        "westLineFt": 150.45,
+        "rearLineFt": 150.0,
+        "westBoundedBy": "E. Washington Gas Light Co. R/W, L.2423 F.336"
+      },
+      "_status": "INCOMPLETE \u2014 see missingCalls."
+    }
+  },
+  "missingCalls": [
+    "Lot 53/54 common line: LENGTH (bearing N 01-32-10 W is read).",
+    "Lot 54: rear (west) line bearing and length; frontage arc length on R=623.13; whether 80.61 belongs to lot 53 or lot 54 frontage.",
+    "Lot 55: frontage arc bearing/chord; rear line bearing and length.",
+    "Lot 56: west line bearing (reads 'N 76-..'); frontage arc length; south line bearing.",
+    "Lot 55 recorded area: 25,096 (plat) vs 25,496 (tax bill)."
+  ],
+  "easements": [
+    {
+      "type": "Storm Drain",
+      "widthFt": 10,
+      "note": "10 ft storm drain easement. A storm drain easement is lettered along the north with 299.06 ft on an S 88-27 bearing; a 10 ft branch crosses the lot 54 / lot 55 area. Alignment not yet transcribed to coordinates."
+    },
+    {
+      "type": "Washington Gas Light Co. right-of-way",
+      "reference": "L.2423 F.336",
+      "note": "Bounds lot 56 on the west/south. Width not transcribed."
+    }
+  ],
+  "street": {
+    "name": "Fort Foote Road",
+    "curve": {
+      "radiusFt": 623.13,
+      "arcLengthFt": 274.28
+    },
+    "rowHalfWidthFt": 40,
+    "pointOfTangency": "P.T. 254+51.63",
+    "note": "Lots 51-53 front the tangent section; lots 54-56 front the curve. PGAtlas Transportation/MapServer/2 returns one centreline segment, NAME='FORT FOOTE', TYPE='RD'."
+  },
+  "topography": {
+    "_source": "existing site plans/Indian Queen lots topo.pdf (clean B&W line scan, best for contours), 'Indian Queen lots  topo 2.pdf' (7200x6300 colour) and 'Indian Queen lots floodplain topo.pdf' \u2014 ALL THREE ARE THE SAME SURVEY SHEET, scanned three ways. Annotated 'FF @ lots 53-56'.",
+    "benchmarks": [
+      {
+        "id": "H31A",
+        "elevationFt": 61.09
+      },
+      {
+        "id": "H32A",
+        "elevationFt": 74.37
+      },
+      {
+        "id": "H32B",
+        "elevationFt": 66.41
+      }
+    ],
+    "spotElevationsFt": {
+      "frontageAtFortFooteRd": [
+        56.3,
+        56.7
+      ],
+      "lotInteriors": [
+        47.7,
+        48.3,
+        48.4,
+        48.7,
+        49.0,
+        49.3,
+        50.7,
+        51.0,
+        51.2,
+        51.3
+      ],
+      "northwestHigh": [
+        73.3,
+        74.5,
+        75.1,
+        75.5,
+        75.7,
+        76.0,
+        76.7
+      ]
+    },
+    "fall": "Ground falls AWAY from Fort Foote Road toward the rear (north/north-west) by roughly 6-9 ft, with contours tightly packed along the frontage \u2014 a steep bank from the road down into the lots. This is what makes rear walkout basements work and it makes driveway grade the binding constraint (Sec. 32-151 Table 4).",
+    "drainageFeature": "A natural drainage channel runs north-south through the lot 54 / lot 55 area; contours V around it and the sheet letters a CONC FLUME and inlet structures.",
+    "pgatlasContours": "PGAtlas Elevation/MapServer/1 returns 195 contour features with ELEVATION attributes over the site envelope (2 ft, NAVD88).",
+    "_floodplainCaveat": "NO FLOODPLAIN LINE IS LABELLED ON ANY OF THE THREE SCANS. The file named 'floodplain topo' carries unlabelled red, teal and black overlay lines flanking the drainage channel. They are PLAUSIBLY a floodplain or stream-buffer limit and are NOT drawn or labelled as such here. Confirm against the PG floodplain layer or the FEMA FIRM panel before any floodplain line goes on a sheet."
+  },
+  "jurisdiction": {
+    "municipal": "NONE. PGAtlas Administrative/MapServer/30 returns 0 features over the site envelope, so the lots are in UNINCORPORATED Prince George's County. County review applies; the internal-staff-review route for incorporated lots does not.",
+    "geocoding": "All four addresses geocode at score 100 against PGAtlas Geocoders/Address/GeocodeServer (parameter is 'Address', not 'Street'). EPSG:2248: lot 53 E1309060.04 N398575.99; lot 54 E1308946.47 N398572.16; lot 55 E1308771.65 N398545.26; lot 56 E1308656.68 N398506.00."
+  },
+  "countyGisCrossCheck": "PGAtlas Property/MapServer/15 parcel polygons agree with the recorded areas as follows: lot 53 +3.23%, lot 54 -2.05%, lot 55 +0.92%, lot 56 +2.21%. Normal for county GIS compiled from plats. Level 1 only: adequate to confirm identity and extent, NOT a substitute for the recorded boundary.",
+  "environmental": {
+    "_source": "PGAtlas Environmental and Easement services, polygon-intersected against the four county parcel polygons (EPSG:2248). Percentages are of the county parcel area, which agrees with the recorded areas to within -2.05%/+3.23%.",
+    "femaFloodplain": {
+      "layer": "Environmental/MapServer/3 \u2014 Floodplain (FEMA - 2026)",
+      "result": "FLD_ZONE = X, 'AREA OF MINIMAL FLOOD HAZARD', covering 100% of all four lots.",
+      "meaning": "No FEMA 100-year floodplain on any of the four lots."
+    },
+    "countyFloodplain": {
+      "dpieLayer": "Environmental/MapServer/31 \u2014 0 features over the site envelope.",
+      "consultantStudy": "Environmental/MapServer/33 \u2014 FPS 770017 ('No cross sections on plans, revised based on FPS 960004') lies within the search envelope but does NOT intersect any of the four lots.",
+      "plattedFloodplainEasement": "Easement/MapServer/0 \u2014 a PLATTED FLOODPLAIN EASEMENT does exist on 'Indian Queen East', record plat 118-083, recorded 1984-01-17, 231,799 sf. It does NOT overlap lots 53, 54, 55 or 56 \u2014 it burdens other ground in the subdivision."
+    },
+    "streamAndDrainage": {
+      "layer": "Environmental/MapServer/1 \u2014 Stream Center and Drainage (2023)",
+      "result": "Mapped channel crosses ALL FOUR lots: lot 53 approx 98 ft, lot 54 approx 195 ft, lot 55 approx 425 ft, lot 56 approx 42 ft.",
+      "corroboration": "Matches the topo sheet, where contours V sharply around a north-south valley and the surveyor letters a CONC FLUME and inlet structures."
+    },
+    "soils": {
+      "layer": "Environmental/MapServer/14 \u2014 Soil (NRCS)",
+      "units": [
+        {
+          "symbol": "ZS",
+          "name": "Zekiah and Issue soils, frequently flooded",
+          "hydrologicGroup": "B/D",
+          "kFactor": "0.37",
+          "coverage": {
+            "53": "3.9%",
+            "54": "94.2%",
+            "55": "31.8%",
+            "56": "0%"
+          },
+          "significance": "ALLUVIAL, FREQUENTLY FLOODED. This is the strongest floodplain evidence on the site and it is a soils mapping, not a regulatory line. It covers almost the whole of lot 54."
+        },
+        {
+          "symbol": "SOE",
+          "name": "Sassafras and Croom soils, 15 to 25 percent slopes",
+          "hydrologicGroup": "A",
+          "kFactor": "0.15",
+          "coverage": {
+            "55": "19%",
+            "56": "10%"
+          }
+        },
+        {
+          "symbol": "BuD",
+          "name": "Beltsville-Urban land complex, 5 to 15 percent slopes",
+          "hydrologicGroup": "C",
+          "kFactor": "0.37",
+          "coverage": "all four lots"
+        }
+      ]
+    },
+    "steepSlopes": {
+      "layer": "Environmental/MapServer/13 \u2014 Slope (2023)",
+      "areaAtOrAbove25pct": {
+        "53": "3,835 sf (31.0%)",
+        "54": "5,353 sf (22.9%)",
+        "55": "9,476 sf (36.8%)",
+        "56": "4,727 sf (34.5%)"
+      }
+    },
+    "greenInfrastructure": {
+      "layer": "Environmental/MapServer/5 \u2014 Green Infrastructure Plan (2017)",
+      "regulatedArea": {
+        "53": "9,645 sf (77.9%)",
+        "54": "19,641 sf (84.0%)",
+        "55": "24,580 sf (95.5%)",
+        "56": "10,218 sf (74.6%)"
+      },
+      "caveat": "A PLANNING designation that triggers conservation review and may constrain clearing. It is NOT a building prohibition and must not be drawn as one."
+    },
+    "naturalResourceInventory": {
+      "conclusion": "THERE IS NO NRI FOR LOTS 53-56. One will have to be prepared.",
+      "correction": "An earlier note in this file said an NRI already existed for this property. That was WRONG and is retracted. NRI-033-2015 is for the ABUTTING property, not for these lots.",
+      "whatNriO33Actually Is": {
+        "case": "NRI-033-2015",
+        "planType": "Natural Resource Inventory EQUIVALENCY LETTER (CASE_TYPE 'NRIEL'), not a delineated inventory",
+        "title": "OXON HILL MS PROPOSED TELECOMMUNICATIONS FACILITY",
+        "description": "TELECOMMUNICATION TOWER AND ACCESS",
+        "location": "FORT FOOTE RD AND ROUND TABLE DR \u2014 event address 9570 FORT FOOTE RD, FORT WASHINGTON",
+        "acres": 21.29,
+        "status": "Approved; accepted 2015-02-09, status date 2015-02-26; reviewer Megan Reiser",
+        "workclass": "Legacy - Natural Resource Inventory",
+        "mapgrid": "113 D-3; Planning Area 80; Council District 8",
+        "geometryTest": "ZERO overlap with all four lots. Shares a boundary with lots 54, 55 and 56 (distance 0.0 ft) and lies 133.9 ft from lot 53. Polygon centroid is 479-717 ft north-west of the lot centroids. It is the Oxon Hill Middle School site \u2014 the parcel the 1967 plat letters as the 'Jr. High School Site' (LOT 3).",
+        "usefulness": "None for this design. It is an equivalency letter for a cell tower on the neighbouring school property and carries no delineation of features on lots 53-56."
+      },
+      "otherCasesOverTheSite": {
+        "treeConservationExempt": "E-026-14, Tree Conservation Plan EXEMPTION, captured 2015-01-07, EXPIRED 2016-12-03 (EXPIRED='Yes'). Located E1308456 N398925 \u2014 again the property to the north-west, not these lots.",
+        "finalPlatOfSubdivision": "0 cases over the envelope",
+        "preliminaryPlanOfSubdivision": "0 cases over the envelope",
+        "note": "Consistent with a 1967 subdivision that predates the current case-tracking system."
+      },
+      "whyOneIsRequired": "PG County requires an NRI where regulated environmental features are present. The Stream Center and Drainage layer maps channel through ALL FOUR lots (lot 53 ~98 ft, lot 54 ~195 ft, lot 55 ~425 ft, lot 56 ~42 ft), steep slopes at or above 25% cover 23-37% of each lot, and ZS 'Zekiah and Issue soils, frequently flooded' covers 94% of lot 54. An NRI with a field-delineated stream, its Primary Management Area buffer, wetlands and specimen trees is the gate on siting anything here, and it is not on file.",
+      "nextStep": "Commission an NRI for the four lots. Until the stream and its buffer are delineated, no dwelling footprint on lots 54 or 55 can be shown as compliant."
+    },
+    "environmentalStrategyArea": "ESA 2 (Environmental/MapServer/2).",
+    "notPresent": [
+      "Woodland Conservation Area \u2014 0 features",
+      "Wetland (DNR) \u2014 0 features",
+      "Wetland of Special State Concern \u2014 0 features",
+      "Tier II stream segment \u2014 0 features"
+    ],
+    "combinedConstraint": {
+      "note": "Union of slope>=25%, GI Regulated Area and ZS frequently-flooded soils, as a screen only.",
+      "unconstrainedArea": {
+        "53": "1,239 sf (10.0%)",
+        "54": "320 sf (1.4%)",
+        "55": "424 sf (1.6%)",
+        "56": "1,919 sf (14.0%)"
+      },
+      "warning": "This is a DESKTOP SCREEN, not a buildable-area determination. The GI Regulated Area is a planning overlay rather than a prohibition, the NRCS soils are coarse, and NRI-033-2015 governs. It does however say plainly that siting four dwellings here is constrained and needs the NRI and a stream-buffer determination before any footprint is placed."
+    }
+  }
+}

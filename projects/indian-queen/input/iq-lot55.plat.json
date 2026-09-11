@@ -1,0 +1,132 @@
+{
+  "_source": "INDIAN QUEEN EAST \u2014 Block \"E\" and parts of Blocks D & F, Plat Book WWW 65 p. 60 (MSA_S1289_51253), 12th Election District, Prince George's County, MD. Plat 6 June 1967, approved 26 June 1967 by M-NCPPC, Record File 5197863. Surveyor W. L. Meekins RLS #384. Scale 1\" = 100'. Zone RSF-95 confirmed by PGAtlas point query at each address.",
+  "_boundarySource": "BOUNDARY SOURCE: county parcel polygons from PGAtlas Property/MapServer/15 (PROP_ID 213017), NOT the recorded plat. Compiled from plats and tax maps rather than surveyed. GIS area 25,731 sf against 25,496 sf of record. Used because the 1967 plat scan available here is 1525 px across a 1\"=100' sheet and lots 54-56 could not be transcribed to a closing traverse; a reconstruction attempt closed 88 ft out and missed the recorded area by 45% and was discarded. LOT 53 IS THE CONTROL: its plat traverse WAS transcribed and closes 0.0000 ft with area 12,000.8 sf against 12,001 of record, and it tracks this GIS outline to within 3 ft \u2014 which is the measure of how far the compiled outline sits from the record here.",
+  "basisOfBearings": "Maryland State Plane Coordinate System (NAD 83), EPSG:2248",
+  "address": "9580 Fort Foote Rd",
+  "reference": {
+    "liber": "WWW 65",
+    "folio": "60",
+    "subdivisionName": "Indian Queen East",
+    "lot": "55"
+  },
+  "pointOfBeginning": [
+    1308666.4932,
+    398591.5239
+  ],
+  "recordedAreaSqFt": 25496,
+  "calls": [
+    {
+      "kind": "line",
+      "bearing": "S 22-16-12 E",
+      "distanceFt": 152.15
+    },
+    {
+      "kind": "line",
+      "bearing": "N 68-46-30 E",
+      "distanceFt": 12.73
+    },
+    {
+      "kind": "line",
+      "bearing": "N 69-50-45 E",
+      "distanceFt": 11.38
+    },
+    {
+      "kind": "line",
+      "bearing": "N 70-48-58 E",
+      "distanceFt": 11.38
+    },
+    {
+      "kind": "line",
+      "bearing": "N 71-50-08 E",
+      "distanceFt": 11.39
+    },
+    {
+      "kind": "line",
+      "bearing": "N 72-49-22 E",
+      "distanceFt": 11.38
+    },
+    {
+      "kind": "line",
+      "bearing": "N 73-52-28 E",
+      "distanceFt": 11.38
+    },
+    {
+      "kind": "line",
+      "bearing": "N 74-49-00 E",
+      "distanceFt": 11.38
+    },
+    {
+      "kind": "line",
+      "bearing": "N 75-49-02 E",
+      "distanceFt": 11.39
+    },
+    {
+      "kind": "line",
+      "bearing": "N 76-50-31 E",
+      "distanceFt": 11.38
+    },
+    {
+      "kind": "line",
+      "bearing": "N 77-49-22 E",
+      "distanceFt": 11.38
+    },
+    {
+      "kind": "line",
+      "bearing": "N 78-51-26 E",
+      "distanceFt": 11.38
+    },
+    {
+      "kind": "line",
+      "bearing": "N 79-48-25 E",
+      "distanceFt": 4.52
+    },
+    {
+      "kind": "line",
+      "bearing": "N 11-25-23 E",
+      "distanceFt": 160.82
+    },
+    {
+      "kind": "line",
+      "bearing": "S 76-11-11 W",
+      "distanceFt": 221.68
+    }
+  ],
+  "_owner": "Interdonato Andrew G Etal \u2014 L.42743 F.456; tax account 1312792",
+  "frontSetbackFt": 30.0,
+  "siteLatLon": [
+    38.76097,
+    -77.01245
+  ],
+  "programme": {
+    "totalFloorAreaSqFt": 2400,
+    "storeys": 2,
+    "hasBasement": false,
+    "garage": "attached_2_car",
+    "coveredPorch": false,
+    "footprintWidthFt": 46,
+    "footprintDepthFt": 26,
+    "garageWidthFt": 20
+  },
+  "frontDoorAboveStreetFt": 3.6,
+  "frontageExisting": true,
+  "sanitaryFrom": "frontage",
+  "_utilityNote": "WATER AND SEWER ARE IN FORT FOOTE ROAD AT THE FRONT OF THE PROPERTY, per instruction. The house connections therefore run from the frontage to the dwelling, which is what `sanitaryFrom: frontage` draws. This replaces an earlier suppression that was applied because no connection record had been obtained for this subdivision \u2014 the mains' location is now stated, so the laterals are drawn. Sizes, invert depths and the tap locations still come from WSSC at connection permit.",
+  "_stormNote": "STORM DRAINAGE IS ONE SHARED SYSTEM for lots 53-56, defined in indian-queen.storm-trunk.json and drawn at subdivision level \u2014 not four independent per-lot runs. See that file for structures, reaches, sizes and the hydraulic data.",
+  "_architectureNote": "Rollins-lot footprint retained per instruction: 46'-0\" overall x 26'-0\" deep, 1,196 sq ft. The garage is TWO-CAR at 20'-0\" of that 46 ft, leaving 26'-0\" of main house front elevation \u2014 the Kingsworth plan's 10 ft one-car bay was inconsistent with the programme's own 'attached_2_car'. The driveway and apron are sized to the 20 ft door: 20 ft driveway, 26 ft apron at the curb face with a 3 ft flare each side.",
+  "_stormDesignNote": "SIZED AND SPECIFIED TO PG COUNTY APPROVED PRACTICE. Guidance document: 'STORM DRAIN & PAVING PLAN', Yocum Property Street Grade Establishment Plan & Profile for Joseph Drive, sheet 4 of 20, Design Engineering Incorporated, PE 11101, DPW&T Engineering and Inspection Services Division, APPROVED PLAN SET SD-SWM ONLY, new permit 25927-2020 (old 2624-2010) \u2014 in existing site plans/Approved Technical Plans Street Construction 15927-2020-0.pdf. That set uses REINFORCED CONCRETE PIPE with a CLASS designation throughout (15 in RCP CL III minimum, up to 33 in), numbers every structure with TOP and INVERT, and carries a hydraulic block per run: Q100, V100, SMIN, Q10, V10, SF MIN. It also specifies bedding 'FILL WITH APPROVED MATERIAL TO PROVIDE FIRM BEDDING PER P.G. COUNTY DER SWM STD. AND SPECIFICATION #02200' and structure lining 'WITH 4 IN (MIN) GRANITE BLOCKS PER DER REQUIREMENTS'. THIS LOT: DA 0.5908 ac, C=0.45, i10=4.60 in/hr, i100=6.07 in/hr -> Q10 1.22 cfs, Q100 1.61 cfs. Required diameter by Manning at S=0.0108, n=0.013 is under 9 in, so the 15 in county minimum governs. The 6 in HDPE previously drawn was both non-standard and undersized \u2014 it carries 0.58 cfs.",
+  "omitSwmPractice": true,
+  "_swmNote": "No on-lot ESD micro-bioretention cell. Runoff is collected by the shared storm drain system in the rear easement and conveyed to the channel outfall, so an on-lot retention practice would be a second and contradictory scheme on the same sheet.",
+  "_frontSetbackNote": "30 ft building restriction line, not the 25 ft of the RSF-95 table. Every dwelling on this frontage is held to the SAME line, per instruction. The approved Indian Queen East site plan (SP-197, Baldwin & Sampson, sheet 1 of 2) carries a revision entry reading 'Rev 30' BRL' on the Fort Foote lots, which is consistent; the handwriting on the scan is faint, so the 30 ft is drawn on the instruction and the revision is corroboration, not the citation. The table's 25 ft is the minimum and 30 ft is more restrictive, so the larger figure governs.",
+  "sideStandoffFt": 20.0,
+  "_sideStandoffNote": "Dwelling placed 20 ft from the nearest side lot line, which on this lot is the LOT 56 boundary \u2014 per instruction. It had been sited 57.6 ft off that line and 47.2 ft off the LOT 54 line, because a setback can only forbid a nearer position and nothing was asking for a particular one. This is a stated placement, not a code requirement; the RSF-95 minimum side yard remains 8 ft.",
+  "_retainingWallNote": "NO RETAINING WALL. A 3 ft wall 22 ft behind the dwelling was carried on earlier versions of this set; it has been REMOVED per instruction. The rear of this lot falls away faster than a 3:1 graded lawn can follow, and the wall was the means of taking 3 ft of that drop so the slope above it stayed mowable. Without it the rear tie-out runs at its natural steepness and the slope is stabilised with GROUND COVER rather than turf \u2014 see _groundCoverNote. That is the other of the two answers the grading module names for a slope steeper than 3:1, and it is the one chosen here.",
+  "_groundCoverNote": "Graded slopes steeper than 3:1 (33.3%) are planted in ground cover, not lawn, per instruction. 3:1 is the limit an owner mows safely; 2:1 is the limit for a stabilised slope. The grading module reports the steepest slope this design creates and the sheet carries a ground cover note keyed to the areas that exceed 3:1. Species and spacing per the Prince George's County Landscape Manual.",
+  "foundation": "crawlspace",
+  "_floodplainDesignNote": "FLOODPLAIN DESIGN. The 100-year water surface at this lot is EL 55.53 NAVD 88 (Indian Queen East floodplain study, sheet FP-101). The lowest floor is set at EL 57.60, being the base flood elevation plus 2.0 ft of county freeboard. NO BASEMENT is proposed on this lot: a below-grade storey would place the lowest floor beneath the base flood elevation, which is prohibited for residential construction under 44 CFR 60.3 and Prince George\u2019s County Subtitle 4, and the mapped Zekiah and Issue soils carry a seasonal high water table at or near the surface. The dwelling is carried on a VENTED CRAWLSPACE / STEM WALL with flood openings to ASCE 24 \u2014 at least one square inch of net open area per square foot of enclosed area, in not fewer than two walls, with the bottom of each opening not more than 1 ft above adjacent grade. The foundation is elevated rather than filled so that floodplain storage is not displaced; see the compensatory storage design on sheet FP-102.",
+  "_foundationNote": "Ground beneath and around the dwelling remains at existing grade, crowned 0.5 ft for positive drainage. Fill below EL 55.53 is limited to what the compensatory storage cells can replace.",
+  "rearYard": {
+    "extentFt": 30,
+    "benchFt": 14
+  },
+  "_rearYardNote": "REAR YARD LEFT AT EXISTING GRADE. Grading behind the dwelling is limited to a 30 ft tie-out, of which 14 ft is bench. The rear of this lot lies below the 100-year water surface of EL 55.53 (sheet FP-101); grading it would place fill in the floodplain, displace storage and require compensatory excavation the site cannot supply. The limit of disturbance stops at the tie-out and the remainder of the lot is undisturbed."
+}

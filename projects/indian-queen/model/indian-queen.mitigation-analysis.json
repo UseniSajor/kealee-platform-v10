@@ -1,0 +1,386 @@
+{
+ "generatedAt": "2026-09-11T22:45:58.567Z",
+ "inflow": {
+  "10": {
+   "peakCfs": 387.98166327018936,
+   "peakTimeHr": 12.4,
+   "volumeAcFt": 57.96980533317817
+  },
+  "25": {
+   "peakCfs": 605.9680645985432,
+   "peakTimeHr": 12.4,
+   "volumeAcFt": 87.29374540138788
+  },
+  "50": {
+   "peakCfs": 813.5991780731473,
+   "peakTimeHr": 12.4,
+   "volumeAcFt": 115.40659366074983
+  },
+  "100": {
+   "peakCfs": 1058.2350195811268,
+   "peakTimeHr": 12.4,
+   "volumeAcFt": 148.78590434114406
+  }
+ },
+ "routed": {
+  "EXISTING 36 in RCP (assumed)": {
+   "10": {
+    "peakStageFt": 54.30597977076081,
+    "peakStorageAcFt": 15.530003488681878,
+    "outflowPeakCfs": 215.13367617055212,
+    "inflowPeakCfs": 387.98166327018936,
+    "attenuation": 0.5544944427456965,
+    "lagHr": 0.40000000000000036,
+    "overtopsBy": 0.30819902434583213
+   },
+   "25": {
+    "peakStageFt": 54.81614171471999,
+    "peakStorageAcFt": 17.762683596054984,
+    "outflowPeakCfs": 511.8419050458406,
+    "inflowPeakCfs": 605.9680645985432,
+    "attenuation": 0.844668118583012,
+    "lagHr": 0.20000000000000107,
+    "overtopsBy": 0.818360968305015
+   },
+   "50": {
+    "peakStageFt": 55.12970267221344,
+    "peakStorageAcFt": 19.197641520057644,
+    "outflowPeakCfs": 757.9377155892939,
+    "inflowPeakCfs": 813.5991780731473,
+    "attenuation": 0.9315861372725611,
+    "lagHr": 0.09999999999999964,
+    "overtopsBy": 1.1319219257984656
+   },
+   "100": {
+    "peakStageFt": 55.4331233199109,
+    "peakStorageAcFt": 20.63072036485703,
+    "outflowPeakCfs": 1032.375121798601,
+    "inflowPeakCfs": 1058.2350195811268,
+    "attenuation": 0.9755631808586699,
+    "lagHr": 0,
+    "overtopsBy": 1.435342573495923
+   }
+  },
+  "48 in RCP": {
+   "10": {
+    "peakStageFt": 53.47952354444806,
+    "peakStorageAcFt": 12.270862339468684,
+    "outflowPeakCfs": 179.39015674647533,
+    "inflowPeakCfs": 387.98166327018936,
+    "attenuation": 0.4623676161250655,
+    "lagHr": 0.5999999999999996,
+    "overtopsBy": -0.518257201966918
+   },
+   "25": {
+    "peakStageFt": 54.64345367733489,
+    "peakStorageAcFt": 16.99028362270464,
+    "outflowPeakCfs": 486.5472499514319,
+    "inflowPeakCfs": 605.9680645985432,
+    "attenuation": 0.8029255638641153,
+    "lagHr": 0.20000000000000107,
+    "overtopsBy": 0.6456729309199147
+   },
+   "50": {
+    "peakStageFt": 55.00245733493132,
+    "peakStorageAcFt": 18.5966520938529,
+    "outflowPeakCfs": 741.1947938334298,
+    "inflowPeakCfs": 813.5991780731473,
+    "attenuation": 0.9110073040988151,
+    "lagHr": 0.09999999999999964,
+    "overtopsBy": 1.0046765885163467
+   },
+   "100": {
+    "peakStageFt": 55.311920215009074,
+    "peakStorageAcFt": 20.05826886270351,
+    "outflowPeakCfs": 1023.3283229511948,
+    "inflowPeakCfs": 1058.2350195811268,
+    "attenuation": 0.967014230313651,
+    "lagHr": 0,
+    "overtopsBy": 1.3141394685940995
+   }
+  },
+  "72 in RCP": {
+   "10": {
+    "peakStageFt": 51.799524175115316,
+    "peakStorageAcFt": 6.897128818925018,
+    "outflowPeakCfs": 274.772420729376,
+    "inflowPeakCfs": 387.98166327018936,
+    "attenuation": 0.7082098118075886,
+    "lagHr": 0.3000000000000007,
+    "overtopsBy": -2.198256571299659
+   },
+   "25": {
+    "peakStageFt": 53.98569442864496,
+    "peakStorageAcFt": 14.184726232055011,
+    "outflowPeakCfs": 370.87555626221007,
+    "inflowPeakCfs": 605.9680645985432,
+    "attenuation": 0.6120381220220193,
+    "lagHr": 0.40000000000000036,
+    "overtopsBy": -0.012086317770013011
+   },
+   "50": {
+    "peakStageFt": 54.63487750344525,
+    "peakStorageAcFt": 16.951924066454485,
+    "outflowPeakCfs": 678.4570426681373,
+    "inflowPeakCfs": 813.5991780731473,
+    "attenuation": 0.8338959292890781,
+    "lagHr": 0.20000000000000107,
+    "overtopsBy": 0.6370967570302781
+   },
+   "100": {
+    "peakStageFt": 55.0388548083698,
+    "peakStorageAcFt": 18.768560134998598,
+    "outflowPeakCfs": 980.6899505763995,
+    "inflowPeakCfs": 1058.2350195811268,
+    "attenuation": 0.9267222615299374,
+    "lagHr": 0.09999999999999964,
+    "overtopsBy": 1.0410740619548235
+   }
+  },
+  "twin 72 in RCP": {
+   "10": {
+    "peakStageFt": 49.76702672508112,
+    "peakStorageAcFt": 1.5376031455469776,
+    "outflowPeakCfs": 333.4965106397323,
+    "inflowPeakCfs": 387.98166327018936,
+    "attenuation": 0.8595677121150086,
+    "lagHr": 0.20000000000000107,
+    "overtopsBy": -4.230754021333858
+   },
+   "25": {
+    "peakStageFt": 51.46833169443622,
+    "peakStorageAcFt": 6.031093762114943,
+    "outflowPeakCfs": 505.3620654485682,
+    "inflowPeakCfs": 605.9680645985432,
+    "attenuation": 0.833974750440641,
+    "lagHr": 0.20000000000000107,
+    "overtopsBy": -2.5294490519787516
+   },
+   "50": {
+    "peakStageFt": 52.868469806908735,
+    "peakStorageAcFt": 10.14630267240901,
+    "outflowPeakCfs": 653.7374420708878,
+    "inflowPeakCfs": 813.5991780731473,
+    "attenuation": 0.8035129086771435,
+    "lagHr": 0.20000000000000107,
+    "overtopsBy": -1.1293109395062402
+   },
+   "100": {
+    "peakStageFt": 54.28045262124359,
+    "peakStorageAcFt": 15.422295443559818,
+    "outflowPeakCfs": 869.9696582170874,
+    "inflowPeakCfs": 1058.2350195811268,
+    "attenuation": 0.8220949431076671,
+    "lagHr": 0.20000000000000107,
+    "overtopsBy": 0.28267187482861544
+   }
+  },
+  "8 x 6 ft box": {
+   "10": {
+    "peakStageFt": 50.282396048650874,
+    "peakStorageAcFt": 3.4151341638593347,
+    "outflowPeakCfs": 306.5625021415587,
+    "inflowPeakCfs": 387.98166327018936,
+    "attenuation": 0.7901468836378214,
+    "lagHr": 0.20000000000000107,
+    "overtopsBy": -3.715384697764101
+   },
+   "25": {
+    "peakStageFt": 52.35996742668756,
+    "peakStorageAcFt": 8.515072900091248,
+    "outflowPeakCfs": 466.9106472434313,
+    "inflowPeakCfs": 605.9680645985432,
+    "attenuation": 0.7705202213135801,
+    "lagHr": 0.20000000000000107,
+    "overtopsBy": -1.6378133197274138
+   },
+   "50": {
+    "peakStageFt": 54.03522123587135,
+    "peakStorageAcFt": 14.387577755899317,
+    "outflowPeakCfs": 577.3333318579691,
+    "inflowPeakCfs": 813.5991780731473,
+    "attenuation": 0.7096041237716977,
+    "lagHr": 0.3000000000000007,
+    "overtopsBy": 0.03744048945637246
+   },
+   "100": {
+    "peakStageFt": 54.73536215296268,
+    "peakStorageAcFt": 17.40137234199598,
+    "outflowPeakCfs": 952.8371232508574,
+    "inflowPeakCfs": 1058.2350195811268,
+    "attenuation": 0.9004021844108048,
+    "lagHr": 0.09999999999999964,
+    "overtopsBy": 0.7375814065477044
+   }
+  },
+  "10 x 8 ft box": {
+   "10": {
+    "peakStageFt": 49.674948312843945,
+    "peakStorageAcFt": 1.0073938331650902,
+    "outflowPeakCfs": 346.78676704095363,
+    "inflowPeakCfs": 387.98166327018936,
+    "attenuation": 0.8938225691337693,
+    "lagHr": 0.09999999999999964,
+    "overtopsBy": -4.32283243357103
+   },
+   "25": {
+    "peakStageFt": 51.296883874482454,
+    "peakStorageAcFt": 5.62109495686324,
+    "outflowPeakCfs": 503.6797710931286,
+    "inflowPeakCfs": 605.9680645985432,
+    "attenuation": 0.8311985408452489,
+    "lagHr": 0.20000000000000107,
+    "overtopsBy": -2.700896871932521
+   },
+   "50": {
+    "peakStageFt": 52.7971953730406,
+    "peakStorageAcFt": 9.912712332680778,
+    "outflowPeakCfs": 655.0225175897765,
+    "inflowPeakCfs": 813.5991780731473,
+    "attenuation": 0.80509240329012,
+    "lagHr": 0.20000000000000107,
+    "overtopsBy": -1.2005853733743734
+   },
+   "100": {
+    "peakStageFt": 54.17384704707277,
+    "peakStorageAcFt": 14.97248893518686,
+    "outflowPeakCfs": 868.9678656230715,
+    "inflowPeakCfs": 1058.2350195811268,
+    "attenuation": 0.8211482794880748,
+    "lagHr": 0.20000000000000107,
+    "overtopsBy": 0.17606630065779427
+   }
+  },
+  "twin 10 x 8 ft box": {
+   "10": {
+    "peakStageFt": 47.93797585349382,
+    "peakStorageAcFt": 0,
+    "outflowPeakCfs": 387.98166327018623,
+    "inflowPeakCfs": 387.98166327018936,
+    "attenuation": 0.9999999999999919,
+    "lagHr": -0.09999999999999964,
+    "overtopsBy": -6.059804892921157
+   },
+   "25": {
+    "peakStageFt": 49.19916292133193,
+    "peakStorageAcFt": 0,
+    "outflowPeakCfs": 605.9680645985399,
+    "inflowPeakCfs": 605.9680645985432,
+    "attenuation": 0.9999999999999946,
+    "lagHr": -0.09999999999999964,
+    "overtopsBy": -4.798617825083042
+   },
+   "50": {
+    "peakStageFt": 49.88603997823872,
+    "peakStorageAcFt": 2.222909653205794,
+    "outflowPeakCfs": 733.1637034401508,
+    "inflowPeakCfs": 813.5991780731473,
+    "attenuation": 0.9011362390710713,
+    "lagHr": 0.09999999999999964,
+    "overtopsBy": -4.111740768176254
+   },
+   "100": {
+    "peakStageFt": 51.131073700523174,
+    "peakStorageAcFt": 5.224577968544502,
+    "outflowPeakCfs": 974.4274649985844,
+    "inflowPeakCfs": 1058.2350195811268,
+    "attenuation": 0.9208044025837329,
+    "lagHr": 0.09999999999999964,
+    "overtopsBy": -2.8667070458918005
+   }
+  },
+  "20 x 8 ft box (bridge-class)": {
+   "10": {
+    "peakStageFt": 47.93797585349382,
+    "peakStorageAcFt": 0,
+    "outflowPeakCfs": 387.98166327018623,
+    "inflowPeakCfs": 387.98166327018936,
+    "attenuation": 0.9999999999999919,
+    "lagHr": -0.09999999999999964,
+    "overtopsBy": -6.059804892921157
+   },
+   "25": {
+    "peakStageFt": 49.19916292133193,
+    "peakStorageAcFt": 0,
+    "outflowPeakCfs": 605.9680645985399,
+    "inflowPeakCfs": 605.9680645985432,
+    "attenuation": 0.9999999999999946,
+    "lagHr": -0.09999999999999964,
+    "overtopsBy": -4.798617825083042
+   },
+   "50": {
+    "peakStageFt": 49.88603997823872,
+    "peakStorageAcFt": 2.222909653205794,
+    "outflowPeakCfs": 733.1637034401508,
+    "inflowPeakCfs": 813.5991780731473,
+    "attenuation": 0.9011362390710713,
+    "lagHr": 0.09999999999999964,
+    "overtopsBy": -4.111740768176254
+   },
+   "100": {
+    "peakStageFt": 51.131073700523174,
+    "peakStorageAcFt": 5.224577968544502,
+    "outflowPeakCfs": 974.4274649985844,
+    "inflowPeakCfs": 1058.2350195811268,
+    "attenuation": 0.9208044025837329,
+    "lagHr": 0.09999999999999964,
+    "overtopsBy": -2.8667070458918005
+   }
+  },
+  "twin 20 x 8 ft box": {
+   "10": {
+    "peakStageFt": 46.63141127462132,
+    "peakStorageAcFt": 0,
+    "outflowPeakCfs": 387.98166327018635,
+    "inflowPeakCfs": 387.98166327018936,
+    "attenuation": 0.9999999999999922,
+    "lagHr": -0.09999999999999964,
+    "overtopsBy": -7.366369471793654
+   },
+   "25": {
+    "peakStageFt": 47.39655960161197,
+    "peakStorageAcFt": 0,
+    "outflowPeakCfs": 605.9680645985424,
+    "inflowPeakCfs": 605.9680645985432,
+    "attenuation": 0.9999999999999987,
+    "lagHr": -0.09999999999999964,
+    "overtopsBy": -6.601221144803006
+   },
+   "50": {
+    "peakStageFt": 48.053298690247935,
+    "peakStorageAcFt": 0,
+    "outflowPeakCfs": 813.5991780731475,
+    "inflowPeakCfs": 813.5991780731473,
+    "attenuation": 1.0000000000000002,
+    "lagHr": -0.09999999999999964,
+    "overtopsBy": -5.94448205616704
+   },
+   "100": {
+    "peakStageFt": 48.769032232520466,
+    "peakStorageAcFt": 0,
+    "outflowPeakCfs": 1058.2350195811232,
+    "inflowPeakCfs": 1058.2350195811268,
+    "attenuation": 0.9999999999999966,
+    "lagHr": -0.09999999999999964,
+    "overtopsBy": -5.228748513894509
+   }
+  }
+ },
+ "lotLowestGroundFt": {
+  "9588 Fort Foote Rd": 48.78,
+  "9584 Fort Foote Rd": 44.97,
+  "9580 Fort Foote Rd": 44.66,
+  "9576 Fort Foote Rd": 53.34
+ },
+ "tailwaterFloorFt": 44.44931567567967,
+ "compensatoryStorage": {
+  "requiredCy": 2108,
+  "requiredAcFt": 1.306611570247934,
+  "designSurfaceFt": 55.52,
+  "cutAreaByDepthSqFt": {
+   "1": 56916,
+   "2": 28458,
+   "3": 18972
+  }
+ }
+}

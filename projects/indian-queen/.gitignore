@@ -1,0 +1,10 @@
+# Superseded generations. Every run writes a timestamped sheet set; the current
+# one lives in drawings/, the rest are history and are not worth 150 MB in git.
+drawings/archive/
+
+# Staff-uploaded source scans — the recorded plat, the 1979 FPS letter, the
+# field topographic survey, the easement map. They are the project record and
+# they are large. Keep them in the working tree, out of the repository.
+source/
+dossier/*.pdf
+dossier/previews/

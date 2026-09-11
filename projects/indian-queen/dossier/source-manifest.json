@@ -1,0 +1,125 @@
+{
+  "dossierPages": 24,
+  "summaryPages": 6,
+  "sourceFiles": [
+    {
+      "id": "A",
+      "title": "Latest generated plan set",
+      "path": "output/site-plans/indian-queen-lots-53-56.1789052980940.pdf",
+      "pages": 3,
+      "firstPage": 7,
+      "lastPage": 9,
+      "sha256": "111d0b75e81711890abc935135c5d4961057cbcde5a44cd588f66a0976df7693",
+      "rotations": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "B",
+      "title": "Recorded subdivision plat",
+      "path": "existing site plans/Indian Queen lots.pdf",
+      "pages": 1,
+      "firstPage": 10,
+      "lastPage": 10,
+      "sha256": "87c6bf8035a514b547b39caaad6c18c816935c0ea43a8f5884a97611326246ed",
+      "rotations": [
+        90
+      ]
+    },
+    {
+      "id": "C",
+      "title": "Highlighted easement map",
+      "path": "existing site plans/ScanIndian Queen easement Map.pdf",
+      "pages": 1,
+      "firstPage": 11,
+      "lastPage": 11,
+      "sha256": "e8f5992ed42f8212e2bf477c29aaab846b7169a7ec7863e413e42469523bd557",
+      "rotations": [
+        270
+      ]
+    },
+    {
+      "id": "D",
+      "title": "Tax accounts and duplicate highlighted plat",
+      "path": "existing site plans/Indian Queen lots including tax acc.pdf",
+      "pages": 5,
+      "firstPage": 12,
+      "lastPage": 16,
+      "sha256": "788bce538d2e64c612c296baa0278b42ae9ad044b3ccc6297d9d11e24d0fd397",
+      "rotations": [
+        0,
+        90,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "E",
+      "title": "Topographic survey - black and white",
+      "path": "existing site plans/Indian Queen lots topo.pdf",
+      "pages": 1,
+      "firstPage": 17,
+      "lastPage": 17,
+      "sha256": "bacb7bcb47f57557cfce3c378a3f993bbe8782f82265f6d781b30605e4a1626e",
+      "rotations": [
+        0
+      ]
+    },
+    {
+      "id": "F",
+      "title": "Topographic survey - color scan",
+      "path": "existing site plans/Indian Queen lots  topo 2.pdf",
+      "pages": 1,
+      "firstPage": 18,
+      "lastPage": 18,
+      "sha256": "edbcee36f0a19b5e7ebece015a208cf099e014a37d940b0e7ecd26e94c3e28c6",
+      "rotations": [
+        0
+      ]
+    },
+    {
+      "id": "G",
+      "title": "Topographic survey - marked overlay scan",
+      "path": "existing site plans/Indian Queen lots floodplain topo.pdf",
+      "pages": 1,
+      "firstPage": 19,
+      "lastPage": 19,
+      "sha256": "5962cddff01cf5d5d25c700a72eb3c00de289cf6a22026d2c590cda3a6c5b834",
+      "rotations": [
+        0
+      ]
+    },
+    {
+      "id": "H",
+      "title": "County floodplain letter and historical grading sheet",
+      "path": "existing site plans/Indian Queen FPS.pdf",
+      "pages": 2,
+      "firstPage": 20,
+      "lastPage": 21,
+      "sha256": "4d2c451df19e409f26f6485f9c0994d4f0bda45b9faa1a72ca0712ae829e5062",
+      "rotations": [
+        0,
+        90
+      ]
+    },
+    {
+      "id": "I",
+      "title": "Historical subdivision site plans",
+      "path": "existing site plans/Indian Queen site plan.pdf",
+      "pages": 3,
+      "firstPage": 22,
+      "lastPage": 24,
+      "sha256": "12f9809860eedf5b0a67c7d1d269ff96aec9fd004c596aaffb164ee22e3ee009",
+      "rotations": [
+        270,
+        270,
+        270
+      ]
+    }
+  ],
+  "selectedPlan": "output/site-plans/indian-queen-lots-53-56.1789052980940.pdf",
+  "permitReady": false
+}
