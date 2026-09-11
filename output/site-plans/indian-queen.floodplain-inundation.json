@@ -1,0 +1,186 @@
+{
+ "10": {
+  "wselExisting": 54.61,
+  "wselProposed": 54.62,
+  "inundatedExistingAc": 3.946,
+  "inundatedProposedAc": 3.68,
+  "lots": {
+   "9588 Fort Foote Rd": {
+    "lotAreaSf": 12500,
+    "floodedExistingSf": 9900,
+    "floodedProposedSf": 7500,
+    "floodedExistingPct": 79.2,
+    "floodedProposedPct": 60.0,
+    "totalFillCy": 533,
+    "lostStorageCy": 195
+   },
+   "9584 Fort Foote Rd": {
+    "lotAreaSf": 23500,
+    "floodedExistingSf": 23400,
+    "floodedProposedSf": 18700,
+    "floodedExistingPct": 99.6,
+    "floodedProposedPct": 79.6,
+    "totalFillCy": 1602,
+    "lostStorageCy": 1365
+   },
+   "9580 Fort Foote Rd": {
+    "lotAreaSf": 25600,
+    "floodedExistingSf": 23500,
+    "floodedProposedSf": 19700,
+    "floodedExistingPct": 91.8,
+    "floodedProposedPct": 77.0,
+    "totalFillCy": 1182,
+    "lostStorageCy": 926
+   },
+   "9576 Fort Foote Rd": {
+    "lotAreaSf": 13900,
+    "floodedExistingSf": 1600,
+    "floodedProposedSf": 1500,
+    "floodedExistingPct": 11.5,
+    "floodedProposedPct": 10.8,
+    "totalFillCy": 220,
+    "lostStorageCy": 3
+   }
+  },
+  "reachLostStorageCy": 2549,
+  "reachTotalFillCy": 3666
+ },
+ "25": {
+  "wselExisting": 54.93,
+  "wselProposed": 54.95,
+  "inundatedExistingAc": 4.054,
+  "inundatedProposedAc": 3.804,
+  "lots": {
+   "9588 Fort Foote Rd": {
+    "lotAreaSf": 12500,
+    "floodedExistingSf": 10100,
+    "floodedProposedSf": 7600,
+    "floodedExistingPct": 80.8,
+    "floodedProposedPct": 60.8,
+    "totalFillCy": 533,
+    "lostStorageCy": 224
+   },
+   "9584 Fort Foote Rd": {
+    "lotAreaSf": 23500,
+    "floodedExistingSf": 23500,
+    "floodedProposedSf": 19200,
+    "floodedExistingPct": 100.0,
+    "floodedProposedPct": 81.7,
+    "totalFillCy": 1602,
+    "lostStorageCy": 1415
+   },
+   "9580 Fort Foote Rd": {
+    "lotAreaSf": 25600,
+    "floodedExistingSf": 23900,
+    "floodedProposedSf": 20500,
+    "floodedExistingPct": 93.4,
+    "floodedProposedPct": 80.1,
+    "totalFillCy": 1182,
+    "lostStorageCy": 971
+   },
+   "9576 Fort Foote Rd": {
+    "lotAreaSf": 13900,
+    "floodedExistingSf": 2000,
+    "floodedProposedSf": 1800,
+    "floodedExistingPct": 14.4,
+    "floodedProposedPct": 12.9,
+    "totalFillCy": 220,
+    "lostStorageCy": 5
+   }
+  },
+  "reachLostStorageCy": 2686,
+  "reachTotalFillCy": 3666
+ },
+ "50": {
+  "wselExisting": 55.2,
+  "wselProposed": 55.23,
+  "inundatedExistingAc": 4.16,
+  "inundatedProposedAc": 3.923,
+  "lots": {
+   "9588 Fort Foote Rd": {
+    "lotAreaSf": 12500,
+    "floodedExistingSf": 10700,
+    "floodedProposedSf": 8100,
+    "floodedExistingPct": 85.6,
+    "floodedProposedPct": 64.8,
+    "totalFillCy": 533,
+    "lostStorageCy": 251
+   },
+   "9584 Fort Foote Rd": {
+    "lotAreaSf": 23500,
+    "floodedExistingSf": 23500,
+    "floodedProposedSf": 19700,
+    "floodedExistingPct": 100.0,
+    "floodedProposedPct": 83.8,
+    "totalFillCy": 1602,
+    "lostStorageCy": 1454
+   },
+   "9580 Fort Foote Rd": {
+    "lotAreaSf": 25600,
+    "floodedExistingSf": 24300,
+    "floodedProposedSf": 21100,
+    "floodedExistingPct": 94.9,
+    "floodedProposedPct": 82.4,
+    "totalFillCy": 1182,
+    "lostStorageCy": 1004
+   },
+   "9576 Fort Foote Rd": {
+    "lotAreaSf": 13900,
+    "floodedExistingSf": 2300,
+    "floodedProposedSf": 2000,
+    "floodedExistingPct": 16.5,
+    "floodedProposedPct": 14.4,
+    "totalFillCy": 220,
+    "lostStorageCy": 8
+   }
+  },
+  "reachLostStorageCy": 2794,
+  "reachTotalFillCy": 3666
+ },
+ "100": {
+  "wselExisting": 55.51,
+  "wselProposed": 55.53,
+  "inundatedExistingAc": 4.272,
+  "inundatedProposedAc": 4.066,
+  "lots": {
+   "9588 Fort Foote Rd": {
+    "lotAreaSf": 12500,
+    "floodedExistingSf": 11100,
+    "floodedProposedSf": 8400,
+    "floodedExistingPct": 88.8,
+    "floodedProposedPct": 67.2,
+    "totalFillCy": 533,
+    "lostStorageCy": 281
+   },
+   "9584 Fort Foote Rd": {
+    "lotAreaSf": 23500,
+    "floodedExistingSf": 23500,
+    "floodedProposedSf": 20500,
+    "floodedExistingPct": 100.0,
+    "floodedProposedPct": 87.2,
+    "totalFillCy": 1602,
+    "lostStorageCy": 1491
+   },
+   "9580 Fort Foote Rd": {
+    "lotAreaSf": 25600,
+    "floodedExistingSf": 24500,
+    "floodedProposedSf": 21700,
+    "floodedExistingPct": 95.7,
+    "floodedProposedPct": 84.8,
+    "totalFillCy": 1182,
+    "lostStorageCy": 1038
+   },
+   "9576 Fort Foote Rd": {
+    "lotAreaSf": 13900,
+    "floodedExistingSf": 2800,
+    "floodedProposedSf": 2400,
+    "floodedExistingPct": 20.1,
+    "floodedProposedPct": 17.3,
+    "totalFillCy": 220,
+    "lostStorageCy": 12
+   }
+  },
+  "reachLostStorageCy": 2908,
+  "reachTotalFillCy": 3666
+ }
+}

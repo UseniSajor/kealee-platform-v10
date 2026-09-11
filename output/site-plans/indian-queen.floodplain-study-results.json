@@ -1,0 +1,4754 @@
+{
+ "generatedAt": "2026-09-11T21:10:48.538Z",
+ "crs": "EPSG:2248",
+ "verticalDatum": "NAVD88",
+ "hydrology": {
+  "watershed": {
+   "areaAc": 396.9,
+   "channelOnlyAc": 368.8,
+   "sqMi": 0.62015625,
+   "flowPathFt": 7986,
+   "headEl": 154.98,
+   "imperviousPct": 23.879509291874164,
+   "canopyPct": 36.803109437629054,
+   "soilGroupPct": {
+    "C": 52.629661119883394,
+    "B/D": 4.3847929065954085,
+    "D": 3.558848536377991,
+    "A": 36.23223612291996,
+    "B": 3.158022592007774,
+    "C/D": 0.03643872221547431
+   }
+  },
+  "precipitation": {
+   "citation": "NOAA Atlas 14 Volume 2 Version 3, PFDS point estimate, 38.7611 N 77.0115 W, partial duration series, retrieved 2026-09-11",
+   "depths": {
+    "1": 2.58,
+    "2": 3.12,
+    "5": 4.02,
+    "10": 4.81,
+    "25": 6.01,
+    "50": 7.08,
+    "100": 8.29,
+    "500": 11.8
+   }
+  },
+  "curveNumber": {
+   "curveNumber": 67.99725923979935,
+   "totalFraction": 1,
+   "parts": [
+    {
+     "label": "Impervious (roofs, roads, drives, walks)",
+     "fraction": 0.23879509291874165,
+     "curveNumber": 98
+    },
+    {
+     "label": "Woods, good condition",
+     "fraction": 0.36803109437629056,
+     "curveNumber": 55.59200777359408
+    },
+    {
+     "label": "Open space / lawn, good condition",
+     "fraction": 0.39317381270496776,
+     "curveNumber": 61.38697922992834
+    }
+   ]
+  },
+  "soilGroupsUsed": {
+   "A": 0.3623223612291996,
+   "B": 0.03158022592007774,
+   "C": 0.526296611198834,
+   "D": 0.07980080165188874
+  },
+  "timeOfConcentration": {
+   "tcHr": 0.8566900136874718,
+   "segments": [
+    {
+     "kind": "sheet",
+     "label": "Sheet flow, lawn/woods at the divide",
+     "lengthFt": 100,
+     "slopeFtPerFt": 0.0284,
+     "manningN": 0.24,
+     "travelTimeHr": 0.20934490730578023,
+     "velocityFps": 0.1326890543231801
+    },
+    {
+     "kind": "shallow",
+     "label": "Shallow concentrated, unpaved",
+     "lengthFt": 1300,
+     "slopeFtPerFt": 0.0136,
+     "paved": false,
+     "velocityFps": 1.8815898669476299,
+     "travelTimeHr": 0.1919180781393748
+    },
+    {
+     "kind": "channel",
+     "label": "Channel, North Branch Broad Creek",
+     "lengthFt": 6424,
+     "slopeFtPerFt": 0.01363,
+     "manningN": 0.05,
+     "hydraulicRadiusFt": 1.2,
+     "velocityFps": 3.9181786187160683,
+     "travelTimeHr": 0.4554270282423168
+    }
+   ],
+   "minimumApplied": false
+  },
+  "flows": [
+   {
+    "label": "10-year",
+    "rainfallIn": 4.81,
+    "runoffIn": 1.7453718845995856,
+    "iaOverP": 0.1956954304278164,
+    "quCsmIn": 323.8688905383923,
+    "peakCfs": 350.5567503183711,
+    "volumeAcFt": 57.72817508313128,
+    "clampedIaOverP": false,
+    "notes": []
+   },
+   {
+    "label": "25-year",
+    "rainfallIn": 6.01,
+    "runoffIn": 2.628265664328112,
+    "iaOverP": 0.15662146761361012,
+    "quCsmIn": 350.2994000096897,
+    "peakCfs": 570.9653851058027,
+    "volumeAcFt": 86.92988684765228,
+    "clampedIaOverP": false,
+    "notes": []
+   },
+   {
+    "label": "50-year",
+    "rainfallIn": 7.08,
+    "runoffIn": 3.47469553701602,
+    "iaOverP": 0.1329512740618357,
+    "quCsmIn": 367.3485985637949,
+    "peakCfs": 791.5826536281422,
+    "volumeAcFt": 114.92555488680486,
+    "clampedIaOverP": false,
+    "notes": []
+   },
+   {
+    "label": "100-year",
+    "rainfallIn": 8.29,
+    "runoffIn": 4.4796896033930365,
+    "iaOverP": 0.11354584081517453,
+    "quCsmIn": 381.94318486438124,
+    "peakCfs": 1061.0792285861148,
+    "volumeAcFt": 148.16573363222466,
+    "clampedIaOverP": false,
+    "notes": []
+   }
+  ]
+ },
+ "crossing": {
+  "roadSagElFt": 53.997780746414975,
+  "crestLengthFt": 184.8815575695586,
+  "assumedBarrel": {
+   "sizeIn": 36,
+   "inletInvertFt": 44.66,
+   "outletInvertFt": 41,
+   "note": "ASSUMED. Not surveyed. See the report."
+  },
+  "alternatives": [
+   {
+    "sizeIn": 36,
+    "headwaterElFt": 55.451231950837546,
+    "governing": "inlet",
+    "hwOverD": 3.5970773169458496,
+    "overtoppingCfs": 939.49024134844,
+    "outletVelocityFps": 17.26219439346813
+   },
+   {
+    "sizeIn": 48,
+    "headwaterElFt": 55.362987159646494,
+    "governing": "inlet",
+    "hwOverD": 2.6757467899116243,
+    "overtoppingCfs": 855.2420952678739,
+    "outletVelocityFps": 16.557800857420244
+   },
+   {
+    "sizeIn": 60,
+    "headwaterElFt": 55.256151760845746,
+    "governing": "inlet",
+    "hwOverD": 2.11923035216915,
+    "overtoppingCfs": 756.8409955936443,
+    "outletVelocityFps": 15.913410833625205
+   },
+   {
+    "sizeIn": 72,
+    "headwaterElFt": 55.13476013763259,
+    "governing": "inlet",
+    "hwOverD": 1.7457933562720989,
+    "overtoppingCfs": 650.0106590030113,
+    "outletVelocityFps": 15.37009890681143
+   },
+   {
+    "sizeIn": 84,
+    "headwaterElFt": 55.0042968219079,
+    "governing": "inlet",
+    "hwOverD": 1.4777566888439861,
+    "overtoppingCfs": 541.4054990132303,
+    "outletVelocityFps": 14.93144452649911
+   },
+   {
+    "sizeIn": 96,
+    "headwaterElFt": 54.87268719632716,
+    "governing": "inlet",
+    "hwOverD": 1.2765858995408959,
+    "overtoppingCfs": 438.7670606047162,
+    "outletVelocityFps": 14.561392960600472
+   }
+  ],
+  "twin72": {
+   "headwaterElFt": 54.63528767664887,
+   "governing": "inlet",
+   "overtoppingCfs": 272.90968904661554,
+   "outletVelocityFps": 14.895922838858185
+  }
+ },
+ "existing": [
+  {
+   "period": 10,
+   "qCfs": 350.5567503183711,
+   "downstream": {
+    "dischargeCfs": 350.5567503183711,
+    "label": "10-yr",
+    "points": [
+     {
+      "sectionId": "RS -460",
+      "riverStationFt": -460,
+      "invertFt": 36.63,
+      "wselFt": 38.259279810739656,
+      "energyGradeFt": 38.412241142011716,
+      "criticalWselFt": 38.012307295153555,
+      "velocityFps": 3.137316647183454,
+      "velocityHeadFt": 0.15296133127205866,
+      "areaSqFt": 111.73776502065408,
+      "topWidthFt": 138.277548195431,
+      "frictionSlope": 0.01199999999999985,
+      "froude": 0.6152925692699032,
+      "maxDepthFt": 1.6292798107396536,
+      "leftEdgeFt": -56.48199526849136,
+      "rightEdgeFt": 81.79555292693964,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": null
+     },
+     {
+      "sectionId": "RS -380",
+      "riverStationFt": -380,
+      "invertFt": 38.7,
+      "wselFt": 39.69712681507764,
+      "energyGradeFt": 39.974902080214825,
+      "criticalWselFt": 39.69712681507764,
+      "velocityFps": 4.227798808014393,
+      "velocityHeadFt": 0.27777526513719036,
+      "areaSqFt": 82.91708433566919,
+      "topWidthFt": 149.25206685016846,
+      "frictionSlope": 0.035913001865932874,
+      "froude": 0.9999998826990114,
+      "maxDepthFt": 0.9971268150776353,
+      "leftEdgeFt": -134.88028396156815,
+      "rightEdgeFt": 14.371782888600308,
+      "criticalDefault": true,
+      "overtopped": false,
+      "energyLossFt": 1.542020585904924
+     },
+     {
+      "sectionId": "RS -300",
+      "riverStationFt": -300,
+      "invertFt": 38.93,
+      "wselFt": 40.86111103894895,
+      "energyGradeFt": 40.93706205887562,
+      "criticalWselFt": 40.38879537070349,
+      "velocityFps": 2.210723010745915,
+      "velocityHeadFt": 0.07595101992667189,
+      "areaSqFt": 158.57108675052444,
+      "topWidthFt": 174.64549860785786,
+      "frictionSlope": 0.005102849379094949,
+      "froude": 0.4090237253142071,
+      "maxDepthFt": 1.9311110389489485,
+      "leftEdgeFt": -152.55555194744744,
+      "rightEdgeFt": 22.08994666041041,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": 0.8612478560555261
+     },
+     {
+      "sectionId": "RS -230",
+      "riverStationFt": -230,
+      "invertFt": 39.5,
+      "wselFt": 41.52007938858205,
+      "energyGradeFt": 41.7902340618774,
+      "criticalWselFt": 41.52007938858205,
+      "velocityFps": 4.16940198556209,
+      "velocityHeadFt": 0.2701546732953488,
+      "areaSqFt": 84.07842456359157,
+      "topWidthFt": 155.61160554640693,
+      "frictionSlope": 0.036309299358977296,
+      "froude": 0.9999998831514487,
+      "maxDepthFt": 2.0200793885820474,
+      "leftEdgeFt": -33.931406735073224,
+      "rightEdgeFt": 13.333634047659267,
+      "criticalDefault": true,
+      "overtopped": false,
+      "energyLossFt": 0.7558547958634669
+     },
+     {
+      "sectionId": "RS -170",
+      "riverStationFt": -170,
+      "invertFt": 40.42,
+      "wselFt": 42.52977244493516,
+      "energyGradeFt": 42.60029938150947,
+      "criticalWselFt": 42.17442324511151,
+      "velocityFps": 2.130320941708936,
+      "velocityHeadFt": 0.07052693657430918,
+      "areaSqFt": 164.55583919536355,
+      "topWidthFt": 210.76452289545784,
+      "frictionSlope": 0.005796752421127404,
+      "froude": 0.4250447085365569,
+      "maxDepthFt": 2.1097724449351603,
+      "leftEdgeFt": -194.06986009139192,
+      "rightEdgeFt": 16.69466280406592,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": 0.7102514512715421
+     },
+     {
+      "sectionId": "RS -115",
+      "riverStationFt": -115,
+      "invertFt": 40.5,
+      "wselFt": 42.81214020458117,
+      "energyGradeFt": 42.88240197488476,
+      "criticalWselFt": 42.332241953226244,
+      "velocityFps": 2.1263123936749073,
+      "velocityHeadFt": 0.07026177030359163,
+      "areaSqFt": 164.86606171377463,
+      "topWidthFt": 177.09975627692225,
+      "frictionSlope": 0.004568118289817022,
+      "froude": 0.3885240361592646,
+      "maxDepthFt": 2.312140204581169,
+      "leftEdgeFt": -153.05350511452923,
+      "rightEdgeFt": 24.04625116239302,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": 0.28202304349408097
+     },
+     {
+      "sectionId": "RS -70",
+      "riverStationFt": -70,
+      "invertFt": 41,
+      "wselFt": 43.03715410224153,
+      "energyGradeFt": 43.61914504374459,
+      "criticalWselFt": 43.03715410224153,
+      "velocityFps": 6.119636680705725,
+      "velocityHeadFt": 0.5819909415030613,
+      "areaSqFt": 57.283915468972644,
+      "topWidthFt": 49.213748115525576,
+      "frictionSlope": 0.02821638879199527,
+      "froude": 0.9999999627498032,
+      "maxDepthFt": 2.03715410224153,
+      "leftEdgeFt": -32.11204570090284,
+      "rightEdgeFt": 17.101702414622736,
+      "criticalDefault": true,
+      "overtopped": false,
+      "energyLossFt": 0.41810850707791275
+     }
+    ],
+    "criticalDefaults": [
+     "RS -380",
+     "RS -230",
+     "RS -70"
+    ],
+    "overtopped": [],
+    "boundaryCondition": "Normal depth on the surveyed channel slope of 1.20 percent, applied 460 ft below the crossing so the boundary assumption has decayed out of the answer at the road."
+   },
+   "upstream": {
+    "dischargeCfs": 350.5567503183711,
+    "label": "10-yr",
+    "points": [
+     {
+      "sectionId": "RS +15",
+      "riverStationFt": 15,
+      "invertFt": 48.25,
+      "wselFt": 54.59965544681029,
+      "energyGradeFt": 54.60285008896651,
+      "criticalWselFt": 49.7536455333576,
+      "velocityFps": 0.3248705869442137,
+      "velocityHeadFt": 0.0031946421562266476,
+      "areaSqFt": 1079.0658323850296,
+      "topWidthFt": 464.7220573690597,
+      "frictionSlope": 0.0000261267274534179,
+      "froude": 0.037586383168187104,
+      "maxDepthFt": 6.349655446810289,
+      "leftEdgeFt": -182.04868961206725,
+      "rightEdgeFt": 126.07427266777145,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": null
+     },
+     {
+      "sectionId": "RS +40",
+      "riverStationFt": 40,
+      "invertFt": 47.69,
+      "wselFt": 54.599837276489865,
+      "energyGradeFt": 54.60352469976315,
+      "criticalWselFt": 49.27773726454987,
+      "velocityFps": 0.3890305478455274,
+      "velocityHeadFt": 0.003687423273282617,
+      "areaSqFt": 901.1034024442905,
+      "topWidthFt": 356.05697129824875,
+      "frictionSlope": 0.000023969574349380027,
+      "froude": 0.04311253976225731,
+      "maxDepthFt": 6.909837276489867,
+      "leftEdgeFt": -138.66124254966212,
+      "rightEdgeFt": 139.83739739104732,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": 0.0006253326849330331
+     },
+     {
+      "sectionId": "RS +75",
+      "riverStationFt": 75,
+      "invertFt": 44.66,
+      "wselFt": 54.59970350174409,
+      "energyGradeFt": 54.60437419508619,
+      "criticalWselFt": 46.85154708392474,
+      "velocityFps": 0.37754367730860666,
+      "velocityHeadFt": 0.004670693342100248,
+      "areaSqFt": 928.5197220554264,
+      "topWidthFt": 226.00679344743267,
+      "frictionSlope": 0.000019328201592287543,
+      "froude": 0.03283823853919832,
+      "maxDepthFt": 9.939703501744091,
+      "leftEdgeFt": -110.70369649086034,
+      "rightEdgeFt": 115.30309695657232,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": 0.0007511683161564186
+     },
+     {
+      "sectionId": "RS +120",
+      "riverStationFt": 120,
+      "invertFt": 44.97,
+      "wselFt": 54.60408141211177,
+      "energyGradeFt": 54.60575512219229,
+      "criticalWselFt": 46.94065160871912,
+      "velocityFps": 0.2755280295197871,
+      "velocityHeadFt": 0.0016737100805227292,
+      "areaSqFt": 1272.308849772381,
+      "topWidthFt": 250.60679407835335,
+      "frictionSlope": 0.000006790612315899239,
+      "froude": 0.02155824503743102,
+      "maxDepthFt": 9.634081412111769,
+      "leftEdgeFt": -143.11616742415163,
+      "rightEdgeFt": 107.4906266542017,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": 0.00048183212763649677
+     },
+     {
+      "sectionId": "RS +175",
+      "riverStationFt": 175,
+      "invertFt": 45.44,
+      "wselFt": 54.60528902584542,
+      "energyGradeFt": 54.60626122530981,
+      "criticalWselFt": 47.58130018070996,
+      "velocityFps": 0.21824471834636625,
+      "velocityHeadFt": 0.0009721994643874514,
+      "areaSqFt": 1606.2553677107478,
+      "topWidthFt": 316.83116861333014,
+      "frictionSlope": 0.00000436063385442889,
+      "froude": 0.017088260942318446,
+      "maxDepthFt": 9.165289025845425,
+      "leftEdgeFt": -225.2358803429449,
+      "rightEdgeFt": 91.5952882703852,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": 0.00029564993267200114
+     },
+     {
+      "sectionId": "RS +240",
+      "riverStationFt": 240,
+      "invertFt": 46.25,
+      "wselFt": 54.6056464961175,
+      "energyGradeFt": 54.60655321196616,
+      "criticalWselFt": 47.35741160708736,
+      "velocityFps": 0.22220690357612594,
+      "velocityHeadFt": 0.0009067158486540827,
+      "areaSqFt": 1577.6141275389036,
+      "topWidthFt": 279.2531059597726,
+      "frictionSlope": 0.00000402894459193668,
+      "froude": 0.01648176173542792,
+      "maxDepthFt": 8.355646496117501,
+      "leftEdgeFt": -145.63915295610073,
+      "rightEdgeFt": 133.61395300367192,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": 0.00027234157163135645
+     },
+     {
+      "sectionId": "RS +310",
+      "riverStationFt": 310,
+      "invertFt": 47.37,
+      "wselFt": 54.60568503444601,
+      "energyGradeFt": 54.60695487743263,
+      "criticalWselFt": 48.563283485744435,
+      "velocityFps": 0.26277532128316244,
+      "velocityHeadFt": 0.001269842986614288,
+      "areaSqFt": 1334.0550726246354,
+      "topWidthFt": 275.6858619789292,
+      "frictionSlope": 0.000007027206641060047,
+      "froude": 0.021059711386879426,
+      "maxDepthFt": 7.235685034446014,
+      "leftEdgeFt": -175.52533051364165,
+      "rightEdgeFt": 100.16053146528758,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": 0.0003653527526802897
+     },
+     {
+      "sectionId": "RS +390",
+      "riverStationFt": 390,
+      "invertFt": 48.56,
+      "wselFt": 54.60600828183473,
+      "energyGradeFt": 54.607754585779325,
+      "criticalWselFt": 50.10260731623616,
+      "velocityFps": 0.32541666141528175,
+      "velocityHeadFt": 0.001746303944596073,
+      "areaSqFt": 1077.2550759809026,
+      "topWidthFt": 254.0459615226788,
+      "frictionSlope": 0.000013216509513889542,
+      "froude": 0.027860193573145266,
+      "maxDepthFt": 6.04600828183473,
+      "leftEdgeFt": -148.57338854556488,
+      "rightEdgeFt": 105.4725729771139,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": 0.0007520622509054706
+     },
+     {
+      "sectionId": "RS +470",
+      "riverStationFt": 470,
+      "invertFt": 49.09,
+      "wselFt": 54.60662646881562,
+      "energyGradeFt": 54.60916539366458,
+      "criticalWselFt": 50.43177092517132,
+      "velocityFps": 0.39368402182409673,
+      "velocityHeadFt": 0.002538924848959796,
+      "areaSqFt": 890.4520653241154,
+      "topWidthFt": 231.1205102244635,
+      "frictionSlope": 0.000021601615999475636,
+      "froude": 0.03535975368109049,
+      "maxDepthFt": 5.516626468815616,
+      "leftEdgeFt": -145.35323082436074,
+      "rightEdgeFt": 85.76727940010275,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": 0.0013315457948295949
+     }
+    ],
+    "criticalDefaults": [],
+    "overtopped": [],
+    "boundaryCondition": "Headwater at the Fort Foote Road crossing, inlet control, computed to HDS-5."
+   },
+   "culvert": {
+    "dischargeCfs": 350.5567503183711,
+    "inlet": {
+     "hwElFt": 54.59965544681029,
+     "hwDepthFt": 9.939655446810292,
+     "regime": "inlet control, submerged, Q/AD^0.5 = 8.18"
+    },
+    "outlet": {
+     "hwElFt": 46.76973782633363,
+     "hwDepthFt": 2.1097378263336353,
+     "regime": "outlet control, H = 6.48 ft, TW set by (dc+D)/2 = 2.95 ft above the outlet invert"
+    },
+    "headwaterElFt": 54.59965544681029,
+    "headwaterDepthFt": 9.939655446810292,
+    "governing": "inlet",
+    "hwOverD": 3.313218482270097,
+    "barrelVelocityFps": 14.176100319608894,
+    "outletVelocityFps": 14.330559078745896,
+    "criticalDepthFt": 2.896416978987121,
+    "overtoppingCfs": 250.35180192194184,
+    "notes": [
+     "The roadway overtops. At the balance point the culvert carries 100.2 cfs and 250.4 cfs passes over the road on 185 ft of crest at EL 54.00.",
+     "INLET CONTROL GOVERNS. The entrance is the constriction, so the barrel is not being used to capacity and enlarging the pipe alone will not lower the headwater — the inlet has to be enlarged with it."
+    ]
+   },
+   "tailwaterElFt": 43.03715410224153,
+   "headwaterElFt": 54.59965544681029
+  },
+  {
+   "period": 25,
+   "qCfs": 570.9653851058027,
+   "downstream": {
+    "dischargeCfs": 570.9653851058027,
+    "label": "25-yr",
+    "points": [
+     {
+      "sectionId": "RS -460",
+      "riverStationFt": -460,
+      "invertFt": 36.63,
+      "wselFt": 38.556863223994,
+      "energyGradeFt": 38.76880927289892,
+      "criticalWselFt": 38.26053295694902,
+      "velocityFps": 3.693007494567768,
+      "velocityHeadFt": 0.2119460489049186,
+      "areaSqFt": 154.60715580611864,
+      "topWidthFt": 149.8013598629289,
+      "frictionSlope": 0.012000000000000037,
+      "froude": 0.6408711814215938,
+      "maxDepthFt": 1.9268632239939976,
+      "leftEdgeFt": -63.92158059984998,
+      "rightEdgeFt": 85.87977926307893,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": null
+     },
+     {
+      "sectionId": "RS -380",
+      "riverStationFt": -380,
+      "invertFt": 38.7,
+      "wselFt": 39.92196808704116,
+      "energyGradeFt": 40.28721616755186,
+      "criticalWselFt": 39.92196808704116,
+      "velocityFps": 4.847987570601121,
+      "velocityHeadFt": 0.3652480805107068,
+      "areaSqFt": 117.77368996740364,
+      "topWidthFt": 161.22422346210962,
+      "frictionSlope": 0.032784004934493835,
+      "froude": 0.9999999419875761,
+      "maxDepthFt": 1.2219680870411551,
+      "leftEdgeFt": -145.12300544007226,
+      "rightEdgeFt": 16.101218022037358,
+      "criticalDefault": true,
+      "overtopped": false,
+      "energyLossFt": 1.4906577779000116
+     },
+     {
+      "sectionId": "RS -300",
+      "riverStationFt": -300,
+      "invertFt": 38.93,
+      "wselFt": 41.17962661366437,
+      "energyGradeFt": 41.28734715914004,
+      "criticalWselFt": 40.617750317841505,
+      "velocityFps": 2.6327935088549084,
+      "velocityHeadFt": 0.10772054547567199,
+      "areaSqFt": 216.86675509699774,
+      "topWidthFt": 191.05364826973175,
+      "frictionSlope": 0.0053744718659957166,
+      "froude": 0.43565775255065536,
+      "maxDepthFt": 2.2496266136643683,
+      "leftEdgeFt": -167.0677755693486,
+      "rightEdgeFt": 23.98587270038314,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": 0.8713672240706742
+     },
+     {
+      "sectionId": "RS -230",
+      "riverStationFt": -230,
+      "invertFt": 39.5,
+      "wselFt": 41.784615440658285,
+      "energyGradeFt": 42.07500629661521,
+      "criticalWselFt": 41.746405460115234,
+      "velocityFps": 4.322738807644516,
+      "velocityHeadFt": 0.29039085595692066,
+      "areaSqFt": 132.08417406485054,
+      "topWidthFt": 193.99912958909096,
+      "frictionSlope": 0.028669554624905145,
+      "froude": 0.9235937056970812,
+      "maxDepthFt": 2.2846154406582855,
+      "leftEdgeFt": -179.6634650411429,
+      "rightEdgeFt": 14.33566454794805,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": 0.7328580443307878
+     },
+     {
+      "sectionId": "RS -170",
+      "riverStationFt": -170,
+      "invertFt": 40.42,
+      "wselFt": 42.7692965698179,
+      "energyGradeFt": 42.87820266709204,
+      "criticalWselFt": 42.35444739932598,
+      "velocityFps": 2.647241875499198,
+      "velocityHeadFt": 0.10890609727414237,
+      "areaSqFt": 215.68311924581283,
+      "topWidthFt": 216.11636793229184,
+      "frictionSlope": 0.006453681082235731,
+      "froude": 0.4671720453618769,
+      "maxDepthFt": 2.349296569817895,
+      "leftEdgeFt": -198.38029588960532,
+      "rightEdgeFt": 17.73607204268651,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": 0.7124539911354395
+     },
+     {
+      "sectionId": "RS -115",
+      "riverStationFt": -115,
+      "invertFt": 40.5,
+      "wselFt": 43.089560499758434,
+      "energyGradeFt": 43.19902589081022,
+      "criticalWselFt": 42.54872657528813,
+      "velocityFps": 2.654030705059803,
+      "velocityHeadFt": 0.1094653910517846,
+      "areaSqFt": 215.13141653458646,
+      "topWidthFt": 185.13744667150428,
+      "frictionSlope": 0.0052962351380348455,
+      "froude": 0.43405886530632026,
+      "maxDepthFt": 2.5895604997584343,
+      "leftEdgeFt": -159.5354659036008,
+      "rightEdgeFt": 25.6019807679035,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": 0.3207672943404112
+     },
+     {
+      "sectionId": "RS -70",
+      "riverStationFt": -70,
+      "invertFt": 41,
+      "wselFt": 43.57409134848348,
+      "energyGradeFt": 44.224052459320596,
+      "criticalWselFt": 43.57409134848348,
+      "velocityFps": 6.467124365600767,
+      "velocityHeadFt": 0.6499611108371218,
+      "areaSqFt": 88.28736743378873,
+      "topWidthFt": 67.91741411707359,
+      "frictionSlope": 0.027186093318822234,
+      "froude": 0.9999999343940504,
+      "maxDepthFt": 2.5740913484834778,
+      "leftEdgeFt": -48.23428263397995,
+      "rightEdgeFt": 19.68313148309364,
+      "criticalDefault": true,
+      "overtopped": false,
+      "energyLossFt": 0.45886429298318426
+     }
+    ],
+    "criticalDefaults": [
+     "RS -380",
+     "RS -70"
+    ],
+    "overtopped": [],
+    "boundaryCondition": "Normal depth on the surveyed channel slope of 1.20 percent, applied 460 ft below the crossing so the boundary assumption has decayed out of the answer at the road."
+   },
+   "upstream": {
+    "dischargeCfs": 570.9653851058027,
+    "label": "25-yr",
+    "points": [
+     {
+      "sectionId": "RS +15",
+      "riverStationFt": 15,
+      "invertFt": 48.25,
+      "wselFt": 54.91219689202957,
+      "energyGradeFt": 54.91908601739321,
+      "criticalWselFt": 50.14647504882754,
+      "velocityFps": 0.4652423267313156,
+      "velocityHeadFt": 0.00688912536363952,
+      "areaSqFt": 1227.242992092471,
+      "topWidthFt": 483.04224615843646,
+      "frictionSlope": 0.00005315360903076061,
+      "froude": 0.05145812616582617,
+      "maxDepthFt": 6.66219689202957,
+      "leftEdgeFt": -190.05781294814668,
+      "rightEdgeFt": 128.4784376309967,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": null
+     },
+     {
+      "sectionId": "RS +40",
+      "riverStationFt": 40,
+      "invertFt": 47.69,
+      "wselFt": 54.91221865049957,
+      "energyGradeFt": 54.92053015292945,
+      "criticalWselFt": 49.630422723348815,
+      "velocityFps": 0.5618419238861427,
+      "velocityHeadFt": 0.0083115024298848,
+      "areaSqFt": 1016.2384842280101,
+      "topWidthFt": 380.6298647801866,
+      "frictionSlope": 0.00005103066375598177,
+      "froude": 0.06061990137835229,
+      "maxDepthFt": 7.2222186504995705,
+      "leftEdgeFt": -148.50683282811153,
+      "rightEdgeFt": 141.89752370454266,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": 0.0013018978296130159
+     },
+     {
+      "sectionId": "RS +75",
+      "riverStationFt": 75,
+      "invertFt": 44.66,
+      "wselFt": 54.911413309521535,
+      "energyGradeFt": 54.922462272459946,
+      "criticalWselFt": 47.43236678448929,
+      "velocityFps": 0.570306440762136,
+      "velocityHeadFt": 0.011048962938407474,
+      "areaSqFt": 1001.1554215358085,
+      "topWidthFt": 239.86425293154986,
+      "frictionSlope": 0.000044111286941866486,
+      "froude": 0.04921389753113002,
+      "maxDepthFt": 10.251413309521539,
+      "leftEdgeFt": -121.38044365071787,
+      "rightEdgeFt": 118.48380928083198,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": 0.0016583734796411953
+     },
+     {
+      "sectionId": "RS +120",
+      "riverStationFt": 120,
+      "invertFt": 44.97,
+      "wselFt": 54.921653450064795,
+      "energyGradeFt": 54.925673500181645,
+      "criticalWselFt": 47.400212089912,
+      "velocityFps": 0.42202890167711093,
+      "velocityHeadFt": 0.0040200501168470675,
+      "areaSqFt": 1352.9058859164136,
+      "topWidthFt": 257.08491037347494,
+      "frictionSlope": 0.000015562983594611373,
+      "froude": 0.03243352596898486,
+      "maxDepthFt": 9.951653450064796,
+      "leftEdgeFt": -146.38242556891814,
+      "rightEdgeFt": 110.7024848045568,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": 0.0011025538752396783
+     },
+     {
+      "sectionId": "RS +175",
+      "riverStationFt": 175,
+      "invertFt": 45.44,
+      "wselFt": 54.9245319933561,
+      "energyGradeFt": 54.92685602200427,
+      "criticalWselFt": 47.8854019983675,
+      "velocityFps": 0.33420729510065317,
+      "velocityHeadFt": 0.0023240286481779867,
+      "areaSqFt": 1708.4168822043366,
+      "topWidthFt": 322.86321630916603,
+      "frictionSlope": 0.000009891493700237065,
+      "froude": 0.025613902612914546,
+      "maxDepthFt": 9.4845319933561,
+      "leftEdgeFt": -226.89860413206299,
+      "rightEdgeFt": 95.96461217710305,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": 0.0006737153820256135
+     },
+     {
+      "sectionId": "RS +240",
+      "riverStationFt": 240,
+      "invertFt": 46.25,
+      "wselFt": 54.925331890239406,
+      "energyGradeFt": 54.92751693985993,
+      "criticalWselFt": 47.62132037502509,
+      "velocityFps": 0.3421326040247284,
+      "velocityHeadFt": 0.0021850496205186244,
+      "areaSqFt": 1668.8423681027925,
+      "topWidthFt": 291.2285284702941,
+      "frictionSlope": 0.000009181390006401828,
+      "froude": 0.02519713910361473,
+      "maxDepthFt": 8.675331890239406,
+      "leftEdgeFt": -148.0248648525329,
+      "rightEdgeFt": 143.2036636177612,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": 0.0006192241473603309
+     },
+     {
+      "sectionId": "RS +310",
+      "riverStationFt": 310,
+      "invertFt": 47.37,
+      "wselFt": 54.92541852219962,
+      "energyGradeFt": 54.92842117031737,
+      "criticalWselFt": 48.81009599880447,
+      "velocityFps": 0.4012398306635057,
+      "velocityHeadFt": 0.0030026481177482084,
+      "areaSqFt": 1423.0027566346848,
+      "topWidthFt": 280.70054993544215,
+      "frictionSlope": 0.000015567843208885106,
+      "froude": 0.03141740212235453,
+      "maxDepthFt": 7.5554185221996235,
+      "leftEdgeFt": -178.54168417169456,
+      "rightEdgeFt": 102.15886576374763,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": 0.000822470607719598
+     },
+     {
+      "sectionId": "RS +390",
+      "riverStationFt": 390,
+      "invertFt": 48.56,
+      "wselFt": 54.9261220662344,
+      "energyGradeFt": 54.93016059053009,
+      "criticalWselFt": 50.311825264496974,
+      "velocityFps": 0.49255165246040566,
+      "velocityHeadFt": 0.004038524295695673,
+      "areaSqFt": 1159.1990043149847,
+      "topWidthFt": 257.88651440729325,
+      "frictionSlope": 0.00002804153748589151,
+      "froude": 0.04095760639679335,
+      "maxDepthFt": 6.3661220662343965,
+      "leftEdgeFt": -150.65507448292837,
+      "rightEdgeFt": 107.23143992436482,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": 0.0016358325949322584
+     },
+     {
+      "sectionId": "RS +470",
+      "riverStationFt": 470,
+      "invertFt": 49.09,
+      "wselFt": 54.92733820455406,
+      "energyGradeFt": 54.93313633735695,
+      "criticalWselFt": 50.66249182004621,
+      "velocityFps": 0.5914882079150486,
+      "velocityHeadFt": 0.005798132802885189,
+      "areaSqFt": 965.3030736122581,
+      "topWidthFt": 235.66009021597654,
+      "frictionSlope": 0.00004490283024240746,
+      "froude": 0.05152342648339034,
+      "maxDepthFt": 5.837338204554058,
+      "leftEdgeFt": -147.7828651860156,
+      "rightEdgeFt": 87.87722502996093,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": 0.0027997859761338013
+     }
+    ],
+    "criticalDefaults": [],
+    "overtopped": [],
+    "boundaryCondition": "Headwater at the Fort Foote Road crossing, inlet control, computed to HDS-5."
+   },
+   "culvert": {
+    "dischargeCfs": 570.9653851058027,
+    "inlet": {
+     "hwElFt": 54.91219689202957,
+     "hwDepthFt": 10.25219689202957,
+     "regime": "inlet control, submerged, Q/AD^0.5 = 8.34"
+    },
+    "outlet": {
+     "hwElFt": 47.02663132462218,
+     "hwDepthFt": 2.3666313246221833,
+     "regime": "outlet control, H = 6.73 ft, TW set by (dc+D)/2 = 2.95 ft above the outlet invert"
+    },
+    "headwaterElFt": 54.91219689202957,
+    "headwaterDepthFt": 10.252196892029573,
+    "governing": "inlet",
+    "hwOverD": 3.4173989640098577,
+    "barrelVelocityFps": 14.450419385012776,
+    "outletVelocityFps": 14.591595507778361,
+    "criticalDepthFt": 2.9036584600278097,
+    "overtoppingCfs": 468.8213894979955,
+    "notes": [
+     "The roadway overtops. At the balance point the culvert carries 102.1 cfs and 468.8 cfs passes over the road on 185 ft of crest at EL 54.00.",
+     "INLET CONTROL GOVERNS. The entrance is the constriction, so the barrel is not being used to capacity and enlarging the pipe alone will not lower the headwater — the inlet has to be enlarged with it."
+    ]
+   },
+   "tailwaterElFt": 43.57409134848348,
+   "headwaterElFt": 54.91219689202957
+  },
+  {
+   "period": 50,
+   "qCfs": 791.5826536281422,
+   "downstream": {
+    "dischargeCfs": 791.5826536281422,
+    "label": "50-yr",
+    "points": [
+     {
+      "sectionId": "RS -460",
+      "riverStationFt": -460,
+      "invertFt": 36.63,
+      "wselFt": 38.803618203553754,
+      "energyGradeFt": 39.065765302614615,
+      "criticalWselFt": 38.470629248985816,
+      "velocityFps": 4.107145180093869,
+      "velocityHeadFt": 0.2621470990608612,
+      "areaSqFt": 192.7330588323763,
+      "topWidthFt": 159.21270301357868,
+      "frictionSlope": 0.011999999999999815,
+      "froude": 0.6581096767700242,
+      "maxDepthFt": 2.173618203553751,
+      "leftEdgeFt": -70.08614770366087,
+      "rightEdgeFt": 89.12655530991783,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": null
+     },
+     {
+      "sectionId": "RS -380",
+      "riverStationFt": -380,
+      "invertFt": 38.7,
+      "wselFt": 40.1134386712731,
+      "energyGradeFt": 40.54731217640129,
+      "criticalWselFt": 40.1134386712731,
+      "velocityFps": 5.283833107507181,
+      "velocityHeadFt": 0.43387350512819356,
+      "areaSqFt": 149.81219836475813,
+      "topWidthFt": 172.64498926340457,
+      "frictionSlope": 0.03095756813370521,
+      "froude": 0.9999999162428224,
+      "maxDepthFt": 1.4134386712730986,
+      "leftEdgeFt": -155.15630323968645,
+      "rightEdgeFt": 17.488686023718113,
+      "criticalDefault": true,
+      "overtopped": false,
+      "energyLossFt": 1.4585111326711855
+     },
+     {
+      "sectionId": "RS -300",
+      "riverStationFt": -300,
+      "invertFt": 38.93,
+      "wselFt": 41.43837981577805,
+      "energyGradeFt": 41.574011009496836,
+      "criticalWselFt": 40.80900577805554,
+      "velocityFps": 2.9542505062057054,
+      "velocityHeadFt": 0.1356311937187895,
+      "areaSqFt": 267.9470315619281,
+      "topWidthFt": 203.67499147120606,
+      "frictionSlope": 0.005559172934445249,
+      "froude": 0.45408710404506986,
+      "maxDepthFt": 2.5083798157780492,
+      "leftEdgeFt": -178.2658256574188,
+      "rightEdgeFt": 25.409165813787258,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": 0.8775776773908562
+     },
+     {
+      "sectionId": "RS -230",
+      "riverStationFt": -230,
+      "invertFt": 39.5,
+      "wselFt": 42.01053795251124,
+      "energyGradeFt": 42.319410794986354,
+      "criticalWselFt": 41.91518084574708,
+      "velocityFps": 4.458177841628634,
+      "velocityHeadFt": 0.30887284247511265,
+      "areaSqFt": 177.55744201962253,
+      "topWidthFt": 206.866389613125,
+      "frictionSlope": 0.022393369173050206,
+      "froude": 0.8483603992341764,
+      "maxDepthFt": 2.5105379525112426,
+      "leftEdgeFt": -191.6845984170414,
+      "rightEdgeFt": 15.181791196083603,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": 0.693427290862621
+     },
+     {
+      "sectionId": "RS -170",
+      "riverStationFt": -170,
+      "invertFt": 40.42,
+      "wselFt": 42.93670336279553,
+      "energyGradeFt": 43.089846805304695,
+      "criticalWselFt": 42.50807372864378,
+      "velocityFps": 3.1391836898435703,
+      "velocityHeadFt": 0.15314344250916723,
+      "areaSqFt": 252.16194139553136,
+      "topWidthFt": 219.52925214759958,
+      "frictionSlope": 0.007524814142146862,
+      "froude": 0.5163814465050022,
+      "maxDepthFt": 2.516703362795525,
+      "leftEdgeFt": -201.0653244832712,
+      "rightEdgeFt": 18.463927664328377,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": 0.7237171903285494
+     },
+     {
+      "sectionId": "RS -115",
+      "riverStationFt": -115,
+      "invertFt": 40.5,
+      "wselFt": 43.308403638761064,
+      "energyGradeFt": 43.45669457714672,
+      "criticalWselFt": 42.7296810766711,
+      "velocityFps": 3.089049255554238,
+      "velocityHeadFt": 0.148290938385656,
+      "areaSqFt": 256.25446153208594,
+      "topWidthFt": 190.61987018914724,
+      "frictionSlope": 0.005908399420744236,
+      "froude": 0.46970012044181964,
+      "maxDepthFt": 2.808403638761064,
+      "leftEdgeFt": -163.81545459155896,
+      "rightEdgeFt": 26.80441559758827,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": 0.36539202060498205
+     },
+     {
+      "sectionId": "RS -70",
+      "riverStationFt": -70,
+      "invertFt": 41,
+      "wselFt": 43.99001354001503,
+      "energyGradeFt": 44.65543588946367,
+      "criticalWselFt": 43.99001354001503,
+      "velocityFps": 6.543592082512548,
+      "velocityHeadFt": 0.6654223494486372,
+      "areaSqFt": 120.97066009716755,
+      "topWidthFt": 90.89764425100455,
+      "frictionSlope": 0.026955830923534735,
+      "froude": 0.9999999499735386,
+      "maxDepthFt": 2.9900135400150276,
+      "leftEdgeFt": -69.37584625093922,
+      "rightEdgeFt": 21.52179800006534,
+      "criticalDefault": true,
+      "overtopped": false,
+      "energyLossFt": 0.4933856162420547
+     }
+    ],
+    "criticalDefaults": [
+     "RS -380",
+     "RS -70"
+    ],
+    "overtopped": [],
+    "boundaryCondition": "Normal depth on the surveyed channel slope of 1.20 percent, applied 460 ft below the crossing so the boundary assumption has decayed out of the answer at the road."
+   },
+   "upstream": {
+    "dischargeCfs": 791.5826536281422,
+    "label": "50-yr",
+    "points": [
+     {
+      "sectionId": "RS +15",
+      "riverStationFt": 15,
+      "invertFt": 48.25,
+      "wselFt": 55.178428230125576,
+      "energyGradeFt": 55.18963350349694,
+      "criticalWselFt": 50.45511189491569,
+      "velocityFps": 0.582889353508122,
+      "velocityHeadFt": 0.011205273371367702,
+      "areaSqFt": 1358.0324445179838,
+      "topWidthFt": 500.1050192591162,
+      "frictionSlope": 0.00008249395965447506,
+      "froude": 0.06236043386131563,
+      "maxDepthFt": 6.928428230125576,
+      "leftEdgeFt": -196.9607057531394,
+      "rightEdgeFt": 130.4623529062539,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": null
+     },
+     {
+      "sectionId": "RS +40",
+      "riverStationFt": 40,
+      "invertFt": 47.69,
+      "wselFt": 55.17802314868145,
+      "energyGradeFt": 55.19196074790129,
+      "criticalWselFt": 49.92455777874105,
+      "velocityFps": 0.7067177372497241,
+      "velocityHeadFt": 0.01393759921984487,
+      "areaSqFt": 1120.083184424775,
+      "topWidthFt": 400.5228569437834,
+      "frictionSlope": 0.00008182900403812746,
+      "froude": 0.07450440944955679,
+      "maxDepthFt": 7.4880231486814495,
+      "leftEdgeFt": -156.7065631965132,
+      "rightEdgeFt": 143.62352693948992,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": 0.0020540118195111453
+     },
+     {
+      "sectionId": "RS +75",
+      "riverStationFt": 75,
+      "invertFt": 44.66,
+      "wselFt": 55.17595178382571,
+      "energyGradeFt": 55.19523186542063,
+      "criticalWselFt": 47.89697561344077,
+      "velocityFps": 0.7424817952951336,
+      "velocityHeadFt": 0.019280081594918452,
+      "areaSqFt": 1066.130723533082,
+      "topWidthFt": 251.34551108281045,
+      "frictionSlope": 0.00007480017315286343,
+      "froude": 0.06355703346318677,
+      "maxDepthFt": 10.515951783825713,
+      "leftEdgeFt": -130.18599324455337,
+      "rightEdgeFt": 121.15951783825707,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": 0.002736869281841153
+     },
+     {
+      "sectionId": "RS +120",
+      "riverStationFt": 120,
+      "invertFt": 44.97,
+      "wselFt": 55.19364140049019,
+      "energyGradeFt": 55.200756023523894,
+      "criticalWselFt": 47.71297746259994,
+      "velocityFps": 0.5560378698280204,
+      "velocityHeadFt": 0.007114623033699754,
+      "areaSqFt": 1423.6128447024212,
+      "topWidthFt": 262.8422310709823,
+      "frictionSlope": 0.000026500837814352133,
+      "froude": 0.042121464807370876,
+      "maxDepthFt": 10.223641400490195,
+      "leftEdgeFt": -149.4731977328431,
+      "rightEdgeFt": 113.36903333813915,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": 0.001874520534897816
+     },
+     {
+      "sectionId": "RS +175",
+      "riverStationFt": 175,
+      "invertFt": 45.44,
+      "wselFt": 55.19870718718529,
+      "energyGradeFt": 55.20280329896461,
+      "criticalWselFt": 48.115824912054904,
+      "velocityFps": 0.4403755512866218,
+      "velocityHeadFt": 0.004096111779318134,
+      "areaSqFt": 1797.5172584295772,
+      "topWidthFt": 327.08891816984135,
+      "frictionSlope": 0.000016698939664675326,
+      "froude": 0.03311822496584617,
+      "maxDepthFt": 9.758707187185294,
+      "leftEdgeFt": -228.32659993325672,
+      "rightEdgeFt": 98.76231823658462,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": 0.0011417220644134344
+     },
+     {
+      "sectionId": "RS +240",
+      "riverStationFt": 240,
+      "invertFt": 46.25,
+      "wselFt": 55.200041278416975,
+      "energyGradeFt": 55.20391676927999,
+      "criticalWselFt": 47.848898169112445,
+      "velocityFps": 0.45228041366769006,
+      "velocityHeadFt": 0.0038754908630198436,
+      "areaSqFt": 1750.203258215272,
+      "topWidthFt": 300.86130893418715,
+      "frictionSlope": 0.00001555558799326115,
+      "froude": 0.03305933994405181,
+      "maxDepthFt": 8.950041278416975,
+      "leftEdgeFt": -150.09128434924526,
+      "rightEdgeFt": 150.7700245849419,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": 0.001047284040496992
+     },
+     {
+      "sectionId": "RS +310",
+      "riverStationFt": 310,
+      "invertFt": 47.37,
+      "wselFt": 55.20018478356204,
+      "energyGradeFt": 55.20543443224203,
+      "criticalWselFt": 49.01974242853231,
+      "velocityFps": 0.5274703729958897,
+      "velocityHeadFt": 0.005249648679995399,
+      "areaSqFt": 1500.7149105496972,
+      "topWidthFt": 284.8946700121952,
+      "frictionSlope": 0.000025804859597047997,
+      "froude": 0.0405171235551678,
+      "maxDepthFt": 7.830184783562039,
+      "leftEdgeFt": -181.0185151149325,
+      "rightEdgeFt": 103.87615489726272,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": 0.0013802471803415273
+     },
+     {
+      "sectionId": "RS +390",
+      "riverStationFt": 390,
+      "invertFt": 48.56,
+      "wselFt": 55.20133429375112,
+      "energyGradeFt": 55.20827689226926,
+      "criticalWselFt": 50.484823688475245,
+      "velocityFps": 0.6432418368329261,
+      "velocityHeadFt": 0.006942598518142614,
+      "areaSqFt": 1230.6143790733336,
+      "topWidthFt": 261.09751041413597,
+      "frictionSlope": 0.00004496296427566508,
+      "froude": 0.0522350635552592,
+      "maxDepthFt": 6.641334293751115,
+      "leftEdgeFt": -152.3539153935254,
+      "rightEdgeFt": 108.74359502061053,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": 0.0026731650434163355
+     },
+     {
+      "sectionId": "RS +470",
+      "riverStationFt": 470,
+      "invertFt": 49.09,
+      "wselFt": 55.203157221500945,
+      "energyGradeFt": 55.21302784657793,
+      "criticalWselFt": 50.857520971979724,
+      "velocityFps": 0.767899835141454,
+      "velocityHeadFt": 0.009870625076987908,
+      "areaSqFt": 1030.8410256167401,
+      "topWidthFt": 239.56422701885307,
+      "frictionSlope": 0.00007087502504691939,
+      "froude": 0.06526302233883012,
+      "maxDepthFt": 6.113157221500941,
+      "leftEdgeFt": -149.87240319318897,
+      "rightEdgeFt": 89.6918238256641,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": 0.004458151652785902
+     }
+    ],
+    "criticalDefaults": [],
+    "overtopped": [],
+    "boundaryCondition": "Headwater at the Fort Foote Road crossing, inlet control, computed to HDS-5."
+   },
+   "culvert": {
+    "dischargeCfs": 791.5826536281422,
+    "inlet": {
+     "hwElFt": 55.178428230125576,
+     "hwDepthFt": 10.51842823012558,
+     "regime": "inlet control, submerged, Q/AD^0.5 = 8.48"
+    },
+    "outlet": {
+     "hwElFt": 47.280560286205706,
+     "hwDepthFt": 2.620560286205709,
+     "regime": "outlet control, H = 6.95 ft, TW = channel 43.99 ft"
+    },
+    "headwaterElFt": 55.178428230125576,
+    "headwaterDepthFt": 10.51842823012558,
+    "governing": "inlet",
+    "hwOverD": 3.506142743375193,
+    "barrelVelocityFps": 14.680049386945374,
+    "outletVelocityFps": 14.811093988864362,
+    "criticalDepthFt": 2.9092673752960883,
+    "overtoppingCfs": 687.8154991843256,
+    "notes": [
+     "The roadway overtops. At the balance point the culvert carries 103.8 cfs and 687.8 cfs passes over the road on 185 ft of crest at EL 54.00.",
+     "INLET CONTROL GOVERNS. The entrance is the constriction, so the barrel is not being used to capacity and enlarging the pipe alone will not lower the headwater — the inlet has to be enlarged with it."
+    ]
+   },
+   "tailwaterElFt": 43.99001354001503,
+   "headwaterElFt": 55.178428230125576
+  },
+  {
+   "period": 100,
+   "qCfs": 1061.0792285861148,
+   "downstream": {
+    "dischargeCfs": 1061.0792285861148,
+    "label": "100-yr",
+    "points": [
+     {
+      "sectionId": "RS -460",
+      "riverStationFt": -460,
+      "invertFt": 36.63,
+      "wselFt": 39.062368815261024,
+      "energyGradeFt": 39.3788011850265,
+      "criticalWselFt": 38.695454946424675,
+      "velocityFps": 4.512404029967699,
+      "velocityHeadFt": 0.31643236976547406,
+      "areaSqFt": 235.14721233721406,
+      "topWidthFt": 168.66823166097902,
+      "frictionSlope": 0.011999999999999943,
+      "froude": 0.6737552747847736,
+      "maxDepthFt": 2.4323688152610217,
+      "leftEdgeFt": -76.37812671739539,
+      "rightEdgeFt": 92.29010494358364,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": null
+     },
+     {
+      "sectionId": "RS -380",
+      "riverStationFt": -380,
+      "invertFt": 38.7,
+      "wselFt": 40.31516194496919,
+      "energyGradeFt": 40.82288310338715,
+      "criticalWselFt": 40.313026151642724,
+      "velocityFps": 5.71584124183648,
+      "velocityHeadFt": 0.5077211584179585,
+      "areaSqFt": 185.63833103335,
+      "topWidthFt": 181.7493296109763,
+      "frictionSlope": 0.029151627583891584,
+      "froude": 0.9970804709352735,
+      "maxDepthFt": 1.6151619449691879,
+      "leftEdgeFt": -162.79888073438798,
+      "rightEdgeFt": 18.95044887658833,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": 1.424953039495407
+     },
+     {
+      "sectionId": "RS -300",
+      "riverStationFt": -300,
+      "invertFt": 38.93,
+      "wselFt": 41.70602108657535,
+      "energyGradeFt": 41.872594314180894,
+      "criticalWselFt": 41.01222559852205,
+      "velocityFps": 3.2739355598364672,
+      "velocityHeadFt": 0.16657322760554677,
+      "areaSqFt": 324.09899620599606,
+      "topWidthFt": 215.72597987023408,
+      "frictionSlope": 0.005720390503106075,
+      "froude": 0.47090139877532267,
+      "maxDepthFt": 2.776021086575348,
+      "leftEdgeFt": -189.07773409905192,
+      "rightEdgeFt": 26.64824577118216,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": 0.8791372453875317
+     },
+     {
+      "sectionId": "RS -230",
+      "riverStationFt": -230,
+      "invertFt": 39.5,
+      "wselFt": 42.2168267114525,
+      "energyGradeFt": 42.57511454934373,
+      "criticalWselFt": 42.09123260455827,
+      "velocityFps": 4.80157326223657,
+      "velocityHeadFt": 0.35828783789123414,
+      "areaSqFt": 220.98574167998112,
+      "topWidthFt": 213.89124574301405,
+      "frictionSlope": 0.020289103222477827,
+      "froude": 0.8328089988611377,
+      "maxDepthFt": 2.716826711452498,
+      "leftEdgeFt": -197.9674086514583,
+      "rightEdgeFt": 15.923837091555745,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": 0.6833487741342684
+     },
+     {
+      "sectionId": "RS -170",
+      "riverStationFt": -170,
+      "invertFt": 40.42,
+      "wselFt": 43.14563292161034,
+      "energyGradeFt": 43.342098695313595,
+      "criticalWselFt": 42.67620025930745,
+      "velocityFps": 3.5555842847915833,
+      "velocityHeadFt": 0.19646577370325224,
+      "areaSqFt": 298.42612172764507,
+      "topWidthFt": 223.3394409617345,
+      "frictionSlope": 0.007891758055076822,
+      "froude": 0.5422789471002961,
+      "maxDepthFt": 2.725632921610341,
+      "leftEdgeFt": -203.96712391125476,
+      "rightEdgeFt": 19.372317050479754,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": 0.7184375267134755
+     },
+     {
+      "sectionId": "RS -115",
+      "riverStationFt": -115,
+      "invertFt": 40.5,
+      "wselFt": 43.541363582546,
+      "energyGradeFt": 43.734071558571976,
+      "criticalWselFt": 42.92381716338713,
+      "velocityFps": 3.5214163118438138,
+      "velocityHeadFt": 0.1927079760259789,
+      "areaSqFt": 301.3217224607373,
+      "topWidthFt": 196.257814965492,
+      "frictionSlope": 0.006432495287009185,
+      "froude": 0.5010292745003749,
+      "maxDepthFt": 3.0413635825459977,
+      "leftEdgeFt": -168.17339967677773,
+      "rightEdgeFt": 28.08441528871428,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": 0.3908455239552076
+     },
+     {
+      "sectionId": "RS -70",
+      "riverStationFt": -70,
+      "invertFt": 41,
+      "wselFt": 44.44931567567967,
+      "energyGradeFt": 45.00275427451611,
+      "criticalWselFt": 44.44931567567967,
+      "velocityFps": 5.967634955149923,
+      "velocityHeadFt": 0.5534385988364398,
+      "areaSqFt": 177.8056527520051,
+      "topWidthFt": 160.63718079586255,
+      "frictionSlope": 0.02861548929477126,
+      "froude": 0.9999999431103305,
+      "maxDepthFt": 3.449315675679671,
+      "leftEdgeFt": -137.11841698855963,
+      "rightEdgeFt": 23.518763807302918,
+      "criticalDefault": true,
+      "overtopped": false,
+      "energyLossFt": 0.5328264092958251
+     }
+    ],
+    "criticalDefaults": [
+     "RS -70"
+    ],
+    "overtopped": [],
+    "boundaryCondition": "Normal depth on the surveyed channel slope of 1.20 percent, applied 460 ft below the crossing so the boundary assumption has decayed out of the answer at the road."
+   },
+   "upstream": {
+    "dischargeCfs": 1061.0792285861148,
+    "label": "100-yr",
+    "points": [
+     {
+      "sectionId": "RS +15",
+      "riverStationFt": 15,
+      "invertFt": 48.25,
+      "wselFt": 55.46777572942694,
+      "energyGradeFt": 55.484759909141864,
+      "criticalWselFt": 50.77345411091699,
+      "velocityFps": 0.7041520745157327,
+      "velocityHeadFt": 0.016984179714925756,
+      "areaSqFt": 1506.889302734571,
+      "topWidthFt": 524.837133904175,
+      "frictionSlope": 0.00011904425652727084,
+      "froude": 0.07326314147996162,
+      "maxDepthFt": 7.21777572942694,
+      "leftEdgeFt": -392.419730326966,
+      "rightEdgeFt": 132.41740357720906,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": null
+     },
+     {
+      "sectionId": "RS +40",
+      "riverStationFt": 40,
+      "invertFt": 47.69,
+      "wselFt": 55.466483474556796,
+      "energyGradeFt": 55.48825028271318,
+      "criticalWselFt": 50.23868405596616,
+      "velocityFps": 0.8560869564983129,
+      "velocityHeadFt": 0.02176680815638792,
+      "areaSqFt": 1239.4526286515215,
+      "topWidthFt": 434.36201026413767,
+      "frictionSlope": 0.00012195089497198482,
+      "froude": 0.08934624442968034,
+      "maxDepthFt": 7.776483474556798,
+      "leftEdgeFt": -165.21611581855984,
+      "rightEdgeFt": 145.44990279151057,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": 0.003012110727174242
+     },
+     {
+      "sectionId": "RS +75",
+      "riverStationFt": 75,
+      "invertFt": 44.66,
+      "wselFt": 55.46216246609413,
+      "energyGradeFt": 55.4933881574619,
+      "criticalWselFt": 48.369394966977694,
+      "velocityFps": 0.9309539999137035,
+      "velocityHeadFt": 0.03122569136777162,
+      "areaSqFt": 1139.7762173904118,
+      "topWidthFt": 263.4270401974123,
+      "frictionSlope": 0.00011764911534446079,
+      "froude": 0.07890346479367479,
+      "maxDepthFt": 10.802162466094131,
+      "leftEdgeFt": -139.40541553647103,
+      "rightEdgeFt": 124.02162466094126,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": 0.004191986427587726
+     },
+     {
+      "sectionId": "RS +120",
+      "riverStationFt": 120,
+      "invertFt": 44.97,
+      "wselFt": 55.49048725182206,
+      "energyGradeFt": 55.50219977829783,
+      "criticalWselFt": 48.01406446124385,
+      "velocityFps": 0.7061555312457821,
+      "velocityHeadFt": 0.011712526475769024,
+      "areaSqFt": 1502.614058285694,
+      "topWidthFt": 269.40170906037906,
+      "frictionSlope": 0.000041892664014867876,
+      "froude": 0.05271379531545163,
+      "maxDepthFt": 10.520487251822061,
+      "leftEdgeFt": -153.29588489239555,
+      "rightEdgeFt": 116.10582416798356,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": 0.0029576713683368153
+     },
+     {
+      "sectionId": "RS +175",
+      "riverStationFt": 175,
+      "invertFt": 45.44,
+      "wselFt": 55.49878076621026,
+      "energyGradeFt": 55.50549500404222,
+      "criticalWselFt": 48.33673688797596,
+      "velocityFps": 0.5595351043892386,
+      "velocityHeadFt": 0.00671423783195979,
+      "areaSqFt": 1896.3586382025796,
+      "topWidthFt": 331.6772908194477,
+      "frictionSlope": 0.000026159707250046564,
+      "froude": 0.041254605786573396,
+      "maxDepthFt": 10.058780766210262,
+      "leftEdgeFt": -229.8894831573451,
+      "rightEdgeFt": 101.7878076621026,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": 0.0017957391512551852
+     },
+     {
+      "sectionId": "RS +240",
+      "riverStationFt": 240,
+      "invertFt": 46.25,
+      "wselFt": 55.50084382700808,
+      "energyGradeFt": 55.507235310074755,
+      "criticalWselFt": 48.096693885654844,
+      "velocityFps": 0.5760514446576147,
+      "velocityHeadFt": 0.006391483066668819,
+      "areaSqFt": 1841.986923957433,
+      "topWidthFt": 309.4427295129624,
+      "frictionSlope": 0.000024452113534879197,
+      "froude": 0.041625130831930604,
+      "maxDepthFt": 9.250843827008083,
+      "leftEdgeFt": -152.82585297280076,
+      "rightEdgeFt": 156.61687654016163,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": 0.0016434796029487762
+     },
+     {
+      "sectionId": "RS +310",
+      "riverStationFt": 310,
+      "invertFt": 47.37,
+      "wselFt": 55.50106187544219,
+      "energyGradeFt": 55.50959883553727,
+      "criticalWselFt": 49.24617189419577,
+      "velocityFps": 0.6685649580608969,
+      "velocityHeadFt": 0.008536960095078967,
+      "areaSqFt": 1587.0996763929486,
+      "topWidthFt": 289.32495769983734,
+      "frictionSlope": 0.000039687545246294574,
+      "froude": 0.05032478506961128,
+      "maxDepthFt": 8.131061875442192,
+      "leftEdgeFt": -183.56832097832364,
+      "rightEdgeFt": 105.75663672151367,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": 0.002148977759677163
+     },
+     {
+      "sectionId": "RS +390",
+      "riverStationFt": 390,
+      "invertFt": 48.56,
+      "wselFt": 55.50280308751722,
+      "energyGradeFt": 55.51390907382455,
+      "criticalWselFt": 50.67164540797489,
+      "velocityFps": 0.8100731875317019,
+      "velocityHeadFt": 0.011105986307324654,
+      "areaSqFt": 1309.856004269478,
+      "topWidthFt": 264.57884931114916,
+      "frictionSlope": 0.00006692202735725933,
+      "froude": 0.06418558637256351,
+      "maxDepthFt": 6.94280308751722,
+      "leftEdgeFt": -154.2148338735631,
+      "rightEdgeFt": 110.36401543758612,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": 0.004053335666067635
+     },
+     {
+      "sectionId": "RS +470",
+      "riverStationFt": 470,
+      "invertFt": 49.09,
+      "wselFt": 55.505316403806674,
+      "energyGradeFt": 55.52095159501474,
+      "criticalWselFt": 51.066890143443274,
+      "velocityFps": 0.9612519171553827,
+      "velocityHeadFt": 0.015635191208066456,
+      "areaSqFt": 1103.8513522304845,
+      "topWidthFt": 243.662077221805,
+      "frictionSlope": 0.00010385639746353956,
+      "froude": 0.07962021837102899,
+      "maxDepthFt": 6.415316403806671,
+      "leftEdgeFt": -152.19474156774365,
+      "rightEdgeFt": 91.46733565406134,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": 0.0065896007001267016
+     }
+    ],
+    "criticalDefaults": [],
+    "overtopped": [],
+    "boundaryCondition": "Headwater at the Fort Foote Road crossing, inlet control, computed to HDS-5."
+   },
+   "culvert": {
+    "dischargeCfs": 1061.0792285861148,
+    "inlet": {
+     "hwElFt": 55.46777572942694,
+     "hwDepthFt": 10.807775729426943,
+     "regime": "inlet control, submerged, Q/AD^0.5 = 8.62"
+    },
+    "outlet": {
+     "hwElFt": 47.97433960952773,
+     "hwDepthFt": 3.3143396095277353,
+     "regime": "outlet control, H = 7.19 ft, TW = channel 44.45 ft"
+    },
+    "headwaterElFt": 55.46777572942694,
+    "headwaterDepthFt": 10.807775729426943,
+    "governing": "inlet",
+    "hwOverD": 3.602591909808981,
+    "barrelVelocityFps": 14.925611802336403,
+    "outletVelocityFps": 15.046725546452135,
+    "criticalDepthFt": 2.914844682217682,
+    "overtoppingCfs": 955.5762957118702,
+    "notes": [
+     "The roadway overtops. At the balance point the culvert carries 105.5 cfs and 955.6 cfs passes over the road on 185 ft of crest at EL 54.00.",
+     "INLET CONTROL GOVERNS. The entrance is the constriction, so the barrel is not being used to capacity and enlarging the pipe alone will not lower the headwater — the inlet has to be enlarged with it."
+    ]
+   },
+   "tailwaterElFt": 44.44931567567967,
+   "headwaterElFt": 55.46777572942694
+  }
+ ],
+ "proposed": [
+  {
+   "period": 10,
+   "qCfs": 350.5567503183711,
+   "downstream": {
+    "dischargeCfs": 350.5567503183711,
+    "label": "10-yr",
+    "points": [
+     {
+      "sectionId": "RS -460",
+      "riverStationFt": -460,
+      "invertFt": 36.63,
+      "wselFt": 38.259279810739656,
+      "energyGradeFt": 38.412241142011716,
+      "criticalWselFt": 38.012307295153555,
+      "velocityFps": 3.137316647183454,
+      "velocityHeadFt": 0.15296133127205866,
+      "areaSqFt": 111.73776502065408,
+      "topWidthFt": 138.277548195431,
+      "frictionSlope": 0.01199999999999985,
+      "froude": 0.6152925692699032,
+      "maxDepthFt": 1.6292798107396536,
+      "leftEdgeFt": -56.48199526849136,
+      "rightEdgeFt": 81.79555292693964,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": null
+     },
+     {
+      "sectionId": "RS -380",
+      "riverStationFt": -380,
+      "invertFt": 38.7,
+      "wselFt": 39.69712681507764,
+      "energyGradeFt": 39.974902080214825,
+      "criticalWselFt": 39.69712681507764,
+      "velocityFps": 4.227798808014393,
+      "velocityHeadFt": 0.27777526513719036,
+      "areaSqFt": 82.91708433566919,
+      "topWidthFt": 149.25206685016846,
+      "frictionSlope": 0.035913001865932874,
+      "froude": 0.9999998826990114,
+      "maxDepthFt": 0.9971268150776353,
+      "leftEdgeFt": -134.88028396156815,
+      "rightEdgeFt": 14.371782888600308,
+      "criticalDefault": true,
+      "overtopped": false,
+      "energyLossFt": 1.542020585904924
+     },
+     {
+      "sectionId": "RS -300",
+      "riverStationFt": -300,
+      "invertFt": 38.93,
+      "wselFt": 40.86111103894895,
+      "energyGradeFt": 40.93706205887562,
+      "criticalWselFt": 40.38879537070349,
+      "velocityFps": 2.210723010745915,
+      "velocityHeadFt": 0.07595101992667189,
+      "areaSqFt": 158.57108675052444,
+      "topWidthFt": 174.64549860785786,
+      "frictionSlope": 0.005102849379094949,
+      "froude": 0.4090237253142071,
+      "maxDepthFt": 1.9311110389489485,
+      "leftEdgeFt": -152.55555194744744,
+      "rightEdgeFt": 22.08994666041041,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": 0.8612478560555261
+     },
+     {
+      "sectionId": "RS -230",
+      "riverStationFt": -230,
+      "invertFt": 39.5,
+      "wselFt": 41.52007938858205,
+      "energyGradeFt": 41.7902340618774,
+      "criticalWselFt": 41.52007938858205,
+      "velocityFps": 4.16940198556209,
+      "velocityHeadFt": 0.2701546732953488,
+      "areaSqFt": 84.07842456359157,
+      "topWidthFt": 155.61160554640693,
+      "frictionSlope": 0.036309299358977296,
+      "froude": 0.9999998831514487,
+      "maxDepthFt": 2.0200793885820474,
+      "leftEdgeFt": -33.931406735073224,
+      "rightEdgeFt": 13.333634047659267,
+      "criticalDefault": true,
+      "overtopped": false,
+      "energyLossFt": 0.7558547958634669
+     },
+     {
+      "sectionId": "RS -170",
+      "riverStationFt": -170,
+      "invertFt": 40.42,
+      "wselFt": 42.52977244493516,
+      "energyGradeFt": 42.60029938150947,
+      "criticalWselFt": 42.17442324511151,
+      "velocityFps": 2.130320941708936,
+      "velocityHeadFt": 0.07052693657430918,
+      "areaSqFt": 164.55583919536355,
+      "topWidthFt": 210.76452289545784,
+      "frictionSlope": 0.005796752421127404,
+      "froude": 0.4250447085365569,
+      "maxDepthFt": 2.1097724449351603,
+      "leftEdgeFt": -194.06986009139192,
+      "rightEdgeFt": 16.69466280406592,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": 0.7102514512715421
+     },
+     {
+      "sectionId": "RS -115",
+      "riverStationFt": -115,
+      "invertFt": 40.5,
+      "wselFt": 42.81214020458117,
+      "energyGradeFt": 42.88240197488476,
+      "criticalWselFt": 42.332241953226244,
+      "velocityFps": 2.1263123936749073,
+      "velocityHeadFt": 0.07026177030359163,
+      "areaSqFt": 164.86606171377463,
+      "topWidthFt": 177.09975627692225,
+      "frictionSlope": 0.004568118289817022,
+      "froude": 0.3885240361592646,
+      "maxDepthFt": 2.312140204581169,
+      "leftEdgeFt": -153.05350511452923,
+      "rightEdgeFt": 24.04625116239302,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": 0.28202304349408097
+     },
+     {
+      "sectionId": "RS -70",
+      "riverStationFt": -70,
+      "invertFt": 41,
+      "wselFt": 43.03715410224153,
+      "energyGradeFt": 43.61914504374459,
+      "criticalWselFt": 43.03715410224153,
+      "velocityFps": 6.119636680705725,
+      "velocityHeadFt": 0.5819909415030613,
+      "areaSqFt": 57.283915468972644,
+      "topWidthFt": 49.213748115525576,
+      "frictionSlope": 0.02821638879199527,
+      "froude": 0.9999999627498032,
+      "maxDepthFt": 2.03715410224153,
+      "leftEdgeFt": -32.11204570090284,
+      "rightEdgeFt": 17.101702414622736,
+      "criticalDefault": true,
+      "overtopped": false,
+      "energyLossFt": 0.41810850707791275
+     }
+    ],
+    "criticalDefaults": [
+     "RS -380",
+     "RS -230",
+     "RS -70"
+    ],
+    "overtopped": [],
+    "boundaryCondition": "Normal depth on the surveyed channel slope of 1.20 percent, applied 460 ft below the crossing so the boundary assumption has decayed out of the answer at the road."
+   },
+   "upstream": {
+    "dischargeCfs": 350.5567503183711,
+    "label": "10-yr",
+    "points": [
+     {
+      "sectionId": "RS +15",
+      "riverStationFt": 15,
+      "invertFt": 50.33,
+      "wselFt": 54.59965544681029,
+      "energyGradeFt": 54.61145063091162,
+      "criticalWselFt": 52.44313945364732,
+      "velocityFps": 0.5991277344387527,
+      "velocityHeadFt": 0.01179518410132875,
+      "areaSqFt": 585.1118720897865,
+      "topWidthFt": 401.16977821021123,
+      "frictionSlope": 0.0003324702509232451,
+      "froude": 0.08746041716681899,
+      "maxDepthFt": 4.26965544681029,
+      "leftEdgeFt": 41.347100420850865,
+      "rightEdgeFt": 126.07427266777145,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": null
+     },
+     {
+      "sectionId": "RS +40",
+      "riverStationFt": 40,
+      "invertFt": 47.94,
+      "wselFt": 54.61346297776382,
+      "energyGradeFt": 54.617216918645276,
+      "criticalWselFt": 49.99920404413491,
+      "velocityFps": 0.4222745499255892,
+      "velocityHeadFt": 0.0037539408814573198,
+      "areaSqFt": 830.1631021337756,
+      "topWidthFt": 357.25672783226275,
+      "frictionSlope": 0.000029377316169772573,
+      "froude": 0.048837213192105294,
+      "maxDepthFt": 6.673462977763819,
+      "leftEdgeFt": -139.1154325921272,
+      "rightEdgeFt": 139.94728207874047,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": 0.0017456661237196353
+     },
+     {
+      "sectionId": "RS +75",
+      "riverStationFt": 75,
+      "invertFt": 44.66,
+      "wselFt": 54.61482370023876,
+      "energyGradeFt": 54.618055375830075,
+      "criticalWselFt": 46.84974959191642,
+      "velocityFps": 0.4000303666729929,
+      "velocityHeadFt": 0.003231675591319122,
+      "areaSqFt": 876.325348082726,
+      "topWidthFt": 205.12255395795785,
+      "frictionSlope": 0.00001385545247691724,
+      "froude": 0.034120426577662205,
+      "maxDepthFt": 9.954823700238762,
+      "leftEdgeFt": -62.78850780415826,
+      "rightEdgeFt": 115.45738469631387,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": 0.0006817775977517991
+     },
+     {
+      "sectionId": "RS +120",
+      "riverStationFt": 120,
+      "invertFt": 44.97,
+      "wselFt": 54.61608092848583,
+      "energyGradeFt": 54.61888037040391,
+      "criticalWselFt": 46.94065160871912,
+      "velocityFps": 0.4111838292737967,
+      "velocityHeadFt": 0.00279944191808105,
+      "areaSqFt": 852.554807268319,
+      "topWidthFt": 198.33754093455235,
+      "frictionSlope": 0.00001734045955141795,
+      "froude": 0.03496429746178375,
+      "maxDepthFt": 9.64608092848583,
+      "leftEdgeFt": -90.72447023571738,
+      "rightEdgeFt": 107.61307069883499,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": 0.000695324471872405
+     },
+     {
+      "sectionId": "RS +175",
+      "riverStationFt": 175,
+      "invertFt": 45.44,
+      "wselFt": 54.61869073962981,
+      "energyGradeFt": 54.61991337181576,
+      "criticalWselFt": 47.58108450448293,
+      "velocityFps": 0.2556931858692443,
+      "velocityHeadFt": 0.0012226321859465995,
+      "areaSqFt": 1371.005445947386,
+      "topWidthFt": 291.2370926836038,
+      "frictionSlope": 0.000006688574638969317,
+      "froude": 0.02077640388388917,
+      "maxDepthFt": 9.178690739629815,
+      "leftEdgeFt": -128.43436119096245,
+      "rightEdgeFt": 91.79834453984566,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": 0.0005599584922183295
+     },
+     {
+      "sectionId": "RS +240",
+      "riverStationFt": 240,
+      "invertFt": 46.25,
+      "wselFt": 54.61945929573953,
+      "energyGradeFt": 54.620342964363466,
+      "criticalWselFt": 47.35741160708736,
+      "velocityFps": 0.22166441509132756,
+      "velocityHeadFt": 0.0008836686239328992,
+      "areaSqFt": 1581.4750877985487,
+      "topWidthFt": 279.7878365421554,
+      "frictionSlope": 0.00000393996554345589,
+      "froude": 0.01643715641888457,
+      "maxDepthFt": 8.369459295739532,
+      "leftEdgeFt": -145.742233550295,
+      "rightEdgeFt": 134.0456029918604,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": 0.0003279034790986884
+     },
+     {
+      "sectionId": "RS +310",
+      "riverStationFt": 310,
+      "invertFt": 47.37,
+      "wselFt": 54.61956160022086,
+      "energyGradeFt": 54.62071825624291,
+      "criticalWselFt": 48.563283485744435,
+      "velocityFps": 0.2620236385048438,
+      "velocityHeadFt": 0.0011566560220451,
+      "areaSqFt": 1337.8821556662365,
+      "topWidthFt": 275.90350151289795,
+      "frictionSlope": 0.000006467793594769536,
+      "froude": 0.0209776878968591,
+      "maxDepthFt": 7.249561600220865,
+      "leftEdgeFt": -175.6562415115176,
+      "rightEdgeFt": 100.2472600013804,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": 0.00034799313964004096
+     },
+     {
+      "sectionId": "RS +390",
+      "riverStationFt": 390,
+      "invertFt": 48.56,
+      "wselFt": 54.61975404653455,
+      "energyGradeFt": 54.62148978362301,
+      "criticalWselFt": 50.10260731623616,
+      "velocityFps": 0.324364846575103,
+      "velocityHeadFt": 0.0017357370884589559,
+      "areaSqFt": 1080.7482808936375,
+      "topWidthFt": 254.21312613368025,
+      "frictionSlope": 0.000013086413516577376,
+      "froude": 0.027734348033275444,
+      "maxDepthFt": 6.05975404653455,
+      "leftEdgeFt": -148.66502697689702,
+      "rightEdgeFt": 105.54809915678324,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": 0.0007136192734705092
+     },
+     {
+      "sectionId": "RS +470",
+      "riverStationFt": 470,
+      "invertFt": 49.09,
+      "wselFt": 54.620364178750094,
+      "energyGradeFt": 54.62288633822406,
+      "criticalWselFt": 50.43177092517132,
+      "velocityFps": 0.3922846720510833,
+      "velocityHeadFt": 0.0025221594739710243,
+      "areaSqFt": 893.6284675245266,
+      "topWidthFt": 231.3149634551947,
+      "frictionSlope": 0.000021369530422276568,
+      "froude": 0.03518618457051625,
+      "maxDepthFt": 5.530364178750091,
+      "leftEdgeFt": -145.4573043844704,
+      "rightEdgeFt": 85.8576590707243,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": 0.0013179123625100826
+     }
+    ],
+    "criticalDefaults": [],
+    "overtopped": [],
+    "boundaryCondition": "Headwater at the Fort Foote Road crossing, inlet control, computed to HDS-5."
+   },
+   "culvert": {
+    "dischargeCfs": 350.5567503183711,
+    "inlet": {
+     "hwElFt": 54.59965544681029,
+     "hwDepthFt": 9.939655446810292,
+     "regime": "inlet control, submerged, Q/AD^0.5 = 8.18"
+    },
+    "outlet": {
+     "hwElFt": 46.76973782633363,
+     "hwDepthFt": 2.1097378263336353,
+     "regime": "outlet control, H = 6.48 ft, TW set by (dc+D)/2 = 2.95 ft above the outlet invert"
+    },
+    "headwaterElFt": 54.59965544681029,
+    "headwaterDepthFt": 9.939655446810292,
+    "governing": "inlet",
+    "hwOverD": 3.313218482270097,
+    "barrelVelocityFps": 14.176100319608894,
+    "outletVelocityFps": 14.330559078745896,
+    "criticalDepthFt": 2.896416978987121,
+    "overtoppingCfs": 250.35180192194184,
+    "notes": [
+     "The roadway overtops. At the balance point the culvert carries 100.2 cfs and 250.4 cfs passes over the road on 185 ft of crest at EL 54.00.",
+     "INLET CONTROL GOVERNS. The entrance is the constriction, so the barrel is not being used to capacity and enlarging the pipe alone will not lower the headwater — the inlet has to be enlarged with it."
+    ]
+   },
+   "tailwaterElFt": 43.03715410224153,
+   "headwaterElFt": 54.59965544681029
+  },
+  {
+   "period": 25,
+   "qCfs": 570.9653851058027,
+   "downstream": {
+    "dischargeCfs": 570.9653851058027,
+    "label": "25-yr",
+    "points": [
+     {
+      "sectionId": "RS -460",
+      "riverStationFt": -460,
+      "invertFt": 36.63,
+      "wselFt": 38.556863223994,
+      "energyGradeFt": 38.76880927289892,
+      "criticalWselFt": 38.26053295694902,
+      "velocityFps": 3.693007494567768,
+      "velocityHeadFt": 0.2119460489049186,
+      "areaSqFt": 154.60715580611864,
+      "topWidthFt": 149.8013598629289,
+      "frictionSlope": 0.012000000000000037,
+      "froude": 0.6408711814215938,
+      "maxDepthFt": 1.9268632239939976,
+      "leftEdgeFt": -63.92158059984998,
+      "rightEdgeFt": 85.87977926307893,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": null
+     },
+     {
+      "sectionId": "RS -380",
+      "riverStationFt": -380,
+      "invertFt": 38.7,
+      "wselFt": 39.92196808704116,
+      "energyGradeFt": 40.28721616755186,
+      "criticalWselFt": 39.92196808704116,
+      "velocityFps": 4.847987570601121,
+      "velocityHeadFt": 0.3652480805107068,
+      "areaSqFt": 117.77368996740364,
+      "topWidthFt": 161.22422346210962,
+      "frictionSlope": 0.032784004934493835,
+      "froude": 0.9999999419875761,
+      "maxDepthFt": 1.2219680870411551,
+      "leftEdgeFt": -145.12300544007226,
+      "rightEdgeFt": 16.101218022037358,
+      "criticalDefault": true,
+      "overtopped": false,
+      "energyLossFt": 1.4906577779000116
+     },
+     {
+      "sectionId": "RS -300",
+      "riverStationFt": -300,
+      "invertFt": 38.93,
+      "wselFt": 41.17962661366437,
+      "energyGradeFt": 41.28734715914004,
+      "criticalWselFt": 40.617750317841505,
+      "velocityFps": 2.6327935088549084,
+      "velocityHeadFt": 0.10772054547567199,
+      "areaSqFt": 216.86675509699774,
+      "topWidthFt": 191.05364826973175,
+      "frictionSlope": 0.0053744718659957166,
+      "froude": 0.43565775255065536,
+      "maxDepthFt": 2.2496266136643683,
+      "leftEdgeFt": -167.0677755693486,
+      "rightEdgeFt": 23.98587270038314,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": 0.8713672240706742
+     },
+     {
+      "sectionId": "RS -230",
+      "riverStationFt": -230,
+      "invertFt": 39.5,
+      "wselFt": 41.784615440658285,
+      "energyGradeFt": 42.07500629661521,
+      "criticalWselFt": 41.746405460115234,
+      "velocityFps": 4.322738807644516,
+      "velocityHeadFt": 0.29039085595692066,
+      "areaSqFt": 132.08417406485054,
+      "topWidthFt": 193.99912958909096,
+      "frictionSlope": 0.028669554624905145,
+      "froude": 0.9235937056970812,
+      "maxDepthFt": 2.2846154406582855,
+      "leftEdgeFt": -179.6634650411429,
+      "rightEdgeFt": 14.33566454794805,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": 0.7328580443307878
+     },
+     {
+      "sectionId": "RS -170",
+      "riverStationFt": -170,
+      "invertFt": 40.42,
+      "wselFt": 42.7692965698179,
+      "energyGradeFt": 42.87820266709204,
+      "criticalWselFt": 42.35444739932598,
+      "velocityFps": 2.647241875499198,
+      "velocityHeadFt": 0.10890609727414237,
+      "areaSqFt": 215.68311924581283,
+      "topWidthFt": 216.11636793229184,
+      "frictionSlope": 0.006453681082235731,
+      "froude": 0.4671720453618769,
+      "maxDepthFt": 2.349296569817895,
+      "leftEdgeFt": -198.38029588960532,
+      "rightEdgeFt": 17.73607204268651,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": 0.7124539911354395
+     },
+     {
+      "sectionId": "RS -115",
+      "riverStationFt": -115,
+      "invertFt": 40.5,
+      "wselFt": 43.089560499758434,
+      "energyGradeFt": 43.19902589081022,
+      "criticalWselFt": 42.54872657528813,
+      "velocityFps": 2.654030705059803,
+      "velocityHeadFt": 0.1094653910517846,
+      "areaSqFt": 215.13141653458646,
+      "topWidthFt": 185.13744667150428,
+      "frictionSlope": 0.0052962351380348455,
+      "froude": 0.43405886530632026,
+      "maxDepthFt": 2.5895604997584343,
+      "leftEdgeFt": -159.5354659036008,
+      "rightEdgeFt": 25.6019807679035,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": 0.3207672943404112
+     },
+     {
+      "sectionId": "RS -70",
+      "riverStationFt": -70,
+      "invertFt": 41,
+      "wselFt": 43.57409134848348,
+      "energyGradeFt": 44.224052459320596,
+      "criticalWselFt": 43.57409134848348,
+      "velocityFps": 6.467124365600767,
+      "velocityHeadFt": 0.6499611108371218,
+      "areaSqFt": 88.28736743378873,
+      "topWidthFt": 67.91741411707359,
+      "frictionSlope": 0.027186093318822234,
+      "froude": 0.9999999343940504,
+      "maxDepthFt": 2.5740913484834778,
+      "leftEdgeFt": -48.23428263397995,
+      "rightEdgeFt": 19.68313148309364,
+      "criticalDefault": true,
+      "overtopped": false,
+      "energyLossFt": 0.45886429298318426
+     }
+    ],
+    "criticalDefaults": [
+     "RS -380",
+     "RS -70"
+    ],
+    "overtopped": [],
+    "boundaryCondition": "Normal depth on the surveyed channel slope of 1.20 percent, applied 460 ft below the crossing so the boundary assumption has decayed out of the answer at the road."
+   },
+   "upstream": {
+    "dischargeCfs": 570.9653851058027,
+    "label": "25-yr",
+    "points": [
+     {
+      "sectionId": "RS +15",
+      "riverStationFt": 15,
+      "invertFt": 50.33,
+      "wselFt": 54.91219689202957,
+      "energyGradeFt": 54.932334584676184,
+      "criticalWselFt": 52.86251404680657,
+      "velocityFps": 0.7978654479817973,
+      "velocityHeadFt": 0.020137692646611863,
+      "areaSqFt": 715.6161312036527,
+      "topWidthFt": 434.12918253591624,
+      "frictionSlope": 0.0005518135492432773,
+      "froude": 0.10955862138451464,
+      "maxDepthFt": 4.582196892029572,
+      "leftEdgeFt": 40.48847007684185,
+      "rightEdgeFt": 128.4784376309967,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": null
+     },
+     {
+      "sectionId": "RS +40",
+      "riverStationFt": 40,
+      "invertFt": 47.94,
+      "wselFt": 54.933531730408504,
+      "energyGradeFt": 54.94169749687859,
+      "criticalWselFt": 50.40474951365138,
+      "velocityFps": 0.6019233889698938,
+      "velocityHeadFt": 0.008165766470082856,
+      "areaSqFt": 948.5681991572528,
+      "topWidthFt": 382.25517707939184,
+      "frictionSlope": 0.000059617531246090374,
+      "froude": 0.06736450112541056,
+      "maxDepthFt": 6.993531730408506,
+      "leftEdgeFt": -149.17286657526574,
+      "rightEdgeFt": 142.03592032732794,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": 0.003376949114142543
+     },
+     {
+      "sectionId": "RS +75",
+      "riverStationFt": 75,
+      "invertFt": 44.66,
+      "wselFt": 54.93583779121927,
+      "energyGradeFt": 54.94335340218946,
+      "criticalWselFt": 47.42922310944893,
+      "velocityFps": 0.6043186783775857,
+      "velocityHeadFt": 0.007515610970184518,
+      "areaSqFt": 944.8084355735512,
+      "topWidthFt": 221.37624712363433,
+      "frictionSlope": 0.00003084436634738535,
+      "froude": 0.05157118589851597,
+      "maxDepthFt": 10.275837791219274,
+      "leftEdgeFt": -63.71629419427534,
+      "rightEdgeFt": 118.73303868591091,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": 0.0014608586609014733
+     },
+     {
+      "sectionId": "RS +120",
+      "riverStationFt": 120,
+      "invertFt": 44.97,
+      "wselFt": 54.93890086738455,
+      "energyGradeFt": 54.94524793733047,
+      "criticalWselFt": 47.35513076959444,
+      "velocityFps": 0.6215877154611131,
+      "velocityHeadFt": 0.006347069945922687,
+      "areaSqFt": 918.5596351148006,
+      "topWidthFt": 210.5632678919028,
+      "frictionSlope": 0.00003839551144795715,
+      "froude": 0.05246715574776466,
+      "maxDepthFt": 9.968900867384548,
+      "leftEdgeFt": -99.69169076068178,
+      "rightEdgeFt": 110.87157713122103,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": 0.0015439728337473455
+     },
+     {
+      "sectionId": "RS +175",
+      "riverStationFt": 175,
+      "invertFt": 45.44,
+      "wselFt": 54.94469122998257,
+      "energyGradeFt": 54.94754422445017,
+      "criticalWselFt": 47.85582435746173,
+      "velocityFps": 0.3889345005053381,
+      "velocityHeadFt": 0.0028529944676034032,
+      "areaSqFt": 1468.024524345241,
+      "topWidthFt": 303.60328303614335,
+      "frictionSlope": 0.000014969131102610449,
+      "froude": 0.03118247024741367,
+      "maxDepthFt": 9.50469122998257,
+      "leftEdgeFt": -129.9297762843237,
+      "rightEdgeFt": 96.17031867329152,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": 0.0012480644761992908
+     },
+     {
+      "sectionId": "RS +240",
+      "riverStationFt": 240,
+      "invertFt": 46.25,
+      "wselFt": 54.946388697653944,
+      "energyGradeFt": 54.94850419496833,
+      "criticalWselFt": 47.62132037502509,
+      "velocityFps": 0.3408784133604624,
+      "velocityHeadFt": 0.0021154973143831485,
+      "areaSqFt": 1674.982523759974,
+      "topWidthFt": 291.97058014120444,
+      "frictionSlope": 0.00000892149215859194,
+      "froude": 0.02509061909309961,
+      "maxDepthFt": 8.696388697653944,
+      "leftEdgeFt": -148.1820052063727,
+      "rightEdgeFt": 143.78857493483173,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": 0.0007387213721960297
+     },
+     {
+      "sectionId": "RS +310",
+      "riverStationFt": 310,
+      "invertFt": 47.37,
+      "wselFt": 54.94663473607997,
+      "energyGradeFt": 54.94933908769265,
+      "criticalWselFt": 48.81009599880447,
+      "velocityFps": 0.3995666149264694,
+      "velocityHeadFt": 0.0027043516126753256,
+      "areaSqFt": 1428.9616894316237,
+      "topWidthFt": 281.0333042333297,
+      "frictionSlope": 0.000014145060025150954,
+      "froude": 0.031239585849314706,
+      "maxDepthFt": 7.576634736079974,
+      "leftEdgeFt": -178.74183713282994,
+      "rightEdgeFt": 102.29146710049982,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": 0.0007760072944931798
+     },
+     {
+      "sectionId": "RS +390",
+      "riverStationFt": 390,
+      "invertFt": 48.56,
+      "wselFt": 54.94700384847991,
+      "energyGradeFt": 54.951007519698926,
+      "criticalWselFt": 50.311825264496974,
+      "velocityFps": 0.4902729833970165,
+      "velocityHeadFt": 0.004003671219013999,
+      "areaSqFt": 1164.5866781189588,
+      "topWidthFt": 258.13014936498064,
+      "frictionSlope": 0.00002764924633003792,
+      "froude": 0.04069292338074794,
+      "maxDepthFt": 6.387003848479907,
+      "leftEdgeFt": -150.78397437333277,
+      "rightEdgeFt": 107.34617499164784,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": 0.0015385000456379343
+     },
+     {
+      "sectionId": "RS +470",
+      "riverStationFt": 470,
+      "invertFt": 49.09,
+      "wselFt": 54.94819685730637,
+      "energyGradeFt": 54.953940690398305,
+      "criticalWselFt": 50.66249182004621,
+      "velocityFps": 0.5884896021779364,
+      "velocityHeadFt": 0.00574383309193446,
+      "areaSqFt": 970.22170484019,
+      "topWidthFt": 235.95533829121854,
+      "frictionSlope": 0.000044221511085182275,
+      "froude": 0.051164139664309764,
+      "maxDepthFt": 5.858196857306368,
+      "leftEdgeFt": -147.940885282624,
+      "rightEdgeFt": 88.01445300859454,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": 0.0027591545120839315
+     }
+    ],
+    "criticalDefaults": [],
+    "overtopped": [],
+    "boundaryCondition": "Headwater at the Fort Foote Road crossing, inlet control, computed to HDS-5."
+   },
+   "culvert": {
+    "dischargeCfs": 570.9653851058027,
+    "inlet": {
+     "hwElFt": 54.91219689202957,
+     "hwDepthFt": 10.25219689202957,
+     "regime": "inlet control, submerged, Q/AD^0.5 = 8.34"
+    },
+    "outlet": {
+     "hwElFt": 47.02663132462218,
+     "hwDepthFt": 2.3666313246221833,
+     "regime": "outlet control, H = 6.73 ft, TW set by (dc+D)/2 = 2.95 ft above the outlet invert"
+    },
+    "headwaterElFt": 54.91219689202957,
+    "headwaterDepthFt": 10.252196892029573,
+    "governing": "inlet",
+    "hwOverD": 3.4173989640098577,
+    "barrelVelocityFps": 14.450419385012776,
+    "outletVelocityFps": 14.591595507778361,
+    "criticalDepthFt": 2.9036584600278097,
+    "overtoppingCfs": 468.8213894979955,
+    "notes": [
+     "The roadway overtops. At the balance point the culvert carries 102.1 cfs and 468.8 cfs passes over the road on 185 ft of crest at EL 54.00.",
+     "INLET CONTROL GOVERNS. The entrance is the constriction, so the barrel is not being used to capacity and enlarging the pipe alone will not lower the headwater — the inlet has to be enlarged with it."
+    ]
+   },
+   "tailwaterElFt": 43.57409134848348,
+   "headwaterElFt": 54.91219689202957
+  },
+  {
+   "period": 50,
+   "qCfs": 791.5826536281422,
+   "downstream": {
+    "dischargeCfs": 791.5826536281422,
+    "label": "50-yr",
+    "points": [
+     {
+      "sectionId": "RS -460",
+      "riverStationFt": -460,
+      "invertFt": 36.63,
+      "wselFt": 38.803618203553754,
+      "energyGradeFt": 39.065765302614615,
+      "criticalWselFt": 38.470629248985816,
+      "velocityFps": 4.107145180093869,
+      "velocityHeadFt": 0.2621470990608612,
+      "areaSqFt": 192.7330588323763,
+      "topWidthFt": 159.21270301357868,
+      "frictionSlope": 0.011999999999999815,
+      "froude": 0.6581096767700242,
+      "maxDepthFt": 2.173618203553751,
+      "leftEdgeFt": -70.08614770366087,
+      "rightEdgeFt": 89.12655530991783,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": null
+     },
+     {
+      "sectionId": "RS -380",
+      "riverStationFt": -380,
+      "invertFt": 38.7,
+      "wselFt": 40.1134386712731,
+      "energyGradeFt": 40.54731217640129,
+      "criticalWselFt": 40.1134386712731,
+      "velocityFps": 5.283833107507181,
+      "velocityHeadFt": 0.43387350512819356,
+      "areaSqFt": 149.81219836475813,
+      "topWidthFt": 172.64498926340457,
+      "frictionSlope": 0.03095756813370521,
+      "froude": 0.9999999162428224,
+      "maxDepthFt": 1.4134386712730986,
+      "leftEdgeFt": -155.15630323968645,
+      "rightEdgeFt": 17.488686023718113,
+      "criticalDefault": true,
+      "overtopped": false,
+      "energyLossFt": 1.4585111326711855
+     },
+     {
+      "sectionId": "RS -300",
+      "riverStationFt": -300,
+      "invertFt": 38.93,
+      "wselFt": 41.43837981577805,
+      "energyGradeFt": 41.574011009496836,
+      "criticalWselFt": 40.80900577805554,
+      "velocityFps": 2.9542505062057054,
+      "velocityHeadFt": 0.1356311937187895,
+      "areaSqFt": 267.9470315619281,
+      "topWidthFt": 203.67499147120606,
+      "frictionSlope": 0.005559172934445249,
+      "froude": 0.45408710404506986,
+      "maxDepthFt": 2.5083798157780492,
+      "leftEdgeFt": -178.2658256574188,
+      "rightEdgeFt": 25.409165813787258,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": 0.8775776773908562
+     },
+     {
+      "sectionId": "RS -230",
+      "riverStationFt": -230,
+      "invertFt": 39.5,
+      "wselFt": 42.01053795251124,
+      "energyGradeFt": 42.319410794986354,
+      "criticalWselFt": 41.91518084574708,
+      "velocityFps": 4.458177841628634,
+      "velocityHeadFt": 0.30887284247511265,
+      "areaSqFt": 177.55744201962253,
+      "topWidthFt": 206.866389613125,
+      "frictionSlope": 0.022393369173050206,
+      "froude": 0.8483603992341764,
+      "maxDepthFt": 2.5105379525112426,
+      "leftEdgeFt": -191.6845984170414,
+      "rightEdgeFt": 15.181791196083603,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": 0.693427290862621
+     },
+     {
+      "sectionId": "RS -170",
+      "riverStationFt": -170,
+      "invertFt": 40.42,
+      "wselFt": 42.93670336279553,
+      "energyGradeFt": 43.089846805304695,
+      "criticalWselFt": 42.50807372864378,
+      "velocityFps": 3.1391836898435703,
+      "velocityHeadFt": 0.15314344250916723,
+      "areaSqFt": 252.16194139553136,
+      "topWidthFt": 219.52925214759958,
+      "frictionSlope": 0.007524814142146862,
+      "froude": 0.5163814465050022,
+      "maxDepthFt": 2.516703362795525,
+      "leftEdgeFt": -201.0653244832712,
+      "rightEdgeFt": 18.463927664328377,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": 0.7237171903285494
+     },
+     {
+      "sectionId": "RS -115",
+      "riverStationFt": -115,
+      "invertFt": 40.5,
+      "wselFt": 43.308403638761064,
+      "energyGradeFt": 43.45669457714672,
+      "criticalWselFt": 42.7296810766711,
+      "velocityFps": 3.089049255554238,
+      "velocityHeadFt": 0.148290938385656,
+      "areaSqFt": 256.25446153208594,
+      "topWidthFt": 190.61987018914724,
+      "frictionSlope": 0.005908399420744236,
+      "froude": 0.46970012044181964,
+      "maxDepthFt": 2.808403638761064,
+      "leftEdgeFt": -163.81545459155896,
+      "rightEdgeFt": 26.80441559758827,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": 0.36539202060498205
+     },
+     {
+      "sectionId": "RS -70",
+      "riverStationFt": -70,
+      "invertFt": 41,
+      "wselFt": 43.99001354001503,
+      "energyGradeFt": 44.65543588946367,
+      "criticalWselFt": 43.99001354001503,
+      "velocityFps": 6.543592082512548,
+      "velocityHeadFt": 0.6654223494486372,
+      "areaSqFt": 120.97066009716755,
+      "topWidthFt": 90.89764425100455,
+      "frictionSlope": 0.026955830923534735,
+      "froude": 0.9999999499735386,
+      "maxDepthFt": 2.9900135400150276,
+      "leftEdgeFt": -69.37584625093922,
+      "rightEdgeFt": 21.52179800006534,
+      "criticalDefault": true,
+      "overtopped": false,
+      "energyLossFt": 0.4933856162420547
+     }
+    ],
+    "criticalDefaults": [
+     "RS -380",
+     "RS -70"
+    ],
+    "overtopped": [],
+    "boundaryCondition": "Normal depth on the surveyed channel slope of 1.20 percent, applied 460 ft below the crossing so the boundary assumption has decayed out of the answer at the road."
+   },
+   "upstream": {
+    "dischargeCfs": 791.5826536281422,
+    "label": "50-yr",
+    "points": [
+     {
+      "sectionId": "RS +15",
+      "riverStationFt": 15,
+      "invertFt": 50.33,
+      "wselFt": 55.178428230125576,
+      "energyGradeFt": 55.20612129743732,
+      "criticalWselFt": 53.17032048032506,
+      "velocityFps": 0.9475987116001963,
+      "velocityHeadFt": 0.02769306731174434,
+      "areaSqFt": 835.3564055521013,
+      "topWidthFt": 466.2385848201808,
+      "frictionSlope": 0.0007368925740020249,
+      "froude": 0.12480734228465282,
+      "maxDepthFt": 4.848428230125577,
+      "leftEdgeFt": 39.44732356171517,
+      "rightEdgeFt": 130.4623529062539,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": null
+     },
+     {
+      "sectionId": "RS +40",
+      "riverStationFt": 40,
+      "invertFt": 47.94,
+      "wselFt": 55.20498901599207,
+      "energyGradeFt": 55.21832919823271,
+      "criticalWselFt": 50.692480477614126,
+      "velocityFps": 0.7502370892097816,
+      "velocityHeadFt": 0.013340182240638794,
+      "areaSqFt": 1055.1099979100068,
+      "topWidthFt": 402.4784602782637,
+      "frictionSlope": 0.00009220649695605097,
+      "froude": 0.0816899168421046,
+      "maxDepthFt": 7.264989015992072,
+      "leftEdgeFt": -157.49967694094326,
+      "rightEdgeFt": 143.79862997397447,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": 0.005031458259836119
+     },
+     {
+      "sectionId": "RS +75",
+      "riverStationFt": 75,
+      "invertFt": 44.66,
+      "wselFt": 55.20786499290935,
+      "energyGradeFt": 55.22080453826941,
+      "criticalWselFt": 47.89259640577207,
+      "velocityFps": 0.786181917803679,
+      "velocityHeadFt": 0.012939545360059451,
+      "areaSqFt": 1006.8695752244608,
+      "topWidthFt": 234.82835214561106,
+      "frictionSlope": 0.00005126071443113669,
+      "froude": 0.06693591098171721,
+      "maxDepthFt": 10.547864992909354,
+      "leftEdgeFt": -64.50249997950678,
+      "rightEdgeFt": 121.47864992909348,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": 0.002355148972526999
+     },
+     {
+      "sectionId": "RS +120",
+      "riverStationFt": 120,
+      "invertFt": 44.97,
+      "wselFt": 55.213197686674334,
+      "energyGradeFt": 55.22397654071777,
+      "criticalWselFt": 47.67911871373538,
+      "velocityFps": 0.8091643378204862,
+      "velocityHeadFt": 0.01077885404343404,
+      "areaSqFt": 978.2718004605825,
+      "topWidthFt": 226.11240517403576,
+      "frictionSlope": 0.00006162227767471189,
+      "froude": 0.06858302435679119,
+      "maxDepthFt": 10.243197686674336,
+      "leftEdgeFt": -107.03326907428705,
+      "rightEdgeFt": 113.5607616340621,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": 0.0025237950533694106
+     },
+     {
+      "sectionId": "RS +175",
+      "riverStationFt": 175,
+      "invertFt": 45.44,
+      "wselFt": 55.22283460991416,
+      "energyGradeFt": 55.22776501903564,
+      "criticalWselFt": 48.093429288522685,
+      "velocityFps": 0.5095315188415308,
+      "velocityHeadFt": 0.004930409121475395,
+      "areaSqFt": 1553.5499264655546,
+      "topWidthFt": 311.2600083585716,
+      "frictionSlope": 0.000024630525265324965,
+      "froude": 0.0402084730054312,
+      "maxDepthFt": 9.782834609914161,
+      "leftEdgeFt": -204.90020122043114,
+      "rightEdgeFt": 99.0085164276955,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": 0.002033944841280294
+     },
+     {
+      "sectionId": "RS +240",
+      "riverStationFt": 240,
+      "invertFt": 46.25,
+      "wselFt": 55.225629607149585,
+      "energyGradeFt": 55.22935752333429,
+      "criticalWselFt": 47.848898169112445,
+      "velocityFps": 0.4502973261345242,
+      "velocityHeadFt": 0.003727916184707822,
+      "areaSqFt": 1757.9110682786081,
+      "topWidthFt": 301.58601334934144,
+      "frictionSlope": 0.00001503004330105789,
+      "froude": 0.03288167914942903,
+      "maxDepthFt": 8.975629607149585,
+      "leftEdgeFt": -150.3239055195417,
+      "rightEdgeFt": 151.26210782979976,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": 0.0012317564176230194
+     },
+     {
+      "sectionId": "RS +310",
+      "riverStationFt": 310,
+      "invertFt": 47.37,
+      "wselFt": 55.22605761194191,
+      "energyGradeFt": 55.2307460022119,
+      "criticalWselFt": 49.01974242853231,
+      "velocityFps": 0.524890554994786,
+      "velocityHeadFt": 0.004688390269992334,
+      "areaSqFt": 1508.0908697928571,
+      "topWidthFt": 285.27563644702605,
+      "frictionSlope": 0.000023222819117705968,
+      "froude": 0.04024712063300157,
+      "maxDepthFt": 7.856057611941914,
+      "leftEdgeFt": -181.23777637238908,
+      "rightEdgeFt": 104.03786007463694,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": 0.0012924314690870363
+     },
+     {
+      "sectionId": "RS +390",
+      "riverStationFt": 390,
+      "invertFt": 48.56,
+      "wselFt": 55.226589625681626,
+      "energyGradeFt": 55.233463361965015,
+      "criticalWselFt": 50.484823688475245,
+      "velocityFps": 0.6398115463928999,
+      "velocityHeadFt": 0.006873736283387689,
+      "areaSqFt": 1237.2122042668507,
+      "topWidthFt": 261.3921730848758,
+      "frictionSlope": 0.00004424170423400877,
+      "froude": 0.05184701247365887,
+      "maxDepthFt": 6.666589625681624,
+      "leftEdgeFt": -152.50981250420756,
+      "rightEdgeFt": 108.88236058066828,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": 0.0024988251517769028
+     },
+     {
+      "sectionId": "RS +470",
+      "riverStationFt": 470,
+      "invertFt": 49.09,
+      "wselFt": 55.22837179492862,
+      "energyGradeFt": 55.238136578103656,
+      "criticalWselFt": 50.857520971979724,
+      "velocityFps": 0.7634230028968025,
+      "velocityHeadFt": 0.009764783175038415,
+      "areaSqFt": 1036.8860390956104,
+      "topWidthFt": 239.92210759968984,
+      "frictionSlope": 0.00006964757376621236,
+      "froude": 0.06474143678064288,
+      "maxDepthFt": 6.1383717949286165,
+      "leftEdgeFt": -150.06439842252786,
+      "rightEdgeFt": 89.85770917716198,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": 0.0043841114494770125
+     }
+    ],
+    "criticalDefaults": [],
+    "overtopped": [],
+    "boundaryCondition": "Headwater at the Fort Foote Road crossing, inlet control, computed to HDS-5."
+   },
+   "culvert": {
+    "dischargeCfs": 791.5826536281422,
+    "inlet": {
+     "hwElFt": 55.178428230125576,
+     "hwDepthFt": 10.51842823012558,
+     "regime": "inlet control, submerged, Q/AD^0.5 = 8.48"
+    },
+    "outlet": {
+     "hwElFt": 47.280560286205706,
+     "hwDepthFt": 2.620560286205709,
+     "regime": "outlet control, H = 6.95 ft, TW = channel 43.99 ft"
+    },
+    "headwaterElFt": 55.178428230125576,
+    "headwaterDepthFt": 10.51842823012558,
+    "governing": "inlet",
+    "hwOverD": 3.506142743375193,
+    "barrelVelocityFps": 14.680049386945374,
+    "outletVelocityFps": 14.811093988864362,
+    "criticalDepthFt": 2.9092673752960883,
+    "overtoppingCfs": 687.8154991843256,
+    "notes": [
+     "The roadway overtops. At the balance point the culvert carries 103.8 cfs and 687.8 cfs passes over the road on 185 ft of crest at EL 54.00.",
+     "INLET CONTROL GOVERNS. The entrance is the constriction, so the barrel is not being used to capacity and enlarging the pipe alone will not lower the headwater — the inlet has to be enlarged with it."
+    ]
+   },
+   "tailwaterElFt": 43.99001354001503,
+   "headwaterElFt": 55.178428230125576
+  },
+  {
+   "period": 100,
+   "qCfs": 1061.0792285861148,
+   "downstream": {
+    "dischargeCfs": 1061.0792285861148,
+    "label": "100-yr",
+    "points": [
+     {
+      "sectionId": "RS -460",
+      "riverStationFt": -460,
+      "invertFt": 36.63,
+      "wselFt": 39.062368815261024,
+      "energyGradeFt": 39.3788011850265,
+      "criticalWselFt": 38.695454946424675,
+      "velocityFps": 4.512404029967699,
+      "velocityHeadFt": 0.31643236976547406,
+      "areaSqFt": 235.14721233721406,
+      "topWidthFt": 168.66823166097902,
+      "frictionSlope": 0.011999999999999943,
+      "froude": 0.6737552747847736,
+      "maxDepthFt": 2.4323688152610217,
+      "leftEdgeFt": -76.37812671739539,
+      "rightEdgeFt": 92.29010494358364,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": null
+     },
+     {
+      "sectionId": "RS -380",
+      "riverStationFt": -380,
+      "invertFt": 38.7,
+      "wselFt": 40.31516194496919,
+      "energyGradeFt": 40.82288310338715,
+      "criticalWselFt": 40.313026151642724,
+      "velocityFps": 5.71584124183648,
+      "velocityHeadFt": 0.5077211584179585,
+      "areaSqFt": 185.63833103335,
+      "topWidthFt": 181.7493296109763,
+      "frictionSlope": 0.029151627583891584,
+      "froude": 0.9970804709352735,
+      "maxDepthFt": 1.6151619449691879,
+      "leftEdgeFt": -162.79888073438798,
+      "rightEdgeFt": 18.95044887658833,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": 1.424953039495407
+     },
+     {
+      "sectionId": "RS -300",
+      "riverStationFt": -300,
+      "invertFt": 38.93,
+      "wselFt": 41.70602108657535,
+      "energyGradeFt": 41.872594314180894,
+      "criticalWselFt": 41.01222559852205,
+      "velocityFps": 3.2739355598364672,
+      "velocityHeadFt": 0.16657322760554677,
+      "areaSqFt": 324.09899620599606,
+      "topWidthFt": 215.72597987023408,
+      "frictionSlope": 0.005720390503106075,
+      "froude": 0.47090139877532267,
+      "maxDepthFt": 2.776021086575348,
+      "leftEdgeFt": -189.07773409905192,
+      "rightEdgeFt": 26.64824577118216,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": 0.8791372453875317
+     },
+     {
+      "sectionId": "RS -230",
+      "riverStationFt": -230,
+      "invertFt": 39.5,
+      "wselFt": 42.2168267114525,
+      "energyGradeFt": 42.57511454934373,
+      "criticalWselFt": 42.09123260455827,
+      "velocityFps": 4.80157326223657,
+      "velocityHeadFt": 0.35828783789123414,
+      "areaSqFt": 220.98574167998112,
+      "topWidthFt": 213.89124574301405,
+      "frictionSlope": 0.020289103222477827,
+      "froude": 0.8328089988611377,
+      "maxDepthFt": 2.716826711452498,
+      "leftEdgeFt": -197.9674086514583,
+      "rightEdgeFt": 15.923837091555745,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": 0.6833487741342684
+     },
+     {
+      "sectionId": "RS -170",
+      "riverStationFt": -170,
+      "invertFt": 40.42,
+      "wselFt": 43.14563292161034,
+      "energyGradeFt": 43.342098695313595,
+      "criticalWselFt": 42.67620025930745,
+      "velocityFps": 3.5555842847915833,
+      "velocityHeadFt": 0.19646577370325224,
+      "areaSqFt": 298.42612172764507,
+      "topWidthFt": 223.3394409617345,
+      "frictionSlope": 0.007891758055076822,
+      "froude": 0.5422789471002961,
+      "maxDepthFt": 2.725632921610341,
+      "leftEdgeFt": -203.96712391125476,
+      "rightEdgeFt": 19.372317050479754,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": 0.7184375267134755
+     },
+     {
+      "sectionId": "RS -115",
+      "riverStationFt": -115,
+      "invertFt": 40.5,
+      "wselFt": 43.541363582546,
+      "energyGradeFt": 43.734071558571976,
+      "criticalWselFt": 42.92381716338713,
+      "velocityFps": 3.5214163118438138,
+      "velocityHeadFt": 0.1927079760259789,
+      "areaSqFt": 301.3217224607373,
+      "topWidthFt": 196.257814965492,
+      "frictionSlope": 0.006432495287009185,
+      "froude": 0.5010292745003749,
+      "maxDepthFt": 3.0413635825459977,
+      "leftEdgeFt": -168.17339967677773,
+      "rightEdgeFt": 28.08441528871428,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": 0.3908455239552076
+     },
+     {
+      "sectionId": "RS -70",
+      "riverStationFt": -70,
+      "invertFt": 41,
+      "wselFt": 44.44931567567967,
+      "energyGradeFt": 45.00275427451611,
+      "criticalWselFt": 44.44931567567967,
+      "velocityFps": 5.967634955149923,
+      "velocityHeadFt": 0.5534385988364398,
+      "areaSqFt": 177.8056527520051,
+      "topWidthFt": 160.63718079586255,
+      "frictionSlope": 0.02861548929477126,
+      "froude": 0.9999999431103305,
+      "maxDepthFt": 3.449315675679671,
+      "leftEdgeFt": -137.11841698855963,
+      "rightEdgeFt": 23.518763807302918,
+      "criticalDefault": true,
+      "overtopped": false,
+      "energyLossFt": 0.5328264092958251
+     }
+    ],
+    "criticalDefaults": [
+     "RS -70"
+    ],
+    "overtopped": [],
+    "boundaryCondition": "Normal depth on the surveyed channel slope of 1.20 percent, applied 460 ft below the crossing so the boundary assumption has decayed out of the answer at the road."
+   },
+   "upstream": {
+    "dischargeCfs": 1061.0792285861148,
+    "label": "100-yr",
+    "points": [
+     {
+      "sectionId": "RS +15",
+      "riverStationFt": 15,
+      "invertFt": 50.33,
+      "wselFt": 55.46777572942694,
+      "energyGradeFt": 55.5038386625046,
+      "criticalWselFt": 53.50451391693295,
+      "velocityFps": 1.0874391448693979,
+      "velocityHeadFt": 0.03606293307765757,
+      "areaSqFt": 975.7596400611003,
+      "topWidthFt": 499.8749533364329,
+      "frictionSlope": 0.0008974033587909306,
+      "froude": 0.13721819323486253,
+      "maxDepthFt": 5.1377757294269415,
+      "leftEdgeFt": 37.63890169108164,
+      "rightEdgeFt": 132.41740357720906,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": null
+     },
+     {
+      "sectionId": "RS +40",
+      "riverStationFt": 40,
+      "invertFt": 47.94,
+      "wselFt": 55.49825330412261,
+      "energyGradeFt": 55.51861696843515,
+      "criticalWselFt": 50.978072085866714,
+      "velocityFps": 0.9010963348343437,
+      "velocityHeadFt": 0.020363664312532597,
+      "areaSqFt": 1177.542497474681,
+      "topWidthFt": 440.2539347325695,
+      "frictionSlope": 0.0001328651565696137,
+      "froude": 0.09713640419202157,
+      "maxDepthFt": 7.558253304122616,
+      "leftEdgeFt": -166.27511013742043,
+      "rightEdgeFt": 145.63678414189772,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": 0.006928671547999204
+     },
+     {
+      "sectionId": "RS +75",
+      "riverStationFt": 75,
+      "invertFt": 44.66,
+      "wselFt": 55.501489696926924,
+      "energyGradeFt": 55.52217497482226,
+      "criticalWselFt": 48.36789900726562,
+      "velocityFps": 0.9843941643343274,
+      "velocityHeadFt": 0.020685277895341025,
+      "areaSqFt": 1077.9007708803756,
+      "topWidthFt": 249.17327272330076,
+      "frictionSlope": 0.00007899739043776756,
+      "froude": 0.08344068075832788,
+      "maxDepthFt": 10.841489696926928,
+      "leftEdgeFt": -65.32140131462148,
+      "rightEdgeFt": 124.41489696926922,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": 0.0035258450288425955
+     },
+     {
+      "sectionId": "RS +120",
+      "riverStationFt": 120,
+      "invertFt": 44.97,
+      "wselFt": 55.5100776854667,
+      "energyGradeFt": 55.52710002563938,
+      "criticalWselFt": 48.03062519877243,
+      "velocityFps": 1.0126960985072764,
+      "velocityHeadFt": 0.0170223401726793,
+      "areaSqFt": 1047.7765542398708,
+      "topWidthFt": 241.36160025538706,
+      "frictionSlope": 0.00009177196886422531,
+      "froude": 0.08568925328537869,
+      "maxDepthFt": 10.540077685466699,
+      "leftEdgeFt": -113.95995178055615,
+      "rightEdgeFt": 116.27184479209066,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": 0.0038261695003211954
+     },
+     {
+      "sectionId": "RS +175",
+      "riverStationFt": 175,
+      "invertFt": 45.44,
+      "wselFt": 55.52498503386592,
+      "energyGradeFt": 55.53290407379536,
+      "criticalWselFt": 48.34891146218678,
+      "velocityFps": 0.643530668967933,
+      "velocityHeadFt": 0.0079190399294385,
+      "areaSqFt": 1648.8401870385264,
+      "topWidthFt": 319.426900513225,
+      "frictionSlope": 0.00003755656992569454,
+      "froude": 0.049935934546228834,
+      "maxDepthFt": 10.08498503386592,
+      "leftEdgeFt": -206.75916687571555,
+      "rightEdgeFt": 102.04985033865917,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": 0.0030730580830079838
+     },
+     {
+      "sectionId": "RS +240",
+      "riverStationFt": 240,
+      "invertFt": 46.25,
+      "wselFt": 55.5292529006374,
+      "energyGradeFt": 55.535353369625945,
+      "criticalWselFt": 48.096693885654844,
+      "velocityFps": 0.5733116303766543,
+      "velocityHeadFt": 0.006100468988542326,
+      "areaSqFt": 1850.7896445237066,
+      "topWidthFt": 310.26917529126985,
+      "frictionSlope": 0.000023477419579051105,
+      "froude": 0.041383670599455476,
+      "maxDepthFt": 9.279252900637402,
+      "leftEdgeFt": -153.08411727852183,
+      "rightEdgeFt": 157.18505801274802,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": 0.0019037245483182943
+     },
+     {
+      "sectionId": "RS +310",
+      "riverStationFt": 310,
+      "invertFt": 47.37,
+      "wselFt": 55.52993263074214,
+      "energyGradeFt": 55.53749662809642,
+      "criticalWselFt": 49.24617189419577,
+      "velocityFps": 0.6650621125057306,
+      "velocityHeadFt": 0.007563997354284696,
+      "areaSqFt": 1595.458843067041,
+      "topWidthFt": 289.7500673382582,
+      "frictionSlope": 0.000035400447252660444,
+      "froude": 0.04996646770320845,
+      "maxDepthFt": 8.15993263074214,
+      "leftEdgeFt": -183.8129883961198,
+      "rightEdgeFt": 105.93707894213836,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": 0.0019969056338991114
+     },
+     {
+      "sectionId": "RS +390",
+      "riverStationFt": 390,
+      "invertFt": 48.56,
+      "wselFt": 55.53061839554708,
+      "energyGradeFt": 55.54160915128191,
+      "criticalWselFt": 50.67164540797489,
+      "velocityFps": 0.8055446284771697,
+      "velocityHeadFt": 0.010990755734832203,
+      "areaSqFt": 1317.2196686259542,
+      "topWidthFt": 264.8896252835816,
+      "frictionSlope": 0.00006580192464678865,
+      "froude": 0.06368548320574818,
+      "maxDepthFt": 6.970618395547078,
+      "leftEdgeFt": -154.38653330584617,
+      "rightEdgeFt": 110.50309197773541,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": 0.003769847347432552
+     },
+     {
+      "sectionId": "RS +470",
+      "riverStationFt": 470,
+      "invertFt": 49.09,
+      "wselFt": 55.53307131098093,
+      "energyGradeFt": 55.5485317480264,
+      "criticalWselFt": 51.066890143443274,
+      "velocityFps": 0.9553941514292559,
+      "velocityHeadFt": 0.015460437045468614,
+      "areaSqFt": 1110.6193469980485,
+      "topWidthFt": 244.03508746853242,
+      "frictionSlope": 0.00010198795700879565,
+      "froude": 0.07895389672880217,
+      "maxDepthFt": 6.443071310980926,
+      "leftEdgeFt": -152.40824085369948,
+      "rightEdgeFt": 91.62684661483293,
+      "criticalDefault": false,
+      "overtopped": false,
+      "energyLossFt": 0.00647562861342088
+     }
+    ],
+    "criticalDefaults": [],
+    "overtopped": [],
+    "boundaryCondition": "Headwater at the Fort Foote Road crossing, inlet control, computed to HDS-5."
+   },
+   "culvert": {
+    "dischargeCfs": 1061.0792285861148,
+    "inlet": {
+     "hwElFt": 55.46777572942694,
+     "hwDepthFt": 10.807775729426943,
+     "regime": "inlet control, submerged, Q/AD^0.5 = 8.62"
+    },
+    "outlet": {
+     "hwElFt": 47.97433960952773,
+     "hwDepthFt": 3.3143396095277353,
+     "regime": "outlet control, H = 7.19 ft, TW = channel 44.45 ft"
+    },
+    "headwaterElFt": 55.46777572942694,
+    "headwaterDepthFt": 10.807775729426943,
+    "governing": "inlet",
+    "hwOverD": 3.602591909808981,
+    "barrelVelocityFps": 14.925611802336403,
+    "outletVelocityFps": 15.046725546452135,
+    "criticalDepthFt": 2.914844682217682,
+    "overtoppingCfs": 955.5762957118702,
+    "notes": [
+     "The roadway overtops. At the balance point the culvert carries 105.5 cfs and 955.6 cfs passes over the road on 185 ft of crest at EL 54.00.",
+     "INLET CONTROL GOVERNS. The entrance is the constriction, so the barrel is not being used to capacity and enlarging the pipe alone will not lower the headwater — the inlet has to be enlarged with it."
+    ]
+   },
+   "tailwaterElFt": 44.44931567567967,
+   "headwaterElFt": 55.46777572942694
+  }
+ ],
+ "rise": [
+  {
+   "period": 10,
+   "upstream": {
+    "rows": [
+     {
+      "sectionId": "RS +15",
+      "riverStationFt": 15,
+      "existingWselFt": 54.59965544681029,
+      "proposedWselFt": 54.59965544681029,
+      "riseFt": 0
+     },
+     {
+      "sectionId": "RS +40",
+      "riverStationFt": 40,
+      "existingWselFt": 54.599837276489865,
+      "proposedWselFt": 54.61346297776382,
+      "riseFt": 0.013625701273952018
+     },
+     {
+      "sectionId": "RS +75",
+      "riverStationFt": 75,
+      "existingWselFt": 54.59970350174409,
+      "proposedWselFt": 54.61482370023876,
+      "riseFt": 0.015120198494670944
+     },
+     {
+      "sectionId": "RS +120",
+      "riverStationFt": 120,
+      "existingWselFt": 54.60408141211177,
+      "proposedWselFt": 54.61608092848583,
+      "riseFt": 0.011999516374061159
+     },
+     {
+      "sectionId": "RS +175",
+      "riverStationFt": 175,
+      "existingWselFt": 54.60528902584542,
+      "proposedWselFt": 54.61869073962981,
+      "riseFt": 0.013401713784389813
+     },
+     {
+      "sectionId": "RS +240",
+      "riverStationFt": 240,
+      "existingWselFt": 54.6056464961175,
+      "proposedWselFt": 54.61945929573953,
+      "riseFt": 0.013812799622030525
+     },
+     {
+      "sectionId": "RS +310",
+      "riverStationFt": 310,
+      "existingWselFt": 54.60568503444601,
+      "proposedWselFt": 54.61956160022086,
+      "riseFt": 0.013876565774850746
+     },
+     {
+      "sectionId": "RS +390",
+      "riverStationFt": 390,
+      "existingWselFt": 54.60600828183473,
+      "proposedWselFt": 54.61975404653455,
+      "riseFt": 0.013745764699820029
+     },
+     {
+      "sectionId": "RS +470",
+      "riverStationFt": 470,
+      "existingWselFt": 54.60662646881562,
+      "proposedWselFt": 54.620364178750094,
+      "riseFt": 0.013737709934474651
+     }
+    ],
+    "maxRiseFt": 0.015120198494670944,
+    "maxRiseSection": "RS +75",
+    "noRise": false
+   },
+   "downstream": {
+    "rows": [
+     {
+      "sectionId": "RS -460",
+      "riverStationFt": -460,
+      "existingWselFt": 38.259279810739656,
+      "proposedWselFt": 38.259279810739656,
+      "riseFt": 0
+     },
+     {
+      "sectionId": "RS -380",
+      "riverStationFt": -380,
+      "existingWselFt": 39.69712681507764,
+      "proposedWselFt": 39.69712681507764,
+      "riseFt": 0
+     },
+     {
+      "sectionId": "RS -300",
+      "riverStationFt": -300,
+      "existingWselFt": 40.86111103894895,
+      "proposedWselFt": 40.86111103894895,
+      "riseFt": 0
+     },
+     {
+      "sectionId": "RS -230",
+      "riverStationFt": -230,
+      "existingWselFt": 41.52007938858205,
+      "proposedWselFt": 41.52007938858205,
+      "riseFt": 0
+     },
+     {
+      "sectionId": "RS -170",
+      "riverStationFt": -170,
+      "existingWselFt": 42.52977244493516,
+      "proposedWselFt": 42.52977244493516,
+      "riseFt": 0
+     },
+     {
+      "sectionId": "RS -115",
+      "riverStationFt": -115,
+      "existingWselFt": 42.81214020458117,
+      "proposedWselFt": 42.81214020458117,
+      "riseFt": 0
+     },
+     {
+      "sectionId": "RS -70",
+      "riverStationFt": -70,
+      "existingWselFt": 43.03715410224153,
+      "proposedWselFt": 43.03715410224153,
+      "riseFt": 0
+     }
+    ],
+    "maxRiseFt": 0,
+    "maxRiseSection": "RS -460",
+    "noRise": true
+   }
+  },
+  {
+   "period": 25,
+   "upstream": {
+    "rows": [
+     {
+      "sectionId": "RS +15",
+      "riverStationFt": 15,
+      "existingWselFt": 54.91219689202957,
+      "proposedWselFt": 54.91219689202957,
+      "riseFt": 0
+     },
+     {
+      "sectionId": "RS +40",
+      "riverStationFt": 40,
+      "existingWselFt": 54.91221865049957,
+      "proposedWselFt": 54.933531730408504,
+      "riseFt": 0.021313079908935606
+     },
+     {
+      "sectionId": "RS +75",
+      "riverStationFt": 75,
+      "existingWselFt": 54.911413309521535,
+      "proposedWselFt": 54.93583779121927,
+      "riseFt": 0.0244244816977357
+     },
+     {
+      "sectionId": "RS +120",
+      "riverStationFt": 120,
+      "existingWselFt": 54.921653450064795,
+      "proposedWselFt": 54.93890086738455,
+      "riseFt": 0.017247417319751435
+     },
+     {
+      "sectionId": "RS +175",
+      "riverStationFt": 175,
+      "existingWselFt": 54.9245319933561,
+      "proposedWselFt": 54.94469122998257,
+      "riseFt": 0.020159236626469124
+     },
+     {
+      "sectionId": "RS +240",
+      "riverStationFt": 240,
+      "existingWselFt": 54.925331890239406,
+      "proposedWselFt": 54.946388697653944,
+      "riseFt": 0.021056807414538525
+     },
+     {
+      "sectionId": "RS +310",
+      "riverStationFt": 310,
+      "existingWselFt": 54.92541852219962,
+      "proposedWselFt": 54.94663473607997,
+      "riseFt": 0.021216213880350665
+     },
+     {
+      "sectionId": "RS +390",
+      "riverStationFt": 390,
+      "existingWselFt": 54.9261220662344,
+      "proposedWselFt": 54.94700384847991,
+      "riseFt": 0.020881782245510294
+     },
+     {
+      "sectionId": "RS +470",
+      "riverStationFt": 470,
+      "existingWselFt": 54.92733820455406,
+      "proposedWselFt": 54.94819685730637,
+      "riseFt": 0.02085865275230958
+     }
+    ],
+    "maxRiseFt": 0.0244244816977357,
+    "maxRiseSection": "RS +75",
+    "noRise": false
+   },
+   "downstream": {
+    "rows": [
+     {
+      "sectionId": "RS -460",
+      "riverStationFt": -460,
+      "existingWselFt": 38.556863223994,
+      "proposedWselFt": 38.556863223994,
+      "riseFt": 0
+     },
+     {
+      "sectionId": "RS -380",
+      "riverStationFt": -380,
+      "existingWselFt": 39.92196808704116,
+      "proposedWselFt": 39.92196808704116,
+      "riseFt": 0
+     },
+     {
+      "sectionId": "RS -300",
+      "riverStationFt": -300,
+      "existingWselFt": 41.17962661366437,
+      "proposedWselFt": 41.17962661366437,
+      "riseFt": 0
+     },
+     {
+      "sectionId": "RS -230",
+      "riverStationFt": -230,
+      "existingWselFt": 41.784615440658285,
+      "proposedWselFt": 41.784615440658285,
+      "riseFt": 0
+     },
+     {
+      "sectionId": "RS -170",
+      "riverStationFt": -170,
+      "existingWselFt": 42.7692965698179,
+      "proposedWselFt": 42.7692965698179,
+      "riseFt": 0
+     },
+     {
+      "sectionId": "RS -115",
+      "riverStationFt": -115,
+      "existingWselFt": 43.089560499758434,
+      "proposedWselFt": 43.089560499758434,
+      "riseFt": 0
+     },
+     {
+      "sectionId": "RS -70",
+      "riverStationFt": -70,
+      "existingWselFt": 43.57409134848348,
+      "proposedWselFt": 43.57409134848348,
+      "riseFt": 0
+     }
+    ],
+    "maxRiseFt": 0,
+    "maxRiseSection": "RS -460",
+    "noRise": true
+   }
+  },
+  {
+   "period": 50,
+   "upstream": {
+    "rows": [
+     {
+      "sectionId": "RS +15",
+      "riverStationFt": 15,
+      "existingWselFt": 55.178428230125576,
+      "proposedWselFt": 55.178428230125576,
+      "riseFt": 0
+     },
+     {
+      "sectionId": "RS +40",
+      "riverStationFt": 40,
+      "existingWselFt": 55.17802314868145,
+      "proposedWselFt": 55.20498901599207,
+      "riseFt": 0.026965867310622116
+     },
+     {
+      "sectionId": "RS +75",
+      "riverStationFt": 75,
+      "existingWselFt": 55.17595178382571,
+      "proposedWselFt": 55.20786499290935,
+      "riseFt": 0.03191320908364048
+     },
+     {
+      "sectionId": "RS +120",
+      "riverStationFt": 120,
+      "existingWselFt": 55.19364140049019,
+      "proposedWselFt": 55.213197686674334,
+      "riseFt": 0.01955628618414096
+     },
+     {
+      "sectionId": "RS +175",
+      "riverStationFt": 175,
+      "existingWselFt": 55.19870718718529,
+      "proposedWselFt": 55.22283460991416,
+      "riseFt": 0.024127422728867032
+     },
+     {
+      "sectionId": "RS +240",
+      "riverStationFt": 240,
+      "existingWselFt": 55.200041278416975,
+      "proposedWselFt": 55.225629607149585,
+      "riseFt": 0.025588328732609966
+     },
+     {
+      "sectionId": "RS +310",
+      "riverStationFt": 310,
+      "existingWselFt": 55.20018478356204,
+      "proposedWselFt": 55.22605761194191,
+      "riseFt": 0.02587282837987459
+     },
+     {
+      "sectionId": "RS +390",
+      "riverStationFt": 390,
+      "existingWselFt": 55.20133429375112,
+      "proposedWselFt": 55.226589625681626,
+      "riseFt": 0.025255331930509328
+     },
+     {
+      "sectionId": "RS +470",
+      "riverStationFt": 470,
+      "existingWselFt": 55.203157221500945,
+      "proposedWselFt": 55.22837179492862,
+      "riseFt": 0.02521457342767519
+     }
+    ],
+    "maxRiseFt": 0.03191320908364048,
+    "maxRiseSection": "RS +75",
+    "noRise": false
+   },
+   "downstream": {
+    "rows": [
+     {
+      "sectionId": "RS -460",
+      "riverStationFt": -460,
+      "existingWselFt": 38.803618203553754,
+      "proposedWselFt": 38.803618203553754,
+      "riseFt": 0
+     },
+     {
+      "sectionId": "RS -380",
+      "riverStationFt": -380,
+      "existingWselFt": 40.1134386712731,
+      "proposedWselFt": 40.1134386712731,
+      "riseFt": 0
+     },
+     {
+      "sectionId": "RS -300",
+      "riverStationFt": -300,
+      "existingWselFt": 41.43837981577805,
+      "proposedWselFt": 41.43837981577805,
+      "riseFt": 0
+     },
+     {
+      "sectionId": "RS -230",
+      "riverStationFt": -230,
+      "existingWselFt": 42.01053795251124,
+      "proposedWselFt": 42.01053795251124,
+      "riseFt": 0
+     },
+     {
+      "sectionId": "RS -170",
+      "riverStationFt": -170,
+      "existingWselFt": 42.93670336279553,
+      "proposedWselFt": 42.93670336279553,
+      "riseFt": 0
+     },
+     {
+      "sectionId": "RS -115",
+      "riverStationFt": -115,
+      "existingWselFt": 43.308403638761064,
+      "proposedWselFt": 43.308403638761064,
+      "riseFt": 0
+     },
+     {
+      "sectionId": "RS -70",
+      "riverStationFt": -70,
+      "existingWselFt": 43.99001354001503,
+      "proposedWselFt": 43.99001354001503,
+      "riseFt": 0
+     }
+    ],
+    "maxRiseFt": 0,
+    "maxRiseSection": "RS -460",
+    "noRise": true
+   }
+  },
+  {
+   "period": 100,
+   "upstream": {
+    "rows": [
+     {
+      "sectionId": "RS +15",
+      "riverStationFt": 15,
+      "existingWselFt": 55.46777572942694,
+      "proposedWselFt": 55.46777572942694,
+      "riseFt": 0
+     },
+     {
+      "sectionId": "RS +40",
+      "riverStationFt": 40,
+      "existingWselFt": 55.466483474556796,
+      "proposedWselFt": 55.49825330412261,
+      "riseFt": 0.03176982956581753
+     },
+     {
+      "sectionId": "RS +75",
+      "riverStationFt": 75,
+      "existingWselFt": 55.46216246609413,
+      "proposedWselFt": 55.501489696926924,
+      "riseFt": 0.039327230832796545
+     },
+     {
+      "sectionId": "RS +120",
+      "riverStationFt": 120,
+      "existingWselFt": 55.49048725182206,
+      "proposedWselFt": 55.5100776854667,
+      "riseFt": 0.019590433644637528
+     },
+     {
+      "sectionId": "RS +175",
+      "riverStationFt": 175,
+      "existingWselFt": 55.49878076621026,
+      "proposedWselFt": 55.52498503386592,
+      "riseFt": 0.02620426765565753
+     },
+     {
+      "sectionId": "RS +240",
+      "riverStationFt": 240,
+      "existingWselFt": 55.50084382700808,
+      "proposedWselFt": 55.5292529006374,
+      "riseFt": 0.028409073629319437
+     },
+     {
+      "sectionId": "RS +310",
+      "riverStationFt": 310,
+      "existingWselFt": 55.50106187544219,
+      "proposedWselFt": 55.52993263074214,
+      "riseFt": 0.028870755299948314
+     },
+     {
+      "sectionId": "RS +390",
+      "riverStationFt": 390,
+      "existingWselFt": 55.50280308751722,
+      "proposedWselFt": 55.53061839554708,
+      "riseFt": 0.027815308029857988
+     },
+     {
+      "sectionId": "RS +470",
+      "riverStationFt": 470,
+      "existingWselFt": 55.505316403806674,
+      "proposedWselFt": 55.53307131098093,
+      "riseFt": 0.02775490717425555
+     }
+    ],
+    "maxRiseFt": 0.039327230832796545,
+    "maxRiseSection": "RS +75",
+    "noRise": false
+   },
+   "downstream": {
+    "rows": [
+     {
+      "sectionId": "RS -460",
+      "riverStationFt": -460,
+      "existingWselFt": 39.062368815261024,
+      "proposedWselFt": 39.062368815261024,
+      "riseFt": 0
+     },
+     {
+      "sectionId": "RS -380",
+      "riverStationFt": -380,
+      "existingWselFt": 40.31516194496919,
+      "proposedWselFt": 40.31516194496919,
+      "riseFt": 0
+     },
+     {
+      "sectionId": "RS -300",
+      "riverStationFt": -300,
+      "existingWselFt": 41.70602108657535,
+      "proposedWselFt": 41.70602108657535,
+      "riseFt": 0
+     },
+     {
+      "sectionId": "RS -230",
+      "riverStationFt": -230,
+      "existingWselFt": 42.2168267114525,
+      "proposedWselFt": 42.2168267114525,
+      "riseFt": 0
+     },
+     {
+      "sectionId": "RS -170",
+      "riverStationFt": -170,
+      "existingWselFt": 43.14563292161034,
+      "proposedWselFt": 43.14563292161034,
+      "riseFt": 0
+     },
+     {
+      "sectionId": "RS -115",
+      "riverStationFt": -115,
+      "existingWselFt": 43.541363582546,
+      "proposedWselFt": 43.541363582546,
+      "riseFt": 0
+     },
+     {
+      "sectionId": "RS -70",
+      "riverStationFt": -70,
+      "existingWselFt": 44.44931567567967,
+      "proposedWselFt": 44.44931567567967,
+      "riseFt": 0
+     }
+    ],
+    "maxRiseFt": 0,
+    "maxRiseSection": "RS -460",
+    "noRise": true
+   }
+  }
+ ],
+ "limits": [
+  {
+   "period": 10,
+   "rows": [
+    {
+     "sectionId": "RS -460",
+     "rs": -460,
+     "wselFt": 38.259279810739656,
+     "leftFt": -56.48199526849136,
+     "rightFt": 81.79555292693964,
+     "widthFt": 138.277548195431,
+     "leftXY": [
+      1308753.99964119,
+      398000.44899494766
+     ],
+     "rightXY": [
+      1308621.5545017,
+      398040.1852608624
+     ]
+    },
+    {
+     "sectionId": "RS -380",
+     "rs": -380,
+     "wselFt": 39.69712681507764,
+     "leftFt": -134.88028396156815,
+     "rightFt": 14.371782888600308,
+     "widthFt": 149.25206685016846,
+     "leftXY": [
+      1308793.9257120404,
+      398081.73496390466
+     ],
+     "rightXY": [
+      1308646.9028740607,
+      398107.4346772956
+     ]
+    },
+    {
+     "sectionId": "RS -300",
+     "rs": -300,
+     "wselFt": 40.86111103894895,
+     "leftFt": -152.55555194744744,
+     "rightFt": 22.08994666041041,
+     "widthFt": 174.64549860785786,
+     "leftXY": [
+      1308860.7355670591,
+      398140.18657422485
+     ],
+     "rightXY": [
+      1308691.5049521357,
+      398183.3379840209
+     ]
+    },
+    {
+     "sectionId": "RS -230",
+     "rs": -230,
+     "wselFt": 41.52007938858205,
+     "leftFt": -33.931406735073224,
+     "rightFt": 13.333634047659267,
+     "widthFt": 47.26504078273249,
+     "leftXY": [
+      1308778.711197372,
+      398224.7465638702
+     ],
+     "rightXY": [
+      1308735.4720982332,
+      398243.8348814456
+     ]
+    },
+    {
+     "sectionId": "RS -170",
+     "rs": -170,
+     "wselFt": 42.52977244493516,
+     "leftFt": -194.06986009139192,
+     "rightFt": 16.69466280406592,
+     "widthFt": 210.76452289545784,
+     "leftXY": [
+      1308943.431574373,
+      398177.37282424484
+     ],
+     "rightXY": [
+      1308768.688605321,
+      398295.21421969903
+     ]
+    },
+    {
+     "sectionId": "RS -115",
+     "rs": -115,
+     "wselFt": 42.81214020458117,
+     "leftFt": -153.05350511452923,
+     "rightFt": 24.04625116239302,
+     "widthFt": 177.09975627692225,
+     "leftXY": [
+      1308944.579833091,
+      398251.96248042147
+     ],
+     "rightXY": [
+      1308793.2647387295,
+      398343.98457638145
+     ]
+    },
+    {
+     "sectionId": "RS -70",
+     "rs": -70,
+     "wselFt": 43.03715410224153,
+     "leftFt": -32.11204570090284,
+     "rightFt": 17.101702414622736,
+     "widthFt": 49.213748115525576,
+     "leftXY": [
+      1308868.9692764895,
+      398352.0488357576
+     ],
+     "rightXY": [
+      1308826.0739338533,
+      398376.1731690151
+     ]
+    },
+    {
+     "sectionId": "RS +15",
+     "rs": 15,
+     "wselFt": 54.59965544681029,
+     "leftFt": -182.04868961206725,
+     "rightFt": 126.07427266777145,
+     "widthFt": 308.1229622798387,
+     "leftXY": [
+      1308934.3605733698,
+      398408.73560034257
+     ],
+     "rightXY": [
+      1308669.4108761956,
+      398566.0299076027
+     ]
+    },
+    {
+     "sectionId": "RS +40",
+     "rs": 40,
+     "wselFt": 54.599837276489865,
+     "leftFt": -138.66124254966212,
+     "rightFt": 139.83739739104732,
+     "widthFt": 278.49863994070944,
+     "leftXY": [
+      1308935.8759528021,
+      398434.1135931354
+     ],
+     "rightXY": [
+      1308700.6908138383,
+      398583.2763506931
+     ]
+    },
+    {
+     "sectionId": "RS +75",
+     "rs": 75,
+     "wselFt": 54.59970350174409,
+     "leftFt": -110.70369649086034,
+     "rightFt": 115.30309695657232,
+     "widthFt": 226.00679344743264,
+     "leftXY": [
+      1308944.7594939722,
+      398467.40099338704
+     ],
+     "rightXY": [
+      1308757.0402853957,
+      398593.2603345424
+     ]
+    },
+    {
+     "sectionId": "RS +120",
+     "rs": 120,
+     "wselFt": 54.60408141211177,
+     "leftFt": -143.11616742415163,
+     "rightFt": 107.4906266542017,
+     "widthFt": 250.60679407835335,
+     "leftXY": [
+      1308997.437001931,
+      398495.9097970798
+     ],
+     "rightXY": [
+      1308775.7389545836,
+      398612.7592245276
+     ]
+    },
+    {
+     "sectionId": "RS +175",
+     "rs": 175,
+     "wselFt": 54.60528902584542,
+     "leftFt": -225.2358803429449,
+     "rightFt": 91.5952882703852,
+     "widthFt": 316.8311686133301,
+     "leftXY": [
+      1309091.427184969,
+      398550.11769816536
+     ],
+     "rightXY": [
+      1308782.682498272,
+      398621.24185988266
+     ]
+    },
+    {
+     "sectionId": "RS +240",
+     "rs": 240,
+     "wselFt": 54.6056464961175,
+     "leftFt": -145.63915295610073,
+     "rightFt": 133.61395300367192,
+     "widthFt": 279.25310595977265,
+     "leftXY": [
+      1309095.5561386389,
+      398642.7836591137
+     ],
+     "rightXY": [
+      1308816.4622069495,
+      398652.21040621155
+     ]
+    },
+    {
+     "sectionId": "RS +310",
+     "rs": 310,
+     "wselFt": 54.60568503444601,
+     "leftFt": -175.52533051364165,
+     "rightFt": 100.16053146528758,
+     "widthFt": 275.6858619789292,
+     "leftXY": [
+      1309075.501454125,
+      398715.23549091397
+     ],
+     "rightXY": [
+      1308799.8687995174,
+      398720.64555026946
+     ]
+    },
+    {
+     "sectionId": "RS +390",
+     "rs": 390,
+     "wselFt": 54.60600828183473,
+     "leftFt": -148.57338854556488,
+     "rightFt": 105.4725729771139,
+     "widthFt": 254.0459615226788,
+     "leftXY": [
+      1309066.5954550335,
+      398792.3803210679
+     ],
+     "rightXY": [
+      1308812.819544368,
+      398804.09260203195
+     ]
+    },
+    {
+     "sectionId": "RS +470",
+     "rs": 470,
+     "wselFt": 54.60662646881562,
+     "leftFt": -145.35323082436074,
+     "rightFt": 85.76727940010275,
+     "widthFt": 231.1205102244635,
+     "leftXY": [
+      1309062.629505852,
+      398872.9855092235
+     ],
+     "rightXY": [
+      1308831.7216264969,
+      398882.898730148
+     ]
+    }
+   ]
+  },
+  {
+   "period": 25,
+   "rows": [
+    {
+     "sectionId": "RS -460",
+     "rs": -460,
+     "wselFt": 38.556863223994,
+     "leftFt": -63.92158059984998,
+     "rightFt": 85.87977926307893,
+     "widthFt": 149.8013598629289,
+     "leftXY": [
+      1308761.1254322517,
+      397998.31111106934
+     ],
+     "rightXY": [
+      1308617.6425439464,
+      398041.3589286477
+     ]
+    },
+    {
+     "sectionId": "RS -380",
+     "rs": -380,
+     "wselFt": 39.92196808704116,
+     "leftFt": -145.12300544007226,
+     "rightFt": 16.101218022037358,
+     "widthFt": 161.22422346210962,
+     "leftXY": [
+      1308804.0154482308,
+      398079.9712696933
+     ],
+     "rightXY": [
+      1308645.1992697704,
+      398107.73246873124
+     ]
+    },
+    {
+     "sectionId": "RS -300",
+     "rs": -300,
+     "wselFt": 41.17962661366437,
+     "leftFt": -167.0677755693486,
+     "rightFt": 23.98587270038314,
+     "widthFt": 191.05364826973175,
+     "leftXY": [
+      1308874.7978391878,
+      398136.6008940123
+     ],
+     "rightXY": [
+      1308689.6678092827,
+      398183.8064294268
+     ]
+    },
+    {
+     "sectionId": "RS -230",
+     "rs": -230,
+     "wselFt": 41.784615440658285,
+     "leftFt": -179.6634650411429,
+     "rightFt": 14.33566454794805,
+     "widthFt": 193.99912958909096,
+     "leftXY": [
+      1308912.0300904159,
+      398165.8916519989
+     ],
+     "rightXY": [
+      1308734.555418687,
+      398244.23955847736
+     ]
+    },
+    {
+     "sectionId": "RS -170",
+     "rs": -170,
+     "wselFt": 42.7692965698179,
+     "leftFt": -198.38029588960532,
+     "rightFt": 17.73607204268651,
+     "widthFt": 216.11636793229184,
+     "leftXY": [
+      1308947.0053178994,
+      398174.962799244
+     ],
+     "rightXY": [
+      1308767.825182294,
+      398295.79648618406
+     ]
+    },
+    {
+     "sectionId": "RS -115",
+     "rs": -115,
+     "wselFt": 43.089560499758434,
+     "leftFt": -159.5354659036008,
+     "rightFt": 25.6019807679035,
+     "widthFt": 185.13744667150428,
+     "leftXY": [
+      1308950.1180592808,
+      398248.59441470366
+     ],
+     "rightXY": [
+      1308791.93551402,
+      398344.7929428189
+     ]
+    },
+    {
+     "sectionId": "RS -70",
+     "rs": -70,
+     "wselFt": 43.57409134848348,
+     "leftFt": -48.23428263397995,
+     "rightFt": 19.68313148309364,
+     "widthFt": 67.91741411707359,
+     "leftXY": [
+      1308883.0216277894,
+      398344.14579582424
+     ],
+     "rightXY": [
+      1308823.8239267187,
+      398377.43857263733
+     ]
+    },
+    {
+     "sectionId": "RS +15",
+     "rs": 15,
+     "wselFt": 54.91219689202957,
+     "leftFt": -190.05781294814668,
+     "rightFt": 128.4784376309967,
+     "widthFt": 318.53625057914337,
+     "leftXY": [
+      1308941.2474823713,
+      398404.64700695244
+     ],
+     "rightXY": [
+      1308667.3435756145,
+      398567.2572145831
+     ]
+    },
+    {
+     "sectionId": "RS +40",
+     "rs": 40,
+     "wselFt": 54.91221865049957,
+     "leftFt": -148.50683282811153,
+     "rightFt": 141.89752370454266,
+     "widthFt": 290.4043565326542,
+     "leftXY": [
+      1308944.1903076526,
+      398428.8403343646
+     ],
+     "rightXY": [
+      1308698.9510886697,
+      398584.37974610605
+     ]
+    },
+    {
+     "sectionId": "RS +75",
+     "rs": 75,
+     "wselFt": 54.911413309521535,
+     "leftFt": -121.38044365071787,
+     "rightFt": 118.48380928083198,
+     "widthFt": 239.86425293154986,
+     "leftXY": [
+      1308953.6275040724,
+      398461.4552943985
+     ],
+     "rightXY": [
+      1308754.3984143657,
+      398595.03161916375
+     ]
+    },
+    {
+     "sectionId": "RS +120",
+     "rs": 120,
+     "wselFt": 54.921653450064795,
+     "leftFt": -146.38242556891814,
+     "rightFt": 110.7024848045568,
+     "widthFt": 257.08491037347494,
+     "leftXY": [
+      1309000.3264808676,
+      398494.3868519597
+     ],
+     "rightXY": [
+      1308772.8976003302,
+      398614.25680477987
+     ]
+    },
+    {
+     "sectionId": "RS +175",
+     "rs": 175,
+     "wselFt": 54.9245319933561,
+     "leftFt": -226.89860413206299,
+     "rightFt": 95.96461217710305,
+     "widthFt": 322.86321630916603,
+     "leftXY": [
+      1309093.0474710588,
+      398549.7444399528
+     ],
+     "rightXY": [
+      1308778.4246926194,
+      398622.2227119292
+     ]
+    },
+    {
+     "sectionId": "RS +240",
+     "rs": 240,
+     "wselFt": 54.925331890239406,
+     "leftFt": -148.0248648525329,
+     "rightFt": 143.2036636177612,
+     "widthFt": 291.2285284702941,
+     "leftXY": [
+      1309097.9404906796,
+      398642.7031246372
+     ],
+     "rightXY": [
+      1308806.8779624705,
+      398652.5341260728
+     ]
+    },
+    {
+     "sectionId": "RS +310",
+     "rs": 310,
+     "wselFt": 54.92541852219962,
+     "leftFt": -178.54168417169456,
+     "rightFt": 102.15886576374763,
+     "widthFt": 280.70054993544215,
+     "leftXY": [
+      1309078.5172256266,
+      398715.1762979898
+     ],
+     "rightXY": [
+      1308797.8708508974,
+      398720.68476558174
+     ]
+    },
+    {
+     "sectionId": "RS +390",
+     "rs": 390,
+     "wselFt": 54.9261220662344,
+     "leftFt": -150.65507448292837,
+     "rightFt": 107.23143992436482,
+     "widthFt": 257.8865144072932,
+     "leftXY": [
+      1309068.6749281387,
+      398792.2843491011
+     ],
+     "rightXY": [
+      1308811.0625470963,
+      398804.17369107483
+     ]
+    },
+    {
+     "sectionId": "RS +470",
+     "rs": 470,
+     "wselFt": 54.92733820455406,
+     "leftFt": -147.7828651860156,
+     "rightFt": 87.87722502996093,
+     "widthFt": 235.66009021597654,
+     "leftXY": [
+      1309065.05690495,
+      398872.88129734644
+     ],
+     "rightXY": [
+      1308829.613622017,
+      398882.989229936
+     ]
+    }
+   ]
+  },
+  {
+   "period": 50,
+   "rows": [
+    {
+     "sectionId": "RS -460",
+     "rs": -460,
+     "wselFt": 38.803618203553754,
+     "leftFt": -70.08614770366087,
+     "rightFt": 89.12655530991783,
+     "widthFt": 159.2127030135787,
+     "leftXY": [
+      1308767.0299840795,
+      397996.53962407896
+     ],
+     "rightXY": [
+      1308614.5327136663,
+      398042.29194169317
+     ]
+    },
+    {
+     "sectionId": "RS -380",
+     "rs": -380,
+     "wselFt": 40.1134386712731,
+     "leftFt": -155.15630323968645,
+     "rightFt": 17.488686023718113,
+     "widthFt": 172.64498926340457,
+     "leftXY": [
+      1308813.8988886946,
+      398078.2436361452
+     ],
+     "rightXY": [
+      1308643.832524991,
+      398107.9713768464
+     ]
+    },
+    {
+     "sectionId": "RS -300",
+     "rs": -300,
+     "wselFt": 41.43837981577805,
+     "leftFt": -178.2658256574188,
+     "rightFt": 25.409165813787258,
+     "widthFt": 203.67499147120606,
+     "leftXY": [
+      1308885.648693733,
+      398133.83407979656
+     ],
+     "rightXY": [
+      1308688.2886453723,
+      398184.15809668927
+     ]
+    },
+    {
+     "sectionId": "RS -230",
+     "rs": -230,
+     "wselFt": 42.01053795251124,
+     "leftFt": -191.6845984170414,
+     "rightFt": 15.181791196083603,
+     "widthFt": 206.866389613125,
+     "leftXY": [
+      1308923.027287693,
+      398161.0368331371
+     ],
+     "rightXY": [
+      1308733.7813634144,
+      398244.5812726471
+     ]
+    },
+    {
+     "sectionId": "RS -170",
+     "rs": -170,
+     "wselFt": 42.93670336279553,
+     "leftFt": -201.0653244832712,
+     "rightFt": 18.463927664328377,
+     "widthFt": 219.52925214759958,
+     "leftXY": [
+      1308949.2314509412,
+      398173.46156216686
+     ],
+     "rightXY": [
+      1308767.2217237488,
+      398296.2034404521
+     ]
+    },
+    {
+     "sectionId": "RS -115",
+     "rs": -115,
+     "wselFt": 43.308403638761064,
+     "leftFt": -163.81545459155896,
+     "rightFt": 26.80441559758827,
+     "widthFt": 190.61987018914724,
+     "leftXY": [
+      1308953.7749072958,
+      398246.37050690147
+     ],
+     "rightXY": [
+      1308790.908146487,
+      398345.417735171
+     ]
+    },
+    {
+     "sectionId": "RS -70",
+     "rs": -70,
+     "wselFt": 43.99001354001503,
+     "leftFt": -69.37584625093922,
+     "rightFt": 21.52179800006534,
+     "widthFt": 90.89764425100455,
+     "leftXY": [
+      1308901.4488894783,
+      398333.782307047
+     ],
+     "rightXY": [
+      1308822.2213210796,
+      398378.33987777063
+     ]
+    },
+    {
+     "sectionId": "RS +15",
+     "rs": 15,
+     "wselFt": 55.178428230125576,
+     "leftFt": -196.9607057531394,
+     "rightFt": 130.4623529062539,
+     "widthFt": 327.4230586593933,
+     "leftXY": [
+      1308947.183162545,
+      398401.12313539867
+     ],
+     "rightXY": [
+      1308665.637640596,
+      398568.2699874598
+     ]
+    },
+    {
+     "sectionId": "RS +40",
+     "rs": 40,
+     "wselFt": 55.17802314868145,
+     "leftFt": -156.7065631965132,
+     "rightFt": 143.62352693948992,
+     "widthFt": 300.33009013600315,
+     "leftXY": [
+      1308951.1147749554,
+      398424.4485915782
+     ],
+     "rightXY": [
+      1308697.4935220878,
+      398585.30418653466
+     ]
+    },
+    {
+     "sectionId": "RS +75",
+     "rs": 75,
+     "wselFt": 55.17595178382571,
+     "leftFt": -130.18599324455337,
+     "rightFt": 121.15951783825707,
+     "widthFt": 251.34551108281045,
+     "leftXY": [
+      1308960.941314315,
+      398456.551633524
+     ],
+     "rightXY": [
+      1308752.1759949191,
+      398596.5216757723
+     ]
+    },
+    {
+     "sectionId": "RS +120",
+     "rs": 120,
+     "wselFt": 55.19364140049019,
+     "leftFt": -149.4731977328431,
+     "rightFt": 113.36903333813915,
+     "widthFt": 262.8422310709822,
+     "leftXY": [
+      1309003.0607170085,
+      398492.9457299859
+     ],
+     "rightXY": [
+      1308770.5386515027,
+      398615.50012569845
+     ]
+    },
+    {
+     "sectionId": "RS +175",
+     "rs": 175,
+     "wselFt": 55.19870718718529,
+     "leftFt": -228.32659993325672,
+     "rightFt": 98.76231823658462,
+     "widthFt": 327.08891816984135,
+     "leftXY": [
+      1309094.439020123,
+      398549.4238748874
+     ],
+     "rightXY": [
+      1308775.6983924117,
+      398622.85075777164
+     ]
+    },
+    {
+     "sectionId": "RS +240",
+     "rs": 240,
+     "wselFt": 55.200041278416975,
+     "leftFt": -150.09128434924526,
+     "rightFt": 150.7700245849419,
+     "widthFt": 300.86130893418715,
+     "leftXY": [
+      1309100.0057323172,
+      398642.63336851425
+     ],
+     "rightXY": [
+      1308799.3159143291,
+      398652.7895437199
+     ]
+    },
+    {
+     "sectionId": "RS +310",
+     "rs": 310,
+     "wselFt": 55.20018478356204,
+     "leftFt": -181.0185151149325,
+     "rightFt": 103.87615489726272,
+     "widthFt": 284.8946700121952,
+     "leftXY": [
+      1309080.9935785416,
+      398715.1276926594
+     ],
+     "rightXY": [
+      1308796.1538932007,
+      398720.7184656637
+     ]
+    },
+    {
+     "sectionId": "RS +390",
+     "rs": 390,
+     "wselFt": 55.20133429375112,
+     "leftFt": -152.3539153935254,
+     "rightFt": 108.74359502061053,
+     "widthFt": 261.0975104141359,
+     "leftXY": [
+      1309070.3719631813,
+      398792.2060274386
+     ],
+     "rightXY": [
+      1308809.5519994209,
+      398804.2434059612
+     ]
+    },
+    {
+     "sectionId": "RS +470",
+     "rs": 470,
+     "wselFt": 55.203157221500945,
+     "leftFt": -149.87240319318897,
+     "rightFt": 89.6918238256641,
+     "widthFt": 239.56422701885307,
+     "leftXY": [
+      1309067.1445205822,
+      398872.7916728822
+     ],
+     "rightXY": [
+      1308827.8006926521,
+      398883.0670617075
+     ]
+    }
+   ]
+  },
+  {
+   "period": 100,
+   "rows": [
+    {
+     "sectionId": "RS -460",
+     "rs": -460,
+     "wselFt": 39.062368815261024,
+     "leftFt": -76.37812671739539,
+     "rightFt": 92.29010494358364,
+     "widthFt": 168.66823166097902,
+     "leftXY": [
+      1308773.0565737104,
+      397994.7315232377
+     ],
+     "rightXY": [
+      1308611.5025993928,
+      398043.2010382972
+     ]
+    },
+    {
+     "sectionId": "RS -380",
+     "rs": -380,
+     "wselFt": 40.31516194496919,
+     "leftFt": -162.79888073438798,
+     "rightFt": 18.95044887658833,
+     "widthFt": 181.7493296109763,
+     "leftXY": [
+      1308821.4273166517,
+      398076.92766072636
+     ],
+     "rightXY": [
+      1308642.3925950278,
+      398108.2230777921
+     ]
+    },
+    {
+     "sectionId": "RS -300",
+     "rs": -300,
+     "wselFt": 41.70602108657535,
+     "leftFt": -189.07773409905192,
+     "rightFt": 26.64824577118216,
+     "widthFt": 215.72597987023408,
+     "leftXY": [
+      1308896.1253789533,
+      398131.1626734588
+     ],
+     "rightXY": [
+      1308687.0879830888,
+      398184.46424856514
+     ]
+    },
+    {
+     "sectionId": "RS -230",
+     "rs": -230,
+     "wselFt": 42.2168267114525,
+     "leftFt": -197.9674086514583,
+     "rightFt": 15.923837091555745,
+     "widthFt": 213.89124574301405,
+     "leftXY": [
+      1308928.7749407173,
+      398158.49947624427
+     ],
+     "rightXY": [
+      1308733.102523504,
+      398244.8809530763
+     ]
+    },
+    {
+     "sectionId": "RS -170",
+     "rs": -170,
+     "wselFt": 43.14563292161034,
+     "leftFt": -203.96712391125476,
+     "rightFt": 19.372317050479754,
+     "widthFt": 223.3394409617345,
+     "leftXY": [
+      1308951.6373067307,
+      398171.8391254815
+     ],
+     "rightXY": [
+      1308766.4685862844,
+      398296.71133367537
+     ]
+    },
+    {
+     "sectionId": "RS -115",
+     "rs": -115,
+     "wselFt": 43.541363582546,
+     "leftFt": -168.17339967677773,
+     "rightFt": 28.08441528871428,
+     "widthFt": 196.257814965492,
+     "leftXY": [
+      1308957.4983617242,
+      398244.1060924875
+     ],
+     "rightXY": [
+      1308789.814507071,
+      398346.0828306905
+     ]
+    },
+    {
+     "sectionId": "RS -70",
+     "rs": -70,
+     "wselFt": 44.44931567567967,
+     "leftFt": -137.11841698855963,
+     "rightFt": 23.518763807302918,
+     "widthFt": 160.63718079586255,
+     "leftXY": [
+      1308960.4941947865,
+      398300.5752375843
+     ],
+     "rightXY": [
+      1308820.4807397216,
+      398379.3187804245
+     ]
+    },
+    {
+     "sectionId": "RS +15",
+     "rs": 15,
+     "wselFt": 55.46777572942694,
+     "leftFt": -392.419730326966,
+     "rightFt": 132.41740357720906,
+     "widthFt": 524.8371339041751,
+     "leftXY": [
+      1309115.2550549728,
+      398301.34286702593
+     ],
+     "rightXY": [
+      1308663.9565257598,
+      398569.2680251869
+     ]
+    },
+    {
+     "sectionId": "RS +40",
+     "rs": 40,
+     "wselFt": 55.466483474556796,
+     "leftFt": -165.21611581855984,
+     "rightFt": 145.44990279151057,
+     "widthFt": 310.6660186100704,
+     "leftXY": [
+      1308958.3008794058,
+      398419.890909232
+     ],
+     "rightXY": [
+      1308695.9511933401,
+      398586.28238613554
+     ]
+    },
+    {
+     "sectionId": "RS +75",
+     "rs": 75,
+     "wselFt": 55.46216246609413,
+     "leftFt": -139.40541553647103,
+     "rightFt": 124.02162466094126,
+     "widthFt": 263.4270401974123,
+     "leftXY": [
+      1308968.598883496,
+      398451.4174939798
+     ],
+     "rightXY": [
+      1308749.7987547512,
+      398598.11553440604
+     ]
+    },
+    {
+     "sectionId": "RS +120",
+     "rs": 120,
+     "wselFt": 55.49048725182206,
+     "leftFt": -153.29588489239555,
+     "rightFt": 116.10582416798356,
+     "widthFt": 269.4017090603791,
+     "leftXY": [
+      1309006.4424380907,
+      398491.1633409348
+     ],
+     "rightXY": [
+      1308768.117563179,
+      398616.77619821153
+     ]
+    },
+    {
+     "sectionId": "RS +175",
+     "rs": 175,
+     "wselFt": 55.49878076621026,
+     "leftFt": -229.8894831573451,
+     "rightFt": 101.7878076621026,
+     "widthFt": 331.6772908194477,
+     "leftXY": [
+      1309095.9620138786,
+      398549.07302948396
+     ],
+     "rightXY": [
+      1308772.7501225527,
+      398623.5299377908
+     ]
+    },
+    {
+     "sectionId": "RS +240",
+     "rs": 240,
+     "wselFt": 55.50084382700808,
+     "leftFt": -152.82585297280076,
+     "rightFt": 156.61687654016163,
+     "widthFt": 309.4427295129624,
+     "leftXY": [
+      1309102.7387422365,
+      398642.5410576812
+     ],
+     "rightXY": [
+      1308793.4723950794,
+      398652.98691590136
+     ]
+    },
+    {
+     "sectionId": "RS +310",
+     "rs": 310,
+     "wselFt": 55.50106187544219,
+     "leftFt": -183.56832097832364,
+     "rightFt": 105.75663672151367,
+     "widthFt": 289.32495769983734,
+     "leftXY": [
+      1309083.5428922924,
+      398715.0776552691
+     ],
+     "rightXY": [
+      1308794.2737743093,
+      398720.755368239
+     ]
+    },
+    {
+     "sectionId": "RS +390",
+     "rs": 390,
+     "wselFt": 55.50280308751722,
+     "leftFt": -154.2148338735631,
+     "rightFt": 110.36401543758612,
+     "widthFt": 264.5788493111492,
+     "leftXY": [
+      1309072.230903505,
+      398792.1202335139
+     ],
+     "rightXY": [
+      1308807.9333015108,
+      398804.3181122037
+     ]
+    },
+    {
+     "sectionId": "RS +470",
+     "rs": 470,
+     "wselFt": 55.505316403806674,
+     "leftFt": -152.19474156774365,
+     "rightFt": 91.46733565406134,
+     "widthFt": 243.662077221805,
+     "leftXY": [
+      1309069.4647224054,
+      398872.69206314464
+     ],
+     "rightXY": [
+      1308826.0268142947,
+      398883.14321696083
+     ]
+    }
+   ]
+  }
+ ]
+}

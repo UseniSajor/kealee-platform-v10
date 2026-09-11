@@ -68,3 +68,4 @@ env-templates/railway-cli.env
 # scratch files
 scratch/
 apps/web-main/find_replicate.js
+.venv-fp/
