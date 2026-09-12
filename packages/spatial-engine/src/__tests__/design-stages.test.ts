@@ -233,8 +233,15 @@ describe('siteplan.generate_utilities', () => {
     const r = await run(ctx('siteplan.generate_utilities'))
     const out = r.outputs as UtilitiesOutput
     expect(r.status).toBe('COMPLETED')
-    expect(out.runs.map(x => x.type)).toEqual(
-      expect.arrayContaining(['Water service', 'Sanitary lateral', 'Storm drain']))
+    // TWO services, not three. The recorded WATER & SEWER CONNECTION SKETCH for
+    // this site shows WHC and SHC and nothing else; the storm run that used to
+    // be drawn here went to a main nobody had identified. They carry their WSSC
+    // codes, so the assertion is that both services exist rather than that they
+    // are spelled the way they were before the sketch was read.
+    const types = out.runs.map(x => x.type)
+    expect(types.some(t => /water/i.test(t))).toBe(true)
+    expect(types.some(t => /sanitary/i.test(t))).toBe(true)
+    expect(types).toHaveLength(2)
     for (const run_ of out.runs) expect(run_.lengthFt).toBeGreaterThan(0)
   })
 

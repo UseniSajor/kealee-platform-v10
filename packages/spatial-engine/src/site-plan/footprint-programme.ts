@@ -56,6 +56,14 @@ export interface HouseProgramme {
    */
   footprintWidthFt?: number
   footprintDepthFt?: number
+  /**
+   * Attached garage width, ft, measured along the front elevation.
+   *
+   * The driveway is centred on the garage and the stoop on the main house, so
+   * the split between them positions both. Without it they fall back to
+   * offsets from the footprint centre, which is a guess.
+   */
+  garageWidthFt?: number
 }
 
 export interface FootprintEstimate {

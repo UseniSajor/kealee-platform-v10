@@ -21,6 +21,16 @@ export type SheetId =
   | 'C-500' | 'C-600' | 'C-700' | 'C-800' | 'C-900'
   | 'L-100' | 'TCP-NRI'
   /**
+   * The floodplain concept sheet.
+   *
+   * A concept study for county review is not a permit sheet and must not be
+   * mistaken for one. It carries the flood elevation of record, what lies
+   * below it, the mitigation concept and the limits of the analysis — and it
+   * carries them on a drawing, because that is the form a reviewer reads a
+   * floodplain question in.
+   */
+  | 'FP-100'
+  /**
    * EVERYTHING ON ONE SHEET.
    *
    * Two infill lots on an existing street do not need a set. The approved
@@ -46,6 +56,7 @@ export const SHEET_TITLES: Record<SheetId, string> = {
   'C-900': 'Civil Details',
   'L-100': 'Landscape and Tree Canopy Plan',
   'TCP-NRI': 'Tree Conservation Plan / Natural Resource Inventory Coordination',
+  'FP-100': 'Floodplain Concept Study — Existing Conditions, Impact and Mitigation',
 }
 
 /**
@@ -71,6 +82,7 @@ export const SHEET_DISCIPLINE: Record<SheetId, string> = {
   'C-900': 'Maryland Professional Engineer',
   'L-100': 'Landscape Architect / Qualified Professional',
   'TCP-NRI': 'Qualified Environmental Professional',
+  'FP-100': 'Maryland Professional Engineer',
 }
 
 export type SheetStatus = 'PRELIMINARY' | 'FOR_REVIEW' | 'PERMIT_SET' | 'NOT_FOR_CONSTRUCTION'

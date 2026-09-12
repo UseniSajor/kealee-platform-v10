@@ -23,6 +23,22 @@ const FC = JSON.parse(readFileSync(join(MODEL_DIR, 'indian-queen.fill-and-cut.js
 const ES = JSON.parse(readFileSync(join(MODEL_DIR, 'indian-queen.easement-storage.json'), 'utf8'))
 const SC = JSON.parse(readFileSync(join(MODEL_DIR, 'indian-queen.scenarios.json'), 'utf8'))
 
+/**
+ * Foundation type per lot, read from the plat specification.
+ *
+ * The twin's building attributes do not carry it, and defaulting the report to
+ * 'slab' printed slab-on-grade against four dwellings designed on vented
+ * crawlspaces — the single decision the compensatory storage balance turns on.
+ */
+const FOUNDATION: Record<string, string> = Object.fromEntries(
+  ['53', '54', '55', '56'].map(lot => {
+    try {
+      const d = JSON.parse(readFileSync(join(PROJ, 'input', `iq-lot${lot}.plat.json`), 'utf8'))
+      return [lot, String(d.foundation ?? 'slab')]
+    } catch { return [lot, 'slab'] }
+  }),
+)
+
 const f = (n: number, d = 2) => n.toFixed(d)
 const n0 = (n: number) => Math.round(n).toLocaleString('en-US')
 const L = (s: string) => s.replace(' Fort Foote Rd', '')
@@ -132,7 +148,7 @@ for (const b of buildings) {
   w(`| ${lot} | ${L(addr)} | ${f(b.finishedFloorElevFt)} | ${fb >= 0 ? '+' : ''}${f(fb)} ft ` +
     `${fb < 2 ? '**BELOW REQUIRED FREEBOARD**' : 'satisfies BFE + 2 ft'} | ` +
     `${f(b.garageSlabElevFt)} | ${b.basementElevFt == null ? 'none' : f(b.basementElevFt)} | ` +
-    `${b.foundationType ?? 'slab'} |`)
+    `${FOUNDATION[lot] ?? 'slab'} |`)
 }
 w()
 w('Prince George\'s County Subtitle 4 and the National Flood Insurance Program require the ' +
@@ -834,7 +850,7 @@ w('|---|---|---|---|')
 for (const b of buildings) {
   const lot = b.id.startsWith('l1') ? '53' : b.id.startsWith('l2') ? '54' : b.id.startsWith('l3') ? '55' : '56'
   w(`| ${lot} | ${b.basementElevFt == null ? 'none proposed' : `EL ${f(b.basementElevFt)}`} | ` +
-    `EL ${f(wsel100)} | ${b.basementElevFt == null ? `${b.foundationType ?? 'elevated'} foundation` : `**${f(wsel100 - b.basementElevFt)} ft below**`} |`)
+    `EL ${f(wsel100)} | ${b.basementElevFt == null ? `${FOUNDATION[lot] ?? 'elevated'} foundation` : `**${f(wsel100 - b.basementElevFt)} ft below**`} |`)
 }
 w()
 w('Three independent grounds apply, each of which is individually sufficient:')
@@ -1092,6 +1108,32 @@ w(`| Compensation required by Lots 53 and 56 | ${n0(SC.splitDevelopment.compensa
 w(`| Available by excavation on Lots 54 and 55 to EL 50.0 | ${n0(SC.splitDevelopment.compensationFromLots5455Cy.toEl50)} cy over ${n0(SC.splitDevelopment.cutAreaSqFt.toEl50)} sq ft |`)
 w(`| Available to EL 49.0 | ${n0(SC.splitDevelopment.compensationFromLots5455Cy.toEl49)} cy |`)
 w(`| **Ratio provided to required, at EL 50.0** | **${f(SC.splitDevelopment.coverageRatioAtEl50, 1)} : 1** |`)
+w()
+w('#### Resulting position of the developed lots relative to the floodplain')
+w()
+w('Distances are measured from the nearest corner of the proposed dwelling to the 100-year ' +
+  'floodplain limit, in plan.')
+w()
+w('| Lot | Existing condition | After grading | Finished floor | Freeboard |')
+w('|---|---|---|---|---|')
+for (const lot of ['53', '56']) {
+  const sb = SC.setbacks[lot]
+  const ex = sb.existing.horizFt < 0 ? `${f(-sb.existing.horizFt, 1)} ft inside the limit` : `${f(sb.existing.horizFt, 1)} ft clear`
+  const pr = sb.proposed.horizFt < 0 ? `${f(-sb.proposed.horizFt, 1)} ft inside the limit` : `**${f(sb.proposed.horizFt, 1)} ft clear**`
+  w(`| ${lot} | ${ex} | ${pr} | EL ${f(sb.proposed.ffFt)} | +${f(sb.proposed.freeboardFt)} ft |`)
+}
+w()
+w('Under the recommended scheme both dwellings stand entirely outside the 100-year ' +
+  `floodplain limit in plan — Lot 53 by ${f(SC.setbacks['53'].proposed.horizFt, 1)} ft and ` +
+  `Lot 56 by ${f(SC.setbacks['56'].proposed.horizFt, 1)} ft — with finished floors ` +
+  `${f(SC.setbacks['53'].proposed.freeboardFt)} ft and ${f(SC.setbacks['56'].proposed.freeboardFt)} ft ` +
+  'above the water surface respectively. In the existing condition both footprints lie within ' +
+  'the limit; the separation is produced by the proposed grading.')
+w()
+w('The lots themselves remain partly within the floodplain at their rear, which is ' +
+  'unavoidable and is the area to be placed under easement. Flood insurance will be required ' +
+  'on any structure within the mapped floodplain irrespective of the lowest-floor elevation, ' +
+  'and the lender will require it in any event.')
 w()
 w('The compensatory storage deficit that constrains the four-lot proposal is eliminated. The ' +
   'excavation is located on land that cannot be developed in any event, at a floor elevation ' +

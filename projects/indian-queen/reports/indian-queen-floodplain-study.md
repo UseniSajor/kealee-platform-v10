@@ -32,7 +32,7 @@ are set out below in the order of their significance to the development.
 
 6. **The proposed condition increases the 100-year water-surface elevation by 0.03 ft** at RS +75. The proposal does not satisfy a no-rise standard.
 
-7. **The proposed condition removes 2,108 cubic yards of floodplain storage** below the 100-year water surface, from 2,243 cy of total fill within the modelled reach. Compensatory storage is required and is designed in Section 11.5.
+7. **The proposed condition removes 5,165 cubic yards of floodplain storage** below the 100-year water surface, from 6,617 cy of total fill within the modelled reach. Compensatory storage is required and is designed in Section 11.5.
 
 8. **Lot 54 is inundated to 89 percent in the 2-year event and Lot 55 to 41 percent.** Fort Foote Road is overtopped between the 5-year and 10-year events, interrupting vehicular and emergency access at approximately a 1-in-7-year frequency. See Section 11.6.
 
@@ -42,17 +42,17 @@ are set out below in the order of their significance to the development.
 
 | Lot | Address | Finished floor | Freeboard to BFE | Garage slab | Basement | Foundation |
 |---|---|---|---|---|---|---|
-| 53 | 9588 | 59.24 | +3.72 ft satisfies BFE + 2 ft | 58.91 | none | slab |
-| 54 | 9584 | 57.57 | +2.05 ft satisfies BFE + 2 ft | 57.24 | none | slab |
-| 55 | 9580 | 57.60 | +2.08 ft satisfies BFE + 2 ft | 57.27 | none | slab |
-| 56 | 9576 | 61.02 | +5.50 ft satisfies BFE + 2 ft | 60.69 | none | slab |
+| 53 | 9588 | 59.24 | +3.72 ft satisfies BFE + 2 ft | 58.91 | none | crawlspace |
+| 54 | 9584 | 57.57 | +2.05 ft satisfies BFE + 2 ft | 57.24 | none | crawlspace |
+| 55 | 9580 | 57.60 | +2.08 ft satisfies BFE + 2 ft | 57.27 | none | crawlspace |
+| 56 | 9576 | 61.02 | +5.50 ft satisfies BFE + 2 ft | 60.69 | none | crawlspace |
 
 Prince George's County Subtitle 4 and the National Flood Insurance Program require the lowest floor of a residential structure, including any basement, to be at or above the base flood elevation, with county freeboard applied above that elevation. The proposed basement elevations do not satisfy this standard and are not subject to variance for new construction on a vacant lot. Section 11.4 sets out the determination and the alternatives.
 
 ### Conclusion
 
 **The proposed improvements do not remove the subject lots from the 100-year floodplain, and the proposed condition produces a measurable increase in the water-surface elevation.** The proposed condition leaves 
-59,700 sq ft of the four lots below the 100-year water surface, against 61,900 sq ft existing.
+51,700 sq ft of the four lots below the 100-year water surface, against 61,900 sq ft existing.
 
 Removal of all four lots from the floodplain is not achievable by any modification to the crossing, because the controlling tailwater in the receiving channel lies above the existing ground on Lots 54 and 55 (Section 11.3). It is not achievable by storage, which would require 136,670 cy of excavation, equivalent to 49.1 ft over the entire property, and which would not drain in any event (Section 11.7). It is not achievable by diversion of upstream drainage, which alters the 100-year elevation by 0.07 ft (Section 11.8).
 
@@ -60,7 +60,7 @@ Removal of all four lots from the floodplain is not achievable by any modificati
 
 **Develop Lots 53 and 56. Dedicate Lots 54 and 55 as floodplain and site the compensatory storage within them.**
 
-Lots 54 and 55 account for 98.5 percent of the compensatory storage obligation of the four-lot proposal and cannot themselves be compensated. Lots 53 and 56, whose building envelopes stand on high ground, require 31 cy between them, against 1,399 cy obtainable by excavation on Lots 54 and 55 at a floor elevation that drains — a ratio of 45.1 to 1. The constraint that prevents the four-lot proposal is removed by the same measure that resolves the two lots which cannot be developed. Section 11.9 sets out the balance and Section 11.10 the full recommendation.
+Lots 54 and 55 account for 82.5 percent of the compensatory storage obligation of the four-lot proposal and cannot themselves be compensated. Lots 53 and 56, whose building envelopes stand on high ground, require 891 cy between them, against 1,399 cy obtainable by excavation on Lots 54 and 55 at a floor elevation that drains — a ratio of 1.6 to 1. The constraint that prevents the four-lot proposal is removed by the same measure that resolves the two lots which cannot be developed. Section 11.9 sets out the balance and Section 11.10 the full recommendation.
 
 ---
 
@@ -399,7 +399,7 @@ Computed outlet velocity at the 100-year condition is 15.0 fps discharging to an
 
 The proposed terrain comprises the graded surface from the site plan — four dwelling pads, driveways, aprons and tie-out grading — merged into the existing surface within the limit of disturbance and re-cut at the same cross sections. Overbank roughness on the graded right bank was reduced from wooded (n = 0.10) to mown lawn (n = 0.035), a change which acts to lower the water surface. The crossing configuration is identical between conditions.
 
-Fill placed: **2,243 cy** in the modelled reach.
+Fill placed: **6,617 cy** in the modelled reach.
 
 ### 8.2 Existing versus proposed water-surface elevations — the no-rise table
 
@@ -481,12 +481,12 @@ The mechanism is the loss of conveyance area in the right overbank where the dwe
 
 | Storm | Water surface | Fill below the flood surface | Total fill in reach |
 |---|---|---|---|
-| 10-year | EL 54.61 | **2,011 cy** | 2,243 cy |
-| 25-year | EL 54.93 | **2,053 cy** | 2,243 cy |
-| 50-year | EL 55.20 | **2,082 cy** | 2,243 cy |
-| 100-year | EL 55.51 | **2,108 cy** | 2,243 cy |
+| 10-year | EL 54.61 | **4,770 cy** | 6,617 cy |
+| 25-year | EL 54.93 | **4,935 cy** | 6,617 cy |
+| 50-year | EL 55.20 | **5,047 cy** | 6,617 cy |
+| 100-year | EL 55.51 | **5,165 cy** | 6,617 cy |
 
-The proposed grading removes 2,108 cubic yards of 100-year floodplain storage. Section 11.1 quantifies the attenuation this storage provides. The steady-state formulation does not credit that attenuation, and the 0.03 ft increase reported in Section 8.2 is therefore a lower bound on the impact.
+The proposed grading removes 5,165 cubic yards of 100-year floodplain storage. Section 11.1 quantifies the attenuation this storage provides. The steady-state formulation does not credit that attenuation, and the 0.03 ft increase reported in Section 8.2 is therefore a lower bound on the impact.
 
 **Compensatory storage is required**, excavated below the 100-year water surface, hydraulically connected, and within the same reach. See Section 11.5.
 
@@ -496,19 +496,19 @@ The proposed grading removes 2,108 cubic yards of 100-year floodplain storage. S
 
 | Lot | Address | Lot area | Flooded, existing | Flooded, proposed | Change | Fill below flood |
 |---|---|---|---|---|---|---|
-| 53 | 9588 | 12,500 sf | 11,100 sf (88.8%) | 11,100 sf (88.8%) | +0 sf | 18 cy |
-| 54 | 9584 | 23,500 sf | 23,500 sf (100.0%) | 23,500 sf (100.0%) | +0 sf | 1,142 cy |
-| 55 | 9580 | 25,600 sf | 24,500 sf (95.7%) | 22,700 sf (88.7%) | -1,800 sf | 932 cy |
-| 56 | 9576 | 13,900 sf | 2,800 sf (20.1%) | 2,400 sf (17.3%) | -400 sf | 12 cy |
+| 53 | 9588 | 12,500 sf | 11,100 sf (88.8%) | 5,900 sf (47.2%) | -5,200 sf | 771 cy |
+| 54 | 9584 | 23,500 sf | 23,500 sf (100.0%) | 22,100 sf (94.0%) | -1,400 sf | 2,516 cy |
+| 55 | 9580 | 25,600 sf | 24,500 sf (95.7%) | 23,000 sf (89.8%) | -1,500 sf | 1,678 cy |
+| 56 | 9576 | 13,900 sf | 2,800 sf (20.1%) | 700 sf (5.0%) | -2,100 sf | 113 cy |
 
 **10-year (existing WS EL 54.61, proposed WS EL 54.62)**
 
 | Lot | Address | Lot area | Flooded, existing | Flooded, proposed | Change | Fill below flood |
 |---|---|---|---|---|---|---|
-| 53 | 9588 | 12,500 sf | 9,900 sf (79.2%) | 9,800 sf (78.4%) | -100 sf | 16 cy |
-| 54 | 9584 | 23,500 sf | 23,400 sf (99.6%) | 22,700 sf (96.6%) | -700 sf | 1,132 cy |
-| 55 | 9580 | 25,600 sf | 23,500 sf (91.8%) | 20,800 sf (81.2%) | -2,700 sf | 855 cy |
-| 56 | 9576 | 13,900 sf | 1,600 sf (11.5%) | 1,400 sf (10.1%) | -200 sf | 3 cy |
+| 53 | 9588 | 12,500 sf | 9,900 sf (79.2%) | 5,000 sf (40.0%) | -4,900 sf | 604 cy |
+| 54 | 9584 | 23,500 sf | 23,400 sf (99.6%) | 18,600 sf (79.1%) | -4,800 sf | 2,431 cy |
+| 55 | 9580 | 25,600 sf | 23,500 sf (91.8%) | 19,700 sf (77.0%) | -3,800 sf | 1,599 cy |
+| 56 | 9576 | 13,900 sf | 1,600 sf (11.5%) | 500 sf (3.6%) | -1,100 sf | 54 cy |
 
 ### 8.6 Does the proposed work remove any part of the lots from the floodplain?
 
@@ -524,10 +524,10 @@ Delineated by intersecting the modelled water surface with the terrain, connecti
 
 | Storm | Existing WS | Existing area | Proposed WS | Proposed area |
 |---|---|---|---|---|
-| 10-year | EL 54.61 | 3.95 ac | EL 54.62 | 3.87 ac |
-| 25-year | EL 54.93 | 4.05 ac | EL 54.94 | 3.98 ac |
-| 50-year | EL 55.20 | 4.16 ac | EL 55.22 | 4.10 ac |
-| 100-year | EL 55.51 | 4.27 ac | EL 55.52 | 4.23 ac |
+| 10-year | EL 54.61 | 3.95 ac | EL 54.62 | 3.69 ac |
+| 25-year | EL 54.93 | 4.05 ac | EL 54.94 | 3.86 ac |
+| 50-year | EL 55.20 | 4.16 ac | EL 55.22 | 3.97 ac |
+| 100-year | EL 55.51 | 4.27 ac | EL 55.52 | 4.07 ac |
 
 **Floodway.** No floodway is delineated. A floodway is defined by an encroachment analysis that raises the water surface by a permitted increment (1.00 ft under the NFIP, and Maryland requires the more restrictive of that and the local standard). Running one here would be meaningless: the reach is a pond with velocities under 1 fps, the conveyance is not in a defined channel, and the control is a road weir. **If DPIE requires a floodway it must be developed from the FPS 200546 model, not from this one.**
 
@@ -552,7 +552,7 @@ Deliverables written:
 | FEMA LOMR / LOMA? | **A LOMA cannot help** — the lots are already outside the FEMA SFHA. Being outside Zone AE does not make them outside the county floodplain. |
 | Does the work qualify as no-rise / zero-rise? | **No.** 0.03 ft rise at the 100-year. |
 | Floodway encroachment analysis required? | Not on the current mapping (no floodway exists). If DPIE establishes one from FPS 200546, then yes. |
-| Compensatory storage required? | **Yes.** 2,108 cy below the 100-year surface. |
+| Compensatory storage required? | **Yes.** 5,165 cy below the 100-year surface. |
 | Does the proposal meet county, DPIE, MDE and FEMA floodplain regulation? | **No, as currently designed.** Two dwellings at the water surface, four basements below it, a rise, and uncompensated fill. |
 | Can the work legally support removing the floodplain designation from the lots? | **No.** Not by crossing enlargement (Section 11.3), not by storage (Section 11.7), not by upstream diversion (Section 11.8). |
 
@@ -589,7 +589,7 @@ Attenuation falls from 45 percent at the 10-year event to 2 percent at the 100-y
 
 ### 11.2 Disposition of displaced floodwater
 
-**Fill without compensating excavation.** Floodwater displaced by fill is accommodated by a rise in the water surface across the impoundment. The impoundment surface at the 100-year event is 4.27 acres. The computed rise attributable to 2,108 cy of fill is 0.03 ft. This value reflects the loss of conveyance area only; the steady-state formulation cannot account for the loss of attenuating storage, which Section 11.1 shows to be significant at the more frequent events. The computed rise is therefore a lower bound. The displaced volume is accommodated on adjoining upstream properties and on the roadway.
+**Fill without compensating excavation.** Floodwater displaced by fill is accommodated by a rise in the water surface across the impoundment. The impoundment surface at the 100-year event is 4.27 acres. The computed rise attributable to 5,165 cy of fill is 0.03 ft. This value reflects the loss of conveyance area only; the steady-state formulation cannot account for the loss of attenuating storage, which Section 11.1 shows to be significant at the more frequent events. The computed rise is therefore a lower bound. The displaced volume is accommodated on adjoining upstream properties and on the roadway.
 
 **Enlargement of the crossing.** Increasing the hydraulic capacity of the crossing transfers discharge downstream at a higher rate. The attenuation presently provided by the impoundment at the more frequent events is a benefit currently accruing to downstream properties, and it is reduced in proportion to the capacity added:
 
@@ -641,10 +641,10 @@ Removal by filling is examined below:
 
 | Lot | Basement | 100-yr water surface | Disposition |
 |---|---|---|---|
-| 53 | none proposed | EL 55.52 | elevated foundation |
-| 54 | none proposed | EL 55.52 | elevated foundation |
-| 55 | none proposed | EL 55.52 | elevated foundation |
-| 56 | none proposed | EL 55.52 | elevated foundation |
+| 53 | none proposed | EL 55.52 | crawlspace foundation |
+| 54 | none proposed | EL 55.52 | crawlspace foundation |
+| 55 | none proposed | EL 55.52 | crawlspace foundation |
+| 56 | none proposed | EL 55.52 | crawlspace foundation |
 
 Three independent grounds apply, each of which is individually sufficient:
 
@@ -677,10 +677,10 @@ Fill placed below the 100-year water surface displaces floodplain storage and mu
 
 | Location | Volume below EL 55.53 | Share |
 |---|---|---|
-| Beneath the dwelling footprints | 835 cy | 28.6% |
-| Within 10 ft of a dwelling | 759 cy | 26.0% |
-| Driveways, aprons and tie-out grading | 1,324 cy | 45.4% |
-| **Total** | **2,917 cy** | |
+| Beneath the dwelling footprints | 1,985 cy | 38.4% |
+| Within 10 ft of a dwelling | 1,410 cy | 27.3% |
+| Driveways, aprons and tie-out grading | 1,770 cy | 34.3% |
+| **Total** | **5,165 cy** | |
 
 #### The recorded storm drain easement
 
@@ -721,16 +721,16 @@ All four rear-yard cells lie within the existing-condition 100-year floodplain l
 
 | | Volume |
 |---|---|
-| Compensation required by the proposed grading | 2,108 cy |
+| Compensation required by the proposed grading | 5,165 cy |
 | Compensation available from all cells | 1,070 cy |
-| **Deficit** | **1,038 cy** |
+| **Deficit** | **4,095 cy** |
 
 **The proposed grading cannot be compensated within the subject property.** The ground lying between the 100-year water surface and a floor elevation that will drain is insufficient to hold the volume the proposed fill displaces.
 
 The design response is to reduce the fill rather than to seek additional excavation. The available measures, in order of the volume returned:
 
-1. **Vented stem-wall or pier foundations to all four dwellings.** Returns the 835 cy placed beneath the footprints and the greater part of the 759 cy placed around them.
-2. **Driveways and aprons constructed at existing grade.** Driveways are permitted to flood. A substantial proportion of the 1,324 cy in the third row of the table above is attributable to raising them.
+1. **Vented stem-wall or pier foundations to all four dwellings.** Returns the 1,985 cy placed beneath the footprints and the greater part of the 1,410 cy placed around them.
+2. **Driveways and aprons constructed at existing grade.** Driveways are permitted to flood. A substantial proportion of the 1,770 cy in the third row of the table above is attributable to raising them.
 3. **Tie-out grading held close to the structures** at 3:1 rather than extended across the rear yards.
 
 With the dwellings on vented foundations and the driveways at existing grade, the fill placed below the 100-year water surface falls to the order of the 1,070 cy available from the cells, and the balance closes. This is the recommended basis of design.
@@ -790,21 +790,34 @@ Sections 11.3 to 11.7 establish that Lots 54 and 55 cannot be removed from the f
 
 | Lot | Fill below the 100-year surface | Share |
 |---|---|---|
-| 53 | 18 cy | 0.9% |
-| 54 | 1,142 cy | 54.2% |
-| 55 | 934 cy | 44.3% |
-| 56 | 13 cy | 0.6% |
+| 53 | 776 cy | 15.3% |
+| 54 | 1,142 cy | 22.4% |
+| 55 | 934 cy | 18.4% |
+| 56 | 115 cy | 2.3% |
 
-Lots 54 and 55 account for 2,076 cy of the 2,108 cy requirement, or 98.5 percent. Lots 53 and 56, whose building envelopes stand on high ground, generate 31 cy between them.
+Lots 54 and 55 account for 4,196 cy of the 5,087 cy requirement, or 82.5 percent. Lots 53 and 56, whose building envelopes stand on high ground, generate 891 cy between them.
 
 **Developing Lots 53 and 56 only, and dedicating Lots 54 and 55 as floodplain, produces the following balance:**
 
 | | Volume |
 |---|---|
-| Compensation required by Lots 53 and 56 | 31 cy |
+| Compensation required by Lots 53 and 56 | 891 cy |
 | Available by excavation on Lots 54 and 55 to EL 50.0 | 1,399 cy over 17,300 sq ft |
 | Available to EL 49.0 | 2,121 cy |
-| **Ratio provided to required, at EL 50.0** | **45.1 : 1** |
+| **Ratio provided to required, at EL 50.0** | **1.6 : 1** |
+
+#### Resulting position of the developed lots relative to the floodplain
+
+Distances are measured from the nearest corner of the proposed dwelling to the 100-year floodplain limit, in plan.
+
+| Lot | Existing condition | After grading | Finished floor | Freeboard |
+|---|---|---|---|---|
+| 53 | 50.6 ft inside the limit | **18.0 ft clear** | EL 59.24 | +3.72 ft |
+| 56 | 10.0 ft inside the limit | **28.9 ft clear** | EL 61.02 | +5.50 ft |
+
+Under the recommended scheme both dwellings stand entirely outside the 100-year floodplain limit in plan — Lot 53 by 18.0 ft and Lot 56 by 28.9 ft — with finished floors 3.72 ft and 5.50 ft above the water surface respectively. In the existing condition both footprints lie within the limit; the separation is produced by the proposed grading.
+
+The lots themselves remain partly within the floodplain at their rear, which is unavoidable and is the area to be placed under easement. Flood insurance will be required on any structure within the mapped floodplain irrespective of the lowest-floor elevation, and the lender will require it in any event.
 
 The compensatory storage deficit that constrains the four-lot proposal is eliminated. The excavation is located on land that cannot be developed in any event, at a floor elevation that drains to the receiving channel, within the area to be placed under floodplain easement. Lots 54 and 55 cease to be a constraint on the project and become the measure that permits it.
 
@@ -812,7 +825,7 @@ The compensatory storage deficit that constrains the four-lot proposal is elimin
 
 1. **Develop Lots 53 and 56. Do not develop Lots 54 and 55.** Lot 54 is inundated to 89 percent in the 2-year event and Lot 55 to 41 percent. Neither can be removed from the floodplain by any means examined, neither can support compensated fill, and together they account for 98.5 percent of the compensatory storage obligation of the four-lot proposal.
 
-2. **Dedicate Lots 54 and 55 as floodplain and construct the compensatory storage within them.** Section 11.9 demonstrates that this eliminates the storage deficit constraining the development of Lots 53 and 56, at a ratio of 45.1 to 1. The easement should be dedicated to the existing-condition 100-year limit and should encompass the excavated cells, so that the storage is protected against subsequent filling. Plat 118-083 provides the precedent and instrument form within this subdivision.
+2. **Dedicate Lots 54 and 55 as floodplain and construct the compensatory storage within them.** Section 11.9 demonstrates that this eliminates the storage deficit constraining the development of Lots 53 and 56, at a ratio of 1.6 to 1. The easement should be dedicated to the existing-condition 100-year limit and should encompass the excavated cells, so that the storage is protected against subsequent filling. Plat 118-083 provides the precedent and instrument form within this subdivision.
 
 3. **Design the dwellings on Lots 53 and 56 to the computed flood elevation.** Lowest floor at or above EL 57.52; no basements; vented stem-wall or pier foundations; driveways and aprons at existing grade.
 

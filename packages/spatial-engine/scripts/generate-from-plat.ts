@@ -71,6 +71,10 @@ async function main(): Promise<void> {
     pointOfBeginning?: [number, number]
     programme?: Record<string, unknown>
     calls: unknown[]
+  siteLatLon?: [number, number]
+  stormOutfall?: unknown
+  frontageExisting?: boolean
+  omitWaterAndSewer?: boolean
   }
 
   // ── 1. The county's own record of where the lot is ────────────────────────
@@ -178,6 +182,12 @@ async function main(): Promise<void> {
       // PLAT FIRST for anything the recorded instrument carries; PGAtlas
       // supplies only the layers it does not — contours, zoning, streets.
       frontSetbackFt: spec.frontSetbackFt ?? null,
+      // Rainfall is a POINT lookup, so the site's own position drives it.
+      siteLatLon: (spec.siteLatLon as [number, number] | undefined) ?? null,
+      // A storm drain is drawn only when the spec names a real outfall.
+      stormOutfall: (spec.stormOutfall as never) ?? null,
+      frontageExisting: (spec.frontageExisting as boolean | undefined) ?? null,
+      omitWaterAndSewer: (spec.omitWaterAndSewer as boolean | undefined) ?? null,
       sanitaryFrom: spec.sanitaryFrom,
       frontFaceToCurbFt: spec.frontFaceToCurbFt ?? null,
       curbOffsetFt: spec.curbOffsetFt ?? null,

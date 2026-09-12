@@ -269,6 +269,9 @@ export const SHEET_SUBJECTS: { sheet: SheetId; subjects: ContentSubject[] }[] = 
   { sheet: 'C-500', subjects: ['utility_design'] },
   { sheet: 'C-800', subjects: ['roadway_design'] },
   { sheet: 'L-100', subjects: ['planting_design', 'tree_conservation'] },
+  // The floodplain concept sheet carries the drainage design as context — the
+  // culvert extension IS the mitigation — plus its own floodplain features.
+  { sheet: 'FP-100', subjects: ['stormwater_design', 'grading_design'] },
 ]
 
 /**
@@ -296,8 +299,24 @@ export function featuresForSheet(features: SiteFeature[], sheet: SheetId): SiteF
   // no dwelling on it is not a sheet anyone can work from, and it was the
   // first thing missing when the set was split by discipline. Paving is the
   // same: the driveway is context for every discipline.
+  // CONTOUR IS NOT UNCONDITIONALLY BASE.
+  //
+  // Existing topography is context and belongs on every sheet. PROPOSED
+  // contours are the grading design, and 29 of the 68 contours in this model
+  // are proposed — so with `Contour` listed here they printed on the landscape
+  // sheet too, and L-100 came out as the grading plan with a canopy schedule
+  // under it. `subjectForFeature` already routes a proposed contour to
+  // `grading_design`; the blanket kind test above it meant nothing ever asked.
+  //
+  // FLOODPLAIN IS BASE, like an easement. A flood limit constrains every
+  // discipline on the sheet — where you may grade, plant, build or store — and
+  // it is not one discipline's private layer. It was classified
+  // `tree_conservation` in the subject registry, which routed it to the
+  // LANDSCAPE sheet and stripped it from the floodplain concept sheet that
+  // exists to show it: the limit line vanished and the impact table read "—"
+  // for every lot. Left in BASE it reaches every sheet, which is correct.
   const BASE: SiteFeature['kind'][] = [
-    'Parcel', 'BoundarySegment', 'Setback', 'Easement', 'Contour',
+    'Parcel', 'BoundarySegment', 'Setback', 'Easement', 'Floodplain',
     'Building', 'Pavement',
     // Surface carries the frontage planting strip and ExistingFeature the
     // street right-of-way lines. Left out, both existed in the model and on
@@ -307,6 +326,9 @@ export function featuresForSheet(features: SiteFeature[], sheet: SheetId): SiteF
   ]
   return features.filter(f =>
     BASE.includes(f.kind)
+    // Existing contours everywhere; proposed ones only where grading is a
+    // subject of the sheet.
+    || (f.kind === 'Contour' && subjectForFeature(f) !== 'grading_design')
     || subjects.includes(subjectForFeature(f))
     // The buildable envelope is the BRL; it orients every discipline.
     // The buildable envelope is the BRL; it orients every discipline.

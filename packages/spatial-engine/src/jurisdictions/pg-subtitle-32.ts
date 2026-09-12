@@ -260,19 +260,32 @@ export const PG_PLAN_CONTENT_STANDARDS: PlanContentStandard[] = [
   { paragraph: '(a)(9)', requirement:
       'Basement, first floor and ground elevations at corners of all buildings, spot elevations at critical ' +
       'points, and profiles and/or cross sections of driveways, access lanes, walks and watercourses.',
-    enforcedBy: null },
+    // PARTIAL, and recorded as partial. Finished floor elevations and storm
+    // structure grades are drawn; basement and building-CORNER elevations and
+    // the driveway profile are not, and calling this enforced would hide two
+    // items a reviewer asks for by name.
+    enforcedBy: 'site-plan/design.ts — FFE and structure grades only; corner elevations and '
+      + 'driveway profiles are NOT drawn' },
   { paragraph: '(a)(10)', requirement: 'Size, location and construction details of all proposed site development.',
-    enforcedBy: null },
+    enforcedBy: 'site-plan/site-improvements.ts — driveway, apron, leadwalk, stoop, public walk, '
+      + 'planting strip and curb, each sized and lettered' },
   { paragraph: '(a)(11)', requirement:
       'Drainage area map and study including computations covering the entire tributary area, showing calculated ' +
-      'runoff to all structures, lines and open channel facilities.', enforcedBy: null },
+      'runoff to all structures, lines and open channel facilities.',
+    enforcedBy: 'site-plan/drainage.ts for the per-lot rational-method computations, and the '
+      + 'STORM DRAIN SCHEDULE in sheets/render-pdf.ts for the trunk sizes and flows' },
   { paragraph: '(a)(12)', requirement:
       'Delineation of the proposed subdivision of the site for staging, with sequential construction order and a ' +
       'statement of respective areas in square feet.', enforcedBy: null },
   { paragraph: '(a)(13)', requirement:
       'Soil type per the USDA Soil Survey of Prince George\'s County or as determined by a professional engineer ' +
       'at each proposed residential building; for lots with a proposed basement, hydrological characteristics to ' +
-      'six (6) feet below finished basement floor and depth to the closest aquifer.', enforcedBy: null },
+      'six (6) feet below finished basement floor and depth to the closest aquifer.',
+    // The SSURGO table only. The hydrological characteristics to six feet below
+    // a basement floor come from a soil boring report, which is a field
+    // investigation and not a map product.
+    enforcedBy: 'jurisdictions/usda-soils.ts SSURGO table only; the sub-basement hydrology needs '
+      + 'the soil boring report' },
   { paragraph: '(a)(14)', requirement:
       'Time required for performing and completing all work, with anticipated start and completion dates for each ' +
       'staged subdivision.', enforcedBy: null },

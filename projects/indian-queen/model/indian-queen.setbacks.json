@@ -1,0 +1,58 @@
+{
+ "53": {
+  "existing": {
+   "horizFt": -50.6,
+   "cornersInside": 5,
+   "ffFt": 59.24,
+   "freeboardFt": 3.73
+  },
+  "proposed": {
+   "horizFt": 18.0,
+   "cornersInside": 0,
+   "ffFt": 59.24,
+   "freeboardFt": 3.72
+  }
+ },
+ "54": {
+  "existing": {
+   "horizFt": -91.9,
+   "cornersInside": 5,
+   "ffFt": 57.57,
+   "freeboardFt": 2.06
+  },
+  "proposed": {
+   "horizFt": -58.4,
+   "cornersInside": 5,
+   "ffFt": 57.57,
+   "freeboardFt": 2.05
+  }
+ },
+ "55": {
+  "existing": {
+   "horizFt": -65.1,
+   "cornersInside": 5,
+   "ffFt": 57.6,
+   "freeboardFt": 2.09
+  },
+  "proposed": {
+   "horizFt": -51.5,
+   "cornersInside": 3,
+   "ffFt": 57.6,
+   "freeboardFt": 2.08
+  }
+ },
+ "56": {
+  "existing": {
+   "horizFt": -10.0,
+   "cornersInside": 2,
+   "ffFt": 61.02,
+   "freeboardFt": 5.51
+  },
+  "proposed": {
+   "horizFt": 28.9,
+   "cornersInside": 0,
+   "ffFt": 61.02,
+   "freeboardFt": 5.5
+  }
+ }
+}

@@ -178,10 +178,24 @@ describe('Sec. 32-130(a) plan content standards', () => {
 
   it('is honest about what the engine does not yet enforce', () => {
     const unenforced = unenforcedPlanContentStandards()
-    // Nine of the fifteen have no implementation. The count is asserted so that
-    // implementing one forces a deliberate update rather than passing silently.
-    expect(unenforced).toHaveLength(9)
-    expect(unenforced.map(s => s.paragraph)).toContain('(a)(11)')
+    // FIVE of the fifteen have no implementation, down from nine. The count is
+    // asserted so that implementing one forces a deliberate update rather than
+    // passing silently — which is what this edit is.
+    //
+    // Newly enforced, each with the module named on the standard itself:
+    //   (a)(9)   FFE and storm structure grades — PARTIAL, and recorded as
+    //            partial: building-corner elevations and the driveway profile
+    //            are still not drawn, so the paragraph is not fully met
+    //   (a)(10)  driveway, apron, leadwalk, stoop, walk, strip, curb
+    //   (a)(11)  per-lot rational-method computations and the storm drain
+    //            schedule now tabled on the sheet
+    //   (a)(13)  the SSURGO soils table, which the subdivision generator never
+    //            fetched
+    expect(unenforced).toHaveLength(5)
+    expect(unenforced.map(s => s.paragraph)).toContain('(a)(15)')
+    // (a)(11) is enforced now. Naming it here keeps the reason visible if the
+    // schedule is ever removed from the sheet.
+    expect(unenforced.map(s => s.paragraph)).not.toContain('(a)(11)')
   })
 
   it('records the sheet-size cap as satisfied by ARCH D', () => {

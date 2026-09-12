@@ -228,6 +228,26 @@ export function subjectForFeature(f: SiteFeature): ContentSubject {
   if (proposed && (base === 'topographic_survey' || base === 'existing_improvements')) {
     return 'grading_design'
   }
+  // A SWALE IS DRAINAGE, whatever kind it is filed under.
+  //
+  // The rear-yard swale is a `ProposedFeature`, which maps to site layout, so
+  // it appeared on the layout sheet and NOT on Grading and Drainage — the one
+  // sheet whose subject it is. Kind alone cannot settle this: the same kind
+  // carries the buildable envelope, the graded area and the swale.
+  if (f.kind === 'ProposedFeature') {
+    if (attrs.swale === true || /swale|drainage/i.test(String(attrs.type ?? ''))) {
+      return 'stormwater_design'
+    }
+    if (/grad/i.test(String(attrs.type ?? ''))) return 'grading_design'
+    // THE GROUND COVER LIMIT IS A GRADING ITEM.
+    //
+    // It is the line where the finished slope passes 3:1, it exists only
+    // because of the grading, and it is what stabilises that slope — but its
+    // type carries no "grad" in it, so it fell through to site layout and was
+    // drawn on C-001 and NOT on the Grading and Drainage sheet. The one sheet
+    // a reviewer stamps for slope stabilisation was the one sheet without it.
+    if (/ground cover/i.test(String(attrs.type ?? ''))) return 'grading_design'
+  }
   if (f.kind === 'Building' && 'existing' in f && f.existing === false) {
     return 'architectural_footprint'
   }

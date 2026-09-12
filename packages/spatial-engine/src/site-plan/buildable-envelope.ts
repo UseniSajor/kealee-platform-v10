@@ -278,7 +278,63 @@ export function classifyEdgesFromStreet(
 
   const yards: EdgeYard[] = new Array(n).fill('side')
   yards[front] = 'front'
-  if (rear !== front) yards[rear] = 'rear'
+
+  // A CURVED FRONTAGE IS A RUN OF EDGES, NOT ONE OF THEM.
+  //
+  // Only the single best-scoring edge was marked front. That is right for a lot
+  // with four straight sides and wrong for every lot on a curve, where the
+  // boundary of record carries the arc as a chain of short chords: on Indian
+  // Queen East the lots on the Fort Foote Road curve front it across eight to
+  // twelve chords of about 11.4 ft each.
+  //
+  // What that produced, measured on the generated model:
+  //
+  //   Lot 55  frontage 4.52 ft against a 50 ft minimum — the sheet printed a
+  //           FAILING frontage for a lot with about 130 ft on the street,
+  //           because a 4.5 ft chord had been elected the whole front line
+  //   Lot 54  97 ft of Fort Foote Road frontage classified SIDE and inset 8 ft
+  //           instead of the 25 ft front yard
+  //
+  // A side yard on a street frontage is not a drafting blemish. It is a
+  // dimensional finding a reviewer would reject, and the house is placed from
+  // this inset.
+  //
+  // So the frontage is grown from the best edge along the ring in both
+  // directions, taking each neighbour that is BOTH about as close to the street
+  // AND running along it. Contiguity is what keeps a corner lot's second street
+  // out of the run: it is reached only by crossing an edge that turns away.
+  const frontDist = rawDist(front)
+  const along = (i: number) => {
+    const a = pts[i], b = pts[(i + 1) % n]
+    let best = Infinity, bestSeg: [Position, Position] | null = null
+    const mid: Position = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2]
+    for (const sg of segs) {
+      const d = distToSegment(mid, sg[0], sg[1])
+      if (d < best) { best = d; bestSeg = sg }
+    }
+    if (!bestSeg) return 0
+    const e = Math.atan2(b[1] - a[1], b[0] - a[0])
+    const t = Math.atan2(bestSeg[1][1] - bestSeg[0][1], bestSeg[1][0] - bestSeg[0][0])
+    return Math.abs(Math.cos(e - t))
+  }
+  // Within 25% or 10 ft of the front edge's own distance, and within 60 deg of
+  // the street's direction. The 10 ft floor matters on a tight curve, where the
+  // middle of the arc genuinely stands a few feet further off the centreline
+  // than its ends.
+  const sameFrontage = (i: number) =>
+    rawDist(i) <= Math.max(frontDist * 1.25, frontDist + 10) && along(i) >= 0.5
+  for (const step of [1, -1]) {
+    for (let k = 1; k < n; k++) {
+      const i = ((front + step * k) % n + n) % n
+      if (!sameFrontage(i)) break
+      yards[i] = 'front'
+    }
+  }
+
+  // The rear is whatever is furthest from the street — unless the frontage run
+  // reached it, in which case there is no rear lot line to assign and saying
+  // there is would inset a street frontage by the rear yard.
+  if (yards[rear] !== 'front') yards[rear] = 'rear'
   return yards
 }
 
@@ -384,6 +440,45 @@ function rectFits(rect: Ring, envelope: Ring): boolean {
   return normaliseRing(rect).every(p => pointInRing(p, poly))
 }
 
+/** True when two closed rings share any area at all. */
+function ringsOverlap(x: Ring, y: Ring): boolean {
+  const A = normaliseRing(x), B = normaliseRing(y)
+  if (A.some(p => pointInRing(p, B))) return true
+  if (B.some(p => pointInRing(p, A))) return true
+  // Edge crossings catch the cross-shaped case neither containment test sees.
+  const cross = (o: Position, p: Position, q: Position) =>
+    (p[0] - o[0]) * (q[1] - o[1]) - (p[1] - o[1]) * (q[0] - o[0])
+  for (let i = 0; i < A.length; i++) {
+    const a1 = A[i], a2 = A[(i + 1) % A.length]
+    for (let j = 0; j < B.length; j++) {
+      const b1 = B[j], b2 = B[(j + 1) % B.length]
+      const d1 = cross(a1, a2, b1), d2 = cross(a1, a2, b2)
+      const d3 = cross(b1, b2, a1), d4 = cross(b1, b2, a2)
+      if (((d1 > 0) !== (d2 > 0)) && ((d3 > 0) !== (d4 > 0))) return true
+    }
+  }
+  return false
+}
+
+/**
+ * A DWELLING MAY NOT BE BUILT OVER A RECORDED EASEMENT.
+ *
+ * The envelope is a setback inset and knows nothing about the rights burdening
+ * the ground inside it. On Indian Queen East that put two corners of the Lot 55
+ * dwelling — and two of its driveway, two of its leadwalk and one of its apron —
+ * inside the recorded 60 ft storm drain easement straddling the 54/55 party
+ * line. The easement was drawn on the sheet, correctly and as recorded, beneath
+ * a house standing on it.
+ *
+ * Keep-out rings are recorded rights, so a placement that touches one is not a
+ * placement. They are tested during the search rather than subtracted from the
+ * envelope: the envelope stays the setback figure a reviewer checks, and the
+ * building moves.
+ */
+function clearOfKeepOut(rect: Ring, keepOut: readonly Ring[]): boolean {
+  return !keepOut.some(k => ringsOverlap(rect, k))
+}
+
 /**
  * The largest rectangle at this angle and aspect that fits INSIDE the envelope,
  * never exceeding the permitted area.
@@ -413,6 +508,8 @@ function rectFits(rect: Ring, envelope: Ring): boolean {
 function placeAgainstFront(
   envelope: Ring, parcel: Ring, yards: EdgeYard[],
   areaSqFt: number, aspect: number, angle: number,
+  keepOut: readonly Ring[] = [],
+  sideStandoffFt: number | null = null,
 ): Ring | null {
   const pts = normaliseRing(parcel)
   const frontIdx = yards.indexOf('front')
@@ -452,11 +549,50 @@ function placeAgainstFront(
   const along = (p: Position) => (p[0] - a[0]) * (dx / len) + (p[1] - a[1]) * (dy / len)
   const env2 = env.map(along)
   const lateralRange = Math.max(...env2) - Math.min(...env2)
+  // Best across ALL depths, for the standoff search below.
+  let globalBest: Ring | null = null, globalErr = Infinity
   for (let back = 0; back <= backOfEnvelope - frontOfEnvelope; back += 1) {
     const want = frontOfEnvelope + depth / 2 + back
     const shift = want - cProj
     const base: Position = [c[0] + nx * shift, c[1] + ny * shift]
-    let best: Ring | null = null, bestOff = Infinity
+    // WHERE A KEEP-OUT IS IN PLAY, THE HOUSE GOES AS FAR FROM IT AS THE LOT
+    // ALLOWS — not merely far enough to clear it.
+    //
+    // The centred placement is the right default: a house between its side
+    // yards reads correctly and leaves usable ground on both sides. But on a
+    // lot burdened by a recorded storm drain easement there is a better side
+    // and a worse one, and stopping at the first position that clears the
+    // easement leaves the dwelling hard against it with the whole opposite yard
+    // standing empty.
+    //
+    // So with keep-outs present the search takes the FURTHEST clearance at this
+    // depth, and without them it keeps the smallest lateral shift exactly as
+    // before.
+    let best: Ring | null = null, bestOff = Infinity, bestClear = -Infinity
+    let bestErr = Infinity
+    // Distance from the rectangle to the NEAREST side lot line, which is what a
+    // stated standoff is measured to.
+    const sideClearance = (rect: Ring): number => {
+      let worst = Infinity
+      for (let i = 0; i < pts.length; i++) {
+        if (yards[i] !== 'side') continue
+        const a2 = pts[i], b2 = pts[(i + 1) % pts.length]
+        for (const q of normaliseRing(rect)) worst = Math.min(worst, distToSegment(q, a2, b2))
+      }
+      return worst
+    }
+    const clearanceOf = (rect: Ring): number => {
+      let worst = Infinity
+      for (const k of keepOut) {
+        const kp = normaliseRing(k)
+        for (const p of normaliseRing(rect)) {
+          for (let i = 0; i < kp.length; i++) {
+            worst = Math.min(worst, distToSegment(p, kp[i], kp[(i + 1) % kp.length]))
+          }
+        }
+      }
+      return worst
+    }
     for (let off = 0; off <= lateralRange / 2; off += 0.5) {
       for (const sgn of off === 0 ? [1] : [1, -1]) {
         const centre: Position = [
@@ -464,13 +600,66 @@ function placeAgainstFront(
           base[1] + (dy / len) * off * sgn,
         ]
         const rect = rectangleAt(centre, areaSqFt, aspect, angle)
-        if (rectFits(rect, envelope) && off < bestOff) { best = rect; bestOff = off }
+        if (!rectFits(rect, envelope) || !clearOfKeepOut(rect, keepOut)) continue
+        if (sideStandoffFt != null) {
+          // A STATED STANDOFF IS A POSITION, NOT A MINIMUM.
+          //
+          // A side setback says "no nearer than"; it cannot say "put it here".
+          // Lot 55's dwelling sat 57.6 ft off the Lot 56 line with the whole of
+          // that yard doing nothing, because every rule in play was a minimum
+          // and the placement was free to ignore the distance entirely.
+          //
+          // With a standoff the search takes the position whose clearance to
+          // the nearest side lot line is CLOSEST TO the stated figure, so the
+          // house is held at a distance somebody chose rather than at whatever
+          // the search happened to reach first.
+          const err = Math.abs(sideClearance(rect) - sideStandoffFt)
+          if (err < bestErr) { best = rect; bestErr = err; bestOff = off }
+        } else if (!keepOut.length) {
+          if (off < bestOff) { best = rect; bestOff = off }
+        } else {
+          const clear = clearanceOf(rect)
+          if (clear > bestClear) { best = rect; bestClear = clear; bestOff = off }
+        }
       }
-      if (best) break
+      // Without keep-outs the first fitting offset is the answer. With them the
+      // whole lateral range is searched, because the best position is the
+      // furthest one and it is reached last.
+      if (best && !keepOut.length && sideStandoffFt == null) break
+    }
+    if (sideStandoffFt != null) {
+      // A STANDOFF IS SEARCHED OVER THE WHOLE DEPTH, not just the first depth
+      // that fits.
+      //
+      // Returning at the first fitting depth honoured "against the front line"
+      // and abandoned the standoff: on Lot 55 the front of the envelope is a
+      // curve, the only positions that fit there are near the middle of the
+      // lot, and the search settled at 46 ft from the side line while being
+      // asked for 20. Stepping back a few feet opens the width the standoff
+      // needs.
+      //
+      // The whole depth is scanned and the best error wins; shallower depths
+      // are reached first, so an exact tie keeps the house as far forward as
+      // possible.
+      if (best && bestErr < globalErr - 1e-6) {
+        globalErr = bestErr; globalBest = best
+      }
+      // THE SHALLOWEST DEPTH THAT MEETS THE STANDOFF WINS.
+      //
+      // Scanning the whole depth for the smallest error found the standoff and
+      // lost the front building line: Lot 55 came to rest 85 ft back from the
+      // street because a position down the lot happened to hit 20.00 ft while a
+      // position near the front line hit 20.4. Half a foot of standoff is not
+      // worth 50 ft of front yard.
+      //
+      // Half a foot is the tolerance — inside it the standoff is met, and the
+      // house stays as far forward as the envelope allows.
+      if (globalBest && globalErr <= 0.5) break
+      continue
     }
     if (best) return best
   }
-  return null
+  return sideStandoffFt != null ? globalBest : null
 }
 
 function largestFittingRectangle(
@@ -627,6 +816,28 @@ export function deriveBuildableEnvelope(input: {
    */
   frontSetbackFt?: number | null
   /**
+   * A side yard STATED for this lot, overriding the zone table.
+   *
+   * Same standing as `frontSetbackFt`: a platted building line, a condition of
+   * approval or a client's own instruction can require more than the table's
+   * minimum, and where one does it governs the lot. It is never used to require
+   * LESS — the table's figure is a minimum and this takes the greater of the
+   * two, so a stated value can only tighten the envelope.
+   *
+   * Lettered on the sheet against the table value it supersedes, so a reviewer
+   * reads a deliberate restriction rather than a misread table.
+   */
+  sideSetbackFt?: number | null
+  /**
+   * A stated distance from the nearest SIDE lot line at which to place the
+   * dwelling — a position, not a minimum.
+   *
+   * Setbacks cannot express "put the house here": they only forbid nearer. Use
+   * this where the placement itself has been decided and the yard it leaves is
+   * the point of the decision.
+   */
+  sideStandoffFt?: number | null
+  /**
    * Distance from the FACE OF BUILDING to the start of the street, when that is
    * how the dimension was given.
    *
@@ -660,6 +871,15 @@ export function deriveBuildableEnvelope(input: {
    * centreline, not a single nearby point.
    */
   streetPaths?: Position[][] | null
+  /**
+   * Ground the dwelling may not stand on — recorded easements, chiefly.
+   *
+   * A setback envelope is silent about the rights burdening the land inside it,
+   * so a house placed only against the setbacks can be placed on a county storm
+   * drain easement. These rings are tested during placement; where the house
+   * cannot clear them the drawing says so rather than moving it quietly.
+   */
+  keepOutRings?: Position[][] | null
 }): BuildableEnvelope {
   const { parcel, standards, maxFootprintSqFt = 1500 } = input
   const tableSetbacks = extractSetbacks(standards, input.useColumn, input.citation)
@@ -668,7 +888,7 @@ export function deriveBuildableEnvelope(input: {
     ? input.frontFaceToCurbFt - curbOffset
     : null
   const statedFront = input.frontSetbackFt ?? fromFace
-  const setbacks = statedFront != null && statedFront > 0
+  const withFront = statedFront != null && statedFront > 0
     ? { ...tableSetbacks, frontFt: statedFront,
         source: fromFace != null
           ? `${tableSetbacks.source}; front yard ${statedFront} ft, from ` +
@@ -676,6 +896,21 @@ export function deriveBuildableEnvelope(input: {
             `${curbOffset} ft of sidewalk and planting strip`
           : `${tableSetbacks.source}; front yard stated as ${statedFront} ft for this lot` }
     : tableSetbacks
+  // A stated side yard can only TIGHTEN. Taking it verbatim would let a stated
+  // figure below the table's minimum quietly authorise an encroachment.
+  const statedSide = input.sideSetbackFt != null && input.sideSetbackFt > 0
+    ? Math.max(input.sideSetbackFt, withFront.sideFt ?? 0)
+    : null
+  const withSide = statedSide != null
+    ? { ...withFront, sideFt: statedSide,
+        source: `${withFront.source}; side yard stated as ${statedSide} ft for this lot`
+          + (withFront.sideFt != null && statedSide > withFront.sideFt
+            ? ` (table ${withFront.sideFt} ft)` : '') }
+    : withFront
+  const setbacks = {
+    ...withSide,
+    maxFt: Math.max(withSide.frontFt ?? 0, withSide.sideFt ?? 0, withSide.rearFt ?? 0),
+  }
   const coveragePct = extractLotCoveragePct(standards, input.useColumn)
   const caveats: string[] = []
   const constraints: FootprintConstraint[] = []
@@ -812,8 +1047,12 @@ export function deriveBuildableEnvelope(input: {
   // Against the front line first, at the full requested area. Only if the
   // house cannot fit anywhere along the lot's depth does it shrink in place.
   const stated = input.footprintStated === true
+  const keepOut: Ring[] = (input.keepOutRings ?? [])
+    .filter(r => r && r.length >= 3)
+    .map(r => ({ coordinates: [...r, r[0]] as Position[] }))
   const footprint = allowed > 0
-    ? (placeAgainstFront(ring, parcel, yards, allowed, aspect, angle)
+    ? (placeAgainstFront(ring, parcel, yards, allowed, aspect, angle, keepOut,
+                         input.sideStandoffFt ?? null)
        // A stated footprint keeps its size. Where it will not fit inside the
        // BRL it is placed against the front line anyway, at full dimensions,
        // and the encroachment is named below — a drawing that shows the real
@@ -862,6 +1101,14 @@ export function deriveBuildableEnvelope(input: {
       `SETBACK ENCROACHMENT: the footprint sits ${e.actualFt} ft from a ${e.yard} lot line where ` +
       `${e.requiredFt} ft is required. The drawing must not be issued in this state — a reviewer ` +
       'rejects it on sight. Reduce or reshape the footprint.')
+  }
+
+  if (footprint && keepOut.length && !clearOfKeepOut(footprint, keepOut)) {
+    caveats.push(
+      'EASEMENT ENCROACHMENT: the dwelling as drawn stands on a recorded easement. No position ' +
+      'against the front building line clears it at this footprint. The drawing must not be ' +
+      'issued in this state — reduce or reshape the footprint, or the easement must be vacated ' +
+      'or relocated by the beneficiary before a building permit can issue.')
   }
 
   const drawnAreaSqFt = footprint ? ringArea(footprint) : 0

@@ -1,9 +1,10 @@
 {
  "bfe": 55.53,
  "belowBfeCy": {
-  "underFootprints": 835,
-  "within10ft": 759,
-  "drivewaysAndTieOut": 1324,
-  "total": 2917
- }
+  "underFootprints": 1985,
+  "within10ft": 1410,
+  "drivewaysAndTieOut": 1770,
+  "total": 5165
+ },
+ "_note": "Recomputed from the engine design surface. The earlier figures were derived by interpolating the proposed contours and were understated."
 }

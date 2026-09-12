@@ -90,6 +90,52 @@ export const PG_SUBDIVISION_PROCEDURES: readonly string[] = [
  *         Amendments in the text: CB-27-2010, CB-33-2011, CB-19-2013,
  *         CB-99-2021, CB-021-2024.
  */
+/**
+ * Landscape Manual Section 4.1(c)(1) — ONE-FAMILY DETACHED, per lot.
+ *
+ * A different requirement from the canopy coverage percentage, and both apply.
+ * Sec. 25-128 asks for a percentage of the tract in canopy; this asks for a
+ * COUNT OF TREES on every individual lot, graded by lot size. A plan can hit
+ * the canopy percentage with woodland conservation and street trees and still
+ * fail this one, because this one is about what stands on the lot somebody
+ * lives on.
+ *
+ * SOURCE  Prince George's County Landscape Manual, December 2010, Section
+ *         4.1(c)(1)(A)-(E). Installed at docs/site-plan-reference/landscape/
+ *         with the text extracted beside it. Retrieved 2026-09-10.
+ */
+export const PG_ONE_FAMILY_DETACHED_PLANTING = {
+  citation: 'Landscape Manual Sec. 4.1(c)(1), one-family detached',
+  retrieved: '2026-09-10',
+  /** Ordered large to small; the first tier a lot reaches governs. */
+  tiers: [
+    { minLotSqFt: 40_000, shadeTrees: 4, ornamentalOrEvergreen: 3 },
+    { minLotSqFt: 20_000, shadeTrees: 4, ornamentalOrEvergreen: 3 },
+    { minLotSqFt: 9_500, shadeTrees: 3, ornamentalOrEvergreen: 2 },
+    { minLotSqFt: 0, shadeTrees: 2, ornamentalOrEvergreen: 2 },
+  ] as { minLotSqFt: number; shadeTrees: number; ornamentalOrEvergreen: number }[],
+  placement:
+    'At least one major shade tree on the south and/or west side and within 30 ft of the dwelling '
+    + 'where feasible, and at least one required tree in the front yard — or, on a corner lot, in '
+    + 'the front or side yard facing the street.',
+  existingTreeCredit:
+    'An existing shade tree over 2.5 in dbh within 75 ft of the dwelling, invasive species '
+    + 'excepted, may count toward the requirement for that lot if its dbh, genus, condition and '
+    + 'location are shown on the landscape plan.',
+} as const
+
+/** The planting a lot of this size owes under Sec. 4.1(c)(1). */
+export function oneFamilyDetachedPlanting(lotSqFt: number): {
+  shadeTrees: number; ornamentalOrEvergreen: number
+} {
+  for (const t of PG_ONE_FAMILY_DETACHED_PLANTING.tiers) {
+    if (lotSqFt >= t.minLotSqFt) {
+      return { shadeTrees: t.shadeTrees, ornamentalOrEvergreen: t.ornamentalOrEvergreen }
+    }
+  }
+  return { shadeTrees: 2, ornamentalOrEvergreen: 2 }
+}
+
 export const PG_TREE_CANOPY_COVERAGE = {
   citation: 'Subtitle 25 Division 3, Sec. 25-128 Table 1',
   basis: 'net tract area',

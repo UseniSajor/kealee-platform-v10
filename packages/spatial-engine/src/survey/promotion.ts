@@ -203,6 +203,11 @@ export function applyPromotion(twin: SiteTwin, decision: PromotionDecision, sour
  * of a claim.
  */
 export const SHEET_DEPENDENCIES: Record<SheetId, SiteFeature['kind'][]> = {
+  // The floodplain concept sheet reads the flood limits, the ground under them,
+  // the conveyance that is the mitigation, and the dwellings being protected.
+  'FP-100': ['Parcel', 'BoundarySegment', 'Easement', 'Floodplain',
+    'EnvironmentalBuffer', 'Building', 'Contour', 'SpotElevation', 'Breakline',
+    'ProposedFeature', 'StormPipe', 'Structure', 'DrainageArea', 'Pavement'],
   // C-001 carries every discipline, so it depends on every kind: any model
   // change regenerates it.
   'C-001': ['Parcel', 'BoundarySegment', 'Easement', 'Building', 'Setback',

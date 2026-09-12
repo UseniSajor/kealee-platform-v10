@@ -1851,6 +1851,9 @@ async function main(): Promise<void> {
   // ties back into existing ground. No survey is needed to decide that — a
   // survey fixes where EXISTING ground is, and it is the tie line and the
   // earthwork either side of it that will move when one is run.
+  // Collected inside the grading block and written after it, so the export
+  // must be declared in the enclosing scope.
+  const proposedGrids: Array<{ lot: string; x0: number; y0: number; cellFt: number; nx: number; ny: number; z: number[][] }> = []
   {
     const gradeFeats: SiteFeature[] = []
     let cutTotal = 0, fillTotal = 0, gradedTotal = 0
@@ -2055,6 +2058,46 @@ async function main(): Promise<void> {
       })
       if (!surface) continue
       gradeFindings.push(...surface.findings.map(f => `${l.label}: ${f}`))
+
+      // ── THE PROPOSED SURFACE, EXPORTED AS A GRID ────────────────────────
+      //
+      // PROPOSED_GRID=<path> writes the graded surface as elevations on a
+      // regular grid, sampled from `surface.elevationAt` itself.
+      //
+      // It exists because the alternative does not work. Reconstructing the
+      // proposed ground by interpolating the PROPOSED CONTOURS is lossy in
+      // exactly the place it matters: a 2 ft contour interval cannot represent
+      // a pad, the interpolation has nothing to key on inside the footprint
+      // where no contour crosses, and clipping to the limit-of-disturbance
+      // rings discards the tie-out grading beyond them. Measured that way a pad
+      // the engine built at EL 57.97 read as EL 51.30 — unchanged from existing
+      // ground — and every earthwork and floodplain-fill volume derived from it
+      // was understated.
+      //
+      // Volumes decide whether this project is permittable. They are taken from
+      // the surface that was designed, not from a contour rendering of it.
+      if (process.env.PROPOSED_GRID) {
+        const CELL_FT = 2
+        const xs = (lotRing as Position[]).map(q => q[0])
+        const ys = (lotRing as Position[]).map(q => q[1])
+        const x0 = Math.floor(Math.min(...xs)) - 20
+        const x1 = Math.ceil(Math.max(...xs)) + 20
+        const y0 = Math.floor(Math.min(...ys)) - 20
+        const y1 = Math.ceil(Math.max(...ys)) + 20
+        const rows: number[][] = []
+        for (let y = y0; y <= y1; y += CELL_FT) {
+          const row: number[] = []
+          for (let x = x0; x <= x1; x += CELL_FT) {
+            const z = surface.elevationAt([x, y] as Position)
+            row.push(z == null ? -9999 : Number(z.toFixed(3)))
+          }
+          rows.push(row)
+        }
+        proposedGrids.push({
+          lot: l.spec.reference?.lot ?? l.label, x0, y0, cellFt: CELL_FT,
+          nx: rows[0]?.length ?? 0, ny: rows.length, z: rows,
+        })
+      }
 
       // ── FRONT YARD DRAINAGE, VERIFIED ─────────────────────────────────────
       //
@@ -2902,6 +2945,15 @@ async function main(): Promise<void> {
   // eyeballed off the sheet.
   if (process.env.TWIN_JSON) {
     writeFileSync(process.env.TWIN_JSON, JSON.stringify(twin, null, 2))
+  }
+  if (process.env.PROPOSED_GRID && proposedGrids.length) {
+    writeFileSync(process.env.PROPOSED_GRID, JSON.stringify({
+      crs: 'EPSG:2248', verticalDatum: 'NAVD88',
+      note: 'Proposed graded surface sampled directly from the design surface, '
+        + 'not interpolated from contours. -9999 is outside the graded extent.',
+      grids: proposedGrids,
+    }))
+    console.log(`    proposed grid   ${proposedGrids.length} lot surface(s) -> ${process.env.PROPOSED_GRID}`)
   }
 
   // ── Terminal review, every sheet ──────────────────────────────────────────

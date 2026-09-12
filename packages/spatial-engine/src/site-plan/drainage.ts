@@ -30,6 +30,7 @@ import {
 import { ringAreaSqFt, type Position, type Ring, type SiteTwin } from './site-twin'
 import {
   noaaIntensity, MD_WATER_QUALITY_RAINFALL_IN, MD_WQV_CITATION, NOAA_ATLAS14_SITE,
+  nearestNoaaSite, type NoaaSite,
 } from '../jurisdictions/noaa-atlas14'
 
 const SQFT_PER_ACRE = 43_560
@@ -77,6 +78,13 @@ export interface DrainageInput {
   catchment?: Ring | null
   /** Design storm return period. 10-year is the ordinary storm-drain design. */
   returnPeriodYr?: number
+  /**
+   * Site position, [latitude, longitude], for the rainfall lookup.
+   *
+   * Omitted, the historical Rollins Avenue point is used — which is right
+   * for that project and wrong for any other, so new callers pass it.
+   */
+  siteLatLon?: [number, number] | null
   /** Override the NOAA intensity, if a designer has their own figure. */
   intensityInPerHr?: number | null
   /** Longest flow path, ft. Defaults to the catchment's diagonal. */
@@ -161,14 +169,36 @@ export function computeDrainage(input: DrainageInput): DrainageComputation | nul
   const diag = Math.hypot(Math.max(...xs) - Math.min(...xs), Math.max(...ys) - Math.min(...ys))
   const flowPathFt = input.flowPathFt ?? diag
 
+  // Contours ON the catchment OR WITHIN REACH of it.
+  //
+  // Strictly inside gave a fall of zero on both lots: at a 2 ft interval a
+  // 9,600 sq ft lot on gentle ground contains ONE contour, and one contour has
+  // no fall. The ground either side of the boundary is the same ground, and a
+  // drafter reads a slope across a lot from the contours around it.
+  const REACH_FT = 60
+  const near = (q: Position) => {
+    if (pointInRing(q, coords)) return true
+    for (let i = 0, j = coords.length - 1; i < coords.length; j = i++) {
+      const a2 = coords[j], b2 = coords[i]
+      const vx = b2[0] - a2[0], vy = b2[1] - a2[1]
+      const t = Math.max(0, Math.min(1,
+        ((q[0] - a2[0]) * vx + (q[1] - a2[1]) * vy) / (vx * vx + vy * vy || 1)))
+      if (Math.hypot(q[0] - (a2[0] + t * vx), q[1] - (a2[1] + t * vy)) <= REACH_FT) return true
+    }
+    return false
+  }
   const elevs: number[] = []
   for (const f of input.twin.features) {
     if (f.kind !== 'Contour') continue
     const line = (f as { line?: number[][] }).line
+    const attrEl = Number((f as { attributes?: Record<string, unknown> }).attributes?.elevationFt)
     if (!line?.length) continue
-    // Only contours crossing the catchment describe its fall.
-    if (!line.some(pt => pointInRing([pt[0], pt[1]], coords))) continue
-    for (const pt of line) if (pt.length > 2 && Number.isFinite(pt[2])) elevs.push(pt[2])
+    if (!line.some(pt => near([pt[0], pt[1]]))) continue
+    let got = false
+    for (const pt of line) {
+      if (pt.length > 2 && Number.isFinite(pt[2])) { elevs.push(pt[2]); got = true }
+    }
+    if (!got && Number.isFinite(attrEl)) elevs.push(attrEl)
   }
   let slope = input.flowPathSlopeFtPerFt ?? null
   if (slope == null && elevs.length >= 2) {
@@ -189,14 +219,25 @@ export function computeDrainage(input: DrainageInput): DrainageComputation | nul
   }
 
   const returnPeriodYr = input.returnPeriodYr ?? 10
-  const i = input.intensityInPerHr ?? (tc != null ? noaaIntensity(tc, returnPeriodYr) : null)
+  // THE RAINFALL POINT FOLLOWS THE SITE.
+  //
+  // Rainfall was read from a single module-level table retrieved for Rollins
+  // Avenue, so a project twelve miles away computed on Rollins rainfall and
+  // cited Rollins' coordinates. `site` selects the nearest retrieved point;
+  // when the caller gives no location it stays on the historical default so
+  // existing projects are unchanged.
+  const site: NoaaSite | null = input.siteLatLon
+    ? nearestNoaaSite(input.siteLatLon[0], input.siteLatLon[1])
+    : NOAA_ATLAS14_SITE
+  const i = input.intensityInPerHr
+    ?? (tc != null && site ? noaaIntensity(tc, returnPeriodYr, site) : null)
   let preQ: number | null = null, postQ: number | null = null
   if (i != null && i > 0) {
     preQ = peakDischargeRational(preC, i, totalAcres).value
     postQ = peakDischargeRational(postC, i, totalAcres).value
     assumptions.push(
       `Rainfall intensity ${i.toFixed(2)} in/hr for the ${returnPeriodYr}-year storm at a ` +
-      `${tc?.toFixed(1)} minute duration. ${NOAA_ATLAS14_SITE.citation}.`)
+      `${tc?.toFixed(1)} minute duration. ${(site ?? NOAA_ATLAS14_SITE).citation}.`)
   }
 
   const P = input.waterQualityRainfallIn ?? MD_WATER_QUALITY_RAINFALL_IN

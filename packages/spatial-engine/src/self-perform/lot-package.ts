@@ -85,6 +85,13 @@ export interface LotInput {
    */
   platRecord?: {
     reference: string
+    /**
+     * The plat's own short citation — book and page — for LETTERING ON THE
+     * PLAN. `reference` is the full transcription and belongs in the title
+     * block and in the general notes; drawn on the graphic it renders as one
+     * unwrapped line the length of the sheet.
+     */
+    citation?: string
     notes: string[]
     legend?: string[]
   }
@@ -125,6 +132,35 @@ export interface LotInput {
   platFrontageEasementFt?: number | null
   /** Which main the sanitary lateral runs to — frontage, or a main behind. */
   sanitaryFrom?: 'frontage' | 'rear'
+  /**
+   * Explicit sanitary connection, for a main reached through an adjoining
+   * property. Overrides `sanitaryFrom`.
+   */
+  sanitaryPoint?: Position | null
+  /** The corridor the services follow to the main, main end first. */
+  utilityRoute?: Position[] | null
+  /** Subdivision-level easement rings the stormwater practice keeps clear of. */
+  keepOutRings?: Position[][] | null
+  /** A real storm-drain outfall, when one has been identified. See design.ts. */
+  stormOutfall?: { to: Position; via?: Position[] | null; label?: string; sizeIn?: number } | null
+  /** Site position [lat, lon], so rainfall is looked up for THIS site. */
+  siteLatLon?: [number, number] | null
+  /** Curb, gutter and walk already built on this frontage. */
+  frontageExisting?: boolean | null
+  /**
+   * Front property line to the gutter face, ft, when the SHEET draws the
+   * frontage section rather than this package. The apron ends there.
+   */
+  frontageOutFt?: number | null
+  /** No water/sewer connection record obtained: draw no laterals. */
+  omitWaterAndSewer?: boolean | null
+  /** A piped system in a recorded easement serves the lot: no on-lot ESD cell. */
+  omitSwmPractice?: boolean | null
+  /** Elevations from the architectural plan, if established. */
+  garageSlabElevFt?: number | null
+  basementElevFt?: number | null
+  finishedFloorElevFt?: number | null
+  subFloorElevFt?: number | null
   /** Rainfall intensity, in/hr, from NOAA Atlas 14 for this site and storm. */
   rainfallIntensityInPerHr?: number | null
   /** Slope of the longest flow path, ft/ft, from the grading design. */
@@ -133,6 +169,10 @@ export interface LotInput {
   waterQualityRainfallIn?: number | null
   /** Front setback stated for this lot, overriding the zone table. */
   frontSetbackFt?: number | null
+  /** A stated side yard for this lot; only ever tightens the table minimum. */
+  sideSetbackFt?: number | null
+  /** A stated distance from the nearest side lot line at which to place the dwelling. */
+  sideStandoffFt?: number | null
   /** Face of building to the start of the street, when quoted that way. */
   frontFaceToCurbFt?: number | null
   /** Sidewalk + planting strip, from the property line out to the curb. */
@@ -513,8 +553,13 @@ export function buildLotPackage(lot: LotInput, resolved?: ResolvedBoundary | nul
       footprintStated: Boolean(lot.programme?.footprintWidthFt && lot.programme?.footprintDepthFt),
       triangleRearAsSide: lot.triangleRearAsSide,
       frontSetbackFt: lot.frontSetbackFt ?? null,
+      sideSetbackFt: lot.sideSetbackFt ?? null,
+      sideStandoffFt: lot.sideStandoffFt ?? null,
       frontFaceToCurbFt: lot.frontFaceToCurbFt ?? null,
       curbOffsetFt: lot.curbOffsetFt ?? null,
+      // Recorded easements are ground the dwelling may not stand on. They
+      // already steered the stormwater practice; they steer the house too.
+      keepOutRings: lot.keepOutRings ?? null,
     })
     const feats: unknown[] = []
     if (buildable.ring) {
@@ -523,7 +568,18 @@ export function buildLotPackage(lot: LotInput, resolved?: ResolvedBoundary | nul
     }
     if (buildable.footprint) {
       feats.push({ kind: 'Building', id: 'proposed-building', existing: false, ring: buildable.footprint,
-        attributes: { areaSqFt: buildable.footprintAreaSqFt, estimated: true }, ...base })
+        attributes: {
+          areaSqFt: buildable.footprintAreaSqFt, estimated: true,
+          // The address is lettered ON the dwelling — that is where a builder
+          // reads which house they are standing in.
+          address: lot.address, lotLabel: lot.name,
+          garageSlabElevFt: lot.garageSlabElevFt ?? null,
+          basementElevFt: lot.basementElevFt ?? null,
+          finishedFloorElevFt: lot.finishedFloorElevFt ?? null,
+          subFloorElevFt: lot.subFloorElevFt ?? null,
+          heightFt: lot.programme?.storeys ? lot.programme.storeys * 10 : null,
+          storeys: lot.programme?.storeys ?? null,
+        }, ...base })
     }
     // ── Proposed site development ─────────────────────────────────────────
     // Sec. 32-130(a)(10) requires the size and location of all proposed site
@@ -539,7 +595,13 @@ export function buildLotPackage(lot: LotInput, resolved?: ResolvedBoundary | nul
         // The apron and the public walk are outside the property line and
         // cannot be placed without the street.
         streetPaths: lot.streets?.flatMap(st => st.paths) ?? null,
+        // The architecture places the stoop and the driveway, so it has to
+        // reach the improvements module.
+        footprintWidthFt: lot.programme?.footprintWidthFt ?? null,
+        garageWidthFt: lot.programme?.garageWidthFt ?? null,
         dedicationWidthFt: lot.dedicationWidthFt ?? null,
+        frontageExisting: lot.frontageExisting ?? null,
+        frontageOutFt: lot.frontageOutFt ?? null,
       })
       for (const imp of siteImprovements.improvements) {
         // THE VERGE IS NOT PAVEMENT. It is the planting strip the street trees
@@ -573,10 +635,22 @@ export function buildLotPackage(lot: LotInput, resolved?: ResolvedBoundary | nul
     // measured.
     // The front lot line, from the STREET-based edge classification. Service
     // runs and the driveway start here rather than at an arbitrary vertex.
+    // THE SAME RING `edgeYards` WAS BUILT ON — the recurring winding trap.
+    //
+    // `edgeYards` indexes the NORMALISED ring: `deriveBuildableEnvelope` drops
+    // the closing point and forces counter-clockwise. This read the RAW
+    // coordinates at that index, and the recorded plat rings are clockwise, so
+    // `frontPoint` was the midpoint of a DIFFERENT edge.
+    //
+    // It is the centre of the stormwater keep-out segment, so the 14 ft
+    // frontage strip was being held clear of the wrong side of the lot: Lot 2's
+    // practice passed the check while sitting 0.62 ft off its front property
+    // line, on the public walk. `frontageAxis` below already normalises, which
+    // is why the keep-out had the right direction and the wrong place.
     const frontEdge = buildable.edgeYards?.indexOf('front') ?? -1
     const frontPoint = frontEdge >= 0
       ? ((): Position => {
-          const pts = ring.coordinates
+          const pts = normaliseRing(ring)
           const a = pts[frontEdge], b = pts[(frontEdge + 1) % pts.length]
           return [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2]
         })()
@@ -616,9 +690,63 @@ export function buildLotPackage(lot: LotInput, resolved?: ResolvedBoundary | nul
       twin,
       contourIntervalFt: lot.contours?.length ? 2 : undefined,
       frontPoint,
+      // The whole front lot line, so a service tap lands in front of the house
+      // rather than at the end of whichever chord `frontPoint` sits on.
+      frontagePath: (() => {
+        if (!ring || !buildable.edgeYards?.length) return undefined
+        const pts = normaliseRing(ring)
+        const n = pts.length
+        const fi = buildable.edgeYards.indexOf('front')
+        if (fi < 0 || fi >= n) return undefined
+        let s0 = fi, e0 = fi
+        for (let k = 1; k < n; k++) {
+          const i = ((fi - k) % n + n) % n
+          if (buildable.edgeYards[i] !== 'front') break
+          s0 = i
+        }
+        for (let k = 1; k < n; k++) {
+          const i = (fi + k) % n
+          if (buildable.edgeYards[i] !== 'front') break
+          e0 = i
+        }
+        const out: Position[] = []
+        for (let k = 0; k <= n; k++) {
+          const i = (s0 + k) % n
+          out.push(pts[i])
+          if (i === e0) { out.push(pts[(i + 1) % n]); break }
+        }
+        return out
+      })(),
       envelope: buildable.ring ?? undefined,
       rearPoint,
       sanitaryFrom: lot.sanitaryFrom,
+      sanitaryPoint: lot.sanitaryPoint ?? null,
+      utilityRoute: lot.utilityRoute ?? null,
+      keepOutRings: lot.keepOutRings ?? null,
+      stormOutfall: lot.stormOutfall ?? null,
+      omitWaterAndSewer: lot.omitWaterAndSewer ?? null,
+      omitSwmPractice: lot.omitSwmPractice ?? null,
+      // Walk, strip and curb occupy the first 7 ft; a practice keeps out of it.
+      frontageKeepOutFt: 14,
+      // The frontage axis, so street trees land in the planting strip rather
+      // than being offset from a centroid and hoping.
+      frontageAxis: (() => {
+        if (!ring || !buildable.edgeYards?.length) return null
+        const pts = normaliseRing(ring)
+        const fi = buildable.edgeYards.indexOf('front')
+        if (fi < 0 || fi >= pts.length) return null
+        const a2 = pts[fi], b2 = pts[(fi + 1) % pts.length]
+        const ex = b2[0] - a2[0], ey = b2[1] - a2[1]
+        const el = Math.hypot(ex, ey) || 1
+        return {
+          along: [ex / el, ey / el] as [number, number],
+          // Outward is the reverse of the counter-clockwise inward normal.
+          outward: [ey / el, -ex / el] as [number, number],
+          lengthFt: el,
+          // Middle of the 4 ft strip, which starts 3 ft out past the walk.
+          stripCentreFt: 3 + 2,
+        }
+      })(),
     })
 
     // Two filters, both about not drawing something wrong on a sheet a
@@ -678,34 +806,164 @@ export function buildLotPackage(lot: LotInput, resolved?: ResolvedBoundary | nul
     // to cross the frontage and reach them — that crossing is the part the
     // permit is for. Clipped at the lot line the drawing showed a service that
     // stops at the boundary and connects to nothing.
+    // THE TAP SITS ON THE CENTRELINE AS DRAWN.
+    //
+    // It was the nearest point on the county's centreline POLYLINE, while the
+    // sheet draws a straight centreline parallel to the frontage at the
+    // measured offset — the plat's alignment, the county's position. Those are
+    // two different lines, so the services ran past the one on the paper.
+    //
+    // Measuring the offset and then stepping out along the frontage normal puts
+    // the tap on the drawn line by construction.
+    /** Direction of the front lot line — used to slide a tap along the main. */
+    const frontAxisForTap: [number, number] | null = (() => {
+      if (!ring || !buildable.edgeYards?.length) return null
+      const pts = normaliseRing(ring)
+      const fi = buildable.edgeYards.indexOf('front')
+      if (fi < 0 || fi >= pts.length) return null
+      const a2 = pts[fi], b2 = pts[(fi + 1) % pts.length]
+      const el = Math.hypot(b2[0] - a2[0], b2[1] - a2[1]) || 1
+      return [(b2[0] - a2[0]) / el, (b2[1] - a2[1]) / el]
+    })()
     const tapPoint: Position | null = (() => {
       const paths = lot.streets?.flatMap(st => st.paths) ?? []
-      if (!paths.length || !frontPoint) return null
-      let best: Position | null = null, bestD = Infinity
+      if (!paths.length || !frontPoint || !ring || !buildable.edgeYards?.length) return null
+      const pts = normaliseRing(ring)
+      const fi = buildable.edgeYards.indexOf('front')
+      if (fi < 0 || fi >= pts.length) return null
+      const a2 = pts[fi], b2 = pts[(fi + 1) % pts.length]
+      const ex = b2[0] - a2[0], ey = b2[1] - a2[1]
+      const el = Math.hypot(ex, ey) || 1
+      // Outward normal: the reverse of a counter-clockwise ring's inward normal.
+      const nx = ey / el, ny = -ex / el
+      let toCentre = Infinity
       for (const path of paths) {
         for (let i = 0; i < path.length - 1; i++) {
           const p0 = path[i], p1 = path[i + 1]
           const vx = p1[0] - p0[0], vy = p1[1] - p0[1]
           const t = Math.max(0, Math.min(1,
             ((frontPoint[0] - p0[0]) * vx + (frontPoint[1] - p0[1]) * vy) / (vx * vx + vy * vy || 1)))
-          const q: Position = [p0[0] + t * vx, p0[1] + t * vy]
-          const d = Math.hypot(frontPoint[0] - q[0], frontPoint[1] - q[1])
-          if (d < bestD) { bestD = d; best = q }
+          const d = Math.hypot(frontPoint[0] - (p0[0] + t * vx), frontPoint[1] - (p0[1] + t * vy))
+          if (d < toCentre) toCentre = d
         }
       }
-      return best
+      if (!Number.isFinite(toCentre)) return null
+      return [frontPoint[0] + nx * toCentre, frontPoint[1] + ny * toCentre] as Position
     })()
+    /**
+     * The tap for THIS run — on the main, directly opposite where the run
+     * leaves the house.
+     *
+     * `tapPoint` is ONE point on the main, and every street-bound service was
+     * snapped to it. Two services that leave the dwelling 10 ft apart and then
+     * converge on a single tap are two diagonals, and the 10 ft of separation
+     * WSSC requires exists only at the wall. Sliding the tap along the main to
+     * sit opposite the house end keeps each run perpendicular to the street and
+     * parallel to its neighbour for its whole length.
+     */
+    const tapFor = (inner: Position): Position | null => {
+      if (!tapPoint || !frontPoint) return tapPoint
+      const along = frontAxisForTap
+      if (!along) return tapPoint
+      // How far along the frontage the house end sits, relative to frontPoint.
+      const d = (inner[0] - frontPoint[0]) * along[0] + (inner[1] - frontPoint[1]) * along[1]
+      return [tapPoint[0] + along[0] * d, tapPoint[1] + along[1] * d] as Position
+    }
     const runsToStreet = (f: { kind: string; attributes?: Record<string, unknown> }) =>
       f.kind === 'Utility' && String(f.attributes?.from ?? 'frontage') === 'frontage'
+    // A lateral to a main in an ADJOINING lot crosses this boundary by
+    // definition. Clipping it at the property line would draw a sewer that
+    // stops short of the main it connects to.
+    const runsOffsite = (f: { kind: string; attributes?: Record<string, unknown> }) =>
+      f.kind === 'Utility' && String(f.attributes?.from ?? '') === 'offsite'
+
+    // STREET TREES ARE MEANT TO BE OUTSIDE THE LOT.
+    //
+    // Sec. 25-129 counts them toward the canopy requirement precisely because
+    // they stand in the right-of-way, and the containment filter — written to
+    // stop heuristic placements drifting off the property — was throwing away
+    // the one feature whose whole point is to be off it.
+    const belongsOffLot = (f: { kind: string; designation?: string }) =>
+      f.kind === 'Tree' && /street tree/i.test(String(f.designation ?? ''))
+
+    // A SERVICE DOES NOT RUN UNDER A SLAB IF IT DOES NOT HAVE TO.
+    //
+    // The three runs are laid at fixed offsets either side of the frontage
+    // point, and on Lot 2 that put the storm drain along the length of the
+    // concrete walk — buried under it, where it cannot be dug up without
+    // breaking the walk out. Crossing a walk is unavoidable and is detailed;
+    // running beneath one for its whole length is a placement nobody chose.
+    //
+    // Each run is shifted along the frontage until it clears the paving, and
+    // the shift is bounded: past that the conflict is real and belongs in front
+    // of a designer rather than nudged out of sight.
+    const slabRings: Position[][] = siteImprovements
+      ? siteImprovements.improvements
+          .filter(i => i.kind === 'Walk' || i.kind === 'Stoop' || i.kind === 'Sidewalk')
+          .map(i => i.ring.coordinates.slice(0, -1) as Position[])
+      : []
+    const crossesSlab = (line: Position[]) => {
+      for (const rg of slabRings) {
+        // Sample the run: an endpoint test misses a line that passes through.
+        for (let k = 0; k <= 60; k++) {
+          const t = k / 60
+          const q: Position = [
+            line[0][0] + (line[line.length - 1][0] - line[0][0]) * t,
+            line[0][1] + (line[line.length - 1][1] - line[0][1]) * t,
+          ]
+          if (pointInPolygon(q, rg)) return true
+        }
+      }
+      return false
+    }
+    const frontAxis = (() => {
+      if (!ring || !buildable.edgeYards?.length) return null
+      const pts = normaliseRing(ring)
+      const fi = buildable.edgeYards.indexOf('front')
+      if (fi < 0) return null
+      const a2 = pts[fi], b2 = pts[(fi + 1) % pts.length]
+      const el = Math.hypot(b2[0] - a2[0], b2[1] - a2[1]) || 1
+      return [(b2[0] - a2[0]) / el, (b2[1] - a2[1]) / el] as [number, number]
+    })()
+    const clearOfSlabs = (line: Position[]): Position[] => {
+      if (!frontAxis || !slabRings.length || !crossesSlab(line)) return line
+      const [ux, uy] = frontAxis
+      for (let step = 1; step <= 24; step++) {
+        for (const sgn of [1, -1]) {
+          const d = step * 1.5 * sgn
+          const moved = line.map(q => [q[0] + ux * d, q[1] + uy * d] as Position)
+          if (!crossesSlab(moved)) return moved
+        }
+      }
+      return line
+    }
 
     const drawable = design.features.flatMap(f => {
       if (f.kind === 'Pavement') return []
-      const line = (f as { line?: Position[] }).line
+      if (belongsOffLot(f as never)) return [f]
+      const line0 = (f as { line?: Position[] }).line
+      // THE WHOLE-RUN SHIFT IS NOT APPLIED TO A DELIBERATELY PLACED SERVICE.
+      //
+      // `clearOfSlabs` slides an entire run sideways until it misses the walk
+      // and stoop. That was right when the runs were laid at fixed offsets from
+      // a frontage point and nobody had chosen where they leave the house. They
+      // are chosen now — `design.ts` brings them out of the left-hand end of
+      // the dwelling, clear of the driveway — and sliding the whole line
+      // afterwards simply detached it from the wall: measured on the model, Lot
+      // 53's water and sewer ended 12 ft off the building they serve.
+      //
+      // Crossing a walk is ordinary and is detailed at the crossing. Running
+      // the length of one is not, and that is what the shift existed to stop —
+      // so it still applies to runs nobody positioned.
+      const positioned = f.kind === 'Utility' && runsToStreet(f as never)
+      const line = line0 && f.kind === 'Utility' && !positioned ? clearOfSlabs(line0) : line0
       if (line?.length) {
+        if (runsOffsite(f as never)) return [{ ...f, line }]
         if (runsToStreet(f as never) && tapPoint) {
-          // Extend the outer end to the tap and leave the rest as designed.
+          // Extend the outer end to the tap OPPOSITE this run's house end, so
+          // the run stays perpendicular to the street instead of converging.
           const inner = line[line.length - 1]
-          return [{ ...f, line: [tapPoint, inner] as Position[] }]
+          return [{ ...f, line: [tapFor(inner) ?? tapPoint, inner] as Position[] }]
         }
         const cl = clipToLot(line)
         return cl ? [{ ...f, line: cl }] : []
@@ -742,7 +1000,7 @@ export function buildLotPackage(lot: LotInput, resolved?: ResolvedBoundary | nul
           ring: pueRing,
           easementType: 'Public Utility',
           widthFt: w,
-          recordReference: lot.platRecord?.reference ?? 'Recorded plat',
+          recordReference: lot.platRecord?.citation ?? 'RECORDED PLAT',
           beneficiary: 'Public utilities',
         }] as never[])
         twin = addSource(twin, gisSourceRecord({
@@ -775,6 +1033,7 @@ export function buildLotPackage(lot: LotInput, resolved?: ResolvedBoundary | nul
     if (ring) {
       const drainage = computeDrainage({
         twin, catchment: ring,
+        siteLatLon: lot.siteLatLon ?? null,
         intensityInPerHr: lot.rainfallIntensityInPerHr ?? null,
         flowPathSlopeFtPerFt: lot.flowPathSlopeFtPerFt ?? null,
         waterQualityRainfallIn: lot.waterQualityRainfallIn ?? null,
@@ -841,6 +1100,15 @@ export function buildLotPackage(lot: LotInput, resolved?: ResolvedBoundary | nul
     ...(lot.disturbance ?? {}),
   }
   const disturbance = calculateDisturbance(disturbanceComponents)
+  // Carried onto the twin so the SITE ANALYSIS table can print it. It read
+  // `twin.disturbedAreaSqFt`, which nothing ever set, so the sheet said NOT
+  // QUANTIFIED while the package had the number.
+  twin = {
+    ...twin,
+    disturbedAreaSqFt: disturbance.knownTotalSqFt,
+    disturbanceHasUnknowns: disturbance.unknownComponents.length > 0,
+    disturbanceMeetsThreshold: disturbance.meetsThreshold,
+  } as typeof twin
   const permitPath = classifyProject({
     zoneCode: lot.zoneCode,
     overlayCodes: lot.overlayCodes,
@@ -884,6 +1152,21 @@ export function buildLotPackage(lot: LotInput, resolved?: ResolvedBoundary | nul
   )
 
   const beforeSeal: string[] = []
+  // A LATERAL THAT CROSSES A NEIGHBOUR NEEDS A RECORDED RIGHT.
+  //
+  // The drawing can show the easement; it cannot create it. The pipe and the
+  // right to have it there are separate things, and only one of them is within
+  // reach of a site plan.
+  if (twin.features.some(f => f.kind === 'Utility' &&
+      String((f as { attributes?: Record<string, unknown> }).attributes?.from ?? '') === 'offsite')) {
+    beforeSeal.push(
+      'Utility easement — the water and sewer connections reach the mains through adjoining ' +
+      'property, so a RECORDED easement is required from each owner they cross. The 20 ft WSSC ' +
+      'easement and the private utility easement are drawn as transcribed from the recorded ' +
+      'WATER & SEWER CONNECTION SKETCH, and the runs follow the route it gives them. The ' +
+      'instrument itself is not held here: obtain the recorded easement, and confirm the ' +
+      'connection with WSSC and with the mains\' owner.')
+  }
   if (!ring) {
     beforeSeal.push(
       'No parcel boundary resolved for this address, so the lot outline is absent from the drawing. ' +
@@ -1009,6 +1292,15 @@ export function buildLotPackage(lot: LotInput, resolved?: ResolvedBoundary | nul
   {
     const front = buildable?.frontage?.providedFt ?? null
     const thresh = PG_CURB_AND_SIDEWALK.curbFrontageThresholdFt
+    if (lot.frontageExisting) {
+      // The determination has been made on the ground. Asking a reviewer to
+      // confirm whether curb and walk are required, on a frontage where both
+      // are built, is noise that makes the real outstanding items harder to see.
+      beforeSeal.push(
+        'Curb, gutter and sidewalk are EXISTING on this frontage and are shown as existing. '
+        + 'Confirm line and grade at the driveway apron tie-in by field measurement; where the '
+        + 'walk is disturbed it is reconstructed to DPW&T standard.')
+    } else {
     beforeSeal.push(
       `Curb and gutter, ${PG_CURB_AND_SIDEWALK.citation}(a)(1): required where the MAJORITY of ` +
       `lots abutting the road front ${thresh} ft or less. This lot fronts ` +
@@ -1016,12 +1308,27 @@ export function buildLotPackage(lot: LotInput, resolved?: ResolvedBoundary | nul
       `${front != null && front <= thresh ? ', at or under the threshold' : ''}. The majority is ` +
       'taken over every lot on the road rather than this one, so DPW&T confirms it; curb and ' +
       'gutter is drawn on that basis.')
+    // THE STREET IS NAMED FROM THE DATA, not from the first project.
+    //
+    // This note read 'Rollins Avenue is a local residential street' as a
+    // literal, so the second project's sheet asserted a classification for a
+    // road twelve miles from the one it was drawing. The classification claim
+    // is dropped with it: FCC A41 and 35 mph were Rollins' attributes and the
+    // county centreline layer carries whatever this road's are.
+    const frontStreet = (() => {
+      const token = lot.address.replace(/^[0-9]+\s+/, '').split(/\s+/)[0]?.toUpperCase() ?? ''
+      const named = (lot.streets ?? []).map(st => st.name).filter((n): n is string => !!n)
+      const onAddress = token ? named.find(n => n.toUpperCase().includes(token)) : undefined
+      return onAddress ?? named[0] ?? null
+    })()
     beforeSeal.push(
       `Sidewalk, ${PG_CURB_AND_SIDEWALK.citation}(c): a residential road takes a walk on ONE ` +
-      'side (arterials and collectors take both). Rollins Avenue is a local residential street by ' +
-      'the county centreline layer — FCC A41, 35 mph — so ONE side is the requirement. WHICH side ' +
-      'is DPW&T\'s at street construction permit, and where walks already exist on both sides ' +
-      'they continue to the next intersection before transitioning.')
+      'side (arterials and collectors take both). ' +
+      `${frontStreet ? `${frontStreet} is` : 'This frontage road is'} classified by the county ` +
+      'centreline layer; where it is a local residential street ONE side is the requirement. ' +
+      'WHICH side is DPW&T\'s at street construction permit, and where walks already exist on ' +
+      'both sides they continue to the next intersection before transitioning.')
+    }
   }
   beforeSeal.push(
     'Review and seal by the professionals responsible for each subject. The platform drafts a ' +
