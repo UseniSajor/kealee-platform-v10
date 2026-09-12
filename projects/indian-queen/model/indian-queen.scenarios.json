@@ -1,0 +1,166 @@
+{
+ "generatedNote": "Scenario analysis supporting Section 11.6.",
+ "floodFrequency": {
+  "note": "Routed peak stage on existing ground, connectivity-limited inundation.",
+  "roadSagFt": 54.0,
+  "rows": [
+   {
+    "storm": 2,
+    "stageFt": 50.17,
+    "roadOvertopped": false,
+    "pctFlooded": {
+     "53": 24.0,
+     "54": 89.4,
+     "55": 40.6,
+     "56": 0.0
+    }
+   },
+   {
+    "storm": 5,
+    "stageFt": 53.02,
+    "roadOvertopped": false,
+    "pctFlooded": {
+     "53": 63.2,
+     "54": 97.4,
+     "55": 78.1,
+     "56": 2.2
+    }
+   },
+   {
+    "storm": 10,
+    "stageFt": 54.31,
+    "roadOvertopped": true,
+    "pctFlooded": {
+     "53": 76.8,
+     "54": 99.1,
+     "55": 91.8,
+     "56": 10.8
+    }
+   },
+   {
+    "storm": 25,
+    "stageFt": 54.82,
+    "roadOvertopped": true,
+    "pctFlooded": {
+     "53": 80.8,
+     "54": 99.6,
+     "55": 93.0,
+     "56": 14.4
+    }
+   },
+   {
+    "storm": 50,
+    "stageFt": 55.13,
+    "roadOvertopped": true,
+    "pctFlooded": {
+     "53": 84.0,
+     "54": 100.0,
+     "55": 94.9,
+     "56": 15.8
+    }
+   },
+   {
+    "storm": 100,
+    "stageFt": 55.43,
+    "roadOvertopped": true,
+    "pctFlooded": {
+     "53": 88.0,
+     "54": 100.0,
+     "55": 95.3,
+     "56": 20.1
+    }
+   }
+  ]
+ },
+ "dryYardStorage": {
+  "note": "Mass-curve storage required to hold the peak stage at the target, existing crossing.",
+  "rows": [
+   {
+    "targetFt": 48.0,
+    "storm": 100,
+    "crossingPassesCfs": 42,
+    "requiredAcFt": 101.0,
+    "existingAcFt": 0.0,
+    "shortAcFt": 101.0,
+    "shortCy": 163021
+   },
+   {
+    "targetFt": 50.0,
+    "storm": 100,
+    "crossingPassesCfs": 65,
+    "requiredAcFt": 87.6,
+    "existingAcFt": 2.9,
+    "shortAcFt": 84.7,
+    "shortCy": 136670
+   },
+   {
+    "targetFt": 52.0,
+    "storm": 100,
+    "crossingPassesCfs": 82,
+    "requiredAcFt": 80.7,
+    "existingAcFt": 7.4,
+    "shortAcFt": 73.3,
+    "shortCy": 118280
+   },
+   {
+    "targetFt": 50.0,
+    "storm": 10,
+    "crossingPassesCfs": 65,
+    "requiredAcFt": 23.1,
+    "existingAcFt": 2.9,
+    "shortAcFt": 20.3,
+    "shortCy": 32703
+   }
+  ],
+  "allLotsAreaSqFt": 75178,
+  "depthOverAllLotsFt": 49.1
+ },
+ "upstreamDiversion": {
+  "subject": "Oxon Hill Middle School, 9570 Fort Foote Road",
+  "parcelAcTotal": 21.25,
+  "parcelAcInWatershed": 21.04,
+  "pctOfWatershed": 5.3,
+  "parcelImperviousPct": 24,
+  "watershedImperviousPct": 23.4,
+  "asIs": {
+   "areaAc": 396.9,
+   "cn": 67.8,
+   "q10": 347,
+   "q100": 1054,
+   "stage10": 54.29,
+   "stage100": 55.43
+  },
+  "diverted": {
+   "areaAc": 375.7,
+   "cn": 67.8,
+   "q10": 327,
+   "q100": 996,
+   "stage10": 54.23,
+   "stage100": 55.36
+  },
+  "stageReductionFt100": 0.07,
+  "stageReductionFt10": 0.06
+ },
+ "splitDevelopment": {
+  "note": "Build Lots 53 and 56; dedicate Lots 54 and 55 as floodplain.",
+  "compensationRequiredCy": {
+   "53": 18,
+   "56": 13,
+   "total": 31
+  },
+  "compensationFromLots5455Cy": {
+   "toEl50": 1399,
+   "toEl49": 2121,
+   "toEl48": 3034
+  },
+  "cutAreaSqFt": {
+   "toEl50": 17300,
+   "toEl49": 21800,
+   "toEl48": 28700
+  },
+  "coverageRatioAtEl50": 45.1,
+  "fourLotRequirementCy": 2108,
+  "lots5455ShareOfRequirementCy": 2076,
+  "lots5455SharePct": 98.5
+ }
+}

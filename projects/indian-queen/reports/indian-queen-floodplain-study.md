@@ -34,7 +34,9 @@ are set out below in the order of their significance to the development.
 
 7. **The proposed condition removes 2,108 cubic yards of floodplain storage** below the 100-year water surface, from 2,243 cy of total fill within the modelled reach. Compensatory storage is required and is designed in Section 11.5.
 
-8. **Lowest-floor elevations do not satisfy the floodplain construction standard on any lot.** See Table 1.1.
+8. **Lot 54 is inundated to 89 percent in the 2-year event and Lot 55 to 41 percent.** Fort Foote Road is overtopped between the 5-year and 10-year events, interrupting vehicular and emergency access at approximately a 1-in-7-year frequency. See Section 11.6.
+
+9. **Lowest-floor elevations do not satisfy the floodplain construction standard on any lot as originally proposed.** See Table 1.1. The site design has been revised accordingly; see Section 11.4.
 
 **Table 1.1 — Proposed dwelling elevations against the 100-year water surface (EL 55.52, proposed condition)**
 
@@ -52,7 +54,13 @@ Prince George's County Subtitle 4 and the National Flood Insurance Program requi
 **The proposed improvements do not remove the subject lots from the 100-year floodplain, and the proposed condition produces a measurable increase in the water-surface elevation.** The proposed condition leaves 
 59,700 sq ft of the four lots below the 100-year water surface, against 61,900 sq ft existing.
 
-Section 11 demonstrates that removal of all four lots from the floodplain is not achievable by any modification to the crossing, because the controlling tailwater in the receiving channel lies above the existing ground on Lots 54 and 55. The recommended approach is set out in Section 11.6.
+Removal of all four lots from the floodplain is not achievable by any modification to the crossing, because the controlling tailwater in the receiving channel lies above the existing ground on Lots 54 and 55 (Section 11.3). It is not achievable by storage, which would require 136,670 cy of excavation, equivalent to 49.1 ft over the entire property, and which would not drain in any event (Section 11.7). It is not achievable by diversion of upstream drainage, which alters the 100-year elevation by 0.07 ft (Section 11.8).
+
+### Recommended course
+
+**Develop Lots 53 and 56. Dedicate Lots 54 and 55 as floodplain and site the compensatory storage within them.**
+
+Lots 54 and 55 account for 98.5 percent of the compensatory storage obligation of the four-lot proposal and cannot themselves be compensated. Lots 53 and 56, whose building envelopes stand on high ground, require 31 cy between them, against 1,399 cy obtainable by excavation on Lots 54 and 55 at a floor elevation that drains — a ratio of 45.1 to 1. The constraint that prevents the four-lot proposal is removed by the same measure that resolves the two lots which cannot be developed. Section 11.9 sets out the balance and Section 11.10 the full recommendation.
 
 ---
 
@@ -546,7 +554,7 @@ Deliverables written:
 | Floodway encroachment analysis required? | Not on the current mapping (no floodway exists). If DPIE establishes one from FPS 200546, then yes. |
 | Compensatory storage required? | **Yes.** 2,108 cy below the 100-year surface. |
 | Does the proposal meet county, DPIE, MDE and FEMA floodplain regulation? | **No, as currently designed.** Two dwellings at the water surface, four basements below it, a rise, and uncompensated fill. |
-| Can the work legally support removing the floodplain designation from the lots? | **No, not as proposed.** See Section 11. |
+| Can the work legally support removing the floodplain designation from the lots? | **No.** Not by crossing enlargement (Section 11.3), not by storage (Section 11.7), not by upstream diversion (Section 11.8). |
 
 ### 10.1 Requirements before a building permit
 
@@ -727,15 +735,92 @@ The design response is to reduce the fill rather than to seek additional excavat
 
 With the dwellings on vented foundations and the driveways at existing grade, the fill placed below the 100-year water surface falls to the order of the 1,070 cy available from the cells, and the balance closes. This is the recommended basis of design.
 
-### 11.6 Recommendation
+### 11.6 Frequency of inundation
 
-1. **The crossing should not be enlarged as part of this development.** Enlargement does not remove the lots from the floodplain, increases the 10-year discharge to downstream properties by up to 80 percent, and constitutes a county roadway improvement outside the scope of a four-lot site plan.
+Peak stages routed through the crossing for the full range of design events, with the resulting inundation of each lot on existing ground:
 
-2. **The dwellings should be designed to the computed flood elevation.** Lowest floor at or above EL 57.52; no basements on any lot; vented stem-wall or pier foundations on Lots 54 and 55; driveways and aprons at existing grade; compensatory storage as designed in Section 11.5.
+| Storm | Peak stage | Fort Foote Road | Lot 53 | Lot 54 | Lot 55 | Lot 56 |
+|---|---|---|---|---|---|---|
+| 2-year | EL 50.17 | clear | 24.0% | **89.4%** | 40.6% | 0.0% |
+| 5-year | EL 53.02 | clear | 63.2% | **97.4%** | 78.1% | 2.2% |
+| 10-year | EL 54.31 | **overtopped** | 76.8% | **99.1%** | 91.8% | 10.8% |
+| 25-year | EL 54.82 | **overtopped** | 80.8% | **99.6%** | 93.0% | 14.4% |
+| 50-year | EL 55.13 | **overtopped** | 84.0% | **100.0%** | 94.9% | 15.8% |
+| 100-year | EL 55.43 | **overtopped** | 88.0% | **100.0%** | 95.3% | 20.1% |
 
-3. **The floodplain easement should be dedicated to the existing-condition 100-year limit** and should encompass the compensatory storage cells, so that the storage is protected against subsequent filling.
+Two findings follow directly.
 
-4. **The roadway overtopping should be reported to DPIE in writing at pre-application.** Overtopping of Fort Foote Road in the 10-year event, conveying 215 cfs across the pavement, is a condition independent of this development. It governs the flood elevation on the subject lots and should be placed on the record at the earliest opportunity.
+**Lot 54 is 89 percent inundated in the 2-year event and Lot 55 is 41 percent.** These are not conditions associated with a rare flood. The 2-year event has a 50 percent probability of occurrence in any year.
+
+**Fort Foote Road is overtopped between the 5-year and 10-year events**, the roadway sag at EL 54.00 lying between the routed stages of EL 53.02 and EL 54.31. Vehicular access to the subject lots, including emergency access, is interrupted at approximately a 1-in-7-year frequency. This condition exists independently of the proposed development.
+
+### 11.7 Storage required to remove the rear yards from inundation
+
+The volume required to hold the peak water surface at a given elevation was determined by mass-curve construction against the crossing rating: for a target stage the crossing passes a fixed discharge, and the storage required is the maximum cumulative volume of inflow in excess of that release rate.
+
+| Target stage | Storm | Crossing passes | Storage required | Presently available | Deficit |
+|---|---|---|---|---|---|
+| EL 48.0 | 100-year | 42 cfs | 101.0 ac-ft | 0.0 ac-ft | **101.0 ac-ft = 163,021 cy** |
+| EL 50.0 | 100-year | 65 cfs | 87.6 ac-ft | 2.9 ac-ft | **84.7 ac-ft = 136,670 cy** |
+| EL 52.0 | 100-year | 82 cfs | 80.7 ac-ft | 7.4 ac-ft | **73.3 ac-ft = 118,280 cy** |
+| EL 50.0 | 10-year | 65 cfs | 23.1 ac-ft | 2.9 ac-ft | **20.3 ac-ft = 32,703 cy** |
+
+Holding the 100-year surface at EL 50.0 requires 136,670 cy of additional storage. Distributed across the combined area of all four lots (75,178 sq ft) this corresponds to 49.1 ft of excavation over the entire property. The measure is not feasible.
+
+**It is also unattainable in principle.** Existing rear-yard ground on Lot 54 is EL 44.97 and on Lot 55 EL 44.66, at or below the EL 44.45 tailwater elevation in the receiving channel at the 100-year event. Excavation below that elevation does not drain. The governing constraint is the water-surface elevation of the watercourse, not the storage volume available.
+
+### 11.8 Sensitivity to upstream diversion
+
+The Oxon Hill Middle School, 9570 Fort Foote Road parcel occupies 21.0 acres within the contributing watershed, being 5.3 percent of its area. The parcel is 24 percent impervious against a watershed average of 23.4 percent; it is not a disproportionate contributor of runoff.
+
+The watershed was re-analysed with the parcel removed in its entirety, representing a separate drainage system discharging outside this catchment:
+
+| Condition | Drainage area | Composite CN | Q10 | Q100 | 100-yr stage |
+|---|---|---|---|---|---|
+| Existing | 396.9 ac | 67.8 | 347 cfs | 1,054 cfs | EL 55.43 |
+| Parcel diverted | 375.7 ac | 67.8 | 327 cfs | 996 cfs | EL 55.36 |
+
+**The reduction in the 100-year water-surface elevation is 0.07 ft.** Existing rear-yard ground on the subject lots lies between EL 44.66 and EL 53.34. Diversion of the upstream parcel does not alter the floodplain status of any lot, and no combination of upstream diversion within this watershed would do so. The flood elevation is set by the capacity of the Fort Foote Road crossing and by the tailwater in the receiving channel, not by any single upstream contributor.
+
+### 11.9 Development scenario — Lots 53 and 56 developed, Lots 54 and 55 dedicated
+
+Sections 11.3 to 11.7 establish that Lots 54 and 55 cannot be removed from the floodplain and cannot support compensated fill. Section 11.5 establishes that the four-lot proposal cannot be compensated within the property. The two findings resolve together.
+
+**The compensatory storage obligation is not evenly distributed:**
+
+| Lot | Fill below the 100-year surface | Share |
+|---|---|---|
+| 53 | 18 cy | 0.9% |
+| 54 | 1,142 cy | 54.2% |
+| 55 | 934 cy | 44.3% |
+| 56 | 13 cy | 0.6% |
+
+Lots 54 and 55 account for 2,076 cy of the 2,108 cy requirement, or 98.5 percent. Lots 53 and 56, whose building envelopes stand on high ground, generate 31 cy between them.
+
+**Developing Lots 53 and 56 only, and dedicating Lots 54 and 55 as floodplain, produces the following balance:**
+
+| | Volume |
+|---|---|
+| Compensation required by Lots 53 and 56 | 31 cy |
+| Available by excavation on Lots 54 and 55 to EL 50.0 | 1,399 cy over 17,300 sq ft |
+| Available to EL 49.0 | 2,121 cy |
+| **Ratio provided to required, at EL 50.0** | **45.1 : 1** |
+
+The compensatory storage deficit that constrains the four-lot proposal is eliminated. The excavation is located on land that cannot be developed in any event, at a floor elevation that drains to the receiving channel, within the area to be placed under floodplain easement. Lots 54 and 55 cease to be a constraint on the project and become the measure that permits it.
+
+### 11.10 Recommendation
+
+1. **Develop Lots 53 and 56. Do not develop Lots 54 and 55.** Lot 54 is inundated to 89 percent in the 2-year event and Lot 55 to 41 percent. Neither can be removed from the floodplain by any means examined, neither can support compensated fill, and together they account for 98.5 percent of the compensatory storage obligation of the four-lot proposal.
+
+2. **Dedicate Lots 54 and 55 as floodplain and construct the compensatory storage within them.** Section 11.9 demonstrates that this eliminates the storage deficit constraining the development of Lots 53 and 56, at a ratio of 45.1 to 1. The easement should be dedicated to the existing-condition 100-year limit and should encompass the excavated cells, so that the storage is protected against subsequent filling. Plat 118-083 provides the precedent and instrument form within this subdivision.
+
+3. **Design the dwellings on Lots 53 and 56 to the computed flood elevation.** Lowest floor at or above EL 57.52; no basements; vented stem-wall or pier foundations; driveways and aprons at existing grade.
+
+4. **Do not enlarge the Fort Foote Road crossing as part of this development.** Enlargement does not remove the lots from the floodplain, increases the 10-year discharge to downstream properties by up to 80 percent, and constitutes a county roadway improvement outside the scope of a residential site plan.
+
+5. **Report the roadway overtopping to DPIE in writing at pre-application.** Overtopping of Fort Foote Road between the 5-year and 10-year events, conveying 215 cfs across the pavement at the 10-year, is a condition independent of this development. It governs the flood elevation on the subject lots and interrupts emergency access at approximately a 1-in-7-year frequency.
+
+6. **Obtain FPS 200546 before proceeding.** The controlling floodplain study of record is not in the project file and this study must be reconciled against it.
 
 ---
 

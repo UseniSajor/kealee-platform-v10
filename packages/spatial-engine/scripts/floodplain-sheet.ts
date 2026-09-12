@@ -25,6 +25,7 @@ const MIT = JSON.parse(readFileSync(join(PROJ, 'model', 'indian-queen.mitigation
 const CS = JSON.parse(readFileSync(join(PROJ, 'model', 'indian-queen.compensatory-storage.json'), 'utf8'))
 const ES = JSON.parse(readFileSync(join(PROJ, 'model', 'indian-queen.easement-storage.json'), 'utf8'))
 const FB = JSON.parse(readFileSync(join(PROJ, 'model', 'indian-queen.fill-breakdown.json'), 'utf8'))
+const SC = JSON.parse(readFileSync(join(PROJ, 'model', 'indian-queen.scenarios.json'), 'utf8'))
 
 const S = ARCH_D
 const M = S.marginPt
@@ -561,6 +562,7 @@ cy += 96
 
 text(doc, tbx + 8, cy, 'DETERMINATIONS', 7, { bold: true }); cy += 11
 const dets: [string, string][] = [
+  ['RECOMMENDED: develop 53 and 56', 'DEDICATE 54 AND 55'],
   ['Removal of all lots from floodplain', 'NOT ACHIEVABLE'],
   ['Controlling tailwater, lower bound', `EL ${f(MIT.tailwaterFloorFt)}`],
   ['Lowest ground, Lot 55', `EL ${f(Math.min(...Object.values(MIT.lotLowestGroundFt as Record<string, number>) as number[]))}`],
@@ -569,6 +571,12 @@ const dets: [string, string][] = [
   ['Compensation required', `${n0(CS.requiredCurrentGradingCy)} cy`],
   ['Compensation available on site', `${n0(CS.totalProvidedCy + ES.cutByFloor['48.0'])} cy`],
   ['Crossing enlargement', 'NOT RECOMMENDED'],
+  ['Lot 54 flooded, 2-year event', `${f(SC.floodFrequency.rows[0].pctFlooded['54'], 0)}%`],
+  ['Road overtopped', 'BETWEEN 5- AND 10-YEAR'],
+  ['Storage to dry the rear yards', `${n0(136670)} cy — NOT FEASIBLE`],
+  ['Upstream diversion benefit', `${f(SC.upstreamDiversion.stageReductionFt100)} ft`],
+  ['53 + 56 only: compensation needed', `${n0(SC.splitDevelopment.compensationRequiredCy.total)} cy`],
+  ['available on 54 + 55 at EL 50', `${n0(SC.splitDevelopment.compensationFromLots5455Cy.toEl50)} cy`],
 ]
 for (const [k, v] of dets) {
   text(doc, tbx + 8, cy, k, 6.4, { color: '#555555' })
@@ -753,8 +761,18 @@ table2(tc2(2), T2Y, cw2, T2H, 'FLOODPLAIN REMOVAL AND FOUNDATION DETERMINATION',
     }),
     ['', '', '', '', ''],
     ['Basements are not permissible on any lot.', '', '', '', ''],
-    ['Vented stem-wall or pier foundations required', '', '', '', ''],
-    ['on Lots 54 and 55 per ASCE 24 and 44 CFR 60.3.', '', '', '', '']]),
+    ['', '', '', '', ''],
+    ['FREQUENCY OF INUNDATION — EXISTING GROUND', '', '', '', ''],
+    ['STORM', 'STAGE', 'LOT 54', 'LOT 55', 'ROAD'],
+    ...SC.floodFrequency.rows.map((r: any) => [`${r.storm}-yr`, `EL ${f(r.stageFt)}`,
+      `${f(r.pctFlooded['54'], 0)}%`, `${f(r.pctFlooded['55'], 0)}%`,
+      r.roadOvertopped ? 'OVERTOPPED' : 'clear']),
+    ['', '', '', '', ''],
+    ['RECOMMENDED: DEVELOP LOTS 53 AND 56;', '', '', '', ''],
+    ['DEDICATE LOTS 54 AND 55 AS FLOODPLAIN', '', '', '', ''],
+    [`compensation needed by 53 + 56`, '', '', '', `${n0(SC.splitDevelopment.compensationRequiredCy.total)} cy`],
+    [`available on 54 + 55 to EL 50.0`, '', '', '', `${n0(SC.splitDevelopment.compensationFromLots5455Cy.toEl50)} cy`],
+    ['ratio provided to required', '', '', '', `${f(SC.splitDevelopment.coverageRatioAtEl50, 1)} : 1`]]),
   [0.3, 0.18, 0.2, 0.16, 0.16])
 
 doc.end()

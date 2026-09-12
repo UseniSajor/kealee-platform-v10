@@ -21,6 +21,7 @@ const CS = JSON.parse(readFileSync(join(MODEL_DIR, 'indian-queen.compensatory-st
 const FB = JSON.parse(readFileSync(join(MODEL_DIR, 'indian-queen.fill-breakdown.json'), 'utf8'))
 const FC = JSON.parse(readFileSync(join(MODEL_DIR, 'indian-queen.fill-and-cut.json'), 'utf8'))
 const ES = JSON.parse(readFileSync(join(MODEL_DIR, 'indian-queen.easement-storage.json'), 'utf8'))
+const SC = JSON.parse(readFileSync(join(MODEL_DIR, 'indian-queen.scenarios.json'), 'utf8'))
 
 const f = (n: number, d = 2) => n.toFixed(d)
 const n0 = (n: number) => Math.round(n).toLocaleString('en-US')
@@ -111,8 +112,13 @@ w(`7. **The proposed condition removes ${n0(INU['100'].reachLostStorageCy)} cubi
   `${n0(INU['100'].reachTotalFillCy)} cy of total fill within the modelled reach. ` +
   'Compensatory storage is required and is designed in Section 11.5.')
 w()
-w('8. **Lowest-floor elevations do not satisfy the floodplain construction standard on any ' +
-  'lot.** See Table 1.1.')
+w('8. **Lot 54 is inundated to 89 percent in the 2-year event and Lot 55 to 41 percent.** ' +
+  'Fort Foote Road is overtopped between the 5-year and 10-year events, interrupting ' +
+  'vehicular and emergency access at approximately a 1-in-7-year frequency. See Section 11.6.')
+w()
+w('9. **Lowest-floor elevations do not satisfy the floodplain construction standard on any ' +
+  'lot as originally proposed.** See Table 1.1. The site design has been revised accordingly; ' +
+  'see Section 11.4.')
 w()
 w('**Table 1.1 — Proposed dwelling elevations against the 100-year water surface ' +
   `(EL ${f(wsel100)}, proposed condition)**`)
@@ -145,10 +151,29 @@ const tot = Object.values(e100.lots).reduce((s: number, v: any) => s + v.flooded
 w(`${n0(tot as number)} sq ft of the four lots below the 100-year water surface, against ` +
   `${n0(Object.values(e100.lots).reduce((s: number, v: any) => s + v.floodedExistingSf, 0) as number)} sq ft existing.`)
 w()
-w('Section 11 demonstrates that removal of all four lots from the floodplain is not ' +
-  'achievable by any modification to the crossing, because the controlling tailwater in the ' +
-  'receiving channel lies above the existing ground on Lots 54 and 55. The recommended ' +
-  'approach is set out in Section 11.6.')
+w('Removal of all four lots from the floodplain is not achievable by any modification to the ' +
+  'crossing, because the controlling tailwater in the receiving channel lies above the ' +
+  'existing ground on Lots 54 and 55 (Section 11.3). It is not achievable by storage, which ' +
+  `would require ${n0(136670)} cy of excavation, equivalent to ` +
+  `${f(SC.dryYardStorage.depthOverAllLotsFt, 1)} ft over the entire property, and which would ` +
+  'not drain in any event (Section 11.7). It is not achievable by diversion of upstream ' +
+  'drainage, which alters the 100-year elevation by ' +
+  `${f(SC.upstreamDiversion.stageReductionFt100)} ft (Section 11.8).`)
+w()
+w('### Recommended course')
+w()
+w('**Develop Lots 53 and 56. Dedicate Lots 54 and 55 as floodplain and site the compensatory ' +
+  'storage within them.**')
+w()
+w(`Lots 54 and 55 account for ${f(SC.splitDevelopment.lots5455SharePct, 1)} percent of the ` +
+  'compensatory storage obligation of the four-lot proposal and cannot themselves be ' +
+  'compensated. Lots 53 and 56, whose building envelopes stand on high ground, require ' +
+  `${n0(SC.splitDevelopment.compensationRequiredCy.total)} cy between them, against ` +
+  `${n0(SC.splitDevelopment.compensationFromLots5455Cy.toEl50)} cy obtainable by excavation on ` +
+  `Lots 54 and 55 at a floor elevation that drains — a ratio of ` +
+  `${f(SC.splitDevelopment.coverageRatioAtEl50, 1)} to 1. The constraint that prevents the ` +
+  'four-lot proposal is removed by the same measure that resolves the two lots which cannot ' +
+  'be developed. Section 11.9 sets out the balance and Section 11.10 the full recommendation.')
 w()
 w('---')
 w()
@@ -675,7 +700,7 @@ w('| Does the work qualify as no-rise / zero-rise? | **No.** ' + f(R.rise[3].ups
 w('| Floodway encroachment analysis required? | Not on the current mapping (no floodway exists). If DPIE establishes one from FPS 200546, then yes. |')
 w('| Compensatory storage required? | **Yes.** ' + n0(INU['100'].reachLostStorageCy) + ' cy below the 100-year surface. |')
 w('| Does the proposal meet county, DPIE, MDE and FEMA floodplain regulation? | **No, as currently designed.** Two dwellings at the water surface, four basements below it, a rise, and uncompensated fill. |')
-w('| Can the work legally support removing the floodplain designation from the lots? | **No, not as proposed.** See Section 11. |')
+w('| Can the work legally support removing the floodplain designation from the lots? | **No.** Not by crossing enlargement (Section 11.3), not by storage (Section 11.7), not by upstream diversion (Section 11.8). |')
 w()
 w('### 10.1 Requirements before a building permit')
 w()
@@ -952,28 +977,162 @@ w('With the dwellings on vented foundations and the driveways at existing grade,
   n0(CS.totalProvidedCy + ES.cutByFloor['48.0']) + ' cy available from the cells, and the ' +
   'balance closes. This is the recommended basis of design.')
 w()
-w('### 11.6 Recommendation')
+w('### 11.6 Frequency of inundation')
 w()
-w('1. **The crossing should not be enlarged as part of this development.** Enlargement does ' +
-  'not remove the lots from the floodplain, increases the 10-year discharge to downstream ' +
-  'properties by up to 80 percent, and constitutes a county roadway improvement outside the ' +
-  'scope of a four-lot site plan.')
+w('Peak stages routed through the crossing for the full range of design events, with the ' +
+  'resulting inundation of each lot on existing ground:')
 w()
-w('2. **The dwellings should be designed to the computed flood elevation.** Lowest floor at ' +
-  `or above EL ${f(wsel100 + 2)}; no basements on any lot; vented stem-wall or pier ` +
-  'foundations on Lots 54 and 55; driveways and aprons at existing grade; compensatory ' +
-  'storage as designed in Section 11.5.')
+w('| Storm | Peak stage | Fort Foote Road | Lot 53 | Lot 54 | Lot 55 | Lot 56 |')
+w('|---|---|---|---|---|---|---|')
+for (const r of SC.floodFrequency.rows) {
+  w(`| ${r.storm}-year | EL ${f(r.stageFt)} | ${r.roadOvertopped ? '**overtopped**' : 'clear'} | ` +
+    `${f(r.pctFlooded['53'], 1)}% | **${f(r.pctFlooded['54'], 1)}%** | ${f(r.pctFlooded['55'], 1)}% | ` +
+    `${f(r.pctFlooded['56'], 1)}% |`)
+}
 w()
-w('3. **The floodplain easement should be dedicated to the existing-condition 100-year ' +
-  'limit** and should encompass the compensatory storage cells, so that the storage is ' +
-  'protected against subsequent filling.')
+w('Two findings follow directly.')
 w()
-w('4. **The roadway overtopping should be reported to DPIE in writing at pre-application.** ' +
-  'Overtopping of Fort Foote Road in the 10-year event, conveying ' +
+w('**Lot 54 is 89 percent inundated in the 2-year event and Lot 55 is 41 percent.** These ' +
+  'are not conditions associated with a rare flood. The 2-year event has a 50 percent ' +
+  'probability of occurrence in any year.')
+w()
+w(`**Fort Foote Road is overtopped between the 5-year and 10-year events**, the roadway sag ` +
+  `at EL ${f(SC.floodFrequency.roadSagFt)} lying between the routed stages of EL ` +
+  `${f(SC.floodFrequency.rows[1].stageFt)} and EL ${f(SC.floodFrequency.rows[2].stageFt)}. ` +
+  'Vehicular access to the subject lots, including emergency access, is interrupted at ' +
+  'approximately a 1-in-7-year frequency. This condition exists independently of the ' +
+  'proposed development.')
+w()
+w('### 11.7 Storage required to remove the rear yards from inundation')
+w()
+w('The volume required to hold the peak water surface at a given elevation was determined by ' +
+  'mass-curve construction against the crossing rating: for a target stage the crossing ' +
+  'passes a fixed discharge, and the storage required is the maximum cumulative volume of ' +
+  'inflow in excess of that release rate.')
+w()
+w('| Target stage | Storm | Crossing passes | Storage required | Presently available | Deficit |')
+w('|---|---|---|---|---|---|')
+for (const r of SC.dryYardStorage.rows) {
+  w(`| EL ${f(r.targetFt, 1)} | ${r.storm}-year | ${n0(r.crossingPassesCfs)} cfs | ` +
+    `${f(r.requiredAcFt, 1)} ac-ft | ${f(r.existingAcFt, 1)} ac-ft | ` +
+    `**${f(r.shortAcFt, 1)} ac-ft = ${n0(r.shortCy)} cy** |`)
+}
+w()
+w(`Holding the 100-year surface at EL 50.0 requires ${n0(136670)} cy of additional storage. ` +
+  `Distributed across the combined area of all four lots (${n0(SC.dryYardStorage.allLotsAreaSqFt)} ` +
+  `sq ft) this corresponds to ${f(SC.dryYardStorage.depthOverAllLotsFt, 1)} ft of excavation over ` +
+  'the entire property. The measure is not feasible.')
+w()
+w('**It is also unattainable in principle.** Existing rear-yard ground on Lot 54 is ' +
+  `EL ${f(MIT.lotLowestGroundFt['9584 Fort Foote Rd'])} and on Lot 55 ` +
+  `EL ${f(MIT.lotLowestGroundFt['9580 Fort Foote Rd'])}, at or below the ` +
+  `EL ${f(MIT.tailwaterFloorFt)} tailwater elevation in the receiving channel at the 100-year ` +
+  'event. Excavation below that elevation does not drain. The governing constraint is the ' +
+  'water-surface elevation of the watercourse, not the storage volume available.')
+w()
+w('### 11.8 Sensitivity to upstream diversion')
+w()
+w(`The ${SC.upstreamDiversion.subject} parcel occupies ` +
+  `${f(SC.upstreamDiversion.parcelAcInWatershed, 1)} acres within the contributing watershed, ` +
+  `being ${f(SC.upstreamDiversion.pctOfWatershed, 1)} percent of its area. The parcel is ` +
+  `${SC.upstreamDiversion.parcelImperviousPct} percent impervious against a watershed average ` +
+  `of ${f(SC.upstreamDiversion.watershedImperviousPct, 1)} percent; it is not a ` +
+  'disproportionate contributor of runoff.')
+w()
+w('The watershed was re-analysed with the parcel removed in its entirety, representing a ' +
+  'separate drainage system discharging outside this catchment:')
+w()
+w('| Condition | Drainage area | Composite CN | Q10 | Q100 | 100-yr stage |')
+w('|---|---|---|---|---|---|')
+w(`| Existing | ${f(SC.upstreamDiversion.asIs.areaAc, 1)} ac | ${f(SC.upstreamDiversion.asIs.cn, 1)} | ` +
+  `${n0(SC.upstreamDiversion.asIs.q10)} cfs | ${n0(SC.upstreamDiversion.asIs.q100)} cfs | ` +
+  `EL ${f(SC.upstreamDiversion.asIs.stage100)} |`)
+w(`| Parcel diverted | ${f(SC.upstreamDiversion.diverted.areaAc, 1)} ac | ${f(SC.upstreamDiversion.diverted.cn, 1)} | ` +
+  `${n0(SC.upstreamDiversion.diverted.q10)} cfs | ${n0(SC.upstreamDiversion.diverted.q100)} cfs | ` +
+  `EL ${f(SC.upstreamDiversion.diverted.stage100)} |`)
+w()
+w(`**The reduction in the 100-year water-surface elevation is ${f(SC.upstreamDiversion.stageReductionFt100)} ft.** ` +
+  'Existing rear-yard ground on the subject lots lies between EL ' +
+  `${f(Math.min(...Object.values(MIT.lotLowestGroundFt as Record<string, number>)))} and ` +
+  `EL ${f(Math.max(...Object.values(MIT.lotLowestGroundFt as Record<string, number>)))}. ` +
+  'Diversion of the upstream parcel does not alter the floodplain status of any lot, and no ' +
+  'combination of upstream diversion within this watershed would do so. The flood elevation ' +
+  'is set by the capacity of the Fort Foote Road crossing and by the tailwater in the ' +
+  'receiving channel, not by any single upstream contributor.')
+w()
+w('### 11.9 Development scenario — Lots 53 and 56 developed, Lots 54 and 55 dedicated')
+w()
+w('Sections 11.3 to 11.7 establish that Lots 54 and 55 cannot be removed from the floodplain ' +
+  'and cannot support compensated fill. Section 11.5 establishes that the four-lot proposal ' +
+  'cannot be compensated within the property. The two findings resolve together.')
+w()
+w('**The compensatory storage obligation is not evenly distributed:**')
+w()
+w('| Lot | Fill below the 100-year surface | Share |')
+w('|---|---|---|')
+for (const lot of ['53', '54', '55', '56']) {
+  const v = lot === '53' ? SC.splitDevelopment.compensationRequiredCy['53']
+    : lot === '56' ? SC.splitDevelopment.compensationRequiredCy['56']
+    : lot === '54' ? 1142 : 934
+  w(`| ${lot} | ${n0(v)} cy | ${f(100 * v / SC.splitDevelopment.fourLotRequirementCy, 1)}% |`)
+}
+w()
+w(`Lots 54 and 55 account for ${n0(SC.splitDevelopment.lots5455ShareOfRequirementCy)} cy of the ` +
+  `${n0(SC.splitDevelopment.fourLotRequirementCy)} cy requirement, or ` +
+  `${f(SC.splitDevelopment.lots5455SharePct, 1)} percent. Lots 53 and 56, whose building ` +
+  'envelopes stand on high ground, generate ' +
+  `${n0(SC.splitDevelopment.compensationRequiredCy.total)} cy between them.`)
+w()
+w('**Developing Lots 53 and 56 only, and dedicating Lots 54 and 55 as floodplain, produces ' +
+  'the following balance:**')
+w()
+w('| | Volume |')
+w('|---|---|')
+w(`| Compensation required by Lots 53 and 56 | ${n0(SC.splitDevelopment.compensationRequiredCy.total)} cy |`)
+w(`| Available by excavation on Lots 54 and 55 to EL 50.0 | ${n0(SC.splitDevelopment.compensationFromLots5455Cy.toEl50)} cy over ${n0(SC.splitDevelopment.cutAreaSqFt.toEl50)} sq ft |`)
+w(`| Available to EL 49.0 | ${n0(SC.splitDevelopment.compensationFromLots5455Cy.toEl49)} cy |`)
+w(`| **Ratio provided to required, at EL 50.0** | **${f(SC.splitDevelopment.coverageRatioAtEl50, 1)} : 1** |`)
+w()
+w('The compensatory storage deficit that constrains the four-lot proposal is eliminated. The ' +
+  'excavation is located on land that cannot be developed in any event, at a floor elevation ' +
+  'that drains to the receiving channel, within the area to be placed under floodplain ' +
+  'easement. Lots 54 and 55 cease to be a constraint on the project and become the measure ' +
+  'that permits it.')
+w()
+
+w('### 11.10 Recommendation')
+w()
+w('1. **Develop Lots 53 and 56. Do not develop Lots 54 and 55.** Lot 54 is inundated to 89 ' +
+  'percent in the 2-year event and Lot 55 to 41 percent. Neither can be removed from the ' +
+  'floodplain by any means examined, neither can support compensated fill, and together they ' +
+  'account for 98.5 percent of the compensatory storage obligation of the four-lot proposal.')
+w()
+w('2. **Dedicate Lots 54 and 55 as floodplain and construct the compensatory storage within ' +
+  'them.** Section 11.9 demonstrates that this eliminates the storage deficit constraining ' +
+  'the development of Lots 53 and 56, at a ratio of ' +
+  `${f(SC.splitDevelopment.coverageRatioAtEl50, 1)} to 1. The easement should be dedicated to ` +
+  'the existing-condition 100-year limit and should encompass the excavated cells, so that ' +
+  'the storage is protected against subsequent filling. Plat 118-083 provides the precedent ' +
+  'and instrument form within this subdivision.')
+w()
+w('3. **Design the dwellings on Lots 53 and 56 to the computed flood elevation.** Lowest ' +
+  `floor at or above EL ${f(wsel100 + 2)}; no basements; vented stem-wall or pier ` +
+  'foundations; driveways and aprons at existing grade.')
+w()
+w('4. **Do not enlarge the Fort Foote Road crossing as part of this development.** ' +
+  'Enlargement does not remove the lots from the floodplain, increases the 10-year discharge ' +
+  'to downstream properties by up to 80 percent, and constitutes a county roadway ' +
+  'improvement outside the scope of a residential site plan.')
+w()
+w('5. **Report the roadway overtopping to DPIE in writing at pre-application.** Overtopping ' +
+  'of Fort Foote Road between the 5-year and 10-year events, conveying ' +
   n0(MIT.routed['EXISTING 36 in RCP (assumed)']['10'].outflowPeakCfs) +
-  ' cfs across the pavement, is a condition independent of this development. It governs the ' +
-  'flood elevation on the subject lots and should be placed on the record at the earliest ' +
-  'opportunity.')
+  ' cfs across the pavement at the 10-year, is a condition independent of this development. ' +
+  'It governs the flood elevation on the subject lots and interrupts emergency access at ' +
+  'approximately a 1-in-7-year frequency.')
+w()
+w('6. **Obtain FPS 200546 before proceeding.** The controlling floodplain study of record is ' +
+  'not in the project file and this study must be reconciled against it.')
 w()
 w('---')
 w()
