@@ -60,7 +60,7 @@ export default function ProductsPage() {
       {/* Supporting sections are isolated: none of them may take the catalog
           — and its buy buttons — offline if they throw. */}
       <SectionBoundary name="products-hero">
-        <EditorialVideoHero eyebrow="Preconstruction services" title="Every service. One path toward construction." description="Explore what Kealee can produce across design, site planning, cost intelligence, permits, professional coordination, and construction readiness." videoSrc="/media/service-videos/home-build-video.mp4" poster="/media/service-photos/home-build.jpg" primary={{ label: 'Get project clarity', href: '/products/home-project-readiness-review' }} secondary={{ label: 'Browse all products', href: '/products#homeowner-services' }} />
+        <EditorialVideoHero eyebrow="Preconstruction services" title="Every service. One path toward construction." description="Explore what Kealee can produce across design, site planning, cost intelligence, permits, professional coordination, and construction readiness." videoSrc="/media/service-videos/home-build-video.mp4" poster="/media/service-photos/home-build.jpg" primary={{ label: 'Get project clarity', href: '/request-service?service=home-project-readiness-review&name=Project+Clarity+Review' }} secondary={{ label: 'Browse all products', href: '/products#homeowner-services' }} />
       </SectionBoundary>
 
       {/* The four core products lead the catalog. */}
@@ -155,7 +155,7 @@ export default function ProductsPage() {
           <p className="mt-3 text-gray-500">Most projects start with project clarity. If you&apos;re not sure which service fits, tell us about your project.</p>
           <div className="mt-6 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
             <Link
-              href="/products/home-project-readiness-review"
+              href="/request-service?service=home-project-readiness-review&name=Project+Clarity+Review"
               className="inline-flex items-center gap-2 rounded-xl px-7 py-3.5 text-base font-semibold text-white transition-opacity hover:opacity-90"
               style={{ backgroundColor: '#E8793A' }}
             >

@@ -109,7 +109,7 @@ function TierCard({
       {/* CTA */}
       <div className="px-6 pb-6">
         <Link
-          href={`/concept?service=${serviceSlug}&tier=${tier.tier}`}
+          href={`/concept/details?service=${serviceSlug}&tier=${tier.tier}`}
           className={`flex items-center justify-center gap-2 w-full rounded-xl py-3 text-sm font-bold transition-all duration-200 ${
             isPremium
               ? 'bg-[#E8724B] hover:bg-[#D45C33] text-white shadow-md shadow-orange-200'
@@ -256,7 +256,7 @@ export default async function ServicePage({
           </div>
 
           <Link
-            href={`/concept?service=${svc.slug}`}
+            href={`/concept/details?service=${svc.slug}`}
             className="inline-flex items-center gap-2 bg-[#E8724B] hover:bg-[#D45C33] text-white font-bold px-8 py-4 rounded-xl shadow-lg shadow-orange-500/30 transition-all duration-200 hover:-translate-y-0.5"
           >
             Get Your {svc.shortLabel} Concept <ArrowRight className="w-5 h-5" />
@@ -336,7 +336,7 @@ export default async function ServicePage({
               </div>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-6">
                 <Link
-                  href={`/concept?service=${svc.slug}`}
+                  href={`/concept/details?service=${svc.slug}`}
                   className="inline-flex items-center gap-2 bg-[#E8724B] hover:bg-[#D45C33] text-white font-bold px-6 py-3 rounded-xl transition text-sm"
                 >
                   Start Your Design <ArrowRight className="w-4 h-4" />
@@ -359,7 +359,7 @@ export default async function ServicePage({
               <p className="text-slate-400 max-w-lg mx-auto text-sm mb-6 leading-relaxed">{videoFallback.body}</p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                 <Link
-                  href={`/concept?service=${svc.slug}`}
+                  href={`/concept/details?service=${svc.slug}`}
                   className="inline-flex items-center gap-2 bg-[#E8724B] hover:bg-[#D45C33] text-white font-bold px-6 py-3 rounded-xl transition text-sm"
                 >
                   Start Your Design <ArrowRight className="w-4 h-4" />
@@ -442,7 +442,7 @@ export default async function ServicePage({
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Link
-            href={`/concept?service=${svc.slug}`}
+            href={`/concept/details?service=${svc.slug}`}
             className="inline-flex items-center justify-center gap-2 bg-white text-[#E8724B] hover:bg-orange-50 font-bold px-8 py-4 rounded-xl shadow-lg transition-all duration-200 hover:-translate-y-0.5"
           >
             Start My {svc.shortLabel} Concept <ArrowRight className="w-5 h-5" />

@@ -14,7 +14,7 @@ const SERVICES = [
     description: 'Upload photos of your space. Get a concept floor plan, design brief, cost band, and permit scope in 24 hours. Staff-reviewed before delivery.',
     price: 'From $395',
     note: 'Pre-design concept only — not a permit-ready plan.',
-    href: '/concept-engine',
+    href: '/concept',
     cta: 'Start your design',
     accent: '#E8793A',
     imgUrl: 'https://images.unsplash.com/photo-1584622781564-1d987f7333c1?w=700&q=60&auto=format&fit=crop',
@@ -30,8 +30,8 @@ const SERVICES = [
     description: 'We know Montgomery DPS, Fairfax LDS, DC DOB, and every DMV agency. We file, track, respond to comments, and notify you when approved.',
     price: 'From $149',
     note: 'Requires existing plans or architectural documents.',
-    href: '/permits',
-    cta: 'View permit services',
+    href: '/intake/permit_path_only?product=permit_assessment',
+    cta: 'Start permit intake',
     accent: '#2563EB',
     imgUrl: 'https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=700&q=60&auto=format&fit=crop',
     tiers: [
@@ -47,8 +47,8 @@ const SERVICES = [
     description: 'Licensed architects provide permit-ready construction drawings. Ideal after an design concept, or if you need plans before permit filing.',
     price: 'From $895',
     note: 'Required before permit filing for most projects.',
-    href: '/design-services',
-    cta: 'Get permit-ready plans',
+    href: '/intake/professional_drawings',
+    cta: 'Start drawing intake',
     accent: '#7C3AED',
     imgUrl: 'https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=700&q=60&auto=format&fit=crop',
     tiers: [
@@ -63,7 +63,7 @@ const SERVICES = [
     description: 'powered by AI tools cost ranges based on real DMV project data. Certified estimates from licensed estimators for financing and bid review.',
     price: 'From $95',
     note: 'AI estimates are ranges — certified estimates are for financing.',
-    href: '/estimate',
+    href: '/intake/cost_estimate',
     cta: 'Get an estimate',
     accent: '#38A169',
     imgUrl: 'https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=700&q=60&auto=format&fit=crop',
@@ -79,8 +79,8 @@ const SERVICES = [
     description: 'Browse GCs, builders, and specialty contractors screened for licensing, insurance, and project fit. Matched by trade and county.',
     price: 'Free to browse',
     note: 'Milestone payment protection included on all platform projects.',
-    href: '/marketplace',
-    cta: 'Browse contractors',
+    href: '/intake/contractor_match',
+    cta: 'Start contractor match',
     accent: '#0891B2',
     imgUrl: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=700&q=60&auto=format&fit=crop',
     tiers: [
@@ -95,8 +95,8 @@ const SERVICES = [
     description: 'Every milestone, document, and payment in one dashboard. Your contractor cannot receive funds until you approve the milestone.',
     price: 'From $950',
     note: 'Self-managed dashboard always free.',
-    href: '/products/pm-advisory',
-    cta: 'View PM services',
+    href: '/intake/pm_advisory',
+    cta: 'Start PM intake',
     accent: '#DC2626',
     imgUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=700&q=60&auto=format&fit=crop',
     tiers: [
@@ -111,8 +111,8 @@ const SERVICES = [
     description: 'Funds are held in escrow and released only when you approve each milestone. Every lien waiver, inspection photo, and pay app is logged.',
     price: 'Free with project',
     note: 'Available on all projects managed through Kealee.',
-    href: '/milestone-pay',
-    cta: 'How it works',
+    href: '/request-service?service=milestone-pay&name=Protected%20Escrow%20Payments',
+    cta: 'Request payment setup',
     accent: '#D97706',
     imgUrl: 'https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?w=700&q=60&auto=format&fit=crop',
     tiers: [
@@ -124,10 +124,10 @@ const SERVICES = [
 ]
 
 const BUNDLES = [
-  { name: 'Design + Permit Starter', desc: 'design concept + simple permit filing', price: '$495', href: '/products/design-permit-starter' },
-  { name: 'Concept + Estimate', desc: 'Design + Cost Estimate in one package', price: '$449', href: '/products/concept-estimate' },
-  { name: 'Permit + PM Advisory', desc: 'Permit filing + milestone payment oversight', price: '$1,799', href: '/products/permit-pm-advisory' },
-  { name: 'Full Owner Package', desc: 'Concept, permit, PM, and contractor match', price: 'From $1,995', href: '/get-started' },
+  { name: 'Design + Permit Starter', desc: 'design concept + simple permit filing', price: '$495', href: '/request-service?service=design-permit-starter&name=Design%20%2B%20Permit%20Starter' },
+  { name: 'Concept + Estimate', desc: 'Design + Cost Estimate in one package', price: '$449', href: '/request-service?service=concept-estimate&name=Concept%20%2B%20Estimate' },
+  { name: 'Permit + PM Advisory', desc: 'Permit filing + milestone payment oversight', price: '$1,799', href: '/request-service?service=permit-pm-advisory&name=Permit%20%2B%20PM%20Advisory' },
+  { name: 'Full Owner Package', desc: 'Concept, permit, PM, and contractor match', price: 'From $1,995', href: '/request-service?service=full-owner-package&name=Full%20Owner%20Package' },
 ]
 
 export default function ServicesPage() {

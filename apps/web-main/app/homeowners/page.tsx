@@ -130,7 +130,7 @@ export default function HomeownersPage() {
         headline="Build with Confidence"
         highlight="Confidence"
         subhead="Plan, price, permit, and control your project. Transparent pricing at every step — pay only for what your project needs."
-        cta={{ label: 'Start with $585 Concept Package', href: '/homeowners/start' }}
+        cta={{ label: 'Start with $585 Concept Package', href: '/intake/whole_home_concept' }}
         secondaryCta={{ label: 'Browse Contractors', href: '/marketplace' }}
         trustItems={['No surprise invoices', 'Escrow-protected payments', 'Licensed & insured contractors', 'AI advisor included']}
         dark
@@ -306,7 +306,7 @@ export default function HomeownersPage() {
       <RoleCTA
         headline="Ready to Start Your Project?"
         subhead="Join thousands of homeowners who have built smarter with Kealee's powered by AI tools platform."
-        cta={{ label: 'Get My $585 Concept Package', href: '/homeowners/start' }}
+        cta={{ label: 'Get My $585 Concept Package', href: '/intake/whole_home_concept' }}
         secondaryCta={{ label: 'Browse Contractors', href: '/marketplace' }}
       />
     </>

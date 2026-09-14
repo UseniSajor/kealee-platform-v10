@@ -25,7 +25,7 @@ const PM_TIERS = [
     ],
     highlight: false,
     cta: 'Start a Project',
-    ctaHref: '/homeowners/start',
+    ctaHref: '/concept',
   },
   {
     name: 'PM Advisory',

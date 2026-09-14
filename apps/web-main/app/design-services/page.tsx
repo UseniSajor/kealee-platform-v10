@@ -121,7 +121,7 @@ export default function DesignServicesPage() {
               Start Pre-Design <ArrowRight className="h-4 w-4" />
             </Link>
             <Link
-              href="/concept-engine"
+              href="/concept"
               className="inline-flex items-center gap-2 rounded-xl border border-white/30 px-6 py-3.5 text-sm font-semibold text-white/80 hover:text-white hover:border-white/50 transition-all"
             >
               Start with design concept First
@@ -252,7 +252,7 @@ export default function DesignServicesPage() {
           </h2>
           <div className="flex flex-col sm:flex-row items-center gap-4">
             {[
-              { step: '1', label: 'design concept', sub: 'From $395', color: '#E8793A', href: '/concept-engine' },
+              { step: '1', label: 'design concept', sub: 'From $395', color: '#E8793A', href: '/concept' },
               { step: '2', label: 'Design Services', sub: 'From $1,200', color: '#2ABFBF', href: '/pre-design' },
               { step: '3', label: 'Permit Submission', sub: 'From $595', color: '#38A169', href: '/permits' },
               { step: '4', label: 'Contractor Match', sub: 'Free matching', color: '#7C3AED', href: '/marketplace' },

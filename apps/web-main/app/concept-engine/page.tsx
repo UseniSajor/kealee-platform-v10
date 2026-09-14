@@ -13,7 +13,7 @@ const PATHS = [
     color:       '#2ABFBF',
     title:       'Exterior Design',
     description: 'Facade, curb appeal, landscaping, hardscaping, and outdoor living — see your exterior transformed.',
-    href:        '/concept-engine/exterior',
+    href:        '/intake/exterior_concept',
     price:       'From $395 · Consultation included',
   },
   {
@@ -21,7 +21,7 @@ const PATHS = [
     color:       '#38A169',
     title:       'Home Farming & Garden',
     description: 'Garden design, raised beds, backyard farming, irrigation systems, and greenhouse build.',
-    href:        '/concept-engine/garden',
+    href:        '/intake/garden_concept',
     price:       'From $395 · Consultation included',
     badge:       'New',
   },
@@ -30,7 +30,7 @@ const PATHS = [
     color:       '#E8793A',
     title:       'Whole Home Renovation',
     description: 'Full property transformation — floor plans, structural changes, systems, and every room redesigned.',
-    href:        '/concept-engine/whole-home',
+    href:        '/intake/whole_home_concept',
     price:       'From $585 · Consultation included',
   },
   {
@@ -38,7 +38,7 @@ const PATHS = [
     color:       '#7C3AED',
     title:       'Interior Reno & Addition',
     description: 'Kitchen, bath, room additions, ADUs, and complete interior redesign — all interior and addition work.',
-    href:        '/concept-engine/interior-reno',
+    href:        '/intake/interior_reno_concept',
     price:       'From $395 · Consultation included',
   },
   {
@@ -46,7 +46,7 @@ const PATHS = [
     color:       '#1A2B4A',
     title:       'Developer / Investor',
     description: 'Commercial, mixed-use, or multifamily. Business-grade concept with feasibility and entitlement brief.',
-    href:        '/concept-engine/developer',
+    href:        '/intake/developer_concept',
     price:       'From $585 · Feasibility add-ons available',
   },
 ]

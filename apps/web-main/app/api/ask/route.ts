@@ -134,11 +134,11 @@ Never direct portal users to public marketing pages (/permits, /concept, /estima
 // --- Path map ---
 const PATH_MAP: Record<string, { label: string; href: string }> = {
   PERMIT:        { label: 'Get Permit Services',        href: '/permits' },
-  DESIGN:        { label: 'See Design Services',        href: '/design-services' },
-  ESTIMATE:      { label: 'Get an Estimate',            href: '/estimate' },
-  AI_CONCEPT:    { label: 'Start design concept',           href: '/concept-engine' },
-  MARKETPLACE:   { label: 'Find a Contractor',          href: '/marketplace' },
-  MILESTONE_PAY: { label: 'Learn About Milestone Pay',  href: '/milestone-pay' },
+  DESIGN:        { label: 'See Design Services',        href: '/intake/professional_drawings' },
+  ESTIMATE:      { label: 'Get an Estimate',            href: '/intake/cost_estimate' },
+  AI_CONCEPT:    { label: 'Start design concept',       href: '/concept' },
+  MARKETPLACE:   { label: 'Find a Contractor',          href: '/intake/contractor_match' },
+  MILESTONE_PAY: { label: 'Set Up Milestone Pay',       href: '/request-service?service=milestone-pay&name=Protected+Escrow+Payments' },
 }
 
 // Keyword fallback when Anthropic API is unavailable

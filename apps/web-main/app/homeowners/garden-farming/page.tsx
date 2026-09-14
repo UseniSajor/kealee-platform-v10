@@ -119,7 +119,7 @@ export default function GardenFarmingPage() {
             </p>
             <div className="mt-8 flex flex-wrap gap-4">
               <Link
-                href="/concept-engine/garden"
+                href="/intake/garden_concept"
                 className="inline-flex items-center gap-2 rounded-xl px-7 py-3.5 text-base font-semibold text-white transition-opacity hover:opacity-90"
                 style={{ backgroundColor: '#38A169' }}
               >
@@ -280,7 +280,7 @@ export default function GardenFarmingPage() {
           </p>
           <div className="mt-8 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
             <Link
-              href="/concept-engine/garden"
+              href="/intake/garden_concept"
               className="inline-flex items-center gap-2 rounded-xl px-7 py-3.5 text-base font-semibold text-white transition-opacity hover:opacity-90"
               style={{ backgroundColor: '#38A169' }}
             >

@@ -102,7 +102,7 @@ export function VideoHeroSection() {
 
         <div className="mt-10 flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
           <Link
-            href="/get-started"
+            href="/request-service?service=home-project-readiness-review&name=Project+Clarity+Review"
             className="inline-flex items-center justify-center gap-2 px-8 py-4 text-base font-semibold text-white bg-kealee-orange rounded-lg hover:bg-kealee-orange-dark transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5"
           >
             Start Your Project

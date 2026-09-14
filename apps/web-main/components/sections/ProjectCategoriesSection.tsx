@@ -17,7 +17,7 @@ const CATEGORIES = [
     desc: 'Already have your drawings? Our AI reviews your documents, flags potential issues, and handles jurisdiction filing for you.',
     img: 'https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=800&q=80',
     cta: 'File permits',
-    href: '/permits',
+    href: '/intake/permit_path_only',
     accent: '#2ABFBF',
   },
   {
@@ -26,7 +26,7 @@ const CATEGORIES = [
     desc: 'Browse AI-vetted GCs, electricians, HVAC pros, and specialty trades. Get matched and receive bids on your project.',
     img: 'https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=800&q=80',
     cta: 'Find a contractor',
-    href: '/marketplace',
+    href: '/intake/contractor_match',
     accent: '#3A7D52',
   },
 ]

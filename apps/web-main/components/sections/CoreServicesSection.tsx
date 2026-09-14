@@ -32,7 +32,7 @@ export default function CoreServicesSection() {
                 <div className="tr"><span className="trn">Full Design Package</span><span className="trp">starting at $4,499</span></div>
               </div>
               <p style={{ fontSize: 12, color: '#9CA3AF', marginTop: 8 }}>Pre-design concept only — not a permit-ready plan. <Link href="/intake/professional_drawings" style={{ color: 'var(--o)' }}>Need permit-ready plans?</Link></p>
-              <Link href="/concept-engine" className="scta">Start your design</Link>
+              <Link href="/concept" className="scta">Start your design</Link>
             </div>
           </div>
 
@@ -57,7 +57,7 @@ export default function CoreServicesSection() {
                 <div className="tr"><span className="trn">Permit Expediting</span><span className="trp">Starting at $5,500</span></div>
               </div>
               <p style={{ fontSize: 12, color: '#9CA3AF', marginTop: 8 }}>Requires existing plans or architectural documents. <Link href="/intake/professional_drawings" style={{ color: 'var(--o)' }}>Get plans first →</Link></p>
-              <Link href="/permits" className="scta">View permit services</Link>
+              <Link href="/intake/permit_path_only" className="scta">Start permit intake</Link>
             </div>
           </div>
 
@@ -79,7 +79,7 @@ export default function CoreServicesSection() {
                 <div className="tr pop"><span className="trn b">PM Advisory <span className="pp">Most common</span></span><span className="trp">$950</span></div>
                 <div className="tr"><span className="trn">PM Oversight</span><span className="trp">$2,950</span></div>
               </div>
-              <Link href="/products/pm-advisory" className="scta">View PM services</Link>
+              <Link href="/intake/pm_advisory" className="scta">Start PM intake</Link>
             </div>
           </div>
 
