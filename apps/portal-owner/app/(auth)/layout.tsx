@@ -2,40 +2,40 @@ import Link from 'next/link'
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div
-      className="min-h-screen"
-      style={{ background: 'linear-gradient(135deg, #1A2B4A 0%, #0F1D34 60%, #1A3B3B 100%)' }}
-    >
-      {/* Subtle dot-grid texture */}
+    <div className="relative min-h-screen overflow-hidden bg-[#F7F5F0]">
       <div
-        className="pointer-events-none fixed inset-0 opacity-[0.03]"
+        className="pointer-events-none absolute -left-32 -top-44 h-[32rem] w-[32rem] rounded-full opacity-70 blur-3xl"
+        style={{ background: 'radial-gradient(circle, rgba(232,114,75,.2), transparent 68%)' }}
+      />
+      <div
+        className="pointer-events-none absolute -bottom-52 -right-32 h-[36rem] w-[36rem] rounded-full opacity-70 blur-3xl"
+        style={{ background: 'radial-gradient(circle, rgba(42,191,191,.16), transparent 68%)' }}
+      />
+      <div
+        className="pointer-events-none absolute inset-0 opacity-[0.025]"
         style={{
-          backgroundImage: `radial-gradient(circle, #fff 1px, transparent 1px)`,
-          backgroundSize: '28px 28px',
+          backgroundImage: 'radial-gradient(circle, #1A2B4A 1px, transparent 1px)',
+          backgroundSize: '24px 24px',
         }}
       />
 
-      {/* Top bar */}
-      <div className="relative flex items-center justify-between px-6 py-4">
+      <header className="relative flex items-center justify-between px-5 py-5 sm:px-8">
         <Link href="/" className="flex items-center gap-2">
           <div
-            className="flex h-8 w-8 items-center justify-center rounded-lg"
+            className="flex h-9 w-9 items-center justify-center rounded-xl shadow-sm"
             style={{ backgroundColor: '#E8793A' }}
           >
-            <span className="text-sm font-bold text-white font-display">K</span>
+            <span className="font-display text-sm font-bold text-white">K</span>
           </div>
-          <span className="text-lg font-bold text-white font-display">Kealee</span>
+          <span className="font-display text-lg font-bold tracking-tight text-[#172033]">Kealee</span>
         </Link>
-        <span
-          className="rounded-full px-3 py-1 text-xs font-semibold"
-          style={{ backgroundColor: 'rgba(42,191,191,0.15)', color: '#2ABFBF' }}
-        >
+        <span className="rounded-full border border-slate-200 bg-white/70 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-slate-600 backdrop-blur-sm">
           Owner Portal
         </span>
-      </div>
+      </header>
 
-      <div className="relative flex items-center justify-center px-4 py-12">
-        <div className="w-full max-w-md">{children}</div>
+      <div className="relative flex min-h-[calc(100vh-5rem)] items-start justify-center px-4 pb-12 pt-7 sm:items-center sm:pb-24 sm:pt-10">
+        <div className="w-full max-w-[28rem]">{children}</div>
       </div>
     </div>
   )

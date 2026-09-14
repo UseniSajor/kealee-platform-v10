@@ -1,5 +1,7 @@
 'use client'
 
+import { Check, Plus } from 'lucide-react'
+
 interface Props {
   label: string
   hint?: string
@@ -11,9 +13,9 @@ interface Props {
 
 export function ScopeChipGrid({ label, hint, options, selected, onToggle, error }: Props) {
   return (
-    <div>
-      <label className="block text-sm font-semibold text-slate-800 mb-1">{label}</label>
-      {hint && <p className="text-xs text-slate-500 mb-2">{hint}</p>}
+    <fieldset>
+      <legend className="block text-sm font-semibold text-slate-800 mb-1">{label}</legend>
+      {hint && <p className="text-xs leading-5 text-slate-500 mb-3">{hint}</p>}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         {options.map((opt) => {
           const on = selected.includes(opt)
@@ -21,19 +23,23 @@ export function ScopeChipGrid({ label, hint, options, selected, onToggle, error 
             <button
               key={opt}
               type="button"
+              aria-pressed={on}
               onClick={() => onToggle(opt)}
-              className={`text-left px-3 py-2.5 rounded-lg border text-sm transition ${
+              className={`flex min-h-12 items-center justify-between gap-3 text-left px-3.5 py-3 rounded-xl border text-sm transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-orange-100 ${
                 on
-                  ? 'border-[#E8724B] bg-orange-50 text-[#E8724B] font-medium'
-                  : 'border-slate-200 bg-slate-50 text-slate-700 hover:border-slate-300'
+                  ? 'border-[#E8724B] bg-orange-50/70 text-orange-900 font-medium shadow-sm'
+                  : 'border-slate-200 bg-white text-slate-600 hover:border-orange-200 hover:bg-orange-50/30'
               }`}
             >
-              {opt}
+              <span>{opt}</span>
+              <span aria-hidden className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full ${on ? 'bg-[#E8724B] text-white' : 'bg-slate-100 text-slate-400'}`}>
+                {on ? <Check className="h-3 w-3" /> : <Plus className="h-3 w-3" />}
+              </span>
             </button>
           )
         })}
       </div>
-      {error && <p className="text-xs text-red-500 mt-1.5">{error}</p>}
-    </div>
+      {error && <p data-field-error role="alert" className="text-xs text-red-500 mt-1.5">{error}</p>}
+    </fieldset>
   )
 }

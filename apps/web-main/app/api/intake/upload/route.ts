@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { randomUUID } from 'crypto'
+import { resolveIntakeFileType } from '@/lib/intake-file-types'
 
 export const dynamic = 'force-dynamic'
 
@@ -22,7 +23,11 @@ const MAX_FILE_SIZE = 50 * 1024 * 1024 // 50 MB
 export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData()
-    const files = formData.getAll('files') as File[]
+    const entries = formData.getAll('files')
+    if (entries.some(file => typeof file === 'string')) {
+      return NextResponse.json({ error: 'Expected file attachments' }, { status: 400 })
+    }
+    const files = entries as File[]
 
     if (!files || files.length === 0) {
       return NextResponse.json({ error: 'No files provided' }, { status: 400 })
@@ -37,10 +42,11 @@ export async function POST(req: NextRequest) {
     const rejectedFiles: Array<{ name: string; reason: string }> = []
 
     for (const file of files) {
+      const contentType = resolveIntakeFileType(file)
       const lowerName = file.name.toLowerCase()
       const extension = lowerName.split('.').pop() ?? ''
       const allowedByExtension = ALLOWED_DOCUMENT_EXTENSIONS.has(extension)
-      if (!ALLOWED_TYPES.has(file.type) && !allowedByExtension) {
+      if (!ALLOWED_TYPES.has(contentType) && !allowedByExtension) {
         rejectedFiles.push({ name: file.name, reason: `Unsupported file type: ${file.type || extension || 'unknown'}` })
         console.warn('[intake/upload] Rejected unsupported file', { name: file.name, type: file.type, extension })
         continue
@@ -59,7 +65,7 @@ export async function POST(req: NextRequest) {
       const { error } = await supabase.storage
         .from('concept-uploads')
         .upload(path, buffer, {
-          contentType: file.type,
+          contentType: contentType || 'application/octet-stream',
           upsert: false,
         })
 

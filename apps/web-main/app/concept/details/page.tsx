@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowRight, ArrowLeft, Paperclip, X, ImageIcon, FileText, Video, Info, Loader2, Smartphone, Monitor } from 'lucide-react'
+import { ArrowRight, ArrowLeft, X, ImageIcon, FileText, Video, Info, Loader2, Smartphone, Monitor, Check, Sparkles, SlidersHorizontal, Camera, UploadCloud } from 'lucide-react'
 import { SERVICE_MAP } from '@/lib/services-config'
 import { getConceptSqftHint, CONCEPT_PHOTO_RENDERING_DISCLAIMER } from '@/lib/concept-scope-placeholders'
 import {
@@ -161,6 +161,8 @@ function DetailsInner() {
     } as IntakeUploadedFile))
   })
   const [uploading, setUploading] = useState(false)
+  const uploadInFlight = useRef(false)
+  const [uploadErrors, setUploadErrors] = useState<string[]>([])
   const [dragActive, setDragActive] = useState(false)
   const [photoAckNoUpload, setPhotoAckNoUpload] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -191,19 +193,34 @@ function DetailsInner() {
     }
   }
 
+  async function uploadFiles(selected: File[]) {
+    if (uploadInFlight.current || selected.length === 0) return
+    const remaining = Math.max(0, 5 - uploadedFiles.length)
+    if (selected.length > remaining) {
+      setUploadErrors([`You can attach up to 5 files. ${remaining > 0 ? `Choose up to ${remaining} more.` : 'Remove a file to add another.'}`])
+      return
+    }
+    uploadInFlight.current = true
+    setUploading(true)
+    setUploadErrors([])
+    try {
+      const newFiles = await uploadIntakeFilesSequentially(selected, message => {
+        setUploadErrors(previous => [...previous, message])
+      })
+      setUploadedFiles(previous => [...previous, ...newFiles])
+    } catch {
+      setUploadErrors(previous => [...previous, 'Upload interrupted. Please choose your files again.'])
+    } finally {
+      uploadInFlight.current = false
+      setUploading(false)
+    }
+  }
+
   async function handleDrop(e: React.DragEvent) {
     e.preventDefault()
     e.stopPropagation()
     setDragActive(false)
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      const selected = Array.from(e.dataTransfer.files)
-      const remaining = 5 - uploadedFiles.length
-      const toUpload = selected.slice(0, remaining)
-      setUploading(true)
-      const newFiles = await uploadIntakeFilesSequentially(toUpload)
-      setUploadedFiles((prev) => [...prev, ...newFiles])
-      setUploading(false)
-    }
+    await uploadFiles(Array.from(e.dataTransfer.files))
   }
 
   useEffect(() => {
@@ -292,16 +309,11 @@ function DetailsInner() {
   }, [captureSession])
 
   async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const selected = Array.from(e.target.files ?? [])
-    if (!selected.length) return
-    const remaining = 5 - uploadedFiles.length
-    const toUpload = selected.slice(0, remaining)
-    setUploading(true)
-    const newFiles = await uploadIntakeFilesSequentially(toUpload)
-    setUploadedFiles((prev) => [...prev, ...newFiles])
-    setUploading(false)
-    // reset input so same file can be re-selected if needed
-    e.target.value = ''
+    const input = e.currentTarget
+    const selected = Array.from(input.files ?? [])
+    // Allow the same file to be selected again after a failed upload.
+    input.value = ''
+    await uploadFiles(selected)
   }
 
   function removeFile(url: string) {
@@ -378,7 +390,10 @@ function DetailsInner() {
   }
 
   function handleNext() {
-    if (!validate()) return
+    if (!validate()) {
+      requestAnimationFrame(() => document.querySelector('[data-field-error]')?.scrollIntoView({ behavior: 'smooth', block: 'center' }))
+      return
+    }
     const params = new URLSearchParams({
       service: serviceSlug,
       scope: composedScope(),
@@ -416,18 +431,26 @@ function DetailsInner() {
 
   return (
     <ConceptIntakeShell serviceSlug={serviceSlug}>
-      <div className="mb-8">
-        <p className="text-xs font-bold uppercase tracking-widest text-[#E8724B] mb-2">Step 2 of 4</p>
-        <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-2">Tell Us About Your Project</h1>
-        <p className="text-slate-500">
-          Selected: <span className="font-semibold text-slate-700">{service?.label ?? serviceSlug}</span>
-          {' · '}
-          <span className="text-slate-400">Tap options below — no long essay required</span>
-        </p>
-      </div>
+      <header className="mb-8">
+        <div className="mb-5 flex flex-wrap items-center gap-3">
+          <span className="rounded-full border border-orange-200 bg-orange-50 px-3 py-1 text-xs font-semibold text-orange-800">Step 2 of 4</span>
+          <span className="text-xs font-medium text-slate-500">Your ideas. Your space. Your next chapter.</span>
+        </div>
+        <h1 className="max-w-lg text-3xl font-semibold leading-tight tracking-tight text-slate-900 sm:text-4xl">Tell Us About<br className="hidden sm:block" /> Your Project</h1>
+        <p className="mt-3 max-w-lg text-sm leading-6 text-slate-600">A few details help us shape a concept that feels like you. Start with what you have, then tell us what you imagine.</p>
+        <div className="mt-5 inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm">
+          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-teal-50 text-teal-700"><Check className="h-3.5 w-3.5" aria-hidden /></span>
+          {service?.label ?? serviceSlug}
+          <Link href={`/concept?service=${serviceSlug}`} className="ml-2 text-xs text-slate-500 underline underline-offset-4 hover:text-slate-900">Change</Link>
+        </div>
+      </header>
 
-      <div className="space-y-6 max-w-xl lg:max-w-none">
-
+      <div className="space-y-5">
+        <section aria-labelledby="project-vision-heading" className="space-y-6 rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm sm:p-7">
+          <div className="flex items-start gap-3 border-b border-slate-100 pb-5">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-orange-50 text-[#D45C33]"><Sparkles className="h-5 w-5" aria-hidden /></span>
+            <div><p className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400">01 / The vision</p><h2 id="project-vision-heading" className="mt-1 text-lg font-semibold tracking-tight text-slate-900">Make room for your ideas</h2><p className="mt-1 text-xs leading-5 text-slate-500">Tap the options that fit. You can choose more than one.</p></div>
+          </div>
         <ScopeChipGrid
           label={isGarden ? "What's the yard like today? (optional)" : "What's it like today? (optional)"}
           hint="Helps us ground the concept in your existing space."
@@ -450,12 +473,13 @@ function DetailsInner() {
         {/* Garden: Outdoor Space Type */}
         {isGarden && (
           <div>
-            <label className="block text-sm font-semibold text-slate-800 mb-1.5">
+            <label htmlFor="project-gardenSpace" className="block text-sm font-semibold text-slate-800 mb-1.5">
               Which outdoor space? <span className="text-[#E8724B]">*</span>
             </label>
             <select
               className={inputClass}
-              value={gardenSpace}
+              id="project-gardenSpace"
+            value={gardenSpace}
               onChange={(e) => setGardenSpace(e.target.value)}
             >
               <option value="">Select area...</option>
@@ -463,7 +487,7 @@ function DetailsInner() {
                 <option key={s} value={s}>{s}</option>
               ))}
             </select>
-            {errors.gardenSpace && <p className="text-xs text-red-500 mt-1">{errors.gardenSpace}</p>}
+            {errors.gardenSpace && <p data-field-error role="alert" className="text-xs text-red-500 mt-1">{errors.gardenSpace}</p>}
           </div>
         )}
 
@@ -510,12 +534,13 @@ function DetailsInner() {
         {/* Garden: Irrigation */}
         {isGarden && (
           <div>
-            <label className="block text-sm font-semibold text-slate-800 mb-1.5">
+            <label htmlFor="project-gardenIrrigation" className="block text-sm font-semibold text-slate-800 mb-1.5">
               Irrigation preference <span className="text-[#E8724B]">*</span>
             </label>
             <select
               className={inputClass}
-              value={gardenIrrigation}
+              id="project-gardenIrrigation"
+            value={gardenIrrigation}
               onChange={(e) => setGardenIrrigation(e.target.value)}
             >
               <option value="">Select irrigation type...</option>
@@ -523,19 +548,20 @@ function DetailsInner() {
                 <option key={o} value={o}>{o}</option>
               ))}
             </select>
-            {errors.gardenIrrigation && <p className="text-xs text-red-500 mt-1">{errors.gardenIrrigation}</p>}
+            {errors.gardenIrrigation && <p data-field-error role="alert" className="text-xs text-red-500 mt-1">{errors.gardenIrrigation}</p>}
           </div>
         )}
 
         {/* Garden: Maintenance Level */}
         {isGarden && (
           <div>
-            <label className="block text-sm font-semibold text-slate-800 mb-1.5">
+            <label htmlFor="project-gardenMaintenance" className="block text-sm font-semibold text-slate-800 mb-1.5">
               Maintenance commitment <span className="text-[#E8724B]">*</span>
             </label>
             <select
               className={inputClass}
-              value={gardenMaintenance}
+              id="project-gardenMaintenance"
+            value={gardenMaintenance}
               onChange={(e) => setGardenMaintenance(e.target.value)}
             >
               <option value="">How much upkeep are you planning?</option>
@@ -543,13 +569,20 @@ function DetailsInner() {
                 <option key={o} value={o}>{o}</option>
               ))}
             </select>
-            {errors.gardenMaintenance && <p className="text-xs text-red-500 mt-1">{errors.gardenMaintenance}</p>}
+            {errors.gardenMaintenance && <p data-field-error role="alert" className="text-xs text-red-500 mt-1">{errors.gardenMaintenance}</p>}
           </div>
         )}
 
+        </section>
+        <section aria-labelledby="project-basics-heading" className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm sm:p-7">
+          <div className="mb-6 flex items-start gap-3 border-b border-slate-100 pb-5">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-teal-50 text-teal-700"><SlidersHorizontal className="h-5 w-5" aria-hidden /></span>
+            <div><p className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400">02 / The details</p><h2 id="project-basics-heading" className="mt-1 text-lg font-semibold tracking-tight text-slate-900">Set the direction</h2><p className="mt-1 text-xs leading-5 text-slate-500">Your style, priorities, and practical starting points.</p></div>
+          </div>
+          <div className="grid grid-cols-1 gap-x-5 gap-y-6 sm:grid-cols-2">
         {/* Square Footage */}
         <div>
-          <label className="block text-sm font-semibold text-slate-800 mb-1.5">
+          <label htmlFor="project-sqft" className="block text-sm font-semibold text-slate-800 mb-1.5">
             Approximate Square Footage <span className="text-[#E8724B]">*</span>
           </label>
           <input
@@ -557,20 +590,22 @@ function DetailsInner() {
             className={inputClass}
             placeholder="e.g. 450"
             min="0"
+            id="project-sqft"
             value={sqft}
             onChange={(e) => setSqft(e.target.value)}
           />
-          {errors.sqft && <p className="text-xs text-red-500 mt-1">{errors.sqft}</p>}
+          {errors.sqft && <p data-field-error role="alert" className="text-xs text-red-500 mt-1">{errors.sqft}</p>}
           <p className="text-xs text-slate-400 mt-1">{getConceptSqftHint(serviceSlug)}</p>
         </div>
 
         {/* Style — garden-specific options when garden service */}
         <div>
-          <label className="block text-sm font-semibold text-slate-800 mb-1.5">
+          <label htmlFor="project-style" className="block text-sm font-semibold text-slate-800 mb-1.5">
             {isGarden ? 'Garden Style' : 'Design Style'} <span className="text-[#E8724B]">*</span>
           </label>
           <select
             className={inputClass}
+            id="project-style"
             value={style}
             onChange={(e) => setStyle(e.target.value)}
           >
@@ -579,16 +614,17 @@ function DetailsInner() {
               <option key={s} value={s}>{s}</option>
             ))}
           </select>
-          {errors.style && <p className="text-xs text-red-500 mt-1">{errors.style}</p>}
+          {errors.style && <p data-field-error role="alert" className="text-xs text-red-500 mt-1">{errors.style}</p>}
         </div>
 
         {/* Priority — garden-specific options when garden service */}
         <div>
-          <label className="block text-sm font-semibold text-slate-800 mb-1.5">
+          <label htmlFor="project-priority" className="block text-sm font-semibold text-slate-800 mb-1.5">
             Top Priority <span className="text-[#E8724B]">*</span>
           </label>
           <select
             className={inputClass}
+            id="project-priority"
             value={priority}
             onChange={(e) => setPriority(e.target.value)}
           >
@@ -597,12 +633,12 @@ function DetailsInner() {
               <option key={p} value={p}>{p}</option>
             ))}
           </select>
-          {errors.priority && <p className="text-xs text-red-500 mt-1">{errors.priority}</p>}
+          {errors.priority && <p data-field-error role="alert" className="text-xs text-red-500 mt-1">{errors.priority}</p>}
         </div>
 
         {/* Budget */}
         <div>
-          <label className="block text-sm font-semibold text-slate-800 mb-1.5">
+          <label htmlFor="project-budget" className="block text-sm font-semibold text-slate-800 mb-1.5">
             Estimated Project Budget <span className="text-[#E8724B]">*</span>
           </label>
           <div className="relative">
@@ -612,21 +648,23 @@ function DetailsInner() {
               className={`${inputClass} pl-7`}
               placeholder="50000"
               min="0"
-              value={budget}
+              id="project-budget"
+            value={budget}
               onChange={(e) => setBudget(e.target.value)}
             />
           </div>
-          {errors.budget && <p className="text-xs text-red-500 mt-1">{errors.budget}</p>}
+          {errors.budget && <p data-field-error role="alert" className="text-xs text-red-500 mt-1">{errors.budget}</p>}
           <p className="text-xs text-slate-400 mt-1">Your total budget for construction — not the AI concept fee</p>
         </div>
 
         {/* Timeline */}
         <div>
-          <label className="block text-sm font-semibold text-slate-800 mb-1.5">
+          <label htmlFor="project-timeline" className="block text-sm font-semibold text-slate-800 mb-1.5">
             Project Timeline <span className="text-[#E8724B]">*</span>
           </label>
           <select
             className={inputClass}
+            id="project-timeline"
             value={timeline}
             onChange={(e) => setTimeline(e.target.value)}
           >
@@ -635,12 +673,12 @@ function DetailsInner() {
               <option key={t} value={t}>{t}</option>
             ))}
           </select>
-          {errors.timeline && <p className="text-xs text-red-500 mt-1">{errors.timeline}</p>}
+          {errors.timeline && <p data-field-error role="alert" className="text-xs text-red-500 mt-1">{errors.timeline}</p>}
         </div>
 
         {/* ZIP */}
         <div>
-          <label className="block text-sm font-semibold text-slate-800 mb-1.5">
+          <label htmlFor="project-zip" className="block text-sm font-semibold text-slate-800 mb-1.5">
             Project ZIP Code <span className="text-[#E8724B]">*</span>
           </label>
           <input
@@ -648,22 +686,25 @@ function DetailsInner() {
             className={inputClass}
             placeholder="20001"
             maxLength={5}
+            id="project-zip"
             value={zip}
             onChange={(e) => setZip(e.target.value.replace(/\D/g, ''))}
           />
-          {errors.zip && <p className="text-xs text-red-500 mt-1">{errors.zip}</p>}
+          {errors.zip && <p data-field-error role="alert" className="text-xs text-red-500 mt-1">{errors.zip}</p>}
           {zip.length === 5 && !errors.zip && (
             <p className="text-xs text-green-600 mt-1">✓ Location confirmed — used for zoning and permit analysis</p>
           )}
         </div>
 
-        <div>
-          <label className="block text-sm font-semibold text-slate-800 mb-1.5">
+        </div>
+        <div className="mt-6">
+          <label htmlFor="project-note" className="block text-sm font-semibold text-slate-800 mb-1.5">
             Anything else? <span className="text-slate-400 font-normal">(optional one line)</span>
           </label>
           <input
             type="text"
             className={inputClass}
+            id="project-note"
             placeholder="e.g. Keep the brick chimney visible, prefer warm wood tones"
             value={extraNote}
             onChange={(e) => setExtraNote(e.target.value)}
@@ -672,17 +713,19 @@ function DetailsInner() {
         </div>
 
         {scopePreview.length > 20 && (
-          <div className="rounded-xl border border-slate-200 bg-slate-50/80 px-4 py-3">
+          <div className="mt-6 rounded-xl border border-teal-100 bg-teal-50/60 px-4 py-4">
             <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-1">Your project summary</p>
             <p className="text-sm text-slate-700 whitespace-pre-line leading-relaxed">{scopePreview}</p>
           </div>
         )}
 
+        </section>
         {/* File / Photo Upload */}
-        <div>
-          <label className="block text-sm font-semibold text-slate-800 mb-1.5">
-            Photos of existing conditions <span className="text-[#E8724B]">*</span>
-          </label>
+        <section aria-labelledby="project-photos-heading" className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm sm:p-7">
+          <div className="mb-5 flex items-start gap-3 border-b border-slate-100 pb-5">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-700"><Camera className="h-5 w-5" aria-hidden /></span>
+            <div><p className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400">03 / Your space</p><h2 id="project-photos-heading" className="mt-1 text-lg font-semibold tracking-tight text-slate-900">Show us the starting point</h2><p className="mt-1 text-xs leading-5 text-slate-500">Add photos, a walkthrough, or plans to help us understand your space.</p></div>
+          </div>
           <div className="flex gap-2 rounded-xl border border-amber-200 bg-amber-50/80 px-3 py-2.5 mb-4 text-xs text-amber-950 leading-relaxed">
             <Info className="w-4 h-4 shrink-0 text-amber-700 mt-0.5" aria-hidden />
             <p>{CONCEPT_PHOTO_RENDERING_DISCLAIMER}</p>
@@ -755,7 +798,8 @@ function DetailsInner() {
               onDragOver={handleDrag}
               onDragLeave={handleDrag}
               onDrop={handleDrop}
-              className={`relative rounded-2xl border-2 border-dashed p-6 transition-all flex flex-col items-center justify-center text-center cursor-pointer ${
+              aria-busy={uploading}
+              className={`group relative rounded-2xl border-2 border-dashed px-5 py-9 transition-colors flex flex-col items-center justify-center text-center focus-within:ring-4 focus-within:ring-orange-100 ${
                 dragActive
                   ? 'border-[#E8724B] bg-orange-50/30'
                   : 'border-slate-300 bg-slate-50 hover:border-[#E8724B] hover:bg-orange-50/10'
@@ -763,34 +807,41 @@ function DetailsInner() {
             >
               <input
                 type="file"
-                accept="image/jpeg,image/png,image/webp,image/heic,video/mp4,video/quicktime,application/pdf"
+                aria-label="Upload project photos, videos, or documents"
+                accept=".jpg,.jpeg,.png,.webp,.heic,.heif,.mp4,.mov,.pdf,image/jpeg,image/png,image/webp,image/heic,image/heif,video/mp4,video/quicktime,application/pdf"
                 multiple
                 disabled={uploading}
                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                 onChange={handleFileChange}
               />
-              <div className="w-12 h-12 rounded-full bg-slate-200/60 flex items-center justify-center mb-3 text-slate-500 group-hover:text-[#E8724B] transition-colors">
-                <Paperclip className="w-5 h-5" />
+              <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-[#D45C33] shadow-sm ring-1 ring-orange-100 transition-transform motion-safe:group-hover:-translate-y-1">
+                <UploadCloud className="w-6 h-6" aria-hidden />
               </div>
               <p className="text-sm font-semibold text-slate-800 mb-1">
                 Drag &amp; drop photos here, or <span className="text-[#E8724B] hover:underline">browse files</span>
               </p>
               <p className="text-xs text-slate-400">
-                Up to 5 files, 50 MB each (JPG, PNG, WEBP, MP4, PDF)
+                Up to 5 files · 50 MB each<br />JPG, PNG, WEBP, HEIC, HEIF, MP4, MOV, or PDF
               </p>
               {uploading && (
                 <div className="absolute inset-0 bg-white/95 rounded-2xl flex flex-col items-center justify-center gap-2">
                   <Loader2 className="w-6 h-6 text-[#E8724B] animate-spin" />
-                  <span className="text-xs font-semibold text-slate-700">Uploading files, please wait...</span>
+                  <span role="status" className="text-xs font-semibold text-slate-700">Uploading your files…</span>
                 </div>
               )}
             </div>
           )}
 
+          {uploadErrors.length > 0 && (
+            <div role="alert" className="mt-4 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-800">
+              <p className="font-semibold">Some files need another try</p>
+              <ul className="mt-1 list-inside list-disc space-y-1 text-xs">{uploadErrors.map((message, index) => <li key={`${index}-${message}`}>{message}</li>)}</ul>
+            </div>
+          )}
           {/* Uploaded file previews grid */}
           {uploadedFiles.length > 0 && (
             <div className="mt-4">
-              <p className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2.5">
+              <p role="status" className="text-xs font-bold uppercase tracking-wider text-teal-700 mb-2.5">
                 Attached Files ({uploadedFiles.length}/5)
               </p>
               <div className="grid grid-cols-2 sm:grid-cols-5 gap-3.5">
@@ -808,7 +859,7 @@ function DetailsInner() {
                       </div>
                     )}
                     {/* Delete hover overlay */}
-                    <div className="absolute inset-0 bg-slate-950/45 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center z-10">
+                    <div className="absolute right-1 top-1 z-10">
                       <button
                         type="button"
                         onClick={(e) => {
@@ -816,7 +867,8 @@ function DetailsInner() {
                           removeFile(f.url)
                         }}
                         className="p-1.5 rounded-full bg-red-600 hover:bg-red-700 text-white shadow transition-transform hover:scale-105"
-                        aria-label="Delete file"
+                        aria-label={`Remove ${f.name}`}
+                        disabled={uploading}
                       >
                         <X className="w-4 h-4" />
                       </button>
@@ -840,11 +892,11 @@ function DetailsInner() {
               </span>
             </label>
           )}
-          {errors.photos && <p className="text-xs text-red-500 mt-2">{errors.photos}</p>}
-        </div>
+          {errors.photos && <p data-field-error role="alert" className="text-xs text-red-500 mt-2">{errors.photos}</p>}
+        </section>
       </div>
 
-      <div className="flex items-center gap-4 mt-10">
+      <div className="mt-6 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
         <Link
           href={`/concept?service=${serviceSlug}`}
           className="flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-slate-700 transition"
@@ -854,7 +906,7 @@ function DetailsInner() {
         <button
           onClick={handleNext}
           disabled={uploading}
-          className="flex items-center gap-2 bg-[#E8724B] hover:bg-[#D45C33] disabled:opacity-60 disabled:cursor-not-allowed text-white font-bold px-8 py-4 rounded-xl transition-all duration-200"
+          className="flex min-h-12 items-center justify-center gap-2 rounded-xl bg-[#E8724B] px-5 py-3.5 text-sm font-bold text-white shadow-md shadow-orange-100 transition-colors hover:bg-[#D45C33] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-orange-200 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {uploading ? 'Uploading files…' : 'Continue to Contact'} <ArrowRight className="w-4 h-4" />
         </button>

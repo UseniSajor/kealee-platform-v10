@@ -1,30 +1,46 @@
+import { resolveIntakeFileType } from './intake-file-types'
+
 export type IntakeUploadedKind = 'image' | 'video' | 'document' | 'voice'
 
 export type IntakeUploadedFile = { name: string; url: string; type: IntakeUploadedKind }
 
 export function classifyIntakeFileType(file: File): IntakeUploadedKind {
-  if (file.type.startsWith('video/')) return 'video'
-  if (file.type.startsWith('audio/')) return 'voice'
-  if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) return 'document'
-  if (file.type.startsWith('image/')) return 'image'
+  const type = resolveIntakeFileType(file)
+  if (type.startsWith('video/')) return 'video'
+  if (type.startsWith('audio/')) return 'voice'
+  if (type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) return 'document'
+  if (type.startsWith('image/')) return 'image'
   return 'document'
 }
 
 /** Upload one file per request so each response URL maps to the correct file. */
-export async function uploadIntakeFilesSequentially(files: File[]): Promise<IntakeUploadedFile[]> {
+export async function uploadIntakeFilesSequentially(
+  files: File[],
+  onError?: (message: string) => void,
+): Promise<IntakeUploadedFile[]> {
   const results: IntakeUploadedFile[] = []
   for (const f of files) {
-    const body = new FormData()
-    body.append('files', f)
-    const res = await fetch('/api/intake/upload', { method: 'POST', body })
-    if (!res.ok) {
-      const failure = await res.json().catch(() => ({})) as { error?: string }
-      console.error('[intake-file-upload] Upload rejected', { name: f.name, type: f.type, size: f.size, status: res.status, error: failure.error })
-      continue
+    try {
+      if (f.size > 50 * 1024 * 1024) throw new Error('File exceeds the 50 MB upload limit.')
+      const body = new FormData()
+      const type = resolveIntakeFileType(f)
+      body.append('files', type !== f.type ? new File([f], f.name, { type }) : f)
+      const res = await fetch('/api/intake/upload', {
+        method: 'POST', body, signal: AbortSignal.timeout(120_000),
+      })
+      const data = await res.json().catch(() => ({})) as { urls?: string[]; error?: string }
+      if (!res.ok) throw new Error(data.error || `Upload failed (${res.status}). Please try again.`)
+      const url = data.urls?.[0]
+      if (!url) throw new Error('The upload did not return a file. Please try again.')
+      results.push({ name: f.name, url, type: classifyIntakeFileType(f) })
+    } catch (error) {
+      const reason = error instanceof Error && error.name === 'TimeoutError'
+        ? 'Upload timed out. Please try again.'
+        : error instanceof Error ? error.message : 'Upload failed. Please try again.'
+      const message = `${f.name}: ${reason}`
+      console.error('[intake-file-upload]', message)
+      onError?.(message)
     }
-    const data = (await res.json()) as { urls?: string[] }
-    const url = data.urls?.[0]
-    if (url) results.push({ name: f.name, url, type: classifyIntakeFileType(f) })
   }
   return results
 }

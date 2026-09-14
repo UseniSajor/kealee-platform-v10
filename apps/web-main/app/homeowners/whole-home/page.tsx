@@ -114,7 +114,7 @@ export default function WholeHomePage() {
               </p>
               <div className="mt-8 flex flex-col gap-4 sm:flex-row">
                 <Link
-                  href="/concept-engine/whole-home"
+                  href="/intake/whole_home_concept"
                   className="inline-flex items-center justify-center gap-2 rounded-lg px-6 py-3 text-sm font-semibold text-white transition-all hover:opacity-90"
                   style={{ backgroundColor: ACCENT }}
                 >
@@ -212,7 +212,7 @@ export default function WholeHomePage() {
                       <div className="flex flex-shrink-0 items-center gap-3 sm:ml-6">
                         <span className="font-bold font-mono text-sm" style={{ color: ACCENT }}>{item.price}</span>
                         <Link
-                          href={ii === 0 ? '/concept-engine/whole-home' : '/contact'}
+                          href={ii === 0 ? '/intake/whole_home_concept' : '/contact'}
                           className="inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-semibold text-white transition-all hover:opacity-90"
                           style={{ backgroundColor: ACCENT }}
                         >
@@ -297,7 +297,7 @@ export default function WholeHomePage() {
           </p>
           <div className="mt-8 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
             <Link
-              href="/concept-engine/whole-home"
+              href="/intake/whole_home_concept"
               className="inline-flex items-center gap-2 rounded-lg px-8 py-3.5 text-sm font-semibold text-white transition-all hover:opacity-90"
               style={{ backgroundColor: ACCENT }}
             >
