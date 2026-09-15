@@ -278,4 +278,18 @@ describe('streetAddressOnly', () => {
   it('leaves a bare street address alone', () => {
     expect(streetAddressOnly('1005 Rollins Ave')).toBe('1005 Rollins Ave')
   })
+  it('decodes HTML entities and takes the first of two street numbers', () => {
+    expect(streetAddressOnly('1005 &amp; 1009 Rollins Ave capital heights')).toBe('1005 Rollins Ave capital heights')
+    expect(streetAddressOnly('1005 and 1009 Rollins Ave')).toBe('1005 Rollins Ave')
+  })
+})
+
+describe('addressCandidates', () => {
+  const { addressCandidates } = require('../workflow/processors/first-release') as typeof import('../workflow/processors/first-release')
+  it('tries the full form first, then drops trailing words down to number + two words', () => {
+    expect(addressCandidates('1009 rollins ave capital heights')).toEqual([
+      '1009 rollins ave capital heights', '1009 rollins ave capital', '1009 rollins ave',
+    ])
+    expect(addressCandidates('1005 Rollins Ave')).toEqual(['1005 Rollins Ave'])
+  })
 })

@@ -143,8 +143,19 @@ export async function runStage(
     rulePackVersion: result.rulePackVersion,
   })
 
+  // REPLACE this job's record, never append beside it. A stage that ran once
+  // and BLOCKED has a record already; appending a COMPLETED one left the
+  // BLOCKED record first in the list, `statusOf` found that, and nothing
+  // downstream was ever enqueued — the first real order stalled right after
+  // its address finally resolved.
   let advanced: WorkflowSnapshot = status === 'COMPLETED'
-    ? { ...ctx.snapshot, stages: [...ctx.snapshot.stages, { job: ctx.job, status: 'COMPLETED', attempt: ctx.attempt }] }
+    ? {
+        ...ctx.snapshot,
+        stages: [
+          ...ctx.snapshot.stages.filter(s => s.job !== ctx.job),
+          { job: ctx.job, status: 'COMPLETED', attempt: ctx.attempt },
+        ],
+      }
     : ctx.snapshot
 
   // A reopen is a persisted fact about OTHER stages, applied whatever this

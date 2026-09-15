@@ -171,3 +171,25 @@ describe('siteplan.ingest_comments', () => {
     expect(out.documentId).toBe('doc_1')
   })
 })
+
+describe('re-running a stage that previously BLOCKED', () => {
+  it('enqueues its dependents once it completes — the old BLOCKED record must not shadow the new one', async () => {
+    // resolve_property BLOCKED on a bad address, the address was fixed, and
+    // the stage is run again. The snapshot still carries the BLOCKED record.
+    const snap: WorkflowSnapshot = {
+      ...newWorkflow('wf_retry'),
+      stages: [
+        { job: 'siteplan.initialize', status: 'COMPLETED', attempt: 1 },
+        { job: 'siteplan.ingest_documents', status: 'COMPLETED', attempt: 1 },
+        { job: 'siteplan.resolve_property', status: 'BLOCKED', attempt: 1 },
+      ],
+    }
+    const ok: StageProcessor = async () => ({ status: 'COMPLETED', outputs: { parcelRing: [] } })
+    const out = await runStage(
+      { ...ctxFor(snap, 'siteplan.resolve_property', {}), attempt: 2 },
+      { processors: { 'siteplan.resolve_property': ok } },
+    )
+    expect(out.disposition).toBe('COMPLETED')
+    expect(out.nextJobs).toContain('siteplan.resolve_jurisdiction')
+  })
+})

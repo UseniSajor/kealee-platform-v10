@@ -45,6 +45,10 @@ export interface InitializeOutput {
 export interface ResolvePropertyOutput {
   matchedAddress: string
   locatorScore: number
+  /** The query the locator answered — a shortened form when the order's text carried city/ZIP/two numbers. */
+  queriedAddress?: string
+  /** The order's address verbatim, for anyone checking what the customer wrote. */
+  orderAddress?: string
   easting2248: number
   northing2248: number
   zoneCode: string | null
@@ -185,16 +189,47 @@ const str = (v: unknown): string | null => (typeof v === 'string' && v.trim() ? 
  * state. A city typed without a comma is left alone rather than guessed at.
  */
 export function streetAddressOnly(raw: string): string {
-  let s = raw.split(',')[0].trim()
+  let s = raw
+    // Form values arrive HTML-encoded from some intake paths: "1005 &amp; 1009".
+    .replace(/&amp;/gi, '&').replace(/&#39;|&apos;/gi, "'").replace(/&quot;/gi, '"')
+  s = s.split(',')[0].trim()
+  // Two street numbers on one order ("1005 & 1009 Rollins Ave", "1005 and
+  // 1009 ..."): a site plan is for ONE lot. The first is taken; the output
+  // records what was asked so nobody mistakes it for both.
+  s = s.replace(/^(\d+[A-Za-z]?)\s*(?:&|and|\/|\+)\s*\d+[A-Za-z]?\b/i, '$1')
   s = s.replace(/\s+\d{5}(?:-\d{4})?\s*$/, '')
   s = s.replace(/\s+(?:MD|DC|VA|Maryland|Virginia)\s*$/i, '')
   return s.replace(/\s+/g, ' ').trim()
+}
+
+/**
+ * The forms to try, strictest first. A city typed with no comma ("1009
+ * rollins ave capital heights") cannot be told from a street name by
+ * grammar, so trailing words are dropped one at a time — down to a number
+ * and at least two words — and each form is put to the locator, which still
+ * has to answer at or above the minimum score. Nothing here lowers that bar.
+ */
+export function addressCandidates(raw: string): string[] {
+  const base = streetAddressOnly(raw)
+  const out: string[] = []
+  const words = base.split(' ')
+  for (let n = words.length; n >= 3; n--) {
+    const c = words.slice(0, n).join(' ')
+    if (!out.includes(c)) out.push(c)
+  }
+  if (out.length === 0 && base) out.push(base)
+  return out
 }
 
 function addressFrom(ctx: StageContext): string | null {
   const f = ctx.subject.formData
   const raw = str(f.address) ?? str(f.projectAddress) ?? str(f.propertyAddress) ?? str(f.site_address)
   return raw ? streetAddressOnly(raw) || null : null
+}
+
+function rawAddressFrom(ctx: StageContext): string | null {
+  const f = ctx.subject.formData
+  return str(f.address) ?? str(f.projectAddress) ?? str(f.propertyAddress) ?? str(f.site_address)
 }
 
 /**
@@ -317,22 +352,39 @@ const resolveProperty: StageProcessor = async (ctx): Promise<StageResult> => {
     }
   }
 
-  const site: PgAtlasSite | null = await resolvePgAtlasSite(address, {
-    fetchImpl: ctx.capabilities.fetchImpl,
-  })
+  // Strictest form first, then shorter ones. Each must clear the locator's
+  // minimum score on its own; a shorter form is a different QUERY, not a
+  // lower bar. What was tried is recorded so a match on a shortened form is
+  // visible for what it is.
+  const candidates = addressCandidates(rawAddressFrom(ctx) ?? address)
+  let site: PgAtlasSite | null = null
+  let matchedForm: string | null = null
+  for (const candidate of candidates) {
+    site = await resolvePgAtlasSite(candidate, { fetchImpl: ctx.capabilities.fetchImpl })
+    if (site) { matchedForm = candidate; break }
+  }
   if (!site) {
     return {
       status: 'BLOCKED', outputs: null,
       blockers: [
-        `The county locator did not match "${address}" at or above the minimum score. ` +
+        `The county locator did not match "${address}" at or above the minimum score ` +
+        `(tried: ${candidates.map(c => `"${c}"`).join(', ')}). ` +
         'A weak match would site the plan on the wrong lot, so none is accepted.',
       ],
     }
+  }
+  if (matchedForm && matchedForm !== candidates[0]) {
+    ctx.capabilities.trace({
+      workflowId: ctx.workflowId, job: ctx.job, phase: 'complete',
+      detail: `located on shortened form "${matchedForm}" (order says "${rawAddressFrom(ctx)}")`,
+    })
   }
 
   const out: ResolvePropertyOutput = {
     matchedAddress: site.address.matchedAddress,
     locatorScore: site.address.score,
+    queriedAddress: matchedForm ?? address,
+    orderAddress: rawAddressFrom(ctx) ?? address,
     easting2248: site.address.easting2248,
     northing2248: site.address.northing2248,
     zoneCode: site.zoning?.zoneCode ?? null,
