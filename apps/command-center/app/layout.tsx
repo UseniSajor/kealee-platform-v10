@@ -21,6 +21,12 @@ export default function RootLayout({
 }: {
   children: React.ReactNode
 }) {
+  // THE ONLY ClerkProvider IN THIS APP.
+  //
+  // A second one lived in app/clerk-provider.tsx with a fuller appearance
+  // block and was never imported, so the styling it carried never reached a
+  // page and the two configurations were free to drift. Its element styles are
+  // folded in here and that file is gone.
   return (
     <ClerkProvider
       appearance={{
@@ -31,6 +37,15 @@ export default function RootLayout({
           colorInputText: '#1F2937',
           colorNeutral: '#F3F4F6',
           fontFamily: "'Nunito', sans-serif",
+          fontSize: '14px',
+        },
+        elements: {
+          formButtonPrimary:
+            'bg-[#FF8C22] hover:bg-[#E67E1A] text-white font-semibold rounded-lg',
+          card: 'bg-white border border-[#E5E7EB] rounded-lg shadow-sm',
+          headerTitle: 'text-2xl font-bold text-[#1F2937]',
+          headerSubtitle: 'text-[#6B7280]',
+          dividerLine: 'bg-[#E5E7EB]',
         },
       }}
     >

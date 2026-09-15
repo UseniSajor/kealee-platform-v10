@@ -38,7 +38,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const { signOut } = useClerk()
 
   const handleSignOut = async () => {
-    await signOut({ redirectUrl: '/login' })
+    // "/sign-in", not "/login": the middleware's public list is
+    // /sign-in, /sign-up, /api/webhooks and /health. "/login" is protected,
+    // so signing out sent the user to a page that immediately bounced them.
+    await signOut({ redirectUrl: '/sign-in' })
   }
 
   return (
