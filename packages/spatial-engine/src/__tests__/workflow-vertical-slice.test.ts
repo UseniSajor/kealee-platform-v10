@@ -263,3 +263,19 @@ describe('resume', () => {
     expect(next).toEqual(['siteplan.run_draft_qc'])
   })
 })
+
+describe('streetAddressOnly', () => {
+  // The county locator answers the street address ALONE. These are the forms
+  // customers actually typed; the first paid orders carried a trailing ZIP and
+  // every one of them returned zero candidates.
+  const { streetAddressOnly } = require('../workflow/processors/first-release') as typeof import('../workflow/processors/first-release')
+  it('strips ZIP, state and everything after a comma', () => {
+    expect(streetAddressOnly('1009 rollins ave 20743')).toBe('1009 rollins ave')
+    expect(streetAddressOnly('1005 Rollins Ave, Capitol Heights, MD 20743')).toBe('1005 Rollins Ave')
+    expect(streetAddressOnly('4600 Wheeler Rd MD')).toBe('4600 Wheeler Rd')
+    expect(streetAddressOnly('  4600   Wheeler Rd 20745-1234 ')).toBe('4600 Wheeler Rd')
+  })
+  it('leaves a bare street address alone', () => {
+    expect(streetAddressOnly('1005 Rollins Ave')).toBe('1005 Rollins Ave')
+  })
+})

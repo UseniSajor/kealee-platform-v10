@@ -104,6 +104,14 @@ function productionPorts(): Workflow.ActivationPorts {
         },
         update: {},   // redelivery is a no-op
       })
+      // A FAILED row is terminal, and the upsert above leaves it that way —
+      // so a resume after a failed stage silently enqueued nothing. An
+      // explicit activation is the one place a failed job is put back to
+      // WAITING. WAITING and ACTIVE rows are untouched: no double-run.
+      await prisma.jobQueue.updateMany({
+        where: { queueName: input.queue, jobId: input.jobKey, status: 'FAILED' },
+        data: { status: 'WAITING', error: null, completedAt: null, processedAt: null },
+      })
     },
   }
 }
@@ -165,6 +173,13 @@ export async function activateSitePlanForOrder(input: {
   isSitePlan: boolean
   /** Intake form data. The stages cannot resolve a property without it. */
   formData?: Record<string, unknown>
+  /**
+   * The order's `project_address` column. The intake form writes the address
+   * there and NOT into form_data, so a workflow given form_data alone had no
+   * address and blocked at resolve_property. Merged in as `address` unless
+   * form_data already carries one.
+   */
+  projectAddress?: string | null
   ports?: Workflow.ActivationPorts
 }): Promise<SitePlanActivation> {
   const organizationId = input.organizationId ?? (await resolveOrganizationId().catch(() => null))
@@ -183,11 +198,37 @@ export async function activateSitePlanForOrder(input: {
       projectId: input.projectId,
       orderId: input.orderId,
       productId: input.productId ?? null,
-      formData: input.formData ?? {},
+      formData: {
+        ...(input.formData ?? {}),
+        ...(input.projectAddress && !(input.formData?.address)
+          ? { address: input.projectAddress }
+          : {}),
+      },
     },
     ports: input.ports ?? productionPorts(),
     eligible: input.isSitePlan,
   })
+
+  // A RESUMED workflow keeps the metadata it was created with. The worker
+  // reads its formData from that column, so a workflow created before the
+  // address was carried through would resume without one and block again
+  // at resolve_property. Back-fill it — only when absent, never overwrite.
+  if (outcome.disposition === 'RESUMED' && outcome.workflowId && input.projectAddress && !input.ports) {
+    try {
+      const wf = await prisma.sitePlanWorkflow.findUnique({
+        where: { id: outcome.workflowId }, select: { metadata: true },
+      })
+      const meta = (wf?.metadata as Record<string, unknown> | null) ?? {}
+      if (!meta.address) {
+        await prisma.sitePlanWorkflow.update({
+          where: { id: outcome.workflowId },
+          data: { metadata: { ...meta, address: input.projectAddress } as never },
+        })
+      }
+    } catch (e) {
+      console.warn('[site-plan-workflow] could not back-fill address on resume:', outcome.workflowId, e instanceof Error ? e.message : e)
+    }
+  }
 
   return {
     disposition: outcome.disposition,

@@ -175,9 +175,26 @@ export interface DraftQcOutput {
 
 const str = (v: unknown): string | null => (typeof v === 'string' && v.trim() ? v : null)
 
+/**
+ * The street address ALONE, which is what the county locator answers.
+ *
+ * "1009 rollins ave 20743" returned zero candidates; "1009 rollins ave"
+ * scored 100. Customers type what they type — ZIP, city, state, commas —
+ * and an order's `project_address` column carries it verbatim. Everything
+ * after the first comma goes, then a trailing ZIP(+4), then a trailing
+ * state. A city typed without a comma is left alone rather than guessed at.
+ */
+export function streetAddressOnly(raw: string): string {
+  let s = raw.split(',')[0].trim()
+  s = s.replace(/\s+\d{5}(?:-\d{4})?\s*$/, '')
+  s = s.replace(/\s+(?:MD|DC|VA|Maryland|Virginia)\s*$/i, '')
+  return s.replace(/\s+/g, ' ').trim()
+}
+
 function addressFrom(ctx: StageContext): string | null {
   const f = ctx.subject.formData
-  return str(f.address) ?? str(f.propertyAddress) ?? str(f.site_address)
+  const raw = str(f.address) ?? str(f.projectAddress) ?? str(f.propertyAddress) ?? str(f.site_address)
+  return raw ? streetAddressOnly(raw) || null : null
 }
 
 /**

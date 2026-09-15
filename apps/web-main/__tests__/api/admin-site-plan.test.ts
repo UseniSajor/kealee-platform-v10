@@ -54,16 +54,18 @@ describe('POST /api/admin/site-plan', () => {
   })
 
   it('activates a paid site-plan order and records the disposition on it', async () => {
-    mocks.intake = { id: 'intake_1', project_path: 'preliminary_site_plan', status: 'processing', form_data: { address: '1005 Rollins Ave' } }
+    mocks.intake = { id: 'intake_1', project_path: 'preliminary_site_plan', status: 'processing', form_data: { description: 'x' }, project_address: '1009 rollins ave 20743' }
     const res = await POST(req({ intakeId: 'intake_1' }))
     expect(res.status).toBe(200)
     expect(await res.json()).toMatchObject({ disposition: 'CREATED', workflowId: 'wf_new' })
+    // The address comes from the project_address COLUMN; the first real
+    // orders blocked at resolve_property because only form_data was passed.
     expect(mocks.activate).toHaveBeenCalledWith(expect.objectContaining({
       projectId: 'intake_1', orderId: 'intake_1', productId: 'preliminary_site_plan', isSitePlan: true,
-      formData: expect.objectContaining({ address: '1005 Rollins Ave' }),
+      projectAddress: '1009 rollins ave 20743',
     }))
     expect(mocks.updates[0].form_data).toMatchObject({
-      address: '1005 Rollins Ave', sitePlanWorkflowId: 'wf_new', sitePlanWorkflowDisposition: 'CREATED',
+      description: 'x', sitePlanWorkflowId: 'wf_new', sitePlanWorkflowDisposition: 'CREATED',
     })
   })
 

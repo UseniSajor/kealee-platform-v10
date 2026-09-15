@@ -202,7 +202,7 @@ async function handleCheckoutCompleted(
 
   const { data: currentIntake, error: fetchErr } = await supabase
     .from('public_intake_leads')
-    .select('form_data, metadata, status, stripe_session_id, contact_email')
+    .select('form_data, metadata, status, stripe_session_id, contact_email, project_address')
     .eq('id', intakeId)
     .single()
 
@@ -293,6 +293,10 @@ async function handleCheckoutCompleted(
       productId: projectPath,
       isSitePlan: true,
       formData: mergedFormData,
+      // The address lives in the project_address COLUMN, not in form_data.
+      // Without this every workflow blocked at resolve_property with "No
+      // address on the order" — the first three real orders did exactly that.
+      projectAddress: (currentIntake?.project_address as string | null) ?? null,
     })
     Object.assign(mergedFormData, sitePlanWorkflowFormData(activation))
     sitePlanEngineActive = ['CREATED', 'RESUMED', 'DUPLICATE', 'ALREADY_COMPLETE']

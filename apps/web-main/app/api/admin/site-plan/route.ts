@@ -106,7 +106,7 @@ export async function POST(req: NextRequest) {
   const supabase = getSupabaseAdmin()
   const { data: intake } = await supabase
     .from('public_intake_leads')
-    .select('id, project_path, status, form_data')
+    .select('id, project_path, status, form_data, project_address')
     .eq('id', intakeId)
     .maybeSingle()
   if (!intake) return NextResponse.json({ error: 'Order not found' }, { status: 404 })
@@ -126,6 +126,7 @@ export async function POST(req: NextRequest) {
     productId: projectPath,
     isSitePlan: true,
     formData,
+    projectAddress: (intake.project_address as string | null) ?? null,
   })
 
   await supabase
