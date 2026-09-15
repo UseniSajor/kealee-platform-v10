@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { ArrowLeft, ArrowRight, Check, CircleCheck, Clock3, FileDown, ShieldCheck, Sparkles } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Check, CheckCircle2, Clock3, FileDown, ShieldCheck, Sparkles } from 'lucide-react'
 import { HOME_JOURNEY_SERVICES, type HomeJourneyService } from '@/components/home/home-services-data'
 
 export function JourneyServicePage({ service }: { service: HomeJourneyService }) {
@@ -40,7 +40,7 @@ export function JourneyServicePage({ service }: { service: HomeJourneyService })
             <h2 className="mt-3 text-3xl font-black tracking-tight">What arrives in your workspace</h2>
             <p className="mt-4 text-base leading-7 text-slate-600">{service.outcome}</p>
             <ul className="mt-8 grid gap-4 sm:grid-cols-2">
-              {service.includes.map(item => <li key={item} className="flex gap-3 rounded-xl bg-slate-50 p-4 text-sm font-bold leading-6"><CircleCheck className="mt-0.5 h-5 w-5 shrink-0 text-[#168275]" />{item}</li>)}
+              {service.includes.map(item => <li key={item} className="flex gap-3 rounded-xl bg-slate-50 p-4 text-sm font-bold leading-6"><CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-[#168275]" />{item}</li>)}
             </ul>
             <div className="mt-8 flex flex-wrap gap-5 border-t border-slate-100 pt-7 text-sm font-bold text-slate-600">
               <span className="flex items-center gap-2"><FileDown className="h-5 w-5 text-[#168275]" /> Portal + downloadable files</span>
