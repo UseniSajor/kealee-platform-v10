@@ -110,6 +110,10 @@ export async function PATCH(
     where: { id: params.workflowId }, select: { id: true, orderId: true },
   })
   if (!wf) return NextResponse.json({ error: 'Workflow not found' }, { status: 404 })
+  if (!wf.orderId) {
+    return NextResponse.json({ error: 'Workflow has no order; comments are recorded against the order.' }, { status: 409 })
+  }
+  const orderId = wf.orderId
 
   const body = (await req.json().catch(() => ({}))) as { countyComments?: unknown }
   const incoming = Array.isArray(body.countyComments) ? body.countyComments : []
@@ -134,21 +138,21 @@ export async function PATCH(
 
   const supabase = getSupabaseAdmin()
   const { data: order } = await supabase
-    .from('public_intake_leads').select('form_data').eq('id', wf.orderId).maybeSingle()
+    .from('public_intake_leads').select('form_data').eq('id', orderId).maybeSingle()
   const fd = ((order?.form_data ?? {}) as Record<string, unknown>)
   const existing = Array.isArray(fd.sitePlanCountyComments) ? fd.sitePlanCountyComments : []
 
   const { error } = await supabase
     .from('public_intake_leads')
     .update({ form_data: { ...fd, sitePlanCountyComments: [...existing, ...comments] } })
-    .eq('id', wf.orderId)
+    .eq('id', orderId)
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
   await prisma.sitePlanAuditEvent.create({
     data: {
       workflowId: wf.id, sequence: BigInt(Date.now()), occurredAt: new Date(),
       actorType: 'STAFF', eventType: 'county.comments.entered',
-      entityTable: 'public_intake_leads', entityId: wf.orderId,
+      entityTable: 'public_intake_leads', entityId: orderId,
       summary: `${comments.length} county comment(s) entered by staff.`,
     },
   }).catch(() => undefined)
