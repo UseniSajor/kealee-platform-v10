@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -41,7 +41,6 @@ import { getIntakePrefill } from "@/lib/intake-prefill-schema";
 import type { AddressParcelResolution, ScaledParcelGeometry } from "@/lib/site-intelligence/authoritative-gis";
 import { AskChatBar } from "@/components/ui/AskChatBar";
 import { getPermitServiceRecommendation } from "@/lib/permit-service-recommendation";
-import { buildOrderChecklist } from "@/lib/intake-checklist";
 
 const AGENT_MAP: Record<string, string> = {
   exterior_concept: "design",
@@ -101,80 +100,6 @@ function formatPrice(cents: number) {
   return dollars % 1 === 0 ? `$${dollars.toLocaleString()}` : `$${dollars.toFixed(2)}`;
 }
 
-function IntakeChecklistPanel({
-  projectPath,
-  formData,
-  siteIntelligence,
-  parcelConfirmed,
-  uploadedFiles,
-  uploadedDocs,
-}: {
-  projectPath: string;
-  formData: Record<string, unknown>;
-  siteIntelligence: unknown;
-  parcelConfirmed: boolean;
-  uploadedFiles: IntakeUploadedFile[];
-  uploadedDocs: IntakeUploadedFile[];
-}) {
-  const items = buildOrderChecklist(
-    projectPath,
-    {
-      ...formData,
-      siteIntelligence,
-      parcelConfirmed,
-      uploadedFileMeta: [...uploadedFiles, ...uploadedDocs].map((file) => ({
-        name: file.name,
-        url: file.url,
-        type: file.type,
-      })),
-    },
-    {
-      project_address: (formData.address as string) || null,
-      contact_email: (formData.email as string) || null,
-      contact_phone: (formData.phone as string) || null,
-    },
-  );
-
-  const missing = items.filter((item) => item.state === "missing");
-  const optional = items.filter((item) => item.state === "optional");
-
-  if (missing.length === 0 && optional.length === 0) return null;
-
-  return (
-    <div className="rounded-xl border border-amber-200 bg-amber-50/70 p-5">
-      <h2 className="text-sm font-bold text-amber-950">
-        {missing.length > 0
-          ? `We are still missing ${missing.length} item${missing.length === 1 ? "" : "s"}`
-          : "Optional items that would sharpen your deliverable"}
-      </h2>
-      <p className="mt-1 text-xs leading-relaxed text-amber-900">
-        You can order now — anything outstanding becomes a stated assumption in your
-        package, and you can send it to us at any point before delivery.
-      </p>
-      <ul className="mt-3 space-y-2">
-        {[...missing, ...optional].map((item) => (
-          <li key={item.key} className="flex items-start gap-2">
-            <span
-              className={`mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full ${item.state === "missing" ? "bg-amber-600" : "bg-slate-300"}`}
-            />
-            <span className="text-xs leading-relaxed text-amber-900">
-              <strong className={item.state === "missing" ? "font-bold" : "font-normal"}>
-                {item.label}
-              </strong>
-              {item.state === "optional" && (
-                <span className="ml-1.5 text-slate-500">optional</span>
-              )}
-              {item.detail && (
-                <span className="mt-0.5 block text-[11px] text-amber-800/80">{item.detail}</span>
-              )}
-            </span>
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-}
-
 function ParcelGeometryPreview({ geometry }: { geometry: ScaledParcelGeometry }) {
   const xs = geometry.vertices.map(point => point.x);
   const ys = geometry.vertices.map(point => point.y);
@@ -186,9 +111,9 @@ function ParcelGeometryPreview({ geometry }: { geometry: ScaledParcelGeometry })
   const height = Math.max(maxY - minY, 1);
   const points = geometry.vertices.map(point => `${10 + ((point.x - minX) / width) * 140},${150 - ((point.y - minY) / height) * 140}`).join(" ");
   return (
-    <svg viewBox="0 0 160 160" role="img" aria-label="Scaled preliminary parcel geometry" className="h-40 w-40 rounded-xl border border-emerald-200 bg-white p-2">
+    <svg viewBox="0 0 160 160" role="img" aria-label="Property outline" className="h-40 w-40 rounded-xl border border-emerald-200 bg-white p-2">
       <polygon points={points} fill="#d1fae5" stroke="#047857" strokeWidth="3" vectorEffect="non-scaling-stroke" />
-      <text x="80" y="154" textAnchor="middle" fontSize="8" fill="#047857">GIS parcel · local feet</text>
+      <text x="80" y="154" textAnchor="middle" fontSize="8" fill="#047857">Property outline</text>
     </svg>
   );
 }
@@ -245,12 +170,6 @@ function BundleUpsellBanner({
   );
 }
 
-function deliverableForPath(projectPath: string) {
-  return projectPath in SERVICE_DELIVERABLES
-    ? SERVICE_DELIVERABLES[projectPath as keyof typeof SERVICE_DELIVERABLES]
-    : undefined;
-}
-
 function intakeGuideImage(projectPath: string): string {
   if (/kitchen/.test(projectPath)) return "/media/service-photos/interior-reno-concept-after.jpg";
   if (/bathroom/.test(projectPath)) return "/media/service-photos/product-bathroom.jpg";
@@ -258,15 +177,6 @@ function intakeGuideImage(projectPath: string): string {
   if (/exterior|site|development|subdivision|lot/.test(projectPath)) return "/media/service-photos/product-addition.jpg";
   if (/permit/.test(projectPath)) return "/media/service-photos/product-facade.jpg";
   return "/media/service-photos/design-build-after.jpg";
-}
-
-/** At least one still image of the project area (videos alone do not satisfy). */
-function intakeRequiresAreaPhoto(projectPath: string): boolean {
-  if (projectPath === "certified_estimate") return true;
-  const d = deliverableForPath(projectPath);
-  if (d?.generatesConcept) return true;
-  if (d?.category === "estimate" || d?.category === "permit") return true;
-  return false;
 }
 
 /**
@@ -281,33 +191,6 @@ function intakeBenefitsFromFloorplanSketch(projectPath: string): boolean {
     "interior_renovation",
     "interior_reno_concept",
   ].includes(projectPath);
-}
-
-/** PDF (or other document upload) required for estimate / permit style intakes. */
-function intakeRequiresConstructionDocuments(projectPath: string): boolean {
-  // All three site-plan products share the get-started intake step, which
-  // explicitly promises "upload surveys, plats, plans... in the next step"
-  // (app/get-started/page.tsx) — and this file already carries a tailored
-  // validation message for all of them (search isSitePlanIntake below).
-  // Only permit_site_plan was actually wired to show/require it; the other
-  // two silently had no upload section at all despite the promise.
-  if (
-    [
-      "verified_site_feasibility",
-      "permit_site_plan",
-    ].includes(projectPath)
-  )
-    return true;
-  if (
-    projectPath === "certified_estimate" ||
-    projectPath === "cost_estimate" ||
-    projectPath === "permit_path_only"
-  )
-    return true;
-  if (projectPath === "design_estimate_permit_bundle") return true;
-  const d = deliverableForPath(projectPath);
-  if (d?.category === "estimate" || d?.category === "permit") return true;
-  return false;
 }
 
 // ── Step indicator ─────────────────────────────────────────────────────────────
@@ -500,7 +383,6 @@ function OrderSummary({
 // ── Main page ──────────────────────────────────────────────────────────────────
 export default function IntakePage() {
   const params = useParams();
-  const router = useRouter();
   const searchParams = useSearchParams();
   const projectPath = Array.isArray(params.projectPath)
     ? params.projectPath[0]
@@ -529,6 +411,8 @@ export default function IntakePage() {
   // field's presence never reveals which paths actually have one.
   const [showPromo, setShowPromo] = useState(false);
   const [promoCode, setPromoCode] = useState("");
+  const [promoStatus, setPromoStatus] = useState<"idle" | "checking" | "applied" | "error">("idle");
+  const [promoMessage, setPromoMessage] = useState("");
 
   // AI insight loads in background — does NOT block the form
   const [agentInsight, setAgentInsight] = useState<AgentInsight | null>(null);
@@ -882,9 +766,6 @@ export default function IntakePage() {
     return () => { cancelled = true; window.clearInterval(interval); };
   }, [activeCaptureSession]);
 
-  const needsAreaPhoto = intakeRequiresAreaPhoto(projectPath);
-  const needsConstructionDocs =
-    intakeRequiresConstructionDocuments(projectPath);
   const benefitsFromFloorplan = intakeBenefitsFromFloorplanSketch(projectPath);
   const isEstimateIntake =
     projectPath === "cost_estimate" || projectPath === "certified_estimate";
@@ -894,11 +775,7 @@ export default function IntakePage() {
     "permit_site_plan",
   ].includes(projectPath);
   const isPermitIntake = projectPath === "permit_path_only";
-  // Every product needs the address validated and the jurisdiction identified:
-  // Site Plan draws the parcel, Permitting derives the agency and checklist,
-  // and Estimation needs the location for its geographic pricing adjustment.
-  // Only Site Plan gates submission on parcel confirmation, because only it
-  // publishes parcel geometry.
+  // Address lookup helps Kealee prepare the package, but it never blocks the order.
   const showSiteIntelligence = true;
   const guidedIntake = true;
   const hasPermitSubmissionDocument =
@@ -1061,21 +938,17 @@ export default function IntakePage() {
             </div>
 
             <span className="text-[10px] font-extrabold uppercase tracking-widest text-orange-600 bg-orange-50 border border-orange-200/50 px-3 py-1 rounded-full mb-3">
-              Lifecycle Coordination Gate
+              Before contractor matching
             </span>
 
             <h1 className="text-3xl font-black text-slate-900 tracking-tight mb-4 animate-fade-in">
-              Bidding Requires Plans & Permits
+              Finish your plans and permits first
             </h1>
 
             <p className="text-sm text-slate-600 leading-relaxed mb-8 max-w-lg text-slate-600">
-              To guarantee construction quality and eliminate cost uncertainty,
-              Kealee operates as a unified workflow that coordinates design,
-              estimating, permit filing, and build execution. Licensed
-              contractors cannot submit accurate, binding bids without completed
-              architectural drawings and municipal permit filings. By
-              coordinating these phases in order, we protect your project from
-              zoning violations and expensive change orders.
+              Contractors need clear plans and permit information to give useful
+              prices. Complete these steps first so quotes are easier to compare
+              and less likely to change.
             </p>
 
             {/* Next Steps cards */}
@@ -1084,14 +957,14 @@ export default function IntakePage() {
                 className={`p-5 rounded-2xl border transition-all duration-300 ${!hasDesign ? "border-orange-500 bg-orange-50/50 ring-2 ring-orange-500/20" : "border-slate-200 bg-white"}`}
               >
                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                  Phase 1: Design & Estimate
+                  Step 1: Design
                 </span>
                 <h3 className="font-bold text-slate-900 mt-1">
                   Design Concepts
                 </h3>
                 <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-                  Visualize your layout, capture site dimensions, and get a
-                  trade-by-trade cost estimate.
+                  Show what you want to change and set a working budget before
+                  asking contractors for prices.
                 </p>
                 {!hasDesign && (
                   <Link
@@ -1112,14 +985,13 @@ export default function IntakePage() {
                 className={`p-5 rounded-2xl border transition-all duration-300 ${hasDesign ? "border-orange-500 bg-orange-50/50 ring-2 ring-orange-500/20" : "border-slate-200 bg-white"}`}
               >
                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                  Phase 2: Permitting
+                  Step 2: Permits
                 </span>
                 <h3 className="font-bold text-slate-900 mt-1">
                   Permit Preparation
                 </h3>
                 <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-                  Convert drawings to permit plans and file with local building
-                  agencies before bidding.
+                  Prepare the needed plans and send them to the local permit office.
                 </p>
                 {hasDesign ? (
                   <Link
@@ -1368,36 +1240,6 @@ export default function IntakePage() {
   }
 
   // ── Step: details ──────────────────────────────────────────────────────────
-  function validateUploadRequirements(): boolean {
-    const hasStillImage = uploadedFiles.some((f) => f.type === "image");
-    const hasVideo = uploadedFiles.some((f) => f.type === "video");
-    const hasSketchOrDocument =
-      uploadedDocs.some((f) => f.type === "document") ||
-      uploadedFiles.some((f) => f.type === "document");
-    const hasVoiceDescription = uploadedFiles.some((f) => f.type === "voice");
-    if (!hasStillImage && !hasVideo && !hasSketchOrDocument && !hasVoiceDescription && !isSitePlanIntake && !isPermitIntake) {
-      setFormError(
-        "Add at least one project photo, sketch/plan, or voice description before continuing.",
-      );
-      return false;
-    }
-    if (needsConstructionDocs) {
-      // Check Q9 doc section first; fall back to checking Q8 for backwards compat
-      const hasDoc =
-        uploadedDocs.some((f) => f.type === "document") ||
-        uploadedFiles.some((f) => f.type === "document");
-      if (!hasDoc && !isPermitIntake) {
-        setFormError(
-          isSitePlanIntake
-            ? "Please upload at least one boundary survey, plat, parcel map, or existing site-plan source document."
-            : "Please upload at least one construction document (PDF, DWG, or DOCX) in the Documents section.",
-        );
-        return false;
-      }
-    }
-    return true;
-  }
-
   function handleDetailsSubmit(e: React.FormEvent) {
     e.preventDefault();
     setFormError("");
@@ -1413,15 +1255,10 @@ export default function IntakePage() {
       setFormError("Project address is required.");
       return;
     }
-    if (isSitePlanIntake && siteIntelligence?.status === "resolved" && !parcelConfirmed) {
-      setFormError("Confirm that the matched parcel is the project parcel before continuing.");
-      return;
-    }
     if (isEstimateIntake && !formData.estimatePurpose) {
       setFormError("Select what the estimate will be used for.");
       return;
     }
-    if (!validateUploadRequirements()) return;
     softCapture(); // capture lead before payment step
     trackEvent("intake_completion", {
       project_path: projectPath,
@@ -1432,14 +1269,43 @@ export default function IntakePage() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
+  async function handlePromoApply() {
+    const normalizedPromoCode = promoCode.trim();
+    if (!normalizedPromoCode) {
+      setPromoStatus("error");
+      setPromoMessage("Enter a promo code first.");
+      return;
+    }
+
+    setPromoStatus("checking");
+    setPromoMessage("");
+    try {
+      const response = await fetch("/api/intake/redeem", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          projectPath,
+          promoCode: normalizedPromoCode,
+          validateOnly: true,
+        }),
+      });
+      const body = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(body.error || "That promo code could not be applied.");
+      }
+      setPromoStatus("applied");
+      setPromoMessage("Promo applied. Your total today is $0.");
+      setFormError("");
+    } catch (error) {
+      setPromoStatus("error");
+      setPromoMessage(error instanceof Error ? error.message : "That promo code could not be applied.");
+    }
+  }
+
   // ── Step: payment ──────────────────────────────────────────────────────────
   async function handlePayment() {
     setSubmitting(true);
     setFormError("");
-    if (!validateUploadRequirements()) {
-      setSubmitting(false);
-      return;
-    }
     try {
       // 1. Create intake record
       const attribution = utmForApiBody();
@@ -1541,6 +1407,7 @@ export default function IntakePage() {
           }),
         });
 
+        const redeemBody = await redeemRes.json().catch(() => ({}));
         if (redeemRes.ok) {
           trackEvent("promo_redeemed", {
             project_path: projectPath,
@@ -1551,6 +1418,7 @@ export default function IntakePage() {
           );
           return;
         }
+        throw new Error(redeemBody.error || "That promo code could not be applied.");
       }
 
       // 2. Create Stripe checkout session
@@ -1593,16 +1461,13 @@ export default function IntakePage() {
       } else {
         throw new Error("No checkout URL returned from payment processor.");
       }
-    } catch {
-      // Non-recoverable — redirect to soft landing so no one hits a dead end
-      const params = new URLSearchParams({
-        source: projectPath,
-        service: projectPath,
-        email: formData.email,
-        name: `${formData.firstName} ${formData.lastName}`.trim(),
-        status: "payment_failed",
-      });
-      router.push(`/got-you?${params.toString()}`);
+    } catch (error) {
+      setFormError(
+        error instanceof Error
+          ? error.message
+          : "We could not start checkout. Please try again.",
+      );
+      setSubmitting(false);
     }
   }
 
@@ -1725,7 +1590,7 @@ export default function IntakePage() {
                             formData.clientType === "service-provider"
                           ? "Build a client-ready estimate and proposal"
                           : isPermitIntake
-                            ? "Organize your permit path"
+                            ? "Tell us about your permit"
                             : isSitePlanIntake
                               ? "Tell us what you want to test on the property"
                               : isInteriorReno
@@ -1736,9 +1601,9 @@ export default function IntakePage() {
                     {isEstimateIntake && formData.clientType !== "owner"
                       ? "Share the commercial and technical inputs your estimator needs. Your progress saves on this device."
                       : isPermitIntake
-                        ? "Confirm the project, jurisdiction, current plan status, and supporting evidence. Your progress saves on this device."
+                        ? "Tell us about the project and add any plans or permit files you already have. Your answers save on this device."
                         : isSitePlanIntake
-                          ? "Confirm the parcel, proposed footprint, available source documents, and site questions. Your progress saves on this device."
+                          ? "Tell us what you want to do with the property and add any survey or plan you already have. Your answers save on this device."
                           : isInteriorReno
                             ? "Tell us about the space and add one photo, sketch, or voice note. We’ll turn it into a clear design and budget direction."
                             : "Common answers are already selected. Adjust only what differs, add files, and review before payment."}
@@ -1751,7 +1616,7 @@ export default function IntakePage() {
                     <div className="absolute inset-y-0 left-0 flex max-w-sm flex-col justify-center p-5 text-white sm:p-7">
                       <p className="text-xs font-bold uppercase tracking-[0.2em] text-orange-300">Two simple screens</p>
                       <h2 className="mt-2 text-xl font-black">Choose, upload, review.</h2>
-                      <p className="mt-2 text-xs leading-relaxed text-slate-200 sm:text-sm">Common answers are preselected. Add project files if required, then review before checkout.</p>
+                      <p className="mt-2 text-xs leading-relaxed text-slate-200 sm:text-sm">Common answers are already selected. Add any files you have, then review your order.</p>
                     </div>
                   </div>
                   <div className="grid grid-cols-3 divide-x divide-slate-200 text-center text-xs font-semibold text-slate-700">
@@ -1889,47 +1754,39 @@ export default function IntakePage() {
                     <div className="mt-3 rounded-xl border border-emerald-200 bg-emerald-50/70 p-4">
                       <div className="flex flex-wrap items-center justify-between gap-3">
                         <div>
-                          <p className="text-sm font-bold text-emerald-950">
-                            {isSitePlanIntake ? "Automatic property lookup — available nationwide" : "Confirm your jurisdiction — available nationwide"}
-                          </p>
+                          <p className="text-sm font-bold text-emerald-950">Check the property address</p>
                           <p className="mt-1 text-xs leading-relaxed text-emerald-800">
                             {isSitePlanIntake
-                              ? "Kealee identifies the state, county, and city for any US address, then pulls parcel geometry where a registered jurisdiction service covers it. Where it does not, the order continues under manual review — automation level varies by location, availability does not."
+                              ? "Enter the project address and we’ll look for the property. If you have a survey or plat, you can upload it below."
                               : isPermitIntake
-                                ? "We identify the permitting authority for your address so the checklist and requirements match your actual jurisdiction. Where no automated source covers it, a Kealee reviewer confirms the agency by hand."
-                                : "We use your project address to identify the local jurisdiction, regional pricing basis, and relevant permit path for your package."}
+                                ? "We’ll use the project address to identify the permit office for your area."
+                                : "We’ll use the project address to tailor your package to the location."}
                           </p>
                         </div>
                         <button type="button" onClick={resolveProjectParcel} disabled={resolvingParcel || !formData.address.trim()} className="inline-flex items-center gap-2 rounded-lg bg-emerald-700 px-4 py-2.5 text-sm font-bold text-white disabled:opacity-50">
                           {resolvingParcel && <Loader2 className="h-4 w-4 animate-spin" />}
-                          {resolvingParcel ? "Checking…" : siteIntelligence ? "Re-check address" : isSitePlanIntake ? "Find my parcel" : "Confirm my jurisdiction"}
+                          {resolvingParcel ? "Checking…" : siteIntelligence ? "Check again" : "Check address"}
                         </button>
                       </div>
                       {siteIntelligence && (
                         <div className="mt-4 border-t border-emerald-200 pt-4">
-                          <div className="grid gap-3 text-xs sm:grid-cols-4">
-                            <div><span className="block text-emerald-700">Status</span><strong className="text-emerald-950">{siteIntelligence.status.replace("_", " ")}</strong></div>
+                          <div className="grid gap-3 text-xs sm:grid-cols-2">
+                            <div><span className="block text-emerald-700">Address</span><strong className="text-emerald-950">{siteIntelligence.status === "not_found" ? "We’ll review it" : "Located"}</strong></div>
                             <div><span className="block text-emerald-700">Jurisdiction</span><strong className="text-emerald-950">{siteIntelligence.jurisdiction.city ?? siteIntelligence.jurisdiction.county ?? "Pending"}{siteIntelligence.jurisdiction.state ? `, ${siteIntelligence.jurisdiction.state}` : ""}</strong></div>
-                            <div><span className="block text-emerald-700">Coverage</span><strong className="text-emerald-950">{siteIntelligence.coverageLabel}</strong></div>
-                            <div><span className="block text-emerald-700">Confidence</span><strong className="text-emerald-950">{Math.round(siteIntelligence.confidence * 100)}%</strong></div>
                           </div>
                           {siteIntelligence.parcel && (
                             <div className="mt-4 grid gap-4 sm:grid-cols-[160px_1fr] sm:items-center">
                               <ParcelGeometryPreview geometry={siteIntelligence.parcel.scaledGeometry} />
                               <div className="space-y-2 text-xs text-emerald-900">
-                                <p><strong>Parcel:</strong> {siteIntelligence.parcel.parcelId ?? "Identifier unavailable"}</p>
-                                <p><strong>Approximate GIS dimensions:</strong> {Math.round(siteIntelligence.parcel.scaledGeometry.widthFeet)} × {Math.round(siteIntelligence.parcel.scaledGeometry.depthFeet)} ft</p>
-                                <p><strong>GIS area:</strong> {Math.round(siteIntelligence.parcel.scaledGeometry.areaSquareFeet).toLocaleString()} sq ft</p>
-                                <label className="flex cursor-pointer items-start gap-2 rounded-lg border border-emerald-300 bg-white p-3 font-semibold">
-                                  <input type="checkbox" checked={parcelConfirmed} onChange={event => setParcelConfirmed(event.target.checked)} className="mt-0.5" />
-                                  <span>I confirm this is the property parcel for my project.</span>
-                                </label>
+                                <p><strong>Property ID:</strong> {siteIntelligence.parcel.parcelId ?? "Not available"}</p>
+                                <p><strong>Approximate size:</strong> {Math.round(siteIntelligence.parcel.scaledGeometry.widthFeet)} × {Math.round(siteIntelligence.parcel.scaledGeometry.depthFeet)} ft</p>
+                                <p><strong>Approximate area:</strong> {Math.round(siteIntelligence.parcel.scaledGeometry.areaSquareFeet).toLocaleString()} sq ft</p>
                               </div>
                             </div>
                           )}
                           {!siteIntelligence.parcel && siteIntelligence.parcelCandidates && siteIntelligence.parcelCandidates.length > 1 && (
                             <div className="mt-4">
-                              <p className="text-xs font-bold text-emerald-950">Select the project parcel</p>
+                              <p className="text-xs font-bold text-emerald-950">Choose your property</p>
                               <div className="mt-2 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                                 {siteIntelligence.parcelCandidates.map((candidate, index) => (
                                   <button
@@ -1939,32 +1796,21 @@ export default function IntakePage() {
                                     className="rounded-xl border border-emerald-200 bg-white p-3 text-left transition hover:border-emerald-500 hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
                                   >
                                     <ParcelGeometryPreview geometry={candidate.scaledGeometry} />
-                                    <span className="mt-2 block text-xs font-bold text-emerald-950">Parcel {candidate.parcelId ?? index + 1}</span>
+                                    <span className="mt-2 block text-xs font-bold text-emerald-950">Property {candidate.parcelId ?? index + 1}</span>
                                     <span className="mt-1 block text-[11px] text-emerald-700">{Math.round(candidate.scaledGeometry.areaSquareFeet).toLocaleString()} sq ft</span>
                                   </button>
                                 ))}
                               </div>
                             </div>
                           )}
-                          {siteIntelligence.itemsRequiringConfirmation.length > 0 && (
+                          {(siteIntelligence.itemsRequiringConfirmation.length > 0 || siteIntelligence.warnings.length > 0) && (
                             <div className="mt-4 rounded-lg border border-emerald-300 bg-white p-3">
-                              <p className="text-xs font-bold text-emerald-950">Requires confirmation before this package can be relied on</p>
-                              <ul className="mt-1.5 space-y-1">
-                                {siteIntelligence.itemsRequiringConfirmation.map(item => (
-                                  <li key={item} className="text-[11px] leading-relaxed text-emerald-800">• {item}</li>
-                                ))}
-                              </ul>
-                              <p className="mt-2 text-[11px] font-semibold text-emerald-900">
-                                We will clearly flag anything that needs your confirmation before you rely on the completed package.
+                              <p className="text-xs font-bold text-emerald-950">Have a survey or plat?</p>
+                              <p className="mt-1 text-xs leading-relaxed text-emerald-800">
+                                Upload it below if you have one. You can continue without it—we’ll contact you if anything else is needed.
                               </p>
                             </div>
                           )}
-                          {siteIntelligence.dataSources.length > 0 && (
-                            <p className="mt-3 text-[11px] text-emerald-700">
-                              {siteIntelligence.dataSources.map(source => `${source.authority} (${source.dataset})`).join(' · ')} — retrieved {new Date(siteIntelligence.dataSources[0].retrievedAt).toLocaleDateString()}
-                            </p>
-                          )}
-                          {siteIntelligence.warnings.map(warning => <p key={warning} className="mt-2 text-xs text-amber-800">• {warning}</p>)}
                         </div>
                       )}
                     </div>
@@ -2315,13 +2161,13 @@ export default function IntakePage() {
                 >
                   <p className="text-sm font-semibold text-slate-800">
                     {isPermitIntake
-                      ? "Permit evidence profile"
-                      : "Quick-start project profile"}
+                      ? "What we need to know"
+                      : "A few quick questions"}
                   </p>
                   <p className="mt-1 text-xs leading-relaxed text-slate-600">
                     {isPermitIntake
-                      ? "Confirm only what you know. Kealee organizes the likely review lanes and evidence gaps; the jurisdiction retains control of requirements, timing, and approval."
-                      : "Common goals, constraints, priorities, budget, and timeline are pre-filled below for this service. Change any choice that does not fit; the project brief is the single custom notes field."}
+                      ? "Share what you know. Kealee will check the local process and tell you if anything else is needed."
+                      : "We selected common answers to save time. Change anything that does not fit your project."}
                   </p>
                 </div>
 
@@ -2394,9 +2240,9 @@ export default function IntakePage() {
                     <div>
                       <label className="block text-sm font-semibold text-slate-800 mb-1.5">
                         {isPermitIntake
-                          ? "Jurisdiction and current plan status"
+                          ? "Where is the project, and what plans do you have?"
                           : isSitePlanIntake
-                            ? "Parcel and existing-site information"
+                            ? "What is already on the property?"
                             : "Tell us about the property"}
                       </label>
                       <textarea
@@ -2411,15 +2257,15 @@ export default function IntakePage() {
                         className="w-full rounded-lg border border-slate-300 px-4 py-3 text-sm focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20 resize-none"
                         placeholder={
                           isPermitIntake
-                            ? "County or municipality, current plan stage, prior submissions, application number, and known agency contacts or comments."
+                            ? "Tell us where the project is and whether you have already started the permit process."
                             : isSitePlanIntake
-                              ? "Parcel/APN, lot dimensions if known, existing structures, access, slope, utilities, easements, survey date, or known zoning."
+                              ? "Tell us about the lot, existing buildings, driveway, trees, slopes, or anything else you know."
                               : "For example: 1960s two-story home, occupied during construction, narrow side access…"
                         }
                       />
                       <p className="mt-1.5 text-xs text-slate-500">
                         {isSitePlanIntake
-                          ? "Include only what you know. Kealee records source, date, confidence, jurisdiction, CRS, and units where available."
+                          ? "Share only what you know. Kealee will check the property details."
                           : "This helps us flag site conditions that may affect layout, cost, or approvals."}
                       </p>
                     </div>
@@ -2427,9 +2273,9 @@ export default function IntakePage() {
                     <div>
                       <label className="block text-sm font-semibold text-slate-800 mb-1.5">
                         {isPermitIntake
-                          ? "Known code, zoning, or agency constraints"
+                          ? "Anything else we should know?"
                           : isSitePlanIntake
-                            ? "Known zoning, overlays, or site constraints"
+                            ? "Anything else we should know?"
                             : "Show us styles or examples you like"}
                       </label>
                       <textarea
@@ -2444,9 +2290,9 @@ export default function IntakePage() {
                         className="w-full rounded-lg border border-slate-300 px-4 py-3 text-sm focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20 resize-none"
                         placeholder={
                           isPermitIntake
-                            ? "Known occupancy, construction type, historic district, zoning issue, variance, fire/life-safety concern, or agency correction."
+                            ? "Add any rules, past permit comments, or special property conditions you already know about."
                             : isSitePlanIntake
-                              ? "Zone code, historic district, floodplain, wetland, easement, HOA, utility, access, tree, slope, or setback information—if known."
+                              ? "Add any HOA rules, flood concerns, shared driveways, utility lines, or property restrictions you already know about."
                               : "Describe colors, materials, rooms, or links that feel right. You can also add inspiration images below."
                         }
                       />
@@ -2463,21 +2309,21 @@ export default function IntakePage() {
                       <div className="flex flex-wrap gap-2">
                         {(isPermitIntake
                           ? [
-                              "Completeness",
-                              "Code path",
-                              "Zoning",
-                              "Trade permits",
-                              "Review comments",
-                              "Inspection plan",
+                              "Complete application",
+                              "Rules to follow",
+                              "Property rules",
+                              "Faster review",
+                              "Reviewer questions",
+                              "Inspections",
                             ]
                           : isSitePlanIntake
                             ? [
-                                "Buildable area",
-                                "Zoning confidence",
-                                "Footprint fit",
-                                "Access / parking",
-                                "Open space",
-                                "Permit path",
+                                "Where I can build",
+                                "Clear property rules",
+                                "Will it fit?",
+                                "Driveway / parking",
+                                "Yard space",
+                                "Permits needed",
                               ]
                             : [
                                 "Budget",
@@ -2582,19 +2428,8 @@ export default function IntakePage() {
                 <div>
                   <div className="flex items-center justify-between mb-1.5">
                     <label className="block text-sm font-semibold text-slate-800">
-                      {needsAreaPhoto ? (
-                        <>
-                          {isSitePlanIntake ? "Site photos" : "Project photos"}{" "}
-                          <span className="text-red-500">*</span>
-                        </>
-                      ) : (
-                        <>
-                          {isSitePlanIntake ? "Site photos" : "Project photos"}{" "}
-                          <span className="text-slate-400 font-normal">
-                            (optional)
-                          </span>
-                        </>
-                      )}
+                      {isSitePlanIntake ? "Site photos" : "Project photos"}{" "}
+                      <span className="text-slate-400 font-normal">(optional)</span>
                     </label>
                     {uploadedFiles.length > 0 && (
                       <span className="text-xs text-slate-400">
@@ -2603,11 +2438,9 @@ export default function IntakePage() {
                     )}
                   </div>
                   <p className="text-xs text-slate-500 mb-3">
-                    {needsAreaPhoto
-                      ? "Upload at least one clear photo or walkthrough video of the project area. Images may be up to 10 MB and videos up to 50 MB."
-                      : isSitePlanIntake
-                        ? "Optionally upload street, front/rear yard, boundary-marker, access, slope, drainage, utility, or proposed-footprint photos. Accepted: JPG, PNG."
-                        : "For best output, upload a photo of your space or reference images. Accepted: JPG, PNG (max 10 MB each, up to 10 photos)."}
+                    {isSitePlanIntake
+                      ? "Add photos of the property if you have them."
+                      : "Photos help us understand the space. You can continue without them."}
                   </p>
 
                   {uploadedFiles.length > 0 && (
@@ -2685,9 +2518,8 @@ export default function IntakePage() {
                     )}
                   </div>
                   <p className="text-xs text-slate-600 mb-3">
-                    Prefer to talk? Describe the property, project area, and
-                    what you want changed. A photo, sketch, or voice description
-                    is required.
+                    Prefer to talk? Describe the property, the project area, and
+                    what you want changed.
                   </p>
                   <button
                     type="button"
@@ -2714,18 +2546,9 @@ export default function IntakePage() {
                 <div>
                   <div className="flex items-center justify-between mb-1.5">
                     <label className="block text-sm font-semibold text-slate-800">
-                      {needsConstructionDocs ? (
+                      {benefitsFromFloorplan ? (
                         <>
-                          {isPermitIntake
-                            ? "Plans and supporting permit documents"
-                            : isSitePlanIntake
-                              ? "Boundary survey or site source document"
-                              : "Construction documents"}{" "}
-                          <span className="text-red-500">*</span>
-                        </>
-                      ) : benefitsFromFloorplan ? (
-                        <>
-                          Floor plan sketch or existing drawings{" "}
+                          Floor plan or drawings{" "}
                           <span className="text-amber-600 font-normal">
                             (recommended)
                           </span>
@@ -2733,7 +2556,7 @@ export default function IntakePage() {
                       ) : (
                         <>
                           {isSitePlanIntake
-                            ? "Survey, plat, parcel map, or existing site plan"
+                            ? "Survey or property plan"
                             : "Documents"}{" "}
                           <span className="text-slate-400 font-normal">
                             (optional)
@@ -2748,17 +2571,13 @@ export default function IntakePage() {
                     )}
                   </div>
                   <p className="text-xs text-slate-500 mb-3">
-                    {needsConstructionDocs
-                      ? isPermitIntake
-                        ? "Upload at least one current plan, drawing, survey, specification, prior application, or agency comment document. Accepted: PDF, DWG, DOCX."
-                        : isSitePlanIntake
-                          ? "Upload the current boundary/topographic survey, plat, parcel map, or existing site plan used for professional coordination. Accepted: PDF, DWG, DOCX."
-                          : "Upload at least one construction document — existing plans, specs, or drawings. Accepted: PDF, DWG, DOCX (max 25 MB each, up to 5 files)."
-                      : benefitsFromFloorplan
+                    {benefitsFromFloorplan
                         ? "A rough hand-drawn sketch or photo of your existing floor plan helps us match your actual room dimensions and layout — especially useful for multi-room and addition projects. Accepted: PDF, DWG, DOCX (max 25 MB each, up to 5 files)."
                         : isSitePlanIntake
-                          ? "Upload any available survey, plat, parcel map, zoning exhibit, easement document, GeoJSON exported as a supported document, or existing site plan."
-                          : "Optionally upload existing plans, specs, or reference drawings. Accepted: PDF, DWG, DOCX (max 25 MB each, up to 5 files)."}
+                          ? "Add any survey or property plan you already have."
+                          : isPermitIntake
+                            ? "Add any plan, survey, permit form, or letter you already have."
+                            : "Add any plans or drawings you already have."}
                   </p>
 
                   {uploadedDocs.length > 0 && (
@@ -2824,7 +2643,7 @@ export default function IntakePage() {
                         <>
                           <FileText className="h-4 w-4" />{" "}
                           {isSitePlanIntake
-                            ? "Add survey, parcel, GIS, or site-plan file"
+                            ? "Add a survey or property plan"
                             : "Add plans, specs, or drawings (PDF / DWG / DOCX)"}
                         </>
                       )}
@@ -2948,21 +2767,19 @@ export default function IntakePage() {
                     Review your order
                   </h1>
                   <p className="text-slate-500 mt-1 text-sm">
-                    Confirm your details, then proceed to secure payment.
+                    Check your contact and project details, then continue to payment.
                   </p>
                 </div>
 
-                {/* Missing-information checklist — shown BEFORE payment, from the
-                    same logic the order page uses afterwards, so the customer is
-                    never told one thing at checkout and another once they pay. */}
-                <IntakeChecklistPanel
-                  projectPath={projectPath}
-                  formData={formData}
-                  siteIntelligence={siteIntelligence}
-                  parcelConfirmed={parcelConfirmed}
-                  uploadedFiles={uploadedFiles}
-                  uploadedDocs={uploadedDocs}
-                />
+                <div className="flex items-start gap-3 rounded-xl border border-teal-200 bg-teal-50 p-4">
+                  <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-teal-700" />
+                  <div>
+                    <h2 className="text-sm font-bold text-teal-950">Kealee will check the property details</h2>
+                    <p className="mt-1 text-xs leading-relaxed text-teal-800">
+                      Complete your order when you&apos;re ready. We&apos;ll check the property and local rules, and contact you only if we need another file.
+                    </p>
+                  </div>
+                </div>
 
                 {formError && (
                   <div className="flex items-start gap-3 rounded-xl bg-red-50 border border-red-200 p-4 text-red-700">
@@ -3145,7 +2962,7 @@ export default function IntakePage() {
                     <span className="text-sm font-semibold text-slate-700">
                       {priceInfo.label}
                     </span>
-                    <span className="text-sm font-bold text-slate-900">
+                    <span className={`text-sm font-bold ${promoStatus === "applied" ? "text-slate-400 line-through" : "text-slate-900"}`}>
                       {formatPrice(priceInfo.amount)}
                     </span>
                   </div>
@@ -3164,7 +2981,7 @@ export default function IntakePage() {
                       Total due today
                     </span>
                     <span className="text-2xl font-black text-blue-700">
-                      {formatPrice(priceInfo.amount)}
+                      {promoStatus === "applied" ? "$0" : formatPrice(priceInfo.amount)}
                     </span>
                   </div>
                 </div>
@@ -3180,21 +2997,34 @@ export default function IntakePage() {
                       + Have a promo code?
                     </button>
                   ) : (
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="text"
-                        value={promoCode}
-                        onChange={(e) => setPromoCode(e.target.value)}
-                        placeholder="Enter promo code"
-                        className="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm uppercase focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPromo(false)}
-                        className="text-xs font-semibold text-slate-400 hover:text-slate-600"
-                      >
-                        Hide
-                      </button>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="text"
+                          value={promoCode}
+                          onChange={(e) => {
+                            setPromoCode(e.target.value);
+                            setPromoStatus("idle");
+                            setPromoMessage("");
+                          }}
+                          placeholder="Enter promo code"
+                          aria-label="Promo code"
+                          className="min-w-0 flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm uppercase focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                        <button
+                          type="button"
+                          onClick={handlePromoApply}
+                          disabled={promoStatus === "checking" || !promoCode.trim()}
+                          className="rounded-lg bg-blue-700 px-4 py-2 font-bold text-white hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                          {promoStatus === "checking" ? "Checking…" : promoStatus === "applied" ? "Applied" : "Apply"}
+                        </button>
+                      </div>
+                      {promoMessage && (
+                        <p className={`mt-2 text-xs font-semibold ${promoStatus === "applied" ? "text-green-700" : "text-red-600"}`} role="status">
+                          {promoMessage}
+                        </p>
+                      )}
                     </div>
                   )}
                 </div>
@@ -3220,20 +3050,21 @@ export default function IntakePage() {
                     {submitting ? (
                       <>
                         <Loader2 className="h-5 w-5 animate-spin" />
-                        Redirecting to payment...
+                        {promoStatus === "applied" ? "Placing your order..." : "Opening payment..."}
                       </>
                     ) : (
                       <>
-                        <Shield className="h-4 w-4" />
-                        Pay {formatPrice(priceInfo.amount)} Securely
+                        {promoStatus === "applied" ? <CheckCircle2 className="h-4 w-4" /> : <Shield className="h-4 w-4" />}
+                        {promoStatus === "applied" ? "Place Free Order" : `Pay ${formatPrice(priceInfo.amount)}`}
                       </>
                     )}
                   </button>
                 </div>
 
                 <p className="text-center text-xs text-slate-400">
-                  🔒 You&apos;ll be redirected to Stripe to complete payment. Your
-                  data is encrypted.
+                  {promoStatus === "applied"
+                    ? "No payment is needed. We’ll start your order when you continue."
+                    : "You’ll finish payment securely with Stripe."}
                 </p>
               </div>
             )}

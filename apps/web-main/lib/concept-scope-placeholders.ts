@@ -33,7 +33,7 @@ export function getConceptScopePlaceholder(serviceSlug: string): string {
 
 /** Shown near photo upload on concept intake. */
 export const CONCEPT_PHOTO_RENDERING_DISCLAIMER =
-  'design concept renderings are illustrative pre-design visuals — not permit-ready drawings and not guaranteed to match final construction. Before/after comparisons require photos of your existing conditions; without them we produce forward-looking concepts only.'
+  'Your concept images show design ideas, not final building plans. Photos help us match your current space.'
 
 /** Short hint under square footage on concept details (optional context per service). */
 export const CONCEPT_SQFT_HINTS: Record<string, string> = {

@@ -383,7 +383,7 @@ function DetailsInner() {
     const hasVisualEvidence = uploadedFiles.some((file) => file.type === 'image' || file.type === 'video')
     if (!hasVisualEvidence && !photoAckNoUpload) {
       e.photos =
-        'Upload at least one photo or walkthrough video of existing conditions, or check the acknowledgment below to continue without visual evidence.'
+        'Add at least one photo or video of the space, or choose the option below to continue without one.'
     }
     setErrors(e)
     return Object.keys(e).length === 0
@@ -692,7 +692,7 @@ function DetailsInner() {
           />
           {errors.zip && <p data-field-error role="alert" className="text-xs text-red-500 mt-1">{errors.zip}</p>}
           {zip.length === 5 && !errors.zip && (
-            <p className="text-xs text-green-600 mt-1">✓ Location confirmed — used for zoning and permit analysis</p>
+            <p className="text-xs text-green-600 mt-1">✓ Location saved — we’ll use it to check local rules</p>
           )}
         </div>
 

@@ -1,6 +1,6 @@
 /**
  * POST /api/intake/redeem
- * Body: { intakeId: string; projectPath: string; promoCode: string }
+ * Body: { intakeId?: string; projectPath: string; promoCode: string; validateOnly?: boolean }
  *
  * Validates a free promo code, marks the intake as paid,
  * and triggers concept generation — bypassing Stripe entirely.
@@ -25,16 +25,17 @@ function validCodes(): string[] {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json() as {
-      intakeId: string
+      intakeId?: string
       projectPath: string
       promoCode: string
+      validateOnly?: boolean
     }
 
-    const { intakeId, projectPath, promoCode } = body
+    const { intakeId, projectPath, promoCode, validateOnly } = body
 
-    if (!intakeId || !projectPath || !promoCode) {
+    if (!projectPath || !promoCode) {
       return NextResponse.json(
-        { error: 'intakeId, projectPath and promoCode are required' },
+        { error: 'Project and promo code are required' },
         { status: 400 },
       )
     }
@@ -43,18 +44,30 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid promo code' }, { status: 400 })
     }
 
+    if (validateOnly) {
+      return NextResponse.json({ ok: true, free: true })
+    }
+
+    if (!intakeId) {
+      return NextResponse.json({ error: 'Order information is required' }, { status: 400 })
+    }
+
     const supabase = getSupabaseAdmin()
 
     // Mark intake as paid (idempotent — update only if still 'new')
-    const { error: updateErr } = await supabase
+    const { data: updated, error: updateErr } = await supabase
       .from('public_intake_leads')
-      .update({ status: 'paid' })
+      .update({ status: 'paid', requires_payment: false, payment_amount: 0 })
       .eq('id', intakeId)
-      .in('status', ['new', 'pending'])
+      .select('id')
+      .maybeSingle()
 
     if (updateErr) {
       console.error('[intake/redeem] Failed to mark intake as paid:', updateErr.message)
-      // Log but continue — generation trigger is more important
+      return NextResponse.json({ error: 'We could not finish your free order. Please try again.' }, { status: 500 })
+    }
+    if (!updated) {
+      return NextResponse.json({ error: 'We could not find your saved order. Please try again.' }, { status: 404 })
     }
 
     // Trigger concept generation fire-and-forget (mirrors Stripe webhook behaviour)
