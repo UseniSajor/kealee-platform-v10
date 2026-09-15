@@ -160,9 +160,12 @@ function ConfirmInner() {
             answers: v30Answers,
           }),
         })
+        // The dynamic quote is an enhancement, not a precondition of paying.
+        // If it cannot be built the checkout route prices from the tier
+        // table; refusing the sale here left the customer stuck at the button.
         if (!v30Res.ok) {
           const b = await v30Res.json().catch(() => ({}))
-          throw new Error((b as { error?: string }).error ?? 'Could not build v30 package quote.')
+          console.warn('[concept/confirm] v30 quote unavailable; pricing from tier table:', (b as { error?: string }).error)
         }
       }
 

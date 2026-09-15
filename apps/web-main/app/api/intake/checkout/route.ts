@@ -54,7 +54,16 @@ export async function POST(req: NextRequest) {
     let unitAmountCents: number
     let productName: string
     let checkoutTier: number | undefined
+    /** What actually priced this session. Recorded in metadata for the webhook. */
+    let pricingModel: 'v30_dynamic' | 'tier_fixed' | 'bundle' = 'tier_fixed'
 
+    // A dynamic quote prices the session when one exists. When it does not —
+    // the quote step failed, the flag is on server-side but the funnel never
+    // built one, an older intake — the customer is NOT turned away: the price
+    // falls back to the server-trusted tier table below. This used to return
+    // 400 "Invalid or missing v30 quote", which failed checkout for every
+    // service on the /concept funnel whenever the quote was absent.
+    let v30Quoted: { cents: number; label: string } | null = null
     if (useV30Pricing && isV30Enabled()) {
       const supabase = getSupabaseAdmin()
       const { data: intakeRow } = await supabase
@@ -67,14 +76,23 @@ export async function POST(req: NextRequest) {
       const v30Quote = formData.v30Quote as { totalPriceCents?: number; features?: string[] } | undefined
       const quoted = v30Quote?.totalPriceCents
 
-      if (!quoted || quoted < 9900 || quoted > 999_900) {
-        return NextResponse.json(
-          { error: 'Invalid or missing v30 quote — complete /get-concept intake first' },
-          { status: 400 },
+      if (quoted && quoted >= 9900 && quoted <= 999_900) {
+        v30Quoted = {
+          cents: Math.round(quoted),
+          label: `Kealee Custom Package (${(v30Quote?.features ?? []).join(', ') || 'v30'})`,
+        }
+      } else {
+        console.warn(
+          '[intake/checkout] v30 pricing requested but no valid quote on intake; ' +
+          'pricing from the tier table instead.', intakeId, projectPath, quoted ?? null,
         )
       }
-      unitAmountCents = Math.round(quoted)
-      productName = `Kealee Custom Package (${(v30Quote?.features ?? []).join(', ') || 'v30'})`
+    }
+
+    if (v30Quoted) {
+      unitAmountCents = v30Quoted.cents
+      productName = v30Quoted.label
+      pricingModel = 'v30_dynamic'
     } else if (isBundleProductKey(projectPath) && sourcePath) {
       const bundle = getBundleCheckoutCents(
         projectPath as 'design_estimate_permit_bundle' | 'estimate_permit_bundle',
@@ -85,6 +103,7 @@ export async function POST(req: NextRequest) {
       }
       unitAmountCents = bundle.cents
       productName = bundle.label
+      pricingModel = 'bundle'
     } else {
       // Server-trusted tier price (v20) — read tier from intake form_data
       try {
@@ -148,11 +167,11 @@ export async function POST(req: NextRequest) {
       allow_promotion_codes: true,
       line_items: lineItems,
       metadata: {
-        source: useV30Pricing ? 'public_intake_v30' : 'public_intake',
+        source: pricingModel === 'v30_dynamic' ? 'public_intake_v30' : 'public_intake',
         intakeId,
         projectPath,
         siteVisitRequested: siteVisitRequested ? 'true' : 'false',
-        pricingModel: useV30Pricing ? 'v30_dynamic' : 'tier_fixed',
+        pricingModel,
         ...(checkoutTier ? { tier: String(checkoutTier) } : {}),
         ...(sourcePath ? { sourcePath } : {}),
         ...(upsellSourceIntakeId ? { upsellSourceIntakeId } : {}),
@@ -160,10 +179,10 @@ export async function POST(req: NextRequest) {
       },
       payment_intent_data: {
         metadata: {
-          source: useV30Pricing ? 'public_intake_v30' : 'public_intake',
+          source: pricingModel === 'v30_dynamic' ? 'public_intake_v30' : 'public_intake',
           intakeId,
           projectPath,
-          pricingModel: useV30Pricing ? 'v30_dynamic' : 'tier_fixed',
+          pricingModel,
           ...(checkoutTier ? { tier: String(checkoutTier) } : {}),
           ...(sourcePath ? { sourcePath } : {}),
           ...(upsellSourceIntakeId ? { upsellSourceIntakeId } : {}),
