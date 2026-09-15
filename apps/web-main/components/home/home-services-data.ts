@@ -34,6 +34,8 @@ export interface HomeJourneyService {
   gradientTo: string
   mediaType: HomeServiceMediaType
   photoSrc: string
+  /** Retained for the previous before/after card design. */
+  beforePhotoSrc?: string
   photoAlt: string
   videoSrc?: string
   videoWebM?: string
