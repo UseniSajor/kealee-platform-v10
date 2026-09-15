@@ -3,13 +3,21 @@ import {
   type HomeJourneyService,
 } from '@/components/home/home-services-data'
 import type { CardMediaManifest } from './card-media-manifest'
-import { resolveHomeServiceMedia } from './card-media-manifest'
+import { resolveCardMedia } from './card-media-manifest'
 
 export function mergeHomeServicesWithManifest(
   manifest: CardMediaManifest,
 ): HomeJourneyService[] {
   return HOME_JOURNEY_SERVICES.map((service) => {
-    const media = resolveHomeServiceMedia(service.id, manifest)
+    // New journey services may not have a generated `home:*` manifest entry yet.
+    // resolveCardMedia preserves their curated local photo/video fallbacks.
+    const media = resolveCardMedia('home', service.id, manifest, {
+      photoUrl: service.photoSrc,
+      photoAlt: service.photoAlt,
+      mediaType: service.mediaType,
+      videoUrl: service.videoSrc,
+      videoWebM: service.videoWebM,
+    })
     return {
       ...service,
       photoSrc: media.photoUrl || service.photoSrc,

@@ -31,119 +31,38 @@ export type NavItem = NavLink | (NavDropdown & { type: 'dropdown' })
 // ── Primary navigation items ──────────────────────────────────────────────────
 
 export const PRIMARY_NAV: NavItem[] = [
-  // 1 — Start your design (design concept Engine)
   {
-    label: 'Start your design',
+    label: 'Services',
     type:  'dropdown',
-    href:  '/concept-engine',
+    href:  '/#choose-service',
     groups: [
       {
-        title: 'Choose Your Design Path',
+        title: 'Plan, approve, and build',
         links: [
-          {
-            label:       'Exterior Design',
-            href:        '/concept-engine/exterior',
-            description: 'Facade, curb appeal, landscaping, hardscaping, outdoor living',
-          },
-          {
-            label:       'Garden & Farming',
-            href:        '/concept-engine/garden',
-            description: 'Raised beds, backyard farming, irrigation, greenhouse design',
-            badge:       'New',
-          },
-          {
-            label:       'Kitchen Remodel',
-            href:        '/products/kitchen-remodel',
-            description: 'design concept, permit scope, layout options — in 24 hours',
-          },
-          {
-            label:       'Bathroom Remodel',
-            href:        '/products/bath-remodel',
-            description: 'Layout options, fixture placement, permit scope, cost band',
-          },
-          {
-            label:       'Whole Home Renovation',
-            href:        '/concept-engine/whole-home',
-            description: 'Floor plan redesign, structural, systems, every room',
-          },
-          {
-            label:       'Interior Reno & Addition',
-            href:        '/concept-engine/interior-reno',
-            description: 'Room additions, layout changes, ADUs, and interior redesign',
-          },
+          { label: '1. Site Plan', href: '/services/site-plan', description: 'Understand the property and what may fit' },
+          { label: '2. Design Concept', href: '/services/design-concept', description: 'Visualize the idea, layout, scope, and materials' },
+          { label: '3. Cost Estimate', href: '/services/cost-estimate', description: 'Understand labor, materials, allowances, and risk' },
+          { label: '4. Permits', href: '/services/permits', description: 'Prepare the right documents and approval path' },
+          { label: '5. Contractor Match', href: '/services/contractor-match', description: 'Compare qualified contractors on one scope' },
+          { label: '6. Escrow & Protection', href: '/services/escrow-protection', description: 'Connect payments to approved milestones' },
         ],
       },
     ],
     featured: {
-      label:       'design concept Engine — From $395',
-      href:        '/concept-engine',
-      description: 'generated using AI tools design + contractor-ready PDF · 5–7 business day delivery',
+      label:       'Not sure where to start?',
+      href:        '/request-service?service=project-clarity&name=Project%20Clarity',
+      description: 'Tell us the goal and get a clear recommendation',
     },
   },
-
-  // 2 — Products (all services dropdown)
-  {
-    label: 'Products',
-    type:  'dropdown',
-    href:  '/products',
-    groups: [
-      {
-        title: 'design',
-        links: [
-          { label: 'Whole Home Renovation',    href: '/products/whole-home',      description: 'Full concept, permits, contractor — From $585' },
-          { label: 'Kitchen Remodel',          href: '/products/kitchen-remodel', description: 'Layouts, permit scope, cost band — From $395' },
-          { label: 'Bathroom Remodel',         href: '/products/bath-remodel',    description: 'Layout, fixtures, permit scope — From $395' },
-          { label: 'Exterior Renovation',      href: '/products/exterior',        description: 'Facade, deck, siding, windows — From $395' },
-          { label: 'ADU & In-Law Suite',       href: '/products/adu',             description: 'Zoning check, concept, permit — From $395' },
-          { label: 'Basement Finish',          href: '/products/basement',        description: 'Egress check, layouts, permits — From $395' },
-        ],
-      },
-      {
-        title: 'Garden & Landscape',
-        links: [
-          { label: 'Garden & Farming Design',  href: '/products/garden',          description: 'Raised beds, irrigation, design concept — From $395' },
-          { label: 'Landscape Design & Install', href: '/products/landscape',     description: 'Beds, hardscape, drainage — From $395' },
-        ],
-      },
-      {
-        title: 'Permits & Estimation',
-        links: [
-          { label: 'Permit Package',           href: '/products/permit-package',   description: 'File, track, respond — From $149' },
-          { label: 'Permit Research',          href: '/products/permit-research',  description: 'Know what you need before filing — $297' },
-          { label: 'Cost Estimate',            href: '/products/cost-estimate',    description: 'RSMeans-validated, lender-ready — From $595' },
-        ],
-      },
-      {
-        title: 'Design & Construction',
-        links: [
-          { label: 'Design Starter',           href: '/products/design-starter',  description: 'Schematic drawings from licensed pro — $1,200' },
-          { label: 'PM Advisory',              href: '/products/pm-advisory',     description: 'Monthly site visits, milestone approvals — $950' },
-          { label: 'ADU Bundle',               href: '/products/adu-bundle',      description: 'Concept + permit bundled — $1,345' },
-        ],
-      },
-    ],
-    featured: {
-      label:       'All Products →',
-      href:        '/products',
-      description: 'Every Kealee service in one place · Per-service pricing',
-    },
-  },
-
-  // 3 — Get Permits
-  { label: 'Get Permits', href: '/permits' },
-
-  // 4 — Get Estimate
-  { label: 'Get Estimate', href: '/estimate' },
-
-  // 5 — For Contractors (direct link to landing page)
+  { label: 'How It Works', href: '/#how-it-works' },
   { label: 'For Contractors', href: '/contractors' },
 ]
 
 // ── CTA buttons ───────────────────────────────────────────────────────────────
 
-export const NAV_CTA_PRIMARY   = { label: 'Start your design',    href: '/concept-engine' }
+export const NAV_CTA_PRIMARY   = { label: 'Choose a service', href: '/#choose-service' }
 /** Shown when NEXT_PUBLIC_KEALEE_V30_ENABLED=true (GlobalNav / MobileNav). */
-export const NAV_CTA_V30       = { label: 'Get concept — see price', href: '/get-concept' }
+export const NAV_CTA_V30       = { label: 'Choose a service', href: '/#choose-service' }
 export const NAV_CTA_SECONDARY = { label: 'Join as Contractor',   href: '/contractor/register' }
 
 /** Login dropdown entries — shown in nav, never internal routes */
@@ -156,13 +75,12 @@ export const NAV_LOGIN_OPTIONS = [
 
 export const FOOTER_NAV = {
   platform: [
-    { label: 'Start Your Design',          href: '/concept-engine' },
-    { label: 'All Products',               href: '/products' },
-    { label: 'Get Permits',                href: '/permits' },
-    { label: 'Get an Estimate',            href: '/estimate' },
-    { label: 'Contractor Marketplace',     href: '/marketplace' },
-    { label: 'Design Services',            href: '/design-services' },
-    { label: 'Payments & Escrow',          href: '/milestone-pay' },
+    { label: 'Site Plan',                   href: '/services/site-plan' },
+    { label: 'Design Concept',              href: '/services/design-concept' },
+    { label: 'Cost Estimate',               href: '/services/cost-estimate' },
+    { label: 'Permits',                     href: '/services/permits' },
+    { label: 'Contractor Match',            href: '/services/contractor-match' },
+    { label: 'Escrow & Payment Protection', href: '/services/escrow-protection' },
   ],
   solutions: [
     { label: 'For Homeowners',             href: '/homeowners' },

@@ -4,7 +4,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { useEffect, useRef, useState } from 'react'
-import { Calculator, FileCheck, Hammer, Map, Palette, Play, ArrowRight } from 'lucide-react'
+import { Calculator, FileCheck, Hammer, Landmark, Map, Palette, Play, ArrowRight } from 'lucide-react'
 import type { HomeJourneyService, HomeServiceId } from './home-services-data'
 import { trackEvent } from '@/lib/analytics'
 
@@ -16,7 +16,8 @@ const ICONS: Record<HomeServiceId, typeof Palette> = {
   estimate: Calculator,
   siteplan: Map,
   permits: FileCheck,
-  build: Hammer,
+  contractor: Hammer,
+  escrow: Landmark,
 }
 
 interface CircularServiceCardProps {
@@ -34,7 +35,8 @@ export function CircularServiceCard({ service, index }: CircularServiceCardProps
   // Never let an unmapped service id render `undefined` as a component — that
   // throws "Element type is invalid" and takes down the entire homepage.
   const Icon = ICONS[service.id] ?? Palette
-  const ringOffset = RING_CIRCUMFERENCE - (service.progress / 100) * RING_CIRCUMFERENCE
+  const progress = Math.round(((index + 1) / 6) * 100)
+  const ringOffset = RING_CIRCUMFERENCE - (progress / 100) * RING_CIRCUMFERENCE
   const useVideo = service.mediaType === 'video' && showVideo
 
   useEffect(() => {
@@ -194,7 +196,7 @@ export function CircularServiceCard({ service, index }: CircularServiceCardProps
               className="transition-all duration-500"
             />
           </svg>
-          <span className="text-[9px] font-bold text-white tracking-tighter">{service.progress}%</span>
+          <span className="text-[9px] font-bold text-white tracking-tighter">{progress}%</span>
         </div>
 
         {useVideo && videoReady && (

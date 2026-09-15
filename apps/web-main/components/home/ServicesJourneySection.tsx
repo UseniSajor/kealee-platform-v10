@@ -1,169 +1,120 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
-import { motion } from 'framer-motion'
-import { Cormorant_Garamond, Barlow } from 'next/font/google'
 import Link from 'next/link'
-import { CircularServiceCard } from './CircularServiceCard'
-import type { HomeJourneyService } from './home-services-data'
+import { useEffect, useRef } from 'react'
+import { ArrowRight, Calculator, FileCheck2, Hammer, Landmark, Map, Palette, ShieldCheck, Sparkles } from 'lucide-react'
+import type { HomeJourneyService, HomeServiceId } from './home-services-data'
+import { trackEvent } from '@/lib/analytics'
 
-const cormorant = Cormorant_Garamond({
-  subsets: ['latin'],
-  weight: ['600', '700'],
-  variable: '--font-home-serif',
-  display: 'swap',
-})
+const ICONS: Record<HomeServiceId, typeof Map> = {
+  siteplan: Map,
+  design: Palette,
+  estimate: Calculator,
+  permits: FileCheck2,
+  contractor: Hammer,
+  escrow: Landmark,
+}
 
-const barlow = Barlow({
-  subsets: ['latin'],
-  weight: ['400', '500', '600'],
-  variable: '--font-home-sans',
-  display: 'swap',
-})
-
-const HERO_VIDEOS = [
-  '/media/hero-videos/hero-new-construction.mp4',
-  '/media/hero-videos/hero-facade-transformation.mp4',
-  '/media/hero-videos/hero-interior-renovation.mp4',
-  '/media/hero-videos/hero-living-remodel.mp4',
-  '/media/hero-videos/hero-landscaping.mp4',
-  '/media/hero-videos/hero-kitchen.mp4',
-]
-
-/**
- * Full-viewport homepage: full-screen video hero followed by service cards.
- * Layout reserves space for sticky nav (4rem) and fixed AskChatBar (~7.5rem).
- */
 export function ServicesJourneySection({ services }: { services: HomeJourneyService[] }) {
-  const [currentVideoIndex, setCurrentVideoIndex] = useState(0)
   const videoRef = useRef<HTMLVideoElement>(null)
-  
-  const handleVideoEnded = () => {
-    setCurrentVideoIndex((prev) => (prev + 1) % HERO_VIDEOS.length)
-  }
 
   useEffect(() => {
-    if (videoRef.current) {
-      videoRef.current.load()
-      videoRef.current.play().catch((err) => {
-        console.warn('Hero video autoplay blocked:', err)
-      })
-    }
-  }, [currentVideoIndex])
+    videoRef.current?.play().catch(() => undefined)
+  }, [])
 
   return (
-    <section
-      id="services"
-      role="region"
-      aria-label="Kealee core services"
-      className={`${cormorant.variable} ${barlow.variable} home-cards-shell flex flex-col bg-[#F5F5F5] relative`}
-    >
-      {/* Full Screen Hero Header */}
-      <header className="relative w-full h-[100svh] min-h-[600px] flex items-center justify-center overflow-hidden">
-        {/* Background Video */}
-        <div className="absolute inset-0 z-0 bg-kealee-black">
-          <video
-            ref={videoRef}
-            muted
-            playsInline
-            onEnded={handleVideoEnded}
-            className="w-full h-full object-cover opacity-60"
-            poster="/media/service-photos/home-design.jpg" // Optional fallback poster
-          >
-            <source src={HERO_VIDEOS[currentVideoIndex]} type="video/mp4" />
-          </video>
-        </div>
-
-        {/* Overlay gradient for readability */}
-        <div className="absolute inset-0 z-0 bg-gradient-to-t from-kealee-black/80 via-transparent to-kealee-black/40" />
-
-        <div className="relative z-10 mx-auto max-w-[1200px] px-4 sm:px-6 lg:px-8 text-center w-full flex flex-col items-center gap-6">
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="inline-block rounded-full bg-white/10 backdrop-blur-md px-4 py-1.5 text-[10px] sm:text-xs font-bold uppercase tracking-[0.2em] text-white border border-white/20"
-          >
-            Home project planning · available nationwide
-          </motion.div>
-          
-          <motion.h1 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.4 }}
-            className="font-home-serif text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold leading-tight text-white max-w-4xl drop-shadow-lg"
-          >
-            Tell us what you want to build.
-            <br className="hidden sm:block" />
-            <span className="text-[#E8724B]">We&apos;ll help you plan it.</span>
-          </motion.h1>
-          
-          <motion.p 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.6 }}
-            className="font-home-sans max-w-2xl mx-auto text-base sm:text-lg md:text-xl text-white/90 leading-relaxed drop-shadow-md font-medium"
-          >
-            Understand the design, likely cost, permit requirements, and next steps before you commit to construction.
-          </motion.p>
-          
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.8 }}
-            className="mt-4"
-          >
-            <div className="flex flex-col items-center gap-3">
-              <Link
-                href="/request-service"
-                className="bg-[#E8724B] hover:bg-[#d65f39] text-white px-8 py-3.5 rounded-xl font-home-sans font-bold text-sm tracking-wide transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5"
-              >
-                Tell Us About Your Project
-              </Link>
-              <p className="font-home-sans text-xs text-white/75">
-                Start with an address and an idea. Add photos or plans if you have them.
-              </p>
-            </div>
-          </motion.div>
-        </div>
-        
-        {/* Scroll indicator */}
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center gap-2 opacity-70 animate-bounce">
-          <span className="text-white text-xs font-bold uppercase tracking-widest">Scroll to Explore</span>
-          <div className="w-px h-8 bg-white/50" />
-        </div>
-      </header>
-
-      {/* Content cards use restrained rounded corners; pills are reserved for compact controls. */}
-      <div className="flex flex-col px-4 py-16 sm:px-6 sm:py-20 lg:px-8 lg:py-24 bg-[#F5F5F5] relative z-20">
-        <div className="text-center mb-12 sm:mb-16">
-          <h2 className="font-home-serif text-3xl sm:text-4xl font-bold text-kealee-black">
-            Choose where you need clarity
-          </h2>
-          <p className="mx-auto mt-4 max-w-2xl font-home-sans text-sm leading-relaxed text-slate-600 sm:text-base">
-            Pick a service if you already know what you need, or start with your project and we&apos;ll recommend the right package.
-          </p>
-          <div className="w-16 h-1 bg-[#E8724B] mx-auto mt-6 rounded-full" />
-        </div>
-        
-        <motion.div
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true, margin: "-100px" }}
-          transition={{ duration: 0.6 }}
-          className="mx-auto flex flex-col w-full max-w-[1160px] gap-8 sm:gap-10 lg:gap-12"
-          role="list"
-          aria-label="Service offerings"
+    <section id="services" aria-labelledby="home-heading" className="bg-[#f6f5f0] text-[#10233e]">
+      <div className="relative min-h-[660px] overflow-hidden bg-[#0c1d32]">
+        <video
+          ref={videoRef}
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="metadata"
+          poster="/media/hero-videos/hero-new-construction.jpg"
+          className="absolute inset-0 h-full w-full object-cover opacity-45"
+          aria-hidden="true"
         >
-          {services.map((service, index) => (
-            <div key={service.id} role="listitem" className="w-full">
-              <CircularServiceCard service={service} index={index} />
+          <source src="/media/hero-videos/hero-new-construction.mp4" type="video/mp4" />
+        </video>
+        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(8,23,40,.96)_0%,rgba(8,23,40,.78)_52%,rgba(8,23,40,.35)_100%)]" />
+
+        <div className="relative mx-auto flex min-h-[660px] max-w-7xl items-center px-5 py-20 sm:px-8 lg:px-12">
+          <div className="max-w-3xl">
+            <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs font-extrabold uppercase tracking-[.16em] text-white backdrop-blur">
+              <Sparkles className="h-4 w-4 text-[#ff9b68]" /> One clear path from idea to construction
             </div>
-          ))}
-        </motion.div>
+            <h1 id="home-heading" className="mt-7 text-5xl font-black leading-[.98] tracking-[-.045em] text-white sm:text-6xl lg:text-7xl">
+              Your project.
+              <span className="mt-2 block text-[#ff8a51]">Six simple steps.</span>
+            </h1>
+            <p className="mt-7 max-w-2xl text-lg leading-8 text-slate-200 sm:text-xl">
+              Choose what you need. Kealee asks a few useful questions, reuses what you already shared, and keeps every product and decision in one owner workspace.
+            </p>
+            <div className="mt-9 flex flex-wrap items-center gap-4">
+              <a href="#choose-service" className="inline-flex items-center gap-2 rounded-xl bg-[#f36b2b] px-6 py-3.5 text-sm font-black text-white shadow-lg transition hover:bg-[#df581f]">
+                Choose a service <ArrowRight className="h-4 w-4" />
+              </a>
+              <Link href="/request-service?service=project-clarity&name=Project%20Clarity" className="inline-flex items-center gap-2 rounded-xl border border-white/25 bg-white/10 px-6 py-3.5 text-sm font-bold text-white backdrop-blur hover:bg-white/15">
+                Not sure? Get a recommendation
+              </Link>
+            </div>
+            <div className="mt-9 flex flex-wrap gap-x-6 gap-y-3 text-xs font-bold text-white/80">
+              <span className="flex items-center gap-2"><ShieldCheck className="h-4 w-4 text-emerald-300" /> Clear scope before payment</span>
+              <span className="flex items-center gap-2"><Sparkles className="h-4 w-4 text-[#ff9b68]" /> AI-assisted intake</span>
+              <span className="flex items-center gap-2"><Landmark className="h-4 w-4 text-sky-300" /> Protected construction payments</span>
+            </div>
+          </div>
+        </div>
       </div>
 
+      <div id="choose-service" className="scroll-mt-20 px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
+        <div className="mx-auto max-w-7xl">
+          <div className="max-w-3xl">
+            <p className="text-xs font-black uppercase tracking-[.2em] text-[#c8521a]">Choose one service</p>
+            <h2 className="mt-3 text-3xl font-black tracking-tight sm:text-5xl">What do you need right now?</h2>
+            <p className="mt-4 text-base leading-7 text-slate-600">Each service has one purpose, a clear deliverable, and one button to begin. Start anywhere; we will show you what comes before and after.</p>
+          </div>
+
+          <ol className="mt-10 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            {services.map((service, index) => {
+              const Icon = ICONS[service.id]
+              return (
+                <li key={service.id}>
+                  <Link
+                    href={`/services/${service.slug}`}
+                    onClick={() => trackEvent('cta_click', { context: 'six_service_home', label: service.id, href: `/services/${service.slug}` })}
+                    className="group flex min-h-[245px] h-full flex-col rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:border-slate-300 hover:shadow-xl focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#2abfbf]/30"
+                  >
+                    <div className="flex items-start justify-between gap-4">
+                      <span className="flex h-12 w-12 items-center justify-center rounded-xl text-white shadow-sm" style={{ background: `linear-gradient(135deg, ${service.gradientFrom}, ${service.gradientTo})` }}>
+                        <Icon className="h-6 w-6" aria-hidden />
+                      </span>
+                      <span className="text-xs font-black text-slate-400">0{index + 1}</span>
+                    </div>
+                    <h3 className="mt-6 text-2xl font-black tracking-tight text-[#10233e]">{service.shortTitle}</h3>
+                    <p className="mt-2 flex-1 text-sm leading-6 text-slate-600">{service.description}</p>
+                    <div className="mt-5 flex items-center justify-between border-t border-slate-100 pt-4">
+                      <span className="text-xs font-bold text-slate-500">{service.priceHint}</span>
+                      <span className="inline-flex items-center gap-1 text-sm font-black text-[#c8521a]">See service <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" /></span>
+                    </div>
+                  </Link>
+                </li>
+              )
+            })}
+          </ol>
+
+          <div className="mt-10 rounded-2xl bg-[#10233e] p-6 text-white sm:flex sm:items-center sm:justify-between sm:gap-8 sm:p-8">
+            <div>
+              <p className="text-xs font-black uppercase tracking-[.18em] text-[#70d5cd]">One project memory</p>
+              <h3 className="mt-2 text-2xl font-black">Answer once. Keep moving.</h3>
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-300">Your address, goals, uploads, selections, and completed products carry forward. Kealee uses automation to reduce repeated questions; qualified people remain accountable wherever professional review is required.</p>
+            </div>
+            <Link href="/get-concept" className="mt-5 inline-flex shrink-0 items-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-black text-[#10233e] sm:mt-0">Start with a concept <ArrowRight className="h-4 w-4" /></Link>
+          </div>
+        </div>
+      </div>
     </section>
   )
 }
-

@@ -7,13 +7,13 @@ import { mergeHomeServicesWithManifest } from '@/lib/marketing/merge-home-servic
 export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
-  title: 'Kealee — Plan your home project with clarity',
+  title: 'Kealee — From site plan to protected construction',
   description:
-    'Tell Kealee what you want to build and get clear direction on design, likely cost, permits, and next steps. Available nationwide.',
+    'Site plans, design concepts, cost estimates, permits, contractor matching, and protected milestone payments in one clear project journey.',
   openGraph: {
-    title: 'Kealee — Plan your home project with clarity',
+    title: 'Kealee — From site plan to protected construction',
     description:
-      'Start with an address and an idea. Kealee helps you understand the design, likely cost, permit requirements, and next steps.',
+      'Choose one service and move forward with fewer questions, clear deliverables, and one coordinated owner workspace.',
     url: 'https://kealee.com',
   },
   alternates: { canonical: '/' },

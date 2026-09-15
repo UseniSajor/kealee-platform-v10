@@ -4,23 +4,23 @@ import { ArrowRight, ShieldCheck, UserCheck, FileSearch } from 'lucide-react'
 const STEPS = [
   {
     n: '1',
-    title: 'Tell us about the property',
-    body: 'Enter the property address and project type so we can tailor the package to your location, goals, and likely local requirements.',
+    title: 'Choose one service',
+    body: 'Start with the product you need now. If you are unsure, describe the goal and Kealee will recommend the right entry point.',
   },
   {
     n: '2',
-    title: 'Upload what you have',
-    body: 'Add photos, plans, a survey, or other documents if you have them. An address and an idea are enough to begin.',
+    title: 'Answer a few questions',
+    body: 'Share the address, desired result, and any photos or plans you have. Existing project information carries forward.',
   },
   {
     n: '3',
-    title: 'Review our recommendation',
-    body: 'See the package that fits your project, what it includes, what it costs, and anything else we need before you purchase.',
+    title: 'Review before payment',
+    body: 'See the scope, price, delivery expectation, and professional requirements before you decide to purchase.',
   },
   {
     n: '4',
-    title: 'Receive clear next steps',
-    body: 'Get your completed package, practical recommendations, and guidance on the next professional or approval step when needed.',
+    title: 'Receive and keep moving',
+    body: 'Track production, open your completed product, download files, and start the next project step from one owner workspace.',
   },
 ]
 
@@ -75,10 +75,10 @@ export function HowItWorksSection() {
               How it works
             </span>
             <h2 className="mt-3 font-display text-3xl font-bold text-slate-950">
-              From your idea to a clear plan
+              One simple experience, start to finish
             </h2>
             <p className="mt-4 text-base leading-relaxed text-slate-600">
-              You do not need to know which service to buy before you start.
+              Automation reduces forms and handoffs. Qualified professionals remain accountable for work that requires licensed review.
             </p>
           </div>
           <ol className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
@@ -94,10 +94,10 @@ export function HowItWorksSection() {
           </ol>
           <div className="mt-10 text-center">
             <Link
-              href="/request-service"
+              href="/#choose-service"
               className="inline-flex items-center gap-2 rounded-xl bg-orange-600 px-7 py-3.5 text-sm font-bold text-white transition hover:bg-orange-700"
             >
-              Tell Us About Your Project <ArrowRight className="h-4 w-4" />
+              Choose a Service <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
         </div>

@@ -37,22 +37,24 @@ describe('NAV_SECTIONS', () => {
     })
   })
 
-  it('is organized around outcome questions, not internal catalog terminology', () => {
+  it('presents the six customer services in project order', () => {
     const labels = NAV_SECTIONS.map(s => s.label)
-    expect(labels).toContain('Site Plans & Feasibility')
-    expect(labels).toContain('Design My Project')
-    expect(labels).toContain('What Will It Cost?')
-    expect(labels).toContain('Permits & Plans')
-    expect(labels).not.toContain('Find a Professional')
+    expect(labels).toEqual([
+      'Site Plan',
+      'Design Concept',
+      'Estimate',
+      'Permits',
+      'Contractor Match',
+      'Escrow & Safety',
+    ])
   })
 
   it('does not advertise the professional marketplace in the topbar', () => {
     expect(NAV_SECTIONS.some(s => s.href === '/marketplace')).toBe(false)
   })
 
-  it('includes the public Site Plans entry point', () => {
-    const sitePlans = NAV_SECTIONS.find(s => s.label === 'Site Plans & Feasibility')
-    expect(sitePlans?.href).toBe('/site-plans')
+  it('sends each item to its educational service page', () => {
+    expect(NAV_SECTIONS.every(s => s.href.startsWith('/services/'))).toBe(true)
   })
 
   it('no duplicate labels', () => {

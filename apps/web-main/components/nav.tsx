@@ -8,9 +8,8 @@ import { KealeeNavIcon } from "@/components/brand/KealeeNavIcon";
 import { KealeeLogo } from "@/components/KealeeLogo";
 import { isAgencyPartnerShellPath } from "@/lib/agency-partner-shell";
 
-// Navigation is organized around the five questions a visitor actually
-// arrives with, not internal service-catalog terminology. Every href below
-// is a live, verified route (checked against the deployed site, not guessed).
+// The public navigation mirrors the six-step customer journey. Product
+// variants live inside each education page instead of competing in the header.
 interface NavDropdownItem {
   label: string;
   href: string;
@@ -27,117 +26,40 @@ interface NavSection {
 
 export const NAV_SECTIONS: NavSection[] = [
   {
-    label: "Ideas & Projects",
-    href: "/gallery",
-    hoverColor: "hover:text-orange-500",
-    activeColor: "text-orange-500 border-b-2 border-orange-500",
-  },
-  {
-    label: "Site Plans & Feasibility",
-    href: "/site-plans",
-    hoverColor: "hover:text-teal-600",
+    label: "Site Plan",
+    href: "/services/site-plan",
+    hoverColor: "hover:text-teal-700",
     activeColor: "text-teal-700 border-b-2 border-teal-600",
-    dropdown: [
-      {
-        label: "Preliminary Site Plan",
-        href: "/products/preliminary_site_plan",
-        detail: "Parcel, setbacks, buildable area",
-      },
-      {
-        label: "Verified Site Feasibility",
-        href: "/products/verified_site_feasibility",
-        detail: "Verified zoning + constraints",
-      },
-      {
-        label: "Developer Feasibility",
-        href: "/products/developer_feasibility",
-        detail: "Yield, parking, massing, NOI",
-      },
-    ],
   },
   {
-    label: "Design My Project",
-    href: "/concept",
+    label: "Design Concept",
+    href: "/services/design-concept",
+    hoverColor: "hover:text-cyan-700",
+    activeColor: "text-cyan-700 border-b-2 border-cyan-600",
+  },
+  {
+    label: "Estimate",
+    href: "/services/cost-estimate",
     hoverColor: "hover:text-orange-500",
     activeColor: "text-orange-500 border-b-2 border-orange-500",
-    dropdown: [
-      {
-        label: "Kitchen Remodel",
-        href: "/products/kitchen-remodel",
-        detail: "Layout, materials, permit scope",
-      },
-      {
-        label: "Bathroom Remodel",
-        href: "/products/bath-remodel",
-        detail: "Fixtures, layout, permit scope",
-      },
-      {
-        label: "Exterior Design",
-        href: "/concept-engine/exterior",
-        detail: "Facade, curb appeal, landscaping",
-      },
-      {
-        label: "Garden & Farming",
-        href: "/concept-engine/garden",
-        detail: "Raised beds, irrigation, greenhouse",
-      },
-      {
-        label: "Whole Home Renovation",
-        href: "/concept-engine/whole-home",
-        detail: "Full floor plan redesign",
-      },
-      {
-        label: "Interior Reno & Addition",
-        href: "/concept-engine/interior-reno",
-        detail: "Additions, ADUs, layout changes",
-      },
-    ],
   },
   {
-    label: "What Will It Cost?",
-    href: "/estimate",
-    hoverColor: "hover:text-blue-500",
-    activeColor: "text-blue-500 border-b-2 border-blue-500",
-    dropdown: [
-      {
-        label: "Detailed Estimate",
-        href: "/products/detailed_estimate",
-        detail: "Trade-by-trade planning estimate",
-      },
-      {
-        label: "Professionally Reviewed Estimate",
-        href: "/products/certified_estimate",
-        detail: "Review and sign-off only as identified in the written package",
-      },
-    ],
+    label: "Permits",
+    href: "/services/permits",
+    hoverColor: "hover:text-violet-700",
+    activeColor: "text-violet-700 border-b-2 border-violet-600",
   },
   {
-    label: "Permits & Plans",
-    href: "/permits",
+    label: "Contractor Match",
+    href: "/services/contractor-match",
     hoverColor: "hover:text-green-600",
     activeColor: "text-green-600 border-b-2 border-green-600",
-    dropdown: [
-      {
-        label: "Permit Assessment",
-        href: "/products/permit_assessment",
-        detail: "Requirements + jurisdiction review",
-      },
-      {
-        label: "Permit Coordination",
-        href: "/products/permit_coordination",
-        detail: "Submission, tracking, response",
-      },
-      {
-        label: "Survey-Based Permit Site Plan",
-        href: "/products/permit_site_plan",
-        detail: "Sealed, submission-ready",
-      },
-      {
-        label: "Professional Drawings",
-        href: "/products/professional_design",
-        detail: "Architect-stamped construction docs",
-      },
-    ],
+  },
+  {
+    label: "Escrow & Safety",
+    href: "/services/escrow-protection",
+    hoverColor: "hover:text-blue-700",
+    activeColor: "text-blue-700 border-b-2 border-blue-600",
   },
 ];
 
@@ -290,22 +212,14 @@ export function SiteNav() {
     <nav className="sticky top-0 z-50 border-b border-[#10233e]/10 bg-white/95 shadow-[0_8px_30px_rgba(16,35,62,.05)] backdrop-blur-xl">
       <div className="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-8">
         <div className="flex h-[72px] items-center justify-between">
-          {/* LEFT: Logo + Desktop Nav */}
+          {/* LEFT: Logo + the six customer services */}
           <div className="flex items-center gap-6">
             <Link href="/" className="flex shrink-0 items-center">
               <KealeeLogo />
               <span className="sr-only">Kealee Construction — home</span>
             </Link>
 
-            {/* Build button — desktop left section */}
-            <Link
-              href="/build"
-              className="hidden items-center rounded-xl bg-[#e8f2fa] px-4 py-2 text-sm font-bold text-[#147d92] transition hover:bg-[#d7eaf5] lg:flex"
-            >
-              Build
-            </Link>
-
-            {/* Desktop tabs — the five questions a visitor arrives with */}
+            {/* Desktop tabs — one button for each service */}
             <div className="hidden lg:flex items-center gap-1">
               {NAV_SECTIONS.map((section) => (
                 <NavSectionMenu key={section.href} section={section} />
@@ -326,10 +240,10 @@ export function SiteNav() {
             </Link>
 
             <Link
-              href="/products/home-project-readiness-review"
+              href="/#choose-service"
               className="hidden items-center rounded-xl bg-[#f36b2b] px-5 py-2.5 text-sm font-extrabold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-[#df581f] hover:shadow-md sm:flex"
             >
-              Get Project Clarity
+              Choose a service
             </Link>
 
             {/* Mobile hamburger */}
@@ -376,18 +290,11 @@ export function SiteNav() {
                 Sign in
               </Link>
               <Link
-                href="/build"
-                onClick={() => setMobileMenuOpen(false)}
-                className="mb-2 block w-full rounded-xl bg-[#2563EB] py-3 text-center text-sm font-bold text-white transition hover:bg-[#1D4ED8]"
-              >
-                Build
-              </Link>
-              <Link
-                href="/products/home-project-readiness-review"
+                href="/#choose-service"
                 onClick={() => setMobileMenuOpen(false)}
                 className="block w-full rounded-xl bg-[#f36b2b] py-3.5 text-center text-base font-extrabold text-white transition hover:bg-[#df581f]"
               >
-                Start Your Project
+                Choose a service
               </Link>
             </div>
           </div>
