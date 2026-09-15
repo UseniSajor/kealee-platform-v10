@@ -17,6 +17,8 @@ import {
   getServiceTierItemsForUi,
   withConsultationIcon,
 } from '@/lib/concept-package-deliverables-ui'
+import { HOME_JOURNEY_SERVICES, getHomeJourneyService } from '@/components/home/home-services-data'
+import { JourneyServicePage } from '@/components/services/JourneyServicePage'
 
 interface Params {
   serviceType: string
@@ -28,6 +30,14 @@ export async function generateMetadata({
   params: Promise<Params>
 }): Promise<Metadata> {
   const { serviceType } = await params
+  const journeyService = getHomeJourneyService(serviceType)
+  if (journeyService) {
+    return {
+      title: `${journeyService.shortTitle} — Kealee`,
+      description: `${journeyService.description} ${journeyService.outcome}`,
+      alternates: { canonical: `/services/${journeyService.slug}` },
+    }
+  }
   const svc = SERVICE_MAP[serviceType]
   if (!svc) return { title: 'Service Not Found' }
   const media = await getServiceMedia(serviceType)
@@ -44,7 +54,11 @@ export async function generateMetadata({
 }
 
 export function generateStaticParams() {
-  return SERVICES.map((s) => ({ serviceType: s.slug }))
+  const slugs = new Set([
+    ...SERVICES.map(service => service.slug),
+    ...HOME_JOURNEY_SERVICES.map(service => service.slug),
+  ])
+  return Array.from(slugs, serviceType => ({ serviceType }))
 }
 
 function TierCard({
@@ -130,6 +144,9 @@ export default async function ServicePage({
   params: Promise<Params>
 }) {
   const { serviceType } = await params
+  const journeyService = getHomeJourneyService(serviceType)
+  if (journeyService) return <JourneyServicePage service={journeyService} />
+
   const svc = SERVICE_MAP[serviceType]
   if (!svc) notFound()
 

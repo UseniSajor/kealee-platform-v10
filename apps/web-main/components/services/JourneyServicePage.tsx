@@ -1,30 +1,8 @@
-import type { Metadata } from 'next'
 import Link from 'next/link'
-import { notFound } from 'next/navigation'
 import { ArrowLeft, ArrowRight, Check, CircleCheck, Clock3, FileDown, ShieldCheck, Sparkles } from 'lucide-react'
-import { HOME_JOURNEY_SERVICES, getHomeJourneyService } from '@/components/home/home-services-data'
+import { HOME_JOURNEY_SERVICES, type HomeJourneyService } from '@/components/home/home-services-data'
 
-type PageProps = { params: Promise<{ service: string }> }
-
-export function generateStaticParams() {
-  return HOME_JOURNEY_SERVICES.map(service => ({ service: service.slug }))
-}
-
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const { service: slug } = await params
-  const service = getHomeJourneyService(slug)
-  if (!service) return { title: 'Service not found — Kealee' }
-  return {
-    title: `${service.shortTitle} — Kealee`,
-    description: `${service.description} ${service.outcome}`,
-    alternates: { canonical: `/services/${service.slug}` },
-  }
-}
-
-export default async function ServiceEducationPage({ params }: PageProps) {
-  const { service: slug } = await params
-  const service = getHomeJourneyService(slug)
-  if (!service) notFound()
+export function JourneyServicePage({ service }: { service: HomeJourneyService }) {
   const index = HOME_JOURNEY_SERVICES.findIndex(item => item.id === service.id)
   const previous = HOME_JOURNEY_SERVICES[index - 1]
   const next = HOME_JOURNEY_SERVICES[index + 1]
