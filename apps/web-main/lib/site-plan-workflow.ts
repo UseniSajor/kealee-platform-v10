@@ -225,7 +225,42 @@ export function sitePlanWorkflowFormData(a: SitePlanActivation): Record<string, 
 export async function reopenSitePlanReview(
   workflowId: string,
 ): Promise<{ enqueued: boolean; jobKey: string | null; error?: string }> {
-  const job = 'siteplan.route_review' as const
+  return enqueueSitePlanStage(workflowId, 'siteplan.route_review')
+}
+
+/**
+ * Stages a person may re-run from the admin side, and why:
+ *
+ *   compose_sheets   — after revising inputs for engineer redlines or county
+ *                      comments; the reopened chain resumes here
+ *   route_review     — re-read the professional's decision
+ *   ingest_comments  — staff have entered the County's comment letter
+ *   run_issuance_qc  — evidence was attached; re-evaluate the gate
+ *
+ * Everything else is derived by the runner, and letting a person enqueue an
+ * arbitrary stage would be a way around the guard.
+ */
+export const STAFF_RUNNABLE_STAGES = [
+  'siteplan.compose_sheets',
+  'siteplan.route_review',
+  'siteplan.ingest_comments',
+  'siteplan.run_issuance_qc',
+] as const
+export type StaffRunnableStage = (typeof STAFF_RUNNABLE_STAGES)[number]
+
+export function isStaffRunnableStage(job: string): job is StaffRunnableStage {
+  return (STAFF_RUNNABLE_STAGES as readonly string[]).includes(job)
+}
+
+/**
+ * Enqueues one stage under its own idempotency key. The worker's guard still
+ * decides whether it may run — a stage whose prerequisites are unmet is
+ * rejected there, not silently skipped here.
+ */
+export async function enqueueSitePlanStage(
+  workflowId: string,
+  job: Workflow.SitePlanJobName,
+): Promise<{ enqueued: boolean; jobKey: string | null; error?: string }> {
   try {
     const w = Workflow.workerFor(job)
     const prefix = Workflow.jobIdempotencyKey({ workflowId, job })
@@ -249,7 +284,7 @@ export async function reopenSitePlanReview(
     return { enqueued: true, jobKey }
   } catch (e) {
     const error = e instanceof Error ? e.message : String(e)
-    console.error('[site-plan-workflow] could not reopen route_review:', workflowId, error)
+    console.error('[site-plan-workflow] could not enqueue', job, 'on', workflowId, error)
     return { enqueued: false, jobKey: null, error }
   }
 }

@@ -13,7 +13,7 @@
  */
 
 import { prisma } from '@kealee/database'
-import { Workflow, type EvidenceKind, type Discipline } from '@kealee/pascal-agents/engine'
+import { Workflow, type EvidenceKind, type Discipline, type CountyComment } from '@kealee/pascal-agents/engine'
 
 /** Maps a runner status onto the SitePlanStageStatus the schema already has. */
 function toStageStatus(s: string): 'COMPLETED' | 'AWAITING_REVIEW' | 'BLOCKED' | 'REJECTED' {
@@ -233,6 +233,66 @@ export function productionCapabilities(opts: {
           notes: r.notes ?? undefined,
         })),
       }
+    },
+
+    /**
+     * County review comments, entered against the ORDER by staff as
+     * `form_data.sitePlanCountyComments`. Read-only here. Ids listed in
+     * `form_data.sitePlanCountyCommentsIngested` were consumed by an earlier
+     * round; the staff-entered array itself is never rewritten.
+     */
+    async loadCountyComments(workflowId) {
+      const wf = await prisma.sitePlanWorkflow.findUnique({
+        where: { id: workflowId }, select: { orderId: true },
+      })
+      if (!wf?.orderId) return null
+      const rows = await prisma.$queryRaw<{ comments: unknown; ingested: unknown }[]>`
+        SELECT form_data -> 'sitePlanCountyComments' AS comments,
+               form_data -> 'sitePlanCountyCommentsIngested' AS ingested
+        FROM public_intake_leads WHERE id = ${wf.orderId} LIMIT 1
+      `
+      const raw = rows[0]?.comments
+      if (!Array.isArray(raw)) return []
+      const ingested = new Set(Array.isArray(rows[0]?.ingested) ? (rows[0]!.ingested as unknown[]).map(String) : [])
+      return raw.flatMap((c, i): CountyComment[] => {
+        if (!c || typeof c !== 'object') return []
+        const r = c as Record<string, unknown>
+        const id = String(r.id ?? `${wf.orderId}:${i}`)
+        if (ingested.has(id)) return []
+        if (typeof r.comment !== 'string' || !r.comment.trim()) return []
+        return [{
+          id,
+          sheet: typeof r.sheet === 'string' ? (r.sheet as CountyComment['sheet']) : undefined,
+          reviewer: String(r.reviewer ?? 'County reviewer'),
+          comment: r.comment,
+          receivedAt: String(r.receivedAt ?? new Date().toISOString()),
+        }]
+      })
+    },
+
+    /**
+     * Records a reopen: the named stage rows drop to READY, outputs kept.
+     * `loadSnapshot` then reports them unsatisfied and the guard lets them
+     * run again. The runner passes the full closure; nothing is added here.
+     */
+    async reopenStages(workflowId, jobs) {
+      if (jobs.length === 0) return
+      await prisma.sitePlanStageExecution.updateMany({
+        where: { workflowId, job: { in: jobs } },
+        data: { status: 'READY' as never, completedAt: null },
+      })
+      await prisma.sitePlanAuditEvent.create({
+        data: {
+          workflowId,
+          sequence: BigInt(Date.now()),
+          occurredAt: new Date(),
+          actorType: 'SYSTEM',
+          eventType: 'stage.reopen',
+          entityTable: 'site_plan_stage_executions',
+          entityId: jobs[0],
+          summary: `Reopened ${jobs.length} stage(s): ${jobs.join(', ')}`,
+        },
+      }).catch(() => undefined)
     },
 
     trace(e) {

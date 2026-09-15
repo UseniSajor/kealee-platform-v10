@@ -17,7 +17,7 @@
  */
 
 import {
-  assertCanRun, nextJobs, alreadySatisfied, WorkflowTransitionError,
+  assertCanRun, nextJobs, alreadySatisfied, applyReopen, WorkflowTransitionError,
   type WorkflowSnapshot,
 } from './state-machine'
 import type { SitePlanJobName } from './definition'
@@ -37,6 +37,8 @@ export interface RunOutcome {
   /** Jobs unblocked by this one completing. */
   nextJobs: SitePlanJobName[]
   artifacts: { documentId: string; filename: string }[]
+  /** Stages this run dropped back to READY (full closure). Empty unless the stage asked. */
+  reopened?: SitePlanJobName[]
   summary: string
   error?: string
   durationMs: number
@@ -141,9 +143,36 @@ export async function runStage(
     rulePackVersion: result.rulePackVersion,
   })
 
-  const advanced: WorkflowSnapshot = status === 'COMPLETED'
+  let advanced: WorkflowSnapshot = status === 'COMPLETED'
     ? { ...ctx.snapshot, stages: [...ctx.snapshot.stages, { job: ctx.job, status: 'COMPLETED', attempt: ctx.attempt }] }
     : ctx.snapshot
+
+  // A reopen is a persisted fact about OTHER stages, applied whatever this
+  // stage's own status is. A host without the capability cannot record it,
+  // and a reopen that is not recorded would leave completed rows standing
+  // over a result they no longer describe — so it is refused, loudly.
+  let reopened: SitePlanJobName[] = []
+  if (result.reopen && result.reopen.length > 0) {
+    if (!ctx.capabilities.reopenStages) {
+      const message =
+        `${ctx.job} asked to reopen ${result.reopen.join(', ')} but this host has no ` +
+        'reopenStages capability; the reopen was not recorded.'
+      ctx.capabilities.trace({ workflowId: ctx.workflowId, job: ctx.job, phase: 'fail', detail: message })
+      return {
+        ...base, disposition: 'BLOCKED', outputs: result.outputs,
+        blockers: [message], summary: `${ctx.job} -> BLOCKED (reopen not recordable).`,
+        error: message, durationMs: Date.now() - started,
+      }
+    }
+    const r = applyReopen(advanced, result.reopen)
+    reopened = r.reopened
+    advanced = r.snapshot
+    await ctx.capabilities.reopenStages(ctx.workflowId, reopened)
+    ctx.capabilities.trace({
+      workflowId: ctx.workflowId, job: ctx.job, phase: 'complete',
+      detail: `reopened ${reopened.join(', ') || 'nothing'}`,
+    })
+  }
 
   const durationMs = Date.now() - started
   ctx.capabilities.trace({
@@ -156,9 +185,13 @@ export async function runStage(
     disposition: status,
     outputs: result.outputs,
     blockers: result.blockers ?? [],
-    nextJobs: result.enqueue ?? nextJobs(advanced, { firstReleaseOnly: true }),
+    // A stage that reopened others never auto-derives successors: the point
+    // of reopening is that a person changes the inputs before the chain
+    // runs again. It says what to enqueue explicitly, or nothing.
+    nextJobs: result.enqueue ?? (reopened.length ? [] : nextJobs(advanced, { firstReleaseOnly: true })),
     artifacts: result.artifacts ?? [],
-    summary: `${ctx.job} -> ${status}.`,
+    reopened,
+    summary: `${ctx.job} -> ${status}.` + (reopened.length ? ` Reopened ${reopened.length} stage(s).` : ''),
     durationMs,
   }
 }

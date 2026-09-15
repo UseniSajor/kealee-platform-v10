@@ -16,7 +16,8 @@ import { Workflow } from '@kealee/pascal-agents/engine'
 import { productionCapabilities, loadSnapshot, loadPriorOutputs } from './capabilities'
 import {
   bridgeSitePlanDelivery, bridgeSitePlanReviewOutcome, bridgeSitePlanSubmission,
-  notifyReviewRouted, productionDeliveryPorts, productIncludesProfessionalReview,
+  bridgeSitePlanCountyReview, notifyReviewRouted, productionDeliveryPorts,
+  productIncludesProfessionalReview,
 } from './delivery'
 
 export interface DrainResult {
@@ -213,6 +214,17 @@ async function runOne(
     const submission = await bridgeSitePlanSubmission(subject, ports)
     deliverySummary = submission.summary
     console.log(`[siteplan] submission: ${submission.summary}`)
+  }
+
+  // County comments were ingested: the order needs corrections. The
+  // reopened chain is NOT enqueued — a person revises the inputs first.
+  if (outcome.disposition === 'COMPLETED' && job === 'siteplan.ingest_comments') {
+    const county = await bridgeSitePlanCountyReview(subject, ports)
+    deliverySummary = county.summary
+    console.log(`[siteplan] county review: ${county.summary}`)
+  }
+  if (outcome.reopened && outcome.reopened.length > 0) {
+    console.log(`[siteplan] ${job} reopened: ${outcome.reopened.join(', ')}`)
   }
 
   // A decided review — approved or changes requested — reaches the order.

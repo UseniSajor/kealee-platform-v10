@@ -592,6 +592,102 @@ export async function bridgeSitePlanSubmission(
   }
 }
 
+// ── County comment round ─────────────────────────────────────────────────────
+
+interface IngestCommentsOutput {
+  round: number
+  receivedCount: number
+  comments: { id: string; sheet?: string; reviewer: string; comment: string; receivedAt: string }[]
+  documentId: string
+  resumeFrom: string
+  note: string
+}
+
+/** Written to `form_data.sitePlanCountyReview`. */
+export interface SitePlanCountyReviewRecord {
+  version: 1
+  round: number
+  recordedAt: string
+  workflowId: string
+  documentId: string
+  comments: IngestCommentsOutput['comments']
+  resumeFrom: string
+  note: string
+}
+
+export function buildSitePlanCountyReviewRecord(input: {
+  workflowId: string
+  outputs: PriorOutputs
+  now?: Date
+}): SitePlanCountyReviewRecord | null {
+  const out = asRecord<IngestCommentsOutput>(input.outputs['siteplan.ingest_comments'])
+  if (!out || !Array.isArray(out.comments) || out.comments.length === 0) return null
+  return {
+    version: 1,
+    round: out.round,
+    recordedAt: (input.now ?? new Date()).toISOString(),
+    workflowId: input.workflowId,
+    documentId: out.documentId,
+    comments: out.comments,
+    resumeFrom: out.resumeFrom,
+    note: out.note,
+  }
+}
+
+/**
+ * County comments mean corrections: the order goes to revision_requested,
+ * the comment ids are marked consumed so the next round only sees new ones,
+ * and the resume point is recorded for the coordinator.
+ */
+export function sitePlanCountyReviewFormDataPatch(input: {
+  record: SitePlanCountyReviewRecord
+  previouslyIngested: string[]
+}): Record<string, unknown> {
+  const n = input.record.comments.length
+  return {
+    sitePlanCountyReview: input.record,
+    sitePlanCountyCommentsIngested: [
+      ...new Set([...input.previouslyIngested, ...input.record.comments.map(c => c.id)]),
+    ],
+    orderStatus: 'revision_requested',
+    orderStatusLabel: 'Revision Requested',
+    orderStatusAt: input.record.recordedAt,
+    orderStatusReason:
+      `County review returned ${n} comment${n === 1 ? '' : 's'} (round ${input.record.round}). ` +
+      `Revise the inputs, then re-run ${input.record.resumeFrom}.`,
+    orderStatusSetBy: 'system',
+    fulfillmentStatus: 'awaiting_county_corrections',
+    requiresHumanFulfillment: true,
+  }
+}
+
+export async function bridgeSitePlanCountyReview(
+  input: { workflowId: string; orderId: string; productId: string | null },
+  ports: DeliveryPorts,
+): Promise<DeliveryOutcome> {
+  const none = (summary: string): DeliveryOutcome =>
+    ({ bridged: false, emailed: false, orderStatus: null, summary })
+  try {
+    const order = await ports.loadOrder(input.orderId)
+    if (!order) return none(`Order ${input.orderId} not found; nothing to bridge.`)
+    const outputs = await ports.loadOutputs(input.workflowId)
+    const record = buildSitePlanCountyReviewRecord({ workflowId: input.workflowId, outputs, now: ports.now() })
+    if (!record) return none(`Workflow ${input.workflowId} has no ingested county comments to bridge.`)
+    const newIds = record.comments.map(c => c.id).filter(id => !order.countyCommentsIngested.includes(id))
+    if (newIds.length === 0) {
+      return none(`Order ${input.orderId} already carries round ${record.round}'s comments; skipped.`)
+    }
+    const patch = sitePlanCountyReviewFormDataPatch({ record, previouslyIngested: order.countyCommentsIngested })
+    await ports.patchOrder(input.orderId, patch)
+    return {
+      bridged: true, emailed: false, orderStatus: String(patch.orderStatus),
+      summary: `Order ${input.orderId} county review round ${record.round} bridged (${record.comments.length} comments).`,
+    }
+  } catch (e) {
+    return none(`County review bridge failed: ${e instanceof Error ? e.message : String(e)}`)
+  }
+}
+
 // ── Ports ────────────────────────────────────────────────────────────────────
 
 export interface DeliveryPorts {
@@ -606,6 +702,8 @@ export interface DeliveryPorts {
     /** `form_data.sitePlanSubmission.state`, when a submission has been bridged. */
     submissionState: string | null
     address: string | null
+    /** `form_data.sitePlanCountyCommentsIngested` — comment ids consumed by earlier rounds. */
+    countyCommentsIngested: string[]
   } | null>
   patchOrder(orderId: string, patch: Record<string, unknown>): Promise<void>
   sendReadyEmail(input: {
@@ -719,12 +817,14 @@ export function productionDeliveryPorts(deps: {
         {
           contact_email: string | null; client_name: string | null; project_address: string | null
           delivered: boolean; review_state: string | null; submission_state: string | null
+          ingested: unknown
         }[]
       >`
         SELECT contact_email, client_name, project_address,
                (form_data ? 'sitePlanDeliverable') AS delivered,
                form_data #>> '{sitePlanReview,state}' AS review_state,
-               form_data #>> '{sitePlanSubmission,state}' AS submission_state
+               form_data #>> '{sitePlanSubmission,state}' AS submission_state,
+               form_data -> 'sitePlanCountyCommentsIngested' AS ingested
         FROM public_intake_leads
         WHERE id = ${orderId}
         LIMIT 1
@@ -738,6 +838,7 @@ export function productionDeliveryPorts(deps: {
         reviewState: row.review_state,
         submissionState: row.submission_state,
         address: row.project_address,
+        countyCommentsIngested: Array.isArray(row.ingested) ? (row.ingested as unknown[]).map(String) : [],
       }
     },
 

@@ -190,3 +190,49 @@ export function progress(
 export function newWorkflow(workflowId: string): WorkflowSnapshot {
   return { workflowId, definitionVersion: SITE_PLAN_WORKFLOW_VERSION, stages: [] }
 }
+
+// ── Reopening ───────────────────────────────────────────────────────────────
+
+/**
+ * The stages that must run again if `jobs` are reopened: the jobs themselves
+ * and everything that transitively depends on them, in definition order.
+ *
+ * Closure, not just the named jobs, because a completed dependent would
+ * otherwise sit on a satisfied prerequisite that is about to change under it
+ * — a rendered sheet set over a layout that is being redrawn.
+ */
+export function reopenClosure(jobs: SitePlanJobName[]): SitePlanJobName[] {
+  const set = new Set<SitePlanJobName>(jobs)
+  let grew = true
+  while (grew) {
+    grew = false
+    for (const s of SITE_PLAN_STAGES) {
+      if (set.has(s.job)) continue
+      if (s.requires.some(r => set.has(r))) { set.add(s.job); grew = true }
+    }
+  }
+  return SITE_PLAN_STAGES.filter(s => set.has(s.job)).map(s => s.job)
+}
+
+/**
+ * Reopens stages: their records drop to READY so nothing treats them as
+ * satisfied, and the guard will let them run again. Pure; the host persists
+ * the same transition through `StageCapabilities.reopenStages`.
+ *
+ * READY rather than deleted, so the previous attempt's outputs stay on the
+ * row for whoever revises — a reopened stage is one whose result is
+ * superseded, not one that never ran.
+ */
+export function applyReopen(
+  snap: WorkflowSnapshot, jobs: SitePlanJobName[],
+): { snapshot: WorkflowSnapshot; reopened: SitePlanJobName[] } {
+  const reopened = reopenClosure(jobs).filter(j => statusOf(snap, j) !== 'NOT_STARTED')
+  const set = new Set(reopened)
+  return {
+    snapshot: {
+      ...snap,
+      stages: snap.stages.map(s => set.has(s.job) ? { ...s, status: 'READY' as const, completedAt: null } : s),
+    },
+    reopened,
+  }
+}

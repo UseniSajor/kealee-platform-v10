@@ -15,12 +15,14 @@ import { FIRST_RELEASE_PROCESSORS } from './first-release'
 import { DESIGN_PROCESSORS } from './design-stages'
 import { REVIEW_PROCESSORS } from './review-stages'
 import { ISSUANCE_PROCESSORS } from './issuance-stages'
+import { SUBMISSION_PROCESSORS } from './submission-stages'
 
 export const SITE_PLAN_PROCESSORS: Record<SitePlanJobName, StageProcessor | undefined> = {
   ...FIRST_RELEASE_PROCESSORS,
   ...DESIGN_PROCESSORS,
   ...REVIEW_PROCESSORS,
   ...ISSUANCE_PROCESSORS,
+  ...SUBMISSION_PROCESSORS,
 }
 
 /** Stages declared in the definition that nothing implements yet. */

@@ -9,6 +9,7 @@
 import type { SitePlanJobName } from './definition'
 import type { WorkflowSnapshot } from './state-machine'
 import type { EvidenceLedger } from '../review/evidence'
+import type { CountyComment } from '../review/checklist'
 
 /** Identity of the order this workflow serves. */
 export interface WorkflowSubject {
@@ -54,6 +55,18 @@ export interface StageCapabilities {
    * treating an empty ledger as "nothing was ever needed".
    */
   loadEvidenceLedger?: (workflowId: string) => Promise<EvidenceLedger | null>
+  /**
+   * County review comments entered against the ORDER by a person, read-only.
+   * Absent means the host keeps none, and ingest_comments says so.
+   */
+  loadCountyComments?: (workflowId: string) => Promise<CountyComment[] | null>
+  /**
+   * Persists a reopen: the named stages' records drop to READY. The runner
+   * calls it with the full closure; the host never widens or narrows it.
+   * Absent means a stage that asks to reopen is BLOCKED rather than silently
+   * leaving stale COMPLETED rows under a superseded result.
+   */
+  reopenStages?: (workflowId: string, jobs: SitePlanJobName[]) => Promise<void>
 }
 
 /** One subject a professional was asked to decide on. */
@@ -140,6 +153,13 @@ export interface StageResult {
   blockers?: string[]
   /** Jobs to enqueue next. Empty lets the runner derive them from the guard. */
   enqueue?: SitePlanJobName[]
+  /**
+   * Stages whose results this one supersedes. The runner reopens their full
+   * closure — them and every dependent — after persisting this result. A
+   * reopened stage is NOT enqueued by this alone; the inputs that made the
+   * revision necessary have to change first, and a person does that.
+   */
+  reopen?: SitePlanJobName[]
   artifacts?: { documentId: string; filename: string }[]
   twinRevision?: number
   rulePackVersion?: string

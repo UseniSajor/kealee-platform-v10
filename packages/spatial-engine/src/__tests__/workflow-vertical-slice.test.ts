@@ -218,24 +218,20 @@ describe('runner enforcement', () => {
   it('reports NO_PROCESSOR for a declared but unconnected stage', async () => {
     // The whole first release is marked complete so the guard lets a
     // professional-review stage start — otherwise this would test the guard
-    // rejecting it, not the missing processor. The stage named here must be
-    // one nothing implements yet: it was `ingest_survey` until that stage was
-    // connected, then `route_review`, then `run_issuance_qc`, and each time
-    // this test failed as it should have.
+    // rejecting it, not the missing processor. Every declared stage now has a
+    // processor (this test named `ingest_survey`, then `route_review`, then
+    // `run_issuance_qc`, then `ingest_comments` as each was connected), so
+    // the harness's FIRST_RELEASE_PROCESSORS map — which carries the later
+    // groups as `undefined` — is what leaves route_review unconnected here.
     const h = harness()
     let snap = newWorkflow('wf1')
     snap = {
       ...snap,
-      stages: [
-        ...FIRST_RELEASE_STAGES.map(s => ({
-          job: s.job, status: 'COMPLETED' as const, attempt: 1,
-        })),
-        { job: 'siteplan.route_review' as const, status: 'COMPLETED' as const, attempt: 1 },
-        { job: 'siteplan.run_issuance_qc' as const, status: 'COMPLETED' as const, attempt: 1 },
-        { job: 'siteplan.build_submission' as const, status: 'COMPLETED' as const, attempt: 1 },
-      ],
+      stages: FIRST_RELEASE_STAGES.map(s => ({
+        job: s.job, status: 'COMPLETED' as const, attempt: 1,
+      })),
     }
-    const out = await runStage(h.ctxFor(snap, 'siteplan.ingest_comments'), h.deps)
+    const out = await runStage(h.ctxFor(snap, 'siteplan.route_review'), h.deps)
     expect(out.disposition).toBe('NO_PROCESSOR')
     expect(out.summary).toMatch(/declared and not yet connected/)
   })

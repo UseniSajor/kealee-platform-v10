@@ -94,13 +94,13 @@ const routeReview = REVIEW_PROCESSORS['siteplan.route_review']!
 const applyRevisions = REVIEW_PROCESSORS['siteplan.apply_revisions']!
 
 describe('the review group is connected', () => {
-  it('has a processor for route_review and apply_revisions; only ingest_comments is left', () => {
+  it('has a processor for route_review and apply_revisions, and nothing is left unconnected', () => {
     expect(typeof routeReview).toBe('function')
     expect(typeof applyRevisions).toBe('function')
     const missing = unconnectedStages()
     expect(missing).not.toContain('siteplan.route_review')
     expect(missing).not.toContain('siteplan.apply_revisions')
-    expect(missing).toEqual(['siteplan.ingest_comments'])
+    expect(missing).toEqual([])
   })
 })
 
@@ -190,8 +190,13 @@ describe('siteplan.apply_revisions', () => {
     const r = await applyRevisions(ctx('siteplan.apply_revisions', { routed, attempt: 2 }))
     expect(r.status).toBe('AWAITING_REVIEW')
     expect(r.artifacts ?? []).toEqual([])
+    // Reopens the drawing chain from composition; enqueues nothing, because
+    // the same inputs would draw the same sheet.
+    expect(r.reopen).toEqual(['siteplan.compose_sheets'])
+    expect(r.enqueue).toEqual([])
     const out = r.outputs as ApplyRevisionsOutput
     expect(out.revisionState).toBe('AWAITING_DRAFTER')
+    expect(out.resumeFrom).toBe('siteplan.compose_sheets')
     expect(out.redlines).toHaveLength(1)
     expect(out.nextSheetRevision).toBe(2)
     expect(out.note).toMatch(/does not apply free-text redlines/)

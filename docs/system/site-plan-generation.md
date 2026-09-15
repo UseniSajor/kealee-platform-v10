@@ -221,9 +221,39 @@ submit. Nothing here implies jurisdiction approval.
 emails `SITE_PLAN_REVIEW_DESK_EMAIL` (default hello@kealee.com) with the
 claim link. Before this an order could wait unseen.
 
-**Not done:** `ingest_comments` (county review comments → reopen) is the
-last unconnected stage; the revision loop is not closed. The concept page at
-`/deliverables/[id]` does not redirect site-plan orders to `/site-plan`.
+### Revisions — reopening (connected 2026-09-15)
+
+Every declared stage now has a processor. The revision loop:
+
+```
+engineer withholds approval ──► apply_revisions   (AWAITING_REVIEW, reopen compose_sheets…)
+county comment letter        ──► staff enter form_data.sitePlanCountyComments on the order
+                                  POST /api/admin/site-plan/{wf}/run {job: siteplan.ingest_comments}
+                             ──► ingest_comments  (COMPLETED, reopen compose_sheets…, order revision_requested)
+a person revises the inputs  ──► POST /api/admin/site-plan/{wf}/run {job: siteplan.compose_sheets}
+                             ──► render → QC → deliver → route_review → issuance → submission again
+```
+
+`StageResult.reopen` names the stages a result supersedes; the runner takes
+the FULL dependent closure (`reopenClosure`), drops their rows to READY
+through `capabilities.reopenStages` (outputs kept), and enqueues NOTHING.
+That last point is the design: a deterministic chain re-run on unchanged
+inputs draws the same sheet. The correction is a change to the inputs and a
+person makes it, then re-enqueues from `compose_sheets`. A host without
+`reopenStages` gets BLOCKED, never a stale COMPLETED row over a superseded
+result.
+
+`ingest_comments` reads comments a person typed; it never marks one
+addressed — `RevisionResponse.status` is a human statement. Consumed comment
+ids go to `form_data.sitePlanCountyCommentsIngested`; the staff-entered array
+is never rewritten.
+
+Staff may enqueue only `STAFF_RUNNABLE_STAGES` (compose_sheets, route_review,
+ingest_comments, run_issuance_qc). The guard still decides.
+
+**Not done:** the concept page at `/deliverables/[id]` does not redirect
+site-plan orders to `/site-plan`. No admin UI for the run route or for
+entering county comments — both are API + form_data today.
 
 ## Requirement sources
 

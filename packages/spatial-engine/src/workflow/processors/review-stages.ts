@@ -66,8 +66,13 @@ export interface ApplyRevisionsOutput {
   redlines: Redline[]
   /** The sheet revision a drafter's re-render must carry. */
   nextSheetRevision: number
+  /** The stage the drafter re-enqueues once the inputs are revised. */
+  resumeFrom: SitePlanJobName
   note: string
 }
+
+/** Where a revision restarts. Composition is the first stage a drafter's input change reaches. */
+export const REVISION_RESUME_JOB: SitePlanJobName = 'siteplan.compose_sheets'
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -202,12 +207,16 @@ const applyRevisions: StageProcessor = async (ctx): Promise<StageResult> => {
     documentId: render.documentId,
     redlines: routed.redlines,
     nextSheetRevision: ctx.attempt,
+    resumeFrom: REVISION_RESUME_JOB,
     note:
-      'The engine does not apply free-text redlines. A drafter revises the sheet set, re-renders, ' +
-      'and the plan is re-routed for review.',
+      'The engine does not apply free-text redlines. A drafter revises the inputs, re-enqueues ' +
+      `${REVISION_RESUME_JOB}, and the plan renders and is re-routed for review.`,
   }
 
-  return { status: 'AWAITING_REVIEW', outputs: output, enqueue: [] }
+  // Reopen from composition so the re-render, QC, delivery and review all
+  // run again once the drafter has changed the inputs. Not enqueued here:
+  // the same inputs would draw the same sheet.
+  return { status: 'AWAITING_REVIEW', outputs: output, enqueue: [], reopen: [REVISION_RESUME_JOB] }
 }
 
 // ── Registry ────────────────────────────────────────────────────────────────
