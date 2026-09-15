@@ -11,7 +11,6 @@ import {
   CheckCircle2,
   Clock,
   Shield,
-  Zap,
   Package,
   ImagePlus,
   X,
@@ -87,13 +86,6 @@ const PRICE_MAP: Record<
     { label: entry.label, amount: entry.cents, delivery: entry.deliveryDays },
   ]),
 );
-
-interface AgentInsight {
-  summary?: string;
-  confidence?: number;
-  risks?: string[];
-  recommendation?: string;
-}
 
 function formatPrice(cents: number) {
   const dollars = cents / 100;
@@ -242,14 +234,10 @@ function StepBar({ step }: { step: "details" | "review" }) {
 function OrderSummary({
   priceInfo,
   includes,
-  agentInsight,
-  insightLoading,
   compact = false,
 }: {
   priceInfo: { label: string; amount: number; delivery: string };
   includes: string[];
-  agentInsight: AgentInsight | null;
-  insightLoading: boolean;
   compact?: boolean;
 }) {
   const visibleIncludes = compact
@@ -258,7 +246,7 @@ function OrderSummary({
         "Layout guidance and photorealistic concepts",
         "Cost estimate and permit roadmap",
       ]
-    : includes;
+    : includes.slice(0, 4);
   return (
     <div className="space-y-4">
       {/* Package card */}
@@ -307,6 +295,11 @@ function OrderSummary({
                 </li>
               ))}
             </ul>
+            {includes.length > visibleIncludes.length && (
+              <p className="mt-2 text-xs font-medium text-slate-500">
+                Your full package list will be included with your order.
+              </p>
+            )}
           </div>
         )}
 
@@ -314,7 +307,6 @@ function OrderSummary({
           <div className="mb-3 rounded-lg border border-emerald-200 bg-emerald-50 p-3">
             <p className="text-xs font-bold text-emerald-900">{PURCHASE_CREDIT_POLICY.label}</p>
             <p className="mt-1 text-[11px] leading-relaxed text-emerald-800">{PURCHASE_CREDIT_POLICY.shortCopy}</p>
-            {!compact && <p className="mt-1 text-[10px] leading-relaxed text-emerald-700">{PURCHASE_CREDIT_POLICY.terms}</p>}
           </div>
           {!compact && <Link
             href="/gallery"
@@ -325,57 +317,6 @@ function OrderSummary({
         </div>
       </div>
 
-      {/* AI insight panel */}
-      {!compact && <div className="rounded-xl bg-slate-900 p-5 text-white">
-        <div className="flex items-center gap-2 mb-3">
-          <Zap className="h-4 w-4 text-orange-400" />
-          <span className="text-xs font-bold uppercase tracking-widest text-orange-400">
-            AI Project Insight
-          </span>
-        </div>
-        {insightLoading ? (
-          <div className="flex items-center gap-2 text-sm text-slate-400">
-            <Loader2 className="h-4 w-4 animate-spin" />
-            Analyzing your project type...
-          </div>
-        ) : agentInsight ? (
-          <div className="space-y-3">
-            {agentInsight.summary && (
-              <p className="text-sm text-slate-300 leading-relaxed">
-                {agentInsight.summary}
-              </p>
-            )}
-            {agentInsight.recommendation && (
-              <p className="text-xs text-orange-300 font-medium leading-relaxed">
-                💡 {agentInsight.recommendation}
-              </p>
-            )}
-            {agentInsight.risks && agentInsight.risks.length > 0 && (
-              <div>
-                <p className="text-xs font-semibold text-slate-400 mb-1.5">
-                  Key considerations:
-                </p>
-                <ul className="space-y-1">
-                  {agentInsight.risks.slice(0, 2).map((r, i) => (
-                    <li
-                      key={i}
-                      className="text-xs text-slate-400 flex items-start gap-1.5"
-                    >
-                      <span className="text-orange-500 mt-0.5">•</span>
-                      {r}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </div>
-        ) : (
-          <p className="text-sm text-slate-400 leading-relaxed">
-            Our team will review your project details and begin work immediately
-            after payment.
-          </p>
-        )}
-      </div>}
     </div>
   );
 }
@@ -413,10 +354,6 @@ export default function IntakePage() {
   const [promoCode, setPromoCode] = useState("");
   const [promoStatus, setPromoStatus] = useState<"idle" | "checking" | "applied" | "error">("idle");
   const [promoMessage, setPromoMessage] = useState("");
-
-  // AI insight loads in background — does NOT block the form
-  const [agentInsight, setAgentInsight] = useState<AgentInsight | null>(null);
-  const [insightLoading, setInsightLoading] = useState(true);
 
   // Send to phone feature
   const [sendingToPhone, setSendingToPhone] = useState(false);
@@ -826,7 +763,6 @@ export default function IntakePage() {
     setParcelConfirmed(false);
   }
 
-  const agentType = AGENT_MAP[projectPath] || "design";
   const bundlePreview = upsellSourcePath
     ? getBuildPathBundle({
         sourceProjectPath: upsellSourcePath,
@@ -874,41 +810,6 @@ export default function IntakePage() {
       }),
     }).catch(() => {});
   }, [upsellFromIntake, upsellSourcePath, projectPath, bundlePreview]);
-
-  // Fetch AI insight in background — form is already visible
-  useEffect(() => {
-    if (isInteriorReno) {
-      setInsightLoading(false);
-      return;
-    }
-    let cancelled = false;
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 8000);
-
-    fetch(`/api/agents/${agentType}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        projectType: projectPath,
-        context: "intake_funnel",
-      }),
-      signal: controller.signal,
-    })
-      .then((r) => (r.ok ? r.json() : null))
-      .then((data) => {
-        if (!cancelled && data) setAgentInsight(data);
-      })
-      .catch(() => null)
-      .finally(() => {
-        clearTimeout(timeout);
-        if (!cancelled) setInsightLoading(false);
-      });
-
-    return () => {
-      cancelled = true;
-      controller.abort();
-    };
-  }, [agentType, isInteriorReno, projectPath]);
 
   // ── Contractor Match Blocker Guard ─────────────────────────────────────────
   if (projectPath === "contractor_match" && checkingProject) {
@@ -3070,13 +2971,11 @@ export default function IntakePage() {
             )}
           </div>
 
-          {/* ── Right: Order summary + AI insight ───────────────────────────── */}
+          {/* ── Right: Order summary ─────────────────────────────────────────── */}
           <div className="lg:col-span-2 lg:sticky lg:top-24">
             <OrderSummary
               priceInfo={priceInfo}
               includes={includes}
-              agentInsight={agentInsight}
-              insightLoading={insightLoading}
               compact={isInteriorReno}
             />
             {step === "details" && !isInteriorReno && (
