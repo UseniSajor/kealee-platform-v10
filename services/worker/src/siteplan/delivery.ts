@@ -439,6 +439,159 @@ export async function bridgeSitePlanReviewOutcome(
   }
 }
 
+// ── Review routing notice ────────────────────────────────────────────────────
+
+/**
+ * Tells the review desk a plan is waiting. Without this a
+ * `verified_site_feasibility` order could sit at needs_professional_review
+ * until someone happened to open /engineer/review.
+ */
+export async function notifyReviewRouted(
+  input: { workflowId: string; orderId: string; productId: string | null; address: string | null },
+  ports: Pick<DeliveryPorts, 'notifyOps'>,
+): Promise<{ sent: boolean; summary: string }> {
+  const webMain = webMainBase()
+  const r = await ports.notifyOps({
+    subject: `Site plan awaiting professional review — ${input.productId ?? 'site plan'}`,
+    text: [
+      'A preliminary site plan has been delivered and routed for licensed professional review.',
+      '',
+      `  Order:     ${input.orderId}`,
+      `  Product:   ${input.productId ?? '-'}`,
+      `  Address:   ${input.address ?? '-'}`,
+      `  Workflow:  ${input.workflowId}`,
+      '',
+      `Claim it in the engineer review queue: ${webMain}/engineer/review`,
+      'The order stays at needs_professional_review until the review is completed there.',
+    ].join('\n'),
+  }).catch((e: unknown) => ({ sent: false, error: e instanceof Error ? e.message : String(e) }))
+  return {
+    sent: r.sent,
+    summary: r.sent ? 'Review desk notified.' : `Review desk NOT notified (${r.error ?? 'unknown'}).`,
+  }
+}
+
+// ── Submission package ───────────────────────────────────────────────────────
+
+/** Structural copy of the engine's SubmissionPackageOutput, narrowed. */
+interface SubmissionPackageOutput {
+  deliveryState: 'SUBMISSION_READY' | 'SUBMISSION_INCOMPLETE'
+  submissionReady: boolean
+  documentId: string
+  pageCount?: number
+  jurisdiction?: string
+  agency?: string
+  checklist?: { providedCount: number; outstandingCount: number; items: unknown[] }
+  outstanding?: { code: string; requirement: string; responsible: string }[]
+  blockingDisciplines?: string[]
+  note?: string
+}
+
+/** Written to `form_data.sitePlanSubmission`. */
+export interface SitePlanSubmissionRecord {
+  version: 1
+  state: 'SUBMISSION_READY' | 'SUBMISSION_INCOMPLETE'
+  recordedAt: string
+  workflowId: string
+  documentId: string
+  jurisdiction: string | null
+  agency: string | null
+  checklist: { providedCount: number; outstandingCount: number; items: unknown[] }
+  outstanding: { code: string; requirement: string; responsible: string }[]
+  note: string
+}
+
+export function buildSitePlanSubmissionRecord(input: {
+  workflowId: string
+  outputs: PriorOutputs
+  now?: Date
+}): SitePlanSubmissionRecord | null {
+  const sub = asRecord<SubmissionPackageOutput>(input.outputs['siteplan.build_submission'])
+  if (!sub?.documentId) return null
+  return {
+    version: 1,
+    state: sub.deliveryState,
+    recordedAt: (input.now ?? new Date()).toISOString(),
+    workflowId: input.workflowId,
+    documentId: sub.documentId,
+    jurisdiction: sub.jurisdiction ?? null,
+    agency: sub.agency ?? null,
+    checklist: sub.checklist ?? { providedCount: 0, outstandingCount: 0, items: [] },
+    outstanding: sub.outstanding ?? [],
+    note: sub.note ?? '',
+  }
+}
+
+/**
+ * A ready package is the end of `permit_site_plan` as far as automation goes:
+ * the customer has the drawing, the county checklist and nothing outstanding.
+ * Filing itself is a separate act. An incomplete package is delivered too —
+ * the drawing and the list of what is still owed are the useful thing — but
+ * the order stays with a human because someone has to chase those items.
+ */
+export function sitePlanSubmissionFormDataPatch(input: {
+  record: SitePlanSubmissionRecord
+}): Record<string, unknown> {
+  const ready = input.record.state === 'SUBMISSION_READY'
+  const n = input.record.outstanding.length
+  return {
+    sitePlanSubmission: input.record,
+    orderStatus: ready ? 'delivered' : 'in_review',
+    orderStatusLabel: ready ? 'Delivered' : 'In Review',
+    orderStatusAt: input.record.recordedAt,
+    orderStatusReason: ready
+      ? 'Submission package assembled and labelled ready to submit. Filing with the County is a separate act; jurisdiction approval is not implied.'
+      : `Submission package assembled with ${n} outstanding item${n === 1 ? '' : 's'}. A Kealee coordinator resolves them before filing.`,
+    orderStatusSetBy: 'system',
+    fulfillmentStatus: ready ? 'delivered' : 'awaiting_submission_items',
+    fulfillmentMode: 'automated',
+    ...(ready ? { fulfillmentCompletedAt: input.record.recordedAt } : {}),
+    requiresHumanFulfillment: !ready,
+  }
+}
+
+export async function bridgeSitePlanSubmission(
+  input: { workflowId: string; orderId: string; productId: string | null },
+  ports: DeliveryPorts,
+): Promise<DeliveryOutcome> {
+  const none = (summary: string): DeliveryOutcome =>
+    ({ bridged: false, emailed: false, orderStatus: null, summary })
+  try {
+    const order = await ports.loadOrder(input.orderId)
+    if (!order) return none(`Order ${input.orderId} not found; nothing to bridge.`)
+    const outputs = await ports.loadOutputs(input.workflowId)
+    const record = buildSitePlanSubmissionRecord({ workflowId: input.workflowId, outputs, now: ports.now() })
+    if (!record) return none(`Workflow ${input.workflowId} has no submission package to bridge.`)
+    if (order.submissionState === record.state) {
+      return none(`Order ${input.orderId} already carries submission state ${record.state}; skipped.`)
+    }
+    const patch = sitePlanSubmissionFormDataPatch({ record })
+    await ports.patchOrder(input.orderId, patch)
+    const orderStatus = String(patch.orderStatus)
+
+    if (!order.contactEmail) {
+      return { bridged: true, emailed: false, orderStatus, summary: `Order ${input.orderId} submission bridged (${orderStatus}); no customer email.` }
+    }
+    const email = await ports.sendReadyEmail({
+      to: order.contactEmail,
+      firstName: order.clientName?.split(' ')[0] || undefined,
+      service: input.productId ?? 'permit_site_plan',
+      intakeId: input.orderId,
+      headline: record.state === 'SUBMISSION_READY'
+        ? 'Your permit site plan package is ready to submit'
+        : 'Your permit site plan package and county checklist are in your portal',
+    })
+    return {
+      bridged: true, emailed: email.sent, orderStatus,
+      summary: email.sent
+        ? `Order ${input.orderId} submission bridged (${orderStatus}); customer emailed.`
+        : `Order ${input.orderId} submission bridged (${orderStatus}); email not sent (${email.error ?? 'unknown'}).`,
+    }
+  } catch (e) {
+    return none(`Submission bridge failed: ${e instanceof Error ? e.message : String(e)}`)
+  }
+}
+
 // ── Ports ────────────────────────────────────────────────────────────────────
 
 export interface DeliveryPorts {
@@ -450,6 +603,9 @@ export interface DeliveryPorts {
     alreadyDelivered: boolean
     /** `form_data.sitePlanReview.state`, when a review has been bridged. */
     reviewState: string | null
+    /** `form_data.sitePlanSubmission.state`, when a submission has been bridged. */
+    submissionState: string | null
+    address: string | null
   } | null>
   patchOrder(orderId: string, patch: Record<string, unknown>): Promise<void>
   sendReadyEmail(input: {
@@ -459,6 +615,8 @@ export interface DeliveryPorts {
     intakeId: string
     headline: string
   }): Promise<{ sent: boolean; error?: string }>
+  /** Internal notice to the review desk. Never to the customer. */
+  notifyOps(input: { subject: string; text: string }): Promise<{ sent: boolean; error?: string }>
   now(): Date
 }
 
@@ -558,11 +716,15 @@ export function productionDeliveryPorts(deps: {
 
     async loadOrder(orderId) {
       const rows = await prisma.$queryRaw<
-        { contact_email: string | null; client_name: string | null; delivered: boolean; review_state: string | null }[]
+        {
+          contact_email: string | null; client_name: string | null; project_address: string | null
+          delivered: boolean; review_state: string | null; submission_state: string | null
+        }[]
       >`
-        SELECT contact_email, client_name,
+        SELECT contact_email, client_name, project_address,
                (form_data ? 'sitePlanDeliverable') AS delivered,
-               form_data #>> '{sitePlanReview,state}' AS review_state
+               form_data #>> '{sitePlanReview,state}' AS review_state,
+               form_data #>> '{sitePlanSubmission,state}' AS submission_state
         FROM public_intake_leads
         WHERE id = ${orderId}
         LIMIT 1
@@ -574,6 +736,8 @@ export function productionDeliveryPorts(deps: {
         clientName: row.client_name,
         alreadyDelivered: Boolean(row.delivered),
         reviewState: row.review_state,
+        submissionState: row.submission_state,
+        address: row.project_address,
       }
     },
 
@@ -596,6 +760,21 @@ export function productionDeliveryPorts(deps: {
       })
       if (res.ok) return { sent: true }
       return { sent: false, error: `HTTP ${res.status}` }
+    },
+
+    async notifyOps(input) {
+      const key = process.env.RESEND_API_KEY
+      if (!key) return { sent: false, error: 'RESEND_API_KEY not configured' }
+      const to = process.env.SITE_PLAN_REVIEW_DESK_EMAIL ?? 'hello@kealee.com'
+      const res = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          from: 'Kealee Notifications <notifications@kealee.com>',
+          to: [to], subject: input.subject, text: input.text,
+        }),
+      })
+      return res.ok ? { sent: true } : { sent: false, error: `Resend ${res.status}` }
     },
 
     now: () => new Date(),

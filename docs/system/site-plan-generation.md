@@ -196,10 +196,34 @@ routing. `ingest_comments` (J) is where reopening is meant to live and it is
 unconnected. Today a drafter revises by hand and the workflow stays at
 `apply_revisions` AWAITING_REVIEW.
 
-**Not done:** the concept page at `/deliverables/[id]` does not redirect
-site-plan orders to `/site-plan`; the list page and the email link route
-there directly. `run_issuance_qc`, `build_submission`, `ingest_comments`
-remain unconnected.
+### Issuance and submission — the I/J groups (connected 2026-09-15)
+
+```
+route_review APPROVED ──► run_issuance_qc
+  seedReviewItems + buildReviewMatrix   (engineer's subjects → APPROVED; surveyor etc. stay PENDING)
+  runIssuanceQc                          (twin, permitPath, county checklist, matrix, frame failures)
+  applyEvidenceGate                      (capabilities.loadEvidenceLedger — SitePlanEvidence rows)
+  → COMPLETED with issuable = gated.issuable && matrix.submissionReady
+build_submission  (deliverable)
+  → SUBMISSION_READY | SUBMISSION_INCOMPLETE, county checklist, deduplicated outstanding list
+worker bridgeSitePlanSubmission → form_data.sitePlanSubmission
+  READY      → delivered, customer emailed "ready to submit"
+  INCOMPLETE → in_review, customer emailed "package + checklist in your portal", staff chase items
+```
+
+**Issuable is a conclusion from evidence and sign-off, never from approval
+alone.** An engineer's approval of zoning/layout does not clear
+MISSING_SURVEY_CERTIFICATION; a certified survey file in the evidence ledger
+does. A GIS-drawn lot with no survey is delivered and NOT labelled ready to
+submit. Nothing here implies jurisdiction approval.
+
+**Review desk notice:** when a plan is routed for review, `notifyReviewRouted`
+emails `SITE_PLAN_REVIEW_DESK_EMAIL` (default hello@kealee.com) with the
+claim link. Before this an order could wait unseen.
+
+**Not done:** `ingest_comments` (county review comments → reopen) is the
+last unconnected stage; the revision loop is not closed. The concept page at
+`/deliverables/[id]` does not redirect site-plan orders to `/site-plan`.
 
 ## Requirement sources
 

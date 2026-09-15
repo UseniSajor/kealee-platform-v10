@@ -2,8 +2,8 @@
  * Every connected stage processor.
  *
  * `FIRST_RELEASE_PROCESSORS` stays exactly what its name says — the vertical
- * slice that a paid order runs today — and the design and review groups are
- * merged on top here. A stage having a processor is NOT the same as a stage being enqueued:
+ * slice that a paid order runs today — and the design, review and issuance groups
+ * are merged on top here. A stage having a processor is NOT the same as a stage being enqueued:
  * the runner still derives what to run next from `inFirstRelease`, so a design
  * stage runs when it is enqueued deliberately and not before. Connecting and
  * releasing are two decisions, and this is the file that keeps them apart.
@@ -14,11 +14,13 @@ import type { StageProcessor } from '../context'
 import { FIRST_RELEASE_PROCESSORS } from './first-release'
 import { DESIGN_PROCESSORS } from './design-stages'
 import { REVIEW_PROCESSORS } from './review-stages'
+import { ISSUANCE_PROCESSORS } from './issuance-stages'
 
 export const SITE_PLAN_PROCESSORS: Record<SitePlanJobName, StageProcessor | undefined> = {
   ...FIRST_RELEASE_PROCESSORS,
   ...DESIGN_PROCESSORS,
   ...REVIEW_PROCESSORS,
+  ...ISSUANCE_PROCESSORS,
 }
 
 /** Stages declared in the definition that nothing implements yet. */

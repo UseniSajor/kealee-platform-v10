@@ -94,15 +94,13 @@ const routeReview = REVIEW_PROCESSORS['siteplan.route_review']!
 const applyRevisions = REVIEW_PROCESSORS['siteplan.apply_revisions']!
 
 describe('the review group is connected', () => {
-  it('has a processor for route_review and apply_revisions, and not for the I/J groups', () => {
+  it('has a processor for route_review and apply_revisions; only ingest_comments is left', () => {
     expect(typeof routeReview).toBe('function')
     expect(typeof applyRevisions).toBe('function')
     const missing = unconnectedStages()
     expect(missing).not.toContain('siteplan.route_review')
     expect(missing).not.toContain('siteplan.apply_revisions')
-    expect(missing).toEqual(expect.arrayContaining([
-      'siteplan.run_issuance_qc', 'siteplan.build_submission', 'siteplan.ingest_comments',
-    ]))
+    expect(missing).toEqual(['siteplan.ingest_comments'])
   })
 })
 
@@ -155,7 +153,7 @@ describe('siteplan.route_review', () => {
       review: reviewState('COMPLETED', ['APPROVED', 'APPROVED']),
     }))
     expect(r.status).toBe('COMPLETED')
-    expect(r.enqueue).toEqual([])
+    expect(r.enqueue).toEqual(['siteplan.run_issuance_qc'])
     const out = r.outputs as RouteReviewOutput
     expect(out.reviewState).toBe('APPROVED')
     expect(out.outstanding).toEqual([])

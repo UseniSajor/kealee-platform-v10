@@ -157,9 +157,8 @@ const routeReview: StageProcessor = async (ctx): Promise<StageResult> => {
         ...base, reviewState: 'APPROVED', reviewCompletedAt: assignment.completedAt,
         note: 'Scoped professional review complete. Sealing remains a separate act.',
       } satisfies RouteReviewOutput,
-      // The issuance stages are declared but not connected; enqueuing them
-      // would only produce NO_PROCESSOR. Explicitly nothing.
-      enqueue: [],
+      // Issuance QC reads this approval and the evidence ledger next.
+      enqueue: ['siteplan.run_issuance_qc'],
     }
   }
 

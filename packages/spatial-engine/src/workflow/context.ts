@@ -8,6 +8,7 @@
 
 import type { SitePlanJobName } from './definition'
 import type { WorkflowSnapshot } from './state-machine'
+import type { EvidenceLedger } from '../review/evidence'
 
 /** Identity of the order this workflow serves. */
 export interface WorkflowSubject {
@@ -45,6 +46,14 @@ export interface StageCapabilities {
    * professional's own identity.
    */
   loadReviewState?: (workflowId: string) => Promise<ReviewState | null>
+  /**
+   * Evidence attached to the workflow — a certified survey file, a licence
+   * verification, a datum statement. Read-only, same reasoning as above:
+   * evidence is attached by a person and only ever read here. Absent means
+   * the host keeps no ledger, and the issuance stage says so rather than
+   * treating an empty ledger as "nothing was ever needed".
+   */
+  loadEvidenceLedger?: (workflowId: string) => Promise<EvidenceLedger | null>
 }
 
 /** One subject a professional was asked to decide on. */

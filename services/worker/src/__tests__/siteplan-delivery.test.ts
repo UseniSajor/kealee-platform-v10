@@ -6,7 +6,10 @@ import {
   buildSitePlanDeliverable,
   bridgeSitePlanDelivery,
   bridgeSitePlanReviewOutcome,
+  bridgeSitePlanSubmission,
   buildSitePlanReviewRecord,
+  sitePlanSubmissionFormDataPatch,
+  notifyReviewRouted,
   sitePlanDeliveryFormDataPatch,
   sitePlanReviewFormDataPatch,
   sitePlanPortalPath,
@@ -134,10 +137,11 @@ describe('bridgeSitePlanDelivery', () => {
     const p: DeliveryPorts = {
       loadOutputs: async () => completedChain(),
       loadOrder: async () => ({
-        contactEmail: 'owner@example.com', clientName: 'Pat Owner', alreadyDelivered: false, reviewState: null,
+        contactEmail: 'owner@example.com', clientName: 'Pat Owner', alreadyDelivered: false, reviewState: null, submissionState: null, address: '1005 Rollins Ave',
       }),
       patchOrder: async (_id, patch) => { patches.push(patch) },
       sendReadyEmail: async (input) => { emails.push(input); return { sent: true } },
+      notifyOps: async () => ({ sent: true }),
       now: () => NOW,
       ...overrides,
     }
@@ -159,7 +163,7 @@ describe('bridgeSitePlanDelivery', () => {
 
   it('is idempotent on the order — a replayed stage does not email twice', async () => {
     const { p, patches, emails } = ports({
-      loadOrder: async () => ({ contactEmail: 'owner@example.com', clientName: null, alreadyDelivered: true, reviewState: null }),
+      loadOrder: async () => ({ contactEmail: 'owner@example.com', clientName: null, alreadyDelivered: true, reviewState: null, submissionState: null, address: null }),
     })
     const out = await bridgeSitePlanDelivery(
       { workflowId: 'wf_1', orderId: 'intake_1', productId: 'preliminary_site_plan' }, p)
@@ -170,7 +174,7 @@ describe('bridgeSitePlanDelivery', () => {
 
   it('still bridges when there is no customer email, and says so', async () => {
     const { p, patches, emails } = ports({
-      loadOrder: async () => ({ contactEmail: null, clientName: null, alreadyDelivered: false, reviewState: null }),
+      loadOrder: async () => ({ contactEmail: null, clientName: null, alreadyDelivered: false, reviewState: null, submissionState: null, address: null }),
     })
     const out = await bridgeSitePlanDelivery(
       { workflowId: 'wf_1', orderId: 'intake_1', productId: 'permit_site_plan' }, p)
@@ -279,9 +283,10 @@ describe('bridgeSitePlanReviewOutcome', () => {
     const emails: Parameters<DeliveryPorts['sendReadyEmail']>[0][] = []
     const p: DeliveryPorts = {
       loadOutputs: async () => reviewed(state),
-      loadOrder: async () => ({ contactEmail: 'owner@example.com', clientName: 'Pat Owner', alreadyDelivered: true, reviewState: null }),
+      loadOrder: async () => ({ contactEmail: 'owner@example.com', clientName: 'Pat Owner', alreadyDelivered: true, reviewState: null, submissionState: null, address: null }),
       patchOrder: async (_id, patch) => { patches.push(patch) },
       sendReadyEmail: async (input) => { emails.push(input); return { sent: true } },
+      notifyOps: async () => ({ sent: true }),
       now: () => NOW,
       ...overrides,
     }
@@ -308,7 +313,7 @@ describe('bridgeSitePlanReviewOutcome', () => {
 
   it('is idempotent on the review state', async () => {
     const { p, patches, emails } = ports('APPROVED', {
-      loadOrder: async () => ({ contactEmail: 'owner@example.com', clientName: null, alreadyDelivered: true, reviewState: 'APPROVED' }),
+      loadOrder: async () => ({ contactEmail: 'owner@example.com', clientName: null, alreadyDelivered: true, reviewState: 'APPROVED', submissionState: null, address: null }),
     })
     const out = await bridgeSitePlanReviewOutcome(
       { workflowId: 'wf_1', orderId: 'intake_1', productId: 'verified_site_feasibility' }, p)
@@ -323,6 +328,86 @@ describe('bridgeSitePlanReviewOutcome', () => {
       { workflowId: 'wf_1', orderId: 'intake_1', productId: 'verified_site_feasibility' }, p)
     expect(out.bridged).toBe(false)
     expect(patches).toHaveLength(0)
+  })
+})
+
+describe('submission bridge', () => {
+  function withSubmission(state: 'SUBMISSION_READY' | 'SUBMISSION_INCOMPLETE'): PriorOutputs {
+    return {
+      ...reviewed('APPROVED'),
+      'siteplan.build_submission': {
+        deliveryState: state, submissionReady: state === 'SUBMISSION_READY', documentId: 'doc_1', pageCount: 2,
+        jurisdiction: "Prince George's County, MD", agency: 'DPIE',
+        checklist: { providedCount: 10, outstandingCount: state === 'SUBMISSION_READY' ? 0 : 2, items: [] },
+        outstanding: state === 'SUBMISSION_READY' ? [] : [
+          { code: 'SP-02', requirement: 'Certified boundary survey', responsible: 'Maryland Licensed Surveyor' },
+          { code: 'REVIEW_SURVEYOR', requirement: 'surveyor sign-off not recorded.', responsible: 'surveyor' },
+        ],
+        note: '',
+      },
+    }
+  }
+  function ports(state: 'SUBMISSION_READY' | 'SUBMISSION_INCOMPLETE', submissionState: string | null = null) {
+    const patches: Record<string, unknown>[] = []
+    const emails: Parameters<DeliveryPorts['sendReadyEmail']>[0][] = []
+    const p: DeliveryPorts = {
+      loadOutputs: async () => withSubmission(state),
+      loadOrder: async () => ({ contactEmail: 'owner@example.com', clientName: 'Pat Owner', alreadyDelivered: true, reviewState: 'APPROVED', submissionState, address: null }),
+      patchOrder: async (_id, patch) => { patches.push(patch) },
+      sendReadyEmail: async (input) => { emails.push(input); return { sent: true } },
+      notifyOps: async () => ({ sent: true }),
+      now: () => NOW,
+    }
+    return { p, patches, emails }
+  }
+
+  it('delivers a ready package and never implies county approval', async () => {
+    const { p, patches, emails } = ports('SUBMISSION_READY')
+    const out = await bridgeSitePlanSubmission({ workflowId: 'wf_1', orderId: 'intake_1', productId: 'permit_site_plan' }, p)
+    expect(out).toMatchObject({ bridged: true, emailed: true, orderStatus: 'delivered' })
+    expect(String(patches[0].orderStatusReason)).toMatch(/jurisdiction approval is not implied/)
+    expect(emails[0].headline).toMatch(/ready to submit/)
+  })
+
+  it('delivers an incomplete package to the customer but keeps the order with a human', async () => {
+    const { p, patches, emails } = ports('SUBMISSION_INCOMPLETE')
+    const out = await bridgeSitePlanSubmission({ workflowId: 'wf_1', orderId: 'intake_1', productId: 'permit_site_plan' }, p)
+    expect(out).toMatchObject({ bridged: true, emailed: true, orderStatus: 'in_review' })
+    expect(patches[0].requiresHumanFulfillment).toBe(true)
+    expect(String(patches[0].orderStatusReason)).toContain('2 outstanding items')
+    expect(emails[0].headline).toMatch(/county checklist/)
+  })
+
+  it('is idempotent on the submission state', async () => {
+    const { p, patches } = ports('SUBMISSION_READY', 'SUBMISSION_READY')
+    const out = await bridgeSitePlanSubmission({ workflowId: 'wf_1', orderId: 'intake_1', productId: 'permit_site_plan' }, p)
+    expect(out.bridged).toBe(false)
+    expect(patches).toHaveLength(0)
+  })
+
+  it('patch shape: ready is terminal, incomplete is not', () => {
+    const rec = { version: 1 as const, state: 'SUBMISSION_INCOMPLETE' as const, recordedAt: NOW.toISOString(), workflowId: 'wf_1', documentId: 'doc_1', jurisdiction: null, agency: null, checklist: { providedCount: 0, outstandingCount: 1, items: [] }, outstanding: [{ code: 'SP-02', requirement: 'x', responsible: 'y' }], note: '' }
+    expect(sitePlanSubmissionFormDataPatch({ record: rec }).fulfillmentCompletedAt).toBeUndefined()
+    expect(sitePlanSubmissionFormDataPatch({ record: { ...rec, state: 'SUBMISSION_READY', outstanding: [] } }).fulfillmentCompletedAt).toBe(NOW.toISOString())
+  })
+})
+
+describe('notifyReviewRouted', () => {
+  it('tells the review desk where to claim the plan and never throws', async () => {
+    const sent: { subject: string; text: string }[] = []
+    const r = await notifyReviewRouted(
+      { workflowId: 'wf_1', orderId: 'intake_1', productId: 'verified_site_feasibility', address: '1005 Rollins Ave' },
+      { notifyOps: async (i) => { sent.push(i); return { sent: true } } })
+    expect(r.sent).toBe(true)
+    expect(sent[0].subject).toMatch(/awaiting professional review/)
+    expect(sent[0].text).toMatch(/\/engineer\/review/)
+    expect(sent[0].text).toContain('1005 Rollins Ave')
+
+    const failed = await notifyReviewRouted(
+      { workflowId: 'wf_1', orderId: 'intake_1', productId: null, address: null },
+      { notifyOps: async () => { throw new Error('smtp down') } })
+    expect(failed.sent).toBe(false)
+    expect(failed.summary).toContain('smtp down')
   })
 })
 

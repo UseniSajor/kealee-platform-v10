@@ -220,8 +220,8 @@ describe('runner enforcement', () => {
     // professional-review stage start — otherwise this would test the guard
     // rejecting it, not the missing processor. The stage named here must be
     // one nothing implements yet: it was `ingest_survey` until that stage was
-    // connected, then `route_review` until the review group was, and each
-    // time this test failed as it should have.
+    // connected, then `route_review`, then `run_issuance_qc`, and each time
+    // this test failed as it should have.
     const h = harness()
     let snap = newWorkflow('wf1')
     snap = {
@@ -231,9 +231,11 @@ describe('runner enforcement', () => {
           job: s.job, status: 'COMPLETED' as const, attempt: 1,
         })),
         { job: 'siteplan.route_review' as const, status: 'COMPLETED' as const, attempt: 1 },
+        { job: 'siteplan.run_issuance_qc' as const, status: 'COMPLETED' as const, attempt: 1 },
+        { job: 'siteplan.build_submission' as const, status: 'COMPLETED' as const, attempt: 1 },
       ],
     }
-    const out = await runStage(h.ctxFor(snap, 'siteplan.run_issuance_qc'), h.deps)
+    const out = await runStage(h.ctxFor(snap, 'siteplan.ingest_comments'), h.deps)
     expect(out.disposition).toBe('NO_PROCESSOR')
     expect(out.summary).toMatch(/declared and not yet connected/)
   })

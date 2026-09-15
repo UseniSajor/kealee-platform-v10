@@ -13,7 +13,7 @@
  */
 
 import { prisma } from '@kealee/database'
-import { Workflow } from '@kealee/pascal-agents/engine'
+import { Workflow, type EvidenceKind, type Discipline } from '@kealee/pascal-agents/engine'
 
 /** Maps a runner status onto the SitePlanStageStatus the schema already has. */
 function toStageStatus(s: string): 'COMPLETED' | 'AWAITING_REVIEW' | 'BLOCKED' | 'REJECTED' {
@@ -201,6 +201,36 @@ export function productionCapabilities(opts: {
           licenceNumber: a.licenceNumber,
           licenceState: a.licenceState,
           decidedAt: a.decidedAt?.toISOString() ?? null,
+        })),
+      }
+    },
+
+    /**
+     * Evidence attached to the workflow, read-only. Revoked items are
+     * excluded; a revoked certified-survey file must not clear a block.
+     */
+    async loadEvidenceLedger(workflowId) {
+      const rows = await prisma.sitePlanEvidence.findMany({
+        where: { workflowId, revokedAt: null },
+        orderBy: { attachedAt: 'asc' },
+      })
+      return {
+        items: rows.map(r => ({
+          id: r.id,
+          kind: String(r.kind).toLowerCase() as EvidenceKind,
+          reference: r.reference,
+          attachedAt: r.attachedAt.toISOString(),
+          attachedBy: r.attachedById,
+          attestedBy: r.attestedByName && r.attestedByLicence && r.attestedByDiscipline && r.attestedByState
+            ? {
+                name: r.attestedByName,
+                licenceNumber: r.attestedByLicence,
+                discipline: r.attestedByDiscipline as Discipline,
+                state: r.attestedByState,
+              }
+            : undefined,
+          checksum: r.checksum ?? undefined,
+          notes: r.notes ?? undefined,
         })),
       }
     },

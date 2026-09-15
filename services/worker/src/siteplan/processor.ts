@@ -15,8 +15,8 @@ import { prisma } from '@kealee/database'
 import { Workflow } from '@kealee/pascal-agents/engine'
 import { productionCapabilities, loadSnapshot, loadPriorOutputs } from './capabilities'
 import {
-  bridgeSitePlanDelivery, bridgeSitePlanReviewOutcome, productionDeliveryPorts,
-  productIncludesProfessionalReview,
+  bridgeSitePlanDelivery, bridgeSitePlanReviewOutcome, bridgeSitePlanSubmission,
+  notifyReviewRouted, productionDeliveryPorts, productIncludesProfessionalReview,
 } from './delivery'
 
 export interface DrainResult {
@@ -186,7 +186,11 @@ async function runOne(
   const subject = { workflowId, orderId: wf?.orderId ?? '', productId: wf?.productId ?? null }
   const ports = productionDeliveryPorts({ loadOutputs: loadPriorOutputs })
 
-  if (settled && Workflow.stageFor(job as Workflow.SitePlanJobName).deliverable) {
+  const stage = Workflow.stageFor(job as Workflow.SitePlanJobName)
+
+  // The preliminary plan is the first deliverable; the submission package is
+  // the second. Each has its own bridge and its own idempotency.
+  if (settled && stage.deliverable && job === 'siteplan.deliver_preliminary') {
     const delivery = await bridgeSitePlanDelivery(subject, ports)
     deliverySummary = delivery.summary
     console.log(`[siteplan] delivery: ${delivery.summary}`)
@@ -194,12 +198,21 @@ async function runOne(
     // The higher tiers include a licensed professional's review. Route the
     // delivered plan to one now. `route_review` is not in the first release,
     // so the runner never derives it; it is enqueued here, on purpose, for
-    // the products that paid for it.
-    if (productIncludesProfessionalReview(subject.productId)) {
+    // the products that paid for it — and the review desk is told, because
+    // a queue nobody knows about is not a queue.
+    if (delivery.bridged && productIncludesProfessionalReview(subject.productId)) {
       await enqueueSitePlanJob({ workflowId, job: 'siteplan.route_review' })
       enqueued++
-      console.log(`[siteplan] routed ${workflowId} for professional review`)
+      const notice = await notifyReviewRouted(
+        { ...subject, address: (await ports.loadOrder(subject.orderId))?.address ?? null }, ports)
+      console.log(`[siteplan] routed ${workflowId} for professional review. ${notice.summary}`)
     }
+  }
+
+  if (settled && job === 'siteplan.build_submission') {
+    const submission = await bridgeSitePlanSubmission(subject, ports)
+    deliverySummary = submission.summary
+    console.log(`[siteplan] submission: ${submission.summary}`)
   }
 
   // A decided review — approved or changes requested — reaches the order.
