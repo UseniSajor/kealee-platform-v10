@@ -8,6 +8,18 @@ const nextConfig = {
   optimizeFonts: false,
   experimental: {
     serverComponentsExternalPackages: ['stripe', 'sharp', '@img/sharp-libvips-dev', '@img/sharp-wasm32', '@img/sharp-libvips-linux-x64', '@img/sharp-libvips-linux-arm64'],
+    // Prisma's query engine is a native .so.node that the file tracer does not
+    // follow through the transpiled @kealee/database, so the standalone bundle
+    // shipped WITHOUT it and every Prisma call in production threw
+    // PrismaClientInitializationError — behind a green healthcheck, because
+    // /api/health touches no database. That is why paid site-plan orders never
+    // got a workflow: the webhook's activation call died here. Found 2026-09-15.
+    outputFileTracingIncludes: {
+      '/**/*': [
+        '../../node_modules/.pnpm/@prisma+client*/node_modules/.prisma/client/**',
+        '../../node_modules/.prisma/client/**',
+      ],
+    },
   },
   transpilePackages: ['@kealee/ui', '@kealee/intake', '@kealee/shared', '@kealee/pascal-wrapper', '@kealee/core-bim', '@kealee/kealee-agent-stack', '@kealee/storage', '@kealee/concept-engine', '@kealee/database', '@kealee/automation', '@kealee/marketing-privacy', '@kealee/marketing-agency'],
   webpack(config, { isServer }) {
