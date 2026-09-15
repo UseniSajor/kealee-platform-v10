@@ -1,0 +1,48 @@
+{
+  "record": "PRELIMINARY SUBDIVISION CONCEPT — 4600 WHEELER ROAD, OXON HILL, PRINCE GEORGE'S COUNTY, MD",
+  "generatedAt": "2026-09-15",
+  "status": "PRELIMINARY — not a plat, not a boundary survey, not for recording",
+  "inputs": {
+    "address": "4600 Wheeler Rd",
+    "locator": { "matched": "4600 WHEELER ROAD", "score": 100, "endpoint": "gis.pgatlas.com Geocoders/Address" },
+    "parcel": { "propId": "366579", "areaSqFt": 230995, "acres": 5.303, "source": "PGAtlas Property/MapServer/15 — Level 1, compiled from tax maps", "verticesInRing": 7 },
+    "zone": { "code": "RSF-95", "source": "PGAtlas Zoning/MapServer/63" },
+    "municipality": { "incorporated": false, "source": "PGAtlas Administrative/MapServer/30" },
+    "frontage": { "street": "WHEELER", "lengthFt": 911.6, "source": "PGAtlas Transportation/MapServer/2 + parcel edge nearest the street point" },
+    "standards": {
+      "section": "27-4202 (RSF-95), certified dimensional table pg-dimensional-standards.generated.ts",
+      "minNetLotSqFt": 9500, "minLotWidthFt": 75, "minFrontageFt": 50, "maxDensityDuPerAc": 4.58,
+      "frontYardFt": 25, "sideYardFt": 8, "rearYardFt": 20, "maxCoveragePct": 30
+    },
+    "programmePerLot": { "totalFloorAreaSqFt": 2400, "storeys": 2, "hasBasement": false, "garage": "attached_2_car", "coveredPorch": true },
+    "proposal": "wheeler-4600.proposal.json",
+    "platSpecs": ["wheeler-4600.plat.json", "wheeler-4600-lot1.plat.json … wheeler-4600-lot10.plat.json"],
+    "platRecord": "wheeler-4600.plat-record.json"
+  },
+  "method": {
+    "script": "packages/spatial-engine/scripts/propose-subdivision.ts → scripts/generate-subdivision.ts",
+    "lotting": "Strips perpendicular to the Wheeler Road frontage, 912 ft / 12 → 76.0 ft wide (≥ 75 min), uniform 140 ft depth (≥ 9,500 sf at 76 ft). End strips at the triangle's corners merged to reach the minimum area.",
+    "remainder": "Land behind the 140-ft lot band is Parcel A, not a lot: lots must front a public street (Sec. 24-128). Subdividing it needs an internal street and a major subdivision preliminary plan (Subtitle 24).",
+    "notDone": "Boundary survey; internal street design; SWM concept; forest conservation/tree canopy schedule; soils narrowed to parcel; water/sewer capacity."
+  },
+  "outputs": {
+    "lots": [
+      { "lot": 1, "widthFt": 151.9, "sqFt": 14617, "conforming": true },
+      { "lot": 2, "widthFt": 76.0, "sqFt": 10636, "conforming": true },
+      { "lot": 3, "widthFt": 76.0, "sqFt": 10636, "conforming": true },
+      { "lot": 4, "widthFt": 76.0, "sqFt": 10636, "conforming": true },
+      { "lot": 5, "widthFt": 76.0, "sqFt": 10636, "conforming": true },
+      { "lot": 6, "widthFt": 76.0, "sqFt": 10636, "conforming": true },
+      { "lot": 7, "widthFt": 76.0, "sqFt": 10636, "conforming": true },
+      { "lot": 8, "widthFt": 76.0, "sqFt": 10636, "conforming": true },
+      { "lot": 9, "widthFt": 76.0, "sqFt": 10636, "conforming": true },
+      { "lot": 10, "widthFt": 151.9, "sqFt": 11412, "conforming": true }
+    ],
+    "remainderSqFt": 119880,
+    "densityCapDu": 24,
+    "sheets": ["C-001 Site Development Plan", "L-100 Landscape and Tree Canopy Plan", "C-400 Grading and Drainage Plan"],
+    "files": ["wheeler-4600-preliminary-set.pdf", "wheeler-4600-preliminary-set.dxf", "wheeler-4600-preliminary-set.landxml.xml"],
+    "scale": "1\" = 100' — below the 1\" = 60' legibility floor because the whole 5.3-acre parcel is composed on one 30x42 sheet. Per-lot text collides in the middle band. Fix is a per-lot sheet series or match lines, not smaller text."
+  },
+  "reviewedBy": "Claude Opus 5 (engine run), rendered to PNG and inspected: lot lines, BRLs, footprints, contours, adjoiners, soils table, site data present; title block PRELIMINARY; Porter exhibit removed; lot labels LOT n."
+}

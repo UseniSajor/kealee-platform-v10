@@ -2882,7 +2882,13 @@ async function main(): Promise<void> {
   console.log(`    sheets          ${sheetIds.length}: ${sheetIds.join(', ')}`)
   console.log(`                    condensed from the canonical ${FULL_SET.length}; `
     + 'FULL_SET=1 forces all, SHEETS=... names a list')
-  const projectName = `${subdivisionName} — ${lots.map(l => l.label).join(' & ')}`
+  // Two or three lots are named; ten are a range. Ten names ran the project
+  // line off the title block.
+  const lotList = lots.length <= 3
+    ? lots.map(l => l.label).join(' & ')
+    : `LOTS ${lots[0].spec.reference?.lot?.replace(/\s*\(.*\)$/, '') ?? 1}–${lots[lots.length - 1].spec.reference?.lot?.replace(/\s*\(.*\)$/, '') ?? lots.length}`
+      + (lots.every(l => /proposed/i.test(String(l.spec.reference?.lot ?? ''))) ? ' (proposed)' : '')
+  const projectName = `${subdivisionName} — ${lotList}`
   // The recorded WSSC connection sketch is THIS project's exhibit, named here
   // rather than living in the global county-details list — where it printed on
   // an unrelated project's sheets.
