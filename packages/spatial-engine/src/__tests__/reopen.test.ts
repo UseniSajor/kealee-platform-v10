@@ -24,6 +24,13 @@ const allDone = (): WorkflowSnapshot => ({
   stages: SITE_PLAN_STAGES.map(s => ({ job: s.job, status: 'COMPLETED' as const, attempt: 1 })),
 })
 
+/** Everything done except the stage under test — otherwise the runner replays it. */
+const readyFor = (job: string): WorkflowSnapshot => ({
+  ...newWorkflow('wf_r'),
+  stages: SITE_PLAN_STAGES.filter(s => s.job !== job)
+    .map(s => ({ job: s.job, status: 'COMPLETED' as const, attempt: 1 })),
+})
+
 describe('reopenClosure', () => {
   it('takes every transitive dependent, in definition order', () => {
     const c = reopenClosure(['siteplan.compose_sheets'])
@@ -94,7 +101,7 @@ describe('runner reopen handling', () => {
 
   it('records the closure through the host and enqueues nothing', async () => {
     const recorded: string[][] = []
-    const snap = allDone()
+    const snap = readyFor('siteplan.ingest_comments')
     const out = await runStage(
       ctxFor(snap, 'siteplan.ingest_comments', {
         reopenStages: async (_w: string, jobs: string[]) => { recorded.push(jobs) },
@@ -104,7 +111,11 @@ describe('runner reopen handling', () => {
     expect(out.disposition).toBe('COMPLETED')
     expect(recorded).toHaveLength(1)
     expect(recorded[0]).toContain('siteplan.compose_sheets')
-    expect(recorded[0]).toContain('siteplan.ingest_comments')   // reopens itself for the next round
+    // The closure includes the triggering stage itself: it depends on
+    // build_submission, so its just-persisted row drops to READY too. That is
+    // what lets the next comment round run it again — and why a host must
+    // bridge this run's outputs from the outcome, not from COMPLETED rows.
+    expect(recorded[0]).toContain('siteplan.ingest_comments')
     expect(out.reopened).toEqual(recorded[0])
     expect(out.nextJobs).toEqual([])
     expect(out.summary).toMatch(/Reopened \d+ stage/)
@@ -112,7 +123,7 @@ describe('runner reopen handling', () => {
 
   it('refuses when the host cannot record a reopen', async () => {
     const out = await runStage(
-      ctxFor(allDone(), 'siteplan.ingest_comments', {}),
+      ctxFor(readyFor('siteplan.ingest_comments'), 'siteplan.ingest_comments', {}),
       { processors: { 'siteplan.ingest_comments': reopener } },
     )
     expect(out.disposition).toBe('BLOCKED')

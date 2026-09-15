@@ -219,7 +219,12 @@ async function runOne(
   // County comments were ingested: the order needs corrections. The
   // reopened chain is NOT enqueued — a person revises the inputs first.
   if (outcome.disposition === 'COMPLETED' && job === 'siteplan.ingest_comments') {
-    const county = await bridgeSitePlanCountyReview(subject, ports)
+    // This stage reopens its own row (it depends on build_submission), so by
+    // now it is READY, not COMPLETED, and loadPriorOutputs would not return
+    // it. Bridge from the outcome we are holding.
+    const county = await bridgeSitePlanCountyReview(subject, {
+      ...ports, loadOutputs: async () => ({ 'siteplan.ingest_comments': outcome.outputs }),
+    })
     deliverySummary = county.summary
     console.log(`[siteplan] county review: ${county.summary}`)
   }

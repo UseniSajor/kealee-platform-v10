@@ -1,18 +1,23 @@
 import { execFile } from 'child_process'
 import { promisify } from 'util'
 import { writeFile, mkdir, readFile, unlink, rm } from 'fs/promises'
+import { existsSync } from 'fs'
 import path from 'path'
 import os from 'os'
 
 const execFileAsync = promisify(execFile)
 
-// Use bundled static binary when available (works on Vercel Lambda), fall back
-// to system ffmpeg for local dev environments that have it installed.
-function getFfmpegBin(): string {
+// FFMPEG_PATH wins; then the bundled static binary (works on Vercel Lambda) —
+// but only if its file actually exists, because pnpm can skip the package's
+// download step and `require('ffmpeg-static')` then returns a path to nothing;
+// then whatever `ffmpeg` is on PATH.
+export function getFfmpegBin(): string {
+  const override = process.env.FFMPEG_PATH
+  if (override && existsSync(override)) return override
   try {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const staticPath: string | null = require('ffmpeg-static') as string | null
-    if (staticPath) return staticPath
+    if (staticPath && existsSync(staticPath)) return staticPath
   } catch {
     // ffmpeg-static not installed — use system binary
   }

@@ -3,11 +3,20 @@
  *
  * From repo root:
  *   pnpm --filter web-main exec tsx scripts/generate-hero-campaign-media.ts
+ *   pnpm --filter web-main exec tsx scripts/generate-hero-campaign-media.ts --only hero-dmv-renovation
+ *
+ * Existing images and videos are never regenerated; delete the file to redo it.
  */
 import { existsSync, readFileSync } from 'fs'
-import { mkdir, writeFile } from 'fs/promises'
+import { mkdir, writeFile, readFile } from 'fs/promises'
+import os from 'os'
 import path from 'path'
+import { execFile } from 'child_process'
+import { promisify } from 'util'
 import Replicate from 'replicate'
+import { stitchMp4Segments, getFfmpegBin } from '../lib/marketing/video-stitch'
+
+const execFileAsync = promisify(execFile)
 
 const webMainRoot = path.join(__dirname, '..')
 const repoRoot = path.join(webMainRoot, '..', '..')
@@ -37,7 +46,72 @@ const replicate = new Replicate({ auth: process.env.REPLICATE_API_TOKEN })
 const imageModel = 'black-forest-labs/flux-1.1-pro-ultra'
 const videoModel = 'bytedance/seedance-1-pro'
 
-const specs = [
+/**
+ * A hero clip is either one Seedance shot (5 s) or a SEQUENCE of shots, each
+ * continuing from the previous shot's last frame and stitched with the same
+ * ffmpeg concat the deliverable process videos use. Seedance caps a shot at
+ * 10 s; a 15-second narrative is three 5-second beats.
+ */
+interface HeroSpec {
+  id: string
+  imageFile: string
+  videoFile: string
+  promptImage: string
+  /** Single-shot prompt. Ignored when `segments` is set. */
+  promptVideo?: string
+  segments?: { promptVideo: string; duration: 5 | 10 }[]
+}
+
+const specs: HeroSpec[] = [
+  // ── DMV 1950s ranch exterior renovation — 15 s, three beats ────────────
+  // Grounded in the exterior_concept / whole_home_remodel services and the
+  // DC · MD · VA service area (CLAUDE.md, AI content generation rules).
+  // Modest one-level 1950s home: the attainable renovation, not a luxury
+  // build. No footprint change, no added floors.
+  {
+    id: 'hero-dmv-renovation',
+    imageFile: 'hero-dmv-renovation.jpg',
+    videoFile: 'hero-dmv-renovation.mp4',
+    promptImage:
+      'Photorealistic editorial photograph, straight-on street view of a modest 1950s one-level ' +
+      'suburban ranch home in the Washington DC / Maryland / Virginia region before renovation: ' +
+      'dated pale siding, worn white trim, small original windows, aging concrete entry steps, ' +
+      'sagging gutters, patchy lawn and overgrown foundation shrubs, mature deciduous trees, ' +
+      'overcast morning light, realistic proportions, wide horizontal 16:9 composition, no people, ' +
+      'no text, no logos',
+    segments: [
+      {
+        duration: 5,
+        promptVideo:
+          'Cinematic residential construction commercial. Slow smooth dolly toward a modest 1950s ' +
+          'one-level suburban home in the DC Maryland Virginia region: dated siding, worn trim, small ' +
+          'windows, aging entry steps, outdated front yard. A crew begins careful demolition of the ' +
+          'deteriorated exterior siding and trim, old gutters coming down, realistic renovation ' +
+          'sequencing, natural overcast light, photorealistic, 4K, no text, no logos, no close-up ' +
+          'faces, footprint unchanged, no added floors',
+      },
+      {
+        duration: 5,
+        promptVideo:
+          'Cinematic time-lapse continuation on the same modest one-level DMV suburban home: new ' +
+          'insulation and clean horizontal siding going on, new energy-efficient black-framed windows ' +
+          'set in place, a warm wood front door installed, rebuilt porch and entry steps, subtle brick ' +
+          'accent at the base, new dark roof and gutters, smooth slow camera drift, realistic ' +
+          'proportions and construction order, natural daylight, photorealistic, 4K, no text, no ' +
+          'logos, no people in close-up, no distorted windows, same footprint',
+      },
+      {
+        duration: 5,
+        promptVideo:
+          'Cinematic golden-hour reveal of the finished renovation of the same modest one-level DMV ' +
+          'suburban home: clean horizontal siding, subtle brick accents, dark roof, black-framed ' +
+          'windows, warm wood front door, new exterior lighting glowing, repaired driveway, ' +
+          'low-maintenance professional landscaping, slow pull-back to a wide frontal view, ' +
+          'attainable and durable rather than luxurious, photorealistic, warm natural light, 4K, ' +
+          'no text, no logos, no people in close-up, same footprint',
+      },
+    ],
+  },
   {
     id: 'hero-new-construction',
     imageFile: 'hero-new-construction.jpg',
@@ -84,7 +158,7 @@ async function download(url: string): Promise<Buffer> {
   return Buffer.from(await response.arrayBuffer())
 }
 
-async function generateImage(spec: typeof specs[0]) {
+async function generateImage(spec: HeroSpec) {
   console.log(`[hero-media] Generating image ${spec.id} with Flux`)
   const output = await replicate.run(imageModel, {
     input: {
@@ -102,13 +176,16 @@ async function generateImage(spec: typeof specs[0]) {
   return remoteUrl
 }
 
-async function generateVideo(spec: typeof specs[0], startImageUrl: string) {
-  console.log(`[hero-media] Generating video ${spec.id} with Seedance 1 Pro`)
+/** One Seedance shot, returned as bytes so a sequence can continue from it. */
+async function generateShot(
+  id: string, startImageUrl: string, prompt: string, duration: 5 | 10,
+): Promise<Buffer> {
+  console.log(`[hero-media] Generating ${id} (${duration}s) with Seedance 1 Pro`)
 
   const input = {
     image: startImageUrl,
-    prompt: spec.promptVideo,
-    duration: 5,
+    prompt,
+    duration,
     resolution: '1080p',
     aspect_ratio: '16:9',
   }
@@ -140,14 +217,67 @@ async function generateVideo(spec: typeof specs[0], startImageUrl: string) {
 
   const remoteUrl = outputUrl(current.output)
   if (!remoteUrl.startsWith('http')) throw new Error('Seedance returned no usable video URL')
-  await writeFile(path.join(outputRoot, spec.videoFile), await download(remoteUrl))
-  console.log(`[hero-media] Saved video ${spec.videoFile}`)
+  return download(remoteUrl)
+}
+
+/** The last frame of a clip, uploaded so the next shot starts where this one ended. */
+async function lastFrameUrl(video: Buffer, id: string): Promise<string> {
+  const ffmpeg = getFfmpegBin()
+  const dir = path.join(os.tmpdir(), `kealee-hero-${id}-${Date.now()}`)
+  await mkdir(dir, { recursive: true })
+  const clip = path.join(dir, 'clip.mp4')
+  const frame = path.join(dir, 'last.jpg')
+  await writeFile(clip, video)
+  await execFileAsync(ffmpeg, ['-y', '-sseof', '-0.1', '-i', clip, '-frames:v', '1', '-q:v', '2', frame], { timeout: 60_000 })
+  const uploaded = await replicate.files.create(await readFile(frame))
+  return String(uploaded.urls?.get)
+}
+
+async function generateVideo(spec: HeroSpec, startImageUrl: string) {
+  const target = path.join(outputRoot, spec.videoFile)
+
+  if (!spec.segments) {
+    if (!spec.promptVideo) throw new Error(`${spec.id} has neither promptVideo nor segments`)
+    await writeFile(target, await generateShot(spec.id, startImageUrl, spec.promptVideo, 5))
+    console.log(`[hero-media] Saved video ${spec.videoFile}`)
+    return
+  }
+
+  // A sequence: each beat starts from the previous beat's last frame, then
+  // the beats are concatenated. Part files are kept beside the output so a
+  // failed later beat does not cost the earlier ones.
+  const parts: Buffer[] = []
+  let frameUrl = startImageUrl
+  for (const [i, seg] of spec.segments.entries()) {
+    const partPath = path.join(outputRoot, `${spec.id}.part-${i + 1}.mp4`)
+    let bytes: Buffer
+    if (existsSync(partPath)) {
+      console.log(`[hero-media] Reusing ${path.basename(partPath)}`)
+      bytes = await readFile(partPath)
+    } else {
+      bytes = await generateShot(`${spec.id} beat ${i + 1}/${spec.segments.length}`, frameUrl, seg.promptVideo, seg.duration)
+      await writeFile(partPath, bytes)
+    }
+    parts.push(bytes)
+    if (i < spec.segments.length - 1) frameUrl = await lastFrameUrl(bytes, `${spec.id}-${i + 1}`)
+  }
+
+  const stitched = await stitchMp4Segments(parts)
+  if (!stitched) throw new Error('ffmpeg concat failed; parts are saved beside the output')
+  await writeFile(target, stitched)
+  const total = spec.segments.reduce((n, s) => n + s.duration, 0)
+  console.log(`[hero-media] Saved ${spec.videoFile} (${spec.segments.length} beats, ${total}s)`)
 }
 
 async function main() {
   await mkdir(outputRoot, { recursive: true })
 
+  // `--only <id>` generates one spec; everything else is skipped.
+  const onlyArg = process.argv.indexOf('--only')
+  const only = onlyArg >= 0 ? process.argv[onlyArg + 1] : null
+
   for (const spec of specs) {
+    if (only && spec.id !== only) continue
     let imageUrl = '';
     const imagePath = path.join(outputRoot, spec.imageFile)
     if (!existsSync(imagePath)) {
