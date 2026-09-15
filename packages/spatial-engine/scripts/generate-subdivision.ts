@@ -747,7 +747,11 @@ async function main(): Promise<void> {
       }))
     const pkg = buildLotPackage(
       {
-        name: spec.address, address: spec.address,
+        // The lot's NAME is its lot number; the address is the subdivision's.
+        // Naming every lot by the address printed "4600 WHEELER ROAD" ten
+        // times over ten abutting strips and nothing said which was which.
+        name: spec.reference?.lot ? `LOT ${spec.reference.lot}` : spec.address,
+        address: spec.address,
         jurisdictionCode: 'prince_georges_md',
         zoneCode: site.zoning?.zoneCode ?? '',
         isResidentialSingleFamily: true, dwellingUnitCount: 1,
@@ -2891,11 +2895,14 @@ async function main(): Promise<void> {
     // list through, and the cover sheet's index needs every sheet in the set,
     // not just the one being drawn.
     sheetIds,
-    // Exhibits are per PROJECT. The connection sketch belongs to Rollins; the
-    // field topo belongs to Indian Queen. Named by which plat record is loaded.
-    exhibits: platRecord?.citation === 'PLAT BOOK WWW 65, P. 60'
-      ? ['indian-queen-field-topo']
-      : ['wssc-connection-sketch'],
+    // Exhibits are per PROJECT — a recorded instrument for one property must
+    // not print on another's sheets. The plat record names its own
+    // (`exhibits: [...]`); the two known records are recognised by citation
+    // so their existing files keep working. Anything else gets none.
+    exhibits: (platRecord as { exhibits?: string[] } | null)?.exhibits
+      ?? (platRecord?.citation === 'PLAT BOOK WWW 65, P. 60' ? ['indian-queen-field-topo']
+        : platRecord?.citation === 'PLAT BOOK PM 231, P. 50' ? ['wssc-connection-sketch']
+        : []),
   }))
   const out = await renderSheetSetPdf({ sheets, responsibility: undefined })
 

@@ -211,7 +211,10 @@ function titleBlock(
   const lotAddresses = ((ctx.twin as unknown as {
     projectLots?: Array<{ address?: string }>
   }).projectLots ?? []).map(l => l.address).filter((a): a is string => Boolean(a))
-  row('ADDRESS', lotAddresses.length ? lotAddresses.join('  ·  ') : ctx.twin.address)
+  // Deduplicated: ten proposed lots on one parcel share one address, and the
+  // block printed it ten times.
+  const uniqueAddresses = [...new Set(lotAddresses)]
+  row('ADDRESS', uniqueAddresses.length ? uniqueAddresses.join('  ·  ') : ctx.twin.address)
   row('JURISDICTION', jurisdictionName(ctx.twin.jurisdictionCode))
   row('ZONE', ctx.twin.zoneCode ?? 'Not determined')
   row('SHEET', `${ctx.sheet} — ${SHEET_TITLES[ctx.sheet]}`)

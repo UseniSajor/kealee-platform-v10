@@ -115,19 +115,18 @@ describe('sitePlanDeliveryFormDataPatch', () => {
     expect(patch.sitePlanDeliverable).toBe(record)
   })
 
-  it('sends the higher tiers to professional review with the plan still visible', () => {
-    for (const productId of ['verified_site_feasibility', 'permit_site_plan']) {
+  it('delivers every tier the moment the plan renders — review is never a gate', () => {
+    for (const productId of ['verified_site_feasibility', 'permit_site_plan', 'something_else']) {
       const patch = sitePlanDeliveryFormDataPatch({ productId, record })
-      expect(patch.orderStatus).toBe('needs_professional_review')
-      expect(patch.requiresHumanFulfillment).toBe(true)
+      expect(patch.orderStatus).toBe('delivered')
+      expect(patch.requiresHumanFulfillment).toBe(false)
       expect(patch.sitePlanDeliverable).toBe(record)
       expect(String(patch.orderStatusReason)).toContain('2 items')
     }
-  })
-
-  it('treats an unknown product as needing review rather than delivered', () => {
-    const patch = sitePlanDeliveryFormDataPatch({ productId: 'something_else', record })
-    expect(patch.orderStatus).toBe('needs_professional_review')
+    expect(String(sitePlanDeliveryFormDataPatch({ productId: 'permit_site_plan', record }).orderStatusReason))
+      .toMatch(/submission package follow automatically/)
+    expect(String(sitePlanDeliveryFormDataPatch({ productId: 'verified_site_feasibility', record }).orderStatusReason))
+      .toMatch(/sign-off is appended/)
   })
 })
 
@@ -179,7 +178,7 @@ describe('bridgeSitePlanDelivery', () => {
     })
     const out = await bridgeSitePlanDelivery(
       { workflowId: 'wf_1', orderId: 'intake_1', productId: 'permit_site_plan' }, p)
-    expect(out).toMatchObject({ bridged: true, emailed: false, orderStatus: 'needs_professional_review' })
+    expect(out).toMatchObject({ bridged: true, emailed: false, orderStatus: 'delivered' })
     expect(patches).toHaveLength(1)
     expect(emails).toHaveLength(0)
     expect(out.summary).toMatch(/no customer email/)
@@ -254,26 +253,23 @@ describe('sitePlanReviewFormDataPatch', () => {
   const approved = buildSitePlanReviewRecord({ workflowId: 'wf_1', outputs: reviewed('APPROVED'), now: NOW })!
   const changes = buildSitePlanReviewRecord({ workflowId: 'wf_1', outputs: reviewed('CHANGES_REQUESTED'), now: NOW })!
 
-  it('delivers verified_site_feasibility on approval — sign-off is its last line item', () => {
-    const patch = sitePlanReviewFormDataPatch({ productId: 'verified_site_feasibility', record: approved })
-    expect(patch.orderStatus).toBe('delivered')
-    expect(patch.requiresHumanFulfillment).toBe(false)
-    expect(String(patch.orderStatusReason)).toContain('A. Engineer (MD MD-12345)')
+  it('an approval appends the sign-off to an already-delivered order, for any product', () => {
+    for (const productId of ['verified_site_feasibility', 'permit_site_plan']) {
+      const patch = sitePlanReviewFormDataPatch({ productId, record: approved })
+      expect(patch.orderStatus).toBe('delivered')
+      expect(patch.requiresHumanFulfillment).toBe(false)
+      expect(String(patch.orderStatusReason)).toContain('A. Engineer (MD MD-12345)')
+      expect(String(patch.orderStatusReason)).toMatch(/sign-off appended/)
+    }
   })
 
-  it('keeps permit_site_plan with a human after approval — issuance and submission are not connected', () => {
-    const patch = sitePlanReviewFormDataPatch({ productId: 'permit_site_plan', record: approved })
-    expect(patch.orderStatus).toBe('in_review')
-    expect(patch.requiresHumanFulfillment).toBe(true)
-    expect(String(patch.orderStatusReason)).toMatch(/Issuance QC/)
-  })
-
-  it('routes changes requested to a drafter regardless of product', () => {
+  it('changes requested flags a revision without taking the delivered plan away', () => {
     for (const productId of ['verified_site_feasibility', 'permit_site_plan']) {
       const patch = sitePlanReviewFormDataPatch({ productId, record: changes })
       expect(patch.orderStatus).toBe('revision_requested')
-      expect(patch.fulfillmentStatus).toBe('awaiting_drafter')
+      expect(patch.fulfillmentStatus).toBe('revision_in_progress')
       expect(String(patch.orderStatusReason)).toContain('1 subject')
+      expect(String(patch.orderStatusReason)).toMatch(/delivered plan stays available/)
     }
   })
 })
@@ -370,12 +366,14 @@ describe('submission bridge', () => {
     expect(emails[0].headline).toMatch(/ready to submit/)
   })
 
-  it('delivers an incomplete package to the customer but keeps the order with a human', async () => {
+  it('delivers an incomplete package too, with the outstanding list, and no human gate', async () => {
     const { p, patches, emails } = ports('SUBMISSION_INCOMPLETE')
     const out = await bridgeSitePlanSubmission({ workflowId: 'wf_1', orderId: 'intake_1', productId: 'permit_site_plan' }, p)
-    expect(out).toMatchObject({ bridged: true, emailed: true, orderStatus: 'in_review' })
-    expect(patches[0].requiresHumanFulfillment).toBe(true)
+    expect(out).toMatchObject({ bridged: true, emailed: true, orderStatus: 'delivered' })
+    expect(patches[0].requiresHumanFulfillment).toBe(false)
+    expect(patches[0].fulfillmentStatus).toBe('delivered_with_outstanding_items')
     expect(String(patches[0].orderStatusReason)).toContain('2 outstanding items')
+    expect(String(patches[0].orderStatusReason)).toMatch(/Not labelled ready to submit/)
     expect(emails[0].headline).toMatch(/county checklist/)
   })
 
@@ -386,10 +384,14 @@ describe('submission bridge', () => {
     expect(patches).toHaveLength(0)
   })
 
-  it('patch shape: ready is terminal, incomplete is not', () => {
+  it('patch shape: both states are delivered; only the label differs', () => {
     const rec = { version: 1 as const, state: 'SUBMISSION_INCOMPLETE' as const, recordedAt: NOW.toISOString(), workflowId: 'wf_1', documentId: 'doc_1', jurisdiction: null, agency: null, checklist: { providedCount: 0, outstandingCount: 1, items: [] }, outstanding: [{ code: 'SP-02', requirement: 'x', responsible: 'y' }], note: '' }
-    expect(sitePlanSubmissionFormDataPatch({ record: rec }).fulfillmentCompletedAt).toBeUndefined()
-    expect(sitePlanSubmissionFormDataPatch({ record: { ...rec, state: 'SUBMISSION_READY', outstanding: [] } }).fulfillmentCompletedAt).toBe(NOW.toISOString())
+    const incomplete = sitePlanSubmissionFormDataPatch({ record: rec })
+    const ready = sitePlanSubmissionFormDataPatch({ record: { ...rec, state: 'SUBMISSION_READY', outstanding: [] } })
+    expect(incomplete.fulfillmentCompletedAt).toBe(NOW.toISOString())
+    expect(ready.fulfillmentCompletedAt).toBe(NOW.toISOString())
+    expect(incomplete.fulfillmentStatus).toBe('delivered_with_outstanding_items')
+    expect(ready.fulfillmentStatus).toBe('delivered')
   })
 })
 

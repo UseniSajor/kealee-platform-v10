@@ -17,7 +17,7 @@ import { productionCapabilities, loadSnapshot, loadPriorOutputs } from './capabi
 import {
   bridgeSitePlanDelivery, bridgeSitePlanReviewOutcome, bridgeSitePlanSubmission,
   bridgeSitePlanCountyReview, notifyReviewRouted, productionDeliveryPorts,
-  productIncludesProfessionalReview,
+  productIncludesProfessionalReview, productIncludesSubmissionPackage,
 } from './delivery'
 
 export interface DrainResult {
@@ -207,6 +207,15 @@ async function runOne(
       const notice = await notifyReviewRouted(
         { ...subject, address: (await ports.loadOrder(subject.orderId))?.address ?? null }, ports)
       console.log(`[siteplan] routed ${workflowId} for professional review. ${notice.summary}`)
+    }
+
+    // The permit product continues straight into issuance QC and the
+    // submission package. Not gated on the review above: the package is
+    // generated and delivered, and reports sign-off as present or pending.
+    if (delivery.bridged && productIncludesSubmissionPackage(subject.productId)) {
+      await enqueueSitePlanJob({ workflowId, job: 'siteplan.run_issuance_qc' })
+      enqueued++
+      console.log(`[siteplan] ${workflowId} continues to issuance QC and submission`)
     }
   }
 

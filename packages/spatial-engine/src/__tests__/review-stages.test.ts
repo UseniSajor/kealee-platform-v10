@@ -153,7 +153,8 @@ describe('siteplan.route_review', () => {
       review: reviewState('COMPLETED', ['APPROVED', 'APPROVED']),
     }))
     expect(r.status).toBe('COMPLETED')
-    expect(r.enqueue).toEqual(['siteplan.run_issuance_qc'])
+    // Issuance runs off the delivered preliminary, not off this approval.
+    expect(r.enqueue).toEqual([])
     const out = r.outputs as RouteReviewOutput
     expect(out.reviewState).toBe('APPROVED')
     expect(out.outstanding).toEqual([])

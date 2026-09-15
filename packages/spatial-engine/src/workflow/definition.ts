@@ -103,7 +103,7 @@ export interface StageDefinition {
  * in-flight workflow resume incorrectly. Adding a field to a payload does not
  * require a bump; removing a stage or reordering does.
  */
-export const SITE_PLAN_WORKFLOW_VERSION = 1
+export const SITE_PLAN_WORKFLOW_VERSION = 2
 
 export const SITE_PLAN_STAGES: StageDefinition[] = [
   {
@@ -246,7 +246,12 @@ export const SITE_PLAN_STAGES: StageDefinition[] = [
     job: 'siteplan.run_issuance_qc', group: 'I_ISSUANCE_QC', persistAs: 'COMPLIANCE_AUDIT',
     purpose: 'Issuance QC against evidence. Approval cannot clear absent evidence.',
     implementation: 'review/evidence#applyEvidenceGate',
-    requires: ['siteplan.route_review'], deterministic: true, retrySafe: true, inFirstRelease: false,
+    // Runs off the delivered preliminary, NOT off professional review: the
+    // package is generated and delivered whether or not anyone has reviewed
+    // it, and the review matrix reports sign-off as present or pending. A
+    // professional's approval is a fact the package records, never something
+    // the customer waits behind. (v1 required route_review.)
+    requires: ['siteplan.deliver_preliminary'], deterministic: true, retrySafe: true, inFirstRelease: false,
   },
   {
     job: 'siteplan.build_submission', group: 'J_SUBMISSION', persistAs: 'SUBMITTED_TO_JURISDICTION',

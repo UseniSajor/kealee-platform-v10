@@ -194,36 +194,38 @@ export function buildSitePlanDeliverable(input: {
 // ── Order status ─────────────────────────────────────────────────────────────
 
 /**
- * Site-plan SKUs and what a PRELIMINARY_READY plan means for each.
+ * Site-plan SKUs and what the engine runs after the preliminary is delivered.
  *
- * The preliminary plan IS the product for `preliminary_site_plan`, so it is
- * delivered. For the two higher tiers it is a milestone: the customer can open
- * it now, but a professional still has to act, and the order says so. Mirrors
+ * Every product is DELIVERED the moment the preliminary renders — the plan
+ * is generated fully and never held for a professional's review. The higher
+ * tiers add work the engine also runs on its own: a review is routed for a
+ * licensed professional who may add a sign-off, and `permit_site_plan` goes
+ * straight on to issuance QC and the submission package. Mirrors
  * `ORDER_STATUSES` in web-main's order-status.ts — values, not the module,
  * because the worker does not import from a Next.js app.
  */
-const SITE_PLAN_PRODUCT_STATUS: Record<string, 'delivered' | 'needs_professional_review'> = {
-  preliminary_site_plan: 'delivered',
-  verified_site_feasibility: 'needs_professional_review',
-  permit_site_plan: 'needs_professional_review',
-}
-
-const ORDER_STATUS_LABEL: Record<'delivered' | 'needs_professional_review', string> = {
-  delivered: 'Delivered',
-  needs_professional_review: 'Needs Professional Review',
+const SITE_PLAN_PRODUCTS: Record<string, { routeReview: boolean; issuance: boolean }> = {
+  preliminary_site_plan: { routeReview: false, issuance: false },
+  verified_site_feasibility: { routeReview: true, issuance: false },
+  permit_site_plan: { routeReview: true, issuance: true },
 }
 
 export function isSitePlanProduct(productId: string | null | undefined): boolean {
-  return Boolean(productId && productId in SITE_PLAN_PRODUCT_STATUS)
+  return Boolean(productId && productId in SITE_PLAN_PRODUCTS)
 }
 
 /**
- * Products whose price includes a licensed professional's review. For these
- * the preliminary plan is a milestone and `siteplan.route_review` is enqueued
- * as soon as it is delivered.
+ * Products whose price includes a licensed professional's review. The plan
+ * is delivered regardless; `siteplan.route_review` is enqueued alongside so a
+ * professional can append a sign-off.
  */
 export function productIncludesProfessionalReview(productId: string | null | undefined): boolean {
-  return SITE_PLAN_PRODUCT_STATUS[productId ?? ''] === 'needs_professional_review'
+  return SITE_PLAN_PRODUCTS[productId ?? '']?.routeReview ?? false
+}
+
+/** Products that continue automatically into issuance QC and the submission package. */
+export function productIncludesSubmissionPackage(productId: string | null | undefined): boolean {
+  return SITE_PLAN_PRODUCTS[productId ?? '']?.issuance ?? false
 }
 
 /**
@@ -238,30 +240,30 @@ export function sitePlanDeliveryFormDataPatch(input: {
   productId: string | null | undefined
   record: SitePlanDeliverableRecord
 }): Record<string, unknown> {
-  const status = SITE_PLAN_PRODUCT_STATUS[input.productId ?? ''] ?? 'needs_professional_review'
-  const humanNext = status === 'needs_professional_review'
   const pending = input.record.qc.pendingSeal.length
+  const continues = productIncludesSubmissionPackage(input.productId)
+  const reviewed = productIncludesProfessionalReview(input.productId)
 
-  const reason = humanNext
-    ? `Preliminary site plan drafted by the engine (${pending} item${pending === 1 ? '' : 's'} pending professional confirmation). Professional review is part of this product.`
-    : `Preliminary site plan delivered by the engine (${pending} item${pending === 1 ? '' : 's'} listed for confirmation).`
+  const reason =
+    `Site plan delivered by the engine (${pending} item${pending === 1 ? '' : 's'} listed for confirmation).` +
+    (continues ? ' Issuance QC and the submission package follow automatically.' : '') +
+    (reviewed ? ' Routed to a licensed professional, whose sign-off is appended when given.' : '')
 
   return {
     sitePlanDeliverable: input.record,
     sitePlanDeliveredAt: input.record.deliveredAt,
-    orderStatus: status,
-    orderStatusLabel: ORDER_STATUS_LABEL[status],
+    orderStatus: 'delivered',
+    orderStatusLabel: 'Delivered',
     orderStatusAt: input.record.deliveredAt,
     orderStatusReason: reason,
     orderStatusSetBy: 'system',
-    fulfillmentStatus: humanNext ? 'awaiting_professional_review' : 'delivered',
+    fulfillmentStatus: 'delivered',
     fulfillmentMode: 'automated',
     fulfillmentCompletedAt: input.record.deliveredAt,
     // The webhook's manual fallback set this while the engine had no route.
-    // A human is still needed on the higher tiers, but for the reason above,
-    // not because automation failed.
-    requiresHumanFulfillment: humanNext,
-    ...(humanNext ? {} : { fulfillmentFallbackReason: null, fulfillmentFallbackDetail: null }),
+    requiresHumanFulfillment: false,
+    fulfillmentFallbackReason: null,
+    fulfillmentFallbackDetail: null,
   }
 }
 
@@ -333,13 +335,12 @@ export function buildSitePlanReviewRecord(input: {
 }
 
 /**
- * The `form_data` patch once the professional has decided.
+ * The `form_data` patch once a professional has decided.
  *
- * APPROVED on `verified_site_feasibility` is the end of that product —
- * "reviewer sign-off status" is its last line item — so it is delivered.
- * APPROVED on `permit_site_plan` still has issuance QC and submission ahead,
- * and those groups are not connected, so a Kealee reviewer carries it by hand
- * and the order says so. CHANGES_REQUESTED routes to a drafter either way.
+ * The order was DELIVERED when the plan rendered, and a review never takes
+ * that back. APPROVED appends the sign-off. CHANGES_REQUESTED records the
+ * redlines and flags the order for a drafter's revision — the customer keeps
+ * the plan they have while the revised one is drawn.
  */
 export function sitePlanReviewFormDataPatch(input: {
   productId: string | null | undefined
@@ -360,28 +361,24 @@ export function sitePlanReviewFormDataPatch(input: {
       orderStatus: 'revision_requested',
       orderStatusLabel: 'Revision Requested',
       orderStatusAt: input.record.recordedAt,
-      orderStatusReason: `${who} requested changes on ${n} subject${n === 1 ? '' : 's'}. A drafter applies the redlines and the plan is re-routed for review.`,
+      orderStatusReason: `${who} requested changes on ${n} subject${n === 1 ? '' : 's'}. The delivered plan stays available; a drafter applies the redlines and a revised plan follows.`,
       orderStatusSetBy: 'system',
-      fulfillmentStatus: 'awaiting_drafter',
+      fulfillmentStatus: 'revision_in_progress',
       requiresHumanFulfillment: true,
     }
   }
 
-  const terminal = input.productId === 'verified_site_feasibility'
   return {
     sitePlanReview: input.record,
     sitePlanReviewedAt: input.record.reviewCompletedAt ?? input.record.recordedAt,
-    orderStatus: terminal ? 'delivered' : 'in_review',
-    orderStatusLabel: terminal ? 'Delivered' : 'In Review',
+    orderStatus: 'delivered',
+    orderStatusLabel: 'Delivered',
     orderStatusAt: input.record.recordedAt,
-    orderStatusReason: terminal
-      ? `Professional review completed by ${who}.`
-      : `Professional review completed by ${who}. Issuance QC and the submission package are prepared by Kealee staff.`,
+    orderStatusReason: `Professional review completed by ${who}; sign-off appended to the delivered plan.`,
     orderStatusSetBy: 'system',
-    fulfillmentStatus: terminal ? 'delivered' : 'awaiting_issuance',
+    fulfillmentStatus: 'delivered',
     fulfillmentMode: 'automated',
-    ...(terminal ? { fulfillmentCompletedAt: input.record.recordedAt } : {}),
-    requiresHumanFulfillment: !terminal,
+    requiresHumanFulfillment: false,
   }
 }
 
@@ -534,19 +531,22 @@ export function sitePlanSubmissionFormDataPatch(input: {
 }): Record<string, unknown> {
   const ready = input.record.state === 'SUBMISSION_READY'
   const n = input.record.outstanding.length
+  // Delivered either way: the drawing, the county checklist and the list of
+  // what is still owed are the package. "Ready to submit" is a label the
+  // package earns from evidence and sign-off; it is not a delivery gate.
   return {
     sitePlanSubmission: input.record,
-    orderStatus: ready ? 'delivered' : 'in_review',
-    orderStatusLabel: ready ? 'Delivered' : 'In Review',
+    orderStatus: 'delivered',
+    orderStatusLabel: 'Delivered',
     orderStatusAt: input.record.recordedAt,
     orderStatusReason: ready
       ? 'Submission package assembled and labelled ready to submit. Filing with the County is a separate act; jurisdiction approval is not implied.'
-      : `Submission package assembled with ${n} outstanding item${n === 1 ? '' : 's'}. A Kealee coordinator resolves them before filing.`,
+      : `Submission package delivered with ${n} outstanding item${n === 1 ? '' : 's'} listed for the applicant and their professionals. Not labelled ready to submit until they are resolved.`,
     orderStatusSetBy: 'system',
-    fulfillmentStatus: ready ? 'delivered' : 'awaiting_submission_items',
+    fulfillmentStatus: ready ? 'delivered' : 'delivered_with_outstanding_items',
     fulfillmentMode: 'automated',
-    ...(ready ? { fulfillmentCompletedAt: input.record.recordedAt } : {}),
-    requiresHumanFulfillment: !ready,
+    fulfillmentCompletedAt: input.record.recordedAt,
+    requiresHumanFulfillment: false,
   }
 }
 

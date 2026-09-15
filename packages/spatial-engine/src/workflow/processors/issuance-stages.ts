@@ -36,6 +36,8 @@ import type { SheetId } from '../../sheets/sheet-template'
 // ── Stage payloads ──────────────────────────────────────────────────────────
 
 export interface IssuanceQcOutput {
+  /** The professional review's state when QC ran. Pending is normal, not an error. */
+  reviewState: 'UNCLAIMED' | 'IN_REVIEW' | 'APPROVED' | 'CHANGES_REQUESTED'
   /** May the package be labelled ready to submit to the County. */
   issuable: boolean
   blocking: QcFinding[]
@@ -121,18 +123,21 @@ function scopedApprovalsFrom(routed: RouteReviewOutput, sheets: SheetId[]): Scop
 
 // ── siteplan.run_issuance_qc ────────────────────────────────────────────────
 
-const runIssuanceQcStage: StageProcessor = async (ctx): Promise<StageResult> => {
-  const routed = requirePriorOutput<RouteReviewOutput>(ctx, 'siteplan.route_review')
-  const render = requirePriorOutput<RenderOutput>(ctx, 'siteplan.render_exports')
-
-  if (routed.reviewState !== 'APPROVED') {
-    return {
-      status: 'BLOCKED', outputs: null,
-      blockers: [
-        `Issuance QC requires an approved professional review; the review is ${routed.reviewState}.`,
-      ],
-    }
+/** What the review application has recorded, if anything. Never required. */
+function reviewIfAny(ctx: StageContext): RouteReviewOutput {
+  const routed = ctx.priorOutputs['siteplan.route_review'] as RouteReviewOutput | undefined
+  return routed ?? {
+    reviewState: 'UNCLAIMED', documentId: '', responsibility: [], reviewer: null,
+    approvals: [], outstanding: [], redlines: [], reviewCompletedAt: null,
+    note: 'No professional review recorded when issuance QC ran.',
   }
+}
+
+const runIssuanceQcStage: StageProcessor = async (ctx): Promise<StageResult> => {
+  const render = requirePriorOutput<RenderOutput>(ctx, 'siteplan.render_exports')
+  // Review is read if present and treated as pending if not. The package is
+  // produced either way; `issuable` and the matrix say what is still owed.
+  const routed = reviewIfAny(ctx)
 
   const pkg = lotPackageFrom(ctx)
   const sheets = [...new Set(pkg.sheets.sheets.flatMap(s => s.covers))]
@@ -163,6 +168,7 @@ const runIssuanceQcStage: StageProcessor = async (ctx): Promise<StageResult> => 
   })
 
   const output: IssuanceQcOutput = {
+    reviewState: routed.reviewState,
     issuable: gated.issuable && matrix.submissionReady,
     blocking: gated.blocking,
     warnings: gated.findings.filter(f => f.severity === 'warning'),

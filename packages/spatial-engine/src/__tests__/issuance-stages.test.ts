@@ -86,10 +86,22 @@ const issuanceQc = ISSUANCE_PROCESSORS['siteplan.run_issuance_qc']!
 const buildSubmission = ISSUANCE_PROCESSORS['siteplan.build_submission']!
 
 describe('siteplan.run_issuance_qc', () => {
-  it('blocks without an approved professional review', async () => {
+  it('runs with no professional review at all — review is reported, never required', async () => {
+    const c = ctx('siteplan.run_issuance_qc')
+    delete (c.priorOutputs as Record<string, unknown>)['siteplan.route_review']
+    const r = await issuanceQc(c)
+    expect(r.status).toBe('COMPLETED')
+    const out = r.outputs as IssuanceQcOutput
+    expect(out.reviewState).toBe('UNCLAIMED')
+    expect(out.issuable).toBe(false)
+    expect(out.review.rows.find(x => x.discipline === 'professional_engineer')?.decision).toBe('PENDING')
+  })
+
+  it('runs on a review that requested changes and says so', async () => {
     const r = await issuanceQc(ctx('siteplan.run_issuance_qc', { review: routed('CHANGES_REQUESTED') }))
-    expect(r.status).toBe('BLOCKED')
-    expect(r.blockers?.[0]).toMatch(/approved professional review/)
+    expect(r.status).toBe('COMPLETED')
+    expect((r.outputs as IssuanceQcOutput).reviewState).toBe('CHANGES_REQUESTED')
+    expect((r.outputs as IssuanceQcOutput).issuable).toBe(false)
   })
 
   it('an engineer approval alone does not make a GIS-drawn lot issuable', async () => {

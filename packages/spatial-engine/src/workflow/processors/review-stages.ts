@@ -162,8 +162,9 @@ const routeReview: StageProcessor = async (ctx): Promise<StageResult> => {
         ...base, reviewState: 'APPROVED', reviewCompletedAt: assignment.completedAt,
         note: 'Scoped professional review complete. Sealing remains a separate act.',
       } satisfies RouteReviewOutput,
-      // Issuance QC reads this approval and the evidence ledger next.
-      enqueue: ['siteplan.run_issuance_qc'],
+      // Issuance runs off the delivered preliminary, not off this approval.
+      // Staff re-run run_issuance_qc if the matrix should reflect it.
+      enqueue: [],
     }
   }
 
