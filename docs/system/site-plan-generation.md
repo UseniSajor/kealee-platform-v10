@@ -164,12 +164,42 @@ human.
 skip) and never throws — the plan is already persisted, and a delivery
 failure must not fail the stage and trigger a re-render.
 
+### Professional review — the H group (connected 2026-09-15)
+
+```
+deliver_preliminary COMPLETED
+  └─ product includes review?  ──►  worker enqueues siteplan.route_review
+route_review
+  reads capabilities.loadReviewState (SitePlanReviewAssignment + ScopedApprovals)
+  ├─ no assignment / ACTIVE      → AWAITING_REVIEW   (stage waits; engineer queue lists the plan)
+  ├─ assignment COMPLETED        → COMPLETED, reviewState APPROVED
+  └─ assignment REVISION_REQUIRED→ COMPLETED, reviewState CHANGES_REQUESTED, enqueue apply_revisions
+engineer acts (apps/web-main/app/engineer/review/actions.ts)
+  completeReview / withheld approval ──► reopenSitePlanReview() re-enqueues route_review (own key)
+route_review COMPLETED ──► worker bridgeSitePlanReviewOutcome()
+  form_data.sitePlanReview + order status:
+    APPROVED  verified_site_feasibility → delivered (emails customer)
+    APPROVED  permit_site_plan          → in_review (I/J groups are staff work)
+    CHANGES_REQUESTED                   → revision_requested, fulfillmentStatus awaiting_drafter
+apply_revisions → AWAITING_REVIEW for a drafter; it does NOT apply free-text redlines
+```
+
+**A processor may read a decision and can never make one.** The assignment
+and scoped approvals are written only by the review application under the
+professional's identity. `loadReviewState` is read-only and optional — a host
+without it (the pilot script) gets BLOCKED from `route_review`, not an
+approval.
+
+**The revision loop is not closed.** `apply_revisions` ends waiting for a
+drafter; there is no reopen of `compose_sheets`/`render_exports` and no second
+routing. `ingest_comments` (J) is where reopening is meant to live and it is
+unconnected. Today a drafter revises by hand and the workflow stays at
+`apply_revisions` AWAITING_REVIEW.
+
 **Not done:** the concept page at `/deliverables/[id]` does not redirect
 site-plan orders to `/site-plan`; the list page and the email link route
-there directly. The deliverable-ready email uses the generic template. The
-higher tiers have no path from `needs_professional_review` back to the
-customer yet — that is the H_PROFESSIONAL_REVIEW group (`route_review`,
-`apply_revisions`), still unconnected.
+there directly. `run_issuance_qc`, `build_submission`, `ingest_comments`
+remain unconnected.
 
 ## Requirement sources
 

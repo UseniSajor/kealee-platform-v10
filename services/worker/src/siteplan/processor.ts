@@ -14,7 +14,10 @@
 import { prisma } from '@kealee/database'
 import { Workflow } from '@kealee/pascal-agents/engine'
 import { productionCapabilities, loadSnapshot, loadPriorOutputs } from './capabilities'
-import { bridgeSitePlanDelivery, productionDeliveryPorts } from './delivery'
+import {
+  bridgeSitePlanDelivery, bridgeSitePlanReviewOutcome, productionDeliveryPorts,
+  productIncludesProfessionalReview,
+} from './delivery'
 
 export interface DrainResult {
   claimed: number
@@ -23,6 +26,56 @@ export interface DrainResult {
   failed: number
   enqueued: number
   details: { job: string; workflowId: string; disposition: string; summary: string }[]
+}
+
+/**
+ * Enqueues one stage. Upsert on (queueName, jobId) so a redelivery or a
+ * concurrent run cannot double-queue a stage; `update: {}` makes the second
+ * writer a no-op.
+ *
+ * `attemptOf` is for RE-RUNNING a stage that ended AWAITING_REVIEW — its
+ * original row is terminal, so the re-run needs its own key rather than a
+ * silent no-op against the finished one.
+ */
+export async function enqueueSitePlanJob(input: {
+  workflowId: string
+  job: Workflow.SitePlanJobName
+  attemptOf?: number
+}): Promise<void> {
+  const w = Workflow.workerFor(input.job)
+  const jobKey = Workflow.jobIdempotencyKey(input)
+  await prisma.jobQueue.upsert({
+    where: { queueName_jobId: { queueName: w.queue, jobId: jobKey } },
+    create: {
+      queueName: w.queue, jobId: jobKey, jobName: input.job, status: 'WAITING',
+      priority: 0, attempts: 0, maxAttempts: w.maxAttempts,
+      data: {
+        workflowId: input.workflowId, job: input.job,
+        payloadVersion: Workflow.SITE_PLAN_WORKFLOW_VERSION,
+        backoffMs: w.backoffMs,
+      } as never,
+    },
+    update: {},
+  })
+}
+
+/**
+ * Re-runs a stage that is waiting on a human. Called when the professional
+ * acts, so the stage can read the decision and move on. The key carries the
+ * next free ordinal for this (workflow, job) so each re-run is its own row.
+ */
+export async function reopenSitePlanJob(input: {
+  workflowId: string
+  job: Workflow.SitePlanJobName
+}): Promise<{ jobKey: string }> {
+  const w = Workflow.workerFor(input.job)
+  const prefix = Workflow.jobIdempotencyKey(input)
+  const priorRuns = await prisma.jobQueue.count({
+    where: { queueName: w.queue, jobId: { startsWith: prefix } },
+  })
+  const attemptOf = priorRuns + 1
+  await enqueueSitePlanJob({ ...input, attemptOf })
+  return { jobKey: Workflow.jobIdempotencyKey({ ...input, attemptOf }) }
 }
 
 /**
@@ -128,38 +181,38 @@ async function runOne(
   // Runs on SKIPPED_ALREADY_DONE too, so a replayed job still closes an order
   // whose bridge previously failed; the bridge itself is idempotent.
   let deliverySummary: string | null = null
-  if (
-    (outcome.disposition === 'COMPLETED' || outcome.disposition === 'SKIPPED_ALREADY_DONE')
-    && Workflow.stageFor(job as Workflow.SitePlanJobName).deliverable
-  ) {
-    const delivery = await bridgeSitePlanDelivery(
-      { workflowId, orderId: wf?.orderId ?? '', productId: wf?.productId ?? null },
-      productionDeliveryPorts({ loadOutputs: loadPriorOutputs }),
-    )
+  let enqueued = 0
+  const settled = outcome.disposition === 'COMPLETED' || outcome.disposition === 'SKIPPED_ALREADY_DONE'
+  const subject = { workflowId, orderId: wf?.orderId ?? '', productId: wf?.productId ?? null }
+  const ports = productionDeliveryPorts({ loadOutputs: loadPriorOutputs })
+
+  if (settled && Workflow.stageFor(job as Workflow.SitePlanJobName).deliverable) {
+    const delivery = await bridgeSitePlanDelivery(subject, ports)
     deliverySummary = delivery.summary
     console.log(`[siteplan] delivery: ${delivery.summary}`)
+
+    // The higher tiers include a licensed professional's review. Route the
+    // delivered plan to one now. `route_review` is not in the first release,
+    // so the runner never derives it; it is enqueued here, on purpose, for
+    // the products that paid for it.
+    if (productIncludesProfessionalReview(subject.productId)) {
+      await enqueueSitePlanJob({ workflowId, job: 'siteplan.route_review' })
+      enqueued++
+      console.log(`[siteplan] routed ${workflowId} for professional review`)
+    }
   }
 
-  // Enqueue what this stage unblocked. Upsert on (queueName, jobId) so a
-  // redelivery or a concurrent run cannot double-queue a stage.
-  let enqueued = 0
+  // A decided review — approved or changes requested — reaches the order.
+  if (settled && job === 'siteplan.route_review') {
+    const review = await bridgeSitePlanReviewOutcome(subject, ports)
+    deliverySummary = review.summary
+    console.log(`[siteplan] review: ${review.summary}`)
+  }
+
+  // Enqueue what this stage unblocked.
   if (outcome.disposition === 'COMPLETED') {
     for (const next of outcome.nextJobs) {
-      const w = Workflow.workerFor(next)
-      const jobKey = Workflow.jobIdempotencyKey({ workflowId, job: next })
-      await prisma.jobQueue.upsert({
-        where: { queueName_jobId: { queueName: w.queue, jobId: jobKey } },
-        create: {
-          queueName: w.queue, jobId: jobKey, jobName: next, status: 'WAITING',
-          priority: 0, attempts: 0, maxAttempts: w.maxAttempts,
-          data: {
-            workflowId, job: next,
-            payloadVersion: Workflow.SITE_PLAN_WORKFLOW_VERSION,
-            backoffMs: w.backoffMs,
-          } as never,
-        },
-        update: {},
-      })
+      await enqueueSitePlanJob({ workflowId, job: next })
       enqueued++
     }
   }

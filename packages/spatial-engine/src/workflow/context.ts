@@ -35,6 +35,44 @@ export interface StageCapabilities {
   /** Structured trace. Never a substitute for persistence. */
   trace: (event: TraceEvent) => void
   now: () => Date
+  /**
+   * The professional-review record for a workflow, as the licensed humans
+   * left it. Optional: a host without a review store (the pilot script, a
+   * test double) simply cannot run the review stages, and they say so.
+   *
+   * Read-only by design. A stage may READ what a professional decided; the
+   * decision itself is only ever written by the review application under the
+   * professional's own identity.
+   */
+  loadReviewState?: (workflowId: string) => Promise<ReviewState | null>
+}
+
+/** One subject a professional was asked to decide on. */
+export interface ReviewSubjectDecision {
+  subject: string
+  decision: 'PENDING' | 'CHANGES_REQUESTED' | 'APPROVED' | 'REJECTED' | 'SUPERSEDED'
+  comment: string | null
+  decidedByName: string | null
+  licenceNumber: string | null
+  licenceState: string | null
+  decidedAt: string | null
+}
+
+/** Mirrors SitePlanReviewAssignment + SitePlanScopedApproval, narrowed. */
+export interface ReviewState {
+  assignment: {
+    status: string
+    discipline: string
+    acceptedAt: string | null
+    completedAt: string | null
+    notes: string | null
+    professional: {
+      displayName: string
+      licenceNumber: string | null
+      licenceState: string | null
+    } | null
+  } | null
+  approvals: ReviewSubjectDecision[]
 }
 
 export interface ArtifactInput {

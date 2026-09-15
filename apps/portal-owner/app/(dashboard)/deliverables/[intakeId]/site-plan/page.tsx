@@ -23,6 +23,8 @@ import {
 import {
   isSitePlanProjectPath,
   parseSitePlanDeliverable,
+  parseSitePlanReview,
+  reviewSubjectLabel,
   sitePlanDocumentUrl,
   sitePlanOrderStage,
   SITE_PLAN_LABELS,
@@ -158,6 +160,7 @@ export default function SitePlanDeliverablePage() {
 
   const d = state.deliverable
   const stage = sitePlanOrderStage(intake.form_data)
+  const review = parseSitePlanReview(intake.form_data)
   const pending = d.qc.pendingSeal
   const p = d.property
   const pdfUrl = sitePlanDocumentUrl(intake.id)
@@ -172,7 +175,11 @@ export default function SitePlanDeliverablePage() {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between mb-6">
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: ACCENT }}>
-            {stage === 'delivered' ? 'Delivered' : stage === 'professional_review' ? 'Drafted — professional review next' : 'In progress'}
+            {stage === 'delivered' ? 'Delivered'
+              : stage === 'professional_review' ? 'Drafted — professional review next'
+              : stage === 'revision' ? 'Reviewer requested changes — revising'
+              : stage === 'staff_review' ? 'Reviewed — Kealee preparing the submission'
+              : 'In progress'}
           </p>
           <h1 className="mt-1 text-2xl font-bold" style={{ color: NAVY }}>{label}</h1>
           {(p.matchedAddress || address) && (
@@ -264,6 +271,43 @@ export default function SitePlanDeliverablePage() {
               </p>
             )}
           </Card>
+
+          {review && (
+            <Card title="Professional review" icon={<ShieldCheck className="h-4 w-4" style={{ color: TEAL }} />}>
+              <p className="text-sm font-semibold" style={{ color: review.state === 'APPROVED' ? '#276749' : '#744210' }}>
+                {review.state === 'APPROVED' ? 'Approved on every reviewed subject' : 'Changes requested'}
+              </p>
+              {review.reviewer && (
+                <p className="mt-1 text-sm text-slate-700">
+                  {review.reviewer.displayName}
+                  {review.reviewer.licenceNumber
+                    ? ` — ${[review.reviewer.licenceState, review.reviewer.licenceNumber].filter(Boolean).join(' ')}`
+                    : ''}
+                </p>
+              )}
+              <ul className="mt-3 space-y-1.5">
+                {review.approvals.map(a => (
+                  <li key={a.subject} className="flex items-center gap-2 text-sm text-slate-700">
+                    {a.decision === 'APPROVED'
+                      ? <CheckCircle2 className="h-4 w-4 shrink-0" style={{ color: TEAL }} />
+                      : <AlertCircle className="h-4 w-4 shrink-0 text-amber-600" />}
+                    <span>{reviewSubjectLabel(a.subject)}</span>
+                    <span className="ml-auto text-xs text-gray-400">{a.decision.toLowerCase().replace('_', ' ')}</span>
+                  </li>
+                ))}
+              </ul>
+              {review.redlines.length > 0 && (
+                <ul className="mt-3 space-y-2 border-t border-gray-100 pt-3">
+                  {review.redlines.map((r, i) => (
+                    <li key={`${r.subject}-${i}`} className="text-sm text-slate-700">
+                      <span className="font-medium">{reviewSubjectLabel(r.subject)}:</span> {r.comment}
+                    </li>
+                  ))}
+                </ul>
+              )}
+              <p className="mt-3 text-xs text-gray-400">{review.note}</p>
+            </Card>
+          )}
 
           <Card title="Items still requiring confirmation" icon={<ClipboardList className="h-4 w-4" style={{ color: TEAL }} />}>
             {pending.length === 0 ? (

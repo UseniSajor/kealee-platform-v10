@@ -82,12 +82,47 @@ export function sitePlanDocumentUrl(intakeId: string): string {
   return `/api/site-plan/${encodeURIComponent(intakeId)}/document`
 }
 
+/** Structural copy of the worker's `SitePlanReviewRecord`. */
+export interface SitePlanReview {
+  version: number
+  state: 'APPROVED' | 'CHANGES_REQUESTED'
+  recordedAt: string
+  reviewer: {
+    displayName: string
+    licenceNumber: string | null
+    licenceState: string | null
+    discipline: string
+  } | null
+  approvals: { subject: string; decision: string; comment: string | null; decidedAt: string | null }[]
+  redlines: { subject: string; comment: string; decision: string }[]
+  reviewCompletedAt: string | null
+  note: string
+}
+
+export function parseSitePlanReview(
+  formData: Record<string, unknown> | null | undefined,
+): SitePlanReview | null {
+  if (!formData) return null
+  const raw = formData.sitePlanReview
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null
+  const rec = raw as Partial<SitePlanReview>
+  if (rec.state !== 'APPROVED' && rec.state !== 'CHANGES_REQUESTED') return null
+  return rec as SitePlanReview
+}
+
 /** `form_data.orderStatus` values a site-plan order moves through after delivery. */
 export function sitePlanOrderStage(
   formData: Record<string, unknown> | null | undefined,
-): 'delivered' | 'professional_review' | 'in_progress' {
+): 'delivered' | 'professional_review' | 'revision' | 'staff_review' | 'in_progress' {
   const status = formData?.orderStatus
   if (status === 'delivered') return 'delivered'
   if (status === 'needs_professional_review' || status === 'ready_for_delivery') return 'professional_review'
+  if (status === 'revision_requested') return 'revision'
+  if (status === 'in_review' && parseSitePlanReview(formData)) return 'staff_review'
   return 'in_progress'
+}
+
+/** Human label for a Prisma SitePlanContentSubject value. */
+export function reviewSubjectLabel(subject: string): string {
+  return subject.toLowerCase().replace(/_/g, ' ').replace(/^\w/, c => c.toUpperCase())
 }

@@ -206,3 +206,50 @@ export function sitePlanWorkflowFormData(a: SitePlanActivation): Record<string, 
     sitePlanWorkflowSummary: a.summary,
   }
 }
+
+/**
+ * Re-runs `siteplan.route_review` after a professional acts.
+ *
+ * The stage ends AWAITING_REVIEW while the plan is with the professional; it
+ * cannot know when they decide unless something re-enqueues it. The engineer
+ * review actions call this after `completeReview` and after any withheld
+ * approval. The worker then re-reads the assignment and moves the workflow —
+ * and the order — on.
+ *
+ * Its own idempotency key per re-run: the first run's JobQueue row is
+ * terminal, and an upsert against it would be a silent no-op.
+ *
+ * Never throws — the professional's decision is already recorded under their
+ * own identity, and a queue hiccup must not surface as a failed review.
+ */
+export async function reopenSitePlanReview(
+  workflowId: string,
+): Promise<{ enqueued: boolean; jobKey: string | null; error?: string }> {
+  const job = 'siteplan.route_review' as const
+  try {
+    const w = Workflow.workerFor(job)
+    const prefix = Workflow.jobIdempotencyKey({ workflowId, job })
+    const priorRuns = await prisma.jobQueue.count({
+      where: { queueName: w.queue, jobId: { startsWith: prefix } },
+    })
+    const jobKey = Workflow.jobIdempotencyKey({ workflowId, job, attemptOf: priorRuns + 1 })
+    await prisma.jobQueue.upsert({
+      where: { queueName_jobId: { queueName: w.queue, jobId: jobKey } },
+      create: {
+        queueName: w.queue, jobId: jobKey, jobName: job, status: 'WAITING',
+        priority: 0, attempts: 0, maxAttempts: w.maxAttempts,
+        data: {
+          workflowId, job,
+          payloadVersion: Workflow.SITE_PLAN_WORKFLOW_VERSION,
+          backoffMs: w.backoffMs,
+        },
+      },
+      update: {},
+    })
+    return { enqueued: true, jobKey }
+  } catch (e) {
+    const error = e instanceof Error ? e.message : String(e)
+    console.error('[site-plan-workflow] could not reopen route_review:', workflowId, error)
+    return { enqueued: false, jobKey: null, error }
+  }
+}

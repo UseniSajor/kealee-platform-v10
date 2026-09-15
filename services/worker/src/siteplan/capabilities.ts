@@ -146,6 +146,65 @@ export function productionCapabilities(opts: {
      * Never a substitute for persistence: a trace explains what happened, the
      * stage execution row is what resume reads.
      */
+    /**
+     * The professional-review record, read-only.
+     *
+     * The assignment and scoped approvals are written by the engineer review
+     * application under the professional's own identity. The engine only
+     * reads them here; nothing in the worker can mark a subject approved.
+     */
+    async loadReviewState(workflowId) {
+      const assignment = await prisma.sitePlanReviewAssignment.findUnique({
+        where: { workflowId },
+        select: {
+          status: true, discipline: true, acceptedAt: true, completedAt: true,
+          notes: true, professionalProfileId: true,
+        },
+      })
+      const professional = assignment
+        ? await prisma.designProfessionalProfile.findUnique({
+            where: { id: assignment.professionalProfileId },
+            select: { displayName: true, licenseNumber: true, licenseState: true },
+          })
+        : null
+      const approvals = await prisma.sitePlanScopedApproval.findMany({
+        where: { workflowId, supersededById: null },
+        orderBy: { createdAt: 'asc' },
+        select: {
+          subject: true, decision: true, comment: true, decidedByName: true,
+          licenceNumber: true, licenceState: true, decidedAt: true,
+        },
+      })
+      if (!assignment && approvals.length === 0) return null
+      return {
+        assignment: assignment
+          ? {
+              status: assignment.status,
+              discipline: assignment.discipline,
+              acceptedAt: assignment.acceptedAt?.toISOString() ?? null,
+              completedAt: assignment.completedAt?.toISOString() ?? null,
+              notes: assignment.notes,
+              professional: professional
+                ? {
+                    displayName: professional.displayName,
+                    licenceNumber: professional.licenseNumber,
+                    licenceState: professional.licenseState,
+                  }
+                : null,
+            }
+          : null,
+        approvals: approvals.map(a => ({
+          subject: String(a.subject),
+          decision: a.decision as Workflow.ReviewSubjectDecision['decision'],
+          comment: a.comment,
+          decidedByName: a.decidedByName,
+          licenceNumber: a.licenceNumber,
+          licenceState: a.licenceState,
+          decidedAt: a.decidedAt?.toISOString() ?? null,
+        })),
+      }
+    },
+
     trace(e) {
       void prisma.sitePlanAuditEvent.create({
         data: {

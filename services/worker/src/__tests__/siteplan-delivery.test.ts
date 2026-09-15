@@ -5,9 +5,13 @@ vi.mock('@kealee/database', () => ({ prisma: {} }))
 import {
   buildSitePlanDeliverable,
   bridgeSitePlanDelivery,
+  bridgeSitePlanReviewOutcome,
+  buildSitePlanReviewRecord,
   sitePlanDeliveryFormDataPatch,
+  sitePlanReviewFormDataPatch,
   sitePlanPortalPath,
   isSitePlanProduct,
+  productIncludesProfessionalReview,
   type DeliveryPorts,
   type PriorOutputs,
 } from '../siteplan/delivery'
@@ -129,7 +133,9 @@ describe('bridgeSitePlanDelivery', () => {
     const emails: Parameters<DeliveryPorts['sendReadyEmail']>[0][] = []
     const p: DeliveryPorts = {
       loadOutputs: async () => completedChain(),
-      loadOrder: async () => ({ contactEmail: 'owner@example.com', clientName: 'Pat Owner', alreadyDelivered: false }),
+      loadOrder: async () => ({
+        contactEmail: 'owner@example.com', clientName: 'Pat Owner', alreadyDelivered: false, reviewState: null,
+      }),
       patchOrder: async (_id, patch) => { patches.push(patch) },
       sendReadyEmail: async (input) => { emails.push(input); return { sent: true } },
       now: () => NOW,
@@ -153,7 +159,7 @@ describe('bridgeSitePlanDelivery', () => {
 
   it('is idempotent on the order — a replayed stage does not email twice', async () => {
     const { p, patches, emails } = ports({
-      loadOrder: async () => ({ contactEmail: 'owner@example.com', clientName: null, alreadyDelivered: true }),
+      loadOrder: async () => ({ contactEmail: 'owner@example.com', clientName: null, alreadyDelivered: true, reviewState: null }),
     })
     const out = await bridgeSitePlanDelivery(
       { workflowId: 'wf_1', orderId: 'intake_1', productId: 'preliminary_site_plan' }, p)
@@ -164,7 +170,7 @@ describe('bridgeSitePlanDelivery', () => {
 
   it('still bridges when there is no customer email, and says so', async () => {
     const { p, patches, emails } = ports({
-      loadOrder: async () => ({ contactEmail: null, clientName: null, alreadyDelivered: false }),
+      loadOrder: async () => ({ contactEmail: null, clientName: null, alreadyDelivered: false, reviewState: null }),
     })
     const out = await bridgeSitePlanDelivery(
       { workflowId: 'wf_1', orderId: 'intake_1', productId: 'permit_site_plan' }, p)
@@ -200,6 +206,126 @@ describe('bridgeSitePlanDelivery', () => {
   })
 })
 
+const PE = { displayName: 'A. Engineer', licenceNumber: 'MD-12345', licenceState: 'MD', discipline: 'professional_engineer' }
+
+function reviewed(state: 'APPROVED' | 'CHANGES_REQUESTED' | 'IN_REVIEW'): PriorOutputs {
+  return {
+    ...completedChain(),
+    'siteplan.route_review': {
+      reviewState: state, documentId: 'doc_1', reviewer: PE,
+      approvals: [
+        { subject: 'ZONING_COMPLIANCE', decision: 'APPROVED', comment: null, decidedByName: PE.displayName, decidedAt: '2026-09-16T10:00:00Z' },
+        { subject: 'SITE_LAYOUT', decision: state === 'CHANGES_REQUESTED' ? 'CHANGES_REQUESTED' : 'APPROVED',
+          comment: state === 'CHANGES_REQUESTED' ? 'Front BRL scales at 24 ft.' : null,
+          decidedByName: PE.displayName, decidedAt: '2026-09-16T10:00:00Z' },
+      ],
+      outstanding: [],
+      redlines: state === 'CHANGES_REQUESTED'
+        ? [{ subject: 'SITE_LAYOUT', decision: 'CHANGES_REQUESTED', comment: 'Front BRL scales at 24 ft.', decidedByName: PE.displayName, decidedAt: '2026-09-16T10:00:00Z' }]
+        : [],
+      reviewCompletedAt: state === 'APPROVED' ? '2026-09-16T11:00:00Z' : null,
+      note: '',
+    },
+  }
+}
+
+describe('buildSitePlanReviewRecord', () => {
+  it('projects an approved review with the reviewer identity', () => {
+    const rec = buildSitePlanReviewRecord({ workflowId: 'wf_1', outputs: reviewed('APPROVED'), now: NOW })!
+    expect(rec.state).toBe('APPROVED')
+    expect(rec.reviewer).toMatchObject({ displayName: 'A. Engineer', licenceNumber: 'MD-12345' })
+    expect(rec.reviewCompletedAt).toBe('2026-09-16T11:00:00Z')
+    expect(rec.redlines).toEqual([])
+    expect(rec.note).toMatch(/Sealing remains a separate act/)
+  })
+
+  it('is null while the review is undecided — nothing to tell the customer yet', () => {
+    expect(buildSitePlanReviewRecord({ workflowId: 'wf_1', outputs: reviewed('IN_REVIEW') })).toBeNull()
+    expect(buildSitePlanReviewRecord({ workflowId: 'wf_1', outputs: completedChain() })).toBeNull()
+  })
+})
+
+describe('sitePlanReviewFormDataPatch', () => {
+  const approved = buildSitePlanReviewRecord({ workflowId: 'wf_1', outputs: reviewed('APPROVED'), now: NOW })!
+  const changes = buildSitePlanReviewRecord({ workflowId: 'wf_1', outputs: reviewed('CHANGES_REQUESTED'), now: NOW })!
+
+  it('delivers verified_site_feasibility on approval — sign-off is its last line item', () => {
+    const patch = sitePlanReviewFormDataPatch({ productId: 'verified_site_feasibility', record: approved })
+    expect(patch.orderStatus).toBe('delivered')
+    expect(patch.requiresHumanFulfillment).toBe(false)
+    expect(String(patch.orderStatusReason)).toContain('A. Engineer (MD MD-12345)')
+  })
+
+  it('keeps permit_site_plan with a human after approval — issuance and submission are not connected', () => {
+    const patch = sitePlanReviewFormDataPatch({ productId: 'permit_site_plan', record: approved })
+    expect(patch.orderStatus).toBe('in_review')
+    expect(patch.requiresHumanFulfillment).toBe(true)
+    expect(String(patch.orderStatusReason)).toMatch(/Issuance QC/)
+  })
+
+  it('routes changes requested to a drafter regardless of product', () => {
+    for (const productId of ['verified_site_feasibility', 'permit_site_plan']) {
+      const patch = sitePlanReviewFormDataPatch({ productId, record: changes })
+      expect(patch.orderStatus).toBe('revision_requested')
+      expect(patch.fulfillmentStatus).toBe('awaiting_drafter')
+      expect(String(patch.orderStatusReason)).toContain('1 subject')
+    }
+  })
+})
+
+describe('bridgeSitePlanReviewOutcome', () => {
+  function ports(state: 'APPROVED' | 'CHANGES_REQUESTED' | 'IN_REVIEW', overrides: Partial<DeliveryPorts> = {}) {
+    const patches: Record<string, unknown>[] = []
+    const emails: Parameters<DeliveryPorts['sendReadyEmail']>[0][] = []
+    const p: DeliveryPorts = {
+      loadOutputs: async () => reviewed(state),
+      loadOrder: async () => ({ contactEmail: 'owner@example.com', clientName: 'Pat Owner', alreadyDelivered: true, reviewState: null }),
+      patchOrder: async (_id, patch) => { patches.push(patch) },
+      sendReadyEmail: async (input) => { emails.push(input); return { sent: true } },
+      now: () => NOW,
+      ...overrides,
+    }
+    return { p, patches, emails }
+  }
+
+  it('emails the customer when the plan is approved', async () => {
+    const { p, patches, emails } = ports('APPROVED')
+    const out = await bridgeSitePlanReviewOutcome(
+      { workflowId: 'wf_1', orderId: 'intake_1', productId: 'verified_site_feasibility' }, p)
+    expect(out).toMatchObject({ bridged: true, emailed: true, orderStatus: 'delivered' })
+    expect(patches).toHaveLength(1)
+    expect(emails[0].headline).toMatch(/professionally reviewed/)
+  })
+
+  it('does not email on changes requested — that is Kealee work, not the customer\'s', async () => {
+    const { p, patches, emails } = ports('CHANGES_REQUESTED')
+    const out = await bridgeSitePlanReviewOutcome(
+      { workflowId: 'wf_1', orderId: 'intake_1', productId: 'permit_site_plan' }, p)
+    expect(out).toMatchObject({ bridged: true, emailed: false, orderStatus: 'revision_requested' })
+    expect(patches).toHaveLength(1)
+    expect(emails).toHaveLength(0)
+  })
+
+  it('is idempotent on the review state', async () => {
+    const { p, patches, emails } = ports('APPROVED', {
+      loadOrder: async () => ({ contactEmail: 'owner@example.com', clientName: null, alreadyDelivered: true, reviewState: 'APPROVED' }),
+    })
+    const out = await bridgeSitePlanReviewOutcome(
+      { workflowId: 'wf_1', orderId: 'intake_1', productId: 'verified_site_feasibility' }, p)
+    expect(out.bridged).toBe(false)
+    expect(patches).toHaveLength(0)
+    expect(emails).toHaveLength(0)
+  })
+
+  it('does nothing while the review is undecided', async () => {
+    const { p, patches } = ports('IN_REVIEW')
+    const out = await bridgeSitePlanReviewOutcome(
+      { workflowId: 'wf_1', orderId: 'intake_1', productId: 'verified_site_feasibility' }, p)
+    expect(out.bridged).toBe(false)
+    expect(patches).toHaveLength(0)
+  })
+})
+
 describe('helpers', () => {
   it('knows the three site-plan SKUs', () => {
     expect(isSitePlanProduct('preliminary_site_plan')).toBe(true)
@@ -207,6 +333,13 @@ describe('helpers', () => {
     expect(isSitePlanProduct('permit_site_plan')).toBe(true)
     expect(isSitePlanProduct('kitchen_remodel')).toBe(false)
     expect(isSitePlanProduct(null)).toBe(false)
+  })
+
+  it('knows which products paid for professional review', () => {
+    expect(productIncludesProfessionalReview('preliminary_site_plan')).toBe(false)
+    expect(productIncludesProfessionalReview('verified_site_feasibility')).toBe(true)
+    expect(productIncludesProfessionalReview('permit_site_plan')).toBe(true)
+    expect(productIncludesProfessionalReview(null)).toBe(false)
   })
 
   it('points the claim link at the portal site-plan page', () => {

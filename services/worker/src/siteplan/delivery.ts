@@ -218,6 +218,15 @@ export function isSitePlanProduct(productId: string | null | undefined): boolean
 }
 
 /**
+ * Products whose price includes a licensed professional's review. For these
+ * the preliminary plan is a milestone and `siteplan.route_review` is enqueued
+ * as soon as it is delivered.
+ */
+export function productIncludesProfessionalReview(productId: string | null | undefined): boolean {
+  return SITE_PLAN_PRODUCT_STATUS[productId ?? ''] === 'needs_professional_review'
+}
+
+/**
  * The `form_data` patch for a delivered preliminary plan.
  *
  * `orderStatus*` keys follow web-main's `orderStatusPatch()` so the admin and
@@ -256,6 +265,180 @@ export function sitePlanDeliveryFormDataPatch(input: {
   }
 }
 
+// ── Professional review outcome ──────────────────────────────────────────────
+
+interface Redline {
+  subject: string
+  comment: string
+  decision: 'CHANGES_REQUESTED' | 'REJECTED'
+  decidedByName: string | null
+  decidedAt: string | null
+}
+
+/** Structural copy of the engine's RouteReviewOutput, narrowed. */
+interface RouteReviewOutput {
+  reviewState: 'UNCLAIMED' | 'IN_REVIEW' | 'APPROVED' | 'CHANGES_REQUESTED'
+  documentId?: string
+  reviewer?: {
+    displayName: string
+    licenceNumber: string | null
+    licenceState: string | null
+    discipline: string
+  } | null
+  approvals?: {
+    subject: string; decision: string; comment: string | null
+    decidedByName: string | null; decidedAt: string | null
+  }[]
+  outstanding?: string[]
+  redlines?: Redline[]
+  reviewCompletedAt?: string | null
+}
+
+/** Written to `form_data.sitePlanReview` — the reviewer sign-off status the higher tiers promise. */
+export interface SitePlanReviewRecord {
+  version: 1
+  state: 'APPROVED' | 'CHANGES_REQUESTED'
+  recordedAt: string
+  workflowId: string
+  documentId: string | null
+  reviewer: RouteReviewOutput['reviewer'] | null
+  approvals: NonNullable<RouteReviewOutput['approvals']>
+  redlines: Redline[]
+  reviewCompletedAt: string | null
+  note: string
+}
+
+export function buildSitePlanReviewRecord(input: {
+  workflowId: string
+  outputs: PriorOutputs
+  now?: Date
+}): SitePlanReviewRecord | null {
+  const routed = asRecord<RouteReviewOutput>(input.outputs['siteplan.route_review'])
+  if (!routed) return null
+  if (routed.reviewState !== 'APPROVED' && routed.reviewState !== 'CHANGES_REQUESTED') return null
+  return {
+    version: 1,
+    state: routed.reviewState,
+    recordedAt: (input.now ?? new Date()).toISOString(),
+    workflowId: input.workflowId,
+    documentId: routed.documentId ?? null,
+    reviewer: routed.reviewer ?? null,
+    approvals: routed.approvals ?? [],
+    redlines: routed.redlines ?? [],
+    reviewCompletedAt: routed.reviewCompletedAt ?? null,
+    note: routed.reviewState === 'APPROVED'
+      ? 'Scoped professional review complete. Sealing remains a separate act, and jurisdiction approval is not implied.'
+      : 'The reviewer withheld approval on at least one subject. Kealee is revising the plan.',
+  }
+}
+
+/**
+ * The `form_data` patch once the professional has decided.
+ *
+ * APPROVED on `verified_site_feasibility` is the end of that product —
+ * "reviewer sign-off status" is its last line item — so it is delivered.
+ * APPROVED on `permit_site_plan` still has issuance QC and submission ahead,
+ * and those groups are not connected, so a Kealee reviewer carries it by hand
+ * and the order says so. CHANGES_REQUESTED routes to a drafter either way.
+ */
+export function sitePlanReviewFormDataPatch(input: {
+  productId: string | null | undefined
+  record: SitePlanReviewRecord
+}): Record<string, unknown> {
+  const reviewer = input.record.reviewer
+  const licence = reviewer
+    ? [reviewer.licenceState, reviewer.licenceNumber].filter(Boolean).join(' ')
+    : ''
+  const who = reviewer
+    ? licence ? `${reviewer.displayName} (${licence})` : reviewer.displayName
+    : 'the assigned professional'
+
+  if (input.record.state === 'CHANGES_REQUESTED') {
+    const n = input.record.redlines.length
+    return {
+      sitePlanReview: input.record,
+      orderStatus: 'revision_requested',
+      orderStatusLabel: 'Revision Requested',
+      orderStatusAt: input.record.recordedAt,
+      orderStatusReason: `${who} requested changes on ${n} subject${n === 1 ? '' : 's'}. A drafter applies the redlines and the plan is re-routed for review.`,
+      orderStatusSetBy: 'system',
+      fulfillmentStatus: 'awaiting_drafter',
+      requiresHumanFulfillment: true,
+    }
+  }
+
+  const terminal = input.productId === 'verified_site_feasibility'
+  return {
+    sitePlanReview: input.record,
+    sitePlanReviewedAt: input.record.reviewCompletedAt ?? input.record.recordedAt,
+    orderStatus: terminal ? 'delivered' : 'in_review',
+    orderStatusLabel: terminal ? 'Delivered' : 'In Review',
+    orderStatusAt: input.record.recordedAt,
+    orderStatusReason: terminal
+      ? `Professional review completed by ${who}.`
+      : `Professional review completed by ${who}. Issuance QC and the submission package are prepared by Kealee staff.`,
+    orderStatusSetBy: 'system',
+    fulfillmentStatus: terminal ? 'delivered' : 'awaiting_issuance',
+    fulfillmentMode: 'automated',
+    ...(terminal ? { fulfillmentCompletedAt: input.record.recordedAt } : {}),
+    requiresHumanFulfillment: !terminal,
+  }
+}
+
+/**
+ * Runs when `siteplan.route_review` COMPLETES. Idempotent on the review
+ * state: the same decision is not re-bridged or re-emailed.
+ */
+export async function bridgeSitePlanReviewOutcome(
+  input: { workflowId: string; orderId: string; productId: string | null },
+  ports: DeliveryPorts,
+): Promise<DeliveryOutcome> {
+  const none = (summary: string): DeliveryOutcome =>
+    ({ bridged: false, emailed: false, orderStatus: null, summary })
+
+  try {
+    const order = await ports.loadOrder(input.orderId)
+    if (!order) return none(`Order ${input.orderId} not found; nothing to bridge.`)
+
+    const outputs = await ports.loadOutputs(input.workflowId)
+    const record = buildSitePlanReviewRecord({ workflowId: input.workflowId, outputs, now: ports.now() })
+    if (!record) return none(`Workflow ${input.workflowId} has no decided review to bridge.`)
+
+    if (order.reviewState === record.state) {
+      return none(`Order ${input.orderId} already carries review state ${record.state}; skipped.`)
+    }
+
+    const patch = sitePlanReviewFormDataPatch({ productId: input.productId, record })
+    await ports.patchOrder(input.orderId, patch)
+    const orderStatus = String(patch.orderStatus)
+
+    // Changes requested is Kealee's work, not the customer's; no email until
+    // the revised plan comes back around.
+    if (record.state !== 'APPROVED' || !order.contactEmail) {
+      return {
+        bridged: true, emailed: false, orderStatus,
+        summary: `Order ${input.orderId} review bridged (${orderStatus}).`,
+      }
+    }
+
+    const email = await ports.sendReadyEmail({
+      to: order.contactEmail,
+      firstName: order.clientName?.split(' ')[0] || undefined,
+      service: input.productId ?? 'verified_site_feasibility',
+      intakeId: input.orderId,
+      headline: 'Your site plan has been professionally reviewed',
+    })
+    return {
+      bridged: true, emailed: email.sent, orderStatus,
+      summary: email.sent
+        ? `Order ${input.orderId} review bridged (${orderStatus}); customer emailed.`
+        : `Order ${input.orderId} review bridged (${orderStatus}); email not sent (${email.error ?? 'unknown'}).`,
+    }
+  } catch (e) {
+    return none(`Review bridge failed: ${e instanceof Error ? e.message : String(e)}`)
+  }
+}
+
 // ── Ports ────────────────────────────────────────────────────────────────────
 
 export interface DeliveryPorts {
@@ -265,6 +448,8 @@ export interface DeliveryPorts {
     contactEmail: string | null
     clientName: string | null
     alreadyDelivered: boolean
+    /** `form_data.sitePlanReview.state`, when a review has been bridged. */
+    reviewState: string | null
   } | null>
   patchOrder(orderId: string, patch: Record<string, unknown>): Promise<void>
   sendReadyEmail(input: {
@@ -373,10 +558,11 @@ export function productionDeliveryPorts(deps: {
 
     async loadOrder(orderId) {
       const rows = await prisma.$queryRaw<
-        { contact_email: string | null; client_name: string | null; delivered: boolean }[]
+        { contact_email: string | null; client_name: string | null; delivered: boolean; review_state: string | null }[]
       >`
         SELECT contact_email, client_name,
-               (form_data ? 'sitePlanDeliverable') AS delivered
+               (form_data ? 'sitePlanDeliverable') AS delivered,
+               form_data #>> '{sitePlanReview,state}' AS review_state
         FROM public_intake_leads
         WHERE id = ${orderId}
         LIMIT 1
@@ -387,6 +573,7 @@ export function productionDeliveryPorts(deps: {
         contactEmail: row.contact_email,
         clientName: row.client_name,
         alreadyDelivered: Boolean(row.delivered),
+        reviewState: row.review_state,
       }
     },
 

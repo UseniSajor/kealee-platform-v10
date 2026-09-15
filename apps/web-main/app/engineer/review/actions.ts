@@ -9,6 +9,7 @@ import {
   requireAssignedReview,
   reviewDb,
 } from '@/lib/engineer-review'
+import { reopenSitePlanReview } from '@/lib/site-plan-workflow'
 
 const DECISIONS = new Set(['APPROVED', 'CHANGES_REQUESTED', 'REJECTED'])
 
@@ -233,6 +234,11 @@ export async function recordScopedDecision(formData: FormData) {
     })
   })
 
+  // A withheld approval is a decision the workflow must hear about now, not
+  // when the review is eventually "completed" — it never will be on this
+  // revision. Re-run route_review so the redlines reach a drafter and the order.
+  if (decision !== 'APPROVED') await reopenSitePlanReview(workflowId)
+
   revalidatePath(`/engineer/review/${workflowId}`)
   revalidatePath('/engineer/review')
 }
@@ -272,5 +278,7 @@ export async function completeReview(formData: FormData) {
       },
     })
   })
+  // The workflow's route_review stage is waiting on exactly this.
+  await reopenSitePlanReview(workflowId)
   redirect('/engineer/review')
 }
