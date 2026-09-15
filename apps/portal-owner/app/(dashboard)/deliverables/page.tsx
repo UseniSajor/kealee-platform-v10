@@ -7,6 +7,9 @@ import {
   Hourglass, Layers, Loader2, Package,
 } from 'lucide-react'
 import { BuildPathUpsell, type OwnedUpsellProduct } from '@/components/BuildPathUpsell'
+import {
+  isSitePlanProjectPath, sitePlanDeliverablePath, sitePlanDocumentUrl,
+} from '@/lib/site-plan-deliverable'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -142,6 +145,10 @@ function JourneyStageIndicator({ stage, intakeId }: { stage: number; intakeId: s
 function DeliverableCard({ d, ownedProducts }: { d: Deliverable; ownedProducts?: OwnedUpsellProduct[] }) {
   const uiStatus = resolveUiStatus(d)
   const ACCENT   = '#E8793A'
+  // Site-plan orders have no conceptOutput; their PDF is served by id from
+  // the documents table and their view is the site-plan page.
+  const isSitePlan = isSitePlanProjectPath(d.projectPath)
+  const pdfUrl     = isSitePlan ? sitePlanDocumentUrl(d.id) : d.pdfUrl
   const dateStr  = new Date(d.updatedAt).toLocaleDateString('en-US', {
     year: 'numeric', month: 'short', day: 'numeric',
   })
@@ -200,14 +207,14 @@ function DeliverableCard({ d, ownedProducts }: { d: Deliverable; ownedProducts?:
         {/* Actions */}
         {uiStatus === 'ready' && (
           <div className="mt-4 flex gap-2 flex-wrap">
-            <Link href={`/deliverables/${d.id}`}
+            <Link href={isSitePlan ? sitePlanDeliverablePath(d.id) : `/deliverables/${d.id}`}
               className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium text-white transition-opacity hover:opacity-90"
               style={{ backgroundColor: ACCENT }}>
               <ArrowRight className="h-3.5 w-3.5" />
               View Package
             </Link>
-            {d.pdfUrl ? (
-              <a href={d.pdfUrl} target="_blank" rel="noopener noreferrer"
+            {pdfUrl ? (
+              <a href={pdfUrl} target="_blank" rel="noopener noreferrer"
                 className="flex items-center gap-1.5 rounded-lg border border-gray-200 px-3 py-2 text-xs font-medium transition-colors hover:bg-gray-50"
                 style={{ color: '#6B7280' }}>
                 <Download className="h-3.5 w-3.5" />
@@ -239,9 +246,11 @@ function DeliverableCard({ d, ownedProducts }: { d: Deliverable; ownedProducts?:
             <div className="flex items-center gap-2">
               <Loader2 className="h-3.5 w-3.5 animate-spin" style={{ color: '#2ABFBF' }} />
               <p className="text-xs text-gray-400">
-                {d.isV30
-                  ? 'Kealee v30 bots are running (design, estimate, permits, floorplan).'
-                  : 'Your concept package is being generated — usually ready within a few minutes.'}
+                {isSitePlan
+                  ? 'Kealee is drafting your site plan from the county parcel, zoning and contour records.'
+                  : d.isV30
+                    ? 'Kealee v30 bots are running (design, estimate, permits, floorplan).'
+                    : 'Your concept package is being generated — usually ready within a few minutes.'}
               </p>
             </div>
             {d.isV30 && d.v30WorkspaceUrl && (

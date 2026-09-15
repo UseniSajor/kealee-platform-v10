@@ -120,6 +120,57 @@ State what the data IS. Do not convert. A silent VERTCON shift under a sealed
 drawing is a fabricated elevation. Confirm current DPIE practice before changing
 this.
 
+## Delivery — how a paid order gets the plan
+
+The engine's last first-release stage, `siteplan.deliver_preliminary`, writes
+`PRELIMINARY_READY` into a stage-execution row. Until 2026-09-15 nothing read
+it: the order stayed at the webhook's `in_review`, the owner portal showed
+"generating" forever, no email went out, and the PDF sat in `documents` with
+no customer-facing route. Delivery now closes the loop:
+
+```
+worker runOne()  ── stage.deliverable && COMPLETED ──►  siteplan/delivery.ts
+   bridgeSitePlanDelivery()
+     ├─ buildSitePlanDeliverable()   stage outputs → form_data.sitePlanDeliverable
+     ├─ patchOrder()                 orderStatus, fulfillmentStatus (raw SQL, same DB)
+     └─ sendReadyEmail()             POST web-main /api/emails/deliverable-ready
+                                     nextPath=/deliverables/{id}/site-plan
+owner portal
+   /deliverables                     list — site-plan rows link to the page below
+   /deliverables/[id]/site-plan      the view: PDF, county facts, pending-seal list
+   /api/site-plan/[id]/document      the PDF, from `documents` by projectId=intakeId
+```
+
+**What the customer sees is `form_data.sitePlanDeliverable` and nothing
+else.** A stage output that is not projected into that record is invisible.
+`SitePlanDeliverableRecord` in `services/worker/src/siteplan/delivery.ts` is
+the contract; `apps/portal-owner/lib/site-plan-deliverable.ts` is its
+structural copy.
+
+**Status by product.** The preliminary plan IS `preliminary_site_plan`, so
+that order goes to `delivered`. `verified_site_feasibility` and
+`permit_site_plan` include professional review, so they go to
+`needs_professional_review` — the plan is still viewable, the order says a
+human acts next. Pending-seal items are listed for the customer under "items
+still requiring confirmation" (a line in the product's `includes`); they
+never withhold the plan.
+
+**The webhook no longer sends an activated site-plan order to the manual
+queue.** `routeToManualFulfillment` is for orders with no automated producer;
+an activated engine workflow is one. Activation `FAILED` still routes to a
+human.
+
+**The bridge is idempotent on the order** (`sitePlanDeliverable` present →
+skip) and never throws — the plan is already persisted, and a delivery
+failure must not fail the stage and trigger a re-render.
+
+**Not done:** the concept page at `/deliverables/[id]` does not redirect
+site-plan orders to `/site-plan`; the list page and the email link route
+there directly. The deliverable-ready email uses the generic template. The
+higher tiers have no path from `needs_professional_review` back to the
+customer yet — that is the H_PROFESSIONAL_REVIEW group (`route_review`,
+`apply_revisions`), still unconnected.
+
 ## Requirement sources
 
 Authoritative documents are in `docs/site-plan-reference/dpie/` with SHA-256

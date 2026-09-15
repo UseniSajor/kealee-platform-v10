@@ -1,3 +1,5 @@
+import { parseSitePlanDeliverable } from './site-plan-deliverable'
+
 /** Resolve concept package JSON from public_intake_leads.form_data (v20 + v30). */
 export function getConceptOutputFromFormData(
   formData: Record<string, unknown> | null | undefined,
@@ -41,6 +43,10 @@ export function mapDeliverableUiStatus(
   formData?: Record<string, unknown> | null,
 ): DeliverableUiStatus {
   if (status === 'failed') return 'failed'
+  // A site-plan order never carries a conceptOutput; the engine's record is
+  // its "ready" signal. Checked first so the concept rules below cannot
+  // demote a delivered plan to "generating".
+  if (parseSitePlanDeliverable(formData)) return 'ready'
   const hasConcept = Boolean(getConceptOutputFromFormData(formData))
   if (status === 'concept_ready' && hasConcept) return 'ready'
   if (status === 'paid' && hasConcept) return 'ready'

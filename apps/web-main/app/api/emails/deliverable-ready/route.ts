@@ -12,7 +12,7 @@ export const dynamic = 'force-dynamic'
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
-    const { to, firstName, service, intakeId, estimatedCost, tier, videoIncluded, headline } = body
+    const { to, firstName, service, intakeId, estimatedCost, tier, videoIncluded, headline, nextPath } = body
 
     if (!to || !intakeId || !service) {
       return NextResponse.json({ error: 'to, intakeId, service required' }, { status: 400 })
@@ -27,6 +27,7 @@ export async function POST(req: NextRequest) {
       tier,
       videoIncluded,
       headline,
+      nextPath: typeof nextPath === 'string' ? nextPath : undefined,
     })
 
     if (!result.sent) {

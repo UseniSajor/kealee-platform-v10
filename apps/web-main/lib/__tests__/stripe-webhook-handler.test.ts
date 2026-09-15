@@ -8,6 +8,9 @@ const mocks = vi.hoisted(() => ({
   sendCustomerEmail: vi.fn().mockResolvedValue(undefined),
   trackPurchase: vi.fn().mockResolvedValue(undefined),
   routeToManual: vi.fn().mockResolvedValue(undefined),
+  activateSitePlan: vi.fn().mockResolvedValue({
+    disposition: 'CREATED', workflowId: 'wf-test', enqueued: ['siteplan.initialize'], summary: 'created',
+  }),
   ensureLedger: vi.fn().mockResolvedValue({ intakeId: 'intake-test', projectPath: 'cost_estimate', created: true }),
   updates: [] as Array<Record<string, unknown>>,
   transitioned: true,
@@ -33,6 +36,12 @@ vi.mock('@/lib/marketing/lifecycle', () => ({
 }))
 vi.mock('@/lib/marketing/ga4-server', () => ({ trackPurchase: mocks.trackPurchase }))
 vi.mock('@/lib/manual-fulfillment', () => ({ routeToManualFulfillment: mocks.routeToManual }))
+vi.mock('@/lib/site-plan-workflow', () => ({
+  activateSitePlanForOrder: mocks.activateSitePlan,
+  sitePlanWorkflowFormData: (a: { workflowId: string | null; disposition: string }) => ({
+    sitePlanWorkflowId: a.workflowId, sitePlanWorkflowDisposition: a.disposition,
+  }),
+}))
 vi.mock('@/lib/paid-order-ledger', () => ({
   isServiceCheckoutSource: (source?: string) => [
     'public_intake', 'public_intake_v30', 'product-order', 'bundle',
@@ -234,6 +243,47 @@ describe('shared Stripe webhook handler', () => {
     expect(mocks.routeToManual).toHaveBeenCalledWith(
       expect.objectContaining({ intakeId: 'intake-test', projectPath: 'cost_estimate', reason: 'automation_disabled' }),
     )
+  })
+
+  it('leaves a site-plan order with the engine when its workflow activated', async () => {
+    // The v30 bots have no site-plan producer; before this the order was sent
+    // to the human queue even though the engine had just been enqueued for it.
+    mocks.triggerV30.mockResolvedValueOnce(null)
+    await processStripeWebhookEvent(
+      checkoutEvent({ source: 'public_intake', projectPath: 'preliminary_site_plan' }),
+      request,
+    )
+    expect(mocks.activateSitePlan).toHaveBeenCalledWith(expect.objectContaining({
+      projectId: 'intake-test', productId: 'preliminary_site_plan', isSitePlan: true,
+    }))
+    expect(mocks.routeToManual).not.toHaveBeenCalled()
+    expect(mocks.updates[0].form_data).toEqual(expect.objectContaining({
+      sitePlanWorkflowId: 'wf-test', sitePlanWorkflowDisposition: 'CREATED',
+    }))
+  })
+
+  it('still hands a site-plan order to a human when the engine failed to activate', async () => {
+    mocks.triggerV30.mockResolvedValueOnce(null)
+    mocks.activateSitePlan.mockResolvedValueOnce({
+      disposition: 'FAILED', workflowId: null, enqueued: [], summary: 'no org',
+    })
+    await processStripeWebhookEvent(
+      checkoutEvent({ source: 'public_intake', projectPath: 'preliminary_site_plan' }),
+      request,
+    )
+    expect(mocks.routeToManual).toHaveBeenCalledWith(
+      expect.objectContaining({ intakeId: 'intake-test', projectPath: 'preliminary_site_plan' }),
+    )
+  })
+
+  it('does not send a site-plan order to the human queue when automation is off but the engine is on', async () => {
+    vi.stubEnv('KEALEE_V30_ENABLED', 'false')
+    await processStripeWebhookEvent(
+      checkoutEvent({ source: 'public_intake', projectPath: 'preliminary_site_plan' }),
+      request,
+    )
+    expect(mocks.triggerV30).not.toHaveBeenCalled()
+    expect(mocks.routeToManual).not.toHaveBeenCalled()
   })
 
   it('suppresses duplicate generation for the same paid checkout session', async () => {

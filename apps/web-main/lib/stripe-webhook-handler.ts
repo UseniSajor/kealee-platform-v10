@@ -258,6 +258,11 @@ async function handleCheckoutCompleted(
   // evaluateSitePlanOrder never throws: this is a paid order, and an exception
   // here would leave Stripe retrying a completed payment. Every failure path
   // returns a manual-review report instead.
+  // True once the site-plan engine owns fulfilment of this order. The manual
+  // queue is the fallback for orders with NO automated producer; an activated
+  // engine workflow is one, and the worker's delivery bridge adds the human
+  // review step for the tiers that include it.
+  let sitePlanEngineActive = false
   if (isSitePlanOrder(projectPath)) {
     const ruleOutcome = evaluateSitePlanOrder({ intakeId, projectPath, formData: mergedFormData })
     Object.assign(mergedFormData, sitePlanRuleFormData(ruleOutcome))
@@ -290,6 +295,8 @@ async function handleCheckoutCompleted(
       formData: mergedFormData,
     })
     Object.assign(mergedFormData, sitePlanWorkflowFormData(activation))
+    sitePlanEngineActive = ['CREATED', 'RESUMED', 'DUPLICATE', 'ALREADY_COMPLETE']
+      .includes(activation.disposition)
     if (activation.disposition === 'FAILED') {
       Sentry.captureMessage('Site plan workflow activation failed on a paid order', {
         level: 'error',
@@ -405,7 +412,9 @@ async function handleCheckoutCompleted(
       generationError = error instanceof Error ? error.message : String(error)
     }
 
-    if (!generation) {
+    if (!generation && sitePlanEngineActive) {
+      console.log('[stripe-webhook] v30 bots declined; site-plan engine workflow is active', intakeId)
+    } else if (!generation) {
       // Previously this threw, which left Stripe retrying an already-paid
       // order and produced no work item anyone could act on. Route it to a
       // human instead: the customer keeps their order and ops gets a task.
@@ -427,10 +436,15 @@ async function handleCheckoutCompleted(
       console.error('[stripe-webhook] Concept generation trigger failed:', err.message)
       void routeToManualFulfillment({ ...manualFallbackContext, reason: 'automation_failed' })
     })
+  } else if (sitePlanEngineActive) {
+    // The site-plan engine is queued for this order; the worker drains it and
+    // its delivery bridge moves the order on. Sending it to the human queue
+    // too would tell ops to draft a plan the engine is already drafting.
+    console.log('[stripe-webhook] site-plan engine owns fulfilment', intakeId)
   } else {
     // Everything else that was paid for but has no automated producer —
-    // Site Plan before its bots are live, quote-scoped products, bundles
-    // handled by hand. These used to fall through this branch silently.
+    // quote-scoped products, bundles handled by hand, a site-plan order
+    // whose workflow failed to activate. These used to fall through silently.
     await routeToManualFulfillment({
       ...manualFallbackContext,
       reason: automationRoute ? 'automation_disabled' : 'no_automated_route',

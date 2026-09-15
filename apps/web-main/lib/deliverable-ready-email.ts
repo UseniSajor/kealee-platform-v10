@@ -17,6 +17,11 @@ export interface DeliverableReadyPayload {
   videoIncluded?: boolean
   /** Human headline override */
   headline?: string
+  /**
+   * Portal path the claim link should open. Defaults to the concept
+   * deliverable page; a non-concept product (site plan) passes its own view.
+   */
+  nextPath?: string
 }
 
 function serviceLabel(projectPath: string): string {
@@ -34,7 +39,10 @@ export async function sendDeliverableReadyEmail(
   const { to, firstName, service, intakeId, estimatedCost, tier, videoIncluded } = payload
   const greeting = firstName?.trim() || 'there'
   const svc = serviceLabel(service)
-  const deliverablePath = `/deliverables/${encodeURIComponent(intakeId)}?projectPath=${encodeURIComponent(service)}`
+  const deliverablePath =
+    payload.nextPath && payload.nextPath.startsWith('/')
+      ? payload.nextPath
+      : `/deliverables/${encodeURIComponent(intakeId)}?projectPath=${encodeURIComponent(service)}`
 
   const portalAccess = await generatePortalAccessToken({
     intakeId,

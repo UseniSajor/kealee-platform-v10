@@ -14,6 +14,7 @@
 import { prisma } from '@kealee/database'
 import { Workflow } from '@kealee/pascal-agents/engine'
 import { productionCapabilities, loadSnapshot, loadPriorOutputs } from './capabilities'
+import { bridgeSitePlanDelivery, productionDeliveryPorts } from './delivery'
 
 export interface DrainResult {
   claimed: number
@@ -122,6 +123,23 @@ async function runOne(
     },
   })
 
+  // A deliverable stage reaching COMPLETED is the moment the customer can be
+  // given something. Bridge it to the order: status, portal record, email.
+  // Runs on SKIPPED_ALREADY_DONE too, so a replayed job still closes an order
+  // whose bridge previously failed; the bridge itself is idempotent.
+  let deliverySummary: string | null = null
+  if (
+    (outcome.disposition === 'COMPLETED' || outcome.disposition === 'SKIPPED_ALREADY_DONE')
+    && Workflow.stageFor(job as Workflow.SitePlanJobName).deliverable
+  ) {
+    const delivery = await bridgeSitePlanDelivery(
+      { workflowId, orderId: wf?.orderId ?? '', productId: wf?.productId ?? null },
+      productionDeliveryPorts({ loadOutputs: loadPriorOutputs }),
+    )
+    deliverySummary = delivery.summary
+    console.log(`[siteplan] delivery: ${delivery.summary}`)
+  }
+
   // Enqueue what this stage unblocked. Upsert on (queueName, jobId) so a
   // redelivery or a concurrent run cannot double-queue a stage.
   let enqueued = 0
@@ -147,7 +165,9 @@ async function runOne(
   }
 
   return {
-    job, workflowId, disposition: outcome.disposition, summary: outcome.summary, enqueued,
+    job, workflowId, disposition: outcome.disposition,
+    summary: deliverySummary ? `${outcome.summary} ${deliverySummary}` : outcome.summary,
+    enqueued,
   }
 }
 
