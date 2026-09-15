@@ -212,3 +212,37 @@ export async function PATCH(
     ...(notified === undefined ? {} : { notified }),
   })
 }
+
+/**
+ * DELETE /api/admin/orders/:intakeId
+ *
+ * Removes an UNPAID lead — a test submission, a diagnostic probe, a duplicate
+ * that never checked out. A paid order is never deleted here: it is a
+ * customer record with a Stripe session behind it, and the answer for one of
+ * those is a status change, not a row removal.
+ */
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: { intakeId: string } },
+) {
+  const denied = await requireCommandCenterApi(req)
+  if (denied) return denied
+
+  const supabase = getSupabaseAdmin()
+  const { data: row } = await supabase
+    .from('public_intake_leads')
+    .select('id, status, contact_email')
+    .eq('id', params.intakeId)
+    .maybeSingle()
+  if (!row) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+  if (row.status !== 'new') {
+    return NextResponse.json(
+      { error: `Only unpaid leads can be deleted; this order is ${row.status}.` },
+      { status: 409 },
+    )
+  }
+
+  const { error } = await supabase.from('public_intake_leads').delete().eq('id', params.intakeId)
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  return NextResponse.json({ deleted: params.intakeId, contactEmail: row.contact_email })
+}

@@ -18,7 +18,10 @@ import type { StageContext, StageResult, StageProcessor } from '../context'
 import { requirePriorOutput } from '../context'
 import type { SitePlanJobName } from '../definition'
 
-import { resolvePgAtlasSite, type PgAtlasSite } from '../../jurisdictions/pgatlas'
+import {
+  resolvePgAtlasSite, fetchPgAtlasAdjacentParcels, type PgAtlasSite, type PgAtlasAdjacentParcel,
+} from '../../jurisdictions/pgatlas'
+import { fetchSoilMapUnits, type SoilMapUnit } from '../../jurisdictions/usda-soils'
 import { fetchPgContours, type PgContourResult } from '../../jurisdictions/pg-elevation'
 import { buildLotPackage, type LotPackage } from '../../self-perform/lot-package'
 import { renderSheetSetPdf } from '../../sheets/render-pdf'
@@ -62,6 +65,12 @@ export interface ResolvePropertyOutput {
   /** Sec. 24-128 — a legal buildable lot fronts a street. */
   hasStreetFrontage: boolean
   /**
+   * Abutting lots from the same parcel layer, so the sheet can reference
+   * every neighbour by number and area as an approved PG plan does. Empty or
+   * absent when the layer did not answer — never inferred from the subject lot.
+   */
+  adjacentParcels?: PgAtlasAdjacentParcel[]
+  /**
    * Municipality, resolved from the county boundary layer rather than from
    * anything the applicant typed.
    *
@@ -94,6 +103,12 @@ export interface ExistingConditionsOutput {
   verticalDatum: string | null
   reliabilityLevel: number
   twinRevision: number
+  /**
+   * USDA SSURGO map units for the survey area — Sec. 32-130(a)(13) soils
+   * table. Absent when Soil Data Access did not answer. The table is county
+   * wide, not narrowed to the parcel; the sheet prints SOILS_CAVEAT with it.
+   */
+  soils?: SoilMapUnit[]
 }
 
 export interface IngestSurveyOutput {
@@ -195,6 +210,8 @@ export function lotPackageFrom(ctx: StageContext): LotPackage {
       streetPoint: prop.streetPoint,
       streets: prop.streets ?? [],
       parcelId: prop.parcelId,
+      adjacentParcels: prop.adjacentParcels ?? [],
+      soils: cond?.soils,
       contours: cond?.contours?.map(c => ({
         elevationFt: c.elevationFt, path: c.path, weight: c.weight, hidden: c.hidden,
       })),
@@ -311,6 +328,16 @@ const resolveProperty: StageProcessor = async (ctx): Promise<StageResult> => {
       paths: st.paths as [number, number][][],
     })),
     hasStreetFrontage: Boolean(site.streetPoint),
+    adjacentParcels: await fetchPgAtlasAdjacentParcels(
+      site.address.easting2248, site.address.northing2248,
+      { fetchImpl: ctx.capabilities.fetchImpl, excludePropId: site.parcel?.propId ?? null },
+    ).catch((e: unknown) => {
+      ctx.capabilities.trace({
+        workflowId: ctx.workflowId, job: ctx.job, phase: 'skip',
+        detail: `adjacent parcels unavailable: ${e instanceof Error ? e.message : String(e)}`,
+      })
+      return [] as PgAtlasAdjacentParcel[]
+    }),
     municipality: {
       determined: site.municipality !== null,
       incorporated: site.municipality?.incorporated ?? false,
@@ -389,6 +416,16 @@ const buildExistingConditions: StageProcessor = async (ctx): Promise<StageResult
     })
   }
 
+  let soils: SoilMapUnit[] | undefined
+  try {
+    soils = (await fetchSoilMapUnits('prince_georges_md', { fetchImpl: ctx.capabilities.fetchImpl }))?.units
+  } catch (e) {
+    ctx.capabilities.trace({
+      workflowId: ctx.workflowId, job: ctx.job, phase: 'skip',
+      detail: `soils unavailable: ${e instanceof Error ? e.message : String(e)}`,
+    })
+  }
+
   const out: ExistingConditionsOutput & { contours?: PgContourResult['contours'] } = {
     contourCount: contours?.contours.length ?? 0,
     elevationsFt: contours?.elevationsFt ?? [],
@@ -397,6 +434,7 @@ const buildExistingConditions: StageProcessor = async (ctx): Promise<StageResult
     reliabilityLevel: 1,
     twinRevision: 1,
     contours: contours?.contours,
+    soils,
   }
   return { status: 'COMPLETED', outputs: out, twinRevision: 1 }
 }

@@ -251,9 +251,20 @@ is never rewritten.
 Staff may enqueue only `STAFF_RUNNABLE_STAGES` (compose_sheets, route_review,
 ingest_comments, run_issuance_qc). The guard still decides.
 
+### Staff desk — `/admin/site-plan`
+
+Lists every paid site-plan order with its workflow. **Activate** calls the
+same entry point the webhook calls, for orders paid before activation existed
+or whose activation FAILED. Open a workflow to see stages/queue/review, re-run
+a staff-runnable stage, or enter the County's comment letter (appended to
+`form_data.sitePlanCountyComments`, then run `ingest_comments`).
+
+API: `GET/POST /api/admin/site-plan`, `GET/PATCH /api/admin/site-plan/{wf}`,
+`POST /api/admin/site-plan/{wf}/run`. `DELETE /api/admin/orders/{id}` removes
+an UNPAID lead only.
+
 **Not done:** the concept page at `/deliverables/[id]` does not redirect
-site-plan orders to `/site-plan`. No admin UI for the run route or for
-entering county comments — both are API + form_data today.
+site-plan orders to `/site-plan`.
 
 ## Requirement sources
 
@@ -358,14 +369,19 @@ some point in this engine:
 The correct method is each edge offset inward by its own yard depth, intersected
 as half-planes (Sutherland-Hodgman).
 
-## Still missing, in priority order
+## Sheet content — state as of 2026-09-15
 
-1. **SOILS TABLE** — map unit, name, soil type, K-factor, hydric rating,
-   hydrologic soil group, drainage class. Sec. 32-130(a)(13). Every column is in
-   USDA SSURGO; the Soil Data Access endpoint is confirmed working for MD033 =
-   Prince George's County.
-2. **Street names and per-lot labels** — already in the PGAtlas responses.
-3. **Bottom band layout** — the right column will overflow.
-4. **Adjacent parcel references** — parcel number, owner, liber/folio, zone, use.
-5. **Match lines** — the scale-floor remedy names them; nothing draws them.
-6. **Spot elevations** — Sec. 32-130(a)(9), needs field survey.
+Done, and now reaching PRODUCTION runs (they were script-only before):
+- **Soils table** (`jurisdictions/usda-soils.ts`, `soilsTable()` in render-pdf)
+  — fetched in `build_existing_conditions`, county-wide units with
+  `SOILS_CAVEAT`; narrowing to the parcel is still open.
+- **Adjacent parcel references** — fetched in `resolve_property` from the
+  PGAtlas parcel layer, drawn by render-pdf. Owner and liber/folio are not on
+  that layer and are not shown.
+- **Street names**, **bottom band** — in render-pdf.
+
+Still missing:
+1. **Match lines** — the composer flags a below-floor scale and names the
+   remedy; nothing draws one.
+2. **Spot elevations** — Sec. 32-130(a)(9), needs field survey.
+3. **Soils narrowed to the parcel** — SSURGO spatial query, not the tabular one.
