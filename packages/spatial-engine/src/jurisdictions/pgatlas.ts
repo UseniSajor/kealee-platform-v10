@@ -19,6 +19,8 @@ export const PGATLAS_ENDPOINTS = {
   addressLocator: `${PGATLAS_ROOT}/Geocoders/Address/GeocodeServer`,
   compositeLocator: `${PGATLAS_ROOT}/Geocoders/Composite_Geolocator/GeocodeServer`,
   parcels: `${PGATLAS_ROOT}/Property/MapServer/15`,
+  /** The same parcel polygons joined to the assessment record — owner, account, acreage, plat, deed. */
+  propertyRecords: `${PGATLAS_ROOT}/Address/MapServer/15`,
   zoning: `${PGATLAS_ROOT}/Zoning/MapServer/63`,
   contours2ft: `${PGATLAS_ROOT}/Elevation/MapServer/1`,
   streetCenterline: `${PGATLAS_ROOT}/Transportation/MapServer/2`,
@@ -383,6 +385,60 @@ export interface PgAtlasAdjacentParcel {
   ring: Ring
   areaSqFt: number
   propId: string | null
+  /** The county's assessment record for the parcel (PGAtlas Address/MapServer/15), when looked up. */
+  record?: PgAtlasPropertyRecord | null
+}
+
+/** Owner and record of a parcel, as the county publishes it on PGAtlas (SDAT-sourced, refreshed by the county). */
+export interface PgAtlasPropertyRecord {
+  account: string | null
+  ownerName: string | null
+  careOf: string | null
+  acres: number | null
+  landSqFt: number | null
+  plat: string | null
+  lot: string | null
+  block: string | null
+  parcel: string | null
+  propertyDesc: string | null
+  liber: string | null
+  folio: string | null
+  subdivision: string | null
+  taxMapGrid: string | null
+  wsscGrid: string | null
+}
+
+/**
+ * The assessment record at a point — owner of record, account, acreage, plat
+ * and deed reference — from PGAtlas's Address/Property layer. This is what an
+ * approved plan letters against each adjoiner ("PROPERTY OF … ACREAGE …").
+ * The county refreshes it from SDAT; MD iMAP's public layer carries no names.
+ */
+export async function fetchPgAtlasPropertyRecord(
+  easting2248: number, northing2248: number, opts: { fetchImpl?: typeof fetch } = {},
+): Promise<PgAtlasPropertyRecord | null> {
+  const doFetch = opts.fetchImpl ?? fetch
+  const url = `${PGATLAS_ENDPOINTS.propertyRecords}/query?` + new URLSearchParams({
+    where: '1=1', geometry: `${easting2248},${northing2248}`, geometryType: 'esriGeometryPoint', inSR: '2248',
+    spatialRel: 'esriSpatialRelIntersects',
+    outFields: 'ACCOUNT,OWNER_NAME,ICO_NAME,LAND_AREA_ACRE,LAND_AREA_SQFT,PLAT,LOT,BLOCK,PARCEL,PROPERTY_DESC,LIBER,FOLIO,SUB_NAME,TAXMAPGRID,WSSCGRID',
+    returnGeometry: 'false', f: 'json',
+  })
+  const str = (v: unknown) => { const t = v == null ? '' : String(v).trim(); return t ? t : null }
+  const num = (v: unknown) => { const n = typeof v === 'number' ? v : Number(v); return Number.isFinite(n) ? n : null }
+  try {
+    const res = await doFetch(url, { headers: { accept: 'application/json' } })
+    if (!res.ok) return null
+    const j = await res.json() as { features?: { attributes?: Record<string, unknown> }[] }
+    const a = j.features?.[0]?.attributes
+    if (!a) return null
+    return {
+      account: str(a.ACCOUNT), ownerName: str(a.OWNER_NAME), careOf: str(a.ICO_NAME),
+      acres: num(a.LAND_AREA_ACRE), landSqFt: num(a.LAND_AREA_SQFT),
+      plat: str(a.PLAT), lot: str(a.LOT), block: str(a.BLOCK), parcel: str(a.PARCEL), propertyDesc: str(a.PROPERTY_DESC),
+      liber: str(a.LIBER), folio: str(a.FOLIO), subdivision: str(a.SUB_NAME), taxMapGrid: str(a.TAXMAPGRID), wsscGrid: str(a.WSSCGRID),
+    }
+  } catch { return null }
 }
 
 /**

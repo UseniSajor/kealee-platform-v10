@@ -625,7 +625,7 @@ function drawGeometry(doc: Doc, ctx: SheetContext, vp: Viewport, b: Bounds): voi
   // by the line it SHARES and its name — that is what tells a reviewer what
   // abuts what. Everything past a short reach from the subject boundary is
   // trimmed away.
-  const adjAll = (t as { adjacentParcels?: { ring: Ring; areaSqFt: number; propId: string | null }[] })
+  const adjAll = (t as { adjacentParcels?: { ring: Ring; areaSqFt: number; propId: string | null; record?: { ownerName: string | null; acres: number | null; liber: string | null; folio: string | null; subdivision: string | null; propertyDesc: string | null; lot: string | null } | null }[] })
     .adjacentParcels ?? []
   const subjectRings = featuresOfKind(t, 'Parcel').map(f => f.ring.coordinates as Position[])
   // Far enough to reach ACROSS THE STREET. The plat shows the lots opposite —
@@ -732,10 +732,19 @@ function drawGeometry(doc: Doc, ctx: SheetContext, vp: Viewport, b: Bounds): voi
       // screen and in colour.
       // An adjoining parcel is context. It yields to everything on the subject
       // property, and its area yields before its identity.
+      // Lettered the way the approved plans letter an adjoiner — PROPERTY OF,
+      // acreage, deed reference — when the record was looked up; the county
+      // lot number and GIS area otherwise.
+      const rec = ap.record
+      const ownerLine = rec?.ownerName ? `PROPERTY OF: ${rec.ownerName.toUpperCase()}` : pid
+      const acreLine = rec?.acres != null ? `ACREAGE: ${rec.acres.toFixed(rec.acres < 1 ? 4 : 3)}`
+        : ap.areaSqFt > 0 ? `${Math.round(ap.areaSqFt).toLocaleString()} SF  (${acre})` : 'AREA NOT PUBLISHED'
+      const desc = [rec?.subdivision ? `SUBDIVISION: ${rec.subdivision.toUpperCase()}` : '', rec?.lot ? `LOT ${rec.lot}` : rec?.propertyDesc ? rec.propertyDesc.toUpperCase() : ''].filter(Boolean).join(' ')
+      const refLine = rec?.liber && rec?.folio ? `L. ${rec.liber} F. ${rec.folio}${desc ? ` · ${desc}` : ''}` : desc
+      const lines = [ownerLine, acreLine, refLine].filter(Boolean)
       L.add({
-        text: `${pid}\n${ap.areaSqFt > 0
-          ? `${Math.round(ap.areaSqFt).toLocaleString()} SF  (${acre})` : 'AREA NOT PUBLISHED'}`,
-        at: [at[0], at[1]], dx: -46, dy: -8, width: 92, align: 'center', lines: 2,
+        text: lines.join('\n'),
+        at: [at[0], at[1]], dx: -60, dy: -8, width: 120, align: 'center', lines: lines.length,
         size: 6, font: 'Helvetica-Bold', color: '#4a4a4a', priority: 34,
         within: ringPt,
       })
@@ -1958,7 +1967,10 @@ function drawGeometry(doc: Doc, ctx: SheetContext, vp: Viewport, b: Bounds): voi
       // THE ADDRESS GOES ON THE HOUSE. It was lettered out on the lot beside
       // the area, which is where a lot label belongs and not where a builder
       // looks to see which dwelling they are standing in.
-      const addr = String(bAt.address ?? bAt.lotLabel ?? '')
+      // On a subdivision set every dwelling shares the tract's address, so the
+      // house block names the LOT; a single-lot plan keeps the address.
+      const multiLot = (((t as { projectLots?: unknown[] }).projectLots?.length ?? 0) > 1)
+      const addr = String((multiLot ? bAt.lotLabel ?? bAt.address : bAt.address ?? bAt.lotLabel) ?? '')
       const fx = r.reduce((n, q) => n + q[0], 0) / r.length
       const fy = r.reduce((n, q) => n + q[1], 0) / r.length
       const ew = 56, eh = rows2.length * 8 + (addr ? 13 : 0) + 4

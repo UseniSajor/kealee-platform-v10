@@ -29,6 +29,7 @@ import { toDxf, toLandXml } from '../src/export/exporters'
 import { buildRecordedPlatBoundary } from '../src/survey/recorded-plat'
 import { normaliseRing } from '../src/site-plan/buildable-envelope'
 import { resolvePgAtlasSite, fetchPgAtlasEasements, fetchPgAtlasAdjacentParcels } from '../src/jurisdictions/pgatlas'
+import { fetchPgAtlasPropertyRecord } from '../src/jurisdictions/pgatlas'
 import { fetchPgContours } from '../src/jurisdictions/pg-elevation'
 import { fetchSoilMapUnits } from '../src/jurisdictions/usda-soils'
 import {
@@ -42,6 +43,7 @@ import {
 import { buildLotPackage } from '../src/self-perform/lot-package'
 import { composeSheets, blocksFromFeatures } from '../src/sheets/composer'
 import { renderSheetSetPdf } from '../src/sheets/render-pdf'
+import { ARCH_E } from '../src/sheets/viewport'
 import { buildSheetContext } from '../src/sheets/render-svg'
 import { SHEET_TITLES, type SheetId } from '../src/sheets/sheet-template'
 import type { Position, SiteFeature, SiteTwin } from '../src/site-plan/site-twin'
@@ -85,6 +87,8 @@ type PlatSpec = {
   rearYard?: { extentFt?: number; benchFt?: number; easementStandoffFt?: number }
   frontageExisting?: boolean
   omitWaterAndSewer?: boolean
+  /** What the lot's water and sewer services connect to, as lettered on the sheet. */
+  utilityMainLabel?: string
   omitSwmPractice?: boolean
   stormOutfall?: unknown
 }
@@ -251,6 +255,28 @@ async function main(): Promise<void> {
   const touching = swept.filter(p => gapToBoundary(p) <= ABUT_TOLERANCE_FT).length
   console.log(`    adjoining lots  ${touching} abutting + `
     + `${adjacentParcels.length - touching} across the street (${swept.length} swept)`)
+  // The county's assessment record for each adjoiner — owner of record, acreage,
+  // deed and subdivision — so it is lettered as an approved plan letters it
+  // (PROPERTY OF … ACREAGE …). PGAtlas Address/Property carries the SDAT join;
+  // the county refreshes it, which is why it is used over any transcribed sheet.
+  {
+    let looked = 0
+    for (const ap of adjacentParcels) {
+      const ring = ap.ring.coordinates as Position[]
+      const c = ring.reduce((acc, q) => [acc[0] + q[0] / ring.length, acc[1] + q[1] / ring.length], [0, 0])
+      // the centroid of a bent parcel can fall outside it; step toward the nearest vertex until inside
+      let probe: Position = c as Position
+      if (!inRing(probe, ring)) {
+        const nearest = ring.reduce((b, q) => Math.hypot(q[0] - c[0], q[1] - c[1]) < Math.hypot(b[0] - c[0], b[1] - c[1]) ? q : b, ring[0])
+        for (let t = 0.9; t > 0 && !inRing(probe, ring); t -= 0.1) probe = [c[0] + (nearest[0] - c[0]) * t, c[1] + (nearest[1] - c[1]) * t]
+      }
+      const rec = await fetchPgAtlasPropertyRecord(probe[0], probe[1])
+      if (!rec) continue
+      looked++
+      ap.record = rec
+    }
+    console.log(`    adjoiner record ${looked} of ${adjacentParcels.length} from PGAtlas Address/Property (owner of record, acreage, deed)`)
+  }
 
   const platRecordPath = outerPath.replace(/\.plat\.json$/, '.plat-record.json')
   let platRecord: {
@@ -265,6 +291,12 @@ async function main(): Promise<void> {
       /** Every branch of the street when it forks (a T to two cul-de-sacs); `centreline` is the first. */
       centrelines?: Position[][]
       rowRings: Position[][]; pavementRings: Position[][]; rowSqFt?: number; basis?: string; note?: string
+      /** Mains in the new street, each offset from its centreline, extended from the existing road's mains. */
+      utilities?: {
+        water?: { sizeIn: number; offsetFt: number; label: string; connectsTo: string }
+        sewer?: { sizeIn: number; offsetFt: number; label: string; connectsTo: string }
+        note?: string
+      }
     }[]
     /** Stormwater management the concept reserves — a parcel for the ESD practice, with its sizing. */
     stormwater?: {
@@ -824,6 +856,7 @@ async function main(): Promise<void> {
         frontageOutFt: FRONTAGE_OUT_FT,
         soils,
         omitWaterAndSewer: spec.omitWaterAndSewer ?? null,
+        utilityMainLabel: spec.utilityMainLabel ?? null,
         omitSwmPractice: spec.omitSwmPractice ?? null,
         // EACH HOUSE IS CONNECTED TO THE TRUNK IN THE EASEMENT.
         //
@@ -2837,6 +2870,31 @@ async function main(): Promise<void> {
       } as never)
     }
     console.log(`    proposed street ${st.name}: ${st.rightOfWayFt}' R/W, ${st.pavementFt}' pavement, ${st.rowSqFt?.toFixed(0) ?? '?'} sf dedication`)
+    // The mains in the new street: one water, one sewer, each offset from the
+    // centreline, run from 30 ft outside the entrance (the connection in the
+    // existing road) to the end of every branch. Drawn as Utility features so
+    // they take the trade line types and the once-per-main caption.
+    const offsetLine = (pts: Position[], off: number): Position[] => pts.map((q, i) => {
+      const a = pts[Math.max(0, i - 1)], b = pts[Math.min(pts.length - 1, i + 1)]
+      const dx = b[0] - a[0], dy = b[1] - a[1], ln = Math.hypot(dx, dy) || 1
+      return [q[0] - dy / ln * off, q[1] + dx / ln * off]
+    })
+    for (const [j, cl] of (st.centrelines ?? [st.centreline]).entries()) {
+      const d0x = cl[1][0] - cl[0][0], d0y = cl[1][1] - cl[0][1], l0 = Math.hypot(d0x, d0y) || 1
+      const start: Position = [cl[0][0] - d0x / l0 * 30, cl[0][1] - d0y / l0 * 30]
+      for (const [svc, spec] of [['Water main', st.utilities?.water], ['Sanitary sewer main', st.utilities?.sewer]] as const) {
+        if (!spec) continue
+        merged.push({
+          kind: 'Utility', id: `prop-street-${k}-${svc.toLowerCase().replace(/\s+/g, '-')}-${j}`,
+          line: offsetLine([start, ...cl], spec.offsetFt),
+          attributes: {
+            type: svc, size: `${spec.sizeIn}" ${/water/i.test(svc) ? 'DIP' : 'PVC'}`, proposed: true,
+            from: 'offsite', sizeAtMain: j === 0 ? `CONNECT TO ${spec.connectsTo}` : '', label: spec.label,
+          },
+        } as never)
+      }
+    }
+    if (st.utilities?.note) console.log(`    street mains: ${st.utilities.note.slice(0, 110)}…`)
   }
   // A stormwater parcel the concept reserves: its outline lettered as a parcel,
   // and the practice inside it drawn the way a lot's SWMPractice is (hatched,
@@ -2973,7 +3031,11 @@ async function main(): Promise<void> {
         : platRecord?.citation === 'PLAT BOOK PM 231, P. 50' ? ['wssc-connection-sketch']
         : []),
   }))
-  const out = await renderSheetSetPdf({ sheets, responsibility: undefined })
+  // SHEET=E plots on ARCH E (36 x 48); a subdivision the size of a tract does
+  // not fit ARCH D at a permitted scale.
+  const sheetSize = process.env.SHEET === 'E' ? ARCH_E : undefined
+  if (sheetSize) console.log('    sheet size      ARCH E (36 x 48 in)')
+  const out = await renderSheetSetPdf({ sheets, sheetSize, responsibility: undefined })
 
   // A LOCKED TARGET IS REPORTED, NEVER SWALLOWED.
   //

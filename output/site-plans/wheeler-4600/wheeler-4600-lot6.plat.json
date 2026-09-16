@@ -4,14 +4,14 @@
   "reference": {
     "subdivisionName": "4600 WHEELER ROAD — PRELIMINARY SUBDIVISION CONCEPT",
     "recordedIn": "NONE — no plat of record; preliminary concept",
-    "lot": "6 (proposed)"
+    "lot": "6"
   },
   "basisOfBearings": "Maryland State Plane Coordinate System (NAD 83), from PGAtlas parcel geometry",
   "pointOfBeginning": [
-    1318742.099,
-    423064.075
+    1318410.258,
+    422981.519
   ],
-  "recordedAreaSqFt": 13335,
+  "recordedAreaSqFt": 13759,
   "programme": {
     "totalFloorAreaSqFt": 2400,
     "storeys": 2,
@@ -22,36 +22,31 @@
   "frontSetbackFt": 25,
   "sideSetbackFt": 8,
   "frontsOn": "PROPOSED STREET (LAST RUN, LEFT SIDE)",
+  "utilityMainLabel": "PROP. 8\" MAIN IN WAHALLA COURT",
   "calls": [
     {
       "kind": "line",
-      "bearing": "S 08-58-56 E",
-      "distanceFt": 0.94,
+      "bearing": "S 50-11-29 E",
+      "distanceFt": 76.16,
       "label": "proposed lot line (fronts PROPOSED STREET (LAST RUN, LEFT SIDE))"
     },
     {
       "kind": "line",
-      "bearing": "S 05-21-59 E",
-      "distanceFt": 109.44,
+      "bearing": "N 49-48-31 E",
+      "distanceFt": 176.84,
       "label": "proposed lot line 2"
     },
     {
       "kind": "line",
-      "bearing": "N 84-38-01 E",
-      "distanceFt": 116.92,
+      "bearing": "N 40-11-30 W",
+      "distanceFt": 75,
       "label": "proposed lot line 3"
     },
     {
       "kind": "line",
-      "bearing": "N 05-21-59 W",
-      "distanceFt": 117.72,
+      "bearing": "S 49-48-31 W",
+      "distanceFt": 190.06,
       "label": "proposed lot line 4"
-    },
-    {
-      "kind": "line",
-      "bearing": "S 81-02-22 W",
-      "distanceFt": 117.21,
-      "label": "proposed lot line 5"
     }
   ]
 }

@@ -162,6 +162,8 @@ export interface DesignInput {
    * has been obtained.
    */
   omitWaterAndSewer?: boolean | null
+  /** The main the services connect to, as lettered: default `EX. 8" MAIN`. A lot on a proposed street names that street's proposed main. */
+  utilityMainLabel?: string | null
   /**
    * Omit the on-lot ESD micro-bioretention practice.
    *
@@ -524,9 +526,9 @@ export function generateDesign(input: DesignInput): DesignResult {
     const SERVICE_SEPARATION_HALF_FT = 5
     const runs: [string, number, Position, string][] = [
       ['Water service (WHC)', -SERVICE_SEPARATION_HALF_FT, utilityStart,
-       '1" COPPER FROM EX. 8" MAIN'],
+       `1" COPPER FROM ${input.utilityMainLabel ?? 'EX. 8" MAIN'}`],
       ['Sanitary lateral (SHC)', SERVICE_SEPARATION_HALF_FT, sanitaryStart,
-       '4" PVC TO EX. 8" MAIN'],
+       `4" PVC TO ${input.utilityMainLabel ?? 'EX. 8" MAIN'}`],
     ]
     for (const [type, offset, from, size] of (input.omitWaterAndSewer ? [] : runs)) {
       // Offset ACROSS the run, not along one axis.

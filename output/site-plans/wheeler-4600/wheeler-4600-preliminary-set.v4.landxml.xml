@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LandXML xmlns="http://www.landxml.org/schema/LandXML-1.2"
+         version="1.2"
+         date="2026-09-16" time="12:48:19">
+  <Units><Imperial areaUnit="squareFoot" linearUnit="USSurveyFoot" volumeUnit="cubicFeet"
+           temperatureUnit="fahrenheit" pressureUnit="inHG"/></Units>
+  <Project name="4600 WHEELER ROAD"/>
+  <Application name="Kealee Site Plan Engine" version="1.0"/>
+  <!-- Coordinate system EPSG:2248; horizontal datum NAD83;
+       vertical datum NAVD88 (feet). Model revision 10. -->
+  <CoordinateSystem desc="EPSG:2248" horizontalDatum="NAD83"
+                    verticalDatum="NAVD88 (feet)"/>
+  <Parcels>
+      <Parcel name="subdivision-outer" area="230996.50830078125" parcelType="Single">
+        <CoordGeom>
+            <PntList2D>423151.87081318715 1318205.8557298675</PntList2D>
+            <PntList2D>422568.2129419484 1318906.1765219627</PntList2D>
+            <PntList2D>423199.5635498709 1318846.8699727813</PntList2D>
+            <PntList2D>423200.0912312043 1318846.8204509637</PntList2D>
+            <PntList2D>423223.80832817475 1318730.6364774075</PntList2D>
+            <PntList2D>423273.42186684336 1318629.4557831977</PntList2D>
+            <PntList2D>423151.87081318715 1318205.8557298675</PntList2D>
+        </CoordGeom>
+      </Parcel>
+      <Parcel name="LOT 1" area="9556.942077636719" parcelType="Single">
+        <CoordGeom>
+            <PntList2D>422749.121 1318689.107</PntList2D>
+            <PntList2D>422664.92498929944 1318790.1313133216</PntList2D>
+            <PntList2D>422727.9383836669 1318819.2594531574</PntList2D>
+            <PntList2D>422737.0381548277 1318822.7881589856</PntList2D>
+            <PntList2D>422745.5873377544 1318824.9159680197</PntList2D>
+            <PntList2D>422754.33621562476 1318825.9519390662</PntList2D>
+            <PntList2D>422763.1459213125 1318825.8799272922</PntList2D>
+            <PntList2D>422771.8765462407 1318824.699974597</PntList2D>
+            <PntList2D>422780.38985805056 1318822.4329011468</PntList2D>
+            <PntList2D>422788.55042027694 1318819.1130631764</PntList2D>
+            <PntList2D>422796.22918738564 1318814.7941934527</PntList2D>
+            <PntList2D>422804.0664911381 1318808.9774701574</PntList2D>
+            <PntList2D>422813.3247229472 1318801.155734815</PntList2D>
+            <PntList2D>422754.9208564375 1318732.0236989942</PntList2D>
+            <PntList2D>422749.121 1318689.107</PntList2D>
+        </CoordGeom>
+      </Parcel>
+      <Parcel name="LOT 2" area="10124.002502441406" parcelType="Single">
+        <CoordGeom>
+            <PntList2D>422786.489 1318644.27</PntList2D>
+            <PntList2D>422749.1192748377 1318689.1092745403</PntList2D>
+            <PntList2D>422754.9163902481 1318732.0295442613</PntList2D>
+            <PntList2D>422813.32025675784 1318801.161580082</PntList2D>
+            <PntList2D>422875.00461871154 1318749.0501418908</PntList2D>
+            <PntList2D>422786.489 1318644.27</PntList2D>
+        </CoordGeom>
+      </Parcel>
+      <Parcel name="LOT 3" area="10783.169494628906" parcelType="Single">
+        <CoordGeom>
+            <PntList2D>422835.246 1318585.767</PntList2D>
+            <PntList2D>422786.4870191513 1318644.272618419</PntList2D>
+            <PntList2D>422875.00326557277 1318749.0473277695</PntList2D>
+            <PntList2D>422932.2952426196 1318700.6466111832</PntList2D>
+            <PntList2D>422835.246 1318585.767</PntList2D>
+        </CoordGeom>
+      </Parcel>
+      <Parcel name="LOT 4" area="11775.39794921875" parcelType="Single">
+        <CoordGeom>
+            <PntList2D>422884.004 1318527.264</PntList2D>
+            <PntList2D>422835.2444518671 1318585.769145636</PntList2D>
+            <PntList2D>422932.29756876605 1318700.6510180102</PntList2D>
+            <PntList2D>422989.58931115887 1318652.2500236651</PntList2D>
+            <PntList2D>422884.004 1318527.264</PntList2D>
+        </CoordGeom>
+      </Parcel>
+      <Parcel name="LOT 5" area="12766.920593261719" parcelType="Single">
+        <CoordGeom>
+            <PntList2D>422932.761 1318468.761</PntList2D>
+            <PntList2D>422884.0020191513 1318527.266618419</PntList2D>
+            <PntList2D>422989.58656902716 1318652.247156614</PntList2D>
+            <PntList2D>423046.87807676464 1318603.8458845112</PntList2D>
+            <PntList2D>422932.761 1318468.761</PntList2D>
+        </CoordGeom>
+      </Parcel>
+      <Parcel name="LOT 6" area="13759.187133789062" parcelType="Single">
+        <CoordGeom>
+            <PntList2D>422981.519 1318410.258</PntList2D>
+            <PntList2D>422932.7594518671 1318468.7631456358</PntList2D>
+            <PntList2D>423046.8818881488 1318603.8499885818</PntList2D>
+            <PntList2D>423104.1736305416 1318555.4489942368</PntList2D>
+            <PntList2D>422981.519 1318410.258</PntList2D>
+        </CoordGeom>
+      </Parcel>
+      <Parcel name="LOT 7" area="14218.989379882812" parcelType="Single">
+        <CoordGeom>
+            <PntList2D>423013.598 1318371.767</PntList2D>
+            <PntList2D>422981.516503891 1318410.26102171</PntList2D>
+            <PntList2D>423104.1703731496 1318555.446530477</PntList2D>
+            <PntList2D>423132.8472697465 1318531.2207755542</PntList2D>
+            <PntList2D>423132.7220821047 1318528.3535071583</PntList2D>
+            <PntList2D>423132.91198810237 1318523.9976449346</PntList2D>
+            <PntList2D>423133.48179483204 1318519.6750392052</PntList2D>
+            <PntList2D>423134.4252858165 1318515.4183474425</PntList2D>
+            <PntList2D>423135.7357784624 1318511.2599572462</PntList2D>
+            <PntList2D>423137.40488360304 1318507.2320932925</PntList2D>
+            <PntList2D>423139.41805130796 1318503.364696779</PntList2D>
+            <PntList2D>423141.7608380457 1318499.6876122952</PntList2D>
+            <PntList2D>423144.41507141566 1318496.2286174675</PntList2D>
+            <PntList2D>423147.360691474 1318493.0141311209</PntList2D>
+            <PntList2D>423150.4573663382 1318490.1767723516</PntList2D>
+            <PntList2D>423053.84252815944 1318375.8148156365</PntList2D>
+            <PntList2D>423013.598 1318371.767</PntList2D>
+        </CoordGeom>
+      </Parcel>
+      <Parcel name="LOT 8" area="16410.403564453125" parcelType="Single">
+        <CoordGeom>
+            <PntList2D>422941.612 1318771.323</PntList2D>
+            <PntList2D>422841.3438119136 1318856.03119357</PntList2D>
+            <PntList2D>422828.94527589285 1318865.2328186734</PntList2D>
+            <PntList2D>422814.6689109245 1318873.263373031</PntList2D>
+            <PntList2D>422799.49607942894 1318879.4350490114</PntList2D>
+            <PntList2D>422783.66800376854 1318883.6512583147</PntList2D>
+            <PntList2D>422767.4354118116 1318885.8438272094</PntList2D>
+            <PntList2D>422751.0559596612 1318885.9777945713</PntList2D>
+            <PntList2D>422734.7896477282 1318884.0512702144</PntList2D>
+            <PntList2D>422718.89438031387 1318880.0959100756</PntList2D>
+            <PntList2D>422704.49919254787 1318874.5127058718</PntList2D>
+            <PntList2D>422632.472052695 1318841.2183576336</PntList2D>
+            <PntList2D>422645.0593119171 1318813.9867417198</PntList2D>
+            <PntList2D>422568.2327397143 1318906.169591554</PntList2D>
+            <PntList2D>423019.72513666877 1318863.7582028436</PntList2D>
+            <PntList2D>422941.612 1318771.323</PntList2D>
+        </CoordGeom>
+      </Parcel>
+      <Parcel name="LOT 9" area="11032.066467285156" parcelType="Single">
+        <CoordGeom>
+            <PntList2D>422998.904 1318722.922</PntList2D>
+            <PntList2D>422941.61225760716 1318771.322994345</PntList2D>
+            <PntList2D>423019.7060967692 1318863.7609323626</PntList2D>
+            <PntList2D>423110.6657486921 1318855.2174364706</PntList2D>
+            <PntList2D>422998.904 1318722.922</PntList2D>
+        </CoordGeom>
+      </Parcel>
+      <Parcel name="LOT 10" area="14943.589538574219" parcelType="Single">
+        <CoordGeom>
+            <PntList2D>423056.196 1318674.521</PntList2D>
+            <PntList2D>422998.9042576072 1318722.921994345</PntList2D>
+            <PntList2D>423110.66538028297 1318855.2124469795</PntList2D>
+            <PntList2D>423199.56398168573 1318846.861233377</PntList2D>
+            <PntList2D>423200.0916210559 1318846.8112664376</PntList2D>
+            <PntList2D>423200.41369713185 1318845.233810574</PntList2D>
+            <PntList2D>423056.196 1318674.521</PntList2D>
+        </CoordGeom>
+      </Parcel>
+      <Parcel name="LOT 11" area="14542.175415039062" parcelType="Single">
+        <CoordGeom>
+            <PntList2D>423113.488 1318626.12</PntList2D>
+            <PntList2D>423056.1962576072 1318674.5209943452</PntList2D>
+            <PntList2D>423200.41831382376 1318845.2351088778</PntList2D>
+            <PntList2D>423219.5251975612 1318751.635387223</PntList2D>
+            <PntList2D>423178.0234346155 1318702.5092254311</PntList2D>
+            <PntList2D>423113.488 1318626.12</PntList2D>
+        </CoordGeom>
+      </Parcel>
+      <Parcel name="LOT 12" area="14913.966064453125" parcelType="Single">
+        <CoordGeom>
+            <PntList2D>423214.986 1318566.545</PntList2D>
+            <PntList2D>423214.8608105108 1318566.660011268</PntList2D>
+            <PntList2D>423211.402291858 1318569.3148650734</PntList2D>
+            <PntList2D>423207.7247531172 1318571.6569386867</PntList2D>
+            <PntList2D>423203.8577666087 1318573.6708938358</PntList2D>
+            <PntList2D>423199.8295547844 1318575.339159252</PntList2D>
+            <PntList2D>423195.6711645881 1318576.6496518978</PntList2D>
+            <PntList2D>423191.414729136 1318577.5942985208</PntList2D>
+            <PntList2D>423187.09197713685 1318578.1629945328</PntList2D>
+            <PntList2D>423182.73611491313 1318578.3529005304</PntList2D>
+            <PntList2D>423178.3802526894 1318578.1629945328</PntList2D>
+            <PntList2D>423174.0575199926 1318577.5941518203</PntList2D>
+            <PntList2D>423171.58762656496 1318577.0459488868</PntList2D>
+            <PntList2D>423113.5014386776 1318626.1181036867</PntList2D>
+            <PntList2D>423178.03572745936 1318702.5074064159</PntList2D>
+            <PntList2D>423219.537490405 1318751.6335682077</PntList2D>
+            <PntList2D>423223.8254850564 1318730.6267430817</PntList2D>
+            <PntList2D>423271.4939920443 1318633.4150856452</PntList2D>
+            <PntList2D>423214.986 1318566.545</PntList2D>
+        </CoordGeom>
+      </Parcel>
+      <Parcel name="LOT 13" area="14262.691528320312" parcelType="Single">
+        <CoordGeom>
+            <PntList2D>423053.85 1318375.809</PntList2D>
+            <PntList2D>423067.164111384 1318391.5675322302</PntList2D>
+            <PntList2D>423150.45947392134 1318490.1623976126</PntList2D>
+            <PntList2D>423150.5846634105 1318490.0473863445</PntList2D>
+            <PntList2D>423154.04365823814 1318487.3931529745</PntList2D>
+            <PntList2D>423157.72074272204 1318485.0503662368</PntList2D>
+            <PntList2D>423161.58813923545 1318483.037198532</PntList2D>
+            <PntList2D>423165.61635105975 1318481.3689331159</PntList2D>
+            <PntList2D>423169.774455252 1318480.0575332812</PntList2D>
+            <PntList2D>423174.03114701464 1318479.1140422968</PntList2D>
+            <PntList2D>423178.3537527439 1318478.544235567</PntList2D>
+            <PntList2D>423182.70961496764 1318478.3543295695</PntList2D>
+            <PntList2D>423187.06547719135 1318478.544235567</PntList2D>
+            <PntList2D>423191.3880994938 1318479.113916557</PntList2D>
+            <PntList2D>423195.6447455097 1318480.0576139106</PntList2D>
+            <PntList2D>423199.80284970195 1318481.3690137453</PntList2D>
+            <PntList2D>423203.83106152626 1318483.0372791614</PntList2D>
+            <PntList2D>423207.69845803967 1318485.0504468663</PntList2D>
+            <PntList2D>423211.3755425236 1318487.393233604</PntList2D>
+            <PntList2D>423214.8345373512 1318490.047466974</PntList2D>
+            <PntList2D>423218.04902369773 1318492.9930870323</PntList2D>
+            <PntList2D>423220.9946437561 1318496.207573379</PntList2D>
+            <PntList2D>423223.6494975615 1318499.6660920316</PntList2D>
+            <PntList2D>423225.9915711748 1318503.3436307723</PntList2D>
+            <PntList2D>423228.00552632404 1318507.2106172808</PntList2D>
+            <PntList2D>423229.6737917401 1318511.2388291052</PntList2D>
+            <PntList2D>423230.984284386 1318515.3972193014</PntList2D>
+            <PntList2D>423231.9277753704 1318519.6539110641</PntList2D>
+            <PntList2D>423232.4975821001 1318523.9765167935</PntList2D>
+            <PntList2D>423232.68748809776 1318528.3323790173</PntList2D>
+            <PntList2D>423232.4975821001 1318532.688241241</PntList2D>
+            <PntList2D>423231.92790111015 1318537.0108635435</PntList2D>
+            <PntList2D>423230.98420375655 1318541.2675095594</PntList2D>
+            <PntList2D>423229.67371111066 1318545.4258997557</PntList2D>
+            <PntList2D>423228.0054456946 1318549.45411158</PntList2D>
+            <PntList2D>423225.9914905454 1318553.3210980885</PntList2D>
+            <PntList2D>423223.6494169321 1318556.9986368292</PntList2D>
+            <PntList2D>423220.9950326375 1318560.457515841</PntList2D>
+            <PntList2D>423218.04891391797 1318563.6715451642</PntList2D>
+            <PntList2D>423214.9522390538 1318566.5089039335</PntList2D>
+            <PntList2D>423271.44620385213 1318633.3795517646</PntList2D>
+            <PntList2D>423273.39200496237 1318629.4108922882</PntList2D>
+            <PntList2D>423204.9617312951 1318390.9450755643</PntList2D>
+            <PntList2D>423053.85 1318375.809</PntList2D>
+        </CoordGeom>
+      </Parcel>
+  </Parcels>
+  <!-- No Surfaces element: no vertical datum or elevation data is established for this site. -->
+</LandXML>

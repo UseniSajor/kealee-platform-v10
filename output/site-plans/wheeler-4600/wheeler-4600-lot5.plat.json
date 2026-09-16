@@ -4,14 +4,14 @@
   "reference": {
     "subdivisionName": "4600 WHEELER ROAD — PRELIMINARY SUBDIVISION CONCEPT",
     "recordedIn": "NONE — no plat of record; preliminary concept",
-    "lot": "5 (proposed)"
+    "lot": "5"
   },
   "basisOfBearings": "Maryland State Plane Coordinate System (NAD 83), from PGAtlas parcel geometry",
   "pointOfBeginning": [
-    1318721.732,
-    423121.042
+    1318468.761,
+    422932.761
   ],
-  "recordedAreaSqFt": 10813,
+  "recordedAreaSqFt": 12767,
   "programme": {
     "totalFloorAreaSqFt": 2400,
     "storeys": 2,
@@ -21,49 +21,32 @@
   },
   "frontSetbackFt": 25,
   "sideSetbackFt": 8,
-  "frontsOn": "PROPOSED STREET (CURVE C2, LEFT SIDE)",
+  "frontsOn": "PROPOSED STREET (LAST RUN, LEFT SIDE)",
+  "utilityMainLabel": "PROP. 8\" MAIN IN WAHALLA COURT",
   "calls": [
     {
       "kind": "line",
-      "bearing": "S 30-31-43 E",
-      "distanceFt": 14.03,
-      "label": "proposed lot line (fronts PROPOSED STREET (CURVE C2, LEFT SIDE))"
+      "bearing": "S 50-11-31 E",
+      "distanceFt": 76.16,
+      "label": "proposed lot line (fronts PROPOSED STREET (LAST RUN, LEFT SIDE))"
     },
     {
       "kind": "line",
-      "bearing": "S 23-20-10 E",
-      "distanceFt": 16.31,
+      "bearing": "N 49-48-31 E",
+      "distanceFt": 163.61,
       "label": "proposed lot line 2"
     },
     {
       "kind": "line",
-      "bearing": "S 16-09-00 E",
-      "distanceFt": 16.31,
+      "bearing": "N 40-11-31 W",
+      "distanceFt": 75,
       "label": "proposed lot line 3"
     },
     {
       "kind": "line",
-      "bearing": "S 08-57-32 E",
-      "distanceFt": 14.42,
+      "bearing": "S 49-48-31 W",
+      "distanceFt": 176.84,
       "label": "proposed lot line 4"
-    },
-    {
-      "kind": "line",
-      "bearing": "N 81-02-22 E",
-      "distanceFt": 117.21,
-      "label": "proposed lot line 5"
-    },
-    {
-      "kind": "line",
-      "bearing": "N 05-22-00 W",
-      "distanceFt": 113.25,
-      "label": "proposed lot line 6"
-    },
-    {
-      "kind": "line",
-      "bearing": "S 59-28-20 W",
-      "distanceFt": 145.76,
-      "label": "proposed lot line 7"
     }
   ]
 }

@@ -139,6 +139,20 @@ export const ARCH_D: SheetSize = {
   titleBlockWidthPt: 7 * 72,
 }
 
+/**
+ * ARCH E, 36 x 48 in — a subdivision sheet. A five-acre tract with its
+ * adjoiners does not fit ARCH D at the 1" = 50' Sec. 32-130 allows once the
+ * table and detail bands take their depth; it fell to 1" = 100' and forty
+ * required labels had nowhere to go. The same column and bands on a larger
+ * sheet put the plan at 1" = 40'.
+ */
+export const ARCH_E: SheetSize = {
+  widthPt: 48 * 72,
+  heightPt: 36 * 72,
+  marginPt: 36,
+  titleBlockWidthPt: 7 * 72,
+}
+
 /** ANSI B, 11 x 17 in — for check prints. */
 export const ANSI_B: SheetSize = {
   widthPt: 17 * 72,

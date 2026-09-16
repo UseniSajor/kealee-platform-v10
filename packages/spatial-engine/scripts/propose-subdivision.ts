@@ -26,7 +26,7 @@
 import { mkdirSync, writeFileSync } from 'fs'
 import path from 'path'
 import polygonClipping from 'polygon-clipping'
-import { resolvePgAtlasSite } from '../src/jurisdictions/pgatlas'
+import { fetchPgAtlasPropertyRecord, resolvePgAtlasSite } from '../src/jurisdictions/pgatlas'
 import { fetchPgContours, type PgContourResult } from '../src/jurisdictions/pg-elevation'
 import { fetchSoilMapUnits } from '../src/jurisdictions/usda-soils'
 import { waterQualityVolume, practiceFootprint } from '../src/site-plan/engineering'
@@ -241,7 +241,8 @@ interface Road {
   /** For curve k: ≥ 0 on the incoming tangent's side of the interior angle bisector. */
   nearerIn: ((p: P) => number)[]
 }
-interface RoadParams { stationFt: number; stemFt: number; radiusFt: number; legs: { turnDeg: number; runFt: number }[] }
+/** `entrySkewDeg`: the stem's angle off perpendicular to the existing road (signed, CCW +). Intersections are held within 15° of a right angle. */
+interface RoadParams { stationFt: number; stemFt: number; radiusFt: number; entrySkewDeg?: number; legs: { turnDeg: number; runFt: number }[] }
 
 function reachAlong(f: Frame, o: P, d: P): number {
   let best = 0
@@ -280,8 +281,9 @@ function buildRoad(f: Frame, pr: RoadParams): Road | null {
   const { A, u, n } = f
   const R = pr.radiusFt, bulbR = STREET.bulbRightOfWayRadiusFt
   const o1 = add(A, u, pr.stationFt)
-  const pis: P[] = [], dirs: P[] = [n]
-  let v = add(o1, n, pr.stemFt)
+  const n0 = rot(n, pr.entrySkewDeg ?? 0)
+  const pis: P[] = [], dirs: P[] = [n0]
+  let v = add(o1, n0, pr.stemFt)
   for (const leg of pr.legs) { pis.push(v); const d = rot(dirs[dirs.length - 1], leg.turnDeg); dirs.push(d); v = add(v, d, leg.runFt) }
   const bulb = v
   const curves = pis.map((pi, k) => fillet(`C${k + 1}`, pi, dirs[k], dirs[k + 1], R))
@@ -563,12 +565,20 @@ async function main() {
   if (!address || !outDir) { console.error('usage: propose-subdivision.ts "<street address>" <out dir> [--recorded-acres N] [--case ID]'); process.exit(1) }
   const recordedAcres = flag('--recorded-acres') ? Number(flag('--recorded-acres')) : null
   const caseNumber = flag('--case') ?? null
+  /** Which end of the frontage the entrance is at: the eastern or western tip, or either (searched). */
+  const enterAt = (flag('--enter') ?? 'either') as 'east' | 'west' | 'either'
+  const newStreetName = flag('--street') ?? 'PROPOSED PUBLIC STREET (NAME TBD)'
+  /** Longest total length of curve the street may have, ft — a short bend was asked for. */
+  const maxCurveFt = flag('--max-curve-ft') ? Number(flag('--max-curve-ft')) : Infinity
+  const streetLabel = newStreetName.toUpperCase().replace(/\bCT\b/, 'COURT').replace(/\bRD\b/, 'ROAD').replace(/\bDR\b/, 'DRIVE')
   mkdirSync(outDir, { recursive: true })
 
   const site = await resolvePgAtlasSite(address, {})
   if (!site?.parcel) throw new Error(`No parcel for "${address}" — nothing is proposed on an invented boundary.`)
   const zone = site.zoning?.zoneCode ?? ''
   const ring = openRing(site.parcel.ring.coordinates as P[])
+  const subjRec = await fetchPgAtlasPropertyRecord(...(ring.reduce((a, p) => [a[0] + p[0] / ring.length, a[1] + p[1] / ring.length], [0, 0]) as P))
+  if (subjRec) console.log(`    record: ${subjRec.ownerName ?? '?'} · acct ${subjRec.account ?? '?'} · ${subjRec.propertyDesc ?? ''} ${subjRec.subdivision ?? ''} · plat ${subjRec.plat ?? 'none'} · L.${subjRec.liber ?? '?'} F.${subjRec.folio ?? '?'} · ${subjRec.acres ?? '?'} ac (assessment)`)
   const ccw = area(ring) > 0 ? ring : ring.slice().reverse()
   const parcelSqFt = Math.abs(area(ccw))
   const recordedSqFt = recordedAcres ? recordedAcres * 43560 : null
@@ -596,8 +606,8 @@ async function main() {
   const L = dist(A, B)
   const u: P = [(B[0] - A[0]) / L, (B[1] - A[1]) / L], n = leftOf(u)
   const f: Frame = { A, B, L, u, n, ccw }
-  const streetName = site.streets[0]?.name ?? 'street'
-  console.log(`    frontage on ${streetName}: ${L.toFixed(1)} ft; entrance at its centre, station ${(L / 2).toFixed(0)} ft`)
+  const existingStreet = site.streets[0]?.name ?? 'street'
+  console.log(`    frontage on ${existingStreet}: ${L.toFixed(1)} ft; entrance at its centre, station ${(L / 2).toFixed(0)} ft`)
 
   // Wheeler Road is an 80' R/W per master plan (2023 layout sheet). Where the
   // parcel line sits closer than 40' to the county centreline the difference is
@@ -609,7 +619,7 @@ async function main() {
   const dedFt = Number.isFinite(toCentre) ? Math.max(0, Math.round((MASTER_PLAN_ROW_FT / 2 - toCentre) * 10) / 10) : 0
   const tract = dedFt > 0 ? clipWhere(ccw, p => dot(p, A, n) - dedFt) : ccw
   const dedRing = dedFt > 0 ? clipWhere(ccw, p => dedFt - dot(p, A, n)) : []
-  console.log(`    ${streetName} centreline ${Number.isFinite(toCentre) ? toCentre.toFixed(1) + ' ft' : 'NOT FOUND'} from the parcel line; master plan ${MASTER_PLAN_ROW_FT}' R/W → dedication strip ${dedFt} ft (${dedRing.length ? Math.abs(area(dedRing)).toFixed(0) : 0} sf)`)
+  console.log(`    ${existingStreet} centreline ${Number.isFinite(toCentre) ? toCentre.toFixed(1) + ' ft' : 'NOT FOUND'} from the parcel line; master plan ${MASTER_PLAN_ROW_FT}' R/W → dedication strip ${dedFt} ft (${dedRing.length ? Math.abs(area(dedRing)).toFixed(0) : 0} sf)`)
 
   // ── Stormwater: the low corner, the soils, the volume, the parcel ─────────
   const ext = ccw.reduce((e, p) => ({ x0: Math.min(e.x0, p[0]), x1: Math.max(e.x1, p[0]), y0: Math.min(e.y0, p[1]), y1: Math.max(e.y1, p[1]) }), { x0: Infinity, x1: -Infinity, y0: Infinity, y1: -Infinity })
@@ -685,18 +695,22 @@ async function main() {
   }
   const score = (c: Layout) => Math.min(c.lots.filter(l => l.ok).length, capGross) * 1000 - c.leftoverSqFt / 1000 - c.lots.filter(l => !l.ok).length * 60 - c.rowSqFt / 4000
     - (c.params.radiusFt < STREET.curveRadiusFt ? 400 : 0) + (c.streetTouchesKeepOut ? 400 : 0)
+    - 3 * c.road.curves.reduce((t, cv) => t + cv.lengthFt, 0)    // a long bend is worth a third of a lot per 100 ft
   const tryLayout = (pr: RoadParams): Layout | null => {
     const road = buildRoad(f, pr)
+    if (road && road.curves.reduce((t, c) => t + c.lengthFt, 0) > maxCurveFt) return null
     return road ? layoutRoad(f, tractForLots, road, pr, std, swmRing.length ? [swmRing] : []) : null
   }
   type Edge = typeof rear[number]
   /** Road params: enter at `station`, then run parallel to each edge in turn at its offset, the bulb `short` ft before the boundary. */
-  const paramsFor = (station: number, follow: { E: Edge; dir: 1 | -1; off: number }[], short: number, R: number): RoadParams | string => {
-    const lines = follow.map(x => ({ q: add(x.E.p0, leftOf(x.E.d), x.off), d: [x.E.d[0] * x.dir, x.E.d[1] * x.dir] as P }))   // inward normal: the ring is CCW
+  const paramsFor = (station: number, follow: { E: Edge; dir: 1 | -1; off: number }[], short: number, R: number): RoadParams | string =>
+    paramsForLines(station, follow.map(x => ({ q: add(x.E.p0, leftOf(x.E.d), x.off), d: [x.E.d[0] * x.dir, x.E.d[1] * x.dir] as P })), short, R)   // inward normal: the ring is CCW
+  const paramsForLines = (station: number, lines: { q: P; d: P }[], short: number, R: number, entrySkewDeg = 0): RoadParams | string => {
     const o1 = add(A, u, station)
-    const stem = lineMeet(o1, n, lines[0].q, lines[0].d)
+    const n0 = rot(n, entrySkewDeg)
+    const stem = lineMeet(o1, n0, lines[0].q, lines[0].d)
     if (stem === null || stem < 100) return 'stem'
-    let v = add(o1, n, stem), dPrev = n
+    let v = add(o1, n0, stem), dPrev = n0
     const legs: RoadParams['legs'] = []
     for (let k = 0; k < lines.length; k++) {
       const d = lines[k].d
@@ -705,7 +719,7 @@ async function main() {
       legs.push({ turnDeg: signedAngle(dPrev, d), runFt: run })
       v = add(v, d, run); dPrev = d
     }
-    return { stationFt: station, stemFt: stem, radiusFt: R, legs }
+    return { stationFt: station, stemFt: stem, radiusFt: R, entrySkewDeg, legs }
   }
   let bestLayout: Layout | null = null, bestScore = -Infinity, tried = 0
   const t0 = Date.now()
@@ -713,18 +727,21 @@ async function main() {
     const v = process.env.LAYOUT.split(',').map(Number)
     const legs: RoadParams['legs'] = []
     for (let i = 3; i + 1 < v.length; i += 2) legs.push({ turnDeg: v[i], runFt: v[i + 1] })
-    bestLayout = tryLayout({ stationFt: v[0], stemFt: v[1], radiusFt: v[2], legs })
+    bestLayout = tryLayout({ stationFt: v[0], stemFt: v[1], radiusFt: v[2], entrySkewDeg: Number(process.env.ENTRY_SKEW ?? 0), legs })
     console.log(`    forced layout ${process.env.LAYOUT}`)
   } else {
     // The edges the street follows: from the entrance end round the tract, skipping edges too short to run beside.
     const followable = (edges: Edge[]) => edges.filter(e => e.len >= 150).slice(0, 3)
     const fromA = followable(rear.slice().reverse()).map(E => ({ E, dir: -1 as const }))
     const fromB = followable(rear).map(E => ({ E, dir: 1 as const }))
-    const options = [
-      { name: 'enter near A', edges: fromA, stations: [] as number[] },
-      { name: 'enter near B', edges: fromB, stations: [] as number[] },
+    const aIsEast = A[0] > B[0]
+    const allOptions = [
+      { name: `enter near A (${aIsEast ? 'east' : 'west'} tip)`, tip: aIsEast ? 'east' : 'west', edges: fromA, stations: [] as number[] },
+      { name: `enter near B (${aIsEast ? 'west' : 'east'} tip)`, tip: aIsEast ? 'west' : 'east', edges: fromB, stations: [] as number[] },
     ]
-    for (let st = 120; st <= L / 2; st += 24) { options[0].stations.push(st); options[1].stations.push(L - st) }
+    for (let st = 120; st <= L / 2; st += 24) { allOptions[0].stations.push(st); allOptions[1].stations.push(L - st) }
+    const options = allOptions.filter(o => enterAt === 'either' || o.tip === enterAt)
+    console.log(`    entrance: ${enterAt} → ${options.map(o => o.name).join(' / ')}`)
     const offs = [130, 160, 190, 220, 250, 280]
     const rejected: Record<string, number> = {}
     const offsetCombos = (k: number): number[][] => k === 0 ? [[]] : offsetCombos(k - 1).flatMap(c => offs.map(o => [...c, o]))
@@ -735,6 +752,26 @@ async function main() {
         if (nEdges < 1) continue
         for (const station of opt.stations) for (const offsets of offsetCombos(nEdges)) for (const short of [0, 60, 120]) for (const R of [STREET.curveRadiusFt, 100]) {
           const pr = paramsFor(station, opt.edges.slice(0, nEdges).map((e, i) => ({ ...e, off: offsets[i] })), short, R)
+          if (typeof pr === 'string') { rejected[pr] = (rejected[pr] ?? 0) + 1; continue }
+          const cand = tryLayout(pr)
+          if (!cand) { rejected.road = (rejected.road ?? 0) + 1; continue }
+          tried++
+          const sc = score(cand)
+          optBest = Math.max(optBest, cand.lots.filter(l => l.ok).length)
+          if (sc > bestScore) { bestScore = sc; bestLayout = cand }
+        }
+      }
+      // A SPINE: one run from the entrance angled across the tract toward the far tip, so the only
+      // bend is the entrance curve (shorter than rounding a boundary corner). Its line is the
+      // frontage offset `off` in, turned `skew` degrees into the tract.
+      {
+        const towardFar: P = opt.edges === fromA ? [u[0], u[1]] : [-u[0], -u[1]]      // along the frontage, away from the entrance tip
+        const into = cross(towardFar, n, [0, 0]) > 0 ? 1 : -1                          // rotating this way turns into the tract
+        const entryToward = cross(n, towardFar, [0, 0]) > 0 ? 1 : -1              // tilting the stem this way leans it toward the far tip
+        for (const station of opt.stations) for (const off of [150, 190, 230, 270]) for (const skew of [0, 10, 20, 30]) for (const entry of [0, 15]) for (const short of [0, 60, 120]) for (const R of [STREET.curveRadiusFt, 100]) {
+          const d = rot(towardFar, into * skew)
+          const q = add(add(A, u, L / 2), n, off)
+          const pr = paramsForLines(station, [{ q, d }], short, R, entryToward * entry)
           if (typeof pr === 'string') { rejected[pr] = (rejected[pr] ?? 0) + 1; continue }
           const cand = tryLayout(pr)
           if (!cand) { rejected.road = (rejected.road ?? 0) + 1; continue }
@@ -774,10 +811,10 @@ async function main() {
   const capRecorded = maxDensity && netRecordedSqFt ? Math.floor(maxDensity * netRecordedSqFt / 43560) : null
   const conforming = layout.lots.filter(l => l.ok)
   const pr = layout.params
-  console.log(`\n    ${layout.lots.length} lots (${conforming.length} conform); entrance at station ${pr.stationFt.toFixed(0)} ft; stem ${pr.stemFt.toFixed(0)} ft; R ${pr.radiusFt} ft; `
+  console.log(`\n    ${layout.lots.length} lots (${conforming.length} conform); entrance at station ${pr.stationFt.toFixed(0)} ft${pr.entrySkewDeg ? ` skewed ${pr.entrySkewDeg}° off perpendicular` : ''}; stem ${pr.stemFt.toFixed(0)} ft; R ${pr.radiusFt} ft; `
     + pr.legs.map((l, i) => `C${i + 1} ${l.turnDeg.toFixed(1)}° then ${l.runFt.toFixed(0)} ft`).join('; ') + ` to the bulb; `
     + `R/W ${layout.rowSqFt.toFixed(0)} sf; net ${netSqFt.toFixed(0)} sf → cap ${cap} du` + (capRecorded !== null ? ` (recorded acreage: ${capRecorded})` : ''))
-  layout.lots.forEach((l, i) => console.log(`      Lot ${String(i + 1).padStart(2)}: ${l.sqFt.toFixed(0).padStart(6)} sf  w ${l.widthFt.toFixed(1).padStart(6)}  fr ${l.frontageFt.toFixed(1).padStart(6)}  ${l.fronts}${l.backsOntoExisting ? ' · backs onto ' + streetName : ''}${l.ok ? '' : '  NOT CONFORMING — ' + l.problems.join('; ')}`))
+  layout.lots.forEach((l, i) => console.log(`      Lot ${String(i + 1).padStart(2)}: ${l.sqFt.toFixed(0).padStart(6)} sf  w ${l.widthFt.toFixed(1).padStart(6)}  fr ${l.frontageFt.toFixed(1).padStart(6)}  ${l.fronts}${l.backsOntoExisting ? ' · backs onto ' + existingStreet : ''}${l.ok ? '' : '  NOT CONFORMING — ' + l.problems.join('; ')}`))
   console.log(`      leftover ${layout.leftoverSqFt.toFixed(0)} sf`)
   const curves = layout.road.curves
   for (const c of curves) console.log(`      curve ${c.id}: R ${c.radiusFt}', Δ ${c.deltaDeg.toFixed(2)}°, T ${c.tangentFt.toFixed(2)}', L ${c.lengthFt.toFixed(2)}'`)
@@ -800,28 +837,30 @@ async function main() {
     basisOfBearings: 'Maryland State Plane Coordinate System (NAD 83), from PGAtlas parcel geometry',
     pointOfBeginning: outerRing[0], recordedAreaSqFt: Math.round(recordedSqFt ?? parcelSqFt), programme,
     frontSetbackFt: frontYard, sideSetbackFt: sideYard,
-    calls: courses(outerRing, i => i === 0 ? `frontage — ${streetName}` : `county parcel edge ${i + 1}`),
+    calls: courses(outerRing, i => i === 0 ? `frontage — ${existingStreet}` : `county parcel edge ${i + 1}`),
   }, null, 2))
 
   const notes = [
     'This drawing is a preliminary subdivision concept. It is not a plat, not a boundary survey, and not for recording.',
     'Street layout follows the 2023 "Wheeler Rd Subdivision Layout" sheet for this parcel (street a tier in from the north and east boundaries, lots both sides) with ONE entrance from Wheeler Road; the second entrance and the private alley on that sheet are omitted and the far end is finished as a cul-de-sac.',
     `Lot lines are proposed to meet Sec. 27-4202 ${zone}: minimum net lot area ${minArea} sq ft, minimum lot width ${minWidth} ft, minimum frontage ${minFrontage} ft, maximum density ${maxDensity} du/ac of net tract area.`,
-    `All lots take access from the proposed street. No lot takes access from ${streetName}; lots backing onto it are double-frontage lots and a no-access reservation along ${streetName} is anticipated at platting.`,
+    `All lots take access from ${streetLabel}. No lot takes access from ${existingStreet}; lots backing onto it are double-frontage lots and a no-access reservation along ${existingStreet} is anticipated at platting.`,
     'Boundary shown from the county parcel layer (Level 1). A field survey by a Maryland licensed surveyor governs.',
   ]
   if (recordedSqFt) notes.push(`Recorded acreage ${recordedAcres} ac (${recordedSqFt.toFixed(0)} sq ft) differs from the county GIS polygon (${parcelSqFt.toFixed(0)} sq ft) by ${(parcelSqFt - recordedSqFt).toFixed(0)} sq ft. Both are reported; neither is adjusted. The survey resolves it.`)
   if (caseNumber) notes.push(`Special exception ${caseNumber} is of record on this property. Its conditions have not been read into this concept and govern where they conflict.`)
-  if (dedFt > 0) notes.push(`${streetName} is an ${MASTER_PLAN_ROW_FT}-ft right-of-way per the master plan; the parcel line is ${toCentre.toFixed(1)} ft from the county centreline, so a ${dedFt}-ft strip (${Math.abs(area(dedRing)).toFixed(0)} sq ft) along the frontage is shown for dedication and is excluded from every lot.`)
+  if (dedFt > 0) notes.push(`${existingStreet} is an ${MASTER_PLAN_ROW_FT}-ft right-of-way per the master plan; the parcel line is ${toCentre.toFixed(1)} ft from the county centreline, so a ${dedFt}-ft strip (${Math.abs(area(dedRing)).toFixed(0)} sq ft) along the frontage is shown for dedication and is excluded from every lot.`)
   if (swmRing.length && !layout.streetTouchesKeepOut) notes.push('PARCEL A does not front the proposed street in this layout; a 20-ft access and maintenance easement across the adjoining lot is required at platting.')
+  notes.push(`Water and sewer: every lot is served from ${streetLabel}; no service connects to ${existingStreet}. Proposed 8-in WSSC water main and 8-in sanitary sewer in ${streetLabel}, extended from the existing WSSC mains in ${existingStreet} at the entrance. As-built size, location, depth and flow direction of the ${existingStreet} mains are not read here.`)
   notes.push(`Stormwater management by Environmental Site Design to the maximum extent practicable (Md. Stormwater Management Act of 2007; MDE Design Manual Ch. 5; PGC Sec. 32-172). Preliminary ESD volume: ${swm.imperviousSqFt} sq ft impervious (${swm.percentImpervious}% of the tract: ${layout.lots.length} lots × ${SWM.lotImperviousSqFt} sq ft, ${pavementSqFt.toFixed(0)} sq ft pavement, sidewalks), Rv = ${swm.rv}, P_E = ${SWM.rainfallTargetIn} in → ESDv = ${swm.esdvCf} cu ft; micro-bioretention at ${SWM.pondingDepthFt} ft × n ${SWM.voidRatio} → ${swm.footprintSqFt} sq ft of practice. ${swmRing.length ? `PARCEL A (${swmSqFt.toFixed(0)} sq ft) is reserved at the low corner of the tract (${relief ? `corner elevations ${relief.min}–${relief.max} ft ${contours!.verticalDatum}` : 'contours unavailable'}) for the practice, its forebay and access; it is not a building lot.` : 'No stormwater parcel is placed: county contours were not available to find the low corner.'} Hydrologic soil group(s) ${hsgs.length ? hsgs.join(', ') : 'unknown'} per USDA SSURGO ${soils?.areaSymbol ?? ''} — P_E is to be taken from Table 5.3 for the site's group and % impervious; the ${SWM.rainfallTargetIn} in used here is the Manual's floor. Rooftop disconnection and a 6-ft infiltration berm along the rear of each lot, as the 2023 layout sheet's legend shows, are credited at concept plan and reduce the parcel; infiltration feasibility depends on the Sec. 32-131 soils investigation. A stormwater management concept approval from DPIE precedes preliminary plan.`)
   notes.push(`Proposed public street: ${STREET.note}${pr.radiusFt !== STREET.curveRadiusFt ? ` THIS LAYOUT USES A ${pr.radiusFt}-FT CENTRELINE RADIUS at its bends, below the 150 ft assumed above; confirm against the DPW&T minimum for a local street before preliminary plan.` : ''} Street dedication ${layout.rowSqFt.toFixed(0)} sq ft. Storm drainage, sanitary sewer capacity, street lighting and forest conservation are not designed here.`)
 
   writeFileSync(path.join(outDir, `${slug}.plat-record.json`), JSON.stringify({
-    reference: `${subdivisionName}. Zone ${zone}${caseNumber ? `, ${caseNumber}` : ''}. Parcel ${site.parcel.propId}, GIS ${parcelSqFt.toFixed(0)} sq ft${recordedSqFt ? `, recorded ${recordedAcres} ac` : ''}. ${provenance}`,
+    reference: `${subdivisionName}. Zone ${zone}${caseNumber ? `, ${caseNumber}` : ''}. Parcel ${site.parcel.propId}${subjRec ? ` — ${subjRec.propertyDesc ?? ''} ${subjRec.subdivision ?? ''}, owner of record ${subjRec.ownerName ?? 'not published'}, acct ${subjRec.account ?? '?'}, L. ${subjRec.liber ?? '?'} F. ${subjRec.folio ?? '?'}${subjRec.plat ? `, PLAT ${subjRec.plat} OF RECORD (not read — obtain it; it supersedes the GIS outline drawn here)` : ''}` : ''}, GIS ${parcelSqFt.toFixed(0)} sq ft${recordedSqFt ? `, recorded ${recordedAcres} ac` : ''}${subjRec?.acres ? `, assessment ${subjRec.acres} ac` : ''}. ${provenance}`,
+    ownerOfRecord: subjRec,
     citation: 'PRELIMINARY CONCEPT — NO PLAT OF RECORD',
     notes, dedicationWidthFt: dedFt, adjoiners: [],
-    dedications: dedRing.length ? [{ name: `${streetName} — ${MASTER_PLAN_ROW_FT}' R/W PER MASTER PLAN`, widthFt: dedFt, ring: dedRing, sqFt: Math.abs(area(dedRing)) }] : [],
+    dedications: dedRing.length ? [{ name: `${existingStreet} — ${MASTER_PLAN_ROW_FT}' R/W PER MASTER PLAN`, widthFt: dedFt, ring: dedRing, sqFt: Math.abs(area(dedRing)) }] : [],
     curveTable: curves.map(c => ({ curve: c.id, radiusFt: c.radiusFt, deltaDeg: Math.round(c.deltaDeg * 100) / 100, tangentFt: Math.round(c.tangentFt * 100) / 100, lengthFt: Math.round(c.lengthFt * 100) / 100, pc: c.pc, pt: c.pt })),
     stormwater: {
       method: 'MDE Stormwater Design Manual Ch. 5 — ESD: Rv = 0.05 + 0.009·I; ESDv = P_E·Rv·A/12; practice area = ESDv/(d·n)',
@@ -832,12 +871,19 @@ async function main() {
       perLot: ['rooftop disconnection (N-1)', '6-ft infiltration berm along the rear lot line (2023 sheet legend)'],
     },
     proposedStreets: [{
-      name: 'PROPOSED PUBLIC STREET (NAME TBD)',
+      name: streetLabel,
       rightOfWayFt: STREET.rightOfWayFt, pavementFt: STREET.pavementFt,
       bulbRightOfWayRadiusFt: STREET.bulbRightOfWayRadiusFt, bulbPavementRadiusFt: STREET.bulbPavementRadiusFt,
       centreline: layout.centrelines[0], centrelines: layout.centrelines,
       rowRings: layout.rowRings, pavementRings: layout.pavementRings,
       rowSqFt: layout.rowSqFt, basis: STREET.basis, note: STREET.note,
+      // Mains in the new street, extended from the existing WSSC mains in the fronting road.
+      // Every lot's water service and sewer lateral runs to these, none to the existing road.
+      utilities: {
+        water: { sizeIn: 8, offsetFt: -8, label: `PROP. 8" WATER MAIN (WSSC) IN ${streetLabel}`, connectsTo: `EX. WSSC WATER MAIN IN ${existingStreet}` },
+        sewer: { sizeIn: 8, offsetFt: 8, label: `PROP. 8" SAN. SEWER (WSSC) IN ${streetLabel}`, connectsTo: `EX. WSSC SANITARY SEWER IN ${existingStreet}` },
+        note: `Water and sewer for every lot are served from ${streetLabel}. The subdivision's mains connect to the existing WSSC mains in ${existingStreet} at the entrance and extend the length of ${streetLabel} to the cul-de-sac. WSSC as-built size and location of the mains in ${existingStreet}, and the sewer's depth and flow direction, are not read here and govern the connection.`,
+      },
     }],
   }, null, 2))
 
@@ -847,10 +893,11 @@ async function main() {
     const file = path.join(outDir, `${slug}-lot${i + 1}.plat.json`)
     writeFileSync(file, JSON.stringify({
       _source: provenance, address: site.address.matchedAddress,
-      reference: { ...reference, lot: `${i + 1} (proposed)` },
+      reference: { ...reference, lot: `${i + 1}` },
       basisOfBearings: 'Maryland State Plane Coordinate System (NAD 83), from PGAtlas parcel geometry',
       pointOfBeginning: l.ring[0], recordedAreaSqFt: Math.round(l.sqFt), programme,
       frontSetbackFt: frontYard, sideSetbackFt: sideYard, frontsOn: l.fronts,
+      utilityMainLabel: `PROP. 8" MAIN IN ${streetLabel}`,
       calls: courses(l.ring, j => j === 0 ? `proposed lot line (fronts ${l.fronts})` : `proposed lot line ${j + 1}`),
     }, null, 2))
     lotFiles.push(file)
@@ -860,8 +907,8 @@ async function main() {
     address: site.address.matchedAddress, parcelId: site.parcel.propId, zone, caseNumber,
     parcelSqFtGis: parcelSqFt, recordedAcres, recordedSqFt,
     standards: { minArea, minWidth, minFrontage, maxDensity, frontYard, sideYard },
-    frontage: { streetName, lengthFt: L },
-    existingStreet: { name: streetName, masterPlanRightOfWayFt: MASTER_PLAN_ROW_FT, centrelineToParcelLineFt: Number.isFinite(toCentre) ? toCentre : null, dedicationFt: dedFt, dedicationSqFt: dedSqFt },
+    frontage: { streetName: existingStreet, lengthFt: L },
+    existingStreet: { name: existingStreet, masterPlanRightOfWayFt: MASTER_PLAN_ROW_FT, centrelineToParcelLineFt: Number.isFinite(toCentre) ? toCentre : null, dedicationFt: dedFt, dedicationSqFt: dedSqFt },
     street: { ...STREET, curveRadiusFt: layout.params.radiusFt, ...layout.params, rowSqFt: layout.rowSqFt, curves: curves.map(c => ({ id: c.id, radiusFt: c.radiusFt, deltaDeg: c.deltaDeg, tangentFt: c.tangentFt, lengthFt: c.lengthFt })), centrelines: layout.centrelines },
     netSqFt, densityCap: cap, densityCapRecorded: capRecorded,
     stormwater: { ...swm, parcelSqFt: Math.round(swmSqFt), parcelRing: swmRing, lowCorner: lowI >= 0 ? tract[lowI] : null, cornerElevationsFt: relief, hydrologicSoilGroups: hsgs, rainfallTargetIn: SWM.rainfallTargetIn },

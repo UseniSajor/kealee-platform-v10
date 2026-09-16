@@ -4,14 +4,14 @@
   "reference": {
     "subdivisionName": "4600 WHEELER ROAD — PRELIMINARY SUBDIVISION CONCEPT",
     "recordedIn": "NONE — no plat of record; preliminary concept",
-    "lot": "2 (proposed)"
+    "lot": "2"
   },
   "basisOfBearings": "Maryland State Plane Coordinate System (NAD 83), from PGAtlas parcel geometry",
   "pointOfBeginning": [
-    1318389.371,
-    423188.926
+    1318644.27,
+    422786.489
   ],
-  "recordedAreaSqFt": 11908,
+  "recordedAreaSqFt": 10124,
   "programme": {
     "totalFloorAreaSqFt": 2400,
     "storeys": 2,
@@ -21,103 +21,38 @@
   },
   "frontSetbackFt": 25,
   "sideSetbackFt": 8,
-  "frontsOn": "PROPOSED STREET (CURVE C1, LEFT SIDE)",
+  "frontsOn": "PROPOSED STREET (LAST RUN, LEFT SIDE)",
+  "utilityMainLabel": "PROP. 8\" MAIN IN WAHALLA COURT",
   "calls": [
     {
       "kind": "line",
-      "bearing": "S 50-11-27 E",
-      "distanceFt": 16.75,
-      "label": "proposed lot line (fronts PROPOSED STREET (CURVE C1, LEFT SIDE))"
+      "bearing": "S 50-11-30 E",
+      "distanceFt": 58.37,
+      "label": "proposed lot line (fronts PROPOSED STREET (LAST RUN, LEFT SIDE))"
     },
     {
       "kind": "line",
-      "bearing": "N 90-00-00 E",
-      "distanceFt": 0,
+      "bearing": "N 82-18-28 E",
+      "distanceFt": 43.31,
       "label": "proposed lot line 2"
     },
     {
       "kind": "line",
-      "bearing": "S 50-11-28 E",
-      "distanceFt": 100,
+      "bearing": "N 49-48-30 E",
+      "distanceFt": 90.5,
       "label": "proposed lot line 3"
     },
     {
       "kind": "line",
-      "bearing": "S 45-00-00 E",
-      "distanceFt": 0,
+      "bearing": "N 40-11-29 W",
+      "distanceFt": 80.75,
       "label": "proposed lot line 4"
     },
     {
       "kind": "line",
-      "bearing": "N 39-48-28 E",
-      "distanceFt": 16.74,
+      "bearing": "S 49-48-29 W",
+      "distanceFt": 137.16,
       "label": "proposed lot line 5"
-    },
-    {
-      "kind": "line",
-      "bearing": "N 42-39-26 E",
-      "distanceFt": 12.18,
-      "label": "proposed lot line 6"
-    },
-    {
-      "kind": "line",
-      "bearing": "N 48-21-12 E",
-      "distanceFt": 12.92,
-      "label": "proposed lot line 7"
-    },
-    {
-      "kind": "line",
-      "bearing": "N 54-03-02 E",
-      "distanceFt": 12.92,
-      "label": "proposed lot line 8"
-    },
-    {
-      "kind": "line",
-      "bearing": "N 59-44-55 E",
-      "distanceFt": 12.92,
-      "label": "proposed lot line 9"
-    },
-    {
-      "kind": "line",
-      "bearing": "N 65-26-38 E",
-      "distanceFt": 12.92,
-      "label": "proposed lot line 10"
-    },
-    {
-      "kind": "line",
-      "bearing": "N 71-08-03 E",
-      "distanceFt": 10.81,
-      "label": "proposed lot line 11"
-    },
-    {
-      "kind": "line",
-      "bearing": "N 71-09-16 E",
-      "distanceFt": 1.37,
-      "label": "proposed lot line 12"
-    },
-    {
-      "kind": "line",
-      "bearing": "N 73-58-13 E",
-      "distanceFt": 0.75,
-      "label": "proposed lot line 13"
-    },
-    {
-      "kind": "line",
-      "bearing": "N 16-00-40 W",
-      "distanceFt": 80.14,
-      "label": "proposed lot line 14"
-    },
-    {
-      "kind": "line",
-      "bearing": "S 73-59-19 W",
-      "distanceFt": 145.87,
-      "label": "proposed lot line 15"
-    },
-    {
-      "kind": "line",
-      "bearing": "S 05-43-57 W",
-      "distanceFt": 16.15,
-      "label": "proposed lot line 16"
     }
   ]
 }

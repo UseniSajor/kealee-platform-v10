@@ -73,7 +73,7 @@ export interface LotInput {
   /** Street centrelines to draw and letter in the right-of-way. */
   streets?: { name: string | null; paths: [number, number][][] }[]
   /** Abutting parcels, lettered with number and area as an approved plan does. */
-  adjacentParcels?: { ring: Ring; areaSqFt: number; propId: string | null }[]
+  adjacentParcels?: { ring: Ring; areaSqFt: number; propId: string | null; record?: { ownerName: string | null; acres: number | null; liber: string | null; folio: string | null; subdivision: string | null; propertyDesc: string | null; lot: string | null } | null }[]
   /**
    * What the recorded plat says, carried onto the sheet.
    *
@@ -154,6 +154,7 @@ export interface LotInput {
   frontageOutFt?: number | null
   /** No water/sewer connection record obtained: draw no laterals. */
   omitWaterAndSewer?: boolean | null
+  utilityMainLabel?: string | null
   /** A piped system in a recorded easement serves the lot: no on-lot ESD cell. */
   omitSwmPractice?: boolean | null
   /** Elevations from the architectural plan, if established. */
@@ -725,6 +726,7 @@ export function buildLotPackage(lot: LotInput, resolved?: ResolvedBoundary | nul
       keepOutRings: lot.keepOutRings ?? null,
       stormOutfall: lot.stormOutfall ?? null,
       omitWaterAndSewer: lot.omitWaterAndSewer ?? null,
+      utilityMainLabel: lot.utilityMainLabel ?? null,
       omitSwmPractice: lot.omitSwmPractice ?? null,
       // Walk, strip and curb occupy the first 7 ft; a practice keeps out of it.
       frontageKeepOutFt: 14,
