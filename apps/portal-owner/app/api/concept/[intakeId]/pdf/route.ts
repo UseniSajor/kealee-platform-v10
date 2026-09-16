@@ -6,7 +6,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { serveConceptPackagePdf } from '@kealee/concept-engine'
-import { uploadFile } from '@kealee/storage'
 import { loadIntakeForPdf, verifyIntakeAccessForSession } from '@/lib/verify-intake-access'
 
 export const dynamic = 'force-dynamic'
@@ -27,6 +26,11 @@ export async function GET(
   }
 
   try {
+    const supabaseAdmin = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+      { auth: { persistSession: false } },
+    )
     const currentFormData = (intake.form_data ?? {}) as Record<string, unknown>
     const currentOutput = (currentFormData.conceptOutput ?? currentFormData.v30ConceptOutput) as Record<string, unknown> | undefined
     const beforeUrls = Array.isArray(currentOutput?.beforeUrls) ? currentOutput.beforeUrls : []
@@ -40,13 +44,16 @@ export async function GET(
 
     const result = await serveConceptPackagePdf(intake, {
       upload: async (buffer, intakeId) => {
-        const uploaded = await uploadFile({
-          bucket: 'designs',
-          path: `concept-packages/${intakeId}/concept-package.pdf`,
-          file: buffer,
-          contentType: 'application/pdf',
-        })
-        return uploaded.url
+        const path = `concept-packages/${intakeId}/concept-package.pdf`
+        const { error } = await supabaseAdmin.storage
+          .from('designs')
+          .upload(path, buffer, {
+            contentType: 'application/pdf',
+            cacheControl: '3600',
+            upsert: true,
+          })
+        if (error) throw new Error(`Concept PDF upload failed: ${error.message}`)
+        return supabaseAdmin.storage.from('designs').getPublicUrl(path).data.publicUrl
       },
     })
 
@@ -54,11 +61,6 @@ export async function GET(
       const formData = (intake.form_data ?? {}) as Record<string, unknown>
       const key = formData.conceptOutput ? 'conceptOutput' : 'v30ConceptOutput'
       const conceptOutput = (formData[key] ?? {}) as Record<string, unknown>
-      const supabaseAdmin = createClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.SUPABASE_SERVICE_ROLE_KEY!,
-        { auth: { persistSession: false } },
-      )
       await supabaseAdmin
         .from('public_intake_leads')
         .update({
