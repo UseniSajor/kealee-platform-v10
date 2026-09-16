@@ -1,0 +1,209 @@
+{
+  "record": "PRELIMINARY SUBDIVISION CONCEPT v6 — 4600 WHEELER ROAD — THE 2023 LAYOUT, ONE STREET (WAHALLA COURT), ONE ENTRANCE",
+  "generatedAt": "2026-09-16",
+  "version": "v6",
+  "status": "PRELIMINARY — not a plat, not a boundary survey, not for recording",
+  "ownerOfRecord": {
+    "account": "1194943",
+    "ownerName": "ETHIOPIAN ORTHODOX TEWAHEDO CHURCH",
+    "careOf": null,
+    "acres": 5.303,
+    "landSqFt": 230986,
+    "plat": "A12-7298",
+    "lot": null,
+    "block": null,
+    "parcel": null,
+    "propertyDesc": "PARCEL A",
+    "liber": "48054",
+    "folio": "597",
+    "subdivision": "FOUR SEASONS NURSING HOME",
+    "taxMapGrid": "087D3",
+    "wsscGrid": "206SE02"
+  },
+  "asked": [
+    "Wahalla Ct is one street",
+    "all driveway aprons on Wahalla",
+    "the subdivision has one street and one main entry/exit",
+    "use the 2023 'Wheeler Rd Subdivision Layout' with its 19 lots",
+    "widen the alley to a street to serve the 6 homes",
+    "make a turnaround for one of the entries/exits"
+  ],
+  "answer": {
+    "source": "2023 Wheeler Rd Subdivision Layout sheet digitised (scale 1\"=30', fit rms 5 ft)",
+    "street": "the 2023 loop, entering from Wheeler Road at the east (station 699 ft) and ending in a 50-ft-radius turnaround where the sheet had its west entrance; the 18-ft alley widened to the loop's measured 42-ft section as a branch of Wahalla Court, ending in a turnaround short of Wheeler Road (so there is one entrance); 26-ft pavement; 52,235 sf of right-of-way (the sheet's loop and alley were 43,741 sf)",
+    "lots": "all 19 lots and the parkland of the 2023 sheet, re-cut to the nearest original lot on the ground the street does not take",
+    "editedLots": [
+      2,
+      14,
+      15,
+      16,
+      17,
+      18
+    ],
+    "lotsUnder9500": [
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19
+    ],
+    "caveat": "Lots 2 and 14–18 lose ground to the widened branch and the two turnarounds and fall below 9,500 sf; the others are within ~2% of what the sheet states (digitising tolerance). The interior lines need rebalancing by the designer, or a narrower branch section."
+  },
+  "lots": [
+    {
+      "lot": "LOT 1",
+      "sqFt": 11780,
+      "sheetStatedSqFt": 12805.47,
+      "deltaPct": -8.0
+    },
+    {
+      "lot": "LOT 2",
+      "sqFt": 8112,
+      "sheetStatedSqFt": 9500.25,
+      "deltaPct": -14.6
+    },
+    {
+      "lot": "LOT 3",
+      "sqFt": 8884,
+      "sheetStatedSqFt": 9500.25,
+      "deltaPct": -6.5
+    },
+    {
+      "lot": "LOT 4",
+      "sqFt": 9165,
+      "sheetStatedSqFt": 9500.25,
+      "deltaPct": -3.5
+    },
+    {
+      "lot": "LOT 5",
+      "sqFt": 9238,
+      "sheetStatedSqFt": 9500.91,
+      "deltaPct": -2.8
+    },
+    {
+      "lot": "LOT 6",
+      "sqFt": 9130,
+      "sheetStatedSqFt": 9500.72,
+      "deltaPct": -3.9
+    },
+    {
+      "lot": "LOT 7",
+      "sqFt": 9363,
+      "sheetStatedSqFt": 9554.14,
+      "deltaPct": -2.0
+    },
+    {
+      "lot": "LOT 8",
+      "sqFt": 9327,
+      "sheetStatedSqFt": 9500.25,
+      "deltaPct": -1.8
+    },
+    {
+      "lot": "LOT 9",
+      "sqFt": 9315,
+      "sheetStatedSqFt": 9500.03,
+      "deltaPct": -1.9
+    },
+    {
+      "lot": "LOT 10",
+      "sqFt": 9399,
+      "sheetStatedSqFt": 9500.25,
+      "deltaPct": -1.1
+    },
+    {
+      "lot": "LOT 11",
+      "sqFt": 9276,
+      "sheetStatedSqFt": 9500.25,
+      "deltaPct": -2.4
+    },
+    {
+      "lot": "LOT 12",
+      "sqFt": 9368,
+      "sheetStatedSqFt": 9500.25,
+      "deltaPct": -1.4
+    },
+    {
+      "lot": "LOT 13",
+      "sqFt": 13352,
+      "sheetStatedSqFt": 13760.36,
+      "deltaPct": -3.0
+    },
+    {
+      "lot": "LOT 14",
+      "sqFt": 7981,
+      "sheetStatedSqFt": 9551.21,
+      "deltaPct": -16.4
+    },
+    {
+      "lot": "LOT 15",
+      "sqFt": 7091,
+      "sheetStatedSqFt": 9550.48,
+      "deltaPct": -25.8
+    },
+    {
+      "lot": "LOT 16",
+      "sqFt": 8142,
+      "sheetStatedSqFt": 9572.76,
+      "deltaPct": -14.9
+    },
+    {
+      "lot": "LOT 17",
+      "sqFt": 8274,
+      "sheetStatedSqFt": 9513.94,
+      "deltaPct": -13.0
+    },
+    {
+      "lot": "LOT 18",
+      "sqFt": 7361,
+      "sheetStatedSqFt": 9513.94,
+      "deltaPct": -22.6
+    },
+    {
+      "lot": "LOT 19",
+      "sqFt": 9385,
+      "sheetStatedSqFt": 9557.47,
+      "deltaPct": -1.8
+    },
+    {
+      "lot": "PARKLAND",
+      "sqFt": 5653,
+      "sheetStatedSqFt": 6051.48,
+      "deltaPct": -6.6
+    }
+  ],
+  "stormwater": {
+    "parkland": 5653,
+    "esdvCf": 4902,
+    "practiceFootprintSqFt": 6128
+  },
+  "outputs": {
+    "sheets": [
+      "C-001",
+      "L-100",
+      "C-400"
+    ],
+    "files": [
+      "wheeler-4600-v6-preliminary-set.pdf (ARCH E)",
+      "wheeler-4600-v6.plat.json",
+      "wheeler-4600-v6-lot1..19.plat.json",
+      "wheeler-4600-v6.plat-record.json",
+      "wheeler-4600-v6.proposal.json"
+    ]
+  },
+  "method": {
+    "scripts": "packages/spatial-engine/scripts/digitise/ (wheeler2023_lots.py → wheeler2023_georef.py → wheeler2023_plan.py) → generate-subdivision.ts (SHEET=E)",
+    "georeference": "similarity fit of the sheet to the county parcel, rms 5.1 ft; scale 1\" = 30.4'"
+  }
+}

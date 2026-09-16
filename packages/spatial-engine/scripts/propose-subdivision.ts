@@ -592,6 +592,12 @@ async function main() {
   const sideStreetAt = flag('--side-street') ? Number(flag('--side-street')) : null
   const sideStreetName = flag('--side-street-name') ?? 'STREET B'
   const SIDE_STREET = { rightOfWayFt: 50, pavementFt: 26 }   // a minor residential street; assumed section
+  /** No separate stormwater parcel at the low corner (the 2023 sheet keeps its open space inside the loop). */
+  const noSwmParcel = argv.includes('--no-swm-parcel')
+  /** Make the lot on the inside of the street's sharpest bend PARKLAND / stormwater, as the 2023 sheet does. */
+  const parklandCorner = argv.includes('--parkland-corner')
+  /** Follow exactly this many rear edges (the 2023 sheet's loop follows two); the bend-length penalty is dropped. */
+  const edgesWanted = flag('--edges') ? Number(flag('--edges')) : null
   /** Which street families to search: 'l' (following the rear boundaries), 'spine', or 'both'. */
   const family = (flag('--family') ?? 'both') as 'l' | 'spine' | 'both'
   /** Longest total length of curve the street may have, ft — a short bend was asked for. */
@@ -680,7 +686,7 @@ async function main() {
   const capGrossEarly = maxDensity ? Math.floor(maxDensity * (recordedSqFt ?? parcelSqFt) / 43560) : 20
   const swmEst = swmSize(capGrossEarly, STREET.pavementFt * L * 0.9 + Math.PI * STREET.bulbPavementRadiusFt ** 2, L * 0.9)
   let swmRing: P[] = [], tractForLots = tract
-  if (lowI >= 0) {
+  if (lowI >= 0 && !noSwmParcel) {
     const low = tract[lowI]
     const tc = tract.reduce((a, p) => [a[0] + p[0] / tract.length, a[1] + p[1] / tract.length], [0, 0] as P)
     const dir = norm([tc[0] - low[0], tc[1] - low[1]])
@@ -721,7 +727,7 @@ async function main() {
   }
   const score = (c: Layout) => Math.min(c.lots.filter(l => l.ok).length, capGross) * 1000 - c.leftoverSqFt / 1000 - c.lots.filter(l => !l.ok).length * 60 - c.rowSqFt / 4000
     - (c.params.radiusFt < STREET.curveRadiusFt ? 400 : 0) + (c.streetTouchesKeepOut ? 400 : 0)
-    - 3 * c.road.curves.reduce((t, cv) => t + cv.lengthFt, 0)    // a long bend is worth a third of a lot per 100 ft
+    - (edgesWanted != null ? 0 : 3 * c.road.curves.reduce((t, cv) => t + cv.lengthFt, 0))    // a long bend is worth a third of a lot per 100 ft, unless the bends were asked for
   const rejectedSide: Record<string, number> = {}
   /** The side street: from the existing road at `station`, perpendicular, to where it meets the main street. */
   const buildSideStreet = (main: Road, station: number): Road | null => {
@@ -738,21 +744,30 @@ async function main() {
     }
     const dbg = (why: string) => { if (process.env.DEBUG_SIDE) { rejectedSide[why] = (rejectedSide[why] ?? 0) + 1 } return null }
     if (Math.abs(dot(main.pts[0], A, u) - station) < 120) return dbg('entrance spacing')   // two entrances under 120 ft apart is not an intersection spacing
-    if (!hit) {
-      // No street to meet: the side street ends in its own turnaround short of the main street's ground.
+    /** A turnaround short of the main street's ground (or of the boundary), when there is no T to make. */
+    const stub = (): Road | null => {
       const reach = reachAlong(f, o2, n)
-      const len = reach - STREET.bulbRightOfWayRadiusFt - 15
+      let len = reach - STREET.bulbRightOfWayRadiusFt - 15
+      if (hit) len = Math.min(len, hitT - main.rightOfWayFt / 2 - STREET.bulbRightOfWayRadiusFt - 15)
+      // and clear of the main street's corridor anywhere along it
+      for (let k = 0; k < 40; k++) {
+        const bulb = add(o2, n, len)
+        let dMin = Infinity
+        for (let i = 0; i + 1 < main.pts.length; i++) dMin = Math.min(dMin, segDist(bulb, main.pts[i], main.pts[i + 1]))
+        if (dMin >= STREET.bulbRightOfWayRadiusFt + main.rightOfWayFt / 2 + 10) break
+        len -= 10
+      }
       if (len < 150) return dbg('too short for a cul-de-sac')
       const bulb = add(o2, n, len)
-      if (Math.min(...main.pts.map(q => dist(q, bulb))) < STREET.bulbRightOfWayRadiusFt + main.rightOfWayFt / 2 + 20) return dbg('bulb on the main street')
       return { pts: [o2, bulb], cum: [0, len], len, segs: [{ kind: 'straight', curve: -1 }], curves: [], bulb, id: sideStreetName, rightOfWayFt: SIDE_STREET.rightOfWayFt, pavementFt: SIDE_STREET.pavementFt, lotDepthFt: 150, nearerIn: [] }
     }
+    if (!hit) return stub()
     // The T must land on a straight run of the main street, clear of its bends and its bulb.
     let hs = 0, hi = -1
     for (let i = 0; i + 1 < main.pts.length; i++) if (segDist(hit, main.pts[i], main.pts[i + 1]) < 0.5) { hi = i; hs = main.cum[i] + dist(main.pts[i], hit); break }
-    if (hi < 0 || main.segs[hi].kind !== 'straight') return dbg('T on a curve')
-    for (const c of main.curves) { const pcS = main.cum[main.pts.findIndex(q => q === c.pc)] ?? 0, ptS = main.cum[main.pts.findIndex(q => q === c.pt)] ?? 0; if (hs > pcS - 60 && hs < ptS + 60) return dbg('T near a curve') }
-    if (main.bulb && main.len - hs < 120) return dbg('T near the bulb')
+    if (hi < 0 || main.segs[hi].kind !== 'straight') { dbg('T on a curve'); return stub() }
+    for (const c of main.curves) { const pcS = main.cum[main.pts.findIndex(q => q === c.pc)] ?? 0, ptS = main.cum[main.pts.findIndex(q => q === c.pt)] ?? 0; if (hs > pcS - 60 && hs < ptS + 60) { dbg('T near a curve'); return stub() } }
+    if (main.bulb && main.len - hs < 120) { dbg('T near the bulb'); return stub() }
     const pts: P[] = [o2, hit]
     return { pts, cum: [0, hitT], len: hitT, segs: [{ kind: 'straight', curve: -1 }], curves: [], id: sideStreetName, rightOfWayFt: SIDE_STREET.rightOfWayFt, pavementFt: SIDE_STREET.pavementFt, lotDepthFt: 150, nearerIn: [] }
   }
@@ -802,7 +817,7 @@ async function main() {
     console.log(`    forced layout ${process.env.LAYOUT}`)
   } else {
     // The edges the street follows: from the entrance end round the tract, skipping edges too short to run beside.
-    const followable = (edges: Edge[]) => edges.filter(e => e.len >= 150).slice(0, 3)
+    const followable = (edges: Edge[]) => edges.filter(e => e.len >= 300).slice(0, 3)   // a short jog in the boundary is cut across, not followed
     const fromA = followable(rear.slice().reverse()).map(E => ({ E, dir: -1 as const }))
     const fromB = followable(rear).map(E => ({ E, dir: 1 as const }))
     const aIsEast = A[0] > B[0]
@@ -821,6 +836,7 @@ async function main() {
       // follow all its edges, or all but the last (the road stops short of the far edge)
       for (const nEdges of [opt.edges.length, opt.edges.length - 1]) {
         if (nEdges < 1 || family === 'spine') continue
+        if (edgesWanted != null && nEdges !== edgesWanted) continue
         for (const station of opt.stations) for (const offsets of offsetCombos(nEdges)) for (const short of [0, 60, 120]) for (const R of [STREET.curveRadiusFt, 100]) {
           const pr = paramsFor(station, opt.edges.slice(0, nEdges).map((e, i) => ({ ...e, off: offsets[i] })), short, R)
           if (typeof pr === 'string') { rejected[pr] = (rejected[pr] ?? 0) + 1; continue }
@@ -877,6 +893,16 @@ async function main() {
   console.log(`    PARCEL A ${layout.streetTouchesKeepOut ? 'fronts the proposed street' : 'has NO street frontage — access easement needed'}`)
   console.log(`    stormwater (as laid out, ${layout.lots.length} lots, pavement ${pavementSqFt.toFixed(0)} sf): impervious ${swm.imperviousSqFt} sf (${swm.percentImpervious}%), ESDv ${swm.esdvCf} cf → practice ${swm.footprintSqFt} sf; PARCEL A ${swmSqFt.toFixed(0)} sf${swmShort ? ' — SHORT of the ' + swm.parcelSqFt + ' sf wanted' : ''}`)
   // Parcel A is not a lot; net tract area for density excludes street dedication only (Sec. 27-4202 net lot area / net tract area).
+  // PARKLAND at the inside of the sharpest bend — the 2023 sheet's open space in the corner of the loop,
+  // which also takes the ESD practice. The lot is kept in the set as a parcel that is not a building lot.
+  let parklandIdx = -1
+  if (parklandCorner && layout.road.curves.length) {
+    const sharpest = layout.road.curves.reduce((b, c) => c.deltaDeg > b.deltaDeg ? c : b, layout.road.curves[0])
+    let bestD = Infinity
+    layout.lots.forEach((l, i) => { const d = Math.min(...l.ring.map(q => dist(q, sharpest.centre))); if (d < bestD) { bestD = d; parklandIdx = i } })
+    if (parklandIdx >= 0) console.log(`    PARKLAND: lot ${parklandIdx + 1} (${layout.lots[parklandIdx].sqFt.toFixed(0)} sf) at the inside of ${sharpest.id} becomes parkland / stormwater`)
+  }
+  const parklandRing = parklandIdx >= 0 ? clean(layout.lots[parklandIdx].ring) : []
   const netSqFt = parcelSqFt - layout.rowSqFt - dedSqFt
   const netRecordedSqFt = recordedSqFt ? recordedSqFt - layout.rowSqFt - dedSqFt : null
   const cap = maxDensity ? Math.floor(maxDensity * netSqFt / 43560) : Infinity
@@ -924,6 +950,7 @@ async function main() {
   if (dedFt > 0) notes.push(`${existingStreet} is an ${MASTER_PLAN_ROW_FT}-ft right-of-way per the master plan; the parcel line is ${toCentre.toFixed(1)} ft from the county centreline, so a ${dedFt}-ft strip (${Math.abs(area(dedRing)).toFixed(0)} sq ft) along the frontage is shown for dedication and is excluded from every lot.`)
   if (layout.roads.length > 1) notes.push(`${layout.roads.slice(1).map(r => `${r.id.toUpperCase()} (${r.rightOfWayFt}' R/W, ${r.pavementFt}' pavement, ${Math.round(r.len)} ft)`).join('; ')}: a second public street from ${existingStreet} to ${streetLabel} in place of the 18-ft private alley on the 2023 layout sheet, so the lots between front a public street. Its section is assumed as a minor residential street; DPW&T standards govern.`)
   if (swmRing.length && !layout.streetTouchesKeepOut) notes.push('PARCEL A does not front the proposed street in this layout; a 20-ft access and maintenance easement across the adjoining lot is required at platting.')
+  if (parklandRing.length) notes.push(`PARKLAND (${Math.abs(area(parklandRing)).toFixed(0)} sq ft) inside the bend of ${streetLabel} is open space and the site of the ESD stormwater practice, as the 2023 layout sheet places it; it is not a building lot.`)
   notes.push(`Water and sewer: every lot is served from ${streetLabel}; no service connects to ${existingStreet}. Proposed 8-in WSSC water main and 8-in sanitary sewer in ${streetLabel}, extended from the existing WSSC mains in ${existingStreet} at the entrance. As-built size, location, depth and flow direction of the ${existingStreet} mains are not read here.`)
   notes.push(`Stormwater management by Environmental Site Design to the maximum extent practicable (Md. Stormwater Management Act of 2007; MDE Design Manual Ch. 5; PGC Sec. 32-172). Preliminary ESD volume: ${swm.imperviousSqFt} sq ft impervious (${swm.percentImpervious}% of the tract: ${layout.lots.length} lots × ${SWM.lotImperviousSqFt} sq ft, ${pavementSqFt.toFixed(0)} sq ft pavement, sidewalks), Rv = ${swm.rv}, P_E = ${SWM.rainfallTargetIn} in → ESDv = ${swm.esdvCf} cu ft; micro-bioretention at ${SWM.pondingDepthFt} ft × n ${SWM.voidRatio} → ${swm.footprintSqFt} sq ft of practice. ${swmRing.length ? `PARCEL A (${swmSqFt.toFixed(0)} sq ft) is reserved at the low corner of the tract (${relief ? `corner elevations ${relief.min}–${relief.max} ft ${contours!.verticalDatum}` : 'contours unavailable'}) for the practice, its forebay and access; it is not a building lot.` : 'No stormwater parcel is placed: county contours were not available to find the low corner.'} Hydrologic soil group(s) ${hsgs.length ? hsgs.join(', ') : 'unknown'} per USDA SSURGO ${soils?.areaSymbol ?? ''} — P_E is to be taken from Table 5.3 for the site's group and % impervious; the ${SWM.rainfallTargetIn} in used here is the Manual's floor. Rooftop disconnection and a 6-ft infiltration berm along the rear of each lot, as the 2023 layout sheet's legend shows, are credited at concept plan and reduce the parcel; infiltration feasibility depends on the Sec. 32-131 soils investigation. A stormwater management concept approval from DPIE precedes preliminary plan.`)
   notes.push(`Proposed public street: ${STREET.note}${pr.radiusFt !== STREET.curveRadiusFt ? ` THIS LAYOUT USES A ${pr.radiusFt}-FT CENTRELINE RADIUS at its bends, below the 150 ft assumed above; confirm against the DPW&T minimum for a local street before preliminary plan.` : ''} Street dedication ${layout.rowSqFt.toFixed(0)} sq ft. Storm drainage, sanitary sewer capacity, street lighting and forest conservation are not designed here.`)
@@ -940,7 +967,10 @@ async function main() {
       rainfallTargetIn: SWM.rainfallTargetIn, hydrologicSoilGroups: hsgs, soilsSource: soils?.source ?? null,
       contoursSource: contours?.source ?? null, cornerElevationsFt: relief, lowCorner: lowI >= 0 ? tract[lowI] : null,
       ...swm, practice: SWM.practice, pondingDepthFt: SWM.pondingDepthFt, voidRatio: SWM.voidRatio,
-      parcels: swmRing.length ? [{ name: 'PARCEL A — STORMWATER MANAGEMENT (ESD)', ring: swmRing, sqFt: Math.round(swmSqFt), practice: SWM.practice, footprintSqFt: swm.footprintSqFt, requiredVolumeCf: swm.esdvCf }] : [],
+      parcels: [
+        ...(swmRing.length ? [{ name: 'PARCEL A — STORMWATER MANAGEMENT (ESD)', ring: swmRing, sqFt: Math.round(swmSqFt), practice: SWM.practice, footprintSqFt: swm.footprintSqFt, requiredVolumeCf: swm.esdvCf }] : []),
+        ...(parklandRing.length ? [{ name: 'PARKLAND — OPEN SPACE AND STORMWATER MANAGEMENT (ESD)', ring: parklandRing, sqFt: Math.round(Math.abs(area(parklandRing))), practice: SWM.practice, footprintSqFt: swm.footprintSqFt, requiredVolumeCf: swm.esdvCf }] : []),
+      ],
       perLot: ['rooftop disconnection (N-1)', '6-ft infiltration berm along the rear lot line (2023 sheet legend)'],
     },
     proposedStreets: [{
@@ -963,11 +993,13 @@ async function main() {
 
   const lotFiles: string[] = []
   layout.lots.forEach((l, i) => {
+    if (i === parklandIdx) return
     l.ring = clean(l.ring)
-    const file = path.join(outDir, `${slug}-lot${i + 1}.plat.json`)
+    const lotNo = parklandIdx >= 0 && i > parklandIdx ? i : i + 1
+    const file = path.join(outDir, `${slug}-lot${lotNo}.plat.json`)
     writeFileSync(file, JSON.stringify({
       _source: provenance, address: site.address.matchedAddress,
-      reference: { ...reference, lot: `${i + 1}` },
+      reference: { ...reference, lot: `${lotNo}` },
       basisOfBearings: 'Maryland State Plane Coordinate System (NAD 83), from PGAtlas parcel geometry',
       pointOfBeginning: l.ring[0], recordedAreaSqFt: Math.round(l.sqFt), programme,
       frontSetbackFt: frontYard, sideSetbackFt: sideYard, frontsOn: l.fronts,
