@@ -301,8 +301,8 @@ export async function POST(req: NextRequest) {
 
   const outputWithSources = {
     ...updatedConceptOutput,
-    beforeUrls: Array.isArray(updatedConceptOutput.beforeUrls)
-      ? updatedConceptOutput.beforeUrls
+    beforeUrls: Array.isArray(conceptOutput.beforeUrls)
+      ? conceptOutput.beforeUrls
       : [sourceImageUrl],
   }
   const pdfUrl = await generateAndAttachConceptPdf({
