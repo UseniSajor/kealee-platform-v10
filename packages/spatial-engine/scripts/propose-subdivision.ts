@@ -237,7 +237,14 @@ interface Road {
   pts: P[]; cum: number[]; len: number
   segs: Seg[]
   curves: Curve[]
-  bulb: P
+  /** The cul-de-sac centre; absent on a street that ends at another street. */
+  bulb?: P
+  /** 'main' or a side street's name; side streets have their own R/W width. */
+  id: string
+  rightOfWayFt: number
+  pavementFt: number
+  /** How deep its lots may run back from it; a side street's lots are one tier, the main street's run to the boundary. */
+  lotDepthFt?: number
   /** For curve k: ≥ 0 on the incoming tangent's side of the interior angle bisector. */
   nearerIn: ((p: P) => number)[]
 }
@@ -309,13 +316,13 @@ function buildRoad(f: Frame, pr: RoadParams): Road | null {
     const sgn = Math.sign(cross(bisIn, probe, c.vertex)) || 1
     return (p: P) => sgn * cross(bisIn, p, c.vertex)
   })
-  return { pts, cum, len: cum[cum.length - 1], segs, curves, bulb, nearerIn }
+  return { pts, cum, len: cum[cum.length - 1], segs, curves, bulb, id: 'main', rightOfWayFt: STREET.rightOfWayFt, pavementFt: STREET.pavementFt, nearerIn }
 }
 
 // ── Lots ────────────────────────────────────────────────────────────────────
 
 interface Layout {
-  lots: Lot[]; road: Road
+  lots: Lot[]; road: Road; roads: Road[]
   /** The street adjoins the reserved stormwater parcel. */
   streetTouchesKeepOut: boolean
   centrelines: P[][]; rowRings: P[][]; pavementRings: P[][]; rowSqFt: number
@@ -323,86 +330,91 @@ interface Layout {
   leftoverSqFt: number
 }
 
-function layoutRoad(f: Frame, tract: P[], road: Road, params: RoadParams, std: Std, keepOut: P[][] = []): Layout | null {
+function layoutRoad(f: Frame, tract: P[], roads: Road[], params: RoadParams, std: Std, keepOut: P[][] = []): Layout | null {
   const { A, n } = f
-  const half = STREET.rightOfWayFt / 2, bulbR = STREET.bulbRightOfWayRadiusFt
+  const road = roads.find(rd => rd.id === 'main') ?? roads[0]
+  const bulbR = STREET.bulbRightOfWayRadiusFt
   const parcel = asMP(tract)
-  const corridor = union([...corridorOf(road.pts, half), circle(road.bulb, bulbR, 72)])
+  const corridor = union(roads.flatMap(rd => [...corridorOf(rd.pts, rd.rightOfWayFt / 2), ...(rd.bulb ? [circle(rd.bulb, bulbR, 72)] : [])]))
   for (const ring of keepOut) if (mpArea(intersection(corridor, asMP(ring))) > 1) return null   // the street may not cross a reserved parcel
-  const pavement = union([...corridorOf(road.pts, STREET.pavementFt / 2), circle(road.bulb, STREET.bulbPavementRadiusFt, 72)])
+  const pavement = union(roads.flatMap(rd => [...corridorOf(rd.pts, rd.pavementFt / 2), ...(rd.bulb ? [circle(rd.bulb, STREET.bulbPavementRadiusFt, 72)] : [])]))
 
-  const segDir = (i: number): P => norm([road.pts[i + 1][0] - road.pts[i][0], road.pts[i + 1][1] - road.pts[i][1]])
-  const at = (s: number, i: number): P => {
-    const t = (s - road.cum[i]) / ((road.cum[i + 1] - road.cum[i]) || 1)
-    return [road.pts[i][0] + (road.pts[i + 1][0] - road.pts[i][0]) * t, road.pts[i][1] + (road.pts[i + 1][1] - road.pts[i][1]) * t]
+  const segDir = (rd: Road, i: number): P => norm([rd.pts[i + 1][0] - rd.pts[i][0], rd.pts[i + 1][1] - rd.pts[i][1]])
+  const at = (rd: Road, s: number, i: number): P => {
+    const t = (s - rd.cum[i]) / ((rd.cum[i + 1] - rd.cum[i]) || 1)
+    return [rd.pts[i][0] + (rd.pts[i + 1][0] - rd.pts[i][0]) * t, rd.pts[i][1] + (rd.pts[i + 1][1] - rd.pts[i][1]) * t]
   }
-  /** The land one side of the road between two stations, before any clipping: quads, pies inside bends, fans outside. */
-  const stripRings = (side: 1 | -1, a: number, e: number, depth = DEPTH): P[][] => {
+  /** The land one side of a road between two stations, before any clipping: quads, pies inside bends, fans outside. */
+  const stripRings = (rd: Road, side: 1 | -1, a: number, e: number, depth = rd.lotDepthFt ?? DEPTH): P[][] => {
     const rings: P[][] = []
     let prevN: P | null = null, prevJoint: P | null = null
-    for (let i = 0; i + 1 < road.pts.length; i++) {
-      const sa = Math.max(a, road.cum[i]), sb = Math.min(e, road.cum[i + 1])
+    for (let i = 0; i + 1 < rd.pts.length; i++) {
+      const sa = Math.max(a, rd.cum[i]), sb = Math.min(e, rd.cum[i + 1])
       if (sb - sa < 0.05) continue
-      const p0 = at(sa, i), p1 = at(sb, i)
-      const nm = leftOf(segDir(i)); if (side < 0) { nm[0] = -nm[0]; nm[1] = -nm[1] }
-      const seg = road.segs[i]
+      const p0 = at(rd, sa, i), p1 = at(rd, sb, i)
+      const nm = leftOf(segDir(rd, i)); if (side < 0) { nm[0] = -nm[0]; nm[1] = -nm[1] }
+      const seg = rd.segs[i]
       let quad: P[]
       if (seg.kind === 'arc') {
-        const c = road.curves[seg.curve]
+        const c = rd.curves[seg.curve]
         if (side === c.turnSign) quad = depth >= c.radiusFt ? [p0, p1, c.centre] : [p0, p1, add(p1, nm, depth), add(p0, nm, depth)]   // inside the bend: a pie to the centre
         else {
           quad = [p0, p1, add(p1, nm, depth), add(p0, nm, depth)]
-          if (prevN && prevJoint && sa <= road.cum[i] + 1e-6 && (prevN[0] !== nm[0] || prevN[1] !== nm[1]))
+          if (prevN && prevJoint && sa <= rd.cum[i] + 1e-6 && (prevN[0] !== nm[0] || prevN[1] !== nm[1]))
             rings.push([prevJoint, add(prevJoint, prevN, depth), add(prevJoint, nm, depth)])   // fan at the joint
         }
       } else {
         quad = [p0, p1, add(p1, nm, depth), add(p0, nm, depth)]
         // A straight between bends: on the inside of a bend, stop at its bisector so this tangent's
         // lots and the next tangent's lots meet on the corner line, as corner lots are drawn.
-        const next = seg.curve >= 0 ? road.curves[seg.curve] : null
-        const prev = seg.curve === -1 ? road.curves[road.curves.length - 1] : seg.curve > 0 ? road.curves[seg.curve - 1] : null
+        const next = seg.curve >= 0 ? rd.curves[seg.curve] : null
+        const prev = seg.curve === -1 ? rd.curves[rd.curves.length - 1] : seg.curve > 0 ? rd.curves[seg.curve - 1] : null
         if (depth >= DEPTH) {
-          if (next && side === next.turnSign) quad = clipWhere(quad, road.nearerIn[seg.curve])
-          if (prev && side === prev.turnSign) quad = clipWhere(quad, p => -road.nearerIn[road.curves.indexOf(prev)](p))
+          if (next && side === next.turnSign) quad = clipWhere(quad, rd.nearerIn[seg.curve])
+          if (prev && side === prev.turnSign) quad = clipWhere(quad, p => -rd.nearerIn[rd.curves.indexOf(prev)](p))
         }
       }
       if (quad.length) rings.push(quad)
-      prevN = nm; prevJoint = road.pts[i + 1]
+      prevN = nm; prevJoint = rd.pts[i + 1]
     }
     return rings
   }
-  // No lot reaches into the first NEAR_FT beside any other part of the street
+  // No lot reaches into the first NEAR_FT beside any other part of any street
   // — that band belongs to the lots fronting there — and no lot takes ground a
   // lot already cut has: each cut is also less everything taken so far.
-  const bulbDir = norm([road.bulb[0] - road.pts[road.pts.length - 2][0], road.bulb[1] - road.pts[road.pts.length - 2][1]])
-  const bulbM = leftOf(bulbDir)
-  const bulbRay = (ang: number): P => [bulbM[0] * Math.sin(ang) + bulbDir[0] * Math.cos(ang), bulbM[1] * Math.sin(ang) + bulbDir[1] * Math.cos(ang)]
+  const bulbDirOf = (rd: Road): P => norm([rd.bulb![0] - rd.pts[rd.pts.length - 2][0], rd.bulb![1] - rd.pts[rd.pts.length - 2][1]])
+  const bulbRayOf = (rd: Road) => { const d = bulbDirOf(rd), m = leftOf(d); return (ang: number): P => [m[0] * Math.sin(ang) + d[0] * Math.cos(ang), m[1] * Math.sin(ang) + d[1] * Math.cos(ang)] }
   const nearBand = union([
-    ...stripRings(1, 0, road.len, NEAR_FT), ...stripRings(-1, 0, road.len, NEAR_FT),
-    clipWhere(circle(road.bulb, bulbR + NEAR_FT), p => dot(p, road.bulb, bulbDir)),
+    ...roads.flatMap(rd => [...stripRings(rd, 1, 0, rd.len, NEAR_FT), ...stripRings(rd, -1, 0, rd.len, NEAR_FT)]),
+    ...roads.filter(rd => rd.bulb).map(rd => clipWhere(circle(rd.bulb!, bulbR + NEAR_FT), p => dot(p, rd.bulb!, bulbDirOf(rd)))),
   ])
   let taken: MP = []
   const finish = (mp: MP, own: MP): P[] =>
     largestRing(difference(difference(difference(intersection(mp, parcel), corridor), difference(nearBand, own)), taken))
-  const strip = (side: 1 | -1, a: number, e: number): P[] => {
-    const rings = stripRings(side, a, e)
+  const strip = (rd: Road, side: 1 | -1, a: number, e: number): P[] => {
+    const rings = stripRings(rd, side, a, e)
     if (!rings.length) return []
-    const own = union(stripRings(side, Math.max(0, a - 1), Math.min(road.len, e + 1), NEAR_FT))
+    const own = union(stripRings(rd, side, Math.max(0, a - 1), Math.min(rd.len, e + 1), NEAR_FT))
     return finish(union(rings), own)
   }
-  const wedge = (a0: number, a1: number): P[] => {
-    const fan: P[] = [road.bulb]
+  const wedge = (rd: Road, a0: number, a1: number): P[] => {
+    if (!rd.bulb) return []
+    const bulbRay = bulbRayOf(rd)
+    const fan: P[] = [rd.bulb]
     const steps = 6
-    for (let i = steps; i >= 0; i--) fan.push(add(road.bulb, bulbRay(a0 + (a1 - a0) * i / steps), DEPTH))
-    const ownFan: P[] = [road.bulb]
-    for (let i = steps; i >= 0; i--) ownFan.push(add(road.bulb, bulbRay(a0 - 0.02 + (a1 - a0 + 0.04) * i / steps), bulbR + NEAR_FT))
+    for (let i = steps; i >= 0; i--) fan.push(add(rd.bulb, bulbRay(a0 + (a1 - a0) * i / steps), rd.lotDepthFt ?? DEPTH))
+    const ownFan: P[] = [rd.bulb]
+    for (let i = steps; i >= 0; i--) ownFan.push(add(rd.bulb, bulbRay(a0 - 0.02 + (a1 - a0 + 0.04) * i / steps), bulbR + NEAR_FT))
     return finish(asMP(fan), asMP(ownFan))
   }
-  /** Boundary length of the lot that lies on the street's R/W line. */
+  /** Boundary length of the lot that lies on any street's R/W line. */
   const frontageOf = (ring: P[]): number => {
     const onStreet = (p: P) => {
-      for (let i = 0; i + 1 < road.pts.length; i++) if (segDist(p, road.pts[i], road.pts[i + 1]) <= half + 0.5) return true
-      return dist(p, road.bulb) <= bulbR + 0.5
+      for (const rd of roads) {
+        for (let i = 0; i + 1 < rd.pts.length; i++) if (segDist(p, rd.pts[i], rd.pts[i + 1]) <= rd.rightOfWayFt / 2 + 0.5) return true
+        if (rd.bulb && dist(p, rd.bulb) <= bulbR + 0.5) return true
+      }
+      return false
     }
     let len = 0
     for (let i = 0; i < ring.length; i++) {
@@ -423,13 +435,14 @@ function layoutRoad(f: Frame, tract: P[], road: Road, params: RoadParams, std: S
     check({ ring, sqFt: Math.abs(area(ring)), widthFt: extentAlong(ring, ring[0], widthDir), frontageFt: frontageOf(ring), fronts, ok: false, problems: [], backsOntoExisting: backs(ring) })
 
   const lots: Lot[] = []
-  const end = road.len
+  for (const rd of roads) {
+  const end = rd.len
   for (const side of [1, -1] as const) {
     const sideName = side === 1 ? 'LEFT' : 'RIGHT'
     let cursor = 0
     const made: { a: number; e: number; ring: P[] }[] = []
     while (cursor < end - 1) {
-      let e = Math.min(cursor + std.minWidth, end), ring = strip(side, cursor, e)
+      let e = Math.min(cursor + std.minWidth, end), ring = strip(rd, side, cursor, e)
       if (!ring.length) { cursor += 5; continue }
       let a = Math.abs(area(ring))
       // widen by the shortfall, then trim back in 5-ft steps so the lot is not fatter than it must be
@@ -437,12 +450,12 @@ function layoutRoad(f: Frame, tract: P[], road: Road, params: RoadParams, std: S
         let w = std.minWidth
         for (let k = 0; k < 6 && a < std.minArea && e < end - 1e-6; k++) {
           w = Math.min(w * Math.max(1.05, std.minArea / Math.max(a, 1)) + 2, end - cursor)
-          e = cursor + w; ring = strip(side, cursor, e); a = Math.abs(area(ring))
+          e = cursor + w; ring = strip(rd, side, cursor, e); a = Math.abs(area(ring))
         }
         for (;;) {
           const e2 = e - 5
           if (e2 - cursor < std.minWidth) break
-          const r2 = strip(side, cursor, e2)
+          const r2 = strip(rd, side, cursor, e2)
           if (!r2.length || Math.abs(area(r2)) < std.minArea) break
           e = e2; ring = r2; a = Math.abs(area(r2))
         }
@@ -456,13 +469,13 @@ function layoutRoad(f: Frame, tract: P[], road: Road, params: RoadParams, std: S
       taken = difference(taken, union([prev.ring, tail.ring]))
       // first try two equal lots over the pair; only then one
       const midS = (prev.a + tail.e) / 2
-      const r1 = strip(side, prev.a, midS), r2 = r1.length ? (taken = union([...taken.map(poly => openRing(poly[0] as P[])), r1]), strip(side, midS, tail.e)) : []
+      const r1 = strip(rd, side, prev.a, midS), r2 = r1.length ? (taken = union([...taken.map(poly => openRing(poly[0] as P[])), r1]), strip(rd, side, midS, tail.e)) : []
       if (r1.length && r2.length && Math.abs(area(r1)) >= std.minArea && Math.abs(area(r2)) >= std.minArea && midS - prev.a >= std.minWidth) {
         made.push({ a: prev.a, e: midS, ring: r1 }, { a: midS, e: tail.e, ring: r2 })
         taken = union([...taken.map(poly => openRing(poly[0] as P[])), r2])
       } else {
         if (r1.length) taken = difference(taken, asMP(r1))
-        const merged = strip(side, prev.a, tail.e)
+        const merged = strip(rd, side, prev.a, tail.e)
         if (merged.length) { made.push({ a: prev.a, e: tail.e, ring: merged }); taken = union([...taken.map(poly => openRing(poly[0] as P[])), merged]) }
         else { made.push(prev, tail); taken = union([...taken.map(poly => openRing(poly[0] as P[])), prev.ring, tail.ring]) }
       }
@@ -470,29 +483,36 @@ function layoutRoad(f: Frame, tract: P[], road: Road, params: RoadParams, std: S
     for (const m of made) {
       if (!m.ring.length) continue
       const mid = (m.a + m.e) / 2
-      const i = Math.max(0, road.cum.findIndex(c => c > mid) - 1)
-      const seg = road.segs[i]
-      const where = seg.kind === 'arc' ? `CURVE ${road.curves[seg.curve].id}` : seg.curve === 0 ? 'ENTRANCE' : seg.curve === -1 ? 'LAST RUN' : `RUN ${seg.curve}`
-      lots.push(mkLot(m.ring, `PROPOSED STREET (${where}, ${sideName} SIDE)`, segDir(i)))
+      const i = Math.max(0, rd.cum.findIndex(c => c > mid) - 1)
+      const seg = rd.segs[i]
+      const where = rd.id !== 'main' ? rd.id.toUpperCase() : seg.kind === 'arc' ? `CURVE ${rd.curves[seg.curve].id}` : seg.curve === 0 ? 'ENTRANCE' : seg.curve === -1 ? 'LAST RUN' : `RUN ${seg.curve}`
+      lots.push(mkLot(m.ring, `PROPOSED STREET (${where}, ${sideName} SIDE)`, segDir(rd, i)))
     }
   }
-  // the bulb: pie wedges beyond the centre, as many as conform
-  let best: Lot[] = [], bestOk = -1
-  const takenBefore = taken
-  for (let k = 1; k <= 5; k++) {
-    const wedges: Lot[] = []
+  }
+  // each bulb: pie wedges beyond the centre, as many as conform
+  for (const rd of roads) {
+    if (!rd.bulb) continue
+    const bulbRay = bulbRayOf(rd)
+    let best: Lot[] = [], bestOk = -1
+    const takenBefore = taken
+    for (let k = 1; k <= 5; k++) {
+      const wedges: Lot[] = []
+      taken = takenBefore
+      for (let i = 0; i < k; i++) {
+        const a0 = -Math.PI / 2 + Math.PI * i / k, a1 = -Math.PI / 2 + Math.PI * (i + 1) / k
+        const ring = wedge(rd, a0, a1)
+        if (!ring.length) continue
+        wedges.push(mkLot(ring, `PROPOSED STREET (${rd.id === 'main' ? '' : rd.id.toUpperCase() + ' '}CUL-DE-SAC)`, leftOf(bulbRay((a0 + a1) / 2))))
+        taken = union([...taken.map(poly => openRing(poly[0] as P[])), ring])
+      }
+      const ok = wedges.filter(x => x.ok).length
+      if (ok > bestOk || (ok === bestOk && wedges.length < best.length)) { bestOk = ok; best = wedges }
+    }
     taken = takenBefore
-    for (let i = 0; i < k; i++) {
-      const a0 = -Math.PI / 2 + Math.PI * i / k, a1 = -Math.PI / 2 + Math.PI * (i + 1) / k
-      const ring = wedge(a0, a1)
-      if (!ring.length) continue
-      wedges.push(mkLot(ring, 'PROPOSED STREET (CUL-DE-SAC)', leftOf(bulbRay((a0 + a1) / 2))))
-      taken = union([...taken.map(poly => openRing(poly[0] as P[])), ring])
-    }
-    const ok = wedges.filter(x => x.ok).length
-    if (ok > bestOk || (ok === bestOk && wedges.length < best.length)) { bestOk = ok; best = wedges }
+    for (const w of best) taken = union([...taken.map(poly => openRing(poly[0] as P[])), w.ring])
+    lots.push(...best)
   }
-  lots.push(...best)
 
   // Ground no lot took — a sliver at a tip, the far side of a bend — goes to
   // the neighbour it shares the longest line with, when the two make one ring.
@@ -543,11 +563,11 @@ function layoutRoad(f: Frame, tract: P[], road: Road, params: RoadParams, std: S
     lots.splice(bad, 1)
   }
   // Does the street reach the reserved parcel (so it has frontage for access and maintenance)?
-  const streetTouchesKeepOut = keepOut.some(ring => mpArea(intersection(union([...corridorOf(road.pts, half + 2), circle(road.bulb, bulbR + 2)]), asMP(ring))) > 1)
+  const streetTouchesKeepOut = keepOut.some(ring => mpArea(intersection(union(roads.flatMap(rd => [...corridorOf(rd.pts, rd.rightOfWayFt / 2 + 2), ...(rd.bulb ? [circle(rd.bulb, bulbR + 2)] : [])])), asMP(ring))) > 1)
   const rowSqFt = mpArea(rowInParcel)
   return {
-    lots, road, streetTouchesKeepOut,
-    centrelines: [road.pts],
+    lots, road, roads, streetTouchesKeepOut,
+    centrelines: roads.map(rd => rd.pts),
     rowRings: rowInParcel.map(poly => openRing(poly[0] as P[])),
     pavementRings: intersection(pavement, parcel).map(poly => openRing(poly[0] as P[])),
     rowSqFt, params,
@@ -568,6 +588,12 @@ async function main() {
   /** Which end of the frontage the entrance is at: the eastern or western tip, or either (searched). */
   const enterAt = (flag('--enter') ?? 'either') as 'east' | 'west' | 'either'
   const newStreetName = flag('--street') ?? 'PROPOSED PUBLIC STREET (NAME TBD)'
+  /** A second street from the existing road, perpendicular, at this fraction of the frontage (0–1) or station in ft, running until it meets the main street (a T). The 2023 sheet's alley, widened. */
+  const sideStreetAt = flag('--side-street') ? Number(flag('--side-street')) : null
+  const sideStreetName = flag('--side-street-name') ?? 'STREET B'
+  const SIDE_STREET = { rightOfWayFt: 50, pavementFt: 26 }   // a minor residential street; assumed section
+  /** Which street families to search: 'l' (following the rear boundaries), 'spine', or 'both'. */
+  const family = (flag('--family') ?? 'both') as 'l' | 'spine' | 'both'
   /** Longest total length of curve the street may have, ft — a short bend was asked for. */
   const maxCurveFt = flag('--max-curve-ft') ? Number(flag('--max-curve-ft')) : Infinity
   const streetLabel = newStreetName.toUpperCase().replace(/\bCT\b/, 'COURT').replace(/\bRD\b/, 'ROAD').replace(/\bDR\b/, 'DRIVE')
@@ -696,10 +722,55 @@ async function main() {
   const score = (c: Layout) => Math.min(c.lots.filter(l => l.ok).length, capGross) * 1000 - c.leftoverSqFt / 1000 - c.lots.filter(l => !l.ok).length * 60 - c.rowSqFt / 4000
     - (c.params.radiusFt < STREET.curveRadiusFt ? 400 : 0) + (c.streetTouchesKeepOut ? 400 : 0)
     - 3 * c.road.curves.reduce((t, cv) => t + cv.lengthFt, 0)    // a long bend is worth a third of a lot per 100 ft
+  const rejectedSide: Record<string, number> = {}
+  /** The side street: from the existing road at `station`, perpendicular, to where it meets the main street. */
+  const buildSideStreet = (main: Road, station: number): Road | null => {
+    const o2 = add(A, u, station)
+    let hit: P | null = null, hitT = Infinity
+    for (let i = 0; i + 1 < main.pts.length; i++) {
+      const a = main.pts[i], b = main.pts[i + 1]
+      const dx = b[0] - a[0], dy = b[1] - a[1]
+      const den = n[0] * dy - n[1] * dx
+      if (Math.abs(den) < 1e-9) continue
+      const t = ((a[0] - o2[0]) * dy - (a[1] - o2[1]) * dx) / den
+      const w = ((a[0] - o2[0]) * n[1] - (a[1] - o2[1]) * n[0]) / den
+      if (w >= 0 && w <= 1 && t > 60 && t < hitT) { hitT = t; hit = add(o2, n, t) }
+    }
+    const dbg = (why: string) => { if (process.env.DEBUG_SIDE) { rejectedSide[why] = (rejectedSide[why] ?? 0) + 1 } return null }
+    if (Math.abs(dot(main.pts[0], A, u) - station) < 120) return dbg('entrance spacing')   // two entrances under 120 ft apart is not an intersection spacing
+    if (!hit) {
+      // No street to meet: the side street ends in its own turnaround short of the main street's ground.
+      const reach = reachAlong(f, o2, n)
+      const len = reach - STREET.bulbRightOfWayRadiusFt - 15
+      if (len < 150) return dbg('too short for a cul-de-sac')
+      const bulb = add(o2, n, len)
+      if (Math.min(...main.pts.map(q => dist(q, bulb))) < STREET.bulbRightOfWayRadiusFt + main.rightOfWayFt / 2 + 20) return dbg('bulb on the main street')
+      return { pts: [o2, bulb], cum: [0, len], len, segs: [{ kind: 'straight', curve: -1 }], curves: [], bulb, id: sideStreetName, rightOfWayFt: SIDE_STREET.rightOfWayFt, pavementFt: SIDE_STREET.pavementFt, lotDepthFt: 150, nearerIn: [] }
+    }
+    // The T must land on a straight run of the main street, clear of its bends and its bulb.
+    let hs = 0, hi = -1
+    for (let i = 0; i + 1 < main.pts.length; i++) if (segDist(hit, main.pts[i], main.pts[i + 1]) < 0.5) { hi = i; hs = main.cum[i] + dist(main.pts[i], hit); break }
+    if (hi < 0 || main.segs[hi].kind !== 'straight') return dbg('T on a curve')
+    for (const c of main.curves) { const pcS = main.cum[main.pts.findIndex(q => q === c.pc)] ?? 0, ptS = main.cum[main.pts.findIndex(q => q === c.pt)] ?? 0; if (hs > pcS - 60 && hs < ptS + 60) return dbg('T near a curve') }
+    if (main.bulb && main.len - hs < 120) return dbg('T near the bulb')
+    const pts: P[] = [o2, hit]
+    return { pts, cum: [0, hitT], len: hitT, segs: [{ kind: 'straight', curve: -1 }], curves: [], id: sideStreetName, rightOfWayFt: SIDE_STREET.rightOfWayFt, pavementFt: SIDE_STREET.pavementFt, lotDepthFt: 150, nearerIn: [] }
+  }
   const tryLayout = (pr: RoadParams): Layout | null => {
     const road = buildRoad(f, pr)
     if (road && road.curves.reduce((t, c) => t + c.lengthFt, 0) > maxCurveFt) return null
-    return road ? layoutRoad(f, tractForLots, road, pr, std, swmRing.length ? [swmRing] : []) : null
+    if (!road) return null
+    if (sideStreetAt == null) return layoutRoad(f, tractForLots, [road], pr, std, swmRing.length ? [swmRing] : [])
+    // The side street's lots are cut first, so it serves a full row each side; its station is searched around the one asked for.
+    let bestSide: Layout | null = null
+    for (const dv of [0, -0.05, 0.05, -0.1, 0.1, -0.15, -0.2]) {
+      const st = (sideStreetAt <= 1 ? sideStreetAt * L : sideStreetAt) + dv * L
+      const side = buildSideStreet(road, st)
+      if (!side) continue
+      const cand = layoutRoad(f, tractForLots, [side, road], pr, std, swmRing.length ? [swmRing] : [])
+      if (cand && (!bestSide || score(cand) > score(bestSide))) bestSide = cand
+    }
+    return bestSide
   }
   type Edge = typeof rear[number]
   /** Road params: enter at `station`, then run parallel to each edge in turn at its offset, the bulb `short` ft before the boundary. */
@@ -749,7 +820,7 @@ async function main() {
       let optBest = 0
       // follow all its edges, or all but the last (the road stops short of the far edge)
       for (const nEdges of [opt.edges.length, opt.edges.length - 1]) {
-        if (nEdges < 1) continue
+        if (nEdges < 1 || family === 'spine') continue
         for (const station of opt.stations) for (const offsets of offsetCombos(nEdges)) for (const short of [0, 60, 120]) for (const R of [STREET.curveRadiusFt, 100]) {
           const pr = paramsFor(station, opt.edges.slice(0, nEdges).map((e, i) => ({ ...e, off: offsets[i] })), short, R)
           if (typeof pr === 'string') { rejected[pr] = (rejected[pr] ?? 0) + 1; continue }
@@ -764,7 +835,7 @@ async function main() {
       // A SPINE: one run from the entrance angled across the tract toward the far tip, so the only
       // bend is the entrance curve (shorter than rounding a boundary corner). Its line is the
       // frontage offset `off` in, turned `skew` degrees into the tract.
-      {
+      if (family !== 'l') {
         const towardFar: P = opt.edges === fromA ? [u[0], u[1]] : [-u[0], -u[1]]      // along the frontage, away from the entrance tip
         const into = cross(towardFar, n, [0, 0]) > 0 ? 1 : -1                          // rotating this way turns into the tract
         const entryToward = cross(n, towardFar, [0, 0]) > 0 ? 1 : -1              // tilting the stem this way leans it toward the far tip
@@ -793,6 +864,7 @@ async function main() {
       }
     }
   }
+  if (process.env.DEBUG_SIDE) console.log(`    side street rejections ${JSON.stringify(rejectedSide)}`)
   if (!bestLayout) throw new Error('No layout fits.')
   const layout = bestLayout
   console.log(`    searched ${tried} layouts in ${((Date.now() - t0) / 1000).toFixed(0)} s`)
@@ -850,6 +922,7 @@ async function main() {
   if (recordedSqFt) notes.push(`Recorded acreage ${recordedAcres} ac (${recordedSqFt.toFixed(0)} sq ft) differs from the county GIS polygon (${parcelSqFt.toFixed(0)} sq ft) by ${(parcelSqFt - recordedSqFt).toFixed(0)} sq ft. Both are reported; neither is adjusted. The survey resolves it.`)
   if (caseNumber) notes.push(`Special exception ${caseNumber} is of record on this property. Its conditions have not been read into this concept and govern where they conflict.`)
   if (dedFt > 0) notes.push(`${existingStreet} is an ${MASTER_PLAN_ROW_FT}-ft right-of-way per the master plan; the parcel line is ${toCentre.toFixed(1)} ft from the county centreline, so a ${dedFt}-ft strip (${Math.abs(area(dedRing)).toFixed(0)} sq ft) along the frontage is shown for dedication and is excluded from every lot.`)
+  if (layout.roads.length > 1) notes.push(`${layout.roads.slice(1).map(r => `${r.id.toUpperCase()} (${r.rightOfWayFt}' R/W, ${r.pavementFt}' pavement, ${Math.round(r.len)} ft)`).join('; ')}: a second public street from ${existingStreet} to ${streetLabel} in place of the 18-ft private alley on the 2023 layout sheet, so the lots between front a public street. Its section is assumed as a minor residential street; DPW&T standards govern.`)
   if (swmRing.length && !layout.streetTouchesKeepOut) notes.push('PARCEL A does not front the proposed street in this layout; a 20-ft access and maintenance easement across the adjoining lot is required at platting.')
   notes.push(`Water and sewer: every lot is served from ${streetLabel}; no service connects to ${existingStreet}. Proposed 8-in WSSC water main and 8-in sanitary sewer in ${streetLabel}, extended from the existing WSSC mains in ${existingStreet} at the entrance. As-built size, location, depth and flow direction of the ${existingStreet} mains are not read here.`)
   notes.push(`Stormwater management by Environmental Site Design to the maximum extent practicable (Md. Stormwater Management Act of 2007; MDE Design Manual Ch. 5; PGC Sec. 32-172). Preliminary ESD volume: ${swm.imperviousSqFt} sq ft impervious (${swm.percentImpervious}% of the tract: ${layout.lots.length} lots × ${SWM.lotImperviousSqFt} sq ft, ${pavementSqFt.toFixed(0)} sq ft pavement, sidewalks), Rv = ${swm.rv}, P_E = ${SWM.rainfallTargetIn} in → ESDv = ${swm.esdvCf} cu ft; micro-bioretention at ${SWM.pondingDepthFt} ft × n ${SWM.voidRatio} → ${swm.footprintSqFt} sq ft of practice. ${swmRing.length ? `PARCEL A (${swmSqFt.toFixed(0)} sq ft) is reserved at the low corner of the tract (${relief ? `corner elevations ${relief.min}–${relief.max} ft ${contours!.verticalDatum}` : 'contours unavailable'}) for the practice, its forebay and access; it is not a building lot.` : 'No stormwater parcel is placed: county contours were not available to find the low corner.'} Hydrologic soil group(s) ${hsgs.length ? hsgs.join(', ') : 'unknown'} per USDA SSURGO ${soils?.areaSymbol ?? ''} — P_E is to be taken from Table 5.3 for the site's group and % impervious; the ${SWM.rainfallTargetIn} in used here is the Manual's floor. Rooftop disconnection and a 6-ft infiltration berm along the rear of each lot, as the 2023 layout sheet's legend shows, are credited at concept plan and reduce the parcel; infiltration feasibility depends on the Sec. 32-131 soils investigation. A stormwater management concept approval from DPIE precedes preliminary plan.`)
@@ -871,7 +944,8 @@ async function main() {
       perLot: ['rooftop disconnection (N-1)', '6-ft infiltration berm along the rear lot line (2023 sheet legend)'],
     },
     proposedStreets: [{
-      name: streetLabel,
+      name: streetLabel + (layout.roads.length > 1 ? ` AND ${layout.roads.filter(r => r.id !== 'main').map(r => r.id.toUpperCase()).join(', ')}` : ''),
+      branches: layout.roads.map(r => ({ name: r.id === 'main' ? streetLabel : r.id.toUpperCase(), rightOfWayFt: r.rightOfWayFt, pavementFt: r.pavementFt, lengthFt: Math.round(r.len), centreline: r.pts, culDeSac: !!r.bulb })),
       rightOfWayFt: STREET.rightOfWayFt, pavementFt: STREET.pavementFt,
       bulbRightOfWayRadiusFt: STREET.bulbRightOfWayRadiusFt, bulbPavementRadiusFt: STREET.bulbPavementRadiusFt,
       centreline: layout.centrelines[0], centrelines: layout.centrelines,

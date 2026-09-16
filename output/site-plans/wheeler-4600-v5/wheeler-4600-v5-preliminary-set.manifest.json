@@ -1,0 +1,318 @@
+{
+  "record": "PRELIMINARY SUBDIVISION CONCEPT v5 — 4600 WHEELER ROAD, OXON HILL — WAHALLA COURT AND STREET B",
+  "generatedAt": "2026-09-16",
+  "version": "v5",
+  "status": "PRELIMINARY — not a plat, not a boundary survey, not for recording",
+  "ownerOfRecord": {
+    "account": "1194943",
+    "ownerName": "ETHIOPIAN ORTHODOX TEWAHEDO CHURCH",
+    "careOf": null,
+    "acres": 5.303,
+    "landSqFt": 230986,
+    "plat": "A12-7298",
+    "lot": null,
+    "block": null,
+    "parcel": null,
+    "propertyDesc": "PARCEL A",
+    "liber": "48054",
+    "folio": "597",
+    "subdivision": "FOUR SEASONS NURSING HOME",
+    "taxMapGrid": "087D3",
+    "wsscGrid": "206SE02"
+  },
+  "asked": [
+    "use the 2023 'Wheeler Rd Subdivision Layout' sheet in existing site plans/",
+    "widen its 18-ft private alley to a street to serve the 6 homes",
+    "make a turnaround for one of the entries/exits (earlier: entrance on the east)"
+  ],
+  "answer": {
+    "wahallaCourt": "public street from Wheeler Road at the east tip (station 588 ft), 60' R/W / 26' pavement, one 45° bend (R 150 ft), ending in a cul-de-sac — the 2023 loop's west exit is replaced by this turnaround",
+    "streetB": "the 2023 alley widened to a 50' R/W / 26' pavement public street from Wheeler Road at the centre of the frontage, serving lots 1–6 (three each side) and ending in its own turnaround (lot 12) — it cannot reach Wahalla Court because PARCEL A (stormwater) holds the west tip and Wahalla Court's turnaround sits where the 2023 loop's north run would have continued",
+    "branches": [
+      {
+        "name": "STREET B",
+        "rightOfWayFt": 50,
+        "pavementFt": 26,
+        "lengthFt": 310,
+        "centreline": [
+          [
+            1318429.956803974,
+            422965.10089801403
+          ],
+          [
+            1318628.6323170532,
+            423203.4872346917
+          ]
+        ],
+        "culDeSac": true
+      },
+      {
+        "name": "WAHALLA COURT",
+        "rightOfWayFt": 60,
+        "pavementFt": 26,
+        "lengthFt": 284,
+        "centreline": [
+          [
+            1318657.2782811588,
+            422775.6470402847
+          ],
+          [
+            1318698.5163396494,
+            422825.12767100224
+          ],
+          [
+            1318708.580104454,
+            422838.68760414555
+          ],
+          [
+            1318717.0559937193,
+            422853.2927556358
+          ],
+          [
+            1318723.8365892428,
+            422868.758028774
+          ],
+          [
+            1318728.8359579307,
+            422884.88742620894
+          ],
+          [
+            1318731.9907408622,
+            422901.47653388674
+          ],
+          [
+            1318733.2609562604,
+            422918.31511166913
+          ],
+          [
+            1318732.6305061972,
+            422935.1897577872
+          ],
+          [
+            1318723.167126665,
+            423035.93250098446
+          ]
+        ],
+        "culDeSac": true
+      }
+    ],
+    "whyNotTheLoop": "The 2023 sheet's street looped along the north and east boundaries with two Wheeler entrances and the alley connecting into its east run. With one loop end finished as a turnaround and PARCEL A reserved at the low west corner, no searched geometry let the alley-street meet Wahalla Court on a straight run clear of its bend and bulb (rejections: T on a curve 206, near a curve 75, near the bulb 123, bulb on the main street 151, entrance spacing 204), so Street B ends in a turnaround instead. Two cul-de-sacs, both off Wheeler."
+  },
+  "propertyFacts": {
+    "parcelId": "366579",
+    "zone": "RSF-95",
+    "specialException": "SE-1796",
+    "gisAreaSqFt": 230995,
+    "recordedAcres": 5.115479,
+    "assessmentAcres": 5.303,
+    "platOfRecord": "A12-7298",
+    "frontage": {
+      "streetName": "WHEELER",
+      "lengthFt": 911.6450009241901
+    },
+    "existingStreet": {
+      "name": "WHEELER",
+      "masterPlanRightOfWayFt": 80,
+      "centrelineToParcelLineFt": 43.73537976213908,
+      "dedicationFt": 0,
+      "dedicationSqFt": 0
+    }
+  },
+  "standards": {
+    "minArea": 9500,
+    "minWidth": 75,
+    "minFrontage": 50,
+    "maxDensity": 4.58,
+    "frontYard": 25,
+    "sideYard": 8
+  },
+  "street": {
+    "basis": "Joseph Drive, Yocum Property Lots 1–19 — DPIE approvals 15927-2020-0 / 15919-2020-0",
+    "mainRightOfWayFt": 60,
+    "pavementFt": 26,
+    "curveRadiusFt": 150,
+    "curves": [
+      {
+        "id": "C1",
+        "radiusFt": 150,
+        "deltaDeg": 45.17,
+        "lengthFt": 118.27
+      }
+    ],
+    "dedicationSqFt": 43036,
+    "utilities": {
+      "water": {
+        "sizeIn": 8,
+        "offsetFt": -8,
+        "label": "PROP. 8\" WATER MAIN (WSSC) IN WAHALLA COURT",
+        "connectsTo": "EX. WSSC WATER MAIN IN WHEELER"
+      },
+      "sewer": {
+        "sizeIn": 8,
+        "offsetFt": 8,
+        "label": "PROP. 8\" SAN. SEWER (WSSC) IN WAHALLA COURT",
+        "connectsTo": "EX. WSSC SANITARY SEWER IN WHEELER"
+      },
+      "note": "Water and sewer for every lot are served from WAHALLA COURT. The subdivision's mains connect to the existing WSSC mains in WHEELER at the entrance and extend the length of WAHALLA COURT to the cul-de-sac. WSSC as-built size and location of the mains in WHEELER, and the sewer's depth and flow direction, are not read here and govern the connection."
+    },
+    "note": "60' R/W and 26' pavement per the approved Joseph Drive section (Yocum Property, DPIE 15927-2020-0). Bend radius 150' centreline and cul-de-sac radii (50' R/W, 40' pavement) are ASSUMED — that approval is a through street with R ≥ 343'. Confirm against PGC DPW&T Specifications and Standards."
+  },
+  "stormwater": {
+    "parcelA": {
+      "sqFt": 17206,
+      "where": "low west corner",
+      "streetFrontage": false
+    },
+    "esdvCf": 4841,
+    "practiceFootprintSqFt": 6051,
+    "percentImpervious": 22.4,
+    "hydrologicSoilGroups": []
+  },
+  "result": {
+    "lots": [
+      {
+        "lot": 1,
+        "fronts": "PROPOSED STREET (STREET B, LEFT SIDE)",
+        "backsOntoWheeler": true,
+        "sqFt": 9901,
+        "widthFt": 111.8,
+        "frontageFt": 111.8,
+        "conforming": true
+      },
+      {
+        "lot": 2,
+        "fronts": "PROPOSED STREET (STREET B, LEFT SIDE)",
+        "backsOntoWheeler": false,
+        "sqFt": 10094,
+        "widthFt": 80.8,
+        "frontageFt": 80.7,
+        "conforming": true
+      },
+      {
+        "lot": 3,
+        "fronts": "PROPOSED STREET (STREET B, LEFT SIDE)",
+        "backsOntoWheeler": false,
+        "sqFt": 10447,
+        "widthFt": 117.8,
+        "frontageFt": 126.8,
+        "conforming": true
+      },
+      {
+        "lot": 4,
+        "fronts": "PROPOSED STREET (STREET B, RIGHT SIDE)",
+        "backsOntoWheeler": true,
+        "sqFt": 10094,
+        "widthFt": 80.7,
+        "frontageFt": 80.7,
+        "conforming": true
+      },
+      {
+        "lot": 5,
+        "fronts": "PROPOSED STREET (STREET B, RIGHT SIDE)",
+        "backsOntoWheeler": false,
+        "sqFt": 9655,
+        "widthFt": 88.6,
+        "frontageFt": 88.6,
+        "conforming": true
+      },
+      {
+        "lot": 6,
+        "fronts": "PROPOSED STREET (STREET B, RIGHT SIDE)",
+        "backsOntoWheeler": false,
+        "sqFt": 14306,
+        "widthFt": 141.0,
+        "frontageFt": 155.0,
+        "conforming": true
+      },
+      {
+        "lot": 7,
+        "fronts": "PROPOSED STREET (ENTRANCE, LEFT SIDE)",
+        "backsOntoWheeler": true,
+        "sqFt": 9560,
+        "widthFt": 98.9,
+        "frontageFt": 100.3,
+        "conforming": true
+      },
+      {
+        "lot": 8,
+        "fronts": "PROPOSED STREET (LAST RUN, LEFT SIDE)",
+        "backsOntoWheeler": false,
+        "sqFt": 11476,
+        "widthFt": 158.2,
+        "frontageFt": 167.1,
+        "conforming": true
+      },
+      {
+        "lot": 9,
+        "fronts": "PROPOSED STREET (ENTRANCE, RIGHT SIDE)",
+        "backsOntoWheeler": true,
+        "sqFt": 20850,
+        "widthFt": 88.3,
+        "frontageFt": 76.7,
+        "conforming": true
+      },
+      {
+        "lot": 10,
+        "fronts": "PROPOSED STREET (CURVE C1, RIGHT SIDE)",
+        "backsOntoWheeler": false,
+        "sqFt": 25107,
+        "widthFt": 174.7,
+        "frontageFt": 91.9,
+        "conforming": true
+      },
+      {
+        "lot": 11,
+        "fronts": "PROPOSED STREET (LAST RUN, RIGHT SIDE)",
+        "backsOntoWheeler": false,
+        "sqFt": 10417,
+        "widthFt": 101.2,
+        "frontageFt": 107.6,
+        "conforming": true
+      },
+      {
+        "lot": 12,
+        "fronts": "PROPOSED STREET (STREET B CUL-DE-SAC)",
+        "backsOntoWheeler": false,
+        "sqFt": 11038,
+        "widthFt": 231.0,
+        "frontageFt": 157.0,
+        "conforming": true
+      },
+      {
+        "lot": 13,
+        "fronts": "PROPOSED STREET (CUL-DE-SAC)",
+        "backsOntoWheeler": false,
+        "sqFt": 16149,
+        "widthFt": 181.7,
+        "frontageFt": 115.2,
+        "conforming": true
+      }
+    ],
+    "conforming": 13,
+    "total": 13,
+    "netSqFt": 187959,
+    "densityCapGis": 19,
+    "densityCapRecorded": 18,
+    "leftoverSqFt": 1658
+  },
+  "outputs": {
+    "sheets": [
+      "C-001",
+      "L-100",
+      "C-400"
+    ],
+    "files": [
+      "wheeler-4600-v5-preliminary-set.pdf (ARCH E)",
+      "wheeler-4600-v5-preliminary-set.dxf",
+      "wheeler-4600-v5-preliminary-set.landxml.xml",
+      "wheeler-4600-v5.plat.json",
+      "wheeler-4600-v5-lot1..13.plat.json",
+      "wheeler-4600-v5.plat-record.json",
+      "wheeler-4600-v5.proposal.json"
+    ]
+  },
+  "method": {
+    "script": "propose-subdivision.ts --enter east --family l --street \"Wahalla Ct\" --side-street 0.42 --side-street-name \"Street B\" → SHEET=E generate-subdivision.ts",
+    "note": "multi-road lot cutting: side street's lots cut first (one tier, 150 ft), then the main street's; every road's R/W, bulb and near band respected by every lot"
+  }
+}

@@ -1,0 +1,58 @@
+{
+  "_source": "PRELIMINARY. Outer boundary from the Prince George's County parcel layer (PGAtlas Property/MapServer/15), compiled from tax maps — NOT a boundary survey and NOT a plat of record. Lot lines and streets are PROPOSED by Kealee. A Maryland licensed surveyor must establish the boundary before any plat is prepared.",
+  "address": "4600 WHEELER ROAD",
+  "reference": {
+    "subdivisionName": "4600 WHEELER ROAD — PRELIMINARY SUBDIVISION CONCEPT",
+    "recordedIn": "NONE — no plat of record; preliminary concept",
+    "lot": "9"
+  },
+  "basisOfBearings": "Maryland State Plane Coordinate System (NAD 83), from PGAtlas parcel geometry",
+  "pointOfBeginning": [
+    1318680.324,
+    422756.441
+  ],
+  "recordedAreaSqFt": 20850,
+  "programme": {
+    "totalFloorAreaSqFt": 2400,
+    "storeys": 2,
+    "hasBasement": false,
+    "garage": "attached_2_car",
+    "coveredPorch": true
+  },
+  "frontSetbackFt": 25,
+  "sideSetbackFt": 8,
+  "frontsOn": "PROPOSED STREET (ENTRANCE, RIGHT SIDE)",
+  "utilityMainLabel": "PROP. 8\" MAIN IN WAHALLA COURT",
+  "calls": [
+    {
+      "kind": "line",
+      "bearing": "S 50-11-30 E",
+      "distanceFt": 294,
+      "label": "proposed lot line (fronts PROPOSED STREET (ENTRANCE, RIGHT SIDE))"
+    },
+    {
+      "kind": "line",
+      "bearing": "N 05-22-00 W",
+      "distanceFt": 125.22,
+      "label": "proposed lot line 2"
+    },
+    {
+      "kind": "line",
+      "bearing": "N 53-25-07 W",
+      "distanceFt": 206.15,
+      "label": "proposed lot line 3"
+    },
+    {
+      "kind": "line",
+      "bearing": "S 36-34-42 W",
+      "distanceFt": 11.43,
+      "label": "proposed lot line 4"
+    },
+    {
+      "kind": "line",
+      "bearing": "S 39-48-32 W",
+      "distanceFt": 65.26,
+      "label": "proposed lot line 5"
+    }
+  ]
+}
