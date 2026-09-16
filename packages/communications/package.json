@@ -12,7 +12,7 @@
   "dependencies": {
     "@kealee/database": "workspace:*",
     "@react-email/components": "^0.0.25",
-    "ioredis": "^5.3.2",
+    "ioredis": "^6.0.0",
     "react": "^18.2.0",
     "resend": "^6.21.0",
     "twilio": "^5.0.0"
