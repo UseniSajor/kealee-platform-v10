@@ -2,13 +2,12 @@
  * GET /api/deliverables
  *
  * Returns the authenticated user's concept deliverables from
- * public_intake_leads (filtered by contact_email from the Supabase session).
+ * public_intake_leads (filtered by the signed-in Clerk email).
  * Uses service_role key to bypass RLS.
  */
 import { NextResponse } from 'next/server'
-import { createServerClient } from '@supabase/ssr'
 import { createClient } from '@supabase/supabase-js'
-import { cookies } from 'next/headers'
+import { getClerkUser } from '@kealee/auth'
 
 export const dynamic = 'force-dynamic'
 import {
@@ -26,26 +25,12 @@ export async function GET() {
     process.env.SUPABASE_SERVICE_ROLE_KEY!,
     { auth: { persistSession: false } }
   )
-  // ── Get authenticated user from session ─────────────────────────────────────
-  const cookieStore = cookies()
-  const supabaseSession = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll: () => cookieStore.getAll(),
-        setAll: () => {},
-      },
-    }
-  )
-
-  const { data: { session } } = await supabaseSession.auth.getSession()
-
-  if (!session?.user?.email) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const user = await getClerkUser()
+  if (!user?.email) {
+    return NextResponse.json({ error: 'Sign in to view your packages' }, { status: 401 })
   }
 
-  const userEmail = session.user.email
+  const userEmail = user.email
 
   // ── Query public_intake_leads by contact_email ──────────────────────────────
   const { data, error } = await supabaseAdmin

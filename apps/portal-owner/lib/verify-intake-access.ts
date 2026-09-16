@@ -1,6 +1,5 @@
-import { createServerClient } from '@supabase/ssr'
 import { createClient } from '@supabase/supabase-js'
-import { cookies } from 'next/headers'
+import { getClerkUser } from '@kealee/auth'
 
 const PAID_STATUSES = new Set(['paid', 'concept_ready', 'processing', 'delivered'])
 
@@ -8,21 +7,9 @@ export async function verifyIntakeAccessForSession(intakeId: string): Promise<
   | { ok: true; email: string }
   | { ok: false; status: number; error: string }
 > {
-  const cookieStore = cookies()
-  const supabaseSession = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll: () => cookieStore.getAll(),
-        setAll: () => {},
-      },
-    },
-  )
-
-  const { data: { session } } = await supabaseSession.auth.getSession()
-  if (!session?.user?.email) {
-    return { ok: false, status: 401, error: 'Authentication required' }
+  const user = await getClerkUser()
+  if (!user?.email) {
+    return { ok: false, status: 401, error: 'Sign in to continue' }
   }
 
   const supabaseAdmin = createClient(
@@ -42,15 +29,15 @@ export async function verifyIntakeAccessForSession(intakeId: string): Promise<
   }
 
   const contactEmail = (intake.contact_email as string | null)?.toLowerCase()
-  if (contactEmail && contactEmail !== session.user.email.toLowerCase()) {
-    return { ok: false, status: 403, error: 'Access denied' }
+  if (contactEmail && contactEmail !== user.email.toLowerCase()) {
+    return { ok: false, status: 404, error: 'This package is available from the account used to place the order' }
   }
 
   if (!PAID_STATUSES.has(intake.status as string)) {
-    return { ok: false, status: 402, error: 'Payment required' }
+    return { ok: false, status: 402, error: 'Complete checkout to open this package' }
   }
 
-  return { ok: true, email: session.user.email }
+  return { ok: true, email: user.email }
 }
 
 export async function loadIntakeForPdf(intakeId: string) {

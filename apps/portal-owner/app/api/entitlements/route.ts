@@ -2,29 +2,15 @@
  * GET /api/entitlements — apps + products for the signed-in user (Phase 3).
  */
 import { NextResponse } from 'next/server'
-import { createServerClient } from '@supabase/ssr'
 import { createClient } from '@supabase/supabase-js'
-import { cookies } from 'next/headers'
-import { entitlementsFromIntakePaths } from '@kealee/auth'
+import { entitlementsFromIntakePaths, getClerkUser } from '@kealee/auth'
 
 export const dynamic = 'force-dynamic'
 
 export async function GET() {
-  const cookieStore = cookies()
-  const supabaseSession = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll: () => cookieStore.getAll(),
-        setAll: () => {},
-      },
-    },
-  )
-
-  const { data: { user } } = await supabaseSession.auth.getUser()
+  const user = await getClerkUser()
   if (!user?.email) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    return NextResponse.json({ error: 'Sign in to continue' }, { status: 401 })
   }
 
   const admin = createClient(
@@ -44,7 +30,7 @@ export async function GET() {
 
   const rows = intakes ?? []
 
-  const role = (user.user_metadata?.role as string | undefined) ?? user.app_metadata?.role ?? 'homeowner'
+  const role = user.role ?? 'homeowner'
   const entitlements = entitlementsFromIntakePaths(
     rows.map((r) => ({
       id: r.id as string,

@@ -3,9 +3,8 @@
  * Returns next-step upsells + bundle for portal UI.
  */
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerClient } from '@supabase/ssr'
 import { createClient } from '@supabase/supabase-js'
-import { cookies } from 'next/headers'
+import { getClerkUser } from '@kealee/auth'
 import { getBuildPathUpsells } from '@kealee/core-rules'
 import { ownedProductsFromRows } from '@/lib/build-path-owned'
 
@@ -18,15 +17,9 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'intakeId and projectPath required' }, { status: 400 })
   }
 
-  const cookieStore = cookies()
-  const sessionClient = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    { cookies: { getAll: () => cookieStore.getAll(), setAll: () => {} } },
-  )
-  const { data: { user } } = await sessionClient.auth.getUser()
+  const user = await getClerkUser()
   if (!user?.email) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    return NextResponse.json({ error: 'Sign in to continue' }, { status: 401 })
   }
 
   const admin = createClient(

@@ -6,6 +6,7 @@
  */
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { getClerkUser } from '@kealee/auth'
 
 export const dynamic = 'force-dynamic'
 
@@ -25,15 +26,21 @@ export async function GET(
     return NextResponse.json({ error: 'Missing intakeId' }, { status: 400 })
   }
 
+  const user = await getClerkUser()
+  if (!user?.email) {
+    return NextResponse.json({ error: 'Sign in to view your package' }, { status: 401 })
+  }
+
   const supabaseAdmin = getSupabaseAdmin()
   const { data, error } = await supabaseAdmin
     .from('public_intake_leads')
     .select('*')
     .eq('id', intakeId)
+    .ilike('contact_email', user.email)
     .single()
 
   if (error || !data) {
-    return NextResponse.json({ error: 'Intake not found' }, { status: 404 })
+    return NextResponse.json({ error: 'Your package is available from the account used to place the order' }, { status: 404 })
   }
 
   // Also fetch service chain gate for contractor matching unlock status

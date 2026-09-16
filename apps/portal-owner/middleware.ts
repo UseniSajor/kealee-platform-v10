@@ -45,6 +45,7 @@ export const config = {
     '/concepts/:path*',
     '/deliverables/:path*', '/deliverables',
     '/services/:path*', '/services',
+    '/api/:path*',
     '/login/:path*', '/signup/:path*',
     '/auth/claim',
     '/auth/callback',
