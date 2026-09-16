@@ -69,7 +69,7 @@
     "@kealee/types": "workspace:*",
     "@kealee/workflow-engine": "workspace:*",
     "@prisma/client": "^5.22.0",
-    "@sendgrid/mail": "^7.7.0",
+    "@sendgrid/mail": "^8.1.6",
     "@sentry/node": "^10.49.0",
     "@supabase/supabase-js": "^2.112.3",
     "axios": "^1.6.7",
