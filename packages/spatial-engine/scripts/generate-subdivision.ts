@@ -257,6 +257,13 @@ async function main(): Promise<void> {
     reference: string; citation?: string; notes: string[]; legend?: string[]
     adjoiners?: { boundary: string; label: string; reference: string }[]
     platEasements?: { type: string; widthFt: number; along: string; note: string }[]
+    /** A street this concept proposes — drawn as R/W lines, pavement and centreline. */
+    proposedStreets?: {
+      name: string; rightOfWayFt: number; pavementFt: number
+      bulbRightOfWayRadiusFt?: number; bulbPavementRadiusFt?: number
+      centreline: Position[]; bulbCentre?: Position
+      rowRings: Position[][]; pavementRings: Position[][]; rowSqFt?: number; basis?: string; note?: string
+    }[]
     dedicationWidthFt?: number
     existingPavement?: { label: string; note: string }
     approvalsOfRecord?: { kind: string; number: string; confirmedBy: string; status: string }[]
@@ -2792,6 +2799,36 @@ async function main(): Promise<void> {
     !/(^|-)(sidewalk|verge|curb)$/.test(String(f.id)))
   merged.length = 0
   merged.push(...withoutPerLot, ...frontageFeats)
+
+  // A PROPOSED street, when the plat record carries one. Yocum's Joseph
+  // Drive is lettered along its centreline with its R/W width; the R/W is a
+  // pair of lines and the pavement a shaded band. The same here, with every
+  // piece labelled PROPOSED so nobody reads it as existing.
+  for (const [k, st] of (platRecord?.proposedStreets ?? []).entries()) {
+    for (const [j, ring] of st.rowRings.entries()) {
+      const closed: Position[] = [...ring, ring[0]]
+      merged.push({
+        kind: 'ProposedFeature', id: `prop-street-${k}-row-${j}`,
+        ring: { coordinates: closed },
+        attributes: { type: 'right-of-way', proposed: true,
+          label: j === 0 ? `PROPOSED ${st.name} (${st.rightOfWayFt}' WIDE R.O.W.)` : '' },
+      } as never)
+    }
+    for (const [j, ring] of st.pavementRings.entries()) {
+      const closed: Position[] = [...ring, ring[0]]
+      merged.push({
+        kind: 'Pavement', id: `prop-street-${k}-pave-${j}`,
+        ring: { coordinates: closed },
+        attributes: { label: j === 0 ? `PROPOSED BIT. CONC. PAVEMENT  ${st.pavementFt}' WIDE` : '', improvement: 'street', proposed: true },
+      } as never)
+    }
+    merged.push({
+      kind: 'ProposedFeature', id: `prop-street-${k}-cl`,
+      line: st.centreline,
+      attributes: { type: 'centerline', proposed: true, label: `PROP. ${st.name} — CENTERLINE` },
+    } as never)
+    console.log(`    proposed street ${st.name}: ${st.rightOfWayFt}' R/W, ${st.pavementFt}' pavement, ${st.rowSqFt?.toFixed(0) ?? '?'} sf dedication`)
+  }
 
   let twin: SiteTwin = {
     ...base,

@@ -4,14 +4,14 @@
   "reference": {
     "subdivisionName": "4600 WHEELER ROAD — PRELIMINARY SUBDIVISION CONCEPT",
     "recordedIn": "NONE — no plat of record; preliminary concept",
-    "lot": "3 (proposed)"
+    "lot": "12 (proposed)"
   },
   "basisOfBearings": "Maryland State Plane Coordinate System (NAD 83), from PGAtlas parcel geometry",
   "pointOfBeginning": [
-    1318611.8848979543,
-    423049.2806794279
+    1318715.0307000196,
+    423059.3372828029
   ],
-  "recordedAreaSqFt": 13307,
+  "recordedAreaSqFt": 12552,
   "programme": {
     "totalFloorAreaSqFt": 2400,
     "storeys": 2,
@@ -21,31 +21,37 @@
   },
   "frontSetbackFt": 25,
   "sideSetbackFt": 8,
-  "frontsOn": "WHEELER ROAD",
+  "frontsOn": "PROPOSED STREET (LEFT)",
   "calls": [
     {
       "kind": "line",
-      "bearing": "N 60-11-30 W",
-      "distanceFt": 77.47,
-      "label": "proposed lot line (fronts WHEELER ROAD)"
+      "bearing": "N 29-48-30 E",
+      "distanceFt": 172.99,
+      "label": "proposed lot line (fronts PROPOSED STREET (LEFT))"
     },
     {
       "kind": "line",
-      "bearing": "S 39-48-30 W",
-      "distanceFt": 167.69,
+      "bearing": "N 78-27-45 W",
+      "distanceFt": 71.85,
       "label": "proposed lot line 2"
     },
     {
       "kind": "line",
-      "bearing": "S 50-11-30 E",
-      "distanceFt": 76.29,
+      "bearing": "N 63-52-45 W",
+      "distanceFt": 10.13,
       "label": "proposed lot line 3"
     },
     {
       "kind": "line",
-      "bearing": "N 39-48-30 E",
-      "distanceFt": 181.14,
+      "bearing": "S 29-48-30 W",
+      "distanceFt": 149.82,
       "label": "proposed lot line 4"
+    },
+    {
+      "kind": "line",
+      "bearing": "S 60-11-30 E",
+      "distanceFt": 78.33,
+      "label": "proposed lot line 5"
     }
   ]
 }

@@ -1,5 +1,5 @@
 {
-  "_source": "PRELIMINARY. Outer boundary from the Prince George's County parcel layer (PGAtlas Property/MapServer/15), compiled from tax maps — NOT a boundary survey and NOT a plat of record. Lot lines are PROPOSED by Kealee. A Maryland licensed surveyor must establish the boundary before any plat is prepared.",
+  "_source": "PRELIMINARY. Outer boundary from the Prince George's County parcel layer (PGAtlas Property/MapServer/15), compiled from tax maps — NOT a boundary survey and NOT a plat of record. Lot lines and the street are PROPOSED by Kealee. A Maryland licensed surveyor must establish the boundary before any plat is prepared.",
   "address": "4600 WHEELER ROAD",
   "reference": {
     "subdivisionName": "4600 WHEELER ROAD — PRELIMINARY SUBDIVISION CONCEPT",
@@ -11,7 +11,7 @@
     1318205.8557298675,
     423151.87081318715
   ],
-  "recordedAreaSqFt": 230995,
+  "recordedAreaSqFt": 222830,
   "programme": {
     "totalFloorAreaSqFt": 2400,
     "storeys": 2,

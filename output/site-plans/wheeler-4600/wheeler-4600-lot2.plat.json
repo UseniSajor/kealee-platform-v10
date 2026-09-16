@@ -1,5 +1,5 @@
 {
-  "_source": "PRELIMINARY. Outer boundary from the Prince George's County parcel layer (PGAtlas Property/MapServer/15), compiled from tax maps — NOT a boundary survey and NOT a plat of record. Lot lines are PROPOSED by Kealee. A Maryland licensed surveyor must establish the boundary before any plat is prepared.",
+  "_source": "PRELIMINARY. Outer boundary from the Prince George's County parcel layer (PGAtlas Property/MapServer/15), compiled from tax maps — NOT a boundary survey and NOT a plat of record. Lot lines and the street are PROPOSED by Kealee. A Maryland licensed surveyor must establish the boundary before any plat is prepared.",
   "address": "4600 WHEELER ROAD",
   "reference": {
     "subdivisionName": "4600 WHEELER ROAD — PRELIMINARY SUBDIVISION CONCEPT",
@@ -8,10 +8,10 @@
   },
   "basisOfBearings": "Maryland State Plane Coordinate System (NAD 83), from PGAtlas parcel geometry",
   "pointOfBeginning": [
-    1318470.5658967353,
-    423113.50330689916
+    1318544.6640475628,
+    423087.79157567315
   ],
-  "recordedAreaSqFt": 10636,
+  "recordedAreaSqFt": 12280,
   "programme": {
     "totalFloorAreaSqFt": 2400,
     "storeys": 2,
@@ -21,29 +21,30 @@
   },
   "frontSetbackFt": 25,
   "sideSetbackFt": 8,
+  "frontsOn": "WHEELER ROAD",
   "calls": [
     {
       "kind": "line",
-      "bearing": "N 50-11-30 W",
-      "distanceFt": 75.97,
-      "label": "proposed lot line"
+      "bearing": "N 60-11-30 W",
+      "distanceFt": 77.47,
+      "label": "proposed lot line (fronts WHEELER ROAD)"
     },
     {
       "kind": "line",
       "bearing": "S 39-48-30 W",
-      "distanceFt": 140,
+      "distanceFt": 154.24,
       "label": "proposed lot line 2"
     },
     {
       "kind": "line",
       "bearing": "S 50-11-30 E",
-      "distanceFt": 75.97,
+      "distanceFt": 76.29,
       "label": "proposed lot line 3"
     },
     {
       "kind": "line",
       "bearing": "N 39-48-30 E",
-      "distanceFt": 140,
+      "distanceFt": 167.69,
       "label": "proposed lot line 4"
     }
   ]

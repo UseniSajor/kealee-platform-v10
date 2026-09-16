@@ -1,48 +1,199 @@
 {
-  "record": "PRELIMINARY SUBDIVISION CONCEPT — 4600 WHEELER ROAD, OXON HILL, PRINCE GEORGE'S COUNTY, MD",
+  "record": "PRELIMINARY SUBDIVISION CONCEPT \u2014 4600 WHEELER ROAD, OXON HILL, PRINCE GEORGE'S COUNTY, MD",
   "generatedAt": "2026-09-15",
-  "status": "PRELIMINARY — not a plat, not a boundary survey, not for recording",
-  "inputs": {
-    "address": "4600 Wheeler Rd",
-    "locator": { "matched": "4600 WHEELER ROAD", "score": 100, "endpoint": "gis.pgatlas.com Geocoders/Address" },
-    "parcel": { "propId": "366579", "areaSqFt": 230995, "acres": 5.303, "source": "PGAtlas Property/MapServer/15 — Level 1, compiled from tax maps", "verticesInRing": 7 },
-    "zone": { "code": "RSF-95", "source": "PGAtlas Zoning/MapServer/63" },
-    "municipality": { "incorporated": false, "source": "PGAtlas Administrative/MapServer/30" },
-    "frontage": { "street": "WHEELER", "lengthFt": 911.6, "source": "PGAtlas Transportation/MapServer/2 + parcel edge nearest the street point" },
-    "standards": {
-      "section": "27-4202 (RSF-95), certified dimensional table pg-dimensional-standards.generated.ts",
-      "minNetLotSqFt": 9500, "minLotWidthFt": 75, "minFrontageFt": 50, "maxDensityDuPerAc": 4.58,
-      "frontYardFt": 25, "sideYardFt": 8, "rearYardFt": 20, "maxCoveragePct": 30
-    },
-    "programmePerLot": { "totalFloorAreaSqFt": 2400, "storeys": 2, "hasBasement": false, "garage": "attached_2_car", "coveredPorch": true },
-    "proposal": "wheeler-4600.proposal.json",
-    "platSpecs": ["wheeler-4600.plat.json", "wheeler-4600-lot1.plat.json … wheeler-4600-lot10.plat.json"],
-    "platRecord": "wheeler-4600.plat-record.json"
+  "status": "PRELIMINARY \u2014 not a plat, not a boundary survey, not for recording",
+  "reference": {
+    "modelPlan": "Yocum Property Lots 1\u201319, Clinton (5th District) \u2014 Joseph Drive. DPIE approvals 15927-2020-0 (street construction, 20 sheets) and 15919-2020-0 (storm drain & site grading, 23 sheets), Design Engineering Inc., P.L. Arora P.E. 11101. Files in existing site plans/.",
+    "takenFromIt": [
+      "60' wide R.O.W.",
+      "26' pavement (reduced from 36' under that approval)",
+      "deep side lots run to the rear boundary",
+      "boxed LOT n / area SF labels",
+      "bearings on lot lines",
+      "dwelling boxes with SF/FF/B/G/HT",
+      "shaded driveways",
+      "index of drawings, curve table, legend, utility/miss-utility/stabilization notes, Sec. 23-128 info block, PE certification, DPIE approval box"
+    ],
+    "notTakenYet": [
+      "storm drain pipes/structures/schedules",
+      "street lighting & photometrics",
+      "soil borings",
+      "conservation easement / expanded buffer",
+      "match lines",
+      "spot elevations"
+    ]
   },
-  "method": {
-    "script": "packages/spatial-engine/scripts/propose-subdivision.ts → scripts/generate-subdivision.ts",
-    "lotting": "Strips perpendicular to the Wheeler Road frontage, 912 ft / 12 → 76.0 ft wide (≥ 75 min), uniform 140 ft depth (≥ 9,500 sf at 76 ft). End strips at the triangle's corners merged to reach the minimum area.",
-    "remainder": "Land behind the 140-ft lot band is Parcel A, not a lot: lots must front a public street (Sec. 24-128). Subdividing it needs an internal street and a major subdivision preliminary plan (Subtitle 24).",
-    "notDone": "Boundary survey; internal street design; SWM concept; forest conservation/tree canopy schedule; soils narrowed to parcel; water/sewer capacity."
+  "propertyFacts": {
+    "parcelId": "366579",
+    "zone": "RSF-95",
+    "specialException": "SE-1796",
+    "gisAreaSqFt": 230995,
+    "recordedAcres": 5.115479,
+    "recordedSqFt": 222830,
+    "discrepancy": "GIS polygon is 8,165 sf (3.66%) larger than the recorded acreage. Both reported; neither moved. A field survey resolves it.",
+    "frontage": {
+      "streetName": "WHEELER",
+      "lengthFt": 911.6450009241901
+    }
+  },
+  "standards": {
+    "minArea": 9500,
+    "minWidth": 75,
+    "minFrontage": 50,
+    "maxDensity": 4.58,
+    "frontYard": 25,
+    "sideYard": 8
+  },
+  "street": {
+    "basis": "Joseph Drive, Yocum Property Lots 1\u201319 \u2014 DPIE approvals 15927-2020-0 / 15919-2020-0",
+    "rightOfWayFt": 60,
+    "pavementFt": 26,
+    "bulbRightOfWayRadiusFt": 50,
+    "bulbPavementRadiusFt": 40,
+    "entersAtStationFt": 170,
+    "stemFt": 175,
+    "turnDeg": 80,
+    "leg2Ft": 340,
+    "dedicationSqFt": 34827,
+    "note": "60' R/W and 26' pavement per the approved Joseph Drive section (Yocum Property, DPIE 15927-2020-0). Cul-de-sac radii (50' R/W, 40' pavement) are ASSUMED \u2014 that approval has no cul-de-sac. Confirm against PGC DPW&T Specifications and Standards before preliminary plan submission."
+  },
+  "result": {
+    "lots": [
+      {
+        "lot": 1,
+        "fronts": "WHEELER ROAD",
+        "sqFt": 9536,
+        "widthFt": 115.0,
+        "frontageFt": 115.0,
+        "conforming": true
+      },
+      {
+        "lot": 2,
+        "fronts": "WHEELER ROAD",
+        "sqFt": 12280,
+        "widthFt": 76.3,
+        "frontageFt": 76.3,
+        "conforming": true
+      },
+      {
+        "lot": 3,
+        "fronts": "WHEELER ROAD",
+        "sqFt": 13307,
+        "widthFt": 76.3,
+        "frontageFt": 76.3,
+        "conforming": true
+      },
+      {
+        "lot": 4,
+        "fronts": "WHEELER ROAD",
+        "sqFt": 14333,
+        "widthFt": 76.3,
+        "frontageFt": 76.3,
+        "conforming": true
+      },
+      {
+        "lot": 5,
+        "fronts": "WHEELER ROAD",
+        "sqFt": 13375,
+        "widthFt": 76.3,
+        "frontageFt": 76.3,
+        "conforming": true
+      },
+      {
+        "lot": 6,
+        "fronts": "WHEELER ROAD",
+        "sqFt": 11063,
+        "widthFt": 76.3,
+        "frontageFt": 76.3,
+        "conforming": true
+      },
+      {
+        "lot": 7,
+        "fronts": "WHEELER ROAD",
+        "sqFt": 11063,
+        "widthFt": 76.3,
+        "frontageFt": 76.3,
+        "conforming": true
+      },
+      {
+        "lot": 8,
+        "fronts": "WHEELER ROAD",
+        "sqFt": 11063,
+        "widthFt": 76.3,
+        "frontageFt": 76.3,
+        "conforming": true
+      },
+      {
+        "lot": 9,
+        "fronts": "WHEELER ROAD",
+        "sqFt": 11548,
+        "widthFt": 152.6,
+        "frontageFt": 152.6,
+        "conforming": true
+      },
+      {
+        "lot": 10,
+        "fronts": "PROPOSED STREET (LEFT)",
+        "sqFt": 9719,
+        "widthFt": 78.3,
+        "frontageFt": 78.3,
+        "conforming": true
+      },
+      {
+        "lot": 11,
+        "fronts": "PROPOSED STREET (LEFT)",
+        "sqFt": 11538,
+        "widthFt": 78.3,
+        "frontageFt": 78.3,
+        "conforming": true
+      },
+      {
+        "lot": 12,
+        "fronts": "PROPOSED STREET (LEFT)",
+        "sqFt": 12552,
+        "widthFt": 78.3,
+        "frontageFt": 78.3,
+        "conforming": true
+      },
+      {
+        "lot": 13,
+        "fronts": "PROPOSED STREET (CUL-DE-SAC)",
+        "sqFt": 18244,
+        "widthFt": 168.4,
+        "frontageFt": 70.7,
+        "conforming": true
+      },
+      {
+        "lot": 14,
+        "fronts": "PROPOSED STREET (CUL-DE-SAC)",
+        "sqFt": 12991,
+        "widthFt": 252.7,
+        "frontageFt": 70.7,
+        "conforming": true
+      }
+    ],
+    "conforming": 14,
+    "total": 14,
+    "netSqFt": 196168,
+    "densityCapGis": 20,
+    "densityCapRecorded": 19,
+    "leftoverSqFt": 23557,
+    "whyNotTheCap": "The parcel is a triangle ~414 ft deep at most. A 145-ft frontage tier + 60-ft R/W + 120-ft tiers both sides of a new street needs ~445 ft, so the new street serves conforming lots on one side only. 1,060 street geometries (station, stem, turn \u221290\u2026+90\u00b0, length) were searched; 14 conforming 9,500-sf/75-ft lots is the most any of them fits. Reaching 19\u201320 would need smaller lots than RSF-95 allows, a second street, or terms of SE-1796 not read here."
   },
   "outputs": {
-    "lots": [
-      { "lot": 1, "widthFt": 151.9, "sqFt": 14617, "conforming": true },
-      { "lot": 2, "widthFt": 76.0, "sqFt": 10636, "conforming": true },
-      { "lot": 3, "widthFt": 76.0, "sqFt": 10636, "conforming": true },
-      { "lot": 4, "widthFt": 76.0, "sqFt": 10636, "conforming": true },
-      { "lot": 5, "widthFt": 76.0, "sqFt": 10636, "conforming": true },
-      { "lot": 6, "widthFt": 76.0, "sqFt": 10636, "conforming": true },
-      { "lot": 7, "widthFt": 76.0, "sqFt": 10636, "conforming": true },
-      { "lot": 8, "widthFt": 76.0, "sqFt": 10636, "conforming": true },
-      { "lot": 9, "widthFt": 76.0, "sqFt": 10636, "conforming": true },
-      { "lot": 10, "widthFt": 151.9, "sqFt": 11412, "conforming": true }
+    "sheets": [
+      "C-001 Site Development Plan",
+      "L-100 Landscape and Tree Canopy Plan",
+      "C-400 Grading and Drainage Plan"
     ],
-    "remainderSqFt": 119880,
-    "densityCapDu": 24,
-    "sheets": ["C-001 Site Development Plan", "L-100 Landscape and Tree Canopy Plan", "C-400 Grading and Drainage Plan"],
-    "files": ["wheeler-4600-preliminary-set.pdf", "wheeler-4600-preliminary-set.dxf", "wheeler-4600-preliminary-set.landxml.xml"],
-    "scale": "1\" = 100' — below the 1\" = 60' legibility floor because the whole 5.3-acre parcel is composed on one 30x42 sheet. Per-lot text collides in the middle band. Fix is a per-lot sheet series or match lines, not smaller text."
+    "files": [
+      "wheeler-4600-preliminary-set.pdf",
+      "wheeler-4600-preliminary-set.dxf",
+      "wheeler-4600-preliminary-set.landxml.xml"
+    ]
   },
-  "reviewedBy": "Claude Opus 5 (engine run), rendered to PNG and inspected: lot lines, BRLs, footprints, contours, adjoiners, soils table, site data present; title block PRELIMINARY; Porter exhibit removed; lot labels LOT n."
+  "method": {
+    "script": "packages/spatial-engine/scripts/propose-subdivision.ts \u2192 scripts/generate-subdivision.ts",
+    "search": "roadLayout() over station \u00d7 stem \u00d7 turn \u00d7 length; score = conforming\u00d71000 \u2212 leftover/1000 \u2212 nonconforming\u00d750 \u2212 dedication/5000"
+  }
 }
