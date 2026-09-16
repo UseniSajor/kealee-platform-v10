@@ -45,6 +45,28 @@ export const maxDuration = 300 // Claude + Replicate render jobs can take 60–1
 // (regenerations are allowed and return cached output).
 const PAID_INTAKE_STATUSES = new Set(['paid', 'concept_ready', 'processing', 'delivered'])
 
+function isCustomerProjectAsset(value: unknown): value is string {
+  if (typeof value !== 'string' || !/^https?:\/\//i.test(value)) return false
+  try {
+    return !new URL(value).hostname.endsWith('images.unsplash.com')
+  } catch {
+    return false
+  }
+}
+
+function hasDeliveryMedia(formData: Record<string, unknown>, output: ConceptOutput): boolean {
+  const attachments = typeof formData.attachments === 'string'
+    ? formData.attachments.split(',').map(value => value.trim()).filter(isCustomerProjectAsset)
+    : []
+  const beforeUrls = Array.isArray(output.beforeUrls)
+    ? output.beforeUrls.filter(isCustomerProjectAsset)
+    : []
+  const renderUrls = Array.isArray(output.renderUrls)
+    ? output.renderUrls.filter(isCustomerProjectAsset)
+    : []
+  return (attachments.length > 0 || beforeUrls.length > 0) && renderUrls.length > 0
+}
+
 function normalizeConceptTier(tier: number): ConceptTier {
   return (tier === 3 ? 3 : tier === 2 ? 2 : 1) as ConceptTier
 }
@@ -166,78 +188,13 @@ function splitDualRenderCounts(total: number): { interior: number; exterior: num
   return { interior, exterior }
 }
 
-const DUAL_SCOPE_DEV_STUBS: Record<string, { interior: string[]; exterior: string[] }> = {
-  addition_expansion: {
-    interior: [
-      'https://images.unsplash.com/photo-1600210492493-0946911123ea?w=1920&q=80',
-      'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=1920&q=80',
-      'https://images.unsplash.com/photo-1618219908412-a29a1bb7b86e?w=1920&q=80',
-    ],
-    exterior: [
-      'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1920&q=80',
-      'https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=1920&q=80',
-    ],
-  },
-  whole_home_remodel: {
-    interior: [
-      'https://images.unsplash.com/photo-1600210492493-0946911123ea?w=1920&q=80',
-      'https://images.unsplash.com/photo-1600566752734-2a0cd0e0da49?w=1920&q=80',
-      'https://images.unsplash.com/photo-1618219908412-a29a1bb7b86e?w=1920&q=80',
-      'https://images.unsplash.com/photo-1600489000022-c2086d79f9d4?w=1920&q=80',
-    ],
-    exterior: [
-      'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1920&q=80',
-      'https://images.unsplash.com/photo-1583608205776-bfd35f0d9f83?w=1920&q=80',
-      'https://images.unsplash.com/photo-1565182999561-18d7dc61c393?w=1920&q=80',
-    ],
-  },
-  whole_home_concept: {
-    interior: [
-      'https://images.unsplash.com/photo-1600210492493-0946911123ea?w=1920&q=80',
-      'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=1920&q=80',
-      'https://images.unsplash.com/photo-1618219908412-a29a1bb7b86e?w=1920&q=80',
-      'https://images.unsplash.com/photo-1600489000022-c2086d79f9d4?w=1920&q=80',
-    ],
-    exterior: [
-      'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1920&q=80',
-      'https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=1920&q=80',
-      'https://images.unsplash.com/photo-1583608205776-bfd35f0d9f83?w=1920&q=80',
-    ],
-  },
-}
-
-function getDualScopeDevStubs(projectPath: string, renderCount: number): {
-  interiorRenderUrls: string[]
-  exteriorRenderUrls: string[]
-  renderUrls: string[]
-} {
-  const pack = DUAL_SCOPE_DEV_STUBS[projectPath] ?? DUAL_SCOPE_DEV_STUBS.addition_expansion
-  const { interior, exterior } = splitDualRenderCounts(renderCount)
-  const interiorRenderUrls = pack.interior.slice(0, interior)
-  const exteriorRenderUrls = pack.exterior.slice(0, exterior)
-  return {
-    interiorRenderUrls,
-    exteriorRenderUrls,
-    renderUrls: [...interiorRenderUrls, ...exteriorRenderUrls],
-  }
-}
-
-/**
- * Minimal static fallbacks used when REPLICATE_API_TOKEN is not configured
- * (local dev / CI). Keeps the portal gallery visible without burning API credits.
- */
-const DEV_RENDER_STUBS = [
-  'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1920&q=80',
-  'https://images.unsplash.com/photo-1618219908412-a29a1bb7b86e?w=1920&q=80',
-  'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1920&q=80',
-]
 
 /**
  * Fire AI render jobs via Flux 1.1 Pro Ultra on Replicate (non-blocking).
  * Returns predictionIds for storage in form_data.renderJobs so the concept
  * portal can poll /api/concept/renders/[id] for real URLs as jobs complete.
  *
- * Falls back to DEV_RENDER_STUBS when REPLICATE_API_TOKEN is not configured.
+ * A missing provider is a production error. It must never become stock customer output.
  */
 interface ConceptRenderBundle {
   predictionIds: string[]
@@ -254,10 +211,12 @@ async function submitOneRenderJob(opts: {
   renderMode: 'realistic' | 'cinematic'
   inputImageUrl?: string
 }): Promise<string | null> {
-  const extra =
-    opts.scope === 'exterior'
-      ? 'exterior architectural photography, front elevation, curb appeal, residential street context, no interior view'
-      : undefined
+  const sourceAccuracy = opts.inputImageUrl
+    ? 'Edit the exact source property photo. Preserve camera viewpoint, perspective, building massing, roof geometry, openings, lot grade, fixed site features, and neighboring context. Do not substitute a different house or room.'
+    : ''
+  const extra = opts.scope === 'exterior'
+    ? `${sourceAccuracy} Exterior architectural renovation, front elevation, curb appeal, residential street context, no interior view.`
+    : `${sourceAccuracy} Interior renovation of the photographed space; preserve visible room geometry and opening locations.`
   const result = await generateImages({
     prompt: buildArchitecturalPrompt({
       style: opts.style.toLowerCase(),
@@ -266,7 +225,7 @@ async function submitOneRenderJob(opts: {
       extra,
     }),
     aspectRatio: '16:9',
-    inputImageUrl: opts.scope === 'interior' ? opts.inputImageUrl : undefined,
+    inputImageUrl: opts.inputImageUrl,
   })
   return result.predictionId
 }
@@ -281,25 +240,7 @@ async function fireConceptRenders(
   const dualScope = DUAL_SCOPE_PROJECT_PATHS.has(projectPath)
 
   if (!process.env.REPLICATE_API_TOKEN) {
-    if (dualScope) {
-      const stubs = getDualScopeDevStubs(projectPath, count)
-      return {
-        predictionIds: [],
-        renderJobScopes: [],
-        ...stubs,
-      }
-    }
-    const renderUrls = Array.from(
-      { length: count },
-      (_, i) => DEV_RENDER_STUBS[i % DEV_RENDER_STUBS.length],
-    )
-    return {
-      predictionIds: [],
-      renderJobScopes: [],
-      renderUrls,
-      interiorRenderUrls: [],
-      exteriorRenderUrls: [],
-    }
+    throw new Error('REPLICATE_API_TOKEN is required for customer concept renderings')
   }
 
   const modes = ['realistic', 'cinematic'] as const
@@ -476,14 +417,9 @@ function preferSelectedRender(renderUrls: string[], selectedRenderUrl?: string |
   ]
 }
 
-/** Initial renderUrls on concept JSON; async jobs replace via fireConceptRenders. */
-function getRenderUrls(projectPath: string, _tier: number): string[] {
-  const count = SERVICE_DELIVERABLES[projectPath]?.renderCount ?? 3
-  if (process.env.REPLICATE_API_TOKEN) return []
-  if (DUAL_SCOPE_PROJECT_PATHS.has(projectPath)) {
-    return getDualScopeDevStubs(projectPath, count).renderUrls
-  }
-  return Array.from({ length: count }, (_, i) => DEV_RENDER_STUBS[i % DEV_RENDER_STUBS.length])
+/** Customer-visible render arrays begin empty and contain generated project assets only. */
+function getRenderUrls(_projectPath: string, _tier: number): string[] {
+  return []
 }
 
 function applyRenderBundle(conceptOutput: ConceptOutput, bundle: ConceptRenderBundle): void {
@@ -970,7 +906,11 @@ export async function POST(req: NextRequest) {
       .filter((u) => u.length > 0 && /\.(jpe?g|png|webp|heic)/i.test(u))
 
     // Return cached concept if already generated
-    if (existingFormData.conceptOutput && (intake.status === 'concept_ready' || intake.status === 'delivered')) {
+    if (
+      existingFormData.conceptOutput &&
+      (intake.status === 'concept_ready' || intake.status === 'delivered') &&
+      hasDeliveryMedia(existingFormData, existingFormData.conceptOutput as ConceptOutput)
+    ) {
       const cachedRaw = existingFormData.conceptOutput as ConceptOutput & Record<string, unknown>
       const out = { ...cachedRaw }
       out.renderUrls = preferSelectedRender(out.renderUrls ?? [], existingFormData.selectedRenderUrl as string | undefined)
@@ -1191,17 +1131,22 @@ export async function POST(req: NextRequest) {
       tier,
     )
 
-    const pdfUrl = await generateAndAttachConceptPdf({
-      id: intakeId,
-      project_path: projectPath,
-      client_name: intake.client_name as string | null,
-      contact_email: intake.contact_email as string | null,
-      contact_phone: intake.contact_phone as string | null,
-      project_address: intake.project_address as string | null,
-      budget_range: intake.budget_range as string | null,
-      form_data: { ...existingFormData, conceptOutput },
-    })
-    if (pdfUrl) conceptOutput.pdfUrl = pdfUrl
+    let pdfUrl: string | null = null
+    const mediaReady = hasDeliveryMedia(existingFormData, conceptOutput)
+    if (mediaReady) {
+      pdfUrl = await generateAndAttachConceptPdf({
+        id: intakeId,
+        project_path: projectPath,
+        client_name: intake.client_name as string | null,
+        contact_email: intake.contact_email as string | null,
+        contact_phone: intake.contact_phone as string | null,
+        project_address: intake.project_address as string | null,
+        budget_range: intake.budget_range as string | null,
+        form_data: { ...existingFormData, conceptOutput },
+      })
+      if (pdfUrl) conceptOutput.pdfUrl = pdfUrl
+    }
+    const deliveryReady = mediaReady && Boolean(pdfUrl)
 
     // 3. Update intake record
     const { error: updateErr } = await supabase
@@ -1217,8 +1162,8 @@ export async function POST(req: NextRequest) {
           renderJobScopes,
           conceptGeneratedAt: new Date().toISOString(),
         },
-        // DB enum lacks 'concept_ready'; 'delivered' = generated-and-delivered
-        status: 'delivered',
+        // Never mark a paid package delivered until its source-linked render and PDF exist.
+        status: deliveryReady ? 'delivered' : 'processing',
       })
       .eq('id', intakeId)
 
@@ -1264,15 +1209,17 @@ export async function POST(req: NextRequest) {
 
     // Notify the customer that their concept is ready to view in the portal.
     // (Fire-and-forget so a slow Resend call never delays the API response.)
-    triggerConceptReadyEmail(appBaseUrl, {
-      intakeId,
-      projectPath,
-      intake: intake as Record<string, unknown>,
-      conceptOutput,
-      tier,
-    })
+    if (deliveryReady) {
+      triggerConceptReadyEmail(appBaseUrl, {
+        intakeId,
+        projectPath,
+        intake: intake as Record<string, unknown>,
+        conceptOutput,
+        tier,
+      })
+    }
 
-    return NextResponse.json({ conceptOutput })
+    return NextResponse.json({ conceptOutput, deliveryReady }, { status: deliveryReady ? 200 : 202 })
   } catch (err: any) {
     console.error('[concept/generate] error:', err?.message)
     // Return partial data rather than hard failure

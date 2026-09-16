@@ -254,15 +254,7 @@ async function executeDesignExecution(intakeData: any, metadata: any) {
     throw new Error(`Design agent returned ${response.status}`)
   } catch (err: any) {
     console.warn('[executeDesignExecution] Agent call failed:', err.message)
-    // Fallback to default response
-    return {
-      type: 'design',
-      success: true,
-      summary: 'Design concept generated based on your requirements',
-      estimatedCost: 50000,
-      nextStep: 'Review concept and discuss with architect',
-      cta: 'View Design Package',
-    }
+    throw new Error(`Design execution failed; customer delivery withheld: ${err.message}`)
   }
 }
 
@@ -302,6 +294,16 @@ async function executeConceptExecution(intakeData: any, metadata: any) {
   const { conceptEngineQueue } = await import('../queues/concept-engine.queue')
   const intakeId = intakeData?.id ?? metadata?.intakeId
   const projectPath = metadata?.projectType ?? intakeData?.projectType ?? intakeData?.project_path ?? 'kitchen_remodel'
+  const formData = intakeData?.formData ?? intakeData?.form_data ?? {}
+  const uploadedPhotos = Array.isArray(intakeData?.uploadedPhotos)
+    ? intakeData.uploadedPhotos
+    : typeof formData.attachments === 'string'
+      ? formData.attachments.split(',').map((value: string) => value.trim()).filter(Boolean)
+      : []
+
+  if (uploadedPhotos.length === 0) {
+    throw new Error('Concept execution requires at least one customer source image; delivery withheld')
+  }
 
   // Use generateFloorplan() which correctly sets jobType: 'generate_floorplan'
   // This starts the full concept engine chain: floorplan → package → architect review + renders
@@ -316,7 +318,7 @@ async function executeConceptExecution(intakeData: any, metadata: any) {
       budgetRange:    intakeData?.budgetRange ?? metadata?.budgetRange ?? 'under_50k',
       stylePreference: intakeData?.stylePreference ?? metadata?.stylePreference ?? 'modern',
       constraints:    intakeData?.constraints ?? [],
-      uploadedPhotos: intakeData?.uploadedPhotos ?? [],
+      uploadedPhotos,
       projectTitle:   intakeData?.projectTitle ?? intakeData?.clientName,
       projectDescription: intakeData?.message ?? intakeData?.projectScope,
     },

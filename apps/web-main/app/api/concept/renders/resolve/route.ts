@@ -20,6 +20,7 @@ import { generateImages, buildArchitecturalPrompt } from '@/lib/ai-image'
 import { archiveReplicateOutputs } from '@/lib/replicate-archive'
 import { SERVICE_DELIVERABLES } from '@/lib/service-deliverables'
 import { TIER_IMAGE_COUNT, resolveConceptTier } from '@kealee/core-rules'
+import { generateAndAttachConceptPdf } from '@/lib/concept-output-enrichment'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 300
@@ -151,6 +152,7 @@ async function resubmitRenders(
   projectPath: string,
   renderCount: number,
   style: string,
+  inputImageUrl: string,
 ): Promise<ResolvedBundle> {
   // 2.5s delay matches generate/route.ts — keeps Replicate rate limits safe
   // without causing timeouts for tier 3 (12 renders).
@@ -179,9 +181,10 @@ async function resubmitRenders(
   for (let i = 0; i < jobs.length; i++) {
     if (i > 0) await new Promise(r => setTimeout(r, DELAY_MS))
     try {
+      const accuracy = 'Edit the exact source property photo. Preserve camera viewpoint, perspective, building or room geometry, openings, fixed site features, and neighboring context. Do not substitute a different property.'
       const extra = jobs[i].scope === 'exterior'
-        ? 'exterior architectural photography, front elevation, curb appeal, residential street context, no interior view'
-        : undefined
+        ? `${accuracy} Exterior architectural renovation, front elevation, curb appeal, residential street context, no interior view.`
+        : `${accuracy} Interior renovation of the photographed space; preserve visible room geometry and opening locations.`
       const result = await generateImages({
         prompt: buildArchitecturalPrompt({
           style: style.toLowerCase(),
@@ -190,6 +193,7 @@ async function resubmitRenders(
           extra,
         }),
         aspectRatio: '16:9',
+        inputImageUrl,
       })
       if (result.predictionId) {
         newPredictionIds.push(result.predictionId)
@@ -235,6 +239,15 @@ export async function POST(req: NextRequest) {
   const conceptOutput = (formData.conceptOutput as Record<string, unknown>) ?? {}
   const existingRenderJobs = (formData.renderJobs as string[]) ?? []
   const existingRenderJobScopes = (formData.renderJobScopes as Array<'interior' | 'exterior'>) ?? []
+  const sourceImageUrl = typeof formData.attachments === 'string'
+    ? formData.attachments.split(',').map(value => value.trim()).find(value => /^https?:\/\//i.test(value))
+    : undefined
+  if (!sourceImageUrl) {
+    return NextResponse.json(
+      { error: 'A source property photo is required before concept renderings can be produced.' },
+      { status: 409 },
+    )
+  }
   const projectPath = intake.project_path as string
   const style = (conceptOutput.designConcept as Record<string, unknown>)?.style as string ?? 'modern contemporary'
   const deliverable = SERVICE_DELIVERABLES[projectPath]
@@ -255,7 +268,7 @@ export async function POST(req: NextRequest) {
     if (bundle.renderUrls.length === 0) {
       // All expired/failed — re-submit fresh jobs
       console.log(`[renders/resolve] All predictions expired for ${intakeId}; re-submitting ${renderCount} renders`)
-      const resubmitted = await resubmitRenders(projectPath, renderCount, style)
+      const resubmitted = await resubmitRenders(projectPath, renderCount, style, sourceImageUrl)
       finalPredictionIds = resubmitted.newPredictionIds ?? []
       finalRenderJobScopes = resubmitted.newRenderJobScopes ?? []
 
@@ -265,7 +278,7 @@ export async function POST(req: NextRequest) {
   } else {
     // No existing predictions — submit new ones
     console.log(`[renders/resolve] No stored renderJobs for ${intakeId}; submitting ${renderCount} renders`)
-    const resubmitted = await resubmitRenders(projectPath, renderCount, style)
+    const resubmitted = await resubmitRenders(projectPath, renderCount, style, sourceImageUrl)
     finalPredictionIds = resubmitted.newPredictionIds ?? []
     finalRenderJobScopes = resubmitted.newRenderJobScopes ?? []
     bundle = await pollPredictions(repl, finalPredictionIds, finalRenderJobScopes, 150_000)
@@ -286,16 +299,35 @@ export async function POST(req: NextRequest) {
     ...(bundle.exteriorRenderUrls.length > 0 && { exteriorRenderUrls: bundle.exteriorRenderUrls }),
   }
 
+  const outputWithSources = {
+    ...updatedConceptOutput,
+    beforeUrls: Array.isArray(updatedConceptOutput.beforeUrls)
+      ? updatedConceptOutput.beforeUrls
+      : [sourceImageUrl],
+  }
+  const pdfUrl = await generateAndAttachConceptPdf({
+    id: intakeId,
+    project_path: projectPath,
+    client_name: intake.client_name as string | null,
+    contact_email: intake.contact_email as string | null,
+    contact_phone: intake.contact_phone as string | null,
+    project_address: intake.project_address as string | null,
+    budget_range: intake.budget_range as string | null,
+    form_data: { ...formData, conceptOutput: outputWithSources },
+  })
+
+  const finalConceptOutput = { ...outputWithSources, ...(pdfUrl ? { pdfUrl } : {}) }
   const { error: updateErr } = await supabase
     .from('public_intake_leads')
     .update({
       form_data: {
         ...formData,
-        conceptOutput: updatedConceptOutput,
+        conceptOutput: finalConceptOutput,
         renderJobs: finalPredictionIds,
         renderJobScopes: finalRenderJobScopes,
         renderResolvedAt: new Date().toISOString(),
       },
+      status: pdfUrl ? 'delivered' : 'processing',
     })
     .eq('id', intakeId)
 

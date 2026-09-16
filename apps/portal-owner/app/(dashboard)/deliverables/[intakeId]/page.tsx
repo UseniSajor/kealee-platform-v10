@@ -33,75 +33,6 @@ import {
   type ConceptTier,
 } from '@kealee/core-rules'
 
-// ─── Render stubs ─────────────────────────────────────────────────────────────
-
-type RenderStubValue = string[] | { interior: string[]; exterior: string[] }
-const RENDER_STUBS: Record<string, RenderStubValue> = {
-  kitchen_remodel: [
-    'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=1920&q=80',
-    'https://images.unsplash.com/photo-1565538810643-b5bdb714032a?w=1920&q=80',
-    'https://images.unsplash.com/photo-1600489000022-c2086d79f9d4?w=1920&q=80',
-    'https://images.unsplash.com/photo-1600566752355-35792bedcfea?w=1920&q=80',
-    'https://images.unsplash.com/photo-1556909172-54557c7e4fb7?w=1920&q=80',
-    'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=1920&q=80',
-  ],
-  bathroom_remodel: [
-    'https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?w=1920&q=80',
-    'https://images.unsplash.com/photo-1507652313519-d4e9174996dd?w=1920&q=80',
-    'https://images.unsplash.com/photo-1600566752734-2a0cd0e0da49?w=1920&q=80',
-    'https://images.unsplash.com/photo-1584568694244-14fbdf83bd30?w=1920&q=80',
-    'https://images.unsplash.com/photo-1620626011761-996317702574?w=1920&q=80',
-    'https://images.unsplash.com/photo-1571902943202-507ec2618e8f?w=1920&q=80',
-  ],
-  exterior_concept: [
-    'https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=1920&q=80',
-    'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1920&q=80',
-    'https://images.unsplash.com/photo-1583608205776-bfd35f0d9f83?w=1920&q=80',
-  ],
-  addition_expansion: {
-    interior: [
-      'https://images.unsplash.com/photo-1600210492493-0946911123ea?w=1920&q=80',
-      'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=1920&q=80',
-      'https://images.unsplash.com/photo-1618219908412-a29a1bb7b86e?w=1920&q=80',
-    ],
-    exterior: [
-      'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1920&q=80',
-      'https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=1920&q=80',
-    ],
-  },
-  whole_home_remodel: {
-    interior: [
-      'https://images.unsplash.com/photo-1600210492493-0946911123ea?w=1920&q=80',
-      'https://images.unsplash.com/photo-1600566752734-2a0cd0e0da49?w=1920&q=80',
-      'https://images.unsplash.com/photo-1618219908412-a29a1bb7b86e?w=1920&q=80',
-      'https://images.unsplash.com/photo-1600489000022-c2086d79f9d4?w=1920&q=80',
-    ],
-    exterior: [
-      'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1920&q=80',
-      'https://images.unsplash.com/photo-1583608205776-bfd35f0d9f83?w=1920&q=80',
-      'https://images.unsplash.com/photo-1565182999561-18d7dc61c393?w=1920&q=80',
-    ],
-  },
-  whole_home_concept: {
-    interior: [
-      'https://images.unsplash.com/photo-1600210492493-0946911123ea?w=1920&q=80',
-      'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=1920&q=80',
-      'https://images.unsplash.com/photo-1618219908412-a29a1bb7b86e?w=1920&q=80',
-      'https://images.unsplash.com/photo-1600489000022-c2086d79f9d4?w=1920&q=80',
-    ],
-    exterior: [
-      'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1920&q=80',
-      'https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=1920&q=80',
-      'https://images.unsplash.com/photo-1583608205776-bfd35f0d9f83?w=1920&q=80',
-    ],
-  },
-  default: [
-    'https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1920&q=80',
-    'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=1920&q=80',
-    'https://images.unsplash.com/photo-1600210492493-0946911123ea?w=1920&q=80',
-  ],
-}
-
 // ─── Package config (mirrors web-main/lib/service-deliverables.ts) ────────────
 
 const TIER_NAMES: Record<number, string> = {
@@ -341,37 +272,6 @@ function getPackageDef(projectPath: string): PackageDef {
   }
 }
 
-const DUAL_SCOPE_PATHS = new Set(['addition_expansion', 'whole_home_remodel', 'whole_home_concept'])
-
-function getDualStubRenders(projectPath: string, tier: number): {
-  interiorRenderUrls: string[]
-  exteriorRenderUrls: string[]
-  renderUrls: string[]
-} {
-  const pack = RENDER_STUBS[projectPath] as { interior: string[]; exterior: string[] } | undefined
-  const interiorSrc = pack?.interior ?? (RENDER_STUBS.addition_expansion as { interior: string[] }).interior
-  const exteriorSrc = pack?.exterior ?? (RENDER_STUBS.addition_expansion as { exterior: string[] }).exterior
-  const interiorCount = tier >= 3 ? interiorSrc.length : tier >= 2 ? Math.min(3, interiorSrc.length) : 2
-  const exteriorCount = tier >= 3 ? exteriorSrc.length : tier >= 2 ? Math.min(2, exteriorSrc.length) : 2
-  const interiorRenderUrls = interiorSrc.slice(0, interiorCount)
-  const exteriorRenderUrls = exteriorSrc.slice(0, exteriorCount)
-  return {
-    interiorRenderUrls,
-    exteriorRenderUrls,
-    renderUrls: [...interiorRenderUrls, ...exteriorRenderUrls],
-  }
-}
-
-function getStubRenders(projectPath: string, tier: number): string[] {
-  if (DUAL_SCOPE_PATHS.has(projectPath)) {
-    return getDualStubRenders(projectPath, tier).renderUrls
-  }
-  const stubs = RENDER_STUBS[projectPath]
-  const list: string[] = Array.isArray(stubs) ? stubs : (RENDER_STUBS.default as string[])
-  const count = tier >= 3 ? list.length : tier === 2 ? Math.min(6, list.length) : 3
-  return list.slice(0, count)
-}
-
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 interface BOMItem {
@@ -394,6 +294,20 @@ interface PermitScope {
 interface NarrativeRoom {
   name: string
   description: string
+}
+
+function isCustomerProjectAsset(value: unknown): value is string {
+  if (typeof value !== 'string' || !/^https?:\/\//i.test(value)) return false
+  try {
+    return !new URL(value).hostname.endsWith('images.unsplash.com')
+  } catch {
+    return false
+  }
+}
+
+interface PropertyReview {
+  state: 'file_received' | 'record_found' | 'checking'
+  place: string
 }
 
 interface ConceptData {
@@ -473,6 +387,38 @@ interface ConceptData {
   v30Landscape?: ReturnType<typeof parseV30LandscapePackage>
   v30Floorplan?: ReturnType<typeof parseV30FloorplanDeliverables>
   v30LotContext?: { satelliteImageUrl?: string; googleEarthHint?: string } | null
+  propertyReview?: PropertyReview
+}
+
+function toRecord(value: unknown): Record<string, unknown> {
+  return value && typeof value === 'object' ? value as Record<string, unknown> : {}
+}
+
+function getPropertyReview(
+  formData: Record<string, unknown>,
+  address: string,
+): PropertyReview | undefined {
+  if (!address) return undefined
+
+  const site = toRecord(formData.siteIntelligence)
+  const jurisdiction = toRecord(site.jurisdiction)
+  const city = typeof jurisdiction.city === 'string' ? jurisdiction.city : ''
+  const county = typeof jurisdiction.county === 'string' ? jurisdiction.county : ''
+  const state = typeof jurisdiction.state === 'string' ? jurisdiction.state : ''
+  const locality = [city, county && county !== city ? county : '', state].filter(Boolean).join(', ')
+
+  const uploads = Array.isArray(formData.uploadedFileMeta)
+    ? formData.uploadedFileMeta.map(toRecord)
+    : []
+  const hasPropertyFile = uploads.some((file) => {
+    const name = String(file.name ?? file.fileName ?? '').toLowerCase()
+    return file.type === 'document' || /survey|plat|property plan|tax record/.test(name)
+  })
+
+  return {
+    state: hasPropertyFile ? 'file_received' : site.parcel ? 'record_found' : 'checking',
+    place: locality || address,
+  }
 }
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
@@ -856,24 +802,17 @@ export default function ConceptDeliverablePage() {
       // Bill of materials — v1 has bom array; v2 doesn't have BOM, show empty
       const billOfMaterials: BOMItem[] = bom.length > 0 ? bom : []
 
-      const dualStubs = DUAL_SCOPE_PATHS.has(projectPath) ? getDualStubRenders(projectPath, tier) : null
       const interiorFromOutput = Array.isArray(co.interiorRenderUrls)
-        ? (co.interiorRenderUrls as string[]).filter(Boolean)
+        ? (co.interiorRenderUrls as unknown[]).filter(isCustomerProjectAsset)
         : []
       const exteriorFromOutput = Array.isArray(co.exteriorRenderUrls)
-        ? (co.exteriorRenderUrls as string[]).filter(Boolean)
+        ? (co.exteriorRenderUrls as unknown[]).filter(isCustomerProjectAsset)
         : []
-      const interiorRenderUrls =
-        interiorFromOutput.length > 0
-          ? interiorFromOutput
-          : dualStubs?.interiorRenderUrls ?? []
-      const exteriorRenderUrls =
-        exteriorFromOutput.length > 0
-          ? exteriorFromOutput
-          : dualStubs?.exteriorRenderUrls ?? []
-      const renderUrls = Array.isArray(co.renderUrls) && (co.renderUrls as string[]).length > 0
-        ? co.renderUrls as string[]
-        : dualStubs?.renderUrls ?? getStubRenders(projectPath, tier)
+      const interiorRenderUrls = interiorFromOutput
+      const exteriorRenderUrls = exteriorFromOutput
+      const renderUrls = Array.isArray(co.renderUrls)
+        ? (co.renderUrls as unknown[]).filter(isCustomerProjectAsset)
+        : []
 
       // Use generated using AI tools video (Sora 2 / Veo 3.1 / Kling 2.5) once completed.
       // While the video is being produced, videoUrl is undefined and the portal
@@ -945,6 +884,7 @@ export default function ConceptDeliverablePage() {
         v30Landscape:    parseV30LandscapePackage(formData),
         v30Floorplan:    parseV30FloorplanDeliverables(formData),
         v30LotContext:   (formData.v30LotContext as ConceptData['v30LotContext']) ?? null,
+        propertyReview:  getPropertyReview(formData, (intake.project_address as string) ?? ''),
         floorplanSvg,
         scope:           scopeDescription,
         budget:          typeof intake.budget_range === 'number' ? intake.budget_range : 0,
@@ -1135,9 +1075,9 @@ export default function ConceptDeliverablePage() {
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
         <div className="text-center max-w-md">
-          <p className="text-slate-700 font-semibold mb-2">Concept not ready yet</p>
+          <p className="text-slate-700 font-semibold mb-2">We&apos;re finishing your concept</p>
           <p className="text-slate-500 text-sm mb-4">
-            Your package is still being generated. Check back in a few minutes or contact support.
+            Your order is saved and Kealee is completing the final details. Check back in a few minutes.
           </p>
           <Link href="/deliverables"
             className="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-medium text-white"
@@ -1277,6 +1217,47 @@ export default function ConceptDeliverablePage() {
       </div>
 
       <div className="space-y-6">
+
+        {data.propertyReview && (
+          <section className="overflow-hidden rounded-2xl border border-[#2ABFBF]/25 bg-gradient-to-br from-[#F1FCFC] to-white">
+            <div className="flex flex-col gap-4 px-6 py-5 sm:flex-row sm:items-center">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#2ABFBF]/10">
+                {data.propertyReview.state === 'checking'
+                  ? <MapPin className="h-5 w-5 text-[#1A8F8F]" />
+                  : <ShieldCheck className="h-5 w-5 text-[#1A8F8F]" />}
+              </div>
+              <div className="min-w-0 flex-1">
+                <h2 className="text-base font-bold text-[#1A2B4A]">
+                  {data.propertyReview.state === 'file_received'
+                    ? 'Your property file is included'
+                    : data.propertyReview.state === 'record_found'
+                      ? 'We found the property record'
+                      : 'Kealee is checking the property records'}
+                </h2>
+                <p className="mt-1 text-sm leading-relaxed text-slate-600">
+                  {data.propertyReview.state === 'file_received'
+                    ? 'We’ll use the survey or property plan you sent as we review the next steps for your project.'
+                    : data.propertyReview.state === 'record_found'
+                      ? `We found a public property outline for ${data.propertyReview.place}. Kealee will confirm it before it is used for permit or construction work.`
+                      : `We found your address in ${data.propertyReview.place}. Kealee will check for the parcel record and any available recorded property plan. You do not need to upload anything now.`}
+                </p>
+              </div>
+              {data.propertyReview.state === 'checking' && (
+                <Link
+                  href="/documents"
+                  className="shrink-0 text-sm font-semibold text-[#1A8F8F] hover:text-[#147575]"
+                >
+                  Add a survey if you have one →
+                </Link>
+              )}
+            </div>
+            {data.propertyReview.state === 'checking' && (
+              <p className="border-t border-[#2ABFBF]/15 px-6 py-3 text-xs text-slate-500">
+                A survey or property plan can help, but it is optional for this concept package.
+              </p>
+            )}
+          </section>
+        )}
 
         {/* ── What's In Your Package ───────────────────────────────────────── */}
         <section className="rounded-2xl bg-white overflow-hidden"
@@ -1504,15 +1485,14 @@ export default function ConceptDeliverablePage() {
         {data.tier >= 2 && !data.videoUrl && (
           <section className="space-y-4">
             {data.conceptVideoStatus === 'failed' ? (
-              /* Video failed — offer retry */
-              <div className="rounded-2xl overflow-hidden border border-red-200 bg-red-50">
+              <div className="rounded-2xl overflow-hidden border border-[#2ABFBF]/25 bg-[#F1FCFC]">
                 <div className="px-6 py-5 sm:px-8 flex flex-col sm:flex-row sm:items-center gap-4">
-                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-red-100">
-                    <Video className="h-5 w-5 text-red-600" />
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#2ABFBF]/10">
+                    <Video className="h-5 w-5 text-[#1A8F8F]" />
                   </div>
                   <div className="flex-1">
-                    <p className="text-sm font-bold text-red-900 mb-0.5">Video generation failed</p>
-                    <p className="text-sm text-red-700">The AI video job encountered an error. Retry to regenerate.</p>
+                    <p className="text-sm font-bold text-[#1A2B4A] mb-0.5">Your concept is ready; we&apos;re finishing the video</p>
+                    <p className="text-sm text-slate-600">Start the video again here while the rest of your package stays available.</p>
                   </div>
                   <button
                     onClick={() => {
@@ -1523,8 +1503,8 @@ export default function ConceptDeliverablePage() {
                         body: JSON.stringify({ intakeId }),
                       }).then(() => fetchData()).catch(() => {})
                     }}
-                    className="shrink-0 rounded-xl bg-red-600 hover:bg-red-700 transition-colors px-4 py-2.5 text-sm font-semibold text-white">
-                    Retry Video →
+                    className="shrink-0 rounded-xl bg-[#1A8F8F] hover:bg-[#147575] transition-colors px-4 py-2.5 text-sm font-semibold text-white">
+                    Continue Video →
                   </button>
                 </div>
               </div>
@@ -1838,10 +1818,10 @@ export default function ConceptDeliverablePage() {
                   color: data.buildabilityFlag === 'feasible' ? '#276749' : data.buildabilityFlag === 'feasible-with-variance' ? '#744210' : '#9B2C2C',
                 }}>
                   {data.buildabilityFlag === 'feasible'
-                    ? 'Buildable — no special approvals needed'
+                    ? 'Ready for the next planning step'
                     : data.buildabilityFlag === 'feasible-with-variance'
-                      ? 'Feasible with zoning variance'
-                      : 'Challenging — additional review required'}
+                      ? 'Kealee will review the local approval options'
+                      : 'Kealee recommends an additional project review'}
                 </p>
               </div>
 
@@ -1876,7 +1856,7 @@ export default function ConceptDeliverablePage() {
                         <div className="mt-3 flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">
                           <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5 text-amber-600" />
                           <p className="text-sm text-amber-800">
-                            <span className="font-semibold">PE stamp required.</span> Your design professional will coordinate licensed engineer stamping — included in your design plan package.
+                            <span className="font-semibold">Engineer review is included in the next plan step.</span> Your Kealee design professional will coordinate the signed drawings.
                           </p>
                         </div>
                       )}
@@ -2090,15 +2070,22 @@ export default function ConceptDeliverablePage() {
 
         {/* ── Download / Share ─────────────────────────────────────────────── */}
         <div className="flex flex-wrap gap-3 pb-8">
-          <a
-            href={data.pdfUrl ?? `/api/concept/${intakeId}/pdf`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-2 rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
-          >
-            <Download className="h-4 w-4" />
-            Download Concept PDF
-          </a>
+          {data.pdfUrl ? (
+            <a
+              href={`/api/concept/${intakeId}/pdf`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+            >
+              <Download className="h-4 w-4" />
+              Download Concept PDF
+            </a>
+          ) : (
+            <span className="flex items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-2.5 text-sm font-medium text-amber-800">
+              <Clock className="h-4 w-4" />
+              PDF quality review in progress
+            </span>
+          )}
           {data.contractorMatchingUnlocked ? (
             <button
               onClick={() => {

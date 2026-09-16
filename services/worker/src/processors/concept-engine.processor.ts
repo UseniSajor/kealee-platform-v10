@@ -181,6 +181,9 @@ async function processGenerateConceptPackage(
     const { renderConceptPdf } = await import('@kealee/concept-engine');
     const { uploadFile } = await import('@kealee/storage');
     const pdfBuffer = await renderConceptPdf({ homeownerDeliverables: result.packageJson });
+    if (pdfBuffer.subarray(0, 5).toString('ascii') !== '%PDF-') {
+      throw new Error('Generated concept package failed PDF signature validation');
+    }
     const pdfUpload = await uploadFile({
       bucket: 'designs',
       path: `concept-packages/${intakeId}/concept-package.pdf`,
@@ -190,7 +193,7 @@ async function processGenerateConceptPackage(
     pdfUrl = pdfUpload.url;
     console.log(`[concept-engine] PDF uploaded: ${pdfUrl}`);
   } catch (pdfErr) {
-    console.warn('[concept-engine] PDF generation/upload failed (non-fatal):', pdfErr);
+    throw new Error(`Concept PDF generation/upload failed; delivery withheld: ${(pdfErr as Error)?.message ?? pdfErr}`);
   }
 
   await job.updateProgress(82);
@@ -198,15 +201,25 @@ async function processGenerateConceptPackage(
   // Generate AI concept renders via Flux 1.1 Pro Ultra on Replicate
   let renderImageUrls: string[] = [];
   try {
+    const sourcePhotos = Array.isArray((intake as any)?.uploadedPhotos)
+      ? (intake as any).uploadedPhotos.filter((value: unknown): value is string => typeof value === 'string' && /^https?:\/\//i.test(value))
+      : [];
+    if (sourcePhotos.length === 0) {
+      throw new Error('Customer source photo is required for concept rendering');
+    }
     renderImageUrls = await generateConceptRenders({
       title:          (intake as any)?.projectTitle ?? (intake as any)?.address ?? intakeId,
       description:    (intake as any)?.projectDescription ?? (intake as any)?.message,
       styleDirection: (intake as any)?.stylePreference,
       projectType:    String(projectPath ?? ''),
+      sourceImageUrl:  sourcePhotos[0],
     });
+    if (renderImageUrls.length === 0) {
+      throw new Error('No durable source-linked concept render was produced');
+    }
     console.log(`[concept-engine] Generated ${renderImageUrls.length} concept renders for intake ${intakeId}`);
   } catch (renderErr: any) {
-    console.warn('[concept-engine] Concept image generation failed (non-fatal):', renderErr?.message);
+    throw new Error(`Concept image generation failed; delivery withheld: ${renderErr?.message ?? renderErr}`);
   }
 
   await job.updateProgress(88);
@@ -464,6 +477,7 @@ interface ConceptRenderInput {
   description?: string
   styleDirection?: string
   projectType?: string
+  sourceImageUrl: string
 }
 
 /**
@@ -484,8 +498,7 @@ interface ReplicatePrediction {
 async function generateConceptRenders(input: ConceptRenderInput): Promise<string[]> {
   const token = process.env.REPLICATE_API_TOKEN;
   if (!token) {
-    console.warn('[concept-engine] REPLICATE_API_TOKEN not set — skipping renders');
-    return [];
+    throw new Error('REPLICATE_API_TOKEN not set; customer delivery withheld');
   }
 
   const exteriorTypes = ['exterior_renovation', 'adu', 'new_construction', 'addition'];
@@ -511,6 +524,7 @@ async function generateConceptRenders(input: ConceptRenderInput): Promise<string
           body: JSON.stringify({
             input: {
               prompt,
+              image_prompt: input.sourceImageUrl,
               aspect_ratio: '16:9',
               output_format: 'jpg',
               output_quality: 95,
@@ -543,9 +557,8 @@ async function generateConceptRenders(input: ConceptRenderInput): Promise<string
 
       if (prediction.status === 'succeeded' && prediction.output) {
         const outputs = Array.isArray(prediction.output) ? prediction.output : [prediction.output];
-        const url = outputs[0];
-        const { archiveReplicateOutputsFireAndForget } = await import('@kealee/storage');
-        archiveReplicateOutputsFireAndForget({
+        const { archiveReplicateOutputs } = await import('@kealee/storage');
+        const archived = await archiveReplicateOutputs({
           predictionId: prediction.id,
           source: 'worker-concept-engine',
           mediaKind: 'image',
@@ -553,8 +566,10 @@ async function generateConceptRenders(input: ConceptRenderInput): Promise<string
           model: 'black-forest-labs/flux-1.1-pro-ultra',
           context: { renderType: type, projectType: input.projectType },
         });
-        imageUrls.push(url);
-        console.log(`[concept-engine] ${type} render ready: ${url}`);
+        const durableUrl = archived?.assets[0]?.publicUrl;
+        if (!durableUrl) throw new Error('Render archival did not return a durable URL');
+        imageUrls.push(durableUrl);
+        console.log(`[concept-engine] ${type} render archived for intake`);
       } else {
         console.warn(`[concept-engine] ${type} render failed:`, prediction.error);
       }
@@ -570,6 +585,7 @@ function buildConceptPrompt(input: ConceptRenderInput, type: 'interior' | 'exter
   const parts = [
     `Photorealistic architectural ${type} rendering, professional photography, natural daylight, 8K resolution`,
     `Project: "${input.title}"`,
+    'Edit the exact customer source photo; preserve camera viewpoint, perspective, building or room geometry, roofline, openings, fixed site features, lot grade, and neighboring context; do not substitute another property',
   ];
   if (input.description) parts.push(input.description);
   if (input.styleDirection) parts.push(`Style: ${input.styleDirection}`);

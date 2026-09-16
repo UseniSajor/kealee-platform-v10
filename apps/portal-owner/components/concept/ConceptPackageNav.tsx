@@ -17,7 +17,7 @@ interface Props {
 }
 
 export function ConceptPackageNav({ visibleSectionIds, intakeId, pdfUrl, packageLabel }: Props) {
-  const pdfHref = intakeId ? `/api/concept/${intakeId}/pdf` : pdfUrl ?? null
+  const pdfHref = pdfUrl ? (intakeId ? `/api/concept/${intakeId}/pdf` : pdfUrl) : null
   const [activeId, setActiveId] = useState<string>(visibleSectionIds[0] ?? 'package-overview')
 
   const sections = CONCEPT_PACKAGE_SECTIONS.filter((s) => visibleSectionIds.includes(s.id))

@@ -27,6 +27,11 @@ export interface ConceptPdfInput {
 
 export type ConceptPdfResult = Buffer
 
+interface PdfVisualAsset {
+  label: string
+  buffer: Uint8Array
+}
+
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
 function safeTruncate(str: string, max: number): string {
@@ -298,11 +303,24 @@ function drawPermitPage(doc: any, data: HomeownerDeliverables): void {
 
 // ── Page 6: Visual Direction ──────────────────────────────────────────────────
 
-function drawVisualsPage(doc: any, data: HomeownerDeliverables): void {
-  sectionHeader(doc, 'Visual Direction')
+function drawVisualsPage(doc: any, data: HomeownerDeliverables, assets: PdfVisualAsset[]): void {
+  sectionHeader(doc, 'Property Visuals')
 
   const visuals = data.visuals
-  if (!visuals) { doc.text('Visual prompts not yet generated.'); return }
+  if (!visuals) { doc.text('Property visuals not yet generated.'); return }
+
+  for (const asset of assets) {
+    if (doc.y > 430) {
+      doc.addPage()
+      sectionHeader(doc, 'Property Visuals (continued)')
+    }
+    doc.fontSize(10).fillColor('#0f172a').font('Helvetica-Bold').text(asset.label)
+    doc.moveDown(0.25)
+    const imageY = doc.y
+    doc.image(asset.buffer, 50, imageY, { fit: [495, 260], align: 'center', valign: 'center' })
+    doc.y = imageY + 270
+    doc.moveDown(0.4)
+  }
 
   if (visuals.styleKeywords?.length) {
     twoCol(doc, 'Style keywords:', visuals.styleKeywords.join(', '))
@@ -320,11 +338,12 @@ function drawVisualsPage(doc: any, data: HomeownerDeliverables): void {
     twoCol(doc, 'Camera guidance:', visuals.cameraGuidance)
   }
 
-  if (visuals.midjourneyPrompts?.length) {
+  const writtenPrompts = (visuals.midjourneyPrompts ?? []).filter(value => !/^https?:\/\//i.test(value))
+  if (writtenPrompts.length) {
     doc.moveDown(0.5)
     doc.fontSize(10).fillColor('#0f172a').font('Helvetica-Bold').text('AI Visual Prompts (Midjourney)')
     doc.moveDown(0.25)
-    for (const prompt of visuals.midjourneyPrompts.slice(0, 4)) {
+    for (const prompt of writtenPrompts.slice(0, 4)) {
       if (doc.y > 680) break
       doc.rect(50, doc.y, 495, 1).fill('#e2e8f0')
       doc.moveDown(0.15)
@@ -381,6 +400,25 @@ export async function renderConceptPdf(input: ConceptPdfInput): Promise<ConceptP
   // Dynamic import — pdfkit lives in the worker, not in this package
   const PDFDocument = (await import('pdfkit' as any)).default ?? (await import('pdfkit' as any))
 
+  const visuals = input.homeownerDeliverables.visuals
+  const visualSources = [
+    ...(visuals?.stableDiffusionPrompts ?? []).filter(value => /^https?:\/\//i.test(value)).map(url => ({ label: 'Existing condition — customer source', url })),
+    ...(visuals?.midjourneyPrompts ?? []).filter(value => /^https?:\/\//i.test(value)).map((url, index) => ({ label: `Design concept ${index + 1}`, url })),
+  ].slice(0, 6)
+  const loadedVisualAssets = await Promise.all(visualSources.map(async source => {
+    try {
+      const response = await fetch(source.url)
+      const contentType = response.headers.get('content-type') ?? ''
+      if (!response.ok || !contentType.toLowerCase().startsWith('image/')) return null
+      return { label: source.label, buffer: Buffer.from(await response.arrayBuffer()) }
+    } catch {
+      return null
+    }
+  }))
+  const visualAssets: PdfVisualAsset[] = loadedVisualAssets.filter(
+    (asset): asset is NonNullable<typeof asset> => asset !== null,
+  )
+
   return new Promise<Buffer>((resolve, reject) => {
     const doc = new PDFDocument({
       margin: 50,
@@ -420,7 +458,7 @@ export async function renderConceptPdf(input: ConceptPdfInput): Promise<ConceptP
 
     // Page 6: Visuals
     doc.addPage()
-    drawVisualsPage(doc, d)
+    drawVisualsPage(doc, d, visualAssets)
 
     // Page 7: Next Steps
     doc.addPage()

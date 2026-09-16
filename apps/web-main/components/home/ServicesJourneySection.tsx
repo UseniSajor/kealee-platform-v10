@@ -1,8 +1,8 @@
 'use client'
 
 import Link from 'next/link'
-import { useEffect, useRef } from 'react'
-import { ArrowRight, Calculator, FileCheck2, Hammer, Landmark, Map, Palette, ShieldCheck, Sparkles } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
+import { ArrowRight, Calculator, ChevronLeft, ChevronRight, FileCheck2, Hammer, Landmark, Map, Palette, ShieldCheck, Sparkles } from 'lucide-react'
 import type { HomeJourneyService, HomeServiceId } from './home-services-data'
 import { trackEvent } from '@/lib/analytics'
 
@@ -15,30 +15,49 @@ const ICONS: Record<HomeServiceId, typeof Map> = {
   escrow: Landmark,
 }
 
+const HERO_MEDIA = [
+  { src: '/media/hero-videos/hero-new-construction.mp4', poster: '/media/hero-videos/hero-new-construction.jpg', label: 'New home construction' },
+  { src: '/media/hero-videos/hero-kitchen.mp4', poster: '/media/hero-videos/hero-kitchen.jpg', label: 'Kitchen transformation' },
+  { src: '/media/hero-videos/hero-addition.mp4', poster: '/media/hero-videos/hero-addition.jpg', label: 'Home addition' },
+  { src: '/media/hero-videos/hero-facade-transformation.mp4', poster: '/media/hero-videos/hero-facade-transformation.jpg', label: 'Exterior transformation' },
+  { src: '/media/hero-videos/hero-interior-renovation.mp4', poster: '/media/hero-videos/hero-interior-renovation.jpg', label: 'Interior renovation' },
+  { src: '/media/hero-videos/hero-landscaping.mp4', poster: '/media/hero-videos/hero-landscaping.jpg', label: 'Landscape design' },
+] as const
+
 export function ServicesJourneySection({ services }: { services: HomeJourneyService[] }) {
   const videoRef = useRef<HTMLVideoElement>(null)
+  const [activeHero, setActiveHero] = useState(0)
+  const hero = HERO_MEDIA[activeHero]
 
   useEffect(() => {
-    videoRef.current?.play().catch(() => undefined)
-  }, [])
+    if (!videoRef.current) return
+    videoRef.current.currentTime = 0
+    videoRef.current.play().catch(() => undefined)
+  }, [activeHero])
+
+  const showHero = (index: number) => {
+    setActiveHero((index + HERO_MEDIA.length) % HERO_MEDIA.length)
+  }
 
   return (
     <section id="services" aria-labelledby="home-heading" className="bg-[#f6f5f0] text-[#10233e]">
       <div className="relative min-h-[660px] overflow-hidden bg-[#0c1d32]">
         <video
+          key={hero.src}
           ref={videoRef}
           autoPlay
           muted
-          loop
           playsInline
           preload="metadata"
-          poster="/media/hero-videos/hero-new-construction.jpg"
-          className="absolute inset-0 h-full w-full object-cover opacity-45"
+          poster={hero.poster}
+          onEnded={() => showHero(activeHero + 1)}
+          className="absolute inset-0 h-full w-full object-cover"
           aria-hidden="true"
         >
-          <source src="/media/hero-videos/hero-new-construction.mp4" type="video/mp4" />
+          <source src={hero.src} type="video/mp4" />
         </video>
-        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(8,23,40,.96)_0%,rgba(8,23,40,.78)_52%,rgba(8,23,40,.35)_100%)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(8,23,40,.78)_0%,rgba(8,23,40,.48)_48%,rgba(8,23,40,.08)_100%)]" />
+        <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-[#0c1d32]/65 to-transparent" />
 
         <div className="relative mx-auto flex min-h-[660px] max-w-7xl items-center px-5 py-20 sm:px-8 lg:px-12">
           <div className="max-w-3xl">
@@ -65,6 +84,25 @@ export function ServicesJourneySection({ services }: { services: HomeJourneyServ
               <span className="flex items-center gap-2"><Sparkles className="h-4 w-4 text-[#ff9b68]" /> AI-assisted intake</span>
               <span className="flex items-center gap-2"><Landmark className="h-4 w-4 text-sky-300" /> Protected construction payments</span>
             </div>
+          </div>
+        </div>
+
+        <div className="absolute inset-x-0 bottom-5 z-20 mx-auto flex max-w-7xl items-center justify-between px-5 sm:px-8 lg:px-12">
+          <div className="rounded-full border border-white/25 bg-black/25 px-3 py-1.5 text-xs font-bold text-white backdrop-blur-sm">
+            {hero.label}
+          </div>
+          <div className="flex items-center gap-2">
+            <button type="button" onClick={() => showHero(activeHero - 1)} aria-label="Previous project video" className="flex h-10 w-10 items-center justify-center rounded-full border border-white/30 bg-black/25 text-white backdrop-blur-sm transition hover:bg-black/45">
+              <ChevronLeft className="h-5 w-5" />
+            </button>
+            <div className="flex gap-1.5" aria-label="Project video selection">
+              {HERO_MEDIA.map((item, index) => (
+                <button key={item.src} type="button" onClick={() => showHero(index)} aria-label={`Show ${item.label}`} className={`h-2 rounded-full transition-all ${index === activeHero ? 'w-7 bg-white' : 'w-2 bg-white/55 hover:bg-white/80'}`} />
+              ))}
+            </div>
+            <button type="button" onClick={() => showHero(activeHero + 1)} aria-label="Next project video" className="flex h-10 w-10 items-center justify-center rounded-full border border-white/30 bg-black/25 text-white backdrop-blur-sm transition hover:bg-black/45">
+              <ChevronRight className="h-5 w-5" />
+            </button>
           </div>
         </div>
       </div>

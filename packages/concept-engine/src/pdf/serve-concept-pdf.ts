@@ -11,6 +11,12 @@ export interface ServeConceptPdfResult {
   generated: boolean
 }
 
+function isPdf(buffer: Buffer, contentType?: string | null): boolean {
+  const hasPdfSignature = buffer.subarray(0, 5).toString('ascii') === '%PDF-'
+  const typeIsPdf = !contentType || contentType.toLowerCase().includes('application/pdf')
+  return hasPdfSignature && typeIsPdf
+}
+
 export async function serveConceptPackagePdf(
   intake: IntakePdfSource,
   opts?: {
@@ -28,7 +34,9 @@ export async function serveConceptPackagePdf(
       const res = await fetch(existingPdfUrl)
       if (res.ok) {
         const buffer = Buffer.from(await res.arrayBuffer())
-        return { buffer, cachedUrl: existingPdfUrl, generated: false }
+        if (isPdf(buffer, res.headers.get('content-type'))) {
+          return { buffer, cachedUrl: existingPdfUrl, generated: false }
+        }
       }
     } catch {
       /* fall through to regenerate */
@@ -41,6 +49,9 @@ export async function serveConceptPackagePdf(
   }
 
   const buffer = await renderConceptPdf({ homeownerDeliverables: deliverables })
+  if (!isPdf(buffer, 'application/pdf')) {
+    throw new Error('Generated concept package failed PDF validation')
+  }
   let cachedUrl: string | undefined
 
   if (opts?.upload) {

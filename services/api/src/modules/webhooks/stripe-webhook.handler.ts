@@ -263,7 +263,9 @@ async function handleCheckoutSessionCompleted(
       zoning:     'design',
       estimation: 'estimate',
       permits:    'permit',
-      public_intake: 'design',
+      // Paid concept intakes must run the complete concept pipeline (source
+      // media, render, PDF, review), not the generic design-summary agent.
+      public_intake: 'concept',
     }
     const outputType = typeMap[source]
     if (outputType) {

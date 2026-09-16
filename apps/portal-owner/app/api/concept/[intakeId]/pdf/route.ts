@@ -4,6 +4,9 @@
  * Serves the pre-generated PDF from storage — no sharp/concept-engine at build time.
  */
 import { NextRequest, NextResponse } from 'next/server'
+import { createClient } from '@supabase/supabase-js'
+import { serveConceptPackagePdf } from '@kealee/concept-engine'
+import { uploadFile } from '@kealee/storage'
 import { loadIntakeForPdf, verifyIntakeAccessForSession } from '@/lib/verify-intake-access'
 
 export const dynamic = 'force-dynamic'
@@ -23,25 +26,51 @@ export async function GET(
     return NextResponse.json({ error: 'Intake not found' }, { status: 404 })
   }
 
-  const formData = (intake.form_data ?? {}) as Record<string, unknown>
-  const co = (formData.conceptOutput ?? formData.v30ConceptOutput) as Record<string, unknown> | undefined
-  const pdfUrl = typeof co?.pdfUrl === 'string' ? co.pdfUrl : null
-
-  if (!pdfUrl) {
-    return NextResponse.json(
-      { error: 'PDF not ready yet — refresh the page in a moment.' },
-      { status: 404 },
-    )
-  }
-
   try {
-    const pdfRes = await fetch(pdfUrl)
-    if (!pdfRes.ok) {
-      return NextResponse.json({ error: 'Failed to fetch PDF' }, { status: 502 })
+    const currentFormData = (intake.form_data ?? {}) as Record<string, unknown>
+    const currentOutput = (currentFormData.conceptOutput ?? currentFormData.v30ConceptOutput) as Record<string, unknown> | undefined
+    const beforeUrls = Array.isArray(currentOutput?.beforeUrls) ? currentOutput.beforeUrls : []
+    const renderUrls = Array.isArray(currentOutput?.renderUrls) ? currentOutput.renderUrls : []
+    if (beforeUrls.length === 0 || renderUrls.length === 0) {
+      return NextResponse.json(
+        { error: 'The source-linked concept visuals are still under quality review.' },
+        { status: 409 },
+      )
     }
 
-    const buffer = await pdfRes.arrayBuffer()
-    return new NextResponse(buffer, {
+    const result = await serveConceptPackagePdf(intake, {
+      upload: async (buffer, intakeId) => {
+        const uploaded = await uploadFile({
+          bucket: 'designs',
+          path: `concept-packages/${intakeId}/concept-package.pdf`,
+          file: buffer,
+          contentType: 'application/pdf',
+        })
+        return uploaded.url
+      },
+    })
+
+    if (result.cachedUrl) {
+      const formData = (intake.form_data ?? {}) as Record<string, unknown>
+      const key = formData.conceptOutput ? 'conceptOutput' : 'v30ConceptOutput'
+      const conceptOutput = (formData[key] ?? {}) as Record<string, unknown>
+      const supabaseAdmin = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!,
+        { auth: { persistSession: false } },
+      )
+      await supabaseAdmin
+        .from('public_intake_leads')
+        .update({
+          form_data: {
+            ...formData,
+            [key]: { ...conceptOutput, pdfUrl: result.cachedUrl },
+          },
+        })
+        .eq('id', params.intakeId)
+    }
+
+    return new NextResponse(new Uint8Array(result.buffer), {
       status: 200,
       headers: {
         'Content-Type': 'application/pdf',

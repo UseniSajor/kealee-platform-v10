@@ -21,8 +21,9 @@ import path from 'path'
 import polygonClipping from 'polygon-clipping'
 import PDFDocument from 'pdfkit'
 import { createWriteStream } from 'fs'
-import { PGATLAS_ENDPOINTS, fetchPgAtlasPropertyRecord, type PgAtlasPropertyRecord } from '../src/jurisdictions/pgatlas'
+import { PGATLAS_ENDPOINTS, fetchPgAtlasPropertyRecord, fetchPgAtlasStreets, type PgAtlasPropertyRecord } from '../src/jurisdictions/pgatlas'
 import { PG_ZONE_DIMENSIONAL_TABLES } from '../src/jurisdictions/pg-dimensional-standards.generated'
+import { waterQualityVolume, practiceFootprint } from '../src/site-plan/engineering'
 
 type P = [number, number]
 type MP = polygonClipping.MultiPolygon
@@ -47,6 +48,23 @@ const UNIT_TYPES = {
     label: 'Two-over-two (stacked, 2 units per bay)', column: 'Multifamily Dwelling, Artists’ Residential Studio, Live-Work Dwelling (2)',
     lotWidthFt: 24, lotDepthFt: 100, footprintFt: [24, 48] as [number, number], unitsPerBay: 2,
     stickMaxUnits: 8, breakFt: 20, parkingPerUnit: 1.5, parkingWhere: 'one garage space per unit + surface bays along the street',
+  },
+  /**
+   * Mixed use: ground-floor retail with dwellings above, on the commercial
+   * frontage. One building per "bay": 200 × 70 ft footprint, retail at grade,
+   * four residential floors; the lot is 220 × 200 ft so its own surface
+   * parking and drive aisle are on it. 48 dwellings = 48 du/ac × 1.01 ac,
+   * which is the certified multifamily cap — the cap, not the floor area, sets
+   * the count. Five storeys ≈ 62 ft against the 86-ft cap in the table.
+   */
+  mixedUse: {
+    label: 'Mixed use (retail below, dwellings above)', column: 'Multifamily Dwelling, Artists’ Residential Studio, Live-Work Dwelling (2)',
+    // Downtown block form: buildings on the street line, party wall to party wall, each on its own
+    // parcel — 100 ft of frontage × 200 ft deep (0.459 ac), a 100 × 70 ft footprint at the street,
+    // retail at grade, four residential floors, parking behind. 22 du = 48 du/ac × 0.459 ac.
+    lotWidthFt: 100, lotDepthFt: 200, footprintFt: [100, 70] as [number, number], unitsPerBay: 22,
+    stickMaxUnits: 40, breakFt: 0, parkingPerUnit: 1.5, parkingWhere: 'surface lot behind the building on its parcel (1.5/du + 4 per 1,000 sf retail, assumed)',
+    retailSqFtPerBay: 7000, residentialStoreys: 4, storeys: 5, heightFt: 62,
   },
 } as const
 type UnitKey = keyof typeof UNIT_TYPES
@@ -148,6 +166,18 @@ async function main() {
   const accounts = (flag('--accounts') ?? '').split(',').map(s => s.trim()).filter(Boolean)
   const name = flag('--name') ?? 'CGO residential yield study'
   const mixArg = flag('--mix') ?? 'twoOverTwo,townhouse,townhouse,twoFamily'   // band assignment from the commercial edge inward
+  /** Study the site under another zone's table (a rezoning the owner would seek). Reported loudly as hypothetical. */
+  const asZone = flag('--as-zone') ?? null
+  /** An existing stormwater facility to keep: "ROAD1|ROAD2,sqft" reserves that area at the tract corner nearest those two roads' meeting. */
+  const keepSwmArg = flag('--keep-swm') ?? null
+  /** Reserve the whole tract north of this northing (EPSG:2248 ft) for stormwater management — an existing pond and its expansion. */
+  const swmNorthOf = flag('--reserve-swm-north') ? Number(flag('--reserve-swm-north')) : null
+  /** Right-of-way width of the access road: its half-width either side of the county centreline is taken out of the tract (dedicated). */
+  const accessRowFt = flag('--access-row-ft') ? Number(flag('--access-row-ft')) : 0
+  /** Name (regex) of the existing road every internal street tees off — streets run perpendicular to it, from its frontage. */
+  const accessRe = flag('--access') ? new RegExp(flag('--access')!, 'i') : null
+  /** Name (regex) of the road the first band faces — the commercial frontage. */
+  const frontageRe = flag('--frontage') ? new RegExp(flag('--frontage')!, 'i') : null
   if (!outDir || !accounts.length) { console.error('usage: propose-townhomes.ts <out dir> --accounts A,B,C [--name N] [--mix band,band,...]'); process.exit(1) }
   mkdirSync(outDir, { recursive: true })
   const slug = path.basename(outDir)
@@ -165,7 +195,10 @@ async function main() {
   }
   if (!parcels.length) throw new Error('No parcels.')
   const zones = [...new Set(parcels.map(p => p.zone).filter(Boolean))]
-  const zone = zones.length === 1 ? zones[0]! : (() => { throw new Error(`Parcels are not all one zone: ${zones.join(', ')}`) })()
+  const mappedZone = zones.length === 1 ? zones[0]! : (() => { throw new Error(`Parcels are not all one zone: ${zones.join(', ')}`) })()
+  const zone = asZone ?? mappedZone
+  const hypothetical = asZone != null && asZone !== mappedZone
+  if (hypothetical) console.log(`    !! HYPOTHETICAL: the parcels are zoned ${mappedZone}; standards below are ${zone}'s. A zoning map amendment is required before any of this is permitted.`)
   if (!PG_ZONE_DIMENSIONAL_TABLES[zone]) throw new Error(`No certified dimensional table for zone ${zone}.`)
   const tract = union(parcels.map(p => p.ring))
   const tractSqFt = mpArea(tract)
@@ -197,9 +230,39 @@ async function main() {
   const wca = await q(26)
   const woodland = intersection(union(wca.flatMap(f => f.geometry?.rings ?? []).map(r => openRing(r.map(c => [c[0], c[1]] as P)))), tract)
   const wetlands = intersection(union((await q(25)).flatMap(f => f.geometry?.rings ?? []).map(r => openRing(r.map(c => [c[0], c[1]] as P)))), tract)
-  const constraints = [pma, steep, floodplain, woodland, wetlands].reduce((a, b) => unionMP(a, b), [] as MP)
+  // An existing stormwater facility the owner keeps (the approved SDP's pond):
+  // the corner of the tract nearest where the two named roads meet, cut off
+  // across the corner to the stated area, and treated as ground already used.
+  let swmKeep: P[] = []
+  if (keepSwmArg) {
+    const [roads, sqftS] = keepSwmArg.split(',')
+    const [r1, r2] = roads.split('|').map(r => new RegExp(r, 'i'))
+    const want = Number(sqftS)
+    const tractRing0 = rings(tract).sort((a, b) => Math.abs(area(b)) - Math.abs(area(a)))[0]
+    const cen0 = interiorPoint(tractRing0)
+    const sts = await fetchPgAtlasStreets(cen0[0], cen0[1], { searchFt: 1200 })
+    const pathsOf = (re: RegExp) => sts.filter(st => st.name && re.test(st.name)).flatMap(st => st.paths).map(pth => pth.map(c => [c[0], c[1]] as P))
+    const d2 = (q: P, paths: P[][]) => Math.min(...paths.flatMap(pth => pth.map(c => Math.hypot(c[0] - q[0], c[1] - q[1]))), Infinity)
+    const p1 = pathsOf(r1), p2 = pathsOf(r2)
+    if (p1.length && p2.length) {
+      const corner = tractRing0.reduce((b, q) => d2(q, p1) + d2(q, p2) < d2(b, p1) + d2(b, p2) ? q : b, tractRing0[0])
+      const dir = norm([cen0[0] - corner[0], cen0[1] - corner[1]])
+      let lo = 0, hi = Math.hypot(cen0[0] - corner[0], cen0[1] - corner[1])
+      const cut = (d: number): MP => intersection(tract, asMP([add(add(corner, dir, d), leftOf(dir), 3000), add(add(corner, dir, d), leftOf(dir), -3000), add(add(corner, dir, -3000), leftOf(dir), -3000), add(add(corner, dir, -3000), leftOf(dir), 3000)]))
+      for (let k = 0; k < 40; k++) { const d = (lo + hi) / 2; if (mpArea(cut(d)) < want) lo = d; else hi = d }
+      swmKeep = rings(cut(hi)).sort((a, b) => Math.abs(area(b)) - Math.abs(area(a)))[0] ?? []
+      console.log(`    existing SWM kept: ${Math.abs(area(swmKeep)).toFixed(0)} sf at the ${bearingOf(cen0, corner)} corner (${roads})`)
+    } else console.log(`    !! --keep-swm: roads not both found (${sts.map(st => st.name).filter(Boolean).slice(0, 8).join(', ')})`)
+  }
+  let swmNorth: MP = []
+  if (swmNorthOf != null) {
+    swmNorth = intersection(tract, asMP([[bbox.x0 - 100, swmNorthOf], [bbox.x1 + 100, swmNorthOf], [bbox.x1 + 100, bbox.y1 + 100], [bbox.x0 - 100, bbox.y1 + 100]]))
+    console.log(`    north side reserved for stormwater management: ${(mpArea(swmNorth) / 43560).toFixed(2)} ac north of N ${swmNorthOf}`)
+  }
+  const swmReserve = unionMP(swmKeep.length ? asMP(swmKeep) : [], swmNorth)
+  const constraints = [pma, steep, floodplain, woodland, wetlands, swmReserve].reduce((a, b) => unionMP(a, b), [] as MP)
   let developable: MP = tract
-  for (const [label, cst] of [['stream buffer', pma], ['steep slopes', steep], ['floodplain', floodplain], ['woodland conservation', woodland], ['wetlands', wetlands]] as const) {
+  for (const [label, cst] of [['stream buffer', pma], ['steep slopes', steep], ['floodplain', floodplain], ['woodland conservation', woodland], ['wetlands', wetlands], ['stormwater reserve', swmReserve]] as const) {
     if (!cst.length) continue
     let next: MP = []
     try { next = polygonClipping.difference(developable, cst) } catch (e) { console.log(`    !! subtracting ${label} failed in the polygon library (${(e as Error).message.slice(0, 60)}); it is NOT taken out`); continue }
@@ -234,15 +297,75 @@ async function main() {
   for (const m of mix) if (!UNIT_TYPES[m]) throw new Error(`Unknown unit type ${m}`)
   type Unit = { type: UnitKey; ring: P[]; sqFt: number; band: number; units: number }
   /** Streets across the ground at one orientation and offset; bands of lots either side. Returns what it placed. */
+  // The commercial frontage: the nearest point of the named road's centreline, so band 0 faces it.
+  let frontPt: P | null = null
+  if (frontageRe) {
+    const sts = await fetchPgAtlasStreets(cen[0], cen[1], { searchFt: 900 })
+    let bestD = Infinity
+    for (const st of sts) if (st.name && frontageRe.test(st.name)) for (const pth of st.paths) for (const q of pth) { const d = Math.hypot(q[0] - cen[0], q[1] - cen[1]); if (d < bestD) { bestD = d; frontPt = [q[0], q[1]] } }
+    console.log(`    frontage road ${frontageRe}: ${frontPt ? `${sts.filter(st => st.name && frontageRe.test(st.name)).map(st => st.name)[0]} at ${bearingOf(cen, frontPt)} of the centre` : 'NOT FOUND among ' + sts.map(st => st.name).filter(Boolean).slice(0, 8).join(', ')}`)
+  }
+  // The access road: the internal streets are perpendicular to its nearest run, so each one meets it.
+  let accessTheta: number | null = null, accessName: string | null = null, accessDir: P | null = null, accessAnchor: P | null = null
+  if (accessRe) {
+    const sts = await fetchPgAtlasStreets(cen[0], cen[1], { searchFt: 1500 })
+    let bestD = Infinity, bestDir: P | null = null
+    for (const st of sts) if (st.name && accessRe.test(st.name)) for (const pth of st.paths) for (let i = 0; i + 1 < pth.length; i++) {
+      const a: P = [pth[i][0], pth[i][1]], b: P = [pth[i + 1][0], pth[i + 1][1]]
+      const vx = b[0] - a[0], vy = b[1] - a[1], t = Math.max(0, Math.min(1, ((cen[0] - a[0]) * vx + (cen[1] - a[1]) * vy) / (vx * vx + vy * vy || 1)))
+      const d = Math.hypot(cen[0] - a[0] - t * vx, cen[1] - a[1] - t * vy)
+      if (d < bestD) { bestD = d; bestDir = norm([vx, vy]); accessName = st.name }
+    }
+    if (bestDir) {
+      accessDir = bestDir
+      const tr = rings(tract).sort((a, b) => Math.abs(area(b)) - Math.abs(area(a)))[0]
+      const dRoad = (q: P) => Math.min(...sts.filter(st => st.name && accessRe.test(st.name)).flatMap(st => st.paths).flatMap(pth => pth.map(cq => Math.hypot(cq[0] - q[0], cq[1] - q[1]))))
+      accessAnchor = tr.reduce((b, q) => dRoad(q) < dRoad(b) ? q : b, tr[0])
+    }
+    if (bestDir && accessRowFt > 0) {
+      const paths = sts.filter(st => st.name && accessRe.test(st.name)).flatMap(st => st.paths).map(pth => pth.map(cq => [cq[0], cq[1]] as P))
+      const row = intersection(union(paths.flatMap(pth => bufferPolyline(pth, accessRowFt / 2))), tract)
+      const before = mpArea(developable)
+      try { developable = polygonClipping.difference(developable, row) } catch { /* keep */ }
+      console.log(`    ${accessName} right-of-way (${accessRowFt} ft on the county centreline) inside the parcel: ${((before - mpArea(developable)) / 43560).toFixed(2)} ac taken out — the 2019 plan dedicated it; the parcel polygon predates that`)
+    }
+    if (bestDir) { const perp = leftOf(bestDir); accessTheta = Math.atan2(perp[1], perp[0]); console.log(`    access road ${accessName}: ${bestD.toFixed(0)} ft from the centre, runs ${bearingOf([0, 0], bestDir)}; internal streets run ${bearingOf([0, 0], perp)} off it`) }
+    else console.log(`    !! --access: no road matching ${accessRe} within 1500 ft`)
+  }
+  // The frontage road's own edge: where buildings stand at street level on the existing road.
+  // The tract boundary vertex nearest that road's centreline anchors a row `lotDepth` deep along it.
+  // (developable may have lost the access road's right-of-way — the largest piece is what the streets are laid on)
+  { const dr = rings(developable).sort((a, b) => Math.abs(area(b)) - Math.abs(area(a)))[0]; devRing.length = 0; devRing.push(...dr) }
+  const frontageIsAccess = !!(frontageRe && accessName && frontageRe.test(accessName))
   const layoutAt = (theta: number, shift: number) => {
-    const axis: P = [Math.cos(theta), Math.sin(theta)], across = leftOf(axis)
+    const axis: P = [Math.cos(theta), Math.sin(theta)]
+    let across = leftOf(axis)
+    if (frontPt && !frontageIsAccess && dot(frontPt, cen, across) > 0) across = [-across[0], -across[1]]   // the first band goes on the road's side
     const along = devRing.map(p => dot(p, cen, axis)), cross_ = devRing.map(p => dot(p, cen, across))
     const a0 = Math.min(...along), a1 = Math.max(...along), c0 = Math.min(...cross_), c1 = Math.max(...cross_)
     const units: Unit[] = []
     const streets: P[][] = []
     let taken: MP = []
+    const placeRow = (ax: P, ac: P, origin: P, cc0: number, cc1: number, s0: number, s1: number, T: typeof UNIT_TYPES[UnitKey], type: UnitKey, bandNo: number) => {
+      let sPos = s0 + 10, inStick = 0
+      while (sPos + T.lotWidthFt <= s1 - 10) {
+        const lot: P[] = [add(add(origin, ax, sPos), ac, cc0), add(add(origin, ax, sPos + T.lotWidthFt), ac, cc0), add(add(origin, ax, sPos + T.lotWidthFt), ac, cc1), add(add(origin, ax, sPos), ac, cc1)]
+        const inside = difference(intersection(asMP(lot), developable), taken)
+        const got = mpArea(inside)
+        if (got >= T.lotWidthFt * T.lotDepthFt * 0.92 && inside.length === 1) {
+          const ring = rings(inside)[0]
+          units.push({ type, ring, sqFt: got, band: bandNo, units: T.unitsPerBay })
+          taken = unionMP(taken, asMP(ring))
+          inStick++
+          sPos += T.lotWidthFt
+          if (inStick >= T.stickMaxUnits) { sPos += T.breakFt; inStick = 0 }
+        } else { sPos += 10; inStick = 0 }
+      }
+    }
+    // Streets first, so the frontage row's buildings stand between them and each street meets the road.
+    const streetPlan: { stripRing: P[]; c: number; streetC0: number; streetC1: number; rowB: number; band: number; t1: typeof UNIT_TYPES[UnitKey]; t2: typeof UNIT_TYPES[UnitKey] }[] = []
     let c = c0 + 10 + shift
-    let band = 0
+    let band = frontageIsAccess ? 1 : 0   // band 0 is the frontage row when the buildings line the access road
     while (c < c1 - 60) {
       const t1 = UNIT_TYPES[mix[band % mix.length]], t2 = UNIT_TYPES[mix[(band + 1) % mix.length]]
       const rowA = t1.lotDepthFt, rowB = t2.lotDepthFt
@@ -254,32 +377,28 @@ async function main() {
       for (const stripRing of pieces) {
         streets.push(stripRing)
         taken = unionMP(taken, asMP(stripRing))
-        const sAlong = stripRing.map(p => dot(p, cen, axis)); const s0 = Math.min(...sAlong), s1 = Math.max(...sAlong)
-        for (const [T, cc0, cc1, bandNo] of [[t1, c, streetC0, band], [t2, streetC1, streetC1 + rowB, band + 1]] as const) {
-          let s = s0 + 10, inStick = 0
-          while (s + T.lotWidthFt <= s1 - 10) {
-            const lot: P[] = [add(add(cen, axis, s), across, cc0), add(add(cen, axis, s + T.lotWidthFt), across, cc0), add(add(cen, axis, s + T.lotWidthFt), across, cc1), add(add(cen, axis, s), across, cc1)]
-            const inside = difference(intersection(asMP(lot), developable), taken)
-            const got = mpArea(inside)
-            if (got >= T.lotWidthFt * T.lotDepthFt * 0.92 && inside.length === 1) {
-              const ring = rings(inside)[0]
-              units.push({ type: mix[bandNo % mix.length], ring, sqFt: got, band: bandNo, units: T.unitsPerBay })
-              taken = unionMP(taken, asMP(ring))
-              inStick++
-              s += T.lotWidthFt
-              if (inStick >= T.stickMaxUnits) { s += T.breakFt; inStick = 0 }
-            } else { s += 10; inStick = 0 }
-          }
-        }
+        streetPlan.push({ stripRing, c, streetC0, streetC1, rowB, band, t1, t2 })
       }
       c = streetC1 + rowB + 10
       band += 2
     }
+    // The frontage row along the access road: mixed-use (or whatever band 0 is) at street level on it.
+    if (frontageIsAccess && accessDir && accessAnchor) {
+      const T0 = UNIT_TYPES[mix[0]]
+      const ac: P = dot(cen, accessAnchor, leftOf(accessDir)) > 0 ? leftOf(accessDir) : [-leftOf(accessDir)[0], -leftOf(accessDir)[1]]   // into the tract
+      const along = devRing.map(p => dot(p, accessAnchor, accessDir))
+      placeRow(accessDir, ac, accessAnchor, 0, T0.lotDepthFt, Math.min(...along) - 10, Math.max(...along) + 10, T0, mix[0], 0)
+    }
+    for (const sp of streetPlan) {
+      const sAlong = sp.stripRing.map(p => dot(p, cen, axis)); const s0 = Math.min(...sAlong), s1 = Math.max(...sAlong)
+      placeRow(axis, across, cen, sp.c, sp.streetC0, s0, s1, sp.t1, mix[sp.band % mix.length], sp.band)
+      placeRow(axis, across, cen, sp.streetC1, sp.streetC1 + sp.rowB, s0, s1, sp.t2, mix[(sp.band + 1) % mix.length], sp.band + 1)
+    }
     return { axis, units, streets, du: units.reduce((t, u) => t + u.units, 0) }
   }
   // Two orientations (the ground's principal axis and across it) and three offsets; the most dwellings wins.
-  let best = layoutAt(theta, 0)
-  for (const th of [theta, theta + Math.PI / 2]) for (const sh of [0, 40, 80]) {
+  let best = layoutAt(accessTheta ?? theta, 0)
+  for (const th of accessTheta != null ? [accessTheta] : [theta, theta + Math.PI / 2]) for (const sh of [0, 20, 40, 60, 80, 100]) {
     const cand = layoutAt(th, sh)
     console.log(`      orientation ${bearingOf([0, 0], [Math.cos(th), Math.sin(th)])} offset ${sh}: ${cand.du} du on ${cand.streets.length} street segment(s)`)
     if (cand.du > best.du) best = cand
@@ -298,34 +417,62 @@ async function main() {
     const density = netAc > 0 ? du / netAc : 0
     const T = UNIT_TYPES[k]
     const coverage = us.length ? (T.footprintFt[0] * T.footprintFt[1]) / (T.lotWidthFt * T.lotDepthFt) * 100 : 0
+    const retail = 'retailSqFtPerBay' in T ? us.length * (T as { retailSqFtPerBay: number }).retailSqFtPerBay : 0
+    const heightFt = 'heightFt' in T ? (T as { heightFt: number }).heightFt : null
     return { type: k, label: T.label, bays: us.length, dwellingUnits: du, lotSqFt: Math.round(lotSqFt), netAcForDensity: Math.round(netAc * 1000) / 1000, densityDuAc: Math.round(density * 100) / 100, densityCapDuAc: cap,
       withinDensity: cap == null || density <= cap + 1e-9, maxUnitsAtCap: cap != null ? Math.floor(netAc * cap) : null,
-      lotCoveragePct: Math.round(coverage * 10) / 10, coverageCapPct: stds[k].maxCoveragePct, parkingRequired: Math.ceil(du * T.parkingPerUnit), parkingRatioAssumed: T.parkingPerUnit, parkingWhere: T.parkingWhere }
+      lotCoveragePct: Math.round(coverage * 10) / 10, coverageCapPct: stds[k].maxCoveragePct, parkingRequired: Math.ceil(du * T.parkingPerUnit + retail / 1000 * 4), parkingRatioAssumed: T.parkingPerUnit, parkingWhere: T.parkingWhere,
+      retailSqFt: retail, buildingHeightFt: heightFt, heightCapFt: stds[k].maxHeightFt, withinHeight: heightFt == null || stds[k].maxHeightFt == null || heightFt <= stds[k].maxHeightFt! }
   })
+  // Stormwater for what is drawn — Environmental Site Design (MDE Ch. 5): impervious
+  // cover of the buildings, their parking and the streets; ESDv at the Manual's
+  // floor P_E; a micro-bioretention footprint at 2 ft × n 0.4. Set against the
+  // ground reserved for it.
+  const imperviousSqFt = units.reduce((t, u) => { const T = UNIT_TYPES[u.type]; const bld = T.footprintFt[0] * T.footprintFt[1]; const park = 'retailSqFtPerBay' in T ? u.sqFt * 0.45 : T.lotWidthFt * 22; return t + bld + park }, 0)
+    + streets.reduce((t, r) => t + Math.abs(area(r)) * 0.75, 0)
+  const pctImp = 100 * imperviousSqFt / tractSqFt
+  const wq = waterQualityVolume(1.0, pctImp, tractSqFt / 43560)
+  const fp = practiceFootprint(wq.value.wqvCubicFeet, 2, 0.4)
+  const swmReservedSqFt = mpArea(swmReserve)
+  const stormwater = {
+    method: 'MDE Stormwater Design Manual Ch. 5 ESD — Rv = 0.05 + 0.009·I; ESDv = P_E·Rv·A/12; practice area = ESDv/(d·n), d = 2 ft, n = 0.4; P_E = 1.0 in is the floor — Table 5.3 raises it with % impervious and HSG',
+    imperviousSqFt: Math.round(imperviousSqFt), percentImpervious: Math.round(pctImp * 10) / 10, rv: wq.value.rv, esdvCf: wq.value.wqvCubicFeet, practiceFootprintSqFt: fp.value.footprintSqFt,
+    reservedSqFt: Math.round(swmReservedSqFt),
+    finding: swmReservedSqFt >= fp.value.footprintSqFt * 2
+      ? `The ${Math.round(swmReservedSqFt).toLocaleString()} sf reserved (existing facility and its expansion) exceeds twice the ${fp.value.footprintSqFt.toLocaleString()} sf of practice the drawn programme needs at P_E 1.0 in; the balance is forebay, access, freeboard and the higher P_E the soils may require.`
+      : `The ${Math.round(swmReservedSqFt).toLocaleString()} sf reserved is short of the ${(fp.value.footprintSqFt * 2).toLocaleString()} sf (practice × 2) the drawn programme wants; add micro-bioretention in the parking lots and along the streets, or reduce impervious cover.`,
+    additional: 'Micro-bioretention in every surface parking lot island and a bioswale along each private street, credited under ESD; rooftop disconnection is not available over parking. Design per the DPIE stormwater concept approval that precedes the DSP.',
+  }
+  console.log(`    stormwater: impervious ${Math.round(imperviousSqFt).toLocaleString()} sf (${pctImp.toFixed(1)}%), ESDv ${wq.value.wqvCubicFeet.toLocaleString()} cf → practice ${fp.value.footprintSqFt.toLocaleString()} sf; reserved ${Math.round(swmReservedSqFt).toLocaleString()} sf`)
   const totalDu = byType.reduce((s, t) => s + t.dwellingUnits, 0)
+  const totalRetail = byType.reduce((s, t) => s + t.retailSqFt, 0)
   console.log(`\n    ${units.length} bays / ${totalDu} dwelling units on ${streets.length} street(s):`)
-  for (const t of byType) if (t.bays) console.log(`      ${t.label}: ${t.bays} bays, ${t.dwellingUnits} du · ${t.densityDuAc} du/ac vs cap ${t.densityCapDuAc} → ${t.withinDensity ? 'ok' : 'OVER — trim to ' + t.maxUnitsAtCap} · coverage ${t.lotCoveragePct}% vs ${t.coverageCapPct}% · parking ${t.parkingRequired} at ${t.parkingRatioAssumed}/du (assumed)`)
+  for (const t of byType) if (t.bays) console.log(`      ${t.label}: ${t.bays} bays, ${t.dwellingUnits} du${t.retailSqFt ? ` + ${t.retailSqFt.toLocaleString()} sf retail` : ''} · ${t.densityDuAc} du/ac vs cap ${t.densityCapDuAc} → ${t.withinDensity ? 'ok' : 'OVER — trim to ' + t.maxUnitsAtCap} · coverage ${t.lotCoveragePct}% vs ${t.coverageCapPct}%${t.buildingHeightFt ? ` · ${t.buildingHeightFt} ft vs ${t.heightCapFt} ft` : ''} · parking ${t.parkingRequired} (assumed ratios)`)
+  if (totalRetail) console.log(`      retail at grade: ${totalRetail.toLocaleString()} sf`)
   const overCap = byType.filter(t => !t.withinDensity)
 
   // The theoretical ceilings, for the record
-  const ceilings = (Object.keys(UNIT_TYPES) as UnitKey[]).map(k => ({ type: k, label: UNIT_TYPES[k].label, allOfThisType: stds[k].densityDuAc != null ? Math.floor(devSqFt / 43560 * 0.8 * stds[k].densityDuAc!) : null, basis: 'developable ac × 0.8 (streets, parking, open space) × certified density' }))
+  const ceilings = (Object.keys(UNIT_TYPES) as UnitKey[]).filter(k => k !== 'mixedUse').map(k => ({ type: k, label: UNIT_TYPES[k].label, allOfThisType: stds[k].densityDuAc != null ? Math.floor(devSqFt / 43560 * 0.8 * stds[k].densityDuAc!) : null, basis: 'developable ac × 0.8 (streets, parking, open space) × certified density' }))
 
   // ── Emit ──────────────────────────────────────────────────────────────────
   const out = {
-    name, generatedAt: new Date().toISOString(), zone,
+    name, generatedAt: new Date().toISOString(), zone, mappedZone, hypothetical,
+    hypotheticalNote: hypothetical ? `The parcels are zoned ${mappedZone}. This study applies the ${zone} table as the rezoning the owner would seek; nothing here is permitted until the Council approves a zoning map amendment.` : null,
     parcels: parcels.map(p => ({ account: p.account, owner: p.record?.ownerName, description: p.record?.propertyDesc, subdivision: p.record?.subdivision, plat: p.record?.plat, liber: p.record?.liber, folio: p.record?.folio, assessedAcres: p.record?.acres, gisSqFt: Math.round(p.sqFt), zone: p.zone, ring: p.ring })),
     tractSqFt: Math.round(tractSqFt), tractAcres: Math.round(tractSqFt / 43560 * 1000) / 1000,
     constraints: {
       source: 'PGAtlas Environmental/MapServer — Stream Center and Drainage (2023) buffered 50 ft; Slope (2023) >25%; Floodplain (FEMA 2026) other than Zone X; Woodland Conservation Area (approved TCPs); Wetland (DNR). Clipped to the tract.',
       streamBufferSqFt: Math.round(mpArea(pma)), steepSlopeSqFt: Math.round(mpArea(steep)), steepSlopeRibbonsRegradedSqFt: Math.round(steepRibbonsSqFt), moderateSlopeSqFt: Math.round(mpArea(moderate)), floodplainSqFt: Math.round(mpArea(floodplain)), woodlandConservationSqFt: Math.round(mpArea(woodland)), wetlandSqFt: Math.round(mpArea(wetlands)),
-      unionSqFt: Math.round(mpArea(constraints)), rings: { streamBuffer: rings(pma), steep: rings(steep), steepRibbons: rings(steepAll.filter(poly => !isBody(poly))), floodplain: rings(floodplain), woodland: rings(woodland), wetlands: rings(wetlands) },
+      unionSqFt: Math.round(mpArea(constraints)), existingSwmKeptSqFt: Math.round(mpArea(swmReserve)), rings: { existingSwm: rings(swmReserve), streamBuffer: rings(pma), steep: rings(steep), steepRibbons: rings(steepAll.filter(poly => !isBody(poly))), floodplain: rings(floodplain), woodland: rings(woodland), wetlands: rings(wetlands) },
       caveat: 'The Primary Management Area, the woodland conservation threshold and any expanded buffers are set by an approved Natural Resources Inventory and TCP, not by these layers. A 50-ft stream buffer and slopes over 25% are the minimum that would be taken; the NRI may take more.',
     },
     developableSqFt: Math.round(devSqFt), developableAcres: Math.round(devSqFt / 43560 * 1000) / 1000, developableRings: rings(developable),
     standards: { zone, section: PG_ZONE_DIMENSIONAL_TABLES[zone].section, perType: stds, source: PG_ZONE_DIMENSIONAL_TABLES[zone].source },
     unitTypes: UNIT_TYPES, streetStripFt: STREET_FT, mix,
+    stormwater,
+    access: accessName ? { road: accessName, note: `Every internal street tees off ${accessName} (existing public right-of-way); no new access to any other road.` } : null,
     layout: { axisBearing: bearingOf([0, 0], axis), streets, units: units.map(u => ({ type: u.type, band: u.band, dwellingUnits: u.units, sqFt: Math.round(u.sqFt), ring: u.ring })) },
-    yield: { totalBays: units.length, totalDwellingUnits: totalDu, byType, overCap: overCap.map(t => t.type), ceilings,
+    yield: { totalBays: units.length, totalDwellingUnits: totalDu, totalRetailSqFt: totalRetail, byType, overCap: overCap.map(t => t.type), ceilings,
       grossDensityDuAc: Math.round(totalDu / (tractSqFt / 43560) * 100) / 100 },
     approvals: [
       `${zone}: townhouse, two-family and multifamily (two-over-two) dwellings are listed uses with their own intensity standards in the certified Sec. 27-4203 table; a Detailed Site Plan is the approval path for residential in the commercial zones (confirm the use table entry for each type — the use table is not carried by this engine).`,
@@ -371,12 +518,13 @@ async function renderYieldSheet(y: Out, file: string) {
   }
   for (const p of y.parcels) poly(p.ring, '#f6f6f6', '#000', 1.4)
   for (const r of y.constraints.rings.woodland ?? []) poly(r, '#cfe5cf', '#2f6f3f', 0.6)
+  for (const r of y.constraints.rings.existingSwm ?? []) { poly(r, '#b8d8ee', '#1f5f86', 1); const c = interiorPoint(r); doc.font('Helvetica-Bold').fontSize(6.5).fillColor('#1f5f86').text('STORMWATER MANAGEMENT — EXISTING FACILITY KEPT AND EXPANDED', X(c[0]) - 70, Y(c[1]) - 4, { width: 100, align: 'center' }) }
   for (const r of y.constraints.rings.steep ?? []) poly(r, '#e8b8b0', '#a04030', 0.4)
   for (const r of y.constraints.rings.steepRibbons ?? []) poly(r, null, '#c06050', 0.3, [2, 2])
   for (const r of y.constraints.rings.streamBuffer ?? []) poly(r, '#c8d8f0', '#2050a0', 0.5)
   for (const r of y.constraints.rings.floodplain ?? []) poly(r, null, '#2050a0', 0.6, [6, 3])
   for (const r of y.layout.streets) poly(r, '#c8c8c8', '#555', 0.6)
-  const col: Record<string, string> = { townhouse: '#f0c060', twoFamily: '#8fb8ee', twoOverTwo: '#cf98d8' }
+  const col: Record<string, string> = { townhouse: '#f0c060', twoFamily: '#8fb8ee', twoOverTwo: '#cf98d8', mixedUse: '#e08080' }
   for (const u of y.layout.units) poly(u.ring, col[u.type] ?? '#ddd', '#333', 0.4)
   // parcel labels
   doc.font('Helvetica-Bold').fontSize(7).fillColor('#000')
@@ -384,11 +532,12 @@ async function renderYieldSheet(y: Out, file: string) {
   // north arrow + scale
   doc.font('Helvetica-Bold').fontSize(9).text('N', M + 14, M + 8); doc.moveTo(M + 18, M + 40).lineTo(M + 18, M + 20).lineWidth(1).stroke('#000')
   doc.fontSize(8).text(`SCALE 1" = ${scale}'   ·   GRAPHIC: |${'—'.repeat(10)}| = ${scale * 2} FT`, M + 40, M + 10)
-  doc.font('Helvetica').fontSize(6.5).fillColor('#444').text('LEGEND — yellow: townhouse lots · blue: two-family (duplex) lots · violet: two-over-two (stacked) bays · grey: private street strip 40 ft · green: woodland conservation (approved TCP) · red: slopes >25% (dashed = graded banks, regraded) · blue band: 50-ft stream buffer', M + 40, M + 24, { width: drawW - 60 })
+  doc.font('Helvetica').fontSize(6.5).fillColor('#444').text('LEGEND — red: mixed-use buildings (retail at grade, dwellings above) · yellow: townhouse lots · blue: two-family (duplex) lots · violet: two-over-two (stacked) bays · grey: private street strip 40 ft · green: woodland conservation (approved TCP) · red: slopes >25% (dashed = graded banks, regraded) · blue band: 50-ft stream buffer', M + 40, M + 24, { width: drawW - 60 })
   // right column
   let x = W - M - COL, yy = M + 4
   const line = (t: string, size = 7, bold = false, color = '#000', gap = 2) => { doc.font(bold ? 'Helvetica-Bold' : 'Helvetica').fontSize(size).fillColor(color).text(t, x, yy, { width: COL - 8 }); yy = doc.y + gap }
   line('KEALEE', 14, true); line('ATTACHED HOUSING YIELD STUDY — PRELIMINARY, NOT A SITE PLAN', 8, true, '#900')
+  if ((y as unknown as { hypotheticalNote?: string | null }).hypotheticalNote) line((y as unknown as { hypotheticalNote: string }).hypotheticalNote.toUpperCase(), 7.5, true, '#900')
   line(y.name, 9, true); line(`Zone ${y.zone} · certified intensity table Sec. ${y.standards.section} · generated ${new Date().toISOString().slice(0, 10)}`, 7)
   yy += 4; line('PARCELS (PGAtlas Address/Property — owner of record, assessment)', 7.5, true)
   for (const p of y.parcels) line(`Acct ${p.account} · ${p.description ?? ''} · ${p.owner ?? '?'} · ${p.assessedAcres ?? '?'} ac assessed / ${(p.gisSqFt / 43560).toFixed(3)} ac GIS · plat ${p.plat ?? '—'} · L.${p.liber ?? '?'} F.${p.folio ?? '?'}`, 6.5)
@@ -396,18 +545,22 @@ async function renderYieldSheet(y: Out, file: string) {
   yy += 4; line('WHAT CANNOT BE BUILT ON (county layers, clipped to the tract)', 7.5, true)
   const c = y.constraints
   line(`Woodland conservation (approved TCP areas) ${(c.woodlandConservationSqFt / 43560).toFixed(2)} ac · slopes >25% in bodies ${(c.steepSlopeSqFt / 43560).toFixed(2)} ac (graded banks ${(c.steepSlopeRibbonsRegradedSqFt / 43560).toFixed(2)} ac, regraded) · 15–25% ${(c.moderateSlopeSqFt / 43560).toFixed(2)} ac (built with grading) · stream buffer ${(c.streamBufferSqFt / 43560).toFixed(2)} ac · floodplain ${(c.floodplainSqFt / 43560).toFixed(2)} ac · wetlands ${(c.wetlandSqFt / 43560).toFixed(2)} ac`, 6.5)
+  if ((c as unknown as { existingSwmKeptSqFt?: number }).existingSwmKeptSqFt) line(`Reserved for stormwater management (the approved SDP's facility and its expansion): ${(c as unknown as { existingSwmKeptSqFt: number }).existingSwmKeptSqFt.toLocaleString()} sf.`, 6.5)
   line(`Developable ${y.developableSqFt.toLocaleString()} sf (${y.developableAcres} ac).`, 7, true)
   line(c.caveat, 6, false, '#333')
   yy += 4; line(`${y.zone} STANDARDS BY DWELLING TYPE (Sec. ${y.standards.section})`, 7.5, true)
   for (const [k, st] of Object.entries(y.standards.perType)) line(`${(y.unitTypes as Record<string, { label: string }>)[k].label}: ${st.densityDuAc} du/ac net · lot ≥ ${st.minLotWidthFt} ft wide · coverage ≤ ${st.maxCoveragePct}% · yards ${st.frontFt}/${st.sideFt}/${st.rearFt} ft · height ≤ ${st.maxHeightFt} ft`, 6.5)
   yy += 4; line('YIELD — THIS LAYOUT', 7.5, true)
-  for (const t of y.yield.byType) if (t.bays) line(`${t.label}: ${t.bays} bays → ${t.dwellingUnits} du · ${t.densityDuAc} du/ac on ${t.netAcForDensity} net ac (cap ${t.densityCapDuAc}) ${t.withinDensity ? '✓' : 'OVER'} · lot coverage ${t.lotCoveragePct}% (cap ${t.coverageCapPct}%) · parking ${t.parkingRequired} at ${t.parkingRatioAssumed}/du ASSUMED — ${t.parkingWhere}`, 6.5)
-  line(`TOTAL ${y.yield.totalDwellingUnits} DWELLING UNITS in ${y.yield.totalBays} bays · ${y.yield.grossDensityDuAc} du/ac gross on the ${y.tractAcres}-ac tract`, 8, true)
+  for (const t of y.yield.byType) if (t.bays) { const tt = t as typeof t & { retailSqFt?: number; buildingHeightFt?: number | null; heightCapFt?: number | null }; line(`${t.label}: ${t.bays} bays → ${t.dwellingUnits} du${tt.retailSqFt ? ` + ${tt.retailSqFt.toLocaleString()} sf retail` : ''} · ${t.densityDuAc} du/ac on ${t.netAcForDensity} net ac (cap ${t.densityCapDuAc}) ${t.withinDensity ? '✓' : 'OVER'} · lot coverage ${t.lotCoveragePct}% (cap ${t.coverageCapPct}%)${tt.buildingHeightFt ? ` · ${tt.buildingHeightFt} ft high (cap ${tt.heightCapFt} ft)` : ''} · parking ${t.parkingRequired} at ${t.parkingRatioAssumed}/du ASSUMED — ${t.parkingWhere}`, 6.5) }
+  line(`TOTAL ${y.yield.totalDwellingUnits} DWELLING UNITS in ${y.yield.totalBays} bays · ${y.yield.grossDensityDuAc} du/ac gross on the ${y.tractAcres}-ac tract${(y.yield as unknown as { totalRetailSqFt?: number }).totalRetailSqFt ? ` · ${(y.yield as unknown as { totalRetailSqFt: number }).totalRetailSqFt.toLocaleString()} sf retail at grade` : ''}`, 8, true)
   yy += 2; line('CEILINGS if the whole developable ground were one type (× 0.8 for streets, parking, open space):', 6.5, true)
   for (const ce of y.yield.ceilings) line(`${ce.label}: ${ce.allOfThisType ?? '—'} du`, 6.5)
+  const sw = (y as unknown as { stormwater?: { imperviousSqFt: number; percentImpervious: number; rv: number; esdvCf: number; practiceFootprintSqFt: number; reservedSqFt: number; finding: string; additional: string } }).stormwater
+  if (sw) { yy += 4; line('STORMWATER MANAGEMENT (ESD, MDE Ch. 5)', 7.5, true); line(`Impervious ${sw.imperviousSqFt.toLocaleString()} sf (${sw.percentImpervious}%), Rv ${sw.rv}, ESDv ${sw.esdvCf.toLocaleString()} cf at P_E 1.0 in → ${sw.practiceFootprintSqFt.toLocaleString()} sf of micro-bioretention. Reserved for stormwater: ${sw.reservedSqFt.toLocaleString()} sf.`, 6.5); line(sw.finding, 6.5); line(sw.additional, 6.2, false, '#333') }
   yy += 4; line('UNIT ASSUMPTIONS', 7.5, true)
-  for (const [k, u] of Object.entries(y.unitTypes as Record<string, { label: string; lotWidthFt: number; lotDepthFt: number; footprintFt: [number, number]; stickMaxUnits: number; unitsPerBay: number }>)) line(`${u.label}: ${u.lotWidthFt} × ${u.lotDepthFt} ft lot, ${u.footprintFt[0]} × ${u.footprintFt[1]} ft footprint, ${u.unitsPerBay} du per bay, sticks of ≤ ${u.stickMaxUnits}`, 6.5)
-  line('Private streets in 40-ft strips (26-ft pavement, walk one side). Streets are drawn as parallel segments; the connecting street, entrance from the public road, visitor parking, open space and the Landscape Manual 4.7 buffer to the RE lots are DSP work not drawn here.', 6.5, false, '#333')
+  for (const [k, u] of Object.entries(y.unitTypes as Record<string, { label: string; lotWidthFt: number; lotDepthFt: number; footprintFt: [number, number]; stickMaxUnits: number; unitsPerBay: number; retailSqFtPerBay?: number; storeys?: number; heightFt?: number }>)) { void k; line(`${u.label}: ${u.lotWidthFt} × ${u.lotDepthFt} ft lot, ${u.footprintFt[0]} × ${u.footprintFt[1]} ft footprint, ${u.unitsPerBay} du per bay${u.retailSqFtPerBay ? `, ${u.retailSqFtPerBay.toLocaleString()} sf retail, ${u.storeys} storeys ≈ ${u.heightFt} ft` : `, sticks of ≤ ${u.stickMaxUnits}`}`, 6.5) }
+  const acc = (y as unknown as { access?: { road: string; note: string } | null }).access
+  line(`Private streets in 40-ft strips (26-ft pavement, walk one side)${acc ? `, each teeing off ${acc.road} — the existing public right-of-way — with no new access to any other road` : ''}. Visitor parking, open space and the Landscape Manual 4.7 buffer to the RE lots are DSP work not drawn here.`, 6.5, false, '#333')
   yy += 4; line('APPROVALS', 7.5, true)
   for (const a of y.approvals) line(a, 6.2, false, '#333')
   yy += 4; line('This is a yield study prepared by the Kealee site-plan engine from county GIS and the certified zoning table. It is not a Detailed Site Plan, not a survey and not a determination of what the Planning Board will approve.', 6.2, true, '#900')

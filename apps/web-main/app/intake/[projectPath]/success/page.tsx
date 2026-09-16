@@ -30,8 +30,7 @@ export default function IntakeSuccessPage() {
   const deliverable = SERVICE_DELIVERABLES[projectPath] ?? null
   const category = deliverable?.category ?? 'design'
 
-  const [status, setStatus] = useState<'idle' | 'generating' | 'redirecting' | 'done'>('idle')
-  const [error, setError] = useState('')
+  const [status, setStatus] = useState<'idle' | 'redirecting' | 'done'>('idle')
 
   useEffect(() => {
     if (!deliverable) return
@@ -42,37 +41,10 @@ export default function IntakeSuccessPage() {
       return
     }
 
-    // For design/development: trigger concept generation then redirect
-    const generate = async () => {
-      setStatus('generating')
-      try {
-        const controller = new AbortController()
-        const timeout = setTimeout(() => controller.abort(), 15000)
-
-        const res = await fetch('/api/concept/generate', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ intakeId }),
-          signal: controller.signal,
-        })
-
-        clearTimeout(timeout)
-
-        if (!res.ok) {
-          console.warn('[success] concept generation failed, redirecting anyway')
-        }
-      } catch (err: any) {
-        if (err?.name !== 'AbortError') {
-          console.error('[success] generate error:', err?.message)
-        }
-        // Fire-and-forget: still redirect even on timeout/error
-      }
-
-      setStatus('redirecting')
-      window.location.assign(getOwnerPortalDeliverableUrl(intakeId, projectPath ?? undefined))
-    }
-
-    generate()
+    // Stripe's signed webhook is the single production trigger. The browser
+    // only opens the portal, which safely shows processing until QC completes.
+    setStatus('redirecting')
+    window.location.assign(getOwnerPortalDeliverableUrl(intakeId, projectPath ?? undefined))
   }, [deliverable, intakeId, projectPath])
 
   // Permit success
@@ -91,7 +63,7 @@ export default function IntakeSuccessPage() {
   }
 
   // Design / Development: show generating state
-  if (status === 'generating' || status === 'redirecting') {
+  if (status === 'redirecting') {
     return (
       <div className="min-h-screen bg-gradient-to-br from-white to-orange-50 flex items-center justify-center px-4">
         <div className="text-center max-w-md">
@@ -102,14 +74,12 @@ export default function IntakeSuccessPage() {
             </div>
           </div>
           <h1 className="text-3xl font-bold text-slate-900 mb-3">
-            {status === 'redirecting' ? 'Concept Ready!' : 'Generating Your Concept'}
+            Payment confirmed
           </h1>
           <p className="text-slate-600 text-lg mb-2">
-            {status === 'redirecting'
-              ? 'Opening the Owner Portal…'
-              : 'Our design engine is building your personalized concept package.'}
+            Opening your Owner Portal while the delivery team starts your package…
           </p>
-          <p className="text-slate-400 text-sm">This takes about 10–15 seconds.</p>
+          <p className="text-slate-400 text-sm">Your portal will show each item only after it passes quality review.</p>
         </div>
       </div>
     )

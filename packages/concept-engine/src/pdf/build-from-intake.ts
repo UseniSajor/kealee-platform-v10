@@ -43,6 +43,7 @@ export function resolveHomeownerDeliverablesForPdf(
   const permitScope = asRecord(co.permitScope)
   const bom = Array.isArray(co.billOfMaterials) ? co.billOfMaterials : []
   const renderUrls = Array.isArray(co.renderUrls) ? (co.renderUrls as string[]) : []
+  const beforeUrls = Array.isArray(co.beforeUrls) ? (co.beforeUrls as string[]) : []
 
   const lineItems = bom.map((row) => {
     const r = asRecord(row) ?? {}
@@ -197,7 +198,9 @@ export function resolveHomeownerDeliverablesForPdf(
     },
     visuals: {
       midjourneyPrompts: renderUrls.slice(0, 3),
-      stableDiffusionPrompts: [],
+      // The PDF renderer recognizes source/render URLs and embeds the actual
+      // project images. Existing prompt-based packages remain supported.
+      stableDiffusionPrompts: beforeUrls.slice(0, 3),
       descriptions: renderUrls.map((_, i) => `Concept rendering ${i + 1}`),
       roomFocus: [intake.project_path.replace(/_/g, ' ')],
       styleKeywords: [style],
