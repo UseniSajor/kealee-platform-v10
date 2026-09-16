@@ -79,10 +79,6 @@ function packageIncludesVideo(_projectPath: string, tier: number): boolean {
   return conceptTierIncludesVideo(normalizeConceptTier(tier))
 }
 
-/** Until a Kealee transcode pipeline writes project-specific MP4s to storage, tier 2+ packages get a playable URL (override via env). */
-const DEFAULT_CONCEPT_PLACEHOLDER_VIDEO_URL =
-  'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4'
-
 interface ConceptOutput {
   designConcept: {
     style: string
@@ -429,33 +425,6 @@ function applyRenderBundle(conceptOutput: ConceptOutput, bundle: ConceptRenderBu
   }
   if (bundle.exteriorRenderUrls.length > 0) {
     conceptOutput.exteriorRenderUrls = bundle.exteriorRenderUrls
-  }
-}
-
-/**
- * Tier 2+ deliverables include a video. The actual generation is async and
- * runs out-of-band via /api/concept/video. This function only attaches the
- * placeholder URL so the customer sees something while the real video renders.
- *
- * Once /api/concept/video reports `completed`, the customer portal swaps in
- * `form_data.conceptVideo.outputUrl`.
- */
-function attachConceptVideoFields(conceptOutput: ConceptOutput, projectPath: string, tier: number): void {
-  if (!packageIncludesVideo(projectPath, tier)) return
-  if (conceptOutput.videoUrl) return
-  const url =
-    (typeof process.env.CONCEPT_PLACEHOLDER_VIDEO_URL === 'string' &&
-      process.env.CONCEPT_PLACEHOLDER_VIDEO_URL.trim()) ||
-    DEFAULT_CONCEPT_PLACEHOLDER_VIDEO_URL
-  conceptOutput.videoUrl = url
-  conceptOutput.videoDuration = 60
-  if (tier >= 3) {
-    conceptOutput.videoFormatUrls = {
-      '60s Full': url,
-      '30s Mobile': url,
-      '15s Social': url,
-      '10s Preview': url,
-    }
   }
 }
 
@@ -918,8 +887,6 @@ export async function POST(req: NextRequest) {
         projectAddress: intake.project_address as string | undefined,
         permitRequired: deliverable?.permitRequired,
       })
-      attachConceptVideoFields(out, projectPath, tier)
-
       const hadFloorplan =
         typeof cachedRaw.floorplanSvgInline === 'string' &&
         cachedRaw.floorplanSvgInline.trim().startsWith('<')
@@ -1109,8 +1076,6 @@ export async function POST(req: NextRequest) {
         nextSteps: { actionItems: nextStepItems },
       }
     }
-
-    attachConceptVideoFields(conceptOutput, projectPath, tier)
 
     // Stamp a stable package ID and provenance metadata so agents and humans
     // can retrieve, audit, and track each delivered package by a durable key.
