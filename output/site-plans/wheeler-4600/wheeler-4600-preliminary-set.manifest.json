@@ -1,27 +1,21 @@
 {
-  "record": "PRELIMINARY SUBDIVISION CONCEPT \u2014 4600 WHEELER ROAD, OXON HILL, PRINCE GEORGE'S COUNTY, MD",
-  "generatedAt": "2026-09-15",
-  "status": "PRELIMINARY \u2014 not a plat, not a boundary survey, not for recording",
-  "reference": {
-    "modelPlan": "Yocum Property Lots 1\u201319, Clinton (5th District) \u2014 Joseph Drive. DPIE approvals 15927-2020-0 (street construction, 20 sheets) and 15919-2020-0 (storm drain & site grading, 23 sheets), Design Engineering Inc., P.L. Arora P.E. 11101. Files in existing site plans/.",
+  "record": "PRELIMINARY SUBDIVISION CONCEPT — 4600 WHEELER ROAD, OXON HILL, PRINCE GEORGE'S COUNTY, MD",
+  "generatedAt": "2026-09-16",
+  "status": "PRELIMINARY — not a plat, not a boundary survey, not for recording",
+  "layoutTemplate": {
+    "sheet": "existing site plans/Wheeler Rd Subdivision Layout.pdf (2023; 19 lots + parkland on this parcel; Wheeler Rd 80' R/W per master plan)",
     "takenFromIt": [
-      "60' wide R.O.W.",
-      "26' pavement (reduced from 36' under that approval)",
-      "deep side lots run to the rear boundary",
-      "boxed LOT n / area SF labels",
-      "bearings on lot lines",
-      "dwelling boxes with SF/FF/B/G/HT",
-      "shaded driveways",
-      "index of drawings, curve table, legend, utility/miss-utility/stabilization notes, Sec. 23-128 info block, PE certification, DPIE approval box"
+      "street a tier in from the north boundary, rounding the north-east corner and running a tier in from the east boundary, lots on both sides",
+      "1,200 SF dwelling footprints and 25'/20'/8' BRLs",
+      "Hydro Area / Impervious Surface / Infiltration Berms 6' wide legend → stormwater by ESD",
+      "adjoining property owner/acreage lettering"
     ],
-    "notTakenYet": [
-      "storm drain pipes/structures/schedules",
-      "street lighting & photometrics",
-      "soil borings",
-      "conservation easement / expanded buffer",
-      "match lines",
-      "spot elevations"
-    ]
+    "changedFromIt": [
+      "ONE entrance from Wheeler Road (the sheet has two); the far end is a cul-de-sac",
+      "no private alley off Wheeler; every lot fronts the proposed public street",
+      "lots along Wheeler back onto it with a no-access reservation"
+    ],
+    "streetSection": "Joseph Drive, Yocum Property Lots 1–19 — DPIE 15927-2020-0 / 15919-2020-0: 60' R/W, 26' pavement"
   },
   "propertyFacts": {
     "parcelId": "366579",
@@ -34,6 +28,13 @@
     "frontage": {
       "streetName": "WHEELER",
       "lengthFt": 911.6450009241901
+    },
+    "existingStreet": {
+      "name": "WHEELER",
+      "masterPlanRightOfWayFt": 80,
+      "centrelineToParcelLineFt": 43.73537976213908,
+      "dedicationFt": 0,
+      "dedicationSqFt": 0
     }
   },
   "standards": {
@@ -45,140 +46,205 @@
     "sideYard": 8
   },
   "street": {
-    "basis": "Joseph Drive, Yocum Property Lots 1\u201319 \u2014 DPIE approvals 15927-2020-0 / 15919-2020-0",
+    "basis": "Joseph Drive, Yocum Property Lots 1–19 — DPIE approvals 15927-2020-0 / 15919-2020-0",
     "rightOfWayFt": 60,
     "pavementFt": 26,
     "bulbRightOfWayRadiusFt": 50,
     "bulbPavementRadiusFt": 40,
-    "entersAtStationFt": 170,
-    "stemFt": 175,
-    "turnDeg": 80,
-    "leg2Ft": 340,
-    "dedicationSqFt": 34827,
-    "note": "60' R/W and 26' pavement per the approved Joseph Drive section (Yocum Property, DPIE 15927-2020-0). Cul-de-sac radii (50' R/W, 40' pavement) are ASSUMED \u2014 that approval has no cul-de-sac. Confirm against PGC DPW&T Specifications and Standards before preliminary plan submission."
+    "curveRadiusFt": 100,
+    "entranceStationFt": 264,
+    "stemFt": 193,
+    "legs": [
+      {
+        "turnDeg": -34.2,
+        "runFt": 176
+      },
+      {
+        "turnDeg": -100.6,
+        "runFt": 355
+      }
+    ],
+    "curves": [
+      {
+        "id": "C1",
+        "radiusFt": 100,
+        "deltaDeg": 34.18,
+        "tangentFt": 30.75,
+        "lengthFt": 59.66
+      },
+      {
+        "id": "C2",
+        "radiusFt": 100,
+        "deltaDeg": 100.64,
+        "tangentFt": 120.55,
+        "lengthFt": 175.66
+      }
+    ],
+    "dedicationSqFt": 44407,
+    "note": "60' R/W and 26' pavement per the approved Joseph Drive section (Yocum Property, DPIE 15927-2020-0). Bend radius 150' centreline and cul-de-sac radii (50' R/W, 40' pavement) are ASSUMED — that approval is a through street with R ≥ 343'. Confirm against PGC DPW&T Specifications and Standards.",
+    "radiusCaveat": "The searched layout uses a 100-ft centreline radius at both bends (the 150-ft assumption did not fit the corner); confirm the DPW&T minimum for a local street."
+  },
+  "stormwater": {
+    "method": "MDE Stormwater Design Manual Ch. 5 ESD: Rv = 0.05 + 0.009·I; ESDv = P_E·Rv·A/12; practice = ESDv/(d·n)",
+    "rainfallTargetIn": 1,
+    "hydrologicSoilGroups": [
+      "B/D",
+      "C",
+      "D"
+    ],
+    "imperviousSqFt": 54309,
+    "percentImpervious": 23.5,
+    "rv": 0.2616,
+    "esdvCf": 5036,
+    "practiceFootprintSqFt": 6295,
+    "parcelA": {
+      "sqFt": 17206,
+      "where": "low corner of the tract (west tip), corner elevations 132–188 ft NAVD88 from PGAtlas 2-ft contours",
+      "streetFrontage": false,
+      "accessNote": "20-ft access and maintenance easement across Lot 1 needed, or shift the entrance to adjoin Parcel A"
+    },
+    "perLot": [
+      "rooftop disconnection",
+      "6-ft infiltration berm along the rear lot line (sheet legend)"
+    ],
+    "caveat": "P_E = 1.0 in is the Manual's floor; Table 5.3 sets it by % impervious and HSG (SSURGO: B/D, C, D). Infiltration feasibility depends on the Sec. 32-131 soils investigation. Concept approval from DPIE precedes preliminary plan."
   },
   "result": {
     "lots": [
       {
         "lot": 1,
-        "fronts": "WHEELER ROAD",
-        "sqFt": 9536,
-        "widthFt": 115.0,
-        "frontageFt": 115.0,
+        "fronts": "PROPOSED STREET (ENTRANCE, LEFT SIDE)",
+        "backsOntoWheeler": true,
+        "sqFt": 9835,
+        "widthFt": 146.0,
+        "frontageFt": 146.0,
         "conforming": true
       },
       {
         "lot": 2,
-        "fronts": "WHEELER ROAD",
-        "sqFt": 12280,
-        "widthFt": 76.3,
-        "frontageFt": 76.3,
+        "fronts": "PROPOSED STREET (CURVE C1, LEFT SIDE)",
+        "backsOntoWheeler": false,
+        "sqFt": 11908,
+        "widthFt": 142.1,
+        "frontageFt": 91.4,
         "conforming": true
       },
       {
         "lot": 3,
-        "fronts": "WHEELER ROAD",
-        "sqFt": 13307,
-        "widthFt": 76.3,
-        "frontageFt": 76.3,
+        "fronts": "PROPOSED STREET (CURVE C2, LEFT SIDE)",
+        "backsOntoWheeler": false,
+        "sqFt": 9854,
+        "widthFt": 136.2,
+        "frontageFt": 92.4,
         "conforming": true
       },
       {
         "lot": 4,
-        "fronts": "WHEELER ROAD",
-        "sqFt": 14333,
-        "widthFt": 76.3,
-        "frontageFt": 76.3,
+        "fronts": "PROPOSED STREET (CURVE C2, LEFT SIDE)",
+        "backsOntoWheeler": false,
+        "sqFt": 12933,
+        "widthFt": 179.0,
+        "frontageFt": 97.6,
         "conforming": true
       },
       {
         "lot": 5,
-        "fronts": "WHEELER ROAD",
-        "sqFt": 13375,
-        "widthFt": 76.3,
-        "frontageFt": 76.3,
+        "fronts": "PROPOSED STREET (CURVE C2, LEFT SIDE)",
+        "backsOntoWheeler": false,
+        "sqFt": 10813,
+        "widthFt": 113.0,
+        "frontageFt": 61.1,
         "conforming": true
       },
       {
         "lot": 6,
-        "fronts": "WHEELER ROAD",
-        "sqFt": 11063,
-        "widthFt": 76.3,
-        "frontageFt": 76.3,
+        "fronts": "PROPOSED STREET (LAST RUN, LEFT SIDE)",
+        "backsOntoWheeler": false,
+        "sqFt": 13335,
+        "widthFt": 83.3,
+        "frontageFt": 83.3,
         "conforming": true
       },
       {
         "lot": 7,
-        "fronts": "WHEELER ROAD",
-        "sqFt": 11063,
-        "widthFt": 76.3,
-        "frontageFt": 76.3,
+        "fronts": "PROPOSED STREET (LAST RUN, LEFT SIDE)",
+        "backsOntoWheeler": false,
+        "sqFt": 14155,
+        "widthFt": 125.8,
+        "frontageFt": 132.2,
         "conforming": true
       },
       {
         "lot": 8,
-        "fronts": "WHEELER ROAD",
-        "sqFt": 11063,
-        "widthFt": 76.3,
-        "frontageFt": 76.3,
+        "fronts": "PROPOSED STREET (ENTRANCE, RIGHT SIDE)",
+        "backsOntoWheeler": true,
+        "sqFt": 14032,
+        "widthFt": 75.0,
+        "frontageFt": 75.0,
         "conforming": true
       },
       {
         "lot": 9,
-        "fronts": "WHEELER ROAD",
-        "sqFt": 11548,
-        "widthFt": 152.6,
-        "frontageFt": 152.6,
+        "fronts": "PROPOSED STREET (ENTRANCE, RIGHT SIDE)",
+        "backsOntoWheeler": false,
+        "sqFt": 9530,
+        "widthFt": 83.8,
+        "frontageFt": 83.8,
         "conforming": true
       },
       {
         "lot": 10,
-        "fronts": "PROPOSED STREET (LEFT)",
-        "sqFt": 9719,
-        "widthFt": 78.3,
-        "frontageFt": 78.3,
+        "fronts": "PROPOSED STREET (CURVE C2, RIGHT SIDE)",
+        "backsOntoWheeler": false,
+        "sqFt": 9746,
+        "widthFt": 159.9,
+        "frontageFt": 215.5,
         "conforming": true
       },
       {
         "lot": 11,
-        "fronts": "PROPOSED STREET (LEFT)",
-        "sqFt": 11538,
-        "widthFt": 78.3,
-        "frontageFt": 78.3,
+        "fronts": "PROPOSED STREET (LAST RUN, RIGHT SIDE)",
+        "backsOntoWheeler": false,
+        "sqFt": 9823,
+        "widthFt": 101.9,
+        "frontageFt": 101.9,
         "conforming": true
       },
       {
         "lot": 12,
-        "fronts": "PROPOSED STREET (LEFT)",
-        "sqFt": 12552,
-        "widthFt": 78.3,
-        "frontageFt": 78.3,
+        "fronts": "PROPOSED STREET (LAST RUN, RIGHT SIDE)",
+        "backsOntoWheeler": true,
+        "sqFt": 13954,
+        "widthFt": 109.2,
+        "frontageFt": 168.0,
         "conforming": true
       },
       {
         "lot": 13,
         "fronts": "PROPOSED STREET (CUL-DE-SAC)",
-        "sqFt": 18244,
-        "widthFt": 168.4,
-        "frontageFt": 70.7,
+        "backsOntoWheeler": true,
+        "sqFt": 12074,
+        "widthFt": 192.6,
+        "frontageFt": 52.3,
         "conforming": true
       },
       {
         "lot": 14,
         "fronts": "PROPOSED STREET (CUL-DE-SAC)",
-        "sqFt": 12991,
-        "widthFt": 252.7,
-        "frontageFt": 70.7,
+        "backsOntoWheeler": false,
+        "sqFt": 17382,
+        "widthFt": 220.4,
+        "frontageFt": 52.3,
         "conforming": true
       }
     ],
     "conforming": 14,
     "total": 14,
-    "netSqFt": 196168,
-    "densityCapGis": 20,
-    "densityCapRecorded": 19,
-    "leftoverSqFt": 23557,
-    "whyNotTheCap": "The parcel is a triangle ~414 ft deep at most. A 145-ft frontage tier + 60-ft R/W + 120-ft tiers both sides of a new street needs ~445 ft, so the new street serves conforming lots on one side only. 1,060 street geometries (station, stem, turn \u221290\u2026+90\u00b0, length) were searched; 14 conforming 9,500-sf/75-ft lots is the most any of them fits. Reaching 19\u201320 would need smaller lots than RSF-95 allows, a second street, or terms of SE-1796 not read here."
+    "netSqFt": 186588,
+    "densityCapGis": 19,
+    "densityCapRecorded": 18,
+    "leftoverSqFt": 6,
+    "whyNotTheCap": "One public street with one entrance serves a 5.3-ac triangle 414 ft deep at most. The 2023 sheet reached 19 lots with a loop street (two entrances) and an 18-ft private alley serving the interior; with one entrance and no alley the interior is reached only from the inside of the L, so the inside-corner and outside-corner lots run deep (12–17k sf) and 14 conforming 9,500-sf / 75-ft lots is the most of 285 searched geometries. All 14 front the proposed street; none take access from Wheeler Road."
   },
   "outputs": {
     "sheets": [
@@ -187,13 +253,21 @@
       "C-400 Grading and Drainage Plan"
     ],
     "files": [
-      "wheeler-4600-preliminary-set.pdf",
+      "wheeler-4600-preliminary-set.v3.pdf (this set; wheeler-4600-preliminary-set.pdf is the superseded bent-street set, locked open in a viewer when this was generated — replace it with the .v3 file)",
       "wheeler-4600-preliminary-set.dxf",
-      "wheeler-4600-preliminary-set.landxml.xml"
+      "wheeler-4600-preliminary-set.landxml.xml",
+      "wheeler-4600.plat.json",
+      "wheeler-4600-lot1..14.plat.json",
+      "wheeler-4600.plat-record.json",
+      "wheeler-4600.proposal.json"
+    ],
+    "knownDefects": [
+      "38 required labels overprint on C-001 at this sheet scale (per-lot sheets / match lines are an open engine item)",
+      "frontage improvements are lettered along Wheeler Road from the outer boundary although no lot fronts it"
     ]
   },
   "method": {
-    "script": "packages/spatial-engine/scripts/propose-subdivision.ts \u2192 scripts/generate-subdivision.ts",
-    "search": "roadLayout() over station \u00d7 stem \u00d7 turn \u00d7 length; score = conforming\u00d71000 \u2212 leftover/1000 \u2212 nonconforming\u00d750 \u2212 dedication/5000"
+    "script": "packages/spatial-engine/scripts/propose-subdivision.ts → scripts/generate-subdivision.ts",
+    "search": "street follows the two long rear edges at offsets 130–280 ft, entrance station 120 ft–L/2 from either tip, R ∈ {150, 100}; lots cut with polygon booleans (polygon-clipping): strips per station interval, pies to the centre inside bends, corner split on the angle bisector, first 130 ft beside every part of the street reserved to its own frontage, no overlaps by construction; score = conforming×1000 − leftover/1000 − nonconforming×60 − dedication/4000 − 400 if R<150 + 400 if the street adjoins Parcel A"
   }
 }

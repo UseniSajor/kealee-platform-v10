@@ -262,8 +262,15 @@ async function main(): Promise<void> {
       name: string; rightOfWayFt: number; pavementFt: number
       bulbRightOfWayRadiusFt?: number; bulbPavementRadiusFt?: number
       centreline: Position[]; bulbCentre?: Position
+      /** Every branch of the street when it forks (a T to two cul-de-sacs); `centreline` is the first. */
+      centrelines?: Position[][]
       rowRings: Position[][]; pavementRings: Position[][]; rowSqFt?: number; basis?: string; note?: string
     }[]
+    /** Stormwater management the concept reserves — a parcel for the ESD practice, with its sizing. */
+    stormwater?: {
+      practice?: string; esdvCf?: number; footprintSqFt?: number
+      parcels?: { name: string; ring: Position[]; sqFt: number; practice?: string; footprintSqFt?: number; requiredVolumeCf?: number }[]
+    }
     dedicationWidthFt?: number
     existingPavement?: { label: string; note: string }
     approvalsOfRecord?: { kind: string; number: string; confirmedBy: string; status: string }[]
@@ -2822,12 +2829,31 @@ async function main(): Promise<void> {
         attributes: { label: j === 0 ? `PROPOSED BIT. CONC. PAVEMENT  ${st.pavementFt}' WIDE` : '', improvement: 'street', proposed: true },
       } as never)
     }
-    merged.push({
-      kind: 'ProposedFeature', id: `prop-street-${k}-cl`,
-      line: st.centreline,
-      attributes: { type: 'centerline', proposed: true, label: `PROP. ${st.name} — CENTERLINE` },
-    } as never)
+    for (const [j, cl] of (st.centrelines ?? [st.centreline]).entries()) {
+      merged.push({
+        kind: 'ProposedFeature', id: `prop-street-${k}-cl-${j}`,
+        line: cl,
+        attributes: { type: 'centerline', proposed: true, label: j === 0 ? `PROP. ${st.name} — CENTERLINE` : '' },
+      } as never)
+    }
     console.log(`    proposed street ${st.name}: ${st.rightOfWayFt}' R/W, ${st.pavementFt}' pavement, ${st.rowSqFt?.toFixed(0) ?? '?'} sf dedication`)
+  }
+  // A stormwater parcel the concept reserves: its outline lettered as a parcel,
+  // and the practice inside it drawn the way a lot's SWMPractice is (hatched,
+  // ESD, its footprint), sized for the whole subdivision.
+  for (const [k, sp] of (platRecord?.stormwater?.parcels ?? []).entries()) {
+    const closed: Position[] = [...sp.ring, sp.ring[0]]
+    merged.push({
+      kind: 'ProposedFeature', id: `swm-parcel-${k}`,
+      ring: { coordinates: closed },
+      attributes: { type: 'stormwater-parcel', proposed: true, label: `${sp.name} — ${Math.round(sp.sqFt).toLocaleString()} SF (NOT A BUILDING LOT)` },
+    } as never)
+    merged.push({
+      kind: 'SWMPractice', id: `swm-facility-${k}`,
+      ring: { coordinates: closed },
+      attributes: { practice: sp.practice ?? 'Environmental Site Design', footprintSqFt: sp.footprintSqFt ?? null, requiredVolumeCf: sp.requiredVolumeCf ?? null, proposed: true },
+    } as never)
+    console.log(`    stormwater parcel ${sp.name}: ${sp.sqFt.toFixed(0)} sf, practice ${sp.footprintSqFt ?? '?'} sf for ${sp.requiredVolumeCf ?? '?'} cf`)
   }
 
   let twin: SiteTwin = {

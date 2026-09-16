@@ -1,5 +1,5 @@
 {
-  "_source": "PRELIMINARY. Outer boundary from the Prince George's County parcel layer (PGAtlas Property/MapServer/15), compiled from tax maps — NOT a boundary survey and NOT a plat of record. Lot lines and the street are PROPOSED by Kealee. A Maryland licensed surveyor must establish the boundary before any plat is prepared.",
+  "_source": "PRELIMINARY. Outer boundary from the Prince George's County parcel layer (PGAtlas Property/MapServer/15), compiled from tax maps — NOT a boundary survey and NOT a plat of record. Lot lines and streets are PROPOSED by Kealee. A Maryland licensed surveyor must establish the boundary before any plat is prepared.",
   "address": "4600 WHEELER ROAD",
   "reference": {
     "subdivisionName": "4600 WHEELER ROAD — PRELIMINARY SUBDIVISION CONCEPT",
@@ -8,10 +8,10 @@
   },
   "basisOfBearings": "Maryland State Plane Coordinate System (NAD 83), from PGAtlas parcel geometry",
   "pointOfBeginning": [
-    1318647.0614753822,
-    423098.27692344453
+    1318594.735,
+    422922.701
   ],
-  "recordedAreaSqFt": 11538,
+  "recordedAreaSqFt": 9823,
   "programme": {
     "totalFloorAreaSqFt": 2400,
     "storeys": 2,
@@ -21,31 +21,43 @@
   },
   "frontSetbackFt": 25,
   "sideSetbackFt": 8,
-  "frontsOn": "PROPOSED STREET (LEFT)",
+  "frontsOn": "PROPOSED STREET (LAST RUN, RIGHT SIDE)",
   "calls": [
     {
       "kind": "line",
-      "bearing": "N 29-48-30 E",
-      "distanceFt": 149.82,
-      "label": "proposed lot line (fronts PROPOSED STREET (LEFT))"
+      "bearing": "N 84-38-02 E",
+      "distanceFt": 100,
+      "label": "proposed lot line (fronts PROPOSED STREET (LAST RUN, RIGHT SIDE))"
     },
     {
       "kind": "line",
-      "bearing": "N 63-52-45 W",
-      "distanceFt": 78.5,
+      "bearing": "N 05-22-00 W",
+      "distanceFt": 101.93,
       "label": "proposed lot line 2"
     },
     {
       "kind": "line",
-      "bearing": "S 29-48-30 W",
-      "distanceFt": 144.77,
+      "bearing": "S 84-38-03 W",
+      "distanceFt": 84.5,
       "label": "proposed lot line 3"
     },
     {
       "kind": "line",
-      "bearing": "S 60-11-30 E",
-      "distanceFt": 78.33,
+      "bearing": "S 33-06-12 E",
+      "distanceFt": 10.37,
       "label": "proposed lot line 4"
+    },
+    {
+      "kind": "line",
+      "bearing": "S 39-48-33 W",
+      "distanceFt": 28.66,
+      "label": "proposed lot line 5"
+    },
+    {
+      "kind": "line",
+      "bearing": "S 05-22-00 E",
+      "distanceFt": 72.54,
+      "label": "proposed lot line 6"
     }
   ]
 }
