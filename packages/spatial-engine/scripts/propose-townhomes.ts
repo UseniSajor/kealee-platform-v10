@@ -76,6 +76,8 @@ type UnitKey = keyof typeof UNIT_TYPES
 const STREET_FT = 40           // private street: 26-ft pavement (≥ 22 ft, Sec. 24-128(b)(7)(A)(i)), 5-ft walk one side, in a 40-ft strip; 10-ft PUE contiguous (24-128(b)(12)) in the lots' front yards
 const BULB_ROW_R = 45          // turnaround at a dead end: 45-ft right-of-way radius, 40-ft pavement — required beyond 150 ft of dead end (IFC D103.4, adopted by Subtitle 11)
 const DEAD_END_MAX_FT = 150
+const BUFFERYARD_FT = 25       // no street on the property line: a landscape strip stays between any street and the tract boundary (Landscape Manual Sec. 4.7 sets the bufferyard width at DSP; 25 ft is assumed)
+const WALK_FT = 5              // sidewalk along the front of every building, on the lot at the street line (Sec. 23-135)
 const DRIVE_APRON_FT = 20      // build line behind the street line where a car parks in front of a garage without overhanging the walk (industry practice; the CGO front yard minimum is 10 ft)
 const ENTRANCE_FT = 60         // the public-road connection
 
@@ -432,13 +434,14 @@ async function main() {
   }
   { devRing.length = 0; devRing.push(...devPieces.flat()); console.log(`    streets swept across ${devPieces.length} developable piece(s) ≥ 0.5 ac`) }
   const frontageIsAccess = !!(frontageRe && accessName && frontageRe.test(accessName))
-  const layoutAt = (theta: number, shift: number) => {
+  const layoutAt = (theta: number, shifts: number[]) => {
     const axis: P = [Math.cos(theta), Math.sin(theta)]
     let across = leftOf(axis)
     if (frontPt && !frontageIsAccess && dot(frontPt, cen, across) > 0) across = [-across[0], -across[1]]   // the first band goes on the road's side
     const units: Unit[] = []
     const streets: P[][] = []
     const bulbs: P[][] = []
+    const connectors: P[][] = []
     let taken: MP = []
     const frames: { ax: P; ac: P; origin: P; cc0: number; cc1: number; front: 'c0' | 'c1' }[] = []
     const placeRow = (ax: P, ac: P, origin: P, cc0: number, cc1: number, s0: number, s1: number, T: typeof UNIT_TYPES[UnitKey], type: UnitKey, bandNo: number, front: 'c0' | 'c1' = 'c0') => {
@@ -465,53 +468,82 @@ async function main() {
     const streetPlan: { stripRing: P[]; c: number; streetC0: number; streetC1: number; rowB: number; band: number; t1: typeof UNIT_TYPES[UnitKey]; t2: typeof UNIT_TYPES[UnitKey] }[] = []
     // Each developable piece (a block between constraints) is swept on its own extents, so a
     // street lands in every block rather than only where the whole tract's sweep happens to fall.
+    // The property line band no street may sit in: the tract's outer edge, less the edges that are
+    // the kept right-of-way or the access road (streets must reach those).
+    const edgeBand = difference(difference(union(rings(tract).flatMap(r => bufferPolyline([...r, r[0]], BUFFERYARD_FT))), union(existingRow.flatMap(r => bufferPolyline([...r, r[0]], BUFFERYARD_FT + 2)))), union(accessPaths.flatMap(pth => bufferPolyline(pth, accessRowFt / 2 + BUFFERYARD_FT + 2))))
     for (const [pi, piece] of devPieces.entries()) {
       const pAlong = piece.map(p => dot(p, cen, axis)), pCross = piece.map(p => dot(p, cen, across))
       const pa0 = Math.min(...pAlong), pa1 = Math.max(...pAlong), pc0 = Math.min(...pCross), pc1 = Math.max(...pCross)
       const pieceMP: MP = [devPolys[pi]]
-      let c = pc0 + 10 + shift
+      const streetGround = difference(pieceMP, edgeBand)   // where a street may be cut
+      const pieceStrips: { stripRing: P[]; s0: number; s1: number; cMid: number }[] = []
+      let c = pc0 + 10 + (shifts[pi] ?? shifts[0] ?? 0)
       let band = frontageIsAccess ? 1 : 0   // band 0 is the frontage row when the buildings line the access road
       while (c < pc1 - 60) {
         const t1 = UNIT_TYPES[mix[band % mix.length]], t2 = UNIT_TYPES[mix[(band + 1) % mix.length]]
         const rowA = t1.lotDepthFt, rowB = t2.lotDepthFt
         // The last module of a block that cannot hold two rows and a street holds one row and a
         // street on the far edge (single-loaded, the street against the boundary bufferyard).
+        // (single-loaded, the street inset the bufferyard from the boundary — never on the property line).
         const single = c + rowA + STREET_FT + 40 > pc1
-        if (single && c + rowA + STREET_FT > pc1 + 6) break
-        const streetC0 = single ? Math.min(c + rowA, pc1 - STREET_FT) : c + rowA, streetC1 = streetC0 + STREET_FT
-        const strip = difference(intersection(asMP([add(add(cen, axis, pa0 - 50), across, streetC0), add(add(cen, axis, pa1 + 50), across, streetC0), add(add(cen, axis, pa1 + 50), across, streetC1), add(add(cen, axis, pa0 - 50), across, streetC1)]), pieceMP), taken)
-        const pieces = mpArea(strip) < 2000 ? [] : rings(strip).filter(r => Math.abs(area(r)) >= 120 * STREET_FT)
+        if (single && c + rowA + STREET_FT + BUFFERYARD_FT > pc1 + 6) break
+        const streetC0 = single ? Math.min(c + rowA, pc1 - BUFFERYARD_FT - STREET_FT) : c + rowA, streetC1 = streetC0 + STREET_FT
+        const strip = difference(intersection(asMP([add(add(cen, axis, pa0 - 50), across, streetC0), add(add(cen, axis, pa1 + 50), across, streetC0), add(add(cen, axis, pa1 + 50), across, streetC1), add(add(cen, axis, pa0 - 50), across, streetC1)]), streetGround), taken)
+        // (a strip that would run alongside the kept right-of-way is redundant — the rows front the right-of-way instead)
+        const alongRow = (r: P[]) => r.some((v, i) => { const w = r[(i + 1) % r.length]; if (Math.hypot(w[0] - v[0], w[1] - v[1]) < 60) return false; const m: P = [(v[0] + w[0]) / 2, (v[1] + w[1]) / 2]; return existingRow.some(rr => rr.some((q, j) => segDistP(m, q, rr[(j + 1) % rr.length]) < 2)) })
+        const pieces = mpArea(strip) < 2000 ? [] : rings(strip).filter(r => Math.abs(area(r)) >= 120 * STREET_FT && !alongRow(r))
         if (!pieces.length) { c += 40; continue }
         for (const stripRing of pieces) {
           streets.push(stripRing)
           taken = unionMP(taken, asMP(stripRing))
           streetPlan.push({ stripRing, c, streetC0, streetC1, rowB: single ? 0 : rowB, band, t1, t2 })
-          // A dead end longer than 150 ft gets a turnaround (IFC D103.4): an end is connected if it
-          // meets the kept right-of-way, the access road or another street; otherwise a bulb is cut
-          // into the block at that end, inside the piece, before the rows are placed.
-          const sA = stripRing.map(q => dot(q, cen, axis)); const s0 = Math.min(...sA), s1 = Math.max(...sA)
-          if (s1 - s0 <= DEAD_END_MAX_FT) continue
-          const cMid = (streetC0 + streetC1) / 2
-          const connected = (e: P) => existingRow.some(r => r.some((v, i) => segDistP(e, v, r[(i + 1) % r.length]) < 30))
-            || accessPaths.some(pth => pth.some((v, i) => i + 1 < pth.length && segDistP(e, v, pth[i + 1]) < accessRowFt / 2 + 8))
-            || streets.some(r => r !== stripRing && r.some((v, i) => segDistP(e, v, r[(i + 1) % r.length]) < 30))
-          for (const [sEnd, dir] of [[s0, 1], [s1, -1]] as const) {
-            const e = add(add(cen, axis, sEnd), across, cMid)
-            if (connected(e)) continue
-            const ctr = add(e, axis, dir * (BULB_ROW_R + 4))
-            const circle: P[] = Array.from({ length: 28 }, (_, k) => [ctr[0] + BULB_ROW_R * Math.cos(k / 28 * 2 * Math.PI), ctr[1] + BULB_ROW_R * Math.sin(k / 28 * 2 * Math.PI)])
-            const bulb = intersection(asMP(circle), pieceMP)
-            for (const r of rings(bulb)) if (Math.abs(area(r)) > 0.6 * Math.PI * BULB_ROW_R * BULB_ROW_R) { streets.push(r); bulbs.push(r); taken = unionMP(taken, asMP(r)) }
-          }
+          const sA = stripRing.map(q => dot(q, cen, axis))
+          pieceStrips.push({ stripRing, s0: Math.min(...sA), s1: Math.max(...sA), cMid: (streetC0 + streetC1) / 2 })
         }
         if (single) break
         c = streetC1 + rowB + 10
         band += 2
       }
+      // ── Close the network. Dead ends are joined by a connector street across their ends where
+      // two or more end at the same edge (a loop, Sec. 24-123(a)(2) — continuous streets); an end
+      // that stays dead beyond 150 ft gets a turnaround (IFC D103.4). Streets before rows, so the
+      // rows are cut around all of it.
+      const connectedEnd = (e: P, self: P[]) => existingRow.some(r => r.some((v, i) => segDistP(e, v, r[(i + 1) % r.length]) < 30))
+        || accessPaths.some(pth => pth.some((v, i) => i + 1 < pth.length && segDistP(e, v, pth[i + 1]) < accessRowFt / 2 + 8))
+        || streets.some(r => r !== self && r.some((v, i) => segDistP(e, v, r[(i + 1) % r.length]) < 30))
+      const endPt = (st: typeof pieceStrips[number], side: 0 | 1) => add(add(cen, axis, side === 0 ? st.s0 : st.s1), across, st.cMid)
+      for (const side of [0, 1] as const) {
+        const dead = pieceStrips.filter(st => st.s1 - st.s0 > DEAD_END_MAX_FT && !connectedEnd(endPt(st, side), st.stripRing))
+        // group dead ends that sit at the same edge (their along-coordinates within 60 ft)
+        const groups: typeof dead[] = []
+        for (const st of [...dead].sort((a, b) => (side === 0 ? a.s0 - b.s0 : a.s1 - b.s1))) {
+          const g = groups.find(gr => Math.abs((side === 0 ? gr[0].s0 : gr[0].s1) - (side === 0 ? st.s0 : st.s1)) < 60)
+          if (g) g.push(st); else groups.push([st])
+        }
+        for (const g of groups) {
+          if (g.length < 2) continue
+          const sEdge = side === 0 ? Math.max(...g.map(st => st.s0)) : Math.min(...g.map(st => st.s1))
+          const aA = side === 0 ? sEdge : sEdge - STREET_FT, aB = aA + STREET_FT
+          const cs = g.flatMap(st => st.stripRing.map(q => dot(q, cen, across)))
+          const c0 = Math.min(...cs), c1 = Math.max(...cs)
+          const strip = intersection(asMP([add(add(cen, axis, aA), across, c0), add(add(cen, axis, aB), across, c0), add(add(cen, axis, aB), across, c1), add(add(cen, axis, aA), across, c1)]), streetGround)
+          for (const r of rings(strip)) if (Math.abs(area(r)) >= 60 * STREET_FT) { streets.push(r); connectors.push(r); taken = unionMP(taken, asMP(r)) }
+        }
+      }
+      for (const st of pieceStrips) {
+        if (st.s1 - st.s0 <= DEAD_END_MAX_FT) continue
+        for (const [side, dir] of [[0, 1], [1, -1]] as const) {
+          const e = endPt(st, side)
+          if (connectedEnd(e, st.stripRing)) continue
+          const ctr = add(e, axis, dir * (BULB_ROW_R + 4))
+          const circle: P[] = Array.from({ length: 28 }, (_, k) => [ctr[0] + BULB_ROW_R * Math.cos(k / 28 * 2 * Math.PI), ctr[1] + BULB_ROW_R * Math.sin(k / 28 * 2 * Math.PI)])
+          const bulb = intersection(asMP(circle), streetGround)
+          for (const r of rings(bulb)) if (Math.abs(area(r)) > 0.6 * Math.PI * BULB_ROW_R * BULB_ROW_R) { streets.push(r); bulbs.push(r); taken = unionMP(taken, asMP(r)) }
+        }
+      }
     }
     // A connector behind the frontage row, parallel to the access road, joining every perpendicular
     // street into one network (a loop with the access road) — so no internal street is a dead end.
-    const connectors: P[][] = []
     if (frontageIsAccess && accessDir && accessAnchor && streetPlan.length >= 2) {
       const T0 = UNIT_TYPES[mix[0]]
       const ac: P = dot(cen, accessAnchor, leftOf(accessDir)) > 0 ? leftOf(accessDir) : [-leftOf(accessDir)[0], -leftOf(accessDir)[1]]
@@ -558,6 +590,7 @@ async function main() {
     const parking: { ring: P[]; spaces: number; serves: string }[] = []
     const buildings: { ring: P[]; type: UnitKey }[] = []
     const driveways: { ring: P[]; type: UnitKey; cars: number }[] = []
+    const walks: P[][] = []
     units.forEach((u, ui) => {
       const T = UNIT_TYPES[u.type]
       const fr = frames[ui]
@@ -575,6 +608,10 @@ async function main() {
         const d0 = fr.front === 'c0' ? fr.cc0 + front : fr.cc1 - front - depth, d1 = d0 + depth
         const band = asMP([add(add(fr.origin, fr.ax, -3000), fr.ac, d0), add(add(fr.origin, fr.ax, 3000), fr.ac, d0), add(add(fr.origin, fr.ax, 3000), fr.ac, d1), add(add(fr.origin, fr.ax, -3000), fr.ac, d1)])
         for (const r of rings(intersection(asMP(u.ring), band))) buildings.push({ ring: r, type: u.type })
+        // the sidewalk along the front of the building, on the lot at the street line
+        const w0 = fr.front === 'c0' ? fr.cc0 : fr.cc1 - WALK_FT
+        const walk = asMP([add(add(fr.origin, fr.ax, -3000), fr.ac, w0), add(add(fr.origin, fr.ax, 3000), fr.ac, w0), add(add(fr.origin, fr.ax, 3000), fr.ac, w0 + WALK_FT), add(add(fr.origin, fr.ax, -3000), fr.ac, w0 + WALK_FT)])
+        for (const r of rings(intersection(asMP(u.ring), walk))) walks.push(r)
         // the driveway from the street line to the garage door, centred on the lot
         const dw = (T as { driveWidthFt?: number }).driveWidthFt ?? 10
         const sAl = u.ring.map(q => dot(q, fr.origin, fr.ax)); const sMid = (Math.min(...sAl) + Math.max(...sAl)) / 2
@@ -594,16 +631,36 @@ async function main() {
     // A street strip that serves no lot (it landed on ground the rows could not use) is not built.
     const serves = (r: P[]) => units.some(u => u.ring.some(q => r.some((v, i) => segDistP(q, v, r[(i + 1) % r.length]) < 2)))
     const kept = streets.filter(r => connectors.includes(r) || bulbs.includes(r) || serves(r))
-    return { axis, units, streets: kept, connectors, bulbs, parking, buildings, driveways, du: units.reduce((t, u) => t + u.units, 0) }
+    return { axis, units, streets: kept, connectors, bulbs, parking, buildings, driveways, walks, du: units.reduce((t, u) => t + u.units, 0) }
   }
   // Two orientations (the ground's principal axis and across it) and three offsets; the most dwellings wins.
-  let best = layoutAt(accessTheta ?? theta, 0)
-  for (const th of accessTheta != null ? [accessTheta] : [theta, theta + Math.PI / 2]) for (const sh of [0, 20, 40, 60, 80, 100]) {
-    const cand = layoutAt(th, sh)
-    console.log(`      orientation ${bearingOf([0, 0], [Math.cos(th), Math.sin(th)])} offset ${sh}: ${cand.du} du on ${cand.streets.length} street segment(s)`)
+  // Each block is swept at its own best offset: the offset that yields the most dwellings on
+  // that block's ground (a unit is on the block whose ring holds its centre), the others held.
+  const SHIFTS = [0, 20, 40, 60, 80, 100, 120, 140, 160, 180, 200]
+  const duOn = (cand: ReturnType<typeof layoutAt>, pi: number) => cand.units.filter(u => pointInRing(interiorPoint(u.ring), devPieces[pi])).reduce((t, u) => t + u.units, 0)
+  let best = layoutAt(accessTheta ?? theta, [0])
+  for (const th of accessTheta != null ? [accessTheta] : [theta, theta + Math.PI / 2]) {
+    const shifts = devPieces.map(() => 0)
+    for (let pi = 0; pi < devPieces.length; pi++) {
+      let bestSh = 0, bestDu = -1
+      for (const sh of SHIFTS) {
+        const trial = [...shifts]; trial[pi] = sh
+        const cand = layoutAt(th, trial); const d = duOn(cand, pi)
+        if (d > bestDu) { bestDu = d; bestSh = sh }
+      }
+      shifts[pi] = bestSh
+      console.log(`      block ${pi + 1} (${(Math.abs(area(devPieces[pi])) / 43560).toFixed(2)} ac): best offset ${bestSh} ft → ${bestDu} du on the block`)
+    }
+    const cand = layoutAt(th, shifts)
+    console.log(`      orientation ${bearingOf([0, 0], [Math.cos(th), Math.sin(th)])} offsets ${shifts.join('/')}: ${cand.du} du on ${cand.streets.length} street segment(s)`)
     if (cand.du > best.du) best = cand
   }
-  const { axis, units, streets, connectors, bulbs, parking, buildings, driveways } = best
+  const { axis, units, streets, connectors, bulbs, parking, buildings, driveways, walks } = best
+  // No street on the property line: report any street strip whose long side runs along the tract boundary.
+  { const tr = rings(tract); let onLine = 0
+    for (const r of streets) { const edges = r.map((v, i) => [v, r[(i + 1) % r.length]] as [P, P]).filter(([a, b]) => Math.hypot(b[0] - a[0], b[1] - a[1]) > 60)
+      if (edges.some(([a, b]) => { const m: P = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2]; return tr.some(t => t.some((v, i) => segDistP(m, v, t[(i + 1) % t.length]) < 1)) && !existingRow.some(rr => rr.some((q, j) => segDistP(m, q, rr[(j + 1) % rr.length]) < 2)) })) onLine++ }
+    console.log(`    streets along the property line: ${onLine}${onLine ? ' — !! should be none' : ''}`) }
 
   // ── Yield, density and parking ────────────────────────────────────────────
   const byType = (Object.keys(UNIT_TYPES) as UnitKey[]).map(k => {
@@ -639,10 +696,10 @@ async function main() {
   const built = [...streets, ...units.map(u => u.ring), ...existingRow].reduce((m, r) => unionMP(m, asMP(r)), [] as MP)
   const leftover = difference(developable, built)
   const esdPractices: P[][] = []
+  // Solid pieces only — a leftover polygon that wraps a row of lots (holes) is cut into 60-ft
+  // bands across the street axis first, so each basin is one simple shape a grading plan can hold.
+  const solids: P[][] = []
   { let need = fp.value.footprintSqFt
-    // Solid pieces only — a leftover polygon that wraps a row of lots (holes) is cut into 60-ft
-    // bands across the street axis first, so each basin is one simple shape a grading plan can hold.
-    const solids: P[][] = []
     for (const poly of leftover) {
       if (poly.length === 1) { solids.push(openRing(poly[0] as P[])); continue }
       const outer = openRing(poly[0] as P[]); const al = outer.map(q => dot(q, cen, axis)); const a0 = Math.min(...al), a1 = Math.max(...al)
@@ -657,6 +714,15 @@ async function main() {
     if (one) esdPractices.push(one.r)
     else for (const c of [...cands].reverse()) { if (need <= 0) break; esdPractices.push(c.r); need -= c.a } }
   const esdReservedSqFt = esdPractices.reduce((t, r) => t + Math.abs(area(r)), 0)
+  // Mandatory dedication of parkland (Sec. 24-134): 5% of the gross tract, met on site as
+  // recreation open space on an HOA parcel — the largest ground the rows left, after the ESD areas.
+  const OPEN_SPACE_PCT = 5
+  const openSpace: P[][] = []
+  { let need = tractSqFt * OPEN_SPACE_PCT / 100
+    const cands = solids.filter(r => Math.abs(area(r)) >= 3000 && 2 * Math.abs(area(r)) / perim(r) >= 20 && !esdPractices.includes(r)).sort((a, b) => Math.abs(area(b)) - Math.abs(area(a)))
+    for (const r of cands) { if (need <= 0) break; openSpace.push(r); need -= Math.abs(area(r)) } }
+  const openSpaceSqFt = openSpace.reduce((t, r) => t + Math.abs(area(r)), 0)
+  console.log(`    open space (Sec. 24-134, 5% = ${Math.round(tractSqFt * 0.05).toLocaleString()} sf): ${Math.round(openSpaceSqFt).toLocaleString()} sf in ${openSpace.length} area(s)`)
   const swmReservedSqFt = mpArea(swmReserve) + esdReservedSqFt
   const stormwater = {
     method: 'MDE Stormwater Design Manual Ch. 5 ESD — Rv = 0.05 + 0.009·I; ESDv = P_E·Rv·A/12; practice area = ESDv/(d·n), d = 2 ft, n = 0.4; P_E = 1.0 in is the floor — Table 5.3 raises it with % impervious and HSG',
@@ -701,9 +767,10 @@ async function main() {
     standards: { zone, section: PG_ZONE_DIMENSIONAL_TABLES[zone].section, perType: stds, source: PG_ZONE_DIMENSIONAL_TABLES[zone].source },
     unitTypes: UNIT_TYPES, streetStripFt: STREET_FT, mix,
     stormwater,
+    openSpace: { rings: openSpace, sqFt: Math.round(openSpaceSqFt), requiredSqFt: Math.round(tractSqFt * OPEN_SPACE_PCT / 100), basis: 'Sec. 24-134 mandatory dedication of parkland — 5% of the gross tract, provided on site as private recreation open space (HOA parcel) in lieu of dedication' },
     existingStreetRow: existingRow,
     access: accessName ? { road: accessName, note: `Every internal street tees off ${accessName} (existing public right-of-way); no new access to any other road.` } : null,
-    layout: { axisBearing: bearingOf([0, 0], axis), streets, connectors, turnarounds: bulbs, parking, buildings, driveways, units: units.map(u => ({ type: u.type, band: u.band, dwellingUnits: u.units, sqFt: Math.round(u.sqFt), ring: u.ring })) },
+    layout: { axisBearing: bearingOf([0, 0], axis), streets, connectors, turnarounds: bulbs, parking, buildings, driveways, walks, units: units.map(u => ({ type: u.type, band: u.band, dwellingUnits: u.units, sqFt: Math.round(u.sqFt), ring: u.ring })) },
     yield: { totalBays: units.length, totalDwellingUnits: totalDu, totalRetailSqFt: totalRetail, byType, parkingDrawnSurface: parkingDrawn, parkingInGarages: garageSpaces, parkingRequired: byType.reduce((t, b) => t + b.parkingRequired, 0), overCap: overCap.map(t => t.type), ceilings,
       grossDensityDuAc: Math.round(totalDu / (tractSqFt / 43560) * 100) / 100 },
     designStandards: [
@@ -711,8 +778,10 @@ async function main() {
       'Sec. 24-123(a)(2): new streets are continuous, tee off the existing street at right angles; (a)(5) public secondary streets 50 ft / primary 60 ft of right-of-way — these are private streets, so Sec. 24-128(b)(7) governs: ≥ 22-ft pavement (26 ft drawn), alleys ≥ 18 ft, a 10-ft public utility easement contiguous to the right-of-way (24-128(b)(12)), maintained by the HOA/condominium with Fire Chief approval of emergency access.',
       `Turnarounds: a dead end over ${DEAD_END_MAX_FT} ft ends in a ${BULB_ROW_R}-ft-radius bulb (40-ft pavement) — IFC D103.4 as adopted by Subtitle 11; ${bulbs.length} drawn.`,
       `Sec. 27-4203 (${zone}) yards: front ${stds.townhouse.frontFt ?? '—'} ft, side ${stds.townhouse.sideFt ?? '—'} ft (end units; party walls within a stick), rear ${stds.townhouse.rearFt ?? '—'} ft — drawn: build line ${DRIVE_APRON_FT} ft (the driveway apron for the front-load garage governs over the ${stds.townhouse.frontFt ?? '—'}-ft minimum), 16-ft breaks between sticks of ≤ ${UNIT_TYPES.townhouse.stickMaxUnits} (8 + 8 ft end yards), rear ${90 - DRIVE_APRON_FT - 40} ft on a 90-ft lot; lot width, coverage, height per the certified table above.`,
+      `Pedestrian access: a ${WALK_FT}-ft sidewalk runs along the front of every building at the street line (Sec. 23-135), on the lot in the front yard, crossed by the driveways; every building front faces a street and its walk. No street is laid on the property line — a ${BUFFERYARD_FT}-ft landscape strip is kept between any street and the tract boundary (Landscape Manual Sec. 4.7 sets the bufferyard at DSP).`,
       'Vehicular access: every townhouse, duplex and two-over-two lot fronts a street (the kept public right-of-way or a private street) and has its own driveway to a front-load garage — 1-car for the 20-ft townhouse, 2-car for the 30-ft duplex and the 24-ft two-over-two bay; no lot is landlocked and none takes access from an adjoining lot (Sec. 24-128(a)).',
       `Table 24-4303(c): regulated stream buffer ${STREAM_BUFFER_FT} ft outside a Transit Oriented Center; slopes over 25%, 100-year floodplain and wetlands taken out of the developable ground (county layers; the NRI/TCP2 governs at preliminary plan).`,
+      `Sec. 24-134 mandatory dedication of parkland: ${OPEN_SPACE_PCT}% of the gross tract (${Math.round(tractSqFt * OPEN_SPACE_PCT / 100).toLocaleString()} sf) — provided on site as recreation open space on an HOA parcel: ${Math.round(openSpaceSqFt).toLocaleString()} sf drawn.`,
       'Sec. 24-121(a)(15): a DPIE-approved stormwater concept precedes the preliminary plan — ESD to the MEP (MDE Manual Ch. 5): micro-bioretention in the reserved areas drawn, bioswales along each private street; (a)(16) Subtitle 25 woodland conservation by TCP2.',
       'Sec. 23-135: curb, gutter and 5-ft sidewalk on the street side of every lot (lot frontages ≤ 100 ft); DPIE grading checklist: lawns ≥ 2.5%, swales 2–4%, banks ≤ 3:1 (residential), slopes steeper than 4:1 set back 10–20 ft from buildings.',
       'Landscape Manual Sec. 4.7 bufferyard against the adjoining RE lots and Sec. 4.6 street trees along every street; Sec. 25-128 tree canopy on the gross tract — DSP work, the widths are not drawn here.',
@@ -787,8 +856,10 @@ async function renderYieldSheet(y: Out, file: string) {
   for (const u of y.layout.units) poly(u.ring, col[u.type] ?? '#ddd', '#333', 0.4)
   for (const pk of (y.layout as unknown as { parking?: { ring: P[] }[] }).parking ?? []) poly(pk.ring, '#f2f2f2', '#666', 0.4, [2, 2])
   const bcol: Record<string, string> = { townhouse: '#c98a1e', twoFamily: '#3f74b8', twoOverTwo: '#8a4e98', mixedUse: '#b03a3a' }
+  for (const w of (y.layout as unknown as { walks?: P[][] }).walks ?? []) poly(w, '#f4f4f4', '#444', 0.3)
   for (const d of (y.layout as unknown as { driveways?: { ring: P[] }[] }).driveways ?? []) poly(d.ring, '#d9d9d9', '#555', 0.3)
   for (const b of (y.layout as unknown as { buildings?: { ring: P[]; type: string }[] }).buildings ?? []) poly(b.ring, bcol[b.type] ?? '#b03a3a', '#000', 0.6)
+  for (const r of (y as unknown as { openSpace?: { rings: P[][] } }).openSpace?.rings ?? []) { poly(r, '#d6ecc8', '#3d7a2e', 0.7); const c = interiorPoint(r); if (Math.abs(area(r)) > 4000) doc.font('Helvetica-Bold').fontSize(5.5).fillColor('#2f5f22').text('OPEN SPACE — RECREATION (HOA)', X(c[0]) - 45, Y(c[1]) - 3, { width: 90, align: 'center' }) }
   const swr = (y as unknown as { stormwater?: { esdPracticeRings?: P[][] } }).stormwater?.esdPracticeRings ?? []
   for (const r of swr) { poly(r, '#a8dcd0', '#1f7a66', 0.7, [3, 2]); const c = interiorPoint(r); if (Math.abs(area(r)) > 4000) doc.font('Helvetica-Bold').fontSize(5.5).fillColor('#1f5f50').text('ESD MICRO-BIORETENTION', X(c[0]) - 40, Y(c[1]) - 3, { width: 80, align: 'center' }) }
   // parcel labels
@@ -797,7 +868,7 @@ async function renderYieldSheet(y: Out, file: string) {
   // north arrow + scale
   doc.font('Helvetica-Bold').fontSize(9).text('N', M + 14, M + 8); doc.moveTo(M + 18, M + 40).lineTo(M + 18, M + 20).lineWidth(1).stroke('#000')
   doc.fontSize(8).text(`SCALE 1" = ${scale}'   ·   GRAPHIC: |${'—'.repeat(10)}| = ${scale * 2} FT`, M + 40, M + 10)
-  doc.font('Helvetica').fontSize(6.5).fillColor('#444').text('LEGEND — red parcels with dark-red buildings at the street line: mixed use (retail at grade, dwellings above) · dashed grey: surface parking · yellow: townhouse lots · blue: two-family (duplex) lots · violet: two-over-two (stacked) bays · grey: private street strip 40 ft (26-ft pavement) with 45-ft-radius turnarounds at dead ends · dark blocks on the lots: dwelling footprints on a 20-ft build line (driveway apron; CGO front yard min. 10 ft), light-grey stubs: driveways to the front-load garages (townhouse 1-car, duplex and two-over-two 2-car) · teal dashed: ESD micro-bioretention reserved · green: woodland conservation (approved TCP) · red: slopes >25% (dashed = graded banks, regraded) · blue band: 50-ft stream buffer · olive: Primary Management Area, light blue: wetlands and their 25-ft buffer, pink dashed: slopes 15–25%, dashed green: forest conservation easement (all from the approved plan where one is supplied)', M + 40, M + 24, { width: drawW - 60 })
+  doc.font('Helvetica').fontSize(6.5).fillColor('#444').text('LEGEND — red parcels with dark-red buildings at the street line: mixed use (retail at grade, dwellings above) · dashed grey: surface parking · yellow: townhouse lots · blue: two-family (duplex) lots · violet: two-over-two (stacked) bays · grey: private street strip 40 ft (26-ft pavement) with 45-ft-radius turnarounds at dead ends · dark blocks on the lots: dwelling footprints on a 20-ft build line (driveway apron; CGO front yard min. 10 ft), light-grey stubs: driveways to the front-load garages (townhouse 1-car, duplex and two-over-two 2-car), 5-ft sidewalk along the front of every building at the street line · no street on the property line (25-ft landscape strip kept) · circles: turnarounds at dead-end streets · teal dashed: ESD micro-bioretention reserved · green: recreation open space (Sec. 24-134, 5% on site) · green: woodland conservation (approved TCP) · red: slopes >25% (dashed = graded banks, regraded) · blue band: 50-ft stream buffer · olive: Primary Management Area, light blue: wetlands and their 25-ft buffer, pink dashed: slopes 15–25%, dashed green: forest conservation easement (all from the approved plan where one is supplied)', M + 40, M + 24, { width: drawW - 60 })
   // right column
   let x = W - M - COL, yy = M + 4
   const line = (t: string, size = 7, bold = false, color = '#000', gap = 2) => { doc.font(bold ? 'Helvetica-Bold' : 'Helvetica').fontSize(size).fillColor(color).text(t, x, yy, { width: COL - 8 }); yy = doc.y + gap }
