@@ -224,6 +224,8 @@ async function main() {
    * Rows are placed along every straight run of that right-of-way before any new street is cut.
    */
   const frontExisting = argv.includes('--front-existing')
+  /** Do not take the approved TCP's woodland conservation areas out — the owner would re-plan the TCP (a new TCP2 with the rezoning). */
+  const noWoodland = argv.includes('--no-woodland')
   /** Name (regex) of the road the first band faces — the commercial frontage. */
   const frontageRe = flag('--frontage') ? new RegExp(flag('--frontage')!, 'i') : null
   if (!outDir || !accounts.length) { console.error('usage: propose-townhomes.ts <out dir> --accounts A,B,C [--name N] [--mix band,band,...]'); process.exit(1) }
@@ -276,7 +278,9 @@ async function main() {
   const flood = (await q(3)).filter(f => !/^X$/i.test(String(f.attributes?.FLD_ZONE ?? '')))
   const floodplain = intersection(union(flood.flatMap(f => f.geometry?.rings ?? []).map(r => openRing(r.map(c => [c[0], c[1]] as P)))), tract)
   const wca = await q(26)
-  const woodland = intersection(union(wca.flatMap(f => f.geometry?.rings ?? []).map(r => openRing(r.map(c => [c[0], c[1]] as P)))), tract)
+  const woodlandAll = intersection(union(wca.flatMap(f => f.geometry?.rings ?? []).map(r => openRing(r.map(c => [c[0], c[1]] as P)))), tract)
+  const woodland: MP = noWoodland ? [] : woodlandAll
+  if (noWoodland) console.log(`    --no-woodland: the approved TCP's ${(mpArea(woodlandAll) / 43560).toFixed(2)} ac of woodland conservation is NOT taken out — a new TCP2 goes with the rezoning; the Sec. 25-121 threshold is met on- or off-site`)
   const wetlands = intersection(union((await q(25)).flatMap(f => f.geometry?.rings ?? []).map(r => openRing(r.map(c => [c[0], c[1]] as P)))), tract)
   // An existing stormwater facility the owner keeps (the approved SDP's pond):
   // the corner of the tract nearest where the two named roads meet, cut off
@@ -605,7 +609,7 @@ async function main() {
   // ── Emit ──────────────────────────────────────────────────────────────────
   const out = {
     name, generatedAt: new Date().toISOString(), zone, mappedZone, hypothetical,
-    hypotheticalNote: hypothetical ? `The parcels are zoned ${mappedZone}. This study applies the ${zone} table as the rezoning the owner would seek; nothing here is permitted until the Council approves a zoning map amendment.` : null,
+    hypotheticalNote: hypothetical ? `The parcels are zoned ${mappedZone}. This study applies the ${zone} table as the rezoning the owner would seek; nothing here is permitted until the Council approves a zoning map amendment.${noWoodland ? ` The approved TCP's woodland conservation (${(mpArea(woodlandAll) / 43560).toFixed(2)} ac) is not reserved: a new TCP2 is part of the rezoning and the Sec. 25-121 requirement is met by afforestation, fee-in-lieu or off-site banking.` : ''}` : null,
     parcels: parcels.map(p => ({ account: p.account, owner: p.record?.ownerName, description: p.record?.propertyDesc, subdivision: p.record?.subdivision, plat: p.record?.plat, liber: p.record?.liber, folio: p.record?.folio, assessedAcres: p.record?.acres, gisSqFt: Math.round(p.sqFt), zone: p.zone, ring: p.ring })),
     tractSqFt: Math.round(tractSqFt), tractAcres: Math.round(tractSqFt / 43560 * 1000) / 1000,
     constraints: {
