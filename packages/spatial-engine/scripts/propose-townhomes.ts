@@ -122,6 +122,15 @@ function interiorPoint(r: P[]): P {
   }
   return best
 }
+function segDistP(p: P, a: P, b: P): number {
+  const vx = b[0] - a[0], vy = b[1] - a[1]
+  const t = Math.max(0, Math.min(1, ((p[0] - a[0]) * vx + (p[1] - a[1]) * vy) / (vx * vx + vy * vy || 1)))
+  return Math.hypot(p[0] - (a[0] + t * vx), p[1] - (a[1] + t * vy))
+}
+function bufferSeg(a: P, b: P, w: number): P[] {
+  const d = norm([b[0] - a[0], b[1] - a[1]]), n = leftOf(d)
+  return [add(a, n, w), add(b, n, w), add(b, n, -w), add(a, n, -w)]
+}
 function bearingOf(a: P, b: P): string {
   const dx = b[0] - a[0], dy = b[1] - a[1]
   const ns = dy >= 0 ? 'N' : 'S', ew = dx >= 0 ? 'E' : 'W'
@@ -346,6 +355,7 @@ async function main() {
     const units: Unit[] = []
     const streets: P[][] = []
     let taken: MP = []
+    const frames: { ax: P; ac: P; origin: P; cc0: number }[] = []
     const placeRow = (ax: P, ac: P, origin: P, cc0: number, cc1: number, s0: number, s1: number, T: typeof UNIT_TYPES[UnitKey], type: UnitKey, bandNo: number) => {
       let sPos = s0 + 10, inStick = 0
       while (sPos + T.lotWidthFt <= s1 - 10) {
@@ -355,6 +365,7 @@ async function main() {
         if (got >= T.lotWidthFt * T.lotDepthFt * 0.92 && inside.length === 1) {
           const ring = rings(inside)[0]
           units.push({ type, ring, sqFt: got, band: bandNo, units: T.unitsPerBay })
+          frames.push({ ax, ac, origin, cc0 })
           taken = unionMP(taken, asMP(ring))
           inStick++
           sPos += T.lotWidthFt
@@ -382,6 +393,18 @@ async function main() {
       c = streetC1 + rowB + 10
       band += 2
     }
+    // A connector behind the frontage row, parallel to the access road, joining every perpendicular
+    // street into one network (a loop with the access road) — so no internal street is a dead end.
+    const connectors: P[][] = []
+    if (frontageIsAccess && accessDir && accessAnchor && streetPlan.length >= 2) {
+      const T0 = UNIT_TYPES[mix[0]]
+      const ac: P = dot(cen, accessAnchor, leftOf(accessDir)) > 0 ? leftOf(accessDir) : [-leftOf(accessDir)[0], -leftOf(accessDir)[1]]
+      const d0 = T0.lotDepthFt + 2, d1 = d0 + STREET_FT
+      const stationsAlong = streetPlan.flatMap(sp => sp.stripRing.map(q => dot(q, accessAnchor, accessDir)))
+      const sA = Math.min(...stationsAlong) - STREET_FT, sB = Math.max(...stationsAlong) + STREET_FT
+      const strip = intersection(asMP([add(add(accessAnchor, accessDir, sA), ac, d0), add(add(accessAnchor, accessDir, sB), ac, d0), add(add(accessAnchor, accessDir, sB), ac, d1), add(add(accessAnchor, accessDir, sA), ac, d1)]), developable)
+      for (const r of rings(strip)) if (Math.abs(area(r)) >= 60 * STREET_FT) { connectors.push(r); streets.push(r); taken = unionMP(taken, asMP(r)) }
+    }
     // The frontage row along the access road: mixed-use (or whatever band 0 is) at street level on it.
     if (frontageIsAccess && accessDir && accessAnchor) {
       const T0 = UNIT_TYPES[mix[0]]
@@ -394,7 +417,29 @@ async function main() {
       placeRow(axis, across, cen, sp.c, sp.streetC0, s0, s1, sp.t1, mix[sp.band % mix.length], sp.band)
       placeRow(axis, across, cen, sp.streetC1, sp.streetC1 + sp.rowB, s0, s1, sp.t2, mix[(sp.band + 1) % mix.length], sp.band + 1)
     }
-    return { axis, units, streets, du: units.reduce((t, u) => t + u.units, 0) }
+    // Parking, drawn: a mixed-use parcel parks on its own ground behind the building (the parcel less the
+    // 70-ft building and a 10-ft walk); a two-over-two bay parks one car in its garage and the rest in a
+    // bay along the street — an 18-ft strip on the lot's street edge, drawn on the lot.
+    const parking: { ring: P[]; spaces: number; serves: string }[] = []
+    const buildings: { ring: P[]; type: UnitKey }[] = []
+    units.forEach((u, ui) => {
+      const T = UNIT_TYPES[u.type]
+      const fr = frames[ui]
+      if (u.type === 'mixedUse' && fr) {
+        const band = (d0: number, d1: number) => asMP([add(add(fr.origin, fr.ax, -3000), fr.ac, fr.cc0 + d0), add(add(fr.origin, fr.ax, 3000), fr.ac, fr.cc0 + d0), add(add(fr.origin, fr.ax, 3000), fr.ac, fr.cc0 + d1), add(add(fr.origin, fr.ax, -3000), fr.ac, fr.cc0 + d1)])
+        for (const r of rings(intersection(asMP(u.ring), band(0, T.footprintFt[1])))) buildings.push({ ring: r, type: u.type })
+        const rear = intersection(asMP(u.ring), band(T.footprintFt[1] + 10, 3000))
+        for (const r of rings(rear)) parking.push({ ring: r, spaces: Math.floor(Math.abs(area(r)) / 330), serves: 'mixed use — surface lot behind the building' })
+      } else if (u.type === 'twoOverTwo') {
+        // the lot's street edge is its shortest side nearest the taken street strips: take the 18 ft of the lot nearest any street ring
+        const near = streets.reduce((best, r) => { const d = Math.min(...u.ring.map(q => Math.min(...r.map((_, i) => segDistP(q, r[i], r[(i + 1) % r.length]))))); return d < best.d ? { d, r } : best }, { d: Infinity, r: streets[0] })
+        if (near.r) {
+          const bay = intersection(asMP(u.ring), union([...near.r.map((q, i) => bufferSeg(q, near.r[(i + 1) % near.r.length], 18))]))
+          for (const r of rings(bay)) if (Math.abs(area(r)) > 200) parking.push({ ring: r, spaces: Math.floor(Math.abs(area(r)) / 400), serves: 'two-over-two — bay on the street edge' })
+        }
+      }
+    })
+    return { axis, units, streets, connectors, parking, buildings, du: units.reduce((t, u) => t + u.units, 0) }
   }
   // Two orientations (the ground's principal axis and across it) and three offsets; the most dwellings wins.
   let best = layoutAt(accessTheta ?? theta, 0)
@@ -403,7 +448,7 @@ async function main() {
     console.log(`      orientation ${bearingOf([0, 0], [Math.cos(th), Math.sin(th)])} offset ${sh}: ${cand.du} du on ${cand.streets.length} street segment(s)`)
     if (cand.du > best.du) best = cand
   }
-  const { axis, units, streets } = best
+  const { axis, units, streets, connectors, parking, buildings } = best
 
   // ── Yield, density and parking ────────────────────────────────────────────
   const byType = (Object.keys(UNIT_TYPES) as UnitKey[]).map(k => {
@@ -444,6 +489,9 @@ async function main() {
     additional: 'Micro-bioretention in every surface parking lot island and a bioswale along each private street, credited under ESD; rooftop disconnection is not available over parking. Design per the DPIE stormwater concept approval that precedes the DSP.',
   }
   console.log(`    stormwater: impervious ${Math.round(imperviousSqFt).toLocaleString()} sf (${pctImp.toFixed(1)}%), ESDv ${wq.value.wqvCubicFeet.toLocaleString()} cf → practice ${fp.value.footprintSqFt.toLocaleString()} sf; reserved ${Math.round(swmReservedSqFt).toLocaleString()} sf`)
+  const parkingDrawn = parking.reduce((t, pk) => t + pk.spaces, 0)
+  const garageSpaces = units.reduce((t, u) => t + (u.type === 'townhouse' || u.type === 'twoFamily' ? 2 * u.units : u.type === 'twoOverTwo' ? u.units : 0), 0)
+  console.log(`    parking drawn: ${parkingDrawn} surface spaces + ${garageSpaces} in garages/driveways = ${parkingDrawn + garageSpaces}; required at the assumed ratios ${byType.reduce((t, b) => t + b.parkingRequired, 0)}`)
   const totalDu = byType.reduce((s, t) => s + t.dwellingUnits, 0)
   const totalRetail = byType.reduce((s, t) => s + t.retailSqFt, 0)
   console.log(`\n    ${units.length} bays / ${totalDu} dwelling units on ${streets.length} street(s):`)
@@ -471,8 +519,8 @@ async function main() {
     unitTypes: UNIT_TYPES, streetStripFt: STREET_FT, mix,
     stormwater,
     access: accessName ? { road: accessName, note: `Every internal street tees off ${accessName} (existing public right-of-way); no new access to any other road.` } : null,
-    layout: { axisBearing: bearingOf([0, 0], axis), streets, units: units.map(u => ({ type: u.type, band: u.band, dwellingUnits: u.units, sqFt: Math.round(u.sqFt), ring: u.ring })) },
-    yield: { totalBays: units.length, totalDwellingUnits: totalDu, totalRetailSqFt: totalRetail, byType, overCap: overCap.map(t => t.type), ceilings,
+    layout: { axisBearing: bearingOf([0, 0], axis), streets, connectors, parking, buildings, units: units.map(u => ({ type: u.type, band: u.band, dwellingUnits: u.units, sqFt: Math.round(u.sqFt), ring: u.ring })) },
+    yield: { totalBays: units.length, totalDwellingUnits: totalDu, totalRetailSqFt: totalRetail, byType, parkingDrawnSurface: parkingDrawn, parkingInGarages: garageSpaces, parkingRequired: byType.reduce((t, b) => t + b.parkingRequired, 0), overCap: overCap.map(t => t.type), ceilings,
       grossDensityDuAc: Math.round(totalDu / (tractSqFt / 43560) * 100) / 100 },
     approvals: [
       `${zone}: townhouse, two-family and multifamily (two-over-two) dwellings are listed uses with their own intensity standards in the certified Sec. 27-4203 table; a Detailed Site Plan is the approval path for residential in the commercial zones (confirm the use table entry for each type — the use table is not carried by this engine).`,
@@ -526,13 +574,15 @@ async function renderYieldSheet(y: Out, file: string) {
   for (const r of y.layout.streets) poly(r, '#c8c8c8', '#555', 0.6)
   const col: Record<string, string> = { townhouse: '#f0c060', twoFamily: '#8fb8ee', twoOverTwo: '#cf98d8', mixedUse: '#e08080' }
   for (const u of y.layout.units) poly(u.ring, col[u.type] ?? '#ddd', '#333', 0.4)
+  for (const pk of (y.layout as unknown as { parking?: { ring: P[] }[] }).parking ?? []) poly(pk.ring, '#f2f2f2', '#666', 0.4, [2, 2])
+  for (const b of (y.layout as unknown as { buildings?: { ring: P[] }[] }).buildings ?? []) poly(b.ring, '#b03a3a', '#000', 0.8)
   // parcel labels
   doc.font('Helvetica-Bold').fontSize(7).fillColor('#000')
   for (const p of y.parcels) { const c = interiorPoint(p.ring); doc.text(`${p.description ?? ''}\n${p.owner ?? ''}\n${(p.gisSqFt / 43560).toFixed(3)} AC · ${y.zone}`, X(c[0]) - 60, Y(c[1]) - 12, { width: 120, align: 'center' }) }
   // north arrow + scale
   doc.font('Helvetica-Bold').fontSize(9).text('N', M + 14, M + 8); doc.moveTo(M + 18, M + 40).lineTo(M + 18, M + 20).lineWidth(1).stroke('#000')
   doc.fontSize(8).text(`SCALE 1" = ${scale}'   ·   GRAPHIC: |${'—'.repeat(10)}| = ${scale * 2} FT`, M + 40, M + 10)
-  doc.font('Helvetica').fontSize(6.5).fillColor('#444').text('LEGEND — red: mixed-use buildings (retail at grade, dwellings above) · yellow: townhouse lots · blue: two-family (duplex) lots · violet: two-over-two (stacked) bays · grey: private street strip 40 ft · green: woodland conservation (approved TCP) · red: slopes >25% (dashed = graded banks, regraded) · blue band: 50-ft stream buffer', M + 40, M + 24, { width: drawW - 60 })
+  doc.font('Helvetica').fontSize(6.5).fillColor('#444').text('LEGEND — red parcels with dark-red buildings at the street line: mixed use (retail at grade, dwellings above) · dashed grey: surface parking · yellow: townhouse lots · blue: two-family (duplex) lots · violet: two-over-two (stacked) bays · grey: private street strip 40 ft · green: woodland conservation (approved TCP) · red: slopes >25% (dashed = graded banks, regraded) · blue band: 50-ft stream buffer', M + 40, M + 24, { width: drawW - 60 })
   // right column
   let x = W - M - COL, yy = M + 4
   const line = (t: string, size = 7, bold = false, color = '#000', gap = 2) => { doc.font(bold ? 'Helvetica-Bold' : 'Helvetica').fontSize(size).fillColor(color).text(t, x, yy, { width: COL - 8 }); yy = doc.y + gap }
@@ -552,6 +602,7 @@ async function renderYieldSheet(y: Out, file: string) {
   for (const [k, st] of Object.entries(y.standards.perType)) line(`${(y.unitTypes as Record<string, { label: string }>)[k].label}: ${st.densityDuAc} du/ac net · lot ≥ ${st.minLotWidthFt} ft wide · coverage ≤ ${st.maxCoveragePct}% · yards ${st.frontFt}/${st.sideFt}/${st.rearFt} ft · height ≤ ${st.maxHeightFt} ft`, 6.5)
   yy += 4; line('YIELD — THIS LAYOUT', 7.5, true)
   for (const t of y.yield.byType) if (t.bays) { const tt = t as typeof t & { retailSqFt?: number; buildingHeightFt?: number | null; heightCapFt?: number | null }; line(`${t.label}: ${t.bays} bays → ${t.dwellingUnits} du${tt.retailSqFt ? ` + ${tt.retailSqFt.toLocaleString()} sf retail` : ''} · ${t.densityDuAc} du/ac on ${t.netAcForDensity} net ac (cap ${t.densityCapDuAc}) ${t.withinDensity ? '✓' : 'OVER'} · lot coverage ${t.lotCoveragePct}% (cap ${t.coverageCapPct}%)${tt.buildingHeightFt ? ` · ${tt.buildingHeightFt} ft high (cap ${tt.heightCapFt} ft)` : ''} · parking ${t.parkingRequired} at ${t.parkingRatioAssumed}/du ASSUMED — ${t.parkingWhere}`, 6.5) }
+  { const yy2 = y.yield as unknown as { parkingDrawnSurface?: number; parkingInGarages?: number; parkingRequired?: number }; if (yy2.parkingRequired != null) line(`Parking: ${yy2.parkingDrawnSurface} surface spaces drawn (dashed) + ${yy2.parkingInGarages} in garages and driveways = ${(yy2.parkingDrawnSurface ?? 0) + (yy2.parkingInGarages ?? 0)} against ${yy2.parkingRequired} required at the assumed ratios.`, 6.5) }
   line(`TOTAL ${y.yield.totalDwellingUnits} DWELLING UNITS in ${y.yield.totalBays} bays · ${y.yield.grossDensityDuAc} du/ac gross on the ${y.tractAcres}-ac tract${(y.yield as unknown as { totalRetailSqFt?: number }).totalRetailSqFt ? ` · ${(y.yield as unknown as { totalRetailSqFt: number }).totalRetailSqFt.toLocaleString()} sf retail at grade` : ''}`, 8, true)
   yy += 2; line('CEILINGS if the whole developable ground were one type (× 0.8 for streets, parking, open space):', 6.5, true)
   for (const ce of y.yield.ceilings) line(`${ce.label}: ${ce.allOfThisType ?? '—'} du`, 6.5)

@@ -1,6 +1,6 @@
 {
   "name": "Livingston of Fort Washington (11901 Gunpowder Dr / 12000 Livingston Rd) — CGO mixed-use concept",
-  "generatedAt": "2026-09-16T13:54:41.845Z",
+  "generatedAt": "2026-09-17T14:18:12.863Z",
   "zone": "CGO",
   "mappedZone": "CGO",
   "hypothetical": false,
@@ -6366,13 +6366,13 @@
   ],
   "stormwater": {
     "method": "MDE Stormwater Design Manual Ch. 5 ESD — Rv = 0.05 + 0.009·I; ESDv = P_E·Rv·A/12; practice area = ESDv/(d·n), d = 2 ft, n = 0.4; P_E = 1.0 in is the floor — Table 5.3 raises it with % impervious and HSG",
-    "imperviousSqFt": 150420,
-    "percentImpervious": 32.7,
-    "rv": 0.3444,
-    "esdvCf": 13197,
-    "practiceFootprintSqFt": 16496,
+    "imperviousSqFt": 153041,
+    "percentImpervious": 33.3,
+    "rv": 0.3495,
+    "esdvCf": 13394,
+    "practiceFootprintSqFt": 16743,
     "reservedSqFt": 107627,
-    "finding": "The 107,627 sf reserved (existing facility and its expansion) exceeds twice the 16,496 sf of practice the drawn programme needs at P_E 1.0 in; the balance is forebay, access, freeboard and the higher P_E the soils may require.",
+    "finding": "The 107,627 sf reserved (existing facility and its expansion) exceeds twice the 16,743 sf of practice the drawn programme needs at P_E 1.0 in; the balance is forebay, access, freeboard and the higher P_E the soils may require.",
     "additional": "Micro-bioretention in every surface parking lot island and a bioswale along each private street, credited under ESD; rooftop disconnection is not available over parking. Design per the DPIE stormwater concept approval that precedes the DSP."
   },
   "access": {
@@ -6433,7 +6433,510 @@
           1315875.2082591506,
           385612.12287244323
         ]
+      ],
+      [
+        [
+          1315462.72,
+          385647.12
+        ],
+        [
+          1315485.4,
+          385614.16
+        ],
+        [
+          1315781.99,
+          385818.2
+        ],
+        [
+          1315759.32,
+          385851.16
+        ]
       ]
+    ],
+    "connectors": [
+      [
+        [
+          1315462.72,
+          385647.12
+        ],
+        [
+          1315485.4,
+          385614.16
+        ],
+        [
+          1315781.99,
+          385818.2
+        ],
+        [
+          1315759.32,
+          385851.16
+        ]
+      ]
+    ],
+    "parking": [
+      {
+        "ring": [
+          [
+            1315881.01,
+            385883.9
+          ],
+          [
+            1315949.0240819724,
+            385785.0347880435
+          ],
+          [
+            1316031.4126730892,
+            385841.71343465045
+          ],
+          [
+            1316006.27,
+            385878.26
+          ],
+          [
+            1315943.57,
+            385926.94
+          ]
+        ],
+        "spaces": 33,
+        "serves": "mixed use — surface lot behind the building"
+      },
+      {
+        "ring": [
+          [
+            1315798.63,
+            385827.22
+          ],
+          [
+            1315866.6394193682,
+            385728.3588440289
+          ],
+          [
+            1315949.0240819724,
+            385785.0347880435
+          ],
+          [
+            1315881.01,
+            385883.9
+          ]
+        ],
+        "spaces": 36,
+        "serves": "mixed use — surface lot behind the building"
+      },
+      {
+        "ring": [
+          [
+            1315633.85,
+            385713.87
+          ],
+          [
+            1315701.8650009762,
+            385615.00345218007
+          ],
+          [
+            1315784.249239986,
+            385671.679104786
+          ],
+          [
+            1315716.24,
+            385770.54
+          ]
+        ],
+        "spaces": 36,
+        "serves": "mixed use — surface lot behind the building"
+      },
+      {
+        "ring": [
+          [
+            1315552.43,
+            385657.86
+          ],
+          [
+            1315620.4460802088,
+            385558.99188340874
+          ],
+          [
+            1315701.8650009762,
+            385615.00345218007
+          ],
+          [
+            1315633.85,
+            385713.87
+          ]
+        ],
+        "spaces": 35,
+        "serves": "mixed use — surface lot behind the building"
+      },
+      {
+        "ring": [
+          [
+            1315436.12,
+            385577.84
+          ],
+          [
+            1315455.11,
+            385550.24
+          ],
+          [
+            1315456.92,
+            385550.84
+          ],
+          [
+            1315461.04,
+            385551.28
+          ],
+          [
+            1315492.51,
+            385551.28
+          ],
+          [
+            1315499.67,
+            385499.19
+          ],
+          [
+            1315491.9,
+            385496.77
+          ],
+          [
+            1315504.1388938993,
+            385478.9791799345
+          ],
+          [
+            1315586.52375632,
+            385535.6552614115
+          ],
+          [
+            1315518.51,
+            385634.52
+          ]
+        ],
+        "spaces": 32,
+        "serves": "mixed use — surface lot behind the building"
+      },
+      {
+        "ring": [
+          [
+            1315472.048951573,
+            385672.38442502636
+          ],
+          [
+            1315480.7618927758,
+            385659.7190397199
+          ],
+          [
+            1315495.59,
+            385669.92
+          ],
+          [
+            1315481.99,
+            385689.69
+          ],
+          [
+            1315472.42,
+            385683.11
+          ],
+          [
+            1315474.22,
+            385672.44
+          ]
+        ],
+        "spaces": 0,
+        "serves": "two-over-two — bay on the street edge"
+      },
+      {
+        "ring": [
+          [
+            1315631.382049117,
+            385864.22802525095
+          ],
+          [
+            1315644.9856917928,
+            385844.45345252944
+          ],
+          [
+            1315659.81,
+            385854.65
+          ],
+          [
+            1315646.21,
+            385874.43
+          ]
+        ],
+        "spaces": 1,
+        "serves": "two-over-two — bay on the street edge"
+      },
+      {
+        "ring": [
+          [
+            1315644.9856917928,
+            385844.4534525294
+          ],
+          [
+            1315658.587447261,
+            385824.6816230972
+          ],
+          [
+            1315673.41,
+            385834.88
+          ],
+          [
+            1315659.81,
+            385854.65
+          ]
+        ],
+        "spaces": 1,
+        "serves": "two-over-two — bay on the street edge"
+      },
+      {
+        "ring": [
+          [
+            1315658.587447261,
+            385824.6816230972
+          ],
+          [
+            1315672.1904189186,
+            385804.90802578354
+          ],
+          [
+            1315687.02,
+            385815.11
+          ],
+          [
+            1315685.67,
+            385817.06
+          ],
+          [
+            1315673.41,
+            385834.88
+          ]
+        ],
+        "spaces": 1,
+        "serves": "two-over-two — bay on the street edge"
+      },
+      {
+        "ring": [
+          [
+            1315699.729584939,
+            386008.3527197198
+          ],
+          [
+            1315756.4100850348,
+            385925.9614343551
+          ],
+          [
+            1315855.27,
+            385993.97
+          ],
+          [
+            1315851.9,
+            385998.86
+          ],
+          [
+            1315774.44,
+            386059.75
+          ]
+        ],
+        "spaces": 32,
+        "serves": "mixed use — surface lot behind the building"
+      },
+      {
+        "ring": [
+          [
+            1315756.4100850348,
+            385925.96143435506
+          ],
+          [
+            1315813.0876931294,
+            385843.5743528291
+          ],
+          [
+            1315911.95,
+            385911.59
+          ],
+          [
+            1315855.27,
+            385993.97
+          ]
+        ],
+        "spaces": 36,
+        "serves": "mixed use — surface lot behind the building"
+      }
+    ],
+    "buildings": [
+      {
+        "ring": [
+          [
+            1315954.6931914,
+            385776.7941753805
+          ],
+          [
+            1315994.3675227943,
+            385719.12360086443
+          ],
+          [
+            1316063.8844060686,
+            385766.94734414836
+          ],
+          [
+            1316069.95,
+            385774.25
+          ],
+          [
+            1316074.11,
+            385779.65
+          ],
+          [
+            1316037.0818670597,
+            385833.47288014815
+          ]
+        ],
+        "type": "mixedUse"
+      },
+      {
+        "ring": [
+          [
+            1315872.308422863,
+            385720.11815849016
+          ],
+          [
+            1315911.98,
+            385662.45
+          ],
+          [
+            1315949.4511776548,
+            385688.22365745466
+          ],
+          [
+            1315994.3675227943,
+            385719.1236008644
+          ],
+          [
+            1315954.6931914,
+            385776.7941753805
+          ]
+        ],
+        "type": "mixedUse"
+      },
+      {
+        "ring": [
+          [
+            1315707.5341104039,
+            385606.7628395171
+          ],
+          [
+            1315747.2086024154,
+            385549.0920315279
+          ],
+          [
+            1315781.6993443654,
+            385572.81974069716
+          ],
+          [
+            1315829.59,
+            385605.77
+          ],
+          [
+            1315789.9182434808,
+            385663.4384192472
+          ]
+        ],
+        "type": "mixedUse"
+      },
+      {
+        "ring": [
+          [
+            1315626.1151896364,
+            385550.75127074576
+          ],
+          [
+            1315665.7897345582,
+            385493.08038584614
+          ],
+          [
+            1315747.2086024154,
+            385549.0920315279
+          ],
+          [
+            1315707.5341104039,
+            385606.76283951703
+          ]
+        ],
+        "type": "mixedUse"
+      },
+      {
+        "ring": [
+          [
+            1315509.807922378,
+            385470.73851158324
+          ],
+          [
+            1315549.48,
+            385413.07
+          ],
+          [
+            1315585.317765939,
+            385437.72015409346
+          ],
+          [
+            1315631.867432714,
+            385469.74373180495
+          ],
+          [
+            1315592.1928657475,
+            385527.41464874847
+          ]
+        ],
+        "type": "mixedUse"
+      },
+      {
+        "ring": [
+          [
+            1315633.82,
+            385963.01
+          ],
+          [
+            1315690.5,
+            385880.62
+          ],
+          [
+            1315748.1693994962,
+            385920.29243086046
+          ],
+          [
+            1315691.4889945288,
+            386002.6835779456
+          ]
+        ],
+        "type": "mixedUse"
+      },
+      {
+        "ring": [
+          [
+            1315690.5,
+            385880.62
+          ],
+          [
+            1315726.36,
+            385828.49
+          ],
+          [
+            1315759.32,
+            385851.16
+          ],
+          [
+            1315780.13,
+            385820.9
+          ],
+          [
+            1315804.8472191736,
+            385837.9050417756
+          ],
+          [
+            1315748.169399496,
+            385920.2924308604
+          ]
+        ],
+        "type": "mixedUse"
+      }
     ],
     "units": [
       {
@@ -6629,30 +7132,6 @@
         ]
       },
       {
-        "type": "twoOverTwo",
-        "band": 1,
-        "dwellingUnits": 2,
-        "sqFt": 2400,
-        "ring": [
-          [
-            1315413.2,
-            385613.24
-          ],
-          [
-            1315426.8,
-            385593.47
-          ],
-          [
-            1315509.19,
-            385650.15
-          ],
-          [
-            1315495.59,
-            385669.92
-          ]
-        ]
-      },
-      {
         "type": "townhouse",
         "band": 2,
         "dwellingUnits": 1,
@@ -6685,54 +7164,6 @@
           [
             1315521.5371937938,
             385729.0389690549
-          ]
-        ]
-      },
-      {
-        "type": "townhouse",
-        "band": 2,
-        "dwellingUnits": 1,
-        "sqFt": 1800,
-        "ring": [
-          [
-            1315520.61,
-            385704.13
-          ],
-          [
-            1315531.94,
-            385687.65
-          ],
-          [
-            1315606.09,
-            385738.66
-          ],
-          [
-            1315594.76,
-            385755.14
-          ]
-        ]
-      },
-      {
-        "type": "townhouse",
-        "band": 2,
-        "dwellingUnits": 1,
-        "sqFt": 1800,
-        "ring": [
-          [
-            1315531.94,
-            385687.65
-          ],
-          [
-            1315543.28,
-            385671.17
-          ],
-          [
-            1315617.43,
-            385722.18
-          ],
-          [
-            1315606.09,
-            385738.66
           ]
         ]
       },
@@ -6812,67 +7243,15 @@
           ],
           [
             1315687.019362493,
-            385815.10956142854
+            385815.1095614285
           ],
           [
-            1315685.6748831167,
-            385817.06392805156
+            1315685.6748830602,
+            385817.06392813375
           ],
           [
             1315673.41,
             385834.88
-          ]
-        ]
-      },
-      {
-        "type": "twoOverTwo",
-        "band": 3,
-        "dwellingUnits": 2,
-        "sqFt": 2400,
-        "ring": [
-          [
-            1315604.63,
-            385758.43
-          ],
-          [
-            1315618.23,
-            385738.66
-          ],
-          [
-            1315700.62,
-            385795.33
-          ],
-          [
-            1315688.751673897,
-            385812.5914331114
-          ],
-          [
-            1315687.019362493,
-            385815.10956142854
-          ]
-        ]
-      },
-      {
-        "type": "twoOverTwo",
-        "band": 3,
-        "dwellingUnits": 2,
-        "sqFt": 2400,
-        "ring": [
-          [
-            1315618.23,
-            385738.66
-          ],
-          [
-            1315631.83,
-            385718.88
-          ],
-          [
-            1315714.22,
-            385775.56
-          ],
-          [
-            1315700.62,
-            385795.33
           ]
         ]
       },
@@ -6908,15 +7287,23 @@
         "type": "mixedUse",
         "band": 4,
         "dwellingUnits": 22,
-        "sqFt": 20000,
+        "sqFt": 18530,
         "ring": [
           [
             1315690.5,
             385880.62
           ],
           [
-            1315747.18,
-            385798.23
+            1315726.3637837197,
+            385828.4884343565
+          ],
+          [
+            1315759.32,
+            385851.16
+          ],
+          [
+            1315780.1323404973,
+            385820.90085827996
           ],
           [
             1315911.95,
@@ -6931,24 +7318,24 @@
     ]
   },
   "yield": {
-    "totalBays": 17,
-    "totalDwellingUnits": 171,
+    "totalBays": 12,
+    "totalDwellingUnits": 163,
     "totalRetailSqFt": 49000,
     "byType": [
       {
         "type": "townhouse",
         "label": "Townhouse",
-        "bays": 3,
-        "dwellingUnits": 3,
-        "lotSqFt": 5335,
-        "netAcForDensity": 0.148,
-        "densityDuAc": 20.28,
+        "bays": 1,
+        "dwellingUnits": 1,
+        "lotSqFt": 1734,
+        "netAcForDensity": 0.053,
+        "densityDuAc": 18.97,
         "densityCapDuAc": 20,
-        "withinDensity": false,
-        "maxUnitsAtCap": 2,
+        "withinDensity": true,
+        "maxUnitsAtCap": 1,
         "lotCoveragePct": 44.4,
         "coverageCapPct": 65,
-        "parkingRequired": 6,
+        "parkingRequired": 2,
         "parkingRatioAssumed": 2,
         "parkingWhere": "front-load garage + driveway on the lot",
         "retailSqFt": 0,
@@ -6980,17 +7367,17 @@
       {
         "type": "twoOverTwo",
         "label": "Two-over-two (stacked, 2 units per bay)",
-        "bays": 7,
-        "dwellingUnits": 14,
-        "lotSqFt": 16608,
-        "netAcForDensity": 0.461,
-        "densityDuAc": 30.4,
+        "bays": 4,
+        "dwellingUnits": 8,
+        "lotSqFt": 9408,
+        "netAcForDensity": 0.286,
+        "densityDuAc": 27.98,
         "densityCapDuAc": 48,
         "withinDensity": true,
-        "maxUnitsAtCap": 22,
+        "maxUnitsAtCap": 13,
         "lotCoveragePct": 48,
         "coverageCapPct": 70,
-        "parkingRequired": 21,
+        "parkingRequired": 12,
         "parkingRatioAssumed": 1.5,
         "parkingWhere": "one garage space per unit + surface bays along the street",
         "retailSqFt": 0,
@@ -7003,12 +7390,12 @@
         "label": "Mixed use (retail below, dwellings above)",
         "bays": 7,
         "dwellingUnits": 154,
-        "lotSqFt": 136195,
-        "netAcForDensity": 3.776,
-        "densityDuAc": 40.78,
+        "lotSqFt": 134726,
+        "netAcForDensity": 4.095,
+        "densityDuAc": 37.6,
         "densityCapDuAc": 48,
         "withinDensity": true,
-        "maxUnitsAtCap": 181,
+        "maxUnitsAtCap": 196,
         "lotCoveragePct": 35,
         "coverageCapPct": 70,
         "parkingRequired": 427,
@@ -7020,9 +7407,10 @@
         "withinHeight": true
       }
     ],
-    "overCap": [
-      "townhouse"
-    ],
+    "parkingDrawnSurface": 243,
+    "parkingInGarages": 10,
+    "parkingRequired": 441,
+    "overCap": [],
     "ceilings": [
       {
         "type": "townhouse",
@@ -7043,7 +7431,7 @@
         "basis": "developable ac × 0.8 (streets, parking, open space) × certified density"
       }
     ],
-    "grossDensityDuAc": 16.2
+    "grossDensityDuAc": 15.44
   },
   "approvals": [
     "CGO: townhouse, two-family and multifamily (two-over-two) dwellings are listed uses with their own intensity standards in the certified Sec. 27-4203 table; a Detailed Site Plan is the approval path for residential in the commercial zones (confirm the use table entry for each type — the use table is not carried by this engine).",
