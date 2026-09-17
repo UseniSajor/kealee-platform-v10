@@ -1893,8 +1893,13 @@ function drawGeometry(doc: Doc, ctx: SheetContext, vp: Viewport, b: Bounds): voi
     // the dwelling it described — on a 46 x 26 ft house at 1"=20' the box is
     // wider than the building. Tables belong in the right-hand column where
     // they can be read; the drawing area carries geometry and dimensions.
+    // ATTACHED UNITS ARE NOT CAPTIONED ONE BY ONE. A stick of six townhouses
+    // carries one caption on the stick (a ProposedFeature label supplied by the
+    // layout), not six 'PROPOSED DWELLING' captions and twelve dimensions over
+    // 20-ft-wide footprints. `attributes.caption === null` says so.
+    const attached = (bl as { attributes?: { caption?: unknown } }).attributes?.caption === null
     // The footprint's own dimensions, lettered on its sides.
-    if (bl.ring.coordinates.length >= 3) {
+    if (!attached && bl.ring.coordinates.length >= 3) {
       const cc = bl.ring.coordinates
       for (let i = 0; i < Math.min(2, cc.length - 1); i++) {
         const ftLen = Math.hypot(cc[i + 1][0] - cc[i][0], cc[i + 1][1] - cc[i][1])
@@ -1949,7 +1954,7 @@ function drawGeometry(doc: Doc, ctx: SheetContext, vp: Viewport, b: Bounds): voi
     // ALWAYS HORIZONTAL — rotated to the building's own axis they came out
     // upside down on any wall facing away, and an elevation read upside down is
     // a misread elevation.
-    {
+    if (!attached) {
       const bAt = (bl as { attributes?: Record<string, unknown> }).attributes ?? {}
       const ev = (k: string) => bAt[k] != null && Number.isFinite(Number(bAt[k]))
         ? Number(bAt[k]).toFixed(2) : '—'
@@ -2009,6 +2014,7 @@ function drawGeometry(doc: Doc, ctx: SheetContext, vp: Viewport, b: Bounds): voi
     // the placer — quite correctly, by its own rules — put the area ABOVE the
     // name on Lot 55 because that was the first clear slot. A caption and the
     // figure it belongs to are one object and have to move as one.
+    if (attached) continue
     L.add({
       text: a.areaSqFt
         ? `PROPOSED DWELLING\n${Math.round(Number(a.areaSqFt)).toLocaleString()} SQ FT`
@@ -2019,6 +2025,27 @@ function drawGeometry(doc: Doc, ctx: SheetContext, vp: Viewport, b: Bounds): voi
     })
   }
 
+
+/**
+ * Spot elevations, drawn where the sheet is a grading sheet: a small cross at
+ * the point and the value beside it. Attached-housing sets carry a finished
+ * floor per dwelling this way rather than in a data block the footprint cannot
+ * hold.
+ */
+function drawSpotElevations(doc: Doc, ctx: SheetContext, vp: Viewport, b: Bounds, L: Labeller): void {
+  if (ctx.sheet !== 'C-400' && ctx.sheet !== 'C-001') return
+  for (const sp of genericOfKind(ctx.twin, 'SpotElevation')) {
+    if (!sp.point) continue
+    const q = project(sp.point as Position, vp, b, PAD_FT)
+    const txt = String(sp.attributes?.label ?? (sp.attributes?.elevationFt != null ? Number(sp.attributes.elevationFt).toFixed(1) : ''))
+    if (!txt) continue
+    doc.save().lineWidth(0.5).strokeColor('#000000')
+    doc.moveTo(q[0] - 2, q[1] - 2).lineTo(q[0] + 2, q[1] + 2).stroke()
+    doc.moveTo(q[0] - 2, q[1] + 2).lineTo(q[0] + 2, q[1] - 2).stroke()
+    doc.restore()
+    L.add({ text: txt, at: q, dx: 3, dy: -3, width: 40, align: 'left', size: 5, color: '#000000', priority: 30, shifts: [[3, 3], [-43, -3], [-43, 3]] })
+  }
+}
 
 /**
  * A street's full name for the sheet.
@@ -2077,6 +2104,7 @@ function streetLabel(name: string | null): string {
     }
   }
 
+  drawSpotElevations(doc, ctx, vp, b, L)
   for (const seg of featuresOfKind(t, 'BoundarySegment')) {
     polyline(doc, [P(seg.from), P(seg.to)], PEN.boundary)
   }
