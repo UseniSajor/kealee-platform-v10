@@ -21,3 +21,17 @@ Run from the repo root with a scratch directory `S`:
 
 The vector content of the PDF is not usable for this: the lot lines are exploded dash-dot fragments and
 many are missing from `get_drawings()`; polygonizing them never closed a lot. The raster route is what worked.
+
+## Aragona Village — approved-plan constraints (`aragona_constraints.py`)
+
+Vector, not raster: the residential exhibit's optional-content layers carry the
+PMA dot hatch, the wetland symbols, the slope hatches and the forest
+conservation easement lines. Georeference is the 16 `Tax Acc.:` labels →
+PGAtlas lot centroids, refined by ICP of the sheet's lot lines against the
+PGAtlas lot rings with the scale locked at 1 in = 42.857 ft (a 1"=50' drawing
+printed 42 in → 36 in). Output is `propose-townhomes --keepout` JSON:
+`subtract` sets are taken out of the developable ground, `show` sets and
+`lines` are drawn for the record.
+
+    python3 aragona_constraints.py "existing site plans/Argona Hills Residential Site.pdf" \
+      output/site-plans/aragona-village/aragona-constraints.keepout.json
