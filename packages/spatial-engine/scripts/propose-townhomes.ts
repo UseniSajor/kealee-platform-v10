@@ -25,6 +25,7 @@ import { PGATLAS_ENDPOINTS, fetchPgAtlasPropertyRecord, fetchPgAtlasStreets, typ
 import { PG_ZONE_DIMENSIONAL_TABLES } from '../src/jurisdictions/pg-dimensional-standards.generated'
 import { waterQualityVolume, practiceFootprint } from '../src/site-plan/engineering'
 import { pgRegulatedStreamBufferFt } from '../src/jurisdictions/pg-subdivision-and-landscape'
+import { fetchPgContours } from '../src/jurisdictions/pg-elevation'
 
 type P = [number, number]
 type MP = polygonClipping.MultiPolygon
@@ -629,9 +630,34 @@ async function main() {
       }
     })
     // A street strip that serves no lot (it landed on ground the rows could not use) is not built.
+    // Building restriction lines, one per stick: the zone's yards applied to the stick as a whole —
+    // the front yard (the 20-ft driveway apron governs where it is deeper than the table's minimum),
+    // the rear yard, and the side yard at each END of the stick (party walls within it).
+    const brls: { ring: P[]; type: UnitKey; units: number; frontFt: number; sideFt: number; rearFt: number }[] = []
+    {
+      const groups = new Map<string, { u: Unit; fr: typeof frames[number]; s0: number; s1: number }[]>()
+      units.forEach((u, ui) => { const fr = frames[ui]; if (!fr) return
+        const key = `${fr.origin[0].toFixed(1)},${fr.origin[1].toFixed(1)}|${fr.ac[0].toFixed(4)},${fr.ac[1].toFixed(4)}|${fr.cc0.toFixed(1)}|${fr.front}|${u.type}`
+        const al = u.ring.map(q => dot(q, fr.origin, fr.ax))
+        const g = groups.get(key) ?? []; g.push({ u, fr, s0: Math.min(...al), s1: Math.max(...al) }); groups.set(key, g) })
+      for (const g of groups.values()) {
+        g.sort((a, b) => a.s0 - b.s0)
+        let stick = [g[0]]
+        const flush = () => {
+          const fr = stick[0].fr, T = UNIT_TYPES[stick[0].u.type], st = stds[stick[0].u.type]
+          const frontFt = Math.max(st.frontFt ?? 10, DRIVE_APRON_FT), sideFt = st.sideFt ?? 8, rearFt = st.rearFt ?? 15
+          const s0 = Math.min(...stick.map(x => x.s0)) + sideFt, s1 = Math.max(...stick.map(x => x.s1)) - sideFt
+          const c0 = fr.front === 'c0' ? fr.cc0 + frontFt : fr.cc0 + rearFt, c1 = fr.front === 'c0' ? fr.cc1 - rearFt : fr.cc1 - frontFt
+          if (s1 > s0 && c1 > c0) brls.push({ ring: [add(add(fr.origin, fr.ax, s0), fr.ac, c0), add(add(fr.origin, fr.ax, s1), fr.ac, c0), add(add(fr.origin, fr.ax, s1), fr.ac, c1), add(add(fr.origin, fr.ax, s0), fr.ac, c1)], type: stick[0].u.type, units: stick.length, frontFt, sideFt, rearFt })
+          void T
+        }
+        for (let k = 1; k < g.length; k++) { if (g[k].s0 - stick[stick.length - 1].s1 > 1) { flush(); stick = [g[k]] } else stick.push(g[k]) }
+        flush()
+      }
+    }
     const serves = (r: P[]) => units.some(u => u.ring.some(q => r.some((v, i) => segDistP(q, v, r[(i + 1) % r.length]) < 2)))
     const kept = streets.filter(r => connectors.includes(r) || bulbs.includes(r) || serves(r))
-    return { axis, units, streets: kept, connectors, bulbs, parking, buildings, driveways, walks, du: units.reduce((t, u) => t + u.units, 0) }
+    return { axis, units, streets: kept, connectors, bulbs, parking, buildings, driveways, walks, brls, du: units.reduce((t, u) => t + u.units, 0) }
   }
   // Two orientations (the ground's principal axis and across it) and three offsets; the most dwellings wins.
   // Each block is swept at its own best offset: the offset that yields the most dwellings on
@@ -655,7 +681,7 @@ async function main() {
     console.log(`      orientation ${bearingOf([0, 0], [Math.cos(th), Math.sin(th)])} offsets ${shifts.join('/')}: ${cand.du} du on ${cand.streets.length} street segment(s)`)
     if (cand.du > best.du) best = cand
   }
-  const { axis, units, streets, connectors, bulbs, parking, buildings, driveways, walks } = best
+  const { axis, units, streets, connectors, bulbs, parking, buildings, driveways, walks, brls } = best
   // No street on the property line: report any street strip whose long side runs along the tract boundary.
   { const tr = rings(tract); let onLine = 0
     for (const r of streets) { const edges = r.map((v, i) => [v, r[(i + 1) % r.length]] as [P, P]).filter(([a, b]) => Math.hypot(b[0] - a[0], b[1] - a[1]) > 60)
@@ -750,6 +776,13 @@ async function main() {
   // The theoretical ceilings, for the record
   const ceilings = (Object.keys(UNIT_TYPES) as UnitKey[]).filter(k => k !== 'mixedUse').map(k => ({ type: k, label: UNIT_TYPES[k].label, allOfThisType: stds[k].densityDuAc != null ? Math.floor(devSqFt / 43560 * 0.8 * stds[k].densityDuAc!) : null, basis: 'developable ac × 0.8 (streets, parking, open space) × certified density' }))
 
+  // Existing topography for the study sheet — the county's 2-ft contours (PGAtlas Elevation/1, NAVD88).
+  const tractC = interiorPoint(rings(tract).sort((a, b) => Math.abs(area(b)) - Math.abs(area(a)))[0])
+  const contourRadius = Math.ceil(Math.max(...rings(tract).flat().map(q => Math.hypot(q[0] - tractC[0], q[1] - tractC[1]))) + 60)
+  const contoursRes = await fetchPgContours(tractC[0], tractC[1], { radiusFt: contourRadius }).catch(() => null)
+  const contours = (contoursRes?.contours ?? []).map(c => ({ elevationFt: c.elevationFt, weight: c.weight, path: c.path.map(q => [Math.round(q[0] * 10) / 10, Math.round(q[1] * 10) / 10] as P) }))
+  console.log(`    contours: ${contours.length} existing 2-ft contours (${contoursRes?.verticalDatum ?? 'not returned'}) within ${contourRadius} ft`)
+
   // ── Emit ──────────────────────────────────────────────────────────────────
   const out = {
     name, generatedAt: new Date().toISOString(), zone, mappedZone, hypothetical,
@@ -769,8 +802,9 @@ async function main() {
     stormwater,
     openSpace: { rings: openSpace, sqFt: Math.round(openSpaceSqFt), requiredSqFt: Math.round(tractSqFt * OPEN_SPACE_PCT / 100), basis: 'Sec. 24-134 mandatory dedication of parkland — 5% of the gross tract, provided on site as private recreation open space (HOA parcel) in lieu of dedication' },
     existingStreetRow: existingRow,
+    existingContours: { source: 'PGAtlas Elevation/MapServer/1 — Contour 2 ft (2023)', verticalDatum: contoursRes?.verticalDatum ?? null, count: contours.length, contours },
     access: accessName ? { road: accessName, note: `Every internal street tees off ${accessName} (existing public right-of-way); no new access to any other road.` } : null,
-    layout: { axisBearing: bearingOf([0, 0], axis), streets, connectors, turnarounds: bulbs, parking, buildings, driveways, walks, units: units.map(u => ({ type: u.type, band: u.band, dwellingUnits: u.units, sqFt: Math.round(u.sqFt), ring: u.ring })) },
+    layout: { axisBearing: bearingOf([0, 0], axis), streets, connectors, turnarounds: bulbs, parking, buildings, driveways, walks, buildingRestrictionLines: brls, units: units.map(u => ({ type: u.type, band: u.band, dwellingUnits: u.units, sqFt: Math.round(u.sqFt), ring: u.ring })) },
     yield: { totalBays: units.length, totalDwellingUnits: totalDu, totalRetailSqFt: totalRetail, byType, parkingDrawnSurface: parkingDrawn, parkingInGarages: garageSpaces, parkingRequired: byType.reduce((t, b) => t + b.parkingRequired, 0), overCap: overCap.map(t => t.type), ceilings,
       grossDensityDuAc: Math.round(totalDu / (tractSqFt / 43560) * 100) / 100 },
     designStandards: [
@@ -850,6 +884,15 @@ async function renderYieldSheet(y: Out, file: string) {
       doc.restore()
     }
   }
+  // existing contours first, under everything: index contours heavier, every one labelled once
+  const ec = (y as unknown as { existingContours?: { contours: { elevationFt: number; weight?: string; path: P[] }[] } }).existingContours
+  if (ec) for (const c of ec.contours) {
+    if (c.path.length < 2) continue
+    const idx = c.elevationFt % 10 === 0
+    doc.save().lineWidth(idx ? 0.5 : 0.25).strokeColor(idx ? '#a67c52' : '#c9a982').dash(idx ? 6 : 3, { space: 2 })
+    doc.moveTo(X(c.path[0][0]), Y(c.path[0][1])); for (const q of c.path.slice(1)) doc.lineTo(X(q[0]), Y(q[1])); doc.stroke(); doc.restore()
+    if (idx) { const m = c.path[Math.floor(c.path.length / 2)]; doc.font('Helvetica').fontSize(4.5).fillColor('#a67c52').text(String(c.elevationFt), X(m[0]) + 1, Y(m[1]) - 2, { lineBreak: false }) }
+  }
   for (const r of ((y as unknown as { existingStreetRow?: P[][] }).existingStreetRow ?? [])) { poly(r, '#e2e2e2', '#333', 0.8); const c = interiorPoint(r); doc.font('Helvetica-Bold').fontSize(6.5).fillColor('#333').text('EXISTING APPROVED STREET (PUBLIC R/W) — KEPT', X(c[0]) - 60, Y(c[1]) - 4, { width: 120, align: 'center' }) }
   for (const r of y.layout.streets) poly(r, '#c8c8c8', '#555', 0.6)
   const col: Record<string, string> = { townhouse: '#f0c060', twoFamily: '#8fb8ee', twoOverTwo: '#cf98d8', mixedUse: '#e08080' }
@@ -857,6 +900,7 @@ async function renderYieldSheet(y: Out, file: string) {
   for (const pk of (y.layout as unknown as { parking?: { ring: P[] }[] }).parking ?? []) poly(pk.ring, '#f2f2f2', '#666', 0.4, [2, 2])
   const bcol: Record<string, string> = { townhouse: '#c98a1e', twoFamily: '#3f74b8', twoOverTwo: '#8a4e98', mixedUse: '#b03a3a' }
   for (const w of (y.layout as unknown as { walks?: P[][] }).walks ?? []) poly(w, '#f4f4f4', '#444', 0.3)
+  for (const bl of (y.layout as unknown as { buildingRestrictionLines?: { ring: P[]; frontFt: number; sideFt: number; rearFt: number }[] }).buildingRestrictionLines ?? []) { poly(bl.ring, null, '#555', 0.4, [4, 2]); const c = interiorPoint(bl.ring); doc.font('Helvetica').fontSize(4).fillColor('#555').text(`BRL ${bl.frontFt}/${bl.sideFt}/${bl.rearFt}`, X(c[0]) - 20, Y(c[1]) - 2, { width: 40, align: 'center' }) }
   for (const d of (y.layout as unknown as { driveways?: { ring: P[] }[] }).driveways ?? []) poly(d.ring, '#d9d9d9', '#555', 0.3)
   for (const b of (y.layout as unknown as { buildings?: { ring: P[]; type: string }[] }).buildings ?? []) poly(b.ring, bcol[b.type] ?? '#b03a3a', '#000', 0.6)
   for (const r of (y as unknown as { openSpace?: { rings: P[][] } }).openSpace?.rings ?? []) { poly(r, '#d6ecc8', '#3d7a2e', 0.7); const c = interiorPoint(r); if (Math.abs(area(r)) > 4000) doc.font('Helvetica-Bold').fontSize(5.5).fillColor('#2f5f22').text('OPEN SPACE — RECREATION (HOA)', X(c[0]) - 45, Y(c[1]) - 3, { width: 90, align: 'center' }) }
@@ -868,7 +912,7 @@ async function renderYieldSheet(y: Out, file: string) {
   // north arrow + scale
   doc.font('Helvetica-Bold').fontSize(9).text('N', M + 14, M + 8); doc.moveTo(M + 18, M + 40).lineTo(M + 18, M + 20).lineWidth(1).stroke('#000')
   doc.fontSize(8).text(`SCALE 1" = ${scale}'   ·   GRAPHIC: |${'—'.repeat(10)}| = ${scale * 2} FT`, M + 40, M + 10)
-  doc.font('Helvetica').fontSize(6.5).fillColor('#444').text('LEGEND — red parcels with dark-red buildings at the street line: mixed use (retail at grade, dwellings above) · dashed grey: surface parking · yellow: townhouse lots · blue: two-family (duplex) lots · violet: two-over-two (stacked) bays · grey: private street strip 40 ft (26-ft pavement) with 45-ft-radius turnarounds at dead ends · dark blocks on the lots: dwelling footprints on a 20-ft build line (driveway apron; CGO front yard min. 10 ft), light-grey stubs: driveways to the front-load garages (townhouse 1-car, duplex and two-over-two 2-car), 5-ft sidewalk along the front of every building at the street line · no street on the property line (25-ft landscape strip kept) · circles: turnarounds at dead-end streets · teal dashed: ESD micro-bioretention reserved · green: recreation open space (Sec. 24-134, 5% on site) · green: woodland conservation (approved TCP) · red: slopes >25% (dashed = graded banks, regraded) · blue band: 50-ft stream buffer · olive: Primary Management Area, light blue: wetlands and their 25-ft buffer, pink dashed: slopes 15–25%, dashed green: forest conservation easement (all from the approved plan where one is supplied)', M + 40, M + 24, { width: drawW - 60 })
+  doc.font('Helvetica').fontSize(6.5).fillColor('#444').text('LEGEND — red parcels with dark-red buildings at the street line: mixed use (retail at grade, dwellings above) · dashed grey: surface parking · yellow: townhouse lots · blue: two-family (duplex) lots · violet: two-over-two (stacked) bays · grey: private street strip 40 ft (26-ft pavement) with 45-ft-radius turnarounds at dead ends · grey dashed with BRL f/s/r: building restriction line per stick (front / side at the stick ends / rear yards per Sec. 27-4203, front deepened to the 20-ft driveway apron) · tan dashed: existing 2-ft contours (PGAtlas, NAVD88; index contours labelled) · dark blocks on the lots: dwelling footprints on a 20-ft build line (driveway apron; CGO front yard min. 10 ft), light-grey stubs: driveways to the front-load garages (townhouse 1-car, duplex and two-over-two 2-car), 5-ft sidewalk along the front of every building at the street line · no street on the property line (25-ft landscape strip kept) · circles: turnarounds at dead-end streets · teal dashed: ESD micro-bioretention reserved · green: recreation open space (Sec. 24-134, 5% on site) · green: woodland conservation (approved TCP) · red: slopes >25% (dashed = graded banks, regraded) · blue band: 50-ft stream buffer · olive: Primary Management Area, light blue: wetlands and their 25-ft buffer, pink dashed: slopes 15–25%, dashed green: forest conservation easement (all from the approved plan where one is supplied)', M + 40, M + 24, { width: drawW - 60 })
   // right column
   let x = W - M - COL, yy = M + 4
   const line = (t: string, size = 7, bold = false, color = '#000', gap = 2) => { doc.font(bold ? 'Helvetica-Bold' : 'Helvetica').fontSize(size).fillColor(color).text(t, x, yy, { width: COL - 8 }); yy = doc.y + gap }

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-17T18:36:30.333Z",
+  "generatedAt": "2026-09-17T19:50:56.956Z",
   "source": "aragona-village.yield.json",
   "sheets": [
     "C-000",
@@ -195,7 +195,7 @@
       "dataset": "Parcel boundaries — county parcel layer (compiled, not surveyed)",
       "crs": "EPSG:2248",
       "horizontalDatum": "NAD83",
-      "retrievedAt": "2026-09-17T18:36:21.738Z",
+      "retrievedAt": "2026-09-17T19:50:44.964Z",
       "verticalDatum": null,
       "accuracyClass": "mapping_grade",
       "reliabilityLevel": 1
@@ -206,7 +206,7 @@
       "dataset": "Elevation/MapServer/1 — Contour 2 ft (2023)",
       "crs": "EPSG:2248",
       "horizontalDatum": "NAD83",
-      "retrievedAt": "2026-09-17T18:36:21.738Z",
+      "retrievedAt": "2026-09-17T19:50:44.965Z",
       "verticalDatum": null,
       "accuracyClass": "mapping_grade",
       "reliabilityLevel": 1
@@ -217,7 +217,7 @@
       "dataset": "Attached-housing layout: 199 du in 148 bays",
       "crs": "EPSG:2248",
       "horizontalDatum": "NAD83",
-      "retrievedAt": "2026-09-17T18:36:21.738Z",
+      "retrievedAt": "2026-09-17T19:50:44.965Z",
       "verticalDatum": null,
       "accuracyClass": "mapping_grade",
       "reliabilityLevel": 1

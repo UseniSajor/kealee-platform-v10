@@ -138,6 +138,9 @@ async function main() {
   // Proposed lots (the units' lots), lettered by number
   const lots = y.layout.units.map((u, i) => ({ ...u, no: i + 1 }))
   lots.forEach(u => F.push({ kind: 'ProposedFeature', id: `lot-${u.no}`, ring: ring(u.ring), attributes: { type: 'proposed lot', label: `LOT ${u.no}`, unitType: u.type, areaSqFt: Math.round(u.sqFt), dwellingUnits: u.dwellingUnits, proposed: true }, ...base } as SiteFeature))
+  // Building restriction lines, one per stick (front / side at the stick ends / rear per the zone table,
+  // the front deepened to the driveway apron) — the BRL every discipline is set from.
+  ;((y.layout as unknown as { buildingRestrictionLines?: { ring: P[]; frontFt: number; sideFt: number; rearFt: number; units: number; type: string }[] }).buildingRestrictionLines ?? []).forEach((bl, i) => F.push({ kind: 'ProposedFeature', id: `stick${i + 1}-buildable-envelope`, ring: ring(bl.ring), attributes: { type: 'buildable envelope', setbacks: { frontFt: bl.frontFt, sideFt: bl.sideFt, rearFt: bl.rearFt }, label: '', proposed: true }, ...base } as SiteFeature))
   // Dwellings
   y.layout.buildings.forEach((b, i) => { const ut = T[b.type]; F.push({ kind: 'Building', id: `bldg-${i + 1}`, ring: ring(b.ring), existing: false, storeys: ut?.storeys ?? 3, heightFt: ut?.heightFt ?? 35, use: ut?.label ?? b.type, attributes: { areaSqFt: Math.round(Math.abs(area(b.ring))), type: b.type, caption: null, lotLabel: `LOT ${i + 1}` }, ...base } as SiteFeature) })
   // One caption per stick: buildings that touch are one stick; the caption names the type and count.
