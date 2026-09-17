@@ -24,6 +24,7 @@ import { createWriteStream } from 'fs'
 import { PGATLAS_ENDPOINTS, fetchPgAtlasPropertyRecord, fetchPgAtlasStreets, type PgAtlasPropertyRecord } from '../src/jurisdictions/pgatlas'
 import { PG_ZONE_DIMENSIONAL_TABLES } from '../src/jurisdictions/pg-dimensional-standards.generated'
 import { waterQualityVolume, practiceFootprint } from '../src/site-plan/engineering'
+import { pgRegulatedStreamBufferFt } from '../src/jurisdictions/pg-subdivision-and-landscape'
 
 type P = [number, number]
 type MP = polygonClipping.MultiPolygon
@@ -37,17 +38,20 @@ const UNIT_TYPES = {
   townhouse: {
     label: 'Townhouse', column: 'Townhouse Dwelling',
     lotWidthFt: 20, lotDepthFt: 90, footprintFt: [20, 40] as [number, number], unitsPerBay: 1,
-    stickMaxUnits: 6, breakFt: 16, parkingPerUnit: 2.0, parkingWhere: 'front-load garage + driveway on the lot',
+    stickMaxUnits: 6, breakFt: 16, parkingPerUnit: 2.0, parkingWhere: '1-car front-load garage + 1 driveway space on the lot',
+    garageCars: 1, driveWidthFt: 10,
   },
   twoFamily: {
     label: 'Two-family (duplex)', column: 'Two-Family Dwelling',
     lotWidthFt: 30, lotDepthFt: 90, footprintFt: [30, 40] as [number, number], unitsPerBay: 1,
-    stickMaxUnits: 2, breakFt: 16, parkingPerUnit: 2.0, parkingWhere: 'garage + driveway on each lot',
+    stickMaxUnits: 2, breakFt: 16, parkingPerUnit: 2.0, parkingWhere: '2-car front-load garage + 2 driveway spaces on each lot',
+    garageCars: 2, driveWidthFt: 18,
   },
   twoOverTwo: {
     label: 'Two-over-two (stacked, 2 units per bay)', column: 'Multifamily Dwelling, Artists’ Residential Studio, Live-Work Dwelling (2)',
     lotWidthFt: 24, lotDepthFt: 100, footprintFt: [24, 48] as [number, number], unitsPerBay: 2,
-    stickMaxUnits: 8, breakFt: 20, parkingPerUnit: 1.5, parkingWhere: 'one garage space per unit + surface bays along the street',
+    stickMaxUnits: 8, breakFt: 20, parkingPerUnit: 1.5, parkingWhere: 'a 2-car front-load garage per bay (one space per unit) + 1 driveway space + surface bays along the street',
+    garageCars: 2, driveWidthFt: 18,
   },
   /**
    * Mixed use: ground-floor retail with dwellings above, on the commercial
@@ -69,7 +73,10 @@ const UNIT_TYPES = {
 } as const
 type UnitKey = keyof typeof UNIT_TYPES
 
-const STREET_FT = 40           // private street: 26-ft pavement, walk one side, in a 40-ft strip (assumed)
+const STREET_FT = 40           // private street: 26-ft pavement (≥ 22 ft, Sec. 24-128(b)(7)(A)(i)), 5-ft walk one side, in a 40-ft strip; 10-ft PUE contiguous (24-128(b)(12)) in the lots' front yards
+const BULB_ROW_R = 45          // turnaround at a dead end: 45-ft right-of-way radius, 40-ft pavement — required beyond 150 ft of dead end (IFC D103.4, adopted by Subtitle 11)
+const DEAD_END_MAX_FT = 150
+const DRIVE_APRON_FT = 20      // build line behind the street line where a car parks in front of a garage without overhanging the walk (industry practice; the CGO front yard minimum is 10 ft)
 const ENTRANCE_FT = 60         // the public-road connection
 
 // ── Geometry ────────────────────────────────────────────────────────────────
@@ -260,7 +267,7 @@ async function main() {
   const q = (layer: number, extra: Record<string, string> = {}) => arcgis(`${ENV}/${layer}`, { where: '1=1', geometry: env, geometryType: 'esriGeometryEnvelope', spatialRel: 'esriSpatialRelIntersects', outFields: '*', returnGeometry: 'true', ...extra })
   const streams = (await q(1)).filter(f => [4110, 4111, 4112, 4113].includes(Number(f.attributes?.FEATURE_CODE)))
   const streamPaths = streams.flatMap(f => f.geometry?.paths ?? []).map(pth => pth.map(c => [c[0], c[1]] as P))
-  const STREAM_BUFFER_FT = 50   // the Primary Management Area's minimum stream buffer (Sec. 24-130 / the Environmental Technical Manual); expanded at steep slopes, which are taken separately
+  const STREAM_BUFFER_FT = pgRegulatedStreamBufferFt(false)   // Table 24-4303(c): 100 ft outside a Transit Oriented Center (75 ft inside) — the regulated stream buffer of the 2022 Subdivision Regulations; expanded at steep slopes, which are taken separately
   const pma = intersection(union(streamPaths.flatMap(p => bufferPolyline(p, STREAM_BUFFER_FT))), tract)
   const slopes = await q(13)
   // Slopes over 25% are taken out only where they form a body of ground (a
@@ -371,6 +378,7 @@ async function main() {
   }
   // The access road: the internal streets are perpendicular to its nearest run, so each one meets it.
   let accessTheta: number | null = null, accessName: string | null = null, accessDir: P | null = null, accessAnchor: P | null = null
+  let accessPaths: P[][] = []
   if (accessRe) {
     const sts = await fetchPgAtlasStreets(cen[0], cen[1], { searchFt: 1500 })
     let bestD = Infinity, bestDir: P | null = null
@@ -382,6 +390,7 @@ async function main() {
     }
     if (bestDir) {
       accessDir = bestDir
+      accessPaths = sts.filter(st => st.name && accessRe.test(st.name)).flatMap(st => st.paths).map(pth => pth.map(cq => [cq[0], cq[1]] as P))
       const tr = rings(tract).sort((a, b) => Math.abs(area(b)) - Math.abs(area(a)))[0]
       const dRoad = (q: P) => Math.min(...sts.filter(st => st.name && accessRe.test(st.name)).flatMap(st => st.paths).flatMap(pth => pth.map(cq => Math.hypot(cq[0] - q[0], cq[1] - q[1]))))
       accessAnchor = tr.reduce((b, q) => dRoad(q) < dRoad(b) ? q : b, tr[0])
@@ -429,18 +438,22 @@ async function main() {
     if (frontPt && !frontageIsAccess && dot(frontPt, cen, across) > 0) across = [-across[0], -across[1]]   // the first band goes on the road's side
     const units: Unit[] = []
     const streets: P[][] = []
+    const bulbs: P[][] = []
     let taken: MP = []
-    const frames: { ax: P; ac: P; origin: P; cc0: number }[] = []
-    const placeRow = (ax: P, ac: P, origin: P, cc0: number, cc1: number, s0: number, s1: number, T: typeof UNIT_TYPES[UnitKey], type: UnitKey, bandNo: number) => {
+    const frames: { ax: P; ac: P; origin: P; cc0: number; cc1: number; front: 'c0' | 'c1' }[] = []
+    const placeRow = (ax: P, ac: P, origin: P, cc0: number, cc1: number, s0: number, s1: number, T: typeof UNIT_TYPES[UnitKey], type: UnitKey, bandNo: number, front: 'c0' | 'c1' = 'c0') => {
       let sPos = s0 + 10, inStick = 0
       while (sPos + T.lotWidthFt <= s1 - 10) {
         const lot: P[] = [add(add(origin, ax, sPos), ac, cc0), add(add(origin, ax, sPos + T.lotWidthFt), ac, cc0), add(add(origin, ax, sPos + T.lotWidthFt), ac, cc1), add(add(origin, ax, sPos), ac, cc1)]
         const inside = difference(intersection(asMP(lot), developable), taken)
         const got = mpArea(inside)
-        if (got >= T.lotWidthFt * T.lotDepthFt * 0.92 && inside.length === 1) {
+        // every lot fronts a street: its front edge midpoint lies on a street strip or the kept right-of-way
+        const fm = add(add(origin, ax, sPos + T.lotWidthFt / 2), ac, front === 'c0' ? cc0 : cc1)
+        const onStreet = [...streets, ...existingRow].some(r => r.some((v, i) => segDistP(fm, v, r[(i + 1) % r.length]) < 3))
+        if (onStreet && got >= T.lotWidthFt * T.lotDepthFt * 0.92 && inside.length === 1) {
           const ring = rings(inside)[0]
           units.push({ type, ring, sqFt: got, band: bandNo, units: T.unitsPerBay })
-          frames.push({ ax, ac, origin, cc0 })
+          frames.push({ ax, ac, origin, cc0, cc1, front })
           taken = unionMP(taken, asMP(ring))
           inStick++
           sPos += T.lotWidthFt
@@ -448,7 +461,67 @@ async function main() {
         } else { sPos += 10; inStick = 0 }
       }
     }
-    // Rows along the existing approved street first: every straight run of its right-of-way edge
+    // Streets first, so each new street reaches the existing right-of-way and the rows are cut around them.
+    const streetPlan: { stripRing: P[]; c: number; streetC0: number; streetC1: number; rowB: number; band: number; t1: typeof UNIT_TYPES[UnitKey]; t2: typeof UNIT_TYPES[UnitKey] }[] = []
+    // Each developable piece (a block between constraints) is swept on its own extents, so a
+    // street lands in every block rather than only where the whole tract's sweep happens to fall.
+    for (const [pi, piece] of devPieces.entries()) {
+      const pAlong = piece.map(p => dot(p, cen, axis)), pCross = piece.map(p => dot(p, cen, across))
+      const pa0 = Math.min(...pAlong), pa1 = Math.max(...pAlong), pc0 = Math.min(...pCross), pc1 = Math.max(...pCross)
+      const pieceMP: MP = [devPolys[pi]]
+      let c = pc0 + 10 + shift
+      let band = frontageIsAccess ? 1 : 0   // band 0 is the frontage row when the buildings line the access road
+      while (c < pc1 - 60) {
+        const t1 = UNIT_TYPES[mix[band % mix.length]], t2 = UNIT_TYPES[mix[(band + 1) % mix.length]]
+        const rowA = t1.lotDepthFt, rowB = t2.lotDepthFt
+        // The last module of a block that cannot hold two rows and a street holds one row and a
+        // street on the far edge (single-loaded, the street against the boundary bufferyard).
+        const single = c + rowA + STREET_FT + 40 > pc1
+        if (single && c + rowA + STREET_FT > pc1 + 6) break
+        const streetC0 = single ? Math.min(c + rowA, pc1 - STREET_FT) : c + rowA, streetC1 = streetC0 + STREET_FT
+        const strip = difference(intersection(asMP([add(add(cen, axis, pa0 - 50), across, streetC0), add(add(cen, axis, pa1 + 50), across, streetC0), add(add(cen, axis, pa1 + 50), across, streetC1), add(add(cen, axis, pa0 - 50), across, streetC1)]), pieceMP), taken)
+        const pieces = mpArea(strip) < 2000 ? [] : rings(strip).filter(r => Math.abs(area(r)) >= 120 * STREET_FT)
+        if (!pieces.length) { c += 40; continue }
+        for (const stripRing of pieces) {
+          streets.push(stripRing)
+          taken = unionMP(taken, asMP(stripRing))
+          streetPlan.push({ stripRing, c, streetC0, streetC1, rowB: single ? 0 : rowB, band, t1, t2 })
+          // A dead end longer than 150 ft gets a turnaround (IFC D103.4): an end is connected if it
+          // meets the kept right-of-way, the access road or another street; otherwise a bulb is cut
+          // into the block at that end, inside the piece, before the rows are placed.
+          const sA = stripRing.map(q => dot(q, cen, axis)); const s0 = Math.min(...sA), s1 = Math.max(...sA)
+          if (s1 - s0 <= DEAD_END_MAX_FT) continue
+          const cMid = (streetC0 + streetC1) / 2
+          const connected = (e: P) => existingRow.some(r => r.some((v, i) => segDistP(e, v, r[(i + 1) % r.length]) < 30))
+            || accessPaths.some(pth => pth.some((v, i) => i + 1 < pth.length && segDistP(e, v, pth[i + 1]) < accessRowFt / 2 + 8))
+            || streets.some(r => r !== stripRing && r.some((v, i) => segDistP(e, v, r[(i + 1) % r.length]) < 30))
+          for (const [sEnd, dir] of [[s0, 1], [s1, -1]] as const) {
+            const e = add(add(cen, axis, sEnd), across, cMid)
+            if (connected(e)) continue
+            const ctr = add(e, axis, dir * (BULB_ROW_R + 4))
+            const circle: P[] = Array.from({ length: 28 }, (_, k) => [ctr[0] + BULB_ROW_R * Math.cos(k / 28 * 2 * Math.PI), ctr[1] + BULB_ROW_R * Math.sin(k / 28 * 2 * Math.PI)])
+            const bulb = intersection(asMP(circle), pieceMP)
+            for (const r of rings(bulb)) if (Math.abs(area(r)) > 0.6 * Math.PI * BULB_ROW_R * BULB_ROW_R) { streets.push(r); bulbs.push(r); taken = unionMP(taken, asMP(r)) }
+          }
+        }
+        if (single) break
+        c = streetC1 + rowB + 10
+        band += 2
+      }
+    }
+    // A connector behind the frontage row, parallel to the access road, joining every perpendicular
+    // street into one network (a loop with the access road) — so no internal street is a dead end.
+    const connectors: P[][] = []
+    if (frontageIsAccess && accessDir && accessAnchor && streetPlan.length >= 2) {
+      const T0 = UNIT_TYPES[mix[0]]
+      const ac: P = dot(cen, accessAnchor, leftOf(accessDir)) > 0 ? leftOf(accessDir) : [-leftOf(accessDir)[0], -leftOf(accessDir)[1]]
+      const d0 = T0.lotDepthFt + 2, d1 = d0 + STREET_FT
+      const stationsAlong = streetPlan.flatMap(sp => sp.stripRing.map(q => dot(q, accessAnchor, accessDir)))
+      const sA = Math.min(...stationsAlong) - STREET_FT, sB = Math.max(...stationsAlong) + STREET_FT
+      const strip = intersection(asMP([add(add(accessAnchor, accessDir, sA), ac, d0), add(add(accessAnchor, accessDir, sB), ac, d0), add(add(accessAnchor, accessDir, sB), ac, d1), add(add(accessAnchor, accessDir, sA), ac, d1)]), developable)
+      for (const r of rings(strip)) if (Math.abs(area(r)) >= 60 * STREET_FT) { connectors.push(r); streets.push(r); taken = unionMP(taken, asMP(r)) }
+    }
+    // Rows along the existing approved street: every straight run of its right-of-way edge
     // that is the lots' edge gets a row of the mix's types in turn, the lot depth into the tract.
     let edgeNo = 0
     for (const rw of existingRow) {
@@ -467,45 +540,6 @@ async function main() {
         edgeNo++
       }
     }
-    // Streets next (where ground is left), so each new street meets the road.
-    const streetPlan: { stripRing: P[]; c: number; streetC0: number; streetC1: number; rowB: number; band: number; t1: typeof UNIT_TYPES[UnitKey]; t2: typeof UNIT_TYPES[UnitKey] }[] = []
-    // Each developable piece (a block between constraints) is swept on its own extents, so a
-    // street lands in every block rather than only where the whole tract's sweep happens to fall.
-    for (const [pi, piece] of devPieces.entries()) {
-      const pAlong = piece.map(p => dot(p, cen, axis)), pCross = piece.map(p => dot(p, cen, across))
-      const pa0 = Math.min(...pAlong), pa1 = Math.max(...pAlong), pc0 = Math.min(...pCross), pc1 = Math.max(...pCross)
-      const pieceMP: MP = [devPolys[pi]]
-      let c = pc0 + 10 + shift
-      let band = frontageIsAccess ? 1 : 0   // band 0 is the frontage row when the buildings line the access road
-      while (c < pc1 - 60) {
-        const t1 = UNIT_TYPES[mix[band % mix.length]], t2 = UNIT_TYPES[mix[(band + 1) % mix.length]]
-        const rowA = t1.lotDepthFt, rowB = t2.lotDepthFt
-        if (c + rowA + STREET_FT + 40 > pc1) break
-        const streetC0 = c + rowA, streetC1 = streetC0 + STREET_FT
-        const strip = difference(intersection(asMP([add(add(cen, axis, pa0 - 50), across, streetC0), add(add(cen, axis, pa1 + 50), across, streetC0), add(add(cen, axis, pa1 + 50), across, streetC1), add(add(cen, axis, pa0 - 50), across, streetC1)]), pieceMP), taken)
-        const pieces = mpArea(strip) < 2000 ? [] : rings(strip).filter(r => Math.abs(area(r)) >= 120 * STREET_FT)
-        if (!pieces.length) { c += 40; continue }
-        for (const stripRing of pieces) {
-          streets.push(stripRing)
-          taken = unionMP(taken, asMP(stripRing))
-          streetPlan.push({ stripRing, c, streetC0, streetC1, rowB, band, t1, t2 })
-        }
-        c = streetC1 + rowB + 10
-        band += 2
-      }
-    }
-    // A connector behind the frontage row, parallel to the access road, joining every perpendicular
-    // street into one network (a loop with the access road) — so no internal street is a dead end.
-    const connectors: P[][] = []
-    if (frontageIsAccess && accessDir && accessAnchor && streetPlan.length >= 2) {
-      const T0 = UNIT_TYPES[mix[0]]
-      const ac: P = dot(cen, accessAnchor, leftOf(accessDir)) > 0 ? leftOf(accessDir) : [-leftOf(accessDir)[0], -leftOf(accessDir)[1]]
-      const d0 = T0.lotDepthFt + 2, d1 = d0 + STREET_FT
-      const stationsAlong = streetPlan.flatMap(sp => sp.stripRing.map(q => dot(q, accessAnchor, accessDir)))
-      const sA = Math.min(...stationsAlong) - STREET_FT, sB = Math.max(...stationsAlong) + STREET_FT
-      const strip = intersection(asMP([add(add(accessAnchor, accessDir, sA), ac, d0), add(add(accessAnchor, accessDir, sB), ac, d0), add(add(accessAnchor, accessDir, sB), ac, d1), add(add(accessAnchor, accessDir, sA), ac, d1)]), developable)
-      for (const r of rings(strip)) if (Math.abs(area(r)) >= 60 * STREET_FT) { connectors.push(r); streets.push(r); taken = unionMP(taken, asMP(r)) }
-    }
     // The frontage row along the access road: mixed-use (or whatever band 0 is) at street level on it.
     if (frontageIsAccess && accessDir && accessAnchor) {
       const T0 = UNIT_TYPES[mix[0]]
@@ -515,14 +549,15 @@ async function main() {
     }
     for (const sp of streetPlan) {
       const sAlong = sp.stripRing.map(p => dot(p, cen, axis)); const s0 = Math.min(...sAlong), s1 = Math.max(...sAlong)
-      placeRow(axis, across, cen, sp.c, sp.streetC0, s0, s1, sp.t1, mix[sp.band % mix.length], sp.band)
-      placeRow(axis, across, cen, sp.streetC1, sp.streetC1 + sp.rowB, s0, s1, sp.t2, mix[(sp.band + 1) % mix.length], sp.band + 1)
+      placeRow(axis, across, cen, sp.c, sp.streetC0, s0, s1, sp.t1, mix[sp.band % mix.length], sp.band, 'c1')
+      if (sp.rowB > 0) placeRow(axis, across, cen, sp.streetC1, sp.streetC1 + sp.rowB, s0, s1, sp.t2, mix[(sp.band + 1) % mix.length], sp.band + 1)
     }
     // Parking, drawn: a mixed-use parcel parks on its own ground behind the building (the parcel less the
     // 70-ft building and a 10-ft walk); a two-over-two bay parks one car in its garage and the rest in a
     // bay along the street — an 18-ft strip on the lot's street edge, drawn on the lot.
     const parking: { ring: P[]; spaces: number; serves: string }[] = []
     const buildings: { ring: P[]; type: UnitKey }[] = []
+    const driveways: { ring: P[]; type: UnitKey; cars: number }[] = []
     units.forEach((u, ui) => {
       const T = UNIT_TYPES[u.type]
       const fr = frames[ui]
@@ -531,7 +566,23 @@ async function main() {
         for (const r of rings(intersection(asMP(u.ring), band(0, T.footprintFt[1])))) buildings.push({ ring: r, type: u.type })
         const rear = intersection(asMP(u.ring), band(T.footprintFt[1] + 10, 3000))
         for (const r of rings(rear)) parking.push({ ring: r, spaces: Math.floor(Math.abs(area(r)) / 330), serves: 'mixed use — surface lot behind the building' })
-      } else if (u.type === 'twoOverTwo') {
+      } else if (fr) {
+        // The dwelling on its lot: the footprint set back the zone's front yard from the street it
+        // fronts, attached party wall to party wall across the stick (the lot's full width).
+        // front-load garages: the build line is the greater of the zone's front yard and the driveway apron
+        const front = Math.max(stds[u.type].frontFt ?? 10, DRIVE_APRON_FT)
+        const [, depth] = T.footprintFt
+        const d0 = fr.front === 'c0' ? fr.cc0 + front : fr.cc1 - front - depth, d1 = d0 + depth
+        const band = asMP([add(add(fr.origin, fr.ax, -3000), fr.ac, d0), add(add(fr.origin, fr.ax, 3000), fr.ac, d0), add(add(fr.origin, fr.ax, 3000), fr.ac, d1), add(add(fr.origin, fr.ax, -3000), fr.ac, d1)])
+        for (const r of rings(intersection(asMP(u.ring), band))) buildings.push({ ring: r, type: u.type })
+        // the driveway from the street line to the garage door, centred on the lot
+        const dw = (T as { driveWidthFt?: number }).driveWidthFt ?? 10
+        const sAl = u.ring.map(q => dot(q, fr.origin, fr.ax)); const sMid = (Math.min(...sAl) + Math.max(...sAl)) / 2
+        const g0 = fr.front === 'c0' ? fr.cc0 : fr.cc1 - front, g1 = g0 + front
+        const drive = asMP([add(add(fr.origin, fr.ax, sMid - dw / 2), fr.ac, g0), add(add(fr.origin, fr.ax, sMid + dw / 2), fr.ac, g0), add(add(fr.origin, fr.ax, sMid + dw / 2), fr.ac, g1), add(add(fr.origin, fr.ax, sMid - dw / 2), fr.ac, g1)])
+        for (const r of rings(intersection(asMP(u.ring), drive))) driveways.push({ ring: r, type: u.type, cars: (T as { garageCars?: number }).garageCars ?? 1 })
+      }
+      if (u.type === 'twoOverTwo') {
         // the lot's street edge is its shortest side nearest the taken street strips: take the 18 ft of the lot nearest any street ring
         const near = streets.reduce((best, r) => { const d = Math.min(...u.ring.map(q => Math.min(...r.map((_, i) => segDistP(q, r[i], r[(i + 1) % r.length]))))); return d < best.d ? { d, r } : best }, { d: Infinity, r: streets[0] })
         if (near.r) {
@@ -542,8 +593,8 @@ async function main() {
     })
     // A street strip that serves no lot (it landed on ground the rows could not use) is not built.
     const serves = (r: P[]) => units.some(u => u.ring.some(q => r.some((v, i) => segDistP(q, v, r[(i + 1) % r.length]) < 2)))
-    const kept = streets.filter(r => connectors.includes(r) || serves(r))
-    return { axis, units, streets: kept, connectors, parking, buildings, du: units.reduce((t, u) => t + u.units, 0) }
+    const kept = streets.filter(r => connectors.includes(r) || bulbs.includes(r) || serves(r))
+    return { axis, units, streets: kept, connectors, bulbs, parking, buildings, driveways, du: units.reduce((t, u) => t + u.units, 0) }
   }
   // Two orientations (the ground's principal axis and across it) and three offsets; the most dwellings wins.
   let best = layoutAt(accessTheta ?? theta, 0)
@@ -552,7 +603,7 @@ async function main() {
     console.log(`      orientation ${bearingOf([0, 0], [Math.cos(th), Math.sin(th)])} offset ${sh}: ${cand.du} du on ${cand.streets.length} street segment(s)`)
     if (cand.du > best.du) best = cand
   }
-  const { axis, units, streets, connectors, parking, buildings } = best
+  const { axis, units, streets, connectors, bulbs, parking, buildings, driveways } = best
 
   // ── Yield, density and parking ────────────────────────────────────────────
   const byType = (Object.keys(UNIT_TYPES) as UnitKey[]).map(k => {
@@ -582,19 +633,46 @@ async function main() {
   const pctImp = 100 * imperviousSqFt / tractSqFt
   const wq = waterQualityVolume(1.0, pctImp, tractSqFt / 43560)
   const fp = practiceFootprint(wq.value.wqvCubicFeet, 2, 0.4)
-  const swmReservedSqFt = mpArea(swmReserve)
+  // Ground for the ESD practices, reserved from what the rows and streets left: the leftover
+  // pieces of the developable ground (not ribbons — mean width 2A/P ≥ 15 ft), largest first,
+  // until the practice footprint is met. Micro-bioretention in these, bioswales along the streets.
+  const built = [...streets, ...units.map(u => u.ring), ...existingRow].reduce((m, r) => unionMP(m, asMP(r)), [] as MP)
+  const leftover = difference(developable, built)
+  const esdPractices: P[][] = []
+  { let need = fp.value.footprintSqFt
+    // Solid pieces only — a leftover polygon that wraps a row of lots (holes) is cut into 60-ft
+    // bands across the street axis first, so each basin is one simple shape a grading plan can hold.
+    const solids: P[][] = []
+    for (const poly of leftover) {
+      if (poly.length === 1) { solids.push(openRing(poly[0] as P[])); continue }
+      const outer = openRing(poly[0] as P[]); const al = outer.map(q => dot(q, cen, axis)); const a0 = Math.min(...al), a1 = Math.max(...al)
+      for (let sA = a0; sA < a1; sA += 60) {
+        const band = asMP([add(add(cen, axis, sA), leftOf(axis), -5000), add(add(cen, axis, sA + 60), leftOf(axis), -5000), add(add(cen, axis, sA + 60), leftOf(axis), 5000), add(add(cen, axis, sA), leftOf(axis), 5000)])
+        for (const piece of intersection([poly], band)) if (piece.length === 1) solids.push(openRing(piece[0] as P[]))
+      }
+    }
+    const cands = solids.map(r => ({ r, a: Math.abs(area(r)), w: 2 * Math.abs(area(r)) / perim(r) })).filter(c => c.a >= 1000 && c.w >= 12).sort((a, b) => a.a - b.a)
+    // the smallest single piece that covers the need; otherwise the largest pieces until it is met
+    const one = cands.find(c => c.a >= need)
+    if (one) esdPractices.push(one.r)
+    else for (const c of [...cands].reverse()) { if (need <= 0) break; esdPractices.push(c.r); need -= c.a } }
+  const esdReservedSqFt = esdPractices.reduce((t, r) => t + Math.abs(area(r)), 0)
+  const swmReservedSqFt = mpArea(swmReserve) + esdReservedSqFt
   const stormwater = {
     method: 'MDE Stormwater Design Manual Ch. 5 ESD — Rv = 0.05 + 0.009·I; ESDv = P_E·Rv·A/12; practice area = ESDv/(d·n), d = 2 ft, n = 0.4; P_E = 1.0 in is the floor — Table 5.3 raises it with % impervious and HSG',
     imperviousSqFt: Math.round(imperviousSqFt), percentImpervious: Math.round(pctImp * 10) / 10, rv: wq.value.rv, esdvCf: wq.value.wqvCubicFeet, practiceFootprintSqFt: fp.value.footprintSqFt,
-    reservedSqFt: Math.round(swmReservedSqFt),
+    reservedSqFt: Math.round(swmReservedSqFt), esdPracticeRings: esdPractices, esdReservedSqFt: Math.round(esdReservedSqFt),
     finding: swmReservedSqFt >= fp.value.footprintSqFt * 2
       ? `The ${Math.round(swmReservedSqFt).toLocaleString()} sf reserved (existing facility and its expansion) exceeds twice the ${fp.value.footprintSqFt.toLocaleString()} sf of practice the drawn programme needs at P_E 1.0 in; the balance is forebay, access, freeboard and the higher P_E the soils may require.`
-      : `The ${Math.round(swmReservedSqFt).toLocaleString()} sf reserved is short of the ${(fp.value.footprintSqFt * 2).toLocaleString()} sf (practice × 2) the drawn programme wants; add micro-bioretention in the parking lots and along the streets, or reduce impervious cover.`,
+      : swmReservedSqFt >= fp.value.footprintSqFt
+        ? `${Math.round(swmReservedSqFt).toLocaleString()} sf is reserved for ESD practices (${esdPractices.length} micro-bioretention areas in the ground the rows left, drawn) against the ${fp.value.footprintSqFt.toLocaleString()} sf footprint at P_E 1.0 in; the higher P_E the soils may require (Table 5.3) is met by bioswales along the private streets and the DPIE concept.`
+        : `The ${Math.round(swmReservedSqFt).toLocaleString()} sf reserved is short of the ${fp.value.footprintSqFt.toLocaleString()} sf of practice the drawn programme needs; add micro-bioretention in the parking lots and along the streets, or reduce impervious cover.`,
     additional: 'Micro-bioretention in every surface parking lot island and a bioswale along each private street, credited under ESD; rooftop disconnection is not available over parking. Design per the DPIE stormwater concept approval that precedes the DSP.',
   }
   console.log(`    stormwater: impervious ${Math.round(imperviousSqFt).toLocaleString()} sf (${pctImp.toFixed(1)}%), ESDv ${wq.value.wqvCubicFeet.toLocaleString()} cf → practice ${fp.value.footprintSqFt.toLocaleString()} sf; reserved ${Math.round(swmReservedSqFt).toLocaleString()} sf`)
   const parkingDrawn = parking.reduce((t, pk) => t + pk.spaces, 0)
-  const garageSpaces = units.reduce((t, u) => t + (u.type === 'townhouse' || u.type === 'twoFamily' ? 2 * u.units : u.type === 'twoOverTwo' ? u.units : 0), 0)
+  // on-lot parking: the garage cars plus the driveway apron (one car per 10 ft of driveway width)
+  const garageSpaces = units.reduce((t, u) => { const T = UNIT_TYPES[u.type] as { garageCars?: number; driveWidthFt?: number }; return t + (T.garageCars ?? 0) + Math.floor((T.driveWidthFt ?? 0) / 9) }, 0)
   console.log(`    parking drawn: ${parkingDrawn} surface spaces + ${garageSpaces} in garages/driveways = ${parkingDrawn + garageSpaces}; required at the assumed ratios ${byType.reduce((t, b) => t + b.parkingRequired, 0)}`)
   const totalDu = byType.reduce((s, t) => s + t.dwellingUnits, 0)
   const totalRetail = byType.reduce((s, t) => s + t.retailSqFt, 0)
@@ -625,9 +703,21 @@ async function main() {
     stormwater,
     existingStreetRow: existingRow,
     access: accessName ? { road: accessName, note: `Every internal street tees off ${accessName} (existing public right-of-way); no new access to any other road.` } : null,
-    layout: { axisBearing: bearingOf([0, 0], axis), streets, connectors, parking, buildings, units: units.map(u => ({ type: u.type, band: u.band, dwellingUnits: u.units, sqFt: Math.round(u.sqFt), ring: u.ring })) },
+    layout: { axisBearing: bearingOf([0, 0], axis), streets, connectors, turnarounds: bulbs, parking, buildings, driveways, units: units.map(u => ({ type: u.type, band: u.band, dwellingUnits: u.units, sqFt: Math.round(u.sqFt), ring: u.ring })) },
     yield: { totalBays: units.length, totalDwellingUnits: totalDu, totalRetailSqFt: totalRetail, byType, parkingDrawnSurface: parkingDrawn, parkingInGarages: garageSpaces, parkingRequired: byType.reduce((t, b) => t + b.parkingRequired, 0), overCap: overCap.map(t => t.type), ceilings,
       grossDensityDuAc: Math.round(totalDu / (tractSqFt / 43560) * 100) / 100 },
+    designStandards: [
+      `Sec. 24-121(a)(13): every lot fronts and takes access from one street only; (a)(8) corner lots truncated at platting; (a)(10) no unnecessary street — the approved ${existingRow.length ? 'right-of-way is kept and the rows front on it' : 'access is reused'}.`,
+      'Sec. 24-123(a)(2): new streets are continuous, tee off the existing street at right angles; (a)(5) public secondary streets 50 ft / primary 60 ft of right-of-way — these are private streets, so Sec. 24-128(b)(7) governs: ≥ 22-ft pavement (26 ft drawn), alleys ≥ 18 ft, a 10-ft public utility easement contiguous to the right-of-way (24-128(b)(12)), maintained by the HOA/condominium with Fire Chief approval of emergency access.',
+      `Turnarounds: a dead end over ${DEAD_END_MAX_FT} ft ends in a ${BULB_ROW_R}-ft-radius bulb (40-ft pavement) — IFC D103.4 as adopted by Subtitle 11; ${bulbs.length} drawn.`,
+      `Sec. 27-4203 (${zone}) yards: front ${stds.townhouse.frontFt ?? '—'} ft, side ${stds.townhouse.sideFt ?? '—'} ft (end units; party walls within a stick), rear ${stds.townhouse.rearFt ?? '—'} ft — drawn: build line ${DRIVE_APRON_FT} ft (the driveway apron for the front-load garage governs over the ${stds.townhouse.frontFt ?? '—'}-ft minimum), 16-ft breaks between sticks of ≤ ${UNIT_TYPES.townhouse.stickMaxUnits} (8 + 8 ft end yards), rear ${90 - DRIVE_APRON_FT - 40} ft on a 90-ft lot; lot width, coverage, height per the certified table above.`,
+      'Vehicular access: every townhouse, duplex and two-over-two lot fronts a street (the kept public right-of-way or a private street) and has its own driveway to a front-load garage — 1-car for the 20-ft townhouse, 2-car for the 30-ft duplex and the 24-ft two-over-two bay; no lot is landlocked and none takes access from an adjoining lot (Sec. 24-128(a)).',
+      `Table 24-4303(c): regulated stream buffer ${STREAM_BUFFER_FT} ft outside a Transit Oriented Center; slopes over 25%, 100-year floodplain and wetlands taken out of the developable ground (county layers; the NRI/TCP2 governs at preliminary plan).`,
+      'Sec. 24-121(a)(15): a DPIE-approved stormwater concept precedes the preliminary plan — ESD to the MEP (MDE Manual Ch. 5): micro-bioretention in the reserved areas drawn, bioswales along each private street; (a)(16) Subtitle 25 woodland conservation by TCP2.',
+      'Sec. 23-135: curb, gutter and 5-ft sidewalk on the street side of every lot (lot frontages ≤ 100 ft); DPIE grading checklist: lawns ≥ 2.5%, swales 2–4%, banks ≤ 3:1 (residential), slopes steeper than 4:1 set back 10–20 ft from buildings.',
+      'Landscape Manual Sec. 4.7 bufferyard against the adjoining RE lots and Sec. 4.6 street trees along every street; Sec. 25-128 tree canopy on the gross tract — DSP work, the widths are not drawn here.',
+      'Sec. 27-6300 parking: the ratios used (2.0/du townhouse and duplex on the lot, 1.5/du two-over-two) are ASSUMED — the certified tables carried by this engine do not include the parking schedule; visitor parking at 0.5/du is customary and not drawn.',
+    ],
     approvals: [
       `${zone}: townhouse, two-family and multifamily (two-over-two) dwellings are listed uses with their own intensity standards in the certified Sec. 27-4203 table; a Detailed Site Plan is the approval path for residential in the commercial zones (confirm the use table entry for each type — the use table is not carried by this engine).`,
       'Sec. 27-6300 parking, Sec. 27-6400 landscaping (Landscape Manual 4.7 buffers against the RE lots), Sec. 25-121 woodland conservation, Sec. 24 subdivision (a preliminary plan of subdivision creates fee-simple townhouse and duplex lots; two-over-twos are condominium or fee-simple with a DSP), stormwater concept (DPIE), WSSC hydraulic planning analysis.',
@@ -696,14 +786,18 @@ async function renderYieldSheet(y: Out, file: string) {
   const col: Record<string, string> = { townhouse: '#f0c060', twoFamily: '#8fb8ee', twoOverTwo: '#cf98d8', mixedUse: '#e08080' }
   for (const u of y.layout.units) poly(u.ring, col[u.type] ?? '#ddd', '#333', 0.4)
   for (const pk of (y.layout as unknown as { parking?: { ring: P[] }[] }).parking ?? []) poly(pk.ring, '#f2f2f2', '#666', 0.4, [2, 2])
-  for (const b of (y.layout as unknown as { buildings?: { ring: P[] }[] }).buildings ?? []) poly(b.ring, '#b03a3a', '#000', 0.8)
+  const bcol: Record<string, string> = { townhouse: '#c98a1e', twoFamily: '#3f74b8', twoOverTwo: '#8a4e98', mixedUse: '#b03a3a' }
+  for (const d of (y.layout as unknown as { driveways?: { ring: P[] }[] }).driveways ?? []) poly(d.ring, '#d9d9d9', '#555', 0.3)
+  for (const b of (y.layout as unknown as { buildings?: { ring: P[]; type: string }[] }).buildings ?? []) poly(b.ring, bcol[b.type] ?? '#b03a3a', '#000', 0.6)
+  const swr = (y as unknown as { stormwater?: { esdPracticeRings?: P[][] } }).stormwater?.esdPracticeRings ?? []
+  for (const r of swr) { poly(r, '#a8dcd0', '#1f7a66', 0.7, [3, 2]); const c = interiorPoint(r); if (Math.abs(area(r)) > 4000) doc.font('Helvetica-Bold').fontSize(5.5).fillColor('#1f5f50').text('ESD MICRO-BIORETENTION', X(c[0]) - 40, Y(c[1]) - 3, { width: 80, align: 'center' }) }
   // parcel labels
   doc.font('Helvetica-Bold').fontSize(7).fillColor('#000')
   for (const p of y.parcels) { const c = interiorPoint(p.ring); doc.text(`${p.description ?? ''}\n${p.owner ?? ''}\n${(p.gisSqFt / 43560).toFixed(3)} AC · ${y.zone}`, X(c[0]) - 60, Y(c[1]) - 12, { width: 120, align: 'center' }) }
   // north arrow + scale
   doc.font('Helvetica-Bold').fontSize(9).text('N', M + 14, M + 8); doc.moveTo(M + 18, M + 40).lineTo(M + 18, M + 20).lineWidth(1).stroke('#000')
   doc.fontSize(8).text(`SCALE 1" = ${scale}'   ·   GRAPHIC: |${'—'.repeat(10)}| = ${scale * 2} FT`, M + 40, M + 10)
-  doc.font('Helvetica').fontSize(6.5).fillColor('#444').text('LEGEND — red parcels with dark-red buildings at the street line: mixed use (retail at grade, dwellings above) · dashed grey: surface parking · yellow: townhouse lots · blue: two-family (duplex) lots · violet: two-over-two (stacked) bays · grey: private street strip 40 ft · green: woodland conservation (approved TCP) · red: slopes >25% (dashed = graded banks, regraded) · blue band: 50-ft stream buffer · olive: Primary Management Area, light blue: wetlands and their 25-ft buffer, pink dashed: slopes 15–25%, dashed green: forest conservation easement (all from the approved plan where one is supplied)', M + 40, M + 24, { width: drawW - 60 })
+  doc.font('Helvetica').fontSize(6.5).fillColor('#444').text('LEGEND — red parcels with dark-red buildings at the street line: mixed use (retail at grade, dwellings above) · dashed grey: surface parking · yellow: townhouse lots · blue: two-family (duplex) lots · violet: two-over-two (stacked) bays · grey: private street strip 40 ft (26-ft pavement) with 45-ft-radius turnarounds at dead ends · dark blocks on the lots: dwelling footprints on a 20-ft build line (driveway apron; CGO front yard min. 10 ft), light-grey stubs: driveways to the front-load garages (townhouse 1-car, duplex and two-over-two 2-car) · teal dashed: ESD micro-bioretention reserved · green: woodland conservation (approved TCP) · red: slopes >25% (dashed = graded banks, regraded) · blue band: 50-ft stream buffer · olive: Primary Management Area, light blue: wetlands and their 25-ft buffer, pink dashed: slopes 15–25%, dashed green: forest conservation easement (all from the approved plan where one is supplied)', M + 40, M + 24, { width: drawW - 60 })
   // right column
   let x = W - M - COL, yy = M + 4
   const line = (t: string, size = 7, bold = false, color = '#000', gap = 2) => { doc.font(bold ? 'Helvetica-Bold' : 'Helvetica').fontSize(size).fillColor(color).text(t, x, yy, { width: COL - 8 }); yy = doc.y + gap }
@@ -737,6 +831,8 @@ async function renderYieldSheet(y: Out, file: string) {
   for (const [k, u] of Object.entries(y.unitTypes as Record<string, { label: string; lotWidthFt: number; lotDepthFt: number; footprintFt: [number, number]; stickMaxUnits: number; unitsPerBay: number; retailSqFtPerBay?: number; storeys?: number; heightFt?: number }>)) { void k; line(`${u.label}: ${u.lotWidthFt} × ${u.lotDepthFt} ft lot, ${u.footprintFt[0]} × ${u.footprintFt[1]} ft footprint, ${u.unitsPerBay} du per bay${u.retailSqFtPerBay ? `, ${u.retailSqFtPerBay.toLocaleString()} sf retail, ${u.storeys} storeys ≈ ${u.heightFt} ft` : `, sticks of ≤ ${u.stickMaxUnits}`}`, 6.5) }
   const acc = (y as unknown as { access?: { road: string; note: string } | null }).access
   line(`Private streets in 40-ft strips (26-ft pavement, walk one side)${acc ? `, each teeing off ${acc.road} — the existing public right-of-way — with no new access to any other road` : ''}. Visitor parking, open space and the Landscape Manual 4.7 buffer to the RE lots are DSP work not drawn here.`, 6.5, false, '#333')
+  const ds = (y as unknown as { designStandards?: string[] }).designStandards
+  if (ds) { yy += 4; line('DESIGN STANDARDS APPLIED (Subtitle 24 Subdivision Regulations, Subtitle 27, DPIE, IFC)', 7.5, true); for (const d of ds) line(d, 6.2, false, '#333') }
   yy += 4; line('APPROVALS', 7.5, true)
   for (const a of y.approvals) line(a, 6.2, false, '#333')
   yy += 4; line('This is a yield study prepared by the Kealee site-plan engine from county GIS and the certified zoning table. It is not a Detailed Site Plan, not a survey and not a determination of what the Planning Board will approve.', 6.2, true, '#900')
