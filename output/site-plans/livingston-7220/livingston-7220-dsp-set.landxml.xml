@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LandXML xmlns="http://www.landxml.org/schema/LandXML-1.2"
+         version="1.2"
+         date="2026-09-18" time="01:52:01">
+  <Units><Imperial areaUnit="squareFoot" linearUnit="USSurveyFoot" volumeUnit="cubicFeet"
+           temperatureUnit="fahrenheit" pressureUnit="inHG"/></Units>
+  <Project name="(ADMIN # 19800)"/>
+  <Application name="Kealee Site Plan Engine" version="1.0"/>
+  <!-- Coordinate system EPSG:2248; horizontal datum NAD83;
+       vertical datum NAVD88 (feet). Model revision 5. -->
+  <CoordinateSystem desc="EPSG:2248" horizontalDatum="NAD83"
+                    verticalDatum="NAVD88 (feet)"/>
+  <Parcels>
+      <Parcel name="TRACT" area="782369" parcelType="Single">
+        <CoordGeom>
+            <PntList2D>409069.92222765496 1315496.5986301033</PntList2D>
+            <PntList2D>408876.0417099633 1315725.5318991935</PntList2D>
+            <PntList2D>408824.8997519004 1315669.734766717</PntList2D>
+            <PntList2D>408771.3529430072 1315611.3218258147</PntList2D>
+            <PntList2D>408572.8982874823 1315906.4721540576</PntList2D>
+            <PntList2D>408597.55079721176 1316371.211053829</PntList2D>
+            <PntList2D>409376.1460245631 1316364.1231414918</PntList2D>
+            <PntList2D>409392.2470422161 1316363.658247404</PntList2D>
+            <PntList2D>409530.59026943013 1316359.6612081623</PntList2D>
+            <PntList2D>409573.1269297404 1316358.432207999</PntList2D>
+            <PntList2D>409647.3590647349 1316356.287527246</PntList2D>
+            <PntList2D>409723.74703529873 1316354.0805106575</PntList2D>
+            <PntList2D>409798.3876340154 1316351.9240189046</PntList2D>
+            <PntList2D>409875.2214698296 1316349.7042070783</PntList2D>
+            <PntList2D>409954.65766262915 1316347.4092641647</PntList2D>
+            <PntList2D>410031.03283794335 1316345.2029037506</PntList2D>
+            <PntList2D>410106.1324252489 1316343.032960578</PntList2D>
+            <PntList2D>410181.4400173828 1316340.857111915</PntList2D>
+            <PntList2D>409967.947334208 1316226.2277480296</PntList2D>
+            <PntList2D>409924.4567700135 1316201.6715975737</PntList2D>
+            <PntList2D>409882.0481593022 1316175.2908576918</PntList2D>
+            <PntList2D>409840.7980036634 1316147.133117034</PntList2D>
+            <PntList2D>409800.7807149302 1316117.2491698111</PntList2D>
+            <PntList2D>409762.06848094694 1316085.6929241663</PntList2D>
+            <PntList2D>409453.1809754643 1315822.7944999018</PntList2D>
+            <PntList2D>409369.35109063936 1315751.4458893526</PntList2D>
+            <PntList2D>409069.92222765496 1315496.5986301033</PntList2D>
+        </CoordGeom>
+      </Parcel>
+  </Parcels>
+  <!-- Surfaces omitted: elevation data present but TIN generation requires a surveyed surface. -->
+</LandXML>

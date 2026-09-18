@@ -271,7 +271,14 @@ async function main() {
   const streams = (await q(1)).filter(f => [4110, 4111, 4112, 4113].includes(Number(f.attributes?.FEATURE_CODE)))
   const streamPaths = streams.flatMap(f => f.geometry?.paths ?? []).map(pth => pth.map(c => [c[0], c[1]] as P))
   const STREAM_BUFFER_FT = pgRegulatedStreamBufferFt(false)   // Table 24-4303(c): 100 ft outside a Transit Oriented Center (75 ft inside) — the regulated stream buffer of the 2022 Subdivision Regulations; expanded at steep slopes, which are taken separately
-  const pma = intersection(union(streamPaths.flatMap(p => bufferPolyline(p, STREAM_BUFFER_FT))), tract)
+  // The buffer is built path by path and simplified between steps: a raw union of every segment's
+  // rectangle and end-circle over a stream network is thousands of vertices, and the clipping
+  // library overflowed its stack subtracting it (the buffer was then silently NOT taken out).
+  const simplifyPath = (pts: P[], tol: number): P[] => { if (pts.length < 3) return pts; const a = pts[0], b = pts[pts.length - 1]; let idx = 0, best = -1; for (let i = 1; i + 1 < pts.length; i++) { const d = segDistP(pts[i], a, b); if (d > best) { best = d; idx = i } } if (best <= tol) return [a, b]; return [...simplifyPath(pts.slice(0, idx + 1), tol).slice(0, -1), ...simplifyPath(pts.slice(idx), tol)] }
+  const simplifyMP = (mp: MP, tol: number): MP => mp.map(poly => poly.map(r => { const sr = simplifyRing(openRing(r as P[]), tol); return sr.length >= 3 ? [...sr, sr[0]] : [] }).filter(r => r.length >= 4) as polygonClipping.Polygon).filter(poly => poly.length)
+  let pmaAll: MP = []
+  for (const pth of streamPaths) { const one = simplifyMP(union(bufferPolyline(simplifyPath(pth, 3), STREAM_BUFFER_FT)), 1.5); pmaAll = simplifyMP(unionMP(pmaAll, one), 1.5) }
+  const pma = intersection(pmaAll, tract)
   const slopes = await q(13)
   // Slopes over 25% are taken out only where they form a body of ground (a
   // ravine side), not where they are a ribbon (a graded embankment of the
@@ -339,7 +346,17 @@ async function main() {
   for (const [label, cst] of [['stream buffer', pma], ['steep slopes', steep], ['floodplain', floodplain], ['woodland conservation', woodland], ['wetlands', wetlands], ['stormwater reserve', swmReserve], ...keepoutSets.map(k => [k.label, k.mp] as const)] as const) {
     if (!cst.length) continue
     let next: MP = []
-    try { next = polygonClipping.difference(developable, cst) } catch (e) { console.log(`    !! subtracting ${label} failed in the polygon library (${(e as Error).message.slice(0, 60)}); it is NOT taken out`); continue }
+    try { next = polygonClipping.difference(developable, cst) } catch (e) {
+      // Whole-set subtraction failed: take the pieces out one at a time, each simplified, and say so.
+      console.log(`    !! subtracting ${label} whole failed in the polygon library (${(e as Error).message.slice(0, 50)}); subtracting its ${cst.length} piece(s) one by one`)
+      next = developable; let failed = 0
+      for (const poly of cst) {
+        const one = [poly] as MP
+        try { next = polygonClipping.difference(next, one); continue } catch { /* simplify and retry */ }
+        try { next = polygonClipping.difference(next, one.map(pl => pl.map(r => { const sr = simplifyRing(openRing(r as P[]), 3); return [...sr, sr[0]] })) as MP) } catch { failed++ }
+      }
+      if (failed) { console.log(`    !! ${failed} piece(s) of ${label} could not be subtracted — subtracting their convex hulls instead (over-conservative)`); for (const poly of cst) { try { next = polygonClipping.difference(next, asMP(convexHull(openRing(poly[0] as P[])))) } catch { /* give up on this piece */ } } }
+    }
     developable = next
   }
   const devSqFt = mpArea(developable)

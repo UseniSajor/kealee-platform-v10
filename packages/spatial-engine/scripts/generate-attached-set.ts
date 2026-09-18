@@ -131,7 +131,7 @@ async function main() {
   void parcelsSorted
 
   // Existing: the kept public right-of-way and the county street centrelines
-  y.existingStreetRow.forEach((r, i) => F.push({ kind: 'ExistingFeature', id: `ex-row-${i}`, ring: ring(r), attributes: { type: 'right-of-way', label: 'EXISTING PUBLIC RIGHT-OF-WAY (SCHOONER COURT) — KEPT' }, ...gis } as SiteFeature))
+  y.existingStreetRow.forEach((r, i) => F.push({ kind: 'ExistingFeature', id: `ex-row-${i}`, ring: ring(r), attributes: { type: 'right-of-way', label: 'EXISTING PUBLIC RIGHT-OF-WAY — KEPT' }, ...gis } as SiteFeature))
   // Existing topography
   if (contours) contours.contours.forEach((c, ci) => F.push({ kind: 'Contour', id: `ct-${ci}`, line: c.path.map(([x, yv]) => [x, yv, c.elevationFt] as Position), attributes: { elevationFt: c.elevationFt, weight: c.weight, hidden: c.hidden }, sourceId: 'pgatlas-contours', reliabilityLevel: 1, crs: 'EPSG:2248', revision: 1 } as SiteFeature))
 
@@ -165,12 +165,13 @@ async function main() {
   y.layout.walks.forEach((w, i) => F.push({ kind: 'Pavement', id: `walk-${i + 1}`, ring: ring(w), attributes: { improvement: 'concrete sidewalk 5 ft', proposed: true }, ...base } as SiteFeature))
   y.layout.parking.forEach((pk, i) => F.push({ kind: 'Pavement', id: `park-${i + 1}`, ring: ring(pk.ring), attributes: { improvement: `parking bay — ${pk.spaces} spaces`, proposed: true }, ...base } as SiteFeature))
   // Utilities: an 8-in water main and an 8-in sanitary sewer in every private street, tied to the
-  // mains in the kept right-of-way (the approved subdivision's mains, WSSC) — drawn on the centreline
-  // of each strip, water 5 ft one side and sewer 5 ft the other.
+  // WSSC mains in the public street the site takes access from — drawn on the centreline of each
+  // strip, water 5 ft one side and sewer 5 ft the other.
+  const mainsIn = y.existingStreetRow.length ? 'THE EXISTING PUBLIC STREET' : (y.access?.road ? `${y.access.road} ROAD` : 'THE PUBLIC STREET')
   allStreets.filter(r => !y.layout.turnarounds.includes(r)).forEach((r, i) => {
     const cl = centrelineOf(r)
-    F.push({ kind: 'Utility', id: `wm-${i + 1}`, line: offsetLine(cl, 5).map(q => [q[0], q[1]] as Position), attributes: { type: 'Water main', size: '8" DIP', from: 'offsite', sizeAtMain: '8"', note: 'PROP. 8" WATER MAIN IN PRIVATE STREET — CONNECT TO EX. WSSC MAIN IN SCHOONER COURT' }, ...base } as SiteFeature)
-    F.push({ kind: 'Utility', id: `ss-${i + 1}`, line: offsetLine(cl, -5).map(q => [q[0], q[1]] as Position), attributes: { type: 'Sanitary sewer', size: '8" PVC', from: 'offsite', sizeAtMain: '8"', note: 'PROP. 8" SANITARY SEWER IN PRIVATE STREET — CONNECT TO EX. WSSC SEWER IN SCHOONER COURT' }, ...base } as SiteFeature)
+    F.push({ kind: 'Utility', id: `wm-${i + 1}`, line: offsetLine(cl, 5).map(q => [q[0], q[1]] as Position), attributes: { type: 'Water main', size: '8" DIP', from: 'offsite', sizeAtMain: '8"', note: `PROP. 8" WATER MAIN IN PRIVATE STREET — CONNECT TO EX. WSSC MAIN IN ${mainsIn}` }, ...base } as SiteFeature)
+    F.push({ kind: 'Utility', id: `ss-${i + 1}`, line: offsetLine(cl, -5).map(q => [q[0], q[1]] as Position), attributes: { type: 'Sanitary sewer', size: '8" PVC', from: 'offsite', sizeAtMain: '8"', note: `PROP. 8" SANITARY SEWER IN PRIVATE STREET — CONNECT TO EX. WSSC SEWER IN ${mainsIn}` }, ...base } as SiteFeature)
   })
   // Public utility easement 10 ft along each private street (Sec. 24-128(b)(12)) — the strip's edges
   // are the lots' front lines; the PUE sits on the lots' first 10 ft, coincident with the front yard.
@@ -181,7 +182,7 @@ async function main() {
   ;(y.openSpace?.rings ?? []).forEach((r, i) => F.push({ kind: 'ProposedFeature', id: `open-space-${i + 1}`, ring: ring(r), attributes: { type: 'open space', label: `OPEN SPACE — RECREATION (HOA) ${(Math.abs(area(r)) / 43560).toFixed(2)} AC`, proposed: true }, ...base } as SiteFeature))
   // Limit of disturbance: the tract (the whole site is graded), as one ring per parcel-union piece — the
   // developable rings ARE the tract here.
-  y.developableRings.filter(r => Math.abs(area(r)) > 20000).forEach((r, i) => F.push({ kind: 'LimitOfDisturbance', id: `lod-${i + 1}`, ring: ring(r), areaSqFt: Math.round(Math.abs(area(r))), attributes: { note: 'Limit of disturbance — the whole tract; perimeter silt fence (SF) on the LOD, stabilised construction entrance at Schooner Court.' }, ...base } as SiteFeature))
+  y.developableRings.filter(r => Math.abs(area(r)) > 20000).forEach((r, i) => F.push({ kind: 'LimitOfDisturbance', id: `lod-${i + 1}`, ring: ring(r), areaSqFt: Math.round(Math.abs(area(r))), attributes: { note: 'Limit of disturbance — the developable ground; perimeter silt fence (SF) on the LOD, stabilised construction entrance at the public street.' }, ...base } as SiteFeature))
   // Street trees: one every 40 ft along each street strip's long edges, 5 ft off the strip (Landscape Manual 4.6)
   let treeNo = 0
   allStreets.filter(r => !y.layout.turnarounds.includes(r)).forEach(r => {
@@ -202,13 +203,13 @@ async function main() {
   // Extras the sheets read
   const owner = y.parcels[0]
   const platRecord = {
-    reference: `${owner?.subdivision ?? 'ARAGONA VILLAGE'} — ${y.parcels.length} lots of record, plat${y.parcels.some(p => p.plat) ? 's ' + [...new Set(y.parcels.map(p => p.plat).filter(Boolean))].join(', ') : ''}, L.${owner?.liber ?? '?'} F.${owner?.folio ?? '?'} — owner of record ${owner?.owner ?? '?'} (PGAtlas Address/Property)`,
+    reference: `${owner?.subdivision ?? owner?.description ?? y.name} — ${y.parcels.length} lots of record, plat${y.parcels.some(p => p.plat) ? 's ' + [...new Set(y.parcels.map(p => p.plat).filter(Boolean))].join(', ') : ''}, L.${owner?.liber ?? '?'} F.${owner?.folio ?? '?'} — owner of record ${owner?.owner ?? '?'} (PGAtlas Address/Property)`,
     citation: [...new Set(y.parcels.map(p => p.plat).filter(Boolean))].map(p => `PLAT ${p}`).join(', ') || 'COUNTY PARCEL LAYER — NO PLAT TRANSCRIBED',
     notes: [
       `PRELIMINARY. Boundaries are the county parcel layer (compiled from the recorded plats, not surveyed); a boundary survey precedes any final plat.`,
       y.hypotheticalNote ?? `Zone ${y.zone}.`,
       `Layout: ${y.yield.totalDwellingUnits} dwelling units in ${y.yield.totalBays} bays — ${y.yield.byType.filter(t => t.bays).map(t => `${t.dwellingUnits} ${t.label.toLowerCase()}`).join(', ')}; ${y.yield.grossDensityDuAc} du/ac gross.`,
-      `Private streets: 26-ft pavement in 40-ft strips with 5-ft walks, 10-ft PUE contiguous (Sec. 24-128(b)(7),(12)), maintained by the HOA; the existing public right-of-way (Schooner Court) is kept and the rows front on it.`,
+      `Private streets: 26-ft pavement in 40-ft strips with 5-ft walks, 10-ft PUE contiguous (Sec. 24-128(b)(7),(12)), maintained by the HOA${y.existingStreetRow.length ? '; the existing public right-of-way inside the tract is kept and the rows front on it' : y.access ? `; access from ${y.access.road}` : ''}.`,
       `Stormwater: ESD to the MEP — ${y.stormwater.esdvCf.toLocaleString()} cf ESDv, ${y.stormwater.practiceFootprintSqFt.toLocaleString()} sf micro-bioretention required, ${y.stormwater.reservedSqFt.toLocaleString()} sf reserved (drawn); DPIE concept approval precedes the preliminary plan (Sec. 24-121(a)(15)).`,
       y.openSpace ? `${y.openSpace.basis}: ${y.openSpace.sqFt.toLocaleString()} sf drawn against ${y.openSpace.requiredSqFt.toLocaleString()} sf.` : 'Open space per Sec. 24-134 to be provided.',
       ...(y.designStandards ?? []),

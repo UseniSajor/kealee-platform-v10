@@ -1,0 +1,235 @@
+{
+  "generatedAt": "2026-09-18T01:52:01.758Z",
+  "source": "livingston-7220.yield.json",
+  "sheets": [
+    "C-000",
+    "C-100",
+    "C-200",
+    "C-300",
+    "C-400",
+    "C-500",
+    "C-600",
+    "C-700",
+    "C-800",
+    "C-900",
+    "L-100"
+  ],
+  "sheetSize": "ARCH E (36 x 48 in)",
+  "pages": 11,
+  "plottedScales": [
+    {
+      "sheet": "C-000",
+      "scaleLabel": "1\" = 100'"
+    },
+    {
+      "sheet": "C-100",
+      "scaleLabel": "1\" = 100'"
+    },
+    {
+      "sheet": "C-200",
+      "scaleLabel": "1\" = 100'"
+    },
+    {
+      "sheet": "C-300",
+      "scaleLabel": "1\" = 100'"
+    },
+    {
+      "sheet": "C-400",
+      "scaleLabel": "1\" = 100'"
+    },
+    {
+      "sheet": "C-500",
+      "scaleLabel": "1\" = 100'"
+    },
+    {
+      "sheet": "C-600",
+      "scaleLabel": "1\" = 100'"
+    },
+    {
+      "sheet": "C-700",
+      "scaleLabel": "1\" = 100'"
+    },
+    {
+      "sheet": "C-800",
+      "scaleLabel": "1\" = 100'"
+    },
+    {
+      "sheet": "C-900",
+      "scaleLabel": "1\" = 100'"
+    },
+    {
+      "sheet": "L-100",
+      "scaleLabel": "1\" = 100'"
+    }
+  ],
+  "frameFailures": [],
+  "yield": {
+    "totalBays": 64,
+    "totalDwellingUnits": 87,
+    "totalRetailSqFt": 0,
+    "byType": [
+      {
+        "type": "townhouse",
+        "label": "Townhouse",
+        "bays": 37,
+        "dwellingUnits": 37,
+        "lotSqFt": 66457,
+        "netAcForDensity": 2.473,
+        "densityDuAc": 14.96,
+        "densityCapDuAc": 20,
+        "withinDensity": true,
+        "maxUnitsAtCap": 49,
+        "lotCoveragePct": 44.4,
+        "coverageCapPct": 40,
+        "parkingRequired": 74,
+        "parkingRatioAssumed": 2,
+        "parkingWhere": "1-car front-load garage + 1 driveway space on the lot",
+        "retailSqFt": 0,
+        "buildingHeightFt": null,
+        "heightCapFt": 50,
+        "withinHeight": true
+      },
+      {
+        "type": "twoFamily",
+        "label": "Two-family (duplex)",
+        "bays": 4,
+        "dwellingUnits": 4,
+        "lotSqFt": 10730,
+        "netAcForDensity": 0.399,
+        "densityDuAc": 10.02,
+        "densityCapDuAc": 40,
+        "withinDensity": true,
+        "maxUnitsAtCap": 15,
+        "lotCoveragePct": 44.4,
+        "coverageCapPct": 35,
+        "parkingRequired": 8,
+        "parkingRatioAssumed": 2,
+        "parkingWhere": "2-car front-load garage + 2 driveway spaces on each lot",
+        "retailSqFt": 0,
+        "buildingHeightFt": null,
+        "heightCapFt": 50,
+        "withinHeight": true
+      },
+      {
+        "type": "twoOverTwo",
+        "label": "Two-over-two (stacked, 2 units per bay)",
+        "bays": 23,
+        "dwellingUnits": 46,
+        "lotSqFt": 55195,
+        "netAcForDensity": 2.054,
+        "densityDuAc": 22.39,
+        "densityCapDuAc": null,
+        "withinDensity": true,
+        "maxUnitsAtCap": null,
+        "lotCoveragePct": 48,
+        "coverageCapPct": null,
+        "parkingRequired": 69,
+        "parkingRatioAssumed": 1.5,
+        "parkingWhere": "a 2-car front-load garage per bay (one space per unit) + 1 driveway space + surface bays along the street",
+        "retailSqFt": 0,
+        "buildingHeightFt": null,
+        "heightCapFt": null,
+        "withinHeight": true
+      },
+      {
+        "type": "mixedUse",
+        "label": "Mixed use (retail below, dwellings above)",
+        "bays": 0,
+        "dwellingUnits": 0,
+        "lotSqFt": 0,
+        "netAcForDensity": 0,
+        "densityDuAc": 0,
+        "densityCapDuAc": null,
+        "withinDensity": true,
+        "maxUnitsAtCap": null,
+        "lotCoveragePct": 0,
+        "coverageCapPct": null,
+        "parkingRequired": 0,
+        "parkingRatioAssumed": 1.5,
+        "parkingWhere": "surface lot behind the building on its parcel (1.5/du + 4 per 1,000 sf retail, assumed)",
+        "retailSqFt": 0,
+        "buildingHeightFt": 62,
+        "heightCapFt": null,
+        "withinHeight": true
+      }
+    ],
+    "parkingDrawnSurface": 26,
+    "parkingInGarages": 182,
+    "parkingRequired": 151,
+    "overCap": [],
+    "ceilings": [
+      {
+        "type": "townhouse",
+        "label": "Townhouse",
+        "allOfThisType": 147,
+        "basis": "developable ac × 0.8 (streets, parking, open space) × certified density"
+      },
+      {
+        "type": "twoFamily",
+        "label": "Two-family (duplex)",
+        "allOfThisType": 294,
+        "basis": "developable ac × 0.8 (streets, parking, open space) × certified density"
+      },
+      {
+        "type": "twoOverTwo",
+        "label": "Two-over-two (stacked, 2 units per bay)",
+        "allOfThisType": null,
+        "basis": "developable ac × 0.8 (streets, parking, open space) × certified density"
+      }
+    ],
+    "grossDensityDuAc": 4.84
+  },
+  "stormwater": {
+    "esdvCf": 14782,
+    "practiceFootprintSqFt": 18478,
+    "reservedSqFt": 24942
+  },
+  "openSpace": {
+    "sqFt": 43713,
+    "requiredSqFt": 39118
+  },
+  "sources": [
+    {
+      "sourceId": "pgatlas-parcels",
+      "authority": "Prince George's County PGAtlas Address/Property (assessment join)",
+      "dataset": "Parcel boundaries — county parcel layer (compiled, not surveyed)",
+      "crs": "EPSG:2248",
+      "horizontalDatum": "NAD83",
+      "retrievedAt": "2026-09-18T01:51:47.440Z",
+      "verticalDatum": null,
+      "accuracyClass": "mapping_grade",
+      "reliabilityLevel": 1
+    },
+    {
+      "sourceId": "pgatlas-contours",
+      "authority": "Prince George's County / M-NCPPC",
+      "dataset": "Elevation/MapServer/1 — Contour 2 ft (2023)",
+      "crs": "EPSG:2248",
+      "horizontalDatum": "NAD83",
+      "retrievedAt": "2026-09-18T01:51:47.440Z",
+      "verticalDatum": null,
+      "accuracyClass": "mapping_grade",
+      "reliabilityLevel": 1
+    },
+    {
+      "sourceId": "kealee-layout",
+      "authority": "Kealee spatial engine — propose-townhomes.ts",
+      "dataset": "Attached-housing layout: 87 du in 64 bays",
+      "crs": "EPSG:2248",
+      "horizontalDatum": "NAD83",
+      "retrievedAt": "2026-09-18T01:51:47.440Z",
+      "verticalDatum": null,
+      "accuracyClass": "mapping_grade",
+      "reliabilityLevel": 1
+    }
+  ],
+  "adjoiners": 37,
+  "contours": 873,
+  "soils": 8,
+  "outputs": {
+    "pdf": "livingston-7220-dsp-set.pdf",
+    "dxf": "livingston-7220-dsp-set.dxf",
+    "landxml": "livingston-7220-dsp-set.landxml.xml"
+  },
+  "status": "PRELIMINARY — Detailed Site Plan / preliminary plan of subdivision submission drawn from county GIS; not a survey"
+}
