@@ -3,7 +3,7 @@ import { requireAuthenticatedUser } from '@kealee/auth'
 import { redirect } from 'next/navigation'
 import { CheckCircle2, ShieldAlert } from 'lucide-react'
 import { reviewDb } from '@/lib/engineer-review'
-import { verifyProfessionalProfile } from '@/app/engineer/review/actions'
+import { verifyProfessionalProfile } from '@/lib/professional-review-actions'
 
 export const dynamic = 'force-dynamic'
 
