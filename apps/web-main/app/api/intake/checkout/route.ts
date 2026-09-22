@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { guardStripeSecretForHttp } from '@/lib/stripe-vercel-guard'
 import { createStripe } from '@/lib/stripe-client'
-import { getIntakePrice, getIntakePriceByTier, SITE_VISIT_FEE_CENTS, getBundleCheckoutCents, isBundleProductKey } from '@kealee/core-rules'
+import { getIntakePrice, getIntakePriceByTier, SITE_VISIT_FEE_CENTS, getBundleCheckoutCents, isBundleProductKey, computeQuote } from '@kealee/core-rules'
+import { quoteFactsFromIntake } from '@/lib/quote-facts'
 import { isV30Enabled } from '@kealee/kealee-agent-stack'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { trackCheckoutStarted } from '@/lib/marketing/ga4-server'
@@ -63,8 +64,14 @@ export async function POST(req: NextRequest) {
     // falls back to the server-trusted tier table below. This used to return
     // 400 "Invalid or missing v30 quote", which failed checkout for every
     // service on the /concept funnel whenever the quote was absent.
-    let v30Quoted: { cents: number; label: string } | null = null
-    if (useV30Pricing && isV30Enabled()) {
+    // The payable amount is RECOMPUTED here from the stored intake facts. A
+    // quote persisted on the record is never trusted as an amount: it may be
+    // expired, it may have been written by an older price table, and it must
+    // never be settable from the browser. Same facts in, same price out.
+    let v30Quoted: { cents: number; label: string; quote: ReturnType<typeof computeQuote> } | null = null
+    let scopingRequired: { reasons: string[] } | null = null
+
+    {
       const supabase = getSupabaseAdmin()
       const { data: intakeRow } = await supabase
         .from('public_intake_leads')
@@ -73,21 +80,49 @@ export async function POST(req: NextRequest) {
         .single()
 
       const formData = (intakeRow?.form_data as Record<string, unknown>) ?? {}
-      const v30Quote = formData.v30Quote as { totalPriceCents?: number; features?: string[] } | undefined
-      const quoted = v30Quote?.totalPriceCents
+      const storedQuote = formData.v30Quote as Record<string, unknown> | undefined
+      const facts = quoteFactsFromIntake({
+        formData,
+        projectPath,
+        answers: (formData.v30Answers ?? undefined) as never,
+        lotContext: (formData.v30LotContext ?? null) as Record<string, unknown> | null,
+      })
+      const recomputed = computeQuote(projectPath, facts)
 
-      if (quoted && quoted >= 9900 && quoted <= 999_900) {
-        v30Quoted = {
-          cents: Math.round(quoted),
-          label: `Kealee Custom Package (${(v30Quote?.features ?? []).join(', ') || 'v30'})`,
+      if (recomputed) {
+        if (recomputed.customQuoteRequired) {
+          scopingRequired = { reasons: recomputed.customQuoteReasons }
+        } else {
+          v30Quoted = {
+            cents: recomputed.totalCents,
+            label: recomputed.label,
+            quote: recomputed,
+          }
+          const shown = Number(storedQuote?.totalPriceCents ?? 0)
+          if (shown && shown !== recomputed.totalCents) {
+            // The customer saw a different figure — honour the lower of the two
+            // and record it, rather than charging more than was displayed.
+            const honoured = Math.min(shown, recomputed.totalCents)
+            console.warn('[intake/checkout] quote drift', intakeId, projectPath, { shown, recomputed: recomputed.totalCents, honoured })
+            v30Quoted.cents = honoured
+          }
         }
-      } else {
-        console.warn(
-          '[intake/checkout] v30 pricing requested but no valid quote on intake; ' +
-          'pricing from the tier table instead.', intakeId, projectPath, quoted ?? null,
-        )
       }
     }
+
+    if (scopingRequired) {
+      return NextResponse.json(
+        {
+          scopingRequired: true,
+          reasons: scopingRequired.reasons,
+          message: 'This project is quoted by our team before payment. We will send your fixed price.',
+        },
+        { status: 409 },
+      )
+    }
+
+    void useV30Pricing
+    void isV30Enabled
 
     if (v30Quoted) {
       unitAmountCents = v30Quoted.cents

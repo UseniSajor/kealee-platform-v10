@@ -2,7 +2,7 @@
   "name": "@kealee/core-rules",
   "version": "1.0.0",
   "private": true,
-  "description": "Core Rules Engine — extracted compliance + workflow rules",
+  "description": "Core Rules Engine \u2014 extracted compliance + workflow rules",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
@@ -15,7 +15,8 @@
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "test": "vitest run"
   },
   "dependencies": {
     "@kealee/database": "workspace:*",
@@ -23,6 +24,7 @@
   },
   "devDependencies": {
     "@types/node": "^20.19.30",
-    "typescript": "^5.3.3"
+    "typescript": "^5.3.3",
+    "vitest": "^1.6.1"
   }
 }

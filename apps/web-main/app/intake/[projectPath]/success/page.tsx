@@ -5,7 +5,11 @@ import { useParams, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { CheckCircle2, Loader2, ArrowRight, Clock, FileText, Users } from 'lucide-react'
 import { SERVICE_DELIVERABLES, ServiceDeliverable } from '@/lib/service-deliverables'
-import { getOwnerPortalDeliverableUrl } from '@/lib/owner-portal-urls'
+import {
+  getOnSiteOrderUrl,
+  getOwnerPortalDeliverableUrl,
+  isOwnerPortalReachable,
+} from '@/lib/owner-portal-urls'
 
 export default function IntakeSuccessPage() {
   const params = useParams()
@@ -43,8 +47,21 @@ export default function IntakeSuccessPage() {
 
     // Stripe's signed webhook is the single production trigger. The browser
     // only opens the portal, which safely shows processing until QC completes.
+    //
+    // Never hand a paying customer off to a host we have not just heard from:
+    // when the portal hostname is down the order view on this domain shows the
+    // same order, and the customer never sees a dead end after paying.
     setStatus('redirecting')
-    window.location.assign(getOwnerPortalDeliverableUrl(intakeId, projectPath ?? undefined))
+    let cancelled = false
+    void isOwnerPortalReachable().then(reachable => {
+      if (cancelled) return
+      window.location.assign(
+        reachable
+          ? getOwnerPortalDeliverableUrl(intakeId, projectPath ?? undefined)
+          : getOnSiteOrderUrl(intakeId, projectPath ?? undefined),
+      )
+    })
+    return () => { cancelled = true }
   }, [deliverable, intakeId, projectPath])
 
   // Permit success

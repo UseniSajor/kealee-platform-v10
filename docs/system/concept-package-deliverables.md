@@ -24,7 +24,10 @@ whatever the tier; a tier that lacks a section says so on that page rather than 
 7. **Before and after** — matching viewpoint and geometry. `queueV30DesignRenders` (`apps/web-main/lib/v30-replicate-renders.ts`)
    queues one img2img render per labelled customer photograph (up to 3) with the camera locked to that photograph
    (`buildViewpointLockedPrompt`); `pollV30RenderPredictions` resolves them into `conceptOutput.beforeAfterPairs`
-   and `beforeUrls`. The page draws only those pairs — never two unrelated images — and says so when none exist yet
+   and `beforeUrls`. Both the PDF and the portal's Before &amp; After panel draw only those pairs — never two unrelated
+   images paired by index — and say so when none exist yet. A photograph without a label or viewpoint still anchors a
+   pair; the label falls back to the area, then the project space. Orders delivered before 2026-09-22 have no pairs and
+   are not re-rendered retroactively
 8. **Materials palette** — labelled selections
 9. **Site and zoning snapshot** — every factual claim with its source and confidence, then the permit path
 

@@ -121,28 +121,72 @@ export class DesignBotEnterprise extends EnterpriseBot {
     }
   }
 
+  /**
+   * The package promises the purchaser three concept directions to choose
+   * between (docs/system/concept-package-deliverables.md). A model that
+   * returns two leaves the customer without the comparison they paid for, so
+   * the shortfall is asked for again rather than delivered short.
+   */
+  private static readonly MIN_CONCEPTS = 3;
+
   private async generateConcepts(input: DesignInput): Promise<DesignOutput['concepts']> {
-    const prompt = this._buildConceptPrompt(input);
     const systemPrompt = this._designSystemPrompt();
+    const concepts = await this._requestConcepts(input, this._buildConceptPrompt(input), systemPrompt);
 
-    try {
-      const { content, tokensUsed } = await this.callClaude(
-        prompt,
-        systemPrompt,
-        `design-${input.projectId}`
-      );
-
-      // Parse JSON response
-      const jsonMatch = content.match(/\{[\s\S]*\}/);
-      if (!jsonMatch) {
-        throw new Error('Failed to parse design concepts');
+    if (concepts.length < DesignBotEnterprise.MIN_CONCEPTS) {
+      const missing = DesignBotEnterprise.MIN_CONCEPTS - concepts.length;
+      const topUpPrompt = [
+        this._buildConceptPrompt(input),
+        '',
+        `ALREADY PROPOSED — do not repeat these, and do not restate them in your answer:`,
+        ...concepts.map((c) => `- ${c.name}: ${c.description}`),
+        '',
+        `Return exactly ${missing} further distinct concept${missing === 1 ? '' : 's'} in the same JSON shape.`,
+      ].join('\n');
+      try {
+        const extra = await this._requestConcepts(input, topUpPrompt, systemPrompt);
+        const seen = new Set(concepts.map((c) => c.name.trim().toLowerCase()));
+        for (const candidate of extra) {
+          if (concepts.length >= DesignBotEnterprise.MIN_CONCEPTS) break;
+          if (seen.has(candidate.name.trim().toLowerCase())) continue;
+          seen.add(candidate.name.trim().toLowerCase());
+          concepts.push(candidate);
+        }
+      } catch (error) {
+        // The directions already produced still ship; the package states how
+        // many were produced rather than implying a missing one exists.
+        console.warn('[design-bot] concept top-up failed:', error instanceof Error ? error.message : error);
       }
+    }
 
-      const parsed = JSON.parse(jsonMatch[0]);
-      return parsed.concepts.map((c: any, idx: number) => ({
+    return concepts.map((c, idx) => ({ ...c, id: `concept-${idx + 1}` }));
+  }
+
+  private async _requestConcepts(
+    input: DesignInput,
+    prompt: string,
+    systemPrompt: string,
+  ): Promise<DesignOutput['concepts']> {
+    const { content } = await this.callClaude(
+      prompt,
+      systemPrompt,
+      `design-${input.projectId}`
+    );
+
+    // Parse JSON response
+    const jsonMatch = content.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      throw new Error('Failed to parse design concepts');
+    }
+
+    const parsed = JSON.parse(jsonMatch[0]);
+    const raw = Array.isArray(parsed.concepts) ? parsed.concepts : [];
+    return raw
+      .filter((c: any) => c && typeof c.name === 'string' && c.name.trim().length > 0)
+      .map((c: any, idx: number) => ({
         id: `concept-${idx + 1}`,
         name: c.name,
-        description: c.description,
+        description: c.description ?? '',
         styleMatch: c.styleMatch || 75,
         estimatedCost: c.estimatedCost || input.budget * 0.8,
         materials: c.materials || [],
@@ -150,10 +194,6 @@ export class DesignBotEnterprise extends EnterpriseBot {
         renderingHints: c.renderingHints || '',
         uniqueFeatures: c.uniqueFeatures || [],
       }));
-    } catch (error) {
-      console.error('Failed to generate concepts:', error);
-      throw error;
-    }
   }
 
   private async generateRecommendations(

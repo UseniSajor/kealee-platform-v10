@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { SiteBottomBar } from '@/components/footer/SiteBottomBar'
+import { getOwnerPortalBaseUrl } from '@/lib/owner-portal-urls'
 
 const COMPANY_LINKS = [
   { href: '/about', label: 'About Kealee' },
@@ -7,7 +8,9 @@ const COMPANY_LINKS = [
   { href: '/marketplace', label: 'Contractor Marketplace' },
   { href: '/faq', label: 'FAQ' },
   { href: '/contact', label: 'Contact' },
-  { href: 'https://owner.kealee.com/login', label: 'Owner Portal' },
+  // Never hardcode the portal host: it moved once and every hardcoded link
+  // became a dead end for customers holding a paid order.
+  { href: `${getOwnerPortalBaseUrl()}/login`, label: 'Owner Portal' },
 ]
 
 const LEGAL_LINKS = [

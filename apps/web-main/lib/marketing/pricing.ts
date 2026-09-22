@@ -1,67 +1,96 @@
 /**
- * Kealee Pricing Constants
+ * Marketing price symbols — DERIVED, never authored here.
  *
- * Single source of truth for all product prices.
- * All marketing files MUST import from here — never hardcode prices.
+ * This file used to carry its own price list and drifted from the checkout by
+ * as much as 5×. Every value below is now computed from the quoting engine in
+ * `@kealee/core-rules` (`PRODUCT_PRICING` → `priceRangeFor`), so marketing copy
+ * and the amount a customer is charged cannot disagree.
+ *
+ * Marketing shows the "from" price or a range. The exact price is quoted after
+ * intake — never stated in copy.
  */
 
-// ── Concept Package Prices ────────────────────────────────────────────────────
+import { priceRangeFor, formatPriceRange, bundleFromCents } from '@kealee/core-rules'
 
-export const CONCEPT_KITCHEN_PRICE        = 395   // dollars
-export const CONCEPT_KITCHEN_ADVANCED     = 695
-export const CONCEPT_KITCHEN_FULL         = 2500  // "from"
-
-export const CONCEPT_BATH_PRICE           = 395
-export const CONCEPT_BATH_ADVANCED        = 695
-export const CONCEPT_BATH_FULL            = 2000  // "from"
-
-export const CONCEPT_WHOLE_HOME_PRICE     = 585
-export const CONCEPT_WHOLE_HOME_ADVANCED  = 1200
-export const CONCEPT_WHOLE_HOME_FULL      = 6500  // "from"
-
-export const CONCEPT_INTERIOR_RENO_PRICE  = 395   // interior reno/addition base
-export const CONCEPT_EXTERIOR_PRICE       = 295
-export const CONCEPT_LANDSCAPE_PRICE      = 195
-export const CONCEPT_COMMERCIAL_PRICE     = 1200  // "from"
-export const CONCEPT_DEVELOPER_PRICE      = 1500  // "from"
-
-/** Generic lowest starting price shown in broad marketing */
-export const CONCEPT_START_PRICE         = 195
-
-// ── Tier label map (numeric tier → display string) ────────────────────────────
-
-export const CONCEPT_TIER_PRICES: Record<1 | 2 | 3, number> = {
-  1: CONCEPT_KITCHEN_PRICE,       // entry-tier concept
-  2: CONCEPT_WHOLE_HOME_PRICE,    // mid-tier concept
-  3: CONCEPT_DEVELOPER_PRICE,     // high-tier concept
+function fromDollars(productKey: string): number {
+  const range = priceRangeFor(productKey)
+  if (!range) throw new Error(`No pricing for product "${productKey}" — add it to PRODUCT_PRICING`)
+  return Math.round(range.lowCents / 100)
 }
 
-// ── Permit Prices ─────────────────────────────────────────────────────────────
+function toDollars(productKey: string): number {
+  const range = priceRangeFor(productKey)
+  if (!range) throw new Error(`No pricing for product "${productKey}" — add it to PRODUCT_PRICING`)
+  return Math.round(range.highCents / 100)
+}
 
-export const PERMIT_BASIC_PRICE    = 299   // permit path assessment
-export const PERMIT_STANDARD_PRICE = 799   // permit package filing
-export const PERMIT_PREMIUM_PRICE  = 1499  // full permit management
+// ── Concept packages — "from" prices ─────────────────────────────────────────
 
-// ── Estimation Prices ─────────────────────────────────────────────────────────
+export const CONCEPT_KITCHEN_PRICE       = fromDollars('kitchen_remodel')
+export const CONCEPT_BATH_PRICE          = fromDollars('bathroom_remodel')
+export const CONCEPT_WHOLE_HOME_PRICE    = fromDollars('whole_home_concept')
+export const CONCEPT_INTERIOR_RENO_PRICE = fromDollars('interior_renovation')
+export const CONCEPT_EXTERIOR_PRICE      = fromDollars('exterior_concept')
+export const CONCEPT_LANDSCAPE_PRICE     = fromDollars('garden_concept')
+export const CONCEPT_ADDITION_PRICE      = fromDollars('addition_expansion')
+export const CONCEPT_COMMERCIAL_PRICE    = fromDollars('developer_concept')
+export const CONCEPT_DEVELOPER_PRICE     = fromDollars('developer_concept')
 
-export const ESTIMATION_PRICE           = 249  // standalone cost estimate
-export const ESTIMATION_CERTIFIED_PRICE = 499  // RSMeans-certified estimate
+/** Generic lowest starting price shown in broad marketing. */
+export const CONCEPT_START_PRICE = Math.min(
+  CONCEPT_KITCHEN_PRICE,
+  CONCEPT_BATH_PRICE,
+  CONCEPT_INTERIOR_RENO_PRICE,
+  CONCEPT_LANDSCAPE_PRICE,
+)
 
-// ── Other Products ────────────────────────────────────────────────────────────
+// ── Permits ──────────────────────────────────────────────────────────────────
 
-export const ADU_BUNDLE_PRICE           = 999
-export const PM_ADVISORY_PRICE          = 299   // per month
-export const CONTRACTOR_MATCH_PRICE     = 0     // free (monetized via contractor)
-export const DESIGN_ESTIMATE_PERMIT_BUNDLE = 1499
+export const PERMIT_BASIC_PRICE    = fromDollars('permit_path_only')
+export const PERMIT_STANDARD_PRICE = fromDollars('permit_filing')
+export const PERMIT_PREMIUM_PRICE  = fromDollars('permit_managed')
 
-// ── String formatters ─────────────────────────────────────────────────────────
+// ── Estimation ───────────────────────────────────────────────────────────────
+
+export const ESTIMATION_PRICE           = fromDollars('cost_estimate')
+export const ESTIMATION_CERTIFIED_PRICE = fromDollars('certified_estimate')
+
+// ── Site intelligence ────────────────────────────────────────────────────────
+
+export const PRELIMINARY_SITE_PLAN_PRICE = fromDollars('preliminary_site_plan')
+export const VERIFIED_FEASIBILITY_PRICE  = fromDollars('verified_site_feasibility')
+export const PERMIT_SITE_PLAN_PRICE      = fromDollars('permit_site_plan')
+
+// ── Drawings and services ────────────────────────────────────────────────────
+
+export const PROFESSIONAL_DRAWINGS_PRICE = fromDollars('professional_drawings')
+export const PROFESSIONAL_DRAWINGS_MAX   = toDollars('professional_drawings')
+export const MANAGED_BID_PRICE           = fromDollars('managed_bid')
+export const PM_ADVISORY_PRICE           = fromDollars('pm_advisory')
+export const PM_OVERSIGHT_PRICE          = fromDollars('pm_oversight')
+
+/** ADU work is quoted as an addition concept — the same package and the same formula. */
+export const ADU_BUNDLE_PRICE            = fromDollars('addition_expansion')
+
+/** Bundles are their parts less the bundle credit; no separate price list exists. */
+export const DESIGN_ESTIMATE_PERMIT_BUNDLE = Math.round(
+  (bundleFromCents(['addition_expansion', 'cost_estimate', 'permit_filing']) ?? 0) / 100,
+)
+export const CONTRACTOR_MATCH_PRICE      = fromDollars('contractor_match')
+
+// ── String formatters ────────────────────────────────────────────────────────
 
 /** Format a dollar amount as "$X,XXX" */
-export function formatPrice(cents: number): string {
-  return `$${cents.toLocaleString('en-US')}`
+export function formatPrice(dollars: number): string {
+  return `$${dollars.toLocaleString('en-US')}`
 }
 
-/** Format a "starting at" string */
-export function startingAt(price: number): string {
-  return `Starting at ${formatPrice(price)}`
+/** Format a "starting at" string. Marketing never states an exact package price. */
+export function startingAt(dollars: number): string {
+  return `Starting at ${formatPrice(dollars)}`
+}
+
+/** "Typical price: $495–$795" — the range a product page should show. */
+export function typicalRange(productKey: string): string {
+  return formatPriceRange(productKey) ?? 'Priced after intake'
 }

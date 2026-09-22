@@ -325,6 +325,8 @@ interface ConceptData {
   exteriorRenderUrls?: string[]
   /** Photos uploaded by the user at intake — shown in before/after comparison. */
   beforeUrls?: string[]
+  /** Viewpoint-locked pairs: each after view was rendered from its own before photo. */
+  beforeAfterPairs?: { beforeUrl: string; afterUrl: string; label: string }[]
   /** From `conceptOutput` when tier includes video (Premium+). */
   videoUrl?: string
   videoFormatUrls?: Record<string, string>
@@ -899,6 +901,11 @@ export default function ConceptDeliverablePage() {
         beforeUrls: Array.isArray(co.beforeUrls) && (co.beforeUrls as string[]).length > 0
           ? (co.beforeUrls as string[]).filter(Boolean)
           : undefined,
+        beforeAfterPairs: Array.isArray(co.beforeAfterPairs)
+          ? (co.beforeAfterPairs as Array<Record<string, unknown>>)
+              .filter(p => typeof p?.beforeUrl === 'string' && typeof p?.afterUrl === 'string')
+              .map(p => ({ beforeUrl: String(p.beforeUrl), afterUrl: String(p.afterUrl), label: String(p.label ?? 'Existing') }))
+          : undefined,
         pdfUrl:          typeof co.pdfUrl === 'string' ? co.pdfUrl : undefined,
         contractorMatchingUnlocked,
         permitSubmitted,
@@ -1393,10 +1400,18 @@ export default function ConceptDeliverablePage() {
               <span className="h-2 w-2 rounded-full" style={{ backgroundColor: '#2ABFBF' }} />
               <h2 className="text-base font-bold" style={{ color: '#1A2B4A' }}>Before &amp; After</h2>
             </div>
+            {/* Pairs, when we have them, keep each after view with the photograph
+                it was rendered from; the index fallback can pair unrelated views. */}
             <BeforeAfterMedia
-              beforeUrls={data.beforeUrls!}
+              beforeUrls={
+                (data.beforeAfterPairs?.length ?? 0) > 0
+                  ? data.beforeAfterPairs!.map(p => p.beforeUrl)
+                  : data.beforeUrls!
+              }
               afterUrls={
-                (data.exteriorRenderUrls?.length ?? 0) > 0
+                (data.beforeAfterPairs?.length ?? 0) > 0
+                  ? data.beforeAfterPairs!.map(p => p.afterUrl)
+                  : (data.exteriorRenderUrls?.length ?? 0) > 0
                   ? data.exteriorRenderUrls!
                   : (data.interiorRenderUrls?.length ?? 0) > 0
                   ? data.interiorRenderUrls!

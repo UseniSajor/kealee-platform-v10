@@ -8,6 +8,9 @@ export type { ZoningRequest, ZoningResponse } from './zoning-bot';
 // Pricing constants
 export * from './pricing';
 
+// Quoting engine — the single authority for what a customer pays
+export * from './quote';
+
 // Concept package deliverables (permit + zoning in all tiers)
 export * from './concept-package-deliverables';
 

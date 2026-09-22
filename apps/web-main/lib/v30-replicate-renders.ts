@@ -22,21 +22,41 @@ const MAX_FREE_RENDERS = 6
 const MAX_PAIRED_RENDERS = 3
 
 /**
- * Pick the customer's photographs that can anchor a before/after pair: image
- * uploads with a label or viewpoint from the intake form (uploadedFileMeta).
+ * Pick the customer's photographs that can anchor a before/after pair.
+ *
+ * A label and viewpoint make the strongest pair, but they are not required:
+ * orders placed before the intake captured them, and customers who skip the
+ * fields, still get pairs — the photograph itself carries the geometry the
+ * render is locked to, and the label falls back to the area, then the project
+ * space, then the file name. Photographs are preferred over screenshots and
+ * scans by keeping the intake's own order, which puts project photos first.
  */
-export function referencePhotosFromFormData(formData: Record<string, unknown>): ReferencePhoto[] {
+export function referencePhotosFromFormData(
+  formData: Record<string, unknown>,
+  projectPath?: string,
+): ReferencePhoto[] {
   const meta = Array.isArray(formData.uploadedFileMeta) ? (formData.uploadedFileMeta as Array<Record<string, unknown>>) : []
-  return meta
+  const space = (projectPath ?? String(formData.projectPath ?? '')).replace(/_/g, ' ').trim()
+  const candidates = meta
     .filter(f => typeof f.url === 'string' && /^https?:\/\//i.test(String(f.url)))
     .filter(f => f.type !== 'video' && f.type !== 'document')
-    .filter(f => Boolean(f.label) || Boolean(f.viewpoint))
-    .map(f => ({
-      url: String(f.url),
-      label: String(f.label ?? f.name ?? 'Existing'),
-      area: f.area != null && f.area !== '' ? String(f.area) : undefined,
-      viewpoint: f.viewpoint != null && f.viewpoint !== '' ? String(f.viewpoint) : undefined,
-    }))
+    .filter(f => !/\.(pdf|dwg|dxf|docx?|xlsx?)$/i.test(String(f.name ?? '')))
+  // Labelled photographs first — they make the clearest caption — then the rest.
+  const described = candidates.filter(f => Boolean(f.label) || Boolean(f.viewpoint))
+  const ordered = [...described, ...candidates.filter(f => !described.includes(f))]
+  return ordered
+    .map(f => {
+      const area = f.area != null && f.area !== '' ? String(f.area) : undefined
+      const named = f.label != null && f.label !== ''
+        ? String(f.label)
+        : area ?? (space ? `Existing ${space}` : String(f.name ?? 'Existing condition'))
+      return {
+        url: String(f.url),
+        label: named,
+        area,
+        viewpoint: f.viewpoint != null && f.viewpoint !== '' ? String(f.viewpoint) : undefined,
+      }
+    })
     .slice(0, MAX_PAIRED_RENDERS)
 }
 
@@ -108,7 +128,7 @@ export async function queueV30DesignRenders(
   const pairs: QueuedRenderPair[] = []
   const conceptPrompt = prompts[0]
   if (conceptPrompt) {
-    for (const photo of referencePhotosFromFormData(formData)) {
+    for (const photo of referencePhotosFromFormData(formData, roomType)) {
       try {
         const job = await generateImages({
           prompt: buildViewpointLockedPrompt(photo, conceptPrompt, roomType),

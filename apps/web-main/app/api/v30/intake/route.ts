@@ -2,13 +2,14 @@ import { NextRequest, NextResponse } from 'next/server'
 import {
   analyzeV30IntakeWithLlm,
   calculateFloorplanAddon,
-  calculateV30PackagePrice,
   mergeV30PackageFeatures,
   isV30Enabled,
   shouldResolveLotGis,
   type V30IntakeFormAnswers,
 } from '@kealee/kealee-agent-stack'
+import { computeQuote, getProductPricing, type QuoteFacts } from '@kealee/core-rules'
 import { fetchActiveV30PricingFormula } from '@/lib/v30-pricing-formula'
+import { quoteFactsFromIntake } from '@/lib/quote-facts'
 import { resolveLotContext } from '@/lib/v30-lot-gis'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
 
@@ -30,6 +31,9 @@ export async function POST(req: NextRequest) {
       tier?: 1 | 2 | 3
       answers: V30IntakeFormAnswers
       selectedFeatures?: string[]
+      /** Optional add-on ids from the quoting engine's ADD_ONS catalogue. */
+      addOns?: string[]
+      rush?: boolean
     }
 
     if (!body.answers?.location || !body.answers?.squareFeet) {
@@ -49,32 +53,51 @@ export async function POST(req: NextRequest) {
     const floorplanAddon = features.some(f => /^floorplan$/i.test(f))
       ? calculateFloorplanAddon(body.answers, formula, body.projectPath ?? undefined)
       : null
-    const { featureAddons, totalPrice, featureBreakdown } = calculateV30PackagePrice(
-      analysis.estimatedCost,
-      features,
-      formula,
-      { answers: body.answers, projectPath: body.projectPath },
-    )
+    // The payable amount is computed here, deterministically, from the intake
+    // facts and the product table. The model's analysis classifies scope; it
+    // never sets a price. `analysis.estimatedCost` is the model's guess at the
+    // customer's CONSTRUCTION budget and is recorded as context only.
+    const facts: QuoteFacts = quoteFactsFromIntake({
+      answers: body.answers,
+      projectPath: body.projectPath,
+      scopeComplexity: analysis.scopeComplexity,
+      lotContext: lotContext as unknown as Record<string, unknown> | null,
+      selectedAddOns: body.addOns,
+      rush: body.rush,
+    })
+    const product = getProductPricing(body.projectPath ?? '')
+    const computed = product ? computeQuote(product.key, facts) : null
+
+    if (!computed) {
+      // No published price for this product — a scoping request, not a charge.
+      return NextResponse.json({
+        scopingRequired: true,
+        reason: 'This project is quoted by our team after review.',
+        analysis: { scopeComplexity: analysis.scopeComplexity, riskLevel: analysis.riskLevel },
+      })
+    }
 
     const quote = {
       version: '3.0',
+      quoteVersion: computed.version,
       projectPath: body.projectPath ?? null,
       analysis,
       features,
-      basePrice: analysis.estimatedCost,
-      featureAddons,
-      featureBreakdown,
-      pricingSource: 'v30_pricing_formulas',
+      pricingSource: 'kealee_quote_engine',
       lotContext,
       floorplanScope: floorplanAddon?.scope ?? null,
-      floorplanAddonUsd: floorplanAddon?.amount ?? null,
       tier: tier ?? null,
       permitNote: features.includes('Permits')
         ? 'Permit scope included for this project type.'
         : 'No permit package — typical for landscape without irrigation.',
-      totalPriceCents: Math.round(totalPrice * 100),
-      totalPrice,
-      quotedAt: new Date().toISOString(),
+      // The customer-facing breakdown, shown in full before Stripe.
+      quote: computed,
+      totalPriceCents: computed.totalCents,
+      totalPrice: computed.totalCents / 100,
+      customQuoteRequired: computed.customQuoteRequired,
+      customQuoteReasons: computed.customQuoteReasons,
+      expiresAt: computed.expiresAt,
+      quotedAt: computed.quotedAt,
     }
 
     if (body.intakeId) {
@@ -114,7 +137,16 @@ export async function POST(req: NextRequest) {
         suggestedFeatures: analysis.suggestedFeatures,
         pricingBreakdown,
       },
-      package: { features, basePrice: analysis.estimatedCost, featureAddons, totalPrice },
+      // `estimatedCost` is the model's read of the CONSTRUCTION budget, shown as
+      // context. The package price is `quote.totalPriceCents`, computed here.
+      package: {
+        features,
+        packageCents: computed.packageCents,
+        addOnsCents: computed.addOnsCents,
+        totalCents: computed.totalCents,
+        lines: computed.lines,
+        expiresAt: computed.expiresAt,
+      },
       quote,
     })
   } catch (err: unknown) {

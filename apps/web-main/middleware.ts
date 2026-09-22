@@ -11,7 +11,7 @@ import {
   getOnSiteOrderUrl,
   getOwnerPortalBaseUrl,
   getOwnerPortalDeliverableUrl,
-  isOwnerPortalConfigured,
+  isOwnerPortalLive,
 } from '@/lib/owner-portal-urls'
 
 // Public routes that don't require authentication
@@ -133,7 +133,7 @@ export default clerkMiddleware(async (auth, request: NextRequest) => {
   if (pathname.startsWith('/concept/deliverable')) {
     const intakeId = request.nextUrl.searchParams.get('intakeId')
     const projectPath = request.nextUrl.searchParams.get('projectPath') ?? undefined
-    if (!isOwnerPortalConfigured()) {
+    if (!(await isOwnerPortalLive())) {
       const target = intakeId ? getOnSiteOrderUrl(intakeId, projectPath) : '/orders'
       return NextResponse.redirect(new URL(target, request.url))
     }
@@ -179,7 +179,7 @@ export default clerkMiddleware(async (auth, request: NextRequest) => {
     // external-portal login page, so redirect there directly.
     if (/^\/concept\/[^/]+$/.test(pathname)) {
       const intakeId = pathname.split('/')[2]
-      if (!isOwnerPortalConfigured()) {
+      if (!(await isOwnerPortalLive())) {
         return NextResponse.redirect(
           new URL(intakeId ? getOnSiteOrderUrl(intakeId) : '/orders', request.url),
         )
