@@ -3335,6 +3335,9 @@ importers:
       '@kealee/observability':
         specifier: workspace:^
         version: link:../../packages/observability
+      '@kealee/os-ai-orch':
+        specifier: workspace:*
+        version: link:../../packages/os-ai-orch
       '@kealee/page-builder':
         specifier: workspace:*
         version: link:../../packages/page-builder

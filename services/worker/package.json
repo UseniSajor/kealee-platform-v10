@@ -19,8 +19,11 @@
     "@kealee/concept-engine": "workspace:*",
     "@kealee/core": "workspace:*",
     "@kealee/database": "workspace:*",
+    "@kealee/knowledge": "workspace:*",
     "@kealee/observability": "workspace:^",
+    "@kealee/os-ai-orch": "workspace:*",
     "@kealee/page-builder": "workspace:*",
+    "@kealee/pascal-agents": "workspace:*",
     "@kealee/queue": "workspace:*",
     "@kealee/realtime": "workspace:*",
     "@kealee/storage": "workspace:*",
@@ -30,9 +33,7 @@
     "node-cron": "^3.0.3",
     "openai": "^4.77.0",
     "pdfkit": "^0.14.0",
-    "resend": "^6.21.0",
-    "@kealee/knowledge": "workspace:*",
-    "@kealee/pascal-agents": "workspace:*"
+    "resend": "^6.21.0"
   },
   "devDependencies": {
     "@types/node": "^20.19.0",

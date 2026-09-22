@@ -1,15 +1,16 @@
 import { Prisma, prisma } from '@kealee/database'
 import {
   getV30Bot,
-  runV30ParallelGeneration,
   shouldUseV30Llm,
   type V30BotExecutionInput,
   type V30BotExecutionResult,
+  type V30BotType,
 } from '@kealee/kealee-agent-stack'
 import { DesignBotEnterprise, mapDesignOutputToConceptOutput } from '@kealee/core-llm'
 import { botTypesForPackageFeatures } from './feature-bots'
 import { executeV30BotForOrch } from './execute-v30-bot'
 import { syncV30DesignConceptToProject } from './sync-design-concept'
+import { enqueueV30BotJobs } from './bot-queue'
 
 export interface StartV30GenerationInput {
   projectId: string
@@ -129,6 +130,102 @@ async function executeDesignBotOrOrch(
 /**
  * Create V30BotExecution rows and run KeaBot v3.0 parallel generation (zip2 os-ai-orch).
  */
+/**
+ * Runs ONE bot execution to completion and persists its result.
+ *
+ * This is the unit the worker drains. It lives here rather than in the worker
+ * because executeDesignBotOrOrch and persistExecutionResult are the canonical
+ * paths for dispatching and recording a bot, and a second copy in the worker
+ * would drift from them.
+ *
+ * Throws on a retryable failure so the caller can requeue; a bot that ran and
+ * reported FAILED is recorded and NOT thrown, because re-running a bot that
+ * produced a deterministic bad answer just spends money to get it again.
+ */
+export async function runV30BotExecution(executionId: string): Promise<{
+  botType: string
+  status: 'COMPLETE' | 'FAILED'
+}> {
+  const exec = await prisma.v30BotExecution.findUnique({
+    where: { id: executionId },
+    select: {
+      id: true, projectId: true, packageId: true, botType: true,
+      status: true, inputData: true,
+    },
+  })
+  if (!exec) throw new Error(`v30BotExecution ${executionId} not found`)
+
+  // Already terminal: a redelivered job must not re-run finished work.
+  if (exec.status === 'COMPLETE' || exec.status === 'FAILED') {
+    return { botType: exec.botType, status: exec.status as 'COMPLETE' | 'FAILED' }
+  }
+
+  await prisma.v30BotExecution.update({
+    where: { id: executionId },
+    data: { status: 'EXECUTING' },
+  })
+
+  const result = await executeDesignBotOrOrch({
+    botType: exec.botType as V30BotType,
+    projectId: exec.projectId,
+    packageId: exec.packageId,
+    inputData: (exec.inputData ?? {}) as Record<string, unknown>,
+  })
+
+  await persistExecutionResult(executionId, result)
+
+  if (exec.botType === 'design' && result.status === 'COMPLETE') {
+    await syncV30DesignConceptToProject(exec.projectId, result)
+  }
+
+  return {
+    botType: exec.botType,
+    status: result.status === 'COMPLETE' ? 'COMPLETE' : 'FAILED',
+  }
+}
+
+/**
+ * Closes out a package once every bot for it is terminal.
+ *
+ * Under the old fire-and-forget design this ran in a single `.then()` after
+ * Promise.all. With bots draining independently, whichever bot finishes last
+ * has to do it, so this is safe to call after every execution — it is a no-op
+ * while any bot is still PENDING or EXECUTING.
+ */
+export async function finalizeV30PackageIfComplete(input: {
+  projectId: string
+  packageId: string
+}): Promise<{ finalized: boolean; failedCount: number; total: number }> {
+  const executions = await prisma.v30BotExecution.findMany({
+    where: { projectId: input.projectId, packageId: input.packageId },
+    select: { status: true },
+  })
+
+  const total = executions.length
+  const terminal = executions.filter(
+    e => e.status === 'COMPLETE' || e.status === 'FAILED',
+  )
+  if (total === 0 || terminal.length < total) {
+    return { finalized: false, failedCount: 0, total }
+  }
+
+  const failedCount = terminal.filter(e => e.status === 'FAILED').length
+
+  await prisma.project.update({
+    where: { id: input.projectId },
+    data: { status: failedCount === 0 ? 'DELIVERED' : 'FAILED' },
+  })
+
+  if (failedCount === 0) {
+    await prisma.v30CustomPackage.update({
+      where: { id: input.packageId },
+      data: { status: 'COMPLETE', completedAt: new Date() },
+    })
+  }
+
+  return { finalized: true, failedCount, total }
+}
+
 export async function startV30Generation(
   input: StartV30GenerationInput,
 ): Promise<StartV30GenerationResult> {
@@ -184,47 +281,25 @@ export async function startV30Generation(
     ...(input.sharedInput ?? {}),
   }
 
-  const orchOptions = shouldUseV30Llm()
-    ? { botTypes, executeBot: executeDesignBotOrOrch }
-    : { botTypes }
+  // Persist the resolved shared input onto each execution row before queueing.
+  // The worker rehydrates from the row, so everything a bot needs has to be
+  // durable — a payload held only in this process would die with it.
+  await prisma.v30BotExecution.updateMany({
+    where: { id: { in: Object.values(executionIds) } },
+    data: { inputData: sharedInput as Prisma.InputJsonValue },
+  })
 
-  void runV30ParallelGeneration(input.projectId, input.packageId, sharedInput, orchOptions)
-    .then(async summary => {
-      for (const result of summary.executions) {
-        const executionId = executionIds[result.botType]
-        if (executionId) await persistExecutionResult(executionId, result)
-      }
-
-      const designResult = summary.executions.find(e => e.botType === 'design')
-      if (designResult) {
-        await syncV30DesignConceptToProject(input.projectId, designResult)
-      }
-
-      await prisma.project.update({
-        where: { id: input.projectId },
-        data: { status: summary.failedCount === 0 ? 'DELIVERED' : 'GENERATING' },
-      })
-
-      if (summary.failedCount === 0) {
-        await prisma.v30CustomPackage.update({
-          where: { id: input.packageId },
-          data: { status: 'COMPLETE', completedAt: new Date() },
-        })
-      }
-    })
-    .catch(async (err: unknown) => {
-      const message = err instanceof Error ? err.message : 'Generation failed'
-      await prisma.project.update({
-        where: { id: input.projectId },
-        data: { status: 'FAILED' },
-      })
-      for (const id of Object.values(executionIds)) {
-        await prisma.v30BotExecution.update({
-          where: { id },
-          data: { status: 'FAILED', errorMessage: message, completedAt: new Date() },
-        }).catch(() => undefined)
-      }
-    })
+  // Record intent in JobQueue rather than running the bots here. The previous
+  // `void runV30ParallelGeneration(...)` executed every bot in this process:
+  // an API restart killed them with no resume, a failure was terminal until a
+  // human retried, and the work competed with HTTP request handling. Draining
+  // from the worker gives restart-safety, retry with backoff, and a bounded
+  // number of concurrent Claude calls.
+  await enqueueV30BotJobs({
+    projectId: input.projectId,
+    packageId: input.packageId,
+    executionIds,
+  })
 
   return {
     projectId: input.projectId,

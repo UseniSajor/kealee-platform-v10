@@ -34,6 +34,7 @@ import { createLeadFollowupWorker } from './processors/lead-followup.processor'
 import { cronManager } from './cron/cron.manager'
 import cron from 'node-cron'
 import { drainSitePlanQueue } from './siteplan/processor'
+import { drainV30BotQueue, V30_BOT_CONCURRENCY } from './v30/processor'
 import type { Queue, Worker } from 'bullmq'
 import { createBotJobsWorker, createChainJobsWorker } from './processors/bot-jobs.processor'
 
@@ -367,6 +368,31 @@ async function initializeCaptureAnalysisWorkers() {
     }, { scheduled: true, timezone: 'UTC' })
 
     console.log('Site-plan queue drain registered (every 1 min)')
+
+    // ── v30 bots ─────────────────────────────────────────────────────────
+    // Generation used to run in the API process as a detached promise, so an
+    // API restart killed in-flight bots and a rate limit failed a paid order.
+    // startV30Generation now records intent in JobQueue; this drains it with
+    // bounded concurrency, retry-with-backoff on 429/5xx, and reaping of
+    // claims left ACTIVE by a dead worker.
+    cron.schedule('* * * * *', async () => {
+      try {
+        const r = await drainV30BotQueue(8)
+        if (r.claimed > 0 || r.reaped > 0) {
+          console.log(
+            `[v30-bots] reaped=${r.reaped} claimed=${r.claimed} completed=${r.completed} ` +
+            `retried=${r.retried} failed=${r.failed} finalized=${r.finalized}`,
+          )
+          for (const d of r.details) {
+            console.log(`[v30-bots]   ${d.bot} ${d.disposition} — ${d.summary}`)
+          }
+        }
+      } catch (e: any) {
+        console.error('[v30-bots] drain failed:', e.message)
+      }
+    }, { scheduled: true, timezone: 'UTC' })
+
+    console.log(`v30 bot queue drain registered (every 1 min, concurrency ${V30_BOT_CONCURRENCY})`)
   } catch (error) {
     console.error('Failed to initialize capture analysis workers:', error)
     throw error
