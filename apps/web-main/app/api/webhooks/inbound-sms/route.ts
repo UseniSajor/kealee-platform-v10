@@ -69,13 +69,13 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    let intake: { id: string; name: string; service_type: string } | null = null
+    let intake: { id: string; client_name: string; project_path: string } | null = null
 
     // ── Look up lead by GHL Contact ID ──────────────────────────────────
     if (ghlContactId) {
       const { data: intakes, error: findErr } = await supabase
         .from('public_intake_leads')
-        .select('id, name, service_type')
+        .select('id, client_name, project_path')
         .eq('ghl_contact_id', ghlContactId)
         .limit(1)
 
@@ -88,12 +88,12 @@ export async function POST(req: NextRequest) {
     // ── Fallback: Look up lead by sender phone number ──────────────────
     if (!intake && fromPhone) {
       const cleanPhone = fromPhone.replace(/\D/g, '')
-      const orQuery = `contact_phone.eq.${fromPhone},phone_number.eq.${fromPhone}` + 
-                      (cleanPhone ? `,contact_phone.ilike.%${cleanPhone}%,phone_number.ilike.%${cleanPhone}%` : '')
+      const orQuery = `contact_phone.eq.${fromPhone}` + 
+                      (cleanPhone ? `,contact_phone.ilike.%${cleanPhone}%` : '')
 
       const { data: intakes, error: findErr } = await supabase
         .from('public_intake_leads')
-        .select('id, name, service_type')
+        .select('id, client_name, project_path')
         .or(orQuery)
         .order('created_at', { ascending: false })
         .limit(1)
@@ -127,8 +127,8 @@ export async function POST(req: NextRequest) {
     if (classification.urgency === 'urgent' || classification.urgency === 'escalate') {
       await sendLeadToSlack({
         leadId: intake.id,
-        leadName: intake.name,
-        leadService: intake.service_type,
+        leadName: intake.client_name,
+        leadService: intake.project_path,
         leadBudget: 'N/A',
         leadScore: 90,
         routingTag: 'urgent-reply',
