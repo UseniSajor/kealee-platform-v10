@@ -78,13 +78,16 @@ Provide JSON response with confidence (0-100), recommendation, reasoning, and su
       ],
     })
 
-    const content = response.content[0]
-    if (content.type !== 'text') {
-      throw new Error('Unexpected response type from Claude')
+    // First TEXT block, not content[0]: AI_MODELS.conceptText is
+    // claude-sonnet-5, where thinking is on by default, so content[0] is a
+    // thinking block and this threw "Unexpected response type" every call.
+    const text = response.content.find((b) => b.type === 'text')?.text
+    if (!text) {
+      throw new Error('No text block in Claude response')
     }
 
     // Parse JSON from Claude's response
-    const jsonMatch = content.text.match(/\{[\s\S]*\}/)
+    const jsonMatch = text.match(/\{[\s\S]*\}/)
     if (!jsonMatch) {
       throw new Error('No JSON found in Claude response')
     }

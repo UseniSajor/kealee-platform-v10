@@ -116,7 +116,9 @@ async function callClaudeFallback(agentType: string, body: Record<string, unknow
     messages: [{ role: 'user', content: prompt }],
   })
 
-  const raw = message.content[0].type === 'text' ? message.content[0].text : ''
+  // First TEXT block, not content[0]: AI_MODELS.conceptText is claude-sonnet-5,
+  // where thinking is on by default, so content[0] is a thinking block.
+  const raw = message.content.find((b) => b.type === 'text')?.text ?? ''
   const jsonMatch = raw.match(/\{[\s\S]*\}/)
   if (!jsonMatch) throw new Error('No JSON in Claude response')
   return JSON.parse(jsonMatch[0])

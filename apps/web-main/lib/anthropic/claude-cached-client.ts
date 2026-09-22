@@ -11,7 +11,11 @@
  * Usage:
  *   const client = new ClaudeCachedClient()
  *   const response = await client.message({ model, max_tokens, system, messages })
- *   const text = response.content[0].type === 'text' ? response.content[0].text : ''
+ *   const text = response.content.find((b) => b.type === 'text')?.text ?? ''
+ *
+ * Find the text block — do not index content[0]. On models where thinking is
+ * on by default (claude-opus-5, claude-sonnet-5) the first block is a thinking
+ * block, so content[0] yields no text.
  */
 
 import { AnthropicClient as Anthropic } from '@kealee/core-llm'

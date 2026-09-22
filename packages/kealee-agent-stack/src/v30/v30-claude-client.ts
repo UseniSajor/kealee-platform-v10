@@ -42,18 +42,27 @@ export class V30ClaudeCachedClient {
       : [{ type: 'text' as const, text: params.system }]
 
     // Cast through `any` so TypeScript doesn't widen to Stream|Message union.
-    // The prompt-caching beta requires system to be a ContentBlock array, which
-    // the SDK non-beta types don't accept — the runtime API handles both forms.
+    // `system` as a ContentBlock array is accepted by the standard endpoint.
+    //
+    // No `betas` here. Prompt caching is GA — `cache_control` on the system
+    // block is the whole mechanism. Sending `betas` to `messages.create` (the
+    // non-beta endpoint) is rejected with
+    // `400 invalid_request_error: betas: Extra inputs are not permitted`,
+    // which failed every cache-enabled bot. `betas` is only valid on
+    // `anthropic.beta.messages.create`.
     const response = (await (this.anthropic.messages as any).create({
       model: params.model,
       max_tokens: params.maxTokens,
       system: systemBlocks,
       messages: [{ role: 'user', content: params.user }],
-      ...(cache ? { betas: ['prompt-caching-2024-07-31'] } : {}),
     })) as Message
 
-    const block = response.content[0]
-    const text = block?.type === 'text' ? block.text : ''
+    // Take the first TEXT block, not content[0]. These bots run on
+    // claude-opus-5 / claude-sonnet-5, where thinking is on by default, so
+    // content[0] is a thinking block and content[0].type === 'text' is false.
+    // Reading content[0] yielded '' on every uncached bot — a 200 response
+    // that then died in extractJsonObject as "<Bot> JSON parse failed".
+    const text = response.content.find((b) => b.type === 'text')?.text ?? ''
     return {
       text,
       inputTokens: response.usage.input_tokens,
