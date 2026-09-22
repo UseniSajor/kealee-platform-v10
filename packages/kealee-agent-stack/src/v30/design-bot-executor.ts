@@ -103,6 +103,8 @@ export async function executeV30DesignBot(
       : {
           raw: result.text.slice(0, 12_000),
           parseError: true,
+          truncated: result.truncated,
+          stopReason: result.stopReason,
           canonicalBot: 'v30_design',
         }
 
@@ -115,7 +117,11 @@ export async function executeV30DesignBot(
       tokensUsed: tokens,
       costUSD: def.estimatedCostUsd,
       durationMs: Date.now() - started,
-      errorMessage: parsed ? undefined : 'DesignBot JSON parse failed',
+      errorMessage: parsed
+        ? undefined
+        : result.truncated
+          ? `DesignBot hit max_tokens (${maxTokensForV30Bot('design')}) — response truncated, raise the bot's maxTokens`
+          : 'DesignBot JSON parse failed',
     }
   } catch (err: unknown) {
     return {

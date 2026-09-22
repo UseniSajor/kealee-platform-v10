@@ -11,6 +11,14 @@ export interface V30ClaudeCallResult {
   text: string
   inputTokens: number
   outputTokens: number
+  /**
+   * Why generation stopped. `max_tokens` means the body was cut off and any
+   * JSON in it is incomplete — callers should report truncation rather than a
+   * parse failure, which is what made the original bug so hard to read.
+   */
+  stopReason: string | null
+  /** True when the response hit the token ceiling and is therefore partial. */
+  truncated: boolean
 }
 
 export class V30ClaudeCachedClient {
@@ -63,10 +71,13 @@ export class V30ClaudeCachedClient {
     // Reading content[0] yielded '' on every uncached bot — a 200 response
     // that then died in extractJsonObject as "<Bot> JSON parse failed".
     const text = response.content.find((b) => b.type === 'text')?.text ?? ''
+    const stopReason = response.stop_reason ?? null
     return {
       text,
       inputTokens: response.usage.input_tokens,
       outputTokens: response.usage.output_tokens,
+      stopReason,
+      truncated: stopReason === 'max_tokens',
     }
   }
 }

@@ -9,18 +9,27 @@ export const V30_WIRED_BOT_CONFIG: Record<
   V30BotType,
   { timeoutSeconds: number; cacheEphemeral: boolean; maxTokens: number }
 > = {
-  intake: { timeoutSeconds: 30, cacheEphemeral: true, maxTokens: 4000 },
-  design: { timeoutSeconds: 60, cacheEphemeral: true, maxTokens: 8192 },
-  estimate: { timeoutSeconds: 45, cacheEphemeral: true, maxTokens: 4096 },
-  zoning: { timeoutSeconds: 30, cacheEphemeral: true, maxTokens: 3072 },
-  floorplan: { timeoutSeconds: 20, cacheEphemeral: false, maxTokens: 3072 },
-  permit: { timeoutSeconds: 40, cacheEphemeral: true, maxTokens: 4096 },
-  video: { timeoutSeconds: 15, cacheEphemeral: false, maxTokens: 2048 },
-  contractor: { timeoutSeconds: 20, cacheEphemeral: true, maxTokens: 2048 },
-  sales: { timeoutSeconds: 10, cacheEphemeral: false, maxTokens: 2048 },
-  marketing: { timeoutSeconds: 25, cacheEphemeral: true, maxTokens: 4096 },
-  support: { timeoutSeconds: 15, cacheEphemeral: false, maxTokens: 2048 },
-  project: { timeoutSeconds: 5, cacheEphemeral: false, maxTokens: 2048 },
+  // maxTokens must cover THINKING PLUS the JSON body. These bots run on
+  // claude-opus-5 / claude-sonnet-5, where thinking is on by default and its
+  // tokens are drawn from this same budget. The original 2048-8192 values were
+  // sized for the visible JSON alone, so reasoning consumed the allowance and
+  // every large response was cut off mid-string — surfacing as
+  // "<Bot> JSON parse failed" rather than as the truncation it was.
+  //
+  // Measured on real orders before the raise: floorplan 10702 tokens against a
+  // 3072 cap, video 8897 against 2048, contractor 4729 against 2048.
+  intake: { timeoutSeconds: 30, cacheEphemeral: true, maxTokens: 16000 },
+  design: { timeoutSeconds: 60, cacheEphemeral: true, maxTokens: 32000 },
+  estimate: { timeoutSeconds: 45, cacheEphemeral: true, maxTokens: 16000 },
+  zoning: { timeoutSeconds: 30, cacheEphemeral: true, maxTokens: 16000 },
+  floorplan: { timeoutSeconds: 20, cacheEphemeral: false, maxTokens: 32000 },
+  permit: { timeoutSeconds: 40, cacheEphemeral: true, maxTokens: 16000 },
+  video: { timeoutSeconds: 15, cacheEphemeral: false, maxTokens: 16000 },
+  contractor: { timeoutSeconds: 20, cacheEphemeral: true, maxTokens: 16000 },
+  sales: { timeoutSeconds: 10, cacheEphemeral: false, maxTokens: 16000 },
+  marketing: { timeoutSeconds: 25, cacheEphemeral: true, maxTokens: 16000 },
+  support: { timeoutSeconds: 15, cacheEphemeral: false, maxTokens: 16000 },
+  project: { timeoutSeconds: 5, cacheEphemeral: false, maxTokens: 16000 },
 }
 
 export function maxTokensForWiredBot(botType: V30BotType): number {

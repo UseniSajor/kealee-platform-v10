@@ -67,13 +67,22 @@ export async function executeV30BotWithLlm(
       outputData: parsed ?? {
         raw: result.text.slice(0, 12_000),
         parseError: true,
+        truncated: result.truncated,
+        stopReason: result.stopReason,
         bot: def.displayName,
       },
       modelUsed: model,
       tokensUsed: tokens,
       costUSD: def.estimatedCostUsd,
       durationMs: Date.now() - started,
-      errorMessage: parsed ? undefined : `${def.displayName} JSON parse failed`,
+      // Name truncation for what it is. A response cut off at the token
+      // ceiling is not malformed JSON — reporting it as a parse failure sent
+      // us looking at the parser instead of at maxTokens.
+      errorMessage: parsed
+        ? undefined
+        : result.truncated
+          ? `${def.displayName} hit max_tokens (${maxTokensForV30Bot(input.botType)}) — response truncated, raise the bot's maxTokens`
+          : `${def.displayName} JSON parse failed`,
     }
   } catch (err: unknown) {
     return {
