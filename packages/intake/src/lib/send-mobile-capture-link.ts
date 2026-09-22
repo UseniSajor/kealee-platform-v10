@@ -35,6 +35,14 @@ export async function sendMobileCaptureLinkViaTwilio(
   const fromNumber = process.env.TWILIO_PHONE_NUMBER;
 
   if (!accountSid || !authToken || !fromNumber) {
+    // Reporting success here would tell the customer to check their phone for a
+    // text that was never sent, and write a capture_sms_log row that looks like
+    // a delivery. Outside development that has to fail loudly.
+    const missing = "TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_PHONE_NUMBER";
+    if (process.env.NODE_ENV === "production") {
+      console.error(`[sendMobileCaptureLink] Twilio not configured (${missing}) — SMS NOT sent`);
+      return { ok: false, error: `SMS is not configured on this environment (${missing})` };
+    }
     console.warn("[sendMobileCaptureLink] Twilio not configured — skipping SMS");
     return { ok: true, messageId: "mock_sms_not_configured" };
   }
