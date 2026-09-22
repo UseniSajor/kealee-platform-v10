@@ -9,6 +9,35 @@
 - Never remove permit/zoning from marketing copy, `conceptOutput.includes`, checkout, or portal “what’s included.”
 - Import deliverables from `@kealee/core-rules` — do not duplicate lists in apps.
 
+## Purchaser-facing order and standard (2026-09-22)
+
+Every concept package PDF (`packages/concept-engine/src/pdf/render-concept-pdf.ts`) is delivered in this order,
+whatever the tier; a tier that lacks a section says so on that page rather than skipping it:
+
+1. **Your project** — goals, property and budget (intake: description, priorities, budgetComfort, stylePreferences)
+2. **What exists today** — the customer's photographs, each labelled with what it shows and the viewpoint, and their
+   own account of the existing conditions (intake: `existingConditions`, `mustStay`, `problemsToSolve`, `uploadedFileMeta[].label/area/viewpoint`)
+3. **Concept directions** — every direction the design engine proposed, as clear alternatives (`conceptOutput.conceptDirections`)
+4. **Recommended design — and why** (`conceptOutput.recommendation.rationale`, cost range, next step)
+5. **Concept floor plan** — labelled and dimensioned
+6. **Exterior/interior views** — coordinated with the plan
+7. **Before and after** — matching viewpoint and geometry; an unmatched pair is flagged, not hidden
+8. **Materials palette** — labelled selections
+9. **Site and zoning snapshot** — every factual claim with its source and confidence, then the permit path
+
+Status stamps, on every section: **EXISTING** · **PROPOSED CONCEPT** · **REQUIRES VERIFICATION** ·
+**PROFESSIONALLY REVIEWED** (from the OS Architecture desk, `form_data.architectReview`) · **APPROVED BY CUSTOMER**
+(`conceptConfirmedAt`) · **NOT FOR PERMIT OR CONSTRUCTION** (footer on every page).
+
+Four tests a package must pass before it is called finished:
+- the floor plan, elevations and renderings match;
+- existing and proposed conditions cannot be confused;
+- every factual site or zoning claim identifies its source;
+- the customer can explain the recommendation, cost range and next step without architectural jargon.
+
+Visually impressive, technically coordinated, easy for a homeowner to understand, and completely honest about what
+remains preliminary.
+
 ## API
 
 | Function | Use |

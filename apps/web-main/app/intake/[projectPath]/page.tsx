@@ -457,6 +457,7 @@ export default function IntakePage() {
     priorities: prefill.priorities,
     mustStay: prefill.mustStay,
     problemsToSolve: prefill.problemsToSolve,
+    existingConditions: "",
     budgetComfort: prefill.budgetComfort,
     squareFootage: sqftFromUrl,
     timeline: prefill.timeline,
@@ -1231,6 +1232,7 @@ export default function IntakePage() {
             priorities: formData.priorities,
             mustStay: formData.mustStay,
             problemsToSolve: formData.problemsToSolve,
+            existingConditions: formData.existingConditions,
             budgetComfort: formData.budgetComfort,
             squareFootage: formData.squareFootage,
             timeline: formData.timeline,
@@ -1255,6 +1257,11 @@ export default function IntakePage() {
               name: f.name,
               url: f.url,
               type: f.type,
+              // What the photograph shows and from where — the package's existing-conditions
+              // page and its before/after pairs are built from these.
+              label: f.label ?? null,
+              area: f.area ?? null,
+              viewpoint: f.viewpoint ?? null,
             })),
             permitReadiness: isPermitIntake
               ? {
@@ -2298,6 +2305,27 @@ export default function IntakePage() {
 
                     <div>
                       <label className="block text-sm font-semibold text-slate-800 mb-1.5">
+                        What exists today?
+                      </label>
+                      <p className="text-xs text-slate-500 mb-2">
+                        Describe the space as it is now — layout, condition, what works and what doesn&apos;t. This becomes the &quot;what exists today&quot; page of your package, so existing and proposed are never confused.
+                      </p>
+                      <textarea
+                        value={formData.existingConditions}
+                        onChange={(e) =>
+                          setFormData((d) => ({
+                            ...d,
+                            existingConditions: e.target.value,
+                          }))
+                        }
+                        rows={3}
+                        className="w-full rounded-lg border border-slate-300 px-4 py-3 text-sm focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20 resize-none"
+                        placeholder="e.g. Galley kitchen, 1990s oak cabinets, one window on the north wall, load-bearing wall between kitchen and dining…"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-800 mb-1.5">
                         Budget comfort range
                       </label>
                       <select
@@ -2345,27 +2373,44 @@ export default function IntakePage() {
                   </p>
 
                   {uploadedFiles.length > 0 && (
-                    <div className="flex flex-wrap gap-2 mb-3">
+                    <div className="grid gap-2 mb-3">
                       {uploadedFiles.map((f, i) => (
                         <div
                           key={i}
-                          className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs text-slate-700"
+                          className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-700"
                         >
-                          <ImagePlus className="h-3.5 w-3.5 text-green-500 shrink-0" />
-                          <span className="max-w-[120px] truncate">
-                            {f.name}
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() =>
-                              setUploadedFiles((prev) =>
-                                prev.filter((_, j) => j !== i),
-                              )
-                            }
-                            className="ml-0.5 text-slate-400 hover:text-red-500 transition"
-                          >
-                            <X className="h-3 w-3" />
-                          </button>
+                          <div className="flex items-center gap-1.5">
+                            <ImagePlus className="h-3.5 w-3.5 text-green-500 shrink-0" />
+                            <span className="max-w-[160px] truncate">{f.name}</span>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setUploadedFiles((prev) =>
+                                  prev.filter((_, j) => j !== i),
+                                )
+                              }
+                              className="ml-auto text-slate-400 hover:text-red-500 transition"
+                              aria-label="Remove file"
+                            >
+                              <X className="h-3 w-3" />
+                            </button>
+                          </div>
+                          {f.type === "image" && (
+                            <div className="mt-1.5 grid gap-1.5 sm:grid-cols-2">
+                              <input
+                                value={f.label ?? ""}
+                                onChange={(e) => setUploadedFiles((prev) => prev.map((x, j) => (j === i ? { ...x, label: e.target.value } : x)))}
+                                placeholder="What it shows (e.g. kitchen, rear yard)"
+                                className="rounded border border-slate-300 bg-white px-2 py-1 text-xs"
+                              />
+                              <input
+                                value={f.viewpoint ?? ""}
+                                onChange={(e) => setUploadedFiles((prev) => prev.map((x, j) => (j === i ? { ...x, viewpoint: e.target.value } : x)))}
+                                placeholder="Taken from where, looking which way"
+                                className="rounded border border-slate-300 bg-white px-2 py-1 text-xs"
+                              />
+                            </div>
+                          )}
                         </div>
                       ))}
                     </div>

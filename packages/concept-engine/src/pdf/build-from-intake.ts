@@ -115,8 +115,64 @@ export function resolveHomeownerDeliverablesForPdf(
 
   const now = new Date().toISOString()
 
+  // ── The purchaser-facing sections ─────────────────────────────────────────
+  const fdStr = (k: string) => { const v = formData[k]; return typeof v === 'string' ? v.trim() : '' }
+  const fdList = (k: string) => { const v = formData[k]; return Array.isArray(v) ? (v as unknown[]).map(String).filter(Boolean) : fdStr(k) ? [fdStr(k)] : [] }
+  const uploaded = Array.isArray(formData.uploadedFileMeta) ? (formData.uploadedFileMeta as Array<Record<string, unknown>>) : []
+  const photos = uploaded
+    .filter((f) => typeof f.url === 'string' && /^https?:\/\//i.test(String(f.url)))
+    .map((f, i) => ({
+      url: String(f.url),
+      label: String(f.label ?? f.name ?? `Photo ${i + 1}`),
+      area: f.area != null ? String(f.area) : undefined,
+      viewpoint: f.viewpoint != null ? String(f.viewpoint) : undefined,
+      kind: (f.type === 'video' ? 'video' : f.type === 'document' ? 'document' : 'photo') as 'photo' | 'video' | 'document',
+    }))
+  const directionsRaw = Array.isArray(co.conceptDirections) ? (co.conceptDirections as Array<Record<string, unknown>>) : []
+  const conceptDirections = directionsRaw.map((c, i) => ({
+    id: String(c.id ?? `concept-${i + 1}`), name: String(c.name ?? `Concept ${i + 1}`), description: String(c.description ?? ''),
+    styleMatch: Number(c.styleMatch ?? 0), estimatedCost: Number(c.estimatedCost ?? 0),
+    materials: Array.isArray(c.materials) ? (c.materials as string[]) : [], keyFeatures: Array.isArray(c.keyFeatures) ? (c.keyFeatures as string[]) : [],
+    recommended: Boolean(c.recommended),
+  }))
+  const rec = asRecord(co.recommendation)
+  const recommendedDirection = conceptDirections.find((c) => c.recommended)
+  const paletteSource = Array.isArray(design?.colorPalette) ? (design!.colorPalette as string[]) : []
+  const materialsPalette = paletteSource.map((sel, i) => ({ item: bom[i] && asRecord(bom[i])?.item ? String(asRecord(bom[i])!.item) : `Selection ${i + 1}`, selection: String(sel) }))
+  const jurisdiction = asRecord(formData.jurisdictionData) ?? asRecord(co.jurisdictionData)
+  const zoneCode = String(jurisdiction?.zoneCode ?? jurisdiction?.zone ?? '')
+  const siteClaims: NonNullable<HomeownerDeliverables['siteZoning']>['claims'] = [
+    { claim: 'Property address', value: intake.project_address ?? '—', source: 'Customer intake', confidence: 'high', status: 'existing' },
+    ...(zoneCode ? [{ claim: 'Zoning district', value: zoneCode, source: String(jurisdiction?.source ?? 'County GIS (PGAtlas / jurisdiction lookup)'), confidence: 'high' as const, status: 'existing' as const }] : []),
+    { claim: 'Permit required', value: permitScope?.requiresPermit === false ? 'No (replace-in-kind expected)' : 'Yes — ' + likelyPermits.join(', '), source: jurisdiction ? String(jurisdiction.name ?? 'Jurisdiction fee schedule') : 'Kealee permit rules (Sec. by service type)', confidence: jurisdiction ? 'high' : 'medium', status: 'requires-verification' },
+    ...(zoningNotes ? [{ claim: 'Zoning notes', value: zoningNotes, source: 'Kealee zoning check', confidence: 'medium' as const, status: 'requires-verification' as const }] : []),
+    { claim: 'Estimated permit fee', value: estimatedPermitFee > 0 ? `$${estimatedPermitFee.toLocaleString()}` : 'Not yet established', source: jurisdiction ? String(jurisdiction.name ?? 'Jurisdiction fee schedule') : 'Kealee default range', confidence: jurisdiction ? 'medium' : 'low', status: 'requires-verification' },
+  ]
+  const architectReview = asRecord(formData.architectReview)
+  const customerConfirm = formData.conceptConfirmedAt ?? formData.v30ConceptConfirmedAt ?? null
+
   return {
-    version: '1.0',
+    version: '1.1',
+    existingConditions: {
+      summary: fdStr('existingConditions') || fdStr('propertyDetails') || 'Existing conditions as described and photographed by the customer at intake.',
+      mustStay: fdList('mustStay'),
+      problems: fdList('problemsToSolve'),
+      photos,
+    },
+    conceptDirections,
+    recommendation: {
+      conceptName: String(rec?.conceptName ?? recommendedDirection?.name ?? style),
+      rationale: Array.isArray(rec?.rationale) ? (rec!.rationale as string[]) : [],
+      costRange: [Math.round(estimatedCost * 0.85), Math.round(estimatedCost * 1.15)],
+      nextStep: 'Approve the recommended direction in your portal; permit drawings by a licensed professional follow.',
+    },
+    materialsPalette,
+    siteZoning: { claims: siteClaims, disclaimer: 'Site and zoning facts are preliminary and marked with their source and confidence. Items marked "requires verification" are confirmed by a licensed professional and the jurisdiction before permit drawings.' },
+    packageStatus: {
+      professionallyReviewed: architectReview ? { by: String(asRecord(architectReview.reviewer)?.displayName ?? 'architect'), state: String(architectReview.state ?? ''), at: String(architectReview.decidedAt ?? '') } : null,
+      approvedByCustomer: customerConfirm ? { at: String(customerConfirm) } : null,
+      generation: Number(formData.conceptGeneration ?? 0),
+    },
     generatedAt: String(co.generatedAt ?? now),
     client: {
       name: intake.client_name ?? 'Homeowner',
@@ -127,10 +183,10 @@ export function resolveHomeownerDeliverablesForPdf(
     },
     project: {
       path: intake.project_path,
-      budgetRange: intake.budget_range ?? '—',
-      stylePreferences: [style],
-      goals: [],
-      knownConstraints: [],
+      budgetRange: intake.budget_range ?? fdStr('budgetComfort') ?? '—',
+      stylePreferences: [...new Set([style, ...fdList('stylePreferences')])],
+      goals: [...fdList('description'), ...fdList('priorities')],
+      knownConstraints: [...fdList('mustStay'), ...fdList('problemsToSolve')],
       address: intake.project_address ?? undefined,
     },
     floorPlan: floorPlanBlock,

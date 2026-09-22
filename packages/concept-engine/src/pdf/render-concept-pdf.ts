@@ -56,6 +56,56 @@ function twoCol(doc: any, label: string, value: string): void {
   doc.fontSize(9).fillColor('#0f172a').font('Helvetica').text(value || '—')
 }
 
+// ── Status stamps and the standing footer ────────────────────────────────────
+//
+// The purchaser standard (docs/system/concept-package-deliverables.md): existing
+// and proposed conditions cannot be confused; every section says what it is.
+
+type Stamp = 'EXISTING' | 'PROPOSED CONCEPT' | 'REQUIRES VERIFICATION' | 'PROFESSIONALLY REVIEWED' | 'APPROVED BY CUSTOMER' | 'NOT FOR PERMIT OR CONSTRUCTION'
+const STAMP_COLOR: Record<Stamp, string> = {
+  'EXISTING': '#475569', 'PROPOSED CONCEPT': '#0f766e', 'REQUIRES VERIFICATION': '#b45309',
+  'PROFESSIONALLY REVIEWED': '#1d4ed8', 'APPROVED BY CUSTOMER': '#15803d', 'NOT FOR PERMIT OR CONSTRUCTION': '#b91c1c',
+}
+function stamp(doc: any, s: Stamp, x = 395, y?: number): void {
+  const yy = y ?? doc.y
+  const w = 150
+  doc.save()
+  doc.roundedRect(x, yy, w, 14, 3).lineWidth(0.8).strokeColor(STAMP_COLOR[s]).stroke()
+  doc.fontSize(6.5).fillColor(STAMP_COLOR[s]).font('Helvetica-Bold').text(s, x, yy + 3.5, { width: w, align: 'center', lineBreak: false })
+  doc.restore()
+}
+function sectionWithStamp(doc: any, title: string, stamps: Stamp[]): void {
+  doc.moveDown(0.5)
+  const y = doc.y
+  doc.fontSize(13).fillColor('#0f172a').font('Helvetica-Bold').text(title, 50, y, { width: 330 })
+  const titleBottom = doc.y   // a two-line title ends lower than the stamps do
+  stamps.slice(0, 2).forEach((st, i) => stamp(doc, st, 395, y + i * 16))
+  doc.y = Math.max(titleBottom, y + 16 * Math.max(1, stamps.length)) + 2
+  doc.x = 50   // the stamp moved the cursor to the right column; the body starts at the margin
+  drawHRule(doc)
+  doc.moveDown(0.25)
+  doc.fontSize(10).fillColor('#334155').font('Helvetica')
+}
+/** Every page: the package is preliminary. Drawn on pageAdded so no page is missed. */
+function standingFooter(doc: any, data: HomeownerDeliverables): void {
+  const status = data.packageStatus
+  const line = [
+    'PRELIMINARY CONCEPT — NOT FOR PERMIT OR CONSTRUCTION',
+    status?.professionallyReviewed ? `PROFESSIONALLY REVIEWED (${status.professionallyReviewed.state})` : 'NOT YET PROFESSIONALLY REVIEWED',
+    status?.approvedByCustomer ? 'APPROVED BY CUSTOMER' : 'AWAITING CUSTOMER APPROVAL',
+  ].join('   ·   ')
+  // Drawn inside the bottom margin: pdfkit would otherwise open a new page for
+  // text past the margin, fire pageAdded again, and recurse without end.
+  const bottom = doc.page.margins.bottom
+  doc.page.margins.bottom = 0
+  const y = doc.y
+  doc.save()
+  doc.fontSize(6.5).fillColor('#b91c1c').font('Helvetica-Bold').text(line, 50, doc.page.height - 34, { width: 495, align: 'center', lineBreak: false })
+  doc.restore()
+  doc.page.margins.bottom = bottom
+  doc.y = y
+}
+
 // ── Page 1: Cover ─────────────────────────────────────────────────────────────
 
 function drawCoverPage(doc: any, data: HomeownerDeliverables): void {
@@ -303,62 +353,129 @@ function drawPermitPage(doc: any, data: HomeownerDeliverables): void {
 
 // ── Page 6: Visual Direction ──────────────────────────────────────────────────
 
-function drawVisualsPage(doc: any, data: HomeownerDeliverables, assets: PdfVisualAsset[]): void {
-  sectionHeader(doc, 'Property Visuals')
+// ── Purchaser sections (docs/system/concept-package-deliverables.md) ────────
 
-  const visuals = data.visuals
-  if (!visuals) { doc.text('Property visuals not yet generated.'); return }
+function drawYourProjectPage(doc: any, data: HomeownerDeliverables): void {
+  sectionWithStamp(doc, '1. Your project — goals, property and budget', ['EXISTING'])
+  twoCol(doc, 'Property:', data.client.address || data.project.address || '—')
+  twoCol(doc, 'Project:', data.project.path.replace(/_/g, ' '))
+  twoCol(doc, 'Budget comfort:', data.project.budgetRange || '—')
+  if (data.project.timeline) twoCol(doc, 'Timeline:', data.project.timeline)
+  if (data.project.stylePreferences.length) twoCol(doc, 'Style preferences:', data.project.stylePreferences.join(', '))
+  doc.moveDown(0.5)
+  doc.fontSize(10).fillColor('#0f172a').font('Helvetica-Bold').text('Your goals, in your words')
+  doc.moveDown(0.2); doc.fontSize(9.5).fillColor('#334155').font('Helvetica')
+  for (const g of data.project.goals.length ? data.project.goals : ['(not stated at intake)']) doc.text(`• ${safeTruncate(g, 600)}`, { width: 495 })
+  if (data.project.knownConstraints.length) {
+    doc.moveDown(0.4); doc.fontSize(10).fillColor('#0f172a').font('Helvetica-Bold').text('What must stay / what must change')
+    doc.moveDown(0.2); doc.fontSize(9.5).fillColor('#334155').font('Helvetica')
+    for (const c of data.project.knownConstraints) doc.text(`• ${safeTruncate(c, 400)}`, { width: 495 })
+  }
+}
 
-  for (const asset of assets) {
-    if (doc.y > 430) {
-      doc.addPage()
-      sectionHeader(doc, 'Property Visuals (continued)')
-    }
-    doc.fontSize(10).fillColor('#0f172a').font('Helvetica-Bold').text(asset.label)
-    doc.moveDown(0.25)
-    const imageY = doc.y
-    doc.image(asset.buffer, 50, imageY, { fit: [495, 260], align: 'center', valign: 'center' })
-    doc.y = imageY + 270
-    doc.moveDown(0.4)
+function drawExistingPage(doc: any, data: HomeownerDeliverables, assets: PdfVisualAsset[]): void {
+  sectionWithStamp(doc, '2. What exists today — photographs and existing conditions', ['EXISTING'])
+  const ex = data.existingConditions
+  doc.fontSize(9.5).fillColor('#334155').font('Helvetica').text(ex?.summary ?? 'Existing conditions as photographed by the customer.', { width: 495 })
+  if (ex?.problems?.length) { doc.moveDown(0.3); doc.font('Helvetica-Bold').fillColor('#0f172a').text('Problems to solve'); doc.font('Helvetica').fillColor('#334155'); for (const p of ex.problems) doc.text(`• ${safeTruncate(p, 300)}`, { width: 495 }) }
+  if (ex?.mustStay?.length) { doc.moveDown(0.3); doc.font('Helvetica-Bold').fillColor('#0f172a').text('Must stay'); doc.font('Helvetica').fillColor('#334155'); for (const p of ex.mustStay) doc.text(`• ${safeTruncate(p, 300)}`, { width: 495 }) }
+  const photos = assets.filter(a => a.label.startsWith('Existing'))
+  if (!photos.length) { doc.moveDown(0.4); doc.fillColor('#b45309').text('No photographs were supplied at intake. Before/after views (section 7) cannot be matched to a viewpoint until they are.') }
+  for (const asset of photos) {
+    if (doc.y > 430) { doc.addPage(); sectionWithStamp(doc, '2. What exists today (continued)', ['EXISTING']) }
+    doc.fontSize(10).fillColor('#0f172a').font('Helvetica-Bold').text(asset.label); doc.moveDown(0.25)
+    const y = doc.y; doc.image(asset.buffer, 50, y, { fit: [495, 240], align: 'center', valign: 'center' }); doc.y = y + 250; doc.moveDown(0.3)
   }
+}
 
-  if (visuals.styleKeywords?.length) {
-    twoCol(doc, 'Style keywords:', visuals.styleKeywords.join(', '))
-  }
-  if (visuals.materialKeywords?.length) {
-    twoCol(doc, 'Material keywords:', visuals.materialKeywords.join(', '))
-  }
-  if (visuals.paletteSuggestion) {
-    twoCol(doc, 'Palette:', visuals.paletteSuggestion)
-  }
-  if (visuals.lightingDirection) {
-    twoCol(doc, 'Lighting:', visuals.lightingDirection)
-  }
-  if (visuals.cameraGuidance) {
-    twoCol(doc, 'Camera guidance:', visuals.cameraGuidance)
-  }
-
-  const writtenPrompts = (visuals.midjourneyPrompts ?? []).filter(value => !/^https?:\/\//i.test(value))
-  if (writtenPrompts.length) {
+function drawDirectionsPage(doc: any, data: HomeownerDeliverables): void {
+  sectionWithStamp(doc, '3. Concept directions — clear alternatives', ['PROPOSED CONCEPT'])
+  const dirs = data.conceptDirections ?? []
+  if (!dirs.length) { doc.text('One direction was developed for this package; see the recommended design.'); return }
+  dirs.forEach((d, i) => {
+    if (doc.y > 640) doc.addPage()
+    doc.fontSize(11).fillColor('#0f172a').font('Helvetica-Bold').text(`${String.fromCharCode(65 + i)}. ${d.name}${d.recommended ? '   ★ recommended' : ''}`)
+    doc.fontSize(9.5).fillColor('#334155').font('Helvetica').text(safeTruncate(d.description, 700), { width: 495 })
+    twoCol(doc, 'Fit to your preferences:', `${d.styleMatch}/100`)
+    twoCol(doc, 'Indicative cost:', d.estimatedCost ? `$${Math.round(d.estimatedCost * 0.85).toLocaleString()} – $${Math.round(d.estimatedCost * 1.15).toLocaleString()}` : '—')
+    if (d.keyFeatures.length) twoCol(doc, 'What sets it apart:', d.keyFeatures.slice(0, 4).join('; '))
+    if (d.materials.length) twoCol(doc, 'Materials:', d.materials.slice(0, 6).join(', '))
     doc.moveDown(0.5)
-    doc.fontSize(10).fillColor('#0f172a').font('Helvetica-Bold').text('AI Visual Prompts (Midjourney)')
-    doc.moveDown(0.25)
-    for (const prompt of writtenPrompts.slice(0, 4)) {
-      if (doc.y > 680) break
-      doc.rect(50, doc.y, 495, 1).fill('#e2e8f0')
-      doc.moveDown(0.15)
-      doc.fontSize(8).fillColor('#475569').font('Helvetica').text(safeTruncate(prompt, 280), { width: 495 })
-      doc.moveDown(0.25)
-    }
-  }
+  })
+}
 
-  if (visuals.consistencyNotes?.length) {
-    doc.moveDown(0.25)
-    sectionHeader(doc, 'Consistency Notes')
-    for (const note of visuals.consistencyNotes) {
-      doc.fontSize(9).fillColor('#334155').text(`• ${note}`)
-    }
+function drawRecommendedPage(doc: any, data: HomeownerDeliverables): void {
+  sectionWithStamp(doc, '4. Recommended design — and why', ['PROPOSED CONCEPT'])
+  const r = data.recommendation
+  doc.fontSize(12).fillColor('#0f172a').font('Helvetica-Bold').text(r?.conceptName ?? data.narrative.styleNarrative)
+  doc.moveDown(0.3); doc.fontSize(9.5).fillColor('#334155').font('Helvetica')
+  for (const line of r?.rationale?.length ? r.rationale : [data.narrative.designIntent || data.narrative.projectSummary]) doc.text(`• ${safeTruncate(line, 500)}`, { width: 495 })
+  doc.moveDown(0.4)
+  twoCol(doc, 'Cost range:', r ? `$${r.costRange[0].toLocaleString()} – $${r.costRange[1].toLocaleString()}` : data.scope.estimatedTotal ?? '—')
+  twoCol(doc, 'Next step:', r?.nextStep ?? data.narrative.nextSteps)
+  if (data.narrative.lifestyleAlignment) { doc.moveDown(0.3); doc.text(data.narrative.lifestyleAlignment, { width: 495 }) }
+}
+
+function drawViewsPage(doc: any, data: HomeownerDeliverables, assets: PdfVisualAsset[]): void {
+  sectionWithStamp(doc, '6. Exterior and interior views — coordinated with the plan', ['PROPOSED CONCEPT'])
+  const views = assets.filter(a => a.label.startsWith('Design concept'))
+  if (!views.length) { doc.text('Concept views are rendered after the recommended direction is confirmed.'); return }
+  for (const asset of views) {
+    if (doc.y > 430) { doc.addPage(); sectionWithStamp(doc, '6. Views (continued)', ['PROPOSED CONCEPT']) }
+    doc.fontSize(10).fillColor('#0f172a').font('Helvetica-Bold').text(`${asset.label} — coordinated with the concept floor plan`); doc.moveDown(0.25)
+    const y = doc.y; doc.image(asset.buffer, 50, y, { fit: [495, 260], align: 'center', valign: 'center' }); doc.y = y + 270; doc.moveDown(0.3)
   }
+  if (data.visuals?.consistencyNotes?.length) { doc.moveDown(0.2); doc.fontSize(9).fillColor('#334155'); for (const n of data.visuals.consistencyNotes) doc.text(`• ${n}`) }
+}
+
+function drawBeforeAfterPage(doc: any, data: HomeownerDeliverables, assets: PdfVisualAsset[]): void {
+  sectionWithStamp(doc, '7. Before and after — matching viewpoint and geometry', ['EXISTING', 'PROPOSED CONCEPT'])
+  const before = assets.filter(a => a.label.startsWith('Existing')), after = assets.filter(a => a.label.startsWith('Design concept'))
+  const pairs = Math.min(before.length, after.length)
+  if (!pairs) { doc.fontSize(9.5).fillColor('#b45309').text(before.length ? 'Concept views are not yet rendered from the existing viewpoints.' : 'No existing photograph was supplied to pair with a concept view. Add photographs in your portal and the before/after pairs are re-rendered from the same viewpoint.', { width: 495 }); return }
+  for (let i = 0; i < pairs; i++) {
+    if (doc.y > 520) doc.addPage()
+    const y = doc.y
+    doc.fontSize(9).fillColor('#475569').font('Helvetica-Bold').text('BEFORE — EXISTING', 50, y, { width: 240 })
+    doc.fontSize(9).fillColor('#0f766e').font('Helvetica-Bold').text('AFTER — PROPOSED CONCEPT', 305, y, { width: 240 })
+    doc.image(before[i].buffer, 50, y + 14, { fit: [240, 180] }); doc.image(after[i].buffer, 305, y + 14, { fit: [240, 180] })
+    doc.y = y + 200; doc.fontSize(8).fillColor('#64748b').font('Helvetica').text(`${before[i].label}  →  ${after[i].label}. Same viewpoint and geometry are required by the Kealee standard; a pair that does not match is flagged at review.`, 50, doc.y, { width: 495 })
+    doc.x = 50; doc.moveDown(0.6)
+  }
+  void data
+}
+
+function drawPalettePage(doc: any, data: HomeownerDeliverables): void {
+  sectionWithStamp(doc, '8. Materials palette — labeled selections', ['PROPOSED CONCEPT'])
+  const items = data.materialsPalette ?? []
+  if (!items.length) { doc.text(data.narrative.materialDirection || 'Material selections follow confirmation of the recommended direction.', { width: 495 }); return }
+  for (const it of items) { twoCol(doc, `${it.item}:`, it.selection + (it.note ? ` — ${it.note}` : '')) }
+  if (data.visuals?.paletteSuggestion) { doc.moveDown(0.3); twoCol(doc, 'Palette:', data.visuals.paletteSuggestion) }
+}
+
+function drawSiteZoningPage(doc: any, data: HomeownerDeliverables): void {
+  sectionWithStamp(doc, '9. Site and zoning snapshot — sources and confidence', ['REQUIRES VERIFICATION'])
+  const sz = data.siteZoning
+  if (!sz) { drawPermitPage(doc, data); return }
+  doc.fontSize(8).fillColor('#64748b').font('Helvetica-Bold')
+  const cols = [50, 160, 320, 430, 490]
+  const y0 = doc.y
+  ;['Claim', 'Value', 'Source', 'Confidence', 'Status'].forEach((h, i) => doc.text(h, cols[i], y0, { width: (cols[i + 1] ?? 545) - cols[i] - 4, lineBreak: false }))
+  doc.y = y0 + 12; drawHRule(doc); doc.moveDown(0.2)
+  for (const c of sz.claims) {
+    if (doc.y > 700) doc.addPage()
+    const y = doc.y
+    doc.fontSize(8.5).fillColor('#0f172a').font('Helvetica').text(c.claim, cols[0], y, { width: 106 })
+    const h1 = doc.y
+    doc.text(safeTruncate(c.value, 160), cols[1], y, { width: 156 }); const h2 = doc.y
+    doc.text(safeTruncate(c.source, 90), cols[2], y, { width: 106 }); const h3 = doc.y
+    doc.text(c.confidence, cols[3], y, { width: 56 })
+    doc.fillColor(c.status === 'existing' ? '#475569' : c.status === 'proposed' ? '#0f766e' : '#b45309').text(c.status.replace('-', ' '), cols[4], y, { width: 55 })
+    doc.y = Math.max(h1, h2, h3, y + 12) + 3
+  }
+  doc.moveDown(0.4); doc.fontSize(8.5).fillColor('#475569').font('Helvetica').text(sz.disclaimer, 50, doc.y, { width: 495 })
+  doc.x = 50; doc.moveDown(0.6)
+  drawPermitPage(doc, data)
 }
 
 // ── Page 7: Next Steps ────────────────────────────────────────────────────────
@@ -401,10 +518,14 @@ export async function renderConceptPdf(input: ConceptPdfInput): Promise<ConceptP
   const PDFDocument = (await import('pdfkit' as any)).default ?? (await import('pdfkit' as any))
 
   const visuals = input.homeownerDeliverables.visuals
+  const existingPhotos = (input.homeownerDeliverables.existingConditions?.photos ?? []).filter(p => p.kind === 'photo')
   const visualSources = [
-    ...(visuals?.stableDiffusionPrompts ?? []).filter(value => /^https?:\/\//i.test(value)).map(url => ({ label: 'Existing condition — customer source', url })),
+    // Existing: the customer's own photographs (labelled, with viewpoint when given), else the legacy before-URLs
+    ...(existingPhotos.length
+      ? existingPhotos.map(p => ({ label: `Existing — ${p.area ? `${p.area}: ` : ''}${p.label}${p.viewpoint ? ` (viewpoint: ${p.viewpoint})` : ''}`, url: p.url }))
+      : (visuals?.stableDiffusionPrompts ?? []).filter(value => /^https?:\/\//i.test(value)).map(url => ({ label: 'Existing condition — customer source', url }))),
     ...(visuals?.midjourneyPrompts ?? []).filter(value => /^https?:\/\//i.test(value)).map((url, index) => ({ label: `Design concept ${index + 1}`, url })),
-  ].slice(0, 6)
+  ].slice(0, 12)
   const loadedVisualAssets = await Promise.all(visualSources.map(async source => {
     try {
       const response = await fetch(source.url)
@@ -436,33 +557,25 @@ export async function renderConceptPdf(input: ConceptPdfInput): Promise<ConceptP
     doc.on('error', reject)
 
     const d = input.homeownerDeliverables
+    doc.on('pageAdded', () => standingFooter(doc, d))
 
-    // Page 1: Cover
-    drawCoverPage(doc, d)
-
-    // Page 2: Floor Plan
-    doc.addPage()
-    drawFloorPlanPage(doc, d)
-
-    // Page 3: Narrative
-    doc.addPage()
-    drawNarrativePage(doc, d)
-
-    // Page 4: Scope
-    doc.addPage()
-    drawScopePage(doc, d)
-
-    // Page 5: Permit
-    doc.addPage()
-    drawPermitPage(doc, d)
-
-    // Page 6: Visuals
-    doc.addPage()
-    drawVisualsPage(doc, d, visualAssets)
-
-    // Page 7: Next Steps
-    doc.addPage()
-    drawNextStepsPage(doc, d)
+    // The purchaser order (docs/system/concept-package-deliverables.md):
+    //  cover · 1 your project · 2 what exists today · 3 concept directions · 4 recommended design
+    //  · 5 concept floor plan · 6 views · 7 before/after · 8 materials palette · 9 site & zoning
+    //  · scope & cost · next steps. Every page carries the preliminary footer.
+    drawCoverPage(doc, d); standingFooter(doc, d)
+    doc.addPage(); drawYourProjectPage(doc, d)
+    doc.addPage(); drawExistingPage(doc, d, visualAssets)
+    doc.addPage(); drawDirectionsPage(doc, d)
+    doc.addPage(); drawRecommendedPage(doc, d)
+    doc.addPage(); sectionWithStamp(doc, '5. Concept floor plan — labeled and dimensioned', ['PROPOSED CONCEPT']); drawFloorPlanPage(doc, d)
+    doc.addPage(); drawViewsPage(doc, d, visualAssets)
+    doc.addPage(); drawBeforeAfterPage(doc, d, visualAssets)
+    doc.addPage(); drawPalettePage(doc, d)
+    doc.addPage(); drawSiteZoningPage(doc, d)
+    doc.addPage(); sectionWithStamp(doc, 'Scope and cost range', ['PROPOSED CONCEPT', 'REQUIRES VERIFICATION']); drawScopePage(doc, d)
+    doc.addPage(); drawNarrativePage(doc, d)
+    doc.addPage(); drawNextStepsPage(doc, d)
 
     doc.end()
   })

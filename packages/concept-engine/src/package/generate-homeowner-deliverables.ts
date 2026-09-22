@@ -103,6 +103,44 @@ export interface HomeownerDeliverables {
     architectUpsell:     string;
     actionItems:         string[];
   };
+
+  // ── The purchaser-facing package (docs/system/concept-package-deliverables.md) ──
+  // Optional so packages generated before 2026-09-22 still render; the PDF
+  // follows the purchaser order whenever these are present.
+
+  /** 2. What exists today — the customer's photographs and their own account of the existing conditions. */
+  existingConditions?: {
+    summary:     string;
+    mustStay:    string[];
+    problems:    string[];
+    photos: Array<{ url: string; label: string; area?: string; viewpoint?: string; kind: 'photo' | 'video' | 'document' }>;
+  };
+  /** 3. Three (or more) concept directions — clear alternatives; one is flagged recommended. */
+  conceptDirections?: Array<{
+    id:            string;
+    name:          string;
+    description:   string;
+    styleMatch:    number;
+    estimatedCost: number;
+    materials:     string[];
+    keyFeatures:   string[];
+    recommended:   boolean;
+  }>;
+  /** 4. Why the recommended direction is recommended, in the customer's terms. */
+  recommendation?: { conceptName: string; rationale: string[]; costRange: [number, number]; nextStep: string };
+  /** 8. Materials palette — labeled selections. */
+  materialsPalette?: Array<{ item: string; selection: string; note?: string }>;
+  /** 9. Site and zoning snapshot — every factual claim names its source and confidence. */
+  siteZoning?: {
+    claims: Array<{ claim: string; value: string; source: string; confidence: 'verified' | 'high' | 'medium' | 'low'; status: 'existing' | 'proposed' | 'requires-verification' }>;
+    disclaimer: string;
+  };
+  /** Status of the package as a whole — printed as stamps. */
+  packageStatus?: {
+    professionallyReviewed: { by: string; state: string; at: string } | null;
+    approvedByCustomer:     { at: string } | null;
+    generation:             number;
+  };
 }
 
 export function assembleHomeownerDeliverables(opts: {

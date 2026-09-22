@@ -39,6 +39,26 @@ export interface MappedConceptOutput {
   zoningNotes: string
   buildabilityFlag: 'feasible' | 'feasible-with-variance' | 'challenging'
   readinessScore: number
+  /**
+   * Every direction the design engine proposed, not only the winner — the
+   * purchaser is shown clear alternatives and told which one is recommended
+   * and why (concept-package standard, docs/system/concept-package-deliverables.md).
+   */
+  conceptDirections: Array<{
+    id: string
+    name: string
+    description: string
+    styleMatch: number
+    estimatedCost: number
+    materials: string[]
+    keyFeatures: string[]
+    recommended: boolean
+  }>
+  recommendation: {
+    conceptId: string
+    conceptName: string
+    rationale: string[]
+  }
 }
 
 /**
@@ -86,7 +106,18 @@ export function mapDesignOutputToConceptOutput(
     },
   ]
 
+  const conceptDirections = output.concepts.map((c) => ({
+    id: c.id, name: c.name, description: c.description, styleMatch: c.styleMatch, estimatedCost: c.estimatedCost,
+    materials: (c.materials ?? []).filter(Boolean), keyFeatures: (c.uniqueFeatures ?? []).filter(Boolean), recommended: c.id === best.id,
+  }))
+  const rationale = [
+    `Highest fit to your stated preferences (${best.styleMatch}/100)${output.concepts.length > 1 ? ` of ${output.concepts.length} directions` : ''}.`,
+    ...((output.recommendations ?? []).filter(Boolean)),
+  ]
+
   return {
+    conceptDirections,
+    recommendation: { conceptId: best.id, conceptName: best.name, rationale },
     designConcept: {
       style: best.name,
       colorPalette: materials.slice(0, 4),

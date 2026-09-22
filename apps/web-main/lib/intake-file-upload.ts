@@ -2,7 +2,12 @@ import { resolveIntakeFileType } from './intake-file-types'
 
 export type IntakeUploadedKind = 'image' | 'video' | 'document' | 'voice'
 
-export type IntakeUploadedFile = { name: string; url: string; type: IntakeUploadedKind }
+/**
+ * `label` and `viewpoint` are what make a photograph usable as an "existing
+ * condition" in the concept package: the package pairs each before-view with a
+ * concept view from the same viewpoint, and it cannot do that from a filename.
+ */
+export type IntakeUploadedFile = { name: string; url: string; type: IntakeUploadedKind; label?: string; area?: string; viewpoint?: string }
 
 export function classifyIntakeFileType(file: File): IntakeUploadedKind {
   const type = resolveIntakeFileType(file)
