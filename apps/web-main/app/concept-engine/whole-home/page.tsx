@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { ArrowRight, ArrowLeft, CheckCircle, Layers, Home, Layout, Hammer, Clock } from 'lucide-react'
+import { CONCEPT_WHOLE_HOME_FROM } from '@/lib/marketing/price-copy'
 
 const STEPS = [
   {
@@ -88,7 +89,7 @@ export default function WholeHomeConceptEnginePage() {
               </p>
               <div className="mt-8 flex flex-wrap gap-4">
                 <Link
-                  href="/intake/whole_home_concept"
+                  href="/intake/whole_home_concept?tier=1"
                   className="inline-flex items-center gap-2 rounded-xl px-7 py-3.5 text-base font-semibold transition-opacity hover:opacity-90"
                   style={{ backgroundColor: '#1A2B4A', color: 'white' }}
                 >
@@ -118,7 +119,7 @@ export default function WholeHomeConceptEnginePage() {
                 </ul>
                 <div className="mt-6 border-t border-white/10 pt-4 flex items-baseline justify-between">
                   <span className="text-sm text-white/50">Starting at</span>
-                  <span className="text-3xl font-bold text-white">$585</span>
+                  <span className="text-3xl font-bold text-white">{CONCEPT_WHOLE_HOME_FROM}</span>
                 </div>
               </div>
             </div>
@@ -139,36 +140,36 @@ export default function WholeHomeConceptEnginePage() {
           <div className="mt-12 grid gap-6 lg:grid-cols-3">
             {([
               {
-                name: 'AI Whole Home Concept',
-                price: '$585',
+                name: 'Basic Whole Home Concept',
+                price: '$249',
                 rounds: '1 feedback round',
                 turnaround: '7–10 business days',
                 desc: 'Floor plan direction, scope summary, material palette, and rough cost range.',
                 items: ['3 whole-home concept options', 'Floor plan reconfiguration', 'Scope + structural summary', 'Material palette direction', '30-min consultation'],
                 cta: 'Start My Whole Home Concept',
-                href: '/intake/whole_home_concept',
+                href: '/intake/whole_home_concept?tier=1',
                 popular: false,
               },
               {
-                name: 'Advanced Whole Home Design',
-                price: '$1,200',
+                name: 'Premium Whole Home Concept',
+                price: '$899',
                 rounds: 'Up to 3 feedback rounds',
                 turnaround: '2–3 weeks',
                 desc: '3D views, detailed floor plans, and a full contractor-ready scope package.',
                 items: ['Everything in design concept', 'Detailed 3D floor plan views', 'Room-by-room finish direction', 'MEP systems summary', '60-min consultation'],
                 cta: 'Start Advanced Design',
-                href: '/intake/whole_home_concept',
+                href: '/intake/whole_home_concept?tier=2',
                 popular: true,
               },
               {
-                name: 'Full Design Package',
-                price: 'From $6,500',
-                rounds: 'Up to 5 rounds',
-                turnaround: '4–6 weeks',
-                desc: 'Permit-ready drawing set with structural coordination and full project specifications.',
-                items: ['Everything in Advanced', 'Permit-ready drawing set', 'Structural coordination', 'Full specification package', 'Contractor bid documents'],
-                cta: 'Contact Us',
-                href: '/contact',
+                name: 'Premium+ Whole Home Concept',
+                price: '$1,699',
+                rounds: 'Up to 3 feedback rounds',
+                turnaround: '4–6 business days',
+                desc: 'The most complete concept package with 12 views, a floor plan, video formats, and a Kealee call.',
+                items: ['Everything in Premium', '12 detailed project views', 'Floor plan and CAD file', 'Four video formats', '15-minute Kealee consultation'],
+                cta: 'Start Premium+',
+                href: '/intake/whole_home_concept?tier=3',
                 popular: false,
               },
             ] as const).map((tier) => (
@@ -274,7 +275,7 @@ export default function WholeHomeConceptEnginePage() {
           <p className="mt-4 text-gray-300">Start your intake. Delivered in 5–7 business days with consultation included.</p>
           <div className="mt-8 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
             <Link
-              href="/intake/whole_home_concept"
+              href="/intake/whole_home_concept?tier=1"
               className="inline-flex items-center gap-2 rounded-xl px-7 py-3.5 text-base font-semibold text-white transition-opacity hover:opacity-90"
               style={{ backgroundColor: '#E8793A' }}
             >

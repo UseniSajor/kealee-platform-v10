@@ -19,6 +19,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Lock, ArrowRight, CheckCircle2, Loader2 } from 'lucide-react'
+import { CONCEPT_FROM } from '@/lib/marketing/price-copy'
 
 interface GateResult {
   allowed: boolean
@@ -59,7 +60,7 @@ export default function ConsultationGate({ email, userId, intakeId, hasPlans, ch
           allowed: false,
           reason: 'Gate check failed',
           upgradeUrl: '/intake/concept',
-          upgradePrice: '$149',
+          upgradePrice: CONCEPT_FROM,
           upgradeProduct: 'concept',
         })
       } finally {
@@ -115,7 +116,7 @@ export default function ConsultationGate({ email, userId, intakeId, hasPlans, ch
 
       <ul className="space-y-2.5 mb-6">
         {[
-          'Concept Package purchased ($149)',
+          `Concept Package purchased (from ${CONCEPT_FROM})`,
           'Professional Drawings package purchased',
           'Permit Package purchased',
           'Approved architect drawings uploaded',

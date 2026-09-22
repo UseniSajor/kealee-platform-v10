@@ -112,7 +112,8 @@ export const HOME_JOURNEY_SERVICES: HomeJourneyService[] = [
     subtitle: 'Step 5 · Bids & contractor selection',
     description: 'Match the approved scope with qualified contractors and compare responses on the same basis.',
     outcome: 'A structured match, comparable bids, contractor credentials, and a clear selection record.',
-    priceHint: '$199 match service', deliveryHint: 'Begins after permit readiness is verified',
+    // Contractor matching is free — Kealee is paid by the build engagement.
+    priceHint: 'Free', deliveryHint: 'Begins after permit readiness is verified',
     ctaText: 'Start Contractor Match', ctaLink: '/intake/contractor_match',
     gradientFrom: '#2c7a53', gradientTo: '#52a66e', mediaType: 'video',
     photoSrc: '/media/service-photos/home-build.jpg', photoAlt: 'Qualified residential construction team on site',

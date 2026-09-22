@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation'
 import { ArrowRight, Home, Leaf, Layers, PaintBucket, Building2, Users, CheckCircle } from 'lucide-react'
 import { getPublicCatalogProduct } from '@kealee/core-rules'
 import { PreconstructionSuiteSection } from '@/components/home/PreconstructionSuiteSection'
+import { CONCEPT_FROM } from '@/lib/marketing/price-copy'
 
 export const metadata: Metadata = {
   title: 'Get Started — Kealee',
@@ -35,7 +36,7 @@ const CONCEPT_PATHS = [
     title:       'Whole Home Renovation',
     description: 'Full home transformation — floor plans, structure, systems, every room.',
     href:        '/intake/whole_home_concept',
-    price:       'From $585',
+    price:       `From ${CONCEPT_FROM}`,
   },
   {
     icon:        PaintBucket,
@@ -51,7 +52,7 @@ const CONCEPT_PATHS = [
     title:       'Developer / Investor',
     description: 'Commercial, mixed-use, or multifamily project concept and feasibility.',
     href:        '/intake/developer_concept',
-    price:       'From $585',
+    price:       `From ${CONCEPT_FROM}`,
   },
 ]
 

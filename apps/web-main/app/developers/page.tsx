@@ -6,6 +6,7 @@ import { RoleBenefits } from '@/components/roles/RoleBenefits'
 import { RoleWorkflow } from '@/components/roles/RoleWorkflow'
 import { RoleCTA } from '@/components/roles/RoleCTA'
 import { RoleFAQ } from '@/components/roles/RoleFAQ'
+import { CONCEPT_DEVELOPER_FROM } from '@/lib/marketing/price-copy'
 
 export const metadata: Metadata = {
   title: 'For Real Estate Developers — Kealee',
@@ -198,7 +199,7 @@ export default function DevelopersPage() {
               },
               {
                 name: 'Commercial Permit Coordination',
-                price: 'Starting at $2,499',
+                price: `Starting at ${CONCEPT_DEVELOPER_FROM}`,
                 desc: 'Retail, office, industrial, or mixed-use. Fire, accessibility, zoning, and building permits coordinated in parallel.',
                 color: '#E8793A',
               },

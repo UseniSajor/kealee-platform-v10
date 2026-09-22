@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import { ArrowLeft, ArrowRight, CheckCircle, Star } from 'lucide-react'
 import { useState } from 'react'
+import { SITE_PLAN_FROM } from '@/lib/marketing/price-copy'
 
 // ---------------------------------------------------------------------------
 // Config
@@ -38,7 +39,7 @@ const TIERS = [
     key: 'starter',
     label: 'Starter',
     price: 149,
-    priceLabel: '$149',
+    priceLabel: SITE_PLAN_FROM,
     tagline: 'Fast concept clarity',
     description: 'AI-generated concept visuals + design direction brief. Ideal for early-stage homeowners who want to see possibilities.',
     includes: [

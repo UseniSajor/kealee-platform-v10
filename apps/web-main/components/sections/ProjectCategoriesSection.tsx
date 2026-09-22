@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
+import { CONCEPT_FROM } from '@/lib/marketing/price-copy'
 
 const CATEGORIES = [
   {
@@ -13,7 +14,7 @@ const CATEGORIES = [
   },
   {
     title: 'Permit Path Only',
-    price: '$149',
+    price: CONCEPT_FROM,
     desc: 'Already have your drawings? Our AI reviews your documents, flags potential issues, and handles jurisdiction filing for you.',
     img: 'https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=800&q=80',
     cta: 'File permits',

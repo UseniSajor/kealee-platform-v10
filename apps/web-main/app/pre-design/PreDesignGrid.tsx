@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { ArrowRight, Home, Layers, Leaf } from 'lucide-react'
+import { SITE_PLAN_FROM } from '@/lib/marketing/price-copy'
 
 const TYPES = [
   {
@@ -10,7 +11,7 @@ const TYPES = [
     color: '#E8793A',
     title: 'Exterior Facade',
     description: 'Curb appeal, siding, windows, doors, roofline, and landscaping. Full exterior transformation.',
-    from: '$149',
+    from: SITE_PLAN_FROM,
     badge: null,
   },
   {
@@ -19,7 +20,7 @@ const TYPES = [
     color: '#7C3AED',
     title: 'Interior Addition',
     description: 'Kitchen, bath, room addition, ADU, or full interior redesign. Every room, every detail.',
-    from: '$149',
+    from: SITE_PLAN_FROM,
     badge: 'Popular',
   },
   {
@@ -28,7 +29,7 @@ const TYPES = [
     color: '#38A169',
     title: 'Landscape & Outdoor',
     description: 'Garden design, hardscape, outdoor living, irrigation, and backyard farming.',
-    from: '$149',
+    from: SITE_PLAN_FROM,
     badge: null,
   },
 ]

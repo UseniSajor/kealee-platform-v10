@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { ESTIMATE_FROM } from '@/lib/marketing/price-copy'
 
 const DELIVERABLES = [
   {
@@ -77,7 +78,7 @@ export default function BundlePage() {
           </p>
           <div className="inline-flex items-baseline gap-2">
             <span className="text-5xl font-bold text-gray-900">$10</span>
-            <span className="text-gray-400 text-lg line-through">$249</span>
+            <span className="text-gray-400 text-lg line-through">{ESTIMATE_FROM}</span>
             <span className="text-sm text-green-600 font-medium">Launch price</span>
           </div>
         </div>

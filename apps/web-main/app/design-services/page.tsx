@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { ArrowRight, CheckCircle, Pencil, FileText, Layers, Info } from 'lucide-react'
+import { DRAWINGS_FROM, DRAWINGS_RANGE, DRAWINGS_TO } from '@/lib/marketing/price-copy'
 
 export const metadata: Metadata = {
   title: 'Design Services — Permit-Ready Plans from Licensed Designers | Kealee',
@@ -31,14 +32,14 @@ const COMPARISON = [
   {
     feature: 'Typical cost',
     concept: 'From $395',
-    design: 'From $1,200 (Starter) through $6,500+ (Full Pre-Design)',
+    design: `Permit-ready drawings ${DRAWINGS_RANGE}, scoped after the property review`,
   },
 ]
 
 const PACKAGES = [
   {
     name: 'Design Starter',
-    price: 'From $1,200',
+    price: `From ${DRAWINGS_FROM}`,
     env: 'STRIPE_PRICE_DESIGN_STARTER',
     turnaround: '10–14 business days',
     description: 'Schematic design drawings suitable for contractor bidding and basic permit pre-check. Covers layout, dimensions, and basic elevations.',
@@ -71,7 +72,7 @@ const PACKAGES = [
   },
   {
     name: 'Full Pre-Design Package',
-    price: 'From $6,500',
+    price: `Up to ${DRAWINGS_TO}`,
     env: 'STRIPE_PRICE_DESIGN_PREDESIGN',
     turnaround: '3–5 weeks',
     description: 'Complete pre-design package with permit-ready drawings, structural coordination, MEP direction, and full contractor bid documents.',
@@ -253,7 +254,7 @@ export default function DesignServicesPage() {
           <div className="flex flex-col sm:flex-row items-center gap-4">
             {[
               { step: '1', label: 'design concept', sub: 'From $395', color: '#E8793A', href: '/concept' },
-              { step: '2', label: 'Design Services', sub: 'From $1,200', color: '#2ABFBF', href: '/pre-design' },
+              { step: '2', label: 'Design Services', sub: `From ${DRAWINGS_FROM}`, color: '#2ABFBF', href: '/pre-design' },
               { step: '3', label: 'Permit Submission', sub: 'From $595', color: '#38A169', href: '/permits' },
               { step: '4', label: 'Contractor Match', sub: 'Free matching', color: '#7C3AED', href: '/marketplace' },
             ].map((item, i) => (

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { ArrowRight, Home, Leaf, Layers, PaintBucket, Building2 } from 'lucide-react'
+import { CONCEPT_DEVELOPER_FROM, CONCEPT_FROM } from '@/lib/marketing/price-copy'
 
 export const metadata: Metadata = {
   title: 'design concept Engine — Kealee',
@@ -31,7 +32,7 @@ const PATHS = [
     title:       'Whole Home Renovation',
     description: 'Full property transformation — floor plans, structural changes, systems, and every room redesigned.',
     href:        '/intake/whole_home_concept',
-    price:       'From $585 · Consultation included',
+    price:       `From ${CONCEPT_FROM} · Consultation included`,
   },
   {
     icon:        PaintBucket,
@@ -47,7 +48,7 @@ const PATHS = [
     title:       'Developer / Investor',
     description: 'Commercial, mixed-use, or multifamily. Business-grade concept with feasibility and entitlement brief.',
     href:        '/intake/developer_concept',
-    price:       'From $585 · Feasibility add-ons available',
+    price:       `From ${CONCEPT_DEVELOPER_FROM} · Feasibility add-ons available`,
   },
 ]
 

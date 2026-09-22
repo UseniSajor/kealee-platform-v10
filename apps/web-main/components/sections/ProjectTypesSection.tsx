@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { CONCEPT_FROM } from '@/lib/marketing/price-copy'
 
 export default function ProjectTypesSection() {
   return (
@@ -68,7 +69,7 @@ export default function ProjectTypesSection() {
             <img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=60&auto=format&fit=crop" alt="Exterior" />
           </div>
           <div className="pto" />
-          <span className="ptpr">from $149</span>
+          <span className="ptpr">from {CONCEPT_FROM}</span>
           <div className="ptb"><div className="ptpre">Quick permit turnaround</div><h3>Exterior renovation</h3><p>Deck · Siding · Roofing · Windows</p></div>
         </Link>
         {/* Landscape */}

@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { CONCEPT_FROM } from '@/lib/marketing/price-copy'
 
 export default function MoreProductsSection() {
   return (
@@ -31,7 +32,7 @@ export default function MoreProductsSection() {
               <div className="fclbl">Exterior services</div>
               <h4>Exterior renovation</h4>
               <p>Deck, siding, roofing, windows — permit filing from $149 included in most exterior scopes.</p>
-              <div className="fcp">from $149 <small>permit filing</small></div>
+              <div className="fcp">from {CONCEPT_FROM} <small>permit filing</small></div>
             </div>
           </Link>
           <Link href="/products/basement" className="fc">

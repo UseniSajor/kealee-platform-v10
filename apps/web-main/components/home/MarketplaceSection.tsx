@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { ArrowRight, Shield, Sparkles } from 'lucide-react'
+import { CONCEPT_START_PRICE, formatPrice } from '@/lib/marketing/pricing'
 import { Container } from '@/components/ui/Container'
 import { Heading } from '@/components/ui/Heading'
 
@@ -46,11 +47,11 @@ export function MarketplaceSection() {
                 <p className="text-sm font-semibold" style={{ color: '#1E293B' }}>Start with an design concept Design</p>
                 <p className="mt-0.5 text-xs text-gray-500">Get a property-specific design concept, then match to a vetted contractor — all in one platform.</p>
                 <Link
-                  href="/concept-engine"
+                  href="/products/concept"
                   className="mt-2 inline-flex items-center gap-1 text-xs font-semibold hover:underline"
                   style={{ color: '#E8793A' }}
                 >
-                  Start design concept — From $395 <ArrowRight className="h-3 w-3" />
+                  Start design concept — From {formatPrice(CONCEPT_START_PRICE)} <ArrowRight className="h-3 w-3" />
                 </Link>
               </div>
             </div>

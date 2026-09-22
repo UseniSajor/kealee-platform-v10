@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { AlertCircle, ArrowRight, Lightbulb, Zap, DollarSign } from 'lucide-react'
+import { CONCEPT_FROM, SITE_PLAN_FROM } from '@/lib/marketing/price-copy'
 
 interface FallbackOutputProps {
   projectId?: string
@@ -74,7 +75,7 @@ export function FallbackOutput({ projectId, projectType, failureReason }: Fallba
                 </p>
               </div>
               <div className="flex items-center gap-2 text-green-600 font-medium text-sm">
-                From $199 <ArrowRight className="w-4 h-4" />
+                From {CONCEPT_FROM} <ArrowRight className="w-4 h-4" />
               </div>
             </div>
           </Link>
@@ -95,7 +96,7 @@ export function FallbackOutput({ projectId, projectType, failureReason }: Fallba
                 </p>
               </div>
               <div className="flex items-center gap-2 text-purple-600 font-medium text-sm">
-                $149 <ArrowRight className="w-4 h-4" />
+                {SITE_PLAN_FROM} <ArrowRight className="w-4 h-4" />
               </div>
             </div>
           </Link>

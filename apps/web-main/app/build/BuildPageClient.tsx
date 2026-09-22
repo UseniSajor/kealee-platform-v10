@@ -7,6 +7,7 @@ import {
   HardHat, PenTool, FileCheck, Users, Zap, Building2,
   ClipboardList, Camera, AlertTriangle, ChevronRight,
 } from 'lucide-react'
+import { CONCEPT_FROM, DRAWINGS_FROM } from '@/lib/marketing/price-copy'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -18,7 +19,7 @@ const JOURNEY_STEPS = [
   {
     n: '01',
     label: 'design concept',
-    price: 'From $149',
+    price: `From ${CONCEPT_FROM}`,
     time: '3–5 days',
     stage: 'none' as BuildStage,
     icon: Zap,
@@ -30,7 +31,7 @@ const JOURNEY_STEPS = [
   {
     n: '02',
     label: 'Professional Drawings',
-    price: 'From $2,499',
+    price: `From ${DRAWINGS_FROM}`,
     time: '7–14 days',
     stage: 'has_concept' as BuildStage,
     icon: PenTool,
@@ -42,7 +43,7 @@ const JOURNEY_STEPS = [
   {
     n: '03',
     label: 'Permit Filing',
-    price: 'From $149',
+    price: `From ${CONCEPT_FROM}`,
     time: 'Jurisdiction-dependent',
     stage: 'has_drawings' as BuildStage,
     icon: FileCheck,

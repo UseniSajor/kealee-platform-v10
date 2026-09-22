@@ -1,9 +1,10 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { ArrowRight, CheckCircle, Clock, FileText, Eye, MapPin, Layers, Route, Ruler, Package, Video } from 'lucide-react'
+import { CONCEPT_FROM } from '@/lib/marketing/price-copy'
 
 export const metadata: Metadata = {
-  title: 'Concept Design Package — $585 | Kealee',
+  title: 'Concept Design Package | Kealee',
   description:
     'A structured, property-specific design concept that gives you clear visual direction, layout thinking, and a defined path toward permitting and construction. Delivered by Kealee.',
 }
@@ -140,7 +141,7 @@ export default function ConceptPackagePage() {
             Concept Design Package
           </h1>
           <p className="mt-5 text-xl font-semibold" style={{ color: '#E8793A' }}>
-            $585
+            {CONCEPT_FROM}
           </p>
           <p className="mt-4 text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed">
             A structured, property-specific design concept that gives you clear visual direction,
@@ -334,7 +335,7 @@ export default function ConceptPackagePage() {
             </Link>
           </div>
           <p className="mt-6 text-sm text-gray-500">
-            $585 · One-time · No subscription · Consultation included
+            {CONCEPT_FROM} · One-time · No subscription · Consultation included
           </p>
         </div>
       </section>

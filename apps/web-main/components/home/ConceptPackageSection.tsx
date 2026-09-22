@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { ArrowRight, Camera, Brain, FileText, MessageSquare, Zap } from 'lucide-react'
+import { CONCEPT_START_PRICE, formatPrice } from '@/lib/marketing/pricing'
 import { Container } from '@/components/ui/Container'
 
 const STEPS = [
@@ -75,7 +76,7 @@ export function ConceptPackageSection() {
 
             <div className="mt-8 flex flex-wrap items-center gap-4">
               <Link
-                href="/concept-engine"
+                href="/products/concept"
                 className="inline-flex items-center gap-2 rounded-xl px-6 py-3 text-sm font-bold text-white transition-all hover:opacity-90"
                 style={{ backgroundColor: '#E8793A' }}
               >
@@ -83,7 +84,7 @@ export function ConceptPackageSection() {
               </Link>
               <div className="text-sm" style={{ color: '#64748B' }}>
                 Starting at{' '}
-                <span className="font-bold text-slate-900">$585</span>
+                <span className="font-bold text-slate-900">{formatPrice(CONCEPT_START_PRICE)}</span>
                 {' '}· 2–5 day concept delivery
               </div>
             </div>

@@ -14,6 +14,7 @@ import { MarketplaceFilterBar, type Filters } from '@/components/marketplace/Mar
 import { MarketplaceCard, type ContractorCardData } from '@/components/marketplace/MarketplaceCard'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { MARKETPLACE_DIRECTORY_SEARCH_PLACEHOLDER } from '@kealee/shared'
+import { CONCEPT_FROM, CONTRACTOR_MATCH_COPY } from '@/lib/marketing/price-copy'
 
 // ─── Media library ──────────────────────────────────────────────────────────────
 // Verified local Kealee AI-render photos (git-tracked under public/media/service-photos).
@@ -247,8 +248,8 @@ function SeeItBuiltBand() {
 // ─── Cross-Category Services ───────────────────────────────────────────────────
 
 const CROSS_SERVICES = [
-  { label: 'Design Concept',      price: 'From $149', href: '/concept',                  Icon: Zap,        desc: 'AI renders, materials & layout for your project' },
-  { label: 'Contractor Match',    price: '$199',       href: '/intake/contractor_match',  Icon: Users,      desc: 'Matched to 3 vetted local contractors' },
+  { label: 'Design Concept',      price: `From ${CONCEPT_FROM}`, href: '/concept',                  Icon: Zap,        desc: 'AI renders, materials & layout for your project' },
+  { label: 'Contractor Match',    price: CONTRACTOR_MATCH_COPY,       href: '/intake/contractor_match',  Icon: Users,      desc: 'Matched to 3 vetted local contractors' },
   { label: 'Project Estimate',    price: 'From $595',  href: '/estimate',                 Icon: Calculator, desc: 'Detailed cost breakdown for contractor bidding' },
 ]
 
