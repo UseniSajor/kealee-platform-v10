@@ -1,4 +1,15 @@
 import type { Metadata } from 'next'
+import {
+  CONCEPT_FROM,
+  CONCEPT_WHOLE_HOME_FROM,
+  DRAWINGS_FROM,
+  ESTIMATE_FROM,
+  PERMIT_ASSESSMENT_FROM,
+  PERMIT_FILING_FROM,
+  PERMIT_MANAGED_FROM,
+  PM_ADVISORY_FROM,
+  PM_OVERSIGHT_FROM,
+} from '@/lib/marketing/price-copy'
 import { RoleHero } from '@/components/roles/RoleHero'
 import { RoleBenefits } from '@/components/roles/RoleBenefits'
 import { RoleWorkflow } from '@/components/roles/RoleWorkflow'
@@ -48,17 +59,17 @@ const WORKFLOW = [
   {
     number: 1,
     title: 'Get Your Concept + Validation',
-    desc: 'For $585, get a structured, property-specific Concept Design Package — 3 concept options, 1 round of feedback, design direction, zoning brief, path-to-approval plan, and an included design consultation. Additional revision rounds available as a paid add-on (Unlimited Package includes unlimited rounds).',
+    desc: `From ${CONCEPT_FROM}, get a structured, property-specific Concept Design Package — three concept directions with a recommendation, one revision round, design direction, zoning brief, path-to-approval plan, and an included design consultation. Your exact price is quoted after intake. Additional revision rounds are an optional add-on.`,
   },
   {
     number: 2,
     title: 'Price Your Project',
-    desc: 'AI cost estimate included with all projects. Upgrade to a Detailed Estimate ($595) or Certified Estimate ($1,850) for lender-ready reports.',
+    desc: `AI cost estimate included with all projects. Upgrade to a detailed planning estimate (from ${ESTIMATE_FROM}) or a professionally reviewed estimate for lender-ready reports.`,
   },
   {
     number: 3,
     title: 'Handle Your Permits',
-    desc: 'Permit guidance is free. Let us file ($149), package ($950), coordinate ($2,750), or expedite ($5,500) for you.',
+    desc: `Permit guidance is free. Add an assessment (from ${PERMIT_ASSESSMENT_FROM}), preparation and filing (from ${PERMIT_FILING_FROM}), or managed coordination (from ${PERMIT_MANAGED_FROM}).`,
   },
   {
     number: 4,
@@ -77,19 +88,20 @@ const WORKFLOW = [
   },
 ]
 
+// Revisions are an add-on, not a tier: one round comes with every package and
+// more are priced individually at checkout.
 const REVISION_TIERS = [
-  { tier: 'Starter', price: 'No revisions', note: 'Concept package is final as delivered. Additional rounds available as add-on.' },
-  { tier: 'Standard (Advanced AI)', price: 'Up to 3 rounds', note: 'Three revision rounds included. Upgrade to Full Design Package to unlock Premium tier.', highlight: true },
-  { tier: 'Premium (Full Design)', price: 'Up to 5 rounds', note: 'Five revision rounds. Requires Full Design Package ($4,499) minimum tier to access.' },
+  { tier: 'Included', price: '1 round', note: 'Every concept package includes one revision round.', highlight: true },
+  { tier: 'Additional rounds', price: 'Add-on', note: 'Add as many rounds as you want at checkout — each is priced before you pay.' },
+  { tier: 'Professional review', price: 'Scoped', note: 'A licensed professional review or stamp is scoped by discipline and jurisdiction.' },
 ]
 
 const PRICING = [
   {
     section: 'Plan Your Project',
     items: [
-      { name: 'Concept Design Package', price: '$585', note: '3 concept options, 1 round of feedback. Design direction, zoning brief, path-to-approval + consultation included.', highlight: true },
-      { name: 'Advanced Concept', price: '$899', note: '3 floor plan options, 3D views, material suggestions — up to 3 revision rounds' },
-      { name: 'Full Design Package', price: '$4,499', note: 'Permit-ready drawing set — up to 5 revision rounds' },
+      { name: 'Design Concept Package', price: `From ${CONCEPT_FROM}`, note: 'Three concept directions with a recommendation, floor plan, views, materials, zoning and permit scope. One revision round included; extra views, video and revisions are optional add-ons.', highlight: true },
+      { name: 'Permit-Ready Drawings', price: `From ${DRAWINGS_FROM}`, note: 'Prepared by the licensed professional the jurisdiction requires. Final fee set after the property review.' },
     ],
     note: 'Projects over $65,000 or with structural complexity are connected with a licensed architect.',
   },
@@ -97,28 +109,27 @@ const PRICING = [
     section: 'Price Your Project',
     items: [
       { name: 'AI Estimate', price: 'Free', note: 'Included with all projects' },
-      { name: 'Detailed Estimate', price: '$595', note: 'Professional cost analyst review' },
-      { name: 'Certified Estimate', price: '$1,850', note: 'Lender-ready certified report' },
+      { name: 'Detailed Planning Estimate', price: `From ${ESTIMATE_FROM}`, note: 'Line-item estimate against verified regional pricing' },
+      { name: 'Professionally Reviewed Estimate', price: 'From $995', note: 'Reviewed and signed off by a construction professional — lender-ready' },
     ],
   },
   {
     section: 'Permit Your Project',
     items: [
       { name: 'Permit Guidance', price: 'Free', note: 'AI checklist + jurisdiction info' },
-      { name: 'Simple Permit Filing', price: '$149', note: 'Single-trade permits' },
-      { name: 'Permit Package', price: '$950', note: 'Full application prep + submission', highlight: true },
-      { name: 'Permit Coordination', price: '$2,750', note: 'Submission, tracking + comment response' },
-      { name: 'Permit Expediting', price: '$5,500', note: 'Priority approval service' },
+      { name: 'Permit Assessment', price: `From ${PERMIT_ASSESSMENT_FROM}`, note: 'Which permits this scope needs, fees, timeline and the AHJ checklist' },
+      { name: 'Permit Preparation and Filing', price: `From ${PERMIT_FILING_FROM}`, note: 'Application prepared, submitted and comment responses handled', highlight: true },
+      { name: 'Managed Permit Coordination', price: `From ${PERMIT_MANAGED_FROM}`, note: 'End-to-end coordination through to issuance' },
     ],
   },
   {
     section: 'Control Your Project',
     items: [
       { name: 'Self-Managed', price: 'Free', note: 'Platform tools included' },
-      { name: 'PM Advisory', price: '$950', note: 'Milestone reviews + budget oversight', highlight: true },
-      { name: 'PM Oversight', price: '$2,950', note: 'Full PM from groundbreaking to closeout' },
+      { name: 'PM Advisory', price: `From ${PM_ADVISORY_FROM}/mo`, note: 'Milestone reviews + budget oversight', highlight: true },
+      { name: 'Active Project Oversight', price: `From ${PM_OVERSIGHT_FROM}/mo`, note: 'Site oversight, draw and change-order review through closeout' },
     ],
-    note: 'One-time per project fee — not a subscription.',
+    note: 'Monthly while the engagement is active — cancel any time.',
   },
 ]
 
@@ -130,7 +141,7 @@ export default function HomeownersPage() {
         headline="Build with Confidence"
         highlight="Confidence"
         subhead="Plan, price, permit, and control your project. Transparent pricing at every step — pay only for what your project needs."
-        cta={{ label: 'Start with $585 Concept Package', href: '/intake/whole_home_concept' }}
+        cta={{ label: `Start from ${CONCEPT_FROM}`, href: '/intake/whole_home_concept' }}
         secondaryCta={{ label: 'Browse Contractors', href: '/marketplace' }}
         trustItems={['No surprise invoices', 'Escrow-protected payments', 'Licensed & insured contractors', 'AI advisor included']}
         dark
@@ -222,11 +233,11 @@ export default function HomeownersPage() {
           <p className="text-center text-sm font-medium text-gray-600">
             Typical fully-managed project:
             <span className="ml-2 font-bold" style={{ color: '#1A2B4A' }}>
-              $585 + $595 + $950 + $2,950 = $5,080
+              {CONCEPT_WHOLE_HOME_FROM} + {ESTIMATE_FROM} + {PERMIT_FILING_FROM} + {PM_OVERSIGHT_FROM}/mo
             </span>
           </p>
           <p className="mt-2 text-center text-xs text-gray-400">
-            Concept + Validation · Detailed Estimate · Permit Package · PM Oversight
+            Whole-home concept · Detailed estimate · Permit filing · Active oversight. Each is quoted from your project at intake.
           </p>
         </div>
       </section>
@@ -278,12 +289,12 @@ export default function HomeownersPage() {
       <RoleFAQ
         items={[
           {
-            question: 'What is included in the $585 Concept Design Package?',
+            question: 'What is included in the Design Concept Package?',
             answer: '3 property-specific concept visuals, design direction summary, layout and flow recommendations, property analysis, path-to-approval plan, rough scope direction, a downloadable digital package, and an included design consultation call. 1 round of feedback is included.',
           },
           {
             question: 'Can I request more design revisions?',
-            answer: 'The Starter package ($585) includes 1 round of feedback. Additional revision rounds are available as a paid add-on. Upgrading to Advanced Concept ($899) includes up to 3 rounds. The Full Design Package ($4,499) includes up to 5 rounds.',
+            answer: 'The package includes one revision round. Additional rounds are an optional add-on you can choose at checkout, priced before you pay.',
           },
           {
             question: 'Does Kealee provide onsite services?',
@@ -306,7 +317,7 @@ export default function HomeownersPage() {
       <RoleCTA
         headline="Ready to Start Your Project?"
         subhead="Join project owners and professionals who plan and build smarter with Kealee's AI-assisted platform."
-        cta={{ label: 'Get My $585 Concept Package', href: '/intake/whole_home_concept' }}
+        cta={{ label: 'Get My Concept Package', href: '/intake/whole_home_concept' }}
         secondaryCta={{ label: 'Browse Contractors', href: '/marketplace' }}
       />
     </>
