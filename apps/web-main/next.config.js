@@ -21,7 +21,7 @@ const nextConfig = {
       ],
     },
   },
-  transpilePackages: ['@kealee/ui', '@kealee/intake', '@kealee/shared', '@kealee/pascal-wrapper', '@kealee/core-bim', '@kealee/kealee-agent-stack', '@kealee/storage', '@kealee/concept-engine', '@kealee/database', '@kealee/automation', '@kealee/marketing-privacy', '@kealee/marketing-agency'],
+  transpilePackages: ['@kealee/ui', '@kealee/intake', '@kealee/shared', '@kealee/pascal-wrapper', '@kealee/core-bim', '@kealee/kealee-agent-stack', '@kealee/storage', '@kealee/concept-engine', '@kealee/database', '@kealee/automation', '@kealee/marketing-privacy', '@kealee/marketing-agency', '@kealee/knowledge'],
   webpack(config, { isServer }) {
     config.resolve.extensionAlias = {
       ...config.resolve.extensionAlias,

@@ -706,6 +706,9 @@ importers:
       '@kealee/kealee-agent-stack':
         specifier: workspace:*
         version: link:../../packages/kealee-agent-stack
+      '@kealee/knowledge':
+        specifier: workspace:*
+        version: link:../../packages/knowledge
       '@kealee/marketing-agency':
         specifier: workspace:*
         version: link:../../packages/marketing-agency
@@ -1980,6 +1983,19 @@ importers:
       typescript:
         specifier: ^5.9.3
         version: 5.9.3
+
+  packages/knowledge:
+    dependencies:
+      '@kealee/database':
+        specifier: workspace:*
+        version: link:../database
+    devDependencies:
+      typescript:
+        specifier: ^5.6.0
+        version: 5.9.3
+      vitest:
+        specifier: ^1.6.0
+        version: 1.6.1(@types/node@20.19.39)(jsdom@28.1.0(canvas@3.2.3)(supports-color@8.1.1))(supports-color@8.1.1)(terser@5.50.0)
 
   packages/marketing-agency:
     dependencies:
@@ -3310,6 +3326,9 @@ importers:
       '@kealee/database':
         specifier: workspace:*
         version: link:../../packages/database
+      '@kealee/knowledge':
+        specifier: workspace:*
+        version: link:../../packages/knowledge
       '@kealee/observability':
         specifier: workspace:^
         version: link:../../packages/observability

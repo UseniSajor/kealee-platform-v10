@@ -16,6 +16,7 @@ import { revalidatePath } from 'next/cache'
 import { assertCurrentLicence, getProfessionalIdentity } from '@/lib/professional-review'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { orderStatusPatch } from '@/lib/order-status'
+import { recordConceptReviewInKnowledge } from '@/lib/knowledge'
 
 export interface ArchitectConceptReview {
   version: 1
@@ -88,5 +89,7 @@ export async function reviewDesignConcept(formData: FormData) {
     .eq('id', intakeId)
   if (updateError) throw new Error(`Could not record the review: ${updateError.message}`)
 
+  // The decision is a review edge in the knowledge registry (Kealee Construction Intelligence).
+  void recordConceptReviewInKnowledge({ intakeId, state: decision as 'APPROVED' | 'CHANGES_REQUESTED', comment: comment || null, reviewer: { displayName: reviewer.displayName, licenceNumber: reviewer.licenceNumber }, generation })
   revalidatePath('/architect/review')
 }

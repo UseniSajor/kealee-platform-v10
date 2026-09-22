@@ -757,6 +757,9 @@ export interface DeliveryOutcome {
   summary: string
   /** True when an already-delivered order received a revised drawing. */
   revision?: boolean
+  /** The record that was bridged, for the knowledge registry. */
+  record?: SitePlanDeliverableRecord
+  previousDocumentId?: string | null
 }
 
 /**
@@ -804,7 +807,7 @@ export async function bridgeSitePlanDelivery(
 
     if (!order.contactEmail) {
       return {
-        bridged: true, emailed: false, orderStatus, revision: Boolean(revision),
+        bridged: true, emailed: false, orderStatus, revision: Boolean(revision), record, previousDocumentId: revision ? order.deliveredDocumentId : null,
         summary: `Order ${input.orderId} ${revision ? 're-bridged with the revised plan' : 'bridged'} (${orderStatus}); no customer email on file.`,
       }
     }
@@ -823,7 +826,7 @@ export async function bridgeSitePlanDelivery(
     })
 
     return {
-      bridged: true, emailed: email.sent, orderStatus, revision: Boolean(revision),
+      bridged: true, emailed: email.sent, orderStatus, revision: Boolean(revision), record, previousDocumentId: revision ? order.deliveredDocumentId : null,
       summary: email.sent
         ? `Order ${input.orderId} bridged (${orderStatus}); customer emailed.`
         : `Order ${input.orderId} bridged (${orderStatus}); email not sent (${email.error ?? 'unknown'}).`,

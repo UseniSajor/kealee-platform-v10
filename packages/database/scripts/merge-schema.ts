@@ -42,6 +42,7 @@ const DOMAIN_ORDER = [
   'analytics',
   'intelligence',
   'pre-design',
+  'knowledge',
 ]
 
 function collectFiles(): string[] {

@@ -1,0 +1,177 @@
+// ── Kealee Construction Intelligence — knowledge layer enums ─────────────────
+//
+// The registry every Kealee artifact enters: uploaded evidence, generated
+// products, human corrections, reviews, jurisdiction records, workspace
+// sessions. Five layers (docs/intelligence/ARCHITECTURE.md): raw evidence is
+// immutable; extraction is versioned; generation carries provenance; human
+// and jurisdiction approval are distinguishable from AI drafts.
+
+enum KnowledgeArtifactType {
+  DRAWING
+  PHOTO
+  VIDEO
+  DOCUMENT
+  ESTIMATE
+  SCHEDULE
+  SITE_PLAN
+  DESIGN_CONCEPT
+  FEASIBILITY_REPORT
+  PERMIT_PACKAGE
+  SPECIFICATION
+  RFI
+  SUBMITTAL
+  CHANGE_ORDER
+  INSPECTION
+  CONTRACT
+  PROPOSAL
+  COST_RECORD
+  LABOR_RECORD
+  MATERIAL_RECORD
+  PROMPT
+  MODEL_RESPONSE
+  AGENT_SESSION
+  CODE_CHANGE
+  CODE_REVIEW
+  COMMIT
+  RULE
+  REGULATION
+  JURISDICTION_COMMENT
+  APPROVED_PLAN
+  AS_BUILT
+  SURVEY
+  PLAT
+  RENDERING
+  YIELD_STUDY
+  OTHER
+}
+
+/// Where an artifact sits in the knowledge lifecycle (docs/intelligence/ARCHITECTURE.md).
+enum KnowledgeArtifactStatus {
+  RAW
+  EXTRACTED
+  NORMALIZED
+  RETRIEVABLE
+  REVIEWED
+  SUPERSEDED
+  ARCHIVED
+  QUARANTINED
+}
+
+/// Who has stood behind the artifact. AI_GENERATED is a draft until a person or a
+/// jurisdiction says otherwise; the ladder is never climbed by software.
+enum KnowledgeApprovalStatus {
+  UNREVIEWED
+  AI_GENERATED
+  HUMAN_REVIEWED
+  HUMAN_APPROVED
+  PROFESSIONAL_SEALED
+  JURISDICTION_APPROVED
+  REJECTED
+}
+
+/// Source authority, structurally, so retrieval ranking can use it (spec §24).
+/// Ordered high → low; the ordinal is the rank.
+enum KnowledgeAuthority {
+  APPROVED_GOVERNMENT_RECORD
+  JURISDICTION_ISSUED_DOCUMENT
+  SEALED_PROFESSIONAL_DOCUMENT
+  APPROVED_CONSTRUCTION_DOCUMENT
+  VERIFIED_FIELD_MEASUREMENT
+  HUMAN_REVIEWED_KEALEE_FINAL
+  PROJECT_CONTRACT
+  MANUFACTURER_DOCUMENTATION
+  VALIDATED_STRUCTURED_DATA
+  UPLOADED_SOURCE_DOCUMENT
+  AI_DERIVED_STRUCTURED_DATA
+  AI_GENERATED_DRAFT
+  UNVERIFIED_INFERENCE
+}
+
+/// Explicit, never inferred. Customer/project data is never promoted to an
+/// external provider's fine-tuning without a policy decision recorded here.
+enum TrainingEligibility {
+  UNKNOWN
+  NOT_ELIGIBLE
+  RETRIEVAL_ONLY
+  EVAL_ELIGIBLE
+  TRAINING_CANDIDATE
+  TRAINING_APPROVED
+  EXCLUDED
+}
+
+enum RetrievalEligibility {
+  UNKNOWN
+  ELIGIBLE
+  ORG_ONLY
+  PROJECT_ONLY
+  EXCLUDED
+}
+
+enum KnowledgeConfidentiality {
+  PUBLIC
+  INTERNAL
+  CUSTOMER_CONFIDENTIAL
+  RESTRICTED
+}
+
+enum KnowledgeRetentionClass {
+  STANDARD
+  PROJECT_RECORD
+  LEGAL_HOLD
+  EPHEMERAL
+}
+
+/// The edges of the lineage graph (spec §4). Direction is child → parent
+/// ("this artifact DERIVED_FROM that one"), except REVIEWS/APPROVES/CORRECTS,
+/// where the subject is the act and the object is what it acted on.
+enum KnowledgeLineageRelation {
+  DERIVED_FROM
+  GENERATED_FROM
+  VERSION_OF
+  SUPERSEDES
+  CORRECTS
+  REVIEWS
+  APPROVES
+  INPUT_TO
+  REFERENCES
+  DEPICTS
+  VALIDATES
+  EXTRACTED_FROM
+}
+
+enum GenerationRunStatus {
+  STARTED
+  COMPLETED
+  FAILED
+  APPROVED
+  REJECTED
+  CORRECTED
+  SUPERSEDED
+}
+
+enum GenerationInputRole {
+  SOURCE_ARTIFACT
+  RETRIEVED_CONTEXT
+  RULE
+  PROJECT_MEMORY
+  USER_REQUEST
+  PRIOR_GENERATION
+  TOOL_RESULT
+}
+
+enum LearningEventType {
+  ARTIFACT_INGESTED
+  ARTIFACT_VERSIONED
+  GENERATION_RECORDED
+  GENERATION_APPROVED
+  GENERATION_REJECTED
+  GENERATION_CORRECTED
+  HUMAN_FEEDBACK
+  JURISDICTION_OUTCOME
+  ACTUALS_RECEIVED
+  TRAINING_CANDIDATE_CREATED
+  TRAINING_EXAMPLE_PROMOTED
+  DATASET_PUBLISHED
+  EVALUATION_COMPLETED
+  WORKSPACE_SESSION_CAPTURED
+}

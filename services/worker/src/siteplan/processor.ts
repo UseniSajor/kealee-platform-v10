@@ -14,6 +14,7 @@
 import { prisma } from '@kealee/database'
 import { Workflow } from '@kealee/pascal-agents/engine'
 import { productionCapabilities, loadSnapshot, loadPriorOutputs } from './capabilities'
+import { recordDeliveryInKnowledge, recordReviewInKnowledge } from './knowledge'
 import {
   bridgeSitePlanDelivery, bridgeSitePlanReviewOutcome, bridgeSitePlanSubmission,
   bridgeSitePlanCountyReview, notifyReviewRouted, productionDeliveryPorts,
@@ -195,6 +196,14 @@ async function runOne(
     const delivery = await bridgeSitePlanDelivery(subject, ports)
     deliverySummary = delivery.summary
     console.log(`[siteplan] delivery: ${delivery.summary}`)
+    // Every delivered plan enters the knowledge registry as a generation run (Kealee Construction Intelligence, Phase 1).
+    if (delivery.bridged && delivery.record) {
+      await recordDeliveryInKnowledge({
+        workflowId, orderId: subject.orderId, productId: subject.productId,
+        address: (await ports.loadOrder(subject.orderId))?.address ?? null,
+        record: delivery.record as never, outputs: await loadPriorOutputs(workflowId), previousDocumentId: delivery.previousDocumentId ?? null,
+      })
+    }
 
     // The higher tiers include a licensed professional's review. Route the
     // delivered plan to one now. `route_review` is not in the first release,
@@ -249,6 +258,10 @@ async function runOne(
     const review = await bridgeSitePlanReviewOutcome(subject, ports)
     deliverySummary = review.summary
     console.log(`[siteplan] review: ${review.summary}`)
+    if (review.bridged) {
+      const routed = (await loadPriorOutputs(workflowId))['siteplan.route_review'] as Parameters<typeof recordReviewInKnowledge>[0]['routed'] | undefined
+      if (routed) await recordReviewInKnowledge({ workflowId, orderId: subject.orderId, routed })
+    }
   }
 
   // Enqueue what this stage unblocked.

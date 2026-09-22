@@ -1,0 +1,297 @@
+// ── Kealee Construction Intelligence — Phase 1: artifact registry, provenance,
+//    generation records, learning events ────────────────────────────────────
+//
+// Additive. Nothing here replaces `Document`, `File`, `rag_documents`,
+// `AgentSession`, `IntelligenceRun` or the site-plan persistence tables: a
+// knowledge artifact POINTS at those rows (`sourceSystem` + `sourceId`) and
+// gives every one of them one identity, one lineage graph and one governance
+// record. Later phases add chunks/embeddings (2), project memory (3), feedback
+// (5), workspace sessions (6), training examples and datasets (7), evaluations
+// (8), models and prompts (10) — each in its own migration.
+
+/// A system that feeds the registry — the site-plan engine, the concept
+/// generator, an upload endpoint, a workspace adapter, a county portal.
+model KnowledgeSource {
+  id          String   @id @default(uuid())
+  key         String   @unique // 'site-plan-engine', 'concept-generator', 'portal-upload', 'claude-code', …
+  name        String
+  kind        String   // 'engine' | 'llm' | 'upload' | 'workspace' | 'jurisdiction' | 'field'
+  /// The authority artifacts from this source carry by default; overridable per artifact.
+  defaultAuthority KnowledgeAuthority @default(AI_GENERATED_DRAFT)
+  defaultTrainingEligibility TrainingEligibility @default(UNKNOWN)
+  active      Boolean  @default(true)
+  metadata    Json?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  artifacts KnowledgeArtifact[]
+
+  @@map("knowledge_sources")
+}
+
+/// One identity per thing Kealee knows about. Immutable in substance: a change
+/// is a new KnowledgeArtifactVersion (and usually a new artifact linked
+/// VERSION_OF / SUPERSEDES), never an overwrite of raw evidence.
+model KnowledgeArtifact {
+  id                 String                  @id @default(uuid())
+  organizationId     String?
+  projectId          String?
+  /// The order/intake this belongs to when the platform's unit of work is an order (public_intake_leads.id).
+  orderId            String?
+  artifactType       KnowledgeArtifactType
+  artifactSubtype    String?                 // 'preliminary_site_plan', 'yield_study', 'kitchen_concept', 'C-400', …
+  discipline         String?                 // 'civil', 'architectural', 'structural', 'mep', 'estimating', 'software', …
+  sourceId           String?
+  source             KnowledgeSource?        @relation(fields: [sourceId], references: [id], onDelete: SetNull)
+  /// Where the bytes/rows live today — the row this artifact points at.
+  sourceSystem       String?                 // 'documents', 'public_intake_leads', 'site_plan_workflows', 'output/site-plans', 'git', …
+  sourceRecordId     String?                 // the id in that system
+  sourceUri          String?
+  storageUri         String?
+  mimeType           String?
+  filename           String?
+  checksum           String?                 // sha256 of the bytes or of the canonical JSON
+  fileSize           Int?
+  title              String
+  summary            String?                 @db.Text
+  capturedAt         DateTime?
+  uploadedById       String?
+  generatedByAgent   String?
+  generatedByModel   String?
+  generationRunId    String?
+  generationRun      GenerationRun?          @relation("GenerationRunArtifacts", fields: [generationRunId], references: [id], onDelete: SetNull)
+  /// The current version number; the history is in `versions`.
+  version            Int                     @default(1)
+  parentArtifactId   String?
+  parentArtifact     KnowledgeArtifact?      @relation("ArtifactParent", fields: [parentArtifactId], references: [id], onDelete: SetNull)
+  children           KnowledgeArtifact[]     @relation("ArtifactParent")
+  supersedesArtifactId String?
+  supersedesArtifact KnowledgeArtifact?      @relation("ArtifactSupersedes", fields: [supersedesArtifactId], references: [id], onDelete: SetNull)
+  supersededBy       KnowledgeArtifact[]     @relation("ArtifactSupersedes")
+  status             KnowledgeArtifactStatus @default(RAW)
+  approvalStatus     KnowledgeApprovalStatus @default(UNREVIEWED)
+  authority          KnowledgeAuthority      @default(UPLOADED_SOURCE_DOCUMENT)
+  jurisdiction       String?                 // 'prince_georges_md', …
+  projectPhase       String?
+  constructionPhase  String?
+  confidentiality    KnowledgeConfidentiality @default(CUSTOMER_CONFIDENTIAL)
+  retentionClass     KnowledgeRetentionClass @default(PROJECT_RECORD)
+  trainingEligibility TrainingEligibility    @default(UNKNOWN)
+  retrievalEligibility RetrievalEligibility  @default(UNKNOWN)
+  qualityScore       Float?
+  confidenceScore    Float?
+  /// Structured facts about the artifact that do not warrant a column yet (sheet list, du count, zone, …).
+  metadata           Json?
+  createdAt          DateTime                @default(now())
+  updatedAt          DateTime                @updatedAt
+
+  versions      KnowledgeArtifactVersion[]
+  files         KnowledgeArtifactFile[]
+  projectLinks  KnowledgeProjectLink[]
+  lineageOut    KnowledgeLineageEdge[] @relation("LineageSubject")
+  lineageIn     KnowledgeLineageEdge[] @relation("LineageObject")
+  generationInputs  GenerationInput[]
+  generationOutputs GenerationOutput[]
+  learningEvents    LearningEvent[]
+
+  @@unique([sourceSystem, sourceRecordId, version])
+  @@index([organizationId, projectId])
+  @@index([orderId])
+  @@index([artifactType, approvalStatus])
+  @@index([jurisdiction, artifactType])
+  @@index([trainingEligibility])
+  @@index([checksum])
+  @@index([generationRunId])
+  @@map("knowledge_artifacts")
+}
+
+/// The history of an artifact. Version 1 is created with the artifact; each
+/// later version records what changed, who changed it and the new checksum.
+model KnowledgeArtifactVersion {
+  id            String            @id @default(uuid())
+  artifactId    String
+  artifact      KnowledgeArtifact @relation(fields: [artifactId], references: [id], onDelete: Cascade)
+  version       Int
+  checksum      String?
+  storageUri    String?
+  changeSummary String?           @db.Text
+  changedById   String?
+  changedByAgent String?
+  approvalStatus KnowledgeApprovalStatus @default(UNREVIEWED)
+  metadata      Json?
+  createdAt     DateTime          @default(now())
+
+  @@unique([artifactId, version])
+  @@map("knowledge_artifact_versions")
+}
+
+/// The files that make up an artifact (a set is one artifact with many files:
+/// PDF, DXF, LandXML, manifest). The bytes stay where they are; this records
+/// where and what they are.
+model KnowledgeArtifactFile {
+  id          String            @id @default(uuid())
+  artifactId  String
+  artifact    KnowledgeArtifact @relation(fields: [artifactId], references: [id], onDelete: Cascade)
+  role        String            // 'primary' | 'export' | 'manifest' | 'source' | 'render' | 'thumbnail'
+  filename    String
+  mimeType    String?
+  storageUri  String?
+  checksum    String?
+  fileSize    Int?
+  pageCount   Int?
+  metadata    Json?
+  createdAt   DateTime          @default(now())
+
+  @@index([artifactId, role])
+  @@map("knowledge_artifact_files")
+}
+
+/// Many-to-many between artifacts and projects/orders/parcels — an approved
+/// plan can be evidence on more than one project.
+model KnowledgeProjectLink {
+  id         String            @id @default(uuid())
+  artifactId String
+  artifact   KnowledgeArtifact @relation(fields: [artifactId], references: [id], onDelete: Cascade)
+  projectId  String?
+  orderId    String?
+  parcelId   String?
+  role       String            @default("evidence") // 'evidence' | 'deliverable' | 'reference' | 'precedent'
+  createdAt  DateTime          @default(now())
+
+  @@unique([artifactId, projectId, orderId, parcelId, role])
+  @@index([projectId])
+  @@index([orderId])
+  @@index([parcelId])
+  @@map("knowledge_project_links")
+}
+
+/// The lineage graph: subject —relation→ object. "What produced this?" walks
+/// subject → object; "what depended on it?" walks object → subject.
+model KnowledgeLineageEdge {
+  id          String                   @id @default(uuid())
+  subjectId   String
+  subject     KnowledgeArtifact        @relation("LineageSubject", fields: [subjectId], references: [id], onDelete: Cascade)
+  objectId    String
+  object      KnowledgeArtifact        @relation("LineageObject", fields: [objectId], references: [id], onDelete: Cascade)
+  relation    KnowledgeLineageRelation
+  /// Who or what made the edge — a generation run, a review action, an upload.
+  actorType   String?                  // 'agent' | 'user' | 'system' | 'jurisdiction'
+  actorId     String?
+  generationRunId String?
+  note        String?                  @db.Text
+  metadata    Json?
+  createdAt   DateTime                 @default(now())
+
+  @@unique([subjectId, objectId, relation])
+  @@index([objectId, relation])
+  @@index([generationRunId])
+  @@map("knowledge_lineage_edges")
+}
+
+/// Every Kealee generation — a site plan, a concept, an estimate, a permit
+/// analysis — recorded with what went in, what came out and what a person
+/// then did about it. Outputs enter the registry automatically; they become
+/// training material only through feedback and promotion (later phases).
+model GenerationRun {
+  id               String              @id @default(uuid())
+  organizationId   String?
+  projectId        String?
+  orderId          String?
+  /// 'site_plan' | 'design_concept' | 'estimate' | 'takeoff' | 'permit_package' | 'feasibility' | 'schedule' | 'rendering' | …
+  productType      String
+  agent            String              // 'siteplan.drafter', 'DesignBot', 'concept-generator', …
+  agentVersion     String?
+  model            String?             // 'claude-opus-5', 'deterministic', 'flux-1.1-pro', …
+  modelParameters  Json?
+  /// The prompt registry version once Phase 10 lands; the literal template hash until then.
+  promptId         String?
+  promptVersion    String?
+  promptHash       String?
+  requestSummary   String?             @db.Text
+  request          Json?
+  /// Rule pack / certified table versions the generation drew on.
+  rulesUsed        Json?
+  toolsExecuted    Json?
+  status           GenerationRunStatus @default(STARTED)
+  confidence       Float?
+  startedAt        DateTime            @default(now())
+  completedAt      DateTime?
+  durationMs       Int?
+  errorMessage     String?             @db.Text
+  /// What a person finally did: 'accepted' | 'corrected' | 'rejected' | 'superseded' | null while open.
+  finalDisposition String?
+  dispositionById  String?
+  dispositionAt    DateTime?
+  /// The workflow / job that ran it, for reproducibility.
+  workflowId       String?
+  jobKey           String?
+  metadata         Json?
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+
+  inputs    GenerationInput[]
+  outputs   GenerationOutput[]
+  artifacts KnowledgeArtifact[] @relation("GenerationRunArtifacts")
+
+  @@index([productType, status])
+  @@index([orderId])
+  @@index([projectId])
+  @@index([workflowId])
+  @@index([startedAt])
+  @@map("generation_runs")
+}
+
+model GenerationInput {
+  id          String              @id @default(uuid())
+  runId       String
+  run         GenerationRun       @relation(fields: [runId], references: [id], onDelete: Cascade)
+  role        GenerationInputRole
+  artifactId  String?
+  artifact    KnowledgeArtifact?  @relation(fields: [artifactId], references: [id], onDelete: SetNull)
+  /// For inputs that are not artifacts (a rule key and version, a user request).
+  reference   String?
+  content     Json?
+  createdAt   DateTime            @default(now())
+
+  @@index([runId])
+  @@index([artifactId])
+  @@map("generation_inputs")
+}
+
+model GenerationOutput {
+  id          String            @id @default(uuid())
+  runId       String
+  run         GenerationRun     @relation(fields: [runId], references: [id], onDelete: Cascade)
+  artifactId  String
+  artifact    KnowledgeArtifact @relation(fields: [artifactId], references: [id], onDelete: Cascade)
+  role        String            @default("primary") // 'primary' | 'export' | 'report' | 'render'
+  createdAt   DateTime          @default(now())
+
+  @@unique([runId, artifactId, role])
+  @@map("generation_outputs")
+}
+
+/// The append-only ledger the learning loops read: every ingest, generation,
+/// review, correction, jurisdiction outcome, promotion. Later phases turn
+/// these into training candidates; this phase only records them.
+model LearningEvent {
+  id          String            @id @default(uuid())
+  eventType   LearningEventType
+  organizationId String?
+  projectId   String?
+  orderId     String?
+  artifactId  String?
+  artifact    KnowledgeArtifact? @relation(fields: [artifactId], references: [id], onDelete: SetNull)
+  generationRunId String?
+  actorType   String?           // 'agent' | 'user' | 'system' | 'jurisdiction'
+  actorId     String?
+  summary     String            @db.Text
+  payload     Json?
+  occurredAt  DateTime          @default(now())
+
+  @@index([eventType, occurredAt])
+  @@index([artifactId])
+  @@index([generationRunId])
+  @@index([orderId])
+  @@map("learning_events")
+}

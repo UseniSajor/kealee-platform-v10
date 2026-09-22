@@ -15,6 +15,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
+import { recordConceptInKnowledge } from '@/lib/knowledge'
 import Replicate from 'replicate'
 import { DesignBotEnterprise, mapDesignOutputToConceptOutput } from '@kealee/core-llm'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
@@ -1138,6 +1139,17 @@ export async function POST(req: NextRequest) {
       })
       .eq('id', intakeId)
 
+    // Every generated concept enters the knowledge registry as a generation run
+    // (Kealee Construction Intelligence, Phase 1) — after the customer record is written, never before.
+    if (!updateErr) {
+      void recordConceptInKnowledge({
+        intakeId, projectPath, tier, address: intake.project_address as string | null, clientName: intake.client_name as string | null,
+        model: 'claude-opus-5', promptText: `DesignBotEnterprise._buildConceptPrompt v1${typeof existingFormData.designerDirection === 'string' ? ' + architect direction' : ''}`, request: { description: existingFormData.description ?? null, squareFootage: existingFormData.squareFootage ?? null, timeline: existingFormData.timeline ?? null, budgetRange: intake.budget_range ?? null },
+        conceptOutput: conceptOutput as unknown as Record<string, unknown>, renderUrls: (conceptOutput.renderUrls ?? []) as string[], pdfUrl: pdfUrl ?? null,
+        generation: Number(existingFormData.conceptGeneration ?? 0) + (existingFormData.conceptOutput ? 1 : 0),
+        designerDirection: typeof existingFormData.designerDirection === 'string' ? existingFormData.designerDirection : null,
+      })
+    }
     if (updateErr) {
       console.error('[concept/generate] Failed to update intake:', updateErr.message, {
         intakeId,

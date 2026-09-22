@@ -183,7 +183,9 @@ Project Type: ${input.projectType}
 Square Feet: ${input.squareFeet}
 Budget: $${input.budget.toLocaleString()}
 Style Preferences: ${input.stylePreferences.join(', ')}
-Accessibility Required: ${input.accessibility ? 'Yes' : 'No'}
+Accessibility Required: ${input.accessibility ? 'Yes' : 'No'}${typeof input.formData?.designerDirection === 'string' && input.formData.designerDirection.trim()
+  ? `\n\nREVISION — a licensed architect reviewed the previous concept (generation ${Number(input.formData.conceptGeneration ?? 0)}) on Kealee's OS Architecture desk and withheld approval. Their direction, which every concept below MUST follow:\n${input.formData.designerDirection}`
+  : ''}
 Timeline: ${input.timeline} days
 
 For each concept, provide:
