@@ -15,6 +15,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { guardStripeSecretForHttp } from '@/lib/stripe-vercel-guard'
 import { createStripe } from '@/lib/stripe-client'
+import { KEALEE_STRIPE_CHECKOUT_BRANDING } from '@/lib/stripe-checkout-branding'
 
 export const dynamic = 'force-dynamic'
 
@@ -47,6 +48,7 @@ export async function POST(req: NextRequest) {
 
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
+      branding_settings: KEALEE_STRIPE_CHECKOUT_BRANDING,
       payment_method_types: ['card'],
       customer_email: customerEmail,
       line_items: [{ price: priceId, quantity: 1 }],

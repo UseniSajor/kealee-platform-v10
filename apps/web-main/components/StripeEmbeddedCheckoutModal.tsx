@@ -20,6 +20,7 @@ import {
   EmbeddedCheckout,
 } from '@stripe/react-stripe-js'
 import { X } from 'lucide-react'
+import { KealeeLogo } from '@/components/KealeeLogo'
 
 // Resolved once at module load — safe because the key is build-time constant.
 const stripePromise = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
@@ -47,11 +48,11 @@ export function StripeEmbeddedCheckoutModal({ clientSecret, onClose }: Props) {
       <div className="relative w-full max-w-lg rounded-2xl bg-white shadow-2xl overflow-hidden max-h-[92vh] flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 shrink-0">
-          <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded bg-[#1A2B4A] flex items-center justify-center">
-              <span className="text-white text-[10px] font-extrabold">K</span>
-            </div>
-            <span className="font-bold text-slate-900 text-sm">Secure Checkout</span>
+          <div className="flex items-center gap-3">
+            <KealeeLogo compact />
+            <span className="border-l border-slate-200 pl-3 text-sm font-bold text-slate-900">
+              Secure checkout
+            </span>
           </div>
           <button
             onClick={onClose}

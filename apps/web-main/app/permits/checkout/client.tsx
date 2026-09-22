@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { Loader2 } from 'lucide-react'
+import { CheckoutBrandHeader } from '@/components/CheckoutBrandHeader'
 
 export default function PermitsCheckoutClient() {
   const params = useSearchParams()
@@ -62,27 +63,33 @@ export default function PermitsCheckoutClient() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center px-4">
-        <div className="bg-white rounded-lg shadow-lg p-8 max-w-md w-full">
-          <h1 className="text-2xl font-bold text-red-600 mb-4">Checkout Error</h1>
-          <p className="text-slate-600 mb-6">{error}</p>
-          <a
-            href="/permits"
-            className="inline-block w-full text-center bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition"
-          >
-            Return to Permits
-          </a>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+        <CheckoutBrandHeader />
+        <div className="flex min-h-[calc(100vh-86px)] items-center justify-center px-4">
+          <div className="bg-white rounded-lg shadow-lg p-8 max-w-md w-full">
+            <h1 className="text-2xl font-bold text-red-600 mb-4">Checkout Error</h1>
+            <p className="text-slate-600 mb-6">{error}</p>
+            <a
+              href="/permits"
+              className="inline-block w-full text-center bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition"
+            >
+              Return to Permits
+            </a>
+          </div>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center px-4">
-      <div className="bg-white rounded-lg shadow-lg p-8 max-w-md w-full text-center">
-        <Loader2 className="w-12 h-12 text-blue-600 mx-auto mb-6 animate-spin" />
-        <h1 className="text-2xl font-bold text-slate-900 mb-2">Processing Your Order</h1>
-        <p className="text-slate-600">Redirecting to secure checkout...</p>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+      <CheckoutBrandHeader />
+      <div className="flex min-h-[calc(100vh-86px)] items-center justify-center px-4">
+        <div className="bg-white rounded-lg shadow-lg p-8 max-w-md w-full text-center">
+          <Loader2 className="w-12 h-12 text-blue-600 mx-auto mb-6 animate-spin" />
+          <h1 className="text-2xl font-bold text-slate-900 mb-2">Processing Your Order</h1>
+          <p className="text-slate-600">Redirecting to secure checkout...</p>
+        </div>
       </div>
     </div>
   )

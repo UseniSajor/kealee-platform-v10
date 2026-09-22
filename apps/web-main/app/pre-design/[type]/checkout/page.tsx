@@ -5,6 +5,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { ArrowLeft, CheckCircle, Lock } from 'lucide-react'
 import { getPreDesignCheckoutNotesPlaceholder } from '@kealee/shared'
+import { CheckoutBrandHeader } from '@/components/CheckoutBrandHeader'
 
 type ProjectType = 'exterior' | 'interior' | 'landscape'
 
@@ -102,6 +103,7 @@ export default function PreDesignCheckoutPage() {
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#F7FAFC' }}>
+      <CheckoutBrandHeader />
       {/* Back nav */}
       <div className="border-b border-gray-100 bg-white">
         <div className="mx-auto max-w-4xl px-4 py-3 sm:px-6">

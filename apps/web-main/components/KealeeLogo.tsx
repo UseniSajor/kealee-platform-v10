@@ -3,9 +3,8 @@
  *
  * - KealeeKeystoneIcon: the keystone "K" enclosed in the rounded orange
  *   keystone shape — favicon / app icon / social icon (navicon).
- * - KealeeLogo: the PRIMARY logo — the "Kealee" wordmark in white inside
- *   the orange keystone shape, with CONSTRUCTION + tagline beneath.
- *   Matches the brand sheet's top-left "PRIMARY LOGO".
+ * - KealeeLogo: the shared site and checkout lockup — the keystone "K" with
+ *   the design.build.deliver. tagline beneath.
  *
  * Inline SVG so the wordmark inherits page fonts and stays crisp.
  */
@@ -27,36 +26,10 @@ export function KealeeKeystoneIcon({ className }: { className?: string }) {
 export function KealeeLogo({ compact = false }: { compact?: boolean }) {
   return (
     <span className="flex flex-col items-center leading-none">
-      {/* Wordmark inside the orange keystone shape */}
-      <svg
-        viewBox="0 0 230 74"
-        xmlns="http://www.w3.org/2000/svg"
-        className={compact ? 'h-7 w-auto' : 'h-8 w-auto'}
-        aria-hidden="true"
-      >
-        <polygon points="10,16 220,6 214,66 16,68" fill="#EE7326" stroke="#EE7326" strokeWidth="11" strokeLinejoin="round" />
-        <text
-          x="115"
-          y="51"
-          textAnchor="middle"
-          fill="#FFFFFF"
-          fontFamily="var(--font-nunito-display), 'Nunito', ui-rounded, system-ui, sans-serif"
-          fontWeight="800"
-          fontSize="42"
-          letterSpacing="-0.5"
-        >
-          Kealee
-        </text>
-      </svg>
-      {/* CONSTRUCTION + tagline */}
-      <span className={`mt-1 font-semibold uppercase text-slate-600 ${compact ? 'text-[7px] tracking-[0.3em]' : 'text-[8px] tracking-[0.34em]'}`}>
-        Construction
+      <KealeeKeystoneIcon className={compact ? 'h-8 w-8' : 'h-9 w-9'} />
+      <span className={`mt-1 whitespace-nowrap font-medium lowercase text-slate-500 ${compact ? 'text-[6px] tracking-[0.08em]' : 'text-[7px] tracking-[0.12em]'}`}>
+        design<span className="text-orange-600">.</span> build<span className="text-orange-600">.</span> deliver<span className="text-orange-600">.</span>
       </span>
-      {!compact && (
-        <span className="mt-0.5 text-[7px] font-medium lowercase tracking-[0.14em] text-slate-400">
-          design<span className="text-orange-600">.</span> build<span className="text-orange-600">.</span> deliver<span className="text-orange-600">.</span>
-        </span>
-      )}
     </span>
   )
 }

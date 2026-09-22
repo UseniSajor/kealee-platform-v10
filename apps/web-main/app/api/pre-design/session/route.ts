@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { guardStripeSecretForHttp } from '@/lib/stripe-vercel-guard'
 import { createStripe } from '@/lib/stripe-client'
+import { KEALEE_STRIPE_CHECKOUT_BRANDING } from '@/lib/stripe-checkout-branding'
 
 export const dynamic = 'force-dynamic'
 
@@ -83,6 +84,7 @@ export async function POST(req: NextRequest) {
     if (priceId) {
       session = await stripe.checkout.sessions.create({
         mode: 'payment',
+        branding_settings: KEALEE_STRIPE_CHECKOUT_BRANDING,
         allow_promotion_codes: true,
         customer_email: contactEmail,
         line_items: [{ price: priceId, quantity: 1 }],
@@ -101,6 +103,7 @@ export async function POST(req: NextRequest) {
       }
       session = await stripe.checkout.sessions.create({
         mode: 'payment',
+        branding_settings: KEALEE_STRIPE_CHECKOUT_BRANDING,
         allow_promotion_codes: true,
         customer_email: contactEmail,
         line_items: [

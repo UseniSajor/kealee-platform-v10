@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { AlertCircle, Loader2 } from 'lucide-react'
+import { CheckoutBrandHeader } from '@/components/CheckoutBrandHeader'
 
 export default function EstimateCheckoutClient() {
   const router = useRouter()
@@ -55,8 +56,10 @@ export default function EstimateCheckoutClient() {
   }, [intakeId, tier, price])
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 py-12 px-4 flex items-center justify-center">
-      <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+      <CheckoutBrandHeader />
+      <div className="flex min-h-[calc(100vh-86px)] items-center justify-center px-4 py-12">
+        <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8">
         {error ? (
           <>
             <div className="flex items-center justify-center gap-3 mb-4">
@@ -80,6 +83,7 @@ export default function EstimateCheckoutClient() {
             <p className="text-slate-600 text-center">Redirecting you to payment...</p>
           </>
         )}
+        </div>
       </div>
     </div>
   )
