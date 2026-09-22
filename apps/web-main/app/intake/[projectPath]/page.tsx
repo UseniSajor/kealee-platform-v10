@@ -25,6 +25,8 @@ import {
 import { SERVICE_DELIVERABLES } from "@/lib/service-deliverables";
 import {
   uploadIntakeFilesSequentially,
+  MAX_UPLOAD_BYTES,
+  MAX_UPLOAD_LABEL,
   type IntakeUploadedFile,
 } from "@/lib/intake-file-upload";
 import {
@@ -984,14 +986,13 @@ export default function IntakePage() {
       setFormError("You can upload a maximum of 10 photos / videos.");
       return;
     }
-    // Images stay lightweight; mobile walkthrough video may use the API's
-    // larger 50 MB allowance.
-    const oversized = selected.filter((file) =>
-      file.size > (file.type.startsWith("video/") ? 50 : 10) * 1024 * 1024,
-    );
+    // One limit for every kind of file — the storage backend's. Photos used to
+    // be capped at 10 MB here while the API accepted 50 MB, so a normal
+    // high-resolution photo was refused before a request was ever made.
+    const oversized = selected.filter((file) => file.size > MAX_UPLOAD_BYTES);
     if (oversized.length > 0) {
       setFormError(
-        `File too large: "${oversized[0].name}". Images must be under 10 MB and videos under 50 MB.`,
+        `"${oversized[0].name}" is larger than ${MAX_UPLOAD_LABEL}. Your file is safe on your device — choose a file under ${MAX_UPLOAD_LABEL}.`,
       );
       return;
     }
@@ -1001,12 +1002,12 @@ export default function IntakePage() {
       const newFiles = await uploadIntakeFilesSequentially(selected);
       if (newFiles.length === 0) {
         setFormError(
-          "Upload failed. Check file type (JPG or PNG) and size (max 10 MB each), then try again.",
+          `Your photos are still safe on your device. Choose JPG or PNG files under ${MAX_UPLOAD_LABEL}, then select them again.`,
         );
         return;
       }
       if (newFiles.length < selected.length) {
-        setFormError("Some files could not be uploaded. Others were saved.");
+        setFormError("Your available files were saved. You can add the remaining files again, or continue now.");
       }
       setUploadedFiles((prev) => [...prev, ...newFiles]);
       trackEvent("upload_completion", {
@@ -1083,14 +1084,13 @@ export default function IntakePage() {
     const selected = Array.from(e.target.files ?? []);
     if (!selected.length) return;
     if (uploadedDocs.length + selected.length > 5) {
-      setFormError("You can upload a maximum of 5 construction documents.");
+      setFormError("Five documents are ready to be included. Remove one before adding another.");
       return;
     }
-    // 25 MB per document limit
-    const oversized = selected.filter((f) => f.size > 25 * 1024 * 1024);
+    const oversized = selected.filter((f) => f.size > MAX_UPLOAD_BYTES);
     if (oversized.length > 0) {
       setFormError(
-        `File too large: "${oversized[0].name}". Documents must be under 25 MB each.`,
+        `"${oversized[0].name}" is larger than ${MAX_UPLOAD_LABEL}. Your file is safe on your device — choose documents under ${MAX_UPLOAD_LABEL} each.`,
       );
       return;
     }
@@ -1100,7 +1100,7 @@ export default function IntakePage() {
       const newFiles = await uploadIntakeFilesSequentially(selected);
       if (newFiles.length === 0) {
         setFormError(
-          `Upload failed. Check the file type and size (max 25 MB each), then try again. ${
+          `Your documents are still safe on your device. Choose files under ${MAX_UPLOAD_LABEL} and select them again. ${
             isSitePlanIntake
               ? "Supported site formats include PDF, DWG, DXF, GeoJSON, KML/KMZ, LandXML, SHP, and ZIP."
               : "Supported document formats include PDF, DWG, and DOCX."
@@ -2602,7 +2602,7 @@ export default function IntakePage() {
                   </div>
                   <p className="text-xs text-slate-500 mb-3">
                     {benefitsFromFloorplan
-                        ? "A rough hand-drawn sketch or photo of your existing floor plan helps us match your actual room dimensions and layout — especially useful for multi-room and addition projects. Accepted: PDF, DWG, DOCX (max 25 MB each, up to 5 files)."
+                        ? "A rough hand-drawn sketch or photo of your existing floor plan helps us match your actual room dimensions and layout — especially useful for multi-room and addition projects. Accepted: PDF, DWG, DOCX (max 50 MB each, up to 5 files)."
                         : isSitePlanIntake
                           ? "Add any survey or property plan you already have."
                           : isPermitIntake

@@ -9,6 +9,18 @@ export type IntakeUploadedKind = 'image' | 'video' | 'document' | 'voice'
  */
 export type IntakeUploadedFile = { name: string; url: string; type: IntakeUploadedKind; label?: string; area?: string; viewpoint?: string }
 
+/**
+ * The largest file the platform accepts, everywhere.
+ *
+ * Set by the storage backend, not by preference: Supabase rejects anything
+ * larger with EntityTooLarge (verified against the live project 2026-09-22).
+ * Raising it means raising the project's storage limit first — a client-side
+ * number above this only moves the failure later, after the customer has
+ * waited through the upload.
+ */
+export const MAX_UPLOAD_BYTES = 50 * 1024 * 1024
+export const MAX_UPLOAD_LABEL = '50 MB'
+
 export function classifyIntakeFileType(file: File): IntakeUploadedKind {
   const type = resolveIntakeFileType(file)
   if (type.startsWith('video/')) return 'video'
@@ -26,7 +38,7 @@ export async function uploadIntakeFilesSequentially(
   const results: IntakeUploadedFile[] = []
   for (const f of files) {
     try {
-      if (f.size > 50 * 1024 * 1024) throw new Error('File exceeds the 50 MB upload limit.')
+      if (f.size > MAX_UPLOAD_BYTES) throw new Error(`File exceeds the ${MAX_UPLOAD_LABEL} upload limit.`)
       const body = new FormData()
       const type = resolveIntakeFileType(f)
       body.append('files', type !== f.type ? new File([f], f.name, { type }) : f)
