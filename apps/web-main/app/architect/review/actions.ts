@@ -1,7 +1,7 @@
 'use server'
 
 /**
- * The engineer queue's actions — the shared professional-review actions,
+ * The architect queue's actions (OS Architecture) — the shared professional-review actions,
  * which read the discipline off the caller's profile. See
  * `lib/professional-review-actions.ts`.
  */

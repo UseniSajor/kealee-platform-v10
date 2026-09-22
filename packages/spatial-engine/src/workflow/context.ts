@@ -72,6 +72,8 @@ export interface StageCapabilities {
 /** One subject a professional was asked to decide on. */
 export interface ReviewSubjectDecision {
   subject: string
+  /** Which licence decides this subject — 'professional_engineer', 'architect', … Absent on hosts predating the architect queue. */
+  discipline?: string
   decision: 'PENDING' | 'CHANGES_REQUESTED' | 'APPROVED' | 'REJECTED' | 'SUPERSEDED'
   comment: string | null
   decidedByName: string | null
@@ -80,21 +82,36 @@ export interface ReviewSubjectDecision {
   decidedAt: string | null
 }
 
-/** Mirrors SitePlanReviewAssignment + SitePlanScopedApproval, narrowed. */
-export interface ReviewState {
-  assignment: {
-    status: string
-    discipline: string
-    acceptedAt: string | null
-    completedAt: string | null
-    notes: string | null
-    professional: {
-      displayName: string
-      licenceNumber: string | null
-      licenceState: string | null
-    } | null
+export interface ReviewAssignmentState {
+  status: string
+  discipline: string
+  acceptedAt: string | null
+  completedAt: string | null
+  notes: string | null
+  professional: {
+    displayName: string
+    licenceNumber: string | null
+    licenceState: string | null
   } | null
+}
+
+/**
+ * Mirrors SitePlanReviewAssignment + SitePlanScopedApproval, narrowed.
+ *
+ * `assignment` is the first (engineer's) assignment, kept for hosts that
+ * know one reviewer per plan. `assignments` carries every discipline's — a
+ * professional engineer and an architect review the same plan side by side —
+ * and `requiredDisciplines` says which of them the product paid for; the
+ * routing stage waits on each of those and completes only when all have
+ * decided.
+ */
+export interface ReviewState {
+  assignment: ReviewAssignmentState | null
+  assignments?: ReviewAssignmentState[]
+  requiredDisciplines?: string[]
   approvals: ReviewSubjectDecision[]
+  /** The drawing revision the professionals are looking at (0 = the first). */
+  sheetRevision?: number
 }
 
 export interface ArtifactInput {

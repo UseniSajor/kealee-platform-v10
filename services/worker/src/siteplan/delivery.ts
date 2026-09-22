@@ -204,10 +204,18 @@ export function buildSitePlanDeliverable(input: {
  * `ORDER_STATUSES` in web-main's order-status.ts — values, not the module,
  * because the worker does not import from a Next.js app.
  */
-const SITE_PLAN_PRODUCTS: Record<string, { routeReview: boolean; issuance: boolean }> = {
-  preliminary_site_plan: { routeReview: false, issuance: false },
-  verified_site_feasibility: { routeReview: true, issuance: false },
-  permit_site_plan: { routeReview: true, issuance: true },
+const SITE_PLAN_PRODUCTS: Record<string, { routeReview: boolean; issuance: boolean; disciplines: string[] }> = {
+  preliminary_site_plan: { routeReview: false, issuance: false, disciplines: [] },
+  verified_site_feasibility: { routeReview: true, issuance: false, disciplines: ['professional_engineer'] },
+  // The permit set carries the dwelling footprint, finished floor and entries — an architect's
+  // subject (content-scope: architectural_footprint is certified by an architect) — so the permit
+  // product routes to the architect queue as well as the engineer's.
+  permit_site_plan: { routeReview: true, issuance: true, disciplines: ['professional_engineer', 'architect'] },
+}
+
+/** The licensed disciplines whose review the product includes, each with its own queue and assignment. */
+export function productReviewDisciplines(productId: string | null | undefined): string[] {
+  return SITE_PLAN_PRODUCTS[productId ?? '']?.disciplines ?? []
 }
 
 export function isSitePlanProduct(productId: string | null | undefined): boolean {
@@ -281,6 +289,14 @@ interface Redline {
 interface RouteReviewOutput {
   reviewState: 'UNCLAIMED' | 'IN_REVIEW' | 'APPROVED' | 'CHANGES_REQUESTED'
   documentId?: string
+  sheetRevision?: number
+  disciplines?: {
+    discipline: string
+    state: 'UNCLAIMED' | 'IN_REVIEW' | 'APPROVED' | 'CHANGES_REQUESTED'
+    reviewer: { displayName: string; licenceNumber: string | null; licenceState: string | null; discipline: string } | null
+    outstanding: string[]
+    completedAt: string | null
+  }[]
   reviewer?: {
     displayName: string
     licenceNumber: string | null
@@ -303,6 +319,10 @@ export interface SitePlanReviewRecord {
   recordedAt: string
   workflowId: string
   documentId: string | null
+  /** The drawing revision this decision was made on (0 = the first issue). */
+  sheetRevision: number
+  /** Every discipline the product requires and where each stands. */
+  disciplines: NonNullable<RouteReviewOutput['disciplines']>
   reviewer: RouteReviewOutput['reviewer'] | null
   approvals: NonNullable<RouteReviewOutput['approvals']>
   redlines: Redline[]
@@ -324,13 +344,15 @@ export function buildSitePlanReviewRecord(input: {
     recordedAt: (input.now ?? new Date()).toISOString(),
     workflowId: input.workflowId,
     documentId: routed.documentId ?? null,
+    sheetRevision: routed.sheetRevision ?? 0,
+    disciplines: routed.disciplines ?? [],
     reviewer: routed.reviewer ?? null,
     approvals: routed.approvals ?? [],
     redlines: routed.redlines ?? [],
     reviewCompletedAt: routed.reviewCompletedAt ?? null,
     note: routed.reviewState === 'APPROVED'
       ? 'Scoped professional review complete. Sealing remains a separate act, and jurisdiction approval is not implied.'
-      : 'The reviewer withheld approval on at least one subject. Kealee is revising the plan.',
+      : `${(routed.disciplines ?? []).filter(d => d.state === 'CHANGES_REQUESTED').map(d => d.discipline.replace(/_/g, ' ')).join(' and ') || 'The reviewer'} withheld approval on at least one subject. Kealee is revising the plan.`,
   }
 }
 
@@ -401,8 +423,8 @@ export async function bridgeSitePlanReviewOutcome(
     const record = buildSitePlanReviewRecord({ workflowId: input.workflowId, outputs, now: ports.now() })
     if (!record) return none(`Workflow ${input.workflowId} has no decided review to bridge.`)
 
-    if (order.reviewState === record.state) {
-      return none(`Order ${input.orderId} already carries review state ${record.state}; skipped.`)
+    if (order.reviewState === record.state && (order.reviewRevision ?? 0) === record.sheetRevision) {
+      return none(`Order ${input.orderId} already carries review state ${record.state} on revision ${record.sheetRevision}; skipped.`)
     }
 
     const patch = sitePlanReviewFormDataPatch({ productId: input.productId, record })
@@ -444,22 +466,28 @@ export async function bridgeSitePlanReviewOutcome(
  * until someone happened to open /engineer/review.
  */
 export async function notifyReviewRouted(
-  input: { workflowId: string; orderId: string; productId: string | null; address: string | null },
+  input: { workflowId: string; orderId: string; productId: string | null; address: string | null; revision?: boolean },
   ports: Pick<DeliveryPorts, 'notifyOps'>,
 ): Promise<{ sent: boolean; summary: string }> {
   const webMain = webMainBase()
+  const disciplines = productReviewDisciplines(input.productId)
+  const queues = (disciplines.length ? disciplines : ['professional_engineer']).map(d =>
+    d === 'architect' ? `  architect:  ${webMain}/architect/review` : `  engineer:   ${webMain}/engineer/review`)
   const r = await ports.notifyOps({
-    subject: `Site plan awaiting professional review — ${input.productId ?? 'site plan'}`,
+    subject: `${input.revision ? 'Revised site plan' : 'Site plan'} awaiting professional review — ${input.productId ?? 'site plan'}`,
     text: [
-      'A preliminary site plan has been delivered and routed for licensed professional review.',
+      input.revision
+        ? 'A revised site plan (the drafter answered the redlines) has been delivered and re-routed for licensed professional review.'
+        : 'A preliminary site plan has been delivered and routed for licensed professional review.',
       '',
       `  Order:     ${input.orderId}`,
       `  Product:   ${input.productId ?? '-'}`,
       `  Address:   ${input.address ?? '-'}`,
       `  Workflow:  ${input.workflowId}`,
       '',
-      `Claim it in the engineer review queue: ${webMain}/engineer/review`,
-      'The order stays at needs_professional_review until the review is completed there.',
+      'Claim it in the review queue for each discipline the product includes:',
+      ...queues,
+      'The order stays at needs_professional_review until every discipline has completed its review.',
     ].join('\n'),
   }).catch((e: unknown) => ({ sent: false, error: e instanceof Error ? e.message : String(e) }))
   return {
@@ -699,6 +727,10 @@ export interface DeliveryPorts {
     alreadyDelivered: boolean
     /** `form_data.sitePlanReview.state`, when a review has been bridged. */
     reviewState: string | null
+    /** `form_data.sitePlanReview.sheetRevision` — the revision that decision was on. */
+    reviewRevision?: number | null
+    /** `form_data.sitePlanDeliverable.document.id` — what the customer currently holds. */
+    deliveredDocumentId?: string | null
     /** `form_data.sitePlanSubmission.state`, when a submission has been bridged. */
     submissionState: string | null
     address: string | null
@@ -723,6 +755,8 @@ export interface DeliveryOutcome {
   emailed: boolean
   orderStatus: string | null
   summary: string
+  /** True when an already-delivered order received a revised drawing. */
+  revision?: boolean
 }
 
 /**
@@ -743,10 +777,6 @@ export async function bridgeSitePlanDelivery(
   try {
     const order = await ports.loadOrder(input.orderId)
     if (!order) return none(`Order ${input.orderId} not found; nothing to bridge.`)
-    if (order.alreadyDelivered) {
-      return none(`Order ${input.orderId} already carries a site-plan deliverable; skipped.`)
-    }
-
     const outputs = await ports.loadOutputs(input.workflowId)
     const record = buildSitePlanDeliverable({
       workflowId: input.workflowId, outputs, now: ports.now(),
@@ -755,14 +785,27 @@ export async function bridgeSitePlanDelivery(
       return none(`Workflow ${input.workflowId} has no rendered document to deliver.`)
     }
 
+    // A replayed delivery of the SAME drawing stops here. A different drawing
+    // on an already-delivered order is a REVISION — the drafter answered the
+    // reviewer's redlines and the chain re-rendered — and the customer's record
+    // is refreshed to the new document, keeping the previous one's id.
+    const revision = order.alreadyDelivered && order.deliveredDocumentId && order.deliveredDocumentId !== record.document.id
+    if (order.alreadyDelivered && !revision) {
+      return none(`Order ${input.orderId} already carries this site-plan deliverable; skipped.`)
+    }
+
     const patch = sitePlanDeliveryFormDataPatch({ productId: input.productId, record })
+    if (revision) {
+      patch.sitePlanDeliverable = { ...record, previousDocumentId: order.deliveredDocumentId, revised: true }
+      patch.orderStatusReason = `Revised site plan delivered by the engine after professional redlines (supersedes ${order.deliveredDocumentId}).`
+    }
     await ports.patchOrder(input.orderId, patch)
     const orderStatus = String(patch.orderStatus)
 
     if (!order.contactEmail) {
       return {
-        bridged: true, emailed: false, orderStatus,
-        summary: `Order ${input.orderId} bridged (${orderStatus}); no customer email on file.`,
+        bridged: true, emailed: false, orderStatus, revision: Boolean(revision),
+        summary: `Order ${input.orderId} ${revision ? 're-bridged with the revised plan' : 'bridged'} (${orderStatus}); no customer email on file.`,
       }
     }
 
@@ -772,13 +815,15 @@ export async function bridgeSitePlanDelivery(
       firstName: order.clientName?.split(' ')[0] || undefined,
       service,
       intakeId: input.orderId,
-      headline: orderStatus === 'delivered'
-        ? 'Your preliminary site plan is ready — open it now'
-        : 'Your preliminary site plan is drafted and queued for professional review',
+      headline: revision
+        ? 'Your site plan has been revised — the updated drawing is ready'
+        : orderStatus === 'delivered'
+          ? 'Your preliminary site plan is ready — open it now'
+          : 'Your preliminary site plan is drafted and queued for professional review',
     })
 
     return {
-      bridged: true, emailed: email.sent, orderStatus,
+      bridged: true, emailed: email.sent, orderStatus, revision: Boolean(revision),
       summary: email.sent
         ? `Order ${input.orderId} bridged (${orderStatus}); customer emailed.`
         : `Order ${input.orderId} bridged (${orderStatus}); email not sent (${email.error ?? 'unknown'}).`,
@@ -816,13 +861,17 @@ export function productionDeliveryPorts(deps: {
       const rows = await prisma.$queryRaw<
         {
           contact_email: string | null; client_name: string | null; project_address: string | null
-          delivered: boolean; review_state: string | null; submission_state: string | null
+          delivered: boolean; delivered_document_id: string | null
+          review_revision: string | null
+          review_state: string | null; submission_state: string | null
           ingested: unknown
         }[]
       >`
         SELECT contact_email, client_name, project_address,
                (form_data ? 'sitePlanDeliverable') AS delivered,
+               form_data #>> '{sitePlanDeliverable,document,id}' AS delivered_document_id,
                form_data #>> '{sitePlanReview,state}' AS review_state,
+               form_data #>> '{sitePlanReview,sheetRevision}' AS review_revision,
                form_data #>> '{sitePlanSubmission,state}' AS submission_state,
                form_data -> 'sitePlanCountyCommentsIngested' AS ingested
         FROM public_intake_leads
@@ -835,7 +884,9 @@ export function productionDeliveryPorts(deps: {
         contactEmail: row.contact_email,
         clientName: row.client_name,
         alreadyDelivered: Boolean(row.delivered),
+        deliveredDocumentId: row.delivered_document_id ?? null,
         reviewState: row.review_state,
+        reviewRevision: row.review_revision != null ? Number(row.review_revision) : null,
         submissionState: row.submission_state,
         address: row.project_address,
         countyCommentsIngested: Array.isArray(row.ingested) ? (row.ingested as unknown[]).map(String) : [],

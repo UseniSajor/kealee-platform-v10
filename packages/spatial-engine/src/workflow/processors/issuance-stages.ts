@@ -127,7 +127,7 @@ function scopedApprovalsFrom(routed: RouteReviewOutput, sheets: SheetId[]): Scop
 function reviewIfAny(ctx: StageContext): RouteReviewOutput {
   const routed = ctx.priorOutputs['siteplan.route_review'] as RouteReviewOutput | undefined
   return routed ?? {
-    reviewState: 'UNCLAIMED', documentId: '', responsibility: [], reviewer: null,
+    reviewState: 'UNCLAIMED', documentId: '', sheetRevision: 0, responsibility: [], reviewer: null, disciplines: [],
     approvals: [], outstanding: [], redlines: [], reviewCompletedAt: null,
     note: 'No professional review recorded when issuance QC ran.',
   }

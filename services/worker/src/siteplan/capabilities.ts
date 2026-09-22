@@ -14,6 +14,7 @@
 
 import { prisma } from '@kealee/database'
 import { Workflow, type EvidenceKind, type Discipline, type CountyComment } from '@kealee/pascal-agents/engine'
+import { productReviewDisciplines } from './delivery'
 
 /** Maps a runner status onto the SitePlanStageStatus the schema already has. */
 function toStageStatus(s: string): 'COMPLETED' | 'AWAITING_REVIEW' | 'BLOCKED' | 'REJECTED' {
@@ -154,47 +155,55 @@ export function productionCapabilities(opts: {
      * reads them here; nothing in the worker can mark a subject approved.
      */
     async loadReviewState(workflowId) {
-      const assignment = await prisma.sitePlanReviewAssignment.findUnique({
+      // One assignment per discipline: the engineer's and the architect's
+      // reviews of the same plan sit side by side. The product says which
+      // disciplines it paid for; route_review waits on each of those.
+      const wf = await prisma.sitePlanWorkflow.findUnique({ where: { id: workflowId }, select: { productId: true } })
+      const rows = await prisma.sitePlanReviewAssignment.findMany({
         where: { workflowId },
+        orderBy: { assignedAt: 'asc' },
         select: {
           status: true, discipline: true, acceptedAt: true, completedAt: true,
           notes: true, professionalProfileId: true,
         },
       })
-      const professional = assignment
-        ? await prisma.designProfessionalProfile.findUnique({
-            where: { id: assignment.professionalProfileId },
-            select: { displayName: true, licenseNumber: true, licenseState: true },
+      const profiles = rows.length
+        ? await prisma.designProfessionalProfile.findMany({
+            where: { id: { in: rows.map(r => r.professionalProfileId) } },
+            select: { id: true, displayName: true, licenseNumber: true, licenseState: true },
           })
-        : null
+        : []
       const approvals = await prisma.sitePlanScopedApproval.findMany({
         where: { workflowId, supersededById: null },
         orderBy: { createdAt: 'asc' },
         select: {
-          subject: true, decision: true, comment: true, decidedByName: true,
+          subject: true, discipline: true, decision: true, comment: true, decidedByName: true,
           licenceNumber: true, licenceState: true, decidedAt: true,
         },
       })
-      if (!assignment && approvals.length === 0) return null
+      const sheets = await prisma.sitePlanSheet.aggregate({ where: { workflowId }, _max: { currentRevision: true } })
+      if (rows.length === 0 && approvals.length === 0) return null
+      const assignments = rows.map(a => {
+        const p = profiles.find(x => x.id === a.professionalProfileId) ?? null
+        return {
+          status: a.status,
+          discipline: a.discipline,
+          acceptedAt: a.acceptedAt?.toISOString() ?? null,
+          completedAt: a.completedAt?.toISOString() ?? null,
+          notes: a.notes,
+          professional: p ? { displayName: p.displayName, licenceNumber: p.licenseNumber, licenceState: p.licenseState } : null,
+        }
+      })
+      const required = productReviewDisciplines(wf?.productId)
       return {
-        assignment: assignment
-          ? {
-              status: assignment.status,
-              discipline: assignment.discipline,
-              acceptedAt: assignment.acceptedAt?.toISOString() ?? null,
-              completedAt: assignment.completedAt?.toISOString() ?? null,
-              notes: assignment.notes,
-              professional: professional
-                ? {
-                    displayName: professional.displayName,
-                    licenceNumber: professional.licenseNumber,
-                    licenceState: professional.licenseState,
-                  }
-                : null,
-            }
-          : null,
+        assignment: assignments.find(a => a.discipline === 'professional_engineer') ?? assignments[0] ?? null,
+        assignments,
+        // Whatever the product says, a discipline that has claimed the plan is part of its review.
+        requiredDisciplines: [...new Set([...(required.length ? required : ['professional_engineer']), ...assignments.map(a => a.discipline)])],
+        sheetRevision: sheets._max.currentRevision ?? 0,
         approvals: approvals.map(a => ({
           subject: String(a.subject),
+          discipline: a.discipline,
           decision: a.decision as Workflow.ReviewSubjectDecision['decision'],
           comment: a.comment,
           decidedByName: a.decidedByName,

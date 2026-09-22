@@ -1,4 +1,4 @@
-import { requireAssignedReview, reviewDb } from '@/lib/engineer-review'
+import { requireAssignedReview, reviewDb } from '@/lib/professional-review'
 
 export const dynamic = 'force-dynamic'
 

@@ -38,8 +38,9 @@ const REVIEWER = {
 
 function routed(state: RouteReviewOutput['reviewState']): RouteReviewOutput {
   return {
-    reviewState: state, documentId: 'doc_1', responsibility: [],
+    reviewState: state, documentId: 'doc_1', sheetRevision: 0, responsibility: [],
     reviewer: REVIEWER,
+    disciplines: [{ discipline: 'professional_engineer', state, reviewer: REVIEWER, outstanding: [], completedAt: state === 'APPROVED' ? '2026-09-16T11:00:00Z' : null }],
     approvals: [
       { subject: 'ZONING_COMPLIANCE', decision: 'APPROVED', comment: null, decidedByName: 'A. Engineer',
         licenceNumber: 'MD-12345', licenceState: 'MD', decidedAt: '2026-09-16T10:00:00Z' },

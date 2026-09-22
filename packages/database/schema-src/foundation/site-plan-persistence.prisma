@@ -315,9 +315,12 @@ model SitePlanScopedApproval {
 
 /// Binds one verified professional to a site-plan review. Accepting an
 /// assignment never implies approval of any engineering subject.
+/// One assignment per discipline per workflow: a professional engineer and an
+/// architect review the same plan side by side, each deciding only the
+/// subjects of their own licence.
 model SitePlanReviewAssignment {
   id                    String   @id @default(uuid())
-  workflowId            String   @unique
+  workflowId            String
   professionalProfileId String
   assignedById          String?
   status                String   @default("ACTIVE")
@@ -330,6 +333,8 @@ model SitePlanReviewAssignment {
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
 
+  @@unique([workflowId, discipline])
+  @@index([workflowId])
   @@index([professionalProfileId, status, updatedAt])
   @@index([status, assignedAt])
   @@map("site_plan_review_assignments")

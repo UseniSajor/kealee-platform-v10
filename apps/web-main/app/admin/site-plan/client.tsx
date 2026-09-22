@@ -38,7 +38,13 @@ interface Detail {
   workflow: { id: string; orderId: string; productId: string | null; currentStage: string; status: string }
   stages: { job: string; group: string; status: string; attempt: number; blockers: unknown[]; completedAt: string | null; runnable: boolean; deliverable: boolean }[]
   queue: { jobId: string; jobName: string | null; status: string; attempts: number; error: string | null; result: unknown; createdAt: string }[]
-  review: { assignment: { status: string; discipline: string } | null; approvals: { subject: string; decision: string; comment: string | null; decidedByName: string | null }[]; evidenceCount: number }
+  review: {
+    assignment: { status: string; discipline: string } | null
+    assignments: { status: string; discipline: string }[]
+    approvals: { id: string; subject: string; discipline: string; decision: string; comment: string | null; decidedByName: string | null }[]
+    redlines: { id: string; subject: string; discipline: string; decision: string; comment: string | null; decidedByName: string | null }[]
+    evidenceCount: number
+  }
   order: {
     orderStatus: string | null; orderStatusReason: string | null; fulfillmentStatus: string | null
     countyComments: { id: string; sheet?: string; reviewer: string; comment: string; receivedAt: string }[]
@@ -131,6 +137,30 @@ export function AdminSitePlanClient() {
     } finally { setBusy('') }
   }
 
+  // The drafter's revision: a response per redline, a description, and the input changes (JSON).
+  const [revision, setRevision] = useState<{ description: string; responses: Record<string, string>; patch: string }>({ description: '', responses: {}, patch: '{}' })
+  async function submitRevision(workflowId: string) {
+    setBusy(`${workflowId}:revision`); setNotice('')
+    try {
+      let formDataPatch: Record<string, unknown>
+      try { formDataPatch = JSON.parse(revision.patch || '{}') } catch { setNotice('The input changes must be valid JSON.'); return }
+      const res = await fetch(`/api/admin/site-plan/${workflowId}/revision`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          description: revision.description,
+          responses: Object.entries(revision.responses).map(([approvalId, response]) => ({ approvalId, response })),
+          formDataPatch,
+        }),
+      })
+      const body = await res.json()
+      setNotice(res.ok
+        ? `Revision ${body.sheetRevision} submitted: ${body.supersededApprovals} redline(s) reset to PENDING, ${body.reactivatedAssignments} reviewer(s) reactivated, compose_sheets enqueued (${body.jobKey}). The chain re-renders, the customer record is refreshed and the plan is re-routed for review.`
+        : body.error ?? `HTTP ${res.status}`)
+      if (res.ok) setRevision({ description: '', responses: {}, patch: '{}' })
+      await loadDetail(workflowId)
+    } finally { setBusy('') }
+  }
+
   async function addComment(workflowId: string) {
     if (!comment.comment.trim()) return
     setBusy(`${workflowId}:comment`); setNotice('')
@@ -208,7 +238,9 @@ export function AdminSitePlanClient() {
                     onToggle={() => toggle(r)} onActivate={() => void activate(r.intakeId)}
                     onRun={(job) => r.workflowId && void run(r.workflowId, job)}
                     comment={comment} setComment={setComment}
-                    onAddComment={() => r.workflowId && void addComment(r.workflowId)} />
+                    onAddComment={() => r.workflowId && void addComment(r.workflowId)}
+                    revision={revision} setRevision={setRevision}
+                    onSubmitRevision={() => r.workflowId && void submitRevision(r.workflowId)} />
                 )
               })}
             </tbody>
@@ -225,6 +257,9 @@ function SitePlanRow(props: {
   comment: { sheet: string; reviewer: string; comment: string }
   setComment: (u: (c: { sheet: string; reviewer: string; comment: string }) => { sheet: string; reviewer: string; comment: string }) => void
   onAddComment: () => void
+  revision: { description: string; responses: Record<string, string>; patch: string }
+  setRevision: (u: (v: { description: string; responses: Record<string, string>; patch: string }) => { description: string; responses: Record<string, string>; patch: string }) => void
+  onSubmitRevision: () => void
 }) {
   const { r, d, isOpen, busy } = props
   return (
@@ -314,13 +349,36 @@ function SitePlanRow(props: {
                   </div>
                   <div>
                     <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-2">Professional review</h3>
-                    {d.review.assignment
-                      ? <div className="text-xs text-slate-700">{d.review.assignment.discipline} · {d.review.assignment.status}
-                          <ul className="mt-1">{d.review.approvals.map(a => <li key={a.subject}>{a.subject}: {a.decision}{a.decidedByName ? ` — ${a.decidedByName}` : ''}{a.comment ? ` · ${a.comment}` : ''}</li>)}</ul>
+                    {d.review.assignments?.length
+                      ? <div className="text-xs text-slate-700">
+                          {d.review.assignments.map(a => <div key={a.discipline}>{a.discipline.replaceAll('_', ' ')} · {a.status}</div>)}
+                          <ul className="mt-1">{d.review.approvals.map(a => <li key={a.id}>{a.subject} ({a.discipline.replaceAll('_', ' ')}): {a.decision}{a.decidedByName ? ` — ${a.decidedByName}` : ''}{a.comment ? ` · ${a.comment}` : ''}</li>)}</ul>
                         </div>
-                      : <div className="text-xs text-slate-400">Unclaimed. Engineers claim at /engineer/review.</div>}
+                      : <div className="text-xs text-slate-400">Unclaimed. Engineers claim at /engineer/review (OS Engineering); architects at /architect/review (OS Architecture).</div>}
                     <div className="text-xs text-slate-500 mt-1">{d.review.evidenceCount} evidence item(s) attached</div>
                   </div>
+                  {d.review.redlines?.length > 0 && (
+                    <div className="rounded-lg border border-amber-200 bg-amber-50 p-3">
+                      <h3 className="text-xs font-semibold uppercase tracking-wide text-amber-900 mb-2">Drafter: answer the redlines and submit the revision</h3>
+                      <p className="text-[11px] text-amber-900 mb-2">Each withheld subject needs a response. The input changes are what makes the next render different — the engine does not apply free-text redlines. Submitting bumps the sheet revision, resets the withheld subjects to PENDING, reactivates the reviewers, re-renders from compose_sheets, refreshes the customer record and re-routes for review.</p>
+                      {d.review.redlines.map(rl => (
+                        <div key={rl.id} className="mb-2">
+                          <div className="text-xs text-slate-800"><span className="font-semibold">{rl.subject}</span> · {rl.discipline.replaceAll('_', ' ')} · {rl.decision}{rl.decidedByName ? ` — ${rl.decidedByName}` : ''}</div>
+                          <div className="text-xs text-slate-600 italic">{rl.comment}</div>
+                          <input value={props.revision.responses[rl.id] ?? ''} onChange={e => props.setRevision(v => ({ ...v, responses: { ...v.responses, [rl.id]: e.target.value } }))}
+                            placeholder="What was done about it" className="mt-1 w-full rounded border border-slate-300 px-2 py-1 text-xs" />
+                        </div>
+                      ))}
+                      <input value={props.revision.description} onChange={e => props.setRevision(v => ({ ...v, description: e.target.value }))}
+                        placeholder="Revision description (printed in the sheet's revision block)" className="mt-1 w-full rounded border border-slate-300 px-2 py-1 text-xs" />
+                      <textarea value={props.revision.patch} onChange={e => props.setRevision(v => ({ ...v, patch: e.target.value }))} rows={3}
+                        placeholder='Input changes as JSON, merged over the workflow form data — e.g. {"frontSetbackFt": 25, "footprintWidthFt": 40}' className="mt-1 w-full rounded border border-slate-300 px-2 py-1 font-mono text-xs" />
+                      <button onClick={props.onSubmitRevision} disabled={busy === `${r.workflowId}:revision` || !props.revision.description.trim()}
+                        className="mt-2 inline-flex items-center gap-1 rounded bg-amber-700 px-3 py-1.5 text-xs font-semibold text-white disabled:opacity-40">
+                        {busy === `${r.workflowId}:revision` ? <Loader2 className="h-3 w-3 animate-spin" /> : <Play className="h-3 w-3" />} Submit revision
+                      </button>
+                    </div>
+                  )}
                   <div>
                     <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-2">County comments</h3>
                     {d.order?.countyComments.length ? (

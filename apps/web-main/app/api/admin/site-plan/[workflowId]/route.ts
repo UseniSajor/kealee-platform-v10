@@ -33,7 +33,7 @@ export async function GET(
   })
   if (!wf) return NextResponse.json({ error: 'Workflow not found' }, { status: 404 })
 
-  const [executions, queue, assignment, approvals, evidence] = await Promise.all([
+  const [executions, queue, assignments, approvals, evidence] = await Promise.all([
     prisma.sitePlanStageExecution.findMany({
       where: { workflowId: wf.id },
       select: { job: true, stage: true, status: true, attempt: true, blockers: true, completedAt: true, updatedAt: true },
@@ -44,10 +44,11 @@ export async function GET(
       select: { jobId: true, jobName: true, status: true, attempts: true, error: true, result: true, createdAt: true, completedAt: true },
       orderBy: { createdAt: 'asc' },
     }),
-    prisma.sitePlanReviewAssignment.findUnique({ where: { workflowId: wf.id } }),
+    // One per discipline — the engineer's and the architect's, side by side.
+    prisma.sitePlanReviewAssignment.findMany({ where: { workflowId: wf.id }, orderBy: { assignedAt: 'asc' } }),
     prisma.sitePlanScopedApproval.findMany({
-      where: { workflowId: wf.id },
-      select: { subject: true, decision: true, comment: true, decidedByName: true, decidedAt: true },
+      where: { workflowId: wf.id, supersededById: null },
+      select: { id: true, subject: true, discipline: true, decision: true, comment: true, decidedByName: true, decidedAt: true },
     }),
     prisma.sitePlanEvidence.count({ where: { workflowId: wf.id, revokedAt: null } }),
   ])
@@ -82,7 +83,11 @@ export async function GET(
     workflow: wf,
     stages: declared,
     queue,
-    review: { assignment, approvals, evidenceCount: evidence },
+    review: {
+      assignment: assignments.find(a => a.discipline === 'professional_engineer') ?? assignments[0] ?? null,
+      assignments, approvals, evidenceCount: evidence,
+      redlines: approvals.filter(a => a.decision === 'CHANGES_REQUESTED' || a.decision === 'REJECTED'),
+    },
     order: order ? {
       intakeId: order.id, productKey: order.project_path, clientName: order.client_name,
       contactEmail: order.contact_email, projectAddress: order.project_address, status: order.status,

@@ -21,7 +21,7 @@
  * comment would be exactly the kind of invented output this engine refuses.
  */
 
-import type { StageContext, StageResult, StageProcessor, ReviewState, ReviewSubjectDecision } from '../context'
+import type { StageContext, StageResult, StageProcessor, ReviewState, ReviewAssignmentState, ReviewSubjectDecision } from '../context'
 import { requirePriorOutput } from '../context'
 import type { SitePlanJobName } from '../definition'
 import { buildResponsibilityBlock, type DividedResponsibilityBlock } from '../../review/content-scope'
@@ -40,18 +40,34 @@ export interface Redline {
   decidedAt: string | null
 }
 
+export interface ReviewerSummary {
+  displayName: string
+  licenceNumber: string | null
+  licenceState: string | null
+  discipline: string
+}
+
+export interface DisciplineReviewState {
+  discipline: string
+  /** UNCLAIMED — no assignment yet; IN_REVIEW — claimed, deciding; APPROVED; CHANGES_REQUESTED. */
+  state: ReviewRoutingState
+  reviewer: ReviewerSummary | null
+  outstanding: string[]
+  completedAt: string | null
+}
+
 export interface RouteReviewOutput {
   reviewState: ReviewRoutingState
   /** The drawing the professional was asked to review. */
   documentId: string
+  /** The drawing revision under review (0 = the first issue). */
+  sheetRevision: number
   /** Title-block responsibility division, one per composed page. Empty when the twin could not be rebuilt. */
   responsibility: DividedResponsibilityBlock[]
-  reviewer: {
-    displayName: string
-    licenceNumber: string | null
-    licenceState: string | null
-    discipline: string
-  } | null
+  /** The first (engineer's) reviewer — kept for readers that know one reviewer per plan. */
+  reviewer: ReviewerSummary | null
+  /** Every discipline the product requires, with where each stands. */
+  disciplines: DisciplineReviewState[]
   approvals: ReviewSubjectDecision[]
   /** Subjects not yet APPROVED. Empty once the review is complete. */
   outstanding: string[]
@@ -105,10 +121,36 @@ function redlinesFrom(approvals: ReviewSubjectDecision[]): Redline[] {
       : [])
 }
 
-function reviewerFrom(state: ReviewState): RouteReviewOutput['reviewer'] {
-  const a = state.assignment
+function reviewerOf(a: ReviewAssignmentState | null): ReviewerSummary | null {
   if (!a?.professional) return null
   return { ...a.professional, discipline: a.discipline }
+}
+
+/** The engineer is always required; the host adds the architect (and others) per product. */
+const DEFAULT_REQUIRED = ['professional_engineer']
+
+/**
+ * Where each required discipline stands. A discipline with no assignment is
+ * UNCLAIMED; one whose assignment is REVISION_REQUIRED (or with a withheld
+ * subject) is CHANGES_REQUESTED; COMPLETED is APPROVED; anything else is
+ * IN_REVIEW. Subjects are attributed to a discipline by their `discipline`
+ * field, or — on a host predating it — all to the engineer.
+ */
+function disciplineStates(state: ReviewState | null): DisciplineReviewState[] {
+  const required = state?.requiredDisciplines?.length ? state.requiredDisciplines : DEFAULT_REQUIRED
+  const assignments = state?.assignments ?? (state?.assignment ? [state.assignment] : [])
+  const approvals = state?.approvals ?? []
+  return required.map(discipline => {
+    const a = assignments.find(x => x.discipline === discipline) ?? null
+    const mine = approvals.filter(ap => (ap.discipline ?? 'professional_engineer') === discipline)
+    const outstanding = mine.filter(ap => ap.decision !== 'APPROVED').map(ap => ap.subject)
+    const withheld = mine.some(ap => ap.decision === 'CHANGES_REQUESTED' || ap.decision === 'REJECTED')
+    const st: ReviewRoutingState = !a ? 'UNCLAIMED'
+      : a.status === 'REVISION_REQUIRED' || withheld ? 'CHANGES_REQUESTED'
+      : a.status === 'COMPLETED' ? 'APPROVED'
+      : 'IN_REVIEW'
+    return { discipline, state: st, reviewer: reviewerOf(a), outstanding, completedAt: a?.completedAt ?? null }
+  })
 }
 
 // ── siteplan.route_review ───────────────────────────────────────────────────
@@ -132,35 +174,42 @@ const routeReview: StageProcessor = async (ctx): Promise<StageResult> => {
   const responsibility = responsibilityFor(ctx, compose)
   const approvals = state?.approvals ?? []
   const outstanding = approvals.filter(a => a.decision !== 'APPROVED').map(a => a.subject)
+  const disciplines = disciplineStates(state)
+  const primary = state?.assignments?.find(a => a.discipline === 'professional_engineer') ?? state?.assignment ?? null
 
   const base = {
     documentId: render.documentId,
+    sheetRevision: state?.sheetRevision ?? 0,
     responsibility,
-    reviewer: state ? reviewerFrom(state) : null,
+    reviewer: reviewerOf(primary),
+    disciplines,
     approvals,
     outstanding,
     redlines: redlinesFrom(approvals),
   }
+  const who = (st: ReviewRoutingState) => disciplines.filter(d => d.state === st).map(d => d.discipline)
 
-  const assignment = state?.assignment ?? null
-
-  // Nobody has claimed it. The review queue lists it; the stage waits.
-  if (!assignment) {
-    return {
-      status: 'AWAITING_REVIEW',
-      outputs: {
-        ...base, reviewState: 'UNCLAIMED', reviewCompletedAt: null,
-        note: 'Awaiting a licensed professional to claim the review.',
-      } satisfies RouteReviewOutput,
-    }
-  }
-
-  if (assignment.status === 'COMPLETED') {
+  // Any required discipline withholding approval decides the plan: it goes
+  // back to a drafter now, whatever the other reviewers are doing.
+  if (who('CHANGES_REQUESTED').length) {
     return {
       status: 'COMPLETED',
       outputs: {
-        ...base, reviewState: 'APPROVED', reviewCompletedAt: assignment.completedAt,
-        note: 'Scoped professional review complete. Sealing remains a separate act.',
+        ...base, reviewState: 'CHANGES_REQUESTED', reviewCompletedAt: null,
+        note: `${who('CHANGES_REQUESTED').join(', ')} withheld approval on at least one subject. Redlines are listed.`,
+      } satisfies RouteReviewOutput,
+      enqueue: ['siteplan.apply_revisions'],
+    }
+  }
+
+  // Every required discipline has completed: the review is approved.
+  if (disciplines.length && disciplines.every(d => d.state === 'APPROVED')) {
+    const completedAt = disciplines.map(d => d.completedAt).filter((v): v is string => Boolean(v)).sort().pop() ?? null
+    return {
+      status: 'COMPLETED',
+      outputs: {
+        ...base, reviewState: 'APPROVED', reviewCompletedAt: completedAt,
+        note: `Scoped professional review complete (${disciplines.map(d => d.discipline).join(', ')}). Sealing remains a separate act.`,
       } satisfies RouteReviewOutput,
       // Issuance runs off the delivered preliminary, not off this approval.
       // Staff re-run run_issuance_qc if the matrix should reflect it.
@@ -168,23 +217,23 @@ const routeReview: StageProcessor = async (ctx): Promise<StageResult> => {
     }
   }
 
-  if (assignment.status === 'REVISION_REQUIRED') {
+  // Nobody has claimed any of it. The review queues list it; the stage waits.
+  if (disciplines.every(d => d.state === 'UNCLAIMED')) {
     return {
-      status: 'COMPLETED',
+      status: 'AWAITING_REVIEW',
       outputs: {
-        ...base, reviewState: 'CHANGES_REQUESTED', reviewCompletedAt: null,
-        note: 'The reviewer withheld approval on at least one subject. Redlines are listed.',
+        ...base, reviewState: 'UNCLAIMED', reviewCompletedAt: null,
+        note: `Awaiting ${disciplines.map(d => d.discipline).join(' and ')} to claim the review.`,
       } satisfies RouteReviewOutput,
-      enqueue: ['siteplan.apply_revisions'],
     }
   }
 
-  // ACTIVE, or any status this engine does not know: still with the professional.
+  // Claimed by some, still with the professionals.
   return {
     status: 'AWAITING_REVIEW',
     outputs: {
       ...base, reviewState: 'IN_REVIEW', reviewCompletedAt: null,
-      note: `Under review (${assignment.status}); ${outstanding.length} subject(s) outstanding.`,
+      note: `Under review: ${disciplines.map(d => `${d.discipline} ${d.state}`).join(', ')}; ${outstanding.length} subject(s) outstanding.`,
     } satisfies RouteReviewOutput,
   }
 }
@@ -207,11 +256,13 @@ const applyRevisions: StageProcessor = async (ctx): Promise<StageResult> => {
     revisionState: 'AWAITING_DRAFTER',
     documentId: render.documentId,
     redlines: routed.redlines,
-    nextSheetRevision: ctx.attempt,
+    nextSheetRevision: (routed.sheetRevision ?? 0) + 1,
     resumeFrom: REVISION_RESUME_JOB,
     note:
-      'The engine does not apply free-text redlines. A drafter revises the inputs, re-enqueues ' +
-      `${REVISION_RESUME_JOB}, and the plan renders and is re-routed for review.`,
+      'The engine does not apply free-text redlines. A drafter answers each redline and revises the ' +
+      `inputs on the staff desk (submit revision), which re-enqueues ${REVISION_RESUME_JOB}; the plan ` +
+      'renders at the next sheet revision, the customer record is refreshed, and it is re-routed to ' +
+      'every reviewer, whose withheld subjects are reset to PENDING on the new revision.',
   }
 
   // Reopen from composition so the re-render, QC, delivery and review all

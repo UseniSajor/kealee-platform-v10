@@ -746,6 +746,9 @@ Project Details:
 - Timeline: ${formData.timeline ?? 'Flexible'}
 - Budget Range: ${intake.budget_range ?? 'Not specified'}
 ${geometry ? '\n' + buildGeometrySection(geometry) : ''}
+${typeof formData.designerDirection === 'string' && formData.designerDirection.trim()
+    ? `\nREVISION — a licensed architect reviewed the previous concept (generation ${Number(formData.conceptGeneration ?? 0)}) and withheld approval. Their direction, which this concept MUST follow:\n${formData.designerDirection}\n`
+    : ''}
 
 What this service includes (tier ${normalizeConceptTier(tier)} — permit and zoning included):
 ${tierIncludes.map((i) => `- ${i}`).join('\n')}
@@ -1126,6 +1129,9 @@ export async function POST(req: NextRequest) {
           renderJobs,
           renderJobScopes,
           conceptGeneratedAt: new Date().toISOString(),
+          // A regenerated concept is a new generation: the architect's review of the
+          // previous one no longer applies and the order returns to the OS Architecture queue.
+          conceptGeneration: Number(existingFormData.conceptGeneration ?? 0) + (existingFormData.conceptOutput ? 1 : 0),
         },
         // Never mark a paid package delivered until its source-linked render and PDF exist.
         status: deliveryReady ? 'delivered' : 'processing',

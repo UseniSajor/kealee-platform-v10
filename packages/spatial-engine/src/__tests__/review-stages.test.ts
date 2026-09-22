@@ -179,6 +179,50 @@ describe('siteplan.route_review', () => {
   })
 })
 
+describe('siteplan.route_review — engineer and architect side by side', () => {
+  const ARCH = { displayName: 'B. Architect', licenceNumber: 'AR-2', licenceState: 'MD' }
+  const two = (pe: string | null, arch: string | null, decisions: { pe: 'PENDING' | 'APPROVED' | 'CHANGES_REQUESTED'; arch: 'PENDING' | 'APPROVED' | 'CHANGES_REQUESTED' }): ReviewState => ({
+    assignment: null,
+    requiredDisciplines: ['professional_engineer', 'architect'],
+    assignments: [
+      ...(pe ? [{ status: pe, discipline: 'professional_engineer', acceptedAt: '2026-09-15T13:00:00Z', completedAt: pe === 'COMPLETED' ? '2026-09-16T11:00:00Z' : null, notes: null, professional: PE }] : []),
+      ...(arch ? [{ status: arch, discipline: 'architect', acceptedAt: '2026-09-15T14:00:00Z', completedAt: arch === 'COMPLETED' ? '2026-09-16T12:30:00Z' : null, notes: null, professional: ARCH }] : []),
+    ],
+    approvals: [
+      { subject: 'ZONING_COMPLIANCE', discipline: 'professional_engineer', decision: decisions.pe, comment: decisions.pe === 'APPROVED' ? null : 'BRL off', decidedByName: PE.displayName, licenceNumber: PE.licenceNumber, licenceState: PE.licenceState, decidedAt: '2026-09-16T10:00:00Z' },
+      { subject: 'ARCHITECTURAL_FOOTPRINT', discipline: 'architect', decision: decisions.arch, comment: decisions.arch === 'APPROVED' ? null : 'Entry faces the side yard.', decidedByName: ARCH.displayName, licenceNumber: ARCH.licenceNumber, licenceState: ARCH.licenceState, decidedAt: '2026-09-16T10:30:00Z' },
+    ],
+    sheetRevision: 0,
+  })
+
+  it('waits while the architect has not claimed, even with the engineer done', async () => {
+    const r = await routeReview(ctx('siteplan.route_review', { review: two('COMPLETED', null, { pe: 'APPROVED', arch: 'PENDING' }) }))
+    expect(r.status).toBe('AWAITING_REVIEW')
+    const out = r.outputs as RouteReviewOutput
+    expect(out.reviewState).toBe('IN_REVIEW')
+    expect(out.disciplines.map(d => [d.discipline, d.state])).toEqual([['professional_engineer', 'APPROVED'], ['architect', 'UNCLAIMED']])
+  })
+
+  it("the architect's withheld subject sends the plan back, whatever the engineer said", async () => {
+    const r = await routeReview(ctx('siteplan.route_review', { review: two('COMPLETED', 'REVISION_REQUIRED', { pe: 'APPROVED', arch: 'CHANGES_REQUESTED' }) }))
+    expect(r.status).toBe('COMPLETED')
+    expect(r.enqueue).toEqual(['siteplan.apply_revisions'])
+    const out = r.outputs as RouteReviewOutput
+    expect(out.reviewState).toBe('CHANGES_REQUESTED')
+    expect(out.redlines).toEqual([expect.objectContaining({ subject: 'ARCHITECTURAL_FOOTPRINT', decidedByName: 'B. Architect' })])
+    expect(out.note).toMatch(/architect withheld/)
+  })
+
+  it('approves only when every required discipline has completed', async () => {
+    const r = await routeReview(ctx('siteplan.route_review', { review: two('COMPLETED', 'COMPLETED', { pe: 'APPROVED', arch: 'APPROVED' }) }))
+    expect(r.status).toBe('COMPLETED')
+    const out = r.outputs as RouteReviewOutput
+    expect(out.reviewState).toBe('APPROVED')
+    expect(out.reviewCompletedAt).toBe('2026-09-16T12:30:00Z')
+    expect(out.reviewer?.displayName).toBe('A. Engineer')
+  })
+})
+
 describe('siteplan.apply_revisions', () => {
   it('records the redlines for a drafter and does not invent a revised sheet', async () => {
     const routed: Partial<RouteReviewOutput> = {
@@ -188,7 +232,7 @@ describe('siteplan.apply_revisions', () => {
         decidedByName: 'A. Engineer', decidedAt: '2026-09-16T10:00:00Z',
       }],
     }
-    const r = await applyRevisions(ctx('siteplan.apply_revisions', { routed, attempt: 2 }))
+    const r = await applyRevisions(ctx('siteplan.apply_revisions', { routed: { ...routed, sheetRevision: 1 }, attempt: 2 }))
     expect(r.status).toBe('AWAITING_REVIEW')
     expect(r.artifacts ?? []).toEqual([])
     // Reopens the drawing chain from composition; enqueues nothing, because

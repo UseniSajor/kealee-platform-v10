@@ -60,6 +60,11 @@ export const SITE_PLAN_AGENTS: AgentDefinition[] = [
     stages: ['siteplan.apply_revisions', 'siteplan.run_issuance_qc'], mayApprove: true,
   },
   {
+    id: 'architect', kind: 'human', title: 'Maryland Architect',
+    licence: 'Maryland Architect',
+    stages: ['siteplan.apply_revisions'], mayApprove: true,
+  },
+  {
     id: 'landscape_architect', kind: 'human', title: 'Maryland Landscape Architect',
     licence: 'Maryland Landscape Architect',
     stages: ['siteplan.apply_revisions'], mayApprove: true,

@@ -201,12 +201,15 @@ async function runOne(
     // so the runner never derives it; it is enqueued here, on purpose, for
     // the products that paid for it — and the review desk is told, because
     // a queue nobody knows about is not a queue.
+    // A revised drawing (the drafter answered redlines and the chain re-ran)
+    // is routed again the same way: every reviewer sees the new revision,
+    // with their withheld subjects reset to PENDING by the revision itself.
     if (delivery.bridged && productIncludesProfessionalReview(subject.productId)) {
       await enqueueSitePlanJob({ workflowId, job: 'siteplan.route_review' })
       enqueued++
       const notice = await notifyReviewRouted(
-        { ...subject, address: (await ports.loadOrder(subject.orderId))?.address ?? null }, ports)
-      console.log(`[siteplan] routed ${workflowId} for professional review. ${notice.summary}`)
+        { ...subject, address: (await ports.loadOrder(subject.orderId))?.address ?? null, revision: Boolean(delivery.revision) }, ports)
+      console.log(`[siteplan] routed ${workflowId} for professional review${delivery.revision ? ' (revised drawing)' : ''}. ${notice.summary}`)
     }
 
     // The permit product continues straight into issuance QC and the

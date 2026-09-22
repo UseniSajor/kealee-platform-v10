@@ -190,11 +190,47 @@ professional's identity. `loadReviewState` is read-only and optional — a host
 without it (the pilot script) gets BLOCKED from `route_review`, not an
 approval.
 
-**The revision loop is not closed.** `apply_revisions` ends waiting for a
-drafter; there is no reopen of `compose_sheets`/`render_exports` and no second
-routing. `ingest_comments` (J) is where reopening is meant to live and it is
-unconnected. Today a drafter revises by hand and the workflow stays at
-`apply_revisions` AWAITING_REVIEW.
+**Two queues, one plan (2026-09-21).** Professional review is per discipline:
+`SitePlanReviewAssignment` is unique on `(workflowId, discipline)`, so the
+engineer (OS Engineering, `/engineer/review`) and the architect (OS
+Architecture, `/architect/review`) hold their own assignment and decide their
+own subjects — `ZONING_COMPLIANCE`/`SITE_LAYOUT` and `ARCHITECTURAL_FOOTPRINT`
+respectively (`content-scope`: the footprint is certified by an architect).
+The worker's `loadReviewState` returns every assignment plus the disciplines
+the product requires (`productReviewDisciplines`: `verified_site_feasibility`
+→ engineer; `permit_site_plan` → engineer + architect); `route_review` waits
+on each, goes CHANGES_REQUESTED the moment any of them withholds, and APPROVED
+only when all have completed. The architect desk also carries the DESIGN
+CONCEPT queue (`DesignConceptQueue`): a concept order is reviewed as
+`form_data.architectReview`; "send back with direction" moves it to
+`revision_requested` and the next `/api/concept/generate` run feeds the
+direction into the prompt and bumps `conceptGeneration`, which returns it to
+the queue.
+
+**The revision loop is closed (2026-09-21).** On the staff desk
+(`/admin/site-plan`) a workflow with withheld subjects shows the redlines and
+a "submit revision" form: a response per redline, a description, and the
+INPUT CHANGES (JSON merged over `SitePlanWorkflow.metadata`, the form data
+every stage reads). `POST /api/admin/site-plan/:id/revision` →
+`lib/site-plan-revision.ts`:
+
+```
+submitSitePlanRevision
+  metadata ← inputs + patch (workflow.version++)
+  every SitePlanSheet → currentRevision+1, a SitePlanSheetRevision with the redlines and responses
+  withheld SitePlanScopedApprovals → superseded by fresh PENDING rows; assignments REVISION_REQUIRED → ACTIVE
+  enqueue siteplan.compose_sheets
+runner derives render_exports → run_draft_qc → persist_package → deliver_preliminary
+worker bridgeSitePlanDelivery: a DIFFERENT document on an already-delivered order is a revision —
+  form_data.sitePlanDeliverable refreshed (previousDocumentId kept), customer emailed "revised"
+worker enqueues route_review again; the desk is notified "revised site plan awaiting review"
+professionals decide on the new revision (decisions bind to the new document's hash);
+  bridgeSitePlanReviewOutcome is idempotent on (state, sheetRevision), so round 2 reaches the order
+```
+
+The engine still applies no free-text redline: a person changes the inputs,
+the engine redraws, and the audit trail (`revision.submitted`) carries what
+was changed and why. `ingest_comments` (J) remains the county-comment path.
 
 ### Issuance and submission — the I/J groups (connected 2026-09-15)
 
