@@ -1,6 +1,7 @@
 packages:
   - 'apps/*'
   - 'packages/*'
+  - 'packages/automation/apps/marketing-cron'
   - 'services/*'
   - 'bots/*'
 

@@ -1,4 +1,5 @@
 import cron from 'node-cron'
+import { createServer } from 'node:http'
 import { prisma } from '@kealee/database'
 import { recordTaskExecution, getHealthStatus } from './monitoring'
 import { initializeJobQueues, addJobToQueue } from './job-queue'
@@ -161,6 +162,16 @@ async function initializeCronJobs() {
 async function main() {
   try {
     await initializeCronJobs()
+    const port = Number(process.env.PORT) || 3000
+    createServer((_req, res) => {
+      const health = getHealthStatus()
+      res.writeHead(health.status === 'healthy' ? 200 : 202, {
+        'Content-Type': 'application/json',
+      })
+      res.end(JSON.stringify({ service: 'marketing-cron', ...health }))
+    }).listen(port, '0.0.0.0', () => {
+      console.log(`${LOG_PREFIX} Health endpoint listening on ${port}`)
+    })
     console.log(`${LOG_PREFIX} Service running. Press Ctrl+C to stop.`)
   } catch (error) {
     console.error(`${LOG_PREFIX} Fatal error:`, error)
