@@ -1,5 +1,5 @@
 import { getSupabaseAdmin } from '@/lib/supabase-server'
-import { getOwnerPortalDeliverableUrl } from '@/lib/owner-portal-urls'
+import { getWebMainUrl } from '@/lib/get-app-url'
 import {
   buildPostPaymentEmail,
   buildPreconstructionWelcomeEmail,
@@ -81,7 +81,14 @@ export async function sendPostPaymentCustomerEmail(opts: {
   clientName: string
   projectPath: string
 }): Promise<boolean> {
-  const deliverableUrl = getOwnerPortalDeliverableUrl(opts.intakeId, opts.projectPath)
+  // An email outlives whichever host serves the portal today. Point it at this
+  // domain and let the middleware send the customer to whichever view is
+  // actually up — a link straight to the portal host became a dead end the day
+  // its DNS record was removed.
+  const deliverableUrl =
+    `${getWebMainUrl()}/concept/deliverable` +
+    `?intakeId=${encodeURIComponent(opts.intakeId)}` +
+    `&projectPath=${encodeURIComponent(opts.projectPath)}`
   const { subject, html, text } = buildPostPaymentEmail({
     clientName: opts.clientName,
     projectPath: opts.projectPath,

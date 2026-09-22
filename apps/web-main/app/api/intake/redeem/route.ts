@@ -12,6 +12,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { SERVICE_DELIVERABLES } from '@/lib/service-deliverables'
+import { sendPostPaymentCustomerEmail } from '@/lib/marketing/lifecycle'
+import { recordPaidOrderIncident } from '@/lib/paid-order-incident'
+import {
+  getConceptPackageDeliverableLabelsForIntake,
+  renderCountForTier,
+  type ConceptTier,
+} from '@kealee/core-rules'
 
 export const dynamic = 'force-dynamic'
 
@@ -29,9 +36,11 @@ export async function POST(req: NextRequest) {
       projectPath: string
       promoCode: string
       validateOnly?: boolean
+      tier?: number
     }
 
     const { intakeId, projectPath, promoCode, validateOnly } = body
+    const requestedTier = body.tier === 3 ? 3 : body.tier === 2 ? 2 : body.tier === 1 ? 1 : undefined
 
     if (!projectPath || !promoCode) {
       return NextResponse.json(
@@ -54,11 +63,48 @@ export async function POST(req: NextRequest) {
 
     const supabase = getSupabaseAdmin()
 
-    // Mark intake as paid (idempotent — update only if still 'new')
+    const { data: savedOrder, error: savedOrderError } = await supabase
+      .from('public_intake_leads')
+      .select('form_data, status, contact_email, client_name')
+      .eq('id', intakeId)
+      .eq('project_path', projectPath)
+      .maybeSingle()
+
+    if (savedOrderError || !savedOrder) {
+      return NextResponse.json({ error: 'Your order is ready to be saved again' }, { status: 404 })
+    }
+
+    const savedFormData = (savedOrder.form_data as Record<string, unknown>) ?? {}
+    const savedTier = savedFormData.tier
+    const tier = (requestedTier ?? (savedTier === 3 ? 3 : savedTier === 2 ? 2 : 1)) as ConceptTier
+    const deliverable = SERVICE_DELIVERABLES[projectPath]
+    // A promo order is a real order: it gets the same record a paid one gets,
+    // so the portal can say what was charged and margin stays measurable.
+    const orderFields = {
+      amountPaidCents: 0,
+      amountPaidCurrency: 'usd',
+      paidAt: new Date().toISOString(),
+      pricingModel: 'promo_code',
+      promoCode: promoCode.trim().toUpperCase(),
+    }
+    const formData = deliverable?.generatesConcept
+      ? {
+          ...savedFormData,
+          ...orderFields,
+          tier,
+          renderCount: renderCountForTier(tier, deliverable.renderCount ?? 3),
+          serviceIncludes: getConceptPackageDeliverableLabelsForIntake(projectPath, tier),
+          funnelStage: 'paid_concept',
+        }
+      : { ...savedFormData, ...orderFields }
+    const alreadyPaid = savedOrder.status === 'paid'
+
+    // Mark intake as paid and preserve the exact tier selected before the free checkout.
     const { data: updated, error: updateErr } = await supabase
       .from('public_intake_leads')
-      .update({ status: 'paid', requires_payment: false, payment_amount: 0 })
+      .update({ status: 'paid', requires_payment: false, payment_amount: 0, form_data: formData })
       .eq('id', intakeId)
+      .eq('project_path', projectPath)
       .select('id')
       .maybeSingle()
 
@@ -71,7 +117,6 @@ export async function POST(req: NextRequest) {
     }
 
     // Trigger concept generation fire-and-forget (mirrors Stripe webhook behaviour)
-    const deliverable = SERVICE_DELIVERABLES[projectPath]
     if (deliverable?.generatesConcept) {
       const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? req.nextUrl.origin
       fetch(`${baseUrl}/api/concept/generate`, {
@@ -83,9 +128,32 @@ export async function POST(req: NextRequest) {
       })
     }
 
+    // The confirmation email is owed on every completed order, not only the
+    // ones that went through Stripe. The promo path skips the webhook, so it
+    // must send the same email the webhook would have sent.
+    const clientEmail = (savedOrder.contact_email as string | null) ?? null
+    if (clientEmail && !alreadyPaid) {
+      const sent = await sendPostPaymentCustomerEmail({
+        intakeId,
+        email: clientEmail,
+        clientName: (savedOrder.client_name as string | null) ?? 'Customer',
+        projectPath,
+      })
+      if (!sent) {
+        await recordPaidOrderIncident({
+          intakeId,
+          projectPath,
+          stripeSessionId: `promo:${promoCode.trim().toUpperCase()}`,
+          stage: 'customer-confirmation-email',
+          error: 'Resend did not accept the confirmation email for a promo order',
+          customerEmail: clientEmail,
+        })
+      }
+    }
+
     console.log(`[intake/redeem] Promo code redeemed intakeId=${intakeId} path=${projectPath}`)
 
-    return NextResponse.json({ ok: true, intakeId })
+    return NextResponse.json({ ok: true, intakeId, tier })
   } catch (err: any) {
     console.error('[intake/redeem]', err?.message)
     return NextResponse.json({ error: 'Redemption failed' }, { status: 500 })
