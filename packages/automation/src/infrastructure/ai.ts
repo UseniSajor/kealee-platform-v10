@@ -246,7 +246,6 @@ export async function analyzeImageJSON<T = unknown>(opts: {
 
 const MODEL_PRICING: Record<string, { input: number; output: number }> = {
   'claude-sonnet-5': { input: 3, output: 15 },
-  'claude-sonnet-5': { input: 3, output: 15 },
   'claude-haiku-4-5-20251001': { input: 0.8, output: 4 },
 };
 
