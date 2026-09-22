@@ -17,8 +17,8 @@ export const metadata: Metadata = {
 const display = (cents: number) => cents === 0 ? 'Included / no fee' : formatPriceFromCents(cents).replace('.00', '')
 
 const ROLE_PRICES = [
-  { audience: 'Homeowner', service: 'Project Clarity Review', price: 'Free', unit: 'project entry review', href: '/products/home-project-readiness-review' },
-  { audience: 'Homeowner', service: 'Project Launch Package', price: display(PLATFORM_PRICING.homeowner.projectLaunchCents), unit: 'one time', href: '/products/project-launch-package' },
+  { audience: 'Project Owner', service: 'Project Clarity Review', price: 'Free', unit: 'project entry review', href: '/products/home-project-readiness-review' },
+  { audience: 'Project Owner', service: 'Project Launch Package', price: display(PLATFORM_PRICING.homeowner.projectLaunchCents), unit: 'one time', href: '/products/project-launch-package' },
   { audience: 'Contractor', service: 'Marketplace Starter', price: display(PLATFORM_PRICING.contractor.marketplaceMonthlyCents.starter), unit: 'per month', href: '/contractor/register' },
   { audience: 'Contractor', service: 'Marketplace Growth', price: display(PLATFORM_PRICING.contractor.marketplaceMonthlyCents.growth), unit: 'per month', href: '/contractor/register' },
   { audience: 'Contractor', service: 'Marketplace Pro', price: display(PLATFORM_PRICING.contractor.marketplaceMonthlyCents.pro), unit: 'per month', href: '/contact' },
@@ -34,7 +34,7 @@ export default function PricingPage() {
           <span className="text-xs font-bold uppercase tracking-[0.16em] text-orange-600">Price reference</span>
           <h1 className="mt-3 font-display text-4xl font-black text-slate-950 sm:text-5xl">Current Kealee pricing</h1>
           <p className="mx-auto mt-5 max-w-2xl text-base leading-relaxed text-slate-600">
-            A plain reference list for comparing services. For a guided homeowner, contractor, or developer path,
+            A plain reference list for comparing services. For a guided project-owner, professional, contractor, or developer path,
             use the products page.
           </p>
           <Link href="/products" className="mt-7 inline-flex items-center gap-2 rounded-xl bg-orange-600 px-6 py-3 text-sm font-bold text-white hover:bg-orange-700">

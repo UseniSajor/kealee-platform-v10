@@ -20,9 +20,51 @@ export const SITE_PLAN_PROJECT_PATHS = [
 export type SitePlanProjectPath = (typeof SITE_PLAN_PROJECT_PATHS)[number]
 
 export const SITE_PLAN_LABELS: Record<SitePlanProjectPath, string> = {
-  preliminary_site_plan: 'Preliminary Site Plan',
+  preliminary_site_plan: 'Preliminary Design Concept + Site Plan',
   verified_site_feasibility: 'Verified Site Feasibility Plan',
-  permit_site_plan: 'Survey-Based Permit Site Plan',
+  permit_site_plan: 'Full / Detailed Survey-Based Site Plan',
+}
+
+export interface SitePlanPackageGuide {
+  level: string
+  summary: string
+  sections: { number: string; title: string; description: string }[]
+}
+
+/**
+ * Purchaser-facing reading order. Preliminary and full/detailed plans must
+ * never share a name or imply the same evidence, professional review, or use.
+ */
+export const SITE_PLAN_PACKAGE_GUIDES: Record<SitePlanProjectPath, SitePlanPackageGuide> = {
+  preliminary_site_plan: {
+    level: 'Preliminary — unsealed',
+    summary: 'Use this civil-planning package to understand existing site conditions, test a possible layout, identify constraints, and decide what to verify next. It is not a permit or construction set.',
+    sections: [
+      { number: '01', title: 'Project brief + design basis', description: 'Property, jurisdiction, stated program, source register, drawing basis, assumptions, and package limitations.' },
+      { number: '02', title: 'Existing conditions', description: 'Parcel and adjoining context, streets and access, available contours, mapped easements, utilities, flood, soils, trees, and environmental constraints—only where supported by identified sources.' },
+      { number: '03', title: 'Concept site + zoning plan', description: 'Buildable area, setbacks or BRLs, proposed footprint, lots, access, parking, circulation, open space, coverage, and key dimensions.' },
+      { number: '04', title: 'Preliminary civil strategy', description: 'Conceptual grading and drainage direction, utility approach, stormwater and erosion-control implications, earthwork or roadway considerations, and likely approvals.' },
+      { number: '05', title: 'Verification + next steps', description: 'Confidence by item, conflicts, alternatives, and the survey, field work, agency confirmation, or licensed-professional decisions required before detailed design.' },
+    ],
+  },
+  verified_site_feasibility: {
+    level: 'Preliminary — professionally reviewed',
+    summary: 'Use this package to compare a proposed layout against verified inputs. A review does not turn it into a sealed permit or construction set.',
+    sections: [
+      { number: '01', title: 'Reviewed design concept', description: 'The proposed site layout and the practical development intent in purchaser-friendly form.' },
+      { number: '02', title: 'Verified feasibility plan', description: 'The technical drawing and constraint analysis tied to the verified sources listed in the package.' },
+      { number: '03', title: 'Professional findings', description: 'Reviewer decisions, exceptions, redlines, remaining evidence, and the recommended next service.' },
+    ],
+  },
+  permit_site_plan: {
+    level: 'Full / detailed — survey based',
+    summary: 'This is the separate technical-plan workflow. Its sheet scope, professional responsibilities, seals, and agency status are shown explicitly.',
+    sections: [
+      { number: '01', title: 'Project + design basis', description: 'Approved scope, survey basis, jurisdiction requirements, sheet index, and professional responsibility.' },
+      { number: '02', title: 'Detailed technical plans', description: 'Applicable existing-conditions, layout, grading, drainage, stormwater, utility, roadway, detail, landscape, profile, and calculation sheets.' },
+      { number: '03', title: 'Review + submission status', description: 'Professional approvals or redlines, seals included or pending, agency checklist, outstanding items, and filing status.' },
+    ],
+  },
 }
 
 export function isSitePlanProjectPath(path: string | null | undefined): path is SitePlanProjectPath {

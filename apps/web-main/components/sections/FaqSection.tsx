@@ -21,7 +21,7 @@ const FAQS = [
   },
   {
     q: 'What is free? What costs money?',
-    a: 'The $395 concept report is where most projects start. Every other service — cost estimate, permit filing, PM advisory — is per-service and optional. Your homeowner dashboard, permit checklist, and standard contractor assignment are included with your project.',
+    a: 'The $395 concept report is where most projects start. Every other service — cost estimate, permit filing, PM advisory — is per-service and optional. Your project-owner dashboard, permit checklist, and standard contractor assignment are included with your project.',
   },
   {
     q: 'What is the difference between design concept and architectural services?',

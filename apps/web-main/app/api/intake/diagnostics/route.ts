@@ -152,7 +152,7 @@ export async function GET(req: NextRequest) {
     },
     pipelineNotes: [
       'After Stripe Checkout, Stripe sends checkout.session.completed to /api/webhooks/stripe (production URL only).',
-      'The success page also POSTs /api/concept/generate for packages with generatesConcept (redundant with webhook trigger).',
+      'The success page and Stripe webhook both call the same idempotent canonical concept trigger, so either can safely recover the order.',
       'status "concept_ready" and hasConceptOutput true mean the concept engine wrote output to form_data.',
       'Concept-ready email must use magic link (action_link), not bare /deliverables URL.',
       'Supabase Auth → Redirect URLs must include owner.kealee.com or magic links land on kealee.com login.',

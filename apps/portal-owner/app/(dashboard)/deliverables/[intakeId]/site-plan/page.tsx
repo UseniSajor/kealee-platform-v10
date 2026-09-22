@@ -27,6 +27,7 @@ import {
   reviewSubjectLabel,
   sitePlanDocumentUrl,
   sitePlanOrderStage,
+  SITE_PLAN_PACKAGE_GUIDES,
   SITE_PLAN_LABELS,
   type SitePlanDeliverable,
 } from '@/lib/site-plan-deliverable'
@@ -134,6 +135,7 @@ export default function SitePlanDeliverablePage() {
   const { intake } = state
   const path = intake.project_path
   const label = isSitePlanProjectPath(path) ? SITE_PLAN_LABELS[path] : 'Site Plan'
+  const packageGuide = isSitePlanProjectPath(path) ? SITE_PLAN_PACKAGE_GUIDES[path] : null
   const address = intake.project_address ?? (intake.form_data?.address as string | undefined) ?? ''
 
   if (state.kind === 'in_progress') {
@@ -200,6 +202,27 @@ export default function SitePlanDeliverablePage() {
           </a>
         </div>
       </div>
+
+      {packageGuide && (
+        <section className="mb-6 overflow-hidden rounded-2xl border border-slate-200 bg-white">
+          <div className="border-b border-slate-100 px-6 py-5">
+            <p className="text-[11px] font-bold uppercase tracking-[0.16em]" style={{ color: ACCENT }}>
+              {packageGuide.level}
+            </p>
+            <h2 className="mt-1 text-lg font-bold" style={{ color: NAVY }}>How to read your package</h2>
+            <p className="mt-1 max-w-3xl text-sm leading-relaxed text-slate-600">{packageGuide.summary}</p>
+          </div>
+          <div className="grid gap-px bg-slate-100 md:grid-cols-2 xl:grid-cols-5">
+            {packageGuide.sections.map(section => (
+              <div key={section.number} className="bg-white px-6 py-5">
+                <p className="text-xs font-bold" style={{ color: TEAL }}>{section.number}</p>
+                <h3 className="mt-1 text-sm font-bold" style={{ color: NAVY }}>{section.title}</h3>
+                <p className="mt-1 text-sm leading-relaxed text-slate-600">{section.description}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Professional review notice — higher tiers */}
       {stage === 'professional_review' && (

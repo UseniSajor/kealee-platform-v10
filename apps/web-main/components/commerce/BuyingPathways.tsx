@@ -19,13 +19,13 @@ function stepPrice(step: PathwayStep): string {
 const PATHWAYS = [
   {
     id: 'homeowners',
-    audience: 'Homeowners & project owners',
+    audience: 'Project owners & professionals',
     headline: 'Understand the property, define the project, then build.',
     description: 'One-time services that reduce uncertainty before you commit to drawings, permits, or construction.',
     icon: Home,
     accent: '#E8793A',
     steps: ROLE_BUYING_PATHWAYS.homeowners,
-    cta: 'Start a homeowner project',
+    cta: 'Start a project',
     href: '/request-service?service=home-project-readiness-review&name=Project+Clarity+Review',
     secondaryCta: 'Browse renovation services',
     secondaryHref: '/products#homeowner-services',
@@ -72,7 +72,7 @@ export function BuyingPathways({
           <span className="text-xs font-bold uppercase tracking-[0.16em] text-orange-600">How Kealee is purchased</span>
           <h2 className="mt-3 font-display text-3xl font-bold text-slate-950 sm:text-4xl">{heading}</h2>
           <p className="mt-4 text-sm leading-relaxed text-slate-600 sm:text-base">
-            Homeowner services are one-time project purchases. Contractor marketplace access is a subscription.
+            Project-owner services are one-time project purchases. Contractor marketplace access is a subscription.
             Developer feasibility and professional services are scoped by site.
           </p>
         </div>

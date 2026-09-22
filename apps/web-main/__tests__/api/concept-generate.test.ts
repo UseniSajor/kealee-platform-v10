@@ -1,124 +1,25 @@
-/**
- * Unit Tests — POST /api/concept/generate
- * MEGA PROMPT §2.3: API Testing (Concept Intake Endpoint)
- *
- * Tests:
- *  - Missing intakeId → 400
- *  - Non-existent intakeId → 404
- *  - Missing ANTHROPIC_API_KEY → 503
- *  - DesignBot success → 200 with conceptOutput
- *  - Cached concept returned if already generated
- *  - DesignBot failure → 500 with partial: true
- */
-
 import { NextRequest } from 'next/server'
-import { vi } from 'vitest'
+import { beforeEach, describe, expect, test, vi } from 'vitest'
 
-// ── Mocks ─────────────────────────────────────────────────────────────────────
-
-const mockIntakeRecord = {
-  id: 'test-intake-001',
-  project_path: 'kitchen_remodel',
-  client_name: 'Test User',
-  contact_email: 'test@example.com',
-  project_address: '1600 Pennsylvania Ave NW, Washington DC 20500',
-  budget_range: '$50,000',
-  form_data: { description: 'Modern kitchen with island', squareFootage: 200 },
-  status: 'paid',
-}
-
-const mockConceptOutput = {
-  designConcept: { style: 'Modern', colorPalette: ['White', 'Grey'], keyFeatures: ['Island', 'LED lighting'] },
-  mepSystem: { electrical: 'New circuits', plumbing: 'Island sink', hvac: 'N/A', lighting: 'LED recessed' },
-  billOfMaterials: [
-    { item: 'Cabinetry', quantity: 1, unit: 'set', estimatedCost: 15000, description: 'Custom shaker' },
-    { item: 'Countertops', quantity: 80, unit: 'sqft', estimatedCost: 8000, description: 'Quartz' },
-    { item: 'Appliances', quantity: 1, unit: 'set', estimatedCost: 12000, description: 'Professional grade' },
-    { item: 'Labor', quantity: 100, unit: 'hours', estimatedCost: 8000, description: 'Install' },
-    { item: 'Electrical', quantity: 1, unit: 'job', estimatedCost: 3500, description: 'New circuits' },
-  ],
-  estimatedCost: 46500,
-  projectTimeline: '10–14 weeks',
-  description: 'Modern chef kitchen concept.',
-  includes: ['3 renders', 'BOM', 'MEP spec'],
-  renderUrls: [],
-  permitScope: {
-    requiresPermit: true,
-    permitTypes: ['Building Permit'],
-    estimatedPermitFee: 850,
-    estimatedProcessingDays: 21,
-    requiresPE: false,
-    notes: 'Permit required.',
-  },
-  zoningNotes: 'R-4 zone.',
-  buildabilityFlag: 'feasible' as const,
-  readinessScore: 80,
-}
-
-const mockDesignOutput = {
-  projectId: 'test-intake-001',
-  conceptCount: 1,
-  concepts: [{
-    id: 'c1',
-    name: 'Modern Kitchen',
-    description: 'Island kitchen',
-    styleMatch: 85,
-    estimatedCost: 46500,
-    materials: ['Quartz'],
-    accessibility: [],
-    renderingHints: 'Clean lines',
-    uniqueFeatures: ['Island'],
-  }],
-  recommendations: ['Add island seating'],
-  estimatedTimeline: 90,
-}
-
-const conceptMocks = vi.hoisted(() => ({
-  supabaseSelect: vi.fn(),
-  botExecute: vi.fn(),
-  designBotEnterprise: vi.fn(),
+const generationMocks = vi.hoisted(() => ({
+  request: vi.fn(),
 }))
 
-vi.mock('@/lib/supabase-server', () => ({
-  getSupabaseAdmin: vi.fn(() => ({
-    from: vi.fn(() => ({
-      select: vi.fn(() => ({
-        eq: vi.fn(() => ({
-          single: (...args: unknown[]) => conceptMocks.supabaseSelect(...args),
-        })),
-      })),
-      update: vi.fn(() => ({
-        eq: vi.fn(() => Promise.resolve({ error: null })),
-      })),
-    })),
-  })),
-}))
-
-// Mock DesignBotEnterprise and mapDesignOutputToConceptOutput so tests never
-// hit the real Anthropic API.
-vi.mock('@kealee/core-llm', () => ({
-  DesignBotEnterprise: conceptMocks.designBotEnterprise,
-  mapDesignOutputToConceptOutput: vi.fn((_data: unknown, _opts: unknown) => mockConceptOutput),
-}))
-
-vi.mock('@kealee/core-rules', async importOriginal => ({
-  ...(await importOriginal<typeof import('@kealee/core-rules')>()),
-  runZoningBot: vi.fn().mockResolvedValue({
-    jurisdiction: 'Test jurisdiction',
-    zoning: 'R-4',
-    setbacks: { front: 20, side: 8, rear: 25 },
-    far: 0.8,
-    requirements: [],
-    permitType: [],
-    zoningClassification: 'R-4',
-    permitRequirements: [],
-    confidence: 1,
-  }),
-}))
+vi.mock('@/lib/concept-generation', () => {
+  class ConceptGenerationError extends Error {
+    constructor(message: string, readonly status: number) {
+      super(message)
+      this.name = 'ConceptGenerationError'
+    }
+  }
+  return {
+    ConceptGenerationError,
+    requestCanonicalConceptGeneration: generationMocks.request,
+  }
+})
 
 async function getHandler() {
-  const mod = await import('@/app/api/concept/generate/route')
-  return mod.POST
+  return (await import('@/app/api/concept/generate/route')).POST
 }
 
 function makeRequest(body: Record<string, unknown>): NextRequest {
@@ -129,98 +30,61 @@ function makeRequest(body: Record<string, unknown>): NextRequest {
   })
 }
 
-// ── Tests ─────────────────────────────────────────────────────────────────────
-
-describe('POST /api/concept/generate', () => {
+describe('POST /api/concept/generate canonical adapter', () => {
   beforeEach(() => {
-    vi.clearAllMocks()
-    conceptMocks.supabaseSelect.mockReset()
-    conceptMocks.botExecute.mockReset()
-    // Re-wire the DesignBotEnterprise mock's execute to use the per-test mockBotExecute
-    conceptMocks.designBotEnterprise.mockReset()
-    conceptMocks.designBotEnterprise.mockImplementation(() => ({
-      execute: vi.fn((..._args: unknown[]) => conceptMocks.botExecute()),
-    }))
+    generationMocks.request.mockReset()
   })
 
   test('returns 400 when intakeId is missing', async () => {
     const POST = await getHandler()
-    const res = await POST(makeRequest({}))
-    expect(res.status).toBe(400)
-    const body = await res.json()
-    expect(body.error).toMatch(/intakeId/i)
+    const response = await POST(makeRequest({}))
+    expect(response.status).toBe(400)
+    expect(await response.json()).toEqual({ error: 'intakeId required' })
+    expect(generationMocks.request).not.toHaveBeenCalled()
   })
 
-  test('returns 404 when intake record not found', async () => {
-    conceptMocks.supabaseSelect.mockResolvedValueOnce({ data: null, error: { message: 'Not found' } })
+  test('returns an existing package without dispatching a second producer', async () => {
+    generationMocks.request.mockResolvedValue({
+      state: 'ready',
+      cached: true,
+      intakeId: 'intake-1',
+      source: 'legacy-existing',
+      conceptOutput: { description: 'Existing paid package' },
+    })
 
     const POST = await getHandler()
-    const res = await POST(makeRequest({ intakeId: 'nonexistent-uuid' }))
-    expect(res.status).toBe(404)
+    const response = await POST(makeRequest({ intakeId: 'intake-1' }))
+    expect(response.status).toBe(200)
+    expect((await response.json()).cached).toBe(true)
+    expect(generationMocks.request).toHaveBeenCalledOnce()
   })
 
-  test('returns 402 when intake is not paid (P0-4 gate)', async () => {
-    const unpaidRecord = { ...mockIntakeRecord, status: 'new' }
-    conceptMocks.supabaseSelect.mockResolvedValueOnce({ data: unpaidRecord, error: null })
+  test('returns 202 when v30 accepts generation', async () => {
+    generationMocks.request.mockResolvedValue({
+      state: 'accepted',
+      cached: false,
+      intakeId: 'intake-1',
+      source: 'v30',
+      projectId: 'project-1',
+      packageId: 'package-1',
+    })
 
     const POST = await getHandler()
-    const res = await POST(makeRequest({ intakeId: 'test-intake-001' }))
-    expect(res.status).toBe(402)
-    const body = await res.json()
-    expect(body.error).toMatch(/Payment required/i)
+    const response = await POST(makeRequest({ intakeId: 'intake-1' }))
+    expect(response.status).toBe(202)
+    expect(await response.json()).toMatchObject({ source: 'v30', projectId: 'project-1' })
   })
 
-  test('returns 503 when ANTHROPIC_API_KEY is missing', async () => {
-    const originalKey = process.env.ANTHROPIC_API_KEY
-    delete process.env.ANTHROPIC_API_KEY
-
-    conceptMocks.supabaseSelect.mockResolvedValueOnce({ data: mockIntakeRecord, error: null })
+  test('preserves canonical payment and not-found errors', async () => {
+    const { ConceptGenerationError } = await import('@/lib/concept-generation')
+    generationMocks.request.mockRejectedValueOnce(new ConceptGenerationError('Payment required before generation', 402))
 
     const POST = await getHandler()
-    const res = await POST(makeRequest({ intakeId: 'test-intake-001' }))
-    expect(res.status).toBe(503)
+    const paymentResponse = await POST(makeRequest({ intakeId: 'unpaid' }))
+    expect(paymentResponse.status).toBe(402)
 
-    if (originalKey) process.env.ANTHROPIC_API_KEY = originalKey
-  })
-
-  test('returns cached concept when already generated', async () => {
-    const cachedRecord = {
-      ...mockIntakeRecord,
-      status: 'concept_ready',
-      form_data: { ...mockIntakeRecord.form_data, conceptOutput: mockConceptOutput },
-    }
-    conceptMocks.supabaseSelect.mockResolvedValueOnce({ data: cachedRecord, error: null })
-
-    const POST = await getHandler()
-    const res = await POST(makeRequest({ intakeId: 'test-intake-001' }))
-    expect(res.status).toBe(200)
-    const body = await res.json()
-    expect(body.cached).toBe(true)
-    expect(body.conceptOutput).toBeDefined()
-  })
-
-  test('calls DesignBot and returns conceptOutput on success', async () => {
-    process.env.ANTHROPIC_API_KEY = 'test-key-for-unit-tests'
-    conceptMocks.supabaseSelect.mockResolvedValueOnce({ data: mockIntakeRecord, error: null })
-    conceptMocks.botExecute.mockResolvedValueOnce({ success: true, data: mockDesignOutput })
-
-    const POST = await getHandler()
-    const res = await POST(makeRequest({ intakeId: 'test-intake-001' }))
-    expect(res.status).toBe(200)
-    const body = await res.json()
-    expect(body.conceptOutput).toBeDefined()
-    expect(body.conceptOutput.designConcept.style).toBe('Modern')
-  })
-
-  test('returns 500 with partial:true when DesignBot fails', async () => {
-    process.env.ANTHROPIC_API_KEY = 'test-key-for-unit-tests'
-    conceptMocks.supabaseSelect.mockResolvedValueOnce({ data: mockIntakeRecord, error: null })
-    conceptMocks.botExecute.mockResolvedValueOnce({ success: false, error: 'DesignBot error: service unavailable' })
-
-    const POST = await getHandler()
-    const res = await POST(makeRequest({ intakeId: 'test-intake-001' }))
-    expect(res.status).toBe(500)
-    const body = await res.json()
-    expect(body.partial).toBe(true)
+    generationMocks.request.mockRejectedValueOnce(new ConceptGenerationError('Intake not found', 404))
+    const missingResponse = await POST(makeRequest({ intakeId: 'missing' }))
+    expect(missingResponse.status).toBe(404)
   })
 })

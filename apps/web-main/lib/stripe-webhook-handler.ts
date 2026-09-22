@@ -31,6 +31,7 @@ import * as Sentry from '@sentry/nextjs'
 import { recordPaidOrderIncident } from '@/lib/paid-order-incident'
 import { routeToManualFulfillment } from '@/lib/manual-fulfillment'
 import { orderStatusPatch } from '@/lib/order-status'
+import { requestCanonicalConceptGeneration } from '@/lib/concept-generation'
 import {
   ensurePaidOrderLedgerEntry,
   isServiceCheckoutSource,
@@ -431,15 +432,15 @@ async function handleCheckoutCompleted(
       })
     }
   } else if (deliverable?.generatesConcept && !upsellSourceIntakeId && !isBundlePurchase) {
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? req.nextUrl.origin
-    fetch(`${baseUrl}/api/concept/generate`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ intakeId }),
-    }).catch((err: Error) => {
-      console.error('[stripe-webhook] Concept generation trigger failed:', err.message)
-      void routeToManualFulfillment({ ...manualFallbackContext, reason: 'automation_failed' })
-    })
+    try {
+      await requestCanonicalConceptGeneration(intakeId)
+    } catch (error) {
+      console.error(
+        '[stripe-webhook] Canonical concept generation trigger failed:',
+        error instanceof Error ? error.message : error,
+      )
+      await routeToManualFulfillment({ ...manualFallbackContext, reason: 'automation_failed' })
+    }
   } else if (sitePlanEngineActive) {
     // The site-plan engine is queued for this order; the worker drains it and
     // its delivery bridge moves the order on. Sending it to the human queue

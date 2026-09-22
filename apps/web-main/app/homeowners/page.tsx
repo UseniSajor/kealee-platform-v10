@@ -6,7 +6,7 @@ import { RoleCTA } from '@/components/roles/RoleCTA'
 import { RoleFAQ } from '@/components/roles/RoleFAQ'
 
 export const metadata: Metadata = {
-  title: 'For Homeowners — Kealee',
+  title: 'For Project Owners & Professionals — Kealee',
   description:
     'Plan, price, permit, and control your renovation or new build. Transparent pricing at every step — pay only for what your project needs.',
 }
@@ -126,7 +126,7 @@ export default function HomeownersPage() {
   return (
     <>
       <RoleHero
-        badge="For Homeowners & Renovation Projects"
+        badge="For Project Owners & Professionals"
         headline="Build with Confidence"
         highlight="Confidence"
         subhead="Plan, price, permit, and control your project. Transparent pricing at every step — pay only for what your project needs."
@@ -142,7 +142,7 @@ export default function HomeownersPage() {
           <h2 className="text-3xl font-bold" style={{ color: '#1A2B4A' }}>
             Transparent pricing at every step
           </h2>
-          <p className="mt-3 text-gray-500">Pay only for what your project needs. No subscriptions for homeowners.</p>
+          <p className="mt-3 text-gray-500">Pay only for what your project needs. No required subscription for project owners.</p>
         </div>
 
         <div className="space-y-12">
@@ -290,8 +290,8 @@ export default function HomeownersPage() {
             answer: 'No. All services requiring onsite support — such as inspections, site visits, and construction oversight — must be performed by your contractor of record. Kealee is a platform and advisory service and does not offer direct onsite services.',
           },
           {
-            question: 'How are homeowner fees structured?',
-            answer: 'All homeowner project fees are one-time per project. There are no monthly subscriptions for homeowners. You pay only for the services your project needs.',
+            question: 'How are project-owner fees structured?',
+            answer: 'Project-owner service fees are one-time per project. There is no required monthly subscription. You pay only for the services your project needs.',
           },
           {
             question: 'How does contractor matching work?',
@@ -305,7 +305,7 @@ export default function HomeownersPage() {
       />
       <RoleCTA
         headline="Ready to Start Your Project?"
-        subhead="Join thousands of homeowners who have built smarter with Kealee's powered by AI tools platform."
+        subhead="Join project owners and professionals who plan and build smarter with Kealee's AI-assisted platform."
         cta={{ label: 'Get My $585 Concept Package', href: '/intake/whole_home_concept' }}
         secondaryCta={{ label: 'Browse Contractors', href: '/marketplace' }}
       />

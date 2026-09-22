@@ -51,7 +51,7 @@ export function SiteFooter() {
               <span className="font-bold text-xl text-slate-900">Kealee</span>
             </div>
             <p className="text-slate-500 text-sm leading-relaxed mb-6">
-              End-to-end design-build platform for homeowners — AI design concepts, verified cost estimates, permit filing, and a personal project workspace from first idea to final build.
+              End-to-end design-build platform for project owners and professionals — AI design concepts, verified cost estimates, permit filing, and a shared project workspace from first idea to final build.
             </p>
             <div className="flex items-center gap-3">
               {SOCIAL.map((s) => (

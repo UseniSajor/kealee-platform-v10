@@ -184,7 +184,7 @@ export default function HeroSection() {
         {/* Role cards */}
         <div className="rrow">
           <div className="rcard">
-            <div className="rtag"><span className="rdot" />&nbsp;Homeowner &amp; project owner</div>
+            <div className="rtag"><span className="rdot" />&nbsp;Project owner &amp; professional</div>
             <h3>Plan, permit, and build</h3>
             <p>$395 gets you a floor plan, zoning check, cost band, and permit risk report — in 24 hours.</p>
             <a href="/#concept" className="rlink">Start your project</a>

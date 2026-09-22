@@ -31,23 +31,20 @@ function SuccessInner() {
     })
   }, [intakeId, amount, service, isV30])
 
-  // Fire concept generation from the browser after Stripe redirect.
-  // The intake is 'paid' by the time the user lands here (webhook runs first).
-  // This is the primary reliable trigger — the webhook fire-and-forget may not
-  // complete in the serverless function lifetime.
+  // Idempotent recovery trigger after Stripe redirect. The webhook uses the
+  // same canonical service, so either caller can win without duplicate work.
   useEffect(() => {
     if (!intakeId) return
     // Small delay to give the Stripe webhook time to mark the intake paid first.
     const t = setTimeout(() => {
-      const url = isV30 ? '/api/v30/generate' : '/api/concept/generate'
-      fetch(url, {
+      fetch('/api/concept/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ intakeId }),
-      }).catch(() => { /* silent — webhook is secondary trigger */ })
+      }).catch(() => { /* status UI and webhook remain available for recovery */ })
     }, 3000)
     return () => clearTimeout(t)
-  }, [intakeId, isV30])
+  }, [intakeId])
 
   // Direct link to the concept access gate.
   // The access page lets the user enter their email to receive a magic-link

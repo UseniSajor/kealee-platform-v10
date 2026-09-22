@@ -87,7 +87,7 @@ const PORTAL_FEATURES = [
   {
     id: 'owner',
     title: 'Owner Portal',
-    description: 'Complete project visibility for homeowners and project owners.',
+    description: 'Complete project visibility for project owners and professionals.',
     icon: Eye,
     color: '#2ABFBF',
     highlights: ['Real-time project dashboard', 'Payment tracking & approvals', 'Project history & documents', 'design insights', 'Document library', 'Inspection status'],

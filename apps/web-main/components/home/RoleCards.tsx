@@ -6,7 +6,7 @@ import { Heading } from '@/components/ui/Heading'
 const ROLES = [
   {
     emoji:       '🏠',
-    title:       'Homeowners',
+    title:       'Project Owners',
     tagline:     'Build with confidence',
     description: 'Track your renovation or new build. Escrow-protected payments, AI progress tracking, and vetted contractor matching strictly after your permit is filed or verified as not required.',
     href:        '/homeowners',
@@ -31,7 +31,7 @@ export function RoleCards() {
         <div className="mx-auto max-w-2xl text-center">
           <Heading>Who Kealee Is Built For</Heading>
           <p className="mt-4 text-lg text-gray-600">
-            One platform — purpose-built tools for home project owners and construction GCs.
+            One platform — purpose-built tools for project owners and construction professionals.
           </p>
         </div>
 

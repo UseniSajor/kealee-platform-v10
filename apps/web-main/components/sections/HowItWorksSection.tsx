@@ -39,7 +39,7 @@ export default function HowItWorksSection() {
       <div className="ftot">
         <div className="ftpath">If you use all five paid services: $395 + $595 + $950 + $2,950</div>
         <div className="ftnum">Fully managed total: <span>$4,890</span></div>
-        <div className="ftnote">Most homeowners and project owners use two or three services. The free tier handles the rest.</div>
+        <div className="ftnote">Most project owners and professionals use two or three services. The free tier handles the rest.</div>
       </div>
     </div>
   )

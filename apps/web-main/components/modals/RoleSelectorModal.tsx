@@ -13,8 +13,8 @@ interface Props {
 const ROLES = [
   {
     icon:        '🏠',
-    label:       'Homeowner',
-    description: 'Renovations, additions, new construction, or property investment',
+    label:       'Project Owner / Professional',
+    description: 'Renovations, additions, new construction, development, or property investment',
     href:        '/homeowners',
     accent:      '#2ABFBF',
   },

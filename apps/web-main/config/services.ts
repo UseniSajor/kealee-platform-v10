@@ -116,7 +116,7 @@ export const SERVICES: ServiceConfig[] = [
     label: 'Whole-Home Remodel',
     tagline: 'A complete renovation concept for every room.',
     description:
-      'Full-home concept renderings, floor plan direction, complete MEP specification, and a phased remodel plan. Ideal for homeowners doing a full renovation before selling or moving in.',
+      'Full-home concept renderings, floor plan direction, complete MEP specification, and a phased remodel plan. Ideal for project owners and professionals planning a full renovation before sale, occupancy, or construction.',
     category: 'design',
     priceDisplay: '$695',
     priceRange: [69500, 69500],
@@ -227,7 +227,7 @@ export const SERVICES: ServiceConfig[] = [
     label: 'Interior Reno Concept',
     tagline: 'A focused interior concept to guide your renovation.',
     description:
-      'Interior renders, layout flow analysis, MEP scope, and cost breakdown—tailored for homeowners who want a clear design direction before hiring a contractor.',
+      'Interior renders, layout flow analysis, MEP scope, and cost breakdown—tailored for project owners and professionals who need clear design direction before contractor procurement.',
     category: 'design',
     priceDisplay: '$345',
     priceRange: [34500, 34500],

@@ -5,7 +5,7 @@ import { ExternalLink } from 'lucide-react'
 
 // ── Row 1: Role navigation ─────────────────────────────────────────────────
 const ROLES = [
-  { label: 'Homeowners',           href: '/homeowners' },
+  { label: 'Project Owners',       href: '/homeowners' },
   { label: 'GC / Contractors',     href: '/contractors' },
   { label: 'Developers',           href: '/developers' },
   { label: 'Property Managers',    href: '/property-managers' },

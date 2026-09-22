@@ -6,7 +6,7 @@ import { resolveProductAutomationRoute } from '@/lib/product-automation'
 import { SERVICE_DELIVERABLES } from '@/lib/service-deliverables'
 import { orderStatusPatch } from '@/lib/order-status'
 import { routeToManualFulfillment } from '@/lib/manual-fulfillment'
-import { getWebMainUrl } from '@/lib/get-app-url'
+import { requestCanonicalConceptGeneration } from '@/lib/concept-generation'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 60
@@ -58,16 +58,15 @@ export async function POST(
 
   const deliverable = SERVICE_DELIVERABLES[projectPath]
 
-  // Concept products are produced in-app; everything else goes through the
-  // orchestration service.
+  // Concept products and all of their compatibility endpoints converge on
+  // the same v30 orchestration service.
   if (deliverable?.generatesConcept) {
-    const res = await fetch(`${getWebMainUrl()}/api/concept/generate`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ intakeId: params.intakeId }),
+    const generation = await requestCanonicalConceptGeneration(params.intakeId, {
+      forceRestart: true,
+      fulfillment: automationRoute,
     }).catch(() => null)
 
-    if (!res?.ok) {
+    if (!generation) {
       // Put the order back in the human queue — leaving it on "Processing"
       // with nothing running is exactly the silent stall we are removing.
       await routeToManualFulfillment({
@@ -81,7 +80,7 @@ export async function POST(
         { status: 502 },
       )
     }
-    return NextResponse.json({ ok: true, dispatched: 'concept' })
+    return NextResponse.json({ ok: true, dispatched: 'concept-v30', ...generation })
   }
 
   const generation = await triggerV30GenerationForIntake(params.intakeId, {

@@ -4,7 +4,7 @@ export default function FeaturedProductsSection() {
   return (
     <div className="sec" id="featured">
       <div className="ey">Featured products</div>
-      <h2 className="h2">What homeowners are ordering now</h2>
+      <h2 className="h2">What project owners are ordering now</h2>
       <p className="sub">Per-service pricing. No subscription required.</p>
       <div className="fg">
         <Link href="/products/ai-design" className="fc">

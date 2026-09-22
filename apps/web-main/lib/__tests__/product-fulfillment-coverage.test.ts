@@ -9,7 +9,7 @@ import { SERVICE_DELIVERABLES } from '../service-deliverables'
  * A Stripe checkout that completes hands the order to exactly one producer:
  *
  *   automation — `CANONICAL_PRODUCT_WORKFLOWS` route, run by the bot fleet
- *   concept    — legacy `/api/concept/generate`, for `generatesConcept` services
+ *   concept    — canonical v30 adapter at `/api/concept/generate`, for `generatesConcept` services
  *   manual     — the human fulfillment queue
  *
  * The precedence is the one `handleCheckoutCompleted` applies, so this table is

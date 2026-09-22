@@ -19,6 +19,19 @@ export interface V30FulfillmentOptions {
 const API_BASE = () =>
   (process.env.INTERNAL_API_URL ?? process.env.NEXT_PUBLIC_API_URL ?? '').replace(/\/$/, '')
 
+const activeConceptMonitors = new Set<string>()
+
+function ensureConceptMonitor(
+  intakeId: string,
+  projectId: string | undefined,
+  requiredBotTypes: V30BotType[] | undefined,
+): void {
+  if (!projectId || activeConceptMonitors.has(intakeId)) return
+  activeConceptMonitors.add(intakeId)
+  void pollAndSyncV30Concept(intakeId, projectId, requiredBotTypes)
+    .finally(() => activeConceptMonitors.delete(intakeId))
+}
+
 export function isV30IntakeMetadata(meta: Record<string, string | undefined>): boolean {
   return meta.source === 'public_intake_v30' || meta.pricingModel === 'v30_dynamic'
 }
@@ -51,6 +64,14 @@ export async function triggerV30GenerationForIntake(
   const propertyIntelligenceDepth = options.propertyIntelligenceDepth ?? formData.propertyIntelligenceDepth as PropertyIntelligenceDepth | undefined
   if (formData.v30ProjectId && formData.v30GenerationStartedAt && !['failed', 'retryable'].includes(String(formData.fulfillmentStatus ?? ''))) {
     console.log('[v30-trigger] generation already started', intakeId)
+    // A previous serverless invocation may have ended after dispatching the
+    // durable API work but before its in-process monitor copied results back
+    // to public_intake_leads. Resume monitoring without starting new bots.
+    ensureConceptMonitor(
+      intakeId,
+      formData.v30ProjectId as string,
+      fulfillmentBotTypes,
+    )
     return {
       projectId: formData.v30ProjectId as string,
       packageId: formData.v30PackageId as string | undefined,
@@ -105,7 +126,7 @@ export async function triggerV30GenerationForIntake(
     })
     .eq('id', intakeId)
 
-  void pollAndSyncV30Concept(intakeId, payload.projectId, fulfillmentBotTypes)
+  ensureConceptMonitor(intakeId, payload.projectId, fulfillmentBotTypes)
 
   return payload
 }
@@ -212,6 +233,9 @@ async function syncV30OutputsToIntake(
   const supabase = getSupabaseAdmin()
   const { data: intake } = await supabase.from('public_intake_leads').select('form_data, contact_email, client_name, project_path, stripe_session_id').eq('id', intakeId).single()
   const formData = (intake?.form_data as Record<string, unknown>) ?? {}
+  if (formData.fulfillmentCompletedAt && formData.fulfillmentStatus === 'completed') {
+    return
+  }
   const outputs = Object.fromEntries(executions.filter(e => e.outputData).map(e => [e.botType, e.outputData]))
   const failed = executions.filter(e => e.status === 'FAILED').map(e => e.botType)
   const missing = requiredBotTypes.filter(botType => {

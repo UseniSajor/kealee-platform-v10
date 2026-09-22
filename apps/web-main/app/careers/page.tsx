@@ -174,7 +174,7 @@ const TEAMS = [
   },
   {
     name: 'Design & Product',
-    description: 'UX, service design, visual design, and product strategy across dedicated homeowner and builder portals. Complex surfaces, high-stakes decisions, real users.',
+    description: 'UX, service design, visual design, and product strategy across dedicated project-owner and builder portals. Complex surfaces, high-stakes decisions, real users.',
   },
   {
     name: 'Growth & BD',
@@ -197,7 +197,7 @@ export default function CareersPage() {
             Build the future of<br />construction with us
           </h1>
           <p className="mt-5 text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed">
-            Kealee is the full-lifecycle construction coordination platform for homeowners — guiding them through design, cost estimating, permit filing, and active build execution. We&apos;re hiring developers, builders, designers, and operators who want to reshape how the built environment works.
+            Kealee is the full-lifecycle construction coordination platform for project owners and professionals — guiding teams through design, cost estimating, permit filing, and active build execution. We&apos;re hiring developers, builders, designers, and operators who want to reshape how the built environment works.
           </p>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
             <a

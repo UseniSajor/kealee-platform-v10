@@ -6,7 +6,7 @@ export default function MoreProductsSection() {
       <div className="sec-s-i">
         <div className="ey">More products</div>
         <h2 className="h2">Per-service pricing on everything</h2>
-        <p className="sub">Order one service at a time. No subscription required for homeowners and project owners.</p>
+        <p className="sub">Order one service at a time. No subscription required for project owners or professionals.</p>
         <div className="fp2">
           <Link href="/products/garden" className="fc">
             <div className="fci">

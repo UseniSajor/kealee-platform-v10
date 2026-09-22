@@ -68,7 +68,7 @@ export const NAV_CTA_SECONDARY = { label: 'Join as Contractor',   href: '/contra
 /** Login dropdown entries — shown in nav, never internal routes */
 export const NAV_LOGIN_OPTIONS = [
   { label: 'Client / Contractor Login', href: '/auth/login',  description: 'Owner, contractor, and developer accounts' },
-  { label: 'Choose your portal',        href: '/login',       description: 'Pick Homeowner, Contractor, Developer, or staff' },
+  { label: 'Choose your portal',        href: '/login',       description: 'Pick Project Owner, Contractor, Developer, or staff' },
 ]
 
 // ── Footer links ──────────────────────────────────────────────────────────────
@@ -83,10 +83,10 @@ export const FOOTER_NAV = {
     { label: 'Escrow & Payment Protection', href: '/services/escrow-protection' },
   ],
   solutions: [
-    { label: 'For Homeowners',             href: '/homeowners' },
+    { label: 'For Project Owners',         href: '/homeowners' },
     { label: 'Garden & Farming',           href: '/homeowners/garden-farming' },
     { label: 'For Contractors',            href: '/contractors' },
-    { label: 'Get Estimate',               href: '/estimate' },
+    { label: 'Get Estimate',               href: '/products/detailed_estimate' },
     { label: 'Design Services',            href: '/design-services' },
     { label: 'Milestone Pay',              href: '/milestone-pay' },
   ],
