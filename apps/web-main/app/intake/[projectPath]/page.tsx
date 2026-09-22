@@ -29,7 +29,6 @@ import {
 } from "@/lib/intake-file-upload";
 import {
   INTAKE_PRICE_CENTS,
-  INTAKE_TIER_PRICE_CENTS,
   PURCHASE_CREDIT_POLICY,
   getBuildPathBundle,
   getConceptPackageDeliverableLabelsForIntake,
@@ -777,8 +776,9 @@ export default function IntakePage() {
         fromIntakeId: upsellFromIntake || undefined,
       })
     : null;
-  const tierPrice =
-    INTAKE_TIER_PRICE_CENTS[projectPath]?.[selectedTier as 1 | 2 | 3];
+  // The figure shown here is the product's published "from" price. The exact
+  // amount is computed from this intake and shown in full before payment —
+  // there is one package per product, so there is no tier price to look up.
   const priceInfo =
     bundlePreview && projectPath === bundlePreview.productKey
       ? {
@@ -786,17 +786,11 @@ export default function IntakePage() {
           amount: bundlePreview.bundleCents,
           delivery: bundlePreview.deliveryDays,
         }
-      : tierPrice
-        ? {
-            label: tierPrice.label,
-            amount: tierPrice.cents,
-            delivery: tierPrice.deliveryDays,
-          }
-        : PRICE_MAP[projectPath] || {
-            label: "Project Package",
-            amount: 0,
-            delivery: "Price confirmed before checkout",
-          };
+      : PRICE_MAP[projectPath] || {
+          label: "Project Package",
+          amount: 0,
+          delivery: "Price confirmed before checkout",
+        };
   const deliverable = SERVICE_DELIVERABLES[projectPath];
   const includes = deliverable?.generatesConcept
     ? getConceptPackageDeliverableLabelsForIntake(

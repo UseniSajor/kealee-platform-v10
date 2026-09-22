@@ -40,7 +40,7 @@ function ServiceCard({
   beforeImage?: string
   videoUrl?: string
 }) {
-  const hasVideo = svc.tiers.some((t) => t.video)
+  const hasVideo = svc.videoAddOnAvailable
 
   return (
     <Link href={`/services/${svc.slug}`}>

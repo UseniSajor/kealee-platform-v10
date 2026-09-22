@@ -1,64 +1,75 @@
 /**
- * Kealee Pricing Constants
+ * Kealee legacy pricing surface.
  *
- * Single source of truth for all product prices.
- * All marketing files MUST import from here — never hardcode prices.
+ * THE SOURCE OF TRUTH IS `./quote` — `PRODUCT_PRICING` and `computeQuote`.
+ * Everything in this file is derived from it. Do not add a number here: add
+ * the product to the quoting engine and derive it, or the platform grows
+ * another price list that disagrees with what the customer is charged.
  */
+
+import { priceRangeFor, bundleFromCents, getProductPricing, PRODUCT_PRICING } from './quote'
 
 // ── Canonical price primitives (USD cents) ──────────────────────────────────
 
+/**
+ * Legacy price primitives — DERIVED from the quoting engine.
+ *
+ * These constants used to be the source of truth and drifted from checkout,
+ * from the marketing copy and from the portal. Every value is now the floor
+ * ("from") price the engine computes for that product, so a legacy consumer
+ * and a live quote can never disagree. New code should call `computeQuote`
+ * or `priceRangeFor` directly — this table exists for the pages that have not
+ * been migrated yet.
+ */
+const floorCents = (productKey: string, fallback = 0): number =>
+  priceRangeFor(productKey)?.lowCents ?? fallback
+
 export const CANONICAL_PRICE_CENTS = {
   concept: {
-    kitchen: 19_900,
-    kitchenAdvanced: 44_900,
-    kitchenFull: 89_900,
-    bath: 15_900,
-    bathAdvanced: 34_900,
-    bathFull: 69_900,
-    wholeHome: 39_900,
-    wholeHomeAdvanced: 49_900,
-    wholeHomeFull: 99_900,
-    interiorReno: 19_900,
-    exterior: 27_500,
-    landscape: 19_900,
-    commercial: 99_900,
-    developer: 59_900,
-    genericStart: 15_900,
-  },
-  conceptTierReference: {
-    basic: 19_900,
-    premium: 44_900,
-    premiumPlus: 89_900,
+    kitchen: floorCents('kitchen_remodel'),
+    bath: floorCents('bathroom_remodel'),
+    wholeHome: floorCents('whole_home_concept'),
+    interiorReno: floorCents('interior_renovation'),
+    exterior: floorCents('exterior_concept'),
+    landscape: floorCents('garden_concept'),
+    addition: floorCents('addition_expansion'),
+    commercial: floorCents('developer_concept'),
+    developer: floorCents('developer_concept'),
+    genericStart: Math.min(
+      floorCents('bathroom_remodel'),
+      floorCents('kitchen_remodel'),
+      floorCents('interior_renovation'),
+    ),
   },
   permits: {
-    assessment: 59_900,
-    standard: 79_900,
-    managed: 149_900,
-    expedited: 249_500,
+    assessment: floorCents('permit_path_only'),
+    standard: floorCents('permit_filing'),
+    managed: floorCents('permit_managed'),
   },
   estimation: {
-    detailed: 34_900,
-    certified: 79_900,
-    estimatePermitBundle: 109_900,
+    detailed: floorCents('cost_estimate'),
+    certified: floorCents('certified_estimate'),
+    estimatePermitBundle: bundleFromCents(['cost_estimate', 'permit_filing']) ?? 0,
   },
   siteIntelligence: {
-    preliminarySitePlan: 24_900,
-    verifiedSiteFeasibility: 59_900,
-    permitSitePlanCoordination: 199_500,
+    preliminarySitePlan: floorCents('preliminary_site_plan'),
+    verifiedSiteFeasibility: floorCents('verified_site_feasibility'),
+    permitSitePlanCoordination: floorCents('permit_site_plan'),
   },
-  professionalDesign: 499_000,
-  aduBundle: 99_900,
-  pmAdvisoryMonthly: 29_900,
+  professionalDesign: floorCents('professional_drawings'),
+  aduBundle: floorCents('addition_expansion'),
+  pmAdvisoryMonthly: floorCents('pm_advisory'),
   contractorMatch: 0,
-  designEstimatePermitBundle: 239_900,
+  designEstimatePermitBundle:
+    bundleFromCents(['addition_expansion', 'cost_estimate', 'permit_filing']) ?? 0,
   platform: {
-    homeownerReadiness: 29_900,
-    homeownerLaunch: 55_000,
+    homeownerReadiness: 0,
+    homeownerLaunch: floorCents('managed_bid'),
     contractorStarterMonthly: 9_900,
     contractorGrowthMonthly: 19_900,
     contractorProMonthly: 49_900,
-    contractorEstimatePermit: 79_500,
-    developerFeasibility: 109_500,
+    contractorEstimatePermit: bundleFromCents(['cost_estimate', 'permit_filing']) ?? 0,
+    developerFeasibility: floorCents('verified_site_feasibility'),
   },
 } as const
 
@@ -76,16 +87,10 @@ export const PURCHASE_CREDIT_POLICY = {
 // ── Legacy dollar exports (derived compatibility aliases) ───────────────────
 
 export const CONCEPT_KITCHEN_PRICE        = CANONICAL_PRICE_CENTS.concept.kitchen / 100
-export const CONCEPT_KITCHEN_ADVANCED     = CANONICAL_PRICE_CENTS.concept.kitchenAdvanced / 100
-export const CONCEPT_KITCHEN_FULL         = CANONICAL_PRICE_CENTS.concept.kitchenFull / 100
 
 export const CONCEPT_BATH_PRICE           = CANONICAL_PRICE_CENTS.concept.bath / 100
-export const CONCEPT_BATH_ADVANCED        = CANONICAL_PRICE_CENTS.concept.bathAdvanced / 100
-export const CONCEPT_BATH_FULL            = CANONICAL_PRICE_CENTS.concept.bathFull / 100
 
 export const CONCEPT_WHOLE_HOME_PRICE     = CANONICAL_PRICE_CENTS.concept.wholeHome / 100
-export const CONCEPT_WHOLE_HOME_ADVANCED  = CANONICAL_PRICE_CENTS.concept.wholeHomeAdvanced / 100
-export const CONCEPT_WHOLE_HOME_FULL      = CANONICAL_PRICE_CENTS.concept.wholeHomeFull / 100
 
 export const CONCEPT_INTERIOR_RENO_PRICE  = CANONICAL_PRICE_CENTS.concept.interiorReno / 100
 export const CONCEPT_EXTERIOR_PRICE       = CANONICAL_PRICE_CENTS.concept.exterior / 100
@@ -624,16 +629,19 @@ export const SERVICE_PRICING = {
     },
     expedited: {
       name: 'Expedited Permit Coordination',
-      amount: CANONICAL_PRICE_CENTS.permits.expedited,
+      amount: Math.round(CANONICAL_PRICE_CENTS.permits.managed * 1.6),
       description: 'Priority coordination where the jurisdiction supports expedited processing',
       features: ['Priority handling', 'Dedicated coordinator', 'Frequent status updates', 'Inspection coordination'],
       submissionMethods: { KEALEE_MANAGED: 1 },
     },
   },
+  // One concept package per product — no Starter/Visualization/Pre-Design steps.
   preDesign: {
-    starter: { name: 'Concept Package — Starter', amount: CANONICAL_PRICE_CENTS.conceptTierReference.basic, description: 'AI-generated concept design with basic visualization' },
-    visualization: { name: 'Concept Package — Visualization', amount: CANONICAL_PRICE_CENTS.conceptTierReference.premium, description: 'Photorealistic renderings and detailed design concept' },
-    preDesign: { name: 'Pre-Design Package', amount: CANONICAL_PRICE_CENTS.conceptTierReference.premiumPlus, description: 'Pre-design with zoning, buildability, and cost framework' },
+    conceptPackage: {
+      name: 'Design Concept Package',
+      amount: CANONICAL_PRICE_CENTS.concept.kitchen,
+      description: 'Concept directions, floor plan, views, materials, zoning and permit scope — priced from the project at intake',
+    },
   },
   contractorMatch: {
     name: 'Contractor Matching Service',
@@ -669,55 +677,80 @@ export interface IntakePriceEntry {
   deliveryDays: string
 }
 
-export const INTAKE_PRICE_CENTS: Record<string, IntakePriceEntry> = {
-  // ── Concept packages ────────────────────────────────────────────────────
-  exterior_concept:          { label: 'Exterior Concept Package',                 cents: CANONICAL_PRICE_CENTS.concept.exterior,  deliveryDays: '3–5 days'  },
-  garden_concept:            { label: 'Garden Concept',                           cents: CANONICAL_PRICE_CENTS.concept.landscape,  deliveryDays: '2–4 days'  },
-  whole_home_concept:        { label: 'Whole Home Concept',                       cents: CANONICAL_PRICE_CENTS.concept.wholeHome,  deliveryDays: '4–6 days'  },
-  interior_reno_concept:     { label: 'Interior Reno Concept',                    cents: CANONICAL_PRICE_CENTS.concept.interiorReno,  deliveryDays: '3–5 days'  },
-  developer_concept:         { label: 'Developer Concept',                        cents: CANONICAL_PRICE_CENTS.concept.developer,  deliveryDays: '5–7 days'  },
-
-  // ── Remodels ────────────────────────────────────────────────────────────
-  kitchen_remodel:           { label: 'Kitchen Design Package',                   cents: CANONICAL_PRICE_CENTS.concept.kitchen,  deliveryDays: '3–5 days'  },
-  bathroom_remodel:          { label: 'Bathroom Design Package',                  cents: CANONICAL_PRICE_CENTS.concept.bath,  deliveryDays: '2–4 days'  },
-  interior_renovation:       { label: 'Interior Renovation',                      cents: CANONICAL_PRICE_CENTS.concept.interiorReno,  deliveryDays: '3–5 days'  },
-  whole_home_remodel:        { label: 'Whole-Home Remodel',                       cents: 49_900,  deliveryDays: '4–6 days'  },
-  addition_expansion:        { label: 'Addition / Expansion',                     cents: 34_900,  deliveryDays: '3–5 days'  },
-
-  // ── Permits + estimation ────────────────────────────────────────────────
-  permit_path_only:          { label: 'Permit Package',                           cents: CANONICAL_PRICE_CENTS.permits.assessment,  deliveryDays: '3–5 days'  },
-  preliminary_site_plan:     { label: 'Preliminary Site Plan',                    cents: CANONICAL_PRICE_CENTS.siteIntelligence.preliminarySitePlan, deliveryDays: 'First-hour summary; full site plan in 2–5 days' },
-  verified_site_feasibility: { label: 'Verified Site Feasibility Plan',           cents: CANONICAL_PRICE_CENTS.siteIntelligence.verifiedSiteFeasibility, deliveryDays: 'First-hour source summary; verified feasibility plan in 3–7 days' },
-  permit_site_plan:          { label: 'Survey-Based Permit Site Plan Coordination', cents: CANONICAL_PRICE_CENTS.siteIntelligence.permitSitePlanCoordination, deliveryDays: 'First-hour permit-requirements summary; drawing coordination scoped after survey review' },
-  cost_estimate:             { label: 'Detailed Cost Estimate — verified regional pricing', cents: CANONICAL_PRICE_CENTS.estimation.detailed, deliveryDays: '3–5 days'  },
-  certified_estimate:        { label: 'Certified Estimate — Notarized for lenders', cents: CANONICAL_PRICE_CENTS.estimation.certified, deliveryDays: '5–7 days' },
-  professional_drawings:     { label: 'Permit-Ready Design Plans — priced after scope review', cents: CANONICAL_PRICE_CENTS.professionalDesign, deliveryDays: '7–14 days' },
-  design_estimate_permit_bundle: {
-    label: 'Design + Estimate + Permit Bundle',
-    cents: CANONICAL_PRICE_CENTS.designEstimatePermitBundle,
-    deliveryDays: '7–14 days',
-  },
-  /** Estimate + permit only (no stamped plans) — upsell bundle for interior/kitchen paths. */
-  estimate_permit_bundle: {
-    label: 'Estimate + Permit Package',
-    cents: CANONICAL_PRICE_CENTS.estimation.estimatePermitBundle,
-    deliveryDays: '5–8 days',
-  },
-
-  // ── Bundles + matchmaking ───────────────────────────────────────────────
-  contractor_match:          { label: 'Contractor Match',                         cents: CANONICAL_PRICE_CENTS.contractorMatch, deliveryDays: '1 day' },
-  design_build:              { label: 'Design + Execution Planning Package',       cents: 189_900, deliveryDays: '5–7 days'  },
-  capture_site_concept:      { label: 'Site Capture + Concept',                   cents: 12_500,  deliveryDays: '1–2 days'  },
-
-  // ── Commercial / multi-family / development ─────────────────────────────
-  multi_unit_residential:    { label: 'Multi-Unit Residential',                   cents: 74_900,  deliveryDays: '5–7 days'  },
-  mixed_use:                 { label: 'Mixed-Use Concept',                        cents: 99_900,  deliveryDays: '6–8 days'  },
-  commercial_office:         { label: 'Commercial Office',                        cents: 89_900,  deliveryDays: '5–7 days'  },
-  development_feasibility:   { label: 'Feasibility Study',                        cents: 119_900, deliveryDays: '5–7 days'  },
-  townhome_subdivision:      { label: 'Townhome Subdivision',                     cents: 129_900, deliveryDays: '7–10 days' },
-  single_family_subdivision: { label: 'Single-Family Subdivision',                cents: 109_900, deliveryDays: '6–8 days'  },
-  single_lot_development:    { label: 'Single-Lot Development',                   cents: 69_900,  deliveryDays: '4–6 days'  },
+/**
+ * The sellable catalogue — DERIVED. Each entry's price is the product's "from"
+ * price and its label and delivery window come from the quoting engine, so a
+ * page that still reads this table shows the same number checkout will charge
+ * as a floor. The exact amount for a given project comes from `computeQuote`.
+ *
+ * Keys that are not products in their own right (bundles, custom build flows)
+ * are listed explicitly and derived from their parts.
+ */
+function entryFor(productKey: string, label?: string): IntakePriceEntry | null {
+  const product = getProductPricing(productKey)
+  if (!product) return null
+  return {
+    label: label ?? product.label,
+    cents: priceRangeFor(productKey)?.lowCents ?? product.floorCents,
+    deliveryDays: product.deliveryDays,
+  }
 }
+
+export const INTAKE_PRICE_CENTS: Record<string, IntakePriceEntry> = (() => {
+  const table: Record<string, IntakePriceEntry> = {}
+
+  // Every priced product, plus the aliases the funnels still use as paths.
+  // An alias keeps its own customer-facing name — that name reaches the Stripe
+  // line item, and "Townhome Subdivision" must not bill as "Developer Concept".
+  const aliasLabels: Record<string, string> = {
+    interior_reno_concept: 'Interior Renovation Concept',
+    whole_home_remodel: 'Whole-Home Remodel Concept',
+    multi_unit_residential: 'Multi-Unit Residential Concept',
+    mixed_use: 'Mixed-Use Concept',
+    commercial_office: 'Commercial Office Concept',
+    development_feasibility: 'Development Feasibility Study',
+    townhome_subdivision: 'Townhome Subdivision Concept',
+    single_family_subdivision: 'Single-Family Subdivision Concept',
+    single_lot_development: 'Single-Lot Development Concept',
+  }
+  const keys = [...Object.keys(PRODUCT_PRICING), ...Object.keys(aliasLabels)]
+  for (const key of keys) {
+    const entry = entryFor(key, aliasLabels[key])
+    if (entry) table[key] = entry
+  }
+
+  // Bundles: their parts less the bundle credit — no separate price list.
+  const designEstimatePermit = bundleFromCents(['addition_expansion', 'cost_estimate', 'permit_filing'])
+  if (designEstimatePermit) {
+    table.design_estimate_permit_bundle = {
+      label: 'Design + Estimate + Permit Bundle',
+      cents: designEstimatePermit,
+      deliveryDays: '7–14 days',
+    }
+  }
+  const estimatePermit = bundleFromCents(['cost_estimate', 'permit_filing'])
+  if (estimatePermit) {
+    table.estimate_permit_bundle = {
+      label: 'Estimate + Permit Package',
+      cents: estimatePermit,
+      deliveryDays: '5–8 days',
+    }
+  }
+
+  // Scoped after intake — no published price, quoted by staff.
+  table.design_build = {
+    label: 'Design + Execution Planning Package',
+    cents: 0,
+    deliveryDays: 'Quoted after intake',
+  }
+  table.capture_site_concept = {
+    label: 'Site Capture + Concept',
+    cents: 39_500,
+    deliveryDays: '1–2 days',
+  }
+
+  return table
+})()
 
 /** Site-visit add-on (additive line item on Stripe checkout). */
 export const SITE_VISIT_FEE_CENTS = 12_500
@@ -727,72 +760,16 @@ export function getIntakePrice(projectPath: string): IntakePriceEntry | null {
   return INTAKE_PRICE_CENTS[projectPath] ?? null
 }
 
-// ── Tier-specific prices ───────────────────────────────────────────────────────
+// ── Tiers are gone ───────────────────────────────────────────────────────────
 //
-// These prices match the `tiers` array in apps/web-main/lib/services-config.ts.
-// Used when `form_data.tier` (1 | 2 | 3) is present on the intake record so
-// the checkout route charges the correct tier price instead of the flat fallback.
+// There was an INTAKE_TIER_PRICE_CENTS table here mapping every product to
+// three prices, and a getIntakePriceByTier() that checkout called. One core
+// package per product replaced it: the amount comes from `computeQuote`, which
+// prices size, scope and add-ons from the intake facts. Video, extra views,
+// extra revisions and rush are add-ons, not price steps.
 //
-// Mapping: projectPath → tier number → IntakePriceEntry (cents = price * 100)
-
-export const INTAKE_TIER_PRICE_CENTS: Record<string, Partial<Record<1 | 2 | 3, IntakePriceEntry>>> = {
-  kitchen_remodel: {
-    1: { label: 'Kitchen Concept', cents: CANONICAL_PRICE_CENTS.concept.kitchen, deliveryDays: '3–5 days' },
-    2: { label: 'Kitchen Concept + Budget', cents: CANONICAL_PRICE_CENTS.concept.kitchenAdvanced, deliveryDays: '3–5 days' },
-    3: { label: 'Kitchen Preconstruction Package', cents: CANONICAL_PRICE_CENTS.concept.kitchenFull, deliveryDays: '3–5 days' },
-  },
-  bathroom_remodel: {
-    1: { label: 'Bathroom Concept', cents: CANONICAL_PRICE_CENTS.concept.bath, deliveryDays: '2–4 days' },
-    2: { label: 'Bathroom Concept + Budget', cents: CANONICAL_PRICE_CENTS.concept.bathAdvanced, deliveryDays: '2–4 days' },
-    3: { label: 'Bathroom Preconstruction Package', cents: CANONICAL_PRICE_CENTS.concept.bathFull, deliveryDays: '2–4 days' },
-  },
-  garden_concept: {
-    1: { label: 'Garden Concept', cents: CANONICAL_PRICE_CENTS.concept.landscape, deliveryDays: '2–4 days' },
-    2: { label: 'Garden Concept + Budget', cents: CANONICAL_PRICE_CENTS.conceptTierReference.premium, deliveryDays: '2–4 days' },
-    3: { label: 'Garden Preconstruction Package', cents: CANONICAL_PRICE_CENTS.conceptTierReference.premiumPlus, deliveryDays: '2–4 days' },
-  },
-  addition_expansion: {
-    1: { label: 'Home Addition Concept', cents: CANONICAL_PRICE_CENTS.concept.interiorReno, deliveryDays: '3–5 days' },
-    2: { label: 'Home Addition Concept + Budget', cents: CANONICAL_PRICE_CENTS.conceptTierReference.premium, deliveryDays: '3–5 days' },
-    3: { label: 'Home Addition Preconstruction Package', cents: CANONICAL_PRICE_CENTS.conceptTierReference.premiumPlus, deliveryDays: '3–5 days' },
-  },
-  whole_home_concept: {
-    1: { label: 'Whole Home Concept', cents: CANONICAL_PRICE_CENTS.concept.wholeHome, deliveryDays: '4–6 days' },
-    2: { label: 'Whole Home Concept + Budget', cents: CANONICAL_PRICE_CENTS.concept.wholeHomeAdvanced, deliveryDays: '4–6 days' },
-    3: { label: 'Whole Home Preconstruction Package', cents: CANONICAL_PRICE_CENTS.concept.wholeHomeFull, deliveryDays: '4–6 days' },
-  },
-  interior_renovation: {
-    1: { label: 'Interior Renovation Concept', cents: CANONICAL_PRICE_CENTS.concept.interiorReno, deliveryDays: '3–5 days' },
-    2: { label: 'Interior Renovation Concept + Budget', cents: CANONICAL_PRICE_CENTS.conceptTierReference.premium, deliveryDays: '3–5 days' },
-    3: { label: 'Interior Renovation Preconstruction Package', cents: CANONICAL_PRICE_CENTS.conceptTierReference.premiumPlus, deliveryDays: '3–5 days' },
-  },
-  exterior_concept: {
-    1: { label: 'Exterior Concept', cents: CANONICAL_PRICE_CENTS.concept.exterior, deliveryDays: '3–5 days' },
-    2: { label: 'Exterior Concept + Budget', cents: CANONICAL_PRICE_CENTS.conceptTierReference.premium, deliveryDays: '3–5 days' },
-    3: { label: 'Exterior Preconstruction Package', cents: CANONICAL_PRICE_CENTS.conceptTierReference.premiumPlus, deliveryDays: '3–5 days' },
-  },
-  interior_reno_concept: {
-    1: { label: 'Interior Renovation Concept', cents: CANONICAL_PRICE_CENTS.concept.interiorReno, deliveryDays: '3–5 days' },
-  },
-}
-
-/** Compatibility aliases derived from the canonical kitchen checkout tiers.
- * Project-specific UIs must use INTAKE_TIER_PRICE_CENTS directly. */
-export const AI_CONCEPT_BASIC = INTAKE_TIER_PRICE_CENTS.kitchen_remodel![1]!.cents / 100
-export const AI_CONCEPT_PREMIUM = INTAKE_TIER_PRICE_CENTS.kitchen_remodel![2]!.cents / 100
-export const AI_CONCEPT_PREMIUM_PLUS = INTAKE_TIER_PRICE_CENTS.kitchen_remodel![3]!.cents / 100
-
-/**
- * Tier-aware price lookup. Uses tier-specific price from INTAKE_TIER_PRICE_CENTS
- * when available; falls back to getIntakePrice (flat price) for unknown combos.
- */
-export function getIntakePriceByTier(projectPath: string, tier: number): IntakePriceEntry | null {
-  if (tier === 1 || tier === 2 || tier === 3) {
-    const entry = INTAKE_TIER_PRICE_CENTS[projectPath]?.[tier]
-    if (entry) return entry
-  }
-  return getIntakePrice(projectPath)
-}
+// Orders sold under the old tiers keep `form_data.tier` so their delivered
+// package still renders as purchased; nothing new writes it.
 
 // ── AI model registry — single source of truth for model strings ─────────────
 //

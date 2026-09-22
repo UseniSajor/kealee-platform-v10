@@ -2,12 +2,13 @@ import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { guardStripeSecretForHttp } from '@/lib/stripe-vercel-guard'
 import { createStripe } from '@/lib/stripe-client'
-import { getIntakePrice, getIntakePriceByTier, SITE_VISIT_FEE_CENTS, getBundleCheckoutCents, isBundleProductKey, computeQuote } from '@kealee/core-rules'
+import { getIntakePrice, SITE_VISIT_FEE_CENTS, getBundleCheckoutCents, isBundleProductKey, computeQuote } from '@kealee/core-rules'
 import { quoteFactsFromIntake } from '@/lib/quote-facts'
 import { isV30Enabled } from '@kealee/kealee-agent-stack'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { trackCheckoutStarted } from '@/lib/marketing/ga4-server'
 import { parseUtmFromBody } from '@/lib/marketing/utm-metadata'
+import { KEALEE_STRIPE_CHECKOUT_BRANDING } from '@/lib/stripe-checkout-branding'
 
 export const dynamic = 'force-dynamic'
 
@@ -54,9 +55,11 @@ export async function POST(req: NextRequest) {
 
     let unitAmountCents: number
     let productName: string
+    // Legacy: only present on orders created before packages became one per
+    // product. Recorded in metadata for reporting, never used to price.
     let checkoutTier: number | undefined
     /** What actually priced this session. Recorded in metadata for the webhook. */
-    let pricingModel: 'v30_dynamic' | 'tier_fixed' | 'bundle' = 'tier_fixed'
+    let pricingModel: 'quote_engine' | 'catalog_floor' | 'bundle' = 'quote_engine'
 
     // A dynamic quote prices the session when one exists. When it does not —
     // the quote step failed, the flag is on server-side but the funnel never
@@ -127,7 +130,7 @@ export async function POST(req: NextRequest) {
     if (v30Quoted) {
       unitAmountCents = v30Quoted.cents
       productName = v30Quoted.label
-      pricingModel = 'v30_dynamic'
+      pricingModel = 'quote_engine'
     } else if (isBundleProductKey(projectPath) && sourcePath) {
       const bundle = getBundleCheckoutCents(
         projectPath as 'design_estimate_permit_bundle' | 'estimate_permit_bundle',
@@ -140,20 +143,10 @@ export async function POST(req: NextRequest) {
       productName = bundle.label
       pricingModel = 'bundle'
     } else {
-      // Server-trusted tier price (v20) — read tier from intake form_data
-      try {
-        const supabase = getSupabaseAdmin()
-        const { data: tierRow } = await supabase
-          .from('public_intake_leads')
-          .select('form_data')
-          .eq('id', intakeId)
-          .single()
-        checkoutTier = ((tierRow?.form_data as Record<string, unknown>) ?? {}).tier as number | undefined
-      } catch { /* non-fatal — falls back to flat price */ }
-
-      const priceEntry = checkoutTier
-        ? getIntakePriceByTier(projectPath, checkoutTier)
-        : getIntakePrice(projectPath)
+      // No quote could be computed for this path — fall back to the product's
+      // published "from" price so a paid order is never blocked, and record
+      // that it was priced this way.
+      const priceEntry = getIntakePrice(projectPath)
       if (!priceEntry) {
         return NextResponse.json(
           { error: `Unknown projectPath: ${projectPath}` },
@@ -162,6 +155,7 @@ export async function POST(req: NextRequest) {
       }
       unitAmountCents = priceEntry.cents
       productName = priceEntry.label
+      pricingModel = 'catalog_floor'
     }
 
     const stripeKey = process.env.STRIPE_SECRET_KEY
@@ -198,11 +192,12 @@ export async function POST(req: NextRequest) {
 
     const commonParams: Stripe.Checkout.SessionCreateParams = {
       mode: 'payment',
+      branding_settings: KEALEE_STRIPE_CHECKOUT_BRANDING,
       payment_method_types: ['card'],
       allow_promotion_codes: true,
       line_items: lineItems,
       metadata: {
-        source: pricingModel === 'v30_dynamic' ? 'public_intake_v30' : 'public_intake',
+        source: pricingModel === 'quote_engine' ? 'public_intake_v30' : 'public_intake',
         intakeId,
         projectPath,
         siteVisitRequested: siteVisitRequested ? 'true' : 'false',
@@ -214,7 +209,7 @@ export async function POST(req: NextRequest) {
       },
       payment_intent_data: {
         metadata: {
-          source: pricingModel === 'v30_dynamic' ? 'public_intake_v30' : 'public_intake',
+          source: pricingModel === 'quote_engine' ? 'public_intake_v30' : 'public_intake',
           intakeId,
           projectPath,
           pricingModel,

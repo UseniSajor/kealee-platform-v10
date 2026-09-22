@@ -3,16 +3,17 @@
 import { useState, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Shield, Loader2, Check, Zap, X } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Shield, Loader2, Check, Zap, X } from 'lucide-react'
 import { SERVICE_MAP } from '@/lib/services-config'
 import { StripeEmbeddedCheckoutModal } from '@/components/StripeEmbeddedCheckoutModal'
 import { isV30EnabledClient } from '@/lib/v30'
 import { buildV30AnswersFromConceptConfirm } from '@/lib/v30-concept-confirm'
 import {
   getServiceTierItemsForUi,
-  TIER_META,
   withConsultationIcon,
 } from '@/lib/concept-package-deliverables-ui'
+import { ADD_ONS, type Quote } from '@kealee/core-rules'
+import { QuoteBreakdown } from '@/components/quote/QuoteBreakdown'
 
 // True when pk is set at build time — activates embedded Stripe checkout
 const USE_EMBEDDED_CHECKOUT = Boolean(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY)
@@ -47,11 +48,14 @@ function ConfirmInner() {
   const address     = searchParams.get('address') ?? ''
   const attachments = searchParams.get('attachments') ?? ''
 
-  const service        = SERVICE_MAP[serviceSlug]
-  const availableTiers = service?.tiers.filter((t) => t.available) ?? []
-  const defaultTier    = availableTiers.find((t) => t.tier === 2) ? 2 : (availableTiers[0]?.tier ?? 1)
+  const service = SERVICE_MAP[serviceSlug]
 
-  const [tier,       setTier]       = useState<1 | 2 | 3>(defaultTier as 1 | 2 | 3)
+  // One core package per product. The exact price is quoted after intake and
+  // shown in full before Stripe — never a tier the customer has to decode.
+  const [quote,      setQuote]      = useState<Quote | null>(null)
+  const [quoteId,    setQuoteId]    = useState<string | null>(null)
+  const [quoting,    setQuoting]    = useState(false)
+  const [selectedAddOns, setSelectedAddOns] = useState<string[]>([])
   const [agreed,     setAgreed]     = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [error,      setError]      = useState('')
@@ -67,8 +71,7 @@ function ConfirmInner() {
   const [showFailed,      setShowFailed]      = useState(searchParams.get('payment_failed') === 'true')
   const [showExpired,     setShowExpired]     = useState(searchParams.get('session_expired') === 'true')
 
-  const selectedTier = service?.tiers.find((t) => t.tier === tier)
-  const price        = selectedTier?.price ?? 0
+  const price = quote ? quote.totalCents / 100 : 0
 
   const detailsParams = new URLSearchParams({ service: serviceSlug, scope, budget, zip, style, priority, timeline, sqft })
   const contactParams = new URLSearchParams({ service: serviceSlug, scope, budget, zip, style, priority, timeline, sqft, firstName, lastName, email, phone, address })
@@ -76,7 +79,7 @@ function ConfirmInner() {
   const projectPath = service?.intakePath ?? serviceSlug
   const v30Enabled = isV30EnabledClient()
 
-  async function createIntakeRecord(checkoutTier: 1 | 2 | 3): Promise<string> {
+  async function createIntakeRecord(): Promise<string> {
     const intakeRes = await fetch('/api/intake', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -88,7 +91,9 @@ function ConfirmInner() {
         projectAddress: address || `ZIP: ${zip}`,
         budgetRange: budget || 'Not provided',
         formData: {
-          description: scope, budget, zip, tier: checkoutTier, style, priority, timeline, sqft,
+          description: scope, budget, zip, style, priority, timeline, sqft,
+          squareFootage: sqft,
+          addOns: selectedAddOns,
           ...(v30Enabled && { v30: true }),
           ...(attachments && { attachments }),
         },
@@ -102,33 +107,52 @@ function ConfirmInner() {
     return intakeId as string
   }
 
-  function handleTierPay(selectedTier: 1 | 2 | 3) {
-    setTier(selectedTier)
-    if (!agreed) {
-      setError('Please agree to the Terms of Service above before selecting a package.')
-      document.getElementById('terms-checkbox')?.scrollIntoView({ behavior: 'smooth', block: 'center' })
-      return
+  /**
+   * Price this project. Creates the order record, then asks the server for a
+   * quote computed from the intake facts. The browser never proposes a price.
+   */
+  async function handleGetPrice() {
+    setError('')
+    setQuoting(true)
+    try {
+      const intakeId = quoteId ?? (await createIntakeRecord())
+      setQuoteId(intakeId)
+
+      const v30Answers = buildV30AnswersFromConceptConfirm({
+        projectPath, scope, budget, zip, timeline, sqft,
+        address: address || undefined,
+      })
+      const res = await fetch('/api/v30/intake', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ intakeId, projectPath, answers: v30Answers, addOns: selectedAddOns }),
+      })
+      const body = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(body.error ?? 'Your price could not be prepared. Try again in a moment.')
+      if (body.scopingRequired) {
+        setError('This project is quoted by our team. Kealee will send your fixed price — nothing is charged now.')
+        return
+      }
+      const computed = body.quote?.quote as Quote | undefined
+      if (!computed) throw new Error('Your price could not be prepared. Try again in a moment.')
+      setQuote(computed)
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Your price could not be prepared. Try again in a moment.')
+    } finally {
+      setQuoting(false)
     }
-    handleSubmitForTier(selectedTier)
   }
 
   async function handleSubmit() {
     if (!agreed) { setError('Please agree to the terms to continue.'); return }
     setError('')
     setSubmitting(true)
-    await runCheckout(tier)
+    await runCheckout()
     setSubmitting(false)
   }
 
-  async function handleSubmitForTier(selectedTier: 1 | 2 | 3) {
-    setError('')
-    setSubmitting(true)
-    await runCheckout(selectedTier)
-    setSubmitting(false)
-  }
-
-  async function runCheckout(selectedTier: 1 | 2 | 3) {
-    const selectedTierPrice = service?.tiers.find((t) => t.tier === selectedTier)?.price ?? price
+  async function runCheckout() {
+    const selectedTierPrice = price
 
     // Fire-and-forget soft capture
     fetch('/api/intake/soft-capture', {
@@ -138,36 +162,9 @@ function ConfirmInner() {
     }).catch(() => {})
 
     try {
-      const intakeId = await createIntakeRecord(selectedTier)
-
-      if (v30Enabled) {
-        const v30Answers = buildV30AnswersFromConceptConfirm({
-          projectPath,
-          scope,
-          budget,
-          zip,
-          timeline,
-          sqft,
-          address: address || undefined,
-        })
-        const v30Res = await fetch('/api/v30/intake', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            intakeId,
-            projectPath,
-            tier: selectedTier,
-            answers: v30Answers,
-          }),
-        })
-        // The dynamic quote is an enhancement, not a precondition of paying.
-        // If it cannot be built the checkout route prices from the tier
-        // table; refusing the sale here left the customer stuck at the button.
-        if (!v30Res.ok) {
-          const b = await v30Res.json().catch(() => ({}))
-          console.warn('[concept/confirm] v30 quote unavailable; pricing from tier table:', (b as { error?: string }).error)
-        }
-      }
+      // The quote step already created the order and priced it; checkout
+      // recomputes the amount server-side before charging.
+      const intakeId = quoteId ?? (await createIntakeRecord())
 
       // ── Free promo code path — bypass Stripe entirely ──────────────────────
       const code = promoCode.trim()
@@ -263,8 +260,10 @@ function ConfirmInner() {
     )
   }
 
-  const tierName        = availableTiers.find((t) => t.tier === tier)?.name ?? 'Basic'
-  const serviceTierItems = getServiceTierItems(serviceSlug)
+  const packageItems = getServiceTierItems(serviceSlug)[2] ?? getServiceTierItems(serviceSlug)[1] ?? []
+  const offeredAddOns = ADD_ONS.filter(a =>
+    service?.videoAddOnAvailable ? true : !['video_presentation', 'interactive_walk'].includes(a.id),
+  )
 
   return (
     <div className="space-y-10">
@@ -309,8 +308,8 @@ function ConfirmInner() {
       {/* ── Page header ───────────────────────────────────── */}
       <div>
         <p className="text-xs font-bold uppercase tracking-widest text-[#E8724B] mb-2">Step 4 of 4</p>
-        <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-1">Choose your package</h1>
-        <p className="text-slate-500 text-sm">Select a tier — all packages deliver in 3–5 business days.</p>
+        <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-1">Your project and price</h1>
+        <p className="text-slate-500 text-sm">One package, priced from your project. No commitment until you pay.</p>
       </div>
 
       {/* ── Summary bar ───────────────────────────────────── */}
@@ -411,77 +410,105 @@ function ConfirmInner() {
         )}
       </div>
 
-      {/* ── Tier cards ────────────────────────────────────── */}
+      {/* ── Your package, then your exact price ──────────── */}
       <div>
-        <h2 className="text-lg font-bold text-slate-900 mb-2">Select your package</h2>
-        <p className="text-sm text-slate-500 mb-5">Click a package below to go directly to checkout.</p>
-        <div className={`grid gap-5 ${availableTiers.length === 3 ? 'lg:grid-cols-3' : availableTiers.length === 2 ? 'sm:grid-cols-2' : ''}`}>
-          {availableTiers.map((t) => {
-            const meta  = TIER_META[t.tier as 1 | 2 | 3]
-            const items = serviceTierItems[t.tier as 1 | 2 | 3] ?? []
+        <h2 className="text-lg font-bold text-slate-900 mb-2">Your package</h2>
+        <p className="text-sm text-slate-500 mb-5">
+          {service?.priceDisplay ? `Typical price: ${service.priceDisplay}. ` : ''}
+          Your exact price is calculated from this project and shown before any payment.
+        </p>
 
-            return (
-              <div key={t.tier} className="relative flex flex-col rounded-2xl overflow-hidden border border-slate-200 shadow-sm hover:shadow-lg transition-all duration-200">
-                {/* Popular badge */}
-                {meta.badge && (
-                  <span className="absolute top-4 right-4 rounded-full bg-[#E8724B] text-white text-[10px] font-bold px-2.5 py-0.5 z-10">
-                    {meta.badge}
-                  </span>
-                )}
-
-                {/* Gradient header */}
-                <div className={`bg-gradient-to-br ${meta.accent} px-6 pt-7 pb-6`}>
-                  <div className="w-12 h-12 rounded-full bg-white/15 flex items-center justify-center mb-4">
-                    <span className="text-white font-black text-lg">{t.tier}</span>
+        <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+          <div className="px-6 py-5 border-b border-slate-100">
+            <p className="text-sm font-bold text-slate-900">{service?.deliverableLabel ?? 'Design Concept Package'}</p>
+            <p className="text-xs text-slate-500 mt-0.5">Delivered in {service?.deliveryDays ?? '3–5 days'}</p>
+          </div>
+          <div className="px-6 py-5 space-y-3">
+            {packageItems.map((item, i) => {
+              const Icon = item.icon
+              return (
+                <div key={i} className="flex items-center gap-3">
+                  <div className={`w-8 h-8 rounded-full ${item.color} flex items-center justify-center shrink-0`}>
+                    <Icon className="w-4 h-4" />
                   </div>
-                  <p className="text-white/70 text-xs font-bold uppercase tracking-widest mb-1">{t.name}</p>
-                  <p className="text-white font-black text-4xl mb-1">${t.price.toLocaleString()}</p>
-                  <p className="text-white/60 text-xs leading-relaxed">{meta.tagline}</p>
+                  <p className="text-sm text-slate-700 leading-snug">{item.label}</p>
                 </div>
+              )
+            })}
+          </div>
 
-                {/* Deliverables */}
-                <div className="bg-white flex-1 px-6 py-5 space-y-3">
-                  {items.map((item, i) => {
-                    const Icon = item.icon
-                    return (
-                      <div key={i} className="flex items-center gap-3">
-                        <div className={`w-8 h-8 rounded-full ${item.color} flex items-center justify-center shrink-0`}>
-                          <Icon className="w-4 h-4" />
-                        </div>
-                        <p className="text-sm text-slate-700 leading-snug">{item.label}</p>
-                      </div>
-                    )
-                  })}
-                </div>
-
-                {/* Permit credit badge */}
-                <div className="bg-teal-50 border-t border-teal-100 px-6 py-2.5 flex items-center gap-2">
-                  <span className="text-teal-600 text-xs">💡</span>
-                  <span className="text-xs text-teal-700 font-medium">Cost credited toward permit drawing plans</span>
-                </div>
-
-                {/* Pay CTA */}
-                <div className="bg-white border-t border-slate-100 px-6 py-4">
-                  <button
-                    type="button"
-                    disabled={submitting}
-                    onClick={() => handleTierPay(t.tier as 1 | 2 | 3)}
-                    className="w-full flex items-center justify-center gap-2 bg-[#E8724B] hover:bg-[#D45C33] active:bg-[#C04820] disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-3.5 rounded-xl text-sm transition-all duration-200 shadow-md shadow-orange-100 hover:shadow-lg"
-                  >
-                    {submitting && tier === t.tier ? (
-                      <><Loader2 className="w-4 h-4 animate-spin" /> Processing…</>
-                    ) : promoApplied ? (
-                      <><Check className="w-4 h-4" strokeWidth={3} /> Redeem Free Access</>
-                    ) : (
-                      <><Shield className="w-4 h-4" /> Pay ${t.price.toLocaleString()} — Start My Concept</>
-                    )}
-                  </button>
-                </div>
-              </div>
-            )
-          })}
+          {/* Optional add-ons — never bundled into the package price */}
+          <div className="px-6 py-5 border-t border-slate-100">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-3">
+              Optional add-ons
+            </p>
+            <div className="space-y-2">
+              {offeredAddOns.map(addOn => (
+                <label key={addOn.id} className="flex items-center justify-between gap-3 cursor-pointer">
+                  <span className="flex items-center gap-2.5 min-w-0">
+                    <input
+                      type="checkbox"
+                      checked={selectedAddOns.includes(addOn.id)}
+                      onChange={e => {
+                        setQuote(null)
+                        setSelectedAddOns(prev =>
+                          e.target.checked ? [...prev, addOn.id] : prev.filter(id => id !== addOn.id),
+                        )
+                      }}
+                      className="h-4 w-4 rounded border-slate-300 text-[#E8724B] focus:ring-[#E8724B]"
+                    />
+                    <span className="text-sm text-slate-700 truncate">{addOn.label}</span>
+                  </span>
+                  <span className="text-sm font-semibold text-slate-900 whitespace-nowrap">
+                    {addOn.cents == null ? 'Scoped' : `$${(addOn.cents / 100).toLocaleString()}`}
+                  </span>
+                </label>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
+
+      {/* ── The quote ─────────────────────────────────────── */}
+      {quote ? (
+        <div className="space-y-4">
+          <QuoteBreakdown quote={quote} projectType={projectPath} />
+          <button
+            type="button"
+            disabled={submitting || quote.customQuoteRequired}
+            onClick={handleSubmit}
+            className="w-full flex items-center justify-center gap-2 bg-[#E8724B] hover:bg-[#D45C33] active:bg-[#C04820] disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-3.5 rounded-xl text-sm transition-all duration-200 shadow-md shadow-orange-100"
+          >
+            {submitting ? (
+              <><Loader2 className="w-4 h-4 animate-spin" /> Processing…</>
+            ) : promoApplied ? (
+              <><Check className="w-4 h-4" strokeWidth={3} /> Redeem Free Access</>
+            ) : (
+              <><Shield className="w-4 h-4" /> Pay ${(quote.totalCents / 100).toLocaleString()} — Start My Concept</>
+            )}
+          </button>
+          <button
+            type="button"
+            onClick={() => setQuote(null)}
+            className="w-full text-xs text-slate-400 hover:text-slate-600 transition"
+          >
+            Change add-ons and re-price
+          </button>
+        </div>
+      ) : (
+        <button
+          type="button"
+          disabled={quoting}
+          onClick={handleGetPrice}
+          className="w-full flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-700 disabled:opacity-50 text-white font-bold py-3.5 rounded-xl text-sm transition-all duration-200"
+        >
+          {quoting ? (
+            <><Loader2 className="w-4 h-4 animate-spin" /> Calculating your exact price…</>
+          ) : (
+            <>Get my exact price <ArrowRight className="w-4 h-4" /></>
+          )}
+        </button>
+      )}
 
       {/* Back link */}
       <div className="flex items-center justify-between pt-2">

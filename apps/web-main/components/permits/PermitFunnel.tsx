@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from 'react'
 import { getPermitFunnelProjectDescriptionPlaceholder } from '@kealee/shared'
-import { CANONICAL_PRICE_CENTS, formatPriceFromCents } from '@kealee/core-rules'
+import { CANONICAL_PRICE_CENTS, formatPriceFromCents, RUSH_MULTIPLIER } from '@kealee/core-rules'
 
 interface PermitFunnelProps {
   countySlug?: string
@@ -87,7 +87,9 @@ const PERMIT_PACKAGES: {
   {
     tier: 'expediting',
     name: 'Expedited Permit Coordination',
-    price: `Starting at ${formatPriceFromCents(CANONICAL_PRICE_CENTS.permits.expedited).replace('.00', '')}`,
+    // Expediting is managed coordination on a priority schedule — the rush
+    // premium the quoting engine applies, not a separate price list.
+    price: `Starting at ${formatPriceFromCents(Math.round(CANONICAL_PRICE_CENTS.permits.managed * (1 + RUSH_MULTIPLIER))).replace('.00', '')}`,
     description: 'Priority processing — fastest path to approval',
     includes: [
       'Everything in Permit Coordination',

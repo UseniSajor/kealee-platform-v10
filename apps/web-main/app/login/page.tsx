@@ -46,6 +46,30 @@ const ROLE_PORTALS = [
   },
 ]
 
+/**
+ * The professional review desks. These live in this app, not in a portal, and
+ * until now were reachable only by typing the URL — a licensed reviewer had no
+ * way to find their own queue. OS Architecture reviews design concepts and
+ * architectural footprints; OS Engineering reviews site plans and zoning.
+ */
+const STAFF_DESKS = [
+  {
+    role: 'OS Architecture',
+    description: 'Design concept review and architectural footprint sign-off.',
+    href: '/architect/review',
+  },
+  {
+    role: 'OS Engineering',
+    description: 'Site plan, zoning compliance and site layout review.',
+    href: '/engineer/review',
+  },
+  {
+    role: 'Kealee staff',
+    description: 'Order desk, site-plan delivery and revision requests.',
+    href: '/admin/site-plan',
+  },
+]
+
 export default function LoginPage({
   searchParams,
 }: {
@@ -131,6 +155,31 @@ export default function LoginPage({
               </div>
             </div>
           ))}
+        </div>
+
+        {/* Professional review desks — Kealee staff and licensed reviewers */}
+        <div className="mt-12 rounded-2xl border border-gray-200 bg-white p-6">
+          <p className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: '#1A2B4A' }}>
+            Kealee staff and licensed professionals
+          </p>
+          <p className="text-sm text-gray-500 mb-4">
+            Review queues for the professionals who sign off on Kealee work.
+          </p>
+          <div className="grid gap-3 sm:grid-cols-3">
+            {STAFF_DESKS.map((desk) => (
+              <Link
+                key={desk.href}
+                href={desk.href}
+                className="rounded-xl border border-gray-200 p-4 transition-colors hover:bg-gray-50"
+              >
+                <p className="text-sm font-bold" style={{ color: '#1A2B4A' }}>{desk.role}</p>
+                <p className="mt-1 text-xs text-gray-500 leading-relaxed">{desk.description}</p>
+                <span className="mt-2 inline-flex items-center gap-1 text-xs font-semibold" style={{ color: '#E8793A' }}>
+                  Open queue <ArrowRight className="h-3 w-3" />
+                </span>
+              </Link>
+            ))}
+          </div>
         </div>
 
         {/* New to Kealee */}

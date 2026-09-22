@@ -3,7 +3,8 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { CheckCircle2, Clock, ArrowRight, Shield, Video, FileText, Image as ImageIcon, Table2, Layers, Star, LayoutTemplate, Zap, PlayCircle, Phone, Lock } from 'lucide-react'
-import { SERVICES, SERVICE_MAP } from '@/lib/services-config'
+import { SERVICES, SERVICE_MAP, type Service } from '@/lib/services-config'
+import { ADD_ONS } from '@kealee/core-rules'
 import { SERVICE_DELIVERABLES } from '@/lib/service-deliverables'
 import {
   getIncludedSectionBlurb,
@@ -61,53 +62,47 @@ export function generateStaticParams() {
   return Array.from(slugs, serviceType => ({ serviceType }))
 }
 
-function TierCard({
-  tier,
-  serviceSlug,
-  deliverableLabel,
-  deliveryDays,
-}: {
-  tier: { tier: number; name: string; price: number; available: boolean; video: boolean; badge?: string }
-  serviceSlug: string
-  deliverableLabel: string
-  deliveryDays: string
-}) {
-  if (!tier.available) return null
+/**
+ * The add-ons offered with a service. Video is listed only where the service
+ * supports it; scoped add-ons show "Scoped" rather than an invented price.
+ */
+function addOnsForService(svc: Service) {
+  const hidden = new Set(svc.videoAddOnAvailable ? [] : ['video_presentation', 'interactive_walk'])
+  return ADD_ONS.filter(a => !hidden.has(a.id)).map(a => ({ id: a.id, label: a.label, cents: a.cents, note: a.note }))
+}
 
-  const isPremium = tier.tier === 2
-  const tierKey = tier.tier as 1 | 2 | 3
-  const deliverables =
-    tierKey === 3
-      ? withConsultationIcon(getServiceTierItemsForUi(serviceSlug)[3])
-      : getServiceTierItemsForUi(serviceSlug)[tierKey]
+/**
+ * One core package per service.
+ *
+ * This was three Basic/Premium/Premium+ cards with hardcoded prices that
+ * disagreed with checkout. There is now a single package, a computed price
+ * RANGE before intake, and optional add-ons priced separately — the exact fee
+ * is quoted after the customer describes the project.
+ */
+function PackageCard({
+  svc,
+  addOns,
+}: {
+  svc: Service
+  addOns: { id: string; label: string; cents: number | null; note?: string }[]
+}) {
+  const deliverables = getServiceTierItemsForUi(svc.slug)[2] ?? getServiceTierItemsForUi(svc.slug)[1]
 
   return (
-    <div
-      className={`relative rounded-2xl border flex flex-col overflow-hidden ${
-        isPremium
-          ? 'border-[#E8724B] shadow-lg shadow-orange-100 bg-white ring-2 ring-[#E8724B]/20'
-          : 'border-slate-200 bg-white shadow-sm'
-      }`}
-    >
-      {tier.badge && (
-        <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-[#E8724B] text-white text-xs font-bold px-3 py-1 z-10">
-          {tier.badge}
-        </span>
-      )}
-
-      {/* Header */}
+    <div className="relative rounded-2xl border border-[#E8724B] bg-white shadow-lg shadow-orange-100 ring-2 ring-[#E8724B]/20 overflow-hidden">
       <div className="px-6 pt-7 pb-5 border-b border-slate-100">
-        <p className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-1">{tier.name}</p>
+        <p className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-1">{svc.deliverableLabel}</p>
         <p className="text-3xl font-black text-slate-900 mt-1">
-          ${tier.price.toLocaleString()}
-          <span className="text-sm font-normal text-slate-400 ml-1">one-time</span>
+          {svc.priceDisplay}
+          <span className="text-sm font-normal text-slate-400 ml-2">typical price</span>
         </p>
-        <p className="text-xs text-slate-500 mt-1">{deliverableLabel} · Delivered in {deliveryDays}</p>
+        <p className="text-xs text-slate-500 mt-1">
+          Final fixed price provided after your project intake · Delivered in {svc.deliveryDays}
+        </p>
       </div>
 
-      {/* Deliverables */}
-      <div className="px-6 py-5 flex-1 space-y-3">
-        {deliverables.map((item, i) => {
+      <div className="px-6 py-5 space-y-3">
+        {deliverables?.map((item, i) => {
           const Icon = item.icon
           return (
             <div key={i} className="flex items-center gap-3">
@@ -120,19 +115,33 @@ function TierCard({
         })}
       </div>
 
-      {/* CTA */}
+      {addOns.length > 0 && (
+        <div className="px-6 pb-5 border-t border-slate-100 pt-5">
+          <p className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-3">Optional add-ons</p>
+          <div className="space-y-2">
+            {addOns.map(addOn => (
+              <div key={addOn.id} className="flex items-baseline justify-between gap-3">
+                <span className="text-sm text-slate-600">{addOn.label}</span>
+                <span className="text-sm font-semibold text-slate-900 whitespace-nowrap">
+                  {addOn.cents == null ? 'Scoped' : `$${(addOn.cents / 100).toLocaleString()}`}
+                </span>
+              </div>
+            ))}
+          </div>
+          <p className="text-xs text-slate-400 mt-3">Choose add-ons at checkout — none are required.</p>
+        </div>
+      )}
+
       <div className="px-6 pb-6">
         <Link
-          href={`/concept/details?service=${serviceSlug}&tier=${tier.tier}`}
-          className={`flex items-center justify-center gap-2 w-full rounded-xl py-3 text-sm font-bold transition-all duration-200 ${
-            isPremium
-              ? 'bg-[#E8724B] hover:bg-[#D45C33] text-white shadow-md shadow-orange-200'
-              : 'bg-slate-900 hover:bg-slate-700 text-white'
-          }`}
+          href={`/concept/details?service=${svc.slug}`}
+          className="flex items-center justify-center gap-2 w-full rounded-xl py-3 text-sm font-bold bg-[#E8724B] hover:bg-[#D45C33] text-white shadow-md shadow-orange-200 transition-all duration-200"
         >
-          Get Started <ArrowRight className="w-4 h-4" />
+          Start your project <ArrowRight className="w-4 h-4" />
         </Link>
-        <p className="text-xs text-slate-400 text-center mt-3">Pricing revealed at checkout — no commitment until then</p>
+        <p className="text-xs text-slate-400 text-center mt-3">
+          Your exact price is shown before payment — no commitment until then
+        </p>
       </div>
     </div>
   )
@@ -158,7 +167,6 @@ export default async function ServicePage({
 
   const deliverable = SERVICE_DELIVERABLES[svc.intakePath]
   const includes = deliverable?.includes ?? svc.features
-  const availableTiers = svc.tiers.filter((t) => t.available)
   const processSteps = getServiceProcessSteps(svc.slug)
   const videoFallback = getServiceVideoFallbackCopy(svc.slug, svc.label)
   const pricingBlurb = getServicePricingBlurb(svc.slug)
@@ -286,14 +294,12 @@ export default async function ServicePage({
         <div className="mx-auto max-w-5xl">
           <div className="text-center mb-12">
             <p className="text-xs font-bold uppercase tracking-widest text-[#E8724B] mb-3">Pricing</p>
-            <h2 className="text-3xl font-bold text-slate-900">Choose Your Package</h2>
+            <h2 className="text-3xl font-bold text-slate-900">Your Package</h2>
             <p className="mt-3 text-slate-500">{pricingBlurb}</p>
           </div>
 
-          <div className={`grid gap-6 ${availableTiers.length === 3 ? 'md:grid-cols-3' : availableTiers.length === 2 ? 'md:grid-cols-2 max-w-2xl mx-auto' : 'max-w-sm mx-auto'}`}>
-            {svc.tiers.map((tier) => (
-              <TierCard key={tier.tier} tier={tier} serviceSlug={svc.slug} deliverableLabel={svc.deliverableLabel} deliveryDays={svc.deliveryDays} />
-            ))}
+          <div className="max-w-md mx-auto">
+            <PackageCard svc={svc} addOns={addOnsForService(svc)} />
           </div>
         </div>
       </section>

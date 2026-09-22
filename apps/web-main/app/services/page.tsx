@@ -1,6 +1,30 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
+import { formatPriceRange, priceRangeFor, bundleFromCents, getProductPricing } from '@kealee/core-rules'
+
+/**
+ * Prices on this page are COMPUTED from the quoting engine. This file used to
+ * carry its own list ("From $395", a $950 PM tier, a $495 bundle) that matched
+ * neither checkout nor any other page. Each service shows the range its
+ * products span; the exact fee is quoted after intake.
+ */
+const dollars = (cents: number) => `$${Math.round(cents / 100).toLocaleString()}`
+const from = (key: string) => {
+  const range = priceRangeFor(key)
+  return range ? `From ${dollars(range.lowCents)}` : 'Quoted after intake'
+}
+/** Drawing classes carry their own base and ceiling in the pricing engine. */
+const drawingClassRange = (cls: 'limited_renovation' | 'addition_adu' | 'whole_home_new_commercial') => {
+  const bases = getProductPricing('professional_drawings')?.classBases
+  const entry = bases?.[cls]
+  return entry ? `${dollars(entry.baseCents)}–${dollars(entry.ceilingCents)}` : 'Quoted after intake'
+}
+const spanOf = (...keys: string[]) => {
+  const ranges = keys.map(priceRangeFor).filter(Boolean) as { lowCents: number; highCents: number }[]
+  if (!ranges.length) return 'Quoted after intake'
+  return `${dollars(Math.min(...ranges.map(r => r.lowCents)))}–${dollars(Math.max(...ranges.map(r => r.highCents)))}`
+}
 
 export const metadata: Metadata = {
   title: 'All Services — Kealee Platform',
@@ -12,65 +36,63 @@ const SERVICES = [
     tag: 'Design Engine',
     title: 'Concept & Design',
     description: 'Upload photos of your space. Get a concept floor plan, design brief, cost band, and permit scope in 24 hours. Staff-reviewed before delivery.',
-    price: 'From $395',
+    price: from('bathroom_remodel'),
     note: 'Pre-design concept only — not a permit-ready plan.',
     href: '/concept',
     cta: 'Start your design',
     accent: '#E8793A',
     imgUrl: 'https://images.unsplash.com/photo-1584622781564-1d987f7333c1?w=700&q=60&auto=format&fit=crop',
     tiers: [
-      { name: 'Design + Validation', price: '$395', pop: true },
-      { name: 'Advanced Concept — 3 options', price: '$695' },
-      { name: 'Full Design Package', price: 'from $4,499' },
+      { name: 'Single room or bath concept', price: formatPriceRange('bathroom_remodel') ?? '', pop: true },
+      { name: 'Kitchen or interior renovation concept', price: formatPriceRange('kitchen_remodel') ?? '' },
+      { name: 'Addition, ADU or whole-home concept', price: spanOf('addition_expansion', 'whole_home_concept') },
     ],
   },
   {
     tag: 'Permit Services',
     title: 'Permit Filing & Tracking',
     description: 'We know Montgomery DPS, Fairfax LDS, DC DOB, and every DMV agency. We file, track, respond to comments, and notify you when approved.',
-    price: 'From $149',
+    price: from('permit_path_only'),
     note: 'Requires existing plans or architectural documents.',
     href: '/intake/permit_path_only?product=permit_assessment',
     cta: 'Start permit intake',
     accent: '#2563EB',
     imgUrl: 'https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=700&q=60&auto=format&fit=crop',
     tiers: [
-      { name: 'Permit Guidance', price: 'Free' },
-      { name: 'Simple Permit Filing', price: '$149' },
-      { name: 'Permit Package', price: '$950', pop: true },
-      { name: 'Permit Coordination', price: '$2,750' },
+      { name: 'Permit assessment', price: formatPriceRange('permit_path_only') ?? '' },
+      { name: 'Permit preparation and filing', price: formatPriceRange('permit_filing') ?? '', pop: true },
+      { name: 'Managed permit coordination', price: formatPriceRange('permit_managed') ?? '' },
     ],
   },
   {
     tag: 'Design Services',
     title: 'Architect-Stamped Plans',
     description: 'Licensed architects provide permit-ready construction drawings. Ideal after an design concept, or if you need plans before permit filing.',
-    price: 'From $895',
+    price: from('professional_drawings'),
     note: 'Required before permit filing for most projects.',
     href: '/intake/professional_drawings',
     cta: 'Start drawing intake',
     accent: '#7C3AED',
     imgUrl: 'https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=700&q=60&auto=format&fit=crop',
     tiers: [
-      { name: 'Design Starter', price: '$895' },
-      { name: 'Design + Visualization', price: '$1,895', pop: true },
-      { name: 'Full Pre-Design Package', price: 'from $3,995' },
+      { name: 'Limited renovation drawings', price: drawingClassRange('limited_renovation'), pop: true },
+      { name: 'Addition or ADU drawings', price: drawingClassRange('addition_adu') },
+      { name: 'Whole-home, new build or commercial', price: drawingClassRange('whole_home_new_commercial') },
     ],
   },
   {
     tag: 'Cost Estimation',
     title: 'Project Cost Estimates',
     description: 'powered by AI tools cost ranges based on real DMV project data. Certified estimates from licensed estimators for financing and bid review.',
-    price: 'From $95',
+    price: from('cost_estimate'),
     note: 'AI estimates are ranges — certified estimates are for financing.',
     href: '/intake/cost_estimate',
     cta: 'Get an estimate',
     accent: '#38A169',
     imgUrl: 'https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=700&q=60&auto=format&fit=crop',
     tiers: [
-      { name: 'Design + Cost Estimate', price: '$395' },
-      { name: 'Standalone Cost Estimate', price: '$95', pop: true },
-      { name: 'Certified Estimate', price: '$595' },
+      { name: 'Detailed planning estimate', price: formatPriceRange('cost_estimate') ?? '', pop: true },
+      { name: 'Professionally reviewed estimate', price: formatPriceRange('certified_estimate') ?? '' },
     ],
   },
   {
@@ -84,25 +106,24 @@ const SERVICES = [
     accent: '#0891B2',
     imgUrl: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=700&q=60&auto=format&fit=crop',
     tiers: [
-      { name: 'Browse + Get Matched', price: 'Free' },
-      { name: 'Concept + Contractor Match', price: '$395', pop: true },
-      { name: 'Managed Bid Process', price: 'Included with PM' },
+      { name: 'Browse and get matched', price: 'Free', pop: true },
+      { name: 'Managed bid process', price: formatPriceRange('managed_bid') ?? '' },
     ],
   },
   {
     tag: 'Project Management',
     title: 'PM Advisory & Oversight',
     description: 'Every milestone, document, and payment in one dashboard. Your contractor cannot receive funds until you approve the milestone.',
-    price: 'From $950',
+    price: from('pm_advisory'),
     note: 'Self-managed dashboard always free.',
     href: '/intake/pm_advisory',
     cta: 'Start PM intake',
     accent: '#DC2626',
     imgUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=700&q=60&auto=format&fit=crop',
     tiers: [
-      { name: 'Self-Managed Dashboard', price: 'Free' },
-      { name: 'PM Advisory', price: '$950', pop: true },
-      { name: 'PM Oversight', price: '$2,950' },
+      { name: 'Self-managed dashboard', price: 'Free' },
+      { name: 'PM advisory', price: `${formatPriceRange('pm_advisory')}/mo`, pop: true },
+      { name: 'Active project oversight', price: `${formatPriceRange('pm_oversight')}/mo` },
     ],
   },
   {
@@ -123,11 +144,17 @@ const SERVICES = [
   },
 ]
 
+/** Bundles are their parts less the bundle credit — no separate price list. */
+const bundlePrice = (...keys: string[]) => {
+  const cents = bundleFromCents(keys)
+  return cents ? `From ${dollars(cents)}` : 'Quoted after intake'
+}
+
 const BUNDLES = [
-  { name: 'Design + Permit Starter', desc: 'design concept + simple permit filing', price: '$495', href: '/request-service?service=design-permit-starter&name=Design%20%2B%20Permit%20Starter' },
-  { name: 'Concept + Estimate', desc: 'Design + Cost Estimate in one package', price: '$449', href: '/request-service?service=concept-estimate&name=Concept%20%2B%20Estimate' },
-  { name: 'Permit + PM Advisory', desc: 'Permit filing + milestone payment oversight', price: '$1,799', href: '/request-service?service=permit-pm-advisory&name=Permit%20%2B%20PM%20Advisory' },
-  { name: 'Full Owner Package', desc: 'Concept, permit, PM, and contractor match', price: 'From $1,995', href: '/request-service?service=full-owner-package&name=Full%20Owner%20Package' },
+  { name: 'Design + Permit Starter', desc: 'Design concept + permit preparation and filing', price: bundlePrice('kitchen_remodel', 'permit_filing'), href: '/request-service?service=design-permit-starter&name=Design%20%2B%20Permit%20Starter' },
+  { name: 'Concept + Estimate', desc: 'Design concept + detailed planning estimate', price: bundlePrice('kitchen_remodel', 'cost_estimate'), href: '/request-service?service=concept-estimate&name=Concept%20%2B%20Estimate' },
+  { name: 'Permit + PM Advisory', desc: 'Permit filing + milestone payment oversight', price: bundlePrice('permit_filing', 'pm_advisory'), href: '/request-service?service=permit-pm-advisory&name=Permit%20%2B%20PM%20Advisory' },
+  { name: 'Full Owner Package', desc: 'Concept, permit, PM, and contractor match', price: bundlePrice('kitchen_remodel', 'permit_filing', 'pm_advisory'), href: '/request-service?service=full-owner-package&name=Full%20Owner%20Package' },
 ]
 
 export default function ServicesPage() {

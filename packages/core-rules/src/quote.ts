@@ -580,8 +580,34 @@ export const PRODUCT_PRICING: Readonly<Record<string, ProductPricing>> = {
   },
 } as const
 
+/**
+ * Intake paths that are the same product under another name. The catalogue
+ * grew several aliases for one piece of work (an "interior reno concept" and an
+ * "interior renovation" are the same package), and every one of them must price
+ * identically or the funnel a customer happens to enter changes the bill.
+ */
+export const PRODUCT_ALIASES: Readonly<Record<string, string>> = {
+  interior_reno_concept: 'interior_renovation',
+  whole_home_remodel: 'whole_home_concept',
+  // Commercial, multi-unit and land products are scoped as developer work; the
+  // size brackets and the custom-quote rules separate them.
+  multi_unit_residential: 'developer_concept',
+  mixed_use: 'developer_concept',
+  commercial_office: 'developer_concept',
+  development_feasibility: 'developer_concept',
+  townhome_subdivision: 'developer_concept',
+  single_family_subdivision: 'developer_concept',
+  single_lot_development: 'developer_concept',
+}
+
 export function getProductPricing(key: string): ProductPricing | null {
-  return PRODUCT_PRICING[key] ?? null
+  const direct = PRODUCT_PRICING[key]
+  if (direct) return direct
+  const alias = PRODUCT_ALIASES[key]
+  if (!alias) return null
+  const target = PRODUCT_PRICING[alias]
+  // The alias keeps its own key so quotes and orders record what was bought.
+  return target ? { ...target, key } : null
 }
 
 // ── Custom-quote rules ───────────────────────────────────────────────────────
