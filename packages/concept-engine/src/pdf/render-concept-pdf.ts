@@ -30,6 +30,7 @@ export type ConceptPdfResult = Buffer
 interface PdfVisualAsset {
   label: string
   buffer: Uint8Array
+  url?: string
 }
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -430,19 +431,23 @@ function drawViewsPage(doc: any, data: HomeownerDeliverables, assets: PdfVisualA
 
 function drawBeforeAfterPage(doc: any, data: HomeownerDeliverables, assets: PdfVisualAsset[]): void {
   sectionWithStamp(doc, '7. Before and after — matching viewpoint and geometry', ['EXISTING', 'PROPOSED CONCEPT'])
-  const before = assets.filter(a => a.label.startsWith('Existing')), after = assets.filter(a => a.label.startsWith('Design concept'))
-  const pairs = Math.min(before.length, after.length)
-  if (!pairs) { doc.fontSize(9.5).fillColor('#b45309').text(before.length ? 'Concept views are not yet rendered from the existing viewpoints.' : 'No existing photograph was supplied to pair with a concept view. Add photographs in your portal and the before/after pairs are re-rendered from the same viewpoint.', { width: 495 }); return }
-  for (let i = 0; i < pairs; i++) {
+  const byUrl = (url: string) => assets.find(a => a.url === url)
+  // Only pairs rendered from the customer's photograph with the camera locked to it
+  // (form_data.conceptOutput.beforeAfterPairs) qualify — never two unrelated images.
+  const pairs = (data.beforeAfterPairs ?? [])
+    .map(p => ({ before: byUrl(p.beforeUrl), after: byUrl(p.afterUrl), caption: `${p.area ? `${p.area}: ` : ''}${p.label}${p.viewpoint ? ` — viewpoint: ${p.viewpoint}` : ''}` }))
+    .filter((p): p is { before: PdfVisualAsset; after: PdfVisualAsset; caption: string } => Boolean(p.before && p.after))
+  const hasExisting = assets.some(a => a.label.startsWith('Existing'))
+  if (!pairs.length) { doc.fontSize(9.5).fillColor('#b45309').text(hasExisting ? 'Concept views rendered from your photographs\u2019 viewpoints are still in progress; this page is completed when they resolve.' : 'No labelled photograph was supplied to pair with a concept view. Add photographs with a label and viewpoint in your portal and the before/after pairs are rendered from the same viewpoint.', { width: 495 }); return }
+  for (const p of pairs) {
     if (doc.y > 520) doc.addPage()
     const y = doc.y
     doc.fontSize(9).fillColor('#475569').font('Helvetica-Bold').text('BEFORE — EXISTING', 50, y, { width: 240 })
     doc.fontSize(9).fillColor('#0f766e').font('Helvetica-Bold').text('AFTER — PROPOSED CONCEPT', 305, y, { width: 240 })
-    doc.image(before[i].buffer, 50, y + 14, { fit: [240, 180] }); doc.image(after[i].buffer, 305, y + 14, { fit: [240, 180] })
-    doc.y = y + 200; doc.fontSize(8).fillColor('#64748b').font('Helvetica').text(`${before[i].label}  →  ${after[i].label}. Same viewpoint and geometry are required by the Kealee standard; a pair that does not match is flagged at review.`, 50, doc.y, { width: 495 })
+    doc.image(p.before.buffer, 50, y + 14, { fit: [240, 180] }); doc.image(p.after.buffer, 305, y + 14, { fit: [240, 180] })
+    doc.y = y + 200; doc.fontSize(8).fillColor('#64748b').font('Helvetica').text(`${p.caption}. The after view was rendered from this photograph with the camera locked to it; a pair that does not match is flagged at review.`, 50, doc.y, { width: 495 })
     doc.x = 50; doc.moveDown(0.6)
   }
-  void data
 }
 
 function drawPalettePage(doc: any, data: HomeownerDeliverables): void {
@@ -526,12 +531,18 @@ export async function renderConceptPdf(input: ConceptPdfInput): Promise<ConceptP
       : (visuals?.stableDiffusionPrompts ?? []).filter(value => /^https?:\/\//i.test(value)).map(url => ({ label: 'Existing condition — customer source', url }))),
     ...(visuals?.midjourneyPrompts ?? []).filter(value => /^https?:\/\//i.test(value)).map((url, index) => ({ label: `Design concept ${index + 1}`, url })),
   ].slice(0, 12)
+  // Before/after pairs load by URL so a pair is never drawn from two unrelated images
+  for (const pair of input.homeownerDeliverables.beforeAfterPairs ?? []) {
+    for (const url of [pair.beforeUrl, pair.afterUrl]) {
+      if (!visualSources.some(s => s.url === url)) visualSources.push({ label: url === pair.beforeUrl ? `Existing — ${pair.label}` : `Design concept — ${pair.label}`, url })
+    }
+  }
   const loadedVisualAssets = await Promise.all(visualSources.map(async source => {
     try {
       const response = await fetch(source.url)
       const contentType = response.headers.get('content-type') ?? ''
       if (!response.ok || !contentType.toLowerCase().startsWith('image/')) return null
-      return { label: source.label, buffer: Buffer.from(await response.arrayBuffer()) }
+      return { label: source.label, url: source.url, buffer: Buffer.from(await response.arrayBuffer()) }
     } catch {
       return null
     }

@@ -20,6 +20,7 @@ import { V30LandscapeCadPanel } from '@/components/v30/V30LandscapeCadPanel'
 import { V30WorkspaceEmbed } from '@/components/v30/V30WorkspaceEmbed'
 import { ConceptPackageNav } from '@/components/concept/ConceptPackageNav'
 import { BeforeAfterMedia } from '@/components/concept/BeforeAfterMedia'
+import { ConceptApproval } from '@/components/concept/ConceptApproval'
 import { ProcessVideoLoop } from '@/components/concept/ProcessVideoLoop'
 import { BuildPathUpsell, type OwnedUpsellProduct } from '@/components/BuildPathUpsell'
 import { BuildJourneyProgress } from '@/components/BuildJourneyProgress'
@@ -2067,6 +2068,11 @@ export default function ConceptDeliverablePage() {
           constructionCostMax={data.constructionCostMax}
           conceptServicePrice={data.conceptServicePrice}
         />
+
+        {/* ── Approved by customer — the writer behind the package stamp ──── */}
+        <div className="pb-4">
+          <ConceptApproval intakeId={intakeId} />
+        </div>
 
         {/* ── Download / Share ─────────────────────────────────────────────── */}
         <div className="flex flex-wrap gap-3 pb-8">

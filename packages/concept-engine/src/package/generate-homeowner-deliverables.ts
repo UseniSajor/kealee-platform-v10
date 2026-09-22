@@ -128,6 +128,8 @@ export interface HomeownerDeliverables {
   }>;
   /** 4. Why the recommended direction is recommended, in the customer's terms. */
   recommendation?: { conceptName: string; rationale: string[]; costRange: [number, number]; nextStep: string };
+  /** 7. Before/after — an after view rendered from the customer's photograph with the camera locked to it. */
+  beforeAfterPairs?: Array<{ beforeUrl: string; afterUrl: string; label: string; area?: string; viewpoint?: string }>;
   /** 8. Materials palette — labeled selections. */
   materialsPalette?: Array<{ item: string; selection: string; note?: string }>;
   /** 9. Site and zoning snapshot — every factual claim names its source and confidence. */

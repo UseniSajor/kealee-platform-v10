@@ -1,6 +1,7 @@
 import Replicate from 'replicate'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { onConceptReadyLifecycle } from '@/lib/marketing/lifecycle'
+import type { QueuedRenderPair } from '@/lib/v30-replicate-renders'
 
 const replicate = () =>
   process.env.REPLICATE_API_TOKEN ? new Replicate({ auth: process.env.REPLICATE_API_TOKEN }) : null
@@ -26,6 +27,8 @@ export async function pollV30RenderPredictions(intakeId: string): Promise<string
   if (!ids.length) return []
 
   const urls: string[] = []
+  const urlById = new Map<string, string>()
+  let settled = 0
   for (const id of ids) {
     try {
       const prediction = await client.predictions.get(id)
@@ -33,19 +36,34 @@ export async function pollV30RenderPredictions(intakeId: string): Promise<string
         const url = Array.isArray(prediction.output)
           ? (prediction.output[0] as string)
           : (prediction.output as string)
-        if (url) urls.push(url)
+        if (url) { urls.push(url); urlById.set(id, url) }
       }
+      if (prediction.status === 'succeeded' || prediction.status === 'failed' || prediction.status === 'canceled') settled += 1
     } catch (err: unknown) {
       console.warn('[v30-replicate-poll]', id, err instanceof Error ? err.message : err)
     }
   }
 
+  lastPollSettled.set(intakeId, { settled, total: ids.length })
   if (!urls.length) return []
 
+  // Viewpoint-locked renders resolve into before/after pairs; the customer's
+  // photographs they were rendered from become the package's beforeUrls.
+  const queuedPairs = Array.isArray(formData.v30RenderPairs) ? (formData.v30RenderPairs as QueuedRenderPair[]) : []
+  const beforeAfterPairs = queuedPairs
+    .filter(p => urlById.has(p.predictionId))
+    .map(p => ({ beforeUrl: p.beforeUrl, afterUrl: urlById.get(p.predictionId)!, label: p.label, area: p.area, viewpoint: p.viewpoint }))
+  const previous = (formData.v30ConceptOutput ?? formData.conceptOutput) as Record<string, unknown>
+  const beforeUrls = [...new Set([
+    ...(Array.isArray(previous?.beforeUrls) ? (previous.beforeUrls as string[]) : []),
+    ...beforeAfterPairs.map(p => p.beforeUrl),
+  ])]
+
   const conceptOutput = {
-    ...((formData.v30ConceptOutput ?? formData.conceptOutput) as Record<string, unknown>),
+    ...previous,
     renderUrls: urls,
     v30RenderUrls: urls,
+    ...(beforeAfterPairs.length ? { beforeAfterPairs, beforeUrls } : {}),
   }
 
   const becomingReady = row.status === 'paid'
@@ -77,7 +95,10 @@ export async function pollV30RenderPredictions(intakeId: string): Promise<string
   return urls
 }
 
-/** Poll until all predictions succeed or timeout (server-side). */
+/** Per-intake settle count from the last poll so the wait loop can stop once every prediction has finished. */
+const lastPollSettled = new Map<string, { settled: number; total: number }>()
+
+/** Poll until every prediction has settled (succeeded, failed or canceled) or timeout (server-side). */
 export async function pollV30RendersUntilDone(
   intakeId: string,
   options?: { maxAttempts?: number; intervalMs?: number },
@@ -95,7 +116,10 @@ export async function pollV30RendersUntilDone(
       .single()
     const formData = (row?.form_data as Record<string, unknown>) ?? {}
     const ids = (formData.v30RenderPredictionIds as string[]) ?? []
-    if (urls.length >= Math.min(ids.length, 1)) return urls
+    // Wait for the whole batch — the viewpoint-locked pairs are queued last and
+    // the package's before/after page needs them — but never for an empty one.
+    const progress = lastPollSettled.get(intakeId)
+    if (ids.length === 0 || (progress && progress.settled >= ids.length)) return urls
     await new Promise(r => setTimeout(r, intervalMs))
   }
   return pollV30RenderPredictions(intakeId)

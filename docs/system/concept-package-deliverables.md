@@ -21,13 +21,19 @@ whatever the tier; a tier that lacks a section says so on that page rather than 
 4. **Recommended design — and why** (`conceptOutput.recommendation.rationale`, cost range, next step)
 5. **Concept floor plan** — labelled and dimensioned
 6. **Exterior/interior views** — coordinated with the plan
-7. **Before and after** — matching viewpoint and geometry; an unmatched pair is flagged, not hidden
+7. **Before and after** — matching viewpoint and geometry. `queueV30DesignRenders` (`apps/web-main/lib/v30-replicate-renders.ts`)
+   queues one img2img render per labelled customer photograph (up to 3) with the camera locked to that photograph
+   (`buildViewpointLockedPrompt`); `pollV30RenderPredictions` resolves them into `conceptOutput.beforeAfterPairs`
+   and `beforeUrls`. The page draws only those pairs — never two unrelated images — and says so when none exist yet
 8. **Materials palette** — labelled selections
 9. **Site and zoning snapshot** — every factual claim with its source and confidence, then the permit path
 
 Status stamps, on every section: **EXISTING** · **PROPOSED CONCEPT** · **REQUIRES VERIFICATION** ·
 **PROFESSIONALLY REVIEWED** (from the OS Architecture desk, `form_data.architectReview`) · **APPROVED BY CUSTOMER**
-(`conceptConfirmedAt`) · **NOT FOR PERMIT OR CONSTRUCTION** (footer on every page).
+(`conceptConfirmedAt`, written by the owner portal's *Approve this concept* control —
+`apps/portal-owner/app/api/concept/[intakeId]/approve`, which also re-renders the PDF so the stamp is on the download;
+a later revision (`conceptGeneration` above `conceptApprovedGeneration`) asks the customer to approve again) ·
+**NOT FOR PERMIT OR CONSTRUCTION** (footer on every page).
 
 Four tests a package must pass before it is called finished:
 - the floor plan, elevations and renderings match;

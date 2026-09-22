@@ -21,6 +21,8 @@ export async function serveConceptPackagePdf(
   intake: IntakePdfSource,
   opts?: {
     existingPdfUrl?: string | null
+    /** Ignore any cached PDF and render again — used when the package's status stamps change. */
+    forceRegenerate?: boolean
     upload?: (buffer: Buffer, intakeId: string) => Promise<string>
   },
 ): Promise<ServeConceptPdfResult> {
@@ -29,7 +31,7 @@ export async function serveConceptPackagePdf(
   const existingPdfUrl =
     opts?.existingPdfUrl ?? (typeof conceptOutput?.pdfUrl === 'string' ? conceptOutput.pdfUrl : null)
 
-  if (existingPdfUrl?.startsWith('http')) {
+  if (!opts?.forceRegenerate && existingPdfUrl?.startsWith('http')) {
     try {
       const res = await fetch(existingPdfUrl)
       if (res.ok) {

@@ -136,6 +136,9 @@ export function resolveHomeownerDeliverablesForPdf(
     recommended: Boolean(c.recommended),
   }))
   const rec = asRecord(co.recommendation)
+  const beforeAfterPairs = (Array.isArray(co.beforeAfterPairs) ? (co.beforeAfterPairs as Array<Record<string, unknown>>) : [])
+    .filter((p) => typeof p.beforeUrl === 'string' && typeof p.afterUrl === 'string')
+    .map((p) => ({ beforeUrl: String(p.beforeUrl), afterUrl: String(p.afterUrl), label: String(p.label ?? 'Existing'), area: p.area != null ? String(p.area) : undefined, viewpoint: p.viewpoint != null ? String(p.viewpoint) : undefined }))
   const recommendedDirection = conceptDirections.find((c) => c.recommended)
   const paletteSource = Array.isArray(design?.colorPalette) ? (design!.colorPalette as string[]) : []
   const materialsPalette = paletteSource.map((sel, i) => ({ item: bom[i] && asRecord(bom[i])?.item ? String(asRecord(bom[i])!.item) : `Selection ${i + 1}`, selection: String(sel) }))
@@ -166,6 +169,7 @@ export function resolveHomeownerDeliverablesForPdf(
       costRange: [Math.round(estimatedCost * 0.85), Math.round(estimatedCost * 1.15)],
       nextStep: 'Approve the recommended direction in your portal; permit drawings by a licensed professional follow.',
     },
+    beforeAfterPairs,
     materialsPalette,
     siteZoning: { claims: siteClaims, disclaimer: 'Site and zoning facts are preliminary and marked with their source and confidence. Items marked "requires verification" are confirmed by a licensed professional and the jurisdiction before permit drawings.' },
     packageStatus: {
