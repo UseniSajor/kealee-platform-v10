@@ -63,7 +63,7 @@ export default function SitePlansPage() {
             preliminary buildable area, and the appropriate next level of professional review.
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-3">
-            <Link href="/get-started?service=preliminary_site_plan" className="inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3 font-bold text-teal-900">
+            <Link href="/intake/preliminary_site_plan" className="inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3 font-bold text-teal-900">
               Start a site plan <ArrowRight className="h-4 w-4" />
             </Link>
             <Link href="/products#site-intelligence" className="rounded-xl border border-white/25 px-6 py-3 font-semibold text-white hover:bg-white/10">

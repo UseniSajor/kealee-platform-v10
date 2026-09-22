@@ -5,6 +5,7 @@ import { SERVICE_DELIVERABLES } from '@/lib/service-deliverables'
 import { resolveOrderStatus, ORDER_STATUS_META } from '@/lib/order-status'
 import { buildOrderChecklist } from '@/lib/order-view'
 import type { OrderRecord } from '@/lib/order-access'
+import { resolveSitePlanSlaHealth, sitePlanSlaLabel } from '@/lib/site-plan-sla'
 
 export const dynamic = 'force-dynamic'
 
@@ -67,6 +68,7 @@ export async function GET(req: NextRequest) {
       const ageDays = order.created_at
         ? Math.floor((now - Date.parse(order.created_at)) / 86_400_000)
         : null
+      const slaHealth = resolveSitePlanSlaHealth(formData)
 
       return {
         id: order.id,
@@ -94,6 +96,14 @@ export async function GET(req: NextRequest) {
         assignedReviewer: (formData.assignedReviewer as string | null) ?? null,
         internalNotes: Array.isArray(formData.internalNotes) ? formData.internalNotes : [],
         deliveredAt: (formData.deliveredAt as string | null) ?? null,
+        slaHealth,
+        slaLabel: sitePlanSlaLabel(slaHealth),
+        slaCommitment: (formData.sitePlanSlaCommitment as string | null) ?? null,
+        summaryDueAt: (formData.sitePlanSummaryDueAt as string | null) ?? null,
+        summaryCompletedAt: (formData.sitePlanSummaryCompletedAt as string | null) ?? null,
+        deliveryDueAt: (formData.sitePlanDeliveryDueAt as string | null) ?? null,
+        sitePlanDeliveredAt: (formData.sitePlanSlaDeliveredAt as string | null) ??
+          (formData.sitePlanDeliveredAt as string | null) ?? null,
       }
     })
     .filter(row => {
@@ -105,6 +115,7 @@ export async function GET(req: NextRequest) {
       if (needsAttention) {
         const stuck =
           row.requiresHumanFulfillment ||
+          (row.slaHealth === 'overdue' || row.slaHealth === 'summary_overdue') ||
           row.status === 'failed' ||
           row.status === 'awaiting_customer_information' ||
           (row.waitingOn === 'kealee' && (row.ageDays ?? 0) > 5 && row.status !== 'delivered')
@@ -126,6 +137,7 @@ export async function GET(req: NextRequest) {
       'id', 'productKey', 'status', 'clientName', 'contactEmail', 'contactPhone',
       'projectAddress', 'state', 'county', 'coverage', 'createdAt', 'paidAt',
       'ageDays', 'missingCount', 'fulfillmentStatus', 'assignedReviewer',
+      'slaLabel', 'deliveryDueAt', 'sitePlanDeliveredAt',
     ] as const
     const escape = (value: unknown) =>
       `"${String(value ?? '').replace(/"/g, '""')}"`

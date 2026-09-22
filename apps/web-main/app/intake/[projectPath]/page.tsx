@@ -436,6 +436,13 @@ export default function IntakePage() {
     phone: "",
     address: searchParams.get("address") ?? "",
     description: searchParams.get("siteGoal") ?? prefill.description,
+    sitePlanProjectType: searchParams.get("projectType") ?? "",
+    sitePlanProposal: searchParams.get("siteGoal") ?? "",
+    sitePlanExistingConditions: "",
+    sitePlanAccessParking: "",
+    sitePlanUtilities: "",
+    sitePlanDrainageEnvironment: "",
+    sitePlanRestrictions: "",
     propertyDetails:
       [
         searchParams.get("parcelId")
@@ -1161,6 +1168,14 @@ export default function IntakePage() {
       setFormError("Select what the estimate will be used for.");
       return;
     }
+    if (isSitePlanIntake && !formData.sitePlanProjectType) {
+      setFormError("Select what you are planning for the property.");
+      return;
+    }
+    if (isSitePlanIntake && !formData.sitePlanProposal.trim()) {
+      setFormError("Briefly describe what you want shown on the site plan.");
+      return;
+    }
     softCapture(); // capture lead before payment step
     trackEvent("intake_completion", {
       project_path: projectPath,
@@ -1227,6 +1242,13 @@ export default function IntakePage() {
             proposalClientName: formData.proposalClientName,
             industryType: formData.industryType,
             description: formData.description,
+            sitePlanProjectType: formData.sitePlanProjectType,
+            sitePlanProposal: formData.sitePlanProposal,
+            sitePlanExistingConditions: formData.sitePlanExistingConditions,
+            sitePlanAccessParking: formData.sitePlanAccessParking,
+            sitePlanUtilities: formData.sitePlanUtilities,
+            sitePlanDrainageEnvironment: formData.sitePlanDrainageEnvironment,
+            sitePlanRestrictions: formData.sitePlanRestrictions,
             propertyDetails: formData.propertyDetails,
             stylePreferences: formData.stylePreferences,
             priorities: formData.priorities,
@@ -2080,7 +2102,7 @@ export default function IntakePage() {
                 </div>
 
                 {/* Description */}
-                <div>
+                {!isSitePlanIntake && <div>
                   <label className="block text-sm font-semibold text-slate-800 mb-1.5">
                     Additional project information <span className="font-normal text-slate-400">(optional)</span>
                   </label>
@@ -2099,9 +2121,75 @@ export default function IntakePage() {
                   <p className="mt-1.5 text-xs text-slate-500">
                     Leave the prefilled description unchanged when it fits your project.
                   </p>
-                </div>
+                </div>}
 
-                <div className="space-y-5 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+                {isSitePlanIntake && (
+                  <section className="space-y-5 rounded-xl border border-teal-200 bg-teal-50/40 p-5 shadow-sm">
+                    <div>
+                      <p className="text-xs font-bold uppercase tracking-[0.14em] text-teal-700">Site plan brief</p>
+                      <h2 className="mt-1 text-base font-bold text-slate-900">Seven quick property questions</h2>
+                      <p className="mt-1 text-xs leading-relaxed text-slate-600">
+                        Share what you know. Unknown is a valid answer; Kealee checks available property records after checkout.
+                      </p>
+                    </div>
+
+                    <label className="block text-sm font-semibold text-slate-800">
+                      1. What are you planning? <span className="text-red-600">*</span>
+                      <select
+                        required
+                        value={formData.sitePlanProjectType}
+                        onChange={(e) => setFormData((d) => ({ ...d, sitePlanProjectType: e.target.value }))}
+                        className="mt-1.5 w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm"
+                      >
+                        <option value="">Select the closest match</option>
+                        <option value="new-building">New home or building</option>
+                        <option value="addition-accessory">Addition, garage, ADU, pool, or accessory structure</option>
+                        <option value="subdivision">Subdivision or new lots</option>
+                        <option value="commercial">Commercial or mixed-use development</option>
+                        <option value="site-improvements">Parking, access, grading, or other site improvements</option>
+                        <option value="other">Other / not sure</option>
+                      </select>
+                    </label>
+
+                    <label className="block text-sm font-semibold text-slate-800">
+                      2. What should the plan show? <span className="text-red-600">*</span>
+                      <textarea
+                        required
+                        value={formData.sitePlanProposal}
+                        onChange={(e) => setFormData((d) => ({ ...d, sitePlanProposal: e.target.value }))}
+                        rows={3}
+                        className="mt-1.5 w-full resize-none rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm"
+                        placeholder="Example: a 2,400 sq ft home, two-car driveway, septic area, and room for a future pool."
+                      />
+                    </label>
+
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <label className="block text-sm font-semibold text-slate-800">
+                        3. What exists on the site now?
+                        <textarea value={formData.sitePlanExistingConditions} onChange={(e) => setFormData((d) => ({ ...d, sitePlanExistingConditions: e.target.value }))} rows={3} className="mt-1.5 w-full resize-none rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm" placeholder="Buildings, driveway, trees, slopes, fences, wells, septic, or demolition." />
+                      </label>
+                      <label className="block text-sm font-semibold text-slate-800">
+                        4. How should people and vehicles enter?
+                        <textarea value={formData.sitePlanAccessParking} onChange={(e) => setFormData((d) => ({ ...d, sitePlanAccessParking: e.target.value }))} rows={3} className="mt-1.5 w-full resize-none rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm" placeholder="Existing or proposed driveway, parking count, loading, shared access, or unknown." />
+                      </label>
+                      <label className="block text-sm font-semibold text-slate-800">
+                        5. What utilities will serve the project?
+                        <textarea value={formData.sitePlanUtilities} onChange={(e) => setFormData((d) => ({ ...d, sitePlanUtilities: e.target.value }))} rows={3} className="mt-1.5 w-full resize-none rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm" placeholder="Public water/sewer, well/septic, electric, gas, storm drain, or unknown." />
+                      </label>
+                      <label className="block text-sm font-semibold text-slate-800">
+                        6. Any drainage or environmental concerns?
+                        <textarea value={formData.sitePlanDrainageEnvironment} onChange={(e) => setFormData((d) => ({ ...d, sitePlanDrainageEnvironment: e.target.value }))} rows={3} className="mt-1.5 w-full resize-none rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm" placeholder="Standing water, steep slopes, streams, wetlands, floodplain, large trees, or unknown." />
+                      </label>
+                    </div>
+
+                    <label className="block text-sm font-semibold text-slate-800">
+                      7. Any known restrictions or prior approvals?
+                      <textarea value={formData.sitePlanRestrictions} onChange={(e) => setFormData((d) => ({ ...d, sitePlanRestrictions: e.target.value }))} rows={3} className="mt-1.5 w-full resize-none rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm" placeholder="Easements, HOA rules, zoning case, permit comments, covenants, or unknown." />
+                    </label>
+                  </section>
+                )}
+
+                {!isSitePlanIntake && <div className="space-y-5 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
                   <div>
                     <h2 className="text-base font-bold text-slate-900">Quick project choices</h2>
                     <p className="mt-1 text-xs text-slate-500">Common answers are selected. Tap only what you want to change.</p>
@@ -2130,18 +2218,20 @@ export default function IntakePage() {
                     </div>
                   </fieldset>
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                    <label className="block text-sm font-semibold text-slate-800">Budget comfort range
-                      <select value={formData.budgetComfort} onChange={(e) => setFormData((d) => ({ ...d, budgetComfort: e.target.value }))} className="mt-1.5 w-full rounded-lg border border-slate-300 px-4 py-3 text-sm">
-                        <option value="under-25k">Under $25,000</option><option value="25k-50k">$25,000–$50,000</option><option value="50k-100k">$50,000–$100,000</option><option value="100k-250k">$100,000–$250,000</option><option value="250k-plus">$250,000+</option><option value="unsure">Not sure yet</option>
-                      </select>
-                    </label>
-                    <label className="block text-sm font-semibold text-slate-800">Approximate project size
+                    {!isSitePlanIntake && (
+                      <label className="block text-sm font-semibold text-slate-800">Budget comfort range
+                        <select value={formData.budgetComfort} onChange={(e) => setFormData((d) => ({ ...d, budgetComfort: e.target.value }))} className="mt-1.5 w-full rounded-lg border border-slate-300 px-4 py-3 text-sm">
+                          <option value="under-25k">Under $25,000</option><option value="25k-50k">$25,000–$50,000</option><option value="50k-100k">$50,000–$100,000</option><option value="100k-250k">$100,000–$250,000</option><option value="250k-plus">$250,000+</option><option value="unsure">Not sure yet</option>
+                        </select>
+                      </label>
+                    )}
+                    <label className="block text-sm font-semibold text-slate-800">{isSitePlanIntake ? "Approximate proposed footprint or site area" : "Approximate project size"}
                       <select value={formData.squareFootage} onChange={(e) => setFormData((d) => ({ ...d, squareFootage: e.target.value }))} className="mt-1.5 w-full rounded-lg border border-slate-300 px-4 py-3 text-sm">
                         <option value="">Not sure</option><option value="250">Under 500 sq ft</option><option value="750">500–1,000 sq ft</option><option value="1500">1,000–2,000 sq ft</option><option value="2500">2,000–3,000 sq ft</option><option value="4000">3,000–5,000 sq ft</option><option value="6000">Over 5,000 sq ft</option>
                       </select>
                     </label>
                   </div>
-                </div>
+                </div>}
 
                 {(!isEstimateIntake || formData.clientType === "owner") && !guidedIntake && (
                   <>

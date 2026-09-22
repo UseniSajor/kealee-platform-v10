@@ -32,6 +32,7 @@ import { recordPaidOrderIncident } from '@/lib/paid-order-incident'
 import { routeToManualFulfillment } from '@/lib/manual-fulfillment'
 import { orderStatusPatch } from '@/lib/order-status'
 import { requestCanonicalConceptGeneration } from '@/lib/concept-generation'
+import { createSitePlanSlaFormData } from '@/lib/site-plan-sla'
 import {
   ensurePaidOrderLedgerEntry,
   isServiceCheckoutSource,
@@ -218,6 +219,7 @@ async function handleCheckoutCompleted(
   }
 
   const existingFormData = (currentIntake?.form_data as Record<string, unknown>) ?? {}
+  const paidAt = new Date()
   const paidTierFromMetadata = Number(meta.tier)
   const purchasedTier = (
     paidTierFromMetadata === 1 || paidTierFromMetadata === 2 || paidTierFromMetadata === 3
@@ -265,8 +267,17 @@ async function handleCheckoutCompleted(
   // review step for the tiers that include it.
   let sitePlanEngineActive = false
   if (isSitePlanOrder(projectPath)) {
+    if (existingFormData.sitePlanSlaVersion !== 1) {
+      Object.assign(mergedFormData, createSitePlanSlaFormData(projectPath, paidAt))
+    }
     const ruleOutcome = evaluateSitePlanOrder({ intakeId, projectPath, formData: mergedFormData })
     Object.assign(mergedFormData, sitePlanRuleFormData(ruleOutcome))
+    // The synchronous rule report is the promised first-hour property summary.
+    // Persist its completion separately from the drawing deadline so operations
+    // can monitor both commitments.
+    if (!ruleOutcome.error) {
+      mergedFormData.sitePlanSummaryCompletedAt = new Date().toISOString()
+    }
     if (ruleOutcome.error) {
       Sentry.captureMessage('Site plan rule engine failed on a paid order', {
         level: 'error',
@@ -328,7 +339,7 @@ async function handleCheckoutCompleted(
     .update({
       status: 'paid',
       form_data: mergedFormData,
-      paid_at: new Date().toISOString(),
+      paid_at: paidAt.toISOString(),
       stripe_session_id: session.id,
     })
     .eq('id', intakeId)

@@ -55,6 +55,13 @@ function fmtSqFt(n: number | null): string {
   return typeof n === 'number' ? `${Math.round(n).toLocaleString('en-US')} sq ft` : 'Not established'
 }
 
+function fmtDeliveryDate(value: unknown): string | null {
+  if (typeof value !== 'string' || !Number.isFinite(Date.parse(value))) return null
+  return new Intl.DateTimeFormat('en-US', {
+    month: 'long', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit',
+  }).format(new Date(value))
+}
+
 function Fact({ label, value }: { label: string; value: string }) {
   return (
     <div>
@@ -137,6 +144,9 @@ export default function SitePlanDeliverablePage() {
   const label = isSitePlanProjectPath(path) ? SITE_PLAN_LABELS[path] : 'Site Plan'
   const packageGuide = isSitePlanProjectPath(path) ? SITE_PLAN_PACKAGE_GUIDES[path] : null
   const address = intake.project_address ?? (intake.form_data?.address as string | undefined) ?? ''
+  const slaCommitment = intake.form_data?.sitePlanSlaCommitment as string | undefined
+  const deliveryDue = fmtDeliveryDate(intake.form_data?.sitePlanDeliveryDueAt)
+  const summaryComplete = Boolean(intake.form_data?.sitePlanSummaryCompletedAt)
 
   if (state.kind === 'in_progress') {
     return (
@@ -155,6 +165,17 @@ export default function SitePlanDeliverablePage() {
             setbacks and a proposed footprint, and running the drawing through QC. This page updates
             itself when the plan is ready, and we&apos;ll email you too.
           </p>
+          {slaCommitment && (
+            <div className="mt-5 rounded-xl border border-sky-200 bg-sky-50 px-4 py-3">
+              <p className="text-xs font-bold uppercase tracking-wide text-sky-800">Your delivery commitment</p>
+              <p className="mt-1 text-sm font-semibold text-slate-800">{slaCommitment}</p>
+              <p className="mt-1 text-xs text-slate-600">
+                {summaryComplete ? 'Property and requirements summary complete' : 'Property summary in progress'}
+                {' · '}
+                {deliveryDue ? `Package due by ${deliveryDue}` : 'Drawing schedule follows survey review'}
+              </p>
+            </div>
+          )}
         </div>
       </div>
     )

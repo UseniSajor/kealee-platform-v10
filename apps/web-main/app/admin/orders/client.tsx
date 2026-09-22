@@ -33,6 +33,20 @@ interface OrderRow {
   requiresHumanFulfillment: boolean
   fulfillmentFallbackReason: string | null
   assignedReviewer: string | null
+  slaHealth: 'not_applicable' | 'on_track' | 'summary_overdue' | 'overdue' | 'delivered_on_time' | 'delivered_late' | 'awaiting_scope'
+  slaLabel: string
+  slaCommitment: string | null
+  summaryDueAt: string | null
+  summaryCompletedAt: string | null
+  deliveryDueAt: string | null
+  sitePlanDeliveredAt: string | null
+}
+
+function formatDeadline(value: string | null): string {
+  if (!value) return 'Schedule pending'
+  return new Intl.DateTimeFormat('en-US', {
+    month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit',
+  }).format(new Date(value))
 }
 
 const PRODUCTS = [
@@ -123,7 +137,7 @@ export function AdminOrdersClient() {
   }
 
   const attentionCount = orders.filter(
-    order => order.requiresHumanFulfillment || order.status === 'failed',
+    order => order.requiresHumanFulfillment || order.status === 'failed' || order.slaHealth === 'overdue' || order.slaHealth === 'summary_overdue',
   ).length
 
   return (
@@ -246,7 +260,7 @@ export function AdminOrdersClient() {
           </div>
         ) : (
           <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
-            <table className="w-full min-w-[1100px] text-left text-sm">
+            <table className="w-full min-w-[1250px] text-left text-sm">
               <thead className="border-b border-slate-200 bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
                 <tr>
                   <th className="px-4 py-3">Order</th>
@@ -255,6 +269,7 @@ export function AdminOrdersClient() {
                   <th className="px-4 py-3">Status</th>
                   <th className="px-4 py-3">Missing</th>
                   <th className="px-4 py-3">Fulfillment</th>
+                  <th className="px-4 py-3">Delivery promise</th>
                   <th className="px-4 py-3">Age</th>
                   <th className="px-4 py-3">Actions</th>
                 </tr>
@@ -320,6 +335,33 @@ export function AdminOrdersClient() {
                       )}
                       {order.assignedReviewer && (
                         <p className="text-[11px] text-slate-500">→ {order.assignedReviewer}</p>
+                      )}
+                    </td>
+                    <td className="px-4 py-3 align-top">
+                      {order.slaHealth === 'not_applicable' ? (
+                        <span className="text-xs text-slate-400">—</span>
+                      ) : (
+                        <div title={order.slaCommitment ?? undefined}>
+                          <span className={`inline-flex rounded-full px-2 py-1 text-[11px] font-bold ${
+                            order.slaHealth === 'overdue' || order.slaHealth === 'summary_overdue' || order.slaHealth === 'delivered_late'
+                              ? 'bg-red-100 text-red-800'
+                              : order.slaHealth === 'delivered_on_time'
+                                ? 'bg-emerald-100 text-emerald-800'
+                                : 'bg-sky-100 text-sky-800'
+                          }`}>
+                            {order.slaLabel}
+                          </span>
+                          <p className="mt-1 text-[11px] text-slate-500">
+                            {order.sitePlanDeliveredAt
+                              ? `Delivered ${formatDeadline(order.sitePlanDeliveredAt)}`
+                              : order.deliveryDueAt
+                                ? `Due ${formatDeadline(order.deliveryDueAt)}`
+                                : 'Confirm after survey review'}
+                          </p>
+                          {order.summaryCompletedAt && (
+                            <p className="text-[11px] text-emerald-700">Property summary complete</p>
+                          )}
+                        </div>
                       )}
                     </td>
                     <td className="px-4 py-3 align-top text-xs text-slate-600">

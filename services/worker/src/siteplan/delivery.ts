@@ -260,6 +260,8 @@ export function sitePlanDeliveryFormDataPatch(input: {
   return {
     sitePlanDeliverable: input.record,
     sitePlanDeliveredAt: input.record.deliveredAt,
+    sitePlanSlaState: 'delivered',
+    sitePlanSlaDeliveredAt: input.record.deliveredAt,
     orderStatus: 'delivered',
     orderStatusLabel: 'Delivered',
     orderStatusAt: input.record.deliveredAt,
