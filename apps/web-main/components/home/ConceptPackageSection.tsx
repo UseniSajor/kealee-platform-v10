@@ -5,26 +5,26 @@ import { Container } from '@/components/ui/Container'
 const STEPS = [
   {
     icon:  Camera,
-    title: 'Capture Your Property',
-    desc:  'Walk your property with your phone. Our capture tool records photos, voice notes, and site conditions — no measuring tape required.',
+    title: 'Capture the Existing Conditions',
+    desc:  'Walk your property with your phone. Our capture tool records the existing conditions — photos, voice notes, site context — and your programme: the rooms, uses and goals the design must serve. No measuring tape required.',
     color: '#2ABFBF',
   },
   {
     icon:  Brain,
-    title: 'AI Analyzes & Designs',
-    desc:  'Our specialized Design Engine analyzes your property, zoning, and project goals to generate a design brief and concept visuals.',
+    title: 'Site Analysis & Schematic Design',
+    desc:  'Our Design Engine reads the parcel and its zoning envelope — setbacks, height, lot coverage — and develops a schematic design: massing, plan organisation, material palette and concept renderings that fit the site and the programme.',
     color: '#E8793A',
   },
   {
     icon:  FileText,
-    title: 'Receive Your Package',
-    desc:  'Within 2–5 business days: design concept renderings, permit path analysis, design direction brief, and cost band estimate. This is your planning package — construction starts after permitting (if required).',
+    title: 'Receive the Schematic Design Package',
+    desc:  'Within 2–5 business days: concept renderings, plan direction or scaled schematic floor plans, a design direction brief with materials and finishes, the zoning and permit path, and a cost band. This is schematic design — the basis for permit drawings, not construction documents.',
     color: '#805AD5',
   },
   {
     icon:  MessageSquare,
-    title: 'Consult with an Expert',
-    desc:  'Premium+ includes a live 15-minute call with a Kealee consultant. All tiers get email support within 1 business day.',
+    title: 'Architectural Review & Consultation',
+    desc:  'Concepts are staged on Kealee\'s OS Architecture desk, where a licensed architect reviews the schematic before permit drawings begin. Premium+ includes a live 15-minute design consultation; all tiers get email support within 1 business day.',
     color: '#38A169',
   },
 ]
@@ -42,27 +42,29 @@ export function ConceptPackageSection() {
               style={{ backgroundColor: 'rgba(42,191,191,0.15)', color: '#2ABFBF' }}
             >
               <Zap className="h-3.5 w-3.5" />
-              Design & Permitting
+              Schematic Design & Permitting
             </div>
 
             <h2 className="text-3xl font-bold text-slate-900 font-display sm:text-4xl lg:text-[40px] leading-tight">
-              From Design Concept to permit ready Plans
+              From schematic design concept to permit-ready plans
             </h2>
 
             <p className="mt-5 text-lg text-slate-600 leading-relaxed">
-              The Kealee Concept Package turns your property photos and project goals into a complete 
-              design brief, exterior renderings, zoning check, and permit roadmap—helping you identify 
-              if a permit is even required (such as for simple replace-in-kind kitchen or bath remodels).
+              The Kealee Concept Package is a schematic design package. It takes your programme and the
+              existing conditions you capture, tests them against the parcel&apos;s zoning envelope, and
+              develops the massing, plan and material palette into concept renderings, a design direction
+              brief and a permit roadmap — including whether a permit is required at all (a replace-in-kind
+              kitchen or bath often needs none).
             </p>
 
             <ul className="mt-6 space-y-2.5">
               {[
-                'design concept renderings (3–12 based on package tier)',
-                'Layout direction brief (Essential); scaled floor plans (Premium & Premium+)',
-                'Zoning & permit path analysis for your parcel',
-                'Bill of materials with line-item cost estimates',
-                'Design direction brief with materials & finishes',
-                'Email support on all tiers; live consultation on Premium+',
+                'Concept renderings (3–12 by tier) — massing, elevations, materials and light',
+                'Plan direction brief (Essential); scaled schematic floor plans (Premium & Premium+)',
+                'Zoning envelope and permit path for your parcel — setbacks, height, coverage, use',
+                'Outline specification: bill of materials with line-item cost estimates',
+                'Design direction brief — material and finish palette, elevation concept',
+                'Licensed architectural review on the OS Architecture desk; email support on all tiers, live design consultation on Premium+',
               ].map((item) => (
                 <li key={item} className="flex items-start gap-3 text-sm text-slate-700">
                   <span className="mt-0.5 flex-shrink-0 text-base" style={{ color: '#2ABFBF' }}>✓</span>
