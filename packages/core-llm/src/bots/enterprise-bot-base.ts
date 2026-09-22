@@ -18,7 +18,7 @@ type RateLimiter = Bottleneck;
 
 export interface BotConfig {
   name: string;
-  model: 'claude-opus-4-8' | 'claude-sonnet-4-6' | 'claude-haiku-4-5-20251001';
+  model: 'claude-opus-5' | 'claude-sonnet-5' | 'claude-haiku-4-5-20251001';
   maxTokens: number;
   temperature: number;
   timeout: number;
@@ -152,8 +152,8 @@ export abstract class EnterpriseBot {
   protected calculateCost(tokens: number): number {
     // Pricing as of June 2026
     const pricing: Record<string, { input: number; output: number }> = {
-      'claude-opus-4-8': { input: 0.015, output: 0.045 },
-      'claude-sonnet-4-6': { input: 0.003, output: 0.015 },
+      'claude-opus-5': { input: 0.015, output: 0.045 },
+      'claude-sonnet-5': { input: 0.003, output: 0.015 },
       'claude-haiku-4-5-20251001': { input: 0.0008, output: 0.004 },
     };
 

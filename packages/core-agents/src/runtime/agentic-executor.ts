@@ -51,7 +51,7 @@ export async function callModelAgentic(args: {
     systemPrompt,
     userMessage,
     tools,
-    model = 'claude-opus-4-8',
+    model = 'claude-opus-5',
     maxTokens = 4096,
     context,
     memory,

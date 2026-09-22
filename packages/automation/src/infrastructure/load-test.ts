@@ -76,7 +76,7 @@ async function simulateBotExecution(
 
     if (shouldHitCache) {
       // Simulate cache hit
-      const mockResult = { content: 'cached response', model: 'claude-opus-4-6' }
+      const mockResult = { content: 'cached response', model: 'claude-opus-5' }
       await redis?.setex(key, 86400, JSON.stringify(mockResult))
     }
 

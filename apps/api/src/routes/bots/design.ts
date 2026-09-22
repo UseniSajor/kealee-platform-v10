@@ -62,7 +62,7 @@ router.post('/', async (req: Request, res: Response) => {
         totalCost: String(result.metrics.costUSD),
         averageCost: String(result.metrics.costUSD),
         averageQuality: result.metrics.qualityScore,
-        modelDistribution: { 'claude-opus-4-8': 1 },
+        modelDistribution: { 'claude-opus-5': 1 },
         totalTokens: result.metrics.tokensUsed,
         cacheTokens: 0,
         cacheHitRate: result.metrics.cacheHits > 0 ? 0.5 : 0,

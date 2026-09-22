@@ -252,7 +252,7 @@ describe('Smoke Test 6: Cache metrics recorded', () => {
     const logger = new CacheMetricsLogger();
     const client = new ClaudeCachedClient(logger);
 
-    await client.callClaudeWithCache('ctx-001', 'test prompt', 'claude-sonnet-4-6');
+    await client.callClaudeWithCache('ctx-001', 'test prompt', 'claude-sonnet-5');
 
     const metrics = await logger.getAggregateMetrics();
 

@@ -15,7 +15,7 @@ export abstract class V30AgentBase {
     const { data } = await generateJSON<AgentOutput>({
       systemPrompt,
       userPrompt,
-      model: 'claude-sonnet-4-5-20250929', // Default model
+      model: 'claude-sonnet-5', // Default model
     });
 
     return {

@@ -251,7 +251,7 @@ Key features: permit tracking, contractor bidding, milestone-based escrow paymen
 Respond in 2-4 sentences. End with: CONFIDENCE:[0.0-1.0]`
 
     const response = await this.ai.messages.create({
-      model:      'claude-sonnet-4-6',
+      model:      'claude-sonnet-5',
       max_tokens: 300,
       messages: [
         { role: 'user', content: userMessage },

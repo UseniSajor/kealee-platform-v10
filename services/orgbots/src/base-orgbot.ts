@@ -18,7 +18,7 @@ import { validateDecision } from "./decision-schema.js";
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
-const MODEL = "claude-sonnet-4-5-20250929";
+const MODEL = "claude-sonnet-5";
 const MAX_TOKENS = 2048;
 const MAX_RETRIES = 3;
 

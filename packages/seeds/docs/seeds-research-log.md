@@ -101,8 +101,8 @@
 
 | Tool Name | File | Status | Notes |
 |-----------|------|--------|-------|
-| check_zoning | tools/zoning/check-zoning.tool.ts | ✅ v2.0.0 | powered by AI tools (claude-sonnet-4-6) + stub fallback; 7 DMV jurisdictions detected |
-| run_feasibility | tools/feasibility/run-feasibility.tool.ts | ✅ v2.0.0 | powered by AI tools (claude-sonnet-4-6) + stub; reads prior zoning from session memory |
+| check_zoning | tools/zoning/check-zoning.tool.ts | ✅ v2.0.0 | powered by AI tools (claude-sonnet-5) + stub fallback; 7 DMV jurisdictions detected |
+| run_feasibility | tools/feasibility/run-feasibility.tool.ts | ✅ v2.0.0 | powered by AI tools (claude-sonnet-5) + stub; reads prior zoning from session memory |
 | create_checkout | tools/payments/create-checkout.tool.ts | ✅ v1.0.0 | Maps 12 product keys → Stripe price env vars; requiresApproval |
 | generate_concept_brief | tools/design/generate-concept-brief.tool.ts | ✅ v1.0.0 | 6 types: exterior, garden, interior, whole_home, developer, adu |
 | create_estimate | tools/estimate/create-estimate.tool.ts | ✅ v1.0.0 | $/sqft lookup by type; ADU $250-450/sf, reno $80-200/sf |

@@ -85,7 +85,7 @@ const tracker = getCostTracker()
 // In bot execution handler:
 tracker.recordBotExecution({
   botType: 'design',
-  model: 'claude-opus-4-6',
+  model: 'claude-opus-5',
   inputTokens: 1250,
   outputTokens: 480,
   cacheCreationTokens: 1250,   // First time

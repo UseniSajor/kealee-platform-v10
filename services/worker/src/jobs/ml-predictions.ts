@@ -95,7 +95,7 @@ Output as JSON array of risk predictions.`
         type: 'analyze_text',
         prompt,
         systemPrompt,
-        model: 'claude-sonnet-4-6',
+        model: 'claude-sonnet-5',
         maxTokens: 4096,
         metadata: {
           projectId,

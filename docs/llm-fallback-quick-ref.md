@@ -9,7 +9,7 @@ import { callLLMWithFallback } from '@kealee/core-bots'
 const response = await callLLMWithFallback(
   messages: Anthropic.MessageParam[],
   systemPrompt: string,
-  model: string,              // e.g. 'claude-sonnet-4-20250514'
+  model: string,              // e.g. 'claude-sonnet-5'
   maxTokens: number,          // e.g. 4096
   temperature: number,        // e.g. 0.3
   tools?: Anthropic.Tool[],   // Optional: function definitions
@@ -80,7 +80,7 @@ const messages: Anthropic.MessageParam[] = [
 const result = await callLLMWithFallback(
   messages,
   'You are a math assistant.',
-  'claude-sonnet-4-20250514',
+  'claude-sonnet-5',
   1024,
   0.7,
 )

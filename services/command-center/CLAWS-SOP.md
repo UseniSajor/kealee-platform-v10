@@ -89,7 +89,7 @@ All Claws extend `BaseClaw` which provides:
 
 ### 3.4 AI Provider (`packages/ai/`)
 
-- **Primary:** Claude (claude-sonnet-4-5-20250929) via `@anthropic-ai/sdk`
+- **Primary:** Claude (claude-sonnet-5) via `@anthropic-ai/sdk`
 - **Fallback:** OpenAI (gpt-4o-mini) via `openai`
 - **Usage:** `ai.reason({ task, context, systemPrompt })` — returns structured JSON
 - **Each Claw has domain-specific prompts** in its `ai/prompts.ts` file

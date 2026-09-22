@@ -233,7 +233,7 @@ Generate this image now.
 `
 
           await anthropic.messages.create({
-            model:      'claude-opus-4-6',
+            model:      'claude-opus-5',
             max_tokens: 1024,
             tools:      [GENERATE_PRODUCT_IMAGE_TOOL_DEF as any],
             messages:   [{ role: 'user', content: prompt }],

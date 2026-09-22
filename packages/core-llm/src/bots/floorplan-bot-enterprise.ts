@@ -53,7 +53,7 @@ export class FloorplanBotEnterprise extends EnterpriseBot {
   constructor() {
     const config: BotConfig = {
       name: 'FloorplanBot',
-      model: 'claude-opus-4-8',
+      model: 'claude-opus-5',
       maxTokens: 4000,
       temperature: 0.6,
       timeout: 60000,

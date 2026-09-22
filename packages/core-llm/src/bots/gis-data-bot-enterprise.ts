@@ -65,7 +65,7 @@ export class GISDataBotEnterprise extends EnterpriseBot {
   constructor() {
     const config: BotConfig = {
       name: 'GISDataBot',
-      model: 'claude-opus-4-8',
+      model: 'claude-opus-5',
       maxTokens: 8192, // Larger for data processing
       temperature: 0.2, // Low temp for consistency
       timeout: 300000, // 5 minutes for large batches

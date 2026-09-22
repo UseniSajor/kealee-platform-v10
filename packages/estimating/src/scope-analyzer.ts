@@ -148,7 +148,7 @@ interface AIAnalysisResponse {
 // CONSTANTS
 // ============================================================================
 
-const MODEL = 'claude-sonnet-4-6'
+const MODEL = 'claude-sonnet-5'
 const MAX_TOKENS = 4096
 const OVERHEAD_PERCENT = 12
 const PROFIT_PERCENT = 15

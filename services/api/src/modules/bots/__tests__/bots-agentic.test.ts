@@ -298,12 +298,12 @@ describe('callModelAgentic()', () => {
 
     await callModelAgentic({
       ...BASE_PARAMS,
-      model:     'claude-opus-4-6',
+      model:     'claude-opus-5',
       maxTokens: 8192,
     })
 
     const args = mockCreate.mock.calls[0][0]
-    expect(args.model).toBe('claude-opus-4-6')
+    expect(args.model).toBe('claude-opus-5')
     expect(args.max_tokens).toBe(8192)
   })
 
@@ -337,7 +337,7 @@ describe('callModelAgentic()', () => {
   // ── Cost calculation ──────────────────────────────────────────────────────
 
   it('estimates cost correctly from accumulated token counts', async () => {
-    // claude-sonnet-4-6 (standard): input $0.003/1k, output $0.015/1k
+    // claude-sonnet-5 (standard): input $0.003/1k, output $0.015/1k
     mockCreate.mockResolvedValueOnce(makeEndTurnResponse('OK', 1000, 500))
 
     const result = await callModelAgentic({ ...BASE_PARAMS, tier: 'standard' })

@@ -119,7 +119,7 @@ describe('KeaBot configuration', () => {
 
   it('allows custom model, maxTokens, and temperature', () => {
     const bot = new TestBot({
-      model: 'claude-opus-4-20250514',
+      model: 'claude-opus-5',
       maxTokens: 8192,
       temperature: 0.7,
     });

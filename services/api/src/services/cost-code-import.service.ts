@@ -162,7 +162,7 @@ export async function structureWithAI(text: string): Promise<ExtractionResult> {
   for (const chunk of chunks) {
     try {
       const response = await anthropic.messages.create({
-        model: 'claude-sonnet-4-6',
+        model: 'claude-sonnet-5',
         max_tokens: 4096,
         system: SYSTEM_PROMPT,
         messages: [

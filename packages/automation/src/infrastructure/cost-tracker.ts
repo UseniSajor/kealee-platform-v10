@@ -18,13 +18,13 @@ import type { Redis } from 'ioredis'
  * Updates required when Anthropic pricing changes
  */
 const ANTHROPIC_PRICING = {
-  'claude-opus-4-6': {
+  'claude-opus-5': {
     input: 0.015,      // $15 per 1M input tokens
     output: 0.080,     // $80 per 1M output tokens
     cacheCreation: 0.00375,  // 25% of input cost
     cacheRead: 0.003,  // 20% of input cost
   },
-  'claude-sonnet-4-6': {
+  'claude-sonnet-5': {
     input: 0.003,
     output: 0.015,
     cacheCreation: 0.00075,

@@ -90,7 +90,7 @@ export const PHASE2_CONFIG = {
     },
     // Model is sourced from @kealee/core-rules AI_MODELS at call site
     // (lib/marketing/ai-qualifier.ts). This field is informational only.
-    model: 'claude-sonnet-4-5',
+    model: 'claude-sonnet-5',
     maxTokens: 300,
   },
 

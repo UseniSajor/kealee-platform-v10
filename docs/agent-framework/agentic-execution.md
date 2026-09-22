@@ -39,7 +39,7 @@ Execute a multi-step agentic task with Claude tool use.
   systemPrompt: string;         // Bot's system prompt
   userMessage: string;          // Initial user input
   tools: AgenticTool[];         // Available tools
-  model?: string;               // Default: 'claude-opus-4-8'
+  model?: string;               // Default: 'claude-opus-5'
   maxTokens?: number;           // Default: 4096
   context?: AgenticExecutionContext; // Session/project context
   memory?: SessionMemory;       // Optional: track tool history
@@ -82,7 +82,7 @@ const result = await callModelAgentic({
   systemPrompt: 'You are a permit specialist. Answer questions about DC building codes.',
   userMessage: 'What are the setback requirements for a residential property in DC?',
   tools: [ragTool],
-  model: 'claude-opus-4-8',
+  model: 'claude-opus-5',
   maxTokens: 2048,
 });
 

@@ -142,7 +142,7 @@ vi.mock('@anthropic-ai/sdk', () => ({
         // a unique keyword in their system prompt ("ContractorBot", "PermitBot",
         // "EstimateBot").  Fall through to EstimateBot as the safe default.
         const text =
-          params.model === 'claude-opus-4-6'     ? mockDesignJson
+          params.model === 'claude-opus-5'     ? mockDesignJson
           : sysText.includes('ContractorBot')    ? mockContractorJson
           : sysText.includes('PermitBot')        ? mockPermitJson
           : /* EstimateBot (default) */             mockEstimateJson
@@ -376,13 +376,13 @@ describe('KeaBots Chain — bots.chain.ts', () => {
       })
     })
 
-    it('uses claude-opus-4-6 (premium tier)', async () => {
+    it('uses claude-opus-5 (premium tier)', async () => {
       const { default: Anthropic } = await import('@anthropic-ai/sdk')
       await runDesignBot({ ...BASE_INPUT })
 
       const instance = (Anthropic as ReturnType<typeof vi.fn>).mock.results[0]?.value
       const createCall = instance?.messages?.create?.mock?.calls[0]?.[0]
-      expect(createCall?.model).toBe('claude-opus-4-6')
+      expect(createCall?.model).toBe('claude-opus-5')
     })
   })
 
@@ -561,7 +561,7 @@ describe('KeaBots Chain — bots.chain.ts', () => {
       if (mockInstance?.messages?.create) {
         mockInstance.messages.create.mockResolvedValueOnce({
           content: [{ type: 'text', text: 'Sorry, I cannot help with that.' }],
-          model:   'claude-opus-4-6',
+          model:   'claude-opus-5',
           usage:   { input_tokens: 50, output_tokens: 20, cache_creation_input_tokens: 0, cache_read_input_tokens: 0 },
         })
       }

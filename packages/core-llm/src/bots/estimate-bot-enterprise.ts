@@ -49,7 +49,7 @@ export class EstimateBotEnterprise extends EnterpriseBot {
   constructor() {
     const config: BotConfig = {
       name: 'EstimateBot',
-      model: 'claude-opus-4-8',
+      model: 'claude-opus-5',
       maxTokens: 4096,
       temperature: 0.3, // Lower temp for consistency
       timeout: 60000,

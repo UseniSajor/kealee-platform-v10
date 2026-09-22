@@ -51,7 +51,7 @@ export class PermitBotEnterprise extends EnterpriseBot {
   constructor() {
     const config: BotConfig = {
       name: 'PermitBot',
-      model: 'claude-opus-4-8',
+      model: 'claude-opus-5',
       maxTokens: 3500,
       temperature: 0.4,
       timeout: 60000,

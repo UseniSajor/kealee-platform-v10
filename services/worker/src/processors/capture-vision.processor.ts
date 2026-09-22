@@ -25,7 +25,7 @@ if (anthropicApiKey) {
   console.warn('[capture-vision] ANTHROPIC_API_KEY not set. Vision analysis will be skipped.')
 }
 
-const VISION_MODEL = 'claude-sonnet-4-6'
+const VISION_MODEL = 'claude-sonnet-5'
 
 // ---------------------------------------------------------------------------
 // Vision prompt

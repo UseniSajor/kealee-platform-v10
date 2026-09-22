@@ -2,7 +2,7 @@
  * core-llm/external/claude.provider.ts
  * Claude (Anthropic) external fallback provider.
  *
- * Model: claude-sonnet-4-6 (latest; update to claude-opus-4-6 for maximum quality)
+ * Model: claude-sonnet-5 (latest; update to claude-opus-5 for maximum quality)
  * Requires: ANTHROPIC_API_KEY env var
  * Feature flag: CLAUDE_ENABLED=true
  */
@@ -30,7 +30,7 @@ export class ClaudeProvider implements LlmProvider {
   private client: Anthropic | null = null;
 
   constructor(model?: string) {
-    this.model = model ?? "claude-sonnet-4-6";
+    this.model = model ?? "claude-sonnet-5";
   }
 
   private getClient(): Anthropic {

@@ -13,7 +13,7 @@ if (anthropicApiKey) {
 }
 
 // Configurable model via env var
-const AI_MODEL = process.env.SPATIAL_AI_MODEL || 'claude-sonnet-4-6'
+const AI_MODEL = process.env.SPATIAL_AI_MODEL || 'claude-sonnet-5'
 const AUTO_PASS_THRESHOLD = 85
 
 /**

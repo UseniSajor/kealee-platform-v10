@@ -27,7 +27,7 @@ export class DesignBotEnterprise extends EnterpriseBot {
   constructor() {
     super({
       name: 'DesignBot',
-      model: 'claude-opus-4-8',
+      model: 'claude-opus-5',
       maxTokens: 4096,
       temperature: 0.7,
       // ...
@@ -188,7 +188,7 @@ export class DesignBotEnterprise extends EnterpriseBot {
   constructor() {
     super({
       name: 'DesignBot',
-      model: 'claude-opus-4-8',
+      model: 'claude-opus-5',
       maxTokens: 4096,
       temperature: 0.7,
       timeout: 60000,

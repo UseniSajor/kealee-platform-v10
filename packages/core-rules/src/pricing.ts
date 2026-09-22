@@ -805,11 +805,11 @@ export function getIntakePriceByTier(projectPath: string, tier: number): IntakeP
 export const AI_MODELS = {
   // ── Text / reasoning (Anthropic Claude) ────────────────────────────────
   /** Concept JSON, design briefs, agent reasoning — default tier. */
-  conceptText:        'claude-sonnet-4-5',
+  conceptText:        'claude-sonnet-5',
   /** Heavier reasoning for developer / commercial / multi-unit tiers. */
-  conceptTextPremium: 'claude-opus-4-1',
+  conceptTextPremium: 'claude-opus-5',
   /** Vision: photo / floor-plan → editable geometry. */
-  vision:             'claude-sonnet-4-5',
+  vision:             'claude-sonnet-5',
 
   // ── Image generation ───────────────────────────────────────────────────
   /** Photorealistic single-image render (Replicate slug). 4MP, ~$0.06/image. */

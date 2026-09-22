@@ -57,7 +57,7 @@
 | Variable | Required | Secret | Notes |
 |----------|----------|--------|-------|
 | `ANTHROPIC_API_KEY` | ✅ | 🔒 | `sk-ant-...` — needed by all KeaBots |
-| `ANTHROPIC_MODEL` | ⚠️ | No | Default: `claude-sonnet-4-20250514` |
+| `ANTHROPIC_MODEL` | ⚠️ | No | Default: `claude-sonnet-5` |
 | `OPENAI_API_KEY` | ⚠️ | 🔒 | For embeddings / RAG only |
 
 ---
@@ -156,7 +156,7 @@
 | `REPORTS_DIR` | ⚠️ | No | Default: `/tmp/reports` |
 | `FILE_CLEANUP_AGE_DAYS` | ⚠️ | No | Default: `30` |
 | `INCOMPLETE_UPLOAD_AGE_HOURS` | ⚠️ | No | Default: `24` |
-| `SPATIAL_AI_MODEL` | ⚠️ | No | Default: `claude-sonnet-4-20250514` |
+| `SPATIAL_AI_MODEL` | ⚠️ | No | Default: `claude-sonnet-5` |
 | `TEST_EMAIL` | ⚠️ | No | Set to `false` to skip dev test email |
 
 ---

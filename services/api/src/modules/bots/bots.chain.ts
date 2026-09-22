@@ -276,12 +276,12 @@ async function dbRetry<T>(fn: () => Promise<T>, attempts = 3, baseMs = 500): Pro
 // ── Cost constants for cache pricing ─────────────────────────────────────────
 // USD per 1 000 tokens — Anthropic prompt caching pricing
 const COST_INPUT: Record<string, number>  = {
-  'claude-opus-4-6':    0.015,
-  'claude-sonnet-4-6':  0.003,
+  'claude-opus-5':    0.015,
+  'claude-sonnet-5':  0.003,
 }
 const COST_OUTPUT: Record<string, number> = {
-  'claude-opus-4-6':    0.075,
-  'claude-sonnet-4-6':  0.015,
+  'claude-opus-5':    0.075,
+  'claude-sonnet-5':  0.015,
 }
 // Cache write: 25% of base input price; cache read: ~10% of base input price
 const CACHE_WRITE_MULTIPLIER = 0.25
@@ -689,7 +689,7 @@ Generate the MEP system design and full BOM for this project.`
     const llmResult = await callModelCached({
       systemPrompt: DESIGN_BOT_SYSTEM,
       userPrompt,
-      model:        'claude-opus-4-6',
+      model:        'claude-opus-5',
       maxTokens:    4096,
       temperature:  0.3,
       cacheKey:     designCacheKey,
@@ -917,7 +917,7 @@ Generate the full 2026 CTC line-item estimate.`
     const llmResult = await callModelCached({
       systemPrompt,
       userPrompt,
-      model:       'claude-sonnet-4-6',
+      model:       'claude-sonnet-5',
       maxTokens:   8192, // 4096 truncates mid-JSON when BOM context is included
       temperature: 0.15,
       cacheKey:    estimateCacheKey,
@@ -1147,7 +1147,7 @@ Identify all required permits, issues, and provide a permitting action plan.`
     const llmResult = await callModelCached({
       systemPrompt,
       userPrompt,
-      model:       'claude-sonnet-4-6',
+      model:       'claude-sonnet-5',
       maxTokens:   4096,
       temperature: 0.15,
       cacheKey:    permitCacheKey,
@@ -1341,7 +1341,7 @@ Provide contractor matching criteria and actionable recommendations.`
     const llmResult = await callModelCached({
       systemPrompt: CONTRACTOR_BOT_SYSTEM,
       userPrompt,
-      model:        'claude-sonnet-4-6',
+      model:        'claude-sonnet-5',
       maxTokens:    2048,
       temperature:  0.15,
       cacheKey:     contractorCacheKey,

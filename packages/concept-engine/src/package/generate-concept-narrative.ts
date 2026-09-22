@@ -68,7 +68,7 @@ Rules:
 
   try {
     const res = await client.messages.create({
-      model:      process.env.ANTHROPIC_MODEL || 'claude-sonnet-4-6',
+      model:      process.env.ANTHROPIC_MODEL || 'claude-sonnet-5',
       max_tokens: 1400,
       messages:   [{ role: 'user', content: prompt }],
     });

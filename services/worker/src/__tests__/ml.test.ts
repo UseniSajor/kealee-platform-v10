@@ -7,7 +7,7 @@ vi.mock('@anthropic-ai/sdk', () => ({
   default: vi.fn().mockImplementation(() => ({
     messages: {
       create: vi.fn().mockResolvedValue({
-        model: 'claude-sonnet-4-6',
+        model: 'claude-sonnet-5',
         content: [{ type: 'text', text: 'Mock response' }],
         usage: {
           input_tokens: 10,

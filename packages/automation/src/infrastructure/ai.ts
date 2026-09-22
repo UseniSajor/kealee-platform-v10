@@ -3,7 +3,7 @@ import type { ImageBlockParam, TextBlockParam, MessageParam } from '@anthropic-a
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
-const DEFAULT_MODEL = 'claude-sonnet-4-5-20250929';
+const DEFAULT_MODEL = 'claude-sonnet-5';
 const DEFAULT_MAX_TOKENS = 2000;
 const DEFAULT_TEMPERATURE = 0.3;
 const MAX_RETRIES = 3;
@@ -245,9 +245,9 @@ export async function analyzeImageJSON<T = unknown>(opts: {
 // ---------------------------------------------------------------------------
 
 const MODEL_PRICING: Record<string, { input: number; output: number }> = {
-  'claude-sonnet-4-5-20250929': { input: 3, output: 15 },
-  'claude-sonnet-4-6': { input: 3, output: 15 },
-  'claude-haiku-3-5-20241022': { input: 0.8, output: 4 },
+  'claude-sonnet-5': { input: 3, output: 15 },
+  'claude-sonnet-5': { input: 3, output: 15 },
+  'claude-haiku-4-5-20251001': { input: 0.8, output: 4 },
 };
 
 /**

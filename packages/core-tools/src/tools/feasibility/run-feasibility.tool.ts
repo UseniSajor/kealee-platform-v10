@@ -91,7 +91,7 @@ Cost estimates should reflect current DMV market rates (2025-2026). Be realistic
 
       try {
         const response = await client.messages.create({
-          model: "claude-sonnet-4-6",
+          model: "claude-sonnet-5",
           max_tokens: 1000,
           messages: [{ role: "user", content: prompt }],
         });

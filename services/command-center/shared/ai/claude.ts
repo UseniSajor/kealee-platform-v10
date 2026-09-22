@@ -13,8 +13,8 @@ export const claude = new Anthropic({
 // Model configurations
 export const MODELS = {
   FAST: 'claude-haiku-4-5-20251001',
-  BALANCED: 'claude-sonnet-4-6',
-  POWERFUL: 'claude-sonnet-4-6',
+  BALANCED: 'claude-sonnet-5',
+  POWERFUL: 'claude-sonnet-5',
 } as const;
 
 export type ModelType = keyof typeof MODELS;

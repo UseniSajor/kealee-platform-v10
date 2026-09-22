@@ -29,7 +29,7 @@
 - ✅ Created `ml.processor.ts` with Claude API integration
 - ✅ Features:
   - Anthropic Claude API integration
-  - Support for multiple Claude models (default: claude-3-5-sonnet-20241022)
+  - Support for multiple Claude models (default: claude-sonnet-5)
   - Configurable max tokens and temperature
   - System prompt support
   - Usage tracking (input/output tokens)
@@ -158,7 +158,7 @@ await mlQueue.generateRecommendation(
 await mlQueue.processMLJob({
   type: 'custom',
   prompt: 'Custom prompt',
-  model: 'claude-3-opus-20240229',
+  model: 'claude-opus-5',
   maxTokens: 8192,
   temperature: 0.5,
 })
@@ -178,7 +178,7 @@ Task 19 is complete! Ready to proceed to:
 
 ## 📝 Notes
 
-- Default model: `claude-3-5-sonnet-20241022`
+- Default model: `claude-sonnet-5`
 - Default max tokens: 4096
 - Default temperature: 0.7
 - Retry attempts: 3 (ML jobs are expensive)

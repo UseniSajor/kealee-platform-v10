@@ -18,8 +18,8 @@ import type { ModelTier, ConvMessage } from './bots.types'
 
 const MODEL_MAP: Record<ModelTier, string> = {
   fast:     'claude-haiku-4-5-20251001',
-  standard: 'claude-sonnet-4-6',
-  premium:  'claude-opus-4-6',
+  standard: 'claude-sonnet-5',
+  premium:  'claude-opus-5',
 }
 
 const TOKEN_LIMITS: Record<ModelTier, number> = {
@@ -31,13 +31,13 @@ const TOKEN_LIMITS: Record<ModelTier, number> = {
 // USD per 1 000 tokens (approximate published rates)
 const COST_INPUT: Record<string, number> = {
   'claude-haiku-4-5-20251001': 0.00025,
-  'claude-sonnet-4-6':         0.003,
-  'claude-opus-4-6':           0.015,
+  'claude-sonnet-5':         0.003,
+  'claude-opus-5':           0.015,
 }
 const COST_OUTPUT: Record<string, number> = {
   'claude-haiku-4-5-20251001': 0.00125,
-  'claude-sonnet-4-6':         0.015,
-  'claude-opus-4-6':           0.075,
+  'claude-sonnet-5':         0.015,
+  'claude-opus-5':           0.075,
 }
 
 // ── Client singleton ──────────────────────────────────────────────────────────
