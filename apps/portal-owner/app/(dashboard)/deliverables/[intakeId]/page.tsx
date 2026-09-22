@@ -26,7 +26,7 @@ import { BuildPathUpsell, type OwnedUpsellProduct } from '@/components/BuildPath
 import { BuildJourneyProgress } from '@/components/BuildJourneyProgress'
 import {
   getConceptPackageDeliverableLabelsForIntake,
-  getIntakePriceByTier,
+  priceRangeFor,
   getPermitZoningLabels,
   intakePathToFamily,
   resolveConceptTier,
@@ -36,10 +36,20 @@ import {
 
 // ─── Package config (mirrors web-main/lib/service-deliverables.ts) ────────────
 
-const TIER_NAMES: Record<number, string> = {
+/**
+ * Tier names for orders sold before packages became one-per-product. A live
+ * order has no tier: its name is the package label from the pricing engine.
+ */
+const LEGACY_TIER_NAMES: Record<number, string> = {
   1: 'Starter Concept',
   2: 'Visualization Package',
   3: 'Pre-Design Package',
+}
+
+function legacyTierName(formData: Record<string, unknown>, tier: number): string | undefined {
+  if (typeof formData.tier !== 'number') return undefined
+  if (isV30IntakeFormData(formData)) return tier === 3 ? 'Premium+' : tier === 2 ? 'Premium' : 'Basic'
+  return LEGACY_TIER_NAMES[tier]
 }
 
 interface PackageDef {
@@ -239,27 +249,12 @@ const PACKAGE_CONFIG: Record<string, PackageDef> = {
   },
 }
 
-// ─── Concept service price map (mirrors INTAKE_PRICE_CENTS in core-rules) ──────
-
-const CONCEPT_PRICE_DOLLARS: Record<string, number> = {
-  exterior_concept:       395,
-  garden_concept:         295,
-  whole_home_concept:     595,
-  interior_reno_concept:  345,
-  developer_concept:      795,
-  kitchen_remodel:        395,
-  bathroom_remodel:       295,
-  interior_renovation:    345,
-  whole_home_remodel:     695,
-  addition_expansion:     495,
-  permit_path_only:               499,
-  cost_estimate:                  595,
-  design_estimate_permit_bundle: 2499,
-  certified_estimate:    1850,
-  design_build:           795,
-  capture_site_concept:   125,
-  single_lot_development: 899,
-}
+// The portal shows WHAT THE CUSTOMER PAID (form_data.amountPaidCents, recorded
+// by the Stripe webhook), never a price re-derived from a table. Two hardcoded
+// maps used to live here and in the deliverables API, each with different
+// numbers from checkout — a customer could be told they paid $395 for a $199
+// order. For an order placed before the amount was recorded, the product's
+// published "from" price is shown as an approximation and labelled as one.
 
 function getPackageDef(projectPath: string): PackageDef {
   return PACKAGE_CONFIG[projectPath] ?? {
@@ -366,7 +361,8 @@ interface ConceptData {
   /** What's included in this package (from the product catalog) */
   packageIncludes: string[]
   /** Tier name, e.g. "Starter Concept" */
-  tierName: string
+  /** Only set for orders sold under the old three-tier catalogue. */
+  tierName?: string
   /** True once permit has been submitted or approved — unlocks contractor matching */
   contractorMatchingUnlocked: boolean
   /** True when the permit step is done (submitted or approved) but before contractor is matched */
@@ -381,6 +377,8 @@ interface ConceptData {
   }
   /** Price paid for the design concept service (USD) */
   conceptServicePrice?: number
+  /** True when the figure is the published "from" price, not a recorded payment. */
+  conceptServicePriceIsEstimate?: boolean
   /** Construction cost estimate range from concept engine scope */
   constructionCostMin?: number
   constructionCostMax?: number
@@ -716,10 +714,13 @@ export default function ConceptDeliverablePage() {
       const constructionCostMin = typeof scope.totalEstimatedMin === 'number' ? scope.totalEstimatedMin as number : undefined
       const constructionCostMax = typeof scope.totalEstimatedMax === 'number' ? scope.totalEstimatedMax as number : undefined
 
-      // Concept service price paid — tier-aware from core-rules; falls back to flat map
-      const conceptServicePrice =
-        (getIntakePriceByTier(projectPath, tier)?.cents ?? 0) / 100 ||
-        (CONCEPT_PRICE_DOLLARS[projectPath] ?? 0)
+      // What this customer actually paid. Only falls back to the published
+      // "from" price for orders placed before the webhook recorded the amount.
+      const paidCents = typeof formData.amountPaidCents === 'number' ? formData.amountPaidCents : 0
+      const conceptServicePrice = paidCents > 0
+        ? paidCents / 100
+        : (priceRangeFor(projectPath)?.lowCents ?? 0) / 100
+      const conceptServicePriceIsEstimate = paidCents === 0
 
       // Estimated cost — v1 has co.estimatedCost; v2 has scope.totalEstimatedMax
       const estimatedCost =
@@ -878,9 +879,9 @@ export default function ConceptDeliverablePage() {
         projectType:     (intake.project_path as string)?.replace(/_/g, ' ') ?? 'Concept Package',
         packageLabel:    pkgDef.label,
         packageIncludes,
-        tierName:        isV30IntakeFormData(formData)
-          ? tier === 3 ? 'Premium+' : tier === 2 ? 'Premium' : 'Basic'
-          : TIER_NAMES[tier] ?? 'Starter Concept',
+        // One core package per product — the package name is the product's, not a
+        // tier label. Legacy orders keep the tier name they were sold under.
+        tierName:        legacyTierName(formData, tier),
         isV30:           isV30IntakeFormData(formData),
         v30WorkspaceUrl: isV30IntakeFormData(formData) ? v30WorkspaceUrl(intakeId) : undefined,
         projectPath,
@@ -943,6 +944,7 @@ export default function ConceptDeliverablePage() {
         buildabilityFlag:    ((co.buildabilityFlag as string) ?? 'feasible') as ConceptData['buildabilityFlag'],
         readinessScore:      (co.readinessScore as number) ?? 70,
         conceptServicePrice,
+        conceptServicePriceIsEstimate,
         constructionCostMin,
         constructionCostMax,
         contractorMatchResult: (formData.contractorMatchResult as ConceptData['contractorMatchResult']) ?? undefined,
@@ -1167,10 +1169,12 @@ export default function ConceptDeliverablePage() {
                   style={{ backgroundColor: '#2ABFBF' }}>
                   Concept Ready
                 </span>
-                <span className="rounded-full px-2.5 py-0.5 text-xs font-semibold"
-                  style={{ backgroundColor: '#1A2B4A15', color: '#1A2B4A' }}>
-                  {data.tierName}
-                </span>
+                {data.tierName ? (
+                  <span className="rounded-full px-2.5 py-0.5 text-xs font-semibold"
+                    style={{ backgroundColor: '#1A2B4A15', color: '#1A2B4A' }}>
+                    {data.tierName}
+                  </span>
+                ) : null}
                 <span className="text-xs text-gray-400">{data.conceptId}</span>
               </div>
               <h1 className="text-2xl font-bold sm:text-3xl" style={{ color: '#1A2B4A' }}>
@@ -1195,12 +1199,16 @@ export default function ConceptDeliverablePage() {
                   )}
                 </div>
               )}
-              {data.conceptServicePrice && (
+              {data.conceptServicePrice ? (
                 <div>
-                  <p className="text-xs text-gray-400 mb-0.5">Design Concept</p>
-                  <p className="text-lg font-bold" style={{ color: '#E8793A' }}>${data.conceptServicePrice.toLocaleString()}</p>
+                  <p className="text-xs text-gray-400 mb-0.5">
+                    {data.conceptServicePriceIsEstimate ? 'Design Concept — typical price' : 'You paid'}
+                  </p>
+                  <p className="text-lg font-bold" style={{ color: '#E8793A' }}>
+                    {data.conceptServicePriceIsEstimate ? 'from ' : ''}${data.conceptServicePrice.toLocaleString()}
+                  </p>
                 </div>
-              )}
+              ) : null}
             </div>
           </div>
           <div className="mt-4 flex flex-wrap gap-4 text-sm text-gray-500">
@@ -1275,10 +1283,12 @@ export default function ConceptDeliverablePage() {
               <span className="h-2 w-2 rounded-full" style={{ backgroundColor: '#1A2B4A' }} />
               <h2 className="text-base font-bold" style={{ color: '#1A2B4A' }}>{data.packageLabel}</h2>
             </div>
-            <span className="rounded-full px-2.5 py-1 text-xs font-semibold text-white"
-              style={{ backgroundColor: '#2ABFBF' }}>
-              {data.tierName}
-            </span>
+            {data.tierName ? (
+              <span className="rounded-full px-2.5 py-1 text-xs font-semibold text-white"
+                style={{ backgroundColor: '#2ABFBF' }}>
+                {data.tierName}
+              </span>
+            ) : null}
           </div>
           <div className="px-6 py-4">
             <ul className="grid sm:grid-cols-2 gap-x-6 gap-y-2">

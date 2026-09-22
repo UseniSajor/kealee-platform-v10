@@ -8,6 +8,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { getClerkUser } from '@kealee/auth'
+import { priceRangeFor } from '@kealee/core-rules'
 
 export const dynamic = 'force-dynamic'
 import {
@@ -88,25 +89,16 @@ export async function GET() {
     permit_path_only:   'Permit Path Assessment',
   }
 
-  // ── Concept service price map (mirrors INTAKE_PRICE_CENTS in core-rules) ────
-  const CONCEPT_PRICE_DOLLARS: Record<string, number> = {
-    exterior_concept:       395,
-    garden_concept:         295,
-    whole_home_concept:     595,
-    interior_reno_concept:  345,
-    developer_concept:      795,
-    kitchen_remodel:        395,
-    bathroom_remodel:       295,
-    interior_renovation:    345,
-    whole_home_remodel:     695,
-    addition_expansion:     495,
-    permit_path_only:       499,
-    cost_estimate:          595,
-    certified_estimate:    1850,
-    contractor_match:       199,
-    design_build:           795,
-    capture_site_concept:   125,
-    single_lot_development: 899,
+  // The amount the customer paid comes from the order (recorded by the Stripe
+  // webhook). The hardcoded map that used to sit here disagreed with checkout
+  // on every product — it even charged for contractor matching, which is free.
+  const conceptServicePriceFor = (fd: Record<string, any>, path: string): number | null => {
+    const paidCents = typeof fd.amountPaidCents === 'number' ? fd.amountPaidCents : 0
+    if (paidCents > 0) return paidCents / 100
+    // Orders placed before the amount was recorded fall back to the published
+    // "from" price, which the list labels as a typical price rather than a bill.
+    const range = priceRangeFor(path)
+    return range ? range.lowCents / 100 : null
   }
 
   // ── Shape response — extract conceptOutput summary from form_data ───────────
@@ -166,7 +158,7 @@ export async function GET() {
       pdfUrl:              co?.pdfUrl ?? null,
       generatedAt:         co?.generatedAt ?? null,
       // Pricing
-      conceptServicePrice: CONCEPT_PRICE_DOLLARS[path] ?? null,
+      conceptServicePrice: conceptServicePriceFor(fd, path),
       estimatedCostMin,
       estimatedCostMax,
       lifecycleStage,

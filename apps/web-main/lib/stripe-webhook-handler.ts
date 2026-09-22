@@ -232,6 +232,14 @@ async function handleCheckoutCompleted(
   })
 
   const mergedFormData: Record<string, unknown> = { ...existingFormData }
+
+  // What the customer actually paid, recorded on the order. Portals must show
+  // this figure rather than re-deriving a price from a table that has since
+  // changed, and margin by product cannot be measured without it.
+  mergedFormData.amountPaidCents = session.amount_total ?? 0
+  mergedFormData.amountPaidCurrency = session.currency ?? 'usd'
+  mergedFormData.paidAt = new Date().toISOString()
+  mergedFormData.pricingModel = (session.metadata?.pricingModel as string | undefined) ?? 'unknown'
   if (deliverable) {
     mergedFormData.serviceLabel = deliverable.label
     mergedFormData.serviceCategory = deliverable.category
