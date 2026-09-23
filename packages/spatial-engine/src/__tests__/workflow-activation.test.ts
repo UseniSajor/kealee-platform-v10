@@ -153,7 +153,7 @@ describe('resume', () => {
   })
 
   it('reports ALREADY_COMPLETE when every stage has finished', async () => {
-    const { FIRST_RELEASE_STAGES } = require('../workflow/definition')
+    const { FIRST_RELEASE_STAGES } = await import('../workflow/definition')
     const seed: ExistingWorkflow = {
       workflowId: 'wf_done', definitionVersion: SITE_PLAN_WORKFLOW_VERSION,
       stages: FIRST_RELEASE_STAGES.map((s: { job: string }) =>

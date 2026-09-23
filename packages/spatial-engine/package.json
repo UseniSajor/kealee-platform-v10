@@ -27,16 +27,24 @@
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "typecheck": "tsc --noEmit",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@kealee/pascal-wrapper": "workspace:*",
-    "pdfkit": "^0.14.0"
+    "@tarikjabiri/dxf": "2.9.0",
+    "@turf/turf": "7.4.0",
+    "geotiff": "3.0.5",
+    "pdfkit": "^0.14.0",
+    "proj4": "2.22.0"
   },
   "devDependencies": {
     "@types/pdfkit": "^0.13.4",
+    "@types/proj4": "2.19.0",
     "polygon-clipping": "0.15.7",
-    "typescript": "^5.3.3"
+    "typescript": "^5.3.3",
+    "vitest": "2.1.9"
   },
   "typesVersions": {
     "*": {

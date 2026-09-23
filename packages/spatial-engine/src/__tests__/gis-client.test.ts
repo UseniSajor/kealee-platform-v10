@@ -1,13 +1,14 @@
 import { geocodeAddress, determineJurisdictionFromAddress, queryArcGisFeature, getJurisdictionGisData } from '../gis-client';
 import * as https from 'https';
 import { EventEmitter } from 'events';
+import { vi, type Mock } from 'vitest';
 
 // Mock Node's https.get
-jest.mock('https');
+vi.mock('https');
 
 describe('Kealee GIS Client Unit Tests', () => {
   afterEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe('determineJurisdictionFromAddress', () => {
@@ -52,7 +53,7 @@ describe('Kealee GIS Client Unit Tests', () => {
     });
 
     test('returns null on geocoding error', async () => {
-      (https.get as jest.Mock).mockImplementationOnce((options: any, callback: any) => {
+      (https.get as unknown as Mock).mockImplementationOnce((options: any, callback: any) => {
         const req = new EventEmitter() as any;
         process.nextTick(() => {
           req.emit('error', new Error('Network error'));
@@ -115,7 +116,7 @@ function setupHttpsGetMock(statusCode: number, data: string) {
   mockResponse.statusCode = statusCode;
   mockResponse.headers = {};
 
-  (https.get as jest.Mock).mockImplementationOnce((options: any, callback: any) => {
+  (https.get as unknown as Mock).mockImplementationOnce((options: any, callback: any) => {
     callback(mockResponse);
     process.nextTick(() => {
       mockResponse.emit('data', Buffer.from(data));

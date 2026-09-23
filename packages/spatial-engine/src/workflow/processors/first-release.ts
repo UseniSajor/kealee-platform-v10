@@ -378,7 +378,10 @@ const resolveProperty: StageProcessor = async (ctx): Promise<StageResult> => {
   let matchedForm: string | null = null
   let locator: 'address' | 'composite' = 'address'
   for (const candidate of candidates) {
-    site = await resolvePgAtlasSite(candidate, { fetchImpl: ctx.capabilities.fetchImpl })
+    // Pinned: this stage runs its own two-phase sweep (every address form on
+    // the strict locator, then every form on the composite), so the library's
+    // per-query fallback must not reorder it.
+    site = await resolvePgAtlasSite(candidate, { fetchImpl: ctx.capabilities.fetchImpl, allowLocatorFallback: false })
     if (site) { matchedForm = candidate; break }
   }
   // The strict Address locator omits some valid county assessment records.
@@ -392,6 +395,7 @@ const resolveProperty: StageProcessor = async (ctx): Promise<StageResult> => {
       site = await resolvePgAtlasSite(candidate, {
         fetchImpl: ctx.capabilities.fetchImpl,
         locator: PGATLAS_ENDPOINTS.compositeLocator,
+        allowLocatorFallback: false,
       })
       if (site) { matchedForm = candidate; break }
     }

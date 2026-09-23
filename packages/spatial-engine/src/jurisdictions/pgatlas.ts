@@ -34,13 +34,92 @@ export const PGATLAS_ENDPOINTS = {
   easementsMiscellaneous: `${PGATLAS_ROOT}/Easement/MapServer/3`,
   easementsTransportation: `${PGATLAS_ROOT}/Easement/MapServer/5`,
 } as const
-
 export interface PgAtlasAddress {
   matchedAddress: string
   /** Locator score, 0-100. */
   score: number
   easting2248: number
   northing2248: number
+  /** Which county locator answered. Provenance: a match on the composite is not the same fact as a match on the strict address locator. */
+  locator: PgAtlasLocatorName
+  /** Endpoint URL that produced the match. */
+  locatorEndpoint: string
+  /** ISO timestamp the county answered. */
+  retrievedAt: string
+}
+
+export type PgAtlasLocatorName = 'address' | 'composite'
+
+/** Why a locator produced no usable answer. A RETIRED SERVICE IS NOT A NO-MATCH. */
+export type LocatorOutcome =
+  | { kind: 'match'; address: PgAtlasAddress }
+  | { kind: 'no_match'; tried: string }
+  | { kind: 'below_score'; tried: string; bestScore: number }
+  | { kind: 'unavailable'; tried: string; reason: string }
+
+function locatorNameFor(endpoint: string): PgAtlasLocatorName {
+  return endpoint === PGATLAS_ENDPOINTS.compositeLocator ? 'composite' : 'address'
+}
+
+/**
+ * One locator, one query. Separates "the county has no such address" from
+ * "the county deleted this service".
+ *
+ * The distinction is the whole point. `Geocoders/Address/GeocodeServer` was
+ * RETIRED by the county: it answers HTTP **200** carrying
+ * `{"error":{"code":404}}`. A `res.ok` check reads that as a clean no-match,
+ * and the caller then blocks a perfectly valid address. Verified 2026-09-23:
+ * "1005 Rollins Ave" scores 100 on the composite locator while the address
+ * locator returns the 404 body.
+ */
+async function queryLocator(
+  address: string,
+  endpoint: string,
+  minScore: number,
+  doFetch: typeof fetch,
+): Promise<LocatorOutcome> {
+  const p = new URLSearchParams({
+    SingleLine: address, outSR: '2248', maxLocations: '5', f: 'json',
+  })
+  let res: Response
+  try {
+    res = await doFetch(`${endpoint}/findAddressCandidates?${p}`, { headers: { accept: 'application/json' } })
+  } catch (e) {
+    return { kind: 'unavailable', tried: endpoint, reason: `network error: ${e instanceof Error ? e.message : String(e)}` }
+  }
+  if (!res.ok) return { kind: 'unavailable', tried: endpoint, reason: `HTTP ${res.status}` }
+
+  const payload: any = await res.json().catch(() => null)
+  if (!payload) return { kind: 'unavailable', tried: endpoint, reason: 'response was not JSON' }
+  // An ArcGIS service-level error inside a 200. Code 404 means the service is gone.
+  if (payload.error) {
+    return {
+      kind: 'unavailable', tried: endpoint,
+      reason: `service error ${payload.error.code ?? '?'}: ${payload.error.message ?? 'unspecified'}`,
+    }
+  }
+  if (!Array.isArray(payload.candidates)) {
+    return { kind: 'unavailable', tried: endpoint, reason: 'response carried no candidates array' }
+  }
+
+  const best = payload.candidates
+    .filter((c: any) => typeof c?.score === 'number' && c?.location)
+    .sort((a: any, b: any) => b.score - a.score)[0]
+  if (!best) return { kind: 'no_match', tried: endpoint }
+  if (best.score < minScore) return { kind: 'below_score', tried: endpoint, bestScore: best.score }
+
+  return {
+    kind: 'match',
+    address: {
+      matchedAddress: best.address,
+      score: best.score,
+      easting2248: best.location.x,
+      northing2248: best.location.y,
+      locator: locatorNameFor(endpoint),
+      locatorEndpoint: endpoint,
+      retrievedAt: new Date().toISOString(),
+    },
+  }
 }
 
 /**
@@ -53,33 +132,39 @@ export interface PgAtlasAddress {
  *
  * Pass the street address alone. The locator matches "1005 Rollins Ave" at 100
  * and returns nothing for the same address with city and ZIP appended.
+ *
+ * When the requested locator is UNAVAILABLE (retired, down, or answering a
+ * service error inside a 200), the query is retried on the other county
+ * locator at the SAME minimum score. Set `allowLocatorFallback: false` to pin
+ * the query to one locator — `resolvePropertyStage` does this because it runs
+ * its own two-phase sweep across address forms and must keep that ordering.
  */
 export async function geocodePgAtlas(
   address: string,
-  opts: { minScore?: number; fetchImpl?: typeof fetch; locator?: string } = {},
+  opts: {
+    minScore?: number
+    fetchImpl?: typeof fetch
+    locator?: string
+    /** Default true. False pins the query to `locator` and never retries elsewhere. */
+    allowLocatorFallback?: boolean
+  } = {},
 ): Promise<PgAtlasAddress | null> {
   const minScore = opts.minScore ?? 90
   const doFetch = opts.fetchImpl ?? fetch
-  const p = new URLSearchParams({
-    SingleLine: address, outSR: '2248', maxLocations: '5', f: 'json',
-  })
-  const base = opts.locator ?? PGATLAS_ENDPOINTS.addressLocator
-  const res = await doFetch(`${base}/findAddressCandidates?${p}`, { headers: { accept: 'application/json' } })
-  if (!res.ok) return null
-  const payload: any = await res.json().catch(() => null)
-  if (!payload || payload.error) return null
+  const primary = opts.locator ?? PGATLAS_ENDPOINTS.addressLocator
 
-  const best = (payload.candidates ?? [])
-    .filter((c: any) => typeof c?.score === 'number')
-    .sort((a: any, b: any) => b.score - a.score)[0]
-  if (!best || best.score < minScore) return null
+  const first = await queryLocator(address, primary, minScore, doFetch)
+  if (first.kind === 'match') return first.address
+  if (first.kind !== 'unavailable' || opts.allowLocatorFallback === false) return null
 
-  return {
-    matchedAddress: best.address,
-    score: best.score,
-    easting2248: best.location.x,
-    northing2248: best.location.y,
-  }
+  const alternate = primary === PGATLAS_ENDPOINTS.compositeLocator
+    ? PGATLAS_ENDPOINTS.addressLocator
+    : PGATLAS_ENDPOINTS.compositeLocator
+  console.warn(
+    `[pgatlas] locator ${primary} unavailable (${first.reason}) — retrying on ${alternate} at the same minimum score ${minScore}.`,
+  )
+  const second = await queryLocator(address, alternate, minScore, doFetch)
+  return second.kind === 'match' ? second.address : null
 }
 
 async function queryAtPoint(
@@ -574,7 +659,7 @@ export async function fetchPgAtlasEasements(
 /** Address to lot, zone and position in one call. */
 export async function resolvePgAtlasSite(
   address: string,
-  opts: { minScore?: number; fetchImpl?: typeof fetch; locator?: string } = {},
+  opts: { minScore?: number; fetchImpl?: typeof fetch; locator?: string; allowLocatorFallback?: boolean } = {},
 ): Promise<PgAtlasSite | null> {
   const geo = await geocodePgAtlas(address, opts)
   if (!geo) return null

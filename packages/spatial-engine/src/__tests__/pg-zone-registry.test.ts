@@ -9,6 +9,7 @@
  * is set so it cannot break an offline CI run.
  */
 
+import { vi } from 'vitest'
 import {
   PG_ALL_ZONE_CLASSES_2022,
   PG_ZONE_NOT_ASSIGNED,
@@ -70,7 +71,8 @@ describe('PG County 2022 zone registry (offline)', () => {
 })
 
 describeNetwork('PG County 2022 zone registry (live drift check)', () => {
-  jest.setTimeout(60_000)
+  // Live county calls; the suite needs longer than the default.
+  vi.setConfig({ testTimeout: 60_000 })
 
   /**
    * Compares against the layer's SUBTYPE CODED-VALUE DOMAINS — the authoritative

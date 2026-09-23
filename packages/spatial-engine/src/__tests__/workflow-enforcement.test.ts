@@ -224,7 +224,7 @@ describe('synchronisation — the definition must name real code', () => {
     }
   })
 
-  it('resolves EVERY named implementation against the real package', () => {
+  it('resolves EVERY named implementation against the real package', async () => {
     // This is what stops the definition becoming documentation of modules
     // nobody wrote. If a stage names an export that does not exist, this fails.
     //
@@ -239,8 +239,7 @@ describe('synchronisation — the definition must name real code', () => {
     const missing: string[] = []
     for (const s of named) {
       const [mod, exp] = (s.implementation as string).split('#')
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
-      const loaded = require(`../${mod}`)
+      const loaded = await import(/* @vite-ignore */ `../${mod}`)
       if (typeof loaded[exp] !== 'function') missing.push(`${s.job} -> ${s.implementation}`)
     }
     expect(missing).toEqual([])

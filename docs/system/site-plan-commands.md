@@ -58,7 +58,8 @@ layout — it records what a real sheet carries and what this engine still lacks
 
 | What | Endpoint |
 |---|---|
-| Address locator | `gis.pgatlas.com/pgatlas/rest/services/Geocoders/Address/GeocodeServer` |
+| Address locator | `gis.pgatlas.com/pgatlas/rest/services/Geocoders/Composite_Geolocator/GeocodeServer` |
+| ~~Address locator (retired)~~ | ~~`.../Geocoders/Address/GeocodeServer`~~ — the county DELETED it. It answers HTTP **200** with `{"error":{"code":404}}`, so a `res.ok` check reads a dead service as a clean no-match. `geocodePgAtlas` now detects the service error and retries on the composite locator at the same minimum score. |
 | Parcel | `.../Property/MapServer/15` |
 | Zoning | `.../Zoning/MapServer/63` |
 | **2-ft contours** | `.../Elevation/MapServer/1` — "Contour - 2 Ft (2023)", NAVD88 |
