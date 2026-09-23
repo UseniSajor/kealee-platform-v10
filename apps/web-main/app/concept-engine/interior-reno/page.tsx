@@ -2,6 +2,11 @@
 
 import Link from 'next/link'
 import { ArrowRight, ArrowLeft, CheckCircle, PaintBucket, Home, Layout, Plus, Clock } from 'lucide-react'
+import { getProductPricing, formatPriceRange } from '@kealee/core-rules'
+
+// Price and contents come from the quoting engine, never from copy.
+const INTERIOR = getProductPricing('interior_renovation')!
+const INTERIOR_PRICE = `From ${formatPriceRange('interior_renovation')?.split('–')[0] ?? ''}`
 
 const STEPS = [
   {
@@ -88,7 +93,7 @@ export default function InteriorRenoConceptEnginePage() {
               </p>
               <div className="mt-8 flex flex-wrap gap-4">
                 <Link
-                  href="/intake/interior_reno_concept"
+                  href="/intake/interior_renovation"
                   className="inline-flex items-center gap-2 rounded-xl px-7 py-3.5 text-base font-semibold text-white transition-opacity hover:opacity-90"
                   style={{ backgroundColor: '#E8793A' }}
                 >
@@ -136,82 +141,37 @@ export default function InteriorRenoConceptEnginePage() {
             </h2>
             <p className="mt-3 text-gray-500">Kitchen, bath, addition, ADU — pick the right level for your project.</p>
           </div>
-          <div className="mt-12 grid gap-6 lg:grid-cols-3">
-            {([
-              {
-                name: 'AI Interior Concept',
-                price: '$395',
-                rounds: '1 feedback round',
-                turnaround: '5–7 business days',
-                desc: 'AI layout concept with finish direction and rough cost range.',
-                items: ['3 interior layout options', 'Finish + material direction', 'Rough cost range', 'Fixture + appliance overview', '30-min consultation'],
-                cta: 'Start My Interior Concept',
-                href: '/intake/interior_reno_concept',
-                popular: false,
-              },
-              {
-                name: 'Advanced Interior Design',
-                price: '$899',
-                rounds: 'Up to 3 feedback rounds',
-                turnaround: '10–14 business days',
-                desc: 'Detailed floor plans, 3D views, material boards, and contractor-ready scope.',
-                items: ['Everything in design concept', 'Detailed floor plans', '3D interior views', 'Material + finish boards', '60-min consultation'],
-                cta: 'Start Advanced Design',
-                href: '/intake/interior_reno_concept',
-                popular: true,
-              },
-              {
-                name: 'Full Design Package',
-                price: 'From $4,500',
-                rounds: 'Up to 5 rounds',
-                turnaround: '3–5 weeks',
-                desc: 'Permit-ready drawings with structural coordination and full specifications.',
-                items: ['Everything in Advanced', 'Permit-ready drawings', 'Structural coordination', 'Full specifications', 'Contractor bid documents'],
-                cta: 'Contact Us',
-                href: '/contact',
-                popular: false,
-              },
-            ] as const).map((tier) => (
-              <div
-                key={tier.name}
-                className="relative flex flex-col rounded-xl bg-white p-6"
-                style={{
-                  boxShadow: tier.popular ? `0 10px 25px -5px #7C3AED40` : '0 1px 3px 0 rgb(0 0 0 / 0.1)',
-                  border: tier.popular ? `2px solid #7C3AED` : '1px solid #E5E7EB',
-                }}
-              >
-                {tier.popular && (
-                  <span className="absolute right-4 top-4 rounded-full px-2 py-0.5 text-xs font-semibold text-white" style={{ backgroundColor: '#7C3AED' }}>
-                    Most Popular
-                  </span>
-                )}
-                <h3 className="font-bold font-display" style={{ color: '#1A2B4A' }}>{tier.name}</h3>
-                <div className="my-3">
-                  <span className="text-3xl font-bold font-mono" style={{ color: '#7C3AED' }}>{tier.price}</span>
-                </div>
-                <p className="text-xs text-gray-500 mb-1">{tier.rounds} · {tier.turnaround}</p>
-                <p className="text-sm text-gray-600 mb-4">{tier.desc}</p>
-                <ul className="flex-1 space-y-2 mb-6">
-                  {tier.items.map((item) => (
-                    <li key={item} className="flex items-start gap-2 text-sm text-gray-700">
-                      <CheckCircle className="mt-0.5 h-4 w-4 flex-shrink-0 text-green-500" />
-                      {item}
-                    </li>
-                  ))}
-                </ul>
-                <Link
-                  href={tier.href}
-                  className="flex w-full items-center justify-center gap-2 rounded-lg py-3 text-sm font-semibold transition-all hover:opacity-90"
-                  style={{
-                    backgroundColor: tier.popular ? '#7C3AED' : 'transparent',
-                    color: tier.popular ? '#fff' : '#7C3AED',
-                    border: tier.popular ? 'none' : `2px solid #7C3AED`,
-                  }}
-                >
-                  {tier.cta}
-                </Link>
+          <div className="mx-auto mt-12 max-w-2xl">
+            <div
+              className="relative flex flex-col rounded-xl bg-white p-8"
+              style={{ boxShadow: '0 10px 25px -5px #7C3AED40', border: '2px solid #7C3AED' }}
+            >
+              <h3 className="font-bold font-display text-xl" style={{ color: '#1A2B4A' }}>
+                {INTERIOR.label}
+              </h3>
+              <div className="mt-2 flex items-baseline gap-2">
+                <span className="text-3xl font-bold font-mono" style={{ color: '#7C3AED' }}>
+                  {INTERIOR_PRICE}
+                </span>
+                <span className="text-sm text-gray-500">quoted after intake</span>
               </div>
-            ))}
+              <p className="mt-1 text-xs text-gray-500">{INTERIOR.deliveryDays}</p>
+              <ul className="mt-5 space-y-2.5">
+                {INTERIOR.included.map((item) => (
+                  <li key={item} className="flex items-start gap-2 text-sm text-gray-600">
+                    <CheckCircle className="mt-0.5 h-4 w-4 flex-shrink-0" style={{ color: '#7C3AED' }} />
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+              <Link
+                href="/intake/interior_renovation"
+                className="mt-7 inline-flex items-center justify-center gap-2 rounded-lg px-5 py-3 font-semibold transition-opacity hover:opacity-90"
+                style={{ backgroundColor: '#7C3AED', color: '#fff' }}
+              >
+                Start My Concept <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
           </div>
         </div>
       </section>
@@ -274,7 +234,7 @@ export default function InteriorRenoConceptEnginePage() {
           <p className="mt-4 text-gray-300">Kitchen, bath, addition, ADU — see it all before you build. Delivered in 5–7 business days.</p>
           <div className="mt-8 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
             <Link
-              href="/intake/interior_reno_concept"
+              href="/intake/interior_renovation"
               className="inline-flex items-center gap-2 rounded-xl px-7 py-3.5 text-base font-semibold text-white transition-opacity hover:opacity-90"
               style={{ backgroundColor: '#E8793A' }}
             >

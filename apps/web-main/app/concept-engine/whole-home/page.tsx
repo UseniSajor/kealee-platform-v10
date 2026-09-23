@@ -2,6 +2,11 @@
 
 import Link from 'next/link'
 import { ArrowRight, ArrowLeft, CheckCircle, Layers, Home, Layout, Hammer, Clock } from 'lucide-react'
+import { getProductPricing, formatPriceRange } from '@kealee/core-rules'
+
+// Price and contents come from the quoting engine, never from copy.
+const WHOLE_HOME = getProductPricing('whole_home_concept')!
+const WHOLE_HOME_PRICE = `From ${formatPriceRange('whole_home_concept')?.split('–')[0] ?? ''}`
 import { CONCEPT_WHOLE_HOME_FROM } from '@/lib/marketing/price-copy'
 
 const STEPS = [
@@ -89,7 +94,7 @@ export default function WholeHomeConceptEnginePage() {
               </p>
               <div className="mt-8 flex flex-wrap gap-4">
                 <Link
-                  href="/intake/whole_home_concept?tier=1"
+                  href="/intake/whole_home_concept"
                   className="inline-flex items-center gap-2 rounded-xl px-7 py-3.5 text-base font-semibold transition-opacity hover:opacity-90"
                   style={{ backgroundColor: '#1A2B4A', color: 'white' }}
                 >
@@ -137,82 +142,37 @@ export default function WholeHomeConceptEnginePage() {
             </h2>
             <p className="mt-3 text-gray-500">Choose the package that matches your renovation scope.</p>
           </div>
-          <div className="mt-12 grid gap-6 lg:grid-cols-3">
-            {([
-              {
-                name: 'Basic Whole Home Concept',
-                price: '$249',
-                rounds: '1 feedback round',
-                turnaround: '7–10 business days',
-                desc: 'Floor plan direction, scope summary, material palette, and rough cost range.',
-                items: ['3 whole-home concept options', 'Floor plan reconfiguration', 'Scope + structural summary', 'Material palette direction', '30-min consultation'],
-                cta: 'Start My Whole Home Concept',
-                href: '/intake/whole_home_concept?tier=1',
-                popular: false,
-              },
-              {
-                name: 'Premium Whole Home Concept',
-                price: '$899',
-                rounds: 'Up to 3 feedback rounds',
-                turnaround: '2–3 weeks',
-                desc: '3D views, detailed floor plans, and a full contractor-ready scope package.',
-                items: ['Everything in design concept', 'Detailed 3D floor plan views', 'Room-by-room finish direction', 'MEP systems summary', '60-min consultation'],
-                cta: 'Start Advanced Design',
-                href: '/intake/whole_home_concept?tier=2',
-                popular: true,
-              },
-              {
-                name: 'Premium+ Whole Home Concept',
-                price: '$1,699',
-                rounds: 'Up to 3 feedback rounds',
-                turnaround: '4–6 business days',
-                desc: 'The most complete concept package with 12 views, a floor plan, video formats, and a Kealee call.',
-                items: ['Everything in Premium', '12 detailed project views', 'Floor plan and CAD file', 'Four video formats', '15-minute Kealee consultation'],
-                cta: 'Start Premium+',
-                href: '/intake/whole_home_concept?tier=3',
-                popular: false,
-              },
-            ] as const).map((tier) => (
-              <div
-                key={tier.name}
-                className="relative flex flex-col rounded-xl bg-white p-6"
-                style={{
-                  boxShadow: tier.popular ? `0 10px 25px -5px #E8793A40` : '0 1px 3px 0 rgb(0 0 0 / 0.1)',
-                  border: tier.popular ? `2px solid #E8793A` : '1px solid #E5E7EB',
-                }}
-              >
-                {tier.popular && (
-                  <span className="absolute right-4 top-4 rounded-full px-2 py-0.5 text-xs font-semibold text-white" style={{ backgroundColor: '#E8793A' }}>
-                    Most Popular
-                  </span>
-                )}
-                <h3 className="font-bold font-display" style={{ color: '#1A2B4A' }}>{tier.name}</h3>
-                <div className="my-3">
-                  <span className="text-3xl font-bold font-mono" style={{ color: '#E8793A' }}>{tier.price}</span>
-                </div>
-                <p className="text-xs text-gray-500 mb-1">{tier.rounds} · {tier.turnaround}</p>
-                <p className="text-sm text-gray-600 mb-4">{tier.desc}</p>
-                <ul className="flex-1 space-y-2 mb-6">
-                  {tier.items.map((item) => (
-                    <li key={item} className="flex items-start gap-2 text-sm text-gray-700">
-                      <CheckCircle className="mt-0.5 h-4 w-4 flex-shrink-0 text-green-500" />
-                      {item}
-                    </li>
-                  ))}
-                </ul>
-                <Link
-                  href={tier.href}
-                  className="flex w-full items-center justify-center gap-2 rounded-lg py-3 text-sm font-semibold transition-all hover:opacity-90"
-                  style={{
-                    backgroundColor: tier.popular ? '#E8793A' : 'transparent',
-                    color: tier.popular ? '#fff' : '#E8793A',
-                    border: tier.popular ? 'none' : `2px solid #E8793A`,
-                  }}
-                >
-                  {tier.cta}
-                </Link>
+          <div className="mx-auto mt-12 max-w-2xl">
+            <div
+              className="relative flex flex-col rounded-xl bg-white p-8"
+              style={{ boxShadow: '0 10px 25px -5px #E8793A40', border: '2px solid #E8793A' }}
+            >
+              <h3 className="font-bold font-display text-xl" style={{ color: '#1A2B4A' }}>
+                {WHOLE_HOME.label}
+              </h3>
+              <div className="mt-2 flex items-baseline gap-2">
+                <span className="text-3xl font-bold font-mono" style={{ color: '#E8793A' }}>
+                  {WHOLE_HOME_PRICE}
+                </span>
+                <span className="text-sm text-gray-500">quoted after intake</span>
               </div>
-            ))}
+              <p className="mt-1 text-xs text-gray-500">{WHOLE_HOME.deliveryDays}</p>
+              <ul className="mt-5 space-y-2.5">
+                {WHOLE_HOME.included.map((item) => (
+                  <li key={item} className="flex items-start gap-2 text-sm text-gray-600">
+                    <CheckCircle className="mt-0.5 h-4 w-4 flex-shrink-0" style={{ color: '#E8793A' }} />
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+              <Link
+                href="/intake/whole_home_concept"
+                className="mt-7 inline-flex items-center justify-center gap-2 rounded-lg px-5 py-3 font-semibold transition-opacity hover:opacity-90"
+                style={{ backgroundColor: '#E8793A', color: '#fff' }}
+              >
+                Start My Concept <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
           </div>
         </div>
       </section>
@@ -275,7 +235,7 @@ export default function WholeHomeConceptEnginePage() {
           <p className="mt-4 text-gray-300">Start your intake. Delivered in 5–7 business days with consultation included.</p>
           <div className="mt-8 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
             <Link
-              href="/intake/whole_home_concept?tier=1"
+              href="/intake/whole_home_concept"
               className="inline-flex items-center gap-2 rounded-xl px-7 py-3.5 text-base font-semibold text-white transition-opacity hover:opacity-90"
               style={{ backgroundColor: '#E8793A' }}
             >

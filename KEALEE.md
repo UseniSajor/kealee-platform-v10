@@ -162,7 +162,7 @@ All system knowledge is stored in the docs/ directory.
 Primary folders:
 - docs/audits/
 - docs/decisions/
-- docs/system/ (includes `concept-package-deliverables.md` — canonical tier deliverables; permit+zoning in all tiers)
+- docs/system/
 - docs/prompts/
 - docs/runbooks/
 
@@ -304,8 +304,10 @@ platform content MUST be grounded in platform data. Generic prompts are forbidde
 
 1. **Schema / service type** — derive from `services-config.ts`, `INTAKE_PRICE_CENTS`, or
    the project's `projectPath` / `service_type` field (e.g. `kitchen_remodel`, `addition_expansion`)
-2. **Platform rules / deliverables** — reference `docs/system/concept-package-deliverables.md`
-   and `@kealee/core-rules` for tier, delivery days, and what is included
+2. **Platform rules / deliverables** — read the product's `included` and
+   `deliveryDays` from `PRODUCT_PRICING` in `@kealee/core-rules` (`quote.ts`).
+   That is the only source of what a customer was sold. There are no
+   Basic/Premium/Premium+ tiers: one package per product
 3. **Seed / jurisdiction data** — reference `ZoningProfile`, `Jurisdiction`, or `ParcelData`
    when relevant to the project location (DC · MD · VA)
 4. **Form data / project context** — use `sqft`, `room_count`, `property_type`, `address`,

@@ -2,6 +2,13 @@
 
 import Link from 'next/link'
 import { ArrowRight, ArrowLeft, CheckCircle, Leaf, MapPin, Droplets, Sun, Clock } from 'lucide-react'
+import { getProductPricing, formatPriceRange } from '@kealee/core-rules'
+
+// Price and contents come from the quoting engine, never from copy. The tier
+// cards this replaced advertised $99/$399/$799 for packages that no longer
+// exist, while the engine priced the product at $595-$995.
+const GARDEN = getProductPricing('garden_concept')!
+const GARDEN_PRICE = `From ${formatPriceRange('garden_concept')?.split('–')[0] ?? ''}`
 
 const STEPS = [
   {
@@ -131,86 +138,41 @@ export default function GardenConceptEnginePage() {
           <div className="mx-auto max-w-2xl text-center">
             <span className="section-label" style={{ color: '#38A169' }}>Packages</span>
             <h2 className="mt-3 text-2xl font-bold font-display sm:text-3xl" style={{ color: '#1A2B4A' }}>
-              Garden Design Packages
+              Garden and Landscape Concept
             </h2>
-            <p className="mt-3 text-gray-500">Choose the package that fits your garden goals.</p>
+            <p className="mt-3 text-gray-500">One package. Your exact price is quoted after intake, from the size and conditions of your property.</p>
           </div>
-          <div className="mt-12 grid gap-6 lg:grid-cols-3">
-            {([
-              {
-                name: 'AI Garden Concept',
-                price: '$395',
-                rounds: '1 feedback round',
-                turnaround: '5–7 business days',
-                desc: 'Property-specific garden layout with raised beds, irrigation overview, and planting guide.',
-                items: ['3 garden layout options', 'Raised bed placement plan', 'Irrigation overview', 'Seasonal planting calendar', '30-min consultation'],
-                cta: 'Start My Garden Concept',
-                href: '/intake/garden_concept',
-                popular: false,
-              },
-              {
-                name: 'Advanced Garden Design',
-                price: '$695',
-                rounds: 'Up to 3 feedback rounds',
-                turnaround: '10–14 business days',
-                desc: 'Detailed garden design with plant lists, irrigation specs, and 3D garden views.',
-                items: ['Everything in design concept', 'Detailed plant + variety list', 'Drip irrigation specs', '3D garden views', '60-min consultation'],
-                cta: 'Start Advanced Design',
-                href: '/intake/garden_concept',
-                popular: true,
-              },
-              {
-                name: 'Full Landscape Design',
-                price: 'From $2,500',
-                rounds: 'Up to 5 rounds',
-                turnaround: '2–3 weeks',
-                desc: 'Permit-ready landscape plans with full contractor bid documents.',
-                items: ['Everything in Advanced', 'Permit-ready drawings', 'Contractor bid documents', 'Irrigation system plan', 'Grading + drainage plan'],
-                cta: 'Contact Us',
-                href: '/contact',
-                popular: false,
-              },
-            ] as const).map((tier, i) => (
-              <div
-                key={tier.name}
-                className="relative flex flex-col rounded-xl bg-white p-6"
-                style={{
-                  boxShadow: tier.popular ? `0 10px 25px -5px #38A16940` : '0 1px 3px 0 rgb(0 0 0 / 0.1)',
-                  border: tier.popular ? `2px solid #38A169` : '1px solid #E5E7EB',
-                }}
-              >
-                {tier.popular && (
-                  <span className="absolute right-4 top-4 rounded-full px-2 py-0.5 text-xs font-semibold text-white" style={{ backgroundColor: '#38A169' }}>
-                    Most Popular
-                  </span>
-                )}
-                <h3 className="font-bold font-display" style={{ color: '#1A2B4A' }}>{tier.name}</h3>
-                <div className="my-3">
-                  <span className="text-3xl font-bold font-mono" style={{ color: '#38A169' }}>{tier.price}</span>
-                </div>
-                <p className="text-xs text-gray-500 mb-1">{tier.rounds} · {tier.turnaround}</p>
-                <p className="text-sm text-gray-600 mb-4">{tier.desc}</p>
-                <ul className="flex-1 space-y-2 mb-6">
-                  {tier.items.map((item) => (
-                    <li key={item} className="flex items-start gap-2 text-sm text-gray-700">
-                      <CheckCircle className="mt-0.5 h-4 w-4 flex-shrink-0 text-green-500" />
-                      {item}
-                    </li>
-                  ))}
-                </ul>
-                <Link
-                  href={tier.href}
-                  className="flex w-full items-center justify-center gap-2 rounded-lg py-3 text-sm font-semibold transition-all hover:opacity-90"
-                  style={{
-                    backgroundColor: tier.popular ? '#38A169' : 'transparent',
-                    color: tier.popular ? '#fff' : '#38A169',
-                    border: tier.popular ? 'none' : `2px solid #38A169`,
-                  }}
-                >
-                  {tier.cta}
-                </Link>
+          <div className="mx-auto mt-12 max-w-2xl">
+            <div
+              className="relative flex flex-col rounded-xl bg-white p-8"
+              style={{ boxShadow: '0 10px 25px -5px #38A16940', border: '2px solid #38A169' }}
+            >
+              <h3 className="font-bold font-display text-xl" style={{ color: '#1A2B4A' }}>
+                {GARDEN.label}
+              </h3>
+              <div className="mt-2 flex items-baseline gap-2">
+                <span className="text-3xl font-bold font-mono" style={{ color: '#38A169' }}>
+                  {GARDEN_PRICE}
+                </span>
+                <span className="text-sm text-gray-500">quoted after intake</span>
               </div>
-            ))}
+              <p className="mt-1 text-xs text-gray-500">{GARDEN.deliveryDays}</p>
+              <ul className="mt-5 space-y-2.5">
+                {GARDEN.included.map((item) => (
+                  <li key={item} className="flex items-start gap-2 text-sm text-gray-600">
+                    <CheckCircle className="mt-0.5 h-4 w-4 flex-shrink-0" style={{ color: '#38A169' }} />
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+              <Link
+                href="/intake/garden_concept"
+                className="mt-7 inline-flex items-center justify-center gap-2 rounded-lg px-5 py-3 font-semibold transition-opacity hover:opacity-90"
+                style={{ backgroundColor: '#38A169', color: '#fff' }}
+              >
+                Start My Garden Concept <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
           </div>
         </div>
       </section>
@@ -266,37 +228,6 @@ export default function GardenConceptEnginePage() {
         </div>
       </section>
 
-      {/* Revision tiers */}
-      <section className="py-16">
-        <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
-          <h2 className="mb-6 text-xl font-bold text-center" style={{ color: '#1A2B4A' }}>Garden design packages</h2>
-          <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
-            {[
-              { tier: 'AI Garden Concept', price: '$395', revisions: '1 round (3 layouts)', note: 'AI layout + raised beds + irrigation overview + planting guide' },
-              { tier: 'Advanced Garden Design', price: '$695', revisions: 'Up to 3 rounds', note: 'Detailed plant lists + irrigation specs + 3D garden views', highlight: true },
-              { tier: 'Full Landscape Design', price: '$2,500+', revisions: 'Up to 5 rounds', note: 'Permit-ready landscape plans + full contractor package' },
-            ].map((row, i) => (
-              <div
-                key={row.tier}
-                className="flex items-center justify-between px-5 py-4"
-                style={{
-                  backgroundColor: row.highlight ? 'rgba(56,161,105,0.04)' : i % 2 === 0 ? 'white' : '#FAFAFA',
-                  borderBottom: i < 2 ? '1px solid #F3F4F6' : undefined,
-                }}
-              >
-                <div>
-                  <p className="text-sm font-semibold" style={{ color: '#1A2B4A' }}>{row.tier}</p>
-                  <p className="mt-0.5 text-xs text-gray-400">{row.note}</p>
-                </div>
-                <div className="ml-4 text-right shrink-0">
-                  <p className="text-sm font-bold" style={{ color: '#38A169' }}>{row.price}</p>
-                  <p className="text-xs text-gray-500">{row.revisions}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* CTA */}
       <section className="py-16" style={{ backgroundColor: '#1a3d2b' }}>
