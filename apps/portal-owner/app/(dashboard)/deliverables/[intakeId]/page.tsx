@@ -30,7 +30,6 @@ import {
   getPermitZoningLabels,
   intakePathToFamily,
   resolveConceptTier,
-  conceptTierIncludesVideo,
   type ConceptTier,
 } from '@kealee/core-rules'
 
@@ -47,8 +46,7 @@ const LEGACY_TIER_NAMES: Record<number, string> = {
 }
 
 function legacyTierName(formData: Record<string, unknown>, tier: number): string | undefined {
-  if (typeof formData.tier !== 'number') return undefined
-  if (isV30IntakeFormData(formData)) return tier === 3 ? 'Premium+' : tier === 2 ? 'Premium' : 'Basic'
+  if (typeof formData.tier !== 'number' || isV30IntakeFormData(formData)) return undefined
   return LEGACY_TIER_NAMES[tier]
 }
 
@@ -322,8 +320,9 @@ interface ConceptData {
   beforeUrls?: string[]
   /** Viewpoint-locked pairs: each after view was rendered from its own before photo. */
   beforeAfterPairs?: { beforeUrl: string; afterUrl: string; label: string }[]
-  /** From `conceptOutput` when tier includes video (Premium+). */
+  /** Present only when video was purchased as an add-on or belongs to a legacy order. */
   videoUrl?: string
+  videoPurchased: boolean
   videoFormatUrls?: Record<string, string>
   /** Raw status from form_data.conceptVideo.status — 'pending' | 'processing' | 'completed' | 'failed' */
   conceptVideoStatus?: string
@@ -828,6 +827,10 @@ export default function ConceptDeliverablePage() {
         conceptVideo?.status === 'completed' && typeof conceptVideo.outputUrl === 'string'
           ? conceptVideo.outputUrl
           : undefined
+      const selectedAddOns = Array.isArray(formData.addOns) ? (formData.addOns as unknown[]).map(String) : []
+      const isLegacyTierOrder = !isV30IntakeFormData(formData) && typeof formData.tier === 'number'
+      const videoPurchased = selectedAddOns.some((id) => id === 'video_presentation' || id === 'interactive_walk') ||
+        (isLegacyTierOrder && tier >= 2) || Boolean(realVideoUrl || conceptVideo)
 
       // Contractor matching unlock status — from the API route (includes gate record)
       const contractorMatchingUnlocked = !!(
@@ -863,8 +866,10 @@ export default function ConceptDeliverablePage() {
 
       const coIncludes = Array.isArray(co.includes) ? (co.includes as string[]) : []
       const pkgDef = getPackageDef(projectPath)
-      const packageIncludes =
-        coIncludes.length > 0 ? coIncludes : getConceptPackageDeliverableLabelsForIntake(projectPath, tierNorm)
+      const packageIncludes = (coIncludes.length > 0
+        ? coIncludes
+        : getConceptPackageDeliverableLabelsForIntake(projectPath, 2))
+        .filter((item) => !/premium|premium\+|video|cad export|consultation|3 design revisions/i.test(item))
       const floorplanSvg = typeof co.floorplanSvgInline === 'string' && co.floorplanSvgInline.trim().startsWith('<')
         ? co.floorplanSvgInline as string
         : undefined
@@ -913,6 +918,7 @@ export default function ConceptDeliverablePage() {
         // Never surface the ForBiggerBlazes.mp4 placeholder — customers see
         // the "In Production" banner instead until the real video is ready.
         videoUrl: realVideoUrl,
+        videoPurchased,
         conceptVideoStatus: conceptVideo?.status,
         videoFormatUrls:
           co.videoFormatUrls && typeof co.videoFormatUrls === 'object'
@@ -977,7 +983,7 @@ export default function ConceptDeliverablePage() {
   // After the concept is ready, poll web-main video pipeline (POST start + GET advance segments).
   useEffect(() => {
     if (loadStatus !== 'ready') return
-    if (!data || !conceptTierIncludesVideo(data.tier as ConceptTier)) return
+    if (!data?.videoPurchased) return
 
     const webMain = (process.env.NEXT_PUBLIC_WEB_MAIN_URL ?? 'https://kealee.com').replace(/\/$/, '')
     let stopped = false
@@ -1035,7 +1041,7 @@ export default function ConceptDeliverablePage() {
     }
 
     return () => { stopped = true }
-  }, [loadStatus, data?.tier, data?.videoUrl, intakeId, fetchData])
+  }, [loadStatus, data?.videoPurchased, data?.videoUrl, intakeId, fetchData])
 
   // When renders are pending: fire the resolve endpoint once on mount (fire-and-forget),
   // then poll form_data every 15s until renderUrls is populated.
@@ -1158,7 +1164,7 @@ export default function ConceptDeliverablePage() {
         <div className="min-w-0">
 
       {/* ── Header ──────────────────────────────────────────────────────── */}
-      <div className="rounded-2xl bg-white overflow-hidden mb-6"
+      <div id="package-overview" className="scroll-mt-24 rounded-2xl bg-white overflow-hidden mb-6"
         style={{ boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.06)' }}>
         <div className="h-1.5" style={{ background: 'linear-gradient(90deg, #E8724B, #2ABFBF)' }} />
         <div className="px-6 py-5 sm:px-8">
@@ -1169,12 +1175,6 @@ export default function ConceptDeliverablePage() {
                   style={{ backgroundColor: '#2ABFBF' }}>
                   Concept Ready
                 </span>
-                {data.tierName ? (
-                  <span className="rounded-full px-2.5 py-0.5 text-xs font-semibold"
-                    style={{ backgroundColor: '#1A2B4A15', color: '#1A2B4A' }}>
-                    {data.tierName}
-                  </span>
-                ) : null}
                 <span className="text-xs text-gray-400">{data.conceptId}</span>
               </div>
               <h1 className="text-2xl font-bold sm:text-3xl" style={{ color: '#1A2B4A' }}>
@@ -1276,19 +1276,13 @@ export default function ConceptDeliverablePage() {
         )}
 
         {/* ── What's In Your Package ───────────────────────────────────────── */}
-        <section className="rounded-2xl bg-white overflow-hidden"
+        <section id="project-brief" className="scroll-mt-24 rounded-2xl bg-white overflow-hidden"
           style={{ boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.06)' }}>
           <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="h-2 w-2 rounded-full" style={{ backgroundColor: '#1A2B4A' }} />
               <h2 className="text-base font-bold" style={{ color: '#1A2B4A' }}>{data.packageLabel}</h2>
             </div>
-            {data.tierName ? (
-              <span className="rounded-full px-2.5 py-1 text-xs font-semibold text-white"
-                style={{ backgroundColor: '#2ABFBF' }}>
-                {data.tierName}
-              </span>
-            ) : null}
           </div>
           <div className="px-6 py-4">
             <ul className="grid sm:grid-cols-2 gap-x-6 gap-y-2">
@@ -1317,14 +1311,14 @@ export default function ConceptDeliverablePage() {
 
         {/* ── Floor Plan ───────────────────────────────────────────────────── */}
         {data.floorplanSvg && (
-          <section className="rounded-2xl bg-white overflow-hidden"
+          <section id="floor-plan" className="scroll-mt-24 rounded-2xl bg-white overflow-hidden"
             style={{ boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.06)' }}>
             <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <span className="h-2 w-2 rounded-full" style={{ backgroundColor: '#E8793A' }} />
                 <h2 className="text-base font-bold" style={{ color: '#1A2B4A' }}>Floor Plan</h2>
               </div>
-              <span className="text-xs text-gray-400 font-medium">generated using AI tools layout</span>
+              <span className="text-xs text-gray-400 font-medium">Preliminary concept plan</span>
             </div>
             <div className="p-6 flex items-center justify-center bg-gray-50 rounded-b-2xl">
               <div
@@ -1393,7 +1387,7 @@ export default function ConceptDeliverablePage() {
                 />
               )}
               <p className="text-xs text-gray-400 text-center">
-                AI-curated concept images — Premium includes interior and exterior sets plus transformation video
+                Project-specific concept visualizations. Additional views and video appear when purchased as add-ons.
               </p>
             </div>
           </section>
@@ -1432,8 +1426,8 @@ export default function ConceptDeliverablePage() {
           </section>
         )}
 
-        {/* ── Video (tier 2+): playable when API stored videoUrl ───────────── */}
-        {data.tier >= 2 && data.videoUrl && (
+        {/* ── Purchased video add-on ─────────────────────────────────────── */}
+        {data.videoPurchased && data.videoUrl && (
           <section
             id={data.renderUrls.length === 0 ? 'visuals' : undefined}
             className={`rounded-2xl border border-gray-200 bg-white overflow-hidden p-6 ${data.renderUrls.length === 0 ? 'scroll-mt-24' : ''}`}
@@ -1441,7 +1435,7 @@ export default function ConceptDeliverablePage() {
             <div className="flex items-center gap-2 mb-4">
               <span className="h-2 w-2 rounded-full" style={{ backgroundColor: '#E8724B' }} />
               <h2 className="text-base font-bold" style={{ color: '#1A2B4A' }}>
-                {data.tier >= 3 ? 'AI transformation video (master)' : 'AI transformation video'}
+                Design presentation video
               </h2>
             </div>
             <video
@@ -1461,7 +1455,7 @@ export default function ConceptDeliverablePage() {
                 Download MP4
               </a>
             </div>
-            {data.tier >= 3 && data.videoFormatUrls && (
+            {data.videoFormatUrls && (
               data.videoFormatUrls['30s Mobile'] &&
               data.videoFormatUrls['30s Mobile'] !== (data.videoFormatUrls['60s Full'] ?? data.videoUrl)
                 ? (
@@ -1488,7 +1482,7 @@ export default function ConceptDeliverablePage() {
                 )
                 : (
                   <p className="text-xs text-gray-500 mt-3">
-                    Premium+ short-format cuts (30s / 15s / 10s) are being prepared and will appear here once trimming completes — typically within a few minutes of your master video delivering.
+                    Purchased short-format cuts are being prepared and will appear here when processing completes.
                   </p>
                 )
             )}
@@ -1508,7 +1502,7 @@ export default function ConceptDeliverablePage() {
           </section>
         )}
 
-        {data.tier >= 2 && !data.videoUrl && (
+        {data.videoPurchased && !data.videoUrl && (
           <section className="space-y-4">
             {data.conceptVideoStatus === 'failed' ? (
               <div className="rounded-2xl overflow-hidden border border-[#2ABFBF]/25 bg-[#F1FCFC]">
@@ -1543,12 +1537,10 @@ export default function ConceptDeliverablePage() {
                   </div>
                   <div className="flex-1">
                     <p className="text-sm font-bold text-gray-900 mb-0.5">
-                      {data.tier >= 3 ? '4-Format AI Video' : 'AI Transformation Video'}
+                      Design presentation video
                     </p>
                     <p className="text-sm text-gray-600">
-                      {data.tier >= 3
-                        ? 'Your package includes 60s, 30s, 15s, and 10s cinematic AI videos. Click to start generation.'
-                        : 'Your package includes a 60-second AI transformation video. Click to start generation.'}
+                      Your purchased video add-on is ready to start production.
                     </p>
                   </div>
                   <button
@@ -1576,12 +1568,10 @@ export default function ConceptDeliverablePage() {
                   </div>
                   <div className="flex-1">
                     <h3 className="font-bold text-white text-base mb-1">
-                      {data.tier >= 3 ? '4 Video Formats — Generating' : 'AI Transformation Video — Generating'}
+                      Design presentation video — generating
                     </h3>
                     <p className="text-white/80 text-sm leading-relaxed">
-                      {data.tier >= 3
-                        ? 'Your 60s, 30s, 15s, and 10s AI transformation videos are being rendered. This page updates automatically when complete.'
-                        : 'Your 60-second AI transformation video is rendering. This page refreshes automatically — no action needed.'}
+                      Your purchased video is rendering. This page refreshes automatically—no action is needed.
                     </p>
                   </div>
                   <div className="shrink-0 flex items-center gap-2">
@@ -2009,7 +1999,7 @@ export default function ConceptDeliverablePage() {
             </div>
             <div className="p-6 space-y-4">
               <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">
-                generated using AI tools requirements for your project type in {data.location || 'your jurisdiction'}
+                preliminary permit requirements for your project type in {data.location || 'your jurisdiction'}
               </p>
               <ul className="space-y-2">
                 {data.contractorMatchResult!.recommendations.map((rec, i) => (

@@ -1,593 +1,208 @@
-/**
- * Concept Package PDF Renderer
- * Generates a multi-page PDF from assembled homeowner deliverables.
- * Uses pdfkit — installed in @kealee/worker.
- *
- * Pages:
- *   1. Cover — project title, address, date
- *   2. Floor Plan — room inventory table + layout dimensions
- *   3. Design Narrative — project summary + space-by-space
- *   4. Scope of Work — trade-by-trade line items + cost ranges
- *   5. Permit Path — permits required, timeline, cost estimate
- *   6. Visual Direction — style keywords + Midjourney prompt samples
- *   7. Next Steps — upsell services + Kealee contact
- */
-
-// Dynamic import used at call site (pdfkit is a devDep of @kealee/worker, not concept-engine)
-// This file exports a factory that accepts the PDFDocument class.
-
+/** Six-page purchaser-facing preliminary Design Concept Package. */
 import type { HomeownerDeliverables } from '../package/generate-homeowner-deliverables'
-import type { ArchitectHandoff }       from '../package/generate-architect-handoff'
+import type { ArchitectHandoff } from '../package/generate-architect-handoff'
 
 export interface ConceptPdfInput {
   homeownerDeliverables: HomeownerDeliverables
   architectHandoff?: ArchitectHandoff
   logoUrl?: string
 }
-
 export type ConceptPdfResult = Buffer
+interface Asset { label: string; buffer: Buffer; url: string }
 
-interface PdfVisualAsset {
-  label: string
-  buffer: Uint8Array
-  url?: string
-}
+const W = 792, H = 612, M = 38, CW = W - M * 2
+const NAVY = '#14243d', ORANGE = '#e8724b', TEAL = '#209c9c'
+const INK = '#172033', BODY = '#455268', MUTED = '#718096', LINE = '#dce3e9', SOFT = '#f5f7f8', WARN = '#a45b16'
 
-// ── Helpers ──────────────────────────────────────────────────────────────────
-
-function safeTruncate(str: string, max: number): string {
-  return str.length > max ? str.slice(0, max - 1) + '…' : str
+function clean(v: unknown, fallback = 'Not provided'): string {
+  const s = String(v ?? '').replace(/\s+/g, ' ').trim()
+  return s || fallback
 }
-
-function drawHRule(doc: any, y?: number): void {
-  const yPos = y ?? doc.y
-  doc.moveTo(50, yPos).lineTo(545, yPos).strokeColor('#e2e8f0').lineWidth(1).stroke()
+function short(v: unknown, n = 220): string { const s = clean(v); return s.length > n ? `${s.slice(0, n - 1)}…` : s }
+function money(v: number): string { return `$${Math.max(0, Math.round(v)).toLocaleString('en-US')}` }
+function addPage(doc: any): void { doc.addPage({ size: 'LETTER', layout: 'landscape', margin: M }) }
+function header(doc: any, n: number, title: string, subtitle: string): void {
+  doc.font('Helvetica-Bold').fontSize(8).fillColor(TEAL).text(`DESIGN CONCEPT  /  ${n} OF 6`, M, 28, { width: CW, characterSpacing: 1.2 })
+  doc.font('Helvetica-Bold').fontSize(23).fillColor(NAVY).text(title, M, 48, { width: CW })
+  doc.font('Helvetica').fontSize(9).fillColor(MUTED).text(short(subtitle, 180), M, 78, { width: CW })
+  doc.moveTo(M, 98).lineTo(W - M, 98).lineWidth(1).strokeColor(LINE).stroke()
 }
-
-function sectionHeader(doc: any, title: string): void {
-  doc.moveDown(0.5)
-  doc.fontSize(13).fillColor('#0f172a').font('Helvetica-Bold').text(title)
-  drawHRule(doc)
-  doc.moveDown(0.25)
-  doc.fontSize(10).fillColor('#334155').font('Helvetica')
-}
-
-function twoCol(doc: any, label: string, value: string): void {
-  doc.fontSize(9).fillColor('#64748b').font('Helvetica').text(label, { continued: true, width: 150 })
-  doc.fontSize(9).fillColor('#0f172a').font('Helvetica').text(value || '—')
-}
-
-// ── Status stamps and the standing footer ────────────────────────────────────
-//
-// The purchaser standard (docs/system/concept-package-deliverables.md): existing
-// and proposed conditions cannot be confused; every section says what it is.
-
-type Stamp = 'EXISTING' | 'PROPOSED CONCEPT' | 'REQUIRES VERIFICATION' | 'PROFESSIONALLY REVIEWED' | 'APPROVED BY CUSTOMER' | 'NOT FOR PERMIT OR CONSTRUCTION'
-const STAMP_COLOR: Record<Stamp, string> = {
-  'EXISTING': '#475569', 'PROPOSED CONCEPT': '#0f766e', 'REQUIRES VERIFICATION': '#b45309',
-  'PROFESSIONALLY REVIEWED': '#1d4ed8', 'APPROVED BY CUSTOMER': '#15803d', 'NOT FOR PERMIT OR CONSTRUCTION': '#b91c1c',
-}
-function stamp(doc: any, s: Stamp, x = 395, y?: number): void {
-  const yy = y ?? doc.y
-  const w = 150
-  doc.save()
-  doc.roundedRect(x, yy, w, 14, 3).lineWidth(0.8).strokeColor(STAMP_COLOR[s]).stroke()
-  doc.fontSize(6.5).fillColor(STAMP_COLOR[s]).font('Helvetica-Bold').text(s, x, yy + 3.5, { width: w, align: 'center', lineBreak: false })
-  doc.restore()
-}
-function sectionWithStamp(doc: any, title: string, stamps: Stamp[]): void {
-  doc.moveDown(0.5)
-  const y = doc.y
-  doc.fontSize(13).fillColor('#0f172a').font('Helvetica-Bold').text(title, 50, y, { width: 330 })
-  const titleBottom = doc.y   // a two-line title ends lower than the stamps do
-  stamps.slice(0, 2).forEach((st, i) => stamp(doc, st, 395, y + i * 16))
-  doc.y = Math.max(titleBottom, y + 16 * Math.max(1, stamps.length)) + 2
-  doc.x = 50   // the stamp moved the cursor to the right column; the body starts at the margin
-  drawHRule(doc)
-  doc.moveDown(0.25)
-  doc.fontSize(10).fillColor('#334155').font('Helvetica')
-}
-/** Every page: the package is preliminary. Drawn on pageAdded so no page is missed. */
-function standingFooter(doc: any, data: HomeownerDeliverables): void {
-  const status = data.packageStatus
-  const line = [
-    'PRELIMINARY CONCEPT — NOT FOR PERMIT OR CONSTRUCTION',
-    status?.professionallyReviewed ? `PROFESSIONALLY REVIEWED (${status.professionallyReviewed.state})` : 'NOT YET PROFESSIONALLY REVIEWED',
-    status?.approvedByCustomer ? 'APPROVED BY CUSTOMER' : 'AWAITING CUSTOMER APPROVAL',
-  ].join('   ·   ')
-  // Drawn inside the bottom margin: pdfkit would otherwise open a new page for
-  // text past the margin, fire pageAdded again, and recurse without end.
-  const bottom = doc.page.margins.bottom
+function footer(doc: any, d: HomeownerDeliverables): void {
+  const review = d.packageStatus?.professionallyReviewed ? 'Professional review recorded' : 'Professional verification not yet recorded'
+  // Footer sits inside the physical page margin. Temporarily release pdfkit's
+  // flow margin so drawing it cannot create a surprise overflow page.
+  const previousBottom = doc.page.margins.bottom
+  const previousY = doc.y
   doc.page.margins.bottom = 0
-  const y = doc.y
-  doc.save()
-  doc.fontSize(6.5).fillColor('#b91c1c').font('Helvetica-Bold').text(line, 50, doc.page.height - 34, { width: 495, align: 'center', lineBreak: false })
-  doc.restore()
-  doc.page.margins.bottom = bottom
-  doc.y = y
+  doc.moveTo(M, H - 35).lineTo(W - M, H - 35).lineWidth(.7).strokeColor(LINE).stroke()
+  doc.font('Helvetica-Bold').fontSize(6.6).fillColor('#a33a32').text(`PRELIMINARY CONCEPT — NOT FOR PERMIT OR CONSTRUCTION  ·  ${review.toUpperCase()}`, M, H - 25, { width: CW, align: 'center', lineBreak: false })
+  doc.page.margins.bottom = previousBottom
+  doc.y = previousY
+}
+function label(doc: any, s: string, x: number, y: number, width: number): void {
+  doc.font('Helvetica-Bold').fontSize(7.2).fillColor(MUTED).text(s.toUpperCase(), x, y, { width, characterSpacing: .7 })
+}
+function value(doc: any, s: unknown, x: number, y: number, width: number, max = 150): void {
+  doc.font('Helvetica').fontSize(9.2).fillColor(INK).text(short(s, max), x, y, { width, lineGap: 2 })
+}
+function card(doc: any, x: number, y: number, width: number, height: number, title: string): void {
+  doc.roundedRect(x, y, width, height, 7).fillAndStroke('#fff', LINE)
+  doc.font('Helvetica-Bold').fontSize(10).fillColor(NAVY).text(title, x + 14, y + 13, { width: width - 28 })
+}
+function bullets(doc: any, items: unknown[], x: number, y: number, width: number, max = 5): number {
+  let cy = y
+  for (const item of items.filter(Boolean).slice(0, max)) {
+    doc.circle(x + 3, cy + 5, 1.8).fill(TEAL)
+    doc.font('Helvetica').fontSize(8.7).fillColor(BODY).text(short(item, 170), x + 12, cy, { width: width - 12, height: 31, ellipsis: true, lineGap: 1 })
+    cy += 33
+  }
+  return cy
+}
+function image(doc: any, asset: Asset, x: number, y: number, width: number, height: number): void {
+  doc.roundedRect(x, y, width, height, 5).fill('#e8edf0')
+  try { doc.image(asset.buffer, x, y, { fit: [width, height], align: 'center', valign: 'center' }) }
+  catch { doc.font('Helvetica').fontSize(8).fillColor(MUTED).text('Project image unavailable in this export.', x + 12, y + height / 2 - 5, { width: width - 24, align: 'center' }) }
 }
 
-// ── Page 1: Cover ─────────────────────────────────────────────────────────────
-
-function drawCoverPage(doc: any, data: HomeownerDeliverables): void {
-  doc.fontSize(28).fillColor('#0f172a').font('Helvetica-Bold')
-     .text('Kealee', 50, 80)
-  doc.fontSize(11).fillColor('#64748b').font('Helvetica')
-     .text('Concept Package', 50, 116)
-
-  doc.moveDown(3)
-
-  doc.fontSize(18).fillColor('#0f172a').font('Helvetica-Bold')
-     .text(data.project?.path?.replace(/_/g, ' ')?.replace(/\b\w/g, (c: string) => c.toUpperCase()) ?? 'Concept Package', { align: 'left' })
-  doc.moveDown(0.5)
-
-  doc.fontSize(11).fillColor('#334155').font('Helvetica')
-     .text(data.project?.address ?? data.client?.address ?? '', { align: 'left' })
-
-  doc.moveDown(0.5)
-  doc.fontSize(10).fillColor('#64748b').text(`Prepared for: ${data.client?.name ?? 'Homeowner'}`)
-  doc.fontSize(10).fillColor('#64748b').text(`Budget range: ${data.project?.budgetRange ?? '—'}`)
-  doc.fontSize(10).fillColor('#64748b').text(`Generated: ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}`)
-
-  doc.moveDown(2)
-  drawHRule(doc)
-
-  doc.moveDown(1)
-  doc.fontSize(9).fillColor('#94a3b8')
-     .text('This generated using AI tools concept package is for planning and discussion purposes only. It is not a substitute for licensed architectural drawings, engineering plans, or permit-ready documents. Always verify zoning, code compliance, and project scope with licensed professionals before construction.', {
-       align: 'left',
-       width: 495,
-     })
+function page1(doc: any, d: HomeownerDeliverables): void {
+  doc.rect(0, 0, W, H).fill('#fff'); doc.rect(0, 0, 245, H).fill(NAVY); doc.rect(0, 0, 9, H).fill(ORANGE)
+  doc.font('Helvetica-Bold').fontSize(25).fillColor('#fff').text('K', 38, 40)
+  doc.font('Helvetica-Bold').fontSize(8).fillColor('#9de1dc').text('DESIGN · BUILD · DELIVERY', 38, 76, { characterSpacing: 1.1 })
+  doc.font('Helvetica-Bold').fontSize(28).fillColor('#fff').text('Design\nConcept\nPackage', 38, 142, { width: 170, lineGap: 5 })
+  doc.font('Helvetica').fontSize(9).fillColor('#d9e2eb').text('A concise preliminary package for choosing a direction and planning the path forward.', 38, 285, { width: 165, lineGap: 4 })
+  label(doc, 'Package status', 38, 402, 150); doc.font('Helvetica-Bold').fontSize(10).fillColor('#fff').text('PRELIMINARY', 38, 420)
+  doc.font('Helvetica').fontSize(7.5).fillColor('#d9e2eb').text('Not for permit or construction', 38, 438)
+  const x = 285, r = d.recommendation
+  doc.font('Helvetica-Bold').fontSize(8).fillColor(ORANGE).text('PROJECT DECISION BRIEF', x, 72, { characterSpacing: 1 })
+  doc.font('Helvetica-Bold').fontSize(27).fillColor(NAVY).text(short(d.project.path.replace(/_/g, ' '), 70), x, 101, { width: 460 })
+  doc.font('Helvetica').fontSize(12).fillColor(BODY).text(clean(d.project.address ?? d.client.address), x, 142, { width: 460 })
+  card(doc, x, 192, 462, 136, 'Recommended direction')
+  doc.font('Helvetica-Bold').fontSize(17).fillColor(TEAL).text(short(r?.conceptName ?? d.narrative.styleNarrative, 80), x + 16, 225, { width: 430 })
+  value(doc, r?.rationale?.[0] ?? d.narrative.designIntent ?? d.narrative.projectSummary, x + 16, 258, 430, 260)
+  label(doc, 'Prepared for', x, 364, 132); value(doc, d.client.name, x, 380, 180, 70)
+  label(doc, 'Generated', x + 215, 364, 100); value(doc, new Date(d.generatedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }), x + 215, 380, 130)
+  label(doc, 'Planning cost range', x, 424, 180); value(doc, r ? `${money(r.costRange[0])}–${money(r.costRange[1])}` : d.scope.estimatedTotal, x, 440, 200)
+  label(doc, 'Budget stated', x + 215, 424, 150); value(doc, d.project.budgetRange, x + 215, 440, 190)
+  doc.roundedRect(x, 501, 462, 46, 7).fill('#f7faf9')
+  doc.font('Helvetica-Bold').fontSize(8.5).fillColor(NAVY).text('YOUR NEXT DECISION', x + 14, 513)
+  doc.font('Helvetica').fontSize(8.5).fillColor(BODY).text(short(r?.nextStep ?? d.narrative.nextSteps, 190), x + 122, 511, { width: 325, height: 27, ellipsis: true })
+  footer(doc, d)
 }
 
-// ── Page 2: Floor Plan ────────────────────────────────────────────────────────
-
-function drawFloorPlanPage(doc: any, data: HomeownerDeliverables): void {
-  sectionHeader(doc, 'Floor Plan Overview')
-
-  const fp = data.floorPlan
-  if (!fp) {
-    doc.text('Floor plan not available.')
-    return
+function page2(doc: any, d: HomeownerDeliverables, assets: Asset[]): void {
+  header(doc, 2, 'Project, existing condition & alternatives', 'What we understood and the directions considered')
+  card(doc, M, 118, 335, 171, 'Project brief')
+  label(doc, 'Address', M + 14, 149, 90); value(doc, d.project.address ?? d.client.address, M + 14, 163, 305)
+  label(doc, 'Goals', M + 14, 202, 90); bullets(doc, d.project.goals.length ? d.project.goals : [d.narrative.projectSummary], M + 14, 219, 305, 2)
+  card(doc, M, 305, 335, 236, 'Existing condition')
+  const existing = assets.find(a => a.label.startsWith('Existing'))
+  if (existing) {
+    image(doc, existing, M + 14, 337, 150, 146); value(doc, d.existingConditions?.summary, M + 178, 337, 141, 210)
+    label(doc, 'Problems to solve', M + 178, 410, 141); bullets(doc, d.existingConditions?.problems ?? d.project.knownConstraints, M + 178, 425, 141, 3)
+  } else {
+    doc.roundedRect(M + 14, 337, 307, 74, 5).fill(SOFT)
+    doc.font('Helvetica-Bold').fontSize(9).fillColor(WARN).text('No project photograph was supplied.', M + 27, 354, { width: 280 })
+    doc.font('Helvetica').fontSize(8.5).fillColor(BODY).text('No stock image has been substituted. Add labelled photos to create viewpoint-matched comparisons.', M + 27, 374, { width: 280 })
+    bullets(doc, d.existingConditions?.problems ?? d.project.knownConstraints, M + 20, 431, 292, 3)
   }
-
-  // Summary stats
-  twoCol(doc, 'Total Area:', fp.totalAreaFt2 ? `${Math.round(fp.totalAreaFt2)} sq ft` : '—')
-  twoCol(doc, 'Layout:', fp.totalWidthFt && fp.totalDepthFt ? `${Math.round(fp.totalWidthFt)}ft × ${Math.round(fp.totalDepthFt)}ft` : '—')
-  twoCol(doc, 'Room Count:', String(fp.rooms?.length ?? 0))
-
-  doc.moveDown(0.5)
-  sectionHeader(doc, 'Room Inventory')
-
-  // Table header
-  const col = [50, 200, 295, 380, 470]
-  doc.fontSize(8).fillColor('#ffffff').font('Helvetica-Bold')
-  doc.rect(50, doc.y, 495, 16).fill('#334155')
-  const tableHeaderY = doc.y - 16
-  doc.fillColor('#ffffff')
-     .text('Room', col[0] + 4, tableHeaderY + 4)
-     .text('Type', col[1] + 4, tableHeaderY + 4)
-     .text('Width (ft)', col[2] + 4, tableHeaderY + 4)
-     .text('Depth (ft)', col[3] + 4, tableHeaderY + 4)
-     .text('Area (ft²)', col[4] + 4, tableHeaderY + 4)
-  doc.moveDown(0.1)
-
-  // Table rows
-  let rowIdx = 0
-  for (const room of fp.rooms ?? []) {
-    if (doc.y > 700) { doc.addPage(); sectionHeader(doc, 'Room Inventory (continued)') }
-    const rowY = doc.y
-    const bg = rowIdx % 2 === 0 ? '#f8fafc' : '#ffffff'
-    doc.rect(50, rowY, 495, 14).fill(bg)
-    doc.fontSize(8).fillColor('#0f172a').font('Helvetica')
-       .text(safeTruncate(room.label ?? '', 30), col[0] + 4, rowY + 3)
-       .text(room.type ?? '', col[1] + 4, rowY + 3)
-       .text(String(Math.round(room.widthFt ?? 0)), col[2] + 4, rowY + 3)
-       .text(String(Math.round(room.depthFt ?? 0)), col[3] + 4, rowY + 3)
-       .text(String(Math.round(room.areaFt2 ?? 0)), col[4] + 4, rowY + 3)
-    doc.y = rowY + 14
-    rowIdx++
-  }
-
-  if (fp.layoutIssues?.length) {
-    doc.moveDown(0.5)
-    sectionHeader(doc, 'Layout Notes')
-    for (const issue of fp.layoutIssues) {
-      doc.fontSize(9).fillColor('#b45309').text(`• ${issue}`)
-    }
-  }
-}
-
-// ── Page 3: Design Narrative ──────────────────────────────────────────────────
-
-function drawNarrativePage(doc: any, data: HomeownerDeliverables): void {
-  sectionHeader(doc, 'Design Narrative')
-
-  const n = data.narrative
-  if (!n) { doc.text('Narrative not yet generated.'); return }
-
-  if (n.projectSummary) {
-    doc.fontSize(10).fillColor('#0f172a').font('Helvetica-Bold').text('Project Summary')
-    doc.fontSize(9).fillColor('#334155').font('Helvetica').text(n.projectSummary, { width: 495 })
-    doc.moveDown(0.5)
-  }
-
-  if (n.designIntent) {
-    doc.fontSize(10).font('Helvetica-Bold').fillColor('#0f172a').text('Design Intent')
-    doc.fontSize(9).font('Helvetica').fillColor('#334155').text(n.designIntent, { width: 495 })
-    doc.moveDown(0.5)
-  }
-
-  if (n.styleNarrative) {
-    doc.fontSize(10).font('Helvetica-Bold').fillColor('#0f172a').text('Style Direction')
-    doc.fontSize(9).font('Helvetica').fillColor('#334155').text(n.styleNarrative, { width: 495 })
-    doc.moveDown(0.5)
-  }
-
-  if (n.spaceBySpace) {
-    doc.fontSize(10).font('Helvetica-Bold').fillColor('#0f172a').text('Space-by-Space')
-    doc.moveDown(0.25)
-    for (const [space, desc] of Object.entries(n.spaceBySpace)) {
-      if (doc.y > 700) doc.addPage()
-      doc.fontSize(9).font('Helvetica-Bold').fillColor('#475569').text(space.replace(/_/g, ' '))
-      doc.fontSize(9).font('Helvetica').fillColor('#334155').text(String(desc), { width: 495 })
-      doc.moveDown(0.25)
-    }
-  }
-
-  if (n.materialDirection) {
-    doc.moveDown(0.25)
-    doc.fontSize(10).font('Helvetica-Bold').fillColor('#0f172a').text('Material Direction')
-    doc.fontSize(9).font('Helvetica').fillColor('#334155').text(n.materialDirection, { width: 495 })
-  }
-}
-
-// ── Page 4: Scope of Work ─────────────────────────────────────────────────────
-
-function drawScopePage(doc: any, data: HomeownerDeliverables): void {
-  sectionHeader(doc, 'Scope of Work')
-
-  const scope = data.scope
-  if (!scope) { doc.text('Scope not yet generated.'); return }
-
-  if (scope.budgetFitNote) {
-    doc.fontSize(9).fillColor('#0369a1').font('Helvetica').text(scope.budgetFitNote, { width: 495 })
-    doc.moveDown(0.5)
-  }
-
-  // Table header
-  const col = [50, 220, 330, 430]
-  doc.rect(50, doc.y, 495, 16).fill('#334155')
-  const hY = doc.y - 16
-  doc.fontSize(8).fillColor('#ffffff').font('Helvetica-Bold')
-     .text('Trade / Item', col[0] + 4, hY + 4)
-     .text('Description', col[1] + 4, hY + 4)
-     .text('Low Est.', col[2] + 4, hY + 4)
-     .text('High Est.', col[3] + 4, hY + 4)
-  doc.moveDown(0.1)
-
-  let rowIdx = 0
-  for (const item of scope.lineItems ?? []) {
-    if (doc.y > 700) { doc.addPage(); sectionHeader(doc, 'Scope (continued)') }
-    const rowY = doc.y
-    const bg = rowIdx % 2 === 0 ? '#f8fafc' : '#ffffff'
-    doc.rect(50, rowY, 495, 14).fill(bg)
-    doc.fontSize(8).fillColor('#0f172a').font('Helvetica')
-       .text(safeTruncate(item.trade ?? '', 25), col[0] + 4, rowY + 3)
-       .text(safeTruncate(item.description ?? '', 35), col[1] + 4, rowY + 3)
-       .text(item.estimatedLow ?? '—', col[2] + 4, rowY + 3)
-       .text(item.estimatedHigh ?? '—', col[3] + 4, rowY + 3)
-    doc.y = rowY + 14
-    rowIdx++
-  }
-
-  if (scope.estimatedTotal) {
-    doc.moveDown(0.5)
-    doc.fontSize(10).fillColor('#0f172a').font('Helvetica-Bold')
-       .text(`Estimated Total Range: ${scope.estimatedTotal}`, { align: 'right' })
-  }
-
-  doc.moveDown(0.5)
-  doc.fontSize(8).fillColor('#94a3b8').font('Helvetica')
-     .text('* Cost estimates are rough ranges for planning purposes only. Get contractor bids before budgeting.', { width: 495 })
-}
-
-// ── Page 5: Permit Path ───────────────────────────────────────────────────────
-
-function resolvePermitPathForPdf(data: HomeownerDeliverables): HomeownerDeliverables['permitPath'] {
-  if (data.permitPath) return data.permitPath
-  const p = data.permit
-  if (!p) return undefined
-  const [low, high] = p.estimatedCostRange ?? [500, 3500]
-  return {
-    requiresPermit: p.requiresPermit,
-    likelyPermits: p.likelyPermits,
-    estimatedTimeline: p.estimatedTimeline,
-    estimatedCost: `$${low.toLocaleString()}–$${high.toLocaleString()}`,
-    permits: p.likelyPermits,
-    tradeLicenses: p.likelyTradePermits,
-    structuralReviewRequired: p.keyConsiderations.some((c) => /structural|PE|engineer/i.test(c)),
-    designReviewRequired: false,
-    notes: [...p.keyConsiderations, p.disclaimer].filter(Boolean),
-    disclaimer: p.disclaimer,
-  }
-}
-
-function drawPermitPage(doc: any, data: HomeownerDeliverables): void {
-  sectionHeader(doc, 'Permit Path & Zoning')
-
-  const permit = resolvePermitPathForPdf(data)
-  if (!permit) { doc.text('Permit information not yet generated.'); return }
-
-  twoCol(doc, 'Estimated cost:', permit.estimatedCost ?? '—')
-  twoCol(doc, 'Estimated timeline:', permit.estimatedTimeline ?? '—')
-  twoCol(doc, 'Design review required:', permit.designReviewRequired ? 'Yes' : 'No')
-  twoCol(doc, 'Structural review required:', permit.structuralReviewRequired ? 'Yes' : 'No')
-
-  doc.moveDown(0.5)
-  doc.fontSize(10).fillColor('#0f172a').font('Helvetica-Bold').text('Permits Required')
-  doc.moveDown(0.15)
-  for (const p of permit.permits ?? []) {
-    doc.fontSize(9).fillColor('#334155').font('Helvetica').text(`• ${p}`)
-  }
-
-  if (permit.tradeLicenses?.length) {
-    doc.moveDown(0.5)
-    doc.fontSize(10).fillColor('#0f172a').font('Helvetica-Bold').text('Trade Licenses Needed')
-    for (const t of permit.tradeLicenses) {
-      doc.fontSize(9).fillColor('#334155').font('Helvetica').text(`• ${t}`)
-    }
-  }
-
-  if (permit.notes?.length) {
-    doc.moveDown(0.5)
-    sectionHeader(doc, 'Permit Notes')
-    for (const note of permit.notes) {
-      doc.fontSize(9).fillColor('#334155').text(`• ${note}`)
-    }
-  }
-
-  doc.moveDown(1)
-  doc.fontSize(8).fillColor('#94a3b8').font('Helvetica')
-     .text('Permit requirements vary by jurisdiction. Always confirm with your local building department.', { width: 495 })
-}
-
-// ── Page 6: Visual Direction ──────────────────────────────────────────────────
-
-// ── Purchaser sections (docs/system/concept-package-deliverables.md) ────────
-
-function drawYourProjectPage(doc: any, data: HomeownerDeliverables): void {
-  sectionWithStamp(doc, '1. Your project — goals, property and budget', ['EXISTING'])
-  twoCol(doc, 'Property:', data.client.address || data.project.address || '—')
-  twoCol(doc, 'Project:', data.project.path.replace(/_/g, ' '))
-  twoCol(doc, 'Budget comfort:', data.project.budgetRange || '—')
-  if (data.project.timeline) twoCol(doc, 'Timeline:', data.project.timeline)
-  if (data.project.stylePreferences.length) twoCol(doc, 'Style preferences:', data.project.stylePreferences.join(', '))
-  doc.moveDown(0.5)
-  doc.fontSize(10).fillColor('#0f172a').font('Helvetica-Bold').text('Your goals, in your words')
-  doc.moveDown(0.2); doc.fontSize(9.5).fillColor('#334155').font('Helvetica')
-  for (const g of data.project.goals.length ? data.project.goals : ['(not stated at intake)']) doc.text(`• ${safeTruncate(g, 600)}`, { width: 495 })
-  if (data.project.knownConstraints.length) {
-    doc.moveDown(0.4); doc.fontSize(10).fillColor('#0f172a').font('Helvetica-Bold').text('What must stay / what must change')
-    doc.moveDown(0.2); doc.fontSize(9.5).fillColor('#334155').font('Helvetica')
-    for (const c of data.project.knownConstraints) doc.text(`• ${safeTruncate(c, 400)}`, { width: 495 })
-  }
-}
-
-function drawExistingPage(doc: any, data: HomeownerDeliverables, assets: PdfVisualAsset[]): void {
-  sectionWithStamp(doc, '2. What exists today — photographs and existing conditions', ['EXISTING'])
-  const ex = data.existingConditions
-  doc.fontSize(9.5).fillColor('#334155').font('Helvetica').text(ex?.summary ?? 'Existing conditions as photographed by the customer.', { width: 495 })
-  if (ex?.problems?.length) { doc.moveDown(0.3); doc.font('Helvetica-Bold').fillColor('#0f172a').text('Problems to solve'); doc.font('Helvetica').fillColor('#334155'); for (const p of ex.problems) doc.text(`• ${safeTruncate(p, 300)}`, { width: 495 }) }
-  if (ex?.mustStay?.length) { doc.moveDown(0.3); doc.font('Helvetica-Bold').fillColor('#0f172a').text('Must stay'); doc.font('Helvetica').fillColor('#334155'); for (const p of ex.mustStay) doc.text(`• ${safeTruncate(p, 300)}`, { width: 495 }) }
-  const photos = assets.filter(a => a.label.startsWith('Existing'))
-  if (!photos.length) { doc.moveDown(0.4); doc.fillColor('#b45309').text('No photographs were supplied at intake. Before/after views (section 7) cannot be matched to a viewpoint until they are.') }
-  for (const asset of photos) {
-    if (doc.y > 430) { doc.addPage(); sectionWithStamp(doc, '2. What exists today (continued)', ['EXISTING']) }
-    doc.fontSize(10).fillColor('#0f172a').font('Helvetica-Bold').text(asset.label); doc.moveDown(0.25)
-    const y = doc.y; doc.image(asset.buffer, 50, y, { fit: [495, 240], align: 'center', valign: 'center' }); doc.y = y + 250; doc.moveDown(0.3)
-  }
-}
-
-function drawDirectionsPage(doc: any, data: HomeownerDeliverables): void {
-  sectionWithStamp(doc, '3. Concept directions — clear alternatives', ['PROPOSED CONCEPT'])
-  const dirs = data.conceptDirections ?? []
-  if (!dirs.length) { doc.text('One direction was developed for this package; see the recommended design.'); return }
-  dirs.forEach((d, i) => {
-    if (doc.y > 640) doc.addPage()
-    doc.fontSize(11).fillColor('#0f172a').font('Helvetica-Bold').text(`${String.fromCharCode(65 + i)}. ${d.name}${d.recommended ? '   ★ recommended' : ''}`)
-    doc.fontSize(9.5).fillColor('#334155').font('Helvetica').text(safeTruncate(d.description, 700), { width: 495 })
-    twoCol(doc, 'Fit to your preferences:', `${d.styleMatch}/100`)
-    twoCol(doc, 'Indicative cost:', d.estimatedCost ? `$${Math.round(d.estimatedCost * 0.85).toLocaleString()} – $${Math.round(d.estimatedCost * 1.15).toLocaleString()}` : '—')
-    if (d.keyFeatures.length) twoCol(doc, 'What sets it apart:', d.keyFeatures.slice(0, 4).join('; '))
-    if (d.materials.length) twoCol(doc, 'Materials:', d.materials.slice(0, 6).join(', '))
-    doc.moveDown(0.5)
+  const x = 393; card(doc, x, 118, 361, 423, 'Concept alternatives')
+  const dirs = d.conceptDirections?.length ? d.conceptDirections.slice(0, 3) : [{ id: 'rec', name: d.recommendation?.conceptName ?? d.narrative.styleNarrative, description: d.narrative.designIntent, recommended: true, keyFeatures: [], materials: [], styleMatch: 0, estimatedCost: 0 }]
+  dirs.forEach((dir, i) => {
+    const y = 153 + i * 121; doc.roundedRect(x + 14, y, 333, 105, 5).fill(dir.recommended ? '#edf9f7' : SOFT)
+    doc.font('Helvetica-Bold').fontSize(8).fillColor(dir.recommended ? TEAL : MUTED).text(dir.recommended ? 'RECOMMENDED' : `ALTERNATIVE ${i + 1}`, x + 27, y + 12, { characterSpacing: .8 })
+    doc.font('Helvetica-Bold').fontSize(12).fillColor(NAVY).text(short(dir.name, 52), x + 27, y + 29, { width: 300 })
+    doc.font('Helvetica').fontSize(8.3).fillColor(BODY).text(short(dir.description, 180), x + 27, y + 51, { width: 300, height: 42, ellipsis: true })
   })
+  footer(doc, d)
 }
 
-function drawRecommendedPage(doc: any, data: HomeownerDeliverables): void {
-  sectionWithStamp(doc, '4. Recommended design — and why', ['PROPOSED CONCEPT'])
-  const r = data.recommendation
-  doc.fontSize(12).fillColor('#0f172a').font('Helvetica-Bold').text(r?.conceptName ?? data.narrative.styleNarrative)
-  doc.moveDown(0.3); doc.fontSize(9.5).fillColor('#334155').font('Helvetica')
-  for (const line of r?.rationale?.length ? r.rationale : [data.narrative.designIntent || data.narrative.projectSummary]) doc.text(`• ${safeTruncate(line, 500)}`, { width: 495 })
-  doc.moveDown(0.4)
-  twoCol(doc, 'Cost range:', r ? `$${r.costRange[0].toLocaleString()} – $${r.costRange[1].toLocaleString()}` : data.scope.estimatedTotal ?? '—')
-  twoCol(doc, 'Next step:', r?.nextStep ?? data.narrative.nextSteps)
-  if (data.narrative.lifestyleAlignment) { doc.moveDown(0.3); doc.text(data.narrative.lifestyleAlignment, { width: 495 }) }
+function page3(doc: any, d: HomeownerDeliverables): void {
+  header(doc, 3, 'Recommended direction & concept plan', 'The planning logic behind the selected direction')
+  card(doc, M, 118, 270, 423, 'Why this direction')
+  doc.font('Helvetica-Bold').fontSize(16).fillColor(TEAL).text(short(d.recommendation?.conceptName ?? d.narrative.styleNarrative, 70), M + 15, 153, { width: 240 })
+  bullets(doc, d.recommendation?.rationale?.length ? d.recommendation.rationale : [d.narrative.designIntent, d.narrative.lifestyleAlignment], M + 15, 191, 240, 5)
+  label(doc, 'Material direction', M + 15, 374, 200); value(doc, d.narrative.materialDirection, M + 15, 391, 240, 260)
+  label(doc, 'Planning cost range', M + 15, 469, 200); value(doc, d.recommendation ? `${money(d.recommendation.costRange[0])}–${money(d.recommendation.costRange[1])}` : d.scope.estimatedTotal, M + 15, 486, 240)
+  const x = 325, fp = d.floorPlan; card(doc, x, 118, 429, 423, 'Preliminary concept plan')
+  const stats = [['AREA', fp?.totalAreaFt2 ? `${Math.round(fp.totalAreaFt2).toLocaleString()} sq ft` : 'To verify'], ['FOOTPRINT', fp?.totalWidthFt && fp.totalDepthFt ? `${Math.round(fp.totalWidthFt)}′ × ${Math.round(fp.totalDepthFt)}′` : 'To verify'], ['SPACES', String(fp?.rooms?.length ?? fp?.roomCount ?? 0)]]
+  stats.forEach(([k, v], i) => { const sx = x + 15 + i * 132; doc.roundedRect(sx, 153, 119, 52, 5).fill(SOFT); label(doc, k, sx + 10, 164, 100); doc.font('Helvetica-Bold').fontSize(10).fillColor(INK).text(v, sx + 10, 181, { width: 100 }) })
+  const rooms = fp?.rooms?.slice(0, 9) ?? [], ty = 226
+  doc.rect(x + 15, ty, 399, 23).fill(NAVY); doc.font('Helvetica-Bold').fontSize(7.5).fillColor('#fff').text('SPACE', x + 24, ty + 8, { width: 160 }).text('DIMENSIONS', x + 211, ty + 8, { width: 85 }).text('AREA', x + 330, ty + 8, { width: 70 })
+  if (!rooms.length) doc.font('Helvetica').fontSize(9).fillColor(BODY).text('A measured room schedule is not yet available. Field dimensions are required before permit drawings.', x + 28, ty + 55, { width: 370, lineGap: 4 })
+  rooms.forEach((room, i) => { const y = ty + 23 + i * 24; doc.rect(x + 15, y, 399, 24).fill(i % 2 ? '#fff' : SOFT); doc.font('Helvetica').fontSize(8).fillColor(INK).text(short(room.label, 35), x + 24, y + 8, { width: 170 }).text(room.widthFt && room.depthFt ? `${room.widthFt}′ × ${room.depthFt}′` : '—', x + 211, y + 8, { width: 90 }).text(room.areaFt2 ? `${Math.round(room.areaFt2)} sf` : '—', x + 330, y + 8, { width: 70 }) })
+  const ny = rooms.length ? Math.min(475, ty + 23 + rooms.length * 24 + 16) : 360
+  label(doc, 'Plan notes', x + 24, ny, 120); value(doc, (fp?.layoutNotes ?? fp?.layoutIssues ?? []).slice(0, 3).join(' · ') || 'Confirm dimensions and code clearances during measured design development.', x + 24, ny + 16, 370, 260)
+  footer(doc, d)
 }
 
-function drawViewsPage(doc: any, data: HomeownerDeliverables, assets: PdfVisualAsset[]): void {
-  sectionWithStamp(doc, '6. Exterior and interior views — coordinated with the plan', ['PROPOSED CONCEPT'])
-  const views = assets.filter(a => a.label.startsWith('Design concept'))
-  if (!views.length) { doc.text('Concept views are rendered after the recommended direction is confirmed.'); return }
-  for (const asset of views) {
-    if (doc.y > 430) { doc.addPage(); sectionWithStamp(doc, '6. Views (continued)', ['PROPOSED CONCEPT']) }
-    doc.fontSize(10).fillColor('#0f172a').font('Helvetica-Bold').text(`${asset.label} — coordinated with the concept floor plan`); doc.moveDown(0.25)
-    const y = doc.y; doc.image(asset.buffer, 50, y, { fit: [495, 260], align: 'center', valign: 'center' }); doc.y = y + 270; doc.moveDown(0.3)
+function page4(doc: any, d: HomeownerDeliverables, assets: Asset[]): void {
+  header(doc, 4, 'Project-specific visual direction', 'Concept imagery coordinated to stored project information')
+  const byUrl = new Map(assets.map(a => [a.url, a]))
+  const pair = (d.beforeAfterPairs ?? []).map(p => ({ p, before: byUrl.get(p.beforeUrl), after: byUrl.get(p.afterUrl) })).find(p => p.before && p.after)
+  if (pair?.before && pair.after) {
+    label(doc, 'Existing — verified source image', M, 118, 330); label(doc, 'Proposed — matching source viewpoint', 404, 118, 350)
+    image(doc, pair.before, M, 136, 350, 250); image(doc, pair.after, 404, 136, 350, 250)
+    doc.font('Helvetica').fontSize(8).fillColor(BODY).text(short(`${pair.p.area ? `${pair.p.area}: ` : ''}${pair.p.label}${pair.p.viewpoint ? ` · ${pair.p.viewpoint}` : ''}`, 160), M, 397, { width: CW, align: 'center' })
+  } else {
+    const proposed = assets.filter(a => a.label.startsWith('Proposed')).slice(0, 4)
+    if (proposed.length) proposed.forEach((a, i) => { const cols = proposed.length === 1 ? 1 : 2, iw = cols === 1 ? CW : 350, x = cols === 1 ? M : M + (i % 2) * 366, y = 122 + Math.floor(i / 2) * 190, ih = proposed.length <= 2 ? 310 : 160; image(doc, a, x, y, iw, ih); doc.font('Helvetica-Bold').fontSize(7.5).fillColor(TEAL).text(a.label.toUpperCase(), x + 8, y + ih + 8, { width: iw - 16 }) })
+    else { card(doc, M, 125, CW, 230, 'Visual production status'); doc.font('Helvetica-Bold').fontSize(14).fillColor(WARN).text('Project-specific visuals are not available in this export.', M + 24, 177, { width: CW - 48 }); doc.font('Helvetica').fontSize(9.5).fillColor(BODY).text('This report does not insert stock images or placeholders. A final package must contain resolved project renderings before it is marked complete.', M + 24, 213, { width: CW - 48, lineGap: 4 }) }
   }
-  if (data.visuals?.consistencyNotes?.length) { doc.moveDown(0.2); doc.fontSize(9).fillColor('#334155'); for (const n of data.visuals.consistencyNotes) doc.text(`• ${n}`) }
+  doc.roundedRect(M, 463, CW, 58, 6).fill('#f7faf9'); doc.font('Helvetica-Bold').fontSize(8).fillColor(NAVY).text('HOW TO READ THESE IMAGES', M + 14, 477)
+  doc.font('Helvetica').fontSize(8.3).fillColor(BODY).text(pair ? 'The comparison is linked by stored source URLs. Materials, dimensions, and site conditions remain subject to field verification.' : 'A before/after comparison appears only when a proposed view is explicitly linked to its source photograph.', M + 169, 475, { width: CW - 183, lineGap: 2 })
+  footer(doc, d)
 }
 
-function drawBeforeAfterPage(doc: any, data: HomeownerDeliverables, assets: PdfVisualAsset[]): void {
-  sectionWithStamp(doc, '7. Before and after — matching viewpoint and geometry', ['EXISTING', 'PROPOSED CONCEPT'])
-  const byUrl = (url: string) => assets.find(a => a.url === url)
-  // Only pairs rendered from the customer's photograph with the camera locked to it
-  // (form_data.conceptOutput.beforeAfterPairs) qualify — never two unrelated images.
-  const pairs = (data.beforeAfterPairs ?? [])
-    .map(p => ({ before: byUrl(p.beforeUrl), after: byUrl(p.afterUrl), caption: `${p.area ? `${p.area}: ` : ''}${p.label}${p.viewpoint ? ` — viewpoint: ${p.viewpoint}` : ''}` }))
-    .filter((p): p is { before: PdfVisualAsset; after: PdfVisualAsset; caption: string } => Boolean(p.before && p.after))
-  const hasExisting = assets.some(a => a.label.startsWith('Existing'))
-  if (!pairs.length) { doc.fontSize(9.5).fillColor('#b45309').text(hasExisting ? 'Concept views rendered from your photographs\u2019 viewpoints are still in progress; this page is completed when they resolve.' : 'No labelled photograph was supplied to pair with a concept view. Add photographs with a label and viewpoint in your portal and the before/after pairs are rendered from the same viewpoint.', { width: 495 }); return }
-  for (const p of pairs) {
-    if (doc.y > 520) doc.addPage()
-    const y = doc.y
-    doc.fontSize(9).fillColor('#475569').font('Helvetica-Bold').text('BEFORE — EXISTING', 50, y, { width: 240 })
-    doc.fontSize(9).fillColor('#0f766e').font('Helvetica-Bold').text('AFTER — PROPOSED CONCEPT', 305, y, { width: 240 })
-    doc.image(p.before.buffer, 50, y + 14, { fit: [240, 180] }); doc.image(p.after.buffer, 305, y + 14, { fit: [240, 180] })
-    doc.y = y + 200; doc.fontSize(8).fillColor('#64748b').font('Helvetica').text(`${p.caption}. The after view was rendered from this photograph with the camera locked to it; a pair that does not match is flagged at review.`, 50, doc.y, { width: 495 })
-    doc.x = 50; doc.moveDown(0.6)
-  }
+function page5(doc: any, d: HomeownerDeliverables): void {
+  header(doc, 5, 'Materials, scope & planning cost', 'A concise basis for contractor conversations—not a bid')
+  card(doc, M, 118, 235, 423, 'Materials & finish direction')
+  const palette = d.materialsPalette?.length ? d.materialsPalette.slice(0, 8).map(i => `${i.item}: ${i.selection}${i.note ? ` — ${i.note}` : ''}`) : [d.narrative.materialDirection]
+  bullets(doc, palette, M + 15, 157, 205, 8)
+  const x = 289, s = d.scope; card(doc, x, 118, 465, 423, 'Scope and cost plan')
+  doc.font('Helvetica-Bold').fontSize(16).fillColor(TEAL).text(s.totalEstimatedMin || s.totalEstimatedMax ? `${money(s.totalEstimatedMin)}–${money(s.totalEstimatedMax)}` : clean(s.estimatedTotal), x + 15, 151, { width: 260 })
+  doc.font('Helvetica').fontSize(8).fillColor(MUTED).text('Preliminary construction planning range', x + 15, 175)
+  const rows = s.lineItems?.slice(0, 9) ?? [], y0 = 205
+  doc.rect(x + 15, y0, 435, 23).fill(NAVY); doc.font('Helvetica-Bold').fontSize(7.2).fillColor('#fff').text('TRADE / ITEM', x + 24, y0 + 8, { width: 105 }).text('DESCRIPTION', x + 142, y0 + 8, { width: 160 }).text('LOW', x + 316, y0 + 8, { width: 55 }).text('HIGH', x + 382, y0 + 8, { width: 55 })
+  rows.forEach((r, i) => { const y = y0 + 23 + i * 25; doc.rect(x + 15, y, 435, 25).fill(i % 2 ? '#fff' : SOFT); doc.font('Helvetica').fontSize(7.6).fillColor(INK).text(short(r.trade, 24), x + 24, y + 8, { width: 108 }).text(short(r.description, 42), x + 142, y + 8, { width: 161 }).text(clean(r.estimatedLow, '—'), x + 316, y + 8, { width: 58 }).text(clean(r.estimatedHigh, '—'), x + 382, y + 8, { width: 58 }) })
+  const ny = Math.max(455, y0 + 35 + rows.length * 25); doc.font('Helvetica').fontSize(7.5).fillColor(MUTED).text(short(s.budgetFitNote || 'Validate planning estimates through contractor bids and current supplier pricing.', 220), x + 20, ny, { width: 425, height: 33, ellipsis: true })
+  label(doc, 'Not included in this preliminary package', x + 20, 498, 300); doc.font('Helvetica').fontSize(7.6).fillColor(BODY).text(short(s.exclusions.join(' · '), 250), x + 20, 513, { width: 425, height: 20, ellipsis: true })
+  footer(doc, d)
 }
 
-function drawPalettePage(doc: any, data: HomeownerDeliverables): void {
-  sectionWithStamp(doc, '8. Materials palette — labeled selections', ['PROPOSED CONCEPT'])
-  const items = data.materialsPalette ?? []
-  if (!items.length) { doc.text(data.narrative.materialDirection || 'Material selections follow confirmation of the recommended direction.', { width: 495 }); return }
-  for (const it of items) { twoCol(doc, `${it.item}:`, it.selection + (it.note ? ` — ${it.note}` : '')) }
-  if (data.visuals?.paletteSuggestion) { doc.moveDown(0.3); twoCol(doc, 'Palette:', data.visuals.paletteSuggestion) }
+function page6(doc: any, d: HomeownerDeliverables): void {
+  header(doc, 6, 'Zoning, permits & next steps', 'Public zoning data, preliminary interpretation, and required verification')
+  card(doc, M, 118, 405, 306, 'Zoning code & preliminary allowances')
+  const claims = d.siteZoning?.claims?.slice(0, 6) ?? []
+  if (claims.length) claims.forEach((c, i) => { const y = 154 + i * 40; doc.font('Helvetica-Bold').fontSize(7.7).fillColor(NAVY).text(short(c.claim, 34), M + 15, y, { width: 105 }); doc.font('Helvetica').fontSize(7.7).fillColor(INK).text(short(c.value, 95), M + 128, y, { width: 165, height: 28, ellipsis: true }); doc.font('Helvetica-Bold').fontSize(6.8).fillColor(c.status === 'requires-verification' ? WARN : TEAL).text(c.status.replace(/-/g, ' ').toUpperCase(), M + 302, y, { width: 86, align: 'right' }); doc.font('Helvetica').fontSize(6.6).fillColor(MUTED).text(short(c.source, 48), M + 302, y + 13, { width: 86, align: 'right' }) })
+  else { doc.font('Helvetica-Bold').fontSize(10).fillColor(WARN).text('Zoning lookup must be completed before delivery.', M + 15, 158, { width: 370 }); doc.font('Helvetica').fontSize(8.5).fillColor(BODY).text('The final package must list the zoning district/code, describe general allowed use and relevant dimensional controls, cite the source, and flag items for final verification.', M + 15, 181, { width: 370, lineGap: 3 }) }
+  const x = 463; card(doc, x, 118, 291, 306, 'Action plan')
+  const rawNext = Array.isArray(d.nextSteps) ? d.nextSteps : d.nextSteps?.actionItems ?? []
+  const steps = rawNext.length ? rawNext : ['Approve or request one revision.', 'Verify dimensions and zoning controls.', 'Advance to permit-ready drawings.', 'Obtain contractor pricing.']
+  let cy = 157; steps.slice(0, 5).forEach((s, i) => { doc.circle(x + 23, cy + 9, 10).fill(i === 0 ? ORANGE : TEAL); doc.font('Helvetica-Bold').fontSize(8).fillColor('#fff').text(String(i + 1), x + 16, cy + 5, { width: 14, align: 'center' }); doc.font('Helvetica').fontSize(8.6).fillColor(BODY).text(short(s, 145), x + 42, cy, { width: 226, height: 34, ellipsis: true }); cy += 48 })
+  doc.roundedRect(M, 441, CW, 100, 7).fill('#f7faf9'); doc.font('Helvetica-Bold').fontSize(9).fillColor(NAVY).text('PACKAGE MANIFEST', M + 15, 457)
+  doc.font('Helvetica').fontSize(8).fillColor(BODY).text('01 Decision brief   ·   02 Project & alternatives   ·   03 Recommendation & plan   ·   04 Visual direction   ·   05 Scope & cost   ·   06 Zoning, permits & next steps', M + 15, 476, { width: CW - 30 })
+  doc.font('Helvetica-Bold').fontSize(7.5).fillColor(TEAL).text('DELIVERED', M + 15, 510)
+  doc.font('Helvetica').fontSize(7.7).fillColor(BODY).text('Six-page PDF · portal workspace · project files · one included revision. Video, extra views, editable CAD/DXF, consultation, and expanded revisions are optional add-ons when purchased.', M + 83, 508, { width: CW - 98, height: 26, ellipsis: true })
+  footer(doc, d)
 }
 
-function drawSiteZoningPage(doc: any, data: HomeownerDeliverables): void {
-  sectionWithStamp(doc, '9. Site and zoning snapshot — sources and confidence', ['REQUIRES VERIFICATION'])
-  const sz = data.siteZoning
-  if (!sz) { drawPermitPage(doc, data); return }
-  doc.fontSize(8).fillColor('#64748b').font('Helvetica-Bold')
-  const cols = [50, 160, 320, 430, 490]
-  const y0 = doc.y
-  ;['Claim', 'Value', 'Source', 'Confidence', 'Status'].forEach((h, i) => doc.text(h, cols[i], y0, { width: (cols[i + 1] ?? 545) - cols[i] - 4, lineBreak: false }))
-  doc.y = y0 + 12; drawHRule(doc); doc.moveDown(0.2)
-  for (const c of sz.claims) {
-    if (doc.y > 700) doc.addPage()
-    const y = doc.y
-    doc.fontSize(8.5).fillColor('#0f172a').font('Helvetica').text(c.claim, cols[0], y, { width: 106 })
-    const h1 = doc.y
-    doc.text(safeTruncate(c.value, 160), cols[1], y, { width: 156 }); const h2 = doc.y
-    doc.text(safeTruncate(c.source, 90), cols[2], y, { width: 106 }); const h3 = doc.y
-    doc.text(c.confidence, cols[3], y, { width: 56 })
-    doc.fillColor(c.status === 'existing' ? '#475569' : c.status === 'proposed' ? '#0f766e' : '#b45309').text(c.status.replace('-', ' '), cols[4], y, { width: 55 })
-    doc.y = Math.max(h1, h2, h3, y + 12) + 3
-  }
-  doc.moveDown(0.4); doc.fontSize(8.5).fillColor('#475569').font('Helvetica').text(sz.disclaimer, 50, doc.y, { width: 495 })
-  doc.x = 50; doc.moveDown(0.6)
-  drawPermitPage(doc, data)
+async function loadAssets(d: HomeownerDeliverables): Promise<Asset[]> {
+  const sources: Array<{ label: string; url: string }> = []
+  const add = (label: string, url: unknown) => { if (typeof url === 'string' && /^https?:\/\//i.test(url) && !sources.some(s => s.url === url)) sources.push({ label, url }) }
+  for (const p of d.existingConditions?.photos ?? []) if (p.kind === 'photo') add(`Existing — ${p.label}`, p.url)
+  for (const u of d.visuals?.stableDiffusionPrompts ?? []) add('Existing — customer source', u)
+  for (const [i, u] of (d.visuals?.midjourneyPrompts ?? []).entries()) add(`Proposed concept ${i + 1}`, u)
+  for (const p of d.beforeAfterPairs ?? []) { add(`Existing — ${p.label}`, p.beforeUrl); add(`Proposed concept — ${p.label}`, p.afterUrl) }
+  const loaded = await Promise.all(sources.slice(0, 16).map(async s => { try { const r = await fetch(s.url), type = r.headers.get('content-type')?.toLowerCase() ?? ''; if (!r.ok || !type.startsWith('image/')) return null; return { ...s, buffer: Buffer.from(await r.arrayBuffer()) } } catch { return null } }))
+  return loaded.filter((a): a is NonNullable<typeof a> => a !== null)
 }
-
-// ── Page 7: Next Steps ────────────────────────────────────────────────────────
-
-function drawNextStepsPage(doc: any, data: HomeownerDeliverables): void {
-  sectionHeader(doc, 'Next Steps')
-
-  const nextStepsObj = data.nextSteps as any
-  const steps: string[] = Array.isArray(nextStepsObj)
-    ? nextStepsObj
-    : (nextStepsObj?.actionItems ?? [])
-  for (const step of steps) {
-    doc.fontSize(10).fillColor('#0f172a').font('Helvetica')
-       .text(`→  ${step}`, { width: 495 })
-    doc.moveDown(0.3)
-  }
-
-  doc.moveDown(1)
-  drawHRule(doc)
-  doc.moveDown(0.5)
-
-  doc.fontSize(10).fillColor('#0f172a').font('Helvetica-Bold').text('Ready to take the next step?')
-  doc.moveDown(0.25)
-  doc.fontSize(9).fillColor('#334155').font('Helvetica')
-     .text('Kealee can connect you with licensed architects, permit expeditors, and verified contractors to bring this concept to life.')
-  doc.moveDown(0.5)
-  doc.fontSize(9).fillColor('#0ea5e9').text('Visit kealee.com or contact your Kealee advisor to get started.')
-
-  doc.moveDown(2)
-  drawHRule(doc)
-  doc.moveDown(0.5)
-  doc.fontSize(7).fillColor('#94a3b8')
-     .text('© Kealee Inc. This document is confidential and intended for the named client only. Not for distribution. All cost estimates are approximate and for planning purposes only.', { width: 495, align: 'center' })
-}
-
-// ── Main Render Function ──────────────────────────────────────────────────────
 
 export async function renderConceptPdf(input: ConceptPdfInput): Promise<ConceptPdfResult> {
-  // Dynamic import — pdfkit lives in the worker, not in this package
-  const PDFDocument = (await import('pdfkit' as any)).default ?? (await import('pdfkit' as any))
-
-  const visuals = input.homeownerDeliverables.visuals
-  const existingPhotos = (input.homeownerDeliverables.existingConditions?.photos ?? []).filter(p => p.kind === 'photo')
-  const visualSources = [
-    // Existing: the customer's own photographs (labelled, with viewpoint when given), else the legacy before-URLs
-    ...(existingPhotos.length
-      ? existingPhotos.map(p => ({ label: `Existing — ${p.area ? `${p.area}: ` : ''}${p.label}${p.viewpoint ? ` (viewpoint: ${p.viewpoint})` : ''}`, url: p.url }))
-      : (visuals?.stableDiffusionPrompts ?? []).filter(value => /^https?:\/\//i.test(value)).map(url => ({ label: 'Existing condition — customer source', url }))),
-    ...(visuals?.midjourneyPrompts ?? []).filter(value => /^https?:\/\//i.test(value)).map((url, index) => ({ label: `Design concept ${index + 1}`, url })),
-  ].slice(0, 12)
-  // Before/after pairs load by URL so a pair is never drawn from two unrelated images
-  for (const pair of input.homeownerDeliverables.beforeAfterPairs ?? []) {
-    for (const url of [pair.beforeUrl, pair.afterUrl]) {
-      if (!visualSources.some(s => s.url === url)) visualSources.push({ label: url === pair.beforeUrl ? `Existing — ${pair.label}` : `Design concept — ${pair.label}`, url })
-    }
-  }
-  const loadedVisualAssets = await Promise.all(visualSources.map(async source => {
-    try {
-      const response = await fetch(source.url)
-      const contentType = response.headers.get('content-type') ?? ''
-      if (!response.ok || !contentType.toLowerCase().startsWith('image/')) return null
-      return { label: source.label, url: source.url, buffer: Buffer.from(await response.arrayBuffer()) }
-    } catch {
-      return null
-    }
-  }))
-  const visualAssets: PdfVisualAsset[] = loadedVisualAssets.filter(
-    (asset): asset is NonNullable<typeof asset> => asset !== null,
-  )
-
+  const module = await import('pdfkit' as any), PDFDocument = module.default ?? module
+  const d = input.homeownerDeliverables, assets = await loadAssets(d)
   return new Promise<Buffer>((resolve, reject) => {
-    const doc = new PDFDocument({
-      margin: 50,
-      size: 'LETTER',
-      info: {
-        Title: 'Kealee Concept Package',
-        Author: 'Kealee Inc.',
-        Subject: 'generated using AI tools concept design package',
-      },
-    })
-
-    const chunks: Buffer[] = []
-    doc.on('data', (chunk: Buffer) => chunks.push(chunk))
-    doc.on('end', () => resolve(Buffer.concat(chunks)))
-    doc.on('error', reject)
-
-    const d = input.homeownerDeliverables
-    doc.on('pageAdded', () => standingFooter(doc, d))
-
-    // The purchaser order (docs/system/concept-package-deliverables.md):
-    //  cover · 1 your project · 2 what exists today · 3 concept directions · 4 recommended design
-    //  · 5 concept floor plan · 6 views · 7 before/after · 8 materials palette · 9 site & zoning
-    //  · scope & cost · next steps. Every page carries the preliminary footer.
-    drawCoverPage(doc, d); standingFooter(doc, d)
-    doc.addPage(); drawYourProjectPage(doc, d)
-    doc.addPage(); drawExistingPage(doc, d, visualAssets)
-    doc.addPage(); drawDirectionsPage(doc, d)
-    doc.addPage(); drawRecommendedPage(doc, d)
-    doc.addPage(); sectionWithStamp(doc, '5. Concept floor plan — labeled and dimensioned', ['PROPOSED CONCEPT']); drawFloorPlanPage(doc, d)
-    doc.addPage(); drawViewsPage(doc, d, visualAssets)
-    doc.addPage(); drawBeforeAfterPage(doc, d, visualAssets)
-    doc.addPage(); drawPalettePage(doc, d)
-    doc.addPage(); drawSiteZoningPage(doc, d)
-    doc.addPage(); sectionWithStamp(doc, 'Scope and cost range', ['PROPOSED CONCEPT', 'REQUIRES VERIFICATION']); drawScopePage(doc, d)
-    doc.addPage(); drawNarrativePage(doc, d)
-    doc.addPage(); drawNextStepsPage(doc, d)
-
-    doc.end()
+    const doc = new PDFDocument({ autoFirstPage: false, size: 'LETTER', layout: 'landscape', margin: M, bufferPages: true, info: { Title: `Kealee Design Concept Package — ${clean(d.project.address ?? d.client.address)}`, Author: 'Kealee', Subject: 'Preliminary design concept package' } })
+    const chunks: Buffer[] = []; doc.on('data', (c: Buffer) => chunks.push(c)); doc.on('end', () => resolve(Buffer.concat(chunks))); doc.on('error', reject)
+    addPage(doc); page1(doc, d); addPage(doc); page2(doc, d, assets); addPage(doc); page3(doc, d); addPage(doc); page4(doc, d, assets); addPage(doc); page5(doc, d); addPage(doc); page6(doc, d); doc.end()
   })
 }

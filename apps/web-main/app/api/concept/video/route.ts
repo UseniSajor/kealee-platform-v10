@@ -58,6 +58,14 @@ function isProcessState(state: ConceptVideoState): state is DeliverableProcessVi
   return state.videoKind === 'process'
 }
 
+function hasVideoEntitlement(formData: Record<string, unknown>): boolean {
+  const addOns = Array.isArray(formData.addOns) ? (formData.addOns as unknown[]).map(String) : []
+  if (addOns.some(id => id === 'video_presentation' || id === 'interactive_walk')) return true
+  if (formData.conceptVideo && typeof formData.conceptVideo === 'object') return true
+  // Preserve delivery for orders sold under the retired tier catalogue.
+  return formData.v30 !== true && typeof formData.tier === 'number' && formData.tier >= 2
+}
+
 export async function POST(req: NextRequest) {
   try {
     const body = (await req.json().catch(() => ({}))) as {
@@ -91,6 +99,12 @@ export async function POST(req: NextRequest) {
     }
 
     const formData = (intake.form_data ?? {}) as Record<string, unknown>
+    if (!hasVideoEntitlement(formData)) {
+      return NextResponse.json(
+        { error: 'Video add-on required', message: 'Purchase a video presentation add-on before starting video production.' },
+        { status: 403 },
+      )
+    }
     const tier = resolveConceptTier(formData, { projectPath: intake.project_path as string })
     const tierKey = tier
     const tierDefault = TIER_VIDEO_DEFAULTS[tierKey]

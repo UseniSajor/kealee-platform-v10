@@ -13,19 +13,19 @@ export interface ConceptPackageSection {
 
 /** Sections shown in owner portal TOC (top → bottom). */
 export const CONCEPT_PACKAGE_SECTIONS: ConceptPackageSection[] = [
-  { id: 'package-overview', label: 'Your package', pdfPage: 1, shortLabel: 'Cover' },
-  { id: 'floor-plan', label: 'Floor plan', pdfPage: 2 },
-  { id: 'narrative', label: 'Design narrative', pdfPage: 3 },
-  { id: 'scope-bom', label: 'Scope & materials', pdfPage: 4, shortLabel: 'Scope' },
-  { id: 'permit', label: 'Permit path', pdfPage: 5 },
-  { id: 'visuals', label: 'Renderings & video', pdfPage: 6, shortLabel: 'Visuals' },
+  { id: 'package-overview', label: 'Decision brief', pdfPage: 1, shortLabel: 'Overview' },
+  { id: 'project-brief', label: 'Project & alternatives', pdfPage: 2 },
+  { id: 'floor-plan', label: 'Recommendation & plan', pdfPage: 3, shortLabel: 'Plan' },
+  { id: 'visuals', label: 'Visual direction', pdfPage: 4, shortLabel: 'Visuals' },
+  { id: 'scope-bom', label: 'Materials, scope & cost', pdfPage: 5, shortLabel: 'Scope' },
+  { id: 'permit', label: 'Zoning, permits & next steps', pdfPage: 6, shortLabel: 'Approvals' },
   { id: 'design-concept', label: 'Style direction', pdfPage: null },
   { id: 'mep', label: 'MEP systems', pdfPage: null },
   { id: 'v30-landscape', label: 'Site & landscape', pdfPage: null },
-  { id: 'next-steps', label: 'Next steps', pdfPage: 7 },
+  { id: 'next-steps', label: 'Next steps', pdfPage: 6 },
 ]
 
-export const CONCEPT_PACKAGE_PDF_PAGE_COUNT = 7
+export const CONCEPT_PACKAGE_PDF_PAGE_COUNT = 6
 
 export function pdfSectionsForToc(): ConceptPackageSection[] {
   return CONCEPT_PACKAGE_SECTIONS.filter((s) => s.pdfPage != null)

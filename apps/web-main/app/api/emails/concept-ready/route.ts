@@ -12,7 +12,6 @@ import { onConceptReadyLifecycle } from '@/lib/marketing/lifecycle'
 import {
   getPermitZoningLabels,
   intakePathToFamily,
-  type ConceptTier,
 } from '@kealee/core-rules'
 
 export const dynamic = 'force-dynamic'
@@ -30,7 +29,7 @@ interface ConceptReadyEmailPayload {
 export async function POST(req: NextRequest) {
   try {
     const body = (await req.json()) as ConceptReadyEmailPayload
-    const { to, firstName, service, intakeId, estimatedCost, tier, videoIncluded } = body
+    const { to, firstName, service, intakeId, estimatedCost, videoIncluded } = body
 
     if (!to || !intakeId || !service) {
       return NextResponse.json(
@@ -74,13 +73,14 @@ export async function POST(req: NextRequest) {
       typeof estimatedCost === 'number' && estimatedCost > 0
         ? `Estimated investment range: $${estimatedCost.toLocaleString('en-US')}`
         : null
-    const videoLine =
-      (tier ?? 1) >= 2 && videoIncluded
-        ? 'A short cinematic walkthrough video (rendering now — typically arrives within a few minutes of this email)'
-        : null
-
-    const tierKey = ((tier ?? 1) === 3 ? 3 : (tier ?? 1) === 2 ? 2 : 1) as ConceptTier
-    const permitZoningBullets = getPermitZoningLabels(intakePathToFamily(service), tierKey)
+    const videoLine = videoIncluded
+      ? 'Purchased design presentation video (available now or finishing production)'
+      : null
+    // The current single package carries the former planning-level depth.
+    // Tier 2 remains an internal legacy schema key; no tier is sold or shown.
+    const permitZoningBullets = getPermitZoningLabels(intakePathToFamily(service), 2)
+      .filter((line) => /zoning|buildability|permit scope|AHJ|trade permit/i.test(line))
+      .slice(0, 4)
 
     const customerRes = await fetch('https://api.resend.com/emails', {
       method: 'POST',
@@ -104,11 +104,11 @@ export async function POST(req: NextRequest) {
             <div style="padding:40px 32px 0">
               <p style="margin:0 0 6px;font-size:13px;font-weight:600;color:#E8793A;text-transform:uppercase;letter-spacing:0.08em">Your concept is ready</p>
               <h1 style="margin:0 0 16px;font-size:26px;font-weight:800;color:#0F1A2E;line-height:1.2">
-                Hi ${greeting} — your ${serviceName} package just landed.
+                Hi ${greeting} — your ${serviceName} package is complete.
               </h1>
               <p style="margin:0 0 24px;font-size:15px;color:#555;line-height:1.7">
-                Your Concept Package is complete and waiting in your Owner Portal.
-                Click below to sign in and access your results.
+                Open the Owner Portal to review the recommended direction, concept plan,
+                project visuals, scope and cost plan, zoning, permits, and next steps.
               </p>
             </div>
 
@@ -117,10 +117,10 @@ export async function POST(req: NextRequest) {
               <p style="margin:0 0 12px;font-size:13px;font-weight:700;color:#0F1A2E;text-transform:uppercase;letter-spacing:0.06em">Inside your package</p>
               <table style="border-collapse:collapse;width:100%">
                 <tr>
-                  <td style="padding:5px 0;font-size:14px;color:#444;line-height:1.5">&#10003;&nbsp; Design concept summary, palette &amp; key features</td>
+                  <td style="padding:5px 0;font-size:14px;color:#444;line-height:1.5">&#10003;&nbsp; Three directions with one clear recommendation</td>
                 </tr>
                 <tr>
-                  <td style="padding:5px 0;font-size:14px;color:#444;line-height:1.5">&#10003;&nbsp; Bill of materials with DMV-market cost ranges</td>
+                  <td style="padding:5px 0;font-size:14px;color:#444;line-height:1.5">&#10003;&nbsp; Preliminary plan, materials, scope &amp; planning cost range</td>
                 </tr>
                 ${permitZoningBullets
                   .map(
@@ -129,7 +129,7 @@ export async function POST(req: NextRequest) {
                   )
                   .join('')}
                 <tr>
-                  <td style="padding:5px 0;font-size:14px;color:#444;line-height:1.5">&#10003;&nbsp; Rendered project visuals</td>
+                  <td style="padding:5px 0;font-size:14px;color:#444;line-height:1.5">&#10003;&nbsp; Six-page PDF, project visuals &amp; portal files</td>
                 </tr>
                 ${videoLine ? `<tr><td style="padding:5px 0;font-size:14px;color:#444;line-height:1.5">&#10003;&nbsp; ${videoLine}</td></tr>` : ''}
               </table>
@@ -175,10 +175,10 @@ export async function POST(req: NextRequest) {
           signInUrl,
           '',
           'Inside your package:',
-          '- Design concept summary, palette & key features',
-          '- Bill of materials with DMV-market cost ranges',
+          '- Three directions with one clear recommendation',
+          '- Preliminary plan, materials, scope & planning cost range',
           ...permitZoningBullets.map((line) => `- ${line}`),
-          '- Rendered project visuals',
+          '- Six-page PDF, project visuals & portal files',
           ...(videoLine ? [`- ${videoLine}`] : []),
           ...(costLine ? ['', costLine] : []),
           '',

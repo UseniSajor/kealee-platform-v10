@@ -144,9 +144,15 @@ export function resolveHomeownerDeliverablesForPdf(
   const materialsPalette = paletteSource.map((sel, i) => ({ item: bom[i] && asRecord(bom[i])?.item ? String(asRecord(bom[i])!.item) : `Selection ${i + 1}`, selection: String(sel) }))
   const jurisdiction = asRecord(formData.jurisdictionData) ?? asRecord(co.jurisdictionData)
   const zoneCode = String(jurisdiction?.zoneCode ?? jurisdiction?.zone ?? '')
+  const allowedUses = Array.isArray(jurisdiction?.allowedUses)
+    ? (jurisdiction!.allowedUses as unknown[]).map(String).filter(Boolean)
+    : Array.isArray(asRecord(formData.zoningResult)?.allowedUses)
+      ? (asRecord(formData.zoningResult)!.allowedUses as unknown[]).map(String).filter(Boolean)
+      : []
   const siteClaims: NonNullable<HomeownerDeliverables['siteZoning']>['claims'] = [
     { claim: 'Property address', value: intake.project_address ?? '—', source: 'Customer intake', confidence: 'high', status: 'existing' },
     ...(zoneCode ? [{ claim: 'Zoning district', value: zoneCode, source: String(jurisdiction?.source ?? 'County GIS (PGAtlas / jurisdiction lookup)'), confidence: 'high' as const, status: 'existing' as const }] : []),
+    ...(allowedUses.length ? [{ claim: 'Preliminary allowed uses', value: allowedUses.join(', '), source: String(jurisdiction?.source ?? 'Jurisdiction zoning data / Kealee zoning lookup'), confidence: 'medium' as const, status: 'requires-verification' as const }] : []),
     { claim: 'Permit required', value: permitScope?.requiresPermit === false ? 'No (replace-in-kind expected)' : 'Yes — ' + likelyPermits.join(', '), source: jurisdiction ? String(jurisdiction.name ?? 'Jurisdiction fee schedule') : 'Kealee permit rules (Sec. by service type)', confidence: jurisdiction ? 'high' : 'medium', status: 'requires-verification' },
     ...(zoningNotes ? [{ claim: 'Zoning notes', value: zoningNotes, source: 'Kealee zoning check', confidence: 'medium' as const, status: 'requires-verification' as const }] : []),
     { claim: 'Estimated permit fee', value: estimatedPermitFee > 0 ? `$${estimatedPermitFee.toLocaleString()}` : 'Not yet established', source: jurisdiction ? String(jurisdiction.name ?? 'Jurisdiction fee schedule') : 'Kealee default range', confidence: jurisdiction ? 'medium' : 'low', status: 'requires-verification' },
@@ -257,10 +263,10 @@ export function resolveHomeownerDeliverablesForPdf(
         'Permit and zoning guidance are informational — not agency filing or stamped drawings.',
     },
     visuals: {
-      midjourneyPrompts: renderUrls.slice(0, 3),
+      midjourneyPrompts: renderUrls.slice(0, 6),
       // The PDF renderer recognizes source/render URLs and embeds the actual
       // project images. Existing prompt-based packages remain supported.
-      stableDiffusionPrompts: beforeUrls.slice(0, 3),
+      stableDiffusionPrompts: beforeUrls.slice(0, 6),
       descriptions: renderUrls.map((_, i) => `Concept rendering ${i + 1}`),
       roomFocus: [intake.project_path.replace(/_/g, ' ')],
       styleKeywords: [style],

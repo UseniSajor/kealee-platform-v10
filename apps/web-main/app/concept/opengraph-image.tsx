@@ -46,19 +46,19 @@ export default function Image() {
           Photorealistic renderings, cost estimates &amp; permit guidance. Starting at $395.
         </div>
 
-        {/* Tiers */}
+        {/* One package, scope-based price, optional add-ons */}
         <div style={{ display: 'flex', gap: '16px', marginTop: '48px' }}>
           {[
-            { label: 'Basic', price: 'from $395' },
-            { label: 'Advanced', price: 'from $695' },
-            { label: 'Full Design', price: 'from $2,500' },
-          ].map((tier) => (
-            <div key={tier.label} style={{
+            { label: 'One complete package', price: 'scope-priced after intake' },
+            { label: 'Zoning included', price: 'code, allowances & sources' },
+            { label: 'Optional add-ons', price: 'video, extra views & CAD' },
+          ].map((item) => (
+            <div key={item.label} style={{
               background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)',
               borderRadius: '12px', padding: '16px 24px', display: 'flex', flexDirection: 'column', gap: '4px',
             }}>
-              <span style={{ color: '#FFFFFF', fontSize: '18px', fontWeight: '700' }}>{tier.label}</span>
-              <span style={{ color: '#2ABFBF', fontSize: '15px', fontWeight: '600' }}>{tier.price}</span>
+              <span style={{ color: '#FFFFFF', fontSize: '18px', fontWeight: '700' }}>{item.label}</span>
+              <span style={{ color: '#2ABFBF', fontSize: '15px', fontWeight: '600' }}>{item.price}</span>
             </div>
           ))}
         </div>

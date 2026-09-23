@@ -8,7 +8,6 @@ import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { SERVICE_DELIVERABLES } from '@/lib/service-deliverables'
 import {
   getConceptPackageDeliverableLabelsForIntake,
-  renderCountForTier,
   resolveConceptTier,
   isBundleProductKey,
   type ConceptTier,
@@ -232,6 +231,8 @@ async function handleCheckoutCompleted(
   })
 
   const mergedFormData: Record<string, unknown> = { ...existingFormData }
+  const currentConceptIncludes = getConceptPackageDeliverableLabelsForIntake(projectPath, 2)
+    .filter(item => !/premium|premium\+|video|cad export|consultation|3 design revisions/i.test(item))
 
   // What the customer actually paid, recorded on the order. Portals must show
   // this figure rather than re-deriving a price from a table that has since
@@ -244,12 +245,15 @@ async function handleCheckoutCompleted(
     mergedFormData.serviceLabel = deliverable.label
     mergedFormData.serviceCategory = deliverable.category
     mergedFormData.serviceIncludes = deliverable.generatesConcept && !isBundlePurchase
-      ? getConceptPackageDeliverableLabelsForIntake(projectPath, purchasedTier)
+      ? currentConceptIncludes
       : deliverable.includes
     mergedFormData.serviceDeliveryDays = deliverable.deliveryDays
     if (deliverable.generatesConcept && !isBundlePurchase) {
-      mergedFormData.renderCount = renderCountForTier(purchasedTier, deliverable.renderCount ?? 3)
-      mergedFormData.tier = purchasedTier
+      // The current product is one package with six still views. `tier` is
+      // retained only on historical orders; video and expanded outputs are
+      // purchased add-ons.
+      mergedFormData.renderCount = 6
+      if (!isV30IntakeMetadata(session.metadata ?? {})) mergedFormData.tier = purchasedTier
     } else if (deliverable.renderCount != null) {
       mergedFormData.renderCount = deliverable.renderCount
     }

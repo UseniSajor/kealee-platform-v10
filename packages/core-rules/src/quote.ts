@@ -145,6 +145,8 @@ export const ADD_ONS: readonly AddOn[] = [
   { id: 'video_presentation', label: 'Cinematic video presentation',                 cents: 44_900, note: '60-second narrated walkthrough of the concept.' },
   { id: 'interactive_walk',   label: 'Interactive walkthrough',                      cents: 54_900 },
   { id: 'revision_round',     label: 'Additional revision round',                    cents: 19_500 },
+  { id: 'editable_cad',       label: 'Editable CAD / DXF concept files',             cents: null,   note: 'Scoped to the plan type and available source measurements.' },
+  { id: 'design_consult',     label: 'Design professional consultation',             cents: null,   note: 'Scoped by discipline and meeting length.' },
   { id: 'site_visit',         label: 'Site visit and capture',                       cents: 39_500, note: 'Measured photo/video capture at the property.' },
   { id: 'as_built_plan',      label: 'As-built measured floor plan',                 cents: 69_500 },
   { id: 'extra_jurisdiction', label: 'Additional jurisdiction',                      cents: null,   note: 'Scoped — review standards differ by agency.' },
@@ -240,17 +242,21 @@ const CONCEPT_SITE_RULES: readonly ComplexityRule[] = SITE_CONDITION_RULES
 
 const CONCEPT_INCLUDED = [
   'Three concept directions with a recommended direction',
-  'Concept floor plan, labelled and dimensioned',
-  'Two proposed design views',
+  'Preliminary concept plan, labelled and dimensioned where source measurements are available',
+  'Six project-specific proposed design views',
+  'Materials and finish direction with planning-level bill of materials',
+  'Scope and construction planning cost range',
   'One revision round',
-  'Zoning and buildability snapshot with sources',
+  'Zoning district/code, preliminary allowances, and buildability snapshot with sources',
   'Permit scope brief — disciplines and likely permit types',
+  'Six-page PDF package and owner portal workspace',
 ] as const
 
 const CONCEPT_EXCLUSIONS = [
   'Not for permit or construction — concept package, not stamped drawings',
   'No agency submission or permit filing',
   'No structural, MEP or civil engineering design',
+  'Video, extra still views, editable CAD/DXF, consultation, and additional revisions unless purchased as add-ons',
 ] as const
 
 function conceptProduct(
