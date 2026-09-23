@@ -119,8 +119,17 @@ export abstract class EnterpriseBot {
         this.metrics.tokensUsed = tokensUsed;
         this.metrics.costUSD = this.calculateCost(tokensUsed);
 
-        const content =
-          response.content[0].type === 'text' ? response.content[0].text : '';
+        // First TEXT block, not content[0]. These bots run on claude-opus-5 /
+        // claude-sonnet-5, where thinking is on by default, so content[0] is a
+        // thinking block and the type guard fails — content came back '' on
+        // every call. Every enterprise bot inherits this method, so DesignBot
+        // then died in _requestConcepts as "Failed to parse design concepts"
+        // with no JSON to match, and the design output that the customer
+        // delivery bridge waits on was never produced.
+        const textBlock = response.content.find(
+          (b): b is Extract<typeof b, { type: 'text' }> => b.type === 'text',
+        );
+        const content = textBlock?.text ?? '';
 
         // Cache result
         if (cacheKey) {

@@ -67,7 +67,7 @@ function StatusBadge({ status, isV30 }: { status: UIStatus; isV30?: boolean }) {
       return (
         <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold"
           style={{ backgroundColor: 'rgba(42,191,191,0.1)', color: '#2ABFBF' }}>
-          <Loader2 className="h-3 w-3 animate-spin" /> {isV30 ? 'Generating (v30)' : 'Generating'}
+          <Loader2 className="h-3 w-3 animate-spin" /> Generating
         </span>
       )
     case 'failed':
@@ -249,7 +249,7 @@ function DeliverableCard({ d, ownedProducts }: { d: Deliverable; ownedProducts?:
                 {isSitePlan
                   ? 'Kealee is drafting your site plan from the county parcel, zoning and contour records.'
                   : d.isV30
-                    ? 'Kealee v30 bots are running (design, estimate, permits, floorplan).'
+                    ? 'Kealee is preparing your design, estimate, permits and floorplan.'
                     : 'Your concept package is being generated — usually ready within a few minutes.'}
               </p>
             </div>
@@ -260,7 +260,7 @@ function DeliverableCard({ d, ownedProducts }: { d: Deliverable; ownedProducts?:
                 rel="noopener noreferrer"
                 className="text-xs font-semibold text-violet-600 hover:underline"
               >
-                Track progress in v30 workspace →
+                Track progress in your project workspace →
               </a>
             )}
           </div>

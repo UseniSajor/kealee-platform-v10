@@ -1,7 +1,9 @@
 'use client'
 
 /**
- * Kealee v30 customer workspace — tabbed view of parallel bot deliverables.
+ * Kealee customer project workspace — tabbed view of the deliverables produced
+ * for one order. "v30" in surrounding identifiers is the frozen historical
+ * label described in CLAUDE.md, not a second workspace.
  * Spec: UI UX v30.zip → /workspace/:projectId
  */
 
@@ -90,7 +92,7 @@ export default function V30WorkspacePage() {
   if (!v30) {
     return (
       <div className="min-h-screen flex items-center justify-center p-8">
-        <p className="text-slate-600">v30 workspace is not enabled.</p>
+        <p className="text-slate-600">Your project workspace is not available right now.</p>
       </div>
     )
   }
@@ -104,7 +106,7 @@ export default function V30WorkspacePage() {
       <header className="bg-white border-b border-slate-200">
         <div className="mx-auto max-w-5xl px-4 py-5 flex flex-wrap items-center justify-between gap-3">
           <div>
-            <p className="text-xs font-bold uppercase tracking-widest text-violet-600">Kealee v30 Workspace</p>
+            <p className="text-xs font-bold uppercase tracking-widest text-violet-600">Project Workspace</p>
             <h1 className="text-xl font-bold text-slate-900">{data?.clientName ?? 'Your project'}</h1>
             <p className="text-sm text-slate-500">{data?.projectPath?.replace(/_/g, ' ')}</p>
           </div>
