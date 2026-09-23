@@ -339,4 +339,28 @@ describe('workflow address contract', () => {
       address: '14408 LEONARD CALVERT DR, ACCOKEEK, MD 20607',
     })
   })
+
+  it('falls back to the county composite locator without lowering the score threshold', async () => {
+    const h = harness()
+    const snap: WorkflowSnapshot = {
+      ...newWorkflow('wf_composite_locator'),
+      stages: [{ job: FIRST_JOB, status: 'COMPLETED', attempt: 1 }],
+    }
+    const ctx = h.ctxFor(snap, 'siteplan.resolve_property')
+    const normalFetch = ctx.capabilities.fetchImpl
+    ctx.capabilities.fetchImpl = (async (url: string, init?: RequestInit) => {
+      if (String(url).includes('/Geocoders/Address/')) {
+        return {
+          ok: true,
+          status: 200,
+          json: async () => ({ candidates: [] }),
+        } as Response
+      }
+      return normalFetch(url, init)
+    }) as typeof fetch
+
+    const out = await runStage(ctx, h.deps)
+    expect(out.disposition).toBe('COMPLETED')
+    expect(h.traces.some(t => t.detail?.includes('county composite locator'))).toBe(true)
+  })
 })

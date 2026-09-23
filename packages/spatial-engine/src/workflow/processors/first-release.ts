@@ -19,7 +19,8 @@ import { requirePriorOutput } from '../context'
 import type { SitePlanJobName } from '../definition'
 
 import {
-  resolvePgAtlasSite, fetchPgAtlasAdjacentParcels, type PgAtlasSite, type PgAtlasAdjacentParcel,
+  resolvePgAtlasSite, fetchPgAtlasAdjacentParcels, PGATLAS_ENDPOINTS,
+  type PgAtlasSite, type PgAtlasAdjacentParcel,
 } from '../../jurisdictions/pgatlas'
 import { fetchSoilMapUnits, type SoilMapUnit } from '../../jurisdictions/usda-soils'
 import { fetchPgContours, type PgContourResult } from '../../jurisdictions/pg-elevation'
@@ -375,9 +376,25 @@ const resolveProperty: StageProcessor = async (ctx): Promise<StageResult> => {
   const candidates = addressCandidates(rawAddressFrom(ctx) ?? address)
   let site: PgAtlasSite | null = null
   let matchedForm: string | null = null
+  let locator: 'address' | 'composite' = 'address'
   for (const candidate of candidates) {
     site = await resolvePgAtlasSite(candidate, { fetchImpl: ctx.capabilities.fetchImpl })
     if (site) { matchedForm = candidate; break }
+  }
+  // The strict Address locator omits some valid county assessment records.
+  // The county Composite locator can resolve those by parcel/account-backed
+  // candidates (for example, an exact street candidate scoring 98.3). Keep
+  // the same >=90 threshold: this expands authoritative coverage without ever
+  // accepting the 75-score street guesses the composite service also emits.
+  if (!site) {
+    locator = 'composite'
+    for (const candidate of candidates) {
+      site = await resolvePgAtlasSite(candidate, {
+        fetchImpl: ctx.capabilities.fetchImpl,
+        locator: PGATLAS_ENDPOINTS.compositeLocator,
+      })
+      if (site) { matchedForm = candidate; break }
+    }
   }
   if (!site) {
     return {
@@ -388,6 +405,12 @@ const resolveProperty: StageProcessor = async (ctx): Promise<StageResult> => {
         'A weak match would site the plan on the wrong lot, so none is accepted.',
       ],
     }
+  }
+  if (locator === 'composite') {
+    ctx.capabilities.trace({
+      workflowId: ctx.workflowId, job: ctx.job, phase: 'complete',
+      detail: `resolved by county composite locator at score ${site.address.score}`,
+    })
   }
   if (matchedForm && matchedForm !== candidates[0]) {
     ctx.capabilities.trace({

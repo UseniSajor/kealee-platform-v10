@@ -574,7 +574,7 @@ export async function fetchPgAtlasEasements(
 /** Address to lot, zone and position in one call. */
 export async function resolvePgAtlasSite(
   address: string,
-  opts: { minScore?: number; fetchImpl?: typeof fetch } = {},
+  opts: { minScore?: number; fetchImpl?: typeof fetch; locator?: string } = {},
 ): Promise<PgAtlasSite | null> {
   const geo = await geocodePgAtlas(address, opts)
   if (!geo) return null
