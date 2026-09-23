@@ -93,6 +93,22 @@ export interface SitePlanDeliverable {
   }
   terrain: { contourCount: number; intervalFt: number | null; verticalDatum: string | null }
   rulePackVersion: string | null
+  /**
+   * Engineering data exports. Structural copy of the worker's record — see
+   * `services/worker/src/siteplan/delivery.ts`. Optional because orders
+   * delivered before the exports existed have no such field, and an older
+   * deliverable must keep rendering.
+   */
+  dataExports?: {
+    format: 'dxf' | 'landxml' | 'geojson'
+    label: string
+    filename: string
+    documentId: string | null
+    byteLength: number | null
+    available: boolean
+    unavailableReason: string | null
+    note: string
+  }[]
   qc: {
     issuable: boolean
     summary: string | null
@@ -122,6 +138,11 @@ export function sitePlanDeliverablePath(intakeId: string): string {
 /** Owner-facing PDF download. */
 export function sitePlanDocumentUrl(intakeId: string): string {
   return `/api/site-plan/${encodeURIComponent(intakeId)}/document`
+}
+
+/** Owner-facing download for one engineering data export. */
+export function sitePlanDataExportUrl(intakeId: string, documentId: string): string {
+  return `/api/site-plan/${encodeURIComponent(intakeId)}/document?documentId=${encodeURIComponent(documentId)}`
 }
 
 /** Structural copy of the worker's `SitePlanReviewRecord`. */

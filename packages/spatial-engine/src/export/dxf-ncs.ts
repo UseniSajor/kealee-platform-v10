@@ -250,6 +250,42 @@ export function unmappedKinds(twin: SiteTwin): string[] {
 
 // ── Writer ──────────────────────────────────────────────────────────────────
 
+/**
+ * Professional document status, stamped INTO the CAD file.
+ *
+ * A DXF handed to a consulting engineer travels on its own. The status cannot
+ * live only in the portal that served it: the moment the file is emailed on,
+ * the context is gone. No automated process may represent a drawing as sealed,
+ * so the only statuses this writer can stamp are the unsealed ones.
+ */
+export type CadDocumentStatus =
+  | 'INTERNAL_DRAFT'
+  | 'REVIEW_COPY'
+  | 'PRELIMINARY_NOT_FOR_CONSTRUCTION'
+  | 'PROFESSIONALLY_REVIEWED_UNSEALED'
+
+const STATUS_TEXT: Record<CadDocumentStatus, string> = {
+  INTERNAL_DRAFT:
+    'INTERNAL DRAFT - NOT REVIEWED - NOT FOR CONSTRUCTION OR PERMIT SUBMISSION',
+  REVIEW_COPY:
+    'REVIEW COPY - UNDER PROFESSIONAL REVIEW - NOT FOR CONSTRUCTION OR PERMIT SUBMISSION',
+  PRELIMINARY_NOT_FOR_CONSTRUCTION:
+    'PRELIMINARY - NOT SEALED - NOT FOR CONSTRUCTION OR PERMIT SUBMISSION',
+  PROFESSIONALLY_REVIEWED_UNSEALED:
+    'PROFESSIONALLY REVIEWED - NOT SEALED - NOT FOR CONSTRUCTION OR PERMIT SUBMISSION',
+}
+
+export interface DxfExportOptions {
+  /** Defaults to PRELIMINARY. There is no SEALED option, deliberately. */
+  status?: CadDocumentStatus
+  /** Coordinate reference system the twin's coordinates are in, for the stamp. */
+  crs?: string | null
+  /** Vertical datum of any Z values, for the stamp. */
+  verticalDatum?: string | null
+  /** Free-text provenance line, e.g. which sources produced the geometry. */
+  provenance?: string | null
+}
+
 export interface DxfExportResult {
   dxf: string
   /** Layers actually written, for the manifest and for review. */
@@ -257,6 +293,8 @@ export interface DxfExportResult {
   /** Feature kinds that had no mapping and landed on the non-plot layer. */
   unmapped: string[]
   entityCount: number
+  /** The status stamped into the file. Never SEALED. */
+  status: CadDocumentStatus
 }
 
 type GeometryBearing = { ring?: Ring; line?: number[][]; point?: number[] }
@@ -270,8 +308,9 @@ type GeometryBearing = { ring?: Ring; line?: number[][]; point?: number[] }
  * receiving professional is told which CRS that is rather than being handed
  * silently shifted coordinates.
  */
-export function toDxfNcs(twin: SiteTwin): DxfExportResult {
+export function toDxfNcs(twin: SiteTwin, options: DxfExportOptions = {}): DxfExportResult {
   const dxf = new DxfWriter()
+  const status = options.status ?? 'PRELIMINARY_NOT_FOR_CONSTRUCTION'
 
   for (const lt of LINETYPES) {
     if (lt.name === 'CONTINUOUS') continue // present by default
@@ -290,6 +329,39 @@ export function toDxfNcs(twin: SiteTwin): DxfExportResult {
     // The library models lineweight as a property on the layer record.
     ;(layer as unknown as { lineWeight?: number }).lineWeight = l.lineWeight
   }
+
+  // The status stamp lives on the non-plot annotation layer: present in the
+  // file and in the recipient's layer manager, absent from a plot. The layer
+  // is declared unconditionally because the stamp is unconditional.
+  if (!used.has(UNMAPPED_LAYER.name)) {
+    dxf.addLayer(UNMAPPED_LAYER.name, UNMAPPED_LAYER.color, UNMAPPED_LAYER.lineType)
+    used.set(UNMAPPED_LAYER.name, UNMAPPED_LAYER)
+  }
+  const stampLines = [
+    STATUS_TEXT[status],
+    `GENERATED ${new Date().toISOString()} BY KEALEE SITE PLAN ENGINE`,
+    options.crs ? `HORIZONTAL: ${options.crs}` : null,
+    options.verticalDatum ? `VERTICAL: ${options.verticalDatum}` : null,
+    options.provenance ? `SOURCES: ${options.provenance}` : null,
+    'THIS FILE IS DATA FOR A LICENSED PROFESSIONAL. IT IS NOT A SEALED DRAWING.',
+  ].filter((l): l is string => Boolean(l))
+
+  // Placed below the drawing extent so the stamp never overlaps geometry.
+  const ys = twin.features.flatMap(f => {
+    const g = f as unknown as GeometryBearing
+    const cs = g.ring?.coordinates ?? g.line ?? (g.point ? [g.point] : [])
+    return cs.map(c => c[1])
+  })
+  const xs = twin.features.flatMap(f => {
+    const g = f as unknown as GeometryBearing
+    const cs = g.ring?.coordinates ?? g.line ?? (g.point ? [g.point] : [])
+    return cs.map(c => c[0])
+  })
+  const baseX = xs.length ? Math.min(...xs) : 0
+  const baseY = ys.length ? Math.min(...ys) - 20 : 0
+  stampLines.forEach((line, i) => {
+    dxf.addText(point3d(baseX, baseY - i * 4, 0), 2.5, line, { layerName: UNMAPPED_LAYER.name })
+  })
 
   let entityCount = 0
   for (const f of twin.features) {
@@ -317,6 +389,7 @@ export function toDxfNcs(twin: SiteTwin): DxfExportResult {
     layers: [...used.keys()].sort(),
     unmapped: unmappedKinds(twin),
     entityCount,
+    status,
   }
 }
 

@@ -26,6 +26,10 @@ import { fetchSoilMapUnits, type SoilMapUnit } from '../../jurisdictions/usda-so
 import { fetchPgContours, type PgContourResult } from '../../jurisdictions/pg-elevation'
 import { buildLotPackage, type LotPackage } from '../../self-perform/lot-package'
 import { renderSheetSetPdf } from '../../sheets/render-pdf'
+import { toDxfNcs } from '../../export/dxf-ncs'
+import { toLandXml, toGeoJson } from '../../export/exporters'
+import { createRegistryTransformer } from '../../export/transformation-registry'
+import { createArcGisTransformer } from '../../export/crs'
 import { buildSheetContext } from '../../sheets/render-svg'
 import { requiredNotesForSheet, PG_REQUIRED_PLAN_NOTES } from '../../site-plan/required-notes'
 import type { SheetId } from '../../sheets/sheet-template'
@@ -166,6 +170,29 @@ export interface RenderOutput {
   pageCount: number
   byteLength: number
   frameFailures: { sheet: string; missing: string[] }[]
+  /**
+   * Engineering data exports produced alongside the PDF.
+   *
+   * These are a HANDOFF, not the deliverable. The PDF is what the customer
+   * bought; these are what a consulting engineer or surveyor needs to continue
+   * the work in their own platform rather than redraw it. A failure here is
+   * recorded and the delivery stands — the plan is already rendered, and
+   * refusing to deliver it because a DXF did not write would be the wrong
+   * trade every time.
+   */
+  cadExports: CadExportRecord[]
+}
+
+export interface CadExportRecord {
+  format: 'dxf' | 'landxml' | 'geojson'
+  filename: string
+  contentType: string
+  documentId: string | null
+  byteLength: number | null
+  /** Present when the export did not produce a file. */
+  error: string | null
+  /** Format-specific detail worth carrying into the deliverable record. */
+  detail?: Record<string, unknown>
 }
 
 export interface DraftQcOutput {
@@ -639,15 +666,135 @@ const renderExports: StageProcessor = async (ctx): Promise<StageResult> => {
     filename, contentType: 'application/pdf', bytes: pdf.buffer, preliminary: true,
   })
 
+  const cadExports = await emitCadExports(ctx, pkg)
+
   return {
     status: 'COMPLETED',
     outputs: {
       documentId: stored.documentId, filename,
       pageCount: pdf.pageCount, byteLength: pdf.buffer.length,
       frameFailures: pdf.frameFailures,
+      cadExports,
     } satisfies RenderOutput,
-    artifacts: [{ documentId: stored.documentId, filename }],
+    artifacts: [
+      { documentId: stored.documentId, filename },
+      ...cadExports
+        .filter(e => e.documentId)
+        .map(e => ({ documentId: e.documentId as string, filename: e.filename })),
+    ],
   }
+}
+
+/**
+ * Writes the engineering data exports beside the PDF.
+ *
+ * Three rules, each learned somewhere else in this engine:
+ *
+ *  1. **Never fails the stage.** The plan is already rendered and stored. A
+ *     DXF that did not write is a missing handoff file, not a missing plan,
+ *     and re-running the whole drawing chain to recover one would be worse
+ *     than delivering without it. Each failure is recorded per format.
+ *  2. **Nothing is fabricated.** GeoJSON needs a real coordinate transform.
+ *     If neither the offline registry nor the county service can supply one,
+ *     the file is ABSENT and says why — it is never written with untransformed
+ *     State Plane numbers, which a conforming reader would place off the coast
+ *     of West Africa.
+ *  3. **Status travels with the file.** A CAD file is emailed onward and
+ *     leaves its portal behind, so the professional document status is stamped
+ *     inside it, not only in the record that served it.
+ */
+async function emitCadExports(
+  ctx: StageContext,
+  pkg: LotPackage,
+): Promise<CadExportRecord[]> {
+  const base = `site-plan-${ctx.workflowId}`
+  const out: CadExportRecord[] = []
+
+  const store = async (
+    format: CadExportRecord['format'],
+    filename: string,
+    contentType: string,
+    body: string,
+    detail?: Record<string, unknown>,
+  ): Promise<void> => {
+    const bytes = Buffer.from(body, 'utf8')
+    const rec = await ctx.capabilities.storeArtifact({
+      workflowId: ctx.workflowId, job: ctx.job,
+      filename, contentType, bytes, preliminary: true,
+    })
+    out.push({
+      format, filename, contentType,
+      documentId: rec.documentId, byteLength: bytes.length, error: null, detail,
+    })
+  }
+
+  const fail = (
+    format: CadExportRecord['format'],
+    filename: string,
+    contentType: string,
+    e: unknown,
+  ): void => {
+    const message = e instanceof Error ? e.message : String(e)
+    out.push({
+      format, filename, contentType,
+      documentId: null, byteLength: null, error: message,
+    })
+    ctx.capabilities.trace({
+      workflowId: ctx.workflowId, job: ctx.job,
+      event: 'cad_export_failed',
+      detail: { format, filename, message },
+    } as never)
+  }
+
+  const sourceNote = pkg.twin.sources
+    .map(s => `${s.dataset} (${s.authority}, level ${s.reliabilityLevel})`)
+    .join('; ')
+
+  // ── DXF ──
+  try {
+    const ncs = toDxfNcs(pkg.twin, {
+      status: 'PRELIMINARY_NOT_FOR_CONSTRUCTION',
+      crs: pkg.twin.crs ?? null,
+      verticalDatum: pkg.twin.verticalDatum ?? null,
+      provenance: sourceNote || null,
+    })
+    await store('dxf', `${base}.dxf`, 'image/vnd.dxf', ncs.dxf, {
+      layers: ncs.layers,
+      entityCount: ncs.entityCount,
+      unmappedKinds: ncs.unmapped,
+      status: ncs.status,
+      layerStandard: 'US National CAD Standard / AIA CAD Layer Guidelines',
+    })
+  } catch (e) {
+    fail('dxf', `${base}.dxf`, 'image/vnd.dxf', e)
+  }
+
+  // ── LandXML ──
+  // Carries the survey semantics — parcels, coordinates, the datum — that a
+  // DXF flattens away.
+  try {
+    await store('landxml', `${base}.landxml.xml`, 'application/xml', toLandXml(pkg.twin))
+  } catch (e) {
+    fail('landxml', `${base}.landxml.xml`, 'application/xml', e)
+  }
+
+  // ── GeoJSON ──
+  try {
+    const transformer = createRegistryTransformer({
+      service: createArcGisTransformer(undefined, ctx.capabilities.fetchImpl),
+    })
+    const geojson = await toGeoJson(pkg.twin, transformer)
+    await store('geojson', `${base}.geojson`, 'application/geo+json', geojson, {
+      note:
+        'WGS84 for GIS interchange only. The engineering coordinates of record ' +
+        'are retained per feature under `engineeringGeometry`; the boundary is ' +
+        'the State Plane geometry, not this one.',
+    })
+  } catch (e) {
+    fail('geojson', `${base}.geojson`, 'application/geo+json', e)
+  }
+
+  return out
 }
 
 const runDraftQc: StageProcessor = async (ctx): Promise<StageResult> => {

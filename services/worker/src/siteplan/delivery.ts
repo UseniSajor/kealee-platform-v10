@@ -37,6 +37,15 @@ interface RenderOutput {
   filename?: string
   pageCount?: number
   frameFailures?: { sheet: string; missing: string[] }[]
+  cadExports?: {
+    format: 'dxf' | 'landxml' | 'geojson'
+    filename: string
+    contentType: string
+    documentId: string | null
+    byteLength: number | null
+    error: string | null
+    detail?: Record<string, unknown>
+  }[]
 }
 
 interface ResolvePropertyOutput {
@@ -115,6 +124,25 @@ export interface SitePlanDeliverableRecord {
     verticalDatum: string | null
   }
   rulePackVersion: string | null
+  /**
+   * Engineering data exports the customer can download.
+   *
+   * Listed even when one failed: a file the engine tried and could not produce
+   * is a fact the customer is entitled to, and silence would read as "this
+   * plan has no CAD" rather than "the CAD did not write this time".
+   */
+  dataExports: {
+    format: 'dxf' | 'landxml' | 'geojson'
+    label: string
+    filename: string
+    documentId: string | null
+    byteLength: number | null
+    available: boolean
+    /** Why it is absent, when it is. */
+    unavailableReason: string | null
+    /** What a recipient needs to know before opening it. */
+    note: string
+  }[]
   qc: {
     issuable: boolean
     summary: string | null
@@ -125,6 +153,25 @@ export interface SitePlanDeliverableRecord {
     frameFailures: { sheet: string; missing: string[] }[]
   }
   disclaimer: string
+}
+
+const DATA_EXPORT_LABELS: Record<string, string> = {
+  dxf: 'CAD drawing (DXF)',
+  landxml: 'Survey data (LandXML)',
+  geojson: 'GIS data (GeoJSON)',
+}
+
+const DATA_EXPORT_NOTES: Record<string, string> = {
+  dxf:
+    'Layered to the US National CAD Standard so your engineer or surveyor can ' +
+    'work in it directly. Preliminary and not sealed — the status is stamped ' +
+    'inside the file.',
+  landxml:
+    'Parcel geometry, coordinates and datum in the format survey and civil ' +
+    'packages exchange. Preserves what a DXF flattens away.',
+  geojson:
+    'WGS84 for mapping and GIS. The engineering coordinates of record are kept ' +
+    'per feature; the boundary is the State Plane geometry, not this one.',
 }
 
 function asRecord<T>(v: unknown): T | null {
@@ -180,6 +227,16 @@ export function buildSitePlanDeliverable(input: {
       verticalDatum: terrain?.verticalDatum ?? null,
     },
     rulePackVersion: rules?.packVersion ?? null,
+    dataExports: (render?.cadExports ?? []).map(e => ({
+      format: e.format,
+      label: DATA_EXPORT_LABELS[e.format] ?? e.format.toUpperCase(),
+      filename: e.filename,
+      documentId: e.documentId,
+      byteLength: e.byteLength,
+      available: Boolean(e.documentId),
+      unavailableReason: e.documentId ? null : (e.error ?? 'The export did not produce a file.'),
+      note: DATA_EXPORT_NOTES[e.format] ?? '',
+    })),
     qc: {
       issuable: qc?.issuable ?? false,
       summary: qc?.summary ?? null,
@@ -197,8 +254,8 @@ export function buildSitePlanDeliverable(input: {
  * Site-plan SKUs and what the engine runs after the preliminary is delivered.
  *
  * Every product is DELIVERED the moment the preliminary renders — the plan
- * is generated fully and never held for a professional's review. The higher
- * tiers add work the engine also runs on its own: a review is routed for a
+ * is generated fully and never held for a professional's review. The full
+ * detailed products add work the engine also runs on its own: a review is routed for a
  * licensed professional who may add a sign-off, and `permit_site_plan` goes
  * straight on to issuance QC and the submission package. Mirrors
  * `ORDER_STATUSES` in web-main's order-status.ts — values, not the module,

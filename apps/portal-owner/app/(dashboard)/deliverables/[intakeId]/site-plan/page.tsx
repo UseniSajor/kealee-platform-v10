@@ -29,8 +29,7 @@ import {
   sitePlanOrderStage,
   SITE_PLAN_PACKAGE_GUIDES,
   SITE_PLAN_LABELS,
-  type SitePlanDeliverable,
-} from '@/lib/site-plan-deliverable'
+  type SitePlanDeliverable, sitePlanDataExportUrl } from '@/lib/site-plan-deliverable'
 
 const NAVY = '#1A2B4A'
 const TEAL = '#2ABFBF'
@@ -187,6 +186,8 @@ export default function SitePlanDeliverablePage() {
   const pending = d.qc.pendingSeal
   const p = d.property
   const pdfUrl = sitePlanDocumentUrl(intake.id)
+  // Orders delivered before the exports existed have no such field.
+  const exports = d.dataExports ?? []
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-8">
@@ -245,7 +246,7 @@ export default function SitePlanDeliverablePage() {
         </section>
       )}
 
-      {/* Professional review notice — higher tiers */}
+      {/* Professional review notice — full/detailed products */}
       {stage === 'professional_review' && (
         <div className="mb-6 rounded-2xl border px-5 py-4 flex gap-3" style={{ borderColor: `${TEAL}40`, backgroundColor: '#F1FCFC' }}>
           <ShieldCheck className="h-5 w-5 shrink-0 mt-0.5" style={{ color: '#1A8F8F' }} />
@@ -289,6 +290,51 @@ export default function SitePlanDeliverablePage() {
 
         {/* Facts */}
         <div className="lg:col-span-2 space-y-6">
+          {exports.length > 0 && (
+            <Card title="Engineering files" icon={<Download className="h-4 w-4" style={{ color: TEAL }} />}>
+              <p className="mb-4 text-xs text-gray-500">
+                Give these to your engineer, surveyor or architect. They open the drawing
+                directly rather than redrawing it from the PDF.
+              </p>
+              <ul className="space-y-3">
+                {exports.map(x => (
+                  <li key={x.format} className="rounded-xl border border-gray-100 p-3">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold" style={{ color: NAVY }}>{x.label}</p>
+                        <p className="mt-0.5 text-xs text-gray-500">{x.note}</p>
+                      </div>
+                      {x.available && x.documentId ? (
+                        <a
+                          href={sitePlanDataExportUrl(intake.id, x.documentId)}
+                          download
+                          className="shrink-0 inline-flex items-center gap-1.5 rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-semibold text-gray-600 hover:bg-gray-50"
+                        >
+                          <Download className="h-3.5 w-3.5" />
+                          {x.byteLength ? `${Math.max(1, Math.round(x.byteLength / 1024))} KB` : 'Download'}
+                        </a>
+                      ) : (
+                        <span className="shrink-0 rounded-lg bg-amber-50 px-2.5 py-1 text-[11px] font-semibold text-amber-800">
+                          Not available
+                        </span>
+                      )}
+                    </div>
+                    {!x.available && x.unavailableReason && (
+                      // A file the engine tried and could not produce is a fact
+                      // the customer is entitled to. Silence would read as
+                      // "this plan has no CAD".
+                      <p className="mt-2 text-xs text-amber-800">{x.unavailableReason}</p>
+                    )}
+                  </li>
+                ))}
+              </ul>
+              <p className="mt-4 text-xs text-gray-500">
+                These files are preliminary and not sealed. The status is stamped inside
+                each file so it travels with the drawing.
+              </p>
+            </Card>
+          )}
+
           <Card title="What the county records established" icon={<MapPin className="h-4 w-4" style={{ color: TEAL }} />}>
             <dl className="grid grid-cols-2 gap-x-4 gap-y-4">
               <Fact label="Zone" value={p.zoneCode ?? 'Not established'} />

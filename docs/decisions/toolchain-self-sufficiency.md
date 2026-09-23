@@ -231,7 +231,11 @@ Updated as work lands. "Deployed" means running in a Railway production service.
 | NCS DXF writer (`export/dxf-ncs.ts`) | 2026-09-23 | 19 tests + real-lot differential vs R12 | **not yet — scripts only** |
 | Registry + NCS DXF wired into `generate-site-plan.ts` | 2026-09-23 | generator exit 0 on 1005 Rollins Ave | n/a (diagnostic script) |
 | `tsc --noEmit` on `spatial-engine` | — | exit 0 | — |
-| Full suite after all of the above | — | **632 tests, 31 files, all pass** | — |
+| CAD emission in `render_exports` (DXF + LandXML + GeoJSON) | 2026-09-23 | vertical slice through the production runner, 5 new tests | **not yet — worker not redeployed** |
+| Document status stamped inside the DXF | 2026-09-23 | 5 tests inc. "never claims sealed under any status" | not yet |
+| `dataExports` projected into `sitePlanDeliverable` | 2026-09-23 | worker `tsc --noEmit` clean | not yet |
+| Portal "Engineering files" card + download route | 2026-09-23 | portal `tsc --noEmit` clean; **no browser test run** | not yet |
+| Full suite after all of the above | — | **641 tests, 31 files, all pass** | — |
 
 ### Gate A — measured result, 2026-09-23
 
@@ -297,15 +301,58 @@ Differential on 1005 Rollins Ave, both writers from the same twin:
 The R12 writer is **retained** and the scripts emit both (`*.r12.dxf`) so
 exports can be diffed rather than trusted, per amendment 1.
 
+### CAD on the paid path — landed 2026-09-23
+
+`siteplan.render_exports` now emits DXF, LandXML and GeoJSON beside the PDF and
+stores each through `storeArtifact`. Before this the stage produced the PDF and
+nothing else, so both DXF writers were reachable only from diagnostic scripts
+while `editable_cad` was a priced add-on in `quote.ts` with no producer behind
+it on a paid order.
+
+Three rules the implementation holds to:
+
+1. **It never fails the stage.** The plan is already rendered and stored. A DXF
+   that did not write is a missing handoff file, not a missing plan, and
+   re-running the drawing chain to recover one would be the wrong trade every
+   time. Each format records its own outcome — a `documentId` or a reason.
+2. **Nothing is fabricated.** GeoJSON needs a real transform. If neither the
+   offline registry nor the county service can supply one, the file is ABSENT
+   and says why. It is never written with untransformed State Plane numbers,
+   which a conforming RFC 7946 reader would place off the coast of West Africa.
+3. **Status travels inside the file.** A CAD file is emailed onward and leaves
+   its portal behind, so the professional document status is stamped on the
+   non-plot annotation layer along with the horizontal CRS, the vertical datum
+   and the source provenance. There is no `SEALED` value the writer can stamp —
+   the type has four unsealed states and nothing else, which is how amendment 9
+   is enforced rather than merely documented.
+
+Projection to the customer, per the engine's own rule that a stage output not
+in `sitePlanDeliverable` is invisible:
+
+```
+render_exports.cadExports
+  └─ worker buildSitePlanDeliverable → form_data.sitePlanDeliverable.dataExports
+       └─ portal /deliverables/[id]/site-plan → "Engineering files" card
+            └─ GET /api/site-plan/:intakeId/document?documentId=<id>
+```
+
+`dataExports` is optional in the portal's structural copy so orders delivered
+before the exports existed keep rendering. A failed export is LISTED with its
+reason rather than omitted — silence would read as "this plan has no CAD"
+instead of "the CAD did not write this time". The download route intersects
+`documentId` with `projectId = intakeId`, so it is a selector within an order
+the caller is already authorised for and never a way out of it; an explicit id
+that does not resolve returns 404 rather than falling back to the PDF under the
+requested filename.
+
 ### Not done — stated so it is not mistaken for done
 
-- **No stage emits CAD at all.** `siteplan.render_exports` produces the PDF and
-  nothing else — there is no DXF, no LandXML and no GeoJSON on the production
-  path. Both writers are reachable only from diagnostic scripts. This matters
-  commercially: `editable_cad` is a priced add-on in `quote.ts` with no
-  producer behind it on the paid path.
-- The transformation registry is wired into `generate-site-plan.ts` only.
-  No deployed service calls it.
+- CAD emission is **implemented and tested, not deployed.** No production order
+  has run through it. The worker must be redeployed before a paying customer
+  sees an Engineering Files card.
+- `editable_cad` now has a producer, but the **add-on is still not linked to
+  it** in `quote.ts` — buying the add-on and receiving the files are two
+  separate facts today.
 - `@turf/turf` and `geotiff` are installed and **unused**.
 - Phase B (`packages/cad-kernel`) not started; the concept engine's own DXF
   writer and geometry kernel are still a second implementation.

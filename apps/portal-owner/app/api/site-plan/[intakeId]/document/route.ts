@@ -1,7 +1,14 @@
 /**
- * GET /api/site-plan/:intakeId/document
+ * GET /api/site-plan/:intakeId/document[?documentId=<id>]
  *
- * Serves the customer's site-plan PDF.
+ * Serves the customer's site-plan PDF, or — with `documentId` — one of the
+ * engineering data exports (DXF, LandXML, GeoJSON) the render stage produced
+ * beside it.
+ *
+ * `documentId` is always intersected with `projectId = intakeId`, so it can
+ * only ever reach a document belonging to the order the caller has already
+ * been authorised for. It is a selector within that order, never a way out of
+ * it.
  *
  * The engine stores the rendered sheet set in the `documents` table with
  * `projectId = intakeId` and a `site-plan*` category, bytes base64-encoded in
@@ -17,11 +24,21 @@ import { verifyIntakeAccessForSession } from '@/lib/verify-intake-access'
 
 export const dynamic = 'force-dynamic'
 
+/** Content type from the stored filename. The `documents` row does not carry one. */
+function contentTypeFor(filename: string): { type: string; inline: boolean } {
+  const lower = filename.toLowerCase()
+  if (lower.endsWith('.dxf')) return { type: 'image/vnd.dxf', inline: false }
+  if (lower.endsWith('.geojson')) return { type: 'application/geo+json', inline: false }
+  if (lower.endsWith('.xml')) return { type: 'application/xml', inline: false }
+  return { type: 'application/pdf', inline: true }
+}
+
 export async function GET(
-  _req: Request,
+  req: Request,
   { params }: { params: { intakeId: string } },
 ) {
   const { intakeId } = params
+  const requestedDocumentId = new URL(req.url).searchParams.get('documentId')
   if (!intakeId) return Response.json({ error: 'Missing intakeId' }, { status: 400 })
 
   const access = await verifyIntakeAccessForSession(intakeId)
@@ -44,7 +61,7 @@ export async function GET(
   const deliverable = (intake?.form_data as Record<string, unknown> | null)?.sitePlanDeliverable as
     | { document?: { id?: string } }
     | undefined
-  const preferredId = deliverable?.document?.id
+  const preferredId = requestedDocumentId ?? deliverable?.document?.id
 
   let query = supabaseAdmin
     .from('documents')
@@ -56,6 +73,12 @@ export async function GET(
   if (preferredId) query = query.eq('id', preferredId)
 
   let { data: docs } = await query
+  if ((!docs || docs.length === 0) && requestedDocumentId) {
+    // An explicit request that does not resolve is a 404. Falling back to the
+    // PDF here would hand back a different file under the name of the one
+    // that was asked for.
+    return Response.json({ error: 'That file is not part of this order.' }, { status: 404 })
+  }
   if ((!docs || docs.length === 0) && preferredId) {
     ;({ data: docs } = await supabaseAdmin
       .from('documents')
@@ -76,10 +99,12 @@ export async function GET(
   }
 
   const filename = String(doc.name || `site-plan-${intakeId}.pdf`).replace(/[^a-zA-Z0-9._-]/g, '-')
+  const { type, inline } = contentTypeFor(filename)
   return new Response(Buffer.from(content.data, 'base64'), {
     headers: {
-      'Content-Type': 'application/pdf',
-      'Content-Disposition': `inline; filename="${filename}"`,
+      'Content-Type': type,
+      // A CAD file rendered inline is a wall of text. It downloads.
+      'Content-Disposition': `${inline ? 'inline' : 'attachment'}; filename="${filename}"`,
       'Cache-Control': 'private, no-store',
     },
   })

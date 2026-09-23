@@ -113,9 +113,12 @@ describe('export', () => {
     { kind: 'Contour', line: [[1340350, 440150], [1340410, 440215]] } as never,
   ])
 
-  it('declares only the layers the drawing actually uses', () => {
+  it('declares only the layers the drawing actually uses, plus the stamp layer', () => {
     const r = toDxfNcs(twin)
-    expect(r.layers).toEqual(['C-BLDG-FTPR-N', 'C-PROP-BRL', 'C-TOPO-MAJR-E', 'V-PROP-BNDY'])
+    expect(r.layers).toEqual([
+      'C-ANNO-NPLT', // carries the unconditional status stamp
+      'C-BLDG-FTPR-N', 'C-PROP-BRL', 'C-TOPO-MAJR-E', 'V-PROP-BNDY',
+    ])
   })
 
   it('writes an entity for every feature that carries geometry', () => {
@@ -151,6 +154,55 @@ describe('export', () => {
     // Closure is flag 1 on the LWPOLYLINE; the open export must not carry it
     // on the same group code the closed one does.
     expect(closed).not.toBe(dxf)
+  })
+})
+
+describe('professional document status', () => {
+  const twin = twinWith([{ kind: 'Parcel', ring: LOT_RING } as never])
+
+  it('stamps PRELIMINARY by default', () => {
+    const r = toDxfNcs(twin)
+    expect(r.status).toBe('PRELIMINARY_NOT_FOR_CONSTRUCTION')
+    expect(r.dxf).toContain('NOT FOR CONSTRUCTION OR PERMIT SUBMISSION')
+  })
+
+  it('never claims the drawing is sealed, under any status', () => {
+    // The repo already records this trap: a check for "SEAL" passes on
+    // "SEALED" inside another phrase. So the assertion is not "SEALED is
+    // absent" — it is that EVERY occurrence of it is negated. No automated
+    // process may represent a drawing as professionally certified.
+    const statuses = ['INTERNAL_DRAFT', 'REVIEW_COPY',
+      'PRELIMINARY_NOT_FOR_CONSTRUCTION', 'PROFESSIONALLY_REVIEWED_UNSEALED']
+    for (const st of statuses) {
+      const out = toDxfNcs(twin, { status: st as never })
+      for (const m of out.dxf.matchAll(/SEALED/g)) {
+        const before = out.dxf.slice(Math.max(0, m.index - 8), m.index)
+        expect(before, `unnegated "SEALED" under ${st}`).toMatch(/NOT (A )?$/)
+      }
+      expect(out.dxf).toContain('NOT A SEALED DRAWING')
+      // And nothing that reads as an affirmative certification.
+      expect(out.dxf).not.toMatch(/SEALED BY|SEAL AND SIGNATURE|CERTIFIED BY/)
+    }
+  })
+
+  it('says a reviewed drawing is still not sealed', () => {
+    const r = toDxfNcs(twin, { status: 'PROFESSIONALLY_REVIEWED_UNSEALED' })
+    expect(r.dxf).toContain('PROFESSIONALLY REVIEWED - NOT SEALED')
+  })
+
+  it('carries the horizontal and vertical datum into the file', () => {
+    const r = toDxfNcs(twin, { crs: 'EPSG:2248', verticalDatum: 'NAVD88' })
+    expect(r.dxf).toContain('EPSG:2248')
+    expect(r.dxf).toContain('NAVD88')
+  })
+
+  it('puts the stamp clear of the drawing extent', () => {
+    // A stamp drawn through the parcel is worse than no stamp.
+    const minY = Math.min(...LOT_RING.coordinates.map(c => c[1]))
+    const r = toDxfNcs(twin)
+    const ys = [...r.dxf.matchAll(/\n\s*20\n(-?[0-9.]+)/g)].map(m => Number(m[1]))
+    const stampYs = ys.filter(y => y < minY)
+    expect(stampYs.length, 'stamp text below the parcel').toBeGreaterThan(0)
   })
 })
 

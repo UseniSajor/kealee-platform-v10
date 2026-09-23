@@ -66,9 +66,12 @@ function harness() {
   const capabilities = {
     fetchImpl: stubFetch(),
     async persist(r: PersistedStageOutput) { persisted.push(r) },
-    async storeArtifact(a: { bytes: Buffer; preliminary: boolean }) {
+    async storeArtifact(a: { bytes: Buffer; preliminary: boolean; filename: string; contentType: string }) {
       docSeq++
-      artifacts.push({ documentId: `doc_${docSeq}`, bytes: a.bytes.length, preliminary: a.preliminary })
+      artifacts.push({
+        documentId: `doc_${docSeq}`, bytes: a.bytes.length, preliminary: a.preliminary,
+        filename: a.filename, contentType: a.contentType,
+      })
       return { documentId: `doc_${docSeq}` }
     },
     trace(e: TraceEvent) { traces.push(e) },
@@ -147,9 +150,51 @@ describe('the vertical slice runs through the production runner', () => {
 
   it('produces a preliminary PDF artifact', async () => {
     const r = await driveSlice()
-    expect(r.artifacts).toHaveLength(1)
-    expect(r.artifacts[0].preliminary).toBe(true)
-    expect(r.artifacts[0].bytes).toBeGreaterThan(1000)
+    const pdf = r.artifacts.find(a => a.contentType === 'application/pdf')
+    expect(pdf, 'the PDF is the deliverable and must always be produced').toBeTruthy()
+    expect(pdf!.preliminary).toBe(true)
+    expect(pdf!.bytes).toBeGreaterThan(1000)
+  })
+
+  it('produces the engineering data exports beside the PDF', async () => {
+    // The handoff files. A consulting engineer or surveyor continues the work
+    // in their own platform rather than redrawing it, so the paid path emits
+    // them — previously they existed only in diagnostic scripts while
+    // `editable_cad` was a priced add-on with no producer.
+    const r = await driveSlice()
+    const types = r.artifacts.map(a => a.contentType).sort()
+    expect(types).toContain('image/vnd.dxf')
+    expect(types).toContain('application/xml')
+    expect(types).toContain('application/geo+json')
+  })
+
+  it('marks every CAD export preliminary, never sealed', async () => {
+    const r = await driveSlice()
+    for (const a of r.artifacts) {
+      expect(a.preliminary, `${a.filename} must be marked preliminary`).toBe(true)
+    }
+  })
+
+  it('records each export on the render stage, with its failure if it had one', async () => {
+    const r = await driveSlice()
+    const render = r.persisted.find(p => p.job === 'siteplan.render_exports')
+    const exports = (render?.outputs as { cadExports?: { format: string; documentId: string | null; error: string | null }[] })?.cadExports
+    expect(exports, 'render_exports must record what it emitted').toBeTruthy()
+    expect(exports!.map(e => e.format).sort()).toEqual(['dxf', 'geojson', 'landxml'])
+    // An export that failed carries its reason rather than vanishing.
+    for (const e of exports!) {
+      expect(e.documentId !== null || e.error !== null, `${e.format} reported neither a document nor a reason`).toBe(true)
+    }
+  })
+
+  it('delivers the plan even when a data export fails', async () => {
+    // The plan is already rendered and stored. Refusing to deliver it because
+    // a DXF did not write would be the wrong trade every time.
+    const r = await driveSlice()
+    const pdf = r.artifacts.find(a => a.contentType === 'application/pdf')
+    const deliver = r.persisted.find(p => p.job === 'siteplan.deliver_preliminary')
+    expect(pdf).toBeTruthy()
+    expect(deliver?.status).toBe('COMPLETED')
   })
 
   it('gives every discipline its own sheet, and never pads with empty ones', async () => {

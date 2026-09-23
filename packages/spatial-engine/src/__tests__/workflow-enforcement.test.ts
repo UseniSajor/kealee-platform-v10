@@ -243,7 +243,11 @@ describe('synchronisation — the definition must name real code', () => {
       if (typeof loaded[exp] !== 'function') missing.push(`${s.job} -> ${s.implementation}`)
     }
     expect(missing).toEqual([])
-  })
+    // Cold-importing every stage module pulls the whole export toolchain
+    // (proj4, the DXF writer, turf). On /mnt/c that resolution alone is tens
+    // of seconds, so this test gets its own budget rather than the suite
+    // default. It is a filesystem cost, not a slow assertion.
+  }, 180_000)
 
   it('keeps every first-release stage reachable from the first job', () => {
     let snap = newWorkflow('wf1')
