@@ -104,15 +104,15 @@ const DELIVERABLES = [
   {
     icon: Video,
     number: '08',
-    title: 'Design Consultation (Premium+)',
-    subtitle: '15-minute video call — included with Premium+; email support on all tiers',
+    title: 'Optional Design Consultation',
+    subtitle: 'Available as an add-on; email support is included',
     items: [
       'Walk through your concept together (Zoom, Google Meet, or Zoho)',
       'Review every design decision in context',
       'Refine direction based on your feedback',
       'Map out clear next steps specific to your project',
     ],
-    callout: 'Premium+ includes a live consultation; Essential and Premium get email support within 1 business day.',
+    callout: 'Add a live consultation when you want a guided review of the completed package.',
     isBonus: true,
   },
 ]
@@ -121,7 +121,7 @@ const NEXT_STEPS = [
   { step: '1', label: 'Submit your project details', desc: 'Complete the quick intake form with photos and your project goals.' },
   { step: '2', label: 'We generate your concept package', desc: 'Our AI analyzes your property, style preferences, and project type.' },
   { step: '3', label: 'You receive your full design concept', desc: 'Delivered to your inbox and accessible in your Kealee portal.' },
-  { step: '4', label: 'Get support on your package', desc: 'Premium+ includes a live consultation; all tiers get email support within 1 business day.' },
+  { step: '4', label: 'Review and refine', desc: 'Email support and one revision round are included. A live consultation is available as an add-on.' },
   { step: '5', label: 'Move into design, permits, or build', desc: 'Your concept becomes the foundation for every next step.' },
 ]
 
@@ -173,7 +173,7 @@ export default function ConceptPackagePage() {
               <Clock className="h-4 w-4 text-green-500" /> Delivered in 2–5 business days
             </span>
             <span className="flex items-center gap-1.5">
-              <Video className="h-4 w-4 text-green-500" /> Consultation included
+              <Video className="h-4 w-4 text-green-500" /> Consultation add-on available
             </span>
           </div>
         </div>

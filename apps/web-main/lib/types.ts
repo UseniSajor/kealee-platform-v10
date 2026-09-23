@@ -35,7 +35,7 @@ export interface Concept {
   floorPlanUrl?: string
   /** Inline SVG when storage upload failed but layout was generated */
   floorplanSvgInline?: string
-  /** Room layout summary from concept-engine (tier 2+ floor plan package) */
+  /** Room layout summary from the included concept floor plan. */
   layoutPlan?: {
     totalAreaFt2?: number
     roomCount?: number

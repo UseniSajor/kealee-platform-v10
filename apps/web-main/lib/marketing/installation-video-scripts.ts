@@ -1,6 +1,6 @@
 /**
  * Shot lists and prompts for AI installation / construction process videos.
- * Card loops = single condensed clip (Kling). Deliverables = multi-segment (Premium+ Sora).
+ * Card loops = single condensed clip (Kling). Purchased cinematic deliverables = multi-segment Sora.
  */
 
 export type VideoNarrativeId =

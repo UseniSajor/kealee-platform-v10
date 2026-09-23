@@ -4,7 +4,7 @@ import { getSupabaseAdmin } from '@/lib/supabase-server'
 
 export const dynamic = 'force-dynamic'
 
-/** GET /api/v30/cad/:intakeId — download concept DXF (Premium+ CAD export). */
+/** GET /api/v30/cad/:intakeId — download a purchased concept DXF add-on. */
 export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ intakeId: string }> },
@@ -30,7 +30,7 @@ export async function GET(
   const cad = deliverables?.cadExport
   const dxf = cad?.dxf
   if (!dxf) {
-    return NextResponse.json({ error: 'CAD export not ready — Premium+ with floorplan required' }, { status: 404 })
+    return NextResponse.json({ error: 'CAD export is not ready or was not selected as an add-on' }, { status: 404 })
   }
 
   const filename = cad?.dxfFilename ?? 'kealee-layout.dxf'

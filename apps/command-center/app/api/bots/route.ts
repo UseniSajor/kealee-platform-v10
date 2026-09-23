@@ -68,7 +68,7 @@ const BOTS = [
   {
     id:          'pitch-bot',
     name:        'Concept Pitch Bot',
-    description: 'Given a qualified lead profile, produces a personalized concept pitch — which package tier to recommend, why it fits, and a compelling one-paragraph sell for email or DM.',
+    description: 'Given a qualified lead profile, produces a personalized concept pitch — which service and optional add-ons fit, why, and a concise sell for email or DM.',
     version:     '1.0.0',
     costProfile: 'low',
     requiresLLM: true,

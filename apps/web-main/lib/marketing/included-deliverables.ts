@@ -9,17 +9,17 @@ export const ESTIMATE_INCLUDED_WITH = [
   'adu_feasibility',
   'addition_feasibility',
   'basement_finish',
-  'design_estimate_permit_bundle',
+  'preliminary_site_plan',
+  'verified_site_feasibility',
   'professional_drawings',
-  'permit_package',
-  'permit_path_only',
+  'permit_site_plan',
 ] as const
 
 export const ESTIMATE_INCLUDED_COPY =
-  'RSMeans-validated cost estimate is included with your design concept, professional design drawings, and permit packages — no separate estimate purchase required.'
+  'A basic planning estimate is included with every design concept and preliminary site plan. A detailed construction estimate is included with permit-set building plans and full detailed site plans — no separate estimate purchase required.'
 
 export const POST_CONCEPT_NEXT_STEP_COPY =
-  'Your next step is permit-ready professional drawings — estimate is already included in your concept package.'
+  'Your next step is permit-set professional drawings. Your concept already includes a basic planning estimate, and the permit-set plan package includes its detailed construction estimate.'
 
 export function isEstimateBundled(serviceKey: string): boolean {
   return (ESTIMATE_INCLUDED_WITH as readonly string[]).includes(serviceKey)

@@ -183,7 +183,7 @@ export async function loadConceptOrderDetail(id: string): Promise<ConceptQueueIt
             : null,
           exteriorConceptImages:  Array.isArray(co.renderUrls) ? (co.renderUrls as string[]).slice(0, 3) : [],
           landscapeConceptImages: Array.isArray(co.renderUrls) ? (co.renderUrls as string[]).slice(3, 6) : [],
-          v30Landscape: fd.v30LandscapePremiumPlus ?? null,
+          v30Landscape: fd.v30LandscapePackage ?? fd.v30LandscapePremiumPlus ?? null,
           v30Floorplan: fd.v30FloorplanDeliverables ?? null,
         },
       },

@@ -288,7 +288,7 @@ export function V30WorkspaceTabContent({
           )}
           {landscape && (
             <div className="space-y-3 rounded-xl border border-emerald-200 bg-emerald-50/50 p-4">
-              <p className="text-sm font-bold text-emerald-900">Premium+ landscape package</p>
+              <p className="text-sm font-bold text-emerald-900">Landscape concept package</p>
               {landscape.estimatedCost && (
                 <p className="text-lg font-bold text-slate-900">
                   ${landscape.estimatedCost.low.toLocaleString()} – ${landscape.estimatedCost.high.toLocaleString()}

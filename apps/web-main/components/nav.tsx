@@ -38,12 +38,6 @@ export const NAV_SECTIONS: NavSection[] = [
     activeColor: "text-cyan-700 border-b-2 border-cyan-600",
   },
   {
-    label: "Estimate",
-    href: "/services/cost-estimate",
-    hoverColor: "hover:text-orange-500",
-    activeColor: "text-orange-500 border-b-2 border-orange-500",
-  },
-  {
     label: "Permits",
     href: "/services/permits",
     hoverColor: "hover:text-violet-700",
@@ -207,6 +201,7 @@ export function SiteNav() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   if (isAgencyPartnerShellPath(pathname)) return null;
+  if (pathname === "/checkout" || pathname.endsWith("/checkout")) return null;
 
   return (
     <nav className="sticky top-0 z-50 border-b border-[#10233e]/10 bg-white/95 shadow-[0_8px_30px_rgba(16,35,62,.05)] backdrop-blur-xl">
@@ -216,7 +211,7 @@ export function SiteNav() {
           <div className="flex items-center gap-6">
             <Link href="/" className="flex shrink-0 items-center">
               <KealeeLogo />
-              <span className="sr-only">Kealee Construction — home</span>
+              <span className="sr-only">Kealee — home</span>
             </Link>
 
             {/* Desktop tabs — one button for each service */}

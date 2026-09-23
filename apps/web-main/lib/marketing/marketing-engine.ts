@@ -446,7 +446,7 @@ Stop guessing on project costs. Get precise estimates fast.
 ✓ Professional recommendations
 
 Get an estimate:
-https://kealee.com/intake/estimate
+https://kealee.com/services
       `,
       targetPersona: 'homeowners',
     },

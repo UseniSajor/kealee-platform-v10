@@ -245,7 +245,7 @@ const CONCEPT_INCLUDED = [
   'Preliminary concept plan, labelled and dimensioned where source measurements are available',
   'Six project-specific proposed design views',
   'Materials and finish direction with planning-level bill of materials',
-  'Scope and construction planning cost range',
+  'Basic planning estimate with major scope assumptions, allowances, and exclusions',
   'One revision round',
   'Zoning district/code, preliminary allowances, and buildability snapshot with sources',
   'Permit scope brief — disciplines and likely permit types',
@@ -354,6 +354,7 @@ export const PRODUCT_PRICING: Readonly<Record<string, ProductPricing>> = {
       'Parcel boundary and setbacks from county GIS, with sources named',
       'Zoning analysis and buildable-area reasoning',
       'Proposed improvements located within the buildable area',
+      'Basic planning estimate with major scope assumptions, allowances, and exclusions',
       'Assumptions and confidence stated for every fact',
     ],
     exclusions: [
@@ -402,6 +403,7 @@ export const PRODUCT_PRICING: Readonly<Record<string, ProductPricing>> = {
       'Permit-requirements summary for the jurisdiction',
       'Coordination of the survey-based site plan through to submission readiness',
       'Licensed professional involvement appropriate to the jurisdiction',
+      'Detailed construction estimate aligned to the coordinated site-plan set',
     ],
     exclusions: [
       'Kealee does not perform the boundary survey',
@@ -530,6 +532,7 @@ export const PRODUCT_PRICING: Readonly<Record<string, ProductPricing>> = {
       'Drawing set prepared for permit submission',
       'Licensed professional of record for the discipline required',
       'Coordination with the jurisdiction’s submittal checklist',
+      'Detailed construction estimate aligned to the permit-set building plans',
     ],
     exclusions: ['Agency fees are paid by the applicant', 'Construction administration is a separate engagement'],
     thirdPartyFees: ['Agency permit and review fees', 'Boundary survey where the jurisdiction requires one'],

@@ -5,8 +5,8 @@ import {
 } from '@kealee/kealee-agent-stack'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
 
-/** Merge Premium+ garden bot outputs into one customer-facing package on the intake lead. */
-export async function syncLandscapePremiumPlusPackage(input: {
+/** Merge garden bot outputs into the single customer-facing landscape package. */
+export async function syncLandscapePackage(input: {
   intakeId: string
   projectPath: string
   tier?: number
@@ -17,7 +17,6 @@ export async function syncLandscapePremiumPlusPackage(input: {
   }>
   sitePlanImageUrl?: string
 }): Promise<LandscapePremiumPackage | null> {
-  if ((input.tier ?? 0) < 3) return null
   if (!isGardenLandscapeScope(input.projectPath)) return null
 
   const design = input.executions.find(e => e.botType === 'design' && e.status === 'COMPLETE')
@@ -54,7 +53,7 @@ export async function syncLandscapePremiumPlusPackage(input: {
     .update({
       form_data: {
         ...formData,
-        v30LandscapePremiumPlus: pkg,
+        v30LandscapePackage: pkg,
         conceptOutput: {
           ...((formData.conceptOutput ?? {}) as Record<string, unknown>),
           landscapePackage: pkg,

@@ -160,7 +160,7 @@ export const COMMAND_REGISTRY: CommandSchema[] = [
   {
     id:          'generate-pitch',
     name:        'Generate Pitch',
-    description: 'Create a personalized concept package pitch for a qualified lead. Outputs a recommended tier, price, pitch paragraph, and CTA.',
+    description: 'Create a personalized concept-package pitch for a qualified lead. Outputs the recommended service, optional add-ons, scoped price, pitch paragraph, and CTA.',
     category:    'leads',
     tags:        ['pitch', 'pitch-bot', 'concept', 'sales'],
     inputs: {
@@ -204,7 +204,7 @@ export const COMMAND_REGISTRY: CommandSchema[] = [
     },
     steps: [
       'Send lead profile to pitch-bot',
-      'Bot recommends Tier 1/2/3 concept package',
+      'Bot recommends the correct service and optional add-ons',
       'Return pitch paragraph, price, CTA, and funnel URL',
     ],
   },
@@ -241,12 +241,6 @@ export const COMMAND_REGISTRY: CommandSchema[] = [
         required:    false,
         placeholder: 'instagram_dm / facebook_bot / email_bot / chatbot',
         default:     'command_center',
-      },
-      tier: {
-        type:     'number',
-        label:    'Package Tier (1–3)',
-        required: false,
-        default:  1,
       },
       budget: {
         type:        'string',
@@ -470,7 +464,7 @@ export const COMMAND_REGISTRY: CommandSchema[] = [
   {
     id:          'qualify-and-pitch',
     name:        'Qualify → Pitch',
-    description: 'Two-step pipeline: qualify an inbound lead message, then immediately generate a personalized concept pitch for the detected project type and tier.',
+    description: 'Two-step pipeline: qualify an inbound lead message, then immediately generate a personalized concept pitch for the detected project type and scope.',
     category:    'campaigns',
     tags:        ['pipeline', 'qualify', 'pitch', 'chain'],
     chain:       ['qualify-lead', 'generate-pitch'],
@@ -490,7 +484,7 @@ export const COMMAND_REGISTRY: CommandSchema[] = [
     },
     steps: [
       'Step 1 — qualify-lead: score and extract lead profile',
-      'Step 2 — generate-pitch: use detected tier + projectType as pitch inputs',
+      'Step 2 — generate-pitch: use lead quality + projectType as pitch inputs',
       'Return full qualification + personalized pitch in one response',
     ],
   },
@@ -668,7 +662,6 @@ async function executeAtomicCommand(
  *
  * Chain-specific output remapping:
  *   qualify-lead  → generate-pitch:  map tier, projectType, budget, location, timeline, score
- *   generate-pitch → capture-lead:   pass tier as numeric (recommendedTier)
  *   qualify-lead  → capture-lead:    map projectType → service, budget, location
  */
 function buildStepParams(
@@ -692,15 +685,10 @@ function buildStepParams(
   // Remap qualify-lead → capture-lead
   if (commandId === 'capture-lead') {
     const q = stepOutputs['qualify-lead']
-    const p = stepOutputs['generate-pitch']
     if (q) {
       if (!merged.service)  merged.service  = q.projectType
       if (!merged.budget)   merged.budget   = q.budget
       if (!merged.location) merged.location = q.location
-    }
-    if (p && !merged.tier) {
-      // capture-lead expects tier as 1|2|3 number
-      merged.tier = p.recommendedTier ?? 1
     }
   }
 

@@ -120,14 +120,6 @@ export function buildServiceJsonLd(): JsonLd {
           '@type': 'Offer',
           itemOffered: {
             '@type': 'Service',
-            name: 'Cost Estimation',
-            url: `${KEALEE_SITE_URL}/estimate`,
-          },
-        },
-        {
-          '@type': 'Offer',
-          itemOffered: {
-            '@type': 'Service',
             name: 'Contractor Marketplace',
             url: `${KEALEE_SITE_URL}/marketplace`,
           },

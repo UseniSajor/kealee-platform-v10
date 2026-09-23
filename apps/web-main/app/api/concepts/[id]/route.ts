@@ -137,7 +137,7 @@ export async function GET(
       // Before-photos uploaded by the client; used alongside "after" renders for comparison
       beforeUrls: (conceptOutput?.beforeUrls as string[] | undefined) ?? undefined,
 
-      // Video (tier 2+)
+      // Video (purchased add-on or historical entitlement)
       videoUrl:        conceptOutput?.videoUrl   as string | undefined,
       videoDuration:   conceptOutput?.videoDuration as number | undefined,
       videoFormatUrls: conceptOutput?.videoFormatUrls as Record<string, string> | undefined,

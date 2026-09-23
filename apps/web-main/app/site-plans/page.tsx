@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { ArrowRight, CheckCircle2, Globe2, Map, Ruler, ShieldCheck } from 'lucide-react'
+import { ArrowRight, CheckCircle2, Globe2, Map, ShieldCheck } from 'lucide-react'
 import {
   formatCatalogPrice,
   getPublicCatalogProduct,
@@ -15,7 +15,6 @@ export const metadata: Metadata = {
 
 const productKeys = [
   'preliminary_site_plan',
-  'verified_site_feasibility',
   'permit_site_plan',
 ] as const
 
@@ -30,19 +29,14 @@ const inclusions: Record<(typeof productKeys)[number], string[]> = {
     'Preliminary setbacks and overlays',
     'Preliminary buildable-area diagram',
     'One proposed footprint',
-  ],
-  verified_site_feasibility: [
-    'Verified source and effective-date record',
-    'Zoning and overlay review',
-    'Constraint and buildable-envelope review',
-    'Proposed footprint validation',
-    'Professional-review checklist',
+    'Basic planning estimate with assumptions and allowances',
   ],
   permit_site_plan: [
     'Validate the survey for permit filing',
     'Draft the jurisdiction-specific site plan',
     'Add setbacks, coverage, structures, and required notes',
     'Complete required professional review and sealing',
+    'Detailed construction estimate aligned to the plan set',
     'Revise for agency comments and add to the submission set',
   ],
 }
@@ -75,18 +69,18 @@ export default function SitePlansPage() {
 
       <section className="bg-slate-50 px-4 py-16 sm:px-6">
         <div className="mx-auto max-w-6xl">
-          <div className="grid gap-6 lg:grid-cols-3">
-            {products.map((product, index) => {
+          <div className="mx-auto grid max-w-4xl gap-6 lg:grid-cols-2">
+            {products.map((product) => {
               const key = product.key as (typeof productKeys)[number]
               return (
-                <article key={product.key} className={`flex flex-col overflow-hidden rounded-2xl border-2 p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-xl ${index === 0 ? 'border-teal-200 bg-gradient-to-br from-white to-teal-50' : index === 1 ? 'border-amber-200 bg-gradient-to-br from-white to-amber-50' : 'border-[#9a7659]/35 bg-gradient-to-br from-white to-[#f4ece3]'}`}>
+                <article key={product.key} className={`flex flex-col overflow-hidden rounded-2xl border-2 p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-xl ${key === 'preliminary_site_plan' ? 'border-teal-200 bg-gradient-to-br from-white to-teal-50' : 'border-[#9a7659]/35 bg-gradient-to-br from-white to-[#f4ece3]'}`}>
                   <div className="flex items-start justify-between gap-4">
-                    <span className={`flex h-11 w-11 items-center justify-center rounded-xl ${index === 1 ? 'bg-yellow-300 text-[#3f321f]' : index === 2 ? 'bg-[#7a563d] text-white' : 'bg-teal-700 text-white'}`}>
-                      {index === 0 ? <Map className="h-5 w-5" /> : index === 1 ? <Ruler className="h-5 w-5" /> : <ShieldCheck className="h-5 w-5" />}
+                    <span className={`flex h-11 w-11 items-center justify-center rounded-xl ${key === 'preliminary_site_plan' ? 'bg-teal-700 text-white' : 'bg-[#7a563d] text-white'}`}>
+                      {key === 'preliminary_site_plan' ? <Map className="h-5 w-5" /> : <ShieldCheck className="h-5 w-5" />}
                     </span>
                     <span className="text-lg font-black text-teal-800">{formatCatalogPrice(product)}</span>
                   </div>
-                  <p className="mt-5 text-xs font-bold uppercase tracking-widest text-teal-700">Level {index + 1}</p>
+                  <p className="mt-5 text-xs font-bold uppercase tracking-widest text-teal-700">{key === 'preliminary_site_plan' ? 'Preliminary planning product' : 'Full / detailed permit product'}</p>
                   <h2 className="mt-2 font-display text-xl font-bold text-slate-950">{product.name}</h2>
                   <p className="mt-3 text-sm leading-relaxed text-slate-600">{product.shortDescription}</p>
                   <ul className="mt-5 flex-1 space-y-2 border-t border-slate-100 pt-5">
@@ -108,7 +102,7 @@ export default function SitePlansPage() {
                     </ul>
                   )}
                   <Link href={product.href} className="mt-4 flex items-center justify-center gap-2 rounded-xl bg-teal-700 px-4 py-3 text-sm font-bold text-white hover:bg-teal-800">
-                    Choose this level <ArrowRight className="h-4 w-4" />
+                    Choose this product <ArrowRight className="h-4 w-4" />
                   </Link>
                 </article>
               )

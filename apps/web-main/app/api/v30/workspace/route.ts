@@ -65,7 +65,7 @@ export async function GET(req: NextRequest) {
     }>
   }
   const deliverables = formData.v30FloorplanDeliverables as Record<string, unknown> | undefined
-  const landscapePkg = formData.v30LandscapePremiumPlus as Record<string, unknown> | undefined
+  const landscapePkg = (formData.v30LandscapePackage ?? formData.v30LandscapePremiumPlus) as Record<string, unknown> | undefined
   if (deliverables && ws.executions) {
     const fp = ws.executions.find(e => e.botType === 'floorplan')
     if (fp) {
@@ -89,7 +89,7 @@ export async function GET(req: NextRequest) {
     quote: v30Quote,
     v30LotContext: formData.v30LotContext,
     v30FloorplanDeliverables: deliverables,
-    v30LandscapePremiumPlus: landscapePkg,
+    v30LandscapePackage: landscapePkg,
     ...ws,
   })
 }

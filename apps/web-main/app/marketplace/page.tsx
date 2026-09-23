@@ -3,7 +3,7 @@
 import { useState, useMemo, useRef, useEffect } from 'react'
 import {
   Search, X, ArrowRight, Home, Wrench, Plus, LayoutGrid,
-  Building2, Store, Flower2, Shield, Calculator, Users, Zap, PenTool, PlayCircle, CheckCircle2,
+  Building2, Store, Flower2, Shield, Users, Zap, PenTool, PlayCircle, CheckCircle2,
 } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -201,7 +201,7 @@ const SERVICE_CATEGORIES: ServiceCategory[] = [
 const BUILD_VIDEOS = [
   { tag: 'Design',   title: 'design + Validation',  description: 'See how upload-to-concept works: AI generates layouts, then staff validate zoning, structure, and cost band.', thumb: 'https://rkreqfpkxavqpsqexbfs.supabase.co/storage/v1/object/public/marketing-media/home/design.jpg',   video: '/media/service-videos/home-design-video.mp4' },
   { tag: 'Permits',  title: 'Permits We File & Track', description: 'We prepare the drawing package, submit to the agency, and respond to reviewer comments for you.',         thumb: 'https://rkreqfpkxavqpsqexbfs.supabase.co/storage/v1/object/public/marketing-media/home/permits.jpg', video: '/media/service-videos/home-permits-video.mp4' },
-  { tag: 'Estimate', title: 'Real Construction Costs', description: 'RSMeans-validated, line-item estimates your contractors can bid against with confidence.',                thumb: 'https://rkreqfpkxavqpsqexbfs.supabase.co/storage/v1/object/public/marketing-media/home/estimate.jpg', video: '/media/service-videos/home-estimate-video.mp4' },
+  { tag: 'Included', title: 'Costs Matched to the Plan', description: 'Basic estimating comes with concepts and preliminary site plans; detailed estimating comes with permit-set plans.', thumb: 'https://rkreqfpkxavqpsqexbfs.supabase.co/storage/v1/object/public/marketing-media/home/estimate.jpg', video: '/media/service-videos/home-estimate-video.mp4' },
   { tag: 'Build',    title: 'From Foundation to Final', description: 'Every milestone, payment, document, and site photo tracked end-to-end in your project workspace.',       thumb: 'https://rkreqfpkxavqpsqexbfs.supabase.co/storage/v1/object/public/marketing-media/home/build.jpg',    video: '/media/service-videos/home-build-video.mp4' },
 ]
 
@@ -250,7 +250,7 @@ function SeeItBuiltBand() {
 const CROSS_SERVICES = [
   { label: 'Design Concept',      price: `From ${CONCEPT_FROM}`, href: '/concept',                  Icon: Zap,        desc: 'AI renders, materials & layout for your project' },
   { label: 'Contractor Match',    price: CONTRACTOR_MATCH_COPY,       href: '/intake/contractor_match',  Icon: Users,      desc: 'Matched to 3 vetted local contractors' },
-  { label: 'Project Estimate',    price: 'From $595',  href: '/estimate',                 Icon: Calculator, desc: 'Detailed cost breakdown for contractor bidding' },
+  { label: 'Preliminary Site Plan', price: 'Estimate included', href: '/services/site-plan', Icon: LayoutGrid, desc: 'Property plan, zoning, constraints, and basic planning estimate' },
 ]
 
 // ─── Combo Packages ────────────────────────────────────────────────────────────

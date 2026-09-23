@@ -3,7 +3,7 @@
  * Body: { intakeId: string }
  *
  * Idempotent — trims the completed master concept video into 30s, 15s, and
- * 10s cuts for Premium+ (tier 3) orders, then writes the URLs back to
+ * 10s cuts for orders with the multi-format video add-on, then writes the URLs back to
  * conceptOutput.videoFormatUrls in Supabase.
  *
  * Called as fire-and-forget from /api/concept/video GET once the master
@@ -12,7 +12,6 @@
  */
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
-import { resolveConceptTier } from '@kealee/core-rules'
 import { downloadUrlToBuffer } from '@/lib/marketing/card-media-storage'
 import { trimMp4ToSeconds } from '@/lib/marketing/video-stitch'
 
@@ -67,12 +66,13 @@ export async function POST(req: NextRequest) {
     }
 
     const formData      = (intake.form_data ?? {}) as Record<string, unknown>
-    const tier          = resolveConceptTier(formData, { projectPath: intake.project_path as string })
     const conceptVideo  = formData.conceptVideo as { status?: string; outputUrl?: string } | undefined
     const conceptOutput = formData.conceptOutput as Record<string, unknown> | undefined
 
-    if (tier < 3) {
-      return NextResponse.json({ skipped: true, reason: 'not tier 3' })
+    const addOns = Array.isArray(formData.addOns) ? (formData.addOns as unknown[]).map(String) : []
+    const historicalMultiFormat = formData.v30 !== true && Number(formData.tier) >= 3
+    if (!addOns.includes('interactive_walk') && !historicalMultiFormat) {
+      return NextResponse.json({ skipped: true, reason: 'multi-format video add-on not purchased' })
     }
 
     if (!conceptVideo?.outputUrl || conceptVideo.status !== 'completed') {

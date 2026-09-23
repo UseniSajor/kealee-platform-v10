@@ -122,7 +122,7 @@ We file permits in DC, MD, and NoVA. → link in bio`,
 Swipe through → each step saves time and money.
 
 1️⃣ Know your permit status
-2️⃣ Get a cost estimate first
+2️⃣ Review the estimate included with your plan
 3️⃣ Write a scope of work
 4️⃣ Verify license + insurance
 5️⃣ Get 3 comparable bids

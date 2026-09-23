@@ -23,7 +23,7 @@ export interface Service {
   /** Computed from the quoting engine — never authored. */
   priceDisplay: string
   heroImage: string        // Unsplash URL
-  /** 'precon' = design/planning services (design concepts, estimates, permits) · 'build' = construction execution */
+  /** 'precon' = site planning, design concepts, and permits · 'build' = construction execution */
   phase: 'precon' | 'build'
   category: 'remodel' | 'addition' | 'landscape' | 'design' | 'construction'
   /** What Kealee actually delivers — e.g. "Design Package", "Concept Package", "Custom Quote" */
@@ -51,7 +51,7 @@ export const SERVICES: Service[] = [
     intakePath: 'kitchen_remodel',
     label: 'Kitchen Remodel',
     shortLabel: 'Kitchen',
-    description: 'Transform your kitchen with AI-generated concepts, detailed cost estimates, and permit-ready plans. From updated cabinets to full gut-renovations with custom islands.',
+    description: 'Transform your kitchen with a coordinated design concept, basic planning estimate, and permit-path guidance. From updated cabinets to full gut renovations with custom islands.',
     priceDisplay: '',
     heroImage: '/images/services/kitchen-concept.jpg',
     phase: 'precon',
@@ -60,7 +60,7 @@ export const SERVICES: Service[] = [
     deliveryDays: '3–5 days',
     videoAddOnAvailable: true,
     usesConceptIntake: true,
-    features: ['6 project-specific concept views', 'Bill of Materials with line-item costs', 'MEP specification', 'Detailed cost estimate', 'Zoning code, allowances & permit scope', 'Direct support via portal ask bar'],
+    features: ['6 project-specific concept views', 'Bill of Materials with line-item costs', 'MEP specification', 'Basic planning estimate included', 'Zoning code, allowances & permit scope', 'Direct support via portal ask bar'],
     costRange: '$25K – $120K',
     timeline: '12–16 weeks',
     permits: 4,
@@ -136,7 +136,7 @@ export const SERVICES: Service[] = [
     deliveryDays: '4–6 days',
     videoAddOnAvailable: true,
     usesConceptIntake: true,
-    features: ['Full interior concept (all rooms)', 'Exterior elevation concept', 'Room-by-room renders', 'Master cost estimate', 'All MEP systems scoped', 'Direct support via portal ask bar'],
+    features: ['Full interior concept (all rooms)', 'Exterior elevation concept', 'Room-by-room renders', 'Basic planning estimate included', 'All MEP systems scoped', 'Direct support via portal ask bar'],
     costRange: '$150K – $800K',
     timeline: '24–48 weeks',
     permits: 8,
@@ -155,7 +155,7 @@ export const SERVICES: Service[] = [
     deliveryDays: '3–5 days',
     videoAddOnAvailable: true,
     usesConceptIntake: true,
-    features: ['6 project-specific concept views', 'Room-by-room specification', 'Material & finish palette', 'Lighting design overview', 'Cost estimate by room', 'Zoning code & permit scope'],
+    features: ['6 project-specific concept views', 'Room-by-room specification', 'Material & finish palette', 'Lighting design overview', 'Basic planning estimate included', 'Zoning code & permit scope'],
     costRange: '$20K – $150K',
     timeline: '8–16 weeks',
     permits: 2,
@@ -174,7 +174,7 @@ export const SERVICES: Service[] = [
     deliveryDays: '3–5 days',
     videoAddOnAvailable: true,
     usesConceptIntake: true,
-    features: ['6 project-specific exterior views', 'Material & finish palette', 'Landscape overview sketch', 'MEP exterior spec', 'Detailed cost estimate', 'Zoning code & permit scope'],
+    features: ['6 project-specific exterior views', 'Material & finish palette', 'Landscape overview sketch', 'MEP exterior spec', 'Basic planning estimate included', 'Zoning code & permit scope'],
     costRange: '$15K – $80K',
     timeline: '6–12 weeks',
     permits: 2,
@@ -210,7 +210,7 @@ export const SERVICES: Service[] = [
     deliverableLabel: 'Design Package',
     category: 'design',
     deliveryDays: '2–3 days',
-    // Tier 2 + 3 NOT available for design services (no video)
+    // Video is not offered for this service.
     videoAddOnAvailable: false,
     usesConceptIntake: true,
     features: ['Mood board & design direction', 'Material & finish palette', 'Furniture layout plan', 'Color scheme specification', 'Shopping list with links', 'Direct support via portal ask bar'],

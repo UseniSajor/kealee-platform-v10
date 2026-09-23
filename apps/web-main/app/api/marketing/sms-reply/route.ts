@@ -3,7 +3,7 @@
  *
  * Receives inbound SMS replies forwarded by GHL.
  * - 'YES' → tags contact as hot lead, advances pipeline stage
- * - '1' / '2' / '3' → updates custom field (package tier preference)
+ * - '1' / '2' / '3' → records the requested service path
  * - 'STOP' / 'UNSUBSCRIBE' → marks contact opted-out
  *
  * Returns 200 immediately (GHL webhook requirement).
@@ -43,12 +43,12 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         }
         console.log(`[sms-reply] Hot lead reply: contactId=${contactId}`)
       } else if (rawMessage === '1' || rawMessage === '2' || rawMessage === '3') {
-        // Package tier preference
+        const serviceChoice = ({ '1': 'design_concept', '2': 'preliminary_site_plan', '3': 'permit_set_plans' } as Record<string, string>)[rawMessage]!
         if (ghlEnabled) {
-          await updateContactField(contactId, 'preferred_tier', rawMessage)
-          await tagContact(contactId, [`tier-${rawMessage}-interest`])
+          await updateContactField(contactId, 'service_interest', serviceChoice)
+          await tagContact(contactId, [`${serviceChoice}-interest`])
         }
-        console.log(`[sms-reply] Tier preference: contactId=${contactId} tier=${rawMessage}`)
+        console.log(`[sms-reply] Service interest: contactId=${contactId} service=${serviceChoice}`)
       } else if (['STOP', 'UNSUBSCRIBE', 'CANCEL', 'END', 'QUIT'].includes(rawMessage)) {
         // Opt-out
         if (ghlEnabled) {

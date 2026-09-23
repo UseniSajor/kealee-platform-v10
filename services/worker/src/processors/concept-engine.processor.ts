@@ -298,21 +298,24 @@ async function processGenerateConceptPackage(
     }
   }
 
-  // Trigger video generation for tier 2+ orders (fire-and-forget).
-  // The video route reads tier from form_data and manages Sora/Kling dispatch.
+  // Trigger video generation only for orders with a purchased video add-on,
+  // while preserving fulfillment for orders sold under the retired catalogue.
   // We only kick it off when conceptVideo is absent so re-runs don't re-trigger.
   try {
     const intakeRows = await prisma.$queryRaw`
       SELECT
         (form_data->>'tier')::int       AS tier,
+        form_data->'addOns'             AS add_ons,
         form_data->'conceptVideo'       AS concept_video
       FROM public_intake_leads
       WHERE id = ${intakeId}
       LIMIT 1
-    ` as Array<{ tier: number | null; concept_video: unknown }>;
+    ` as Array<{ tier: number | null; add_ons: unknown; concept_video: unknown }>;
 
     if (intakeRows.length > 0) {
       const intakeTier  = intakeRows[0].tier ?? 1;
+      const addOns = Array.isArray(intakeRows[0].add_ons) ? intakeRows[0].add_ons.map(String) : [];
+      const hasVideoAddOn = addOns.includes('video_presentation') || addOns.includes('interactive_walk');
       const conceptVideo = intakeRows[0].concept_video;
       const videoAbsent =
         !conceptVideo ||
@@ -320,7 +323,7 @@ async function processGenerateConceptPackage(
           conceptVideo !== null &&
           Object.keys(conceptVideo as object).length === 0);
 
-      if (intakeTier >= 2 && videoAbsent) {
+      if ((hasVideoAddOn || intakeTier >= 2) && videoAbsent) {
         const webMain = (
           process.env.NEXT_PUBLIC_WEB_MAIN_URL ??
           process.env.WEB_MAIN_URL ??
@@ -336,7 +339,7 @@ async function processGenerateConceptPackage(
             if (!r.ok) {
               console.warn(`[concept-engine] Video trigger HTTP ${r.status} for intake ${intakeId}`);
             } else {
-              console.log(`[concept-engine] Video generation triggered for intake ${intakeId} (tier ${intakeTier})`);
+              console.log(`[concept-engine] Video add-on generation triggered for intake ${intakeId}`);
             }
           })
           .catch((err: unknown) => {

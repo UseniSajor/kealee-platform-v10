@@ -34,7 +34,7 @@ export interface CampaignRecord {
 
 const PRODUCT_FUNNEL: Record<string, { path: string; service?: string }> = {
   conceptEngine: { path: '/concept', service: 'exterior_concept' },
-  estimationTool: { path: '/estimate/intake' },
+  estimationTool: { path: '/services' },
   permitsService: { path: '/permits' },
   preDesign: { path: '/concept', service: 'whole_home_concept' },
   drawings: { path: '/concept' },

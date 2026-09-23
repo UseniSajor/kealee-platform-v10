@@ -25,7 +25,7 @@ const STEPS = [
   {
     icon:  MessageSquare,
     title: 'Architectural Review & Consultation',
-    desc:  'Concepts are staged on Kealee\'s OS Architecture desk, where a licensed architect reviews the schematic before permit drawings begin. Premium+ includes a live 15-minute design consultation; all tiers get email support within 1 business day.',
+    desc:  'Concepts are staged on Kealee\'s OS Architecture desk for professional review before permit drawings begin. Email support and one revision round are included; a live consultation is available as an add-on.',
     color: '#38A169',
   },
 ]
@@ -60,12 +60,12 @@ export function ConceptPackageSection() {
 
             <ul className="mt-6 space-y-2.5">
               {[
-                'Concept renderings (3–12 by tier) — massing, elevations, materials and light',
-                'Plan direction brief (Essential); scaled schematic floor plans (Premium & Premium+)',
+                'Six concept views — massing, elevations, materials and light',
+                'Plan direction and a scaled schematic floor plan',
                 'Zoning envelope and permit path for your parcel — setbacks, height, coverage, use',
                 'Outline specification: bill of materials with line-item cost estimates',
                 'Design direction brief — material and finish palette, elevation concept',
-                'Licensed architectural review on the OS Architecture desk; email support on all tiers, live design consultation on Premium+',
+                'Professional review on the OS Architecture desk; email support and one revision included',
               ].map((item) => (
                 <li key={item} className="flex items-start gap-3 text-sm text-slate-700">
                   <span className="mt-0.5 flex-shrink-0 text-base" style={{ color: '#2ABFBF' }}>✓</span>

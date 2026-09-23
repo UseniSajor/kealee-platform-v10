@@ -8,7 +8,7 @@ import { CONCEPT_FROM } from '@/lib/marketing/price-copy'
 
 export const metadata: Metadata = {
   title: 'Get Started — Kealee',
-  description: 'Start a design concept, estimate, site plan, or permit package — or join as a contractor. Available nationwide.',
+  description: 'Start a design concept, site plan, or permit package with the appropriate estimate included — or join as a contractor. Available nationwide.',
 }
 
 const CONCEPT_PATHS = [

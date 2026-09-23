@@ -84,17 +84,17 @@ export const CANONICAL_PRODUCT_WORKFLOWS: Readonly<Record<string, ProductAutomat
   // listed on /site-plans) but had no route here, so a paid Site Plan order
   // matched neither fulfillment branch in the Stripe webhook and nothing ran.
   preliminary_site_plan: {
-    fulfillmentBotTypes: ['zoning', 'permit', 'floorplan', 'project'],
+    fulfillmentBotTypes: ['zoning', 'permit', 'floorplan', 'estimate', 'project'],
     workflowTemplateId: 'wf_permit_roadmap_v1',
     propertyIntelligenceDepth: 'project',
   },
   verified_site_feasibility: {
-    fulfillmentBotTypes: ['zoning', 'permit', 'floorplan', 'project'],
+    fulfillmentBotTypes: ['zoning', 'permit', 'floorplan', 'estimate', 'project'],
     workflowTemplateId: 'wf_permit_roadmap_v1',
     propertyIntelligenceDepth: 'project',
   },
   permit_site_plan: {
-    fulfillmentBotTypes: ['zoning', 'permit', 'floorplan', 'project'],
+    fulfillmentBotTypes: ['zoning', 'permit', 'floorplan', 'estimate', 'project'],
     workflowTemplateId: 'wf_permit_roadmap_v1',
     propertyIntelligenceDepth: 'project',
   },

@@ -3,15 +3,11 @@ import { CONCEPT_PACKAGE_RULES } from '@kealee/core-rules'
 export type ServiceCategory = 'design' | 'development' | 'permit' | 'estimate' | 'match'
 export type AgentType = 'design' | 'land' | 'permit' | 'contractor'
 
-/** Tier 2+; Basic is renders + PDF only. */
-const VIDEO_PREMIUM_TIERS =
-  'AI transformation video (Premium or Premium+): 60s narrated flythrough synced to your renders — Premium+ adds 30s, 15s, and 10s cuts for HOA, lenders, and social.'
 /**
- * Included in every concept tier — full lists: @kealee/core-rules concept-package-deliverables.
- * @see docs/system/concept-package-deliverables.md
+ * Included in every Design Concept Package.
  */
 const PERMIT_ROADMAP_IN_DESIGN_BUNDLE =
-  'Permit + zoning in every package: scope brief, buildability snapshot, AHJ checklist, and fee/timeline ranges (depth increases by tier; not agency filing).'
+  'Zoning code, preliminary allowances, buildability snapshot, permit scope, AHJ checklist, and fee/timeline ranges (not agency filing).'
 const CREDIT_TOWARD_PERMIT_DRAWINGS = CONCEPT_PACKAGE_RULES.creditTowardDrawings
 /**
  * Required on every permit-category deliverable. Kealee prepares, coordinates,
@@ -21,6 +17,10 @@ const PERMIT_APPROVAL_DISCLAIMER =
   'Kealee prepares, coordinates, and assists with permit filing. Kealee does not issue permits and cannot guarantee approval — permit approval, fees, and timelines are set by the jurisdiction.'
 const ESTIMATE_SCOPE_DISCLAIMER =
   'An estimate is a priced opinion based on the stated scope and assumptions. It is not a bid, a contract price, or a guarantee of construction cost.'
+const BASIC_PLANNING_ESTIMATE =
+  'Basic planning estimate included — major scope costs, allowances, assumptions, exclusions, and a realistic construction range'
+const DETAILED_CONSTRUCTION_ESTIMATE =
+  'Detailed construction estimate included — trade-by-trade quantities, labor, materials, allowances, exclusions, and regional cost basis aligned to the plan set'
 const SITE_PLAN_PRELIMINARY_DISCLAIMER =
   'Preliminary and not for construction unless professionally reviewed. Not a boundary survey. Source coverage and accuracy vary by jurisdiction.'
 
@@ -41,23 +41,22 @@ export interface ServiceDeliverable {
   nextStep: { label: string; href: string }
 }
 
-export const SERVICE_DELIVERABLES: Record<string, ServiceDeliverable> = {
+const SERVICE_DELIVERABLE_DEFINITIONS: Record<string, ServiceDeliverable> = {
   kitchen_remodel: {
     label: 'Kitchen Design Package',
     category: 'design',
     agentType: 'design',
     generatesConcept: true,
     permitRequired: 'sometimes',
-    renderCount: 5,
+    renderCount: 6,
     includes: [
       'Floor plan / layout direction',
-      '5 photorealistic AI renderings (multiple angles and lighting)',
+      '6 project-specific concept views (multiple angles and lighting)',
       PERMIT_ROADMAP_IN_DESIGN_BUNDLE,
       'Bill of Materials (BOM) with line-item costs',
       'MEP specification (electrical, plumbing, HVAC, lighting)',
-      'Detailed cost estimate',
+      BASIC_PLANNING_ESTIMATE,
       'Design brief with style direction',
-      VIDEO_PREMIUM_TIERS,
       CREDIT_TOWARD_PERMIT_DRAWINGS,
       'Direct support via portal ask bar',
     ],
@@ -70,16 +69,15 @@ export const SERVICE_DELIVERABLES: Record<string, ServiceDeliverable> = {
     agentType: 'design',
     generatesConcept: true,
     permitRequired: 'sometimes',
-    renderCount: 5,
+    renderCount: 6,
     includes: [
       'Floor plan / layout direction',
-      '5 photorealistic AI renderings (multiple angles and lighting)',
+      '6 project-specific concept views (multiple angles and lighting)',
       PERMIT_ROADMAP_IN_DESIGN_BUNDLE,
       'Bill of Materials (BOM) with line-item costs',
       'MEP specification (electrical, plumbing, HVAC, lighting)',
-      'Detailed cost estimate',
+      BASIC_PLANNING_ESTIMATE,
       'Design brief with style direction',
-      VIDEO_PREMIUM_TIERS,
       CREDIT_TOWARD_PERMIT_DRAWINGS,
       'Direct support via portal ask bar',
     ],
@@ -92,16 +90,15 @@ export const SERVICE_DELIVERABLES: Record<string, ServiceDeliverable> = {
     agentType: 'design',
     generatesConcept: true,
     permitRequired: 'sometimes',
-    renderCount: 5,
+    renderCount: 6,
     includes: [
       'Floor plan / layout direction',
-      '5 exterior renderings (front, side, rear, and detail views)',
+      '6 project-specific exterior concept views',
       PERMIT_ROADMAP_IN_DESIGN_BUNDLE,
       'Material palette with finish selections',
       'Landscape overview sketch',
       'MEP specification (exterior systems)',
       'Bill of Materials (BOM)',
-      VIDEO_PREMIUM_TIERS,
       CREDIT_TOWARD_PERMIT_DRAWINGS,
       'Direct support via portal ask bar',
     ],
@@ -114,20 +111,19 @@ export const SERVICE_DELIVERABLES: Record<string, ServiceDeliverable> = {
     agentType: 'design',
     generatesConcept: true,
     permitRequired: 'always',
-    renderCount: 5,
+    renderCount: 6,
     includes: [
       'Floor plan / layout direction',
-      '5 photorealistic AI renderings',
+      '6 project-specific concept views',
       PERMIT_ROADMAP_IN_DESIGN_BUNDLE,
       'Layout recommendations with flow analysis',
       'MEP specification (electrical, plumbing, lighting)',
       'Bill of Materials (BOM) with cost breakdown',
-      VIDEO_PREMIUM_TIERS,
       CREDIT_TOWARD_PERMIT_DRAWINGS,
       'Direct support via portal ask bar',
     ],
     deliveryDays: '3-5 days',
-    nextStep: { label: 'Get Detailed Cost Estimate', href: '/intake/cost_estimate' },
+    nextStep: { label: 'Continue to Permit Planning', href: '/intake/permit_path_only' },
   },
   interior_renovation: {
     label: 'Interior Renovation',
@@ -135,20 +131,19 @@ export const SERVICE_DELIVERABLES: Record<string, ServiceDeliverable> = {
     agentType: 'design',
     generatesConcept: true,
     permitRequired: 'always',
-    renderCount: 5,
+    renderCount: 6,
     includes: [
       'Floor plan / layout direction',
-      '5 photorealistic AI renderings',
+      '6 project-specific concept views',
       PERMIT_ROADMAP_IN_DESIGN_BUNDLE,
       'Layout recommendations with flow analysis',
       'MEP specification (electrical, plumbing, lighting)',
       'Bill of Materials (BOM) with cost breakdown',
-      VIDEO_PREMIUM_TIERS,
       CREDIT_TOWARD_PERMIT_DRAWINGS,
       'Direct support via portal ask bar',
     ],
     deliveryDays: '3-5 days',
-    nextStep: { label: 'Get Detailed Cost Estimate', href: '/intake/cost_estimate' },
+    nextStep: { label: 'Continue to Permit Planning', href: '/intake/permit_path_only' },
   },
   whole_home_concept: {
     label: 'Whole Home Concept',
@@ -156,14 +151,13 @@ export const SERVICE_DELIVERABLES: Record<string, ServiceDeliverable> = {
     agentType: 'design',
     generatesConcept: true,
     permitRequired: 'always',
-    renderCount: 7,
+    renderCount: 6,
     includes: [
       'Floor plan / layout direction',
-      '7 photorealistic AI renderings across living, dining, kitchen, and primary spaces',
+      '6 coordinated project-specific views across priority spaces',
       PERMIT_ROADMAP_IN_DESIGN_BUNDLE,
       'MEP specification for all systems',
       'Bill of Materials (BOM)',
-      VIDEO_PREMIUM_TIERS,
       CREDIT_TOWARD_PERMIT_DRAWINGS,
       'Direct support via portal ask bar',
     ],
@@ -176,15 +170,14 @@ export const SERVICE_DELIVERABLES: Record<string, ServiceDeliverable> = {
     agentType: 'design',
     generatesConcept: true,
     permitRequired: 'always',
-    renderCount: 7,
+    renderCount: 6,
     includes: [
       'Floor plan / layout direction',
-      '7 photorealistic AI renderings across living, dining, kitchen, and primary spaces',
+      '6 coordinated project-specific views across priority spaces',
       PERMIT_ROADMAP_IN_DESIGN_BUNDLE,
       'MEP specification for all systems',
       'Bill of Materials (BOM)',
       'Remodel phase plan',
-      VIDEO_PREMIUM_TIERS,
       CREDIT_TOWARD_PERMIT_DRAWINGS,
       'Direct support via portal ask bar',
     ],
@@ -197,15 +190,14 @@ export const SERVICE_DELIVERABLES: Record<string, ServiceDeliverable> = {
     agentType: 'design',
     generatesConcept: true,
     permitRequired: 'always',
-    renderCount: 5,
+    renderCount: 6,
     includes: [
       'Floor plan / layout direction',
-      '5 AI renderings (interior and exterior views of the addition)',
+      '6 project-specific concept views (interior and exterior)',
       PERMIT_ROADMAP_IN_DESIGN_BUNDLE,
       'Structural considerations brief',
       'MEP specification for new addition',
       'Bill of Materials (BOM)',
-      VIDEO_PREMIUM_TIERS,
       CREDIT_TOWARD_PERMIT_DRAWINGS,
       'Direct support via portal ask bar',
     ],
@@ -218,15 +210,15 @@ export const SERVICE_DELIVERABLES: Record<string, ServiceDeliverable> = {
     agentType: 'design',
     generatesConcept: true,
     permitRequired: 'rarely',
+    renderCount: 6,
     includes: [
       'Floor plan / layout direction',
-      'Garden layout concept rendering',
+      '6 project-specific garden and landscape concept views',
       PERMIT_ROADMAP_IN_DESIGN_BUNDLE,
       'Irrigation design with smart controller spec',
       'Plant list with seasonal selection',
       'Seasonal maintenance calendar',
       'Bill of Materials (BOM)',
-      VIDEO_PREMIUM_TIERS,
       CREDIT_TOWARD_PERMIT_DRAWINGS,
       'Direct support via portal ask bar',
     ],
@@ -239,18 +231,18 @@ export const SERVICE_DELIVERABLES: Record<string, ServiceDeliverable> = {
     agentType: 'design',
     generatesConcept: true,
     permitRequired: 'sometimes',
+    renderCount: 6,
     includes: [
       'Floor plan / layout direction',
       'Site capture documentation',
-      'Concept render based on site conditions',
+      '6 project-specific concept views based on site conditions',
       PERMIT_ROADMAP_IN_DESIGN_BUNDLE,
       'Property analysis report',
       'Initial scope recommendations',
-      VIDEO_PREMIUM_TIERS,
       CREDIT_TOWARD_PERMIT_DRAWINGS,
     ],
     deliveryDays: '1-2 days',
-    nextStep: { label: 'Get Full Design Package', href: '/intake/kitchen_remodel' },
+    nextStep: { label: 'Continue to Design Development', href: '/intake/professional_drawings' },
   },
   design_build: {
     label: 'Design + Build Package',
@@ -258,6 +250,7 @@ export const SERVICE_DELIVERABLES: Record<string, ServiceDeliverable> = {
     agentType: 'design',
     generatesConcept: true,
     permitRequired: 'always',
+    renderCount: 6,
     includes: [
       'Floor plan / layout direction',
       'Full concept design package',
@@ -265,7 +258,6 @@ export const SERVICE_DELIVERABLES: Record<string, ServiceDeliverable> = {
       'Build-ready scope document',
       'MEP specification for all systems',
       'Bill of Materials (BOM)',
-      VIDEO_PREMIUM_TIERS,
       'Contractor match recommendation',
       CREDIT_TOWARD_PERMIT_DRAWINGS,
       'Direct support via portal ask bar',
@@ -417,7 +409,7 @@ export const SERVICE_DELIVERABLES: Record<string, ServiceDeliverable> = {
       PERMIT_APPROVAL_DISCLAIMER,
     ],
     deliveryDays: '3-5 days',
-    nextStep: { label: 'Get a Cost Estimate', href: '/intake/cost_estimate' },
+    nextStep: { label: 'Continue to Permit-Set Plans', href: '/intake/professional_drawings' },
   },
   certified_estimate: {
     label: 'Certified Cost Estimate',
@@ -453,6 +445,7 @@ export const SERVICE_DELIVERABLES: Record<string, ServiceDeliverable> = {
       'Preliminary zoning plan with setbacks or BRLs, lot coverage, overlays, buildable area, and code-source notes',
       'Easy-to-read concept layout with proposed buildings or lots, access, parking, circulation, open space, key dimensions, and area schedule as applicable',
       'Preliminary civil strategy for grading and drainage direction, utilities, stormwater, erosion control, roadway or driveway needs, and likely approvals',
+      BASIC_PLANNING_ESTIMATE,
       'Separate scaled technical drawing with north arrow, graphic scale, legend, parcel context, source notes, and preliminary status on every applicable sheet',
       'Purchaser guide with confidence by item, conflicts, alternatives, verification owners, and next-step recommendations',
       'Explicit list of survey, field, agency, and licensed-professional work required before detailed design, permit, bidding, or construction',
@@ -491,6 +484,7 @@ export const SERVICE_DELIVERABLES: Record<string, ServiceDeliverable> = {
       'Setbacks, lot coverage, structures, calculations, profiles, details, schedules, and required agency notes',
       'Coordination of the professional review and sealing your jurisdiction requires',
       'Revisions for agency comments and inclusion in the submission set',
+      DETAILED_CONSTRUCTION_ESTIMATE,
       'Required source documents identified up front',
       PERMIT_APPROVAL_DISCLAIMER,
     ],
@@ -544,6 +538,7 @@ export const SERVICE_DELIVERABLES: Record<string, ServiceDeliverable> = {
       'Jurisdiction cover sheet and code compliance notes',
       'Building department coordination',
       'Permit filing fee included — all-in pricing',
+      DETAILED_CONSTRUCTION_ESTIMATE,
     ],
     deliveryDays: '7–14 days',
     nextStep: { label: 'File Your Permit', href: '/intake/permit_path_only' },
@@ -556,17 +551,16 @@ export const SERVICE_DELIVERABLES: Record<string, ServiceDeliverable> = {
     agentType: 'design',
     generatesConcept: true,
     permitRequired: 'always',
+    renderCount: 6,
     includes: [
       'Floor plan / layout direction',
-      'design concept renderings (3–5 views)',
+      '6 project-specific design concept views',
       PERMIT_ROADMAP_IN_DESIGN_BUNDLE,
       'Zoning and setback analysis tied to your concept massing',
       'Bill of Materials with line-item costs',
       'MEP specification (electrical, plumbing, HVAC, lighting)',
-      'RSMeans-validated cost estimate (trade-by-trade)',
-      VIDEO_PREMIUM_TIERS,
+      BASIC_PLANNING_ESTIMATE,
       CREDIT_TOWARD_PERMIT_DRAWINGS,
-      '15-min expert consultation call (booked after delivery) — ideal to align estimate, video cuts, and permit filing sequence',
     ],
     deliveryDays: '3–5 days',
     nextStep: { label: 'Match with a Contractor', href: '/intake/contractor_match' },
@@ -587,3 +581,15 @@ export const SERVICE_DELIVERABLES: Record<string, ServiceDeliverable> = {
     nextStep: { label: 'Match with a Contractor', href: '/intake/contractor_match' },
   },
 }
+
+/**
+ * Customer delivery contract. Every concept path receives the same basic
+ * planning estimate even when an old project-path definition omitted it.
+ * Standalone estimate keys remain readable only for historical paid orders.
+ */
+export const SERVICE_DELIVERABLES: Record<string, ServiceDeliverable> = Object.fromEntries(
+  Object.entries(SERVICE_DELIVERABLE_DEFINITIONS).map(([key, value]) => {
+    if (!value.generatesConcept || value.includes.includes(BASIC_PLANNING_ESTIMATE)) return [key, value]
+    return [key, { ...value, includes: [...value.includes, BASIC_PLANNING_ESTIMATE] }]
+  }),
+)

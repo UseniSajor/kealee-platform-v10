@@ -31,9 +31,8 @@ export function v30CadDownloadUrl(intakeId: string): string {
 }
 
 export function v30TierLabel(tier: number): string {
-  if (tier === 3) return 'Premium+'
-  if (tier === 2) return 'Premium'
-  return 'Basic'
+  void tier
+  return 'Design Concept Package'
 }
 
 export type DeliverableUiStatus = 'ready' | 'generating' | 'failed' | 'pending'
@@ -91,7 +90,7 @@ export function parseV30LandscapePackage(
   formData: Record<string, unknown> | null | undefined,
 ): V30LandscapePackage | null {
   if (!formData) return null
-  const raw = formData.v30LandscapePremiumPlus
+  const raw = formData.v30LandscapePackage ?? formData.v30LandscapePremiumPlus
   if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null
   return raw as V30LandscapePackage
 }
@@ -130,7 +129,7 @@ export const getAutomatedWorkspaceUrl = v30WorkspaceUrl
 /** CAD file download URL for AI-automated orders. */
 export const getAutomatedCadDownloadUrl = v30CadDownloadUrl
 
-/** Tier label for AI-automated orders: 'Basic' | 'Premium' | 'Premium+' */
+/** Historical adapter; all current orders use one Design Concept Package. */
 export const getAutomatedTierLabel = v30TierLabel
 
 /** Floorplan and CAD deliverables written by FloorplanBot. */

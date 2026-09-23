@@ -13,14 +13,12 @@ import {
 export function V30LandscapeCadPanel({
   intakeId,
   projectPath,
-  tier,
   landscape,
   floorplan,
   lotContext,
 }: {
   intakeId: string
   projectPath: string
-  tier: number
   landscape: V30LandscapePackage | null
   floorplan: V30FloorplanDeliverables | null
   lotContext?: { satelliteImageUrl?: string; googleEarthHint?: string } | null
@@ -30,7 +28,7 @@ export function V30LandscapeCadPanel({
     landscape?.sitePlanImageUrl ??
     (lotContext?.satelliteImageUrl as string | undefined)
   const hasCad = Boolean(floorplan?.cadExport?.dxf)
-  const showLandscape = tier >= 3 && landscape && (landscape.plants?.length || landscape.trees?.length)
+  const showLandscape = landscape && (landscape.plants?.length || landscape.trees?.length)
 
   if (!siteUrl && !showLandscape && !hasCad && !floorplan?.rooms?.length) {
     return null
@@ -107,7 +105,7 @@ export function V30LandscapeCadPanel({
 
         {showLandscape && (
           <div className="space-y-3 rounded-xl border border-emerald-200 bg-emerald-50/50 p-4">
-            <p className="text-sm font-bold text-emerald-900">Premium+ landscape package</p>
+            <p className="text-sm font-bold text-emerald-900">Landscape concept package</p>
             {landscape!.estimatedCost && (
               <p className="text-lg font-bold text-slate-900">
                 ${landscape!.estimatedCost.low.toLocaleString()} – $
@@ -178,9 +176,9 @@ export function V30LandscapeCadPanel({
           </div>
         )}
 
-        {!showLandscape && tier >= 3 && isGardenLandscapePath(projectPath) && (
+        {!showLandscape && isGardenLandscapePath(projectPath) && (
           <p className="text-sm text-gray-500">
-            Landscape schedules will appear here when Premium+ garden generation completes.
+            Landscape schedules will appear here when garden generation completes.
           </p>
         )}
       </div>

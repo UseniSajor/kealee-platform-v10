@@ -37,7 +37,7 @@ export async function GET(
   const dxf = deliverables?.cadExport?.dxf
   if (!dxf) {
     return NextResponse.json(
-      { error: 'CAD export not ready — Premium+ with floorplan required' },
+      { error: 'CAD export is not ready or was not selected as an add-on' },
       { status: 404 },
     )
   }

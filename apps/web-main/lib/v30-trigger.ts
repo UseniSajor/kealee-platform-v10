@@ -2,7 +2,7 @@ import { isV30Enabled } from '@kealee/kealee-agent-stack'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { syncV30ConceptToIntakeLead } from '@/lib/v30-design-sync'
 import { finalizeV30FloorplanDeliverables } from '@/lib/v30-floorplan-deliverables'
-import { syncLandscapePremiumPlusPackage } from '@/lib/v30-landscape-package'
+import { syncLandscapePackage } from '@/lib/v30-landscape-package'
 import { isGardenLandscapeScope } from '@kealee/kealee-agent-stack'
 import type { V30BotType } from '@kealee/kealee-agent-stack'
 import type { PropertyIntelligenceDepth } from './revenue-product-catalog'
@@ -218,15 +218,11 @@ export async function reconcileV30ProjectOnce(
       features: ws.package?.features ?? getV30Features(fd),
       address: intake?.project_address,
     })
-    if (
-      tier === 3 &&
-      intake?.project_path &&
-      isGardenLandscapeScope(intake.project_path)
-    ) {
-      await syncLandscapePremiumPlusPackage({
+    if (intake?.project_path && isGardenLandscapeScope(intake.project_path)) {
+      await syncLandscapePackage({
         intakeId,
         projectPath: intake.project_path,
-        tier: 3,
+        tier,
         executions,
         sitePlanImageUrl: (deliverables.floorplanImageUrl ?? deliverables.sitePlanImageUrl) as string | undefined,
       })

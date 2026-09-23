@@ -2,8 +2,8 @@
  * POST /api/concept/video      — Submit process video generation for an intake.
  * GET  /api/concept/video?intakeId=… — Poll status / chain segments / fetch URL.
  *
- * Premium (tier 2): Kling — up to 3 process segments.
- * Premium+ (tier 3): Sora 2 Pro — up to 6 segments, stitched when ffmpeg is available.
+ * Video presentation add-on: Kling process segments.
+ * Interactive walkthrough add-on: Sora 2 Pro segments when configured.
  */
 
 import { NextRequest, NextResponse } from 'next/server'
@@ -105,13 +105,14 @@ export async function POST(req: NextRequest) {
         { status: 403 },
       )
     }
-    const tier = resolveConceptTier(formData, { projectPath: intake.project_path as string })
-    const tierKey = tier
-    const tierDefault = TIER_VIDEO_DEFAULTS[tierKey]
+    const addOns = Array.isArray(formData.addOns) ? (formData.addOns as unknown[]).map(String) : []
+    const historicalTier = resolveConceptTier(formData, { projectPath: intake.project_path as string })
+    const videoMode: 2 | 3 = addOns.includes('interactive_walk') ? 3 : addOns.includes('video_presentation') ? 2 : historicalTier >= 3 ? 3 : 2
+    const tierDefault = TIER_VIDEO_DEFAULTS[videoMode]
 
     if (!tierDefault) {
       return NextResponse.json(
-        { error: 'Video not included in this tier', tier: tierKey },
+        { error: 'Video provider is not configured for this add-on' },
         { status: 400 },
       )
     }
@@ -147,8 +148,8 @@ export async function POST(req: NextRequest) {
 
     let provider: VideoProvider
     try {
-      // Prefer: explicit override → tier default (if its API key is available) → best available key.
-      // This prevents tier 3 (sora-2-pro) from hard-failing when OPENAI_API_KEY isn't set —
+      // Prefer: explicit override → add-on default (if its API key is available) → best available key.
+      // This prevents the cinematic provider from hard-failing when OPENAI_API_KEY isn't set —
       // it falls back to kling-2.5 (REPLICATE_API_TOKEN) or veo-3.1 (GEMINI_API_KEY).
       const preferred = providerOverride ?? tierDefault
       const preferredAvailable = preferred && isVideoProviderAvailable(preferred)
@@ -161,14 +162,14 @@ export async function POST(req: NextRequest) {
     }
 
     const plan = buildDeliverableProcessPlan({
-      tier: tierKey,
+      tier: videoMode,
       projectPath: intake.project_path as string,
       provider,
       inputImageUrl,
     })
 
     if (!plan) {
-      return NextResponse.json({ error: 'No process video plan for tier' }, { status: 400 })
+      return NextResponse.json({ error: 'No process video plan for this add-on' }, { status: 400 })
     }
 
     const { state: started, job } = await startNextDeliverableSegment(plan, {
@@ -267,18 +268,19 @@ export async function GET(req: NextRequest) {
           .eq('id', intakeId)
       }
 
-      // Kick Tier 3 format trimming (30s / 15s / 10s) once master is ready.
+      // Kick multi-format trimming for the interactive walkthrough add-on.
       // Fire-and-forget so the GET response is not delayed.
       if (justFinished) {
-        const tier = resolveConceptTier(formData, { projectPath: intake.project_path as string })
-        if (tier >= 3) {
+        const addOns = Array.isArray(formData.addOns) ? (formData.addOns as unknown[]).map(String) : []
+        const historicalTier = resolveConceptTier(formData, { projectPath: intake.project_path as string })
+        if (addOns.includes('interactive_walk') || (formData.v30 !== true && historicalTier >= 3)) {
           const appBaseUrl = process.env.NEXT_PUBLIC_APP_URL ?? req.nextUrl.origin
           fetch(`${appBaseUrl}/api/concept/video/formats`, {
             method:  'POST',
             headers: { 'Content-Type': 'application/json' },
             body:    JSON.stringify({ intakeId }),
           }).catch((err: unknown) => {
-            console.warn('[concept/video] Tier 3 format kick failed:', (err as Error)?.message ?? err)
+            console.warn('[concept/video] Multi-format add-on kick failed:', (err as Error)?.message ?? err)
           })
         }
       }

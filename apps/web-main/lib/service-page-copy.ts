@@ -12,8 +12,8 @@ export interface ServiceProcessStep {
 const FALLBACK_PROCESS_STEPS: ServiceProcessStep[] = [
   {
     step: '01',
-    title: 'Choose Your Package',
-    desc: 'Select Basic, Premium, or Premium+ based on depth of drawings, video, and support you need.',
+    title: 'Describe Your Project',
+    desc: 'Answer a few scope questions. Kealee calculates one project-specific package price before checkout.',
   },
   {
     step: '02',
@@ -36,8 +36,8 @@ export const SERVICE_PROCESS_STEPS: Record<string, ServiceProcessStep[]> = {
   kitchen: [
     {
       step: '01',
-      title: 'Pick a kitchen package',
-      desc: 'Match the tier to how much you need: concept visuals only, or full kitchen MEP + Premium+ assets.',
+      title: 'Describe your kitchen',
+      desc: 'Define the layout, appliances, finishes, and constraints; optional video and extra outputs are selected separately.',
     },
     {
       step: '02',
@@ -58,7 +58,7 @@ export const SERVICE_PROCESS_STEPS: Record<string, ServiceProcessStep[]> = {
   bathroom: [
     {
       step: '01',
-      title: 'Pick a bath package',
+      title: 'Describe your bathroom',
       desc: 'Choose depth of tile/fixture specs, wet-area detail, and whether you want the transformation video.',
     },
     {
@@ -80,8 +80,8 @@ export const SERVICE_PROCESS_STEPS: Record<string, ServiceProcessStep[]> = {
   garden: [
     {
       step: '01',
-      title: 'Pick a landscape package',
-      desc: 'Tiers scale planting detail, irrigation overview, and hardscape depth for your lot and climate.',
+      title: 'Describe your landscape',
+      desc: 'Define planting, irrigation, hardscape, lot, climate, and use goals in one guided intake.',
     },
     {
       step: '02',
@@ -102,8 +102,8 @@ export const SERVICE_PROCESS_STEPS: Record<string, ServiceProcessStep[]> = {
   addition: [
     {
       step: '01',
-      title: 'Pick a feasibility package',
-      desc: 'Addition work needs zoning and massing clarity — tiers add structural context and documentation depth.',
+      title: 'Describe your addition',
+      desc: 'Addition work starts with zoning, massing, footprint, and tie-in constraints in one complete concept package.',
     },
     {
       step: '02',
@@ -124,8 +124,8 @@ export const SERVICE_PROCESS_STEPS: Record<string, ServiceProcessStep[]> = {
   'whole-house': [
     {
       step: '01',
-      title: 'Pick a whole-home package',
-      desc: 'Coordinated interior + systems + exterior scope needs the higher tiers for consistent documentation.',
+      title: 'Describe the whole-home scope',
+      desc: 'Coordinate interior, systems, exterior, phasing, and room priorities in one package.',
     },
     {
       step: '02',
@@ -146,7 +146,7 @@ export const SERVICE_PROCESS_STEPS: Record<string, ServiceProcessStep[]> = {
   interior: [
     {
       step: '01',
-      title: 'Pick an interior package',
+      title: 'Describe your interior scope',
       desc: 'Choose how deep you want finishes, lighting, and room-by-room specs beyond pretty renderings.',
     },
     {
@@ -168,7 +168,7 @@ export const SERVICE_PROCESS_STEPS: Record<string, ServiceProcessStep[]> = {
   facade: [
     {
       step: '01',
-      title: 'Pick an exterior package',
+      title: 'Describe your exterior scope',
       desc: 'Exterior packages emphasize elevations, materials, and weather barrier logic — not interior room counts.',
     },
     {
@@ -190,8 +190,8 @@ export const SERVICE_PROCESS_STEPS: Record<string, ServiceProcessStep[]> = {
   deck: [
     {
       step: '01',
-      title: 'Pick a deck / patio package',
-      desc: 'Outdoor structures need guard, stair, and ledger detail — tiers add structural and electrical depth.',
+      title: 'Describe your deck or patio',
+      desc: 'Capture size, attachment, guard, stair, drainage, structural, and electrical goals in one package.',
     },
     {
       step: '02',
@@ -212,7 +212,7 @@ export const SERVICE_PROCESS_STEPS: Record<string, ServiceProcessStep[]> = {
   'design-services': [
     {
       step: '01',
-      title: 'Pick a design-services tier',
+      title: 'Describe your design goals',
       desc: 'Lighter than full construction packages — focused on palette, layout, and documentation for decisions.',
     },
     {
@@ -277,7 +277,7 @@ const SERVICE_VIDEO_FALLBACK: Record<string, ServiceVideoFallbackCopy> = {
   },
   'design-services': {
     headline: 'Design direction before you over-order samples',
-    body: 'Focused on layout, palette, and cohesion so you can align furniture and finishes — without implying full construction documentation in every tier.',
+      body: 'Focused on layout, palette, and cohesion so you can align furniture and finishes without implying permit-ready construction documents.',
   },
 }
 
@@ -296,27 +296,27 @@ export function getServiceVideoFallbackCopy(
 export function getServicePricingBlurb(serviceSlug: string): string {
   const map: Record<string, string> = {
     kitchen:
-      'Tiers add depth on appliance circuits, ventilation, lighting, and kitchen-specific permit triggers.',
+      'Scope pricing reflects appliance circuits, ventilation, lighting, and kitchen-specific permit triggers.',
     bathroom:
-      'Tiers scale wet-area detail, fixture specs, and ventilation — scoped to baths, not whole-home noise.',
+      'Scope pricing reflects wet-area detail, fixture specs, ventilation, size, and plumbing changes.',
     garden:
       'Pricing reflects planting layout, irrigation overview, and hardscape — tuned to outdoor programs, not interior rooms.',
     addition:
-      'Feasibility tiers emphasize zoning, massing, and new square footage — before you commit to full architectural fees.',
+      'The package emphasizes zoning, massing, and new square footage before you commit to full architectural fees.',
     'whole-house':
-      'Whole-home tiers bundle coordinated rooms and systems so estimates and permit lists stay aligned across trades.',
+      'One whole-home package coordinates rooms and systems so estimates and permit lists stay aligned across trades.',
     interior:
-      'Interior tiers emphasize finish palettes, lighting, and room-by-room specs — without assuming a full kitchen gut.',
+      'Interior pricing reflects finish palettes, lighting, room count, and room-by-room specifications.',
     facade:
-      'Exterior tiers focus on elevations and envelope materials — not a generic “any remodel” checklist.',
+      'Exterior pricing reflects elevation count, envelope materials, openings, and site constraints.',
     deck:
-      'Deck and patio tiers emphasize structure, attachment, and code-oriented outdoor scope.',
+      'Deck and patio pricing reflects structure, attachment, stairs, guards, and code-oriented outdoor scope.',
     'design-services':
-      'Design-services tiers stay lighter: direction, palette, and layout support — not full construction CDs in every package.',
+      'Design-services pricing reflects room count, direction, palette, and layout support—not permit-ready drawings.',
   }
   return (
     map[serviceSlug] ??
-    'All packages include staff review. Premium+ includes a 15-minute expert call when available.'
+    'Every concept includes the complete core package; video, CAD/DXF, extra views, consultations, and extra revisions are optional add-ons.'
   )
 }
 

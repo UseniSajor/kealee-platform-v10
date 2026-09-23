@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { ArrowRight, ArrowLeft, CheckCircle, Home, Layers, MapPin, Video, Clock } from 'lucide-react'
-import { CONCEPT_FROM, DRAWINGS_FROM } from '@/lib/marketing/price-copy'
+import { CONCEPT_FROM } from '@/lib/marketing/price-copy'
 
 const STEPS = [
   {
@@ -28,22 +28,22 @@ const STEPS = [
   },
   {
     number: '04',
-    title: 'Your 3 Concept Options',
-    desc: 'Receive 3 property-specific concept visuals with design direction, material suggestions, and a path-to-approval plan.',
+    title: 'Your Complete Concept Package',
+    desc: 'Receive three design directions and six property-specific views with a floor plan, zoning brief, materials, cost direction, and path to approval.',
     icon: Video,
     color: '#2ABFBF',
   },
 ]
 
 const WHATS_INCLUDED = [
-  '3 concept design options — exterior and/or interior',
+  '3 design directions and 6 coordinated concept views',
   'Design direction summary (style, materials, palette)',
   'Layout and flow recommendations',
   'Property-based zoning brief',
   'Path-to-approval plan',
   'Rough scope and cost direction',
   'Downloadable digital concept package',
-  'Included 30-min design consultation call',
+  'One revision round and email support',
 ]
 
 export default function HomeownerConceptEnginePage() {
@@ -156,7 +156,7 @@ export default function HomeownerConceptEnginePage() {
             </span>
             <span className="flex items-center gap-2">
               <Video className="h-4 w-4 text-green-500" />
-              Consultation included
+              Consultation add-on available
             </span>
             <span className="flex items-center gap-2">
               <CheckCircle className="h-4 w-4 text-green-500" />
@@ -166,31 +166,29 @@ export default function HomeownerConceptEnginePage() {
         </div>
       </section>
 
-      {/* Revision tiers */}
+      {/* One package with optional add-ons */}
       <section className="py-16">
         <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
-          <h2 className="mb-6 text-xl font-bold text-center" style={{ color: '#1A2B4A' }}>Revision rounds by package tier</h2>
+          <h2 className="mb-6 text-xl font-bold text-center" style={{ color: '#1A2B4A' }}>One complete package, priced to your scope</h2>
           <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
             {[
-              { tier: 'Concept Package', price: CONCEPT_FROM, revisions: '1 round (3 options)', note: 'Additional rounds available as add-on' },
-              { tier: 'Advanced Concept', price: '$899', revisions: 'Up to 3 rounds', note: '3 floor plan options + 3D views + material suggestions', highlight: true },
-              { tier: 'Permit-Ready Drawings', price: DRAWINGS_FROM, revisions: 'Up to 5 rounds', note: 'Permit-ready drawing set. Premium credit applies at this tier.' },
+              { label: 'Design Concept Package', value: CONCEPT_FROM, detail: 'Three directions, six views, floor plan, zoning, materials, cost direction, and one revision' },
+              { label: 'Optional add-ons', value: 'Selected after intake', detail: 'Video walkthrough, extra views, CAD export, consultation, or additional revision rounds' },
             ].map((row, i) => (
               <div
-                key={row.tier}
+                key={row.label}
                 className="flex items-center justify-between px-5 py-4"
                 style={{
-                  backgroundColor: row.highlight ? 'rgba(42,191,191,0.04)' : i % 2 === 0 ? 'white' : '#FAFAFA',
-                  borderBottom: i < 2 ? '1px solid #F3F4F6' : undefined,
+                  backgroundColor: i % 2 === 0 ? 'white' : '#FAFAFA',
+                  borderBottom: i === 0 ? '1px solid #F3F4F6' : undefined,
                 }}
               >
                 <div>
-                  <p className="text-sm font-semibold" style={{ color: '#1A2B4A' }}>{row.tier}</p>
-                  <p className="mt-0.5 text-xs text-gray-400">{row.note}</p>
+                  <p className="text-sm font-semibold" style={{ color: '#1A2B4A' }}>{row.label}</p>
+                  <p className="mt-0.5 text-xs text-gray-400">{row.detail}</p>
                 </div>
                 <div className="ml-4 text-right shrink-0">
-                  <p className="text-sm font-bold" style={{ color: '#E8793A' }}>{row.price}</p>
-                  <p className="text-xs text-gray-500">{row.revisions}</p>
+                  <p className="text-sm font-bold" style={{ color: '#E8793A' }}>{row.value}</p>
                 </div>
               </div>
             ))}

@@ -61,6 +61,15 @@ const nextConfig = {
       { source: '/auth/verify', destination: '/login', permanent: false },
       { source: '/auth/forgot-password', destination: '/login', permanent: false },
       { source: '/auth/reset-password', destination: '/login', permanent: false },
+      // Estimating is included with plan products; retire the old standalone sales paths.
+      { source: '/estimate', destination: '/services/design-concept', permanent: true },
+      { source: '/services/cost-estimate', destination: '/services/design-concept', permanent: true },
+      { source: '/intake/cost_estimate', destination: '/services/design-concept', permanent: true },
+      { source: '/intake/certified_estimate', destination: '/services/design-concept', permanent: true },
+      { source: '/products/detailed_estimate', destination: '/services/design-concept', permanent: true },
+      { source: '/products/certified_estimate', destination: '/services/design-concept', permanent: true },
+      { source: '/products/cost-estimate', destination: '/services/design-concept', permanent: true },
+      { source: '/products/certified-estimate', destination: '/services/design-concept', permanent: true },
     ]
   },
   images: {

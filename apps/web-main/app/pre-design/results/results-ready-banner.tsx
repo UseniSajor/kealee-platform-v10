@@ -97,8 +97,8 @@ export function ResultsReadyBanner({
 
   const secondaryCta = requiresPermit === false
     ? {
-        href: `/intake/certified_estimate?projectId=${projectId}`,
-        label: 'Get Full Cost Estimate',
+        href: '/services',
+        label: 'Choose Your Plan Package',
       }
     : {
         href: `#permit`,

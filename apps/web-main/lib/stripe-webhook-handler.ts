@@ -485,19 +485,7 @@ async function handleCheckoutCompleted(
   const notificationEmail = clientEmail ?? 'unknown'
 
   if (resendApiKey) {
-    const purchasedTier = mergedFormData.tier as number | undefined
-    const isPremiumPlusConcept = purchasedTier === 3 && Boolean(deliverable?.generatesConcept) && !isBundlePurchase
-    const premiumPlusNote = isPremiumPlusConcept
-      ? [
-          '',
-          '⚠️ PREMIUM+ ORDER — includes a CAD (DXF) file deliverable.',
-          'CAD export normally generates automatically with the floor plan. If it is',
-          'still missing by the time the customer checks their portal, deliver it',
-          'manually from the admin Purchases list:',
-          '  https://admin.kealee.com/purchases',
-          `  (or trigger directly: POST https://admin.kealee.com/api/purchases/${intakeId}/redeliver)`,
-        ].join('\n')
-      : ''
+    const selectedAddOns = Array.isArray(mergedFormData.addOns) ? mergedFormData.addOns.map(String) : []
 
     fetch('https://api.resend.com/emails', {
       method: 'POST',
@@ -508,17 +496,17 @@ async function handleCheckoutCompleted(
       body: JSON.stringify({
         from: 'Kealee Notifications <notifications@kealee.com>',
         to: ['hello@kealee.com'],
-        subject: `New purchase — ${isPremiumPlusConcept ? 'Premium+ ' : ''}${projectPath.replace(/_/g, ' ')} $${amountFormatted}`,
+        subject: `New purchase — ${projectPath.replace(/_/g, ' ')} $${amountFormatted}`,
         text: [
           'A new purchase has been completed.',
           '',
           `  Intake ID:   ${intakeId}`,
           `  Service:     ${projectPath.replace(/_/g, ' ')}`,
-          `  Tier:        ${purchasedTier === 3 ? 'Premium+' : purchasedTier === 2 ? 'Premium' : purchasedTier === 1 ? 'Basic' : 'n/a'}`,
+          `  Package:     ${deliverable?.label ?? projectPath.replace(/_/g, ' ')}`,
+          `  Add-ons:     ${selectedAddOns.length ? selectedAddOns.join(', ') : 'none'}`,
           `  Client:      ${clientName} <${notificationEmail}>`,
           `  Amount:      $${amountFormatted}`,
           `  Time:        ${new Date().toISOString()}`,
-          premiumPlusNote,
           '',
           'Review in Command Center: https://command.kealee.com/events',
         ].join('\n'),

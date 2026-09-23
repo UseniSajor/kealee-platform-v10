@@ -120,7 +120,7 @@ export async function finalizeV30FloorplanDeliverables(input: {
     })
     deliverables.cadExport = cad
     deliverables.cadUpsell = {
-      label: 'Professional CAD export (Premium+)',
+      label: 'Professional CAD export add-on',
       formats: ['DXF', 'layout JSON', 'geoJson point for GIS / Google Earth'],
       transitionHint:
         'Open DXF in AutoCAD or SketchUp; refine in Vectorworks / PRO Landscape / DynaSCAPE for permit-grade sheets.',

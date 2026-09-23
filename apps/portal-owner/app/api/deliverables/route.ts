@@ -62,13 +62,6 @@ export async function GET() {
     })
   })
 
-    // ── Tier label map ─────────────────────────────────────────────────────────
-  const TIER_LABELS: Record<number, string> = {
-    1: 'Starter Concept',
-    2: 'Visualization Package',
-    3: 'Pre-Design Package',
-  }
-
   // ── Package label overrides by project_path ─────────────────────────────────
   const PACKAGE_LABELS: Record<string, string> = {
     kitchen_remodel:    'Kitchen Design Package',
@@ -144,7 +137,7 @@ export async function GET() {
                          ?? path?.replace(/_/g, ' ')?.replace(/\b\w/g, (c: string) => c.toUpperCase())
                          ?? 'Project',
       tier,
-      tierLabel:       isV30 ? v30TierLabel(tier) : (TIER_LABELS[tier] ?? 'Starter Concept'),
+      tierLabel:       v30TierLabel(tier),
       address:         row.project_address ?? fd.projectAddress ?? null,
       budgetRange:     row.budget_range ?? fd.budgetRange ?? null,
       status:          row.status as string,

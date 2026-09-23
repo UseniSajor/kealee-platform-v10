@@ -44,7 +44,7 @@ function detectCTA(content: string): { label: string; href: string } | null {
   if (/permit/i.test(c) && /need.*plan|design service/i.test(c)) return { label: 'Get Permit-Ready Drawings', href: '/intake/professional_drawings' }
   if (/permit/i.test(c)) return { label: 'Get Permit Services', href: '/intake/permit_path_only' }
   if (/concept|visualization|floor plan/i.test(c)) return { label: 'Start design concept', href: '/concept' }
-  if (/estimate|cost|budget|how much/i.test(c)) return { label: 'Get an Estimate', href: '/intake/cost_estimate' }
+  if (/estimate|cost|budget|how much/i.test(c)) return { label: 'Choose the Right Plan', href: '/services' }
   if (/contractor|builder|hire/i.test(c)) return { label: 'Find a Contractor', href: '/intake/contractor_match' }
   if (/design service|architect|stamped|permit.ready|drawings?/i.test(c)) return { label: 'Get Permit-Ready Drawings', href: '/intake/professional_drawings' }
   if (/escrow|milestone|pay/i.test(c)) return { label: 'Learn About Milestone Pay', href: '/milestone-pay' }

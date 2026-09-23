@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { ArrowRight, Calculator, FileCheck, Globe2, Map, Palette } from 'lucide-react'
+import { ArrowRight, FileCheck, Globe2, Map, Palette } from 'lucide-react'
 import {
   NATIONWIDE_STATEMENT,
   PRECONSTRUCTION_SUITE,
@@ -9,7 +9,6 @@ import {
 
 const ICONS: Record<SuiteProductId, React.ElementType> = {
   'design-concept': Palette,
-  estimation: Calculator,
   'site-plan': Map,
   permitting: FileCheck,
 }
@@ -102,7 +101,7 @@ function ProductCard({ product }: { product: SuiteProduct }) {
 }
 
 /**
- * The four core preconstruction products, presented as an integrated suite.
+ * The three core preconstruction services, presented as an integrated suite.
  * This is the primary commercial surface of the homepage — the products are
  * purchasable directly from here, not hidden behind a chat interface.
  */
@@ -115,11 +114,11 @@ export function PreconstructionSuiteSection() {
             The preconstruction suite
           </span>
           <h2 className="mt-3 font-display text-3xl font-bold text-slate-950 sm:text-4xl">
-            Four products. One project record.
+            Three planning services. One project record.
           </h2>
           <p className="mt-4 text-base leading-relaxed text-slate-600">
-            Start anywhere. Each product stands on its own, and each one feeds the next — your
-            property, scope, and documents carry forward so you never re-enter them.
+            Estimating is built into the work: concepts and preliminary site plans include a basic
+            planning estimate, while permit-set building plans and full site plans include a detailed estimate.
           </p>
         </div>
 
@@ -135,12 +134,6 @@ export function PreconstructionSuiteSection() {
             className="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-7 py-3.5 text-sm font-bold text-white hover:bg-slate-800"
           >
             Start a Project <ArrowRight className="h-4 w-4" />
-          </Link>
-          <Link
-            href="/intake/cost_estimate"
-            className="inline-flex items-center gap-2 rounded-xl border-2 border-slate-300 px-7 py-3.5 text-sm font-bold text-slate-800 hover:border-slate-500"
-          >
-            Get an Estimate
           </Link>
           <Link
             href="/intake/permit_path_only?product=permit_assessment"

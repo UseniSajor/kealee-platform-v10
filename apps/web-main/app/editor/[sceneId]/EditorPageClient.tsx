@@ -7,7 +7,7 @@
  * - Mounting PascalEditor with scene data from server
  * - Autosave via onSave callback → PUT /api/editor/scenes/[id]
  * - Upload mode (shows upload zone if ?mode=upload)
- * - Estimate export → links to /estimate with scene context
+ * - Estimate export → stays attached to the selected plan package
  * - Reel carousel for the project type
  * - Navigation between editor, upload, and renders
  */

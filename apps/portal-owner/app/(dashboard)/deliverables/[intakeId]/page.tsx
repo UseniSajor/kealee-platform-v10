@@ -35,21 +35,6 @@ import {
 
 // ─── Package config (mirrors web-main/lib/service-deliverables.ts) ────────────
 
-/**
- * Tier names for orders sold before packages became one-per-product. A live
- * order has no tier: its name is the package label from the pricing engine.
- */
-const LEGACY_TIER_NAMES: Record<number, string> = {
-  1: 'Starter Concept',
-  2: 'Visualization Package',
-  3: 'Pre-Design Package',
-}
-
-function legacyTierName(formData: Record<string, unknown>, tier: number): string | undefined {
-  if (typeof formData.tier !== 'number' || isV30IntakeFormData(formData)) return undefined
-  return LEGACY_TIER_NAMES[tier]
-}
-
 interface PackageDef {
   label: string
   includes: string[]
@@ -60,13 +45,13 @@ const PACKAGE_CONFIG: Record<string, PackageDef> = {
     label: 'Kitchen Design Package',
     includes: [
       'Floor plan / layout direction',
-      '3–5 concept renderings',
+      'Six project-specific concept views',
       'Permit roadmap (disciplines, AHJ checklist, fees)',
       'Bill of Materials with line-item costs',
       'MEP specification (electrical, plumbing, HVAC, lighting)',
-      'Basic cost estimate',
+      'Basic planning estimate with assumptions and allowances',
       'Design brief with style direction',
-      'AI transformation video (Visualization & Pre-Design tiers)',
+      'Video presentation when purchased as an add-on',
       'Concept fee credited toward design plans (permits included in design plan package)',
       'Direct support via portal ask bar',
     ],
@@ -75,13 +60,13 @@ const PACKAGE_CONFIG: Record<string, PackageDef> = {
     label: 'Bathroom Design Package',
     includes: [
       'Floor plan / layout direction',
-      '3–5 concept renderings',
+      'Six project-specific concept views',
       'Permit roadmap (disciplines, AHJ checklist, fees)',
       'Bill of Materials with line-item costs',
       'MEP specification (electrical, plumbing, HVAC, lighting)',
-      'Basic cost estimate',
+      'Basic planning estimate with assumptions and allowances',
       'Design brief with style direction',
-      'AI transformation video (Visualization & Pre-Design tiers)',
+      'Video presentation when purchased as an add-on',
       'Concept fee credited toward design plans (permits included in design plan package)',
       'Direct support via portal ask bar',
     ],
@@ -90,13 +75,13 @@ const PACKAGE_CONFIG: Record<string, PackageDef> = {
     label: 'Exterior Concept Package',
     includes: [
       'Floor plan / layout direction',
-      '3–5 exterior renderings (front, side, rear)',
+      'Six project-specific exterior views',
       'Permit roadmap (disciplines, AHJ checklist, fees)',
       'Material palette with finish selections',
       'Landscape overview sketch',
       'MEP specification (exterior systems)',
       'Bill of Materials',
-      'AI transformation video (Visualization & Pre-Design tiers)',
+      'Video presentation when purchased as an add-on',
       'Concept fee credited toward design plans (permits included in design plan package)',
       'Direct support via portal ask bar',
     ],
@@ -120,7 +105,7 @@ const PACKAGE_CONFIG: Record<string, PackageDef> = {
       'Permit roadmap across all disciplines',
       'MEP specification for all systems',
       'Bill of Materials',
-      'AI transformation video (Visualization & Pre-Design tiers)',
+      'Video presentation when purchased as an add-on',
       'Concept fee credited toward design plans (permits included in design plan package)',
       'Direct support via portal ask bar',
     ],
@@ -134,7 +119,7 @@ const PACKAGE_CONFIG: Record<string, PackageDef> = {
       'MEP specification for all systems',
       'Bill of Materials',
       'Remodel phase plan',
-      'AI transformation video (Visualization & Pre-Design tiers)',
+      'Video presentation when purchased as an add-on',
       'Concept fee credited toward design plans (permits included in design plan package)',
       'Direct support via portal ask bar',
     ],
@@ -148,7 +133,7 @@ const PACKAGE_CONFIG: Record<string, PackageDef> = {
       'Structural considerations brief',
       'MEP specification for new addition',
       'Bill of Materials',
-      'AI transformation video (Visualization & Pre-Design tiers)',
+      'Video presentation when purchased as an add-on',
       'Concept fee credited toward design plans (permits included in design plan package)',
       'Direct support via portal ask bar',
     ],
@@ -157,12 +142,12 @@ const PACKAGE_CONFIG: Record<string, PackageDef> = {
     label: 'Interior Reno Concept',
     includes: [
       'Floor plan / layout direction',
-      'Interior concept visuals (3–5 renders)',
+      'Six project-specific interior concept views',
       'Permit roadmap (permit required)',
       'Layout recommendations with flow analysis',
       'MEP specification (electrical, plumbing, lighting)',
       'Bill of Materials with cost breakdown',
-      'AI transformation video (Visualization & Pre-Design tiers)',
+      'Video presentation when purchased as an add-on',
       'Concept fee credited toward design plans (permits included in design plan package)',
       'Direct support via portal ask bar',
     ],
@@ -171,12 +156,12 @@ const PACKAGE_CONFIG: Record<string, PackageDef> = {
     label: 'Interior Renovation',
     includes: [
       'Floor plan / layout direction',
-      'Interior concept visuals (3–5 renders)',
+      'Six project-specific interior concept views',
       'Permit roadmap (permit required)',
       'Layout recommendations with flow analysis',
       'MEP specification (electrical, plumbing, lighting)',
       'Bill of Materials with cost breakdown',
-      'AI transformation video (Visualization & Pre-Design tiers)',
+      'Video presentation when purchased as an add-on',
       'Concept fee credited toward design plans (permits included in design plan package)',
       'Direct support via portal ask bar',
     ],
@@ -189,7 +174,7 @@ const PACKAGE_CONFIG: Record<string, PackageDef> = {
       'Feasibility analysis',
       'Cost estimate',
       'Permit scope brief',
-      'AI transformation video (Pre-Design tier)',
+      'Video presentation when purchased as an add-on',
       'Direct support via portal ask bar',
     ],
   },
@@ -201,23 +186,23 @@ const PACKAGE_CONFIG: Record<string, PackageDef> = {
       'Feasibility analysis',
       'Cost estimate',
       'Permit scope brief',
-      'AI transformation video (Pre-Design tier)',
+      'Video presentation when purchased as an add-on',
       'Direct support via portal ask bar',
     ],
   },
   design_estimate_permit_bundle: {
-    label: 'Design + Estimate + Permit Bundle',
+    label: 'Design Concept Package',
     includes: [
       'Floor plan / layout direction',
-      'design concept renderings (3–5 views)',
+      'Six project-specific design concept views',
       'Permit roadmap (disciplines, AHJ checklist, fees)',
       'Zoning and setback analysis tied to your concept massing',
       'Bill of Materials with line-item costs',
       'MEP specification (electrical, plumbing, HVAC, lighting)',
-      'RSMeans-validated cost estimate (trade-by-trade)',
-      'AI transformation video (Visualization & Pre-Design tiers)',
+      'Basic planning estimate with assumptions and allowances',
+      'Video presentation when purchased as an add-on',
       'Concept fee credited toward permit drawings',
-      '15-min expert consultation call (booked after delivery)',
+      'Live consultation when purchased as an add-on',
       'Direct support via portal ask bar',
     ],
   },
@@ -359,9 +344,6 @@ interface ConceptData {
   packageLabel: string
   /** What's included in this package (from the product catalog) */
   packageIncludes: string[]
-  /** Tier name, e.g. "Starter Concept" */
-  /** Only set for orders sold under the old three-tier catalogue. */
-  tierName?: string
   /** True once permit has been submitted or approved — unlocks contractor matching */
   contractorMatchingUnlocked: boolean
   /** True when the permit step is done (submitted or approved) but before contractor is matched */
@@ -884,9 +866,6 @@ export default function ConceptDeliverablePage() {
         projectType:     (intake.project_path as string)?.replace(/_/g, ' ') ?? 'Concept Package',
         packageLabel:    pkgDef.label,
         packageIncludes,
-        // One core package per product — the package name is the product's, not a
-        // tier label. Legacy orders keep the tier name they were sold under.
-        tierName:        legacyTierName(formData, tier),
         isV30:           isV30IntakeFormData(formData),
         v30WorkspaceUrl: isV30IntakeFormData(formData) ? v30WorkspaceUrl(intakeId) : undefined,
         projectPath,
@@ -1301,7 +1280,6 @@ export default function ConceptDeliverablePage() {
             <V30LandscapeCadPanel
               intakeId={intakeId}
               projectPath={data.projectPath ?? 'kitchen_remodel'}
-              tier={data.tier}
               landscape={data.v30Landscape ?? null}
               floorplan={data.v30Floorplan ?? null}
               lotContext={data.v30LotContext}
@@ -1945,8 +1923,8 @@ export default function ConceptDeliverablePage() {
           const primaryLabel = requiresPermit
             ? 'Get Permit-Ready Design'
             : 'Match with Contractors + Get Firm Pricing'
-          const secondaryHref = requiresPermit ? '#permit' : `https://kealee.com/intake/certified_estimate?projectId=${intakeId}`
-          const secondaryLabel = requiresPermit ? 'Review Permit Requirements' : 'Get Full Cost Estimate'
+          const secondaryHref = requiresPermit ? '#permit' : '#scope-bom'
+          const secondaryLabel = requiresPermit ? 'Review Permit Requirements' : 'Review Included Estimate'
           return (
             <section className="rounded-2xl overflow-hidden"
               style={{ border: '1.5px solid #E8724B30', background: 'linear-gradient(135deg, #FFF7F3 0%, #FFF 100%)' }}>

@@ -8,25 +8,12 @@ import { SERVICE_MAP } from '@/lib/services-config'
 import { StripeEmbeddedCheckoutModal } from '@/components/StripeEmbeddedCheckoutModal'
 import { isV30EnabledClient } from '@/lib/v30'
 import { buildV30AnswersFromConceptConfirm } from '@/lib/v30-concept-confirm'
-import {
-  getServiceTierItemsForUi,
-  withConsultationIcon,
-} from '@/lib/concept-package-deliverables-ui'
+import { getServicePackageItemsForUi } from '@/lib/concept-package-deliverables-ui'
 import { ADD_ONS, type Quote } from '@kealee/core-rules'
 import { QuoteBreakdown } from '@/components/quote/QuoteBreakdown'
 
 // True when pk is set at build time — activates embedded Stripe checkout
 const USE_EMBEDDED_CHECKOUT = Boolean(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY)
-
-// Tier deliverables: @kealee/core-rules — see docs/system/concept-package-deliverables.md
-function getServiceTierItems(serviceSlug: string) {
-  const items = getServiceTierItemsForUi(serviceSlug)
-  return {
-    1: items[1],
-    2: items[2],
-    3: withConsultationIcon(items[3]),
-  }
-}
 
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -260,7 +247,7 @@ function ConfirmInner() {
     )
   }
 
-  const packageItems = getServiceTierItems(serviceSlug)[2] ?? getServiceTierItems(serviceSlug)[1] ?? []
+  const packageItems = getServicePackageItemsForUi(serviceSlug)
   const offeredAddOns = ADD_ONS.filter(a =>
     service?.videoAddOnAvailable ? true : !['video_presentation', 'interactive_walk'].includes(a.id),
   )
@@ -353,7 +340,7 @@ function ConfirmInner() {
             {agreed && <Check className="w-3 h-3 text-white" strokeWidth={3} />}
           </div>
           <span className="text-sm text-slate-600 leading-relaxed">
-            I agree to Kealee's{' '}
+            I agree to Kealee&apos;s{' '}
             <Link href="/terms" className="font-semibold text-[#E8724B] hover:underline">Terms of Service</Link>{' '}
             and{' '}
             <Link href="/privacy" className="font-semibold text-[#E8724B] hover:underline">Privacy Policy</Link>.

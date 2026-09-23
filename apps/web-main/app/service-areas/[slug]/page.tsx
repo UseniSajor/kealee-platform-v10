@@ -92,8 +92,8 @@ export default async function ServiceAreaPage({ params }: Props) {
             <Link href="/permits" className="text-sm font-medium text-[#2ABFBF] hover:underline">
               Permits
             </Link>
-            <Link href="/estimate" className="text-sm font-medium text-[#2ABFBF] hover:underline">
-              Estimates
+            <Link href="/services" className="text-sm font-medium text-[#2ABFBF] hover:underline">
+              Plans with estimating included
             </Link>
             <Link href="/marketplace" className="text-sm font-medium text-[#2ABFBF] hover:underline">
               Contractors

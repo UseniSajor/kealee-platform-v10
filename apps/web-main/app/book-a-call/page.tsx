@@ -1,7 +1,7 @@
 /**
  * /book-a-call
  *
- * 15-min expert consultation booking page (Premium+ package only).
+ * 15-minute expert consultation booking page for customers who selected the add-on.
  * Embeds a Calendly inline widget — set NEXT_PUBLIC_CALENDLY_URL in Vercel.
  * Fallback: mailto link + contact card when Calendly is not configured.
  */
@@ -12,7 +12,7 @@ import { Phone, Clock, Shield, MessageCircle } from 'lucide-react'
 
 export const metadata: Metadata = {
   title: 'Book Your 15-Min Call — Kealee',
-  description: 'Schedule your 15-minute expert consultation with the Kealee team. Available to Premium+ package holders.',
+  description: 'Schedule your 15-minute expert consultation with the Kealee team. Available with the consultation add-on.',
 }
 
 const TRUST_POINTS = [
@@ -29,7 +29,7 @@ export default function BookACallPage() {
       <section className="py-16 px-4 border-b border-slate-100 bg-gradient-to-br from-[#1A2B4A] to-[#2d4a72]">
         <div className="mx-auto max-w-3xl text-center">
           <span className="inline-block rounded-full bg-white/10 text-white text-xs font-bold uppercase tracking-widest px-4 py-1.5 mb-5">
-            Premium+ Consultation
+            Design Consultation Add-on
           </span>
           <h1 className="text-3xl sm:text-4xl font-bold text-white mb-4 leading-tight">
             Book Your 15-Min Expert Call

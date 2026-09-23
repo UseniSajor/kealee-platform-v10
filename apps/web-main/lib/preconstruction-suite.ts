@@ -1,5 +1,5 @@
 /**
- * The four core preconstruction products, as presented on the public site.
+ * The three core preconstruction services, as presented on the public site.
  *
  * Each entry is a thin, buyer-facing wrapper over the canonical catalog in
  * `@kealee/core-rules` — prices, includes, inputs, and limitations come from
@@ -15,7 +15,7 @@ import {
   type PublicCatalogProduct,
 } from '@kealee/core-rules'
 
-export type SuiteProductId = 'design-concept' | 'estimation' | 'site-plan' | 'permitting'
+export type SuiteProductId = 'design-concept' | 'site-plan' | 'permitting'
 
 export interface SuiteProduct {
   id: SuiteProductId
@@ -41,7 +41,7 @@ export interface SuiteProduct {
   /** Public detail page. */
   detailHref: string
   accent: string
-  /** Additional tiers within this product family, for the detail page. */
+  /** Related products within this service family, for the detail page. */
   relatedCatalogKeys: readonly string[]
 }
 
@@ -75,22 +75,6 @@ const SEEDS: readonly SuiteSeed[] = [
     accent: '#2ABFBF',
     relatedCatalogKeys: ['project_launch', 'professional_design'],
     fallbackDelivery: '2–5 business days',
-    fallbackPrice: 'Request pricing',
-  },
-  {
-    id: 'estimation',
-    name: 'Estimation',
-    catalogKey: 'detailed_estimate',
-    tagline:
-      'A documented, trade-by-trade cost plan with the assumptions, exclusions, and confidence level written down.',
-    audience:
-      'Owners validating a budget, contractors pricing work, and anyone who needs a cost plan a lender or partner will read.',
-    disclaimer:
-      'An estimate is a priced opinion based on the stated scope and assumptions. It is not a bid, a contract price, or a guarantee of construction cost. Professional review is included only on the reviewed tier.',
-    ctaLabel: 'Get an Estimate',
-    accent: '#E8793A',
-    relatedCatalogKeys: ['certified_estimate'],
-    fallbackDelivery: '3–5 business days',
     fallbackPrice: 'Request pricing',
   },
   {

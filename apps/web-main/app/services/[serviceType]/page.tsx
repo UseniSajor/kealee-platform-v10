@@ -14,10 +14,7 @@ import {
 } from '@/lib/service-page-copy'
 import { getServiceMedia } from '@/lib/marketing/service-media'
 import { ServiceHeroMedia } from '@/components/marketing/ServiceHeroMedia'
-import {
-  getServiceTierItemsForUi,
-  withConsultationIcon,
-} from '@/lib/concept-package-deliverables-ui'
+import { getServicePackageItemsForUi } from '@/lib/concept-package-deliverables-ui'
 import { HOME_JOURNEY_SERVICES, getHomeJourneyService } from '@/components/home/home-services-data'
 import { JourneyServicePage } from '@/components/services/JourneyServicePage'
 
@@ -86,7 +83,7 @@ function PackageCard({
   svc: Service
   addOns: { id: string; label: string; cents: number | null; note?: string }[]
 }) {
-  const deliverables = getServiceTierItemsForUi(svc.slug)[2] ?? getServiceTierItemsForUi(svc.slug)[1]
+  const deliverables = getServicePackageItemsForUi(svc.slug)
 
   return (
     <div className="relative rounded-2xl border border-[#E8724B] bg-white shadow-lg shadow-orange-100 ring-2 ring-[#E8724B]/20 overflow-hidden">
@@ -223,7 +220,7 @@ export default async function ServicePage({
         {/* Features */}
         <section className="py-16 px-4 bg-white">
           <div className="mx-auto max-w-3xl">
-            <h2 className="text-2xl font-bold text-slate-900 mb-6">What's Included</h2>
+            <h2 className="text-2xl font-bold text-slate-900 mb-6">What&apos;s Included</h2>
             <div className="grid sm:grid-cols-2 gap-3">
               {svc.features.map((f) => (
                 <div key={f} className="flex items-start gap-3 rounded-xl bg-slate-50 p-4 border border-slate-100">
@@ -307,7 +304,7 @@ export default async function ServicePage({
       {/* ── 3. What's Included ─────────────────────────────────────────────── */}
       <section className="py-16 px-4 bg-white">
         <div className="mx-auto max-w-4xl">
-          <h2 className="text-2xl font-bold text-slate-900 mb-2">What's Included</h2>
+          <h2 className="text-2xl font-bold text-slate-900 mb-2">What&apos;s Included</h2>
           <p className="text-slate-500 mb-8">{includedBlurb}</p>
           <div className="grid sm:grid-cols-2 gap-3">
             {includes.map((item) => (

@@ -199,16 +199,16 @@ function RevenueCtaBar({ route, requiresArchitect, projectId }: { route?: string
     <div className="rounded-2xl border border-gray-200 bg-white p-6">
       <h3 className="text-lg font-bold text-gray-900 mb-4">Next Steps</h3>
       <div className="space-y-3 flex flex-col">
-        {/* Cost Estimation CTA */}
+        {/* Continue into the coordinated plan journey; estimating is included. */}
         <Link
-          href={`/estimate?projectId=${projectId || ''}`}
+          href="/services"
           className="flex items-center justify-between rounded-xl border border-gray-200 px-4 py-3 hover:border-gray-300 hover:bg-gray-50 transition"
         >
           <div>
-            <p className="text-sm font-bold text-gray-900">Get Cost Estimate</p>
-            <p className="text-xs text-gray-500">Trade-by-trade breakdown from RSMeans</p>
+            <p className="text-sm font-bold text-gray-900">Choose the right plan package</p>
+            <p className="text-xs text-gray-500">Estimating is included with the plan</p>
           </div>
-          <span className="text-sm font-bold text-gray-900">from $595</span>
+          <span className="text-sm font-bold text-gray-900">View services</span>
         </Link>
 
         {/* Permit Package CTA */}

@@ -7,52 +7,6 @@
  */
 
 export const SERVICE_PRICING = {
-  // ESTIMATION SERVICES
-  estimation: {
-    cost_estimate: {
-      name: 'Detailed Cost Estimate',
-      amount: 59500, // cents
-      amountUsd: 595,
-      turnaround: 3, // business days
-      description: 'Human-reviewed, trade-by-trade breakdown validated against RSMeans',
-      features: [
-        'CSI MasterFormat line-item breakdown',
-        'RSMeans unit cost validation',
-        'Base / mid / high scenarios',
-        'Licensed estimator sign-off',
-        'Lender-ready PDF',
-      ],
-    },
-    certified_estimate: {
-      name: 'Certified Cost Estimate',
-      amount: 185000, // cents
-      amountUsd: 1850,
-      turnaround: 5,
-      description: 'Notarized licensed estimator sign-off, full RSMeans source documentation',
-      features: [
-        'Everything in Detailed Estimate',
-        'Notarized licensed estimator signature',
-        'Full RSMeans source citations',
-        'Investor-grade executive summary',
-        'Excel + PDF deliverable',
-      ],
-    },
-    bundle: {
-      name: 'Estimate + Permit Bundle',
-      amount: 110000, // cents
-      amountUsd: 1100,
-      turnaround: 5,
-      description: 'Detailed cost estimate plus permit package preparation — bundled for efficiency',
-      features: [
-        'Full Detailed Cost Estimate',
-        'Permit package preparation',
-        'Submission to correct agency',
-        'Bundle savings vs. individual',
-        'Single project intake',
-      ],
-    },
-  },
-
   // PERMIT SERVICES
   permits: {
     document_assembly: {
@@ -130,28 +84,6 @@ export const SERVICE_PRICING = {
       submissionMethods: {
         KEALEE_MANAGED: 1.0, // premium price is base
       },
-    },
-  },
-
-  // DESIGN SERVICES
-  preDesign: {
-    starter: {
-      name: 'Concept Package — Starter',
-      amount: 29500, // cents
-      amountUsd: 295,
-      description: 'generated using AI tools concept design with basic visualization',
-    },
-    visualization: {
-      name: 'Concept Package — Visualization',
-      amount: 59500, // cents
-      amountUsd: 595,
-      description: 'Photorealistic renderings and detailed design concept',
-    },
-    preDesign: {
-      name: 'Pre-Design Package',
-      amount: 99500, // cents
-      amountUsd: 995,
-      description: 'Complete pre-design with zoning, buildability, and cost framework',
     },
   },
 

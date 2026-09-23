@@ -1,6 +1,7 @@
 /**
- * Concept → build lifecycle upsells + bundled package deals.
- * Always surfaces estimation + permit; structural paths bundle in permit-ready plans.
+ * Concept → build lifecycle recommendations.
+ * Estimating is included in the plan product and is never surfaced as a
+ * separate upsell. Historical bundle keys remain accepted for old orders.
  * All prices from INTAKE_PRICE_CENTS — never hardcode in UI.
  */
 
@@ -340,16 +341,10 @@ export function getBuildPathUpsells(opts: {
   const owned = new Set(opts.ownedProducts ?? [])
   const needsDesign = projectNeedsProfessionalDesign(opts.sourceProjectPath)
 
-  const estimateCents = scaledCents('cost_estimate', mult.estimate)
   const permitCents = scaledCents('permit_path_only', mult.permit)
   const drawingsCents = scaledCents('professional_drawings', mult.drawings)
 
-  const bundle = getBuildPathBundle(opts)
-  const bundleComponentKeys = new Set<UpsellProductKey>(
-    needsDesign
-      ? ['cost_estimate', 'permit_path_only', 'professional_drawings']
-      : ['cost_estimate', 'permit_path_only'],
-  )
+  const bundle = null
 
   const offers: LifecycleUpsellOffer[] = []
 
@@ -361,25 +356,12 @@ export function getBuildPathUpsells(opts: {
         tier: 'primary',
         badge: 'Permit-ready plans',
         description:
-          'Licensed architect converts your concept into permit-ready drawings with PE stamp where required.',
+          'Licensed professionals convert your concept into permit-set drawings; the detailed construction estimate is included.',
       }),
     )
   }
 
-  if (!owned.has('cost_estimate') && !(bundle && bundleComponentKeys.has('cost_estimate'))) {
-    offers.push(
-      offerFrom('cost_estimate', estimateCents, getIntakePrice('cost_estimate'), {
-        fromIntakeId: opts.fromIntakeId,
-        sourceProjectPath: opts.sourceProjectPath,
-        tier: needsDesign && !bundle ? 'standard' : 'primary',
-        badge: needsDesign ? undefined : 'Plan your budget',
-        description:
-          'RSMeans-validated trade-by-trade estimate aligned to your concept scope — lender-ready PDF.',
-      }),
-    )
-  }
-
-  if (!owned.has('permit_path_only') && !(bundle && bundleComponentKeys.has('permit_path_only'))) {
+  if (!owned.has('permit_path_only')) {
     offers.push(
       offerFrom('permit_path_only', permitCents, getIntakePrice('permit_path_only'), {
         fromIntakeId: opts.fromIntakeId,
@@ -387,18 +369,6 @@ export function getBuildPathUpsells(opts: {
         tier: 'standard',
         description:
           'Jurisdiction checklist, application prep, and filing support for DC / MD / VA agencies.',
-      }),
-    )
-  }
-
-  if (!owned.has('certified_estimate') && family !== 'exterior' && !bundle) {
-    const certCents = scaledCents('certified_estimate', mult.estimate * 1.2)
-    offers.push(
-      offerFrom('certified_estimate', certCents, getIntakePrice('certified_estimate'), {
-        fromIntakeId: opts.fromIntakeId,
-        sourceProjectPath: opts.sourceProjectPath,
-        tier: 'standard',
-        description: 'Notarized RSMeans estimate for construction loans and investor packages.',
       }),
     )
   }
@@ -424,6 +394,10 @@ export function getBuildPathUpsells(opts: {
     creditNote: 'Your concept fee is credited toward permit-ready design plans when you move forward.',
     bundle,
     offers,
-    nextSteps: buildNextStepsCopy(needsDesign, bundle),
+    nextSteps: [
+      'Review the included basic planning estimate in your concept package',
+      ...(needsDesign ? ['Advance to permit-set building plans with a detailed construction estimate included'] : []),
+      'Complete the permit path and contractor handoff',
+    ],
   }
 }

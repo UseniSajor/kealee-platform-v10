@@ -5,7 +5,6 @@
 import {
   getPermitZoningLabels,
   intakePathToFamily,
-  type ConceptTier,
 } from '@kealee/core-rules'
 
 export interface ConceptPermitScope {
@@ -37,10 +36,6 @@ const STRUCTURAL_PATHS = new Set([
   'design_build',
 ])
 
-function normalizeTier(tier: number): ConceptTier {
-  return (tier === 3 ? 3 : tier === 2 ? 2 : 1) as ConceptTier
-}
-
 function zoningLooksEmpty(notes: string | undefined): boolean {
   if (!notes?.trim()) return true
   return /pending|confirm with local|not yet|to be determined/i.test(notes)
@@ -55,7 +50,7 @@ function zoningLooksEmpty(notes: string | undefined): boolean {
 export function ensureConceptPermitZoningFields(
   output: EnrichableConceptOutput,
   projectPath: string,
-  tier: number,
+  _tier: number,
   opts?: {
     projectAddress?: string
     permitRequired?: 'always' | 'sometimes' | 'rarely'
@@ -68,9 +63,8 @@ export function ensureConceptPermitZoningFields(
     }
   },
 ): void {
-  const tierKey = normalizeTier(tier)
   const family = intakePathToFamily(projectPath)
-  const pzLabels = getPermitZoningLabels(family, tierKey)
+  const pzLabels = getPermitZoningLabels(family)
   const permitRequired = opts?.permitRequired ?? 'sometimes'
   const defaultRequiresPermit =
     permitRequired === 'always' ||
@@ -88,7 +82,7 @@ export function ensureConceptPermitZoningFields(
       ? `${jData.city}, ${jData.state}`
       : opts?.projectAddress ?? undefined
     output.zoningNotes = [
-      `Your ${tierKey === 1 ? 'Basic' : tierKey === 2 ? 'Premium' : 'Premium+'} package includes zoning and permit guidance.`,
+      'Your Design Concept Package includes zoning and permit guidance.',
       ...zoningLines,
       locationLabel ? `Property: ${locationLabel}.` : '',
       jData && !jData.inferredByAI
@@ -269,13 +263,12 @@ async function analyzePhotosForFloorplan(photoUrls: string[]): Promise<{
   }
 }
 
-/** Run concept-engine floorplan optimizer and attach SVG + packageJson.floorPlan (Premium+ tiers). */
+/** Run the concept floorplan optimizer and attach SVG + packageJson.floorPlan. */
 export async function generateAndAttachConceptFloorplan(
   intake: FloorplanEnrichmentInput,
   output: EnrichableConceptOutput & Record<string, unknown>,
   tier: number,
 ): Promise<void> {
-  if (normalizeTier(tier) < 2) return
   if (NO_FLOORPLAN_PATHS.has(intake.project_path)) return
   if (typeof output.floorplanSvgInline === 'string' && output.floorplanSvgInline.trim().startsWith('<')) {
     return

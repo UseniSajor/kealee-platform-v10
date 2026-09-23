@@ -101,19 +101,6 @@ export const CONCEPT_DEVELOPER_PRICE      = CANONICAL_PRICE_CENTS.concept.develo
 /** Generic lowest starting price shown in broad marketing */
 export const CONCEPT_START_PRICE = CANONICAL_PRICE_CENTS.concept.genericStart / 100
 
-// ── Tier label map (numeric tier → display string) ────────────────────────────
-
-export const CONCEPT_TIER_PRICES: Record<1 | 2 | 3, number> = {
-  1: CONCEPT_KITCHEN_PRICE,       // entry-tier concept
-  2: CONCEPT_WHOLE_HOME_PRICE,    // mid-tier concept
-  3: CONCEPT_DEVELOPER_PRICE,     // high-tier concept
-}
-
-// ── AI Concept tier marketing display prices ──────────────────────────────────
-//
-// Used on marketing surfaces (concept page tier blurbs, ads, banners).
-// Checkout amounts are determined by INTAKE_TIER_PRICE_CENTS (per project path).
-//
 /** Starting price for Professional Design services (permit-ready stamped plan set). */
 export const PROFESSIONAL_DESIGN_BASE = CANONICAL_PRICE_CENTS.professionalDesign / 100
 
@@ -161,9 +148,10 @@ export const PLATFORM_PRICING = {
 export type PublicCatalogCategoryId =
   | 'site-intelligence'
   | 'concept-planning'
-  | 'estimation'
   | 'permits-professional'
   | 'construction-execution'
+
+export type IncludedEstimateLevel = 'basic_planning' | 'detailed_construction'
 
 export interface PublicCatalogProduct {
   key: string
@@ -180,6 +168,12 @@ export interface PublicCatalogProduct {
   deliveryDays?: string
   audience: readonly ('homeowner' | 'contractor' | 'developer')[]
   preliminary?: boolean
+  /** Estimating is bundled into the plan package and is never a separate public SKU. */
+  includedEstimate?: {
+    level: IncludedEstimateLevel
+    label: string
+    description: string
+  }
   outcome: string
   includes: readonly string[]
   customerProvides: readonly string[]
@@ -211,11 +205,6 @@ export const PUBLIC_CATALOG_CATEGORIES: ReadonlyArray<{
     description: 'Turn a project idea into a visual concept, scope, and budget direction.',
   },
   {
-    id: 'estimation',
-    label: 'Estimation',
-    description: 'Build a decision-ready cost plan before bids and construction.',
-  },
-  {
     id: 'permits-professional',
     label: 'Permits & Professional Services',
     description: 'Advance verified project data through drawings, applications, and professional review.',
@@ -239,8 +228,13 @@ export const PUBLIC_PRODUCT_CATALOG: readonly PublicCatalogProduct[] = [
     deliveryDays: 'First-hour summary; full site plan in 2–5 days',
     audience: ['homeowner', 'contractor'],
     preliminary: true,
+    includedEstimate: {
+      level: 'basic_planning',
+      label: 'Basic planning estimate included',
+      description: 'Planning-level construction cost range with major scope assumptions, allowances, and exclusions.',
+    },
     outcome: 'A clearly organized preliminary package that shows what may fit, why it may fit, and what must be verified before detailed design.',
-    includes: ['Project brief, design basis, source register, and assumptions', 'Available existing conditions with parcel, access, terrain, easement, utility, flood, soil, tree, and environmental context', 'Preliminary zoning, setbacks or BRLs, overlays, coverage, and buildable-area analysis', 'Concept layout with proposed buildings or lots, access, parking, circulation, open space, dimensions, and area schedule as applicable', 'Preliminary grading, drainage, utility, stormwater, erosion-control, and roadway strategy', 'Separate scaled technical drawing with north arrow, graphic scale, legend, source notes, and preliminary status', 'Purchaser guide with confidence, conflicts, alternatives, verification owners, and next steps'],
+    includes: ['Project brief, design basis, source register, and assumptions', 'Available existing conditions with parcel, access, terrain, easement, utility, flood, soil, tree, and environmental context', 'Preliminary zoning, setbacks or BRLs, overlays, coverage, and buildable-area analysis', 'Concept layout with proposed buildings or lots, access, parking, circulation, open space, dimensions, and area schedule as applicable', 'Preliminary grading, drainage, utility, stormwater, erosion-control, and roadway strategy', 'Basic planning estimate with major scope assumptions, allowances, and exclusions', 'Separate scaled technical drawing with north arrow, graphic scale, legend, source notes, and preliminary status', 'Purchaser guide with confidence, conflicts, alternatives, verification owners, and next steps'],
     customerProvides: ['Property address', 'Project goal and approximate footprint', 'Survey or site documents when available'],
     sampleAsset: '/media/product-samples/site-intelligence.svg',
     sampleAlt: 'Representative preliminary package with an easy-to-read design concept plan followed by a sourced preliminary site plan',
@@ -267,6 +261,11 @@ export const PUBLIC_PRODUCT_CATALOG: readonly PublicCatalogProduct[] = [
     deliveryDays: 'First-hour source summary; verified feasibility plan in 3–7 days',
     audience: ['homeowner', 'contractor', 'developer'],
     preliminary: true,
+    includedEstimate: {
+      level: 'basic_planning',
+      label: 'Basic planning estimate included',
+      description: 'Planning-level construction cost range with major scope assumptions, allowances, and exclusions.',
+    },
     outcome: 'A reviewed feasibility record connecting verified zoning inputs, constraints, and a proposed footprint.',
     includes: ['Verified zoning and overlay source record', 'Constraint and buildable-envelope review', 'Proposed footprint validation', 'Assumptions, exceptions, and confidence register', 'Professional-review checklist'],
     customerProvides: ['Property address and intended use', 'Known survey, title, or site documents', 'Target program or footprint requirements'],
@@ -294,6 +293,11 @@ export const PUBLIC_PRODUCT_CATALOG: readonly PublicCatalogProduct[] = [
     deliveryDays: '4–7 days',
     audience: ['developer'],
     preliminary: true,
+    includedEstimate: {
+      level: 'basic_planning',
+      label: 'Basic planning estimate included',
+      description: 'Planning-level construction cost range with major scope assumptions, allowances, and exclusions.',
+    },
     outcome: 'A comparable set of early development options with yield, parking, massing, cost, NOI, and entitlement assumptions.',
     includes: ['Parcel and constraint basis', 'Multifamily yield and unit-mix options', 'Parking and massing metrics', 'Preliminary earthwork and cost/NOI inputs', 'Entitlement checklist and option comparison'],
     customerProvides: ['Site address or parcel identifiers', 'Target use, unit mix, and parking assumptions', 'Available survey, topo, and financial assumptions'],
@@ -313,13 +317,18 @@ export const PUBLIC_PRODUCT_CATALOG: readonly PublicCatalogProduct[] = [
     pricePrefix: 'From ',
     audience: ['homeowner', 'contractor'],
     preliminary: true,
+    includedEstimate: {
+      level: 'basic_planning',
+      label: 'Basic planning estimate included',
+      description: 'Planning-level construction cost range with major scope assumptions, allowances, and exclusions.',
+    },
     outcome: 'A visual, property-specific direction that makes scope, layout, budget, and permit questions easier to decide.',
-    includes: ['Project-specific concept visualization', 'Preliminary layout or plan direction', 'Scope and material direction', 'Planning cost band', 'Permit-path and professional-review flags'],
+    includes: ['Project-specific concept visualization', 'Preliminary layout or plan direction', 'Scope and material direction', 'Basic planning estimate with major assumptions, allowances, and exclusions', 'Permit-path and professional-review flags'],
     customerProvides: ['Project type and goals', 'Service-specific photos or video', 'Measurements, plans, or address when available'],
     sampleAsset: '/media/product-samples/concept-plan.svg',
     sampleAlt: 'Representative Kealee concept-plan deliverable with existing conditions, proposed direction, scope, and cost band',
     limitations: ['Concept geometry and visuals are preliminary', 'Not permit-ready or for construction', 'Existing conditions must be field verified'],
-    nextStep: 'Add detailed estimating, verified feasibility, or professional design as the project requires.',
+    nextStep: 'Advance the approved concept into verified feasibility or professional design as the project requires.',
   },
   {
     key: 'project_launch',
@@ -331,6 +340,11 @@ export const PUBLIC_PRODUCT_CATALOG: readonly PublicCatalogProduct[] = [
     priceCents: CANONICAL_PRICE_CENTS.platform.homeownerLaunch,
     audience: ['homeowner'],
     preliminary: true,
+    includedEstimate: {
+      level: 'basic_planning',
+      label: 'Basic planning estimate included',
+      description: 'Planning-level construction cost range with major scope assumptions, allowances, and exclusions.',
+    },
     outcome: 'A combined decision package for owners who need concept direction and early feasibility before engaging execution professionals.',
     includes: ['Concept visualization and preliminary layout', 'Early estimate and assumptions', 'Zoning and permit-path direction', 'Scope brief for professional handoff', 'Contractor-ready project summary'],
     customerProvides: ['Address and project objective', 'Photos, video, or existing plans', 'Budget range and desired schedule'],
@@ -338,42 +352,6 @@ export const PUBLIC_PRODUCT_CATALOG: readonly PublicCatalogProduct[] = [
     sampleAlt: 'Representative concept and feasibility package with visualization, plan direction, scope, and budget',
     limitations: ['Not a construction-document package', 'Professional services and filing are separate unless expressly included', 'Budget remains a planning range'],
     nextStep: 'Move the approved direction into professional drawings, permits, and Marketplace handoff.',
-  },
-  {
-    key: 'detailed_estimate',
-    categoryId: 'estimation',
-    name: 'Detailed Construction Estimate',
-    shortDescription: 'Trade-by-trade planning estimate with quantities, assumptions, and regional cost references.',
-    href: '/products/detailed_estimate',
-    startHref: '/intake/cost_estimate',
-    priceCents: CANONICAL_PRICE_CENTS.estimation.detailed,
-    deliveryDays: '3–5 days',
-    audience: ['homeowner', 'contractor', 'developer'],
-    outcome: 'A documented planning estimate organized by trade, quantities, assumptions, and regional references.',
-    includes: ['Trade-by-trade cost breakdown', 'Material and labor planning ranges', 'Quantity and scope assumptions', 'Regional cost reference basis', 'Allowances, exclusions, and risk notes'],
-    customerProvides: ['Project location and scope', 'Plans, photos, or measurements', 'Finish level and target schedule'],
-    sampleAsset: '/media/product-samples/estimate.svg',
-    sampleAlt: 'Representative detailed estimate with trades, quantities, unit costs, assumptions, and total planning range',
-    limitations: ['Not a contractor bid or guaranteed construction price', 'Unknown conditions and market changes affect cost', 'Taxes, design, agency, and financing costs are listed only when scoped'],
-    nextStep: 'Use the estimate for scope decisions, bid comparison, or professional estimate review.',
-  },
-  {
-    key: 'certified_estimate',
-    categoryId: 'estimation',
-    name: 'Professionally Reviewed Estimate',
-    shortDescription: 'A documented estimate prepared for higher-stakes financing, bid, or investment review.',
-    href: '/products/certified_estimate',
-    startHref: '/intake/certified_estimate',
-    priceCents: CANONICAL_PRICE_CENTS.estimation.certified,
-    deliveryDays: '5–7 days',
-    audience: ['homeowner', 'contractor', 'developer'],
-    outcome: 'A professionally reviewed estimate package for higher-stakes financing, bid, or investment decisions.',
-    includes: ['Detailed trade and quantity estimate', 'Documented source and assumption register', 'Professional reasonableness review', 'Review notes and identified exceptions', 'Downloadable lender/investor-oriented report'],
-    customerProvides: ['Complete available plans and specifications', 'Project location and schedule', 'Required recipient or review purpose'],
-    sampleAsset: '/media/product-samples/estimate.svg',
-    sampleAlt: 'Representative professionally reviewed estimate with cost schedule, assumptions, and review status',
-    limitations: ['Review is not a contractor commitment to build', 'Certification scope depends on supplied documents', 'Changes after review require an updated estimate'],
-    nextStep: 'Proceed to bid comparison, permit coordination, or construction consultation.',
   },
   {
     key: 'permit_assessment',
@@ -421,8 +399,13 @@ export const PUBLIC_PRODUCT_CATALOG: readonly PublicCatalogProduct[] = [
     priceCents: CANONICAL_PRICE_CENTS.siteIntelligence.permitSitePlanCoordination,
     pricePrefix: 'From ',
     audience: ['homeowner', 'contractor', 'developer'],
+    includedEstimate: {
+      level: 'detailed_construction',
+      label: 'Detailed construction estimate included',
+      description: 'Trade-by-trade estimate aligned to the detailed site-plan set, with quantities, labor, materials, allowances, and exclusions.',
+    },
     outcome: 'A full, detailed, survey-backed plan set coordinated for the target jurisdiction and required professional review.',
-    includes: ['Validate the boundary survey and proposed-work dimensions needed for filing', 'Draft the jurisdiction-specific detailed plan set', 'Use the Yocum approved-plan organization as the technical completeness benchmark, adapted to the actual project and agency', 'Add applicable existing-conditions, layout, grading, drainage, stormwater, utility, roadway, detail, landscape, calculation, profile, and schedule sheets', 'Route each professional subject through required licensed review and sealing', 'Revise the plans for agency comments and place them into the permit submission set'],
+    includes: ['Validate the boundary survey and proposed-work dimensions needed for filing', 'Draft the jurisdiction-specific detailed plan set', 'Use the Yocum approved-plan organization as the technical completeness benchmark, adapted to the actual project and agency', 'Add applicable existing-conditions, layout, grading, drainage, stormwater, utility, roadway, detail, landscape, calculation, profile, and schedule sheets', 'Detailed construction estimate aligned to the coordinated plan set', 'Route each professional subject through required licensed review and sealing', 'Revise the plans for agency comments and place them into the permit submission set'],
     customerProvides: ['Current boundary survey or approved equivalent', 'Proposed improvement dimensions', 'Jurisdiction and application requirements'],
     sampleAsset: '/media/product-samples/site-intelligence.svg',
     sampleAlt: 'Representative full detailed survey-based site plan set with technical sheets, professional responsibility, and review status',
@@ -446,8 +429,13 @@ export const PUBLIC_PRODUCT_CATALOG: readonly PublicCatalogProduct[] = [
     priceCents: CANONICAL_PRICE_CENTS.professionalDesign,
     pricePrefix: 'From ',
     audience: ['homeowner', 'contractor', 'developer'],
+    includedEstimate: {
+      level: 'detailed_construction',
+      label: 'Detailed construction estimate included',
+      description: 'Trade-by-trade estimate aligned to the permit-set building plans, with quantities, labor, materials, allowances, and exclusions.',
+    },
     outcome: 'A scoped construction-document package produced with the licensed professionals required for the project and jurisdiction.',
-    includes: ['Confirm the code path and drawing list required by the permitting authority', 'Produce the architectural and engineering sheets required for the application', 'Coordinate structural, architectural, and applicable trade-plan information', 'Complete required licensed review, signatures, and seals', 'Assemble the final drawing set in the agency-required format for permit filing'],
+    includes: ['Confirm the code path and drawing list required by the permitting authority', 'Produce the architectural and engineering sheets required for the application', 'Coordinate structural, architectural, and applicable trade-plan information', 'Detailed construction estimate aligned to the permit-set building plans', 'Complete required licensed review, signatures, and seals', 'Assemble the final drawing set in the agency-required format for permit filing'],
     customerProvides: ['Verified existing conditions and survey when applicable', 'Approved concept and scope', 'Jurisdiction requirements and professional-service agreement'],
     sampleAsset: '/media/product-samples/professional-design.svg',
     sampleAlt: 'Representative professional drawing index and review matrix without implying a project-specific seal',
@@ -818,19 +806,18 @@ export type AiModelKey = keyof typeof AI_MODELS
 export type VideoProvider = 'sora-2-pro' | 'sora-2' | 'veo-3.1' | 'kling-2.5'
 export type ImageProvider = 'flux-1.1-pro-ultra' | 'flux-1.1-pro' | 'recraft-v3' | 'sdxl'
 
-/** Tier → recommended video provider. Premium+ get the best-in-class model;
- *  Premium gets a balanced quality/cost choice; Essential never gets video. */
+/** Historical paid-order adapter. New orders choose video as an add-on. */
 export const TIER_VIDEO_DEFAULTS: Record<1 | 2 | 3, VideoProvider | null> = {
-  1: null,                  // Essential — no video deliverable
-  2: 'kling-2.5',           // Premium — production-ready, low cost
-  3: 'sora-2-pro',          // Premium+ — cinematic real-life quality
+  1: null,
+  2: 'kling-2.5',
+  3: 'sora-2-pro',
 }
 
-/** Tier → number of high-realism still renders included in the deliverable. */
+/** Historical tier adapter; the current package always includes six views. */
 export const TIER_IMAGE_COUNT: Record<1 | 2 | 3, number> = {
-  1: 3,
+  1: 6,
   2: 6,
-  3: 12,
+  3: 6,
 }
 
 // ── String formatters ─────────────────────────────────────────────────────────

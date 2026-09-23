@@ -276,7 +276,7 @@ Most first-time buyers skip this and regret it. Look up your local permit requir
 
 Unpermitted work creates problems when you sell. Don't skip this step.
 
-**Step 2: Get a cost estimate BEFORE hiring a contractor**
+**Step 2: Use the estimate included with your plan BEFORE hiring a contractor**
 
 Don't hire a contractor until you know roughly what the project should cost. Otherwise you have no baseline to evaluate quotes.
 

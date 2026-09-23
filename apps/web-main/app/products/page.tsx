@@ -17,7 +17,7 @@ import { PreconstructionSuiteSection } from '@/components/home/PreconstructionSu
 
 export const metadata: Metadata = {
   title: 'All Products & Services — Kealee',
-  description: 'Every Kealee service in one place. AI design, permits, cost estimation, construction management, and landscape — all starting with AI concept.',
+  description: 'Kealee site planning, design concepts, permits, construction management, and landscape services, with estimating included in the relevant plan package.',
 }
 
 const CATEGORY_ACCENTS = {

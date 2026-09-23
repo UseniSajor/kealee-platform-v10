@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion'
 import {
-  Shield, Zap, BarChart3, Users, FileText,
+  Shield, Zap, Users, FileText,
   TrendingUp, Lock, Eye, Hammer, Brain, Layers,
   CheckCircle, ArrowRight, Clock, Target, Package,
   CreditCard, Gauge, Activity, Cpu, TreePine
@@ -34,28 +34,12 @@ const PHASES_DETAIL = [
     ],
   },
   {
-    id: 'estimate',
-    icon: BarChart3,
-    color: '#E8793A',
-    title: 'Phase 2: Cost Estimating',
-    subtitle: 'RSMeans Regional Validation',
-    description: 'Protect your budget from early-stage overruns. Get accurate, line-item material and labor estimates matched directly to your concept designs.',
-    features: [
-      'Trade-by-trade breakdown (carpentry, plumbing, electrical, etc.)',
-      'RSMeans regional data validation for Bethesda, DMV, and local markets',
-      'Material quantity takeoffs with standard and premium tier options',
-      'Reconciliation checks to highlight potential budget deviations',
-      'Investor-ready Certified Estimates for construction loans',
-      'Editable digital budget sheet to model custom material choices',
-    ],
-  },
-  {
     id: 'permit',
     icon: FileText,
     color: '#805AD5',
-    title: 'Phase 3: Permit Filing',
+    title: 'Phase 2: Permit Plans & Filing',
     subtitle: 'Filing Prep & Agency Tracking',
-    description: 'Skip the municipal bureaucracy. Our platform manages permit drawings, jurisdiction checklists, and county submittals under one unified workflow.',
+    description: 'Move from the concept into permit-set plans, an included detailed construction estimate, jurisdiction checklists, and coordinated filing.',
     features: [
       'Site plan preparation and code compliance reviews',
       'Architectural and structural engineering stamp coordination (PE stamp)',
@@ -69,7 +53,7 @@ const PHASES_DETAIL = [
     id: 'build',
     icon: Hammer,
     color: '#38A169',
-    title: 'Phase 4: Build & Manage',
+    title: 'Phase 3: Build & Manage',
     subtitle: 'General Contractor Matching & Workspaces',
     description: 'Connect with the right builders and manage milestones securely. Secure your project funds in escrow and track daily construction logs through closeout.',
     features: [
@@ -280,7 +264,7 @@ export default function FeaturesPage() {
             Ready to Transform Your Project?
           </h2>
           <p className="mt-4 text-lg text-slate-600">
-            See how Kealee's unified end-to-end design-build workflow keeps construction simple, transparent, and on-schedule.
+            See how Kealee&apos;s unified end-to-end design-build workflow keeps construction simple, transparent, and on-schedule.
           </p>
           <div className="mt-8 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
             <Link 

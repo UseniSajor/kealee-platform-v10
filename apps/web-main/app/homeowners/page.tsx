@@ -3,7 +3,6 @@ import {
   CONCEPT_FROM,
   CONCEPT_WHOLE_HOME_FROM,
   DRAWINGS_FROM,
-  ESTIMATE_FROM,
   PERMIT_ASSESSMENT_FROM,
   PERMIT_FILING_FROM,
   PERMIT_MANAGED_FROM,
@@ -59,30 +58,25 @@ const WORKFLOW = [
   {
     number: 1,
     title: 'Get Your Concept + Validation',
-    desc: `From ${CONCEPT_FROM}, get a structured, property-specific Concept Design Package — three concept directions with a recommendation, one revision round, design direction, zoning brief, path-to-approval plan, and an included design consultation. Your exact price is quoted after intake. Additional revision rounds are an optional add-on.`,
+    desc: `From ${CONCEPT_FROM}, get a structured, property-specific Concept Design Package with three directions, six views, a floor plan, zoning, permit guidance, and a basic planning estimate. One revision is included; video, consultation, extra views, CAD, and extra revisions are add-ons.`,
   },
   {
     number: 2,
-    title: 'Price Your Project',
-    desc: `AI cost estimate included with all projects. Upgrade to a detailed planning estimate (from ${ESTIMATE_FROM}) or a professionally reviewed estimate for lender-ready reports.`,
+    title: 'Handle Your Permits',
+    desc: `Move into permit-set building plans with a detailed construction estimate included, then add assessment, filing, or managed coordination as required.`,
   },
   {
     number: 3,
-    title: 'Handle Your Permits',
-    desc: `Permit guidance is free. Add an assessment (from ${PERMIT_ASSESSMENT_FROM}), preparation and filing (from ${PERMIT_FILING_FROM}), or managed coordination (from ${PERMIT_MANAGED_FROM}).`,
-  },
-  {
-    number: 4,
     title: 'Get Matched to Contractors',
     desc: 'AI matching surfaces verified contractors in your area with the right trade, license, and capacity for your project.',
   },
   {
-    number: 5,
+    number: 4,
     title: 'Review Bids & Sign Contracts',
     desc: 'Compare AI-analyzed bids side by side. Add PM Advisory ($950) or PM Oversight ($2,950) for professional oversight.',
   },
   {
-    number: 6,
+    number: 5,
     title: 'Track Every Milestone',
     desc: 'Escrow-protected payments release only when you approve each milestone. Full project visibility from day one.',
   },
@@ -90,7 +84,7 @@ const WORKFLOW = [
 
 // Revisions are an add-on, not a tier: one round comes with every package and
 // more are priced individually at checkout.
-const REVISION_TIERS = [
+const REVISION_OPTIONS = [
   { tier: 'Included', price: '1 round', note: 'Every concept package includes one revision round.', highlight: true },
   { tier: 'Additional rounds', price: 'Add-on', note: 'Add as many rounds as you want at checkout — each is priced before you pay.' },
   { tier: 'Professional review', price: 'Scoped', note: 'A licensed professional review or stamp is scoped by discipline and jurisdiction.' },
@@ -101,16 +95,15 @@ const PRICING = [
     section: 'Plan Your Project',
     items: [
       { name: 'Design Concept Package', price: `From ${CONCEPT_FROM}`, note: 'Three concept directions with a recommendation, floor plan, views, materials, zoning and permit scope. One revision round included; extra views, video and revisions are optional add-ons.', highlight: true },
-      { name: 'Permit-Ready Drawings', price: `From ${DRAWINGS_FROM}`, note: 'Prepared by the licensed professional the jurisdiction requires. Final fee set after the property review.' },
+      { name: 'Permit-Ready Drawings', price: `From ${DRAWINGS_FROM}`, note: 'Prepared by the licensed professional the jurisdiction requires, with a detailed construction estimate included. Final fee set after review.' },
     ],
     note: 'Projects over $65,000 or with structural complexity are connected with a licensed architect.',
   },
   {
-    section: 'Price Your Project',
+    section: 'Estimating Included With Plans',
     items: [
-      { name: 'AI Estimate', price: 'Free', note: 'Included with all projects' },
-      { name: 'Detailed Planning Estimate', price: `From ${ESTIMATE_FROM}`, note: 'Line-item estimate against verified regional pricing' },
-      { name: 'Professionally Reviewed Estimate', price: 'From $995', note: 'Reviewed and signed off by a construction professional — lender-ready' },
+      { name: 'Basic Planning Estimate', price: 'Included', note: 'Included with every design concept and preliminary site plan' },
+      { name: 'Detailed Construction Estimate', price: 'Included', note: 'Included with permit-set building plans and full detailed site plans' },
     ],
   },
   {
@@ -195,17 +188,17 @@ export default function HomeownersPage() {
           ))}
         </div>
 
-        {/* Revision Tiers */}
+        {/* Revision options */}
         <div className="mt-10">
           <h3 className="mb-4 text-lg font-bold" style={{ color: '#1A2B4A' }}>Design Revision Rounds by Package</h3>
           <div className="overflow-hidden rounded-xl border border-gray-200">
-            {REVISION_TIERS.map((r, i) => (
+            {REVISION_OPTIONS.map((r, i) => (
               <div
                 key={r.tier}
                 className="flex items-center justify-between px-5 py-4"
                 style={{
                   backgroundColor: r.highlight ? 'rgba(42,191,191,0.04)' : i % 2 === 0 ? 'white' : '#FAFAFA',
-                  borderBottom: i < REVISION_TIERS.length - 1 ? '1px solid #F3F4F6' : undefined,
+                  borderBottom: i < REVISION_OPTIONS.length - 1 ? '1px solid #F3F4F6' : undefined,
                 }}
               >
                 <div>
@@ -216,7 +209,7 @@ export default function HomeownersPage() {
               </div>
             ))}
           </div>
-          <p className="mt-2 text-xs text-gray-400">Premium revision credit only applies when upgrading to Full Design Package tier or higher.</p>
+          <p className="mt-2 text-xs text-gray-400">Any additional revision or professional review is priced clearly before purchase.</p>
         </div>
 
         {/* Onsite services disclaimer */}
