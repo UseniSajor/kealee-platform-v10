@@ -75,9 +75,11 @@ Return only JSON.`,
       ],
     });
 
-    const content = message.content[0];
-    if (content.type !== "text") {
-      throw new Error("Unexpected response type from Claude");
+    // First TEXT block, not content[0]: on models with thinking on by
+    // default content[0] is a thinking block, and this threw on every call.
+    const content = message.content.find((b) => b.type === "text");
+    if (!content || content.type !== "text") {
+      throw new Error("No text block in Claude response");
     }
 
     const zoningData = JSON.parse(content.text) as ZoningResponse;

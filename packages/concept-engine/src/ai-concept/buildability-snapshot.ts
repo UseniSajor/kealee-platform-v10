@@ -217,7 +217,9 @@ Respond ONLY with valid JSON matching this structure:
       messages: [{ role: 'user', content: prompt }],
     })
 
-    const block = message.content[0]
+    // First TEXT block, not content[0]: on models with thinking on by
+    // default content[0] is a thinking block and text came back empty.
+    const block = message.content.find((b) => b.type === 'text')
     const text = block?.type === 'text' ? (block.text ?? '') : ''
     const jsonMatch = text.match(/\{[\s\S]+\}/)
     if (jsonMatch) {

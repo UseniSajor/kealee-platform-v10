@@ -79,8 +79,10 @@ Respond ONLY with valid JSON, no markdown or explanation.`
       const duration = Date.now() - startTime
       console.log(`Spatial verification ${job.id}: AI call completed in ${duration}ms (attempt ${attempt})`)
 
-      const content = response.content[0]
-      if (content.type === 'text') {
+      // First TEXT block, not content[0]: with thinking on by default
+      // content[0] is a thinking block and this branch never ran.
+      const content = response.content.find((b) => b.type === 'text')
+      if (content && content.type === 'text') {
         try {
           const analysis = JSON.parse(content.text)
           return {

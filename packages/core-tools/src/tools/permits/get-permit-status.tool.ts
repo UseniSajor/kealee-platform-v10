@@ -190,7 +190,11 @@ Important notes for ${portal.name}:
           messages: [{ role: "user", content: prompt }],
         });
 
-        const text = response.content[0].type === "text" ? response.content[0].text.trim() : "";
+        // First TEXT block, not content[0]: with thinking on by default
+
+        // content[0] is a thinking block and this came back empty.
+
+        const text = response.content.find((b) => b.type === "text")?.text?.trim() ?? "";
         const parsed = JSON.parse(text) as Partial<PermitStatusResult>;
 
         // Bubble risk flags into session memory

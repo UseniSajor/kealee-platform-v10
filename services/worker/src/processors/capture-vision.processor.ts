@@ -180,7 +180,9 @@ async function analyzeAsset(job: Job<CaptureAnalysisJobData>): Promise<void> {
 
     await job.updateProgress(70)
 
-    const rawText = response.content[0]?.type === 'text' ? response.content[0].text : ''
+    // First TEXT block, not content[0]: with thinking on by default
+    // content[0] is a thinking block and rawText came back empty.
+    const rawText = response.content.find((b) => b.type === 'text')?.text ?? ''
     const result = extractJson(rawText) ?? fallbackResult(rawText)
 
     await prisma.$executeRaw`

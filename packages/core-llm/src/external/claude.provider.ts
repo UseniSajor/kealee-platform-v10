@@ -62,7 +62,9 @@ export class ClaudeProvider implements LlmProvider {
       messages: [{ role: "user", content: args.prompt }],
     });
 
-    const block = response.content[0]
+    // First TEXT block, not content[0]: on models with thinking on by
+    // default content[0] is a thinking block and text came back empty.
+    const block = response.content.find((b) => b.type === "text")
     const text = block?.type === "text" ? (block.text ?? "") : "";
     const latencyMs = Date.now() - start;
 

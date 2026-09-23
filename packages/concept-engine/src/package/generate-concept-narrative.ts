@@ -73,7 +73,9 @@ Rules:
       messages:   [{ role: 'user', content: prompt }],
     });
 
-    const block   = res.content[0]
+    // First TEXT block, not content[0]: on models with thinking on by
+    // default content[0] is a thinking block and text came back empty.
+    const block   = res.content.find((b) => b.type === 'text')
     const text    = block?.type === 'text' ? (block.text ?? '') : '';
     const cleaned = text.replace(/```json\n?|```\n?/g, '').trim();
     return JSON.parse(cleaned) as ConceptNarrative;

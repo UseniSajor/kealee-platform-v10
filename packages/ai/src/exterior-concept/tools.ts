@@ -156,7 +156,11 @@ Return only valid JSON, no markdown.`,
         ],
       });
 
-      const raw = response.content[0].type === "text" ? response.content[0].text.trim() : "";
+      // First TEXT block, not content[0]: with thinking on by default
+
+      // content[0] is a thinking block and this came back empty.
+
+      const raw = response.content.find((b) => b.type === "text")?.text?.trim() ?? "";
       const parsed = JSON.parse(raw) as VisionAnalysis;
       return parsed;
     } catch (err) {
@@ -258,7 +262,11 @@ Return only valid JSON, no markdown.`;
         messages: [{ role: "user", content: prompt }],
       });
 
-      const raw = response.content[0].type === "text" ? response.content[0].text.trim() : "";
+      // First TEXT block, not content[0]: with thinking on by default
+
+      // content[0] is a thinking block and this came back empty.
+
+      const raw = response.content.find((b) => b.type === "text")?.text?.trim() ?? "";
       const parsed = JSON.parse(raw);
       return { id: id("brief"), ...parsed };
     } catch (err) {
@@ -430,7 +438,11 @@ Return only valid JSON, no markdown. This is a preliminary estimate only.`;
         messages: [{ role: "user", content: prompt }],
       });
 
-      const raw = response.content[0].type === "text" ? response.content[0].text.trim() : "";
+      // First TEXT block, not content[0]: with thinking on by default
+
+      // content[0] is a thinking block and this came back empty.
+
+      const raw = response.content.find((b) => b.type === "text")?.text?.trim() ?? "";
       return JSON.parse(raw) as PermitPathSummary;
     } catch (err) {
       console.warn("[generatePermitPathSummary] Claude failed, using fallback:", err);
