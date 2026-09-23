@@ -42,10 +42,17 @@ ARG NEXT_PUBLIC_SUPABASE_URL
 ARG NEXT_PUBLIC_SUPABASE_ANON_KEY
 ARG NEXT_PUBLIC_APP_URL
 ARG NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
+# Gates the customer workspace at /workspace/[intakeId]. It was set on the
+# web-main service but never declared here, so the build inlined `undefined`
+# and isV30EnabledClient() returned false no matter what the runtime env said
+# — the page rendered "v30 workspace is not enabled" permanently. This is the
+# hazard the comment above describes, in practice.
+ARG NEXT_PUBLIC_KEALEE_V30_ENABLED
 ENV NEXT_PUBLIC_SUPABASE_URL=$NEXT_PUBLIC_SUPABASE_URL \
     NEXT_PUBLIC_SUPABASE_ANON_KEY=$NEXT_PUBLIC_SUPABASE_ANON_KEY \
     NEXT_PUBLIC_APP_URL=$NEXT_PUBLIC_APP_URL \
-    NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=$NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
+    NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=$NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY \
+    NEXT_PUBLIC_KEALEE_V30_ENABLED=$NEXT_PUBLIC_KEALEE_V30_ENABLED
 
 # Build the right thing for the service. Any Next.js app (apps/<name>/next.config.js)
 # is built as a standalone server; everything else builds the API entrypoint.
