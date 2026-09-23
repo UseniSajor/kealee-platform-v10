@@ -65,7 +65,7 @@ interface HeroSpec {
 const specs: HeroSpec[] = [
   // ── DMV 1950s ranch exterior renovation — 15 s, three beats ────────────
   // Grounded in the exterior_concept / whole_home_remodel services and the
-  // DC · MD · VA service area (CLAUDE.md, AI content generation rules).
+  // DC · MD · VA service area (KEALEE.md, AI content generation rules).
   // Modest one-level 1950s home: the attainable renovation, not a luxury
   // build. No footprint change, no added floors.
   {

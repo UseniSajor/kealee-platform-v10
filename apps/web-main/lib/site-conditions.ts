@@ -6,7 +6,7 @@
  * box and not from a model's guess. Every condition returned here carries the
  * service it came from, so the customer's quote can name its source.
  *
- * Rules from CLAUDE.md that this file obeys:
+ * Rules from KEALEE.md that this file obeys:
  *  - PGAtlas is the authority; no public geocoder.
  *  - The street address alone is passed to the locator; a score below 90 is
  *    treated as no match.

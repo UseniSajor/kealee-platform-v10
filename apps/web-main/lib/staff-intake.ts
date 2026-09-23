@@ -151,7 +151,7 @@ export function buildStaffIntakeFormData(input: StaffIntakeInput): Record<string
           // An in-house job is still a v30 AI-automated order. It skips Stripe,
           // not the bots — without this flag it would sit paid and idle,
           // because nothing downstream would recognise it as automated.
-          // `v30` is a frozen DB key written by os-ai-orch; see CLAUDE.md.
+          // `v30` is a frozen DB key written by os-ai-orch; see KEALEE.md.
           v30: true,
           v30Source: 'admin-in-house',
         }

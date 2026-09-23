@@ -632,7 +632,7 @@ async function main(): Promise<void> {
     // the along-axis component dominated the dot product and the corridor came
     // out on the LOT 12 side — drawn over ground there is no easement for. The
     // county parcel for LOT 13 is in `adjacentParcels`, so the side is measured
-    // to ITS centroid. The field note that identifies it is in CLAUDE.md: the
+    // to ITS centroid. The field note that identifies it is in KEALEE.md: the
     // layer's key is PROP_ID, and 34811 is the LOT 13 candidate at the Porter
     // west corner. Absent that parcel the corridor is not sided by guess — the
     // transcribed north side is kept, which is where the sketch draws it.
