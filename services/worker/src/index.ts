@@ -34,6 +34,13 @@ import { createLeadFollowupWorker } from './processors/lead-followup.processor'
 import { cronManager } from './cron/cron.manager'
 import cron from 'node-cron'
 import { drainSitePlanQueue } from './siteplan/processor'
+import { buildIdentity } from '@kealee/core-rules'
+import { Workflow as SitePlanWorkflow } from '@kealee/pascal-agents/engine'
+
+/** Stages this BUILD knows about — proves the graph is the one that shipped. */
+const SITE_PLAN_STAGE_COUNT = SitePlanWorkflow.SITE_PLAN_STAGES.length
+/** CAD formats this build emits. Empty means the deployed worker predates them. */
+const SITE_PLAN_CAD_EXPORTS = ['dxf', 'landxml', 'geojson']
 import { drainV30BotQueue, V30_BOT_CONCURRENCY } from './v30/processor'
 import type { Queue, Worker } from 'bullmq'
 import { createBotJobsWorker, createChainJobsWorker } from './processors/bot-jobs.processor'
@@ -717,6 +724,16 @@ start()
           status: health.status,
           ready,
           service: 'worker',
+          // BUILD IDENTITY. Without this, "is the site-plan engine deployed?"
+          // could only be answered from the Railway dashboard, and a stage
+          // that exists in the repo was indistinguishable from one that is
+          // live. `capabilities` reports what THIS PROCESS has registered.
+          ...buildIdentity('worker'),
+          capabilities: {
+            sitePlanDrain: typeof drainSitePlanQueue === 'function',
+            sitePlanStages: SITE_PLAN_STAGE_COUNT,
+            cadExports: SITE_PLAN_CAD_EXPORTS,
+          },
           timestamp: health.timestamp,
           uptime: health.uptime,
           checks: health.checks,

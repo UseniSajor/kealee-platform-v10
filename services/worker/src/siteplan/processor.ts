@@ -19,6 +19,7 @@ import {
   bridgeSitePlanDelivery, bridgeSitePlanReviewOutcome, bridgeSitePlanSubmission,
   bridgeSitePlanCountyReview, notifyReviewRouted, productionDeliveryPorts,
   productIncludesProfessionalReview, productIncludesSubmissionPackage,
+  type DeliveryPorts,
 } from './delivery'
 
 export interface DrainResult {
@@ -39,6 +40,43 @@ export interface DrainResult {
  * original row is terminal, so the re-run needs its own key rather than a
  * silent no-op against the finished one.
  */
+/**
+ * Enqueues `siteplan.route_review` and tells the review desk.
+ *
+ * Called at the END of the automated chain, never in the middle of it. A queue
+ * nobody knows about is not a queue, so the desk is notified every time —
+ * including on a revision, where a reviewer who already decided once needs to
+ * know there is a new revision bound to a new content hash.
+ *
+ * A failure to notify does NOT fail the routing: the stage is enqueued and the
+ * plan is in the queue either way, and losing the work because an email
+ * bounced would be the wrong trade.
+ */
+async function routeForProfessionalReview(args: {
+  workflowId: string
+  subject: { workflowId: string; orderId: string; productId: string | null }
+  ports: Parameters<typeof notifyReviewRouted>[1] & Pick<DeliveryPorts, 'loadOrder'>
+  revision: boolean
+}): Promise<number> {
+  const { workflowId, subject, ports, revision } = args
+  await enqueueSitePlanJob({ workflowId, job: 'siteplan.route_review' })
+  try {
+    const address = (await ports.loadOrder(subject.orderId))?.address ?? null
+    const notice = await notifyReviewRouted({ ...subject, address, revision }, ports)
+    console.log(
+      `[siteplan] every automated stage complete; routed ${workflowId} for professional review` +
+      `${revision ? ' (revised drawing)' : ''}. ${notice.summary}`,
+    )
+  } catch (e) {
+    console.error(
+      `[siteplan] ${workflowId} is queued for professional review but the desk notice failed: ` +
+      `${e instanceof Error ? e.message : String(e)}`,
+    )
+  }
+  return 1
+}
+
+
 export async function enqueueSitePlanJob(input: {
   workflowId: string
   job: Workflow.SitePlanJobName
@@ -205,29 +243,31 @@ async function runOne(
       })
     }
 
-    // The higher tiers include a licensed professional's review. Route the
-    // delivered plan to one now. `route_review` is not in the first release,
-    // so the runner never derives it; it is enqueued here, on purpose, for
-    // the products that paid for it — and the review desk is told, because
-    // a queue nobody knows about is not a queue.
+    // PROFESSIONAL REVIEW IS THE LAST REQUIREMENT.
+    //
+    // Everything the engine can do is finished before a licensed human is
+    // asked to look. For the permit product that means issuance QC and the
+    // submission package run FIRST and the review is enqueued when they
+    // land — see the build_submission branch below. A product with review but
+    // no submission package has nothing else left to run, so it routes here.
+    //
+    // The ordering is deliberate in both directions:
+    //   - the reviewer sees a COMPLETE package, not a part-built one, so their
+    //     decision covers what the customer will actually receive;
+    //   - the absence of a reviewer never blocks the engine. Every automated
+    //     stage has already completed and been persisted. The workflow waits
+    //     in a queue, it does not fail, and no stage is left un-run.
+    //
     // A revised drawing (the drafter answered redlines and the chain re-ran)
-    // is routed again the same way: every reviewer sees the new revision,
-    // with their withheld subjects reset to PENDING by the revision itself.
-    if (delivery.bridged && productIncludesProfessionalReview(subject.productId)) {
-      await enqueueSitePlanJob({ workflowId, job: 'siteplan.route_review' })
-      enqueued++
-      const notice = await notifyReviewRouted(
-        { ...subject, address: (await ports.loadOrder(subject.orderId))?.address ?? null, revision: Boolean(delivery.revision) }, ports)
-      console.log(`[siteplan] routed ${workflowId} for professional review${delivery.revision ? ' (revised drawing)' : ''}. ${notice.summary}`)
-    }
-
-    // The permit product continues straight into issuance QC and the
-    // submission package. Not gated on the review above: the package is
-    // generated and delivered, and reports sign-off as present or pending.
+    // is routed again the same way: every reviewer sees the new revision, with
+    // their withheld subjects reset to PENDING by the revision itself.
     if (delivery.bridged && productIncludesSubmissionPackage(subject.productId)) {
       await enqueueSitePlanJob({ workflowId, job: 'siteplan.run_issuance_qc' })
       enqueued++
-      console.log(`[siteplan] ${workflowId} continues to issuance QC and submission`)
+      console.log(`[siteplan] ${workflowId} continues to issuance QC and submission before review`)
+    } else if (delivery.bridged && productIncludesProfessionalReview(subject.productId)) {
+      enqueued += await routeForProfessionalReview(
+        { workflowId, subject, ports, revision: Boolean(delivery.revision) })
     }
   }
 
@@ -235,6 +275,11 @@ async function runOne(
     const submission = await bridgeSitePlanSubmission(subject, ports)
     deliverySummary = submission.summary
     console.log(`[siteplan] submission: ${submission.summary}`)
+
+    // The last automated task has landed. NOW the professional is asked.
+    if (productIncludesProfessionalReview(subject.productId)) {
+      enqueued += await routeForProfessionalReview({ workflowId, subject, ports, revision: false })
+    }
   }
 
   // County comments were ingested: the order needs corrections. The

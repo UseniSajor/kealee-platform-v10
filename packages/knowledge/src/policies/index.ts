@@ -87,3 +87,6 @@ export function redactJson<T>(value: T): { value: T; redactions: number } {
   const r = redactSecrets(JSON.stringify(value))
   return { value: r.redactions ? JSON.parse(r.text) as T : value, redactions: r.redactions }
 }
+
+// Personal-data classification, retention and corpus admission.
+export * from './personal-data'

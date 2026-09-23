@@ -34,3 +34,6 @@ export type {
   SendEmailResult,
   CreateOpportunityInput,
 } from './marketing/ghl-client';
+
+// What is actually running — commit, host, uptime. See build-identity.ts.
+export * from './build-identity';

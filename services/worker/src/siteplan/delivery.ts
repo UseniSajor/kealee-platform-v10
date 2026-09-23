@@ -304,30 +304,54 @@ export function productIncludesSubmissionPackage(productId: string | null | unde
 export function sitePlanDeliveryFormDataPatch(input: {
   productId: string | null | undefined
   record: SitePlanDeliverableRecord
+  /** True once a professional has approved this revision. */
+  reviewApproved?: boolean
 }): Record<string, unknown> {
   const pending = input.record.qc.pendingSeal.length
   const continues = productIncludesSubmissionPackage(input.productId)
   const reviewed = productIncludesProfessionalReview(input.productId)
 
-  const reason =
-    `Site plan delivered by the engine (${pending} item${pending === 1 ? '' : 's'} listed for confirmation).` +
-    (continues ? ' Issuance QC and the submission package follow automatically.' : '') +
-    (reviewed ? ' Routed to a licensed professional, whose sign-off is appended when given.' : '')
+  // A product whose price includes professional review is NOT released to the
+  // customer until that review has happened. The engine still runs to
+  // completion and the plan is fully drawn and stored — the absence of a
+  // professional never blocks the engine, it only holds the release.
+  //
+  // This is the ordering the platform sells: every automated task finishes,
+  // then a licensed human looks, then the customer receives it. Sending first
+  // and appending a sign-off later would mean the customer had already acted
+  // on a drawing the professional went on to redline.
+  const heldForReview = reviewed && !input.reviewApproved
+
+  const reason = heldForReview
+    ? `Site plan complete and queued for professional review ` +
+      `(${pending} item${pending === 1 ? '' : 's'} listed for confirmation).` +
+      (continues ? ' Issuance QC and the submission package completed first.' : '') +
+      ' It is released to the customer once a licensed professional has reviewed it.'
+    : `Site plan delivered by the engine (${pending} item${pending === 1 ? '' : 's'} listed for confirmation).` +
+      (continues ? ' Issuance QC and the submission package follow automatically.' : '')
 
   return {
     sitePlanDeliverable: input.record,
     sitePlanDeliveredAt: input.record.deliveredAt,
-    sitePlanSlaState: 'delivered',
+    sitePlanSlaState: heldForReview ? 'awaiting_professional_review' : 'delivered',
     sitePlanSlaDeliveredAt: input.record.deliveredAt,
-    orderStatus: 'delivered',
-    orderStatusLabel: 'Delivered',
+    /**
+     * Whether the customer may see this deliverable yet. The portal reads it;
+     * a record with `false` is complete and held, not missing.
+     */
+    sitePlanCustomerReleased: !heldForReview,
+    orderStatus: heldForReview ? 'needs_professional_review' : 'delivered',
+    orderStatusLabel: heldForReview ? 'In Professional Review' : 'Delivered',
     orderStatusAt: input.record.deliveredAt,
     orderStatusReason: reason,
     orderStatusSetBy: 'system',
-    fulfillmentStatus: 'delivered',
+    fulfillmentStatus: heldForReview ? 'awaiting_professional_review' : 'delivered',
     fulfillmentMode: 'automated',
-    fulfillmentCompletedAt: input.record.deliveredAt,
+    fulfillmentCompletedAt: heldForReview ? null : input.record.deliveredAt,
     // The webhook's manual fallback set this while the engine had no route.
+    // Review is a human step in a completed workflow, not a fallback: the
+    // engine did its whole job. `requiresHumanFulfillment` stays false so the
+    // manual-drafting queue does not pick the order up and start again.
     requiresHumanFulfillment: false,
     fulfillmentFallbackReason: null,
     fulfillmentFallbackDetail: null,
@@ -856,13 +880,27 @@ export async function bridgeSitePlanDelivery(
       return none(`Order ${input.orderId} already carries this site-plan deliverable; skipped.`)
     }
 
-    const patch = sitePlanDeliveryFormDataPatch({ productId: input.productId, record })
+    const reviewApproved = order.reviewState === 'APPROVED'
+    const patch = sitePlanDeliveryFormDataPatch({ productId: input.productId, record, reviewApproved })
+    const heldForReview = patch.sitePlanCustomerReleased === false
     if (revision) {
       patch.sitePlanDeliverable = { ...record, previousDocumentId: order.deliveredDocumentId, revised: true }
       patch.orderStatusReason = `Revised site plan delivered by the engine after professional redlines (supersedes ${order.deliveredDocumentId}).`
     }
     await ports.patchOrder(input.orderId, patch)
     const orderStatus = String(patch.orderStatus)
+
+    if (heldForReview) {
+      // Complete, stored, and waiting on a human. No customer email: the
+      // review desk is notified instead, by the caller.
+      return {
+        bridged: true, emailed: false, orderStatus, revision: Boolean(revision), record,
+        previousDocumentId: revision ? order.deliveredDocumentId : null,
+        summary:
+          `Order ${input.orderId} ${revision ? 're-bridged with the revised plan' : 'bridged'} (${orderStatus}); ` +
+          'complete and queued for professional review, customer not yet emailed.',
+      }
+    }
 
     if (!order.contactEmail) {
       return {

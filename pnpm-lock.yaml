@@ -1338,6 +1338,9 @@ importers:
       typescript:
         specifier: ^5.6.0
         version: 5.9.3
+      vitest:
+        specifier: 2.1.9
+        version: 2.1.9(@types/node@20.19.39)(jsdom@28.1.0(canvas@3.2.3)(supports-color@8.1.1))(supports-color@8.1.1)(terser@5.50.0)
 
   packages/ai-chat:
     dependencies:
@@ -3344,6 +3347,9 @@ importers:
       '@kealee/core':
         specifier: workspace:*
         version: link:../../packages/core
+      '@kealee/core-rules':
+        specifier: workspace:*
+        version: link:../../packages/core-rules
       '@kealee/database':
         specifier: workspace:*
         version: link:../../packages/database

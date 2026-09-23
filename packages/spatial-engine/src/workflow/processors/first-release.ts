@@ -27,6 +27,7 @@ import { fetchPgContours, type PgContourResult } from '../../jurisdictions/pg-el
 import { buildLotPackage, type LotPackage } from '../../self-perform/lot-package'
 import { renderSheetSetPdf } from '../../sheets/render-pdf'
 import { toDxfNcs } from '../../export/dxf-ncs'
+import { propertyBlockedMessage, coverageFor } from '../../jurisdictions/coverage'
 import { toLandXml, toGeoJson } from '../../export/exporters'
 import { createRegistryTransformer } from '../../export/transformation-registry'
 import { createArcGisTransformer } from '../../export/crs'
@@ -431,9 +432,9 @@ const resolveProperty: StageProcessor = async (ctx): Promise<StageResult> => {
     return {
       status: 'BLOCKED', outputs: null,
       blockers: [
-        `The county locator did not match "${address}" at or above the minimum score ` +
-        `(tried: ${candidates.map(c => `"${c}"`).join(', ')}). ` +
-        'A weak match would site the plan on the wrong lot, so none is accepted.',
+        // "Out of service area" and "the county has no such address" need
+        // different actions and only one of them is the customer's fault.
+        propertyBlockedMessage(address, candidates),
       ],
     }
   }
@@ -519,10 +520,27 @@ const ingestDocuments: StageProcessor = async (ctx): Promise<StageResult> => {
 
 const resolveJurisdiction: StageProcessor = async (ctx): Promise<StageResult> => {
   const prop = requirePriorOutput<ResolvePropertyOutput>(ctx, 'siteplan.resolve_property')
+
+  // The code is fixed because the ENGINE is: one certified rule pack, for
+  // Prince George's County. Reaching this stage means the county's own
+  // locator, parcel layer and zoning layer all answered for this point, which
+  // is the geometric proof that the parcel is in the county — the jurisdiction
+  // is established by those answers, not by this constant.
+  //
+  // The coverage record travels with the output so every downstream consumer
+  // can see what the engine is certified for here, rather than inferring it
+  // from the absence of a caveat.
+  const coverage = coverageFor('prince_georges_md')
+
   return {
     status: 'COMPLETED',
     outputs: {
       jurisdictionCode: 'prince_georges_md',
+      jurisdictionName: coverage?.name ?? "Prince George's County",
+      coverageLevel: coverage?.level ?? 'full',
+      rulePackVersion: coverage?.rulePackVersion ?? null,
+      /** Stated on the sheet and in the deliverable so scope is never implied. */
+      coverageLimits: coverage?.cannotProduce ?? [],
       zoneCode: prop.zoneCode,
       zoneSource: 'PGAtlas Zoning/MapServer/63',
     },

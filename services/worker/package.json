@@ -18,6 +18,7 @@
     "@kealee/communications": "workspace:*",
     "@kealee/concept-engine": "workspace:*",
     "@kealee/core": "workspace:*",
+    "@kealee/core-rules": "workspace:*",
     "@kealee/database": "workspace:*",
     "@kealee/knowledge": "workspace:*",
     "@kealee/observability": "workspace:^",
