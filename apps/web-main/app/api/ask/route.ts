@@ -253,7 +253,8 @@ export async function POST(req: NextRequest) {
       messages: history,
     })
 
-    const raw = message.content.find((b: { type: string }) => b.type === 'text')?.text ?? ''
+    const textBlock = message.content.find(block => block.type === 'text')
+    const raw = textBlock?.type === 'text' ? textBlock.text : ''
     const jsonMatch = raw.match(/\{[\s\S]*\}/)
     if (!jsonMatch) {
       return NextResponse.json(keywordFallback(query))
