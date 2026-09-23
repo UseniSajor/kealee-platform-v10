@@ -131,6 +131,93 @@ export async function triggerV30GenerationForIntake(
   return payload
 }
 
+interface V30WorkspaceExecution {
+  botType: string
+  status: string
+  outputData?: Record<string, unknown>
+  errorMessage?: string
+}
+
+/**
+ * Reconcile one durable v30 project into the customer order.
+ *
+ * Exported for the authenticated worker callback. The old design depended on
+ * an in-memory polling promise inside a web request; this operation is now
+ * idempotent and can be retried by a long-lived worker until the PDF and other
+ * purchased outputs are actually attached to the intake.
+ */
+export async function reconcileV30ProjectOnce(
+  intakeId: string,
+  projectId: string,
+  requiredBotTypes: V30BotType[] = [],
+): Promise<{ terminal: boolean; designReady: boolean }> {
+  const base = API_BASE()
+  if (!base) throw new Error('INTERNAL_API_URL / NEXT_PUBLIC_API_URL not set')
+
+  const res = await fetch(`${base}/v30/project/${encodeURIComponent(projectId)}/workspace`, {
+    cache: 'no-store',
+  })
+  if (!res.ok) throw new Error(`v30 workspace returned HTTP ${res.status}`)
+
+  const ws = (await res.json()) as {
+    v30ConceptOutput?: Record<string, unknown>
+    executions?: V30WorkspaceExecution[]
+    package?: { features?: string[] }
+  }
+  const executions = ws.executions ?? []
+  const designDone = executions.some(e => e.botType === 'design' && e.status === 'COMPLETE')
+  const floorplanExec = executions.find(e => e.botType === 'floorplan')
+  const concept = ws.v30ConceptOutput
+
+  if (designDone && concept) {
+    await syncV30ConceptToIntakeLead(intakeId, concept)
+  }
+
+  // Assemble floor-plan derivatives before marking the order terminal. The
+  // previous ordering returned on allComplete first and skipped this block.
+  if (floorplanExec?.status === 'COMPLETE' && floorplanExec.outputData) {
+    const supabase = getSupabaseAdmin()
+    const { data: intake } = await supabase
+      .from('public_intake_leads')
+      .select('project_path, project_address, form_data')
+      .eq('id', intakeId)
+      .single()
+    const fd = (intake?.form_data as Record<string, unknown>) ?? {}
+    const tier = typeof fd.tier === 'number' ? (fd.tier as 1 | 2 | 3) : undefined
+    const deliverables = await finalizeV30FloorplanDeliverables({
+      intakeId,
+      projectPath: intake?.project_path ?? 'kitchen_remodel',
+      floorplanOutput: floorplanExec.outputData,
+      tier,
+      features: ws.package?.features ?? getV30Features(fd),
+      address: intake?.project_address,
+    })
+    if (
+      tier === 3 &&
+      intake?.project_path &&
+      isGardenLandscapeScope(intake.project_path)
+    ) {
+      await syncLandscapePremiumPlusPackage({
+        intakeId,
+        projectPath: intake.project_path,
+        tier: 3,
+        executions,
+        sitePlanImageUrl: (deliverables.floorplanImageUrl ?? deliverables.sitePlanImageUrl) as string | undefined,
+      })
+    }
+  }
+
+  const requiredPresent = requiredBotTypes.every(botType => executions.some(e => e.botType === botType))
+  const allComplete = executions.length > 0 && requiredPresent && executions.every(
+    e => e.status === 'COMPLETE' || e.status === 'FAILED',
+  )
+  if (allComplete) {
+    await syncV30OutputsToIntake(intakeId, executions, requiredBotTypes)
+  }
+
+  return { terminal: allComplete, designReady: Boolean(designDone && concept) }
+}
+
 /** Poll API workspace until DesignBot completes, then sync concept portal (no duplicate generate). */
 async function pollAndSyncV30Concept(intakeId: string, projectId?: string, requiredBotTypes: V30BotType[] = []): Promise<void> {
   if (!projectId) return
@@ -141,68 +228,8 @@ async function pollAndSyncV30Concept(intakeId: string, projectId?: string, requi
   for (let i = 0; i < maxAttempts; i++) {
     await new Promise(r => setTimeout(r, 10_000))
     try {
-      const res = await fetch(`${base}/v30/project/${encodeURIComponent(projectId)}/workspace`, {
-        cache: 'no-store',
-      })
-      if (!res.ok) continue
-      const ws = (await res.json()) as {
-        v30ConceptOutput?: Record<string, unknown>
-        executions?: Array<{
-          botType: string
-          status: string
-          outputData?: Record<string, unknown>
-        }>
-        package?: { features?: string[] }
-      }
-      const designDone = ws.executions?.some(e => e.botType === 'design' && e.status === 'COMPLETE')
-      const floorplanExec = ws.executions?.find(e => e.botType === 'floorplan')
-      const concept = ws.v30ConceptOutput
-
-      if (designDone && concept) {
-        await syncV30ConceptToIntakeLead(intakeId, concept)
-      }
-
-      const executions = ws.executions ?? []
-      const requiredPresent = requiredBotTypes.every(botType => executions.some(e => e.botType === botType))
-      const allComplete = executions.length > 0 && requiredPresent && executions.every(e => e.status === 'COMPLETE' || e.status === 'FAILED')
-
-      if (allComplete) {
-        await syncV30OutputsToIntake(intakeId, executions, requiredBotTypes)
-        return
-      }
-
-      if (floorplanExec?.status === 'COMPLETE' && floorplanExec.outputData) {
-        const supabase = getSupabaseAdmin()
-        const { data: intake } = await supabase
-          .from('public_intake_leads')
-          .select('project_path, project_address, form_data')
-          .eq('id', intakeId)
-          .single()
-        const fd = (intake?.form_data as Record<string, unknown>) ?? {}
-        const tier = typeof fd.tier === 'number' ? (fd.tier as 1 | 2 | 3) : undefined
-        const deliverables = await finalizeV30FloorplanDeliverables({
-          intakeId,
-          projectPath: intake?.project_path ?? 'kitchen_remodel',
-          floorplanOutput: floorplanExec.outputData,
-          tier,
-          features: ws.package?.features ?? getV30Features(fd),
-          address: intake?.project_address,
-        })
-        if (
-          tier === 3 &&
-          intake?.project_path &&
-          isGardenLandscapeScope(intake.project_path) &&
-          ws.executions
-        ) {
-          await syncLandscapePremiumPlusPackage({
-            intakeId,
-            projectPath: intake.project_path,
-            tier: 3,
-            executions: ws.executions,
-            sitePlanImageUrl: (deliverables.floorplanImageUrl ?? deliverables.sitePlanImageUrl) as string | undefined,
-          })
-        }
-      }
+      const result = await reconcileV30ProjectOnce(intakeId, projectId, requiredBotTypes)
+      if (result.terminal) return
     } catch {
       /* retry */
     }

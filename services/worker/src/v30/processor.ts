@@ -27,6 +27,7 @@ import {
   V30_BOT_PAYLOAD_VERSION,
   V30_BOT_STALE_CLAIM_MS,
   backoffForAttempt,
+  enqueueV30BotJobs,
   isRetryableBotError,
   runV30BotExecution,
   finalizeV30PackageIfComplete,
@@ -45,6 +46,9 @@ import {
 export const V30_BOT_CONCURRENCY = Number(process.env.V30_BOT_CONCURRENCY ?? 4)
 
 export interface V30DrainResult {
+  recovered: number
+  deliveryReconciled: number
+  deliveryFailed: number
   reaped: number
   claimed: number
   completed: number
@@ -52,6 +56,151 @@ export interface V30DrainResult {
   retried: number
   finalized: number
   details: { bot: string; disposition: string; summary: string }[]
+}
+
+function webMainBase(): string {
+  const raw = process.env.NEXT_PUBLIC_WEB_MAIN_URL
+    ?? process.env.WEB_MAIN_URL
+    ?? process.env.RAILWAY_SERVICE_WEB_MAIN_URL
+    ?? 'https://kealee.com'
+  return raw.replace(/\/$/, '')
+}
+
+/**
+ * Replays the v30 -> intake delivery bridge until the customer-facing record
+ * says both fulfillment and concept assembly completed.
+ *
+ * This is intentionally a scan of durable state rather than an in-memory
+ * callback from the API. If web-main is deploying or an image provider times
+ * out, the next worker tick tries again. The endpoint itself is idempotent.
+ */
+export async function reconcileV30CustomerDeliveries(limit = 2): Promise<{
+  reconciled: number
+  failed: number
+}> {
+  const secret = process.env.KEALEE_OPS_SECRET ?? process.env.CRON_SECRET
+  if (!secret) return { reconciled: 0, failed: 0 }
+
+  const projects = await prisma.project.findMany({
+    where: {
+      status: { in: ['GENERATING', 'DESIGN', 'DELIVERED', 'FAILED'] },
+      updatedAt: { gt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) },
+    },
+    orderBy: { updatedAt: 'asc' },
+    select: { id: true, categoryMetadata: true },
+    take: 100,
+  })
+
+  let reconciled = 0
+  let failed = 0
+  for (const project of projects) {
+    if (reconciled + failed >= limit) break
+    const meta = (project.categoryMetadata as Record<string, unknown> | null) ?? {}
+    const intakeId = typeof meta.intakeLeadId === 'string' ? meta.intakeLeadId : ''
+    if (!intakeId) continue
+
+    const rows = await prisma.$queryRaw<Array<{ form_data: unknown }>>`
+      SELECT form_data FROM public_intake_leads WHERE id = ${intakeId} LIMIT 1
+    `
+    const formData = (rows[0]?.form_data as Record<string, unknown> | null) ?? {}
+    if (formData.fulfillmentCompletedAt && formData.v30ConceptDeliverablesFinalizedAt) continue
+
+    const executions = await prisma.v30BotExecution.findMany({
+      where: { projectId: project.id },
+      orderBy: { createdAt: 'desc' },
+      select: { botType: true, status: true },
+    })
+    if (!executions.some(e => e.botType === 'design' && e.status === 'COMPLETE')) continue
+
+    try {
+      const response = await fetch(`${webMainBase()}/api/internal/v30/reconcile`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${secret}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          intakeId,
+          projectId: project.id,
+          requiredBotTypes: Array.isArray(formData.fulfillmentBotTypes)
+            ? formData.fulfillmentBotTypes
+            : [],
+        }),
+      })
+      if (!response.ok) throw new Error(`web-main reconciliation returned HTTP ${response.status}`)
+      reconciled++
+    } catch (error) {
+      failed++
+      console.error(
+        `[v30-delivery] reconcile failed intake=${intakeId} project=${project.id}:`,
+        error instanceof Error ? error.message : String(error),
+      )
+    }
+  }
+
+  return { reconciled, failed }
+}
+
+/**
+ * Repairs the most dangerous payment/generation split-brain state:
+ * V30BotExecution rows exist, but no JobQueue row was committed for them.
+ *
+ * This can happen when an older API deployment creates executions just before
+ * a restart, or when a process dies between those two writes. The executions
+ * are the durable statement that work is owed, so the worker reconstructs the
+ * missing queue rows. Upsert-by-execution-id makes this safe on every tick.
+ *
+ * EXECUTING rows with no queue record and no update for the full stale window
+ * are also reset. A live execution is never touched.
+ */
+export async function recoverOrphanedV30Executions(): Promise<number> {
+  const now = Date.now()
+  const pendingGrace = new Date(now - 30_000)
+  const staleExecution = new Date(now - V30_BOT_STALE_CLAIM_MS)
+
+  const candidates = await prisma.v30BotExecution.findMany({
+    where: {
+      OR: [
+        { status: 'PENDING', createdAt: { lt: pendingGrace } },
+        { status: 'EXECUTING', updatedAt: { lt: staleExecution } },
+      ],
+    },
+    orderBy: { createdAt: 'asc' },
+    select: {
+      id: true, projectId: true, packageId: true, botType: true,
+      status: true, updatedAt: true,
+    },
+    take: 200,
+  })
+  if (candidates.length === 0) return 0
+
+  const existing = await prisma.jobQueue.findMany({
+    where: { queueName: V30_BOT_QUEUE, jobId: { in: candidates.map(c => c.id) } },
+    select: { jobId: true },
+  })
+  const queuedIds = new Set(existing.map(j => j.jobId))
+  const missing = candidates.filter(c => !queuedIds.has(c.id))
+  if (missing.length === 0) return 0
+
+  let recovered = 0
+  for (const execution of missing) {
+    if (execution.status === 'EXECUTING') {
+      await prisma.v30BotExecution.updateMany({
+        where: { id: execution.id, status: 'EXECUTING', updatedAt: { lt: staleExecution } },
+        data: {
+          status: 'PENDING',
+          errorMessage: 'Recovered after execution lost its durable queue record.',
+        },
+      })
+    }
+    recovered += await enqueueV30BotJobs({
+      projectId: execution.projectId,
+      packageId: execution.packageId,
+      executionIds: { [execution.botType]: execution.id },
+    })
+  }
+
+  return recovered
 }
 
 /**
@@ -197,9 +346,11 @@ async function runOne(
  */
 export async function drainV30BotQueue(limit = 8): Promise<V30DrainResult> {
   const result: V30DrainResult = {
+    recovered: 0, deliveryReconciled: 0, deliveryFailed: 0,
     reaped: 0, claimed: 0, completed: 0, failed: 0, retried: 0, finalized: 0, details: [],
   }
 
+  result.recovered = await recoverOrphanedV30Executions()
   result.reaped = await reapStaleClaims()
 
   let remaining = limit
@@ -232,6 +383,10 @@ export async function drainV30BotQueue(limit = 8): Promise<V30DrainResult> {
       result.details.push({ bot: r.bot, disposition: r.disposition, summary: r.summary })
     }
   }
+
+  const delivery = await reconcileV30CustomerDeliveries()
+  result.deliveryReconciled = delivery.reconciled
+  result.deliveryFailed = delivery.failed
 
   return result
 }

@@ -200,6 +200,10 @@ export async function activateSitePlanForOrder(input: {
       productId: input.productId ?? null,
       formData: {
         ...(input.formData ?? {}),
+        // Always retain the canonical column value under a dedicated key.
+        // Older clients sometimes stored a street-only `address` in formData;
+        // that value must not hide the complete paid-order address.
+        ...(input.projectAddress ? { projectAddress: input.projectAddress } : {}),
         ...(input.projectAddress && !(input.formData?.address)
           ? { address: input.projectAddress }
           : {}),
@@ -219,10 +223,16 @@ export async function activateSitePlanForOrder(input: {
         where: { id: outcome.workflowId }, select: { metadata: true },
       })
       const meta = (wf?.metadata as Record<string, unknown> | null) ?? {}
-      if (!meta.address) {
+      if (!meta.projectAddress || !meta.address) {
         await prisma.sitePlanWorkflow.update({
           where: { id: outcome.workflowId },
-          data: { metadata: { ...meta, address: input.projectAddress } as never },
+          data: {
+            metadata: {
+              ...meta,
+              projectAddress: meta.projectAddress ?? input.projectAddress,
+              address: meta.address ?? input.projectAddress,
+            } as never,
+          },
         })
       }
     } catch (e) {

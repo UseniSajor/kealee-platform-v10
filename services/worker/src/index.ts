@@ -378,10 +378,14 @@ async function initializeCaptureAnalysisWorkers() {
     cron.schedule('* * * * *', async () => {
       try {
         const r = await drainV30BotQueue(8)
-        if (r.claimed > 0 || r.reaped > 0) {
+        if (
+          r.claimed > 0 || r.reaped > 0 || r.recovered > 0 ||
+          r.deliveryReconciled > 0 || r.deliveryFailed > 0
+        ) {
           console.log(
-            `[v30-bots] reaped=${r.reaped} claimed=${r.claimed} completed=${r.completed} ` +
-            `retried=${r.retried} failed=${r.failed} finalized=${r.finalized}`,
+            `[v30-bots] recovered=${r.recovered} reaped=${r.reaped} claimed=${r.claimed} completed=${r.completed} ` +
+            `retried=${r.retried} failed=${r.failed} finalized=${r.finalized} ` +
+            `deliveryReconciled=${r.deliveryReconciled} deliveryFailed=${r.deliveryFailed}`,
           )
           for (const d of r.details) {
             console.log(`[v30-bots]   ${d.bot} ${d.disposition} — ${d.summary}`)

@@ -11,7 +11,11 @@
  */
 
 import { runStage, type RunnerDeps } from '../workflow/runner'
-import { FIRST_RELEASE_PROCESSORS } from '../workflow/processors/first-release'
+import {
+  FIRST_RELEASE_PROCESSORS,
+  addressCandidates,
+  streetAddressOnly,
+} from '../workflow/processors/first-release'
 import { FIRST_RELEASE_STAGES, FIRST_JOB, type SitePlanJobName } from '../workflow/definition'
 import { newWorkflow, nextJobs, type WorkflowSnapshot } from '../workflow/state-machine'
 import type { StageContext, PersistedStageOutput, TraceEvent } from '../workflow/context'
@@ -268,7 +272,6 @@ describe('streetAddressOnly', () => {
   // The county locator answers the street address ALONE. These are the forms
   // customers actually typed; the first paid orders carried a trailing ZIP and
   // every one of them returned zero candidates.
-  const { streetAddressOnly } = require('../workflow/processors/first-release') as typeof import('../workflow/processors/first-release')
   it('strips ZIP, state and everything after a comma', () => {
     expect(streetAddressOnly('1009 rollins ave 20743')).toBe('1009 rollins ave')
     expect(streetAddressOnly('1005 Rollins Ave, Capitol Heights, MD 20743')).toBe('1005 Rollins Ave')
@@ -285,11 +288,55 @@ describe('streetAddressOnly', () => {
 })
 
 describe('addressCandidates', () => {
-  const { addressCandidates } = require('../workflow/processors/first-release') as typeof import('../workflow/processors/first-release')
   it('tries the full form first, then drops trailing words down to number + two words', () => {
     expect(addressCandidates('1009 rollins ave capital heights')).toEqual([
       '1009 rollins ave capital heights', '1009 rollins ave capital', '1009 rollins ave',
     ])
     expect(addressCandidates('1005 Rollins Ave')).toEqual(['1005 Rollins Ave'])
+  })
+})
+
+describe('workflow address contract', () => {
+  it('keeps the complete canonical address in initialization output', async () => {
+    const h = harness()
+    const snap = newWorkflow('wf_complete_address')
+    const ctx = {
+      ...h.ctxFor(snap, FIRST_JOB),
+      subject: {
+        ...h.ctxFor(snap, FIRST_JOB).subject,
+        formData: {
+          address: '14408 LEONARD CALVERT DR',
+          projectAddress: '14408 LEONARD CALVERT DR, ACCOKEEK, MD 20607',
+        },
+      },
+    }
+
+    const out = await runStage(ctx, h.deps)
+    expect(out.disposition).toBe('COMPLETED')
+    expect(h.persisted.at(-1)?.outputs).toMatchObject({
+      address: '14408 LEONARD CALVERT DR, ACCOKEEK, MD 20607',
+    })
+  })
+
+  it('uses standardized site intelligence when older metadata has no top-level address', async () => {
+    const h = harness()
+    const snap = newWorkflow('wf_site_intelligence_address')
+    const ctx = {
+      ...h.ctxFor(snap, FIRST_JOB),
+      subject: {
+        ...h.ctxFor(snap, FIRST_JOB).subject,
+        formData: {
+          siteIntelligence: {
+            standardizedAddress: '14408 LEONARD CALVERT DR, ACCOKEEK, MD 20607',
+          },
+        },
+      },
+    }
+
+    const out = await runStage(ctx, h.deps)
+    expect(out.disposition).toBe('COMPLETED')
+    expect(h.persisted.at(-1)?.outputs).toMatchObject({
+      address: '14408 LEONARD CALVERT DR, ACCOKEEK, MD 20607',
+    })
   })
 })

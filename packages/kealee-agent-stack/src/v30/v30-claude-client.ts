@@ -58,12 +58,20 @@ export class V30ClaudeCachedClient {
     // `400 invalid_request_error: betas: Extra inputs are not permitted`,
     // which failed every cache-enabled bot. `betas` is only valid on
     // `anthropic.beta.messages.create`.
-    const response = (await (this.anthropic.messages as any).create({
+    const request = {
       model: params.model,
       max_tokens: params.maxTokens,
       system: systemBlocks,
       messages: [{ role: 'user', content: params.user }],
-    })) as Message
+    }
+    // Anthropic rejects potentially >10-minute non-streaming requests. Design
+    // and floorplan intentionally have 32k-token ceilings so their JSON is not
+    // truncated; use the SDK streaming helper and await the final assembled
+    // Message. This keeps the downstream parser unchanged while satisfying
+    // the long-request contract.
+    const response = (params.maxTokens > 16_000
+      ? await (this.anthropic.messages as any).stream(request).finalMessage()
+      : await (this.anthropic.messages as any).create(request)) as Message
 
     // Take the first TEXT block, not content[0]. These bots run on
     // claude-opus-5 / claude-sonnet-5, where thinking is on by default, so

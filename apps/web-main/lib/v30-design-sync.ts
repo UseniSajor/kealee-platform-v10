@@ -50,32 +50,35 @@ export async function syncV30ConceptToIntakeLead(
     })
     .eq('id', intakeId)
 
-  void (async () => {
-    try {
-      if (imagePrompts.length > 0 && !formData.v30RenderPredictionIds) {
-        await queueV30DesignRenders(intakeId, imagePrompts, roomType.split(' ')[0] ?? 'kitchen')
-      }
-      if (imagePrompts.length > 0 && !formData.v30RendersCompletedAt) {
-        await pollV30RendersUntilDone(intakeId, { maxAttempts: 40, intervalMs: 15_000 })
-      }
-      await finalizeConceptDeliverables(intakeId)
-    } catch (error) {
-      console.error('[v30-design-sync] deliverable assembly failed', error)
-      const { data: failedRow } = await supabase
-        .from('public_intake_leads')
-        .select('form_data')
-        .eq('id', intakeId)
-        .single()
-      const failedFormData = (failedRow?.form_data as Record<string, unknown>) ?? {}
-      await supabase.from('public_intake_leads').update({
-        form_data: {
-          ...failedFormData,
-          v30DeliverableAssemblyStartedAt: null,
-          v30DeliverableAssemblyError: error instanceof Error ? error.message : String(error),
-        },
-      }).eq('id', intakeId)
+  // This must stay attached to a durable caller. It used to be a detached
+  // promise, so a server restart after writing the concept JSON could abandon
+  // the paid order before images and PDF existed. The worker reconciliation
+  // loop retries this awaited operation until finalization is recorded.
+  try {
+    if (imagePrompts.length > 0 && !formData.v30RenderPredictionIds) {
+      await queueV30DesignRenders(intakeId, imagePrompts, roomType.split(' ')[0] ?? 'kitchen')
     }
-  })()
+    if (imagePrompts.length > 0 && !formData.v30RendersCompletedAt) {
+      await pollV30RendersUntilDone(intakeId, { maxAttempts: 40, intervalMs: 15_000 })
+    }
+    await finalizeConceptDeliverables(intakeId)
+  } catch (error) {
+    console.error('[v30-design-sync] deliverable assembly failed', error)
+    const { data: failedRow } = await supabase
+      .from('public_intake_leads')
+      .select('form_data')
+      .eq('id', intakeId)
+      .single()
+    const failedFormData = (failedRow?.form_data as Record<string, unknown>) ?? {}
+    await supabase.from('public_intake_leads').update({
+      form_data: {
+        ...failedFormData,
+        v30DeliverableAssemblyStartedAt: null,
+        v30DeliverableAssemblyError: error instanceof Error ? error.message : String(error),
+      },
+    }).eq('id', intakeId)
+    throw error
+  }
 }
 
 async function finalizeConceptDeliverables(intakeId: string): Promise<void> {

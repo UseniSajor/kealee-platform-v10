@@ -222,14 +222,27 @@ export function addressCandidates(raw: string): string[] {
 }
 
 function addressFrom(ctx: StageContext): string | null {
-  const f = ctx.subject.formData
-  const raw = str(f.address) ?? str(f.projectAddress) ?? str(f.propertyAddress) ?? str(f.site_address)
+  const raw = rawAddressFrom(ctx)
   return raw ? streetAddressOnly(raw) || null : null
 }
 
 function rawAddressFrom(ctx: StageContext): string | null {
   const f = ctx.subject.formData
-  return str(f.address) ?? str(f.projectAddress) ?? str(f.propertyAddress) ?? str(f.site_address)
+  const intelligence = f.siteIntelligence && typeof f.siteIntelligence === 'object'
+    ? f.siteIntelligence as Record<string, unknown>
+    : {}
+
+  // `projectAddress` is copied from public_intake_leads.project_address when
+  // the paid order becomes a workflow. It is the canonical customer address;
+  // `address` can be a street-only value left by an older intake client.
+  // Keeping the complete value here is important even though PGAtlas receives
+  // a street-only query: the order, audit trail and resulting sheet must never
+  // silently lose city/state/ZIP.
+  return str(f.projectAddress)
+    ?? str(intelligence.standardizedAddress)
+    ?? str(f.address)
+    ?? str(f.propertyAddress)
+    ?? str(f.site_address)
 }
 
 /**
@@ -338,7 +351,10 @@ const initialize: StageProcessor = async (ctx): Promise<StageResult> => ({
   status: 'COMPLETED',
   outputs: {
     activatedAt: ctx.capabilities.now().toISOString(),
-    address: addressFrom(ctx),
+    // Persist the complete order address. `resolveProperty` derives its
+    // locator query separately, so presentation/audit data is never mutated
+    // merely to satisfy a GIS API's input format.
+    address: rawAddressFrom(ctx),
     jurisdictionCode: 'prince_georges_md',
   } satisfies InitializeOutput,
 })
