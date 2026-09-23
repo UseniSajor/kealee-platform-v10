@@ -146,6 +146,8 @@ export function resolveHomeownerDeliverablesForPdf(
   const zoneCode = String(jurisdiction?.zoneCode ?? jurisdiction?.zone ?? '')
   const allowedUses = Array.isArray(jurisdiction?.allowedUses)
     ? (jurisdiction!.allowedUses as unknown[]).map(String).filter(Boolean)
+    : typeof jurisdiction?.allowedUses === 'string' && jurisdiction.allowedUses.trim()
+      ? [jurisdiction.allowedUses.trim()]
     : Array.isArray(asRecord(formData.zoningResult)?.allowedUses)
       ? (asRecord(formData.zoningResult)!.allowedUses as unknown[]).map(String).filter(Boolean)
       : []

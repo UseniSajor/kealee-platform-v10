@@ -167,10 +167,36 @@ export async function reconcileV30ProjectOnce(
   const executions = ws.executions ?? []
   const designDone = executions.some(e => e.botType === 'design' && e.status === 'COMPLETE')
   const floorplanExec = executions.find(e => e.botType === 'floorplan')
+  const zoningExec = executions.find(e => e.botType === 'zoning')
+  const zoningRequired = requiredBotTypes.includes('zoning')
+  const zoningReady = zoningExec?.status === 'COMPLETE' && Boolean(zoningExec.outputData)
   const concept = ws.v30ConceptOutput
 
-  if (designDone && concept) {
-    await syncV30ConceptToIntakeLead(intakeId, concept)
+  if (designDone && concept && (!zoningRequired || zoningReady)) {
+    const zoning = zoningExec?.outputData ?? {}
+    const zoneInfo = zoning.zoneInfo && typeof zoning.zoneInfo === 'object'
+      ? zoning.zoneInfo as Record<string, unknown>
+      : {}
+    const allowedUses = Array.isArray(zoneInfo.allowedUses)
+      ? zoneInfo.allowedUses.map(String)
+      : typeof zoneInfo.allowedUses === 'string' && zoneInfo.allowedUses.trim()
+        ? [zoneInfo.allowedUses.trim()]
+        : []
+    const zoningSummary = [zoneInfo.zoneDescription, allowedUses.join(', ')]
+      .filter(value => typeof value === 'string' && value.trim())
+      .join(' ')
+    await syncV30ConceptToIntakeLead(intakeId, {
+      ...concept,
+      ...(zoningSummary ? { zoningNotes: zoningSummary } : {}),
+      ...(zoneInfo.zone ? {
+        jurisdictionData: {
+          zoneCode: String(zoneInfo.zone),
+          allowedUses,
+          name: String(zoning.jurisdiction ?? 'Local planning jurisdiction'),
+          source: `${String(zoning.jurisdiction ?? 'Local jurisdiction')} zoning analysis`,
+        },
+      } : {}),
+    })
   }
 
   // Assemble floor-plan derivatives before marking the order terminal. The
@@ -215,7 +241,7 @@ export async function reconcileV30ProjectOnce(
     await syncV30OutputsToIntake(intakeId, executions, requiredBotTypes)
   }
 
-  return { terminal: allComplete, designReady: Boolean(designDone && concept) }
+  return { terminal: allComplete, designReady: Boolean(designDone && concept && (!zoningRequired || zoningReady)) }
 }
 
 /** Poll API workspace until DesignBot completes, then sync concept portal (no duplicate generate). */

@@ -20,6 +20,41 @@ export function mergeFulfillmentFormData(
  * for audits and tooling and must remain read-only at runtime.
  */
 export const CANONICAL_PRODUCT_WORKFLOWS: Readonly<Record<string, ProductAutomationRoute>> = {
+  bathroom_remodel: {
+    fulfillmentBotTypes: ['design', 'estimate', 'zoning', 'permit', 'floorplan', 'project'],
+    workflowTemplateId: 'wf_design_estimate_permit_bundle_v1',
+    propertyIntelligenceDepth: 'project',
+  },
+  kitchen_remodel: {
+    fulfillmentBotTypes: ['design', 'estimate', 'zoning', 'permit', 'floorplan', 'project'],
+    workflowTemplateId: 'wf_design_estimate_permit_bundle_v1',
+    propertyIntelligenceDepth: 'project',
+  },
+  interior_renovation: {
+    fulfillmentBotTypes: ['design', 'estimate', 'zoning', 'permit', 'floorplan', 'project'],
+    workflowTemplateId: 'wf_design_estimate_permit_bundle_v1',
+    propertyIntelligenceDepth: 'project',
+  },
+  interior_reno_concept: {
+    fulfillmentBotTypes: ['design', 'estimate', 'zoning', 'permit', 'floorplan', 'project'],
+    workflowTemplateId: 'wf_design_estimate_permit_bundle_v1',
+    propertyIntelligenceDepth: 'project',
+  },
+  exterior_concept: {
+    fulfillmentBotTypes: ['design', 'estimate', 'zoning', 'permit', 'floorplan', 'project'],
+    workflowTemplateId: 'wf_design_estimate_permit_bundle_v1',
+    propertyIntelligenceDepth: 'project',
+  },
+  garden_concept: {
+    fulfillmentBotTypes: ['design', 'estimate', 'zoning', 'permit', 'floorplan', 'project'],
+    workflowTemplateId: 'wf_design_estimate_permit_bundle_v1',
+    propertyIntelligenceDepth: 'project',
+  },
+  addition_expansion: {
+    fulfillmentBotTypes: ['design', 'estimate', 'zoning', 'permit', 'floorplan', 'project'],
+    workflowTemplateId: 'wf_design_estimate_permit_bundle_v1',
+    propertyIntelligenceDepth: 'project',
+  },
   cost_estimate: {
     fulfillmentBotTypes: ['estimate', 'project'],
     workflowTemplateId: 'wf_estimate_v1',
