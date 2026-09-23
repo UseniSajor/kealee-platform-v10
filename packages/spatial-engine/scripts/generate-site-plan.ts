@@ -25,6 +25,8 @@ import { resolvePgAtlasSite } from '../src/jurisdictions/pgatlas'
 import { addFeatures, addSource } from '../src/site-plan/site-twin'
 import type { SiteFeature } from '../src/site-plan/site-twin'
 import { resolveCrs, createArcGisTransformer } from '../src/export/crs'
+import { createRegistryTransformer } from '../src/export/transformation-registry'
+import { toDxfNcs } from '../src/export/dxf-ncs'
 import { geocodeAddress } from '../src/gis-client'
 import { buildSheetContext } from '../src/sheets/render-svg'
 import { renderSheetSetPdf } from '../src/sheets/render-pdf'
@@ -78,8 +80,18 @@ async function main() {
     step(1, 'PGAtlas did not match — falling back to Nominatim + MD iMAP')
     const coords = await geocodeAddress(address)
     if (!coords) throw new Error('Neither PGAtlas nor Nominatim could locate this address.')
-    const tx = createArcGisTransformer()
-    const [[e2, n2]] = await tx.transform([[coords.lng, coords.lat]], resolveCrs('EPSG:4326'), resolveCrs('EPSG:2248'))
+    // Registry transformer: proj4 supplies the offline path, the county
+    // geometry service cross-checks it, and the operation's accuracy and
+    // datum handling are recorded rather than assumed.
+    const tx = createRegistryTransformer({ service: createArcGisTransformer() })
+    const traced = await tx.transformTraced([[coords.lng, coords.lat]], resolveCrs('EPSG:4326'), resolveCrs('EPSG:2248'))
+    const [[e2, n2]] = traced.points
+    console.log(`    transform: ${traced.provenance.operation.method}`)
+    console.log(`               engine ${traced.provenance.engine}, stated accuracy ${traced.provenance.operation.accuracyMetres} m`)
+    if (traced.provenance.crossCheck) {
+      const cc = traced.provenance.crossCheck
+      console.log(`               cross-check vs ${cc.against}: ${cc.maxDivergence.toFixed(4)} (tol ${cc.tolerance}) ${cc.withinTolerance ? 'OK' : 'OUT OF TOLERANCE'}`)
+    }
     easting = e2; northing = n2
     console.log(`    E ${easting.toFixed(1)}  N ${northing.toFixed(1)}`)
     step(3, 'Parcel from MD iMAP')
@@ -273,10 +285,20 @@ async function main() {
   // never depends on someone remembering to export.
   const dxfPath = outPath.replace(/\.pdf$/i, '.dxf')
   const xmlPath = outPath.replace(/\.pdf$/i, '.landxml.xml')
-  writeFileSync(dxfPath, toDxf(pkg.twin))
+  const ncs = toDxfNcs(pkg.twin)
+  writeFileSync(dxfPath, ncs.dxf)
   writeFileSync(xmlPath, toLandXml(pkg.twin))
   console.log(`    CAD: ${dxfPath}`)
+  console.log(`         ${ncs.entityCount} entities on ${ncs.layers.length} NCS layers: ${ncs.layers.join(', ')}`)
+  if (ncs.unmapped.length) {
+    console.log(`         !! UNMAPPED feature kinds on the non-plot layer: ${ncs.unmapped.join(', ')}`)
+  }
+  // The R12 writer it replaces, kept alongside until the shared kernel lands
+  // so an export can be diffed rather than trusted.
+  const legacyPath = outPath.replace(/\.pdf$/i, '.r12.dxf')
+  writeFileSync(legacyPath, toDxf(pkg.twin))
   console.log(`         ${xmlPath}`)
+  console.log(`         ${legacyPath} (previous R12 writer, for diff)`)
 
   // ALWAYS render to the terminal for review.
   //

@@ -228,7 +228,10 @@ Updated as work lands. "Deployed" means running in a Railway production service.
 | 4 test files converted off Jest idioms so they execute at all | 2026-09-23 | included in the 613 | n/a |
 | `proj4` 2.22.0, `@turf/turf` 7.4.0, `@tarikjabiri/dxf` 2.9.0, `geotiff` 3.0.5 installed | 2026-09-23 | install exit 0; proj4 exercised by the registry | **not yet** — no deployed service imports them |
 | Verified transformation registry (`export/transformation-registry.ts`) | 2026-09-23 | 16 tests inc. live cross-check vs the county geometry service | **not yet — not wired into any stage** |
+| NCS DXF writer (`export/dxf-ncs.ts`) | 2026-09-23 | 19 tests + real-lot differential vs R12 | **not yet — scripts only** |
+| Registry + NCS DXF wired into `generate-site-plan.ts` | 2026-09-23 | generator exit 0 on 1005 Rollins Ave | n/a (diagnostic script) |
 | `tsc --noEmit` on `spatial-engine` | — | exit 0 | — |
+| Full suite after all of the above | — | **632 tests, 31 files, all pass** | — |
 
 ### Gate A — measured result, 2026-09-23
 
@@ -254,12 +257,56 @@ service's datum transformation would also fail.
 is never round-tripped through EPSG:4326. A metre of datum ambiguity is larger
 than the setback tolerances a plan is checked against.
 
+### NCS DXF writer — landed 2026-09-23
+
+`export/dxf-ncs.ts` on `@tarikjabiri/dxf`, replacing the hand-written DXF R12
+writer in the diagnostic scripts. R12 carries no linetypes, no lineweights and
+no text, so the approved-plan convention — existing contours thin and dashed
+against heavier proposed — was not expressible, and every line arrived in the
+recipient's CAD at one weight on one linetype.
+
+Layer names follow the NCS / AIA CAD Layer Guidelines field structure
+`<discipline>-<major>-<minor>[-<status>]`. The status field is what makes a set
+readable: `C-TOPO-MAJR-E` existing against `C-TOPO-MAJR-N` proposed,
+`C-BLDG-FTPR-N` against `C-BLDG-FTPR-D`. Ten legacy layer names that were not
+conformant are corrected and recorded in `LEGACY_LAYER_ALIASES` so a diff
+against an older export is explainable.
+
+Differential on 1005 Rollins Ave, both writers from the same twin:
+
+| | R12 (previous) | NCS (new) |
+|---|---|---|
+| Polyline entities | 34 | 34 |
+| Linetype table | absent | present |
+| Linetypes usable | none | DASHED, HIDDEN, PHANTOM, DASHDOT |
+| Lineweights | none | 6 pen weights |
+| Bytes | 21,951 | 20,149 |
+
+**Two twin gaps the work surfaced**, both recorded rather than papered over:
+
+1. `Surface` had no layer and silently landed on the non-plot layer in a real
+   export. The unmapped-kind report caught it on its first run. An
+   exhaustiveness test now fails if any `SiteFeature['kind']` lacks a layer.
+2. `SiteFeature` has a **single `Contour` kind**, so the engine cannot
+   distinguish existing county contours from proposed grading. The
+   existing/proposed convention the approved plans use is therefore not
+   expressible today. `MinorContour` and `ProposedContour` layers are
+   forward-declared and marked "not yet emitted by the twin"; the C-400 grading
+   work in Phase F adds the kinds.
+
+The R12 writer is **retained** and the scripts emit both (`*.r12.dxf`) so
+exports can be diffed rather than trusted, per amendment 1.
+
 ### Not done — stated so it is not mistaken for done
 
-- The registry is **written and tested but not yet wired** into `exporters.ts`
-  or any stage. Nothing in production calls it. That is the next change.
-- The DXF writer still uses the hand-rolled implementation. `@tarikjabiri/dxf`
-  is installed and unused.
-- `@turf/turf` and `geotiff` are installed and unused.
-- No NCS layer naming yet.
-- Phase B (`packages/cad-kernel`) not started.
+- **No stage emits CAD at all.** `siteplan.render_exports` produces the PDF and
+  nothing else — there is no DXF, no LandXML and no GeoJSON on the production
+  path. Both writers are reachable only from diagnostic scripts. This matters
+  commercially: `editable_cad` is a priced add-on in `quote.ts` with no
+  producer behind it on the paid path.
+- The transformation registry is wired into `generate-site-plan.ts` only.
+  No deployed service calls it.
+- `@turf/turf` and `geotiff` are installed and **unused**.
+- Phase B (`packages/cad-kernel`) not started; the concept engine's own DXF
+  writer and geometry kernel are still a second implementation.
+- Nothing in this phase is **deployed**. Every item above is repo-state only.
