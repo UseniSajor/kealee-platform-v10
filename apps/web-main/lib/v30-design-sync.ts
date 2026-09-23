@@ -6,6 +6,10 @@ import {
   generateAndAttachConceptFloorplan,
   generateAndAttachConceptPdf,
 } from '@/lib/concept-output-enrichment'
+import {
+  conceptDeliverablesAreComplete,
+  conceptHasRenders,
+} from '@/lib/v30-deliverable-state'
 
 /**
  * Copy the canonical v30 DesignBot result into the customer portal, render its
@@ -27,7 +31,7 @@ export async function syncV30ConceptToIntakeLead(
   const formData = (row.form_data as Record<string, unknown>) ?? {}
   const assemblyStartedAt = Date.parse(String(formData.v30DeliverableAssemblyStartedAt ?? ''))
   const assemblyIsActive = Number.isFinite(assemblyStartedAt) && Date.now() - assemblyStartedAt < 30 * 60 * 1000
-  if (formData.v30ConceptDeliverablesFinalizedAt || assemblyIsActive) return
+  if (conceptDeliverablesAreComplete(formData) || assemblyIsActive) return
 
   const imagePrompts = (conceptOutput.imagePrompts as string[] | undefined) ?? []
   const roomType = String(conceptOutput.projectPath ?? 'kitchen').replace(/_/g, ' ')
@@ -45,6 +49,10 @@ export async function syncV30ConceptToIntakeLead(
         v30ConceptOutput: mergedConcept,
         v30ConceptSyncedAt: new Date().toISOString(),
         v30DeliverableAssemblyStartedAt: new Date().toISOString(),
+        // A prior run may have written this marker without producing its
+        // required images/PDF. The assembly lock above prevents concurrency;
+        // clear stale success before retrying the actual customer assets.
+        v30ConceptDeliverablesFinalizedAt: null,
       },
       status: row.status === 'paid' ? 'concept_ready' : row.status,
     })
@@ -55,10 +63,19 @@ export async function syncV30ConceptToIntakeLead(
   // the paid order before images and PDF existed. The worker reconciliation
   // loop retries this awaited operation until finalization is recorded.
   try {
-    if (imagePrompts.length > 0 && !formData.v30RenderPredictionIds) {
-      await queueV30DesignRenders(intakeId, imagePrompts, roomType.split(' ')[0] ?? 'kitchen')
+    const existingPredictionIds = Array.isArray(formData.v30RenderPredictionIds)
+      ? formData.v30RenderPredictionIds.filter((id): id is string => typeof id === 'string' && id.length > 0)
+      : []
+    if (imagePrompts.length > 0 && existingPredictionIds.length === 0 && !conceptHasRenders(formData)) {
+      const queued = await queueV30DesignRenders(intakeId, imagePrompts, roomType.split(' ')[0] ?? 'kitchen')
+      if (queued.length === 0) {
+        throw new Error('No design render jobs were accepted by the image provider')
+      }
     }
-    if (imagePrompts.length > 0 && !formData.v30RendersCompletedAt) {
+    if (!conceptHasRenders(formData)) {
+      if (imagePrompts.length === 0 && existingPredictionIds.length === 0) {
+        throw new Error('Design output did not include image prompts or completed renders')
+      }
       await pollV30RendersUntilDone(intakeId, { maxAttempts: 40, intervalMs: 15_000 })
     }
     await finalizeConceptDeliverables(intakeId)
@@ -70,11 +87,27 @@ export async function syncV30ConceptToIntakeLead(
       .eq('id', intakeId)
       .single()
     const failedFormData = (failedRow?.form_data as Record<string, unknown>) ?? {}
+    const predictionIds = Array.isArray(failedFormData.v30RenderPredictionIds)
+      ? failedFormData.v30RenderPredictionIds
+      : []
+    const settledCount = Number(failedFormData.v30RenderSettledCount ?? 0)
+    const exhaustedWithoutImages = predictionIds.length > 0
+      && settledCount >= predictionIds.length
+      && !conceptHasRenders(failedFormData)
     await supabase.from('public_intake_leads').update({
       form_data: {
         ...failedFormData,
         v30DeliverableAssemblyStartedAt: null,
         v30DeliverableAssemblyError: error instanceof Error ? error.message : String(error),
+        // If every prediction definitively failed, release the batch so the
+        // durable reconciler can submit a fresh one. Do not clear jobs that are
+        // merely slow; the next pass must continue polling those same IDs.
+        ...(exhaustedWithoutImages ? {
+          v30RenderPredictionIds: null,
+          v30RenderPairs: [],
+          v30RendersCompletedAt: null,
+          v30RenderRetryCount: Number(failedFormData.v30RenderRetryCount ?? 0) + 1,
+        } : {}),
       },
     }).eq('id', intakeId)
     throw error
@@ -101,6 +134,10 @@ async function finalizeConceptDeliverables(intakeId: string): Promise<void> {
     form_data: formData,
   }
 
+  if (!conceptHasRenders(formData)) {
+    throw new Error('Concept deliverables cannot be finalized without a completed design rendering')
+  }
+
   await generateAndAttachConceptFloorplan(enrichmentInput, output, tier)
 
   const enrichedFormData = {
@@ -117,7 +154,10 @@ async function finalizeConceptDeliverables(intakeId: string): Promise<void> {
     ...enrichmentInput,
     form_data: enrichedFormData,
   })
-  const finalOutput = pdfUrl ? { ...output, pdfUrl } : output
+  if (!pdfUrl) {
+    throw new Error('Concept deliverables cannot be finalized because PDF generation or storage failed')
+  }
+  const finalOutput = { ...output, pdfUrl }
 
   await supabase
     .from('public_intake_leads')

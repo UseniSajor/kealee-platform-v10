@@ -153,6 +153,9 @@ export async function queueV30DesignRenders(
         v30RenderPairs: pairs,
         v30RenderProvider: 'replicate-flux',
         v30RendersQueuedAt: new Date().toISOString(),
+        v30RenderSettledCount: 0,
+        v30RenderTotalCount: predictionIds.length + pairs.length,
+        v30RendersSettledAt: null,
       },
     })
     .eq('id', intakeId)

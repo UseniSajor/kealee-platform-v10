@@ -45,7 +45,20 @@ export async function pollV30RenderPredictions(intakeId: string): Promise<string
   }
 
   lastPollSettled.set(intakeId, { settled, total: ids.length })
-  if (!urls.length) return []
+  const lifecycle = {
+    v30RenderSettledCount: settled,
+    v30RenderTotalCount: ids.length,
+    ...(ids.length > 0 && settled >= ids.length
+      ? { v30RendersSettledAt: new Date().toISOString() }
+      : {}),
+  }
+  if (!urls.length) {
+    await supabase
+      .from('public_intake_leads')
+      .update({ form_data: { ...formData, ...lifecycle } })
+      .eq('id', intakeId)
+    return []
+  }
 
   // Viewpoint-locked renders resolve into before/after pairs; the customer's
   // photographs they were rendered from become the package's beforeUrls.
@@ -77,6 +90,7 @@ export async function pollV30RenderPredictions(intakeId: string): Promise<string
         conceptOutput,
         v30ConceptOutput: conceptOutput,
         v30RendersCompletedAt: new Date().toISOString(),
+        ...lifecycle,
         funnelStage: becomingReady ? 'concept_ready' : formData.funnelStage,
       },
       status: nextStatus,
