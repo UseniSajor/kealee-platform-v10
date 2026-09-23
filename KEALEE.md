@@ -220,7 +220,7 @@ free text, and do not use a public geocoder.
 
 | What | Endpoint (`gis.pgatlas.com/pgatlas/rest/services/…`) |
 |---|---|
-| Address locator | `Geocoders/Address/GeocodeServer` |
+| Address locator | `Geocoders/Composite_Geolocator/GeocodeServer` (see note — `Geocoders/Address` is retired) |
 | Parcel | `Property/MapServer/15` |
 | Zoning | `Zoning/MapServer/63` |
 | 2-ft contours (NAVD88) | `Elevation/MapServer/1` |
@@ -234,6 +234,15 @@ free text, and do not use a public geocoder.
   candidates and the stage blocks. `1005 Rollins Ave` scores 100;
   `1005 Rollins Ave, Capitol Heights, MD` matches nothing. Verified against the
   live service.
+- **`Geocoders/Address/GeocodeServer` IS RETIRED.** The county removed it. It
+  answers HTTP **200** with `{"error":{"code":404,...}}`, so a `res.ok` check
+  reads a dead endpoint as a clean no-match. That is not hypothetical: with
+  only the address locator wired, `resolve_property` blocked a real order with
+  "the county locator did not match <address> at or above the minimum score"
+  while the same address resolved at 100 on the composite locator. The address
+  was never the problem. `resolvePropertyStage` now falls back to the composite
+  locator and traces which one answered. Verified 2026-09-23 against the live
+  service with `14408 Leonard Calvert Dr`.
 - **Minimum locator score is 90.** The composite locator offered a DIFFERENT
   STREET at 77 for a valid address. A weak match sites the plan on the wrong
   lot and every downstream check still passes.
