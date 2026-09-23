@@ -20,8 +20,44 @@ function errorRedirect(origin: string, code: string, next?: string): NextRespons
   return NextResponse.redirect(url)
 }
 
+/**
+ * The public origin to send the customer back to.
+ *
+ * NOT request.nextUrl.origin. This runs as a Next standalone server started by
+ * scripts/railway-next-start.sh, which exports HOSTNAME=0.0.0.0 so the process
+ * binds every interface. Next then reports that bind address as the request
+ * origin, so the claim redirect was built as
+ *
+ *     https://0.0.0.0:3000/deliverables/<intakeId>
+ *
+ * which the browser rejects outright with ERR_ADDRESS_INVALID. Every
+ * one-click link in a concept-ready email landed there: the deliverable was
+ * finished and the customer still could not open it.
+ *
+ * Prefer the forwarded headers so the customer stays on whichever host they
+ * arrived on (owner.kealee.com or the railway domain), then fall back to
+ * configuration, and only then to the request — never to a bind address.
+ */
+function publicOrigin(request: NextRequest): string {
+  const first = (v: string | null) => v?.split(',')[0]?.trim() || ''
+  const host = first(request.headers.get('x-forwarded-host')) || first(request.headers.get('host'))
+  const proto = first(request.headers.get('x-forwarded-proto')) || 'https'
+  if (host && !host.startsWith('0.0.0.0') && !host.startsWith('localhost')) {
+    return `${proto}://${host}`
+  }
+
+  const configured = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, '')
+  if (configured) return configured
+
+  const railwayDomain = process.env.RAILWAY_PUBLIC_DOMAIN
+  if (railwayDomain) return `https://${railwayDomain}`
+
+  return request.nextUrl.origin
+}
+
 export async function GET(request: NextRequest) {
-  const { searchParams, origin } = request.nextUrl
+  const { searchParams } = request.nextUrl
+  const origin = publicOrigin(request)
   const token = searchParams.get('t')
   const intakeId = searchParams.get('i')
 
