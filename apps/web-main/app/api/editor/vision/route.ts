@@ -149,7 +149,7 @@ export async function POST(req: NextRequest) {
       ],
     })
 
-    const rawText = message.content[0].type === 'text' ? message.content[0].text : ''
+    const rawText = message.content.find((b: { type: string }) => b.type === 'text')?.text ?? ''
 
     // Parse JSON from response
     const jsonMatch = rawText.match(/\{[\s\S]*\}/)

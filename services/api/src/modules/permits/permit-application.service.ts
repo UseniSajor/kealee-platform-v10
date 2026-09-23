@@ -54,7 +54,9 @@ Return only valid JSON, no markdown.`
       messages: [{ role: 'user', content: prompt }],
     })
 
-    const raw = response.content[0]?.type === 'text' ? (response.content[0] as any).text?.trim() ?? '' : ''
+    // First TEXT block, not content[0]: thinking is on by default on
+    // claude-opus-5 / claude-sonnet-5, so content[0] is a thinking block.
+    const raw = (response.content.find((b: { type: string }) => b.type === 'text') as any)?.text?.trim() ?? ''
     return JSON.parse(raw)
   } catch (err: any) {
     console.warn('[runAIReview] Claude failed, using rule-based fallback:', err.message)

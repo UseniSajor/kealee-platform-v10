@@ -80,8 +80,10 @@ export async function analyzeBid(bidId: string): Promise<{ bid: any; analysis: B
       messages: [{ role: 'user', content: prompt }],
     })
 
-    const content = message.content[0]
-    if (content.type === 'text') {
+    // First TEXT block, not content[0]: thinking is on by default on
+    // claude-opus-5 / claude-sonnet-5, so content[0] is a thinking block.
+    const content = message.content.find((b: { type: string }) => b.type === 'text');
+    if (content && content.type === 'text') {
       const jsonMatch = (content.text ?? '').match(/\{[\s\S]*\}/)
       if (jsonMatch) {
         const parsed = JSON.parse(jsonMatch[0])
@@ -139,8 +141,10 @@ export async function generateBidStrategy(bidId: string): Promise<{ bid: any; st
       messages: [{ role: 'user', content: prompt }],
     })
 
-    const content = message.content[0]
-    if (content.type === 'text') {
+    // First TEXT block, not content[0]: thinking is on by default on
+    // claude-opus-5 / claude-sonnet-5, so content[0] is a thinking block.
+    const content = message.content.find((b: { type: string }) => b.type === 'text');
+    if (content && content.type === 'text') {
       const jsonMatch = (content.text ?? '').match(/\{[\s\S]*\}/)
       if (jsonMatch) {
         const parsed = JSON.parse(jsonMatch[0])

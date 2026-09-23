@@ -54,7 +54,12 @@ export class FloorplanBotEnterprise extends EnterpriseBot {
     const config: BotConfig = {
       name: 'FloorplanBot',
       model: 'claude-opus-5',
-      maxTokens: 4000,
+      // maxTokens covers THINKING PLUS the JSON body. These bots run on
+      // claude-opus-5 / claude-sonnet-5 where thinking is on by default, so a
+      // ceiling sized for the visible JSON alone gets consumed by reasoning
+      // and the body is cut off mid-array — surfacing as a JSON.parse error
+      // ("Expected ',' or ']' after array element"), not as truncation.
+      maxTokens: 16000,
       temperature: 0.6,
       timeout: 60000,
       retries: 3,

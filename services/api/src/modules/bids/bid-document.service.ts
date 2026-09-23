@@ -127,8 +127,10 @@ export async function processBidDocument(bidId: string, docId: string): Promise<
         }],
       })
 
-      const content = message.content[0]
-      if (content.type === 'text') {
+      // First TEXT block, not content[0]: thinking is on by default on
+      // claude-opus-5 / claude-sonnet-5, so content[0] is a thinking block.
+      const content = message.content.find((b: { type: string }) => b.type === 'text');
+      if (content && content.type === 'text') {
         extractedText = content.text ?? ''
         metadata = parseDocumentResponse(content.text ?? '')
       } else {
@@ -148,8 +150,10 @@ export async function processBidDocument(bidId: string, docId: string): Promise<
         }],
       })
 
-      const content = message.content[0]
-      if (content.type === 'text') {
+      // First TEXT block, not content[0]: thinking is on by default on
+      // claude-opus-5 / claude-sonnet-5, so content[0] is a thinking block.
+      const content = message.content.find((b: { type: string }) => b.type === 'text');
+      if (content && content.type === 'text') {
         metadata = parseDocumentResponse(content.text ?? '')
       } else {
         metadata = buildBasicMetadata(doc)

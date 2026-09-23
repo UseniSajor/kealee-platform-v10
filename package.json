@@ -117,10 +117,11 @@
     "automation-validation": "tsx scripts/automation-validation.ts",
     "production-deployment-check": "tsx scripts/production-deployment-check.ts",
     "platform:inventory": "node scripts/generate-workspace-inventory.mjs",
-    "platform:verify-vercel-plan": "node scripts/verify-vercel-migration-config.mjs"
-    ,"platform:provider-boundaries": "node scripts/check-provider-boundaries.mjs"
-    ,"security:committed-secrets": "node scripts/check-committed-secrets.mjs"
-    ,"platform:railway-catalog": "railway status --json | node scripts/verify-railway-service-catalog.mjs"
+    "platform:verify-vercel-plan": "node scripts/verify-vercel-migration-config.mjs",
+    "platform:provider-boundaries": "node scripts/check-provider-boundaries.mjs",
+    "security:committed-secrets": "node scripts/check-committed-secrets.mjs",
+    "platform:railway-catalog": "railway status --json | node scripts/verify-railway-service-catalog.mjs",
+    "check:anthropic-blocks": "bash scripts/check-anthropic-content-blocks.sh"
   },
   "workspaces": [
     "apps/*",

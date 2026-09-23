@@ -63,6 +63,9 @@ jobs:
       - name: Run Unit Tests
         run: pnpm test
 
+      - name: Anthropic content-block check
+        run: pnpm check:anthropic-blocks
+
       - name: Committed Secret Scan
         run: pnpm security:committed-secrets
 

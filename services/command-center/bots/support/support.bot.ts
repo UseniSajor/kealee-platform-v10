@@ -259,7 +259,9 @@ Respond in 2-4 sentences. End with: CONFIDENCE:[0.0-1.0]`
       system: systemPrompt,
     })
 
-    const text = (response.content[0] as { type: 'text'; text: string }).text
+    // First TEXT block, not content[0]: thinking is on by default on
+    // claude-opus-5 / claude-sonnet-5, so content[0] is a thinking block.
+    const text = (response.content.find((b: { type: string }) => b.type === 'text') as { type: 'text'; text: string } | undefined)?.text ?? ''
     const confidenceMatch = text.match(/CONFIDENCE:\s*([\d.]+)/)
     const confidence = confidenceMatch ? parseFloat(confidenceMatch[1]) : 0.5
     const answer = text.replace(/CONFIDENCE:[\s\d.]+$/, '').trim()

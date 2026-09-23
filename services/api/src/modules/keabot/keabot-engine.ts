@@ -259,7 +259,7 @@ export async function chat(
   });
 
   const assistantMessage =
-    (response.content[0].type === 'text' ? response.content[0].text : '') || 'I apologize, I had trouble processing that.';
+    (response.content.find((b: { type: string }) => b.type === 'text')?.text ?? '') || 'I apologize, I had trouble processing that.';
 
   ctx.messages.push({ role: 'assistant', content: assistantMessage ?? '' });
 

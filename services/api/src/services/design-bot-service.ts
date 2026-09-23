@@ -149,8 +149,10 @@ Return only JSON.`,
       ],
     });
 
-    const content = message.content[0];
-    if (content.type !== "text") {
+    // First TEXT block, not content[0]: thinking is on by default on
+    // claude-opus-5 / claude-sonnet-5, so content[0] is a thinking block.
+    const content = message.content.find((b: { type: string }) => b.type === 'text');
+    if (!content || content.type !== "text") {
       throw new Error("Unexpected response type from Claude");
     }
 

@@ -243,7 +243,7 @@ async function analyzePhotosForFloorplan(photoUrls: string[]): Promise<{
       ],
     })
 
-    const raw = response.content[0].type === 'text' ? response.content[0].text.trim() : ''
+    const raw = response.content.find((b: { type: string }) => b.type === 'text')?.text ?? ''
     const match = raw.match(/\{[\s\S]*\}/)
     if (!match) return { captureZones: [], roomSizeHints: {} }
 

@@ -66,7 +66,12 @@ export class GISDataBotEnterprise extends EnterpriseBot {
     const config: BotConfig = {
       name: 'GISDataBot',
       model: 'claude-opus-5',
-      maxTokens: 8192, // Larger for data processing
+      // maxTokens covers THINKING PLUS the JSON body. These bots run on
+      // claude-opus-5 / claude-sonnet-5 where thinking is on by default, so a
+      // ceiling sized for the visible JSON alone gets consumed by reasoning
+      // and the body is cut off mid-array — surfacing as a JSON.parse error
+      // ("Expected ',' or ']' after array element"), not as truncation.
+      maxTokens: 16000, // Larger for data processing
       temperature: 0.2, // Low temp for consistency
       timeout: 300000, // 5 minutes for large batches
       retries: 5, // More retries for API calls

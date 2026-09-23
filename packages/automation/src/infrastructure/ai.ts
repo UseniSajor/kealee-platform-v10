@@ -65,7 +65,9 @@ export async function generateText(opts: {
   // The first content block is optional in the SDK types, and a non-text block
   // (tool use, thinking) carries no `.text`. Both cases mean "no text", which is
   // what this function already contracts to return.
-  const block = response.content[0];
+  // First TEXT block, not content[0]: thinking is on by default on
+  // claude-opus-5 / claude-sonnet-5, so content[0] is a thinking block.
+  const block = response.content.find((b: { type: string }) => b.type === 'text');
   const text = block?.type === 'text' ? block.text ?? '' : '';
 
   return {
@@ -183,7 +185,9 @@ export async function analyzeImage(opts: {
   // The first content block is optional in the SDK types, and a non-text block
   // (tool use, thinking) carries no `.text`. Both cases mean "no text", which is
   // what this function already contracts to return.
-  const block = response.content[0];
+  // First TEXT block, not content[0]: thinking is on by default on
+  // claude-opus-5 / claude-sonnet-5, so content[0] is a thinking block.
+  const block = response.content.find((b: { type: string }) => b.type === 'text');
   const text = block?.type === 'text' ? block.text ?? '' : '';
 
   return {

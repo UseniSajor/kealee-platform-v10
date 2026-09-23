@@ -84,8 +84,10 @@ Return your response as JSON with this structure:
     });
 
     // Parse AI response
-    const content = message.content[0];
-    if (content.type === 'text') {
+    // First TEXT block, not content[0]: thinking is on by default on
+    // claude-opus-5 / claude-sonnet-5, so content[0] is a thinking block.
+    const content = message.content.find((b: { type: string }) => b.type === 'text');
+    if (content && content.type === 'text') {
       try {
         // Extract JSON from response
         const jsonMatch = (content.text ?? '').match(/\{[\s\S]*\}/);
@@ -191,8 +193,10 @@ Make it professional, concise, and suitable for executive review.`;
       ],
     });
 
-    const content = message.content[0];
-    if (content.type === 'text') {
+    // First TEXT block, not content[0]: thinking is on by default on
+    // claude-opus-5 / claude-sonnet-5, so content[0] is a thinking block.
+    const content = message.content.find((b: { type: string }) => b.type === 'text');
+    if (content && content.type === 'text') {
       return content.text ?? '';
     }
 
