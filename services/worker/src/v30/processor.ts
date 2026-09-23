@@ -63,7 +63,8 @@ function webMainBase(): string {
     ?? process.env.WEB_MAIN_URL
     ?? process.env.RAILWAY_SERVICE_WEB_MAIN_URL
     ?? 'https://kealee.com'
-  return raw.replace(/\/$/, '')
+  const withProtocol = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`
+  return withProtocol.replace(/\/$/, '')
 }
 
 /**
