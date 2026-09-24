@@ -161,6 +161,55 @@ Add to the "do not offer" list: **a market Kealee has not integrated.**
 
 ---
 
+## 4b. OPEN DESIGN FORK — needs a human decision
+
+Two tenant models were built in parallel on 2026-09-24 and they disagree about
+the same thing. Neither is wrong; they cannot both stand.
+
+| | **A — `Tenant` as a new entity** (Claude, committed `ea80478e`) | **B — `Org` IS the tenant** (Codex, uncommitted at time of writing) |
+|---|---|---|
+| Entity | new `Tenant` table, `Org` gains `tenantId` | `WhiteLabelTenantProfile` hangs off the existing `Org` |
+| Homeowner/professional split | `TenantKind: KEALEE_DIRECT \| WHITE_LABEL`, with a partial unique index allowing exactly one homeowner tenant | not represented |
+| Metering | `TenantUsage`, a single rollup table | `TenantUsageEvent` + `TenantUsageRollup` |
+| Also has | — | plans, domains, deployment config, secret references, support-access sessions, per-tenant evaluation suites |
+| Scoping cost | a new id on every model | `organizationId` is ALREADY on the models that matter |
+
+**Recommendation: adopt B, and port A's `kind` into it.**
+
+B is the better fit and the reason is structural rather than aesthetic:
+`organizationId` already exists on the models that carry customer data, so
+tenant scoping comes close to free, whereas A adds a second identifier that
+every table and every query has to learn. B's metering is also the right shape
+— an event table plus a rollup, rather than one aggregate that cannot be
+recomputed or audited.
+
+What B is missing is the thing this document exists for: **the
+homeowner/professional distinction.** `WhiteLabelTier` and
+`WhiteLabelTenantStatus` describe commercial shape, not who carries
+professional responsibility. That must move onto the Org-as-tenant entity, with
+the same one-homeowner-tenant constraint, or the liability boundary in §1 has
+nothing enforcing it.
+
+**Consequently these are withdrawn pending the decision:**
+
+- `schema-src/foundation/tenant.prisma` and migration
+  `20260924100000_tenancy` — committed in `ea80478e` and NOT applied to any
+  database. If B is adopted, delete both; nothing depends on them.
+- `Org.tenantId` — reverted before commit. Under B, an Org does not need one.
+- `tenantId` on the site-plan children — reverted before commit. Under B the
+  denormalised column is `organizationId`.
+- The RLS migration — withdrawn until the column name is settled.
+
+**What stands regardless of the outcome**, because it is id-agnostic:
+
+- `packages/knowledge/src/tenancy/index.ts` — the boundary rules, module
+  licensing and the homeowner-SKU refusal. Takes an id; does not care where it
+  came from.
+- `packages/database/src/tenant-context.ts` — `withTenant()` and the RLS
+  session helper.
+- The RAG corpus scoping and the cross-tenant write fix. The `tenantId` column
+  on the new tables holds whichever id wins.
+
 ## 5. Working alongside other agents
 
 This repository is edited concurrently by several agents. In one session on
