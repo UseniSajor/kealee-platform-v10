@@ -28,7 +28,28 @@ FROM deps AS builder
 
 # Large Next.js applications and the API type graph exceed Node's default
 # heap during optimized production compilation.
-ENV NODE_OPTIONS=--max-old-space-size=6144
+#
+# 6144 was the per-process figure and it is SAFE ONLY IF ONE PROCESS RUNS.
+# turbo.json declares `"concurrency": "100"`, so turbo will happily start every
+# ready task at once — sixteen `tsc` invocations in this graph. Sixteen
+# processes each entitled to a 6 GB heap is not a heap setting, it is an
+# out-of-memory kill with extra steps, and that is precisely what the builder
+# was doing: dying about 33 seconds into the first wave of `tsc` with
+# "build daemon returned an error ... exit code: 2". The same graph builds
+# clean on a developer machine in ~32 minutes, which is what makes a 33-second
+# failure legible as OOM rather than as a type error.
+#
+# So the two are set TOGETHER and must stay together: bound the parallelism,
+# then size the heap to what that many concurrent processes can actually have.
+ENV NODE_OPTIONS=--max-old-space-size=4096
+# Overrides turbo.json's 100 for the container only. Local builds keep their
+# parallelism; the memory-constrained builder does not get to use it.
+ENV TURBO_CONCURRENCY=2
+# The worker, marketing-cron and api branches below use `pnpm --filter ...`
+# rather than turbo, and pnpm's recursive runner defaults to one job per CPU.
+# Bounding turbo alone would leave those three branches able to OOM the builder
+# in exactly the same way, so it is set here rather than on each command.
+ENV NPM_CONFIG_WORKSPACE_CONCURRENCY=2
 
 # Railway injects the service name as a build arg for Dockerfile deploys.
 ARG RAILWAY_SERVICE_NAME
@@ -84,7 +105,7 @@ RUN set -eux; \
   elif [ -n "$RAILWAY_SERVICE_NAME" ] && { [ -f "$APP_DIR/next.config.js" ] || [ -f "$APP_DIR/next.config.ts" ] || [ -f "$APP_DIR/next.config.mjs" ]; }; then \
       rm -rf "$APP_DIR/.next"; \
       echo "Building Next app $RAILWAY_SERVICE_NAME and dependencies..."; \
-      pnpm turbo run build --filter="$RAILWAY_SERVICE_NAME..."; \
+      pnpm turbo run build --concurrency="${TURBO_CONCURRENCY:-2}" --filter="$RAILWAY_SERVICE_NAME..."; \
       SRV=$(find "$APP_DIR/.next/standalone/apps" -name server.js -print -quit); \
       echo "server.js: $SRV"; \
       test -n "$SRV"; \
