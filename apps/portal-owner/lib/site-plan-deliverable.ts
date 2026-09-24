@@ -92,6 +92,19 @@ export interface SitePlanDeliverable {
     internalStaffReviewRequired: boolean
   }
   terrain: { contourCount: number; intervalFt: number | null; verticalDatum: string | null }
+  /**
+   * What the plan is drawn from. Structural copy of the worker's record.
+   * Optional because plans delivered before this existed have no such field
+   * and must keep rendering.
+   */
+  basis?: {
+    kind: 'county_gis' | 'recorded_plat' | 'field_survey'
+    label: string
+    statement: string
+    surveyor: string | null
+    surveyedOn: string | null
+    notEstablished: string[]
+  }
   rulePackVersion: string | null
   /**
    * Engineering data exports. Structural copy of the worker's record — see

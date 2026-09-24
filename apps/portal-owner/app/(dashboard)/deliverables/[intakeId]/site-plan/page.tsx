@@ -340,7 +340,14 @@ export default function SitePlanDeliverablePage() {
             </Card>
           )}
 
-          <Card title="What the county records established" icon={<MapPin className="h-4 w-4" style={{ color: TEAL }} />}>
+          {/* Was "What the county records established". The title named the
+              source, which the customer neither needs nor should be told:
+              "preliminary site plan" already means not-survey-based, and the
+              disclaimer says so outright. The FACTS stay — they are on the
+              drawing anyway and a customer checking zone or lot area should
+              not have to open a PDF — under a title about the property rather
+              than about where Kealee looked. */}
+          <Card title="Your property" icon={<MapPin className="h-4 w-4" style={{ color: TEAL }} />}>
             <dl className="grid grid-cols-2 gap-x-4 gap-y-4">
               <Fact label="Zone" value={p.zoneCode ?? 'Not established'} />
               <Fact label="Lot area" value={fmtSqFt(p.parcelAreaSqFt)} />
@@ -349,6 +356,43 @@ export default function SitePlanDeliverablePage() {
               <Fact label="Municipality"
                 value={p.incorporated == null ? 'Not determined' : p.incorporated ? (p.municipality ?? 'Incorporated') : 'Unincorporated county'} />
             </dl>
+
+            {/* SURVEY-AWARE. A preliminary plan is not survey-based, and the
+                product name says it. But a customer who supplied a plat, or
+                bought the survey add-on, gets a plan resting on something
+                stronger — and saying the same thing either way undersells
+                theirs and overstates everyone else's. */}
+            {d.basis && (
+              <div className={`mt-4 rounded-xl border px-4 py-3 ${
+                d.basis.kind === 'field_survey'
+                  ? 'border-emerald-200 bg-emerald-50'
+                  : d.basis.kind === 'recorded_plat'
+                    ? 'border-sky-200 bg-sky-50'
+                    : 'border-slate-200 bg-slate-50'
+              }`}>
+                <p className={`text-[11px] font-bold uppercase tracking-wide ${
+                  d.basis.kind === 'field_survey' ? 'text-emerald-800'
+                    : d.basis.kind === 'recorded_plat' ? 'text-sky-800' : 'text-slate-600'
+                }`}>
+                  {d.basis.label}
+                </p>
+                <p className="mt-1 text-sm text-slate-700">{d.basis.statement}</p>
+                {d.basis.surveyedOn && (
+                  <p className="mt-1 text-xs text-slate-500">
+                    Surveyed {new Date(d.basis.surveyedOn).toLocaleDateString('en-US', {
+                      year: 'numeric', month: 'short', day: 'numeric',
+                    })}
+                  </p>
+                )}
+                {d.basis.notEstablished.length > 0 && (
+                  <ul className="mt-2 space-y-1">
+                    {d.basis.notEstablished.map((n, i) => (
+                      <li key={i} className="text-xs text-slate-600">· {n}</li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            )}
           </Card>
 
           <Card title="Terrain" icon={<Mountain className="h-4 w-4" style={{ color: TEAL }} />}>

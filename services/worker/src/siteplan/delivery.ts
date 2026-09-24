@@ -48,6 +48,23 @@ interface RenderOutput {
   }[]
 }
 
+/** Mirrors `IngestSurveyOutput` in the engine's first-release processors. */
+interface IngestSurveyOutput {
+  platProvided?: boolean
+  reference?: { liber?: string; folio?: string; subdivision?: string } | null
+  certifiable?: boolean
+  fieldSurvey?: {
+    supplied?: boolean
+    pointCount?: number
+    surveyor?: { name?: string; licenceNumber?: string; licenceState?: string } | null
+    surveyedOn?: string | null
+    sealed?: boolean
+    verticalDatum?: string | null
+    absent?: string[]
+    warnings?: string[]
+  } | null
+}
+
 interface ResolvePropertyOutput {
   matchedAddress?: string
   locatorScore?: number
@@ -123,6 +140,26 @@ export interface SitePlanDeliverableRecord {
     intervalFt: number | null
     verticalDatum: string | null
   }
+  /**
+   * WHAT THE PLAN IS DRAWN FROM.
+   *
+   * A preliminary site plan is GIS-based by definition and the product name
+   * says so. But a customer may supply a recorded plat, or buy the survey
+   * add-on, and then the plan rests on something stronger. The portal cannot
+   * tell the customer which without this, so it used to say the same thing
+   * either way — which is wrong in both directions: it undersells a
+   * survey-based plan and overstates a GIS one.
+   */
+  basis: {
+    kind: 'county_gis' | 'recorded_plat' | 'field_survey'
+    label: string
+    /** One sentence the portal shows. */
+    statement: string
+    surveyor: string | null
+    surveyedOn: string | null
+    /** What the supplied survey does NOT establish. Empty when none was supplied. */
+    notEstablished: string[]
+  }
   rulePackVersion: string | null
   /**
    * Engineering data exports the customer can download.
@@ -185,6 +222,63 @@ function asRecord<T>(v: unknown): T | null {
  * throw: a plan that rendered is deliverable even if, say, the contour stage
  * recorded nothing, and the record must say so instead of failing delivery.
  */
+/**
+ * What the plan is actually drawn from, in the customer's terms.
+ *
+ * Three levels, and the difference between them is what the customer can rely
+ * on the drawing for:
+ *
+ *   county_gis     the default. Compiled from plats and tax maps, not
+ *                  surveyed. This engine's own testing found the county fabric
+ *                  4.3 ft off a surveyed line — enough to flip a setback from
+ *                  compliant to non-compliant. "Preliminary" says this.
+ *   recorded_plat  a plat the customer supplied. The boundary of record, and
+ *                  stronger than GIS, but still not a field survey: it says
+ *                  where the lines are, not where the ground is.
+ *   field_survey   a licensed surveyor measured it.
+ *
+ * Reported rather than inferred by the reader. A customer who bought the
+ * survey add-on should see that it was used; one who did not should not be
+ * left wondering.
+ */
+function resolvePlanBasis(survey: IngestSurveyOutput | null): SitePlanDeliverableRecord['basis'] {
+  const fs = survey?.fieldSurvey
+  if (fs?.supplied && (fs.pointCount ?? 0) > 0) {
+    const who = fs.surveyor?.name?.trim() || null
+    return {
+      kind: 'field_survey',
+      label: 'Field survey',
+      statement: who
+        ? `Drawn from the field survey supplied by ${who}.`
+        : 'Drawn from the field survey supplied with your order.',
+      surveyor: who,
+      surveyedOn: fs.surveyedOn ?? null,
+      // What a survey does not establish still matters — it is the difference
+      // between "surveyed" and "surveyed for THIS purpose".
+      notEstablished: fs.absent ?? [],
+    }
+  }
+  if (survey?.platProvided) {
+    return {
+      kind: 'recorded_plat',
+      label: 'Recorded plat',
+      statement:
+        'Drawn from the recorded plat supplied with your order, which is the boundary of record.',
+      surveyor: null,
+      surveyedOn: null,
+      notEstablished: [],
+    }
+  }
+  return {
+    kind: 'county_gis',
+    label: 'Public records',
+    statement: 'A preliminary plan, drawn without a field survey.',
+    surveyor: null,
+    surveyedOn: null,
+    notEstablished: [],
+  }
+}
+
 export function buildSitePlanDeliverable(input: {
   workflowId: string
   outputs: PriorOutputs
@@ -199,6 +293,7 @@ export function buildSitePlanDeliverable(input: {
   const prop = asRecord<ResolvePropertyOutput>(input.outputs['siteplan.resolve_property'])
   const terrain = asRecord<ExistingConditionsOutput>(input.outputs['siteplan.build_existing_conditions'])
   const rules = asRecord<EvaluateRulesOutput>(input.outputs['siteplan.evaluate_rules'])
+  const basis = resolvePlanBasis(asRecord<IngestSurveyOutput>(input.outputs['siteplan.ingest_survey']))
 
   return {
     version: 1,
@@ -226,6 +321,7 @@ export function buildSitePlanDeliverable(input: {
       intervalFt: terrain?.intervalFt ?? null,
       verticalDatum: terrain?.verticalDatum ?? null,
     },
+    basis,
     rulePackVersion: rules?.packVersion ?? null,
     dataExports: (render?.cadExports ?? []).map(e => ({
       format: e.format,
