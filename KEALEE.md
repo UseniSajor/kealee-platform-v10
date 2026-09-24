@@ -20,6 +20,67 @@ git push origin main
 - NEVER leave commits local-only — they block other agents
 - If a merge conflict occurs, resolve it before pushing
 
+## TWO BUSINESSES, ONE CODEBASE — MANDATORY
+
+Kealee sells **homeowner services** and **professional white-label software**.
+They are never combined, never cross-sold from one catalogue, and never share
+data. Full reasoning in `docs/decisions/white-label-and-tenancy.md`; the rules
+are here because they are easy to violate by accident.
+
+| | Homeowner Services | Professional OS (white-label) |
+|---|---|---|
+| Buys | a DELIVERABLE (site plan, concept, permit package) | a LICENCE to software their staff operate |
+| Kealee is | the service provider — we produce the work | the software vendor — THEY produce the work |
+| Professionally responsible | Kealee arranges the licensed review | THEIR licensed professional |
+| Price | per deliverable, $395–$1,995 | setup + monthly licence + metered usage |
+| Surfaces | `web-main`, `portal-owner` | a separate tenant shell |
+
+**The three prohibitions:**
+
+1. **Homeowner SKUs are NOT licensable modules.** The `PRODUCT_PRICING`
+   entries in `@kealee/core-rules` are the homeowner catalogue. The module
+   catalogue is a separate list and does not contain them. A white-label
+   builder must not be able to resell Kealee's $395 product at their margin.
+2. **No data crosses the line, either direction.** The Phase G retrieval
+   corpus exists to carry one job's findings into the next. Across this
+   boundary that is a homeowner's property, or a professional's judgement,
+   leaking into a competitor's workspace. Retrieval is tenant-partitioned.
+3. **Never one bill.** A client who buys both is two relationships.
+
+**Why it is architectural, not marketing:** the liability models are opposites.
+In the homeowner business Kealee produces the work product and owes the duty to
+get it reviewed. In white-label the client's own PE or architect is
+responsible. Blend them and Kealee inherits professional liability for a
+builder's decision on a drawing Kealee never saw. No contract clause repairs
+that afterwards — the product boundary has to hold it.
+
+**Tenancy today: 66 of 510 models carry an org/tenant id (12%).** Multi-tenant
+sharing of one database is NOT safe yet. `SitePlanSheet`,
+`SitePlanStageExecution`, `SitePlanReviewAssignment`, `Document`, `RagDocument`
+and `RagChunk` are all unscoped. Sell the single-tenant managed deployment
+until the phases in the decision doc are gated through.
+
+**Jurisdiction:** one certified rule pack, `pg-2022.1`, Prince George's County.
+No Texas support exists. Do not sell into a market that has not been
+integrated — it is a data-layer build, not a configuration.
+
+## MULTIPLE AGENTS EDIT THIS REPO — READ BEFORE COMMITTING
+
+On 2026-09-23 four separate build breaks reached `main` and broke production
+deploys, all from concurrent edits: a staged file swept into another agent's
+commit, a deletion that left its export behind, a usage that left its import
+behind, and a union that did not track its icon map.
+
+1. **Never `git add <shared file>` blind.** Barrels and `index.ts` files
+   accumulate other agents' pending edits. Run `git diff --cached` and READ it
+   before every commit.
+2. **A deletion takes its exports with it.** Grep for the symbols first.
+3. **Commit small, push immediately.** A staged-but-uncommitted file is worse
+   than an unpushed commit — another agent will commit around it.
+4. **`tsc --noEmit` before push, and CHECK THE EXIT STATUS.** A heap-exhausted
+   tsc exits 134 printing zero errors, which behind a `grep` reads exactly like
+   a pass. `web-main` needs `--max-old-space-size=8192`.
+
 ## Project Overview
 
 Kealee Platform v20 is a full-lifecycle construction development platform with 18 apps, 11 services, 34 packages, and 13 AI bots, built as a monorepo using pnpm workspaces. Evolved from v10 with formal service layers, Digital Development Twin System (DDTS), and KeaBot automation agents.
