@@ -5,8 +5,8 @@
  * filtered by metadata. Uses SQL cosine similarity on FLOAT8[] embeddings.
  */
 
-import { prismaAny } from '../utils/prisma-helper.js'
 import { generateEmbedding } from './vector-store.js'
+import { withTenantSession } from './tenant-session.js'
 import type { RetrievalOptions, RetrievalResult } from './types.js'
 
 /**
@@ -65,7 +65,7 @@ export async function retrieveContext(opts: RetrievalOptions): Promise<Retrieval
   const whereClause = conditions.length > 0 ? `AND ${conditions.join(' AND ')}` : ''
 
   // Cosine similarity via dot product / magnitude product using SQL
-  const rows: any[] = await prismaAny.$queryRawUnsafe(`
+  const rows: any[] = await withTenantSession(tenantId, (tx) => tx.$queryRawUnsafe(`
     WITH query_vec AS (
       SELECT $1::float8[] AS qv
     ),
@@ -100,7 +100,7 @@ export async function retrieveContext(opts: RetrievalOptions): Promise<Retrieval
     WHERE similarity >= ${threshold}
     ORDER BY similarity DESC
     LIMIT $2
-  `, ...params)
+  `, ...params))
 
   return rows.map((r: any) => ({
     chunkId: r.chunkId,

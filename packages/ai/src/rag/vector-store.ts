@@ -8,6 +8,7 @@
 import { prismaAny } from '../utils/prisma-helper.js'
 import type { IngestOptions, RagChunk, RagDocument } from './types.js'
 import { resolveEmbeddingProvider } from './embedding-provider.js'
+import { withTenantSession } from './tenant-session.js'
 
 /**
  * Bumped whenever the embedding model changes. Vectors from two models are not
@@ -69,6 +70,15 @@ export async function ingestDocument(opts: IngestOptions): Promise<RagDocument> 
   }
 
   const provider = resolveEmbeddingProvider()
+
+  // ONE transaction for the whole ingest, with the tenant session set.
+  //
+  // Not just for RLS: the document row, its chunks and the chunkCount update
+  // must land together. Previously each statement was its own implicit
+  // transaction, so a failure partway through left a document with some of its
+  // chunks and a chunkCount that disagreed with reality — and the next ingest
+  // would find the row, delete the chunks and start again, which masked it.
+  return withTenantSession(tenantId, async (prismaAny) => {
 
   // Upsert WITHIN THE TENANT.
   //
@@ -146,6 +156,7 @@ export async function ingestDocument(opts: IngestOptions): Promise<RagDocument> 
     createdAt: new Date(),
     updatedAt: new Date(),
   }
+  })
 }
 
 /**
