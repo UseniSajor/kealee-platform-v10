@@ -91,6 +91,16 @@ behind, and a union that did not track its icon map.
 4. **`tsc --noEmit` before push, and CHECK THE EXIT STATUS.** A heap-exhausted
    tsc exits 134 printing zero errors, which behind a `grep` reads exactly like
    a pass. `web-main` needs `--max-old-space-size=8192`.
+5. **A `package.json` change is not finished until the lockfile moves with it.**
+   CI runs `--frozen-lockfile`, so a missing entry is a hard stop that blocks
+   EVERY service, not just the one that changed — and it never fails on the
+   machine that made the change, because a local install updates the file
+   quietly. Run `pnpm install --lockfile-only` and commit the result.
+6. **Adding a NOT NULL column is a contract change with every WRITER.**
+   Backfilling the existing rows proves nothing about the next INSERT. Grep for
+   what writes to the table before constraining it. This one cost a production
+   outage on 2026-09-24: the backfill was clean, and the deployed worker could
+   no longer insert.
 
 ## Project Overview
 
