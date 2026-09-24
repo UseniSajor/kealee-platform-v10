@@ -26,6 +26,37 @@ function toStageStatus(s: string): 'COMPLETED' | 'AWAITING_REVIEW' | 'BLOCKED' |
   }
 }
 
+/**
+ * Runs a unit of site-plan database work with the tenant session set.
+ *
+ * ONE SHORT TRANSACTION PER OPERATION, deliberately not one spanning the whole
+ * stage. A stage run does minutes of network I/O between its database calls —
+ * county GIS, PDF rendering, SSURGO — and a transaction held open across that
+ * would pin a pooled connection for the duration and, at any concurrency,
+ * exhaust the pool.
+ *
+ * `SET LOCAL` rather than a session `SET`: verified against the real Supabase
+ * transaction-mode pooler on port 6543 that the setting IS visible to later
+ * statements in the same transaction and does NOT survive it. Both halves
+ * matter — the first makes RLS work, the second stops one tenant's context
+ * reaching whoever takes the connection next.
+ *
+ * When no owner is known the work still runs, WITHOUT a session. Today that is
+ * harmless because the application role bypasses RLS. Once it does not, such a
+ * call returns nothing rather than someone else's rows, which is the right
+ * direction to fail in.
+ */
+async function withOwner<T>(
+  owner: string | null,
+  fn: (tx: typeof prisma) => Promise<T>,
+): Promise<T> {
+  if (!owner) return fn(prisma)
+  return prisma.$transaction(async (tx) => {
+    await tx.$executeRawUnsafe(`SELECT set_config('app.tenant_id', $1, true)`, owner)
+    return fn(tx as unknown as typeof prisma)
+  })
+}
+
 export function productionCapabilities(opts: {
   jobQueueId?: string | null
   /**
@@ -74,6 +105,7 @@ export function productionCapabilities(opts: {
       const stage = Workflow.persistedStageFor(r.job)
       const status = toStageStatus(r.status)
 
+      return withOwner(owner, async (prisma) => {
       const existing = await prisma.sitePlanStageExecution.findFirst({
         where: { workflowId: r.workflowId, job: r.job },
         select: { id: true },
@@ -124,6 +156,7 @@ export function productionCapabilities(opts: {
         where: { id: r.workflowId },
         data: { currentStage: stage as never },
       }).catch(() => undefined)
+      })
     },
 
     /**
@@ -188,6 +221,7 @@ export function productionCapabilities(opts: {
       // One assignment per discipline: the engineer's and the architect's
       // reviews of the same plan sit side by side. The product says which
       // disciplines it paid for; route_review waits on each of those.
+      return withOwner(owner, async (prisma) => {
       const wf = await prisma.sitePlanWorkflow.findUnique({ where: { id: workflowId }, select: { productId: true } })
       const rows = await prisma.sitePlanReviewAssignment.findMany({
         where: { workflowId },
@@ -242,6 +276,7 @@ export function productionCapabilities(opts: {
           decidedAt: a.decidedAt?.toISOString() ?? null,
         })),
       }
+      })
     },
 
     /**
@@ -249,6 +284,7 @@ export function productionCapabilities(opts: {
      * excluded; a revoked certified-survey file must not clear a block.
      */
     async loadEvidenceLedger(workflowId) {
+      return withOwner(owner, async (prisma) => {
       const rows = await prisma.sitePlanEvidence.findMany({
         where: { workflowId, revokedAt: null },
         orderBy: { attachedAt: 'asc' },
@@ -272,6 +308,7 @@ export function productionCapabilities(opts: {
           notes: r.notes ?? undefined,
         })),
       }
+      })
     },
 
     /**
@@ -316,6 +353,7 @@ export function productionCapabilities(opts: {
      */
     async reopenStages(workflowId, jobs) {
       if (jobs.length === 0) return
+      return withOwner(owner, async (prisma) => {
       await prisma.sitePlanStageExecution.updateMany({
         where: { workflowId, job: { in: jobs } },
         data: { status: 'READY' as never, completedAt: null },
@@ -333,6 +371,7 @@ export function productionCapabilities(opts: {
           summary: `Reopened ${jobs.length} stage(s): ${jobs.join(', ')}`,
         },
       }).catch(() => undefined)
+      })
     },
 
     trace(e) {
