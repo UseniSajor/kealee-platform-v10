@@ -88,8 +88,12 @@ export {
 } from './load-test';
 
 // ── Tier Integration Testing ─────────────────────────────────
-export {
-  runTierTest,
-  TEST_CASES,
-  type TestResult,
-} from './tier-integration-test';
+// REMOVED: `tier-integration-test.ts` was deleted in 9adeabc0 and this export
+// was left pointing at it, which made @kealee/automation — and therefore the
+// whole `pnpm --filter @kealee/api...` build that the kealee-platform-v10
+// service runs — fail to compile with TS2307.
+//
+// Deleted rather than restored: nothing imports `runTierTest`, `TEST_CASES` or
+// `TestResult` anywhere in the repo, so the export had no consumers and the
+// deletion of the harness was evidently deliberate. Recovering the file to
+// satisfy a barrel nobody reads would be the wrong repair.
