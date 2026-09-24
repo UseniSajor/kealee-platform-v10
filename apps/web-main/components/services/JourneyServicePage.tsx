@@ -1,3 +1,4 @@
+import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowLeft, ArrowRight, Check, CheckCircle2, Clock3, FileDown, ShieldCheck, Sparkles } from 'lucide-react'
 import { HOME_JOURNEY_SERVICES, type HomeJourneyService } from '@/components/home/home-services-data'
@@ -19,17 +20,26 @@ export function JourneyServicePage({ service }: { service: HomeJourneyService })
             playsInline
             preload="metadata"
             poster={service.photoSrc}
-            className={`absolute inset-0 h-full w-full object-cover ${isDesignConcept ? 'opacity-[.85]' : 'opacity-40'}`}
+            className={`absolute inset-0 h-full w-full object-cover ${isDesignConcept ? 'opacity-[.88]' : 'opacity-[.72]'}`}
             aria-hidden="true"
           >
             <source src={service.videoSrc} type="video/mp4" />
           </video>
-        ) : null}
+        ) : (
+          <Image
+            src={service.photoSrc}
+            alt={service.photoAlt}
+            fill
+            sizes="100vw"
+            className="object-cover opacity-[.72]"
+            priority
+          />
+        )}
         <div
           className={`absolute inset-0 ${
             isDesignConcept
-              ? 'bg-[linear-gradient(90deg,rgba(8,23,40,.88)_0%,rgba(8,23,40,.58)_55%,rgba(8,23,40,.12)_100%)]'
-              : 'bg-[linear-gradient(90deg,rgba(8,23,40,.97)_0%,rgba(8,23,40,.84)_55%,rgba(8,23,40,.35)_100%)]'
+              ? 'bg-[linear-gradient(90deg,rgba(8,23,40,.72)_0%,rgba(8,23,40,.38)_55%,rgba(8,23,40,.06)_100%)]'
+              : 'bg-[linear-gradient(90deg,rgba(8,23,40,.78)_0%,rgba(8,23,40,.52)_55%,rgba(8,23,40,.14)_100%)]'
           }`}
         />
         <div className="relative mx-auto max-w-7xl px-5 py-16 sm:px-8 sm:py-24 lg:px-12 lg:py-28">

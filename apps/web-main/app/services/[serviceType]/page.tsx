@@ -202,7 +202,13 @@ export default async function ServicePage({
         {/* Hero for New Construction */}
         <section className="relative bg-[#1A2B4A] py-24 px-4 overflow-hidden">
           <div className="absolute inset-0">
-            <Image src={heroImage} alt={svc.label} fill className="object-cover opacity-20" />
+            <ServiceHeroMedia
+              heroImage={heroImage}
+              heroVideo={showcaseVideo}
+              heroVideoWebM={heroVideoWebM}
+              alt={svc.label}
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-[#1A2B4A]/72 via-[#1A2B4A]/52 to-[#1A2B4A]/24" />
           </div>
           <div className="relative mx-auto max-w-3xl text-center">
             <p className="text-xs font-bold uppercase tracking-widest text-orange-400 mb-4">{svc.category}</p>
@@ -243,11 +249,11 @@ export default async function ServicePage({
           <ServiceHeroMedia
             heroImage={heroImage}
             beforeImage={beforeImage}
-            heroVideo={heroVideo}
+            heroVideo={showcaseVideo}
             heroVideoWebM={heroVideoWebM}
             alt={svc.label}
           />
-          <div className="absolute inset-0 bg-gradient-to-br from-[#1A2B4A]/90 via-[#1A2B4A]/80 to-[#E8724B]/30" />
+          <div className="absolute inset-0 bg-gradient-to-br from-[#1A2B4A]/72 via-[#1A2B4A]/55 to-[#E8724B]/18" />
         </div>
         <div className="relative mx-auto max-w-4xl text-center">
           <p className="text-xs font-bold uppercase tracking-widest text-orange-400 mb-4">

@@ -26,7 +26,7 @@ export function ServiceHeroMedia({
           src={heroVideo}
           webm={heroVideoWebM}
           poster={heroImage}
-          className="h-full w-full object-cover opacity-30"
+          className="h-full w-full object-cover opacity-[.62]"
           autoPlayInView={false}
         />
       </div>
@@ -35,7 +35,7 @@ export function ServiceHeroMedia({
 
   if (beforeImage) {
     return (
-      <div className="absolute inset-0 opacity-30">
+      <div className="absolute inset-0 opacity-[.55]">
         <BeforeAfterMedia
           beforeUrl={beforeImage}
           afterUrl={heroImage}
@@ -48,6 +48,6 @@ export function ServiceHeroMedia({
   }
 
   return (
-    <Image src={heroImage} alt={alt} fill className="object-cover opacity-25" priority />
+    <Image src={heroImage} alt={alt} fill sizes="100vw" className="object-cover opacity-[.58]" priority />
   )
 }

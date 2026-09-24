@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { ArrowRight, CheckCircle2 } from 'lucide-react'
 import { HOME_JOURNEY_SERVICES } from '@/components/home/home-services-data'
+import { ServiceHeroMedia } from '@/components/marketing/ServiceHeroMedia'
 
 export const metadata: Metadata = {
   title: 'Services — Kealee Platform',
@@ -11,8 +12,16 @@ export const metadata: Metadata = {
 export default function ServicesPage() {
   return (
     <main className="min-h-screen bg-slate-50">
-      <section className="bg-gradient-to-br from-[#1A2B4A] via-[#10233f] to-[#164b50] px-6 py-20 text-white">
-        <div className="mx-auto max-w-4xl text-center">
+      <section className="relative overflow-hidden bg-[#1A2B4A] px-6 py-20 text-white">
+        <div className="absolute inset-0">
+          <ServiceHeroMedia
+            heroImage="/media/hero-videos/hero-new-construction.jpg"
+            heroVideo="/media/hero-videos/hero-new-construction.mp4"
+            alt="Kealee home planning, design, permits, and construction services"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#0c1d32]/75 via-[#0c1d32]/45 to-[#0c1d32]/20" />
+        </div>
+        <div className="relative mx-auto max-w-4xl text-center">
           <p className="text-xs font-bold uppercase tracking-[0.2em] text-teal-300">One coordinated project journey</p>
           <h1 className="mt-4 text-4xl font-black tracking-tight sm:text-5xl">Know exactly what to order next.</h1>
           <p className="mx-auto mt-5 max-w-2xl text-lg leading-relaxed text-slate-300">
