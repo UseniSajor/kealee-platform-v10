@@ -147,13 +147,35 @@ else.** A stage output that is not projected into that record is invisible.
 the contract; `apps/portal-owner/lib/site-plan-deliverable.ts` is its
 structural copy.
 
-**Status by product.** The preliminary plan IS `preliminary_site_plan`, so
-that order goes to `delivered`. `verified_site_feasibility` and
-`permit_site_plan` include professional review, so they go to
-`needs_professional_review` — the plan is still viewable, the order says a
-human acts next. Pending-seal items are listed for the customer under "items
-still requiring confirmation" (a line in the product's `includes`); they
-never withhold the plan.
+**Status by product — CHANGED 2026-09-23 by owner decision.** The preliminary
+plan IS `preliminary_site_plan`, so that order goes straight to `delivered`.
+`verified_site_feasibility` and `permit_site_plan` include professional
+review, and they are now **held from the customer until that review happens**:
+`orderStatus` is `needs_professional_review` and
+`form_data.sitePlanCustomerReleased` is `false` until a professional approves,
+at which point the order goes to `delivered` and the customer is emailed.
+
+This reverses the previous rule ("review is never a gate", plan delivered
+immediately with a sign-off appended afterwards). The reason for the reversal:
+sending first and redlining second means the customer has already acted on a
+drawing the professional went on to change.
+
+**What did NOT change, and must not:** the ENGINE is never gated. Every stage
+runs to completion and the plan is fully drawn and persisted whether or not a
+professional exists. The absence of a reviewer holds the RELEASE, never the
+work, and no stage is ever left un-run waiting for a human.
+
+**Professional review is now the LAST stage.** For `permit_site_plan`,
+issuance QC and the submission package run FIRST and `route_review` is
+enqueued when they land; a product with review but no submission package has
+nothing else to run and routes after delivery. The ordering lives in the
+worker's orchestration, deliberately NOT in the stage graph's `requires` — a
+hard dependency on a human step could block a stage, and the whole point is
+that it cannot.
+
+Pending-seal items are listed for the customer under "items still requiring
+confirmation" (a line in the product's `includes`); they never withhold the
+plan itself.
 
 **The webhook no longer sends an activated site-plan order to the manual
 queue.** `routeToManualFulfillment` is for orders with no automated producer;

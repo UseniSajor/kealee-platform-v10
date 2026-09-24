@@ -115,18 +115,59 @@ describe('sitePlanDeliveryFormDataPatch', () => {
     expect(patch.sitePlanDeliverable).toBe(record)
   })
 
-  it('delivers every tier the moment the plan renders — review is never a gate', () => {
+  // SUPERSEDED BY AN EXPLICIT PRODUCT DECISION (2026-09-23).
+  //
+  // This suite previously asserted "review is never a gate": every tier was
+  // marked `delivered` the moment the plan rendered, and a professional's
+  // sign-off was appended afterwards. The owner reversed that: where a product
+  // includes professional review, the plan is queued for review BEFORE it goes
+  // to the customer. Sending first and redlining second means the customer has
+  // already acted on a drawing the professional went on to change.
+  //
+  // What did NOT change, and is asserted below: the ENGINE is never gated. It
+  // runs every stage to completion and persists the plan. The absence of a
+  // reviewer holds the RELEASE, never the work.
+  it('renders and stores every tier, gating only the customer release', () => {
     for (const productId of ['verified_site_feasibility', 'permit_site_plan', 'something_else']) {
       const patch = sitePlanDeliveryFormDataPatch({ productId, record })
-      expect(patch.orderStatus).toBe('delivered')
-      expect(patch.requiresHumanFulfillment).toBe(false)
+      // The plan exists and is attached to the order in every case.
       expect(patch.sitePlanDeliverable).toBe(record)
+      // And the manual-drafting queue never picks it up: the engine did its job.
+      expect(patch.requiresHumanFulfillment).toBe(false)
       expect(String(patch.orderStatusReason)).toContain('2 items')
     }
+  })
+
+  it('holds the customer release on products whose price includes review', () => {
+    for (const productId of ['verified_site_feasibility', 'permit_site_plan']) {
+      const patch = sitePlanDeliveryFormDataPatch({ productId, record })
+      expect(patch.orderStatus, productId).toBe('needs_professional_review')
+      expect(patch.sitePlanCustomerReleased, productId).toBe(false)
+      expect(patch.fulfillmentCompletedAt, productId).toBeNull()
+      expect(String(patch.orderStatusReason)).toMatch(/queued for professional review/)
+    }
+  })
+
+  it('delivers immediately when no professional review was bought', () => {
+    for (const productId of ['preliminary_site_plan', 'something_else']) {
+      const patch = sitePlanDeliveryFormDataPatch({ productId, record })
+      expect(patch.orderStatus, productId).toBe('delivered')
+      expect(patch.sitePlanCustomerReleased, productId).toBe(true)
+    }
+  })
+
+  it('releases to the customer once the professional has approved', () => {
+    const patch = sitePlanDeliveryFormDataPatch({
+      productId: 'verified_site_feasibility', record, reviewApproved: true,
+    })
+    expect(patch.orderStatus).toBe('delivered')
+    expect(patch.sitePlanCustomerReleased).toBe(true)
+  })
+
+  it('says the submission package ran BEFORE review on the permit product', () => {
+    // Review is the last requirement: every automated task finishes first.
     expect(String(sitePlanDeliveryFormDataPatch({ productId: 'permit_site_plan', record }).orderStatusReason))
-      .toMatch(/submission package follow automatically/)
-    expect(String(sitePlanDeliveryFormDataPatch({ productId: 'verified_site_feasibility', record }).orderStatusReason))
-      .toMatch(/sign-off is appended/)
+      .toMatch(/submission package completed first/)
   })
 })
 
@@ -173,15 +214,44 @@ describe('bridgeSitePlanDelivery', () => {
   })
 
   it('still bridges when there is no customer email, and says so', async () => {
+    // A product with NO professional review, so the release is not held and
+    // the missing-email path is the one under test.
     const { p, patches, emails } = ports({
       loadOrder: async () => ({ contactEmail: null, clientName: null, alreadyDelivered: false, reviewState: null, submissionState: null, address: null, countyCommentsIngested: [] }),
     })
     const out = await bridgeSitePlanDelivery(
-      { workflowId: 'wf_1', orderId: 'intake_1', productId: 'permit_site_plan' }, p)
+      { workflowId: 'wf_1', orderId: 'intake_1', productId: 'preliminary_site_plan' }, p)
     expect(out).toMatchObject({ bridged: true, emailed: false, orderStatus: 'delivered' })
     expect(patches).toHaveLength(1)
     expect(emails).toHaveLength(0)
     expect(out.summary).toMatch(/no customer email/)
+  })
+
+  it('bridges the plan but sends NO customer email while review is pending', async () => {
+    // The plan is stored and the order updated; the customer hears nothing
+    // until a licensed professional has looked. The desk is notified instead,
+    // by the caller.
+    const { p, patches, emails } = ports()
+    const out = await bridgeSitePlanDelivery(
+      { workflowId: 'wf_1', orderId: 'intake_1', productId: 'permit_site_plan' }, p)
+    expect(out).toMatchObject({ bridged: true, emailed: false, orderStatus: 'needs_professional_review' })
+    expect(patches, 'the plan is still persisted to the order').toHaveLength(1)
+    expect(emails, 'no customer email while review is pending').toHaveLength(0)
+    expect(out.summary).toMatch(/queued for professional review/)
+  })
+
+  it('emails the customer once the professional has approved', async () => {
+    const { p, emails } = ports({
+      loadOrder: async () => ({
+        contactEmail: 'owner@example.com', clientName: 'Pat Owner', alreadyDelivered: false,
+        reviewState: 'APPROVED', submissionState: null, address: '1005 Rollins Ave',
+        countyCommentsIngested: [],
+      }),
+    })
+    const out = await bridgeSitePlanDelivery(
+      { workflowId: 'wf_1', orderId: 'intake_1', productId: 'permit_site_plan' }, p)
+    expect(out.orderStatus).toBe('delivered')
+    expect(emails).toHaveLength(1)
   })
 
   it('reports an email failure without undoing the bridge', async () => {
