@@ -261,6 +261,11 @@ model SurveyDiscrepancy {
 
 /// What clears an issuance block. A professional approval on its own never does.
 model SitePlanEvidence {
+  /// Owning Org, denormalised from the parent workflow. An Org IS the tenant.
+  /// Present so a row-level security policy filters WITHOUT a join — a policy
+  /// that joins is slower and is the kind of thing someone later simplifies
+  /// away. Backfilled 2026-09-24; 318 rows, zero orphans.
+  organizationId String
   id                   String               @id @default(uuid())
   workflowId           String
   kind                 SitePlanEvidenceKind
@@ -287,6 +292,11 @@ model SitePlanEvidence {
 /// sheet is not owned by one profession; the title block divides responsibility
 /// and sheets are never duplicated to separate seals.
 model SitePlanScopedApproval {
+  /// Owning Org, denormalised from the parent workflow. An Org IS the tenant.
+  /// Present so a row-level security policy filters WITHOUT a join — a policy
+  /// that joins is slower and is the kind of thing someone later simplifies
+  /// away. Backfilled 2026-09-24; 318 rows, zero orphans.
+  organizationId String
   id              String                     @id @default(uuid())
   workflowId      String
   subject         SitePlanContentSubject
@@ -319,6 +329,11 @@ model SitePlanScopedApproval {
 /// architect review the same plan side by side, each deciding only the
 /// subjects of their own licence.
 model SitePlanReviewAssignment {
+  /// Owning Org, denormalised from the parent workflow. An Org IS the tenant.
+  /// Present so a row-level security policy filters WITHOUT a join — a policy
+  /// that joins is slower and is the kind of thing someone later simplifies
+  /// away. Backfilled 2026-09-24; 318 rows, zero orphans.
+  organizationId String
   id                    String   @id @default(uuid())
   workflowId            String
   professionalProfileId String
@@ -341,6 +356,11 @@ model SitePlanReviewAssignment {
 }
 
 model SitePlanChecklistResult {
+  /// Owning Org, denormalised from the parent workflow. An Org IS the tenant.
+  /// Present so a row-level security policy filters WITHOUT a join — a policy
+  /// that joins is slower and is the kind of thing someone later simplifies
+  /// away. Backfilled 2026-09-24; 318 rows, zero orphans.
+  organizationId String
   id                  String              @id @default(uuid())
   workflowId          String
   itemKey             String
@@ -364,6 +384,11 @@ model SitePlanChecklistResult {
 /// An issuance QC finding. A block that cleared must name the evidence that
 /// cleared it, so the clearance can be audited or withdrawn.
 model SitePlanQcFinding {
+  /// Owning Org, denormalised from the parent workflow. An Org IS the tenant.
+  /// Present so a row-level security policy filters WITHOUT a join — a policy
+  /// that joins is slower and is the kind of thing someone later simplifies
+  /// away. Backfilled 2026-09-24; 318 rows, zero orphans.
+  organizationId String
   id                       String            @id @default(uuid())
   workflowId               String
   runId                    String
@@ -389,6 +414,11 @@ model SitePlanQcFinding {
 /// set and `covers` lists the canonical content it carries, so a two-sheet
 /// infill package is a first-class outcome, not a missing set.
 model SitePlanSheet {
+  /// Owning Org, denormalised from the parent workflow. An Org IS the tenant.
+  /// Present so a row-level security policy filters WITHOUT a join — a policy
+  /// that joins is slower and is the kind of thing someone later simplifies
+  /// away. Backfilled 2026-09-24; 318 rows, zero orphans.
+  organizationId String
   id                  String              @id @default(uuid())
   workflowId          String
   sheetNumber         String
@@ -415,6 +445,11 @@ model SitePlanSheet {
 }
 
 model SitePlanSheetRevision {
+  /// Owning Org, denormalised from the parent workflow. An Org IS the tenant.
+  /// Present so a row-level security policy filters WITHOUT a join — a policy
+  /// that joins is slower and is the kind of thing someone later simplifies
+  /// away. Backfilled 2026-09-24; 318 rows, zero orphans.
+  organizationId String
   id                  String               @id @default(uuid())
   sheetId             String
   workflowId          String
@@ -442,6 +477,11 @@ model SitePlanSheetRevision {
 }
 
 model SitePlanIssuance {
+  /// Owning Org, denormalised from the parent workflow. An Org IS the tenant.
+  /// Present so a row-level security policy filters WITHOUT a join — a policy
+  /// that joins is slower and is the kind of thing someone later simplifies
+  /// away. Backfilled 2026-09-24; 318 rows, zero orphans.
+  organizationId String
   id                        String              @id @default(uuid())
   workflowId                String              @unique
   status                    SheetIssuanceStatus @default(PRELIMINARY)
@@ -483,6 +523,11 @@ model SitePlanIssuance {
 /// Append-only. One stream over every table above, so "who changed what, when,
 /// and on what basis" is answerable without reconstructing it from timestamps.
 model SitePlanAuditEvent {
+  /// Owning Org, denormalised from the parent workflow. An Org IS the tenant.
+  /// Present so a row-level security policy filters WITHOUT a join — a policy
+  /// that joins is slower and is the kind of thing someone later simplifies
+  /// away. Backfilled 2026-09-24; 318 rows, zero orphans.
+  organizationId String
   id            String   @id @default(uuid())
   workflowId    String
   sequence      BigInt   @default(autoincrement())

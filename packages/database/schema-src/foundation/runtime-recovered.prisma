@@ -1082,6 +1082,11 @@ model SitePlanWorkflow {
 }
 
 model SitePlanStageExecution {
+  /// Owning Org, denormalised from the parent workflow. An Org IS the tenant.
+  /// Present so a row-level security policy filters WITHOUT a join — a policy
+  /// that joins is slower and is the kind of thing someone later simplifies
+  /// away. Backfilled 2026-09-24; 318 rows, zero orphans.
+  organizationId String
   id              String              @id @default(uuid())
   workflowId      String
   /// Detailed registered job name, e.g. siteplan.render_exports. `stage`
@@ -1112,6 +1117,11 @@ model SitePlanStageExecution {
 }
 
 model SitePlanComplianceResult {
+  /// Owning Org, denormalised from the parent workflow. An Org IS the tenant.
+  /// Present so a row-level security policy filters WITHOUT a join — a policy
+  /// that joins is slower and is the kind of thing someone later simplifies
+  /// away. Backfilled 2026-09-24; 318 rows, zero orphans.
+  organizationId String
   id                    String            @id @default(uuid())
   workflowId            String
   stageExecutionId      String
