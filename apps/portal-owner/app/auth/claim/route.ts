@@ -90,6 +90,26 @@ export async function GET(request: NextRequest) {
 
   const meta = readPortalAccessMeta(intake)
 
+  // ALREADY CLAIMED is the common case, not an error worth alarming anyone
+  // with. The token is single use and cleared on success, so a customer who
+  // opens the email on their phone after clicking it on their laptop lands
+  // here — and used to get a bare sign-in page with no email filled in and no
+  // explanation, which reads like the link was broken.
+  //
+  // Treated like an expired link: same destination, email pre-filled, and a
+  // message saying what happened. Distinguished by `portalTokenClaimedAt`,
+  // which the successful claim writes.
+  if (!meta.portalToken && meta.portalTokenClaimedAt) {
+    const claimedEmail = (meta.portalEmail ?? intake.contact_email ?? '').trim().toLowerCase()
+    const claimedPath = meta.portalNextPath ?? `/deliverables/${intakeId}`
+    const loginUrl = new URL('/login', origin)
+    if (claimedEmail) loginUrl.searchParams.set('email', claimedEmail)
+    loginUrl.searchParams.set('next', claimedPath.startsWith('/') ? claimedPath : `/deliverables/${intakeId}`)
+    loginUrl.searchParams.set('info', 'link_already_used')
+    console.log('[auth/claim] link already used for intake:', intakeId, '— sending to login with email pre-filled')
+    return NextResponse.redirect(loginUrl)
+  }
+
   if (!meta.portalToken || meta.portalToken !== token) {
     console.error('[auth/claim] token mismatch for intake:', intakeId)
     return errorRedirect(origin, 'invalid_token', `/deliverables/${intakeId}`)
