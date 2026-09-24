@@ -67,3 +67,6 @@ export type { RouterInput, RouterOutput, ExecutionRoute as ConceptExecutionRoute
 // Export package builder
 export { buildExportPackage } from './export/export-package-builder';
 export type { ExportPackageInput, ExportManifest, HandoffSummary, ExportPackageResult } from './export/export-package-builder';
+
+// Prompt grounding, enforced. See prompt-grounding.ts.
+export * from './prompt-grounding'

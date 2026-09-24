@@ -28,6 +28,7 @@ import { buildLotPackage, type LotPackage } from '../../self-perform/lot-package
 import { renderSheetSetPdf } from '../../sheets/render-pdf'
 import { toDxfNcs } from '../../export/dxf-ncs'
 import { propertyBlockedMessage, coverageFor } from '../../jurisdictions/coverage'
+import { suppliedSurveyFrom, ingestSuppliedSurvey, type SurveyIngestResult } from '../survey-intake'
 import { toLandXml, toGeoJson } from '../../export/exporters'
 import { createRegistryTransformer } from '../../export/transformation-registry'
 import { createArcGisTransformer } from '../../export/crs'
@@ -133,6 +134,15 @@ export interface IngestSurveyOutput {
   certifiable: boolean
   problems: string[]
   beforeCertification: string[]
+  /**
+   * The FIELD SURVEY supplied with the order, distinct from the plat.
+   *
+   * A plat is the boundary of record. A field survey carries located
+   * improvements, spot elevations and a benchmark — the items this engine
+   * reports as pending_seal, and what separates a GIS plan from a
+   * survey-based permit plan.
+   */
+  fieldSurvey: SurveyIngestResult
   summary: string
 }
 
@@ -870,6 +880,12 @@ const deliverPreliminary: StageProcessor = async (ctx): Promise<StageResult> => 
  */
 const ingestSurvey: StageProcessor = async (ctx): Promise<StageResult> => {
   const plat = platFrom(ctx)
+  // A PLAT and a FIELD SURVEY are different instruments and an order may carry
+  // either, both or neither. The plat is the boundary of record; the survey
+  // carries located improvements, spot elevations and a benchmark — the very
+  // items this engine reports as pending_seal. Both are read here.
+  const field = await ingestSuppliedSurvey(suppliedSurveyFrom(ctx))
+
   if (!plat) {
     return {
       status: 'COMPLETED',
@@ -877,9 +893,10 @@ const ingestSurvey: StageProcessor = async (ctx): Promise<StageResult> => {
         platProvided: false, reference: null, callCount: 0,
         computedAreaSqFt: null, closureDistanceFt: null, precisionDenominator: null,
         positionSource: null, certifiable: false, problems: [], beforeCertification: [],
+        fieldSurvey: field,
         summary:
           'No recorded-plat calls were supplied with the order, so the boundary comes from county ' +
-          'GIS at Level 1 and the package says so.',
+          'GIS at Level 1 and the package says so. ' + field.summary,
       } satisfies IngestSurveyOutput,
     }
   }
@@ -897,7 +914,8 @@ const ingestSurvey: StageProcessor = async (ctx): Promise<StageResult> => {
       certifiable: plat.certifiable,
       problems: plat.problems,
       beforeCertification: plat.beforeCertification,
-      summary: plat.summary,
+      fieldSurvey: field,
+      summary: `${plat.summary} ${field.summary}`,
     } satisfies IngestSurveyOutput,
   }
 }
@@ -925,10 +943,18 @@ const reconcileSurveyStage: StageProcessor = async (ctx): Promise<StageResult> =
   }
 
   const pkg = lotPackageFrom(ctx)
+  // `surveyPoints: []` was hardcoded here, which meant every point-level check
+  // in the reconciliation report — spot elevations against county contours,
+  // monument agreement, datum conflict — was dead code. The supplied survey
+  // now reaches it.
+  const survey = await ingestSuppliedSurvey(suppliedSurveyFrom(ctx))
   const report = reconcileSurvey({
-    surveyPoints: [],
+    surveyPoints: survey.points,
     surveyBoundary: plat.ring,
     platAreaSqFt: plat.computedAreaSqFt,
+    surveyVerticalDatum: survey.verticalDatum,
+    gisVerticalDatum: pkg.twin.verticalDatum ?? null,
+    surveyHorizontalDatum: survey.horizontalDatum,
     twin: pkg.twin,
   })
 

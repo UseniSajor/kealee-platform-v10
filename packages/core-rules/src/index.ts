@@ -37,3 +37,9 @@ export type {
 
 // What is actually running — commit, host, uptime. See build-identity.ts.
 export * from './build-identity';
+
+// What an order costs to fulfil. See unit-economics.ts.
+export * from './unit-economics';
+
+// Outcome-based property upgrades marketplace
+export * from './home-upgrades';
