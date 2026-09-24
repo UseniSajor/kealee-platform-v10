@@ -159,10 +159,15 @@ export default function SitePlanDeliverablePage() {
             <h1 className="text-xl font-bold" style={{ color: NAVY }}>Drafting your {label.toLowerCase()}</h1>
           </div>
           {address && <p className="text-sm text-gray-500 mb-4"><MapPin className="inline h-3.5 w-3.5 mr-1" />{address}</p>}
+          {/* Progress, not method. A step-by-step narration of how the plan
+              is produced gives the customer nothing they can act on and gives
+              away how the engine works. What they want to know is that it is
+              moving and when it lands. The provenance of the FINISHED plan is
+              a different matter and is disclosed on the delivered page — that
+              is a sold feature and a liability disclosure, not a leak. */}
           <p className="text-sm text-slate-600 leading-relaxed">
-            Kealee is locating the parcel, reading the county zoning and contour layers, drawing the
-            setbacks and a proposed footprint, and running the drawing through QC. This page updates
-            itself when the plan is ready, and we&apos;ll email you too.
+            Your site plan is being prepared. This page updates itself the moment it is
+            ready, and we&apos;ll email you as well.
           </p>
           {slaCommitment && (
             <div className="mt-5 rounded-xl border border-sky-200 bg-sky-50 px-4 py-3">
@@ -343,7 +348,6 @@ export default function SitePlanDeliverablePage() {
               <Fact label="Street frontage" value={p.hasStreetFrontage == null ? 'Not established' : p.hasStreetFrontage ? 'Yes' : 'None found'} />
               <Fact label="Municipality"
                 value={p.incorporated == null ? 'Not determined' : p.incorporated ? (p.municipality ?? 'Incorporated') : 'Unincorporated county'} />
-              <Fact label="Address match" value={p.locatorScore != null ? `${p.locatorScore}/100` : 'Not established'} />
             </dl>
           </Card>
 

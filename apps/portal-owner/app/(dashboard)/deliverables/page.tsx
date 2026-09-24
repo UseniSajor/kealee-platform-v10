@@ -170,7 +170,12 @@ function DeliverableCard({ d, ownedProducts }: { d: Deliverable; ownedProducts?:
             </div>
             <div>
               <h3 className="font-semibold" style={{ color: '#1A2B4A' }}>{d.projectLabel}</h3>
-              <p className="text-xs text-gray-400 mt-0.5">Design Concept Package · {dateStr}</p>
+              {/* A site plan is not a concept package. Calling it one on the
+                  card is how a customer ends up looking for renders that were
+                  never part of what they bought. */}
+              <p className="text-xs text-gray-400 mt-0.5">
+                {isSitePlan ? 'Site Plan' : 'Design Concept Package'} · {dateStr}
+              </p>
               {d.address && (
                 <p className="text-xs text-gray-400 mt-0.5 truncate max-w-[180px]">{d.address}</p>
               )}
@@ -178,7 +183,7 @@ function DeliverableCard({ d, ownedProducts }: { d: Deliverable; ownedProducts?:
                 <div className="mt-2 space-y-1 text-xs">
                   {d.conceptServicePrice && (
                     <div className="text-gray-400">
-                      Concept{' '}
+                      {isSitePlan ? 'Site plan' : 'Concept'}{' '}
                       <span className="font-semibold" style={{ color: '#E8793A' }}>
                         ${d.conceptServicePrice.toLocaleString()}
                       </span>
@@ -246,8 +251,12 @@ function DeliverableCard({ d, ownedProducts }: { d: Deliverable; ownedProducts?:
             <div className="flex items-center gap-2">
               <Loader2 className="h-3.5 w-3.5 animate-spin" style={{ color: '#2ABFBF' }} />
               <p className="text-xs text-gray-400">
+                {/* Says WHAT is happening, never HOW. The customer bought a
+                    site plan, not a description of which records Kealee reads
+                    to produce one — naming the sources both gives away method
+                    and reframes a professional deliverable as data assembly. */}
                 {isSitePlan
-                  ? 'Kealee is drafting your site plan from the county parcel, zoning and contour records.'
+                  ? 'Kealee is preparing your site plan. We will email you the moment it is ready.'
                   : d.isV30
                     ? 'Kealee is preparing your design, estimate, permits and floorplan.'
                     : 'Your concept package is being generated — usually ready within a few minutes.'}
