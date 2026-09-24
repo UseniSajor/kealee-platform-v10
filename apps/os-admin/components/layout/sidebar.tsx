@@ -26,6 +26,7 @@ import {
   FlaskConical,
   Sparkles,
   Calculator,
+  PanelsTopLeft,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -33,6 +34,7 @@ const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { name: 'Modules', href: '/modules', icon: Boxes },
   { name: 'Organizations', href: '/orgs', icon: Building2 },
+  { name: 'Professional White Label', href: '/white-label', icon: PanelsTopLeft },
   { name: 'Users', href: '/users', icon: Users },
   { name: 'Financials', href: '/financials', icon: DollarSign },
   { name: 'Purchases', href: '/purchases', icon: ShoppingBag },

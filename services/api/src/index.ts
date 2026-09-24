@@ -188,6 +188,7 @@ import { orgRoutes } from './modules/orgs/org.routes'
 import { userRoutes } from './modules/users/user.routes'
 import { rbacRoutes } from './modules/rbac/rbac.routes'
 import { entitlementRoutes } from './modules/entitlements/entitlement.routes'
+import { whiteLabelRoutes } from './modules/white-label/white-label.routes'
 import { eventRoutes } from './modules/events/event.routes'
 import { auditRoutes } from './modules/audit/audit.routes'
 import { registerAuditMiddleware } from './middleware/audit.middleware'
@@ -523,6 +524,7 @@ const start = async () => {
       await fastify.register(userRoutes, { prefix: '/users' })
       await fastify.register(rbacRoutes, { prefix: '/rbac' })
       await fastify.register(entitlementRoutes, { prefix: '/entitlements' })
+      await fastify.register(whiteLabelRoutes, { prefix: '/white-label' })
       await fastify.register(eventRoutes, { prefix: '/events' })
       await fastify.register(auditRoutes, { prefix: '/audit' })
       await fastify.register(pmRoutes, { prefix: '/pm' })

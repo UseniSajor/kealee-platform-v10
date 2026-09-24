@@ -1,12 +1,15 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
 import { verifyToken } from '@clerk/backend';
 import { sanitizeErrorMessage } from '../utils/sanitize-error'
+import { getRequestedOrgId, resolveOrganizationMembership, isPlatformRole } from './tenant-context'
 
 export interface AuthenticatedUser {
   id: string
   email?: string
   role: string
   organizationId?: string | null
+  organizationRole?: string | null
+  platformRole?: string | null
   profile?: any
   [key: string]: any
 }
@@ -62,7 +65,6 @@ export async function authenticateUser(
           include: {
             org: true,
           },
-          take: 1, // Get first org as primary
           orderBy: { joinedAt: 'asc' },
         },
       }
@@ -75,16 +77,19 @@ export async function authenticateUser(
       });
     }
 
-    // Get primary organization (first membership)
-    const primaryMembership = userWithOrgs.orgMemberships?.[0];
-    const primaryOrg = primaryMembership?.org;
+    if (userWithOrgs.status !== 'ACTIVE') {
+      return reply.code(403).send({ error: 'User account is deactivated' })
+    }
+    const membership = resolveOrganizationMembership(userWithOrgs, getRequestedOrgId(request))
 
     // Attach user to request with proper type checking
     const authenticatedUser: AuthenticatedUser = {
       id: userWithOrgs.id,
       email: userWithOrgs.email || undefined,
-      role: primaryMembership?.roleKey || userWithOrgs.role || 'user',
-      organizationId: primaryOrg?.id || null,
+      role: userWithOrgs.role || 'user',
+      platformRole: userWithOrgs.role || null,
+      organizationRole: membership?.roleKey || null,
+      organizationId: membership?.orgId || null,
       profile: userWithOrgs,
       clerkUserId,
     }
@@ -100,7 +105,7 @@ export async function authenticateUser(
     }
 
   } catch (error: any) {
-    return reply.code(401).send({
+    return reply.code([400, 403].includes(error.statusCode) ? error.statusCode : 401).send({
       error: 'Authentication failed',
       message: sanitizeErrorMessage(error, 'Unable to authenticate user')
     });
@@ -109,7 +114,7 @@ export async function authenticateUser(
 
 /**
  * Require the authenticated user to have one of the specified roles.
- * Uses the role already resolved by authenticateUser (from OrgMember.roleKey).
+ * Uses the identity role. Organization roles never grant global permissions.
  */
 export function requireRole(roles: string[]) {
   return async (request: AuthenticatedRequest, reply: FastifyReply) => {
@@ -158,7 +163,7 @@ export function requireProjectMembership() {
     }
 
     // Admins bypass project membership checks
-    if (['admin', 'super_admin'].includes(user.role.toLowerCase())) {
+    if (isPlatformRole(user.platformRole)) {
       return
     }
 
@@ -215,11 +220,7 @@ export function requireOrgMembership() {
       return reply.code(401).send({ error: 'Not authenticated' })
     }
 
-    // Admins bypass org membership checks
-    if (['admin', 'super_admin'].includes(user.role.toLowerCase())) {
-      return
-    }
-
+    // Membership is required even for platform staff in ordinary tenant routes.
     const params = request.params as Record<string, string>
     const orgId = params?.orgId
 

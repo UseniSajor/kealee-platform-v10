@@ -8,6 +8,7 @@
 import Stripe from 'stripe'
 import { prismaAny } from '../../utils/prisma-helper'
 import { getStripe } from './stripe.client'
+import { isHomeownerRole } from '../../middleware/tenant-context'
 
 // ── Tier slug mapping (matches setup-software-packages.ts lookup keys) ──
 
@@ -67,14 +68,20 @@ export class SoftwareBillingService {
   }
 
   /**
-   * Get the user's org ID (first org they belong to).
+   * Resolve an explicitly selected organization; personal identities never imply a tenant.
    */
-  private async getUserOrgId(userId: string): Promise<string> {
+  private async getUserOrgId(userId: string, orgId?: string, manage = false): Promise<string> {
+    if (!orgId) throw Object.assign(new Error('Select an organization before accessing software billing'), { statusCode: 400 })
     const membership = await prismaAny.orgMember.findFirst({
-      where: { userId },
-      select: { orgId: true },
+      where: { userId, orgId, org: { status: 'ACTIVE' } },
+      select: { orgId: true, roleKey: true, user: { select: { role: true, status: true } } },
     })
-    if (!membership) throw new Error('User is not a member of any organization')
+    if (!membership || membership.user.status !== 'ACTIVE' || isHomeownerRole(membership.user.role)) {
+      throw Object.assign(new Error('Professional organization membership required'), { statusCode: 403 })
+    }
+    if (manage && !['OWNER', 'ADMIN', 'FINANCE'].includes(membership.roleKey.toUpperCase().replace(/^ORG_/, ''))) {
+      throw Object.assign(new Error('Organization billing administrator required'), { statusCode: 403 })
+    }
     return membership.orgId
   }
 
@@ -84,6 +91,7 @@ export class SoftwareBillingService {
 
   async createCheckoutSession(params: {
     userId: string
+    orgId?: string
     tier: string
     pricingTier: string
     interval: 'month' | 'year'
@@ -91,15 +99,16 @@ export class SoftwareBillingService {
     cancelUrl: string
   }) {
     const { userId, tier, pricingTier, interval, successUrl, cancelUrl } = params
-    const orgId = await this.getUserOrgId(userId)
+    const orgId = await this.getUserOrgId(userId, params.orgId, true)
 
     // Resolve price
     const lookupKey = this.buildLookupKey(tier, pricingTier, interval)
     const price = await this.resolvePriceByLookup(lookupKey)
 
-    // Get or create Stripe customer
+    // Reuse only this organization's customer. A personal customer can expose other tenants in the portal.
     const user = await prismaAny.user.findUnique({ where: { id: userId }, select: { id: true, email: true, stripeCustomerId: true } })
-    let customerId = user?.stripeCustomerId
+    const existingSubscription = await prismaAny.softwareSubscription.findFirst({ where: { organizationId: orgId }, orderBy: { createdAt: 'desc' } })
+    let customerId = existingSubscription?.stripeCustomerId
 
     if (!customerId) {
       const customer = await this.stripe.customers.create({
@@ -107,7 +116,6 @@ export class SoftwareBillingService {
         metadata: { userId, orgId },
       })
       customerId = customer.id
-      await prismaAny.user.update({ where: { id: userId }, data: { stripeCustomerId: customerId } })
     }
 
     // Create checkout session
@@ -143,8 +151,8 @@ export class SoftwareBillingService {
   // 2. Get Usage
   // ────────────────────────────────────────────────────────────────────
 
-  async getUsage(userId: string) {
-    const orgId = await this.getUserOrgId(userId)
+  async getUsage(userId: string, selectedOrgId?: string) {
+    const orgId = await this.getUserOrgId(userId, selectedOrgId)
 
     // Count active projects
     const projectCount = await prismaAny.project.count({
@@ -158,7 +166,7 @@ export class SoftwareBillingService {
 
     // Get software subscription
     const subscription = await prismaAny.softwareSubscription.findFirst({
-      where: { userId, status: 'ACTIVE' },
+      where: { organizationId: orgId, status: 'ACTIVE' },
       orderBy: { createdAt: 'desc' },
     })
 
@@ -221,15 +229,15 @@ export class SoftwareBillingService {
   // 3. Get Subscription Details
   // ────────────────────────────────────────────────────────────────────
 
-  async getSubscription(userId: string) {
+  async getSubscription(userId: string, selectedOrgId?: string) {
+    const orgId = await this.getUserOrgId(userId, selectedOrgId)
     const subscription = await prismaAny.softwareSubscription.findFirst({
-      where: { userId, status: { in: ['ACTIVE', 'TRIALING', 'PAST_DUE'] } },
+      where: { organizationId: orgId, status: { in: ['ACTIVE', 'TRIALING', 'PAST_DUE'] } },
       orderBy: { createdAt: 'desc' },
     })
 
     if (!subscription) {
       // Fallback: check PM service
-      const orgId = await this.getUserOrgId(userId)
       const pmSub = await prismaAny.pMServiceSubscription.findFirst({
         where: { clientId: orgId, status: { in: ['ACTIVE', 'active'] } },
       })
@@ -272,15 +280,17 @@ export class SoftwareBillingService {
 
   async changePlan(params: {
     userId: string
+    orgId?: string
     newTier: string
     newPricingTier: string
     interval: 'month' | 'year'
   }) {
     const { userId, newTier, newPricingTier, interval } = params
+    const orgId = await this.getUserOrgId(userId, params.orgId, true)
 
     // Find existing subscription
     const subscription = await prismaAny.softwareSubscription.findFirst({
-      where: { userId, status: { in: ['ACTIVE', 'TRIALING'] } },
+      where: { organizationId: orgId, status: { in: ['ACTIVE', 'TRIALING'] } },
     })
     if (!subscription) throw new Error('No active software subscription found')
     if (!subscription.stripeSubscriptionId) throw new Error('Subscription has no Stripe ID')
@@ -332,9 +342,10 @@ export class SoftwareBillingService {
   // 5. Cancel Subscription
   // ────────────────────────────────────────────────────────────────────
 
-  async cancelSubscription(userId: string, immediately: boolean = false) {
+  async cancelSubscription(userId: string, immediately: boolean = false, selectedOrgId?: string) {
+    const orgId = await this.getUserOrgId(userId, selectedOrgId, true)
     const subscription = await prismaAny.softwareSubscription.findFirst({
-      where: { userId, status: { in: ['ACTIVE', 'TRIALING'] } },
+      where: { organizationId: orgId, status: { in: ['ACTIVE', 'TRIALING'] } },
     })
     if (!subscription) throw new Error('No active software subscription found')
     if (!subscription.stripeSubscriptionId) throw new Error('Subscription has no Stripe ID')
@@ -362,9 +373,10 @@ export class SoftwareBillingService {
   // 6. Create Portal Session
   // ────────────────────────────────────────────────────────────────────
 
-  async createPortalSession(userId: string, returnUrl: string) {
+  async createPortalSession(userId: string, returnUrl: string, selectedOrgId?: string) {
+    const orgId = await this.getUserOrgId(userId, selectedOrgId, true)
     const subscription = await prismaAny.softwareSubscription.findFirst({
-      where: { userId, status: { in: ['ACTIVE', 'TRIALING', 'PAST_DUE', 'CANCELLED'] } },
+      where: { organizationId: orgId, status: { in: ['ACTIVE', 'TRIALING', 'PAST_DUE', 'CANCELLED'] } },
       orderBy: { createdAt: 'desc' },
     })
 
@@ -372,9 +384,6 @@ export class SoftwareBillingService {
 
     if (subscription?.stripeCustomerId) {
       customerId = subscription.stripeCustomerId
-    } else {
-      const user = await prismaAny.user.findUnique({ where: { id: userId }, select: { stripeCustomerId: true } })
-      customerId = user?.stripeCustomerId
     }
 
     if (!customerId) throw new Error('No Stripe customer found. Please subscribe first.')
@@ -396,7 +405,7 @@ export class SoftwareBillingService {
     if (metadata.packageType !== 'software_only') return
 
     const { userId, orgId, tier, pricingTier } = metadata
-    if (!userId || !tier) return
+    if (!userId || !orgId || !tier) return
 
     const limits = TIER_LIMITS[tier]?.[pricingTier || 'standard']
     if (!limits) return
@@ -412,6 +421,7 @@ export class SoftwareBillingService {
     await prismaAny.softwareSubscription.create({
       data: {
         userId,
+        organizationId: orgId,
         softwareTier: tier,
         pricingTier: pricingTier || 'standard',
         maxProjects: limits.projects,

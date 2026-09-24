@@ -51,6 +51,7 @@ export async function softwareBillingRoutes(fastify: FastifyInstance) {
 
         const result = await softwareBillingService.createCheckoutSession({
           userId: user.id,
+          orgId: (request as any).user.organizationId,
           tier: body.tier,
           pricingTier: body.pricingTier,
           interval: body.interval,
@@ -79,7 +80,7 @@ export async function softwareBillingRoutes(fastify: FastifyInstance) {
     async (request, reply) => {
       try {
         const user = (request as any).user as { id: string }
-        const usage = await softwareBillingService.getUsage(user.id)
+        const usage = await softwareBillingService.getUsage(user.id, (request as any).user.organizationId)
         return reply.send({ usage })
       } catch (error: any) {
         request.log.error(error)
@@ -101,7 +102,7 @@ export async function softwareBillingRoutes(fastify: FastifyInstance) {
     async (request, reply) => {
       try {
         const user = (request as any).user as { id: string }
-        const subscription = await softwareBillingService.getSubscription(user.id)
+        const subscription = await softwareBillingService.getSubscription(user.id, (request as any).user.organizationId)
         return reply.send({ subscription })
       } catch (error: any) {
         request.log.error(error)
@@ -140,6 +141,7 @@ export async function softwareBillingRoutes(fastify: FastifyInstance) {
 
         const result = await softwareBillingService.changePlan({
           userId: user.id,
+          orgId: (request as any).user.organizationId,
           newTier: body.newTier,
           newPricingTier: body.newPricingTier,
           interval: body.interval,
@@ -177,7 +179,8 @@ export async function softwareBillingRoutes(fastify: FastifyInstance) {
 
         const result = await softwareBillingService.cancelSubscription(
           user.id,
-          body.immediately || false
+          body.immediately || false,
+          (request as any).user.organizationId
         )
 
         return reply.send(result)
@@ -210,7 +213,7 @@ export async function softwareBillingRoutes(fastify: FastifyInstance) {
         const user = (request as any).user as { id: string }
         const body = request.body as { returnUrl: string }
 
-        const result = await softwareBillingService.createPortalSession(user.id, body.returnUrl)
+        const result = await softwareBillingService.createPortalSession(user.id, body.returnUrl, (request as any).user.organizationId)
         return reply.send(result)
       } catch (error: any) {
         request.log.error(error)

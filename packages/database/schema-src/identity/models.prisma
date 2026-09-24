@@ -312,6 +312,17 @@ model Org {
   projects     Project[]
   properties   Property[]
   entitlements ModuleEntitlement[]
+  whiteLabelProfile WhiteLabelTenantProfile?
+  whiteLabelDomains TenantDomain[]
+  whiteLabelProducts TenantProductAssignment[]
+  whiteLabelPlan TenantPlan?
+  tenantUsageEvents TenantUsageEvent[]
+  tenantUsageRollups TenantUsageRollup[]
+  tenantSecretReferences TenantSecretReference[]
+  tenantDeployment TenantDeploymentConfig?
+  tenantEvaluationSuites TenantEvaluationSuite[]
+  tenantSupportSessions TenantSupportAccessSession[]
+  tenantAuditEvents TenantAuditEvent[]
 
   // Command Center Infrastructure relations
   integrationCredentials IntegrationCredential[]

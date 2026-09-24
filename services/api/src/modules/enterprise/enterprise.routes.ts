@@ -4,6 +4,7 @@
  */
 import type { FastifyInstance } from 'fastify'
 import { authenticateUser } from '../../middleware/auth'
+import { isHomeownerRole, isPlatformRole } from '../../middleware/tenant-context'
 import {
   CreatePortfolioOrgDto,
   UpdatePortfolioOrgDto,
@@ -36,6 +37,18 @@ import {
 
 export async function enterpriseRoutes(fastify: FastifyInstance) {
   fastify.addHook('preHandler', authenticateUser)
+  fastify.addHook('preHandler', async (request, reply) => {
+    const user = (request as any).user
+    if (!user) return reply.code(401).send({ error: 'Authentication required' })
+    if (isHomeownerRole(user.role)) return reply.code(403).send({ error: 'Professional workspace required' })
+    const path = request.routeOptions.url || ''
+    const platformOperation = path.includes('/partners') ||
+      (path.endsWith('/flags') && ['GET', 'PUT'].includes(request.method)) ||
+      (path.endsWith('/entitlements') && request.method === 'POST')
+    if (platformOperation && !isPlatformRole(user.platformRole || user.role)) {
+      return reply.code(403).send({ error: 'Platform administrator required' })
+    }
+  })
 
   // ─── Portfolio Orgs ────────────────────────────────────────────────────────
 
@@ -126,6 +139,10 @@ export async function enterpriseRoutes(fastify: FastifyInstance) {
   /** POST /enterprise/flags/check */
   fastify.post('/flags/check', async (request, reply) => {
     const body = CheckFeatureFlagDto.parse(request.body)
+    const user = (request as any).user
+    if (body.userId && body.userId !== user.id) return reply.code(403).send({ error: 'Cannot inspect another user' })
+    if (body.orgId) await getPortfolioOrg(body.orgId, user.id)
+    body.userId = user.id
     const enabled = await checkFeatureFlag(body)
     return reply.send({ enabled })
   })
@@ -135,6 +152,7 @@ export async function enterpriseRoutes(fastify: FastifyInstance) {
   /** GET /enterprise/orgs/:orgId/entitlements */
   fastify.get('/orgs/:orgId/entitlements', async (request, reply) => {
     const { orgId } = request.params as { orgId: string }
+    await getPortfolioOrg(orgId, (request as any).user.id)
     const entitlements = await listOrgEntitlements(orgId)
     return reply.send({ entitlements })
   })
@@ -150,6 +168,7 @@ export async function enterpriseRoutes(fastify: FastifyInstance) {
   /** GET /enterprise/orgs/:orgId/entitlements/check?featureKey= */
   fastify.get('/orgs/:orgId/entitlements/check', async (request, reply) => {
     const { orgId } = request.params as { orgId: string }
+    await getPortfolioOrg(orgId, (request as any).user.id)
     const { featureKey } = request.query as Record<string, string>
     if (!featureKey) return reply.status(400).send({ error: 'featureKey required' })
     const has = await hasEntitlement(orgId, featureKey)

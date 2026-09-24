@@ -1,0 +1,404 @@
+// IDENTITY — White-label tenant control plane
+// Professional organizations are tenants. Homeowners remain project-scoped
+// customers and never receive tenant membership through these models.
+
+enum WhiteLabelTier {
+  MANAGED_BRANDED
+  FULL_WHITE_LABEL
+  PRIVATE_ENTERPRISE
+}
+
+enum WhiteLabelTenantStatus {
+  DRAFT
+  PROVISIONING
+  ACTIVE
+  SUSPENDED
+  ARCHIVED
+}
+
+enum TenantDomainStatus {
+  PENDING
+  VERIFYING
+  ACTIVE
+  FAILED
+}
+
+enum TenantDeploymentMode {
+  SHARED
+  DEDICATED_KEALEE
+  CUSTOMER_CLOUD
+}
+
+enum TenantUsageMetric {
+  AI_INPUT_TOKEN
+  AI_OUTPUT_TOKEN
+  AGENT_RUN
+  IMAGE_GENERATION
+  VIDEO_GENERATION_SECOND
+  DOCUMENT_PROCESSED
+  REPORT_GENERATED
+  PROPERTY_EVALUATED
+  STORAGE_GB_HOUR
+  EMAIL_SENT
+  NOTIFICATION_SENT
+  API_CALL
+  BACKGROUND_JOB_SECOND
+  THIRD_PARTY_DATA_CENT
+}
+
+enum TenantUsageEventStatus {
+  RECORDED
+  REPORTED
+  BILLED
+  VOID
+}
+
+enum TenantEvaluationRunStatus {
+  QUEUED
+  RUNNING
+  PASSED
+  FAILED
+  CANCELLED
+}
+
+enum TenantSupportAccessStatus {
+  REQUESTED
+  APPROVED
+  ACTIVE
+  EXPIRED
+  REVOKED
+  DENIED
+}
+
+model WhiteLabelTenantProfile {
+  id                    String                 @id @default(uuid())
+  orgId                 String                 @unique
+  tier                  WhiteLabelTier         @default(MANAGED_BRANDED)
+  status                WhiteLabelTenantStatus @default(DRAFT)
+  companyName           String
+  productName           String?
+  logoUrl               String?
+  faviconUrl            String?
+  primaryColor          String                 @default("#2563EB")
+  secondaryColor        String                 @default("#0F172A")
+  accentColor           String                 @default("#14B8A6")
+  emailFromName         String?
+  emailFromAddress      String?
+  emailReplyToAddress   String?
+  reportHeader          String?
+  reportFooter          String?
+  legalDisclaimer       String?                @db.Text
+  supportName           String?
+  supportEmail          String?
+  supportPhone          String?
+  supportUrl            String?
+  locale                String                 @default("en-US")
+  currency              String                 @default("USD")
+  timeZone              String                 @default("America/New_York")
+  navigationConfig      Json?
+  documentBranding      Json?
+  emailBranding         Json?
+  kealeeBrandingVisible Boolean                @default(true)
+  clientAdminEnabled    Boolean                @default(false)
+  provisionedAt         DateTime?
+  activatedAt           DateTime?
+  suspendedAt           DateTime?
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+
+  org Org @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@index([status])
+  @@index([tier])
+  @@map("white_label_tenant_profiles")
+}
+
+model TenantDomain {
+  id                String             @id @default(uuid())
+  orgId             String
+  hostname          String             @unique
+  status            TenantDomainStatus @default(PENDING)
+  isPrimary         Boolean            @default(false)
+  verificationToken String             @unique
+  verifiedAt        DateTime?
+  lastCheckedAt     DateTime?
+  failureReason     String?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+
+  org Org @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@index([orgId, status])
+  @@index([orgId, isPrimary])
+  @@map("tenant_domains")
+}
+
+model WhiteLabelProductTemplate {
+  id                    String   @id @default(uuid())
+  key                   String   @unique
+  name                  String
+  description           String?  @db.Text
+  enabledModuleKeys     String[] @default([])
+  navigationConfig      Json?
+  workflowBlueprint     Json?
+  defaultAssistantConfig Json?
+  pricingGuidance       Json?
+  version               Int      @default(1)
+  isActive              Boolean  @default(true)
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  tenantAssignments TenantProductAssignment[]
+
+  @@index([isActive])
+  @@map("white_label_product_templates")
+}
+
+model TenantProductAssignment {
+  id                String   @id @default(uuid())
+  orgId             String
+  productTemplateId String
+  displayName       String?
+  configuration     Json?
+  enabled           Boolean  @default(true)
+  enabledAt         DateTime @default(now())
+  disabledAt        DateTime?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  org             Org                       @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  productTemplate WhiteLabelProductTemplate @relation(fields: [productTemplateId], references: [id], onDelete: Restrict)
+
+  @@unique([orgId, productTemplateId])
+  @@index([orgId, enabled])
+  @@index([productTemplateId])
+  @@map("tenant_product_assignments")
+}
+
+model TenantPlan {
+  id                     String   @id @default(uuid())
+  orgId                  String   @unique
+  planKey                String
+  planName               String
+  baseMonthlyAmountCents Int
+  supportTier            String   @default("STANDARD")
+  includedUsage          Json?
+  overageRates           Json?
+  billingStatus          String   @default("DRAFT")
+  stripeCustomerId       String?
+  stripeSubscriptionId   String?  @unique
+  stripeBasePriceId      String?
+  stripeMeterPriceIds    Json?
+  currentPeriodStart     DateTime?
+  currentPeriodEnd       DateTime?
+  cancelAtPeriodEnd      Boolean  @default(false)
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+
+  org Org @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@index([planKey])
+  @@index([billingStatus])
+  @@map("tenant_plans")
+}
+
+model TenantUsageEvent {
+  id             String                 @id @default(uuid())
+  orgId          String
+  metric         TenantUsageMetric
+  quantity       Decimal                @db.Decimal(20, 6)
+  unit           String
+  provider       String?
+  model          String?
+  resourceType   String?
+  resourceId     String?
+  idempotencyKey String                 @unique
+  occurredAt     DateTime               @default(now())
+  unitCostCents  Decimal?               @db.Decimal(20, 6)
+  status         TenantUsageEventStatus @default(RECORDED)
+  stripeEventId  String?                @unique
+  metadata       Json?
+  createdAt      DateTime               @default(now())
+
+  org Org @relation(fields: [orgId], references: [id], onDelete: Restrict)
+
+  @@index([orgId, metric, occurredAt])
+  @@index([orgId, status, occurredAt])
+  @@index([resourceType, resourceId])
+  @@map("tenant_usage_events")
+}
+
+model TenantUsageRollup {
+  id             String            @id @default(uuid())
+  orgId          String
+  metric         TenantUsageMetric
+  periodStart    DateTime
+  periodEnd      DateTime
+  quantity       Decimal           @db.Decimal(20, 6)
+  costCents      Decimal           @default(0) @db.Decimal(20, 6)
+  includedAmount Decimal?          @db.Decimal(20, 6)
+  overageAmount  Decimal?          @db.Decimal(20, 6)
+  finalizedAt    DateTime?
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+
+  org Org @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@unique([orgId, metric, periodStart, periodEnd])
+  @@index([orgId, periodStart, periodEnd])
+  @@map("tenant_usage_rollups")
+}
+
+model TenantSecretReference {
+  id          String    @id @default(uuid())
+  orgId       String
+  key         String
+  provider    String
+  vaultRef    String
+  description String?
+  active      Boolean   @default(true)
+  rotatedAt   DateTime?
+  expiresAt   DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  org Org @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@unique([orgId, key])
+  @@index([orgId, active])
+  @@map("tenant_secret_references")
+}
+
+model TenantDeploymentConfig {
+  id                    String               @id @default(uuid())
+  orgId                 String               @unique
+  mode                  TenantDeploymentMode @default(SHARED)
+  environmentKey        String?
+  databaseRef           String?
+  storageNamespace      String
+  vectorNamespace       String
+  queueNamespace        String
+  region                String?
+  dataRetentionDays     Int?
+  backupPolicy          Json?
+  securityControls      Json?
+  customerCloudMetadata Json?
+  serviceLevel          String               @default("STANDARD")
+  createdAt             DateTime             @default(now())
+  updatedAt             DateTime             @updatedAt
+
+  org Org @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@index([mode])
+  @@map("tenant_deployment_configs")
+}
+
+model TenantEvaluationSuite {
+  id                String   @id @default(uuid())
+  orgId             String
+  name              String
+  description       String?  @db.Text
+  moduleKey         String?
+  accuracyThreshold Decimal? @db.Decimal(5, 4)
+  humanReviewPolicy Json?
+  active            Boolean  @default(true)
+  promptVersion     String?
+  modelVersion      String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  org   Org                    @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  cases TenantEvaluationCase[]
+  runs  TenantEvaluationRun[]
+
+  @@index([orgId, active])
+  @@index([orgId, moduleKey])
+  @@map("tenant_evaluation_suites")
+}
+
+model TenantEvaluationCase {
+  id             String   @id @default(uuid())
+  suiteId        String
+  name           String
+  input          Json
+  expectedOutput Json?
+  assertions     Json
+  active         Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  suite TenantEvaluationSuite @relation(fields: [suiteId], references: [id], onDelete: Cascade)
+
+  @@index([suiteId, active])
+  @@map("tenant_evaluation_cases")
+}
+
+model TenantEvaluationRun {
+  id            String                    @id @default(uuid())
+  suiteId       String
+  status        TenantEvaluationRunStatus @default(QUEUED)
+  promptVersion String?
+  modelVersion  String?
+  passedCases   Int                       @default(0)
+  failedCases   Int                       @default(0)
+  totalCases    Int                       @default(0)
+  score         Decimal?                  @db.Decimal(5, 4)
+  results       Json?
+  errorMessage  String?                   @db.Text
+  startedAt     DateTime?
+  completedAt   DateTime?
+  createdAt     DateTime                  @default(now())
+
+  suite TenantEvaluationSuite @relation(fields: [suiteId], references: [id], onDelete: Cascade)
+
+  @@index([suiteId, createdAt])
+  @@index([status])
+  @@map("tenant_evaluation_runs")
+}
+
+model TenantSupportAccessSession {
+  id            String                    @id @default(uuid())
+  orgId         String
+  requestedById String
+  approvedById  String?
+  reason        String                    @db.Text
+  status        TenantSupportAccessStatus @default(REQUESTED)
+  permissions   String[]                  @default([])
+  startsAt      DateTime?
+  expiresAt     DateTime
+  revokedAt     DateTime?
+  revokedById   String?
+  createdAt     DateTime                  @default(now())
+  updatedAt     DateTime                  @updatedAt
+
+  org Org @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@index([orgId, status, expiresAt])
+  @@index([requestedById])
+  @@map("tenant_support_access_sessions")
+}
+
+model TenantAuditEvent {
+  id           String   @id @default(uuid())
+  orgId        String
+  actorUserId  String?
+  actorType    String
+  action       String
+  resourceType String
+  resourceId   String?
+  reason       String?  @db.Text
+  ipAddress    String?
+  userAgent    String?  @db.Text
+  beforeData   Json?
+  afterData    Json?
+  metadata     Json?
+  occurredAt   DateTime @default(now())
+  createdAt    DateTime @default(now())
+
+  org Org @relation(fields: [orgId], references: [id], onDelete: Restrict)
+
+  @@index([orgId, occurredAt])
+  @@index([orgId, action])
+  @@index([actorUserId, occurredAt])
+  @@map("tenant_audit_events")
+}

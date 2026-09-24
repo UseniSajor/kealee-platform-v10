@@ -1,0 +1,110 @@
+{
+  "catalogVersion": 1,
+  "status": "planning-reference",
+  "runtimeAuthority": false,
+  "notes": "Seed through reviewed runtime seed/migration code. ModuleEntitlement remains the access authority.",
+  "products": [
+    {
+      "key": "builder-acquisition-intelligence",
+      "name": "Builder Acquisition Intelligence OS",
+      "audience": ["home_builder", "residential_developer"],
+      "modules": ["acquisition", "feasibility", "executive_reporting", "knowledge_base"],
+      "capabilities": [
+        "property_discovery",
+        "acquisition_filtering",
+        "teardown_scoring",
+        "comparable_sales",
+        "preliminary_feasibility",
+        "maximum_purchase_price",
+        "daily_opportunity_reporting",
+        "priority_alerts",
+        "acquisition_pipeline"
+      ]
+    },
+    {
+      "key": "developer-feasibility",
+      "name": "Developer Feasibility OS",
+      "audience": ["developer", "broker", "investment_group"],
+      "modules": ["acquisition", "feasibility", "site_plans", "design_concepts", "estimating", "executive_reporting"],
+      "capabilities": [
+        "parcel_analysis",
+        "zoning_screening",
+        "development_concepts",
+        "site_plan_concepts",
+        "unit_scenarios",
+        "construction_budgets",
+        "pro_formas",
+        "capital_stack_analysis",
+        "sensitivity_analysis",
+        "investment_memoranda"
+      ]
+    },
+    {
+      "key": "contractor-preconstruction",
+      "name": "Contractor Preconstruction OS",
+      "audience": ["general_contractor"],
+      "modules": ["estimating", "project_management", "knowledge_base", "executive_reporting"],
+      "capabilities": [
+        "bid_intake",
+        "scope_extraction",
+        "addenda_tracking",
+        "estimating",
+        "bid_leveling",
+        "compliance_matrices",
+        "proposal_generation",
+        "go_no_go",
+        "subcontractor_communications",
+        "submission_checklists"
+      ]
+    },
+    {
+      "key": "property-operations",
+      "name": "Property Operations OS",
+      "audience": ["property_manager", "multifamily_operator"],
+      "modules": ["operations", "project_management", "payments", "executive_reporting"],
+      "capabilities": [
+        "maintenance_intake",
+        "work_order_classification",
+        "vendor_routing",
+        "turnover_scopes",
+        "cost_estimates",
+        "tenant_communications",
+        "inspection_documentation",
+        "daily_operating_reports"
+      ]
+    },
+    {
+      "key": "permit-design-coordination",
+      "name": "Permit and Design Coordination OS",
+      "audience": ["architect", "permit_expediter", "design_build_firm"],
+      "modules": ["design_concepts", "site_plans", "permits", "project_management", "knowledge_base"],
+      "capabilities": [
+        "design_concepts",
+        "site_plan_coordination",
+        "permit_document_checklists",
+        "jurisdictional_rules",
+        "submission_tracking",
+        "review_comment_intake",
+        "revision_coordination",
+        "professional_review_routing"
+      ]
+    },
+    {
+      "key": "agency-operations",
+      "name": "Agency Operations OS",
+      "audience": ["professional_services_agency"],
+      "modules": ["operations", "project_management", "knowledge_base", "executive_reporting"],
+      "capabilities": [
+        "email_document_intake",
+        "client_onboarding",
+        "technical_project_management",
+        "sop_workflows",
+        "rfp_proposal_intake",
+        "knowledge_assistants",
+        "task_approval_routing",
+        "executive_reporting",
+        "ai_assisted_quality_control"
+      ]
+    }
+  ]
+}

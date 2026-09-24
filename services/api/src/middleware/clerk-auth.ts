@@ -2,6 +2,7 @@ import { FastifyRequest, FastifyReply } from "fastify";
 import { verifyToken } from "@clerk/backend";
 import { prisma } from "@kealee/database";
 import { createLogger } from "@kealee/observability";
+import { getRequestedOrgId, resolveOrganizationMembership, isHomeownerRole } from './tenant-context';
 
 const logger = createLogger("api:clerk-auth");
 
@@ -81,15 +82,7 @@ export async function verifyClerkSession(
       return;
     }
 
-    // Extract org_id from request query/body if provided
-    const orgId =
-      (request.query as any)?.org_id ||
-      (request.body as any)?.org_id ||
-      user.orgMemberships[0]?.orgId;
-
-    const membership = orgId
-      ? user.orgMemberships.find((candidate) => candidate.orgId === orgId) ?? null
-      : null;
+    const membership = resolveOrganizationMembership(user, getRequestedOrgId(request));
     const org = membership?.org ?? null;
 
     // Attach auth context to request
@@ -109,7 +102,9 @@ export async function verifyClerkSession(
     });
   } catch (err) {
     logger.warn("Clerk token verification failed", { error: err });
-    reply.code(401).send({ error: "Invalid or expired token" });
+    const statusCode = (err as { statusCode?: number }).statusCode;
+    reply.code(statusCode === 400 || statusCode === 403 ? statusCode : 401)
+      .send({ error: statusCode === 400 || statusCode === 403 ? (err as Error).message : "Invalid or expired token" });
     return;
   }
 }
@@ -236,6 +231,20 @@ export async function requireProjectAccess(projectId: string) {
 
     if (!project || !project.orgId) {
       reply.code(404).send({ error: "Project not found" });
+      return;
+    }
+
+    // Homeowners can access a shared project without joining its professional organization.
+    if (isHomeownerRole(auth.user.role)) {
+      const sharedProject = auth.user.email ? await prisma.project.findFirst({
+        where: { id: projectId, client: { email: auth.user.email } },
+        select: { id: true },
+      }) : null;
+      if (!sharedProject) reply.code(403).send({ error: 'Access denied to this project' });
+      return;
+    }
+    if (auth.orgId && auth.orgId !== project.orgId) {
+      reply.code(403).send({ error: 'Project is outside the selected organization' });
       return;
     }
 
