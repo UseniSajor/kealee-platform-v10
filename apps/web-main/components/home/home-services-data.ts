@@ -10,6 +10,16 @@ export type HomeServiceId =
   | 'siteplan'
   | 'design'
   | 'permits'
+  // Declared ahead of its service entry. Both home ICONS maps already carry an
+  // `estimate` key, and `lib/marketing/card-media-spec.ts` already lists
+  // 'estimate' in its own HomeServiceId union — so the id is established
+  // platform-wide and only this union had not caught up, which is what made
+  // `Record<HomeServiceId, …>` reject the icon.
+  //
+  // There is deliberately NO entry for it in SERVICES below yet. Nothing
+  // renders an estimate card until one is added; the icon is simply ready for
+  // when it is.
+  | 'estimate'
   | 'contractor'
   | 'escrow'
 

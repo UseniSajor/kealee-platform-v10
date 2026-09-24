@@ -37,6 +37,12 @@ if (!process.env.REPLICATE_API_TOKEN) {
   throw new Error('REPLICATE_API_TOKEN is not configured in apps/web-main/.env.local')
 }
 if (!ffmpegPath) throw new Error('ffmpeg-static is unavailable')
+// `ffmpeg-static` is typed `string | null`, and the guard above does NOT narrow
+// it at the call site: TypeScript treats an imported binding as possibly
+// reassigned, so the narrowing does not survive into a function body. Binding
+// the checked value to a local const carries the proof forward, which a `!`
+// assertion would only have silenced.
+const FFMPEG: string = ffmpegPath
 
 const replicate = new Replicate({ auth: process.env.REPLICATE_API_TOKEN })
 const imageModel = 'black-forest-labs/flux-1.1-pro-ultra'
@@ -157,7 +163,7 @@ async function composeExactly15Seconds(first: Buffer, second: Buffer): Promise<B
       writeFile(listPath, `file '${firstPath}'\nfile '${secondPath}'\n`, 'utf8'),
     ])
     await execFileAsync(
-      ffmpegPath,
+      FFMPEG,
       [
         '-y', '-f', 'concat', '-safe', '0', '-i', listPath,
         '-an', '-vf', 'scale=1920:1080:force_original_aspect_ratio=decrease,pad=1920:1080:(ow-iw)/2:(oh-ih)/2,fps=30,tpad=stop_mode=clone:stop_duration=1',
