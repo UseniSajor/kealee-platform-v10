@@ -1,0 +1,180 @@
+Warning: Cannot polyfill `DOMMatrix`, rendering may be broken.
+Warning: Cannot polyfill `Path2D`, rendering may be broken.
+===== PAGE 1 =====
+Part D
+Guidelines for
+Tree Canopy Coverage
+===== PAGE 2 =====
+D-2
+•
+Environmental Technical Manual
+Prince George’s County Planning Department
+1.0
+INTRODUCTION
+The Woodland and Wildlife Habitat Conservation Ordinance (WCO) provides for the protection and enhancement
+of existing woodlands and provides for the planting of tree and forest cover. However, there are sites that are
+exempt from meeting these requirements, and there are sites where it is not possible to meet the requirements
+on-site. These sites could benefit greatly from the strategic planting of trees to provide meaningful areas of tree
+canopy coverage as part of the overall design.
+The planting of trees provides many benefits to communities. Trees reduce overall temperatures, especially where
+they are planted to shade hard surfaces, such as parking lots, roofs, and siding. Studies have shown that the net
+cooling effect of a young, healthy tree is equivalent to 10 room-size air conditioners operating 20 hours a day. They
+take in a gas that at high concentrations can be lethal to humans (carbon dioxide) and release oxygen. One acre
+of trees removes up to 2.6 tons of carbon dioxide per year. Preserving trees and providing tree canopies not only
+results in cleaner air but also in increased property values and reduced energy costs.
+Tree canopies provide many other benefits too, the most important of which are intercepting rainwater so it can
+be absorbed more slowly and absorbing and transpiring excess rainwater. Studies have shown that tree canopies
+in urban settings provide millions of dollars worth of stormwater management benefits. The preservation and
+enhancement of tree canopy coverage is one of the tools being emphasized for the restoration of the Chesapeake Bay.
+In December 2003, the Chesapeake Executive Council signed a Riparian Forest Buffer Directive that included setting
+goals for tree canopies in urban areas in order to protect the Chesapeake Bay from the pollutants in urban runoff.
+In order to ensure sustainable and livable communities for future generations, the 2005 General Plan set forest and
+tree cover goals for 2025 as follows:
+Developed Tier:
+26 percent (maintains the 2000 coverage percentage)
+Developing Tier:
+38 percent (a reduction from the 2000 figure of 41 percent)
+Rural Tier:
+60 percent (an increase from the 2000 figure of 59 percent)
+Countywide
+44 percent (a slight decrease from the 2000 figure of 45 percent)
+In order to reach these goals, the Countywide Green Infrastructure Plan contains recommendations regarding
+needed changes to the associated ordinances. The addition of a tree canopy coverage requirement was not
+explored at that time, but it is an appropriate strategy to assist in reaching the 2025 tree and forest canopy
+coverage goals of the general plan.
+For most development projects, the tree canopy coverage requirement will not result in additional tree planting
+because it will be met using the areas provided for woodland conservation. The types of projects that will
+benefit the most from this requirement are the sites that need the tree canopy the most: dense development and
+redevelopment projects where strategic tree planting can turn uninhabitable outdoor spaces into urban oases for
+relaxation and protection from the sun.
+===== PAGE 3 =====
+Part D: Guidelines for Tree Canopy Coverage
+•
+D-3
+2.0
+Overview of Tree Canopy Coverage
+Tree canopy is defined in Subtitle 25 as follows:
+“Tree canopy: The land area under the dripline of an existing tree or group of trees or the
+amount of credit provided for planting trees of a certain species and certain size at time
+of planting in conformance with the worksheet provided in ‘The Technical Manual.’”
+Tree canopy coverage is defined as:
+“Tree canopy coverage: The combined area measured in square feet of the tree canopies
+of existing trees and trees planted in conformance with this Division and “The Technical
+Manual.” Tree canopy coverage requirements are measured using a percentage of the
+gross tract area.”
+To visualize tree canopy coverage, imagine the amount of shade a tree will cast at noon on a sunny day when
+viewed from above. The shadow of the tree would then be measured in square footage to determine how much
+tree canopy is provided by that tree.
+Figure D-1.
+Calculating Tree Canopy Area for Single Tree
+To meet the requirements for tree canopy coverage, the existing and proposed amounts of tree canopy coverage
+must be measured.
+To be eligible to meet the tree canopy coverage requirements, planting areas must be designed to provide the
+maximum allowable rooting zone.
+Trees should be planted in appropriate locations based on each species’ cultural tolerances to be eligible to meet
+the tree canopy coverage requirements. For example, a dogwood planted in a parking lot island in full sun would
+not be eligible to meet the requirements because dogwoods prefer partial to full shade in order to thrive. In
+another example, if an evergreen tree, such as a white pine, is proposed to be planted in a narrow space between
+a fence and a parking lot curb, it could not be given credit because, due to its low branching and wide form, it will
+outgrow the available area quickly.
+===== PAGE 4 =====
+D-4
+•
+Environmental Technical Manual
+Prince George’s County Planning Department
+3.0
+Applicability of the Tree Canopy
+Requirements
+The tree canopy requirements contained in the WCO apply to all types of applications that require a tree
+conservation plan or letter of exemption; in other words, all applications requiring a grading permit.
+Existing woodlands and landscape and street trees may be counted toward meeting the tree canopy coverage
+requirement. While the woodland conservation requirements may be met on-site or off-site, the tree canopy
+coverage requirement must be met on-site, unless a variance has been approved to either allow a reduction in
+the requirement or to allow the meeting of the requirement through some other method. All woodlands and
+landscape trees may be counted toward meeting the tree canopy coverage requirements even if they are used to
+meet the requirements of the WCO or the Landscape Manual.
+If the only application to be submitted is a grading permit, then the tree canopy coverage notes must be placed
+on the grading plan. Refer to the scenarios in Appendix D for more information regarding how each type of
+application is to be handled.
+Table D-1.
+Tree Canopy Requirements by Zone
+Zone
+Minimum Tree Canopy
+Coverage*
+R-O-S, O-S, R-A
+Exempt
+R-E, R-L, V-L
+20%
+R-S, R-R, R-80, R-55, R-35, R-20, R-T, R-30, R-30C, R-18, R-18C, R-10, R-10A, R-H, R-U, R-M,
+R-M-H, V-M
+15%
+C-A, C-O, C-S-C, C-1, C-C, C-G, C-2, C-W, C-M, C-H, C-R-C, I-1, I-2, I-3, I-4, E-I-A, L-A-C, M-X-C,
+M-U-I, M-U-TC, M-X-T, M-A-C, U-L-I
+10%
+*Percentage of gross tract area
+4.0
+Tree Canopy Coverage Calculation
+Methodology
+4.1
+STEP 1: CALCULATING THE AMOUNT REQUIRED
+To calculate the requirement for a site, the gross tract area is multiplied by the percentage required based on the
+zone as shown in Table D-1. For a 2.55-acre site in the R-R Zone, the requirement would be calculated as follows:
+2.55-acre site (gross tract area) x 15% = 0.38 acres or 16,662 square feet of tree canopy coverage required
+===== PAGE 5 =====
+Part D: Guidelines for Tree Canopy Coverage
+•
+D-5
+4.2
+STEP 2: MEASURING THE WOODLANDS AND TREE COVER TO
+BE PRESERVED
+The proper method for calculating the amount of tree coverage provided depends on the types of vegetation to
+be used to meet the requirement. Any of the following methods can be used alone or in combination to meet the
+requirement for a particular site.
+Woodland conservation:
+If the site is providing sufficient woodland conservation on-site to also meet the tree
+canopy coverage requirement, the following notation shall be placed below the woodland conservation worksheet
+on the tree conservation plan:
+Note: The tree canopy coverage requirement on this site has been met using woodland conservation on-site as
+follows:
+Tree canopy coverage required: 0.38 acres or 16,553 square feet (2.55 acres x 15%)
+Total tree canopy coverage provided using woodland conservation: 0.91 acres (the 0.91-acre figure will be
+shown on the “Total Woodland Conservation Provided” line on the woodland conservation worksheet).
+Existing wooded areas or large trees:
+For existing wooded areas or trees larger than 6 inches in diameter
+measured 12 inches above the ground, the existing tree canopy coverage is used (see Figure D-2). For example,
+a 10-inch diameter tree might provide an area of canopy coverage that is 400 square feet in area, based on aerial
+photo observations or ground measurements. Tree canopies for existing woodlands and trees are measured from
+the edges of the outermost branches.
+In this case, the plan must be marked to note which woodland areas or large trees are being preserved to
+be counted toward meeting the requirements, and a tree canopy coverage worksheet must be added. If the
+information cannot be displayed legibly on the tree conservation plan, then a separate sheet illustrating how the
+tree canopy coverage requirements are being met must be added. The tree canopy coverage worksheet should be
+placed on this separate sheet if one is provided.
+Areas proposed for afforestation/reforestation:
+These areas are measured based on their square footage. The
+amount credited toward meeting the requirement is the same as the area afforested or reforested. In this case,
+the plan must be marked to note which afforestation/reforestation areas are being planted to be counted toward
+meeting the requirements. If this is the sole method being used, a note on the plan is sufficient. If landscape trees
+are used in combination, then a tree canopy coverage worksheet must be included on the associated plan.
+Landscape trees:
+Trees smaller than 6 inches in diameter, 12 inches above the ground, are measured using
+their potential future canopy coverage in ten years, according to the chart shown in the worksheet provided in
+Appendix D
+.
+===== PAGE 6 =====
+D-6
+•
+Environmental Technical Manual
+Prince George’s County Planning Department
+Figure D-2.
+Calculating Tree Canopy Area for Group of Trees
+4.3
+STEP 3: CALCULATING THE AMOUNT PROVIDED
+As noted above, if existing woodlands are used exclusively. Then, all that is needed on the plans is a note under the
+woodland conservation worksheet.
+If woodlands are used and proposed landscape trees are used to meet the tree canopy coverage requirement, then
+a tree canopy worksheet must be provided on the associated plan.
+If proposed landscape trees are used exclusively to meet the tree canopy coverage requirement and there is no
+TCP2 to show the calculations, then a tree canopy worksheet must be provided on the associated plan.
+When calculating the amount provided, the acreages of the woodlands and landscape trees used to meet the
+requirement are added, and the amount provided must at least equal the amount required.

@@ -8,6 +8,13 @@ import {
   buildConceptFunnelUrl,
   schedulePrePaymentDrip,
 } from '@/lib/marketing/drip-schedule'
+import {
+  HOME_UPGRADE_BY_SLUG,
+  HOME_UPGRADES_CATALOG_VERSION,
+  calculateUpgradePlanningRange,
+  formatUpgradeRange,
+  type HomeUpgradeScopeBand,
+} from '@kealee/core-rules'
 
 export const dynamic = 'force-dynamic'
 
@@ -42,6 +49,38 @@ export async function POST(req: NextRequest) {
 
     const deliverable = SERVICE_DELIVERABLES[path]
     const resolvedFormData: Record<string, unknown> = { ...fd, funnelStage: 'lead' }
+    const requestedUpgradeCandidate = typeof fd.upgradeProductSlug === 'string'
+      ? HOME_UPGRADE_BY_SLUG[fd.upgradeProductSlug]
+      : undefined
+    const requestedUpgrade = requestedUpgradeCandidate?.conceptIntakePath === path
+      ? requestedUpgradeCandidate
+      : undefined
+    if (requestedUpgrade) {
+      const allowedScopes = new Set(requestedUpgrade.scopeBands.map(scope => scope.id))
+      const allowedOptions = new Set(requestedUpgrade.options.map(option => option.id))
+      const upgradeScope: HomeUpgradeScopeBand['id'] = typeof fd.upgradeScope === 'string' && allowedScopes.has(fd.upgradeScope as HomeUpgradeScopeBand['id'])
+        ? fd.upgradeScope as HomeUpgradeScopeBand['id']
+        : 'transformative'
+      const upgradeOptions = Array.isArray(fd.upgradeOptions)
+        ? fd.upgradeOptions.map(String).filter(option => allowedOptions.has(option))
+        : []
+      const planningRange = calculateUpgradePlanningRange(requestedUpgrade, upgradeScope, upgradeOptions)
+      resolvedFormData.upgradeProductSlug = requestedUpgrade.slug
+      resolvedFormData.upgradeProductName = requestedUpgrade.name
+      resolvedFormData.upgradeScope = upgradeScope
+      resolvedFormData.upgradeOptions = upgradeOptions
+      resolvedFormData.upgradePlanningRange = formatUpgradeRange(planningRange)
+      resolvedFormData.financingInterest = fd.financingInterest === true
+      resolvedFormData.homeUpgradesCatalogVersion = HOME_UPGRADES_CATALOG_VERSION
+      resolvedFormData.marketplaceAttribution = 'home-upgrades'
+    } else {
+      delete resolvedFormData.upgradeProductSlug
+      delete resolvedFormData.upgradeProductName
+      delete resolvedFormData.upgradeScope
+      delete resolvedFormData.upgradeOptions
+      delete resolvedFormData.upgradePlanningRange
+      delete resolvedFormData.financingInterest
+    }
     if (utm.source) resolvedFormData.utm_source = utm.source
     if (utm.medium) resolvedFormData.utm_medium = utm.medium
     if (utm.campaign) resolvedFormData.utm_campaign = utm.campaign

@@ -1,6 +1,7 @@
 import type { MetadataRoute } from 'next'
 import { PUBLISHED_BLOG_SLUGS } from '@/lib/content/public-blog-slugs'
 import { SERVICE_AREA_SLUGS } from '@/lib/content/service-areas'
+import { HOME_UPGRADE_PRODUCTS } from '@kealee/core-rules'
 
 const BASE_URL = 'https://kealee.com'
 
@@ -62,10 +63,18 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: slug === 'oxon-hill-md' ? 0.82 : 0.7,
   }))
 
+  const upgradeRoutes: MetadataRoute.Sitemap = HOME_UPGRADE_PRODUCTS.map((product) => ({
+    url: `${BASE_URL}/marketplace/${product.slug}`,
+    lastModified: now,
+    changeFrequency: 'monthly' as const,
+    priority: product.featured ? 0.82 : 0.72,
+  }))
+
   return [
     ...withDates(HIGH_PRIORITY_ROUTES),
     ...withDates(STANDARD_ROUTES),
     ...withDates(serviceAreaRoutes),
+    ...upgradeRoutes,
     ...blogRoutes,
   ]
 }

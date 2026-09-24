@@ -619,7 +619,12 @@ async function main() {
   const minFrontage = standard(zone, 'Lot frontage') ?? 50, maxDensity = standard(zone, 'Density, max.')
   const frontYard = standard(zone, 'Front yard depth') ?? 25, sideYard = standard(zone, 'Side yard depth') ?? 8
   if (!minArea || !minWidth) throw new Error(`Zone ${zone} has no certified lot standards in the dimensional table.`)
-  const std: Std = { minArea, minWidth, minFrontage }
+  // A study can cut lots smaller than the zone's minimum to show what a count takes; every such lot is marked non-conforming against the zone.
+  const cutArea = flag('--cut-lot-sqft') ? Number(flag('--cut-lot-sqft')) : minArea
+  const cutWidth = flag('--cut-lot-width') ? Number(flag('--cut-lot-width')) : minWidth
+  if (cutArea !== minArea || cutWidth !== minWidth) console.log(`    !! cutting lots at ${cutArea} sf / ${cutWidth} ft wide — the zone minimum is ${minArea} sf / ${minWidth} ft; lots below it are marked NOT CONFORMING`)
+  const std: Std = { minArea: cutArea, minWidth: cutWidth, minFrontage }
+  const zoneStd: Std = { minArea, minWidth, minFrontage }
 
   console.log(`\n=== ${site.address.matchedAddress} — proposed subdivision (one entrance, street a tier in from the rear boundaries, cul-de-sac) ===`)
   console.log(`    parcel ${site.parcel.propId}  GIS ${parcelSqFt.toFixed(0)} sf (${(parcelSqFt / 43560).toFixed(4)} ac)`
@@ -907,6 +912,13 @@ async function main() {
   const netRecordedSqFt = recordedSqFt ? recordedSqFt - layout.rowSqFt - dedSqFt : null
   const cap = maxDensity ? Math.floor(maxDensity * netSqFt / 43560) : Infinity
   const capRecorded = maxDensity && netRecordedSqFt ? Math.floor(maxDensity * netRecordedSqFt / 43560) : null
+  for (const l of layout.lots) {   // conformance is against the ZONE, whatever size the study cut
+    const problems: string[] = []
+    if (l.sqFt < zoneStd.minArea) problems.push(`net area ${l.sqFt.toFixed(0)} < ${zoneStd.minArea} sf`)
+    if (l.widthFt < zoneStd.minWidth - 0.5) problems.push(`width ${l.widthFt.toFixed(1)} < ${zoneStd.minWidth} ft`)
+    if (l.frontageFt < zoneStd.minFrontage - 0.5) problems.push(`frontage ${l.frontageFt.toFixed(1)} < ${zoneStd.minFrontage} ft`)
+    l.problems = problems; l.ok = problems.length === 0
+  }
   const conforming = layout.lots.filter(l => l.ok)
   const pr = layout.params
   console.log(`\n    ${layout.lots.length} lots (${conforming.length} conform); entrance at station ${pr.stationFt.toFixed(0)} ft${pr.entrySkewDeg ? ` skewed ${pr.entrySkewDeg}° off perpendicular` : ''}; stem ${pr.stemFt.toFixed(0)} ft; R ${pr.radiusFt} ft; `

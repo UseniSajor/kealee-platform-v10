@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -15,10 +16,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
       />
       <div className="relative flex items-center justify-between px-6 py-4">
         <Link href="/" className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg" style={{ backgroundColor: '#E8793A' }}>
-            <span className="text-sm font-bold text-white font-display">K</span>
-          </div>
-          <span className="text-lg font-bold text-white font-display">Kealee</span>
+          <Image src="/kealee-icon-512x512-transparent.png" alt="Kealee" width={32} height={32} className="h-8 w-8" priority />
         </Link>
         <span
           className="rounded-full px-3 py-1 text-xs font-semibold"

@@ -1,0 +1,39 @@
+{
+  "lots": [
+    {
+      "lot": 1,
+      "recordAreaSF": 9598,
+      "surfacesSF": {
+        "Dwelling footprint": 1196.011260244133,
+        "Areaway": 51.999999999999915,
+        "Baseline paving": 406.28761818288046,
+        "Added leadwalk": 35.001000145632794
+      },
+      "imperviousSF": 1689.2998785726456,
+      "imperviousPct": 17.60054051440556,
+      "remainingAreaSF": 7908.700121427354,
+      "rv": 0.20840486462965002,
+      "screeningRainfallIn": 1.0,
+      "screeningWQvCF": 166.68915755961507
+    },
+    {
+      "lot": 2,
+      "recordAreaSF": 8008,
+      "surfacesSF": {
+        "Dwelling footprint": 1196.011404166527,
+        "Areaway": 51.999999999999865,
+        "Baseline paving": 397.98137663242886,
+        "Added leadwalk": 17.49188317369621
+      },
+      "imperviousSF": 1663.484663972651,
+      "imperviousPct": 20.772785514143997,
+      "remainingAreaSF": 6344.515336027349,
+      "rv": 0.23695506962729596,
+      "screeningRainfallIn": 1.0,
+      "screeningWQvCF": 158.1280164646155
+    }
+  ],
+  "offsiteDepictedHardSurfaceSF": 513.7249328294208,
+  "basis": "Selected drawing geometry; lot-wide screening, not delineated facility catchments",
+  "peakDischarges": null
+}

@@ -1,0 +1,103 @@
+{
+  "baselineSHA256": "d9b0e033c4822b35df5ae31a5cc65dc2a7cae056db395fcdc08aad85b81cdb94",
+  "sitePlanPages": 1,
+  "supportingPages": 7,
+  "submissionReady": false,
+  "measuredFromSelectedPDF": [
+    {
+      "lot": 1,
+      "recordAreaSF": 9598,
+      "computedAreaSF": 9598.470814664917,
+      "footprintSF": 1196,
+      "footprintCoveragePct": 12.460929360283393,
+      "frontFt": 30.99871374579114,
+      "sideFt": [
+        8.096274239900982,
+        10.90294083161407
+      ],
+      "rearFt": 62.486981448500586
+    },
+    {
+      "lot": 2,
+      "recordAreaSF": 8008,
+      "computedAreaSF": 8008.841636251761,
+      "footprintSF": 1196,
+      "footprintCoveragePct": 14.935064935064934,
+      "frontFt": 31.000216248018422,
+      "sideFt": [
+        10.578131834625859,
+        8.15438192231983
+      ],
+      "rearFt": null
+    }
+  ],
+  "proposedLODsf": 19170.911489557297,
+  "offsiteLODsf": 1563.5990386406183,
+  "issues": [
+    {
+      "id": "R01",
+      "status": "OPEN",
+      "resolution": "Field survey, grading, floors, driveway profiles and utility inverts"
+    },
+    {
+      "id": "R02",
+      "status": "PARTIAL",
+      "resolution": "Both addresses added; owner and responsible professional details/signatures required"
+    },
+    {
+      "id": "R03",
+      "status": "OPEN",
+      "resolution": "Public utility containment and continuous approved connections"
+    },
+    {
+      "id": "R04",
+      "status": "OPEN",
+      "resolution": "Recorded private easement limits and WSSC junction design"
+    },
+    {
+      "id": "R05",
+      "status": "OPEN",
+      "resolution": "Approved concept and full stormwater design/report"
+    },
+    {
+      "id": "R06",
+      "status": "PARTIAL",
+      "resolution": "Proposed measured LOD added; final ESC design and approvals remain"
+    },
+    {
+      "id": "R07",
+      "status": "PARTIAL",
+      "resolution": "Soil component table/historical evidence added; current environmental/landscape documents remain"
+    },
+    {
+      "id": "R08",
+      "status": "PARTIAL",
+      "resolution": "Measured per-lot footprint clearances/ratios added; yard interpretation and projections remain"
+    },
+    {
+      "id": "R09",
+      "status": "PARTIAL",
+      "resolution": "Recorded areas and label corrections made; survey/control reconciliation remains"
+    },
+    {
+      "id": "R10",
+      "status": "CLOSED",
+      "resolution": "Full recorded conditions/adjoiners/legend supplied without ellipses"
+    },
+    {
+      "id": "R11",
+      "status": "OPEN",
+      "resolution": "Frontage width, cross slopes, driveway profiles and DPW&T determination"
+    },
+    {
+      "id": "R12",
+      "status": "OPEN",
+      "resolution": "Complete coordinated architectural, structural and trade/energy drawings"
+    },
+    {
+      "id": "R13",
+      "status": "PARTIAL",
+      "resolution": "Source dossier and preparation worksheet supplied; executed applications/approvals remain"
+    }
+  ]
+}

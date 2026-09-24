@@ -1,0 +1,2246 @@
+
+    <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+    <html>
+    <head>
+
+        <title></title>
+        <link type="text/css" rel="Stylesheet" href="jqueryui/css/jqueryui.css" media="all" />
+        <link type="text/css" rel="Stylesheet" href="css/ui.css" media="all" />
+        <link type="text/css" rel="Stylesheet" href="css/customui.css" media="all" />
+        <link type="text/css" rel="Stylesheet" href="css/document.css" media="all" />
+        <link type="text/css" rel="Stylesheet" href="css/customdoc.css" media="all" />
+        <link type="text/css" rel="Stylesheet" href="tablestyles.aspx" media="all" />
+        <link rel="StyleSheet" type="text/css" href="/common/font-awesome/css/all.min.css">
+        <link type="text/css" rel="Stylesheet" href="css/docprint.css" media="print" />
+        <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+        <script type="text/javascript" src="jqueryui/js/jquery-ui-1.8.21.custom.min.js"></script>
+        <script type="text/javascript" src="js/doc-view.js?_t=252"></script>
+        <script type="text/javascript" src="js/tabletools.js"></script>
+        <script type="text/javascript" src="js/tabs.js"></script>
+        <script type="text/javascript">
+            var iframeReady = false;
+        </script>
+        
+        <script type="text/javascript">
+            $(document).ready(function () {
+                setTimeout(attemptPrint, 250);
+            });
+
+            function attemptPrint() {
+                if (iframeReady) {
+                    parent.ZP.DocView.PrintIframe();
+                } else {
+                    setTimeout(attemptPrint, 250);
+                }
+            }
+        </script>
+        
+    </head>
+    <body class='doc-view'>
+        <script type="text/javascript">
+            $(document).ready(function () {
+                ZP.DocView.InitDef();
+                ZP.DocView.OpenDefinitionPage = null;
+                ZP.DocView.OpenDefinitionMode = '_self';
+                ZP.DocView.OpenXRefPage = 'doc-viewer.aspx#$2-';
+                ZP.DocView.OpenXRefMode = '_blank';
+                $(window).bind('hashchange', ZP.DocView.HashChanged);
+        
+        if (typeof ZP.DocView.ZoomClasses == 'undefined') {
+            ZP.DocView.ZoomClasses = ["Unzoom1", "", "Zoom1", "Zoom2", "Zoom3", "Zoom4"];
+        }
+        ZP.DocView.InitializeZoom();
+        EC.SortedTable.Init(".ord-tbl, .stat-tbl", ".sortable");
+        EC.Tabs.PositionLeftTabs();
+    });
+
+
+        </script>
+
+
+    <div id="doc-viewer">
+        
+
+<div id="doc-view">
+    <div id="doc-view-content">
+        
+<div id="pageControls">
+<script type="text/javascript" >
+    function clearEffDate() {
+        jQuery.get("doc-view-helper.aspx?task=currentversion", function () {
+            window.location.reload();
+        });
+        return false;
+    }
+</script>
+     <div class="pageControls psuedoTable white" role="navigation" aria-label="Document Navigation">  
+        <div class="psuedoTableBody" >     
+            <div class="psuedoTableRow">         
+                <div class="pageControls_outer" ></div>
+                <div class="pageControls_inner left">
+                    <a id='button1' onclick='ZP.DocView.PrintDoc("002.004.002.002",false);return false;' href="#" title="Print" role="button"> 
+                            <i class="fa fa-print" aria-hidden="true"></i></a>
+                    <a id='Button2' onclick='ZP.DocView.OpenPDF("002.004.002.002",false);return false;' href="#" title="Export PDF" role="button">
+                            <i class="fa fa-file-pdf-o" aria-hidden="true"></i></a>
+                    <a class="exp-word" onclick='ZP.DocView.OpenWord("002.004.002.002",false);return false;' href="#" title="Export MSWord" role="button">
+                        <i class="fa fa-file-word-o" aria-hidden="true"></i></a>
+                    <a class="popup" params="toobar=0,menubar=0,scrollbars=1,height=436,width=626" href="https://www.facebook.com/sharer/sharer.php?s=100&p[title]=27-4202.+Residential+Base+Zones&p[summary]=Prince+George%27s+County%2c+MD+Zoning+Ordinance%2c+Subdivision+Regulations%2c+%26+Landscape+Manual+(Effective+4%2f1%2f2022)&p[url]=https%3a%2f%2fonline.encodeplus.com%2fregs%2fprincegeorgescounty-md%2fdoc-viewer.aspx%3fsecid%3d634" title="Click to Share this page" style="text-decoration:none;border:none;" >
+                          <i class="fa fa-share-alt" aria-hidden="true"></i></a>     
+                </div>
+                <div  class="pageControls_inner breadCrumbs" title="Navigation 'breadcrumbs'">
+                     <div class='breadCrumbs'><a href='/regs/princegeorgescounty-md/doc-viewer.aspx?tocid=002' >Subtitle 27: Zoning Ordinance</a> &gt; <a href='/regs/princegeorgescounty-md/doc-viewer.aspx?tocid=002.004' >PART 27-4 ZONES AND ZONE REGULATIONS</a> &gt; <a href='/regs/princegeorgescounty-md/doc-viewer.aspx?tocid=002.004.002' >Sec. 27-4200 Base Zones</a> &gt; <a href='/regs/princegeorgescounty-md/doc-viewer.aspx?tocid=002.004.002.002' >27-4202. Residential Base Zones</a></div>
+                </div>
+                 <div  class="pageControls_inner right">       
+                     <ul >  
+                         <li>
+                            <a id='button3' class="nav fa" onclick="ZP.DocView.LoadPrevDoc('002.004.002.002');return false;" href="#"  title="Previous Section" accesskey="," role="button">
+                                <i class="fa fa-chevron-left" aria-hidden="true"></i></a>
+                         </li>  
+                         <li>
+                             <a id='Button4'  class="nav fa" onclick="ZP.DocView.LoadNextDoc('002.004.002.002');return false;" href="#"  title="Next Section" accesskey="." role="button"> 
+                                  <i class="fa fa-chevron-right" aria-hidden="true"></i></a>
+                         </li>   
+                         <li>
+                             <a id="pageControls-overflow" onclick="ZP.DocView.PgCntrlOverflowClick(event);return false;" href="#" title="Click for more options" role="button" >
+                             
+<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 viewBox="0 0 23 23" style="enable-background:new 0 0 23 23;" xml:space="preserve">
+<g>
+	<path d="M2,21.2c-0.4-2.9-0.8-5.5-1.2-8.1C-0.1,6.9,4.6,1.2,10.9,0.8C16.7,0.3,22.1,5.2,22.3,11c0.3,6.4-4.5,11.5-10.9,11.3
+		C8.2,22.2,5.1,21.6,2,21.2z M20.4,11.6c0-5-3.9-9-8.8-9s-9.1,4.2-9.1,9.1s4.1,8.9,9,8.9C16.5,20.5,20.4,16.6,20.4,11.6z"/>
+	<path d="M7.7,10.8c0-0.9,0-1.7,0-2.6c0.9,0,1.7,0,2.6,0c0,0.8,0,1.7,0,2.6C9.5,10.8,8.7,10.8,7.7,10.8z"/>
+	<path d="M7.7,15.8c0-0.9,0-1.7,0-2.6c0.9,0,1.7,0,2.6,0c0,0.8,0,1.7,0,2.6C9.5,15.8,8.7,15.8,7.7,15.8z"/>
+	<path d="M12.8,15.8c0-0.9,0-1.7,0-2.6c0.9,0,1.7,0,2.6,0c0,0.8,0,1.7,0,2.6C14.6,15.8,13.8,15.8,12.8,15.8z"/>
+	<path d="M12.8,10.8c0-0.9,0-1.7,0-2.6c0.9,0,1.7,0,2.6,0c0,0.8,0,1.7,0,2.6C14.6,10.8,13.8,10.8,12.8,10.8z"/>
+</g>
+</svg>
+</a>
+                               
+  <ul class="submenu" role="dialog">
+            <li><a href="/regs/princegeorgescounty-md/doc-viewer.aspx?secid=634" onclick="javascript:alert('Right click this icon and select \'add to favorites\' or \'Bookmark this Link\' to bookmark this page');return false;" title="Bookmark this page" >Bookmark</a></li>
+            <li>
+                                        
+                <a id="zoomMinus" onclick="ZP.DocView.DecreaseZoom();return false;" href="#" title="Decrease Zoom" class="zoomLink glyphicon" >&#x2212;</a>
+                <a onclick="ZP.DocView.DefaultZoom();return false;"  href="#" title="Default Zoom"  class="zoomLink" >100%</a>
+                <a id="zoomPlus" onclick="ZP.DocView.IncreaseZoom();return false;" href="#" title="Increase Zoom"  class="zoomLink glyphicon" > &#x2b; </a>
+            </li>
+           
+                           
+                
+</ul>
+                         </li>        
+                        
+                        </ul>   
+                </div>
+                <div class="pageControls_outer"></div>
+            </div>
+        </div>
+    </div> 
+    <div id="subscribe-dialog" title="" aria-live="polite" >
+        <div id="sub-message"></div>
+        <div id="sub-form-cntr"></div>
+    </div>
+</div>
+
+
+        <div id="thePage-outer" >
+            <div id="thePage-wrap" class="thePage-wrap ">
+                <div id="outer-doc-banner"></div>
+                <div id="thePage-border">
+                    <div id="thePage" class="textPage " tocid="000" secid="634" role="main" aria-label="Document">
+                        <img id="sectionBanner" title="Document text banner" src="resources/docbanner.png" width="720" valign="Top" alt="Document text banner">
+                        
+                        <section id='secid-634' class='secLvl4 _002 _002-004 _002-004-002 _002-004-002-002' tabindex='-1' data-secid='634'> 
+<h4>27-4202. Residential Base Zones</h4>
+
+<ol class="list-v2" data-numpre="(" data-numsuf=")" style="list-style-type:lower-alpha">
+	<li data-autopath="1" data-bkid="634bk1" data-liststylename="default" data-lstruct="(ǂaǂ)" data-path="sec#.ǁ(a)" id="secid-634bk1">
+	<div class="li-num">(a)</div>
+
+	<div class="li-cont"><strong>General Purposes of Residential Base Zones</strong>
+
+	<p>The Residential base zones established in this Section are intended to provide a comfortable, healthy, safe, and pleasant environment in which to live and recreate. More specifically, they are intended to:</p>
+
+	<ol data-numpre="(" data-numsuf=")">
+		<li>
+		<div class="li-num">(1)</div>
+
+		<div class="li-cont">Provide appropriately located lands for residential <a class="iLink" target="_blank" href="doc-view.aspx?pn=0&ajax=0&secid=196">development</a> that are consistent with the goals and policies of the <a class="iLink" target="_blank" href="doc-view.aspx?pn=0&ajax=0&secid=265">General Plan</a> and the applicable <a class="iLink" target="_blank" href="doc-view.aspx?pn=0&ajax=0&secid=89">Area Master Plan</a> or <a class="iLink" target="_blank" href="doc-view.aspx?pn=0&ajax=0&secid=449">Sector Plan</a>;</div>
+		</li>
+		<li>
+		<div class="li-num">(2)</div>
+
+		<div class="li-cont">Ensure adequate light, air, privacy, and open space for each <a class="iLink" target="_blank" href="doc-view.aspx?pn=0&ajax=0&secid=211">dwelling</a>, and protect residents from the negative effects of noise, excessive population density, flooding, and other significant adverse environmental impacts;</div>
+		</li>
+		<li>
+		<div class="li-num">(3)</div>
+
+		<div class="li-cont">Ensure protection from fires, explosions, toxic fumes and substances, and other public safety hazards;</div>
+		</li>
+		<li>
+		<div class="li-num">(4)</div>
+
+		<div class="li-cont">Provide for residential housing choice, affordability, and diversity with varying housing densities, types, and designs;</div>
+		</li>
+		<li>
+		<div class="li-num">(5)</div>
+
+		<div class="li-cont">Provide for safe and efficient vehicular, bicycle, and pedestrian access and circulation, and neighborhoods that promote multiple forms of mobility;</div>
+		</li>
+		<li>
+		<div class="li-num">(6)</div>
+
+		<div class="li-cont">Provide for the public services and facilities needed to serve residential development;</div>
+		</li>
+		<li>
+		<div class="li-num">(7)</div>
+
+		<div class="li-cont">Protect the existing character of lands in the residential zones from incompatible development;</div>
+		</li>
+		<li>
+		<div class="li-num">(8)</div>
+
+		<div class="li-cont">Accommodate new infill development and redevelopment that is consistent with the context and the character of the residential zone in which it is located; and</div>
+		</li>
+		<li>
+		<div class="li-num">(9)</div>
+
+		<div class="li-cont">Promote sustainable development in terms of energy efficiency and conservation, greenhouse gas reductions, food security, materials recycling, and similar sustainability goals.</div>
+		</li>
+	</ol>
+	</div>
+	</li>
+	<li data-autopath="1" data-bkid="634bk2" data-liststylename="default" data-lstruct="(ǂbǂ)" data-path="sec#.ǁ(b)" id="secid-634bk2">
+	<div class="li-num">(b)</div>
+
+	<div class="li-cont"><strong>Residential Estate (RE) Zone</strong></div>
+	</li>
+</ol>
+
+<table class="general smalt" style="width:100%;">
+	<thead>
+		<tr class="sheading">
+			<th colspan="7" style="text-align: left;">
+			<ol class="list-v2" data-contfont="" data-indent=".5em" data-numfont="" data-numpre="(" data-numsuf=")" data-txtindent="2em" style="margin-left:0.5em">
+				<li class="li-num">
+				<div class="li-num" style="max-width:2em; min-width:2em">(1)</div>
+
+				<div class="li-cont"><strong><span style="color:inherit; font-family:inherit; font-size:inherit; font-weight:inherit; text-align:inherit">Purposes</span></strong></div>
+				</li>
+			</ol>
+			</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td colspan="3" rowspan="2" style="vertical-align:top">The purposes of the Residential Estate (RE) Zone are:
+			<ol class="list-v2" data-contfont="" data-numfont="" data-numpre="(" data-numsuf=")" data-txtindent="2em" style="list-style-type:upper-alpha">
+				<li data-unlistid="2038422">
+				<div class="li-num" style="max-width:2em; min-width:2em">(A)</div>
+
+				<div class="li-cont">To provide for and encourage variation in the size, shape, and width of single-family detached residential <a class="iLink" target="_blank" href="doc-view.aspx?pn=0&ajax=0&secid=500">subdivision</a> <a class="iLink" target="_blank" href="doc-view.aspx?pn=0&ajax=0&secid=308">lots</a>, in order to better utilize the natural terrain;</div>
+				</li>
+				<li data-unlistid="53889553">
+				<div class="li-num" style="max-width:2em; min-width:2em">(B)</div>
+
+				<div class="li-cont">To facilitate the planning of single-family residential developments with large lots and dwellings of various sizes and styles;</div>
+				</li>
+				<li data-unlistid="74587025">
+				<div class="li-num" style="max-width:2em; min-width:2em">(C)</div>
+
+				<div class="li-cont">To encourage the preservation of trees and open spaces in order to create an estate-like atmosphere; and</div>
+				</li>
+				<li data-unlistid="48513968">
+				<div class="li-num" style="max-width:2em; min-width:2em">(D)</div>
+
+				<div class="li-cont">To prevent soil erosion and stream valley flooding.</div>
+				</li>
+			</ol>
+			</td>
+			<td colspan="4"><img alt="Computer generated rendering of a Residential Estate Zone" id="" src="media/images/27-4201.-rural-and-agricultural-base-zones-1.jpg" style="margin: auto;height: 258px;width: 400px;"></td>
+		</tr>
+		<tr>
+			<td colspan="2"><img alt="House with a long driveway and trees in the front yard" id="" src="media/images/27-4202.-residential-base-zones-2.jpg" style="height: 133px;width: 200px;"></td>
+			<td colspan="2"><img alt="House with a white fence and trees in the front yard" id="" src="media/images/27-4202.-residential-base-zones-3.jpg" style="height: 136px;width: 200px;"></td>
+		</tr>
+	</tbody>
+</table>
+
+<table class="general smalt" style="width:100%;">
+	<thead>
+		<tr class="sheading">
+			<th colspan="4">
+			<ol class="list-v2" data-contfont="" data-indent=".5em" data-numfont="" data-numpre="(" data-numsuf=")" data-txtindent="2em" start="2" style="margin-left:0.5em">
+				<li>
+				<div class="li-num" style="max-width:2em; min-width:2em">(2)</div>
+
+				<div class="li-cont"><strong>Intensity and Dimensional Standards</strong></div>
+				</li>
+			</ol>
+			</th>
+		</tr>
+		<tr class="alt1">
+			<th style="width: 38.18%;"><strong>Standard(1)</strong></th>
+			<th class="subsubheading" style="text-align: center; width: 23.84%;"><strong>Agricultural Uses</strong></th>
+			<th style="text-align: center; width: 18%;"><strong>Single-Family Detached Dwelling</strong></th>
+			<th class="subsubheading" style="text-align: center; width: 19.62%;">&nbsp;<strong>Other Uses</strong></th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td>Density, max. (du/ac of <a class="iLink" target="_blank" href="doc-view.aspx?pn=0&ajax=0&secid=347">net lot area</a>)</td>
+			<td class="subsubheading" style="text-align:center">No requirement</td>
+			<td style="text-align:center">1.08</td>
+			<td class="subsubheading" style="text-align:center">No requirement</td>
+		</tr>
+		<tr>
+			<td>Net lot area, min.</td>
+			<td class="subsubheading" style="text-align:center">2 ac</td>
+			<td style="text-align:center">40,000</td>
+			<td class="subsubheading" style="text-align:center">40,000</td>
+		</tr>
+		<tr>
+			<td><span style="color:#ff0000">❶</span> Lot width, min. (ft)</td>
+			<td class="subsubheading" style="text-align:center">50</td>
+			<td style="text-align:center">120(4)</td>
+			<td class="subsubheading" style="text-align:center">50&nbsp;</td>
+		</tr>
+		<tr>
+			<td>Lot frontage (width) at <a class="iLink" target="_blank" href="doc-view.aspx?pn=0&ajax=0&secid=257">front street line</a>, min. (ft)</td>
+			<td class="subsubheading" style="text-align:center">40</td>
+			<td style="text-align:center">70</td>
+			<td class="subsubheading" style="text-align:center">40</td>
+		</tr>
+		<tr>
+			<td><a class="iLink" target="_blank" href="doc-view.aspx?pn=0&ajax=0&secid=313">Lot coverage</a>, max. (% of net lot area)</td>
+			<td class="subsubheading" style="text-align:center">20</td>
+			<td style="text-align:center">20</td>
+			<td class="subsubheading" style="text-align:center">60</td>
+		</tr>
+		<tr>
+			<td><span style="color:#ff0000">❷</span> <a class="iLink" target="_blank" href="doc-view.aspx?pn=0&ajax=0&secid=557">Front yard</a> depth, min. (ft)</td>
+			<td class="subsubheading" style="text-align:center">25</td>
+			<td style="text-align:center">25</td>
+			<td class="subsubheading" style="text-align:center">25</td>
+		</tr>
+		<tr>
+			<td><span style="color:#ff0000">❸</span> <a class="iLink" target="_blank" href="doc-view.aspx?pn=0&ajax=0&secid=559">Side yard</a> depth, min. (ft) (2)</td>
+			<td class="subsubheading" style="text-align:center">17</td>
+			<td style="text-align:center">17</td>
+			<td class="subsubheading" style="text-align:center">17</td>
+		</tr>
+		<tr>
+			<td><span style="color:#ff0000">❹</span> <a class="iLink" target="_blank" href="doc-view.aspx?pn=0&ajax=0&secid=558">Rear yard</a> depth, min. (ft)</td>
+			<td class="subsubheading" style="text-align:center">25</td>
+			<td style="text-align:center">25</td>
+			<td class="subsubheading" style="text-align:center">25</td>
+		</tr>
+		<tr>
+			<td><span style="color:#ff0000">❺</span> Principal <a class="iLink" target="_blank" href="doc-view.aspx?pn=0&ajax=0&secid=499">structure height</a>, max. (ft)</td>
+			<td class="subsubheading" style="text-align:center">35</td>
+			<td style="text-align:center">35</td>
+			<td class="subsubheading" style="text-align:center">35</td>
+		</tr>
+		<tr>
+			<td><a class="iLink" target="_blank" href="doc-view.aspx?pn=0&ajax=0&secid=61">Accessory structure</a> height, max. (ft) (3)</td>
+			<td class="subsubheading" style="text-align:center">15</td>
+			<td style="text-align:center">15</td>
+			<td class="subsubheading" style="text-align:center">15</td>
+		</tr>
+		<tr>
+			<td colspan="4"><strong>NOTES:</strong> du/ac = <a class="iLink" target="_blank" href="doc-view.aspx?pn=0&ajax=0&secid=212">dwelling units</a> per acre; sf = square feet; ft = feet<strong> </strong>
+			<ol class="list-v2" data-contfont="" data-numfont="" data-numpre="(" data-numsuf=")">
+				<li>
+				<div class="li-num">(1)</div>
+
+				<div class="li-cont">See measurement rules and allowed exceptions in Section <a class="xref" target="_blank" href="doc-viewer.aspx#secid-50">27-2200</a>, Measurement and Exceptions of Intensity and Dimensional Standards.</div>
+				</li>
+				<li>
+				<div class="li-num">(2)</div>
+
+				<div class="li-cont">On <a class="iLink" target="_blank" href="doc-view.aspx?pn=0&ajax=0&secid=309">corner lot</a>, min. side yard depth alongside <a class="iLink" target="_blank" href="doc-view.aspx?pn=0&ajax=0&secid=496">street</a> = 25&nbsp;ft.<span style="color:#ff0000">❻</span></div>
+				</li>
+				<li>
+				<div class="li-num">(3)</div>
+
+				<div class="li-cont">May be increased for certain purposes by approval of a special exception pursuant to Section <a class="xref" target="_blank" href="doc-viewer.aspx#secid-608">27-3604</a>, Special Exception, and may be increased to forty (40) feet with approval of a Special Exception, if the <a class="iLink" target="_blank" href="doc-view.aspx?pn=0&ajax=0&secid=115">building</a> is used for agricultural purposes and is erected on property (used for <a class="iLink" target="_blank" href="doc-view.aspx?pn=0&ajax=0&secid=68">agriculture</a>) containing at least five (5) acres.</div>
+				</li>
+				<li>
+				<div class="li-num">(4)</div>
+
+				<div class="li-cont">
+				<p>If the lot is served by an individual well or sewerage system, the min. width shall be 150 ft.</p>
+				</div>
+				</li>
+			</ol>
+			</td>
+		</tr>
+		<tr>
+			<td colspan="4">
+			<p><strong>Single-Family Detached Dwellings and Agricultural and Other Uses</strong></p>
+			<img alt="Computer generated graphic with numbering to match standards" id="" src="media/images/27-4202_re_550.jpg" style="margin:auto;width: 550px;height: 261px;"></td>
+		</tr>
+	</tbody>
+</table>
+
+<table class="general smalt" style="width:100%;">
+	<thead>
+		<tr class="sheading">
+			<th colspan="6">
+			<ol class="list-v2" data-contfont="" data-indent=".5em" data-numfont="" data-numpre="(" data-numsuf=")" data-txtindent="2em" start="3" style="margin-left:0.5em">
+				<li>
+				<div class="li-num" style="max-width:2em; min-width:2em">(3)</div>
+
+				<div class="li-cont"><strong>Reference to Other Standards</strong></div>
+				</li>
+			</ol>
+			</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr class="alt1">
+			<td colspan="3">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-580">27-3400</a>&nbsp; &nbsp;Standard Review Procedures</td>
+			<td colspan="2">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-690">27-6400</a>&nbsp; &nbsp;Open Space Set-Asides</td>
+			<td>Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-743">27-61200</a>&nbsp; Neighborhood Compatibility Standards</td>
+		</tr>
+		<tr class="alt2">
+			<td colspan="3">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-604">27-3600</a>&nbsp; &nbsp;Application-Specific Review Procedures and Decision Standards</td>
+			<td colspan="2">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-699">27-6500</a>&nbsp; &nbsp;Landscaping</td>
+			<td>Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-747">27-61300</a>&nbsp; Agricultural Compatibility Standards</td>
+		</tr>
+		<tr class="alt1">
+			<td colspan="3"><span>Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-643">27-4400</a>&nbsp; &nbsp;</span>Overlay Zones</td>
+			<td colspan="2">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-700">27-6600</a>&nbsp; &nbsp;<span style="font-size:8pt">Fences and Walls</span></td>
+			<td>Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-751">27-61400</a>&nbsp; Urban Agriculture Compatibility Standards</td>
+		</tr>
+		<tr class="alt2">
+			<td colspan="3">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-649">27-5101</a>&nbsp; &nbsp;Principal Use Tables</td>
+			<td colspan="2">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-711">27-6700</a>&nbsp; &nbsp;Exterior Lighting</td>
+			<td>Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-755">27-61500</a>&nbsp; Signage</td>
+		</tr>
+		<tr class="alt1">
+			<td colspan="3">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-652">27-5200</a>&nbsp; &nbsp;Accessory Uses and Structures</td>
+			<td colspan="2">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-721">27-6800</a>&nbsp; &nbsp;Environmental Protection and Noise Controls</td>
+			<td>Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-763">27-61600</a>&nbsp; Green Building Standards</td>
+		</tr>
+		<tr class="alt2">
+			<td colspan="3">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-656">27-5300</a>&nbsp; &nbsp;Temporary Uses and Structures</td>
+			<td colspan="2">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-732">27-6900</a>&nbsp; &nbsp;Multifamily, Townhouse, and Three-Family Form and Design Standards</td>
+			<td>&nbsp;</td>
+		</tr>
+		<tr class="alt1">
+			<td colspan="3">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-670">27-6200</a>&nbsp; &nbsp;Roadway Access, Mobility, and Circulation</td>
+			<td colspan="2">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-736">27-61000</a>&nbsp; Nonresidential and Mixed-Use Form and Design Standards</td>
+			<td><a class="xref" target="_blank" href="doc-viewer.aspx#secid-48">PART 27-2</a>&nbsp; &nbsp;Interpretation and Definitions</td>
+		</tr>
+		<tr class="alt2">
+			<td colspan="3">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-679">27-6300</a>&nbsp; &nbsp;Off-Street Parking and Loading</td>
+			<td colspan="2">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-740">27-61100</a>&nbsp; Industrial Form and Design Standards</td>
+			<td><a class="xref" target="_blank" href="doc-viewer.aspx#secid-768">PART 27-7</a>&nbsp; &nbsp;Nonconforming Buildings, Structures, Uses, Lots, and Signs</td>
+		</tr>
+	</tbody>
+</table>
+
+<ol class="list-v2" data-numpre="(" data-numsuf=")" start="3" style="list-style-type:lower-alpha">
+	<li data-autopath="1" data-bkid="634bk3" data-liststylename="default" data-lstruct="(ǂcǂ)" data-path="sec#.ǁ(c)" id="secid-634bk3">
+	<div class="li-num">(c)</div>
+
+	<div class="li-cont"><strong>Residential, Rural (RR) Zone</strong></div>
+	</li>
+</ol>
+
+<table class="general smalt" style="width:100%;">
+	<thead>
+		<tr class="sheading">
+			<th colspan="6" style="text-align: left;">
+			<ol class="list-v2" data-contfont="" data-indent="0.5em" data-numfont="" data-numpre="(" data-numsuf=")" data-txtindent="2em" style="margin-left:0.5em">
+				<li class="li-num">
+				<div class="li-num" style="max-width:2em; min-width:2em">(1)</div>
+
+				<div class="li-cont"><strong><span style="color:inherit; font-family:inherit; font-size:inherit; font-weight:inherit; text-align:inherit">Purposes</span><span style="color:inherit; font-family:inherit; font-size:11pt; font-weight:normal; text-align:inherit">&nbsp;</span><span style="color:inherit; font-family:inherit; font-size:11pt; font-weight:normal; text-align:inherit">&nbsp;</span><span style="color:inherit; font-family:inherit; font-size:11pt; font-weight:normal; text-align:inherit">&nbsp;</span><span style="color:inherit; font-family:inherit; font-size:11pt; font-weight:normal; text-align:inherit">&nbsp;</span></strong><span style="color:inherit; font-family:inherit; font-size:11pt; font-weight:normal; text-align:inherit">&nbsp;</span><span style="color:inherit; font-family:inherit; font-size:11pt; font-weight:normal; text-align:inherit">&nbsp;</span></div>
+				</li>
+			</ol>
+			</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td colspan="2" rowspan="2" style="vertical-align:top">The purposes of the Residential, Rural (RR) Zone are:
+			<ol class="list-v2" data-contfont="" data-numfont="" data-numpre="(" data-numsuf=")" data-txtindent="2em" style="list-style-type:upper-alpha">
+				<li data-unlistid="21288758">
+				<div class="li-num" style="max-width:2em; min-width:2em">(A)</div>
+
+				<div class="li-cont">To provide for and encourage variation in the size, shape, and width of single-family detached residential subdivision lots, in order to better utilize their natural terrain;</div>
+				</li>
+				<li data-unlistid="21288758">
+				<div class="li-num" style="max-width:2em; min-width:2em">(B)</div>
+
+				<div class="li-cont">To facilitate the planning of single-family residential developments with moderately large lots and dwellings of various sizes and styles;</div>
+				</li>
+				<li data-unlistid="21288758">
+				<div class="li-num" style="max-width:2em; min-width:2em">(C)</div>
+
+				<div class="li-cont">To encourage the preservation of trees and open spaces; and</div>
+				</li>
+				<li data-unlistid="21288758">
+				<div class="li-num" style="max-width:2em; min-width:2em">(D)</div>
+
+				<div class="li-cont">To prevent soil erosion and stream valley flooding.</div>
+				</li>
+			</ol>
+			</td>
+			<td colspan="4"><img alt="Computer generated rendering of a Reserved Open Space" id="" src="media/images/27-4202.-residential-base-zones-6.jpg" style="height: 250px;width: 400px;"></td>
+		</tr>
+		<tr>
+			<td colspan="2"><img alt="Residential area with trees" id="" src="media/images/27-4202.-residential-base-zones-7.jpg" style="height: 134px;width: 200px;"></td>
+			<td colspan="2"><img alt="Corner lot in a residential area" id="" src="media/images/27-4202.-residential-base-zones-8.jpg" style="height: 133px;width: 200px;"></td>
+		</tr>
+	</tbody>
+</table>
+
+<table class="general smalt" style="width:100%;">
+	<thead>
+		<tr class="sheading">
+			<th colspan="3">
+			<ol class="list-v2" data-contfont="" data-indent="0em" data-numfont="" data-numpre="(" data-numsuf=")" data-txtindent="2em" start="2" style="margin-left:0em">
+				<li>
+				<div class="li-num" style="max-width:2em; min-width:2em">(2)</div>
+
+				<div class="li-cont"><strong>Intensity and Dimensional Standards</strong></div>
+				</li>
+			</ol>
+			</th>
+		</tr>
+		<tr class="alt1">
+			<th style="width: 40.44%;"><strong>Standard(1)</strong></th>
+			<th class="subsubheading" style="text-align: center; width: 20%;"><strong>Single-Family Detached Dwelling</strong></th>
+			<th style="text-align: center; width: 23.09%;">&nbsp;<strong>Other Uses</strong></th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td>Density, max. (du/ac of net lot area)</td>
+			<td class="subsubheading" style="text-align:center">2.17</td>
+			<td style="text-align:center">&nbsp;No requirement</td>
+		</tr>
+		<tr>
+			<td>Net lot area, min. (sf)</td>
+			<td class="subsubheading" style="text-align:center">20,000</td>
+			<td style="text-align:center">&nbsp;20,000</td>
+		</tr>
+		<tr>
+			<td><span style="color:#ff0000">❶</span> Lot width, min. (ft)</td>
+			<td class="subsubheading" style="text-align:center">80(4)</td>
+			<td style="text-align:center">100&nbsp;</td>
+		</tr>
+		<tr>
+			<td>Lot frontage (width) at front street line, min. (ft)</td>
+			<td class="subsubheading" style="text-align:center">70</td>
+			<td style="text-align:center">70</td>
+		</tr>
+		<tr>
+			<td>Lot coverage, max. (% of net lot area)</td>
+			<td class="subsubheading" style="text-align:center">25</td>
+			<td style="text-align:center">60</td>
+		</tr>
+		<tr>
+			<td><span style="color:#ff0000">❷</span> Front yard depth, min. (ft)</td>
+			<td class="subsubheading" style="text-align:center">25</td>
+			<td style="text-align:center">25</td>
+		</tr>
+		<tr>
+			<td><span style="color:#ff0000">❸</span> Side yard depth, min. (ft) (2)</td>
+			<td class="subsubheading" style="text-align:center">8</td>
+			<td style="text-align:center">8</td>
+		</tr>
+		<tr>
+			<td><span style="color:#ff0000">❹</span> Rear yard depth, min. (ft)</td>
+			<td class="subsubheading" style="text-align:center">20</td>
+			<td style="text-align:center">20</td>
+		</tr>
+		<tr>
+			<td><span style="color:#ff0000">❺</span> Principal structure height, max. (ft)</td>
+			<td class="subsubheading" style="text-align:center">40</td>
+			<td style="text-align:center">40</td>
+		</tr>
+		<tr>
+			<td>Accessory structure height, max. (ft) (3)</td>
+			<td class="subsubheading" style="text-align:center">15</td>
+			<td style="text-align:center">15</td>
+		</tr>
+		<tr>
+			<td colspan="3"><strong>NOTES:</strong> du/ac = dwelling units per acre; sf = square feet; ft = feet<strong> </strong>
+			<ol class="list-v2" data-contfont="" data-numfont="" data-numpre="(" data-numsuf=")">
+				<li>
+				<div class="li-num">(1)</div>
+
+				<div class="li-cont">See measurement rules and allowed exceptions in Section <a class="xref" target="_blank" href="doc-viewer.aspx#secid-50">27-2200</a>, Measurement and Exceptions of Intensity and Dimensional Standards.</div>
+				</li>
+				<li>
+				<div class="li-num">(2)</div>
+
+				<div class="li-cont">On corner lot, min. side yard depth alongside street = 25&nbsp;ft.<span style="color:#ff0000">❻</span></div>
+				</li>
+				<li>
+				<div class="li-num">(3)</div>
+
+				<div class="li-cont">May be increased for certain purposes by approval of a special exception pursuant to Section <a class="xref" target="_blank" href="doc-viewer.aspx#secid-608">27-3604</a>, Special Exception, and may be increased to forty (40) feet with approval of a Special Exception, if the building is used for agricultural purposes and is erected on property (used for agriculture) containing at least five (5) acres.</div>
+				</li>
+				<li>
+				<div class="li-num">(4)</div>
+
+				<div class="li-cont">Minimum 100 ft if the lot is not served by a public or other approved water supply system.</div>
+				</li>
+			</ol>
+			</td>
+		</tr>
+		<tr>
+			<td colspan="3">
+			<p><strong>Single-Family Detached Dwellings and Other Uses</strong></p>
+			<img alt="Computer generated graphic with numbering to match standards" id="" src="media/images/27-4202_rr_550.jpg" style="margin:auto;width: 550px;height: 269px;"></td>
+		</tr>
+	</tbody>
+</table>
+
+<table class="general smalt" style="width:100%;">
+	<thead>
+		<tr class="sheading">
+			<th colspan="6">
+			<ol class="list-v2" data-contfont="" data-indent=".5em" data-numfont="" data-numpre="(" data-numsuf=")" data-txtindent="2em" start="3" style="margin-left:0.5em">
+				<li>
+				<div class="li-num" style="max-width:2em; min-width:2em">(3)</div>
+
+				<div class="li-cont"><strong>Reference to Other Standards</strong></div>
+				</li>
+			</ol>
+			</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr class="alt1">
+			<td colspan="3">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-580">27-3400</a>&nbsp; &nbsp;Standard Review Procedures</td>
+			<td colspan="2">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-690">27-6400</a>&nbsp; &nbsp;Open Space Set-Asides</td>
+			<td>Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-743">27-61200</a>&nbsp; Neighborhood Compatibility Standards</td>
+		</tr>
+		<tr class="alt2">
+			<td colspan="3">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-604">27-3600</a>&nbsp; &nbsp;Application-Specific Review Procedures and Decision Standards</td>
+			<td colspan="2">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-699">27-6500</a>&nbsp; &nbsp;Landscaping</td>
+			<td>Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-747">27-61300</a>&nbsp; Agricultural Compatibility Standards</td>
+		</tr>
+		<tr class="alt1">
+			<td colspan="3"><span>Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-643">27-4400</a>&nbsp; &nbsp;</span>Overlay Zones</td>
+			<td colspan="2">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-700">27-6600</a>&nbsp; &nbsp;<span style="font-size:8pt">Fences and Walls</span></td>
+			<td>Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-751">27-61400</a>&nbsp; Urban Agriculture Compatibility Standards</td>
+		</tr>
+		<tr class="alt2">
+			<td colspan="3">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-649">27-5101</a>&nbsp; &nbsp;Principal Use Tables</td>
+			<td colspan="2">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-711">27-6700</a>&nbsp; &nbsp;Exterior Lighting</td>
+			<td>Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-755">27-61500</a>&nbsp; Signage</td>
+		</tr>
+		<tr class="alt1">
+			<td colspan="3">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-652">27-5200</a>&nbsp; &nbsp;Accessory Uses and Structures</td>
+			<td colspan="2">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-721">27-6800</a>&nbsp; &nbsp;Environmental Protection and Noise Controls</td>
+			<td>Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-763">27-61600</a>&nbsp; Green Building Standards</td>
+		</tr>
+		<tr class="alt2">
+			<td colspan="3">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-656">27-5300</a>&nbsp; &nbsp;Temporary Uses and Structures</td>
+			<td colspan="2">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-732">27-6900</a>&nbsp; &nbsp;Multifamily, Townhouse, and Three-Family Form and Design Standards</td>
+			<td>&nbsp;</td>
+		</tr>
+		<tr class="alt1">
+			<td colspan="3">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-670">27-6200</a>&nbsp; &nbsp;Roadway Access, Mobility, and Circulation</td>
+			<td colspan="2">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-736">27-61000</a>&nbsp; Nonresidential and Mixed-Use Form and Design Standards</td>
+			<td><a class="xref" target="_blank" href="doc-viewer.aspx#secid-48">PART 27-2</a>&nbsp; &nbsp;Interpretation and Definitions</td>
+		</tr>
+		<tr class="alt2">
+			<td colspan="3">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-679">27-6300</a>&nbsp; &nbsp;Off-Street Parking and Loading</td>
+			<td colspan="2">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-740">27-61100</a>&nbsp; Industrial Form and Design Standards</td>
+			<td><a class="xref" target="_blank" href="doc-viewer.aspx#secid-768">PART 27-7</a>&nbsp; &nbsp;Nonconforming Buildings, Structures, Uses, Lots, and Signs</td>
+		</tr>
+	</tbody>
+</table>
+
+<ol class="list-v2" data-numpre="(" data-numsuf=")" start="4" style="list-style-type:lower-alpha">
+	<li data-autopath="1" data-bkid="634bk4" data-liststylename="default" data-lstruct="(ǂdǂ)" data-path="sec#.ǁ(d)" id="secid-634bk4">
+	<div class="li-num">(d)</div>
+
+	<div class="li-cont"><strong>Residential, Single-Family-95 (RSF-95) Zone</strong></div>
+	</li>
+</ol>
+
+<table class="general smalt" style="width:100%;">
+	<thead>
+		<tr class="sheading">
+			<th colspan="6" style="text-align: left;">
+			<ol class="list-v2" data-contfont="" data-indent=".5em" data-numfont="" data-numpre="(" data-numsuf=")" data-txtindent="2em" style="margin-left:0.5em">
+				<li class="li-num">
+				<div class="li-num" style="max-width:2em; min-width:2em">(1)</div>
+
+				<div class="li-cont"><strong><span style="color:inherit; font-family:inherit; font-size:inherit; font-weight:inherit; text-align:inherit">Purposes</span><span style="color:inherit; font-family:inherit; font-size:11pt; font-weight:normal; text-align:inherit">&nbsp;</span><span style="color:inherit; font-family:inherit; font-size:11pt; font-weight:normal; text-align:inherit">&nbsp;</span><span style="color:inherit; font-family:inherit; font-size:11pt; font-weight:normal; text-align:inherit">&nbsp;</span><span style="color:inherit; font-family:inherit; font-size:11pt; font-weight:normal; text-align:inherit">&nbsp;</span></strong><span style="color:inherit; font-family:inherit; font-size:11pt; font-weight:normal; text-align:inherit">&nbsp;</span><span style="color:inherit; font-family:inherit; font-size:11pt; font-weight:normal; text-align:inherit">&nbsp;</span></div>
+				</li>
+			</ol>
+			</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td colspan="2" rowspan="2" style="vertical-align:top">
+			<div class="li-num">The purposes of the Residential, Single-Family-95 (RSF-95) Zone are:</div>
+
+			<ol class="list-v2" data-contfont="" data-numfont="" data-numpre="(" data-numsuf=")" data-txtindent="2em" style="list-style-type:upper-alpha">
+				<li data-unlistid="61152149">
+				<div class="li-num" style="max-width:2em; min-width:2em">(A)</div>
+
+				<div class="li-cont">To provide for and encourage variation in the size, shape, and width of single-family detached residential subdivision lots, in order to better utilize the natural terrain;</div>
+				</li>
+				<li data-unlistid="68188744">
+				<div class="li-num" style="max-width:2em; min-width:2em">(B)</div>
+
+				<div class="li-cont">To facilitate the planning of single-family residential developments with medium-sized lots and dwellings of various sizes and styles;</div>
+				</li>
+				<li data-unlistid="23500781">
+				<div class="li-num" style="max-width:2em; min-width:2em">(C)</div>
+
+				<div class="li-cont">To encourage the preservation of trees and open spaces; and</div>
+				</li>
+				<li data-unlistid="97277636">
+				<div class="li-num" style="max-width:2em; min-width:2em">(D)</div>
+
+				<div class="li-cont">To prevent soil erosion and stream valley flooding.</div>
+				</li>
+			</ol>
+			</td>
+			<td colspan="4"><img alt="Computer generated rendering of a Reserved Open Space" id="" src="media/images/27-4202.-residential-base-zones-11.jpg" style="height: 258px;width: 400px;"></td>
+		</tr>
+		<tr>
+			<td colspan="2"><img alt="Single-family two-story home" id="" src="media/images/27-4202.-residential-base-zones-12.jpg" style="height: 134px;width: 200px;"></td>
+			<td colspan="2"><img alt="Single-family A-frame home" id="" src="media/images/27-4202.-residential-base-zones-13.jpg" style="height: 134px;width: 200px;"></td>
+		</tr>
+	</tbody>
+</table>
+
+<table class="general smalt" style="width:100%;">
+	<thead>
+		<tr class="sheading">
+			<th colspan="3">
+			<ol class="list-v2" data-contfont="" data-indent=".5em" data-numfont="" data-numpre="(" data-numsuf=")" data-txtindent="2em" start="2" style="margin-left:0.5em">
+				<li>
+				<div class="li-num" style="max-width:2em; min-width:2em">(2)</div>
+
+				<div class="li-cont"><strong>Intensity and Dimensional Standards</strong></div>
+				</li>
+			</ol>
+			</th>
+		</tr>
+		<tr class="alt1">
+			<th style="width: 41.71%;"><strong>Standard(1)</strong></th>
+			<th class="subsubheading" style="text-align: center; width: 18%;"><strong>Single-Family Detached Dwelling</strong></th>
+			<th style="text-align: center; width: 23.81%;">&nbsp;<strong>Other Uses</strong></th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td>Density, max. (du/ac of net lot area)</td>
+			<td class="subsubheading" style="text-align:center">4.58</td>
+			<td style="text-align:center">&nbsp;No requirement</td>
+		</tr>
+		<tr>
+			<td>Net lot area, min. (sf)</td>
+			<td class="subsubheading" style="text-align:center">9,500</td>
+			<td style="text-align:center">9,500</td>
+		</tr>
+		<tr>
+			<td><span style="color:#ff0000">❶</span> Lot width, min. (ft)</td>
+			<td class="subsubheading" style="text-align:center">75</td>
+			<td style="text-align:center">75&nbsp;</td>
+		</tr>
+		<tr>
+			<td>Lot frontage (width) at front street line, min. (ft)</td>
+			<td class="subsubheading" style="text-align:center">50 (4)</td>
+			<td style="text-align:center">60</td>
+		</tr>
+		<tr>
+			<td>Lot coverage, max. (% of net lot area)</td>
+			<td class="subsubheading" style="text-align:center">30</td>
+			<td style="text-align:center">60</td>
+		</tr>
+		<tr>
+			<td><span style="color:#ff0000">❷</span> Front yard depth, min. (ft)</td>
+			<td class="subsubheading" style="text-align:center">25</td>
+			<td style="text-align:center">25</td>
+		</tr>
+		<tr>
+			<td><span style="color:#ff0000">❸</span> Side yard depth, min. (ft) (2)</td>
+			<td class="subsubheading" style="text-align:center">8</td>
+			<td style="text-align:center">8</td>
+		</tr>
+		<tr>
+			<td><span style="color:#ff0000">❹</span> Rear yard depth, min. (ft)</td>
+			<td class="subsubheading" style="text-align:center">20</td>
+			<td style="text-align:center">20</td>
+		</tr>
+		<tr>
+			<td><span style="color:#ff0000">❺</span> Principal structure height, max. (ft)</td>
+			<td class="subsubheading" style="text-align:center">40</td>
+			<td style="text-align:center">40</td>
+		</tr>
+		<tr>
+			<td>Accessory structure height, max. (ft) (3)</td>
+			<td class="subsubheading" style="text-align:center">15</td>
+			<td style="text-align:center">15</td>
+		</tr>
+		<tr>
+			<td colspan="3"><strong>NOTES:</strong> du/ac = dwelling units per acre; sf = square feet; ft = feet<strong> </strong>
+			<ol class="list-v2" data-contfont="" data-numfont="" data-numpre="(" data-numsuf=")">
+				<li>
+				<div class="li-num">(1)</div>
+
+				<div class="li-cont">See measurement rules and allowed exceptions in Section <a class="xref" target="_blank" href="doc-viewer.aspx#secid-50">27-2200</a>, Measurement and Exceptions of Intensity and Dimensional Standards.</div>
+				</li>
+				<li>
+				<div class="li-num">(2)</div>
+
+				<div class="li-cont">On corner lot, min. side yard depth alongside street = 25&nbsp;ft.<span style="color:#ff0000">❻</span></div>
+				</li>
+				<li>
+				<div class="li-num">(3)</div>
+
+				<div class="li-cont">May be increased for certain purposes by approval of a special exception pursuant to Section <a class="xref" target="_blank" href="doc-viewer.aspx#secid-608">27-3604</a>, Special Exception.</div>
+				</li>
+				<li>
+				<div class="li-num">(4)</div>
+
+				<div class="li-cont">If the lot is located on a cul-de-sac, the minimum width may be reduced to forty-five (45) feet.</div>
+				</li>
+			</ol>
+			</td>
+		</tr>
+		<tr>
+			<td colspan="3">
+			<p><strong>Single-Family Detached Dwellings and Other Uses</strong></p>
+
+			<p><strong><img alt="Computer generated graphic with numbering to match standards" id="" src="media/images/27-4202.-residential-base-zones-10.jpg" style="margin:auto;height: 269px;width: 550px;"></strong></p>
+			</td>
+		</tr>
+	</tbody>
+</table>
+
+<table class="general smalt" style="width:100%;">
+	<thead>
+		<tr class="sheading">
+			<th colspan="6">
+			<ol class="list-v2" data-contfont="" data-indent=".5em" data-numfont="" data-numpre="(" data-numsuf=")" data-txtindent="2em" start="3" style="margin-left:0.5em">
+				<li>
+				<div class="li-num" style="max-width:2em; min-width:2em">(3)</div>
+
+				<div class="li-cont"><strong>Reference to Other Standards</strong></div>
+				</li>
+			</ol>
+			</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr class="alt1">
+			<td colspan="3">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-580">27-3400</a>&nbsp; &nbsp;Standard Review Procedures</td>
+			<td colspan="2">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-690">27-6400</a>&nbsp; &nbsp;Open Space Set-Asides</td>
+			<td>Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-743">27-61200</a>&nbsp; Neighborhood Compatibility Standards</td>
+		</tr>
+		<tr class="alt2">
+			<td colspan="3">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-604">27-3600</a>&nbsp; &nbsp;Application-Specific Review Procedures and Decision Standards</td>
+			<td colspan="2">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-699">27-6500</a>&nbsp; &nbsp;Landscaping</td>
+			<td>Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-747">27-61300</a>&nbsp; Agricultural Compatibility Standards</td>
+		</tr>
+		<tr class="alt1">
+			<td colspan="3"><span>Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-643">27-4400</a>&nbsp; &nbsp;</span>Overlay Zones</td>
+			<td colspan="2">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-700">27-6600</a>&nbsp; &nbsp;<span style="font-size:8pt">Fences and Walls</span></td>
+			<td>Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-751">27-61400</a>&nbsp; Urban Agriculture Compatibility Standards</td>
+		</tr>
+		<tr class="alt2">
+			<td colspan="3">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-649">27-5101</a>&nbsp; &nbsp;Principal Use Tables</td>
+			<td colspan="2">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-711">27-6700</a>&nbsp; &nbsp;Exterior Lighting</td>
+			<td>Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-755">27-61500</a>&nbsp; Signage</td>
+		</tr>
+		<tr class="alt1">
+			<td colspan="3">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-652">27-5200</a>&nbsp; &nbsp;Accessory Uses and Structures</td>
+			<td colspan="2">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-721">27-6800</a>&nbsp; &nbsp;Environmental Protection and Noise Controls</td>
+			<td>Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-763">27-61600</a>&nbsp; Green Building Standards</td>
+		</tr>
+		<tr class="alt2">
+			<td colspan="3">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-656">27-5300</a>&nbsp; &nbsp;Temporary Uses and Structures</td>
+			<td colspan="2">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-732">27-6900</a>&nbsp; &nbsp;Multifamily, Townhouse, and Three-Family Form and Design Standards</td>
+			<td>&nbsp;</td>
+		</tr>
+		<tr class="alt1">
+			<td colspan="3">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-670">27-6200</a>&nbsp; &nbsp;Roadway Access, Mobility, and Circulation</td>
+			<td colspan="2">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-736">27-61000</a>&nbsp; Nonresidential and Mixed-Use Form and Design Standards</td>
+			<td><a class="xref" target="_blank" href="doc-viewer.aspx#secid-48">PART 27-2</a>&nbsp; &nbsp;Interpretation and Definitions</td>
+		</tr>
+		<tr class="alt2">
+			<td colspan="3">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-679">27-6300</a>&nbsp; &nbsp;Off-Street Parking and Loading</td>
+			<td colspan="2">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-740">27-61100</a>&nbsp; Industrial Form and Design Standards</td>
+			<td><a class="xref" target="_blank" href="doc-viewer.aspx#secid-768">PART 27-7</a>&nbsp; &nbsp;Nonconforming Buildings, Structures, Uses, Lots, and Signs</td>
+		</tr>
+	</tbody>
+</table>
+
+<ol class="list-v2" data-numpre="(" data-numsuf=")" start="5" style="list-style-type:lower-alpha">
+	<li data-autopath="1" data-bkid="634bk5" data-liststylename="default" data-lstruct="(ǂeǂ)" data-path="sec#.ǁ(e)" id="secid-634bk5">
+	<div class="li-num">(e)</div>
+
+	<div class="li-cont"><strong>Residential, Single-Family-65 (RSF-65) Zone</strong></div>
+	</li>
+</ol>
+
+<table class="general smalt" style="width:100%;">
+	<thead>
+		<tr class="sheading">
+			<th colspan="6" style="text-align: left;">
+			<ol class="list-v2" data-contfont="" data-indent=".5em" data-numfont="" data-numpre="(" data-numsuf=")" data-txtindent="2em" style="margin-left:0.5em">
+				<li class="li-num">
+				<div class="li-num" style="max-width:2em; min-width:2em">(1)</div>
+
+				<div class="li-cont"><strong><span style="color:inherit; font-family:inherit; font-size:inherit; font-weight:inherit; text-align:inherit">Purposes</span><span style="color:inherit; font-family:inherit; font-size:11pt; font-weight:normal; text-align:inherit">&nbsp;</span><span style="color:inherit; font-family:inherit; font-size:11pt; font-weight:normal; text-align:inherit">&nbsp;</span><span style="color:inherit; font-family:inherit; font-size:11pt; font-weight:normal; text-align:inherit">&nbsp;</span><span style="color:inherit; font-family:inherit; font-size:11pt; font-weight:normal; text-align:inherit">&nbsp;</span></strong><span style="color:inherit; font-family:inherit; font-size:11pt; font-weight:normal; text-align:inherit">&nbsp;</span><span style="color:inherit; font-family:inherit; font-size:11pt; font-weight:normal; text-align:inherit">&nbsp;</span></div>
+				</li>
+			</ol>
+			</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td colspan="2" rowspan="2" style="vertical-align:top">The purposes of the Residential, Single-Family-65 (RSF-65) Zone are:
+			<ol class="list-v2" data-contfont="" data-numfont="" data-numpre="(" data-numsuf=")" data-txtindent="2em" style="list-style-type:upper-alpha">
+				<li>
+				<div class="li-num" style="max-width:2em; min-width:2em">(A)</div>
+
+				<div class="li-cont">To provide for and encourage variation in the size, shape, and width of single-family detached residential subdivision lots, in order to better utilize the natural terrain;</div>
+				</li>
+				<li>
+				<div class="li-num" style="max-width:2em; min-width:2em">(B)</div>
+
+				<div class="li-cont">To facilitate the planning of higher density single-family residential developments with small&nbsp;lots and dwellings of various sizes and styles;</div>
+				</li>
+				<li>
+				<div class="li-num" style="max-width:2em; min-width:2em">(C)</div>
+
+				<div class="li-cont">To encourage the preservation of trees and open spaces; and</div>
+				</li>
+				<li>
+				<div class="li-num" style="max-width:2em; min-width:2em">(D)</div>
+
+				<div class="li-cont">To prevent soil erosion and stream valley flooding.</div>
+				</li>
+			</ol>
+			</td>
+			<td colspan="4"><img alt="Computer generated rendering of a Reserved Open Space" id="" src="media/images/27-4202.-residential-base-zones-16.jpg" style="height: 257px;width: 400px;"></td>
+		</tr>
+		<tr>
+			<td colspan="2"><img alt="Single-family two-story home" id="" src="media/images/27-4202.-residential-base-zones-17.jpg" style="height: 134px;width: 200px;"></td>
+			<td colspan="2"><img alt="Single-family two-story home" id="" src="media/images/27-4202.-residential-base-zones-18.jpg" style="height: 134px;width: 200px;"></td>
+		</tr>
+	</tbody>
+</table>
+
+<table class="general smalt" style="width:100%;">
+	<thead>
+		<tr class="sheading">
+			<th colspan="3">
+			<ol class="list-v2" data-contfont="" data-indent=".5em" data-numfont="" data-numpre="(" data-numsuf=")" data-txtindent="2em" start="2" style="margin-left:0.5em">
+				<li>
+				<div class="li-num" style="max-width:2em; min-width:2em">(2)</div>
+
+				<div class="li-cont"><strong>Intensity and Dimensional Standards</strong></div>
+				</li>
+			</ol>
+			</th>
+		</tr>
+		<tr class="alt1">
+			<th style="width: 41.71%;"><strong>Standard(1)</strong></th>
+			<th class="subsubheading" style="text-align: center; width: 18%;"><strong>Single-Family Detached Dwelling</strong></th>
+			<th style="text-align: center; width: 23.81%;">&nbsp;<strong>Other Uses</strong></th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td>Density, max. (du/ac of net lot area)</td>
+			<td class="subsubheading" style="text-align:center">6.7</td>
+			<td style="text-align:center">&nbsp;No requirement</td>
+		</tr>
+		<tr>
+			<td>Net lot area, min. (sf)</td>
+			<td class="subsubheading" style="text-align:center">6,500</td>
+			<td style="text-align:center">6,500</td>
+		</tr>
+		<tr>
+			<td><span style="color:#ff0000">❶</span> Lot width, min. (ft)</td>
+			<td class="subsubheading" style="text-align:center">65</td>
+			<td style="text-align:center">45</td>
+		</tr>
+		<tr>
+			<td>Lot frontage (width) at front street line, min. (ft)</td>
+			<td class="subsubheading" style="text-align:center">45 (4)</td>
+			<td style="text-align:center">36</td>
+		</tr>
+		<tr>
+			<td>Lot coverage, max. (% of net lot area)</td>
+			<td class="subsubheading" style="text-align:center">35</td>
+			<td style="text-align:center">60</td>
+		</tr>
+		<tr>
+			<td><span style="color:#ff0000">❷</span> Front yard depth, min. (ft)</td>
+			<td class="subsubheading" style="text-align:center">25</td>
+			<td style="text-align:center">25</td>
+		</tr>
+		<tr>
+			<td><span style="color:#ff0000">❸</span> Side yard depth, min. (ft) (2)</td>
+			<td class="subsubheading" style="text-align:center">8</td>
+			<td style="text-align:center">8</td>
+		</tr>
+		<tr>
+			<td><span style="color:#ff0000">❹</span> Rear yard depth, min. (ft)</td>
+			<td class="subsubheading" style="text-align:center">20</td>
+			<td style="text-align:center">20</td>
+		</tr>
+		<tr>
+			<td><span style="color:#ff0000">❺</span> Principal structure height, max. (ft)</td>
+			<td class="subsubheading" style="text-align:center">40</td>
+			<td style="text-align:center">40</td>
+		</tr>
+		<tr>
+			<td>Accessory structure height, max. (ft) (3)</td>
+			<td class="subsubheading" style="text-align:center">15</td>
+			<td style="text-align:center">15</td>
+		</tr>
+		<tr>
+			<td colspan="3"><strong>NOTES:</strong> du/ac = dwelling units per acre; sf = square feet; ft = feet<strong> </strong>
+			<ol class="list-v2" data-contfont="" data-numfont="" data-numpre="(" data-numsuf=")">
+				<li>
+				<div class="li-num">(1)</div>
+
+				<div class="li-cont">See measurement rules and allowed exceptions in Section <a class="xref" target="_blank" href="doc-viewer.aspx#secid-50">27-2200</a>, Measurement and Exceptions of Intensity and Dimensional Standards.</div>
+				</li>
+				<li>
+				<div class="li-num">(2)</div>
+
+				<div class="li-cont">On corner lot, min. side yard depth alongside street = 25&nbsp;ft.<span style="color:#ff0000">❻</span></div>
+				</li>
+				<li>
+				<div class="li-num">(3)</div>
+
+				<div class="li-cont">May be increased for certain purposes by approval of a special exception pursuant to Section <a class="xref" target="_blank" href="doc-viewer.aspx#secid-608">27-3604</a>, Special Exception.</div>
+				</li>
+				<li>
+				<div class="li-num">(4)</div>
+
+				<div class="li-cont">If the lot is located on a cul-de-sac, the minimum width may be reduced to forty-five (45) feet.</div>
+				</li>
+			</ol>
+			</td>
+		</tr>
+		<tr>
+			<td colspan="3">
+			<p><strong>Single-Family Detached Dwellings and Other Uses</strong></p>
+
+			<p>&nbsp;</p>
+			<img alt="Computer generated graphic with numbering to match standards" id="" src="media/images/27-4202.-residential-base-zones-10.jpg" style="margin:auto;height: 269px;width: 550px;"></td>
+		</tr>
+	</tbody>
+</table>
+
+<table class="general smalt" style="width:100%;">
+	<thead>
+		<tr class="sheading">
+			<th colspan="6">
+			<ol class="list-v2" data-contfont="" data-indent=".5em" data-numfont="" data-numpre="(" data-numsuf=")" data-txtindent="2em" start="3" style="margin-left:0.5em">
+				<li>
+				<div class="li-num" style="max-width:2em; min-width:2em">(3)</div>
+
+				<div class="li-cont"><strong>Reference to Other Standards</strong></div>
+				</li>
+			</ol>
+			</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr class="alt1">
+			<td colspan="3">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-580">27-3400</a>&nbsp; &nbsp;Standard Review Procedures</td>
+			<td colspan="2">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-690">27-6400</a>&nbsp; &nbsp;Open Space Set-Asides</td>
+			<td>Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-743">27-61200</a>&nbsp; Neighborhood Compatibility Standards</td>
+		</tr>
+		<tr class="alt2">
+			<td colspan="3">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-604">27-3600</a>&nbsp; &nbsp;Application-Specific Review Procedures and Decision Standards</td>
+			<td colspan="2">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-699">27-6500</a>&nbsp; &nbsp;Landscaping</td>
+			<td>Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-747">27-61300</a>&nbsp; Agricultural Compatibility Standards</td>
+		</tr>
+		<tr class="alt1">
+			<td colspan="3"><span>Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-643">27-4400</a>&nbsp; &nbsp;</span>Overlay Zones</td>
+			<td colspan="2">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-700">27-6600</a>&nbsp; &nbsp;<span style="font-size:8pt">Fences and Walls</span></td>
+			<td>Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-751">27-61400</a>&nbsp; Urban Agriculture Compatibility Standards</td>
+		</tr>
+		<tr class="alt2">
+			<td colspan="3">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-649">27-5101</a>&nbsp; &nbsp;Principal Use Tables</td>
+			<td colspan="2">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-711">27-6700</a>&nbsp; &nbsp;Exterior Lighting</td>
+			<td>Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-755">27-61500</a>&nbsp; Signage</td>
+		</tr>
+		<tr class="alt1">
+			<td colspan="3">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-652">27-5200</a>&nbsp; &nbsp;Accessory Uses and Structures</td>
+			<td colspan="2">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-721">27-6800</a>&nbsp; &nbsp;Environmental Protection and Noise Controls</td>
+			<td>Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-763">27-61600</a>&nbsp; Green Building Standards</td>
+		</tr>
+		<tr class="alt2">
+			<td colspan="3">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-656">27-5300</a>&nbsp; &nbsp;Temporary Uses and Structures</td>
+			<td colspan="2">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-732">27-6900</a>&nbsp; &nbsp;Multifamily, Townhouse, and Three-Family Form and Design Standards</td>
+			<td>&nbsp;</td>
+		</tr>
+		<tr class="alt1">
+			<td colspan="3">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-670">27-6200</a>&nbsp; &nbsp;Roadway Access, Mobility, and Circulation</td>
+			<td colspan="2">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-736">27-61000</a>&nbsp; Nonresidential and Mixed-Use Form and Design Standards</td>
+			<td><a class="xref" target="_blank" href="doc-viewer.aspx#secid-48">PART 27-2</a>&nbsp; &nbsp;Interpretation and Definitions</td>
+		</tr>
+		<tr class="alt2">
+			<td colspan="3">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-679">27-6300</a>&nbsp; &nbsp;Off-Street Parking and Loading</td>
+			<td colspan="2">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-740">27-61100</a>&nbsp; Industrial Form and Design Standards</td>
+			<td><a class="xref" target="_blank" href="doc-viewer.aspx#secid-768">PART 27-7</a>&nbsp; &nbsp;Nonconforming Buildings, Structures, Uses, Lots, and Signs</td>
+		</tr>
+	</tbody>
+</table>
+
+<ol class="list-v2" data-numpre="(" data-numsuf=")" start="6" style="list-style-type:lower-alpha">
+	<li data-autopath="1" data-bkid="634bk6" data-liststylename="default" data-lstruct="(ǂfǂ)" data-path="sec#.ǁ(f)" id="secid-634bk6">
+	<div class="li-num">(f)</div>
+
+	<div class="li-cont"><strong>Residential, Single-Family-Attached (RSF-A) Zone</strong></div>
+	</li>
+</ol>
+
+<table class="general smalt" style="width:100%;">
+	<thead>
+		<tr class="sheading">
+			<th colspan="15" style="width: 99.6%;">
+			<ol class="list-v2" data-contfont="" data-indent=".5em" data-numfont="" data-numpre="(" data-numsuf=")" data-txtindent="2em" style="margin-left:0.5em">
+				<li>
+				<div class="li-num" style="max-width:2em; min-width:2em">(1)</div>
+
+				<div class="li-cont"><strong>Purposes</strong></div>
+				</li>
+			</ol>
+			</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td colspan="5" rowspan="2" style="vertical-align:top; width:43%">The purposes of the Residential, Single-Family-Attached (RSF-A) Zone are:
+			<ol class="list-v2" data-contfont="" data-numfont="" data-numpre="(" data-numsuf=")" data-txtindent="2em" style="list-style-type:upper-alpha">
+				<li data-unlistid="21519248">
+				<div class="li-num" style="max-width:2em; min-width:2em">(A)</div>
+
+				<div class="li-cont">To provide for development in a form that supports residential living and walkability, is pedestrian oriented and is well connected to surrounding lands;</div>
+				</li>
+				<li data-unlistid="21519248">
+				<div class="li-num" style="max-width:2em; min-width:2em">(B)</div>
+
+				<div class="li-cont">To provide development that is respectful of the natural features of the land; and</div>
+				</li>
+				<li data-unlistid="21519248">
+				<div class="li-num" style="max-width:2em; min-width:2em">(C)</div>
+
+				<div class="li-cont">To provide development that is compatible with surrounding lands.</div>
+				</li>
+			</ol>
+			</td>
+			<td colspan="8" style="width:55.9%"><img alt="Computer generated graphic of neighborhood with single-family homes" id="" src="media/images/27-4202.-residential-base-zones-21.jpg" style="height: 254px;width: 400px;"></td>
+		</tr>
+		<tr>
+			<td colspan="5" style="width:26.7%"><img alt="Single-family two-story homes" id="" src="media/images/27-4202.-residential-base-zones-22.jpg" style="margin: auto;height: 133px;width: 200px;"></td>
+			<td colspan="3" style="width:28%"><img alt="Single-family two-story homes" id="" src="media/images/27-4202.-residential-base-zones-23.jpg" style="margin: auto;height: 134px;width: 200px;"></td>
+		</tr>
+	</tbody>
+</table>
+
+<table class="general smalt" style="width:100%;">
+	<thead>
+		<tr class="sheading">
+			<th colspan="16" style="vertical-align: top; width: 43%;">
+			<ol class="list-v2" data-contfont="" data-indent=".5em" data-numfont="" data-numpre="(" data-numsuf=")" data-txtindent="2em" start="2" style="margin-left:0.5em">
+				<li class="li-num">
+				<div class="li-num" style="max-width:2em; min-width:2em">(2)</div>
+
+				<div class="li-cont"><strong style="font-size:8pt">Intensity and Dimensional Standards</strong>&nbsp;</div>
+				</li>
+			</ol>
+			</th>
+		</tr>
+		<tr class="alt1">
+			<th colspan="4" style="vertical-align: top; width: 43%;"><strong>Standard(1)</strong></th>
+			<th class="subsubheading" colspan="4" style="text-align: center; vertical-align: top; width: 43%;"><strong>Single-Family Detached Dwelling</strong></th>
+			<th colspan="4" style="text-align: center; vertical-align: top; width: 43%;"><strong>Two-Family Dwelling</strong></th>
+			<th class="subsubheading" style="text-align: center; vertical-align: top; width: 43%;"><strong>Three-Family Dwelling</strong></th>
+			<th style="text-align: center; vertical-align: top; width: 43%;"><strong>Townhouse Dwelling</strong></th>
+			<th class="subsubheading" colspan="2" style="text-align: center; vertical-align: top; width: 43%;"><strong>Other Uses</strong></th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td colspan="4" style="vertical-align:top; width:43%">Density, max. (du/ac of net lot area)</td>
+			<td class="subsubheading" colspan="4" style="text-align:center; vertical-align:top; width:43%">8.70</td>
+			<td colspan="4" style="text-align:center; vertical-align:top; width:43%">32.66</td>
+			<td class="subsubheading" style="text-align:center; vertical-align:top; width:43%">12.44</td>
+			<td style="text-align:center; vertical-align:top; width:43%">16.33</td>
+			<td class="subsubheading" colspan="2" style="text-align:center; vertical-align:top; width:43%">No requirement</td>
+		</tr>
+		<tr>
+			<td colspan="4" style="vertical-align:top; width:43%">Net lot area, min. (sf)</td>
+			<td class="subsubheading" colspan="4" style="text-align:center; vertical-align:top; width:43%">5,000</td>
+			<td colspan="4" style="text-align:center; vertical-align:top; width:43%">No requirement</td>
+			<td class="subsubheading" style="text-align:center; vertical-align:top; width:43%">No requirement</td>
+			<td style="text-align:center; vertical-align:top; width:43%">No requirement</td>
+			<td class="subsubheading" colspan="2" style="text-align:center; vertical-align:top; width:43%">6,500</td>
+		</tr>
+		<tr>
+			<td colspan="4" style="vertical-align:top; width:43%"><span style="color:#ff0000">❶</span> Lot width, min. (ft)</td>
+			<td class="subsubheading" colspan="4" style="text-align:center; vertical-align:top; width:43%">45 (10)</td>
+			<td colspan="4" style="text-align:center; vertical-align:top; width:43%">60 (8)</td>
+			<td class="subsubheading" style="text-align:center; vertical-align:top; width:43%">40</td>
+			<td style="text-align:center; vertical-align:top; width:43%">20 (5)</td>
+			<td class="subsubheading" colspan="2" style="text-align:center; vertical-align:top; width:43%">45</td>
+		</tr>
+		<tr>
+			<td colspan="4" style="vertical-align:top; width:43%">Lot frontage (width) at front street line, min. (ft)</td>
+			<td class="subsubheading" colspan="4" style="text-align:center; vertical-align:top; width:43%">40</td>
+			<td colspan="4" style="text-align:center; vertical-align:top; width:43%">48 (9)</td>
+			<td class="subsubheading" style="text-align:center; vertical-align:top; width:43%">32</td>
+			<td style="text-align:center; vertical-align:top; width:43%">16</td>
+			<td class="subsubheading" colspan="2" style="text-align:center; vertical-align:top; width:43%">36</td>
+		</tr>
+		<tr>
+			<td colspan="4" style="vertical-align:top; width:43%">Lot coverage, max. (% of net lot area)</td>
+			<td class="subsubheading" colspan="4" style="text-align:center; vertical-align:top; width:43%">40</td>
+			<td colspan="4" style="text-align:center; vertical-align:top; width:43%">45&nbsp;(2)</td>
+			<td class="subsubheading" style="text-align:center; vertical-align:top; width:43%">40 (2)</td>
+			<td style="text-align:center; vertical-align:top; width:43%">45&nbsp;(2)</td>
+			<td class="subsubheading" colspan="2" style="text-align:center; vertical-align:top; width:43%">60</td>
+		</tr>
+		<tr>
+			<td colspan="4" style="vertical-align:top; width:43%"><span style="color:#ff0000">❷</span> Front yard depth, min. (ft)</td>
+			<td class="subsubheading" colspan="4" style="text-align:center; vertical-align:top; width:43%">15</td>
+			<td colspan="4" style="text-align:center; vertical-align:top; width:43%">15</td>
+			<td class="subsubheading" style="text-align:center; vertical-align:top; width:43%">15</td>
+			<td style="text-align:center; vertical-align:top; width:43%">15</td>
+			<td class="subsubheading" colspan="2" style="text-align:center; vertical-align:top; width:43%">15</td>
+		</tr>
+		<tr>
+			<td colspan="4" style="vertical-align:top; width:43%"><span style="color:#ff0000">❸</span> Side yard depth, min. (ft)</td>
+			<td class="subsubheading" colspan="4" style="text-align:center; vertical-align:top; width:43%">8 (3)</td>
+			<td colspan="4" style="text-align:center; vertical-align:top; width:43%">8 (4)</td>
+			<td class="subsubheading" style="text-align:center; vertical-align:top; width:43%">8 (4)</td>
+			<td style="text-align:center; vertical-align:top; width:43%">8 (4)</td>
+			<td class="subsubheading" colspan="2" style="text-align:center; vertical-align:top; width:43%">8 (3)</td>
+		</tr>
+		<tr>
+			<td colspan="4" style="vertical-align:top; width:43%"><span style="color:#ff0000">❹</span> Rear yard depth, min. (ft)</td>
+			<td class="subsubheading" colspan="4" style="text-align:center; vertical-align:top; width:43%">20</td>
+			<td colspan="4" style="text-align:center; vertical-align:top; width:43%">20 (7)</td>
+			<td class="subsubheading" style="text-align:center; vertical-align:top; width:43%">20</td>
+			<td style="text-align:center; vertical-align:top; width:43%">20 (7)</td>
+			<td class="subsubheading" colspan="2" style="text-align:center; vertical-align:top; width:43%">20</td>
+		</tr>
+		<tr>
+			<td colspan="4" style="vertical-align:top; width:43%"><span style="color:#ff0000">❺</span> Principal structure height, max. (ft)</td>
+			<td class="subsubheading" colspan="4" style="text-align:center; vertical-align:top; width:43%">40</td>
+			<td colspan="4" style="text-align:center; vertical-align:top; width:43%">50</td>
+			<td class="subsubheading" style="text-align:center; vertical-align:top; width:43%">40</td>
+			<td style="text-align:center; vertical-align:top; width:43%">50</td>
+			<td class="subsubheading" colspan="2" style="text-align:center; vertical-align:top; width:43%">40</td>
+		</tr>
+		<tr>
+			<td colspan="4" style="vertical-align:top; width:43%">Accessory structure height, max. (ft) (6)</td>
+			<td class="subsubheading" colspan="4" style="text-align:center; vertical-align:top; width:43%">25</td>
+			<td colspan="4" style="text-align:center; vertical-align:top; width:43%">25</td>
+			<td class="subsubheading" style="text-align:center; vertical-align:top; width:43%">25</td>
+			<td style="text-align:center; vertical-align:top; width:43%">25</td>
+			<td class="subsubheading" colspan="2" style="text-align:center; vertical-align:top; width:43%">25</td>
+		</tr>
+		<tr>
+			<td colspan="17"><strong>NOTES:</strong> du/ac = dwelling units per acre; sf = square feet; ft = feet<strong> </strong>
+			<ol class="list-v2" data-contfont="" data-numfont="" data-numpre="(" data-numsuf=")" data-txtindent="2em">
+				<li>
+				<div class="li-num" style="max-width:2em; min-width:2em">(1)</div>
+
+				<div class="li-cont">See measurement rules and allowed exceptions in Section <a class="xref" target="_blank" href="doc-viewer.aspx#secid-50">27-2200</a>, Measurement and Exceptions of Intensity and Dimensional Standards.</div>
+				</li>
+				<li>
+				<div class="li-num" style="max-width:2em; min-width:2em">(2)</div>
+
+				<div class="li-cont">Applicable to the lot coverage of the <a class="iLink" target="_blank" href="doc-view.aspx?pn=0&ajax=0&secid=198">development lot as a whole</a> rather than individual lots under townhouse units.</div>
+				</li>
+				<li>
+				<div class="li-num" style="max-width:2em; min-width:2em">(3)</div>
+
+				<div class="li-cont">On corner lot, min. side yard depth alongside street = 25 ft.<span style="color:#ff0000">❻</span></div>
+				</li>
+				<li>
+				<div class="li-num" style="max-width:2em; min-width:2em">(4)</div>
+
+				<div class="li-cont">Applicable to the buildings on the edges of the development lot as a whole. Within the development lot as a whole, a minimum separation of 8 feet is required between buildings.</div>
+				</li>
+				<li>
+				<div class="li-num" style="max-width:2em; min-width:2em">(5)</div>
+
+				<div class="li-cont">Applicable to the individual lots under townhouse units. The minimum lot width for the development lot as a whole shall be 100 ft.</div>
+				</li>
+				<li>
+				<div class="li-num" style="max-width:2em; min-width:2em">(6)</div>
+
+				<div class="li-cont">May be increased for certain purposes by approval of a special exception pursuant to Section <a class="xref" target="_blank" href="doc-viewer.aspx#secid-608">27-3604</a>, Special Exception. Height may not exceed 2 stories.</div>
+				</li>
+				<li>
+				<div class="li-num" style="max-width:2em; min-width:2em">(7)</div>
+
+				<div class="li-cont">May be reduced to 0 feet when a 20-foot-wide or wider <a class="iLink" target="_blank" href="doc-view.aspx?pn=0&ajax=0&secid=77">alley</a> is provided, or to a range between 5 and 10 feet when an alley less than 20 feet in width is provided.</div>
+				</li>
+				<li>
+				<div class="li-num" style="max-width:2em; min-width:2em">(8)</div>
+
+				<div class="li-cont">May be reduced to 20 feet when building vertically stacked dwelling units.</div>
+				</li>
+				<li>
+				<div class="li-num" style="max-width:2em; min-width:2em">(9)</div>
+
+				<div class="li-cont">May be reduced to 16 feet when building vertically stacked dwelling units.</div>
+				</li>
+				<li>
+				<div class="li-num" style="max-width:2em; min-width:2em">(10)</div>
+
+				<div class="li-cont">If the lot is located on a cul-de-sac, the minimum width may be reduced to forty-five (45) feet.</div>
+				</li>
+			</ol>
+			</td>
+		</tr>
+		<tr>
+			<td colspan="9" style="width:48.1%"><strong>Single-Family Dwellings and Two- and Three- <a class="iLink" target="_blank" href="doc-view.aspx?pn=0&ajax=0&secid=232">Family</a> Dwellings</strong><img alt="Single-Family Dwellings and Two- and Three- Family Dwellings" src="media/images/27-4202.-residential-base-zones-25.jpg" style="height:350px;width:342px;margin: auto;"></td>
+			<td colspan="8" style="width:51.8%"><strong>Townhouse Dwellings and Other Uses</strong><img alt="Townhouse Dwellings and Other Uses" src="media/images/27-4202.-residential-base-zones-27.jpg" style="height:350px;width:346px;margin: auto;"></td>
+		</tr>
+	</tbody>
+</table>
+
+<table class="general smalt" style="width:100%;">
+	<thead>
+		<tr class="sheading">
+			<th colspan="6">
+			<ol class="list-v2" data-contfont="" data-indent=".5em" data-numfont="" data-numpre="(" data-numsuf=")" data-txtindent="2em" start="3" style="margin-left:0.5em">
+				<li>
+				<div class="li-num" style="max-width:2em; min-width:2em">(3)</div>
+
+				<div class="li-cont"><strong>Reference to Other Standards</strong></div>
+				</li>
+			</ol>
+			</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr class="alt1">
+			<td colspan="3">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-580">27-3400</a>&nbsp; &nbsp;Standard Review Procedures</td>
+			<td colspan="2">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-690">27-6400</a>&nbsp; &nbsp;Open Space Set-Asides</td>
+			<td>Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-743">27-61200</a>&nbsp; Neighborhood Compatibility Standards</td>
+		</tr>
+		<tr class="alt2">
+			<td colspan="3">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-604">27-3600</a>&nbsp; &nbsp;Application-Specific Review Procedures and Decision Standards</td>
+			<td colspan="2">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-699">27-6500</a>&nbsp; &nbsp;Landscaping</td>
+			<td>Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-747">27-61300</a>&nbsp; Agricultural Compatibility Standards</td>
+		</tr>
+		<tr class="alt1">
+			<td colspan="3"><span>Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-643">27-4400</a>&nbsp; &nbsp;</span>Overlay Zones</td>
+			<td colspan="2">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-700">27-6600</a>&nbsp; &nbsp;<span style="font-size:8pt">Fences and Walls</span></td>
+			<td>Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-751">27-61400</a>&nbsp; Urban Agriculture Compatibility Standards</td>
+		</tr>
+		<tr class="alt2">
+			<td colspan="3">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-649">27-5101</a>&nbsp; &nbsp;Principal Use Tables</td>
+			<td colspan="2">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-711">27-6700</a>&nbsp; &nbsp;Exterior Lighting</td>
+			<td>Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-755">27-61500</a>&nbsp; Signage</td>
+		</tr>
+		<tr class="alt1">
+			<td colspan="3">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-652">27-5200</a>&nbsp; &nbsp;Accessory Uses and Structures</td>
+			<td colspan="2">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-721">27-6800</a>&nbsp; &nbsp;Environmental Protection and Noise Controls</td>
+			<td>Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-763">27-61600</a>&nbsp; Green Building Standards</td>
+		</tr>
+		<tr class="alt2">
+			<td colspan="3">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-656">27-5300</a>&nbsp; &nbsp;Temporary Uses and Structures</td>
+			<td colspan="2">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-732">27-6900</a>&nbsp; &nbsp;Multifamily, Townhouse, and Three-Family Form and Design Standards</td>
+			<td>&nbsp;</td>
+		</tr>
+		<tr class="alt1">
+			<td colspan="3">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-670">27-6200</a>&nbsp; &nbsp;Roadway Access, Mobility, and Circulation</td>
+			<td colspan="2">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-736">27-61000</a>&nbsp; Nonresidential and Mixed-Use Form and Design Standards</td>
+			<td><a class="xref" target="_blank" href="doc-viewer.aspx#secid-48">PART 27-2</a>&nbsp; &nbsp;Interpretation and Definitions</td>
+		</tr>
+		<tr class="alt2">
+			<td colspan="3">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-679">27-6300</a>&nbsp; &nbsp;Off-Street Parking and Loading</td>
+			<td colspan="2">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-740">27-61100</a>&nbsp; Industrial Form and Design Standards</td>
+			<td><a class="xref" target="_blank" href="doc-viewer.aspx#secid-768">PART 27-7</a>&nbsp; &nbsp;Nonconforming Buildings, Structures, Uses, Lots, and Signs</td>
+		</tr>
+	</tbody>
+</table>
+
+<ol class="list-v2" data-numpre="(" data-numsuf=")" start="7" style="list-style-type:lower-alpha">
+	<li data-autopath="1" data-bkid="634bk7" data-liststylename="default" data-lstruct="(ǂgǂ)" data-path="sec#.ǁ(g)" id="secid-634bk7">
+	<div class="li-num">(g)</div>
+
+	<div class="li-cont"><strong>Residential, Multifamily-12 (RMF-12) Zone</strong></div>
+	</li>
+</ol>
+
+<table class="general smalt" style="width:100%;">
+	<thead>
+		<tr class="sheading">
+			<th colspan="15" style="width: 99.7%;">
+			<ol class="list-v2" data-contfont="" data-indent=".5em" data-numfont="" data-numpre="(" data-numsuf=")" data-txtindent="2em" style="margin-left:0.5em">
+				<li>
+				<div class="li-num" style="max-width:2em; min-width:2em">(1)</div>
+
+				<div class="li-cont"><strong>Purposes</strong></div>
+				</li>
+			</ol>
+			</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td colspan="5" rowspan="3" style="vertical-align:top; width:40%">The purposes of the RMF‐12 Zone are:
+			<ol class="list-v2" data-contfont="" data-numfont="" data-numpre="(" data-numsuf=")" data-txtindent="2em" style="list-style-type:upper-alpha">
+				<li data-unlistid="2702904">
+				<div class="li-num" style="max-width:2em; min-width:2em">(A)</div>
+
+				<div class="li-cont">To make available low-density, multifamily developments of the &ldquo;garden apartment&rdquo; type which would offer many of the advantages normally associated with a single-family dwelling;</div>
+				</li>
+				<li data-unlistid="2702904">
+				<div class="li-num" style="max-width:2em; min-width:2em">(B)</div>
+
+				<div class="li-cont">To provide for this type of development at locations recommended in an Area Master Plan or Sector Plan, or at other locations which are found to be suitable by the <a class="iLink" target="_blank" href="doc-view.aspx?pn=0&ajax=0&secid=201">District Council</a>; and</div>
+				</li>
+				<li data-unlistid="2702904">
+				<div class="li-num" style="max-width:2em; min-width:2em">(C)</div>
+
+				<div class="li-cont">To provide for this type of development at locations which are adequately served by facilities such as those for circulation, sanitation, and retail sales and service.</div>
+				</li>
+			</ol>
+			</td>
+			<td colspan="10" style="width:59%"><img alt="Computer generated graphic of a standard residential base zone" id="" src="media/images/27-4202.-residential-base-zones-28.jpg" style="margin: auto;height: 273px;width: 415px;"></td>
+		</tr>
+		<tr>
+			<td colspan="7" rowspan="2" style="border-right:1px none #000000; width:27%"><img alt="Multi-family dwellings" id="" src="media/images/27-4202.-residential-base-zones-29.jpg" style="margin: auto;height: 137px;width: 205px;"></td>
+			<td colspan="3" rowspan="2" style="border-left:1px none #000000; width:30%"><img alt="Multi-family dwellings" id="" src="media/images/27-4202.-residential-base-zones-30.jpg" style="margin: auto;height: 137px;width: 205px;"></td>
+		</tr>
+		<tr>
+		</tr>
+	</tbody>
+</table>
+
+<table class="general smalt" style="width:100%;">
+	<thead>
+		<tr class="sheading">
+			<th colspan="16" style="vertical-align: top; width: 40%;">
+			<ol class="list-v2" data-contfont="" data-indent=".5em" data-numfont="" data-numpre="(" data-numsuf=")" data-txtindent="2em" start="2" style="margin-left:0.5em">
+				<li class="li-num">
+				<div class="li-num" style="max-width:2em; min-width:2em">(2)</div>
+
+				<div class="li-cont"><strong style="font-size:8pt">Intensity and Dimensional Standards</strong></div>
+				</li>
+			</ol>
+			</th>
+		</tr>
+		<tr class="alt1">
+			<th colspan="2"><strong>Standard(1)</strong></th>
+			<th class="subsubheading" colspan="2" style="text-align: center;"><strong>Single-Family Detached Dwelling</strong></th>
+			<th colspan="4" style="text-align: center;"><strong>Two-Family Dwelling</strong></th>
+			<th class="subsubheading" colspan="2" style="text-align: center;"><strong>Three-Family Dwelling</strong></th>
+			<th colspan="2" style="text-align: center;"><strong>Townhouse Dwelling</strong></th>
+			<th class="subsubheading" colspan="2" style="text-align: center;"><strong>Multifamily Dwelling</strong></th>
+			<th colspan="2" style="text-align: center;"><strong>Other Uses</strong></th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td colspan="2">Density, max. (du/ac of net lot area)</td>
+			<td class="subsubheading" colspan="2" style="text-align:center">8.70</td>
+			<td colspan="4" style="text-align:center">24.00</td>
+			<td class="subsubheading" colspan="2" style="text-align:center">10.00</td>
+			<td colspan="2" style="text-align:center">12.00</td>
+			<td class="subsubheading" colspan="2" style="text-align:center">12.00</td>
+			<td colspan="2" style="text-align:center">No requirement</td>
+		</tr>
+		<tr>
+			<td colspan="2">Net lot area, min. (sf)</td>
+			<td class="subsubheading" colspan="2" style="text-align:center">5,000</td>
+			<td colspan="4" style="text-align:center">No requirement</td>
+			<td class="subsubheading" colspan="2" style="text-align:center">No requirement</td>
+			<td colspan="2" style="text-align:center">No requirement</td>
+			<td class="subsubheading" colspan="2" style="text-align:center">9,000</td>
+			<td colspan="2" style="text-align:center">14,000</td>
+		</tr>
+		<tr>
+			<td colspan="2"><span style="color:#ff0000">❶</span> Lot width, min. (ft)</td>
+			<td class="subsubheading" colspan="2" style="text-align:center">50</td>
+			<td colspan="4" style="text-align:center">60 (2)(8)</td>
+			<td class="subsubheading" colspan="2" style="text-align:center">60 (2)</td>
+			<td colspan="2" style="text-align:center">20 (2)(6)</td>
+			<td class="subsubheading" colspan="2" style="text-align:center">75 (2)</td>
+			<td colspan="2" style="text-align:center">75 (2)</td>
+		</tr>
+		<tr>
+			<td colspan="2">Lot frontage (width) at front street line, min. (ft)</td>
+			<td class="subsubheading" colspan="2" style="text-align:center">40</td>
+			<td colspan="4" style="text-align:center">48 (9)</td>
+			<td class="subsubheading" colspan="2" style="text-align:center">48</td>
+			<td colspan="2" style="text-align:center">16</td>
+			<td class="subsubheading" colspan="2" style="text-align:center">60</td>
+			<td colspan="2" style="text-align:center">60</td>
+		</tr>
+		<tr>
+			<td colspan="2">Lot coverage, max. (% of net lot area)</td>
+			<td class="subsubheading" colspan="2" style="text-align:center">30</td>
+			<td colspan="4" style="text-align:center">35 (3)</td>
+			<td class="subsubheading" colspan="2" style="text-align:center">35 (3)</td>
+			<td colspan="2" style="text-align:center">35 (3)</td>
+			<td class="subsubheading" colspan="2" style="text-align:center">35</td>
+			<td colspan="2" style="text-align:center">20</td>
+		</tr>
+		<tr>
+			<td colspan="2"><a class="iLink" target="_blank" href="doc-view.aspx?pn=0&ajax=0&secid=269">Green area</a>, min. (% of net lot area)</td>
+			<td class="subsubheading" colspan="2" style="text-align:center">No requirement</td>
+			<td colspan="4" style="text-align:center">No requirement</td>
+			<td class="subsubheading" colspan="2" style="text-align:center">No requirement</td>
+			<td colspan="2" style="text-align:center">50</td>
+			<td class="subsubheading" colspan="2" style="text-align:center">50</td>
+			<td colspan="2" style="text-align:center">70</td>
+		</tr>
+		<tr>
+			<td colspan="2"><span style="color:#ff0000">❷</span> Front yard depth, min. (ft)</td>
+			<td class="subsubheading" colspan="2" style="text-align:center">15</td>
+			<td colspan="4" style="text-align:center">15</td>
+			<td class="subsubheading" colspan="2" style="text-align:center">15</td>
+			<td colspan="2" style="text-align:center">15</td>
+			<td class="subsubheading" colspan="2" style="text-align:center">15</td>
+			<td colspan="2" style="text-align:center">20</td>
+		</tr>
+		<tr>
+			<td colspan="2"><span style="color:#ff0000">❸</span> Side yard depth, min. (ft)</td>
+			<td class="subsubheading" colspan="2" style="text-align:center">8</td>
+			<td colspan="4" style="text-align:center">8 (4)</td>
+			<td class="subsubheading" colspan="2" style="text-align:center">8 (4)</td>
+			<td colspan="2" style="text-align:center">8 (4)</td>
+			<td class="subsubheading" colspan="2" style="text-align:center">8 (5)</td>
+			<td colspan="2" style="text-align:center">8 (5)</td>
+		</tr>
+		<tr>
+			<td colspan="2"><span style="color:#ff0000">❹</span> Rear yard depth, min. (ft)</td>
+			<td class="subsubheading" colspan="2" style="text-align:center">20</td>
+			<td colspan="4" style="text-align:center">20</td>
+			<td class="subsubheading" colspan="2" style="text-align:center">20</td>
+			<td colspan="2" style="text-align:center">20</td>
+			<td class="subsubheading" colspan="2" style="text-align:center">20</td>
+			<td colspan="2" style="text-align:center">20</td>
+		</tr>
+		<tr>
+			<td colspan="2"><span style="color:#ff0000">❺</span> Principal structure height, max. (ft)</td>
+			<td class="subsubheading" colspan="2" style="text-align:center">40</td>
+			<td colspan="4" style="text-align:center">50</td>
+			<td class="subsubheading" colspan="2" style="text-align:center">40</td>
+			<td colspan="2" style="text-align:center">50</td>
+			<td class="subsubheading" colspan="2" style="text-align:center">50</td>
+			<td colspan="2" style="text-align:center">40</td>
+		</tr>
+		<tr>
+			<td colspan="2">Accessory structure height, max. (ft) (7)</td>
+			<td class="subsubheading" colspan="2" style="text-align:center">15</td>
+			<td colspan="4" style="text-align:center">15</td>
+			<td class="subsubheading" colspan="2" style="text-align:center">15</td>
+			<td colspan="2" style="text-align:center">15</td>
+			<td class="subsubheading" colspan="2" style="text-align:center">15</td>
+			<td colspan="2" style="text-align:center">15</td>
+		</tr>
+		<tr>
+			<td colspan="16"><strong>NOTES</strong>: du/ac = dwelling units per acre; sf = square feet; ft = feet
+			<ol class="list-v2" data-numpre="(" data-numsuf=")">
+				<li>
+				<div class="li-num">(1)</div>
+
+				<div class="li-cont">See measurement rules and allowed exceptions in Section <a class="xref" target="_blank" href="doc-viewer.aspx#secid-50">27-2200</a>, Measurement and Exceptions of Intensity and Dimensional Standards.</div>
+				</li>
+				<li>
+				<div class="li-num">(2)</div>
+
+				<div class="li-cont">100 ft on corner lots.<span style="color:#ff0000">❻</span></div>
+				</li>
+				<li>
+				<div class="li-num">(3)</div>
+
+				<div class="li-cont">Applicable to the building coverage of the development lot as a whole rather than individual lots under townhouse units.</div>
+				</li>
+				<li>
+				<div class="li-num">(4)</div>
+
+				<div class="li-cont">Applicable to buildings on the edges of the development lot as a whole. Within the development lot as a whole, a minimum separation of 8 feet is required between buildings.</div>
+				</li>
+				<li>
+				<div class="li-num">(5)</div>
+
+				<div class="li-cont">On corner lot, min. side yard depth alongside street = 15 ft.<span style="color:#ff0000">❼</span></div>
+				</li>
+				<li>
+				<div class="li-num">(6)</div>
+
+				<div class="li-cont">Applicable to the individual lots under townhouse units. The minimum lot width for the development lot as a whole shall be 100 ft.</div>
+				</li>
+				<li>
+				<div class="li-num">(7)</div>
+
+				<div class="li-cont">May be increased for certain purposes by approval of a special exception pursuant to Section <a class="xref" target="_blank" href="doc-viewer.aspx#secid-608">27-3604</a>, Special Exception.</div>
+				</li>
+				<li>
+				<div class="li-num">(8)</div>
+
+				<div class="li-cont">May be reduced to 20 feet when building vertically stacked dwelling units.</div>
+				</li>
+				<li>
+				<div class="li-num">(9)</div>
+
+				<div class="li-cont">May be reduced to 16 feet when building vertically stacked dwelling units.</div>
+				</li>
+			</ol>
+			</td>
+		</tr>
+		<tr>
+			<td colspan="8" style="vertical-align:top; width:47%">
+			<p><strong>Single-Family Detached Dwellings</strong></p>
+			<img alt="Computer generated graphic of single-family detached dwellings" id="" src="media/images/27-4202.-residential-base-zones-32.jpg" style="margin:auto;height: 299px;width: 325px;"></td>
+			<td colspan="8" style="width:52.6%"><strong>Two- and Three-Family Dwellings</strong><img alt="Computer generated graphic of multi-family dwellings" id="" src="media/images/27-4202.-residential-base-zones-34.jpg" style="height: 318px;width: 325px;margin: auto;"></td>
+		</tr>
+		<tr>
+			<td colspan="8">
+			<p><strong>Townhouse Dwellings</strong></p>
+			<img alt="Computer generated graphic of townhouse dwellings" id="" src="media/images/27-4202.-residential-base-zones-36.jpg" style="height: 303px;width: 325px;margin: auto;"></td>
+			<td colspan="8" style="vertical-align:top">
+			<p><strong>Multifamily Dwellings and Other Uses</strong></p>
+			<img alt="Computer generated graphic of multi-family dwellings" id="" src="media/images/27-4202.-residential-base-zones-38.jpg" style="height: 284px;width: 325px;margin: auto;"></td>
+		</tr>
+	</tbody>
+</table>
+
+<table class="general smalt" style="width:100%;">
+	<thead>
+		<tr class="sheading">
+			<th colspan="6">
+			<ol class="list-v2" data-contfont="" data-indent=".5em" data-numfont="" data-numpre="(" data-numsuf=")" data-txtindent="2em" start="3" style="margin-left:0.5em">
+				<li>
+				<div class="li-num" style="max-width:2em; min-width:2em">(3)</div>
+
+				<div class="li-cont"><strong>Reference to Other Standards</strong></div>
+				</li>
+			</ol>
+			</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr class="alt1">
+			<td colspan="3">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-580">27-3400</a>&nbsp; &nbsp;Standard Review Procedures</td>
+			<td colspan="2">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-690">27-6400</a>&nbsp; &nbsp;Open Space Set-Asides</td>
+			<td>Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-743">27-61200</a>&nbsp; Neighborhood Compatibility Standards</td>
+		</tr>
+		<tr class="alt2">
+			<td colspan="3">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-604">27-3600</a>&nbsp; &nbsp;Application-Specific Review Procedures and Decision Standards</td>
+			<td colspan="2">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-699">27-6500</a>&nbsp; &nbsp;Landscaping</td>
+			<td>Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-747">27-61300</a>&nbsp; Agricultural Compatibility Standards</td>
+		</tr>
+		<tr class="alt1">
+			<td colspan="3"><span>Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-643">27-4400</a>&nbsp; &nbsp;</span>Overlay Zones</td>
+			<td colspan="2">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-700">27-6600</a>&nbsp; &nbsp;<span style="font-size:8pt">Fences and Walls</span></td>
+			<td>Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-751">27-61400</a>&nbsp; Urban Agriculture Compatibility Standards</td>
+		</tr>
+		<tr class="alt2">
+			<td colspan="3">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-649">27-5101</a>&nbsp; &nbsp;Principal Use Tables</td>
+			<td colspan="2">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-711">27-6700</a>&nbsp; &nbsp;Exterior Lighting</td>
+			<td>Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-755">27-61500</a>&nbsp; Signage</td>
+		</tr>
+		<tr class="alt1">
+			<td colspan="3">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-652">27-5200</a>&nbsp; &nbsp;Accessory Uses and Structures</td>
+			<td colspan="2">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-721">27-6800</a>&nbsp; &nbsp;Environmental Protection and Noise Controls</td>
+			<td>Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-763">27-61600</a>&nbsp; Green Building Standards</td>
+		</tr>
+		<tr class="alt2">
+			<td colspan="3">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-656">27-5300</a>&nbsp; &nbsp;Temporary Uses and Structures</td>
+			<td colspan="2">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-732">27-6900</a>&nbsp; &nbsp;Multifamily, Townhouse, and Three-Family Form and Design Standards</td>
+			<td>&nbsp;</td>
+		</tr>
+		<tr class="alt1">
+			<td colspan="3">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-670">27-6200</a>&nbsp; &nbsp;Roadway Access, Mobility, and Circulation</td>
+			<td colspan="2">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-736">27-61000</a>&nbsp; Nonresidential and Mixed-Use Form and Design Standards</td>
+			<td><a class="xref" target="_blank" href="doc-viewer.aspx#secid-48">PART 27-2</a>&nbsp; &nbsp;Interpretation and Definitions</td>
+		</tr>
+		<tr class="alt2">
+			<td colspan="3">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-679">27-6300</a>&nbsp; &nbsp;Off-Street Parking and Loading</td>
+			<td colspan="2">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-740">27-61100</a>&nbsp; Industrial Form and Design Standards</td>
+			<td><a class="xref" target="_blank" href="doc-viewer.aspx#secid-768">PART 27-7</a>&nbsp; &nbsp;Nonconforming Buildings, Structures, Uses, Lots, and Signs</td>
+		</tr>
+	</tbody>
+</table>
+
+<ol class="list-v2" data-numpre="(" data-numsuf=")" start="8" style="list-style-type:lower-alpha">
+	<li data-autopath="1" data-bkid="634bk8" data-liststylename="default" data-lstruct="(ǂhǂ)" data-path="sec#.ǁ(h)" id="secid-634bk8">
+	<div class="li-num">(h)</div>
+
+	<div class="li-cont"><strong>Residential, Multifamily-20 (RMF-20) Zone</strong></div>
+	</li>
+</ol>
+
+<table class="general smalt" style="width:100%;">
+	<thead>
+		<tr class="sheading">
+			<th colspan="14" style="width: 99.7%;">
+			<ol class="list-v2" data-contfont="" data-indent=".5em" data-numfont="" data-numpre="(" data-numsuf=")" data-txtindent="2em" style="margin-left:0.5em">
+				<li>
+				<div class="li-num" style="max-width:2em; min-width:2em">(1)</div>
+
+				<div class="li-cont"><strong>Purposes</strong></div>
+				</li>
+			</ol>
+			</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td colspan="5" rowspan="2" style="vertical-align:top; width:40%">The purposes of the Residential, Multifamily-20 (RMF-20) Zone&nbsp;are:
+			<ol class="list-v2" data-contfont="" data-numfont="" data-numpre="(" data-numsuf=")" data-txtindent="2em" style="list-style-type:upper-alpha">
+				<li data-unlistid="91028607">
+				<div class="li-num" style="max-width:2em; min-width:2em">(A)</div>
+
+				<div class="li-cont">To provide suitable sites for high-density multifamily residential development;</div>
+				</li>
+				<li data-unlistid="47220587">
+				<div class="li-num" style="max-width:2em; min-width:2em">(B)</div>
+
+				<div class="li-cont">To provide for this type of development at locations recommended by an Area Master Plan or Sector Plan, or at other locations which are found to be suitable by the District Council;</div>
+				</li>
+				<li data-unlistid="41636571">
+				<div class="li-num" style="max-width:2em; min-width:2em">(C)</div>
+
+				<div class="li-cont">To support multifamily development at sites that are proximate to centers or are at appropriate locations along commercial corridors; and</div>
+				</li>
+				<li data-unlistid="98368919">
+				<div class="li-num" style="max-width:2em; min-width:2em">(D)</div>
+
+				<div class="li-cont">To ensure compatibility with surrounding lands.</div>
+				</li>
+			</ol>
+			</td>
+			<td colspan="9" style="width:59%"><img alt="Computer generated graphic of a residential base zone" id="" src="media/images/27-4202.-residential-base-zones-39.jpg" style="margin: auto;height: 268px;width: 415px;"></td>
+		</tr>
+		<tr>
+			<td colspan="5" style="border-right:1px none #000000; width:27%"><img alt="Multi-family dwellings" id="" src="media/images/27-4202.-residential-base-zones-40.jpg" style="margin: auto;height: 133px;width: 200px;"></td>
+			<td style="border-left:1px none #000000; border-right:1px none #000000; width:1.2%">&nbsp;</td>
+			<td colspan="3" style="border-left:1px none #000000; width:30%"><img alt="Multi-family dwellings" id="" src="media/images/27-4202.-residential-base-zones-41.jpg" style="margin: auto;height: 134px;width: 200px;"></td>
+		</tr>
+	</tbody>
+</table>
+
+<table class="general smalt" style="width:100%;">
+	<thead>
+		<tr class="sheading">
+			<th colspan="16" style="vertical-align: top; width: 40%;">
+			<ol class="list-v2" data-contfont="" data-indent=".5em" data-numfont="" data-numpre="(" data-numsuf=")" data-txtindent="2em" start="2" style="margin-left:0.5em">
+				<li>
+				<div class="li-num" style="max-width:2em; min-width:2em">(2)</div>
+
+				<div class="li-cont"><strong style="font-size:8pt">Intensity and Dimensional Standards</strong></div>
+				</li>
+			</ol>
+			</th>
+		</tr>
+		<tr class="alt1">
+			<th colspan="2"><strong>Standard(1)</strong></th>
+			<th class="subsubheading" colspan="4" style="text-align: center;"><strong>Two-Family Dwelling</strong></th>
+			<th colspan="3" style="text-align: center;"><strong>Three-Family Dwelling</strong></th>
+			<th class="subsubheading" colspan="4" style="text-align: center;"><strong>Townhouse Dwelling</strong></th>
+			<th style="text-align: center;"><strong>Multifamily Dwelling</strong></th>
+			<th class="subsubheading" style="text-align: center;"><strong>Other Uses</strong></th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td colspan="2">Density, max. (du/ac of net lot area)</td>
+			<td class="subsubheading" colspan="4" style="text-align:center">40.00</td>
+			<td colspan="3" style="text-align:center">14.00</td>
+			<td class="subsubheading" colspan="4" style="text-align:center">20.00</td>
+			<td style="text-align:center">20.00</td>
+			<td class="subsubheading" style="text-align:center">
+			<p style="text-align:center">No&nbsp;requirement</p>
+			</td>
+		</tr>
+		<tr>
+			<td colspan="2">Net lot area, min. (sf)</td>
+			<td class="subsubheading" colspan="4" style="text-align:center">No requirement</td>
+			<td colspan="3" style="text-align:center">No requirement</td>
+			<td class="subsubheading" colspan="4" style="text-align:center">No requirement</td>
+			<td style="text-align:center">7,500</td>
+			<td class="subsubheading" style="text-align:center">
+			<p style="text-align:center">7,500</p>
+			</td>
+		</tr>
+		<tr>
+			<td colspan="2"><span style="color:#ff0000">❶</span> Lot width, min. (ft)</td>
+			<td class="subsubheading" colspan="4" style="text-align:center">60 (2)(9)</td>
+			<td colspan="3" style="text-align:center">60 (2)</td>
+			<td class="subsubheading" colspan="4" style="text-align:center">20 (7)</td>
+			<td style="text-align:center">60 (2)</td>
+			<td class="subsubheading" style="text-align:center">60 (2)</td>
+		</tr>
+		<tr>
+			<td colspan="2">Lot frontage (width) at front street line, min. (ft)</td>
+			<td class="subsubheading" colspan="4" style="text-align:center">48 (10)</td>
+			<td colspan="3" style="text-align:center">48</td>
+			<td class="subsubheading" colspan="4" style="text-align:center">16</td>
+			<td style="text-align:center">48</td>
+			<td class="subsubheading" style="text-align:center">48</td>
+		</tr>
+		<tr>
+			<td colspan="2">Lot coverage, max. (% of net lot area)</td>
+			<td class="subsubheading" colspan="4" style="text-align:center">35 (3)</td>
+			<td colspan="3" style="text-align:center">35 (3)</td>
+			<td class="subsubheading" colspan="4" style="text-align:center">40 (3)</td>
+			<td style="text-align:center">40</td>
+			<td class="subsubheading" style="text-align:center">60</td>
+		</tr>
+		<tr>
+			<td colspan="2">Green area, min. (% of net lot area)</td>
+			<td class="subsubheading" colspan="4" style="text-align:center">No requirement</td>
+			<td colspan="3" style="text-align:center">No requirement</td>
+			<td class="subsubheading" colspan="4" style="text-align:center">50</td>
+			<td style="text-align:center">60</td>
+			<td class="subsubheading" style="text-align:center">
+			<p style="text-align:center">No&nbsp;requirement</p>
+			</td>
+		</tr>
+		<tr>
+			<td colspan="2"><span style="color:#ff0000">❷</span> Front yard depth, min. (ft)</td>
+			<td class="subsubheading" colspan="4" style="text-align:center">15</td>
+			<td colspan="3" style="text-align:center">15</td>
+			<td class="subsubheading" colspan="4" style="text-align:center">15</td>
+			<td style="text-align:center">15</td>
+			<td class="subsubheading" style="text-align:center">0</td>
+		</tr>
+		<tr>
+			<td colspan="2"><span style="color:#ff0000">❸</span> Side yard depth, min. (ft)</td>
+			<td class="subsubheading" colspan="4" style="text-align:center">8 (4)</td>
+			<td colspan="3" style="text-align:center">8 (4)</td>
+			<td class="subsubheading" colspan="4" style="text-align:center">8 (4)</td>
+			<td style="text-align:center">8 (5)</td>
+			<td class="subsubheading" style="text-align:center">8 (5)</td>
+		</tr>
+		<tr>
+			<td colspan="2"><span style="color:#ff0000">❹</span> Rear yard depth, min. (ft)</td>
+			<td class="subsubheading" colspan="4" style="text-align:center">20</td>
+			<td colspan="3" style="text-align:center">20</td>
+			<td class="subsubheading" colspan="4" style="text-align:center">20</td>
+			<td style="text-align:center">20</td>
+			<td class="subsubheading" style="text-align:center">20</td>
+		</tr>
+		<tr>
+			<td colspan="2"><span style="color:#ff0000">❺</span> Principal structure height, max. (ft) (6)</td>
+			<td class="subsubheading" colspan="4" style="text-align:center">50</td>
+			<td colspan="3" style="text-align:center">50</td>
+			<td class="subsubheading" colspan="4" style="text-align:center">50</td>
+			<td style="text-align:center">50</td>
+			<td class="subsubheading" style="text-align:center">50</td>
+		</tr>
+		<tr>
+			<td colspan="2">Accessory structure height, max. (ft) (7)(8)</td>
+			<td class="subsubheading" colspan="4" style="text-align:center">15</td>
+			<td colspan="3" style="text-align:center">15</td>
+			<td class="subsubheading" colspan="4" style="text-align:center">15</td>
+			<td style="text-align:center">15</td>
+			<td class="subsubheading" style="text-align:center">15</td>
+		</tr>
+		<tr>
+			<td colspan="16"><strong>NOTES</strong>: du/ac = dwelling units per acre; sf = square feet; ft = feet
+			<ol class="list-v2" data-numpre="(" data-numsuf=")">
+				<li>
+				<div class="li-num">(1)</div>
+
+				<div class="li-cont">See measurement rules and allowed exceptions in Section <a class="xref" target="_blank" href="doc-viewer.aspx#secid-50">27-2200</a>, Measurement and Exceptions of Intensity and Dimensional Standards.</div>
+				</li>
+				<li>
+				<div class="li-num">(2)</div>
+
+				<div class="li-cont">80 ft on corner lots.<span style="color:#ff0000">❻</span></div>
+				</li>
+				<li>
+				<div class="li-num">(3)</div>
+
+				<div class="li-cont">Applicable to the building coverage of the development lot as a whole rather than individual lots under townhouse units.</div>
+				</li>
+				<li>
+				<div class="li-num">(4)</div>
+
+				<div class="li-cont">Applicable to buildings on the edges of the development lot as a whole. Within the development lot as a whole, a minimum separation of 8 feet is required between buildings.</div>
+				</li>
+				<li>
+				<div class="li-num">(5)</div>
+
+				<div class="li-cont">On corner lot, min. side yard depth alongside street = 15 ft.<span style="color:#ff0000">❼</span></div>
+				</li>
+				<li>
+				<div class="li-num">(6)</div>
+
+				<div class="li-cont">80 ft where net lot area&nbsp;<span style="font-size:8.0pt"><span style="font-family:&quot;Calibri&quot;,sans-serif">&ge;&nbsp;4 acres.</span></span></div>
+				</li>
+				<li>
+				<div class="li-num">(7)</div>
+
+				<div class="li-cont">Applicable to the individual lots under townhouse units. The minimum lot width for the development lot as a whole shall be 100 ft.</div>
+				</li>
+				<li>
+				<div class="li-num">(8)</div>
+
+				<div class="li-cont">May be increased for certain purposes by approval of a special exception pursuant to Section <a class="xref" target="_blank" href="doc-viewer.aspx#secid-608">27-3604</a>, Special Exception.</div>
+				</li>
+				<li>
+				<div class="li-num">(9)</div>
+
+				<div class="li-cont">May be reduced to 20 feet when building vertically stacked dwelling units.</div>
+				</li>
+				<li>
+				<div class="li-num">(10)</div>
+
+				<div class="li-cont">May be reduced to 16 feet when building vertically stacked dwelling units.</div>
+				</li>
+			</ol>
+			</td>
+		</tr>
+		<tr>
+			<td colspan="10" style="vertical-align:top; width:47%">
+			<p><strong>Two- and Three-Family Dwellings</strong></p>
+			<img alt="Computer generated graphic of multi-family dwellings" id="" src="media/images/27-4202.-residential-base-zones-34.jpg" style="margin: auto;height: 318px;width: 325px;"></td>
+			<td colspan="6" style="vertical-align:top; width:52%"><strong>Townhouse Dwellings</strong><img alt="Computer generated graphic of townhouse dwellings" id="" src="media/images/27-4202.-residential-base-zones-36.jpg" style="height: 303px;width: 325px;margin: auto;"></td>
+		</tr>
+		<tr>
+			<td colspan="16">
+			<p><strong>Multifamily Dwellings and Other Uses</strong></p>
+			<img alt="Computer generated graphic of multi-family dwellings" src="media/images/27-4202.-residential-base-zones-38.jpg" style="height: 306px;width: 350px;margin: auto;"></td>
+		</tr>
+	</tbody>
+</table>
+
+<table class="general smalt" style="width:100%;">
+	<thead>
+		<tr class="sheading">
+			<th colspan="6">
+			<ol class="list-v2" data-contfont="" data-indent=".5em" data-numfont="" data-numpre="(" data-numsuf=")" data-txtindent="2em" start="3" style="margin-left:0.5em">
+				<li>
+				<div class="li-num" style="max-width:2em; min-width:2em">(3)</div>
+
+				<div class="li-cont"><strong>Reference to Other Standards</strong></div>
+				</li>
+			</ol>
+			</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr class="alt1">
+			<td colspan="3">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-580">27-3400</a>&nbsp; &nbsp;Standard Review Procedures</td>
+			<td colspan="2">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-690">27-6400</a>&nbsp; &nbsp;Open Space Set-Asides</td>
+			<td>Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-743">27-61200</a>&nbsp; Neighborhood Compatibility Standards</td>
+		</tr>
+		<tr class="alt2">
+			<td colspan="3">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-604">27-3600</a>&nbsp; &nbsp;Application-Specific Review Procedures and Decision Standards</td>
+			<td colspan="2">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-699">27-6500</a>&nbsp; &nbsp;Landscaping</td>
+			<td>Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-747">27-61300</a>&nbsp; Agricultural Compatibility Standards</td>
+		</tr>
+		<tr class="alt1">
+			<td colspan="3"><span>Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-643">27-4400</a>&nbsp; &nbsp;</span>Overlay Zones</td>
+			<td colspan="2">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-700">27-6600</a>&nbsp; &nbsp;<span style="font-size:8pt">Fences and Walls</span></td>
+			<td>Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-751">27-61400</a>&nbsp; Urban Agriculture Compatibility Standards</td>
+		</tr>
+		<tr class="alt2">
+			<td colspan="3">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-649">27-5101</a>&nbsp; &nbsp;Principal Use Tables</td>
+			<td colspan="2">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-711">27-6700</a>&nbsp; &nbsp;Exterior Lighting</td>
+			<td>Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-755">27-61500</a>&nbsp; Signage</td>
+		</tr>
+		<tr class="alt1">
+			<td colspan="3">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-652">27-5200</a>&nbsp; &nbsp;Accessory Uses and Structures</td>
+			<td colspan="2">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-721">27-6800</a>&nbsp; &nbsp;Environmental Protection and Noise Controls</td>
+			<td>Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-763">27-61600</a>&nbsp; Green Building Standards</td>
+		</tr>
+		<tr class="alt2">
+			<td colspan="3">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-656">27-5300</a>&nbsp; &nbsp;Temporary Uses and Structures</td>
+			<td colspan="2">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-732">27-6900</a>&nbsp; &nbsp;Multifamily, Townhouse, and Three-Family Form and Design Standards</td>
+			<td>&nbsp;</td>
+		</tr>
+		<tr class="alt1">
+			<td colspan="3">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-670">27-6200</a>&nbsp; &nbsp;Roadway Access, Mobility, and Circulation</td>
+			<td colspan="2">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-736">27-61000</a>&nbsp; Nonresidential and Mixed-Use Form and Design Standards</td>
+			<td><a class="xref" target="_blank" href="doc-viewer.aspx#secid-48">PART 27-2</a>&nbsp; &nbsp;Interpretation and Definitions</td>
+		</tr>
+		<tr class="alt2">
+			<td colspan="3">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-679">27-6300</a>&nbsp; &nbsp;Off-Street Parking and Loading</td>
+			<td colspan="2">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-740">27-61100</a>&nbsp; Industrial Form and Design Standards</td>
+			<td><a class="xref" target="_blank" href="doc-viewer.aspx#secid-768">PART 27-7</a>&nbsp; &nbsp;Nonconforming Buildings, Structures, Uses, Lots, and Signs</td>
+		</tr>
+	</tbody>
+</table>
+
+<ol class="list-v2" data-numpre="(" data-numsuf=")" start="9" style="list-style-type:lower-alpha">
+	<li data-autopath="1" data-bkid="634bk9" data-liststylename="default" data-lstruct="(ǂiǂ)" data-path="sec#.ǁ(i)" id="secid-634bk9">
+	<div class="li-num">(i)</div>
+
+	<div class="li-cont"><strong>Residential, Multifamily-48 (RMF-48) Zone</strong></div>
+	</li>
+</ol>
+
+<table class="general smalt" style="width:100%;">
+	<thead>
+		<tr class="sheading">
+			<th colspan="6" style="text-align: left;">
+			<ol class="list-v2" data-contfont="" data-indent=".5em" data-numfont="" data-numpre="(" data-numsuf=")" data-txtindent="2em" style="margin-left:0.5em">
+				<li class="li-num">
+				<div class="li-num" style="max-width:2em; min-width:2em">(1)</div>
+
+				<div class="li-cont"><strong><span style="color:inherit; font-family:inherit; font-size:inherit; font-weight:inherit; text-align:inherit">Purposes</span><span style="color:inherit; font-family:inherit; font-size:11pt; font-weight:normal; text-align:inherit">&nbsp;</span><span style="color:inherit; font-family:inherit; font-size:11pt; font-weight:normal; text-align:inherit">&nbsp;</span><span style="color:inherit; font-family:inherit; font-size:11pt; font-weight:normal; text-align:inherit">&nbsp;</span><span style="color:inherit; font-family:inherit; font-size:11pt; font-weight:normal; text-align:inherit">&nbsp;</span></strong><span style="color:inherit; font-family:inherit; font-size:11pt; font-weight:normal; text-align:inherit">&nbsp;</span><span style="color:inherit; font-family:inherit; font-size:11pt; font-weight:normal; text-align:inherit">&nbsp;</span></div>
+				</li>
+			</ol>
+			</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td colspan="2" rowspan="2" style="vertical-align:top">The purposes of the Residential, Multifamily‐48 (RMF‐48) Zone are:
+			<ol class="list-v2" data-contfont="" data-numfont="" data-numpre="(" data-numsuf=")" data-txtindent="2em" style="list-style-type:upper-alpha">
+				<li>
+				<div class="li-num" style="max-width:2em; min-width:2em">(A)</div>
+
+				<div class="li-cont">To provide suitable sites respectful of the natural features of the land for high-density multifamily residential development and other forms of development that support residential living and walkability;</div>
+				</li>
+				<li>
+				<div class="li-num" style="max-width:2em; min-width:2em">(B)</div>
+
+				<div class="li-cont">To provide for this type of development at locations recommended by an Area Master Plan or Sector Plan, proximate to centers (including transit centers) or at other locations which are found to be suitable by the District Council; and</div>
+				</li>
+				<li>
+				<div class="li-num" style="max-width:2em; min-width:2em">(C)</div>
+
+				<div class="li-cont">To ensure development is compatible with surrounding lands.</div>
+				</li>
+			</ol>
+			</td>
+			<td colspan="4"><img alt="Computer generated graphic of a standard residential base zone" id="" src="media/images/27-4202.-residential-base-zones-48.jpg" style="margin: auto;height: 242px;width: 400px;"></td>
+		</tr>
+		<tr>
+			<td colspan="2"><img alt="Apartment complex" id="" src="media/images/27-4202.-residential-base-zones-49.jpg" style="height: 134px;width: 200px;"></td>
+			<td colspan="2"><img alt="Apartment Complex" id="" src="media/images/27-4202.-residential-base-zones-50.jpg" style="height: 134px;width: 200px;"></td>
+		</tr>
+	</tbody>
+</table>
+
+<table class="general smalt" style="width:100%;">
+	<thead>
+		<tr class="sheading">
+			<th colspan="3">
+			<ol class="list-v2" data-contfont="" data-indent=".5em" data-numfont="" data-numpre="(" data-numsuf=")" data-txtindent="2em" start="2" style="margin-left:0.5em">
+				<li>
+				<div class="li-num" style="max-width:2em; min-width:2em">(2)</div>
+
+				<div class="li-cont"><strong>Intensity and Dimensional Standards</strong></div>
+				</li>
+			</ol>
+			</th>
+		</tr>
+		<tr class="alt1">
+			<th style="width: 39.57%;"><strong>Standard(1)</strong></th>
+			<th class="subsubheading" style="text-align: center; width: 20%;"><strong>Multifamily Dwelling</strong></th>
+			<th style="text-align: center; width: 24.52%;">&nbsp;<strong>Other Uses</strong></th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td>Density, max. (du/ac of net lot area)</td>
+			<td class="subsubheading" style="text-align:center">48.00</td>
+			<td style="text-align:center">&nbsp;No requirement</td>
+		</tr>
+		<tr>
+			<td>Net lot area, min. (sf)</td>
+			<td class="subsubheading" style="text-align:center">7,500</td>
+			<td style="text-align:center">7,500</td>
+		</tr>
+		<tr>
+			<td><span style="color:#ff0000">❶</span> Lot width, min. (ft)</td>
+			<td class="subsubheading" style="text-align:center">75 (2)</td>
+			<td style="text-align:center">75 (2)</td>
+		</tr>
+		<tr>
+			<td>Lot frontage (width) at front street line, min. (ft)</td>
+			<td class="subsubheading" style="text-align:center">60</td>
+			<td style="text-align:center">60</td>
+		</tr>
+		<tr>
+			<td>Lot coverage, max. (% of development lot as a whole)</td>
+			<td class="subsubheading" style="text-align:center">60</td>
+			<td style="text-align:center">60</td>
+		</tr>
+		<tr>
+			<td><span style="color:#ff0000">❷</span> Front yard depth, min. (ft)</td>
+			<td class="subsubheading" style="text-align:center">15</td>
+			<td style="text-align:center">15</td>
+		</tr>
+		<tr>
+			<td><span style="color:#ff0000">❸</span> Side yard depth, min. (ft)&nbsp;(both yards total/either yard) (3)</td>
+			<td class="subsubheading" style="text-align:center">8</td>
+			<td style="text-align:center">8</td>
+		</tr>
+		<tr>
+			<td><span style="color:#ff0000">❹</span> Rear yard depth, min. (ft)</td>
+			<td class="subsubheading" style="text-align:center">20</td>
+			<td style="text-align:center">20</td>
+		</tr>
+		<tr>
+			<td><span style="color:#ff0000">❺</span> Principal structure height, max. (ft)</td>
+			<td class="subsubheading" style="text-align:center">110 (4)(5)</td>
+			<td style="text-align:center">110 (5)</td>
+		</tr>
+		<tr>
+			<td>Accessory structure height, max. (ft) (6)</td>
+			<td class="subsubheading" style="text-align:center">15</td>
+			<td style="text-align:center">15</td>
+		</tr>
+		<tr>
+			<td colspan="3"><strong>NOTES:</strong> du/ac = dwelling units per acre; sf = square feet; ft = feet<strong> </strong>
+			<ol class="list-v2" data-contfont="" data-numfont="" data-numpre="(" data-numsuf=")">
+				<li>
+				<div class="li-num">(1)</div>
+
+				<div class="li-cont">See measurement rules and allowed exceptions in Section <a class="xref" target="_blank" href="doc-viewer.aspx#secid-50">27-2200</a>, Measurement and Exceptions of Intensity and Dimensional Standards.</div>
+				</li>
+				<li>
+				<div class="li-num">(2)</div>
+
+				<div class="li-cont">100 ft on corner lots.&nbsp;<span style="color:#ff0000">❻</span></div>
+				</li>
+				<li>
+				<div class="li-num">(3)</div>
+
+				<div class="li-cont">On corner lot, min. side yard depth alongside street = 30 ft.&nbsp;<span style="font-size:8.0pt"><span style="font-family:&quot;Calibri&quot;,sans-serif"><span style="color:red">❼</span></span></span></div>
+				</li>
+				<li>
+				<div class="li-num">(4)</div>
+
+				<div class="li-cont">At least 80% of buildings in the multifamily development must be <span style="font-size:8.0pt"><span style="font-family:&quot;Calibri&quot;,sans-serif">&ge;</span></span> 52 ft high.</div>
+				</li>
+				<li>
+				<div class="li-num">(5)</div>
+
+				<div class="li-cont">Provided those portions of the structure greater than 52 ft high are set back from the minimum front , side, and rear yard depths an additional 0.5 ft for each 1 ft (or major fraction thereof) the height of the portion exceeds 52 ft.</div>
+				</li>
+				<li>
+				<div class="li-num">(6)</div>
+
+				<div class="li-cont">May be increased for certain purposes by approval of a special exception pursuant to Section <a class="xref" target="_blank" href="doc-viewer.aspx#secid-608">27-3604</a>, Special Exception.</div>
+				</li>
+			</ol>
+			</td>
+		</tr>
+		<tr>
+			<td colspan="3">
+			<p><strong>Multifamily Dwellings and Other Uses</strong></p>
+			<img alt="Multi-family dwellings" id="" src="media/images/27-4202_rmf-48_550.jpg" style="margin: auto;width: 400px;height: 365px;"></td>
+		</tr>
+	</tbody>
+</table>
+
+<table class="general smalt" style="width:100%;">
+	<thead>
+		<tr class="sheading">
+			<th colspan="6">
+			<ol class="list-v2" data-contfont="" data-indent=".5em" data-numfont="" data-numpre="(" data-numsuf=")" data-txtindent="2em" start="3" style="margin-left:0.5em">
+				<li>
+				<div class="li-num" style="max-width:2em; min-width:2em">(3)</div>
+
+				<div class="li-cont"><strong>Reference to Other Standards</strong></div>
+				</li>
+			</ol>
+			</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr class="alt1">
+			<td colspan="3">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-580">27-3400</a>&nbsp; &nbsp;Standard Review Procedures</td>
+			<td colspan="2">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-690">27-6400</a>&nbsp; &nbsp;Open Space Set-Asides</td>
+			<td>Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-743">27-61200</a>&nbsp; Neighborhood Compatibility Standards</td>
+		</tr>
+		<tr class="alt2">
+			<td colspan="3">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-604">27-3600</a>&nbsp; &nbsp;Application-Specific Review Procedures and Decision Standards</td>
+			<td colspan="2">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-699">27-6500</a>&nbsp; &nbsp;Landscaping</td>
+			<td>Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-747">27-61300</a>&nbsp; Agricultural Compatibility Standards</td>
+		</tr>
+		<tr class="alt1">
+			<td colspan="3"><span>Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-643">27-4400</a>&nbsp; &nbsp;</span>Overlay Zones</td>
+			<td colspan="2">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-700">27-6600</a>&nbsp; &nbsp;<span style="font-size:8pt">Fences and Walls</span></td>
+			<td>Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-751">27-61400</a>&nbsp; Urban Agriculture Compatibility Standards</td>
+		</tr>
+		<tr class="alt2">
+			<td colspan="3">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-649">27-5101</a>&nbsp; &nbsp;Principal Use Tables</td>
+			<td colspan="2">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-711">27-6700</a>&nbsp; &nbsp;Exterior Lighting</td>
+			<td>Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-755">27-61500</a>&nbsp; Signage</td>
+		</tr>
+		<tr class="alt1">
+			<td colspan="3">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-652">27-5200</a>&nbsp; &nbsp;Accessory Uses and Structures</td>
+			<td colspan="2">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-721">27-6800</a>&nbsp; &nbsp;Environmental Protection and Noise Controls</td>
+			<td>Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-763">27-61600</a>&nbsp; Green Building Standards</td>
+		</tr>
+		<tr class="alt2">
+			<td colspan="3">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-656">27-5300</a>&nbsp; &nbsp;Temporary Uses and Structures</td>
+			<td colspan="2">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-732">27-6900</a>&nbsp; &nbsp;Multifamily, Townhouse, and Three-Family Form and Design Standards</td>
+			<td>&nbsp;</td>
+		</tr>
+		<tr class="alt1">
+			<td colspan="3">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-670">27-6200</a>&nbsp; &nbsp;Roadway Access, Mobility, and Circulation</td>
+			<td colspan="2">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-736">27-61000</a>&nbsp; Nonresidential and Mixed-Use Form and Design Standards</td>
+			<td><a class="xref" target="_blank" href="doc-viewer.aspx#secid-48">PART 27-2</a>&nbsp; &nbsp;Interpretation and Definitions</td>
+		</tr>
+		<tr class="alt2">
+			<td colspan="3">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-679">27-6300</a>&nbsp; &nbsp;Off-Street Parking and Loading</td>
+			<td colspan="2">Sec. <a class="xref" target="_blank" href="doc-viewer.aspx#secid-740">27-61100</a>&nbsp; Industrial Form and Design Standards</td>
+			<td><a class="xref" target="_blank" href="doc-viewer.aspx#secid-768">PART 27-7</a>&nbsp; &nbsp;Nonconforming Buildings, Structures, Uses, Lots, and Signs</td>
+		</tr>
+	</tbody>
+</table>
+
+<p><span data-ordfnote='1'>(<a href='https://princegeorgescountymd.legistar.com/LegislationDetail.aspx?ID=5712870&amp;GUID=A29DA158-3E21-4C59-A8D2-185A2409A153&amp;Options=Advanced&amp;Search=' target='_blank'>CB-068-2022</a>; <a href='https://princegeorgescountymd.legistar.com/LegislationDetail.aspx?ID=6563784&amp;GUID=C2A79CE0-D733-43AA-8A6E-56A132002E37&amp;Options=Advanced&amp;Search=' target='_blank'>CB-015-2024</a>)</span>&nbsp;</p>
+
+<p class='archiveNotice  '></p>
+</section> 
+
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- hidden div below is for definition popup -->
+<div id="defFrame">
+    <img alt='loading progress' src="resources/progress.gif" /></div>
+<!-- hidden div below is for ajax loading progress-->
+<div id='progress-template' style='display: none;'>
+    <div class="progress" style='padding: 100px;'>
+        <div style='margin: auto; display: block; width: 200px; border: 1px solid #ccc; background-color: #eee; padding: 10px;'>
+            <img alt='loading progress' src='resources/progress.gif' style='margin: auto; display: block;' />
+            <br />
+            <span style='margin: auto; display: block; width: 75px; padding-left: 10px;'>Loading...</span>
+        </div>
+    </div>
+</div>
+<iframe style="width: 1px; height: 1px" src="" id="printiframe" name="printiframe" onload="ZP.DocView.IFrameReady();" title="Print frame" aria-hidden="true" role="presentation"></iframe>
+
+    </div>
+
+
+    </body>
+</html>

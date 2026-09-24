@@ -29,7 +29,7 @@ export const SERVICE_AREAS: ServiceArea[] = [
     ],
     permitAgency: 'Prince George\'s County DPS',
     typicalTimeline: '4–10 weeks plan review',
-    primaryCta: { label: 'Start design concept', href: '/concept' },
+    primaryCta: { label: 'Start design concept', href: '/products/concept' },
   },
   {
     slug: 'silver-spring-md',
@@ -42,7 +42,7 @@ export const SERVICE_AREAS: ServiceArea[] = [
     highlights: ['Montgomery DPS ePlans workflow', 'HOA coordination experience', 'Whole-home and addition concepts'],
     permitAgency: 'Montgomery County DPS',
     typicalTimeline: '4–8 weeks',
-    primaryCta: { label: 'Permit services', href: '/permits' },
+    primaryCta: { label: 'Permit services', href: '/products/permit_assessment' },
   },
   {
     slug: 'washington-dc',
@@ -68,7 +68,7 @@ export const SERVICE_AREAS: ServiceArea[] = [
     highlights: ['Fairfax Permit Portal', 'Basement finish and addition scope', 'Typical 2–4 week minor permits'],
     permitAgency: 'Fairfax County Land Development Services',
     typicalTimeline: '2–4 weeks many residential scopes',
-    primaryCta: { label: 'Get estimate', href: '/estimate' },
+    primaryCta: { label: 'Get estimate', href: '/products/detailed_estimate' },
   },
   {
     slug: 'arlington-va',

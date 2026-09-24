@@ -192,8 +192,8 @@ export default function DocumentsPage() {
       )
       setDocuments(prev => [...prev, ...uploaded.map(mapApiFileToDoc)])
       if (uploaded.length > 0) setIsLive(true)
-    } catch (err: any) {
-      setUploadError(err.message || 'Upload failed')
+    } catch {
+      setUploadError('Your files are still safe on your device. Select Upload to try again.')
     } finally {
       setUploading(false)
       if (fileInputRef.current) fileInputRef.current.value = ''
@@ -259,7 +259,7 @@ export default function DocumentsPage() {
         </button>
       </div>
       {uploadError && (
-        <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-2.5 text-sm text-red-700">{uploadError}</div>
+        <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-2.5 text-sm text-amber-800">{uploadError}</div>
       )}
 
       {/* Permit Summary Cards */}

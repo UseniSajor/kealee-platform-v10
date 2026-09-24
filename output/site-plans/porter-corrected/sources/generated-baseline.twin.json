@@ -1,0 +1,7971 @@
+{
+  "siteId": "1005 Rollins Ave",
+  "projectId": "1005 Rollins Ave",
+  "organizationId": "self-perform",
+  "address": "1005 Rollins Ave",
+  "jurisdictionCode": "prince_georges_md",
+  "crs": "EPSG:2248",
+  "horizontalDatum": "NAD83",
+  "verticalDatum": "NAVD88 (feet)",
+  "revision": 13,
+  "zoneCode": "RSF-65",
+  "overlayCodes": [],
+  "features": [
+    {
+      "kind": "Parcel",
+      "id": "subdivision-outer",
+      "ring": {
+        "coordinates": [
+          [
+            1340254.7066,
+            440194.1578
+          ],
+          [
+            1340447.788475504,
+            440229.9976347079
+          ],
+          [
+            1340488.3413499699,
+            440011.44818315847
+          ],
+          [
+            1340254.7066,
+            440194.1578
+          ]
+        ]
+      },
+      "parcelId": null,
+      "areaSqFt": 21825.673095703125
+    },
+    {
+      "kind": "Parcel",
+      "id": "l1-parcel",
+      "parcelId": "1005 Rollins Ave",
+      "ring": {
+        "coordinates": [
+          [
+            1340254.7066,
+            440194.1578
+          ],
+          [
+            1340428.1243676003,
+            440226.3475853436
+          ],
+          [
+            1340439.9830001371,
+            440162.4384871309
+          ],
+          [
+            1340323.0208863274,
+            440140.7279935122
+          ],
+          [
+            1340254.7066,
+            440194.1578
+          ]
+        ]
+      },
+      "areaSqFt": 9598.549926757812,
+      "sourceId": "gis1",
+      "reliabilityLevel": 1,
+      "crs": "EPSG:2248",
+      "revision": 1
+    },
+    {
+      "kind": "ProposedFeature",
+      "id": "l1-buildable-envelope",
+      "ring": {
+        "coordinates": [
+          [
+            1340340.8500604494,
+            440152.17409453925
+          ],
+          [
+            1340409.027314216,
+            440164.82914825383
+          ],
+          [
+            1340400.087729694,
+            440213.0067761061
+          ],
+          [
+            1340289.351598482,
+            440192.45194863476
+          ],
+          [
+            1340340.8500604494,
+            440152.17409453925
+          ]
+        ]
+      },
+      "attributes": {
+        "label": "Buildable envelope",
+        "setbacks": {
+          "frontFt": 30,
+          "sideFt": 8,
+          "rearFt": 20,
+          "maxFt": 30,
+          "source": "Subtitle 27, Sec. 27-4202; front yard stated as 30 ft for this lot"
+        }
+      },
+      "sourceId": "gis1",
+      "reliabilityLevel": 1,
+      "crs": "EPSG:2248",
+      "revision": 1
+    },
+    {
+      "kind": "Building",
+      "id": "l1-proposed-building",
+      "existing": false,
+      "ring": {
+        "coordinates": [
+          [
+            1340407.5703299597,
+            440167.199957017
+          ],
+          [
+            1340399.1780669338,
+            440212.42793421366
+          ],
+          [
+            1340373.6144276487,
+            440207.6844811989
+          ],
+          [
+            1340382.0066906747,
+            440162.4565040022
+          ],
+          [
+            1340407.5703299597,
+            440167.199957017
+          ]
+        ]
+      },
+      "attributes": {
+        "areaSqFt": 1196.0000000018626,
+        "estimated": true,
+        "address": "1005 Rollins Ave",
+        "lotLabel": "1005 Rollins Ave",
+        "garageSlabElevFt": null,
+        "basementElevFt": null,
+        "finishedFloorElevFt": null,
+        "subFloorElevFt": null,
+        "heightFt": 20,
+        "storeys": 2
+      },
+      "sourceId": "gis1",
+      "reliabilityLevel": 1,
+      "crs": "EPSG:2248",
+      "revision": 1
+    },
+    {
+      "kind": "Pavement",
+      "id": "l1-driveway",
+      "ring": {
+        "coordinates": [
+          [
+            1340432.7592792062,
+            440201.3689025063
+          ],
+          [
+            1340430.5699931993,
+            440213.1675052533
+          ],
+          [
+            1340400.0902694366,
+            440207.51184973575
+          ],
+          [
+            1340402.2795554434,
+            440195.7132469888
+          ],
+          [
+            1340432.7592792062,
+            440201.3689025063
+          ]
+        ]
+      },
+      "attributes": {
+        "label": "PROPOSED DRIVEWAY  12' WIDE",
+        "areaSqFt": 371.99999999813735,
+        "note": "Longitudinal pitch 1% min to 12.5% max, lateral 1/8\" in 12\" to 1/2\" in 12\" away from the building. PGC Code Sec. 32-151, Table 4 — Site Slope Limitations.",
+        "improvement": "Driveway",
+        "impervious": true
+      },
+      "sourceId": "gis1",
+      "reliabilityLevel": 1,
+      "crs": "EPSG:2248",
+      "revision": 1
+    },
+    {
+      "kind": "Pavement",
+      "id": "l1-walk",
+      "ring": {
+        "coordinates": [
+          [
+            1340402.4264887478,
+            440192.18076760403
+          ],
+          [
+            1340407.3425732255,
+            440193.09297010687
+          ],
+          [
+            1340406.1019778217,
+            440199.7788449968
+          ],
+          [
+            1340401.185893344,
+            440198.866642494
+          ],
+          [
+            1340402.4264887478,
+            440192.18076760403
+          ]
+        ]
+      },
+      "attributes": {
+        "label": "CONCRETE WALK  5' WIDE",
+        "areaSqFt": 33.999999998370185,
+        "note": "Leadwalk from the edge of the driveway to the stoop, 7 ft. Lateral pitch 48:1 max, longitudinal 12:1 max. PGC Code Sec. 32-151, Table 4 — Site Slope Limitations.",
+        "improvement": "Walk",
+        "impervious": true
+      },
+      "sourceId": "gis1",
+      "reliabilityLevel": 1,
+      "crs": "EPSG:2248",
+      "revision": 1
+    },
+    {
+      "kind": "Pavement",
+      "id": "l1-stoop",
+      "ring": {
+        "coordinates": [
+          [
+            1340408.9490305344,
+            440181.6947555574
+          ],
+          [
+            1340407.4895065296,
+            440189.560490722
+          ],
+          [
+            1340403.5566389472,
+            440188.83072871977
+          ],
+          [
+            1340405.016162952,
+            440180.96499355516
+          ],
+          [
+            1340408.9490305344,
+            440181.6947555574
+          ]
+        ]
+      },
+      "attributes": {
+        "label": "CONCRETE STOOP  8' x 4'",
+        "areaSqFt": 32.000000001862645,
+        "note": "Front concrete stoop at the entrance, met by the leadwalk. Riser count and handrail per the architectural plans and the building code.",
+        "improvement": "Stoop",
+        "impervious": true
+      },
+      "sourceId": "gis1",
+      "reliabilityLevel": 1,
+      "crs": "EPSG:2248",
+      "revision": 1
+    },
+    {
+      "kind": "Pavement",
+      "id": "l1-apron",
+      "ring": {
+        "coordinates": [
+          [
+            1340438.38001531,
+            440217.6679001948
+          ],
+          [
+            1340441.6639443203,
+            440199.9699960744
+          ],
+          [
+            1340429.8096285192,
+            440200.8215810046
+          ],
+          [
+            1340427.6203425126,
+            440212.6201837515
+          ],
+          [
+            1340438.38001531,
+            440217.6679001948
+          ]
+        ]
+      },
+      "attributes": {
+        "label": "PROPOSED 18' DRIVEWAY APRON  PER DPW&T STANDARD",
+        "areaSqFt": 172.49999999813735,
+        "note": "Driveway apron at the front property line, at street level, between the curb and the driveway. DPW&T standard detail governs the depression, jointing and curb cut; the depressed curb section applies here per STD. 300.01 note 6.",
+        "improvement": "Apron",
+        "impervious": true
+      },
+      "sourceId": "gis1",
+      "reliabilityLevel": 1,
+      "crs": "EPSG:2248",
+      "revision": 1
+    },
+    {
+      "kind": "LimitOfDisturbance",
+      "id": "l1-lod",
+      "ring": {
+        "coordinates": [
+          [
+            1340373.6144276487,
+            440207.6844811989
+          ],
+          [
+            1340382.0066906747,
+            440162.4565040022
+          ],
+          [
+            1340437.0333494504,
+            440161.8911656292
+          ],
+          [
+            1340443.9158677196,
+            440163.16824913316
+          ],
+          [
+            1340445.390693063,
+            440163.44190988404
+          ],
+          [
+            1340441.6639443203,
+            440199.9699960744
+          ],
+          [
+            1340438.38001531,
+            440217.6679001948
+          ],
+          [
+            1340433.532060526,
+            440227.3510080967
+          ],
+          [
+            1340428.1243676003,
+            440226.3475853436
+          ],
+          [
+            1340425.1747169136,
+            440225.80026384187
+          ],
+          [
+            1340373.6144276487,
+            440207.6844811989
+          ]
+        ]
+      },
+      "attributes": {
+        "note": "Limits of disturbance — proposed work plus a 10 ft working margin, clipped to the property line."
+      },
+      "sourceId": "gis1",
+      "reliabilityLevel": 1,
+      "crs": "EPSG:2248",
+      "revision": 1
+    },
+    {
+      "sourceId": "design",
+      "reliabilityLevel": 1,
+      "crs": "EPSG:2248",
+      "revision": 1,
+      "kind": "ProposedFeature",
+      "id": "l1-grade-1",
+      "ring": {
+        "coordinates": [
+          [
+            1340259.6685830874,
+            440193.5423945737
+          ],
+          [
+            1340423.6274491663,
+            440224.1617846672
+          ],
+          [
+            1340435.0912526501,
+            440163.47328494815
+          ],
+          [
+            1340324.8733741827,
+            440145.3721606868
+          ],
+          [
+            1340259.6685830874,
+            440193.5423945737
+          ]
+        ]
+      },
+      "attributes": {
+        "type": "Graded area",
+        "proposed": true,
+        "contourIntervalFt": 2,
+        "note": "Positive drainage away from structure at 2% minimum for the first 10 ft."
+      }
+    },
+    {
+      "sourceId": "design",
+      "reliabilityLevel": 1,
+      "crs": "EPSG:2248",
+      "revision": 1,
+      "kind": "SpotElevation",
+      "id": "l1-ffe-2",
+      "point": [
+        1340340.108290813,
+        440183.5659331974
+      ],
+      "attributes": {
+        "label": "FFE",
+        "note": "Finished floor elevation to be set above the adjacent grade per code."
+      }
+    },
+    {
+      "sourceId": "design",
+      "reliabilityLevel": 1,
+      "crs": "EPSG:2248",
+      "revision": 1,
+      "kind": "Utility",
+      "id": "l1-util-3",
+      "line": [
+        [
+          1340284.79,
+          440169.85
+        ],
+        [
+          1340376.8105591617,
+          440185.07049260056
+        ]
+      ],
+      "attributes": {
+        "type": "Water service (WHC)",
+        "size": "1\" COPPER FROM EX. 8\" MAIN",
+        "sizeAtHouse": "1\" COPPER",
+        "from": "offsite",
+        "note": "Record information. Field verification required before excavation — call Miss Utility."
+      }
+    },
+    {
+      "sourceId": "design",
+      "reliabilityLevel": 1,
+      "crs": "EPSG:2248",
+      "revision": 1,
+      "kind": "Utility",
+      "id": "l1-util-4",
+      "line": [
+        [
+          1340286.79,
+          440169.85
+        ],
+        [
+          1340378.8105591617,
+          440185.07049260056
+        ]
+      ],
+      "attributes": {
+        "type": "Sanitary lateral (SHC)",
+        "size": "4\" PVC TO EX. 8\" MAIN",
+        "sizeAtHouse": "4\" PVC",
+        "from": "offsite",
+        "note": "Record information. Field verification required before excavation — call Miss Utility."
+      }
+    },
+    {
+      "sourceId": "design",
+      "reliabilityLevel": 1,
+      "crs": "EPSG:2248",
+      "revision": 1,
+      "kind": "SWMPractice",
+      "id": "l1-swm-5",
+      "ring": {
+        "coordinates": [
+          [
+            1340325.1045893752,
+            440156.97449091985
+          ],
+          [
+            1340339.7333282134,
+            440156.97449091985
+          ],
+          [
+            1340339.7333282134,
+            440171.6032297582
+          ],
+          [
+            1340325.1045893752,
+            440171.6032297582
+          ],
+          [
+            1340325.1045893752,
+            440156.97449091985
+          ]
+        ]
+      },
+      "attributes": {
+        "practice": "Environmental Site Design — micro-bioretention",
+        "requiredVolumeCf": 171,
+        "footprintSqFt": 214,
+        "pondingDepthFt": 2
+      }
+    },
+    {
+      "sourceId": "design",
+      "reliabilityLevel": 1,
+      "crs": "EPSG:2248",
+      "revision": 1,
+      "kind": "DrainageArea",
+      "id": "l1-da-6",
+      "ring": {
+        "coordinates": [
+          [
+            1340254.7066,
+            440194.1578
+          ],
+          [
+            1340428.1243676003,
+            440226.3475853436
+          ],
+          [
+            1340439.9830001371,
+            440162.4384871309
+          ],
+          [
+            1340323.0208863274,
+            440140.7279935122
+          ],
+          [
+            1340254.7066,
+            440194.1578
+          ]
+        ]
+      },
+      "attributes": {
+        "areaAcres": 0.2204,
+        "percentImpervious": 18.2,
+        "compositeC": 0.377
+      }
+    },
+    {
+      "sourceId": "design",
+      "reliabilityLevel": 1,
+      "crs": "EPSG:2248",
+      "revision": 1,
+      "kind": "ProposedFeature",
+      "id": "l1-sce-8",
+      "ring": {
+        "coordinates": [
+          [
+            1340373.6144276487,
+            440191.6844811989
+          ],
+          [
+            1340403.6144276487,
+            440191.6844811989
+          ],
+          [
+            1340403.6144276487,
+            440207.6844811989
+          ],
+          [
+            1340373.6144276487,
+            440207.6844811989
+          ],
+          [
+            1340373.6144276487,
+            440191.6844811989
+          ]
+        ]
+      },
+      "attributes": {
+        "type": "Stabilized construction entrance",
+        "note": "Mountable berm, washrack where required."
+      }
+    },
+    {
+      "sourceId": "design",
+      "reliabilityLevel": 1,
+      "crs": "EPSG:2248",
+      "revision": 1,
+      "kind": "Tree",
+      "id": "l1-street-tree-10",
+      "ring": {
+        "coordinates": [
+          [
+            1340433.9697683465,
+            440190.30523874005
+          ],
+          [
+            1340443.9697683465,
+            440190.30523874005
+          ],
+          [
+            1340443.9697683465,
+            440200.30523874005
+          ],
+          [
+            1340433.9697683465,
+            440200.30523874005
+          ],
+          [
+            1340433.9697683465,
+            440190.30523874005
+          ]
+        ]
+      },
+      "designation": "Street tree in planting strip"
+    },
+    {
+      "sourceId": "design",
+      "reliabilityLevel": 1,
+      "crs": "EPSG:2248",
+      "revision": 1,
+      "kind": "Tree",
+      "id": "l1-tree-11",
+      "ring": {
+        "coordinates": [
+          [
+            1340354.6028954114,
+            440177.39376668975
+          ],
+          [
+            1340366.6028954114,
+            440177.39376668975
+          ],
+          [
+            1340366.6028954114,
+            440189.39376668975
+          ],
+          [
+            1340354.6028954114,
+            440189.39376668975
+          ],
+          [
+            1340354.6028954114,
+            440177.39376668975
+          ]
+        ]
+      },
+      "designation": "Proposed shade tree"
+    },
+    {
+      "sourceId": "design",
+      "reliabilityLevel": 1,
+      "crs": "EPSG:2248",
+      "revision": 1,
+      "kind": "Tree",
+      "id": "l1-tree-12",
+      "ring": {
+        "coordinates": [
+          [
+            1340359.0756471697,
+            440160.7012298778
+          ],
+          [
+            1340371.0756471697,
+            440160.7012298778
+          ],
+          [
+            1340371.0756471697,
+            440172.7012298778
+          ],
+          [
+            1340359.0756471697,
+            440172.7012298778
+          ],
+          [
+            1340359.0756471697,
+            440160.7012298778
+          ]
+        ]
+      },
+      "designation": "Proposed shade tree"
+    },
+    {
+      "sourceId": "design",
+      "reliabilityLevel": 1,
+      "crs": "EPSG:2248",
+      "revision": 1,
+      "kind": "Tree",
+      "id": "l1-tree-13",
+      "ring": {
+        "coordinates": [
+          [
+            1340416.9002909008,
+            440160.7012298778
+          ],
+          [
+            1340428.9002909008,
+            440160.7012298778
+          ],
+          [
+            1340428.9002909008,
+            440172.7012298778
+          ],
+          [
+            1340416.9002909008,
+            440172.7012298778
+          ],
+          [
+            1340416.9002909008,
+            440160.7012298778
+          ]
+        ]
+      },
+      "designation": "Proposed shade tree"
+    },
+    {
+      "kind": "Easement",
+      "id": "l1-esmt-plat-frontage",
+      "ring": {
+        "coordinates": [
+          [
+            1340439.9830001371,
+            440162.4384871309
+          ],
+          [
+            1340428.1243676003,
+            440226.3475853436
+          ],
+          [
+            1340418.2921986445,
+            440224.5231803379
+          ],
+          [
+            1340430.1508311813,
+            440160.61408212525
+          ],
+          [
+            1340439.9830001371,
+            440162.4384871309
+          ]
+        ]
+      },
+      "easementType": "Public Utility",
+      "widthFt": 10,
+      "recordReference": "PLAT BOOK PM 231, P. 50",
+      "beneficiary": "Public utilities"
+    },
+    {
+      "kind": "Easement",
+      "id": "l1-esmt-0",
+      "ring": {
+        "coordinates": [
+          [
+            1340418.8746239548,
+            440224.6253815215
+          ],
+          [
+            1340428.6813628613,
+            440226.50431476964
+          ],
+          [
+            1340465.2534682006,
+            440029.48403952474
+          ],
+          [
+            1340453.1501459482,
+            440038.95088411676
+          ],
+          [
+            1340418.8746239548,
+            440224.6253815215
+          ]
+        ]
+      },
+      "easementType": "Public Utility",
+      "beneficiary": "Porter Subdivision",
+      "recordReference": "Record plat 231-050"
+    },
+    {
+      "kind": "Parcel",
+      "id": "l2-parcel",
+      "parcelId": "1009 Rollins Ave",
+      "ring": {
+        "coordinates": [
+          [
+            1340439.984797532,
+            440162.4389510336
+          ],
+          [
+            1340464.550410933,
+            440030.0487960438
+          ],
+          [
+            1340323.0278943828,
+            440140.72441625566
+          ],
+          [
+            1340439.984797532,
+            440162.4389510336
+          ]
+        ]
+      },
+      "areaSqFt": 8008.6866455078125,
+      "sourceId": "gis1",
+      "reliabilityLevel": 1,
+      "crs": "EPSG:2248",
+      "revision": 1
+    },
+    {
+      "kind": "ProposedFeature",
+      "id": "l2-buildable-envelope",
+      "ring": {
+        "coordinates": [
+          [
+            1340341.931056188,
+            440136.0973139916
+          ],
+          [
+            1340426.654817491,
+            440069.84033201117
+          ],
+          [
+            1340411.948386198,
+            440149.0969207409
+          ],
+          [
+            1340341.931056188,
+            440136.0973139916
+          ]
+        ]
+      },
+      "attributes": {
+        "label": "Buildable envelope",
+        "setbacks": {
+          "frontFt": 30,
+          "sideFt": 8,
+          "rearFt": 20,
+          "maxFt": 30,
+          "source": "Subtitle 27, Sec. 27-4202; front yard stated as 30 ft for this lot"
+        }
+      },
+      "sourceId": "gis1",
+      "reliabilityLevel": 1,
+      "crs": "EPSG:2248",
+      "revision": 1
+    },
+    {
+      "kind": "Building",
+      "id": "l2-proposed-building",
+      "existing": false,
+      "ring": {
+        "coordinates": [
+          [
+            1340420.0244502295,
+            440100.09177891177
+          ],
+          [
+            1340411.6321872035,
+            440145.31975610845
+          ],
+          [
+            1340386.0685479185,
+            440140.5763030938
+          ],
+          [
+            1340394.4608109444,
+            440095.3483258971
+          ],
+          [
+            1340420.0244502295,
+            440100.09177891177
+          ]
+        ]
+      },
+      "attributes": {
+        "areaSqFt": 1195.9999999990687,
+        "estimated": true,
+        "address": "1009 Rollins Ave",
+        "lotLabel": "1009 Rollins Ave",
+        "garageSlabElevFt": null,
+        "basementElevFt": null,
+        "finishedFloorElevFt": null,
+        "subFloorElevFt": null,
+        "heightFt": 20,
+        "storeys": 2
+      },
+      "sourceId": "gis1",
+      "reliabilityLevel": 1,
+      "crs": "EPSG:2248",
+      "revision": 1
+    },
+    {
+      "kind": "Pavement",
+      "id": "l2-driveway",
+      "ring": {
+        "coordinates": [
+          [
+            1340445.2133994761,
+            440134.26072440116
+          ],
+          [
+            1340443.0241134695,
+            440146.05932714813
+          ],
+          [
+            1340412.5443897066,
+            440140.4036716306
+          ],
+          [
+            1340414.7336757132,
+            440128.6050688836
+          ],
+          [
+            1340445.2133994761,
+            440134.26072440116
+          ]
+        ]
+      },
+      "attributes": {
+        "label": "PROPOSED DRIVEWAY  12' WIDE",
+        "areaSqFt": 372,
+        "note": "Longitudinal pitch 1% min to 12.5% max, lateral 1/8\" in 12\" to 1/2\" in 12\" away from the building. PGC Code Sec. 32-151, Table 4 — Site Slope Limitations.",
+        "improvement": "Driveway",
+        "impervious": true
+      },
+      "sourceId": "gis1",
+      "reliabilityLevel": 1,
+      "crs": "EPSG:2248",
+      "revision": 1
+    },
+    {
+      "kind": "Pavement",
+      "id": "l2-walk",
+      "ring": {
+        "coordinates": [
+          [
+            1340414.8806090173,
+            440125.0725894988
+          ],
+          [
+            1340419.796693495,
+            440125.98479200166
+          ],
+          [
+            1340418.5560980912,
+            440132.6706668916
+          ],
+          [
+            1340413.6400136135,
+            440131.7584643888
+          ],
+          [
+            1340414.8806090173,
+            440125.0725894988
+          ]
+        ]
+      },
+      "attributes": {
+        "label": "CONCRETE WALK  5' WIDE",
+        "areaSqFt": 33.999999998370185,
+        "note": "Leadwalk from the edge of the driveway to the stoop, 7 ft. Lateral pitch 48:1 max, longitudinal 12:1 max. PGC Code Sec. 32-151, Table 4 — Site Slope Limitations.",
+        "improvement": "Walk",
+        "impervious": true
+      },
+      "sourceId": "gis1",
+      "reliabilityLevel": 1,
+      "crs": "EPSG:2248",
+      "revision": 1
+    },
+    {
+      "kind": "Pavement",
+      "id": "l2-stoop",
+      "ring": {
+        "coordinates": [
+          [
+            1340421.403150804,
+            440114.5865774522
+          ],
+          [
+            1340419.9436267994,
+            440122.4523126168
+          ],
+          [
+            1340416.010759217,
+            440121.72255061456
+          ],
+          [
+            1340417.4702832217,
+            440113.85681544995
+          ],
+          [
+            1340421.403150804,
+            440114.5865774522
+          ]
+        ]
+      },
+      "attributes": {
+        "label": "CONCRETE STOOP  8' x 4'",
+        "areaSqFt": 32.000000001862645,
+        "note": "Front concrete stoop at the entrance, met by the leadwalk. Riser count and handrail per the architectural plans and the building code.",
+        "improvement": "Stoop",
+        "impervious": true
+      },
+      "sourceId": "gis1",
+      "reliabilityLevel": 1,
+      "crs": "EPSG:2248",
+      "revision": 1
+    },
+    {
+      "kind": "Pavement",
+      "id": "l2-apron",
+      "ring": {
+        "coordinates": [
+          [
+            1340450.83413558,
+            440150.5597220897
+          ],
+          [
+            1340454.1180645905,
+            440132.86181796924
+          ],
+          [
+            1340442.2637487894,
+            440133.7134028995
+          ],
+          [
+            1340440.0744627828,
+            440145.5120056464
+          ],
+          [
+            1340450.83413558,
+            440150.5597220897
+          ]
+        ]
+      },
+      "attributes": {
+        "label": "PROPOSED 18' DRIVEWAY APRON  PER DPW&T STANDARD",
+        "areaSqFt": 172.49999999813735,
+        "note": "Driveway apron at the front property line, at street level, between the curb and the driveway. DPW&T standard detail governs the depression, jointing and curb cut; the depressed curb section applies here per STD. 300.01 note 6.",
+        "improvement": "Apron",
+        "impervious": true
+      },
+      "sourceId": "gis1",
+      "reliabilityLevel": 1,
+      "crs": "EPSG:2248",
+      "revision": 1
+    },
+    {
+      "kind": "LimitOfDisturbance",
+      "id": "l2-lod",
+      "ring": {
+        "coordinates": [
+          [
+            1340386.0685479185,
+            440140.5763030938
+          ],
+          [
+            1340394.4608109444,
+            440095.3483258971
+          ],
+          [
+            1340461.6007602464,
+            440029.5014745421
+          ],
+          [
+            1340468.4832785155,
+            440030.77855804603
+          ],
+          [
+            1340469.9581038589,
+            440031.0522187969
+          ],
+          [
+            1340454.1180645905,
+            440132.86181796924
+          ],
+          [
+            1340450.83413558,
+            440150.5597220897
+          ],
+          [
+            1340445.3924904577,
+            440163.4423737867
+          ],
+          [
+            1340439.984797532,
+            440162.4389510336
+          ],
+          [
+            1340437.0351468453,
+            440161.89162953186
+          ],
+          [
+            1340386.0685479185,
+            440140.5763030938
+          ]
+        ]
+      },
+      "attributes": {
+        "note": "Limits of disturbance — proposed work plus a 10 ft working margin, clipped to the property line."
+      },
+      "sourceId": "gis1",
+      "reliabilityLevel": 1,
+      "crs": "EPSG:2248",
+      "revision": 1
+    },
+    {
+      "sourceId": "design",
+      "reliabilityLevel": 1,
+      "crs": "EPSG:2248",
+      "revision": 1,
+      "kind": "ProposedFeature",
+      "id": "l2-grade-14",
+      "ring": {
+        "coordinates": [
+          [
+            1340437.4137823859,
+            440158.150608566
+          ],
+          [
+            1340462.2865936474,
+            440034.5069493944
+          ],
+          [
+            1340327.949567989,
+            440139.84286709985
+          ],
+          [
+            1340437.4137823859,
+            440158.150608566
+          ]
+        ]
+      },
+      "attributes": {
+        "type": "Graded area",
+        "proposed": true,
+        "contourIntervalFt": 2,
+        "note": "Positive drainage away from structure at 2% minimum for the first 10 ft."
+      }
+    },
+    {
+      "sourceId": "design",
+      "reliabilityLevel": 1,
+      "crs": "EPSG:2248",
+      "revision": 1,
+      "kind": "SpotElevation",
+      "id": "l2-ffe-15",
+      "point": [
+        1340416.886975095,
+        440123.9127785917
+      ],
+      "attributes": {
+        "label": "FFE",
+        "note": "Finished floor elevation to be set above the adjacent grade per code."
+      }
+    },
+    {
+      "sourceId": "design",
+      "reliabilityLevel": 1,
+      "crs": "EPSG:2248",
+      "revision": 1,
+      "kind": "Utility",
+      "id": "l2-util-16",
+      "line": [
+        [
+          1340322.0208863274,
+          440140.7279935122
+        ],
+        [
+          1340389.2646794314,
+          440117.96231449547
+        ]
+      ],
+      "attributes": {
+        "type": "Water service (WHC)",
+        "size": "1\" COPPER FROM EX. 8\" MAIN",
+        "sizeAtHouse": "1\" COPPER",
+        "from": "offsite",
+        "note": "Record information. Field verification required before excavation — call Miss Utility."
+      }
+    },
+    {
+      "sourceId": "design",
+      "reliabilityLevel": 1,
+      "crs": "EPSG:2248",
+      "revision": 1,
+      "kind": "Utility",
+      "id": "l2-util-17",
+      "line": [
+        [
+          1340324.0208863274,
+          440140.7279935122
+        ],
+        [
+          1340391.2646794314,
+          440117.96231449547
+        ]
+      ],
+      "attributes": {
+        "type": "Sanitary lateral (SHC)",
+        "size": "4\" PVC TO EX. 8\" MAIN",
+        "sizeAtHouse": "4\" PVC",
+        "from": "offsite",
+        "note": "Record information. Field verification required before excavation — call Miss Utility."
+      }
+    },
+    {
+      "sourceId": "design",
+      "reliabilityLevel": 1,
+      "crs": "EPSG:2248",
+      "revision": 1,
+      "kind": "SWMPractice",
+      "id": "l2-swm-18",
+      "ring": {
+        "coordinates": [
+          [
+            1340421.3476674594,
+            440066.27187033516
+          ],
+          [
+            1340436.8718421557,
+            440066.27187033516
+          ],
+          [
+            1340436.8718421557,
+            440081.79604503146
+          ],
+          [
+            1340421.3476674594,
+            440081.79604503146
+          ],
+          [
+            1340421.3476674594,
+            440066.27187033516
+          ]
+        ]
+      },
+      "attributes": {
+        "practice": "Environmental Site Design — micro-bioretention",
+        "requiredVolumeCf": 193,
+        "footprintSqFt": 241,
+        "pondingDepthFt": 2
+      }
+    },
+    {
+      "sourceId": "design",
+      "reliabilityLevel": 1,
+      "crs": "EPSG:2248",
+      "revision": 1,
+      "kind": "DrainageArea",
+      "id": "l2-da-19",
+      "ring": {
+        "coordinates": [
+          [
+            1340439.984797532,
+            440162.4389510336
+          ],
+          [
+            1340464.550410933,
+            440030.0487960438
+          ],
+          [
+            1340323.0278943828,
+            440140.72441625566
+          ],
+          [
+            1340439.984797532,
+            440162.4389510336
+          ]
+        ]
+      },
+      "attributes": {
+        "areaAcres": 0.1839,
+        "percentImpervious": 26.6,
+        "compositeC": 0.436
+      }
+    },
+    {
+      "sourceId": "design",
+      "reliabilityLevel": 1,
+      "crs": "EPSG:2248",
+      "revision": 1,
+      "kind": "ProposedFeature",
+      "id": "l2-sce-21",
+      "ring": {
+        "coordinates": [
+          [
+            1340386.0685479185,
+            440124.5763030938
+          ],
+          [
+            1340416.0685479185,
+            440124.5763030938
+          ],
+          [
+            1340416.0685479185,
+            440140.5763030938
+          ],
+          [
+            1340386.0685479185,
+            440140.5763030938
+          ],
+          [
+            1340386.0685479185,
+            440124.5763030938
+          ]
+        ]
+      },
+      "attributes": {
+        "type": "Stabilized construction entrance",
+        "note": "Mountable berm, washrack where required."
+      }
+    },
+    {
+      "sourceId": "design",
+      "reliabilityLevel": 1,
+      "crs": "EPSG:2248",
+      "revision": 1,
+      "kind": "Tree",
+      "id": "l2-street-tree-23",
+      "ring": {
+        "coordinates": [
+          [
+            1340458.3250920607,
+            440059.05853729404
+          ],
+          [
+            1340468.3250920607,
+            440059.05853729404
+          ],
+          [
+            1340468.3250920607,
+            440069.05853729404
+          ],
+          [
+            1340458.3250920607,
+            440069.05853729404
+          ],
+          [
+            1340458.3250920607,
+            440059.05853729404
+          ]
+        ]
+      },
+      "designation": "Street tree in planting strip"
+    },
+    {
+      "sourceId": "design",
+      "reliabilityLevel": 1,
+      "crs": "EPSG:2248",
+      "revision": 1,
+      "kind": "Tree",
+      "id": "l2-street-tree-24",
+      "ring": {
+        "coordinates": [
+          [
+            1340452.1836887104,
+            440092.1560760415
+          ],
+          [
+            1340462.1836887104,
+            440092.1560760415
+          ],
+          [
+            1340462.1836887104,
+            440102.1560760415
+          ],
+          [
+            1340452.1836887104,
+            440102.1560760415
+          ],
+          [
+            1340452.1836887104,
+            440092.1560760415
+          ]
+        ]
+      },
+      "designation": "Street tree in planting strip"
+    },
+    {
+      "sourceId": "design",
+      "reliabilityLevel": 1,
+      "crs": "EPSG:2248",
+      "revision": 1,
+      "kind": "Tree",
+      "id": "l2-street-tree-25",
+      "ring": {
+        "coordinates": [
+          [
+            1340446.0422853602,
+            440125.253614789
+          ],
+          [
+            1340456.0422853602,
+            440125.253614789
+          ],
+          [
+            1340456.0422853602,
+            440135.253614789
+          ],
+          [
+            1340446.0422853602,
+            440135.253614789
+          ],
+          [
+            1340446.0422853602,
+            440125.253614789
+          ]
+        ]
+      },
+      "designation": "Street tree in planting strip"
+    },
+    {
+      "sourceId": "design",
+      "reliabilityLevel": 1,
+      "crs": "EPSG:2248",
+      "revision": 1,
+      "kind": "Tree",
+      "id": "l2-tree-26",
+      "ring": {
+        "coordinates": [
+          [
+            1340423.6406466996,
+            440123.6792819411
+          ],
+          [
+            1340435.6406466996,
+            440123.6792819411
+          ],
+          [
+            1340435.6406466996,
+            440135.6792819411
+          ],
+          [
+            1340423.6406466996,
+            440135.6792819411
+          ],
+          [
+            1340423.6406466996,
+            440123.6792819411
+          ]
+        ]
+      },
+      "designation": "Proposed shade tree"
+    },
+    {
+      "sourceId": "design",
+      "reliabilityLevel": 1,
+      "crs": "EPSG:2248",
+      "revision": 1,
+      "kind": "Tree",
+      "id": "l2-tree-28",
+      "ring": {
+        "coordinates": [
+          [
+            1340420.5326293397,
+            440145.08342467627
+          ],
+          [
+            1340432.5326293397,
+            440145.08342467627
+          ],
+          [
+            1340432.5326293397,
+            440157.08342467627
+          ],
+          [
+            1340420.5326293397,
+            440157.08342467627
+          ],
+          [
+            1340420.5326293397,
+            440145.08342467627
+          ]
+        ]
+      },
+      "designation": "Proposed shade tree"
+    },
+    {
+      "kind": "Easement",
+      "id": "wssc-esmt",
+      "ring": {
+        "coordinates": [
+          [
+            1340285.79,
+            440169.85
+          ],
+          [
+            1340194.0433855364,
+            440174.8299299171
+          ],
+          [
+            1340190.3938342012,
+            440173.4497601632
+          ],
+          [
+            1340187.5502565184,
+            440170.7780267446
+          ],
+          [
+            1340185.9455614134,
+            440167.22147685505
+          ],
+          [
+            1340185.824049169,
+            440163.32156297495
+          ],
+          [
+            1340187.2042189229,
+            440159.67201163975
+          ],
+          [
+            1340189.8759523414,
+            440156.82843395707
+          ],
+          [
+            1340193.432502231,
+            440155.22373885184
+          ],
+          [
+            1340197.3324161111,
+            440155.1022266074
+          ],
+          [
+            1340285.79,
+            440169.85
+          ]
+        ]
+      },
+      "easementType": "WSSC",
+      "widthFt": 20,
+      "beneficiary": "Washington Suburban Sanitary Commission",
+      "recordReference": "20' WSSC ESMT",
+      "attributes": {
+        "label": "20' WSSC ESMT",
+        "note": "From the existing mains in the Modupeola Way cul-de-sac EAST through the 20-foot WSSC easement wholly on the LOT 13 side of the LOT 12 / LOT 13 common line, terminating at the common LOT 1 / LOT 12 / LOT 13 corner. LOT 12 is not encumbered by this public easement."
+      }
+    },
+    {
+      "kind": "Easement",
+      "id": "private-utility-esmt",
+      "ring": {
+        "coordinates": [
+          [
+            1340285.79,
+            440169.85
+          ],
+          [
+            1340323.0208863274,
+            440140.7279935122
+          ],
+          [
+            1340329.1815697204,
+            440148.6049205863
+          ],
+          [
+            1340291.950683393,
+            440177.7269270741
+          ],
+          [
+            1340285.79,
+            440169.85
+          ]
+        ]
+      },
+      "easementType": "Private Utility",
+      "beneficiary": "LOT 2, over LOT 1",
+      "recordReference": "PRIVATE UTILITY ESMT",
+      "attributes": {
+        "label": "PRIVATE UTILITY ESMT",
+        "note": "Runs inside LOT 1 along the portion shown on page 2, from the cleanout at the LOT 1 / LOT 12 / LOT 13 corner toward the LOT 1 / LOT 2 / LOT 12 corner. The unsupported segment from the common corner to Lot 1's north corner is not drawn. Page 2 letters the easement without a dimension, so the 10 ft width remains a stated assumption pending the recorded instrument."
+      }
+    },
+    {
+      "kind": "Utility",
+      "id": "public-corridor-whc-0",
+      "line": [
+        [
+          1340196.6746099961,
+          440159.04776726937
+        ],
+        [
+          1340261.4589499133,
+          440169.8487039724
+        ],
+        [
+          1340285.79,
+          440169.85
+        ]
+      ],
+      "attributes": {
+        "type": "Water service (WHC)",
+        "size": "WHC",
+        "sizeAtMain": "EX. 8\" WATER",
+        "from": "offsite",
+        "label": "WHC",
+        "note": "Inside the 20 ft WSSC easement on LOT 13, 4 ft from the LOT 12 / LOT 13 line, from the Modupeola Way mains to the common corner. Record information — field verification required before excavation; call Miss Utility."
+      }
+    },
+    {
+      "kind": "Utility",
+      "id": "private-corridor-whc-0",
+      "line": [
+        [
+          1340287.0221366787,
+          440171.4253854148
+        ],
+        [
+          1340324.253023006,
+          440142.303378927
+        ]
+      ],
+      "attributes": {
+        "type": "Water service (WHC)",
+        "size": "WHC",
+        "from": "shared",
+        "label": "WHC",
+        "note": "Inside the separate 10 ft Lot 1 private utility easement, connected at the common corner. Field verification required before excavation; call Miss Utility."
+      }
+    },
+    {
+      "kind": "Utility",
+      "id": "public-corridor-whc-1",
+      "line": [
+        [
+          1340196.0168038814,
+          440162.9933079313
+        ],
+        [
+          1340260.8011437985,
+          440173.79424463434
+        ],
+        [
+          1340285.79,
+          440169.85
+        ]
+      ],
+      "attributes": {
+        "type": "Water service (WHC)",
+        "size": "WHC",
+        "sizeAtMain": "EX. 8\" WATER",
+        "from": "offsite",
+        "label": "WHC",
+        "note": "Inside the 20 ft WSSC easement on LOT 13, 8 ft from the LOT 12 / LOT 13 line, from the Modupeola Way mains to the common corner. Record information — field verification required before excavation; call Miss Utility."
+      }
+    },
+    {
+      "kind": "Utility",
+      "id": "private-corridor-whc-1",
+      "line": [
+        [
+          1340288.2542733573,
+          440173.0007708296
+        ],
+        [
+          1340325.4851596847,
+          440143.8787643418
+        ]
+      ],
+      "attributes": {
+        "type": "Water service (WHC)",
+        "size": "WHC",
+        "from": "shared",
+        "label": "WHC",
+        "note": "Inside the separate 10 ft Lot 1 private utility easement, connected at the common corner. Field verification required before excavation; call Miss Utility."
+      }
+    },
+    {
+      "kind": "Utility",
+      "id": "public-corridor-shc-2",
+      "line": [
+        [
+          1340195.3589977664,
+          440166.9388485933
+        ],
+        [
+          1340260.1433376835,
+          440177.7397852963
+        ],
+        [
+          1340285.79,
+          440169.85
+        ]
+      ],
+      "attributes": {
+        "type": "Sanitary lateral (SHC)",
+        "size": "4\" SHC",
+        "sizeAtMain": "EX. 8\" SEWER",
+        "from": "offsite",
+        "label": "SHC",
+        "note": "Inside the 20 ft WSSC easement on LOT 13, 12 ft from the LOT 12 / LOT 13 line, from the Modupeola Way mains to the common corner. Record information — field verification required before excavation; call Miss Utility."
+      }
+    },
+    {
+      "kind": "Utility",
+      "id": "private-corridor-shc-2",
+      "line": [
+        [
+          1340289.486410036,
+          440174.57615624444
+        ],
+        [
+          1340326.7172963633,
+          440145.45414975664
+        ]
+      ],
+      "attributes": {
+        "type": "Sanitary lateral (SHC)",
+        "size": "4\" SHC",
+        "from": "shared",
+        "label": "SHC",
+        "note": "Inside the separate 10 ft Lot 1 private utility easement, connected at the common corner. Field verification required before excavation; call Miss Utility."
+      }
+    },
+    {
+      "kind": "Utility",
+      "id": "public-corridor-shc-3",
+      "line": [
+        [
+          1340194.7011916514,
+          440170.8843892552
+        ],
+        [
+          1340259.4855315685,
+          440181.68532595824
+        ],
+        [
+          1340285.79,
+          440169.85
+        ]
+      ],
+      "attributes": {
+        "type": "Sanitary lateral (SHC)",
+        "size": "4\" SHC",
+        "sizeAtMain": "EX. 8\" SEWER",
+        "from": "offsite",
+        "label": "SHC",
+        "note": "Inside the 20 ft WSSC easement on LOT 13, 16 ft from the LOT 12 / LOT 13 line, from the Modupeola Way mains to the common corner. Record information — field verification required before excavation; call Miss Utility."
+      }
+    },
+    {
+      "kind": "Utility",
+      "id": "private-corridor-shc-3",
+      "line": [
+        [
+          1340290.7185467144,
+          440176.15154165926
+        ],
+        [
+          1340327.9494330417,
+          440147.02953517146
+        ]
+      ],
+      "attributes": {
+        "type": "Sanitary lateral (SHC)",
+        "size": "4\" SHC",
+        "from": "shared",
+        "label": "SHC",
+        "note": "Inside the separate 10 ft Lot 1 private utility easement, connected at the common corner. Field verification required before excavation; call Miss Utility."
+      }
+    },
+    {
+      "kind": "SpotElevation",
+      "id": "corridor-co",
+      "point": [
+        1340285.79,
+        440169.85
+      ],
+      "attributes": {
+        "label": "CO",
+        "monument": true,
+        "note": "Cleanout at the LOT 1 / LOT 12 / LOT 13 corner, as lettered on the connection sketch."
+      }
+    },
+    {
+      "kind": "Annotation",
+      "id": "corridor-conn-note",
+      "point": [
+        1340195.6879008238,
+        440164.96607826225
+      ],
+      "attributes": {
+        "label": "CONNECT TO EX. 8\" WATER AND EX. 8\" SEWER IN MODUPEOLA WAY",
+        "note": "Mains are of record in Modupeola Way; their positions are not surveyed here."
+      }
+    },
+    {
+      "kind": "Contour",
+      "id": "ct-8-0",
+      "line": [
+        [
+          1340253.2342071945,
+          440215.71365393675,
+          212
+        ],
+        [
+          1340246.647278116,
+          440215.6693626886,
+          212
+        ],
+        [
+          1340242.0400038639,
+          440217.3517740209,
+          212
+        ]
+      ],
+      "attributes": {
+        "elevationFt": 212,
+        "weight": "intermediate",
+        "hidden": true
+      }
+    },
+    {
+      "kind": "Contour",
+      "id": "ct-12-0",
+      "line": [
+        [
+          1340300.4506481974,
+          440040.03716802754,
+          214
+        ],
+        [
+          1340297.4280164503,
+          440039.49025311414,
+          214
+        ],
+        [
+          1340296.4417979557,
+          440042.89247727016,
+          214
+        ],
+        [
+          1340295.449017786,
+          440044.50631919224,
+          214
+        ],
+        [
+          1340292.147187114,
+          440046.7487687734,
+          214
+        ],
+        [
+          1340295.9526257077,
+          440050.60998151527,
+          214
+        ],
+        [
+          1340300.0277487964,
+          440050.1408223664,
+          214
+        ],
+        [
+          1340301.7646219516,
+          440048.4285554404,
+          214
+        ],
+        [
+          1340302.769213122,
+          440044.4525135314,
+          214
+        ],
+        [
+          1340300.4506481974,
+          440040.03716802754,
+          214
+        ]
+      ],
+      "attributes": {
+        "elevationFt": 214,
+        "weight": "intermediate",
+        "hidden": false
+      }
+    },
+    {
+      "kind": "Contour",
+      "id": "ct-13-0",
+      "line": [
+        [
+          1340338.3984069496,
+          440251.068898196,
+          214
+        ],
+        [
+          1340337.4043144572,
+          440249.8487562926,
+          214
+        ],
+        [
+          1340336.7409299575,
+          440249.4632583555,
+          214
+        ],
+        [
+          1340335.3308277884,
+          440249.0429836045,
+          214
+        ]
+      ],
+      "attributes": {
+        "elevationFt": 214,
+        "weight": "intermediate",
+        "hidden": false
+      }
+    },
+    {
+      "kind": "Contour",
+      "id": "ct-14-0",
+      "line": [
+        [
+          1340338.9377759492,
+          440231.7654591,
+          212
+        ],
+        [
+          1340334.1369325332,
+          440229.8494524432,
+          212
+        ]
+      ],
+      "attributes": {
+        "elevationFt": 212,
+        "weight": "intermediate",
+        "hidden": true
+      }
+    },
+    {
+      "kind": "Contour",
+      "id": "ct-15-0",
+      "line": [
+        [
+          1340268.1147548635,
+          440065.4193351067,
+          214
+        ],
+        [
+          1340267.9894270266,
+          440061.43738768325,
+          214
+        ],
+        [
+          1340264.5524260371,
+          440054.40787418967,
+          214
+        ],
+        [
+          1340264.1318231937,
+          440053.7375999325,
+          214
+        ],
+        [
+          1340262.0527591202,
+          440046.5860394354,
+          214
+        ],
+        [
+          1340265.8939587893,
+          440042.5972022859,
+          214
+        ],
+        [
+          1340269.7801058711,
+          440040.5164977761,
+          214
+        ],
+        [
+          1340276.5658534428,
+          440035.67136311455,
+          214
+        ],
+        [
+          1340277.621625615,
+          440035.1175584384,
+          214
+        ],
+        [
+          1340289.6278351953,
+          440030.48075670324,
+          214
+        ],
+        [
+          1340292.1557172851,
+          440029.4955224249,
+          214
+        ],
+        [
+          1340293.0664766103,
+          440028.4266269471,
+          214
+        ],
+        [
+          1340293.7810421113,
+          440027.91547311435,
+          214
+        ],
+        [
+          1340298.9883807881,
+          440030.01192560047,
+          214
+        ],
+        [
+          1340303.6819409549,
+          440029.97550836654,
+          214
+        ],
+        [
+          1340307.1766846133,
+          440028.061798283,
+          214
+        ],
+        [
+          1340308.1527325332,
+          440025.9669861863,
+          214
+        ],
+        [
+          1340309.340394197,
+          440021.37349145394,
+          214
+        ],
+        [
+          1340313.9627602813,
+          440017.12743694056,
+          214
+        ],
+        [
+          1340316.2704984474,
+          440017.2714655206,
+          214
+        ],
+        [
+          1340326.3629979515,
+          440018.28130602237,
+          214
+        ],
+        [
+          1340331.3134473725,
+          440014.9758664442,
+          214
+        ],
+        [
+          1340333.7691511204,
+          440012.83381035744,
+          214
+        ],
+        [
+          1340341.5394767786,
+          440007.9830982857,
+          214
+        ],
+        [
+          1340345.0834329554,
+          440005.1970146005,
+          214
+        ],
+        [
+          1340348.7484518753,
+          439999.9998465275,
+          214
+        ]
+      ],
+      "attributes": {
+        "elevationFt": 214,
+        "weight": "intermediate",
+        "hidden": false
+      }
+    },
+    {
+      "kind": "Contour",
+      "id": "ct-18-0",
+      "line": [
+        [
+          1340508.9955066978,
+          440144.83420252276,
+          210
+        ],
+        [
+          1340507.809485448,
+          440149.4824872009,
+          210
+        ],
+        [
+          1340506.9633585373,
+          440152.6333995258,
+          210
+        ],
+        [
+          1340506.7822565378,
+          440153.59894877026,
+          210
+        ],
+        [
+          1340506.1513522866,
+          440156.7075383681,
+          210
+        ],
+        [
+          1340505.6920356124,
+          440157.9030740175,
+          210
+        ],
+        [
+          1340505.1297007785,
+          440159.5956559372,
+          210
+        ],
+        [
+          1340504.7615912843,
+          440161.34040310694,
+          210
+        ],
+        [
+          1340504.427602452,
+          440163.7039154494,
+          210
+        ],
+        [
+          1340504.358376874,
+          440165.0464324452,
+          210
+        ],
+        [
+          1340504.6526676272,
+          440168.27313203184,
+          210
+        ],
+        [
+          1340505.9197254465,
+          440169.7997037766,
+          210
+        ],
+        [
+          1340507.794721706,
+          440169.18454753276,
+          210
+        ],
+        [
+          1340509.2038396127,
+          440166.5569281125,
+          210
+        ]
+      ],
+      "attributes": {
+        "elevationFt": 210,
+        "weight": "index",
+        "hidden": false
+      }
+    },
+    {
+      "kind": "Contour",
+      "id": "ct-28-0",
+      "line": [
+        [
+          1340234.0734843733,
+          440001.5720218638,
+          218
+        ],
+        [
+          1340235.1715792806,
+          439999.9998465367,
+          218
+        ]
+      ],
+      "attributes": {
+        "elevationFt": 218,
+        "weight": "intermediate",
+        "hidden": false
+      }
+    },
+    {
+      "kind": "Contour",
+      "id": "ct-32-0",
+      "line": [
+        [
+          1340334.1369325332,
+          440229.8494524432,
+          212
+        ],
+        [
+          1340324.3436450323,
+          440225.94033953967,
+          212
+        ],
+        [
+          1340319.7836147812,
+          440224.00694444374,
+          212
+        ],
+        [
+          1340319.0142593672,
+          440223.60766702396,
+          212
+        ],
+        [
+          1340315.9388061997,
+          440222.5479578608,
+          212
+        ],
+        [
+          1340307.866315776,
+          440223.0417232759,
+          212
+        ],
+        [
+          1340299.0644961086,
+          440227.1135655266,
+          212
+        ],
+        [
+          1340295.5710647842,
+          440230.0082447726,
+          212
+        ],
+        [
+          1340294.9503311152,
+          440230.68081560923,
+          212
+        ],
+        [
+          1340290.9103129492,
+          440232.9701811038,
+          212
+        ],
+        [
+          1340284.3624257825,
+          440227.06829002715,
+          212
+        ],
+        [
+          1340282.3591489473,
+          440224.3517600219,
+          212
+        ],
+        [
+          1340278.5261513721,
+          440220.22479978227,
+          212
+        ],
+        [
+          1340277.334224625,
+          440219.17887010187,
+          212
+        ],
+        [
+          1340274.9260929513,
+          440217.9150931159,
+          212
+        ],
+        [
+          1340265.12788421,
+          440216.89606628113,
+          212
+        ],
+        [
+          1340256.9057877837,
+          440215.73858827964,
+          212
+        ],
+        [
+          1340253.2342071945,
+          440215.71365393675,
+          212
+        ]
+      ],
+      "attributes": {
+        "elevationFt": 212,
+        "weight": "intermediate",
+        "hidden": false
+      }
+    },
+    {
+      "kind": "Contour",
+      "id": "ct-34-0",
+      "line": [
+        [
+          1340413.6531777063,
+          439999.9998465275,
+          212
+        ],
+        [
+          1340414.0449092072,
+          439997.28167610837,
+          212
+        ],
+        [
+          1340415.928435613,
+          439992.76856177533,
+          212
+        ],
+        [
+          1340417.4799417036,
+          439992.0602298642,
+          212
+        ],
+        [
+          1340419.089518526,
+          439994.8148175326,
+          212
+        ],
+        [
+          1340420.259791789,
+          439999.9998465367,
+          212
+        ]
+      ],
+      "attributes": {
+        "elevationFt": 212,
+        "weight": "intermediate",
+        "hidden": false
+      }
+    },
+    {
+      "kind": "Contour",
+      "id": "ct-35-0",
+      "line": [
+        [
+          1340436.9497190379,
+          440151.2426542794,
+          210
+        ],
+        [
+          1340438.2735352837,
+          440150.6035479379,
+          210
+        ],
+        [
+          1340438.9490588722,
+          440148.2721877869,
+          210
+        ],
+        [
+          1340441.0048290316,
+          440143.2439826094,
+          210
+        ],
+        [
+          1340448.781060201,
+          440135.8325801168,
+          210
+        ],
+        [
+          1340450.678694201,
+          440134.41132310504,
+          210
+        ],
+        [
+          1340455.819103861,
+          440128.34473418153,
+          210
+        ],
+        [
+          1340456.6386560323,
+          440122.4264389447,
+          210
+        ],
+        [
+          1340453.738399368,
+          440118.4887827633,
+          210
+        ],
+        [
+          1340448.0678070318,
+          440120.5478337824,
+          210
+        ],
+        [
+          1340444.953968121,
+          440124.0740734416,
+          210
+        ],
+        [
+          1340437.5192717009,
+          440134.1121111092,
+          210
+        ],
+        [
+          1340434.6941461232,
+          440137.2039684427,
+          210
+        ],
+        [
+          1340431.7509105345,
+          440142.3056642842,
+          210
+        ],
+        [
+          1340432.277812372,
+          440147.19082511164,
+          210
+        ],
+        [
+          1340434.0159978713,
+          440150.47231460136,
+          210
+        ],
+        [
+          1340434.1793833612,
+          440150.6183116995,
+          210
+        ],
+        [
+          1340436.9497190379,
+          440151.2426542794,
+          210
+        ]
+      ],
+      "attributes": {
+        "elevationFt": 210,
+        "weight": "index",
+        "hidden": false
+      }
+    },
+    {
+      "kind": "Contour",
+      "id": "ct-37-0",
+      "line": [
+        [
+          1340235.1715792806,
+          439999.9998465367,
+          218
+        ],
+        [
+          1340239.4002453675,
+          439993.94506861456,
+          218
+        ],
+        [
+          1340242.3129692054,
+          439991.8883142054,
+          218
+        ],
+        [
+          1340246.721424949,
+          439989.29973669664,
+          218
+        ]
+      ],
+      "attributes": {
+        "elevationFt": 218,
+        "weight": "intermediate",
+        "hidden": false
+      }
+    },
+    {
+      "kind": "Contour",
+      "id": "ct-40-0",
+      "line": [
+        [
+          1340277.494985454,
+          439999.9998465306,
+          216
+        ],
+        [
+          1340282.2676137094,
+          439996.3942107082,
+          216
+        ],
+        [
+          1340286.2036294462,
+          439994.0051078603,
+          216
+        ],
+        [
+          1340294.019230618,
+          439988.84238851554,
+          216
+        ]
+      ],
+      "attributes": {
+        "elevationFt": 216,
+        "weight": "intermediate",
+        "hidden": false
+      }
+    },
+    {
+      "kind": "Contour",
+      "id": "ct-41-0",
+      "line": [
+        [
+          1340348.7484518753,
+          439999.9998465275,
+          214
+        ],
+        [
+          1340348.8504857847,
+          439999.8558179475,
+          214
+        ],
+        [
+          1340353.1628131233,
+          439996.00936893973,
+          214
+        ],
+        [
+          1340361.2599097835,
+          439995.8512327789,
+          214
+        ],
+        [
+          1340365.3484842894,
+          439994.8774814345,
+          214
+        ],
+        [
+          1340368.097822619,
+          439991.9230910194,
+          214
+        ],
+        [
+          1340373.617168533,
+          439983.7069001114,
+          214
+        ]
+      ],
+      "attributes": {
+        "elevationFt": 214,
+        "weight": "intermediate",
+        "hidden": false
+      }
+    },
+    {
+      "kind": "Contour",
+      "id": "ct-48-0",
+      "line": [
+        [
+          1340236.1735457922,
+          440083.3500735181,
+          216
+        ],
+        [
+          1340236.2772201092,
+          440083.20538877865,
+          216
+        ],
+        [
+          1340236.63220629,
+          440082.6479751797,
+          216
+        ],
+        [
+          1340238.2936202863,
+          440077.81202685117,
+          216
+        ],
+        [
+          1340236.153204619,
+          440075.12568053463,
+          216
+        ],
+        [
+          1340230.0659464581,
+          440073.951470281,
+          216
+        ]
+      ],
+      "attributes": {
+        "elevationFt": 216,
+        "weight": "intermediate",
+        "hidden": true
+      }
+    },
+    {
+      "kind": "Contour",
+      "id": "ct-49-0",
+      "line": [
+        [
+          1340283.449041783,
+          440150.27972968185,
+          214
+        ],
+        [
+          1340284.3145256147,
+          440150.11798460135,
+          214
+        ],
+        [
+          1340286.4040883735,
+          440147.750207198,
+          214
+        ],
+        [
+          1340286.5907677854,
+          440147.32041801594,
+          214
+        ]
+      ],
+      "attributes": {
+        "elevationFt": 214,
+        "weight": "intermediate",
+        "hidden": false
+      }
+    },
+    {
+      "kind": "Contour",
+      "id": "ct-50-0",
+      "line": [
+        [
+          1340342.1693967807,
+          440140.2767969538,
+          210
+        ],
+        [
+          1340341.6611957038,
+          440140.78302952665,
+          210
+        ],
+        [
+          1340339.1054265297,
+          440141.90769919247,
+          210
+        ],
+        [
+          1340336.4010356222,
+          440137.5848731995,
+          210
+        ],
+        [
+          1340338.325572455,
+          440134.8752329417,
+          210
+        ],
+        [
+          1340340.849845614,
+          440134.12228169054,
+          210
+        ],
+        [
+          1340343.9364536225,
+          440136.6970796952,
+          210
+        ],
+        [
+          1340342.1693967807,
+          440140.2767969538,
+          210
+        ]
+      ],
+      "attributes": {
+        "elevationFt": 210,
+        "weight": "index",
+        "hidden": false
+      }
+    },
+    {
+      "kind": "Contour",
+      "id": "ct-65-0",
+      "line": [
+        [
+          1340232.0446170408,
+          440099.9688066961,
+          214
+        ],
+        [
+          1340236.3444772048,
+          440101.5009558603,
+          214
+        ],
+        [
+          1340239.51441836,
+          440101.3418354298,
+          214
+        ],
+        [
+          1340243.8228086971,
+          440100.168281357,
+          214
+        ],
+        [
+          1340250.1177436288,
+          440097.7391523493,
+          214
+        ],
+        [
+          1340252.9697720378,
+          440096.15024477016,
+          214
+        ],
+        [
+          1340256.0800020415,
+          440094.1709180367,
+          214
+        ],
+        [
+          1340256.536694032,
+          440093.7923098685,
+          214
+        ],
+        [
+          1340256.6361032864,
+          440093.6728875333,
+          214
+        ]
+      ],
+      "attributes": {
+        "elevationFt": 214,
+        "weight": "intermediate",
+        "hidden": false
+      }
+    },
+    {
+      "kind": "Contour",
+      "id": "ct-66-0",
+      "line": [
+        [
+          1340256.6361032864,
+          440093.6728875333,
+          214
+        ],
+        [
+          1340260.266673459,
+          440089.30773877667,
+          214
+        ]
+      ],
+      "attributes": {
+        "elevationFt": 214,
+        "weight": "intermediate",
+        "hidden": true
+      }
+    },
+    {
+      "kind": "Contour",
+      "id": "ct-68-0",
+      "line": [
+        [
+          1340345.6897309537,
+          440177.2878777763,
+          210
+        ],
+        [
+          1340342.3016143693,
+          440179.81838452676,
+          210
+        ],
+        [
+          1340342.9410487833,
+          440186.19501219917,
+          210
+        ],
+        [
+          1340344.062109526,
+          440186.34363395337,
+          210
+        ],
+        [
+          1340348.501733201,
+          440180.225864019,
+          210
+        ],
+        [
+          1340345.6897309537,
+          440177.2878777763,
+          210
+        ]
+      ],
+      "attributes": {
+        "elevationFt": 210,
+        "weight": "index",
+        "hidden": false
+      }
+    },
+    {
+      "kind": "Contour",
+      "id": "ct-70-0",
+      "line": [
+        [
+          1340363.925586862,
+          440250.1919314385,
+          212
+        ],
+        [
+          1340362.5765082026,
+          440249.9245435208,
+          212
+        ],
+        [
+          1340356.528620031,
+          440247.0442999475,
+          212
+        ],
+        [
+          1340353.1552672065,
+          440243.27462243766,
+          212
+        ],
+        [
+          1340352.6667511144,
+          440242.67882310506,
+          212
+        ],
+        [
+          1340348.3025866144,
+          440238.5863116058,
+          212
+        ],
+        [
+          1340341.367561117,
+          440233.0380943484,
+          212
+        ],
+        [
+          1340339.3790480339,
+          440231.9416398471,
+          212
+        ],
+        [
+          1340338.9377759492,
+          440231.7654591,
+          212
+        ]
+      ],
+      "attributes": {
+        "elevationFt": 212,
+        "weight": "intermediate",
+        "hidden": false
+      }
+    },
+    {
+      "kind": "Contour",
+      "id": "ct-71-0",
+      "line": [
+        [
+          1340407.3900668763,
+          440249.93077711493,
+          212
+        ],
+        [
+          1340405.828390208,
+          440250.4688337781,
+          212
+        ]
+      ],
+      "attributes": {
+        "elevationFt": 212,
+        "weight": "intermediate",
+        "hidden": true
+      }
+    },
+    {
+      "kind": "Contour",
+      "id": "ct-83-0",
+      "line": [
+        [
+          1340268.2820773723,
+          440070.7437995167,
+          214
+        ],
+        [
+          1340268.1147548635,
+          440065.4193351067,
+          214
+        ]
+      ],
+      "attributes": {
+        "elevationFt": 214,
+        "weight": "intermediate",
+        "hidden": true
+      }
+    },
+    {
+      "kind": "Contour",
+      "id": "ct-84-0",
+      "line": [
+        [
+          1340260.266673459,
+          440089.30773877667,
+          214
+        ],
+        [
+          1340261.3201490324,
+          440088.04100902134,
+          214
+        ],
+        [
+          1340268.3437570322,
+          440072.70245702,
+          214
+        ],
+        [
+          1340268.2820773723,
+          440070.7437995167,
+          214
+        ]
+      ],
+      "attributes": {
+        "elevationFt": 214,
+        "weight": "intermediate",
+        "hidden": false
+      }
+    },
+    {
+      "kind": "Contour",
+      "id": "ct-96-0",
+      "line": [
+        [
+          1340229.0367490337,
+          440081.68931569793,
+          216
+        ],
+        [
+          1340234.7381811964,
+          440084.37008461036,
+          216
+        ],
+        [
+          1340235.818231531,
+          440083.84547937155,
+          216
+        ],
+        [
+          1340236.1735457922,
+          440083.3500735181,
+          216
+        ]
+      ],
+      "attributes": {
+        "elevationFt": 216,
+        "weight": "intermediate",
+        "hidden": false
+      }
+    },
+    {
+      "kind": "Contour",
+      "id": "ct-98-0",
+      "line": [
+        [
+          1340231.23392312,
+          440024.3754539449,
+          216
+        ],
+        [
+          1340237.5485430325,
+          440021.72880568093,
+          216
+        ],
+        [
+          1340242.0472217025,
+          440021.11266519484,
+          216
+        ],
+        [
+          1340245.9563346154,
+          440021.0529540257,
+          216
+        ],
+        [
+          1340253.7447048703,
+          440019.84101417643,
+          216
+        ],
+        [
+          1340257.327702949,
+          440018.8488901904,
+          216
+        ],
+        [
+          1340260.8690344514,
+          440016.36267469113,
+          216
+        ],
+        [
+          1340261.6718543794,
+          440015.29673193995,
+          216
+        ],
+        [
+          1340269.1514981964,
+          440006.5926811068,
+          216
+        ],
+        [
+          1340273.3535895378,
+          440003.7429492684,
+          216
+        ],
+        [
+          1340273.7315415414,
+          440003.45981335297,
+          216
+        ],
+        [
+          1340275.71677379,
+          440001.34301969805,
+          216
+        ],
+        [
+          1340277.494985454,
+          439999.9998465306,
+          216
+        ]
+      ],
+      "attributes": {
+        "elevationFt": 216,
+        "weight": "intermediate",
+        "hidden": false
+      }
+    },
+    {
+      "kind": "Contour",
+      "id": "ct-100-0",
+      "line": [
+        [
+          1340308.0936775333,
+          440247.6145087686,
+          214
+        ],
+        [
+          1340304.607464026,
+          440250.78904310835,
+          214
+        ]
+      ],
+      "attributes": {
+        "elevationFt": 214,
+        "weight": "intermediate",
+        "hidden": false
+      }
+    },
+    {
+      "kind": "Contour",
+      "id": "ct-103-0",
+      "line": [
+        [
+          1340420.259791789,
+          439999.9998465367,
+          212
+        ],
+        [
+          1340420.9454859442,
+          440003.03724201943,
+          212
+        ],
+        [
+          1340427.3086622048,
+          440008.06052593386,
+          212
+        ],
+        [
+          1340433.5169831142,
+          440008.37384552887,
+          212
+        ],
+        [
+          1340434.730235286,
+          440007.98637911346,
+          212
+        ],
+        [
+          1340438.989413124,
+          440001.71736276883,
+          212
+        ],
+        [
+          1340438.863757207,
+          439999.9998465275,
+          212
+        ]
+      ],
+      "attributes": {
+        "elevationFt": 212,
+        "weight": "intermediate",
+        "hidden": false
+      }
+    },
+    {
+      "kind": "Contour",
+      "id": "ct-105-0",
+      "line": [
+        [
+          1340472.4824563675,
+          440253.0341173548,
+          210
+        ],
+        [
+          1340471.3876422967,
+          440240.37994319777,
+          210
+        ],
+        [
+          1340470.871895275,
+          440235.0656493538,
+          210
+        ],
+        [
+          1340470.5359379477,
+          440230.71985751763,
+          210
+        ],
+        [
+          1340469.3325282903,
+          440226.67393385514,
+          210
+        ],
+        [
+          1340463.9837857003,
+          440223.1431010279,
+          210
+        ],
+        [
+          1340460.3968506127,
+          440224.6342397778,
+          210
+        ],
+        [
+          1340459.9076783664,
+          440224.7700662671,
+          210
+        ],
+        [
+          1340442.6331066175,
+          440224.7139640238,
+          210
+        ],
+        [
+          1340436.093093453,
+          440225.42393636104,
+          210
+        ],
+        [
+          1340426.1482314428,
+          440226.2526748527,
+          210
+        ],
+        [
+          1340420.1790832935,
+          440225.82190143754,
+          210
+        ],
+        [
+          1340413.4327056964,
+          440223.90819136624,
+          210
+        ],
+        [
+          1340406.6781260334,
+          440220.5138411907,
+          210
+        ],
+        [
+          1340402.5934885452,
+          440220.84422110836,
+          210
+        ],
+        [
+          1340390.1279622875,
+          440228.70739435963,
+          210
+        ],
+        [
+          1340384.7880779486,
+          440229.5725501066,
+          210
+        ],
+        [
+          1340367.50760071,
+          440226.5630416996,
+          210
+        ],
+        [
+          1340366.4774190292,
+          440226.436401525,
+          210
+        ],
+        [
+          1340363.9492088656,
+          440225.9505101118,
+          210
+        ],
+        [
+          1340363.6585270304,
+          440225.7877807738,
+          210
+        ],
+        [
+          1340359.6749392012,
+          440222.2936932694,
+          210
+        ],
+        [
+          1340353.9098588615,
+          440215.650661949,
+          210
+        ],
+        [
+          1340351.2963470337,
+          440213.57225402165,
+          210
+        ],
+        [
+          1340341.9023369537,
+          440208.96333935915,
+          210
+        ],
+        [
+          1340339.9446637006,
+          440209.0191135136,
+          210
+        ],
+        [
+          1340332.0309656255,
+          440213.0775043674,
+          210
+        ],
+        [
+          1340330.0440929553,
+          440213.0319007821,
+          210
+        ],
+        [
+          1340327.697969036,
+          440212.1664169462,
+          210
+        ],
+        [
+          1340326.1031559526,
+          440211.3957491823,
+          210
+        ],
+        [
+          1340320.1143227783,
+          440208.9994285256,
+          210
+        ],
+        [
+          1340315.5359198733,
+          440207.6897198502,
+          210
+        ],
+        [
+          1340308.937507867,
+          440205.2146591989,
+          210
+        ],
+        [
+          1340303.3522171958,
+          440201.5945876916,
+          210
+        ],
+        [
+          1340301.7898843766,
+          440198.63822877983,
+          210
+        ],
+        [
+          1340301.8587818726,
+          440198.0401328586,
+          210
+        ],
+        [
+          1340302.5005128654,
+          440193.05425045703,
+          210
+        ],
+        [
+          1340301.1904761214,
+          440184.5437687795,
+          210
+        ],
+        [
+          1340303.8732135394,
+          440172.5851312718,
+          210
+        ],
+        [
+          1340308.6579808737,
+          440167.4873724419,
+          210
+        ],
+        [
+          1340311.0064013726,
+          440165.70095869247,
+          210
+        ],
+        [
+          1340316.1005512914,
+          440164.18652602873,
+          210
+        ],
+        [
+          1340320.0539554497,
+          440164.9371807005,
+          210
+        ],
+        [
+          1340329.5047239508,
+          440164.83678719687,
+          210
+        ],
+        [
+          1340336.2514296174,
+          440161.48410360416,
+          210
+        ],
+        [
+          1340343.1723475293,
+          440156.08057111985,
+          210
+        ],
+        [
+          1340345.5781826207,
+          440153.89619227865,
+          210
+        ],
+        [
+          1340348.125749701,
+          440150.17868002795,
+          210
+        ],
+        [
+          1340348.5319168717,
+          440149.67540020315,
+          210
+        ],
+        [
+          1340352.6375517056,
+          440145.04023885744,
+          210
+        ],
+        [
+          1340359.1345859435,
+          440135.7689319452,
+          210
+        ],
+        [
+          1340363.5870048662,
+          440131.9756324449,
+          210
+        ],
+        [
+          1340368.6047113647,
+          440128.0953908562,
+          210
+        ],
+        [
+          1340373.6332446116,
+          440123.54192227754,
+          210
+        ],
+        [
+          1340385.3133393642,
+          440115.47533735377,
+          210
+        ],
+        [
+          1340393.151250195,
+          440110.4435232719,
+          210
+        ],
+        [
+          1340394.0636499557,
+          440107.6052743642,
+          210
+        ],
+        [
+          1340390.0380674535,
+          440098.8083759405,
+          210
+        ],
+        [
+          1340388.0469296947,
+          440093.95011794346,
+          210
+        ],
+        [
+          1340388.7398416921,
+          440093.1203951974,
+          210
+        ],
+        [
+          1340389.7864275388,
+          440092.35038360825,
+          210
+        ],
+        [
+          1340395.2956028664,
+          440087.929788783,
+          210
+        ],
+        [
+          1340396.0770973677,
+          440087.3615484372,
+          210
+        ],
+        [
+          1340399.9648848767,
+          440084.64501844416,
+          210
+        ],
+        [
+          1340402.8720312845,
+          440082.5105082827,
+          210
+        ],
+        [
+          1340404.7253740407,
+          440081.4691717794,
+          210
+        ],
+        [
+          1340412.3516711094,
+          440079.98000152304,
+          210
+        ],
+        [
+          1340420.2489650387,
+          440079.1223916891,
+          210
+        ],
+        [
+          1340422.0803261923,
+          440078.19260353444,
+          210
+        ],
+        [
+          1340422.8365582793,
+          440076.76839378075,
+          210
+        ],
+        [
+          1340424.703680527,
+          440070.30416786356,
+          210
+        ],
+        [
+          1340427.8575456117,
+          440064.2221590251,
+          210
+        ],
+        [
+          1340428.5550507926,
+          440063.55155669124,
+          210
+        ],
+        [
+          1340430.5753879533,
+          440060.84454111394,
+          210
+        ],
+        [
+          1340431.585884608,
+          440058.37276127207,
+          210
+        ],
+        [
+          1340432.536670118,
+          440055.4505230271,
+          210
+        ],
+        [
+          1340433.531746859,
+          440050.55912861164,
+          210
+        ],
+        [
+          1340435.2476226937,
+          440048.1450914361,
+          210
+        ],
+        [
+          1340441.6603395336,
+          440044.4676053666,
+          210
+        ],
+        [
+          1340444.2338252077,
+          440043.15395968873,
+          210
+        ],
+        [
+          1340447.472335778,
+          440040.96826852555,
+          210
+        ],
+        [
+          1340447.8046841996,
+          440040.52273136104,
+          210
+        ],
+        [
+          1340449.9851260306,
+          440036.589340274,
+          210
+        ],
+        [
+          1340453.531706866,
+          440032.0962390331,
+          210
+        ],
+        [
+          1340455.4939732815,
+          440030.72714727436,
+          210
+        ],
+        [
+          1340464.4414619452,
+          440028.61822761834,
+          210
+        ],
+        [
+          1340466.7370610354,
+          440027.2389652661,
+          210
+        ],
+        [
+          1340473.6911153677,
+          440021.24914786796,
+          210
+        ],
+        [
+          1340478.4263421132,
+          440017.2156913509,
+          210
+        ],
+        [
+          1340481.4696431118,
+          440014.0503433717,
+          210
+        ],
+        [
+          1340489.8885895205,
+          440005.2429462778,
+          210
+        ],
+        [
+          1340490.4154913663,
+          440004.4210975275,
+          210
+        ],
+        [
+          1340491.6786121961,
+          440000.7505011871,
+          210
+        ],
+        [
+          1340491.9204096207,
+          439999.99984653364,
+          210
+        ]
+      ],
+      "attributes": {
+        "elevationFt": 210,
+        "weight": "index",
+        "hidden": false
+      }
+    },
+    {
+      "kind": "Contour",
+      "id": "ct-106-0",
+      "line": [
+        [
+          1340438.863757207,
+          439999.9998465275,
+          212
+        ],
+        [
+          1340438.7915788733,
+          439999.014284194,
+          212
+        ],
+        [
+          1340433.2246608702,
+          439997.6117279494,
+          212
+        ],
+        [
+          1340428.0744087105,
+          439992.26232919033,
+          212
+        ],
+        [
+          1340427.9681096976,
+          439984.74561195244,
+          212
+        ]
+      ],
+      "attributes": {
+        "elevationFt": 212,
+        "weight": "intermediate",
+        "hidden": false
+      }
+    },
+    {
+      "kind": "Contour",
+      "id": "ct-113-0",
+      "line": [
+        [
+          1340318.2193134557,
+          440114.43432893633,
+          214
+        ],
+        [
+          1340321.800014954,
+          440113.4740290316,
+          214
+        ],
+        [
+          1340324.8085391175,
+          440110.7506092727,
+          214
+        ],
+        [
+          1340329.2324147797,
+          440104.12201361277,
+          214
+        ],
+        [
+          1340331.4158093773,
+          440099.22996302875,
+          214
+        ],
+        [
+          1340331.5404810254,
+          440095.91861793917,
+          214
+        ],
+        [
+          1340328.2796607886,
+          440090.8159378646,
+          214
+        ],
+        [
+          1340316.5785686916,
+          440086.9199482813,
+          214
+        ],
+        [
+          1340312.1209004463,
+          440087.2788714371,
+          214
+        ],
+        [
+          1340307.0165799551,
+          440088.322176437,
+          214
+        ],
+        [
+          1340305.2688800413,
+          440088.49901335884,
+          214
+        ],
+        [
+          1340295.760040785,
+          440089.09185994643,
+          214
+        ],
+        [
+          1340295.0602390312,
+          440089.3684341819,
+          214
+        ],
+        [
+          1340293.3981688707,
+          440090.08660861914,
+          214
+        ],
+        [
+          1340285.606517788,
+          440091.573154198,
+          214
+        ],
+        [
+          1340278.6787101172,
+          440097.98652717797,
+          214
+        ],
+        [
+          1340276.0520749516,
+          440105.42056745547,
+          214
+        ],
+        [
+          1340275.7371149473,
+          440106.05639294785,
+          214
+        ],
+        [
+          1340274.771565704,
+          440106.89694244694,
+          214
+        ],
+        [
+          1340265.7587884546,
+          440111.8847933543,
+          214
+        ],
+        [
+          1340263.4750003642,
+          440117.4674593552,
+          214
+        ],
+        [
+          1340263.651181114,
+          440123.2417260181,
+          214
+        ],
+        [
+          1340263.7814301983,
+          440129.21513928653,
+          214
+        ],
+        [
+          1340265.0688292037,
+          440136.4415027696,
+          214
+        ],
+        [
+          1340266.5606241198,
+          440139.5113785266,
+          214
+        ],
+        [
+          1340269.8102895294,
+          440145.3102514435,
+          214
+        ],
+        [
+          1340271.6436192035,
+          440149.2705453579,
+          214
+        ],
+        [
+          1340273.5570012014,
+          440150.2485617723,
+          214
+        ],
+        [
+          1340281.919845367,
+          440150.15079293394,
+          214
+        ],
+        [
+          1340283.449041783,
+          440150.27972968185,
+          214
+        ]
+      ],
+      "attributes": {
+        "elevationFt": 214,
+        "weight": "intermediate",
+        "hidden": false
+      }
+    },
+    {
+      "kind": "Contour",
+      "id": "ct-114-0",
+      "line": [
+        [
+          1340335.3308277884,
+          440249.0429836045,
+          214
+        ],
+        [
+          1340329.8226367075,
+          440247.40125460975,
+          214
+        ],
+        [
+          1340309.1776648774,
+          440246.6273060273,
+          214
+        ],
+        [
+          1340308.0936775333,
+          440247.6145087686,
+          214
+        ]
+      ],
+      "attributes": {
+        "elevationFt": 214,
+        "weight": "intermediate",
+        "hidden": true
+      }
+    },
+    {
+      "kind": "Contour",
+      "id": "ct-116-0",
+      "line": [
+        [
+          1340368.6296457045,
+          440209.85539793957,
+          210
+        ],
+        [
+          1340368.7461152787,
+          440204.20777144824,
+          210
+        ],
+        [
+          1340369.5092371225,
+          440201.30095312424,
+          210
+        ],
+        [
+          1340373.0961722007,
+          440194.5266884429,
+          210
+        ],
+        [
+          1340371.1178297072,
+          440186.59494577534,
+          210
+        ],
+        [
+          1340364.3392999452,
+          440184.7524297795,
+          210
+        ],
+        [
+          1340363.5768342877,
+          440185.15334760095,
+          210
+        ],
+        [
+          1340355.3521131962,
+          440196.1907271061,
+          210
+        ],
+        [
+          1340353.887877279,
+          440203.7363156986,
+          210
+        ],
+        [
+          1340357.5381324564,
+          440210.3596620341,
+          210
+        ],
+        [
+          1340359.9567627897,
+          440213.12015519856,
+          210
+        ],
+        [
+          1340364.1158751932,
+          440215.6322892677,
+          210
+        ],
+        [
+          1340368.6296457045,
+          440209.85539793957,
+          210
+        ]
+      ],
+      "attributes": {
+        "elevationFt": 210,
+        "weight": "index",
+        "hidden": false
+      }
+    },
+    {
+      "kind": "Contour",
+      "id": "ct-117-0",
+      "line": [
+        [
+          1340511.9384141942,
+          440238.92784634704,
+          210
+        ],
+        [
+          1340507.356402364,
+          440242.00723652286,
+          210
+        ],
+        [
+          1340504.4600827072,
+          440242.1611076137,
+          210
+        ],
+        [
+          1340497.9791245246,
+          440240.28283052804,
+          210
+        ],
+        [
+          1340491.400069463,
+          440237.9606567009,
+          210
+        ],
+        [
+          1340486.9994876967,
+          440239.221480951,
+          210
+        ],
+        [
+          1340487.6333447038,
+          440242.3612384462,
+          210
+        ],
+        [
+          1340493.828542289,
+          440246.6256656256,
+          210
+        ],
+        [
+          1340505.5785187935,
+          440252.04428994516,
+          210
+        ]
+      ],
+      "attributes": {
+        "elevationFt": 210,
+        "weight": "index",
+        "hidden": false
+      }
+    },
+    {
+      "kind": "Contour",
+      "id": "ct-126-0",
+      "line": [
+        [
+          1340286.5907677854,
+          440147.32041801594,
+          214
+        ],
+        [
+          1340287.869964706,
+          440144.37751053466,
+          214
+        ],
+        [
+          1340292.0284209526,
+          440135.76794769685,
+          214
+        ],
+        [
+          1340293.8105696102,
+          440129.5825926037,
+          214
+        ],
+        [
+          1340294.5159487836,
+          440127.09276819084,
+          214
+        ],
+        [
+          1340298.9388402065,
+          440120.3719811089,
+          214
+        ],
+        [
+          1340300.0320138624,
+          440119.7328747735,
+          214
+        ],
+        [
+          1340309.8502356955,
+          440116.9622110185,
+          214
+        ],
+        [
+          1340313.6336926976,
+          440115.6643133566,
+          214
+        ],
+        [
+          1340318.2193134557,
+          440114.43432893633,
+          214
+        ]
+      ],
+      "attributes": {
+        "elevationFt": 214,
+        "weight": "intermediate",
+        "hidden": true
+      }
+    },
+    {
+      "kind": "Contour",
+      "id": "ct-130-0",
+      "line": [
+        [
+          1340242.0400038639,
+          440217.3517740209,
+          212
+        ],
+        [
+          1340236.7394895356,
+          440219.28713760735,
+          212
+        ],
+        [
+          1340234.1574736978,
+          440220.0292621086,
+          212
+        ]
+      ],
+      "attributes": {
+        "elevationFt": 212,
+        "weight": "intermediate",
+        "hidden": false
+      }
+    },
+    {
+      "kind": "Contour",
+      "id": "ct-130-1",
+      "line": [
+        [
+          1340229.1404233687,
+          440120.4667971992,
+          212
+        ],
+        [
+          1340234.7322757079,
+          440125.3168530963,
+          212
+        ],
+        [
+          1340236.1955273715,
+          440127.0360097667,
+          212
+        ],
+        [
+          1340238.5222943674,
+          440130.06749977777,
+          212
+        ],
+        [
+          1340244.9376358683,
+          440135.7272653593,
+          212
+        ],
+        [
+          1340247.206004037,
+          440139.77023627993,
+          212
+        ],
+        [
+          1340250.7657082065,
+          440149.14849835436,
+          212
+        ],
+        [
+          1340252.0101282876,
+          440154.28070593986,
+          212
+        ],
+        [
+          1340252.9464781072,
+          440158.0874568615,
+          212
+        ],
+        [
+          1340261.9533498676,
+          440164.1648725319,
+          212
+        ],
+        [
+          1340264.0225714566,
+          440165.2344241844,
+          212
+        ],
+        [
+          1340266.3391678757,
+          440165.86106336216,
+          212
+        ],
+        [
+          1340274.4592303592,
+          440164.66191876866,
+          212
+        ],
+        [
+          1340283.2551445346,
+          440161.20326427737,
+          212
+        ],
+        [
+          1340291.0943676946,
+          440155.58647759754,
+          212
+        ],
+        [
+          1340293.506436377,
+          440153.60813511244,
+          212
+        ],
+        [
+          1340297.6891707957,
+          440151.0713947862,
+          212
+        ],
+        [
+          1340302.5874549572,
+          440148.49101936514,
+          212
+        ],
+        [
+          1340305.9276713696,
+          440145.6649095263,
+          212
+        ],
+        [
+          1340308.4391492833,
+          440142.4086824531,
+          212
+        ],
+        [
+          1340312.8023295384,
+          440137.12982160697,
+          212
+        ],
+        [
+          1340319.7695071956,
+          440132.62687785836,
+          212
+        ],
+        [
+          1340322.1340037873,
+          440130.4579189351,
+          212
+        ],
+        [
+          1340324.5089990315,
+          440127.9674383689,
+          212
+        ],
+        [
+          1340328.9023629571,
+          440124.65150010213,
+          212
+        ],
+        [
+          1340329.4328737108,
+          440124.25419119425,
+          212
+        ],
+        [
+          1340332.5463845413,
+          440121.2948795253,
+          212
+        ],
+        [
+          1340337.725508033,
+          440114.9435142603,
+          212
+        ],
+        [
+          1340340.125109539,
+          440111.8329561963,
+          212
+        ],
+        [
+          1340343.6739869532,
+          440107.6781088505,
+          212
+        ],
+        [
+          1340350.7641958727,
+          440101.12858128623,
+          212
+        ],
+        [
+          1340352.8531024593,
+          440098.5649381082,
+          212
+        ],
+        [
+          1340355.084069113,
+          440092.75064527633,
+          212
+        ],
+        [
+          1340356.0637259453,
+          440090.19815694937,
+          212
+        ],
+        [
+          1340360.863913206,
+          440077.91734161176,
+          212
+        ],
+        [
+          1340361.737271039,
+          440072.41243135405,
+          212
+        ],
+        [
+          1340361.8977037764,
+          440071.50429669314,
+          212
+        ],
+        [
+          1340364.510231377,
+          440062.89965512144,
+          212
+        ],
+        [
+          1340364.9380520396,
+          440052.4298597721,
+          212
+        ],
+        [
+          1340364.7428424489,
+          440051.5371450261,
+          212
+        ],
+        [
+          1340363.5482910376,
+          440041.7415609486,
+          212
+        ],
+        [
+          1340365.8753861212,
+          440035.7389482764,
+          212
+        ],
+        [
+          1340367.9305001164,
+          440033.63790261303,
+          212
+        ],
+        [
+          1340368.8970336162,
+          440032.93908511155,
+          212
+        ],
+        [
+          1340371.8327232858,
+          440031.1808865144,
+          212
+        ],
+        [
+          1340381.7641338687,
+          440025.88070027565,
+          212
+        ],
+        [
+          1340386.0702276225,
+          440023.4230280237,
+          212
+        ],
+        [
+          1340391.1528946129,
+          440020.44075051765,
+          212
+        ],
+        [
+          1340396.3907450393,
+          440019.0785485247,
+          212
+        ],
+        [
+          1340400.3533355433,
+          440019.47093619703,
+          212
+        ],
+        [
+          1340407.2056840356,
+          440018.0956108473,
+          212
+        ],
+        [
+          1340411.7322497775,
+          440012.8803981911,
+          212
+        ],
+        [
+          1340411.8595461259,
+          440012.44995284954,
+          212
+        ],
+        [
+          1340413.6531777063,
+          439999.9998465275,
+          212
+        ]
+      ],
+      "attributes": {
+        "elevationFt": 212,
+        "weight": "intermediate",
+        "hidden": false
+      }
+    },
+    {
+      "kind": "Contour",
+      "id": "ct-131-0",
+      "line": [
+        [
+          1340509.405938952,
+          440119.98320235935,
+          208
+        ],
+        [
+          1340506.2481368745,
+          440130.7243226136,
+          208
+        ],
+        [
+          1340504.9594255409,
+          440135.87129393325,
+          208
+        ],
+        [
+          1340504.4551614507,
+          440139.1111168524,
+          208
+        ],
+        [
+          1340504.0745847784,
+          440141.37653229205,
+          208
+        ],
+        [
+          1340503.779309792,
+          440142.56714668445,
+          208
+        ],
+        [
+          1340500.6782661194,
+          440154.2295249443,
+          208
+        ],
+        [
+          1340500.501429196,
+          440155.0280797778,
+          208
+        ],
+        [
+          1340500.2455241946,
+          440156.28332661156,
+          208
+        ],
+        [
+          1340500.08771611,
+          440157.1579967743,
+          208
+        ],
+        [
+          1340498.8318131247,
+          440167.6405873458,
+          208
+        ],
+        [
+          1340498.9095688737,
+          440169.1694556853,
+          208
+        ],
+        [
+          1340499.1425080262,
+          440170.1687975138,
+          208
+        ],
+        [
+          1340501.2793147827,
+          440174.1832251962,
+          208
+        ],
+        [
+          1340504.9574570344,
+          440175.38925953105,
+          208
+        ],
+        [
+          1340508.119852284,
+          440174.4365055179,
+          208
+        ],
+        [
+          1340509.6979331165,
+          440173.1589490279,
+          208
+        ]
+      ],
+      "attributes": {
+        "elevationFt": 208,
+        "weight": "intermediate",
+        "hidden": false
+      }
+    },
+    {
+      "kind": "Contour",
+      "id": "ct-132-0",
+      "line": [
+        [
+          1340413.7174820248,
+          440251.2119425155,
+          212
+        ],
+        [
+          1340410.8743118583,
+          440249.2165396924,
+          212
+        ],
+        [
+          1340409.572477204,
+          440249.1784820232,
+          212
+        ],
+        [
+          1340407.3900668763,
+          440249.93077711493,
+          212
+        ]
+      ],
+      "attributes": {
+        "elevationFt": 212,
+        "weight": "intermediate",
+        "hidden": false
+      }
+    },
+    {
+      "kind": "Contour",
+      "id": "ct-133-0",
+      "line": [
+        [
+          1340510.766500529,
+          440179.43682360137,
+          208
+        ],
+        [
+          1340507.0814685344,
+          440179.1143176948,
+          208
+        ],
+        [
+          1340504.713363032,
+          440179.38925152854,
+          208
+        ],
+        [
+          1340504.3314740297,
+          440179.38990769716,
+          208
+        ],
+        [
+          1340499.2527440335,
+          440177.4880086211,
+          208
+        ],
+        [
+          1340496.6786021998,
+          440175.4971989385,
+          208
+        ],
+        [
+          1340494.7796558677,
+          440170.9125624381,
+          208
+        ],
+        [
+          1340494.507018624,
+          440164.66257494944,
+          208
+        ],
+        [
+          1340495.0053771979,
+          440153.7180430318,
+          208
+        ],
+        [
+          1340495.5312947915,
+          440144.9608427004,
+          208
+        ],
+        [
+          1340495.7855593679,
+          440139.00219319656,
+          208
+        ],
+        [
+          1340496.107409118,
+          440136.60816909786,
+          208
+        ],
+        [
+          1340497.0093101978,
+          440132.3240569611,
+          208
+        ],
+        [
+          1340498.2379822857,
+          440122.9329996064,
+          208
+        ],
+        [
+          1340499.0365371213,
+          440114.95138827746,
+          208
+        ],
+        [
+          1340499.2458542835,
+          440113.7732410244,
+          208
+        ],
+        [
+          1340500.9725568711,
+          440105.3372342623,
+          208
+        ],
+        [
+          1340501.9965049403,
+          440098.5062111813,
+          208
+        ],
+        [
+          1340502.1359403722,
+          440096.30444393767,
+          208
+        ],
+        [
+          1340502.2501133634,
+          440089.9455327718,
+          208
+        ],
+        [
+          1340502.8455846142,
+          440086.19521220383,
+          208
+        ],
+        [
+          1340504.6234682049,
+          440080.9878735098,
+          208
+        ],
+        [
+          1340505.2186113715,
+          440079.1689795166,
+          208
+        ],
+        [
+          1340508.5686702891,
+          440065.0794407702,
+          208
+        ]
+      ],
+      "attributes": {
+        "elevationFt": 208,
+        "weight": "intermediate",
+        "hidden": false
+      }
+    },
+    {
+      "kind": "Contour",
+      "id": "ct-134-0",
+      "line": [
+        [
+          1340491.9204096207,
+          439999.99984653364,
+          210
+        ],
+        [
+          1340493.1192261204,
+          439996.2803657741,
+          210
+        ],
+        [
+          1340498.7589786174,
+          439987.3975095347,
+          210
+        ]
+      ],
+      "attributes": {
+        "elevationFt": 210,
+        "weight": "index",
+        "hidden": false
+      }
+    },
+    {
+      "kind": "Pavement",
+      "id": "frontage-sidewalk-0-0",
+      "ring": {
+        "coordinates": [
+          [
+            1340428.1243675614,
+            440226.34758533636
+          ],
+          [
+            1340430.0226716588,
+            440216.1171559328
+          ],
+          [
+            1340432.9723223455,
+            440216.66447743453
+          ],
+          [
+            1340431.0740182481,
+            440226.8949068381
+          ],
+          [
+            1340428.1243675614,
+            440226.34758533636
+          ]
+        ]
+      },
+      "attributes": {
+        "label": "CONCRETE SIDEWALK  3' WIDE",
+        "improvement": "sidewalk-0"
+      }
+    },
+    {
+      "kind": "Surface",
+      "id": "frontage-verge-0-0",
+      "ring": {
+        "coordinates": [
+          [
+            1340431.0740182481,
+            440226.8949068381
+          ],
+          [
+            1340432.9723223455,
+            440216.66447743453
+          ],
+          [
+            1340436.905189928,
+            440217.3942394368
+          ],
+          [
+            1340435.0068858305,
+            440227.6246688403
+          ],
+          [
+            1340431.0740182481,
+            440226.8949068381
+          ]
+        ]
+      },
+      "attributes": {
+        "label": "PLANTING STRIP  4' WIDE  (STREET TREES)",
+        "improvement": "verge-0"
+      }
+    },
+    {
+      "kind": "Pavement",
+      "id": "frontage-curb-0-0",
+      "ring": {
+        "coordinates": [
+          [
+            1340435.0068858305,
+            440227.6246688403
+          ],
+          [
+            1340436.905189928,
+            440217.3942394368
+          ],
+          [
+            1340438.3800152713,
+            440217.66790018766
+          ],
+          [
+            1340436.481711174,
+            440227.8983295912
+          ],
+          [
+            1340435.0068858305,
+            440227.6246688403
+          ]
+        ]
+      },
+      "attributes": {
+        "label": "CURB AND GUTTER",
+        "improvement": "curb-0"
+      }
+    },
+    {
+      "kind": "Pavement",
+      "id": "frontage-sidewalk-1-0",
+      "ring": {
+        "coordinates": [
+          [
+            1340433.306600669,
+            440198.41925181233
+          ],
+          [
+            1340442.4749711454,
+            440149.0086399727
+          ],
+          [
+            1340445.424621832,
+            440149.5559614744
+          ],
+          [
+            1340436.2562513556,
+            440198.96657331404
+          ],
+          [
+            1340433.306600669,
+            440198.41925181233
+          ]
+        ]
+      },
+      "attributes": {
+        "label": "",
+        "improvement": "sidewalk-1"
+      }
+    },
+    {
+      "kind": "Surface",
+      "id": "frontage-verge-1-0",
+      "ring": {
+        "coordinates": [
+          [
+            1340436.2562513556,
+            440198.96657331404
+          ],
+          [
+            1340445.424621832,
+            440149.5559614744
+          ],
+          [
+            1340449.3574894145,
+            440150.28572347667
+          ],
+          [
+            1340440.189118938,
+            440199.6963353163
+          ],
+          [
+            1340436.2562513556,
+            440198.96657331404
+          ]
+        ]
+      },
+      "attributes": {
+        "label": "",
+        "improvement": "verge-1"
+      }
+    },
+    {
+      "kind": "Pavement",
+      "id": "frontage-curb-1-0",
+      "ring": {
+        "coordinates": [
+          [
+            1340440.189118938,
+            440199.6963353163
+          ],
+          [
+            1340449.3574894145,
+            440150.28572347667
+          ],
+          [
+            1340450.8323147579,
+            440150.55938422756
+          ],
+          [
+            1340441.6639442814,
+            440199.9699960672
+          ],
+          [
+            1340440.189118938,
+            440199.6963353163
+          ]
+        ]
+      },
+      "attributes": {
+        "label": "",
+        "improvement": "curb-1"
+      }
+    },
+    {
+      "kind": "Pavement",
+      "id": "frontage-sidewalk-2-0",
+      "ring": {
+        "coordinates": [
+          [
+            1340445.7589001555,
+            440131.3107358523
+          ],
+          [
+            1340464.5485901108,
+            440030.04845818167
+          ],
+          [
+            1340467.4982407975,
+            440030.5957796834
+          ],
+          [
+            1340448.7085508422,
+            440131.858057354
+          ],
+          [
+            1340445.7589001555,
+            440131.3107358523
+          ]
+        ]
+      },
+      "attributes": {
+        "label": "",
+        "improvement": "sidewalk-2"
+      }
+    },
+    {
+      "kind": "Surface",
+      "id": "frontage-verge-2-0",
+      "ring": {
+        "coordinates": [
+          [
+            1340448.7085508422,
+            440131.858057354
+          ],
+          [
+            1340467.4982407975,
+            440030.5957796834
+          ],
+          [
+            1340471.43110838,
+            440031.3255416856
+          ],
+          [
+            1340452.6414184247,
+            440132.58781935624
+          ],
+          [
+            1340448.7085508422,
+            440131.858057354
+          ]
+        ]
+      },
+      "attributes": {
+        "label": "",
+        "improvement": "verge-2"
+      }
+    },
+    {
+      "kind": "Pavement",
+      "id": "frontage-curb-2-0",
+      "ring": {
+        "coordinates": [
+          [
+            1340452.6414184247,
+            440132.58781935624
+          ],
+          [
+            1340471.43110838,
+            440031.3255416856
+          ],
+          [
+            1340472.9059337233,
+            440031.5992024365
+          ],
+          [
+            1340454.116243768,
+            440132.8614801071
+          ],
+          [
+            1340452.6414184247,
+            440132.58781935624
+          ]
+        ]
+      },
+      "attributes": {
+        "label": "",
+        "improvement": "curb-2"
+      }
+    },
+    {
+      "kind": "ExistingFeature",
+      "id": "centreline-plat-0",
+      "line": [
+        [
+          1340455.0612936586,
+          440292.37003325473
+        ],
+        [
+          1340513.3783762758,
+          439978.0848786305
+        ]
+      ],
+      "attributes": {
+        "label": "EX. PAVEMENT CENTERLINE",
+        "note": "Parallel to the lots' front line, as the recorded plat draws it; offset 38.5 ft, measured against the county centreline. Alignment from the plat, position from PGAtlas."
+      }
+    },
+    {
+      "kind": "ExistingFeature",
+      "id": "row-far-0",
+      "line": [
+        [
+          1340473.280311878,
+          440295.750657427
+        ],
+        [
+          1340531.5973944953,
+          439981.4655028028
+        ]
+      ],
+      "attributes": {
+        "label": "FAR RIGHT-OF-WAY LINE (DERIVED — 18.5 ft each side)"
+      }
+    },
+    {
+      "kind": "SpotElevation",
+      "id": "mon-A",
+      "point": [
+        1340254.7066,
+        440194.1578
+      ],
+      "attributes": {
+        "label": "IPF (A)",
+        "note": "Iron pipe found, north corner. Coordinate published on the plat to four decimals.",
+        "monument": true
+      }
+    },
+    {
+      "kind": "SpotElevation",
+      "id": "mon-B",
+      "point": [
+        1340447.7902,
+        440229.9981
+      ],
+      "attributes": {
+        "label": "IPF ON LINE (B)",
+        "note": "North-east corner. Plat letters IPF on line along this boundary.",
+        "monument": true
+      }
+    },
+    {
+      "kind": "SpotElevation",
+      "id": "mon-C",
+      "point": [
+        1340488.344,
+        440011.445
+      ],
+      "attributes": {
+        "label": "IPF (C)",
+        "note": "Rollins Avenue corner. Coordinate published on the plat.",
+        "monument": true
+      }
+    }
+  ],
+  "approvals": [],
+  "sources": [
+    {
+      "sourceId": "gis1",
+      "authority": "PORTER SUBDIVISION, LOTS 1 AND 2 — Plat Book PM 231, p. 50 (MSA_C2381_19050). Seat Pleasant (18th) Election District, Prince George's County, Maryland. Tax Map 73, Grid B3; 200 Map 202 SE 06. Zone R-55 at recording (RSF-65 under the 2022 rewrite). Scale 1\" = 20', November 2007. M-NCPPC Record File 5-09121. Basis of bearings: Maryland State Plane Coordinate System (NAD 83). Lot 1 = 9,598 sq ft (0.2203 ac); Lot 2 = 8,008 sq ft (0.1838 ac); 4,219 sq ft (0.0969 ac) dedicated to public use.",
+      "dataset": "Parcel boundary — recorded plat",
+      "crs": "EPSG:2248",
+      "horizontalDatum": "NAD83",
+      "retrievedAt": "2026-09-09T16:06:04.036Z",
+      "verticalDatum": null,
+      "accuracyClass": "mapping_grade",
+      "reliabilityLevel": 1
+    },
+    {
+      "sourceId": "contours",
+      "authority": "Jurisdiction GIS",
+      "dataset": "Existing contours",
+      "crs": "EPSG:2248",
+      "horizontalDatum": "NAD83",
+      "retrievedAt": "2026-09-09T16:06:04.042Z",
+      "verticalDatum": null,
+      "accuracyClass": "mapping_grade",
+      "reliabilityLevel": 1
+    },
+    {
+      "sourceId": "plat-pue",
+      "authority": "PORTER SUBDIVISION, LOTS 1 AND 2 — Plat Book PM 231, p. 50 (MSA_C2381_19050). Seat Pleasant (18th) Election District, Prince George's County, Maryland. Tax Map 73, Grid B3; 200 Map 202 SE 06. Zone R-55 at recording (RSF-65 under the 2022 rewrite). Scale 1\" = 20', November 2007. M-NCPPC Record File 5-09121. Basis of bearings: Maryland State Plane Coordinate System (NAD 83). Lot 1 = 9,598 sq ft (0.2203 ac); Lot 2 = 8,008 sq ft (0.1838 ac); 4,219 sq ft (0.0969 ac) dedicated to public use.",
+      "dataset": "Recorded easements — plat frontage PUE",
+      "crs": "EPSG:2248",
+      "horizontalDatum": "NAD83",
+      "retrievedAt": "2026-09-09T16:06:04.094Z",
+      "verticalDatum": null,
+      "accuracyClass": "mapping_grade",
+      "reliabilityLevel": 1
+    },
+    {
+      "sourceId": "easements",
+      "authority": "Prince George's County — platted easements",
+      "dataset": "Recorded easements — platted",
+      "crs": "EPSG:2248",
+      "horizontalDatum": "NAD83",
+      "retrievedAt": "2026-09-09T16:06:04.094Z",
+      "verticalDatum": null,
+      "accuracyClass": "mapping_grade",
+      "reliabilityLevel": 1
+    }
+  ],
+  "updatedAt": "2026-09-09T16:06:04.095Z",
+  "drainage": {
+    "totalAreaSqFt": 9598.549926757812,
+    "totalAreaAcres": 0.2204,
+    "percentImpervious": 17,
+    "preDevelopment": {
+      "subAreas": [
+        {
+          "label": "Pervious — lawn / meadow",
+          "areaSqFt": 9598.549926757812,
+          "surface": "lawn_average",
+          "c": 0.25
+        }
+      ],
+      "compositeC": 0.25,
+      "peakCfs": 0.37
+    },
+    "postDevelopment": {
+      "subAreas": [
+        {
+          "label": "Proposed roof",
+          "areaSqFt": 1196.0000610351562,
+          "surface": "roof",
+          "c": 0.95
+        },
+        {
+          "label": "Driveway and on-lot paving",
+          "areaSqFt": 438,
+          "surface": "pavement",
+          "c": 0.95
+        },
+        {
+          "label": "Pervious — lawn",
+          "areaSqFt": 7964.549865722656,
+          "surface": "lawn_average",
+          "c": 0.25
+        }
+      ],
+      "compositeC": 0.369,
+      "peakCfs": 0.55
+    },
+    "increaseCfs": 0.18,
+    "timeOfConcentrationMin": 5,
+    "flowPathFt": 204,
+    "flowPathSlopePct": 1.96,
+    "returnPeriodYr": 10,
+    "intensityInPerHr": 6.71,
+    "waterQualityVolumeCf": 163,
+    "rv": 0.2032,
+    "assumptions": [
+      "Time of concentration by Kirpich over a 204 ft flow path at 2.0%, taken from the 2 ft contours across the catchment. A 5-minute floor applies.",
+      "Rainfall intensity 6.71 in/hr for the 10-year storm at a 5.0 minute duration. NOAA Atlas 14 Vol. 2 Ver. 3, PFDS point estimate, 38.8752 N 76.9019 W.",
+      "Water quality volume on a 1.0 in rainfall. Maryland Stormwater Design Manual, Vol. I & II — WQv on a 1.0 in rainfall.",
+      "Runoff coefficients: roof and pavement 0.95, average lawn 0.25. Confirm the lawn coefficient against the soil hydrologic group before relying on the composite.",
+      "Sidewalk, curb and gutter and the driveway apron lie in the public right-of-way and drain to the street. They are excluded from the lot catchment and included in the disturbed area."
+    ]
+  },
+  "soils": [
+    {
+      "mapUnitSymbol": "AaB",
+      "mapUnitName": "Adelphia silt loam, 2 to 5 percent slopes complex",
+      "hydricRating": "No",
+      "hydrologicGroup": "C",
+      "drainageClass": "Moderately well drained",
+      "kFactor": ".37"
+    },
+    {
+      "mapUnitSymbol": "AcA",
+      "mapUnitName": "Adelphia-Aquasco complex, 0 to 2 percent slopes",
+      "hydricRating": "No",
+      "hydrologicGroup": "D",
+      "drainageClass": "Somewhat poorly drained",
+      "kFactor": ".43"
+    },
+    {
+      "mapUnitSymbol": "AcA",
+      "mapUnitName": "Adelphia-Aquasco complex, 0 to 2 percent slopes",
+      "hydricRating": "No",
+      "hydrologicGroup": "C",
+      "drainageClass": "Moderately well drained",
+      "kFactor": ".37"
+    },
+    {
+      "mapUnitSymbol": "AdA",
+      "mapUnitName": "Adelphia-Holmdel complex, 0 to 2 percent slopes",
+      "hydricRating": "No",
+      "hydrologicGroup": "B/D",
+      "drainageClass": "Somewhat poorly drained",
+      "kFactor": ".24"
+    },
+    {
+      "mapUnitSymbol": "AdA",
+      "mapUnitName": "Adelphia-Holmdel complex, 0 to 2 percent slopes",
+      "hydricRating": "No",
+      "hydrologicGroup": "C",
+      "drainageClass": "Moderately well drained",
+      "kFactor": ".37"
+    },
+    {
+      "mapUnitSymbol": "AdB",
+      "mapUnitName": "Adelphia-Holmdel complex, 2 to 5 percent slopes",
+      "hydricRating": "No",
+      "hydrologicGroup": "B/D",
+      "drainageClass": "Somewhat poorly drained",
+      "kFactor": ".24"
+    },
+    {
+      "mapUnitSymbol": "AdB",
+      "mapUnitName": "Adelphia-Holmdel complex, 2 to 5 percent slopes",
+      "hydricRating": "No",
+      "hydrologicGroup": "C",
+      "drainageClass": "Moderately well drained",
+      "kFactor": ".37"
+    },
+    {
+      "mapUnitSymbol": "AdC",
+      "mapUnitName": "Adelphia-Holmdel complex, 5 to 10 percent slopes",
+      "hydricRating": "No",
+      "hydrologicGroup": "B/D",
+      "drainageClass": "Somewhat poorly drained",
+      "kFactor": ".24"
+    }
+  ],
+  "streets": [
+    {
+      "name": "MODUPEOLA",
+      "paths": [
+        [
+          [
+            1340197.3324161111,
+            440155.1022266074
+          ],
+          [
+            1340143.6773396991,
+            440231.95935635676
+          ],
+          [
+            1340140.535943824,
+            440238.5307701363
+          ],
+          [
+            1340138.5624460655,
+            440245.5419864147
+          ],
+          [
+            1340137.8147812502,
+            440252.78718098975
+          ],
+          [
+            1340138.3148981403,
+            440260.0536608943
+          ],
+          [
+            1340140.0481150942,
+            440267.1281083
+          ],
+          [
+            1340142.9635510694,
+            440273.8028427652
+          ],
+          [
+            1340146.9756193056,
+            440279.8819179887
+          ],
+          [
+            1340151.9665398472,
+            440285.1868740915
+          ],
+          [
+            1340157.78979714,
+            440289.56197655987
+          ],
+          [
+            1340164.274441203,
+            440292.8787880528
+          ],
+          [
+            1340171.230106109,
+            440295.0399388627
+          ],
+          [
+            1340442.2413751157,
+            440350.48405369144
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "ROLLINS",
+      "paths": [
+        [
+          [
+            1340489.8846525312,
+            440106.17942418746
+          ],
+          [
+            1340526.5594479577,
+            439923.50951394206
+          ],
+          [
+            1340546.958685365,
+            439819.77678178414
+          ],
+          [
+            1340549.592595347,
+            439801.99950036587
+          ],
+          [
+            1340549.9950029664,
+            439784.0326618981
+          ],
+          [
+            1340548.1596590534,
+            439766.15528152126
+          ],
+          [
+            1340544.1150654922,
+            439748.64498514053
+          ],
+          [
+            1340537.9240326006,
+            439731.77369804814
+          ],
+          [
+            1340529.6827037216,
+            439715.80342207296
+          ],
+          [
+            1340519.5190621691,
+            439700.9821668355
+          ],
+          [
+            1340507.5909437186,
+            439687.5400982951
+          ],
+          [
+            1340494.0835855026,
+            439675.6859643983
+          ],
+          [
+            1340479.2067493806,
+            439665.60385333863
+          ],
+          [
+            1340463.1914644528,
+            439657.45033476705
+          ],
+          [
+            1340370.309432368,
+            439596.68634867796
+          ],
+          [
+            1340319.9624202112,
+            439558.49187127495
+          ],
+          [
+            1340258.3303256156,
+            439498.59632177895
+          ],
+          [
+            1340162.4916065265,
+            439391.9840021919
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "ROLLINS",
+      "paths": [
+        [
+          [
+            1340442.2413751157,
+            440350.48405369144
+          ],
+          [
+            1340451.906710116,
+            440301.98152603174
+          ],
+          [
+            1340481.4207587033,
+            440148.33583594626
+          ],
+          [
+            1340489.8846525312,
+            440106.17942418746
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "METRO CITY",
+      "paths": [
+        [
+          [
+            1340489.8846525312,
+            440106.17942418746
+          ],
+          [
+            1341183.4216512856,
+            440248.74311543384
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "ROLLINS",
+      "paths": [
+        [
+          [
+            1340377.9915036238,
+            440691.234028367
+          ],
+          [
+            1340442.2413751157,
+            440350.48405369144
+          ]
+        ]
+      ]
+    }
+  ],
+  "adjacentParcels": [
+    {
+      "ring": {
+        "coordinates": [
+          [
+            1340367.4806978686,
+            440215.08799902874
+          ],
+          [
+            1340343.448265621,
+            440306.5648502011
+          ],
+          [
+            1340396.0436328582,
+            440316.5750007685
+          ],
+          [
+            1340398.023615789,
+            440316.8509188598
+          ],
+          [
+            1340400.020330943,
+            440316.95787402504
+          ],
+          [
+            1340402.018686532,
+            440316.8978347732
+          ],
+          [
+            1340404.004574951,
+            440316.6681764419
+          ],
+          [
+            1340405.9645447861,
+            440316.27283602156
+          ],
+          [
+            1340407.8844884462,
+            440315.7127977788
+          ],
+          [
+            1340409.7493141135,
+            440314.99396719126
+          ],
+          [
+            1340411.548523121,
+            440314.12093744235
+          ],
+          [
+            1340413.2663674476,
+            440313.09797361126
+          ],
+          [
+            1340414.8923484473,
+            440311.93524627003
+          ],
+          [
+            1340416.4146551169,
+            440310.6386609485
+          ],
+          [
+            1340417.8224607091,
+            440309.21904435364
+          ],
+          [
+            1340419.1055946168,
+            440307.68492668367
+          ],
+          [
+            1340420.254542458,
+            440306.04877510224
+          ],
+          [
+            1340421.261758283,
+            440304.32174443296
+          ],
+          [
+            1340422.1193681133,
+            440302.5159737691
+          ],
+          [
+            1340422.822122614,
+            440300.6439302868
+          ],
+          [
+            1340423.6748111963,
+            440297.1879004333
+          ],
+          [
+            1340436.8411234447,
+            440227.9514903543
+          ],
+          [
+            1340428.105576616,
+            440226.3383046008
+          ],
+          [
+            1340367.4806978686,
+            440215.08799902874
+          ]
+        ]
+      },
+      "areaSqFt": 6854.10452083994,
+      "propId": "34809"
+    },
+    {
+      "ring": {
+        "coordinates": [
+          [
+            1340850.2612283668,
+            440422.3329913677
+          ],
+          [
+            1341035.9462244485,
+            440457.41887919116
+          ],
+          [
+            1341031.9754318648,
+            440387.6880475193
+          ],
+          [
+            1341029.8218928755,
+            440349.8695536131
+          ],
+          [
+            1340499.568688287,
+            440247.47080827435
+          ],
+          [
+            1340478.3800823656,
+            440243.3789529438
+          ],
+          [
+            1340458.8916042934,
+            440342.3229807846
+          ],
+          [
+            1340457.5517119456,
+            440348.7931121887
+          ],
+          [
+            1340521.341282525,
+            440360.942694202
+          ],
+          [
+            1340627.0215173617,
+            440381.54304669314
+          ],
+          [
+            1340850.2612283668,
+            440422.3329913677
+          ]
+        ]
+      },
+      "areaSqFt": 61063.4798632023,
+      "propId": "34802"
+    },
+    {
+      "ring": {
+        "coordinates": [
+          [
+            1340896.839219196,
+            440299.8854015978
+          ],
+          [
+            1340873.2690563635,
+            440295.36310094094
+          ],
+          [
+            1340849.6992216231,
+            440290.84047218604
+          ],
+          [
+            1340826.1290587925,
+            440286.3178434525
+          ],
+          [
+            1340802.5592240337,
+            440281.7955427742
+          ],
+          [
+            1340778.9890612036,
+            440277.2729140132
+          ],
+          [
+            1340755.4188983717,
+            440272.7502852857
+          ],
+          [
+            1340726.9386403698,
+            440267.2857292706
+          ],
+          [
+            1340742.7676769497,
+            440184.79048743955
+          ],
+          [
+            1340732.9465023698,
+            440182.905976772
+          ],
+          [
+            1340717.117793874,
+            440265.401218603
+          ],
+          [
+            1340688.637207788,
+            440259.93666261545
+          ],
+          [
+            1340665.0670449538,
+            440255.4140338544
+          ],
+          [
+            1340641.4972102032,
+            440250.89140510553
+          ],
+          [
+            1340617.927047365,
+            440246.3687763659
+          ],
+          [
+            1340594.357212616,
+            440241.84647568455
+          ],
+          [
+            1340570.7870497848,
+            440237.323846948
+          ],
+          [
+            1340547.2172150286,
+            440232.80154626357
+          ],
+          [
+            1340518.7366289499,
+            440227.3366622054
+          ],
+          [
+            1340533.2595657785,
+            440151.6475091064
+          ],
+          [
+            1340515.7422123647,
+            440163.5654642704
+          ],
+          [
+            1340499.568688287,
+            440247.47080827435
+          ],
+          [
+            1341029.8218928755,
+            440349.8695536131
+          ],
+          [
+            1341031.9754318648,
+            440387.6880475193
+          ],
+          [
+            1341094.672484948,
+            440354.1369335314
+          ],
+          [
+            1341113.5536807927,
+            440255.9353582807
+          ],
+          [
+            1341106.1386693686,
+            440254.51278895314
+          ],
+          [
+            1341090.3099608717,
+            440337.0080307689
+          ],
+          [
+            1341061.8297028684,
+            440331.5431467046
+          ],
+          [
+            1341042.1876817874,
+            440327.77445345226
+          ],
+          [
+            1341022.5459887795,
+            440324.0057601877
+          ],
+          [
+            1341002.9046238628,
+            440320.2370669292
+          ],
+          [
+            1340983.2626027875,
+            440316.46804560325
+          ],
+          [
+            1340963.6209097751,
+            440312.6996804398
+          ],
+          [
+            1340935.1406517911,
+            440307.23479636025
+          ],
+          [
+            1340950.9693602952,
+            440224.7395545231
+          ],
+          [
+            1340941.1485137956,
+            440222.85504385555
+          ],
+          [
+            1340925.319805293,
+            440305.35028569266
+          ],
+          [
+            1340896.839219196,
+            440299.8854015978
+          ]
+        ]
+      },
+      "areaSqFt": 18670.594006820702,
+      "propId": "34804"
+    },
+    {
+      "ring": {
+        "coordinates": [
+          [
+            1340311.581531452,
+            440061.1896847779
+          ],
+          [
+            1340201.3570143657,
+            440010.32495711604
+          ],
+          [
+            1340203.4915245299,
+            440101.85889478313
+          ],
+          [
+            1340204.2894231968,
+            440101.8549577715
+          ],
+          [
+            1340206.288106876,
+            440101.8999051882
+          ],
+          [
+            1340208.284493947,
+            440102.02392070054
+          ],
+          [
+            1340210.274647458,
+            440102.22700427193
+          ],
+          [
+            1340212.2546303677,
+            440102.5088278593
+          ],
+          [
+            1340214.2218180383,
+            440102.8687352787
+          ],
+          [
+            1340216.172273453,
+            440103.3070546039
+          ],
+          [
+            1340218.1056685408,
+            440103.8221454453
+          ],
+          [
+            1340220.0154416189,
+            440104.41400776926
+          ],
+          [
+            1340221.9006084488,
+            440105.08001692593
+          ],
+          [
+            1340223.7585443684,
+            440105.8208291022
+          ],
+          [
+            1340225.5856404572,
+            440106.63480385364
+          ],
+          [
+            1340227.3786158673,
+            440107.52062886435
+          ],
+          [
+            1340229.1348459525,
+            440108.47830411
+          ],
+          [
+            1340230.8513779447,
+            440109.5032364378
+          ],
+          [
+            1340232.5265714498,
+            440110.59575396107
+          ],
+          [
+            1340234.1564894393,
+            440111.75388811895
+          ],
+          [
+            1340235.7394915302,
+            440112.9759985312
+          ],
+          [
+            1340237.2732811281,
+            440114.26011668594
+          ],
+          [
+            1340238.7545773662,
+            440115.60427410476
+          ],
+          [
+            1340240.1804275343,
+            440117.00486185576
+          ],
+          [
+            1340241.5508316136,
+            440118.46220803703
+          ],
+          [
+            1340241.8815396274,
+            440118.84311278467
+          ],
+          [
+            1340277.1442643732,
+            440089.67486402026
+          ],
+          [
+            1340311.581531452,
+            440061.1896847779
+          ]
+        ]
+      },
+      "areaSqFt": 6559.645673743191,
+      "propId": "34806"
+    },
+    {
+      "ring": {
+        "coordinates": [
+          [
+            1340367.4806978686,
+            440215.08799902874
+          ],
+          [
+            1340298.0264404528,
+            440202.1995733663
+          ],
+          [
+            1340283.2577691963,
+            440247.7687079422
+          ],
+          [
+            1340270.1413256165,
+            440292.6127783578
+          ],
+          [
+            1340273.8916462036,
+            440293.3270157834
+          ],
+          [
+            1340335.2845680371,
+            440305.0110475187
+          ],
+          [
+            1340343.448265621,
+            440306.5648502011
+          ],
+          [
+            1340367.4806978686,
+            440215.08799902874
+          ]
+        ]
+      },
+      "areaSqFt": 6872.38804429192,
+      "propId": "34810"
+    },
+    {
+      "ring": {
+        "coordinates": [
+          [
+            1340381.104686352,
+            440095.30411785777
+          ],
+          [
+            1340311.581531452,
+            440061.1896847779
+          ],
+          [
+            1340277.1442643732,
+            440089.67486402026
+          ],
+          [
+            1340241.8815396274,
+            440118.84311278467
+          ],
+          [
+            1340241.999649611,
+            440118.9786112034
+          ],
+          [
+            1340242.8615245302,
+            440119.9720475266
+          ],
+          [
+            1340244.112178204,
+            440121.53306802706
+          ],
+          [
+            1340245.299511788,
+            440123.1429729375
+          ],
+          [
+            1340246.4212287043,
+            440124.7981533566
+          ],
+          [
+            1340247.4776570296,
+            440126.49598461296
+          ],
+          [
+            1340248.4642036231,
+            440128.2348262774
+          ],
+          [
+            1340249.3821807785,
+            440130.0117256111
+          ],
+          [
+            1340250.2296200423,
+            440131.82372985076
+          ],
+          [
+            1340251.0032405388,
+            440133.6678862666
+          ],
+          [
+            1340251.7036984512,
+            440135.54091402784
+          ],
+          [
+            1340252.3283691236,
+            440137.44084461336
+          ],
+          [
+            1340252.8785648616,
+            440139.36406911263
+          ],
+          [
+            1340253.350348714,
+            440141.30697861215
+          ],
+          [
+            1340253.746673374,
+            440143.2669484465
+          ],
+          [
+            1340254.0636018626,
+            440145.24168201495
+          ],
+          [
+            1340254.3014622952,
+            440147.2278985173
+          ],
+          [
+            1340254.4612388755,
+            440149.2210047701
+          ],
+          [
+            1340254.5304644518,
+            440150.9545971224
+          ],
+          [
+            1340254.541619289,
+            440151.2190322676
+          ],
+          [
+            1340254.5426035363,
+            440153.2187001912
+          ],
+          [
+            1340254.4641916137,
+            440155.218040032
+          ],
+          [
+            1340254.3067116078,
+            440157.21081819595
+          ],
+          [
+            1340254.0695073716,
+            440159.19703469827
+          ],
+          [
+            1340253.7548754497,
+            440161.17209634645
+          ],
+          [
+            1340253.472723779,
+            440162.5802300135
+          ],
+          [
+            1340276.51565671,
+            440167.7642747785
+          ],
+          [
+            1340285.7912286946,
+            440169.8512128519
+          ],
+          [
+            1340323.017532198,
+            440140.7390663552
+          ],
+          [
+            1340381.104686352,
+            440095.30411785777
+          ]
+        ]
+      },
+      "areaSqFt": 7761.66081415428,
+      "propId": "34805"
+    },
+    {
+      "ring": {
+        "coordinates": [
+          [
+            1340254.7059890358,
+            440194.16054744466
+          ],
+          [
+            1340285.7912286946,
+            440169.8512128519
+          ],
+          [
+            1340276.51565671,
+            440167.7642747785
+          ],
+          [
+            1340253.472723779,
+            440162.5802300135
+          ],
+          [
+            1340253.3615035345,
+            440163.1330504353
+          ],
+          [
+            1340252.8903758645,
+            440165.07628802053
+          ],
+          [
+            1340252.3424767072,
+            440166.99984061794
+          ],
+          [
+            1340251.7194464474,
+            440168.89977119426
+          ],
+          [
+            1340251.0206289531,
+            440170.77378319163
+          ],
+          [
+            1340250.2486488703,
+            440172.61892385577
+          ],
+          [
+            1340249.4031781175,
+            440174.4309280985
+          ],
+          [
+            1340248.487169453,
+            440176.2091397755
+          ],
+          [
+            1340247.5016071175,
+            440177.9489656944
+          ],
+          [
+            1340246.44747537,
+            440179.6487654352
+          ],
+          [
+            1340245.3267427075,
+            440181.3049301087
+          ],
+          [
+            1340244.1413776297,
+            440182.91483503446
+          ],
+          [
+            1340242.892692442,
+            440184.47782403155
+          ],
+          [
+            1340241.5823276166,
+            440185.98864777555
+          ],
+          [
+            1340240.2142201222,
+            440187.446978196
+          ],
+          [
+            1340238.7893542047,
+            440188.8498625295
+          ],
+          [
+            1340237.3093702905,
+            440190.1950041814
+          ],
+          [
+            1340235.7772211093,
+            440191.4810908572
+          ],
+          [
+            1340234.1952032833,
+            440192.70352934615
+          ],
+          [
+            1340232.5665976284,
+            440193.86396011704
+          ],
+          [
+            1340230.8923883713,
+            440194.95811803587
+          ],
+          [
+            1340229.1765125357,
+            440195.98501885723
+          ],
+          [
+            1340227.4206105291,
+            440196.94302218873
+          ],
+          [
+            1340225.6286193733,
+            440197.8308156931
+          ],
+          [
+            1340223.802835611,
+            440198.64708702697
+          ],
+          [
+            1340221.9455558641,
+            440199.38888343016
+          ],
+          [
+            1340220.0603890384,
+            440200.05817343603
+          ],
+          [
+            1340218.1512721162,
+            440200.65102003276
+          ],
+          [
+            1340216.2195174536,
+            440201.16807936167
+          ],
+          [
+            1340214.268405868,
+            440201.60803910677
+          ],
+          [
+            1340212.3015462856,
+            440201.9699150259
+          ],
+          [
+            1340210.3212352833,
+            440202.25403518963
+          ],
+          [
+            1340208.3064755339,
+            440202.4607276991
+          ],
+          [
+            1340206.3143535343,
+            440202.6319871923
+          ],
+          [
+            1340204.3396199462,
+            440202.945634864
+          ],
+          [
+            1340202.3924453696,
+            440203.40199876926
+          ],
+          [
+            1340200.483656537,
+            440203.9968138566
+          ],
+          [
+            1340198.6224397842,
+            440204.7290958593
+          ],
+          [
+            1340196.8192937796,
+            440205.592939266
+          ],
+          [
+            1340195.0837329472,
+            440206.5850632673
+          ],
+          [
+            1340193.4226470424,
+            440207.6992342721
+          ],
+          [
+            1340191.847190871,
+            440208.93085911544
+          ],
+          [
+            1340190.3655665363,
+            440210.2730480345
+          ],
+          [
+            1340188.9836795293,
+            440211.71792702144
+          ],
+          [
+            1340187.7094038706,
+            440213.25893445115
+          ],
+          [
+            1340186.5506135318,
+            440214.88918051205
+          ],
+          [
+            1340185.5122297811,
+            440216.5965261811
+          ],
+          [
+            1340184.5995019425,
+            440218.37703443755
+          ],
+          [
+            1340183.817679368,
+            440220.2169257712
+          ],
+          [
+            1340183.1703709504,
+            440222.108982364
+          ],
+          [
+            1340182.662497949,
+            440224.0427055366
+          ],
+          [
+            1340182.2943884574,
+            440226.0075966065
+          ],
+          [
+            1340182.0696513643,
+            440227.99479736015
+          ],
+          [
+            1340181.988614781,
+            440229.9931529374
+          ],
+          [
+            1340182.0525910356,
+            440231.99216469855
+          ],
+          [
+            1340182.2596116152,
+            440233.9800215994
+          ],
+          [
+            1340182.610332697,
+            440235.94884969015
+          ],
+          [
+            1340183.1011453648,
+            440237.88716602157
+          ],
+          [
+            1340183.7327057861,
+            440239.78512811044
+          ],
+          [
+            1340184.460722699,
+            440241.5429986126
+          ],
+          [
+            1340184.4974680427,
+            440241.63190919464
+          ],
+          [
+            1340185.3944478764,
+            440243.4189791066
+          ],
+          [
+            1340187.3872260265,
+            440246.54102010134
+          ],
+          [
+            1340188.3983788637,
+            440248.267066507
+          ],
+          [
+            1340189.3006080382,
+            440250.05085560953
+          ],
+          [
+            1340190.0906327043,
+            440251.88779419824
+          ],
+          [
+            1340190.7664843593,
+            440253.7700082711
+          ],
+          [
+            1340191.3255383656,
+            440255.68995193957
+          ],
+          [
+            1340191.764185784,
+            440257.64106353285
+          ],
+          [
+            1340192.0824266118,
+            440259.6157971105
+          ],
+          [
+            1340192.315365784,
+            440262.25982069393
+          ],
+          [
+            1340192.701191782,
+            440264.2217590311
+          ],
+          [
+            1340193.2533560323,
+            440266.1430150246
+          ],
+          [
+            1340193.9685776911,
+            440268.01079344
+          ],
+          [
+            1340194.8412793702,
+            440269.8086901111
+          ],
+          [
+            1340195.8655555404,
+            440271.5271906129
+          ],
+          [
+            1340197.0322198689,
+            440273.15021885274
+          ],
+          [
+            1340198.3343826162,
+            440274.66662002227
+          ],
+          [
+            1340199.7622012934,
+            440276.0668796783
+          ],
+          [
+            1340201.3045210356,
+            440277.33885879477
+          ],
+          [
+            1340202.9505151203,
+            440278.47501136083
+          ],
+          [
+            1340204.6877163663,
+            440279.4651668532
+          ],
+          [
+            1340206.5023452898,
+            440280.3017793559
+          ],
+          [
+            1340208.3832470328,
+            440280.98058377753
+          ],
+          [
+            1340210.3156578618,
+            440281.49567461276
+          ],
+          [
+            1340212.2841578715,
+            440281.8427867734
+          ],
+          [
+            1340214.5443239473,
+            440282.03077852185
+          ],
+          [
+            1340225.731309458,
+            440284.1606955214
+          ],
+          [
+            1340270.1413256165,
+            440292.6127783578
+          ],
+          [
+            1340283.2577691963,
+            440247.7687079422
+          ],
+          [
+            1340298.0264404528,
+            440202.1995733663
+          ],
+          [
+            1340254.7059890358,
+            440194.16054744466
+          ]
+        ]
+      },
+      "areaSqFt": 9097.90382955353,
+      "propId": "34811"
+    },
+    {
+      "ring": {
+        "coordinates": [
+          [
+            1341003.7159739553,
+            440180.8899046821
+          ],
+          [
+            1340993.893487035,
+            440179.005065944
+          ],
+          [
+            1340965.4138852023,
+            440173.54050993494
+          ],
+          [
+            1340945.7721922062,
+            440169.7718166979
+          ],
+          [
+            1340926.1304991953,
+            440166.00312343944
+          ],
+          [
+            1340906.488806201,
+            440162.23410211346
+          ],
+          [
+            1340886.8471132067,
+            440158.465408855
+          ],
+          [
+            1340867.205420209,
+            440154.6967156149
+          ],
+          [
+            1340847.5637271926,
+            440150.92802237166
+          ],
+          [
+            1340819.0831411115,
+            440145.4631382707
+          ],
+          [
+            1340737.662700277,
+            440120.6761143617
+          ],
+          [
+            1340716.1551973633,
+            440116.54948219575
+          ],
+          [
+            1340692.5850345364,
+            440112.0271815358
+          ],
+          [
+            1340669.014871699,
+            440107.50422470114
+          ],
+          [
+            1340645.4447088654,
+            440102.9819240259
+          ],
+          [
+            1340621.8748741122,
+            440098.45929525874
+          ],
+          [
+            1340598.3047112809,
+            440093.9366665283
+          ],
+          [
+            1340574.7348765368,
+            440089.41436585307
+          ],
+          [
+            1340553.1191061104,
+            440085.2667363558
+          ],
+          [
+            1340547.5715450319,
+            440077.08499419125
+          ],
+          [
+            1340535.7657943633,
+            440059.6877192872
+          ],
+          [
+            1340515.7422123647,
+            440163.5654642704
+          ],
+          [
+            1340533.2595657785,
+            440151.6475091064
+          ],
+          [
+            1340541.4301531196,
+            440146.1586749292
+          ],
+          [
+            1340563.0459235257,
+            440150.3063044386
+          ],
+          [
+            1340586.6160863552,
+            440154.8286050986
+          ],
+          [
+            1340610.1859211165,
+            440159.3512338688
+          ],
+          [
+            1340633.7560839478,
+            440163.8738626054
+          ],
+          [
+            1340657.325918698,
+            440168.3964913542
+          ],
+          [
+            1340680.8960815356,
+            440172.9187920142
+          ],
+          [
+            1340704.4662443686,
+            440177.4414207783
+          ],
+          [
+            1340732.9465023698,
+            440182.905976772
+          ],
+          [
+            1340742.7676769497,
+            440184.79048743955
+          ],
+          [
+            1340771.2479349412,
+            440190.2550434425
+          ],
+          [
+            1340794.818097787,
+            440194.7776721974
+          ],
+          [
+            1340818.3879325376,
+            440199.30030093703
+          ],
+          [
+            1340841.95809537,
+            440203.82260162145
+          ],
+          [
+            1340865.5279301251,
+            440208.34523035807
+          ],
+          [
+            1340889.098092957,
+            440212.86785910075
+          ],
+          [
+            1340912.6679276964,
+            440217.3901597821
+          ],
+          [
+            1340941.1485137956,
+            440222.85504385555
+          ],
+          [
+            1340950.9693602952,
+            440224.7395545231
+          ],
+          [
+            1340979.44994637,
+            440230.20443860267
+          ],
+          [
+            1340999.0916393674,
+            440233.9728037875
+          ],
+          [
+            1341018.7333323618,
+            440237.7418251196
+          ],
+          [
+            1341038.3750253734,
+            440241.5105183536
+          ],
+          [
+            1341058.01671837,
+            440245.2795396826
+          ],
+          [
+            1341077.6584113669,
+            440249.0479048553
+          ],
+          [
+            1341106.1386693686,
+            440254.51278895314
+          ],
+          [
+            1341113.5536807927,
+            440255.9353582807
+          ],
+          [
+            1341123.5119941975,
+            440257.8461156131
+          ],
+          [
+            1341127.321233693,
+            440258.8945147417
+          ],
+          [
+            1341130.9177393669,
+            440260.52993309963
+          ],
+          [
+            1341134.2116881825,
+            440262.7115259736
+          ],
+          [
+            1341137.1208134869,
+            440265.3848078951
+          ],
+          [
+            1341139.5724596267,
+            440268.4830134198
+          ],
+          [
+            1341141.50539653,
+            440271.9287645999
+          ],
+          [
+            1341145.662158459,
+            440279.24796873797
+          ],
+          [
+            1341150.987790718,
+            440285.76617861394
+          ],
+          [
+            1341157.3313666089,
+            440291.2986702646
+          ],
+          [
+            1341164.513111239,
+            440295.68865466287
+          ],
+          [
+            1341172.3294962842,
+            440298.81172106834
+          ],
+          [
+            1341180.5590079161,
+            440300.57936278754
+          ],
+          [
+            1341188.9684244322,
+            440300.9414854248
+          ],
+          [
+            1341197.319425684,
+            440299.88782654156
+          ],
+          [
+            1341205.375346992,
+            440297.44824649027
+          ],
+          [
+            1341212.9078861477,
+            440293.691882182
+          ],
+          [
+            1341219.7035734234,
+            440288.72518776834
+          ],
+          [
+            1341225.569821236,
+            440282.68891776534
+          ],
+          [
+            1341230.3403820165,
+            440275.75413811585
+          ],
+          [
+            1341233.8800596127,
+            440268.117378236
+          ],
+          [
+            1341236.0885407047,
+            440259.9950614351
+          ],
+          [
+            1341236.9028328843,
+            440251.64951443847
+          ],
+          [
+            1341236.3110292915,
+            440243.2852454965
+          ],
+          [
+            1341234.329774003,
+            440235.13749403314
+          ],
+          [
+            1341231.014788488,
+            440227.43541006435
+          ],
+          [
+            1341226.4593044787,
+            440220.3956095084
+          ],
+          [
+            1341220.7914418913,
+            440214.21608200896
+          ],
+          [
+            1341214.170605539,
+            440209.0706226102
+          ],
+          [
+            1341206.7622984364,
+            440205.0949799774
+          ],
+          [
+            1341198.7925775568,
+            440202.4168654209
+          ],
+          [
+            1341190.486791288,
+            440201.1120041516
+          ],
+          [
+            1341182.0797904572,
+            440201.21729186364
+          ],
+          [
+            1341175.9560236284,
+            440202.19772180816
+          ],
+          [
+            1341170.0007361,
+            440203.92870808917
+          ],
+          [
+            1341164.305547782,
+            440206.38362011896
+          ],
+          [
+            1341160.4983691962,
+            440207.93371898227
+          ],
+          [
+            1341156.4884983888,
+            440208.8383467396
+          ],
+          [
+            1341152.3845547168,
+            440209.07299883955
+          ],
+          [
+            1341148.297705782,
+            440208.6313190276
+          ],
+          [
+            1341003.7159739553,
+            440180.8899046821
+          ]
+        ]
+      },
+      "areaSqFt": 43943.698369217505,
+      "propId": "395691"
+    },
+    {
+      "ring": {
+        "coordinates": [
+          [
+            1340129.4044023713,
+            439976.23381794075
+          ],
+          [
+            1340201.3570143657,
+            440010.32495711604
+          ],
+          [
+            1340311.581531452,
+            440061.1896847779
+          ],
+          [
+            1340381.104686352,
+            440095.30411785777
+          ],
+          [
+            1340457.2364238596,
+            440035.7550243538
+          ],
+          [
+            1340295.856497282,
+            439953.97894119
+          ],
+          [
+            1340167.491268454,
+            439888.9531526082
+          ],
+          [
+            1340139.7262321217,
+            439952.58065002144
+          ],
+          [
+            1340129.4044023713,
+            439976.23381794075
+          ]
+        ]
+      },
+      "areaSqFt": 27363.3064979581,
+      "propId": "245798"
+    },
+    {
+      "ring": {
+        "coordinates": [
+          [
+            1340445.6016046212,
+            439667.0431633559
+          ],
+          [
+            1340440.1167074584,
+            439663.3591156156
+          ],
+          [
+            1340295.856497282,
+            439953.97894119
+          ],
+          [
+            1340457.2364238596,
+            440035.7550243538
+          ],
+          [
+            1340464.5307006205,
+            440030.0493271072
+          ],
+          [
+            1340488.3360992065,
+            440011.43289452366
+          ],
+          [
+            1340494.0624656966,
+            440006.5808701116
+          ],
+          [
+            1340497.4512384501,
+            439990.47296268365
+          ],
+          [
+            1340502.4413859525,
+            439966.7728788509
+          ],
+          [
+            1340530.2015010405,
+            439832.77281876816
+          ],
+          [
+            1340534.1411257065,
+            439813.7426731135
+          ],
+          [
+            1340534.621439708,
+            439811.59274301876
+          ],
+          [
+            1340535.1512942896,
+            439808.8627616105
+          ],
+          [
+            1340535.5712409392,
+            439806.1130952021
+          ],
+          [
+            1340535.901620862,
+            439803.35293011426
+          ],
+          [
+            1340536.1417778707,
+            439800.58292253397
+          ],
+          [
+            1340536.2716988793,
+            439797.802744354
+          ],
+          [
+            1340536.3212394507,
+            439795.0228942783
+          ],
+          [
+            1340536.261528277,
+            439792.2430441933
+          ],
+          [
+            1340536.1010955411,
+            439789.4628660195
+          ],
+          [
+            1340535.8514241243,
+            439786.69285843614
+          ],
+          [
+            1340535.5115297867,
+            439783.942863945
+          ],
+          [
+            1340535.0613994605,
+            439781.1928694415
+          ],
+          [
+            1340534.5217023615,
+            439778.4628880302
+          ],
+          [
+            1340533.8914542936,
+            439775.76309029234
+          ],
+          [
+            1340533.1614688614,
+            439773.0731350255
+          ],
+          [
+            1340531.5614064452,
+            439767.67288336286
+          ],
+          [
+            1340530.6516313716,
+            439764.86317770556
+          ],
+          [
+            1340529.6913314636,
+            439762.0728289443
+          ],
+          [
+            1340528.681162862,
+            439759.2929788655
+          ],
+          [
+            1340527.6214537004,
+            439756.5328137685
+          ],
+          [
+            1340526.511547788,
+            439753.79266178503
+          ],
+          [
+            1340525.3616156974,
+            439751.07285093976
+          ],
+          [
+            1340524.1614868618,
+            439748.3727251069
+          ],
+          [
+            1340522.9114893689,
+            439745.69294044585
+          ],
+          [
+            1340521.6116231964,
+            439743.04268327437
+          ],
+          [
+            1340520.2717308681,
+            439740.4029247701
+          ],
+          [
+            1340518.8914842894,
+            439737.7926937767
+          ],
+          [
+            1340517.4515265357,
+            439735.2126464354
+          ],
+          [
+            1340515.9817132042,
+            439732.6526121893
+          ],
+          [
+            1340514.4613750381,
+            439730.12308969634
+          ],
+          [
+            1340512.891168205,
+            439727.61325219437
+          ],
+          [
+            1340511.281591367,
+            439725.13294219726
+          ],
+          [
+            1340509.6313322019,
+            439722.683143935
+          ],
+          [
+            1340507.9315324547,
+            439720.2628731989
+          ],
+          [
+            1340506.2015490348,
+            439717.8727861149
+          ],
+          [
+            1340504.4213688604,
+            439715.51288268605
+          ],
+          [
+            1340502.6014906142,
+            439713.182834857
+          ],
+          [
+            1340500.7415862067,
+            439710.882970677
+          ],
+          [
+            1340498.8413275268,
+            439708.62313269643
+          ],
+          [
+            1340496.9013707903,
+            439706.3928221841
+          ],
+          [
+            1340494.92171596,
+            439704.19269536657
+          ],
+          [
+            1340492.9013787787,
+            439702.0332508713
+          ],
+          [
+            1340490.8518422022,
+            439699.90333385643
+          ],
+          [
+            1340488.761623287,
+            439697.81278685725
+          ],
+          [
+            1340486.6313782004,
+            439695.7632502753
+          ],
+          [
+            1340484.4716056122,
+            439693.74291311234
+          ],
+          [
+            1340482.2714787796,
+            439691.77310077637
+          ],
+          [
+            1340480.0411682846,
+            439689.8331440188
+          ],
+          [
+            1340477.781330281,
+            439687.93321343325
+          ],
+          [
+            1340475.481466116,
+            439686.07298093697
+          ],
+          [
+            1340473.1514182824,
+            439684.2527746096
+          ],
+          [
+            1340470.7915148728,
+            439682.47325060755
+          ],
+          [
+            1340468.40142779,
+            439680.7327685384
+          ],
+          [
+            1340465.9716426106,
+            439679.04281127173
+          ],
+          [
+            1340463.521516288,
+            439677.3827095957
+          ],
+          [
+            1340461.041534367,
+            439675.7731327803
+          ],
+          [
+            1340458.5316968677,
+            439674.2130965251
+          ],
+          [
+            1340456.0015181983,
+            439672.68258777785
+          ],
+          [
+            1340453.441483958,
+            439671.2127744266
+          ],
+          [
+            1340450.8515941226,
+            439669.77314477944
+          ],
+          [
+            1340448.2413631226,
+            439668.39322628
+          ],
+          [
+            1340445.6016046212,
+            439667.0431633559
+          ]
+        ]
+      },
+      "areaSqFt": 51939.6860628907,
+      "propId": "34831"
+    },
+    {
+      "ring": {
+        "coordinates": [
+          [
+            1340428.105576616,
+            440226.3383046008
+          ],
+          [
+            1340439.9651329496,
+            440162.4289836124
+          ],
+          [
+            1340323.017532198,
+            440140.7390663552
+          ],
+          [
+            1340285.7912286946,
+            440169.8512128519
+          ],
+          [
+            1340254.7059890358,
+            440194.16054744466
+          ],
+          [
+            1340298.0264404528,
+            440202.1995733663
+          ],
+          [
+            1340367.4806978686,
+            440215.08799902874
+          ],
+          [
+            1340428.105576616,
+            440226.3383046008
+          ]
+        ]
+      },
+      "areaSqFt": 9596.312319682469,
+      "propId": "348854"
+    },
+    {
+      "ring": {
+        "coordinates": [
+          [
+            1340464.5307006205,
+            440030.0493271072
+          ],
+          [
+            1340457.2364238596,
+            440035.7550243538
+          ],
+          [
+            1340381.104686352,
+            440095.30411785777
+          ],
+          [
+            1340323.017532198,
+            440140.7390663552
+          ],
+          [
+            1340439.9651329496,
+            440162.4289836124
+          ],
+          [
+            1340464.5307006205,
+            440030.0493271072
+          ]
+        ]
+      },
+      "areaSqFt": 8007.14141959139,
+      "propId": "348855"
+    },
+    {
+      "ring": {
+        "coordinates": [
+          [
+            1340529.0243380363,
+            439978.11471968866
+          ],
+          [
+            1340555.4941013695,
+            439957.3417953609
+          ],
+          [
+            1341148.6822194569,
+            439491.8210728645
+          ],
+          [
+            1341272.1042167074,
+            439394.9629988641
+          ],
+          [
+            1341327.2320592073,
+            439356.4696375235
+          ],
+          [
+            1341952.0953107919,
+            438769.56464336463
+          ],
+          [
+            1341967.983730443,
+            438768.41471127915
+          ],
+          [
+            1342175.1355471143,
+            438753.42327143846
+          ],
+          [
+            1342187.6611126142,
+            438542.16483568377
+          ],
+          [
+            1341588.0865243624,
+            438515.21803920285
+          ],
+          [
+            1341563.4947100414,
+            437625.0836646037
+          ],
+          [
+            1341563.2250255325,
+            437615.32154503046
+          ],
+          [
+            1341481.7179706993,
+            437611.0311992812
+          ],
+          [
+            1341351.897364197,
+            437604.1982076852
+          ],
+          [
+            1341178.9259253729,
+            437716.37088360765
+          ],
+          [
+            1341097.3394743637,
+            437850.27350293787
+          ],
+          [
+            1340961.6405987875,
+            438045.00638119713
+          ],
+          [
+            1340938.3158422827,
+            438309.6301957766
+          ],
+          [
+            1340800.9781904502,
+            438383.64021835884
+          ],
+          [
+            1340847.3649087092,
+            438601.35336561804
+          ],
+          [
+            1340017.1972777122,
+            439038.264565277
+          ],
+          [
+            1340005.8095052075,
+            439044.25799161306
+          ],
+          [
+            1340008.0946056177,
+            439062.00664375996
+          ],
+          [
+            1340013.3039033315,
+            439093.9902651394
+          ],
+          [
+            1340020.6373529923,
+            439125.5546332668
+          ],
+          [
+            1340030.0622166956,
+            439156.55883884255
+          ],
+          [
+            1340041.5364200706,
+            439186.86447323824
+          ],
+          [
+            1340055.0087401064,
+            439216.33624637907
+          ],
+          [
+            1340070.4190338224,
+            439244.84259070456
+          ],
+          [
+            1340087.6985067572,
+            439272.25624851056
+          ],
+          [
+            1340106.770020081,
+            439298.45484005194
+          ],
+          [
+            1340127.5484349567,
+            439323.32140986895
+          ],
+          [
+            1340279.5796269383,
+            439493.3824214508
+          ],
+          [
+            1340302.1270127988,
+            439517.3003022411
+          ],
+          [
+            1340325.9066491628,
+            439539.9934405221
+          ],
+          [
+            1340350.852103226,
+            439561.39843882236
+          ],
+          [
+            1340376.8936852564,
+            439581.4554983273
+          ],
+          [
+            1340403.9586432874,
+            439600.10858593835
+          ],
+          [
+            1340487.7688431153,
+            439654.6596579383
+          ],
+          [
+            1340503.3567954972,
+            439666.2133064564
+          ],
+          [
+            1340517.538069795,
+            439679.45575762057
+          ],
+          [
+            1340530.1306948704,
+            439694.2170870746
+          ],
+          [
+            1340540.9730847995,
+            439710.30788053444
+          ],
+          [
+            1340549.9261123084,
+            439727.52166431275
+          ],
+          [
+            1340556.8748940255,
+            439745.637554746
+          ],
+          [
+            1340561.730264641,
+            439764.4230925271
+          ],
+          [
+            1340564.4299210578,
+            439783.63722557476
+          ],
+          [
+            1340564.9392218504,
+            439803.03340216307
+          ],
+          [
+            1340563.251631778,
+            439822.3627346215
+          ],
+          [
+            1340557.3313680422,
+            439849.11268109764
+          ],
+          [
+            1340532.2411951248,
+            439962.4828611967
+          ],
+          [
+            1340529.0243380363,
+            439978.11471968866
+          ]
+        ]
+      },
+      "areaSqFt": 2052707.71809058,
+      "propId": "34833"
+    },
+    {
+      "ring": {
+        "coordinates": [
+          [
+            1340548.276924201,
+            439994.78266535024
+          ],
+          [
+            1340788.8430441145,
+            439805.9926886063
+          ],
+          [
+            1340901.6561387004,
+            439792.64363394113
+          ],
+          [
+            1340944.7902387856,
+            439840.59859052795
+          ],
+          [
+            1341240.3605137863,
+            439608.64268961543
+          ],
+          [
+            1341148.6822194569,
+            439491.8210728645
+          ],
+          [
+            1340555.4941013695,
+            439957.3417953609
+          ],
+          [
+            1340548.276924201,
+            439994.78266535024
+          ]
+        ]
+      },
+      "areaSqFt": 68875.0321448443,
+      "propId": "368925"
+    },
+    {
+      "ring": {
+        "coordinates": [
+          [
+            1340563.0459235257,
+            440150.3063044386
+          ],
+          [
+            1340541.4301531196,
+            440146.1586749292
+          ],
+          [
+            1340533.2595657785,
+            440151.6475091064
+          ],
+          [
+            1340518.7366289499,
+            440227.3366622054
+          ],
+          [
+            1340547.2172150286,
+            440232.80154626357
+          ],
+          [
+            1340563.0459235257,
+            440150.3063044386
+          ]
+        ]
+      },
+      "areaSqFt": 2411.7874013895103,
+      "propId": "392780"
+    },
+    {
+      "ring": {
+        "coordinates": [
+          [
+            1340553.1191061104,
+            440085.2667363558
+          ],
+          [
+            1340574.7348765368,
+            440089.41436585307
+          ],
+          [
+            1340590.5639131207,
+            440006.919452117
+          ],
+          [
+            1340562.0833270361,
+            440001.4545680344
+          ],
+          [
+            1340547.5715450319,
+            440077.08499419125
+          ],
+          [
+            1340553.1191061104,
+            440085.2667363558
+          ]
+        ]
+      },
+      "areaSqFt": 2411.5741330643104,
+      "propId": "392796"
+    },
+    {
+      "ring": {
+        "coordinates": [
+          [
+            1340926.0599612868,
+            439894.782865358
+          ],
+          [
+            1340944.7902387856,
+            439840.59859052795
+          ],
+          [
+            1340901.6561387004,
+            439792.64363394113
+          ],
+          [
+            1340788.8430441145,
+            439805.9926886063
+          ],
+          [
+            1340548.276924201,
+            439994.78266535024
+          ],
+          [
+            1340535.7657943633,
+            440059.6877192872
+          ],
+          [
+            1340547.5715450319,
+            440077.08499419125
+          ],
+          [
+            1340562.0833270361,
+            440001.4545680344
+          ],
+          [
+            1340590.5639131207,
+            440006.919452117
+          ],
+          [
+            1340614.1337478687,
+            440011.44175277086
+          ],
+          [
+            1340637.7035826058,
+            440015.96438151965
+          ],
+          [
+            1340661.2737454465,
+            440020.48668218876
+          ],
+          [
+            1340684.8435802017,
+            440025.0093109315
+          ],
+          [
+            1340708.4137430326,
+            440029.5319396895
+          ],
+          [
+            1340731.9839058656,
+            440034.0542403555
+          ],
+          [
+            1340760.464163868,
+            440039.5191244412
+          ],
+          [
+            1340772.3699799487,
+            439977.47102019435
+          ],
+          [
+            1340765.821764705,
+            439985.94606886484
+          ],
+          [
+            1340753.5944269586,
+            440001.772808868
+          ],
+          [
+            1340735.8641474538,
+            440024.72125378664
+          ],
+          [
+            1340669.3921675365,
+            439973.36505727685
+          ],
+          [
+            1340687.122118949,
+            439950.41628427844
+          ],
+          [
+            1340699.3497847917,
+            439934.5895442784
+          ],
+          [
+            1340711.5774506112,
+            439918.763132358
+          ],
+          [
+            1340723.8054445395,
+            439902.9363923641
+          ],
+          [
+            1340736.0331103583,
+            439887.10965235176
+          ],
+          [
+            1340748.2607762,
+            439871.2832404528
+          ],
+          [
+            1340760.488442036,
+            439855.4565004405
+          ],
+          [
+            1340778.2187215383,
+            439832.5077274421
+          ],
+          [
+            1340844.690701454,
+            439883.8639239641
+          ],
+          [
+            1340829.699589692,
+            439903.2674284381
+          ],
+          [
+            1340921.0576747067,
+            439920.6647033605
+          ],
+          [
+            1340926.0599612868,
+            439894.782865358
+          ]
+        ]
+      },
+      "areaSqFt": 30361.5717968635,
+      "propId": "392834"
+    }
+  ],
+  "platRecord": {
+    "reference": "PORTER SUBDIVISION, LOTS 1 AND 2 — Plat Book PM 231, p. 50 (MSA_C2381_19050). Seat Pleasant (18th) Election District, Prince George's County, Maryland. Tax Map 73, Grid B3; 200 Map 202 SE 06. Zone R-55 at recording (RSF-65 under the 2022 rewrite). Scale 1\" = 20', November 2007. M-NCPPC Record File 5-09121. Basis of bearings: Maryland State Plane Coordinate System (NAD 83). Lot 1 = 9,598 sq ft (0.2203 ac); Lot 2 = 8,008 sq ft (0.1838 ac); 4,219 sq ft (0.0969 ac) dedicated to public use.",
+    "citation": "PLAT BOOK PM 231, P. 50",
+    "notes": [
+      "Development of this property shall be in accordance with the approved Stormwater Management Concept Plan 41230-2006-00, or any approved revisions thereafter.",
+      "Approval of this plat is based upon a reasonable expectation that public water and sewer service will be available when needed, and is conditioned on fulfilling all of the Washington Suburban Sanitary Commission authorization DA 4916 Z 08 commitments.",
+      "The applicant, his heirs, successors and or assignees shall utilize an abutting driveway design, constructed per DPW&T standards and requirements. Separate, standard residential driveway aprons shall be provided along Rollins Avenue, if deemed appropriate by DPW&T upon the issuance of street construction permits.",
+      "ADJOINING PROPERTIES, per the recorded plat: LOTS 13, 14 AND 15 (Addition to Pleasant Park, Plat Book VJ 185, Plat 76) — northeast; LOT 12 (Addition to Pleasant Park, Plat Book VJ 185, Plat 76) — southwest; OUTLOT A (Addition to Pleasant Park, Plat Book VJ 185, Plat 76) — northwest; JEAN M. YOUNG (L.14377 F.589) — northwest; MAITLAND W. DADE (L.11452 F.473) — across Rollins Avenue; PATRICIA L. FERRELL (L.12766 F.721) — across Rollins Avenue; VALLE GARGAN SUBDIVISION (P.B. WWW 19, P. 41) — across Rollins Avenue; EDWARD B. ROLLINS, TRUSTEE, ET AL (L.12790 F.155) — across Rollins Avenue."
+    ],
+    "legend": [
+      "PUE — Public Utility Easement",
+      "IPF — Iron Pipe Found",
+      "For Public Water and Sewer Only"
+    ],
+    "_omitted": "Signature blocks, the owner/surveyor certifications and the preparing firm are transcribed nowhere. The notes and legend are the recorded conditions and they carry over; a signature and a preparer's name attest to who did the work, and reproducing them on a drawing this engine generated would assert an authorship and a certification that do not exist.",
+    "adjoiners": [
+      {
+        "boundary": "northeast",
+        "label": "LOTS 13, 14 AND 15",
+        "reference": "Addition to Pleasant Park, Plat Book VJ 185, Plat 76"
+      },
+      {
+        "boundary": "southwest",
+        "label": "LOT 12",
+        "reference": "Addition to Pleasant Park, Plat Book VJ 185, Plat 76"
+      },
+      {
+        "boundary": "northwest",
+        "label": "OUTLOT A",
+        "reference": "Addition to Pleasant Park, Plat Book VJ 185, Plat 76"
+      },
+      {
+        "boundary": "northwest",
+        "label": "JEAN M. YOUNG",
+        "reference": "L.14377 F.589"
+      },
+      {
+        "boundary": "across Rollins Avenue",
+        "label": "MAITLAND W. DADE",
+        "reference": "L.11452 F.473"
+      },
+      {
+        "boundary": "across Rollins Avenue",
+        "label": "PATRICIA L. FERRELL",
+        "reference": "L.12766 F.721"
+      },
+      {
+        "boundary": "across Rollins Avenue",
+        "label": "VALLE GARGAN SUBDIVISION",
+        "reference": "P.B. WWW 19, P. 41"
+      },
+      {
+        "boundary": "across Rollins Avenue",
+        "label": "EDWARD B. ROLLINS, TRUSTEE, ET AL",
+        "reference": "L.12790 F.155"
+      }
+    ],
+    "platEasements": [
+      {
+        "type": "Public Utility Easement",
+        "widthFt": 10,
+        "along": "frontage",
+        "note": "10.00' PUE lettered along the Rollins Avenue frontage of BOTH Lot 1 and Lot 2, inside the property line."
+      }
+    ],
+    "existingPavement": {
+      "label": "EX. PAVEMENT CENTERLINE",
+      "note": "The plat draws the existing pavement centreline of Rollins Avenue and dimensions 222.27 ft along it. Its OFFSET from the right-of-way line is not dimensioned on the plat, so the distance to the edge of pavement cannot be transcribed — only the 20.00 ft dedication is a dimensioned figure."
+    },
+    "dedicationWidthFt": 20,
+    "approvalsOfRecord": [
+      {
+        "kind": "Stormwater Management Concept",
+        "number": "41230-2006-00",
+        "confirmedBy": "Lettered in Note 1 of the PORTER SUBDIVISION plat itself (Plat Book PM 231 p.50), so it belongs to THESE lots and not to another subdivision — the number and the lots appear on the same recorded instrument. What is absent is the approved concept DOCUMENT, not the identification.",
+        "status": "identified; approved document not in repo"
+      },
+      {
+        "kind": "WSSC authorization",
+        "number": "DA 4916 Z 08",
+        "confirmedBy": "Lettered in Note 2 of the same plat, alongside the statement that approval is conditioned on fulfilling its commitments. Same instrument, same lots.",
+        "status": "identified; commitments document not in repo"
+      },
+      {
+        "kind": "M-NCPPC Record File",
+        "number": "5-09121",
+        "confirmedBy": "Lettered in the plat's approval block.",
+        "status": "identified"
+      },
+      {
+        "kind": "Preliminary Plan",
+        "number": "4-08111",
+        "confirmedBy": "Lettered in the plat's record block.",
+        "status": "identified"
+      }
+    ],
+    "frontageSection": {
+      "sidewalkWidthFt": 3,
+      "plantingStripWidthFt": 4,
+      "totalFt": 7,
+      "note": "3 ft concrete walk inside the front property line, 4 ft planting strip between the walk and the street. GIVEN DIMENSIONS. Whether a walk is required, reconstructed or waived on this frontage remains a DPW&T decision at street construction permit — the dimensions are settled, the requirement is not, and those are different questions."
+    },
+    "monuments": [
+      {
+        "id": "A",
+        "label": "IPF",
+        "easting": 1340254.7066,
+        "northing": 440194.1578,
+        "note": "Iron pipe found, north corner. Coordinate published on the plat to four decimals."
+      },
+      {
+        "id": "B",
+        "label": "IPF ON LINE",
+        "easting": 1340447.7902,
+        "northing": 440229.9981,
+        "note": "North-east corner. Plat letters IPF on line along this boundary."
+      },
+      {
+        "id": "C",
+        "label": "IPF",
+        "easting": 1340488.344,
+        "northing": 440011.445,
+        "note": "Rollins Avenue corner. Coordinate published on the plat."
+      }
+    ],
+    "monumentNote": "The plat publishes three corner coordinates and letters IPF / IPF-on-line at the corners. Carrying them onto the drawing does not make it a survey — a surveyor must still visit and certify — but it gives the field the record positions to recover, which is what the certification starts from.",
+    "waterAndSewerConnection": {
+      "source": "existing site plans/ScanRollions SW Easemenmt.pdf p.2 — WATER & SEWER CONNECTION SKETCH, scale 1\" = 60'. Confirmed against the WSSC Water and Sewer Extension as-built for Pleasant Park Drive / Modupeola Way, Contract 98(W)9822AA, final as-built filed 11 April 2001 (same file, p.3).",
+      "mains": [
+        {
+          "kind": "water",
+          "size": "8 inch",
+          "location": "Modupeola Way",
+          "label": "EX. 8\" WATER"
+        },
+        {
+          "kind": "sewer",
+          "size": "8 inch",
+          "location": "Modupeola Way",
+          "label": "EX. 8\" SEWER"
+        }
+      ],
+      "easement": {
+        "type": "WSSC",
+        "widthFt": 20,
+        "label": "20' WSSC ESMT",
+        "route": "From the existing mains in the Modupeola Way cul-de-sac EAST through the 20-foot WSSC easement wholly on the LOT 13 side of the LOT 12 / LOT 13 common line, terminating at the common LOT 1 / LOT 12 / LOT 13 corner. LOT 12 is not encumbered by this public easement.",
+        "alsoCarries": "PRIVATE UTILITY ESMT continues from the same corner inside LOT 1"
+      },
+      "services": [
+        {
+          "code": "WHC",
+          "name": "Water house connection",
+          "from": "EX. 8\" water main, Modupeola Way"
+        },
+        {
+          "code": "SHC",
+          "name": "Sewer house connection",
+          "from": "EX. 8\" sewer main, Modupeola Way"
+        }
+      ],
+      "correctsEarlierAssumption": "Superseded twice. The corridor does not start at Lot 1's WEST CORNER: it starts at the LOT 1 / LOT 12 / LOT 13 corner 39.46 ft south-east of it, on Lot 1's south-west line, and runs S 84-00-24 W. Anchoring it on the west corner put the run at whatever angle the nearest boundary vertex and the nearest centreline point happened to make, and it crossed LOT 15 — ground these lots have no right over. BOTH water and sewer come from Modupeola Way through this corridor; the earlier drawing tapped water in Rollins Avenue, which the record contradicts.",
+      "corridor": {
+        "note": "Transcribed from p.2. The east terminus is the corner common to PORTER LOT 1, LOT 12 and LOT 13; it falls ON Lot 1's recorded south-west line, which is an independent check that the transcription is seated correctly. Bearing and length are the LOT 12 / LOT 13 common line.",
+        "eastTerminus": [
+          1340285.79,
+          440169.85
+        ],
+        "eastTerminusCheck": "47.27 ft from the plat's south corner (V3) along Lot 1's S 51-58-13 E line of 86.73 ft; 39.46 ft back from Lot 1's west corner. Lies on that line to 0.00 ft.",
+        "bearing": "S 84-00-24 W",
+        "axis": [
+          -0.99453,
+          -0.10441
+        ],
+        "lengthFt": 33.45,
+        "widthFt": 20,
+        "widthSide": "On the LOT 13 side of the LOT 12 / LOT 13 common line. The WSSC easement and public water/sewer runs do not enter LOT 12.",
+        "shape": "A 20-foot public WSSC corridor from the mapped mains at the cul-de-sac to the common LOT 1 / LOT 12 / LOT 13 corner, tapered at the terminus and contained on the LOT 13 side. Page 2 of the connection sketch controls the route.",
+        "services": {
+          "offsetsFt": [
+            1,
+            7,
+            13,
+            19
+          ],
+          "orderSouthToNorth": [
+            "WHC",
+            "WHC",
+            "SHC",
+            "SHC"
+          ],
+          "measured": "Four lines at 6 ft centres spanning 18 ft, centred in the 20 ft corridor with 1 ft margins. Scaled off p.2 at 4.95 px/ft, the scale itself checked against the recorded 118.96 ft LOT 1 / LOT 2 line on the same sketch.",
+          "note": "Sewer house connections farther into LOT 13 and water house connections nearer the LOT 12 / LOT 13 line, per p.2; all four runs remain within the LOT 13 easement."
+        }
+      },
+      "privateEasement": {
+        "type": "Private Utility",
+        "widthFt": 10,
+        "label": "PRIVATE UTILITY ESMT",
+        "on": "PORTER LOT 1",
+        "from": "the LOT 1 / LOT 12 / LOT 13 common corner",
+        "to": "the LOT 1 / LOT 2 / LOT 12 corner (V3)",
+        "note": "Runs inside LOT 1 along the portion shown on page 2, from the cleanout at the LOT 1 / LOT 12 / LOT 13 corner toward the LOT 1 / LOT 2 / LOT 12 corner. The unsupported segment from the common corner to Lot 1's north corner is not drawn. Page 2 letters the easement without a dimension, so the 10 ft width remains a stated assumption pending the recorded instrument.",
+        "along": "lot1-rear-lower",
+        "spans": "the page-2 segment from the LOT 1 / LOT 12 / LOT 13 corner toward the LOT 1 / LOT 2 / LOT 12 corner",
+        "serviceLine": "inside LOT 1",
+        "lengthFt": 47.27
+      }
+    }
+  },
+  "buildableEnvelope": {
+    "setbacks": {
+      "frontFt": 30,
+      "sideFt": 8,
+      "rearFt": 20,
+      "maxFt": 30,
+      "source": "Subtitle 27, Sec. 27-4202; front yard stated as 30 ft for this lot"
+    },
+    "coveragePct": 35,
+    "allowedFootprintSqFt": 1196,
+    "hasStreetFrontage": true,
+    "frontage": {
+      "providedFt": 65,
+      "requiredFt": 45,
+      "meets": true
+    },
+    "edgeYards": [
+      "side",
+      "front",
+      "side",
+      "rear"
+    ]
+  },
+  "disturbedAreaSqFt": 6807.000183133641,
+  "disturbanceHasUnknowns": true,
+  "disturbanceMeetsThreshold": true,
+  "projectLots": [
+    {
+      "featurePrefix": "l1-",
+      "label": "LOT 1",
+      "address": "1005 Rollins Ave",
+      "areaSqFt": 9598.549926757812,
+      "buildableEnvelope": {
+        "setbacks": {
+          "frontFt": 30,
+          "sideFt": 8,
+          "rearFt": 20,
+          "maxFt": 30,
+          "source": "Subtitle 27, Sec. 27-4202; front yard stated as 30 ft for this lot"
+        },
+        "coveragePct": 35,
+        "allowedFootprintSqFt": 1196,
+        "hasStreetFrontage": true,
+        "frontage": {
+          "providedFt": 65,
+          "requiredFt": 45,
+          "meets": true
+        },
+        "edgeYards": [
+          "side",
+          "front",
+          "side",
+          "rear"
+        ]
+      },
+      "drainage": {
+        "totalAreaSqFt": 9598.549926757812,
+        "totalAreaAcres": 0.2204,
+        "percentImpervious": 17,
+        "preDevelopment": {
+          "subAreas": [
+            {
+              "label": "Pervious — lawn / meadow",
+              "areaSqFt": 9598.549926757812,
+              "surface": "lawn_average",
+              "c": 0.25
+            }
+          ],
+          "compositeC": 0.25,
+          "peakCfs": 0.37
+        },
+        "postDevelopment": {
+          "subAreas": [
+            {
+              "label": "Proposed roof",
+              "areaSqFt": 1196.0000610351562,
+              "surface": "roof",
+              "c": 0.95
+            },
+            {
+              "label": "Driveway and on-lot paving",
+              "areaSqFt": 438,
+              "surface": "pavement",
+              "c": 0.95
+            },
+            {
+              "label": "Pervious — lawn",
+              "areaSqFt": 7964.549865722656,
+              "surface": "lawn_average",
+              "c": 0.25
+            }
+          ],
+          "compositeC": 0.369,
+          "peakCfs": 0.55
+        },
+        "increaseCfs": 0.18,
+        "timeOfConcentrationMin": 5,
+        "flowPathFt": 204,
+        "flowPathSlopePct": 1.96,
+        "returnPeriodYr": 10,
+        "intensityInPerHr": 6.71,
+        "waterQualityVolumeCf": 163,
+        "rv": 0.2032,
+        "assumptions": [
+          "Time of concentration by Kirpich over a 204 ft flow path at 2.0%, taken from the 2 ft contours across the catchment. A 5-minute floor applies.",
+          "Rainfall intensity 6.71 in/hr for the 10-year storm at a 5.0 minute duration. NOAA Atlas 14 Vol. 2 Ver. 3, PFDS point estimate, 38.8752 N 76.9019 W.",
+          "Water quality volume on a 1.0 in rainfall. Maryland Stormwater Design Manual, Vol. I & II — WQv on a 1.0 in rainfall.",
+          "Runoff coefficients: roof and pavement 0.95, average lawn 0.25. Confirm the lawn coefficient against the soil hydrologic group before relying on the composite.",
+          "Sidewalk, curb and gutter and the driveway apron lie in the public right-of-way and drain to the street. They are excluded from the lot catchment and included in the disturbed area."
+        ]
+      },
+      "disturbedAreaSqFt": 6807.000183133641,
+      "disturbanceHasUnknowns": true
+    },
+    {
+      "featurePrefix": "l2-",
+      "label": "LOT 2",
+      "address": "1009 Rollins Ave",
+      "areaSqFt": 8008.6866455078125,
+      "buildableEnvelope": {
+        "setbacks": {
+          "frontFt": 30,
+          "sideFt": 8,
+          "rearFt": 20,
+          "maxFt": 30,
+          "source": "Subtitle 27, Sec. 27-4202; front yard stated as 30 ft for this lot"
+        },
+        "coveragePct": 35,
+        "allowedFootprintSqFt": 1196,
+        "hasStreetFrontage": true,
+        "frontage": {
+          "providedFt": 134.65,
+          "requiredFt": 45,
+          "meets": true
+        },
+        "edgeYards": [
+          "side",
+          "front",
+          "side"
+        ]
+      },
+      "drainage": {
+        "totalAreaSqFt": 8008.6866455078125,
+        "totalAreaAcres": 0.1839,
+        "percentImpervious": 20.4,
+        "preDevelopment": {
+          "subAreas": [
+            {
+              "label": "Pervious — lawn / meadow",
+              "areaSqFt": 8008.6866455078125,
+              "surface": "lawn_average",
+              "c": 0.25
+            }
+          ],
+          "compositeC": 0.25,
+          "peakCfs": 0.31
+        },
+        "postDevelopment": {
+          "subAreas": [
+            {
+              "label": "Proposed roof",
+              "areaSqFt": 1196,
+              "surface": "roof",
+              "c": 0.95
+            },
+            {
+              "label": "Driveway and on-lot paving",
+              "areaSqFt": 438.00006103515625,
+              "surface": "pavement",
+              "c": 0.95
+            },
+            {
+              "label": "Pervious — lawn",
+              "areaSqFt": 6374.686584472656,
+              "surface": "lawn_average",
+              "c": 0.25
+            }
+          ],
+          "compositeC": 0.393,
+          "peakCfs": 0.48
+        },
+        "increaseCfs": 0.17,
+        "timeOfConcentrationMin": 5,
+        "flowPathFt": 194,
+        "flowPathSlopePct": 2.06,
+        "returnPeriodYr": 10,
+        "intensityInPerHr": 6.71,
+        "waterQualityVolumeCf": 156,
+        "rv": 0.2336,
+        "assumptions": [
+          "Time of concentration by Kirpich over a 194 ft flow path at 2.1%, taken from the 2 ft contours across the catchment. A 5-minute floor applies.",
+          "Rainfall intensity 6.71 in/hr for the 10-year storm at a 5.0 minute duration. NOAA Atlas 14 Vol. 2 Ver. 3, PFDS point estimate, 38.8752 N 76.9019 W.",
+          "Water quality volume on a 1.0 in rainfall. Maryland Stormwater Design Manual, Vol. I & II — WQv on a 1.0 in rainfall.",
+          "Runoff coefficients: roof and pavement 0.95, average lawn 0.25. Confirm the lawn coefficient against the soil hydrologic group before relying on the composite.",
+          "Sidewalk, curb and gutter and the driveway apron lie in the public right-of-way and drain to the street. They are excluded from the lot catchment and included in the disturbed area."
+        ]
+      },
+      "disturbedAreaSqFt": 9869.07510986668,
+      "disturbanceHasUnknowns": true
+    }
+  ]
+}

@@ -10,18 +10,6 @@ import {
   type ApiMilestone,
 } from '@/lib/api/payments'
 
-// ── Seed data (shown when API unavailable) ────────────────────────────────────
-const SEED_CONTRACT_AMOUNT = 520000
-const SEED_MILESTONES = [
-  { key: 'DEPOSIT',           name: 'Deposit / Mobilization',    percentage: 10, order: 1, description: 'Initial deposit covering mobilization and procurement.', amount: 52000,  status: 'paid'        as const, paidDate: '2025-11-01' },
-  { key: 'FOUNDATION',        name: 'Foundation Complete',        percentage: 15, order: 2, description: 'Released after foundation inspection approval.',          amount: 78000,  status: 'paid'        as const, paidDate: '2025-12-20' },
-  { key: 'FRAMING',           name: 'Framing Complete',           percentage: 20, order: 3, description: 'Released after structural framing inspection.',           amount: 104000, status: 'in_progress' as const, dueDate: '2026-03-15' },
-  { key: 'MEP_ROUGH',         name: 'MEP Rough-In Complete',      percentage: 15, order: 4, description: 'Released after rough MEP inspection before wall close.',  amount: 78000,  status: 'upcoming'    as const, dueDate: '2026-04-15' },
-  { key: 'DRYWALL_INTERIOR',  name: 'Drywall & Interior',         percentage: 15, order: 5, description: 'Released after insulation, drywall, and interior trim.',   amount: 78000,  status: 'upcoming'    as const, dueDate: '2026-05-30' },
-  { key: 'FINISH',            name: 'Finish Work',                percentage: 15, order: 6, description: 'Released after cabinets, flooring, painting, fixtures.',   amount: 78000,  status: 'upcoming'    as const, dueDate: '2026-07-15' },
-  { key: 'COMPLETION',        name: 'Substantial Completion',     percentage: 10, order: 7, description: 'Final payment upon CO and closeout documentation.',         amount: 52000,  status: 'upcoming'    as const, dueDate: '2026-08-01' },
-]
-
 type DisplayStatus = 'paid' | 'in_progress' | 'upcoming' | 'submitted' | 'approved' | 'rejected'
 
 interface DisplayMilestone {
@@ -82,10 +70,10 @@ const STATUS_CONFIG: Record<DisplayStatus, { bg: string; text: string; label: st
 }
 
 export default function PaymentsPage() {
-  const [milestones, setMilestones]         = useState<DisplayMilestone[]>(SEED_MILESTONES)
-  const [contractAmount, setContractAmount] = useState(SEED_CONTRACT_AMOUNT)
+  const [milestones, setMilestones]         = useState<DisplayMilestone[]>([])
+  const [contractAmount, setContractAmount] = useState(0)
   const [projectId, setProjectId]           = useState<string | null>(null)
-  const [projectName, setProjectName]       = useState('Loading...')
+  const [projectName, setProjectName]       = useState('No project selected')
   const [isLive, setIsLive]                 = useState(false)
   const [loading, setLoading]               = useState(true)
   const [activeTab, setActiveTab]           = useState<'milestones' | 'history'>('milestones')
@@ -95,7 +83,7 @@ export default function PaymentsPage() {
   const load = useCallback(async () => {
     try {
       const { projects } = await listProjects()
-      if (!projects.length) { setLoading(false); return }
+      if (!projects.length) return
 
       const proj = projects[0]
       setProjectId(proj.id)
@@ -108,7 +96,7 @@ export default function PaymentsPage() {
         setIsLive(true)
       }
     } catch {
-      // keep seed data
+      setProjectName('Payments unavailable')
     } finally {
       setLoading(false)
     }
@@ -146,7 +134,7 @@ export default function PaymentsPage() {
 
   const totalPaid     = milestones.filter(m => m.status === 'paid').reduce((s, m) => s + m.amount, 0)
   const totalUpcoming = milestones.filter(m => m.status !== 'paid').reduce((s, m) => s + m.amount, 0)
-  const paidPct       = Math.round((totalPaid / contractAmount) * 100)
+  const paidPct       = contractAmount > 0 ? Math.round((totalPaid / contractAmount) * 100) : 0
   const nextMilestone = milestones.find(m => m.status === 'submitted' || m.status === 'approved' || m.status === 'in_progress') || milestones.find(m => m.status === 'upcoming')
 
   return (
@@ -188,7 +176,7 @@ export default function PaymentsPage() {
             <div>
               <p className="text-sm text-gray-600">Remaining</p>
               <p className="text-xl font-bold" style={{ color: '#E8793A' }}>${totalUpcoming.toLocaleString()}</p>
-              <p className="text-xs text-gray-400">{Math.round((totalUpcoming / contractAmount) * 100)}% of contract</p>
+              <p className="text-xs text-gray-400">{contractAmount > 0 ? Math.round((totalUpcoming / contractAmount) * 100) : 0}% of contract</p>
             </div>
           </div>
         </div>
@@ -219,8 +207,7 @@ export default function PaymentsPage() {
       {/* Progress Visual */}
       <div className="mb-8 rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-sm font-semibold" style={{ color: '#1A2B4A' }}>7-Milestone Payment Schedule</h2>
-          {!isLive && <span className="text-xs text-gray-400">Seed data — sign in to load live data</span>}
+          <h2 className="text-sm font-semibold" style={{ color: '#1A2B4A' }}>Milestone Payment Schedule</h2>
         </div>
         <div className="flex items-end gap-2">
           {milestones.map((m) => {
@@ -238,6 +225,9 @@ export default function PaymentsPage() {
             )
           })}
         </div>
+        {!loading && milestones.length === 0 && (
+          <div className="py-8 text-center text-sm text-gray-500">No payment milestones have been recorded for this account.</div>
+        )}
         <div className="mt-4 flex gap-4 justify-center">
           {[
             { color: '#38A169', label: 'Paid' },

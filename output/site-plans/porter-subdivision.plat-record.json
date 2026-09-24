@@ -1,5 +1,6 @@
 {
   "reference": "PORTER SUBDIVISION, LOTS 1 AND 2 — Plat Book PM 231, p. 50 (MSA_C2381_19050). Seat Pleasant (18th) Election District, Prince George's County, Maryland. Tax Map 73, Grid B3; 200 Map 202 SE 06. Zone R-55 at recording (RSF-65 under the 2022 rewrite). Scale 1\" = 20', November 2007. M-NCPPC Record File 5-09121. Basis of bearings: Maryland State Plane Coordinate System (NAD 83). Lot 1 = 9,598 sq ft (0.2203 ac); Lot 2 = 8,008 sq ft (0.1838 ac); 4,219 sq ft (0.0969 ac) dedicated to public use.",
+  "citation": "PLAT BOOK PM 231, P. 50",
   "notes": [
     "Development of this property shall be in accordance with the approved Stormwater Management Concept Plan 41230-2006-00, or any approved revisions thereafter.",
     "Approval of this plat is based upon a reasonable expectation that public water and sewer service will be available when needed, and is conditioned on fulfilling all of the Washington Suburban Sanitary Commission authorization DA 4916 Z 08 commitments.",
@@ -121,5 +122,88 @@
       "note": "Rollins Avenue corner. Coordinate published on the plat."
     }
   ],
-  "monumentNote": "The plat publishes three corner coordinates and letters IPF / IPF-on-line at the corners. Carrying them onto the drawing does not make it a survey — a surveyor must still visit and certify — but it gives the field the record positions to recover, which is what the certification starts from."
+  "monumentNote": "The plat publishes three corner coordinates and letters IPF / IPF-on-line at the corners. Carrying them onto the drawing does not make it a survey — a surveyor must still visit and certify — but it gives the field the record positions to recover, which is what the certification starts from.",
+  "waterAndSewerConnection": {
+    "source": "existing site plans/ScanRollions SW Easemenmt.pdf p.2 — WATER & SEWER CONNECTION SKETCH, scale 1\" = 60'. Confirmed against the WSSC Water and Sewer Extension as-built for Pleasant Park Drive / Modupeola Way, Contract 98(W)9822AA, final as-built filed 11 April 2001 (same file, p.3).",
+    "mains": [
+      {
+        "kind": "water",
+        "size": "8 inch",
+        "location": "Modupeola Way",
+        "label": "EX. 8\" WATER"
+      },
+      {
+        "kind": "sewer",
+        "size": "8 inch",
+        "location": "Modupeola Way",
+        "label": "EX. 8\" SEWER"
+      }
+    ],
+    "easement": {
+      "type": "WSSC",
+      "widthFt": 20.0,
+      "label": "20' WSSC ESMT",
+      "route": "From the existing mains in the Modupeola Way cul-de-sac EAST through the 20-foot WSSC easement wholly on the LOT 13 side of the LOT 12 / LOT 13 common line, terminating at the common LOT 1 / LOT 12 / LOT 13 corner. LOT 12 is not encumbered by this public easement.",
+      "alsoCarries": "PRIVATE UTILITY ESMT continues from the same corner inside LOT 1"
+    },
+    "services": [
+      {
+        "code": "WHC",
+        "name": "Water house connection",
+        "from": "EX. 8\" water main, Modupeola Way"
+      },
+      {
+        "code": "SHC",
+        "name": "Sewer house connection",
+        "from": "EX. 8\" sewer main, Modupeola Way"
+      }
+    ],
+    "correctsEarlierAssumption": "Superseded twice. The corridor does not start at Lot 1's WEST CORNER: it starts at the LOT 1 / LOT 12 / LOT 13 corner 39.46 ft south-east of it, on Lot 1's south-west line, and runs S 84-00-24 W. Anchoring it on the west corner put the run at whatever angle the nearest boundary vertex and the nearest centreline point happened to make, and it crossed LOT 15 — ground these lots have no right over. BOTH water and sewer come from Modupeola Way through this corridor; the earlier drawing tapped water in Rollins Avenue, which the record contradicts.",
+    "corridor": {
+      "note": "Transcribed from p.2. The east terminus is the corner common to PORTER LOT 1, LOT 12 and LOT 13; it falls ON Lot 1's recorded south-west line, which is an independent check that the transcription is seated correctly. Bearing and length are the LOT 12 / LOT 13 common line.",
+      "eastTerminus": [
+        1340285.79,
+        440169.85
+      ],
+      "eastTerminusCheck": "47.27 ft from the plat's south corner (V3) along Lot 1's S 51-58-13 E line of 86.73 ft; 39.46 ft back from Lot 1's west corner. Lies on that line to 0.00 ft.",
+      "bearing": "S 84-00-24 W",
+      "axis": [
+        -0.99453,
+        -0.10441
+      ],
+      "lengthFt": 33.45,
+      "widthFt": 20.0,
+      "widthSide": "On the LOT 13 side of the LOT 12 / LOT 13 common line. The WSSC easement and public water/sewer runs do not enter LOT 12.",
+      "shape": "A 20-foot public WSSC corridor from the mapped mains at the cul-de-sac to the common LOT 1 / LOT 12 / LOT 13 corner, tapered at the terminus and contained on the LOT 13 side. Page 2 of the connection sketch controls the route.",
+      "services": {
+        "offsetsFt": [
+          1,
+          7,
+          13,
+          19
+        ],
+        "orderSouthToNorth": [
+          "WHC",
+          "WHC",
+          "SHC",
+          "SHC"
+        ],
+        "measured": "Four lines at 6 ft centres spanning 18 ft, centred in the 20 ft corridor with 1 ft margins. Scaled off p.2 at 4.95 px/ft, the scale itself checked against the recorded 118.96 ft LOT 1 / LOT 2 line on the same sketch.",
+        "note": "Sewer house connections farther into LOT 13 and water house connections nearer the LOT 12 / LOT 13 line, per p.2; all four runs remain within the LOT 13 easement."
+      }
+    },
+    "privateEasement": {
+      "type": "Private Utility",
+      "widthFt": 10.0,
+      "label": "PRIVATE UTILITY ESMT",
+      "on": "PORTER LOT 1",
+      "from": "the LOT 1 / LOT 12 / LOT 13 common corner",
+      "to": "the LOT 1 / LOT 2 / LOT 12 corner (V3)",
+      "note": "Runs inside LOT 1 along the portion shown on page 2, from the cleanout at the LOT 1 / LOT 12 / LOT 13 corner toward the LOT 1 / LOT 2 / LOT 12 corner. The unsupported segment from the common corner to Lot 1's north corner is not drawn. Page 2 letters the easement without a dimension, so the 10 ft width remains a stated assumption pending the recorded instrument.",
+      "along": "lot1-rear-lower",
+      "spans": "the page-2 segment from the LOT 1 / LOT 12 / LOT 13 corner toward the LOT 1 / LOT 2 / LOT 12 corner",
+      "serviceLine": "inside LOT 1",
+      "lengthFt": 47.27
+    }
+  }
 }

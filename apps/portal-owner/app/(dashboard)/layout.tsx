@@ -1,12 +1,13 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { useState } from 'react'
 import { useClerk } from '@clerk/nextjs'
 import {
   FolderKanban, DollarSign, FileText, MessageSquare,
-  LogOut, Bell, Package, Menu, Home, Sparkles, Calculator,
+  LogOut, Package, Menu, Sparkles, Calculator, UserCircle,
 } from 'lucide-react'
 import { PortalPageWithAskRail } from '@kealee/ui'
 
@@ -17,7 +18,7 @@ const NAV_ITEMS = [
   { href: '/concepts',     label: 'Order Concept',    icon: Sparkles,     badge: null },
   { href: '/payments',     label: 'Payments',     icon: DollarSign,   badge: null },
   { href: '/documents',    label: 'Documents',    icon: FileText,     badge: null },
-  { href: '/messages',     label: 'Messages',     icon: MessageSquare, badge: '2' },
+  { href: '/messages',     label: 'Messages',     icon: MessageSquare, badge: null },
 ]
 
 // Owner accent: coral #E8724B + teal #2ABFBF
@@ -39,10 +40,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       {/* Logo */}
       <div className="flex h-16 items-center gap-2 px-5" style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
         <Link href="/projects" className="flex items-center gap-2.5">
-          <div className="flex h-8 w-8 items-center justify-center rounded-xl" style={{ background: `linear-gradient(135deg, ${CORAL}, #c95a30)` }}>
-            <Home className="h-4 w-4 text-white" />
-          </div>
-          <span className="text-base font-bold text-white font-display tracking-tight">Kealee</span>
+          <Image src="/kealee-icon-512x512-transparent.png" alt="Kealee" width={32} height={32} className="h-8 w-8" priority />
           <span className="rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide" style={{ backgroundColor: `${ACCENT}22`, color: ACCENT }}>
             Owner
           </span>
@@ -119,14 +117,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </button>
           <span className="font-bold font-display text-sm" style={{ color: '#0F1F38' }}>Project Workspace</span>
           <div className="ml-auto flex items-center gap-2">
-            <button className="relative rounded-lg p-1.5 text-slate-400 hover:bg-slate-100">
-              <Bell className="h-4 w-4" />
-              <span className="absolute right-1 top-1 h-1.5 w-1.5 rounded-full" style={{ backgroundColor: CORAL }} />
-            </button>
-            <div className="flex h-7 w-7 items-center justify-center rounded-full text-[10px] font-bold text-white"
-              style={{ background: `linear-gradient(135deg, ${CORAL}, #c95a30)` }}>
-              JA
-            </div>
+            <UserCircle className="h-7 w-7 text-slate-400" aria-label="Account" />
           </div>
         </header>
 
@@ -138,14 +129,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </span>
           </div>
           <div className="flex items-center gap-3">
-            <button className="relative rounded-lg p-1.5 text-slate-400 hover:bg-slate-100">
-              <Bell className="h-4 w-4" />
-              <span className="absolute right-1 top-1 h-1.5 w-1.5 rounded-full" style={{ backgroundColor: CORAL }} />
-            </button>
-            <div className="flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold text-white"
-              style={{ background: `linear-gradient(135deg, ${CORAL}, #c95a30)` }}>
-              JA
-            </div>
+            <UserCircle className="h-8 w-8 text-slate-400" aria-label="Account" />
           </div>
         </div>
 

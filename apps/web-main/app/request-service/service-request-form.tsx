@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { ArrowRight, CheckCircle2, Loader2 } from 'lucide-react'
 import type { ProjectClarityReport } from '@/lib/project-clarity-report'
 
-export function ServiceRequestForm({ serviceKey, serviceName, showPaidNextSteps = false }: { serviceKey: string; serviceName: string; showPaidNextSteps?: boolean }) {
+export function ServiceRequestForm({ serviceKey, serviceName, initialDescription = '', showPaidNextSteps = false }: { serviceKey: string; serviceName: string; initialDescription?: string; showPaidNextSteps?: boolean }) {
   const [state, setState] = useState<'idle' | 'saving' | 'complete' | 'error'>('idle')
   const [message, setMessage] = useState('')
   const [clarityResult, setClarityResult] = useState<{ report: ProjectClarityReport; portalDownloadUrl: string } | null>(null)
@@ -35,7 +35,7 @@ export function ServiceRequestForm({ serviceKey, serviceName, showPaidNextSteps 
     <div className="grid gap-5 sm:grid-cols-2"><label className="text-sm font-bold text-[#10233e]">Name<input required name="name" autoComplete="name" className={fieldClass} /></label><label className="text-sm font-bold text-[#10233e]">Email<input required type="email" name="email" autoComplete="email" className={fieldClass} /></label></div>
     <div className="grid gap-5 sm:grid-cols-2"><label className="text-sm font-bold text-[#10233e]">Phone<input name="phone" autoComplete="tel" className={fieldClass} /></label><label className="text-sm font-bold text-[#10233e]">Preferred contact<select name="contactPreference" className={fieldClass}><option>Email</option><option>Phone</option><option>Text message</option></select></label></div>
     <label className="block text-sm font-bold text-[#10233e]">Property address<input required name="address" autoComplete="street-address" className={fieldClass} /></label>
-    <label className="block text-sm font-bold text-[#10233e]">What are you hoping to build or change?<textarea required name="projectDescription" rows={5} className={fieldClass} placeholder="Describe the property, desired result, important constraints, and the decision you need help making." /></label>
+    <label className="block text-sm font-bold text-[#10233e]">What are you hoping to build or change?<textarea required name="projectDescription" rows={5} defaultValue={initialDescription} className={fieldClass} placeholder="Describe the property, desired result, important constraints, and the decision you need help making." /></label>
     <div className="grid gap-5 sm:grid-cols-2"><label className="text-sm font-bold text-[#10233e]">Budget range<select name="budgetRange" className={fieldClass}><option>Not sure yet</option><option>Under $50,000</option><option>$50,000–$100,000</option><option>$100,000–$250,000</option><option>$250,000–$500,000</option><option>Over $500,000</option></select></label><label className="text-sm font-bold text-[#10233e]">Desired timing<select name="timeline" className={fieldClass}><option>Exploring</option><option>Within 3 months</option><option>3–6 months</option><option>6–12 months</option><option>More than 12 months</option></select></label></div>
     <label className="flex items-start gap-3 text-xs leading-5 text-[#66758a]"><input required type="checkbox" name="consent" value="yes" className="mt-1" />I agree that Kealee may contact me about this project. This request is not a purchase or acceptance of the project.</label>
     {state === 'error' && <p className="rounded-xl bg-red-50 p-3 text-sm text-red-700">{message}</p>}

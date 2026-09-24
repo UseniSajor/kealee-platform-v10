@@ -342,6 +342,12 @@ export default function IntakePage() {
   const upsellFromIntake = searchParams.get("fromIntake") ?? "";
   const upsellSourcePath = searchParams.get("sourcePath") ?? "";
   const checkoutCanceled = searchParams.get("canceled") === "true";
+  const upgradeProductSlug = searchParams.get("upgrade") ?? "";
+  const upgradeProductName = searchParams.get("upgradeName") ?? "";
+  const upgradeScope = searchParams.get("upgradeScope") ?? "";
+  const upgradeOptions = (searchParams.get("upgradeOptions") ?? "").split(",").filter(Boolean);
+  const upgradePlanningRange = searchParams.get("budgetRange") ?? "";
+  const financingInterest = searchParams.get("financingInterest") === "yes";
   const isInteriorReno = projectPath === "interior_reno_concept";
   const [step, setStep] = useState<"details" | "review">("details");
   const [formError, setFormError] = useState("");
@@ -466,7 +472,7 @@ export default function IntakePage() {
     mustStay: prefill.mustStay,
     problemsToSolve: prefill.problemsToSolve,
     existingConditions: "",
-    budgetComfort: prefill.budgetComfort,
+    budgetComfort: upgradePlanningRange || prefill.budgetComfort,
     squareFootage: sqftFromUrl,
     timeline: prefill.timeline,
     estimatePurpose: searchParams.get("estimatePurpose") ?? "Planning a budget",
@@ -736,7 +742,7 @@ export default function IntakePage() {
 
   async function resolveProjectParcel() {
     if (!formData.address.trim()) {
-      setFormError("Enter the complete project address first.");
+      setFormError("Add the complete project address to check the property.");
       return;
     }
     setResolvingParcel(true);
@@ -749,11 +755,11 @@ export default function IntakePage() {
         body: JSON.stringify({ address: formData.address }),
       });
       const payload = await response.json();
-      if (!response.ok) throw new Error(payload.error ?? "Parcel lookup failed");
+      if (!response.ok) throw new Error("Kealee will check the property records for you after checkout.");
       setSiteIntelligence(payload as AddressParcelResolution);
       if (payload.standardizedAddress) setFormData(previous => ({ ...previous, address: payload.standardizedAddress }));
     } catch (error) {
-      setFormError(error instanceof Error ? error.message : "Parcel lookup failed");
+      setFormError(error instanceof Error ? error.message : "Kealee will check the property records for you after checkout.");
     } finally {
       setResolvingParcel(false);
     }
@@ -1016,7 +1022,7 @@ export default function IntakePage() {
         uploaded_count: newFiles.length,
       });
     } catch {
-      setFormError("Upload failed. Please try again.");
+      setFormError("Your photos are still safe on your device. Select them again, or continue without photos.");
     } finally {
       setUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
@@ -1033,7 +1039,7 @@ export default function IntakePage() {
       typeof MediaRecorder === "undefined"
     ) {
       setFormError(
-        "Voice recording is not supported in this browser. Upload a photo or sketch instead.",
+        "You can describe your project in writing or add a photo or sketch with this browser.",
       );
       return;
     }
@@ -1062,7 +1068,7 @@ export default function IntakePage() {
           if (files[0]) setUploadedFiles((prev) => [...prev, files[0]]);
           else
             setFormError(
-              "Voice upload failed. Please try again or upload a photo/sketch.",
+              "Your project details are saved. Record again, or add a photo or sketch instead.",
             );
         } finally {
           setUploadingVoice(false);
@@ -1074,7 +1080,7 @@ export default function IntakePage() {
       setFormError("");
     } catch {
       setFormError(
-        "Microphone access was unavailable. Allow microphone access or upload a photo/sketch instead.",
+        "Turn on microphone access to record, or continue with a written note, photo, or sketch.",
       );
     }
   }
@@ -1110,7 +1116,7 @@ export default function IntakePage() {
       }
       if (newFiles.length < selected.length) {
         setFormError(
-          "Some documents could not be uploaded. Others were saved.",
+          "Your available documents were saved. You can add the remaining documents again, or continue now.",
         );
       }
       setUploadedDocs((prev) => [...prev, ...newFiles]);
@@ -1120,7 +1126,7 @@ export default function IntakePage() {
         uploaded_count: newFiles.length,
       });
     } catch {
-      setFormError("Document upload failed. Please try again.");
+      setFormError("Your documents are still safe on your device. Select them again, or continue without them.");
     } finally {
       setUploadingDocs(false);
       if (docInputRef.current) docInputRef.current.value = "";
@@ -1147,15 +1153,15 @@ export default function IntakePage() {
     e.preventDefault();
     setFormError("");
     if (!formData.firstName.trim()) {
-      setFormError("First name is required.");
+      setFormError("Add your first name to continue.");
       return;
     }
     if (!formData.email.trim()) {
-      setFormError("Email is required.");
+      setFormError("Add your email so Kealee can deliver your package.");
       return;
     }
     if (!formData.address.trim()) {
-      setFormError("Project address is required.");
+      setFormError("Add the project address to continue.");
       return;
     }
     if (isEstimateIntake && !formData.estimatePurpose) {
@@ -1198,18 +1204,19 @@ export default function IntakePage() {
           projectPath,
           promoCode: normalizedPromoCode,
           validateOnly: true,
+          tier: selectedTier,
         }),
       });
       const body = await response.json().catch(() => ({}));
       if (!response.ok) {
-        throw new Error(body.error || "That promo code could not be applied.");
+        throw new Error("Enter an active promo code, or continue with the current price.");
       }
       setPromoStatus("applied");
       setPromoMessage("Promo applied. Your total today is $0.");
       setFormError("");
     } catch (error) {
       setPromoStatus("error");
-      setPromoMessage(error instanceof Error ? error.message : "That promo code could not be applied.");
+      setPromoMessage(error instanceof Error ? error.message : "Enter an active promo code, or continue with the current price.");
     }
   }
 
@@ -1263,6 +1270,12 @@ export default function IntakePage() {
             equipmentPlan: formData.equipmentPlan,
             serviceFrequency: formData.serviceFrequency,
             costAssumptions: formData.costAssumptions,
+            upgradeProductSlug: upgradeProductSlug || undefined,
+            upgradeProductName: upgradeProductName || undefined,
+            upgradeScope: upgradeScope || undefined,
+            upgradeOptions,
+            upgradePlanningRange: upgradePlanningRange || undefined,
+            financingInterest,
             siteIntelligence,
             parcelConfirmed,
             tier: selectedTier,
@@ -1302,7 +1315,7 @@ export default function IntakePage() {
       if (!intakeRes.ok) {
         const body = await intakeRes.json().catch(() => ({}));
         throw new Error(
-          body.error || "Failed to save your intake. Please try again.",
+          "Your project details are still here. Select Continue again to save your order.",
         );
       }
       const { intakeId } = await intakeRes.json();
@@ -1328,6 +1341,7 @@ export default function IntakePage() {
             intakeId,
             projectPath,
             promoCode: normalizedPromoCode,
+            tier: selectedTier,
           }),
         });
 
@@ -1342,7 +1356,7 @@ export default function IntakePage() {
           );
           return;
         }
-        throw new Error(redeemBody.error || "That promo code could not be applied.");
+        throw new Error("Your order is saved. Enter an active promo code, or continue with the current price.");
       }
 
       // 2. Create Stripe checkout session
@@ -1364,7 +1378,7 @@ export default function IntakePage() {
       if (!checkoutRes.ok) {
         const body = await checkoutRes.json().catch(() => ({}));
         throw new Error(
-          body.error || "Could not create checkout session. Please try again.",
+          "Your order is saved. Select Continue to Payment again when you’re ready.",
         );
       }
       const { url } = await checkoutRes.json();
@@ -1383,13 +1397,13 @@ export default function IntakePage() {
       if (url) {
         window.location.href = url;
       } else {
-        throw new Error("No checkout URL returned from payment processor.");
+        throw new Error("Your order is saved. Select Continue to Payment again when you’re ready.");
       }
     } catch (error) {
       setFormError(
         error instanceof Error
           ? error.message
-          : "We could not start checkout. Please try again.",
+          : "Your order is saved. Select Continue to Payment again when you’re ready.",
       );
       setSubmitting(false);
     }
@@ -1417,7 +1431,7 @@ export default function IntakePage() {
       });
       const capture = await captureResponse.json();
       if (!captureResponse.ok || !capture.captureToken || !capture.captureSessionId) {
-        throw new Error(capture.error ?? "Could not create mobile capture session");
+        throw new Error("Your project is saved here. You can add photos on this device and continue.");
       }
       setActiveCaptureSession({ id: capture.captureSessionId, token: capture.captureToken });
       const intakeUrl = `${window.location.origin}/capture/${capture.captureToken}?returnTo=${encodeURIComponent(returnPath)}`;
@@ -1438,11 +1452,11 @@ export default function IntakePage() {
         setPhoneLinkCopied(true);
         setTimeout(() => setPhoneLinkCopied(false), 3000);
       } else {
-        setFormError("Failed to send link. Please copy the URL manually.");
+        setFormError("Your photo link is ready to copy and open on your phone.");
       }
     } catch (error) {
       console.error("[intake/send-to-phone] Mobile capture handoff failed", error);
-      setFormError(error instanceof Error ? error.message : "Could not send to phone. Please try again.");
+      setFormError(error instanceof Error ? error.message : "Your project is saved here. You can add photos on this device and continue.");
     } finally {
       setSendingToPhone(false);
     }
@@ -1472,6 +1486,19 @@ export default function IntakePage() {
                 className="space-y-5"
                 noValidate
               >
+                {upgradeProductName && (
+                  <div className="rounded-2xl border border-orange-200 bg-orange-50 p-5">
+                    <p className="text-xs font-bold uppercase tracking-widest text-orange-700">Your selected upgrade</p>
+                    <h2 className="mt-1 text-lg font-black text-slate-900">{upgradeProductName}</h2>
+                    <div className="mt-3 flex flex-wrap gap-2 text-xs text-slate-700">
+                      {upgradeScope && <span className="rounded-full bg-white px-3 py-1.5 font-semibold">{upgradeScope.replace(/-/g, " ")} scope</span>}
+                      {upgradePlanningRange && <span className="rounded-full bg-white px-3 py-1.5 font-semibold">Planning range {upgradePlanningRange}</span>}
+                      {upgradeOptions.map(option => <span key={option} className="rounded-full bg-white px-3 py-1.5 font-semibold">{option.replace(/-/g, " ")}</span>)}
+                      {financingInterest && <span className="rounded-full bg-white px-3 py-1.5 font-semibold">Financing interest noted</span>}
+                    </div>
+                    <p className="mt-3 text-xs leading-5 text-orange-900">Next, tell us about the property. Your concept package will include zoning and permit-path findings plus a basic planning estimate.</p>
+                  </div>
+                )}
                 {bundlePreview && projectPath === bundlePreview.productKey && (
                   <BundleUpsellBanner
                     bundle={bundlePreview}

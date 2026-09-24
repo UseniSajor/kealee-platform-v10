@@ -5,7 +5,7 @@ import { getOwnerPortalBaseUrl } from '@/lib/owner-portal-urls'
 const COMPANY_LINKS = [
   { href: '/about', label: 'About Kealee' },
   { href: '/gallery', label: 'Gallery' },
-  { href: '/marketplace', label: 'Contractor Marketplace' },
+  { href: '/marketplace', label: 'Property Upgrades' },
   { href: '/faq', label: 'FAQ' },
   { href: '/contact', label: 'Contact' },
   // Never hardcode the portal host: it moved once and every hardcoded link

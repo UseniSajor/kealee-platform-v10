@@ -1,0 +1,4732 @@
+Warning: Cannot polyfill `DOMMatrix`, rendering may be broken.
+Warning: Cannot polyfill `Path2D`, rendering may be broken.
+===== PAGE 1 =====
+PRINCE GEORGE’S COUNTY
+LANDSCAPE MANUAL
+December 2010
+The Maryland-National Capital Park and Planning Commission
+www.pgplanning.org
+$7.00
+===== PAGE 2 =====
+i
+Table of Contents
+P
+AGE
+I
+NTRODUCTION
+................................................................................................................................
+1
+S
+ECTION
+1
+–G
+ENERAL
+I
+NFORMATION AND
+P
+ROCEDURES
+.................................................................... 5
+1.1 Applicability ........................................................................................................................
+5
+1.2 Approval Process .................................................................................................................
+9
+1.3 Alternative Compliance .......................................................................................................
+9
+1.4 Plant Substitutions .............................................................................................................
+11
+1.5 Certification of Installation of Plant Materials ...................................................................
+12
+1.6 Maintenance and Enforcement ...........................................................................................
+13
+1.7 Certificate of Landscape Maintenance ...............................................................................
+13
+S
+ECTION
+2
+–P
+LAN
+P
+REPARATION
+..................................................................................................
+15
+2.1 Preparation of Landscape Plans .................................................................................................... 15
+2.2 Submittal Requirements
+................................................................................................................ 15
+S
+ECTION
+3
+–L
+ANDSCAPE
+E
+LEMENTS AND
+D
+ESIGN
+C
+RITERIA
+........................................................
+18
+3.1 Design Elements ........................................................................................................................... 18
+3.2 Design Criteria: Functional and Aesthetic Values of Plants
+......................................................... 18
+3.3 Landscape Functions..................................................................................................................... 18
+3.4 Landscape Elements...................................................................................................................... 21
+3.5 Other Landscape Design Considerations ...................................................................................... 23
+S
+ECTION
+4
+–L
+ANDSCAPE
+S
+TANDARDS
+...................................................................................................... 31
+4.1 Residential Requirements ............................................................................................................. 31
+4.2 Requirements for Landscape Strips Along Streets ....................................................................... 41
+4.3 Parking Lot Requirements ............................................................................................................ 47
+4.4 Screening Requirements ............................................................................................................... 60
+4.5 Stormwater Management Facilities .............................................................................................. 65
+4.6 Buffering Development from Streets
+............................................................................................ 65
+4.7 Buffering Incompatible Uses ........................................................................................................ 74
+4.8 Landscape Requirements in a Regional Urban Community ......................................................... 96
+4.9 Sustainable Landscaping Requirements ....................................................................................... 98
+4.10 Street Trees Along Private Streets ............................................................................................ 101
+===== PAGE 3 =====
+ii
+S
+ECTION
+5
+–G
+LOSSARY OF
+T
+ERMS
+......................................................................................................... 105
+A
+PPENDICES
+.................................................................................................................................
+109
+Appendix 1 Alternative Compliance Submittal Checklist
+................................................................ 110
+Appendix 2 Plant Substitution Request Form
+................................................................................... 112
+Appendix 3 Plant Lists
+...................................................................................................................... 113
+Appendix 4 Landscape Specifications and Planting Details
+............................................................. 126
+LIST OF FIGURES
+Section 4.2: Landscape Strip Along Streets
+4.2-1 Developing Tier, Developed Tier, Centers and Corridor Nodes—Option 1 ............................. 42
+4.2-2 Developing Tier, Developed Tier, Centers and Corridor Nodes—Option 2 ............................. 43
+4.2-3 Developing Tier, Developed Tier, Centers and Corridor Nodes—Option 3,
+Rural Tier—Option 2 ................................................................................................................ 43
+4.2-4 Developing Tier, Developed Tier, Centers and Corridor Nodes—Option 4 ............................. 44
+4.2-5 Required Landscape Strip: Rural Tier—Option 1 ..................................................................... 45
+Section 4.3: Parking Lot Requirements, Parking Lot Perimeter Landscape Strip Requirements
+4.3-1 Parking Lot Within 30 Feet of Property Line
+............................................................................ 49
+4.3-2 Option 1-Developing Tier, Developed Tier, Centers and Corridor Nodes
+................................ 49
+4.3-3 Option 2-Developing Tier, Developed Tier, Centers and Corridor Nodes
+................................ 50
+4.3-4 Option 1-Developing Tier ......................................................................................................... 51
+4.3-5 Option 2-Developing Tier ......................................................................................................... 51
+4.3-6 Option 1-Rural Tier ................................................................................................................... 52
+4.3-7 Parking Lot Area ....................................................................................................................... 53
+4.3-8 Minimum Width of Landscape Island Parallel to Spaces (parking on both sides)
+.................... 55
+4.3-9 Minimum Width of Landscape Island Perpendicular to Spaces (parking on both sides) .......... 55
+4.3-10 Minimum Width of Landscape Island Perpendicular to Spaces (parking on one side)
+........... 56
+4.3-11 Minimum Number of Planting Islands .................................................................................... 57
+4.3-12 Parking Bay Separation ........................................................................................................... 57
+Section 4.7: Buffering Incompatible Uses
+4.7-1 Relationship of Bufferyards and Landscape Strips ................................................................... 77
+4.7-2 Use Determination for Horizontally Arranged Mixed-Use Development................................. 78
+4.7-3 Use Determination for Vertically Arranged Mixed-Use Development
+..................................... 79
+4.7-4 Required Bufferyard Adjacent to Existing Bufferyard
+.............................................................. 88
+===== PAGE 4 =====
+iii
+4.7-5 Developing Non-Residential Use Adjacent to Vacant Residentially-Zoned Property .............. 91
+4.7-6 Developing Residential Use Adjacent to Vacant Residentially-Zoned Property ...................... 91
+4.7-7 Developing Property Adjacent to Incompatible, Nonconforming Use...................................... 92
+4.7-8 Developing Property Adjacent to Historic Site ......................................................................... 93
+Section 4.10: Street Trees Along Private Streets
+4.10-1 Minimum Soil Surface Area Required .................................................................................. 103
+LIST
+OF
+TABLES
+4.1-1
+On-Site Residential Planting Requirements...................................................................... 37
+4.3-1
+Parking Lot Interior Planting Requirements ..................................................................... 54
+4.7-1
+Use Impact Categories ...................................................................................................... 80
+4.7-2
+Minimum Bufferyard Requirements
+................................................................................. 87
+4.7-3
+Bufferyard Types .............................................................................................................. 88
+SAMPLE
+SCHEDULES
+4.1-1
+Residential Requirements for One-Family Detached Lots ............................................... 38
+4.1-2
+Residential Requirements for Townhouses, One-Family Semi-Detached, and
+Two-Family Dwellings Arranged Horizontally
+................................................................ 39
+4.1-3
+Residential Requirements for Two-Family and Three-Family Dwellings Arranged
+Vertically .......................................................................................................................... 39
+4.1-4
+Residential Requirements for Multifamily ....................................................................... 40
+4.2-1
+Requirements for Landscape Strips Along Streets ........................................................... 46
+4.3-1
+Parking Lot Perimeter Landscape Strip for Parking Lots 7,000 Square Feet or Larger ... 58
+4.3-2
+Interior Planting for Parking Lots 7,000 Square Feet or Larger ....................................... 59
+4.6-1
+Buffering Residential Development from Streets
+............................................................. 72
+4.6-2
+Buffering Development from Special Roadways ............................................................. 73
+4.7-1
+Buffering Incompatible Uses Requirements ..................................................................... 95
+4.9-1
+Sustainable Landscaping Requirements ......................................................................... 100
+4.10-1
+Street Trees Along Private Rights-of-Way ..................................................................... 104
+===== PAGE 5 =====
+1
+Introduction
+History
+The purpose of the
+Prince George’s County Landscape Manual
+is to enhance the quality of life of
+county residents, the appearance of communities, and the overall environmental health of Prince
+George’s County by improving the design, sustainability, and quality of landscaping. Toward that
+end, the Landscape Manual set forth in one publication all of the regulations for landscaping,
+buffering, and screening that apply to public and private development in Prince George’s County.
+It established minimum mandatory standards, articulated design guidelines, provided options that
+allow greater creativity and flexibility in design, and established a procedure for approval of
+alternative methods of compliance with the standards.
+On October 3, 1989, the Prince George’s County Council approved Council Bill CB-1-1989,
+legislation that removed sections of the Prince George’s County Zoning Ordinance (“the Zoning
+Ordinance”) that addressed landscaping, buffering, and screening and consolidated them into the
+Landscape Manual. CB-1-1989 adopted the Landscape Manual by reference as part of the Zoning
+Ordinance. The Landscape Manual was first amended by CB-62-1990. The Landscape Manual
+was further amended in 1992 by CB-30-1992 and CB-91-1992 and in 2008 by CB-29-2008.
+2010 Comprehensive Update
+The comprehensive update to the Landscape Manual (“updated manual”) is intended to set a new
+standard of excellence in the design, sustainability, and quality of landscaping in the county and
+to generate aesthetic, economic, environmental, and health benefits for the county’s residents,
+businesses, and visitors.
+Aesthetic Benefits
+(a)
+Establish a greater sense of continuity within individual developments.
+(b)
+Ensure smoother visual transitions from one type of development to another.
+(c)
+Enhance the relationship between incompatible land uses, particularly between residential
+and commercial or industrial uses.
+(d)
+Define public and private spaces.
+===== PAGE 6 =====
+2
+(e)
+Screen unsightly views and provide privacy.
+(f)
+Provide visual relief from views of expansive paved areas, such as parking compounds.
+(g)
+Protect scenic and historic landscapes and sites.
+Environmental and Health Benefits
+(a)
+Reduce heat islands, and minimize effects on microclimates.
+(b)
+Filter and reduce stormwater runoff.
+(c)
+Reduce greenhouse gases and improve air quality.
+(d)
+Promote energy conservation.
+(e)
+Increase pedestrian activity by creating safer pedestrian-friendly environments.
+(f)
+Reduce the negative effects of reflection and glare.
+(g)
+Control erosion.
+(h)
+Provide wildlife habitat.
+Economic Benefits
+(a)
+Enhance commercial viability of an area or business.
+(b)
+Increase home values.
+(c)
+Minimize utility costs.
+These benefits are accomplished through the updated manual by maintaining existing regulations
+that create more attractively landscaped outdoor spaces, creating a greater sense of continuity
+within individual developments, and allowing smoother visual transitions from one development
+to another. It also includes revised regulations requiring improved buffers between incompatible
+land uses that will reduce negative impacts of more-intensive uses on less-intensive, adjacent
+uses. Revised parking lot requirements will result in more shade, reduced glare and heat build-up,
+and less visual monotony created by large expanses of pavement and parked cars. Revised
+regulations for buffering all types of development from streets and special roadways will improve
+the view of developments. Additionally, new regulations have been added regarding standards for
+private streets and sustainable landscaping techniques, such as ways to use plants to lessen the
+harsh effect of the summer sun, provide protection from winter winds, create barriers from
+unwanted noise, help filter and purify water, prevent soil erosion, and contribute to cleaner air.
+===== PAGE 7 =====
+3
+The updated manual also contains standards specific to the tier in which a property is located
+based on the
+Prince George’s County Approved General Plan
+(“the General Plan”). In October
+2002, the Prince George’s County Council approved the plan to provide long-range guidance for
+the future growth of the county. The plan established three development tiers that correspond to
+the different development patterns in the county and specify their desired levels and forms of
+development. Within the Developed and Developing Tiers, the plan
+designates centers and
+corridors within which more intense development is encouraged to capitalize on existing public
+investments in infrastructure, such as transportation facilities. The plan also introduced the
+concept of a corridor node—a concentrated, higher-intensity, mixed-use location within one-
+quarter mile of a major intersection or major transit stop along a designated corridor—to be
+developed in a pedestrian-oriented form. Specific corridor nodes are identified in the adopted
+sector and master plan processes. This updated manual recognizes this range of development
+patterns and establishes standards designed to address the tiers’, centers’, and corridor nodes’
+unique constraints and opportunities and to help implement the visions set forth in the plan.
+Contents
+Section 1, General Information and Procedures
+,
+of the updated manual includes information on
+the applicability of standards, approval procedures, and the process for requesting approval of
+proposals for alternative compliance and plant substitutions.
+Section 2, Plan Preparation
+,
+sets forth requirements for the preparation and content of all
+landscape plans.
+Section 3, Landscape Elements and Design Criteria
+,
+outlines the general design considerations
+that will serve as the basis for evaluation of all landscape plans in Prince George’s County,
+including conformance to the General Plan, the importance of preserving existing trees, and,
+where appropriate, the application of sustainable landscaping techniques, landscaping for energy
+conservation, and Crime Prevention Through Environmental Design (“CPTED”) principles.
+Section 4, Landscape Standards
+,
+contains the standards for on-site residential plantings, landscape
+strips along streets, parking lot landscaping, screening, buffering development from streets,
+buffering incompatible uses, sustainable landscaping techniques, and standards for street trees
+along private streets.
+===== PAGE 8 =====
+4
+Section 5, Glossary of Terms
+,
+is a glossary of terms used in the updated manual followed by the
+appendices, which contain recommended plant materials, planting details and specifications, and
+sample forms and checklists. In addition to the requirements of the updated manual, some
+development activities in Prince George’s County are subject to the requirements of the
+Woodland Conservation and Wildlife Habitat Ordinance
+. The
+Woodland Conservation and
+Wildlife Habitat Ordinance
+requires the preservation and/or planting of woodlands. The updated
+manual encourages the retention of existing trees to fulfill landscaping requirements. Protected
+woodland conservation areas shown on a Type II Tree Conservation Plan may also be credited
+toward fulfillment of standards contained within the updated manual.
+Additional Requirements
+Any land located in the Chesapeake Bay critical area within Prince George’s County is subject to
+the requirements of this updated manual and the applicable provisions of the
+Conservation
+Manual for the Chesapeake Bay Critical Area
+, adopted by the Prince George’s County Council
+on November 17, 1987. The Conservation Manual explains the review process necessary for
+developing or improving property located in the Chesapeake Bay critical area.
+The Department of Parks and Recreation of The Maryland-National Capital Park and Planning
+Commission (“M-NCPPC”) has established guidelines for the provision of landscaping on
+parkland and in private recreational areas. Those guidelines are set forth in the Parks and
+Recreation Facilities Guidelines (1983).
+Questions about interpretation or use of the updated manual should be directed to the Urban
+Design Section of the Development Review Division of M-NCPPC.
+===== PAGE 9 =====
+5
+SECTION 1 - GENERAL INFORMATION AND PROCEDURES
+1.1
+Applicability
+(a)
+All public, private, and institutional development shall comply with the standards in this
+manual, except as provided below, and as specifically exempt elsewhere in this manual
+and in Section 27-121 of the Zoning Ordinance.
+(b)
+Existing conditions on developed sites not in conformance with the requirements of this
+manual that were otherwise lawful on December 13, 2010, and not the subject of any
+building or grading permit, may continue as a matter of right.
+(c)
+Except as stated in the exemptions cited in Sections 1.1(d) to 1.1(n), all building and
+grading permits shall be in compliance with this manual. Any application not in
+compliance with the requirements must apply for and obtain approval of an Alternative
+Compliance application pursuant to Section 1.3, Alternative Compliance, and/or apply
+for and obtain approval of a Departure from Design Standards application pursuant to
+Section 27-587 of the Zoning Ordinance.
+(d)
+Building permits for interior or exterior rehabilitation (including, but not limited to,
+façade restoration, canopies, and mechanical equipment) of an existing building that do
+not involve a change of use from a lower- to a higher-intensity use category or from a
+residential use to a nonresidential use (as defined in Table 4.7-1, Use Impact Categories),
+do not involve an increase in impervious surface, and do not involve an increase in the
+gross floor area (GFA) of the building are exempt from the requirements of Sections 4.1,
+4.2, 4.3, 4.6, 4.7, 4.8, 4.9, and 4.10.
+(e)
+In addition to permits exempt as stated in 1.1(d), the following are exempt from the
+requirements of Section 4.1, Residential Requirements:
+(1)
+Building, grading, and/or use and occupancy permits pertaining to any existing
+single-family home.
+===== PAGE 10 =====
+6
+(2)
+Building permits that involve an increase in the GFA of a multifamily building(s)
+when they result in a total cumulative increase of not more than ten percent
+(10%) of the GFA of an existing building(s) on a single lot or multiple
+contiguous lots as of January 1, 1990, or five thousand (5,000) square feet,
+whichever is less.
+(f)
+Building and grading permits are subject to Section 4.2, Requirements for Landscape
+Strips Along Streets, except as stated in 1.1(d) and except for the following exemptions:
+(1)
+Building and grading permits for a building expansion are exempt from the
+requirements of Section 4.2 when they involve a cumulative increase in GFA of
+less than ten percent (10%) of the GFA of an existing building(s) on a single lot
+as of January 1, 1990, or five thousand (5,000) square feet, whichever is less.
+(2)
+Building and grading permits for a property that is subject to a required build-to
+line established by a sector plan or the underlying zone that precludes the
+provision of a landscape strip are exempt from the requirements of Section 4.2
+for that portion of the street frontage where the building is located. In such a
+case, a landscape strip shall be provided only for that portion of the property
+where a building is not adjacent to the street.
+(3)
+Building and grading permits for properties with frontage on a special roadway
+are exempt from Section 4.2 and are subject to Section 4.6, Buffering
+Development from Streets.
+(g)
+In addition to permits exempt as stated in 1.1(d), the following are exempt from the
+requirements of Section 4.3, Parking Lot Requirements:
+(1)
+Permits for any building renovation, expansion, or change of use that does not
+necessitate an increase in the number of parking or loading spaces beyond the
+number currently existing. When a building or site renovation, expansion, or
+change of use results in the creation of additional impervious area, the entire
+parking facility associated with the property shall be subject to Section 4.3.
+===== PAGE 11 =====
+7
+(2)
+Structured parking garages are exempt from Section 4.3.
+(3)
+Permits that involve an existing and/or proposed parking lot less than seven
+thousand (7,000) square feet.
+(4)
+Restriping of an existing parking compound whether or not it results in an
+increase in the number of parking spaces when no new impervious area is
+created.
+(5)
+Building and grading permits for integrated shopping centers, office parks, and
+restaurant parks are exempt from Section 4.3(c)(1), Parking Lot Perimeter
+Landscape Strip Requirements, where access drive aisles are located such that it
+is impractical to conform to this section.
+(h)
+All building and grading permits are subject to Section 4.6, Buffering Development from
+Streets, except as stated in 1.1(d) and except for the following:
+(1)
+Permits pertaining to an existing single-family home.
+(2)
+Permits for properties that contain an environmental setting of a historic site that
+abuts a special roadway.
+(3)
+Permits for properties that abut a master plan right-of-way that has not been
+dedicated or is not required to be dedicated pursuant to an approved preliminary
+plan of subdivision.
+(i)
+All building, grading, and use and occupancy permits are subject to Section 4.7,
+Buffering Incompatible Uses, except as stated in 1.1(d) and except for those that meet all
+three of the following criteria and are, therefore, exempt:
+(1)
+Building permits that involve a total cumulative increase in GFA of not more
+than ten percent (10%) of the GFA of an existing building(s) on a single lot as of
+January 1, 1990, or five thousand (5,000) square feet, whichever is less.
+===== PAGE 12 =====
+8
+(2)
+No part of any new structure, including any paved surface intended for parking,
+loading, or access thereto but excluding a wall or fence, extends closer to an
+adjacent property in a less-intense use category than would normally be allowed
+by the provisions of Section 4.7.
+(3)
+Use and occupancy permits that do not involve a change of use from a lower- to
+higher-intensity use category as defined in Table 4.7-1, Use Impact Categories,
+or from a residential to a nonresidential use.
+(j)
+All building, grading, and/or use and occupancy permits associated with the development
+of privately-owned and maintained streets are subject to Section 4.10, Street Trees Along
+Private Streets, except as stated in 1.1(d) and except for the following:
+(1)
+Access easement authorized pursuant to Sections 24-128(b)(1), (3), (11) and
+24-152(j)(2) serving four (4) or fewer lots; or
+(2)
+Alleys as defined by Subtitle 27 or Subtitle 24.
+(k)
+The temporary uses listed in Section 27-261 of the Zoning Ordinance are exempt from
+the provisions of this manual and shall only be required to provide landscaping or
+buffering when required pursuant to the approval provisions for the specific temporary
+use.
+(l)
+If planting is required by other provisions of the County Code, any zoning map
+amendment, special exception, subdivision plat, detailed site plan, or specific design plan
+that differs from the standards set forth in this manual, such planting shall be required in
+addition to the minimum amounts specified here.
+(m)
+In the Mixed-Use Town Center Zone, landscaping and screening shall be provided in
+accordance with the approved town center development plan.
+(n)
+Section 4.3(c) of the Landscape Manual shall not be applicable to arenas (stadiums).
+However, landscaping in the interior parking lot area of a stadium shall be provided along
+all major vehicular access driveways. In addition, the District Council shall determine the
+===== PAGE 13 =====
+9
+type and amount of landscaping required during the approval of any specific design plan
+for an arena (stadium).
+1.2
+Approval Processes
+(a)
+A landscape plan is a required element of all detailed site plans (Zoning Ordinance,
+Section 27-282(e)(15)) and all specific design plans (Section 27-527(b)(3)) and shall be
+approved in accordance with the provisions in the Zoning Ordinance for approval of
+those plans.
+(b)
+Landscape plans are required in conjunction with site plans that must be submitted with
+each application for a building permit. Landscape plans of this type shall be approved in
+accordance with the provisions of Part 3, Division 7, of the Zoning Ordinance for
+approval of building permits.
+(c)
+An approved landscape plan shall be amended in accordance with the provisions of the
+Zoning Ordinance requirements for amendment of the plans or permits under which the
+landscape plan was originally approved, except when the plan was approved in
+conjunction with a special exception.
+(d)
+Plant material, in addition to that which is shown on an approved landscape plan filed in
+conjunction with a building, grading, or use and occupancy permit, may be installed
+without requiring a revision to such plan, provided that such plant material complies with
+the items and specifications set forth in Appendix 3, Plant Lists, and Appendix 4,
+Landscape Specifications and Planting Details, and that the additional plant material is a
+noninvasive species.
+1.3
+Alternative Compliance
+(a)
+The standards contained in this manual are intended to encourage development that is
+economically viable and environmentally sound. The standards are not intended to be
+arbitrary or to inhibit creative solutions. Project conditions may justify approval of
+alternative methods of compliance with the standards. Conditions may arise where
+normal compliance is impractical or impossible or where maximum achievement of the
+===== PAGE 14 =====
+10
+purposes can only be obtained through alternative compliance. Requests for alternative
+compliance may be approved for any application to which the requirements apply when
+one or more of the following conditions are present:
+(1)
+Topography, soil, vegetation, or other site conditions are such that full
+compliance with the requirements is impossible or impractical; improved
+environmental quality would result from the alternative compliance.
+(2)
+Space limitations, unusually shaped lots, prevailing practices in the surrounding
+neighborhood, in-fill sites, and improvements and redevelopment in older
+communities.
+(3)
+Change of use on an existing site increases the buffer required by Section 4.7,
+Buffering Incompatible Uses, more than it is feasible to provide.
+(4)
+Safety considerations make alternative compliance necessary.
+(5)
+An alternative compliance proposal is equal or better than normal compliance in
+its ability to fulfill the design criteria in Section 3, Landscape Elements and
+Design Criteria.
+(b)
+A proposed alternative compliance measure must be equally effective as normal
+compliance in terms of quality, durability, hardiness, and ability to fulfill the design
+criteria in Section 3.
+(c)
+Alternative compliance shall be limited to the specific project under consideration and
+shall not establish precedents for approval in other cases.
+(d)
+A request for alternative compliance shall be submitted to the planning director (or
+designee) at the time the application is submitted. In the case of those applications for
+which no public hearing is required, the decision of the planning director (or designee)
+will be final, unless the applicant appeals the decision to the Planning Board. In the case
+of those plans for which a Planning Board or other public hearing is required:
+===== PAGE 15 =====
+11
+(1)
+The request for alternative compliance will be accepted at the time of acceptance
+of the companion case, unless the need for alternative compliance is not
+determined until after its acceptance; in which case, the request for alternative
+compliance shall be submitted as soon as possible but no less than thirty-five (35)
+days prior to the scheduled hearing date for the companion case.
+(2)
+The planning director (or designee) will forward a recommendation to the proper
+hearing authority, as soon as possible, prior to the hearing.
+(e)
+Requests for alternative compliance shall be accompanied by sufficient written, graphic,
+and/or photographic explanation and justification to enable appropriate evaluation and
+decision (see Appendix 1, Alternative Compliance Submittal Checklist).
+(f)
+Where compliance with this manual is not possible and there is no feasible proposal for
+alternative compliance that is, in the judgment of the planning director (or designee),
+equally effective as normal compliance, then the applicant may seek relief by applying
+for a Departure from Design Standards in accordance with the provisions of Section 27-
+239.01 of the Zoning Ordinance.
+1.4
+Plant Substitutions
+(a)
+An approved landscape plan in need of minor revisions to the specified plant materials
+due to seasonal planting problems or lack of plant availability may be revised in
+accordance with the Plant Substitution process as described in Section 1.4(b), if the
+requested revisions meet the following criteria:
+(1)
+No reduction in the quantities of overall plant materials or native plant materials.
+(2)
+No significant change in size or location of plant materials.
+(3)
+New plant materials fall within the same general functional category of plants
+(shade trees, ornamental trees, evergreens, etc.) and have the same general design
+characteristics (mature height, spread, etc.) as the plant materials being replaced.
+===== PAGE 16 =====
+12
+(4)
+The proposed new plant materials are considered appropriate with respect to
+elements necessary for good survival and continued growth.
+(b)
+A letter shall be submitted to the supervisor of the Urban Design Section requesting a
+minor revision for plant substitution. The letter shall include a list of the quantities, types,
+native status, and sizes of the original plants and the proposed substitution(s), the location
+of the substitute plants on the plan, reference to any approved permit or site plan
+numbers, and the name and telephone number of a contact person (see Appendix 2, Plant
+Substitution Request Form).
+(1)
+A representative of the Urban Design Section will notify the applicant in a timely
+manner whether or not the proposed plant materials have been found to meet the
+criteria listed in Section 1.4(a)(1)-(4). Such notification will take place within
+five (5) working days. If the substitutions are approved, the applicant will be
+informed of any additional actions or information required to finalize and
+document the plant substitution(s).
+(2)
+If the plant requested substitution(s) is not approved, a representative of the
+Urban Design Section will supply the applicant with specific recommendations
+for changes that will make the plant substitution(s) approvable.
+(3)
+If the requested revisions to the landscape plan do not fulfill the four criteria
+listed in 1.4(a), they may not be approved in accordance with this Plant
+Substitution process. In that case, the Urban Design Section will inform the
+applicant of procedures necessary to formally revise the plan.
+1.5
+Certification of Installation of Plant Materials
+Within thirty (30) days of the installation of plant materials, a landscape architect registered in the
+State of Maryland shall submit written certification to the Department of Environmental
+Resources or the Department of Public Works and Transportation (DPW&T) (whichever is
+appropriate) stating that healthy plant materials were properly installed in accordance with the
+locations, quantities, minimum sizes, and species indicated on the approved landscaped plan.
+===== PAGE 17 =====
+13
+1.6
+Maintenance and Enforcement
+(a)
+All required landscaping, buffering, and screening shall be maintained in a healthy
+condition and in accordance with the approved landscape plan. Failure to maintain or to
+replace dead, diseased, or removed material as shown on an approved landscape plan
+shall constitute a zoning violation and shall be subject to the penalty provisions set forth
+in Subtitle 28, Division 1, of the County Code. The replacement of dead or diseased plant
+material with a different plant species than that specified on the approved landscape plan
+is allowed only if done in accordance with Section 1.4, Plant Substitutions.
+(b)
+The removal and replacement of healthy plant material approved in accordance with the
+requirements is strictly prohibited, except plants under federal quarantine restrictions or
+unless such landscaping poses a threat to the health, safety, and/or welfare of the public.
+In cases where landscaping poses a threat to the health, safety, and/or welfare of the
+public, as determined by the planning director (or designee), removal and/or replacement
+of the healthy plant material is allowed only if done in accordance with the requirements
+of the approval of the original plan.
+1.7
+Certificate of Landscape Maintenance
+(a)
+Building and grading permits for sites that were previously subject to the
+Prince
+George’s County Landscape Manual
+or any subsequent amendments and which are
+subject to any provision of Section 4.1 through 4.10 shall include a valid Certificate of
+Landscape Maintenance to demonstrate compliance with Section 1.6(a).
+(b)
+A landscape architect registered in the State of Maryland shall certify that the site has
+been inspected and that landscaping has been maintained and is in compliance with the
+previously approved landscape plan in terms of quantity, location, species, and minimum
+size of plant materials.
+(c)
+A Certificate of Landscape Maintenance is valid for two (2) years from date of signature
+by the registered landscape architect. A copy of the Certificate of Landscape
+Maintenance shall be included on the landscape plan and shall include the date of
+===== PAGE 18 =====
+14
+inspection, the signature and seal of the landscape architect, and the permit number
+associated with the originally approved landscape plan.
+===== PAGE 19 =====
+15
+SECTION 2 - PLAN PREPARATION
+2.1
+Preparation of Landscape Plans
+(a)
+Landscape plans for development in all zones (except for subdivisions in residential
+zones containing fewer than four (4) single-family lots) shall be prepared and sealed by a
+landscape architect registered in the State of Maryland.
+2.2
+Submittal Requirements
+The submission package for a landscape plan shall include planting and site information. The
+landscape plan may be submitted on a separate sheet or superimposed on a single sheet with the
+site plan in cases where the site plan includes a single sheet. All symbols and site features on the
+landscape plan shall be legible. The plan shall be prepared at the same scale as the associated site
+plan unless otherwise authorized by the planning director (or designee). The landscape plan must
+include the following information:
+(a)
+Planting Elements
+(1)
+Location, general type and quality of existing vegetation, specimen trees, and
+areas of second growth; if a Forest Stand Delineation has been conducted on the
+site in connection with any previous stage of development, the level of detail
+concerning existing vegetation shown on the landscape plan shall be equal to that
+in the Forest Stand Delineation.
+(2)
+Existing vegetation to be saved (indicated and noted accurately by size and
+species).
+(3)
+Methods and details for protection of existing vegetation during construction.
+(4)
+Locations and labels of all proposed plants, using standard landscape
+architectural graphic conventions portraying plant spreads at twenty-five (25) to
+thirty (30) feet for shade trees, ten (10) feet for evergreen trees, and fifteen (15)
+to twenty (20) feet for ornamental trees.
+===== PAGE 20 =====
+16
+(5)
+Plant list or schedule including botanical and common names, quantities,
+spacing, native status, and size at time of planting of all proposed plants.
+(6)
+Location and description of other landscape improvements, such as earth berms,
+walls, fences, screens, sculptures, fountains, street furniture, lights, and courts or
+paved areas.
+(7)
+Planting installation details as necessary to ensure conformance with the
+standards in Appendix 4, Landscape Specifications and Planting Details.
+(8)
+Schedules or lists showing required and proposed quantities for items called for
+by this manual (see Section 4, Landscape Standards, for examples).
+(9)
+Specifications for soil mixture in which plant materials are proposed to be cultivated
+and/or amendments proposed to existing on-site soils in planting areas.
+(b)
+Site Elements
+(1)
+North arrow and scale.
+(2)
+Property lines.
+(3)
+Zoning and use of the subject property and all abutting properties, location of
+buildings on abutting properties within fifty (50) feet of a property line, and notes
+indicating the existence of all buildings on abutting properties within two
+hundred (200) feet of a property line.
+(4)
+Name, location, existing right-of-way width, ultimate right-of-way width, and all
+existing and proposed improvements within all of the abutting streets.
+(5)
+Features, such as existing two (2) foot contour topography, ponds, lakes, and
+streams.
+===== PAGE 21 =====
+17
+(6)
+Delineation of regulated environmental features, such as one hundred (100) year
+floodplains, non-tidal wetlands, regulated streams, wetlands, and associated
+buffers.
+(7)
+Existing and proposed stormwater management facilities.
+(8)
+Required bufferyards, including building setbacks and width of landscape yards
+from all lot lines.
+(9)
+Location, height, dimensions, and use of all existing and proposed buildings and
+other structures and improvements (including parking lots, sidewalks, paved or
+unpaved trails, and other hard surface areas, fences and walls, and recreational
+equipment).
+(10)
+Proposed grading in two (2) foot contours with any slope steeper than three-to-
+one (3:1) labeled.
+(11)
+Location of existing and proposed utilities, including water, storm drain, sanitary
+sewer pipes, overhead and underground wires, utility poles and boxes, and signs.
+(12)
+Location of existing and proposed easements, including, but not limited to,
+access easements and utility easements.
+(13)
+Location, size, and description of all elements required to be screened by Section
+4.4, Screening Requirements.
+(c)
+Sample Planting Schedules
+(1)
+Landscape plans should include all applicable schedules from Section 4,
+Landscape Standards, to document compliance with all standards established by
+this manual.
+===== PAGE 22 =====
+18
+SECTION 3 - LANDSCAPE ELEMENTS AND DESIGN CRITERIA
+In a well-designed landscape plan, plants are carefully selected and arranged to perform a design
+function, not used to fill space. Designing such a plan is a complex process that requires taking
+into account the growth preferences and habits of plants while maintaining a clear understanding
+of the design problem to be solved with planting. The following information is intended to
+provide guidance in this process.
+3.1
+Design Elements
+The aesthetic qualities of plants, including form, size, texture, color, flowering habits, autumn
+foliage, bark and crown characteristics, and type of fruit, should be taken into account when
+selecting plants to create a pleasing appearance. Some general principles of composition that
+apply to planting design are axis, symmetry, hierarchy, emphasis, balance, repetition, rhythm, and
+scale.
+3.2
+Design Criteria: Functional and Aesthetic Values of Plants
+In an effective planting design, there should be a dominant material, color, or texture to provide
+unity to the composition. Accent planting can then be used to create contrast. Masses of a
+predominant species with a few individual accent plants will usually produce the most satisfying
+visual effects.
+3.3
+Landscape Functions
+(a)
+Visual Control—Plants may be used to:
+(1)
+Reduce negative effects of reflection and glare from paving or structures and
+direct light from the sun, headlights, street lights, parking lot lights, floodlights,
+signage, etc.
+(2)
+Create privacy.
+(3)
+Screen unsightly views.
+===== PAGE 23 =====
+19
+(4)
+Provide visual relief from paved areas.
+(5)
+Direct views.
+(b)
+Architectural Definition—Plants may be used to:
+(1)
+Define public and private spaces.
+(2)
+Delineate pedestrian and vehicular circulation.
+(3)
+Create pedestrian-friendly environments.
+(4)
+Promote compatibility between land uses by mitigating the visual, noise, and
+lighting impacts of adjoining developments.
+(5)
+Create physical barriers.
+(c)
+Environmental Sustainability—Plants may be used to:
+(1)
+Reduce heat island, and minimize effects on microclimates by providing shading
+and increasing evapotranspiration by intercepting reflected solar radiation from
+some surfaces.
+(2)
+Modify windflow (block harsh winter wind, amplify summer breeze, and direct
+snowdrift).
+(3)
+Filter pollution from stormwater and reduce stormwater temperature, rate, and
+volume of flow.
+(4)
+Absorb carbon dioxide.
+(5)
+Improve water quality.
+(6)
+Modify precipitation, temperature, humidity, and moisture retention.
+===== PAGE 24 =====
+20
+(d)
+Community Health and Wellness—Plants may be used to:
+(1)
+Promote pedestrian activity by enhancing pedestrian environments and safety.
+(2)
+Provide cleaner air by filtering air pollution.
+(e)
+Economic Benefits—Plants may be used to:
+(1)
+Enhance commercial viability by improving aesthetic appeal and expressing vitality
+to potential customers, investors, or residents.
+(2)
+Increase home values.
+(3)
+Minimize utility costs in the summer by providing cooling through shading and
+increased evapotranspiration and in the winter by preventing heat loss through
+reduced wind speed and allowing for passive solar heating.
+(f)
+Scenic and Historic Landscapes—Plants may be used to:
+(1)
+Protect and/or enhance scenic and historic landscapes.
+(2)
+Enhance and preserve scenic viewsheds.
+(3)
+Preserve and/or restore historically appropriate landscape plants and features.
+(g)
+Erosion Control—Plants may be used to control soil erosion caused by wind or
+stormwater runoff.
+(h)
+Wildlife Habitat—Plants may be used to provide cover and food for birds and other wild
+animals.
+===== PAGE 25 =====
+21
+3.4
+Landscape Elements
+(a)
+Shade Trees
+Shade trees have the greatest overall impact on the built environment because of their
+size, character, and permanence and should be the first element considered for a planting
+design. Shade trees provide unity, character, and identity for residential neighborhoods
+and can soften architecture, create a transition between the built and natural environment,
+and provide a human scale for nonresidential neighborhoods. Shade trees should also be
+used to:
+(1)
+Define major active and passive open spaces and direct both vehicular and
+pedestrian movement.
+(2)
+Define and enhance views.
+(3)
+Modify climate.
+(4)
+Provide shade in the summer.
+(5)
+Reduce the impact of direct and reflected light.
+(6)
+Screen and buffer undesirable or incompatible views and activities.
+(b)
+Street Trees
+Street trees may perform the same functions as shade trees but are differentiated because
+they have a specific relationship to the street. They define the street space with overhead
+or canopy elements (crown) and with vertical elements (trunks), establishing it as a
+unified space that connects distant and sometimes disparate uses. To perform this
+function, street trees should be planted close to the curb or edge of pavement so that the
+canopy at maturity will extend over the street. The importance of street trees, which will
+eventually become large, is greater for wider streets. Large street trees are the first, and
+perhaps the only plant material, noticed while traveling down a wide road. In developing
+===== PAGE 26 =====
+22
+areas, street trees will establish the basic structure or skeleton of an outdoor environment
+and will have the most significant effect on future travelers along the road.
+(c)
+Ornamental Trees
+Ornamental trees are generally utilized to provide an understory layer for the overhead
+canopy of major shade trees. They may also be used architecturally to define minor
+outdoor spaces, such as entry areas or small pedestrian use areas; provide a transitional or
+softening element for architecture; provide color and variety of form; and as an accent or
+major focus.
+(d)
+Evergreen Trees
+Evergreen trees are most often utilized as a vertical architectural element, such as a wall
+or screen to define space and direct views. They may also be used to provide winter
+interest and variety in color and form as well as an accent and to soften architecture.
+(e)
+Shrub and Ground Plane Planting
+Shrub and ground plane planting includes low shrubs, ground covers, and perennials.
+They should be used to define minor pedestrian spaces, such as entries and sitting areas;
+direct pedestrian traffic; provide color and variety; and to accent the overall landscape
+design. In accordance with sustainable landscaping principles (see Section 3.5(b),
+Sustainable Landscaping), shrub and ground plane planting may be installed to control
+erosion, enhance the absorption of stormwater runoff, and reduce lawn maintenance and
+the need for application of chemical fertilizers.
+Plant material should be massed in beds rather than planted as independent units on the
+lawn, and it should relate to the architecture (e.g., beds of ground cover related to
+windows and massing of shrubbery at entrances).
+===== PAGE 27 =====
+23
+(f)
+Screening and Buffering Plantings
+Screening is required for a number of unsightly uses (see Section 4.4, Screening
+Requirements). As such, vegetative screening may consist primarily of evergreen trees
+and shrubs, but finely branched deciduous trees and shrubs planted in masses or tightly
+spaced may also be considered. Because of their density and opacity, evergreen trees
+often create the effect of a large wall. Other screening elements, such as walls, fences,
+and berms, should be carefully designed to avoid unnecessarily obstructing views,
+restricting light and air, or creating hazardous blind spots.
+Where bufferyard planting is required (see Sections 4.4, Screening Requirements and 4.7,
+Buffering Incompatible Uses), a combination of evergreens, deciduous plant materials,
+walls and/or fencing may be used to achieve the desired effect. When a linear screen is
+required, such as along a property line, the screen planting may be staggered,
+naturalistically designed, or laid out employing a more formal approach using, for
+example, a hedge or a formal planting scheme and fencing.
+3.5
+Other Landscape Design Considerations
+Other landscape design considerations include, but are not limited to, the existing development
+pattern of and future vision for the area; use of sustainable landscaping; energy conservation
+measures; preservation of existing trees in coordination with the requirements of the
+Woodland
+Conservation and Wildlife Habitat Ordinance
+; safety considerations, including CPTED principles;
+and environmental settings for historic sites.
+(a)
+Development Patterns Based on the General Plan
+Two important landscape design considerations are the existing development pattern of
+and the future vision for an area. Prince George’s County has a variety of development
+patterns ranging from urban (typically found inside the Capital Beltway) to rural (mainly
+located in the far southern and eastern areas of the county). This manual recognizes the
+differing landscaping needs of the county’s various development patterns and seeks to
+further the vision and policies of the General Plan for those areas.
+===== PAGE 28 =====
+24
+The plan established and delineated three tiers that correspond to the different
+development patterns in the county and to their desired levels and forms of development.
+A list of tiers follows, along with a brief description of the location and character of each:
+Developed Tier—Located between the county’s boundary with the District of
+Columbia and the Capital Beltway, the Developed Tier is the most densely
+populated and built out part of the county and contains most of the pedestrian,
+bicycle, and transit system capacity. The vision for the Developed Tier is a
+network of sustainable, transit-supporting, mixed-use, pedestrian-oriented,
+medium- to high-density neighborhoods.
+Developing Tier—The Developing Tier encompasses the middle section of the
+county, which has been most subject to recent suburban expansion. It is an
+evolving pattern of farms, residential subdivisions, employment parks, and
+automobile-oriented commercial centers. The vision for the Developing Tier is to
+maintain a pattern of low- to moderate-density suburban residential communities,
+distinct commercial centers, and employment areas that are increasingly transit
+serviceable.
+Centers and Corridor Nodes—Within the Developed and Developing Tiers, the plan
+designates centers and corridors within which more intense development is
+encouraged to capitalize on existing public investments in transportation facilities.
+The vision for the centers and corridors is mixed-residential and nonresidential
+uses at moderate to high densities and intensities, with a strong emphasis on
+pedestrian- and transit-oriented development. A Corridor Node is a concentrated,
+higher-intensity, mixed-use location within a one-quarter mile of a major
+intersection or major transit stop along a designated corridor to be developed in a
+pedestrian-oriented form. Specific corridor nodes are identified through the sector
+and master plan processes.
+Rural Tier—The Rural Tier comprises the eastern and southern portions of the
+county in the Patuxent River, Potomac River, and Mattawoman Creek
+watersheds. Characterized by fine landscapes, most of the county’s remaining
+farms, extensive woodlands, large public land holdings, numerous streams, and
+===== PAGE 29 =====
+25
+diverse wildlife habitat, the Rural Tier is the most scenic part of the county. The
+vision for the Rural Tier is to protect large amounts of woodland and wildlife
+habitat, encourage recreation and agricultural pursuits, and preserve the rural
+character and vistas.
+This manual recognizes this range of development patterns and establishes standards
+designed to address each area’s unique constraints and opportunities and to help
+implement the visions set forth in the plan.
+(b)
+Sustainable Landscaping
+Sustainable landscaping works in tandem with nature to create healthy and viable
+environments. By implementing environmentally sensitive design techniques, low impact
+development methods, and incorporating noninvasive native plants, sustainable
+landscaping reduces soil erosion, air and water pollution, creates and maintains wildlife
+habitat, and fosters healthy living conditions.
+Key sustainable landscaping techniques include, but are not limited to:
+(1)
+Adopting a broader vision for landscaping, taking into consideration the natural
+context.
+(2)
+Minimizing the use of supplemental watering, and adopting more efficient
+watering techniques, when necessary, such as drip and spot irrigation.
+(3)
+Using plants native to the area or native plants that have adapted to the area’s
+growing conditions, soil, and climate typically requires less maintenance and
+supports local wildlife.
+(4)
+Using buffer plantings to create wind screens, wildlife habitats, and for
+protection of less hardy plants.
+(5)
+Reducing the use of chemical fertilizers and pesticides.
+===== PAGE 30 =====
+26
+(6)
+Minimizing bare soil, and stabilizing slopes by planting ground covers.
+(7)
+Implementing sustainable mowing practices, and reducing lawn waste.
+(8)
+Reducing the amount of impervious surface used in landscaped areas through the
+use of alternative hard surfaces with permeable joints, such as stepping stones,
+brick walkways, cobblestones, and decks.
+(9)
+Mixing species in a massed planting encourages natural predators and provides
+nectar sources throughout the year.
+(c)
+Landscaping for Energy Conservation
+When preparing a landscape plan, consideration should be given to the proper selection
+and placement of tree species near buildings to minimize building heating and cooling
+requirements. When located appropriately, trees of adequate size, quality, canopy, and
+form can decrease energy consumption in buildings in the summer by reducing heat
+absorption and in the winter by allowing for passive solar heating and providing
+protection from the wind. Maximum cooling savings will result when deciduous trees are
+planted to shade the southern and/or western wall and windows of buildings. To shade
+the roof or wall of a one-family residential structure, for example, trees that will mature
+to a medium-to-large size should be planted within thirty (30) feet of the structure.
+Smaller trees can also be planted closer to the house and used to shade walls and window
+areas.
+(d)
+Preservation of Existing Trees
+The importance of saving existing individual trees and groves of trees in developing areas
+cannot be overstated. Existing trees, regardless of size, should be preserved whenever
+possible. Particular efforts should be made to retain healthy trees or vegetation that have
+special character due to size, age, habit, or historical importance or that have special
+value as screening or buffering elements.
+===== PAGE 31 =====
+27
+If possible, trees selected for preservation should be identified prior to site design.
+Roadways should be sited where they would cause the least damage to valuable stands,
+and original topography should be followed as closely as possible to minimize grading
+within the critical root zone of trees to be retained.
+Many factors must be weighed in the decision to preserve trees and vegetation, including
+existing and proposed grading conditions, age, condition, type of trees, percentage of
+critical root zone that can remain undisturbed, and location of site improvements and
+utility connections.
+In general, the critical root zone is a circle delineated around each tree with a radius equal to
+one (1) foot per inch of diameter at breast height (dbh) of the tree. If seventy percent (70%)
+or more of the critical root zone area can remain undisturbed and at original grades,
+depending upon the species and condition, a tree can be retained without special
+management. If disturbance of between fifty and sixty-nine percent (50% and 69%) of the
+critical root zone is proposed, depending on species and condition, a careful evaluation of
+the tree by a licensed arborist and a registered landscape architect in the State of Maryland
+and a retention management plan should be prepared to evaluate whether the tree can be
+successfully retained. Disturbance of more than fifty percent (50%) of the critical root zone
+is detrimental to the retention of a tree, except under very unusual circumstances.
+Credit may be given for existing shade trees preserved when they are in a location and of a
+nature and diameter at breast height (dbh) if they contribute to the objectives and are in
+accordance with the design guidelines of the standards to which they are being credited.
+(e)
+Coordination with the
+Woodland Conservation and Wildlife Habitat Ordinance
+In addition to the requirements of the Landscape Manual, many development activities in
+Prince George’s County are subject to the requirements of the
+Woodland Conservation and
+Wildlife Habitat Ordinance
+, which was enacted in September 2010.
+This manual encourages the retention of existing trees to fulfill landscaping requirements.
+Trees within areas that are protected woodland conservation areas shown on a Type II Tree
+Conservation Plan may be credited toward the fulfillment requirements if they meet the
+===== PAGE 32 =====
+28
+diameter at breast height size and quantity requirements of the standards to which they are
+being credited. When a woodland conservation area is proposed to be counted toward the
+fulfillment of a requirement and a Woodland Conservation requirement, both the landscape
+plan and the tree conservation plan must demonstrate compliance with the associated
+requirements.
+(f)
+Crime Prevention Through Environmental Design (CPTED)
+Landscape design must be sensitive to public safety concerns and the perception of a
+crime-free environment. CPTED focuses on creating environments that are both safe for
+residents and visitors and deterrents to potential criminals. Through its design and
+landscaping principles, CPTED facilitates natural surveillance of the private and public
+properties, open spaces, and roadways that make up neighborhoods and deters criminals
+from using these areas for illegal activities.
+Whenever possible, CPTED recommends avoiding the use of landscaping and screening
+elements that create blind spots or hiding places. This can be achieved by ensuring that
+shade trees have a minimum clear height of eight (8) feet and that all plantings, screenwalls,
+and fences are carefully selected and sited, especially in proximity to major site accesses
+and other points of entry. CPTED also underscores the importance of maintaining and
+keeping landscaped areas free of litter, as a signal that residents and property owners have a
+vested interest in the area and will not tolerate illegal activities.
+(g)
+Residential Design
+Planting plans for subdivisions should be comprehensive for a group of lots or an entire
+project rather than sample model plantings repeated many times over. Generally, trees
+may be grouped to simulate natural stands or located symmetrically. In single-family
+subdivisions, the relative location of trees should vary from lot to lot. On corner lots, care
+should be taken to use plant materials to provide privacy for backyards and attractive
+views from the intersection.
+Buffering is encouraged for rear yards that back up to each other and are visible from
+other rear yards. Screening elements may be located on individual lots or on intervening
+===== PAGE 33 =====
+29
+common open space. It is desirable that screening fences and walls be built with materials
+compatible with those of the overall subdivision design.
+Subdivisions that include common open space should provide landscaping in the open
+space. Plant material can be used to define space and circulation, provide shade, preserve
+natural areas for passive recreation and environmental needs, and screen parking lots and
+other incompatible uses from the residential areas. The quantity of trees allocated to
+common open space shall not have the effect of eliminating the landscaping devoted to
+individual lots.
+(h)
+Parking Lot Design
+Planting islands should be used to define circulation patterns and parking bays. They
+should also be used to soften large expanses of paving. In general, islands should be
+distributed throughout the parking lot and should be placed once every ten (10) or so
+spaces. In large parking lots, fewer but larger islands may be used to provide greater
+visual relief and a healthier environment for tree growth but will require an alternative
+compliance application to be submitted and approved.
+Trees in or at the edge of parking lots should be species that branch no lower than twelve
+(12) feet from the ground at maturity to allow cars and trucks to circulate beneath the
+canopy without causing damage.
+Shrubs in or at the edge of the parking lot should provide a low, two (2) to four (4) foot
+year-round screen for paving and cars. Shrub varieties should either be evergreen or, if
+deciduous, have a dense, twiggy growth habit for winter screening and an attractive year-
+round appearance.
+Good visibility in the parking lot is important, both for security and traffic safety reasons.
+Plants or other elements that restrict visibility, such as tall shrubs, low-branching trees,
+and tall fencing or walls should be avoided. Plant materials at vehicular entrances should
+be located to maintain safe sight distances.
+===== PAGE 34 =====
+30
+Plants in parking lots are subject to many adverse conditions and are not likely to receive
+consistent care. Accordingly, plant varieties that should be selected are ones which are
+moderate to slow growing, require little maintenance, tolerate such conditions as sun,
+wind, drought, glare, reflected heat, salt and chemicals, and restricted planting spaces.
+(i)
+Environmental Settings of Historic Sites
+The environmental setting of an historic site is an essential element of its historic value.
+The environmental setting is the extent of the property protected as a historic site on
+which the structure is located, unless the environmental setting has been reduced or
+enlarged by the action of the Prince George’s County Historic Preservation Commission
+after careful consideration of the historic and natural features and landscape character of
+the property. Many historic sites in Prince George’s County are still rural in character.
+The integrity of these sites should not be compromised by incompatible adjacent
+development. Developing properties adjacent to designated historic sites should minimize
+adverse visual impact on the historic site and its environmental setting by sensitive siting
+of built elements, providing buffer areas that preserve existing trees, or landscaping to be
+as compatible as possible with the environmental setting.
+===== PAGE 35 =====
+31
+SECTION 4 - LANDSCAPE STANDARDS
+4.1
+Residential Requirements
+(a)
+Purposes and Objectives
+(1)
+Establish a visual relationship between residential structures and their
+surrounding environments.
+(2)
+Reduce the energy needs of residential structures by landscaping for energy
+conservation.
+(3)
+Create privacy by buffering residential structures from each other.
+(4)
+Reduce the negative effects of reflection and glare from paving, structures, or
+direct light from the sun, headlights, street lights, etc.
+(5)
+Enhance the aesthetic appearance of residential neighborhoods to increase
+individual property values.
+(b)
+Design Guidelines
+(1)
+Planting schemes for subdivisions should be comprehensively designed for an
+entire project rather than sample model plantings repeated many times over.
+(2)
+On-lot residential plantings should be used to accent corners of intersecting
+streets and may be used to identify individual streets.
+(3)
+In single-family subdivisions, the relative location of trees should vary from lot
+to lot. On corner lots, care should be taken to use plant materials to provide
+privacy for backyards and attractive views from the street.
+(4)
+Subdivisions that include common open space should provide landscaping in the
+open space.
+===== PAGE 36 =====
+32
+(5)
+Plant material should be used to define space and circulation, provide shade,
+enhance natural areas for passive recreation and environmental needs, and screen
+parking lots and other incompatible uses from the residential areas.
+(6)
+The quantity of trees allocated to common open space should not have the effect
+of eliminating the landscaping devoted to individual lots.
+(7)
+Deciduous shade trees should be planted on the south and/or west sides of
+residential structures to provide shade in the summer months and reduce the
+amount of energy required to maintain indoor air temperatures. Likewise, since
+deciduous trees lose their leaves in the fall, they allow for passive solar heating
+of structures in the winter months (see discussion of Landscaping for Energy
+Conservation in Section 3).
+(8)
+Evergreen trees should be planted on the north and/or west sides of residential
+structures to provide protection from winter winds by reducing wind speed and
+creating dead air space for insulation around structures, both of which contribute
+toward maintaining indoor air temperature (see Section 3.5(c), Landscaping for
+Energy Conservation).
+(c)
+Requirements
+(1)
+One-Family Detached
+All residential development shall comply with the following standards:
+(A)
+All one-family detached lots that are forty thousand (40,000) square feet
+or larger shall be planted as follows:
+(i)
+Plant a minimum of four (4) major shade trees and three (3)
+ornamental or evergreen trees per lot.
+===== PAGE 37 =====
+33
+(ii)
+At least two (2) of the major shade trees shall be planted on the
+south and/or west side and within thirty (30) feet, where feasible,
+of the residential structure.
+(iii)
+At least one (1) of the required major shade trees and one (1) of
+the ornamental trees shall be located in the front yard or, in the
+case of a corner lot, in the front or side yard facing the street.
+This shade tree may also count toward fulfillment of the
+landscaping for energy conservation requirement in
+4.1(c)(1)(A)(ii), if located in accordance with such requirement.
+(B)
+All one-family detached lots that are twenty thousand (20,000) square feet
+or larger but less than forty thousand (40,000) square feet shall be planted
+as follows:
+(i)
+Plant a minimum of four (4) major shade trees and three (3)
+ornamental or evergreen trees per lot.
+(ii)
+At least one (1) of the major shade trees shall be planted on the
+south and/or west side and within thirty (30) feet, where feasible,
+of the residential structure.
+(iii)
+At least one (1) of the required major shade trees shall be located
+in the front yard or, in the case of a corner lot, in the front or side
+yard facing the street. This shade tree may also count toward
+fulfillment of the landscaping for energy conservation
+requirement in 4.1(c)(1)(B)(ii), if located in accordance with
+such requirement.
+(C)
+All one-family detached lots that are nine thousand, five hundred (9,500)
+square feet or larger but less than twenty thousand (20,000) square feet
+shall be planted as follows:
+===== PAGE 38 =====
+34
+(i)
+Plant a minimum of three (3) major shade trees and two (2)
+ornamental or evergreen trees per lot.
+(ii)
+At least one (1) of the major shade trees shall be planted on the
+south and/or west side and within thirty (30) feet, where feasible,
+of the residential structure.
+(iii)
+At least one (1) of the required major shade, ornamental, or
+evergreen trees shall be located in the front yard or, in the case of
+a corner lot, in the front or side yard facing the street. This shade
+tree may also count toward fulfillment of the landscaping for
+energy conservation requirement in 4.1(c)(1)(C)(ii), if located in
+accordance with such requirement.
+(D)
+All one-family detached lots that are smaller than nine thousand, five
+hundred (9,500) square feet shall be planted as follows:
+(i)
+Plant a minimum of two (2) major shade trees and two (2)
+ornamental or evergreen trees per lot.
+(ii)
+At least one (1) of the required major shade, ornamental, or
+evergreen trees shall be located in the front yard or, in the case of
+a corner lot, in the front or side yard facing the street.
+(E)
+An existing shade tree, except for an invasive species, exceeding two and
+one-half (2-1/2) inches diameter at breast height (dbh) located on an
+individual lot within seventy-five (75) feet of a dwelling unit may be
+counted toward fulfillment of the requirement for a tree on that lot,
+provided that the size (dbh), genus, condition, and location of each tree to
+be counted toward the fulfillment of this requirement is shown on the
+landscape plan. The site and landscape plan must also demonstrate that a
+minimum of seventy percent (70%) of the critical root zone of such tree
+will remain undisturbed.
+===== PAGE 39 =====
+35
+(F)
+When a buffer strip as required by Section 4.6, Buffering Development
+from Streets, is located on a single-family detached lot, the following shall
+apply:
+(i)
+If less than twenty-five percent (25%) of the area of the lot is
+occupied by the buffer strip, none of the trees required by
+Section 4.1 may be located in the buffer strip.
+(ii)
+If more than twenty-five percent (25%) of the area of the lot is
+occupied by the buffer strip, one (1) of the shade trees or two (2)
+of the ornamental or evergreen trees required by Section 4.1,
+Residential Requirements, may be located in the buffer strip and
+may also count toward fulfillment of the buffer strip
+requirement.
+(2)
+Townhouses, One-Family Semi-Detached, Two-Family, and Three-Family
+Dwellings Arranged Horizontally
+(A)
+Plant a minimum of one and one-half (1.5) major shade trees and one (1)
+ornamental or evergreen tree per dwelling unit located on individual lots
+and/or common open space to best fulfill the objectives and design
+guidelines of this section.
+(B)
+An existing shade tree, except for an invasive species, exceeding two and
+one-half (2-1/2) inches diameter at breast height (dbh) located in the
+common area or open space within seventy-five (75) feet of a dwelling
+unit may be counted toward fulfillment of the requirement for a tree,
+provided that the size (dbh), genus, condition, and location of each tree to
+be counted toward the fulfillment of this requirement is shown on the
+landscape plan. The site and landscape plan must also demonstrate that a
+minimum of seventy percent (70%) of the critical root zone of such tree
+will remain undisturbed.
+===== PAGE 40 =====
+36
+(3)
+Two-Family and Three-Family dwellings Arranged Vertically
+Plant a minimum of two (2) major shade trees and one and one-half (1.5)
+ornamental or evergreen trees per building located in common open space to best
+fulfill the objectives and design guidelines of this section.
+(4)
+Multifamily Dwellings
+(A)
+For multifamily dwellings located in the Developing and Rural Tiers,
+plant a minimum of one (1) major shade tree per one thousand, six
+hundred (1,600) square feet or fraction of green area provided.
+(B)
+For multifamily dwellings located in the Developed Tier and/or Corridor
+Nodes or Centers, plant a minimum of one (1) major shade tree per one
+thousand (1,000) square feet or fraction of green area provided.
+(C)
+The following areas shall be excluded when determining the total amount
+of green area provided: lakes or other water areas, any required parking
+lot landscape strip adjacent to a public right-of-way, and any required
+interior parking lot green area. Trees that count toward fulfillment of the
+parking lot perimeter requirement may be counted toward fulfillment of
+this requirement. Trees shall be located to best fulfill the objectives and
+design guidelines of this section.
+(D)
+Up to one-quarter (1/4) of the number of required shade trees may be
+substituted on a two-to-one (2:1) basis by the use of ornamental or
+evergreen trees.
+(E)
+An existing shade tree, except for invasive species, exceeding two and
+one-half (2-1/2) inches diameter at breast height (dbh) located anywhere
+in the green area on the site, except in the floodplain, may be counted on a
+one-to-one (1:1) basis for up to one hundred percent (100%) of the shade
+tree requirement on that site, provided that the size (dbh), genus,
+condition, and location of each tree to be counted toward the fulfillment of
+===== PAGE 41 =====
+37
+this requirement is shown on the landscape plan. The landscape plan must
+also demonstrate that a minimum of seventy percent (70%) of the critical
+root zone of such trees will remain undisturbed.
+Table 4.1-1
+On-Site Residential Planting Requirements
+Residential Type
+Minimum number
+of Shade Trees
+Minimum number
+of Ornamental or
+Evergreen Trees
+Notes
+One-Family Detached Lots
+40,000 sq. ft. or larger
+4 per lot
+3 per lot
+One-Family Detached Lots
+20,000–39,999 sq. ft.
+4 per lot
+3 per lot
+One-Family Detached Lots
+9,500–19,999 sq. ft.
+3 per lot
+2 per lot
+One-Family Detached Lots
+smaller than 9,500 sq. ft.
+2 per lot
+2 per lot
+Townhouses, One-Family Semi-
+Detached, Two-Family, Three-
+Family Arranged Horizontally
+1.5 per dwelling
+1 per dwelling
+Total number of trees
+to be located on lots and/or
+in common open space
+Two-Family, Three-Family
+Arranged Vertically
+2 per building
+1.5 per building
+Total number of trees
+to be located on lots and/or in
+common open space
+Multifamily Dwellings
+Located in the Developing and
+Rural Tiers
+1 per 1,600 sq. ft.
+or fraction of
+green area
+See Section 4.1(c)(4)
+for explanation of green area
+and permissible plant
+substitutions
+Multifamily Dwellings
+Located in the Developed Tier
+and/or Corridor Nodes or
+Centers
+1 per 1,000 sq. ft.
+or fraction of
+green area
+See Section 4.1(c)(4)
+for explanation of green area
+and permissible plant
+substitutions
+===== PAGE 42 =====
+38
+(d)
+Demonstrating Compliance
+The landscape plan shall include a schedule as provided below demonstrating compliance
+with the requirements of this section.
+Sample Schedule 4.1-1
+Residential Requirements for One-Family Detached Lots
+1)
+Lot size range:
+_____square feet
+2)
+Number of lots:
+_____lots
+3)
+Total number of trees required per lot:
+_____shade trees
+_____ornamental/evergreen trees
+4)
+Total number of trees provided:
+_____shade trees
+_____ornamental trees
+_____evergreen trees
+_____existing shade trees (min. 2.5
+inches dbh and located within 75 feet of a
+dwelling unit)
+5)
+Number of shade trees required per lot to be located on the south
+and/or west side of the residential structure:
+_____shade trees
+6)
+Total number of shade trees provided on the south and/or west
+side of structures*:
+_____shade trees
+7)
+Number of trees required per lot to be located in the front yard:
+_____shade trees
+_____ornamental/evergreen trees
+8)
+Total number of trees provided in front yards*:
+_____shade trees
+_____ornamental/evergreen trees
+*Shade trees planted on the south and/or west side and within 30 feet of a residential structure, which are also
+located in the front yard may, be counted in both six and eight above.
+===== PAGE 43 =====
+39
+Sample Schedule 4.1-2
+Residential Requirements for Townhouses, One-Family Semi-Detached,
+and Two-Family Dwellings Arranged Horizontally:
+1)
+Number of dwelling units:
+_____units
+2)
+Number of trees required per dwelling unit:
+1.5 shade trees
+1
+ornamental/evergreen trees
+3)
+Total number of trees required:
+_____shade trees
+_____ornamental/evergreen trees
+4)
+Total number of trees provided:
+_____shade trees
+(on individual lots and/or in common open space)
+_____ornamental trees
+_____evergreen trees
+_____existing shade trees (min. 2.5 inches dbh and
+located within 75 feet of a dwelling unit)
+Sample Schedule 4.1-3
+Residential Requirements for Two-Family and Three-Family Dwellings Arranged Vertically
+1)
+Number of buildings:
+_____buildings
+2)
+Number of trees required per building:
+2
+shade trees
+1.5
+ornamental/evergreen trees
+3)
+Total number of trees provided:
+_____shade trees
+(in common open space)
+_____ornamental trees
+_____evergreen trees
+_____existing shade trees (min. 2.5 inches dbh and
+located within 75 feet of a dwelling unit)
+===== PAGE 44 =====
+40
+Sample Schedule for Section 4.1-4
+Residential Requirements for Multifamily
+1)
+General Plan designation:
+_____Rural or Developing Tier (1 shade tree per 1,600
+square feet of green space provided)
+_____Developed Tier and/or Corridor Node or Center
+(1 shade tree per 1,000 square feet of green space provided)
+2)
+Green space provided:
+_____square feet
+3)
+Number of shade trees required:
+_____shade trees
+4)
+Total number of trees provided:
+_____shade trees
+_____ornamental trees
+_____evergreen trees (ornamental and evergreen trees may be
+substituted for shade trees at a rate of 2:1, not to exceed 25%
+of total shade tree requirement)
+_____existing shade trees (min. 2.5 inches dbh and located
+within green area but outside of floodplain)
+===== PAGE 45 =====
+41
+4.2
+Requirements for Landscape Strips Along Streets
+(a)
+Purposes and Objectives
+(1)
+Promote pedestrian activity by establishing human scale and fostering a safe,
+pedestrian-friendly streetscape.
+(2)
+Clearly delineate the boundaries of streets and parking facilities adjacent to
+streets.
+(3)
+Enhance a business’s commercial viability by improving its aesthetic appeal as
+viewed from the street to potential customers, investors, or passersby.
+(4)
+Improve the appearance of parking facilities as viewed from streets.
+(b)
+Design Guidelines
+(1)
+The landscape strip should not include any paved area, except pedestrian
+sidewalks or trails that cross the landscape strip.
+(2)
+Trees at the edge of streets should be major shade trees that can be trimmed so
+that at maturity cars and trucks can circulate beneath the canopy without causing
+damage. Major shade trees are listed in Appendix 3, Plant Lists.
+(3)
+Shrubs in the landscape strip adjacent to a parking lot should provide a low, two
+(2) to four (4) foot high, year-round screen for paving and cars. Shrub varieties
+should either be evergreen or, if deciduous, have a dense, twiggy growth habit for
+winter screening and an attractive year-round appearance.
+(4)
+Plants within landscape strips are subject to many adverse conditions and are not
+likely to receive consistent care. Accordingly, plant varieties that require little
+maintenance and tolerate such conditions as sun, wind, drought, glare, reflected
+heat, salt and chemicals should be selected.
+===== PAGE 46 =====
+42
+(c)
+Requirements
+(1)
+For properties with frontage on a Special Roadway, the requirements of
+Section 4.6(c)(2), Buffering Development from Special Roadways, supersede the
+requirements of this section.
+(2)
+For all nonresidential uses in any zone and for all parking lots, a landscape strip,
+as described in Section 4.2(c)(3)-(5), shall be provided on the property abutting
+all public and private streets. The landscape strip may not include any paved area
+except pedestrian sidewalks or trails that cross the landscape strip.
+(3)
+Developing Tier, Developed Tier, Centers and Corridor Nodes
+(A)
+The following landscape strip treatments may be used singly or in
+combination:
+(i)
+Option 1-Provide a minimum ten (10) foot wide landscape strip
+to be planted with a minimum of one (1) shade tree and ten (10)
+shrubs per thirty-five (35) linear feet of frontage, excluding
+driveway openings (see Figure 4.2-1); or
+Figure 4.2-1 Developing Tier, Developed Tier, Centers and Corridor Nodes—Option 1
+(ii)
+Option 2-Provide a landscape strip that is a minimum of ten (10)
+feet wide and has an average width of at least fifteen (15) feet.
+Provide planting within the strip at the rate of one (1) shade tree
+===== PAGE 47 =====
+43
+and five (5) shrubs per thirty-five (35) linear feet of frontage
+excluding driveway openings (see Figure 4.2-2); or
+Figure 4.2-2 Developing Tier, Developed Tier, Centers and Corridor Nodes—Option 2
+(iii)
+Option 3-Provide a minimum twenty-five (25) foot wide strip of
+noninvasive existing trees. (see Figure 4.2-3); or
+Figure 4.2-3 Developing Tier, Developed Tier, Centers and Corridor Nodes—Option 3,
+Rural Tier—Option 2
+(iv)
+Option 4-Provide a minimum four (4) foot wide landscape strip
+abutting the street adjacent to three (3) to four (4) foot high
+brick, stone, or finished stamped concrete masonry wall. The
+wall shall be located adjacent to, but entirely outside, the four (4)
+foot wide landscape strip. Provide planting within the strip at the
+===== PAGE 48 =====
+44
+rate of one (1) shade tree per thirty-five (35) linear feet of
+frontage, excluding driveway openings (see Figure 4.2-4).
+Figure 4.2-4 Developing Tier, Developed Tier, Centers and Corridor Nodes—Option 4
+(B)
+Where the plantings required in 4.2(c)(3)(A)(i) or 4.2(c)(3)(A)(ii) would
+result in an inappropriate or impractical design due to underground
+utilities, overhead wires, or other factors, the following shall apply:
+(i)
+Underground Utilities: The landscape strip should be located
+outside the public utility easement. If landscaping is proposed
+and approved within the public utility easement, the owner shall
+maintain or replace the plant material as stated in Section 1.6,
+Maintenance and Enforcement.
+(ii)
+Overhead Utilities: Two (2) ornamental trees may be substituted
+for one (1) shade tree.
+===== PAGE 49 =====
+45
+(4)
+Rural Tier
+(A)
+The following landscape strip treatments may be used singly or in
+combination:
+(i)
+Option 1-Provide a minimum twenty (20) foot wide landscape
+strip to be planted with a minimum of one (1) shade tree and ten
+(10) shrubs per thirty-five (35) linear feet of frontage, excluding
+driveway openings (see Figure 4.2-5). If a public utility
+easement is proposed or exists along the street frontage, then
+plant materials shall be placed outside the public utility
+easement.
+Figure 4.2-5 Required Landscape Strip: Rural Tier—Option 1
+(ii)
+Option 2-Provide a minimum twenty-five (25) foot wide strip of
+noninvasive existing trees (see Figure 4.2-3).
+(5)
+I-3 Zone
+(A)
+If a property is located in the I-3 Zone, the width of the required landscape
+strip shall be as required by Section 27-474 of the Zoning Ordinance. The
+plant materials proposed within the landscape strip shall be shown on a
+detailed site plan approved by the Planning Board in accordance with
+===== PAGE 50 =====
+46
+Section 27-471(d) of the Zoning Ordinance but shall not be less in
+quantity than required by Section 4.2(c)(3)(A)(i).
+(d)
+Demonstrating Compliance
+The landscape plan shall include a schedule as provided in Schedule 4.2-1 that
+demonstrates compliance with the requirements of this section.
+Sample Schedule 4.2-1
+Requirements for Landscape Strips Along Streets
+Linear feet of street frontage, excluding driveway entrances
+:
+1)
+General Plan Designation:
+_____Developing Tier
+_____Developed Tier,
+Corridor Node or Center
+_____Rural Tier
+2)
+Option Selected:
+1, 2, 3, or 4:_____
+1 or 2: _____
+3)
+Is there a public utility easement
+along the frontage of the
+property?
+_____Yes
+_____No
+4)
+Number of plants required:
+_____shade trees
+_____shade trees
+_____shrubs
+_____shrubs
+_____25-foot-wide strip of
+existing trees
+_____25-foot-wide strip of
+existing trees
+5)
+Total number of trees provided:
+_____shade trees
+_____shade trees
+_____ornamental/evergreen
+_____trees
+_____ornamental/evergreen
+_____trees
+_____shrubs
+_____shrubs
+_____25-foot-wide strip of
+existing trees
+_____25-foot-wide strip of
+existing trees
+===== PAGE 51 =====
+47
+4.3
+Parking Lot Requirements
+(a)
+Purposes and Objectives
+(1)
+Enhance the appearance of surface parking facilities as viewed from the street
+and adjacent compatible uses.
+(2)
+Provide shade and visual relief within parking facilities.
+(3)
+Use green space and trees to delineate vehicular and pedestrian travel-ways
+within parking facilities.
+(4)
+Minimize the heat island effect created by large expanses of pavement.
+(5)
+Provide healthy soil volumes to support the growth of trees.
+(b)
+Design Guidelines
+(1)
+Planting islands should be used to define circulation patterns, break up rows of
+parking, and to soften the visual impact of large expanses of pavement.
+(2)
+In general, impervious areas within parking lots should be evenly distributed
+throughout the parking lot to maximize shading.
+(3)
+Islands should be provided at both ends of parking rows to protect parked cars
+from moving vehicles and to ensure more even distribution of shade throughout
+the parking lot.
+(4)
+Trees in or at the edge of parking lots should be major shade trees that can be
+trimmed so that at maturity cars and trucks may circulate beneath the canopy
+without causing damage. Major shade trees are listed in Appendix 3, Plant Lists.
+(5)
+Good visibility in the parking lot is important, both for neighborhood security
+and traffic safety. The use of landscaping elements and plants that restrict
+===== PAGE 52 =====
+48
+visibility, such as tall shrubs, evergreen trees, and low-branching trees, should be
+avoided.
+(6)
+The use and location of plant materials at vehicular entrances should be placed to
+maintain safe sight distances.
+(7)
+Plants in parking lots are subject to many adverse conditions and are not likely to
+receive consistent care. Accordingly, principles of sustainability should be
+considered when selecting plant materials. Specifically, plant material should be
+moderate-to-slow growing, require little maintenance, and tolerate such
+conditions as sun, wind, drought, glare, reflected heat, salt and chemicals, and
+restricted planting spaces.
+(8)
+Planting spaces should be large enough to allow for healthy tree growth and
+should be protected from car overhangs and opening car doors.
+(c)
+Requirements
+The following requirements apply to all parking lots, except those provided for, and on
+the same lot with, one-family dwellings.
+(1)
+Parking Lot Perimeter Landscape Strip Requirements
+(A)
+When the adjacent property is an incompatible use as defined in
+Section 4.7, Buffering Incompatible Uses, parking lots shall be set back
+and buffered from adjacent property lines in accordance with those
+requirements and are not subject to this section. In all other cases, the
+perimeter of a proposed parking lot adjacent to a property line shall be
+treated as indicated in Section 4.3(c)(1)(C)-(E).
+(B)
+For the purposes of this section, a parking lot shall be considered adjacent
+to a property line for that portion of the lot that is within thirty (30) feet of
+the property line, and no building is located between the lot and the
+property line (see Figure 4.3-1).
+===== PAGE 53 =====
+49
+Figure 4.3-1 Parking Lot Within 30 Feet of Property Line
+(C)
+Developed Tier, Corridor Nodes and Centers:
+(i)
+Option 1-Provide a minimum three (3) foot wide landscape strip
+between the parking lot and any adjacent property line with
+fifteen (15) shrubs per thirty-five (35) linear feet of parking lot
+adjacent to a property line to create a solid hedge (see Figure
+4.3-2); or
+Figure 4.3-2 Developing Tier, Developed Tier, Centers and Corridor Nodes—Option 1
+===== PAGE 54 =====
+50
+(ii)
+Option 2-Provide a minimum three (3) foot wide landscape strip
+between the parking lot and any adjacent property line with a
+three (3) to four (4) foot high masonry wall (see Figure 4.3-3); or
+Figure 4.3-3 Developing Tier, Developed Tier, Centers and Corridor Nodes—Option 2
+(iii)
+Option 3-Provide a perimeter landscape strip in accordance with
+the requirements for the Developing Tier, as stated in Section
+4.3(c)(1)(D)(i)-(ii).
+(D)
+Developing Tier
+(i)
+Option 1-Provide a minimum five (5) foot wide landscape strip
+between the parking lot and any adjacent property line. Within
+this landscape strip, provide one (1) tree and three (3) shrubs per
+thirty-five (35) linear feet of parking lot adjacent to a property
+line. (This does not mean that shade trees must be located thirty-
+five (35) feet on center.) Any existing shade tree, except an
+invasive species, exceeding four (4) inches diameter at breast
+height (dbh) and located within fifteen (15) feet of the edge of
+the parking lot may count at a rate of one-to-one (1:1) toward
+fulfillment of this requirement, provided that seventy percent
+(70%) of the critical root zone is undisturbed. Shrubs shall not be
+planted within the critical root zone, and the shrub requirement
+shall be waived when preserving existing vegetation. (See Figure
+4.3-4); or
+===== PAGE 55 =====
+51
+Figure 4.3-4 Developing Tier—Option 1
+(ii)
+Option 2-Provide a minimum twenty-five (25) foot wide strip of
+noninvasive existing trees (see Figure 4.3-5).
+Figure 4.3-5 Developing Tier—Option 2
+(E)
+Rural Tier:
+(i)
+Option 1-Provide a minimum ten (10) foot wide landscape strip
+between the parking lot and any adjacent property line. Within
+===== PAGE 56 =====
+52
+this landscape strip, provide one (1) shade tree and five (5)
+shrubs per thirty-five (35) linear feet of parking lot adjacent to a
+property line. (This does not mean that shade trees must be
+located thirty-five (35) feet on center.) Any existing shade tree
+(except an invasive species) exceeding four (4) inches diameter
+at breast height (dbh) that is located within fifteen (15) feet of
+the edge of the parking lot may count at a rate of one-to-one
+(1:1) toward fulfillment of this requirement, provided that
+seventy percent (70%) or more of the critical root zone is
+undisturbed. Shrubs shall not be planted within the critical root
+zone, and the shrub requirement shall be waived when
+preserving existing vegetation (see Figure 4.3-6); or
+Figure 4.3-6 Rural Tier—Option 1
+(ii)
+Option 2-Provide a minimum twenty-five (25) foot wide strip of
+existing noninvasive trees between the parking lot and any
+adjacent property line (see Figure 4.3-5).
+===== PAGE 57 =====
+53
+(2)
+Parking Lot Interior Planting Requirements
+(A)
+The minimum Parking Lot Interior Planting requirements shall be
+calculated as a percentage of the parking lot area based on the size of the
+parking lot as shown in Table 4.3-1, Parking Lot Interior Planting
+Requirements. For purposes of computing the total area of any parking
+lot, all areas within the perimeter of the parking lot shall be counted,
+including planting islands, curbed areas, corner areas, parking spaces,
+aisles, and all vehicular surfaces. Landscaped areas situated outside of the
+parking lot, such as perimeter areas, landscape strips, and areas
+surrounding buildings, shall not be counted as an interior planting area
+(see Figure 4.3-7).
+Figure 4.3-7 Parking Lot Area
+===== PAGE 58 =====
+54
+Table 4.3-1
+Parking Lot Interior Planting Requirements
+Parking Lot Area
+Percent of Interior
+Planting Area Required
+0–6,999 square feet
+0
+7,000–49,999 sq. ft.
+8
+50,000–99,999 sq. ft.
+10
+100,000–149,999 sq. ft.
+13
+150,000 sq. ft. or larger
+15
+(B)
+At least one (1) shade tree shall be provided for each three hundred (300)
+square feet (or fraction) of interior landscape area provided. These trees
+shall have a clear trunk at least six (6) feet above finished grade level.
+(C)
+If a parking lot less than seven thousand (7,000) square feet is built
+without interior landscaping and, later, additional spaces are added so that
+the total size of the lot is greater than seven thousand (7,000) square feet,
+then the percentage of interior planting area required shall be calculated
+for the entire parking lot.
+(D)
+Planting spaces must be large enough to allow for healthy tree growth and
+must be protected from car overhangs and opening car doors.
+(i)
+A minimum of one hundred sixty (160) square feet of contiguous
+pervious land area shall be provided for each tree. No tree
+planting area shall be less than six (6) feet wide in any
+dimension.
+(ii)
+A curb or wheel stop shall be provided for all parking spaces
+abutting planting or pedestrian areas to protect those areas from
+overhanging by parked vehicles.
+===== PAGE 59 =====
+55
+(iii)
+Planting islands that are parallel to parking spaces on both sides
+shall be a minimum of nine (9) feet wide to allow car doors to
+swing open (see Figure 4.3-8).
+Figure 4.3-8 Minimum Width of Landscape Island Parallel to Spaces (parking on both sides)
+(iv)
+In cases where a planting island is perpendicular to parking
+spaces and the spaces head into the planting island on both sides,
+the island shall be a minimum of nine (9) feet wide to allow for
+bumper overhang (see Figure 4.3-9). If parking spaces are
+located on only one side of such a planting island, the island
+shall be a minimum of six (6) feet wide (see Figure 4.3-10).
+Figure 4.3-9 Minimum Width of Landscape Island Perpendicular to Spaces (parking on both sides)
+===== PAGE 60 =====
+56
+Figure 4.3-10 Minimum Width of Landscape Island Perpendicular to Spaces
+(parking on one side)
+(E)
+Existing shade trees (except an invasive species) may be retained and
+credited toward fulfilling parking lot interior planting requirements if
+appropriate measures are taken to provide long-term viability based on the
+species, condition, and size of the tree; the limits of disturbance, allowing
+a minimum area of seventy percent (70%) critical root zone retention
+protection during construction; and specialized tree management
+practices, as approved by the planning director (or designee).
+(F)
+Main drive aisles shall be separated from abutting parking spaces by a
+minimum six (6) foot wide interior planting area.
+(G)
+A minimum of one (1) interior planting island shall be provided on
+average for every ten (10) contiguous spaces (see Figure 4.3-11).
+===== PAGE 61 =====
+57
+Figure 4.3-11 Minimum Number of Planting Islands
+(H)
+The following requirements shall only apply to parking lots more than
+fifty thousand (50,000) square feet in area:
+(i)
+Option 1-There shall be no more than two (2) contiguous parking
+bays without the provision of a minimum nine (9) foot wide
+island separating the two bays from additional parking bays or
+drive aisles (see Figure 4.3-12); or
+Figure 4.3-12 Parking Bay Separation
+===== PAGE 62 =====
+58
+(ii)
+Option 2-At least one (1) shade tree shall be provided for each
+two hundred (200) square feet (or fraction) of interior landscape
+area provided. These trees shall have a clear trunk at least six (6)
+feet above finished grade level.
+(d)
+Demonstrating Compliance
+The landscape plan shall include a schedule as provided below demonstrating compliance
+with the requirements of this section.
+Sample Schedule 4.3-1
+Parking Lot Perimeter Landscape Strip for
+Parking Lots 7,000 Square Feet or Larger
+Linear feet of parking lot perimeter adjacent to property line
+:
+1)
+General Plan designation:
+_____Developed Tier,
+Corridor Node or
+Center
+_____Developing Tier
+_____Rural Tier
+2)
+Option selected:
+1, 2, or 3:_____
+1 or 2:_____
+1 or 2:_____
+3)
+Width of perimeter strip
+required:
+_____feet
+_____feet
+_____feet
+4)
+Width of perimeter strip
+provided:
+_____feet
+_____feet
+_____feet
+5)
+Plant material required:
+_____shade trees
+_____shrubs
+_____shade trees
+_____shrubs
+_____shade trees
+_____shrubs
+6)
+Total plant material
+provided:
+_____shade trees
+_____shrubs
+_____existing shade
+trees
+_____shade trees
+_____shrubs
+_____existing shade
+trees
+_____shade trees
+_____shrubs
+_____existing shade
+trees
+===== PAGE 63 =====
+59
+Sample Schedule 4.3-2
+Interior Planting for Parking Lots 7,000 Square Feet or Larger
+1)
+Parking Lot Area (see Figure 4.3-7):
+_____square feet
+2)
+Interior landscaped area required:
+_____%
+_____square feet
+3)
+Interior landscaped area provided:
+_____%
+_____square feet
+4)
+Minimum number of shade trees required:
+(1 per 300 square feet of interior planting area provided)
+or
+(1 per 200 square feet of interior planting area provided)
+_____shade trees
+_____shade trees
+5)
+Number of shade trees provided:
+_____shade trees
+6)
+Is a minimum of 160 square feet of contiguous pervious land area
+provided per shade tree?
+_____yes
+_____no
+7)
+Is there a planting island on average every 10 spaces?
+_____yes
+_____no
+8)
+Is a curb or wheel stop provided for all parking spaces abutting a
+planting or pedestrian area?
+_____yes
+_____no
+9)
+Are planting islands that are either parallel or perpendicular to parking
+spaces on both sides a minimum of 9 feet wide?
+_____yes
+_____no
+10)
+Is a planting island that is perpendicular to parking spaces on one side a
+minimum of 6 feet wide?
+_____yes
+_____no
+11)
+For parking lots 50,000 square feet or larger:
+a)
+Is there a 9-foot-wide planting island perpendicular to parking
+for every 2 bays?
+or
+b)
+Is the number of shade trees required increased? (1 per 200
+square feet of interior planting area provided)
+_____yes
+_____no
+_____yes
+_____no
+===== PAGE 64 =====
+60
+4.4
+Screening Requirements
+(a)
+Purposes and Objectives
+(1)
+Conceal loading and maintenance areas from residential properties and streets.
+(2)
+Conceal all outdoor merchandise storage areas from residential properties and
+streets.
+(3)
+Completely conceal all trash collection facilities.
+(4)
+Conceal mechanical equipment from adjacent properties, streets, outdoor living
+and recreation areas, and parking facilities.
+(b)
+Design Guidelines
+(1)
+In general, screening materials should consist of evergreen trees and shrubs,
+walls, fences, and berms. Screening fences and walls should not be constructed
+of corrugated metal, corrugated fiberglass, sheet metal, chain link, or wire mesh.
+(2)
+Vegetative screening should consist primarily of evergreen trees and shrubs, but
+finely branched deciduous trees and shrubs planted in masses or tightly spaced
+may also be considered.
+(3)
+Screening elements, such as walls, fences, and berms, should be carefully
+designed to avoid unnecessarily obstructing views, restricting light and air, or
+creating hazardous blind spots (see Section 3.5(f), Crime Prevention Through
+Environmental Design).
+(4)
+All screening structures should be constructed of attractive, durable, low-
+maintenance materials compatible with the architectural character and materials
+of adjacent buildings.
+===== PAGE 65 =====
+61
+(5)
+Screening options presented below should not be used to produce monotonous,
+linear designs. If a long stretch of screening is required, options should be
+combined or alternated, or plant materials should be varied to achieve a more
+pleasing effect. Other creative options, such as grade changes or use of existing
+vegetation or plant materials, are encouraged, but the applicant must demonstrate
+to the satisfaction of the appropriate hearing authority (or designee) that
+comparable or superior screening will be provided.
+(6)
+At the time of installation or planting of screening materials, screening should
+occupy seventy-five percent (75%) of a vertical rectangular plane (excluding
+driveways) sufficiently tall and wide to accomplish the required screening.
+(7)
+Screening in addition to that specified below may also be required if, because of
+slopes or other specific conditions on a site, the required screening measures do
+not achieve the necessary level of concealment (see Section 3.4(f), Screening and
+Buffering Plantings).
+(c)
+Requirements
+(1)
+Materials:
+(A)
+Screening walls shall be compatible with on-site structures in terms of
+design and materials.
+(B)
+The use of corrugated metal, corrugated fiberglass, sheet metal, chain
+link, or wire mesh fencing is prohibited.
+(2)
+Loading Spaces
+Loading spaces, loading docks, maintenance areas, and access driveways
+adjoining these areas shall be screened from adjoining existing residential uses,
+land in any residential zone, or land proposed to be used for residential purposes
+on an approved basic plan, approved official plan, or any approved conceptual,
+===== PAGE 66 =====
+62
+detailed, or special exception site plan. Loading spaces, loading docks, and
+maintenance areas shall also be screened from constructed public streets.
+Options:
+(A)
+Six (6) foot high sight-tight fence or wall; or
+(B)
+Minimum two (2) foot high berm, densely planted with vegetation to
+achieve a screen with an ultimate height of at least six (6) feet; or
+(C)
+Six (6) foot high, evergreen screen (trees or shrubs, minimum six (6) feet
+high at planting, minimum nine (9) feet on center, double staggered row);
+or
+(D)
+A combination of the above options.
+(3)
+Outdoor Merchandise Storage
+Outdoor merchandise storage areas shall be screened from adjoining existing
+residential uses, land in any residential zone, or land proposed to be used for
+residential purposes on an approved basic plan, approved official plan, or any
+approved conceptual, detailed, or special exception site plan. Loading spaces,
+loading docks, and maintenance areas shall also be screened from constructed
+public streets.
+Options:
+(A)
+Six (6) foot high, sight-tight fence or wall; or
+(B)
+Minimum two (2) foot high berm, densely planted with vegetation to
+achieve a screen with an ultimate height of at least six (6) feet; or
+===== PAGE 67 =====
+63
+(C)
+Six (6) foot high evergreen screen (trees or shrubs, minimum six (6) feet
+high at planting, minimum nine (9) feet on center, double staggered row);
+or
+(D)
+A combination of the above options.
+(4)
+Trash and Recycling Facilities
+All dumpsters, trash pads, and trash collection or storage areas, including
+recycling facilities, shall be carefully located and oriented on the site to be as
+inconspicuous as possible. Such facilities shall be screened from all adjoining
+properties, except for those on which industrial, warehouse and distribution, or
+resource recovery uses are permitted; from all public roads, if located within a
+residential development; from all outdoor living and recreation areas, parking
+areas, and entrance drives within the development; and, if located within a
+commercial development, from all outdoor recreation areas, retail parking areas,
+and entrance drives within the development. Where screening is required, the
+facilities shall be wholly enclosed.
+Options:
+(A)
+Sight-tight fence or wall (height to be determined by size and location of
+area to be screened); or
+(B)
+Evergreen screen (height, spacing, and variety to be determined by size
+and location of area to be screened); or
+(C)
+An extension of a building.
+(5)
+Mechanical Equipment
+All mechanical equipment and meters (except for public utility transformers;
+electric and other meters attached to single-family dwelling units; and heat pumps
+or air conditioners for single-family dwellings, unless placed in a group of three or
+more) shall be screened from all adjacent properties, except for those properties on
+===== PAGE 68 =====
+64
+which industrial, warehouse and distribution, or resource recovery uses are
+permitted; from all adjacent dedicated public roads, if located within a residential
+development; from all outdoor living and recreation areas, parking areas, and
+entrance drives within the development; and, if located within a commercial
+development, from all outdoor recreation areas, parking areas, and entrance
+drives.
+Options:
+(A)
+Sight-tight fence or wall (height to be determined by size and location of
+area to be screened); or
+(B)
+Evergreen screen (height, spacing, and variety to be determined by size
+and location of area to be screened); or
+(C)
+A combination of the above options.
+(6)
+Vehicle-Related Uses
+All vehicle repair facilities, vehicle towing stations, and vehicle storage yards,
+notwithstanding the nonconforming status of the property, shall be completely
+screened from any adjoining existing residential use, land in any residential zone,
+or land in any other zone proposed to be used for residential purposes on an
+approved basic plan, official plan, or any approved conceptual, detailed, or special
+exception site plan.
+Options:
+(A)
+Six (6) foot high, sight-tight fence or wall; or
+(B)
+Evergreen screen (height, spacing, and variety to be determined by size
+and location of area to be screened); or
+(C)
+A combination of the above options.
+===== PAGE 69 =====
+65
+(d)
+Demonstrating Compliance
+The landscape plans shall show the proposed location, type, size, and botanical and
+common names of all plant materials proposed to be installed in fulfillment of the
+requirements of this section and shall include construction details of all proposed
+structural screening elements identifying dimensions and proposed construction
+materials.
+4.5
+Stormwater Management Facilities
+Requirements for the landscaping of stormwater management facilities are generally established
+by the Department of Public Works and Transportation (DPW&T) or by those municipalities with
+stormwater management authority. The DPW&T requirements may be found in the
+Storm
+Drainage and Stormwater Management Design Manual for Prince George's County
+or any
+subsequent revision thereof.
+DPW&T and M-NCPPC shall coordinate review of the design of all landscaping associated with
+stormwater management facilities prior to the final technical approval of the stormwater
+management plan by DPW&T. Landscape plans for stormwater management facilities shall be
+reviewed and approved by the appropriate authority concurrently and in association with the
+regulatory plan review.
+4.6
+Buffering Development from Streets
+(a)
+Purposes and Objectives
+(1)
+Provide an attractive view of development from streets and special roadways by
+buffering those developments with appropriate landscaping.
+(2)
+Buffer the rear yard and the lowest story of the rear exterior walls of any single-
+family attached or detached dwelling from the view of any street, except an alley.
+===== PAGE 70 =====
+66
+(3)
+Provide a buffer between a multifamily dwelling and a major collector or higher
+classification roadway in order to reduce the adverse impacts to the multifamily
+development.
+(4)
+Preserve and enhance the scenic and/or historic landscape qualities within the
+viewshed adjacent to special roadways.
+(b)
+Design Guidelines
+(1)
+Trees and shrubs planted in the buffer should exhibit substantial variety in
+species and visual characteristics, include native species, and be designed to
+create varied and attractive views on a year-round basis.
+(2)
+Long stretches of a single fence or wall design should not be continued to the
+point of visual monotony but should be varied by using changes in height,
+species, different material combinations, offset angles, or other types of
+articulation so that the visual characteristics of the landscaping are provided on a
+year-round basis.
+(3)
+Plans submitted for review should show the general location and type of major
+landscape elements of an existing or proposed buffer on adjacent properties and
+should demonstrate that the proposed buffer treatment will provide an attractive
+visual continuity with existing or proposed buffer treatments on adjacent
+properties.
+(4)
+When buffering development from historic roadways, the plant materials selected
+should be noninvasive, appropriate species.
+(5)
+Natural landscape features, particularly existing native plant materials and tree
+cover, should be preserved and enhanced whenever possible.
+(6)
+If a bufferyard is not currently vegetated, it should be planted with vegetation that
+mimics the landscape conditions on nearby properties. However, in no case should
+proposed plantings be an invasive species.
+===== PAGE 71 =====
+67
+(c)
+Requirements
+(1)
+Buffering Residential Development from Streets
+(A)
+When the rear yards of single-family attached or detached dwellings in any
+zone are oriented toward a street, a buffer area shall be provided between the
+development and the street, either on individual lots or as part of the
+common open space owned and maintained by a homeowners association.
+All plant material required for this buffer should be located outside of public
+utility easements adjacent to the right-of-way. The width of the buffer and
+the plant materials required to be planted within the buffer shall be based on
+road classifications as identified in the
+Approved Countywide Master Plan of
+Transportation
+as follows:
+(i)
+Primary or Lower Road Classifications (excluding alleys)
+A minimum of a twenty (20) foot wide buffer with the following
+plant material per one hundred (100) linear feet of property line
+adjacent to the street:
+Two (2) shade trees*
+Eight (8) evergreen trees
+Twelve (12) shrubs
+(ii)
+Collector Road
+A minimum of a thirty-five (35) foot wide buffer with the
+following plant materials per one hundred (100) linear feet of
+property line adjacent to the street:
+Four (4) shade trees*
+Twelve (12) evergreen trees
+Twenty (20) shrubs
+===== PAGE 72 =====
+68
+(iii)
+Major Collector or Arterial Road
+A minimum fifty (50) foot wide buffer with the following plant
+materials per one hundred (100) linear feet of property line
+adjacent to the street:
+Six (6) shade trees*
+Sixteen (16) evergreen trees
+Thirty (30) shrubs
+(iv)
+Freeway or Expressway: A minimum seventy-five (75) foot wide
+buffer with the following plant materials per one hundred (100)
+linear feet of property line adjacent to the street
+Eight (8) shade trees*
+Twenty (20) evergreen trees
+Forty (40) shrubs
+*One-half (1/2) of the number of required shade trees may be
+satisfied on a two-to-one (2:1) basis by the use of ornamental
+trees and evergreen trees (not to exceed one-fourth (1/4) of the
+required number of shade trees).
+(B)
+When any yard of a multifamily development in any zone is oriented toward
+a major collector, an arterial, a freeway, or an expressway, a buffer shall be
+provided between the development and the street, as part of the common
+open space. All plant material required for this buffer shall be located
+outside of public utility easements adjacent to the right-of-way. The width of
+the buffer and the plant materials required to be planted within the buffer
+shall be based on road classifications as follows:
+===== PAGE 73 =====
+69
+(i)
+Major Collector or Arterial Road:
+A minimum fifty (50) foot wide buffer with the following plant
+materials per one hundred (100) linear feet of property line
+adjacent to the street:
+Six (6) shade trees*
+Sixteen (16) evergreen trees
+Thirty (30) shrubs
+(ii)
+Freeway or Expressway
+A minimum of a seventy-five (75) foot wide buffer with the
+following plant materials per one hundred (100) linear feet of
+property line adjacent to the street:
+Eight (8) shade trees*
+Twenty (20) evergreen trees
+Forty (40) shrubs
+*One-half (1/2) of the number of required shade trees may be
+satisfied on a two-to-one (2:1) basis by the use of ornamental
+trees and evergreen trees (not to exceed one-fourth (1/4) of the
+required number of shade trees).
+(C)
+When existing noninvasive trees are located within the buffer area,
+preservation of those trees is generally preferred to the planting of new
+trees. When existing vegetation is located in only part of the buffer, the
+number of shade trees, evergreen trees, and shrubs required to be planted
+may be reduced in proportion to the percentage of the area of the buffer
+occupied by existing vegetation. Any invasive species should be removed
+from the buffer area.
+===== PAGE 74 =====
+70
+(D)
+Fences, walls, or berms may also be employed on the inner edge of the
+buffer to screen the views of rear yards. Use of a six (6) foot high
+decorative, opaque fence or wall reduces the requirement for plant
+materials by fifty percent (50%).
+(2)
+Buffering Development from Special Roadways
+(A)
+When a property supporting any use has frontage on a special roadway,
+except residential development as described in Section 4.6(c)(1), a buffer
+area shall be provided adjacent to the entire right-of-way, excluding
+driveway openings. All plant material required by this section shall be
+located outside of public utility easements adjacent to the right-of-way. The
+width of the buffer area and the plant material required to be planted within
+the buffer area shall be as follows:
+(i)
+Developed Tier-Designated historic roads, designated scenic
+roads, and the Suitland and Baltimore-Washington Parkways
+A minimum ten (10) foot wide buffer with one (1) shade tree and
+ten (10) shrubs per thirty-five (35) linear feet of frontage, excluding
+driveway openings.
+(ii)
+Developing Tier-Designated historic roads, designated scenic
+roads, the Maryland State-designated scenic byway, and the
+Suitland and Baltimore-Washington Parkways
+A minimum twenty (20) foot wide buffer to be planted with a
+minimum of eighty (80) plant units per one hundred (100) linear
+feet of frontage, excluding driveway openings.
+(iii)
+Rural Tier-Designated historic roads, designated scenic roads,
+the Maryland State-designated scenic byway, and the Suitland
+and Baltimore-Washington Parkways
+===== PAGE 75 =====
+71
+A minimum forty (40) foot wide buffer to be planted with a
+minimum of one hundred sixty (160) plant units per one hundred
+(100) linear feet of frontage, excluding driveways, for high impact
+uses only. The buffering and planting requirements for all other
+uses shall be a minimum forty (40) foot wide buffer to be planted
+with a minimum of eighty (80) plant units. One hundred (100)
+percent of the plant units provided within the buffer shall be native
+species that shall be randomly spaced to mimic local forest
+communities.
+(B)
+When existing noninvasive trees are located within the buffer, preservation
+of the trees is generally preferred to the planting of new trees. When existing
+vegetation is located in only part of the buffer, the number of shade trees,
+evergreen trees, and shrubs required to be planted may be reduced in
+proportion to the percentage of the area of the buffer occupied by existing
+vegetation. Any invasive species should be removed from the buffer area.
+(C)
+The buffering and planting requirements of Section 4.6(c)(2)(iii) may be
+reduced if viewshed studies indicate, at the time of a detailed site plan,
+specific design plan, or special exception (or if none of these are required,
+through an application for alternative compliance), that the alternative
+landscape design will conserve and enhance the special roadway with regard
+to the natural and/or cultural features of the surrounding area.
+(d)
+Demonstrating Compliance
+In addition, the landscape plan shall include a schedule as provided below demonstrating
+compliance with the requirements of this section.
+===== PAGE 76 =====
+72
+Sample Schedule 4.6-1
+Buffering Residential Development from Streets
+1)
+Name of street adjacent to rear yard:
+2)
+Type of street adjacent to rear yard:
+3)
+Linear feet of street frontage toward which rear yard is oriented,
+not including driveway openings:
+_____feet
+4)
+Minimum width of required buffer:
+_____feet
+5)
+Minimum width of provided buffer:
+_____feet
+6)
+Percentage of required buffer strip occupied by existing trees:
+_____%
+7)
+Invasive species in the buffer area?
+_____yes _____no
+8)
+Six (6) foot high fence or wall included in bufferyard?
+_____yes _____no
+9)
+Number of plants required:
+_____shade trees
+_____evergreen trees
+_____shrubs
+10)
+Total number of plants
+provided:
+_____shade trees
+_____evergreen trees
+_____shrubs
+===== PAGE 77 =====
+73
+Sample Schedule 4.6-2
+Buffering Development from Special Roadways
+1)
+Name of special roadway:
+2)
+Type of special roadway:
+3)
+General Plan designation:
+_____Developed Tier
+_____Developing Tier
+_____Rural Tier
+4)
+Linear feet of street frontage, not including driveway entrances:
+_____feet
+5)
+Minimum width of required buffer:
+_____feet
+6)
+Minimum width of provided buffer:
+_____feet
+7)
+Percentage of required buffer occupied by existing trees:
+_____%
+8)
+Invasive species in the buffer areas?
+_____yes _____no
+9)
+Number of plants required:
+_____shade trees
+_____evergreen trees
+_____shrubs
+10)
+Total number of plants provided:
+_____shade trees
+_____evergreen trees
+_____shrubs
+===== PAGE 78 =====
+74
+4.7
+Buffering Incompatible Uses
+(a)
+Objectives
+(1)
+Establish a comprehensive, consistent, and flexible buffering system consisting
+of a specified area of land and vertical elements, such as plant materials, walls,
+fences, and berms, between adjacent incompatible land uses.
+(2)
+Form a visual and physical separation between uses of a significantly different
+scale, character, and/or intensity of development to mitigate undesirable impacts,
+such as noise, smell, storage facilities, dust, fumes, vibration, litter, vehicle
+exhaust, and lighting.
+(3)
+Create a transition between moderately incompatible uses.
+(b)
+Design Guidelines
+(1)
+Any combination of shade trees, ornamental trees, evergreen trees, and shrubs may
+be used to achieve the desired buffering effect, as long as the proposed combination
+of plants yields a total number of plant units equal to or greater than the
+requirement.
+(2)
+Buffering elements, such as walls, fences, and berms, should be carefully designed
+not to unnecessarily obstruct views, restrict light and air, or create hazardous blind
+spots (see Section 3.5(f), Crime Prevention Through Environmental Design).
+(3)
+When buffering historic sites from incompatible uses, historically appropriate,
+noninvasive species should be used to preserve the context of the historic site.
+(4)
+Consideration should be given to topography, the extent of the environmental
+setting, and the preservation of vistas whenever possible. When designing
+bufferyards, equal consideration should be given to preserving and enhancing the
+views of and the views from historic sites.
+===== PAGE 79 =====
+75
+(5)
+Trees and shrubs planted in the buffer should exhibit substantial variety in species
+and visual characteristics, include native species, and be designed to create varied
+and attractive views.
+(6)
+Plans submitted for review shall show the general location and type of major
+landscape elements of an existing or proposed buffer on adjacent properties and
+shall demonstrate that the proposed buffer treatment will provide an attractive visual
+continuity with existing or proposed buffer treatments on adjacent properties.
+(7)
+Natural landscape features, particularly existing native plant materials and tree
+cover, should be preserved and enhanced whenever possible.
+(c)
+Requirements
+If the adjoining property is neither vacant (see Section 4.7(c)(5)), a nonconforming use
+(see Section 4.7(c)(6)), nor a historic site (see Section 4.7(c)(7)), the following
+methodology shall be used to determine the required bufferyard width and quantity of
+plant materials between two adjacent uses:
+(1)
+Locate the proposed development (nonresidential uses only) in Section 4.7, Table
+4.7-1, Use Impact Categories. Note whether the use is assigned High (H),
+Medium (M), or Low Impact (L).
+(2)
+Locate the adjoining use in Table 4.7-1, Use Impact Categories. Note whether the
+use is assigned High (H), Medium (M), or Low Impact (L) and whether the
+proposed and adjacent uses are considered compatible based on the use group. If
+a developing lot adjoins a vacant lot, see Section 4.7(c)(5). A lot is considered
+vacant if it contains no structure or vehicle surface area within two hundred (200)
+feet of the property line. If a developing lot adjoins nonconforming uses, see
+Section 4.7(c)(6). If a developing lot adjoins a historic site, see Section 4.7(c)(7).
+===== PAGE 80 =====
+76
+(A)
+The assignment of each use as high, medium, or low impact, as indicated
+in Table 4.7-1, Use Impact Categories, is based on whether the use
+typically involves one or more of the following:
+(i)
+Noise.
+(ii)
+Outdoor loading spaces and/or dumpsters, other trash collection
+facilities, or recycling facilities.
+(iii)
+Type of trash generated on the site, e.g., food or animal by-product
+disposal.
+(iv)
+Exterior storage.
+(v)
+Dust, fumes, vehicle exhaust, and vibration.
+(vi)
+Litter.
+(vii)
+Lighting during the evening or at night (10:00 p.m.–6:00 a.m.).
+(viii)
+Use of the property during the evening or at night (10:00 p.m.–6:00
+a.m.).
+(ix)
+Generation of more than three hundred (300) daily vehicle trips.
+(B)
+A High-Impact Use, signified by "H" in Table 4.7-1, Use Impact
+Categories, is one which, considering the criteria, is expected to have a
+strong effect on adjacent properties.
+(C)
+A Medium-Impact Use, signified by "M" in Table 4.7-1, Use Impact
+Categories, is one which, considering the criteria, is expected to have a
+moderate effect on adjacent properties.
+===== PAGE 81 =====
+77
+(D)
+A Low-Impact Use, signified by "L" in Table 4.7-1, Use Impact
+Categories, is one which, considering the criteria, is expected to have a
+limited effect on adjacent properties.
+(E)
+When a specific use is not identified in Table 4.7-1, Use Impact
+Categories, the most similar use shall be used. Interpretations relating to
+impact categories shall be made by the planning director, or the designee,
+whose decision shall be appealable to the Planning Board.
+(F)
+A required bufferyard shall not overlap a required landscape strip along a
+street (see Figure 4.7-1).
+Figure 4.7-1 Relationship of Bufferyards and Landscape Strips
+(G)
+In the case of a lot that is located in more than one zone, the establishment of
+a required bufferyard is based on the platted or recorded property line(s), not
+the zoning line(s).
+===== PAGE 82 =====
+78
+(H)
+For applications proposing horizontally arranged mixed-use under a unified
+development scheme on a single lot or multiple lots, the impact category for
+the use nearest a property line shall determine the buffering requirements for
+that yard (see Figure 4.7-2).
+Figure 4.7-2 Use Determination for Horizontally Arranged Mixed-Use Development
+(I)
+For applications proposing vertically arranged mixed-use development on a
+single lot or multiple lots, the impact category for the property shall be based
+on the predominant use of the property. The predominant use is determined
+by the gross floor area associated with each use (see Figure 4.7-3).
+===== PAGE 83 =====
+79
+Figure 4.7-3 Use Determination for Vertically Arranged Mixed-Use Development
+(J)
+For applications including buildings over forty-six (46) feet in height, the
+bufferyard (setback and landscaped yard) shall be increased by one-third
+(1/3) of the additional building height when adjoining properties contain
+one-family attached and/or detached structures.
+===== PAGE 84 =====
+80
+Table 4.7-1
+Use Impact Categories
+USE
+IMPACT
+CATEGORY
+A.
+RESIDENTIAL, OTHER THAN SINGLE-FAMILY, MULTIPLEX,
+MULTIFAMILY, AND LODGING
+The following uses are considered compatible when located on adjoining
+properties:
+Country Inn or Bed and Breakfast
+L
+Fraternity or Sorority House
+M
+Group Residential Facility (20 residents or more)
+M
+Motel or Hotel
+M
+Rooming Houses or Boarding Houses
+L
+B.
+INSTITUTIONAL/EDUCATIONAL
+1.
+The following uses are considered compatible when located on
+adjoining properties:
+Chancery
+L
+Church or similar place of worship
+M
+Convent or Monastery
+L
+Day Care Center for children or adults
+L
+Eleemosynary or Philanthropic Institutions
+L
+Nursing or Care Home
+L
+School (public or private)
+M
+2.
+The following uses are not considered compatible with the uses above
+when located on adjoining properties:
+Hospital
+H
+Training Facility, general
+M
+Training Facility, truck driver, military, or any other facility that
+includes the use of firearms, explosives, or heavy machinery
+H
+===== PAGE 85 =====
+81
+C.
+PUBLIC/QUASI PUBLIC
+1.
+The following uses are considered compatible when located on
+adjoining properties:
+Fire, Ambulance, or Rescue Station
+H
+Library
+L
+Post Office
+M
+Public Office Buildings
+M
+2.
+The following uses are not considered compatible with the uses above
+when located on adjoining properties:
+Jail
+H
+Sanitary Landfill
+H
+D.
+RECREATIONAL/ENTERTAINMENT/SOCIAL/CULTURAL
+1.
+The following uses are considered compatible when located on
+adjoining properties:
+Amusement Arcade
+M
+Archery Range
+L
+Athletic Field (lighted)
+M
+Athletic Field (unlighted)
+L
+Baseball Batting Range
+M
+Beach, Public
+M
+Billiard or Pool Parlor
+M
+Boat Ramp
+M
+Bowling Alley
+M
+Club or Lodge (private)
+M
+Community Center (public or private)
+M
+Dog Park
+L
+Fishing Pier
+L
+Golf Course or Country Club
+L
+Golf Driving Range (unlighted)
+M
+Marina
+M
+===== PAGE 86 =====
+82
+Museum, Aquarium, Art Gallery, Cultural Center, or similar facility
+M
+Park (with no active recreational facilities)
+NO BUFFER
+Playground
+L
+Recreational Campground
+M
+Reducing/Exercise Salon or Health Club
+M
+Riding Stable (Equestrian)
+M
+Rifle, Pistol, or Skeet Shooting Range (indoor)
+M
+Skate Park (outdoor)
+M
+Skating Rink
+M
+Summer Camp
+L
+Swimming Pool (private or HOA owned)
+L
+Tennis, Basketball, Handball, or similar court (outdoor)
+M
+Theater (indoor)
+M
+2.
+The following uses are not considered compatible with the uses above
+when located on adjoining properties:
+Amusement Park
+H
+Arena or Stadium
+H
+Go-Cart Track
+H
+Golf Driving Range (lighted)
+H
+Miniature Golf Course
+H
+Race Track
+H
+Rifle, Pistol, or Skeet Shooting Range (outdoor)
+H
+Swimming Pool (public)
+H
+Theater (outdoor, including drive-in)
+H
+E.
+COMMERCIAL
+1.
+The following uses are considered compatible when located on
+adjoining properties:
+Animal Hospital, Veterinary Office (without kennel or boarding)
+M
+Antique Shop
+L
+Bank (with drive-through)
+M
+Bank (without drive-through)
+L
+===== PAGE 87 =====
+83
+Building Supply (wholly enclosed, except for nursery stock)
+M
+Commercial and Professional Offices
+M
+Contractor’s Office (without outside storage)
+L
+Dry Cleaning (pick-up only)
+M
+Food and Beverage Store
+M
+Funeral Parlor, Undertaking Establishment (see Section 27-357(a)(1))
+M
+Laundromat
+M
+Offices: Accountants, Architects, Clergymen, Engineers, Lawyers,
+Medical Practitioners, and similarly recognized and learned
+profession (as an accessory use in a dwelling)
+L
+Medical Practitioner’s Office
+M
+Real Estate Sales Office (as an accessory use in a dwelling)
+L
+Restaurant (sit down)
+M
+Retail Sales and Consumer Service Establishment (including
+integrated shopping centers) 60,000 square feet GFA or less
+M
+2.
+The following uses are not considered compatible with the uses above
+when located on adjoining properties:
+Animal Hospital, Veterinary Office (with kennel or boarding)
+H
+Building Supply (with outdoor storage)
+H
+Contractor’s Office (with outside storage)
+H
+Drive-in or Fast-Food Restaurant
+H
+Dry Cleaning Plant
+H
+Kennel
+H
+Retail Sales and Consumer Service Establishment (including
+integrated shipping centers) larger than 60,000 square feet GFA
+H
+F.
+VEHICLE-RELATED USES
+The following uses are considered compatible when located on adjoining
+properties:
+Auto Parts with Installation
+H
+Automobile Filling Station
+H
+Auto Repair Facilities
+H
+===== PAGE 88 =====
+84
+Auto Dealership without repair facilities
+M
+Auto Storage Yard (not wrecked cars)
+M
+Auto Towing Yard
+H
+Auto Salvage Yard
+H
+Carwash
+H
+Rental and display of trucks, recreational vehicles, trailers exceeding
+8,500 pounds of gross vehicle weight
+H
+Rental and display of passenger cars and light trucks
+M
+G.
+INDUSTRIAL
+The following uses are considered compatible when located on adjoining
+properties:
+Chemical and Allied Manufacturing
+H
+Distillery for the Production of Fuel Alcohol (industrial continued)
+H
+Fabrication of Wood, Metal, Paper, Plastic, and Glass Products from
+materials produced elsewhere
+H
+Manufacturing and Processing of Lumber, Wood, and related
+products
+H
+Manufacturing of Scientific, Specialized, and Technical Instruments
+and Equipment
+H
+Metal Production
+H
+Petroleum, Gas, and Related Products
+H
+Printing, Publishing, Paper, and related industries
+H
+Processing of Food and related products for human consumption
+H
+Rubber and Synthetic Rubber Products
+H
+Stone, Clay, Glass, and Cement Products
+H
+Textile Products
+H
+H.
+WHOLESALE, WAREHOUSE AND DISTRIBUTION
+All general wholesale, warehouse, and distribution
+H
+Consolidated storage (formerly mini-warehouse)
+H
+===== PAGE 89 =====
+85
+I.
+RESOURCE PRODUCTION AND RECOVERY
+The following uses are considered compatible when located on
+adjoining properties:
+Agricultural uses
+:
+(A) All general agriculture
+L
+(B) Limited to floriculture, horticulture, gardening and
+private noncommercial greenhouses
+L
+(C) Keeping of homing or racing pigeons
+L
+Class Three Fill
+H
+Concrete Recycling
+H
+Nursery or Garden Center
+M
+Rubble Fill
+H
+Sand or Gravel Wet Processing
+H
+Sawmill
+H
+Surface Mining
+H
+J.
+TRANSPORTATION/PARKING/COMMUNICATION,
+UTILITIES
+The following uses are considered compatible when located on adjoining
+properties:
+Airport, Airpark, Airfield, Airstrip, Heliport, Helistop
+H
+Broadcasting Studio (with tower)
+M
+Broadcasting Studio (without tower)
+L
+Bus Maintenance (at a private school or church)
+H
+Bus or Train Station or Terminal
+H
+Motor Freight Facilities and Terminals
+H
+Parking Garage (commercial)
+M
+Parking Lot (commercial)
+M
+Public Utility Use or Structure (except overhead utility lines but
+including a tower, monopole, or antenna)
+M
+===== PAGE 90 =====
+86
+Public Utility with overhead power lines
+L
+Public Utility Easement without any aboveground structures
+NO BUFFER
+Rail Lines at or above ground level
+H
+Satellite Dish Antenna
+L
+Taxicab Dispatching Station
+M
+Tower, Pole, Whip, or Antenna (electronic, radio, or television,
+transmitting or receiving, except a public utility structure or satellite
+dish antenna)
+L
+K.
+MISCELLANEOUS
+Auction House
+M
+Carpentry, Cabinet Making, or other
+M
+Cemetery
+L
+Crematory
+M
+Junk Yard
+H
+Palmistry/Spiritual Advisor (as an accessory use or otherwise)
+L
+Recycling Collection Center
+H
+Rental Business
+M
+Storage Yard
+H
+Stormwater Management Pond (on an individual lot)
+NO BUFFER
+Tattoo Parlor
+L
+===== PAGE 91 =====
+87
+(3)
+Consult Table 4.7-2, Minimum Bufferyard Requirements. Locate the use
+categories for the proposed use and the adjoining use along the appropriate axis.
+Read down and over to determine the required bufferyard type.
+Table 4.7-2
+Minimum Bufferyard Requirements
+Adjoining Use
+One-Family
+Detached
+Townhouses,
+Multiplexes
+and Other
+Attached
+Units
+Multifamily
+Low
+Impact
+Medium
+Impact
+High
+Impact
+Proposed Use
+One-Family
+Detached
+NONE
+A*
+B*
+B*
+C*
+D*
+Townhouses,
+Multiplexes, and
+Other Attached
+Units
+A
+NONE
+A*
+B*
+C*
+D*
+Multifamily
+B
+A
+NONE
+A*
+B*
+D*
+Low Impact
+B
+B
+A
+NONE
+A*
+C*
+Medium Impact
+C
+C
+B
+A
+NONE
+B*
+High Impact
+D
+D
+D
+C
+B
+NONE
+*Indicates the maximum buffer that may be required. If all or any part of the buffer has been provided on
+the adjacent property, was required by the landscape manual, and is shown on a landscape plan approved
+in accordance with this section, the proposed use may provide only that amount of the buffer that has not
+been provided on the adjacent property (see Figure 4.7-4).
+===== PAGE 92 =====
+88
+Figure 4.7-4 Required Bufferyard Adjacent to Existing Bufferyard
+(4)
+Consult Table 4.7-3, Bufferyard Types, to determine minimum building setback,
+minimum landscaped yard, and plant requirements for each bufferyard type.
+Table 4.7-3
+Bufferyard Types
+Type
+Minimum
+Building Setback
+Minimum
+Landscaped Yard
+Number of Plant Units
+Required per 100 Linear
+Feet of Property Line
+A
+20 feet
+10 feet
+40
+B
+30 feet
+20 feet
+80
+C
+40 feet
+30 feet
+120
+D
+50 feet
+40 feet
+160
+E
+60 feet
+50 feet
+180
+===== PAGE 93 =====
+89
+In order to use and understand Table 4.7-3, Bufferyard Types, the following notes
+apply:
+(A)
+Where a greater building setback is required by the Zoning Ordinance to
+compensate for the height of the building, one (1) additional foot of
+landscaped yard shall be required for every three (3) feet of required
+building setback in excess of the setbacks required in Table 4.7-3,
+Buffered Types.
+(B)
+Surface parking, loading facilities, trash collection, recycling facilities,
+and mechanical equipment may not be located in the minimum
+landscaped yard.
+(C)
+Number of Plants Required
+Any combination of shade trees, ornamental trees, evergreen trees, and
+shrubs may be used to achieve the desired buffering effect, as long as the
+proposed combination of plants yields a total number of plant units equal
+to or greater than the requirement.
+Plant unit equivalencies are as follows:
+One (1) shade tree = Ten (10) plant units
+One (1) evergreen tree = Five (5) plant units
+One (1) ornamental tree = Five (5) plant units
+One (1) shrub = One (1) plant unit
+Plants may be located anywhere within the bufferyard.
+(D)
+When existing noninvasive trees are located within the entire minimum
+landscaped yard, preservation of those trees will be allowed to substitute
+for the required plant materials. When existing trees are located in only
+part of the minimum landscaped yard, the number of plant units required
+may be reduced in proportion to the percentage of the area of the
+===== PAGE 94 =====
+90
+landscaped yard occupied by existing trees. Seventy percent (70%) or
+more of the critical root zone of all trees proposed to be preserved shall
+remain undisturbed.
+(E)
+For properties located in the Developing Tier, the required bufferyard may
+be reduced as follows:
+(i)
+If the width of the required bufferyard (building setback and the
+landscape yard) is increased, the required plant material may be
+proportionately decreased for a total maximum reduction of
+twenty-five percent (25%) of the required plant material; or
+(ii)
+If a six (6) foot high, opaque fence or wall is located within the
+bufferyard, plant unit requirements may be reduced by up to fifty
+percent (50%). The wall or fence must provide the maximum
+concealment.
+(F)
+For properties located in the Developed Tier and/or a Center or Corridor
+Node, except for those adjoining existing residentially developed lots, the
+requirements may be reduced up to fifty percent (50%) (including the
+number of plant units, setback, and landscape yard), if a six (6) foot high,
+opaque fence or wall is located within the bufferyard. The wall or fence must
+provide the maximum concealment.
+(5)
+Developing Lots Adjacent to Vacant Lots
+(A)
+A lot is considered vacant if it contains no structure or vehicular surface
+area within two hundred (200) feet of the property line.
+(B)
+If a developing property with a nonresidential use is adjacent to a vacant
+property zoned residential, then one hundred percent (100%) of the
+bufferyard is required. In the Developed Tier and/or a Center or Corridor
+Node, the landscape yard requirements may be reduced by fifty percent
+===== PAGE 95 =====
+91
+(50%) on the developing lot if a six (6) foot high, opaque fence or wall is
+provided on the developing lot (see Figure 4.7-5).
+Figure 4.7-5 Developing Non-Residential Use Adjacent to Vacant Residentially-Zoned Property
+(C)
+If a developing property with a residential use is adjoining vacant property
+zoned residential, fifty percent (50%) of the bufferyard is required to be
+provided on the developing lot (see Figure 4.7-6).
+Figure 4.7-6 Developing Residential Use Adjacent to Vacant Residentially-Zoned Property
+===== PAGE 96 =====
+92
+(D)
+If a developing property with a residential use is located adjacent to a
+vacant lot located in a Commercial or Industrial Zone, the developing
+property is not required to provide a buffer.
+(E)
+If a developing property with a non-residential use is located adjacent to a
+vacant lot located in a Commercial or Industrial Zone, fifty percent (50%)
+of the bufferyard is required to be provided on the developing lot.
+(F)
+If a developing property is located in a Commercial Zone and is adjoining
+vacant property located in a Commercial Zone, the developing property is
+not required to provide a bufferyard.
+(G)
+If a developing property is located in an Industrial Zone and is adjoining
+vacant property located in an Industrial Zone, the developing property is not
+required to provide a bufferyard.
+(6)
+Developing Lots Adjacent to Nonconforming Uses
+If a developing property is adjacent to an incompatible, certified, nonconforming
+use, the bufferyard requirement may be reduced by fifty percent (50%) if a six (6)
+foot high, opaque fence or wall is provided on the developing lot (see Figure 4.7-7).
+Figure 4.7-7 Developing Property Adjacent to Incompatible, Nonconforming Use
+===== PAGE 97 =====
+93
+(7)
+Developing Lots Adjacent to Historic Sites
+(A)
+If a developing lot adjoins a designated historic site (except underground
+archeological sites) located within the Developed Tier, a Center, or a
+Corridor Node, the developing lot shall provide a Type “D” buffer along
+the entire shared property line (see Table 4.7-3, Bufferyard Types). This
+requirement does not apply to a property line or right-of-way line adjacent
+to a special roadway (see Section 4.6(c)(2)).
+(B)
+If a developing lot adjoins a designated historic site (except underground
+archeological sites)
+and is located within the Developing or Rural Tier, the
+developing lot shall provide a Type “E” buffer along the entire shared
+property line (see Table 4.7-3, Bufferyard Types and Figure 4.7-8). This
+requirement does not apply to a property line or right-of-way line adjacent
+to a special roadway (see Section 4.6(c)(2), Buffering Development from
+Special Roadways).
+Figure 4.7-8 Developing Property Adjacent to Historic Site
+===== PAGE 98 =====
+94
+(d)
+Demonstrating Compliance
+The landscape plan shall include a schedule as follows demonstrating compliance with
+the requirements of this section.
+===== PAGE 99 =====
+95
+Sample Schedule 4.7-1
+Buffering Incompatible Uses Requirements
+1)
+General Plan designation:
+_____Developed Tier, Corridor
+Node or Center
+_____Developing or Rural Tier
+2)
+Use of proposed development:
+3)
+Impact of proposed development:
+4)
+Use of adjoining development:
+5)
+Impact of adjoining development:
+6)
+Minimum required bufferyard (A, B, C, D or E):
+___A ___B ___C ___D ___ E
+7)
+Minimum required building setback:
+_____ feet
+8)
+Building setback provided:
+_____ feet
+9)
+Minimum required width of landscape yard:
+_____ feet
+10)
+Width of landscape yard provided:
+_____ feet
+(The required setback and landscape yard may be reduced by fifty percent (50%) in the Developed
+Tier, Corridor Node or Center when a six (6) foot high fence or wall is provided.)
+11)
+Linear feet of buffer strip required along property line and right-of-way:
+_____ linear
+feet
+12)
+Percentage of required bufferyard occupied by existing trees:
+_____ %
+13)
+Is a six (6) foot high fence or wall included in bufferyard?
+_____ yes
+_____ no
+(The required plant material may be reduced by fifty percent (50%) when a six (6) foot high fence
+or wall is provided.)
+14)
+Total number of plant units required in buffer strip:
+_____ p.u.
+15)
+Total number of plant units provided:
+shade trees
+_____ x 10 p.u.=
+_____ p.u.
+evergreen trees
+_____ x 5 p.u.=
+_____ p.u.
+ornamental trees
+_____ x 5 p.u.=
+_____ p.u.
+shrubs
+_____ x 1 p.u.=
+_____ p.u.
+Total
+_____ p.u.
+===== PAGE 100 =====
+96
+4.8
+Landscape Requirements in a Regional Urban Community
+(a)
+Purposes and Objectives
+Establish regulatory guidelines for landscaping within a Regional Urban
+Community.
+(b)
+Requirements
+The landscape requirements for a Regional Urban Community shall be determined at the
+time of the conceptual site plan pursuant to Section 27-544 of the Zoning Ordinance or,
+where appropriate, at the time of the comprehensive design plan pursuant to Section
+27-480 of the Zoning Ordinance. The requirements, at a minimum, shall include:
+(1)
+Residential Requirements
+(A)
+All one-family detached lots that are smaller than nine thousand, five
+hundred (9,500) square feet shall be planted with a minimum of one (1)
+shade tree or one (1) ornamental tree.
+(B)
+For one-family attached, one-family semi-detached, two-family and three-
+family dwellings, a minimum total of one (1) shade tree and one (1)
+ornamental or evergreen tree per every two (2) units shall be provided.
+These trees may be planted either on individual lots or on public or private
+open space.
+(C)
+For multifamily units, one (1) major shade tree per two thousand, four
+hundred (2,400) square feet of green area provided shall be required. The
+number of trees may be satisfied on a two-to-one (2:1) basis by the use of
+ornamental trees or evergreen trees, not to exceed one quarter (1/4) of the
+number of shade trees.
+===== PAGE 101 =====
+97
+(2)
+Screening Requirements:
+(A)
+Screening materials shall consist of evergreen trees and shrubs, walls,
+and fences.
+(B)
+At the time of installation or planting of screening materials, screening
+must occupy seventy-five percent (75%) of a vertical, rectangular plane,
+excluding driveways, sufficiently tall and wide to accomplish the
+required screening.
+(C)
+All loading areas consisting of loading spaces, loading docks, adjacent
+vehicular lanes, and service or maintenance areas shall be screened from
+residential areas (containing one-family detached and attached dwelling
+units) and all adjacent public roads.
+(D)
+All dumpsters, trash pads, trash/recycling collection, or storage areas
+shall be carefully located and oriented on the site to be as inconspicuous
+as possible.
+(E)
+All mechanical equipment and meters shall be screened to prevent
+excessive noise and visual impacts on surrounding properties.
+(F)
+Screening options may include:
+(i)
+Six (6) foot high, sight-tight fence.
+(ii)
+Architecturally decorative walls.
+(iii)
+Evergreen screen (height, spacing, and variety to be determined
+by size and location of area to be screened).
+===== PAGE 102 =====
+98
+4.9
+Sustainable Landscaping Requirements
+(a)
+Purposes and Objectives
+(1)
+Promote sustainable landscaping as an environmentally sensitive design
+approach.
+(2)
+Incorporate regionally native plants into landscape design.
+(3)
+Prohibit the planting of invasive species, and manage existing invasive species.
+(4)
+Prohibit the planting of trees on steep slopes.
+(b)
+Design Guidelines
+(1)
+Plant material should be organized to mirror patterns found in nature, through
+layering of trees and shrubs where space allows.
+(2)
+Landscapes should be designed for year-round visual interest through the use of
+native evergreen, deciduous, flowering, and fruiting plant species.
+(3)
+Plants should be selected to suit site conditions, such as soil composition,
+moisture content, and availability of sunlight.
+(4)
+The landscape design should include a diversity of native plants with a wide
+variety of environmental benefits and should not include invasive species that
+negatively affect regional ecosystems.
+(5)
+Invasive species present in vegetated areas to be retained according to the
+requirements of the landscape manual should be removed in order to allow for
+long-term sustainability of the landscape.
+(6)
+Landscaped areas should be maintained in order to prevent the introduction of
+invasive species, which negatively affect the existing ecosystem.
+===== PAGE 103 =====
+99
+(7)
+Slopes greater than three-to-one (3:1) are not conducive to tree growth and
+should not be planted to fulfill the requirements.
+(c)
+Requirements
+(1)
+A percentage of plants within each plant type (including shade trees, ornamental
+trees, evergreen trees, and shrubs) shall be native species (or the cultivars of
+native species) as identified in the National Park Service, U.S. Fish and Wildlife
+Service publication
+Native Plants for Wildlife Habitat and Conservation
+Landscaping: Chesapeake Bay Watershed
+(as updated periodically) or
+M-NCPPC’s publication
+Native Plants of Prince George’s County
+dated 1998 or
+any subsequent revision. The minimum percentage of plants of each plant type
+required to be native species and/or native species cultivars is specified below:
+Shade trees
+50%
+Ornamental trees
+50%
+Evergreen trees
+30%
+Shrubs
+30%
+(2)
+Native plant material shall be identified as such in the planting schedule on the
+landscape plan.
+(3)
+The planting schedule on the landscape plan shall not include species identified
+in
+Invasive Species of Concern in Maryland
+(as updated periodically by the
+Maryland Invasive Species Council) or in
+Plant Invaders of Mid-Atlantic Natural
+Areas
+, published by the National Park Service, U.S. Fish and Wildlife Service (as
+updated periodically).
+(4)
+Existing trees and/or vegetation retained in fulfillment of the requirements shall
+not contain invasive species. A note shall be added to the landscape plan that
+requires removal of existing invasive species prior to certification in accordance
+with Section 1.5, Certification of Installation of Plant Materials.
+===== PAGE 104 =====
+100
+(5)
+Trees proposed in fulfillment of the requirements shall not be planted on slopes
+steeper than three-to-one (3:1).
+(d)
+Demonstrating Compliance
+The landscape plan shall include a schedule as follows demonstrating compliance with
+the requirements of this section.
+Sample Schedule 4.9-1
+Sustainable Landscaping Requirements
+1)
+Percentage of native plant material required in each category:
+Shade Trees:
+total _____ x 50% =_____total number required
+total number provided_____=_____% native
+Ornamental Trees:
+total _____ x 50% =_____total number required
+total number provided_____=_____% native
+Evergreen Trees:
+total _____ x 30% =_____total number required
+total number provided_____=_____% native
+Shrubs:
+total _____ x 30% =_____total number required
+total number provided_____=_____% native
+2)
+Are invasive species proposed?
+_____yes
+_____no
+3)
+Are existing invasive species on-site in areas that are to remain
+undisturbed?
+_____yes
+_____no
+4)
+If “yes” is checked in numbers 2 or 3, is a note included on the plan
+requiring removal of invasive species prior to certification in
+accordance with Section 1.5, Certification of Installation of Plant
+Materials?
+_____yes
+_____no
+5)
+Are trees proposed to be planted on slopes greater than 3:1?
+_____yes
+_____no
+===== PAGE 105 =====
+101
+4.10
+Street Trees Along Private Streets
+All public rights-of-way are governed by the Department of Public Works and Transportation, State
+Highway Administration, or a municipality. Section 23-141 of the County Code requires the planting
+of street trees during the development process when existing public roads have to be improved and
+when new public roads are constructed. Design standards for street trees within public rights-of-way
+should be obtained from the governing agency; however, all proposed street trees within public
+rights-of-way should be shown on all landscape plans for informational purposes.
+(a)
+Purposes and Objectives
+(1)
+Ensure that street trees along private streets are selected and planted in a manner
+that will enhance private streets both visually and environmentally.
+(2)
+Define the private street as a unified space that connects distant and sometimes
+disparate uses.
+(3)
+Establish human scale, and promote pedestrian activity by fostering a safe,
+pedestrian-friendly streetscape along private streets.
+(b)
+Design Guidelines
+(1)
+Street trees should be of a substantial size and should be spaced at intervals that
+create a consistent canopy over the streetscape, provided they do not conflict with
+traffic safety and operational standards.
+(2)
+Trees adjacent to the right-of-way should be selected from varieties that require
+little maintenance and tolerate salt and soil compaction.
+(3)
+Street trees at vehicular entrances should be located so as to maintain safe
+sight distances.
+(4)
+Street trees should be part of an overall streetscape plan designed to provide both
+canopy and shade and to give special character and coherence to each street.
+===== PAGE 106 =====
+102
+(5)
+The desired aesthetic effect should be achieved through the use of native and/or
+proven hardy adapted species.
+(6)
+Street trees should shape and subdivide the street space, increasing pedestrian
+comfort and adding value to the community.
+(7)
+Street tree species that form a ceiling-like enclosure and open a clear view of the
+street space and shop fronts at eye-level should be utilized.
+(8)
+Street tree species should be planted consistently within the streetscape to
+provide a distinct form and character to each private street. Plans should provide
+species diversity corresponding to the street character by planting different streets
+with different trees.
+(c)
+Requirements
+(1)
+Street trees shall be located in a space not less than five (5) feet wide between the
+street curb or edge of paving and the sidewalk.
+(2)
+Shade trees, two and one-half (2-1/2) to three (3) inch caliper in size, shall
+be planted along each private street at an average spacing of not less than
+twenty-five (25) feet on center nor greater than fifty (50) feet on center,
+excluding driveway openings. Spacing allowances may be made, where
+necessary, to accommodate curb cuts, fire hydrants, and other
+infrastructure elements.
+(3)
+Ornamental trees, seven (7) to nine (9) feet in height, may only be used to meet
+the requirements of this section where overhead wires prohibit the planting of
+shade trees. Ornamental trees shall be planted at an average rate of one (1) tree
+per thirty (30) linear feet, excluding driveway openings.
+(4)
+Street trees shall be located a minimum thirty-five (35) feet from the point of
+curvature of an intersection of two (2) streets.
+===== PAGE 107 =====
+103
+(5)
+Street trees shall be located a minimum ten (10) feet from the point of curvature
+of residential driveway entrances.
+(6)
+Street trees shall be located a minimum twenty (20) feet from the point of
+curvature of commercial driveway entrances.
+(7)
+Street trees shall be located a minimum fifteen (15) feet from street light poles.
+(8)
+Street trees shall be located a minimum ten (10) feet from water meters.
+(9)
+Street trees shall be located a minimum ten (10) feet from storm drain inlets,
+hydrants, or manholes.
+(10)
+Soil surface area provided shall be a minimum of one hundred fifty (150) square
+feet per tree for isolated trees and a minimum of one hundred twenty (120)
+square feet per tree within a continuous open landscape strip. These requirements
+may also be met through the use of bridged slab, structural soil, or other
+techniques clearly indicating a minimum of three hundred and seventy-five (375)
+cubic feet of soil or three hundred (300) cubic feet of soil for each tree,
+respectively. Details and specifications of such techniques shall be provided on
+the landscape plan (see Figure 4.10-1).
+Figure 4.10-1 Minimum Soil Surface Area Required
+===== PAGE 108 =====
+104
+(d)
+Demonstrating Compliance
+The landscape plan shall include a schedule as follows for all private streets,
+demonstrating compliance with the requirements of this section.
+Sample Schedule 4.10-1
+Street Trees Along Private Streets
+1)
+Number of street trees required (1 tree per 35 linear feet of frontage
+excluding driveway openings):
+_____street trees
+2)
+Number of street trees provided:
+_____street trees
+3)
+If ornamental trees are used, are they spaced on average 30 feet on
+center? (Ornamental trees may only be used where overhead wires
+prohibit the planting of shade trees.)
+_____ yes
+_____no
+4)
+Are street trees located a minimum of 35 feet from the point of curvature
+of an intersection?
+_____ yes
+_____no
+5)
+Are street trees located a minimum of 10 feet from the point of curvature
+of a residential driveway?
+_____ yes
+_____no
+6)
+Are street trees located a minimum of 20 feet from the point of curvature
+of commercial driveway entrances?
+_____ yes
+_____no
+7)
+Are street trees located between the sidewalk and face of curb in a space
+no less than 5 feet wide?
+_____ yes
+_____no
+8)
+Are street trees located a minimum of 15 feet from street light poles?
+_____ yes
+_____no
+9)
+Are street trees located a minimum of 10 feet from water meters?
+_____ yes
+_____no
+10)
+Are street trees located a minimum of 10 feet from storm drain inlets,
+hydrants, or manholes?
+_____ yes
+_____no
+11)
+Area of soil surface required (minimum of 150 square feet for isolated
+trees and a minimum of 120 square feet for continuous landscape strips):
+_____square feet
+12)
+Minimum area of soil surface provided:
+_____square feet
+===== PAGE 109 =====
+105
+SECTION 5 - GLOSSARY OF TERMS
+The definitions contained in this glossary are distinct to this manual. For the definitions not contained herein,
+reference should be made to Part 2, Division 1, Section 107.01 of Subtitle 27 of the Zoning Ordinance.
+BERM
+: An earthen mound designed to provide screening of undesirable views, reduce noise, etc.
+BUFFER
+: A combination of physical space and vertical elements, such as plants, berms, fences, or walls, the
+purpose of which is to separate and screen incompatible land uses from each other.
+BUFFERYARD
+: One of several specific combinations of minimum building setbacks, landscaped yard
+widths, and plant material requirements set forth in Section 4.7, Buffering Incompatible Uses, for use in
+buffering incompatible land uses.
+CONSERVATION LANDSCAPING
+: A landscape methodology that uses native plants, removes invasive
+plants, conserves water, and minimizes use of chemical fertilizers and pesticides in order to provide
+sustainable biological communities.
+CRITICAL ROOT ZONE
+: The minimum volume of roots necessary for maintenance of tree health and
+stability. The critical root zone of a specimen tree (thirty (30) inches diameter at breast height (dbh) or
+greater) is a circle with a radial distance of one and one half (1.5) feet for every one (1) inch dbh. The critical
+root zone of a non-specimen tree (less than thirty (30) inches dbh) is a circle with a radial distance of one (1)
+foot for every one (1) inch of dbh, with a minimum of eight (8) feet.
+DECIDUOUS
+: A plant with foliage that is shed annually.
+EVAPOTRANSPIRATION
+: The sum of evaporation and plant transpiration from the earth’s surface to the
+atmosphere.
+EVERGREEN
+: A plant with foliage that persists and remains green year-round.
+GREEN AREA
+: An area of land associated with and located on the same parcel of land as a building for
+which it serves to provide light and air. Green area, for purposes of this manual, does not include any water
+surfaces or paved surfaces or any impervious area of a site, such as rooftops or patios.
+===== PAGE 110 =====
+106
+HISTORIC ROAD
+: A public or private road that has been documented by historic surveys, and
+maintains its historic alignment and landscape context through views of natural features, historic
+landscape patterns, historic sites and structures, historic farmstead groupings, or rural villages and is
+identified as a historic road in the
+Approved Countywide Master Plan of Transportation
+.
+HISTORIC SITE
+: As identified on the
+Prince George’s County Historic Sites and Districts Plan
+as a
+designated historic site or that is noted on the
+National Register of Historic Places
+.
+INVASIVE SPECIES
+: A non-native plant that tends to escape containment and rapidly spreads in an area
+where there are few natural controls to its growth, resulting in a crowding out of native species or lessening of
+biological diversity. For purposes of this manual, invasive species are those identified in (1)
+Invasive Species
+of Concern in Maryland
+(as updated periodically by the Maryland Invasive Species Council), or (2)
+Plant
+Invaders of Mid-Atlantic Natural Areas
+, published by the National Park Service, U.S. Fish and Wildlife
+Service (as updated periodically).
+NATIVE SPECIES
+: A plant historically present in a particular region. Native is usually defined as having
+been found indigenous to the local area before colonization. For purposes of this manual, native species are
+those as identified in the U.S. Fish and Wildlife Service Publication,
+Native Plants for Wildlife Habitat and
+Conservation Landscaping – Chesapeake Bay Watershed
+or the M-NCPPC publication,
+Native Plants of
+Prince George’s County
+.
+ORNAMENTAL TREE
+: A deciduous tree planted primarily for its ornamental value. May be any size at
+maturity, but will tend to be smaller than a shade tree.
+PARKWAY
+: A linear, landscaped park designed to encompass a roadway that is restricted to use by
+automobiles. Suitland Parkway and Baltimore-Washington Parkway are the two parkways located in
+Prince George’s County and are identified as such in the
+Approved Countywide Master Plan of
+Transportation
+.
+PLANT UNIT
+: Plant unit equivalencies are as follows:
+One (1) shade tree = Ten (10) plant units
+One (1) evergreen tree = Five (5) plant units
+One (1) ornamental tree = Five (5) plant units
+One (1) shrub = One (1) plant unit
+===== PAGE 111 =====
+107
+PRIVATE STREET:
+A private road, right-of-way, or easement along which development is authorized
+pursuant to Subtitle 24, except for easements created under Section 24-128(b)(9) to avoid potentially
+hazardous or dangerous traffic situations, for easements utilized pursuant to Section 24-128(b)(10), for
+opportunity housing, or for right-of-way easements in an integrated shopping center pursuant to Section 24-
+128(b)(15) or any other right-of-way or access easement that is not defined as a street in Subtitle 27.
+SCENIC BYWAY
+: Transportation Corridors identified by the Maryland State Highway Administration and
+identified as such in the
+Approved Countywide Master Plan of Transportation
+, linking historic and scenic
+features under a specific theme.
+SCENIC ROAD
+: A public or private road that provides scenic views along a substantial part of its length
+through natural or manmade features, such as forest or extensive woodland, cropland, pasturage, or
+meadows; distinctive topography, including outcroppings, streambeds, and wetlands; traditional
+building
+types; historic sites; or roadway features, such as curving, rolling roadway alignment, and leaf tunnels;
+and is identified as a scenic road in the
+Approved Countywide Master Plan of Transportation
+.
+SCREENING
+: A method of reducing the impact of visual and/or noise intrusions through the use of plant
+materials, berms, fences, walls, or any combination thereof. Screening blocks that which is unsightly or
+offensive with a more harmonious element or a combination of elements.
+SETBACK
+: The distance between a building or structure (not including ground-level parking lots or other
+paved surfaces) and the street right-of-way or lot line.
+SHADE TREE
+: A deciduous (or rarely, an evergreen) tree planted primarily for its high crown of foliage or
+overhead canopy. A major shade tree at maturity reaches a height of at least seventy (70) feet. A minor shade
+tree generally does not exceed a height of forty (40) feet.
+SHRUB
+: A woody plant, smaller than a tree that consists of a number of small stems from the ground or
+small branches near the ground. It may be deciduous or evergreen.
+SPECIMEN TREE
+: A particularly impressive or unusual example of a species due to its size, shape, age, or
+any other trait that epitomizes the character of the species.
+===== PAGE 112 =====
+108
+SPECIAL ROADWAY
+: A roadway identified in the
+Approved Countywide Master Plan of Transportation
+as either a designated scenic or historic road, a state-designated scenic byway, or one of the two parkways
+(Suitland or Baltimore-Washington).
+STREET TREE
+: A tree planted in close proximity to a street in order to provide canopy over the street, to
+give the street a sense of spatial definition and human scale, to provide shade, and soften the street edge.
+TREE
+: A large, woody plant having one or several self-supporting stems or trunks and numerous branches.
+It may be classified as deciduous or evergreen.
+TREES, EXISTING
+: Existing trees and shrubs of a number, size, and type that approximately accomplish
+the same function as new plantings but do not necessarily meet the definition of woodland in the
+Woodland
+Conservation and Wildlife Habitat Ordinance
+.
+===== PAGE 113 =====
+109
+Appendices
+The following appendices may be revised and/or updated by the Planning Board or the planning director (or
+designee).
+Appendix Number
+Appendix Name
+1
+Alternative Compliance Submittal Checklist
+2
+Plant Substitution Request Form
+3
+Plant Lists
+4
+Landscape Planting Specifications and Planting Details
+===== PAGE 114 =====
+110
+Appendix 1
+Alternative Compliance Submittal Checklist
+(1)
+Completed application form.
+(2)
+Application Fee:
+(a)
+In conjunction with a permit (fee).
+(b)
+In conjunction with companion case (no fee).
+(3)
+Underlying permit case or underlying companion case number on application form.
+(4)
+Section of Landscape Manual from which Alternative Compliance is requested.
+(5)
+A typewritten Statement of Justification demonstrating how the request satisfies the requirements
+of Section 1.3, Alternative Compliance of the Landscape Manual. The statement must be signed
+by the applicant or the designated correspondent.
+(6)
+One (1) zoning sketch map.
+(7)
+One (1) aerial photograph with property outlined in red.
+(8)
+Any supporting information (photographs, previous Alternative Compliance approvals, etc.).
+(9)
+One (1) Tree Conservation Plan or Exemption Letter.
+(10)
+One (1) Site Plan demonstrating the following:
+(a)
+North arrow and scale.
+(b)
+Property lines.
+(c)
+Zoning and use of subject property and all abutting properties, location of buildings on
+abutting properties within fifty (50) feet of a property line, and notes indicating the
+existence of all buildings on abutting properties within two hundred (200) feet of a
+property line; zoning and use of properties directly adjacent to the subject property.
+===== PAGE 115 =====
+111
+(d)
+Name, location, existing right-of-way width, ultimate right-of-way width, and all existing
+and proposed improvements within all abutting streets.
+(e)
+Natural features, such as existing two (2) foot contour topography, ponds, lakes, and
+streams.
+(f)
+Delineation of regulated environmental features, such as one hundred (100) year
+floodplain, non-tidal wetlands, regulated streams, and associated buffers.
+(g)
+Existing and proposed stormwater management facilities.
+(h)
+Required bufferyard depths/widths (i.e., building setbacks and landscape yards from all
+lot lines).
+(i)
+Location, height, dimensions, details, and use of all existing and proposed buildings and
+other structures (including parking lots, sidewalks, and other paved areas; fences and
+walls; and recreational equipment).
+(j)
+Proposed grading in two (2) foot contours, with any slope steeper than three-to-one (3:1)
+labeled.
+(k)
+Location of existing and proposed utilities, including water, storm drain, and sanitary
+sewer pipes; overhead wires; utility poles and boxes; and signs.
+(l)
+Location of existing and proposed easements, including, but not limited to, access
+easements and utility easements.
+(m)
+Location, size, and description of all elements that are required to be screened by Section
+4.4, Screening Requirements.
+(11)
+One (1) Landscape Plan in accordance with Section 2, Plan Preparation.
+===== PAGE 116 =====
+112
+Appendix 2
+Plant Substitution Request Form
+DATE:
+_____________
+TO:
+Urban Design Supervisor
+FROM:
+Applicant Name: ____________________________________
+Phone: ____________________ Fax: ____________________
+E-mail: ____________________________________________
+Address: ___________________________________________
+___________________________________________
+Signature: __________________________________________
+SUBJECT:
+Case Name: ________________________________
+Case #: _________________
+This request must be accompanied by a landscape plan highlighting the location of all plants for
+which a substitution is requested.
+Plant Approved on
+Landscape Plan
+Botanical/Common Name
+Qty
+Size
+Native
+Status*
+(yes/no)
+Proposed Plant Substitution
+Botanical/Common Name
+Qty
+Size
+Native
+Status*
+(yes/no)
+*Native species as identified in the U.S. Fish and Wildlife Service publication,
+Native Plants for Wildlife
+Habitat and Conservation Landscaping: Chesapeake Bay Watershed
+or The Maryland-National Capital
+Park and Planning Commission publication,
+Native Plants of Prince George’s County
+dated 1998 or as
+subsequently revised.
+See the
+Prince George’s County Landscape Manual
+Section 1.4, Plant Substitutions, for more
+information regarding the process and review criteria for plant substitutions.
+Action
+Date
+Reviewer
+_____ Approval _____ Denial
+===== PAGE 117 =====
+113
+Appendix 3
+Plant Lists
+1.
+Table A-3(a)
+Recommended Shade Trees
+2.
+Table A-3(b)
+Recommended Minor Shade Trees
+3.
+Table A-3(c)
+Recommended Ornamental Trees
+4.
+Table A-3(d)
+Recommended Evergreen Trees
+5.
+Table A-3(e)
+Trees Not Recommended For General Use
+6.
+Table A-3(f)
+Recommended Shrubs
+7.
+Table A-3(g)
+Prohibited Trees
+8.
+Table A-3(h)
+Prohibited Shrubs, Grasses, and Ground Covers
+===== PAGE 118 =====
+114
+Table A-3-1
+Recommended Shade Trees
+Trees from the following list must be used to fulfill the requirements of the Landscape Manual unless
+acceptable alternatives have been approved in advance by the planning director (or designee).
+Botanic Name
+Common Name
+Comments
+Acer rubrum and its cultivars
+Red Maple
+Fagus grandiflora
+American Beech
+Beech trees not desirable as street
+trees due to surface roots.
+Fagus sylvatica
+European Beech
+Ginkgo biloba ‘Princeton Sentry’
+Male Ginkgo (graft)
+Gleditsia triacanthos inermis
+Selected cultivars:
+‘Imperial’
+‘Moraine’
+‘Shademaster’
+‘Skyline’
+Thornless Honeylocust
+Webworm
+Gymnocladus dioicus
+Kentucky Coffee Tree
+Liquidambar styraciflua
+Sweetgum
+Fruit can be a maintenance
+problem.
+Metasequoia glyptostroboides
+Dawn Redwood
+Nyssa sylvatica
+Black Gum
+Tap root. Difficult to transplant.
+Platanus acerifolia ‘Bloodgood’
+Bloodgood London Planetree
+Platanus occidentalis
+Sycamore
+Quercus alba
+White Oak
+Quercus bicolor
+Swamp White Oak
+Quercus coccinea
+Scarlet Oak
+Quercus falcata
+Southern Red Oak
+Quercus michauxii
+Swamp Chestnut Oak (Basket
+Oak)
+Quercus palustris
+Pin Oak
+Cultivars without drooping
+branches recommended.
+===== PAGE 119 =====
+115
+Botanic Name
+Common Name
+Comments
+Quercus phellos
+Willow Oak
+Quercus prinus
+Chestnut Oak
+Quercus rubra (borealis)
+Red Oak
+Quercus velutina
+Black Oak
+Sophora japonica ‘Regent’
+Japanese Pagoda Tree
+Taxodium distichum
+Baldcypress
+Tilia americana
+American Linden
+Tilia cordata ‘Greenspire’ Linden
+Greenspire Littleleaf
+Tilia euchlora
+Crimean Linden
+Tilia tomentosa
+Silver Linden
+Ulmus hollandica ‘Groenveldt’
+Groenveldt Elm
+Ulmus parvifolia
+Chinese Elm
+Zelkova serrata
+Japanese Zelkova
+===== PAGE 120 =====
+116
+Table A-3-2
+Recommended Minor Shade Trees
+Botanic Name
+Common Name
+Comments
+Acer buergerianum
+Trident Maple
+Acer capestre
+Hedge Maple
+Betula nigra
+River Birch
+Carpinus betulus ‘Fastigiata’
+European Hornbeam
+Cladrastis lutea
+Yellowood
+Eucommia ulmoides
+Hardy Rubber Tree
+Drought resistant.
+Ostrya virginiana
+Ironwood
+Prefers better planting sites.
+Prunus sargentii
+Sargent Cherry
+Sassafras albidum
+Sassafras
+Tilia mongolica
+Mongolian Linden
+Ulmus rubra
+Slippery Elm
+===== PAGE 121 =====
+117
+Table A-3-3
+Recommended Ornamental Trees
+Botanic Name
+Common Name
+Comments
+Amelanchier canadensis
+Serviceberry
+Carpinus caroliniana
+American Hornbeam
+Cercis canadensis
+Redbud
+Chionanthus virginicus
+Fringetree
+Cornus kousa
+Kousa Dogwood
+Crataegus phaenopyrum
+Washington Hawthorne
+Thornless varieties are available.
+Crataegus viridis ‘Winter King’
+Winter King ‘Green Hawthorne’
+Lagerstroemia spp.
+Crape Myrtle
+Laburnum anagyroides
+Goldenchain Tree
+Magnolia spp.
+Magnolia
+Oxydendrum arboreum
+Sourwood
+Prunus spp.
+Flowering Cherry and Plum
+Styrax japonicum
+Japanese Snowball
+===== PAGE 122 =====
+118
+Table A-3-4
+Recommended Evergreen Trees
+Botanic Name
+Common Name
+Comments
+Cedrus atlantica glauca
+Atlas Blue Cedar
+Cryptomeria japonica
+Japanese Cryptomeria
+Cupressocyparis leylandi
+Leyland Cypress
+Ilex equifolium cultivars
+English Holly
+Ilex opaca cultivars
+American Holly
+Ilex x attenuata
+Foster Holly
+Juniperus virginiana
+Eastern Red Cedar
+Picea spp.
+Spruce
+Pinus spp.
+Pine
+Pseudotsuga menziesii
+Douglas Fir
+Thuja spp.
+Arborvitae
+Tsuga canadensis
+Canadian Hemlock
+Hemlock wooly adelgid
+===== PAGE 123 =====
+119
+Table A-3-5
+Trees Not Recommended for General Use
+Botanic Name
+Common Name
+Comments
+Acer negundo
+Boxelder
+Short-lived; weak wood, prone to
+storm damage; prone to insects
+and diseases; roots buckle paving
+and clog drain pipes.
+Acer platanoides
+Norway Maple
+Shallow spreading roots and
+heavy shade prevent anything
+from growing under it.
+Acer pseudoplatanus
+Sycamore Maple
+Cankers. Subject to dead wood.
+Invasive.
+Acer saccharinum
+Silver Maple
+Same as Acer negundo
+Ailanthus altissima
+Tree of Heaven
+Heavy seeding and sprouting.
+Weak wood. Male flowers have
+bad odor.
+Albizia julibrissin
+Mimosa, Silk Tree
+Invasive.
+Betula papyrifera
+Paper Birch
+Prone to birch borers, leaf-
+miners. Short lived.
+Betula pendula
+European White Birch
+Prone to birch borers, leaf-
+miners. Short lived.
+Ginkgo biloba female
+Female Ginkgo
+Very bad smelling fruit.
+Gleditsia triacanthos
+Thorny Honeylocust
+Dangerous thorns.
+Fraxinus pensylvanica
+‘Marshall’s Seedless’
+Marshall’s Seedless Green Ash
+Borers a problem.
+Maclura pomifera
+Osage Orange
+Messy fruit. Large thorns.
+Morus spp.
+Mulberry
+Heavy sprouting. Weak wood.
+Messy fruit.
+Populus spp.
+Poplar
+Short-lived. Tendency to sucker
+freely. Roots lift paving and clog
+drains. Prone to canker disease.
+Quercus alba
+White Oak
+Extremely susceptible to gypsy
+===== PAGE 124 =====
+120
+Botanic Name
+Common Name
+Comments
+moths.
+Sorbus spp.
+Mountain Ash
+Susceptible to many diseases and
+insect pests.
+Juglans nigra
+Black Walnut
+Phytotoxins from roots, messy
+fruit.
+Prunus serotina
+Black Cherry
+Messy fruit.
+Ulmus americana
+American Elm
+Susceptible to elm bark beetle.
+Ulmus pumila
+Siberian Elm
+Invasive.
+===== PAGE 125 =====
+121
+Table A-3-6
+Recommended Shrubs
+Botanic Name
+Common Name
+Comments
+Abelia grandiflora
+Gossy Abelia
+Azalea spp.
+Azalea (in variety)
+Clethra alnifolia
+Summersweet
+Cornus alba cultivars
+Siberian Dogwood
+Cornus stolonifera
+Red-Osier Dogwood
+Euonymus spp.
+Euonymus (in variety)
+Except Euonymus alatus due to
+it invasiveness.
+Forsythia spp.
+Forsythia (in variety)
+Ilex cornuta rotunda
+Dwarf Chinese Holly
+Ilex spp. (excl. above)
+Holly (in variety)
+Jasminum nudiflorum
+Winter Jasmine
+Juniperus chinensis sargenti,
+conferta, horizontalis, var.
+Spreading or Dwarf Junipers (in
+variety)
+Juniperus spp. (excl. above)
+Junipers (in variety)
+Kalmia latifolia
+Mountain Laurel
+Leucothoe spp.
+Leucothoe
+Mahonia aquifolium
+Oregon Grape Holly
+Myrica cerifera
+Southern Bayberry
+Myrica pensylvanica
+Nothern Bayberry
+Osmanthus spp.
+Osmanthus (in variety)
+Pieris Japonica
+Japanese Andromeda
+Prunus laurocerasus
+Schipkaensis
+Cherry Laurel
+Pyracantha spp.
+Firethorn
+Rhododendron spp.
+Rhododendron
+Spiraea spp.
+Spirea (in variety)
+Except Spirea japonica due to its
+invasiveness.
+Taxus spp.
+Yew (in variety)
+===== PAGE 126 =====
+122
+Botanic Name
+Common Name
+Comments
+Viburnum spp.
+Viburnum (in variety)
+Weigela spp.
+Weigela (in variety)
+===== PAGE 127 =====
+123
+Table A-3-7
+Prohibited Trees
+Botanic Name
+Common Name
+Comments
+Acer platanoides
+Norway Maple
+Ailanthus altissima
+Tree of Heaven
+Heavy seeding and sprouting.
+Weak wood. Male flowers have
+bad odor.
+Albizia julibrissin
+Mimosa, Silk Tree
+Invasive
+Broussonetia papyrifera
+Paper Mulberry
+Morus alba
+White Mulberry
+Heavy sprouting. Weak wood.
+Messy Fruit. Invasive.
+Displacing and crossing with
+native.
+Paulownia tomentosa
+Princess Tree
+Pyrus calleryana
+Bradford Pear
+Quercus acutissima
+Sawtooth Oak
+===== PAGE 128 =====
+124
+Table A-3-8
+Prohibited Shrubs, Grasses, and Ground Covers
+Botanic Name
+Common Name
+Comments
+Allium vineale
+Wild Garlic
+Alliaria petiolata
+Garlic mustard
+Ampelopsis brevipedunculata
+Porcelainberry
+Artemisia vulgaris
+Mugwort
+Arundo donax
+Giant reed, wild cane
+Akebia quinata
+Five-leaved akebia
+Bambusa, Phyllostachys, and
+Pseudosassa
+Bamboo
+Berberis thunbergii
+Japanese Barberry
+Buddleia
+Butterfly Bush
+Carduus acanthoides
+Plumeless Thistle
+Carduus nutans
+Musk Thistle
+Cirsium arvense
+Canada Thistle
+Cirsium vulgare
+Bull Thistle
+Celastrus orbiculatus
+Oriental Bittersweet
+Centaurea biebersteinii
+Spotted knapweed
+Cynachum louiseae
+Louis’ swallowwort
+Elaeagnus umbellata
+Autumn Olive
+Euonymus alatus
+Burning Bush
+Euonymus fortunei
+Creeping euonymus
+Hedera helix
+English Ivy
+Hemerocallis fulva
+Common daylily
+Heracleum mantegazzianum
+Giant hogweed
+Humulus japonicus
+Japanese Hops
+Lespedeza cuneata
+Chinese lespedeza
+Ligustrum (spp.)
+Privit
+Lonicera
+Honeysuckle
+Lythrum salicaria
+Purple loosestrife
+===== PAGE 129 =====
+125
+Botanic Name
+Common Name
+Comments
+Microstegium vimineum
+Japanese stiltgrass
+Miscanthus sinensis
+Chinese Silver Grass
+Murdannia keisak
+Marsh dewflower
+Perilla frutescens
+Perilla
+Phragmites australis
+Common reed
+Polygonum cuspidatum
+Japanese Knotweed
+Polygonum perfoliatum
+Mile-a-minute
+Pueraria montana v. lobata
+Kudzu
+Ranunculus ficaria
+Lesser celandine
+Rhodotypos scandens
+Jetbead
+Rubus phoenicolasius
+Wineberry
+Vinca minor
+Periwinkle
+Wisteria sinensis, W. floribunda
+Wisterias, exotic
+===== PAGE 130 =====
+126
+Appendix 4
+Landscape Specifications and Planting Details
+Landscape Specifications
+Landscape specifications shall be as outlined below or as specified as best practices in the industry. Any
+item or procedure not mentioned below shall be as specified in the Landscape Specification Guidelines
+published by the Landscape Contractors Association (latest edition) or as subsequently amended.
+(a)
+Plant Materials
+The landscape contractor shall furnish and install and/or dig, ball, burlap, and transplant
+all of the plant materials called for on the drawings and/or listed in the Plant Schedule.
+(b)
+Plant Names
+Plant names used in the Plant Schedule shall be identified in accordance with Hortus
+Third, by L. H. Bailey, 1976 or any subsequent edition.
+(c)
+Plant Standards
+All plant materials shall be equal to or better than the requirements of the “American
+Standard for Nursery Stock,” latest edition, as published by the American Nursery and
+Landscape Association (hereafter referred to as “ANLA Standards”). All plants shall be
+typical of their species and variety, shall have a normal habit of growth, and shall be first
+quality, sound, vigorous, well-branched, and with healthy well-furnished root systems.
+They shall be free of disease, insect pests, and mechanical injuries.
+(1)
+All plants shall be nursery grown and shall have been grown under the same
+climatic conditions as the location of this project for at least two years before
+planting. Neither heeled-in plants nor plants from cold storage will be accepted.
+===== PAGE 131 =====
+127
+(2)
+Collected plants or transplanted trees may be called for by the landscape architect
+and used, provided, however, that locations and soil conditions will permit proper
+balling.
+(d)
+Plant Measurements
+All plants shall conform to the measurements specified in the Plant Schedule.
+(1)
+Caliper measurements shall be taken six (6) inches above grade for trees under
+four (4) inch caliper and twelve (12) inches above grade for trees four (4) inches
+caliper and over.
+(2)
+Minimum branching height for all shade trees shall be six (6) to eight (8) feet.
+(3)
+Minimum size for planting shade trees shall be two and one half to three (2-1/2–
+3) inches caliper, twelve to fourteen (12–14) feet in height.
+(4)
+Minimum size for planting minor shade trees shall be two and one half to three
+(2-1/2–3) inches caliper, eight to ten (8–10) feet in height.
+(5)
+Minimum size for planting ornamental trees shall be one and a half to one and
+three-fourths (1-1/2–1-3/4) inches caliper, seven to nine (7–9) feet in height.
+(6)
+Minimum size for planting evergreen trees shall be six to eight (6–8) feet in
+height.
+===== PAGE 132 =====
+128
+(7)
+Caliper, height, and spread shall be generally as follows:
+Caliper
+Height
+Spread
+2–2-1/2”
+12’–14’
+6’–8’
+2-1/2”–3”
+12’–14’
+6’–8’
+3”–3-1/2”
+14’–16’
+6’–8’
+3-1/2”–4”
+14’–16’
+8’–10’
+4”–4-1/2”
+16’–18’
+8’–10’
+4-1/2”–5”
+16’–18’
+10’–12’
+5”–5-1/2”
+18’–20’
+10’–12’
+5-1/2”–6”
+18’–20’
+12’–14’
+All plant material shall generally average the median for the size ranges indicated
+above and as indicated in the ANLA Standards.
+(8)
+Minimum size for planting shrubs shall be, in general, eighteen to twenty-four
+(18-24) inches in height or spread, as appropriate, except that a larger size may
+be required when deemed appropriate by the planning director (or designee) in
+the case of particular species or planting situations.
+(e)
+Planting Methods
+All proposed plant material that meets the specifications in Appendix 4, Section (a), Plant
+Materials, are to be planted in accordance with the following planting methods during the
+proper seasons as described below.
+(1)
+Planting Seasons
+A professional horticulturalist/nurseryman shall be consulted to determine the
+proper time, based on plant species and weather conditions, to move and install
+particular plant material to minimize stress to the plant. Planting of deciduous
+material may be continued during the winter months provided there is no frost in
+the ground and frost-free top soil planting mixtures are used.
+===== PAGE 133 =====
+129
+(2)
+Digging
+All plant material shall be dug, balled, and burlapped or bare root in accordance
+with the American Standard for Nursery Stock, American Nursery and
+Landscape Association.
+(3)
+Excavation of Plant Pits
+The landscape contractor shall excavate all plant pits, vine pits, hedge trenches
+and shrub beds as follows:
+(A)
+All pits shall be generally circular in outline, with bowl shaped sides.
+The tree pit shall be deep enough to allow one-eighth (1/8) of the ball to
+be above the existing grade. Plants shall rest on undisturbed existing soil
+or well-compacted backfill. The tree pit must be a minimum of nine (9)
+inches larger on every side than the ball of the tree.
+(B)
+If areas are designated as shrub beds or hedge trenches, they shall be
+cultivated to at least an eighteen (18) inches in depth minimum. Areas
+designated for ground covers and vines shall be cultivated to at least
+twelve (12) inches in depth minimum.
+(4)
+Staking, Guying, and Wrapping
+See the Landscape Specification Guidelines.
+(5)
+Plant Pruning, Edging, and Mulching
+(A)
+Each tree, shrub, or vine shall be pruned in an appropriate manner to its
+particular requirements in accordance with accepted standard practices as
+stated in ANSI Standards A300 for pruning. Broken or bruised branches
+shall be removed with clean cuts made on an angle from the bark ridge to
+the branch collar, no flush cuts, to minimize the area cut. All cuts shall
+===== PAGE 134 =====
+130
+be made with sharp tools. Trim all edges smooth. No tree wound
+dressings shall be applied.
+(B)
+All trenches and shrub beds shall be edged and cultivated to the lines
+shown on the drawing. The areas around isolated plants shall be edged
+and cultivated to the full diameter of the pit. Sod that has been removed
+and stacked shall be used to trim the edges of all excavated areas to the
+neat lines of the plant pit saucers, the edges of shrub areas, hedge
+trenches and vine pockets.
+(C)
+After cultivation, all plant materials shall be mulched with a two to three
+(2–3) inch layer of tan bark, peat moss, or another approved material
+over the entire area of the bed or saucer.
+(f)
+Seeding and Sodding
+All seeding and sodding shall be as per 1994
+Standards and Specifications for Soil
+Erosion and Sediment Control
+or the latest edition.
+(g)
+Top Soil
+Top soil shall be retained and/or provided on all sites and spread over all unimproved
+areas.
+Planting Details
+Shall be in accordance with standard practices in the industry.
+Tree Preservation Measures
+For more information on this subject, contact the Environmental Planning Section, Countywide
+Planning Division of The Maryland-National Capital Park and Planning Commission.
+===== PAGE 135 =====
+Cover Photo: Rob Meintjes
+Location: University of Maryland in Prince George’s County, Maryland
+Trees: Willow Oaks (Quercus Phellos), the Prince George’s County Of
+fi
+cial Tree
+The Maryland-National Capital Park and Planning Commission
+Prince George’s County Planning Department
+14741 Governor Oden Bowie Drive
+Upper Marlboro, MD 20772
+www.pgplanning.org

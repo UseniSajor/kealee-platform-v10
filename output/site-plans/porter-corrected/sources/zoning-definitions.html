@@ -1,0 +1,187 @@
+
+    <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+    <html>
+    <head>
+
+        <title></title>
+        <link type="text/css" rel="Stylesheet" href="jqueryui/css/jqueryui.css" media="all" />
+        <link type="text/css" rel="Stylesheet" href="css/ui.css" media="all" />
+        <link type="text/css" rel="Stylesheet" href="css/customui.css" media="all" />
+        <link type="text/css" rel="Stylesheet" href="css/document.css" media="all" />
+        <link type="text/css" rel="Stylesheet" href="css/customdoc.css" media="all" />
+        <link type="text/css" rel="Stylesheet" href="tablestyles.aspx" media="all" />
+        <link rel="StyleSheet" type="text/css" href="/common/font-awesome/css/all.min.css">
+        <link type="text/css" rel="Stylesheet" href="css/docprint.css" media="print" />
+        <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+        <script type="text/javascript" src="jqueryui/js/jquery-ui-1.8.21.custom.min.js"></script>
+        <script type="text/javascript" src="js/doc-view.js?_t=252"></script>
+        <script type="text/javascript" src="js/tabletools.js"></script>
+        <script type="text/javascript" src="js/tabs.js"></script>
+        <script type="text/javascript">
+            var iframeReady = false;
+        </script>
+        
+        <script type="text/javascript">
+            $(document).ready(function () {
+                setTimeout(attemptPrint, 250);
+            });
+
+            function attemptPrint() {
+                if (iframeReady) {
+                    parent.ZP.DocView.PrintIframe();
+                } else {
+                    setTimeout(attemptPrint, 250);
+                }
+            }
+        </script>
+        
+    </head>
+    <body class='doc-view'>
+        <script type="text/javascript">
+            $(document).ready(function () {
+                ZP.DocView.InitDef();
+                ZP.DocView.OpenDefinitionPage = null;
+                ZP.DocView.OpenDefinitionMode = '_self';
+                ZP.DocView.OpenXRefPage = 'doc-viewer.aspx#$2-';
+                ZP.DocView.OpenXRefMode = '_blank';
+                $(window).bind('hashchange', ZP.DocView.HashChanged);
+        
+        if (typeof ZP.DocView.ZoomClasses == 'undefined') {
+            ZP.DocView.ZoomClasses = ["Unzoom1", "", "Zoom1", "Zoom2", "Zoom3", "Zoom4"];
+        }
+        ZP.DocView.InitializeZoom();
+        EC.SortedTable.Init(".ord-tbl, .stat-tbl", ".sortable");
+        EC.Tabs.PositionLeftTabs();
+    });
+
+
+        </script>
+
+
+    <div id="doc-viewer">
+        
+
+<div id="doc-view">
+    <div id="doc-view-content">
+        
+<div id="pageControls">
+<script type="text/javascript" >
+    function clearEffDate() {
+        jQuery.get("doc-view-helper.aspx?task=currentversion", function () {
+            window.location.reload();
+        });
+        return false;
+    }
+</script>
+     <div class="pageControls psuedoTable white" role="navigation" aria-label="Document Navigation">  
+        <div class="psuedoTableBody" >     
+            <div class="psuedoTableRow">         
+                <div class="pageControls_outer" ></div>
+                <div class="pageControls_inner left">
+                    <a id='button1' onclick='ZP.DocView.PrintDoc("002.002.005.024",false);return false;' href="#" title="Print" role="button"> 
+                            <i class="fa fa-print" aria-hidden="true"></i></a>
+                    <a id='Button2' onclick='ZP.DocView.OpenPDF("002.002.005.024",false);return false;' href="#" title="Export PDF" role="button">
+                            <i class="fa fa-file-pdf-o" aria-hidden="true"></i></a>
+                    <a class="exp-word" onclick='ZP.DocView.OpenWord("002.002.005.024",false);return false;' href="#" title="Export MSWord" role="button">
+                        <i class="fa fa-file-word-o" aria-hidden="true"></i></a>
+                    <a class="popup" params="toobar=0,menubar=0,scrollbars=1,height=436,width=626" href="https://www.facebook.com/sharer/sharer.php?s=100&p[title]=Animal+shelter&p[summary]=Prince+George%27s+County%2c+MD+Zoning+Ordinance%2c+Subdivision+Regulations%2c+%26+Landscape+Manual+(Effective+4%2f1%2f2022)&p[url]=https%3a%2f%2fonline.encodeplus.com%2fregs%2fprincegeorgescounty-md%2fdoc-viewer.aspx%3fsecid%3d80" title="Click to Share this page" style="text-decoration:none;border:none;" >
+                          <i class="fa fa-share-alt" aria-hidden="true"></i></a>     
+                </div>
+                <div  class="pageControls_inner breadCrumbs" title="Navigation 'breadcrumbs'">
+                     <div class='breadCrumbs'><a href='/regs/princegeorgescounty-md/doc-viewer.aspx?tocid=002' >Subtitle 27: Zoning Ordinance</a> &gt; <a href='/regs/princegeorgescounty-md/doc-viewer.aspx?tocid=002.002' >PART 27-2 INTERPRETATION AND DEFINITIONS</a> &gt; <a href='/regs/princegeorgescounty-md/doc-viewer.aspx?tocid=002.002.005' >Sec. 27-2500 Definitions</a> &gt; <a href='/regs/princegeorgescounty-md/doc-viewer.aspx?tocid=002.002.005.024' >Animal shelter</a></div>
+                </div>
+                 <div  class="pageControls_inner right">       
+                     <ul >  
+                         <li>
+                            <a id='button3' class="nav fa" onclick="ZP.DocView.LoadPrevDoc('002.002.005.024');return false;" href="#"  title="Previous Section" accesskey="," role="button">
+                                <i class="fa fa-chevron-left" aria-hidden="true"></i></a>
+                         </li>  
+                         <li>
+                             <a id='Button4'  class="nav fa" onclick="ZP.DocView.LoadNextDoc('002.002.005.024');return false;" href="#"  title="Next Section" accesskey="." role="button"> 
+                                  <i class="fa fa-chevron-right" aria-hidden="true"></i></a>
+                         </li>   
+                         <li>
+                             <a id="pageControls-overflow" onclick="ZP.DocView.PgCntrlOverflowClick(event);return false;" href="#" title="Click for more options" role="button" >
+                             
+<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 viewBox="0 0 23 23" style="enable-background:new 0 0 23 23;" xml:space="preserve">
+<g>
+	<path d="M2,21.2c-0.4-2.9-0.8-5.5-1.2-8.1C-0.1,6.9,4.6,1.2,10.9,0.8C16.7,0.3,22.1,5.2,22.3,11c0.3,6.4-4.5,11.5-10.9,11.3
+		C8.2,22.2,5.1,21.6,2,21.2z M20.4,11.6c0-5-3.9-9-8.8-9s-9.1,4.2-9.1,9.1s4.1,8.9,9,8.9C16.5,20.5,20.4,16.6,20.4,11.6z"/>
+	<path d="M7.7,10.8c0-0.9,0-1.7,0-2.6c0.9,0,1.7,0,2.6,0c0,0.8,0,1.7,0,2.6C9.5,10.8,8.7,10.8,7.7,10.8z"/>
+	<path d="M7.7,15.8c0-0.9,0-1.7,0-2.6c0.9,0,1.7,0,2.6,0c0,0.8,0,1.7,0,2.6C9.5,15.8,8.7,15.8,7.7,15.8z"/>
+	<path d="M12.8,15.8c0-0.9,0-1.7,0-2.6c0.9,0,1.7,0,2.6,0c0,0.8,0,1.7,0,2.6C14.6,15.8,13.8,15.8,12.8,15.8z"/>
+	<path d="M12.8,10.8c0-0.9,0-1.7,0-2.6c0.9,0,1.7,0,2.6,0c0,0.8,0,1.7,0,2.6C14.6,10.8,13.8,10.8,12.8,10.8z"/>
+</g>
+</svg>
+</a>
+                               
+  <ul class="submenu" role="dialog">
+            <li><a href="/regs/princegeorgescounty-md/doc-viewer.aspx?secid=80" onclick="javascript:alert('Right click this icon and select \'add to favorites\' or \'Bookmark this Link\' to bookmark this page');return false;" title="Bookmark this page" >Bookmark</a></li>
+            <li>
+                                        
+                <a id="zoomMinus" onclick="ZP.DocView.DecreaseZoom();return false;" href="#" title="Decrease Zoom" class="zoomLink glyphicon" >&#x2212;</a>
+                <a onclick="ZP.DocView.DefaultZoom();return false;"  href="#" title="Default Zoom"  class="zoomLink" >100%</a>
+                <a id="zoomPlus" onclick="ZP.DocView.IncreaseZoom();return false;" href="#" title="Increase Zoom"  class="zoomLink glyphicon" > &#x2b; </a>
+            </li>
+           
+                           
+                
+</ul>
+                         </li>        
+                        
+                        </ul>   
+                </div>
+                <div class="pageControls_outer"></div>
+            </div>
+        </div>
+    </div> 
+    <div id="subscribe-dialog" title="" aria-live="polite" >
+        <div id="sub-message"></div>
+        <div id="sub-form-cntr"></div>
+    </div>
+</div>
+
+
+        <div id="thePage-outer" >
+            <div id="thePage-wrap" class="thePage-wrap ">
+                <div id="outer-doc-banner"></div>
+                <div id="thePage-border">
+                    <div id="thePage" class="textPage " tocid="000" secid="80" role="main" aria-label="Document">
+                        <img id="sectionBanner" title="Document text banner" src="resources/docbanner.png" width="720" valign="Top" alt="Document text banner">
+                        
+                        <section id='secid-80' class='secLvl4 _002 _002-002 _002-002-005 _002-002-005-024' tabindex='-1' data-secid='80'> 
+<p><strong class="def">Animal shelter</strong></p><p><span style="background-color:#FFFFFF;">A facility used to house and care for stray, homeless, abandoned, or neglected animals that is owned, operated, or maintained by a public body or an established humane society or other private or nonprofit organization.</span></p>
+
+<p class='archiveNotice nullValue '></p>
+</section> 
+
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- hidden div below is for definition popup -->
+<div id="defFrame">
+    <img alt='loading progress' src="resources/progress.gif" /></div>
+<!-- hidden div below is for ajax loading progress-->
+<div id='progress-template' style='display: none;'>
+    <div class="progress" style='padding: 100px;'>
+        <div style='margin: auto; display: block; width: 200px; border: 1px solid #ccc; background-color: #eee; padding: 10px;'>
+            <img alt='loading progress' src='resources/progress.gif' style='margin: auto; display: block;' />
+            <br />
+            <span style='margin: auto; display: block; width: 75px; padding-left: 10px;'>Loading...</span>
+        </div>
+    </div>
+</div>
+<iframe style="width: 1px; height: 1px" src="" id="printiframe" name="printiframe" onload="ZP.DocView.IFrameReady();" title="Print frame" aria-hidden="true" role="presentation"></iframe>
+
+    </div>
+
+
+    </body>
+</html>

@@ -1,0 +1,68 @@
+{
+  "reviewDate": "2026-09-09",
+  "status": "NOT_READY_FOR_SUBMISSION",
+  "source": "porter-subdivision-permit-set.BEST-BACKUP.pdf",
+  "sourceSHA256": "c895fdd08bc08f67f5f60c392e245d13dd350564b62138d0b774290785b4f226",
+  "sourcePages": 1,
+  "sheetInches": [
+    36,
+    24
+  ],
+  "findings": [
+    {
+      "id": "R01",
+      "comment": "Both lots: missing surveyed floor/spot/garage elevations and engineered proposed grading. See READINESS.md R01."
+    },
+    {
+      "id": "R02",
+      "comment": "Unsigned professional certification; designer/checker and owner details incomplete. Do not change PRELIMINARY until reviewed."
+    },
+    {
+      "id": "R03",
+      "comment": "Sanitary paths visibly exit public easement shading. Reconcile continuity and all service routes with approved WSSC design."
+    },
+    {
+      "id": "R04",
+      "comment": "Private easement extends beyond page-2 reference segment; 10-foot width is an assumption in source JSON. Obtain legal instrument before redrawing."
+    },
+    {
+      "id": "R05",
+      "comment": "ESD footprint and summary Q/WQv are insufficient: provide approved concept, calculations, facility sections, elevations, outlets and overflow."
+    },
+    {
+      "id": "R06",
+      "comment": "16,789 SF AT LEAST is not a final coordinated disturbance calculation. Provide labelled LOD and erosion/sediment-control plan."
+    },
+    {
+      "id": "R07",
+      "comment": "Woodland/floodplain NOT ESTABLISHED. Soils, groundwater, TCP2/exemption and landscape evidence outstanding."
+    },
+    {
+      "id": "R08",
+      "comment": "20-foot rear yard shown as provided conflicts with Lot 2 side-yard assumption. Verify zoning; show per-lot setbacks and coverage."
+    },
+    {
+      "id": "R09",
+      "comment": "Use recorded lot areas 9,598 / 8,008 SF; gross 21,825; net 17,606. Distinguish computed geometry from recorded values."
+    },
+    {
+      "id": "R10",
+      "comment": "Recorded driveway condition truncated with ellipsis. Full condition requires abutting driveway design unless separate aprons deemed appropriate by DPW&T."
+    },
+    {
+      "id": "R11",
+      "comment": "3-foot public sidewalk needs standards/approval verification. Aprons visually meet curb; grades/approval remain unverified."
+    },
+    {
+      "id": "R12",
+      "comment": "Only one Kingsworth foundation/basement sheet found. Resolve basement/areaway/garage options and supply full project-specific building set."
+    },
+    {
+      "id": "R13",
+      "comment": "Supporting application records and current approvals not established. See READINESS.md R13."
+    }
+  ],
+  "reviewPDF": "porter-BEST-BACKUP.REVIEW.pdf",
+  "reviewAnnotations": 14,
+  "originalModified": false
+}

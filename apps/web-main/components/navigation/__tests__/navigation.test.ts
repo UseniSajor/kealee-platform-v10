@@ -37,19 +37,18 @@ describe('NAV_SECTIONS', () => {
     })
   })
 
-  it('presents the six customer services in project order', () => {
+  it('presents the five customer services in project order', () => {
     const labels = NAV_SECTIONS.map(s => s.label)
     expect(labels).toEqual([
       'Site Plan',
       'Design Concept',
-      'Estimate',
       'Permits',
       'Contractor Match',
       'Escrow & Safety',
     ])
   })
 
-  it('does not advertise the professional marketplace in the topbar', () => {
+  it('keeps property upgrades out of the five-step service topbar', () => {
     expect(NAV_SECTIONS.some(s => s.href === '/marketplace')).toBe(false)
   })
 

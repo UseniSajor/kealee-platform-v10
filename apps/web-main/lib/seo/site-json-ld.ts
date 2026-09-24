@@ -120,7 +120,7 @@ export function buildServiceJsonLd(): JsonLd {
           '@type': 'Offer',
           itemOffered: {
             '@type': 'Service',
-            name: 'Contractor Marketplace',
+            name: 'Home & Property Upgrades',
             url: `${KEALEE_SITE_URL}/marketplace`,
           },
         },

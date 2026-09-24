@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { Send, Search, User } from 'lucide-react'
+import { MessageSquare, Search, Send, User } from 'lucide-react'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? ''
 
@@ -22,22 +22,6 @@ interface Message {
   isMine: boolean
 }
 
-const SEED_CONVERSATIONS: Conversation[] = [
-  { id: '1', name: 'Mike Rodriguez (GC)', lastMessage: 'Framing inspection is scheduled for Thursday', time: '2 hours ago', unread: 2, project: 'Modern Duplex' },
-  { id: '2', name: 'Sarah Chen (Architect)', lastMessage: 'Updated plans uploaded to the documents folder', time: '1 day ago', unread: 0, project: 'Kitchen Remodel' },
-  { id: '3', name: 'Kealee PM Bot', lastMessage: 'Your draw request #3 has been approved', time: '3 days ago', unread: 0, project: 'Modern Duplex' },
-  { id: '4', name: 'Tom Jackson (Inspector)', lastMessage: 'Foundation passed - report attached', time: '1 week ago', unread: 0, project: 'Modern Duplex' },
-]
-
-const SEED_MESSAGES: Message[] = [
-  { id: '1', sender: 'Mike Rodriguez', content: 'Good morning! Just wanted to let you know the trusses arrived on site today.', time: '10:30 AM', isMine: false },
-  { id: '2', sender: 'You', content: 'Great news! Are we still on track for the framing inspection this week?', time: '10:45 AM', isMine: true },
-  { id: '3', sender: 'Mike Rodriguez', content: 'Yes, framing inspection is scheduled for Thursday at 9 AM. The inspector from the city will be on site.', time: '11:02 AM', isMine: false },
-  { id: '4', sender: 'Mike Rodriguez', content: "I'll send you photos once the last section is complete, should be by tomorrow EOD.", time: '11:03 AM', isMine: false },
-  { id: '5', sender: 'You', content: 'Perfect. Can you also provide an updated schedule for MEP rough-in start date?', time: '11:15 AM', isMine: true },
-  { id: '6', sender: 'Mike Rodriguez', content: 'Will get that to you by end of day. The plumber is confirmed for April 7th start.', time: '11:20 AM', isMine: false },
-]
-
 function formatTime(ts: string) {
   try {
     const d = new Date(ts)
@@ -51,35 +35,46 @@ function formatTime(ts: string) {
 }
 
 export default function MessagesPage() {
-  const [conversations, setConversations] = useState<Conversation[]>(SEED_CONVERSATIONS)
-  const [messages, setMessages] = useState<Message[]>(SEED_MESSAGES)
-  const [selectedConv, setSelectedConv] = useState('1')
+  const [conversations, setConversations] = useState<Conversation[]>([])
+  const [messages, setMessages] = useState<Message[]>([])
+  const [selectedConv, setSelectedConv] = useState<string | null>(null)
   const [newMessage, setNewMessage] = useState('')
   const [isLive, setIsLive] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState<string | null>(null)
   const [sending, setSending] = useState(false)
 
   const loadConversations = useCallback(async () => {
-    if (!API_URL) return
+    if (!API_URL) {
+      setLoadError('Messaging is not connected yet. Your project updates remain available in Projects and Documents.')
+      setLoading(false)
+      return
+    }
     try {
       const token = typeof window !== 'undefined' ? localStorage.getItem('kealee_token') : null
       const res = await fetch(`${API_URL}/api/v1/messages/conversations`, {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
         signal: AbortSignal.timeout(5000),
       })
-      if (!res.ok) return
+      if (!res.ok) throw new Error('Messaging service unavailable')
       const data = await res.json() as { conversations?: Array<{ id: string; participantName: string; lastMessage: string; updatedAt: string; unreadCount: number; projectName: string }> }
-      if (data.conversations?.length) {
-        setConversations(data.conversations.map(c => ({
+      const realConversations = (data.conversations ?? []).map(c => ({
           id: c.id,
           name: c.participantName,
           lastMessage: c.lastMessage,
           time: formatTime(c.updatedAt),
           unread: c.unreadCount,
           project: c.projectName,
-        })))
-        setIsLive(true)
-      }
-    } catch { /* keep seed */ }
+        }))
+      setConversations(realConversations)
+      setSelectedConv(current => current ?? realConversations[0]?.id ?? null)
+      setIsLive(true)
+      setLoadError(null)
+    } catch {
+      setLoadError('Messages could not be loaded. Please try again shortly or use your project workspace for updates.')
+    } finally {
+      setLoading(false)
+    }
   }, [])
 
   const loadMessages = useCallback(async (convId: string) => {
@@ -90,18 +85,18 @@ export default function MessagesPage() {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
         signal: AbortSignal.timeout(5000),
       })
-      if (!res.ok) return
+      if (!res.ok) throw new Error('Messages unavailable')
       const data = await res.json() as { messages?: Array<{ id: string; senderName: string; content: string; createdAt: string; isOwn: boolean }> }
-      if (data.messages?.length) {
-        setMessages(data.messages.map(m => ({
+      setMessages((data.messages ?? []).map(m => ({
           id: m.id,
           sender: m.senderName,
           content: m.content,
           time: new Date(m.createdAt).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }),
           isMine: m.isOwn,
         })))
-      }
-    } catch { /* keep current */ }
+    } catch {
+      setMessages([])
+    }
   }, [isLive])
 
   useEffect(() => { loadConversations() }, [loadConversations])
@@ -113,11 +108,12 @@ export default function MessagesPage() {
       setSending(true)
       try {
         const token = typeof window !== 'undefined' ? localStorage.getItem('kealee_token') : null
-        await fetch(`${API_URL}/api/v1/messages/conversations/${selectedConv}`, {
+        const response = await fetch(`${API_URL}/api/v1/messages/conversations/${selectedConv}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
           body: JSON.stringify({ content: newMessage }),
         })
+        if (!response.ok) throw new Error('Message was not accepted')
         setMessages(prev => [...prev, {
           id: Date.now().toString(),
           sender: 'You',
@@ -125,16 +121,10 @@ export default function MessagesPage() {
           time: new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }),
           isMine: true,
         }])
-      } catch { /* show optimistically */ }
+      } catch {
+        setLoadError('Your message was not sent. Please try again.')
+      }
       setSending(false)
-    } else {
-      setMessages(prev => [...prev, {
-        id: Date.now().toString(),
-        sender: 'You',
-        content: newMessage,
-        time: new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }),
-        isMine: true,
-      }])
     }
     setNewMessage('')
   }
@@ -167,6 +157,14 @@ export default function MessagesPage() {
             </div>
           </div>
           <div className="divide-y divide-gray-50 overflow-y-auto">
+            {loading && <p className="p-4 text-sm text-gray-500">Loading conversations…</p>}
+            {!loading && conversations.length === 0 && (
+              <div className="p-5 text-center">
+                <MessageSquare className="mx-auto h-7 w-7 text-gray-300" />
+                <p className="mt-3 text-sm font-medium text-gray-700">No conversations yet</p>
+                <p className="mt-1 text-xs leading-5 text-gray-500">Project-team conversations will appear here when a team member contacts you.</p>
+              </div>
+            )}
             {conversations.map((conv) => (
               <button key={conv.id} onClick={() => setSelectedConv(conv.id)}
                 className={`w-full p-4 text-left transition-colors ${selectedConv === conv.id ? '' : 'hover:bg-gray-50'}`}
@@ -202,6 +200,18 @@ export default function MessagesPage() {
           </div>
 
           <div className="flex-1 space-y-3 overflow-y-auto p-5">
+            {!activeConv && (
+              <div className="flex h-full items-center justify-center text-center">
+                <div className="max-w-sm">
+                  <MessageSquare className="mx-auto h-9 w-9 text-gray-300" />
+                  <p className="mt-3 text-sm font-medium text-gray-700">Your real project messages will appear here</p>
+                  <p className="mt-1 text-xs leading-5 text-gray-500">{loadError ?? 'There are no project conversations in your account yet.'}</p>
+                </div>
+              </div>
+            )}
+            {activeConv && messages.length === 0 && (
+              <p className="py-8 text-center text-sm text-gray-500">No messages in this conversation.</p>
+            )}
             {messages.map((msg) => (
               <div key={msg.id} className={`flex ${msg.isMine ? 'justify-end' : 'justify-start'}`}>
                 <div className={`max-w-[70%] rounded-2xl px-4 py-2.5 ${
@@ -220,6 +230,7 @@ export default function MessagesPage() {
               <input
                 type="text"
                 placeholder="Type a message..."
+                disabled={!activeConv || !isLive}
                 value={newMessage}
                 onChange={(e) => setNewMessage(e.target.value)}
                 onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend() } }}
@@ -228,7 +239,7 @@ export default function MessagesPage() {
               />
               <button
                 onClick={handleSend}
-                disabled={sending || !newMessage.trim()}
+                disabled={sending || !activeConv || !isLive || !newMessage.trim()}
                 className="rounded-lg p-2.5 text-white hover:opacity-90 disabled:opacity-50"
                 style={{ backgroundColor: '#E8793A' }}
               >

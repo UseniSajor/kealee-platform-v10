@@ -112,8 +112,8 @@ function SuccessContent() {
       </div>
 
       <p className="mt-6 text-xs text-slate-400">
-        A confirmation email has been sent. Delivery time depends on your
-        selected package tier.
+        A confirmation email has been sent. Delivery timing is based on the
+        project scope confirmed during intake.
       </p>
     </div>
   );

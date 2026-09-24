@@ -26,7 +26,7 @@ export const PLATFORM_BLOG_ARTICLES: PlatformBlogArticle[] = [
     datePublished: '2026-03-05',
     readTime: '6 min',
     keywords: ['construction digital twin', 'project management software', 'construction analytics'],
-    cta: { label: 'Explore project workspace', href: '/get-started' },
+    cta: { label: 'Explore project workspace', href: '/products/home-project-readiness-review' },
     sections: [
       {
         heading: 'What is a construction digital twin?',
@@ -57,7 +57,7 @@ export const PLATFORM_BLOG_ARTICLES: PlatformBlogArticle[] = [
     datePublished: '2026-03-01',
     readTime: '8 min',
     keywords: ['AI construction assistant', 'KeaBots', 'construction automation'],
-    cta: { label: 'Start design concept', href: '/concept' },
+    cta: { label: 'Start design concept', href: '/products/concept' },
     sections: [
       {
         heading: 'Agents, not autopilot',
@@ -142,7 +142,7 @@ export const PLATFORM_BLOG_ARTICLES: PlatformBlogArticle[] = [
     datePublished: '2026-02-10',
     readTime: '5 min',
     keywords: ['construction cost estimator', 'AI estimate', 'renovation cost calculator'],
-    cta: { label: 'Get an estimate', href: '/estimate' },
+    cta: { label: 'Get an estimate', href: '/products/detailed_estimate' },
     sections: [
       {
         heading: 'What AI estimates include',

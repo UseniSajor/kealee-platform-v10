@@ -90,10 +90,17 @@ export class V30ClaudeCachedClient {
   }
 }
 
-/** Map registry model ids to Anthropic API model strings (wired spec). */
-export function resolveV30AnthropicModel(defaultModel: string): string {
-  if (defaultModel.includes('opus')) return 'claude-opus-5'
-  return 'claude-sonnet-5'
+/**
+ * Map registry model ids to Anthropic API model strings.
+ *
+ * Every bot runs on Opus. These bots produce what the customer paid for —
+ * design directions, an estimate, a zoning read, a permit scope — and a
+ * cheaper model on any one of them shows up in the delivered package, not in
+ * the bill. The previous fallback silently downgraded every non-design bot to
+ * Sonnet.
+ */
+export function resolveV30AnthropicModel(_defaultModel: string): string {
+  return 'claude-opus-5'
 }
 
 export function maxTokensForV30Bot(botType: V30BotType): number {

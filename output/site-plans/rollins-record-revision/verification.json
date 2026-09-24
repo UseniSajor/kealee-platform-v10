@@ -1,0 +1,248 @@
+{
+  "baselineSHA256": "d9b0e033c4822b35df5ae31a5cc65dc2a7cae056db395fcdc08aad85b81cdb94",
+  "sitePlanPages": 1,
+  "supportingPages": 9,
+  "submissionReady": false,
+  "measuredFromSelectedPDFWithLot2Shift": [
+    {
+      "lot": 1,
+      "recordAreaSF": 9598,
+      "computedAreaSF": 9598.470814664917,
+      "footprintSF": 1196,
+      "footprintCoveragePct": 12.460929360283393,
+      "frontFt": 30.99871374579114,
+      "sideFt": [
+        8.096274239900982,
+        10.90294083161407
+      ],
+      "rearFt": 62.486981448500586
+    },
+    {
+      "lot": 2,
+      "recordAreaSF": 8008,
+      "computedAreaSF": 8008.841636251761,
+      "footprintSF": 1196,
+      "footprintCoveragePct": 14.935064935064934,
+      "frontFt": 30.3002162480203,
+      "sideFt": [
+        11.102712503332189,
+        8.154458275736383
+      ],
+      "rearFt": null
+    }
+  ],
+  "lot2ShiftTowardStreetFt": 0.7,
+  "lot2ShiftPdfPoints": [
+    2.477712183748216,
+    -0.45971984349780576
+  ],
+  "areawayChecks": [
+    {
+      "lot": 1,
+      "areaSF": 51.999999999999915,
+      "minimumBoundaryGapFt": 8.097160629921195,
+      "pass": true
+    },
+    {
+      "lot": 2,
+      "areaSF": 51.999999999999865,
+      "minimumBoundaryGapFt": 8.105108682153292,
+      "pass": true
+    }
+  ],
+  "walkChecks": [
+    {
+      "lot": 1,
+      "connectsStoopAndDrive": true
+    },
+    {
+      "lot": 2,
+      "connectsStoopAndDrive": true
+    }
+  ],
+  "geometry": {
+    "houses": [
+      [
+        [
+          1299.4000244140625,
+          490.5299987792969
+        ],
+        [
+          1207.3699951171875,
+          507.6099853515625
+        ],
+        [
+          1177.1600341796875,
+          344.7900085449219
+        ],
+        [
+          1269.18994140625,
+          327.7099914550781
+        ],
+        [
+          1299.4000244140625,
+          490.5299987792969
+        ]
+      ],
+      [
+        [
+          1342.7677512462483,
+          710.4202850393146
+        ],
+        [
+          1250.7377219493733,
+          727.5003021291584
+        ],
+        [
+          1220.5277610118733,
+          564.6802948049396
+        ],
+        [
+          1312.5576682384358,
+          547.6002777150959
+        ],
+        [
+          1342.7677512462483,
+          710.4202850393146
+        ]
+      ]
+    ],
+    "areaways": [
+      [
+        [
+          1207.3699951171875,
+          507.6099853515625
+        ],
+        [
+          1198.8323393338308,
+          461.59533079755204
+        ],
+        [
+          1184.673984086443,
+          464.2223018078156
+        ],
+        [
+          1193.2116398697997,
+          510.23695636182606
+        ],
+        [
+          1207.3699951171875,
+          507.6099853515625
+        ]
+      ],
+      [
+        [
+          1250.7377219493733,
+          727.5003021291584
+        ],
+        [
+          1242.2000677129854,
+          681.4856472881202
+        ],
+        [
+          1228.0417123772813,
+          684.1126178223933
+        ],
+        [
+          1236.5793666136692,
+          730.1272726634315
+        ],
+        [
+          1250.7377219493733,
+          727.5003021291584
+        ]
+      ]
+    ],
+    "lot2Stoop": [
+      [
+        1347.7277121837483,
+        658.2402923635334
+      ],
+      [
+        1342.4777121837483,
+        629.9302948049396
+      ],
+      [
+        1328.3176780040608,
+        632.5502899221271
+      ],
+      [
+        1333.5776877696858,
+        660.8702972463459
+      ],
+      [
+        1347.7277121837483,
+        658.2402923635334
+      ]
+    ]
+  },
+  "proposedLODsf": 19170.911489557297,
+  "offsiteLODsf": 1563.5990386406183,
+  "issues": [
+    {
+      "id": "R01",
+      "status": "PARTIAL",
+      "resolution": "Recorded boundary survey and WSSC benchmarks documented; vertical datum, grading, floor and utility design remain"
+    },
+    {
+      "id": "R02",
+      "status": "PARTIAL",
+      "resolution": "Both addresses added; owner and responsible professional details/signatures required"
+    },
+    {
+      "id": "R03",
+      "status": "OPEN",
+      "resolution": "Public utility containment and continuous approved connections"
+    },
+    {
+      "id": "R04",
+      "status": "PARTIAL",
+      "resolution": "Recorded status confirmed by applicant; upper private extension removed; no unlettered width asserted"
+    },
+    {
+      "id": "R05",
+      "status": "OPEN",
+      "resolution": "Approved concept and full stormwater design/report"
+    },
+    {
+      "id": "R06",
+      "status": "PARTIAL",
+      "resolution": "Proposed measured LOD added; final ESC design and approvals remain"
+    },
+    {
+      "id": "R07",
+      "status": "PARTIAL",
+      "resolution": "Soil component table/historical evidence added; current environmental/landscape documents remain"
+    },
+    {
+      "id": "R08",
+      "status": "PARTIAL",
+      "resolution": "Measured per-lot footprint clearances/ratios added; yard interpretation and projections remain"
+    },
+    {
+      "id": "R09",
+      "status": "PARTIAL",
+      "resolution": "Recorded areas and label corrections made; survey/control reconciliation remains"
+    },
+    {
+      "id": "R10",
+      "status": "CLOSED",
+      "resolution": "Full recorded conditions/adjoiners/legend supplied without ellipses"
+    },
+    {
+      "id": "R11",
+      "status": "OPEN",
+      "resolution": "Frontage width, cross slopes, driveway profiles and DPW&T determination"
+    },
+    {
+      "id": "R12",
+      "status": "PARTIAL",
+      "resolution": "Kingsworth areaways added; Lot 2 shifted to clear 8-foot side; complete upper building/trade designs remain"
+    },
+    {
+      "id": "R13",
+      "status": "PARTIAL",
+      "resolution": "Source dossier and preparation worksheet supplied; executed applications/approvals remain"
+    }
+  ]
+}

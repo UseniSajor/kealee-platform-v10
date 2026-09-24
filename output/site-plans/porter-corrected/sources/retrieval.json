@@ -1,0 +1,29 @@
+{
+  "date": "2026-09-09",
+  "jobs": [
+    [
+      "https://www.pgatlas.com/Documents/DAMS/SR_4-06111_2.pdf",
+      "Porter-4-06111-staff-report.pdf",
+      null
+    ],
+    [
+      "https://sdmdataaccess.sc.egov.usda.gov/Tabular/post.rest",
+      "porter-site-soils.json",
+      {
+        "format": "JSON",
+        "query": "SELECT mu.musym, mu.muname, c.hydricrating, c.hydgrp, c.drainagecl, (SELECT TOP 1 ch.kffact FROM chorizon ch WHERE ch.cokey=c.cokey ORDER BY ch.hzdept_r) AS kf FROM mapunit mu LEFT JOIN component c ON c.mukey=mu.mukey AND c.majcompflag='Yes' WHERE mu.mukey IN (SELECT mukey FROM SDA_Get_Mukey_from_intersection_with_WktWgs84('POLYGON((-76.90192376926662 38.87533122894189,-76.90124541688202 38.87542906510182,-76.90110380298184 38.87482885944999,-76.90192376926662 38.87533122894189))'))"
+      }
+    ],
+    [
+      "https://online.encodeplus.com/regs/princegeorgescounty-md/doc-view.aspx?secid=634&print=1",
+      "zoning-residential.html",
+      null
+    ],
+    [
+      "https://online.encodeplus.com/regs/princegeorgescounty-md/doc-view.aspx?secid=80&print=1",
+      "zoning-definitions.html",
+      null
+    ]
+  ],
+  "siteWkt": "POLYGON((-76.90192376926662 38.87533122894189,-76.90124541688202 38.87542906510182,-76.90110380298184 38.87482885944999,-76.90192376926662 38.87533122894189))"
+}

@@ -10,7 +10,8 @@
     "garage": "attached_2_car",
     "coveredPorch": false,
     "footprintWidthFt": 46,
-    "footprintDepthFt": 26
+    "footprintDepthFt": 26,
+    "garageWidthFt": 10
   },
   "address": "1009 Rollins Ave",
   "reference": {
@@ -46,8 +47,10 @@
   "_yardDetermination": "LOT 2 IS A TRIANGLE and has no lot line opposite the frontage. The NW boundary (179.66 ft) is treated as a SIDE yard at 8 ft, not a rear yard at 20 ft, on the determination that a triangular lot has no rear lot line. Stated by the applicant, carried into the drawing and labelled on the sheet; the zoning reviewer confirms it against Subtitle 27.",
   "dedicationWidthFt": 20.0,
   "platFrontageEasementFt": 10.0,
-  "_frontSetbackNote": "Front setback 20 ft from the front property line, with the plat's 10.00' PUE lying inside it. The RSF-65 table gives 25 ft; the platted building restriction line governs the lot and it is 20 ft. Earlier this sheet showed 23 ft, derived from a face-to-curb dimension — that derivation is withdrawn.",
-  "sanitaryFrom": "rear",
+  "_frontSetbackNote": "Building footprint set 30 ft from the front property line on Rollins Avenue. The RSF-65 table gives 25 ft; the greater figure governs. The plat's 10.00' PUE lies inside it.",
+  "sanitaryFrom": "lot13",
   "_utilityNote": "Lot 2 water comes from the Rollins Avenue main; the sanitary lateral runs to the main behind the lot, not out to the street. Stated for this lot — the engine defaults every service to the frontage, which is the usual case and not this one.",
-  "frontSetbackFt": 20.0
+  "frontSetbackFt": 30.0,
+  "_architectureNote": "From the Kingsworth foundation/basement plan: 36'-0\" main house + 10'-0\" optional one-car garage = 46'-0\" overall, 26'-0\" deep. Front concrete stoop 8'-0\" wide by 4'-0\" deep, lettered 14'-0\" | 8'-0\" | 14'-0\" across the main house, so it is centred on the 36 ft house and not on the whole footprint. The driveway is centred on the garage.",
+  "_sanitaryNote": "Both lots are sewered from LOT 13 in the adjoining Addition to Pleasant Park subdivision (Plat Book VJ 185, Plat 76), through the north-east boundary. Lot 1's lateral runs to that connection; Lot 2's runs to Lot 1's connection rather than making a second tap. Neither lot is sewered from the Rollins Avenue main."
 }

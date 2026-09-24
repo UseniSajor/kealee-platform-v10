@@ -1,0 +1,17 @@
+{
+  "revision": 5,
+  "sourceUnchanged": true,
+  "sourceSHA256": "d1271751ca29cb2e7d1aa012dd3699050c1fd35b42d3c939d408680bc0d8ddb5",
+  "mainPlanViewPixelIdentical": true,
+  "revisionColumns": [
+    "REV.",
+    "DATE",
+    "DESCRIPTION",
+    "BY"
+  ],
+  "populatedRows": 4,
+  "blankRows": 3,
+  "professionalFieldsRetained": true,
+  "legendRetained": true,
+  "textWithinPage": true
+}

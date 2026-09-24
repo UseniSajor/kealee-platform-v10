@@ -1,13 +1,14 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { useState } from 'react'
 import { useClerk } from '@clerk/nextjs'
 import {
   Map, FlaskConical, Landmark, LayoutGrid,
-  FileBarChart, LogOut, Building, Briefcase,
-  Bell, Menu, ChevronRight,
+  FileBarChart, LogOut, Briefcase,
+  Menu, ChevronRight, UserCircle,
 } from 'lucide-react'
 import { PortalPageWithAskRail } from '@kealee/ui'
 
@@ -45,11 +46,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       {/* Logo */}
       <div className="flex h-16 items-center px-5" style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
         <Link href="/pipeline" className="flex items-center gap-2.5">
-          <div className="flex h-8 w-8 items-center justify-center rounded-xl"
-            style={{ background: 'linear-gradient(135deg, #6366F1, #4338CA)' }}>
-            <Building className="h-4 w-4 text-white" />
-          </div>
-          <span className="text-base font-bold text-white font-display tracking-tight">Kealee</span>
+          <Image src="/kealee-icon-512x512-transparent.png" alt="Kealee" width={32} height={32} className="h-8 w-8" priority />
           <span className="rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide"
             style={{ backgroundColor: `${ACCENT}22`, color: ACCENT }}>
             Dev
@@ -128,13 +125,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </button>
           <span className="font-bold font-display text-sm" style={{ color: SIDEBAR }}>Developer Portal</span>
           <div className="ml-auto flex items-center gap-2">
-            <button className="relative rounded-lg p-1.5 text-slate-400 hover:bg-slate-100">
-              <Bell className="h-4 w-4" />
-            </button>
-            <div className="flex h-7 w-7 items-center justify-center rounded-full text-[10px] font-bold text-white"
-              style={{ background: 'linear-gradient(135deg, #6366F1, #4338CA)' }}>
-              D
-            </div>
+            <UserCircle className="h-7 w-7 text-slate-400" aria-label="Account" />
           </div>
         </header>
 
@@ -151,13 +142,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             )}
           </div>
           <div className="flex items-center gap-3">
-            <button className="relative rounded-lg p-1.5 text-slate-400 hover:bg-slate-100">
-              <Bell className="h-4 w-4" />
-            </button>
-            <div className="flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold text-white"
-              style={{ background: 'linear-gradient(135deg, #6366F1, #4338CA)' }}>
-              D
-            </div>
+            <UserCircle className="h-8 w-8 text-slate-400" aria-label="Account" />
           </div>
         </div>
 

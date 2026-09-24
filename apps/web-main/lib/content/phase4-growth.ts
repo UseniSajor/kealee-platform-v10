@@ -35,19 +35,19 @@ export const serviceArchitecture = [
   {
     name: 'Concept planning',
     description: 'AI-supported visual direction, scope framing, zoning context, and path-to-approval planning.',
-    href: '/concept',
+    href: '/products/concept',
     schemaName: 'design concepts',
   },
   {
     name: 'Cost estimates',
     description: 'Trade-by-trade cost guidance and detailed estimate packages for project decisions and bid comparison.',
-    href: '/estimate',
+    href: '/products/detailed_estimate',
     schemaName: 'Construction Cost Estimation',
   },
   {
     name: 'Permit support',
     description: 'Permit guidance, filing support, coordination, and jurisdiction-aware project readiness.',
-    href: '/permits',
+    href: '/products/permit_assessment',
     schemaName: 'Permit Analysis and Filing',
   },
   {
@@ -97,14 +97,14 @@ export const purchasePaths = [
     label: 'Cost clarity',
     title: 'Order an estimate',
     description: 'Use this when you already know the project scope and need a trade-by-trade cost view.',
-    href: '/estimate',
+    href: '/products/detailed_estimate',
     cta: 'Compare estimates',
   },
   {
     label: 'Permitting',
     title: 'Check permit path',
     description: 'Use this when approval risk, filing requirements, or jurisdiction timing are the main concern.',
-    href: '/permits',
+    href: '/products/permit_assessment',
     cta: 'Review permit support',
   },
   {

@@ -10,7 +10,8 @@
     "garage": "attached_2_car",
     "coveredPorch": false,
     "footprintWidthFt": 46,
-    "footprintDepthFt": 26
+    "footprintDepthFt": 26,
+    "garageWidthFt": 10
   },
   "address": "1005 Rollins Ave",
   "reference": {
@@ -49,6 +50,9 @@
   "_footprintSource": "Kingsworth foundation/basement plan, custom designs unlimited inc., dwg 260811, 1/4\"=1'-0\" (existing site plans/Kingsworth 2nd & basement floor plan.pdf). The plan dimensions the main house 36'-0\" wide and adds 10'-0\" for the optional one-car garage, giving the 46'-0\" overall width; depth is 26'-0\", lettered (26'-4\" w/ optional brick veneer). The footprint is drawn at the 26'-0\" nominal. IF THE BRICK VENEER OPTION IS TAKEN the outermost projection is 4 in deeper than drawn, and a setback is measured to the outermost projection.",
   "dedicationWidthFt": 20.0,
   "platFrontageEasementFt": 10.0,
-  "_frontSetbackNote": "Front setback 20 ft from the front property line, with the plat's 10.00' PUE lying inside it. The RSF-65 table gives 25 ft; the platted building restriction line governs the lot and it is 20 ft. Earlier this sheet showed 23 ft, derived from a face-to-curb dimension — that derivation is withdrawn.",
-  "frontSetbackFt": 20.0
+  "_frontSetbackNote": "Building footprint set 30 ft from the front property line on Rollins Avenue. The RSF-65 table gives 25 ft; the greater figure governs. The plat's 10.00' PUE lies inside it.",
+  "frontSetbackFt": 30.0,
+  "_architectureNote": "From the Kingsworth foundation/basement plan: 36'-0\" main house + 10'-0\" optional one-car garage = 46'-0\" overall, 26'-0\" deep. Front concrete stoop 8'-0\" wide by 4'-0\" deep, lettered 14'-0\" | 8'-0\" | 14'-0\" across the main house, so it is centred on the 36 ft house and not on the whole footprint. The driveway is centred on the garage.",
+  "sanitaryFrom": "lot13",
+  "_sanitaryNote": "Both lots are sewered from LOT 13 in the adjoining Addition to Pleasant Park subdivision (Plat Book VJ 185, Plat 76), through the north-east boundary. Lot 1's lateral runs to that connection; Lot 2's runs to Lot 1's connection rather than making a second tap. Neither lot is sewered from the Rollins Avenue main."
 }

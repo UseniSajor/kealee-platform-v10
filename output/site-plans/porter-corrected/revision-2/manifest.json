@@ -1,0 +1,79 @@
+{
+  "status": "PRELIMINARY_NOT_SUBMISSION_READY",
+  "pageChecks": [
+    {
+      "sheet": "C-001",
+      "widthIn": 36.0,
+      "heightIn": 24.0,
+      "textOutsidePage": []
+    },
+    {
+      "sheet": "C-002",
+      "widthIn": 36.0,
+      "heightIn": 24.0,
+      "textOutsidePage": []
+    },
+    {
+      "sheet": "C-003",
+      "widthIn": 36.0,
+      "heightIn": 24.0,
+      "textOutsidePage": []
+    },
+    {
+      "sheet": "C-004",
+      "widthIn": 36.0,
+      "heightIn": 24.0,
+      "textOutsidePage": []
+    }
+  ],
+  "files": [
+    {
+      "path": "COMPLETION-REGISTER.md",
+      "sha256": "4619b0c874c239bf7c4c5c66a0ef041378c98356ac65fee6d173a75bed755949"
+    },
+    {
+      "path": "Rollins-Avenue-Civil-Review-Rev2.pdf",
+      "sha256": "082c1aaa32ad57dbb9d5cfa022eaa31093aa394e9026d5b85d8669cd6d546fdc"
+    },
+    {
+      "path": "corrected-features.json",
+      "sha256": "50c465e720c929193d78179edf5435244529c32e4faba9326fd344cc43f5996b"
+    },
+    {
+      "path": "eplan/C-001 - Site and Utilities.pdf",
+      "sha256": "511ad0749e51f671a9adb04872f67bd709525333a139768e95bb568c2e2e3712"
+    },
+    {
+      "path": "eplan/C-002 - Disturbance and Erosion Control.pdf",
+      "sha256": "98f89a65b8edfe4280c205cb7adca163f7a3b5c7dfaf69471aa73e0a5f42795e"
+    },
+    {
+      "path": "eplan/C-003 - Notes and Calculations.pdf",
+      "sha256": "e5c263114d3af259aceb9ea80b923b9c1b8b7d26067e7288dcd48d350c7aebe5"
+    },
+    {
+      "path": "eplan/C-004 - Details and Utility Reference.pdf",
+      "sha256": "6f877202a3b839f3a841b5ad92183459ea0e7195754b6f89fa058990a1508c69"
+    },
+    {
+      "path": "preview-1.png",
+      "sha256": "f1a8a31efbad06510ba053f7e59a406ce2da631e86b4341549e934a5d47382c5"
+    },
+    {
+      "path": "preview-2.png",
+      "sha256": "16a0090906c7fe4b9835ea0ecc051adb1746834609a5fc7b99fae5e88c2e9fbb"
+    },
+    {
+      "path": "preview-3.png",
+      "sha256": "67cdcb68fdfaabc372f6fb22696d5d09da68a212c4e6f8ce99ecd8baacf4f9eb"
+    },
+    {
+      "path": "preview-4.png",
+      "sha256": "36c1acd8bd3df0819b10f204c549c8932d7c6779b19c349d59e286b60b783fac"
+    },
+    {
+      "path": "verification.json",
+      "sha256": "122540494ced4dcec4bda30deb594e1d119f2bfb2882c099cbc1c4df220d577d"
+    }
+  ]
+}

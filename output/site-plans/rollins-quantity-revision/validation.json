@@ -1,0 +1,11 @@
+{
+  "sourceUnchanged": true,
+  "sitePages": 1,
+  "supportingPages": 10,
+  "bothHousesAndAreawaysMatchRenderedGeometry": true,
+  "areawaySideCriterionPassed": true,
+  "lot2FrontCriterionPassed": true,
+  "oldPrivateRectangleRemoved": true,
+  "textWithinPages": true,
+  "submissionReady": false
+}

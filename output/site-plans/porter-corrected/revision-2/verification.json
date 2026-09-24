@@ -1,0 +1,219 @@
+{
+  "sourceBestBackupSHA256": "c895fdd08bc08f67f5f60c392e245d13dd350564b62138d0b774290785b4f226",
+  "status": "CORRECTED_DRAWINGS_PROFESSIONAL_REVIEW_REQUIRED",
+  "pages": 4,
+  "recordAreas": [
+    9598,
+    8008
+  ],
+  "disturbanceUnionSqFt": 19728.33774599896,
+  "clearances": [
+    {
+      "front": 30.999999999729724,
+      "sideMin": 8.401466102342095,
+      "sideMax": 10.59689518970018,
+      "rear": 62.860586082346614
+    },
+    {
+      "front": 31.00000000015339,
+      "sideMin": 8.260847407584187,
+      "sideMax": 11.653265181962738,
+      "rear": null
+    }
+  ],
+  "drainage": [
+    {
+      "lot": 1,
+      "area": 9598,
+      "roof": 1196,
+      "impervious": 1617.4999999974038,
+      "percent": 16.85246926440304,
+      "Cpre": 0.25,
+      "Cpost": 0.3679672848508213,
+      "I10": 6.71,
+      "tc": 5,
+      "Qpre": 0.3696199494949495,
+      "Qpost": 0.5440321969694171,
+      "WQv": 161.30416666647196
+    },
+    {
+      "lot": 2,
+      "area": 8008,
+      "roof": 1196,
+      "impervious": 1617.4999999979027,
+      "percent": 20.198551448525258,
+      "Cpre": 0.25,
+      "Cpost": 0.39138986013967686,
+      "I10": 6.71,
+      "tc": 5,
+      "Qpre": 0.3083888888888889,
+      "Qpost": 0.48280113636341027,
+      "WQv": 154.67916666650936
+    }
+  ],
+  "geometryChecks": [
+    {
+      "check": "Public service 1 inside public corridor",
+      "pass": true
+    },
+    {
+      "check": "Public service 2 inside public corridor",
+      "pass": true
+    },
+    {
+      "check": "Public service 3 inside public corridor",
+      "pass": true
+    },
+    {
+      "check": "Public service 4 inside public corridor",
+      "pass": true
+    },
+    {
+      "check": "Lot 1 water inside own lot",
+      "pass": true
+    },
+    {
+      "check": "Lot 1 sewer inside own lot",
+      "pass": true
+    },
+    {
+      "check": "Lot 2 water inside own lot",
+      "pass": true
+    },
+    {
+      "check": "Private water inside Lot 1 working corridor",
+      "pass": true
+    },
+    {
+      "check": "Lot 2 sewer inside own lot",
+      "pass": true
+    },
+    {
+      "check": "Private sewer inside Lot 1 working corridor",
+      "pass": true
+    },
+    {
+      "check": "LOD valid and includes both lots/frontage/public utility work",
+      "pass": true
+    },
+    {
+      "check": "Lot 1 dwelling within 30-foot front and 8-foot side design lines",
+      "pass": true
+    },
+    {
+      "check": "Lot 2 dwelling within 30-foot front and 8-foot side design lines",
+      "pass": true
+    },
+    {
+      "check": "Lot 1 leadwalk reaches stoop and driveway",
+      "pass": true
+    },
+    {
+      "check": "Lot 2 leadwalk reaches stoop and driveway",
+      "pass": true
+    },
+    {
+      "check": "Lot 1 SWM footprint clears dwelling, walk, stoop and driveway",
+      "pass": true,
+      "minimumGapFt": 39.895
+    },
+    {
+      "check": "Lot 1 driveway meets apron",
+      "pass": true
+    },
+    {
+      "check": "Lot 1 apron meets curb",
+      "pass": true
+    },
+    {
+      "check": "Lot 1 SWM clears public sidewalk",
+      "pass": true,
+      "minimumGapFt": 96.895
+    },
+    {
+      "check": "Lot 2 SWM footprint clears dwelling, walk, stoop and driveway",
+      "pass": true,
+      "minimumGapFt": 18.23
+    },
+    {
+      "check": "Lot 2 driveway meets apron",
+      "pass": true
+    },
+    {
+      "check": "Lot 2 apron meets curb",
+      "pass": true
+    },
+    {
+      "check": "Lot 2 SWM clears public sidewalk",
+      "pass": true,
+      "minimumGapFt": 17.771
+    }
+  ],
+  "submissionReady": false,
+  "utilityConnectivityChecks": [
+    {
+      "check": "Lot 1 water public-to-service junction",
+      "pass": false,
+      "gapFt": 1.441,
+      "resolution": "Surveyed WSSC junction design; no connecting geometry inferred"
+    },
+    {
+      "check": "Lot 2 water public-to-service junction",
+      "pass": false,
+      "gapFt": 10.075,
+      "resolution": "Surveyed WSSC junction design; no connecting geometry inferred"
+    },
+    {
+      "check": "Lot 1 sewer public-to-service junction",
+      "pass": false,
+      "gapFt": 18.709,
+      "resolution": "Surveyed WSSC junction design; no connecting geometry inferred"
+    },
+    {
+      "check": "Lot 2 sewer public-to-service junction",
+      "pass": false,
+      "gapFt": 27.343,
+      "resolution": "Surveyed WSSC junction design; no connecting geometry inferred"
+    }
+  ],
+  "boundaryCallsOfRecord": [
+    {
+      "id": "B1",
+      "bearing": "N 79-29-14 E",
+      "distanceFt": 176.36
+    },
+    {
+      "id": "B2",
+      "bearing": "S 10-30-46 E",
+      "distanceFt": 65.0
+    },
+    {
+      "id": "B3",
+      "bearing": "N 79-29-14 E",
+      "distanceFt": 118.96
+    },
+    {
+      "id": "B4",
+      "bearing": "N 51-58-25 W",
+      "distanceFt": 86.72
+    },
+    {
+      "id": "B5",
+      "bearing": "S 10-30-46 E",
+      "distanceFt": 134.64
+    },
+    {
+      "id": "B6",
+      "bearing": "N 51-58-25 W",
+      "distanceFt": 179.66
+    }
+  ],
+  "remaining": [
+    "Public-to-private utility junction continuity and surveyed easement reconciliation",
+    "Professional signatures and certification",
+    "Final vertical grading, utility/infiltration design values not present in records",
+    "Current approval attachments and private easement legal instrument",
+    "Lot 2 zoning interpretation and DPW&T driveway/sidewalk determination",
+    "Complete coordinated architectural and structural building set"
+  ]
+}

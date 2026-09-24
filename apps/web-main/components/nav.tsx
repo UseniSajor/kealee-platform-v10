@@ -8,7 +8,7 @@ import { KealeeNavIcon } from "@/components/brand/KealeeNavIcon";
 import { KealeeLogo } from "@/components/KealeeLogo";
 import { isAgencyPartnerShellPath } from "@/lib/agency-partner-shell";
 
-// The public navigation mirrors the six-step customer journey. Product
+// The public navigation mirrors the five-step customer journey. Product
 // variants live inside each education page instead of competing in the header.
 interface NavDropdownItem {
   label: string;
@@ -207,7 +207,7 @@ export function SiteNav() {
     <nav className="sticky top-0 z-50 border-b border-[#10233e]/10 bg-white/95 shadow-[0_8px_30px_rgba(16,35,62,.05)] backdrop-blur-xl">
       <div className="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-8">
         <div className="flex h-[72px] items-center justify-between">
-          {/* LEFT: Logo + the six customer services */}
+          {/* LEFT: Logo + the five customer services */}
           <div className="flex items-center gap-6">
             <Link href="/" className="flex shrink-0 items-center">
               <KealeeLogo />

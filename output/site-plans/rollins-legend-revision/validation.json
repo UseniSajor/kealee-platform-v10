@@ -1,0 +1,13 @@
+{
+  "revision": 4,
+  "sourceSHA256": "e805686090d4248bd9feea5b8bfdfeecb5a7c2f172d852f4c279bab82054be2d",
+  "sourceUnchanged": true,
+  "mainPlanViewPixelIdentical": true,
+  "legendEntries": 14,
+  "pageSizeInches": [
+    36,
+    24
+  ],
+  "textWithinPage": true,
+  "permitReady": false
+}

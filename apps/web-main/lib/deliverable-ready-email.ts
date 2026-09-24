@@ -3,9 +3,7 @@
  * Replaces concept-only notifications for all paid intake types.
  */
 
-import { getOwnerPortalDeliverableUrl } from '@/lib/owner-portal-urls'
 import { generatePortalAccessToken } from '@/lib/portal-access-token'
-import { getBuildPathUpsells } from '@kealee/core-rules'
 
 export interface DeliverableReadyPayload {
   to: string
@@ -55,25 +53,6 @@ export async function sendDeliverableReadyEmail(
   }
 
   const signInUrl = portalAccess.claimUrl
-  // "Create a password" link uses the portal's login page in create-account mode.
-  // Previously pointed to kealee.com/auth/complete which requires an active session
-  // the user doesn't have when arriving from email — causing a 404/auth error.
-  // Only offer the "create a password" upsell when a portal is actually
-  // configured — otherwise it links to a host that does not resolve.
-  const portalBase = (process.env.NEXT_PUBLIC_PORTAL_URL ?? process.env.NEXT_PUBLIC_OWNER_PORTAL_URL ?? '').replace(/\/$/, '')
-  const accountUrl = portalBase
-    ? `${portalBase}/login?welcome=1&email=${encodeURIComponent(to)}&next=${encodeURIComponent(getOwnerPortalDeliverableUrl(intakeId, service))}`
-    : ''
-
-  const upsells = getBuildPathUpsells({
-    sourceProjectPath: service,
-    fromIntakeId: intakeId,
-  })
-  const upsellLines = upsells.offers
-    .filter((o) => o.tier !== 'locked')
-    .slice(0, 3)
-    .map((o) => `${o.label} — ${o.priceLabel}`)
-
   const costLine =
     typeof estimatedCost === 'number' && estimatedCost > 0
       ? `Estimated investment range: $${estimatedCost.toLocaleString('en-US')}`
@@ -103,19 +82,19 @@ export async function sendDeliverableReadyEmail(
           </div>
           <div style="padding:40px 32px 0">
             <p style="margin:0 0 6px;font-size:13px;font-weight:600;color:#E8793A;text-transform:uppercase">Your package is ready</p>
-            <h1 style="margin:0 0 16px;font-size:26px;font-weight:800;color:#0F1A2E">Hi ${greeting} — your ${svc} deliverable is waiting.</h1>
+            <h1 style="margin:0 0 16px;font-size:26px;font-weight:800;color:#0F1A2E">Hi ${greeting} — your ${svc} package is complete.</h1>
             <p style="margin:0 0 24px;font-size:15px;color:#555;line-height:1.7">
-              Click below for one-click access. Save your project by creating a password on your next visit.
+              Your secure link signs you in and opens the package in your Kealee Owner Portal.
             </p>
           </div>
           <div style="margin:0 32px;background:#F8F9F9;border:1px solid #E8E6DF;border-radius:12px;padding:24px">
-            <p style="margin:0 0 12px;font-size:13px;font-weight:700;color:#0F1A2E;text-transform:uppercase">Continue toward build</p>
-            ${upsellLines.map((line) => `<p style="margin:6px 0;font-size:14px;color:#444">→ ${line}</p>`).join('')}
+            <p style="margin:0 0 8px;font-size:13px;font-weight:700;color:#0F1A2E;text-transform:uppercase">Ready to open</p>
+            <p style="margin:0;font-size:14px;color:#444;line-height:1.6">Your concept, project details, and downloads are together in one place.</p>
             ${costLine ? `<p style="margin:16px 0 0;font-size:14px;font-weight:600;color:#0F1A2E">${costLine}</p>` : ''}
           </div>
           <div style="padding:32px 32px 0;text-align:center">
-            <a href="${signInUrl}" style="display:inline-block;background:#E8793A;color:#fff;text-decoration:none;padding:16px 40px;border-radius:10px;font-weight:800;font-size:16px">View My Deliverable →</a>
-            ${accountUrl ? `<p style="margin:14px 0 0;font-size:12px;color:#999"><a href="${accountUrl}" style="color:#2ABFBF">Create a password</a> for faster return access.</p>` : ''}
+            <a href="${signInUrl}" style="display:inline-block;background:#E8793A;color:#fff;text-decoration:none;padding:16px 40px;border-radius:10px;font-weight:800;font-size:16px">Open My Package →</a>
+            <p style="margin:14px 0 0;font-size:12px;color:#777">Secure one-click access. The link is valid for 30 days.</p>
           </div>
           <div style="padding:24px 32px 32px;margin-top:24px;border-top:1px solid #E8E6DF">
             <p style="margin:0;font-size:12px;color:#bbb;word-break:break-all">${signInUrl}</p>
@@ -126,12 +105,11 @@ export async function sendDeliverableReadyEmail(
         `Hi ${greeting},`,
         '',
         `Your ${svc} package is ready.`,
+        'Use this secure link to sign in and open it:',
         signInUrl,
         '',
-        'Next steps toward build:',
-        ...upsellLines.map((l) => `- ${l}`),
-        '',
-        `Create a password: ${accountUrl}`,
+        ...(costLine ? [costLine, ''] : []),
+        'Your concept, project details, and downloads are together in your Kealee Owner Portal.',
       ].join('\n'),
     }),
   })

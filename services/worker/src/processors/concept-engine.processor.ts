@@ -207,10 +207,21 @@ async function processGenerateConceptPackage(
     if (sourcePhotos.length === 0) {
       throw new Error('Customer source photo is required for concept rendering');
     }
+    const upgradeOptions = Array.isArray((intake as any)?.upgradeOptions)
+      ? (intake as any).upgradeOptions.map(String).join(', ')
+      : '';
+    const upgradeBrief = [
+      (intake as any)?.description ?? (intake as any)?.projectDescription ?? (intake as any)?.message,
+      (intake as any)?.upgradeProductName ? `Selected transformation: ${(intake as any).upgradeProductName}` : '',
+      (intake as any)?.upgradeScope ? `Scope: ${String((intake as any).upgradeScope).replace(/-/g, ' ')}` : '',
+      upgradeOptions ? `Selected options: ${upgradeOptions.replace(/-/g, ' ')}` : '',
+      (intake as any)?.problemsToSolve ? `Problems to solve: ${(intake as any).problemsToSolve}` : '',
+      (intake as any)?.mustStay ? `Preserve: ${(intake as any).mustStay}` : '',
+    ].filter(Boolean).join('. ');
     renderImageUrls = await generateConceptRenders({
       title:          (intake as any)?.projectTitle ?? (intake as any)?.address ?? intakeId,
-      description:    (intake as any)?.projectDescription ?? (intake as any)?.message,
-      styleDirection: (intake as any)?.stylePreference,
+      description:    upgradeBrief,
+      styleDirection: (intake as any)?.stylePreferences ?? (intake as any)?.stylePreference,
       projectType:    String(projectPath ?? ''),
       sourceImageUrl:  sourcePhotos[0],
     });
@@ -504,11 +515,13 @@ async function generateConceptRenders(input: ConceptRenderInput): Promise<string
     throw new Error('REPLICATE_API_TOKEN not set; customer delivery withheld');
   }
 
-  const exteriorTypes = ['exterior_renovation', 'adu', 'new_construction', 'addition'];
-  const renderTypes: Array<'interior' | 'exterior'> = ['interior'];
-  if (!input.projectType || exteriorTypes.includes(input.projectType)) {
-    renderTypes.push('exterior');
-  }
+  const exteriorOnlyTypes = ['exterior_renovation', 'exterior_concept', 'garden_concept', 'adu', 'new_construction'];
+  const interiorAndExteriorTypes = ['addition', 'addition_expansion', 'whole_home_concept', 'whole_home_remodel'];
+  const renderTypes: Array<'interior' | 'exterior'> = exteriorOnlyTypes.includes(input.projectType ?? '')
+    ? ['exterior']
+    : interiorAndExteriorTypes.includes(input.projectType ?? '')
+      ? ['interior', 'exterior']
+      : ['interior'];
 
   const imageUrls: string[] = [];
 
@@ -597,6 +610,10 @@ function buildConceptPrompt(input: ConceptRenderInput, type: 'interior' | 'exter
     kitchen_remodel:     { interior: 'Modern kitchen, high-end appliances, granite countertops, custom cabinetry, pendant lighting' },
     bathroom_remodel:    { interior: 'Spa bathroom, custom tile, double vanity, soaking tub, walk-in shower' },
     exterior_renovation: { exterior: 'Updated siding, new windows, manicured landscaping, professional lighting' },
+    exterior_concept:    { exterior: 'Property-specific facade transformation, coordinated entry, siding, trim, windows, architectural lighting, and landscaping' },
+    garden_concept:      { exterior: 'Property-specific outdoor living and landscape design with realistic grading, drainage, planting, lighting, and selected structures' },
+    addition_expansion:  { interior: 'Seamless connection between existing and proposed rooms', exterior: 'Property-specific addition that preserves the existing house identity and site conditions' },
+    whole_home_concept:  { interior: 'Cohesive whole-home renovation with realistic retained conditions', exterior: 'Coordinated exterior direction that preserves the exact property geometry' },
     adu:                 { exterior: 'Accessory dwelling unit, clean lines, private entrance, complementary to main home' },
     new_construction:    { exterior: 'New home construction, curb appeal, modern facade, professional landscaping' },
   };

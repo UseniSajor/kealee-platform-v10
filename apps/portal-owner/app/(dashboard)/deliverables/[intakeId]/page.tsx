@@ -366,6 +366,11 @@ interface ConceptData {
   isV30?: boolean
   v30WorkspaceUrl?: string
   projectPath?: string
+  upgradeProductName?: string
+  upgradeScope?: string
+  upgradeOptions?: string[]
+  upgradePlanningRange?: string
+  financingInterest?: boolean
   v30Landscape?: ReturnType<typeof parseV30LandscapePackage>
   v30Floorplan?: ReturnType<typeof parseV30FloorplanDeliverables>
   v30LotContext?: { satelliteImageUrl?: string; googleEarthHint?: string } | null
@@ -869,6 +874,11 @@ export default function ConceptDeliverablePage() {
         isV30:           isV30IntakeFormData(formData),
         v30WorkspaceUrl: isV30IntakeFormData(formData) ? v30WorkspaceUrl(intakeId) : undefined,
         projectPath,
+        upgradeProductName: typeof formData.upgradeProductName === 'string' ? formData.upgradeProductName : undefined,
+        upgradeScope: typeof formData.upgradeScope === 'string' ? formData.upgradeScope : undefined,
+        upgradeOptions: Array.isArray(formData.upgradeOptions) ? formData.upgradeOptions.map(String) : undefined,
+        upgradePlanningRange: typeof formData.upgradePlanningRange === 'string' ? formData.upgradePlanningRange : undefined,
+        financingInterest: formData.financingInterest === true,
         v30Landscape:    parseV30LandscapePackage(formData),
         v30Floorplan:    parseV30FloorplanDeliverables(formData),
         v30LotContext:   (formData.v30LotContext as ConceptData['v30LotContext']) ?? null,
@@ -1208,6 +1218,19 @@ export default function ConceptDeliverablePage() {
               </span>
             )}
           </div>
+          {data.upgradeProductName && (
+            <div className="mt-5 rounded-xl border border-orange-200 bg-orange-50 p-4">
+              <p className="text-xs font-bold uppercase tracking-wider text-orange-700">Selected property upgrade</p>
+              <p className="mt-1 font-bold text-slate-900">{data.upgradeProductName}</p>
+              <div className="mt-2 flex flex-wrap gap-2 text-xs text-slate-700">
+                {data.upgradeScope && <span className="rounded-full bg-white px-3 py-1 font-semibold">{data.upgradeScope.replace(/-/g, ' ')} scope</span>}
+                {data.upgradePlanningRange && <span className="rounded-full bg-white px-3 py-1 font-semibold">Original planning range {data.upgradePlanningRange}</span>}
+                {data.upgradeOptions?.map(option => <span key={option} className="rounded-full bg-white px-3 py-1 font-semibold">{option.replace(/-/g, ' ')}</span>)}
+                {data.financingInterest && <span className="rounded-full bg-white px-3 py-1 font-semibold">Financing interest recorded</span>}
+              </div>
+              <p className="mt-3 text-xs leading-5 text-orange-900">Your generated concepts and current estimate below supersede the original marketplace range where they differ.</p>
+            </div>
+          )}
         </div>
       </div>
 

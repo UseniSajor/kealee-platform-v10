@@ -17,6 +17,7 @@ type EventName =
   | 'upload_completion'
   | 'intake_completion'
   | 'promo_redeemed'
+  | 'home_upgrade_configured'
   | 'purchase'
 
 declare global {

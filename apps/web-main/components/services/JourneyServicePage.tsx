@@ -6,16 +6,32 @@ export function JourneyServicePage({ service }: { service: HomeJourneyService })
   const index = HOME_JOURNEY_SERVICES.findIndex(item => item.id === service.id)
   const previous = HOME_JOURNEY_SERVICES[index - 1]
   const next = HOME_JOURNEY_SERVICES[index + 1]
+  const isDesignConcept = service.id === 'design'
 
   return (
     <main className="min-h-screen bg-[#f6f5f0] text-[#10233e]">
       <section className="relative overflow-hidden bg-[#0c1d32]">
         {service.videoSrc ? (
-          <video autoPlay muted loop playsInline preload="metadata" poster={service.photoSrc} className="absolute inset-0 h-full w-full object-cover opacity-40" aria-hidden="true">
+          <video
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="metadata"
+            poster={service.photoSrc}
+            className={`absolute inset-0 h-full w-full object-cover ${isDesignConcept ? 'opacity-[.85]' : 'opacity-40'}`}
+            aria-hidden="true"
+          >
             <source src={service.videoSrc} type="video/mp4" />
           </video>
         ) : null}
-        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(8,23,40,.97)_0%,rgba(8,23,40,.84)_55%,rgba(8,23,40,.35)_100%)]" />
+        <div
+          className={`absolute inset-0 ${
+            isDesignConcept
+              ? 'bg-[linear-gradient(90deg,rgba(8,23,40,.88)_0%,rgba(8,23,40,.58)_55%,rgba(8,23,40,.12)_100%)]'
+              : 'bg-[linear-gradient(90deg,rgba(8,23,40,.97)_0%,rgba(8,23,40,.84)_55%,rgba(8,23,40,.35)_100%)]'
+          }`}
+        />
         <div className="relative mx-auto max-w-7xl px-5 py-16 sm:px-8 sm:py-24 lg:px-12 lg:py-28">
           <Link href="/#choose-service" className="inline-flex items-center gap-2 text-sm font-bold text-white/75 hover:text-white"><ArrowLeft className="h-4 w-4" /> All six services</Link>
           <div className="mt-10 max-w-3xl">

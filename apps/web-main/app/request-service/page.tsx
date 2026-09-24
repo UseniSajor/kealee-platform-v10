@@ -67,7 +67,7 @@ const SERVICE_NAMES: Record<string, string> = {
   permit_site_plan: 'Permit Site Plan',
 }
 
-export default function RequestServicePage({ searchParams }: { searchParams?: { service?: string; name?: string } }) {
+export default function RequestServicePage({ searchParams }: { searchParams?: { service?: string; name?: string; description?: string } }) {
   const serviceKey = searchParams?.service ?? 'project-planning'
   const serviceName = SERVICE_NAMES[serviceKey] ?? searchParams?.name ?? serviceKey.replace(/[_-]/g, ' ')
   const hero = SERVICE_HEROES[serviceKey] ?? SERVICE_HEROES['project-planning']
@@ -94,7 +94,7 @@ export default function RequestServicePage({ searchParams }: { searchParams?: { 
             <p className="text-xs font-extrabold uppercase tracking-[.18em] text-[#147d92]">Requested service</p>
             <h2 className="mt-2 text-3xl font-black capitalize text-[#10233e]">{serviceName}</h2>
             <p className="mt-3 text-sm leading-6 text-[#66758a]">Share enough for an initial suitability review. You can provide detailed measurements and documents after Kealee confirms the production path.</p>
-            <ServiceRequestForm serviceKey={serviceKey} serviceName={serviceName} showPaidNextSteps={isProjectClarity} />
+            <ServiceRequestForm serviceKey={serviceKey} serviceName={serviceName} initialDescription={searchParams?.description} showPaidNextSteps={isProjectClarity} />
           </section>
         </div>
       </div>

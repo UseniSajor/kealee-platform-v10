@@ -1,0 +1,454 @@
+Warning: Cannot polyfill `DOMMatrix`, rendering may be broken.
+Warning: Cannot polyfill `Path2D`, rendering may be broken.
+===== PAGE 1 =====
+5
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+COUNTY COUNCIL
+OF
+PRINCE GEORGE'S COUNTY, MARYLAND
+2024 Legislative Session
+Bill No.
+Chapter No.
+CB-021-2024
+Proposed and Presented
+by
+The Chair (by request - Planning Board)
+DR-2
+Introduced
+by
+Council Members Harrison, Olson, Watson, Demoga, Oriadha, and Fisher
+Co-Sponsors
+Date
+of
+Introduction
+AN
+ACT concerning
+April 2, 2024
+BILL
+Tree Canopy Coverage Ordinance
+For the purpose
+of
+revising the existing applicability language, requiring a certain grandfather
+provision. revising the tree canopy coverage requirements, revising the credit and security
+requirements.,_
+and adding the Planning Director to those that can issue waivers.
+BY repealing and reenacting with amendments:
+SUBTITLE 25. TREES AND VEGETATION.
+Sections 25-127, 25-128, 25-129, and
+25-130.,_
+The Prince George's County Code
+[(2019 Edition; 2020 Supplement)) (2023 Edition).
+SECTION
+1.
+BE IT ENACTED
+by
+the County Council
+of
+Prince George's County,
+Maryland, that Sections 25-127, 25-128, 25-129 and 25-130
+of
+the Prince George's County Code
+be and the same are hereby repealed and reenacted with the following amendments:
+SUBTITLE 25. TREES AND VEGETATION.
+DIVISION 3. TREE CANOPY COVERAGE ORDINANCE.
+Sec. 25-127. Applicability.
+(a)
+General
+(1)
+Building and grading permits that propose [5,000] 2,500 square feet or greater
+of
+gross floor area or disturbance shall be in compliance with this Division, except as
+provided in Section 25-127(b).
+(2)
+A Standard or Numbered Letter
+of
+Exemption from Division 2
+of
+this Subtitle
+===== PAGE 2 =====
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+CB-021-2024 (DR-2)
+does not exempt the property from this Division.
+(3)
+Any exemption from a provision
+of
+the Prince George's County Landscape
+Manual, per Section
+1.1
+Applicability, shall not be construed as an exemption
+from this Division.
+®
+Landscape plans demonstrating conformance to this Division approved as part
+of
+a permit or an entitlement case shall be subject to the regulations in place at the
+time
+of
+approval.
+(b)
+Exemptions
+(1)
+The following are exempt from this Division:
+[(A) Public buildings and uses as set forth in the Zoning Ordinance.
+(B)
+Any permit pertaining to an existing single-family detached home.
+(C)
+Any permit pertaining to an existing townhouse, one family semi-detached,
+two-family or three-family dwelling or other similar unit type, except
+multifamily.]
+[(D)] A [Properties located in the R-O-S, and AG, and
+AR
+Zones] Agricultural
+activities and agricultural support structures.
+[(E)] B Properties located in the Chesapeake Bay Critical Area Overlay Zones
+unless a permit is submitted in conformance with Section 5B-116(a)(2).
+[(F)] C The environmental setting
+of
+a Historic Site.
+[(G)] D Temporary uses listed in the Zoning Ordinance.
+[(H) Permits for minor improvements
+of
+a limited scope and nature such as, but
+not limited to, facade restoration, signage, canopies, mechanical equipment,
+and construction for general maintenance, or similar alterations as described
+in the Zoning Ordinance, or as] As determined
+by
+the Planning Director.
+(I)
+Properties in a nonresidential or Transit-Oriented/Activity Center zone
+subject to a Detailed Site Plan or Specific Design Plan approved before
+September
+1,
+2010 or that have maintained an active grading permit since
+September
+1,
+2010.]
+Sec. 25-128. Tree Canopy Coverage Requirements.
+(a)
+Tree canopy requirements shall be met unless a waiver has been granted pursuant to
+Section 25-130.
+2
+===== PAGE 3 =====
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+Zone
+CB-021-2024 (DR-2)
+(b)
+All activities that are subject to this Division shall provide the tree canopy percentages
+listed in Table
+1.
+Tree canopy coverage requirements are based on the [gross] net tract
+area and must be met within the net tract area.
+Table
+1.
+Tree Canopy Requirements
+by
+Zone
+Minimum Tree
+Canopy Coverage
+ROS,AG,AR
+Exempt
+RE
+[20%]
+25%
+RR, RSF-95, RSF-65, RSF-A, RMF-12, RMF-20, RMF-48, RMH, R-
+[15%] 20%
+PD
+CGO, CS,
+Ill,
+IE, IE-PD, CN, NAC, TAC, LTO, RTO-L, RTO-H,
+[10%]
+15%
+NAC-PD, TAC-PD, LTO-PD, RTO-PD, MU-PD
+LCD, [LMXT] LMXC, LMUTC
+Thresholds shall be as
+specified
+by
+CB-27-
+2010 for the prior
+zoning
+of
+the property
+(before its designation
+as a legacy zone)
+*
+*
+*
+*
+*
+*
+*
+*
+Sec. 25-129. Credit and Security.
+(a)
+Existing trees to be preserved, proposed on-site woodland conservation, trees planted
+throughout the site, and street trees located within the right-of-way along the property
+frontage may be counted toward meeting this requirement. Calculations
+of
+tree canopy
+coverage credits shall be completed using the worksheet provided in the Technical
+Manual. Credit toward meeting this requirement shall be calculated using the amount
+of
+tree canopy coverage a planted tree provides in ten years, and/or
+by
+calculating the
+amount
+of
+tree canopy provided by existing trees to be preserved, regardless
+of
+whether
+or not the existing trees are used to meet other requirements
+of
+this Subtitle.
+*
+(b)
+Specimen, champion, and historic trees may be credited
+by
+counting [twice] the square
+footage
+of
+the unimpacted critical root zone area
+if
+they are not within a designated
+woodland conservation area and
+if
+the site has been designed to ensure long-term
+survival.
+If
+the specimen, champion or historic trees are within a woodland conservation
+area, additional credit shall not be calculated. A tree management plan in accordance with
+the [Environmental] Technical Manual may be required for each specimen, champion, or
+historic tree preserved for credit under this paragraph.
+3
+===== PAGE 4 =====
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+CB-021-2024 (DR-2)
+(
+c)
+Existing trees that are not bonded through other requirements
+of
+the County Code may
+be required to be bonded by the approving authority
+of
+the [development] DRD
+awlication.
+permit application and any other associated plan or application prior to
+permit issuance.
+If
+a bond is required, the bond amount shall be equal to the replacement
+cost
+of
+the trees used to meet the tree canopy requirement and shall be provided prior to
+permit issuance. The replacement cost for landscaping trees shall be based on the average
+cost
+of
+the plant material as provided by the applicant, with a 2.5 multiplier to cover
+installation costs. The replacement cost for trees used to meet this requirement that are
+above landscape sizes shall be calculated by the applicant using the removal cost plus the
+replacement value. The replacement value shall be calculated using the latest edition
+of
+the "Guide for Plant Appraisal" prepared by the Council
+of
+Tree and Landscape
+Appraisers.
+(
+d)
+If
+an existing tree proposed to be preserved does not survive construction, mitigation
+shall be provided as stated in Section 25-120(c)(6)(D).
+Sec. 25-130. Waivers.
+*
+*
+*
+*
+*
+*
+*
+*
+*
+(c)
+A waiver request shall be approved by the Planning Director. Planning Board, Zoning
+Hearing Examiner, and/or the District Council for applications heard by them. The appeal
+process for waiver requests is the same as the appeal process as articulated in the Prince
+George's County Code for the associated application types.
+*
+*
+*
+*
+*
+*
+*
+*
+*
+SECTION 2.
+BE
+IT FURTHER ENACTED that the provisions
+of
+this Act are hereby
+declared to be severable; and, in the event that any section, subsection, paragraph, subparagraph,
+sentence, clause, phrase, or word
+of
+this Act is declared invalid or unconstitutional by a court
+of
+competent jurisdiction, such invalidity or unconstitutionality shall not affect the remaining
+words, phrases, clauses, sentences, subparagraphs, paragraphs, subsections, or sections
+of
+this
+Act, since the same would have been enacted without the incorporation in this Act
+of
+any such
+invalid or unconstitutional word, phrase, clause, sentence, paragraph, subparagraph, subsection,
+or section.
+SECTION
+3.
+BE IT FURTHER ENACTED that this Act shall take forty-five (45) calendar
+days after it becomes law.
+4
+===== PAGE 5 =====
+Adopted this 7
+th
+day
+of
+May. 2024.
+COUNTY COUNCIL OF PRINCE
+GEORGE'S COUNTY, MARYLAND
+BY:
+_
+y_~
+_ ~
+_7
+___
+_
+ATTEST:
+Donna
+J.
+Brown
+Clerk
+of
+the Council
+Jolene Ivey
+Chair
+APPROVED:
+DATE:
+May
+15,
+2024
+BY:
+~
+~
+An
+~
+lsobrooks
+County Executive
+KEY:
+Underscoring indicates language added to existing law.
+[Brackets] indicate language deleted from existing law.
+Asterisks*** indicate intervening existing Code provisions that remain unchanged.
+*
+*
+*
+*
+*
+*
+*
+*
+DR-2
+*

@@ -119,11 +119,13 @@ describe('order lifecycle', () => {
 describe('missing-information checklist', () => {
   const emptyOrder = { project_address: null, contact_email: null, contact_phone: null }
 
-  it('requires a survey and parcel confirmation for a permit site plan', () => {
+  it('keeps property files optional while Kealee confirms the permit site details', () => {
     const items = buildOrderChecklist('permit_site_plan', {}, emptyOrder)
     const survey = items.find(item => item.key === 'survey')
-    expect(survey?.state).toBe('missing')
-    expect(items.find(item => item.key === 'parcel_confirmed')?.state).toBe('missing')
+    expect(survey?.state).toBe('optional')
+    expect(survey?.detail).toMatch(/Kealee will check available property records/i)
+    expect(items.find(item => item.key === 'parcel_confirmed')?.state).toBe('optional')
+    expect(items.find(item => item.key === 'parcel_confirmed')?.detail).toMatch(/Kealee will confirm/i)
   })
 
   it('treats a survey as optional for a preliminary site plan', () => {

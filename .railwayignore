@@ -17,13 +17,20 @@ _docs/
 docs/
 data/
 website-versions/
-services/
+# Worker deployments need these two service packages. Keep other services out
+# of CLI upload snapshots to avoid unnecessarily large archives.
+/services/*
+!/services/api/
+!/services/worker/
 bots/
 testskeabots/
 replicate/
 Kealee Platform Agents/
 data/replicate-archive/media/
 _archived-apps/
+packages/spatial-engine/src/survey/import-record.ts
+.worker-deploy-snapshot/
+worker-deploy-snapshot/
 
 apps/web-main/.next/
 apps/web-main/node_modules/

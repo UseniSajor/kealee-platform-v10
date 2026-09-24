@@ -1,0 +1,947 @@
+{
+  "reference": "4600 WHEELER ROAD — PRELIMINARY SUBDIVISION CONCEPT. Zone RSF-95, SE-1796. Parcel 366579 — PARCEL A FOUR SEASONS NURSING HOME, owner of record ETHIOPIAN ORTHODOX TEWAHEDO CHURCH, acct 1194943, L. 48054 F. 597, PLAT A12-7298 OF RECORD (not read — obtain it; it supersedes the GIS outline drawn here), GIS 230995 sq ft, recorded 5.115479 ac, assessment 5.303 ac. PRELIMINARY. Outer boundary from the Prince George's County parcel layer (PGAtlas Property/MapServer/15), compiled from tax maps — NOT a boundary survey and NOT a plat of record. Lot lines and streets are PROPOSED by Kealee. A Maryland licensed surveyor must establish the boundary before any plat is prepared.",
+  "ownerOfRecord": {
+    "account": "1194943",
+    "ownerName": "ETHIOPIAN ORTHODOX TEWAHEDO CHURCH",
+    "careOf": null,
+    "acres": 5.303,
+    "landSqFt": 230986,
+    "plat": "A12-7298",
+    "lot": null,
+    "block": null,
+    "parcel": null,
+    "propertyDesc": "PARCEL A",
+    "liber": "48054",
+    "folio": "597",
+    "subdivision": "FOUR SEASONS NURSING HOME",
+    "taxMapGrid": "087D3",
+    "wsscGrid": "206SE02"
+  },
+  "citation": "PRELIMINARY CONCEPT — NO PLAT OF RECORD",
+  "notes": [
+    "This drawing is a preliminary subdivision concept. It is not a plat, not a boundary survey, and not for recording.",
+    "Street layout follows the 2023 \"Wheeler Rd Subdivision Layout\" sheet for this parcel (street a tier in from the north and east boundaries, lots both sides) with ONE entrance from Wheeler Road; the second entrance and the private alley on that sheet are omitted and the far end is finished as a cul-de-sac.",
+    "Lot lines are proposed to meet Sec. 27-4202 RSF-95: minimum net lot area 9500 sq ft, minimum lot width 75 ft, minimum frontage 50 ft, maximum density 4.58 du/ac of net tract area.",
+    "All lots take access from WAHALLA COURT. No lot takes access from WHEELER; lots backing onto it are double-frontage lots and a no-access reservation along WHEELER is anticipated at platting.",
+    "Boundary shown from the county parcel layer (Level 1). A field survey by a Maryland licensed surveyor governs.",
+    "Recorded acreage 5.115479 ac (222830 sq ft) differs from the county GIS polygon (230995 sq ft) by 8165 sq ft. Both are reported; neither is adjusted. The survey resolves it.",
+    "Special exception SE-1796 is of record on this property. Its conditions have not been read into this concept and govern where they conflict.",
+    "Water and sewer: every lot is served from WAHALLA COURT; no service connects to WHEELER. Proposed 8-in WSSC water main and 8-in sanitary sewer in WAHALLA COURT, extended from the existing WSSC mains in WHEELER at the entrance. As-built size, location, depth and flow direction of the WHEELER mains are not read here.",
+    "Stormwater management by Environmental Site Design to the maximum extent practicable (Md. Stormwater Management Act of 2007; MDE Design Manual Ch. 5; PGC Sec. 32-172). Preliminary ESD volume: 58173 sq ft impervious (25.2% of the tract: 15 lots × 2000 sq ft, 22467 sq ft pavement, sidewalks), Rv = 0.2767, P_E = 1 in → ESDv = 5325 cu ft; micro-bioretention at 2 ft × n 0.4 → 6656 sq ft of practice. No stormwater parcel is placed: county contours were not available to find the low corner. Hydrologic soil group(s) B/D, C, D per USDA SSURGO MD033 — P_E is to be taken from Table 5.3 for the site's group and % impervious; the 1 in used here is the Manual's floor. Rooftop disconnection and a 6-ft infiltration berm along the rear of each lot, as the 2023 layout sheet's legend shows, are credited at concept plan and reduce the parcel; infiltration feasibility depends on the Sec. 32-131 soils investigation. A stormwater management concept approval from DPIE precedes preliminary plan.",
+    "Proposed public street: 60' R/W and 26' pavement per the approved Joseph Drive section (Yocum Property, DPIE 15927-2020-0). Bend radius 150' centreline and cul-de-sac radii (50' R/W, 40' pavement) are ASSUMED — that approval is a through street with R ≥ 343'. Confirm against PGC DPW&T Specifications and Standards. THIS LAYOUT USES A 100-FT CENTRELINE RADIUS at its bends, below the 150 ft assumed above; confirm against the DPW&T minimum for a local street before preliminary plan. Street dedication 47129 sq ft. Storm drainage, sanitary sewer capacity, street lighting and forest conservation are not designed here."
+  ],
+  "dedicationWidthFt": 0,
+  "adjoiners": [],
+  "dedications": [],
+  "curveTable": [
+    {
+      "curve": "C1",
+      "radiusFt": 100,
+      "deltaDeg": 75,
+      "tangentFt": 76.73,
+      "lengthFt": 130.9,
+      "pc": [
+        1318828.5144674648,
+        422731.7159115303
+      ],
+      "pt": [
+        1318801.7651876514,
+        422850.49341414514
+      ]
+    }
+  ],
+  "stormwater": {
+    "method": "MDE Stormwater Design Manual Ch. 5 — ESD: Rv = 0.05 + 0.009·I; ESDv = P_E·Rv·A/12; practice area = ESDv/(d·n)",
+    "rainfallTargetIn": 1,
+    "hydrologicSoilGroups": [
+      "B/D",
+      "C",
+      "D"
+    ],
+    "soilsSource": {
+      "authority": "USDA NRCS Soil Data Access (SSURGO)",
+      "endpoint": "https://sdmdataaccess.sc.egov.usda.gov/Tabular/post.rest",
+      "retrievedAt": "2026-09-16T19:55:09.187Z"
+    },
+    "contoursSource": {
+      "authority": "Prince George's County / M-NCPPC",
+      "endpoint": "https://gis.pgatlas.com/pgatlas/rest/services/Elevation/MapServer/1/query?where=1%3D1&geometry=1317999.0826067303%2C422363.88822254416%2C1319112.9447095876%2C423477.7503254016&geometryType=esriGeometryEnvelope&inSR=2248&outSR=2248&spatialRel=esriSpatialRelIntersects&outFields=ELEVATION%2CFEATURE_CODE&returnGeometry=true&f=json",
+      "retrievedAt": "2026-09-16T19:55:05.097Z",
+      "layer": "Elevation/MapServer/1 — Contour - 2 Ft (2023)"
+    },
+    "cornerElevationsFt": {
+      "min": 132,
+      "max": 188
+    },
+    "lowCorner": [
+      1318205.8557298675,
+      423151.87081318715
+    ],
+    "imperviousSqFt": 58173,
+    "percentImpervious": 25.2,
+    "rv": 0.2767,
+    "esdvCf": 5325,
+    "footprintSqFt": 6656,
+    "parcelSqFt": 13312,
+    "practice": "Environmental Site Design — micro-bioretention (M-6), one cell at the low corner",
+    "pondingDepthFt": 2,
+    "voidRatio": 0.4,
+    "parcels": [],
+    "perLot": [
+      "rooftop disconnection (N-1)",
+      "6-ft infiltration berm along the rear lot line (2023 sheet legend)"
+    ]
+  },
+  "proposedStreets": [
+    {
+      "name": "WAHALLA COURT",
+      "branches": [
+        {
+          "name": "WAHALLA COURT",
+          "rightOfWayFt": 60,
+          "pavementFt": 26,
+          "lengthFt": 713,
+          "centreline": [
+            [
+              1318795.5523396542,
+              422660.4069224994
+            ],
+            [
+              1318828.5144674648,
+              422731.7159115303
+            ],
+            [
+              1318832.8538039052,
+              422742.7889628619
+            ],
+            [
+              1318835.847869783,
+              422754.2988662522
+            ],
+            [
+              1318837.4543163397,
+              422766.08282297285
+            ],
+            [
+              1318837.6504216248,
+              422777.97415802197
+            ],
+            [
+              1318836.4334118802,
+              422789.80467761395
+            ],
+            [
+              1318833.8205007717,
+              422801.4070481508
+            ],
+            [
+              1318829.8486459176,
+              422812.6171630276
+            ],
+            [
+              1318824.5740261485,
+              422823.2764637938
+            ],
+            [
+              1318818.0712469032,
+              422833.2341828409
+            ],
+            [
+              1318810.432284991,
+              422842.3494758938
+            ],
+            [
+              1318801.7651876514,
+              422850.49341414514
+            ],
+            [
+              1318414.70929707,
+              423173.0728401443
+            ]
+          ],
+          "culDeSac": true
+        }
+      ],
+      "rightOfWayFt": 60,
+      "pavementFt": 26,
+      "bulbRightOfWayRadiusFt": 50,
+      "bulbPavementRadiusFt": 40,
+      "centreline": [
+        [
+          1318795.5523396542,
+          422660.4069224994
+        ],
+        [
+          1318828.5144674648,
+          422731.7159115303
+        ],
+        [
+          1318832.8538039052,
+          422742.7889628619
+        ],
+        [
+          1318835.847869783,
+          422754.2988662522
+        ],
+        [
+          1318837.4543163397,
+          422766.08282297285
+        ],
+        [
+          1318837.6504216248,
+          422777.97415802197
+        ],
+        [
+          1318836.4334118802,
+          422789.80467761395
+        ],
+        [
+          1318833.8205007717,
+          422801.4070481508
+        ],
+        [
+          1318829.8486459176,
+          422812.6171630276
+        ],
+        [
+          1318824.5740261485,
+          422823.2764637938
+        ],
+        [
+          1318818.0712469032,
+          422833.2341828409
+        ],
+        [
+          1318810.432284991,
+          422842.3494758938
+        ],
+        [
+          1318801.7651876514,
+          422850.49341414514
+        ],
+        [
+          1318414.70929707,
+          423173.0728401443
+        ]
+      ],
+      "centrelines": [
+        [
+          [
+            1318795.5523396542,
+            422660.4069224994
+          ],
+          [
+            1318828.5144674648,
+            422731.7159115303
+          ],
+          [
+            1318832.8538039052,
+            422742.7889628619
+          ],
+          [
+            1318835.847869783,
+            422754.2988662522
+          ],
+          [
+            1318837.4543163397,
+            422766.08282297285
+          ],
+          [
+            1318837.6504216248,
+            422777.97415802197
+          ],
+          [
+            1318836.4334118802,
+            422789.80467761395
+          ],
+          [
+            1318833.8205007717,
+            422801.4070481508
+          ],
+          [
+            1318829.8486459176,
+            422812.6171630276
+          ],
+          [
+            1318824.5740261485,
+            422823.2764637938
+          ],
+          [
+            1318818.0712469032,
+            422833.2341828409
+          ],
+          [
+            1318810.432284991,
+            422842.3494758938
+          ],
+          [
+            1318801.7651876514,
+            422850.49341414514
+          ],
+          [
+            1318414.70929707,
+            423173.0728401443
+          ]
+        ]
+      ],
+      "rowRings": [
+        [
+          [
+            1318364.709,
+            423173.073
+          ],
+          [
+            1318364.9,
+            423168.715
+          ],
+          [
+            1318365.469,
+            423164.39
+          ],
+          [
+            1318366.413,
+            423160.132
+          ],
+          [
+            1318367.725,
+            423155.972
+          ],
+          [
+            1318369.394,
+            423151.942
+          ],
+          [
+            1318371.408,
+            423148.073
+          ],
+          [
+            1318373.752,
+            423144.394
+          ],
+          [
+            1318376.407,
+            423140.933
+          ],
+          [
+            1318379.354,
+            423137.718
+          ],
+          [
+            1318382.57,
+            423134.771
+          ],
+          [
+            1318386.03,
+            423132.115
+          ],
+          [
+            1318389.709,
+            423129.772
+          ],
+          [
+            1318393.578,
+            423127.757
+          ],
+          [
+            1318397.608,
+            423126.088
+          ],
+          [
+            1318401.768,
+            423124.777
+          ],
+          [
+            1318406.027,
+            423123.832
+          ],
+          [
+            1318410.352,
+            423123.263
+          ],
+          [
+            1318414.709,
+            423123.073
+          ],
+          [
+            1318419.067,
+            423123.263
+          ],
+          [
+            1318423.392,
+            423123.832
+          ],
+          [
+            1318426.1889618426,
+            423124.4527442323
+          ],
+          [
+            1318781.873,
+            422828.019
+          ],
+          [
+            1318788.587,
+            422821.71
+          ],
+          [
+            1318793.93,
+            422815.335
+          ],
+          [
+            1318798.479,
+            422808.369
+          ],
+          [
+            1318802.168,
+            422800.914
+          ],
+          [
+            1318804.946,
+            422793.073
+          ],
+          [
+            1318806.774,
+            422784.957
+          ],
+          [
+            1318807.625,
+            422776.682
+          ],
+          [
+            1318807.488,
+            422768.364
+          ],
+          [
+            1318806.364,
+            422760.122
+          ],
+          [
+            1318804.27,
+            422752.071
+          ],
+          [
+            1318800.908,
+            422743.493
+          ],
+          [
+            1318771.6940720265,
+            422680.2913334398
+          ],
+          [
+            1318795.5546250078,
+            422660.4055177355
+          ],
+          [
+            1318822.784,
+            422647.819
+          ],
+          [
+            1318856.121,
+            422719.939
+          ],
+          [
+            1318861.438,
+            422733.507
+          ],
+          [
+            1318865.332,
+            422748.476
+          ],
+          [
+            1318867.421,
+            422763.801
+          ],
+          [
+            1318867.676,
+            422779.266
+          ],
+          [
+            1318866.093,
+            422794.652
+          ],
+          [
+            1318862.695,
+            422809.742
+          ],
+          [
+            1318857.529,
+            422824.321
+          ],
+          [
+            1318850.67,
+            422838.183
+          ],
+          [
+            1318842.212,
+            422851.134
+          ],
+          [
+            1318832.278,
+            422862.988
+          ],
+          [
+            1318821.658,
+            422872.968
+          ],
+          [
+            1318464.5988864535,
+            423170.5473429694
+          ],
+          [
+            1318464.709,
+            423173.073
+          ],
+          [
+            1318464.519,
+            423177.431
+          ],
+          [
+            1318463.95,
+            423181.755
+          ],
+          [
+            1318463.006,
+            423186.014
+          ],
+          [
+            1318461.694,
+            423190.174
+          ],
+          [
+            1318460.025,
+            423194.204
+          ],
+          [
+            1318458.011,
+            423198.073
+          ],
+          [
+            1318455.667,
+            423201.752
+          ],
+          [
+            1318453.012,
+            423205.212
+          ],
+          [
+            1318450.065,
+            423208.428
+          ],
+          [
+            1318446.849,
+            423211.375
+          ],
+          [
+            1318443.388,
+            423214.03
+          ],
+          [
+            1318439.709,
+            423216.374
+          ],
+          [
+            1318436.486164452,
+            423218.0516404222
+          ],
+          [
+            1318372.4247681857,
+            423199.6688575745
+          ],
+          [
+            1318371.408,
+            423198.073
+          ],
+          [
+            1318369.394,
+            423194.204
+          ],
+          [
+            1318367.725,
+            423190.174
+          ],
+          [
+            1318366.413,
+            423186.014
+          ],
+          [
+            1318365.469,
+            423181.755
+          ],
+          [
+            1318364.9,
+            423177.431
+          ]
+        ]
+      ],
+      "pavementRings": [
+        [
+          [
+            1318374.709,
+            423173.073
+          ],
+          [
+            1318374.862,
+            423169.587
+          ],
+          [
+            1318375.317,
+            423166.127
+          ],
+          [
+            1318376.072,
+            423162.72
+          ],
+          [
+            1318377.122,
+            423159.392
+          ],
+          [
+            1318378.457,
+            423156.168
+          ],
+          [
+            1318380.068,
+            423153.073
+          ],
+          [
+            1318381.943,
+            423150.13
+          ],
+          [
+            1318384.068,
+            423147.361
+          ],
+          [
+            1318386.425,
+            423144.789
+          ],
+          [
+            1318388.998,
+            423142.431
+          ],
+          [
+            1318391.766,
+            423140.307
+          ],
+          [
+            1318394.709,
+            423138.432
+          ],
+          [
+            1318397.805,
+            423136.821
+          ],
+          [
+            1318401.028,
+            423135.485
+          ],
+          [
+            1318404.357,
+            423134.436
+          ],
+          [
+            1318407.763,
+            423133.681
+          ],
+          [
+            1318411.223,
+            423133.225
+          ],
+          [
+            1318414.709,
+            423133.073
+          ],
+          [
+            1318418.196,
+            423133.225
+          ],
+          [
+            1318421.655,
+            423133.681
+          ],
+          [
+            1318425.062,
+            423134.436
+          ],
+          [
+            1318428.39,
+            423135.485
+          ],
+          [
+            1318431.614,
+            423136.821
+          ],
+          [
+            1318434.709,
+            423138.432
+          ],
+          [
+            1318435.4224675752,
+            423138.8865537558
+          ],
+          [
+            1318793.145,
+            422840.755
+          ],
+          [
+            1318800.966,
+            422833.406
+          ],
+          [
+            1318807.61,
+            422825.478
+          ],
+          [
+            1318813.266,
+            422816.817
+          ],
+          [
+            1318817.854,
+            422807.546
+          ],
+          [
+            1318821.308,
+            422797.795
+          ],
+          [
+            1318823.581,
+            422787.704
+          ],
+          [
+            1318824.639,
+            422777.414
+          ],
+          [
+            1318824.469,
+            422767.071
+          ],
+          [
+            1318823.072,
+            422756.822
+          ],
+          [
+            1318820.467,
+            422746.811
+          ],
+          [
+            1318816.552,
+            422736.819
+          ],
+          [
+            1318785.21360052,
+            422669.0239142713
+          ],
+          [
+            1318795.553278003,
+            422660.4066403537
+          ],
+          [
+            1318807.353,
+            422654.952
+          ],
+          [
+            1318840.477,
+            422726.612
+          ],
+          [
+            1318845.24,
+            422738.767
+          ],
+          [
+            1318848.624,
+            422751.776
+          ],
+          [
+            1318850.44,
+            422765.094
+          ],
+          [
+            1318850.661,
+            422778.534
+          ],
+          [
+            1318849.286,
+            422791.905
+          ],
+          [
+            1318846.333,
+            422805.019
+          ],
+          [
+            1318841.844,
+            422817.689
+          ],
+          [
+            1318835.882,
+            422829.736
+          ],
+          [
+            1318828.532,
+            422840.991
+          ],
+          [
+            1318819.899,
+            422851.293
+          ],
+          [
+            1318810.385,
+            422860.232
+          ],
+          [
+            1318452.0744348173,
+            423158.8545092517
+          ],
+          [
+            1318452.297,
+            423159.392
+          ],
+          [
+            1318453.346,
+            423162.72
+          ],
+          [
+            1318454.102,
+            423166.127
+          ],
+          [
+            1318454.557,
+            423169.587
+          ],
+          [
+            1318454.709,
+            423173.073
+          ],
+          [
+            1318454.557,
+            423176.559
+          ],
+          [
+            1318454.102,
+            423180.019
+          ],
+          [
+            1318453.346,
+            423183.426
+          ],
+          [
+            1318452.297,
+            423186.754
+          ],
+          [
+            1318450.962,
+            423189.978
+          ],
+          [
+            1318449.35,
+            423193.073
+          ],
+          [
+            1318447.475,
+            423196.016
+          ],
+          [
+            1318445.351,
+            423198.784
+          ],
+          [
+            1318442.994,
+            423201.357
+          ],
+          [
+            1318440.421,
+            423203.715
+          ],
+          [
+            1318437.652,
+            423205.839
+          ],
+          [
+            1318434.709,
+            423207.714
+          ],
+          [
+            1318431.614,
+            423209.325
+          ],
+          [
+            1318428.39,
+            423210.661
+          ],
+          [
+            1318425.062,
+            423211.71
+          ],
+          [
+            1318421.655,
+            423212.465
+          ],
+          [
+            1318418.4773528012,
+            423212.88390925777
+          ],
+          [
+            1318390.4752326761,
+            423204.8485412587
+          ],
+          [
+            1318388.998,
+            423203.715
+          ],
+          [
+            1318386.425,
+            423201.357
+          ],
+          [
+            1318384.068,
+            423198.784
+          ],
+          [
+            1318381.943,
+            423196.016
+          ],
+          [
+            1318380.068,
+            423193.073
+          ],
+          [
+            1318378.457,
+            423189.978
+          ],
+          [
+            1318377.122,
+            423186.754
+          ],
+          [
+            1318376.072,
+            423183.426
+          ],
+          [
+            1318375.317,
+            423180.019
+          ],
+          [
+            1318374.862,
+            423176.559
+          ]
+        ]
+      ],
+      "rowSqFt": 47128.685119628906,
+      "basis": "Joseph Drive, Yocum Property Lots 1–19 — DPIE approvals 15927-2020-0 / 15919-2020-0",
+      "note": "60' R/W and 26' pavement per the approved Joseph Drive section (Yocum Property, DPIE 15927-2020-0). Bend radius 150' centreline and cul-de-sac radii (50' R/W, 40' pavement) are ASSUMED — that approval is a through street with R ≥ 343'. Confirm against PGC DPW&T Specifications and Standards.",
+      "utilities": {
+        "water": {
+          "sizeIn": 8,
+          "offsetFt": -8,
+          "label": "PROP. 8\" WATER MAIN (WSSC) IN WAHALLA COURT",
+          "connectsTo": "EX. WSSC WATER MAIN IN WHEELER"
+        },
+        "sewer": {
+          "sizeIn": 8,
+          "offsetFt": 8,
+          "label": "PROP. 8\" SAN. SEWER (WSSC) IN WAHALLA COURT",
+          "connectsTo": "EX. WSSC SANITARY SEWER IN WHEELER"
+        },
+        "note": "Water and sewer for every lot are served from WAHALLA COURT. The subdivision's mains connect to the existing WSSC mains in WHEELER at the entrance and extend the length of WAHALLA COURT to the cul-de-sac. WSSC as-built size and location of the mains in WHEELER, and the sewer's depth and flow direction, are not read here and govern the connection."
+      }
+    }
+  ]
+}

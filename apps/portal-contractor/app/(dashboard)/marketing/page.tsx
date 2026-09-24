@@ -10,15 +10,8 @@
  */
 
 import { useState } from 'react'
-import { TrendingUp, Eye, Target, Trophy, Zap } from 'lucide-react'
+import { TrendingUp } from 'lucide-react'
 import { RevenueHookInline, RevenueHookModal, type HookTier } from '@kealee/core-hooks'
-
-const MOCK_STATS = [
-  { label: 'Profile Views',  value: '142',  delta: '+18%',  icon: Eye,     color: '#2ABFBF' },
-  { label: 'Lead Match Rate', value: '34%', delta: '+6 pts', icon: Target,  color: '#38A169' },
-  { label: 'Bid Win Rate',   value: '22%',  delta: '+3 pts', icon: Trophy,  color: '#E8793A' },
-  { label: 'Active Leads',   value: '8',    delta: '+2',     icon: Zap,     color: '#1A2B4A' },
-]
 
 export default function ContractorMarketingPage() {
   const [showModal, setShowModal] = useState(false)
@@ -57,21 +50,8 @@ export default function ContractorMarketingPage() {
         </button>
       </div>
 
-      {/* Stats grid */}
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-        {MOCK_STATS.map(s => (
-          <div key={s.label} className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-            <div
-              className="mb-3 flex h-9 w-9 items-center justify-center rounded-lg"
-              style={{ backgroundColor: `${s.color}15`, color: s.color }}
-            >
-              <s.icon className="h-5 w-5" />
-            </div>
-            <p className="text-2xl font-bold font-mono" style={{ color: s.color }}>{s.value}</p>
-            <p className="mt-0.5 text-xs text-gray-500">{s.label}</p>
-            <p className="mt-1 text-xs font-medium" style={{ color: '#38A169' }}>{s.delta} this month</p>
-          </div>
-        ))}
+      <div className="rounded-xl border border-gray-200 bg-white p-5 text-sm text-gray-600 shadow-sm">
+        Performance metrics will appear after your verified profile receives real views, matches, and bid activity.
       </div>
 
       {/* Revenue Hook — contractor_growth inline */}

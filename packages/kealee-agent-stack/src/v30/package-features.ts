@@ -1,66 +1,60 @@
 import { adjustPackageFeaturesForScope, includesCadExport } from './scope-rules'
 import type { V30IntakeFormAnswers } from './types'
 
-/** Premium (tier 2) and Premium+ (tier 3) always include floorplan in concept packages. */
-export function featuresForConceptTier(
-  tier: 1 | 2 | 3,
+/**
+ * The features every concept package includes.
+ *
+ * There are no tiers. One package per product, so every order gets the same
+ * core set; scope rules still drop what does not apply (no Permits on a
+ * cosmetic scope, for example).
+ *
+ * Videos and CAD are NOT here. They are priced add-ons in ADD_ONS
+ * (`video_presentation` at $449, `editable_cad` scoped), and the tier function
+ * this replaced granted them free at tier 3 — the platform ran and paid for a
+ * VideoBot the customer had not bought.
+ */
+export function featuresForConcept(
   projectPath?: string,
   answers?: V30IntakeFormAnswers,
 ): string[] {
-  const base =
-    tier >= 2
-      ? ['Design', 'Floorplan', 'Estimate', 'Zoning']
-      : ['Design', 'Estimate', 'Zoning']
-
-  if (tier >= 2 && answers) {
-    const withPermits = adjustPackageFeaturesForScope([...base, 'Permits'], answers, projectPath)
-    base.length = 0
-    base.push(...withPermits)
-  } else if (tier >= 2) {
-    base.push('Permits')
-  }
-
-  if (tier >= 3) {
-    base.push('Videos', 'CADExport')
-  }
-
-  const path = (projectPath ?? '').toLowerCase()
-  const layoutHeavy =
-    path.includes('garden') ||
-    path.includes('landscape') ||
-    path.includes('kitchen') ||
-    path.includes('bath') ||
-    path.includes('addition') ||
-    path.includes('whole') ||
-    path.includes('interior') ||
-    path.includes('basement') ||
-    path.includes('facade') ||
-    path.includes('deck')
-
-  if (layoutHeavy && tier >= 2) {
-    if (!base.includes('Floorplan')) base.push('Floorplan')
-  }
-  if (path.includes('garden') || path.includes('landscape')) {
-    if (!base.includes('Estimate')) base.push('Estimate')
-    if (tier >= 3 && !base.includes('Design')) base.push('Design')
-  }
-
-  return [...new Set(base)]
+  const base = ['Design', 'Floorplan', 'Estimate', 'Zoning', 'Permits']
+  const scoped = answers
+    ? adjustPackageFeaturesForScope([...base], answers, projectPath)
+    : base
+  return [...new Set(scoped)]
 }
 
-/** Merge tier-mandated features into a v30 quote feature list. */
+/**
+ * Back-compat shim for callers still passing a tier. The tier is ignored —
+ * every order gets the same package.
+ *
+ * @deprecated Call featuresForConcept. Tiers were removed.
+ */
+export function featuresForConceptTier(
+  _tier: 1 | 2 | 3,
+  projectPath?: string,
+  answers?: V30IntakeFormAnswers,
+): string[] {
+  return featuresForConcept(projectPath, answers)
+}
+
+/**
+ * Merge the package features into a v30 quote feature list.
+ *
+ * `tier` is accepted only so existing callers keep compiling; it has no effect.
+ */
 export function mergeV30PackageFeatures(
   features: string[],
   options?: { tier?: 1 | 2 | 3; projectPath?: string; answers?: V30IntakeFormAnswers },
 ): string[] {
-  const tierFeatures = options?.tier
-    ? featuresForConceptTier(options.tier, options.projectPath, options.answers)
-    : []
-  let merged = [...new Set([...features, ...tierFeatures])]
+  // Every order gets the same package; a tier in options is ignored.
+  const packageFeatures = featuresForConcept(options?.projectPath, options?.answers)
+  let merged = [...new Set([...features, ...packageFeatures])]
   if (options?.answers) {
     merged = adjustPackageFeaturesForScope(merged, options.answers, options.projectPath)
   }
-  if (options?.tier === 3 && !merged.includes('CADExport')) merged.push('CADExport')
+  // CADExport is the `editable_cad` add-on, not a tier grant. It reaches this
+  // list only when the customer bought it and it arrives in `features`.
   return merged
 }
 

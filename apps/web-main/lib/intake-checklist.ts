@@ -29,9 +29,8 @@ function asRecord(value: unknown): Record<string, unknown> {
 }
 
 /**
- * Inputs are per-product: a Site Plan order genuinely needs a survey, an
- * estimate needs scope, a permit needs drawings. Optional items are shown so
- * the customer can improve accuracy voluntarily.
+ * Customer uploads can help Kealee, but checkout never presents records that
+ * Kealee can research or prepare as missing customer work.
  */
 export function buildOrderChecklist(
   productKey: string,
@@ -78,23 +77,32 @@ export function buildOrderChecklist(
     },
     {
       key: 'photos',
-      label: 'Photos of the existing conditions',
-      state: hasPhoto ? 'provided' : category === 'design' ? 'missing' : 'optional',
+      label: 'Photos of your space',
+      state: hasPhoto ? 'provided' : 'optional',
+      detail: hasPhoto
+        ? 'We’ll use these as a visual reference.'
+        : 'Photos can help, and you can add them later if you have them.',
     },
   ]
 
   if (category === 'development' || productKey === 'permit_site_plan') {
     items.push({
       key: 'survey',
-      label: 'Boundary survey or recorded plat',
-      state: hasDocument ? 'provided' : productKey === 'permit_site_plan' ? 'missing' : 'optional',
-      detail:
-        'Required for a permit site plan. For preliminary work we use published parcel data and label it as such.',
+      label: 'Survey or property plan',
+      state: hasDocument ? 'provided' : 'optional',
+      detail: hasDocument
+        ? 'Kealee will use the file you sent.'
+        : productKey === 'permit_site_plan'
+          ? 'Kealee will check available property records first and contact you if a new survey is needed for filing.'
+          : 'This can help with property details, and it is optional for early planning.',
     })
     items.push({
       key: 'parcel_confirmed',
-      label: 'Parcel confirmed as the project parcel',
-      state: formData.parcelConfirmed === true ? 'provided' : 'missing',
+      label: 'Property record check',
+      state: formData.parcelConfirmed === true ? 'provided' : 'optional',
+      detail: formData.parcelConfirmed === true
+        ? 'The property record is matched to your address.'
+        : 'Kealee will confirm the property record for you.',
     })
   }
 
@@ -125,10 +133,9 @@ export function buildOrderChecklist(
   if (siteIntelligence.status && siteIntelligence.status !== 'resolved') {
     items.push({
       key: 'jurisdiction',
-      label: 'Jurisdiction confirmation',
-      state: 'missing',
-      detail:
-        'Automated lookup could not confirm the parcel. A Kealee reviewer will confirm it manually — you can speed this up by sending a survey or tax record.',
+      label: 'Local property check',
+      state: 'optional',
+      detail: 'Kealee is confirming the local property details. You do not need to send anything now.',
     })
   }
 

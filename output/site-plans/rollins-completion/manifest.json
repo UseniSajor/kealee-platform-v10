@@ -1,0 +1,62 @@
+{
+  "status": "PRELIMINARY_NOT_SUBMISSION_READY",
+  "baseline": "../rollins-submission-review/porter-BEST-BACKUP.REVIEW.pdf",
+  "files": [
+    {
+      "path": "README.md",
+      "sha256": "a05b2b489cf5d1bad13196ed28eda7d5f1ea0606b08c3c88b1ab76c44d5078ee"
+    },
+    {
+      "path": "Rollins-Avenue-Supporting-Dossier.pdf",
+      "sha256": "6e8fe15cdd401ce5a3dce5bd9fe8eed9d90a57c9f483760de606f8948fa78d9b"
+    },
+    {
+      "path": "Rollins-Avenue-Updated-Site-Plan.pdf",
+      "sha256": "76d09b32653d076945b7036c4fb58a1af041f904a7a4c0e40d23d797604ba17b"
+    },
+    {
+      "path": "build_package.py",
+      "sha256": "4dde39d566dc2a450f322de897db4d5ff0ad2aad01a7b5d7562d77bd38418b24"
+    },
+    {
+      "path": "completion-tracker.csv",
+      "sha256": "5735cb62f86b4a12023363fe587e0f064168296f0dae704686f3d0b8802ae651"
+    },
+    {
+      "path": "sources/historical-planning-report.pdf",
+      "sha256": "8f39e805239df013085117106c86ea1b9bdd386c6c5208c263bfcde01e57402e"
+    },
+    {
+      "path": "sources/kingsworth-supplied-foundation.pdf",
+      "sha256": "2fb853ef25ac061724075613e57b5429b34217fee74036e6c0bf309c250b8218"
+    },
+    {
+      "path": "sources/record-vicinity.png",
+      "sha256": "6e3775ee3e3bd11d67d05db6c766d90a9999654b93762ec8419320c0b7cd6481"
+    },
+    {
+      "path": "sources/recorded-plat.pdf",
+      "sha256": "690216afe67da4e799194f49a29a27d5d5f9e93e3e90b7b05a53e12a8955c3f4"
+    },
+    {
+      "path": "sources/soil-components.json",
+      "sha256": "43bca59189cd498bd1f556749ee2818dad51cb66ef6ba133a01c3dda693e4de8"
+    },
+    {
+      "path": "sources/wssc-connection-source.pdf",
+      "sha256": "5706be0efd2c1a4f510878e839c910c431f7bcb0bbd175c28437828cf92089b9"
+    },
+    {
+      "path": "validation.json",
+      "sha256": "b500751878a7f79a3ee0932ad44eaa5329724af35107c81ab104f92c725e7d55"
+    },
+    {
+      "path": "verification.json",
+      "sha256": "28f4f9881e0cf69bd020354fc91a87793f033cddd499bb8a7c7e7be0d7ae4193"
+    },
+    {
+      "path": "verify_package.py",
+      "sha256": "63dcb390917e06d09f559027c0e59365791e7e7373b7926c7d4246f77e578f2c"
+    }
+  ]
+}
