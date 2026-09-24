@@ -1,8 +1,8 @@
-import Replicate from 'replicate'
 import {
   buildConceptVisualPrompt,
   type ConceptVisualInput,
 } from '@kealee/marketing-agency'
+import { createMediaRouterFromEnv, waitForMediaJob } from '@kealee/media-router'
 import { downloadUrlToBuffer, uploadMarketingAsset } from '@/lib/marketing/card-media-storage'
 
 export interface GeneratedConceptVisual {
@@ -12,45 +12,31 @@ export interface GeneratedConceptVisual {
   model: string
 }
 
-export function isReplicateConfigured(): boolean {
-  return Boolean(process.env.REPLICATE_API_TOKEN?.trim())
+export function isMediaRouterConfigured(): boolean {
+  return Boolean(
+    process.env.HF_CREDENTIALS?.trim()
+    || (process.env.HF_API_KEY_ID?.trim() && process.env.HF_API_KEY_SECRET?.trim())
+    || process.env.REPLICATE_API_TOKEN?.trim(),
+  )
 }
 
-export async function generateConceptVisualWithReplicate(
+export async function generateConceptVisual(
   input: ConceptVisualInput,
 ): Promise<GeneratedConceptVisual> {
-  const token = process.env.REPLICATE_API_TOKEN
-  if (!token) throw new Error('REPLICATE_API_TOKEN not configured')
-
   const prompt = buildConceptVisualPrompt(input)
-  const replicate = new Replicate({ auth: token })
-
-  let prediction = await replicate.predictions.create({
-    model: 'black-forest-labs/flux-1.1-pro-ultra',
-    input: {
-      prompt,
-      aspect_ratio: '16:9',
-      raw: false,
-      safety_tolerance: 2,
-    },
+  const router = createMediaRouterFromEnv()
+  const job = await router.submit({
+    kind: 'image',
+    intent: input.service_type === 'ADU'
+      ? 'development-visualization'
+      : 'renovation-visualization',
+    prompt,
+    aspectRatio: '16:9',
+    resolution: '2k',
   })
-
-  while (
-    prediction.status !== 'succeeded' &&
-    prediction.status !== 'failed' &&
-    prediction.status !== 'canceled'
-  ) {
-    await new Promise((resolve) => setTimeout(resolve, 2000))
-    prediction = await replicate.predictions.get(prediction.id)
-  }
-
-  if (prediction.status !== 'succeeded') {
-    throw new Error(`Replicate failed: ${prediction.error ?? prediction.status}`)
-  }
-
-  const out = prediction.output
-  const remoteUrl = Array.isArray(out) ? String(out[0]) : String(out)
-  if (!remoteUrl) throw new Error('Replicate returned no image')
+  const result = await waitForMediaJob(router, job, { timeoutMs: 110_000, intervalMs: 2_000 })
+  const remoteUrl = result.outputUrls[0]
+  if (!remoteUrl) throw new Error(`${result.provider} returned no image`)
 
   const bytes = await downloadUrlToBuffer(remoteUrl)
   const id = `concept-${input.service_type}-${Date.now()}`
@@ -59,7 +45,11 @@ export async function generateConceptVisualWithReplicate(
   return {
     storageUrl,
     promptUsed: prompt,
-    provider: 'replicate',
-    model: 'black-forest-labs/flux-1.1-pro-ultra',
+    provider: result.provider,
+    model: result.model,
   }
 }
+
+// Compatibility exports for existing internal callers during rollout.
+export const isReplicateConfigured = isMediaRouterConfigured
+export const generateConceptVisualWithReplicate = generateConceptVisual

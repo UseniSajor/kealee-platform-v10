@@ -2,6 +2,7 @@
 const nextConfig = {
   output: 'standalone',
   reactStrictMode: true,
+  transpilePackages: ['@kealee/media-router'],
   images: {
     remotePatterns: [
       { protocol: 'https', hostname: '*.supabase.co' },

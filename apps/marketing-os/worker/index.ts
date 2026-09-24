@@ -7,6 +7,7 @@ import { executeAgent } from '@/lib/agents'
 import { ingestSourceById } from '@/lib/ingestion'
 import { fetchSocialMetrics, publishSocial } from '@/lib/social-publishers'
 import { pollVideoGeneration, submitVideoGeneration } from '@/lib/video-factory'
+import type { VideoProvider } from '@/lib/video-factory'
 
 if (!process.env.REDIS_URL) throw new Error('REDIS_URL is required for Marketing OS worker')
 
@@ -166,7 +167,7 @@ async function submitVideoJob(input: Record<string, unknown>) {
   if (error || !asset) throw new Error(error?.message ?? 'Media asset not found')
   const sourceUrls = Array.isArray(asset.source_asset_urls) ? asset.source_asset_urls : []
   const submitted = await submitVideoGeneration({
-    provider: asset.provider as 'runway' | 'kling' | 'veo',
+    provider: asset.provider as VideoProvider,
     prompt: String(asset.prompt ?? ''),
     inputImageUrl: typeof sourceUrls[0] === 'string' ? sourceUrls[0] : undefined,
     durationSeconds: [5, 8, 10].includes(Number(asset.duration_seconds))
@@ -177,6 +178,7 @@ async function submitVideoJob(input: Record<string, unknown>) {
       : '16:9',
   })
   await supabase.from('marketing_os_media_assets').update({
+    provider: submitted.provider,
     external_job_id: submitted.jobId,
     status: 'running',
     generation_metadata: submitted.response,
@@ -253,9 +255,11 @@ async function pollVideoJob(input: Record<string, unknown>) {
     .single()
   if (error || !asset) throw new Error(error?.message ?? 'Media asset not found')
   if (!asset.external_job_id) throw new Error('Media asset has no external generation job')
-  if (!['runway', 'kling', 'veo'].includes(asset.provider)) throw new Error(`Unsupported video provider: ${asset.provider}`)
+  if (!['higgsfield', 'seedance', 'veo', 'replicate', 'kling', 'runway'].includes(asset.provider)) {
+    throw new Error(`Unsupported video provider: ${asset.provider}`)
+  }
   const result = await pollVideoGeneration(
-    asset.provider as 'runway' | 'kling' | 'veo',
+    asset.provider as VideoProvider,
     asset.external_job_id,
   )
   const completedAt = result.status === 'completed' || result.status === 'failed'

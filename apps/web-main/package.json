@@ -39,6 +39,7 @@
     "@kealee/kealee-agent-stack": "workspace:*",
     "@kealee/marketing-agency": "workspace:*",
     "@kealee/marketing-privacy": "workspace:*",
+    "@kealee/media-router": "workspace:*",
     "@kealee/knowledge": "workspace:*",
     "@kealee/pascal-agents": "workspace:*",
     "@kealee/pascal-wrapper": "workspace:*",

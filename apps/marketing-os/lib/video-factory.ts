@@ -1,7 +1,10 @@
-import Replicate from 'replicate'
+import {
+  createMediaRouterFromEnv,
+  type MediaProviderId,
+} from '@kealee/media-router'
 import { requireProvider } from './providers'
 
-export type VideoProvider = 'runway' | 'kling' | 'veo'
+export type VideoProvider = 'auto' | 'higgsfield' | 'seedance' | 'veo' | 'replicate' | 'kling' | 'runway'
 
 export interface VideoGenerationRequest {
   provider: VideoProvider
@@ -12,24 +15,63 @@ export interface VideoGenerationRequest {
 }
 
 export async function submitVideoGeneration(input: VideoGenerationRequest) {
-  switch (input.provider) {
-    case 'runway':
-      return submitRunway(input)
-    case 'kling':
-      return submitKling(input)
-    case 'veo':
-      return submitVeo(input)
+  if (input.provider === 'runway') return submitRunway(input)
+
+  const provider: MediaProviderId | undefined = input.provider === 'auto'
+    ? undefined
+    : input.provider === 'kling'
+      ? 'replicate'
+      : input.provider
+  const job = await createMediaRouterFromEnv().submit({
+    provider,
+    kind: 'video',
+    intent: 'marketing-content',
+    prompt: input.prompt,
+    inputImageUrls: input.inputImageUrl ? [input.inputImageUrl] : undefined,
+    durationSec: input.durationSeconds,
+    aspectRatio: input.aspectRatio,
+    model: input.provider === 'kling' ? process.env.KLING_REPLICATE_MODEL : undefined,
+    generateAudio: true,
+  })
+  return {
+    provider: input.provider === 'kling' ? 'kling' as const : job.provider,
+    jobId: job.jobId,
+    response: job.raw,
   }
 }
 
 export async function pollVideoGeneration(provider: VideoProvider, jobId: string) {
+  if (provider === 'auto') throw new Error('Auto-routed jobs must be stored with their resolved provider')
+  if (provider === 'runway') return pollRunway(jobId)
+
+  const routedProvider: MediaProviderId = provider === 'kling' ? 'replicate' : provider
+  const result = await createMediaRouterFromEnv().poll({
+    provider: routedProvider,
+    jobId,
+    model: modelForProvider(provider),
+    kind: 'video',
+    status: 'processing',
+    submittedAt: new Date().toISOString(),
+  })
+  return {
+    status: result.status === 'completed'
+      ? 'completed' as const
+      : result.status === 'failed' || result.status === 'canceled'
+        ? 'failed' as const
+        : 'running' as const,
+    outputUrls: result.outputUrls,
+    error: result.error ?? null,
+    response: result.raw,
+  }
+}
+
+function modelForProvider(provider: Exclude<VideoProvider, 'auto' | 'runway'>): string {
   switch (provider) {
-    case 'runway':
-      return pollRunway(jobId)
+    case 'higgsfield': return process.env.HIGGSFIELD_CINEMATIC_MODEL ?? 'higgsfield/cinema-studio/4.0'
+    case 'seedance': return process.env.SEEDANCE_VIDEO_MODEL ?? 'dreamina-seedance-2-0-260128'
+    case 'veo': return process.env.VEO_VIDEO_MODEL ?? 'veo-3.1-generate-preview'
     case 'kling':
-      return pollKling(jobId)
-    case 'veo':
-      return pollVeo(jobId)
+    case 'replicate': return process.env.KLING_REPLICATE_MODEL ?? 'kwaivgi/kling-v2.5-turbo-pro'
   }
 }
 
@@ -58,54 +100,6 @@ async function submitRunway(input: VideoGenerationRequest) {
   return { provider: 'runway' as const, jobId: String(body.id), response: body }
 }
 
-async function submitKling(input: VideoGenerationRequest) {
-  requireProvider('Kling via Replicate', ['REPLICATE_API_TOKEN'])
-  const replicate = new Replicate({ auth: process.env.REPLICATE_API_TOKEN })
-  const prediction = await replicate.predictions.create({
-    model: process.env.KLING_REPLICATE_MODEL ?? 'kwaivgi/kling-v2.5-turbo-pro',
-    input: {
-      prompt: input.prompt,
-      start_image: input.inputImageUrl,
-      duration: input.durationSeconds ?? 5,
-      aspect_ratio: input.aspectRatio ?? '16:9',
-    },
-  })
-  return { provider: 'kling' as const, jobId: prediction.id, response: prediction }
-}
-
-async function submitVeo(input: VideoGenerationRequest) {
-  requireProvider('Google Veo', ['GEMINI_API_KEY'])
-  const instance: Record<string, unknown> = { prompt: input.prompt }
-  if (input.inputImageUrl) {
-    const image = await fetch(input.inputImageUrl)
-    if (!image.ok) throw new Error(`Could not load Veo input image (${image.status})`)
-    instance.image = {
-      bytesBase64Encoded: Buffer.from(await image.arrayBuffer()).toString('base64'),
-      mimeType: image.headers.get('content-type') ?? 'image/jpeg',
-    }
-  }
-  const model = process.env.VEO_VIDEO_MODEL ?? 'veo-3.1'
-  const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/${model}:predictLongRunning?key=${process.env.GEMINI_API_KEY}`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        instances: [instance],
-        parameters: {
-          aspectRatio: input.aspectRatio ?? '16:9',
-          durationSeconds: input.durationSeconds ?? 8,
-          sampleCount: 1,
-          generateAudio: true,
-        },
-      }),
-    },
-  )
-  const body = await response.json().catch(() => ({})) as Record<string, unknown>
-  if (!response.ok || !body.name) throw new Error(`Veo submit failed (${response.status}): ${JSON.stringify(body).slice(0, 400)}`)
-  return { provider: 'veo' as const, jobId: String(body.name), response: body }
-}
-
 async function pollRunway(jobId: string) {
   requireProvider('Runway', ['RUNWAY_API_KEY'])
   const response = await fetch(
@@ -124,49 +118,6 @@ async function pollRunway(jobId: string) {
     status: status === 'SUCCEEDED' ? 'completed' as const : status === 'FAILED' ? 'failed' as const : 'running' as const,
     outputUrls: Array.isArray(body.output) ? body.output.filter((value): value is string => typeof value === 'string') : [],
     error: status === 'FAILED' ? String(body.failure ?? body.failureCode ?? 'Runway generation failed') : null,
-    response: body,
-  }
-}
-
-async function pollKling(jobId: string) {
-  requireProvider('Kling via Replicate', ['REPLICATE_API_TOKEN'])
-  const replicate = new Replicate({ auth: process.env.REPLICATE_API_TOKEN })
-  const prediction = await replicate.predictions.get(jobId)
-  const output = Array.isArray(prediction.output) ? prediction.output : [prediction.output]
-  return {
-    status: prediction.status === 'succeeded'
-      ? 'completed' as const
-      : prediction.status === 'failed' || prediction.status === 'canceled'
-        ? 'failed' as const
-        : 'running' as const,
-    outputUrls: output.filter((value): value is string => typeof value === 'string'),
-    error: prediction.error ? String(prediction.error) : null,
-    response: prediction,
-  }
-}
-
-async function pollVeo(jobId: string) {
-  requireProvider('Google Veo', ['GEMINI_API_KEY'])
-  const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/${jobId}?key=${process.env.GEMINI_API_KEY}`,
-  )
-  const body = await response.json().catch(() => ({})) as {
-    done?: boolean
-    error?: { message?: string }
-    response?: {
-      generateVideoResponse?: {
-        generatedSamples?: Array<{ video?: { uri?: string } }>
-      }
-    }
-  }
-  if (!response.ok) throw new Error(`Veo poll failed (${response.status}): ${JSON.stringify(body).slice(0, 400)}`)
-  const outputUrls = body.response?.generateVideoResponse?.generatedSamples
-    ?.map((sample) => sample.video?.uri)
-    .filter((value): value is string => typeof value === 'string') ?? []
-  return {
-    status: body.error ? 'failed' as const : body.done ? 'completed' as const : 'running' as const,
-    outputUrls,
-    error: body.error?.message ?? null,
     response: body,
   }
 }

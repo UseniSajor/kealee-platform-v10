@@ -8,6 +8,8 @@ export interface ProviderHealth {
 export function getProviderHealth(): ProviderHealth[] {
   return [
     { provider: 'OpenAI', category: 'ai', configured: Boolean(process.env.OPENAI_API_KEY), capability: 'Agent reasoning and structured generation' },
+    { provider: 'Higgsfield', category: 'video', configured: Boolean(process.env.HF_CREDENTIALS || (process.env.HF_API_KEY_ID && process.env.HF_API_KEY_SECRET)), capability: 'Cinematic, renovation, development, and marketing media' },
+    { provider: 'Seedance direct', category: 'video', configured: Boolean(process.env.SEEDANCE_API_KEY || process.env.ARK_API_KEY), capability: 'Direct text/image-to-video fallback' },
     { provider: 'Runway', category: 'video', configured: Boolean(process.env.RUNWAY_API_KEY), capability: 'Text/image-to-video' },
     { provider: 'Kling via Replicate', category: 'video', configured: Boolean(process.env.REPLICATE_API_TOKEN), capability: 'Image-to-video and social clips' },
     { provider: 'Google Veo', category: 'video', configured: Boolean(process.env.GEMINI_API_KEY), capability: 'Video generation with audio' },

@@ -25,6 +25,9 @@
     "paths": {
       "@/*": [
         "./*"
+      ],
+      "@kealee/media-router": [
+        "../../packages/media-router/src/index.ts"
       ]
     }
   },

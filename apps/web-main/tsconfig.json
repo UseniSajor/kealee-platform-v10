@@ -24,6 +24,7 @@
       "@kealee/kealee-agent-stack": ["../../packages/kealee-agent-stack/src/index.ts"],
       "@kealee/database": ["../../packages/database/src/index.ts"],
       "@kealee/communications": ["../../packages/communications/src/index.ts"],
+      "@kealee/media-router": ["../../packages/media-router/src/index.ts"],
       "@kealee/automation/dist/*.js": ["../../packages/automation/src/*.ts"],
       "@kealee/automation/dist/*": ["../../packages/automation/src/*"]
     }

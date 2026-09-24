@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@clerk/nextjs": "^5.0.0",
+    "@kealee/media-router": "workspace:*",
     "@supabase/supabase-js": "^2.112.3",
     "bullmq": "^5.0.0",
     "csv-parse": "^6.2.1",

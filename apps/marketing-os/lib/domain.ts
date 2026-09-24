@@ -109,7 +109,7 @@ export const AGENT_DEFINITIONS: MarketingAgentDefinition[] = [
     purpose: 'Converts approved content into scripts, voice, video, captions, and channel variants.',
     upstream: ['editor'],
     downstream: ['social'],
-    tools: ['runway', 'kling', 'veo', 'elevenlabs', 'media_archive'],
+    tools: ['higgsfield', 'seedance', 'veo', 'replicate', 'runway', 'elevenlabs', 'media_archive'],
   },
   {
     key: 'social',

@@ -6,8 +6,8 @@ import {
 import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { MarketingAgencyService, ConceptVisualInputSchema } from '@kealee/marketing-agency'
 import {
-  generateConceptVisualWithReplicate,
-  isReplicateConfigured,
+  generateConceptVisual,
+  isMediaRouterConfigured,
 } from '@/lib/marketing-agency/concept-visual-generate'
 
 export const dynamic = 'force-dynamic'
@@ -19,9 +19,9 @@ export async function POST(req: NextRequest) {
   const auth = await authorizeMarketingAgencySession(req, 'write:marketing_assets')
   if (!auth.authorized) return marketingUnauthorized()
 
-  if (!isReplicateConfigured()) {
+  if (!isMediaRouterConfigured()) {
     return NextResponse.json(
-      { error: 'REPLICATE_API_TOKEN not configured — image generation unavailable' },
+      { error: 'No media image provider is configured — add Higgsfield or Replicate credentials' },
       { status: 503 },
     )
   }
@@ -38,7 +38,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 })
   }
 
-  const generated = await generateConceptVisualWithReplicate(parsed.data)
+  const generated = await generateConceptVisual(parsed.data)
   const service = new MarketingAgencyService(getSupabaseAdmin())
 
   const asset = await service.proposeAsset(
