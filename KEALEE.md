@@ -54,11 +54,22 @@ responsible. Blend them and Kealee inherits professional liability for a
 builder's decision on a drawing Kealee never saw. No contract clause repairs
 that afterwards — the product boundary has to hold it.
 
-**Tenancy today: 66 of 510 models carry an org/tenant id (12%).** Multi-tenant
-sharing of one database is NOT safe yet. `SitePlanSheet`,
-`SitePlanStageExecution`, `SitePlanReviewAssignment`, `Document`, `RagDocument`
-and `RagChunk` are all unscoped. Sell the single-tenant managed deployment
-until the phases in the decision doc are gated through.
+**AN ORG IS THE TENANT.** There is no separate `Tenant` entity — one was built
+on 2026-09-24 and withdrawn the same day in favour of this, because
+`organizationId` already sits on the models that carry customer data. `Org.
+tenantKind` is `KEALEE_DIRECT` or `WHITE_LABEL` and says who carries
+professional responsibility; `WhiteLabelTier` and `WhiteLabelTenantStatus`
+describe commercial shape and are NOT the same question.
+
+**Multi-tenant sharing of one database is NOT safe yet.** 66 of ~524 models
+carry an org id. `SitePlanSheet`, `SitePlanStageExecution`,
+`SitePlanReviewAssignment` and `Document` are unscoped, and row-level security
+is not enabled. Sell the single-tenant managed deployment until the phases in
+the decision doc are gated through.
+
+**Do not enable RLS before the application sets the session tenant**
+(`withTenant()` in `@kealee/database`). The policies fail closed, so turning
+them on early makes every protected query return zero rows and stops delivery.
 
 **Jurisdiction:** one certified rule pack, `pg-2022.1`, Prince George's County.
 No Texas support exists. Do not sell into a market that has not been

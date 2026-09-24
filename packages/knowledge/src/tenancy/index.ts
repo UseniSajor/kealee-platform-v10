@@ -21,15 +21,34 @@
  * greppable way.
  */
 
+/**
+ * Mirrors `OrgTenantKind` in the Prisma schema.
+ *
+ * AN ORG IS THE TENANT (resolved 2026-09-24, see the decision doc §4b). There
+ * is no separate Tenant entity: `organizationId` already sits on the models
+ * that carry customer data, so scoping costs nothing extra, and a second
+ * identifier would be one more thing every query has to remember.
+ */
 export type TenantKind = 'KEALEE_DIRECT' | 'WHITE_LABEL'
 
 export interface TenantScope {
+  /** An Org id. Named `tenantId` because that is the ROLE the Org plays here. */
   tenantId: string
   kind: TenantKind
 }
 
-/** The homeowner tenant. There is exactly one, and the database enforces it. */
-export const KEALEE_DIRECT_TENANT_ID = 'tenant_kealee_direct'
+/**
+ * The homeowner business's Org id, from `SITE_PLAN_ORG_ID`.
+ *
+ * Read at call time rather than captured at module load: the value differs
+ * per deployment, and a captured undefined would silently become the empty
+ * string — which `requireTenantScope` rejects, but only after something has
+ * already tried to use it.
+ */
+export function kealeeDirectOrgId(): string | null {
+  const v = process.env.SITE_PLAN_ORG_ID
+  return v && v.trim() ? v.trim() : null
+}
 
 export class CrossTenantAccessError extends Error {
   readonly requested: string
@@ -208,4 +227,55 @@ export function tenantHasModule(
   moduleKey: LicensableModule,
 ): boolean {
   return enabledModules.includes(moduleKey)
+}
+
+/**
+ * Guards the sale itself: a module may only be licensed to a WHITE_LABEL Org.
+ *
+ * Licensing a module to the homeowner Org is not a smaller mistake than
+ * licensing a homeowner SKU to a white-label firm — it is the same error
+ * pointed the other way, and it quietly turns Kealee's own business into a
+ * tenant of itself, with a licence term and an expiry it was never meant to
+ * have.
+ */
+export function assertModuleLicensableTo(
+  scope: TenantScope,
+  moduleKey: string,
+): LicensableModule {
+  const m = assertLicensableModule(moduleKey)
+  if (scope.kind === 'KEALEE_DIRECT') {
+    throw new Error(
+      `Cannot license module "${m}" to the KEALEE_DIRECT organization. That Org is ` +
+      "Kealee's own homeowner business, not a customer of it — modules are what a " +
+      'white-label firm buys. See docs/decisions/white-label-and-tenancy.md.',
+    )
+  }
+  return m
+}
+
+/**
+ * Who carries professional responsibility for work produced under this scope.
+ *
+ * The single most consequential difference between the two businesses, kept as
+ * a function so it is answered the same way everywhere — a report footer, a
+ * review routing decision and a contract template must not disagree about it.
+ */
+export function professionalResponsibility(scope: TenantScope): {
+  party: 'kealee' | 'tenant'
+  statement: string
+} {
+  return scope.kind === 'KEALEE_DIRECT'
+    ? {
+        party: 'kealee',
+        statement:
+          'Kealee produces this deliverable and arranges review by a licensed ' +
+          'professional before it is released.',
+      }
+    : {
+        party: 'tenant',
+        statement:
+          'This deliverable is produced by the licensee using Kealee software. ' +
+          'Professional review and certification are the licensee\u2019s responsibility; ' +
+          'Kealee is the software vendor and does not certify this work.',
+      }
 }

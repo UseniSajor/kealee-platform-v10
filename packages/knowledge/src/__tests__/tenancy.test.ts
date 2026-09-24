@@ -9,11 +9,13 @@ import {
   platformOperation, isPlatformOperation,
   tenantStoragePrefix, tenantJobKey,
   assertLicensableModule, tenantHasModule,
-  HOMEOWNER_ONLY_SKUS, LICENSABLE_MODULES, KEALEE_DIRECT_TENANT_ID,
+  HOMEOWNER_ONLY_SKUS, LICENSABLE_MODULES,
+  assertModuleLicensableTo, professionalResponsibility, kealeeDirectOrgId,
   CrossTenantAccessError, MissingTenantScopeError,
   type TenantScope,
 } from '../tenancy'
 
+const KEALEE_DIRECT_TENANT_ID = 'org_kealee_homeowner'
 const homeowner: TenantScope = { tenantId: KEALEE_DIRECT_TENANT_ID, kind: 'KEALEE_DIRECT' }
 const builder: TenantScope = { tenantId: 'tenant_acme_builders', kind: 'WHITE_LABEL' }
 const rival: TenantScope = { tenantId: 'tenant_rival_homes', kind: 'WHITE_LABEL' }
@@ -139,5 +141,44 @@ describe('module licensing — homeowner SKUs are not for sale to tenants', () =
   it('gates a module a tenant has not licensed', () => {
     expect(tenantHasModule(['acquisition'], 'acquisition')).toBe(true)
     expect(tenantHasModule(['acquisition'], 'site_plans')).toBe(false)
+  })
+})
+
+describe('Org-as-tenant: who is responsible, and who may buy modules', () => {
+  it('reads the homeowner org from the environment, not a hardcoded constant', () => {
+    const saved = process.env.SITE_PLAN_ORG_ID
+    process.env.SITE_PLAN_ORG_ID = 'org_abc'
+    expect(kealeeDirectOrgId()).toBe('org_abc')
+    delete process.env.SITE_PLAN_ORG_ID
+    expect(kealeeDirectOrgId()).toBeNull()
+    if (saved) process.env.SITE_PLAN_ORG_ID = saved
+  })
+
+  it('says Kealee is responsible in the homeowner business', () => {
+    const r = professionalResponsibility(homeowner)
+    expect(r.party).toBe('kealee')
+    expect(r.statement).toMatch(/arranges review/)
+  })
+
+  it('says the LICENSEE is responsible under white-label, and Kealee is not', () => {
+    const r = professionalResponsibility(builder)
+    expect(r.party).toBe('tenant')
+    expect(r.statement).toMatch(/does not certify/)
+  })
+
+  it('licenses a module to a white-label org', () => {
+    expect(assertModuleLicensableTo(builder, 'acquisition')).toBe('acquisition')
+  })
+
+  it('refuses to license a module to the HOMEOWNER org', () => {
+    // The same error as selling a homeowner SKU to a licensee, pointed the
+    // other way: it turns Kealee's own business into a tenant of itself.
+    expect(() => assertModuleLicensableTo(homeowner, 'acquisition'))
+      .toThrow(/KEALEE_DIRECT organization/)
+  })
+
+  it('still refuses a homeowner SKU even to a white-label org', () => {
+    expect(() => assertModuleLicensableTo(builder, 'preliminary_site_plan'))
+      .toThrow(/homeowner SKU/)
   })
 })

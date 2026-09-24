@@ -161,7 +161,7 @@ Add to the "do not offer" list: **a market Kealee has not integrated.**
 
 ---
 
-## 4b. OPEN DESIGN FORK — needs a human decision
+## 4b. RESOLVED 2026-09-24 — Org IS the tenant
 
 Two tenant models were built in parallel on 2026-09-24 and they disagree about
 the same thing. Neither is wrong; they cannot both stand.
@@ -174,7 +174,7 @@ the same thing. Neither is wrong; they cannot both stand.
 | Also has | — | plans, domains, deployment config, secret references, support-access sessions, per-tenant evaluation suites |
 | Scoping cost | a new id on every model | `organizationId` is ALREADY on the models that matter |
 
-**Recommendation: adopt B, and port A's `kind` into it.**
+**DECIDED: B is adopted. A is withdrawn.**
 
 B is the better fit and the reason is structural rather than aesthetic:
 `organizationId` already exists on the models that carry customer data, so
@@ -190,15 +190,41 @@ professional responsibility. That must move onto the Org-as-tenant entity, with
 the same one-homeowner-tenant constraint, or the liability boundary in §1 has
 nothing enforcing it.
 
-**Consequently these are withdrawn pending the decision:**
+### What was done
 
-- `schema-src/foundation/tenant.prisma` and migration
-  `20260924100000_tenancy` — committed in `ea80478e` and NOT applied to any
-  database. If B is adopted, delete both; nothing depends on them.
-- `Org.tenantId` — reverted before commit. Under B, an Org does not need one.
-- `tenantId` on the site-plan children — reverted before commit. Under B the
-  denormalised column is `organizationId`.
-- The RLS migration — withdrawn until the column name is settled.
+- **`Tenant` and `TenantUsage` deleted**, along with migration
+  `20260924100000_tenancy`. Neither reached a database. `organizationId`
+  already sits on the models that carry customer data, so scoping an Org costs
+  nothing extra, and a second identifier would be one more thing every query
+  has to remember.
+- **`OrgTenantKind` added to `Org`** (`20260924130000_org_tenant_kind`), which
+  is the piece B was missing. `WhiteLabelTier` and `WhiteLabelTenantStatus`
+  describe commercial shape; neither says who carries professional
+  responsibility, and that is what §1 turns on. Every existing Org backfills to
+  `KEALEE_DIRECT` — unambiguous, because white-label does not exist yet.
+- **`professionalResponsibility(scope)`** in `@kealee/knowledge` answers "who
+  is responsible" in one place, so a report footer, a review routing decision
+  and a contract template cannot disagree about it.
+- **`assertModuleLicensableTo(scope, module)`** refuses to license a module to
+  the homeowner Org. That is the same error as selling a homeowner SKU to a
+  licensee, pointed the other way: it turns Kealee's own business into a tenant
+  of itself, with a licence term it was never meant to have.
+- **A latent multi-tenant bug fixed on the way through.**
+  `resolveOrganizationId()` fell back to the OLDEST Org when
+  `SITE_PLAN_ORG_ID` was unset, with a comment reading "set it explicitly
+  before this deployment serves more than one tenant". Under Org-as-tenant that
+  fallback would hand a homeowner order to a white-label client, silently, with
+  the whole audit trail attributed to the wrong business. It now throws when
+  the owning Org is ambiguous rather than guessing.
+
+### Still outstanding
+
+- RLS, and the denormalised scope column on the site-plan children — the column
+  is `organizationId` under this model. Gated as before: the application must
+  set the session context BEFORE the policies go on, or every protected query
+  returns zero rows and delivery stops.
+- `packages/database/src/tenant-context.ts` is written and id-agnostic; it
+  takes whatever id the caller scopes to, which is now an Org id.
 
 **What stands regardless of the outcome**, because it is id-agnostic:
 

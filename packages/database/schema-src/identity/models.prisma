@@ -272,8 +272,33 @@ model ModuleEntitlement {
   @@index([enabled])
 }
 
+/// Which of Kealee's two businesses an Org belongs to.
+///
+/// An Org IS the tenant (Codex's model, adopted 2026-09-24). What that model
+/// did not carry is WHO CARRIES PROFESSIONAL RESPONSIBILITY, which is the
+/// distinction the whole white-label design turns on:
+///
+///   KEALEE_DIRECT  Kealee's own homeowner business. Kealee produces the
+///                  deliverable and owes the duty to get it reviewed by a
+///                  licensed professional.
+///   WHITE_LABEL    a firm licensing the platform. THEIR professionals are
+///                  responsible; Kealee is the software vendor.
+///
+/// `WhiteLabelTier` and `WhiteLabelTenantStatus` describe commercial shape.
+/// This describes liability, and the two must not be conflated: blending them
+/// has Kealee inheriting professional responsibility for a builder's decision
+/// on a drawing Kealee never saw. See docs/decisions/white-label-and-tenancy.md.
+enum OrgTenantKind {
+  KEALEE_DIRECT
+  WHITE_LABEL
+}
+
 model Org {
   id          String   @id @default(uuid())
+  /// Which business this Org is. Defaults to the homeowner business because
+  /// every Org that existed before white-label is one; a new white-label Org
+  /// must say so explicitly.
+  tenantKind  OrgTenantKind @default(KEALEE_DIRECT)
   externalAuthId String? @unique
   name        String
   slug        String   @unique

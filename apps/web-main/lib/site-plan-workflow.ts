@@ -137,15 +137,38 @@ async function resolveOrganizationId(): Promise<string | null> {
   if (fromEnv) return fromEnv
   if (cachedOrgId) return cachedOrgId
 
-  const org = await prisma.org.findFirst({
-    orderBy: { createdAt: 'asc' }, select: { id: true },
+  // The oldest-Org fallback was safe while exactly one Org existed. It is not
+  // safe now: an Org IS the tenant, so once a white-label Org exists this
+  // would hand a HOMEOWNER order to a white-label tenant, or the reverse —
+  // silently, and with the order's whole audit trail attributed to the wrong
+  // business. The comment that used to sit here said "set it explicitly before
+  // this deployment serves more than one tenant"; this enforces it instead of
+  // asking.
+  const orgs = await prisma.org.findMany({
+    orderBy: { createdAt: 'asc' },
+    select: { id: true, tenantKind: true },
+    take: 2,
   })
-  if (!org) return null
+  if (orgs.length === 0) return null
 
-  cachedOrgId = org.id
+  const homeowner = orgs.filter(o => o.tenantKind === 'KEALEE_DIRECT')
+
+  if (orgs.length > 1 || homeowner.length !== 1) {
+    // More than one Org, or none unambiguously the homeowner business. Guessing
+    // here is how a customer's plan ends up in someone else's tenant.
+    throw new Error(
+      'SITE_PLAN_ORG_ID is not set and the owning organization cannot be inferred: ' +
+      `${orgs.length} organizations exist. An Org is a TENANT, so picking one by age ` +
+      'could attribute a homeowner order to a white-label client. Set SITE_PLAN_ORG_ID ' +
+      'to the KEALEE_DIRECT org id.',
+    )
+  }
+
+  cachedOrgId = homeowner[0].id
   console.warn(
-    '[site-plan-workflow] SITE_PLAN_ORG_ID is not set; defaulting to the oldest Org ' +
-    `(${org.id}). Set it explicitly before this deployment serves more than one tenant.`,
+    '[site-plan-workflow] SITE_PLAN_ORG_ID is not set; using the single KEALEE_DIRECT Org ' +
+    `(${cachedOrgId}). Set it explicitly — this fallback stops working the moment a ` +
+    'second organization exists.',
   )
   return cachedOrgId
 }
