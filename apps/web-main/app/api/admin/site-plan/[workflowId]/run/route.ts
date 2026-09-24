@@ -36,7 +36,7 @@ export async function POST(
   }
 
   const wf = await prisma.sitePlanWorkflow.findUnique({
-    where: { id: params.workflowId }, select: { id: true, orderId: true, status: true },
+    where: { id: params.workflowId }, select: { id: true, orderId: true, status: true, organizationId: true },
   })
   if (!wf) return NextResponse.json({ error: 'Workflow not found' }, { status: 404 })
 
@@ -45,6 +45,7 @@ export async function POST(
 
   await prisma.sitePlanAuditEvent.create({
     data: {
+      organizationId: wf.organizationId,
       workflowId: wf.id,
       sequence: BigInt(Date.now()),
       occurredAt: new Date(),

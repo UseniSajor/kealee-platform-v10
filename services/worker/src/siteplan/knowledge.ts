@@ -17,6 +17,14 @@ function k(): Knowledge {
   return knowledge
 }
 
+/** The Org that owns a workflow. An Org IS the tenant; every child row carries it. */
+async function orgOfWorkflow(workflowId: string): Promise<string | undefined> {
+  const w = await prisma.sitePlanWorkflow.findUnique({
+    where: { id: workflowId }, select: { organizationId: true },
+  })
+  return w?.organizationId ?? undefined
+}
+
 export async function recordDeliveryInKnowledge(input: {
   workflowId: string; orderId: string; productId: string | null; address: string | null
   record: { document: { id: string; filename: string | null; pageCount: number | null }; deliveredAt: string; revision?: number } & Record<string, unknown>
@@ -35,7 +43,7 @@ export async function recordDeliveryInKnowledge(input: {
     console.log(`[knowledge] site plan ${plan.id} recorded (run ${run.id}, ${plan.approvalStatus})`)
   } catch (e) {
     console.error(`[knowledge] !! site plan for order ${input.orderId} NOT recorded: ${e instanceof Error ? e.message : String(e)}`)
-    await prisma.sitePlanAuditEvent.create({ data: { workflowId: input.workflowId, actorType: 'system', eventType: 'knowledge.record_failed', entityTable: 'knowledge_artifacts', entityId: input.record.document.id, summary: `Knowledge registry write failed: ${e instanceof Error ? e.message : String(e)}` } }).catch(() => undefined)
+    await prisma.sitePlanAuditEvent.create({ data: { organizationId: await orgOfWorkflow(input.workflowId), workflowId: input.workflowId, actorType: 'system', eventType: 'knowledge.record_failed', entityTable: 'knowledge_artifacts', entityId: input.record.document.id, summary: `Knowledge registry write failed: ${e instanceof Error ? e.message : String(e)}` } }).catch(() => undefined)
   }
 }
 

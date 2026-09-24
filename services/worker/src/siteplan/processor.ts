@@ -193,7 +193,10 @@ async function runOne(
         formData: ((wf?.metadata as Record<string, unknown>) ?? {}),
       },
       snapshot,
-      capabilities: productionCapabilities({ jobQueueId: claimed.id }),
+      capabilities: productionCapabilities({
+        jobQueueId: claimed.id,
+        organizationId: wf?.organizationId ?? null,
+      }),
       priorOutputs: (await loadPriorOutputs(workflowId)) as never,
     },
     {

@@ -112,7 +112,7 @@ export async function PATCH(
   if (denied) return denied
 
   const wf = await prisma.sitePlanWorkflow.findUnique({
-    where: { id: params.workflowId }, select: { id: true, orderId: true },
+    where: { id: params.workflowId }, select: { id: true, orderId: true, organizationId: true },
   })
   if (!wf) return NextResponse.json({ error: 'Workflow not found' }, { status: 404 })
   if (!wf.orderId) {
@@ -155,6 +155,7 @@ export async function PATCH(
 
   await prisma.sitePlanAuditEvent.create({
     data: {
+      organizationId: wf.organizationId,
       workflowId: wf.id, sequence: BigInt(Date.now()), occurredAt: new Date(),
       actorType: 'STAFF', eventType: 'county.comments.entered',
       entityTable: 'public_intake_leads', entityId: orderId,

@@ -89,6 +89,7 @@ export async function submitSitePlanRevision(input: RevisionInput): Promise<Revi
     for (const sheet of sheets) {
       await tx.sitePlanSheetRevision.create({
         data: {
+          organizationId: workflow.organizationId,
           sheetId: sheet.id, workflowId: input.workflowId,
           revisionNumber: nextRevision, revisionDate: now,
           description: input.description, issuedBy: input.actor.name,
@@ -109,6 +110,7 @@ export async function submitSitePlanRevision(input: RevisionInput): Promise<Revi
     for (const a of withheld) {
       const fresh = await tx.sitePlanScopedApproval.create({
         data: {
+          organizationId: workflow.organizationId,
           workflowId: input.workflowId, subject: a.subject, discipline: a.discipline,
           appearsOnSheets: a.appearsOnSheets, objectIds: a.objectIds,
           decision: 'PENDING', twinRevision: a.twinRevision, contentHash: null,
@@ -125,6 +127,7 @@ export async function submitSitePlanRevision(input: RevisionInput): Promise<Revi
 
     await tx.sitePlanAuditEvent.create({
       data: {
+        organizationId: workflow.organizationId,
         workflowId: input.workflowId,
         actorId: input.actor.id, actorType: 'drafter',
         eventType: 'revision.submitted',

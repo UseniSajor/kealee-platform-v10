@@ -52,7 +52,33 @@ const d = (v: string | null | undefined): Date | null => {
 }
 
 export class PrismaSitePlanStore implements SitePlanStore {
-  constructor(private readonly prisma: PrismaLike) {}
+  /**
+   * @param organizationId The Org that owns everything this store writes — and
+   *   an Org IS the tenant. Injected once here rather than threaded through
+   *   every row type, because the row types are constructed in dozens of
+   *   places and a single one that forgot would write an unowned row.
+   *
+   *   There IS a column default today, but it is a temporary hotfix pointing
+   *   at the homeowner org and is scheduled for removal. Relying on it would
+   *   mean a white-label row written by forgetful code is silently attributed
+   *   to Kealee's own business — the exact failure
+   *   docs/decisions/white-label-and-tenancy.md exists to prevent.
+   */
+  constructor(
+    private readonly prisma: PrismaLike,
+    private readonly organizationId?: string | null,
+  ) {}
+
+  /** Stamps the owner onto a row, or leaves it alone when none was supplied. */
+  private own<T extends object>(row: T): T {
+    const org = this.organizationId?.trim()
+    return org ? ({ ...row, organizationId: org } as T) : row
+  }
+
+  private ownAll<T extends object>(rows: T[]): T[] {
+    const org = this.organizationId?.trim()
+    return org ? rows.map(r => ({ ...r, organizationId: org } as T)) : rows
+  }
 
   async upsertRuleVersions(rows: RuleVersionRow[]): Promise<void> {
     for (const r of rows) {
@@ -118,7 +144,7 @@ export class PrismaSitePlanStore implements SitePlanStore {
   async insertEvidence(rows: EvidenceRow[]): Promise<void> {
     if (!rows.length) return
     await this.prisma.sitePlanEvidence.createMany({
-      data: rows.map(r => ({ ...r, attachedAt: d(r.attachedAt) })),
+      data: this.ownAll(rows.map(r => ({ ...r, attachedAt: d(r.attachedAt) }))),
       skipDuplicates: true,
     })
   }
@@ -128,7 +154,7 @@ export class PrismaSitePlanStore implements SitePlanStore {
       const data = { ...r, decidedAt: d(r.decidedAt) }
       await this.prisma.sitePlanScopedApproval.upsert({
         where: { id: r.id },
-        create: data,
+        create: this.own(data),
         update: (({ id, workflowId, subject, ...rest }) => rest)(data),
       })
     }
@@ -138,7 +164,7 @@ export class PrismaSitePlanStore implements SitePlanStore {
     for (const r of rows) {
       await this.prisma.sitePlanChecklistResult.upsert({
         where: { workflowId_itemKey: { workflowId: r.workflowId, itemKey: r.itemKey } },
-        create: r,
+        create: this.own(r),
         update: (({ workflowId, itemKey, ...rest }) => rest)(r),
       })
     }
@@ -150,7 +176,7 @@ export class PrismaSitePlanStore implements SitePlanStore {
     await this.prisma.sitePlanQcFinding.deleteMany({ where: { workflowId, runId } })
     if (rows.length) {
       await this.prisma.sitePlanQcFinding.createMany({
-        data: rows.map(r => ({ ...r, clearedAt: d(r.clearedAt) })),
+        data: this.ownAll(rows.map(r => ({ ...r, clearedAt: d(r.clearedAt) }))),
       })
     }
   }
@@ -159,7 +185,7 @@ export class PrismaSitePlanStore implements SitePlanStore {
     for (const r of rows) {
       await this.prisma.sitePlanSheet.upsert({
         where: { workflowId_sheetNumber: { workflowId: r.workflowId, sheetNumber: r.sheetNumber } },
-        create: r,
+        create: this.own(r),
         update: (({ id, workflowId, sheetNumber, ...rest }) => rest)(r),
       })
     }
@@ -168,7 +194,7 @@ export class PrismaSitePlanStore implements SitePlanStore {
   async insertSheetRevisions(rows: SheetRevisionRow[]): Promise<void> {
     if (!rows.length) return
     await this.prisma.sitePlanSheetRevision.createMany({
-      data: rows.map(r => ({ ...r, revisionDate: d(r.revisionDate) })),
+      data: this.ownAll(rows.map(r => ({ ...r, revisionDate: d(r.revisionDate) }))),
       skipDuplicates: true,
     })
   }
@@ -176,7 +202,7 @@ export class PrismaSitePlanStore implements SitePlanStore {
   async upsertIssuance(row: IssuanceRow): Promise<void> {
     await this.prisma.sitePlanIssuance.upsert({
       where: { workflowId: row.workflowId },
-      create: row,
+      create: this.own(row),
       update: (({ workflowId, ...rest }) => rest)(row),
     })
   }
@@ -184,10 +210,11 @@ export class PrismaSitePlanStore implements SitePlanStore {
   async appendAudit(rows: AuditEventRow[]): Promise<void> {
     if (!rows.length) return
     // Append-only: never upserted, never updated, never deleted.
-    await this.prisma.sitePlanAuditEvent.createMany({ data: rows })
+    await this.prisma.sitePlanAuditEvent.createMany({ data: this.ownAll(rows) })
   }
 
   async transaction<T>(fn: (store: SitePlanStore) => Promise<T>): Promise<T> {
-    return this.prisma.$transaction(tx => fn(new PrismaSitePlanStore(tx)))
+    // Propagate the owner: a nested store that lost it would write unowned rows.
+    return this.prisma.$transaction(tx => fn(new PrismaSitePlanStore(tx, this.organizationId)))
   }
 }

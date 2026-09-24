@@ -28,7 +28,36 @@ function toStageStatus(s: string): 'COMPLETED' | 'AWAITING_REVIEW' | 'BLOCKED' |
 
 export function productionCapabilities(opts: {
   jobQueueId?: string | null
+  /**
+   * The Org that owns this workflow — and an Org IS the tenant.
+   *
+   * Every site-plan child row must carry it. There IS a column default today,
+   * pointing at the homeowner org, but that default is a temporary hotfix and
+   * is scheduled for removal: relying on it would mean a white-label row
+   * written by forgetful code is silently attributed to Kealee's own business,
+   * which is the exact failure docs/decisions/white-label-and-tenancy.md
+   * exists to prevent. So it is passed explicitly here.
+   */
+  organizationId?: string | null
 } = {}): Workflow.StageCapabilities {
+  // Resolved once. A write with no owner is a bug worth seeing rather than a
+  // row quietly filed under whoever the default happens to name.
+  const owner = opts.organizationId?.trim() || null
+  if (!owner) {
+    // Loud, because a run with no owner writes rows that land on whichever org
+    // the temporary column default names. That default exists to keep the
+    // deployed worker writing while this wiring lands; it is not a fallback to
+    // rely on, and silently depending on it is how a white-label row ends up
+    // attributed to Kealee's own business.
+    console.warn(
+      '[siteplan] no organizationId supplied to productionCapabilities; rows will fall back ' +
+      'to the column default. This is a bug in the caller, not a supported mode.',
+    )
+  }
+  // Typed as definite so Prisma accepts the spread. At runtime the property is
+  // absent when there is no owner, and the column default covers it — which is
+  // exactly the temporary arrangement the warning above is about.
+  const ownerFields = (owner ? { organizationId: owner } : {}) as { organizationId: string }
   return {
     fetchImpl: fetch,
     now: () => new Date(),
@@ -80,6 +109,7 @@ export function productionCapabilities(opts: {
         await prisma.sitePlanStageExecution.create({
           data: {
             ...data,
+            ...ownerFields,
             attempt: used + 1,
             workflowId: r.workflowId,
             prerequisites: [] as never,
@@ -292,6 +322,7 @@ export function productionCapabilities(opts: {
       })
       await prisma.sitePlanAuditEvent.create({
         data: {
+          ...ownerFields,
           workflowId,
           sequence: BigInt(Date.now()),
           occurredAt: new Date(),
@@ -307,6 +338,7 @@ export function productionCapabilities(opts: {
     trace(e) {
       void prisma.sitePlanAuditEvent.create({
         data: {
+          ...ownerFields,
           workflowId: e.workflowId,
           sequence: BigInt(Date.now()),
           occurredAt: new Date(),

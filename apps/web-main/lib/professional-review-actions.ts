@@ -43,6 +43,21 @@ async function latestDrawing(workflowId: string, projectId: string) {
   }
 }
 
+/**
+ * The Org that owns a workflow — and an Org IS the tenant.
+ *
+ * Every site-plan child row carries it. There is a column default today, but
+ * it points at the homeowner org and is a temporary hotfix: relying on it
+ * would silently attribute a white-label row to Kealee's own business. See
+ * docs/decisions/white-label-and-tenancy.md.
+ */
+async function ownerOf(workflowId: string): Promise<string | undefined> {
+  const w = await reviewDb.sitePlanWorkflow.findUnique({
+    where: { id: workflowId }, select: { organizationId: true },
+  })
+  return w?.organizationId ?? undefined
+}
+
 export async function createProfessionalProfile(formData: FormData) {
   const identity = await getProfessionalIdentity()
   if (!identity) throw new Error('Authentication required.')
@@ -112,6 +127,7 @@ export async function claimReview(formData: FormData) {
   await reviewDb.$transaction(async (tx: any) => {
     const assignment = await tx.sitePlanReviewAssignment.create({
       data: {
+        organizationId: workflow.organizationId,
         workflowId,
         professionalProfileId: identity.profile.id,
         assignedById: identity.user.id,
@@ -125,6 +141,7 @@ export async function claimReview(formData: FormData) {
       for (const [index, page] of pages.entries()) {
         await tx.sitePlanSheet.create({
           data: {
+            organizationId: workflow.organizationId,
             workflowId,
             sheetNumber: page.primary ?? `C-${(index + 1) * 100}`,
             title: index === 0 ? 'Site Plan and Zoning Layout' : 'Site Plan Continuation',
@@ -145,6 +162,7 @@ export async function claimReview(formData: FormData) {
       for (const subject of cfg.subjects) {
         await tx.sitePlanScopedApproval.create({
           data: {
+            organizationId: workflow.organizationId,
             workflowId, subject, discipline: cfg.id,
             appearsOnSheets: pages.map((page) => page.primary ?? 'C-100'),
             objectIds: [], decision: 'PENDING', twinRevision, contentHash,
@@ -155,6 +173,7 @@ export async function claimReview(formData: FormData) {
     await tx.sitePlanIssuance.updateMany({ where: { workflowId }, data: { deliveryState: 'PROFESSIONAL_REVIEW' } })
     await tx.sitePlanAuditEvent.create({
       data: {
+        organizationId: await ownerOf(workflowId),
         workflowId,
         actorId: identity.user.id,
         actorType: cfg.actorType,
@@ -185,7 +204,7 @@ export async function recordScopedDecision(formData: FormData) {
   const identity = await requireAssignedReview(workflowId)
   assertCurrentLicence(identity.profile)
   const cfg = disciplineConfig(identity.discipline)
-  const workflow = await reviewDb.sitePlanWorkflow.findUnique({ where: { id: workflowId }, select: { projectId: true } })
+  const workflow = await reviewDb.sitePlanWorkflow.findUnique({ where: { id: workflowId }, select: { projectId: true, organizationId: true } })
   // A decision binds to the drawing on the desk NOW — after a revision that is the
   // re-rendered document, not the one the subject was seeded with.
   const drawing = workflow ? await latestDrawing(workflowId, workflow.projectId) : null
@@ -223,6 +242,7 @@ export async function recordScopedDecision(formData: FormData) {
 
     await tx.sitePlanAuditEvent.create({
       data: {
+        organizationId: await ownerOf(workflowId),
         workflowId,
         actorId: identity.user.id,
         actorType: cfg.actorType,
@@ -268,6 +288,7 @@ export async function completeReview(formData: FormData) {
     })
     await tx.sitePlanAuditEvent.create({
       data: {
+        organizationId: await ownerOf(workflowId),
         workflowId,
         actorId: identity.user.id,
         actorType: cfg.actorType,
