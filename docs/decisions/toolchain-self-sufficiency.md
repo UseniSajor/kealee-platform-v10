@@ -218,6 +218,43 @@ I  lands with A, then again at each phase boundary
 
 ## 6. Status ledger — implemented / tested / deployed
 
+### Deployment, VERIFIED 2026-09-23 21:30 ET
+
+For the first time this is measured rather than inferred, because
+`buildIdentity()` is live and the healthcheck now answers with the commit:
+
+```
+$ curl -s https://kealee.com/api/health
+{"ok":true,"commit":"8310a98a","branch":"main","host":"railway",
+ "service":"web-main","uptimeSeconds":7212,"node":"v24.21.0",
+ "capabilities":{"stripeConfigured":true,"databaseConfigured":true,
+                 "replicateConfigured":true,"anthropicConfigured":true},
+ "missing":[]}
+```
+
+| Fact | Value |
+|---|---|
+| Live web-main commit | `8310a98a` |
+| Repo HEAD | `5ff1012b` (2 commits ahead) |
+| Deploy mechanism | Railway auto-deploy from a push to `main`. No manual step. |
+| Portals | owner, contractor, developer all HTTP 200 |
+| Migrations run by the pipeline | **None.** No release command anywhere. |
+
+**Railway build of `d3f34b65` FAILED** (deployment `e8de7c4c`, 20:07:31) while
+the same commit builds clean locally: `pnpm turbo run build
+--filter="portal-owner..."` reports **16 successful, 16 total** in 31m48s, with
+`✓ Compiled successfully` and 21/21 static pages. So the failure is a
+build-environment difference or a Railway-side transient, not the code. If the
+deploy of `5ff1012b` also fails, that distinction is confirmed and the Railway
+builder is the thing to investigate, not the repo.
+
+**Migrations are NOT applied.** Nothing in Phase G's schema exists in
+production. The procedure and its hazards are in
+`docs/runbooks/apply-production-migrations.md` — in short, `prisma migrate
+deploy` must not be used here, because two migrations carry no timestamp prefix
+and sort ahead of everything else.
+
+
 Updated as work lands. "Deployed" means running in a Railway production service.
 
 | Item | Implemented | Tested | Deployed |
