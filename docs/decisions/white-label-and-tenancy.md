@@ -6,6 +6,15 @@
 
 ---
 
+## 0. Positioning — channel-agnostic
+
+This is a PLATFORM offering sold directly to professionals and firms that need
+the service: builders, developers, general contractors, property managers,
+architects, permit expediters, agencies. It is not tied to any freelance
+marketplace, referral network or intermediary, and nothing in the design should
+assume one. Contracting channel is a commercial detail that changes the
+paperwork, never the product or the architecture.
+
 ## 1. The rule that governs everything else
 
 **Kealee runs TWO businesses on ONE codebase. They are never combined, never

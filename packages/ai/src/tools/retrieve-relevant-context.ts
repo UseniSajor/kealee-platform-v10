@@ -9,6 +9,15 @@ import { retrieveContext, formatContext } from '../rag/retriever.js'
 import type { RetrievalFilter, RetrievalResult } from '../rag/types.js'
 
 export interface RetrieveContextParams {
+  /**
+   * REQUIRED, and deliberately NOT a field the model can choose.
+   *
+   * This is a Claude tool handler, so `params` is partly model-controlled. The
+   * tenant must therefore come from the SERVER's session, never from the tool
+   * call — a model that could name a tenant could be talked into naming
+   * someone else's. The caller supplies it; the tool schema does not expose it.
+   */
+  tenantId: string
   query: string
   jurisdiction?: string
   serviceType?: string
@@ -37,6 +46,7 @@ export async function retrieveRelevantContext(
   if (params.sourceType)   filters.sourceType = params.sourceType as any
 
   const results = await retrieveContext({
+    tenantId: params.tenantId,
     query: params.query,
     filters,
     topK: params.topK ?? 5,
@@ -51,7 +61,13 @@ export async function retrieveRelevantContext(
 }
 
 /**
- * Claude tool definition — register this in any KeaBot
+ * Claude tool definition — register this in any KeaBot.
+ *
+ * NOTE the absence of `tenantId` from `parameters`, which is deliberate and
+ * must stay that way. Everything listed here is model-controlled. The tenant
+ * is supplied by the server from the authenticated session and injected by the
+ * caller, because a parameter the model can set is a parameter the model can
+ * be talked into setting to someone else's tenant.
  */
 export const RETRIEVE_CONTEXT_TOOL_DEF = {
   name: 'retrieve_relevant_context',

@@ -44,3 +44,6 @@ export function createKnowledge(prisma: unknown, opts: { events?: EventSink; log
   const registry = new KnowledgeRegistry(db, events, opts.log)
   return { registry, generation: new GenerationRecorder(db, registry, events), provenance: new Provenance(db), learning: new LearningLedger(db), events }
 }
+
+// Tenant context and the corpus boundary. See docs/decisions/white-label-and-tenancy.md
+export * from './tenancy'

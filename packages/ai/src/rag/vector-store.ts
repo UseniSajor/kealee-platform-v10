@@ -7,27 +7,28 @@
 
 import { prismaAny } from '../utils/prisma-helper.js'
 import type { IngestOptions, RagChunk, RagDocument } from './types.js'
-
-const EMBEDDING_MODEL = process.env.EMBEDDING_MODEL ?? 'text-embedding-3-small'
-const EMBEDDING_DIM   = parseInt(process.env.EMBEDDING_DIMENSION ?? '1536', 10)
-
-function getOpenAI() {
-  const OpenAI = require('openai')
-  const apiKey = process.env.EMBEDDING_API_KEY ?? process.env.OPENAI_API_KEY
-  if (!apiKey) throw new Error('EMBEDDING_API_KEY is required for RAG embeddings')
-  return new OpenAI({ apiKey })
-}
+import { resolveEmbeddingProvider } from './embedding-provider.js'
 
 /**
- * Generate embedding vector for a text string
+ * Bumped whenever the embedding model changes. Vectors from two models are not
+ * comparable, so a switch writes a NEW version rather than mutating rows —
+ * the index is never half in one vector space and half in another.
+ */
+export const EMBEDDING_VERSION = 1
+
+/**
+ * Generate an embedding.
+ *
+ * Routed through `resolveEmbeddingProvider()` rather than calling OpenAI
+ * directly. That defaults to the LOCAL provider, so building the corpus is
+ * never blocked on a billing relationship and no platform data leaves — which
+ * matters more once the corpus holds several tenants' work. Set
+ * EMBEDDING_PROVIDER=openai for the metered one.
  */
 export async function generateEmbedding(text: string): Promise<number[]> {
-  const openai = getOpenAI()
-  const resp = await openai.embeddings.create({
-    model: EMBEDDING_MODEL,
-    input: text.slice(0, 8192), // token limit guard
-  })
-  return resp.data[0].embedding as number[]
+  const provider = resolveEmbeddingProvider()
+  const [vec] = await provider.embed([text.slice(0, 8192)])
+  return vec
 }
 
 /**
@@ -55,15 +56,32 @@ export function chunkText(
  */
 export async function ingestDocument(opts: IngestOptions): Promise<RagDocument> {
   const {
-    sourceType, sourceId, title, content,
+    tenantId, sourceType, sourceId, title, content,
     jurisdiction, serviceType, phase, projectId,
     chunkSize = 512, chunkOverlap = 64,
   } = opts
 
-  // Upsert document record
+  if (typeof tenantId !== 'string' || tenantId.trim() === '') {
+    throw new Error(
+      'ingestDocument requires a non-empty tenantId. See ' +
+      'docs/decisions/white-label-and-tenancy.md.',
+    )
+  }
+
+  const provider = resolveEmbeddingProvider()
+
+  // Upsert WITHIN THE TENANT.
+  //
+  // This lookup previously matched on (sourceType, sourceId) alone. Two
+  // tenants can legitimately hold a document about the same public parcel —
+  // the same sourceId — so that query would find ANOTHER tenant's row and the
+  // UPDATE below would overwrite their corpus with this tenant's content. A
+  // cross-tenant WRITE, which is worse than a cross-tenant read.
   const existing: any[] = await prismaAny.$queryRawUnsafe(
-    `SELECT id FROM rag_documents WHERE "sourceType" = $1 AND "sourceId" = $2`,
-    sourceType, sourceId
+    `SELECT id FROM rag_documents
+     WHERE "tenantId" = $1 AND "sourceType" = $2 AND "sourceId" = $3
+       AND "embeddingVersion" = $4`,
+    tenantId, sourceType, sourceId, EMBEDDING_VERSION
   )
 
   let docId: string
@@ -72,20 +90,22 @@ export async function ingestDocument(opts: IngestOptions): Promise<RagDocument> 
     await prismaAny.$executeRawUnsafe(
       `UPDATE rag_documents SET title=$1, content=$2, jurisdiction=$3,
        "serviceType"=$4, phase=$5, "projectId"=$6, "updatedAt"=NOW()
-       WHERE id=$7`,
+       WHERE id=$7 AND "tenantId"=$8`,
       title, content, jurisdiction ?? null, serviceType ?? null,
-      phase ?? null, projectId ?? null, docId
+      phase ?? null, projectId ?? null, docId, tenantId
     )
     // Remove old chunks
     await prismaAny.$executeRawUnsafe(`DELETE FROM rag_chunks WHERE "documentId"=$1`, docId)
   } else {
     const rows: any[] = await prismaAny.$queryRawUnsafe(
       `INSERT INTO rag_documents
-       ("sourceType","sourceId",title,content,jurisdiction,"serviceType",phase,"projectId")
-       VALUES($1,$2,$3,$4,$5,$6,$7,$8)
+       (id,"tenantId","sourceType","sourceId",title,content,jurisdiction,"serviceType",
+        phase,"projectId","embeddingModel","embeddingVersion","embeddingDims","updatedAt")
+       VALUES(gen_random_uuid()::text,$1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,NOW())
        RETURNING id`,
-      sourceType, sourceId, title, content,
-      jurisdiction ?? null, serviceType ?? null, phase ?? null, projectId ?? null
+      tenantId, sourceType, sourceId, title, content,
+      jurisdiction ?? null, serviceType ?? null, phase ?? null, projectId ?? null,
+      provider.model, EMBEDDING_VERSION, provider.dimensions
     )
     docId = rows[0].id
   }
@@ -97,9 +117,9 @@ export async function ingestDocument(opts: IngestOptions): Promise<RagDocument> 
     const meta = JSON.stringify({ documentTitle: title, sourceType, sourceId, jurisdiction, serviceType, projectId, phase })
     await prismaAny.$executeRawUnsafe(
       `INSERT INTO rag_chunks
-       (id, "documentId", "chunkIndex", content, embedding, "tokenCount", metadata)
-       VALUES(gen_random_uuid()::text, $1, $2, $3, $4, $5, $6)`,
-      docId, i, chunks[i],
+       (id, "tenantId", "documentId", "chunkIndex", content, embedding, "tokenCount", metadata)
+       VALUES(gen_random_uuid()::text, $1, $2, $3, $4, $5, $6, $7)`,
+      tenantId, docId, i, chunks[i],
       `{${embedding.join(',')}}`,
       Math.ceil(chunks[i].split(' ').length * 1.3),
       meta
@@ -107,8 +127,8 @@ export async function ingestDocument(opts: IngestOptions): Promise<RagDocument> 
   }
 
   await prismaAny.$executeRawUnsafe(
-    `UPDATE rag_documents SET "chunkCount"=$1, "lastIndexed"=NOW() WHERE id=$2`,
-    chunks.length, docId
+    `UPDATE rag_documents SET "chunkCount"=$1, "lastIndexed"=NOW() WHERE id=$2 AND "tenantId"=$3`,
+    chunks.length, docId, tenantId
   )
 
   return {

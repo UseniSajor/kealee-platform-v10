@@ -10,6 +10,15 @@
 // the corpus is thousands of chunks, not millions, and a dependency on a
 // Postgres extension the host may not offer is a Ring-3 risk for no gain.
 //
+// TENANCY: every row is tenant-scoped and there is no nullable escape hatch.
+// This corpus exists to carry one job's findings into the next, so an unscoped
+// row is not a latent bug — it is cross-tenant leakage working as designed. A
+// homeowner's property or a professional's judgement must never surface in
+// another tenant's workspace, and the homeowner business and the white-label
+// tenants are on opposite sides of that line (docs/decisions/white-label-and-
+// tenancy.md). Scoped here BEFORE the tables exist in any database, which is
+// the only moment it costs nothing.
+//
 // PERSONAL DATA: nothing enters these tables that has not passed
 // `admitToCorpus()` in @kealee/knowledge. Customer names, emails and street
 // addresses are dropped at the boundary; order ids are hashed. See
@@ -19,6 +28,8 @@
 
 model RagDocument {
   id          String   @id @default(cuid())
+  /// Owning tenant. Required — retrieval is partitioned on it.
+  tenantId    String
   sourceType  String
   sourceId    String
   title       String
@@ -54,15 +65,22 @@ model RagDocument {
 
   chunks      RagChunk[]
 
-  @@unique([sourceType, sourceId, embeddingVersion])
-  @@index([jurisdiction, serviceType])
-  @@index([projectId])
+  // Uniqueness is PER TENANT: two tenants may legitimately hold a document
+  // about the same public parcel, and neither may see the other's.
+  @@unique([tenantId, sourceType, sourceId, embeddingVersion])
+  @@index([tenantId, jurisdiction, serviceType])
+  @@index([tenantId, projectId])
   @@index([embeddingModel, embeddingVersion])
   @@map("rag_documents")
 }
 
 model RagChunk {
   id          String   @id @default(cuid())
+  /// Denormalised from the parent document so a similarity scan can filter on
+  /// the tenant WITHOUT joining. The join is the thing most likely to be
+  /// forgotten in a hand-written similarity query, and forgetting it here
+  /// returns another tenant's chunks.
+  tenantId    String
   documentId  String
   chunkIndex  Int
   content     String   @db.Text
@@ -76,6 +94,7 @@ model RagChunk {
 
   @@unique([documentId, chunkIndex])
   @@index([documentId])
+  @@index([tenantId])
   @@map("rag_chunks")
 }
 
@@ -84,6 +103,7 @@ model RagChunk {
 // is an assertion nobody can check.
 model RagRetrieval {
   id            String   @id @default(cuid())
+  tenantId      String
   query         String   @db.Text
   filters       Json?
   /// Chunk ids returned, in rank order, with their scores.
@@ -97,6 +117,6 @@ model RagRetrieval {
 
   @@index([generationRunId])
   @@index([workflowId])
-  @@index([createdAt])
+  @@index([tenantId, createdAt])
   @@map("rag_retrievals")
 }

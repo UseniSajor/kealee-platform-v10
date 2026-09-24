@@ -71,6 +71,16 @@ export interface RetrievalResult {
 }
 
 export interface RetrievalOptions {
+  /**
+   * REQUIRED. The corpus carries findings from one job to the next, which
+   * across a tenant line means a homeowner's property or a professional's
+   * judgement surfacing in a competitor's workspace.
+   *
+   * Deliberately NOT part of `filters`: a filter is optional by convention and
+   * therefore forgettable, and a boundary you can forget is not a boundary.
+   * See docs/decisions/white-label-and-tenancy.md.
+   */
+  tenantId: string
   query: string
   filters?: RetrievalFilter
   topK?: number         // default 5
@@ -78,6 +88,8 @@ export interface RetrievalOptions {
 }
 
 export interface IngestOptions {
+  /** REQUIRED. See RetrievalOptions.tenantId. */
+  tenantId: string
   sourceType: RagDocumentType
   sourceId: string
   title: string

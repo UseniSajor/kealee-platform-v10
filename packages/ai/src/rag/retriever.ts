@@ -13,7 +13,18 @@ import type { RetrievalOptions, RetrievalResult } from './types.js'
  * Core retrieval function — returns ranked chunks above threshold.
  */
 export async function retrieveContext(opts: RetrievalOptions): Promise<RetrievalResult[]> {
-  const { query, filters = {}, topK = 5, threshold = 0.70 } = opts
+  const { tenantId, query, filters = {}, topK = 5, threshold = 0.70 } = opts
+
+  // The tenant predicate is applied FIRST and unconditionally, before any
+  // optional filter is considered. It is not part of the `filters` object
+  // precisely so that no code path can construct a query without it.
+  if (typeof tenantId !== 'string' || tenantId.trim() === '') {
+    throw new Error(
+      'retrieveContext requires a non-empty tenantId. The corpus carries findings between ' +
+      'jobs; an unscoped read would carry them between customers. See ' +
+      'docs/decisions/white-label-and-tenancy.md.',
+    )
+  }
 
   const queryEmbedding = await generateEmbedding(query)
   const embeddingLiteral = `{${queryEmbedding.join(',')}}`
@@ -21,6 +32,13 @@ export async function retrieveContext(opts: RetrievalOptions): Promise<Retrieval
   // Build WHERE clauses for metadata filters
   const conditions: string[] = []
   const params: unknown[] = [embeddingLiteral, topK]
+
+  // Tenant scope. Checked on the CHUNK as well as the document: the chunk
+  // carries a denormalised tenantId exactly so a similarity scan is bounded
+  // without depending on the join being written correctly.
+  params.push(tenantId)
+  conditions.push(`rd."tenantId" = $${params.length}`)
+  conditions.push(`rc."tenantId" = $${params.length}`)
 
   if (filters.jurisdiction) {
     params.push(filters.jurisdiction)

@@ -7,10 +7,16 @@
 -- No pgvector: the corpus is thousands of chunks, not millions, and depending
 -- on an extension the host may not offer buys nothing here.
 --
+-- TENANCY: every table here is tenant-scoped. This corpus carries one job's
+-- findings into the next, so an unscoped row is cross-tenant leakage working as
+-- designed rather than a bug. Amended before first application, which is the
+-- only moment the column costs nothing to add.
+--
 -- Idempotent: safe to run against a database where an earlier attempt landed.
 
 CREATE TABLE IF NOT EXISTS "rag_documents" (
     "id"                    TEXT NOT NULL,
+    "tenantId"              TEXT NOT NULL,
     "sourceType"            TEXT NOT NULL,
     "sourceId"              TEXT NOT NULL,
     "title"                 TEXT NOT NULL,
@@ -35,17 +41,24 @@ CREATE TABLE IF NOT EXISTS "rag_documents" (
 -- One row per (source, embedding version). A re-embed under a new model writes
 -- a NEW version rather than mutating rows, so the index is never half in one
 -- vector space and half in another.
-CREATE UNIQUE INDEX IF NOT EXISTS "rag_documents_sourceType_sourceId_embeddingVersion_key"
-    ON "rag_documents"("sourceType", "sourceId", "embeddingVersion");
-CREATE INDEX IF NOT EXISTS "rag_documents_jurisdiction_serviceType_idx"
-    ON "rag_documents"("jurisdiction", "serviceType");
-CREATE INDEX IF NOT EXISTS "rag_documents_projectId_idx"
-    ON "rag_documents"("projectId");
+-- Uniqueness is PER TENANT: two tenants may hold a document about the same
+-- public parcel, and neither may see the other's.
+CREATE UNIQUE INDEX IF NOT EXISTS "rag_documents_tenantId_sourceType_sourceId_embeddingVersion_key"
+    ON "rag_documents"("tenantId", "sourceType", "sourceId", "embeddingVersion");
+CREATE INDEX IF NOT EXISTS "rag_documents_tenantId_jurisdiction_serviceType_idx"
+    ON "rag_documents"("tenantId", "jurisdiction", "serviceType");
+CREATE INDEX IF NOT EXISTS "rag_documents_tenantId_projectId_idx"
+    ON "rag_documents"("tenantId", "projectId");
 CREATE INDEX IF NOT EXISTS "rag_documents_embeddingModel_embeddingVersion_idx"
     ON "rag_documents"("embeddingModel", "embeddingVersion");
 
 CREATE TABLE IF NOT EXISTS "rag_chunks" (
     "id"          TEXT NOT NULL,
+    -- Denormalised from the parent so a similarity scan filters on the tenant
+    -- WITHOUT a join. The join is the thing most likely to be left out of a
+    -- hand-written similarity query, and leaving it out returns another
+    -- tenant's chunks.
+    "tenantId"    TEXT NOT NULL,
     "documentId"  TEXT NOT NULL,
     "chunkIndex"  INTEGER NOT NULL,
     "content"     TEXT NOT NULL,
@@ -60,6 +73,8 @@ CREATE UNIQUE INDEX IF NOT EXISTS "rag_chunks_documentId_chunkIndex_key"
     ON "rag_chunks"("documentId", "chunkIndex");
 CREATE INDEX IF NOT EXISTS "rag_chunks_documentId_idx"
     ON "rag_chunks"("documentId");
+CREATE INDEX IF NOT EXISTS "rag_chunks_tenantId_idx"
+    ON "rag_chunks"("tenantId");
 
 DO $$
 BEGIN
@@ -78,6 +93,7 @@ END $$;
 -- evidence.
 CREATE TABLE IF NOT EXISTS "rag_retrievals" (
     "id"              TEXT NOT NULL,
+    "tenantId"        TEXT NOT NULL,
     "query"           TEXT NOT NULL,
     "filters"         JSONB,
     "hits"            JSONB NOT NULL,
@@ -92,4 +108,4 @@ CREATE TABLE IF NOT EXISTS "rag_retrievals" (
 
 CREATE INDEX IF NOT EXISTS "rag_retrievals_generationRunId_idx" ON "rag_retrievals"("generationRunId");
 CREATE INDEX IF NOT EXISTS "rag_retrievals_workflowId_idx"      ON "rag_retrievals"("workflowId");
-CREATE INDEX IF NOT EXISTS "rag_retrievals_createdAt_idx"       ON "rag_retrievals"("createdAt");
+CREATE INDEX IF NOT EXISTS "rag_retrievals_tenantId_createdAt_idx" ON "rag_retrievals"("tenantId", "createdAt");
