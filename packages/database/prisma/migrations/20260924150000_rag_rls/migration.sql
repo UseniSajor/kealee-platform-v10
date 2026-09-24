@@ -72,14 +72,32 @@ END $$;
 -- CANNOT BYPASS IT. Enabled-and-bypassed is more dangerous than disabled,
 -- because it reads as protection to any audit that checks relrowsecurity.
 --
--- To make it real, three steps, in this order:
---   1. Create a login role with NOBYPASSRLS and NOSUPERUSER, and grant it
---      USAGE on schema public, DML on all tables, USAGE+SELECT on sequences,
---      plus matching ALTER DEFAULT PRIVILEGES so future tables inherit them.
---   2. Point DATABASE_URL at that role. Leave DIRECT_URL on postgres —
---      migrations must create objects the application role must not.
---   3. Re-run the two-tenant proof. It must pass before isolation is claimed.
+-- STEP 1 DONE (2026-09-24). Role `kealee_app` created:
+--   rolsuper=false  rolbypassrls=false  rolcanlogin=true  password: NOT SET
+--   652 tables granted, plus ALTER DEFAULT PRIVILEGES so new tables inherit.
+-- No NOSUPERUSER clause: Supabase's `postgres` is not a superuser and cannot
+-- set that attribute, and roles are non-superuser by default anyway.
+-- No password was set, deliberately — the role cannot authenticate, so its
+-- existence changes nothing about who can reach this database.
 --
--- Step 2 is a cutover: if any grant is missing, EVERY service fails at once.
--- Do it deliberately and watch the healthchecks, not as a side effect of
--- something else.
+-- STEP 3 DONE (2026-09-24). The policy was proven under that role using
+-- SET LOCAL ROLE, which exercises RLS exactly as a real connection would
+-- without needing credentials. Two tenants, seven checks, all passed:
+--   * A sees only its own row; B sees only its own
+--   * A cannot read B even by naming the exact row id
+--   * A cannot INSERT a row labelled as B        (WITH CHECK)
+--   * A cannot UPDATE B's row — 0 rows affected  (USING)
+--   * no tenant session returns NOTHING, not everything
+--   * proof rows removed; tables empty again
+-- The policy is correct. Only the connecting role is wrong.
+--
+-- STEP 2 REMAINS, and is a human cutover:
+--   a. Set a password on kealee_app (Supabase dashboard, or ALTER ROLE from
+--      a psql session you control).
+--   b. Repoint DATABASE_URL for every service to kealee_app. Leave DIRECT_URL
+--      on postgres — migrations must create objects kealee_app must not.
+--   c. Watch the healthchecks. If any grant is missing, EVERY service fails at
+--      once, and the symptom is empty results rather than an error, because
+--      the policy fails closed.
+--   d. Re-run the proof against the real connection.
+-- Do this deliberately, not as a side effect of something else.
