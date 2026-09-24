@@ -250,6 +250,61 @@ export async function listProductTemplates() {
   return db.whiteLabelProductTemplate.findMany({ where: { isActive: true }, orderBy: { name: 'asc' } })
 }
 
+/** Public, presentation-only context. No membership, billing, secrets, usage, or
+ * operational data is returned from hostname resolution. */
+export async function resolvePublicTenantContext(hostnameInput: string) {
+  const hostname = normalizeHostname(hostnameInput.split(',')[0] ?? hostnameInput)
+  const domain = await db.tenantDomain.findFirst({
+    where: { hostname, status: 'ACTIVE' },
+    include: {
+      org: {
+        include: {
+          whiteLabelProfile: true,
+          whiteLabelProducts: {
+            where: { enabled: true },
+            include: { productTemplate: true },
+          },
+          entitlements: {
+            where: {
+              enabled: true,
+              OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
+            },
+          },
+        },
+      },
+    },
+  })
+  const profile = domain?.org?.whiteLabelProfile
+  if (!domain || !profile || profile.status !== 'ACTIVE' || domain.org.status !== 'ACTIVE') return null
+
+  return {
+    orgId: domain.orgId,
+    hostname: domain.hostname,
+    companyName: profile.companyName,
+    productName: profile.productName,
+    logoUrl: profile.logoUrl,
+    faviconUrl: profile.faviconUrl,
+    primaryColor: profile.primaryColor,
+    secondaryColor: profile.secondaryColor,
+    accentColor: profile.accentColor,
+    supportName: profile.supportName,
+    supportEmail: profile.supportEmail,
+    supportPhone: profile.supportPhone,
+    supportUrl: profile.supportUrl,
+    locale: profile.locale,
+    currency: profile.currency,
+    timeZone: profile.timeZone,
+    navigationConfig: profile.navigationConfig,
+    kealeeBrandingVisible: profile.kealeeBrandingVisible,
+    products: domain.org.whiteLabelProducts.map((assignment: any) => ({
+      key: assignment.productTemplate.key,
+      name: assignment.displayName ?? assignment.productTemplate.name,
+      configuration: assignment.configuration,
+    })),
+    enabledModules: domain.org.entitlements.map((entitlement: any) => entitlement.moduleKey),
+  }
+}
+
 export async function listTenantDomains(orgId: string) {
   return db.tenantDomain.findMany({ where: { orgId }, orderBy: [{ isPrimary: 'desc' }, { hostname: 'asc' }] })
 }

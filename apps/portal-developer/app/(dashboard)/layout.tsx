@@ -9,8 +9,9 @@ import {
   Map, FlaskConical, Landmark, LayoutGrid,
   FileBarChart, LogOut, Briefcase,
   Menu, ChevronRight, UserCircle,
+  Settings,
 } from 'lucide-react'
-import { PortalPageWithAskRail } from '@kealee/ui'
+import { PortalPageWithAskRail, TenantBrandAttribution, useTenantBranding } from '@kealee/ui'
 
 const NAV_ITEMS = [
   { href: '/pipeline',    label: 'Land Pipeline',  icon: Map,          group: 'Acquisitions' },
@@ -19,6 +20,7 @@ const NAV_ITEMS = [
   { href: '/portfolio',   label: 'Portfolio',      icon: LayoutGrid,   group: 'Finance' },
   { href: '/reports',     label: 'Reports',        icon: FileBarChart, group: 'Finance' },
   { href: '/services',    label: 'Estimate & Permits', icon: Briefcase, group: 'Tools' },
+  { href: '/company-settings', label: 'Company OS', icon: Settings, group: 'Tools' },
 ]
 
 // Developer accent: indigo/violet
@@ -26,6 +28,9 @@ const ACCENT  = '#818CF8'   // indigo-400
 const SIDEBAR = '#1E1B4B'   // indigo-950
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+  const tenantBrand = useTenantBranding()
+  const accent = tenantBrand?.accentColor || ACCENT
+  const sidebar = tenantBrand?.secondaryColor || SIDEBAR
   const pathname = usePathname()
   const [mobileOpen, setMobileOpen] = useState(false)
   const { signOut } = useClerk()
@@ -48,7 +53,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <Link href="/pipeline" className="flex items-center gap-2.5">
           <Image src="/kealee-icon-512x512-transparent.png" alt="Kealee" width={32} height={32} className="h-8 w-8" priority />
           <span className="rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide"
-            style={{ backgroundColor: `${ACCENT}22`, color: ACCENT }}>
+            style={{ backgroundColor: `${accent}22`, color: accent }}>
             Dev
           </span>
         </Link>
@@ -70,9 +75,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     onClick={() => setMobileOpen(false)}
                     className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all"
                     style={{
-                      backgroundColor: active ? `${ACCENT}18` : 'transparent',
-                      color: active ? ACCENT : 'rgba(255,255,255,0.5)',
-                      borderLeft: active ? `3px solid ${ACCENT}` : '3px solid transparent',
+                      backgroundColor: active ? `${accent}18` : 'transparent',
+                      color: active ? accent : 'rgba(255,255,255,0.5)',
+                      borderLeft: active ? `3px solid ${accent}` : '3px solid transparent',
                     }}
                   >
                     <item.icon className="h-4 w-4 shrink-0" />
@@ -102,7 +107,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     <div className="flex min-h-screen" style={{ backgroundColor: '#F5F4FF' }}>
       {/* Desktop sidebar */}
       <aside className="hidden w-56 flex-shrink-0 flex-col lg:flex"
-        style={{ backgroundColor: SIDEBAR, position: 'sticky', top: 0, height: '100vh' }}>
+        style={{ backgroundColor: sidebar, position: 'sticky', top: 0, height: '100vh' }}>
         <SidebarContent />
       </aside>
 
@@ -110,7 +115,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       {mobileOpen && (
         <div className="fixed inset-0 z-50 lg:hidden">
           <div className="absolute inset-0 bg-black/40" onClick={() => setMobileOpen(false)} />
-          <aside className="absolute left-0 top-0 h-full w-56 flex flex-col" style={{ backgroundColor: SIDEBAR }}>
+          <aside className="absolute left-0 top-0 h-full w-56 flex flex-col" style={{ backgroundColor: sidebar }}>
             <SidebarContent />
           </aside>
         </div>
@@ -123,7 +128,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <button onClick={() => setMobileOpen(true)} className="rounded-lg p-1.5 text-slate-500 hover:bg-slate-100">
             <Menu className="h-5 w-5" />
           </button>
-          <span className="font-bold font-display text-sm" style={{ color: SIDEBAR }}>Developer Portal</span>
+          <span className="font-bold font-display text-sm" style={{ color: sidebar }}>{tenantBrand?.productName || tenantBrand?.companyName || 'Developer Portal'}</span>
           <div className="ml-auto flex items-center gap-2">
             <UserCircle className="h-7 w-7 text-slate-400" aria-label="Account" />
           </div>
@@ -137,7 +142,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             {currentPage && (
               <>
                 <ChevronRight className="h-3.5 w-3.5 text-slate-300" />
-                <span className="font-semibold" style={{ color: SIDEBAR }}>{currentPage.label}</span>
+                <span className="font-semibold" style={{ color: sidebar }}>{currentPage.label}</span>
               </>
             )}
           </div>
@@ -148,6 +153,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
         <main className="flex-1 overflow-auto p-4 sm:p-6 lg:p-8">
           <PortalPageWithAskRail portal="developer">{children}</PortalPageWithAskRail>
+          <footer className="mt-8 border-t border-slate-200/60 pt-4 text-center"><TenantBrandAttribution /></footer>
         </main>
       </div>
     </div>

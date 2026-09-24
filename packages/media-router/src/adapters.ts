@@ -34,6 +34,8 @@ abstract class HttpAdapter implements MediaProviderAdapter {
       kind: request.kind,
       status: 'queued',
       submittedAt: new Date().toISOString(),
+      tenantId: request.tenantId,
+      requestedDurationSec: request.durationSec,
       raw,
       ...extra,
     }

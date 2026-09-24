@@ -199,7 +199,7 @@ export const stripeConfig = {
     },
     whiteLabel: {
       priceId: process.env.STRIPE_PRICE_WHITE_LABEL || '',
-      name: 'White-Label Reporting',
+      name: 'Branded Reporting Add-On (Legacy)',
       amount: 19900, // $199 in cents
       interval: 'month',
       features: [
@@ -207,6 +207,7 @@ export const stripeConfig = {
         'Remove Kealee branding',
         'Custom logo and colors',
         'Client-facing dashboards',
+        'Does not include a white-label platform tenant, custom domain, or source-code license',
       ],
     },
   },

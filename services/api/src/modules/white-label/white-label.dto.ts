@@ -58,6 +58,28 @@ export const updateWhiteLabelProfileSchema = z.object({
   clientAdminEnabled: z.boolean().optional(),
 }).strict()
 
+export const updateTenantAdminProfileSchema = updateWhiteLabelProfileSchema.pick({
+  companyName: true,
+  productName: true,
+  logoUrl: true,
+  faviconUrl: true,
+  primaryColor: true,
+  secondaryColor: true,
+  accentColor: true,
+  emailFromName: true,
+  emailReplyToAddress: true,
+  reportHeader: true,
+  reportFooter: true,
+  supportName: true,
+  supportEmail: true,
+  supportPhone: true,
+  supportUrl: true,
+  locale: true,
+  currency: true,
+  timeZone: true,
+  navigationConfig: true,
+})
+
 export const createTenantDomainSchema = z.object({
   hostname: z.string().trim().min(3).max(253),
   isPrimary: z.boolean().default(false),
@@ -119,6 +141,11 @@ export const usageQuerySchema = z.object({
   to: z.coerce.date().optional(),
   metric: z.string().optional(),
   limit: z.coerce.number().int().min(1).max(200).default(50),
+})
+
+export const reconcileUsageSchema = z.object({
+  periodStart: z.coerce.date(),
+  periodEnd: z.coerce.date(),
 })
 
 export const updateDeploymentSchema = z.object({

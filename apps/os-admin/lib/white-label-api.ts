@@ -48,6 +48,8 @@ export interface WhiteLabelDomain {
   status?: string
   verifiedAt?: string | null
   isPrimary?: boolean
+  verificationRecords?: unknown
+  certificateStatus?: string | null
 }
 
 export interface WhiteLabelPlan {
@@ -141,6 +143,10 @@ export const whiteLabelApi = {
     apiRequest(path(orgId) + `/domains/${encodeURIComponent(domainId)}`, { method: 'PATCH', body: data }),
   removeDomain: (orgId: string, domainId: string) =>
     apiRequest(path(orgId) + `/domains/${encodeURIComponent(domainId)}`, { method: 'DELETE' }),
+  provisionDomain: (orgId: string, domainId: string) =>
+    apiRequest(path(orgId) + `/domains/${encodeURIComponent(domainId)}/provision`, { method: 'POST' }),
+  verifyDomain: (orgId: string, domainId: string) =>
+    apiRequest(path(orgId) + `/domains/${encodeURIComponent(domainId)}/verify`, { method: 'POST' }),
   getProductCatalog: () => apiRequest<Collection<WhiteLabelProduct>>('/white-label/products'),
   getProducts: (orgId: string) => apiRequest<{ tenant: { products: WhiteLabelProductAssignment[] } }>(path(orgId)),
   updateProducts: (orgId: string, productKeys: string[]) =>

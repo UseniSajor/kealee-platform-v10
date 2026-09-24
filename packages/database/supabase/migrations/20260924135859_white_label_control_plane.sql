@@ -64,6 +64,11 @@ create table "tenant_domains" (
   "verifiedAt" timestamptz,
   "lastCheckedAt" timestamptz,
   "failureReason" text,
+  "provider" text not null default 'VERCEL',
+  "providerProjectId" text,
+  "verificationRecords" jsonb,
+  "certificateStatus" text,
+  "lastProvisionedAt" timestamptz,
   "createdAt" timestamptz not null default now(),
   "updatedAt" timestamptz not null default now()
 );
@@ -333,3 +338,27 @@ on conflict ("key") do update set
   "defaultAssistantConfig" = excluded."defaultAssistantConfig",
   "pricingGuidance" = excluded."pricingGuidance",
   "updatedAt" = now();
+
+-- One-time compatibility import. Only rows whose legacy partnerId is already a
+-- canonical Org ID are migrated; all future writes use the new control plane.
+do $migration$
+begin
+  if to_regclass('public.v30_white_label_configs') is not null then
+    execute $sql$
+      insert into "white_label_tenant_profiles" (
+        "orgId", "companyName", "logoUrl", "primaryColor", "secondaryColor",
+        "accentColor", "supportEmail", "supportPhone", "status", "provisionedAt"
+      )
+      select legacy."partnerId", legacy."companyName", legacy."logoUrl",
+        legacy."primaryColor", legacy."secondaryColor", legacy."accentColor",
+        legacy."supportEmail", legacy."supportPhone",
+        case when legacy."status" = 'ACTIVE' then 'ACTIVE'::"WhiteLabelTenantStatus"
+             else 'DRAFT'::"WhiteLabelTenantStatus" end,
+        legacy."createdAt"
+      from "v30_white_label_configs" legacy
+      join "Org" org on org."id" = legacy."partnerId"
+      on conflict ("orgId") do nothing
+    $sql$;
+  end if;
+end
+$migration$;

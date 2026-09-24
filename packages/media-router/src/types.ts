@@ -15,6 +15,8 @@ export type MediaJobStatus = 'queued' | 'processing' | 'completed' | 'failed' | 
 export type MediaAspectRatio = '16:9' | '9:16' | '1:1' | '4:3' | '3:4' | '3:2' | '2:3' | '21:9'
 
 export interface MediaGenerationRequest {
+  /** Canonical professional tenant. Required for billable white-label work. */
+  tenantId?: string
   kind: MediaKind
   intent: MediaIntent
   prompt: string
@@ -39,7 +41,27 @@ export interface MediaJob {
   statusUrl?: string
   cancelUrl?: string
   submittedAt: string
+  tenantId?: string
+  requestedDurationSec?: number
   raw?: unknown
+}
+
+export interface MediaUsageRecord {
+  tenantId: string
+  metric: 'IMAGE_GENERATION' | 'VIDEO_GENERATION_SECOND'
+  quantity: number
+  unit: 'generation' | 'second'
+  provider: MediaProviderId
+  model: string
+  resourceType: 'media_job'
+  resourceId: string
+  idempotencyKey: string
+  occurredAt: string
+  metadata?: Record<string, unknown>
+}
+
+export interface MediaUsageRecorder {
+  record(event: MediaUsageRecord): Promise<void>
 }
 
 export interface MediaJobResult extends MediaJob {

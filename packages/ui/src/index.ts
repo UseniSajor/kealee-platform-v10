@@ -77,6 +77,14 @@ export type {
   BreadcrumbItem,
 } from './components/layout';
 
+export {
+  TenantBrandAttribution,
+  TenantBrandingProvider,
+  useTenantBranding,
+  TenantSelfServiceSettings,
+} from './components/tenant';
+export type { TenantBrandingProviderProps, TenantSelfServiceSettingsProps } from './components/tenant';
+
 // ========================================
 // Portal — locked ask rail (owner / contractor / developer)
 // ========================================

@@ -152,28 +152,21 @@ export async function v30AdminRoutes(fastify: FastifyInstance) {
   })
 
   fastify.get('/white-label/partners', async (_request, reply) => {
-    const partners = await prisma.v30WhiteLabelConfig.findMany({ take: 50 }).catch(() => [])
-    return reply.send({ partners })
+    const partners = await (prisma as any).whiteLabelTenantProfile.findMany({
+      take: 50,
+      include: { org: { select: { id: true, name: true, slug: true } } },
+      orderBy: { updatedAt: 'desc' },
+    }).catch(() => [])
+    reply.header('Deprecation', 'true')
+    reply.header('Link', '</white-label/tenants>; rel="successor-version"')
+    return reply.send({ partners, deprecated: true })
   })
 
-  fastify.post('/white-label/partners', async (request, reply) => {
-    const body = request.body as { partnerId?: string; companyName?: string; companyEmail?: string }
-    if (!body.partnerId || !body.companyName) {
-      return reply.code(400).send({ error: 'partnerId and companyName required' })
-    }
-    try {
-      const created = await prisma.v30WhiteLabelConfig.create({
-        data: {
-          partnerId: body.partnerId,
-          companyName: body.companyName,
-          companyEmail: body.companyEmail ?? `partner+${body.partnerId}@kealee.com`,
-          primaryColor: '#7C3AED',
-        },
-      })
-      return reply.code(201).send(created)
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Create failed'
-      return reply.code(503).send({ error: message })
-    }
+  fastify.post('/white-label/partners', async (_request, reply) => {
+    reply.header('Deprecation', 'true')
+    reply.header('Link', '</white-label/tenants>; rel="successor-version"')
+    return reply.code(410).send({
+      error: 'Legacy V30 white-label writes are disabled. Provision professional tenants through /white-label/tenants.',
+    })
   })
 }

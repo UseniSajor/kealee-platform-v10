@@ -6,6 +6,7 @@ import type {
   MediaProviderAdapter,
   MediaProviderHealth,
   MediaProviderId,
+  MediaUsageRecorder,
 } from './types'
 
 const ROUTES: Record<MediaGenerationRequest['intent'], MediaProviderId[]> = {
@@ -20,8 +21,10 @@ const ROUTES: Record<MediaGenerationRequest['intent'], MediaProviderId[]> = {
 
 export class KealeeMediaRouter {
   private readonly adapters = new Map<MediaProviderId, MediaProviderAdapter>()
+  private readonly usageRecorder?: MediaUsageRecorder
 
-  constructor(adapters: MediaProviderAdapter[] = []) {
+  constructor(adapters: MediaProviderAdapter[] = [], options: { usageRecorder?: MediaUsageRecorder } = {}) {
+    this.usageRecorder = options.usageRecorder
     for (const adapter of adapters) this.register(adapter)
   }
 
@@ -59,18 +62,37 @@ export class KealeeMediaRouter {
   async poll(job: MediaJob): Promise<MediaJobResult> {
     const adapter = this.adapters.get(job.provider)
     if (!adapter) throw new Error(`Unknown media provider: ${job.provider}`)
-    return adapter.poll(job)
+    const result = await adapter.poll(job)
+    if (result.status === 'completed' && result.tenantId && this.usageRecorder) {
+      const isVideo = result.kind === 'video'
+      await this.usageRecorder.record({
+        tenantId: result.tenantId,
+        metric: isVideo ? 'VIDEO_GENERATION_SECOND' : 'IMAGE_GENERATION',
+        quantity: isVideo ? result.requestedDurationSec ?? 1 : 1,
+        unit: isVideo ? 'second' : 'generation',
+        provider: result.provider,
+        model: result.model,
+        resourceType: 'media_job',
+        resourceId: result.jobId,
+        idempotencyKey: `media:${result.provider}:${result.jobId}:completed`,
+        occurredAt: result.completedAt ?? new Date().toISOString(),
+      })
+    }
+    return result
   }
 }
 
-export function createMediaRouterFromEnv(extraAdapters: MediaProviderAdapter[] = []): KealeeMediaRouter {
+export function createMediaRouterFromEnv(
+  extraAdapters: MediaProviderAdapter[] = [],
+  options: { usageRecorder?: MediaUsageRecorder } = {},
+): KealeeMediaRouter {
   return new KealeeMediaRouter([
     new ReplicateAdapter(),
     new HiggsfieldAdapter(),
     new SeedanceAdapter(),
     new VeoAdapter(),
     ...extraAdapters,
-  ])
+  ], options)
 }
 
 export async function waitForMediaJob(

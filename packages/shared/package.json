@@ -40,6 +40,18 @@
       "import": "./dist/pricing.js",
       "require": "./dist/pricing.js",
       "default": "./dist/pricing.js"
+    },
+    "./tenant-branding": {
+      "types": "./dist/tenant-branding.d.ts",
+      "import": "./dist/tenant-branding.js",
+      "require": "./dist/tenant-branding.js",
+      "default": "./dist/tenant-branding.js"
+    },
+    "./tenant-scope": {
+      "types": "./dist/tenant-scope.d.ts",
+      "import": "./dist/tenant-scope.js",
+      "require": "./dist/tenant-scope.js",
+      "default": "./dist/tenant-scope.js"
     }
   },
   "typesVersions": {
@@ -58,6 +70,12 @@
       ],
       "pricing": [
         "dist/pricing.d.ts"
+      ],
+      "tenant-branding": [
+        "dist/tenant-branding.d.ts"
+      ],
+      "tenant-scope": [
+        "dist/tenant-scope.d.ts"
       ]
     }
   },

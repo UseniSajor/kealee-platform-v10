@@ -137,6 +137,37 @@ export function requireRole(roles: string[]) {
 // Convenience function for admin-only routes
 export const requireAdmin = requireRole(['admin', 'super_admin']);
 
+/** Platform control-plane authorization. Organization-level ADMIN is never
+ * sufficient for this guard. */
+export async function requirePlatformAdmin(
+  request: AuthenticatedRequest,
+  reply: FastifyReply,
+) {
+  const user = request.user
+  if (!user) return reply.code(401).send({ error: 'Not authenticated' })
+  if (!isPlatformRole(user.platformRole || user.role)) {
+    return reply.code(403).send({
+      error: 'Insufficient permissions',
+      message: 'Platform administrator access is required',
+    })
+  }
+}
+
+/** Requires a verified, explicitly selected professional organization role. */
+export function requireSelectedOrganizationRole(roles: string[]) {
+  const allowed = new Set(roles.map((role) => role.toLowerCase()))
+  return async (request: AuthenticatedRequest, reply: FastifyReply) => {
+    const user = request.user
+    if (!user) return reply.code(401).send({ error: 'Not authenticated' })
+    if (!user.organizationId || !user.organizationRole) {
+      return reply.code(403).send({ error: 'Explicit professional organization context is required' })
+    }
+    if (!allowed.has(user.organizationRole.toLowerCase())) {
+      return reply.code(403).send({ error: 'Tenant administrator access is required' })
+    }
+  }
+}
+
 // Convenience function for PM-only routes
 export const requirePM = requireRole(['pm', 'admin', 'super_admin']);
 
