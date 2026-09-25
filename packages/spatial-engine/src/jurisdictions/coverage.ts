@@ -76,12 +76,20 @@ export const JURISDICTION_COVERAGE: JurisdictionCoverage[] = [
   // reads as an oversight; an explicit one is a decision with a reason.
   {
     code: 'montgomery_md', name: 'Montgomery County', state: 'MD',
-    level: 'data_only', rulePackVersion: null, gisConnector: true,
-    produces: ['Zone code', 'Existing 2-ft contours (2023)'],
+    level: 'preliminary', rulePackVersion: null, gisConnector: true,
+    produces: [
+      'Parcel from M-NCPPC Montgomery Planning (SDAT account, lot, block), MD iMAP fallback',
+      'Recorded plat reference and State Archives link from the M-NCPPC plat index',
+      'Zone code and single-family standards for RE-2, RE-2C, RE-1, R-200, R-90, R-60, R-40, cited',
+      'Established Building Line (§4.4.1.A) measured from neighbouring detached houses',
+      '2-ft existing contours, NAVD88 (GEOID12B)',
+      'Soils (SSURGO MD031)',
+    ],
     cannotProduce: [
-      'NO PARCEL LAYER located — the engine cannot draw the lot, so no site plan.',
-      'No dimensional standards extracted; setbacks cannot be computed.',
-      'No geocoder; Address_Labels is a label layer.',
+      'Standards reconciled with zoning text amendments after the 2014 adopted text — the current consolidated code could not be read; a reviewer confirms the section.',
+      'Townhouse, multi-unit, commercial and floating-zone envelopes — not transcribed, not drawn.',
+      'Residential Infill Compatibility (§4.4.1.B) determinations.',
+      'A certified rule pack, or a boundary survey — that is a licensed surveyor',
     ],
   },
   {
@@ -104,21 +112,35 @@ export const JURISDICTION_COVERAGE: JurisdictionCoverage[] = [
   },
   {
     code: 'arlington_va', name: 'Arlington County', state: 'VA',
-    level: 'data_only', rulePackVersion: null, gisConnector: true,
-    produces: ['Zone code'],
+    level: 'preliminary', rulePackVersion: null, gisConnector: true,
+    produces: [
+      'Property polygon, zone code and street network from Arlington open data',
+      'Address resolution on the VGIN statewide locator, point addresses in Arlington only',
+      'One-family standards for R-20, R-10, R-8, R-6, R-5, R2-7 (2026 ordinance), cited',
+      'Resource Protection Area and local historic district status',
+      '2-ft contours generated from USGS 3DEP lidar, NAVD88 read from the source tile',
+    ],
     cannotProduce: [
-      'Zoning layer only. No parcel, contour or address service located.',
-      'No dimensional standards extracted.',
+      'The reduced front setback by frontage average (§3.2.6.A.1(e)) — needs Zoning Administrator approval of a plat; 25 ft is drawn.',
+      'Townhouse, multifamily and commercial envelopes — not transcribed, not drawn.',
+      'County-published contours: the county layer carries no stated datum and is not used.',
+      'A certified rule pack, or a boundary survey — that is a licensed surveyor',
     ],
   },
   {
     code: 'fairfax_va', name: 'Fairfax County', state: 'VA',
-    level: 'data_only', rulePackVersion: null, gisConnector: true,
-    produces: ['Parcel boundary', 'Zone code', 'Master Address Repository'],
+    level: 'preliminary', rulePackVersion: null, gisConnector: true,
+    produces: [
+      'Parcel and zone code from Fairfax County GIS; address on the county locator (point addresses)',
+      'Single-family standards for R-A, R-C, R-E, R-1 to R-5, R-8 from Chapter 112.1, cited',
+      'Chesapeake Bay Preservation Area status',
+      '2-ft contours generated from USGS 3DEP lidar, NAVD88 read from the source tile',
+    ],
     cannotProduce: [
-      'NO CONTOUR LAYER located — no existing grade, so no grading or disturbance sheet.',
-      'No dimensional standards extracted; zMOD was voided in 2023 and readopted, so which text governs is a human question.',
-      'Address layer is a MapServer, not a scored GeocodeServer — no minimum-score rule.',
+      'County contours: Fairfax publishes them only as vector tiles, one set in NGVD29.',
+      'Cluster, ADU, PDH/PDC and multifamily envelopes — not transcribed, not drawn.',
+      'A determination of which zMOD text governs an application pending since before 2023 — a person decides.',
+      'A certified rule pack, or a boundary survey — that is a licensed surveyor',
     ],
   },
 ]
@@ -193,15 +215,32 @@ export function assessServiceArea(rawAddress: string): ServiceAreaVerdict {
         'standards are extracted from Title 11 and cited, not yet certified.',
     }
   }
+  if (/\b(arlington|fairfax)\b/.test(a) && /\b(virginia|,\s*va\b|\bva\s+2\d{4})\b/.test(a)) {
+    return {
+      served: true, level: 'preliminary', disposition: 'proceed',
+      message:
+        'Within the Arlington / Fairfax service area, pending the county locator. Plans are ' +
+        'delivered as preliminary plans for professional review.',
+    }
+  }
+  if (/\bmontgomery\b|\b(bethesda|rockville|silver spring|gaithersburg|germantown|potomac|chevy chase|kensington|takoma park)\b/.test(a)) {
+    return {
+      served: true, level: 'preliminary', disposition: 'proceed',
+      message:
+        'Within the Montgomery County service area, pending the county locator. Plans are ' +
+        'delivered as preliminary plans for professional review; the zoning standards are the ' +
+        '2014 adopted text and later amendments must be confirmed.',
+    }
+  }
   const outOfState = [
-    { pattern: /\b(virginia|,\s*va\b|\bva\s+2\d{4})\b/, name: 'Virginia' },
+    { pattern: /\b(virginia|,\s*va\b|\bva\s+2\d{4})\b/, name: 'Virginia outside Arlington and Fairfax counties' },
   ]
   for (const o of outOfState) {
     if (o.pattern.test(a)) {
       return {
         served: false, level: 'unserved', disposition: 'refer_or_refund',
         message:
-          `This engine serves Prince George's County, Maryland and the District of Columbia. The address given is in ` +
+          `This engine serves Prince George's and Montgomery Counties, Maryland, the District of Columbia, and Arlington and Fairfax Counties, Virginia. The address given is in ` +
           `${o.name}, which is not yet covered — the zoning rules there are not encoded, ` +
           `so a plan drawn for it could not be checked for compliance.`,
       }
@@ -209,7 +248,6 @@ export function assessServiceArea(rawAddress: string): ServiceAreaVerdict {
   }
 
   const otherMdCounty = [
-    { pattern: /\bmontgomery\b/, name: 'Montgomery County' },
     { pattern: /\bhoward county\b/, name: 'Howard County' },
     { pattern: /\banne arundel\b/, name: 'Anne Arundel County' },
     { pattern: /\bbaltimore\b/, name: 'Baltimore' },
@@ -221,7 +259,7 @@ export function assessServiceArea(rawAddress: string): ServiceAreaVerdict {
       return {
         served: false, level: 'unserved', disposition: 'refer_or_refund',
         message:
-          `This engine serves Prince George's County, Maryland. The address given appears ` +
+          `This engine serves Prince George's and Montgomery Counties in Maryland. The address given appears ` +
           `to be in ${o.name}, which is not yet covered.`,
       }
     }

@@ -32,6 +32,7 @@
  */
 
 import type { Position, Ring } from '../site-plan/site-twin'
+import { fetch3depContours } from './usgs-3dep'
 
 export const ENGINE_WKID = 2248
 
@@ -39,6 +40,18 @@ export interface LocatorConfig {
   /** Short name recorded as provenance: "MAR", "county composite". */
   name: string
   url: string
+  /**
+   * The single-line input field. Most locators take `SingleLine`;
+   * Montgomery's MARPLOI takes `Street` and answers 400 to anything else.
+   */
+  param?: string
+  /**
+   * Rejects candidates that score well and are still the wrong thing. VGIN
+   * returns an INTERPOLATED street-range candidate at the same score 100 as
+   * the real address point, and covers the whole Commonwealth, so Arlington
+   * accepts only point addresses in Arlington County.
+   */
+  acceptCandidate?: (candidate: { address: string; attributes: Record<string, unknown> }) => boolean
 }
 
 export interface ParcelLayerConfig {
@@ -77,8 +90,10 @@ export interface ArcGisJurisdictionConfig {
   locators: LocatorConfig[]
   parcels: ParcelLayerConfig[]
   zoning: { url: string; codeFields: string[]; descriptionField?: string; urlField?: string; authority: string }
-  streets: { url: string; nameFields: string[]; authority: string }
-  contours: ContourLayerConfig | null
+  /** One or more centreline layers (MD publishes roads split by class). */
+  streets: { urls: string[]; nameFields: string[]; authority: string }
+  /** County contours, or '3dep' where the county publishes none queryable. */
+  contours: ContourLayerConfig | '3dep' | null
   /** Default 90. Never lowered for a shorter address form. */
   minScore?: number
 }
@@ -181,6 +196,22 @@ export async function queryAtPoint(
   return Array.isArray(payload.features) ? payload.features : []
 }
 
+/** Features intersecting a polygon — does the LOT touch it, not the address point. */
+export async function queryIntersecting(
+  endpoint: string, ring: Position[], doFetch: typeof fetch, opts: { outFields?: string } = {},
+): Promise<any[]> {
+  const payload = await arcgisGet(endpoint, 'query', {
+    where: '1=1',
+    geometry: JSON.stringify({ rings: [ring.map(p => [p[0], p[1]])], spatialReference: { wkid: ENGINE_WKID } }),
+    geometryType: 'esriGeometryPolygon',
+    inSR: String(ENGINE_WKID),
+    spatialRel: 'esriSpatialRelIntersects',
+    outFields: opts.outFields ?? '*',
+    returnGeometry: 'false',
+  }, doFetch)
+  return Array.isArray(payload.features) ? payload.features : []
+}
+
 /** Envelope query around a point. `truncated` is true when the server capped the answer. */
 export async function queryAround(
   endpoint: string, e: number, n: number, radiusFt: number, doFetch: typeof fetch,
@@ -207,7 +238,8 @@ export async function queryLocator(
   let payload: any
   try {
     payload = await arcgisGet(locator.url, 'findAddressCandidates', {
-      SingleLine: address, outSR: String(ENGINE_WKID), maxLocations: '5',
+      [locator.param ?? 'SingleLine']: address, outSR: String(ENGINE_WKID), maxLocations: '5',
+      ...(locator.acceptCandidate ? { outFields: '*' } : {}),
     }, doFetch)
   } catch (e) {
     return { kind: 'unavailable', tried: locator.url, reason: e instanceof Error ? e.message : String(e) }
@@ -217,6 +249,8 @@ export async function queryLocator(
   }
   const best = payload.candidates
     .filter((c: any) => typeof c?.score === 'number' && c?.location)
+    .filter((c: any) => !locator.acceptCandidate ||
+      locator.acceptCandidate({ address: String(c.address ?? ''), attributes: c.attributes ?? {} }))
     .sort((a: any, b: any) => b.score - a.score)[0]
   if (!best) return { kind: 'no_match', tried: locator.url }
   if (best.score < minScore) return { kind: 'below_score', tried: locator.url, bestScore: best.score }
@@ -322,7 +356,8 @@ export async function fetchJurisdictionStreets(
   opts: { searchFt?: number; fetchImpl?: typeof fetch } = {},
 ): Promise<JurisdictionStreet[]> {
   const doFetch = opts.fetchImpl ?? fetch
-  const { features } = await queryAround(cfg.streets.url, e, n, opts.searchFt ?? 300, doFetch)
+  const features = (await Promise.all(cfg.streets.urls.map(u =>
+    queryAround(u, e, n, opts.searchFt ?? 300, doFetch).then(r => r.features)))).flat()
   return features.map((f: any) => ({
     name: firstField(f.attributes ?? {}, cfg.streets.nameFields),
     paths: (f.geometry?.paths ?? []).map((p: number[][]) => p.map(pt => [pt[0], pt[1]] as Position)),
@@ -383,6 +418,12 @@ export async function fetchJurisdictionContours(
 ): Promise<JurisdictionContourResult | null> {
   const c = cfg.contours
   if (!c) return null
+  if (c === '3dep') {
+    return fetch3depContours(e, n, {
+      radiusFt: opts.radiusFt ?? 120, fetchImpl: opts.fetchImpl,
+      authorityNote: `${cfg.name} publishes no queryable contours with a stated datum.`,
+    })
+  }
   const doFetch = opts.fetchImpl ?? fetch
   const { features, truncated } = await queryAround(
     c.url, e, n, opts.radiusFt ?? 120, doFetch, { outFields: c.elevationField })

@@ -94,7 +94,7 @@ export const DC_GIS: ArcGisJurisdictionConfig = {
     url: DC_ENDPOINTS.zoning, codeFields: ['ZONING', 'ZR16'], descriptionField: 'ZONE_DESCRIPTION',
     urlField: 'ZONING_WEB_URL', authority: 'DC Office of Zoning — Zoning 2016',
   },
-  streets: { url: DC_ENDPOINTS.roadwayBlocks, nameFields: ['ROUTENAME'], authority: 'DDOT — Roadway Block' },
+  streets: { urls: [DC_ENDPOINTS.roadwayBlocks], nameFields: ['ROUTENAME'], authority: 'DDOT — Roadway Block' },
   contours: {
     url: DC_ENDPOINTS.contours2ft,
     elevationField: 'ELEVATION',

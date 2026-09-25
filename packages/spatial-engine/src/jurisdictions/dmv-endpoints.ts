@@ -50,6 +50,8 @@ export interface JurisdictionGisEndpoints {
   parcels: string | null
   /** Contour layer, with its interval. Null where the jurisdiction publishes none. */
   contours: { url: string; intervalFt: number; note: string } | null
+  /** Terrain comes from USGS 3DEP lidar because the county publishes no usable contours. */
+  terrainFrom3dep?: boolean
   /** Spot elevations, where published separately. */
   spotElevations: string | null
   /** Address locator or address layer. */
@@ -96,29 +98,22 @@ export const DMV_GIS_ENDPOINTS: JurisdictionGisEndpoints[] = [
     state: 'MD',
     authority: 'Montgomery County DPS / M-NCPPC',
     zoning: `${MCATLAS}/backgrounds/Zoning_background/MapServer/26`,
-    parcels: null,
+    parcels: 'https://montgomeryplans.org/server/rest/services/Backgrounds/Parcels_by_Land_Use/MapServer/0',
     contours: {
-      url: `${MCATLAS}/backgrounds/Contours_2ft/MapServer/0`,
+      url: `${MCATLAS}/backgrounds/Contours_2ft/MapServer/1`,
       intervalFt: 2,
       note: 'Contours (2-ft, 2023). A 2020 vintage also exists at ' +
             'backgrounds/contours_2ft_2020. Layer 0 is the 1:4,800-and-coarser ' +
             'scale band and layer 1 the finer one — pick by scale, not by habit.',
     },
     spotElevations: null,
-    addresses: `${MCATLAS}/backgrounds/Address_Labels/MapServer`,
+    addresses: `${MCATLAS}/tools/MARPLOI/GeocodeServer`,
     // mcatlas.org has presented a certificate name mismatch; the existing
     // gis-client already carries a bypass flag for it.
     tlsQuirk: true,
     verifiedOn: '2026-09-25',
-    blockers: [
-      'No dimensional standards extracted. Montgomery rewrote its zoning ' +
-      'ordinance in 2014; its zone codes and yard depths are its own.',
-      'NO PARCEL LAYER FOUND in the backgrounds folder. Without a parcel ' +
-      'boundary the engine cannot draw a lot, which makes this jurisdiction ' +
-      'unusable for site plans until one is located.',
-      'Address_Labels is a label layer, not a geocoder. Address resolution is ' +
-      'unsolved here.',
-    ],
+    // Resolved 2026-09-25 — see dmv-counties-gis.ts for what closed each.
+    blockers: [],
   },
   {
     code: 'fairfax_va',
@@ -129,35 +124,26 @@ export const DMV_GIS_ENDPOINTS: JurisdictionGisEndpoints[] = [
     parcels: `${FAIRFAX}/GIS/Property/MapServer/1`,
     contours: null,
     spotElevations: null,
-    addresses: `${FAIRFAX}/GIS/MasterAddressRepository/MapServer/0`,
+    addresses: 'https://www.fairfaxcounty.gov/mercator/rest/services/Locators/FairfaxCountyAddresses/GeocodeServer',
     verifiedOn: '2026-09-25',
-    blockers: [
-      'No dimensional standards extracted. Fairfax adopted zMOD in 2021, had ' +
-      'it voided by the courts in 2023 and readopted it — which version governs ' +
-      'a given application is a question a person must answer.',
-      'NO CONTOUR LAYER FOUND. Without terrain the engine cannot show existing ' +
-      'grade, and the disturbance and grading sheets have no basis.',
-      'MasterAddressRepository is a MapServer layer, not a GeocodeServer. It ' +
-      'can be queried by attribute but does not score candidate matches the way ' +
-      "PG's locator does, so the minimum-score rule has no equivalent yet.",
-    ],
+    terrainFrom3dep: true,
+    // Contours: USGS 3DEP (the county's are vector tiles only). Resolved 2026-09-25.
+    blockers: [],
   },
   {
     code: 'arlington_va',
     name: 'Arlington County',
     state: 'VA',
     authority: 'Arlington County Zoning',
-    zoning: `${ARLGIS}/Public_Maps/Zoning_Map/MapServer/0`,
-    parcels: null,
+    zoning: `${ARLGIS}/Open_Data/od_Zoning_Polygons/MapServer/0`,
+    parcels: `${ARLGIS}/Open_Data/od_REA_Property_Polygons/MapServer/0`,
     contours: null,
     spotElevations: null,
-    addresses: null,
+    addresses: 'https://vginmaps.vdem.virginia.gov/arcgis/rest/services/Geocoding/VGIN_Composite_Locator/GeocodeServer',
     verifiedOn: '2026-09-25',
-    blockers: [
-      'Only the zoning layer is verified. No parcel, contour or address service ' +
-      'has been located.',
-      'No dimensional standards extracted.',
-    ],
+    terrainFrom3dep: true,
+    // Contours: USGS 3DEP (the county's 2011 layer states no datum). Resolved 2026-09-25.
+    blockers: [],
   },
 ]
 
@@ -182,7 +168,7 @@ export function capabilityOf(j: JurisdictionGisEndpoints): {
 } {
   const canLocateParcel = Boolean(j.parcels)
   const canReadZoneCode = Boolean(j.zoning)
-  const canShowTerrain = Boolean(j.contours)
+  const canShowTerrain = Boolean(j.contours) || j.terrainFrom3dep === true
   // True only where dimensional standards have been extracted and a
   // connector reads the site — i.e. coverage draws plans there.
   const canComputeSetbacks = drawsPlansIn(j.code)

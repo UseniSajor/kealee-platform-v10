@@ -25,13 +25,22 @@ import {
   DC_GIS, fetchDcBuildingRestrictionLines, fetchDcHistoricStatus, measureDcFrontSetback,
   measureDcStructureType, type DcBuildingRestrictionLine, type DcHistoricStatus,
 } from './dc-gis'
-import type { BlockFaceResult, StructureTypeEvidence } from './block-face-setback'
+import { measureBlockFace, type BlockFaceResult, type StructureTypeEvidence } from './block-face-setback'
+import {
+  MONTGOMERY_GIS, FAIRFAX_GIS, ARLINGTON_GIS, montgomeryDetachedHousesAround, montgomeryRecordPlat,
+  virginiaConstraintsOn, type EnvironmentalFinding,
+} from './dmv-counties-gis'
+import { countyStandard } from './county-zoning'
+import { queryAround, parcelFromFeature, type JurisdictionParcel } from './arcgis-jurisdiction'
 
 export const PG_CODE = 'prince_georges_md'
 
 /** Jurisdictions with a working connector, other than PG. Add one here when its config is verified live. */
 export const JURISDICTION_CONNECTORS: Record<string, ArcGisJurisdictionConfig> = {
   [DC_GIS.code]: DC_GIS,
+  [MONTGOMERY_GIS.code]: MONTGOMERY_GIS,
+  [FAIRFAX_GIS.code]: FAIRFAX_GIS,
+  [ARLINGTON_GIS.code]: ARLINGTON_GIS,
 }
 
 export interface AddressHints {
@@ -87,11 +96,26 @@ export function jurisdictionAttemptOrder(raw: string): string[] {
   return [...new Set(order)].filter(c => !state || stateOf(c) === state)
 }
 
+export interface EstablishedBuildingLine {
+  /** Average front setback of the qualifying detached houses. */
+  averageFt: number | null
+  /** 2+ houses and more than half set back beyond the zone minimum. */
+  applies: boolean
+  sampleCount: number
+  basis: string
+}
+
 export interface JurisdictionFindings {
   buildingRestrictionLines?: DcBuildingRestrictionLine[] | null
   historic?: DcHistoricStatus | null
   blockFace?: BlockFaceResult | null
   structure?: StructureTypeEvidence | null
+  /** Montgomery §4.4.1.A. */
+  establishedBuildingLine?: EstablishedBuildingLine | null
+  /** The recorded plat covering the lot, where the county indexes plats. */
+  recordPlat?: { plat: string; link: string | null; recorded: string | null } | null
+  /** Chesapeake Bay / RPA / local historic district touching the lot. */
+  constraints?: EnvironmentalFinding[] | null
 }
 
 export interface ResolvedJurisdictionSite {
@@ -124,6 +148,18 @@ export async function resolveInJurisdiction(
   const [adjacent] = await Promise.all([
     soft(fetchJurisdictionAdjacentParcels(cfg, site.parcel, opts), 'adjacent parcels'),
     (async () => {
+      if (code === MONTGOMERY_GIS.code) {
+        const [ebl, plat] = await Promise.all([
+          soft(measureEstablishedBuildingLine(site, opts), 'established building line'),
+          soft(montgomeryRecordPlat(site.address.easting2248, site.address.northing2248, opts), 'record plat index'),
+        ])
+        Object.assign(findings, { establishedBuildingLine: ebl, recordPlat: plat })
+        return
+      }
+      if (code === FAIRFAX_GIS.code || code === ARLINGTON_GIS.code) {
+        findings.constraints = await virginiaConstraintsOn(code, site.parcel!.ring.coordinates, opts)
+        return
+      }
       if (code !== DC_GIS.code) return
       const [brls, historic, blockFace, structure] = await Promise.all([
         soft(fetchDcBuildingRestrictionLines(site.parcel!, opts), 'building restriction lines'),
@@ -161,4 +197,55 @@ export function recordedFrontBrlFt(f: JurisdictionFindings): number | null {
     .filter(b => b.kind === 'building_restriction' && b.offsetFt != null)
     .map(b => b.offsetFt as number)
   return offs.length ? Math.max(...offs) : null
+}
+
+/**
+ * Montgomery §4.4.1.A, measured.
+ *
+ * The qualifying houses are detached houses (M-NCPPC building land use
+ * "Single Family Detached") on lots within 300 ft of the subject, on the same
+ * side of the SAME street, not fronting another street. The line applies when
+ * at least two qualify and more than half are set back beyond the zone
+ * minimum; it is then their average. The ordinance requires the permit
+ * figure to come from a sealed survey — this is the drafter's measurement of
+ * what that survey will find, stated as such.
+ */
+export async function measureEstablishedBuildingLine(
+  site: JurisdictionSite, opts: { fetchImpl?: typeof fetch } = {},
+): Promise<EstablishedBuildingLine | null> {
+  if (!site.parcel || !site.zoning) return null
+  const std = countyStandard(MONTGOMERY_GIS.code, site.zoning.zoneCode)
+  if (!std || !['R-200', 'R-90', 'R-60', 'R-40'].includes(std.zone)) {
+    return { averageFt: null, applies: false, sampleCount: 0, basis: `§4.4.1.A does not apply in ${site.zoning.zoneCode}` }
+  }
+  const doFetch = opts.fetchImpl ?? fetch
+  const ring = site.parcel.ring.coordinates
+  const xs = ring.map(c => c[0]), ys = ring.map(c => c[1])
+  const cx = (Math.min(...xs) + Math.max(...xs)) / 2, cy = (Math.min(...ys) + Math.max(...ys)) / 2
+  const reach = 300 + Math.max(Math.max(...xs) - Math.min(...xs), Math.max(...ys) - Math.min(...ys)) / 2
+  const layer = MONTGOMERY_GIS.parcels.find(l => l.kind === site.parcel!.kind) ?? MONTGOMERY_GIS.parcels[0]
+  const [lots, houses] = await Promise.all([
+    queryAround(layer.url, cx, cy, reach, doFetch).then(r => r.features
+      .map((f: any) => parcelFromFeature(f, layer))
+      .filter((p: JurisdictionParcel | null): p is JurisdictionParcel => p !== null)),
+    montgomeryDetachedHousesAround(cx, cy, reach + 60, opts),
+  ])
+  const token = site.address.matchedAddress.toUpperCase().replace(/^\s*\d+[A-Z]?\s+/, '').split(/\s+/)[0] ?? ''
+  const fronting = site.streets.filter(s => (s.name ?? '').toUpperCase().split(/\s+/)[0] === token).flatMap(s => s.paths)
+  const other = site.streets.filter(s => (s.name ?? '').toUpperCase().split(/\s+/)[0] !== token).flatMap(s => s.paths)
+  const r = measureBlockFace({
+    subject: { id: site.parcel.propId ?? 'subject', ring },
+    blockLots: lots.map(l => ({ id: l.propId ?? '', ring: l.ring.coordinates })),
+    streetPaths: fronting, otherStreetPaths: other, footprints: houses,
+    source: 'M-NCPPC building footprints (detached houses) and parcels',
+  })
+  const n = r.samples.length
+  const beyond = r.samples.filter(x => x.setbackFt > std.frontFt).length
+  const applies = n >= 2 && beyond > n / 2
+  return {
+    averageFt: r.meanFt,
+    applies,
+    sampleCount: n,
+    basis: `${beyond} of ${n} set back beyond ${std.frontFt} ft, within 300 ft on the same side`,
+  }
 }

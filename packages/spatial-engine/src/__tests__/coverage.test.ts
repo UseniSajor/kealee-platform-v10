@@ -15,20 +15,20 @@ describe('the coverage registry', () => {
     expect(servedJurisdictions().map(j => j.code)).toEqual(['prince_georges_md'])
   })
 
-  it('does NOT count a wired data layer as being served', () => {
-    // DC, Montgomery, Fairfax and Arlington have live GIS as of 2026-09-25 and
-    // no dimensional standards. Reading a zone code is not the same as being
-    // able to place a setback, and conflating them sells a plan that cannot be
-    // drawn correctly.
-    const dataOnly = dataOnlyJurisdictions().map(j => j.code)
-    expect(dataOnly.length).toBeGreaterThan(0)
-    for (const code of dataOnly) {
+  it('never presents a preliminary jurisdiction as certified', () => {
+    // DC, Montgomery, Fairfax and Arlington draw plans from cited, extracted
+    // standards. None has a certified rule pack, and each must say so rather
+    // than let "we can draw it" read as "it is certified".
+    const prelim = preliminaryJurisdictions().map(j => j.code)
+    expect(prelim.sort()).toEqual(['arlington_va', 'district_of_columbia', 'fairfax_va', 'montgomery_md'])
+    for (const code of prelim) {
       expect(servedJurisdictions().map(j => j.code), code).not.toContain(code)
       expect(coverageFor(code)!.rulePackVersion, code).toBeNull()
+      expect(coverageFor(code)!.cannotProduce.join(' '), code).toMatch(/certified rule pack/i)
     }
   })
 
-  it('keeps every data_only jurisdiction honest about what it cannot do', () => {
+  it('keeps any data_only jurisdiction honest about what it cannot do', () => {
     for (const j of dataOnlyJurisdictions()) {
       expect(j.cannotProduce.length, j.code).toBeGreaterThan(0)
       expect(j.cannotProduce.join(' '), j.code).toMatch(/dimensional standards/i)
@@ -58,7 +58,8 @@ describe('the coverage registry', () => {
     expect(dc.rulePackVersion).toBeNull()
     expect(dc.cannotProduce.join(' ')).toMatch(/certified rule pack/i)
     expect(drawsPlansIn('district_of_columbia')).toBe(true)
-    expect(drawsPlansIn('arlington_va')).toBe(false)
+    expect(drawsPlansIn('arlington_va')).toBe(true)
+    expect(drawsPlansIn('howard_md')).toBe(false)
   })
 
   it('says what it cannot produce even where coverage is full', () => {
@@ -80,23 +81,30 @@ describe('service-area assessment', () => {
     expect(dc.message).toMatch(/not yet certified/)
   })
 
-  it('turns away Virginia with the reason, not a blank refusal', () => {
-    const va = assessServiceArea('2100 Clarendon Blvd, Arlington, VA 22201')
+  it('accepts Arlington and Fairfax, and turns away the rest of Virginia with the reason', () => {
+    expect(assessServiceArea('2100 Clarendon Blvd, Arlington, VA 22201').served).toBe(true)
+    const va = assessServiceArea('100 Main St, Richmond, VA 23219')
     expect(va.served).toBe(false)
     expect(va.disposition).toBe('refer_or_refund')
     expect(va.message).toMatch(/Virginia/)
   })
 
-  it('turns away other Maryland counties by name', () => {
+  it('accepts Montgomery and warns that later amendments are unreconciled', () => {
     const mc = assessServiceArea('101 Monroe St, Rockville, Montgomery County, MD')
-    expect(mc.served).toBe(false)
-    expect(mc.message).toMatch(/Montgomery County/)
+    expect(mc.served).toBe(true)
+    expect(mc.message).toMatch(/2014/)
+  })
+
+  it('turns away other Maryland counties by name', () => {
+    const hc = assessServiceArea('3430 Court House Dr, Ellicott City, Howard County, MD')
+    expect(hc.served).toBe(false)
+    expect(hc.message).toMatch(/Howard County/)
   })
 })
 
 describe('the blocked-property message', () => {
   it('blames the service area when that is the problem', () => {
-    const m = propertyBlockedMessage('123 Main St, Fairfax, VA', ['123 Main St'])
+    const m = propertyBlockedMessage('123 Main St, Richmond, VA', ['123 Main St'])
     expect(m).toMatch(/Virginia/)
     expect(m, 'must not blame the address').not.toMatch(/did not match/)
   })

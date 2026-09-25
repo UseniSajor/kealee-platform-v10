@@ -34,6 +34,9 @@ import { fetchMdParcelAtPoint } from '../jurisdictions/md-imap'
 import { profileFor, jurisdictionDisplayName, licensedSurveyor } from '../jurisdictions/profiles'
 import type { NoaaSite } from '../jurisdictions/noaa-atlas14'
 import {
+  countyStandard, countyFrontSetback, countyStandardRows, normaliseCountyZone,
+} from '../jurisdictions/county-zoning'
+import {
   dcEnvelope, dcFrontSetback, dcStandardRows, DC_ZONING_SOURCE,
   type DcStructureType, type DcBlockFaceMeasure,
 } from '../jurisdictions/dc-zoning'
@@ -188,6 +191,10 @@ export interface LotInput {
   blockFace?: DcBlockFaceMeasure | null
   /** A building restriction line recorded against this lot, offset from the front line. */
   recordedBrlFt?: number | null
+  /** Montgomery §4.4.1.A, measured from the neighbouring detached houses. */
+  establishedBuildingLine?: { averageFt: number | null; applies: boolean; sampleCount: number; basis: string } | null
+  /** Facts the jurisdiction's own layers reported about THIS lot, for the reviewer's worklist. */
+  jurisdictionNotes?: string[]
   /** A stated side yard for this lot; only ever tightens the table minimum. */
   sideSetbackFt?: number | null
   /** A stated distance from the nearest side lot line at which to place the dwelling. */
@@ -326,9 +333,13 @@ export function readZoningEnvelope(
     structureType?: DcStructureType | null
     blockFace?: DcBlockFaceMeasure | null
     recordedBrlFt?: number | null
+    establishedBuildingLine?: { averageFt: number | null; applies: boolean; sampleCount: number; basis: string } | null
   } = {},
 ): ZoningEnvelope {
   if (opts.jurisdictionCode === 'district_of_columbia') return readDcZoningEnvelope(zoneCode, opts)
+  if (opts.jurisdictionCode && ['montgomery_md', 'fairfax_va', 'arlington_va'].includes(opts.jurisdictionCode)) {
+    return readCountyZoningEnvelope(opts.jurisdictionCode, zoneCode, opts.establishedBuildingLine ?? null)
+  }
   const lookup = getPgDimensionalStandards(zoneCode)
   if (!lookup.table) {
     return {
@@ -369,6 +380,40 @@ export function readZoningEnvelope(
           'replace the table value outright, so none of these is the requirement for a specific lot ' +
           'until the footnote is read.'
         : 'No footnotes on the published values for this zone.',
+  }
+}
+
+/**
+ * Montgomery, Fairfax or Arlington, from the hand-transcribed single-family
+ * standards (`county-zoning.ts`). A zone not transcribed is NOT drawn: its
+ * yards are unknown here, and a guessed yard draws like a real one.
+ */
+function readCountyZoningEnvelope(
+  code: string, zoneCode: string,
+  ebl: { averageFt: number | null; applies: boolean; sampleCount: number; basis: string } | null,
+): ZoningEnvelope {
+  const std = countyStandard(code, zoneCode)
+  if (!std) {
+    return {
+      zone: zoneCode, found: false, standards: [], section: null, citation: null,
+      caution:
+        `No single-family standards are transcribed for ${zoneCode} (${normaliseCountyZone(zoneCode)}). ` +
+        'Townhouse, multifamily, commercial and planned zones are read from their own sections; ' +
+        'none is assumed.',
+    }
+  }
+  const front = countyFrontSetback(code, std, ebl)
+  const cautions = [...std.notes]
+  if (code === 'montgomery_md') {
+    cautions.unshift(
+      'Standards are from the 2014 council-adopted Chapter 59. Zoning text amendments since 2014 are ' +
+      'NOT reconciled; confirm the current section before relying on them.')
+  }
+  return {
+    zone: zoneCode, found: true,
+    standards: countyStandardRows(std, front),
+    section: std.citation, citation: std.citation,
+    caution: cautions.join(' '),
   }
 }
 
@@ -591,6 +636,7 @@ export function buildLotPackage(lot: LotInput, resolved?: ResolvedBoundary | nul
     structureType: lot.structureType ?? null,
     blockFace: lot.blockFace ?? null,
     recordedBrlFt: lot.recordedBrlFt ?? null,
+    establishedBuildingLine: lot.establishedBuildingLine ?? null,
   })
   let siteImprovements: SiteImprovementResult | null = null
   let footprintEstimate: FootprintEstimate | null = null
@@ -1426,7 +1472,8 @@ export function buildLotPackage(lot: LotInput, resolved?: ResolvedBoundary | nul
       `No jurisdiction profile for ${lot.jurisdictionCode}: confirm the reviewing agencies and ` +
       'their submission requirements before sealing.',
     ]))
-    if (zoningEnvelope.found) beforeSeal.push(`Zoning envelope — ${zoningEnvelope.caution}`)
+    beforeSeal.push(...(lot.jurisdictionNotes ?? []))
+    if (zoningEnvelope.found && zoningEnvelope.caution.trim()) beforeSeal.push(`Zoning envelope — ${zoningEnvelope.caution}`)
     else beforeSeal.push(`Zoning envelope NOT computed — ${zoningEnvelope.caution}`)
   }
   beforeSeal.push(

@@ -351,6 +351,8 @@ export function lotPackageFrom(ctx: StageContext): LotPackage {
           }
         : null,
       recordedBrlFt: recordedFrontBrlFt(findings),
+      establishedBuildingLine: findings.establishedBuildingLine ?? null,
+      jurisdictionNotes: jurisdictionNotesFrom(findings),
       zoneCode: prop.zoneCode ?? '',
       isResidentialSingleFamily: true,
       dwellingUnitCount: 1,
@@ -426,6 +428,29 @@ function platFrom(ctx: StageContext): RecordedPlatBoundary | null {
     // point of beginning. A fit is drawable and is never a surveyed position.
     referenceParcel: prop?.parcelRing ? { coordinates: prop.parcelRing } : null,
   })
+}
+
+/** What the jurisdiction's own layers said about this lot, as worklist items. */
+function jurisdictionNotesFrom(f: JurisdictionFindings): string[] {
+  const out: string[] = []
+  if (f.historic?.reviewRequired) {
+    out.push(
+      `Historic preservation review: the lot is in ${f.historic.district ?? f.historic.landmark}. ` +
+      'Exterior work needs Historic Preservation Office / HPRB review before permit.')
+  }
+  if (f.recordPlat) {
+    out.push(
+      `Recorded plat: ${f.recordPlat.plat}${f.recordPlat.recorded ? `, recorded ${f.recordPlat.recorded}` : ''}` +
+      `${f.recordPlat.link ? ` (${f.recordPlat.link})` : ''}. The plat is the boundary of record; ` +
+      'transcribe its calls — the county parcel drawn here is compiled GIS.')
+  }
+  for (const c of f.constraints ?? []) {
+    out.push(`${c.layer}: ${c.value} (${c.authority}). Confirm its limits on the plan before siting any disturbance.`)
+  }
+  if (f.constraints === null) {
+    out.push('Environmental constraint layers did not answer; RPA / Chesapeake Bay status is UNKNOWN, not clear.')
+  }
+  return out
 }
 
 /** Detached, semi-detached or row, when the order states it. */
