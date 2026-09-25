@@ -71,27 +71,42 @@ export const JURISDICTION_COVERAGE: JurisdictionCoverage[] = [
   // reads as an oversight; an explicit one is a decision with a reason.
   {
     code: 'montgomery_md', name: 'Montgomery County', state: 'MD',
-    level: 'unserved', rulePackVersion: null, gisConnector: false,
-    produces: [],
-    cannotProduce: ['No certified rule pack and no verified locator. Not sold.'],
+    level: 'data_only', rulePackVersion: null, gisConnector: true,
+    produces: ['Zone code', 'Existing 2-ft contours (2023)'],
+    cannotProduce: [
+      'NO PARCEL LAYER located — the engine cannot draw the lot, so no site plan.',
+      'No dimensional standards extracted; setbacks cannot be computed.',
+      'No geocoder; Address_Labels is a label layer.',
+    ],
   },
   {
     code: 'district_of_columbia', name: 'District of Columbia', state: 'DC',
-    level: 'unserved', rulePackVersion: null, gisConnector: false,
-    produces: [],
-    cannotProduce: ['DCRA/DOB zoning regulations are not encoded. Not sold.'],
+    level: 'data_only', rulePackVersion: null, gisConnector: true,
+    produces: ['Parcel boundary', 'Zone code (2016 Regs)', '2-ft contours', 'Spot elevations'],
+    cannotProduce: [
+      'No dimensional standards extracted; setbacks cannot be computed.',
+      'No verified address locator.',
+      'Contour vertical datum unconfirmed — do not assume NAVD88 because PG is.',
+    ],
   },
   {
     code: 'arlington_va', name: 'Arlington County', state: 'VA',
-    level: 'unserved', rulePackVersion: null, gisConnector: false,
-    produces: [],
-    cannotProduce: ['No certified rule pack. Not sold.'],
+    level: 'data_only', rulePackVersion: null, gisConnector: true,
+    produces: ['Zone code'],
+    cannotProduce: [
+      'Zoning layer only. No parcel, contour or address service located.',
+      'No dimensional standards extracted.',
+    ],
   },
   {
     code: 'fairfax_va', name: 'Fairfax County', state: 'VA',
-    level: 'unserved', rulePackVersion: null, gisConnector: false,
-    produces: [],
-    cannotProduce: ['No certified rule pack. Not sold.'],
+    level: 'data_only', rulePackVersion: null, gisConnector: true,
+    produces: ['Parcel boundary', 'Zone code', 'Master Address Repository'],
+    cannotProduce: [
+      'NO CONTOUR LAYER located — no existing grade, so no grading or disturbance sheet.',
+      'No dimensional standards extracted; zMOD was voided in 2023 and readopted, so which text governs is a human question.',
+      'Address layer is a MapServer, not a scored GeocodeServer — no minimum-score rule.',
+    ],
   },
 ]
 
@@ -99,9 +114,28 @@ export function coverageFor(code: string): JurisdictionCoverage | null {
   return JURISDICTION_COVERAGE.find(j => j.code === code) ?? null
 }
 
-/** The jurisdictions an order may be accepted for today. */
+/**
+ * The jurisdictions an order may be ACCEPTED for today.
+ *
+ * `full` only. This deliberately excludes `data_only`: a jurisdiction whose
+ * GIS answers but whose dimensional standards have not been extracted can be
+ * described and cannot be drawn to. Treating "we can read the zone code" as
+ * "we can sell a site plan" is the mistake this function exists to prevent —
+ * a guessed setback produces a non-compliant plan indistinguishable from a
+ * compliant one.
+ */
 export function servedJurisdictions(): JurisdictionCoverage[] {
-  return JURISDICTION_COVERAGE.filter(j => j.level !== 'unserved')
+  return JURISDICTION_COVERAGE.filter(j => j.level === 'full')
+}
+
+/**
+ * Jurisdictions whose data layer is wired but which cannot be sold.
+ *
+ * Useful for a feasibility or property-report product, which needs facts
+ * rather than a drawing, and for showing what a rule pack would unlock.
+ */
+export function dataOnlyJurisdictions(): JurisdictionCoverage[] {
+  return JURISDICTION_COVERAGE.filter(j => j.level === 'data_only')
 }
 
 export interface ServiceAreaVerdict {

@@ -4,7 +4,7 @@
  */
 import { describe, it, expect } from 'vitest'
 import {
-  JURISDICTION_COVERAGE, coverageFor, servedJurisdictions,
+  JURISDICTION_COVERAGE, coverageFor, servedJurisdictions, dataOnlyJurisdictions,
   assessServiceArea, propertyBlockedMessage,
 } from '../jurisdictions/coverage'
 
@@ -13,6 +13,26 @@ describe('the coverage registry', () => {
     // If this fails because a jurisdiction was ADDED, the rule pack had better
     // exist. `rules/` holds pg-certifiable.ts and nothing else.
     expect(servedJurisdictions().map(j => j.code)).toEqual(['prince_georges_md'])
+  })
+
+  it('does NOT count a wired data layer as being served', () => {
+    // DC, Montgomery, Fairfax and Arlington have live GIS as of 2026-09-25 and
+    // no dimensional standards. Reading a zone code is not the same as being
+    // able to place a setback, and conflating them sells a plan that cannot be
+    // drawn correctly.
+    const dataOnly = dataOnlyJurisdictions().map(j => j.code)
+    expect(dataOnly.length).toBeGreaterThan(0)
+    for (const code of dataOnly) {
+      expect(servedJurisdictions().map(j => j.code), code).not.toContain(code)
+      expect(coverageFor(code)!.rulePackVersion, code).toBeNull()
+    }
+  })
+
+  it('keeps every data_only jurisdiction honest about what it cannot do', () => {
+    for (const j of dataOnlyJurisdictions()) {
+      expect(j.cannotProduce.length, j.code).toBeGreaterThan(0)
+      expect(j.cannotProduce.join(' '), j.code).toMatch(/dimensional standards/i)
+    }
   })
 
   it('declares the unserved jurisdictions rather than omitting them', () => {
