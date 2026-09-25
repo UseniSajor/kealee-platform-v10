@@ -25,6 +25,10 @@
       "types": "./src/components/Label.tsx",
       "default": "./src/components/Label.tsx"
     },
+    "./tenant-branding": {
+      "types": "./src/components/tenant/TenantBrandingProvider.tsx",
+      "default": "./src/components/tenant/TenantBrandingProvider.tsx"
+    },
     "./components": {
       "types": "./src/components/index.ts",
       "default": "./src/components/index.ts"

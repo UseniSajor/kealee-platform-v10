@@ -3,7 +3,7 @@ import type { Metadata, Viewport } from 'next'
 import { headers } from 'next/headers'
 import { cache } from 'react'
 import { loadTenantPresentationContext } from '@kealee/shared/tenant-branding'
-import { TenantBrandingProvider } from '@kealee/ui'
+import { TenantBrandingProvider } from '@kealee/ui/tenant-branding'
 import './globals.css'
 
 const resolveTenantContext = cache(async () => {
