@@ -16,6 +16,20 @@ export type {
   SendTemplateEmailOptions,
   SendEmailOptions,
 } from './email';
+export {
+  interpolateHtmlVariables,
+  interpolateTextVariables,
+  renderBrandedDocumentChrome,
+  renderBrandedEmailHtml,
+  resolveTenantEmailEnvelope,
+} from './outbound-branding';
+export type { TenantOutboundBrandingInput } from '@kealee/shared';
+export type {
+  RenderBrandedEmailOptions,
+  RenderBrandedDocumentOptions,
+  BrandedDocumentChrome,
+  TenantEmailEnvelope,
+} from './outbound-branding';
 
 // SMS & WhatsApp (Twilio)
 export {
@@ -45,7 +59,8 @@ export type {
 } from './in-app';
 
 // Templates
-export { EmailLayout } from './templates/email-layout';
+export { EmailBrandingProvider, EmailLayout } from './templates/email-layout';
+export type { EmailLayoutProps } from './templates/email-layout';
 export { WelcomeEmail } from './templates/welcome';
 export { NewLeadEmail } from './templates/new-lead';
 export { BidAcceptedEmail } from './templates/bid-accepted';

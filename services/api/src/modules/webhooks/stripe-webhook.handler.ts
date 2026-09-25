@@ -33,6 +33,10 @@ const emailQueue = {
 }
 import { getProjectExecutionQueue } from '../../utils/project-execution-queue'
 import { updateReadinessState } from '../orchestration/chain-gating'
+import {
+  markTenantInvoicePaymentFailed,
+  reconcileTenantSubscription,
+} from '../billing/tenant-subscription.service'
 
 // ============================================================================
 // TYPES
@@ -370,8 +374,11 @@ async function handleSubscriptionUpdated(
   subscription: Stripe.Subscription,
   logger: any
 ): Promise<void> {
-  logger.info({ subscriptionId: subscription.id }, 'Subscription updated')
-  // TODO: Handle subscription updates (price changes, tier upgrades, etc.)
+  const result = await reconcileTenantSubscription(subscription)
+  logger.info(
+    { subscriptionId: subscription.id, ...result },
+    result.handled ? 'White-label tenant subscription reconciled' : 'Non-tenant subscription ignored',
+  )
 }
 
 /**
@@ -382,8 +389,19 @@ async function handleSubscriptionDeleted(
   subscription: Stripe.Subscription,
   logger: any
 ): Promise<void> {
-  logger.info({ subscriptionId: subscription.id }, 'Subscription deleted')
-  // TODO: Handle subscription cancellations
+  const result = await reconcileTenantSubscription(subscription)
+  logger.info(
+    { subscriptionId: subscription.id, ...result },
+    result.handled ? 'White-label tenant subscription canceled' : 'Non-tenant subscription ignored',
+  )
+}
+
+async function handleInvoicePaymentFailed(invoice: Stripe.Invoice, logger: any): Promise<void> {
+  const result = await markTenantInvoicePaymentFailed(invoice)
+  logger.info(
+    { invoiceId: invoice.id, ...result },
+    result.handled ? 'White-label tenant marked past due' : 'Non-tenant invoice ignored',
+  )
 }
 
 // ============================================================================
@@ -561,12 +579,17 @@ export async function registerStripeWebhookHandler(fastify: FastifyInstance) {
             await handleChargeFailed(event.data.object as Stripe.Charge, redis, fastify.log)
             break
 
+          case 'customer.subscription.created':
           case 'customer.subscription.updated':
             await handleSubscriptionUpdated(event.data.object as Stripe.Subscription, fastify.log)
             break
 
           case 'customer.subscription.deleted':
             await handleSubscriptionDeleted(event.data.object as Stripe.Subscription, fastify.log)
+            break
+
+          case 'invoice.payment_failed':
+            await handleInvoicePaymentFailed(event.data.object as Stripe.Invoice, fastify.log)
             break
 
           default:

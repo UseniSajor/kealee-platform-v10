@@ -323,12 +323,14 @@ model Org {
   tenantEvaluationSuites TenantEvaluationSuite[]
   tenantSupportSessions TenantSupportAccessSession[]
   tenantAuditEvents TenantAuditEvent[]
+  tenantDataLifecycleRequests TenantDataLifecycleRequest[]
 
   // Command Center Infrastructure relations
   integrationCredentials IntegrationCredential[]
 
   @@index([slug])
   @@index([status])
+  @@index([tenantKind, status])
 }
 
 model OrgMember {

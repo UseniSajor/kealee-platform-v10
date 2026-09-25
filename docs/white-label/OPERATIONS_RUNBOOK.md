@@ -113,6 +113,15 @@ Suspension is not deletion.
 
 ## Export and termination
 
+The implemented self-service export and deletion workflow is deliberately
+bounded to `WHITE_LABEL_CONTROL_PLANE`. It exports or removes branding,
+products, plan metadata, domain records, usage rollups, evaluation settings,
+support sessions, and deployment configuration while retaining audit and
+lifecycle evidence. It does **not** represent deletion of homeowner, project,
+storage-object, vector, log, backup, or provider-held data. Those systems must
+complete the remaining steps below before a contractual all-data deletion can
+be certified.
+
 1. Verify the requestor and documented authority.
 2. Define included data, format, delivery method, and cutoff date.
 3. Generate export in a tenant-scoped job and storage location.

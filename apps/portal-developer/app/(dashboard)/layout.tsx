@@ -31,6 +31,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const tenantBrand = useTenantBranding()
   const accent = tenantBrand?.accentColor || ACCENT
   const sidebar = tenantBrand?.secondaryColor || SIDEBAR
+  const portalName = tenantBrand?.productName || tenantBrand?.companyName || 'Developer Portal'
+  const showKealeeBrand = tenantBrand?.kealeeBrandingVisible !== false
   const pathname = usePathname()
   const [mobileOpen, setMobileOpen] = useState(false)
   const { signOut } = useClerk()
@@ -51,7 +53,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       {/* Logo */}
       <div className="flex h-16 items-center px-5" style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
         <Link href="/pipeline" className="flex items-center gap-2.5">
-          <Image src="/kealee-icon-512x512-transparent.png" alt="Kealee" width={32} height={32} className="h-8 w-8" priority />
+          {tenantBrand?.logoUrl ? (
+            // Tenant logos are configuration-owned URLs and bypass Next's host allowlist.
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={tenantBrand.logoUrl} alt={`${tenantBrand.companyName} logo`} className="h-8 max-w-28 object-contain" />
+          ) : showKealeeBrand ? (
+            <Image src="/kealee-icon-512x512-transparent.png" alt="Kealee" width={32} height={32} className="h-8 w-8" priority />
+          ) : (
+            <span className="max-w-28 truncate text-sm font-semibold text-white">{tenantBrand?.companyName || 'Company'}</span>
+          )}
           <span className="rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide"
             style={{ backgroundColor: `${accent}22`, color: accent }}>
             Dev
@@ -114,7 +124,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       {/* Mobile overlay */}
       {mobileOpen && (
         <div className="fixed inset-0 z-50 lg:hidden">
-          <div className="absolute inset-0 bg-black/40" onClick={() => setMobileOpen(false)} />
+          <button type="button" aria-label="Close navigation" className="absolute inset-0 bg-black/40" onClick={() => setMobileOpen(false)} />
           <aside className="absolute left-0 top-0 h-full w-56 flex flex-col" style={{ backgroundColor: sidebar }}>
             <SidebarContent />
           </aside>
@@ -125,10 +135,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <div className="flex flex-1 flex-col min-w-0">
         {/* Mobile header */}
         <header className="flex h-14 items-center gap-3 border-b border-slate-200 bg-white px-4 lg:hidden">
-          <button onClick={() => setMobileOpen(true)} className="rounded-lg p-1.5 text-slate-500 hover:bg-slate-100">
+          <button type="button" aria-label="Open navigation" onClick={() => setMobileOpen(true)} className="rounded-lg p-1.5 text-slate-500 hover:bg-slate-100">
             <Menu className="h-5 w-5" />
           </button>
-          <span className="font-bold font-display text-sm" style={{ color: sidebar }}>{tenantBrand?.productName || tenantBrand?.companyName || 'Developer Portal'}</span>
+          <span className="font-bold font-display text-sm" style={{ color: sidebar }}>{portalName}</span>
           <div className="ml-auto flex items-center gap-2">
             <UserCircle className="h-7 w-7 text-slate-400" aria-label="Account" />
           </div>
@@ -138,7 +148,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <div className="hidden lg:flex h-12 items-center justify-between px-8 border-b"
           style={{ backgroundColor: '#FAFAFE', borderColor: '#E8E7FF' }}>
           <div className="flex items-center gap-2 text-sm">
-            <span className="text-slate-400">Developer Portal</span>
+            <span className="text-slate-400">{portalName}</span>
             {currentPage && (
               <>
                 <ChevronRight className="h-3.5 w-3.5 text-slate-300" />
@@ -153,7 +163,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
         <main className="flex-1 overflow-auto p-4 sm:p-6 lg:p-8">
           <PortalPageWithAskRail portal="developer">{children}</PortalPageWithAskRail>
-          <footer className="mt-8 border-t border-slate-200/60 pt-4 text-center"><TenantBrandAttribution /></footer>
+          <footer className="mt-8 border-t border-slate-200/60 pt-4 text-center text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+            {showKealeeBrand
+              ? <><span>© {new Date().getFullYear()} Kealee Services LLC. All rights reserved.</span><span className="ml-2"><TenantBrandAttribution /></span></>
+              : `© ${new Date().getFullYear()} ${tenantBrand?.companyName || 'Company'}. All rights reserved.`}
+          </footer>
         </main>
       </div>
     </div>

@@ -52,6 +52,12 @@
       "import": "./dist/tenant-scope.js",
       "require": "./dist/tenant-scope.js",
       "default": "./dist/tenant-scope.js"
+    },
+    "./outbound-branding": {
+      "types": "./dist/outbound-branding.d.ts",
+      "import": "./dist/outbound-branding.js",
+      "require": "./dist/outbound-branding.js",
+      "default": "./dist/outbound-branding.js"
     }
   },
   "typesVersions": {
@@ -76,15 +82,20 @@
       ],
       "tenant-scope": [
         "dist/tenant-scope.d.ts"
+      ],
+      "outbound-branding": [
+        "dist/outbound-branding.d.ts"
       ]
     }
   },
   "scripts": {
     "build": "tsc",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "test": "vitest run"
   },
   "devDependencies": {
-    "typescript": "^5.3.3"
+    "typescript": "^5.3.3",
+    "vitest": "^1.6.1"
   },
   "dependencies": {
     "@kealee/core-rules": "workspace:*",

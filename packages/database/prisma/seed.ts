@@ -2,6 +2,7 @@ import { PrismaClient } from "@prisma/client";
 import * as bcrypt from "bcryptjs";
 import { seedMessageTemplates } from "./seed-templates";
 import { seedDocumentTemplates } from "./seed-doc-templates";
+import { seedWhiteLabelProductTemplates } from "./seeds/white-label-products.seed";
 
 const prisma = new PrismaClient();
 
@@ -652,6 +653,10 @@ async function main() {
   console.log("📄 Seeding document templates...");
   const docCount = await seedDocumentTemplates(prisma);
   console.log("✅ Document templates seeded");
+
+  console.log("🏢 Seeding white-label product templates...");
+  const whiteLabelProductCount = await seedWhiteLabelProductTemplates(prisma);
+  console.log(`✅ ${whiteLabelProductCount} white-label product templates seeded`);
 
   // ============================================================================
   // 10. ASSEMBLY LIBRARY (optional — requires @kealee/estimating build)

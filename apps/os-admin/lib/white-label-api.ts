@@ -106,6 +106,22 @@ export interface WhiteLabelSupportSession {
   permissions?: string[]
 }
 
+export interface WhiteLabelDataRequest {
+  id: string
+  requestType: 'DATA_EXPORT' | 'DATA_DELETION' | 'RETENTION_CHANGE'
+  status: string
+  requestReason?: string | null
+  requestedRetentionDays?: number | null
+  effectiveRetentionDays?: number | null
+  scheduledFor?: string | null
+  approvalReason?: string | null
+  failureReason?: string | null
+  exportSha256?: string | null
+  exportExpiresAt?: string | null
+  createdAt: string
+  completedAt?: string | null
+}
+
 type Collection<T> = T[] | Record<string, unknown>
 
 export function extractCollection<T>(value: Collection<T>, keys: string[]): T[] {
@@ -163,11 +179,29 @@ export const whiteLabelApi = {
   getSupportAccess: (orgId: string) => apiRequest<Collection<WhiteLabelSupportSession>>(path(orgId) + '/support-access'),
   requestSupportAccess: (orgId: string, reason: string, permissions: string[], expiresAt: string) =>
     apiRequest(path(orgId) + '/support-access', { method: 'POST', body: { reason, permissions, expiresAt } }),
-  closeSupportAccess: (orgId: string, sessionId: string) =>
-    apiRequest(path(orgId) + `/support-access/${encodeURIComponent(sessionId)}`, { method: 'PATCH', body: { action: 'REVOKE' } }),
+  updateSupportAccess: (orgId: string, sessionId: string, action: 'APPROVE' | 'DENY' | 'ACTIVATE' | 'REVOKE', reason: string) =>
+    apiRequest(path(orgId) + `/support-access/${encodeURIComponent(sessionId)}`, { method: 'PATCH', body: { action, reason } }),
+  closeSupportAccess: (orgId: string, sessionId: string, reason: string) =>
+    apiRequest(path(orgId) + `/support-access/${encodeURIComponent(sessionId)}`, { method: 'PATCH', body: { action: 'REVOKE', reason } }),
   getDeployment: (orgId: string) => apiRequest<WhiteLabelDeployment | { deployment: WhiteLabelDeployment }>(path(orgId) + '/deployment'),
   updateDeployment: (orgId: string, data: WhiteLabelDeployment) =>
     apiRequest(path(orgId) + '/deployment', { method: 'PATCH', body: data }),
+  getDataRequests: (orgId: string) =>
+    apiRequest<{ dataRequests: WhiteLabelDataRequest[] }>(path(orgId) + '/data-requests'),
+  createDataRequest: (orgId: string, data: { requestType: WhiteLabelDataRequest['requestType']; reason: string; requestedRetentionDays?: number }) =>
+    apiRequest<{ dataRequest: WhiteLabelDataRequest }>(path(orgId) + '/data-requests', { method: 'POST', body: data }),
+  reviewDataRequest: (orgId: string, requestId: string, action: 'APPROVE' | 'REJECT', reason: string) =>
+    apiRequest<{ dataRequest: WhiteLabelDataRequest }>(path(orgId) + `/data-requests/${encodeURIComponent(requestId)}/review`, { method: 'PATCH', body: { action, reason } }),
+  cancelDataRequest: (orgId: string, requestId: string, reason: string) =>
+    apiRequest<{ dataRequest: WhiteLabelDataRequest }>(path(orgId) + `/data-requests/${encodeURIComponent(requestId)}/cancel`, { method: 'POST', body: { reason } }),
+  executeDataExport: (orgId: string, requestId: string) =>
+    apiRequest<{ dataRequest: WhiteLabelDataRequest }>(path(orgId) + `/data-requests/${encodeURIComponent(requestId)}/export/execute`, { method: 'POST' }),
+  getDataExport: (orgId: string, requestId: string) =>
+    apiRequest<{ payload: unknown; sha256: string; expiresAt: string }>(path(orgId) + `/data-requests/${encodeURIComponent(requestId)}/export`),
+  executeRetentionChange: (orgId: string, requestId: string) =>
+    apiRequest<{ dataRequest: WhiteLabelDataRequest }>(path(orgId) + `/data-requests/${encodeURIComponent(requestId)}/retention/execute`, { method: 'POST' }),
+  executeDataDeletion: (orgId: string, requestId: string, confirmation: string, reason: string) =>
+    apiRequest<{ dataRequest: WhiteLabelDataRequest }>(path(orgId) + `/data-requests/${encodeURIComponent(requestId)}/deletion/execute`, { method: 'POST', body: { confirmation, reason } }),
 }
 
 export interface WhiteLabelProductAssignment {

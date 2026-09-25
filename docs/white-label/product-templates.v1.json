@@ -1,8 +1,8 @@
 {
   "catalogVersion": 1,
-  "status": "planning-reference",
-  "runtimeAuthority": false,
-  "notes": "Seed through reviewed runtime seed/migration code. ModuleEntitlement remains the access authority.",
+  "status": "runtime-seeded",
+  "runtimeAuthority": true,
+  "notes": "Seeded idempotently by packages/database/prisma/seeds/white-label-products.seed.ts and the control-plane migration. ModuleEntitlement remains the access authority.",
   "products": [
     {
       "key": "builder-acquisition-intelligence",

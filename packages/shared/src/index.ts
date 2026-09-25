@@ -7,3 +7,4 @@ export * from './pricing';
 export * from './project-placeholders';
 export * from './tenant-branding';
 export * from './tenant-scope';
+export * from './outbound-branding';

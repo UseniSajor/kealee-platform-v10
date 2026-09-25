@@ -12,6 +12,13 @@
 import { Resend } from 'resend'
 import { PrismaClient, EmailEventStatus } from '@kealee/database'
 import Redis from 'ioredis'
+import type { TenantOutboundBrandingInput } from '@kealee/shared'
+import {
+  interpolateHtmlVariables,
+  interpolateTextVariables,
+  renderBrandedEmailHtml,
+  resolveTenantEmailEnvelope,
+} from './outbound-branding'
 
 const prisma = new PrismaClient()
 
@@ -39,10 +46,70 @@ export interface SendTemplateEmailOptions {
   templateName: string
   variables: Record<string, string>
   projectId?: string
+  /** Explicit professional tenant. When omitted, projectId is resolved to its org. */
+  orgId?: string
   userId?: string
   route?: string
   ipAddress?: string
   userAgent?: string
+  /** Presentation/sender configuration only; never include provider credentials. */
+  branding?: TenantOutboundBrandingInput
+}
+
+async function resolveEmailBranding(opts: SendTemplateEmailOptions): Promise<TenantOutboundBrandingInput | undefined> {
+  if (opts.branding) return opts.branding
+  const db = prisma as any
+  const project = !opts.orgId && opts.projectId
+    ? await db.project.findUnique({ where: { id: opts.projectId }, select: { orgId: true } })
+    : null
+  const orgId = opts.orgId ?? project?.orgId
+  if (!orgId) return undefined
+
+  const profile = await db.whiteLabelTenantProfile.findFirst({
+    where: { orgId, status: 'ACTIVE', org: { status: 'ACTIVE', tenantKind: 'WHITE_LABEL' } },
+    select: {
+      companyName: true, productName: true, logoUrl: true,
+      primaryColor: true, secondaryColor: true, accentColor: true,
+      supportName: true, supportEmail: true, supportPhone: true, supportUrl: true,
+      emailFromName: true, emailFromAddress: true, emailReplyToAddress: true,
+      reportHeader: true, reportFooter: true, legalDisclaimer: true,
+      kealeeBrandingVisible: true,
+      org: {
+        select: {
+          whiteLabelDomains: {
+            where: { status: 'ACTIVE', isPrimary: true },
+            select: { hostname: true },
+            take: 1,
+          },
+        },
+      },
+    },
+  })
+  if (!profile) return undefined
+  const hostname = profile.org?.whiteLabelDomains?.[0]?.hostname
+  const appUrl = hostname ? `https://${hostname}` : undefined
+  return {
+    companyName: profile.companyName,
+    productName: profile.productName,
+    logoUrl: profile.logoUrl,
+    primaryColor: profile.primaryColor,
+    secondaryColor: profile.secondaryColor,
+    accentColor: profile.accentColor,
+    supportName: profile.supportName,
+    supportEmail: profile.supportEmail,
+    supportPhone: profile.supportPhone,
+    supportUrl: profile.supportUrl,
+    appUrl,
+    privacyUrl: appUrl ? `${appUrl}/privacy` : undefined,
+    unsubscribeUrl: appUrl ? `${appUrl}/unsubscribe` : undefined,
+    emailSenderName: profile.emailFromName,
+    emailFrom: profile.emailFromAddress,
+    emailReplyTo: profile.emailReplyToAddress,
+    reportHeader: profile.reportHeader,
+    reportFooter: profile.reportFooter,
+    legalDisclaimer: profile.legalDisclaimer,
+    kealeeBrandingVisible: profile.kealeeBrandingVisible,
+  }
 }
 
 export interface SendEmailResult {
@@ -107,9 +174,11 @@ export async function sendEmailWithTemplate(
   }
 
   // 2. Interpolate variables safely
-  const subject = interpolateVariables(template.subject || template.name, opts.variables)
-  const body = interpolateVariables(template.body, opts.variables)
-  const html = wrapInEmailLayout(body, opts.variables.projectName)
+  const branding = await resolveEmailBranding(opts)
+  const subject = interpolateTextVariables(template.subject || template.name, opts.variables)
+  const body = interpolateHtmlVariables(template.body, opts.variables)
+  const html = wrapInEmailLayout(body, opts.variables.projectName, branding)
+  const envelope = resolveTenantEmailEnvelope(branding)
 
   // 3. Create EmailEvent (QUEUED)
   const emailEvent = await prisma.emailEvent.create({
@@ -117,7 +186,7 @@ export async function sendEmailWithTemplate(
       provider: 'resend',
       route: opts.route || 'unknown',
       template: template.name,
-      fromEmail: DEFAULT_FROM,
+      fromEmail: envelope.from,
       toEmail: opts.to,
       subject,
       triggeredByUserId: opts.userId,
@@ -132,15 +201,16 @@ export async function sendEmailWithTemplate(
   // 4. Send via Resend
   const resend = getResend()
   const { data, error } = await resend.emails.send({
-    from: DEFAULT_FROM,
+    from: envelope.from,
     to: [opts.to],
     subject,
     html,
-    replyTo: DEFAULT_REPLY_TO,
+    replyTo: envelope.replyTo,
     tags: [
       { name: 'template', value: template.name },
       { name: 'eventId', value: emailEvent.id },
       ...(opts.projectId ? [{ name: 'projectId', value: opts.projectId }] : []),
+      ...(opts.orgId ? [{ name: 'orgId', value: opts.orgId }] : []),
     ],
   })
 
@@ -265,45 +335,10 @@ export async function sendInternalSystemEmail(
   return { messageId: data?.id || '', status: 'sent' }
 }
 
-function interpolateVariables(template: string, variables: Record<string, string>): string {
-  return template.replace(/\{\{(\w+)\}\}/g, (_, key) => variables[key] ?? `{{${key}}}`)
-}
-
-export function wrapInEmailLayout(bodyHtml: string, projectName?: string): string {
-  const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://app.kealee.com'
-  return `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-</head>
-<body style="margin:0; padding:0; background-color:#f4f4f5; font-family:-apple-system,sans-serif;">
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#f4f4f5;">
-    <tr>
-      <td align="center" style="padding:40px 20px;">
-        <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="background-color:#ffffff; border-radius:8px; overflow:hidden;">
-          <tr>
-            <td style="background-color:#1e293b; padding:24px 32px; text-align:center;">
-              <span style="font-size:24px; font-weight:700; color:#ffffff; letter-spacing:-0.5px;">Kealee</span>
-              ${projectName ? `<br/><span style="font-size:13px; color:#94a3b8; margin-top:4px; display:inline-block;">${projectName}</span>` : ''}
-            </td>
-          </tr>
-          <tr>
-            <td style="padding:32px;">
-              ${bodyHtml}
-            </td>
-          </tr>
-          <tr>
-            <td style="padding:24px 32px; background-color:#f8fafc; border-top:1px solid #e2e8f0; text-align:center;">
-              <p style="margin:0 0 8px; font-size:12px; color:#64748b;">
-                Powered by Kealee &mdash; Construction Project Management
-              </p>
-            </td>
-          </tr>
-        </table>
-      </td>
-    </tr>
-  </table>
-</body>
-</html>`
+export function wrapInEmailLayout(
+  bodyHtml: string,
+  projectName?: string,
+  branding?: TenantOutboundBrandingInput,
+): string {
+  return renderBrandedEmailHtml({ bodyHtml, projectName, branding })
 }

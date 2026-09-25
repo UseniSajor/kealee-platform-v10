@@ -11,6 +11,12 @@ Do not create a parallel `Tenant` root model unless an approved architecture
 decision replaces `Org`. Do not use the legacy `V30WhiteLabelConfig` as a second
 tenant system. Its useful values must be migrated into the canonical profile.
 
+`Org.tenantKind` is the explicit commercial and responsibility boundary:
+`KEALEE_DIRECT` retains the homeowner/project commerce path, while
+`WHITE_LABEL` identifies a professional company whose platform access is
+governed by its `TenantPlan`. Provisioning rejects homeowner/customer
+memberships and marks only the professional organization as `WHITE_LABEL`.
+
 ## System planes
 
 ```text
@@ -158,6 +164,10 @@ Non-relational boundaries:
 - webhook: derive/verify tenant from stored endpoint/customer mapping;
 - secret: tenant-specific vault reference;
 - logs/traces: include tenant correlation but avoid confidential payloads.
+
+The shared `tenant-scope` helpers are the required key/namespace constructors.
+They do not, by themselves, prove that every historical storage, queue, vector,
+or cache call site has migrated; that remains a release-gate inventory item.
 
 ## Deployment tiers
 

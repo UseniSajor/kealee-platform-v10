@@ -10,24 +10,24 @@ code may exist but has not passed the release gate.
 
 | Capability | Status | Current evidence | Required next evidence |
 | --- | --- | --- | --- |
-| Canonical organization and membership | SCAFFOLDED | `Org`, `OrgMember`, and `ModuleEntitlement` exist in `packages/database/schema-src/identity/models.prisma` | Explicit tenant selection, full route adoption, negative authorization tests |
-| Canonical white-label control-plane schema | IN PROGRESS | `packages/database/schema-src/identity/white-label.prisma` defines profile, domain, product, plan, usage, secret reference, deployment, evaluation, support, and audit models | Generated schema validation, migration, database apply, service/API tests |
-| Legacy V30 branding config | SCAFFOLDED | `V30WhiteLabelConfig` exists in `packages/database/schema-src/workflow/loops.prisma` | Migration/compatibility plan into canonical profile; prevent dual writes |
-| Tenant request context | IN PROGRESS | Clerk middleware verifies a selected membership and has platform-admin middleware | Remove `orgMemberships[0]` fallback everywhere; trusted host/session resolver; worker context tests |
-| Professional/homeowner separation | SCAFFOLDED | Separate professional and owner portal applications exist | Formal audience claims/guards, project-scoped homeowner policy, cross-audience tests |
-| Module licensing | SCAFFOLDED | `ModuleEntitlement` schema and admin UI concepts exist | Central fail-closed guard used by every licensed API/service and UI derivation |
-| Kealee management console | SCAFFOLDED | `apps/os-admin` includes orgs, modules, subscriptions, audit, and enterprise areas | Unified White Label navigation, live APIs, platform-admin guard, test coverage |
-| Tenant professional administration | NOT STARTED | Professional portals exist, but a unified delegated tenant-admin experience is not verified | Role-scoped team/workflow/integration/brand/usage administration |
-| Homeowner white-label presentation | NOT STARTED | `apps/portal-owner` exists | Branded project presentation without tenant-admin access; boundary tests |
-| Custom domains | SCAFFOLDED | Legacy and canonical schema fields/models exist | DNS/TLS verification, hostname resolver, auth/email links, lifecycle tests |
-| Branded reports/email/documents | SCAFFOLDED | Platform has report, email, and document systems; canonical branding fields are in progress | Shared render context adopted and snapshot/delivery tested |
-| Usage metering | IN PROGRESS | Canonical event/rollup schema is in progress; older API usage data exists | Instrument all billable paths, idempotency/reconciliation, billing integration |
-| Subscription billing | SCAFFOLDED | Stripe software subscription infrastructure exists | Org-centric white-label plans, usage overages, webhooks, reconciliation tests |
+| Canonical organization and membership | IN PROGRESS | `Org.tenantKind`, `OrgMember`, and `ModuleEntitlement` distinguish direct/homeowner commerce from professional white-label tenants | Apply migrations and finish platform-wide route inventory |
+| Canonical white-label control-plane schema | IN PROGRESS | Assembled schema validates with 525 models/311 enums; additive SQL covers control plane, tenant kind, usage idempotency, and data lifecycle | Apply migrations in staging/production-like database and record evidence |
+| Legacy V30 branding config | IN PROGRESS | V30 reads canonical profiles, writes return 410, and the migration imports compatible rows | Apply migration and verify imported production data |
+| Tenant request context | IN PROGRESS | Explicit membership selector, platform-admin guard, host presentation resolver, worker/database tenant context, and negative tests exist | Finish platform-wide HTTP/worker/raw-SQL inventory |
+| Professional/homeowner separation | IN PROGRESS | Professional org membership and `tenantKind` are separate from project-scoped homeowner access; focused denial tests pass | Production-like two-audience end-to-end test |
+| Module licensing | IN PROGRESS | Central fail-closed plan+entitlement decision, route guard, protected entitlement administration, and negative route tests exist | Adopt guard across every licensed product route |
+| Kealee management console | IN PROGRESS | `apps/os-admin/white-label` manages tenants, brand, products, modules, plans, usage, domains, deployment, evaluations, support, and data lifecycle | Browser verification against deployed API/database |
+| Tenant professional administration | IN PROGRESS | Contractor/developer Company OS settings provide delegated brand/support, plan, usage, evaluation and data-request access | Add team/workflow/integration administration and browser verification |
+| Homeowner white-label presentation | IN PROGRESS | Owner shell resolves tenant brand/metadata from verified host with `HOMEOWNER_PROJECT` audience and no admin controls | Bind host brand to explicit shared project in end-to-end authorization tests |
+| Custom domains | IN PROGRESS | Vercel provisioning/verification/deprovisioning, hostname resolver, TLS status, and admin actions exist | Verify DNS/TLS/auth callbacks in a deployed Vercel project |
+| Branded reports/email/documents | IN PROGRESS | Shared sanitized render context is adopted by stored-template email, React Email layout, and document generator; full white-label output tests pass | Inventory remaining report/document emitters and delivery-test verified sender domains |
+| Usage metering | IN PROGRESS | Tenant-local idempotency, media-router recording, rollups, Stripe meter reporting, reconciliation and tests exist | Instrument remaining billable paths and reconcile in Stripe test mode |
+| Subscription billing | IN PROGRESS | Stripe subscription/invoice webhooks reconcile only explicitly bound white-label plans; active plan intersects module entitlements | Test-mode checkout/provisioning and webhook replay evidence |
 | Tenant secrets | IN PROGRESS | Canonical secret-reference schema is in progress; org integration credentials exist | Approved vault integration, rotation/revocation flows, no plaintext tests |
-| Storage/queue/vector/cache isolation | NOT STARTED | Individual systems exist, but a platform-wide tenant-isolation inventory is not verified | Namespacing utilities, migrations/config, leakage tests for each system |
+| Storage/queue/vector/cache isolation | IN PROGRESS | Shared fail-closed namespace/job helpers and tenant-aware media jobs exist | Adopt across all historical call sites and add leakage tests per subsystem |
 | Support access | IN PROGRESS | Canonical time-bound support-session schema is in progress | Approval/activation/expiry enforcement, UI, real-actor audit tests |
 | Tenant audit | IN PROGRESS | General audit infrastructure exists; canonical tenant audit schema is in progress | Service adoption, immutable retention, admin/support/export coverage |
-| Tenant evaluations | IN PROGRESS | General AI evaluation concepts exist; tenant suite/case/run schema is in progress | Runner, thresholds, promotion gate, customer-specific regression evidence |
+| Tenant evaluations | IN PROGRESS | Tenant suites/cases/runs and assertion runner record versions, results, thresholds, and failures | Connect promotion workflow and obtain customer-specific regression evidence |
 | Managed branded release | NOT STARTED | Architecture and schema work are underway | All Gate A evidence in `SECURITY_AND_RELEASE_GATES.md` |
 | Full white-label SaaS release | NOT STARTED | Target documented | Gate B after Gate A verification |
 | Private enterprise release | NOT STARTED | Deployment model documented | Gate C after Gate B verification and provisioning automation |
@@ -57,36 +57,36 @@ code may exist but has not passed the release gate.
 
 ### Foundation
 
-- [ ] Validate the assembled Prisma schema and generate the client.
-- [ ] Add and review the canonical white-label migration.
-- [ ] Seed versioned product templates from `product-templates.v1.json` through
+- [x] Validate the assembled Prisma schema.
+- [x] Add and review the canonical white-label migrations.
+- [x] Seed versioned product templates from `product-templates.v1.json` through
       runtime-owned seed code.
-- [ ] Create a single tenant-context contract for HTTP, workers, and internal
+- [x] Create shared tenant-context contracts for HTTP, workers, and internal
       calls.
-- [ ] Remove all implicit first-organization selection.
-- [ ] Protect all platform control-plane routes with platform-admin policy.
-- [ ] Define audience (`PLATFORM`, `PROFESSIONAL`, `HOMEOWNER`, `SERVICE`) in
+- [x] Remove known implicit first-organization selection from authentication and billing paths.
+- [x] Protect white-label and entitlement control-plane routes with platform-admin policy.
+- [x] Define audience (`PLATFORM`, `PROFESSIONAL`, `HOMEOWNER`, `SERVICE`) in
       authorization context.
 
 ### Managed branded pilot
 
-- [ ] Build White Label tenant management in `apps/os-admin`.
-- [ ] Add tenant profile, product, module, plan, domain, deployment, support,
+- [x] Build White Label tenant management in `apps/os-admin`.
+- [x] Add tenant profile, product, module, plan, domain, deployment, support,
       evaluation, usage, and audit services/APIs.
-- [ ] Add branded theme/navigation resolution to professional portal shell.
-- [ ] Add shared branded email/report/document rendering context.
-- [ ] Implement Builder Acquisition Intelligence OS as first product assignment.
-- [ ] Add homeowner branded project presentation without admin controls.
+- [x] Add branded theme/navigation resolution to professional portal shell.
+- [x] Add shared branded email/report/document rendering context.
+- [x] Implement Builder Acquisition Intelligence OS as a runtime product template.
+- [x] Add homeowner branded project presentation without admin controls.
 - [ ] Instrument usage and audit events for the pilot paths.
 - [ ] Pass Gate A.
 
 ### Full SaaS
 
-- [ ] Add verified custom-domain and TLS lifecycle.
-- [ ] Add tenant professional self-service administration.
-- [ ] Complete metering, included usage, overages, and reconciliation.
-- [ ] Implement data export/deletion/retention workflows.
-- [ ] Run tenant-specific evaluations before model/prompt/workflow promotion.
+- [x] Add custom-domain and TLS lifecycle code (deployed verification remains required).
+- [x] Add initial tenant professional self-service administration.
+- [x] Implement metering, included usage, overages, and reconciliation services.
+- [x] Implement bounded control-plane export/deletion/retention workflows.
+- [x] Implement tenant-specific evaluation execution (promotion integration remains required).
 - [ ] Pass Gate B.
 
 ### Private enterprise
@@ -101,6 +101,20 @@ code may exist but has not passed the release gate.
 | Date | Change | Evidence/status |
 | --- | --- | --- |
 | 2026-09-24 | Established white-label architecture, product catalog, professional/homeowner boundary, operations runbook, and release gates | Documentation complete; runtime implementation remains governed by statuses above |
+| 2026-09-24 | Added professional control plane, tenant presentation, delegated Company OS, domains, products, plans, usage, billing reconciliation, support state machine, evaluations, bounded data lifecycle, branded outputs, and tenant-scope helpers | Schema/type checks and focused tests pass; no release gate is marked complete until migrations and external services are verified in a production-like environment |
+
+## Latest local verification (2026-09-24)
+
+- Prisma: `prisma validate` passed for the merged 525-model/311-enum schema.
+- TypeScript: API, shared, communications, automation, UI, os-admin,
+  contractor portal, developer portal, and owner portal passed.
+- API security/runtime: 10 files, 47 tests passed (tenant context,
+  professional/homeowner boundary, entitlement routes, billing, usage,
+  support, evaluations, and data lifecycle).
+- Branding/scope: 3 files, 13 tests passed.
+- Media router: 1 file, 8 tests passed.
+
+These results are local code evidence, not deployed-environment approval.
 
 ## Future-agent handoff protocol
 

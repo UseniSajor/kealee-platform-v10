@@ -24,6 +24,14 @@ interface SelfTenant {
   evaluationSuites: Array<{ id: string; name: string; active: boolean }>
 }
 
+interface DataRequestSummary {
+  id: string
+  requestType: 'DATA_EXPORT' | 'DATA_DELETION' | 'RETENTION_CHANGE'
+  status: string
+  createdAt: string
+  exportExpiresAt?: string | null
+}
+
 export interface TenantSelfServiceSettingsProps {
   apiUrl: string
   getToken: TokenProvider
@@ -39,6 +47,9 @@ export function TenantSelfServiceSettings({ apiUrl, getToken, organizationId }: 
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
+  const [dataRequests, setDataRequests] = useState<DataRequestSummary[]>([])
+  const [lifecycleReason, setLifecycleReason] = useState('')
+  const [retentionDays, setRetentionDays] = useState('365')
 
   const request = useCallback(async (path: string, init?: RequestInit) => {
     if (!orgId) throw new Error('Select a professional organization or open this page from its verified domain.')
@@ -62,9 +73,13 @@ export function TenantSelfServiceSettings({ apiUrl, getToken, organizationId }: 
     setLoading(true)
     setError(null)
     try {
-      const payload = await request('/white-label/self')
+      const [payload, lifecycle] = await Promise.all([
+        request('/white-label/self'),
+        request('/white-label/self/data-requests'),
+      ])
       setTenant(payload.tenant)
       setDraft(payload.tenant.profile)
+      setDataRequests(lifecycle.dataRequests ?? [])
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Company settings could not be loaded.')
     } finally {
@@ -95,6 +110,45 @@ export function TenantSelfServiceSettings({ apiUrl, getToken, organizationId }: 
       setNotice('Company branding saved.')
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Company settings could not be saved.')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  async function createDataRequest(requestType: DataRequestSummary['requestType']) {
+    if (lifecycleReason.trim().length < 10) {
+      setError('Enter a reason with at least 10 characters.')
+      return
+    }
+    setSaving(true)
+    setError(null)
+    setNotice(null)
+    try {
+      const created = await request('/white-label/self/data-requests', {
+        method: 'POST',
+        body: JSON.stringify({
+          requestType,
+          reason: lifecycleReason.trim(),
+          ...(requestType === 'RETENTION_CHANGE' ? { requestedRetentionDays: Number(retentionDays) } : {}),
+        }),
+      })
+      if (requestType === 'DATA_EXPORT') {
+        await request(`/white-label/self/data-requests/${created.dataRequest.id}/export/execute`, { method: 'POST' })
+        const exported = await request(`/white-label/self/data-requests/${created.dataRequest.id}/export`)
+        const url = URL.createObjectURL(new Blob([JSON.stringify(exported.payload, null, 2)], { type: 'application/json' }))
+        const link = document.createElement('a')
+        link.href = url
+        link.download = `company-configuration-${created.dataRequest.id}.json`
+        link.click()
+        URL.revokeObjectURL(url)
+        setNotice('Company configuration export downloaded.')
+      } else {
+        setNotice('Request submitted for Kealee review.')
+      }
+      setLifecycleReason('')
+      await load()
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Data request could not be submitted.')
     } finally {
       setSaving(false)
     }
@@ -134,5 +188,6 @@ export function TenantSelfServiceSettings({ apiUrl, getToken, organizationId }: 
       <article className="rounded-xl border bg-white p-5"><h2 className="font-semibold">Quality controls</h2><p className="mt-2 text-sm text-slate-600">{tenant.evaluationSuites.length} evaluation suite{tenant.evaluationSuites.length === 1 ? '' : 's'}</p></article>
     </section>
     <section className="rounded-xl border bg-white p-6"><h2 className="text-lg font-semibold">Recent measured usage</h2>{tenant.usageRollups.length ? <div className="mt-4 divide-y rounded-lg border">{tenant.usageRollups.slice(0, 20).map((item) => <div key={item.id} className="flex justify-between gap-4 p-3 text-sm"><span>{item.metric.replace(/_/g, ' ')}</span><span className="tabular-nums">{Number(item.quantity).toLocaleString()}</span></div>)}</div> : <p className="mt-3 text-sm text-slate-500">No usage rollups are available yet.</p>}</section>
+    <section className="rounded-xl border bg-white p-6"><h2 className="text-lg font-semibold">Company data</h2><p className="mt-1 text-sm text-slate-600">Download the white-label configuration or request a retention change or control-plane deletion. Homeowner and project data remains in its separate project lifecycle.</p><div className="mt-4 grid gap-3 sm:grid-cols-[1fr_auto]"><input className="h-10 rounded-md border border-slate-300 px-3 text-sm" aria-label="Data request reason" minLength={10} placeholder="Reason (at least 10 characters)" value={lifecycleReason} onChange={(event) => setLifecycleReason(event.target.value)} /><input className="h-10 w-32 rounded-md border border-slate-300 px-3 text-sm" aria-label="Requested retention days" type="number" min={1} max={3650} value={retentionDays} onChange={(event) => setRetentionDays(event.target.value)} /></div><div className="mt-3 flex flex-wrap gap-2"><button type="button" disabled={saving} onClick={() => void createDataRequest('DATA_EXPORT')} className="rounded-md bg-blue-700 px-3 py-2 text-sm font-semibold text-white disabled:opacity-60">Download configuration</button><button type="button" disabled={saving} onClick={() => void createDataRequest('RETENTION_CHANGE')} className="rounded-md border px-3 py-2 text-sm font-semibold disabled:opacity-60">Request retention change</button><button type="button" disabled={saving} onClick={() => void createDataRequest('DATA_DELETION')} className="rounded-md border border-red-300 px-3 py-2 text-sm font-semibold text-red-700 disabled:opacity-60">Request control-plane deletion</button></div>{dataRequests.length > 0 && <div className="mt-4 divide-y rounded-lg border">{dataRequests.slice(0, 10).map((item) => <div key={item.id} className="flex justify-between gap-4 p-3 text-sm"><span>{item.requestType.replace(/_/g, ' ')}</span><span className="text-slate-500">{item.status}</span></div>)}</div>}</section>
   </div>
 }

@@ -14,6 +14,7 @@ const db = prisma as any
 
 export interface TenantActor {
   userId: string
+  actorType?: 'PLATFORM_ADMIN' | 'TENANT_ADMIN' | 'SERVICE'
   ipAddress?: string
   userAgent?: string
 }
@@ -49,7 +50,7 @@ async function audit(
     data: {
       orgId,
       actorUserId: actor.userId,
-      actorType: 'PLATFORM_ADMIN',
+      actorType: actor.actorType ?? 'PLATFORM_ADMIN',
       action,
       resourceType,
       resourceId,
@@ -164,8 +165,23 @@ export async function getWhiteLabelTenant(orgId: string) {
 }
 
 export async function createWhiteLabelTenant(input: CreateWhiteLabelTenantInput, actor: TenantActor) {
-  const org = await db.org.findUnique({ where: { id: input.orgId }, select: { id: true, slug: true, name: true } })
+  const org = await db.org.findUnique({
+    where: { id: input.orgId },
+    select: {
+      id: true,
+      slug: true,
+      name: true,
+      tenantKind: true,
+      members: { select: { roleKey: true, user: { select: { role: true } } } },
+    },
+  })
   if (!org) throw notFound('Professional organization not found')
+  const homeownerRoles = new Set(['HOMEOWNER', 'HOME_OWNER', 'CLIENT', 'CUSTOMER'])
+  if (org.members.some((member: any) =>
+    homeownerRoles.has(String(member.roleKey).toUpperCase())
+    || homeownerRoles.has(String(member.user?.role).toUpperCase()))) {
+    throw conflict('Homeowner/customer memberships must be removed and represented by project access before white-label provisioning')
+  }
   const existing = await db.whiteLabelTenantProfile.findUnique({ where: { orgId: input.orgId } })
   if (existing) throw conflict('Organization is already configured as a white-label tenant')
 
@@ -175,6 +191,7 @@ export async function createWhiteLabelTenant(input: CreateWhiteLabelTenantInput,
   if (templates.length !== input.productKeys.length) throw notFound('One or more product templates were not found')
 
   const result = await db.$transaction(async (tx: any) => {
+    await tx.org.update({ where: { id: org.id }, data: { tenantKind: 'WHITE_LABEL' } })
     const profile = await tx.whiteLabelTenantProfile.create({
       data: {
         orgId: org.id,
@@ -260,6 +277,7 @@ export async function resolvePublicTenantContext(hostnameInput: string) {
       org: {
         include: {
           whiteLabelProfile: true,
+          whiteLabelPlan: { select: { billingStatus: true, currentPeriodEnd: true } },
           whiteLabelProducts: {
             where: { enabled: true },
             include: { productTemplate: true },
@@ -276,6 +294,9 @@ export async function resolvePublicTenantContext(hostnameInput: string) {
   })
   const profile = domain?.org?.whiteLabelProfile
   if (!domain || !profile || profile.status !== 'ACTIVE' || domain.org.status !== 'ACTIVE') return null
+  const billingStatus = String(domain.org.whiteLabelPlan?.billingStatus ?? '').toUpperCase()
+  const periodEnd = domain.org.whiteLabelPlan?.currentPeriodEnd
+  if (!['ACTIVE', 'TRIALING'].includes(billingStatus) || (periodEnd && new Date(periodEnd).getTime() <= Date.now())) return null
 
   return {
     orgId: domain.orgId,
@@ -413,7 +434,7 @@ export async function upsertTenantPlan(orgId: string, input: UpdateTenantPlanInp
 export async function recordTenantUsage(orgId: string, input: RecordTenantUsageInput) {
   await ensureTenant(orgId)
   return db.tenantUsageEvent.upsert({
-    where: { idempotencyKey: input.idempotencyKey },
+    where: { orgId_idempotencyKey: { orgId, idempotencyKey: input.idempotencyKey } },
     update: {},
     create: { orgId, ...input },
   })
@@ -532,6 +553,17 @@ export async function updateSupportAccess(
   const before = await db.tenantSupportAccessSession.findFirst({ where: { id: sessionId, orgId } })
   if (!before) throw notFound('Support access session not found')
   const now = new Date()
+  const allowedTransitions: Record<string, string[]> = {
+    REQUESTED: ['APPROVE', 'DENY'],
+    APPROVED: ['ACTIVATE', 'REVOKE'],
+    ACTIVE: ['REVOKE'],
+  }
+  if (!allowedTransitions[before.status]?.includes(input.action)) {
+    throw conflict(`Support access cannot ${input.action.toLowerCase()} from ${String(before.status).toLowerCase()}`)
+  }
+  if (input.action === 'ACTIVATE' && new Date(before.expiresAt).getTime() <= now.getTime()) {
+    throw conflict('Expired support access cannot be activated')
+  }
   const transitions: Record<string, any> = {
     APPROVE: { status: 'APPROVED', approvedById: actor.userId },
     DENY: { status: 'DENIED', approvedById: actor.userId },

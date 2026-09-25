@@ -1,13 +1,25 @@
-import { FastifyInstance } from 'fastify'
+import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import { entitlementService } from './entitlement.service'
-import { authenticateUser } from '../auth/auth.middleware'
+import { authenticateUser, requirePlatformAdmin } from '../../middleware/auth.middleware'
+import { isPlatformRole } from '../../middleware/tenant-context'
 import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 export async function entitlementRoutes(fastify: FastifyInstance) {
+  const platformAdmin = { preHandler: [authenticateUser, requirePlatformAdmin] }
+  const requireSelectedOrg = async (request: FastifyRequest, reply: FastifyReply) => {
+    const user = (request as any).user
+    const orgId = (request.params as any)?.orgId ?? (request.body as any)?.orgId
+    if (isPlatformRole(user?.platformRole || user?.role)) return
+    if (!orgId || user?.organizationId !== orgId) {
+      return reply.code(403).send({ error: 'Explicit organization membership is required' })
+    }
+  }
+  const orgReader = { preHandler: [authenticateUser, requireSelectedOrg] }
+
   // POST /entitlements/orgs/:orgId/modules/:moduleKey/enable - Enable module
   fastify.post(
     '/orgs/:orgId/modules/:moduleKey/enable',
-    { preHandler: authenticateUser },
+    platformAdmin,
     async (request, reply) => {
       try {
         const { orgId, moduleKey } = request.params as {
@@ -37,7 +49,7 @@ export async function entitlementRoutes(fastify: FastifyInstance) {
   // POST /entitlements/orgs/:orgId/modules/:moduleKey/disable - Disable module
   fastify.post(
     '/orgs/:orgId/modules/:moduleKey/disable',
-    { preHandler: authenticateUser },
+    platformAdmin,
     async (request, reply) => {
       try {
         const { orgId, moduleKey } = request.params as {
@@ -60,7 +72,7 @@ export async function entitlementRoutes(fastify: FastifyInstance) {
   // GET /entitlements/orgs/:orgId/modules/:moduleKey - Get entitlement
   fastify.get(
     '/orgs/:orgId/modules/:moduleKey',
-    { preHandler: authenticateUser },
+    orgReader,
     async (request, reply) => {
       try {
         const { orgId, moduleKey } = request.params as {
@@ -89,7 +101,7 @@ export async function entitlementRoutes(fastify: FastifyInstance) {
   // GET /entitlements/orgs/:orgId/modules/:moduleKey/status - Get entitlement status
   fastify.get(
     '/orgs/:orgId/modules/:moduleKey/status',
-    { preHandler: authenticateUser },
+    orgReader,
     async (request, reply) => {
       try {
         const { orgId, moduleKey } = request.params as {
@@ -112,7 +124,7 @@ export async function entitlementRoutes(fastify: FastifyInstance) {
   // GET /entitlements/orgs/:orgId - Get all entitlements for organization
   fastify.get(
     '/orgs/:orgId',
-    { preHandler: authenticateUser },
+    orgReader,
     async (request, reply) => {
       try {
         const { orgId } = request.params as { orgId: string }
@@ -132,7 +144,7 @@ export async function entitlementRoutes(fastify: FastifyInstance) {
   // GET /entitlements/orgs/:orgId/enabled - Get enabled modules for organization
   fastify.get(
     '/orgs/:orgId/enabled',
-    { preHandler: authenticateUser },
+    orgReader,
     async (request, reply) => {
       try {
         const { orgId } = request.params as { orgId: string }
@@ -152,7 +164,7 @@ export async function entitlementRoutes(fastify: FastifyInstance) {
   // GET /entitlements/modules/:moduleKey/orgs - Get all orgs with module access
   fastify.get(
     '/modules/:moduleKey/orgs',
-    { preHandler: authenticateUser },
+    platformAdmin,
     async (request, reply) => {
       try {
         const { moduleKey } = request.params as { moduleKey: string }
@@ -172,7 +184,7 @@ export async function entitlementRoutes(fastify: FastifyInstance) {
   // PUT /entitlements/orgs/:orgId/modules/:moduleKey/expiration - Update expiration
   fastify.put(
     '/orgs/:orgId/modules/:moduleKey/expiration',
-    { preHandler: authenticateUser },
+    platformAdmin,
     async (request, reply) => {
       try {
         const { orgId, moduleKey } = request.params as {
@@ -202,7 +214,7 @@ export async function entitlementRoutes(fastify: FastifyInstance) {
   // POST /entitlements/check - Check module access
   fastify.post(
     '/check',
-    { preHandler: authenticateUser },
+    orgReader,
     async (request, reply) => {
       try {
         const { orgId, moduleKey } = request.body as {

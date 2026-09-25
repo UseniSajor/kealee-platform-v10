@@ -46,8 +46,10 @@ export async function registerStripeWebhookRoutes(fastify: FastifyInstance) {
         events: [
           'checkout.session.completed',
           'charge.failed',
+          'customer.subscription.created',
           'customer.subscription.updated',
           'customer.subscription.deleted',
+          'invoice.payment_failed',
         ],
         signature_verification: true,
         webhook_url: `${process.env.API_URL || 'https://api.kealee.com'}/webhooks/stripe`,

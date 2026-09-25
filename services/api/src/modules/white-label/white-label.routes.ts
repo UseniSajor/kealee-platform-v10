@@ -1,14 +1,19 @@
-import type { FastifyInstance, FastifyRequest } from 'fastify'
+import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import { z } from 'zod'
 import { authenticateUser, requirePlatformAdmin, requireSelectedOrganizationRole } from '../../middleware/auth.middleware'
+import { isPlatformRole } from '../../middleware/tenant-context'
 import { requireTenantSupportAccess } from '../../middleware/tenant-support-access'
 import {
   createEvaluationSuiteSchema,
   createSupportAccessSchema,
+  createTenantDataRequestSchema,
   createTenantDomainSchema,
   createWhiteLabelTenantSchema,
   recordTenantUsageSchema,
   reconcileUsageSchema,
+  cancelTenantDataRequestSchema,
+  executeTenantDeletionSchema,
+  reviewTenantDataRequestSchema,
   updateDeploymentSchema,
   updateSupportAccessSchema,
   updateTenantDomainSchema,
@@ -48,28 +53,54 @@ import {
 import { reconcileTenantUsage } from './white-label-metering.service'
 import { executeTenantEvaluationRun } from './white-label-evaluation.service'
 import { deprovisionTenantDomain, provisionTenantDomain, verifyProvisionedTenantDomain } from './white-label-domain.service'
+import {
+  cancelTenantDataRequest,
+  createTenantDataRequest,
+  executeTenantDataDeletion,
+  executeTenantDataExport,
+  executeTenantRetentionChange,
+  getTenantDataExport,
+  listTenantDataRequests,
+  purgeExpiredTenantExports,
+  reviewTenantDataRequest,
+} from './white-label-data-lifecycle.service'
 
 const tenantParams = z.object({ tenantId: z.string().uuid() })
 const domainParams = tenantParams.extend({ domainId: z.string().uuid() })
 const suiteParams = tenantParams.extend({ suiteId: z.string().uuid() })
 const supportParams = tenantParams.extend({ sessionId: z.string().uuid() })
 const runParams = suiteParams.extend({ runId: z.string().uuid() })
+const selfDataRequestParams = z.object({ requestId: z.string().uuid() })
+const tenantDataRequestParams = tenantParams.extend({ requestId: z.string().uuid() })
 
 function actorFrom(request: FastifyRequest): TenantActor {
   const user = (request as any).user
   return {
     userId: user.id,
+    actorType: isPlatformRole(user.platformRole || user.role) ? 'PLATFORM_ADMIN' : 'TENANT_ADMIN',
     ipAddress: request.ip,
     userAgent: request.headers['user-agent'],
   }
 }
 
+function lifecycleActorFrom(request: FastifyRequest, actorType: 'PLATFORM_ADMIN' | 'TENANT_ADMIN') {
+  return { ...actorFrom(request), actorType }
+}
+
 export async function whiteLabelRoutes(fastify: FastifyInstance) {
   const platformAdmin = { preHandler: [authenticateUser, requirePlatformAdmin] }
+  const requireDelegatedTenantAdmin = async (request: FastifyRequest, reply: FastifyReply) => {
+    const user = (request as any).user
+    const tenant = await getWhiteLabelTenant(user.organizationId)
+    if (!tenant.profile.clientAdminEnabled) {
+      return reply.code(403).send({ error: 'Delegated tenant administration is not enabled' })
+    }
+  }
   const tenantAdmin = {
     preHandler: [
       authenticateUser,
       requireSelectedOrganizationRole(['org_owner', 'org_admin', 'owner', 'admin']),
+      requireDelegatedTenantAdmin,
     ],
   }
 
@@ -81,30 +112,60 @@ export async function whiteLabelRoutes(fastify: FastifyInstance) {
     return { tenantContext }
   })
 
-  fastify.get('/self', tenantAdmin, async (request, reply) => {
+  fastify.get('/self', tenantAdmin, async (request) => {
     const user = (request as any).user
     const tenant = await getWhiteLabelTenant(user.organizationId)
-    if (!tenant.profile.clientAdminEnabled) {
-      return reply.code(403).send({ error: 'Delegated tenant administration is not enabled' })
-    }
     return {
       tenant: {
-        profile: tenant.profile,
-        domains: tenant.domains,
-        products: tenant.products,
-        plan: tenant.plan,
+        profile: {
+          companyName: tenant.profile.companyName,
+          productName: tenant.profile.productName,
+          logoUrl: tenant.profile.logoUrl,
+          faviconUrl: tenant.profile.faviconUrl,
+          primaryColor: tenant.profile.primaryColor,
+          secondaryColor: tenant.profile.secondaryColor,
+          accentColor: tenant.profile.accentColor,
+          emailFromName: tenant.profile.emailFromName,
+          emailReplyToAddress: tenant.profile.emailReplyToAddress,
+          reportHeader: tenant.profile.reportHeader,
+          reportFooter: tenant.profile.reportFooter,
+          supportName: tenant.profile.supportName,
+          supportEmail: tenant.profile.supportEmail,
+          supportPhone: tenant.profile.supportPhone,
+          supportUrl: tenant.profile.supportUrl,
+          locale: tenant.profile.locale,
+          currency: tenant.profile.currency,
+          timeZone: tenant.profile.timeZone,
+          navigationConfig: tenant.profile.navigationConfig,
+        },
+        products: tenant.products.map((assignment: any) => ({
+          enabled: assignment.enabled,
+          displayName: assignment.displayName,
+          productTemplate: {
+            key: assignment.productTemplate.key,
+            name: assignment.productTemplate.name,
+            version: assignment.productTemplate.version,
+            enabledModuleKeys: assignment.productTemplate.enabledModuleKeys,
+          },
+        })),
+        plan: tenant.plan ? {
+          planKey: tenant.plan.planKey,
+          planName: tenant.plan.planName,
+          supportTier: tenant.plan.supportTier,
+          billingStatus: tenant.plan.billingStatus,
+          includedUsage: tenant.plan.includedUsage,
+          currentPeriodStart: tenant.plan.currentPeriodStart,
+          currentPeriodEnd: tenant.plan.currentPeriodEnd,
+          cancelAtPeriodEnd: tenant.plan.cancelAtPeriodEnd,
+        } : null,
         usageRollups: tenant.usageRollups,
         evaluationSuites: tenant.evaluationSuites,
       },
     }
   })
 
-  fastify.patch('/self/profile', tenantAdmin, async (request, reply) => {
+  fastify.patch('/self/profile', tenantAdmin, async (request) => {
     const user = (request as any).user
-    const current = await getWhiteLabelTenant(user.organizationId)
-    if (!current.profile.clientAdminEnabled) {
-      return reply.code(403).send({ error: 'Delegated tenant administration is not enabled' })
-    }
     const input = updateTenantAdminProfileSchema.parse(request.body)
     const profile = await updateWhiteLabelProfile(user.organizationId, input, actorFrom(request))
     return { profile }
@@ -119,6 +180,58 @@ export async function whiteLabelRoutes(fastify: FastifyInstance) {
   fastify.get('/self/evaluations', tenantAdmin, async (request) => {
     const user = (request as any).user
     return { evaluationSuites: await listEvaluationSuites(user.organizationId) }
+  })
+
+  fastify.get('/self/data-requests', tenantAdmin, async (request) => {
+    const user = (request as any).user
+    return { dataRequests: await listTenantDataRequests(user.organizationId) }
+  })
+
+  fastify.post('/self/data-requests', tenantAdmin, async (request, reply) => {
+    const user = (request as any).user
+    const input = createTenantDataRequestSchema.parse(request.body)
+    const dataRequest = await createTenantDataRequest(
+      user.organizationId,
+      input,
+      lifecycleActorFrom(request, 'TENANT_ADMIN'),
+      { autoApproveTenantExport: true },
+    )
+    return reply.code(201).send({ dataRequest })
+  })
+
+  fastify.post('/self/data-requests/:requestId/cancel', tenantAdmin, async (request) => {
+    const user = (request as any).user
+    const { requestId } = selfDataRequestParams.parse(request.params)
+    const { reason } = cancelTenantDataRequestSchema.parse(request.body)
+    return {
+      dataRequest: await cancelTenantDataRequest(
+        user.organizationId,
+        requestId,
+        reason,
+        lifecycleActorFrom(request, 'TENANT_ADMIN'),
+      ),
+    }
+  })
+
+  fastify.post('/self/data-requests/:requestId/export/execute', tenantAdmin, async (request) => {
+    const user = (request as any).user
+    const { requestId } = selfDataRequestParams.parse(request.params)
+    return {
+      dataRequest: await executeTenantDataExport(
+        user.organizationId,
+        requestId,
+        lifecycleActorFrom(request, 'TENANT_ADMIN'),
+      ),
+    }
+  })
+
+  fastify.get('/self/data-requests/:requestId/export', tenantAdmin, async (request, reply) => {
+    const user = (request as any).user
+    const { requestId } = selfDataRequestParams.parse(request.params)
+    const exported = await getTenantDataExport(user.organizationId, requestId)
+    reply.header('Cache-Control', 'private, no-store')
+    reply.header('Content-Disposition', `attachment; filename="kealee-tenant-${user.organizationId}-${requestId}.json"`)
+    return exported
   })
 
   fastify.get('/products', platformAdmin, async () => ({ products: await listProductTemplates() }))
@@ -232,6 +345,97 @@ export async function whiteLabelRoutes(fastify: FastifyInstance) {
     const { tenantId } = tenantParams.parse(request.params)
     const input = updateDeploymentSchema.parse(request.body)
     return { deployment: await upsertTenantDeployment(tenantId, input, actorFrom(request)) }
+  })
+
+  fastify.get('/tenants/:tenantId/data-requests', platformAdmin, async (request) => {
+    const { tenantId } = tenantParams.parse(request.params)
+    return { dataRequests: await listTenantDataRequests(tenantId) }
+  })
+
+  fastify.post('/tenants/:tenantId/data-requests', platformAdmin, async (request, reply) => {
+    const { tenantId } = tenantParams.parse(request.params)
+    const input = createTenantDataRequestSchema.parse(request.body)
+    const dataRequest = await createTenantDataRequest(
+      tenantId,
+      input,
+      lifecycleActorFrom(request, 'PLATFORM_ADMIN'),
+    )
+    return reply.code(201).send({ dataRequest })
+  })
+
+  fastify.patch('/tenants/:tenantId/data-requests/:requestId/review', platformAdmin, async (request) => {
+    const { tenantId, requestId } = tenantDataRequestParams.parse(request.params)
+    const input = reviewTenantDataRequestSchema.parse(request.body)
+    return {
+      dataRequest: await reviewTenantDataRequest(
+        tenantId,
+        requestId,
+        input,
+        lifecycleActorFrom(request, 'PLATFORM_ADMIN'),
+      ),
+    }
+  })
+
+  fastify.post('/tenants/:tenantId/data-requests/:requestId/cancel', platformAdmin, async (request) => {
+    const { tenantId, requestId } = tenantDataRequestParams.parse(request.params)
+    const { reason } = cancelTenantDataRequestSchema.parse(request.body)
+    return {
+      dataRequest: await cancelTenantDataRequest(
+        tenantId,
+        requestId,
+        reason,
+        lifecycleActorFrom(request, 'PLATFORM_ADMIN'),
+      ),
+    }
+  })
+
+  fastify.post('/tenants/:tenantId/data-requests/:requestId/export/execute', platformAdmin, async (request) => {
+    const { tenantId, requestId } = tenantDataRequestParams.parse(request.params)
+    return {
+      dataRequest: await executeTenantDataExport(
+        tenantId,
+        requestId,
+        lifecycleActorFrom(request, 'PLATFORM_ADMIN'),
+      ),
+    }
+  })
+
+  fastify.get('/tenants/:tenantId/data-requests/:requestId/export', platformAdmin, async (request, reply) => {
+    const { tenantId, requestId } = tenantDataRequestParams.parse(request.params)
+    const exported = await getTenantDataExport(tenantId, requestId)
+    reply.header('Cache-Control', 'private, no-store')
+    reply.header('Content-Disposition', `attachment; filename="kealee-tenant-${tenantId}-${requestId}.json"`)
+    return exported
+  })
+
+  fastify.post('/tenants/:tenantId/data-requests/:requestId/deletion/execute', platformAdmin, async (request) => {
+    const { tenantId, requestId } = tenantDataRequestParams.parse(request.params)
+    const { confirmation, reason } = executeTenantDeletionSchema.parse(request.body)
+    return {
+      dataRequest: await executeTenantDataDeletion(
+        tenantId,
+        requestId,
+        confirmation,
+        reason,
+        lifecycleActorFrom(request, 'PLATFORM_ADMIN'),
+      ),
+    }
+  })
+
+  fastify.post('/tenants/:tenantId/data-requests/:requestId/retention/execute', platformAdmin, async (request) => {
+    const { tenantId, requestId } = tenantDataRequestParams.parse(request.params)
+    return {
+      dataRequest: await executeTenantRetentionChange(
+        tenantId,
+        requestId,
+        lifecycleActorFrom(request, 'PLATFORM_ADMIN'),
+      ),
+    }
+  })
+
+  fastify.post('/tenants/:tenantId/data-requests/purge-expired-exports', platformAdmin, async (request) => {
+    const { tenantId } = tenantParams.parse(request.params)
+    return purgeExpiredTenantExports(tenantId, lifecycleActorFrom(request, 'PLATFORM_ADMIN'))
   })
 
   fastify.get('/tenants/:tenantId/evaluations', platformAdmin, async (request) => {

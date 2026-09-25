@@ -107,7 +107,10 @@ export const updateTenantPlanSchema = z.object({
   supportTier: z.string().trim().min(1).max(80).default('STANDARD'),
   includedUsage: z.record(z.number().nonnegative()).optional().nullable(),
   overageRates: z.record(z.number().nonnegative()).optional().nullable(),
-  billingStatus: z.string().trim().min(1).max(80).optional(),
+  billingStatus: z.enum([
+    'DRAFT', 'ACTIVE', 'TRIALING', 'PAST_DUE', 'UNPAID', 'CANCELED',
+    'INCOMPLETE', 'INCOMPLETE_EXPIRED', 'PAUSED', 'PRICE_MISMATCH', 'UNKNOWN',
+  ]).optional(),
   stripeCustomerId: z.string().max(255).optional().nullable(),
   stripeSubscriptionId: z.string().max(255).optional().nullable(),
   stripeBasePriceId: z.string().max(255).optional().nullable(),
@@ -187,8 +190,48 @@ export const createSupportAccessSchema = z.object({
 
 export const updateSupportAccessSchema = z.object({
   action: z.enum(['APPROVE', 'DENY', 'ACTIVATE', 'REVOKE']),
-  reason: z.string().trim().max(5000).optional(),
+  reason: z.string().trim().min(10).max(5000),
 })
+
+const dataRequestReason = z.string().trim().min(10).max(5000).optional()
+
+export const createTenantDataRequestSchema = z.discriminatedUnion('requestType', [
+  z.object({
+    requestType: z.literal('DATA_EXPORT'),
+    reason: dataRequestReason,
+    exportExpiresInHours: z.number().int().min(1).max(168).default(24),
+  }).strict(),
+  z.object({
+    requestType: z.literal('DATA_DELETION'),
+    reason: dataRequestReason,
+  }).strict(),
+  z.object({
+    requestType: z.literal('RETENTION_CHANGE'),
+    reason: dataRequestReason,
+    requestedRetentionDays: z.number().int().min(1).max(3650),
+  }).strict(),
+])
+
+export const reviewTenantDataRequestSchema = z.discriminatedUnion('action', [
+  z.object({
+    action: z.literal('APPROVE'),
+    reason: z.string().trim().min(10).max(5000),
+    scheduledFor: z.coerce.date().optional(),
+  }).strict(),
+  z.object({
+    action: z.literal('REJECT'),
+    reason: z.string().trim().min(10).max(5000),
+  }).strict(),
+])
+
+export const cancelTenantDataRequestSchema = z.object({
+  reason: z.string().trim().min(10).max(5000),
+}).strict()
+
+export const executeTenantDeletionSchema = z.object({
+  confirmation: z.string().trim(),
+  reason: z.string().trim().min(10).max(5000),
+}).strict()
 
 export type CreateWhiteLabelTenantInput = z.infer<typeof createWhiteLabelTenantSchema>
 export type UpdateWhiteLabelProfileInput = z.infer<typeof updateWhiteLabelProfileSchema>
@@ -197,3 +240,5 @@ export type UpdateTenantPlanInput = z.infer<typeof updateTenantPlanSchema>
 export type RecordTenantUsageInput = z.infer<typeof recordTenantUsageSchema>
 export type UpdateDeploymentInput = z.infer<typeof updateDeploymentSchema>
 export type CreateEvaluationSuiteInput = z.infer<typeof createEvaluationSuiteSchema>
+export type CreateTenantDataRequestInput = z.infer<typeof createTenantDataRequestSchema>
+export type ReviewTenantDataRequestInput = z.infer<typeof reviewTenantDataRequestSchema>

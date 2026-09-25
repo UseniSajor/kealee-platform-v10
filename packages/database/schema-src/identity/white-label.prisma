@@ -70,6 +70,26 @@ enum TenantSupportAccessStatus {
   DENIED
 }
 
+enum TenantDataRequestType {
+  DATA_EXPORT
+  DATA_DELETION
+  RETENTION_CHANGE
+}
+
+enum TenantDataRequestStatus {
+  REQUESTED
+  APPROVED
+  PROCESSING
+  COMPLETED
+  REJECTED
+  CANCELLED
+  FAILED
+}
+
+enum TenantDataScope {
+  WHITE_LABEL_CONTROL_PLANE
+}
+
 model WhiteLabelTenantProfile {
   id                    String                 @id @default(uuid())
   orgId                 String                 @unique
@@ -217,7 +237,7 @@ model TenantUsageEvent {
   model          String?
   resourceType   String?
   resourceId     String?
-  idempotencyKey String                 @unique
+  idempotencyKey String
   occurredAt     DateTime               @default(now())
   unitCostCents  Decimal?               @db.Decimal(20, 6)
   status         TenantUsageEventStatus @default(RECORDED)
@@ -227,6 +247,7 @@ model TenantUsageEvent {
 
   org Org @relation(fields: [orgId], references: [id], onDelete: Restrict)
 
+  @@unique([orgId, idempotencyKey])
   @@index([orgId, metric, occurredAt])
   @@index([orgId, status, occurredAt])
   @@index([resourceType, resourceId])
@@ -406,4 +427,43 @@ model TenantAuditEvent {
   @@index([orgId, action])
   @@index([actorUserId, occurredAt])
   @@map("tenant_audit_events")
+}
+
+/// Durable workflow record for professional white-label tenant data requests.
+/// Homeowners are project-scoped customers and never receive access through
+/// this model. Export payloads contain only the bounded control-plane scope;
+/// secrets and raw operational/project data are deliberately excluded.
+model TenantDataLifecycleRequest {
+  id                     String                  @id @default(uuid())
+  orgId                  String
+  requestType            TenantDataRequestType
+  status                 TenantDataRequestStatus @default(REQUESTED)
+  scope                  TenantDataScope         @default(WHITE_LABEL_CONTROL_PLANE)
+  requestedById          String
+  requestedByType        String
+  requestReason          String?                 @db.Text
+  requestedRetentionDays Int?
+  effectiveRetentionDays Int?
+  scheduledFor           DateTime?
+  approvedById           String?
+  approvalReason         String?                 @db.Text
+  approvedAt             DateTime?
+  rejectedAt             DateTime?
+  processingStartedAt    DateTime?
+  completedAt            DateTime?
+  failedAt               DateTime?
+  failureReason          String?                 @db.Text
+  exportPayload          Json?
+  exportSha256           String?
+  exportExpiresAt        DateTime?
+  executionSummary       Json?
+  createdAt              DateTime                @default(now())
+  updatedAt              DateTime                @updatedAt
+
+  org Org @relation(fields: [orgId], references: [id], onDelete: Restrict)
+
+  @@index([orgId, createdAt])
+  @@index([orgId, status, requestType])
+  @@index([status, scheduledFor])
+  @@map("tenant_data_lifecycle_requests")
 }
