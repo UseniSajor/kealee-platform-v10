@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LandXML xmlns="http://www.landxml.org/schema/LandXML-1.2"
+         version="1.2"
+         date="2026-09-25" time="21:55:34">
+  <Units><Imperial areaUnit="squareFoot" linearUnit="USSurveyFoot" volumeUnit="cubicFeet"
+           temperatureUnit="fahrenheit" pressureUnit="inHG"/></Units>
+  <Project name="3210 NEWARK STREET NW"/>
+  <Application name="Kealee Site Plan Engine" version="1.0"/>
+  <!-- Coordinate system EPSG:2248; horizontal datum NAD83;
+       vertical datum NAVD88 (feet). Model revision 8. -->
+  <CoordinateSystem desc="EPSG:2248" horizontalDatum="NAD83"
+                    verticalDatum="NAVD88 (feet)"/>
+  <Parcels>
+      <Parcel name="2079 0060" area="9999.999816894531" parcelType="Single">
+        <CoordGeom>
+            <PntList2D>461558.90456213057 1294170.0429095626</PntList2D>
+            <PntList2D>461558.7300218046 1294120.0430095643</PntList2D>
+            <PntList2D>461743.7289956361 1294119.3973415643</PntList2D>
+            <PntList2D>461758.7286375463 1294119.3448482305</PntList2D>
+            <PntList2D>461758.9031778872 1294169.3447482288</PntList2D>
+            <PntList2D>461743.9035359621 1294169.3969134837</PntList2D>
+            <PntList2D>461558.90456213057 1294170.0429095626</PntList2D>
+        </CoordGeom>
+      </Parcel>
+  </Parcels>
+  <!-- No Surfaces element: no vertical datum or elevation data is established for this site. -->
+</LandXML>
