@@ -163,6 +163,8 @@ function rectFromAxis(
  * a car into a neighbour's yard.
  */
 export function deriveSiteImprovements(input: {
+  /** Whose standard governs the apron, as lettered: "DPW&T STANDARD" in PG. */
+  apronStandard?: string
   parcel: Ring
   footprint: Ring | null
   edgeYards: EdgeYard[]
@@ -688,12 +690,14 @@ export function deriveSiteImprovements(input: {
         ? `PROPOSED ${(driveWidthFt + 2 * APRON_FLARE_FT).toFixed(0)}' DRIVEWAY APRON — TIE TO `
           + 'EXISTING CURB, GUTTER AND STREET IN LINE AND GRADE'
         : `PROPOSED ${(driveWidthFt + 2 * APRON_FLARE_FT).toFixed(0)}' DRIVEWAY APRON  `
-          + 'PER DPW&T STANDARD',
+          + `PER ${input.apronStandard ?? 'DPW&T STANDARD'}`,
       ring: apron, areaSqFt: ringArea(apron.coordinates.slice(0, -1)), impervious: true,
       note:
         'Driveway apron at the front property line, at street level, between the curb and the ' +
-        'driveway. DPW&T standard detail governs the depression, jointing and curb cut; the ' +
-        'depressed curb section applies here per STD. 300.01 note 6.',
+        (input.apronStandard && input.apronStandard !== 'DPW&T STANDARD'
+          ? `driveway. The ${input.apronStandard.toLowerCase()} govern the depression, jointing and curb cut.`
+          : 'driveway. DPW&T standard detail governs the depression, jointing and curb cut; the ' +
+            'depressed curb section applies here per STD. 300.01 note 6.'),
     })
 
     assumptions.push(

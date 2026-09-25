@@ -85,6 +85,14 @@ export interface DrainageInput {
    * for that project and wrong for any other, so new callers pass it.
    */
   siteLatLon?: [number, number] | null
+  /** The Atlas 14 point retrieved for THIS site (`fetchNoaaSite`). Wins over `siteLatLon`. */
+  rainfallSite?: NoaaSite | null
+  /**
+   * Replaces the Maryland water-quality citation where Maryland's method does
+   * not govern (DC, Virginia): the computation is shown for reference and the
+   * note names whose method applies.
+   */
+  waterQualityNote?: string | null
   /** Override the NOAA intensity, if a designer has their own figure. */
   intensityInPerHr?: number | null
   /** Longest flow path, ft. Defaults to the catchment's diagonal. */
@@ -226,9 +234,10 @@ export function computeDrainage(input: DrainageInput): DrainageComputation | nul
   // cited Rollins' coordinates. `site` selects the nearest retrieved point;
   // when the caller gives no location it stays on the historical default so
   // existing projects are unchanged.
-  const site: NoaaSite | null = input.siteLatLon
-    ? nearestNoaaSite(input.siteLatLon[0], input.siteLatLon[1])
-    : NOAA_ATLAS14_SITE
+  const site: NoaaSite | null = input.rainfallSite
+    ?? (input.siteLatLon
+      ? nearestNoaaSite(input.siteLatLon[0], input.siteLatLon[1])
+      : NOAA_ATLAS14_SITE)
   const i = input.intensityInPerHr
     ?? (tc != null && site ? noaaIntensity(tc, returnPeriodYr, site) : null)
   let preQ: number | null = null, postQ: number | null = null
@@ -244,7 +253,7 @@ export function computeDrainage(input: DrainageInput): DrainageComputation | nul
   const wqvCalc = waterQualityVolume(P, percentImpervious, totalAcres).value
   const wqv = wqvCalc.wqvCubicFeet
   const rv = wqvCalc.rv
-  assumptions.push(`Water quality volume on a ${P.toFixed(1)} in rainfall. ${MD_WQV_CITATION}.`)
+  assumptions.push(`Water quality volume on a ${P.toFixed(1)} in rainfall. ${input.waterQualityNote ?? `${MD_WQV_CITATION}.`}`)
   assumptions.push(
     'Runoff coefficients: roof and pavement 0.95, average lawn 0.25. Confirm the lawn coefficient ' +
     'against the soil hydrologic group before relying on the composite.',

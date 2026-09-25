@@ -87,12 +87,13 @@ async function main(): Promise<void> {
   console.log(
     `\n${broken === 0 ? 'Every published endpoint answered.' : `${broken} endpoint(s) did not answer — the registry is out of date.`}`,
   )
+  const drawable = DMV_GIS_ENDPOINTS.filter(j => capabilityOf(j).sellable).map(j => j.name)
   console.log(
-    '\nNo jurisdiction here is sellable. Every one lacks an extracted dimensional\n' +
-    'table, so setbacks cannot be computed, and a guessed setback draws a\n' +
-    'non-compliant plan that looks exactly like a compliant one. Prince George’s\n' +
-    'is served because someone extracted its standards from the adopted\n' +
-    'ordinance; that work has no shortcut.',
+    drawable.length
+      ? `\nPreliminary plans can be drawn in: ${drawable.join(', ')}. The rest lack a parcel ` +
+        'layer, a connector or extracted dimensional standards, and a guessed setback draws a ' +
+        'non-compliant plan that looks exactly like a compliant one.'
+      : '\nNo jurisdiction here can be drawn: each lacks extracted dimensional standards.',
   )
   process.exit(broken === 0 ? 0 : 1)
 }

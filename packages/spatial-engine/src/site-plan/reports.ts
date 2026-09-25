@@ -8,6 +8,7 @@
  * exactly how far the current data can be trusted.
  */
 
+import { licensedSurveyor } from '../jurisdictions/profiles'
 import type { SiteTwin } from './site-twin'
 import { checkTwinConsistency, featuresOfKind } from './site-twin'
 import {
@@ -70,7 +71,7 @@ export function buildMissingInformationReport(
       key: 'survey',
       label: platBased
         ? 'Field-run topographic survey'
-        : 'Maryland surveyor-certified boundary and topographic survey',
+        : `${licensedSurveyor(twin.jurisdictionCode).replace(/ licensed( land)? surveyor$/, '')} surveyor-certified boundary and topographic survey`,
       why: platBased
         ? 'The RECORDED PLAT IS THE BOUNDARY SURVEY — certified, signed and in the land records — ' +
           'and the boundary here is transcribed from it and closes. A plat carries no topography, ' +

@@ -16,9 +16,14 @@
  * The distinction this module draws:
  *
  *   OUT OF SERVICE AREA  — we do not serve this jurisdiction. Refund or refer.
- *   DATA ONLY            — we can read the county's GIS but have no certified
- *                          rule pack, so we can describe the site and must not
- *                          assert compliance.
+ *   DATA ONLY            — we can read the county's GIS but have no dimensional
+ *                          standards, so we can describe the site and must not
+ *                          draw an envelope.
+ *   PRELIMINARY          — GIS plus dimensional standards machine-extracted from
+ *                          the adopted ordinance, every value cited. A complete
+ *                          preliminary plan is drawn and delivered for
+ *                          professional review; no certified rule pack exists,
+ *                          so compliance is never asserted as certified.
  *   FULL                 — GIS plus a certified rule pack. The product as sold.
  *
  * Adding a jurisdiction to `FULL` requires a rule pack that the maintenance
@@ -28,7 +33,7 @@
  * Montgomery and DC, and a connector is not coverage.
  */
 
-export type CoverageLevel = 'full' | 'data_only' | 'unserved'
+export type CoverageLevel = 'full' | 'preliminary' | 'data_only' | 'unserved'
 
 export interface JurisdictionCoverage {
   code: string
@@ -81,12 +86,20 @@ export const JURISDICTION_COVERAGE: JurisdictionCoverage[] = [
   },
   {
     code: 'district_of_columbia', name: 'District of Columbia', state: 'DC',
-    level: 'data_only', rulePackVersion: null, gisConnector: true,
-    produces: ['Parcel boundary', 'Zone code (2016 Regs)', '2-ft contours', 'Spot elevations'],
+    level: 'preliminary', rulePackVersion: null, gisConnector: true,
+    produces: [
+      'Record lot from the Office of the Surveyor, with its subdivision book and page',
+      'Zone code (2016 Regulations) and the dimensional envelope, every value cited to Title 11',
+      'Front setback MEASURED from the blockface (11-D § 206.2) and any recorded building restriction line',
+      'Historic district and landmark status',
+      '2-ft existing contours, NAVD88 (2008 capture, datum per District metadata)',
+      'Soils (SSURGO DC001)',
+    ],
     cannotProduce: [
-      'No dimensional standards extracted; setbacks cannot be computed.',
-      'No verified address locator.',
-      'Contour vertical datum unconfirmed — do not assume NAVD88 because PG is.',
+      'A certified rule pack — the DC standards are machine-extracted and hand-transcribed, not yet verified by a reviewer.',
+      'Envelopes for zones whose yards are height formulas (RA-2 to RA-5, MU-1, MU-2, MU-7 and up) — reported as not computable.',
+      'A Zoning Administrator determination of the blockface range — the measured range is evidence for one.',
+      'A boundary survey — that is a licensed surveyor',
     ],
   },
   {
@@ -138,6 +151,17 @@ export function dataOnlyJurisdictions(): JurisdictionCoverage[] {
   return JURISDICTION_COVERAGE.filter(j => j.level === 'data_only')
 }
 
+/** GIS plus cited, machine-extracted standards: preliminary plans for professional review. */
+export function preliminaryJurisdictions(): JurisdictionCoverage[] {
+  return JURISDICTION_COVERAGE.filter(j => j.level === 'preliminary')
+}
+
+/** Whether the engine should draw a plan for an order resolved here. */
+export function drawsPlansIn(code: string): boolean {
+  const level = coverageFor(code)?.level
+  return level === 'full' || level === 'preliminary'
+}
+
 export interface ServiceAreaVerdict {
   served: boolean
   level: CoverageLevel
@@ -160,8 +184,16 @@ export interface ServiceAreaVerdict {
 export function assessServiceArea(rawAddress: string): ServiceAreaVerdict {
   const a = rawAddress.toLowerCase()
 
+  if (/\b(washington,?\s*d\.?c\.?|district of columbia)\b|,\s*dc\b/.test(a)) {
+    return {
+      served: true, level: 'preliminary', disposition: 'proceed',
+      message:
+        'Within the District of Columbia service area, pending the District\'s address locator. ' +
+        'DC plans are delivered as preliminary plans for professional review: the zoning ' +
+        'standards are extracted from Title 11 and cited, not yet certified.',
+    }
+  }
   const outOfState = [
-    { pattern: /\b(washington,?\s*d\.?c\.?|district of columbia)\b/, name: 'the District of Columbia' },
     { pattern: /\b(virginia|,\s*va\b|\bva\s+2\d{4})\b/, name: 'Virginia' },
   ]
   for (const o of outOfState) {
@@ -169,7 +201,7 @@ export function assessServiceArea(rawAddress: string): ServiceAreaVerdict {
       return {
         served: false, level: 'unserved', disposition: 'refer_or_refund',
         message:
-          `This engine serves Prince George's County, Maryland. The address given is in ` +
+          `This engine serves Prince George's County, Maryland and the District of Columbia. The address given is in ` +
           `${o.name}, which is not yet covered — the zoning rules there are not encoded, ` +
           `so a plan drawn for it could not be checked for compliance.`,
       }

@@ -21,6 +21,11 @@ export const MD_SURVEY_AREAS: Record<string, string> = {
   anne_arundel_md: 'MD003',
   charles_md: 'MD017',
   howard_md: 'MD027',
+  // Not Maryland, despite the map's name; kept here so one lookup serves every
+  // jurisdiction. Each verified against the SDA legend table 2026-09-25.
+  district_of_columbia: 'DC001',
+  fairfax_va: 'VA059',
+  arlington_va: 'VA013',
 }
 
 export interface SoilMapUnit {

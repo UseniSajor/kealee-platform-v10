@@ -31,6 +31,12 @@ import { estimateFootprint, type FootprintEstimate, type HouseProgramme } from '
 import { generateDesign } from '../site-plan/design'
 import { deriveSiteImprovements, type SiteImprovementResult } from '../site-plan/site-improvements'
 import { fetchMdParcelAtPoint } from '../jurisdictions/md-imap'
+import { profileFor, jurisdictionDisplayName, licensedSurveyor } from '../jurisdictions/profiles'
+import type { NoaaSite } from '../jurisdictions/noaa-atlas14'
+import {
+  dcEnvelope, dcFrontSetback, dcStandardRows, DC_ZONING_SOURCE,
+  type DcStructureType, type DcBlockFaceMeasure,
+} from '../jurisdictions/dc-zoning'
 
 /** Everything you know about a lot before a surveyor has been out. */
 export interface LotInput {
@@ -145,6 +151,8 @@ export interface LotInput {
   stormOutfall?: { to: Position; via?: Position[] | null; label?: string; sizeIn?: number } | null
   /** Site position [lat, lon], so rainfall is looked up for THIS site. */
   siteLatLon?: [number, number] | null
+  /** NOAA Atlas 14 point retrieved for this site. */
+  rainfallSite?: NoaaSite | null
   /** Curb, gutter and walk already built on this frontage. */
   frontageExisting?: boolean | null
   /**
@@ -170,6 +178,16 @@ export interface LotInput {
   waterQualityRainfallIn?: number | null
   /** Front setback stated for this lot, overriding the zone table. */
   frontSetbackFt?: number | null
+  /**
+   * Detached, semi-detached or row. DC and other ordinances key side yards and
+   * occupancy on it. Stated on the order, or measured from the existing
+   * building; absent means detached, the restrictive reading.
+   */
+  structureType?: DcStructureType | null
+  /** DC: the measured blockface front setbacks (11-D § 206.2). */
+  blockFace?: DcBlockFaceMeasure | null
+  /** A building restriction line recorded against this lot, offset from the front line. */
+  recordedBrlFt?: number | null
   /** A stated side yard for this lot; only ever tightens the table minimum. */
   sideSetbackFt?: number | null
   /** A stated distance from the nearest side lot line at which to place the dwelling. */
@@ -300,7 +318,17 @@ export async function resolveMarylandParcel(
 }
 
 /** Reads the published envelope for a zone, keeping footnotes attached. */
-export function readZoningEnvelope(zoneCode: string): ZoningEnvelope {
+export function readZoningEnvelope(
+  zoneCode: string,
+  opts: {
+    jurisdictionCode?: string
+    lotAreaSqFt?: number | null
+    structureType?: DcStructureType | null
+    blockFace?: DcBlockFaceMeasure | null
+    recordedBrlFt?: number | null
+  } = {},
+): ZoningEnvelope {
+  if (opts.jurisdictionCode === 'district_of_columbia') return readDcZoningEnvelope(zoneCode, opts)
   const lookup = getPgDimensionalStandards(zoneCode)
   if (!lookup.table) {
     return {
@@ -341,6 +369,43 @@ export function readZoningEnvelope(zoneCode: string): ZoningEnvelope {
           'replace the table value outright, so none of these is the requirement for a specific lot ' +
           'until the footnote is read.'
         : 'No footnotes on the published values for this zone.',
+  }
+}
+
+/**
+ * DC's envelope, assembled from the 2016 Zoning Regulations (`dc-zoning.ts`).
+ *
+ * The front row is the DETERMINATION — measured blockface or recorded BRL —
+ * not a table value, and says so in `printed`, so the sheet shows how the
+ * number was reached rather than presenting it as read from a table.
+ */
+function readDcZoningEnvelope(
+  zoneCode: string,
+  opts: { lotAreaSqFt?: number | null; structureType?: DcStructureType | null; blockFace?: DcBlockFaceMeasure | null; recordedBrlFt?: number | null },
+): ZoningEnvelope {
+  const env = dcEnvelope(zoneCode, { structure: opts.structureType ?? 'detached', lotAreaSqFt: opts.lotAreaSqFt ?? null })
+  const citation = `11-${env.zone.subtitle ?? '?'} §§ 206–211, DC Zoning Regulations of 2016`
+  if (!env.computable) {
+    return {
+      zone: zoneCode, found: false, standards: [], section: null, citation: null,
+      caution: `${env.reason ?? 'The envelope is not computable for this zone.'} ${env.cautions.join(' ')}`.trim(),
+    }
+  }
+  const front = dcFrontSetback(env, opts.blockFace ?? null, opts.recordedBrlFt ?? null)
+  const cautions = [
+    `Machine-extracted tables and hand-transcribed prose (${DC_ZONING_SOURCE.publication}, export ` +
+    `${DC_ZONING_SOURCE.exportDate}); not yet verified by a reviewer.`,
+    ...env.cautions,
+  ]
+  if (front.conflict) cautions.unshift(front.conflict)
+  if (!opts.structureType) cautions.push('Structure type not stated or measured; the detached standards are drawn.')
+  return {
+    zone: zoneCode,
+    found: true,
+    standards: dcStandardRows(env, front),
+    section: env.zone.subtitle,
+    citation,
+    caution: cautions.join(' '),
   }
 }
 
@@ -520,7 +585,13 @@ export function buildLotPackage(lot: LotInput, resolved?: ResolvedBoundary | nul
   }
 
   // ── Buildable envelope and proposed footprint ─────────────────────────────
-  const zoningEnvelope = readZoningEnvelope(lot.zoneCode)
+  const zoningEnvelope = readZoningEnvelope(lot.zoneCode, {
+    jurisdictionCode: lot.jurisdictionCode,
+    lotAreaSqFt: areaSqFt,
+    structureType: lot.structureType ?? null,
+    blockFace: lot.blockFace ?? null,
+    recordedBrlFt: lot.recordedBrlFt ?? null,
+  })
   let siteImprovements: SiteImprovementResult | null = null
   let footprintEstimate: FootprintEstimate | null = null
   let buildable: BuildableEnvelope | null = null
@@ -589,6 +660,7 @@ export function buildLotPackage(lot: LotInput, resolved?: ResolvedBoundary | nul
     // impervious area on an infill lot.
     if (buildable.footprint) {
       siteImprovements = deriveSiteImprovements({
+        apronStandard: profileFor(lot.jurisdictionCode)?.apronStandard,
         parcel: ring,
         footprint: buildable.footprint,
         edgeYards: buildable.edgeYards,
@@ -1016,7 +1088,9 @@ export function buildLotPackage(lot: LotInput, resolved?: ResolvedBoundary | nul
     if (lot.easements !== undefined) {
       twin = addSource(twin, gisSourceRecord({
         sourceId: 'easements',
-        authority: "Prince George's County — platted easements",
+        authority: lot.jurisdictionCode === 'prince_georges_md'
+          ? "Prince George's County — platted easements"
+          : `${jurisdictionDisplayName(lot.jurisdictionCode)} — recorded easements`,
         dataset: 'Recorded easements — platted',
         crs: 'EPSG:2248', horizontalDatum: 'NAD83',
       }))
@@ -1036,6 +1110,14 @@ export function buildLotPackage(lot: LotInput, resolved?: ResolvedBoundary | nul
       const drainage = computeDrainage({
         twin, catchment: ring,
         siteLatLon: lot.siteLatLon ?? null,
+        rainfallSite: lot.rainfallSite ?? null,
+        waterQualityNote: (() => {
+          const p = profileFor(lot.jurisdictionCode)
+          return p && p.state !== 'MD'
+            ? `Computed by the Maryland Stormwater Design Manual method for reference only; ` +
+              `${p.stormwaterAgency}'s own stormwater method governs this lot.`
+            : null
+        })(),
         intensityInPerHr: lot.rainfallIntensityInPerHr ?? null,
         flowPathSlopeFtPerFt: lot.flowPathSlopeFtPerFt ?? null,
         waterQualityRainfallIn: lot.waterQualityRainfallIn ?? null,
@@ -1112,6 +1194,7 @@ export function buildLotPackage(lot: LotInput, resolved?: ResolvedBoundary | nul
     disturbanceMeetsThreshold: disturbance.meetsThreshold,
   } as typeof twin
   const permitPath = classifyProject({
+    jurisdictionCode: lot.jurisdictionCode,
     zoneCode: lot.zoneCode,
     overlayCodes: lot.overlayCodes,
     proposedUse: lot.proposedUse,
@@ -1180,7 +1263,7 @@ export function buildLotPackage(lot: LotInput, resolved?: ResolvedBoundary | nul
   }
   if (ring && !surveyed) {
     beforeSeal.push(
-      'Certification of the boundary and topography by a Maryland licensed surveyor. The plan is ' +
+      `Certification of the boundary and topography by a ${licensedSurveyor(lot.jurisdictionCode)}. The plan is ` +
       'complete and delivered; this is the review step that follows. The boundary shown is GIS, ' +
       'compiled rather than surveyed — in testing, county GIS was 4.3 ft off the surveyed line and ' +
       'a front setback flipped from compliant to non-compliant once corrected.',
@@ -1275,8 +1358,13 @@ export function buildLotPackage(lot: LotInput, resolved?: ResolvedBoundary | nul
   // Municode, a host the earlier search never asked — the same mistake, on the
   // same county, as concluding there were no contours after searching only the
   // open-data portal.
-  const canopy = getPgTreeCanopyRequirement(lot.zoneCode)
-  if (canopy.openItem) {
+  // Prince George's Landscape Manual and Sec. 23-135 are PG law. Printed on a
+  // DC or Virginia plan they are wrong requirements with real-looking citations.
+  const isPg = lot.jurisdictionCode === 'prince_georges_md'
+  const canopy = isPg ? getPgTreeCanopyRequirement(lot.zoneCode) : null
+  if (!canopy) {
+    // Not PG: the jurisdiction's own items are added from its profile below.
+  } else if (canopy.openItem) {
     beforeSeal.push(`Tree canopy — ${canopy.openItem} ${canopy.citation}.`)
   } else if (canopy.percent != null && areaSqFt) {
     const req = Math.round((areaSqFt * canopy.percent) / 100)
@@ -1291,7 +1379,7 @@ export function buildLotPackage(lot: LotInput, resolved?: ResolvedBoundary | nul
 
   // Sec. 23-135 — curb and gutter, and when a sidewalk is required. Retrieved
   // and applied rather than left to DPW&T as an unanswered question.
-  {
+  if (isPg) {
     const front = buildable?.frontage?.providedFt ?? null
     const thresh = PG_CURB_AND_SIDEWALK.curbFrontageThresholdFt
     if (lot.frontageExisting) {
@@ -1331,6 +1419,15 @@ export function buildLotPackage(lot: LotInput, resolved?: ResolvedBoundary | nul
       'WHICH side is DPW&T\'s at street construction permit, and where walks already exist on ' +
       'both sides they continue to the next intersection before transitioning.')
     }
+  }
+  if (!isPg) {
+    const profile = profileFor(lot.jurisdictionCode)
+    beforeSeal.push(...(profile?.beforeSeal ?? [
+      `No jurisdiction profile for ${lot.jurisdictionCode}: confirm the reviewing agencies and ` +
+      'their submission requirements before sealing.',
+    ]))
+    if (zoningEnvelope.found) beforeSeal.push(`Zoning envelope — ${zoningEnvelope.caution}`)
+    else beforeSeal.push(`Zoning envelope NOT computed — ${zoningEnvelope.caution}`)
   }
   beforeSeal.push(
     'Review and seal by the professionals responsible for each subject. The platform drafts a ' +

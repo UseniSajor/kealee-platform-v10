@@ -59,6 +59,13 @@ function registerDefs(): void {
   defsRegistered = true
 }
 
+/** Engine coordinates (EPSG:2248, US ft) to [longitude, latitude], offline. */
+export function lonLatFrom2248(easting: number, northing: number): [number, number] {
+  registerDefs()
+  const [lon, lat] = proj4('EPSG:2248', 'EPSG:4326', [easting, northing])
+  return [lon, lat]
+}
+
 // ── The registry ────────────────────────────────────────────────────────────
 
 /** Which implementation is trusted for a pair. */

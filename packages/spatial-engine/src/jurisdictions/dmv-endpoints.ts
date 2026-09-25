@@ -36,6 +36,8 @@
  * yard depths differ.
  */
 
+import { drawsPlansIn } from './coverage'
+
 export interface JurisdictionGisEndpoints {
   code: string
   name: string
@@ -81,16 +83,12 @@ export const DMV_GIS_ENDPOINTS: JurisdictionGisEndpoints[] = [
             'assume NAVD88 because PG is NAVD88.',
     },
     spotElevations: `${DCGIS}/Elevation_WebMercator/MapServer/1`,
-    addresses: null,
+    addresses: 'https://maps2.dcgis.dc.gov/dcgis/rest/services/DCGIS_APPS/DCGIS_MAR/GeocodeServer',
     verifiedOn: '2026-09-25',
-    blockers: [
-      'No dimensional standards extracted. DC uses the 2016 Zoning Regulations ' +
-      'with an entirely different zone taxonomy (RA, RF, MU, …) — PG zone codes ' +
-      'do not map onto it.',
-      'No address locator found on maps2.dcgis.dc.gov. The MAR geocoder lives ' +
-      'elsewhere and has not been verified; two candidate URLs answered 404.',
-      'Vertical datum for the contour layer unconfirmed.',
-    ],
+    // Resolved 2026-09-25: the MAR GeocodeServer is in DCGIS_APPS, not
+    // DCGIS_DATA; the contour datum is NAVD88 feet per the District's own
+    // metadata; the standards are extracted (dc-zoning.ts). Connector: dc-gis.ts.
+    blockers: [],
   },
   {
     code: 'montgomery_md',
@@ -185,9 +183,9 @@ export function capabilityOf(j: JurisdictionGisEndpoints): {
   const canLocateParcel = Boolean(j.parcels)
   const canReadZoneCode = Boolean(j.zoning)
   const canShowTerrain = Boolean(j.contours)
-  // No jurisdiction here has an extracted dimensional table. When one does,
-  // this stops being a constant.
-  const canComputeSetbacks = false
+  // True only where dimensional standards have been extracted and a
+  // connector reads the site — i.e. coverage draws plans there.
+  const canComputeSetbacks = drawsPlansIn(j.code)
   return {
     canLocateParcel,
     canReadZoneCode,

@@ -12,6 +12,7 @@
  * submission-ready while a blocking condition stands.
  */
 
+import { licensedSurveyor } from '../jurisdictions/profiles'
 import type { SiteTwin } from '../site-plan/site-twin'
 import { checkTwinConsistency, featuresOfKind } from '../site-plan/site-twin'
 import type { ApplicabilityReport } from '../site-plan/classification'
@@ -200,7 +201,7 @@ export function runIssuanceQc(input: {
     add('MISSING_SURVEY_CERTIFICATION', 'pending_seal',
       'No surveyor-certified boundary or topographic survey is on file. The plan is drawn from ' +
       'jurisdiction GIS and is delivered in full.',
-      'A Maryland licensed surveyor certifies the boundary and topography. This happens after the ' +
+      `A ${licensedSurveyor(twin.jurisdictionCode)} certifies the boundary and topography. This happens after the ` +
       'plan is drafted, not before.')
   }
 

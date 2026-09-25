@@ -11,6 +11,7 @@
  * to reverse-engineer the logic.
  */
 
+import { profileFor } from '../jurisdictions/profiles'
 import {
   calculateDisturbance,
   requiresSedimentAndStormwaterReview,
@@ -46,6 +47,14 @@ export const CLASSIFICATION_LABELS: Record<ProjectClassification, string> = {
 }
 
 export interface ProjectIntake {
+  /**
+   * The jurisdiction. The approval taxonomy below is Prince George's — Detailed
+   * Site Plan, DPIE site/road review, PG grading permits — and outside PG those
+   * determinations are recorded as not applicable rather than asserted.
+   * Absent means Prince George's, which is every caller written before other
+   * jurisdictions were wired.
+   */
+  jurisdictionCode?: string
   /** Purely exploratory — no permit intended yet. */
   feasibilityOnly?: boolean
   /** Amending something already approved. */
@@ -262,6 +271,9 @@ export function classifyProject(intake: ProjectIntake): ApplicabilityReport {
   return finish(selected.length ? selected : ['permit_plot_plan'])
 
   function finish(classifications: ProjectClassification[]): ApplicabilityReport {
+    if (intake.jurisdictionCode && intake.jurisdictionCode !== 'prince_georges_md') {
+      classifications = outsidePrinceGeorges(intake.jurisdictionCode, determinations, openItems)
+    }
     const level = governingReliability(intake.sources ?? [])
     for (const d of determinations) {
       if (d.undetermined && d.toResolve) openItems.push(...d.toResolve)
@@ -283,4 +295,37 @@ export function classifyProject(intake: ProjectIntake): ApplicabilityReport {
       summary,
     }
   }
+}
+
+/**
+ * Re-reads the PG determinations for another jurisdiction.
+ *
+ * Kept: whether building work is described (every jurisdiction permits it),
+ * and feasibility. Everything else is a Prince George's approval by name and
+ * is recorded as not applicable, with the reason — never silently dropped,
+ * because an absent line reads as "considered and not required" too.
+ */
+function outsidePrinceGeorges(
+  code: string, determinations: ApprovalDetermination[], openItems: string[],
+): ProjectClassification[] {
+  const profile = profileFor(code)
+  const name = profile?.displayName ?? code
+  for (const d of determinations) {
+    if (d.approval === 'feasibility_only') continue
+    if (d.approval === 'building_permit_site_road_review') {
+      if (d.required) d.reason = `A building permit is contemplated, so ${profile?.permitAuthority ?? `${name} permit`} review applies.`
+      continue
+    }
+    d.required = false
+    d.undetermined = false
+    d.toResolve = undefined
+    d.reason =
+      `${CLASSIFICATION_LABELS[d.approval]} is a Prince George's County approval and does not ` +
+      `apply in ${name}. ${name}'s own reviews are listed in the pre-seal worklist.`
+  }
+  // PG-specific citations in the open items are replaced, not left to mislead.
+  for (let i = openItems.length - 1; i >= 0; i--) {
+    if (/24-4303|Tree Conservation Plan|Chesapeake Bay Critical Area/.test(openItems[i])) openItems.splice(i, 1)
+  }
+  return determinations.filter(d => d.required).map(d => d.approval)
 }

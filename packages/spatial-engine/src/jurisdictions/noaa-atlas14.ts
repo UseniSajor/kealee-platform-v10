@@ -119,6 +119,67 @@ export function nearestNoaaSite(
   return bestMi <= maxMiles ? best : null
 }
 
+export const PFDS_ENDPOINT = 'https://hdsc.nws.noaa.gov/cgi-bin/new/cgi_readH5.py'
+
+/**
+ * Retrieves the Atlas 14 point for THIS site from NOAA's PFDS.
+ *
+ * The stored points are two PG projects. The production pipeline passed no
+ * location at all, so every order — in any county — computed on Rollins
+ * Avenue rainfall and printed Rollins' coordinates. The answer is the same as
+ * it was for the second project: go and get the site's own point. PFDS returns
+ * intensity by duration (rows: 5, 10, 15, 30, 60 min, …) and return period
+ * (columns: 1 … 1000 yr), partial-duration series, English units.
+ *
+ * Null when the service does not answer or answers something unparseable; the
+ * caller then falls back to the nearest stored point within 15 miles, or to
+ * no intensity at all, never to a distant table.
+ */
+export async function fetchNoaaSite(
+  latitude: number, longitude: number, opts: { fetchImpl?: typeof fetch; label?: string } = {},
+): Promise<NoaaSite | null> {
+  const doFetch = opts.fetchImpl ?? fetch
+  const lat = Number(latitude.toFixed(4)), lon = Number(longitude.toFixed(4))
+  const url = `${PFDS_ENDPOINT}?lat=${lat}&lon=${lon}&type=pf&data=intensity&units=english&series=pds`
+  let text: string
+  try {
+    const res = await doFetch(url)
+    if (!res.ok) return null
+    text = await res.text()
+  } catch {
+    return null
+  }
+  const m = text.match(/quantiles\s*=\s*(\[\[[\s\S]*?\]\])\s*;/)
+  if (!m) return null
+  let rows: number[][]
+  try {
+    rows = (JSON.parse(m[1].replace(/'/g, '"')) as string[][]).map(r => r.map(Number))
+  } catch {
+    return null
+  }
+  const grid = rows.slice(0, DURATIONS_MIN.length)
+  if (grid.length < DURATIONS_MIN.length || grid.some(r => r.length < RETURN_PERIODS_YR.length || r.some(v => !Number.isFinite(v)))) {
+    return null
+  }
+  const volume = text.match(/volume\s*=\s*'?(\d+)/)?.[1]
+  const version = text.match(/version\s*=\s*'?(\d+)/)?.[1]
+  const vol = volume ? `Vol. ${volume}${version ? ` Ver. ${version}` : ''}` : 'Vol. 2'
+  const ns = `${Math.abs(lat).toFixed(4)} ${lat >= 0 ? 'N' : 'S'}`
+  const ew = `${Math.abs(lon).toFixed(4)} ${lon >= 0 ? 'E' : 'W'}`
+  return {
+    id: `pfds-${lat}-${lon}`,
+    label: opts.label ?? `${ns} ${ew}`,
+    latitude: lat, longitude: lon,
+    volume: `Atlas 14 ${vol}`,
+    region: 'retrieved for this site',
+    series: 'partial duration',
+    units: 'in/hr',
+    retrieved: new Date().toISOString().slice(0, 10),
+    citation: `NOAA Atlas 14 ${vol}, PFDS point estimate, ${ns} ${ew}`,
+    intensityInPerHr: grid.map(r => r.slice(0, RETURN_PERIODS_YR.length)),
+  }
+}
+
 /** Kept for callers that predate the per-site table. */
 export const NOAA_ATLAS14_SITE = NOAA_SITE_ROLLINS
 export const NOAA_INTENSITY_IN_PER_HR: readonly (readonly number[])[] =

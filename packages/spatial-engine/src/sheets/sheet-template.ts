@@ -15,6 +15,7 @@ import type { SiteTwin } from '../site-plan/site-twin'
 import type { ReliabilityLevel } from '../site-plan/reliability'
 import type { RequiredPlanNote } from '../site-plan/required-notes'
 import { requiredNotesForSheet } from '../site-plan/required-notes'
+import { profileFor } from '../jurisdictions/profiles'
 
 export type SheetId =
   | 'C-000' | 'C-100' | 'C-200' | 'C-300' | 'C-400'
@@ -173,11 +174,13 @@ export function auditSheetFrame(ctx: SheetContext): FrameAudit {
   check('legendAndAbbreviations', true)
   // A sheet that owes the County a verbatim note and does not carry it is
   // incomplete, the same as one missing its north arrow.
-  check(
-    'requiredCountyNotes',
-    requiredNotesForSheet(ctx.sheet).length === 0 ||
-      (ctx.requiredNotes ?? []).length >= requiredNotesForSheet(ctx.sheet).length,
-  )
+  // The notes owed are PG's DPIE checklist notes; another jurisdiction owes
+  // none of them, and demanding them there blocks a sheet for lacking the
+  // wrong county's text.
+  const owed = profileFor(ctx.twin.jurisdictionCode)?.usesPgRequiredNotes === false
+    ? 0
+    : requiredNotesForSheet(ctx.sheet).length
+  check('requiredCountyNotes', owed === 0 || (ctx.requiredNotes ?? []).length >= owed)
   check('statusWatermark', ctx.status !== 'PERMIT_SET' ? Boolean(ctx.disclosure ?? ctx.status) : true)
 
   return { present, missing, complete: missing.length === 0 }

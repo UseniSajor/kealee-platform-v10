@@ -5,7 +5,7 @@
 import { describe, it, expect } from 'vitest'
 import {
   JURISDICTION_COVERAGE, coverageFor, servedJurisdictions, dataOnlyJurisdictions,
-  assessServiceArea, propertyBlockedMessage,
+  preliminaryJurisdictions, drawsPlansIn, assessServiceArea, propertyBlockedMessage,
 } from '../jurisdictions/coverage'
 
 describe('the coverage registry', () => {
@@ -52,6 +52,15 @@ describe('the coverage registry', () => {
     }
   })
 
+  it('draws preliminary plans in DC without calling its standards certified', () => {
+    expect(preliminaryJurisdictions().map(j => j.code)).toContain('district_of_columbia')
+    const dc = coverageFor('district_of_columbia')!
+    expect(dc.rulePackVersion).toBeNull()
+    expect(dc.cannotProduce.join(' ')).toMatch(/certified rule pack/i)
+    expect(drawsPlansIn('district_of_columbia')).toBe(true)
+    expect(drawsPlansIn('arlington_va')).toBe(false)
+  })
+
   it('says what it cannot produce even where coverage is full', () => {
     const pg = coverageFor('prince_georges_md')!
     expect(pg.cannotProduce.join(' ')).toMatch(/surveyor/i)
@@ -64,14 +73,17 @@ describe('service-area assessment', () => {
     expect(assessServiceArea('14408 Leonard Calvert Dr').served).toBe(true)
   })
 
-  it('turns away DC and Virginia with the reason, not a blank refusal', () => {
+  it('accepts DC as a preliminary-plan jurisdiction and says what that means', () => {
     const dc = assessServiceArea('1600 Pennsylvania Ave NW, Washington, DC')
-    expect(dc.served).toBe(false)
-    expect(dc.disposition).toBe('refer_or_refund')
-    expect(dc.message).toMatch(/District of Columbia/)
+    expect(dc.served).toBe(true)
+    expect(dc.level).toBe('preliminary')
+    expect(dc.message).toMatch(/not yet certified/)
+  })
 
+  it('turns away Virginia with the reason, not a blank refusal', () => {
     const va = assessServiceArea('2100 Clarendon Blvd, Arlington, VA 22201')
     expect(va.served).toBe(false)
+    expect(va.disposition).toBe('refer_or_refund')
     expect(va.message).toMatch(/Virginia/)
   })
 

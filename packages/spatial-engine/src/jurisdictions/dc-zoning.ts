@@ -412,3 +412,116 @@ export function dcTablesMissing(): string[] {
   const have = new Set(DC_DIMENSIONAL_TABLES.map(t => t.table))
   return DC_TABLES_REQUIRED.filter(t => !have.has(t))
 }
+
+// ── Front setback and the engine's standards rows ───────────────────────────
+
+export interface DcBlockFaceMeasure {
+  determined: boolean
+  minFt: number | null
+  maxFt: number | null
+  meanFt: number | null
+  sampleCount: number
+}
+
+export interface DcFrontDetermination {
+  /** The front setback the envelope is drawn at, or null when nothing establishes one. */
+  ft: number | null
+  basis: string
+  /** A recorded line and the zoning rule disagree. Both bind; a person decides. */
+  conflict: string | null
+}
+
+/**
+ * The front setback to DRAW, and why.
+ *
+ * Two independent sources can bind the front of a DC lot: the zoning rule
+ * (blockface range, block average, or none) and a BUILDING RESTRICTION LINE
+ * recorded against the lot by the Surveyor. A house must satisfy both, so the
+ * drawn line is the more restrictive of the two. Where the recorded line lies
+ * beyond the blockface maximum they cannot both be met; that is reported, not
+ * resolved.
+ */
+export function dcFrontSetback(
+  env: DcEnvelope, measured: DcBlockFaceMeasure | null, recordedBrlFt: number | null,
+): DcFrontDetermination {
+  const brl = recordedBrlFt != null && recordedBrlFt > 0 ? recordedBrlFt : null
+  const brlText = brl != null ? `; recorded building restriction line ${brl} ft` : ''
+  switch (env.front.mode) {
+    case 'none_required':
+      return {
+        ft: brl ?? 0,
+        basis: `${env.front.citation}: no front setback required${brlText}`,
+        conflict: null,
+      }
+    case 'block_range':
+    case 'block_average': {
+      if (!measured?.determined || measured.minFt == null || measured.maxFt == null) {
+        return {
+          ft: brl,
+          basis:
+            `${env.front.citation}: blockface not measurable (${measured?.sampleCount ?? 0} buildings)` +
+            (brl != null ? `; drawn at the recorded building restriction line ${brl} ft` : '; open item'),
+          conflict: null,
+        }
+      }
+      const zoningFt = env.front.mode === 'block_average' ? (measured.meanFt ?? measured.minFt) : measured.minFt
+      const ft = Math.max(zoningFt, brl ?? 0)
+      const range = `${measured.minFt}–${measured.maxFt} ft over ${measured.sampleCount} buildings`
+      const conflict = brl != null && brl > measured.maxFt
+        ? `The recorded building restriction line (${brl} ft) lies beyond the blockface maximum ` +
+          `(${measured.maxFt} ft). A house cannot satisfy both; the Zoning Administrator decides.`
+        : null
+      return {
+        ft,
+        basis: env.front.mode === 'block_average'
+          ? `${env.front.citation}: at least the block average, measured ${measured.meanFt} ft (${range})${brlText}; drawn at ${ft} ft`
+          : `${env.front.citation}: within the blockface range, measured ${range}${brlText}; drawn at ${ft} ft`,
+        conflict,
+      }
+    }
+    case 'adjacent_match':
+      return {
+        ft: brl,
+        basis: `${env.front.citation}: consistent with an immediately adjacent property — measure the ` +
+               `neighbours' setbacks${brl != null ? `; drawn at the recorded line ${brl} ft` : '; open item'}`,
+        conflict: null,
+      }
+  }
+}
+
+/** One standards row, in the shape the envelope reader consumes. */
+export interface DcStandardRow {
+  standard: string
+  useColumn: string
+  printed: string
+  numeric: number | null
+  footnotes: string[]
+}
+
+/**
+ * The envelope as the engine's standards rows.
+ *
+ * `useColumn` is the engine's single-family column name so the shared reader
+ * picks these rows; `printed` carries the DC structure type and citation.
+ */
+export function dcStandardRows(env: DcEnvelope, front: DcFrontDetermination): DcStandardRow[] {
+  const use = 'Single-Family Detached Dwelling'
+  const kind = env.structure.replace('_', '-')
+  const row = (standard: string, v: DcValue | null, printedOverride?: string): DcStandardRow | null =>
+    v ? { standard, useColumn: use, printed: printedOverride ?? `${v.printed} (${v.citation})`, numeric: v.value, footnotes: [] } : null
+  const side: DcValue = env.sideYardAggregate?.value != null && env.sideYardCount === 2
+    ? { value: Math.max(env.sideYard.value ?? 0, env.sideYardAggregate.value / 2),
+        printed: `${env.sideYardAggregate.printed}; drawn equal`, citation: env.sideYardAggregate.citation }
+    : env.sideYard
+  return [
+    { standard: 'Front yard depth', useColumn: use, printed: front.basis, numeric: front.ft, footnotes: [] },
+    row('Side yard depth', side, `${side.printed} — ${kind} (${side.citation})`),
+    row('Rear yard depth', env.rearYard),
+    row('Lot coverage (lot occupancy)', env.lotOccupancyPct),
+    row('Maximum height (ft)', env.heightFt),
+    row('Maximum stories', env.stories),
+    row('Minimum pervious surface (%)', env.perviousPct),
+    row('Minimum lot width (ft)', env.minLotWidthFt),
+    row('Minimum lot area (sq ft)', env.minLotAreaSqFt),
+  ].filter((r): r is DcStandardRow => r !== null)
+}

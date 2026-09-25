@@ -24,10 +24,18 @@ import {
 } from '../../jurisdictions/pgatlas'
 import { fetchSoilMapUnits, type SoilMapUnit } from '../../jurisdictions/usda-soils'
 import { fetchPgContours, type PgContourResult } from '../../jurisdictions/pg-elevation'
+import { fetchNoaaSite, type NoaaSite } from '../../jurisdictions/noaa-atlas14'
+import { lonLatFrom2248 } from '../../export/transformation-registry'
 import { buildLotPackage, type LotPackage } from '../../self-perform/lot-package'
 import { renderSheetSetPdf } from '../../sheets/render-pdf'
 import { toDxfNcs } from '../../export/dxf-ncs'
 import { propertyBlockedMessage, coverageFor } from '../../jurisdictions/coverage'
+import {
+  PG_CODE, jurisdictionAttemptOrder, resolveInJurisdiction, fetchContoursIn, zoneSourceOf,
+  recordedFrontBrlFt, JURISDICTION_CONNECTORS, type JurisdictionFindings,
+} from '../../jurisdictions/registry'
+import { profileFor, jurisdictionDisplayName } from '../../jurisdictions/profiles'
+import { DC_ZONING_SOURCE, type DcStructureType } from '../../jurisdictions/dc-zoning'
 import { suppliedSurveyFrom, ingestSuppliedSurvey, type SurveyIngestResult } from '../survey-intake'
 import { toLandXml, toGeoJson } from '../../export/exporters'
 import { createRegistryTransformer } from '../../export/transformation-registry'
@@ -100,6 +108,22 @@ export interface ResolvePropertyOutput {
     /** Kealee routes an incorporated parcel to internal staff review. */
     internalStaffReviewRequired: boolean
   }
+  /**
+   * The jurisdiction whose OWN locator, parcel and zoning layers answered.
+   * Absent on outputs persisted before other jurisdictions were wired, which
+   * were all Prince George's.
+   */
+  jurisdictionCode?: string
+  /** Which locator matched, as provenance. */
+  locatorName?: string
+  /** record_lot | tax_lot | parcel — a record lot is drawn from a recorded plat. */
+  parcelKind?: string
+  /** Who published the parcel polygon, for the source table. */
+  parcelAuthority?: string
+  /** The recorded-plat reference the parcel layer itself carries (DC: Surveyor's book and page). */
+  platReferenceFromGis?: string | null
+  /** Jurisdiction-specific facts read at resolution: recorded BRLs, historic status, blockface, structure type. */
+  jurisdictionFindings?: JurisdictionFindings
 }
 
 export interface ExistingConditionsOutput {
@@ -120,6 +144,13 @@ export interface ExistingConditionsOutput {
    * wide, not narrowed to the parcel; the sheet prints SOILS_CAVEAT with it.
    */
   soils?: SoilMapUnit[]
+  /**
+   * NOAA Atlas 14 point retrieved for this lot. Absent on outputs persisted
+   * before it was fetched — those orders computed on the Rollins Avenue point.
+   */
+  rainfallSite?: NoaaSite | null
+  /** Who published the contours, for the source table. */
+  contourAuthority?: string | null
 }
 
 export interface IngestSurveyOutput {
@@ -303,11 +334,23 @@ export function lotPackageFrom(ctx: StageContext): LotPackage {
       'invented — it would render exactly like a real boundary and nothing downstream could tell.')
   }
 
+  const code = prop.jurisdictionCode ?? PG_CODE
+  const findings = prop.jurisdictionFindings ?? {}
   return buildLotPackage(
     {
       name: prop.matchedAddress,
       address: prop.matchedAddress,
-      jurisdictionCode: 'prince_georges_md',
+      jurisdictionCode: code,
+      // The order's statement wins; otherwise what the existing building shows.
+      structureType: structureTypeFrom(ctx) ?? findings.structure?.structure ?? null,
+      blockFace: findings.blockFace
+        ? {
+            determined: findings.blockFace.determined, minFt: findings.blockFace.minFt,
+            maxFt: findings.blockFace.maxFt, meanFt: findings.blockFace.meanFt,
+            sampleCount: findings.blockFace.samples.length,
+          }
+        : null,
+      recordedBrlFt: recordedFrontBrlFt(findings),
       zoneCode: prop.zoneCode ?? '',
       isResidentialSingleFamily: true,
       dwellingUnitCount: 1,
@@ -320,12 +363,26 @@ export function lotPackageFrom(ctx: StageContext): LotPackage {
         elevationFt: c.elevationFt, path: c.path, weight: c.weight, hidden: c.hidden,
       })),
       verticalDatum: cond?.verticalDatum ?? null,
+      contourSourceAuthority: cond?.contourAuthority ?? undefined,
       programme: programmeFrom(ctx),
+      // The lot's own position, so a missing retrieved point falls back to the
+      // nearest stored one within 15 miles — or to none — never to Rollins.
+      siteLatLon: (() => {
+        const [lon, lat] = lonLatFrom2248(prop.easting2248, prop.northing2248)
+        return [lat, lon] as [number, number]
+      })(),
+      rainfallSite: cond?.rainfallSite ?? null,
     },
     {
       ring: { coordinates: prop.parcelRing },
       provenance: 'jurisdiction_gis',
-      authority: "Prince George's County / M-NCPPC — PGAtlas Property",
+      // A DC record lot names the Surveyor's book and page it was recorded in.
+      // That is a reference to the plat, not the plat: the polygon is still
+      // compiled GIS, so it is NOT passed as a transcribed plat record.
+      authority: [
+        prop.parcelAuthority ?? "Prince George's County / M-NCPPC — PGAtlas Property",
+        prop.platReferenceFromGis,
+      ].filter(Boolean).join(' — '),
       retrievedAt: new Date().toISOString(),
     },
   )
@@ -371,6 +428,17 @@ function platFrom(ctx: StageContext): RecordedPlatBoundary | null {
   })
 }
 
+/** Detached, semi-detached or row, when the order states it. */
+function structureTypeFrom(ctx: StageContext): DcStructureType | null {
+  const v = str(ctx.subject.formData.structureType ?? ctx.subject.formData.buildingType)
+  if (!v) return null
+  const t = v.toLowerCase()
+  if (/row|town/.test(t)) return 'row'
+  if (/semi|duplex|twin/.test(t)) return 'semi_detached'
+  if (/detached|single/.test(t)) return 'detached'
+  return null
+}
+
 function programmeFrom(ctx: StageContext) {
   const f = ctx.subject.formData
   const sqft = Number(f.houseSquareFeet ?? f.totalFloorAreaSqFt ?? 0)
@@ -394,7 +462,10 @@ const initialize: StageProcessor = async (ctx): Promise<StageResult> => ({
     // locator query separately, so presentation/audit data is never mutated
     // merely to satisfy a GIS API's input format.
     address: rawAddressFrom(ctx),
-    jurisdictionCode: 'prince_georges_md',
+    // A HINT from the order's text — which jurisdiction to ask first. The
+    // jurisdiction itself is established by resolve_property, from whichever
+    // jurisdiction's own layers answer at the matched point.
+    jurisdictionCode: jurisdictionAttemptOrder(rawAddressFrom(ctx) ?? '')[0] ?? PG_CODE,
   } satisfies InitializeOutput,
 })
 
@@ -406,6 +477,107 @@ const resolveProperty: StageProcessor = async (ctx): Promise<StageResult> => {
       blockers: ['No address on the order, so the site cannot be located.'],
     }
   }
+  const raw = rawAddressFrom(ctx) ?? address
+  const candidates = addressCandidates(raw)
+
+  // Asked in order; ACCEPTED only on the jurisdiction's own answer. The order
+  // comes from the text, the acceptance from the county's layers.
+  const order = jurisdictionAttemptOrder(raw)
+  const asked: string[] = []
+  for (const code of order) {
+    const result = code === PG_CODE
+      ? await resolvePgProperty(ctx, address)
+      : await resolveOtherProperty(ctx, code, raw, candidates)
+    if (result) return result
+    asked.push(jurisdictionDisplayName(code))
+  }
+
+  return {
+    status: 'BLOCKED', outputs: null,
+    blockers: [
+      // "Out of service area" and "the county has no such address" need
+      // different actions and only one of them is the customer's fault.
+      order.length === 1 && order[0] === PG_CODE
+        ? propertyBlockedMessage(address, candidates)
+        : `No jurisdiction's own locator matched "${address}" at or above the minimum score of 90 ` +
+          `(asked: ${asked.join(', ')}; tried: ${candidates.map(c => `"${c}"`).join(', ')}). A weak ` +
+          'match would site the plan on the wrong lot, so none is accepted. If the address is ' +
+          'correct and new, the address point may not be published yet — a recorded plat resolves it.',
+    ],
+  }
+}
+
+/**
+ * Any jurisdiction other than PG, through its own ArcGIS services.
+ *
+ * DC's quadrant is part of the street name: "3210 Newark St" is a different
+ * query from "3210 Newark St NW", so a shortened form that drops the quadrant
+ * is never tried.
+ */
+async function resolveOtherProperty(
+  ctx: StageContext, code: string, raw: string, candidates: string[],
+): Promise<StageResult | null> {
+  const quadrant = raw.match(/\b(NW|NE|SW|SE)\b/i)?.[1]?.toUpperCase() ?? null
+  const forms = quadrant
+    ? candidates.filter(c => /\b(NW|NE|SW|SE)\b/i.test(c))
+    : candidates
+  const trace = (detail: string) => ctx.capabilities.trace({
+    workflowId: ctx.workflowId, job: ctx.job, phase: 'skip', detail,
+  })
+  for (const form of forms) {
+    const r = await resolveInJurisdiction(code, form, { fetchImpl: ctx.capabilities.fetchImpl, trace })
+    if (!r) continue
+    const { site, findings } = r
+    const cfg = JURISDICTION_CONNECTORS[code]
+    if (form !== candidates[0]) trace(`located on shortened form "${form}" (order says "${raw}")`)
+    const out: ResolvePropertyOutput = {
+      jurisdictionCode: code,
+      locatorName: site.address.locator,
+      parcelKind: site.parcel?.kind,
+      parcelAuthority: site.parcel?.source.authority,
+      platReferenceFromGis: site.parcel?.platReference ?? null,
+      jurisdictionFindings: findings,
+      matchedAddress: site.address.matchedAddress,
+      locatorScore: site.address.score,
+      queriedAddress: form,
+      orderAddress: raw,
+      easting2248: site.address.easting2248,
+      northing2248: site.address.northing2248,
+      zoneCode: site.zoning?.zoneCode ?? null,
+      parcelRing: site.parcel ? (site.parcel.ring.coordinates as [number, number][]) : null,
+      parcelAreaSqFt: site.parcel?.areaSqFt ?? null,
+      parcelId: site.parcel?.propId ?? null,
+      streetPoint: site.streetPoint as [number, number] | null,
+      streets: site.streets.map(st => ({ name: st.name, paths: st.paths as [number, number][][] })),
+      hasStreetFrontage: Boolean(site.streetPoint),
+      adjacentParcels: r.adjacent.map(a => ({
+        ring: { coordinates: a.ring }, areaSqFt: a.areaSqFt, propId: a.propId,
+      })) as PgAtlasAdjacentParcel[],
+      // No incorporated municipalities inside these jurisdictions' own zoning
+      // (DC has none at all). Recorded as determined-not-incorporated, which
+      // is what the jurisdiction's own layers say, not a default.
+      municipality: {
+        determined: true, incorporated: false, name: null, nearestName: null,
+        nearestWithin: null, mailingCity: null, zipCode: null, internalStaffReviewRequired: false,
+      },
+    }
+    ctx.capabilities.trace({
+      workflowId: ctx.workflowId, job: ctx.job, phase: 'complete',
+      detail: `resolved in ${cfg?.name ?? code} by ${site.address.locator} at score ${site.address.score}`,
+    })
+    return { status: 'COMPLETED', outputs: out }
+  }
+  return null
+}
+
+/**
+ * Prince George's: the county's two-locator sweep, unchanged. Null when
+ * neither locator matched any address form, so the caller can ask the next
+ * jurisdiction.
+ */
+async function resolvePgProperty(
+  ctx: StageContext, address: string,
+): Promise<StageResult | null> {
 
   // Strictest form first, then shorter ones. Each must clear the locator's
   // minimum score on its own; a shorter form is a different QUERY, not a
@@ -438,16 +610,7 @@ const resolveProperty: StageProcessor = async (ctx): Promise<StageResult> => {
       if (site) { matchedForm = candidate; break }
     }
   }
-  if (!site) {
-    return {
-      status: 'BLOCKED', outputs: null,
-      blockers: [
-        // "Out of service area" and "the county has no such address" need
-        // different actions and only one of them is the customer's fault.
-        propertyBlockedMessage(address, candidates),
-      ],
-    }
-  }
+  if (!site) return null
   if (locator === 'composite') {
     ctx.capabilities.trace({
       workflowId: ctx.workflowId, job: ctx.job, phase: 'complete',
@@ -462,6 +625,10 @@ const resolveProperty: StageProcessor = async (ctx): Promise<StageResult> => {
   }
 
   const out: ResolvePropertyOutput = {
+    jurisdictionCode: PG_CODE,
+    locatorName: `PGAtlas ${locator} locator`,
+    parcelKind: 'parcel',
+    parcelAuthority: "Prince George's County / M-NCPPC — PGAtlas Property",
     matchedAddress: site.address.matchedAddress,
     locatorScore: site.address.score,
     queriedAddress: matchedForm ?? address,
@@ -509,6 +676,7 @@ const resolveProperty: StageProcessor = async (ctx): Promise<StageResult> => {
   return { status: blockers ? 'BLOCKED' : 'COMPLETED', outputs: out, blockers }
 }
 
+
 const ingestDocuments: StageProcessor = async (ctx): Promise<StageResult> => {
   // Uploaded evidence is registered by the upload path; this stage records that
   // the collection point was reached. A survey is NOT required to draw.
@@ -531,28 +699,28 @@ const ingestDocuments: StageProcessor = async (ctx): Promise<StageResult> => {
 const resolveJurisdiction: StageProcessor = async (ctx): Promise<StageResult> => {
   const prop = requirePriorOutput<ResolvePropertyOutput>(ctx, 'siteplan.resolve_property')
 
-  // The code is fixed because the ENGINE is: one certified rule pack, for
-  // Prince George's County. Reaching this stage means the county's own
-  // locator, parcel layer and zoning layer all answered for this point, which
-  // is the geometric proof that the parcel is in the county — the jurisdiction
-  // is established by those answers, not by this constant.
+  // The jurisdiction is whichever one's OWN locator, parcel layer and zoning
+  // layer answered in resolve_property — the geometric proof. Outputs
+  // persisted before other jurisdictions were wired carry no code and were
+  // all Prince George's.
   //
   // The coverage record travels with the output so every downstream consumer
   // can see what the engine is certified for here, rather than inferring it
   // from the absence of a caveat.
-  const coverage = coverageFor('prince_georges_md')
+  const code = prop.jurisdictionCode ?? PG_CODE
+  const coverage = coverageFor(code)
 
   return {
     status: 'COMPLETED',
     outputs: {
-      jurisdictionCode: 'prince_georges_md',
-      jurisdictionName: coverage?.name ?? "Prince George's County",
-      coverageLevel: coverage?.level ?? 'full',
+      jurisdictionCode: code,
+      jurisdictionName: coverage?.name ?? jurisdictionDisplayName(code),
+      coverageLevel: coverage?.level ?? 'data_only',
       rulePackVersion: coverage?.rulePackVersion ?? null,
       /** Stated on the sheet and in the deliverable so scope is never implied. */
       coverageLimits: coverage?.cannotProduce ?? [],
       zoneCode: prop.zoneCode,
-      zoneSource: 'PGAtlas Zoning/MapServer/63',
+      zoneSource: zoneSourceOf(code),
     },
   }
 }
@@ -561,21 +729,36 @@ const evaluateRules: StageProcessor = async (ctx): Promise<StageResult> => {
   // The certified pack is prepared by the maintenance cycle; evaluation is
   // synchronous and touches no network.
   const prop = requirePriorOutput<ResolvePropertyOutput>(ctx, 'siteplan.resolve_property')
+  const code = prop.jurisdictionCode ?? PG_CODE
+  // Only PG has a CERTIFIED pack. DC's standards are machine-extracted from
+  // the published regulations and named as such, so nothing downstream reads
+  // them as certified.
+  const packVersion = code === PG_CODE
+    ? 'pg-2022.1'
+    : code === 'district_of_columbia'
+      ? `dc-zr16-${DC_ZONING_SOURCE.exportDate}-machine`
+      : `${code}-uncertified`
   return {
     status: 'COMPLETED',
-    rulePackVersion: 'pg-2022.1',
-    outputs: { zoneCode: prop.zoneCode, packVersion: 'pg-2022.1' },
+    rulePackVersion: packVersion,
+    outputs: { zoneCode: prop.zoneCode, packVersion, certified: code === PG_CODE },
   }
 }
 
 const buildExistingConditions: StageProcessor = async (ctx): Promise<StageResult> => {
   const prop = requirePriorOutput<ResolvePropertyOutput>(ctx, 'siteplan.resolve_property')
 
+  const code = prop.jurisdictionCode ?? PG_CODE
   let contours: PgContourResult | null = null
   try {
-    contours = await fetchPgContours(prop.easting2248, prop.northing2248, {
-      radiusFt: 150, fetchImpl: ctx.capabilities.fetchImpl,
-    })
+    contours = code === PG_CODE
+      ? await fetchPgContours(prop.easting2248, prop.northing2248, {
+          radiusFt: 150, fetchImpl: ctx.capabilities.fetchImpl,
+        })
+      // Same shape by construction; null where the jurisdiction publishes none.
+      : (await fetchContoursIn(code, prop.easting2248, prop.northing2248, {
+          radiusFt: 150, fetchImpl: ctx.capabilities.fetchImpl,
+        })) as PgContourResult | null
   } catch (e) {
     ctx.capabilities.trace({
       workflowId: ctx.workflowId, job: ctx.job, phase: 'skip',
@@ -585,7 +768,7 @@ const buildExistingConditions: StageProcessor = async (ctx): Promise<StageResult
 
   let soils: SoilMapUnit[] | undefined
   try {
-    soils = (await fetchSoilMapUnits('prince_georges_md', { fetchImpl: ctx.capabilities.fetchImpl }))?.units
+    soils = (await fetchSoilMapUnits(code, { fetchImpl: ctx.capabilities.fetchImpl }))?.units
   } catch (e) {
     ctx.capabilities.trace({
       workflowId: ctx.workflowId, job: ctx.job, phase: 'skip',
@@ -593,7 +776,20 @@ const buildExistingConditions: StageProcessor = async (ctx): Promise<StageResult
     })
   }
 
+  // Rainfall for THIS lot. Without it every order computed on the Rollins
+  // Avenue point and printed Rollins' coordinates, in any county.
+  const [lon, lat] = lonLatFrom2248(prop.easting2248, prop.northing2248)
+  const rainfallSite = await fetchNoaaSite(lat, lon, { fetchImpl: ctx.capabilities.fetchImpl })
+  if (!rainfallSite) {
+    ctx.capabilities.trace({
+      workflowId: ctx.workflowId, job: ctx.job, phase: 'skip',
+      detail: `NOAA Atlas 14 point unavailable for ${lat.toFixed(4)}, ${lon.toFixed(4)}`,
+    })
+  }
+
   const out: ExistingConditionsOutput & { contours?: PgContourResult['contours'] } = {
+    rainfallSite,
+    contourAuthority: contours ? `${contours.source.authority} — ${contours.source.layer}` : null,
     contourCount: contours?.contours.length ?? 0,
     elevationsFt: contours?.elevationsFt ?? [],
     intervalFt: contours?.intervalFt ?? null,
@@ -666,9 +862,12 @@ const renderExports: StageProcessor = async (ctx): Promise<StageResult> => {
     })
     // A single-sheet plan owes the County every required note — the grading
     // certificate does not disappear because the set was consolidated.
-    const notes = composed.pages.length === 1
-      ? PG_REQUIRED_PLAN_NOTES
-      : pg.covers.flatMap(s => requiredNotesForSheet(s))
+    // They are DPIE checklist notes: PG law, printed only on a PG plan.
+    const notes = profileFor(pkg.jurisdiction)?.usesPgRequiredNotes === false
+      ? []
+      : composed.pages.length === 1
+        ? PG_REQUIRED_PLAN_NOTES
+        : pg.covers.flatMap(s => requiredNotesForSheet(s))
     const seen = new Set<string>()
     return { ...c, requiredNotes: notes.filter(n => !seen.has(n.id) && seen.add(n.id)) }
   })

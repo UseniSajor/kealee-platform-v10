@@ -31,6 +31,7 @@ import type { DrainageComputation } from '../site-plan/drainage'
 import { existsSync } from 'fs'
 import { join } from 'path'
 import type { DividedResponsibilityBlock } from '../review/content-scope'
+import { profileFor, jurisdictionDisplayName, localiseLicensure } from '../jurisdictions/profiles'
 
 const PAD_FT = 20
 
@@ -163,12 +164,7 @@ function graphicScale(doc: Doc, x: number, y: number, vp: Viewport): void {
  * md" in the field naming the county that will review it.
  */
 function jurisdictionName(code: string): string {
-  const words = code.replace(/_/g, ' ').trim()
-  if (/^prince\s+georges\s+md$/i.test(words)) return "Prince George's County, Maryland"
-  return words
-    .split(/\s+/)
-    .map(w => (/^[a-z]{2}$/i.test(w) ? w.toUpperCase() : w.charAt(0).toUpperCase() + w.slice(1)))
-    .join(' ')
+  return jurisdictionDisplayName(code)
 }
 
 function titleBlock(
@@ -235,7 +231,7 @@ function titleBlock(
   if (responsibility && responsibility.rows.length) {
     label(doc, x + 8, cy, 'PROFESSIONAL RESPONSIBILITY', 6, { color: '#666666' }); cy += 10
     for (const r of responsibility.rows) {
-      label(doc, x + 8, cy, r.title, 7, { bold: true }); cy += 9
+      label(doc, x + 8, cy, localiseLicensure(r.title, ctx.twin.jurisdictionCode), 7, { bold: true }); cy += 9
       doc.font('Helvetica').fontSize(7.5).fillColor('#444444')
          .text(`certifies: ${r.certifies.join(', ')}`, x + 8, cy, { width: w - 16 })
       cy = doc.y + 3
@@ -2546,10 +2542,14 @@ const PROJECT_EXHIBITS: Record<string, { file: string; title: string; std: strin
 
 function countyDetails(
   doc: Doc, x: number, y: number, w: number, h: number, exhibits: string[] = [],
+  jurisdictionCode?: string,
 ): number {
   const dir = join(__dirname, '..', '..', 'assets', 'details')
   const extra = exhibits.map(k => PROJECT_EXHIBITS[k]).filter(Boolean)
-  const avail = [...COUNTY_DETAILS, ...extra].filter(d => existsSync(join(dir, d.file)))
+  // PGC DPW&T standards govern only in PG. Reproduced on another
+  // jurisdiction's plan they are the wrong standard under a real number.
+  const standards = (profileFor(jurisdictionCode)?.reproducesStandardDetails ?? true) ? COUNTY_DETAILS : []
+  const avail = [...standards, ...extra].filter(d => existsSync(join(dir, d.file)))
   if (!avail.length) return y
 
   // EACH PANEL IS SIZED TO ITS DETAIL, not to an equal share of the band.
@@ -2636,7 +2636,7 @@ function preparerPanel(doc: Doc, x: number, y: number, w: number, ctx: SheetCont
   const rows: [string, string][] = [
     ['PLAN TYPE', 'SITE DEVELOPMENT / FINE GRADING'],
     ['SHEET', `${ctx.sheet} — ${SHEET_TITLES[ctx.sheet]}`],
-    ['DISCIPLINE', SHEET_DISCIPLINE[ctx.sheet] ?? '—'],
+    ['DISCIPLINE', localiseLicensure(SHEET_DISCIPLINE[ctx.sheet] ?? '—', ctx.twin.jurisdictionCode)],
     ['DRAWN BY', 'KEALEE SITE-PLAN ENGINE'],
     // DESIGNED BY and CHECKED BY are left EMPTY, not annotated.
     //
@@ -2672,7 +2672,10 @@ function generalNotes(doc: Doc, x: number, y: number, twin?: SiteTwin): number {
   const notes = [
     'CONTRACTOR SHALL CONTACT MISS UTILITY AT 811 A MINIMUM OF 48 HOURS PRIOR TO ANY EXCAVATION. ' +
     'FIELD-VERIFY LOCATION AND DEPTH BY TEST PIT BEFORE CONSTRUCTION.',
-    'ALL EXISTING AND PROPOSED UTILITIES SHOWN PER PGC CODE SEC. 32-106.',
+    // PG cites its code; elsewhere the note states the source plainly rather
+    // than borrowing a Prince George's citation.
+    profileFor(twin?.jurisdictionCode)?.utilitiesNote
+      ?? 'ALL EXISTING AND PROPOSED UTILITIES SHOWN PER PGC CODE SEC. 32-106.',
     'PROPOSED GRADE SHOWN SOLID; EXISTING GRADE SHOWN DASHED.',
     'ROUGH EARTHWORK GRADES AND UTILITY ELEVATIONS SHOWN TO TENTHS OF A FOOT.',
     plat?.reference
@@ -2707,7 +2710,7 @@ function generalNotes(doc: Doc, x: number, y: number, twin?: SiteTwin): number {
     // the rear easement, which crosses no driveway on any of the four lots.
     'NO DRIVEWAY CULVERT IS REQUIRED. THIS FRONTAGE IS AN EXISTING CURB AND GUTTER SECTION, NOT ' +
     'AN OPEN DITCH SECTION: GUTTER FLOW IS CARRIED THROUGH EACH ENTRANCE BY THE DEPRESSED CURB ' +
-    'AT THE APRON PER DPW&T STD. 300.01 NOTE 6. ON-LOT DRAINAGE IS COLLECTED BY THE REAR-YARD ' +
+    `AT THE APRON PER ${(profileFor(twin?.jurisdictionCode)?.apronStandard ?? 'DPW&T STANDARD') === 'DPW&T STANDARD' ? 'DPW&T STD. 300.01 NOTE 6' : profileFor(twin?.jurisdictionCode)!.apronStandard}. ON-LOT DRAINAGE IS COLLECTED BY THE REAR-YARD ` +
     'SWALE IN THE REAR DRAINAGE EASEMENT AND CROSSES NO DRIVEWAY OR APRON.',
   ]
   doc.font('Helvetica-Bold').fontSize(9).fillColor('#000000')
@@ -2767,11 +2770,16 @@ function siteAnalysis(doc: Doc, x: number, y: number, ctx: SheetContext): number
     ['6.  TOTAL AREA DISTURBED',
       dist == null ? 'NOT QUANTIFIED'
         : disturbanceHasUnknowns ? `${fmt(dist)} (AT LEAST)` : fmt(dist)],
-    ['7.  SWM REQUIRED — Sec. 32-174(a)(3)',
-      dist == null ? 'UNDETERMINED'
-        : dist > 5000
-          ? 'YES — DISTURBANCE EXCEEDS 5,000 SF'
-          : 'EXEMPT — 5,000 SF OR LESS'],
+    // Sec. 32-174(a)(3) is PG's threshold. Elsewhere the row names the agency
+    // that decides rather than applying PG's rule under another county's name.
+    (profileFor(ctx.twin.jurisdictionCode)?.usesPgRequiredNotes ?? true)
+      ? ['7.  SWM REQUIRED — Sec. 32-174(a)(3)',
+          dist == null ? 'UNDETERMINED'
+            : dist > 5000
+              ? 'YES — DISTURBANCE EXCEEDS 5,000 SF'
+              : 'EXEMPT — 5,000 SF OR LESS']
+      : ['7.  SWM REVIEW',
+          `CONFIRM WITH ${profileFor(ctx.twin.jurisdictionCode)?.stormwaterAgency ?? 'THE JURISDICTION'}`],
   ]
   doc.font('Helvetica-Bold').fontSize(9).fillColor('#000000')
      .text('SITE ANALYSIS', x, y, { lineBreak: false })
@@ -2825,8 +2833,10 @@ function sequenceOfConstruction(doc: Doc, x: number, y: number, w = 256): number
  * An approved plan reserves these. The engine draws the box and never fills
  * it: the platform does not sign for an agency.
  */
-function approvalBlocks(doc: Doc, x: number, y: number): number {
-  const blocks = [
+function approvalBlocks(doc: Doc, x: number, y: number, jurisdictionCode?: string): number {
+  // The agencies that sign are the jurisdiction's. A DPIE box on a DC plan
+  // asks an agency with no authority there to approve it.
+  const blocks = profileFor(jurisdictionCode)?.approvalBlocks ?? [
     ["PRINCE GEORGE'S COUNTY SOIL CONSERVATION DISTRICT APPROVAL",
      'SEDIMENT CONTROL, GRADING, SOILS & DRAINAGE'],
     ['DPIE SITE/ROAD PLAN REVIEW DIVISION APPROVAL', ''],
@@ -2964,7 +2974,8 @@ function soilsTable(
 
   return dataTable(doc, x, y, {
     title: 'SOILS TABLE',
-    subtitle: 'USDA NRCS SSURGO — PGC Code Sec. 32-130(a)(13)',
+    subtitle: profileFor(ctx.twin.jurisdictionCode)?.soilsTableSubtitle
+      ?? 'USDA NRCS SSURGO — PGC Code Sec. 32-130(a)(13)',
     columns: [['MAP UNIT', 52], ['MAP UNIT NAME', 196], ['K-FACT', 44],
               ['HYDRIC', 42], ['HYD. GRP', 48], ['DRAINAGE CLASS', 118]],
     rows: soils.map(u => [u.mapUnitSymbol, u.mapUnitName, u.kFactor ?? '—',
@@ -3518,7 +3529,7 @@ function stormDrainSchedule(
 }
 
 /** Legend — a reviewer must not have to guess what a line means. */
-function legend(doc: Doc, x: number, y: number): number {
+function legend(doc: Doc, x: number, y: number, twin?: SiteTwin): number {
   // EVERY SWATCH IS THE PEN THE DRAWING USES.
   //
   // The swatches were all stroked at 1.1 pt with a single 3/2 dash, so a
@@ -3555,7 +3566,10 @@ function legend(doc: Doc, x: number, y: number): number {
     { color: '#0d47a1', width: 1.2,
       label: '100-YR FLOODPLAIN LIMIT, PROPOSED GROUND — SAME ELEVATION, REGRADED SURFACE' },
     { color: '#227744', label: 'ESD — STORMWATER PRACTICE', width: 1.2 },
-  ]
+  ].filter(r =>
+    // The floodplain rows describe ONE study (FPS-770017, WSSC datum). They
+    // key a line only a plan with a delineated floodplain draws.
+    !/^100-YR FLOODPLAIN/.test(r.label) || !twin || featuresOfKind(twin, 'Floodplain').length > 0)
   doc.font('Helvetica-Bold').fontSize(9).fillColor('#000000').text('LEGEND', x, y, { lineBreak: false })
   let cy = y + 11
   for (const r of rows) {
@@ -3646,7 +3660,7 @@ function coverPlate(doc: Doc, ctx: SheetContext, vp: Viewport, sheet: SheetSize)
   for (const id of ids) {
     label(doc, x + 24, cy, id, 9, { bold: true })
     label(doc, x + 92, cy, SHEET_TITLES[id] ?? '', 9)
-    label(doc, x + w * 0.62, cy, SHEET_DISCIPLINE[id] ?? '', 8, { color: '#444444' })
+    label(doc, x + w * 0.62, cy, localiseLicensure(SHEET_DISCIPLINE[id] ?? '', ctx.twin.jurisdictionCode), 8, { color: '#444444' })
     cy += 14
   }
 
@@ -3895,7 +3909,7 @@ export function renderSheetSetPdf(input: RenderPdfInput): Promise<RenderedPdf> {
       if (!planOnly) {
         countyDetails(doc, sheetSize.marginPt + 16, bandTop,
           drawRight - sheetSize.marginPt - 32, DETAILS_BAND_PT - 46,
-          (ctx as { exhibits?: string[] }).exhibits ?? [])
+          (ctx as { exhibits?: string[] }).exhibits ?? [], ctx.twin.jurisdictionCode)
       }
       graphicScale(doc, sheetSize.marginPt + 16, sheetSize.heightPt - sheetSize.marginPt - 26, vp)
       if (planOnly) {
@@ -3922,7 +3936,9 @@ export function renderSheetSetPdf(input: RenderPdfInput): Promise<RenderedPdf> {
         for (const n of input.sourceNotes.slice(0, 4)) {
           ny += 9
           doc.font('Helvetica').fontSize(7.5).fillColor('#444444')
-             .text(n, sheetSize.marginPt + 16, ny, { width: 380, lineBreak: false, ellipsis: true })
+             // `height` is what makes pdfkit honour the ellipsis; without it a
+             // long source line wrapped onto the next one and overprinted it.
+             .text(n, sheetSize.marginPt + 16, ny, { width: 380, height: 9, lineBreak: false, ellipsis: true })
         }
       }
 
@@ -4042,9 +4058,9 @@ export function renderSheetSetPdf(input: RenderPdfInput): Promise<RenderedPdf> {
       // mono plot. The plat text is reference a reviewer can also read from
       // general note 5, which carries the same transcription; the key is not
       // available anywhere else.
-      if (room(135, by)) by = legend(doc, blockX, by) + 12
+      if (room(135, by)) by = legend(doc, blockX, by, ctx.twin) + 12
       if (room(200, by)) by = platRecordBlock(doc, ctx.twin, blockX, by) + 10
-      if (room(110, by)) by = approvalBlocks(doc, blockX, by) + 6
+      if (room(110, by)) by = approvalBlocks(doc, blockX, by, ctx.twin.jurisdictionCode) + 6
 
       // ENGINEER'S SEAL AND SIGNATURE AREA.
       //
@@ -4058,8 +4074,9 @@ export function renderSheetSetPdf(input: RenderPdfInput): Promise<RenderedPdf> {
       certY += 11
       doc.font('Helvetica').fontSize(7).fillColor('#000000')
          .text('I HEREBY CERTIFY THAT THESE DOCUMENTS WERE PREPARED OR APPROVED BY ME, AND THAT ' +
-               'I AM A DULY LICENSED PROFESSIONAL ENGINEER UNDER THE LAWS OF THE STATE OF ' +
-               'MARYLAND.', blockX, certY, { width: blockW })
+               'I AM A DULY LICENSED PROFESSIONAL ENGINEER UNDER THE LAWS OF ' +
+               `${profileFor(ctx.twin.jurisdictionCode)?.licensingJurisdiction ?? 'THE STATE OF MARYLAND'}.`,
+               blockX, certY, { width: blockW })
       certY = doc.y + 4
       const sealH = 84
       box(doc, blockX, certY, blockW, sealH, PEN.hair)
