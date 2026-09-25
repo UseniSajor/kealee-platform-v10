@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LandXML xmlns="http://www.landxml.org/schema/LandXML-1.2"
+         version="1.2"
+         date="2026-09-25" time="22:23:41">
+  <Units><Imperial areaUnit="squareFoot" linearUnit="USSurveyFoot" volumeUnit="cubicFeet"
+           temperatureUnit="fahrenheit" pressureUnit="inHG"/></Units>
+  <Project name="1611 N KENILWORTH ST, ARLINGTON, VA, 22205"/>
+  <Application name="Kealee Site Plan Engine" version="1.0"/>
+  <!-- Coordinate system EPSG:2248; horizontal datum NAD83;
+       vertical datum NAVD88 (feet). Model revision 8. -->
+  <CoordinateSystem desc="EPSG:2248" horizontalDatum="NAD83"
+                    verticalDatum="NAVD88 (feet)"/>
+  <Parcels>
+      <Parcel name="09023002" area="8041.983093261719" parcelType="Single">
+        <CoordGeom>
+            <PntList2D>444449.22400505596 1273589.9156139316</PntList2D>
+            <PntList2D>444411.02499495045 1273532.9803544544</PntList2D>
+            <PntList2D>444376.53180279053 1273481.5669838921</PntList2D>
+            <PntList2D>444397.66904107964 1273468.9907699737</PntList2D>
+            <PntList2D>444419.5852231849 1273457.827214942</PntList2D>
+            <PntList2D>444439.4057918865 1273448.5375726754</PntList2D>
+            <PntList2D>444495.5411062211 1273568.3075857337</PntList2D>
+            <PntList2D>444449.22400505596 1273589.9156139316</PntList2D>
+        </CoordGeom>
+      </Parcel>
+  </Parcels>
+  <!-- No Surfaces element: no vertical datum or elevation data is established for this site. -->
+</LandXML>

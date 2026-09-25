@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LandXML xmlns="http://www.landxml.org/schema/LandXML-1.2"
+         version="1.2"
+         date="2026-09-25" time="22:23:10">
+  <Units><Imperial areaUnit="squareFoot" linearUnit="USSurveyFoot" volumeUnit="cubicFeet"
+           temperatureUnit="fahrenheit" pressureUnit="inHG"/></Units>
+  <Project name="3400 BARKLEY DR, FAIRFAX, VA, 22031"/>
+  <Application name="Kealee Site Plan Engine" version="1.0"/>
+  <!-- Coordinate system EPSG:2248; horizontal datum NAD83;
+       vertical datum NAVD88 (feet). Model revision 8. -->
+  <CoordinateSystem desc="EPSG:2248" horizontalDatum="NAD83"
+                    verticalDatum="NAVD88 (feet)"/>
+  <Parcels>
+      <Parcel name="0582 04 0006" area="37709.99313354492" parcelType="Single">
+        <CoordGeom>
+            <PntList2D>433293.69057456875 1238785.3790864607</PntList2D>
+            <PntList2D>433284.267247037 1238784.3478410998</PntList2D>
+            <PntList2D>433274.8248470959 1238783.5043075557</PntList2D>
+            <PntList2D>433265.36837408604 1238782.848567653</PntList2D>
+            <PntList2D>433255.8998113356 1238782.381653912</PntList2D>
+            <PntList2D>433246.4241418229 1238782.1046479987</PntList2D>
+            <PntList2D>433236.9444141352 1238782.0145993866</PntList2D>
+            <PntList2D>433227.98491204676 1238782.0370731093</PntList2D>
+            <PntList2D>433219.02766171645 1238782.227604929</PntList2D>
+            <PntList2D>433210.0746464815 1238782.5872274349</PntList2D>
+            <PntList2D>433201.12986580824 1238783.116006037</PntList2D>
+            <PntList2D>433192.19733545516 1238783.8130063035</PntList2D>
+            <PntList2D>433183.28003865195 1238784.6792771334</PntList2D>
+            <PntList2D>433174.3799914972 1238785.7138514046</PntList2D>
+            <PntList2D>433165.5012097707 1238786.915794643</PntList2D>
+            <PntList2D>433134.29799021914 1238554.582053157</PntList2D>
+            <PntList2D>433189.314853895 1238551.6534640908</PntList2D>
+            <PntList2D>433267.90122138784 1238547.4701873616</PntList2D>
+            <PntList2D>433318.29332774365 1238544.980017661</PntList2D>
+            <PntList2D>433327.80822641886 1238544.509571009</PntList2D>
+            <PntList2D>433293.69057456875 1238785.3790864607</PntList2D>
+        </CoordGeom>
+      </Parcel>
+  </Parcels>
+  <!-- No Surfaces element: no vertical datum or elevation data is established for this site. -->
+</LandXML>

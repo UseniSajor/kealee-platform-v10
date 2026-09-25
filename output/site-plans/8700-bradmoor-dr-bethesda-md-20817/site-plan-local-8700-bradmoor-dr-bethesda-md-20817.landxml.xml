@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LandXML xmlns="http://www.landxml.org/schema/LandXML-1.2"
+         version="1.2"
+         date="2026-09-25" time="22:22:43">
+  <Units><Imperial areaUnit="squareFoot" linearUnit="USSurveyFoot" volumeUnit="cubicFeet"
+           temperatureUnit="fahrenheit" pressureUnit="inHG"/></Units>
+  <Project name="8700 BRADMOOR DR"/>
+  <Application name="Kealee Site Plan Engine" version="1.0"/>
+  <!-- Coordinate system EPSG:2248; horizontal datum NAD83;
+       vertical datum NAVD88 (feet). Model revision 8. -->
+  <CoordinateSystem desc="EPSG:2248" horizontalDatum="NAD83"
+                    verticalDatum="NAVD88 (feet)"/>
+  <Parcels>
+      <Parcel name="00587728" area="8237.293701171875" parcelType="Single">
+        <CoordGeom>
+            <PntList2D>484755.4168448895 1278338.4848547876</PntList2D>
+            <PntList2D>484682.9579927027 1278245.852251768</PntList2D>
+            <PntList2D>484724.5735832155 1278209.0755339563</PntList2D>
+            <PntList2D>484732.13284915686 1278202.4009313285</PntList2D>
+            <PntList2D>484811.15063372254 1278290.8672628105</PntList2D>
+            <PntList2D>484800.0377202183 1278300.932717815</PntList2D>
+            <PntList2D>484785.9580786377 1278313.5643390417</PntList2D>
+            <PntList2D>484760.8876199573 1278334.37427634</PntList2D>
+            <PntList2D>484755.4168448895 1278338.4848547876</PntList2D>
+        </CoordGeom>
+      </Parcel>
+  </Parcels>
+  <!-- No Surfaces element: no vertical datum or elevation data is established for this site. -->
+</LandXML>
